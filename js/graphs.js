@@ -79,7 +79,10 @@ function getGraphs(device, popup) {
         case 'Gas':
             txtUnit = 'm3';
             break;
-        case 'Energy':
+        case 'Electric':
+            txtUnit = 'Watt';
+            break;
+	case 'Energy':
         case 'kWh':
         case 'YouLess counter':
             txtUnit = 'kWh';
@@ -102,10 +105,10 @@ function getGraphs(device, popup) {
         case 'Leaf Wetness':
             txtUnit = 'Range';
             break;
-        case 'Voltage':
-        case 'A/D':
+	case 'A/D':
             txtUnit = 'mV';
             break;
+        case 'Voltage':		    
         case 'VoltageGeneral':
             txtUnit = 'V';
             break;
@@ -117,6 +120,7 @@ function getGraphs(device, popup) {
             txtUnit = 'dB';
             break;
         case 'CurrentGeneral':
+	case 'CM113, Electrisave':	    
         case 'Current':
             txtUnit = 'A';
             break;
@@ -251,7 +255,38 @@ function showGraph(idx, title, label, range, current, forced, sensor, popup) {
                 });
 
                 if ($('#graphoutput' + idx).length > 0) {
-                    makeMorrisGraph(idx, graphProperties);
+                    var graphtype='line';
+                    graphProperties.pointFillColors= ['none'];
+                    graphProperties.pointSize=3;
+                    graphProperties.lineColors=settings['lineColors'];
+
+                    if (blocksConfig) {
+
+                        if (typeof(blocksConfig['graph']) !== 'undefined'){
+                            graphtype = blocksConfig.graph;
+                        }
+
+                        if(typeof(blocksConfig['pointFillColors']) !== 'undefined') {
+                            graphProperties.pointFillColors = blocksConfig['pointFillColors']
+                        }
+
+
+                        if(typeof(blocksConfig['pointSize']) !== 'undefined') {
+                            graphProperties.pointSize = blocksConfig['pointSize']
+                        }
+                        if(typeof(blocksConfig['lineColors']) !== 'undefined') {
+                            graphProperties.lineColors = blocksConfig['lineColors']
+                        }
+
+                    }
+                        
+                    switch(graphtype) {
+                        case 'bar':
+                            makeMorrisGraphBar(idx,  graphProperties);
+                            break;
+                        default:
+                            makeMorrisGraph(idx, graphProperties);
+                    }
                 }
             }
         });
@@ -267,12 +302,41 @@ function makeMorrisGraph(idx, graphProperties) {
         gridTextColor: '#fff',
         lineWidth: 2,
         xkey: ['d'],
+	ymin: 'auto',    
         ykeys: graphProperties.keys,
         labels: graphProperties.labels,
         xLabelFormat: function (x) { return moment(x.src.d, 'YYYY-MM-DD HH:mm').locale(settings['calendarlanguage']).format(graphProperties.dateFormat); },
-        lineColors: settings['lineColors'],
-        pointFillColors: ['none'],
-        pointSize: 3,
+        lineColors: graphProperties.lineColors,
+        pointFillColors: graphProperties.pointFillColors,
+        pointSize: graphProperties.pointSize,
+        hideHover: 'auto',
+        resize: true,
+        hoverCallback: function (index, options, content, row) {
+            var datePoint = moment(row.d, 'YYYY-MM-DD HH:mm').locale(settings['calendarlanguage']).format(graphProperties.dateFormat);
+            var text = datePoint + ": ";
+            graphProperties.keys.forEach(function (element, index) {
+                text += (index > 0 ? ' / ' : '') + number_format(row[element], 2) + ' ' + graphProperties.labels[index];
+            });
+            return text;
+        }
+    });
+}
+
+function makeMorrisGraphBar(idx, graphProperties) {
+    Morris.Bar({
+        parseTime: false,
+        element: 'graphoutput' + idx,
+        data: graphProperties.data,
+        fillOpacity: 0.2,
+        gridTextColor: '#fff',
+        lineWidth: 2,
+        xkey: ['d'],
+        ykeys: graphProperties.keys,
+        labels: graphProperties.labels,
+        xLabelFormat: function (x) { return moment(x.src.d, 'YYYY-MM-DD HH:mm').locale(settings['calendarlanguage']).format(graphProperties.dateFormat); },
+        lineColors: graphProperties.lineColors,
+        pointFillColors: graphProperties.pointFillColors,
+        pointSize: graphProperties.pointSize,
         hideHover: 'auto',
         resize: true,
         hoverCallback: function (index, options, content, row) {
