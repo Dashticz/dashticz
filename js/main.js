@@ -919,29 +919,49 @@ function loadFrame(f, frame) {
 }
 
 function checkForceRefresh(m_instance, url){
-//adds current time to an url if forcerefresh is set to 1 or true
-//calls nocache.php in case forcerefresh is 2.
+//forcerefresh is set to 1 or true:
+//   adds current time to an url as second parameter (for webcams)
+//   adds the timestamp as first parameter if there are no parameters yet
+//forcerefresh:2
+//   calls nocache.php and prevent caching by setting headers in php.
+//forcerefresh:3
+//   adds timestamp parameter to the end of the url
+
+
   if(typeof(m_instance.forcerefresh)!=='undefined') {
-    
+    var str = "" + (new Date()).getTime();
+    var mytimestamp = 't='+str.substr(str.length - 8, 5);
     switch (m_instance.forcerefresh) {
       case true:
       case 1:
-		var sep = '?';
-		if (url.indexOf("?") != -1) sep='&';		
-		if((typeof(m_instance.cheapwebcam)!=='undefined') && (m_instance.cheapwebcam == true)){
-			var newurl = url.split(sep);
-			url = newurl[0];
-			var str = "" + (new Date()).getTime();
-			url += sep + 't=' + str.substr(str.length - 8, 5);
-			url += sep + newurl[1];
-		} else {
-			var newurl = url.split(sep + 't=');
-			url = newurl[0];
-			url += sep + 't=' + (new Date()).getTime();
-		}
-        break;
+      //try to add the timestamp as second parameter
+      //it there are no parameters the timestamp will be added.
+      //behavior changed to support cheap webcams
+		  if (url.indexOf("?") == -1) //no parameters. We will add the timestamp
+          url += '?'+mytimestamp;
+      else { //we have at least one parameters
+          var pos = url.indexOf("&");
+          if (pos>0) {
+            //we have more than one parameter
+            //insert the timestamp as second
+            url = url.substr(0, pos+1) + '&' + mytimestamp + url.substr(pos);
+          }
+          else {
+            //there is only one parameter so we add it to the end
+            url += '&' + mytimestamp;
+          }
+        
+      }
+      break;
       case 2:
         url = settings['dashticz_php_path']+'nocache.php?'+url;
+        break;
+      case 3: //add timestamp to the end
+        var sep = '&';
+        if (url.indexOf("?") == -1) { //there is no parameter yet
+            sep = '?';
+        }
+        url += sep + mytimestamp;
         break;
       }
   }
@@ -1044,6 +1064,7 @@ function appendStreamPlayer(columndiv) {
     $(columndiv).append(this.html);
 
     var streamelement = '.containsstreamplayer' + random;
+    var connecting = null;
 
     var supportsAudio = !!document.createElement('audio').canPlayType;
     if (supportsAudio) {
@@ -1055,11 +1076,16 @@ function appendStreamPlayer(columndiv) {
             audio = $(streamelement + ' .audio1').bind('play', function () {
                 $(streamelement + ' .stateicon').removeClass('fas fa-play');
                 $(streamelement + ' .stateicon').addClass('fas fa-pause');
+                $(streamelement).addClass('playing')
                 playing = true;
+                connecting = setTimeout(function () {
+                    infoMessage("StreamPlayer", "connecting ... ", 0);
+                }, 1000);
             }).bind('pause', function () {
-
                 $(streamelement + ' .stateicon').removeClass('fas fa-pause');
                 $(streamelement + ' .stateicon').addClass('fas fa-play');
+                $(streamelement).removeClass('playing')
+
                 playing = false;
             }).get(0),
             btnPrev = $(streamelement + ' .btnPrev').click(function () {
@@ -1071,41 +1097,45 @@ function appendStreamPlayer(columndiv) {
                     loadTrack(trackCount - 1);
                 }
                 if (playing) {
-                    audio.play();
+                    doPlay();
                 }
-                audio.pause();
             }),
             btnNext = $(streamelement + ' .btnNext').click(function () {
                 if ((index + 1) < trackCount) index++;
                 else index = 0;
 
                 loadTrack(index);
-
                 if (playing) {
-                    audio.play();
+                    doPlay();
                 }
-                audio.pause();
+            }),
+            btnPlay = $(streamelement + ' .playStream').click(function () {
+                if (audio.paused) {
+                    doPlay();
+                } else {
+                    audio.pause();
+                }
             }),
             loadTrack = function (id) {
                 npTitle.text(tracks[id].name);
                 index = id;
                 audio.src = tracks[id].file;
+            },
+            doPlay = function () {
+                audio.play()
+                .then(function() {
+                    clearTimeout(connecting);
+                    $(".update").remove();
+                })
+                .catch(function (err) {
+                    console.log(err);
+                    console.log(err.message);
+                    infoMessage("Streamplayer", err.message);
+
+                })
             };
         loadTrack(index);
     }
-
-    $(streamelement + ' .playStream').click(function () {
-        var myAudio = $(streamelement + ' .audio1').get(0);
-        if (myAudio.paused) {
-            $(streamelement + ' .stateicon').removeClass('fas fa-play');
-            $(streamelement + ' .stateicon').addClass('fas fa-pause');
-            myAudio.play();
-        } else {
-            $(streamelement + ' .stateicon').removeClass('fas fa-pause');
-            $(streamelement + ' .stateicon').addClass('fas fa-play');
-            myAudio.pause();
-        }
-    });
 }
 
 function getDevices(override) {
@@ -1312,6 +1342,7 @@ function getAutoAppendSelector(device) {
         case 'Thermostat':
         case 'Temp + Humidity':
         case 'Temp + Humidity + Baro':
+        case 'Temp + Baro':
         case 'Usage':
         case 'Temp':
         case 'Humidity':
@@ -1405,6 +1436,7 @@ function handleDevice(device, idx) {
           return getHumBlock(device, idx);
         case 'Temp + Humidity + Baro':
         case 'Temp + Humidity':
+        case 'Temp + Baro': 
         case 'Heating':
         case 'Radiator 1':
             return getTempHumBarBlock(device, idx);
