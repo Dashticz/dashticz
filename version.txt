@@ -1,26 +1,8 @@
 {
-"version": "2.5.11",
+"version": "3.0.0",
 "branch": "beta",
 "last_changes": "Improved forcerefresh",
 "changelog" : {
-            "2.5.10": "Added confirmation option for switches",
-            "2.5.9": "Small fix for TwenteMilieu garbage pickup dates",
-			      "2.5.8": "No caching of version.txt",
-            "2.5.7": "Improved flash behavior for changing block",
-            "2.5.6": "Improved layout for blinds",
-            "2.5.5": "Calendar recurrence improvement",        
-            "2.5.4": "Fix for OWM sometimes not showing up",
-            "2.5.3": "Add the possibility to show several weather forecast days with OWM",
-            "2.5.2": "Add Standby URL settings to configuration window",
-            "2.5.1": "Fix for TV Guide and several other small fixes",
-            "2.5.0": "New beta",
-            "2.4.7": "Addition of internal PHP based cors proxy",
-            "2.4.6": "Small change in garbage name mapping rules to support Dordrecht",
-            "2.4.5": "Fix for cross origin issues with php",
-            "2.4.4": "Fix HVC garbage data",
-            "2.4.3": "Use local garbage.php module",
-            "2.4.2": "Merge PHP OV Module into Dashticz",
-            "2.4.1": "Merge PHP TV Module into Dashticz",
-            "2.4.0": "Upgrade to fontawesome 5.0.13"
+            "3.0.0": "Dashticz V3"
             }
 }
