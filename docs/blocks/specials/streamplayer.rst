@@ -4,7 +4,7 @@ Streamplayer
 ############
 
 
-For those who like to listen to the radio on Dashticz v2.0, there is a Plugin available.
+For those who like to listen to the radio on Dashticz, there is a Plugin available.
 
 Add the following to your CONFIG.js::
 
@@ -24,4 +24,15 @@ To enable, use the key: 'streamplayer' in the block definitions::
 
 .. image :: customstreamplayer.png
 
-.. warning :: In the current Dashticz version Streamplayer is not stable
+To change the color of the Streamplayer buttons add the following to your ``custom.css``::
+
+    div[data-id='streamplayer'] > div {
+    background-color: blue !important;
+    }
+
+    div[data-id='streamplayer'].playing > div {
+    background-color: orange !important;
+    }
+
+This last part is applied if the Streamplayer is in playing state.
+

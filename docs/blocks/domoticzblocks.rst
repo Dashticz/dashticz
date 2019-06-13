@@ -91,7 +91,7 @@ Block parameters
       | ``['ba']``: Barometer
       | ``['gu', 'sp']``: wind guts and speed
       | ``['uvi']``, ``['lux']``, ``['lux_avg']``, ``['mm']``, ``['v_max']``
-      | ``['v2']``, ``['mm']``, ``['eu']``, ``['u']``, ``['u_max']``
+      | ``['v2']``, ``['mm']``, ``['eu']``, ``['u']``, ``['u_max']``,``['co2']``
   * - hide_stop
     - | ``true`` Hide stop button for applicable devices, like blinds
       | ``false`` (Default) Show stop button
@@ -116,6 +116,9 @@ Block parameters
   * - protected
     - | ``true`` Protect switching manually in Dashticz (not in Domoticz)
       | ``false`` (Default) Switch state can be changed in Dashticz
+  * - confirmation
+    - | ``0`` No confirmation (default)
+      | ``1`` Dashticz asks the user for confirmation before changing a switch-device
   * - gotoslide
     - | Goto screen when a device changes
       | ``1`` .. ``99``
@@ -133,6 +136,10 @@ Block parameters
     - Open a popup when a device changes to off. See :ref:`openpopup`
   * - type
     - Set this parameter to ``'blocktitle'`` if you want to define a block title instead of a normal block. See :ref:`blocktitle`
+  * - graph
+    - | Sets the graph type
+      | ``'line'`` Line graph (default)
+      | ``'bar'`` Bar graph
       
 Usage
 -----
@@ -287,6 +294,8 @@ So now you can do::
       width: 6,
       graphTypes: ['te', 'hu']
    };
+
+With the ``graph`` parameter you can define the graph type (``line`` for a line graph and ``bar`` for a bar graph)
 
 .. note:: Using both a graph-block as well as a popup graph of the same device is not supported
 

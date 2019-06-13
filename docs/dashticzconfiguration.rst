@@ -3,7 +3,7 @@
 Dashticz configuration
 ======================
 
-Dashticz v2.0 can be configured by editing the ``CONFIG.js`` file.
+Dashticz can be configured by editing the ``CONFIG.js`` file.
 This file you can find in the subfolder ``[dashticz]/custom``.
 
 .. note:: TIP! If CUSTOM POSITIONING is not working check if you have uncomment all lines from the blocks/colums/screens you want.
@@ -33,8 +33,8 @@ Parameter                         Description
 config['language']                can be used to select the language, Dutch (nl_NL), English (en_US), German (de_DE),French (fr_FR), Hungarian (hu_HU), Italian (it_IT), Portuguese (pt_PT), or Swedish (sv_SV)
 
 config['domoticz_ip']             is the URL to your Domoticz installation (with the correct PORT address)
-config['domoticz_refresh']        the refresh rate of Dashticz v2.0 to get information from Domoticz
-config['dashticz_refresh']        the refresh rate of the Dashticz v2.0 Dashboard
+config['domoticz_refresh']        the refresh rate of Dashticz to get information from Domoticz
+config['dashticz_refresh']        the refresh rate of the Dashticz Dashboard
 ==========================        =============
 
 Config parameters

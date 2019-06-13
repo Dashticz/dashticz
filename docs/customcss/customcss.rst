@@ -8,8 +8,8 @@ The source files that define the style information also have the ``.css`` extens
 
 There are a lot of creative users on the Domoticz Forum, that modify the CSS. A lot of examples can be found on the forum. Some examples will be summarized here, which you can use as a starting point to customize your own dashboard.
 
-The default styling is defined in the file ``<dashticz_v2>/css/creative.css``. While you can use this file for inspiration, you should not modify it,
-since the default styling can be modified in the file ``custom.css``, located in the folder ``<dashticz v2>/custom``
+The default styling is defined in the file ``<dashticz_v3>/css/creative.css``. While you can use this file for inspiration, you should not modify it,
+since the default styling can be modified in the file ``custom.css``, located in the folder ``<dashticz v3>/custom``
 
 This sections has some examples of CSS that can be placed in ``custom.css``, so you can create your own look and feel.
 

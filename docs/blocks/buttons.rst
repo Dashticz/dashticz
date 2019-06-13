@@ -47,10 +47,14 @@ Parameters
   * - url
     - ``'<url>'``: URL of the page to open in a popup window on click. 
   * - forcerefresh
-    - | Control the caching-prevention mechanism of the images for a button.
+    - | Control the caching-prevention mechanism of the images and popup frame for a button.
       | ``0`` : Normal caching behavior (=default)
-      | ``1``,  ``true`` : Prevent caching by adding t=<timestamp> parameter to the url. Not all webservers will handle this correctly
+      | ``1``,  ``true`` : Prevent caching by adding t=<timestamp> parameter to the url as second parameter. Try this if you have a (cheap Chinese) webcam. Not all webservers will handle this correctly
       | ``2`` : The image is loaded via php, preventing caching. (php must be enabled on your Dashticz server)
+      | ``3`` : Prevent caching by adding t=<timestamp> parameter to the end of the url. Not all webservers will handle this correctly.      
+  * - refreshiframe
+    - | ``0``: No automatic refresh of a button popup frame (default)
+      | ``1..99999``: Refresh time of the button popup frame in msec.   
   * - log
     - | ``true`` Button will show the Domoticz log info
       | ``false`` Default

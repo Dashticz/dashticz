@@ -1,8 +1,8 @@
 Functionality via custom.jss
 ############################
 
-There is the possibility to use your own functions in Dashticz V2.0
-For this you can edit the file ``<dashticz v2 folder>/custom/custom.js``.
+There is the possibility to use your own functions in Dashticz.
+For this you can edit the file ``<dashticz folder>/custom/custom.js``.
 
 ``function afterGetDevices()``
 ------------------------------
