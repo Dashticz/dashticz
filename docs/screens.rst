@@ -1,7 +1,7 @@
 Screens
 =======
 
-There is the ability to use multiple screens within Dashticz v2.0. Each screen can use it's own background.
+There is the ability to use multiple screens within Dashticz. Each screen can use it's own background.
 The background can also automatically change for the part of the day.
 
 ::
@@ -93,7 +93,7 @@ To setup, use this code in config.js, change according your own needs::
 
 Standby Screen
 ~~~~~~~~~~~~~~
-There is the ability to let Dashticz v2.0 go into standby mode. This defined with the ``config['standby_after']`` parameter in the CONFIG.js file.
+There is the ability to let Dashticz go into standby mode. This defined with the ``config['standby_after']`` parameter in the CONFIG.js file.
 The screen get sort of grayed out and you can show items on the standby theme. These items MUST have been declared and used in the Dashboard::
 
     config['standby_after'] = 5;  //Enter standby mode after 5 minutes
