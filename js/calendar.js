@@ -1,6 +1,11 @@
 var recurring = {};
 
 function addCalendar(calobject, icsUrlorg) {
+  if(!_PHP_INSTALLED) {
+    console.error("Domoticz error!\nCalendar requires a PHP enabled web server.");
+    infoMessage('<font color="red">Domoticz error!', 'Calendar requires a PHP enabled web server</font>', 0);
+    return;
+  }
     if (typeof(icsUrlorg.calendars) == 'undefined') {
         var icsUrl = {};
         icsUrl.calendars = [];
@@ -36,9 +41,8 @@ function addCalendar(calobject, icsUrlorg) {
             html += '</div>';
             html += '</div>';
             $('body').append(html);
-            calobject.find('.transbg').addClass('hover');
+            calobject.addClass('hover');
             calobject.attr('data-toggle', 'modal');
-            calobject.attr('data-id', '');
             calobject.attr('data-target', '#calendar_' + random);
             calobject.attr('onclick', 'setSrc(this);');
         }
@@ -54,8 +58,8 @@ function addCalendar(calobject, icsUrlorg) {
 
         colors[$.md5(curUrl)] = color;
         var cache = new Date().getTime();
-        curUrl = 'http://dashticz.nl/ical/?time=' + cache + '&url=' + curUrl;
-        moment.locale(settings['calendarlanguage']);
+		    curUrl = settings['dashticz_php_path']+'ical/?time=' + cache + '&maxitems=' + maxitems + '&url=' + curUrl;
+	      moment.locale(settings['calendarlanguage']);
         $.getJSON(curUrl, function (data, textstatus, jqXHR) {
 
             var url = this.url.replace('https://cors-anywhere.herokuapp.com/http://ical-to-json.herokuapp.com/convert.json?url=', '');

@@ -26,7 +26,7 @@
         "today": "hoje"
     },
     "misc": {
-        "download": "Click here to download",
+        "download": "Clique aqui para baixar",
         "last_update": "Última atualização",
         "loading": "Carregando...",
         "mediaplayer_nothing_playing": "Agora nada está a tocar",
@@ -37,7 +37,9 @@
         "spotify_back_to_playlist": "Back to playlists",
         "spotify_select_device": "Select device",
         "spotify_select_playlist": "Selecionar lista",
-        "value": "Valor"
+        "value": "Valor",
+        "enter_pincode": "Enter pin code",
+        "wrong_code": "Wrong pin code"
     },
     "settings": {
         "about": {
@@ -94,7 +96,12 @@
             "use_favorites": "Only use favorite devices",
             "use_favorites_help": "Only used when using auto positioning",
             "user_name": "Username",
-            "user_name_help": "Set Dashticz username and password"
+            "user_name_help": "Set Dashticz username and password",
+            "disable_update_check": "Disable update check",
+            "default_cors_url": "Default CORS URL",
+            "dashticz_php_path": "Dashticz PHP Path",
+            "standby_call_url": "URL to be called at start of standby",
+            "standby_call_url_on_end": "URL to be called at end of standby"
         },
         "infosave": "By default, settings are stored in your browser. Downside of this method is it will only work in your current browser. If that's not a problem, you can proceed. Otherwise, copy code below to your CONFIG.JS to keep settings across all browsers and devices.",
         "localize": {
@@ -130,7 +137,10 @@
             "sv": "Swedish",
             "timeformat": "Datetime format",
             "title": "Localizar",
-            "uk": "Ukrainian"
+            "uk": "Ukrainian",
+            "sr": "Serbian",
+            "lt": "lituano",
+            "ro": "romena"
         },
         "media": {
             "hide_mediaplayer": "Hide mediaplayer when it's off",
@@ -159,7 +169,10 @@
             "slide_effect": "Slide effect",
             "standard_graph": "Standard graph",
             "standby_after": "Standby after (minutes, 0 = never)",
-            "title": "Screen"
+            "title": "Screen",
+            "security_button_icons": "Icons instead of text on security switch",
+            "blink_color": "Cor e opacidade do flash (RGBA)",
+            "blink_color_help": "Definir cor e opacidade do flash (vermelho, verde, azul, alfa)"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",
@@ -173,7 +186,26 @@
             "wu_api": "Wunderground API Key",
             "wu_city": "Estação Wunderground (Cidade ou Código)",
             "wu_country": "Wunderground Country",
-            "wu_name": "Mostrar nome"
+            "wu_name": "Mostrar nome",
+            "owm_api": "Open Weather Map API Key",
+            "owm_city": "Estação Open Weather Map (Cidade ou Código)",
+            "owm_cnt": "Open Weather Map contagem de previsão (4 - 40)",
+            "owm_cnt_help": "Number of columns to show. If showing days, max is 5",
+            "owm_days": "Forecast in days",
+            "owm_days_help": "Off shows the Open Weather Map default 3 hour forecast",
+            "owm_min": "Minimum temperature on 2nd row",
+            "owm_min_help": "Only shown when forecast in days",
+            "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
+            "owm_lang_help": "For available languages, see https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_country": "Open Weather Map Country",
+            "owm_name": "Mostrar nome Open Weather Map",
+            "longfonds_zipcode": "Longfonds zipcode",
+            "longfonds_housenumber": "Longfonds housenumber"
+        },
+        "other": {
+            "title": "De outros",
+            "setpoint_min": "Valor mínimo do valor nominal do termostato",
+            "setpoint_max": "Valor máximo do valor nominal do termostato"
         }
     },
     "switches": {
@@ -184,8 +216,16 @@
         "state_off": "FORA",
         "state_on": "COMUTADA",
         "state_open": "ABERTO",
+        "state_locked": "LOCKED",
+        "state_unlocked": "UNLOCKED",
         "state_smoke": "FUMO DETECTADO",
-        "state_switch": "Interruptor"
+        "state_switch": "Interruptor",
+        "state_armaway": "Arm Away",
+        "state_armedaway": "Armed Away",
+        "state_armedhome": "Armed Home",
+        "state_armhome": "Arm Home",
+        "state_disarm": "Disarm",
+        "state_disarmed": "Disarmed"
     },
     "weekdays": {
         "entire_day": "Durante todo o dia",

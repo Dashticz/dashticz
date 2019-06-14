@@ -8,7 +8,7 @@ function getNews(divToFill, newsfeed) {
     if (typeof(settings['default_news_url']) !== 'undefined') {
         // Some RSS feed doesn't load trough crossorigin.me or vice versa
         //$.ajax('https://crossorigin.me/'+newsfeed, {
-        $.ajax(newsfeed, {
+        $.ajax(_CORS_PATH + newsfeed, {
             accepts: {
                 xml: 'application/rss+xml'
             },
@@ -24,7 +24,7 @@ function getNews(divToFill, newsfeed) {
                 var maxcss = '';
                 if (maxheight > 0) maxcss = ' style="max-height:' + maxheight + 'px;overflow:hidden;"';
 
-                var html = '<div class="col-xs-' + width + ' hover transbg" ' + maxcss + '><div class="col-xs-2 col-icon"><em class="fa fa-newspaper-o"></em></div><div class="col-xs-10">';
+                var html = '<div class="col-xs-' + width + ' hover transbg" ' + maxcss + '><div class="col-xs-2 col-icon"><em class="fas fa-newspaper"></em></div><div class="col-xs-10">';
                 html += '<div id="rss-styled_' + divToFill + '"><ul id="newsTicker">';
 
                 $(data).find('item').each(function () { // or "item" or whatever suits your feed
@@ -67,14 +67,16 @@ function getNews(divToFill, newsfeed) {
                     maxHeight = maxHeight > $(this).height() ? maxHeight : $(this).height();
                 });
 
-                $('#rss-styled_' + divToFill).parents('.transbg').height(maxHeight);
+                if(maxHeight > 0) {
+                  $('#rss-styled_' + divToFill).parents('.transbg').height(maxHeight);
+                }
             },error: function(data){
 		infoMessage('<font color="red">News Error!</font>','RSS feed ' + data.statusText +'. Check rss url.', 10000);
 		}
         });
 
         setTimeout(function () {
-            getNews(divToFill);
+          getNews(divToFill, newsfeed);
         }, (60000 * 5));
     }
 }

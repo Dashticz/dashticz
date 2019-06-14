@@ -26,18 +26,20 @@
         "today": "Heute"
     },
     "misc": {
-        "download": "Click here to download",
+        "download": "Klicken Sie hier zum Download",
         "last_update": "Zuletzt aktualisiert",
         "loading": "Lädt...",
         "mediaplayer_nothing_playing": "Derzeit wird nichts abgespielt",
-        "new_version": "New version is available",
+        "new_version": "Neue Version ist verfügbar",
         "notifications_ns": "Benachrichtigungen hinzugefügt von NS",
         "scheduled": "Geplant",
         "select": "Auswählen",
         "spotify_back_to_playlist": "Zurück zu Wiedergabelisten",
         "spotify_select_device": "Gerät auswählen",
         "spotify_select_playlist": "Playlist wählen",
-        "value": "Wert"
+        "value": "Wert",
+        "enter_pincode": "Enter pin code",
+        "wrong_code": "Wrong pin code"
     },
     "settings": {
         "about": {
@@ -94,7 +96,12 @@
             "use_favorites": "Nur favorisierte Geräte anzeigen",
             "use_favorites_help": "Nur genutzt bei aktivierter Auto Positionierung",
             "user_name": "Username",
-            "user_name_help": "Set Dashticz username and password"
+            "user_name_help": "Set Dashticz username and password",
+            "disable_update_check": "Disable update check",
+            "default_cors_url": "Default CORS URL",
+            "dashticz_php_path": "Dashticz PHP Path",
+            "standby_call_url": "URL to be called at start of standby",
+            "standby_call_url_on_end": "URL to be called at end of standby"
         },
         "infosave": "Die Einstellungen werden standardmäßig im Browser selber gespeichert. Der Nachteil dieser Methode ist, sie gelten entsprechend nur für den aktuellen Browser. Wenn das kein Problem darstellt, kannst das Fenster schließen und musst nichts weiter unternehmen. Ansonsten kopiere den unten dargestellten Code in deine CONFIG.JS um die Einstellungen für alle Browser und Geräte zu aktivieren.",
         "localize": {
@@ -130,7 +137,10 @@
             "sv": "Schwedisch",
             "timeformat": "Datumsformat",
             "title": "Lokalisieren",
-            "uk": "Ukrainisch"
+            "uk": "Ukrainisch",
+            "sr": "Serbian",
+            "lt": "litauisch",
+            "ro": "rumänisch"
         },
         "media": {
             "hide_mediaplayer": "Mediaplayer ausblenden wenn ausgeschaltet",
@@ -159,7 +169,10 @@
             "slide_effect": "Slide-Effekt",
             "standard_graph": "Standardgraph",
             "standby_after": "Standby nach x Minuten (0 = niemals)",
-            "title": "Anzeige"
+            "title": "Anzeige",
+            "security_button_icons": "Icons instead of text on security switch",
+            "blink_color": "Flashfarbe und Deckkraft (RGBA)",
+            "blink_color_help": "Blitzfarbe und Deckkraft einstellen (Rot, Grün, Blau, Alpha)"
         },
         "weather": {
             "idx_moonpicture": "IDX des Mondbildes",
@@ -173,7 +186,26 @@
             "wu_api": "Wunderground API-Schlüssel",
             "wu_city": "Wunderground Messstation (Stadt oder Code)",
             "wu_country": "Wunderground Land",
-            "wu_name": "Anzeigename"
+            "wu_name": "Anzeigename",
+            "owm_api": "Open Weather Map API-Schlüssel",
+            "owm_city": "Open Weather Map Messstation (Stadt oder Code)",
+            "owm_cnt": "Open Weather Map Prognose zählen (4 - 40)",
+            "owm_cnt_help": "Number of columns to show. If showing days, max is 5",
+            "owm_days": "Forecast in days",
+            "owm_days_help": "Off shows the Open Weather Map default 3 hour forecast",
+            "owm_min": "Minimum temperature on 2nd row",
+            "owm_min_help": "Only shown when forecast in days",
+            "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
+            "owm_lang_help": "For available languages, see https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_country": "Open Weather Map Land",
+            "owm_name": "Anzeigename Open Weather Map",
+            "longfonds_zipcode": "Longfonds zipcode",
+            "longfonds_housenumber": "Longfonds housenumber"
+        },
+        "other": {
+            "title": "Andere",
+            "setpoint_min": "Minimalwert des Thermostatsollwerts",
+            "setpoint_max": "Maximalwert des Thermostatsollwerts"
         }
     },
     "switches": {
@@ -184,8 +216,16 @@
         "state_off": "AUS",
         "state_on": "AN",
         "state_open": "OFFEN",
+        "state_locked": "LOCKED",
+        "state_unlocked": "UNLOCKED",
         "state_smoke": "RAUCH ENTDECK",
-        "state_switch": "Schalter"
+        "state_switch": "Schalter",
+        "state_armaway": "Arm Away",
+        "state_armedaway": "Armed Away",
+        "state_armedhome": "Armed Home",
+        "state_armhome": "Arm Home",
+        "state_disarm": "Disarm",
+        "state_disarmed": "Disarmed"
     },
     "weekdays": {
         "entire_day": "ganzen Tag",

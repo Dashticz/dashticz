@@ -1,15 +1,15 @@
 blocktypes = {};
 blocktypes.SubType = {};
-blocktypes.SubType['Visibility'] = {icon: 'fa fa-eye', title: '<Name>', value: '<Data>'};
-blocktypes.SubType['Electric'] = {icon: 'fa fa-plug', title: '<Name>', value: '<Data>'};
-blocktypes.SubType['Lux'] = {icon: 'fa fa-sun-o', title: '<Name>', value: '<Data>'};
+blocktypes.SubType['Visibility'] = {icon: 'fas fa-eye', title: '<Name>', value: '<Data>'};
+blocktypes.SubType['Electric'] = {icon: 'fas fa-plug', title: '<Name>', value: '<Data>'};
+blocktypes.SubType['Lux'] = {icon: 'fas fa-sun-o', title: '<Name>', value: '<Data>'};
 blocktypes.SubType['Pressure'] = {icon: 'wi wi-barometer', title: '<Name>', value: '<Data>', format: true, decimals: 1};
 blocktypes.SubType['Barometer'] = {icon: 'wi wi-barometer', title: '<Name>', value: '<Data>'};
-blocktypes.SubType['Sound Level'] = {icon: 'fa fa-volume-up', title: '<Name>', value: '<Data>'};
-blocktypes.SubType['Distance'] = {icon: 'fa fa-eye', title: '<Name>', value: '<Data>'};
-blocktypes.SubType['Alert'] = {icon: 'fa fa-warning', title: '<Data>', value: '<Name>'};
-blocktypes.SubType['Percentage'] = {icon: 'fa fa-percent', title: '<Name>', value: '<Data>'};
-blocktypes.SubType['Text'] = {icon: 'fa fa-file', title: '<Name>', value: '<Data>'};
+blocktypes.SubType['Sound Level'] = {icon: 'fas fa-volume-up', title: '<Name>', value: '<Data>'};
+blocktypes.SubType['Distance'] = {icon: 'fas fa-eye', title: '<Name>', value: '<Data>'};
+blocktypes.SubType['Alert'] = {icon: 'fas fa-warning', title: '<Data>', value: '<Name>'};
+blocktypes.SubType['Percentage'] = {icon: 'fas fa-percent', title: '<Name>', value: '<Data>'};
+blocktypes.SubType['Text'] = {icon: 'fas fa-file', title: '<Name>', value: '<Data>'};
 blocktypes.SubType['Counter Incremental'] = {
     icon: 'fa fa-bolt',
     title: '<Name>',
@@ -17,7 +17,7 @@ blocktypes.SubType['Counter Incremental'] = {
     format: true,
     decimals: 2
 };
-blocktypes.SubType['Voltage'] = {icon: 'fa fa-bolt', title: '<Name>', value: '<Data>'};
+blocktypes.SubType['Voltage'] = {icon: 'fas fa-bolt', title: '<Name>', value: '<Data>'};
 blocktypes.SubType['Solar Radiation'] = {
     icon: 'fa fa-sun-o',
     title: '<Name>',
@@ -25,51 +25,65 @@ blocktypes.SubType['Solar Radiation'] = {
     format: true,
     decimals: 0
 };
-blocktypes.SubType['Thermostat Mode'] = {icon: 'fa fa-thermometer-half', title: '<Name>', value: '<Data>'};
+blocktypes.SubType['Thermostat Mode'] = {icon: 'fas fa-thermometer-half', title: '<Name>', value: '<Data>'};
 
 blocktypes.SensorUnit = {};
-blocktypes.SensorUnit['Fertility'] = {icon: 'fa fa-flask', title: '<Name>', value: '<Data>'};
+blocktypes.SensorUnit['Fertility'] = {icon: 'fas fa-flask', title: '<Name>', value: '<Data>'};
 
 blocktypes.Type = {};
-blocktypes.Type['Rain'] = {icon: 'fa fa-tint', title: '<Name>', value: '<Rain>mm', format: true, decimals: 1};
+blocktypes.Type['Rain'] = {icon: 'fas fa-tint', title: '<Name>', value: '<Rain>mm', format: true, decimals: 1};
 blocktypes.Type['Wind'] = {icon: 'wi wi-wind-direction', title: language.wind.wind, value: ''};
 blocktypes.Type['Temp'] = {
-    icon: 'fa fa-thermometer-half',
+    icon: 'fas fa-thermometer-half',
     title: '<Name>',
     value: '<Temp>' + _TEMP_SYMBOL,
     format: true,
     decimals: 1
 };
 blocktypes.Type['Air Quality'] = {image: 'air.png', title: '<Name>', value: '<Data>'};
-blocktypes.Type['UV'] = {icon: 'fa fa-sun-o', title: '<Name>', value: '<Data>'};
+blocktypes.Type['UV'] = {icon: 'fas fa-sun', title: '<Name>', value: '<Data>'};
+blocktypes.Type['Variable'] = {icon: 'fas fa-equals', title: '<Name>', value: '<Value>'};
+
+//Recognition of
+//"HardwareType" : "RFXCOM - RFXtrx433 USB 433.92MHz Transceiver",
+//"Type" : "Energy",
+//"SubType" : "CM180",
+blocktypes.Type['Energy'] = {icon: 'fas fa-plug', title: '<Name>', value: '<Data>'};
+
+//Recognition of
+//"HardwareType" : "RFXCOM - RFXtrx433 USB 433.92MHz Transceiver",
+//"Type" : "Current/Energy",
+//"SubType" : "CM180i",
+blocktypes.Type['Current/Energy'] = {icon: 'fas fa-plug', title: '<Name>', value: '<Data>'};
 
 blocktypes.HardwareType = {};
-blocktypes.HardwareType['Motherboard sensors'] = {icon: 'fa fa-desktop', title: '<Name>', value: '<Data>'};
+blocktypes.HardwareType['Motherboard sensors'] = {icon: 'fas fa-desktop', title: '<Name>', value: '<Data>'};
 blocktypes.HardwareType['PVOutput (Input)'] = {};
-blocktypes.HardwareType['PVOutput (Input)']['today'] = {icon: 'fa fa-sun-o', title: '<Name>', value: '<CounterToday>', format: true, decimals: 1};
-blocktypes.HardwareType['PVOutput (Input)']['usage'] = {icon: 'fa fa-sun-o', title: '<Name>', value: '<Usage>', format: true, decimals: 1};
-blocktypes.HardwareType['PVOutput (Input)']['total'] = {icon: 'fa fa-sun-o', title: '<Name>', value: '<Data>', format: true, decimals: 0};
+blocktypes.HardwareType['PVOutput (Input)']['today'] = {icon: 'fas fa-sun', title: '<Name>', value: '<CounterToday>', format: true, decimals: 1};
+blocktypes.HardwareType['PVOutput (Input)']['usage'] = {icon: 'fas fa-sun', title: '<Name>', value: '<Usage>', format: true, decimals: 1};
+blocktypes.HardwareType['PVOutput (Input)']['total'] = {icon: 'fas fa-sun', title: '<Name>', value: '<Data>', format: true, decimals: 0};
 
 blocktypes.HardwareName = {};
-blocktypes.HardwareName['Rain expected'] = {icon: 'fa fa-tint', title: '<Data>', value: '<Name>'};
+blocktypes.HardwareName['Rain expected'] = {icon: 'fas fa-tint', title: '<Data>', value: '<Name>'};
 
 blocktypes.Name = {};
-blocktypes.Name['Rain Expected'] = {icon: 'fa fa-tint', title: '<Data>', value: '<Name>'};
-blocktypes.Name['Rain expected'] = {icon: 'fa fa-tint', title: '<Data>', value: '<Name>'};
-blocktypes.Name['Regen mm/uur'] = {icon: 'fa fa-tint', title: '<Data>', value: '<Name>'};
-blocktypes.Name['Regen verwacht'] = {icon: 'fa fa-tint', title: '<Data>', value: '<Name>'};
-blocktypes.Name['Regen Verwacht'] = {icon: 'fa fa-tint', title: '<Data>', value: '<Name>'};
+blocktypes.Name['Rain Expected'] = {icon: 'fas fa-tint', title: '<Data>', value: '<Name>'};
+blocktypes.Name['Rain expected'] = {icon: 'fas fa-tint', title: '<Data>', value: '<Name>'};
+blocktypes.Name['Regen mm/uur'] = {icon: 'fas fa-tint', title: '<Data>', value: '<Name>'};
+blocktypes.Name['Regen verwacht'] = {icon: 'fas fa-tint', title: '<Data>', value: '<Name>'};
+blocktypes.Name['Regen Verwacht'] = {icon: 'fas fa-tint', title: '<Data>', value: '<Name>'};
 
-blocktypes.Name['Ping'] = {icon: 'fa fa-arrows-v', title: '<Name>', value: '<Data>'};
-blocktypes.Name['Upload'] = {icon: 'fa fa-upload', title: '<Name>', value: '<Data>', format: true, decimals: 3};
-blocktypes.Name['Download'] = {icon: 'fa fa-download', title: '<Name>', value: '<Data>', format: true, decimals: 3};
+blocktypes.Name['Ping'] = {icon: 'fas fa-arrows-v', title: '<Name>', value: '<Data>'};
+blocktypes.Name['Upload'] = {icon: 'fas fa-upload', title: '<Name>', value: '<Data>', format: true, decimals: 3};
+blocktypes.Name['Download'] = {icon: 'fas fa-download', title: '<Name>', value: '<Data>', format: true, decimals: 3};
 
-blocktypes.Name['Maanfase'] = {icon: 'fa fa-moon-o', title: '<Data>', value: '<Name>'};
-blocktypes.Name['Moon phase'] = {icon: 'fa fa-moon-o', title: '<Data>', value: '<Name>'};
-blocktypes.Name['Mondphase'] = {icon: 'fa fa-moon-o', title: '<Data>', value: '<Name>'};
+blocktypes.Name['Maanfase'] = {icon: 'fas fa-moon', title: '<Data>', value: '<Name>'};
+blocktypes.Name['Moon phase'] = {icon: 'fas fa-moon', title: '<Data>', value: '<Name>'};
+blocktypes.Name['Mondphase'] = {icon: 'fas fa-moon', title: '<Data>', value: '<Name>'};
 
 blocktypes = getExtendedBlockTypes(blocktypes);
 
+var myBlockNumbering=0;  //To give all blocks a unique number
 
 function getBlock(cols, c, columndiv, standby) {
     if (typeof(cols) !== 'undefined') {
@@ -100,19 +114,22 @@ function getBlock(cols, c, columndiv, standby) {
                     continue;
                 }
             }
-
+            $(columndiv).append('<div id="block_' + myBlockNumbering + '"</div>');
+            var myIndex = myBlockNumbering++;
+            var myblockselector = '#block_' + myIndex;
+            
             switch (typeof(cols['blocks'][b])) {
                 case 'object':
-                    handleObjectBlock(cols['blocks'][b], b, columndiv, width, c);
+                    handleObjectBlock(cols['blocks'][b], myIndex, myblockselector, width, c);
                     continue;
 
                 case 'string':
-                    handleStringBlock(cols['blocks'][b], columndiv, width, c);
+                    handleStringBlock(cols['blocks'][b], myblockselector, width, c);
                     continue;
 
-                default:
-                    $(columndiv).append('<div data-id="' + cols['blocks'][b] + '" class="mh transbg block_' + cols['blocks'][b] + '"></div>');
-                    break;
+                    default:
+                        $(myblockselector).html('<div data-id="' + cols['blocks'][b] + '" class="mh transbg block_' + cols['blocks'][b] + '"></div>');
+                        break;
             }
         }
     }
@@ -132,7 +149,7 @@ function handleStringBlock(block, columndiv, width, c) {
             for (i = 0; i < icons.length; i++) {
                 switch (icons[i]) {
                     case 'settings':
-                        content += '<span class="settings settingsicon" data-id="settings" data-target="#settingspopup" data-toggle="modal"><em class="fa fa-cog"/></span>';
+                        content += '<span class="settings settingsicon" data-id="settings" data-target="#settingspopup" data-toggle="modal"><em class="fas fa-cog"/> </span>';
                         break;
 
                     case 'fullscreen':
@@ -199,6 +216,39 @@ function handleStringBlock(block, columndiv, width, c) {
                 loadWeather(settings['wu_city'], settings['wu_country']);
             }
             return;
+		case 'weather_owm':
+            if (typeof(loadWeatherFull) !== 'function') {
+                $.ajax({url: 'js/weather_owm.js', async: false, dataType: "script"});
+            }
+            $(columndiv).append('<div data-id="weather" class="block_' + block + ' containsweatherfull"></div>');
+            if (settings['owm_api'] !== "" && settings['owm_city'] !== "") loadWeatherFull(settings['owm_city'], settings['owm_country'], $('.weatherfull'));
+            return;
+		case 'currentweather_owm':
+            if (settings['owm_api'] !== "" && settings['owm_city'] !== "") {
+                if (typeof(loadWeather) !== 'function') {
+                    $.ajax({url: 'js/weather_owm.js', async: false, dataType: "script"});
+                }
+				
+                $(columndiv).append('<div data-id="currentweather" class="mh transbg block_' + block + ' col-xs-' + width + ' containsweather">' +
+                    '<div class="col-xs-4"><div class="weather" id="weather"></div></div>' +
+                    '<div class="col-xs-8"><strong class="title weatherdegrees" id="weatherdegrees"></strong><br /><span class="weatherloc" id="weatherloc"></span></div>' +
+                    '</div>');
+                loadWeather(settings['owm_city'], settings['owm_country']);
+            }
+            return;
+		case 'currentweather_big_owm':
+            if (settings['owm_api'] !== "" && settings['owm_city'] !== "") {
+                if (typeof(loadWeather) !== 'function') {
+                    $.ajax({url: 'js/weather_owm.js', async: false, dataType: "script"});
+                }
+                $(columndiv).append('<div data-id="currentweather_big" class="mh transbg big block_' + block + ' col-xs-' + width + ' containsweather">' +
+                    '<div class="col-xs-1"><div class="weather" id="weather"></div></div>' +
+                    '<div class="col-xs-11"><span class="title weatherdegrees" id="weatherdegrees"></span> <span class="weatherloc" id="weatherloc"></span></div>' +
+                    '</div>');
+
+                loadWeather(settings['owm_city'], settings['owm_country']);
+            }
+            return;
         case 'spotify':
             if (typeof(getSpotify) !== 'function') $.ajax({url: 'js/spotify.js', async: false, dataType: "script"});
             getSpotify(columndiv);
@@ -212,6 +262,26 @@ function handleStringBlock(block, columndiv, width, c) {
             $(columndiv).append('<div data-id="train" class="train"></div>');
             getTrainInfo();
             return;
+		case 'longfonds':
+			$(columndiv).append('<div data-id="longfonds" class="mh transbg block_longfonds col-xs-'+width+'"></div>');
+			$.getJSON(_CORS_PATH + 'https://www.longfonds.nl/gezondelucht/api/zipcode-check?zipcode='+settings['longfonds_zipcode']+'&houseNumber='+settings['longfonds_housenumber'],function(data){
+				var stateBlock = '<div class="col-xs-4 col-icon">';
+				stateBlock += '<em class="fas fa-cloud"></em>';
+				stateBlock += '</div>';
+				stateBlock += '<div class="col-xs-8 col-data">';
+
+				if (titleAndValueSwitch('longfonds')) {
+					stateBlock += '<strong class="title">Luchtkwaliteit</strong><br />';
+					stateBlock += '<span class="value">'+data.value+'</span>';
+				} else {
+					stateBlock += '<strong class="title">'+data.value+'</strong><br />';
+					stateBlock += '<span class="value">Luchtkwaliteit</span>';
+				}
+
+				stateBlock += '</div>';
+				$('div.block_longfonds').html(stateBlock);
+			});
+			return;
         case 'traffic':
             if (typeof(getTraffic) !== 'function') $.ajax({url: 'js/traffic.js', async: false, dataType: "script"});
             $(columndiv).append('<div data-id="traffic" class="traffic"></div>');
@@ -248,7 +318,7 @@ function handleStringBlock(block, columndiv, width, c) {
             var random = getRandomInt(1, 100000);
             var html = '<div class="col-xs-' + width + ' transbg containsicalendar containsicalendar' + random + '">';
             html += '<div class="col-xs-2 col-icon">';
-            html += '<em class="fa fa-calendar"></em>';
+            html += '<em class="fas fa-calendar"></em>';
             html += '</div>';
             html += '<div class="col-xs-10 items">' + language.misc.loading + '</div>';
             html += '</div>';
@@ -295,10 +365,7 @@ function handleObjectBlock(block, index, columndiv, width, c) {
     if (block.hasOwnProperty('latitude')) {
         $(columndiv).append(loadMaps(random, block));
         return;
-    } else if (block.hasOwnProperty('isimage')) {
-        $(columndiv).append(loadImage(random, block));
-        return;
-    }
+  }
     var key = 'UNKNOWN';
     if (block.hasOwnProperty('key')) key = block['key'];
     if (block.hasOwnProperty('width')) width = block['width'];
@@ -339,6 +406,8 @@ function handleObjectBlock(block, index, columndiv, width, c) {
         addCalendar($('.containsicalendar' + random), block);
     } else {
         $(columndiv).append(loadButton(index, block));
+        if(buttonIsClickable(block))
+          $(columndiv).click(block, buttonOnClick);
     }
 }
 
@@ -351,7 +420,7 @@ function appendTvOrCalendarBlock(dataId, classes, width, block, columndiv) {
     html += '<div data-id="' + dataId + '" class="col-xs-' + width + ' ' + classes + '">';
     if (block.hasOwnProperty('icon') && block['icon'] !== '') {
         html += '<div class="col-xs-2 col-icon">';
-        html += '<em class="fa ' + block['icon'] + '"></em>';
+        html += '<em class="' + block['icon'] + '"></em>';
         html += '</div>';
         html += '<div class="col-xs-10 items">' + language.misc.loading + '</div>';
     }
@@ -377,16 +446,24 @@ function getStateBlock(id, icon, title, value, device) {
     getBlockClick(id, device);
 
     var stateBlock = '<div class="col-xs-4 col-icon">';
-    stateBlock += '<em class="fa ' + icon + '"></em>';
+    stateBlock += '<em class="' + icon + '"></em>';
     stateBlock += '</div>';
     stateBlock += '<div class="col-xs-8 col-data">';
 
     if (titleAndValueSwitch(id)) {
-        stateBlock += '<strong class="title">' + title + '</strong><br />';
-        stateBlock += '<span class="value">' + value + '</span>';
+		if (hideTitle(id)) {
+			stateBlock += '<span class="value">' + value + '</span>';
+		} else {
+			stateBlock += '<strong class="title">' + title + '</strong><br />';
+			stateBlock += '<span class="value">' + value + '</span>';			
+		}
     } else {
-        stateBlock += '<strong class="title">' + value + '</strong><br />';
-        stateBlock += '<span class="value">' + title + '</span>';
+		if (hideTitle(id)) {
+			stateBlock += '<strong class="title">' + value + '</strong>';
+		} else {
+			stateBlock += '<strong class="title">' + value + '</strong><br />';		
+			stateBlock += '<span class="value">' + title + '</span>';		
+		}			
     }
     if (showUpdateInformation(id)) {
         stateBlock += '<br /><span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
@@ -450,12 +527,20 @@ function getStatusBlock(idx, device, block, c) {
 
     stateBlock += '<div class="col-xs-8 col-data">';
     if (titleAndValueSwitch(idx)) {
-        stateBlock += '<strong class="title">' + title + '</strong><br />';
-        stateBlock += '<span class="value">' + value + '</span>';
+		if (hideTitle(idx)) {
+			stateBlock += '<span class="value">' + value + '</span>';
+		} else {
+			stateBlock += '<strong class="title">' + title + '</strong><br />';
+			stateBlock += '<span class="value">' + value + '</span>';			
+		}
     } else {
-        stateBlock += '<strong class="title">' + value + '</strong><br />';
-        stateBlock += '<span class="value">' + title + '</span>';
-    }
+		if (hideTitle(idx)) {
+			stateBlock += '<strong class="title">' + value + '</strong>';
+		} else {
+			stateBlock += '<strong class="title">' + value + '</strong><br />';		
+			stateBlock += '<span class="value">' + title + '</span>';		
+		}			
+    }	
 
     if (showUpdateInformation(idx)) {
         stateBlock += '<br /><span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
@@ -534,13 +619,13 @@ function iconORimage(idx, defaulticon, defaultimage, classnames, attr, colwidth,
     if (typeof(attrcol) === 'undefined') attrcol = '';
     var icon = '<div class="col-xs-' + colwidth + ' col-icon" ' + attrcol + '>';
     if (typeof(blocks[idx]) !== 'undefined' && typeof(blocks[idx]['icon']) !== 'undefined') {
-        icon += '<em class="fa ' + blocks[idx]['icon'] + ' ' + classnames + '" ' + attr + '></em>';
+        icon += '<em class="' + blocks[idx]['icon'] + ' ' + classnames + '" ' + attr + '></em>';
     }
     else if (typeof(blocks[idx]) !== 'undefined' && typeof(blocks[idx]['image']) !== 'undefined') {
         icon += '<img src="img/' + blocks[idx]['image'] + '" class="' + classnames + '" ' + attr + ' />';
     }
     else if (defaultimage !== '') icon += '<img src="img/' + defaultimage + '" class="' + classnames + '" ' + attr + ' />';
-    else if (defaulticon !== '') icon += '<em class="fa ' + defaulticon + ' ' + classnames + '" ' + attr + '></em>';
+    else if (defaulticon !== '') icon += '<em class="' + defaulticon + ' ' + classnames + '" ' + attr + '></em>';
 
     icon += '</div>';
     return icon;
@@ -580,6 +665,12 @@ function titleAndValueSwitch(idx) {
     return typeof(blocks[idx]) !== 'undefined'
         && typeof(blocks[idx]['switch']) !== 'undefined'
         && blocks[idx]['switch'];
+}
+
+function hideTitle(idx) {
+    return typeof(blocks[idx]) !== 'undefined'
+        && typeof(blocks[idx]['hide_title']) !== 'undefined'
+        && blocks[idx]['hide_title'];
 }
 
 function showUpdateInformation(idx) {

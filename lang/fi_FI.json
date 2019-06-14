@@ -37,7 +37,9 @@
         "spotify_back_to_playlist": "Takaisin soittolistoihin",
         "spotify_select_device": "Select device",
         "spotify_select_playlist": "Valitse soittolista",
-        "value": "Arvo"
+        "value": "Arvo",
+        "enter_pincode": "Enter pin code",
+        "wrong_code": "Wrong pin code"
     },
     "settings": {
         "about": {
@@ -94,7 +96,12 @@
             "use_favorites": "Käytä vain suosikkilaitteita",
             "use_favorites_help": "Käytetään vain, kun käytät automaattista sijaintien määritystä",
             "user_name": "Username",
-            "user_name_help": "Set Dashticz username and password"
+            "user_name_help": "Set Dashticz username and password",
+            "disable_update_check": "Disable update check",
+            "default_cors_url": "Default CORS URL",
+            "dashticz_php_path": "Dashticz PHP Path",
+            "standby_call_url": "URL to be called at start of standby",
+            "standby_call_url_on_end": "URL to be called at end of standby"
         },
         "infosave": "Asetukset tallennetaan oletuksena selaimen muistiin. Tämän menetelmän huono puoli on se, että se toimii vain kyseisessä selaimessa. Voit jatkaa mikäli tämä ei ole ongelma. Muussa tapauksessa kopioi alla oleva koodi CONFIG.JS tiedostoon pitääksesi samat asetukset kaikissa selaimissa ja laitteissa",
         "localize": {
@@ -130,7 +137,10 @@
             "sv": "Ruotsi",
             "timeformat": "Aikamuoto",
             "title": "Paikallistaa",
-            "uk": "Ukraina"
+            "uk": "Ukraina",
+            "sr": "Serbian",
+            "lt": "liettualainen",
+            "ro": "romanialainen"
         },
         "media": {
             "hide_mediaplayer": "Piilota mediasoitin, kun se on pois päältä",
@@ -159,7 +169,10 @@
             "slide_effect": "Slide-vaikutus",
             "standard_graph": "Standardi kuvaaja",
             "standby_after": "Valmiustila (minuutit, 0 = ei koskaan)",
-            "title": "Näytön otsikko"
+            "title": "Näytön otsikko",
+            "security_button_icons": "Icons instead of text on security switch",
+            "blink_color": "Salaman väri ja opasiteetti (RGBA)",
+            "blink_color_help": "Aseta salaman väri ja opasiteetti (punainen, vihreä, sininen, alfa)"
         },
         "weather": {
             "idx_moonpicture": "Kuun IDX-numero",
@@ -173,7 +186,26 @@
             "wu_api": "Wunderground API-Avain",
             "wu_city": "Wunderground asema (kaupunki tai koodi)",
             "wu_country": "Wunderground Maa",
-            "wu_name": "Näyttönimi"
+            "wu_name": "Näyttönimi",
+            "owm_api": "Open Weather Map API-Avain",
+            "owm_city": "Open Weather Map asema (kaupunki tai koodi)",
+            "owm_cnt": "Open Weather Map ennuste lasketaan (4 - 40)",
+            "owm_cnt_help": "Number of columns to show. If showing days, max is 5",
+            "owm_days": "Forecast in days",
+            "owm_days_help": "Off shows the Open Weather Map default 3 hour forecast",
+            "owm_min": "Minimum temperature on 2nd row",
+            "owm_min_help": "Only shown when forecast in days",
+            "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
+            "owm_lang_help": "For available languages, see https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_country": "Open Weather Map Maa",
+            "owm_name": "Näyttönimi Open Weather Map",
+            "longfonds_zipcode": "Longfonds zipcode",
+            "longfonds_housenumber": "Longfonds housenumber"
+        },
+        "other": {
+            "title": "muut",
+            "setpoint_min": "Termostaatin ohjearvon minimiarvo",
+            "setpoint_max": "Termostaatin asetusarvon enimmäisarvo"
         }
     },
     "switches": {
@@ -184,8 +216,16 @@
         "state_off": "Pois",
         "state_on": "Päällä",
         "state_open": "Auki",
+        "state_locked": "LOCKED",
+        "state_unlocked": "UNLOCKED",
         "state_smoke": "Savua havaittu",
-        "state_switch": "Kytkin"
+        "state_switch": "Kytkin",
+        "state_armaway": "Arm Away",
+        "state_armedaway": "Armed Away",
+        "state_armedhome": "Armed Home",
+        "state_armhome": "Arm Home",
+        "state_disarm": "Disarm",
+        "state_disarmed": "Disarmed"
     },
     "weekdays": {
         "entire_day": "Koko päivä",
