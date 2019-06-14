@@ -1,0 +1,8 @@
+{
+"version": "3.0.0",
+"branch": "master",
+"last_changes": "Creation of v3",
+"changelog" : {
+            "3.0.0": "Dashticz V3"
+            }
+}

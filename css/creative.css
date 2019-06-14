@@ -53,7 +53,15 @@
 	background-color:#fff !important;
 }
 
-
+#loadingMessage {
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background: #fff;
+    top: 0px;
+    left: 0px;
+    position: absolute;
+}
 
 .currencydown {
 	background: rgba(132,22,12,0.7) !important;
@@ -114,8 +122,8 @@
 }
 
 .trashcan {
-    width: 100%;
 	margin-left:-4px;
+	height:30px;
 }
 .modal {
 	z-index:9999;
@@ -186,9 +194,11 @@
 	border-bottom: 0px !important;
 }
 
-.modal-body {
-    position: relative;
-    padding: 0px 0px 0px 0px;
+/*
+next css sets the default height of the frame popup
+*/
+.popupheight {
+	height: calc(95vh - 150px);
 }
 
 .modal-body .glyphicon {
@@ -196,7 +206,7 @@
 	cursor:help;
 }
 .modal-dialog-settings {
-	min-width: 50% !important;
+	width: 70%;
 	margin: 80px auto;
 }
 
@@ -245,8 +255,12 @@
 }
 
 .modal-dialog {
-    min-width: 80% !important;
-    margin: 80px auto;
+    min-width: 80%;
+}
+
+.modal-dialog-custom {
+	min-width: 10px;
+	width: 80%;
 }
 
 .material-switch > input[type="checkbox"] {
@@ -333,7 +347,9 @@
     margin-top: -4px;
     margin-bottom: -4px;
 }
-.colbar.transbg .fa {
+.colbar.transbg .fab,
+.colbar.transbg .fas,
+.colbar.transbg .far {
     margin-top: 0px;
     font-size: 20px !important;
 	margin-left: 10px;
@@ -379,6 +395,11 @@ a.playlist {
 	overflow: hidden;
     max-height: 33px;
 }
+
+.containsspotify #current .current_track {
+	overflow: hidden;
+    max-height: 33px;
+}
 .containsspotify .change {
 	background-color: #282828;
 	display: block;
@@ -386,6 +407,14 @@ a.playlist {
 	padding: 3px;
 	padding-left: 4px;
 	color: #fff;
+}
+
+.containsspotify .fas {
+	font-size:30px !important
+}
+
+.containsspotify .shuffleoff {
+	color: #aaa;
 }
 
 .containsspotify select.devices{
@@ -441,61 +470,69 @@ a.playlist {
 	position:absolute;
 	z-index:9999;
 }
-.input-groupBtn .btn-number {
+
+.mh .btn-number {
     opacity: 0.5;
     color: white;
     background-color: rgb(34, 34, 34);
 	border-radius: 0px;
-    padding: 6px 10px 6px 10px;
-    line-height: 20px;
+		padding:5px 5px 5px 5px;
+		font-size: 20px;
+		width: 30px;
+		height: 100%;
+		margin: auto;
 }
-.input-groupBtn.input-chevron .btn-number {
-	padding: 5px 10px 5px 10px
+
+.btn.plus {
 	
 }
-.input-groupBtn .btn-number.plus{
-	border-bottom:0px;
-	padding-bottom:7px;
+
+.btn.min {
+	
 }
-.input-groupBtn li {
-	position: -webkit-sticky;
-  	position: sticky;
-	z-index:9997;
-	right:1px;
-}
-.input-groupBtn li.down {
-	top:35px;
-}
-.input-groupBtn .stop {
-	z-index:9997;
-	-ms-transform: rotate(45deg); /* IE 9 */
-    -webkit-transform: rotate(45deg); /* Chrome, Safari, Opera */
-      
-	transform: rotate(45deg);
-    top: 0;
-    width: 71px;
+
+.btn.stop {
+	transform: rotate(90deg);
+    top: 19px;
+    width: 70px;
     height: 33px;
     position: absolute;
-    right: 0;
-    margin-right: -27px;
-    margin-top: 0px;
-
+    right: -20px;
+		padding-left: 0px;
+		padding-right: 0px;
+		padding-top: 10px;
 }
 
-.input-groupBtn.input-chevron {
-	right:27px;
+.col-button2 {
+	z-index:10;
+	position:absolute;
+	width: 62px;
+	height: 100%;
+	right: 0px;
+	top: 0px;
 }
-.input-groupBtn.input-chevron.hidestop {
-	right:-5px;
+
+.col-button1 {
+	z-index:10;
+	position:absolute;
+	width: 31px;
+	height: 100%;
+	right: 0px;
+	top: 0px;
 }
-.input-groupBtn .btn-number:active,.btn-number:hover {
+
+
+.up,.down {
+	height: 50%;
+	width: 31px;
+}
+
+.btn-number:hover {
 	color: black; 
 	background: rgba(255, 255, 255, 0.3) none repeat scroll 0 0 padding-box;
 }
-.input-groupBtn .fa-thermostat {
-	vertical-align: middle;
-	font-size: 20px !important;
-}
+
+
 .title-input {
 	font-size: 20px !important; 
 	margin-top:-2px;
@@ -516,47 +553,13 @@ a.playlist {
 .iconheating {
 	margin-top: 2px;
 }
-.input-groupBtn {
-    position: absolute;
-	z-index:9999;
-    right: -5px;
-    list-style: outside none none;
-    padding: 0px;
-    margin: 0;
-    top: 0px;
-}
-@media only screen and (max-width: 1400px) {
 
-	.input-groupBtn.input-chevron .btn-number {
-		padding: 7px 10px 7px 10px;
-
-	}
+.owmdescription {
+	height: 2.5em; 
+	line-height: 1em; 
 }
+
 @media only screen and (max-width: 1000px) {
-.trashcan {
-	margin-left:0px !important;
-}
-
-	.input-groupBtn .stop {
-		width: 60px;
-		margin-right: -23px;
-		margin-top: -1px;
-	}
-	.input-groupBtn li {
-		top:1px;
-	}
-	.input-groupBtn li.down {
-		top:30px;
-	}
-	.input-groupBtn .btn-number {
-   		padding: 4px 5px 3px 5px;
-		line-height: 19px;
-	}
-	.input-groupBtn.input-chevron .btn-number {
-		padding: 5px 7px 5px 7px !important;
-
-	}
-	
 	.title-input {
 		font-size: 14px !important;
 		margin-top: 7px;
@@ -575,8 +578,40 @@ a.playlist {
 .lastupdate {
 	font-size: 10px;
     color: #bbb;
+		white-space:nowrap
 }
 .graphpopup {overflow:hidden;}
+
+/*To change the default height of the graph popup adapt the height value*/
+.graphheight {
+	width: 100%;
+	height: calc(80vh - 200px);
+}
+
+/*To remove the close button of the graph popup:
+.graphclose {
+	display: none;
+}
+*/
+
+.graphwidth {
+	min-width: 30px;
+	width: 70vw;
+}
+
+/*To remove the close button of a popup frame:
+.frameclose {
+	display: none;
+}
+*/
+
+.selectedbutton {
+	background-color: #abc !important;
+}
+.blockchange {
+	background-color: #aaa !important;	
+}
+
 html,
 body {
 	height: 100%;
@@ -600,7 +635,7 @@ hr {
 	background-image:none !important;
 	background-color:#313131;
 }
-.standby .fa,.standby .fa.fa-small {
+.standby .far,.standby .far.fa-small,.standby .fas,.standby .fas.fa-small,.standby .fab,.standby .fab.fa-small, {
 	color:#fff !important;
 }
 
@@ -647,10 +682,12 @@ a:focus {
 		color:#fff;
 	}
 
-.fa.fa-newspaper-o {
+.fas.fa-newspaper,
+.far.fa-newspaper {
     margin-left: 1px;
 }
-.fa.fa-lightbulb-o {
+.fas.fa-lightbulb,
+.far.fa-lightbulb {
     margin-top: 1px;
     margin-left: 6px;
 }
@@ -688,35 +725,37 @@ select option {
 
 .wi {font-size:30px;}
 .wi.wi-rain {margin-top:0px;}
-.fa {font-size:30px;}
-.fa.fa-small {font-size:20px;}
-.fa.fa-thermometer-half {margin-left:8px;margin-top:2px;}
-.fa.fa-calendar {margin-left:4px;margin-top:1px;}
-.fa.fa-thermometer-half.fa-thermometer-half-switch {margin-left:4px;}
-.fa.fa-desktop {margin-top:5px;}
-.fa.fa-fire {margin-top:5px;}
-.fa.fa-plug {margin-top:5px;}
-.fa.fa-music{margin-top:5px;}
-.fa.fa-television,
-.fa.fa-microchip{margin-left: 3px;
+.fas {font-size:30px;}
+.far {font-size:30px;}
+.fab {font-size:30px;}
+.fas.fa-small {font-size:20px;}
+.fas.fa-thermometer-half {margin-left:8px;margin-top:2px;}
+.fas.fa-calendar {margin-left:4px;margin-top:1px;}
+.fas.fa-thermometer-half.fa-thermometer-half-switch {margin-left:4px;}
+.fas.fa-desktop {margin-top:5px;}
+.fas.fa-fire {margin-top:5px;}
+.fas.fa-plug {margin-top:5px;}
+.fas.fa-music{margin-top:5px;}
+.fas.fa-television,
+.fas.fa-microchip{margin-left: 3px;
     margin-top: 2px;}
-.containshorizon .fa { margin-top:8px; }
-.containsnzbget .fa { margin-top:8px; }
-.fa.fa-tint {
+.containshorizon .fas { margin-top:8px; }
+.containsnzbget .fas { margin-top:8px; }
+.fas.fa-tint {
     margin-left: 5px;
     margin-top: 4px;
 }
-.fa.fa-trash {
+.fas.fa-trash {
     margin-left: 8px;
 }
-.fa.fa-bolt {
+.fas.fa-bolt {
     margin-left: 8px;
 }
 .wi.wi-wind-direction {
     margin-left: 4px;
     margin-top: 2px;
 }
-.fa.fa-toggle-off {
+.fas.fa-toggle-off {
 	opacity: 0.5;
 	filter: alpha(opacity=50); /* For IE8 and earlier */
 }
@@ -869,8 +908,8 @@ Only add this hover on NON touch devices
 	.col-xs-10,
 	.col-xs-11,
 	.col-xs-12 {
-		padding-right: 5px !important;
-		padding-left: 5px !important;
+		padding-right: 5px;
+		padding-left: 5px;
 	}
 
 .containsicalendar .transbg {
@@ -887,7 +926,7 @@ Only add this hover on NON touch devices
 	margin:0px !important
 		
 }
-.fa.fa-train,.fa.fa-bus{
+.fas.fa-train,.fas.fa-bus{
 	margin-left:5px;
 	margin-top:3px;
 }
@@ -903,10 +942,35 @@ Only add this hover on NON touch devices
 }
 
 .col-icon {
-	width:50px !important;
+	width:40px !important;
+	float: left;
+	z-index:10;
 }
+
+.col-data {
+	width: calc(100% - 45px);
+	float: left;
+}
+
+.right2col {
+	padding-right: 70px;
+}
+
+.right1col {
+	padding-right: 40px;
+}
+
+.col-no-icon {
+	width: calc(100% - 15px);
+}
+
+.col-data.no-icon {
+	width: 100%;
+}
+
 .slider {
 	margin-top:7px;
+	margin-right: 7px;
 }
 .weekday {margin-bottom: 5px;}
 .ui-widget.ui-widget-content {
@@ -1020,7 +1084,7 @@ img.icon {
 }
 
 
-	.blinds .fa.fa-arrow-up,.blinds .fa.fa-arrow-down,.blinds .fa.fa-stop-circle {
+	.blinds .fas.fa-arrow-up,.blinds .fas.fa-arrow-down,.blinds .fas.fa-stop-circle {
 		font-size: 20px !important;
     	margin-right: 3px !important;
 	}
@@ -1033,16 +1097,23 @@ img.icon {
 	img.icon {
 		max-width:20px !important;
 	}
-	.fa,.wi {
+	.fas,.far,.fab,.wi {
 		font-size:15px !important;
 	}
+	.fa-tv:before  {font-size:12px;}
 	#weather .wi {
 		font-size:24px !important;
 	}
 	.cast-button-container {
 		padding: 11px !important;
 	}
+	.col-data {
+		width: calc(100% - 34px);
+//		padding-left: 34px;
+	}
+
 }
+
 @media (max-width: 975px) {
 	div.mh {
 		height: 75px;
@@ -1067,9 +1138,10 @@ img.icon {
 	img.icon {
 		max-width:15px !important;
 	}
-	.fa,.wi {
+	.fas,.far,.fab,.wi {
 		font-size:15px !important;
 	}
+	.fa-tv:before  {font-size:12px;}
 	
 	.big .wi {
 		font-size:30px !important;
@@ -1077,11 +1149,23 @@ img.icon {
 	.col-icon {
 		max-width:26px !important;
 	}
+	.col-data {
+		width: calc(100% - 30px);
+	}
+	
+	.btn.stop {
+	    top: 14px;
+	    width: 60px;
+	    right: -14px;
+	}
+
+
+	.trashcan {
+		height: 25px !important;
+	}
+
 }
 
-.modal-dialog {
-    min-width: 90% !important;
-}
 div.screen {
   -webkit-background-size: cover;
   -moz-background-size: cover;
@@ -1367,7 +1451,9 @@ body {
 	font-size:10px !important;
 }
 
-
+a:not([href]) {
+    cursor: pointer;
+}
 
 /* PLUGINS */
 .morris-hover{position:absolute;z-index:1000}.morris-hover.morris-default-style{border-radius:10px;padding:6px;color:#666;background:rgba(255,255,255,0.8);border:solid 2px rgba(230,230,230,0.8);font-family:sans-serif;font-size:12px;text-align:center}.morris-hover.morris-default-style .morris-hover-row-label{font-weight:bold;margin:0.25em 0}

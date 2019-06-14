@@ -26,18 +26,20 @@
         "today": "dzisiaj"
     },
     "misc": {
-        "download": "Click here to download",
+        "download": "Kliknij tutaj, aby pobrać",
         "last_update": "Ostatnia aktualizacja",
         "loading": "Ładowanie...",
         "mediaplayer_nothing_playing": "Odtwarzanie wyłączone",
-        "new_version": "New version is available",
+        "new_version": "Dostępna jest nowa wersja",
         "notifications_ns": "Powiadomienia dodane przez NS",
         "scheduled": "Zaplanowane",
         "select": "Wybierz",
         "spotify_back_to_playlist": "Powrót do list odtwarzania",
         "spotify_select_device": "Wybierz urządzenie",
         "spotify_select_playlist": "Wybierz listę odtwarzania",
-        "value": "Wartość"
+        "value": "Wartość",
+        "enter_pincode": "Enter pin code",
+        "wrong_code": "Wrong pin code"
     },
     "settings": {
         "about": {
@@ -94,7 +96,12 @@
             "use_favorites": "Tylko Ulubione urządzenia",
             "use_favorites_help": "Używane wyłącznie przy autopozycjonowaniu",
             "user_name": "Nazwa użytkownika",
-            "user_name_help": "Ustaw nazwę użytkownika i hasło Dashticz"
+            "user_name_help": "Ustaw nazwę użytkownika i hasło Dashticz",
+            "disable_update_check": "Disable update check",
+            "default_cors_url": "Default CORS URL",
+            "dashticz_php_path": "Dashticz PHP Path",
+            "standby_call_url": "URL to be called at start of standby",
+            "standby_call_url_on_end": "URL to be called at end of standby"
         },
         "infosave": "Domyślnie ustawienia zapisywane są w przeglądarce. Wadą tej metody będzie działanie tylko w bieżącej przeglądarce. Jeśli nie jest to problemem, możesz kontynuować. W przeciwnym razie skopiuj poniższy kod do pliku CONFIG.JS, aby zachować ustawienia we wszystkich przeglądarkach i urządzeniach.",
         "localize": {
@@ -130,7 +137,10 @@
             "sv": "Szwedzki",
             "timeformat": "Format daty i czasu",
             "title": "Lokalizacja",
-            "uk": "Ukraiński"
+            "uk": "Ukraiński",
+            "sr": "Serbski",
+            "lt": "litewski",
+            "ro": "rumuński"
         },
         "media": {
             "hide_mediaplayer": "Ukryj odtwarzacz, gdy jest wyłączony",
@@ -159,7 +169,10 @@
             "slide_effect": "Efekt przewijania",
             "standard_graph": "Wykres standardowy",
             "standby_after": "Przejdź w tryb czuwania po (minuty, 0 = nigdy)",
-            "title": "Ekran"
+            "title": "Ekran",
+            "security_button_icons": "Icons instead of text on security switch",
+            "blink_color": "Kolor i moc krycia (RGBA)",
+            "blink_color_help": "Ustaw kolor błysku i krycie (czerwony, zielony, niebieski, alfa)"
         },
         "weather": {
             "idx_moonpicture": "IDX dla obrazu księżyca",
@@ -173,7 +186,26 @@
             "wu_api": "Klucz API programu Wunderground",
             "wu_city": "Stacja Wunderground (miasto lub kod)",
             "wu_country": "Kraj Wunderground",
-            "wu_name": "Wyświetlana nazwa"
+            "wu_name": "Wyświetlana nazwa",
+            "owm_api": "Klucz API programu Open Weather Map",
+            "owm_city": "Stacja Open Weather Map (miasto lub kod)",
+            "owm_cnt": "Open Weather liczba prognoz (4 - 40)",
+            "owm_cnt_help": "Number of columns to show. If showing days, max is 5",
+            "owm_days": "Forecast in days",
+            "owm_days_help": "Off shows the Open Weather Map default 3 hour forecast",
+            "owm_min": "Minimum temperature on 2nd row",
+            "owm_min_help": "Only shown when forecast in days",
+            "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
+            "owm_lang_help": "For available languages, see https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_country": "Kraj Open Weather Map",
+            "owm_name": "Wyświetlana nazwa Open Weather Map",
+            "longfonds_zipcode": "Longfonds zipcode",
+            "longfonds_housenumber": "Longfonds housenumber"
+        },
+        "other": {
+            "title": "Inny",
+            "setpoint_min": "Minimalna wartość zadana termostatu",
+            "setpoint_max": "Maksymalna wartość zadana termostatu"
         }
     },
     "switches": {
@@ -184,8 +216,16 @@
         "state_off": "Wył.",
         "state_on": "Wł.",
         "state_open": "OTWARTE",
+        "state_locked": "LOCKED",
+        "state_unlocked": "UNLOCKED",
         "state_smoke": "WYKRYTO DYM",
-        "state_switch": "Przełącznik"
+        "state_switch": "Przełącznik",
+        "state_armaway": "Arm Away",
+        "state_armedaway": "Armed Away",
+        "state_armedhome": "Armed Home",
+        "state_armhome": "Arm Home",
+        "state_disarm": "Disarm",
+        "state_disarmed": "Disarmed"
     },
     "weekdays": {
         "entire_day": "cały dzień",

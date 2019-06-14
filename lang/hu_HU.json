@@ -26,7 +26,7 @@
         "today": "ma"
     },
     "misc": {
-        "download": "Click here to download",
+        "download": "Kattintson ide a letöltéshez",
         "last_update": "Utolsó frissítés",
         "loading": "Betöltés...",
         "mediaplayer_nothing_playing": "Semmi sem játszódik most",
@@ -37,7 +37,9 @@
         "spotify_back_to_playlist": "Vissza a lejátszási listákhoz",
         "spotify_select_device": "Eszköz kiválasztása",
         "spotify_select_playlist": "Válasszon lejátszási listát",
-        "value": "Érték"
+        "value": "Érték",
+        "enter_pincode": "Enter pin code",
+        "wrong_code": "Wrong pin code"
     },
     "settings": {
         "about": {
@@ -94,7 +96,12 @@
             "use_favorites": "Csak a kedvenc eszközök használata",
             "use_favorites_help": "Csak akkor használatos, ha az automatikus pozícionálást használja",
             "user_name": "Username",
-            "user_name_help": "Set Dashticz username and password"
+            "user_name_help": "Set Dashticz username and password",
+            "disable_update_check": "Disable update check",
+            "default_cors_url": "Default CORS URL",
+            "dashticz_php_path": "Dashticz PHP Path",
+            "standby_call_url": "URL to be called at start of standby",
+            "standby_call_url_on_end": "URL to be called at end of standby"
         },
         "infosave": "Alapértelmezés szerint a beállítások a böngészőben tárolódnak. E módszer hátránya, hogy csak a jelenlegi böngészőben fog működni. Ha ez nem jelent problémát, továbbléphet. Ellenkező esetben másolja a kódot a CONFIG.JS fájlba, hogy megőrizze a beállításokat az összes böngészőben és eszközön.",
         "localize": {
@@ -130,7 +137,10 @@
             "sv": "Svéd",
             "timeformat": "Datetime formátum",
             "title": "Lokalizálni",
-            "uk": "Ukrán"
+            "uk": "Ukrán",
+            "sr": "Serbian",
+            "lt": "litván",
+            "ro": "román"
         },
         "media": {
             "hide_mediaplayer": "Médialejátszó elrejtése, amikor ki van kapcsolva",
@@ -159,7 +169,10 @@
             "slide_effect": "Dia hatás",
             "standard_graph": "Standard grafikon",
             "standby_after": "Készenléti állapot (perc, 0 = soha)",
-            "title": "Képernyő"
+            "title": "Képernyő",
+            "security_button_icons": "Icons instead of text on security switch",
+            "blink_color": "Flash szín és opacitás (RGBA)",
+            "blink_color_help": "Állítsa be a vaku színét és az opacitását (piros, zöld, kék, alfa)"
         },
         "weather": {
             "idx_moonpicture": "Holdfotó idxje",
@@ -173,7 +186,26 @@
             "wu_api": "Wunderground API Kulcs",
             "wu_city": "Wunderállomás (város vagy kód)",
             "wu_country": "Wunderground Ország",
-            "wu_name": "Megjelenítendő név"
+            "wu_name": "Megjelenítendő név",
+            "owm_api": "Open Weather Map API Kulcs",
+            "owm_city": "Open Weather Map (város vagy kód)",
+            "owm_cnt": "Open Weather Map előrejelzés számít (4 - 40)",
+            "owm_cnt_help": "Number of columns to show. If showing days, max is 5",
+            "owm_days": "Forecast in days",
+            "owm_days_help": "Off shows the Open Weather Map default 3 hour forecast",
+            "owm_min": "Minimum temperature on 2nd row",
+            "owm_min_help": "Only shown when forecast in days",
+            "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
+            "owm_lang_help": "For available languages, see https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_country": "Open Weather Map Ország",
+            "owm_name": "Megjelenítendő név Open Weather Map",
+            "longfonds_zipcode": "Longfonds zipcode",
+            "longfonds_housenumber": "Longfonds housenumber"
+        },
+        "other": {
+            "title": "Más",
+            "setpoint_min": "Termosztát minimális érték",
+            "setpoint_max": "Termosztát maximális érték"
         }
     },
     "switches": {
@@ -184,8 +216,16 @@
         "state_off": "KI",
         "state_on": "BE",
         "state_open": "NYITVA",
+        "state_locked": "LOCKED",
+        "state_unlocked": "UNLOCKED",
         "state_smoke": "FÜST ÉRZÉKELVE",
-        "state_switch": "Kapcsoló"
+        "state_switch": "Kapcsoló",
+        "state_armaway": "Arm Away",
+        "state_armedaway": "Armed Away",
+        "state_armedhome": "Armed Home",
+        "state_armhome": "Arm Home",
+        "state_disarm": "Disarm",
+        "state_disarmed": "Disarmed"
     },
     "weekdays": {
         "entire_day": "egész nap",

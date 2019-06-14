@@ -37,7 +37,9 @@
         "spotify_back_to_playlist": "Terug naar afspeellijsten",
         "spotify_select_device": "Selecteer apparaat",
         "spotify_select_playlist": "Selecteer afspeellijst",
-        "value": "Waarde"
+        "value": "Waarde",
+        "enter_pincode": "Voer de pincode in",
+        "wrong_code": "Verkeerde pincode"
     },
     "settings": {
         "about": {
@@ -94,7 +96,12 @@
             "use_favorites": "Gebruik alleen favoriete schakelaars",
             "use_favorites_help": "Wordt alleen gebruikt wanneer de schakelaars automatisch toegevoegd worden",
             "user_name": "Gebruikersnaam",
-            "user_name_help": "Stel Dashticz-gebruikersnaam en -wachtwoord in"
+            "user_name_help": "Stel Dashticz-gebruikersnaam en -wachtwoord in",
+            "disable_update_check": "Schakel update controle uit",
+            "default_cors_url": "Default CORS URL",
+            "dashticz_php_path": "Dashticz PHP Path",
+            "standby_call_url": "URL to be called at start of standby",
+            "standby_call_url_on_end": "URL to be called at end of standby"
         },
         "infosave": "Standaard worden de instellingen opgeslagen in uw browser. Nadeel van deze methode is dat het alleen in uw huidige browser werkt. Als dat geen probleem is, kunt u verdergaan. Anders, kopieer onderstaande code naar uw CONFIG.JS om instellingen te gebruiken in alle browsers waarmee u Dashticz opent.",
         "localize": {
@@ -130,7 +137,10 @@
             "sv": "Zweeds",
             "timeformat": "Datum\/tijd weergave",
             "title": "Lokaliseren",
-            "uk": "Oekraïens"
+            "uk": "Oekraïens",
+            "sr": "Servisch",
+            "lt": "Litouws",
+            "ro": "Roemeense"
         },
         "media": {
             "hide_mediaplayer": "Verberg mediaspeler wanneer het uit is",
@@ -159,7 +169,10 @@
             "slide_effect": "Schuif effect",
             "standard_graph": "Standaard grafiek",
             "standby_after": "Standby na (minuteen, 0 = nooit)",
-            "title": "Weergave"
+            "title": "Weergave",
+            "security_button_icons": "Pictogrammen in plaats van tekst op beveiligingsschakelaar",
+            "blink_color": "Knipperkleur en ondoorzichtigheid (RBGA)",
+            "blink_color_help": "Stel de knipperkleur en ondoorzichtigheid in (rood, groen, blauw, ondoorzichtigheid)"
         },
         "weather": {
             "idx_moonpicture": "IDX van maanfoto",
@@ -173,7 +186,26 @@
             "wu_api": "Wunderground API-Sleutel",
             "wu_city": "Wunderground Station (Stad of Code)",
             "wu_country": "Wunderground Land",
-            "wu_name": "Weergavenaam"
+            "wu_name": "Weergavenaam",
+            "owm_api": "Open Weather Map API-Sleutel",
+            "owm_city": "Open Weather Map Station (Stad of Code)",
+            "owm_cnt": "Open Weather Map voorspelling tellen (4 - 40)",
+            "owm_cnt_help": "Aantal weer te geven kolommen. Bij dagen weergave is 5 het maximaal aantal",
+            "owm_days": "Voorspelling in dagen",
+            "owm_days_help": "Uitgeschakeld geeft de Open Weather Map standaard 3 uurs voorspelling",
+            "owm_min": "Minimum temperatuur op 2e regel",
+            "owm_min_help": "Wordt alleen weergegeven bij voorspelling in dagen",
+            "owm_lang": "Taal voor de beschrijving (regen, bewolkt, etc.)",
+            "owm_lang_help": "Zie voor beschikbare talen https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_country": "Open Weather Map Land",
+            "owm_name": "Weergavenaam Open Weather Map",
+            "longfonds_zipcode": "Longfonds postcode",
+            "longfonds_housenumber": "Longfonds huisnummer"
+        },
+        "other": {
+            "title": "Overige",
+            "setpoint_min": "Thermostaatinstelling minimum waarde",
+            "setpoint_max": "Thermostaatinstelling maximum waarde"
         }
     },
     "switches": {
@@ -184,8 +216,16 @@
         "state_off": "UIT",
         "state_on": "AAN",
         "state_open": "OPEN",
+        "state_locked": "VERGRENDELD",
+        "state_unlocked": "ONTGRENDELD",
         "state_smoke": "ROOK GEDETECTEERD",
-        "state_switch": "Schakelen"
+        "state_switch": "Schakelen",
+        "state_armaway": "Arm Away",
+        "state_armedaway": "Armed Away",
+        "state_armedhome": "Armed Home",
+        "state_armhome": "Arm Home",
+        "state_disarm": "Disarm",
+        "state_disarmed": "Disarmed"
     },
     "weekdays": {
         "entire_day": "Hele dag",
