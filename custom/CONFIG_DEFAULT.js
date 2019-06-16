@@ -1,7 +1,7 @@
 
 var config = {}
 config['domoticz_ip'] = 'http://192.168.1.3:8084';
-config['app_title'] = 'Dashticz';
+config['app_title'] = 'Dashticz V3';
 config['domoticz_refresh'] = '5';
 config['dashticz_refresh'] = '60';
 
