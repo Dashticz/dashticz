@@ -17,7 +17,7 @@ help:
 testdocker:
 ifeq (, $(shell which docker))
 	@echo "Let's install docker first"
-	@sudo apt-get install docker.io	
+	curl -sSL https://get.docker.com | sh	
 endif
 ifeq (true, $(shell sudo docker inspect -f '{{.State.Running}}' dtv2 2>/dev/null))
 	@echo "$(APP) is running already. Let's stop it first"
