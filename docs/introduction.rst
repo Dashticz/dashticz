@@ -19,6 +19,6 @@ In every column you place one or more blocks.
 
 A block may be a Domoticz device, external content being displayed in a frame, or some special block.
 
-The next section provides an overview on how to configure Dashticz the system,
+The next sections show how to setup your system, how to configure Dashticz,
 how to configure a block, how to add blocks to a column,
 and how to define screens.

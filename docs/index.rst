@@ -13,16 +13,13 @@ Welcome to Dashticz's documentation!
    :caption: Contents:
 
    introduction
-   installation
+   gettingstarted/index
    configuration
    customization
    tipsandtricks
    releasenotes
    develop/develop
    
-
-Dashticz documentation will come here.
-
 Indices and tables
 ==================
 
