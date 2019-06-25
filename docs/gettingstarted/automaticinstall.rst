@@ -3,7 +3,7 @@
 Automatic install
 =================
 
-.. note :: The installation scripts currently only works on Raspberry and Ubuntu
+.. note :: The installation scripts currently only works on Raspberry (except xbian) and Ubuntu
 
 For the automatic install open a terminal in a folder of choice where Dashticz V3 will get installed::
 
@@ -12,12 +12,7 @@ For the automatic install open a terminal in a folder of choice where Dashticz V
 
 Then start the installation script with::
 
-    . <(curl https://raw.githubusercontent.com/dashticzv3/dashticz_v3/beta/scripts/dashticz_install.sh )
-
-If ``curl`` is not installed on your system, then install it first with::
-
-    sudo apt-get install curl
-
+     . <(wget -qO - https://raw.githubusercontent.com/dashticzv3/dashticz_v3/beta/scripts/dashticz_install.sh )
 
 The script:
 
