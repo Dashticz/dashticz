@@ -102,6 +102,10 @@ switch($_GET['service']){
 		$url = $baseUrl.'/rest/adressen/'.$_GET['zipcode'].'-'.$_GET['nr'];
 		$return = file_get_contents($url);
 		$return = json_decode($return,true);
+		if( empty($return[0]['bagId'])){
+			$return = '';
+			break;
+		}
 		$url = $baseUrl.'/rest/adressen/'.$return[0]['bagId'].'/afvalstromen';
 		$return = file_get_contents($url);
 		$return = json_decode($return,true);
@@ -114,7 +118,7 @@ switch($_GET['service']){
 			}
 		}
 		
-		$return = json_decode($return,true);
+		//$return = json_decode($return,true);
 		break;
 }
 
