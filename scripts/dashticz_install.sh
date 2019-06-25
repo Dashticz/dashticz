@@ -1,6 +1,8 @@
-#
+#!/bin/bash
 # Dashticz V3 Installation script
 #
+#Execute this script via:
+# . <(wget -qO - https://raw.githubusercontent.com/dashticzv3/dashticz_v3/beta/scripts/dashticz_install.sh )
 
 REPOSITORY="https://github.com/dashticzv3/dashticz_v3"
 myport=8082
@@ -75,19 +77,25 @@ done
 echo
 echo "Setting up Dashticz on port $myport"
 echo
+#Checking whether make is installed
+if [ $(dpkg-query -W -f='${Status}' make 2>/dev/null | grep -c "ok installed") -eq 0 ];
+then
+  sudo apt-get install make;
+fi
+echo
 make start PORT="$myport"
 echo
 
 statusok=true
-reply=`curl -s -o /dev/null -I -w "%{http_code}" "$domip"`
-#echo "$reply"
+printf "Trying Domoticz IP..."
+reply=`wget -q -T 3 -t 1 --spider --server-response "$domip" 2>&1 | awk '/^  HTTP/{print $2}'`
 
 if [[ "$reply" != 200 ]]; then
     echo "Domoticz IP is not correct: no valid reply" 
     statusok=false
 fi
 if [ "$statusok" == true ]; then
-    reply=`curl -s -o /dev/null -I -w "%{http_code}\n" "$domip"'/json.htm?type=command&param=getversion'`
+    reply=`wget -q -T 3 -t 1 --spider --server-response "$domip"'/json.htm?type=command&param=getversion' 2>&1 | awk '/^  HTTP/{print $2}'`
 #    echo "$reply"
     if [[ "$reply" != 200 ]]; then
         echo "Domoticz IP is not correct: no valid reply" 
@@ -95,14 +103,14 @@ if [ "$statusok" == true ]; then
     fi
 fi
 if [ "$statusok" == true ]; then
-    reply=`curl -s "$domip"'/json.htm?type=command&param=getversion' | grep -Po '"status".*\K".*"'`
+    reply=`wget -q -O - -T 3 -t 1 "$domip"'/json.htm?type=command&param=getversion' | grep -Po '"status".*\K".*"'`
     if [[ "$reply" != '"OK"' ]]; then
         echo "Domoticz status reply is not correct: no valid reply" 
         statusok=false
     fi
 fi
 if [ "$statusok" == true ]; then
-    echo "Domoticz connection OK"
+    echo "OK!"
 else
     echo "Domoticz is not responding correctly"
     echo "Please check custom/CONFIG.js."
