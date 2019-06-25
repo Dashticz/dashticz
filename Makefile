@@ -17,15 +17,24 @@ help:
 testdocker:
 ifeq (, $(shell which docker))
 	@echo "Let's install docker first"
-	curl -sSL https://get.docker.com | sh	
+	wget -qO- https://get.docker.com/ | sh	
 endif
 ifeq (true, $(shell sudo docker inspect -f '{{.State.Running}}' dtv2 2>/dev/null))
 	@echo "$(APP) is running already. Let's stop it first"
 	make stop
 endif
 
+testgit:
+	@echo "Check for git"
+ifeq (, $(shell which git))
+	@echo "Installing git ..."
+	sudo apt-get install git
+else
+	@echo "Installed..."	
+endif
+
 .PHONY: start
-start: testdocker
+start: testdocker testgit
 	sudo docker build -t $(APP) .
 	sudo docker run --name $(APP) -d -p $(PORT):80 --mount type=bind,source="$(CURDIR)",target=/var/www/html $(APP)
 	@echo "Dashticz is running at:"
