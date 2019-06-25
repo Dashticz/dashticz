@@ -1,7 +1,7 @@
 {
-"version": "3.0.0",
+"version": "3.0.1",
 "branch": "beta",
-"last_changes": "Creation of v3",
+"last_changes": "Update install script",
 "changelog" : {
             "3.0.0": "Dashticz V3"
             }

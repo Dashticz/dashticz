@@ -1,4 +1,4 @@
-.. _AUtomaticInstall :
+.. _AutomaticInstall :
 
 Automatic install
 =================
