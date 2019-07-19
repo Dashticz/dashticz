@@ -71,6 +71,23 @@ Block parameters
   * - image
     - | If you want to show an image instead of an icon, place image in ``img/`` folder
       | ``'bulb_off.png'``
+  * - iconOn
+    - | Icon to show in case the device state is on.
+      | ``'fas fa-eye'``
+  * - iconOff
+    - | Icon to show in case the device state is off.
+      | ``'fas fa-eye'``
+  * - imageOn
+    - | Image to show in case the device state is on. Place image in ``img/`` folder
+      | ``'bulb_off.png'``
+  * - imageOff
+    - | Image to show in case the device state is off. Place image in ``img/`` folder
+      | ``'bulb_off.png'``
+  * - textOn
+    - Text to display in case the device is on.
+  * - textOff
+    - Text to display in case the device is off.
+
   * - switch
     - | ``true`` Switch title and data
       | ``false`` (default)
