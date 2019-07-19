@@ -622,18 +622,64 @@ function addBlockClickFrame(idx) {
  * @returns {string}
  */
 function iconORimage(idx, defaulticon, defaultimage, classnames, attr, colwidth, attrcol) {
+    var block=blocks[idx];
+    var mIcon=defaulticon;
+    var mImage=defaultimage;
+    var useImage = false;
+    if (defaultimage !== '') {
+        useImage = true;
+    }
+    var isOn = false;
+    if( typeof (alldevices[idx]) !== 'undefined' && typeof (alldevices[idx]['Status']) !== 'undefined') 
+        isOn = (getIconStatusClass(alldevices[idx]['Status']) === 'on'); 
+    if (typeof (block) !== 'undefined') {
+        if (typeof (block['icon']) !== 'undefined') {
+            mIcon = block['icon'];
+            useImage = false;
+        }
+        if (typeof (block['image']) !== 'undefined') {
+            mImage = block['image'];
+            useImage = true;
+        }
+    }
+    var iconOn = mIcon;
+    var iconOff = mIcon;
+    var imageOn = mImage;
+    var imageOff = mImage;
+
+    if (typeof (block) !== 'undefined') {
+        if (typeof (block['iconOn']) !== 'undefined') {
+            iconOn = block['iconOn'];
+            if(isOn) useImage = false;
+        }
+        if (typeof (block['iconOff']) !== 'undefined') {
+            iconOff = block['iconOff'];
+            if(!isOn) useImage = false;
+        }
+        if (typeof (block['imageOn']) !== 'undefined') {
+            imageOn = block['imageOn']
+            if(isOn) useImage = true;
+        }
+        if (typeof (block['imageOff']) !== 'undefined') {
+            imageOff = block['imageOff']
+            if(!isOn) useImage = true;
+        }
+    }
+
+    var mIcon = isOn ? iconOn: iconOff;
+    var mImage = isOn ? imageOn: imageOff;
+
     if (typeof(colwidth) === 'undefined') colwidth = 4;
     if (typeof(attrcol) === 'undefined') attrcol = '';
+    if (typeof(attr) === 'undefined') attr = '';
     var icon = '<div class="col-xs-' + colwidth + ' col-icon" ' + attrcol + '>';
-    if (typeof(blocks[idx]) !== 'undefined' && typeof(blocks[idx]['icon']) !== 'undefined') {
-        icon += '<em class="' + blocks[idx]['icon'] + ' ' + classnames + '" ' + attr + '></em>';
+    if (useImage) {
+        icon += '<img src="img/' + mImage + '" class="' + classnames + '" ' + attr + ' />';
     }
-    else if (typeof(blocks[idx]) !== 'undefined' && typeof(blocks[idx]['image']) !== 'undefined') {
-        icon += '<img src="img/' + blocks[idx]['image'] + '" class="' + classnames + '" ' + attr + ' />';
+    else {
+        icon += '<em class="' + mIcon + ' ' + classnames + '" ' + attr + '></em>';
     }
-    else if (defaultimage !== '') icon += '<img src="img/' + defaultimage + '" class="' + classnames + '" ' + attr + ' />';
-    else if (defaulticon !== '') icon += '<em class="' + defaulticon + ' ' + classnames + '" ' + attr + '></em>';
-
+ 
     icon += '</div>';
     return icon;
 }

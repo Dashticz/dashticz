@@ -1,25 +1,33 @@
-function switchDeviceConfirm(cur) {
-	var r = confirm("Are you sure you want to switch?");
-	if (r == true) {
-		switchDevice(cur)
-	}
-}
 
-function switchOnOffConfirm(cur) {
-	var r = confirm("Are you sure you want to switch?");
-	if (r == true) {
-		switchDevice(cur)
-	}
-}
-
-function switchDevice(cur) {
+function switchDevice(cur, pMode, pAskConfirm) {
+/* Switch device
+    params:
+        cur : reference to DOM block 
+        mode: "toggle", "on","off"
+        confirm: boolean. Ask for confirmation first.
+*/
+    if (pAskConfirm===true && !confirm("Are you sure you want to switch?"))
+        return;
     var idx = $(cur).data('light');
     var doStatus = '';
     var param = 'switchlight';
-    if ($(cur).find('.icon').hasClass('on') || $(cur).find('.fa-toggle-on').length > 0) {
-        doStatus = toggleItem(cur, 'on');
-    } else {
-        doStatus = toggleItem(cur, 'off');
+    switch(pMode) {
+        case 'toggle' :
+            if ($(cur).find('.icon').hasClass('on') || $(cur).find('.fa-toggle-on').length > 0) {
+                doStatus = toggleItem(cur, 'on');
+            } else {
+                doStatus = toggleItem(cur, 'off');
+            };
+            break;
+        case 'on':
+            doStatus = toggleItem(cur,'off');
+            break;
+        case 'off':
+            doStatus = toggleItem(cur,'on');
+            break;
+        default:
+            console.log("Incorrect mode in SwitchDevice for device " + idx)
+            return;
     }
     triggerChange(idx, doStatus);
     if (typeof(req) !== 'undefined') {
@@ -41,23 +49,6 @@ function switchDevice(cur) {
 	
 }
 
-function switchOnOff(cur, onOrOff) {
-    var idx = $(cur).data('light');
-    var doStatus = toggleItem(cur, onOrOff === 'off' ? 'on' : 'off');
-
-    triggerChange(idx, doStatus);
-    if (typeof(req) !== 'undefined') {
-        req.abort();
-    }
-
-    $.ajax({
-        url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=switchlight&idx=' + idx + '&switchcmd=' + doStatus + '&level=0&passcode=&jsoncallback=?',
-        type: 'GET', async: false, contentType: 'application/json', dataType: 'jsonp',
-        success: function (data) {
-            getDevices(true);
-        }
-    });
-}
 
 function toggleItem(cur, currentState) {
     if (currentState.toLowerCase() === 'off') {
