@@ -1,8 +1,9 @@
 {
-"version": "3.0.1",
+"version": "3.0.2",
 "branch": "beta",
-"last_changes": "Update install script",
+"last_changes": "Add imageOn/Off, iconOn/Off and textOn/Off block parameters",
 "changelog" : {
+            "3.0.1": "Update install script",
             "3.0.0": "Dashticz V3"
             }
 }
