@@ -1,8 +1,9 @@
 {
-"version": "3.0.2",
+"version": "3.0.3",
 "branch": "beta",
-"last_changes": "Add imageOn/Off, iconOn/Off and textOn/Off block parameters",
+"last_changes": "Fix for Spotify block; layout improvements",
 "changelog" : {
+            "3.0.2": "Add imageOn/Off, iconOn/Off and textOn/Off block parameters",
             "3.0.1": "Update install script",
             "3.0.0": "Dashticz V3"
             }
