@@ -370,7 +370,6 @@ a.playlist {
 
 .containsspotify #current {
 	overflow: hidden;
-	background-color: #282828;
 }
 
 .containsspotify #current .current_image {
@@ -401,7 +400,7 @@ a.playlist {
     max-height: 33px;
 }
 .containsspotify .change {
-	background-color: #282828;
+/*	background-color: #282828;*/
 	display: block;
 	margin-top: -4px;
 	padding: 3px;
@@ -421,13 +420,15 @@ a.playlist {
 	width: 100%;
     max-width: 100%;
     color: #fff !important;
-    background-color: #282828;
+	background-color: transparent;
+
     border: 0px;
     padding-left: 0px;
 }
 
 .containsspotify select.devices option{
-    color: #fff !important;
+	color: #fff !important;
+	background-color: #292b2c;
 }
 
 .spotback {
@@ -635,7 +636,7 @@ hr {
 	background-image:none !important;
 	background-color:#313131;
 }
-.standby .far,.standby .far.fa-small,.standby .fas,.standby .fas.fa-small,.standby .fab,.standby .fab.fa-small, {
+.standby .far,.standby .far.fa-small,.standby .fas,.standby .fas.fa-small,.standby .fab,.standby .fab.fa-small {
 	color:#fff !important;
 }
 
@@ -1109,7 +1110,6 @@ img.icon {
 	}
 	.col-data {
 		width: calc(100% - 34px);
-//		padding-left: 34px;
 	}
 
 }
