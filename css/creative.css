@@ -375,16 +375,17 @@ a.playlist {
 .containsspotify #current .current_image {
 	float: left;
 	margin:2px 0px 5px 2px;
-	width: calc(32% - 2px);
+/*	width: calc(32% - 2px);*/
+	width: 68px;
 }
 
 .containsspotify #current .current_image img {
-	max-width:64px;
+	max-width: 64px;
 }
 .containsspotify #current .current_info {
 	float: left;
 	padding-left:10px;
-	width: calc(68%);
+	width: calc(100% - 72px);
 }
 .containsspotify #current .current_artist {
 	font-weight: bold;
