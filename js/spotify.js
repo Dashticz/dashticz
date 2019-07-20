@@ -213,8 +213,6 @@ var SpotifyModule = function() {
 			$('a.change').show();
 			$('select.devices').show();
 
-			html += '<a href="javascript:SpotifyModule.trackAction(\'Rewind\');"><em class="fas fa-arrow-circle-left fa-small"></em></a> ';
-			//html += '<a href="javascript:SpotifyModule.trackAction(\'Stop\');"><em class="fa fa-stop-circle fa-small"></em></a> ';
 			if (currently.is_playing) {
 				html += '<a class="spotpause" href="javascript:SpotifyModule.trackAction(\'Pause\');"><em class="fas fa-pause-circle fa-small"></em></a> ';
 				html += '<a class="spotplay" style="display:none;" href="javascript:SpotifyModule.trackAction(\'Play\');"><em class="fas fa-play-circle fa-small"></em></a> ';
