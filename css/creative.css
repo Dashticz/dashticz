@@ -1089,7 +1089,8 @@ img.icon {
     	margin-right: 3px !important;
 	}
 
-@media (max-width: 1400px) {
+/*
+@media (max-width: 975px) {
 	
 	.col-icon {
 		width:30px !important;
@@ -1109,10 +1110,10 @@ img.icon {
 	}
 	.col-data {
 		width: calc(100% - 34px);
-//		padding-left: 34px;
 	}
 
 }
+*/
 
 @media (max-width: 975px) {
 	div.mh {
