@@ -2,6 +2,11 @@ Release Notes
 =============
 A link to the release notes will be posted in the Dashticz support forum. The total overview can be found below.
 
+Latest (24-7-2019)
+------------------
+Main changes:
+  * New graph options to set the graph appearance. See :ref:`dom_graphs`.
+
 3.0.3 (20-7-2019)
 -----------------
 Main changes:
