@@ -636,6 +636,7 @@ if (typeof(settings['garbage_use_colors']) === 'undefined') settings['garbage_us
 if (typeof(settings['garbage_icon_use_colors']) === 'undefined') settings['garbage_icon_use_colors'] = 1;
 if (typeof(settings['garbage_use_cors_prefix']) === 'undefined') settings['garbage_use_cors_prefix'] = 1;
 if (typeof(settings['lineColors']) === 'undefined') settings['lineColors'] = ['#eee', '#eee', '#eee'];
+if (typeof(settings['pointSize']) === 'undefined') settings['pointSize'] = 3;
 if (typeof(settings['room_plan']) === 'undefined') settings['room_plan'] = 0;
 if (typeof(settings['garbage_use_cors_prefix']) === 'undefined') settings['garbage_use_cors_prefix'] = 1;
 if (typeof(settings['theme']) === 'undefined') settings['theme'] = 'default';

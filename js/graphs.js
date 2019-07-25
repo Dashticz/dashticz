@@ -255,7 +255,7 @@ function showGraph(idx, title, label, range, current, forced, sensor, popup) {
                         return text;
                     },
                     pointFillColors:['none'],
-                    pointSize:3,
+                    pointSize: settings['pointSize'],
                     gridTextColor: '#fff', 
                     lineWidth: 2,
                     stacked: false
