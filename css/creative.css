@@ -1117,6 +1117,14 @@ img.icon {
 }
 */
 
+.containsweather .col-xs-1 {
+	width: 50px
+}
+
+.containsweather .col-xs-11 {
+	width: calc(100% - 50px)
+}
+
 @media (max-width: 975px) {
 	div.mh {
 		height: 75px;
@@ -1135,9 +1143,18 @@ img.icon {
 		margin-left:0px !important
 	}
 	div.big {
-		padding-top: 9px !important;
 		padding-left: 13px !important;
 	}
+
+
+	.containsweather .col-xs-1 {
+		width: 35px
+	}
+	
+	.containsweather .col-xs-11 {
+		width: calc(100% - 35px)
+	}
+	
 	img.icon {
 		max-width:15px !important;
 	}
