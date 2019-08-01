@@ -53,13 +53,17 @@ First clone the dashticz repository to a folder of your choice:
 .. code-block:: bash
 
     cd /home/pi
-    git clone https://github.com/dashticzv3/dashticz_v3 --branch beta
+    git clone https://github.com/Dashticz/dashticz 
 
-After the installation is finished, go to the ``/home/pi/dashticz_v3/custom/`` folder, copy the CONFIG_DEFAULT.js file to CONFIG.js (mind the CAPITALS!), and edit it with the basics:
+If you prefer the development branch (might be less stable, but latest and greatest), then use the following git clone command::
+
+    git clone https://github.com/Dashticz/dashticz --branch beta
+
+After the installation is finished, go to the ``/home/pi/Dashticz/custom/`` folder, copy the CONFIG_DEFAULT.js file to CONFIG.js (mind the CAPITALS!), and edit it with the basics:
 
 .. code-block:: bash
 
-    cd dashticz_v3/custom/
+    cd dashticz/custom/
     cp CONFIG_DEFAULT.js CONFIG.js
     nano CONFIG.js
 
@@ -77,17 +81,17 @@ You can read more about the connection configurtion :ref:`config-connection`.
 
 Then create a symbolic link from the root of the www folder of your web server to the previously created Dashticz location::
 
-  sudo ln -s /home/pi/dashticz_v3/ /var/www/html
+  sudo ln -s /home/pi/dashticz/ /var/www/html
 
 Set the correct permissions to the files and folders::
 
-  chmod -R a+rX /home/pi/dashticz_v3
+  chmod -R a+rX /home/pi/dashticz
 
 If you want to be able to save the settings via Dashticz to CONFIG.js then you have to give write permission to CONFIG.js for root::
 
-  chmod a+w /home/pi/dashticz_v3/custom/CONFIG.js
+  chmod a+w /home/pi/dashticz/custom/CONFIG.js
 
-Now you can browse to the dashboard: http://192.168.1.3/dashticz_v3/index.html
+Now you can browse to the dashboard: http://192.168.1.3/dashticz/index.html
 Replace 192.168.1.3 with the IP Address (and Port number) for your web server, NOT your Domoticz IP!
 
 By default, Dashticz will show all your Domoticz favorites on the dashboard.
