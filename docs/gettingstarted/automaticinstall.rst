@@ -12,7 +12,7 @@ For the automatic install open a terminal in a folder of choice where Dashticz V
 
 Then start the installation script with::
 
-     . <(wget -qO - https://raw.githubusercontent.com/dashticzv3/dashticz_v3/beta/scripts/dashticz_install.sh )
+     . <(wget -qO - https://raw.githubusercontent.com/Dashticz/dashticz/beta/scripts/dashticz_install.sh )
 
 The script:
 
@@ -28,7 +28,7 @@ Then a Makefile is executed which:
 * Creates a Dashticz V3 container, named dtv3, containing Apache and PHP
 * FInd the first free port, 8082 or higher
 * Starts the container on the first free port
-* Mounts the dashticz_v3 folder to the web-root of the container
+* Mounts the dashticz folder to the web-root of the container
 * Shows the Dashticz url
 
 If you open this url then the default Dashticz dashboard becomes visible.
@@ -40,6 +40,6 @@ The first time the installation may take a while (5 - 15 minutes?): be patient.
 
 Update from a previous version
 ------------------------------
-If the default page is working then you can copy your previous CONFIG.js, custom.css, custom.js from your previous installation to dashticz_v3/custom.
+If the default page is working then you can copy your previous CONFIG.js, custom.css, custom.js from your previous installation to dashticz/custom.
 
 Just refresh your browser, and your new dashboard is shown. No need to rebuild the docker container.

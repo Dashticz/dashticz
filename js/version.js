@@ -28,7 +28,7 @@ if (typeof(config) === 'undefined'
     || (typeof(config) !== 'undefined' && (typeof(config['disable_update_check']) === 'undefined' || !config['disable_update_check']))
 ) {
     $.ajax({
-        url: 'https://raw.githubusercontent.com/Dashticzv3/dashticz_v3/' + dashticz_branch + '/version.txt',
+        url: 'https://raw.githubusercontent.com/Dashticz/dashticz/' + dashticz_branch + '/version.txt',
         async: false,
         dataType: 'json',
         success: function (data) {
@@ -36,14 +36,14 @@ if (typeof(config) === 'undefined'
 
             if (dashticz_version !== data.version) {
                 moved = true;
-                newVersion = '<br><i>Version ' + data.version + ' is available! <a href="https://github.com/Dashticzv3/dashticz_v3/tree/' + dashticz_branch + '" target="_blank">Click here to download</a></i><br><i>' + message + '</i>';
+                newVersion = '<br><i>Version ' + data.version + ' is available! <a href="https://github.com/Dashticz/dashticz/tree/' + dashticz_branch + '" target="_blank">Click here to download</a></i><br><i>' + message + '</i>';
             }
             else if (dashticz_version === data.version) {
                 moved = false;
                 newVersion = '<br><i>You are running latest version.</i>';
             }
             if (moved == true) {
-                infoMessage(language.misc.new_version + '! (V' + data.version + ')', '<a href="https://github.com/Dashticz/dashticz_v3/tree/' + dashticz_branch + '" target="_blank">' + language.misc.download + '</a>');
+                infoMessage(language.misc.new_version + '! (V' + data.version + ')', '<a href="https://github.com/Dashticz/dashticz/tree/' + dashticz_branch + '" target="_blank">' + language.misc.download + '</a>');
             }
         }
     });

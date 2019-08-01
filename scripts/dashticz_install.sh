@@ -1,21 +1,21 @@
 #!/bin/bash
-# Dashticz V3 Installation script
+# Dashticz Installation script
 #
 #Execute this script via:
-# . <(wget -qO - https://raw.githubusercontent.com/dashticzv3/dashticz_v3/beta/scripts/dashticz_install.sh )
+# . <(wget -qO - https://raw.githubusercontent.com/Dashticz/dashticz/beta/scripts/dashticz_install.sh )
 
-REPOSITORY="https://github.com/dashticzv3/dashticz_v3"
+REPOSITORY="https://github.com/Dashticz/dashticz"
 myport=8082
 
-echo This is the installation script for Dashticz V3
+echo This is the installation script for Dashticz
 retry=true
 
 while "$retry"; do
-    echo The script will create a folder for Dashticz v3 in the following location:
+    echo The script will create a folder for Dashticz in the following location:
     echo `pwd`
     echo
-    read -p "Enter the folder name [dashticz_v3]: " NAME
-    NAME=${NAME:-dashticz_v3}
+    read -p "Enter the folder name [dashticz]: " NAME
+    NAME=${NAME:-dashticz}
     echo
     echo Dashticz will be installed in
     echo ${NAME}
