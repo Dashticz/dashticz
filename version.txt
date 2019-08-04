@@ -1,6 +1,6 @@
 {
 "version": "3.0.5",
-"branch": "beta",
+"branch": "master",
 "last_changes": "Improve installation script",
 "changelog" : {
             "3.0.4": "Dashticz moved to new location.",
