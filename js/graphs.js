@@ -234,9 +234,38 @@ function showGraph(idx, title, label, range, current, forced, sensor, popup) {
                 }
                 $('.block_graph' + (popup ? 'popup' : '') + '_' + idx).html(html);
 
-                var graphProperties = getGraphProperties(data.result[0], label);
+                var graphProperties = {
+                    parseTime: false,
+                    element: 'graphoutput' + idx,
+                    fillOpacity: 0.2,
+                    xkey: ['d'],
+                    ymin: 'auto',    
+                    ymax: 'auto',
+                    xLabelFormat: function (x) { return moment(x.src.d, 'YYYY-MM-DD HH:mm').locale(settings['calendarlanguage']).format(graphProperties.dateFormat); },
+                    lineColors: settings['lineColors'],
+                    barColors: settings['lineColors'],
+                    hideHover: 'auto',
+                    resize: true,
+                    hoverCallback: function (index, options, content, row) {
+                        var datePoint = moment(row.d, 'YYYY-MM-DD HH:mm').locale(settings['calendarlanguage']).format(graphProperties.dateFormat);
+                        var text = datePoint + ": ";
+                        graphProperties.ykeys.forEach(function (element, index) {
+                            text += (index > 0 ? ' / ' : '') + number_format(row[element], 2) + ' ' + graphProperties.labels[index];
+                        });
+                        return text;
+                    },
+                    pointFillColors:['none'],
+                    pointSize: settings['pointSize'],
+                    gridTextColor: '#fff', 
+                    lineWidth: 2,
+                    stacked: false
+                }
+                
+                
+                $.extend(graphProperties, getGraphProperties(data.result[0], label));
+
                 if (blocksConfig && typeof(blocksConfig['graphTypes']) !== 'undefined') {
-                    graphProperties.keys = blocksConfig['graphTypes'];
+                    graphProperties.ykeys = blocksConfig['graphTypes'];
                 }
 
                 graphProperties.dateFormat = settings['shorttime'];
@@ -251,33 +280,25 @@ function showGraph(idx, title, label, range, current, forced, sensor, popup) {
                     });
                 }
                 graphProperties.data = data.result.filter(function (element) {
-                    return element.hasOwnProperty(graphProperties.keys[0]);
+                    return element.hasOwnProperty(graphProperties.ykeys[0]);
                 });
 
                 if ($('#graphoutput' + idx).length > 0) {
                     var graphtype='line';
-                    graphProperties.pointFillColors= ['none'];
-                    graphProperties.pointSize=3;
-                    graphProperties.lineColors=settings['lineColors'];
 
                     if (blocksConfig) {
 
                         if (typeof(blocksConfig['graph']) !== 'undefined'){
                             graphtype = blocksConfig.graph;
                         }
-
-                        if(typeof(blocksConfig['pointFillColors']) !== 'undefined') {
-                            graphProperties.pointFillColors = blocksConfig['pointFillColors']
+                        if (graphtype == 'bar') {
+                            graphProperties.lineWidth = 1;
+                            graphProperties.stacked = true;
+                            graphProperties.ymin = 0;
                         }
 
-
-                        if(typeof(blocksConfig['pointSize']) !== 'undefined') {
-                            graphProperties.pointSize = blocksConfig['pointSize']
-                        }
-                        if(typeof(blocksConfig['lineColors']) !== 'undefined') {
-                            graphProperties.lineColors = blocksConfig['lineColors']
-                        }
-
+                        if(blocksConfig.graphProperties)
+                            $.extend(graphProperties, blocksConfig.graphProperties)
                     }
                         
                     switch(graphtype) {
@@ -294,60 +315,11 @@ function showGraph(idx, title, label, range, current, forced, sensor, popup) {
 }
 
 function makeMorrisGraph(idx, graphProperties) {
-    Morris.Line({
-        parseTime: false,
-        element: 'graphoutput' + idx,
-        data: graphProperties.data,
-        fillOpacity: 0.2,
-        gridTextColor: '#fff',
-        lineWidth: 2,
-        xkey: ['d'],
-	ymin: 'auto',    
-        ykeys: graphProperties.keys,
-        labels: graphProperties.labels,
-        xLabelFormat: function (x) { return moment(x.src.d, 'YYYY-MM-DD HH:mm').locale(settings['calendarlanguage']).format(graphProperties.dateFormat); },
-        lineColors: graphProperties.lineColors,
-        pointFillColors: graphProperties.pointFillColors,
-        pointSize: graphProperties.pointSize,
-        hideHover: 'auto',
-        resize: true,
-        hoverCallback: function (index, options, content, row) {
-            var datePoint = moment(row.d, 'YYYY-MM-DD HH:mm').locale(settings['calendarlanguage']).format(graphProperties.dateFormat);
-            var text = datePoint + ": ";
-            graphProperties.keys.forEach(function (element, index) {
-                text += (index > 0 ? ' / ' : '') + number_format(row[element], 2) + ' ' + graphProperties.labels[index];
-            });
-            return text;
-        }
-    });
+    Morris.Line(graphProperties);
 }
 
 function makeMorrisGraphBar(idx, graphProperties) {
-    Morris.Bar({
-        parseTime: false,
-        element: 'graphoutput' + idx,
-        data: graphProperties.data,
-        fillOpacity: 0.2,
-        gridTextColor: '#fff',
-        lineWidth: 2,
-        xkey: ['d'],
-        ykeys: graphProperties.keys,
-        labels: graphProperties.labels,
-        xLabelFormat: function (x) { return moment(x.src.d, 'YYYY-MM-DD HH:mm').locale(settings['calendarlanguage']).format(graphProperties.dateFormat); },
-        lineColors: graphProperties.lineColors,
-        pointFillColors: graphProperties.pointFillColors,
-        pointSize: graphProperties.pointSize,
-        hideHover: 'auto',
-        resize: true,
-        hoverCallback: function (index, options, content, row) {
-            var datePoint = moment(row.d, 'YYYY-MM-DD HH:mm').locale(settings['calendarlanguage']).format(graphProperties.dateFormat);
-            var text = datePoint + ": ";
-            graphProperties.keys.forEach(function (element, index) {
-                text += (index > 0 ? ' / ' : '') + number_format(row[element], 2) + ' ' + graphProperties.labels[index];
-            });
-            return text;
-        }
-    });
+    Morris.Bar(graphProperties);
 }
 
 function createButtons(idx, title, label, range, current, sensor, popup) {
@@ -372,57 +344,57 @@ function getGraphProperties(result, label) {
     var graphProperties = {};
     if (result.hasOwnProperty('uvi')) {
         graphProperties = {
-            keys: ['uvi'],
+            ykeys: ['uvi'],
             labels: [label],
         };
     } else if (result.hasOwnProperty('lux')) {
         graphProperties = {
-            keys: ['lux'],
+            ykeys: ['lux'],
             labels: ['Lux'],
         };
     } else if (result.hasOwnProperty('lux_avg')) {
         graphProperties = {
-            keys: ['lux_avg', 'lux_min', 'lux_max'],
+            ykeys: ['lux_avg', 'lux_min', 'lux_max'],
             labels: ['Lux average', 'Minimum', 'Maximum'],
         };
     } else if (result.hasOwnProperty('gu') && result.hasOwnProperty('sp')) {
         graphProperties = {
-            keys: ['gu', 'sp'],
+            ykeys: ['gu', 'sp'],
             labels: ['m/s', 'm/s'],
         };
     } else if (result.hasOwnProperty('ba') && result.hasOwnProperty('hu') && result.hasOwnProperty('te')) {
         graphProperties = {
-            keys: ['ba', 'hu', 'te'],
+            ykeys: ['ba', 'hu', 'te'],
             labels: ['hPa', '%', _TEMP_SYMBOL],
         };
     } else if (result.hasOwnProperty('hu') && result.hasOwnProperty('te')) {
         graphProperties = {
-            keys: ['hu', 'te'],
+            ykeys: ['hu', 'te'],
             labels: ['%', _TEMP_SYMBOL],
         };
     } else if (result.hasOwnProperty('te')) {
         graphProperties = {
-            keys: ['te'],
+            ykeys: ['te'],
             labels: [_TEMP_SYMBOL],
         };
     } else if (result.hasOwnProperty('hu')) {
         graphProperties = {
-            keys: ['hu'],
+            ykeys: ['hu'],
             labels: ['%'],
         };
     } else if (result.hasOwnProperty('mm')) {
         graphProperties = {
-            keys: ['mm'],
+            ykeys: ['mm'],
             labels: ['mm'],
         };
     } else if (result.hasOwnProperty('v_max')) {
         graphProperties = {
-            keys: ['v_max'],
+            ykeys: ['v_max'],
             labels: [label],
         };
     } else if (result.hasOwnProperty('v2')) {
         graphProperties = {
-            keys: ['v2', 'v'],
+            ykeys: ['v2', 'v'],
             labels: [label, label],
         };
         if (label === 'kWh' && realrange === 'day') {
@@ -434,33 +406,33 @@ function getGraphProperties(result, label) {
         }
         if (data.method === 1) {
             graphProperties = {
-                keys: ['eu'],
+                ykeys: ['eu'],
                 labels: [label],
             };
         } else {
             graphProperties = {
-                keys: ['v'],
+                ykeys: ['v'],
                 labels: [label],
             };
         }
     } else if (result.hasOwnProperty('eu')) {
         graphProperties = {
-            keys: ['eu'],
+            ykeys: ['eu'],
             labels: [label],
         };
     } else if (result.hasOwnProperty('u')) {
         graphProperties = {
-            keys: ['u'],
+            ykeys: ['u'],
             labels: [label],
         };
     } else if (result.hasOwnProperty('u_max')) {
         graphProperties = {
-            keys: ['u_max', 'u_min'],
+            ykeys: ['u_max', 'u_min'],
             labels: ['?', '?'],
         };
     } else if (result.hasOwnProperty('co2')) {
 		graphProperties = {
-			keys: ['co2'],
+			ykeys: ['co2'],
 			labels: ['ppm'],
 		};		
     }
