@@ -1,8 +1,12 @@
 {
-"version": "3.0.0",
+"version": "3.0.5",
 "branch": "master",
-"last_changes": "Creation of v3",
+"last_changes": "Improve installation script",
 "changelog" : {
+            "3.0.4": "Dashticz moved to new location.",
+            "3.0.3": "Fix for Spotify block; layout improvements",
+            "3.0.2": "Add imageOn/Off, iconOn/Off and textOn/Off block parameters",
+            "3.0.1": "Update install script",
             "3.0.0": "Dashticz V3"
             }
 }

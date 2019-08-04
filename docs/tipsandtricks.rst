@@ -68,7 +68,7 @@ Step 2
 
 In your dashticz folder create a ``.htaccess`` file::
 
-    cd /home/pi/dashticz_v3
+    cd /home/pi/dashticz
     nano .htaccess
     
 with the following content::

@@ -13,11 +13,15 @@ For more information see:
 
 .. rubric:: Basic
 
-For basic modification of the documentation just edit the files in the docs folder, push your changes to github and create a pull request. After merging of the change the documentation will be pulled by readthedocs.org and the new version of the documentaion becomes available on https://dashticz-v3.readthedocs.io
+For basic modification of the documentation just edit the files in the docs folder, push your changes to github and create a pull request. After merging of the change the documentation will be pulled by readthedocs.org and the new version of the documentaion becomes available on https://dashticz.readthedocs.io
 
 .. rubric:: Advanced
 
-#. install Sphinx
+#. install Sphinx::
+
+    sudo apt update
+    sudo apt install python-pip
+    sudo apt install python-sphinx  
 
 #. Make changes::
 

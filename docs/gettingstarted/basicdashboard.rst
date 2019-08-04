@@ -3,7 +3,7 @@
 Configuring a basic Dashticz Dashboard
 --------------------------------------
 
-If you followed the steps as described in :ref:`SystemSetup` and :ref:`DashticzInstallation` 
+If you followed the steps as described in :ref:`Installation` 
 then you are prepared for creating your own Dashboard.
 
 Step 1: Default Dashboard
@@ -17,6 +17,8 @@ with the following content::
     config['domoticz_ip'] = 'http://192.168.1.3:8084';
     config['domoticz_refresh'] = '5';
     config['dashticz_refresh'] = '60';
+
+Replace the domoticz_ip config setting with the ip-address of your Domoticz server.
 
 This should give a result like this:
 

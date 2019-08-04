@@ -71,6 +71,23 @@ Block parameters
   * - image
     - | If you want to show an image instead of an icon, place image in ``img/`` folder
       | ``'bulb_off.png'``
+  * - iconOn
+    - | Icon to show in case the device state is on.
+      | ``'fas fa-eye'``
+  * - iconOff
+    - | Icon to show in case the device state is off.
+      | ``'fas fa-eye'``
+  * - imageOn
+    - | Image to show in case the device state is on. Place image in ``img/`` folder
+      | ``'bulb_off.png'``
+  * - imageOff
+    - | Image to show in case the device state is off. Place image in ``img/`` folder
+      | ``'bulb_off.png'``
+  * - textOn
+    - Text to display in case the device is on.
+  * - textOff
+    - Text to display in case the device is off.
+
   * - switch
     - | ``true`` Switch title and data
       | ``false`` (default)
@@ -84,14 +101,6 @@ Block parameters
     - | Controls the flashing of the block when it's value changes.
       | ``0`` : No flashing (=default)
       | ``1..1000`` : Duration (in ms) of the flashing effect
-  * - graphTypes
-    - | Array of values you want to show in the graph. Can be used for Domoticz devices having several values.
-      | ``['te']``: Temperature
-      | ``['hu']``: Humidity
-      | ``['ba']``: Barometer
-      | ``['gu', 'sp']``: wind guts and speed
-      | ``['uvi']``, ``['lux']``, ``['lux_avg']``, ``['mm']``, ``['v_max']``
-      | ``['v2']``, ``['mm']``, ``['eu']``, ``['u']``, ``['u_max']``,``['co2']``
   * - hide_stop
     - | ``true`` Hide stop button for applicable devices, like blinds
       | ``false`` (Default) Show stop button
@@ -140,6 +149,17 @@ Block parameters
     - | Sets the graph type
       | ``'line'`` Line graph (default)
       | ``'bar'`` Bar graph
+  * - graphTypes
+    - | Array of values you want to show in the graph. Can be used for Domoticz devices having several values.
+      | ``['te']``: Temperature
+      | ``['hu']``: Humidity
+      | ``['ba']``: Barometer
+      | ``['gu', 'sp']``: wind guts and speed
+      | ``['uvi']``, ``['lux']``, ``['lux_avg']``, ``['mm']``, ``['v_max']``
+      | ``['v2']``, ``['mm']``, ``['eu']``, ``['u']``, ``['u_max']``,``['co2']``
+  * - graphProperties
+    - Set this parameter to control the visual appearance of the graph. See :ref:`dom_graphs`
+
       
 Usage
 -----
@@ -201,6 +221,25 @@ This example will give the following result:
 
 .. image :: blocktitle.jpg
 
+Example of a more extensive block definition::
+
+    var blocks = {}
+
+    blocks[1] = {
+      width: 4,               //1 to 12, remove this line if you want to use the default (4)
+      title : 'Living room',  //if you want change the name of switch different then domoticz
+      icon : 'fa-eye',        //if you want an other icon instead of the default, choose from: https://fontawesome.com/v4.7.0/icons/
+      image : 'bulb_off.png', //if you want to show an image instead if icon, place image in img/ folder
+      switch : true,          //if you want to switch the title and data
+      hide_data : true,       //if you want to hide the data of this block
+      last_update : true,     //if you want to show the last update specific for this block
+      playsound : 'sounds/ping.mp3', //play a sound when a device changes
+      protected : true,       //protect switching manually in Dashticz
+      speak : 'Device status has changed',  //speak text when device is changed
+      gotoslide: 2            //Goto screen when a device changes
+    };  
+
+
 .. _openpopup :
 
 Usage of openpopup(On)(Off)
@@ -261,6 +300,15 @@ by adding the graph-id to a column definition as follows::
       ...
     ]
 
+.. note:: Using both a graph-block as well as a popup graph of the same device is not supported
+
+The following block parameters can be used to configure the graph:
+
+* ``graph``
+* ``graphTypes``
+* ``graphProperties``
+
+With the ``graph`` parameter you can define the graph type (``line`` for a line graph and ``bar`` for a bar graph)
 
 In case of multi-value devices, like temp-hum-bar, you can select the data to show in the graph via the ``graphTypes`` parameter.
 
@@ -295,28 +343,27 @@ So now you can do::
       graphTypes: ['te', 'hu']
    };
 
-With the ``graph`` parameter you can define the graph type (``line`` for a line graph and ``bar`` for a bar graph)
+With the parameter ``graphProperties`` you can provide an object to define the visual appearance.
+Example: Stacked bar graph (of a P1 smart meter with index 43 in this case) ::
 
-.. note:: Using both a graph-block as well as a popup graph of the same device is not supported
+    blocks['graph_43'] = {
+        title: 'My Power',
+        graph: 'bar',
+        graphProperties : {
+            gridTextColor : '#c3f6fe',
+            barColors: ['#f1c40f', '#40e0d0', '#eee'],
+            ymax:10  //set to 'auto' for auto scaling
+        }
+    }
+
+This will give the following result:
+
+.. image :: img/graph_bar.jpg
+
+
+For all possible graphProperties see:
+
+* https://morrisjs.github.io/morris.js/lines.html (for line graphs)
+* https://morrisjs.github.io/morris.js/bars.html (for bar graphs)
 
   
-Examples
---------
-
-Example of a more extensive block definition::
-
-    var blocks = {}
-
-    blocks[1] = {
-      width: 4,               //1 to 12, remove this line if you want to use the default (4)
-      title : 'Living room',  //if you want change the name of switch different then domoticz
-      icon : 'fa-eye',        //if you want an other icon instead of the default, choose from: https://fontawesome.com/v4.7.0/icons/
-      image : 'bulb_off.png', //if you want to show an image instead if icon, place image in img/ folder
-      switch : true,          //if you want to switch the title and data
-      hide_data : true,       //if you want to hide the data of this block
-      last_update : true,     //if you want to show the last update specific for this block
-      playsound : 'sounds/ping.mp3', //play a sound when a device changes
-      protected : true,       //protect switching manually in Dashticz
-      speak : 'Device status has changed',  //speak text when device is changed
-      gotoslide: 2            //Goto screen when a device changes
-    };  

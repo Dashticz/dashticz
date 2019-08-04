@@ -24,13 +24,12 @@ var SpotifyModule = function() {
 			var html ='<div data-id="spotify" class="col-xs-12 transbg containsspotify containsspotify'+random+'" style="padding:0px !important;">';
 			    html+='<div id="current"></div>';
 
-				html+='<a class="change" style="display:none;" onclick="SpotifyModule.createPlaylistsDlg('+random+');">'+language.misc.spotify_select_playlist+' &raquo;</a>';
-				html+='<select class="devices" style="display:none;" onchange="SpotifyModule.changeDevice(this.value);"></select>';
+				html+='<a class="change"  onclick="SpotifyModule.createPlaylistsDlg('+random+');">'+language.misc.spotify_select_playlist+' &raquo;</a>';
+				html+='<select class="devices" onchange="SpotifyModule.changeDevice(this.value);"></select>';
 
 			html+='</div>';
 			$(columndiv).append(html);
-
-			_getData(columndiv,random);
+			_getMe();
 			setInterval(function(){
 				_getData(columndiv,random);
 			},2000);
@@ -46,46 +45,73 @@ var SpotifyModule = function() {
 
 	}
 
-	function _getData(columndiv,rand){
-		if($('select.devices option').length === 0) $('select.devices').html('<option>'+language.misc.spotify_select_device+'</option>');
-
+	function _getMe() {
 		spotifyApi.getMe(function(err, user) {
-			userinfo = user;
-			spotifyApi.getMyDevices(function(err, data) {
-				if (err){
+			if (!err)
+				userinfo = user;
+			else {
+				console.log('Error getting Spotify user info. Retry in 5 seconds');
+				console.log(err.status);
+				if(err.status == 401) {
+					//token expired or not authorized
+					console.log("token expired");
 					var url = _getLoginURL();
 					window.location.href=url;
-
+					return;
 				}
-				else{
-					devices = data.devices;
-					var sel='';
-					for(d in devices){
+				setTimeout(function(){
+					_getMe();
+				},5000);
+			}
+		});
+	}
 
-						$('select.devices').show();
-						$('a.change').show();
+	function _getData(columndiv,rand){
+		if($('select.devices option').length === 0)
+			$('select.devices').html('<option>'+language.misc.spotify_select_device+'</option>');
+		if(typeof (userinfo) == 'undefined') {
+			console.log("no valid user info");
+			return;
+		}
+		spotifyApi.getMyDevices(function(err, data) {
+			if (err){
+				var url = _getLoginURL();
+				window.location.href=url;
 
-						sel='';
-						if(devices[d]['is_active']){
-							sel='selected';
-						}
-						if(!devices[d]['is_restricted']) {
-							if($('select.devices option[value="' + devices[d]['id'] + '"]').length === 0) {
-								$('select.devices').append('<option value="'+devices[d]['id']+'" '+sel+'>'+devices[d]['name']+'</option>');
-							}
+			}
+			else{
+				devices = data.devices;
+				var sel='';
+				for(d in devices){
+
+					$('select.devices').show();
+					$('a.change').show();
+
+					sel='';
+					if(devices[d]['is_active']){
+						sel='selected';
+					}
+					if(!devices[d]['is_restricted']) {
+						if($('select.devices option[value="' + devices[d]['id'] + '"]').length === 0) {
+							$('select.devices').append('<option value="'+devices[d]['id']+'" '+sel+'>'+devices[d]['name']+'</option>');
 						}
 					}
-
-					_getCurrentTrack();
-
-
 				}
-			});
+
+				_getCurrentTrack();
+
+
+			}
 		});
 	}
 
   function _createPlaylistsDlg(rand) {
 		spotifyApi.getUserPlaylists(function(err, playlists) {
+			if(err) {
+				infoMessage('Spotify getUserPlahylists error ' + err.status, 4000);
+				console.log('Spotify getUserPlahylists error ' + err.status);
+				return;
+			}
 			var html = '<div class="modal fade" id="spotify_'+rand+'" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
 				html+='<div class="modal-dialog">';
 				html+='<div class="modal-content">';
@@ -98,7 +124,7 @@ var SpotifyModule = function() {
 				if(typeof(playlists.items[p])!=='undefined' && typeof(playlists.items[p]['uri'])!=='undefined' && typeof(playlists.items[p]['images'][0])!=='undefined'){
 					html+='<div class="col-md-3 col-sm-6">';
 					html+='<div class="spotlist">';
-					html+='<div class="col-lg-4 col-md-5 col-sm-4" style="padding:0px;"><a onclick="SpotifyModule.getPlayList(\''+playlists.items[p]['href']+'\');"><img style="height:75px;width:75px;" src="'+playlists.items[p]['images'][0]['url']+'" /></a></div>';
+					html+='<div class="col-lg-4 col-md-5 col-sm-4" style="padding:0px;"><a onclick="SpotifyModule.getPlayList(\''+playlists.items[p]['owner']['id']+'\',\''+playlists.items[p]['id']+'\');"><img style="height:75px;width:75px;" src="'+playlists.items[p]['images'][0]['url']+'" /></a></div>';
 					html+='<div class="col-lg-8 col-md-7 col-sm-8" style="padding:0px;padding-top:5px;padding-right:10px;">';
 					html+='<a onclick="SpotifyModule.getPlayList(\''+playlists.items[p]['owner']['id']+'\',\''+playlists.items[p]['id']+'\');">'+playlists.items[p]['name']+'</a><br />';
 					html+='<a onclick="SpotifyModule.getTrackList(\''+playlists.items[p]['owner']['id']+'\',\''+playlists.items[p]['id']+'\',\''+columndiv+'\');"><em>Tracks: '+playlists.items[p]['tracks']['total']+'</em></a></div>';
@@ -187,8 +213,6 @@ var SpotifyModule = function() {
 			$('a.change').show();
 			$('select.devices').show();
 
-			html += '<a href="javascript:SpotifyModule.trackAction(\'Rewind\');"><em class="fas fa-arrow-circle-left fa-small"></em></a> ';
-			//html += '<a href="javascript:SpotifyModule.trackAction(\'Stop\');"><em class="fa fa-stop-circle fa-small"></em></a> ';
 			if (currently.is_playing) {
 				html += '<a class="spotpause" href="javascript:SpotifyModule.trackAction(\'Pause\');"><em class="fas fa-pause-circle fa-small"></em></a> ';
 				html += '<a class="spotplay" style="display:none;" href="javascript:SpotifyModule.trackAction(\'Play\');"><em class="fas fa-play-circle fa-small"></em></a> ';
@@ -265,7 +289,7 @@ var SpotifyModule = function() {
 	}
 
 	function _getPlayList(owner,id){
-		spotifyApi.getPlaylist(owner,id,function(err, playlist) {
+		spotifyApi.getPlaylist(id,null, function(err, playlist) {
 			spotifyApi.play({
 				context_uri: playlist.uri
 			},function(err, result) {
@@ -307,7 +331,7 @@ var SpotifyModule = function() {
 
 	function _getTrackList(owner,id,back){
 
-		spotifyApi.getPlaylist(owner,id,function(err, tracks) {
+		spotifyApi.getPlaylist(id, null, function(err, tracks) {
 			tracks=tracks.tracks;
 
 			var html='<div class="col-md-12"><div class="spotback"><a onclick="SpotifyModule.showPlaylists();">&laquo; '+language.misc.spotify_back_to_playlist+'</a></div></div>';

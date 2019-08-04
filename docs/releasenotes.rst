@@ -2,6 +2,35 @@ Release Notes
 =============
 A link to the release notes will be posted in the Dashticz support forum. The total overview can be found below.
 
+3.0.4 (1-8-2019)
+------------------
+Main changes:
+  * New Domoticz Github location: https://github.com/Dashticz/dashticz
+  * New graph options to set the graph appearance. See :ref:`dom_graphs`.
+
+Fixes:
+  * OWM Weather layout
+  
+3.0.3 (20-7-2019)
+-----------------
+Main changes:
+  * Fixed the broken Spotify module
+  * Improved layout (icon size for certain screen widths)
+
+3.0.2 (19-7-2019)
+-----------------
+Main changes:
+  * New block parameters (textOn, textOff, imageOn, imageOff, iconOn, iconOff) to control the display of block text, icons and images depending on the device state.
+
+3.0.1 (25-6-2019)
+-----------------
+
+Main changes (thanks to Steven):
+  * New special block: Traffic information based on providers, ANWB is the first one. See :ref:`trafficinfo`.
+  * Additional filter options for the public transport module. See :ref:`publictransport`. 
+
+Fixes:
+  * Update of the installation script. See :ref:`AutomaticInstall`
 
 3.0.0 (13-6-2019)
 -----------------

@@ -59,10 +59,18 @@ Parameters
       | ``'9292-metro'`` The Netherlands, metro only
       | ``'9292-train'`` The Netherlands, train only
       | ``'9292-tram'`` The Netherlands, tram only      
+      | ``'9292-tram-metro'`` The Netherlands, tram and metro      
       | ``'9292-tram-bus'`` The Netherlands, tram and bus      
+      | ``'9292-bus-tram'`` The Netherlands, tram and bus      
       | ``'mobiliteit'`` Luxembourg
       | ``'irail'`` Belgium 
       | ``'delijn'`` Belgium
+  * - destination
+    - | Set the end destination to filter the direction
+      | ``'Den Haag De Uithof,Den Haag Loosduinen'``
+  * - service
+    - | Set the specific services (Dutch: lijnnummers) to further filter the result
+      | ``'3,4'`` (comma seperated)
   * - icon
     - | The font-awesome icon (without ``fas fa-``)
       | ``'bus'``, ``'tram'``, ``'train'``, ``'ship'``, ``'subway'``, ...

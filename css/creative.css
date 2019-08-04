@@ -370,22 +370,22 @@ a.playlist {
 
 .containsspotify #current {
 	overflow: hidden;
-	background-color: #282828;
 }
 
 .containsspotify #current .current_image {
 	float: left;
 	margin:2px 0px 5px 2px;
-	width: calc(32% - 2px);
+/*	width: calc(32% - 2px);*/
+	width: 68px;
 }
 
 .containsspotify #current .current_image img {
-	max-width:64px;
+	max-width: 64px;
 }
 .containsspotify #current .current_info {
 	float: left;
 	padding-left:10px;
-	width: calc(68%);
+	width: calc(100% - 72px);
 }
 .containsspotify #current .current_artist {
 	font-weight: bold;
@@ -401,7 +401,7 @@ a.playlist {
     max-height: 33px;
 }
 .containsspotify .change {
-	background-color: #282828;
+/*	background-color: #282828;*/
 	display: block;
 	margin-top: -4px;
 	padding: 3px;
@@ -421,13 +421,15 @@ a.playlist {
 	width: 100%;
     max-width: 100%;
     color: #fff !important;
-    background-color: #282828;
+	background-color: transparent;
+
     border: 0px;
     padding-left: 0px;
 }
 
 .containsspotify select.devices option{
-    color: #fff !important;
+	color: #fff !important;
+	background-color: #292b2c;
 }
 
 .spotback {
@@ -635,7 +637,7 @@ hr {
 	background-image:none !important;
 	background-color:#313131;
 }
-.standby .far,.standby .far.fa-small,.standby .fas,.standby .fas.fa-small,.standby .fab,.standby .fab.fa-small, {
+.standby .far,.standby .far.fa-small,.standby .fas,.standby .fas.fa-small,.standby .fab,.standby .fab.fa-small {
 	color:#fff !important;
 }
 
@@ -1089,7 +1091,8 @@ img.icon {
     	margin-right: 3px !important;
 	}
 
-@media (max-width: 1400px) {
+/*
+@media (max-width: 975px) {
 	
 	.col-icon {
 		width:30px !important;
@@ -1109,9 +1112,17 @@ img.icon {
 	}
 	.col-data {
 		width: calc(100% - 34px);
-//		padding-left: 34px;
 	}
 
+}
+*/
+
+.containsweather .col-xs-1 {
+	width: 50px
+}
+
+.containsweather .col-xs-11 {
+	width: calc(100% - 50px)
 }
 
 @media (max-width: 975px) {
@@ -1132,9 +1143,18 @@ img.icon {
 		margin-left:0px !important
 	}
 	div.big {
-		padding-top: 9px !important;
 		padding-left: 13px !important;
 	}
+
+
+	.containsweather .col-xs-1 {
+		width: 35px
+	}
+	
+	.containsweather .col-xs-11 {
+		width: calc(100% - 35px)
+	}
+	
 	img.icon {
 		max-width:15px !important;
 	}
