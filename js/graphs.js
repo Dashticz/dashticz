@@ -1,177 +1,181 @@
 var dtGraphs = [];
 
 function getGraphs(device, popup) {
-    var sensor = 'counter';
-    var txtUnit = '?';
-    var currentValue = device['Data'];
-    var decimals = 2;
-    console.log("Graph for " + device.Type + ' ' + device.SubType);
-    switch (device['Type']) {
-        case 'Rain':
-            sensor = 'rain';
-            txtUnit = 'mm';
-            decimals = 1;
-            break;
-        case 'Lux':
-            sensor = 'counter';
-            txtUnit = 'Lux';
-            decimals = 0;
-            break;
-        case 'Wind':
-            sensor = 'wind';
-            if (config['use_beaufort']) {
-                currentValue = Beaufort(device['Speed']);
-                decimals = 0;
-                txtUnit = 'Bft';
-            } else {
-                currentValue = device['Speed'];
+        var sensor = 'counter';
+        var txtUnit = '?';
+        var currentValue = device['Data'];
+        var decimals = 2;
+        console.log("Graph for " + device.Type + ' ' + device.SubType);
+        switch (device['Type']) {
+            case 'Rain':
+                sensor = 'rain';
+                txtUnit = 'mm';
                 decimals = 1;
-                txtUnit = 'm/s';
-            }
+                break;
+            case 'Lux':
+                sensor = 'counter';
+                txtUnit = 'Lux';
+                decimals = 0;
+                break;
+            case 'Wind':
+                sensor = 'wind';
+                if (config['use_beaufort']) {
+                    currentValue = Beaufort(device['Speed']);
+                    decimals = 0;
+                    txtUnit = 'Bft';
+                } else {
+                    currentValue = device['Speed'];
+                    decimals = 1;
+                    txtUnit = 'm/s';
+                }
+                break;
+            case 'Temp':
+            case 'Temp + Humidity':
+            case 'Temp + Humidity + Baro':
+                sensor = 'temp';
+                txtUnit = '°C';
+                currentValue = device['Temp'];
+                decimals = 1;
+                break;
+            case 'Humidity':
+                sensor = 'temp';
+                txtUnit = '%';
+                decimals = 1;
+                break;
+            case 'RFXMeter':
+                txtUnit = device['CounterToday'].split(' ')[1];
+                currentValue = device['CounterToday'].split(' ')[0];
+            switch (device['SwitchTypeVal']) {
+                case 0: //Energy
+                break;
+                case 1: //Gas
+                break;
+                case 2: //Water
+                decimals = 0;
+                break;
+                case 3: //Counter
+                break;
+                case 4: //Energy generated
+                break;
+                case 5: //Time
+                break;
+            }          
             break;
-        case 'Temp':
-        case 'Temp + Humidity':
-        case 'Temp + Humidity + Baro':
-            sensor = 'temp';
-            txtUnit = '°C';
-            currentValue = device['Temp'];
-            decimals = 1;
-            break;
-        case 'Humidity':
-            sensor = 'temp';
-            txtUnit = '%';
-            decimals = 1;
-            break;
-        case 'RFXMeter':
-            txtUnit = device['CounterToday'].split(' ')[1];
-            currentValue = device['CounterToday'].split(' ')[0];
-          switch (device['SwitchTypeVal']) {
-            case 0: //Energy
-              break;
-            case 1: //Gas
-              break;
-            case 2: //Water
-              decimals = 0;
-              break;
-            case 3: //Counter
-              break;
-            case 4: //Energy generated
-              break;
-            case 5: //Time
-              break;
-          }          
-          break;
-        case 'Air Quality':
-            sensor = 'counter';
-            txtUnit = 'ppm';
-            decimals = 1;
-            break;
-    }
+            case 'Air Quality':
+                sensor = 'counter';
+                txtUnit = 'ppm';
+                decimals = 1;
+                break;
+        }
 
-    switch (device['SubType']) {
-        case 'Percentage':
-            sensor = 'Percentage';
-            txtUnit = '%';
-            decimals = 1;
-            break;
-        case 'Custom Sensor':
-            sensor = 'Percentage';
-            txtUnit = device['SensorUnit'];
-            decimals = 1;
-            break;
-        case 'Gas':
-            txtUnit = 'm3';
-            break;
-        case 'Electric':
-            txtUnit = 'Watt';
-            break;
-	case 'Energy':
-        case 'kWh':
-        case 'YouLess counter':
-            txtUnit = 'kWh';
-            currentValue = device['CounterToday'];
-            break;
-        case 'Visibility':
-            txtUnit = 'km';
-            break;
-        case 'Radiation':
-        case 'Solar Radiation':
-            txtUnit = 'Watt/m2';
-            decimals = 0;
-            break;
-        case 'Pressure':
-            txtUnit = 'Bar';
-            break;
-        case 'Soil Moisture':
-            txtUnit = 'cb';
-            break;
-        case 'Leaf Wetness':
-            txtUnit = 'Range';
-            break;
-	case 'A/D':
-            txtUnit = 'mV';
-            break;
-        case 'Voltage':		    
-        case 'VoltageGeneral':
-            txtUnit = 'V';
-            break;
-        case 'DistanceGeneral':
-        case 'Distance':
-            txtUnit = 'cm';
-            break;
-        case 'Sound Level':
-            txtUnit = 'dB';
-            break;
-        case 'CurrentGeneral':
-	case 'CM113, Electrisave':	    
-        case 'Current':
-            txtUnit = 'A';
-            break;
-        case 'Weight':
-            txtUnit = 'kg';
-            break;
-        case 'Waterflow':
-            sensor = 'Percentage';
-            txtUnit = 'l/min';
-            break;
-        case 'Counter Incremental':
-            txtUnit = device['CounterToday'].split(' ')[1];
-            currentValue = device['CounterToday'].split(' ')[0];
-            break;
-    }
+        switch (device['SubType']) {
+            case 'Percentage':
+                sensor = 'Percentage';
+                txtUnit = '%';
+                decimals = 1;
+                break;
+            case 'Custom Sensor':
+                sensor = 'Percentage';
+                txtUnit = device['SensorUnit'];
+                decimals = 1;
+                break;
+            case 'Gas':
+                txtUnit = 'm3';
+                break;
+            case 'Electric':
+                txtUnit = 'Watt';
+                break;
+        case 'Energy':
+            case 'kWh':
+            case 'YouLess counter':
+                txtUnit = 'kWh';
+                currentValue = device['CounterToday'];
+                break;
+            case 'Visibility':
+                txtUnit = 'km';
+                break;
+            case 'Radiation':
+            case 'Solar Radiation':
+                txtUnit = 'Watt/m2';
+                decimals = 0;
+                break;
+            case 'Pressure':
+                txtUnit = 'Bar';
+                break;
+            case 'Soil Moisture':
+                txtUnit = 'cb';
+                break;
+            case 'Leaf Wetness':
+                txtUnit = 'Range';
+                break;
+        case 'A/D':
+                txtUnit = 'mV';
+                break;
+            case 'Voltage':		    
+            case 'VoltageGeneral':
+                txtUnit = 'V';
+                break;
+            case 'DistanceGeneral':
+            case 'Distance':
+                txtUnit = 'cm';
+                break;
+            case 'Sound Level':
+                txtUnit = 'dB';
+                break;
+            case 'CurrentGeneral':
+        case 'CM113, Electrisave':	    
+            case 'Current':
+                txtUnit = 'A';
+                break;
+            case 'Weight':
+                txtUnit = 'kg';
+                break;
+            case 'Waterflow':
+                sensor = 'Percentage';
+                txtUnit = 'l/min';
+                break;
+            case 'Counter Incremental':
+                txtUnit = device['CounterToday'].split(' ')[1];
+                currentValue = device['CounterToday'].split(' ')[0];
+                break;
+        }
 
-    var range;
-    switch (settings['standard_graph']) {
-        case 'hours':
-            range = 'last';
-            break;
-        case 'day':
-            range = 'day';
-            break;
-        case 'month':
-            range = 'month';
-            break;
-    }
+        var range;
+        switch (settings['standard_graph']) {
+            case 'hours':
+                range = 'last';
+                break;
+            case 'day':
+                range = 'day';
+                break;
+            case 'month':
+                range = 'month';
+                break;
+        }
 
-    currentValue = number_format(currentValue, decimals);
-    var graphIdx = device.idx;
-    if(popup) graphIdx+='p';
-    dtGraphs[graphIdx] = {
-        idx: device.idx,
-        title: device.Name,
-        type: device.Type,
-        subtype: device.SubType,
-        sensor : sensor,
-        txtUnit: txtUnit,
-        currentValue : currentValue,
-        decimals : decimals,
-        popup:popup,
-        range:range,
-        lastRefreshTime: 0,
-        forced: false
-    // forced: false
+        currentValue = number_format(currentValue, decimals);
+        var graphIdx = device.idx;
+        if(popup) graphIdx+='p'; //Todo: make it possible have a popup graph and inline graph of same device
+        if ( typeof dtGraphs[graphIdx] == 'undefined') {
+            dtGraphs[graphIdx] = {
+                idx: device.idx,
+                title: device.Name,
+                type: device.Type,
+                subtype: device.SubType,
+                sensor : sensor,
+                txtUnit: txtUnit,
+                currentValue : currentValue,
+                decimals : decimals,
+                popup:popup,
+                range:'initial',
+                lastRefreshTime: 0,
+                forced: false,
+                graphIdx: graphIdx
+        // forced: false
+        }
     }
-    if(!popup) showGraph(graphIdx);
+    dtGraphs[graphIdx].currentValue = currentValue;
+    showGraph(graphIdx);
 }
 
 function getGraphByIDX(idx) {
@@ -180,11 +184,12 @@ function getGraphByIDX(idx) {
 }
 
 function getButtonGraphs(device) {
-    console.log('Open buttonGraps' + device.idx);
-    if(!dtGraphs[device.idx]) {
+    
+    console.log('ERROR!! dont use this. Open buttonGraps' + device.idx);
+/*    if(!dtGraphs[device.idx]) {
         console.log('   not defined');
         return;
-    }
+    }*/
 //    console.log(device);
     if ($('#opengraph' + device['idx']).length === 0) {
         var html = '<div class="modal fade opengraph' + device['idx'] + '" data-idx="' + device['idx'] + '" id="opengraph' + device['idx'] + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
@@ -206,31 +211,139 @@ function getButtonGraphs(device) {
     }
 }
 
+function showPopupGraph(idx, subidx) {
+    console.log('showPopupGraph '+idx);
+    var device=alldevices[idx];
+    if ($('#opengraph' + device['idx']).length === 0) {
+        var html = '<div class="modal fade opengraph' + device['idx'] +'p'+ '" data-idx="' + device['idx'] + '" id="opengraph' + device['idx']+'p' + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
+        html += '<div class="modal-dialog graphwidth">';
+        html += '<div class="modal-content">';
+        html += '<div class="modal-header graphclose">';
+        html += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
+        html += '</div>';
+        html += '<div class="modal-body block_graphpopup_' + device['idx'] +'p' + '">' + language.misc.loading;
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+        $('body').append(html);
+
+/*
+        $('#opengraph' + device['idx']).on('shown.bs.modal', function () {
+            getGraphByIDX($(this).data('idx'));
+        });
+        */
+// todo: add handler to destroy after close
+        //show the dialog
+
+    }
+    $("#opengraph" + device['idx']+'p').modal();
+    getGraphs(alldevices[idx], true);
+
+}
+
 //function showGraph(idx, title, deviceType, deviceSubType, label, range, current, forced, sensor, popup) {
-function showGraph(graphIdx) {
+function showGraph(graphIdx, selGraph) {
     var datasetColors = [ '#85c198', '#aed886','#f2e880','#9fb2c3',	'#7e88ba'];
 //    if (typeof(popup) === 'undefined') forced = false;
 //    if (typeof(forced) === 'undefined') forced = false;
     var myProperties = dtGraphs[graphIdx];
+    if(typeof selGraph!=='undefined') {
+        myProperties.range=selGraph;
+        myProperties.forced=true;
+    }
 
-    if (myProperties.lastRefreshTime < (time() - (parseFloat(_GRAPHREFRESH) * 60))) {
+    console.log(myProperties);
+
+    if (myProperties.lastRefreshTime < (time() - (parseFloat(_GRAPHREFRESH) * 60000))) {
+        console.log('set to true');
         myProperties.forced = true;
     }
 
-    if ($('.graphcurrent' + myProperties.idx).length > 0) {
-        $('.graphcurrent' + myProperties.idx).html(myProperties.current + ' ' + myProperties.label);
+    if ($('.graphcurrent' + myProperties.graphIdx).length > 0) {
+        $('.graphcurrent' + myProperties.graphIdx).html(myProperties.currentValue + ' ' + myProperties.txtUnit);
     }
 
+    var isInitial = (myProperties.range === 'initial');
+
     if (myProperties.forced || myProperties.popup) {
+        myProperties.forced = false;
+//        dtGraphs[graphIdx].lastRefreshTime = time();
         myProperties.lastRefreshTime = time();
-        //Check settings for standard graph
+//Check settings for standard graph
+        if (isInitial) {
+            switch (settings['standard_graph']) {
+                case 'hours':
+                        myProperties.range = 'last';
+                    break;
+                case 'day':
+                        myProperties.range = 'day';
+                    break;
+                case 'month':
+                        myProperties.range = 'month';
+                    break;
+            }
+        }
         myProperties.realrange = myProperties.range;
-        if (myProperties.realrange === 'last') myProperties.realrange = 'day';
+        var dataFilterCount = 0;
+        if (myProperties.range === 'last') {
+            myProperties.realrange = 'day';
+            dataFilterCount = 4;
+            dataFilterUnit = 'hours';
+        }
 
         var blocksConfig = typeof(blocks['graph_' + myProperties.idx]) !== 'undefined' ? blocks['graph_' + myProperties.idx] : null;
 
+        var method=1;
+        var _graphConfig=null;
+        if(blocksConfig) {
+            if (typeof(blocksConfig.method)!=='undefined') method = blocksConfig.method;
+            var customRange=false;
+            if(blocksConfig.hasOwnProperty("custom")) {
+                console.log("custom");
+                if (isInitial) {
+                    myProperties.range = Object.keys(blocksConfig.custom)[0];
+                    customRange=true;
+                    console.log('initital '+myProperties.range);
+                }
+                if (blocksConfig.custom.hasOwnProperty(myProperties.range)) {
+                    _graphConfig=blocksConfig.custom[myProperties.range];
+                    customRange=true;
+                    if( _graphConfig.hasOwnProperty("range")) {
+                        switch (_graphConfig.range) {
+                            case 'day':
+                            case 'month':
+                            case 'year':
+                                    myProperties.realrange = _graphConfig.range;
+                                break;
+                            case 'last':
+                                dataFilterCount = 4;
+                                dataFilterUnit = 'hours';
+                                myProperties.realrange = 'day';
+                                break;
+                            default:
+                                console.log('invalid range: ' + _graphConfig.range)
+
+                        }
+                    }
+                    if( _graphConfig.hasOwnProperty("filter")) {
+                        console.log('custom filter for ' + myProperties.range+': '+_graphConfig.filter);
+                        dataFilterCount = parseInt(_graphConfig.filter);
+                        dataFilterUnit = _graphConfig.filter.split(" ").splice(-1)[0];
+                    }
+                    if( _graphConfig.hasOwnProperty("method")) {
+                        method = _graphConfig.hasOwnProperty("method");
+                    }
+                }
+                if(!customRange){
+                    console.log('custom graph, but graph selector ' + myProperties.range + ' not found')
+                }
+    
+            } 
+        }
+
         $.ajax({
-            url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=graph&sensor=' + myProperties.sensor + '&idx=' + myProperties.idx + '&range=' + myProperties.realrange + '&method=1&time=' + new Date().getTime() + '&jsoncallback=?',
+            url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=graph&sensor=' + myProperties.sensor + '&idx=' + myProperties.idx + '&range=' + myProperties.realrange + '&method=' + method + '&time=' + new Date().getTime() + '&jsoncallback=?',
 //            url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=graph&sensor=' + sensor + '&idx=' + idx + '&range=' + realrange + '&time=' + new Date().getTime() + '&jsoncallback=?',
             type: 'GET', async: true, contentType: "application/json", dataType: 'jsonp',
             success: function (data) {
@@ -238,7 +351,12 @@ function showGraph(graphIdx) {
                     alert('Could not load graph!');
                     return;
                 }
-                var buttons = createButtons(graphIdx);
+
+                var ranges = ["last", "day", "month"];
+                if(customRange)
+                    ranges=Object.keys( blocksConfig.custom);
+                var buttons = createButtons(myProperties.graphIdx, myProperties.range, ranges, customRange);
+
                 var baseTitle = myProperties.title;
 
                 if (blocksConfig && typeof(blocksConfig['title']) !== 'undefined') {
@@ -246,7 +364,7 @@ function showGraph(graphIdx) {
                 }
 
                 title = '<h4>' + baseTitle;
-                if (typeof(myProperties.current) !== 'undefined' && myProperties.current !== 'undefined') title += ': <B class="graphcurrent' + myProperties.idx + '">' + myProperties.current + ' ' + myProperties.label + '</B>';
+                if (typeof(myProperties.currentValue) !== 'undefined' && myProperties.currentValue !== 'undefined') title += ': <B class="graphcurrent' + myProperties.idx + '">' + myProperties.currentValue + ' ' + myProperties.txtUnit + '</B>';
                 title += '</h4>';
 
                 var html = '<div class="graph' + (myProperties.popup ? 'popup' : '')  + '" id="graph' + myProperties.idx + '">';
@@ -260,15 +378,15 @@ function showGraph(graphIdx) {
                 html += title + '<br /><div style="margin-left:15px;">' + buttons + '</div><br />'
 //for morris
 //              html+='<div ' + (popup ? 'class="graphheight" ':'') +  'id="graphoutput' + idx + '"></div>';
-                html+='<canvas ' + (myProperties.popup ? 'class="graphheight" ':'') +  'id="graphoutput' + myProperties.idx + '"></canvas>';
+                html+='<canvas ' + (myProperties.popup ? 'class="graphheight" ':'') +  'id="graphoutput' + myProperties.graphIdx + '"></canvas>';
                 
                 html += '</div>';
                 html += '</div>';
 
-                if ($('#graph' + myProperties.idx + '.graph').length > 0) {
-                    $('#graph' + myProperties.idx + '.graph').replaceWith(html);
+                if ($('#graph' + myProperties.graphIdx + '.graph').length > 0) {
+                    $('#graph' + myProperties.graphIdx + '.graph').replaceWith(html);
                 }
-                $('.block_graph' + (myProperties.popup ? 'popup' : '') + '_' + myProperties.idx).html(html);
+                $('.block_graph' + (myProperties.popup ? 'popup' : '') + '_' + myProperties.graphIdx).html(html);
 
 /*
                 var graphProperties = {
@@ -350,145 +468,148 @@ function showGraph(graphIdx) {
                             makeMorrisGraph(idx, graphProperties);
                     }
                 }*/
-                var chartctx = document.getElementById('graphoutput' + myProperties.idx).getContext('2d');
+                var chartctx = document.getElementById('graphoutput' + myProperties.graphIdx).getContext('2d');
 
-               // Chart.defaults.line.backgroundColor = "#FFFFFF";
-//                Chart.defaults.global.defaultColor = rgba(1, 1, 1, 0.5);
-                if (myProperties.range === 'last') {
+                graphProperties = getDefaultGraphProperties();
+
+                $.extend(myProperties, getGraphProperties(data.result[0], graphIdx));
+
+                var mydatasets = [];
+
+/*                if (myProperties.range === 'last') {
                     var fourHoursAgo = moment().subtract(4, 'hours').format('YYYY-MM-DD HH:mm');
                     data.result = data.result.filter(function (element) {
                         return element.d > fourHoursAgo;
                     });
+                }*/
+
+                if (dataFilterCount>0) {
+                    console.log("filter " + dataFilterCount + dataFilterUnit);
+                    var startMoment = moment().subtract(dataFilterCount, dataFilterUnit).format('YYYY-MM-DD HH:mm');
+                    data.result = data.result.filter(function (element) {
+                        return element.d > startMoment;
+                    });
                 }
 
-                var mySet = new Set([]);
-                data.result.forEach (element => {
-                    Object.keys(element).forEach(el => {
-                        if(el!== 'd') mySet.add(el);
+                if(_graphConfig){
+                    //custom data sets
+                    console.log("custom dataset");
+                    $.extend(myProperties, getGraphProperties(data.result[0], graphIdx));
+   //                 $.extend(myProperties, myProperties);
+
+                    myProperties.ykeys=Object.keys(_graphConfig.data);
+                    console.log(myProperties.ykeys);
+
+                    
+                    myProperties.ykeys.forEach((element, index) => {
+                        var currentGraphType = myProperties.type;
+                        mydatasets[element]= {
+                            data: [],
+                            borderColor: datasetColors [index],
+                            borderWidth: 1,
+                            backgroundColor: "rgba(0,0,0,0)",
+                            pointRadius: 1,
+                        };
+
+                        if(_graphConfig.hasOwnProperty('type')) {
+                            mydatasets[element].type=_graphConfig.type;
+                            currentGraphType = _graphConfig.type;
+                        }
+
+                        if(currentGraphType == 'bar')
+                            mydatasets[element].backgroundColor= datasetColors [index];
+
                     })
-                });
-                myProperties.ykeys = [...mySet];
-                console.log(myProperties.ykeys);
 
-                $.extend(myProperties, getGraphProperties(data.result[0], graphIdx));
-                console.log(myProperties.ykeys);
-
-                graphProperties = {
-                    type: 'bar',
-                    data: {
-                        labels: [],
-                        datasets: []
-                    },
-                    options: {
-                        layout: {
-                            padding: {
-                                top: 20
-                            }
-                        },
-                        legend: {
-                            labels: {
-                                fontColor: "white",
-                                fontSize: 18
-                            },
-                            position: 'bottom'
-                      },
-                  
-                        scales: {
-                            yAxes: [{
-                                ticks: {
-                                  reverse: false,
-                                  fontColor: "white"
-                                },
-                                gridLines: {
-                                  color: 'rgba(255,255,255,0.2)', //give the needful color
-                                },
-                                scaleLabel: {
-                                    labelString: myProperties.ylabels[0],
-                                    display: true,
-                                    fontColor: 'white'                                    
+                    data.result.forEach(y => {
+                        var valid = false;
+                        myProperties.ykeys.forEach((_value, index) => {
+                            var customValue = _graphConfig.data[_value];
+                            var d={};
+                            for (key in y) {
+                                if(key!=='d')
+                                    d[key]=parseFloat(y[key]);
+                            };
+    
+                            try {
+                                res=eval(customValue);
+//                                console.log(d, customValue, res);
+                                valid=true;
+                                var datapoint = {
+                                    x: y.d,
+                                    y: res
                                 }
-                              }],
-                        
-                            xAxes: [{
-                                ticks: {
-                                    fontColor: "white"
-                                  },
-                                  gridLines: {
-                                    color: 'rgba(255,255,255,0.2)', //give the needful color
-                                    display: true,
-                                  },
-                                type: 'time',
-                                distribution: 'linear'
-                            }]
+                                mydatasets[_value].data.push(datapoint);
+                            }
+                            catch(error) {
+                                console.log("error in eval " + customValue);
+                                console.log(error);
+                            }
+                        });
+                        if(valid) graphProperties.data.labels.push(y.d);
+                    });
 
-                        },
-
-                    },
-
+                    if(_graphConfig.hasOwnProperty('type')) {
+                        console.log("setting type to ", _graphConfig.type)
+                        graphProperties.type = _graphConfig.type;
+                    }
                 }
 
+                else {
+                    var mySet = new Set([]);
+                    data.result.forEach (element => {
+                        Object.keys(element).forEach(el => {
+                            if(el!== 'd') mySet.add(el);
+                        })
+                    });
+                    myProperties.ykeys = [...mySet];
+                    console.log(myProperties.ykeys);
 
-                var mydatasets = [];
-                //first collect all unique keys
+                    $.extend(myProperties, getGraphProperties(data.result[0], graphIdx));
+                    console.log(myProperties.ykeys);
 
-                //ykeys = ['r1','r2','v', 'v2'];
-                //ykeys = [ 'v', 'eu'];
-                //ykeys = ['v'];
-                myProperties.ykeys.forEach((element, index) => {
-                    mydatasets[element]= {
-                        label: element + ' ' + myProperties.labels[index],
-                        data: [],
-                        borderColor: datasetColors [index],
-                        borderWidth: 1,
-                        backgroundColor: "rgba(0,0,0,0)",
-                        pointRadius: 1,
-                    };
-                    if(element!='eu' && element!='eg') {
-                        mydatasets[element].type='line'
-                    }
-                })
-                
-//                var factor=Math.trunc(data.result.length/100)+1;
-//                var filtered = 0;
-                data.result.forEach(element => {
-                    var valid = false;
-                    myProperties.ykeys.forEach(el => {
-                        if (element.hasOwnProperty(el)) {
-                            switch(el) {
-                                case 'eu':
-                                case 'eg':
-                                        mydatasets[el].data.push( 
-                                
-                                            {
-                                               x: element.d,
-                                               y: element[el]
-                                            });
-                                        break;
-                                default:
-                                    mydatasets[el].data.push(element[el]);
-                                    valid=true;
-                                    break;
-                            }
+                    myProperties.ykeys.forEach((element, index) => {
+                        mydatasets[element]= {
+                            data: [],
+                            borderColor: datasetColors [index],
+                            borderWidth: 1,
+                            backgroundColor: "rgba(0,0,0,0)",
+                            pointRadius: 1,
+                        };
+                        if(element!='eu' && element!='eg') {
+                            mydatasets[element].type='line'
                         }
                     });
 
-                    if(valid) graphProperties.data.labels.push(element.d);
-                });
-                    /*
-                    Object.keys(element).forEach(el => {
-                        if (ykeys.indexOf(el)>=0) {
-                            valid = true;
-                            mydatasets[el].data.push( 
-                                
-                             /*   {
-                                x: element.d,
-                                y: element[el]
-            }*//*
-                            element[el])
-                        }
-                        else
-                            mydatasets[el].data.push(null);
-                    });*/
+                    
+    //                var factor=Math.trunc(data.result.length/100)+1;
+    //                var filtered = 0;
+                    data.result.forEach(element => {
+                        var valid = false;
+                        myProperties.ykeys.forEach(el => {
+                            if (element.hasOwnProperty(el)) {
+                                switch(el) {
+                                    case 'eu':
+                                    case 'eg':
+                                            mydatasets[el].data.push( 
+                                    
+                                                {
+                                                x: element.d,
+                                                y: element[el]
+                                                });
+                                            break;
+                                    default:
+                                        mydatasets[el].data.push(element[el]);
+                                        valid=true;
+                                        break;
+                                }
+                            }
+                        });
+
+                        if(valid) graphProperties.data.labels.push(element.d);
+                    });
+                       
+                }
                 
                 console.log(mydatasets);
                 console.log("for each element of mydatasets");
@@ -496,9 +617,6 @@ function showGraph(graphIdx) {
                     console.log(element);
                     graphProperties.data.datasets.push(mydatasets[element]);  
                 });
-//                graphProperties.data.datasets.push(mydataset);
-//                graphProperties.data = mydataset;
-//                graphProperties.data.datasets = mydatasets;
                 console.log(graphProperties);
                 
                 var mychart  = new Chart(chartctx, graphProperties);
@@ -508,28 +626,84 @@ function showGraph(graphIdx) {
     }
 }
 
-function makeMorrisGraph(idx, graphProperties) {
-    Morris.Line(graphProperties);
+function getDefaultGraphProperties() {
+    return  {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: []
+        },
+        options: {
+            tooltips: {
+                mode: 'index'
+            },
+            layout: {
+                padding: {
+                    top: 20
+                }
+            },
+            legend: {
+                labels: {
+                    fontColor: "white",
+                    fontSize: 18
+                },
+                position: 'bottom',
+                display: false                        
+          },
+      
+            scales: {
+                yAxes: [{
+                    ticks: {
+                      reverse: false,
+                      fontColor: "white"
+                    },
+                    gridLines: {
+                      color: 'rgba(255,255,255,0.2)', //give the needful color
+                    },
+                    scaleLabel: {
+//                        labelString: myProperties.ylabels[0],
+//                        display: false,
+                        fontColor: 'white'                                    
+                    }
+                  }],
+            
+                xAxes: [{
+                    ticks: {
+                        fontColor: "white"
+                      },
+                      gridLines: {
+                        color: 'rgba(255,255,255,0.2)', //give the needful color
+                        display: true,
+                      },
+                    type: 'time',
+                    distribution: 'linear'
+                }]
+
+            },
+
+        },
+
+    }
 }
 
-function makeMorrisGraphBar(idx, graphProperties) {
-    Morris.Bar(graphProperties);
-}
 
-function createButtons(graphIdx) {
-    var myProperties = dtGraphs[graphIdx];
+function createButtons(graphIdx, selrange, ranges, customRange) {
+    console.log("Buildbuttons");
+    console.log(ranges);
     var buttons = '<div class="btn-group" role="group" aria-label="Basic example">';
-    buttons += '<button type="button" class="btn btn-default ';
-    if (myProperties.range === 'last') buttons += 'active';
-    buttons += '" onclick="showGraphHours(' + graphIdx +  ');">' + language.graph.last_hours + '</button> ';
 
-    buttons += '<button type="button" class="btn btn-default ';
-    if (myProperties.range === 'day') buttons += 'active';
-    buttons += '" onclick="showGraphDay(' + graphIdx +  ');">' + language.graph.today + '</button> ';
+    var btnTextList={
+        'last': language.graph.last_hours,
+        'day': language.graph.today,
+        'month': language.graph.last_month
+    }
 
-    buttons += '<button type="button" class="btn btn-default ';
-    if (myProperties.range === 'month') buttons += 'active';
-    buttons += '" onclick="showGraphMonth(' + graphIdx +  ');">' +language.graph.last_month + '</button>';
+    ranges.forEach(function(item) {
+        var btnText = customRange ? item: btnTextList[item];
+        buttons += '<button type="button" class="btn btn-default ';
+        if (selrange === item) buttons += 'active';
+        buttons += '" onclick="showGraph(' + graphIdx + ',\'' + item + '\');">' + btnText + '</button> ';
+    });
     buttons += '</div>';
 
     return buttons;
@@ -627,31 +801,31 @@ function getGraphProperties(result, graphIdx) {
         graphProperties = {
             ykeys: ['v2', 'v'],
             ylabels: [label, label],
-            labels: ['usage 2', 'usage 1'],
+            //labels: ['usage 2', 'usage 1'],
         };
         if (result.hasOwnProperty('r2')) {
             graphProperties.ykeys.push('r2');
             graphProperties.ylabels.push(label);
-            graphProperties.labels.push('delivery 2');
+            //graphProperties.labels.push('delivery 2');
         }
         if (result.hasOwnProperty('r1')) {
             graphProperties.ykeys.push('r1');
             graphProperties.ylabels.push(label);
-            graphProperties.labels.push('delivery 1');
+            //graphProperties.labels.push('delivery 1');
         }
     } else if (result.hasOwnProperty('v')) {
         if (label === 'kWh' && realrange === 'day') {
             graphProperties = {
                 ykeys: ['v'],
                 ylabels: ['W'],
-                labels: ['Power']
+               // labels: ['Power']
             }
         }
         else {
             graphProperties = {
                 ykeys: ['v'],
                 ylabels: [label],
-                labels: ['Energy']
+              //  labels: ['Energy']
             }
         }
 /*
