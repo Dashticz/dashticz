@@ -1,6 +1,7 @@
 -include Makefile.ini
 PORT?=8082
 APP?=dtv3-$(PORT)
+TZ?="$(shell cat /etc/timezone)"
 
 .PHONY: help
 help:
@@ -43,13 +44,12 @@ endif
 .PHONY: start
 start: testdocker testgit
 	@echo "Checking container $(APP)"
-#ifeq ($(strip shell sudo docker image -q $(APP)),)
 ifeq ($(shell sudo docker ps -q -a -f NAME=$(APP) ),)
 	@echo "Checking port $(PORT)"
 
 ifeq ($(shell ss -ln src :$(PORT) | grep -Ec -e "\<$(PORT)\>"),0)
-	sudo docker build -t $(APP) .
-	sudo docker run --name $(APP) -d -p $(PORT):80 --mount type=bind,source="$(CURDIR)",target=/var/www/html $(APP)
+	sudo docker build --build-arg tz=$(TZ) -t $(APP) .
+	sudo docker run  -v /etc/localtime:/etc/localtime:ro  --name $(APP) -d -p $(PORT):80 --mount type=bind,source="$(CURDIR)",target=/var/www/html $(APP)
 	@echo
 	@echo "Dashticz is running at:"
 	@printf "http://%s:`sudo docker inspect -f '{{ (index (index .NetworkSettings.Ports "80/tcp") 0).HostPort }}' $(APP)`\n" `hostname -I | grep -Po '\b(?:\d{1,3}\.){3}\d{1,3}\b'` 
