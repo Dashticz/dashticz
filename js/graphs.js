@@ -244,7 +244,7 @@ function showPopupGraph(idx, subidx) {
 
 //function showGraph(idx, title, deviceType, deviceSubType, label, range, current, forced, sensor, popup) {
 function showGraph(graphIdx, selGraph) {
-    var datasetColors = [ '#85c198', '#aed886','#f2e880','#9fb2c3',	'#7e88ba'];
+    var datasetColors = [ '#FFFFFF','#85c198', '#aed886','#f2e880','#9fb2c3',	'#7e88ba'];
 //    if (typeof(popup) === 'undefined') forced = false;
 //    if (typeof(forced) === 'undefined') forced = false;
     var myProperties = dtGraphs[graphIdx];
@@ -376,8 +376,6 @@ function showGraph(graphIdx, selGraph) {
 
                 html += '<div class="transbg col-xs-' + width + '">';
                 html += title + '<br /><div style="margin-left:15px;">' + buttons + '</div><br />'
-//for morris
-//              html+='<div ' + (popup ? 'class="graphheight" ':'') +  'id="graphoutput' + idx + '"></div>';
                 html+='<canvas ' + (myProperties.popup ? 'class="graphheight" ':'') +  'id="graphoutput' + myProperties.graphIdx + '"></canvas>';
                 
                 html += '</div>';
@@ -388,86 +386,7 @@ function showGraph(graphIdx, selGraph) {
                 }
                 $('.block_graph' + (myProperties.popup ? 'popup' : '') + '_' + myProperties.graphIdx).html(html);
 
-/*
-                var graphProperties = {
-                    parseTime: false,
-                    element: 'graphoutput' + idx,
-                    fillOpacity: 0.2,
-                    xkey: ['d'],
-                    ymin: 'auto',    
-                    ymax: 'auto',
-                    xLabelFormat: function (x) { return moment(x.src.d, 'YYYY-MM-DD HH:mm').locale(settings['calendarlanguage']).format(graphProperties.dateFormat); },
-                    lineColors: settings['lineColors'],
-                    barColors: settings['lineColors'],
-                    hideHover: 'auto',
-                    resize: true,
-                    hoverCallback: function (index, options, content, row) {
-                        var datePoint = moment(row.d, 'YYYY-MM-DD HH:mm').locale(settings['calendarlanguage']).format(graphProperties.dateFormat);
-                        var text = datePoint + ": ";
-                        graphProperties.ykeys.forEach(function (element, index) {
-                            text += (index > 0 ? ' / ' : '') + number_format(row[element], 2) + ' ' + graphProperties.labels[index];
-                        });
-                        return text;
-                    },
-                    pointFillColors:['none'],
-                    pointSize: settings['pointSize'],
-                    gridTextColor: '#fff', 
-                    lineWidth: 2,
-                    stacked: false
-                }
-                
-                var chartProperties = {
 
-                };
-                
-
-                $.extend(graphProperties, getGraphProperties(data.result[0], label));
-
-                if (blocksConfig && typeof(blocksConfig['graphTypes']) !== 'undefined') {
-                    graphProperties.ykeys = blocksConfig['graphTypes'];
-                }
-
-                graphProperties.dateFormat = settings['shorttime'];
-                if (range === 'month' || range === 'year') {
-                    graphProperties.dateFormat = settings['shortdate'];
-                }
-
-                if (range === 'last') {
-                    var fourHoursAgo = moment().subtract(4, 'hours').format('YYYY-MM-DD HH:mm');
-                    data.result = data.result.filter(function (element) {
-                        return element.d > fourHoursAgo;
-                    });
-                }
-                graphProperties.data = data.result.filter(function (element) {
-                    return element.hasOwnProperty(graphProperties.ykeys[0]);
-                });
-
-                if ($('#graphoutput' + idx).length > 0) {
-                    var graphtype='line';
-
-                    if (blocksConfig) {
-
-                        if (typeof(blocksConfig['graph']) !== 'undefined'){
-                            graphtype = blocksConfig.graph;
-                        }
-                        if (graphtype == 'bar') {
-                            graphProperties.lineWidth = 1;
-                            graphProperties.stacked = true;
-                            graphProperties.ymin = 0;
-                        }
-
-                        if(blocksConfig.graphProperties)
-                            $.extend(graphProperties, blocksConfig.graphProperties)
-                    }
-                        
-                    switch(graphtype) {
-                        case 'bar':
-                            makeMorrisGraphBar(idx,  graphProperties);
-                            break;
-                        default:
-                            makeMorrisGraph(idx, graphProperties);
-                    }
-                }*/
                 var chartctx = document.getElementById('graphoutput' + myProperties.graphIdx).getContext('2d');
 
                 graphProperties = getDefaultGraphProperties();
@@ -702,7 +621,7 @@ function createButtons(graphIdx, selrange, ranges, customRange) {
         var btnText = customRange ? item: btnTextList[item];
         buttons += '<button type="button" class="btn btn-default ';
         if (selrange === item) buttons += 'active';
-        buttons += '" onclick="showGraph(' + graphIdx + ',\'' + item + '\');">' + btnText + '</button> ';
+        buttons += '" onclick="showGraph(\'' + graphIdx + '\',\'' + item + '\');">' + btnText + '</button> ';
     });
     buttons += '</div>';
 
