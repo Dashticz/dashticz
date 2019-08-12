@@ -114,9 +114,11 @@ function getBlock(cols, c, columndiv, standby) {
                     continue;
                 }
             }
-            $(columndiv).append('<div id="block_' + myBlockNumbering + '"</div>');
+            var blockIndex = 'block_'+myBlockNumbering;
+            blockIndex += standby ? '_sb':'';
+            $(columndiv).append('<div id="' + blockIndex + '"</div>');
             var myIndex = myBlockNumbering++;
-            var myblockselector = '#block_' + myIndex;
+            var myblockselector = '#'+blockIndex;
             
             switch (typeof(cols['blocks'][b])) {
                 case 'object':
@@ -293,7 +295,7 @@ function handleStringBlock(block, columndiv, width, c) {
         case 'news':
             if (typeof(getNews) !== 'function') $.ajax({url: 'js/news.js', async: false, dataType: "script"});
             $(columndiv).append('<div data-id="news" class="news"></div>');
-            getNews('news', settings['default_news_url']);
+            getNews(columndiv, 'news', settings['default_news_url']);
             return;
         case 'log':
             if (typeof(getLog) !== 'function') $.ajax({url: 'js/log.js', async: false, dataType: "script"});
@@ -352,7 +354,7 @@ function handleStringBlock(block, columndiv, width, c) {
             if (block.substring(0, 5) === 'news_') {
                 if (typeof(getNews) !== 'function') $.ajax({url: 'js/news.js', async: false, dataType: 'script'});
                 $(columndiv).append('<div class="' + block + '"></div>');
-                getNews(block, blocks[block]['feed']);
+                getNews(columndiv, block, blocks[block]['feed']);
                 return;
             }
             $(columndiv).append('<div data-id="' + block + '" class="mh transbg block_' + block + '"></div>');
