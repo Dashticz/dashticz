@@ -4,8 +4,8 @@ function setSrcRss(cur) {
 
 $.ajax({url: 'vendor/jquery.newsTicker.min.js', async: false, dataType: 'script'});
 
-function getNews(divToFill, newsfeed) {
-    if (typeof(settings['default_news_url']) !== 'undefined') {
+function getNews(columndiv, blockdef, newsfeed) {
+    if (typeof(newsfeed) !== 'undefined' && newsfeed!=='') {
         // Some RSS feed doesn't load trough crossorigin.me or vice versa
         //$.ajax('https://crossorigin.me/'+newsfeed, {
         $.ajax(_CORS_PATH + newsfeed, {
@@ -16,16 +16,16 @@ function getNews(divToFill, newsfeed) {
             success: function (data) {
 
                 var width = 12;
-                if (typeof(blocks[divToFill]) !== 'undefined' && typeof(blocks[divToFill]['width']) !== 'undefined') width = blocks[divToFill]['width'];
+                if (typeof(blocks[blockdef]) !== 'undefined' && typeof(blocks[blockdef]['width']) !== 'undefined') width = blocks[blockdef]['width'];
 
                 var maxheight = 0;
-                if (typeof(blocks[divToFill]) !== 'undefined' && typeof(blocks[divToFill]['maxheight']) !== 'undefined') maxheight = blocks[divToFill]['maxheight'];
+                if (typeof(blocks[blockdef]) !== 'undefined' && typeof(blocks[blockdef]['maxheight']) !== 'undefined') maxheight = blocks[blockdef]['maxheight'];
 
                 var maxcss = '';
                 if (maxheight > 0) maxcss = ' style="max-height:' + maxheight + 'px;overflow:hidden;"';
 
                 var html = '<div class="col-xs-' + width + ' hover transbg" ' + maxcss + '><div class="col-xs-2 col-icon"><em class="fas fa-newspaper"></em></div><div class="col-xs-10">';
-                html += '<div id="rss-styled_' + divToFill + '"><ul id="newsTicker">';
+                html += '<div id="rss-styled_' + blockdef + '"><ul id="newsTicker">';
 
                 $(data).find('item').each(function () { // or "item" or whatever suits your feed
                     var el = $(this);
@@ -34,7 +34,7 @@ function getNews(divToFill, newsfeed) {
                 });
 
                 html += '</div></div></div>';
-                $('div.' + divToFill).replaceWith('<div class="' + divToFill + '">' + html + '</div>');
+                $(columndiv).replaceWith('<div class="' + blockdef + '">' + html + '</div>');
 
                 if ($('#rssweb').length === 0) {
                     var htmlRss = '<div class="modal fade" id="rssweb" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
@@ -52,7 +52,7 @@ function getNews(divToFill, newsfeed) {
                     $('body').append(htmlRss);
                 }
 
-                newsWrapper = $('#rss-styled_' + divToFill).easyTicker({
+                newsWrapper = $('#rss-styled_' + blockdef).easyTicker({
                     direction: 'up',
                     easing: 'lineair',
                     speed: 'slow',
@@ -62,13 +62,14 @@ function getNews(divToFill, newsfeed) {
                 }).data('easyTicker');
 
                 var maxHeight = -1;
+                if (typeof(blocks[blockdef]) !== 'undefined' && typeof(blocks[blockdef]['maxheight']) !== 'undefined') maxHeight = blocks[blockdef]['maxheight'];
 
-                $('#rss-styled_' + divToFill + ' li').each(function () {
+                $('#rss-styled_' + blockdef + ' li').each(function () {
                     maxHeight = maxHeight > $(this).height() ? maxHeight : $(this).height();
                 });
 
                 if(maxHeight > 0) {
-                  $('#rss-styled_' + divToFill).parents('.transbg').height(maxHeight);
+                  $('#rss-styled_' + blockdef).parents('.transbg').height(maxHeight);
                 }
             },error: function(data){
 		infoMessage('<font color="red">News Error!</font>','RSS feed ' + data.statusText +'. Check rss url.', 10000);
@@ -76,7 +77,7 @@ function getNews(divToFill, newsfeed) {
         });
 
         setTimeout(function () {
-          getNews(divToFill, newsfeed);
+          getNews(columndiv, blockdef, newsfeed);
         }, (60000 * 5));
     }
 }
