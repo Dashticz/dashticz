@@ -63,10 +63,24 @@ while "$retry"; do
 #        retry=true
 #    fi
 done
+
+#Checking whether git is installed
+printf "Checking for git: "
+if [ $(dpkg-query -W -f='${Status}' git 2>/dev/null | grep -c "ok installed") -eq 0 ];
+then
+  echo "Ïnstalling ..."
+  sudo apt-get install git || { echo Error. Something went wrong. Exiting; exit 1; } 
+else
+    echo "[OK!]"
+fi
+
+
+
+
 echo
 echo "Now cloning the Dashticz repository $REPOSITORY"
 echo 
-git clone "$REPOSITORY" -b "$BRANCH" "$NAME" || ( echo Error. Something went wrong. Exiting; exit 1 )
+git clone "$REPOSITORY" -b "$BRANCH" "$NAME" || { echo Error. Something went wrong. Exiting; exit 1; }
 echo
 cd "$NAME"
 chmod a+rX .
@@ -76,7 +90,7 @@ printf "Checking for make: "
 if [ $(dpkg-query -W -f='${Status}' make 2>/dev/null | grep -c "ok installed") -eq 0 ];
 then
   echo "Ïnstalling ..."
-  sudo apt-get install make || ( echo Error. Something went wrong. Exiting; exit 1 ) ; 
+  sudo apt-get install make || { echo Error. Something went wrong. Exiting; exit 1; } 
 else
     echo "[OK!]"
 fi
@@ -117,7 +131,7 @@ echo "PORT=$PORT" >> Makefile.ini
 echo
 echo "Starting make process ..."
 echo
-make start || ( echo "Error during Make. Exiting"; exit 1 )
+make start || { echo "Error during Make. Exiting"; exit 1; }
 echo
 
 statusok=true
