@@ -2,6 +2,7 @@
 PORT?=8082
 APP?=dtv3-$(PORT)
 TZ?="$(shell cat /etc/timezone)"
+CHECKDOCKER?=true
 
 .PHONY: help
 help:
@@ -17,9 +18,11 @@ help:
 	@echo "make master  : Switch to the master branch"
 
 testdocker:
+ifeq ($(CHECKDOCKER),true)
 ifeq (, $(shell which docker))
 	@echo "Let's install docker first"
 	wget -qO- https://get.docker.com/ | sh	
+endif
 endif
 
 
