@@ -179,7 +179,7 @@ function getGraphs(device, popup) {
 }
 
 function getGraphByIDX(idx) {
-    console.log("getGraphbyIDX "+idx);
+//    console.log("getGraphbyIDX "+idx);
     getGraphs(alldevices[idx], true);
 }
 
@@ -212,7 +212,7 @@ function getButtonGraphs(device) {
 }
 
 function showPopupGraph(idx, subidx) {
-    console.log('showPopupGraph '+idx);
+//    console.log('showPopupGraph '+idx);
     var device=alldevices[idx];
     if ($('#opengraph' + device['idx']).length === 0) {
         var html = '<div class="modal fade opengraph' + device['idx'] +'p'+ '" data-idx="' + device['idx'] + '" id="opengraph' + device['idx']+'p' + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
@@ -253,10 +253,9 @@ function showGraph(graphIdx, selGraph) {
         myProperties.forced=true;
     }
 
-    console.log(myProperties);
+//    console.log(myProperties);
 
     if (myProperties.lastRefreshTime < (time() - (parseFloat(_GRAPHREFRESH) * 60000))) {
-        console.log('set to true');
         myProperties.forced = true;
     }
 
@@ -300,11 +299,11 @@ function showGraph(graphIdx, selGraph) {
             if (typeof(blocksConfig.method)!=='undefined') method = blocksConfig.method;
             var customRange=false;
             if(blocksConfig.hasOwnProperty("custom")) {
-                console.log("custom");
+//                console.log("custom");
                 if (isInitial) {
                     myProperties.range = Object.keys(blocksConfig.custom)[0];
                     customRange=true;
-                    console.log('initital '+myProperties.range);
+//                    console.log('initital '+myProperties.range);
                 }
                 if (blocksConfig.custom.hasOwnProperty(myProperties.range)) {
                     _graphConfig=blocksConfig.custom[myProperties.range];
@@ -327,7 +326,7 @@ function showGraph(graphIdx, selGraph) {
                         }
                     }
                     if( _graphConfig.hasOwnProperty("filter")) {
-                        console.log('custom filter for ' + myProperties.range+': '+_graphConfig.filter);
+//                        console.log('custom filter for ' + myProperties.range+': '+_graphConfig.filter);
                         dataFilterCount = parseInt(_graphConfig.filter);
                         dataFilterUnit = _graphConfig.filter.split(" ").splice(-1)[0];
                     }
@@ -390,6 +389,9 @@ function showGraph(graphIdx, selGraph) {
                 var chartctx = document.getElementById('graphoutput' + myProperties.graphIdx).getContext('2d');
 
                 graphProperties = getDefaultGraphProperties();
+                $.extend(true, graphProperties,blocksConfig); 
+
+                console.log(" block merge ", blocksConfig, graphProperties);
 
                 $.extend(myProperties, getGraphProperties(data.result[0], graphIdx));
 
@@ -403,7 +405,7 @@ function showGraph(graphIdx, selGraph) {
                 }*/
 
                 if (dataFilterCount>0) {
-                    console.log("filter " + dataFilterCount + dataFilterUnit);
+//                    console.log("filter " + dataFilterCount + dataFilterUnit);
                     var startMoment = moment().subtract(dataFilterCount, dataFilterUnit).format('YYYY-MM-DD HH:mm');
                     data.result = data.result.filter(function (element) {
                         return element.d > startMoment;
@@ -412,12 +414,12 @@ function showGraph(graphIdx, selGraph) {
 
                 if(_graphConfig){
                     //custom data sets
-                    console.log("custom dataset");
+//                    console.log("custom dataset");
                     $.extend(myProperties, getGraphProperties(data.result[0], graphIdx));
-   //                 $.extend(myProperties, myProperties);
+                    $.extend(myProperties, myProperties);
 
                     myProperties.ykeys=Object.keys(_graphConfig.data);
-                    console.log(myProperties.ykeys);
+//                    console.log(myProperties.ykeys);
 
                     
                     myProperties.ykeys.forEach((element, index) => {
@@ -428,6 +430,7 @@ function showGraph(graphIdx, selGraph) {
                             borderWidth: 1,
                             backgroundColor: "rgba(0,0,0,0)",
                             pointRadius: 1,
+                            label: element
                         };
 
                         if(_graphConfig.hasOwnProperty('type')) {
@@ -472,6 +475,9 @@ function showGraph(graphIdx, selGraph) {
                         console.log("setting type to ", _graphConfig.type)
                         graphProperties.type = _graphConfig.type;
                     }
+                    console.log("Merging ", _graphConfig);
+                    $.extend(true, graphProperties, _graphConfig); //merge the custom settings.
+
                 }
 
                 else {
@@ -482,10 +488,10 @@ function showGraph(graphIdx, selGraph) {
                         })
                     });
                     myProperties.ykeys = [...mySet];
-                    console.log(myProperties.ykeys);
+//                    console.log(myProperties.ykeys);
 
                     $.extend(myProperties, getGraphProperties(data.result[0], graphIdx));
-                    console.log(myProperties.ykeys);
+//                    console.log(myProperties.ykeys);
 
                     myProperties.ykeys.forEach((element, index) => {
                         mydatasets[element]= {
@@ -527,13 +533,13 @@ function showGraph(graphIdx, selGraph) {
 
                         if(valid) graphProperties.data.labels.push(element.d);
                     });
-                       
+                    
                 }
                 
-                console.log(mydatasets);
-                console.log("for each element of mydatasets");
+//                console.log(mydatasets);
+//                console.log("for each element of mydatasets");
                 Object.keys(mydatasets).forEach(element => {
-                    console.log(element);
+//                    console.log(element);
                     graphProperties.data.datasets.push(mydatasets[element]);  
                 });
                 console.log(graphProperties);
@@ -581,7 +587,8 @@ function getDefaultGraphProperties() {
                     },
                     scaleLabel: {
 //                        labelString: myProperties.ylabels[0],
-//                        display: false,
+                        labelString: 'Default',
+                        display: true,
                         fontColor: 'white'                                    
                     }
                   }],
@@ -607,8 +614,8 @@ function getDefaultGraphProperties() {
 
 
 function createButtons(graphIdx, selrange, ranges, customRange) {
-    console.log("Buildbuttons");
-    console.log(ranges);
+//    console.log("Buildbuttons");
+//    console.log(ranges);
     var buttons = '<div class="btn-group" role="group" aria-label="Basic example">';
 
     var btnTextList={
@@ -774,4 +781,3 @@ function getGraphProperties(result, graphIdx) {
     }
     return graphProperties;
 }
-
