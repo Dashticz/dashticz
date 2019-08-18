@@ -113,5 +113,17 @@ Save the file and restart Apache::
 Now if you browse to Dashticz you get a prompt to enter your login credentials.
 
 
+Use of Web Fonts
+----------------
+Add the following to custom.js::
+
+    $('<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Orbitron" />').appendTo('head');
+
+Add the following to custom.css::
+
+    .webfont {
+        font-family : orbitron;
+        }
+
 
   
