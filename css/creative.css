@@ -600,7 +600,10 @@ a.playlist {
     color: #bbb;
 		white-space:nowrap
 }
-.graphpopup {overflow:hidden;}
+.graphpopup {
+	overflow:hidden;
+	background-color: darkgray
+}
 
 /*To change the default height of the graph popup adapt the height value*/
 .graphheight {
