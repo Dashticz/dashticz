@@ -67,7 +67,7 @@ Parameters
       | ``'irail'`` Belgium 
       | ``'delijn'`` Belgium
   * - destination
-    - | Set the end destination to filter the direction
+    - | Set the end destination station name to filter the direction. 
       | ``'Den Haag De Uithof,Den Haag Loosduinen'``
   * - service
     - | Set the specific services (Dutch: lijnnummers) to further filter the result
@@ -145,6 +145,20 @@ Then copy the id, and add to CONFIG.js as follows::
     };
 
 As you can see in the previous example specific transport types can be selected.
+
+In the next example only the trains to Schiphol Airport and Maastricht will be shown::
+
+    //example station id: station-eindhoven
+    var publictransport = {}
+    publictransport.schiphol= {
+    station: 'station-eindhoven',
+    destination: 'Schiphol Airport,Maastricht',
+    provider: '9292-train',
+    show_lastupdate:false,
+    icon: 'train',
+    results: 7
+    };
+    
 
 .. _predefpubtrans :
 
