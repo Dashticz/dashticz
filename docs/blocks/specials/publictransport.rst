@@ -15,7 +15,7 @@ Dashticz currently supports the following types of public transport info:
 
 #. Predefined blocks, see :ref:`predefpubtrans`
 
-   * ``'traffic'``. Traffic info from `Rijkswaterstaat Verkeersinfo <https://rijkswaterstaatverkeersinformatie.nl//>`_ (Netherlands)
+   * ``'traffic'``. Traffic info from `Rijkswaterstaat Verkeersinfo <https://rijkswaterstaatverkeersinformatie.nl/>`_ (Netherlands)
    * ``'train'``. Train status from `Rijden de Treinen <https://www.rijdendetreinen.nl/>`_ (Netherlands)
 
 A public transport block can be configured as follows::
@@ -146,17 +146,28 @@ Then copy the id, and add to CONFIG.js as follows::
 
 As you can see in the previous example specific transport types can be selected.
 
-In the next example only the trains to Schiphol Airport and Maastricht will be shown::
+In the next examples only the filtered results will be shown::
 
-    //example station id: station-eindhoven
     var publictransport = {}
     publictransport.schiphol= {
-    station: 'station-eindhoven',
-    destination: 'Schiphol Airport,Maastricht',
-    provider: '9292-train',
-    show_lastupdate:false,
-    icon: 'train',
-    results: 7
+      station: 'station-eindhoven',
+      destination: 'Schiphol Airport,Maastricht',
+      provider: '9292-train',
+      show_lastupdate:false,
+      icon: 'train',
+      results: 7
+    };
+    publictransport.ovinfotram = { 
+      show_via: true, 
+      station: 'den-haag/tramhalte-metrostation-leidschenveen', 
+      title:'Station Leidschenveen', 
+      destination:'Den Haag De Uithof,Den Haag Loosduinen', 
+      service:'3,4', 
+      provider: '9292-tram-bus', 
+      show_lastupdate:true, 
+      icon: 'bus', 
+      width:12, 
+      results: 8 
     };
     
 
