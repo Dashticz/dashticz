@@ -523,6 +523,24 @@ a.playlist {
 	top: 0px;
 }
 
+.titlegroups h3 {
+	margin-left: 0px;
+}
+
+.titlegroups .co-data {
+	margin-top: 0px;
+	top: 50%;
+	-ms-transform: translateY(-50%);
+	transform: translateY(-50%);
+
+}
+
+.titlegroups .col-icon {
+	margin-top: 0;
+	top: 40%;
+	-ms-transform: translateY(-50%);
+	transform: translateY(-50%);
+}
 
 .up,.down {
 	height: 50%;

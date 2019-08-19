@@ -102,18 +102,18 @@ function getBlock(cols, c, columndiv, standby) {
                     width = 8;
                     break;
             }
-            if (typeof(blocks[cols['blocks'][b]]) !== 'undefined' && typeof(blocks[cols['blocks'][b]]['width']) !== 'undefined') width = blocks[cols['blocks'][b]]['width'];
+            var blockdef = null;
+            if(typeof (blocks[cols['blocks'][b]]) !== 'undefined')
+                blockdef = blocks[cols['blocks'][b]];
+            if (blockdef && typeof(blockdef.width) !== 'undefined') width = blockdef.width;
 
-            var blocktype = '';
-            if (typeof(blocks[cols['blocks'][b]]) !== 'undefined' && typeof(blocks[cols['blocks'][b]]['type']) !== 'undefined') {
-                blocktype = blocks[cols['blocks'][b]]['type'];
-                if (blocktype === 'blocktitle') {
-                    $(columndiv).append('<div data-id="' + cols['blocks'][b] + '" class="col-xs-' + width + ' mh titlegroups transbg">' +
-                        '<h3>' + blocks[cols['blocks'][b]]['title'] + '</h3>' +
-                        '</div>');
+            if (blockdef &&
+                typeof(blockdef.type) !== 'undefined' &&
+                blockdef.type === 'blocktitle') {
+                    $(columndiv).append(handleBlocktitle(cols['blocks'][b], blockdef, width));
                     continue;
-                }
             }
+
             var blockIndex = 'block_'+myBlockNumbering;
             blockIndex += standby ? '_sb':'';
             $(columndiv).append('<div id="' + blockIndex + '"</div>');
@@ -135,6 +135,26 @@ function getBlock(cols, c, columndiv, standby) {
             }
         }
     }
+}
+
+function handleBlocktitle(idx, blockdef, width) {
+    var html= '<div data-id="' + idx + '" class="col-xs-' + width + ' mh titlegroups transbg">';
+    var data_width=12;
+    var data_class = 'col-data no-icon';
+    if (blockdef &&
+        ( ( typeof (blockdef.icon) !== 'undefined') ||
+          (typeof (blockdef.image) !== 'undefined')
+        )
+       ) {
+           data_width = 8;
+           data_class = 'col-data';
+           html += iconORimage(idx,'','','icon','',4,'');
+    }
+    html += '<div class="col-xs-' + data_width + ' '+data_class+'">';
+    html += '<h3>' + blockdef.title + '</h3>';
+    html += '</div>';
+    html += '</div>';
+    return html;
 }
 
 function handleStringBlock(block, columndiv, width, c) {
