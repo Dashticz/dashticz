@@ -73,7 +73,7 @@ Parameters
     - | Set the specific services (Dutch: lijnnummers) to further filter the result
       | ``'3,4'`` (comma seperated)
   * - show_via
-    - ``false`` , ``true``. To display via routes to station. Does not work with all providers.
+    - ``false`` , ``true``. Hide the via-part.
   * - icon
     - | The font-awesome icon (without ``fas fa-``)
       | ``'bus'``, ``'tram'``, ``'train'``, ``'ship'``, ``'subway'``, ...
