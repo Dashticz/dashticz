@@ -249,20 +249,30 @@ With the openpopup, openpopupOn and openpopupOff parameter you can configure to 
 
   blocks[123]['openpopup'] = {
       url: 'http://www.urltocamera.nl/image.jpg',   //Open a popup window with this url when the device changes
+      framewidth:500,                               //specific width of the frame
+      frameheight:400,                              //specific height of the frame
       autoclose: 5                                  //autoclose the popup window after 5 seconds.
   } 
   
   blocks[123]['openpopupOn'] = {
       url: 'http://www.urltocamera.nl/image.jpg',   //Open a popup window with this url when the device changes to On
+      framewidth:500,                               //specific width of the frame
+      frameheight:400,                              //specific height of the frame
       autoclose: 5                                  //autoclose the popup window after 5 seconds.
   } 
   
   blocks[123]['openpopupOff'] = {
       url: 'http://www.urltocamera.nl/image.jpg',   //Open a popup window with this url when the device changes to Off
+      framewidth:500,                               //specific width of the frame
+      frameheight:400,                              //specific height of the frame
       autoclose: 5                                  //autoclose the popup window after 5 seconds.
   } 
-  
-  
+
+To remove the close button of the block-popup add the following text to custom.css::
+
+  .frameclose { display: none; }
+
+
 .. _Flashonchange:
 
 Flash on change
@@ -289,6 +299,20 @@ Graphs
 ~~~~~~
 If your Domoticz device contains a value (temperature, humidity, power, etc.)
 then when you click on the block a popup window will appear showing a graph of the values of the device.
+
+To change the default size of the graph popup windows add the following style blocks to your custom.css::
+
+    .graphheight {
+      height: 400px;
+    }
+    
+    .graphwidth {
+      width: 400px;
+    }
+
+To remove the close button of the graph popup add the following text to custom.css::
+
+    .graphclose { display: none; }
 
 Besides popup graphs it's also possible to show the graph directly on the dashboard itself,
 by adding the graph-id to a column definition as follows::
