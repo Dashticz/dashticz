@@ -15,7 +15,7 @@ Dashticz currently supports the following types of public transport info:
 
 #. Predefined blocks, see :ref:`predefpubtrans`
 
-   * ``'traffic'``. Traffic info from `Rijkswaterstaat Verkeersinfo <https://rijkswaterstaatverkeersinformatie.nl//>`_ (Netherlands)
+   * ``'traffic'``. Traffic info from `Rijkswaterstaat Verkeersinfo <https://rijkswaterstaatverkeersinformatie.nl/>`_ (Netherlands)
    * ``'train'``. Train status from `Rijden de Treinen <https://www.rijdendetreinen.nl/>`_ (Netherlands)
 
 A public transport block can be configured as follows::
