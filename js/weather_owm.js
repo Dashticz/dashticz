@@ -1,7 +1,7 @@
 function loadWeather(location, country) {
     var html = '';
     if (typeof(settings['owm_api']) !== 'undefined' && settings['owm_api'] !== '' && settings['owm_api'] !== 0) {
-		var site = 'http://api.openweathermap.org/data/2.5/weather?q=' + settings['owm_city'] + ',' + settings['owm_country'] + '&appid=' + settings['owm_api'];
+		var site = 'https://api.openweathermap.org/data/2.5/weather?q=' + settings['owm_city'] + ',' + settings['owm_country'] + '&appid=' + settings['owm_api'];
 
         if (settings['use_fahrenheit'] === 1) {
             site += '&units=imperial';
@@ -49,7 +49,7 @@ function loadWeatherFull(location, country) {
               containsweatherfull += '<div class="col-xs-2 transbg" style="width: ' + Math.round(1/cntSetting*100) + '%"></div>';
         }
         $('div.containsweatherfull').html('<div class="weatherfull">' + containsweatherfull + '</div>');
-		var site = 'http://api.openweathermap.org/data/2.5/forecast?q=' + settings['owm_city'] + ',' + settings['owm_country'] + '&appid=' + settings['owm_api'] + '&lang=' + settings['owm_lang'];
+		var site = 'https://api.openweathermap.org/data/2.5/forecast?q=' + settings['owm_city'] + ',' + settings['owm_country'] + '&appid=' + settings['owm_api'] + '&lang=' + settings['owm_lang'];
 
         if (settings['use_fahrenheit'] === 1) {
             site += '&units=imperial';
