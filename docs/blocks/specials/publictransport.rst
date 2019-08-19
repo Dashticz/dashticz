@@ -15,7 +15,7 @@ Dashticz currently supports the following types of public transport info:
 
 #. Predefined blocks, see :ref:`predefpubtrans`
 
-   * ``'traffic'``. Traffic info from Rijkswaterstaat (Netherlands)
+   * ``'traffic'``. Traffic info from `Rijkswaterstaat Verkeersinfo <https://rijkswaterstaatverkeersinformatie.nl//>`_ (Netherlands)
    * ``'train'``. Train status from `Rijden de Treinen <https://www.rijdendetreinen.nl/>`_ (Netherlands)
 
 A public transport block can be configured as follows::
@@ -27,6 +27,7 @@ A public transport block can be configured as follows::
      title:'OV Info',
      show_lastupdate:true,
      provider: '9292',
+     show_via: true,
      icon: 'train',
      results: 5
    };
@@ -71,6 +72,8 @@ Parameters
   * - service
     - | Set the specific services (Dutch: lijnnummers) to further filter the result
       | ``'3,4'`` (comma seperated)
+  * - show_via
+    - ``false`` , ``true``. To display via routes to station. Does not work with all providers.
   * - icon
     - | The font-awesome icon (without ``fas fa-``)
       | ``'bus'``, ``'tram'``, ``'train'``, ``'ship'``, ``'subway'``, ...
@@ -99,6 +102,7 @@ Use this station id as value for the station parameter in the publictransport bl
       title:'Trains',
       show_lastupdate:true,
       provider: 'VVS',
+      show_via: true,
       icon: 'train',
       interval: 15,
       results: 5
@@ -119,6 +123,7 @@ Then copy the id, and add to CONFIG.js as follows::
       title:'OV Info',
       show_lastupdate:true,
       provider: '9292',
+      show_via: true,
       icon: 'train',
       results: 5
     };
