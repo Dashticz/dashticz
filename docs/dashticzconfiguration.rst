@@ -220,8 +220,8 @@ Usage
 
 .. _dom_CORS_proxy:
 
-CORS proxy
-------------
+PHP based CORS proxy
+--------------------
 
 To be able to load resources from other domains, like tvguide data and news updates, we need a CORS proxy (Cross Origin Resouce Sharing). Public CORS proxies exist on the internet, like cors-anywhere.herokuapp.com. These public CORS proxies might be slow or not available at all.
 
