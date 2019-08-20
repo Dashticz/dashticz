@@ -40,13 +40,19 @@ Example::
 Variables
 ---------
 
-To select a Domoticz variable add 'v' in front of the Domoticz variable ID.
+To select a Domoticz variable add 'v' in front of the Domoticz variable ID. 
 
 Example::
 
     blocks['v3'] = {    //Select variable with Domoticz index 3
       title: 'My variable 3'
     }
+
+After that you can use ``'v3'`` in your column definitions in ``CONFIG.js`` as usual.
+
+A list of all Domoticz variables can be obtained via::
+
+    http://[DomoticzIP:Port]/json.htm?type=command&param=getuservariables
 
 
 .. _dom_blockparameters:
