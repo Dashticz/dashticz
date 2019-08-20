@@ -72,7 +72,7 @@ Block parameters
   * - title
     - ``'<string>'``: Custom title for the block
   * - icon
-    - | Defines alternative icon of the device instead of the default, choose from: https://fontawesome.com/v4.7.0/icons/
+    - | Defines alternative icon of the device instead of the default, choose from: https://fontawesome.com/icons?d=gallery&m=free
       | ``'fas fa-eye'``
   * - image
     - | If you want to show an image instead of an icon, place image in ``img/`` folder
@@ -175,12 +175,15 @@ Usage
 Block title
 ~~~~~~~~~~~
 
-A special block type is a block title. A block title only contains a title element.
+A special block type is a block title.
 You define a block title as follows::
 
   blocks['blocktitle_1'] = {  //'blocktitle_1' must be an unique name
-    type: 'blocktitle',       //Set type to 'blocktitle'
-    title: 'Switches'         //The title of the block as shown in the dashboard.
+    type: 'blocktitle',       //Set type to 'blocktitle' (required for block title)
+    title: 'Switches',        //The title of the block as shown in the dashboard.
+    width: 6,                 //The width of the block relative to the column width
+    icon: 'far fa-lightbulb', //If you want  to show an icon, choose from: https://fontawesome.com/icons?d=gallery&m=free
+    image: 'lightbulb.png'    //If you want to show an image instead if icon, place image in img/ folder    
   }
   
 Full example of one block title and two devices::
@@ -234,7 +237,7 @@ Example of a more extensive block definition::
     blocks[1] = {
       width: 4,               //1 to 12, remove this line if you want to use the default (4)
       title : 'Living room',  //if you want change the name of switch different then domoticz
-      icon : 'fa-eye',        //if you want an other icon instead of the default, choose from: https://fontawesome.com/v4.7.0/icons/
+      icon : 'fa-eye',        //if you want an other icon instead of the default, choose from: https://fontawesome.com/icons?d=gallery&m=free
       image : 'bulb_off.png', //if you want to show an image instead if icon, place image in img/ folder
       switch : true,          //if you want to switch the title and data
       hide_data : true,       //if you want to hide the data of this block
