@@ -344,3 +344,16 @@ Lightbulbs color & Opacity
     .fas.fa-lightbulb {
         color: rgba(0,255,0,0.4)
     }
+
+
+Miscellaneous
+-------------
+
+Remove Swiper Pagination Bullet
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    .swiper-pagination-bullet {
+        display: none !important
+    }
