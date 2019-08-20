@@ -220,7 +220,17 @@ Usage
 
 .. _dom_CORS_proxy:
 
-CORS proxy
-------------
+PHP based CORS proxy
+--------------------
 
-Text to be added ...
+To be able to load resources from other domains, like tvguide data and news updates, we need a CORS proxy (Cross Origin Resouce Sharing). Public CORS proxies exist on the internet, like cors-anywhere.herokuapp.com. These public CORS proxies might be slow or not available at all.
+
+A basic PHP based CORS proxy has been integrated into Dashticz.
+
+For normal use just remove the ``config['default_cors_url']`` from your ``CONFIG.js`` and the internal CORS proxy will be used.
+
+If you prefer to use a different CORS proxy you can define it in ``CONFIG.js`` as usual::
+
+    config['default_cors_url'] = 'http://cors-anywhere.herokuapp.com'
+
+In case PHP is not installed it falls back to the defined CORS proxy in ``config['default_cors_url']``. In case ``config['default_cors_url']`` is not set, it will use ``cors-anywhere.herokuapp.com`` by default.
