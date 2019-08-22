@@ -447,7 +447,9 @@ function showGraph(graphIdx, selGraph) {
                             backgroundColor: myProperties.datasetColors [index],
                             fill: false,
                             pointRadius: 1,
-                            label: element
+                            label: element,
+                            yAxisID : myProperties.ylabels[index]
+
                         };
 
                         if(_graphConfig.hasOwnProperty('graph')) {
@@ -609,6 +611,21 @@ function showGraph(graphIdx, selGraph) {
                     labelLeft = !labelLeft;
                 })
                 
+               
+                //extend the y label with all dataset labels
+                 if (graphProperties.options.scales.yAxes.length>1) {
+                    graphProperties.options.scales.yAxes.filter( element => {  //filter the ylabels that have an initial label  
+                        return typeof element.scaleLabel.labelString !== "undefined"
+                    }).forEach( yAxis => {
+                        yAxis.scaleLabel.labelString = graphProperties.data.datasets.filter( dataset => {
+                            return dataset.yAxisID === yAxis.id;
+                        })
+                        .reduce( function (newlabelString, dataset)  {
+                            return dataset.label + ' ' + newlabelString;
+                        },  '('+yAxis.scaleLabel.labelString+')');
+                    })
+                }
+
                 if(typeof myProperties.legend !== 'undefined') {
                     if (typeof myProperties.legend == 'array') {
                         myProperties.legend.forEach( function(element, idx) {

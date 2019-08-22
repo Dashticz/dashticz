@@ -49,10 +49,6 @@ The following block parameters can be used to configure the graph:
   * - custom
     - Customized graph. See below for examples
 
-With the ``graph`` parameter you can define the graph type (``line`` for a line graph and ``bar`` for a bar graph)
-
-In case of multi-value devices, like temp-hum-bar, you can select the data to show in the graph via the ``graphTypes`` parameter.
-
 We will show the possibilities by showing a:
 
 * Simple energy device (Solar panel)
@@ -60,7 +56,7 @@ We will show the possibilities by showing a:
 * P1 Smart Meter
 
 Simple energy device
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 The solar panel device has device id 6. First we add it to a column without any additional configuration parameters,
 to show the default result::
@@ -119,7 +115,30 @@ After pressing the 'Month' button on the popup graph:
 
 .. image :: img/solar_custom_legend.jpg
 
+Climate device
+--------------
+First let's add a climate device with Domoticz ID 659 to a column::
 
+    columns[3]['blocks'] = [
+        'graph_659'
+    ]
+
+This will show the graph directly on the Dashticz dashboard:
+
+.. image :: img/climate.jpg
+
+As you can see the climate device has three subdevices (temperature, humidity, pressure).
+Since these are different properties three Y axes are being created.
+
+If you prefer to only see the temperature and humidity add a block definition::
+
+    blocks['graph_659'] = {
+        graphTypes : ['te', 'hu'],
+        legend: true
+    }
+
+
+.. image :: img/climate_te_hu.jpg
 
 Examples::
 
