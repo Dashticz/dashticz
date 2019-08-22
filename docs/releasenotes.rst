@@ -2,6 +2,10 @@ Release Notes
 =============
 A link to the release notes will be posted in the Dashticz support forum. The total overview can be found below.
 
+Latest changes
+--------------
+  * OpenWeatherMap module: support for using the city id as city name
+
 3.0.5 (4-8-2019)
 ------------------
   * Update of documentation.
