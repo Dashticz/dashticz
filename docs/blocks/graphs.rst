@@ -160,10 +160,10 @@ This gives:
 That doesn't tell too much. However, this are the value names as provided by Domoticz.
 Now you have to know that a P1 power meter has 4 values:
 
-  * Power usage tariff 1
-  * Power usage tariff 2
-  * Power delivery tariff 1
-  * Power delivery tariff 2
+* Power usage tariff 1
+* Power usage tariff 2
+* Power delivery tariff 1
+* Power delivery tariff 2
 
 The first two represent the energy that flows into your house. The last two represent the energy that your house delivers back to the grid.
 
@@ -182,8 +182,9 @@ Resulting in:
 .. image :: img/p1_legend_2.jpg
 
 However what I would like to see is:
+
 * The sum of Usage 1 and Usage 2
-* The sum of Return 1 and Return 2, but than negative
+* The sum of Return 1 and Return 2, but then negative
 * A line to show the nett energy usage: Usage 1 + Usage 2 - Return 1 - Return
 * The usage and return data should be presented as bars. The nett energy as a line.
 
@@ -195,60 +196,75 @@ Custom graphs
 I use the P1 smart meter as an example again to demonstrate how to create custom graphs. First the code and result.
 The explanation will follow after that::
 
-
-
-Examples::
-
-    // To show the temperature values of device 658
-    // in a popup graph
-    blocks[658] = {
-      graphTypes: ['te']
-    }
-    
-    // To show the barometer values of device 659
-    // on the dashboard directly
-    blocks['graph_659'] = {
-      graphTypes: ['ba']
-    }
-
-You can combine the values in one graph. Example::
-
-   graphTypes: ['te', 'hu']
-
-The title and width parameters are applicable to graph-blocks as well.
-
-So now you can do::
-   
-   //To show a graph of device id 12
-   //on the Dashboard
-   //with a custom title and a 50% column width
-   blocks['graph_12'] = {
-      title: 'Custom graph title',
-      width: 6,
-      graphTypes: ['te', 'hu']
-   };
-
-With the parameter ``graphProperties`` you can provide an object to define the visual appearance.
-Example: Stacked bar graph (of a P1 smart meter with index 43 in this case) ::
-
     blocks['graph_43'] = {
         title: 'My Power',
-        graph: 'bar',
-        graphProperties : {
-            gridTextColor : '#c3f6fe',
-            barColors: ['#f1c40f', '#40e0d0', '#eee'],
-            ymax:10  //set to 'auto' for auto scaling
-        }
+        graph: ['line','bar','bar'], 
+        custom : {
+            "last day": {
+                range: 'day',
+                filter: '24 hours',
+                data: {
+                    nett: 'd.v+d.v2-d.r1-d.r2',
+                    usage: 'd.v+d.v2',
+                    generation: '-d.r1-d.r2'
+                }
+            },
+            "last 2 weeks": {
+                range: 'month',
+                filter: '14 days',
+                data: {
+                    nett: 'd.v+d.v2-d.r1-d.r2',
+                    usage: 'd.v+d.v2',
+                    generation: '-d.r1-d.r2'
+                }
+            },
+            "last 6 months": {
+                range: 'year',
+                filter: '6 months',
+                data: {
+                    nett: 'd.v+d.v2-d.r1-d.r2',
+                    usage: 'd.v+d.v2',
+                    generation: '-d.r1-d.r2'
+                }
+            }
+        },
+        legend: true,
+        datasetColors:['blue','red','yellow']
     }
 
-This will give the following result:
+This will give:
 
-.. image :: img/graph_bar.jpg
+.. image :: img/p1_custom.jpg
 
+As you can see, the graph has
 
-For all possible graphProperties see:
+* title, set via the ``title`` parameter
+* custom colors, defined by the parameter ``datasetColors``
+* The ``graph`` parameter is used to define the graph types. This time it's an array, because we want to select the graph type per value.
+* ``legend`` set to true, to show a default legend
+* custom buttons, defined by the ``custom`` parameter
 
-* https://morrisjs.github.io/morris.js/lines.html (for line graphs)
-* https://morrisjs.github.io/morris.js/bars.html (for bar graphs)
+A ``custom`` object start with the name of the button. The button should contain the following three parameters:
+
+* ``range``. This is the name of the range as requested from Domoticz, and can be ``'day'``, ``'month'`` or ``'year'``.
+* ``filter`` (optional). This limits the amount of data to the period as defined by this parameter. Examples: ``'2 hours'``, ``'4 days'``, ``'3 months'``
+* ``data``. This is an object that defines the values to use for the graph.
+
+As you can see in the example the first value will have the name 'nett'. The formula to compute the value is::
+
+  'd.v+d.v2-d.r1-d.r2'
+
+The ``d`` object contains the data as delivered by Domoticz. As you maybe remember from a previous example
+Domoticz provides the two power usage values (v and v2) and the two power return values (r1 and r2).
+
+So the first part sums the two power usage values (``d.v+d.v2``) and the last parts substracts the two return values (``-d.r1-d.r2``),
+
+The two other value-names in the data object (usage and generation) will compute the sum of the power usage values and the power return values respectively.
+
+Maybe a bit complex in the beginning, but the Dashticz forum is not far away.
+
+As indicated, the graph functionality is still under development. Additional configuration possibilities will follow.
+Please leave your feedback in the Dashticz forum.
+
 
   
