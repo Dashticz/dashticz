@@ -30,8 +30,6 @@ by adding the graph-id to a column definition as follows::
       ...
     ]
 
-.. note:: Using both a graph-block as well as a popup graph of the same device is not supported
-
 The following block parameters can be used to configure the graph:
 
   * - graph
@@ -139,6 +137,65 @@ If you prefer to only see the temperature and humidity add a block definition::
 
 
 .. image :: img/climate_te_hu.jpg
+
+Of course you can add a legend as well. See the previous section for an example.
+
+P1 smart meter
+--------------
+
+First let's show the default P1 smart meter graph:
+
+.. image :: img/p1.jpg
+
+You see a lot of lines. What do they mean? Let's add a legend ::
+
+    blocks['graph_43'] = {
+        legend: true
+    }
+
+This gives:
+
+.. image :: img/p1_legend.jpg
+
+That doesn't tell too much. However, this are the value names as provided by Domoticz.
+Now you have to know that a P1 power meter has 4 values:
+
+  * Power usage tariff 1
+  * Power usage tariff 2
+  * Power delivery tariff 1
+  * Power delivery tariff 2
+
+The first two represent the energy that flows into your house. The last two represent the energy that your house delivers back to the grid.
+
+So we can add a more meaningful legend as follows::
+
+    blocks['graph_43'] = {
+        legend: {
+          v: "Usage 1",
+          v2: "Usage 2",
+          r1: "Return 1",
+          r2: "Return 2"
+    }
+
+Resulting in:
+
+.. image :: img/p1_legend_2.jpg
+
+However what I would like to see is:
+* The sum of Usage 1 and Usage 2
+* The sum of Return 1 and Return 2, but than negative
+* A line to show the nett energy usage: Usage 1 + Usage 2 - Return 1 - Return
+* The usage and return data should be presented as bars. The nett energy as a line.
+
+Can we do that? Yes, with custom graphs!
+
+Custom graphs
+-------------
+
+I use the P1 smart meter as an example again to demonstrate how to create custom graphs. First the code and result.
+The explanation will follow after that::
+
+
 
 Examples::
 
