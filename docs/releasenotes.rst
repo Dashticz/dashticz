@@ -4,6 +4,7 @@ A link to the release notes will be posted in the Dashticz support forum. The to
 
 Latest changes
 --------------
+  * New graph module. The module is under development. It's not completely backwards compatible. Especialy styling will be different.
   * OpenWeatherMap module: support for using the city id as city name
 
 3.0.5 (4-8-2019)
