@@ -371,7 +371,7 @@ function showGraph(graphIdx, selGraph) {
                 var html = '<div class="graph' + (myProperties.popup ? 'popup' : '')  + '" id="graph' + myProperties.idx + '">';
 
                 var width = 12;
-                if(blocksConfig && typeof(blocksConfig['width']) !== 'undefined' && !popup) {
+                if(blocksConfig && typeof(blocksConfig['width']) !== 'undefined' && !myProperties.popup) {
                     width = blocksConfig['width'];
                 }
 
