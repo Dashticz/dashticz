@@ -183,34 +183,6 @@ function getGraphByIDX(idx) {
     getGraphs(alldevices[idx], true);
 }
 
-function getButtonGraphs(device) {
-    
-    console.log('ERROR!! dont use this. Open buttonGraps' + device.idx);
-/*    if(!dtGraphs[device.idx]) {
-        console.log('   not defined');
-        return;
-    }*/
-//    console.log(device);
-    if ($('#opengraph' + device['idx']).length === 0) {
-        var html = '<div class="modal fade opengraph' + device['idx'] + '" data-idx="' + device['idx'] + '" id="opengraph' + device['idx'] + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
-        html += '<div class="modal-dialog graphwidth">';
-        html += '<div class="modal-content">';
-        html += '<div class="modal-header graphclose">';
-        html += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
-        html += '</div>';
-        html += '<div class="modal-body block_graphpopup_' + device['idx'] + '">' + language.misc.loading;
-        html += '</div>';
-        html += '</div>';
-        html += '</div>';
-        html += '</div>';
-        $('body').append(html);
-
-        $('#opengraph' + device['idx']).on('shown.bs.modal', function () {
-            getGraphByIDX($(this).data('idx'));
-        });
-    }
-}
-
 function showPopupGraph(idx, subidx) {
 //    console.log('showPopupGraph '+idx);
     var device=alldevices[idx];
@@ -221,7 +193,7 @@ function showPopupGraph(idx, subidx) {
         html += '<div class="modal-header graphclose">';
         html += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
         html += '</div>';
-        html += '<div class="modal-body block_graphpopup_' + device['idx'] +'p' + '">' + language.misc.loading;
+        html += '<div class="modal-body  graphpopup block_graphpopup_' + device['idx'] +'p' + '">' + language.misc.loading;
         html += '</div>';
         html += '</div>';
         html += '</div>';
@@ -368,24 +340,29 @@ function showGraph(graphIdx, selGraph) {
                 if (typeof(myProperties.currentValue) !== 'undefined' && myProperties.currentValue !== 'undefined') title += ': <B class="graphcurrent' + myProperties.idx + '">' + myProperties.currentValue + ' ' + myProperties.txtUnit + '</B>';
                 title += '</h4>';
 
-                var html = '<div class="graph' + (myProperties.popup ? 'popup' : '')  + '" id="graph' + myProperties.idx + '">';
-
                 var width = 12;
                 if(blocksConfig && typeof(blocksConfig['width']) !== 'undefined' && !myProperties.popup) {
                     width = blocksConfig['width'];
                 }
+                console.log("tmp");
+//                var html = '<div class="graph' + (myProperties.popup ? 'popup' : '')  + '" id="graph' + myProperties.idx + '">';
+                var html = '<div class="graph ' + (myProperties.popup ? 'popup' : '')  + '" id="graph' + myProperties.idx + '">';
 
-                html += '<div class="transbg col-xs-' + width + '">';
+//                html += '<div class="transbg col-xs-' + width + '">';
                 html += title + '<br /><div style="margin-left:15px;">' + buttons + '</div><br />'
                 html+='<canvas ' + (myProperties.popup ? 'class="graphheight" ':'') +  'id="graphoutput' + myProperties.graphIdx + '"></canvas>';
                 
-                html += '</div>';
+//                html += '</div>';
                 html += '</div>';
 
                 if ($('#graph' + myProperties.graphIdx + '.graph').length > 0) {
+                    console.log("replacing");
                     $('#graph' + myProperties.graphIdx + '.graph').replaceWith(html);
                 }
-                $('.block_graph' + (myProperties.popup ? 'popup' : '') + '_' + myProperties.graphIdx).html(html);
+                var mydiv=$('.block_graph' + (myProperties.popup ? 'popup' : '') + '_' + myProperties.graphIdx);
+                if(!myProperties.popup) mydiv.addClass('col-xs-' + width);
+                mydiv.html(html);
+
 
 
                 var chartctx = document.getElementById('graphoutput' + myProperties.graphIdx).getContext('2d');
