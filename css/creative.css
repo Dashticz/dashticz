@@ -600,26 +600,34 @@ a.playlist {
     color: #bbb;
 		white-space:nowrap
 }
-.graphpopup {
-	overflow:hidden;
-	background-color: #333
-}
 
-/*To change the default height of the graph popup adapt the height value*/
+/*To change the default height of the graph popup adapt the height value in custom.css
+  Example:
 .graphheight {
-	width: 100%;
-	height: calc(80vh - 200px);
-}
-
-/*To remove the close button of the graph popup:
-.graphclose {
-	display: none;
+	height: 300px;
 }
 */
 
+.modal.opengraph .modal-body {
+	background-color: #222;
+	color: white;
+	margin: 5px;
+}
+
+.modal .graph  {
+	height: calc(100vh - 250px); 
+}
+
+/* graphwidth for small screens.*/
 .graphwidth {
 	min-width: 30px;
-	width: 70vw;
+	width: 100vw;
+}
+
+@media (min-width: 768px) {
+  .graphwidth {
+	  width: 80vw;
+  }
 }
 
 /*To remove the close button of a popup frame:
@@ -1092,6 +1100,7 @@ Only add this hover on NON touch devices
   .navbar-default.affix .nav > li > a:focus:hover {
     color: #F05F40;
   }
+
 }
 
 img.icon {

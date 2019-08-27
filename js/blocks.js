@@ -115,7 +115,7 @@ function getBlock(cols, c, columndiv, standby) {
             }
 
             var blockIndex = 'block_'+myBlockNumbering;
-            console.log(blockIndex);
+//            console.log(blockIndex);
             blockIndex += standby ? '_sb':'';
             $(columndiv).append('<div id="' + blockIndex + '"></div>');
             var myIndex = myBlockNumbering++;
@@ -393,7 +393,6 @@ function handleObjectBlock(block, index, columndiv, width, c) {
         $(columndiv).append(loadMaps(random, block));
         return;
   }
-    console.log("objectblock ", block)
     var key = 'UNKNOWN';
     if (block.hasOwnProperty('key')) key = block['key'];
     if (block.hasOwnProperty('width')) width = block['width'];

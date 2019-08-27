@@ -6,20 +6,6 @@ Graphs
 If your Domoticz device contains a value (temperature, humidity, power, etc.)
 then when you click on the block a popup window will appear showing a graph of the values of the device.
 
-To change the default size of the graph popup windows add the following style blocks to your custom.css::
-
-    .graphheight {
-      height: 400px;
-    }
-    
-    .graphwidth {
-      width: 400px;
-    }
-
-To remove the close button of the graph popup add the following text to custom.css::
-
-    .graphclose { display: none; }
-
 Besides popup graphs it's also possible to show the graph directly on the dashboard itself,
 by adding the graph-id to a column definition as follows::
 
@@ -44,6 +30,8 @@ The following block parameters can be used to configure the graph:
       | ``['gu', 'sp']``: wind guts and speed
       | ``['uvi']``, ``['lux']``, ``['lux_avg']``, ``['mm']``, ``['v_max']``
       | ``['v2']``, ``['mm']``, ``['eu']``, ``['u']``, ``['u_max']``,``['co2']``
+  * - height
+    - ``'300px'``: Height of the graph in the graph block
   * - custom
     - Customized graph. See below for examples
 
@@ -266,5 +254,33 @@ Maybe a bit complex in the beginning, but the Dashticz forum is not far away.
 As indicated, the graph functionality is still under development. Additional configuration possibilities will follow.
 Please leave your feedback in the Dashticz forum.
 
+Styling
+-------
+
+To change the default size of the graph popup windows add the following style blocks to your custom.css::
+
+    .graphheight {
+      height: 400px;
+    }
+    
+    .graphwidth {
+      width: 400px;
+    }
+
+To remove the close button of the graph popup add the following text to custom.css::
+
+    .graphclose { display: none; }
+
+
+
+To be detailed... ::
+
+    .opengraph, .opengraph<idx>p, #opengraph<idx>p   //classes attached to the graph popup dialog
+    .graphcurrent<idx>      //class attached to the div with the current value
+
+For internal use::
+
+    block_graph_<idx>     //The div to which the graph needs to be attached.
+    #graphoutput<idx>     //The canvas for the graph output
 
   
