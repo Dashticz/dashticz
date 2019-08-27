@@ -5,7 +5,6 @@ function getGraphs(device, popup) {
         var txtUnit = '?';
         var currentValue = device['Data'];
         var decimals = 2;
-        console.log("Graph for " + device.Type + ' ' + device.SubType);
         switch (device['Type']) {
             case 'Rain':
                 sensor = 'rain';
@@ -179,49 +178,20 @@ function getGraphs(device, popup) {
 }
 
 function getGraphByIDX(idx) {
-//    console.log("getGraphbyIDX "+idx);
     getGraphs(alldevices[idx], true);
 }
 
-function getButtonGraphs(device) {
-    
-    console.log('ERROR!! dont use this. Open buttonGraps' + device.idx);
-/*    if(!dtGraphs[device.idx]) {
-        console.log('   not defined');
-        return;
-    }*/
-//    console.log(device);
-    if ($('#opengraph' + device['idx']).length === 0) {
-        var html = '<div class="modal fade opengraph' + device['idx'] + '" data-idx="' + device['idx'] + '" id="opengraph' + device['idx'] + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
-        html += '<div class="modal-dialog graphwidth">';
-        html += '<div class="modal-content">';
-        html += '<div class="modal-header graphclose">';
-        html += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
-        html += '</div>';
-        html += '<div class="modal-body block_graphpopup_' + device['idx'] + '">' + language.misc.loading;
-        html += '</div>';
-        html += '</div>';
-        html += '</div>';
-        html += '</div>';
-        $('body').append(html);
-
-        $('#opengraph' + device['idx']).on('shown.bs.modal', function () {
-            getGraphByIDX($(this).data('idx'));
-        });
-    }
-}
-
 function showPopupGraph(idx, subidx) {
-//    console.log('showPopupGraph '+idx);
     var device=alldevices[idx];
     if ($('#opengraph' + device['idx']).length === 0) {
-        var html = '<div class="modal fade opengraph' + device['idx'] +'p'+ '" data-idx="' + device['idx'] + '" id="opengraph' + device['idx']+'p' + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
+        var html = '<div class="modal fade opengraph opengraph' + device['idx'] +'p'+ '" data-idx="' + device['idx'] + '" id="opengraph' + device['idx']+'p' + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
         html += '<div class="modal-dialog graphwidth">';
         html += '<div class="modal-content">';
         html += '<div class="modal-header graphclose">';
         html += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
         html += '</div>';
-        html += '<div class="modal-body block_graphpopup_' + device['idx'] +'p' + '">' + language.misc.loading;
+//        html += '<div class="modal-body  graphpopup block_graphpopup_' + device['idx'] +'p' + '">' + language.misc.loading;
+        html += '<div class="modal-body block_graph_' + device['idx'] +'p' + '">' + language.misc.loading;
         html += '</div>';
         html += '</div>';
         html += '</div>';
@@ -242,20 +212,13 @@ function showPopupGraph(idx, subidx) {
 
 }
 
-//function showGraph(idx, title, deviceType, deviceSubType, label, range, current, forced, sensor, popup) {
 function showGraph(graphIdx, selGraph) {
-//    var datasetColors = [ '#FFFFFF','#85c198', '#aed886','#f2e880','#9fb2c3',	'#7e88ba'];
-// var datasetColors = [ 'red','yellow', 'blue','orange','green',	'purple'];
-//    if (typeof(popup) === 'undefined') forced = false;
-//    if (typeof(forced) === 'undefined') forced = false;
     var myProperties = dtGraphs[graphIdx];
     myProperties.datasetColors = [ 'red','yellow', 'blue','orange','green',	'purple'];
     if(typeof selGraph!=='undefined') {
         myProperties.range=selGraph;
         myProperties.forced=true;
     }
-
-//    console.log(myProperties);
 
     if (myProperties.lastRefreshTime < (time() - (parseFloat(_GRAPHREFRESH) * 60000))) {
         myProperties.forced = true;
@@ -301,11 +264,9 @@ function showGraph(graphIdx, selGraph) {
             if (typeof(blocksConfig.method)!=='undefined') method = blocksConfig.method;
             var customRange=false;
             if(blocksConfig.hasOwnProperty("custom")) {
-//                console.log("custom");
                 if (isInitial) {
                     myProperties.range = Object.keys(blocksConfig.custom)[0];
                     customRange=true;
-//                    console.log('initital '+myProperties.range);
                 }
                 if (blocksConfig.custom.hasOwnProperty(myProperties.range)) {
                     _graphConfig=blocksConfig.custom[myProperties.range];
@@ -328,7 +289,6 @@ function showGraph(graphIdx, selGraph) {
                         }
                     }
                     if( _graphConfig.hasOwnProperty("filter")) {
-//                        console.log('custom filter for ' + myProperties.range+': '+_graphConfig.filter);
                         dataFilterCount = parseInt(_graphConfig.filter);
                         dataFilterUnit = _graphConfig.filter.split(" ").splice(-1)[0];
                     }
@@ -345,7 +305,6 @@ function showGraph(graphIdx, selGraph) {
 
         $.ajax({
             url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=graph&sensor=' + myProperties.sensor + '&idx=' + myProperties.idx + '&range=' + myProperties.realrange + '&method=' + method + '&time=' + new Date().getTime() + '&jsoncallback=?',
-//            url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=graph&sensor=' + sensor + '&idx=' + idx + '&range=' + realrange + '&time=' + new Date().getTime() + '&jsoncallback=?',
             type: 'GET', async: true, contentType: "application/json", dataType: 'jsonp',
             success: function (data) {
                 if (data.status === 'ERR') {
@@ -368,32 +327,24 @@ function showGraph(graphIdx, selGraph) {
                 if (typeof(myProperties.currentValue) !== 'undefined' && myProperties.currentValue !== 'undefined') title += ': <B class="graphcurrent' + myProperties.idx + '">' + myProperties.currentValue + ' ' + myProperties.txtUnit + '</B>';
                 title += '</h4>';
 
-                var html = '<div class="graph' + (myProperties.popup ? 'popup' : '')  + '" id="graph' + myProperties.idx + '">';
-
                 var width = 12;
                 if(blocksConfig && typeof(blocksConfig['width']) !== 'undefined' && !myProperties.popup) {
                     width = blocksConfig['width'];
                 }
+                var html = '';
+                html += title + '<br /><div style="margin-left:15px;">' + buttons + '</div><br />';
 
-                html += '<div class="transbg col-xs-' + width + '">';
-                html += title + '<br /><div style="margin-left:15px;">' + buttons + '</div><br />'
-                html+='<canvas ' + (myProperties.popup ? 'class="graphheight" ':'') +  'id="graphoutput' + myProperties.graphIdx + '"></canvas>';
-                
+                html += '<div class="graph ' + (myProperties.popup ? 'popup graphheight' : '')  + '" id="graph' + myProperties.idx + '">';
+                html+='<canvas ' +  'id="graphoutput' + myProperties.graphIdx + '"></canvas>';
                 html += '</div>';
-                html += '</div>';
-
-                if ($('#graph' + myProperties.graphIdx + '.graph').length > 0) {
-                    $('#graph' + myProperties.graphIdx + '.graph').replaceWith(html);
-                }
-                $('.block_graph' + (myProperties.popup ? 'popup' : '') + '_' + myProperties.graphIdx).html(html);
-
+                var mydiv=$('.block_graph' + '_' + myProperties.graphIdx);
+                if(!myProperties.popup) mydiv.addClass('col-xs-' + width);
+                mydiv.html(html);
 
                 var chartctx = document.getElementById('graphoutput' + myProperties.graphIdx).getContext('2d');
 
                 graphProperties = getDefaultGraphProperties();
                 $.extend(true, graphProperties,blocksConfig); 
-
-                console.log(" block merge ", blocksConfig, graphProperties);
 
                 $.extend(myProperties, getGraphProperties(data.result[0], graphIdx));
 
@@ -402,15 +353,18 @@ function showGraph(graphIdx, selGraph) {
                 if(_graphConfig) //in case of custom block we deep merge that one as well
                     $.extend(true, myProperties, _graphConfig);
 
-                console.log(myProperties);
-//                console.log(graphProperties);
-//                graphProperties.options.scales.yAxes[0].scaleLabel.labelString = myProperties.ylabels[0];
-                if( typeof myProperties.yLabel!=='undefined') {
+                if( !myProperties.popup) {
+                    var setHeight = '' + Math.round((60/12 * width)) + 'vh';
+                    if (myProperties.height)
+                        setHeight = myProperties.height;
+                        $('.block_graph' + '_' + myProperties.graphIdx+' .graph').css("height",setHeight);
+                }
+
+               if( typeof myProperties.yLabel!=='undefined') {
                     if( typeof myProperties.yLabel=='string') {
 //we might have to do something with ylabel
 //                        graphProperties.options.scales.yAxes[0].scaleLabel.labelString = myProperties.yLabel;
                     }
-//                    graphProperties.options.scales.yAxes[0].scaleLabel.display = true;
 
                 }
 
@@ -421,7 +375,6 @@ function showGraph(graphIdx, selGraph) {
                 var mydatasets = [];
 
                 if (dataFilterCount>0) {
-//                    console.log("filter " + dataFilterCount + dataFilterUnit);
                     var startMoment = moment().subtract(dataFilterCount, dataFilterUnit).format('YYYY-MM-DD HH:mm');
                     data.result = data.result.filter(function (element) {
                         return element.d > startMoment;
@@ -430,12 +383,8 @@ function showGraph(graphIdx, selGraph) {
 
                 if(_graphConfig){
                     //custom data sets
-//                    console.log("custom dataset");
-//                    $.extend(myProperties, getGraphProperties(data.result[0], graphIdx));
 
                     myProperties.ykeys=Object.keys(_graphConfig.data);
-//                    console.log(myProperties.ykeys);
-
                     
                     myProperties.ykeys.forEach((element, index) => {
                         var currentGraphType = myProperties.type;
@@ -474,7 +423,6 @@ function showGraph(graphIdx, selGraph) {
     
                             try {
                                 res=eval(customValue);
-//                                console.log(d, customValue, res);
                                 valid=true;
                                 var datapoint = {
                                     x: y.d,
@@ -491,10 +439,8 @@ function showGraph(graphIdx, selGraph) {
                     });
 
                     if(_graphConfig.hasOwnProperty('graph')) {
-                        console.log("setting type to ", _graphConfig.graph)
                         graphProperties.type = _graphConfig.graph;
                     }
-                    console.log("Merging ", _graphConfig);
                     $.extend(true, graphProperties, _graphConfig); //merge the custom settings.
 
                 }
@@ -520,17 +466,12 @@ function showGraph(graphIdx, selGraph) {
                         myProperties.ykeys = myProperties.graphTypes; //for backwards compatibility
                         myProperties.ylabels = newylabels;
                     }
-                    console.log(myProperties.ykeys, myProperties.ylabels);
-
-//                    console.log(myProperties.ykeys);
-
 
                     myProperties.ykeys.forEach((element, index) => {
                         mydatasets[element]= {
                             data: [],
                             borderColor: myProperties.datasetColors [index],
                             borderWidth: 2,
-//                            backgroundColor: "rgba(0,0,0,0)",
                             backgroundColor: myProperties.datasetColors [index],
                             fill: false,
                             pointRadius: 1,
@@ -542,9 +483,6 @@ function showGraph(graphIdx, selGraph) {
                         }
                     });
 
-                    
-    //                var factor=Math.trunc(data.result.length/100)+1;
-    //                var filtered = 0;
                     data.result.forEach(element => {
                         var valid = false;
                         myProperties.ykeys.forEach(el => {
@@ -571,11 +509,8 @@ function showGraph(graphIdx, selGraph) {
                     });
                     
                 }
-                
-//                console.log(mydatasets);
-//                console.log("for each element of mydatasets");
+
                 Object.keys(mydatasets).forEach(element => {
-//                    console.log(element);
                     if (typeof myProperties.legend == 'object') {
                         if (typeof myProperties.legend[element] !== 'undefined') 
                             mydatasets[element].label = myProperties.legend[element];
@@ -587,7 +522,6 @@ function showGraph(graphIdx, selGraph) {
                 //create the y-axes
                 //ylabels contains the labels.
                 var uniqueylabels = [...new Set(myProperties.ylabels)];
-                console.log("unique ylabels ", uniqueylabels);
                 var labelLeft = true
                 uniqueylabels.forEach(element => {
                     var yaxis = {
@@ -654,7 +588,7 @@ function showGraph(graphIdx, selGraph) {
 
                 }
 
-                console.log(graphProperties);
+//                console.log(graphProperties);
                 
                 var mychart  = new Chart(chartctx, graphProperties);
             }
@@ -671,6 +605,7 @@ function getDefaultGraphProperties() {
             datasets: []
         },
         options: {
+            maintainAspectRatio: false,
             tooltips: {
                 mode: 'index'
             },
@@ -712,8 +647,6 @@ function getDefaultGraphProperties() {
 
 
 function createButtons(graphIdx, selrange, ranges, customRange) {
-//    console.log("Buildbuttons");
-//    console.log(ranges);
     var buttons = '<div class="btn-group" role="group" aria-label="Basic example">';
 
     var btnTextList={

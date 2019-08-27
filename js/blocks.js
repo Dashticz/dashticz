@@ -115,8 +115,9 @@ function getBlock(cols, c, columndiv, standby) {
             }
 
             var blockIndex = 'block_'+myBlockNumbering;
+//            console.log(blockIndex);
             blockIndex += standby ? '_sb':'';
-            $(columndiv).append('<div id="' + blockIndex + '"</div>');
+            $(columndiv).append('<div id="' + blockIndex + '"></div>');
             var myIndex = myBlockNumbering++;
             var myblockselector = '#'+blockIndex;
             
@@ -375,6 +376,10 @@ function handleStringBlock(block, columndiv, width, c) {
                 if (typeof(getNews) !== 'function') $.ajax({url: 'js/news.js', async: false, dataType: 'script'});
                 $(columndiv).append('<div class="' + block + '"></div>');
                 getNews(columndiv, block, blocks[block]['feed']);
+                return;
+            }
+            if (block.substring(0, 6) === 'graph_') {
+                $(columndiv).append('<div data-id="' + block + '" class="transbg block_' + block + '"></div>');
                 return;
             }
             $(columndiv).append('<div data-id="' + block + '" class="mh transbg block_' + block + '"></div>');
