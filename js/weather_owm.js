@@ -1,16 +1,8 @@
 function loadWeather(location, country) {
     var html = '';
     if (typeof(settings['owm_api']) !== 'undefined' && settings['owm_api'] !== '' && settings['owm_api'] !== 0) {
-		var site = 'http://api.openweathermap.org/data/2.5/weather?q=' + settings['owm_city'] + ',' + settings['owm_country'] + '&appid=' + settings['owm_api'];
 
-        if (settings['use_fahrenheit'] === 1) {
-            site += '&units=imperial';
-        }
-        else {
-            site += '&units=metric';
-        }
-
-        $.getJSON(site, function (weather) {
+        $.getJSON(getOWMurl(false), function (weather) {
             $('.containsweather').each(function () {
                 var curfull = $(this);
                 if (typeof(weather.main) === 'undefined') {
@@ -38,6 +30,26 @@ function loadWeather(location, country) {
     }
 }
 
+function isNumeric(n) {
+    return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+function getOWMurl(makeFull) {
+	var site='https://api.openweathermap.org/data/2.5/' + (makeFull? 'forecast':'weather') + '?';
+	if (isNumeric(settings['owm_city']))
+		site += 'id=' + settings['owm_city']
+	else
+		site += 'q=' + settings['owm_city'] + ',' + settings['owm_country'];
+	site+= '&appid=' + settings['owm_api']+ '&lang=' + settings['owm_lang'];
+	if (settings['use_fahrenheit'] === 1) {
+		site += '&units=imperial';
+	}
+	else {
+		site += '&units=metric';
+	}
+	return site;
+}
+
 function loadWeatherFull(location, country) {
     if (typeof(settings['owm_api']) !== 'undefined' && settings['owm_api'] !== '' && settings['owm_api'] !== 0) {
 		var cntSetting = settings['owm_cnt'];
@@ -49,17 +61,9 @@ function loadWeatherFull(location, country) {
               containsweatherfull += '<div class="col-xs-2 transbg" style="width: ' + Math.round(1/cntSetting*100) + '%"></div>';
         }
         $('div.containsweatherfull').html('<div class="weatherfull">' + containsweatherfull + '</div>');
-		var site = 'http://api.openweathermap.org/data/2.5/forecast?q=' + settings['owm_city'] + ',' + settings['owm_country'] + '&appid=' + settings['owm_api'] + '&lang=' + settings['owm_lang'];
-
-        if (settings['use_fahrenheit'] === 1) {
-            site += '&units=imperial';
-        }
-        else {
-            site += '&units=metric';
-        }
 
 		var html = '';
-        $.getJSON(site, function (currentforecast) {
+        $.getJSON(getOWMurl(true), function (currentforecast) {
             $('.containsweatherfull').each(function () {
                 var curfull = $(this);
                 if (typeof(currentforecast.list) === 'undefined') {
