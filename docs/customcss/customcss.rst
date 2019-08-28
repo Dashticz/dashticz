@@ -11,6 +11,11 @@ There are a lot of creative users on the Domoticz Forum, that modify the CSS. A 
 The default styling is defined in the file ``<dashticz>/css/creative.css``. While you can use this file for inspiration, you should not modify it,
 since the default styling can be modified in the file ``custom.css``, located in the folder ``<dashticz v3>/custom``
 
+TIP: Comments can be used to explain the code, and may help when you edit the source code at a later date.
+A CSS comment starts with /* and ends with */. Comments can also span multiple lines::
+
+    /* This is a single-line comment */
+
 This sections has some examples of CSS that can be placed in ``custom.css``, so you can create your own look and feel.
 
 Introduction into CSS
@@ -343,4 +348,17 @@ Lightbulbs color & Opacity
 
     .fas.fa-lightbulb {
         color: rgba(0,255,0,0.4)
+    }
+
+
+Miscellaneous
+-------------
+
+Remove Swiper Pagination Bullet
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    .swiper-pagination-bullet {
+        display: none !important
     }

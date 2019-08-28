@@ -2,6 +2,25 @@ Release Notes
 =============
 A link to the release notes will be posted in the Dashticz support forum. The total overview can be found below.
 
+3.0.6 (28-8-2019)
+-----------------
+Enhancements
+  * OpenWeatherMap module: support for using the city id as city name
+  * Icon/image options for blocktitles
+
+Fixes
+  * Docker PHP timezone
+  * News update in standby
+  * Robustness install script and makefile
+  * Auto restart docker container after reboot
+  * Documentation updates (Thanks to HansieNL)
+  * 
+
+3.0.5 (4-8-2019)
+------------------
+  * Update of documentation.
+  * Improvements in the automatic installation script.
+
 3.0.4 (1-8-2019)
 ------------------
 Main changes:
