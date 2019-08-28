@@ -1,8 +1,9 @@
 {
-"version": "3.0.5",
+"version": "3.0.6",
 "branch": "master",
-"last_changes": "Improve installation script",
+"last_changes": "[enh] OWM city id as city name, icon/images for blocktitles",
 "changelog" : {
+            "3.0.5": "Improve installation script",
             "3.0.4": "Dashticz moved to new location.",
             "3.0.3": "Fix for Spotify block; layout improvements",
             "3.0.2": "Add imageOn/Off, iconOn/Off and textOn/Off block parameters",
