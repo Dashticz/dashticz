@@ -220,7 +220,7 @@ function showGraph(graphIdx, selGraph) {
         myProperties.forced=true;
     }
 
-    if (myProperties.lastRefreshTime < (time() - (parseFloat(_GRAPHREFRESH) * 60000))) {
+    if (myProperties.lastRefreshTime < (time() - (parseFloat(_GRAPHREFRESH) * 60))) {
         myProperties.forced = true;
     }
 
@@ -354,10 +354,11 @@ function showGraph(graphIdx, selGraph) {
                     $.extend(true, myProperties, _graphConfig);
 
                 if( !myProperties.popup) {
-                    var setHeight = '' + Math.round((60/12 * width)) + 'vh';
+                    var graphwidth = $('.block_graph' + '_' + myProperties.graphIdx+' .graph').width();
+                    var setHeight=Math.min(Math.round(graphwidth/window.innerWidth*window.innerHeight)-50, 0+window.innerHeight-200);
                     if (myProperties.height)
                         setHeight = myProperties.height;
-                        $('.block_graph' + '_' + myProperties.graphIdx+' .graph').css("height",setHeight);
+                    $('.block_graph' + '_' + myProperties.graphIdx+' .graph').css("height",setHeight);
                 }
 
                if( typeof myProperties.yLabel!=='undefined') {
@@ -607,7 +608,8 @@ function getDefaultGraphProperties() {
         options: {
             maintainAspectRatio: false,
             tooltips: {
-                mode: 'index'
+                mode: 'index',
+                intersect: false
             },
             layout: {
                 padding: {
