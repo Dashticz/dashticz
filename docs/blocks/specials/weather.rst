@@ -39,8 +39,9 @@ The OWM module makes use of the following CONFIG parameters:
   * - owm_api
     - ``'<api-key>'`` API-key provided by https://openweathermap.org/
   * - owm_city
-    - | Your city or nearby city to use in OWM
-      | ``'Utrecht, NL'``
+    - | Your city or nearby city to use in OWM. You can also fill in the city id here.
+      | ``'Utrecht'``
+      | ``'2748075'``
   * - owm_name
     - | Name to use instead of city name
       | ``'Tuinwijk'``

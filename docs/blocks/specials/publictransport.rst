@@ -15,7 +15,7 @@ Dashticz currently supports the following types of public transport info:
 
 #. Predefined blocks, see :ref:`predefpubtrans`
 
-   * ``'traffic'``. Traffic info from Rijkswaterstaat (Netherlands)
+   * ``'traffic'``. Traffic info from `Rijkswaterstaat Verkeersinfo <https://rijkswaterstaatverkeersinformatie.nl/>`_ (Netherlands)
    * ``'train'``. Train status from `Rijden de Treinen <https://www.rijdendetreinen.nl/>`_ (Netherlands)
 
 A public transport block can be configured as follows::
@@ -27,6 +27,7 @@ A public transport block can be configured as follows::
      title:'OV Info',
      show_lastupdate:true,
      provider: '9292',
+     show_via: true,
      icon: 'train',
      results: 5
    };
@@ -66,11 +67,13 @@ Parameters
       | ``'irail'`` Belgium 
       | ``'delijn'`` Belgium
   * - destination
-    - | Set the end destination to filter the direction
+    - | Set the end destination station name to filter the direction. 
       | ``'Den Haag De Uithof,Den Haag Loosduinen'``
   * - service
     - | Set the specific services (Dutch: lijnnummers) to further filter the result
       | ``'3,4'`` (comma seperated)
+  * - show_via
+    - ``false`` , ``true``. Hide the via-part.
   * - icon
     - | The font-awesome icon (without ``fas fa-``)
       | ``'bus'``, ``'tram'``, ``'train'``, ``'ship'``, ``'subway'``, ...
@@ -99,6 +102,7 @@ Use this station id as value for the station parameter in the publictransport bl
       title:'Trains',
       show_lastupdate:true,
       provider: 'VVS',
+      show_via: true,
       icon: 'train',
       interval: 15,
       results: 5
@@ -119,6 +123,7 @@ Then copy the id, and add to CONFIG.js as follows::
       title:'OV Info',
       show_lastupdate:true,
       provider: '9292',
+      show_via: true,
       icon: 'train',
       results: 5
     };
@@ -140,6 +145,31 @@ Then copy the id, and add to CONFIG.js as follows::
     };
 
 As you can see in the previous example specific transport types can be selected.
+
+In the next examples only the filtered results will be shown::
+
+    var publictransport = {}
+    publictransport.schiphol= {
+      station: 'station-eindhoven',
+      destination: 'Schiphol Airport,Maastricht',
+      provider: '9292-train',
+      show_lastupdate:false,
+      icon: 'train',
+      results: 7
+    };
+    publictransport.ovinfotram = { 
+      show_via: true, 
+      station: 'den-haag/tramhalte-metrostation-leidschenveen', 
+      title:'Station Leidschenveen', 
+      destination:'Den Haag De Uithof,Den Haag Loosduinen', 
+      service:'3,4', 
+      provider: '9292-tram-bus', 
+      show_lastupdate:true, 
+      icon: 'bus', 
+      width:12, 
+      results: 8 
+    };
+    
 
 .. _predefpubtrans :
 

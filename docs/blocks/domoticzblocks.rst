@@ -40,13 +40,19 @@ Example::
 Variables
 ---------
 
-To select a Domoticz variable add 'v' in front of the Domoticz variable ID.
+To select a Domoticz variable add 'v' in front of the Domoticz variable ID. 
 
 Example::
 
     blocks['v3'] = {    //Select variable with Domoticz index 3
       title: 'My variable 3'
     }
+
+After that you can use ``'v3'`` in your column definitions in ``CONFIG.js`` as usual.
+
+A list of all Domoticz variables can be obtained via::
+
+    http://[DomoticzIP:Port]/json.htm?type=command&param=getuservariables
 
 
 .. _dom_blockparameters:
@@ -66,7 +72,7 @@ Block parameters
   * - title
     - ``'<string>'``: Custom title for the block
   * - icon
-    - | Defines alternative icon of the device instead of the default, choose from: https://fontawesome.com/v4.7.0/icons/
+    - | Defines alternative icon of the device instead of the default, choose from: https://fontawesome.com/icons?d=gallery&m=free
       | ``'fas fa-eye'``
   * - image
     - | If you want to show an image instead of an icon, place image in ``img/`` folder
@@ -169,12 +175,15 @@ Usage
 Block title
 ~~~~~~~~~~~
 
-A special block type is a block title. A block title only contains a title element.
+A special block type is a block title.
 You define a block title as follows::
 
   blocks['blocktitle_1'] = {  //'blocktitle_1' must be an unique name
-    type: 'blocktitle',       //Set type to 'blocktitle'
-    title: 'Switches'         //The title of the block as shown in the dashboard.
+    type: 'blocktitle',       //Set type to 'blocktitle' (required for block title)
+    title: 'Switches',        //The title of the block as shown in the dashboard.
+    width: 6,                 //The width of the block relative to the column width
+    icon: 'far fa-lightbulb', //If you want  to show an icon, choose from: https://fontawesome.com/icons?d=gallery&m=free
+    image: 'lightbulb.png'    //If you want to show an image instead if icon, place image in img/ folder    
   }
   
 Full example of one block title and two devices::
@@ -228,7 +237,7 @@ Example of a more extensive block definition::
     blocks[1] = {
       width: 4,               //1 to 12, remove this line if you want to use the default (4)
       title : 'Living room',  //if you want change the name of switch different then domoticz
-      icon : 'fa-eye',        //if you want an other icon instead of the default, choose from: https://fontawesome.com/v4.7.0/icons/
+      icon : 'fa-eye',        //if you want an other icon instead of the default, choose from: https://fontawesome.com/icons?d=gallery&m=free
       image : 'bulb_off.png', //if you want to show an image instead if icon, place image in img/ folder
       switch : true,          //if you want to switch the title and data
       hide_data : true,       //if you want to hide the data of this block
@@ -249,20 +258,30 @@ With the openpopup, openpopupOn and openpopupOff parameter you can configure to 
 
   blocks[123]['openpopup'] = {
       url: 'http://www.urltocamera.nl/image.jpg',   //Open a popup window with this url when the device changes
+      framewidth:500,                               //specific width of the frame
+      frameheight:400,                              //specific height of the frame
       autoclose: 5                                  //autoclose the popup window after 5 seconds.
   } 
   
   blocks[123]['openpopupOn'] = {
       url: 'http://www.urltocamera.nl/image.jpg',   //Open a popup window with this url when the device changes to On
+      framewidth:500,                               //specific width of the frame
+      frameheight:400,                              //specific height of the frame
       autoclose: 5                                  //autoclose the popup window after 5 seconds.
   } 
   
   blocks[123]['openpopupOff'] = {
       url: 'http://www.urltocamera.nl/image.jpg',   //Open a popup window with this url when the device changes to Off
+      framewidth:500,                               //specific width of the frame
+      frameheight:400,                              //specific height of the frame
       autoclose: 5                                  //autoclose the popup window after 5 seconds.
   } 
-  
-  
+
+To remove the close button of the block-popup add the following text to custom.css::
+
+  .frameclose { display: none; }
+
+
 .. _Flashonchange:
 
 Flash on change
@@ -289,6 +308,20 @@ Graphs
 ~~~~~~
 If your Domoticz device contains a value (temperature, humidity, power, etc.)
 then when you click on the block a popup window will appear showing a graph of the values of the device.
+
+To change the default size of the graph popup windows add the following style blocks to your custom.css::
+
+    .graphheight {
+      height: 400px;
+    }
+    
+    .graphwidth {
+      width: 400px;
+    }
+
+To remove the close button of the graph popup add the following text to custom.css::
+
+    .graphclose { display: none; }
 
 Besides popup graphs it's also possible to show the graph directly on the dashboard itself,
 by adding the graph-id to a column definition as follows::
