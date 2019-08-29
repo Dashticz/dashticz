@@ -615,7 +615,7 @@ a.playlist {
 }
 
 .modal .graph  {
-	height: calc(100vh - 250px); 
+	height: calc(100vh - 250px);
 }
 
 /* graphwidth for small screens.*/
@@ -630,6 +630,28 @@ a.playlist {
   }
 }
 
+.graphheader {
+	display: flex;
+	justify-content: space-between;
+	flex-wrap: wrap;
+}
+
+.graphtitle {
+	font-size: 150%;
+}
+
+.graphbuttons {
+}
+
+.graph {
+	flex: 1
+}
+
+.block_graph {
+	display: flex;
+	flex-direction: column;  
+
+}
 /*To remove the close button of a popup frame:
 .frameclose {
 	display: none;

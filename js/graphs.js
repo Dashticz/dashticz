@@ -139,22 +139,9 @@ function getGraphs(device, popup) {
                 break;
         }
 
-        var range;
-        switch (settings['standard_graph']) {
-            case 'hours':
-                range = 'last';
-                break;
-            case 'day':
-                range = 'day';
-                break;
-            case 'month':
-                range = 'month';
-                break;
-        }
-
         currentValue = number_format(currentValue, decimals);
         var graphIdx = device.idx;
-        if(popup) graphIdx+='p'; //Todo: make it possible have a popup graph and inline graph of same device
+        if(popup) graphIdx+='p'; 
         if ( typeof dtGraphs[graphIdx] == 'undefined') {
             dtGraphs[graphIdx] = {
                 idx: device.idx,
@@ -323,22 +310,26 @@ function showGraph(graphIdx, selGraph) {
                     baseTitle = blocksConfig['title'];
                 }
 
-                title = '<h4>' + baseTitle;
+                title = '<div class="graphheader"><div class="graphtitle">' + baseTitle;
                 if (typeof(myProperties.currentValue) !== 'undefined' && myProperties.currentValue !== 'undefined') title += ': <B class="graphcurrent' + myProperties.idx + '">' + myProperties.currentValue + ' ' + myProperties.txtUnit + '</B>';
-                title += '</h4>';
+                title += '</div>';
 
                 var width = 12;
                 if(blocksConfig && typeof(blocksConfig['width']) !== 'undefined' && !myProperties.popup) {
                     width = blocksConfig['width'];
                 }
                 var html = '';
-                html += title + '<br /><div style="margin-left:15px;">' + buttons + '</div><br />';
+                html += title + '<div class="graphbuttons" >' + buttons + '</div>';
+                html += '</div>'
 
                 html += '<div class="graph swiper-no-swiping' + (myProperties.popup ? ' popup graphheight' : '')  + '" id="graph' + myProperties.idx + '">';
                 html+='<canvas ' +  'id="graphoutput' + myProperties.graphIdx + '"></canvas>';
                 html += '</div>';
                 var mydiv=$('.block_graph' + '_' + myProperties.graphIdx);
-                if(!myProperties.popup) mydiv.addClass('col-xs-' + width);
+                if(!myProperties.popup) {
+                    mydiv.addClass('col-xs-' + width);
+                    mydiv.addClass('block_graph');
+                }
                 mydiv.html(html);
 
                 var chartctx = document.getElementById('graphoutput' + myProperties.graphIdx).getContext('2d');
@@ -350,15 +341,21 @@ function showGraph(graphIdx, selGraph) {
 
                 $.extend(true, myProperties, blocksConfig);
 
-                if(_graphConfig) //in case of custom block we deep merge that one as well
+                if(_graphConfig) {
+                    //in case of custom block we deep merge that one as well
+                    //We have to save the range parameter, because it selects the scenario
+                    var range_tmp = myProperties.range;
                     $.extend(true, myProperties, _graphConfig);
+                    myProperties.range = range_tmp;
+                }
 
                 if( !myProperties.popup) {
                     var graphwidth = $('.block_graph' + '_' + myProperties.graphIdx+' .graph').width();
-                    var setHeight=Math.min(Math.round(graphwidth/window.innerWidth*window.innerHeight)-50, 0+window.innerHeight-200);
+                    var setHeight=Math.min(Math.round(graphwidth/window.innerWidth*window.innerHeight), window.innerHeight-50);
                     if (myProperties.height)
                         setHeight = myProperties.height;
-                    $('.block_graph' + '_' + myProperties.graphIdx+' .graph').css("height",setHeight);
+//                    $('.block_graph' + '_' + myProperties.graphIdx+' .graph').css("height",setHeight);
+                    $('.block_graph' + '_' + myProperties.graphIdx).css("height",setHeight);
                 }
 
                if( typeof myProperties.yLabel!=='undefined') {
