@@ -334,7 +334,7 @@ function showGraph(graphIdx, selGraph) {
                 var html = '';
                 html += title + '<br /><div style="margin-left:15px;">' + buttons + '</div><br />';
 
-                html += '<div class="graph ' + (myProperties.popup ? 'popup graphheight' : '')  + '" id="graph' + myProperties.idx + '">';
+                html += '<div class="graph swiper-no-swiping' + (myProperties.popup ? ' popup graphheight' : '')  + '" id="graph' + myProperties.idx + '">';
                 html+='<canvas ' +  'id="graphoutput' + myProperties.graphIdx + '"></canvas>';
                 html += '</div>';
                 var mydiv=$('.block_graph' + '_' + myProperties.graphIdx);
