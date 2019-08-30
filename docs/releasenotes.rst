@@ -2,6 +2,13 @@ Release Notes
 =============
 A link to the release notes will be posted in the Dashticz support forum. The total overview can be found below.
 
+
+Latest changes
+--------------
+
+Fixes
+  * Faster initial display of the Dashticz dashboard.
+
 3.0.6 (28-8-2019)
 -----------------
 Enhancements

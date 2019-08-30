@@ -42,7 +42,18 @@ function b64_to_utf8(str) {
 }
 
 function loadFiles() {
-    $.ajax({ url: customfolder + '/CONFIG.js', async: false, dataType: 'script' }).done(function () {
+
+    $.ajax({ url: customfolder + '/CONFIG.js', dataType: 'script' })
+    .error(function(result) {
+        console.log('Error in config.js');
+        $('#hide').show();
+        $('#loaderHolder').fadeOut();
+        return;
+    })
+    .done(function () {
+        $('#loaderHolder').fadeOut();
+        $('body').css('overflow', 'auto');
+    
         if (objectlength(columns) === 0) defaultcolumns = true;
 
         _GRAPHREFRESH = 5;
