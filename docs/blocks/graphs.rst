@@ -257,6 +257,26 @@ Please leave your feedback in the Dashticz forum.
 Styling
 -------
 
+For graphs the following css-classes are used:
+
+* .graph_header: The graph header, including title and buttons
+* .graph_title: The title of the graph, including the current value
+* .graph_buttons: The buttons for the graph
+
+You can modify the class definition in custom.css. If you want to hide the header::
+
+  .graph_header {
+    display: none;
+  }
+
+You can also modify the class for a specific graph only ::
+
+  .block_graph_43 .graph_header {
+    display: none;
+  }
+
+In the previous example only the graph for device id 43 will be affected.
+
 To change the default size of the graph popup windows add the following style blocks to your custom.css::
 
     .graphheight {
