@@ -50,8 +50,10 @@ function loadFiles() {
         $('#loaderHolder').fadeOut();
         return;
     })
-    .done(function () {
-        $('#loaderHolder').fadeOut();
+    .then(function () {
+        setTimeout(function() {
+            $('#loaderHolder').fadeOut();
+        }, 1000);
         $('body').css('overflow', 'auto');
     
         if (objectlength(columns) === 0) defaultcolumns = true;
@@ -68,81 +70,99 @@ function loadFiles() {
         else {
             setLang = 'en_US';
         }
-        $.ajax({
-            url: 'lang/' + setLang + '.json?v=' + cache, async: false, dataType: 'json', success: function (data) {
+        return $.ajax({
+            url: 'lang/' + setLang + '.json?v=' + cache,  dataType: 'json', success: function (data) {
                 language = data;
             }
         });
+    })
+    .then(function(){
+        return $.ajax({ url: 'js/version.js',  dataType: 'script' });
+    })
+    .then(function() {
+        return initVersion();
+    })
+    .then(function(){
 
-        $.ajax({ url: 'js/version.js', async: false, dataType: 'script' });
-        $.ajax({ url: 'js/settings.js', async: false, dataType: 'script' }).done(function () {
-            loadSettings();
-            userEnc = '';
-            pwdEnc = '';
-            if (typeof (settings['user_name']) !== 'undefined') {
-                usrEnc = window.btoa(settings['user_name']);
-                pwdEnc = window.btoa(settings['pass_word']);
-            }
-            if (typeof (screens) === 'undefined' || objectlength(screens) === 0) {
-                screens = {};
-                screens[1] = {};
-                screens[1]['background'] = settings['background_image'];
-                screens[1]['columns'] = [];
-                if (defaultcolumns === false) {
-                    for (c in columns) {
-                        if (c !== 'bar') screens[1]['columns'].push(c);
-                    }
+        return $.ajax({ url: 'js/settings.js', dataType: 'script' });
+    })
+    .then(function () {
+        loadSettings();
+        userEnc = '';
+        pwdEnc = '';
+        if (typeof (settings['user_name']) !== 'undefined') {
+            usrEnc = window.btoa(settings['user_name']);
+            pwdEnc = window.btoa(settings['pass_word']);
+        }
+        if (typeof (screens) === 'undefined' || objectlength(screens) === 0) {
+            screens = {};
+            screens[1] = {};
+            screens[1]['background'] = settings['background_image'];
+            screens[1]['columns'] = [];
+            if (defaultcolumns === false) {
+                for (c in columns) {
+                    if (c !== 'bar') screens[1]['columns'].push(c);
                 }
             }
+        }
 
-            $('<link href="vendor/weather/css/weather-icons.min.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
+        $('<link href="vendor/weather/css/weather-icons.min.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
 
-            if (settings['theme'] !== 'default') {
-                $('<link rel="stylesheet" type="text/css" href="themes/' + settings['theme'] + '/' + settings['theme'] + '.css?v=' + cache + '" />').appendTo('head');
-            }
-            $('<link href="' + customfolder + '/custom.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
+        if (settings['theme'] !== 'default') {
+            $('<link rel="stylesheet" type="text/css" href="themes/' + settings['theme'] + '/' + settings['theme'] + '.css?v=' + cache + '" />').appendTo('head');
+        }
+        $('<link href="' + customfolder + '/custom.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
 
-            if (typeof (settings['edit_mode']) !== 'undefined' && settings['edit_mode'] == 1) {
-                $('<link href="css/sortable.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
-                $.ajax({ url: 'js/sortable.js', async: false, dataType: 'script' });
+        if (typeof (settings['edit_mode']) !== 'undefined' && settings['edit_mode'] == 1) {
+            $('<link href="css/sortable.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
+            $.ajax({ url: 'js/sortable.js', async: false, dataType: 'script' });
 
-                var html = '<div class="newblocksHolder" style="display:none;">';
-                html += '<div class="title">' + language.editmode.add_plugin + '</div>';
-                html += '<div class="newblocks plugins sortable"></div>';
-                html += '<div class="title">' + language.editmode.add_block + '</div>';
-                html += '<div class="newblocks domoticz sortable"></div>';
-                html += '</div>';
+            var html = '<div class="newblocksHolder" style="display:none;">';
+            html += '<div class="title">' + language.editmode.add_plugin + '</div>';
+            html += '<div class="newblocks plugins sortable"></div>';
+            html += '<div class="title">' + language.editmode.add_block + '</div>';
+            html += '<div class="newblocks domoticz sortable"></div>';
+            html += '</div>';
 
-                $('body').prepend(html);
-            }
+            $('body').prepend(html);
+        }
 
-            $.ajax({ url: 'js/switches.js', async: false, dataType: 'script' });
-            $.ajax({ url: 'js/thermostat.js', async: false, dataType: 'script' });
+        return $.when(
+            $.ajax({ url: 'js/switches.js', dataType: 'script' }),
+            $.ajax({ url: 'js/thermostat.js', dataType: 'script' })
+        );
+    })
+    .then (function(){
+        return $.ajax({ url: customfolder + '/custom.js?v=' + cache, dataType: 'script' });
+    })
+    .then (function(){
+        return $.when(
+//            $.ajax({ url: 'js/switches.js', async: false, dataType: 'script' });
+            $.ajax({ url: 'js/blocks.js',  dataType: 'script' }),
+            $.ajax({ url: 'js/graphs.js',  dataType: 'script' }),
+            $.ajax({ url: 'js/login.js', dataType: 'script' }),
+            $.ajax({ url: 'js/moon.js',  dataType: 'script' })
+        );
+    })
+    .then(function () {
 
-            $.ajax({ url: customfolder + '/custom.js?v=' + cache, async: false, dataType: 'script' });
-            $.ajax({ url: 'js/switches.js', async: false, dataType: 'script' });
-            $.ajax({ url: 'js/blocks.js', async: false, dataType: 'script' });
-            $.ajax({ url: 'js/graphs.js', async: false, dataType: 'script' });
-            $.ajax({ url: 'js/login.js', async: false, dataType: 'script' });
-            $.ajax({ url: 'js/moon.js', async: false, dataType: 'script' });
+        sessionValid();
 
-            sessionValid();
+        if (typeof (settings['gm_api']) !== 'undefined' && settings['gm_api'] !== '' && settings['gm_api'] !== 0) {
+            return $.ajax({
+                url: 'https://maps.googleapis.com/maps/api/js?key=' + settings['gm_api'],
+                dataType: 'script'
+            }).done(function () {
+                setTimeout(function () {
+                    initMap();
+                }, 2000);
+            });
+        }
+    })
+    .then(function() {
+        onLoad();
+    })
 
-            if (typeof (settings['gm_api']) !== 'undefined' && settings['gm_api'] !== '' && settings['gm_api'] !== 0) {
-                $.ajax({
-                    url: 'https://maps.googleapis.com/maps/api/js?key=' + settings['gm_api'],
-                    async: false,
-                    dataType: 'script'
-                }).done(function () {
-                    setTimeout(function () {
-                        initMap();
-                    }, 2000);
-                    onLoad();
-                });
-            }
-            else onLoad();
-        });
-    });
 }
 
 function onLoad() {
