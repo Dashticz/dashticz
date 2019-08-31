@@ -385,7 +385,6 @@ function showGraph(graphIdx, selGraph) {
                     myProperties.ykeys=Object.keys(_graphConfig.data);
                     
                     myProperties.ykeys.forEach((element, index) => {
-                        var currentGraphType; // = myProperties.type;
                         mydatasets[element]= {
                             data: [],
                             borderColor: myProperties.datasetColors [index],
@@ -401,11 +400,7 @@ function showGraph(graphIdx, selGraph) {
 
                         if(_graphConfig.hasOwnProperty('graph')) {
                             mydatasets[element].type=_graphConfig.graph;
-                            currentGraphType = _graphConfig.graph;
                         }
-
-//                        if(currentGraphType == 'bar')
-//                            mydatasets[element].backgroundColor= datasetColors [index];
 
                     })
 
