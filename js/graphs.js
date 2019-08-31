@@ -385,7 +385,7 @@ function showGraph(graphIdx, selGraph) {
                     myProperties.ykeys=Object.keys(_graphConfig.data);
                     
                     myProperties.ykeys.forEach((element, index) => {
-                        var currentGraphType = myProperties.type;
+                        var currentGraphType; // = myProperties.type;
                         mydatasets[element]= {
                             data: [],
                             borderColor: myProperties.datasetColors [index],
