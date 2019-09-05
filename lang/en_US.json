@@ -169,6 +169,7 @@
             "slide_effect": "Slide effect",
             "standard_graph": "Standard graph",
             "standby_after": "Standby after (minutes, 0 = never)",
+            "start_page": "Start page number (First page=1)",
             "title": "Screen",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Flash color and opacity (RGBA)",

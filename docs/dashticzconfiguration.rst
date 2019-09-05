@@ -81,18 +81,21 @@ Config parameters
     - | Enter the amount of minutes
       | ``0`` = No standby mode(default)
       | ``1..1000`` = Switch to standby after `<value>` minutes
+  * - start_page
+    - | Page to show after starting Dashticz
+      | ``1..100`` = Page number
   * - auto_swipe_back_to
-    - | when no activity, swipe back to the selected screen
-      | ``1..100`` = screen number
+    - | when no activity, swipe back to the selected page
+      | ``1..100`` = page number
   * - auto_swipe_back_after
-    - | The amount of seconds after which Dashticz will swipe back to the default screen, as defined by ``auto_swipe_back_to``
+    - | The amount of seconds after which Dashticz will swipe back to the default page, as defined by ``auto_swipe_back_to``
       | ``0`` = No auto swiping back (default)
       | ``1..9999`` = Swipe back after <value> seconds
   * - auto_slide_pages
     - | Loop all pages and change page every x (min. 5) seconds,
       |     set ``config['auto_swipe_back_after'] = 0``
       | ``false`` = No auto slide (default)
-      | ``5..9999`` = Auto slide to the next screen every <value> second
+      | ``5..9999`` = Auto slide to the next page every <value> second
   * - slide_effect
     - | Control which Screenslider effect you prefer
       | ``'slide'``, ``'fade'``, ``'cube'``, ``'coverflow'``, ``'flip'``

@@ -6,6 +6,9 @@ A link to the release notes will be posted in the Dashticz support forum. The to
 Latest changes
 --------------
 
+Enhancements
+  * New config setting ``'start_page'`` to set Dashticz start page number
+
 Fixes
   * Faster initial display of the Dashticz dashboard.
 
