@@ -459,13 +459,14 @@ function buildScreens() {
 function startSwiper() {
     if (md.mobile() == null || md.tablet() !== null) {
         if ($('.swiper-container .screen').length > 1) {
-            $.ajax({ url: 'vendor/swiper/js/swiper.min.js', async: false, dataType: 'script' }).done(function () {
+            $.ajax({ url: 'vendor/swiper/js/swiper.min.js',  dataType: 'script' }).done(function () {
                 $('<link href="vendor/swiper/css/swiper.min.css" rel="stylesheet">').appendTo("head");
                 setTimeout(function () {
                     myswiper = new Swiper('.swiper-container', {
                         pagination: '.swiper-pagination',
                         paginationClickable: true,
                         loop: false,
+                        initialSlide: settings['start_page']-1,
                         effect: settings['slide_effect'],
                         keyboardControl: true,
                         onSlideChangeStart: function (swiper) {
@@ -482,7 +483,7 @@ function startSwiper() {
 
                     });
 
-                }, 2000);
+                }, 100);
             });
         }
     }

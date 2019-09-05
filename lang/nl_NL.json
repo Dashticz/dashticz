@@ -169,6 +169,7 @@
             "slide_effect": "Schuif effect",
             "standard_graph": "Standaard grafiek",
             "standby_after": "Standby na (minuteen, 0 = nooit)",
+            "start_page": "Start pagina nummer (Eerste pagina=1)",
             "title": "Weergave",
             "security_button_icons": "Pictogrammen in plaats van tekst op beveiligingsschakelaar",
             "blink_color": "Knipperkleur en ondoorzichtigheid (RBGA)",

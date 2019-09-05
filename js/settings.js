@@ -118,6 +118,10 @@ settingList['screen']['standby_after'] = {};
 settingList['screen']['standby_after']['title'] = language.settings.screen.standby_after;
 settingList['screen']['standby_after']['type'] = 'text';
 
+settingList['screen']['start_page'] = {};
+settingList['screen']['start_page']['title'] = language.settings.screen.start_page;
+settingList['screen']['start_page']['type'] = 'text';
+
 settingList['screen']['auto_swipe_back_to'] = {};
 settingList['screen']['auto_swipe_back_to']['title'] = language.settings.screen.auto_swipe_back_to;
 settingList['screen']['auto_swipe_back_to']['type'] = 'text';
@@ -574,6 +578,7 @@ if (typeof(settings['hide_topbar']) === 'undefined') settings['hide_topbar'] = 0
 if (typeof(settings['slide_effect']) === 'undefined') settings['slide_effect'] = 'slide';
 if (typeof(settings['hide_mediaplayer']) === 'undefined') settings['hide_mediaplayer'] = 0;
 if (typeof(settings['auto_swipe_back_to']) === 'undefined') settings['auto_swipe_back_to'] = 1;
+if (typeof(settings['start_page']) === 'undefined') settings['start_page'] = 1;
 if (typeof(settings['auto_positioning']) === 'undefined') settings['auto_positioning'] = 1;
 if (typeof(settings['use_favorites']) === 'undefined') settings['use_favorites'] = 1;
 if (typeof(settings['translate_windspeed']) === 'undefined') settings['translate_windspeed'] = 1;
