@@ -1,6 +1,7 @@
 var dtGraphs = [];
 
 function getGraphs(device, popup) {
+        moment.locale(settings['calendarlanguage']);
         var sensor = 'counter';
         var txtUnit = '?';
         var currentValue = device['Data'];
@@ -177,22 +178,12 @@ function showPopupGraph(idx, subidx) {
         html += '<div class="modal-header graphclose">';
         html += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
         html += '</div>';
-//        html += '<div class="modal-body  graphpopup block_graphpopup_' + device['idx'] +'p' + '">' + language.misc.loading;
         html += '<div class="modal-body block_graph_' + device['idx'] +'p' + '">' + language.misc.loading;
         html += '</div>';
         html += '</div>';
         html += '</div>';
         html += '</div>';
         $('body').append(html);
-
-/*
-        $('#opengraph' + device['idx']).on('shown.bs.modal', function () {
-            getGraphByIDX($(this).data('idx'));
-        });
-        */
-// todo: add handler to destroy after close
-        //show the dialog
-
     }
     $("#opengraph" + device['idx']+'p').modal();
     getGraphs(alldevices[idx], true);
@@ -219,7 +210,6 @@ function showGraph(graphIdx, selGraph) {
 
     if (myProperties.forced || myProperties.popup) {
         myProperties.forced = false;
-//        dtGraphs[graphIdx].lastRefreshTime = time();
         myProperties.lastRefreshTime = time();
 //Check settings for standard graph
         if (isInitial) {
@@ -354,7 +344,6 @@ function showGraph(graphIdx, selGraph) {
                     var setHeight=Math.min(Math.round(graphwidth/window.innerWidth*window.innerHeight), window.innerHeight-50);
                     if (myProperties.height)
                         setHeight = myProperties.height;
-//                    $('.block_graph' + '_' + myProperties.graphIdx+' .graph').css("height",setHeight);
                     $('.block_graph' + '_' + myProperties.graphIdx).css("height",setHeight);
                 }
 
@@ -389,7 +378,6 @@ function showGraph(graphIdx, selGraph) {
                             data: [],
                             borderColor: myProperties.datasetColors [index],
                             borderWidth: 2,
-//                            backgroundColor: "rgba(0,0,0,0)",
                             backgroundColor: myProperties.datasetColors [index],
                             fill: false,
                             pointRadius: 1,
@@ -471,9 +459,6 @@ function showGraph(graphIdx, selGraph) {
                             label: element,
                             yAxisID : myProperties.ylabels[index]
                         };
-                        if(element!='eu' && element!='eg') {
-//                            mydatasets[element].type='line'
-                        }
                     });
 
                     data.result.forEach(element => {
@@ -527,7 +512,6 @@ function showGraph(graphIdx, selGraph) {
                           color: 'rgba(255,255,255,0.2)', //give the needful color
                         },
                         scaleLabel: {
-//                            labelString: myProperties.ylabels[0],
                             labelString: element,
                             display: true,
                             fontColor: 'white'                                    
@@ -561,11 +545,6 @@ function showGraph(graphIdx, selGraph) {
                         graphProperties.options.legend.display = true;
                     };
                 }
-/*
-                if(typeof myProperties.graph !== 'undefined') {
-                    graphProperties.type = myProperties.graph;
-                }
-*/
                 switch(typeof myProperties.graph) {
                     case 'string' :
                             graphProperties.type = myProperties.graph;
@@ -579,6 +558,11 @@ function showGraph(graphIdx, selGraph) {
                     default:
                         break;
 
+                }
+
+                /* Check for displayFormats setting */
+                if(typeof myProperties.displayFormats !== 'undefined') {
+                    $.extend(graphProperties.options.scales.xAxes[0].time.displayFormats,myProperties.displayFormats)
                 }
 
 //                console.log(graphProperties);
@@ -629,6 +613,13 @@ function getDefaultGraphProperties() {
                         display: true,
                       },
                     type: 'time',
+                    time: {
+                        displayFormats: {
+                            'minute': 'H:mm',
+                            'hour': 'H:mm',
+                            'day': 'D MMM'
+                         }
+                    },
                     distribution: 'linear'
                 }]
 
@@ -682,21 +673,7 @@ function showGraphMonth(graphIdx) {
 function getGraphProperties(result, graphIdx) {
     var myProperties = dtGraphs[graphIdx];
     var label=myProperties.txtUnit;
-//    var deviceType = myProperties.Type;
-//    var deviceSubtype = myProperties.SubType;
- //   var range = myProperties.range;
     var realrange = myProperties.realrange;
-    /*
-    var defGP = {
-        default: {
-            ykeys: [Object.keys(result)[0]],
-//            labels: [Object.keys(result)[0]],
-            ylabels: [''],
-            yaxis: [0]
-        },
-
-    }
-    */
     var graphProperties = {};
     if(typeof result == 'undefined')
         return graphProperties;
@@ -757,37 +734,28 @@ function getGraphProperties(result, graphIdx) {
         graphProperties = {
             ykeys: ['v2', 'v'],
             ylabels: [label, label],
-            //labels: ['usage 2', 'usage 1'],
         };
         if (result.hasOwnProperty('r2')) {
             graphProperties.ykeys.push('r2');
             graphProperties.ylabels.push(label);
-            //graphProperties.labels.push('delivery 2');
         }
         if (result.hasOwnProperty('r1')) {
             graphProperties.ykeys.push('r1');
             graphProperties.ylabels.push(label);
-            //graphProperties.labels.push('delivery 1');
         }
     } else if (result.hasOwnProperty('v')) {
         if (label === 'kWh' && realrange === 'day') {
             graphProperties = {
                 ykeys: ['v'],
                 ylabels: ['W'],
-               // labels: ['Power']
             }
         }
         else {
             graphProperties = {
                 ykeys: ['v'],
                 ylabels: [label],
-              //  labels: ['Energy']
             }
         }
-/*
-        if (label === 'kWh' && realrange === 'day') {
-            label = 'Wh';
-        }*/
     } else if (result.hasOwnProperty('eu')) {
         graphProperties = {
             ykeys: ['eu'],

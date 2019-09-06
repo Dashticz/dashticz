@@ -18,6 +18,13 @@ by adding the graph-id to a column definition as follows::
 
 The following block parameters can be used to configure the graph:
 
+.. list-table:: 
+  :header-rows: 1
+  :widths: 5 30
+  :class: tight-table
+
+  * - Parameter
+    - Description
   * - graph
     - | Sets the graph type
       | ``'line'`` Line graph (default)
@@ -32,6 +39,8 @@ The following block parameters can be used to configure the graph:
       | ``['v2']``, ``['mm']``, ``['eu']``, ``['u']``, ``['u_max']``,``['co2']``
   * - height
     - ``'300px'``: Height of the graph in the graph block
+  * - displayFormats
+    - Object to set the time display format on the x-axis. See below for an example.
   * - custom
     - Customized graph. See below for examples
 
@@ -253,6 +262,28 @@ Maybe a bit complex in the beginning, but the Dashticz forum is not far away.
 
 As indicated, the graph functionality is still under development. Additional configuration possibilities will follow.
 Please leave your feedback in the Dashticz forum.
+
+Time format on the x-axis
+-------------------------
+
+The chart module uses moments.js for displaying the times and dates.
+The locale will be set via the Domoticz setting for the calendar language::
+
+  config['calendarlangauge'] = 'nl_NL';
+
+To set the time (or date) format for the x-axis add the ``displayFormats`` parameter to the block definition::
+
+    blocks['graph_6'] = {
+        displayFormats : {
+          minute: 'h:mm a',
+          hour: 'hA',
+          day: 'MMM D',
+          week: 'll',
+          month: 'MMM D',
+        },
+    }
+
+The previous example sets the time formats to UK style. See https://www.chartjs.org/docs/latest/axes/cartesian/time.html#display-formats for time/date formats. 
 
 Styling
 -------
