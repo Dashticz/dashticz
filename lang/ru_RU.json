@@ -172,7 +172,8 @@
             "title": "Интерфейс",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Цвет вспышки и непрозрачность (RGBA)",
-            "blink_color_help": "Установите цвет вспышки и непрозрачность (красный, зеленый, синий, альфа)"
+            "blink_color_help": "Установите цвет вспышки и непрозрачность (красный, зеленый, синий, альфа)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX картинки луны",
