@@ -172,7 +172,8 @@
             "title": "Skärm",
             "security_button_icons": "Ikoner istället för text på säkerhetsbrytare",
             "blink_color": "Flashfärg och opacitet (RGBA)",
-            "blink_color_help": "Ställ in blixtfärg och opacitet (röd, grön, blå, alfa)"
+            "blink_color_help": "Ställ in blixtfärg och opacitet (röd, grön, blå, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX på månbild",
