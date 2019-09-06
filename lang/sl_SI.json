@@ -172,7 +172,8 @@
             "title": "Screen",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Barva bliskavice in motnost (RGBA)",
-            "blink_color_help": "Nastavi barvo in motnost bliskavice (rdeča, zelena, modra, alfa)"
+            "blink_color_help": "Nastavi barvo in motnost bliskavice (rdeča, zelena, modra, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",
