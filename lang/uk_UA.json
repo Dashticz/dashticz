@@ -172,7 +172,8 @@
             "title": "Screen",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Колір і непрозорість спалаху (RGBA)",
-            "blink_color_help": "Встановити колір і непрозорість спалаху (червоний, зелений, синій, альфа)"
+            "blink_color_help": "Встановити колір і непрозорість спалаху (червоний, зелений, синій, альфа)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",
