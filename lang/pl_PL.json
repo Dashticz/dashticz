@@ -172,7 +172,8 @@
             "title": "Ekran",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Kolor i moc krycia (RGBA)",
-            "blink_color_help": "Ustaw kolor błysku i krycie (czerwony, zielony, niebieski, alfa)"
+            "blink_color_help": "Ustaw kolor błysku i krycie (czerwony, zielony, niebieski, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX dla obrazu księżyca",

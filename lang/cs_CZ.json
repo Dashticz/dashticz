@@ -172,7 +172,8 @@
             "title": "Obrazovka",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Barva a neprůhlednost blesku (RGBA)",
-            "blink_color_help": "Nastavení barvy a opacity blesku (červená, zelená, modrá, alfa)"
+            "blink_color_help": "Nastavení barvy a opacity blesku (červená, zelená, modrá, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX měsíce",

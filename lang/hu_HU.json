@@ -172,7 +172,8 @@
             "title": "Képernyő",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Flash szín és opacitás (RGBA)",
-            "blink_color_help": "Állítsa be a vaku színét és az opacitását (piros, zöld, kék, alfa)"
+            "blink_color_help": "Állítsa be a vaku színét és az opacitását (piros, zöld, kék, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "Holdfotó idxje",

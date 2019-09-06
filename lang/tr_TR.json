@@ -172,7 +172,8 @@
             "title": "Ekran",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Flaş rengi ve opaklığı (RGBA)",
-            "blink_color_help": "Flaş rengini ve opaklığını ayarla (kırmızı, yeşil, mavi, alfa)"
+            "blink_color_help": "Flaş rengini ve opaklığını ayarla (kırmızı, yeşil, mavi, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "Ay Evresi Simge IDX",
