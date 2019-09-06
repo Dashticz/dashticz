@@ -172,7 +172,8 @@
             "title": "Skjerm",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Flash-farge og opasitet (RGBA)",
-            "blink_color_help": "Angi blitsfarge og opasitet (rød, grønn, blå, alfa)"
+            "blink_color_help": "Angi blitsfarge og opasitet (rød, grønn, blå, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX av moonpicture",
