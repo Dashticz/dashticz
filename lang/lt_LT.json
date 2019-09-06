@@ -172,7 +172,8 @@
             "title": "Ekranas",
             "security_button_icons": "Piktogramos vietoj teksto apsaugos jungiklių",
             "blink_color": "Blykstės spalva ir neskaidrumas (RGBA)",
-            "blink_color_help": "Nustatykite blykstės spalvą ir neskaidrumą (raudona, žalia, mėlyna, alfa)"
+            "blink_color_help": "Nustatykite blykstės spalvą ir neskaidrumą (raudona, žalia, mėlyna, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "Mėnulio piktogramų IDX",

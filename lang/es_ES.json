@@ -172,7 +172,8 @@
             "title": "Pantalla",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Color flash y opacidad (RGBA)",
-            "blink_color_help": "Ajuste el color del flash y la opacidad (rojo, verde, azul, alfa)"
+            "blink_color_help": "Ajuste el color del flash y la opacidad (rojo, verde, azul, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX de la imagen de la luna",

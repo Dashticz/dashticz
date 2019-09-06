@@ -169,11 +169,11 @@
             "slide_effect": "Schuif effect",
             "standard_graph": "Standaard grafiek",
             "standby_after": "Standby na (minuteen, 0 = nooit)",
-            "start_page": "Start pagina nummer (Eerste pagina=1)",
             "title": "Weergave",
             "security_button_icons": "Pictogrammen in plaats van tekst op beveiligingsschakelaar",
             "blink_color": "Knipperkleur en ondoorzichtigheid (RBGA)",
-            "blink_color_help": "Stel de knipperkleur en ondoorzichtigheid in (rood, groen, blauw, ondoorzichtigheid)"
+            "blink_color_help": "Stel de knipperkleur en ondoorzichtigheid in (rood, groen, blauw, ondoorzichtigheid)",
+            "start_page": "Start pagina nummer (Eerste pagina=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX van maanfoto",

@@ -172,7 +172,8 @@
             "title": "Ekran",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Boja i neprozirnost bljeskalice (RGBA)",
-            "blink_color_help": "Postavite boju i neprozirnost bljeskalice (crvena, zelena, plava, alfa)"
+            "blink_color_help": "Postavite boju i neprozirnost bljeskalice (crvena, zelena, plava, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX slike mjeseca",

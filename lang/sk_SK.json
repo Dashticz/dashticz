@@ -172,7 +172,8 @@
             "title": "Screen",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Farba a opacita blesku (RGBA)",
-            "blink_color_help": "Nastavte farbu a opacitu blesku (červená, zelená, modrá, alfa)"
+            "blink_color_help": "Nastavte farbu a opacitu blesku (červená, zelená, modrá, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",
