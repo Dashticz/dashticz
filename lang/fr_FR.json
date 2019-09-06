@@ -172,7 +172,8 @@
             "title": "Écran",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Couleur et opacité du flash (RGBA)",
-            "blink_color_help": "Définir la couleur et l'opacité du flash (rouge, vert, bleu, alpha)"
+            "blink_color_help": "Définir la couleur et l'opacité du flash (rouge, vert, bleu, alpha)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX de la photo de la lune",
