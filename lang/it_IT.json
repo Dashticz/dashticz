@@ -172,7 +172,8 @@
             "title": "Schermata",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Colore e opacità del flash (RGBA)",
-            "blink_color_help": "Imposta colore e opacità del flash (rosso, verde, blu, alfa)"
+            "blink_color_help": "Imposta colore e opacità del flash (rosso, verde, blu, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX faselunare",
