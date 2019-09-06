@@ -172,7 +172,8 @@
             "title": "Screen",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Color i opacitat en flash (RGBA)",
-            "blink_color_help": "Establiu el color i l'opacitat de flaix (vermell, verd, blau, alfa)"
+            "blink_color_help": "Establiu el color i l'opacitat de flaix (vermell, verd, blau, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",
