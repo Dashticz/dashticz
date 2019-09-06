@@ -172,7 +172,8 @@
             "title": "Screen",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "闪光颜色和不透明度（RGBA）",
-            "blink_color_help": "设置闪光颜色和不透明度（红色，绿色，蓝色，alpha）"
+            "blink_color_help": "设置闪光颜色和不透明度（红色，绿色，蓝色，alpha）",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",
