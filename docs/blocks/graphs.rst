@@ -285,6 +285,33 @@ To set the time (or date) format for the x-axis add the ``displayFormats`` param
 
 The previous example sets the time formats to UK style. See https://www.chartjs.org/docs/latest/axes/cartesian/time.html#display-formats for time/date formats. 
 
+Modifying the y-axes
+--------------------
+
+You can modify the y-axes by setting the options parameter. Below you see an example how to define the min and max values of two y-axes::
+
+    blocks['graph_659'] = {
+        graph: 'line',
+        graphTypes: ['te', 'hu'],
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        min: 0,
+                        max: 30
+                    }
+                }, {
+                    ticks: {
+                        min: 50,
+                        max: 100
+                    }
+                }]
+            }
+        }
+    }
+
+The ``yAxes`` parameter in the ``options`` block is an array, with an entry for each y-axis.
+
 Styling
 -------
 
