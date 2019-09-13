@@ -260,8 +260,40 @@ The two other value-names in the data object (usage and generation) will compute
 
 Maybe a bit complex in the beginning, but the Dashticz forum is not far away.
 
-As indicated, the graph functionality is still under development. Additional configuration possibilities will follow.
-Please leave your feedback in the Dashticz forum.
+Below another example to adapt the reported values of a watermeter to liters::
+
+    blocks['graph_903'] = {
+        graph: 'bar',
+        datasetColors: ['lightblue'],
+        legend: true,
+        custom : {
+            "last hours": {
+                range: 'day',
+                filter: '6 hours',
+                data: {
+                    liter: 'd.v*100'            }
+                },
+
+      "today": {
+                range: 'day',
+                filter: '12 hours',
+                data: {
+                    liter: 'd.v*100'            }
+                },
+      
+      "last week": {
+                range: 'month',
+                filter: '7 days',
+                data: {
+                    liter: 'd.v*1000'            }
+                }
+
+
+            }
+      }
+
+.. image :: img/water.jpg
+
 
 Time format on the x-axis
 -------------------------
