@@ -301,7 +301,7 @@ Time format on the x-axis
 The chart module uses moments.js for displaying the times and dates.
 The locale will be set via the Domoticz setting for the calendar language::
 
-  config['calendarlangauge'] = 'nl_NL';
+  config['calendarlanguage'] = 'nl_NL';
 
 To set the time (or date) format for the x-axis add the ``displayFormats`` parameter to the block definition::
 

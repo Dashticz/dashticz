@@ -326,40 +326,30 @@ function showGraph(graphIdx, selGraph) {
                 mydiv.html(html);
 
                 var chartctx = document.getElementById('graphoutput' + myProperties.graphIdx).getContext('2d');
-
+                var myLocalProperties = {};
+                
+                $.extend(true, myLocalProperties, myProperties);    // create a deep copy for temporary use
                 graphProperties = getDefaultGraphProperties();
                 $.extend(true, graphProperties, blocksConfig);
 
-                $.extend(myProperties, getGraphProperties(data.result[0], graphIdx));
+                $.extend(myLocalProperties, getGraphProperties(data.result[0], graphIdx));
 
-                $.extend(true, myProperties, blocksConfig);
+                $.extend(true, myLocalProperties, blocksConfig);
 
                 if (_graphConfig) {
-                    //in case of custom block we deep merge that one as well
-                    //We have to save the range parameter, because it selects the scenario
-                    var range_tmp = myProperties.range;
-                    $.extend(true, myProperties, _graphConfig);
-                    myProperties.range = range_tmp;
+                    $.extend(true, myLocalProperties, _graphConfig);
                 }
 
-                if (!myProperties.popup) {
-                    var graphwidth = $('.block_graph' + '_' + myProperties.graphIdx + ' .graph').width();
+                if (!myLocalProperties.popup) {
+                    var graphwidth = $('.block_graph' + '_' + myLocalProperties.graphIdx + ' .graph').width();
                     var setHeight = Math.min(Math.round(graphwidth / window.innerWidth * window.innerHeight), window.innerHeight - 50);
-                    if (myProperties.height)
-                        setHeight = myProperties.height;
-                    $('.block_graph' + '_' + myProperties.graphIdx).css("height", setHeight);
+                    if (myLocalProperties.height)
+                        setHeight = myLocalProperties.height;
+                    $('.block_graph' + '_' + myLocalProperties.graphIdx).css("height", setHeight);
                 }
 
-                if (typeof myProperties.yLabel !== 'undefined') {
-                    if (typeof myProperties.yLabel == 'string') {
-                        //we might have to do something with ylabel
-                        //                        graphProperties.options.scales.yAxes[0].scaleLabel.labelString = myProperties.yLabel;
-                    }
-
-                }
-
-                if (typeof myProperties.legend == 'boolean') {
-                    graphProperties.options.legend.display = myProperties.legend;
+                if (typeof myLocalProperties.legend == 'boolean') {
+                    graphProperties.options.legend.display = myLocalProperties.legend;
                 }
 
                 var mydatasets = [];
@@ -370,22 +360,21 @@ function showGraph(graphIdx, selGraph) {
                         return element.d > startMoment;
                     });
                 }
-
                 if (_graphConfig) {
                     //custom data sets
 
-                    myProperties.ykeys = Object.keys(_graphConfig.data);
+                    myLocalProperties.ykeys = Object.keys(_graphConfig.data);
 
-                    myProperties.ykeys.forEach((element, index) => {
+                    myLocalProperties.ykeys.forEach((element, index) => {
                         mydatasets[element] = {
                             data: [],
-                            borderColor: myProperties.datasetColors[index],
+                            borderColor: myLocalProperties.datasetColors[index],
                             borderWidth: 2,
-                            backgroundColor: myProperties.datasetColors[index],
+                            backgroundColor: myLocalProperties.datasetColors[index],
                             fill: false,
                             pointRadius: 1,
                             label: element,
-                            yAxisID: myProperties.ylabels[index]
+                            yAxisID: myLocalProperties.ylabels[index]
 
                         };
 
@@ -397,7 +386,7 @@ function showGraph(graphIdx, selGraph) {
 
                     data.result.forEach(y => {
                         var valid = false;
-                        myProperties.ykeys.forEach((_value, index) => {
+                        myLocalProperties.ykeys.forEach((_value, index) => {
                             var customValue = _graphConfig.data[_value];
                             var d = {};
                             for (key in y) {
@@ -406,7 +395,7 @@ function showGraph(graphIdx, selGraph) {
                             };
 
                             try {
-                                res = eval(customValue);
+                                res = eval(customValue).toPrecision(8);
                                 valid = true;
                                 var datapoint = {
                                     x: y.d,
@@ -427,42 +416,42 @@ function showGraph(graphIdx, selGraph) {
                     $.extend(true, graphProperties, _graphConfig); //merge the custom settings.
 
                 } else {
-                    if (typeof myProperties.graphTypes == 'undefined') {
+                    if (typeof myLocalProperties.graphTypes == 'undefined') {
                         var mySet = new Set([]);
                         data.result.forEach(element => {
                             Object.keys(element).forEach(el => {
                                 if (el !== 'd') mySet.add(el);
                             })
                         });
-                        myProperties.ykeys = [...mySet];
-                        $.extend(myProperties, getGraphProperties(data.result[0], graphIdx));
+                        myLocalProperties.ykeys = [...mySet];
+                        $.extend(myLocalProperties, getGraphProperties(data.result[0], graphIdx));
                     } else {
                         var newylabels = [];
-                        myProperties.graphTypes.forEach(function (element, index) {
-                            var idx = myProperties.ykeys.indexOf(element);
+                        myLocalProperties.graphTypes.forEach(function (element, index) {
+                            var idx = myLocalProperties.ykeys.indexOf(element);
                             if (idx >= 0)
-                                newylabels.push(myProperties.ylabels[idx]);
+                                newylabels.push(myLocalProperties.ylabels[idx]);
                         });
-                        myProperties.ykeys = myProperties.graphTypes; //for backwards compatibility
-                        myProperties.ylabels = newylabels;
+                        myLocalProperties.ykeys = myLocalProperties.graphTypes; //for backwards compatibility
+                        myLocalProperties.ylabels = newylabels;
                     }
 
-                    myProperties.ykeys.forEach((element, index) => {
+                    myLocalProperties.ykeys.forEach((element, index) => {
                         mydatasets[element] = {
                             data: [],
-                            borderColor: myProperties.datasetColors[index],
+                            borderColor: myLocalProperties.datasetColors[index],
                             borderWidth: 2,
-                            backgroundColor: myProperties.datasetColors[index],
+                            backgroundColor: myLocalProperties.datasetColors[index],
                             fill: false,
                             pointRadius: 1,
                             label: element,
-                            yAxisID: myProperties.ylabels[index]
+                            yAxisID: myLocalProperties.ylabels[index]
                         };
                     });
 
                     data.result.forEach(element => {
                         var valid = false;
-                        myProperties.ykeys.forEach(el => {
+                        myLocalProperties.ykeys.forEach(el => {
                             if (element.hasOwnProperty(el)) {
                                 switch (el) {
                                     case 'eu':
@@ -488,9 +477,9 @@ function showGraph(graphIdx, selGraph) {
                 }
 
                 Object.keys(mydatasets).forEach(element => {
-                    if (typeof myProperties.legend == 'object') {
-                        if (typeof myProperties.legend[element] !== 'undefined')
-                            mydatasets[element].label = myProperties.legend[element];
+                    if (typeof myLocalProperties.legend == 'object') {
+                        if (typeof myLocalProperties.legend[element] !== 'undefined')
+                            mydatasets[element].label = myLocalProperties.legend[element];
                         graphProperties.options.legend.display = true;
                     };
                     graphProperties.data.datasets.push(mydatasets[element]);
@@ -498,9 +487,9 @@ function showGraph(graphIdx, selGraph) {
 
                 //create the y-axes
                 //ylabels contains the labels.
-                var uniqueylabels = [...new Set(myProperties.ylabels)];
+                var uniqueylabels = [...new Set(myLocalProperties.ylabels)];
                 var labelLeft = true
-                var axisCount = myProperties.options && myProperties.options.scales && myProperties.options.scales.yAxes ? myProperties.options.scales.yAxes.length : 0;
+                var axisCount = myLocalProperties.options && myLocalProperties.options.scales && myLocalProperties.options.scales.yAxes ? myLocalProperties.options.scales.yAxes.length : 0;
                 graphProperties.options.scales.yAxes = []; // reset to empty
                 uniqueylabels.forEach((element, i) => {
                     var yaxis = {
@@ -521,7 +510,7 @@ function showGraph(graphIdx, selGraph) {
                     }
                     graphProperties.options.scales.yAxes.push(yaxis);
                     if (i < axisCount)
-                        $.extend(true, graphProperties.options.scales.yAxes[i], myProperties.options.scales.yAxes[i])
+                        $.extend(true, graphProperties.options.scales.yAxes[i], myLocalProperties.options.scales.yAxes[i])
                     labelLeft = !labelLeft;
                 })
 
@@ -540,20 +529,20 @@ function showGraph(graphIdx, selGraph) {
                     })
                 }
 
-                if (typeof myProperties.legend !== 'undefined') {
-                    if (typeof myProperties.legend == 'array') {
-                        myProperties.legend.forEach(function (element, idx) {
+                if (typeof myLocalProperties.legend !== 'undefined') {
+                    if (typeof myLocalProperties.legend == 'array') {
+                        myLocalProperties.legend.forEach(function (element, idx) {
                             graphProperties.data.datasets[idx].label = element
                         });
                         graphProperties.options.legend.display = true;
                     };
                 }
-                switch (typeof myProperties.graph) {
+                switch (typeof myLocalProperties.graph) {
                     case 'string':
-                        graphProperties.type = myProperties.graph;
+                        graphProperties.type = myLocalProperties.graph;
                         break;
                     case 'object':
-                        myProperties.graph.forEach(function (element, idx) {
+                        myLocalProperties.graph.forEach(function (element, idx) {
                             graphProperties.data.datasets[idx].type = element;
                         });
                         graphProperties.type = 'bar';
@@ -564,8 +553,8 @@ function showGraph(graphIdx, selGraph) {
                 }
 
                 /* Check for displayFormats setting */
-                if (typeof myProperties.displayFormats !== 'undefined') {
-                    $.extend(graphProperties.options.scales.xAxes[0].time.displayFormats, myProperties.displayFormats)
+                if (typeof myLocalProperties.displayFormats !== 'undefined') {
+                    $.extend(graphProperties.options.scales.xAxes[0].time.displayFormats, myLocalProperties.displayFormats)
                 }
 
                 //console.log(graphProperties);
