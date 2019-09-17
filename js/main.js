@@ -933,7 +933,7 @@ function loadFrame(f, frame) {
     var width = 12;
     if (typeof (frame.width) !== 'undefined') width = frame.width;
     console.log(frame);
-    var scrolling = (typeof frame.scrollbars !== 'undefined ') && !frame.scrollbars ? ' scrolling="no"' : '';
+    var scrolling = frame.scrollbars === false ? ' scrolling="no"' : '';
     var html = '<div data-id="frames.' + key + '" class="col-xs-' + width + ' hover transbg swiper-no-swiping imgblock imgblock' + f + '" style="height:' + frame.height + 'px;padding:0px !important;">';
     html += '<div class="col-xs-12 col-no-icon" style="padding:0px !important;">';
     html += '<iframe src="' + frame.frameurl + '"' + scrolling + ' style="width:100%;border:0px;height:' + (frame.height - 14) + 'px;"></iframe>';
