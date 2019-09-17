@@ -992,11 +992,7 @@ Only add this hover on NON touch devices
 	padding-right: 40px;
 }
 
-.col-no-icon {
-	width: calc(100% - 15px);
-}
-
-.col-data.no-icon {
+.no-icon {
 	width: 100%;
 }
 
