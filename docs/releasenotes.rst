@@ -8,6 +8,7 @@ Latest changes
 
 Enhancements
   * New config setting ``'start_page'`` to set Dashticz start page number
+  * New parameter ``'scrollbars'`` to set scrollbars in frame
 
 Fixes
   * Faster initial display of the Dashticz dashboard.
