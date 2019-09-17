@@ -40,6 +40,8 @@ Frame parameters
       - ``1..12`` The width of the frame relative to the column width. 12=100%, 3=25%
     * - heigth
       - Height of the frame in pixels
+    * - scrollbars
+      - ``false`` Scrollbars are never shown (even if they are needed) ``Default: auto``
     * - refreshiframe
       - Refresh interval (in msec)
     * - forcerefresh
