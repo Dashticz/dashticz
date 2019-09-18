@@ -3,12 +3,13 @@ Release Notes
 A link to the release notes will be posted in the Dashticz support forum. The total overview can be found below.
 
 
-Latest changes
---------------
+3.1.0 (18-9-2019)
+-----------------
 
 Enhancements
   * New config setting ``'start_page'`` to set Dashticz start page number
-  * New parameter ``'scrollbars'`` to set scrollbars in frame
+  * New parameter ``'scrollbars'`` to set scrollbars in frame. See :ref:`Frames`
+  * New graph module. It's not completely backwards compatible. Especialy styling will be different. See :ref:`dom_graphs`
 
 Fixes
   * Faster initial display of the Dashticz dashboard.
@@ -25,7 +26,6 @@ Fixes
   * Robustness install script and makefile
   * Auto restart docker container after reboot
   * Documentation updates (Thanks to HansieNL)
-  * 
 
 3.0.5 (4-8-2019)
 ------------------

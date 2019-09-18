@@ -115,8 +115,9 @@ function getBlock(cols, c, columndiv, standby) {
             }
 
             var blockIndex = 'block_'+myBlockNumbering;
+//            console.log(blockIndex);
             blockIndex += standby ? '_sb':'';
-            $(columndiv).append('<div id="' + blockIndex + '"</div>');
+            $(columndiv).append('<div id="' + blockIndex + '"></div>');
             var myIndex = myBlockNumbering++;
             var myblockselector = '#'+blockIndex;
             
@@ -377,6 +378,10 @@ function handleStringBlock(block, columndiv, width, c) {
                 getNews(columndiv, block, blocks[block]['feed']);
                 return;
             }
+            if (block.substring(0, 6) === 'graph_') {
+                $(columndiv).append('<div data-id="' + block + '" class="transbg block_' + block + '"></div>');
+                return;
+            }
             $(columndiv).append('<div data-id="' + block + '" class="mh transbg block_' + block + '"></div>');
             return;
     }
@@ -600,6 +605,8 @@ function getBlockClick(idx, device) {
             || device['Type'] == 'Temp + Humidity' || device['Type'] == 'Temp + Humidity + Baro'
             || device['SubType'] == 'kWh' || device['SubType'] === 'Lux' || device['SubType'] === 'Solar Radiation'
         ) {
+            /* In this case we want to the popup graph
+    
             getButtonGraphs(device);
             if ($('.block_' + idx).length > 0) {
                 $('.block_' + idx).addClass('hover');
@@ -609,7 +616,23 @@ function getBlockClick(idx, device) {
                 $('.block_' + device['idx']).addClass('hover');
                 $('.block_' + device['idx']).attr('data-toggle', 'modal');
                 $('.block_' + device['idx']).attr('data-target', '#opengraph' + device['idx']);
+            } */
+//            console.log('idx '+idx+'device[idx] '+device['idx']);
+            var blockSel = '.block_' + idx;
+            if ($(blockSel).length == 0) {
+                blockSel = 0;
             }
+            if(blockSel == 0) {
+                blockSel = '.block_' + device['idx'];
+                if ($(blockSel).length == 0) {
+                    blockSel = 0
+                }
+            }
+            if(blockSel !== 0) {
+                $(blockSel).addClass('hover');
+                $(blockSel).attr('onclick', 'showPopupGraph(\'' + device['idx'] + '\',\'' + idx + '\');');
+            }
+
         }
     }
 }
