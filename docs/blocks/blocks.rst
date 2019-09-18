@@ -7,6 +7,7 @@ The visible elements on the Dashticz dashboard are called blocks. Several block 
    :maxdepth: 2
    
    domoticzblocks
+   graphs
    buttons
    frames
    specials

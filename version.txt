@@ -1,8 +1,9 @@
 {
-"version": "3.0.6",
+"version": "3.1.0",
 "branch": "beta",
-"last_changes": "[enh] OWM city id as city name, icon/images for blocktitles",
+"last_changes": "New graph module",
 "changelog" : {
+            "3.0.6": "[enh] OWM city id as city name, icon/images for blocktitles",
             "3.0.5": "Improve installation script",
             "3.0.4": "Dashticz moved to new location.",
             "3.0.3": "Fix for Spotify block; layout improvements",
