@@ -344,6 +344,30 @@ You can modify the y-axes by setting the options parameter. Below you see an exa
 
 The ``yAxes`` parameter in the ``options`` block is an array, with an entry for each y-axis.
 
+Y-axis for custom graphs
+------------------------
+
+To define the y-axes for a custom graph you can add the ``ylabels`` parameter as follows::
+
+    blocks['graph_659'] = {
+        custom: {
+            'The Temp': {
+                ylabels: ['yaxis of temp'],
+                data: {
+                    'temp value': 'd.te'
+                },
+                range: 'day',
+                filter: '2 days',
+                legend: true
+            }
+        },
+        width: 6
+    }
+
+.. image :: img/customlabels.jpg
+
+The parameter ``ylabels`` is an array. You can add a string for each value of the data object. 
+
 Styling
 -------
 

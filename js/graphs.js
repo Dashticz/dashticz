@@ -227,6 +227,7 @@ function showGraph(graphIdx, selGraph) {
         }
         myProperties.realrange = myProperties.range;
         var dataFilterCount = 0;
+        var dataFilterUnit = '';
         if (myProperties.range === 'last') {
             myProperties.realrange = 'day';
             dataFilterCount = 4;
@@ -329,7 +330,7 @@ function showGraph(graphIdx, selGraph) {
                 var myLocalProperties = {};
                 
                 $.extend(true, myLocalProperties, myProperties);    // create a deep copy for temporary use
-                graphProperties = getDefaultGraphProperties();
+                graphProperties = getDefaultGraphProperties(myProperties);
                 $.extend(true, graphProperties, blocksConfig);
 
                 $.extend(myLocalProperties, getGraphProperties(data.result[0], graphIdx));
@@ -362,7 +363,8 @@ function showGraph(graphIdx, selGraph) {
                 }
                 if (_graphConfig) {
                     //custom data sets
-
+                    if(_graphConfig.ylabels)
+                        myLocalProperties.ylabels = _graphConfig.ylabels;   //in case ylabels are defined in the custom graph, we take those, instead of the default generated ylabels
                     myLocalProperties.ykeys = Object.keys(_graphConfig.data);
 
                     myLocalProperties.ykeys.forEach((element, index) => {
@@ -374,7 +376,7 @@ function showGraph(graphIdx, selGraph) {
                             fill: false,
                             pointRadius: 1,
                             label: element,
-                            yAxisID: myLocalProperties.ylabels[index]
+                            yAxisID: index<myLocalProperties.ylabels? myLocalProperties.ylabels[index] : myLocalProperties.ylabels[0]
 
                         };
 
@@ -566,7 +568,7 @@ function showGraph(graphIdx, selGraph) {
     }
 }
 
-function getDefaultGraphProperties() {
+function getDefaultGraphProperties(myProperties) {
     return {
         type: 'line',
         data: {
@@ -608,7 +610,7 @@ function getDefaultGraphProperties() {
                     time: {
                         displayFormats: {
                             'minute': 'H:mm',
-                            'hour': 'H:mm',
+                            'hour': myProperties.realrange === 'day' ? 'ddd H:mm':'D MMM',
                             'day': 'D MMM'
                         }
                     },
