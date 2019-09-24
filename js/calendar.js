@@ -201,7 +201,7 @@ function formatDate(caltime, dateFormat) {
 
         try {
             return tmpevent.toLocaleDateString(settings.calendarlanguage.replace(/_/g, "-"), dateOptions);
-        } catch {
+        } catch(err) {
             return tmpevent.toLocaleDateString('nl-NL', dateOptions);
         }
     } else {
