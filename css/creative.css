@@ -340,8 +340,19 @@ next css sets the default height of the frame popup
 .containslog .items .level0.popup{ color:#c70626; }
 .containslog .items .level1.popup{ color:#067676; }
 .containslog .items .level2.popup{ color:#727272; }
-				
-				
+
+table.calendar {
+		border-collapse: separate;
+		border-spacing: 10px 0px;
+}				
+.calendar td {
+	vertical-align: top;
+	white-space: nowrap;
+}				
+td.caltitle {
+	white-space: normal;
+}
+
 .containslog.popup {
 	height: 100% !important;
 	overflow:auto;
