@@ -2,6 +2,11 @@ Release Notes
 =============
 A link to the release notes will be posted in the Dashticz support forum. The total overview can be found below.
 
+Latest changes
+--------------
+
+Enhancements
+  * Show calendar with table formatting by setting blockparameter ``calFormat:1``. See :ref:`calTable`
 
 3.1.0 (18-9-2019)
 -----------------
