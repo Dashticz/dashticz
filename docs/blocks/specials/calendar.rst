@@ -23,7 +23,25 @@ You have to add the following code into the ``CONFIG.js`` file and define them a
     - the web address to the ical-version of your calendar.
   * - url
     - (optional) The web address of the page to be shown when clicking the block.
- 
+  * - calFormat
+    - | The calendar formatting to use
+      | ``0``: Compact format (default)
+      | ``1``: Table format
+  * - dateFormat
+    - | String to change the date formatting of a calendar item using moments.js
+      | Only applicable for ``calFormat: 1``
+      | ``'dd DD-MM'``. This will represent the dates as 'di 24-9'
+  * - timeFormat
+    - | String to change the time formatting of a calendar item using moments.js
+      | Only applicable for ``calFormat: 1``. Examples:
+      | ``'LT'`` (=default): This will represent the time in the local time format.
+      | ``'HH:mm'``. This will represent the time as '23:12'
+  * - icon
+    - | Icon name. Example:
+      | ``'fas fa-car'``. To display a car icon in the left column.
+  * - image
+    - Name of custom image to display in the first column. 
+  
 And define them in a column like::
 
     columns[1] = {}
@@ -61,7 +79,7 @@ The following config settings are applicable:
   * - Parameter
     - Description
   * - calendarformat
-    - | Configure the Calendar Date/Time format.
+    - | Configure the Calendar Date/Time format. Only applicable in case ``calFormat`` is ``0``
       | ``'dd DD.MM HH:mm'`` = default
   * - calendarlanguage
     - | Controls the calendar locale
@@ -99,6 +117,27 @@ Example
 This will give:
 
 .. image :: calendar.jpg
+
+.. _calTable :
+
+Example of table format
+-----------------------
+
+::
+
+    calendars.f1 = {
+        maxitems: 6,
+        url: 'https://www.f1calendar.com/#!/timezone/Europe-Amsterdam',
+        icalurl: 'http://www.f1calendar.com/download/f1-calendar_p1_p2_p3_q_gp_alarm-20.ics',
+        calFormat: 1,
+        dateFormat: "dd M",
+        timeFormat: "HH",
+        icon: 'fas fa-car'
+    }
+
+This will give:
+
+.. image :: img/calendar1.jpg
 
 Usage
 -----
