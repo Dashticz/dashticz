@@ -27,8 +27,6 @@ var columns = {};
 var columns_standby = {};
 var blocks = {};
 var req;
-// eslint-disable-next-line no-unused-vars
-var slide;
 var sliding = false;
 var defaultcolumns = false;
 var allblocks = {};
@@ -41,11 +39,6 @@ var gettingDevices = false;
 var md;
 var usrEnc='';
 var pwdEnc='';
-var _STREAMPLAYER_TRACKS = [
-    {"track":1,"name":"Q-music","file":"http://icecast-qmusic.cdp.triple-it.nl/Qmusic_nl_live_96.mp3"},
-    {"track":2,"name":"100%NL","file":"http://stream.100p.nl/100pctnl.mp3"},
-    {"track":3,"name":"NPO Radio 1","file":"http://icecast.omroep.nl/radio1-bb-mp3"},
- ];
 // eslint-disable-next-line no-unused-vars
 var _THOUSAND_SEPARATOR = '.';
 // eslint-disable-next-line no-unused-vars
@@ -54,16 +47,12 @@ var _STANDBY_CALL_URL = '';
 var _END_STANDBY_CALL_URL = '';
 var lastGetDevicesTime = 0;
 var allVariables = {};
-// eslint-disable-next-line no-unused-vars
-var map;
-
-
 function b64_to_utf8(str) {
     return decodeURIComponent(escape(window.atob(str)));
 }
 
 // eslint-disable-next-line no-unused-vars
-function loadFiles() {
+function loadFiles(customfolder) {
 
     $.ajax({ url: customfolder + '/CONFIG.js', dataType: 'script' })
     .error(function() {
@@ -147,7 +136,16 @@ function loadFiles() {
 
         return $.when(
             $.ajax({ url: 'js/switches.js', dataType: 'script' }),
-            $.ajax({ url: 'js/thermostat.js', dataType: 'script' })
+            $.ajax({ url: 'js/thermostat.js', dataType: 'script' }),
+            $.ajax({ url: 'js/specials/streamplayer.js', dataType: 'script' }),
+            $.ajax({ url: 'js/specials/frame.js', dataType: 'script' }),
+            $.ajax({ url: 'js/specials/news.js', dataType: 'script' }),
+            $.ajax({ url: 'js/specials/longfonds.js', dataType: 'script' }),
+            $.ajax({ url: 'js/specials/traffic.js', dataType: 'script' }),
+            $.ajax({ url: 'js/specials/train.js', dataType: 'script' }),
+            $.ajax({ url: 'js/specials/publictransport.js', dataType: 'script' }),
+            $.ajax({ url: 'js/specials/button.js', dataType: 'script' })
+
         );
     })
     .then (function(){
@@ -836,156 +834,6 @@ function loadMaps(b, map) {
     return html;
 }
 
-function buttonLoadFrame(button) //Displays the frame of a button after pressing is
-{
-
-    var random = getRandomInt(1, 100000);
-    $('body').append(createModalDialog('openpopup', 'button_' + random, button));
-    if (button.log == true) {
-        if (typeof (getLog) !== 'function') $.ajax({ url: 'js/log.js', async: false, dataType: 'script' });
-        $('#button_' + random + ' .modal-body').html('');
-        // eslint-disable-next-line no-undef
-        getLog($('#button_' + random + ' .modal-body'), button.level, true);
-    }
-    $('#button_' + random).on('hidden.bs.modal', function () {
-        $(this).data('bs.modal', null);
-        $(this).remove();
-    });
-
-    $('#button_' + random).modal('show');
-
-    if (!button.log && typeof (button.refreshiframe) !== 'undefined' && button.refreshiframe > 0) {
-        setTimeout(function () {
-            refreshButtonFrame(button, random);
-        }, button.refreshiframe);
-    }
-}
-
-function refreshButtonFrame(button, buttonid) {
-    var mydiv = $('#button_' + buttonid).find('iframe');
-    if (mydiv.length > 0) {
-        mydiv.attr('src', checkForceRefresh(button, button.url));
-        setTimeout(function () {
-            refreshButtonFrame(button, buttonid);
-        }, button.refreshiframe);
-    }
-}
-
-// eslint-disable-next-line no-unused-vars
-function buttonOnClick(m_event)
-//button clickhandler. Assumption: button is clickable
-{
-    var button = m_event.data;
-    if (typeof (button.newwindow) !== 'undefined') {
-		if (button.newwindow == '0') {
-			window.open(button.url, '_self');
-		}
-		else if (button.newwindow == '1') {
-			window.open(button.url);
-		}
-		else if (button.newwindow == '2') {
-			buttonLoadFrame(button);
-		}
-		else {
-			buttonLoadFrame(button);
-		}
-    }
-    else if (typeof (button.slide) !== 'undefined') {
-        toSlide(button.slide - 1);
-    }
-    else {
-        buttonLoadFrame(button);
-    }
-}
-
-function buttonIsClickable(button) {
-    var clickable = typeof (button.url) !== 'undefined' || button.log == true || typeof (button.slide) !== 'undefined';
-    return clickable;
-}
-
-// eslint-disable-next-line no-unused-vars
-function loadButton(b, button) {
-    var width = 12;
-    if (typeof (button.width) !== 'undefined') width = button.width;
-
-    var key = b;
-    if (typeof (button.key) !== 'undefined') key = button.key;
-
-    var slideToext = '';
-
-    if (typeof (button.slide) !== 'undefined') {
-        slideToext = ' slide slide' + button.slide;
-    }
-
-    var html = '<div class="col-xs-' + width + (buttonIsClickable(button) ? ' hover ' : ' ') + ' transbg buttons-' + key + slideToext + '" data-id="buttons.' + key + '">';
-
-    if (button.isimage) {
-        var img = '';
-        if (typeof (button.image) !== 'undefined') {
-            img = button.image;
-        }
-        if (img == 'moon') {
-            img = getMoonInfo(button);
-        }
-        if (typeof (button.forceheight) !== 'undefined') {
-            html += '<img id="buttonimg_' + b + '"src="' + img + '" style="max-width:100%;" width=100% height="' + button.forceheight + '" />';
-        } else {
-            html += '<img id="buttonimg_' + b + '"src="' + img + '" style="max-width:100%;" />';
-        }
-
-        var refreshtime = 60000;
-        if (typeof (button.refresh) !== 'undefined') refreshtime = button.refresh;
-        if (typeof (button.refreshimage) !== 'undefined') refreshtime = button.refreshimage;
-        setInterval(function () {
-            reloadImage(b, button, true);
-        }, refreshtime);
-
-    }
-    else {
-        if (typeof (button.title) !== 'undefined') {
-            html += '<div class="col-xs-4 col-icon">';
-        }
-        else {
-            html += '<div class="col-xs-12 col-icon">';
-        }
-
-        if (typeof (button.image) !== 'undefined') html += '<img class="buttonimg" src="' + button.image + '" />';
-        else html += '<em class="' + button.icon + ' fa-small"></em>';
-        html += '</div>';
-        if (typeof (button.title) !== 'undefined') {
-            html += '<div class="col-xs-8 col-data">';
-            html += '<strong class="title">' + button.title + '</strong><br>';
-            html += '<span class="state"></span>';
-            html += '</div>';
-        }
-    }
-    html += '</div>';
-    return html;
-}
-
-// eslint-disable-next-line no-unused-vars
-function loadFrame(f, frame) {
-
-    var key = 'UNKNOWN';
-    if (typeof (frame.key) !== 'undefined') key = frame.key;
-
-    var width = 12;
-    if (typeof (frame.width) !== 'undefined') width = frame.width;
-    var scrolling = frame.scrollbars === false ? ' scrolling="no"' : '';
-    var html = '<div data-id="frames.' + key + '" class="col-xs-' + width + ' hover transbg swiper-no-swiping imgblock imgblock' + f + '" style="height:' + frame.height + 'px;padding:0px !important;">';
-    html += '<div class="col-xs-12 no-icon" style="padding:0px !important;">';
-    html += '<iframe src="' + frame.frameurl + '"' + scrolling + ' style="width:100%;border:0px;height:' + (frame.height - 14) + 'px;"></iframe>';
-    html += '</div>';
-    html += '</div>';
-
-    var refreshtime = 60000;
-    if (typeof (frame.refreshiframe) !== 'undefined') refreshtime = frame.refreshiframe;
-    setInterval(function () {
-        reloadFrame(f, frame);
-    }, refreshtime);
-
-    return html;
-}
 
 function checkForceRefresh(m_instance, url) {
     //forcerefresh is set to 1 or true:
@@ -1037,40 +885,6 @@ function checkForceRefresh(m_instance, url) {
     return url;
 }
 
-function reloadFrame(i, frame) {
-    if (typeof (frame.frameurl) !== 'undefined') {
-        $('.imgblock' + i).find('iframe').attr('src', checkForceRefresh(frame, frame.frameurl));
-    }
-}
-
-function reloadImage(i, image) {
-    var src;
-    if (typeof (image.image) !== 'undefined') {
-        if (image.image === 'moon')
-            src = getMoonInfo(image)
-        else
-            src = checkForceRefresh(image, image.image);
-        $('#buttonimg_' + i).attr('src', src);
-    }
-}
-
-/*not used anymore
-function reloadIframe(button, i) {
-//reloads the Iframe of a button if it exists
-    if (typeof(button.url) !== 'undefined') {
-        if (typeof($('.imgblockopens' + i + ' iframe').attr('src') !== 'undefined')) {
-            $('.imgblockopens' + i + ' iframe').attr('src', checkForceRefresh(image, image.url));
-        }
-    }
-}
-*/
-
-function getMoonInfo() {
-    var mymoon = new MoonPhase(new Date());
-    var myphase = parseInt(mymoon.phase() * 100 + 50) % 100;
-    var src = 'img/moon/moon.' + ("0" + myphase).slice(-2) + '.png';
-    return src;
-}
 
 // eslint-disable-next-line no-unused-vars
 function appendHorizon(columndiv) {
@@ -1118,101 +932,6 @@ function appendStationClock(columndiv, col, width) {
     }, 50);
 }
 
-// eslint-disable-next-line no-unused-vars
-function appendStreamPlayer(columndiv) {
-    var random = getRandomInt(1, 100000);
-    var html = '<div data-id="streamplayer" class="transbg containsstreamplayer' + random + '">'
-        + '<div class="col-xs-12 transbg smalltitle"><h3></h3></div>'
-        + '<audio class="audio1" preload="none"></audio>'
-        + '<div class="col-xs-4 transbg hover text-center btnPrev">'
-        + '<em class="fas fa-chevron-left fa-small"></em>'
-        + '</div>'
-        + '<div class="col-xs-4 transbg hover text-center playStream">'
-        + '<em class="fas fa-play fa-small stateicon"></em>'
-        + '</div>'
-        + '<div class="col-xs-4 transbg hover text-center btnNext">'
-        + '<em class="fas fa-chevron-right fa-small"></em>'
-        + '</div>'
-        + '</div>';
-    $(columndiv).append(html);
-
-    var streamelement = '.containsstreamplayer' + random;
-    var connecting = null;
-
-    var supportsAudio = !!document.createElement('audio').canPlayType;
-    if (supportsAudio) {
-        var index = 0,
-            playing = false,
-            tracks = _STREAMPLAYER_TRACKS,
-            trackCount = tracks.length,
-            npTitle = $(streamelement + ' h3'),
-            audio = $(streamelement + ' .audio1').bind('play', function () {
-                $(streamelement + ' .stateicon').removeClass('fas fa-play');
-                $(streamelement + ' .stateicon').addClass('fas fa-pause');
-                $(streamelement).addClass('playing')
-                playing = true;
-                connecting = setTimeout(function () {
-                    infoMessage("StreamPlayer", "connecting ... ", 0);
-                }, 1000);
-            }).bind('pause', function () {
-                $(streamelement + ' .stateicon').removeClass('fas fa-pause');
-                $(streamelement + ' .stateicon').addClass('fas fa-play');
-                $(streamelement).removeClass('playing')
-
-                playing = false;
-            }).get(0),
-            // eslint-disable-next-line no-unused-vars
-            btnPrev = $(streamelement + ' .btnPrev').click(function () {
-                if ((index - 1) > -1) {
-                    index--;
-                    loadTrack(index);
-                } else {
-                    index = 0
-                    loadTrack(trackCount - 1);
-                }
-                if (playing) {
-                    doPlay();
-                }
-            }),
-            // eslint-disable-next-line no-unused-vars
-            btnNext = $(streamelement + ' .btnNext').click(function () {
-                if ((index + 1) < trackCount) index++;
-                else index = 0;
-
-                loadTrack(index);
-                if (playing) {
-                    doPlay();
-                }
-            }),
-            // eslint-disable-next-line no-unused-vars
-            btnPlay = $(streamelement + ' .playStream').click(function () {
-                if (audio.paused) {
-                    doPlay();
-                } else {
-                    audio.pause();
-                }
-            }),
-            loadTrack = function (id) {
-                npTitle.text(tracks[id].name);
-                index = id;
-                audio.src = tracks[id].file;
-            },
-            doPlay = function () {
-                audio.play()
-                    .then(function () {
-                        clearTimeout(connecting);
-                        $(".update").remove();
-                    })
-                    .catch(function (err) {
-                        console.log(err);
-                        console.log(err.message);
-                        infoMessage("Streamplayer", err.message);
-
-                    })
-            };
-        loadTrack(index);
-    }
-}
 
 function getDevices(override) {
     if (typeof (override) == 'undefined') override = false;

@@ -26,6 +26,12 @@ Fixes
   * Protect parameter for dimmers.
   * Removal of ES6 dependency (introduced by the graph update)
 
+Upgrading from earlier versions:
+
+buttons:
+  Use the btnimage parameter instead of the image parameter.
+  The parameter ``isimage`` is not used anymore.
+
 3.1.0 (18-9-2019)
 -----------------
 

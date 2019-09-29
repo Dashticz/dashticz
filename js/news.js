@@ -51,7 +51,7 @@ function getNews(columndiv, blockdef, newsfeed) {
                     htmlRss += '</div>';
                     $('body').append(htmlRss);
                 }
-
+//                return;
                 newsWrapper = $('#rss-styled_' + blockdef).easyTicker({
                     direction: 'up',
                     easing: 'lineair',
@@ -60,7 +60,7 @@ function getNews(columndiv, blockdef, newsfeed) {
                     visible: 1,
                     mousePause: 0
                 }).data('easyTicker');
-
+/*
                 var maxHeight = -1;
                 if (typeof(blocks[blockdef]) !== 'undefined' && typeof(blocks[blockdef]['maxheight']) !== 'undefined') maxHeight = blocks[blockdef]['maxheight'];
 
@@ -70,7 +70,7 @@ function getNews(columndiv, blockdef, newsfeed) {
 
                 if(maxHeight > 0) {
                   $('#rss-styled_' + blockdef).parents('.transbg').height(maxHeight);
-                }
+                }*/
             },error: function(data){
 		infoMessage('<font color="red">News Error!</font>','RSS feed ' + data.statusText +'. Check rss url.', 10000);
 		}

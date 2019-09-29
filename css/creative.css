@@ -88,6 +88,24 @@
 	border: 7px solid rgba(255,255,255,0);
 }
 
+.dt_block {
+	display: flex
+}
+
+.dt_content {
+	width: 100%;
+/*	padding-left: 10px;*/
+}
+
+.dt_block .col-icon {
+	width: 50px !important
+}
+
+.dt_title {
+	font-weight: bold;
+	font-size: 150%;
+}
+
 .fa-tv:before  {font-size:26px;}
 .col-currency {font-size: 18px;text-align:right;}
 .SonarrItem {
@@ -1021,6 +1039,8 @@ Only add this hover on NON touch devices
 	width:40px !important;
 	float: left;
 	z-index:10;
+	padding-left: 5px;
+	padding-right: 5px;
 }
 
 .col-data {
