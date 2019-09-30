@@ -106,9 +106,10 @@ As the last step the screens need to be defined::
 One screen has been defined, consisting of column 1 and column 2.
 
 
-Just to be sure, add the following CONFIG setting as well::
+Just to be sure, add the following CONFIG settings as well::
 
   config['use_favorites'] = 0;  //Request all Domoticz Devices, not only favorites
+  config['auto_positioning'] = 0;  // Use 0 this if you have defined your own columns
 
 Your complete CONFIG.js now should look as follows::
 
@@ -119,6 +120,7 @@ Your complete CONFIG.js now should look as follows::
   config['dashticz_refresh'] = '60';
 
   config['use_favorites'] = 0; //Request all Domoticz Devices, not only favorites
+  config['auto_positioning'] = 0;  // Use 0 this if you have defined your own columns
 
   //Definition of blocks
   blocks = {}
