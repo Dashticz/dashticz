@@ -106,6 +106,11 @@
 	font-size: 150%;
 }
 
+.dt_state iframe {
+	width: 100%;
+	max-width: 100%
+}
+
 .fa-tv:before  {font-size:26px;}
 .col-currency {font-size: 18px;text-align:right;}
 .SonarrItem {

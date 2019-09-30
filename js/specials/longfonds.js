@@ -1,3 +1,5 @@
+/* global Dashticz */
+
 function DT_longfonds(block) {
     return {
         name: 'longfonds',
@@ -6,6 +8,8 @@ function DT_longfonds(block) {
         run: runLongfonds
     }
 }
+
+Dashticz.register(DT_longfonds);
 
 function runLongfonds(me) {
     $.getJSON(_CORS_PATH + 'https://www.longfonds.nl/gezondelucht/api/zipcode-check?zipcode=' + settings['longfonds_zipcode'] + '&houseNumber=' + settings['longfonds_housenumber'], function (data) {

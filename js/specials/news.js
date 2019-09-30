@@ -1,4 +1,4 @@
-/* global settings _CORS_PATH infoMessage*/
+/* global settings _CORS_PATH infoMessage Dashticz*/
 // eslint-disable-next-line no-unused-vars
 function DT_news(block) {
     return {
@@ -11,6 +11,8 @@ function DT_news(block) {
     }
 }
 
+Dashticz.register(DT_news);
+
 $.ajax({
     url: 'vendor/jquery.newsTicker.min.js',
     async: false,
@@ -18,7 +20,7 @@ $.ajax({
 });
 
 function getNews() {
-    return '<div id="rss-styled"><ul id="newsTicker"></div></div>';
+    return '<ul id="newsTicker"></div>';
 }
 
 function runNews(me) {
@@ -58,7 +60,7 @@ function runNews(me) {
                 $('body').append(htmlRss);
             }
 
-                $(me.mountPoint+' #rss-styled').easyTicker({
+                $(me.mountPoint+' .dt_state').easyTicker({
                     direction: 'up',
                     easing: 'lineair',
                     speed: 'slow',

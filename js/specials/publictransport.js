@@ -1,4 +1,4 @@
-/* global language, _CORS_PATH, moment*/
+/* global language, _CORS_PATH, moment, Dashticz*/
 // eslint-disable-next-line no-unused-vars
 function DT_publictransport(block) {
 	return {
@@ -8,11 +8,13 @@ function DT_publictransport(block) {
 	}
 }
 
+Dashticz.register(DT_publictransport)
+
 function runPublicTransport(me) {
 	//Get data every interval and call function to create block
 	var interval = 60;
 	if (typeof (me.block.interval) !== 'undefined') interval = me.block.interval;
-	$(me.mountPoint + ' .state').html(language.misc.loading);
+	$(me.mountPoint + ' .dt_state').html(language.misc.loading);
 	getData(me);
 
 	if (me.block.provider.toLowerCase() == 'ns') {
@@ -223,19 +225,19 @@ function dataPublicTransport(me, data) {
 	}
 
 
-	$(me.mountPoint + ' .state').html('');
+	$(me.mountPoint + ' .dt_state').html('');
 	var c = 1;
 	Object.keys(dataPart).forEach(function (d) {
 		//Object.keys(dataPart).sort().forEach(function(d) {
 		for (const p in dataPart[d]) {
-			if (c <= transportobject.results) $(me.mountPoint + ' .state').append(dataPart[d][p]);
+			if (c <= transportobject.results) $(me.mountPoint + ' .dt_state').append(dataPart[d][p]);
 			c++;
 		}
 	});
 
 	if (typeof (transportobject.show_lastupdate) !== 'undefined' && transportobject.show_lastupdate == true) {
 		var dt = new Date();
-		$(me.mountPoint + ' .state').append('<em>' + language.misc.last_update + ': ' + addZero(dt.getHours()) + ":" + addZero(dt.getMinutes()) + ":" + addZero(dt.getSeconds()) + '</em>')
+		$(me.mountPoint + ' .dt_state').append('<em>' + language.misc.last_update + ': ' + addZero(dt.getHours()) + ":" + addZero(dt.getMinutes()) + ":" + addZero(dt.getSeconds()) + '</em>')
 	}
 }
 

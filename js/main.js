@@ -1,7 +1,7 @@
 /* eslint-disable no-prototype-builtins */
-/* global getBlockClick customfolder myBlockNumbering:writable objectlength config initVersion loadSettings settings getRandomInt number_format levelNamesEncoded _TEMP_SYMBOL hexToHsb Cookies*/
+/* global getBlockClick myBlockNumbering:writable objectlength config initVersion loadSettings settings getRandomInt number_format levelNamesEncoded _TEMP_SYMBOL hexToHsb Cookies*/
 /* global sessionValid MobileDetect moment getBlock buttons handleObjectBlock getGraphs iconORimage getBlockData titleAndValueSwitch showUpdateInformation getStateBlock addThermostatFunctions*/
-/* global loadWeatherFull loadWeather Swiper ion MoonPhase StationClock*/
+/* global loadWeatherFull loadWeather Swiper ion StationClock*/
 
 //To refactor later:
 /* global blocktypes afterGetDevices getStatusBlock google slideDeviceExt switchSecurity*/
@@ -11,6 +11,7 @@
 
 /*To be removed from this file: appendHorizon loadMaps*/
 
+/* global Dashticz*/
 var language = {};
 var cache = new Date().getTime();
 
@@ -53,6 +54,10 @@ function b64_to_utf8(str) {
 
 // eslint-disable-next-line no-unused-vars
 function loadFiles(customfolder) {
+    $( document ).ajaxError(function( event, request, settings, thrownError ) {
+        console.error("Ajax error reading " + settings.url)
+        console.error(thrownError);
+      });
 
     $.ajax({ url: customfolder + '/CONFIG.js', dataType: 'script' })
     .error(function() {
@@ -137,14 +142,8 @@ function loadFiles(customfolder) {
         return $.when(
             $.ajax({ url: 'js/switches.js', dataType: 'script' }),
             $.ajax({ url: 'js/thermostat.js', dataType: 'script' }),
-            $.ajax({ url: 'js/specials/streamplayer.js', dataType: 'script' }),
-            $.ajax({ url: 'js/specials/frame.js', dataType: 'script' }),
-            $.ajax({ url: 'js/specials/news.js', dataType: 'script' }),
-            $.ajax({ url: 'js/specials/longfonds.js', dataType: 'script' }),
-            $.ajax({ url: 'js/specials/traffic.js', dataType: 'script' }),
-            $.ajax({ url: 'js/specials/train.js', dataType: 'script' }),
-            $.ajax({ url: 'js/specials/publictransport.js', dataType: 'script' }),
-            $.ajax({ url: 'js/specials/button.js', dataType: 'script' })
+            $.ajax({ url: 'js/specials/special.js', dataType: 'script' })
+                .then(function() { console.log("loaded"); console.log(Dashticz); return Dashticz.init()})
 
         );
     })

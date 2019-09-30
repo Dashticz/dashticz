@@ -1,7 +1,7 @@
 /* eslint-disable no-debugger */
 /*global blocktypes:writable, language, _TEMP_SYMBOL, getExtendedBlockTypes, blocks, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
 /*global getSpotify, loadNZBGET, loadTrafficInfo, getCoin, addTVGuide, loadChromecast, loadGarbage, loadSonarr, loadMaps */
-/*global DT_button, DT_frame, DT_publictransport, DT_train, DT_longfonds, DT_traffic, DT_news, DT_streamplayer, getLog, appendStationClock, appendHorizon, addCalendar*/
+/*global Dashticz, getLog, appendStationClock, appendHorizon, addCalendar*/
 /*global alldevices getIconStatusClass*/
 /*global getRandomInt, moment, number_format*/
 
@@ -327,6 +327,8 @@ function handleBlocktitle(idx, blockdef, width) {
 }
 
 function handleStringBlock(block, columndiv, width, c) {
+    if (Dashticz.mount(columndiv, block, blocks[block] ))
+        return;
     switch (block) {
         case 'logo':
             $(columndiv).append('<div data-id="logo" class="logo col-xs-' + width + '">' + settings['app_title'] + '</div>');
@@ -484,26 +486,8 @@ function handleStringBlock(block, columndiv, width, c) {
             });
             loadNZBGET(columndiv);
             return;
-        case 'train':
-            mountSpecialBlock(columndiv, blocks['train'], DT_train);
-            return;
-        case 'longfonds':
-            mountSpecialBlock(columndiv, blocks['longfonds'], DT_longfonds);
-            return;
-        case 'traffic':
-            //            if (typeof(getTraffic) !== 'function') $.ajax({url: 'js/traffic.js', async: false, dataType: "script"});
-            //            $(columndiv).append('<div data-id="traffic" class="traffic"></div>');
-            //            getTraffic();
-            mountSpecialBlock(columndiv, blocks['traffic'], DT_traffic);
-            return;
         case 'trafficmap':
             $(columndiv).append('<div data-id="trafficmap" class="mh transbg block_trafficmap col-xs-12"><div id="trafficm" class="trafficmap"></div></div>');
-            return;
-        case 'news':
-            //            if (typeof(getNews) !== 'function') $.ajax({url: 'js/news.js', async: false, dataType: "script"});
-            //            $(columndiv).append('<div data-id="news" class="news"></div>');
-            //            getNews(columndiv, 'news', settings['default_news_url']);
-            mountSpecialBlock(columndiv, blocks['news'], DT_news);
             return;
         case 'log':
             if (typeof (getLog) !== 'function') $.ajax({
@@ -538,10 +522,6 @@ function handleStringBlock(block, columndiv, width, c) {
             html += '</div>';
             $(columndiv).append(html);
             addCalendar($('.containsicalendar' + random), settings['calendarurl']);
-            return;
-        case 'streamplayer':
-            //            appendStreamPlayer(columndiv, 'streamplayer', );
-            mountSpecialBlock(columndiv, blocks['streamplayer'], DT_streamplayer)
             return;
         case 'chromecast':
             $.ajax({
@@ -584,7 +564,7 @@ function handleStringBlock(block, columndiv, width, c) {
                 //                if (typeof(getNews) !== 'function') $.ajax({url: 'js/news.js', async: false, dataType: 'script'});
                 //                $(columndiv).append('<div class="' + block + '"></div>');
                 //                getNews(columndiv, block, blocks[block]['feed']);
-                mountSpecialBlock(columndiv, blocks[block], DT_news);
+                Dashticz.mount(columndiv, 'news', blocks[block]);
                 return;
             }
             if (block.substring(0, 6) === 'graph_') {
@@ -597,6 +577,8 @@ function handleStringBlock(block, columndiv, width, c) {
 }
 
 function handleObjectBlock(block, index, columndiv, width) {
+    if (Dashticz.mount(columndiv, block))
+        return;
     var random = getRandomInt(1, 100000);
     if (block.latitude) {
         $(columndiv).append(loadMaps(random, block));
@@ -606,13 +588,8 @@ function handleObjectBlock(block, index, columndiv, width) {
     if (block.key) key = block['key'];
     if (block.width) width = block['width'];
 
-    if (block.frameurl) {
-        mountSpecialBlock(columndiv, block, DT_frame)
-        return;
-    } else if (block.empty) {
+    if (block.empty) {
         $(columndiv).append('<div data-id="' + key + '" class="mh transbg col-xs-' + width + '">');
-    } else if (block.station) {
-        mountSpecialBlock(columndiv, block, DT_publictransport);
     } else if (block.trafficJams || block.roadWorks || block.radars) {
         if (typeof (loadTrafficInfo) !== 'function') $.ajax({
             url: 'js/trafficinfo.js',
@@ -656,7 +633,7 @@ function handleObjectBlock(block, index, columndiv, width) {
         addCalendar($('.containsicalendar' + random), block);
     } else {
         console.log(index);
-        mountSpecialBlock(columndiv, block, DT_button);
+        Dashticz.mountSpecialBlock(columndiv, block, Dashticz.components["button"]);
         //        $(columndiv).append(loadButton(index, block));
     }
 }
@@ -1044,72 +1021,3 @@ function Beaufort(windSpeed) {
     return '12 Bft';
 }
 
-
-function mountSpecialBlock(mountPoint, blockdef, special) {
-    var tmpSpecialDef = getDefaultBlockConfig(mountPoint, blockdef, special);
-    $(mountPoint).append(getSpecialBlock(tmpSpecialDef));
-    tmpSpecialDef.run(tmpSpecialDef);
-}
-
-function getSpecialBlock(blockConfig) {
-    debugger;
-    var html = '<div ' + blockConfig.containerExtra +
-        (blockConfig.dataId ? ' data-id="' + blockConfig.dataId + '"' : '') +
-        ' class="transbg ' + blockConfig.containerClass + ' col-xs-' + blockConfig.width + ' ' + blockConfig.name + ' dt_block">' +
-        getColIcon(blockConfig) +
-        '<div class="dt_content">' +
-        blockConfig.renderTitle(blockConfig) +
-        '<div class="dt_state">' +
-            (blockConfig.getState? blockConfig.getState(blockConfig) : '') +
-        '</div></div></div>';
-    return html;
-}
-
-function getColIcon(blockConfig) {
-    var html = '';
-    if (blockConfig.icon) {
-        html += '<div class="col-icon">';
-        html += '<em class="' + blockConfig.icon + '"></em>';
-        html += '</div>';
-    }
-    if (blockConfig.image) {
-        html += '<div class="col-icon">';
-        html += '<img src="img/' + blockConfig.image + '" class="icon"/>';
-        html += '</div>';
-    }
-    return html;
-}
-
-function getDefaultBlockConfig(mountPoint, block, special) {
-    var defaultConfig = {
-        width: 12,
-        containerExtra: '',
-        dataId: '',
-        mountPoint: mountPoint,
-        block: block,
-        key: '',
-        containerClass: '',
-        getTitle: function() { return this.block && this.block.title},
-        renderTitle: function () {
-            if (this.getTitle()) {
-                var res = '<div class="dt_title">' + this.getTitle() + '</div>';
-                console.log(res);
-                return res;
-            } else return ''
-        }
-    }
-    var newConfig = {}
-    if (block && typeof block.icon !== 'undefined') newConfig.icon = block.icon;
-    if (block && typeof block.image !== 'undefined') newConfig.image = block.image;
-    if (block && block.width) newConfig.width = block.width;
-    if (block && block.key) {
-        newConfig.key = block.key;
-        newConfig.dataId = block.key;
-    }
-
-    var result = {}
-    $.extend(result, defaultConfig);
-    $.extend(result, special(block));
-    $.extend(result, newConfig);
-    return result
-}

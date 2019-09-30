@@ -1,4 +1,4 @@
-/* global _CORS_PATH*/
+/* global _CORS_PATH Dashticz*/
 // eslint-disable-next-line no-unused-vars
 function DT_traffic() {
     return {
@@ -10,6 +10,9 @@ function DT_traffic() {
         run: runTraffic
     }
 }
+
+debugger;
+Dashticz.register(DT_traffic);
 
 function getTraffic() {
     return '<strong></strong>'

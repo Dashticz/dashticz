@@ -1,4 +1,4 @@
-/* global _STREAMPLAYER_TRACKS infoMessage*/
+/* global _STREAMPLAYER_TRACKS infoMessage Dashticz*/
 // eslint-disable-next-line no-unused-vars
 function DT_streamplayer(block)  {
     return {
@@ -7,6 +7,8 @@ function DT_streamplayer(block)  {
         run: runStreamPlayer
     }
 }
+
+Dashticz.register(DT_streamplayer);
 
 function runStreamPlayer(me) {
     var defaultTracks = [

@@ -1,4 +1,4 @@
-/* global _CORS_PATH, language */
+/* global _CORS_PATH, language, Dashticz */
 // eslint-disable-next-line no-unused-vars
 function DT_train(block) {
     return {
@@ -10,6 +10,8 @@ function DT_train(block) {
         run: runTrain
     }
 }
+
+Dashticz.register(DT_train);
 
 function getStateTrain() {
     return '<strong></strong>'

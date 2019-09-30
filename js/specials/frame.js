@@ -1,15 +1,17 @@
 
-/* global checkForceRefresh*/
+/* global checkForceRefresh Dashticz*/
 // eslint-disable-next-line no-unused-vars
 function DT_frame(block) {
     return  {
         name: 'frame',
         containerClass: 'swiper-no-swiping imgblock',
         containerExtra: (block && block.height) ? 'style="height:' + block.height + 'px;"': '',
-        getContent: renderFrame,
+        getState: renderFrame,
         run: runFrame
     }
 }
+
+Dashticz.register(DT_frame);
 
 function runFrame(me) {
     var refreshtime = 60000;
@@ -26,8 +28,9 @@ function reloadFrame(me) {
 }
 
 function renderFrame(me) {
-    var scrolling = me.block.scrollbars === false ? ' scrolling="no"' : '';
-    var html = '';
-    html += '<iframe class="dt_content" src="' + me.block.frameurl + '"' + scrolling + ' style="border:0px;height:' + (me.block.height - 30) + 'px;"></iframe>';
+    const scrolling = me.block.scrollbars === false ? ' scrolling="no"' : '';
+    let html = '';
+    const height = me.block && me.block.height ? ';height:' + (me.block.height - 30) + 'px' : '';
+    html += '<iframe src="' + me.block.frameurl + '"' + scrolling + ' style="border:0px' + height +';"></iframe>';
     return html
 }
