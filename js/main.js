@@ -1,7 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 /* global getBlockClick myBlockNumbering:writable objectlength config initVersion loadSettings settings getRandomInt number_format levelNamesEncoded _TEMP_SYMBOL hexToHsb Cookies*/
 /* global sessionValid MobileDetect moment getBlock buttons handleObjectBlock getGraphs iconORimage getBlockData titleAndValueSwitch showUpdateInformation getStateBlock addThermostatFunctions*/
-/* global loadWeatherFull loadWeather Swiper ion StationClock*/
+/* global loadWeatherFull loadWeather Swiper ion */
 
 //To refactor later:
 /* global blocktypes afterGetDevices getStatusBlock google slideDeviceExt switchSecurity*/
@@ -361,7 +361,7 @@ function buildScreens() {
                 parseFloat(screens[t]['maxheight']) >= $(window).height()
             )
         ) {
-            for (s in screens[t]) {
+            for (var s in screens[t]) {
                 if (s !== 'maxwidth' && s !== 'maxheight') {
                     var screenhtml = '<div class="screen screen' + s + ' swiper-slide slide' + s + '"';
                     if (typeof (screens[t][s]['background']) === 'undefined') {
@@ -443,7 +443,9 @@ function buildScreens() {
                                 for (var b in buttons) {
                                     $('.col3 .auto_buttons').append('<div id="block_' + myBlockNumbering + '"</div>');
                                     var myblockselector = '#block_' + myBlockNumbering++;
-                                    handleObjectBlock(buttons[b], b, myblockselector, 12, null);
+                                    
+                                    handleObjectBlock(buttons[b], Dashticz.mountNewContainer('.col3 .auto_buttons'), 12, null);
+
                                 }
                             }
                         }
@@ -521,6 +523,7 @@ function showMap(mapid, map) {
         infoMessage('Info:', 'Please, set Google Maps API KEY!', 8000);
         return
     }
+    var map;
     if (typeof (map) !== 'undefined') {
          map = new google.maps.Map(document.getElementById(mapid), {
             zoom: map.zoom,
@@ -633,7 +636,7 @@ function createModalDialog(dialogClass, dialogId, myFrame) {
     var setWidth = false;
     var setHeight = false;
     var mySetUrl = 'data-popup';
-    var mywidth, myheight;
+    var mywidth='', myheight='';
     if (typeof (myFrame.framewidth) !== 'undefined') {
         mywidth = myFrame.framewidth;
         setWidth = true;
@@ -696,6 +699,7 @@ function triggerStatus(idx, value, device) {
                 disableStandby();
             }
             if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['openpopupOn']) !== 'undefined') {
+                var random = getRandomInt(1, 100000);
                 $('.modal.openpopup,.modal-backdrop').remove();
 
                 $('body').append(createModalDialog('openpopup', 'popup_' + random, blocks[idx]['openpopupOn']));
@@ -725,6 +729,7 @@ function triggerStatus(idx, value, device) {
                 disableStandby();
             }
             if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['openpopupOff']) !== 'undefined') {
+                var random = getRandomInt(1, 100000);
                 $('.modal.openpopup,.modal-backdrop').remove();
 
                 $('body').append(createModalDialog('openpopup', 'popup_' + random, blocks[idx]['openpopupOff']));
@@ -834,55 +839,6 @@ function loadMaps(b, map) {
 }
 
 
-function checkForceRefresh(m_instance, url) {
-    //forcerefresh is set to 1 or true:
-    //   adds current time to an url as second parameter (for webcams)
-    //   adds the timestamp as first parameter if there are no parameters yet
-    //forcerefresh:2
-    //   calls nocache.php and prevent caching by setting headers in php.
-    //forcerefresh:3
-    //   adds timestamp parameter to the end of the url
-
-
-    if (typeof (m_instance.forcerefresh) !== 'undefined') {
-        var str = "" + (new Date()).getTime();
-        var mytimestamp = 't=' + str.substr(str.length - 8, 5);
-        switch (m_instance.forcerefresh) {
-            case true:
-            case 1:
-                //try to add the timestamp as second parameter
-                //it there are no parameters the timestamp will be added.
-                //behavior changed to support cheap webcams
-                if (url.indexOf("?") == -1) //no parameters. We will add the timestamp
-                    url += '?' + mytimestamp;
-                else { //we have at least one parameters
-                    var pos = url.indexOf("&");
-                    if (pos > 0) {
-                        //we have more than one parameter
-                        //insert the timestamp as second
-                        url = url.substr(0, pos + 1) + '&' + mytimestamp + url.substr(pos);
-                    }
-                    else {
-                        //there is only one parameter so we add it to the end
-                        url += '&' + mytimestamp;
-                    }
-
-                }
-                break;
-            case 2:
-                url = settings['dashticz_php_path'] + 'nocache.php?' + url;
-                break;
-            case 3: //add timestamp to the end
-                var sep = '&';
-                if (url.indexOf("?") == -1) { //there is no parameter yet
-                    sep = '?';
-                }
-                url += sep + mytimestamp;
-                break;
-        }
-    }
-    return url;
-}
 
 
 // eslint-disable-next-line no-unused-vars
@@ -901,35 +857,6 @@ function appendHorizon(columndiv) {
     $(columndiv).append(html);
 }
 
-// eslint-disable-next-line no-unused-vars
-function appendStationClock(columndiv, col, width) {
-    $(columndiv).append(
-        '<div data-id="clock" class="transbg block_' + col + ' col-xs-' + width + ' text-center">' +
-        '<canvas id="clock" width="150" height="150">Your browser is unfortunately not supported.</canvas>' +
-        '</div>'
-    );
-    if (typeof (StationClock) !== 'function') $.ajax({ url: 'vendor/stationclock.js', async: false, dataType: 'script' });
-
-    var clock = new StationClock("clock");
-    clock.body = StationClock.RoundBody;
-    clock.dial = StationClock.GermanStrokeDial;
-    clock.hourHand = StationClock.PointedHourHand;
-    clock.minuteHand = StationClock.PointedMinuteHand;
-    if (settings['hide_seconds_stationclock']) {
-        clock.secondHand = false;
-    } else {
-        clock.secondHand = StationClock.HoleShapedSecondHand;
-        if (typeof (settings['boss_stationclock']) == 'undefined') clock.boss = StationClock.NoBoss;
-        else if (settings['boss_stationclock'] == 'RedBoss') clock.boss = StationClock.RedBoss;
-    }
-
-    clock.minuteHandBehavoir = StationClock.BouncingMinuteHand;
-    clock.secondHandBehavoir = StationClock.OverhastySecondHand;
-
-    window.setInterval(function () {
-        clock.draw()
-    }, 50);
-}
 
 
 function getDevices(override) {
@@ -1058,7 +985,7 @@ function getDevices(override) {
                             }
 
                             triggerStatus(idx, device['LastUpdate'], device);
-                            triggerChange(idx, device['LastUpdate'], device);
+                            triggerChange(idx, device['LastUpdate']);
 
                             try {
                                 html += eval('getBlock_' + idx + '(device,idx,data.result)');
@@ -1172,11 +1099,11 @@ function handleDevice(device, idx) {
     if (device['Image'] === 'Heating') buttonimg = 'heating.png';
     var html = '';
     var addHTML = true;
-    if (device.hasOwnProperty('SubType') && device['SubType'] in blocktypes['SubType']) {
+    if (device.SubType && device['SubType'] in blocktypes['SubType']) {
         html += getStatusBlock(idx, device, blocktypes['SubType'][device['SubType']]);
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('HardwareType') && device['HardwareType'] in blocktypes['HardwareType']) {
+    if (device.HardwareType && device['HardwareType'] in blocktypes['HardwareType']) {
         if (typeof (blocktypes['HardwareType'][device['HardwareType']]['icon']) !== 'undefined') {
             html += getStatusBlock(idx, device, blocktypes['HardwareType'][device['HardwareType']]);
         }
@@ -1186,7 +1113,7 @@ function handleDevice(device, idx) {
                 html = getStatusBlock(idx, device, blocktypes['HardwareType'][device['HardwareType']][de], c);
 
                 triggerStatus(idx + '_' + c, device['LastUpdate'], device);
-                triggerChange(idx + '_' + c, device['LastUpdate'], device);
+                triggerChange(idx + '_' + c, device['LastUpdate']);
 
                 $('div.block_' + idx + '_' + c).html(html);
                 addHTML = false;
@@ -1195,19 +1122,19 @@ function handleDevice(device, idx) {
         }
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('HardwareName') && device['HardwareName'] in blocktypes['HardwareName']) {
+    if (device.HardwareName && device['HardwareName'] in blocktypes['HardwareName']) {
         html += getStatusBlock(idx, device, blocktypes['HardwareName'][device['HardwareName']]);
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('SensorUnit') && device['SensorUnit'] in blocktypes['SensorUnit']) {
+    if (device.SensorUnit && device['SensorUnit'] in blocktypes['SensorUnit']) {
         html += getStatusBlock(idx, device, blocktypes['SensorUnit'][device['SensorUnit']]);
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('Type') && device['Type'] in blocktypes['Type']) {
+    if (device.Type && device['Type'] in blocktypes['Type']) {
         html += getStatusBlock(idx, device, blocktypes['Type'][device['Type']]);
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('Name') && device['Name'] in blocktypes['Name']) {
+    if (device.Name && device['Name'] in blocktypes['Name']) {
         html += getStatusBlock(idx, device, blocktypes['Name'][device['Name']]);
         return [html, addHTML];
     }
@@ -1355,7 +1282,7 @@ function handleDevice(device, idx) {
             html += '<div class="col-xs-8 col-data">';
             html += '<strong class="title">' + device['Name'] + '</strong><br />';
             html += '<div class="btn-group" data-toggle="buttons">';
-            for (a in names) {
+            for (var a in names) {
                 if (parseFloat(a) > 0 || (a == 0 && (typeof (device['LevelOffHidden']) == 'undefined' || device['LevelOffHidden'] === false))) {
                     var st = '';
                     if ((a * 10) == parseFloat(device['Level'])) st = 'active';
@@ -1720,7 +1647,7 @@ function createBlocks(blockValues, device) {
         if (typeof (blocks[blockValue.idx]) !== 'undefined' && typeof (blocks[blockValue.idx]['icon']) !== 'undefined') blockValue.icon = blocks[blockValue.idx]['icon'];
 
         triggerStatus(blockValue.idx, device['LastUpdate'], device);
-        triggerChange(blockValue.idx, device['LastUpdate'], device);
+        triggerChange(blockValue.idx, device['LastUpdate']);
 
         if (typeof (blocks[blockValue.idx]) !== 'undefined' && typeof (blocks[blockValue.idx]['title']) !== 'undefined') blockValue.title = blocks[blockValue.idx]['title'];
         this.html = getStateBlock(blockValue.idx, blockValue.icon, blockValue.title, blockValue.value + ' ' + blockValue.unit, device);
@@ -1999,7 +1926,7 @@ function getDimmerBlock(device, idx, buttonimg) {
     slider.disabled= isProtected(idx);
     addSlider(device['idx'], slider);
 
-    return [this.html, false];
+    return [html, false];
 }
 
 function getBlindsBlock(device, idx, withPercentage) {

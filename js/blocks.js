@@ -1,7 +1,7 @@
 /* eslint-disable no-debugger */
 /*global blocktypes:writable, language, _TEMP_SYMBOL, getExtendedBlockTypes, blocks, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
 /*global getSpotify, loadNZBGET, loadTrafficInfo, getCoin, addTVGuide, loadChromecast, loadGarbage, loadSonarr, loadMaps */
-/*global Dashticz, getLog, appendStationClock, appendHorizon, addCalendar*/
+/*global Dashticz, getLog, appendHorizon, addCalendar*/
 /*global alldevices getIconStatusClass*/
 /*global getRandomInt, moment, number_format*/
 
@@ -249,7 +249,7 @@ blocktypes.Name['Mondphase'] = {
 
 blocktypes = getExtendedBlockTypes(blocktypes);
 
-var myBlockNumbering = 0; //To give all blocks a unique number
+//var myBlockNumbering = 0; //To give all blocks a unique number
 
 // eslint-disable-next-line no-unused-vars
 function getBlock(cols, c, columndiv, standby) {
@@ -281,26 +281,27 @@ function getBlock(cols, c, columndiv, standby) {
                 $(columndiv).append(handleBlocktitle(cols['blocks'][b], blockdef, width));
                 continue;
             }
-
+/*
             var blockIndex = 'block_' + myBlockNumbering;
             //            console.log(blockIndex);
             blockIndex += standby ? '_sb' : '';
             $(columndiv).append('<div id="' + blockIndex + '"></div>');
             var myIndex = myBlockNumbering++;
-            var myblockselector = '#' + blockIndex;
+            var myblockselector = '#' + blockIndex;*/
+            const myblockselector = Dashticz.mountNewContainer(columndiv);
+            if(!Dashticz.mount(myblockselector, cols['blocks'][b]))
+                switch (typeof (cols['blocks'][b])) {
+                    case 'object':
+                        handleObjectBlock(cols['blocks'][b], myblockselector, width, c);
+                        continue;
 
-            switch (typeof (cols['blocks'][b])) {
-                case 'object':
-                    handleObjectBlock(cols['blocks'][b], myIndex, myblockselector, width, c);
-                    continue;
+                    case 'string':
+                        handleStringBlock(cols['blocks'][b], myblockselector, width, c);
+                        continue;
 
-                case 'string':
-                    handleStringBlock(cols['blocks'][b], myblockselector, width, c);
-                    continue;
-
-                default:
-                    $(myblockselector).html('<div data-id="' + cols['blocks'][b] + '" class="mh transbg block_' + cols['blocks'][b] + '"></div>');
-                    break;
+                    default:
+                        $(myblockselector).html('<div data-id="' + cols['blocks'][b] + '" class="mh transbg block_' + cols['blocks'][b] + '"></div>');
+                        break;
             }
         }
     }
@@ -327,8 +328,6 @@ function handleBlocktitle(idx, blockdef, width) {
 }
 
 function handleStringBlock(block, columndiv, width, c) {
-    if (Dashticz.mount(columndiv, block, blocks[block] ))
-        return;
     switch (block) {
         case 'logo':
             $(columndiv).append('<div data-id="logo" class="logo col-xs-' + width + '">' + settings['app_title'] + '</div>');
@@ -497,9 +496,11 @@ function handleStringBlock(block, columndiv, width, c) {
             });
             getLog(columndiv);
             return;
+/*            
         case 'stationclock':
             appendStationClock(columndiv, block, width);
             return;
+*/
         case 'sunrise':
             var classes = 'block_' + block + ' col-xs-' + width + ' transbg text-center sunriseholder';
             if (c === 'bar') {
@@ -560,13 +561,6 @@ function handleStringBlock(block, columndiv, width, c) {
             $(columndiv).append('<div data-id="fullscreen" class="col-xs-' + width + ' text-right">' + getFullScreenIcon() + '</div>');
             return;
         default:
-            if (block.substring(0, 5) === 'news_') {
-                //                if (typeof(getNews) !== 'function') $.ajax({url: 'js/news.js', async: false, dataType: 'script'});
-                //                $(columndiv).append('<div class="' + block + '"></div>');
-                //                getNews(columndiv, block, blocks[block]['feed']);
-                Dashticz.mount(columndiv, 'news', blocks[block]);
-                return;
-            }
             if (block.substring(0, 6) === 'graph_') {
                 $(columndiv).append('<div data-id="' + block + '" class="transbg block_' + block + '"></div>');
                 return;
@@ -576,9 +570,7 @@ function handleStringBlock(block, columndiv, width, c) {
     }
 }
 
-function handleObjectBlock(block, index, columndiv, width) {
-    if (Dashticz.mount(columndiv, block))
-        return;
+function handleObjectBlock(block, columndiv, width) {
     var random = getRandomInt(1, 100000);
     if (block.latitude) {
         $(columndiv).append(loadMaps(random, block));
@@ -632,7 +624,6 @@ function handleObjectBlock(block, index, columndiv, width) {
         });
         addCalendar($('.containsicalendar' + random), block);
     } else {
-        console.log(index);
         Dashticz.mountSpecialBlock(columndiv, block, Dashticz.components["button"]);
         //        $(columndiv).append(loadButton(index, block));
     }
