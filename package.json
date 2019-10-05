@@ -1,21 +1,12 @@
 {
   "name": "dashticz",
-  "version": "3.2.0",
+  "version": "3.1.0",
   "description": "Alternative dashboard for Domoticz",
   "main": "index.js",
   "directories": {
     "doc": "docs"
   },
   "dependencies": {
-    "babel-core": "^6.26.3",
-    "babel-loader": "^8.0.6",
-    "babel-preset-env": "^1.7.0",
-    "css-loader": "^3.2.0",
-    "eslint-config-airbnb-base": "^14.0.0",
-    "eslint-plugin-import": "^2.18.2",
-    "style-loader": "^1.0.0",
-    "webpack-cli": "^3.3.9",
-    "webpack": "^4.41.0"
   },
   "devDependencies": {
     "eslint": "^6.5.1"
