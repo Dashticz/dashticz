@@ -1,0 +1,188 @@
+/* global blocks settings */
+
+// eslint-disable-next-line no-unused-vars
+var Dashticz = {
+    components: [],
+    blockNumbering: 0,
+    init() {
+        const components = [
+            'streamplayer',
+            'button',
+            'frame',
+            'news',
+            'longfonds',
+            'traffic',
+            'train',
+            'publictransport',
+            'stationclock',
+            'blocktitle'
+        ]
+        //the $.ajax().then accepts two functions: Success and Error handler.
+        // In the success handler we call the async init function from the component
+        return Promise.all(components.map(component => {
+            return $.ajax({
+                    url: 'js/components/' + component + '.js',
+                    dataType: 'script'
+                })
+                .fail((jqXHR, textStatus, errorThrown) => {
+
+                    console.error("Error loading: ./js/components/" + component + '.js');
+                    console.error('Error: ', textStatus);
+                    return errorThrown;
+                })
+                .done(() => Dashticz.components[component].init ? Dashticz.components[component].init() : 'Loaded: ' + component)
+        }))
+    },
+    mountSpecialBlock(mountPoint, blockdef, special) {
+        const me = Dashticz.getDefaultBlockConfig(mountPoint, blockdef, special);
+        $(mountPoint).append(Dashticz.getSpecialBlock(me));
+        if (me.containerClass)
+            $(mountPoint + ' .dt_block').addClass(me.containerClass(blockdef))
+        if (special.get)
+            $(mountPoint + ' .dt_state').append(special.get(me))
+        if(special.run) special.run(me);
+    },
+    getSpecialBlock(me) {
+        var html = '<div ' +
+            (me.dataId ? ' data-id="' + me.dataId + '"' : '') +
+            ' class="transbg  col-xs-' + me.width + ' ' + me.name + ' dt_block "' +
+            (me.containerExtra ? me.containerExtra(me.block) : '') + '>' +
+            Dashticz.getColIcon(me) +
+            '<div class="dt_content">' +
+            Dashticz.renderTitle(me) +
+            Dashticz.renderStateDiv(me) +
+            '</div></div>'
+        return html;
+    },
+    getColIcon: (me) => {
+        const icon = me.icon;
+        let html = '';
+        if (icon) {
+            html += '<div class="col-icon">';
+            html += '<em class="' + icon + '"></em>';
+            html += '</div>';
+        }
+        const image = me.image;
+        if (image) {
+            html += '<div class="col-icon">';
+            html += '<img src="img/' + image + '" class="icon"/>';
+            html += '</div>';
+        }
+        return html;
+    },
+    renderTitle: function (me) {
+        if (me.title) {
+            let res = '<div class="dt_title">' + me.title + '</div>';
+            console.log(res);
+            return res;
+        } else return ''
+    },
+    renderStateDiv: () => '<div class="dt_state"></div>',
+    getDefaultBlockConfig(mountPoint, block, special) {
+        var defaultConfig = {
+            width: 12,
+            mountPoint: mountPoint,
+            block: block,
+            key: '',
+            name: special.name
+        }
+
+        if (special.default)
+            $.extend(defaultConfig, special.default)
+
+        if (block && typeof block.icon !== 'undefined') defaultConfig.icon = block.icon;
+        if (block && typeof block.image !== 'undefined') defaultConfig.image = block.image;
+        if (block && block.width) defaultConfig.width = block.width;
+        if (block && block.title) defaultConfig.title = block.title;
+        if (block && block.key) {
+            defaultConfig.key = block.key;
+            defaultConfig.dataId = block.key;
+        }
+        return defaultConfig
+    },
+    register(special) {
+        this.components[special.name] = special;
+    },
+    mount(mountPoint, selector) {
+        console.log("mount ", selector, typeof selector);
+        if (typeof selector === 'string') {
+            const def = this.components[selector];
+            if (def) {
+                this.mountSpecialBlock(mountPoint, blocks[selector], def);
+                return true
+            }
+        }
+        if (typeof selector === 'object') {
+            for (const comp in this.components) {
+                if (this.components[comp].canHandle && this.components[comp].canHandle(selector)) {
+                    this.mountSpecialBlock(mountPoint, selector, this.components[comp])
+                    return true;
+                }
+            }
+        } else {
+            for (const comp in this.components) {
+                if (this.components[comp].canHandle && this.components[comp].canHandle(blocks[selector], selector)) {
+                    this.mountSpecialBlock(mountPoint, blocks[selector], this.components[comp])
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    },
+    mountNewContainer(column) {
+        $(column).append('<div id="block_' + Dashticz.blockNumbering + '"</div>');
+        return '#block_' + Dashticz.blockNumbering++;
+    }
+
+}
+
+// eslint-disable-next-line no-unused-vars
+function checkForceRefresh(m_instance, url) {
+    //forcerefresh is set to 1 or true:
+    //   adds current time to an url as second parameter (for webcams)
+    //   adds the timestamp as first parameter if there are no parameters yet
+    //forcerefresh:2
+    //   calls nocache.php and prevent caching by setting headers in php.
+    //forcerefresh:3
+    //   adds timestamp parameter to the end of the url
+
+
+    if (typeof (m_instance.forcerefresh) !== 'undefined') {
+        var str = "" + (new Date()).getTime();
+        var mytimestamp = 't=' + str.substr(str.length - 8, 5);
+        switch (m_instance.forcerefresh) {
+            case true:
+            case 1:
+                //try to add the timestamp as second parameter
+                //it there are no parameters the timestamp will be added.
+                //behavior changed to support cheap webcams
+                if (url.indexOf("?") == -1) //no parameters. We will add the timestamp
+                    url += '?' + mytimestamp;
+                else { //we have at least one parameters
+                    var pos = url.indexOf("&");
+                    if (pos > 0) {
+                        //we have more than one parameter
+                        //insert the timestamp as second
+                        url = url.substr(0, pos + 1) + '&' + mytimestamp + url.substr(pos);
+                    } else {
+                        //there is only one parameter so we add it to the end
+                        url += '&' + mytimestamp;
+                    }
+
+                }
+                break;
+            case 2:
+                url = settings['dashticz_php_path'] + 'nocache.php?' + url;
+                break;
+            case 3: //add timestamp to the end
+                var sep = '&';
+                if (url.indexOf("?") == -1) { //there is no parameter yet
+                    sep = '?';
+                }
+                url += sep + mytimestamp;
+                break;
+        }
+    }
+    return url;
+}

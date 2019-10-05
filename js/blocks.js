@@ -252,12 +252,20 @@ blocktypes = getExtendedBlockTypes(blocktypes);
 //var myBlockNumbering = 0; //To give all blocks a unique number
 
 // eslint-disable-next-line no-unused-vars
-function getBlock(cols, c, columndiv, standby) {
+function getBlock(cols, c, screendiv, standby) {
+//    if (c==='bar') debugger;
     if (typeof (cols) !== 'undefined') {
+        let columndiv = screendiv + ' .row .col' + c;
         var colclass = '';
         if (c === 'bar') colclass = 'transbg dark';
-        //        if (!standby) $('div.screen' + s + ' .row').append('<div data-colindex="' + c + '" class="col-sm-' + cols['width'] + ' col-xs-12 sortable col' + c + ' ' + colclass + '"></div>');
-        if (!standby) $('div.screen' + ' .row').append('<div data-colindex="' + c + '" class="col-sm-' + cols['width'] + ' col-xs-12 sortable col' + c + ' ' + colclass + '"></div>');
+        const colwidth = 'col-xs-' + (cols.width ? cols.width + ' ': '');
+        if (standby) {
+//            $('div.screenstandby .row').append('<div class="col-xs-' + columns_standby[c]['width'] + ' colstandby' + c + '"></div>');
+            $(screendiv+ ' .row').append('<div class="' + colwidth +  'col' + c + '"></div>');
+        } else {
+            $(screendiv + ' .row').append('<div data-colindex="' + c + '" class="' + colwidth + 'col-xs-12 sortable col' + c + ' ' + colclass + '"></div>');
+        }
+        //if (!standby) $('div.screen' + ' .row').append('<div data-colindex="' + c + '" class="col-sm-' + cols['width'] + ' col-xs-12 sortable col' + c + ' ' + colclass + '"></div>');
         for (var b in cols['blocks']) {
             var width = 12;
             switch (cols['blocks'][b]) {
@@ -274,13 +282,13 @@ function getBlock(cols, c, columndiv, standby) {
             if (typeof (blocks[cols['blocks'][b]]) !== 'undefined')
                 blockdef = blocks[cols['blocks'][b]];
             if (blockdef && typeof (blockdef.width) !== 'undefined') width = blockdef.width;
-
+/*
             if (blockdef &&
                 typeof (blockdef.type) !== 'undefined' &&
                 blockdef.type === 'blocktitle') {
                 $(columndiv).append(handleBlocktitle(cols['blocks'][b], blockdef, width));
                 continue;
-            }
+            }*/
 /*
             var blockIndex = 'block_' + myBlockNumbering;
             //            console.log(blockIndex);
@@ -307,25 +315,6 @@ function getBlock(cols, c, columndiv, standby) {
     }
 }
 
-function handleBlocktitle(idx, blockdef, width) {
-    var html = '<div data-id="' + idx + '" class="col-xs-' + width + ' mh titlegroups transbg">';
-    var data_width = 12;
-    var data_class = 'col-data no-icon';
-    if (blockdef &&
-        ((typeof (blockdef.icon) !== 'undefined') ||
-            (typeof (blockdef.image) !== 'undefined')
-        )
-    ) {
-        data_width = 8;
-        data_class = 'col-data';
-        html += iconORimage(idx, '', '', 'icon', '', 4, '');
-    }
-    html += '<div class="col-xs-' + data_width + ' ' + data_class + '">';
-    html += '<h3>' + blockdef.title + '</h3>';
-    html += '</div>';
-    html += '</div>';
-    return html;
-}
 
 function handleStringBlock(block, columndiv, width, c) {
     switch (block) {

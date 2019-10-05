@@ -1,20 +1,21 @@
 /* global _CORS_PATH, language, Dashticz */
 var DT_train = {
     name: 'train',
-    init(){
-        function getStateTrain() {
-            return '<strong></strong>'
-        }
-        function runTrain(me) {
+    default: {
+        icon: 'fas fa-train',
+        containerClass: () => 'hover trainrow', // and trafficrow
+        containerExtra: () => 'data-toggle="modal" data-target="#trainweb" onclick="setSrc(this);"'
+    },
+    run(me) {
             var rssurl = _CORS_PATH + 'https://www.rijdendetreinen.nl/rss/';
 
             $.ajax(rssurl, {
                 accepts: {
                     xml: 'application/rss+xml'
                 },
-                dataType: 'xml',
-                success: function (data) {
-                    var count = 0;
+                dataType: 'xml'})
+                .then( (data) => {
+                    let count = 0;
                     $(data).find('title').each(function () { // or "item" or whatever suits your feed
                         var el = $(this);
                         if (el.find('title').text().substr(0, 8) !== 'Opgelost') {
@@ -22,7 +23,7 @@ var DT_train = {
                         }
                     });
 
-                    $(me.mountPoint + ' strong').html(count + ' ' + language.misc.notifications_ns);
+                    $(me.mountPoint + ' .dt_state').html(count + ' ' + language.misc.notifications_ns);
 
                     if ($('#trainweb').length == 0) {
                         var html = '<div class="modal fade" id="trainweb" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
@@ -40,20 +41,11 @@ var DT_train = {
                         $('body').append(html);
                     }
                 }
-            });
+            );
             setTimeout(function () {
-                runTrain(me);
+                DT_train.run(me);
             }, (60000 * 5));
         }
-
-        return {
-            icon: 'fas fa-train',
-            containerClass: 'hover trainrow', // and trafficrow
-            containerExtra: 'data-toggle="modal" data-target="#trainweb" onclick="setSrc(this);"',
-            getState: getStateTrain,
-            run: runTrain
-        }
-    }
 }
 
 Dashticz.register(DT_train);

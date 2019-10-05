@@ -2,12 +2,13 @@
 // eslint-disable-next-line no-unused-vars
 var DT_traffic = {
     name: "traffic",
-    init: () => {
-        function getTraffic() {
-            return '<strong></strong>'
-        }
-        
-        function runTraffic(me) {
+    default: {
+        icon: 'fas fa-car',
+        containerClass: () => 'hover trafficrow',
+        containerExtra: () =>'data-toggle="modal" data-target="#trafficweb" onclick="setSrc(this);"'
+    },
+    get: () => '',
+    run(me) {
         
             const rssurl = _CORS_PATH + 'http://www.vid.nl/VI/_rss';
         
@@ -15,14 +16,15 @@ var DT_traffic = {
                 accepts: {
                     xml: 'application/rss+xml'
                 },
-                dataType: 'xml',
-                success: function (data) {
+                dataType: 'xml'}
+            )
+            .then( (data) => {
                     $(data).find('item').each(function () { // or "item" or whatever suits your feed
                         const el = $(this);
                         let text = el.find("title").text();
                         text = text.split(') [');
                         text = text[0] + ')';
-                        $(me.mountPoint+' strong').html(text);
+                        $(me.mountPoint+' .dt_state').html(text);
         
                         if ($('#trafficweb').length == 0) {
                             let html = '<div class="modal fade" id="trafficweb" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
@@ -40,23 +42,13 @@ var DT_traffic = {
                             $('body').append(html);
                         }
                     });
-                }
+                
             });
         
             setTimeout(function () {
-                getTraffic(me);
+                DT_traffic.run(me);
             }, (60000 * 5));
         }
-        
-    return {
-        name: 'traffic',
-        icon: 'fas fa-car',
-        containerClass: 'hover trafficrow', // and trafficrow
-        containerExtra: 'data-toggle="modal" data-target="#trafficweb" onclick="setSrc(this);"',
-        getState: getTraffic,
-        run: runTraffic
-    }
-}
 }
 
 Dashticz.register(DT_traffic);

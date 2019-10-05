@@ -142,9 +142,8 @@ function loadFiles(customfolder) {
         return $.when(
             $.ajax({ url: 'js/switches.js', dataType: 'script' }),
             $.ajax({ url: 'js/thermostat.js', dataType: 'script' }),
-            $.ajax({ url: 'js/specials/special.js', dataType: 'script' })
-                .then(function() { console.log("loaded"); console.log(Dashticz); return Dashticz.init()})
-
+            $.ajax({ url: 'js/dashticz.js', dataType: 'script' })
+                .then(function(){ return Dashticz.init()})
         );
     })
     .then (function(){
@@ -323,8 +322,7 @@ function buildStandby() {
         $('div.swiper-container').before(screenhtml);
 
         for (var c in columns_standby) {
-            $('div.screenstandby .row').append('<div class="col-xs-' + columns_standby[c]['width'] + ' colstandby' + c + '"></div>');
-            getBlock(columns_standby[c], c, 'div.screenstandby .row .colstandby' + c, true);
+            getBlock(columns_standby[c], 'standby'+c, 'div.screenstandby', true);
         }
     }
 
@@ -385,17 +383,19 @@ function buildScreens() {
                                 columns['bar'] = {}
                                 columns['bar']['blocks'] = ['logo', 'miniclock', 'settings']
                             }
-                            getBlock(columns['bar'], 'bar', 'div.screen' + s + ' .row .colbar', false);
+                            console.log('colbar');
+                            getBlock(columns['bar'], 'bar', 'div.screen' + s, false);
                         }
 
                         for (var cs in screens[t][s]['columns']) {
                             if (typeof (screens[t]) !== 'undefined') {
                                 var c = screens[t][s]['columns'][cs];
-                                getBlock(columns[c], c, 'div.screen' + s + ' .row .col' + c, false);
+                                getBlock(columns[c], c, 'div.screen' + s, false);
                             }
                         }
                     }
                     else {
+                        console.log('else')
 
                         if (parseFloat(settings['hide_topbar']) == 0) $('body .row').append('<div class="col-sm-undefined col-xs-12 sortable colbar transbg dark"><div data-id="logo" class="logo col-xs-2">' + settings['app_title'] + '<div></div></div><div data-id="miniclock" class="miniclock col-xs-8 text-center"><span class="weekday"></span> <span class="date"></span> <span>&nbsp;&nbsp;&nbsp;&nbsp;</span> <span class="clock"></span></div><div data-id="settings" class="settings settingsicon text-right" data-toggle="modal" data-target="#settingspopup"><em class="fas fa-cog" /></div></div></div>');
                         if (typeof (settings['default_columns']) == 'undefined' || parseFloat(settings['default_columns']) == 3) {

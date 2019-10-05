@@ -2,25 +2,25 @@
 // eslint-disable-next-line no-unused-vars
 var DT_publictransport = {
 	name: 'publictransport',
-	canHandle(block){
+	canHandle(block) {
 		return block && block.station
 	},
-	init() {
-		function runPublicTransport(me) {
-			//Get data every interval and call function to create block
-			var interval = 60;
-			if (typeof (me.block.interval) !== 'undefined') interval = me.block.interval;
-			$(me.mountPoint + ' .dt_state').html(language.misc.loading);
-			getData(me);
+	get() {
+		return language.misc.loading
+	},
+	run(me) {
+		//Get data every interval and call function to create block
+		var interval = 60;
+		if (typeof (me.block.interval) !== 'undefined') interval = me.block.interval;
+		getData(me);
 
-			if (me.block.provider.toLowerCase() == 'ns') {
-				if (parseFloat(interval) < 60) interval = 60; // limit request because of limitations in NS api for my private key ;)
-			}
-
-			setInterval(function () {
-				getData(me)
-			}, (interval * 1000));
+		if (me.block.provider.toLowerCase() == 'ns') {
+			if (parseFloat(interval) < 60) interval = 60; // limit request because of limitations in NS api for my private key ;)
 		}
+
+		setInterval(function () {
+			getData(me)
+		}, (interval * 1000));
 
 		function getData(me) {
 			var provider = me.block.provider.toLowerCase();
@@ -40,9 +40,10 @@ var DT_publictransport = {
 				dataURL = 'https://www.delijn.be/rise-api-core/haltes/Multivertrekken/' + me.block.station + '/' + me.block.results;
 			}
 
-			$.getJSON(dataURL, function (data) {
-				dataPublicTransport(me, data);
-			});
+			$.getJSON(dataURL)
+				.then((data) => {
+					dataPublicTransport(me, data);
+				});
 
 		}
 
@@ -254,11 +255,10 @@ var DT_publictransport = {
 
 			return z(mins % (24 * 60) / 60 | 0) + ':' + z(mins % 60);
 		}
-		return {
-			containerExtra: '', //style="padding-left:0px !important;padding-right:0px !important;">'
-			run: runPublicTransport
-		}
+
+
 	}
+
 }
 
 Dashticz.register(DT_publictransport)

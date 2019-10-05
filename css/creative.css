@@ -94,7 +94,7 @@
 
 .dt_content {
 	width: 100%;
-/*	padding-left: 10px;*/
+	padding-left: 10px;
 }
 
 .dt_block .col-icon {
@@ -573,19 +573,8 @@ a.playlist {
 	margin-left: 0px;
 }
 
-.titlegroups .co-data {
-	margin-top: 0px;
-	top: 50%;
-	-ms-transform: translateY(-50%);
-	transform: translateY(-50%);
-
-}
-
-.titlegroups .col-icon {
-	margin-top: 0;
-	top: 40%;
-	-ms-transform: translateY(-50%);
-	transform: translateY(-50%);
+.blocktitle{
+	font-size: 150%;
 }
 
 .up,.down {
@@ -1025,10 +1014,6 @@ Only add this hover on NON touch devices
 	margin:0px !important
 		
 }
-.fas.fa-train,.fas.fa-bus{
-	margin-left:5px;
-	margin-top:3px;
-}
 
 .trainrow,
 .trafficrow{
@@ -1231,6 +1216,13 @@ img.icon {
 	.transbg.col-xs-1, .transbg.col-xs-2, .transbg.col-xs-3, .transbg.col-xs-4, .transbg.col-xs-5, .transbg.col-xs-6, .transbg.col-xs-7, .transbg.col-xs-8, .transbg.col-xs-9, .transbg.col-xs-10, .transbg.col-xs-11, .transbg.col-xs-12 {
 		padding-top: 7px;
 		padding-bottom: 7px;
+	}
+	.dt_content {
+		padding-left: 5px;
+	}
+	
+	.dt_title {
+		font-size: 100%
 	}
 	.cast-button-container {
 		padding: 3px !important;
