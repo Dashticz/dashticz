@@ -603,7 +603,8 @@ function getBlockClick(idx, device) {
         if (device['SubType'] == 'Percentage' || device['SubType'] == 'Custom Sensor' || device['TypeImg'] == 'counter'
             || device['Type'] == 'Temp' || device['Type'] == 'Humidity' || device['Type'] == 'Wind' || device['Type'] == 'Rain'
             || device['Type'] == 'Temp + Humidity' || device['Type'] == 'Temp + Humidity + Baro'
-            || device['SubType'] == 'kWh' || device['SubType'] === 'Lux' || device['SubType'] === 'Solar Radiation'
+            || device['SubType'] == 'kWh' || device['SubType'] === 'Lux' || device['SubType'] === 'Solar Radiation' ||
+            device['SubType'] === 'Barometer'
         ) {
             /* In this case we want to the popup graph
     
