@@ -21,12 +21,13 @@ function getGraphs(device, popup) {
             break;
         case 'Wind':
             sensor = 'wind';
+            var windspeed=device.Data.split(';')[2]/10;
             if (config['use_beaufort']) {
-                currentValue = Beaufort(device['Speed']);
+                currentValue = Beaufort(windspeed);
                 decimals = 0;
                 txtUnit = 'Bft';
             } else {
-                currentValue = device['Speed'];
+                currentValue = windspeed;
                 decimals = 1;
                 txtUnit = 'm/s';
             }

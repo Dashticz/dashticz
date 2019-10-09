@@ -543,10 +543,11 @@ function getStatusBlock(idx, device, block, c) {
     var attr = '';
     if (typeof(device['Direction']) !== 'undefined' && typeof(device['DirectionStr']) !== 'undefined') {
         attr += ' style="-webkit-transform: rotate(' + (device['Direction'] + 180) + 'deg);-moz-transform: rotate(' + (device['Direction'] + 180) + 'deg);-ms-transform: rotate(' + (device['Direction'] + 180) + 'deg);-o-transform: rotate(' + (device['Direction'] + 180) + 'deg); transform: rotate(' + (device['Direction'] + 180) + 'deg);"';
+        var windspeed=device.Data.split(';')[2]/10;
         if (settings['use_beaufort'] == 1) {
-            value = Beaufort(device['Speed']) + ', ';
+            value = Beaufort(windspeed) + ', ';
         } else {
-            value = device['Speed'] + ' m/s, ';
+            value = windspeed + ' m/s, ';
         }
         value += device['Direction'] + '&deg ';
         if (settings['translate_windspeed'] == true) {
