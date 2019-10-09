@@ -8,6 +8,10 @@ Latest changes
 Enhancements
   * Show calendar with table formatting by setting blockparameter ``calFormat:1``. See :ref:`calTable`
 
+Fixes
+  * Graph for barometer device
+  * Almere garbage provider
+
 3.1.0 (18-9-2019)
 -----------------
 

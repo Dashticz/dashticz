@@ -1,5 +1,6 @@
-/* global moment settings config Beaufort number_format alldevices language time _GRAPHREFRESH blocks usrEnc pwdEnc Chart _TEMP_SYMBOL*/
+/* global moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL*/
 var dtGraphs = [];
+var _GRAPHREFRESH = 5;
 
 function getGraphs(device, popup) {
     moment.locale(settings['calendarlanguage']);
@@ -139,6 +140,11 @@ function getGraphs(device, popup) {
             txtUnit = device['CounterToday'].split(' ')[1];
             currentValue = device['CounterToday'].split(' ')[0];
             break;
+        case 'Barometer':
+            sensor='temp';
+            txtUnit = device['Data'].split(' ')[1];
+            break;
+
     }
 
     currentValue = number_format(currentValue, decimals);
@@ -283,7 +289,6 @@ function showGraph(graphIdx, selGraph) {
 
             }
         }
-
         $.ajax({
             url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=graph&sensor=' + myProperties.sensor + '&idx=' + myProperties.idx + '&range=' + myProperties.realrange + '&method=' + method + '&time=' + new Date().getTime() + '&jsoncallback=?',
             type: 'GET',
@@ -657,7 +662,6 @@ function getGraphProperties(result, graphIdx) {
     var graphProperties = {};
     if (typeof result == 'undefined')
         return graphProperties;
-
     if (result.uvi) {
         graphProperties = {
             ykeys: ['uvi'],
@@ -708,6 +712,14 @@ function getGraphProperties(result, graphIdx) {
             ykeys: ['v_max'],
             ylabels: [label],
         };
+        if (result.v_min) {
+            graphProperties.ykeys.push('v_min')
+            graphProperties.ylabels.push[label]
+        }
+        if (result.v_avg) {
+            graphProperties.ykeys.push('v_avg')
+            graphProperties.ylabels.push[label]
+        }
     } else if (result.v2) {
         label = 'kWh';
         if (realrange == 'day') label = 'W';
@@ -754,6 +766,11 @@ function getGraphProperties(result, graphIdx) {
         graphProperties = {
             ykeys: ['co2'],
             ylabels: ['ppm'],
+        };
+    } else if (result.ba) {
+        graphProperties = {
+            ykeys: ['ba'],
+            ylabels: [label],
         };
     }
     return graphProperties;
