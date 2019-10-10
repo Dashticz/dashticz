@@ -12,6 +12,7 @@ Fixes
   * Graph for barometer device
   * Almere garbage provider
   * Wind speed unit interpretation in case of non default Domoticz setting
+  * Protect parameter for dimmers.
 
 3.1.0 (18-9-2019)
 -----------------
