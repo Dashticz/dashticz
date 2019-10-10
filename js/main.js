@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-/* global customfolder myBlockNumbering:writable objectlength config initVersion loadSettings settings getRandomInt number_format levelNamesEncoded _TEMP_SYMBOL hexToHsb Cookies*/
+/* global getBlockClick customfolder myBlockNumbering:writable objectlength config initVersion loadSettings settings getRandomInt number_format levelNamesEncoded _TEMP_SYMBOL hexToHsb Cookies*/
 /* global sessionValid MobileDetect moment getBlock buttons handleObjectBlock getGraphs iconORimage getBlockData titleAndValueSwitch showUpdateInformation getStateBlock addThermostatFunctions*/
 /* global loadWeatherFull loadWeather Swiper ion MoonPhase StationClock*/
 
@@ -1680,7 +1680,7 @@ function getDefaultSwitchBlock(device, block, idx, defaultIconOn, defaultIconOff
         buttonimg: Default image. 
     */
     var html = '';
-    if (!isProtected(device, idx)) {
+    if (!isProtected(idx)) {
         var confirmswitch = 0;
         if (typeof (block) !== 'undefined')
             if (typeof (block['confirmation']) !== 'undefined') {
@@ -1721,9 +1721,8 @@ function getDefaultSwitchBlock(device, block, idx, defaultIconOn, defaultIconOff
 
     return [html, true];
 }
-function isProtected(device, idx) {
-    return ((typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['protected']) !== 'undefined' && blocks[idx]['protected'] === true)
-        || device['Protected'] === true);
+function isProtected(idx) {
+    return (blocks[idx] && blocks[idx].protected) || alldevices[idx].Protected;
 }
 
 function getIconStatusClass(deviceStatus) {
@@ -2169,10 +2168,11 @@ function getThermostatBlock(device, idx) {
 
 function getDimmerBlock(device, idx, buttonimg) {
     var html = '';
+    var classExtension = isProtected(idx) ? ' icon':' icon iconslider'; //no pointer in case of protected device
     if (device['Status'] === 'Off')
-        html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon iconslider', '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false );"');
+        html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false );"');
     else
-        html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon iconslider', '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false);"');
+        html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false);"');
     html += '<div class="col-xs-10 swiper-no-swiping col-data">';
     html += '<strong class="title">' + device['Name'];
     if (typeof (blocks[idx]) == 'undefined' || typeof (blocks[idx]['hide_data']) == 'undefined' || blocks[idx]['hide_data'] == false) {
@@ -2198,6 +2198,9 @@ function getDimmerBlock(device, idx, buttonimg) {
     }
 
     $('div.block_' + idx).html(html);
+    if(!isProtected(idx)) {
+        $('div.block_' + idx).addClass('hover');
+    }
 
     if (isRGBDeviceAndEnabled(device)) {
         $('.rgbw' + idx).spectrum({
@@ -2260,6 +2263,7 @@ function getDimmerBlock(device, idx, buttonimg) {
             };
             break;
     }
+    slider.disabled= isProtected(idx);
     addSlider(device['idx'], slider);
 
     return [this.html, false];
@@ -2341,7 +2345,8 @@ function getBlindsBlock(device, idx, withPercentage) {
             value: device['Level'],
             step: 1,
             min: 1,
-            max: 100
+            max: 100,
+            disabled: isProtected(idx)
         });
     }
     return [this.html, false];
@@ -2353,6 +2358,7 @@ function addSlider(idx, sliderValues) {
         step: sliderValues.step,
         min: sliderValues.min,
         max: sliderValues.max,
+        disabled: sliderValues.disabled,
         start: function (event, ui) {
             sliding = true;
             slideDeviceExt($(this).data('light'), ui.value, 0);
