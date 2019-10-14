@@ -655,6 +655,7 @@ if (typeof(settings['security_button_icons']) === 'undefined') settings['securit
 if (typeof(settings['disable_update_check']) === 'undefined') settings['disable_update_check'] = 0;
 if (typeof(settings['setpoint_min']) === 'undefined') settings['setpoint_min'] = 5;
 if (typeof(settings['setpoint_max']) === 'undefined') settings['setpoint_max'] = 40;
+if (typeof(settings['login_timeout']) === 'undefined') settings['login_timeout'] = 60;
 
 //The Config settings for all checkbox items will be converted to a number
 for (var s in settingList){
