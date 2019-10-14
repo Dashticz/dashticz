@@ -101,7 +101,8 @@
             "default_cors_url": "Adresa URL CORS implicită",
             "dashticz_php_path": "Calea Dashticz PHP",
             "standby_call_url": "Adresa URL ce va fi accesată la intrarea in standby",
-            "standby_call_url_on_end": "Adresa URL ce va fi accesată la ieșirea din standby"
+            "standby_call_url_on_end": "Adresa URL ce va fi accesată la ieșirea din standby",
+            "login_timeout": "Keep Dashticz logged in (minutes)"
         },
         "infosave": "În mod prestabilit, setările sunt stocate în browser. Dezavantajul acestei metode este că va funcționa numai în browserul curent. Dacă nu este o problemă, puteți continua. În caz contrar, copiați codul de mai jos în CONFIG.JS pentru a păstra setările pe toate browserele și dispozitivele.",
         "localize": {
