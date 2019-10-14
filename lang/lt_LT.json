@@ -101,7 +101,8 @@
             "default_cors_url": "Numatytasis CORS URL",
             "dashticz_php_path": "Dashticz PHP kelias",
             "standby_call_url": "URL, kuris bus iškviestas budėjimo režimo pradžioje",
-            "standby_call_url_on_end": "URL, kuris bus iškviestas budėjimo režimo pabaigoje"
+            "standby_call_url_on_end": "URL, kuris bus iškviestas budėjimo režimo pabaigoje",
+            "login_timeout": "Keep Dashticz logged in (minutes)"
         },
         "infosave": "Pagal nutylėjimą, nustatymo parametrai yra saugomi jūsų naršyklės. Kitaip nukopijuokite kodą į CONFIG.JS bylą  norėdami išsaugoti parametrus visose naršyklėse.",
         "localize": {
