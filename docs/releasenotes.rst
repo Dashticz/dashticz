@@ -7,7 +7,8 @@ Latest changes
 
 Enhancements
   * Show calendar with table formatting by setting blockparameter ``calFormat:1``. See :ref:`calTable`
-
+  * Session Time Out option
+  
 Fixes
   * Graph for barometer device
   * Almere garbage provider
