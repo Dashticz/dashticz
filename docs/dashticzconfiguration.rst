@@ -62,6 +62,9 @@ Config parameters
     - | Enable if you want a login form to dashticz
       | ``false`` = No login form (default)
       | ``true`` = Show login form
+  * - login_timeout
+    - | Time to keep Dashticz logged in
+      | ``60`` = Time in minutes
   * - app_title
     - | Name of the Dashboard - Title to show in the :ref:`customtopbar`
       | ``'Dashticz'`` = Show 'Dashticz' in the top bar
