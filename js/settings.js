@@ -11,6 +11,10 @@ settingList['general']['loginEnabled'] = {};
 settingList['general']['loginEnabled']['title'] = language.settings.general.loginEnabled;
 settingList['general']['loginEnabled']['type'] = 'checkbox';
 
+settingList['general']['login_timeout'] = {};
+settingList['general']['login_timeout']['title'] = language.settings.general.login_timeout;
+settingList['general']['login_timeout']['type'] = 'text';
+
 settingList['general']['disable_update_check'] = {};
 settingList['general']['disable_update_check']['title'] = language.settings.general.disable_update_check;
 settingList['general']['disable_update_check']['type'] = 'checkbox';
@@ -651,6 +655,7 @@ if (typeof(settings['security_button_icons']) === 'undefined') settings['securit
 if (typeof(settings['disable_update_check']) === 'undefined') settings['disable_update_check'] = 0;
 if (typeof(settings['setpoint_min']) === 'undefined') settings['setpoint_min'] = 5;
 if (typeof(settings['setpoint_max']) === 'undefined') settings['setpoint_max'] = 40;
+if (typeof(settings['login_timeout']) === 'undefined') settings['login_timeout'] = 60;
 
 //The Config settings for all checkbox items will be converted to a number
 for (var s in settingList){
