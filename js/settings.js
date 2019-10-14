@@ -11,6 +11,10 @@ settingList['general']['loginEnabled'] = {};
 settingList['general']['loginEnabled']['title'] = language.settings.general.loginEnabled;
 settingList['general']['loginEnabled']['type'] = 'checkbox';
 
+settingList['general']['login_timeout'] = {};
+settingList['general']['login_timeout']['title'] = language.settings.general.login_timeout;
+settingList['general']['login_timeout']['type'] = 'text';
+
 settingList['general']['disable_update_check'] = {};
 settingList['general']['disable_update_check']['title'] = language.settings.general.disable_update_check;
 settingList['general']['disable_update_check']['type'] = 'checkbox';
