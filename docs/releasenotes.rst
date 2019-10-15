@@ -2,8 +2,8 @@ Release Notes
 =============
 A link to the release notes will be posted in the Dashticz support forum. The total overview can be found below.
 
-Latest changes
---------------
+3.1.1 (15-10-2019)
+------------------
 
 Enhancements
   * Show calendar with table formatting by setting blockparameter ``calFormat:1``. See :ref:`calTable`
@@ -14,6 +14,7 @@ Fixes
   * Almere garbage provider
   * Wind speed unit interpretation in case of non default Domoticz setting
   * Protect parameter for dimmers.
+  * Removal of ES6 dependency (introduced by the graph update)
 
 3.1.0 (18-9-2019)
 -----------------
