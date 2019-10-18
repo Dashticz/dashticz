@@ -2,6 +2,12 @@ Release Notes
 =============
 A link to the release notes will be posted in the Dashticz support forum. The total overview can be found below.
 
+Latest changes
+--------------
+
+Fixes
+  * Fix for loading Dashticz without external network
+
 3.1.1 (15-10-2019)
 ------------------
 
