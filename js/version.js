@@ -47,7 +47,11 @@ function initVersion() {
                         infoMessage(language.misc.new_version + '! (V' + data.version + ')', '<a href="https://github.com/Dashticz/dashticz/tree/' + dashticz_branch + '" target="_blank">' + language.misc.download + '</a>');
                     }
                 }
-            });
+            })
+            .then(null, function() {
+                console.log('Error loading git info. Probably no internet');
+                return $.Deferred().resolve();
+            })
         }
     })
     .then(function() {
