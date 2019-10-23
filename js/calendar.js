@@ -1,13 +1,19 @@
-var recurring = {};
+/* global _PHP_INSTALLED infoMessage settings moment language*/
+/* global objectlength getRandomInt ksort*/
 
+/*  addCalendar adds the calendar to calobject
+    icsUrlorg:    string, in case of adding default calendar
+                object, in case of adding custom calendar via block definition from CONFIG.js
+*/
+// eslint-disable-next-line no-unused-vars
 function addCalendar(calobject, icsUrlorg) {
     if (!_PHP_INSTALLED) {
         console.error("Domoticz error!\nCalendar requires a PHP enabled web server.");
         infoMessage('<font color="red">Domoticz error!', 'Calendar requires a PHP enabled web server</font>', 0);
         return;
     }
+    var icsUrl = {}
     if (typeof (icsUrlorg.calendars) == 'undefined') {
-        var icsUrl = {};
         icsUrl.calendars = [];
         icsUrl.maxitems = icsUrlorg.maxitems;
         icsUrl.calendars[0] = {};
@@ -15,26 +21,32 @@ function addCalendar(calobject, icsUrlorg) {
         icsUrl.calFormat = icsUrlorg.calFormat;
         icsUrl.timeFormat = icsUrlorg.timeFormat;
         icsUrl.dateFormat = icsUrlorg.dateFormat;
+        icsUrl.fixAllDay = icsUrlorg.fixAllDay;
     } else icsUrl = icsUrlorg;
 
     var done = 0;
-    var doneitems = {};
-    var amountc = objectlength(icsUrl.calendars);
+    var amountc = objectlength(icsUrl.calendars); //count of calendars
     var calitems = [];
     var colors = {};
 
     var maxitems = 10;
     if (typeof (icsUrl.maxitems) !== 'undefined') maxitems = icsUrl.maxitems;
 
-    for (c in icsUrl.calendars) {
-        curUrl = icsUrl.calendars[c].calendar;
-        if (typeof (curUrl.url) !== 'undefined') {
-            createCalendarModal(calobject, curUrl);
+    for (var c in icsUrl.calendars) {
+        var curCalendar = icsUrl.calendars[c].calendar;
+        if (typeof (curCalendar.url) !== 'undefined') {
+            createCalendarModal(calobject, curCalendar);
         }
 
-        if (typeof (curUrl.icalurl) !== 'undefined') {
-            curUrl = curUrl.icalurl.replace(/webcal?\:\/\//i, 'https://');
+
+        var curUrl = curCalendar.icalurl
+        if (typeof (curUrl) === 'undefined') {
+            console.error('icalurl in Calendar block not defined');
+            return
         }
+
+        // eslint-disable-next-line no-useless-escape
+        curUrl = curUrl.replace(/webcal?\:\/\//i, 'https://');
 
         var color = '';
         if (typeof (icsUrl.calendars[c].color) !== 'undefined') color = icsUrl.calendars[c].color;
@@ -45,36 +57,25 @@ function addCalendar(calobject, icsUrlorg) {
         var cache = new Date().getTime();
         curUrl = settings['dashticz_php_path'] + 'ical/?time=' + cache + '&maxitems=' + maxitems + '&url=' + curUrl;
         moment.locale(settings['calendarlanguage']);
-        $.getJSON(curUrl, function (data, textstatus, jqXHR) {
+        $.getJSON(curUrl, function (data) {
 
             var url = this.url.replace('https://cors-anywhere.herokuapp.com/http://ical-to-json.herokuapp.com/convert.json?url=', '');
-            var url = this.url.split('url=');
-            var url = url[1];
+            url = this.url.split('url=');
+            url = url[1];
 
             done++;
-            for (e in data) {
-                event1 = data[e];
-                var startdateStamp = event1.start;
-                var enddateStamp = event1.end;
-                var startdate = moment.unix(event1.start).format(settings['calendarformat']);
-                var enddate = moment.unix(event1.end).format(settings['calendarformat']);
+            for (var e in data) {
+                var event1 = data[e];
 
-                if (event1.allDay == '') {
-                    var test = settings['calendarformat'];
-                    test = test.replace('dd', '');
-                    test = test.replace('dddd', '');
-                    if (moment(enddate, test).format('YYYY-MM-DD') === moment(startdate, test).format('YYYY-MM-DD')) {
-                        enddate = moment.unix(event1.end + 60).format('HH:mm');
-                    }
-                    if (enddate !== '') enddate = ' - ' + enddate;
-                } else {
-                    enddate = '';
-                    startdate = startdate.replace('00:00', '');
-                    startdate = startdate.replace('00:00:00', '');
-                    startdate += ' ' + language.weekdays.entire_day
-                }
-                event1.enddate = enddate;
-                event1.startdate = startdate;
+                var offset = 0;
+                //debugger
+                if (curCalendar.adjustTZ)
+                    offset = curCalendar.adjustTZ * 60 * 60
+                if (event1.allDay === true && curCalendar.adjustAllDayTZ)
+                    offset = curCalendar.adjustAllDayTZ * 60 * 60
+                event1.start += offset
+                event1.end += offset
+                var enddateStamp = event1.end;
 
                 event1.color = colors[$.md5(url)];
                 if (parseFloat(enddateStamp) > moment().format('X')) {
@@ -91,7 +92,7 @@ function addCalendar(calobject, icsUrlorg) {
                         break;
                     case 2: //todo :)  => https://fullcalendar.io/docs/list-view
                     default:
-                        insertCalendar_0(calobject, calitems, maxitems); //classic format
+                        insertCalendar_0(calobject, calitems, icsUrl, maxitems); //classic format
                 }
 
             }
@@ -138,34 +139,39 @@ function insertCalendar(calobject, calitems, calBlock) {
     var prevStartDayPart = '';
     calitems = ksort(calitems);
     var html = '<table class="calendar">';
-    var calendarDateFormat, calendarTimeFormat;
+    var calFormat = getCalendarFormatting(calBlock);
 
-    [calendarDateFormat, calendarTimeFormat] = getCalendarFormatting(calBlock);
-
-    for (check in calitems) {
-        items = calitems[check];
-        for (c in items) {
-            item1 = items[c];
+    for (var check in calitems) {
+        var items = calitems[check];
+        for (var c in items) {
+            var item1 = items[c];
             if (check > moment().format('X') && counter <= calBlock.maxitems) {
                 var styleColor = item1.color !== '' ? ' style="color:' + item1.color + '"' : '';
-                var startDayPart = formatDate(item1.start, calendarDateFormat);
-                var endDayPart = formatDate(item1.end, calendarDateFormat);
-                var startTimePart = moment.unix(item1.start).format(calendarTimeFormat);
-                var endTimePart = moment.unix(item1.end + 60).format(calendarTimeFormat);
+                var startDayPart = formatDate(item1.start, calFormat.date);
+                var endDayPart = formatDate(item1.end, calFormat.date);
+
+                if (item1.allDay) {
+                    var startTmp = moment.unix(item1.start);
+                    var endTmp = moment.unix(item1.end);
+                    if (endTmp.diff(startTmp, 'days') === 0) {
+                        endDayPart = startDayPart
+                    }
+                }
+                var startTimePart = moment.unix(item1.start).format(calFormat.time);
+                var endTimePart = moment.unix(item1.end + 60).format(calFormat.time);
                 var widget = '<tr><td>';
                 if (prevStartDayPart !== startDayPart) {
                     widget += startDayPart
-                    if (startDayPart !== endDayPart) {
-                        widget += '<br>' + '-' + endDayPart
-                    }
-
                 }
                 prevStartDayPart = startDayPart;
                 widget += '</td>';
                 widget += '<td' + styleColor + '>';
                 if (item1.allDay == '') {
-                    widget += startTimePart + (startDayPart !== endDayPart ? '<br>&nbsp;&nbsp;&nbsp;' : '') + ' - ' + endTimePart
+                    widget += startTimePart + ' - ' + (startDayPart !== endDayPart ? endDayPart + ' ' : '') + endTimePart
                 } else {
+                    if (startDayPart !== endDayPart) {
+                        widget += ' - ' + endDayPart + ' ';
+                    }
                     widget += language.weekdays.entire_day;
                 }
                 widget += '</td>'
@@ -185,7 +191,10 @@ function getCalendarFormatting(calBlock) {
     var calendarTimeFormat = typeof calBlock.timeFormat === 'undefined' ? 'LT' : calBlock.timeFormat; //The localized short time format will be used
     var calendarDateFormat = typeof calBlock.dateFormat === 'undefined' ? 'LD' : calBlock.dateFormat; // https://devhints.io/moment
 
-    return [calendarDateFormat, calendarTimeFormat];
+    return {
+        date: calendarDateFormat,
+        time: calendarTimeFormat
+    };
 }
 
 function formatDate(caltime, dateFormat) {
@@ -201,7 +210,7 @@ function formatDate(caltime, dateFormat) {
 
         try {
             return tmpevent.toLocaleDateString(settings.calendarlanguage.replace(/_/g, "-"), dateOptions);
-        } catch(err) {
+        } catch (err) {
             return tmpevent.toLocaleDateString('nl-NL', dateOptions);
         }
     } else {
@@ -209,7 +218,7 @@ function formatDate(caltime, dateFormat) {
     }
 }
 
-function insertCalendar_0(calobject, calitems, maxitems) {
+function insertCalendar_0(calobject, calitems, calBlock, maxitems) {
     /*
       Generates the calendar. Classic format
       calobject: The HTML container
@@ -220,10 +229,42 @@ function insertCalendar_0(calobject, calitems, maxitems) {
     calobject.find('.items').html('');
     var counter = 1;
     calitems = ksort(calitems);
-    for (check in calitems) {
-        items = calitems[check];
-        for (c in items) {
-            item1 = items[c];
+    for (var check in calitems) {
+        var items = calitems[check];
+        for (var c in items) {
+            var item1 = items[c];
+            var startdateStamp = item1.start;
+            var enddateStamp = item1.end;
+
+            var startdate = moment.unix(startdateStamp).format(settings['calendarformat']);
+            var enddate = moment.unix(enddateStamp).format(settings['calendarformat']);
+
+            if (item1.allDay === false) {
+                var test = settings['calendarformat'];
+                test = test.replace('dd', '');
+                test = test.replace('dddd', '');
+                if (moment(enddate, test).format('YYYY-MM-DD') === moment(startdate, test).format('YYYY-MM-DD')) {
+                    enddate = moment.unix(enddateStamp + 60).format('HH:mm');
+                }
+                if (enddate !== '') enddate = ' - ' + enddate;
+            } else {
+                enddate = '';
+                if (calBlock.fixAllDay) {
+                    var tmpdate = moment.unix(startdateStamp);
+                    startdate = moment({
+                        year: tmpdate.year(),
+                        month: tmpdate.month(),
+                        day: tmpdate.date()
+                    }).format(settings['calendarformat']);
+                }
+                //                startdate = moment(moment.unix(startdateStamp).format("LLLL")).format(settings['calendarformat']);
+                startdate = startdate.replace('00:00', '');
+                startdate = startdate.replace('00:00:00', '');
+                startdate += ' ' + language.weekdays.entire_day
+            }
+            item1.enddate = enddate;
+            item1.startdate = startdate;
+
             if (check > moment().format('X') && counter <= maxitems) {
                 var widget = '<div style="color:' + item1['color'] + '">' + item1['startdate'] + "" + item1['enddate'] + ' - <b>' + item1['title'] + '</b></div>';
                 calobject.find('.items').append(widget);
