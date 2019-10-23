@@ -102,7 +102,7 @@ function getSonarrCalendar() {
 				} 
 				lastdate = field.airDateUtc;
 
-				data += '<div class="SonarrItem"><img src="'+ imgBannerUrl + '" class="SonarrBanner">';
+				data += '<div class="SonarrItem"><img src="'+ _CORS_PATH+imgBannerUrl + '" class="SonarrBanner">';
 				if(field.hasFile == true){
 					data += '<div class="ribbon"><span>&#x2714;</span></div>'
 				} else {
@@ -110,7 +110,7 @@ function getSonarrCalendar() {
 				}
 			} else {
 				// Poster View
-				data += '<div class="SonarrItem"><img src="'+ imgPosterUrl + '" class="SonarrPoster">';
+				data += '<div class="SonarrItem"><img src="'+ _CORS_PATH+imgPosterUrl + '" class="SonarrPoster">';
 				data += '<div class="SonarrData">';
 				data += '<span class="SonarrTitleShow">'+ field.series.title +'</span>';
 				data += '<span class="SonarrEpisode">'+ field.title +'</span>';
