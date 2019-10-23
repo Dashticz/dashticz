@@ -41,6 +41,16 @@ You have to add the following code into the ``CONFIG.js`` file and define them a
       | ``'fas fa-car'``. To display a car icon in the left column.
   * - image
     - Name of custom image to display in the first column. 
+  * - adjustTZ
+    - | Adjust start- and end-time for all calendar events to compensate time zone errors
+      | ``-24 .. 24``: Number of hours to adjust
+  * - adjustAllDayTZ
+    - | Adjust start- and end-time for 'All Day'-events to compensate for time zone differences
+      | ``-24 .. 24``: Number of hours to adjust
+  * - fixAllDay
+    - | Remove start time for All Day events that are created in a different time zone (only applicable in case ``calFormat: 0``)
+      | ``false``: Show the start time for 'All Day'-events in case the start time is not 00:00
+      | ``true``: Don't show the start time for 'All Day'-events
   
 And define them in a column like::
 
