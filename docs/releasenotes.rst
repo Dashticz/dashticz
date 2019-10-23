@@ -5,6 +5,9 @@ A link to the release notes will be posted in the Dashticz support forum. The to
 Latest changes
 --------------
 
+Enhancements
+  * Improved calendar layout for full day events. Added timezone adjust parameters.
+
 Fixes
   * Fix for loading Dashticz without external network
 
