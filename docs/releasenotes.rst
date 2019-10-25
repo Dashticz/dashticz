@@ -10,6 +10,7 @@ Enhancements
 
 Fixes
   * Fix for loading Dashticz without external network
+  * Load Sonarr images via CORS proxy
 
 3.1.1 (15-10-2019)
 ------------------
