@@ -38,6 +38,24 @@ For debian/stretch:
 
 - https://tecadmin.net/install-php-debian-9-stretch/ (PHP installation instructions)]. 
 
+Functionality that is lost without PHP:
+
+- calendar
+- garbage
+- savings settings from Dashticz
+- version check
+- CORS proxy, which is used for TVguide, news, traffic info, frames, images in buttons (You can switch an external CORS proxy as well.)
+
+Quick install for Synology NAS
+
+- Install Apache HTTP Server (Web Station will be installed too) and PHP
+- In Web Station configure your HTTP back-end server and PHP (PHP Extensions ``curl`` and ``openssl`` needs to be selected)
+- Download Dashticz ZIP file from GitHub https://github.com/Dashticz/dashticz (choose branch)
+- Create Dashticz folder on your Web Server
+- Unpack downloaded Dashticz ZIP file to your Dashticz folder
+- Copy CONFIG_DEFAULT.js to CONFIG.js
+- Edit CONFIG.js to your needs and set write permission
+
 .. _DashticzInstallation :
 
 Dashticz Installation 
