@@ -11,6 +11,10 @@ settingList['general']['loginEnabled'] = {};
 settingList['general']['loginEnabled']['title'] = language.settings.general.loginEnabled;
 settingList['general']['loginEnabled']['type'] = 'checkbox';
 
+settingList['general']['login_timeout'] = {};
+settingList['general']['login_timeout']['title'] = language.settings.general.login_timeout;
+settingList['general']['login_timeout']['type'] = 'text';
+
 settingList['general']['disable_update_check'] = {};
 settingList['general']['disable_update_check']['title'] = language.settings.general.disable_update_check;
 settingList['general']['disable_update_check']['type'] = 'checkbox';
@@ -117,6 +121,10 @@ settingList['screen']['background_image']['help'] = language.settings.screen.bac
 settingList['screen']['standby_after'] = {};
 settingList['screen']['standby_after']['title'] = language.settings.screen.standby_after;
 settingList['screen']['standby_after']['type'] = 'text';
+
+settingList['screen']['start_page'] = {};
+settingList['screen']['start_page']['title'] = language.settings.screen.start_page;
+settingList['screen']['start_page']['type'] = 'text';
 
 settingList['screen']['auto_swipe_back_to'] = {};
 settingList['screen']['auto_swipe_back_to']['title'] = language.settings.screen.auto_swipe_back_to;
@@ -574,6 +582,7 @@ if (typeof(settings['hide_topbar']) === 'undefined') settings['hide_topbar'] = 0
 if (typeof(settings['slide_effect']) === 'undefined') settings['slide_effect'] = 'slide';
 if (typeof(settings['hide_mediaplayer']) === 'undefined') settings['hide_mediaplayer'] = 0;
 if (typeof(settings['auto_swipe_back_to']) === 'undefined') settings['auto_swipe_back_to'] = 1;
+if (typeof(settings['start_page']) === 'undefined') settings['start_page'] = 1;
 if (typeof(settings['auto_positioning']) === 'undefined') settings['auto_positioning'] = 1;
 if (typeof(settings['use_favorites']) === 'undefined') settings['use_favorites'] = 1;
 if (typeof(settings['translate_windspeed']) === 'undefined') settings['translate_windspeed'] = 1;
@@ -646,6 +655,7 @@ if (typeof(settings['security_button_icons']) === 'undefined') settings['securit
 if (typeof(settings['disable_update_check']) === 'undefined') settings['disable_update_check'] = 0;
 if (typeof(settings['setpoint_min']) === 'undefined') settings['setpoint_min'] = 5;
 if (typeof(settings['setpoint_max']) === 'undefined') settings['setpoint_max'] = 40;
+if (typeof(settings['login_timeout']) === 'undefined') settings['login_timeout'] = 60;
 
 //The Config settings for all checkbox items will be converted to a number
 for (var s in settingList){
@@ -662,115 +672,117 @@ if (settings['use_fahrenheit'] === 1) _TEMP_SYMBOL = '°F';
 var phpversion = '<br>PHP not installed!!';
 var _PHP_INSTALLED = false;
 
-$.ajax({
-    url: settings['dashticz_php_path']+'info.php?get=phpversion',
-    async: false,
-    dataType: 'json',
-    success: function (data) {
-        phpversion = '<br> PHP version: ' + data;
-        _PHP_INSTALLED = true;
-      },
-    error: function () {
-      console.log('PHP not installed.');
-    }
-});
-
-if (typeof(settings['default_cors_url'])==='undefined' || settings['default_cors_url']==='') {
-  if(_PHP_INSTALLED)
-    _CORS_PATH = settings['dashticz_php_path']+'cors.php?'
-  else {
-    _CORS_PATH = 'https://cors-anywhere.herokuapp.com/';
-    console.log('PHP not enabled and default_cors_url not set.');
-    console.log('CORS proxy: ' + _CORS_PATH);
-  }
-//    _CORS_PATH = 'http://192.168.178.18:8081/';
-}
-else
-  _CORS_PATH = settings['default_cors_url'];
-
-settingList['about']['about_text5'] = {};
-settingList['about']['about_text5']['title'] = domoversion + dzVents + python + phpversion;
 
 
 
 function loadSettings() {
-
-    var html = '<div class="modal fade" id="settingspopup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
-    html += '<div class="modal-dialog modal-dialog-settings">';
-    html += '<div class="modal-content">';
-    html += '<div class="modal-body"><br />';
-    html += '<div class="row">';
-
-
-    html += '<ul class="nav nav-pills">';
-    var first = true;
-    for (b in settingList) {
-        var c = '';
-        if (first) {
-            c = ' class="active"';
-            first = false;
+    return $.ajax({
+        url: settings['dashticz_php_path']+'info.php?get=phpversion',
+        dataType: 'json',
+        success: function (data) {
+            phpversion = '<br> PHP version: ' + data;
+            _PHP_INSTALLED = true;
+          },
+        error: function () {
+          console.log('PHP not installed.');
         }
-        html += '<li' + c + '><a data-toggle="pill" href="#tabs-' + b + '">' + settingList[b]['title'] + '</a></li>';
-    }
-    html += '</ul>';
-
-    html += '<div class="tab-content"><br /><br />';
-
-    var first = true;
-    for (b in settingList) {
-        var c = '';
-        if (first) {
-            c = ' active in';
-            first = false;
+    })
+    .then( function() {
+        
+        if (typeof(settings['default_cors_url'])==='undefined' || settings['default_cors_url']==='') {
+        if(_PHP_INSTALLED)
+            _CORS_PATH = settings['dashticz_php_path']+'cors.php?'
+        else {
+            _CORS_PATH = 'https://cors-anywhere.herokuapp.com/';
+            console.log('PHP not enabled and default_cors_url not set.');
+            console.log('CORS proxy: ' + _CORS_PATH);
         }
-        html += '<div class="tab-pane fade' + c + '" id="tabs-' + b + '">';
-        for (s in settingList[b]) {
-            if (s !== 'title') {
-                html += '<div class="row">';
-                html += '<div class="col-xs-5" style="margin-bottom:1px;"><label style="margin-top: 6px;font-size: 12px;">' + settingList[b][s]['title'] + '</label>';
-                if (typeof(settingList[b][s]['help']) !== 'undefined') html += '<span class="glyphicon" title="' + settingList[b][s]['help'] + '">&nbsp;&#xe086;</span>';
-                html += '</div>';
-                html += '<div class="col-xs-7" style="margin-bottom:1px;">';
-                var val = '';
-                if (typeof(settings[s]) !== 'undefined') val = settings[s];
-                if (settingList[b][s]['type'] === 'text') html += '<div><input class="form-control" type="text" name="' + s + '" value="' + val + '" style="max-width:75%;" /></div>';
-                if (settingList[b][s]['type'] === 'checkbox') {
-                    var sel = '';
-                    if (settings[s] == 1) sel = 'checked';
-                    html += '<div class="material-switch pull-left"><input type="checkbox" id="' + s + '" name="' + s + '" value="1" ' + sel + ' style="margin-top:11px;" /><label for="' + s + '" class="label-success"></label></div>';
-                }
-                if (settingList[b][s]['type'] === 'select') {
-                    html += '<select name="' + s + '" class="form-control" style="max-width:75%;padding-left: 8px;color: #555 !important;">';
-                    html += '<option value=""></option>';
-                    for (o in settingList[b][s]['options']) {
-                        var sel = '';
-                        if (settings[s] == o) sel = 'selected';
-                        html += '<option value="' + o + '" ' + sel + '>' + settingList[b][s]['options'][o] + '</option>';
-                    }
-                    html += '</select>';
-                }
-                html += '</div>';
-                html += '</div>';
+        //    _CORS_PATH = 'http://192.168.178.18:8081/';
+        }
+        else
+        _CORS_PATH = settings['default_cors_url'];
+    
+        settingList['about']['about_text5'] = {};
+        settingList['about']['about_text5']['title'] = domoversion + dzVents + python + phpversion;
+    
+
+        var html = '<div class="modal fade" id="settingspopup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
+        html += '<div class="modal-dialog modal-dialog-settings">';
+        html += '<div class="modal-content">';
+        html += '<div class="modal-body"><br />';
+        html += '<div class="row">';
+
+
+        html += '<ul class="nav nav-pills">';
+        var first = true;
+        for (b in settingList) {
+            var c = '';
+            if (first) {
+                c = ' class="active"';
+                first = false;
             }
+            html += '<li' + c + '><a data-toggle="pill" href="#tabs-' + b + '">' + settingList[b]['title'] + '</a></li>';
+        }
+        html += '</ul>';
+
+        html += '<div class="tab-content"><br /><br />';
+
+        var first = true;
+        for (b in settingList) {
+            var c = '';
+            if (first) {
+                c = ' active in';
+                first = false;
+            }
+            html += '<div class="tab-pane fade' + c + '" id="tabs-' + b + '">';
+            for (s in settingList[b]) {
+                if (s !== 'title') {
+                    html += '<div class="row">';
+                    html += '<div class="col-xs-5" style="margin-bottom:1px;"><label style="margin-top: 6px;font-size: 12px;">' + settingList[b][s]['title'] + '</label>';
+                    if (typeof(settingList[b][s]['help']) !== 'undefined') html += '<span class="glyphicon" title="' + settingList[b][s]['help'] + '">&nbsp;&#xe086;</span>';
+                    html += '</div>';
+                    html += '<div class="col-xs-7" style="margin-bottom:1px;">';
+                    var val = '';
+                    if (typeof(settings[s]) !== 'undefined') val = settings[s];
+                    if (settingList[b][s]['type'] === 'text') html += '<div><input class="form-control" type="text" name="' + s + '" value="' + val + '" style="max-width:75%;" /></div>';
+                    if (settingList[b][s]['type'] === 'checkbox') {
+                        var sel = '';
+                        if (settings[s] == 1) sel = 'checked';
+                        html += '<div class="material-switch pull-left"><input type="checkbox" id="' + s + '" name="' + s + '" value="1" ' + sel + ' style="margin-top:11px;" /><label for="' + s + '" class="label-success"></label></div>';
+                    }
+                    if (settingList[b][s]['type'] === 'select') {
+                        html += '<select name="' + s + '" class="form-control" style="max-width:75%;padding-left: 8px;color: #555 !important;">';
+                        html += '<option value=""></option>';
+                        for (o in settingList[b][s]['options']) {
+                            var sel = '';
+                            if (settings[s] == o) sel = 'selected';
+                            html += '<option value="' + o + '" ' + sel + '>' + settingList[b][s]['options'][o] + '</option>';
+                        }
+                        html += '</select>';
+                    }
+                    html += '</div>';
+                    html += '</div>';
+                }
+            }
+            html += '</div>';
         }
         html += '</div>';
-    }
-    html += '</div>';
-    html += '</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">' + language.settings.close + '</button> ';
-	if (settings['loginEnabled'] == true) html += '<button onClick="logout()" type="button" class="btn btn-primary" data-dismiss="modal">' + language.settings.general.logout + '</button> ';
-	html += '<button onClick="saveSettings();" type="button" class="btn btn-primary" data-dismiss="modal">' + language.settings.save + '</button></div>';
-    html += '</div>';
-    html += '</div>';
-    html += '</div>';
-    setTimeout(function () {
-        $('body').append(html);
+        html += '</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">' + language.settings.close + '</button> ';
+        if (settings['loginEnabled'] == true) html += '<button onClick="logout()" type="button" class="btn btn-primary" data-dismiss="modal">' + language.settings.general.logout + '</button> ';
+        html += '<button onClick="saveSettings();" type="button" class="btn btn-primary" data-dismiss="modal">' + language.settings.save + '</button></div>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+        setTimeout(function () {
+            $('body').append(html);
 
-        if (typeof(settings['domoticz_ip']) === 'undefined') {
-            if ($('.settingsicon').length == 0) $('body').prepend('<div data-id="settings" class="settings settingsicon col-xs-12 text-right" data-toggle="modal" data-target="#settingspopup"><em class="fa fa-cog" /><div>');
-            $('.settingsicon').trigger('click');
-        }
-    }, 2000);
-    $("#tabs").tabs();
+            if (typeof(settings['domoticz_ip']) === 'undefined') {
+                if ($('.settingsicon').length == 0) $('body').prepend('<div data-id="settings" class="settings settingsicon col-xs-12 text-right" data-toggle="modal" data-target="#settingspopup"><em class="fa fa-cog" /><div>');
+                $('.settingsicon').trigger('click');
+            }
+        }, 2000);
+        $("#tabs").tabs();
+    });
 
 }
 

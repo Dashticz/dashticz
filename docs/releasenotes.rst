@@ -2,6 +2,41 @@ Release Notes
 =============
 A link to the release notes will be posted in the Dashticz support forum. The total overview can be found below.
 
+3.1.2 (26-10-2019)
+--------------
+
+Enhancements
+  * Improved calendar layout for full day events. Added timezone adjust parameters.
+
+Fixes
+  * Fix for loading Dashticz without external network
+  * Load Sonarr images via CORS proxy
+
+3.1.1 (15-10-2019)
+------------------
+
+Enhancements
+  * Show calendar with table formatting by setting blockparameter ``calFormat:1``. See :ref:`calTable`
+  * Session Time Out option
+  
+Fixes
+  * Graph for barometer device
+  * Almere garbage provider
+  * Wind speed unit interpretation in case of non default Domoticz setting
+  * Protect parameter for dimmers.
+  * Removal of ES6 dependency (introduced by the graph update)
+
+3.1.0 (18-9-2019)
+-----------------
+
+Enhancements
+  * New config setting ``'start_page'`` to set Dashticz start page number
+  * New parameter ``'scrollbars'`` to set scrollbars in frame. See :ref:`Frames`
+  * New graph module. It's not completely backwards compatible. Especialy styling will be different. See :ref:`dom_graphs`
+
+Fixes
+  * Faster initial display of the Dashticz dashboard.
+
 3.0.6 (28-8-2019)
 -----------------
 Enhancements
@@ -14,7 +49,6 @@ Fixes
   * Robustness install script and makefile
   * Auto restart docker container after reboot
   * Documentation updates (Thanks to HansieNL)
-  * 
 
 3.0.5 (4-8-2019)
 ------------------

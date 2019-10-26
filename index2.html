@@ -45,8 +45,8 @@
 		<div id="loaderHolder">
 			<div class="loaderHeader">Dashticz v3 is loading...</div>
 			<div class="loader"></div>
-			<div id="hide" style="visibility: hidden">Timeout! Something is wrong please check your CONFIG.js<br>For more help visit <a href="https://dashticz.readthedocs.io/">Dashticz v3 documentation</a></div>
 		</div>
+		<div id="hide" style="display: none">Something is wrong. Please check your CONFIG.js<br>For more help visit <a href="https://dashticz.readthedocs.io/">Dashticz v3 documentation</a></div>
 		<div class="swiper-container">
 			<div class="contents swiper-wrapper"> </div>
         	<div class="swiper-pagination"></div>
@@ -67,6 +67,7 @@
 				"vendor/spotify/spotify-web-api.js",
 				"vendor/plugins.js",
 				"vendor/moment.js",
+				"vendor/chart/chart.min.js",
 				"js/functions.js",
 				"css/creative.css?v=" + cache,
 				"js/main.js?v="+cache, function() {
