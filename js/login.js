@@ -3,9 +3,9 @@ function validate() {
 	var username = document.getElementById("username").value;
 	var password = document.getElementById("password").value;
 	if (username == settings['user_name'] && password == settings['pass_word']) {
-		var sessionTimeout = 1; //session timeout after x hour(s)
+		var sessionTimeout = settings['login_timeout']; //session timeout after x minute(s)
 		var loginDuration = new Date();
-		loginDuration.setTime(loginDuration.getTime() + (sessionTimeout * 60 * 60 * 1000));
+		loginDuration.setTime(loginDuration.getTime() + (sessionTimeout * 60 * 1000));
 		var expires = "expires=" + loginDuration.toUTCString()
 		document.cookie = "CrewCentreSession=Valid; " + expires + "; path=/";
 		window.location.href = window.location.href;

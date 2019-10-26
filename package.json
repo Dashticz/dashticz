@@ -1,0 +1,27 @@
+{
+  "name": "dashticz",
+  "version": "3.1.0",
+  "description": "Alternative dashboard for Domoticz",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "eslint": "^6.5.1"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Dashticz/dashticz.git"
+  },
+  "author": "Dashticz",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Dashticz/dashticz/issues"
+  },
+  "homepage": "https://github.com/Dashticz/dashticz#readme"
+}

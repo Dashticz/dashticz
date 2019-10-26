@@ -9,6 +9,8 @@ function switchDevice(cur, pMode, pAskConfirm) {
     if (pAskConfirm===true && !confirm("Are you sure you want to switch?"))
         return;
     var idx = $(cur).data('light');
+    if(isProtected(idx))
+        return;
     var doStatus = '';
     var param = 'switchlight';
     switch(pMode) {
@@ -17,7 +19,7 @@ function switchDevice(cur, pMode, pAskConfirm) {
                 doStatus = toggleItem(cur, 'on');
             } else {
                 doStatus = toggleItem(cur, 'off');
-            };
+            }
             break;
         case 'on':
             doStatus = toggleItem(cur,'off');

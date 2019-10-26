@@ -120,7 +120,7 @@ Your complete CONFIG.js now should look as follows::
   config['dashticz_refresh'] = '60';
 
   config['use_favorites'] = 0; //Request all Domoticz Devices, not only favorites
-  config['auto_positioning'] = 0;  // Use 0 this if you have defined your own columns
+  config['auto_positioning'] = 0; // Use 0 this if you have defined your own columns
 
   //Definition of blocks
   blocks = {}

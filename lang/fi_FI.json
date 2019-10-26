@@ -101,7 +101,8 @@
             "default_cors_url": "Default CORS URL",
             "dashticz_php_path": "Dashticz PHP Path",
             "standby_call_url": "URL to be called at start of standby",
-            "standby_call_url_on_end": "URL to be called at end of standby"
+            "standby_call_url_on_end": "URL to be called at end of standby",
+            "login_timeout": "Keep Dashticz logged in (minutes)"
         },
         "infosave": "Asetukset tallennetaan oletuksena selaimen muistiin. Tämän menetelmän huono puoli on se, että se toimii vain kyseisessä selaimessa. Voit jatkaa mikäli tämä ei ole ongelma. Muussa tapauksessa kopioi alla oleva koodi CONFIG.JS tiedostoon pitääksesi samat asetukset kaikissa selaimissa ja laitteissa",
         "localize": {
@@ -172,7 +173,8 @@
             "title": "Näytön otsikko",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Salaman väri ja opasiteetti (RGBA)",
-            "blink_color_help": "Aseta salaman väri ja opasiteetti (punainen, vihreä, sininen, alfa)"
+            "blink_color_help": "Aseta salaman väri ja opasiteetti (punainen, vihreä, sininen, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "Kuun IDX-numero",

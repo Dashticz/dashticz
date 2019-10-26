@@ -147,10 +147,11 @@ function getWasteApi2Data(address, date, random, companyCode) {
                         PAPER: 'Papier',
                         GREENGREY: 'GFT & Rest',
                     };
+                    var pickupType = element.description !== 'Null' ? element.description : element._pickupTypeText;
                     dataFiltered.push({
-                        date: moment(dateElement),
-                        summary: pickupTypes[element.description],
-                        garbageType: mapGarbageType(pickupTypes[element.description]),
+                      date: moment(dateElement),
+                      summary: pickupTypes[pickupType],
+                      garbageType: mapGarbageType(pickupTypes[pickupType])
                     });
                 });
             });
