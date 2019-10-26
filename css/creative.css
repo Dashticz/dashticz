@@ -95,6 +95,7 @@
 .dt_content {
 	width: 100%;
 	padding-left: 10px;
+	padding-right: 10px;
 }
 
 .dt_block .col-icon {
@@ -1219,6 +1220,7 @@ img.icon {
 	}
 	.dt_content {
 		padding-left: 5px;
+		padding-right: 5px;
 	}
 	
 	.dt_title {
