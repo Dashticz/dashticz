@@ -41,7 +41,11 @@ var gettingDevices = false;
 var md;
 var usrEnc='';
 var pwdEnc='';
-var _STREAMPLAYER_TRACKS = { "track": 1, "name": "Music FM", "file": "http://stream.musicfm.hu:8000/musicfm.mp3" };
+var _STREAMPLAYER_TRACKS = [
+    {"track":1,"name":"Q-music","file":"http://icecast-qmusic.cdp.triple-it.nl/Qmusic_nl_live_96.mp3"},
+    {"track":2,"name":"100%NL","file":"http://stream.100p.nl/100pctnl.mp3"},
+    {"track":3,"name":"NPO Radio 1","file":"http://icecast.omroep.nl/radio1-bb-mp3"},
+ ];
 // eslint-disable-next-line no-unused-vars
 var _THOUSAND_SEPARATOR = '.';
 // eslint-disable-next-line no-unused-vars
