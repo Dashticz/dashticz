@@ -1,8 +1,9 @@
 {
-"version": "3.1.1",
+"version": "3.1.2",
 "branch": "beta",
-"last_changes": "Calendar with table formatting; session time-out setting",
+"last_changes": "Stable version",
 "changelog" : {
+            "3.1.1": "Calendar with table formatting; session time-out setting",
             "3.1.0": "New graph module",
             "3.0.6": "[enh] OWM city id as city name, icon/images for blocktitles",
             "3.0.5": "Improve installation script",
