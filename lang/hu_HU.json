@@ -101,7 +101,8 @@
             "default_cors_url": "Default CORS URL",
             "dashticz_php_path": "Dashticz PHP Path",
             "standby_call_url": "URL to be called at start of standby",
-            "standby_call_url_on_end": "URL to be called at end of standby"
+            "standby_call_url_on_end": "URL to be called at end of standby",
+            "login_timeout": "Keep Dashticz logged in (minutes)"
         },
         "infosave": "Alapértelmezés szerint a beállítások a böngészőben tárolódnak. E módszer hátránya, hogy csak a jelenlegi böngészőben fog működni. Ha ez nem jelent problémát, továbbléphet. Ellenkező esetben másolja a kódot a CONFIG.JS fájlba, hogy megőrizze a beállításokat az összes böngészőben és eszközön.",
         "localize": {
@@ -172,7 +173,8 @@
             "title": "Képernyő",
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Flash szín és opacitás (RGBA)",
-            "blink_color_help": "Állítsa be a vaku színét és az opacitását (piros, zöld, kék, alfa)"
+            "blink_color_help": "Állítsa be a vaku színét és az opacitását (piros, zöld, kék, alfa)",
+            "start_page": "Start page number (First page=1)"
         },
         "weather": {
             "idx_moonpicture": "Holdfotó idxje",

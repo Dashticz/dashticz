@@ -101,7 +101,8 @@
             "default_cors_url": "Default CORS URL",
             "dashticz_php_path": "Dashticz PHP Path",
             "standby_call_url": "URL to be called at start of standby",
-            "standby_call_url_on_end": "URL to be called at end of standby"
+            "standby_call_url_on_end": "URL to be called at end of standby",
+            "login_timeout": "Laat Dashticz ingelogd (minuten)"
         },
         "infosave": "Standaard worden de instellingen opgeslagen in uw browser. Nadeel van deze methode is dat het alleen in uw huidige browser werkt. Als dat geen probleem is, kunt u verdergaan. Anders, kopieer onderstaande code naar uw CONFIG.JS om instellingen te gebruiken in alle browsers waarmee u Dashticz opent.",
         "localize": {
@@ -172,7 +173,8 @@
             "title": "Weergave",
             "security_button_icons": "Pictogrammen in plaats van tekst op beveiligingsschakelaar",
             "blink_color": "Knipperkleur en ondoorzichtigheid (RBGA)",
-            "blink_color_help": "Stel de knipperkleur en ondoorzichtigheid in (rood, groen, blauw, ondoorzichtigheid)"
+            "blink_color_help": "Stel de knipperkleur en ondoorzichtigheid in (rood, groen, blauw, ondoorzichtigheid)",
+            "start_page": "Start pagina nummer (Eerste pagina=1)"
         },
         "weather": {
             "idx_moonpicture": "IDX van maanfoto",

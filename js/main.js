@@ -1,17 +1,33 @@
+/* eslint-disable no-prototype-builtins */
+/* global getBlockClick customfolder myBlockNumbering:writable objectlength config initVersion loadSettings settings getRandomInt number_format levelNamesEncoded _TEMP_SYMBOL hexToHsb Cookies*/
+/* global sessionValid MobileDetect moment getBlock buttons handleObjectBlock getGraphs iconORimage getBlockData titleAndValueSwitch showUpdateInformation getStateBlock addThermostatFunctions*/
+/* global loadWeatherFull loadWeather Swiper ion MoonPhase StationClock*/
+
+//To refactor later:
+/* global blocktypes afterGetDevices getStatusBlock google slideDeviceExt switchSecurity*/
+
+// Currently not in use anymore:
+/* global startSortable */
+
+/*To be removed from this file: appendHorizon loadMaps*/
+
 var language = {};
 var cache = new Date().getTime();
 
 // device detection
+// eslint-disable-next-line no-unused-vars
 var standby = true;
 var standbyActive = false;
 var standbyTime = 0;
 var swipebackTime = 0;
+// eslint-disable-next-line no-unused-vars
 var audio = {};
 var screens = {};
 var columns = {};
 var columns_standby = {};
 var blocks = {};
 var req;
+// eslint-disable-next-line no-unused-vars
 var slide;
 var sliding = false;
 var defaultcolumns = false;
@@ -23,115 +39,148 @@ var oldstates = [];
 var onOffstates = [];
 var gettingDevices = false;
 var md;
-var usrEnc;
-var pwdEnc;
-var _GRAPHS_LOADED = {};
-var _STREAMPLAYER_TRACKS = { "track": 1, "name": "Music FM", "file": "http://stream.musicfm.hu:8000/musicfm.mp3" };
+var usrEnc='';
+var pwdEnc='';
+var _STREAMPLAYER_TRACKS = [
+    {"track":1,"name":"Q-music","file":"http://icecast-qmusic.cdp.triple-it.nl/Qmusic_nl_live_96.mp3"},
+    {"track":2,"name":"100%NL","file":"http://stream.100p.nl/100pctnl.mp3"},
+    {"track":3,"name":"NPO Radio 1","file":"http://icecast.omroep.nl/radio1-bb-mp3"},
+ ];
+// eslint-disable-next-line no-unused-vars
 var _THOUSAND_SEPARATOR = '.';
+// eslint-disable-next-line no-unused-vars
 var _DECIMAL_POINT = ',';
 var _STANDBY_CALL_URL = '';
 var _END_STANDBY_CALL_URL = '';
 var lastGetDevicesTime = 0;
 var allVariables = {};
+// eslint-disable-next-line no-unused-vars
+var map;
 
-function utf8_to_b64(str) {
-    return window.btoa(unescape(encodeURIComponent(str)));
-}
+
 function b64_to_utf8(str) {
     return decodeURIComponent(escape(window.atob(str)));
 }
 
+// eslint-disable-next-line no-unused-vars
 function loadFiles() {
-    $.ajax({ url: customfolder + '/CONFIG.js', async: false, dataType: 'script' }).done(function () {
+
+    $.ajax({ url: customfolder + '/CONFIG.js', dataType: 'script' })
+    .error(function() {
+        console.log('Error in config.js');
+        $('#hide').show();
+        $('#loaderHolder').fadeOut();
+        return;
+    })
+    .then(function () {
+        setTimeout(function() {
+            $('#loaderHolder').fadeOut();
+        }, 1000);
+        $('body').css('overflow', 'auto');
+    
         if (objectlength(columns) === 0) defaultcolumns = true;
 
-        _GRAPHREFRESH = 5;
-
         //Check language before loading settings and fallback to English when not set
+        var setLang = 'en_US';
         if (typeof (localStorage.dashticz_language) !== 'undefined') {
             setLang = localStorage.dashticz_language
         }
         else if (typeof (config) !== 'undefined' && typeof (config.language) !== 'undefined') {
             setLang = config.language;
         }
-        else {
-            setLang = 'en_US';
-        }
-        $.ajax({
-            url: 'lang/' + setLang + '.json?v=' + cache, async: false, dataType: 'json', success: function (data) {
+        return $.ajax({
+            url: 'lang/' + setLang + '.json?v=' + cache,  dataType: 'json', success: function (data) {
                 language = data;
             }
         });
+    })
+    .then(function(){
+        return $.ajax({ url: 'js/version.js',  dataType: 'script' });
+    })
+    .then(function() {
+        return initVersion();
+    })
+    .then(function(){
 
-        $.ajax({ url: 'js/version.js', async: false, dataType: 'script' });
-        $.ajax({ url: 'js/settings.js', async: false, dataType: 'script' }).done(function () {
-            loadSettings();
-            userEnc = '';
-            pwdEnc = '';
-            if (typeof (settings['user_name']) !== 'undefined') {
-                usrEnc = window.btoa(settings['user_name']);
-                pwdEnc = window.btoa(settings['pass_word']);
-            }
-            if (typeof (screens) === 'undefined' || objectlength(screens) === 0) {
-                screens = {};
-                screens[1] = {};
-                screens[1]['background'] = settings['background_image'];
-                screens[1]['columns'] = [];
-                if (defaultcolumns === false) {
-                    for (c in columns) {
-                        if (c !== 'bar') screens[1]['columns'].push(c);
-                    }
+        return $.ajax({ url: 'js/settings.js', dataType: 'script' });
+    })
+    .then(function () {
+        loadSettings();
+        usrEnc = '';
+        pwdEnc = '';
+        if (typeof (settings['user_name']) !== 'undefined') {
+            usrEnc = window.btoa(settings['user_name']);
+            pwdEnc = window.btoa(settings['pass_word']);
+        }
+        if (typeof (screens) === 'undefined' || objectlength(screens) === 0) {
+            screens = {};
+            screens[1] = {};
+            screens[1]['background'] = settings['background_image'];
+            screens[1]['columns'] = [];
+            if (defaultcolumns === false) {
+                for (var c in columns) {
+                    if (c !== 'bar') screens[1]['columns'].push(c);
                 }
             }
+        }
 
-            $('<link href="vendor/weather/css/weather-icons.min.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
+        $('<link href="vendor/weather/css/weather-icons.min.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
 
-            if (settings['theme'] !== 'default') {
-                $('<link rel="stylesheet" type="text/css" href="themes/' + settings['theme'] + '/' + settings['theme'] + '.css?v=' + cache + '" />').appendTo('head');
-            }
-            $('<link href="' + customfolder + '/custom.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
+        if (settings['theme'] !== 'default') {
+            $('<link rel="stylesheet" type="text/css" href="themes/' + settings['theme'] + '/' + settings['theme'] + '.css?v=' + cache + '" />').appendTo('head');
+        }
+        $('<link href="' + customfolder + '/custom.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
 
-            if (typeof (settings['edit_mode']) !== 'undefined' && settings['edit_mode'] == 1) {
-                $('<link href="css/sortable.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
-                $.ajax({ url: 'js/sortable.js', async: false, dataType: 'script' });
+        if (typeof (settings['edit_mode']) !== 'undefined' && settings['edit_mode'] == 1) {
+            $('<link href="css/sortable.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
+            $.ajax({ url: 'js/sortable.js', async: false, dataType: 'script' });
 
-                var html = '<div class="newblocksHolder" style="display:none;">';
-                html += '<div class="title">' + language.editmode.add_plugin + '</div>';
-                html += '<div class="newblocks plugins sortable"></div>';
-                html += '<div class="title">' + language.editmode.add_block + '</div>';
-                html += '<div class="newblocks domoticz sortable"></div>';
-                html += '</div>';
+            var html = '<div class="newblocksHolder" style="display:none;">';
+            html += '<div class="title">' + language.editmode.add_plugin + '</div>';
+            html += '<div class="newblocks plugins sortable"></div>';
+            html += '<div class="title">' + language.editmode.add_block + '</div>';
+            html += '<div class="newblocks domoticz sortable"></div>';
+            html += '</div>';
 
-                $('body').prepend(html);
-            }
+            $('body').prepend(html);
+        }
 
-            $.ajax({ url: 'js/switches.js', async: false, dataType: 'script' });
-            $.ajax({ url: 'js/thermostat.js', async: false, dataType: 'script' });
+        return $.when(
+            $.ajax({ url: 'js/switches.js', dataType: 'script' }),
+            $.ajax({ url: 'js/thermostat.js', dataType: 'script' })
+        );
+    })
+    .then (function(){
+        return $.ajax({ url: customfolder + '/custom.js?v=' + cache, dataType: 'script' });
+    })
+    .then (function(){
+        return $.when(
+//            $.ajax({ url: 'js/switches.js', async: false, dataType: 'script' });
+            $.ajax({ url: 'js/blocks.js',  dataType: 'script' }),
+            $.ajax({ url: 'js/graphs.js',  dataType: 'script' }),
+            $.ajax({ url: 'js/login.js', dataType: 'script' }),
+            $.ajax({ url: 'js/moon.js',  dataType: 'script' })
+        );
+    })
+    .then(function () {
 
-            $.ajax({ url: customfolder + '/custom.js?v=' + cache, async: false, dataType: 'script' });
-            $.ajax({ url: 'js/switches.js', async: false, dataType: 'script' });
-            $.ajax({ url: 'js/blocks.js', async: false, dataType: 'script' });
-            $.ajax({ url: 'js/graphs.js', async: false, dataType: 'script' });
-            $.ajax({ url: 'js/login.js', async: false, dataType: 'script' });
-            $.ajax({ url: 'js/moon.js', async: false, dataType: 'script' });
+        sessionValid();
 
-            sessionValid();
+        if (typeof (settings['gm_api']) !== 'undefined' && settings['gm_api'] !== '' && settings['gm_api'] !== 0) {
+            return $.ajax({
+                url: 'https://maps.googleapis.com/maps/api/js?key=' + settings['gm_api'],
+                dataType: 'script'
+            }).done(function () {
+                setTimeout(function () {
+                    initMap();
+                }, 2000);
+            });
+        }
+    })
+    .then(function() {
+        onLoad();
+    })
 
-            if (typeof (settings['gm_api']) !== 'undefined' && settings['gm_api'] !== '' && settings['gm_api'] !== 0) {
-                $.ajax({
-                    url: 'https://maps.googleapis.com/maps/api/js?key=' + settings['gm_api'],
-                    async: false,
-                    dataType: 'script'
-                }).done(function () {
-                    setTimeout(function () {
-                        initMap();
-                    }, 2000);
-                    onLoad();
-                });
-            }
-            else onLoad();
-        });
-    });
 }
 
 function onLoad() {
@@ -143,7 +192,6 @@ function onLoad() {
 
     $('body').attr('unselectable', 'on')
         .css({
-            '-moz-user-select': '-moz-none',
             '-moz-user-select': 'none',
             '-o-user-select': 'none',
             '-khtml-user-select': 'none',
@@ -175,6 +223,7 @@ function onLoad() {
     }, (60000));
 
     setTimeout(function () {
+        // eslint-disable-next-line no-self-assign
         window.location.href = window.location.href;
     }, (settings['dashticz_refresh'] * 60 * 1000));
 
@@ -218,14 +267,14 @@ function onLoad() {
     }
 
     if (md.mobile() == null) {
-        $('body').bind('mousemove', function (e) {
+        $('body').bind('mousemove', function () {
             standbyTime = 0;
             swipebackTime = 0;
             disableStandby();
         });
     }
 
-    $('body').bind('touchend click', function (e) {
+    $('body').bind('touchend click', function () {
         setTimeout(function () {
             standbyTime = 0;
             swipebackTime = 0;
@@ -276,7 +325,7 @@ function buildStandby() {
         $('#settingspopup').modal('hide');
         $('div.swiper-container').before(screenhtml);
 
-        for (c in columns_standby) {
+        for (var c in columns_standby) {
             $('div.screenstandby .row').append('<div class="col-xs-' + columns_standby[c]['width'] + ' colstandby' + c + '"></div>');
             getBlock(columns_standby[c], c, 'div.screenstandby .row .colstandby' + c, true);
         }
@@ -284,10 +333,11 @@ function buildStandby() {
 
 }
 
+//we have to define s globally. Is used in getBlock in blocks.js. Needs to be fixed ...
+var s;
 function buildScreens() {
-    var num = 1;
     var allscreens = {}
-    for (t in screens) {
+    for (var t in screens) {
         if (typeof (screens[t]['maxwidth']) !== 'undefined' && typeof (screens[t]['maxheight']) !== 'undefined') {
             allscreens[screens[t]['maxwidth']] = screens[t];
         }
@@ -302,10 +352,10 @@ function buildScreens() {
         }
     }
     screens = allscreens;
-    keys = Object.keys(screens);
-    len = keys.length;
+    var keys = Object.keys(screens);
+    var len = keys.length;
     keys.sort(function (a, b) { return a - b });
-    for (i = 0; i < len; i++) {
+    for (var i = 0; i < len; i++) {
         t = keys[i];
         if (
             typeof (screens[t]['maxwidth']) == 'undefined' ||
@@ -341,9 +391,9 @@ function buildScreens() {
                             getBlock(columns['bar'], 'bar', 'div.screen' + s + ' .row .colbar', false);
                         }
 
-                        for (cs in screens[t][s]['columns']) {
+                        for (var cs in screens[t][s]['columns']) {
                             if (typeof (screens[t]) !== 'undefined') {
-                                c = screens[t][s]['columns'][cs];
+                                var c = screens[t][s]['columns'][cs];
                                 getBlock(columns[c], c, 'div.screen' + s + ' .row .col' + c, false);
                             }
                         }
@@ -393,7 +443,7 @@ function buildScreens() {
                             $('.col3 .auto_clock').html('<div class="transbg block_clock col-xs-12 text-center"><h1 id="clock" class="clock"></h1><h4 id="weekday" class="weekday"></h4><h4 id="date" class="date"></h4></div>');
                             $('.col3 .auto_sunrise').html('<div class="block_sunrise col-xs-12 transbg text-center sunriseholder"><em class="wi wi-sunrise"></em><span id="sunrise" class="sunrise"></span><em class="wi wi-sunset"></em><span id="sunset" class="sunset"></span></div>');
                             if (typeof (buttons) !== 'undefined') {
-                                for (b in buttons) {
+                                for (var b in buttons) {
                                     $('.col3 .auto_buttons').append('<div id="block_' + myBlockNumbering + '"</div>');
                                     var myblockselector = '#block_' + myBlockNumbering++;
                                     handleObjectBlock(buttons[b], b, myblockselector, 12, null);
@@ -408,7 +458,6 @@ function buildScreens() {
                             $('body .row').append('<div class="col-xs-6 sortable col2" data-colindex="2"><div class="block_weather containsweatherfull"></div><div class="auto_media"></div><div class="auto_states"></div></div>');
                         }
                     }
-                    num++;
                 }
             }
             break;
@@ -428,16 +477,17 @@ function buildScreens() {
 function startSwiper() {
     if (md.mobile() == null || md.tablet() !== null) {
         if ($('.swiper-container .screen').length > 1) {
-            $.ajax({ url: 'vendor/swiper/js/swiper.min.js', async: false, dataType: 'script' }).done(function () {
+            $.ajax({ url: 'vendor/swiper/js/swiper.min.js',  dataType: 'script' }).done(function () {
                 $('<link href="vendor/swiper/css/swiper.min.css" rel="stylesheet">').appendTo("head");
                 setTimeout(function () {
                     myswiper = new Swiper('.swiper-container', {
                         pagination: '.swiper-pagination',
                         paginationClickable: true,
                         loop: false,
+                        initialSlide: settings['start_page']-1,
                         effect: settings['slide_effect'],
                         keyboardControl: true,
-                        onSlideChangeStart: function (swiper) {
+                        onSlideChangeStart: function () {
                             $('.slide').removeClass('selectedbutton');
                         },
                         onSlideChangeEnd: function (swiper) {
@@ -451,7 +501,7 @@ function startSwiper() {
 
                     });
 
-                }, 2000);
+                }, 100);
             });
         }
     }
@@ -475,12 +525,12 @@ function showMap(mapid, map) {
         return
     }
     if (typeof (map) !== 'undefined') {
-        var map = new google.maps.Map(document.getElementById(mapid), {
+         map = new google.maps.Map(document.getElementById(mapid), {
             zoom: map.zoom,
             center: { lat: map.latitude, lng: map.longitude }
         });
     } else {
-        var map = new google.maps.Map(document.getElementById(mapid), {
+         map = new google.maps.Map(document.getElementById(mapid), {
             zoom: parseFloat(settings['gm_zoomlevel']),
             center: { lat: parseFloat(settings['gm_latitude']), lng: parseFloat(settings['gm_longitude']) }
         });
@@ -493,6 +543,7 @@ function showMap(mapid, map) {
 function setClassByTime() {
     var d = new Date();
     var n = d.getHours();
+    var newClass;
 
     if (n >= 20 || n <= 5) {
         newClass = 'night';
@@ -507,8 +558,8 @@ function setClassByTime() {
         newClass = 'afternoon';
     }
 
-    for (t in screens) {
-        for (s in screens[t]) {
+    for (var t in screens) {
+        for (var s in screens[t]) {
             if (typeof (screens[t][s]['background_' + newClass]) !== 'undefined') {
                 if (screens[t][s]['background_' + newClass].indexOf("/") > 0) $('.screen.screen' + s).css('background-image', 'url(\'' + screens[t][s]['background_' + newClass] + '\')');
                 else $('.screen.screen' + s).css('background-image', 'url(\'img/' + screens[t][s]['background_' + newClass] + '\')');
@@ -519,6 +570,7 @@ function setClassByTime() {
     $('body').removeClass('morning noon afternoon night').addClass(newClass);
 }
 
+// eslint-disable-next-line no-unused-vars
 function enterCode(armLevel) {
     var code;
     code = prompt(language.misc.enter_pincode);
@@ -554,10 +606,10 @@ function speak(textToSpeak) {
 }
 
 function playAudio(file) {
-    var key = $.md5(file);
+//    var key = $.md5(file);
     file = file.split('/');
 
-    filename = file[(file.length - 1)].split('.');
+    var filename = file[(file.length - 1)].split('.');
     filename = filename[0];
     delete file[(file.length - 1)];
 
@@ -575,6 +627,7 @@ function playAudio(file) {
         ion.sound.play(filename);
     }
 }
+// eslint-disable-next-line no-unused-vars
 function removeLoading() {
     $('#loadingMessage').css('display', 'none');
 }
@@ -583,6 +636,7 @@ function createModalDialog(dialogClass, dialogId, myFrame) {
     var setWidth = false;
     var setHeight = false;
     var mySetUrl = 'data-popup';
+    var mywidth, myheight;
     if (typeof (myFrame.framewidth) !== 'undefined') {
         mywidth = myFrame.framewidth;
         setWidth = true;
@@ -621,9 +675,11 @@ function createModalDialog(dialogClass, dialogId, myFrame) {
 }
 
 function triggerStatus(idx, value, device) {
+    var random = getRandomInt(1, 100000);
     try {
         eval('getStatus_' + idx + '(idx,value,device)');
     }
+    // eslint-disable-next-line no-empty
     catch (err) {
     }
     if (typeof (onOffstates[idx]) !== 'undefined' && value !== onOffstates[idx]) {
@@ -643,7 +699,6 @@ function triggerStatus(idx, value, device) {
                 disableStandby();
             }
             if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['openpopupOn']) !== 'undefined') {
-                var random = getRandomInt(1, 100000);
                 $('.modal.openpopup,.modal-backdrop').remove();
 
                 $('body').append(createModalDialog('openpopup', 'popup_' + random, blocks[idx]['openpopupOn']));
@@ -673,7 +728,6 @@ function triggerStatus(idx, value, device) {
                 disableStandby();
             }
             if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['openpopupOff']) !== 'undefined') {
-                var random = getRandomInt(1, 100000);
                 $('.modal.openpopup,.modal-backdrop').remove();
 
                 $('body').append(createModalDialog('openpopup', 'popup_' + random, blocks[idx]['openpopupOff']));
@@ -691,12 +745,13 @@ function triggerStatus(idx, value, device) {
     onOffstates[idx] = value;
 }
 
-function triggerChange(idx, value, device) {
+function triggerChange(idx, value) {
     if (typeof (oldstates[idx]) !== 'undefined' && value !== oldstates[idx]) {
         //disableStandby();
         try {
             eval('getChange_' + idx + '(idx,value,device)');
         }
+        // eslint-disable-next-line no-empty
         catch (err) {
         }
 
@@ -755,8 +810,8 @@ function disableStandby() {
 
 //END OF STANDBY FUNCTION
 
+// eslint-disable-next-line no-unused-vars
 function loadMaps(b, map) {
-    var random = getRandomInt(1, 100000);
 
     if (typeof (map.link) !== 'undefined') {
         map['url'] = map.link;
@@ -768,8 +823,9 @@ function loadMaps(b, map) {
 
     var width = 12;
     if (typeof (map.width) !== 'undefined') width = map.width;
-    if (typeof (map.link) !== 'undefined') var html = '<div class="col-xs-' + width + ' mh hover swiper-no-swiping transbg block_trafficmap" data-toggle="modal" data-target="#trafficmap_frame_' + b + '" onclick="setSrc(this);" ';
-    else var html = '<div class="col-xs-' + width + ' mh swiper-no-swiping transbg block_trafficmap" ';
+    var html='';
+    if (typeof (map.link) !== 'undefined') html = '<div class="col-xs-' + width + ' mh hover swiper-no-swiping transbg block_trafficmap" data-toggle="modal" data-target="#trafficmap_frame_' + b + '" onclick="setSrc(this);" ';
+    else html = '<div class="col-xs-' + width + ' mh swiper-no-swiping transbg block_trafficmap" ';
     if (typeof (map.height) !== 'undefined') html += ' style="height:' + map.height + 'px !important;"';
     html += '>';
     html += '<div id="trafficmap_' + b + '" data-id="maps.' + key + '" class="trafficmap"></div>';
@@ -788,6 +844,7 @@ function buttonLoadFrame(button) //Displays the frame of a button after pressing
     if (button.log == true) {
         if (typeof (getLog) !== 'function') $.ajax({ url: 'js/log.js', async: false, dataType: 'script' });
         $('#button_' + random + ' .modal-body').html('');
+        // eslint-disable-next-line no-undef
         getLog($('#button_' + random + ' .modal-body'), button.level, true);
     }
     $('#button_' + random).on('hidden.bs.modal', function () {
@@ -814,6 +871,7 @@ function refreshButtonFrame(button, buttonid) {
     }
 }
 
+// eslint-disable-next-line no-unused-vars
 function buttonOnClick(m_event)
 //button clickhandler. Assumption: button is clickable
 {
@@ -834,6 +892,7 @@ function buttonIsClickable(button) {
     return clickable;
 }
 
+// eslint-disable-next-line no-unused-vars
 function loadButton(b, button) {
     var width = 12;
     if (typeof (button.width) !== 'undefined') width = button.width;
@@ -847,9 +906,9 @@ function loadButton(b, button) {
         slideToext = ' slide slide' + button.slide;
     }
 
-    html = '<div class="col-xs-' + width + (buttonIsClickable(button) ? ' hover ' : ' ') + ' transbg buttons-' + key + slideToext + '" data-id="buttons.' + key + '">';
+    var html = '<div class="col-xs-' + width + (buttonIsClickable(button) ? ' hover ' : ' ') + ' transbg buttons-' + key + slideToext + '" data-id="buttons.' + key + '">';
 
-    if (button.hasOwnProperty('isimage')) {
+    if (button.isimage) {
         var img = '';
         if (typeof (button.image) !== 'undefined') {
             img = button.image;
@@ -893,6 +952,7 @@ function loadButton(b, button) {
     return html;
 }
 
+// eslint-disable-next-line no-unused-vars
 function loadFrame(f, frame) {
 
     var key = 'UNKNOWN';
@@ -900,9 +960,10 @@ function loadFrame(f, frame) {
 
     var width = 12;
     if (typeof (frame.width) !== 'undefined') width = frame.width;
+    var scrolling = frame.scrollbars === false ? ' scrolling="no"' : '';
     var html = '<div data-id="frames.' + key + '" class="col-xs-' + width + ' hover transbg swiper-no-swiping imgblock imgblock' + f + '" style="height:' + frame.height + 'px;padding:0px !important;">';
-    html += '<div class="col-xs-12 col-no-icon" style="padding:0px !important;">';
-    html += '<iframe src="' + frame.frameurl + '" style="width:100%;border:0px;height:' + (frame.height - 14) + 'px;"></iframe>';
+    html += '<div class="col-xs-12 no-icon" style="padding:0px !important;">';
+    html += '<iframe src="' + frame.frameurl + '"' + scrolling + ' style="width:100%;border:0px;height:' + (frame.height - 14) + 'px;"></iframe>';
     html += '</div>';
     html += '</div>';
 
@@ -972,6 +1033,7 @@ function reloadFrame(i, frame) {
 }
 
 function reloadImage(i, image) {
+    var src;
     if (typeof (image.image) !== 'undefined') {
         if (image.image === 'moon')
             src = getMoonInfo(image)
@@ -992,13 +1054,14 @@ function reloadIframe(button, i) {
 }
 */
 
-function getMoonInfo(image) {
+function getMoonInfo() {
     var mymoon = new MoonPhase(new Date());
     var myphase = parseInt(mymoon.phase() * 100 + 50) % 100;
-    src = 'img/moon/moon.' + ("0" + myphase).slice(-2) + '.png';
+    var src = 'img/moon/moon.' + ("0" + myphase).slice(-2) + '.png';
     return src;
 }
 
+// eslint-disable-next-line no-unused-vars
 function appendHorizon(columndiv) {
     var html = '<div data-id="horizon" class="containshorizon">';
     html += '<div class="col-xs-4 transbg hover text-center" onclick="ziggoRemote(\'E0x07\')">';
@@ -1014,6 +1077,7 @@ function appendHorizon(columndiv) {
     $(columndiv).append(html);
 }
 
+// eslint-disable-next-line no-unused-vars
 function appendStationClock(columndiv, col, width) {
     $(columndiv).append(
         '<div data-id="clock" class="transbg block_' + col + ' col-xs-' + width + ' text-center">' +
@@ -1043,9 +1107,10 @@ function appendStationClock(columndiv, col, width) {
     }, 50);
 }
 
+// eslint-disable-next-line no-unused-vars
 function appendStreamPlayer(columndiv) {
-    this.random = getRandomInt(1, 100000);
-    this.html = '<div data-id="streamplayer" class="transbg containsstreamplayer' + this.random + '">'
+    var random = getRandomInt(1, 100000);
+    var html = '<div data-id="streamplayer" class="transbg containsstreamplayer' + random + '">'
         + '<div class="col-xs-12 transbg smalltitle"><h3></h3></div>'
         + '<audio class="audio1" preload="none"></audio>'
         + '<div class="col-xs-4 transbg hover text-center btnPrev">'
@@ -1058,7 +1123,7 @@ function appendStreamPlayer(columndiv) {
         + '<em class="fas fa-chevron-right fa-small"></em>'
         + '</div>'
         + '</div>';
-    $(columndiv).append(this.html);
+    $(columndiv).append(html);
 
     var streamelement = '.containsstreamplayer' + random;
     var connecting = null;
@@ -1085,6 +1150,7 @@ function appendStreamPlayer(columndiv) {
 
                 playing = false;
             }).get(0),
+            // eslint-disable-next-line no-unused-vars
             btnPrev = $(streamelement + ' .btnPrev').click(function () {
                 if ((index - 1) > -1) {
                     index--;
@@ -1097,6 +1163,7 @@ function appendStreamPlayer(columndiv) {
                     doPlay();
                 }
             }),
+            // eslint-disable-next-line no-unused-vars
             btnNext = $(streamelement + ' .btnNext').click(function () {
                 if ((index + 1) < trackCount) index++;
                 else index = 0;
@@ -1106,6 +1173,7 @@ function appendStreamPlayer(columndiv) {
                     doPlay();
                 }
             }),
+            // eslint-disable-next-line no-unused-vars
             btnPlay = $(streamelement + ' .playStream').click(function () {
                 if (audio.paused) {
                     doPlay();
@@ -1177,10 +1245,10 @@ function getDevices(override) {
                         $('div.newblocks.plugins').append('<div data-id="news"><span class="title">' + language.editmode.news + '</span></div>');
                     }
                     //Add all variables to device table
-                    for (v in allVariables) {
+                    for (var v in allVariables) {
                         data.result.push(allVariables[v]);
                     }
-                    for (r in data.result) {
+                    for (var r in data.result) {
                         var device = data.result[r];
                         var idx = device['idx'];
 
@@ -1272,11 +1340,12 @@ function getDevices(override) {
                                 addHTML = response[1];
                             }
 
-                            if (typeof ($('.block_' + idx).attr('onclick')) !== 'undefined') {
-                                $('div.block_' + idx).addClass('hover');
-                            }
                             if (addHTML) {
                                 $('div.block_' + idx).html(html);
+                                getBlockClick(idx, device);
+                            }
+                            if (typeof ($('.block_' + idx).attr('onclick')) !== 'undefined') {
+                                $('div.block_' + idx).addClass('hover');
                             }
 
                             if ($('div.block_' + idx).hasClass('hover')) {
@@ -1304,13 +1373,13 @@ function getVariables() {
     $.get({
         url: settings['domoticz_ip'] + '/json.htm?' + usrinfo + 'type=command&param=getuservariables',
         type: 'GET', async: true, contentType: "application/json",
-        error: function (jqXHR, textStatus) {
+        error: function () {
             console.error("Domoticz error!\nPlease, double check the path to Domoticz in Settings!");
             infoMessage('<font color="red">Domoticz error!', 'double check the path to Domoticz in Settings!</font>', 0);
         },
         success: function (data) {
             allVariables = data.result;
-            for (v in allVariables) {
+            for (var v in allVariables) {
                 allVariables[v].idx = 'v' + allVariables[v].idx;
                 allVariables[v].Type = 'Variable';
             }
@@ -1384,7 +1453,7 @@ function handleDevice(device, idx) {
         }
         else {
             var c = 1;
-            for (de in blocktypes['HardwareType'][device['HardwareType']]) {
+            for (var de in blocktypes['HardwareType'][device['HardwareType']]) {
                 html = getStatusBlock(idx, device, blocktypes['HardwareType'][device['HardwareType']][de], c);
 
                 triggerStatus(idx + '_' + c, device['LastUpdate'], device);
@@ -1542,7 +1611,7 @@ function handleDevice(device, idx) {
             html += '<strong class="title">' + device['Name'] + '</strong><br />';
             html += '<select onchange="slideDevice(' + device['idx'] + ',this.value);">';
             html += '<option value="">' + language.misc.select + '</option>';
-            for (a in names) {
+            for (var a in names) {
                 if (parseFloat(a) > 0 || (a == 0 && (typeof (device['LevelOffHidden']) == 'undefined' || device['LevelOffHidden'] === false))) {
 
                     var s = '';
@@ -1559,9 +1628,9 @@ function handleDevice(device, idx) {
             html += '<div class="btn-group" data-toggle="buttons">';
             for (a in names) {
                 if (parseFloat(a) > 0 || (a == 0 && (typeof (device['LevelOffHidden']) == 'undefined' || device['LevelOffHidden'] === false))) {
-                    var s = '';
-                    if ((a * 10) == parseFloat(device['Level'])) s = 'active';
-                    html += '<label class="btn btn-default ' + s + '" onclick="slideDevice(' + device['idx'] + ',$(this).children(\'input\').val());">';
+                    var st = '';
+                    if ((a * 10) == parseFloat(device['Level'])) st = 'active';
+                    html += '<label class="btn btn-default ' + st + '" onclick="slideDevice(' + device['idx'] + ',$(this).children(\'input\').val());">';
                     html += '<input type="radio" name="options" autocomplete="off" value="' + (a * 10) + '" checked>' + names[a];
                     html += '</label>';
                 }
@@ -1615,7 +1684,7 @@ function getDefaultSwitchBlock(device, block, idx, defaultIconOn, defaultIconOff
         buttonimg: Default image. 
     */
     var html = '';
-    if (!isProtected(device, idx)) {
+    if (!isProtected(idx)) {
         var confirmswitch = 0;
         if (typeof (block) !== 'undefined')
             if (typeof (block['confirmation']) !== 'undefined') {
@@ -1656,9 +1725,8 @@ function getDefaultSwitchBlock(device, block, idx, defaultIconOn, defaultIconOff
 
     return [html, true];
 }
-function isProtected(device, idx) {
-    return ((typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['protected']) !== 'undefined' && blocks[idx]['protected'] === true)
-        || device['Protected'] === true);
+function isProtected(idx) {
+    return (blocks[idx] && blocks[idx].protected) || alldevices[idx].Protected;
 }
 
 function getIconStatusClass(deviceStatus) {
@@ -1788,7 +1856,7 @@ function getSmartMeterBlock(device, idx) {
         if ($('div.block_' + idx).length > 0) {
             allblocks[idx] = true;
         }
-        var blockValues = [
+        var myblockValues = [
             {
                 icon: 'fas fa-fire',
                 idx: idx + '_1',
@@ -1804,7 +1872,7 @@ function getSmartMeterBlock(device, idx) {
                 unit: 'm3'
             }
         ];
-        createBlocks(blockValues, device);
+        createBlocks(myblockValues, device);
         return ['', false];
     }
     return ['', false];
@@ -1918,7 +1986,7 @@ function getYouLessBlock(device, idx) {
 }
 
 function createBlocks(blockValues, device) {
-    blockValues.forEach(function (blockValue, index, arr) {
+    blockValues.forEach(function (blockValue, index) {
 
         if (typeof (blocks[blockValue.idx]) !== 'undefined' && typeof (blocks[blockValue.idx]['icon']) !== 'undefined') blockValue.icon = blocks[blockValue.idx]['icon'];
 
@@ -1937,7 +2005,7 @@ function createBlocks(blockValues, device) {
                 //sometimes there is a block_IDX_3 and block_IDX_6, but no block_IDX_4, therefor, loop to remove classes
                 //(e.g. with smart P1 meters, when there's no CounterDeliv value)
                 var newblock = $('div.block_' + device['idx']).last().clone();
-                for (i = 1; i <= 10; i++) {
+                for (var i = 1; i <= 10; i++) {
                     newblock.removeClass('block_' + device['idx'] + '_' + i);
                 }
                 newblock.addClass('block_' + blockValue.idx).insertAfter($('div.block_' + device['idx']).last());
@@ -2103,36 +2171,40 @@ function getThermostatBlock(device, idx) {
 }
 
 function getDimmerBlock(device, idx, buttonimg) {
-    this.html = '';
+    var html = '';
+    var classExtension = isProtected(idx) ? ' icon':' icon iconslider'; //no pointer in case of protected device
     if (device['Status'] === 'Off')
-        this.html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon iconslider', '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false );"');
+        html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false );"');
     else
-        this.html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon iconslider', '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false);"');
+        html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false);"');
     html += '<div class="col-xs-10 swiper-no-swiping col-data">';
     html += '<strong class="title">' + device['Name'];
     if (typeof (blocks[idx]) == 'undefined' || typeof (blocks[idx]['hide_data']) == 'undefined' || blocks[idx]['hide_data'] == false) {
-        this.html += ' ' + device['Level'] + '%';
+        html += ' ' + device['Level'] + '%';
     }
-    this.html += '</strong>';
+    html += '</strong>';
     if (showUpdateInformation(idx)) {
-        this.html += ' &nbsp; <span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
+        html += ' &nbsp; <span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
     }
-    this.html += '<br />';
+    html += '<br />';
     if (isRGBDeviceAndEnabled(device)) {
-        this.html += '<input type="text" class="rgbw rgbw' + idx + '" data-light="' + device['idx'] + '" />';
-        this.html += '<div class="slider slider' + device['idx'] + '" style="margin-left:55px;" data-light="' + device['idx'] + '"></div>';
+        html += '<input type="text" class="rgbw rgbw' + idx + '" data-light="' + device['idx'] + '" />';
+        html += '<div class="slider slider' + device['idx'] + '" style="margin-left:55px;" data-light="' + device['idx'] + '"></div>';
     }
     else {
-        this.html += '<div class="slider slider' + device['idx'] + '" data-light="' + device['idx'] + '"></div>';
+        html += '<div class="slider slider' + device['idx'] + '" data-light="' + device['idx'] + '"></div>';
     }
 
-    this.html += '</div>';
+    html += '</div>';
 
     if (isRGBDeviceAndEnabled(device)) {  //we have to manually destroy the previous spectrum color picker
         $('.rgbw' + idx).spectrum("destroy");
     }
 
-    $('div.block_' + idx).html(this.html);
+    $('div.block_' + idx).html(html);
+    if(!isProtected(idx)) {
+        $('div.block_' + idx).addClass('hover');
+    }
 
     if (isRGBDeviceAndEnabled(device)) {
         $('.rgbw' + idx).spectrum({
@@ -2140,10 +2212,10 @@ function getDimmerBlock(device, idx, buttonimg) {
         });
 
         $('.rgbw' + idx).on("dragstop.spectrum", function (e, color) {
-            curidx = $(this).data('light');
+            var curidx = $(this).data('light');
             color = color.toHexString();
             Cookies.set('rgbw_' + curidx, color);
-            hue = hexToHsb(color);
+            var hue = hexToHsb(color);
             var bIsWhite = (hue.s < 20);
 
             sliding = true;
@@ -2158,12 +2230,12 @@ function getDimmerBlock(device, idx, buttonimg) {
             });
         });
 
-        $('.rgbw' + idx).on('hide.spectrum', function (e, tinycolor) {
+        $('.rgbw' + idx).on('hide.spectrum', function () {
             sliding = false;
             getDevices(true);
         });
 
-        $('.rgbw' + idx).on('beforeShow.spectrum', function (e, tinycolor) {
+        $('.rgbw' + idx).on('beforeShow.spectrum', function () {
             sliding = true;
         });
     }
@@ -2195,6 +2267,7 @@ function getDimmerBlock(device, idx, buttonimg) {
             };
             break;
     }
+    slider.disabled= isProtected(idx);
     addSlider(device['idx'], slider);
 
     return [this.html, false];
@@ -2276,7 +2349,8 @@ function getBlindsBlock(device, idx, withPercentage) {
             value: device['Level'],
             step: 1,
             min: 1,
-            max: 100
+            max: 100,
+            disabled: isProtected(idx)
         });
     }
     return [this.html, false];
@@ -2288,6 +2362,7 @@ function addSlider(idx, sliderValues) {
         step: sliderValues.step,
         min: sliderValues.min,
         max: sliderValues.max,
+        disabled: sliderValues.disabled,
         start: function (event, ui) {
             sliding = true;
             slideDeviceExt($(this).data('light'), ui.value, 0);
@@ -2298,7 +2373,7 @@ function addSlider(idx, sliderValues) {
         change: function (event, ui) {
             slideDeviceExt($(this).data('light'), ui.value, 2);
         },
-        stop: function (event, ui) {
+        stop: function () {
             sliding = false;
         }
     });
@@ -2316,8 +2391,7 @@ function getSecurityBlock(device, idx) {
     if (device['Status'] === 'Normal') html += iconORimage(idx, 'fas fa-shield-alt', '', 'off icon', '', 2);
     else html += iconORimage(idx, 'fas fa-shield-alt', '', 'on icon', '', 2);
 
-    if (settings['security_button_icons'] === true || settings['security_button_icons'] === 1 || settings['security_button_icons'] === '1') var secPanelicons = true;
-    else var secPanelicons = false;
+    var secPanelicons =  (settings['security_button_icons'] === true || settings['security_button_icons'] === 1 || settings['security_button_icons'] === '1') ? true : false;
     var da = 'default';
     var ah = 'default';
     var aa = 'default';
