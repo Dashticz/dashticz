@@ -4,8 +4,8 @@
 var Dashticz = {
     components: [],
     blockNumbering: 0,
-    init() {
-        const components = [
+    init: function() {
+        var components = [
             'streamplayer',
             'button',
             'frame',
@@ -19,22 +19,22 @@ var Dashticz = {
         ]
         //the $.ajax().then accepts two functions: Success and Error handler.
         // In the success handler we call the async init function from the component
-        return Promise.all(components.map(component => {
+        return Promise.all(components.map(function(component){
             return $.ajax({
                     url: 'js/components/' + component + '.js',
                     dataType: 'script'
                 })
-                .fail((jqXHR, textStatus, errorThrown) => {
+                .fail(function(jqXHR, textStatus, errorThrown) {
 
                     console.error("Error loading: ./js/components/" + component + '.js');
                     console.error('Error: ', textStatus);
                     return errorThrown;
                 })
-                .done(() => Dashticz.components[component].init ? Dashticz.components[component].init() : 'Loaded: ' + component)
+                .done(function() { return Dashticz.components[component].init ? Dashticz.components[component].init() : 'Loaded: ' + component})
         }))
     },
-    mountSpecialBlock(mountPoint, blockdef, special) {
-        const me = Dashticz.getDefaultBlockConfig(mountPoint, blockdef, special);
+    mountSpecialBlock: function(mountPoint, blockdef, special) {
+        var me = Dashticz.getDefaultBlockConfig(mountPoint, blockdef, special);
         $(mountPoint).append(Dashticz.getSpecialBlock(me));
         if (me.containerClass)
             $(mountPoint + ' .dt_block').addClass(me.containerClass(blockdef))
@@ -42,7 +42,7 @@ var Dashticz = {
             $(mountPoint + ' .dt_state').append(special.get(me))
         if(special.run) special.run(me);
     },
-    getSpecialBlock(me) {
+    getSpecialBlock: function(me) {
         var html = '<div ' +
             (me.dataId ? ' data-id="' + me.dataId + '"' : '') +
             ' class="transbg  col-xs-' + me.width + ' ' + me.name + ' dt_block "' +
@@ -54,15 +54,15 @@ var Dashticz = {
             '</div></div>'
         return html;
     },
-    getColIcon: (me) => {
-        const icon = me.icon;
-        let html = '';
+    getColIcon: function(me) {
+        var icon = me.icon;
+        var html = '';
         if (icon) {
             html += '<div class="col-icon">';
             html += '<em class="' + icon + '"></em>';
             html += '</div>';
         }
-        const image = me.image;
+        var image = me.image;
         if (image) {
             html += '<div class="col-icon">';
             html += '<img src="img/' + image + '" class="icon"/>';
@@ -72,13 +72,13 @@ var Dashticz = {
     },
     renderTitle: function (me) {
         if (me.title) {
-            let res = '<div class="dt_title">' + me.title + '</div>';
+            var res = '<div class="dt_title">' + me.title + '</div>';
             console.log(res);
             return res;
         } else return ''
     },
-    renderStateDiv: () => '<div class="dt_state"></div>',
-    getDefaultBlockConfig(mountPoint, block, special) {
+    renderStateDiv: function() { return '<div class="dt_state"></div>'},
+    getDefaultBlockConfig: function(mountPoint, block, special) {
         var defaultConfig = {
             width: 12,
             mountPoint: mountPoint,
@@ -100,27 +100,27 @@ var Dashticz = {
         }
         return defaultConfig
     },
-    register(special) {
+    register: function(special) {
         this.components[special.name] = special;
     },
-    mount(mountPoint, selector) {
+    mount: function(mountPoint, selector) {
         console.log("mount ", selector, typeof selector);
         if (typeof selector === 'string') {
-            const def = this.components[selector];
+            var def = this.components[selector];
             if (def) {
                 this.mountSpecialBlock(mountPoint, blocks[selector], def);
                 return true
             }
         }
         if (typeof selector === 'object') {
-            for (const comp in this.components) {
+            for (var comp in this.components) {
                 if (this.components[comp].canHandle && this.components[comp].canHandle(selector)) {
                     this.mountSpecialBlock(mountPoint, selector, this.components[comp])
                     return true;
                 }
             }
         } else {
-            for (const comp in this.components) {
+            for (var comp in this.components) {
                 if (this.components[comp].canHandle && this.components[comp].canHandle(blocks[selector], selector)) {
                     this.mountSpecialBlock(mountPoint, blocks[selector], this.components[comp])
                     return true;
@@ -130,7 +130,7 @@ var Dashticz = {
 
         return false;
     },
-    mountNewContainer(column) {
+    mountNewContainer: function(column) {
         $(column).append('<div id="block_' + Dashticz.blockNumbering + '"</div>');
         return '#block_' + Dashticz.blockNumbering++;
     }

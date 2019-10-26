@@ -255,10 +255,10 @@ blocktypes = getExtendedBlockTypes(blocktypes);
 function getBlock(cols, c, screendiv, standby) {
 //    if (c==='bar') debugger;
     if (typeof (cols) !== 'undefined') {
-        let columndiv = screendiv + ' .row .col' + c;
+        var columndiv = screendiv + ' .row .col' + c;
         var colclass = '';
         if (c === 'bar') colclass = 'transbg dark';
-        const colwidth = 'col-xs-' + (cols.width ? cols.width + ' ': '');
+        var colwidth = 'col-xs-' + (cols.width ? cols.width + ' ': '');
         if (standby) {
 //            $('div.screenstandby .row').append('<div class="col-xs-' + columns_standby[c]['width'] + ' colstandby' + c + '"></div>');
             $(screendiv+ ' .row').append('<div class="' + colwidth +  'col' + c + '"></div>');
@@ -296,7 +296,7 @@ function getBlock(cols, c, screendiv, standby) {
             $(columndiv).append('<div id="' + blockIndex + '"></div>');
             var myIndex = myBlockNumbering++;
             var myblockselector = '#' + blockIndex;*/
-            const myblockselector = Dashticz.mountNewContainer(columndiv);
+            var myblockselector = Dashticz.mountNewContainer(columndiv);
             if(!Dashticz.mount(myblockselector, cols['blocks'][b]))
                 switch (typeof (cols['blocks'][b])) {
                     case 'object':

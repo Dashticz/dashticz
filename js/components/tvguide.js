@@ -1,33 +1,29 @@
 /* global Dashticz _CORS_PATH moment settings ksort*/
-const allchannels = [];
+var allchannels = [];
 
 var DT_tvguide = {
     name: "tvguide",
-    canHandle: (block) => block && block.channels,
-    default: {
-        containerClass: () => ''
-    },
-    get: () => '',
-    run(me) {
-        const tvObj = me.block;
-        const tvobject = $(me.mountPoint + ' .dt_state');
+    canHandle: function(block) { return block && block.channels},
+    run: function(me) {
+        var tvObj = me.block;
+        var tvobject = $(me.mountPoint + ' .dt_state');
         loadChannels(me)
-            .fail( () => {
+            .fail( function() {
                 console.log("TVGuide error")
             })
-            .then(() => {
+            .then(function(){
                 var cache = new Date().getTime();
 
-                const curUrl = _CORS_PATH + 'http://json.tvgids.nl/v4/programs/?day=0&channels=' + tvObj.channels.join(',') + '&time=' + cache;
+                var curUrl = _CORS_PATH + 'http://json.tvgids.nl/v4/programs/?day=0&channels=' + tvObj.channels.join(',') + '&time=' + cache;
                 moment.locale(settings['calendarlanguage']);
                 return $.getJSON(curUrl)
             })
-            .then((data) => {
-                let tvitems = []
-                const maxitems = (tvObj && tvObj.maxitems) || 10;
-                for (const channel in data.data) {
-                    for (const e in data.data[channel].prog) {
-                        const event = data.data[channel].prog[e];
+            .then(function(data){
+                var tvitems = []
+                var maxitems = (tvObj && tvObj.maxitems) || 10;
+                for (var channel in data.data) {
+                    for (var e in data.data[channel].prog) {
+                        var event = data.data[channel].prog[e];
                         var enddateStamp = event.e;
                         if (parseFloat(enddateStamp) > moment().format('X')) {
                             var newevent = {};
@@ -43,10 +39,10 @@ var DT_tvguide = {
                 tvobject.html('');
                 var counter = 1;
                 tvitems = ksort(tvitems);
-                for (const check in tvitems) {
-                    const items = tvitems[check];
-                    for (const c in items) {
-                        const item = items[c];
+                for (var check in tvitems) {
+                    var items = tvitems[check];
+                    for (var c in items) {
+                        var item = items[c];
                         if (check > moment().format('X') && counter <= maxitems) {
                             //Sometimes there might be no endtime (?). In that case the next line will give an error
                             var widget = '<div>' + item['starttime'] + ' - ' + item['endtime'] + ' - <em>' + item['channel'] + '</em> - <b>' + item['title'] + '</b></div>';
@@ -65,12 +61,12 @@ var DT_tvguide = {
 
 
         function loadChannels(me) {
-            return new Promise((resolve, reject) => {
+            return new Promise(function(resolve, reject){
                 if (typeof (allchannels[1]) !== 'undefined') resolve(allchannels);
-                const curUrl = _CORS_PATH + 'http://json.tvgids.nl/v4/channels';
+                var curUrl = _CORS_PATH + 'http://json.tvgids.nl/v4/channels';
                 return $.getJSON(curUrl)
-                    .done(channels => {
-                        for (const num in channels.data) {
+                    .done(function(channels){
+                        for (var num in channels.data) {
                             allchannels[channels.data[num]['ch_id']] = channels.data[num]['ch_name'];
                         }
                         resolve(allchannels);
