@@ -2,8 +2,10 @@
 // eslint-disable-next-line no-unused-vars
 var DT_news = {
     name: "news",
-    canHandle: (block) => block && block.feed,
-    init(){
+    canHandle: function (block) {
+        return block && block.feed
+    },
+    init: function () {
         return $.ajax({
             url: 'vendor/jquery.newsTicker.min.js',
             dataType: 'script'
@@ -11,11 +13,17 @@ var DT_news = {
     },
     default: {
         icon: 'fas fa-newspaper',
-        containerClass: () => 'hover',
-        containerExtra: (block) => (block && block.maxheight) ? ' style="max-height:' + block.maxheight + 'px;overflow:hidden;"' : ''
+        containerClass: function () {
+            return 'hover'
+        },
+        containerExtra: function (block) {
+            return (block && block.maxheight) ? ' style="max-height:' + block.maxheight + 'px;overflow:hidden;"' : ''
+        }
     },
-    get: () => '<ul id="newsTicker"></div>',
-    run(me) {
+    get: function () {
+        return '<ul id="newsTicker"></div>'
+    },
+    run: function (me) {
         var newsfeed = settings['default_news_url'];
         if (me.block && me.block.feed) newsfeed = me.block.feed;
 
@@ -62,7 +70,7 @@ var DT_news = {
 
                 });
 
-                let maxHeight = -1;
+                var maxHeight = -1;
                 if (me.block && me.block.maxheight) maxHeight = me.block.maxheight;
                 $(me.mountPoint + ' li').each(function () {
                     maxHeight = maxHeight > $(this).height() ? maxHeight : $(this).height();
@@ -83,6 +91,12 @@ var DT_news = {
     }
 
 
+}
+
+/* callback for newsfeed item onclick*/
+// eslint-disable-next-line no-unused-vars
+function setSrcRss(cur) {
+    $($(cur).data('target')).find('iframe').attr('src', $(cur).data('link'));
 }
 
 Dashticz.register(DT_news);

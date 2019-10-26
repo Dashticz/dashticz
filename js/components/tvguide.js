@@ -3,22 +3,24 @@ var allchannels = [];
 
 var DT_tvguide = {
     name: "tvguide",
-    canHandle: function(block) { return block && block.channels},
-    run: function(me) {
+    canHandle: function (block) {
+        return block && block.channels
+    },
+    run: function (me) {
         var tvObj = me.block;
         var tvobject = $(me.mountPoint + ' .dt_state');
         loadChannels(me)
-            .fail( function() {
+            .fail(function () {
                 console.log("TVGuide error")
             })
-            .then(function(){
+            .then(function () {
                 var cache = new Date().getTime();
 
                 var curUrl = _CORS_PATH + 'http://json.tvgids.nl/v4/programs/?day=0&channels=' + tvObj.channels.join(',') + '&time=' + cache;
                 moment.locale(settings['calendarlanguage']);
                 return $.getJSON(curUrl)
             })
-            .then(function(data){
+            .then(function (data) {
                 var tvitems = []
                 var maxitems = (tvObj && tvObj.maxitems) || 10;
                 for (var channel in data.data) {
@@ -60,25 +62,19 @@ var DT_tvguide = {
 
 
 
-        function loadChannels(me) {
-            return new Promise(function(resolve, reject){
-                if (typeof (allchannels[1]) !== 'undefined') resolve(allchannels);
-                var curUrl = _CORS_PATH + 'http://json.tvgids.nl/v4/channels';
-                return $.getJSON(curUrl)
-                    .done(function(channels){
-                        for (var num in channels.data) {
-                            allchannels[channels.data[num]['ch_id']] = channels.data[num]['ch_name'];
-                        }
-                        resolve(allchannels);
-                    })
-                    .fail(function () {
-                        console.log("error getting channel info from tvgids. Retrying in 5 seconds.");
-                        setTimeout(function () {
-                            DT_tvguide.run(me);
-                        }, 5000);
-                        reject();
-                    });
-            })
+        function loadChannels() {
+            if (typeof (allchannels[1]) !== 'undefined') return allchannels;
+            var curUrl = _CORS_PATH + 'http://json.tvgids.nl/v4/channels';
+            return $.getJSON(curUrl)
+                .done(function (channels) {
+                    for (var num in channels.data) {
+                        allchannels[channels.data[num]['ch_id']] = channels.data[num]['ch_name'];
+                    }
+                    return allchannels;
+                })
+                .fail(function () {
+                    console.log("error getting channel info from tvgids. Retrying in 5 seconds.");
+                });
         }
     }
 

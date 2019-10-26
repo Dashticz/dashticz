@@ -2,13 +2,13 @@
 // eslint-disable-next-line no-unused-vars
 var DT_publictransport = {
 	name: 'publictransport',
-	canHandle(block) {
+	canHandle: function (block) {
 		return block && block.station
 	},
-	get() {
+	get: function () {
 		return language.misc.loading
 	},
-	run(me) {
+	run: function (me) {
 		//Get data every interval and call function to create block
 		var interval = 60;
 		if (typeof (me.block.interval) !== 'undefined') interval = me.block.interval;
@@ -41,7 +41,7 @@ var DT_publictransport = {
 			}
 
 			$.getJSON(dataURL)
-				.then((data) => {
+				.then(function (data) {
 					dataPublicTransport(me, data);
 				});
 
@@ -52,9 +52,9 @@ var DT_publictransport = {
 			var provider = me.block.provider.toLowerCase();
 			var dataPart = {}
 			var i = 0;
-			for (const d in data) {
+			for (var d in data) {
 				if (provider == '9292' || provider == '9292-train' || provider == '9292-bus' || provider == '9292-metro' || provider == '9292-tram-bus') {
-					for (const t in data[d]) {
+					for (var t in data[d]) {
 						var l_id = data[d][t]['id'];
 						if (provider == '9292' ||
 							(l_id == 'bus' && provider == '9292-bus') ||
@@ -68,9 +68,9 @@ var DT_publictransport = {
 							(l_id == 'trein' && provider == '9292-train') ||
 							(l_id == 'veerboot' && provider == '9292-boat')
 						) {
-							const deps = data[d][t]['departures'];
-							for (const de in deps) {
-								const key = deps[de]['time'];
+							var deps = data[d][t]['departures'];
+							for (var de in deps) {
+								var key = deps[de]['time'];
 								if (typeof (transportobject.destination) != 'undefined') {
 									var destinationArray = [];
 									if (transportobject.destination.indexOf(',')) {
@@ -105,7 +105,7 @@ var DT_publictransport = {
 									} else {
 										dataPart[key][i] += '- Lijn ' + deps[de]['service'];
 									}
-									const dest = deps[de]['destinationName'].split(' via ');
+									var dest = deps[de]['destinationName'].split(' via ');
 									dataPart[key][i] += ' - ' + dest[0];
 									if (typeof (transportobject.show_via) == 'undefined' || transportobject.show_via == true) {
 										if (typeof (dest[1]) !== 'undefined') {
@@ -121,11 +121,11 @@ var DT_publictransport = {
 						}
 					}
 				} else if (provider == 'mobiliteit') {
-					for (const t in data[d]) {
+					for (t in data[d]) {
 						if (data[d][t]['time'] == null) {
 							continue;
 						}
-						const key = data[d][t]['time'] + data[d][t]['trainNumber'];
+						key = data[d][t]['time'] + data[d][t]['trainNumber'];
 						if (typeof (dataPart[key]) == 'undefined') dataPart[key] = [];
 						var fullArrivalDate = data[d][t]['date'] + ' ' + data[d][t]['time'];
 						var arrivalTime = moment(fullArrivalDate);
@@ -147,7 +147,7 @@ var DT_publictransport = {
 						dataPart[key][i] += '<span class="trainLine ' + (data[d][t]['name']).replace(/ /g, '') + '">' + data[d][t]['name'] + '</span>';
 						dataPart[key][i] += '<span class="trainSeparator"> - </span>'
 
-						const dest = data[d][t]['direction'].split(' via ');
+						dest = data[d][t]['direction'].split(' via ');
 						dataPart[key][i] += '<span class="trainDestination">' + dest[0];
 						if (typeof (transportobject.show_via) == 'undefined' || transportobject.show_via == true) {
 							if (typeof (dest[1]) !== 'undefined') dataPart[key][i] += ' via ' + dest[1];
@@ -157,19 +157,19 @@ var DT_publictransport = {
 					}
 				} else if (provider == 'vvs') {
 					arrivalTime = data[d]['departureTime']['year'] + ':' + data[d]['departureTime']['month'] + ':' + data[d]['departureTime']['day'] + ':' + addZero(data[d]['departureTime']['hour']) + ':' + addZero(data[d]['departureTime']['minute']);
-					const arrivalTimeShow = addZero(data[d]['departureTime']['hour']) + ':' + addZero(data[d]['departureTime']['minute']);
+					var arrivalTimeShow = addZero(data[d]['departureTime']['hour']) + ':' + addZero(data[d]['departureTime']['minute']);
 					if (typeof (dataPart[arrivalTime]) == 'undefined') dataPart[arrivalTime] = [];
 					dataPart[arrivalTime][i] = '';
-					const arrivalTimeScheduled = addMinutes(arrivalTimeShow, data[d]['delay'] * -1);
+					var arrivalTimeScheduled = addMinutes(arrivalTimeShow, data[d]['delay'] * -1);
 					dataPart[arrivalTime][i] += '<div><b>' + arrivalTimeShow + '</b> ';
-					let latecolor = '';
+					var latecolor = '';
 					if (data[d]['delay'] == 0) latecolor = 'notlatetrain';
 					if (data[d]['delay'] > 0) latecolor = 'latetrain';
 					dataPart[arrivalTime][i] += '<span id="' + latecolor + '">+' + data[d]['delay'] + ' Min.</span> ';
 					dataPart[arrivalTime][i] += '<span id="departureScheduled">(' + language.misc.scheduled + ': ' + arrivalTimeScheduled + ')</span> ';
 					dataPart[arrivalTime][i] += '- ' + data[d]['number'] + ' ';
 
-					const dest = data[d]['direction'].split(' via ');
+					dest = data[d]['direction'].split(' via ');
 					dataPart[arrivalTime][i] += dest[0];
 					if (typeof (transportobject.show_via) == 'undefined' || transportobject.show_via == true) {
 						if (typeof (dest[1]) !== 'undefined') dataPart[arrivalTime][i] += ' via ' + dest[1];
@@ -181,11 +181,11 @@ var DT_publictransport = {
 			}
 
 			if (provider == 'irailbe') {
-				for (let j = 0; j < data.departures.departure.length; j++) {
-					const key = data.departures.departure[j].time + data.departures.departure[j].vehicle;
+				for (var j = 0; j < data.departures.departure.length; j++) {
+					key = data.departures.departure[j].time + data.departures.departure[j].vehicle;
 					if (typeof (dataPart[key]) == 'undefined') dataPart[key] = [];
-					const fullDepartureDate = data.departures.departure[j].time;
-					const delay = data.departures.departure[j].delay / 60;
+					var fullDepartureDate = data.departures.departure[j].time;
+					delay = data.departures.departure[j].delay / 60;
 					dataPart[key][i] = '';
 					dataPart[key][i] += '<div><div class="trainTime">' + moment.unix(fullDepartureDate).format('HH:mm');
 
@@ -204,10 +204,10 @@ var DT_publictransport = {
 					i++;
 				}
 			} else if (provider == 'delijnbe') {
-				for (var j = 0; j < data.lijnen.length; j++) {
-					const key = data.lijnen[j].vertrekCalendar + data.lijnen[j].voertuigNummer;
+				for (j = 0; j < data.lijnen.length; j++) {
+					key = data.lijnen[j].vertrekCalendar + data.lijnen[j].voertuigNummer;
 					if (typeof (dataPart[key]) == 'undefined') dataPart[key] = [];
-					const delay = data.lijnen[j].vertrekTijd;
+					delay = data.lijnen[j].vertrekTijd;
 					dataPart[key][i] = '';
 					dataPart[key][i] += '<div><div class="trainTime">' + delay;
 					dataPart[key][i] += '</div>'
@@ -226,7 +226,7 @@ var DT_publictransport = {
 			var c = 1;
 			Object.keys(dataPart).forEach(function (d) {
 				//Object.keys(dataPart).sort().forEach(function(d) {
-				for (const p in dataPart[d]) {
+				for (var p in dataPart[d]) {
 					if (c <= transportobject.results) $(me.mountPoint + ' .dt_state').append(dataPart[d][p]);
 					c++;
 				}

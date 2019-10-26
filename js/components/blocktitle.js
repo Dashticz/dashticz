@@ -2,11 +2,13 @@
 
 var DT_blocktitle = {
     name: "blocktitle",
-    canHandle(block) {
-        return block && block.type && block.type==='blocktitle'
+    canHandle: function (block) {
+        return block && block.type && block.type === 'blocktitle'
     },
     default: {
-        containerClass: () => 'titlegroups'
+        containerClass: function () {
+            return 'titlegroups'
+        }
     }
 }
 

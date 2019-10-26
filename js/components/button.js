@@ -3,18 +3,20 @@
 // eslint-disable-next-line no-unused-vars
 var DT_button = {
     name: "button",
-    canHandle: (block) => {
+    canHandle: function (block) {
         return block && (block.btnimage || block.slide)
     },
     default: {
-        containerClass: (button) => (button && button.slide ? 'slide slide' + button.slide : '') + (DT_button.buttonIsClickable(button) ? ' hover ' : ' ')
+        containerClass: function (button) {
+            return (button && button.slide ? 'slide slide' + button.slide : '') + (DT_button.buttonIsClickable(button) ? ' hover ' : ' ')
+        }
     },
-    get(me) {
-        const button = me.block
-        let html = '';
+    get: function (me) {
+        var button = me.block
+        var html = '';
         if (button.btnimage) {
             var img = button.btnimage;
-            if (img == 'moon') {
+            if (img === 'moon') {
                 img = DT_button.getMoonInfo(button);
             }
             if (typeof (button.forceheight) !== 'undefined') {
@@ -25,8 +27,8 @@ var DT_button = {
         }
         return html;
     },
-    run(me) {
-        const button = me.block
+    run: function (me) {
+        var button = me.block
 
         if (DT_button.buttonIsClickable(button))
             $(me.mountPoint + ' .button').click(button, DT_button.buttonOnClick);
@@ -40,7 +42,7 @@ var DT_button = {
             }, refreshtime);
         }
     },
-    buttonLoadFrame(button) //Displays the frame of a button after pressing is
+    buttonLoadFrame: function (button) //Displays the frame of a button after pressing is
     {
         var random = getRandomInt(1, 100000);
         $('body').append(createModalDialog('openpopup', 'button_' + random, button));
@@ -66,7 +68,7 @@ var DT_button = {
             }, button.refreshiframe);
         }
     },
-    refreshButtonFrame(button, buttonid) {
+    refreshButtonFrame: function (button, buttonid) {
         var mydiv = $('#button_' + buttonid).find('iframe');
         if (mydiv.length > 0) {
             mydiv.attr('src', checkForceRefresh(button, button.url));
@@ -75,7 +77,7 @@ var DT_button = {
             }, button.refreshiframe);
         }
     },
-    buttonOnClick(m_event)
+    buttonOnClick: function (m_event)
     //button clickhandler. Assumption: button is clickable
     {
         var button = m_event.data;
@@ -87,12 +89,12 @@ var DT_button = {
             DT_button.buttonLoadFrame(button);
         }
     },
-    buttonIsClickable(button) {
+    buttonIsClickable: function (button) {
         var clickable = typeof (button.url) !== 'undefined' || button.log == true || typeof (button.slide) !== 'undefined';
         return clickable;
     },
-    reloadImage(me) {
-        let src;
+    reloadImage: function (me) {
+        var src;
         if (typeof (me.block.btnimage) !== 'undefined') {
             if (me.block.btnimage === 'moon')
                 src = DT_button.getMoonInfo(me.block.btnimage)
@@ -101,7 +103,7 @@ var DT_button = {
             $(me.mountPoint + ' .dt_content img').attr('src', src);
         }
     },
-    getMoonInfo() {
+    getMoonInfo: function () {
         var mymoon = new MoonPhase(new Date());
         var myphase = parseInt(mymoon.phase() * 100 + 50) % 100;
         return 'img/moon/moon.' + ("0" + myphase).slice(-2) + '.png';

@@ -6,14 +6,18 @@ var DT_longfonds = {
         icon: 'fas fa-cloud',
         title: 'Luchtkwaliteit',
     },
-    run(me) {
+    run: function (me) {
+        if (!settings['longfonds_zipcode'] || !settings['longfonds_housenumber']) {
+            console.log('Longfonds: Set zipcode and housenumber as config setting in CONFIG.js first');
+            return;
+        }
         $.getJSON(_CORS_PATH + 'https://www.longfonds.nl/gezondelucht/api/zipcode-check?zipcode=' + settings['longfonds_zipcode'] + '&houseNumber=' + settings['longfonds_housenumber'])
-        .fail( () => {
-            console.log("Error reading longfonds")
-        })
-        .done(data =>  {
-            $(me.mountPoint + ' .dt_state').html(data.value);
-        });
+            .fail(function () {
+                console.log("Error reading longfonds")
+            })
+            .done(function (data) {
+                $(me.mountPoint + ' .dt_state').html(data.value);
+            });
 
     }
 }

@@ -2,17 +2,21 @@
 
 var DT_stationclock = {
     name: "stationclock",
-    init() {
+    init: function () {
         return $.ajax({
             url: 'vendor/stationclock.js',
             dataType: 'script'
         });
     },
     default: {
-        containerClass: () => 'text-center'
+        containerClass: function () {
+            return 'text-center'
+        }
     },
-    get: () => '<canvas id="clock" width="150" height="150">Your browser is unfortunately not supported.</canvas>',
-    run() {
+    get: function () {
+        return '<canvas id="clock" width="150" height="150">Your browser is unfortunately not supported.</canvas>'
+    },
+    run: function () {
         var clock = new StationClock("clock");
         clock.body = StationClock.RoundBody;
         clock.dial = StationClock.GermanStrokeDial;

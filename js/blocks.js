@@ -1,6 +1,6 @@
 /* eslint-disable no-debugger */
 /*global blocktypes:writable, language, _TEMP_SYMBOL, getExtendedBlockTypes, blocks, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
-/*global getSpotify, loadNZBGET, loadTrafficInfo, getCoin, addTVGuide, loadChromecast, loadGarbage, loadSonarr, loadMaps */
+/*global getSpotify, loadNZBGET, loadTrafficInfo, getCoin, loadChromecast, loadGarbage, loadSonarr, loadMaps */
 /*global Dashticz, getLog, appendHorizon, addCalendar*/
 /*global alldevices getIconStatusClass*/
 /*global getRandomInt, moment, number_format*/
@@ -588,19 +588,7 @@ function handleObjectBlock(block, columndiv, width) {
         $(columndiv).append(html);
         getCoin(block);
 
-    } else if (block.channels) {
-        if (typeof (addTVGuide) !== 'function') $.ajax({
-            url: 'js/tvguide.js',
-            async: false,
-            dataType: 'script'
-        });
-
-        var dataId = 'tvguide.' + key;
-        var classes = 'block_tvguide transbg containstvguide containstvguide' + random;
-        appendTvOrCalendarBlock(dataId, classes, width, block, columndiv);
-        addTVGuide($('.containstvguide' + random), block);
-        getBlockClick('tvguide');
-    } else if (block.icalurl ||
+    }  else if (block.icalurl ||
         block.calendars
     ) {
         var dataId = 'calendars.' + key;
