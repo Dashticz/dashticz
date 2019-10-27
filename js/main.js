@@ -877,7 +877,18 @@ function buttonOnClick(m_event)
 {
     var button = m_event.data;
     if (typeof (button.newwindow) !== 'undefined') {
-        window.open(button.url);
+		if (button.newwindow == '0') {
+			window.open(button.url, '_self');
+		}
+		else if (button.newwindow == '1') {
+			window.open(button.url);
+		}
+		else if (button.newwindow == '2') {
+			buttonLoadFrame(button);
+		}
+		else {
+			buttonLoadFrame(button);
+		}
     }
     else if (typeof (button.slide) !== 'undefined') {
         toSlide(button.slide - 1);
