@@ -65,7 +65,10 @@ Parameters
   * - level
     - Domoticz log level used by the log-button.
   * - newwindow
-    - Set to ``true`` if the page needs to be opened in a new window instead of in a popup window on click.    
+    - | ``0``: no new window/frame (for intent handling, api calls)
+      | ``1``: open in new window
+      | ``2``: open in new frame (default, to prevent a breaking change in default behavior)
+
     
 
 Usage
