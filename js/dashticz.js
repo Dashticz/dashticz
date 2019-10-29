@@ -20,7 +20,8 @@ var Dashticz = {
         ]
         //the $.ajax().then accepts two functions: Success and Error handler.
         // In the success handler we call the async init function from the component
-        return Promise.all(components.map(function (component) {
+        //        return Promise.all(components.map(function (component) {
+        return $.when.apply($, components.map(function (component) {
             return $.ajax({
                     url: 'js/components/' + component + '.js',
                     dataType: 'script'
