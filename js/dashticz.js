@@ -36,8 +36,8 @@ var Dashticz = {
                 })
         }))
     },
-    mountSpecialBlock: function (mountPoint, blockdef, special) {
-        var me = Dashticz.getDefaultBlockConfig(mountPoint, blockdef, special);
+    mountSpecialBlock: function (mountPoint, blockdef, special, key) {
+        var me = Dashticz.getDefaultBlockConfig(mountPoint, blockdef, special, key);
         $(mountPoint).append(Dashticz.getSpecialBlock(me));
         if (me.containerClass)
             $(mountPoint + ' .dt_block').addClass(me.containerClass(blockdef))
@@ -47,7 +47,7 @@ var Dashticz = {
     },
     getSpecialBlock: function (me) {
         var html = '<div ' +
-            (me.dataId ? ' data-id="' + me.dataId + '"' : '') +
+            (me.key ? ' data-id="' + me.key + '"' : '') +
             ' class="transbg  col-xs-' + me.width + ' ' + me.name + ' dt_block "' +
             (me.containerExtra ? me.containerExtra(me.block) : '') + '>' +
             Dashticz.getColIcon(me) +
@@ -83,12 +83,12 @@ var Dashticz = {
     renderStateDiv: function () {
         return '<div class="dt_state"></div>'
     },
-    getDefaultBlockConfig: function (mountPoint, block, special) {
+    getDefaultBlockConfig: function (mountPoint, block, special, key) {
         var defaultConfig = {
             width: 12,
             mountPoint: mountPoint,
             block: block,
-            key: '',
+            key: key,
             name: special.name
         }
 
@@ -101,7 +101,7 @@ var Dashticz = {
         if (block && block.title) defaultConfig.title = block.title;
         if (block && block.key) {
             defaultConfig.key = block.key;
-            defaultConfig.dataId = block.key;
+            //            defaultConfig.dataId = block.key;
         }
         return defaultConfig
     },
@@ -113,19 +113,19 @@ var Dashticz = {
         if (typeof selector === 'string') {
             var def = this.components[selector];
             if (def) {
-                this.mountSpecialBlock(mountPoint, blocks[selector], def);
+                this.mountSpecialBlock(mountPoint, blocks[selector], def, selector);
                 return true
             }
         }
         for (var comp in this.components) {
             if (typeof selector === 'object') {
                 if (this.components[comp].canHandle && this.components[comp].canHandle(selector)) {
-                    this.mountSpecialBlock(mountPoint, selector, this.components[comp])
+                    this.mountSpecialBlock(mountPoint, selector, this.components[comp], '')
                     return true;
                 }
             } else {
                 if (this.components[comp].canHandle && this.components[comp].canHandle(blocks[selector], selector)) {
-                    this.mountSpecialBlock(mountPoint, blocks[selector], this.components[comp])
+                    this.mountSpecialBlock(mountPoint, blocks[selector], this.components[comp], selector)
                     return true;
                 }
             }

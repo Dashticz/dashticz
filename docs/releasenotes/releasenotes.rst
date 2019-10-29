@@ -1,9 +1,16 @@
 Release Notes
 =============
-A link to the release notes will be posted in the Dashticz support forum. The total overview can be found below.
+
+3.2.0
+-----------
+
+.. warning :: Breaking changes
+
+Main change:
+  * Standardization of the html template for special blocks. See
 
 3.1.2 (26-10-2019)
---------------
+------------------
 
 Enhancements
   * Improved calendar layout for full day events. Added timezone adjust parameters.
