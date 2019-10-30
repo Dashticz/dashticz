@@ -15,6 +15,7 @@ In this version the following blocks have been migrated to the new format:
   * Stationclock
   * Streamplayer
   * Traffic
+  * Trafficinfo
   * Train
   * TV Guide
 
