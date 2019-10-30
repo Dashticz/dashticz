@@ -328,8 +328,6 @@ function buildStandby() {
 
 }
 
-//we have to define s globally. Is used in getBlock in blocks.js. Needs to be fixed ...
-var s;
 function buildScreens() {
     var allscreens = {}
     for (var t in screens) {
@@ -442,8 +440,6 @@ function buildScreens() {
                             if (typeof (buttons) !== 'undefined') {
                                 for (var b in buttons) {
                                     $('.col3 .auto_buttons').append('<div id="block_' + myBlockNumbering + '"</div>');
-                                    var myblockselector = '#block_' + myBlockNumbering++;
-                                    
                                     handleObjectBlock(buttons[b], Dashticz.mountNewContainer('.col3 .auto_buttons'), 12, null);
 
                                 }
@@ -523,7 +519,6 @@ function showMap(mapid, map) {
         infoMessage('Info:', 'Please, set Google Maps API KEY!', 8000);
         return
     }
-    var map;
     if (typeof (map) !== 'undefined') {
          map = new google.maps.Map(document.getElementById(mapid), {
             zoom: map.zoom,
@@ -699,7 +694,6 @@ function triggerStatus(idx, value, device) {
                 disableStandby();
             }
             if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['openpopupOn']) !== 'undefined') {
-                var random = getRandomInt(1, 100000);
                 $('.modal.openpopup,.modal-backdrop').remove();
 
                 $('body').append(createModalDialog('openpopup', 'popup_' + random, blocks[idx]['openpopupOn']));
@@ -729,7 +723,6 @@ function triggerStatus(idx, value, device) {
                 disableStandby();
             }
             if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['openpopupOff']) !== 'undefined') {
-                var random = getRandomInt(1, 100000);
                 $('.modal.openpopup,.modal-backdrop').remove();
 
                 $('body').append(createModalDialog('openpopup', 'popup_' + random, blocks[idx]['openpopupOff']));
@@ -1282,7 +1275,7 @@ function handleDevice(device, idx) {
             html += '<div class="col-xs-8 col-data">';
             html += '<strong class="title">' + device['Name'] + '</strong><br />';
             html += '<div class="btn-group" data-toggle="buttons">';
-            for (var a in names) {
+            for (a in names) {
                 if (parseFloat(a) > 0 || (a == 0 && (typeof (device['LevelOffHidden']) == 'undefined' || device['LevelOffHidden'] === false))) {
                     var st = '';
                     if ((a * 10) == parseFloat(device['Level'])) st = 'active';

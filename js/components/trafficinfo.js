@@ -1,5 +1,4 @@
 /* global  Dashticz language*/
-// eslint-disable-next-line no-unused-vars
 var DT_trafficinfo = {
 	name: "trafficinfo",
 	canHandle: function(block) {
@@ -8,11 +7,7 @@ var DT_trafficinfo = {
 	default: {
 		icon: 'fas fa-car',
 		containerClass: function () {
-			return 'hover trafficrow'
-		},
-		containerExtra: function () {
-			//maybe we have to add :style="padding-left:0px !important;padding-right:0px !important;"
-			return 'data-toggle="modal" data-target="#trafficweb" onclick="setSrc(this);"'
+			return 'trafficrow'
 		}
 	},
 	get: function () {
