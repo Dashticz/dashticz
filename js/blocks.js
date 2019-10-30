@@ -1,6 +1,6 @@
 /* eslint-disable no-debugger */
 /*global blocktypes:writable, language, _TEMP_SYMBOL, getExtendedBlockTypes, blocks, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
-/*global getSpotify, loadNZBGET, loadTrafficInfo, getCoin, loadChromecast, loadGarbage, loadSonarr, loadMaps */
+/*global getSpotify, loadNZBGET, getCoin, loadChromecast, loadGarbage, loadSonarr, loadMaps */
 /*global Dashticz, getLog, appendHorizon, addCalendar*/
 /*global alldevices getIconStatusClass*/
 /*global getRandomInt, moment, number_format*/
@@ -571,13 +571,6 @@ function handleObjectBlock(block, columndiv, width) {
 
     if (block.empty) {
         $(columndiv).append('<div data-id="' + key + '" class="mh transbg col-xs-' + width + '">');
-    } else if (block.trafficJams || block.roadWorks || block.radars) {
-        if (typeof (loadTrafficInfo) !== 'function') $.ajax({
-            url: 'js/trafficinfo.js',
-            async: false,
-            dataType: 'script'
-        });
-        $(columndiv).append(loadTrafficInfo(random, block, key));
     } else if (block.currency) {
         if (typeof (getCoin) !== 'function') $.ajax({
             url: 'js/coins.js',

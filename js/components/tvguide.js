@@ -63,7 +63,7 @@ var DT_tvguide = {
 
 
         function loadChannels() {
-            if (typeof (allchannels[1]) !== 'undefined') return allchannels;
+            if (typeof (allchannels[1]) !== 'undefined') return $.when();
             var curUrl = _CORS_PATH + 'http://json.tvgids.nl/v4/channels';
             return $.getJSON(curUrl)
                 .done(function (channels) {
@@ -73,7 +73,7 @@ var DT_tvguide = {
                     return allchannels;
                 })
                 .fail(function () {
-                    console.log("error getting channel info from tvgids. Retrying in 5 seconds.");
+                    console.log("error getting channel info from tvgids. Retrying later.");
                 });
         }
     }

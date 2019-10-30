@@ -16,7 +16,8 @@ var Dashticz = {
             'publictransport',
             'stationclock',
             'blocktitle',
-            'tvguide'
+            'tvguide',
+            'trafficinfo'
         ]
         //the $.ajax().then accepts two functions: Success and Error handler.
         // In the success handler we call the async init function from the component
@@ -96,13 +97,21 @@ var Dashticz = {
         if (special.default)
             $.extend(defaultConfig, special.default)
 
-        if (block && typeof block.icon !== 'undefined') defaultConfig.icon = block.icon;
-        if (block && typeof block.image !== 'undefined') defaultConfig.image = block.image;
-        if (block && block.width) defaultConfig.width = block.width;
-        if (block && block.title) defaultConfig.title = block.title;
-        if (block && block.key) {
-            defaultConfig.key = block.key;
-            //            defaultConfig.dataId = block.key;
+        if (block) {
+            if (typeof block.icon !== 'undefined') {
+                defaultConfig.icon = block.icon;
+                defaultConfig.image = ''; //reset default image in case icon is set
+            }
+            if (typeof block.image !== 'undefined') {
+                defaultConfig.image = block.image
+                defaultConfig.icon = ''; //reset default icon in case image is set
+            }
+            if (block.width) defaultConfig.width = block.width;
+            if (block.title) defaultConfig.title = block.title;
+            if (block.key) {
+                defaultConfig.key = block.key;
+                //            defaultConfig.dataId = block.key;
+            }
         }
         return defaultConfig
     },
