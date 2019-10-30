@@ -258,12 +258,12 @@ function getBlock(cols, c, screendiv, standby) {
         var columndiv = screendiv + ' .row .col' + c;
         var colclass = '';
         if (c === 'bar') colclass = 'transbg dark';
-        var colwidth = 'col-xs-' + (cols.width ? cols.width + ' ': '');
+        var colwidth = 'col-xs-' + (cols.width ? cols.width + ' ': '12 ');
         if (standby) {
 //            $('div.screenstandby .row').append('<div class="col-xs-' + columns_standby[c]['width'] + ' colstandby' + c + '"></div>');
             $(screendiv+ ' .row').append('<div class="' + colwidth +  'col' + c + '"></div>');
         } else {
-            $(screendiv + ' .row').append('<div data-colindex="' + c + '" class="' + colwidth + 'col-xs-12 sortable col' + c + ' ' + colclass + '"></div>');
+            $(screendiv + ' .row').append('<div data-colindex="' + c + '" class="' + colwidth + 'sortable col' + c + ' ' + colclass + '"></div>');
         }
         //if (!standby) $('div.screen' + ' .row').append('<div data-colindex="' + c + '" class="col-sm-' + cols['width'] + ' col-xs-12 sortable col' + c + ' ' + colclass + '"></div>');
         for (var b in cols['blocks']) {
