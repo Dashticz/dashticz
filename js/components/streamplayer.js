@@ -2,6 +2,9 @@
 // eslint-disable-next-line no-unused-vars
 var DT_streamplayer = {
     name: "streamplayer",
+    default: {
+        title: 'Loading...',
+    },
     run: function (me) {
         var defaultTracks = [{
                 "track": 1,
@@ -25,7 +28,7 @@ var DT_streamplayer = {
             },
         ]
 
-        var html = '<h3 class="title"></h3>' +
+        var html = 
             '<audio class="audio1" preload="none"></audio>' +
             '<div class="col-xs-4 transbg hover text-center btnPrev">' +
             '<em class="fas fa-chevron-left fa-small"></em>' +
@@ -46,7 +49,7 @@ var DT_streamplayer = {
             var index = 0,
                 playing = false,
                 trackCount = tracks.length,
-                npTitle = $(streamelement + ' .dt_state h3'),
+                npTitle = $(streamelement + ' .dt_title'),
                 audio = $(streamelement + ' .audio1').bind('play', function () {
                     $(streamelement + ' .stateicon').removeClass('fas fa-play');
                     $(streamelement + ' .stateicon').addClass('fas fa-pause');

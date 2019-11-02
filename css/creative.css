@@ -89,22 +89,35 @@
 }
 
 .dt_block {
-	display: flex
+	display: flex;
+    background: rgba(0,0,0,0.2);
+	background-clip: padding-box;
+	border: 7px solid rgba(255,255,255,0);
+	padding: 5px;
 }
 
 .dt_content {
 	width: 100%;
-	padding-left: 10px;
-	padding-right: 10px;
+	margin: 0px 0px; 
 }
 
 .dt_block .col-icon {
-	width: 50px !important
+	margin-top: 5px;
+	width:45px !important;
 }
 
 .dt_title {
 	font-weight: bold;
 	font-size: 150%;
+	margin: 5px 5px;
+}
+
+.dt_state {
+	margin: 5px 5px;
+}
+
+.button .dt_state, .frame .dt_state  {
+	margin: -5px;
 }
 
 .dt_state iframe {
@@ -760,16 +773,22 @@ a:focus {
 }
 
 .newsWrapper { width:80%; height:106px; overflow:hidden; }
-	#newsTicker { padding:0; margin:10px 0 0 15px; color:#333; }
+#newsTicker { 
+	margin:10px 0 0 15px;
+	color:#333;
+	padding-top: 0px;
+	padding-left: 0px;
+ }
 
-	#newsTicker li {
-		min-height:72px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		text-align: left;
-		font-size: 14px;
-		color:#fff;
-	}
+#newsTicker li {
+	min-height:72px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-align: left;
+	font-size: 14px;
+	color:#fff;
+	padding-left: 0px;
+}
 
 .fas.fa-newspaper,
 .far.fa-newspaper {
@@ -1173,32 +1192,6 @@ img.icon {
     	margin-right: 3px !important;
 	}
 
-/*
-@media (max-width: 975px) {
-	
-	.col-icon {
-		width:30px !important;
-	}
-	img.icon {
-		max-width:20px !important;
-	}
-	.fas,.far,.fab,.wi {
-		font-size:15px !important;
-	}
-	.fa-tv:before  {font-size:12px;}
-	#weather .wi {
-		font-size:24px !important;
-	}
-	.cast-button-container {
-		padding: 11px !important;
-	}
-	.col-data {
-		width: calc(100% - 34px);
-	}
-
-}
-*/
-
 .containsweather .col-xs-1 {
 	width: 50px
 }
@@ -1218,14 +1211,26 @@ img.icon {
 		padding-top: 7px;
 		padding-bottom: 7px;
 	}
-	.dt_content {
-		padding-left: 5px;
-		padding-right: 5px;
+	.dt_block {
+		padding: 2px;
 	}
-	
+	.dt_title, .dt_state {
+		margin: 2px 2px;
+	}
+
+	.dt_block .col-icon {
+		width: 36px !important;
+		margin: 2px;
+	}
+
+	.button .dt_state, .frame .dt_state  {
+			margin: -2px;
+		}
+			
 	.dt_title {
 		font-size: 100%
 	}
+
 	.cast-button-container {
 		padding: 3px !important;
 	}
