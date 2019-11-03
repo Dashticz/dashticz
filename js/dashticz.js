@@ -50,7 +50,7 @@ var Dashticz = {
     getSpecialBlock: function (me) {
         var html = '<div ' +
             (me.key ? ' data-id="' + me.key + '"' : '') +
-            ' class="transbg ' + me.name + ' dt_block "' +
+            ' class="transbg  col-xs-' + me.width + ' ' + me.name + ' dt_block "' +
             (me.containerExtra ? me.containerExtra(me.block) : '') + '>' +
             Dashticz.getColIcon(me) +
             '<div class="dt_content">' +
