@@ -130,6 +130,19 @@
 	max-width: 100%
 }
 
+.ios .dt_state{
+    overflow-y: auto;
+    -webkit-overflow-scrolling:touch !important;
+    height: 100%;
+}
+
+.ios iframe{
+    height: 100%;
+    min-width: 100%;
+    width: 100px;
+    *width: 100%;
+}
+
 .streamplayer .title {
 	font-size: 150%;
 	font-weight: bold;
@@ -182,7 +195,8 @@
 
 .trashcan {
 	margin-left:-4px;
-	height:30px;
+	max-width:30px;
+	height: auto
 }
 .modal {
 	z-index:9999;
@@ -639,13 +653,6 @@ a.playlist {
 }
 
 @media only screen and (max-width: 1000px) {
-	.title-input {
-		font-size: 14px !important;
-		margin-top: 7px;
-	}
-	.iconheating {
-		margin-top: 14px;
-	}
 }
 /************************/
   
@@ -1286,8 +1293,19 @@ img.icon {
 
 
 	.trashcan {
-		height: 25px !important;
+		max-width:15px !important;
 	}
+
+	.iconheating {
+		margin-top: 0px;
+	}
+
+	.title-input {
+		font-size: 14px !important;
+		margin-top: 0px;
+	}
+
+
 
 }
 
