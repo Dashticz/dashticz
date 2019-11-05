@@ -10,15 +10,12 @@ var DT_frame = {
     default: {
         containerClass: function () {
             return 'swiper-no-swiping imgblock'
-        },
-        containerExtra: function (block) {
-            return (block && block.height) ? 'style="height:' + block.height + 'px;"' : ''
         }
     },
     get: function (me) {
         var scrolling = me.block.scrollbars === false ? ' scrolling="no"' : '';
         var html = '';
-        var height = me.block && me.block.height ? ';height:' + (me.block.height - 45) + 'px' : '';
+        var height = me.block && me.block.height ? ';height:' + (me.block.height) + 'px' : '';
         html += '<iframe src="' + me.block.frameurl + '"' + scrolling + ' style="border:0px' + height + ';"></iframe>';
         return html;
     },
