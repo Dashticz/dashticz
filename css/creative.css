@@ -120,6 +120,11 @@
 	margin: -5px;
 }
 
+.dt_block.dt_button .col-icon, .dt_block.dt_button .dt_title {
+	min-height: 55px;
+    padding-top: 10px !important;
+} 
+
 .dt_state iframe {
 	width: 100%;
 	max-width: 100%
