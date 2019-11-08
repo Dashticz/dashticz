@@ -382,7 +382,6 @@ function buildScreens() {
                                 columns['bar'] = {}
                                 columns['bar']['blocks'] = ['logo', 'miniclock', 'settings']
                             }
-                            console.log('colbar');
                             getBlock(columns['bar'], 'bar', 'div.screen' + s, false);
                         }
 
@@ -394,8 +393,6 @@ function buildScreens() {
                         }
                     }
                     else {
-                        console.log('else')
-
                         if (parseFloat(settings['hide_topbar']) == 0) $('body .row').append('<div class="col-sm-undefined col-xs-12 sortable colbar transbg dark"><div data-id="logo" class="logo col-xs-2">' + settings['app_title'] + '<div></div></div><div data-id="miniclock" class="miniclock col-xs-8 text-center"><span class="weekday"></span> <span class="date"></span> <span>&nbsp;&nbsp;&nbsp;&nbsp;</span> <span class="clock"></span></div><div data-id="settings" class="settings settingsicon text-right" data-toggle="modal" data-target="#settingspopup"><em class="fas fa-cog" /></div></div></div>');
                         if (typeof (settings['default_columns']) == 'undefined' || parseFloat(settings['default_columns']) == 3) {
                             $('body .row').append('<div class="col-xs-5 sortable col1" data-colindex="1"><div class="auto_switches"></div><div class="auto_dimmers"></div></div>');
