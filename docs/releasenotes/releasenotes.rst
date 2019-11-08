@@ -1,9 +1,16 @@
 Release Notes
 =============
-A link to the release notes will be posted in the Dashticz support forum. The total overview can be found below.
+
+3.2.0
+-----------
+
+.. warning :: Breaking changes
+
+Main change:
+  * Standardization of the html template for special blocks. See
 
 3.1.2 (26-10-2019)
---------------
+------------------
 
 Enhancements
   * Improved calendar layout for full day events. Added timezone adjust parameters.
@@ -25,6 +32,12 @@ Fixes
   * Wind speed unit interpretation in case of non default Domoticz setting
   * Protect parameter for dimmers.
   * Removal of ES6 dependency (introduced by the graph update)
+
+Upgrading from earlier versions:
+
+buttons:
+  Use the btnimage parameter instead of the image parameter.
+  The parameter ``isimage`` is not used anymore.
 
 3.1.0 (18-9-2019)
 -----------------

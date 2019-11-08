@@ -17,7 +17,7 @@ A traffic info block can be configured as follows::
         road:'A1',
         provider: 'anwb',
         show_lastupdate:true,
-        icon: 'car',
+        icon: 'fas fa-car',
         width:12,
         results: 100 };
 
@@ -46,8 +46,8 @@ Parameters
     - | Traffic info provider to use. Choose from
       | ``'anwb'`` The Netherlands
   * - icon
-    - | The font-awesome icon (without ``fas fa-``)
-      | ``'car'``, ...
+    - | The font-awesome icon (including ``fas fa-``)
+      | ``'fas fa-car'``, ...
   * - interval 
     - time in seconds for refreshing the data
   * - results 
