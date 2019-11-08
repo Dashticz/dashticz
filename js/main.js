@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-/* global getBlockClick myBlockNumbering:writable objectlength config initVersion loadSettings settings getRandomInt number_format levelNamesEncoded _TEMP_SYMBOL hexToHsb Cookies*/
+/* global getBlockClick  myBlockNumbering:writable objectlength config initVersion loadSettings settings getRandomInt number_format levelNamesEncoded _TEMP_SYMBOL hexToHsb Cookies*/
 /* global sessionValid MobileDetect moment getBlock buttons handleObjectBlock getGraphs iconORimage getBlockData titleAndValueSwitch showUpdateInformation getStateBlock addThermostatFunctions*/
 /* global loadWeatherFull loadWeather Swiper ion */
 
@@ -53,12 +53,13 @@ function b64_to_utf8(str) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function loadFiles(customfolder) {
-    $( document ).ajaxError(function( event, request, settings, thrownError ) {
-        console.error("Ajax error reading " + settings.url)
-        console.error(thrownError);
-      });
+function loadFiles(dashtype) {
+    var customfolder = 'custom';
+    if (typeof (dashtype) !== 'undefined' && parseFloat(dashtype) > 1) {
+        customfolder = 'custom_' + dashtype;
+    }
 
+    $('<link href="' + 'css/creative.css'+'" rel="stylesheet">').appendTo('head');
     $.ajax({ url: customfolder + '/CONFIG.js', dataType: 'script' })
     .error(function() {
         console.log('Error in config.js');
@@ -470,18 +471,25 @@ function buildScreens() {
 }
 
 function startSwiper() {
-    if (md.mobile() == null || md.tablet() !== null) {
+//    if (md.mobile() == null || md.tablet() !== null) {
         if ($('.swiper-container .screen').length > 1) {
-            $.ajax({ url: 'vendor/swiper/js/swiper.min.js',  dataType: 'script' }).done(function () {
-                $('<link href="vendor/swiper/css/swiper.min.css" rel="stylesheet">').appendTo("head");
+//            $.ajax({ url: 'vendor/swiper/js/swiper.min.js',  dataType: 'script' }).done(function () {
+//                $('<link href="vendor/swiper/css/swiper.min.css" rel="stylesheet">').appendTo("head");
                 setTimeout(function () {
+//                    debugger
                     myswiper = new Swiper('.swiper-container', {
-                        pagination: '.swiper-pagination',
+                        pagination: {
+                            el: '.swiper-pagination',
+                            clickable: true
+                        },
                         paginationClickable: true,
                         loop: false,
                         initialSlide: settings['start_page']-1,
                         effect: settings['slide_effect'],
-                        keyboardControl: true,
+                        keyboard: {
+                            enabled: true,
+                            onlyInViewport: false,
+                          },
                         onSlideChangeStart: function () {
                             $('.slide').removeClass('selectedbutton');
                         },
@@ -495,11 +503,13 @@ function startSwiper() {
 
 
                     });
+                    myswiper.keyboard.enable();	
+
 
                 }, 100);
-            });
+  //          });
         }
-    }
+   // }
 }
 
 function initMap() {
