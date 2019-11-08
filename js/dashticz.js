@@ -78,7 +78,6 @@ var Dashticz = {
     renderTitle: function (me) {
         if (me.title) {
             var res = '<div class="dt_title">' + me.title + '</div>';
-            console.log(res);
             return res;
         } else return ''
     },
@@ -119,7 +118,6 @@ var Dashticz = {
         this.components[special.name] = special;
     },
     mount: function (mountPoint, selector) {
-        console.log("mount ", selector, typeof selector);
         if (typeof selector === 'string') {
             var def = this.components[selector];
             if (def) {

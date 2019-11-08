@@ -1,3 +1,5 @@
+.. _v320:
+
 v3.2.0: Change in HTML template for special blocks
 ===================================================
 
@@ -20,8 +22,10 @@ In this version the following blocks have been migrated to the new format:
   * TV Guide
 
 Block parameters
-----------------
-For these blocks you can set the following block parameters
+-----------------
+
+For these blocks you can set the following block parameters:
+
   * icon: Icon name 
   * image: Image name. Image path is relative to the <dashticz>/img folder.
   * title

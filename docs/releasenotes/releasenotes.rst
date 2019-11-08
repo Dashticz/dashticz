@@ -7,7 +7,16 @@ Release Notes
 .. warning :: Breaking changes
 
 Main change:
-  * Standardization of the html template for special blocks. See
+  * Standardization of the html template for special blocks. See :ref:`v320`
+
+Other changes:
+  * Enable swiper for mobile devices
+  * Update to swiper 5.2.0
+  * Bundle most external dependencies (webpack, babel, package.json)
+
+Fixes
+  * Calendar: Improved handling for recurring events
+  * Blinds: Fix for custom icons
 
 3.1.2 (26-10-2019)
 ------------------

@@ -282,20 +282,6 @@ function getBlock(cols, c, screendiv, standby) {
             if (typeof (blocks[cols['blocks'][b]]) !== 'undefined')
                 blockdef = blocks[cols['blocks'][b]];
             if (blockdef && typeof (blockdef.width) !== 'undefined') width = blockdef.width;
-/*
-            if (blockdef &&
-                typeof (blockdef.type) !== 'undefined' &&
-                blockdef.type === 'blocktitle') {
-                $(columndiv).append(handleBlocktitle(cols['blocks'][b], blockdef, width));
-                continue;
-            }*/
-/*
-            var blockIndex = 'block_' + myBlockNumbering;
-            //            console.log(blockIndex);
-            blockIndex += standby ? '_sb' : '';
-            $(columndiv).append('<div id="' + blockIndex + '"></div>');
-            var myIndex = myBlockNumbering++;
-            var myblockselector = '#' + blockIndex;*/
             var myblockselector = Dashticz.mountNewContainer(columndiv);
             if(!Dashticz.mount(myblockselector, cols['blocks'][b]))
                 switch (typeof (cols['blocks'][b])) {
