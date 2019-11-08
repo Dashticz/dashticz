@@ -88,6 +88,66 @@
 	border: 7px solid rgba(255,255,255,0);
 }
 
+.dt_block {
+	display: flex;
+    background: rgba(0,0,0,0.2);
+	background-clip: padding-box;
+	border: 7px solid rgba(255,255,255,0);
+	padding: 5px !important;
+}
+
+.dt_content {
+	width: 100%;
+	margin: 0px 0px; 
+}
+
+.dt_block .col-icon {
+	margin-top: 5px;
+	width:45px !important;
+}
+
+.dt_title {
+	font-weight: bold;
+	font-size: 150%;
+	margin: 5px 5px;
+}
+
+.dt_state {
+	margin: 5px 5px;
+}
+
+.button .dt_state, .frame .dt_state  {
+	margin: -5px;
+}
+
+.dt_block.dt_button .col-icon, .dt_block.dt_button .dt_title {
+	min-height: 55px;
+    padding-top: 10px !important;
+} 
+
+.dt_state iframe {
+	width: 100%;
+	max-width: 100%
+}
+
+.ios .dt_state{
+    overflow-y: auto;
+    -webkit-overflow-scrolling:touch !important;
+    height: 100%;
+}
+
+.ios iframe{
+    height: 100%;
+    min-width: 100%;
+    width: 100px;
+    *width: 100%;
+}
+
+.streamplayer .title {
+	font-size: 150%;
+	font-weight: bold;
+}
+
 .fa-tv:before  {font-size:26px;}
 .col-currency {font-size: 18px;text-align:right;}
 .SonarrItem {
@@ -135,7 +195,8 @@
 
 .trashcan {
 	margin-left:-4px;
-	height:30px;
+	max-width:30px;
+	height: auto
 }
 .modal {
 	z-index:9999;
@@ -550,19 +611,8 @@ a.playlist {
 	margin-left: 0px;
 }
 
-.titlegroups .co-data {
-	margin-top: 0px;
-	top: 50%;
-	-ms-transform: translateY(-50%);
-	transform: translateY(-50%);
-
-}
-
-.titlegroups .col-icon {
-	margin-top: 0;
-	top: 40%;
-	-ms-transform: translateY(-50%);
-	transform: translateY(-50%);
+.blocktitle{
+	font-size: 150%;
 }
 
 .up,.down {
@@ -603,13 +653,6 @@ a.playlist {
 }
 
 @media only screen and (max-width: 1000px) {
-	.title-input {
-		font-size: 14px !important;
-		margin-top: 7px;
-	}
-	.iconheating {
-		margin-top: 14px;
-	}
 }
 /************************/
   
@@ -747,16 +790,22 @@ a:focus {
 }
 
 .newsWrapper { width:80%; height:106px; overflow:hidden; }
-	#newsTicker { padding:0; margin:10px 0 0 15px; color:#333; }
+#newsTicker { 
+	margin:10px 0 0 15px;
+	color:#333;
+	padding-top: 0px;
+	padding-left: 0px;
+ }
 
-	#newsTicker li {
-		min-height:72px;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		text-align: left;
-		font-size: 14px;
-		color:#fff;
-	}
+#newsTicker li {
+	min-height:72px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-align: left;
+	font-size: 14px;
+	color:#fff;
+	padding-left: 0px;
+}
 
 .fas.fa-newspaper,
 .far.fa-newspaper {
@@ -1002,10 +1051,6 @@ Only add this hover on NON touch devices
 	margin:0px !important
 		
 }
-.fas.fa-train,.fas.fa-bus{
-	margin-left:5px;
-	margin-top:3px;
-}
 
 .trainrow,
 .trafficrow{
@@ -1021,6 +1066,8 @@ Only add this hover on NON touch devices
 	width:40px !important;
 	float: left;
 	z-index:10;
+	padding-left: 5px;
+	padding-right: 5px;
 }
 
 .col-data {
@@ -1162,32 +1209,6 @@ img.icon {
     	margin-right: 3px !important;
 	}
 
-/*
-@media (max-width: 975px) {
-	
-	.col-icon {
-		width:30px !important;
-	}
-	img.icon {
-		max-width:20px !important;
-	}
-	.fas,.far,.fab,.wi {
-		font-size:15px !important;
-	}
-	.fa-tv:before  {font-size:12px;}
-	#weather .wi {
-		font-size:24px !important;
-	}
-	.cast-button-container {
-		padding: 11px !important;
-	}
-	.col-data {
-		width: calc(100% - 34px);
-	}
-
-}
-*/
-
 .containsweather .col-xs-1 {
 	width: 50px
 }
@@ -1207,6 +1228,26 @@ img.icon {
 		padding-top: 7px;
 		padding-bottom: 7px;
 	}
+	.dt_block {
+		padding: 2px !important;
+	}
+	.dt_title, .dt_state {
+		margin: 2px 2px;
+	}
+
+	.dt_block .col-icon {
+		width: 36px !important;
+		margin: 2px;
+	}
+
+	.button .dt_state, .frame .dt_state  {
+			margin: -2px;
+		}
+			
+	.dt_title {
+		font-size: 100%
+	}
+
 	.cast-button-container {
 		padding: 3px !important;
 	}
@@ -1252,8 +1293,19 @@ img.icon {
 
 
 	.trashcan {
-		height: 25px !important;
+		max-width:15px !important;
 	}
+
+	.iconheating {
+		margin-top: 0px;
+	}
+
+	.title-input {
+		font-size: 14px !important;
+		margin-top: 0px;
+	}
+
+
 
 }
 

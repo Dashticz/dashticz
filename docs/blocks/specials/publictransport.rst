@@ -28,7 +28,7 @@ A public transport block can be configured as follows::
      show_lastupdate:true,
      provider: '9292',
      show_via: true,
-     icon: 'train',
+     icon: 'fas fa-train',
      results: 5
    };
 
@@ -75,8 +75,8 @@ Parameters
   * - show_via
     - ``false`` , ``true``. Hide the via-part.
   * - icon
-    - | The font-awesome icon (without ``fas fa-``)
-      | ``'bus'``, ``'tram'``, ``'train'``, ``'ship'``, ``'subway'``, ...
+    - | The font-awesome icon (including ``fas fa-``)
+      | ``'fas fa-bus'``, ``'fas fa-tram'``, ``'fas fa-train'``, ``'fas fa-ship'``, ``'fas fa-subway'``, ...
   * - interval 
     - time in seconds for refreshing the data
   * - results 
@@ -103,7 +103,7 @@ Use this station id as value for the station parameter in the publictransport bl
       show_lastupdate:true,
       provider: 'VVS',
       show_via: true,
-      icon: 'train',
+      icon: 'fas fa-train',
       interval: 15,
       results: 5
     };
@@ -124,7 +124,7 @@ Then copy the id, and add to CONFIG.js as follows::
       show_lastupdate:true,
       provider: '9292',
       show_via: true,
-      icon: 'train',
+      icon: 'fas fa-train',
       results: 5
     };
     publictransport.ovinfotrain= {
@@ -132,7 +132,7 @@ Then copy the id, and add to CONFIG.js as follows::
       title:'Bus',
       show_lastupdate:true,
       provider: '9292-bus',
-      icon: 'bus',
+      icon: 'fas fa-bus',
       results: 5
     };
     publictransport.ovinfobus= {
@@ -140,7 +140,7 @@ Then copy the id, and add to CONFIG.js as follows::
       title:'Trein',
       show_lastupdate:true,
       provider: '9292-train',
-      icon: 'train',
+      icon: 'fas fa-train',
       results: 5
     };
 
@@ -154,7 +154,7 @@ In the next examples only the filtered results will be shown::
       destination: 'Schiphol Airport,Maastricht',
       provider: '9292-train',
       show_lastupdate:false,
-      icon: 'train',
+      icon: 'fas fa-train',
       results: 7
     };
     publictransport.ovinfotram = { 
@@ -165,7 +165,7 @@ In the next examples only the filtered results will be shown::
       service:'3,4', 
       provider: '9292-tram-bus', 
       show_lastupdate:true, 
-      icon: 'bus', 
+      icon: 'fas fa-bus', 
       width:12, 
       results: 8 
     };
