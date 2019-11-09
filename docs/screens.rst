@@ -124,4 +124,12 @@ The following config settings are applicable to the standby screen:
     - | [URL]
       | Enter the url for adjusting the brightness when exiting stand-by mode
 
-  
+
+Styling
+-------
+
+If you want to be able to scroll the screen vertically add the following to custom.css::
+
+    .swiper-slide {
+        overflow: auto!important
+    }

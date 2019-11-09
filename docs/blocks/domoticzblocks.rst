@@ -241,10 +241,12 @@ Blocks with a sub device id
 For a thermostat IDX, IDX_1 or IDX_2 can be used.
 If IDX_1 is used the thermostat +/- buttons will not be shown.
 If IDX_2 is used the icon/image of the block can be changed as in a normal block.
+
 ::
-  blocks['123_2'] = {
-      image: 'toon.png'
-  } 
+
+    blocks['123_2'] = {
+        image: 'toon.png'
+    } 
 
 .. _openpopup :
 

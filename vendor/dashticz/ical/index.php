@@ -6,8 +6,9 @@ $ICS = $_GET['url'];
 $MAXITEMS = $_GET['maxitems'];
 $ICS = str_replace('#','%23',urldecode($ICS));
 $ical = new SG_iCalReader($ICS);
+//$query = new SG_iCal_Query();
 $evts = $ical->getEvents();
-
+//$evts = $query->Between($ical,time(),time()+60*60*24*365);
 $data = array();
 if($evts){
 	foreach($evts as $id => $ev) {
@@ -27,28 +28,24 @@ if($evts){
 		}
 		$count = 0;
 		$start = $ev->getStart();
-
 		if (isset($ev->recurrence)) {
 			$freq = $ev->getFrequency();
-			if ($freq->firstOccurrence() == $start)
-				$data[] = $jsEvt;
+//			if ($freq->firstOccurrence() == $start)
+//				$data[$start] = $jsEvt;
 			$currentdate = time();
-			while (($next = $freq->nextOccurrence($start)) > 0 ) {
-				if (!$next or $count >= $MAXITEMS) break;
-				$start = $next;
+			$start=$freq->previousOccurrence($currentdate);
+			while ($start && ($count<$MAXITEMS)) {
 				$jsEvt["start"] = $start;
 				$jsEvt["end"] = $start + $ev->getDuration()-1;
 				$jsEvt["startt"] = date('Y-m-d H:i:s',$jsEvt["start"]);
 				$jsEvt["endt"] = date('Y-m-d H:i:s',$jsEvt["end"]);
-				if($jsEvt["end"]>$currentdate) {
-					$data[$start] = $jsEvt;
-					$count++;
-				}
+				$data[$start] = $jsEvt;
+				$count++;
+				$start=$freq->nextOccurrence($start);
 			}
 		} else {
 			if(date('Y',$start)>2016) $data[$start] = $jsEvt;
 		}
-
 	}
 }
 ksort($data);

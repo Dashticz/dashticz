@@ -1,7 +1,7 @@
 /* eslint-disable no-prototype-builtins */
-/* global getBlockClick customfolder myBlockNumbering:writable objectlength config initVersion loadSettings settings getRandomInt number_format levelNamesEncoded _TEMP_SYMBOL hexToHsb Cookies*/
+/* global getBlockClick  myBlockNumbering:writable objectlength config initVersion loadSettings settings getRandomInt number_format levelNamesEncoded _TEMP_SYMBOL hexToHsb Cookies*/
 /* global sessionValid MobileDetect moment getBlock buttons handleObjectBlock getGraphs iconORimage getBlockData titleAndValueSwitch showUpdateInformation getStateBlock addThermostatFunctions*/
-/* global loadWeatherFull loadWeather Swiper ion MoonPhase StationClock*/
+/* global loadWeatherFull loadWeather Swiper ion */
 
 //To refactor later:
 /* global blocktypes afterGetDevices getStatusBlock google slideDeviceExt switchSecurity*/
@@ -11,6 +11,7 @@
 
 /*To be removed from this file: appendHorizon loadMaps*/
 
+/* global Dashticz*/
 var language = {};
 var cache = new Date().getTime();
 
@@ -27,8 +28,6 @@ var columns = {};
 var columns_standby = {};
 var blocks = {};
 var req;
-// eslint-disable-next-line no-unused-vars
-var slide;
 var sliding = false;
 var defaultcolumns = false;
 var allblocks = {};
@@ -41,11 +40,6 @@ var gettingDevices = false;
 var md;
 var usrEnc='';
 var pwdEnc='';
-var _STREAMPLAYER_TRACKS = [
-    {"track":1,"name":"Q-music","file":"http://icecast-qmusic.cdp.triple-it.nl/Qmusic_nl_live_96.mp3"},
-    {"track":2,"name":"100%NL","file":"http://stream.100p.nl/100pctnl.mp3"},
-    {"track":3,"name":"NPO Radio 1","file":"http://icecast.omroep.nl/radio1-bb-mp3"},
- ];
 // eslint-disable-next-line no-unused-vars
 var _THOUSAND_SEPARATOR = '.';
 // eslint-disable-next-line no-unused-vars
@@ -54,17 +48,18 @@ var _STANDBY_CALL_URL = '';
 var _END_STANDBY_CALL_URL = '';
 var lastGetDevicesTime = 0;
 var allVariables = {};
-// eslint-disable-next-line no-unused-vars
-var map;
-
-
 function b64_to_utf8(str) {
     return decodeURIComponent(escape(window.atob(str)));
 }
 
 // eslint-disable-next-line no-unused-vars
-function loadFiles() {
+function loadFiles(dashtype) {
+    var customfolder = 'custom';
+    if (typeof (dashtype) !== 'undefined' && parseFloat(dashtype) > 1) {
+        customfolder = 'custom_' + dashtype;
+    }
 
+    $('<link href="' + 'css/creative.css'+'" rel="stylesheet">').appendTo('head');
     $.ajax({ url: customfolder + '/CONFIG.js', dataType: 'script' })
     .error(function() {
         console.log('Error in config.js');
@@ -147,7 +142,9 @@ function loadFiles() {
 
         return $.when(
             $.ajax({ url: 'js/switches.js', dataType: 'script' }),
-            $.ajax({ url: 'js/thermostat.js', dataType: 'script' })
+            $.ajax({ url: 'js/thermostat.js', dataType: 'script' }),
+            $.ajax({ url: 'js/dashticz.js', dataType: 'script' })
+                .then(function(){ return Dashticz.init()})
         );
     })
     .then (function(){
@@ -326,15 +323,12 @@ function buildStandby() {
         $('div.swiper-container').before(screenhtml);
 
         for (var c in columns_standby) {
-            $('div.screenstandby .row').append('<div class="col-xs-' + columns_standby[c]['width'] + ' colstandby' + c + '"></div>');
-            getBlock(columns_standby[c], c, 'div.screenstandby .row .colstandby' + c, true);
+            getBlock(columns_standby[c], 'standby'+c, 'div.screenstandby', true);
         }
     }
 
 }
 
-//we have to define s globally. Is used in getBlock in blocks.js. Needs to be fixed ...
-var s;
 function buildScreens() {
     var allscreens = {}
     for (var t in screens) {
@@ -364,7 +358,7 @@ function buildScreens() {
                 parseFloat(screens[t]['maxheight']) >= $(window).height()
             )
         ) {
-            for (s in screens[t]) {
+            for (var s in screens[t]) {
                 if (s !== 'maxwidth' && s !== 'maxheight') {
                     var screenhtml = '<div class="screen screen' + s + ' swiper-slide slide' + s + '"';
                     if (typeof (screens[t][s]['background']) === 'undefined') {
@@ -388,18 +382,17 @@ function buildScreens() {
                                 columns['bar'] = {}
                                 columns['bar']['blocks'] = ['logo', 'miniclock', 'settings']
                             }
-                            getBlock(columns['bar'], 'bar', 'div.screen' + s + ' .row .colbar', false);
+                            getBlock(columns['bar'], 'bar', 'div.screen' + s, false);
                         }
 
                         for (var cs in screens[t][s]['columns']) {
                             if (typeof (screens[t]) !== 'undefined') {
                                 var c = screens[t][s]['columns'][cs];
-                                getBlock(columns[c], c, 'div.screen' + s + ' .row .col' + c, false);
+                                getBlock(columns[c], c, 'div.screen' + s, false);
                             }
                         }
                     }
                     else {
-
                         if (parseFloat(settings['hide_topbar']) == 0) $('body .row').append('<div class="col-sm-undefined col-xs-12 sortable colbar transbg dark"><div data-id="logo" class="logo col-xs-2">' + settings['app_title'] + '<div></div></div><div data-id="miniclock" class="miniclock col-xs-8 text-center"><span class="weekday"></span> <span class="date"></span> <span>&nbsp;&nbsp;&nbsp;&nbsp;</span> <span class="clock"></span></div><div data-id="settings" class="settings settingsicon text-right" data-toggle="modal" data-target="#settingspopup"><em class="fas fa-cog" /></div></div></div>');
                         if (typeof (settings['default_columns']) == 'undefined' || parseFloat(settings['default_columns']) == 3) {
                             $('body .row').append('<div class="col-xs-5 sortable col1" data-colindex="1"><div class="auto_switches"></div><div class="auto_dimmers"></div></div>');
@@ -445,8 +438,8 @@ function buildScreens() {
                             if (typeof (buttons) !== 'undefined') {
                                 for (var b in buttons) {
                                     $('.col3 .auto_buttons').append('<div id="block_' + myBlockNumbering + '"</div>');
-                                    var myblockselector = '#block_' + myBlockNumbering++;
-                                    handleObjectBlock(buttons[b], b, myblockselector, 12, null);
+                                    handleObjectBlock(buttons[b], Dashticz.mountNewContainer('.col3 .auto_buttons'), 12, null);
+
                                 }
                             }
                         }
@@ -475,18 +468,25 @@ function buildScreens() {
 }
 
 function startSwiper() {
-    if (md.mobile() == null || md.tablet() !== null) {
+//    if (md.mobile() == null || md.tablet() !== null) {
         if ($('.swiper-container .screen').length > 1) {
-            $.ajax({ url: 'vendor/swiper/js/swiper.min.js',  dataType: 'script' }).done(function () {
-                $('<link href="vendor/swiper/css/swiper.min.css" rel="stylesheet">').appendTo("head");
+//            $.ajax({ url: 'vendor/swiper/js/swiper.min.js',  dataType: 'script' }).done(function () {
+//                $('<link href="vendor/swiper/css/swiper.min.css" rel="stylesheet">').appendTo("head");
                 setTimeout(function () {
+//                    debugger
                     myswiper = new Swiper('.swiper-container', {
-                        pagination: '.swiper-pagination',
+                        pagination: {
+                            el: '.swiper-pagination',
+                            clickable: true
+                        },
                         paginationClickable: true,
                         loop: false,
                         initialSlide: settings['start_page']-1,
                         effect: settings['slide_effect'],
-                        keyboardControl: true,
+                        keyboard: {
+                            enabled: true,
+                            onlyInViewport: false,
+                          },
                         onSlideChangeStart: function () {
                             $('.slide').removeClass('selectedbutton');
                         },
@@ -500,11 +500,13 @@ function startSwiper() {
 
 
                     });
+                    myswiper.keyboard.enable();	
+
 
                 }, 100);
-            });
+  //          });
         }
-    }
+   // }
 }
 
 function initMap() {
@@ -636,7 +638,7 @@ function createModalDialog(dialogClass, dialogId, myFrame) {
     var setWidth = false;
     var setHeight = false;
     var mySetUrl = 'data-popup';
-    var mywidth, myheight;
+    var mywidth='', myheight='';
     if (typeof (myFrame.framewidth) !== 'undefined') {
         mywidth = myFrame.framewidth;
         setWidth = true;
@@ -836,241 +838,8 @@ function loadMaps(b, map) {
     return html;
 }
 
-function buttonLoadFrame(button) //Displays the frame of a button after pressing is
-{
-
-    var random = getRandomInt(1, 100000);
-    $('body').append(createModalDialog('openpopup', 'button_' + random, button));
-    if (button.log == true) {
-        if (typeof (getLog) !== 'function') $.ajax({ url: 'js/log.js', async: false, dataType: 'script' });
-        $('#button_' + random + ' .modal-body').html('');
-        // eslint-disable-next-line no-undef
-        getLog($('#button_' + random + ' .modal-body'), button.level, true);
-    }
-    $('#button_' + random).on('hidden.bs.modal', function () {
-        $(this).data('bs.modal', null);
-        $(this).remove();
-    });
-
-    $('#button_' + random).modal('show');
-
-    if (!button.log && typeof (button.refreshiframe) !== 'undefined' && button.refreshiframe > 0) {
-        setTimeout(function () {
-            refreshButtonFrame(button, random);
-        }, button.refreshiframe);
-    }
-}
-
-function refreshButtonFrame(button, buttonid) {
-    var mydiv = $('#button_' + buttonid).find('iframe');
-    if (mydiv.length > 0) {
-        mydiv.attr('src', checkForceRefresh(button, button.url));
-        setTimeout(function () {
-            refreshButtonFrame(button, buttonid);
-        }, button.refreshiframe);
-    }
-}
-
-// eslint-disable-next-line no-unused-vars
-function buttonOnClick(m_event)
-//button clickhandler. Assumption: button is clickable
-{
-    var button = m_event.data;
-    if (typeof (button.newwindow) !== 'undefined') {
-		if (button.newwindow == '0') {
-			window.open(button.url, '_self');
-		}
-		else if (button.newwindow == '1') {
-			window.open(button.url);
-		}
-		else if (button.newwindow == '2') {
-			buttonLoadFrame(button);
-		}
-		else {
-			buttonLoadFrame(button);
-		}
-    }
-    else if (typeof (button.slide) !== 'undefined') {
-        toSlide(button.slide - 1);
-    }
-    else {
-        buttonLoadFrame(button);
-    }
-}
-
-function buttonIsClickable(button) {
-    var clickable = typeof (button.url) !== 'undefined' || button.log == true || typeof (button.slide) !== 'undefined';
-    return clickable;
-}
-
-// eslint-disable-next-line no-unused-vars
-function loadButton(b, button) {
-    var width = 12;
-    if (typeof (button.width) !== 'undefined') width = button.width;
-
-    var key = b;
-    if (typeof (button.key) !== 'undefined') key = button.key;
-
-    var slideToext = '';
-
-    if (typeof (button.slide) !== 'undefined') {
-        slideToext = ' slide slide' + button.slide;
-    }
-
-    var html = '<div class="col-xs-' + width + (buttonIsClickable(button) ? ' hover ' : ' ') + ' transbg buttons-' + key + slideToext + '" data-id="buttons.' + key + '">';
-
-    if (button.isimage) {
-        var img = '';
-        if (typeof (button.image) !== 'undefined') {
-            img = button.image;
-        }
-        if (img == 'moon') {
-            img = getMoonInfo(button);
-        }
-        if (typeof (button.forceheight) !== 'undefined') {
-            html += '<img id="buttonimg_' + b + '"src="' + img + '" style="max-width:100%;" width=100% height="' + button.forceheight + '" />';
-        } else {
-            html += '<img id="buttonimg_' + b + '"src="' + img + '" style="max-width:100%;" />';
-        }
-
-        var refreshtime = 60000;
-        if (typeof (button.refresh) !== 'undefined') refreshtime = button.refresh;
-        if (typeof (button.refreshimage) !== 'undefined') refreshtime = button.refreshimage;
-        setInterval(function () {
-            reloadImage(b, button, true);
-        }, refreshtime);
-
-    }
-    else {
-        if (typeof (button.title) !== 'undefined') {
-            html += '<div class="col-xs-4 col-icon">';
-        }
-        else {
-            html += '<div class="col-xs-12 col-icon">';
-        }
-
-        if (typeof (button.image) !== 'undefined') html += '<img class="buttonimg" src="' + button.image + '" />';
-        else html += '<em class="' + button.icon + ' fa-small"></em>';
-        html += '</div>';
-        if (typeof (button.title) !== 'undefined') {
-            html += '<div class="col-xs-8 col-data">';
-            html += '<strong class="title">' + button.title + '</strong><br>';
-            html += '<span class="state"></span>';
-            html += '</div>';
-        }
-    }
-    html += '</div>';
-    return html;
-}
-
-// eslint-disable-next-line no-unused-vars
-function loadFrame(f, frame) {
-
-    var key = 'UNKNOWN';
-    if (typeof (frame.key) !== 'undefined') key = frame.key;
-
-    var width = 12;
-    if (typeof (frame.width) !== 'undefined') width = frame.width;
-    var scrolling = frame.scrollbars === false ? ' scrolling="no"' : '';
-    var html = '<div data-id="frames.' + key + '" class="col-xs-' + width + ' hover transbg swiper-no-swiping imgblock imgblock' + f + '" style="height:' + frame.height + 'px;padding:0px !important;">';
-    html += '<div class="col-xs-12 no-icon" style="padding:0px !important;">';
-    html += '<iframe src="' + frame.frameurl + '"' + scrolling + ' style="width:100%;border:0px;height:' + (frame.height - 14) + 'px;"></iframe>';
-    html += '</div>';
-    html += '</div>';
-
-    var refreshtime = 60000;
-    if (typeof (frame.refreshiframe) !== 'undefined') refreshtime = frame.refreshiframe;
-    setInterval(function () {
-        reloadFrame(f, frame);
-    }, refreshtime);
-
-    return html;
-}
-
-function checkForceRefresh(m_instance, url) {
-    //forcerefresh is set to 1 or true:
-    //   adds current time to an url as second parameter (for webcams)
-    //   adds the timestamp as first parameter if there are no parameters yet
-    //forcerefresh:2
-    //   calls nocache.php and prevent caching by setting headers in php.
-    //forcerefresh:3
-    //   adds timestamp parameter to the end of the url
 
 
-    if (typeof (m_instance.forcerefresh) !== 'undefined') {
-        var str = "" + (new Date()).getTime();
-        var mytimestamp = 't=' + str.substr(str.length - 8, 5);
-        switch (m_instance.forcerefresh) {
-            case true:
-            case 1:
-                //try to add the timestamp as second parameter
-                //it there are no parameters the timestamp will be added.
-                //behavior changed to support cheap webcams
-                if (url.indexOf("?") == -1) //no parameters. We will add the timestamp
-                    url += '?' + mytimestamp;
-                else { //we have at least one parameters
-                    var pos = url.indexOf("&");
-                    if (pos > 0) {
-                        //we have more than one parameter
-                        //insert the timestamp as second
-                        url = url.substr(0, pos + 1) + '&' + mytimestamp + url.substr(pos);
-                    }
-                    else {
-                        //there is only one parameter so we add it to the end
-                        url += '&' + mytimestamp;
-                    }
-
-                }
-                break;
-            case 2:
-                url = settings['dashticz_php_path'] + 'nocache.php?' + url;
-                break;
-            case 3: //add timestamp to the end
-                var sep = '&';
-                if (url.indexOf("?") == -1) { //there is no parameter yet
-                    sep = '?';
-                }
-                url += sep + mytimestamp;
-                break;
-        }
-    }
-    return url;
-}
-
-function reloadFrame(i, frame) {
-    if (typeof (frame.frameurl) !== 'undefined') {
-        $('.imgblock' + i).find('iframe').attr('src', checkForceRefresh(frame, frame.frameurl));
-    }
-}
-
-function reloadImage(i, image) {
-    var src;
-    if (typeof (image.image) !== 'undefined') {
-        if (image.image === 'moon')
-            src = getMoonInfo(image)
-        else
-            src = checkForceRefresh(image, image.image);
-        $('#buttonimg_' + i).attr('src', src);
-    }
-}
-
-/*not used anymore
-function reloadIframe(button, i) {
-//reloads the Iframe of a button if it exists
-    if (typeof(button.url) !== 'undefined') {
-        if (typeof($('.imgblockopens' + i + ' iframe').attr('src') !== 'undefined')) {
-            $('.imgblockopens' + i + ' iframe').attr('src', checkForceRefresh(image, image.url));
-        }
-    }
-}
-*/
-
-function getMoonInfo() {
-    var mymoon = new MoonPhase(new Date());
-    var myphase = parseInt(mymoon.phase() * 100 + 50) % 100;
-    var src = 'img/moon/moon.' + ("0" + myphase).slice(-2) + '.png';
-    return src;
-}
 
 // eslint-disable-next-line no-unused-vars
 function appendHorizon(columndiv) {
@@ -1088,131 +857,7 @@ function appendHorizon(columndiv) {
     $(columndiv).append(html);
 }
 
-// eslint-disable-next-line no-unused-vars
-function appendStationClock(columndiv, col, width) {
-    $(columndiv).append(
-        '<div data-id="clock" class="transbg block_' + col + ' col-xs-' + width + ' text-center">' +
-        '<canvas id="clock" width="150" height="150">Your browser is unfortunately not supported.</canvas>' +
-        '</div>'
-    );
-    if (typeof (StationClock) !== 'function') $.ajax({ url: 'vendor/stationclock.js', async: false, dataType: 'script' });
 
-    var clock = new StationClock("clock");
-    clock.body = StationClock.RoundBody;
-    clock.dial = StationClock.GermanStrokeDial;
-    clock.hourHand = StationClock.PointedHourHand;
-    clock.minuteHand = StationClock.PointedMinuteHand;
-    if (settings['hide_seconds_stationclock']) {
-        clock.secondHand = false;
-    } else {
-        clock.secondHand = StationClock.HoleShapedSecondHand;
-        if (typeof (settings['boss_stationclock']) == 'undefined') clock.boss = StationClock.NoBoss;
-        else if (settings['boss_stationclock'] == 'RedBoss') clock.boss = StationClock.RedBoss;
-    }
-
-    clock.minuteHandBehavoir = StationClock.BouncingMinuteHand;
-    clock.secondHandBehavoir = StationClock.OverhastySecondHand;
-
-    window.setInterval(function () {
-        clock.draw()
-    }, 50);
-}
-
-// eslint-disable-next-line no-unused-vars
-function appendStreamPlayer(columndiv) {
-    var random = getRandomInt(1, 100000);
-    var html = '<div data-id="streamplayer" class="transbg containsstreamplayer' + random + '">'
-        + '<div class="col-xs-12 transbg smalltitle"><h3></h3></div>'
-        + '<audio class="audio1" preload="none"></audio>'
-        + '<div class="col-xs-4 transbg hover text-center btnPrev">'
-        + '<em class="fas fa-chevron-left fa-small"></em>'
-        + '</div>'
-        + '<div class="col-xs-4 transbg hover text-center playStream">'
-        + '<em class="fas fa-play fa-small stateicon"></em>'
-        + '</div>'
-        + '<div class="col-xs-4 transbg hover text-center btnNext">'
-        + '<em class="fas fa-chevron-right fa-small"></em>'
-        + '</div>'
-        + '</div>';
-    $(columndiv).append(html);
-
-    var streamelement = '.containsstreamplayer' + random;
-    var connecting = null;
-
-    var supportsAudio = !!document.createElement('audio').canPlayType;
-    if (supportsAudio) {
-        var index = 0,
-            playing = false,
-            tracks = _STREAMPLAYER_TRACKS,
-            trackCount = tracks.length,
-            npTitle = $(streamelement + ' h3'),
-            audio = $(streamelement + ' .audio1').bind('play', function () {
-                $(streamelement + ' .stateicon').removeClass('fas fa-play');
-                $(streamelement + ' .stateicon').addClass('fas fa-pause');
-                $(streamelement).addClass('playing')
-                playing = true;
-                connecting = setTimeout(function () {
-                    infoMessage("StreamPlayer", "connecting ... ", 0);
-                }, 1000);
-            }).bind('pause', function () {
-                $(streamelement + ' .stateicon').removeClass('fas fa-pause');
-                $(streamelement + ' .stateicon').addClass('fas fa-play');
-                $(streamelement).removeClass('playing')
-
-                playing = false;
-            }).get(0),
-            // eslint-disable-next-line no-unused-vars
-            btnPrev = $(streamelement + ' .btnPrev').click(function () {
-                if ((index - 1) > -1) {
-                    index--;
-                    loadTrack(index);
-                } else {
-                    index = 0
-                    loadTrack(trackCount - 1);
-                }
-                if (playing) {
-                    doPlay();
-                }
-            }),
-            // eslint-disable-next-line no-unused-vars
-            btnNext = $(streamelement + ' .btnNext').click(function () {
-                if ((index + 1) < trackCount) index++;
-                else index = 0;
-
-                loadTrack(index);
-                if (playing) {
-                    doPlay();
-                }
-            }),
-            // eslint-disable-next-line no-unused-vars
-            btnPlay = $(streamelement + ' .playStream').click(function () {
-                if (audio.paused) {
-                    doPlay();
-                } else {
-                    audio.pause();
-                }
-            }),
-            loadTrack = function (id) {
-                npTitle.text(tracks[id].name);
-                index = id;
-                audio.src = tracks[id].file;
-            },
-            doPlay = function () {
-                audio.play()
-                    .then(function () {
-                        clearTimeout(connecting);
-                        $(".update").remove();
-                    })
-                    .catch(function (err) {
-                        console.log(err);
-                        console.log(err.message);
-                        infoMessage("Streamplayer", err.message);
-
-                    })
-            };
-        loadTrack(index);
-    }
-}
 
 function getDevices(override) {
     if (typeof (override) == 'undefined') override = false;
@@ -1340,7 +985,7 @@ function getDevices(override) {
                             }
 
                             triggerStatus(idx, device['LastUpdate'], device);
-                            triggerChange(idx, device['LastUpdate'], device);
+                            triggerChange(idx, device['LastUpdate']);
 
                             try {
                                 html += eval('getBlock_' + idx + '(device,idx,data.result)');
@@ -1454,11 +1099,11 @@ function handleDevice(device, idx) {
     if (device['Image'] === 'Heating') buttonimg = 'heating.png';
     var html = '';
     var addHTML = true;
-    if (device.hasOwnProperty('SubType') && device['SubType'] in blocktypes['SubType']) {
+    if (device.SubType && device['SubType'] in blocktypes['SubType']) {
         html += getStatusBlock(idx, device, blocktypes['SubType'][device['SubType']]);
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('HardwareType') && device['HardwareType'] in blocktypes['HardwareType']) {
+    if (device.HardwareType && device['HardwareType'] in blocktypes['HardwareType']) {
         if (typeof (blocktypes['HardwareType'][device['HardwareType']]['icon']) !== 'undefined') {
             html += getStatusBlock(idx, device, blocktypes['HardwareType'][device['HardwareType']]);
         }
@@ -1468,7 +1113,7 @@ function handleDevice(device, idx) {
                 html = getStatusBlock(idx, device, blocktypes['HardwareType'][device['HardwareType']][de], c);
 
                 triggerStatus(idx + '_' + c, device['LastUpdate'], device);
-                triggerChange(idx + '_' + c, device['LastUpdate'], device);
+                triggerChange(idx + '_' + c, device['LastUpdate']);
 
                 $('div.block_' + idx + '_' + c).html(html);
                 addHTML = false;
@@ -1477,19 +1122,19 @@ function handleDevice(device, idx) {
         }
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('HardwareName') && device['HardwareName'] in blocktypes['HardwareName']) {
+    if (device.HardwareName && device['HardwareName'] in blocktypes['HardwareName']) {
         html += getStatusBlock(idx, device, blocktypes['HardwareName'][device['HardwareName']]);
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('SensorUnit') && device['SensorUnit'] in blocktypes['SensorUnit']) {
+    if (device.SensorUnit && device['SensorUnit'] in blocktypes['SensorUnit']) {
         html += getStatusBlock(idx, device, blocktypes['SensorUnit'][device['SensorUnit']]);
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('Type') && device['Type'] in blocktypes['Type']) {
+    if (device.Type && device['Type'] in blocktypes['Type']) {
         html += getStatusBlock(idx, device, blocktypes['Type'][device['Type']]);
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('Name') && device['Name'] in blocktypes['Name']) {
+    if (device.Name && device['Name'] in blocktypes['Name']) {
         html += getStatusBlock(idx, device, blocktypes['Name'][device['Name']]);
         return [html, addHTML];
     }
@@ -2002,7 +1647,7 @@ function createBlocks(blockValues, device) {
         if (typeof (blocks[blockValue.idx]) !== 'undefined' && typeof (blocks[blockValue.idx]['icon']) !== 'undefined') blockValue.icon = blocks[blockValue.idx]['icon'];
 
         triggerStatus(blockValue.idx, device['LastUpdate'], device);
-        triggerChange(blockValue.idx, device['LastUpdate'], device);
+        triggerChange(blockValue.idx, device['LastUpdate']);
 
         if (typeof (blocks[blockValue.idx]) !== 'undefined' && typeof (blocks[blockValue.idx]['title']) !== 'undefined') blockValue.title = blocks[blockValue.idx]['title'];
         this.html = getStateBlock(blockValue.idx, blockValue.icon, blockValue.title, blockValue.value + ' ' + blockValue.unit, device);
@@ -2281,7 +1926,7 @@ function getDimmerBlock(device, idx, buttonimg) {
     slider.disabled= isProtected(idx);
     addSlider(device['idx'], slider);
 
-    return [this.html, false];
+    return [html, false];
 }
 
 function getBlindsBlock(device, idx, withPercentage) {

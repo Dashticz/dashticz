@@ -1,8 +1,9 @@
 {
-"version": "3.1.2",
+"version": "3.2.0",
 "branch": "beta",
-"last_changes": "Stable version",
+"last_changes": "Change in HTML template for special blocks",
 "changelog" : {
+            "3.1.2": "Stable version",
             "3.1.1": "Calendar with table formatting; session time-out setting",
             "3.1.0": "New graph module",
             "3.0.6": "[enh] OWM city id as city name, icon/images for blocktitles",
