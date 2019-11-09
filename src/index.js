@@ -25,3 +25,4 @@ import 'swiper/css/swiper.min.css'
 // Install modules
 Swiper.use([Navigation, Pagination, Scrollbar, Keyboard]);
 window.Swiper = Swiper
+window.Skycons = require("skycons")(window)
