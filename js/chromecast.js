@@ -5,6 +5,8 @@
 var selectedStreamIndex = 0;
 
 function loadChromecast(columndiv) {
+    console.log('Chromecast temporarily disabled.');
+    return;
     head.load('https://www.gstatic.com/cv/js/sender/v1/cast_sender.js?loadCastFramework=1');
 
     var random = getRandomInt(1, 100000);
