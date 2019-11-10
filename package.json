@@ -17,6 +17,7 @@
     "mobile-detect": "^1.4.4",
     "moment": "^2.24.0",
     "skycons": "^1.0.0",
+    "spectrum-colorpicker": "^1.8.0",
     "spotify-web-api-js": "^1.2.0",
     "swiper": "^5.2.0",
     "webpack-jquery-ui": "^2.0.1"
