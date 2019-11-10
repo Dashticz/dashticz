@@ -38,10 +38,16 @@ Parameters
     - ``1..12``: The width of the block relative to the column width
   * - title
     - ``'<string>'``: Custom title for the block
+  * - key
+    - ``'key'``: unique identifier.
   * - slide
     - ``1..99``: Slide to specified screen on click.
   * - isimage
     - Set to ``true`` if the image should be shown in the full button width (default ``false``).
+  * - icon
+    - ``'fas fa-icon'``: icon to show in the button.
+  * - image
+    - ``'image.png'``: image to show as icon the button. Image path is relative to the <dashticz>/img folder.
   * - btnimage
     - ``'<url>'``: URL of the image to show in the button.
   * - url
@@ -158,10 +164,10 @@ Examples
 Additional examples of button definitions::
 
     var buttons = {}
-    buttons.buienradar = {width:12, isimage:true, refreshimage:60000, image: 'http://api.buienradar.nl/image/1.0/RadarMapNL?w=285&h=256', url: 'http://www.weer.nl/verwachting/nederland/son/189656/'}
-    buttons.radio = {width:12, image: 'img/radio_on.png', title: 'Radio', url: 'http://nederland.fm'}
+    buttons.buienradar = {width:12, isimage:true, refreshimage:60000, btnimage: 'http://api.buienradar.nl/image/1.0/RadarMapNL?w=285&h=256', url: 'http://www.weer.nl/verwachting/nederland/son/189656/'}
+    buttons.radio = {width:12, image: 'radio_on.png', title: 'Radio', url: 'http://nederland.fm'}
     buttons.nunl = {width:12, icon: 'far fa-newspaper', title: 'Nu.nl', url: 'http://www.nu.nl'}
-    buttons.webcam = {width:12, isimage:true, refresh:2000, image: 'http://ip_url_to_webcam', url: 'http://ip_url_to_webcam', framewidth:500, frameheight:400}
+    buttons.webcam = {width:12, isimage:true, refresh:2000, btnimage: 'http://ip_url_to_webcam', url: 'http://ip_url_to_webcam', framewidth:500, frameheight:400}
 
 To remove the close button of the button-popup add the following text to custom.css::
 
