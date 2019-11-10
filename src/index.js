@@ -27,3 +27,4 @@ Swiper.use([Navigation, Pagination, Scrollbar, Keyboard]);
 window.Swiper = Swiper
 window.Skycons = require("skycons")(window)
 require('spectrum-colorpicker')
+require('ion-sound')
