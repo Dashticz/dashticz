@@ -20,6 +20,8 @@ Before you can use a device in a column you must make it known in your CONFIG.js
     width: 12
    }
    
+If you use anything other than a number you have to put it between quotes: ``['s1']`` ``['v3']`` ``['123_1']``
+
 The number ``123`` is the Domoticz device id. The example above also shows the use of two parameters: ``title`` and ``width``.
 For a full list of parameters see :ref:`dom_blockparameters`.
 
