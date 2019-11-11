@@ -11,7 +11,7 @@ Main change:
 
 Other changes:
   * Enable swiper for mobile devices
-  * Update to swiper 5.2.0
+  * Update to swiper 5.2.0. Added the config parameters ``vertical_scroll`` and ``enable_swiper`` to control swiping and scrolling behavior. See :ref:`ConfigParams`
   * Bundle most external dependencies (webpack, babel, package.json)
 
 Fixes
