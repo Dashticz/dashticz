@@ -33,7 +33,7 @@ TV Guide Parameters
   * - key
     - | ``'key'``: unique identifier.
   * - icon
-    - | ``'fas fa-icon'``: icon to show in the news block. You choose an icon from the FontAwesome Free set.
+    - | ``'fas fa-icon'``: icon to show in the TV Guide block. You choose an icon from the FontAwesome Free set.
   * - image
     - | ``'image.png'``: image to show as icon. Image path is relative to the <dashticz>/img folder.
   * - maxitems
