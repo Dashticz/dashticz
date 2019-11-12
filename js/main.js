@@ -486,7 +486,6 @@ function buildSwipingScrolling()
 function startSwiper() {
     $('.dt-container').addClass('swiper-container');
     $('.contents').addClass('swiper-wrapper');
-    debugger;
     setTimeout(function () {
         myswiper = new Swiper('.swiper-container', {
             pagination: {
