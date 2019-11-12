@@ -126,6 +126,18 @@ settingList['screen']['start_page'] = {};
 settingList['screen']['start_page']['title'] = language.settings.screen.start_page;
 settingList['screen']['start_page']['type'] = 'text';
 
+settingList['screen']['enable_swiper'] = {
+    'title': language.settings.screen.enable_swiper,
+    'type': 'text',
+    'help': language.settings.screen.enable_swiper_help
+}
+
+settingList['screen']['vertical_scroll'] = {
+    'title': language.settings.screen.vertical_scroll,
+    'type': 'text',
+    'help': language.settings.screen.vertical_scroll_help
+}
+
 settingList['screen']['auto_swipe_back_to'] = {};
 settingList['screen']['auto_swipe_back_to']['title'] = language.settings.screen.auto_swipe_back_to;
 settingList['screen']['auto_swipe_back_to']['type'] = 'text';
@@ -588,6 +600,8 @@ if (typeof(settings['use_favorites']) === 'undefined') settings['use_favorites']
 if (typeof(settings['translate_windspeed']) === 'undefined') settings['translate_windspeed'] = 1;
 if (typeof(settings['static_weathericons']) === 'undefined') settings['static_weathericons'] = 0;
 if (typeof(settings['last_update']) === 'undefined') settings['last_update'] = 1;
+if (typeof(settings['vertical_scroll']) === 'undefined') settings['vertical_scroll'] = 2
+if (typeof(settings['enable_swiper']) === 'undefined') settings['enable_swiper'] = 2
 if (typeof(settings['auto_swipe_back_after']) === 'undefined') settings['auto_swipe_back_after'] = 10;
 if (typeof(settings['standby_after']) === 'undefined') settings['standby_after'] = 0;
 if (typeof(settings['selector_instead_of_buttons']) === 'undefined') settings['selector_instead_of_buttons'] = 0;

@@ -42,27 +42,32 @@
 	text-align: center
 }
 
+.dt-container {
+	width: 100%
+}
+
 .swiper-container {
-	width: 100%;
 	height: 100%;
 }
-.swiper-container.edit{
+
+.dt-container.edit{
 	width:auto;
 	float: right;
     width: calc(100% - 220px);
 }
-.swiper-wrapper {
-	height: 100%;
-}
+
 .swiper-slide {
 	background: #000;
+	overflow-x: hidden;
+	overflow-y: hidden
 }
-.swiper-slide {
-	height: auto !important;
-	min-height: 100% !important;
-}
+
 .swiper-pagination-bullet-active {
 	background-color:#fff !important;
+}
+
+.vertical-scroll {
+	overflow-y: auto;
 }
 
 #loadingMessage {

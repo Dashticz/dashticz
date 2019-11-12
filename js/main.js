@@ -463,50 +463,55 @@ function buildScreens() {
             startSortable();
         }, 2000);
     }
+    buildSwipingScrolling();
+}
 
-    startSwiper();
+function buildSwipingScrolling()
+{
+    var enable_swiper = Number(settings['enable_swiper'])
+    var vertical_screen = (window.innerWidth < 768)
+    var multi_screen = $('.dt-container .screen').length > 1
+    var start_swiper = multi_screen &&
+            (
+                (enable_swiper === 2 ) ||
+                ((enable_swiper === 1) && (!vertical_screen))
+            )
+    if (start_swiper) startSwiper();
+    var vertical_scroll = Number(settings['vertical_scroll']);
+    if (vertical_scroll === 2 || (vertical_scroll === 1 && !start_swiper)) {
+        $('.swiper-slide').addClass('vertical-scroll')
+    }
 }
 
 function startSwiper() {
-//    if (md.mobile() == null || md.tablet() !== null) {
-        if ($('.swiper-container .screen').length > 1) {
-//            $.ajax({ url: 'vendor/swiper/js/swiper.min.js',  dataType: 'script' }).done(function () {
-//                $('<link href="vendor/swiper/css/swiper.min.css" rel="stylesheet">').appendTo("head");
-                setTimeout(function () {
-//                    debugger
-                    myswiper = new Swiper('.swiper-container', {
-                        pagination: {
-                            el: '.swiper-pagination',
-                            clickable: true
-                        },
-                        paginationClickable: true,
-                        loop: false,
-                        initialSlide: settings['start_page']-1,
-                        effect: settings['slide_effect'],
-                        keyboard: {
-                            enabled: true,
-                            onlyInViewport: false,
-                          },
-                        onSlideChangeStart: function () {
-                            $('.slide').removeClass('selectedbutton');
-                        },
-                        onSlideChangeEnd: function (swiper) {
-                            //after Event use it for your purpose
-                            $('.slide' + (1 + swiper.activeIndex)).addClass('selectedbutton');
-                        },
-                        onInit: function () {
-                            $('.slide1').addClass('selectedbutton');
-                        }
+    $('.dt-container').addClass('swiper-container');
+    $('.contents').addClass('swiper-wrapper');
+    debugger;
+    setTimeout(function () {
+        myswiper = new Swiper('.swiper-container', {
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true
+            },
+            paginationClickable: true,
+            loop: false,
+            initialSlide: settings['start_page'] - 1,
+            effect: settings['slide_effect'],
+            keyboard: {
+                enabled: true,
+                onlyInViewport: false,
+            },
+            direction: 'horizontal',
+        });
+        myswiper.on('transitionStart', function () {
+            $('.slide').removeClass('selectedbutton');
+        });
+        myswiper.on('transitionEnd', function () {
+            $('.slide' + (1 + this.activeIndex)).addClass('selectedbutton');
+        });
+        $('.slide'+settings['start_page']).addClass('selectedbutton');
 
-
-                    });
-                    myswiper.keyboard.enable();	
-
-
-                }, 100);
-  //          });
-        }
-   // }
+    }, 100);
 }
 
 function initMap() {
