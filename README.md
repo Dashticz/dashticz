@@ -9,7 +9,7 @@ In addition to that it's possible to show information from all kind of other sou
 ![alt tag](http://i.imgur.com/9DBcpNd.jpg)
 
 # Installation instructions
-See https://dashticz.readthedocs.io/en/latest/gettingstarted/
+See https://dashticz.readthedocs.io/en/master/gettingstarted/
 
 # Documentation and support
 Documentation can be found on:
