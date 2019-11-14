@@ -12,7 +12,7 @@ This is the Domoticz Security Panel as block. You can use the normal block param
 
 You can add this block to a column with::
 
-    columns[1]['blocks'] = ['123'];
+    columns[1]['blocks'] = [123];
 
 CSS Tip!
 To the active button an additional class ``btn-warning`` is added::
