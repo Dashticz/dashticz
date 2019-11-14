@@ -1,4 +1,4 @@
-/* global isProtected triggerChange req:writable settings usrEnc pwdEnc getDevices language infoMessage*/
+/* global isProtected alldevices triggerChange req:writable settings usrEnc pwdEnc getDevices language infoMessage*/
 
 // eslint-disable-next-line no-unused-vars
 /* global sliding:writable  slide:writable*/
@@ -36,7 +36,7 @@ function switchDevice(cur, pMode, pAskConfirm) {
             console.log("Incorrect mode in SwitchDevice for device " + idx)
             return;
     }
-    triggerChange(idx, doStatus);
+    triggerChange(idx, doStatus, alldevices[idx]);
     if (typeof (req) !== 'undefined') {
         req.abort();
     }
@@ -147,7 +147,7 @@ function switchDeviceBtn(cur, url) {
 function switchScene(cur) {
     var idx = $(cur).data('light');
     var doStatus = 'On'; // toggleItem(cur, $(cur).find('img.icon').hasClass('on') ? 'on' : 'off');
-    triggerChange(idx, doStatus);
+    triggerChange(idx, doStatus, alldevices[idx]);
     if (typeof (req) !== 'undefined') req.abort();
     $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=switchscene&idx=' + idx.replace('s', '') + '&switchcmd=' + doStatus + '&level=0&passcode=&jsoncallback=?',
