@@ -751,7 +751,8 @@ function triggerStatus(idx, value, device) {
     onOffstates[idx] = value;
 }
 
-function triggerChange(idx, value) {
+// eslint-disable-next-line no-unused-vars
+function triggerChange(idx, value, device) {
     if (typeof (oldstates[idx]) !== 'undefined' && value !== oldstates[idx]) {
         //disableStandby();
         try {
@@ -989,7 +990,7 @@ function getDevices(override) {
                             }
 
                             triggerStatus(idx, device['LastUpdate'], device);
-                            triggerChange(idx, device['LastUpdate']);
+                            triggerChange(idx, device['LastUpdate'], device);
 
                             try {
                                 html += eval('getBlock_' + idx + '(device,idx,data.result)');
@@ -1117,7 +1118,7 @@ function handleDevice(device, idx) {
                 html = getStatusBlock(idx, device, blocktypes['HardwareType'][device['HardwareType']][de], c);
 
                 triggerStatus(idx + '_' + c, device['LastUpdate'], device);
-                triggerChange(idx + '_' + c, device['LastUpdate']);
+                triggerChange(idx + '_' + c, device['LastUpdate'], device);
 
                 $('div.block_' + idx + '_' + c).html(html);
                 addHTML = false;
@@ -1651,7 +1652,7 @@ function createBlocks(blockValues, device) {
         if (typeof (blocks[blockValue.idx]) !== 'undefined' && typeof (blocks[blockValue.idx]['icon']) !== 'undefined') blockValue.icon = blocks[blockValue.idx]['icon'];
 
         triggerStatus(blockValue.idx, device['LastUpdate'], device);
-        triggerChange(blockValue.idx, device['LastUpdate']);
+        triggerChange(blockValue.idx, device['LastUpdate'], device);
 
         if (typeof (blocks[blockValue.idx]) !== 'undefined' && typeof (blocks[blockValue.idx]['title']) !== 'undefined') blockValue.title = blocks[blockValue.idx]['title'];
         this.html = getStateBlock(blockValue.idx, blockValue.icon, blockValue.title, blockValue.value + ' ' + blockValue.unit, device);
