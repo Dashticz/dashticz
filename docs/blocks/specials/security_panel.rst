@@ -18,7 +18,7 @@ CSS Tip!
 To the active button an additional class ``btn-warning`` is added::
 
   .block_123 .btn.btn-warning {
-    color: white !important;
+    color: black !important;
   }
 
       
