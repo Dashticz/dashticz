@@ -6,7 +6,7 @@ Security Panel block
 
 .. image :: security_panel_block.jpg
 
-This is the Domoticz Security Panel as block. You can use the normal block parameters. See :ref:`_dom_blockparameters` ::
+This is the Domoticz Security Panel as block. You can use the normal block parameters. See :ref:`dom_blockparameters` ::
 
     blocks[123] = {};  //123 is the Domoticz Security Panel device ID
 
@@ -27,7 +27,7 @@ Security Panel frame
 
 .. image :: security_panel_frame.jpg
 
-This is the Domoticz Security Panel as frame. You can use the normal frame parameters. See :ref:`_Frames` ::
+This is the Domoticz Security Panel as frame. You can use the normal frame parameters. See :ref:`Frames` ::
 
     frames.secpanel = {key: 'secpanel', height: 390, width: 12, frameurl: "http://<YOUR DOMOTICZ IP>:<PORT>/secpanel/index.html"}
 
