@@ -17,7 +17,8 @@ var Dashticz = {
             'stationclock',
             'blocktitle',
             'tvguide',
-            'trafficinfo'
+            'trafficinfo',
+            'secpanel'
         ]
         //the $.ajax().then accepts two functions: Success and Error handler.
         // In the success handler we call the async init function from the component
