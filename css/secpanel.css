@@ -1,0 +1,129 @@
+/*Security panel*/
+.secpanel .hidden {
+    visibility: hidden;
+}
+
+.secpanel div,.secpanel  ul,.secpanel  li,.secpanel  p {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+@font-face {
+    font-family: 'Digital';
+    src: url('../font/Digital.eot');
+    src: url('../font/Digital.eot?#iefix') format('embedded-opentype'), url('../font/Digital.woff') format('woff'), url('../font/Digital.ttf') format('truetype'), url('../font/Digital.svg#../font/Digital-7Italic') format('svg');
+}
+
+@font-face {
+    font-family: 'Audiowide';
+    src: url('../font/Audiowide.eot');
+    src: url('../font/Audiowide.eot?#iefix') format('embedded-opentype'), url('../font/Audiowide.woff') format('woff'), url('../font/Audiowide.ttf') format('truetype'), url('../font/Audiowide.svg#../font/Audiowide-7Italic') format('svg');
+}
+
+.secpanel .clear {
+    clear: both;
+    height: 0
+}
+
+.secpanel .main-border {
+    width: 100%;
+    margin-top: 0px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.secpanel #keypad {
+    border-radius: 3px;
+    padding: 15px;
+}
+
+.secpanel .dt_title {
+    margin-top: 5%;
+    margin-bottom: 0%;
+    color: rgba(64, 64, 64, .5);
+    text-align: center;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 1px #D1DAD3, 0 0 0 #000000;
+}
+
+.secpanel .title {
+    margin-bottom: 5%;
+    color: rgba(64, 64, 64, .5);
+    text-align: center;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 1px #D1DAD3, 0 0 0 #000000;
+}
+
+.secpanel input[type="text"] {
+    background: #222324;
+    border-radius: 5px;
+    padding: 2px 10px 0;
+    width: calc(100% - 10px);
+    margin-bottom: 5%;
+    color: rgba(128, 255, 196, .95);
+    text-align: center;
+    border: 0;
+    box-shadow: inset 1px 1px 2px #000;
+}
+
+.secpanel .keypad-keys {
+    overflow: hidden;
+}
+
+.secpanel .keypad-keys li {
+    display: block;
+    float: left;
+    cursor: pointer;
+    width: 16%;
+    background: #212223;
+    text-align: center;
+    white-space: nowrap;
+    margin: 0 3% 3% 0;
+    border-radius: 5px;
+    color: #D2D3D4;
+    padding: 4%;
+    box-shadow: inset 1px 1px 2px #000;
+}
+
+.secpanel .keypad-keys li:hover {
+    background: #323334;
+    color: rgba(196, 255, 225, .95);
+}
+
+.secpanel .keypad-keys li:nth-child(4n+4) {
+    margin-right: 0;
+}
+
+.secpanel .keypad-keys .secbtn {
+    width: 40%;
+    box-shadow: inset 1px 1px 2px #000;
+}
+
+.secpanel .keypad-keys li.arm {
+    background: rgba(128,0,0,0.6);
+}
+
+.secpanel .keypad-keys li.arm:hover {
+        background: rgba(128,0,0,0.9);
+}
+
+.secpanel .keypad-keys li.disarm {
+    background: rgba(0,128,0,0.6);
+}
+
+.secpanel .keypad-keys li.disarm:hover {
+    background: rgba(0,128,0,0.9);
+}
+
+.secpanel .keypad-keys li.disabled {
+    background: rgba(128,128,128,0.75);
+}
+
+.secpanel .keypad-keys li.cancel {
+    background: #212223;
+}
+
+.secpanel .keypad-keys li.cancel:hover {
+    background: #323334;
+}

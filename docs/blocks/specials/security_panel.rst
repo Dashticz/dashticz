@@ -1,5 +1,23 @@
+.. _secpanel:
+
 Domoticz Security Panel
 #######################
+
+There are three ways to show the Domoticz Security Panel:
+
+* As special block 'secpanel'
+* As Domoticz device
+* In a frame
+
+Security Panel special block
+----------------------------
+
+You can add the Domoticz Security Panel as special block ::
+
+    columns[1]['blocks'] = ['secpanel'];
+
+This will show a Domoticz like security panel, which automatically scales to the block width.
+The styling can be modified via custom.css.
 
 Security Panel block
 --------------------

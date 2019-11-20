@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+Latest changes
+--------------
+
+Enhancements
+  * Addition of special block 'secpanel' which adds a Domoticz like security panel. See :ref:`secpanel`
+
 3.2.0
 -----------
 
