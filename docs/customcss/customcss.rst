@@ -365,7 +365,15 @@ Remove Swiper Pagination Bullet
         display: none !important
     }
 
+Remove break line
+~~~~~~~~~~~~~~~~~
+::
 
+   .block_107 br:nth-child(2) {
+      display: none
+   }
+
+Change 107 to your own block number
 
 .. _specialclasses:
 
