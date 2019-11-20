@@ -3,6 +3,7 @@
 // eslint-disable-next-line no-unused-vars
 var Dashticz = {
     components: [],
+    mountedBlocks: [],
     blockNumbering: 0,
     init: function () {
         var components = [
@@ -23,6 +24,7 @@ var Dashticz = {
         //the $.ajax().then accepts two functions: Success and Error handler.
         // In the success handler we call the async init function from the component
         //        return Promise.all(components.map(function (component) {
+        $(window).on('resize', Dashticz.onResize);
         return $.when.apply($, components.map(function (component) {
             return $.ajax({
                     url: 'js/components/' + component + '.js',
@@ -34,19 +36,31 @@ var Dashticz = {
                     console.error('Error: ', textStatus);
                     return errorThrown;
                 })
-                .done(function () {
-                    return Dashticz.components[component].init ? Dashticz.components[component].init() : 'Loaded: ' + component
-                })
+            //                .done(function () {
+            //                    return Dashticz.components[component].init ? Dashticz.components[component].init() : 'Loaded: ' + component
+            //                })
         }))
     },
+    onResize: function () {
+        Object.keys(Dashticz.mountedBlocks).forEach(function (key) {
+            var me = Dashticz.mountedBlocks[key];
+            var comp = Dashticz.components[me.name];
+            if (comp.onResize)
+                comp.onResize(me)
+        })
+    },
     mountSpecialBlock: function (mountPoint, blockdef, special, key) {
-        var me = Dashticz.getDefaultBlockConfig(mountPoint, blockdef, special, key);
-        $(mountPoint).append(Dashticz.getSpecialBlock(me));
-        if (me.containerClass)
-            $(mountPoint + ' .dt_block').addClass(me.containerClass(blockdef))
-        if (special.get)
-            $(mountPoint + ' .dt_state').append(special.get(me))
-        if (special.run) special.run(me);
+        if (!special.initPromise) special.initPromise = special.init ? $.when(special.init(blockdef)) : $.when();
+        special.initPromise.done(function () {
+            var me = Dashticz.getDefaultBlockConfig(mountPoint, blockdef, special, key);
+            $(mountPoint).append(Dashticz.getSpecialBlock(me));
+            if (me.containerClass)
+                $(mountPoint + ' .dt_block').addClass(me.containerClass(blockdef))
+            if (special.get)
+                $(mountPoint + ' .dt_state').append(special.get(me))
+            if (special.run) special.run(me);
+            Dashticz.mountedBlocks[mountPoint] = me
+        })
     },
     getSpecialBlock: function (me) {
         var html = '<div ' +
@@ -145,6 +159,20 @@ var Dashticz = {
     mountNewContainer: function (column) {
         $(column).append('<div id="block_' + Dashticz.blockNumbering + '"</div>');
         return '#block_' + Dashticz.blockNumbering++;
+    },
+    loadFont: function (fontName, fontURL, fontFormat) {
+        var newStyle = document.createElement('style');
+        newStyle.appendChild(document.createTextNode("\
+            @font-face {\
+                font-family: " + fontName + ";\
+                src: url('" + fontURL + "') format('" + fontFormat + "');\
+            }\
+        "));
+
+        document.head.appendChild(newStyle);
+    },
+    loadCSS: function (filename) {
+        $('head').append('<link rel="stylesheet" type="text/css" href="' + filename + '">');
     }
 
 }
