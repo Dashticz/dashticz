@@ -232,6 +232,9 @@ Config parameters
   * - hide_off_button
     - | 0 / 1
       | Hide off button of selector switch
+  * - speak_lang
+    - | Text to speech language
+      | ``'<LANGUAGE>'``
 
 Usage
 #####
