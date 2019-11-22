@@ -234,7 +234,7 @@ Config parameters
       | Hide off button of selector switch
   * - speak_lang
     - | Text to speech language
-      | ``'<LANGUAGE>'``
+      | ``'<LANGUAGE>'`` Language options: de-DE, en-US, es-ES, fr-FR, it-IT, nl-NL, pl-PL, ru-RU
 
 Usage
 #####
