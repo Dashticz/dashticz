@@ -623,7 +623,7 @@ function getDefaultGraphProperties(myProperties) {
                             'day': 'D MMM'
                         }
                     },
-                    distribution: 'linear'
+                    distribution: 'series'
                 }]
 
             },
