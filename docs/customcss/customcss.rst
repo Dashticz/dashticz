@@ -201,6 +201,31 @@ Rounded corners for all blocks::
       border-radius: 20px;                            /* Rounded corners */
     }
 
+
+Buttons
+-------
+
+Render the title below the icon (all buttons)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+::
+
+   .button {
+      flex-direction: column;
+      min-height: 85px;
+   }
+
+A Domoticz device block normally has a height of 85 pixels (small devices: 75 pixels).
+
+Render the title below the icon (specific button)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You have to add the key parameter to your button definition.
+::
+
+   [data-id='mykey'].button {
+      flex-direction: column;
+   }
+
+
 Icons
 -----
 
