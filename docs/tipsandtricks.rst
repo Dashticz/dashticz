@@ -126,4 +126,81 @@ Add the following to custom.css::
         }
 
 
-  
+Changing alert icon colors dynamically
+--------------------------------------
+
+Assumptions:
+    - Today alert IDX in Domoticz=115 (find your own IDX and replace in the code below)
+    - Tomorrow alert IDX in Domoticz=116 (find your own IDX and replace in the code below)
+    - Level grades (as defined in Domoticz): Level 1 - normal (no alert, GREEN), Level 2 - Light warning (YELLOW), Level 3 - Warning (ORANGE), Level 4 - Critical (RED).
+
+Add the following to ``custom.js``::
+
+    function getStatus_115(idx,value,device) {
+        if(device['Level']==1) {
+            $('div.block_115').addClass('alertnormal');
+            $('div.block_115').removeClass('alertmedium');
+            $('div.block_115').removeClass('alerthigh');
+            $('div.block_115').removeClass('alertlight');
+        }
+        else if (device['Level']==2) {
+            $('div.block_115').addClass('alertlight');
+            $('div.block_115').removeClass('alertmedium');
+            $('div.block_115').removeClass('alertnormal');
+            $('div.block_115').removeClass('alerthigh');
+        }
+        else if (device['Level']==3) {
+            $('div.block_115').addClass('alertmedium');
+            $('div.block_115').removeClass('alertnormal');
+            $('div.block_115').removeClass('alerthigh');
+            $('div.block_115').removeClass('alertlight');
+        }
+        else {
+            $('div.block_115').addClass('alerthigh');
+            $('div.block_115').removeClass('alertnormal');
+            $('div.block_115').removeClass('alertmedium');
+            $('div.block_115').removeClass('alertlight');
+        }
+    }
+    
+    function getStatus_116(idx,value,device) {
+        if(device['Level']==1) {
+            $('div.block_116').addClass('alertnormal');
+            $('div.block_116').removeClass('alertmedium');
+            $('div.block_116').removeClass('alerthigh');
+            $('div.block_116').removeClass('alertlight');
+        }
+        else if (device['Level']==2) {
+            $('div.block_116').addClass('alertlight');
+            $('div.block_116').removeClass('alertmedium');
+            $('div.block_116').removeClass('alertnormal');
+            $('div.block_116').removeClass('alerthigh');
+        }
+        else if (device['Level']==3) {
+            $('div.block_116').addClass('alertmedium');
+            $('div.block_116').removeClass('alertnormal');
+            $('div.block_116').removeClass('alerthigh');
+            $('div.block_116').removeClass('alertlight');
+        }
+        else {
+            $('div.block_116').addClass('alerthigh');
+            $('div.block_116').removeClass('alertnormal');
+            $('div.block_116').removeClass('alertmedium');
+            $('div.block_116').removeClass('alertlight');
+        }
+    }
+
+Add the following to ``custom.css``::
+
+    .alertnormal .col-icon {
+        color: green !important;
+    }
+    .alertlight .col-icon {
+        color: yellow !important;
+    }
+    .alertmedium .col-icon {
+        color: orange !important;
+    }
+    .alerthigh .col-icon {
+        color: red !important;
+    }
