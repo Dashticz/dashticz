@@ -13,18 +13,10 @@ require('jquery.md5');
 require('js-cookie')
 require("script-loader!./functions.js")
 
-import {
-    Swiper,
-    Navigation,
-    Pagination,
-    Scrollbar,
-    Keyboard
-} from 'swiper/js/swiper.esm.js';
-import 'swiper/css/swiper.min.css'
-
-// Install modules
-Swiper.use([Navigation, Pagination, Scrollbar, Keyboard]);
+var Swiper = require('swiper').default
 window.Swiper = Swiper
+require( 'swiper/css/swiper.min.css')
+
 window.Skycons = require("skycons")(window)
 require('spectrum-colorpicker')
 require('ion-sound')
