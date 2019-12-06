@@ -20,7 +20,7 @@
     "skycons": "^1.0.0",
     "spectrum-colorpicker": "^1.8.0",
     "spotify-web-api-js": "^1.2.0",
-    "swiper": "^5.2.0",
+    "swiper": "^5.2.1",
     "webpack-jquery-ui": "^2.0.1"
   },
   "devDependencies": {
