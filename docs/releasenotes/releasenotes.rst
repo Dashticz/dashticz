@@ -7,6 +7,9 @@ Latest changes
 Enhancements
   * Addition of special block 'secpanel' which adds a Domoticz like security panel. See :ref:`secpanel`
 
+Fixes
+  * Swiper transition effect
+
 3.2.0
 -----------
 
