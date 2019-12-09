@@ -1,8 +1,9 @@
 {
-"version": "3.2.0",
+"version": "3.2.1",
 "branch": "beta",
-"last_changes": "Change in HTML template for special blocks",
+"last_changes": "Update of jQuery version.",
 "changelog" : {
+            "3.2.0": "Change in HTML template for special blocks",
             "3.1.2": "Stable version",
             "3.1.1": "Calendar with table formatting; session time-out setting",
             "3.1.0": "New graph module",

@@ -47,7 +47,7 @@ var DT_streamplayer = {
                 playing = false,
                 trackCount = tracks.length,
                 npTitle = $(streamelement + ' .title'),
-                audio = $(streamelement + ' .audio1').bind('play', function () {
+                audio = $(streamelement + ' .audio1').on('play', function () {
                     $(streamelement + ' .stateicon').removeClass('fas fa-play');
                     $(streamelement + ' .stateicon').addClass('fas fa-pause');
                     $(streamelement).addClass('playing')
@@ -55,7 +55,7 @@ var DT_streamplayer = {
                     connecting = setTimeout(function () {
                         infoMessage("StreamPlayer", "connecting ... ", 0);
                     }, 1000);
-                }).bind('pause', function () {
+                }).on('pause', function () {
                     $(streamelement + ' .stateicon').removeClass('fas fa-pause');
                     $(streamelement + ' .stateicon').addClass('fas fa-play');
                     $(streamelement).removeClass('playing')
@@ -63,7 +63,7 @@ var DT_streamplayer = {
                     playing = false;
                 }).get(0),
                 // eslint-disable-next-line no-unused-vars
-                btnPrev = $(streamelement + ' .btnPrev').click(function () {
+                btnPrev = $(streamelement + ' .btnPrev').on('click', function () {
                     if ((index - 1) > -1) {
                         index--;
                         loadTrack(index);
@@ -76,7 +76,7 @@ var DT_streamplayer = {
                     }
                 }),
                 // eslint-disable-next-line no-unused-vars
-                btnNext = $(streamelement + ' .btnNext').click(function () {
+                btnNext = $(streamelement + ' .btnNext').on('click', function () {
                     if ((index + 1) < trackCount) index++;
                     else index = 0;
 
@@ -86,7 +86,7 @@ var DT_streamplayer = {
                     }
                 }),
                 // eslint-disable-next-line no-unused-vars
-                btnPlay = $(streamelement + ' .playStream').click(function () {
+                btnPlay = $(streamelement + ' .playStream').on('click', function () {
                     if (audio.paused) {
                         doPlay();
                     } else {
