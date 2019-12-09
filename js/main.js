@@ -61,7 +61,7 @@ function loadFiles(dashtype) {
 
     $('<link href="' + 'css/creative.css'+'" rel="stylesheet">').appendTo('head');
     $.ajax({ url: customfolder + '/CONFIG.js', dataType: 'script' })
-    .error(function() {
+    .catch(function() {
         console.log('Error in config.js');
         $('#hide').show();
         $('#loaderHolder').fadeOut();
@@ -195,7 +195,7 @@ function onLoad() {
             '-webkit-user-select': 'none',
             '-ms-user-select': 'none',
             'user-select': 'none'
-        }).bind('selectstart', function () {
+        }).on('selectstart', function () {
             return false;
         });
 
@@ -264,14 +264,14 @@ function onLoad() {
     }
 
     if (md.mobile() == null) {
-        $('body').bind('mousemove', function () {
+        $('body').on('mousemove', function () {
             standbyTime = 0;
             swipebackTime = 0;
             disableStandby();
         });
     }
 
-    $('body').bind('touchend click', function () {
+    $('body').on('touchend click', function () {
         setTimeout(function () {
             standbyTime = 0;
             swipebackTime = 0;
