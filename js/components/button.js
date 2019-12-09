@@ -31,7 +31,7 @@ var DT_button = {
         var button = me.block
 
         if (DT_button.buttonIsClickable(button))
-            $(me.mountPoint + ' .button').click(button, DT_button.buttonOnClick);
+            $(me.mountPoint + ' .button').on('click', button, DT_button.buttonOnClick);
 
         if (button.btnimage) {
             var refreshtime = 60000;
