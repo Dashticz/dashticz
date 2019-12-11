@@ -34,6 +34,14 @@ The Swiper library is in ES6 format, and will be transpiled to ES5 as well. See 
 
 The regular Dashticz files will NOT be transpiled: They should be in ES5 format.
 
+jQuery 3.4.1
+~~~~~~~~~~~~
+In December 2019 Dashticz was upgraded from jQuery 2.2.4 to jQuery 3.4.1, because of a reported security vulnerability in jQuery 2.2.4.
+Migration is checked via jquery-migrate plugin, which can be enabled in ``src/index.js``.
+
+The spectrum-colorpicker is not fully compatible with jQuery 3. The jquery-migrate plugin generates warnings in the console if the ``jquery-migrate`` plugin is enabled.
+
+
 Design
 -------
 

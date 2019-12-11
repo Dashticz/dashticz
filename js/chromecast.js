@@ -94,14 +94,14 @@ function changeVolume(action) {
 function selectStream(streamelement) {
     var trackCount = _STREAMPLAYER_TRACKS.length,
         titleElement = $(streamelement + ' h3');
-    $(streamelement + ' .btnPrev').click(function () {
+    $(streamelement + ' .btnPrev').on('click', function () {
         selectedStreamIndex--;
         if (selectedStreamIndex < 0) {
             selectedStreamIndex = trackCount - 1;
         }
         loadTrack(selectedStreamIndex);
     });
-    $(streamelement + ' .btnNext').click(function () {
+    $(streamelement + ' .btnNext').on('click', function () {
         selectedStreamIndex++;
         if (selectedStreamIndex === trackCount) {
             selectedStreamIndex = 0;
@@ -109,10 +109,10 @@ function selectStream(streamelement) {
 
         loadTrack(selectedStreamIndex);
     });
-    $(streamelement + ' .btnVolDown').click(function () {
+    $(streamelement + ' .btnVolDown').on('click', function () {
         changeVolume('down');
     });
-    $(streamelement + ' .btnVolUp').click(function () {
+    $(streamelement + ' .btnVolUp').on('click', function () {
         changeVolume('up');
     });
     var loadTrack = function (id) {

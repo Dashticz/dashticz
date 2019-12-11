@@ -4,11 +4,15 @@ Release Notes
 Latest changes
 --------------
 
+3.2.1 (10-12-2019)
+------------------
+
 Enhancements
   * Addition of special block 'secpanel' which adds a Domoticz like security panel. See :ref:`secpanel`
 
 Fixes
   * Swiper transition effect
+  * Update to latest jQuery version to solve security alert
 
 3.2.0
 -----------
