@@ -1,7 +1,12 @@
 require("chart.js");
 window.moment = require("moment");
-require('webpack-jquery-ui');
-require('webpack-jquery-ui/css');
+require('jquery')
+//require('jquery-ui')
+require("jquery-ui/ui/widgets/tabs");
+require("jquery-ui/ui/widgets/slider");
+require('jquery-ui/themes/base/tabs.css');
+require('jquery-ui/themes/base/slider.css');
+//require('jquery-migrate')
 require('jquery-ui-touch-punch');
 require('bootstrap');
 require('bootstrap/dist/css/bootstrap.min.css');

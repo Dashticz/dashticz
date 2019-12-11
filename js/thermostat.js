@@ -1,17 +1,21 @@
+// eslint-disable-next-line no-unused-vars
+/* global sliding:writable switchThermostat number_format _TEMP_SYMBOL */
+
+// eslint-disable-next-line no-unused-vars
 function addThermostatFunctions(thermelement) {
-    $(document).delegate((thermelement + ' .btn-number'), "click", function (e) {
+    $(document).on("click", (thermelement + ' .btn-number'), function () {
         sliding = true;
-        var fieldName = $(this).attr('data-field');
+//        var fieldName = $(this).attr('data-field');
         var type = $(this).attr('data-type');
         var input = $(thermelement + " strong");
         var currentVal = input.text().split('°');
         currentVal = parseFloat(currentVal[0].replace(',', '.'));
         if (!isNaN(currentVal)) {
             var newValue = (type === 'minus') ? currentVal - 0.5 : currentVal + 0.5;
-            if (newValue >= input.attr('min')
-                && newValue <= input.attr('max')
+            if (newValue >= input.attr('min') &&
+                newValue <= input.attr('max')
             ) {
-                input.text(number_format(newValue, 1) + _TEMP_SYMBOL).change();
+                input.text(number_format(newValue, 1) + _TEMP_SYMBOL).trigger( "change" );
                 switchThermostat(newValue, input);
             }
             if (newValue <= input.attr('min')) {
@@ -25,16 +29,16 @@ function addThermostatFunctions(thermelement) {
         }
     });
 
-    $(thermelement + ' .input-number').focusin(function () {
+    $(thermelement + ' .input-number').on('focusin', function () {
         $(this).data('oldValue', $(this).text());
     });
 
-    $(thermelement + ' .input-number').change(function () {
-        minValue = parseFloat($(this).attr('min'));
-        maxValue = parseFloat($(this).attr('max'));
-        valueCurrent = parseFloat($(this).text());
+    $(thermelement + ' .input-number').on('change', function () {
+        var minValue = parseFloat($(this).attr('min'));
+        var maxValue = parseFloat($(this).attr('max'));
+        var valueCurrent = parseFloat($(this).text());
 
-        name = $(this).attr('name');
+//        var name = $(this).attr('name');
         if (valueCurrent >= minValue) {
             $(thermelement + " .btn-number[data-type='minus']").removeAttr('disabled')
         } else {
