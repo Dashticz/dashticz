@@ -142,16 +142,11 @@ function getWasteApi2Data(address, date, random, companyCode) {
             var dataFiltered = [];
             data.dataList.forEach(function (element) {
                 element.pickupDates.forEach(function (dateElement) {
-                    var pickupTypes = {
-                        PACKAGES: 'Verpakkingen',
-                        PAPER: 'Papier',
-                        GREENGREY: 'GFT & Rest',
-                    };
                     var pickupType = element.description !== 'Null' ? element.description : element._pickupTypeText;
                     dataFiltered.push({
                       date: moment(dateElement),
-                      summary: pickupTypes[pickupType],
-                      garbageType: mapGarbageType(pickupTypes[pickupType])
+                      summary: pickupType,
+                      garbageType: mapGarbageType(pickupType)
                     });
                 });
             });
