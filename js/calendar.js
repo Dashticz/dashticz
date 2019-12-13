@@ -96,7 +96,11 @@ function addCalendar(calobject, icsUrlorg) {
                 }
 
             }
+        })
+        .catch(function() {
+            console.error('Error in response from calendar with icalurl '+curUrl)
         });
+
     }
 
     setTimeout(function () {

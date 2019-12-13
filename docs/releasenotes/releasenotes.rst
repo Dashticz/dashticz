@@ -2,7 +2,10 @@ Release Notes
 =============
 
 Latest changes
---------------
+------------------
+
+Fixes
+  * Improved error handling
 
 3.2.1 (10-12-2019)
 ------------------
