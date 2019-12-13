@@ -38,8 +38,8 @@ var oldstates = [];
 var onOffstates = [];
 var gettingDevices = false;
 var md;
-var usrEnc='';
-var pwdEnc='';
+var usrEnc = '';
+var pwdEnc = '';
 // eslint-disable-next-line no-unused-vars
 var _THOUSAND_SEPARATOR = '.';
 // eslint-disable-next-line no-unused-vars
@@ -48,6 +48,7 @@ var _STANDBY_CALL_URL = '';
 var _END_STANDBY_CALL_URL = '';
 var lastGetDevicesTime = 0;
 var allVariables = {};
+
 function b64_to_utf8(str) {
     return decodeURIComponent(escape(window.atob(str)));
 }
@@ -58,126 +59,176 @@ function loadFiles(dashtype) {
     if (typeof (dashtype) !== 'undefined' && parseFloat(dashtype) > 1) {
         customfolder = 'custom_' + dashtype;
     }
-
-    $('<link href="' + 'css/creative.css'+'" rel="stylesheet">').appendTo('head');
-    $.ajax({ url: customfolder + '/CONFIG.js', dataType: 'script' })
-    .catch(function() {
-        console.log('Error in config.js');
-        $('#hide').show();
-        $('#loaderHolder').fadeOut();
-        return;
-    })
-    .then(function () {
-        setTimeout(function() {
-            $('#loaderHolder').fadeOut();
-        }, 1000);
-        $('body').css('overflow', 'auto');
-    
-        if (objectlength(columns) === 0) defaultcolumns = true;
-
-        //Check language before loading settings and fallback to English when not set
-        var setLang = 'en_US';
-        if (typeof (localStorage.dashticz_language) !== 'undefined') {
-            setLang = localStorage.dashticz_language
-        }
-        else if (typeof (config) !== 'undefined' && typeof (config.language) !== 'undefined') {
-            setLang = config.language;
-        }
-        return $.ajax({
-            url: 'lang/' + setLang + '.json?v=' + cache,  dataType: 'json', success: function (data) {
-                language = data;
+    $('<link href="' + 'css/creative.css' + '" rel="stylesheet">').appendTo('head');
+    $.ajax({
+            url: customfolder + '/CONFIG.js',
+            dataType: 'script'
+        })
+        .fail(function () {
+            return $.Deferred()
+                .reject(new Error("Load error in config.js"))
+        })
+        .then(function () {
+            if (typeof config == 'undefined') {
+                return $.Deferred()
+                    .reject(new Error("Error in config.js"))
             }
-        });
-    })
-    .then(function(){
-        return $.ajax({ url: 'js/version.js',  dataType: 'script' });
-    })
-    .then(function() {
-        return initVersion();
-    })
-    .then(function(){
+            setTimeout(function () {
+                $('#loaderHolder').fadeOut();
+            }, 1000);
+            $('body').css('overflow', 'auto');
 
-        return $.ajax({ url: 'js/settings.js', dataType: 'script' });
-    })
-    .then(function () {
-        loadSettings();
-        usrEnc = '';
-        pwdEnc = '';
-        if (typeof (settings['user_name']) !== 'undefined') {
-            usrEnc = window.btoa(settings['user_name']);
-            pwdEnc = window.btoa(settings['pass_word']);
-        }
-        if (typeof (screens) === 'undefined' || objectlength(screens) === 0) {
-            screens = {};
-            screens[1] = {};
-            screens[1]['background'] = settings['background_image'];
-            screens[1]['columns'] = [];
-            if (defaultcolumns === false) {
-                for (var c in columns) {
-                    if (c !== 'bar') screens[1]['columns'].push(c);
+            if (objectlength(columns) === 0) defaultcolumns = true;
+
+            //Check language before loading settings and fallback to English when not set
+            var setLang = 'en_US';
+            if (typeof (localStorage.dashticz_language) !== 'undefined') {
+                setLang = localStorage.dashticz_language
+            } else if (typeof (config) !== 'undefined' && typeof (config.language) !== 'undefined') {
+                setLang = config.language;
+            }
+            return $.ajax({
+                url: 'lang/' + setLang + '.json?v=' + cache,
+                dataType: 'json',
+                success: function (data) {
+                    language = data;
+                }
+            });
+        })
+        .then(function () {
+            return $.ajax({
+                url: 'js/version.js',
+                dataType: 'script'
+            });
+        })
+        .then(function () {
+            return initVersion();
+        })
+        .then(function () {
+
+            return $.ajax({
+                url: 'js/settings.js',
+                dataType: 'script'
+            });
+        })
+        .then(function () {
+            loadSettings();
+            usrEnc = '';
+            pwdEnc = '';
+            if (typeof (settings['user_name']) !== 'undefined') {
+                usrEnc = window.btoa(settings['user_name']);
+                pwdEnc = window.btoa(settings['pass_word']);
+            }
+            if (typeof (screens) === 'undefined' || objectlength(screens) === 0) {
+                screens = {};
+                screens[1] = {};
+                screens[1]['background'] = settings['background_image'];
+                screens[1]['columns'] = [];
+                if (defaultcolumns === false) {
+                    for (var c in columns) {
+                        if (c !== 'bar') screens[1]['columns'].push(c);
+                    }
                 }
             }
-        }
 
-        $('<link href="vendor/weather/css/weather-icons.min.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
+            $('<link href="vendor/weather/css/weather-icons.min.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
 
-        if (settings['theme'] !== 'default') {
-            $('<link rel="stylesheet" type="text/css" href="themes/' + settings['theme'] + '/' + settings['theme'] + '.css?v=' + cache + '" />').appendTo('head');
-        }
-        $('<link href="' + customfolder + '/custom.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
+            if (settings['theme'] !== 'default') {
+                $('<link rel="stylesheet" type="text/css" href="themes/' + settings['theme'] + '/' + settings['theme'] + '.css?v=' + cache + '" />').appendTo('head');
+            }
+            $('<link href="' + customfolder + '/custom.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
 
-        if (typeof (settings['edit_mode']) !== 'undefined' && settings['edit_mode'] == 1) {
-            $('<link href="css/sortable.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
-            $.ajax({ url: 'js/sortable.js', async: false, dataType: 'script' });
+            if (typeof (settings['edit_mode']) !== 'undefined' && settings['edit_mode'] == 1) {
+                $('<link href="css/sortable.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
+                $.ajax({
+                    url: 'js/sortable.js',
+                    async: false,
+                    dataType: 'script'
+                });
 
-            var html = '<div class="newblocksHolder" style="display:none;">';
-            html += '<div class="title">' + language.editmode.add_plugin + '</div>';
-            html += '<div class="newblocks plugins sortable"></div>';
-            html += '<div class="title">' + language.editmode.add_block + '</div>';
-            html += '<div class="newblocks domoticz sortable"></div>';
-            html += '</div>';
+                var html = '<div class="newblocksHolder" style="display:none;">';
+                html += '<div class="title">' + language.editmode.add_plugin + '</div>';
+                html += '<div class="newblocks plugins sortable"></div>';
+                html += '<div class="title">' + language.editmode.add_block + '</div>';
+                html += '<div class="newblocks domoticz sortable"></div>';
+                html += '</div>';
 
-            $('body').prepend(html);
-        }
+                $('body').prepend(html);
+            }
 
-        return $.when(
-            $.ajax({ url: 'js/switches.js', dataType: 'script' }),
-            $.ajax({ url: 'js/thermostat.js', dataType: 'script' }),
-            $.ajax({ url: 'js/dashticz.js', dataType: 'script' })
-                .then(function(){ return Dashticz.init()})
-        );
-    })
-    .then (function(){
-        return $.ajax({ url: customfolder + '/custom.js?v=' + cache, dataType: 'script' });
-    })
-    .then (function(){
-        return $.when(
-//            $.ajax({ url: 'js/switches.js', async: false, dataType: 'script' });
-            $.ajax({ url: 'js/blocks.js',  dataType: 'script' }),
-            $.ajax({ url: 'js/graphs.js',  dataType: 'script' }),
-            $.ajax({ url: 'js/login.js', dataType: 'script' }),
-            $.ajax({ url: 'js/moon.js',  dataType: 'script' })
-        );
-    })
-    .then(function () {
-
-        sessionValid();
-
-        if (typeof (settings['gm_api']) !== 'undefined' && settings['gm_api'] !== '' && settings['gm_api'] !== 0) {
+            return $.when(
+                $.ajax({
+                    url: 'js/switches.js',
+                    dataType: 'script'
+                }),
+                $.ajax({
+                    url: 'js/thermostat.js',
+                    dataType: 'script'
+                }),
+                $.ajax({
+                    url: 'js/dashticz.js',
+                    dataType: 'script'
+                })
+                .then(function () {
+                    return Dashticz.init()
+                })
+            );
+        })
+        .then(function () {
             return $.ajax({
-                url: 'https://maps.googleapis.com/maps/api/js?key=' + settings['gm_api'],
+                url: customfolder + '/custom.js?v=' + cache,
                 dataType: 'script'
-            }).done(function () {
-                setTimeout(function () {
-                    initMap();
-                }, 2000);
             });
-        }
-    })
-    .then(function() {
-        onLoad();
-    })
+        })
+        .then(function () {
+            if (typeof getExtendedBlockTypes == 'undefined') {
+                return $.Deferred()
+                    .reject(new Error("Error in custom.js"))
+            }
+            return $.when(
+                //            $.ajax({ url: 'js/switches.js', async: false, dataType: 'script' });
+                $.ajax({
+                    url: 'js/blocks.js',
+                    dataType: 'script'
+                }),
+                $.ajax({
+                    url: 'js/graphs.js',
+                    dataType: 'script'
+                }),
+                $.ajax({
+                    url: 'js/login.js',
+                    dataType: 'script'
+                }),
+                $.ajax({
+                    url: 'js/moon.js',
+                    dataType: 'script'
+                })
+            );
+        })
+        .then(function () {
 
+            sessionValid();
+
+            if (typeof (settings['gm_api']) !== 'undefined' && settings['gm_api'] !== '' && settings['gm_api'] !== 0) {
+                return $.ajax({
+                    url: 'https://maps.googleapis.com/maps/api/js?key=' + settings['gm_api'],
+                    dataType: 'script'
+                }).done(function () {
+                    setTimeout(function () {
+                        initMap();
+                    }, 2000);
+                });
+            }
+        })
+        .then(function () {
+            onLoad();
+        })
+        .catch(function (err) {
+            console.error(err);
+            if (err.message) $('#error').html(err.message);
+            $('#hide').show();
+            $('#loaderHolder').fadeOut();
+        })
 }
 
 function onLoad() {
@@ -323,7 +374,7 @@ function buildStandby() {
         $('div.swiper-container').before(screenhtml);
 
         for (var c in columns_standby) {
-            getBlock(columns_standby[c], 'standby'+c, 'div.screenstandby', true);
+            getBlock(columns_standby[c], 'standby' + c, 'div.screenstandby', true);
         }
     }
 
@@ -334,8 +385,7 @@ function buildScreens() {
     for (var t in screens) {
         if (typeof (screens[t]['maxwidth']) !== 'undefined' && typeof (screens[t]['maxheight']) !== 'undefined') {
             allscreens[screens[t]['maxwidth']] = screens[t];
-        }
-        else {
+        } else {
             var maxwidth = 5000;
             if (typeof (allscreens[maxwidth]) == 'undefined') {
                 allscreens[maxwidth] = {}
@@ -348,7 +398,9 @@ function buildScreens() {
     screens = allscreens;
     var keys = Object.keys(screens);
     var len = keys.length;
-    keys.sort(function (a, b) { return a - b });
+    keys.sort(function (a, b) {
+        return a - b
+    });
     for (var i = 0; i < len; i++) {
         t = keys[i];
         if (
@@ -367,8 +419,7 @@ function buildScreens() {
                     if (typeof (screens[t][s]['background']) !== 'undefined') {
                         if (screens[t][s]['background'].indexOf("/") > 0) screenhtml += 'style="background-image:url(\'' + screens[t][s]['background'] + '\');"';
                         else screenhtml += 'style="background-image:url(\'img/' + screens[t][s]['background'] + '\');"';
-                    }
-                    else if (typeof (screens[t][s][1]) !== 'undefined' && typeof (screens[t][s][1]['background']) !== 'undefined') {
+                    } else if (typeof (screens[t][s][1]) !== 'undefined' && typeof (screens[t][s][1]['background']) !== 'undefined') {
                         if (screens[t][s][1]['background'].indexOf("/") > 0) screenhtml += 'style="background-image:url(\'' + screens[t][s][1]['background'] + '\');"';
                         else screenhtml += 'style="background-image:url(\'img/' + screens[t][s][1]['background'] + '\');"';
                     }
@@ -391,8 +442,7 @@ function buildScreens() {
                                 getBlock(columns[c], c, 'div.screen' + s, false);
                             }
                         }
-                    }
-                    else {
+                    } else {
                         if (parseFloat(settings['hide_topbar']) == 0) $('body .row').append('<div class="col-sm-undefined col-xs-12 sortable colbar transbg dark"><div data-id="logo" class="logo col-xs-2">' + settings['app_title'] + '<div></div></div><div data-id="miniclock" class="miniclock col-xs-8 text-center"><span class="weekday"></span> <span class="date"></span> <span>&nbsp;&nbsp;&nbsp;&nbsp;</span> <span class="clock"></span></div><div data-id="settings" class="settings settingsicon text-right" data-toggle="modal" data-target="#settingspopup"><em class="fas fa-cog" /></div></div></div>');
                         if (typeof (settings['default_columns']) == 'undefined' || parseFloat(settings['default_columns']) == 3) {
                             $('body .row').append('<div class="col-xs-5 sortable col1" data-colindex="1"><div class="auto_switches"></div><div class="auto_dimmers"></div></div>');
@@ -442,11 +492,9 @@ function buildScreens() {
 
                                 }
                             }
-                        }
-                        else if (parseFloat(settings['default_columns']) == 1) {
+                        } else if (parseFloat(settings['default_columns']) == 1) {
                             $('body .row').append('<div class="col-xs-12 sortable col1" data-colindex="1"><div class="auto_switches"></div><div class="auto_dimmers"></div></div>');
-                        }
-                        else if (parseFloat(settings['default_columns']) == 2) {
+                        } else if (parseFloat(settings['default_columns']) == 2) {
                             $('body .row').append('<div class="col-xs-6 sortable col1" data-colindex="1"><div class="auto_switches"></div><div class="auto_dimmers"></div></div>');
                             $('body .row').append('<div class="col-xs-6 sortable col2" data-colindex="2"><div class="block_weather containsweatherfull"></div><div class="auto_media"></div><div class="auto_states"></div></div>');
                         }
@@ -466,16 +514,15 @@ function buildScreens() {
     buildSwipingScrolling();
 }
 
-function buildSwipingScrolling()
-{
+function buildSwipingScrolling() {
     var enable_swiper = Number(settings['enable_swiper'])
     var vertical_screen = (window.innerWidth < 768)
     var multi_screen = $('.dt-container .screen').length > 1
     var start_swiper = multi_screen &&
-            (
-                (enable_swiper === 2 ) ||
-                ((enable_swiper === 1) && (!vertical_screen))
-            )
+        (
+            (enable_swiper === 2) ||
+            ((enable_swiper === 1) && (!vertical_screen))
+        )
     if (start_swiper) startSwiper();
     var vertical_scroll = Number(settings['vertical_scroll']);
     if (vertical_scroll === 2 || (vertical_scroll === 1 && !start_swiper)) {
@@ -508,7 +555,7 @@ function startSwiper() {
         myswiper.on('transitionEnd', function () {
             $('.slide' + (1 + this.activeIndex)).addClass('selectedbutton');
         });
-        $('.slide'+settings['start_page']).addClass('selectedbutton');
+        $('.slide' + settings['start_page']).addClass('selectedbutton');
 
     }, 100);
 }
@@ -523,22 +570,28 @@ function initMap() {
 }
 
 function showMap(mapid, map) {
-    if (typeof (settings['gm_api']) == 'undefined'
-        || settings['gm_api'] == ""
-        || settings['gm_api'] == 0) {
+    if (typeof (settings['gm_api']) == 'undefined' ||
+        settings['gm_api'] == "" ||
+        settings['gm_api'] == 0) {
         console.log('Please, set Google Maps API KEY!');
         infoMessage('Info:', 'Please, set Google Maps API KEY!', 8000);
         return
     }
     if (typeof (map) !== 'undefined') {
-         map = new google.maps.Map(document.getElementById(mapid), {
+        map = new google.maps.Map(document.getElementById(mapid), {
             zoom: map.zoom,
-            center: { lat: map.latitude, lng: map.longitude }
+            center: {
+                lat: map.latitude,
+                lng: map.longitude
+            }
         });
     } else {
-         map = new google.maps.Map(document.getElementById(mapid), {
+        map = new google.maps.Map(document.getElementById(mapid), {
             zoom: parseFloat(settings['gm_zoomlevel']),
-            center: { lat: parseFloat(settings['gm_latitude']), lng: parseFloat(settings['gm_longitude']) }
+            center: {
+                lat: parseFloat(settings['gm_latitude']),
+                lng: parseFloat(settings['gm_longitude'])
+            }
         });
     }
 
@@ -553,14 +606,11 @@ function setClassByTime() {
 
     if (n >= 20 || n <= 5) {
         newClass = 'night';
-    }
-    else if (n >= 6 && n <= 10) {
+    } else if (n >= 6 && n <= 10) {
         newClass = 'morning';
-    }
-    else if (n >= 11 && n <= 15) {
+    } else if (n >= 11 && n <= 15) {
         newClass = 'noon';
-    }
-    else if (n >= 16 && n <= 19) {
+    } else if (n >= 16 && n <= 19) {
         newClass = 'afternoon';
     }
 
@@ -589,14 +639,14 @@ function infoMessage(sub, msg, timeOut) {
     }
     if (timeOut == 0) {
         $('body').append('<div class="update">' + sub + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + msg + '&nbsp;&nbsp;</div>');
-    }
-    else {
+    } else {
         $('body').append('<div class="update">' + sub + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + msg + '&nbsp;&nbsp;</div>');
         setTimeout(function () {
             $(".update").fadeOut();
         }, timeOut);
     }
 }
+
 function infoDevicsSwitch(msg) {
     $('body').append('<div class="update">&nbsp;&nbsp;' + msg + '&nbsp;&nbsp;</div>');
     setTimeout(function () {
@@ -612,7 +662,7 @@ function speak(textToSpeak) {
 }
 
 function playAudio(file) {
-//    var key = $.md5(file);
+    //    var key = $.md5(file);
     file = file.split('/');
 
     var filename = file[(file.length - 1)].split('.');
@@ -621,9 +671,9 @@ function playAudio(file) {
 
     if (!gettingDevices) {
         ion.sound({
-            sounds: [
-                { name: filename }
-            ],
+            sounds: [{
+                name: filename
+            }],
 
             path: file.join('/') + "/",
             preload: true,
@@ -642,7 +692,8 @@ function createModalDialog(dialogClass, dialogId, myFrame) {
     var setWidth = false;
     var setHeight = false;
     var mySetUrl = 'data-popup';
-    var mywidth='', myheight='';
+    var mywidth = '',
+        myheight = '';
     if (typeof (myFrame.framewidth) !== 'undefined') {
         mywidth = myFrame.framewidth;
         setWidth = true;
@@ -686,8 +737,7 @@ function triggerStatus(idx, value, device) {
         eval('getStatus_' + idx + '(idx,value,device)');
     }
     // eslint-disable-next-line no-empty
-    catch (err) {
-    }
+    catch (err) {}
     if (typeof (onOffstates[idx]) !== 'undefined' && value !== onOffstates[idx]) {
         if (device['Status'] == 'On' || device['Status'] == 'Open') {
             if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['playsoundOn']) !== 'undefined') {
@@ -759,8 +809,7 @@ function triggerChange(idx, value, device) {
             eval('getChange_' + idx + '(idx,value,device)');
         }
         // eslint-disable-next-line no-empty
-        catch (err) {
-        }
+        catch (err) {}
 
         if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['flash']) !== 'undefined') {
             var flash_value = blocks[idx]['flash'];
@@ -830,7 +879,7 @@ function loadMaps(b, map) {
 
     var width = 12;
     if (typeof (map.width) !== 'undefined') width = map.width;
-    var html='';
+    var html = '';
     if (typeof (map.link) !== 'undefined') html = '<div class="col-xs-' + width + ' mh hover swiper-no-swiping transbg block_trafficmap" data-toggle="modal" data-target="#trafficmap_frame_' + b + '" onclick="setSrc(this);" ';
     else html = '<div class="col-xs-' + width + ' mh swiper-no-swiping transbg block_trafficmap" ';
     if (typeof (map.height) !== 'undefined') html += ' style="height:' + map.height + 'px !important;"';
@@ -877,7 +926,9 @@ function getDevices(override) {
         if (typeof (usrEnc) !== 'undefined' && usrEnc !== '') usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
         req = $.get({
             url: settings['domoticz_ip'] + '/json.htm?' + usrinfo + 'type=devices&plan=' + settings['room_plan'] + '&filter=all&used=true&order=Name',
-            type: 'GET', async: true, contentType: "application/json",
+            type: 'GET',
+            async: true,
+            contentType: "application/json",
             error: function (jqXHR, textStatus) {
                 if (typeof (textStatus) !== 'undefined' && textStatus === 'abort') {
                     console.log('Domoticz request cancelled')
@@ -957,8 +1008,7 @@ function getDevices(override) {
                             if (typeof (blocks) !== 'undefined' && typeof (blocks[idx]) !== 'undefined') {
                                 if ($(window).width() < 768 && typeof (blocks[idx]['width_smartphone']) !== 'undefined') {
                                     width = blocks[idx]['width_smartphone'];
-                                }
-                                else if (typeof (blocks[idx]['width']) !== 'undefined') {
+                                } else if (typeof (blocks[idx]['width']) !== 'undefined') {
                                     width = blocks[idx]['width'];
                                 }
                             }
@@ -994,8 +1044,7 @@ function getDevices(override) {
 
                             try {
                                 html += eval('getBlock_' + idx + '(device,idx,data.result)');
-                            }
-                            catch (err) {
+                            } catch (err) {
                                 var response = handleDevice(device, idx);
                                 html = response[0];
                                 addHTML = response[1];
@@ -1033,7 +1082,9 @@ function getVariables() {
     if (typeof (usrEnc) !== 'undefined' && usrEnc !== '') usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
     $.get({
         url: settings['domoticz_ip'] + '/json.htm?' + usrinfo + 'type=command&param=getuservariables',
-        type: 'GET', async: true, contentType: "application/json",
+        type: 'GET',
+        async: true,
+        contentType: "application/json",
         error: function () {
             console.error("Domoticz error!\nPlease, double check the path to Domoticz in Settings!");
             infoMessage('<font color="red">Domoticz error!', 'double check the path to Domoticz in Settings!</font>', 0);
@@ -1111,8 +1162,7 @@ function handleDevice(device, idx) {
     if (device.HardwareType && device['HardwareType'] in blocktypes['HardwareType']) {
         if (typeof (blocktypes['HardwareType'][device['HardwareType']]['icon']) !== 'undefined') {
             html += getStatusBlock(idx, device, blocktypes['HardwareType'][device['HardwareType']]);
-        }
-        else {
+        } else {
             var c = 1;
             for (var de in blocktypes['HardwareType'][device['HardwareType']]) {
                 html = getStatusBlock(idx, device, blocktypes['HardwareType'][device['HardwareType']][de], c);
@@ -1171,22 +1221,22 @@ function handleDevice(device, idx) {
             return getThermostatBlock(device, idx);
         case 'Group':
         case 'Scene':
-/*
-            if (device['Type'] === 'Group') $('.block_' + idx).attr('onclick', 'switchDevice(this)');
-            if (device['Type'] === 'Scene') $('.block_' + idx).attr('onclick', 'switchScene(this)');
+            /*
+                        if (device['Type'] === 'Group') $('.block_' + idx).attr('onclick', 'switchDevice(this)');
+                        if (device['Type'] === 'Scene') $('.block_' + idx).attr('onclick', 'switchScene(this)');
 
-            if (device['Status'] === 'Off') html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon');
-            else html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon');
-            html += getBlockData(device, idx, language.switches.state_on, language.switches.state_off);
-            return [html, addHTML];
-*/
-            return getDefaultSwitchBlock(device, blocks[idx], idx,'fas fa-lightbulb', 'far fa-lightbulb', buttonimg);
+                        if (device['Status'] === 'Off') html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon');
+                        else html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon');
+                        html += getBlockData(device, idx, language.switches.state_on, language.switches.state_off);
+                        return [html, addHTML];
+            */
+            return getDefaultSwitchBlock(device, blocks[idx], idx, 'fas fa-lightbulb', 'far fa-lightbulb', buttonimg);
     }
 
     switch (device['HardwareType']) {
         case 'Toon Thermostat':
-            if (device['SubType'] !== 'SetPoint'
-                && device['SubType'] !== 'AC'
+            if (device['SubType'] !== 'SetPoint' &&
+                device['SubType'] !== 'AC'
             ) {
                 return getSmartMeterBlock(device, idx);
             }
@@ -1282,8 +1332,7 @@ function handleDevice(device, idx) {
             }
             html += '</select>';
             html += '</div>';
-        }
-        else {
+        } else {
             html += '<div class="col-xs-8 col-data">';
             html += '<strong class="title">' + device['Name'] + '</strong><br />';
             html += '<div class="btn-group" data-toggle="buttons">';
@@ -1301,8 +1350,7 @@ function handleDevice(device, idx) {
             html += '</div>';
         }
 
-    }
-    else if (device['SubType'] == 'Custom Sensor') {
+    } else if (device['SubType'] == 'Custom Sensor') {
         this.icon = 'fas fa-question';
         if (device['Image'] === 'Water') this.icon = 'fas fa-tint';
         else if (device['Image'] === 'Heating') this.icon = 'fas fa-utensils';
@@ -1322,12 +1370,10 @@ function handleDevice(device, idx) {
             html += '<br /><span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
         }
         html += '</div>';
-    }
-    else if (device['HardwareName'] == 'Dummy') { 
-        return getDefaultSwitchBlock(device, blocks[idx], idx,'fas fa-toggle-on', 'fas fa-toggle-off', buttonimg);
-    }
-    else {
-        return getDefaultSwitchBlock(device, blocks[idx], idx,'fas fa-lightbulb', 'far fa-lightbulb', buttonimg);
+    } else if (device['HardwareName'] == 'Dummy') {
+        return getDefaultSwitchBlock(device, blocks[idx], idx, 'fas fa-toggle-on', 'fas fa-toggle-off', buttonimg);
+    } else {
+        return getDefaultSwitchBlock(device, blocks[idx], idx, 'fas fa-lightbulb', 'far fa-lightbulb', buttonimg);
     }
 
     return [html, addHTML];
@@ -1376,16 +1422,17 @@ function getDefaultSwitchBlock(device, block, idx, defaultIconOn, defaultIconOff
     if (device['Image'] == 'Alarm') {
         defaultIconOff = 'fas fa-exclamation-triangle';
         defaultIconOn = defaultIconOff;
-        if (device['Status'] == 'On') 
+        if (device['Status'] == 'On')
             attr = 'style="color:#F05F40;"';
-     }
-    
-    var mIcon = (getIconStatusClass(device['Status']) === 'off') ? defaultIconOff: defaultIconOn;
+    }
+
+    var mIcon = (getIconStatusClass(device['Status']) === 'off') ? defaultIconOff : defaultIconOn;
     html += iconORimage(idx, mIcon, buttonimg, getIconStatusClass(device['Status']) + ' icon', attr);
     html += getBlockData(device, idx, textOn, textOff);
 
     return [html, true];
 }
+
 function isProtected(idx) {
     return (blocks[idx] && blocks[idx].protected) || alldevices[idx].Protected;
 }
@@ -1400,8 +1447,7 @@ function getIconStatusClass(deviceStatus) {
                 return 'off';
         }
         return 'on';
-    }
-    else {
+    } else {
         return "off";
     }
 }
@@ -1442,8 +1488,7 @@ function getSmartMeterBlock(device, idx) {
         }
 
         var data = device['Data'].split(';');
-        var blockValues = [
-            {
+        var blockValues = [{
                 icon: 'fas fa-plug',
                 idx: idx + '_1',
                 title: language.energy.energy_usage,
@@ -1517,8 +1562,7 @@ function getSmartMeterBlock(device, idx) {
         if ($('div.block_' + idx).length > 0) {
             allblocks[idx] = true;
         }
-        var myblockValues = [
-            {
+        var myblockValues = [{
                 icon: 'fas fa-fire',
                 idx: idx + '_1',
                 title: language.energy.gas_usagetoday,
@@ -1583,8 +1627,7 @@ function getRFXMeterCounterBlock(device, idx) {
             break;
     }
 
-    var blockValues = [
-        {
+    var blockValues = [{
             icon: icon,
             idx: idx + '_1',
             title: device['Name'],
@@ -1617,8 +1660,7 @@ function getYouLessBlock(device, idx) {
     if ($('div.block_' + idx).length > 0) {
         allblocks[idx] = true;
     }
-    var blockValues = [
-        {
+    var blockValues = [{
             icon: 'fas fa-fire',
             idx: idx + '_1',
             title: device['Name'],
@@ -1659,8 +1701,8 @@ function createBlocks(blockValues, device) {
         if (!index) {
             if (!$('div.block_' + device['idx']).hasClass('block_' + blockValue.idx)) $('div.block_' + device['idx']).addClass('block_' + blockValue.idx);
         } else {
-            if (typeof (allblocks[device['idx']]) !== 'undefined'
-                && $('div.block_' + blockValue.idx).length == 0
+            if (typeof (allblocks[device['idx']]) !== 'undefined' &&
+                $('div.block_' + blockValue.idx).length == 0
             ) {
 
                 //sometimes there is a block_IDX_3 and block_IDX_6, but no block_IDX_4, therefor, loop to remove classes
@@ -1681,8 +1723,7 @@ function getGeneralKwhBlock(device, idx) {
     if ($('div.block_' + idx).length > 0) {
         allblocks[idx] = true;
     }
-    var blockValues = [
-        {
+    var blockValues = [{
             icon: 'fas fa-fire',
             idx: idx + '_1',
             title: device['Name'] + ' ' + language.energy.energy_now,
@@ -1710,15 +1751,13 @@ function getGeneralKwhBlock(device, idx) {
 
 function getHumBlock(device, idx) {
     this.html = '';
-    var blockValues = [
-        {
-            icon: 'wi wi-humidity',
-            idx: idx,
-            title: device['Name'],
-            value: number_format(device['Humidity'], 0),
-            unit: '%'
-        },
-    ];
+    var blockValues = [{
+        icon: 'wi wi-humidity',
+        idx: idx,
+        title: device['Name'],
+        value: number_format(device['Humidity'], 0),
+        unit: '%'
+    }, ];
     createBlocks(blockValues, device);
     return ['', false];
 }
@@ -1728,20 +1767,18 @@ function getTempHumBarBlock(device, idx) {
     if ($('div.block_' + idx).length > 0) {
         allblocks[idx] = true;
     }
-    var single_block = (typeof (blocks[idx]) !== 'undefined'
-        && typeof (blocks[idx]['single_block']) !== 'undefined'
-        && blocks[idx]['single_block']
+    var single_block = (typeof (blocks[idx]) !== 'undefined' &&
+        typeof (blocks[idx]['single_block']) !== 'undefined' &&
+        blocks[idx]['single_block']
     );
 
-    var blockValues = [
-        {
-            icon: 'fas fa-thermometer-half',
-            idx: idx + '_1',
-            title: device['Name'],
-            value: number_format((typeof (device['Temp']) !== 'undefined') ? device['Temp'] : device['Data'], 1),
-            unit: _TEMP_SYMBOL
-        },
-    ];
+    var blockValues = [{
+        icon: 'fas fa-thermometer-half',
+        idx: idx + '_1',
+        title: device['Name'],
+        value: number_format((typeof (device['Temp']) !== 'undefined') ? device['Temp'] : device['Data'], 1),
+        unit: _TEMP_SYMBOL
+    }, ];
     if (typeof (device['Humidity']) !== 'undefined') {
         if (single_block) {
             blockValues[0].value += ' ' + blockValues[0].unit + ' / ' + number_format(device['Humidity'], 0) + ' %';
@@ -1833,7 +1870,7 @@ function getThermostatBlock(device, idx) {
 
 function getDimmerBlock(device, idx, buttonimg) {
     var html = '';
-    var classExtension = isProtected(idx) ? ' icon':' icon iconslider'; //no pointer in case of protected device
+    var classExtension = isProtected(idx) ? ' icon' : ' icon iconslider'; //no pointer in case of protected device
     if (device['Status'] === 'Off')
         html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false );"');
     else
@@ -1851,19 +1888,18 @@ function getDimmerBlock(device, idx, buttonimg) {
     if (isRGBDeviceAndEnabled(device)) {
         html += '<input type="text" class="rgbw rgbw' + idx + '" data-light="' + device['idx'] + '" />';
         html += '<div class="slider slider' + device['idx'] + '" style="margin-left:55px;" data-light="' + device['idx'] + '"></div>';
-    }
-    else {
+    } else {
         html += '<div class="slider slider' + device['idx'] + '" data-light="' + device['idx'] + '"></div>';
     }
 
     html += '</div>';
 
-    if (isRGBDeviceAndEnabled(device)) {  //we have to manually destroy the previous spectrum color picker
+    if (isRGBDeviceAndEnabled(device)) { //we have to manually destroy the previous spectrum color picker
         $('.rgbw' + idx).spectrum("destroy");
     }
 
     $('div.block_' + idx).html(html);
-    if(!isProtected(idx)) {
+    if (!isProtected(idx)) {
         $('div.block_' + idx).addClass('hover');
     }
 
@@ -1887,7 +1923,10 @@ function getDimmerBlock(device, idx, buttonimg) {
             var url = settings['domoticz_ip'] + '/json.htm?' + usrinfo + 'type=command&param=setcolbrightnessvalue&idx=' + curidx + '&hue=' + hue.h + '&brightness=' + hue.b + '&iswhite=' + bIsWhite;
             $.ajax({
                 url: url + '&jsoncallback=?',
-                type: 'GET', async: false, contentType: "application/json", dataType: 'jsonp'
+                type: 'GET',
+                async: false,
+                contentType: "application/json",
+                dataType: 'jsonp'
             });
         });
 
@@ -1928,7 +1967,7 @@ function getDimmerBlock(device, idx, buttonimg) {
             };
             break;
     }
-    slider.disabled= isProtected(idx);
+    slider.disabled = isProtected(idx);
     addSlider(device['idx'], slider);
 
     return [html, false];
@@ -2041,10 +2080,10 @@ function addSlider(idx, sliderValues) {
 }
 
 function isRGBDeviceAndEnabled(device) {
-    return (typeof (settings['no_rgb']) === 'undefined'
-        || (typeof (settings['no_rgb']) !== 'undefined'
-            && parseFloat(settings['no_rgb']) === 0))
-        && (device['SubType'] === 'RGBW' || device['SubType'] === 'RGBWW' || device['SubType'] === 'RGB');
+    return (typeof (settings['no_rgb']) === 'undefined' ||
+            (typeof (settings['no_rgb']) !== 'undefined' &&
+                parseFloat(settings['no_rgb']) === 0)) &&
+        (device['SubType'] === 'RGBW' || device['SubType'] === 'RGBWW' || device['SubType'] === 'RGB');
 }
 
 function getSecurityBlock(device, idx) {
@@ -2052,7 +2091,7 @@ function getSecurityBlock(device, idx) {
     if (device['Status'] === 'Normal') html += iconORimage(idx, 'fas fa-shield-alt', '', 'off icon', '', 2);
     else html += iconORimage(idx, 'fas fa-shield-alt', '', 'on icon', '', 2);
 
-    var secPanelicons =  (settings['security_button_icons'] === true || settings['security_button_icons'] === 1 || settings['security_button_icons'] === '1') ? true : false;
+    var secPanelicons = (settings['security_button_icons'] === true || settings['security_button_icons'] === 1 || settings['security_button_icons'] === '1') ? true : false;
     var da = 'default';
     var ah = 'default';
     var aa = 'default';
