@@ -412,9 +412,10 @@ function getTrashRow(garbage) {
         this.displayDate = garbage.date.format('dddd');
     }
     var name = settings['garbage'][garbage.garbageType].name;
+    
     var color = ' style="color:' + settings['garbage'][garbage.garbageType].code + '"';
     return '<div class="' + this.rowClass + '"' + (settings['garbage_use_colors'] ? color : '') + '>'
-        + (settings['garbage_use_names'] ? name : (garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)))
+        + ((settings['garbage_use_names'] || !garbage.summary) ? name : (garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)))
         + ': ' + this.displayDate
         + '</div>';
 }
