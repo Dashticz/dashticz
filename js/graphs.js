@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 /* global moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL*/
 var dtGraphs = [];
 var _GRAPHREFRESH = 5;
@@ -334,7 +335,10 @@ function showGraph(graphIdx, selGraph) {
                     mydiv.addClass('block_graph');
                 }
                 mydiv.html(html);
-
+                if (!data.result || !data.result.length) { //No data returned
+                    console.log('No graph data for ' + myProperties.graphIdx);
+                    return;
+                }
                 var chartctx = document.getElementById('graphoutput' + myProperties.graphIdx).getContext('2d');
                 var myLocalProperties = {};
 
@@ -663,80 +667,85 @@ function getGraphProperties(result, graphIdx) {
     var graphProperties = {};
     if (typeof result == 'undefined')
         return graphProperties;
-    if (result.uvi) {
+    if (result.hasOwnProperty('uvi')) {
         graphProperties = {
             ykeys: ['uvi'],
             ylabels: [label],
         };
-    } else if (result.lux) {
+    } else if (result.hasOwnProperty('lux')) {
         graphProperties = {
             ykeys: ['lux'],
             ylabels: ['Lux'],
         };
-    } else if (result.lux_avg) {
+    } else if (result.hasOwnProperty('lux_avg')) {
         graphProperties = {
             ykeys: ['lux_avg', 'lux_min', 'lux_max'],
             ylabels: ['Lux average', 'Minimum', 'Maximum'],
         };
-    } else if (result.gu && result.sp) {
+    } else if (result.hasOwnProperty('gu') && result.hasOwnProperty('sp')) {
         graphProperties = {
             ykeys: ['gu', 'sp'],
             ylabels: ['m/s', 'm/s'],
         };
-    } else if (result.ba && result.hu && result.te) {
+    } else if (result.hasOwnProperty('ba') && result.hasOwnProperty('hu') && result.hasOwnProperty('te')) {
         graphProperties = {
             ykeys: ['ba', 'hu', 'te'],
             ylabels: ['hPa', '%', _TEMP_SYMBOL],
         };
-    } else if (result.hu && result.te) {
+    } else if (result.hasOwnProperty('hu') && result.hasOwnProperty('te')) {
         graphProperties = {
             ykeys: ['hu', 'te'],
             ylabels: ['%', _TEMP_SYMBOL],
         };
-    } else if (result.te) {
+    } else if (result.hasOwnProperty('ba') && result.hasOwnProperty('te')) {
+        graphProperties = {
+            ykeys: ['ba', 'te'],
+            ylabels: ['hPa', _TEMP_SYMBOL],
+        };
+    } else if (result.hasOwnProperty('te')) {
         graphProperties = {
             ykeys: ['te'],
             ylabels: [_TEMP_SYMBOL],
         };
-    } else if (result.hu) {
+    } else if (result.hasOwnProperty('hu')) {
         graphProperties = {
             ykeys: ['hu'],
             ylabels: ['%'],
         };
-    } else if (result.mm) {
+    } else if (result.hasOwnProperty('mm')) {
         graphProperties = {
             ykeys: ['mm'],
             ylabels: ['mm'],
         };
-    } else if (result.v_max) {
+    } else if (result.hasOwnProperty('v_max')) {
         graphProperties = {
             ykeys: ['v_max'],
             ylabels: [label],
         };
-        if (result.v_min) {
+        if (result.hasOwnProperty('v_min')) {
             graphProperties.ykeys.push('v_min')
             graphProperties.ylabels.push[label]
         }
-        if (result.v_avg) {
+        if (result.hasOwnProperty('v_avg')) {
             graphProperties.ykeys.push('v_avg')
             graphProperties.ylabels.push[label]
         }
-    } else if (result.v2) {
+    } else if (result.hasOwnProperty('v2')) {
         label = 'kWh';
         if (realrange == 'day') label = 'W';
         graphProperties = {
             ykeys: ['v2', 'v'],
             ylabels: [label, label],
         };
-        if (result.r2) {
+        if (result.hasOwnProperty('r2')) {
             graphProperties.ykeys.push('r2');
             graphProperties.ylabels.push(label);
         }
-        if (result.r1) {
+        if (result.hasOwnProperty('r1')) {
             graphProperties.ykeys.push('r1');
             graphProperties.ylabels.push(label);
         }
-    } else if (result.v) {
+    } else if (result.hasOwnProperty('v')) {
         if (label === 'kWh' && realrange === 'day') {
             graphProperties = {
                 ykeys: ['v'],
@@ -748,27 +757,27 @@ function getGraphProperties(result, graphIdx) {
                 ylabels: [label],
             }
         }
-    } else if (result.eu) {
+    } else if (result.hasOwnProperty('eu')) {
         graphProperties = {
             ykeys: ['eu'],
             ylabels: [label],
         };
-    } else if (result.u) {
+    } else if (result.hasOwnProperty('u')) {
         graphProperties = {
             ykeys: ['u'],
             ylabels: [label],
         };
-    } else if (result.u_max) {
+    } else if (result.hasOwnProperty('u_max')) {
         graphProperties = {
             ykeys: ['u_max', 'u_min'],
             ylabels: ['?', '?'],
         };
-    } else if (result.co2) {
+    } else if (result.hasOwnProperty('co2')) {
         graphProperties = {
             ykeys: ['co2'],
             ylabels: ['ppm'],
         };
-    } else if (result.ba) {
+    } else if (result.hasOwnProperty('ba')) {
         graphProperties = {
             ykeys: ['ba'],
             ylabels: [label],

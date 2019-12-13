@@ -6,6 +6,7 @@ Latest changes
 
 Fixes
   * Improved error handling
+  * Improved handling of chart data
 
 3.2.1 (10-12-2019)
 ------------------
