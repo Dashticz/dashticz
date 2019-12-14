@@ -25,11 +25,13 @@ function validate() {
 function sessionValid() {
 	if (settings['loginEnabled'] == true && document.cookie.indexOf("CrewCentreSession=Valid") == -1) {
 		$('#loaderHolder').remove();
-		$('.swiper-container').remove();
+		$('.dt-container').remove();
 		document.body.style.backgroundImage = "url('" + settings['background_image'] + "')";
 		document.body.style.backgroundSize = "cover";
 		loginPage()
+		return false
 	}
+	return true;
 }
 function logout() {
   document.cookie = 'CrewCentreSession=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';

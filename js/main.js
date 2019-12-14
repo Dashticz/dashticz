@@ -48,6 +48,7 @@ var _STANDBY_CALL_URL = '';
 var _END_STANDBY_CALL_URL = '';
 var lastGetDevicesTime = 0;
 var allVariables = {};
+var sessionvalid = false;
 
 function b64_to_utf8(str) {
     return decodeURIComponent(escape(window.atob(str)));
@@ -207,7 +208,7 @@ function loadFiles(dashtype) {
         })
         .then(function () {
 
-            sessionValid();
+            sessionvalid = sessionValid();
 
             if (typeof (settings['gm_api']) !== 'undefined' && settings['gm_api'] !== '' && settings['gm_api'] !== 0) {
                 return $.ajax({
@@ -221,7 +222,7 @@ function loadFiles(dashtype) {
             }
         })
         .then(function () {
-            onLoad();
+            if(sessionvalid) onLoad();
         })
         .catch(function (err) {
             console.error(err);
