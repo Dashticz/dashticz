@@ -8,6 +8,7 @@ Fixes
   * Improved error handling
   * Improved handling of chart data
   * Almere garbage
+  * Login screen background image
 
 3.2.1 (10-12-2019)
 ------------------
