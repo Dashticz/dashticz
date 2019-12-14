@@ -1,3 +1,4 @@
+/* global language dashticz_version dashticz_branch newVersion config domoversion dzVents python*/
 var settingList = {};
 settingList['general'] = {};
 settingList['general']['title'] = language.settings.general.title;
@@ -547,12 +548,11 @@ settingList['about']['about_text4']['title'] = 'If you have any issues you can r
 
 var settings = {};
 var _CORS_PATH = '';
-doneSettings = false;
+
 if (typeof(Storage) !== "undefined") {
     $.each(localStorage, function (key, value) {
         if (key.substr(0, 9) == 'dashticz_') {
             settings[key.substr(9)] = value;
-            doneSettings = true;
         }
     });
 }
@@ -680,6 +680,7 @@ for (var s in settingList){
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 var _TEMP_SYMBOL = '°C';
 if (settings['use_fahrenheit'] === 1) _TEMP_SYMBOL = '°F';
 
@@ -689,6 +690,7 @@ var _PHP_INSTALLED = false;
 
 
 
+// eslint-disable-next-line no-unused-vars
 function loadSettings() {
     return $.ajax({
         url: settings['dashticz_php_path']+'info.php?get=phpversion',
@@ -696,10 +698,10 @@ function loadSettings() {
         success: function (data) {
             phpversion = '<br> PHP version: ' + data;
             _PHP_INSTALLED = true;
-          },
-        error: function () {
-          console.log('PHP not installed.');
-        }
+          }
+    })
+    .catch( function() {
+        console.log('PHP not installed.');
     })
     .then( function() {
         
@@ -729,7 +731,7 @@ function loadSettings() {
 
         html += '<ul class="nav nav-pills">';
         var first = true;
-        for (b in settingList) {
+        for (var b in settingList) {
             var c = '';
             if (first) {
                 c = ' class="active"';
@@ -741,9 +743,9 @@ function loadSettings() {
 
         html += '<div class="tab-content"><br /><br />';
 
-        var first = true;
+        first = true;
         for (b in settingList) {
-            var c = '';
+            c = '';
             if (first) {
                 c = ' active in';
                 first = false;
@@ -767,8 +769,8 @@ function loadSettings() {
                     if (settingList[b][s]['type'] === 'select') {
                         html += '<select name="' + s + '" class="form-control" style="max-width:75%;padding-left: 8px;color: #555 !important;">';
                         html += '<option value=""></option>';
-                        for (o in settingList[b][s]['options']) {
-                            var sel = '';
+                        for (var o in settingList[b][s]['options']) {
+                            sel = '';
                             if (settings[s] == o) sel = 'selected';
                             html += '<option value="' + o + '" ' + sel + '>' + settingList[b][s]['options'][o] + '</option>';
                         }
@@ -800,6 +802,7 @@ function loadSettings() {
 
 }
 
+// eslint-disable-next-line no-unused-vars
 function saveSettings() {
 
     var saveSettings = {};
@@ -807,7 +810,7 @@ function saveSettings() {
     $('div#settingspopup input[type="text"],div#settingspopup select').each(function () {
         if (typeof(Storage) !== "undefined") localStorage.setItem('dashticz_' + $(this).attr('name'), $(this).val());
         if ($(this).val() == 1 || $(this).val() == 0) {
-            val = parseFloat($(this).val());
+            var val = parseFloat($(this).val());
             if (isNaN(val)) val = 0;
             alertSettings += "config['" + $(this).attr('name') + "'] = " + val + ";\n";
             saveSettings[$(this).attr('name')] = val;
@@ -853,6 +856,7 @@ function saveSettings() {
             }, 1000);
         }
         else {
+            // eslint-disable-next-line no-self-assign
             window.location.href = window.location.href;
         }
     });
