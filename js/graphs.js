@@ -467,7 +467,7 @@ function showGraph(graphIdx, selGraph) {
                     data.result.forEach(function (element) {
                         var valid = false;
                         myLocalProperties.ykeys.forEach(function (el) {
-                            if (element[el]) {
+                            if ( typeof element[el]!=='undefined') {
                                 switch (el) {
                                     case 'eu':
                                     case 'eg':
