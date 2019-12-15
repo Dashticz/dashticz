@@ -4,8 +4,7 @@ require('jquery')
 //require('jquery-ui')
 require("jquery-ui/ui/widgets/tabs");
 require("jquery-ui/ui/widgets/slider");
-require('jquery-ui/themes/base/tabs.css');
-require('jquery-ui/themes/base/slider.css');
+require('jquery-ui/themes/base/all.css');
 //require('jquery-migrate')
 require('jquery-ui-touch-punch');
 require('bootstrap');
