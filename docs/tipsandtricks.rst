@@ -80,6 +80,22 @@ with the following content::
 
 In the first line use the location of your credentials file you created in the first step.
 
+If you want to be able to login from your local network without user/password authentication, then use the following for .htacess::
+
+    AuthUserFile /home/pi/dashticzpasswd
+    AuthName "Please Enter Password"
+    AuthType Basic
+    <RequireAny>
+        Require valid-user
+        Require ip 192.168.1
+    </RequireAny>
+
+Replace 192.168.1 with your own subnet.
+
+.. note::
+    If you are using a reverse proxy in your local network to access Dashticz, then the Apache server thinks the traffic comes from your local network, and will give access without asking for a password.
+    See method 2 below for an alternative setup.
+
 Step 3
 ~~~~~~
 
@@ -111,6 +127,64 @@ Save the file and restart Apache::
     sudo service apache2 restart
     
 Now if you browse to Dashticz you get a prompt to enter your login credentials.
+
+
+Dashticz security (method 2)
+----------------------------
+You can choose a specific port for serving Dashticz. Then you can choose to only expose this Dashticz port to the outside world, for instance via a reverse proxy.
+In my situation I have a reverse proxy on my NAS, that forwards a certain incoming url to the dedicated Dashticz port on my Dashticz server.
+
+Step 1
+~~~~~~~~
+First create a credentials file preferably in a location not accessible via your webbrower, for instance in ``/home/pi/dashticzpasswd``
+
+In the terminal window type the following::
+
+    htpasswd -c /home/pi/dashticzpasswd admin
+    
+and choose a password. In this example you add the user 'admin'. You can choose a different user name of course.
+
+Step 2
+~~~~~~
+
+Create a new Apache2 configuration::
+
+    cd /etc/apache2/conf-available
+    sudo nano dashticz.conf
+
+Add the following content to the dashticz.conf file::
+
+    Listen 8081
+    <VirtualHost *:8081>
+        DocumentRoot "/home/pi/dashticz"
+    </VirtualHost>
+
+    <Directory "/home/pi/dashticz">
+        AuthUserFile /home/pi/dashticzpasswd
+        AuthName "Dashticz Password"
+        AuthType Basic
+        <RequireAny>
+            Require valid-user
+            <RequireAll>
+                Require ip 192.168.1
+                Require not ip 192.168.1.16
+            </RequireAll>
+        </RequireAny>
+    </Directory>
+
+With the previous example the folder ``/home/pi/dashticz`` will be served on port 8081. Choose/check your own folder and (available) port.
+Apache will ask for username/password, except from your local network (192.168.1.xxx).
+On my system the reverse proxy runs on 192.168.1.16. If the traffic is coming from that IP address, then the user must be authenticated.
+
+Step 3
+~~~~~~
+
+::
+
+    #Enable configuration
+    sudo a2enconf dashticz.conf
+    #Reload apache2
+    sudo service apache2 reload
 
 
 Use of Web Fonts
