@@ -37,7 +37,7 @@ var DT_publictransport = {
 				var todayTime = moment(date).format('HHmm');
 				dataURL = 'https://api.irail.be/liveboard/?station=' + me.block.station + '&date=' + todayDate + '&time=' + todayTime + '&arrdep=departure&lang=nl&format=json&fast=false&alerts=false';
 			} else if (provider == 'delijnbe') {
-				dataURL = 'https://www.delijn.be/rise-api-core/haltes/Multivertrekken/' + me.block.station + '/' + me.block.results;
+				dataURL = _CORS_PATH + 'https://www.delijn.be/rise-api-core/haltes/Multivertrekken/' + me.block.station + '/' + me.block.results;
 			}
 
 			$.getJSON(dataURL)
