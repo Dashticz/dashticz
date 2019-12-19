@@ -64,8 +64,8 @@ Parameters
       | ``'9292-tram-bus'`` The Netherlands, tram and bus      
       | ``'9292-bus-tram'`` The Netherlands, tram and bus      
       | ``'mobiliteit'`` Luxembourg
-      | ``'irail'`` Belgium 
-      | ``'delijn'`` Belgium
+      | ``'irailbe'`` Belgium 
+      | ``'delijnbe'`` Belgium
   * - destination
     - | Set the end destination station name to filter the direction. 
       | ``'Den Haag De Uithof,Den Haag Loosduinen'``
@@ -169,7 +169,11 @@ In the next examples only the filtered results will be shown::
       width:12, 
       results: 8 
     };
-    
+
+De lijn
+--------
+
+The station code consists of 6 digits. Search for your station code in the search box on https://delijn.be 
 
 .. _predefpubtrans :
 
