@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-/* global getBlockClick  myBlockNumbering:writable objectlength config initVersion loadSettings settings getRandomInt number_format levelNamesEncoded _TEMP_SYMBOL hexToHsb Cookies switchDevice*/
+/* global getBlockClick  myBlockNumbering:writable objectlength config initVersion loadSettings settings getRandomInt number_format levelNamesEncoded _TEMP_SYMBOL hexToHsb Cookies*/
 /* global sessionValid MobileDetect moment getBlock buttons handleObjectBlock getGraphs iconORimage getBlockData titleAndValueSwitch showUpdateInformation getStateBlock addThermostatFunctions*/
 /* global loadWeatherFull loadWeather Swiper ion */
 
@@ -11,7 +11,7 @@
 
 /*To be removed from this file: appendHorizon loadMaps*/
 
-/* global Dashticz*/
+/* global Dashticz Domoticz*/
 var language = {};
 var cache = new Date().getTime();
 
@@ -30,12 +30,12 @@ var blocks = {};
 var req;
 var sliding = false;
 var defaultcolumns = false;
-var allblocks = {};
+//move var allblocks = {};
 var alldevices = {};
 var myswiper;
-var addedThermostat = [];
-var oldstates = [];
-var onOffstates = [];
+//move var addedThermostat = [];
+//move var oldstates = [];
+//move var onOffstates = [];
 var gettingDevices = false;
 var md;
 var usrEnc = '';
@@ -47,7 +47,7 @@ var _DECIMAL_POINT = ',';
 var _STANDBY_CALL_URL = '';
 var _END_STANDBY_CALL_URL = '';
 var lastGetDevicesTime = 0;
-var allVariables = {};
+//move var allVariables = {};
 var sessionvalid = false;
 
 function b64_to_utf8(str) {
@@ -74,10 +74,6 @@ function loadFiles(dashtype) {
                 return $.Deferred()
                     .reject(new Error("Error in config.js"))
             }
-            setTimeout(function () {
-                $('#loaderHolder').fadeOut();
-            }, 1000);
-            $('body').css('overflow', 'auto');
 
             if (objectlength(columns) === 0) defaultcolumns = true;
 
@@ -138,24 +134,6 @@ function loadFiles(dashtype) {
                 $('<link rel="stylesheet" type="text/css" href="themes/' + settings['theme'] + '/' + settings['theme'] + '.css?v=' + cache + '" />').appendTo('head');
             }
             $('<link href="' + customfolder + '/custom.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
-
-            if (typeof (settings['edit_mode']) !== 'undefined' && settings['edit_mode'] == 1) {
-                $('<link href="css/sortable.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
-                $.ajax({
-                    url: 'js/sortable.js',
-                    async: false,
-                    dataType: 'script'
-                });
-
-                var html = '<div class="newblocksHolder" style="display:none;">';
-                html += '<div class="title">' + language.editmode.add_plugin + '</div>';
-                html += '<div class="newblocks plugins sortable"></div>';
-                html += '<div class="title">' + language.editmode.add_block + '</div>';
-                html += '<div class="newblocks domoticz sortable"></div>';
-                html += '</div>';
-
-                $('body').prepend(html);
-            }
 
             return $.when(
                 $.ajax({
@@ -222,7 +200,13 @@ function loadFiles(dashtype) {
             }
         })
         .then(function () {
-            if(sessionvalid) onLoad();
+            if (sessionvalid) {
+                setTimeout(function () {
+                    $('#loaderHolder').fadeOut();
+                }, 500);
+                $('body').css('overflow', 'auto');
+                onLoad();
+            }
         })
         .catch(function (err) {
             console.error(err);
@@ -234,10 +218,6 @@ function loadFiles(dashtype) {
 
 function onLoad() {
     md = new MobileDetect(window.navigator.userAgent);
-
-    if (settings['edit_mode'] == 1) {
-        $('body').append('<div class="editmode">' + language.editmode.edit + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:void(0);" onclick="saveBlocks();" style="color:#fff;"><em class="fas fa-save" /></a>&nbsp;&nbsp;</div>');
-    }
 
     $('body').attr('unselectable', 'on')
         .css({
@@ -252,10 +232,6 @@ function onLoad() {
         });
 
     buildScreens();
-    setTimeout(function () {
-        $('#loaderHolder').fadeOut();
-        $('body').css('overflow', 'auto');
-    }, 2000);
 
     setClockDateWeekday();
     setInterval(function () {
@@ -263,8 +239,7 @@ function onLoad() {
     }, settings['hide_seconds'] ? 30000 : 1000);
 
     enableRefresh();
-    getVariables();
-    getDevices();
+    getAllDevicesHandler();
     setClassByTime();
 
     setInterval(function () {
@@ -506,12 +481,6 @@ function buildScreens() {
         }
     }
 
-    if (typeof (settings['edit_mode']) !== 'undefined' && settings['edit_mode'] == 1) {
-        $('.dt-container').addClass('edit');
-        setTimeout(function () {
-            startSortable();
-        }, 2000);
-    }
     buildSwipingScrolling();
 }
 
@@ -913,164 +882,122 @@ function appendHorizon(columndiv) {
 }
 
 
+function getAllDevicesHandler() {
+    console.log('devices update');
+    alldevices = Domoticz.getAllDevices()
+    $('.solar').remove();
+    if ($('.sunrise').length > 0) {
+        $('.sunrise').html(alldevices['_Sunset']);
+    }
+    if ($('.sunset').length > 0)
+        $('.sunset').html(alldevices['_Sunset']);
 
-function getDevices(override) {
-    if (typeof (override) == 'undefined') override = false;
-    if (!sliding || override) {
-        if (typeof (req) !== 'undefined') req.abort();
-        gettingDevices = true;
+    $('div.newblocks.plugins').html('');
+    $('div.newblocks.domoticz').html('');
 
-        var tmpnow = new Date();
-        lastGetDevicesTime = tmpnow.getTime();
+    for (var idx in alldevices) {
+        //debugger
+        var device = alldevices[idx];
+        //iterate over devices and set names
+        if (typeof (blocks) !== 'undefined' && typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['title']) !== 'undefined') {
+            device['Name'] = blocks[idx]['title'];
+        }
 
-        var usrinfo = '';
-        if (typeof (usrEnc) !== 'undefined' && usrEnc !== '') usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
-        req = $.get({
-            url: settings['domoticz_ip'] + '/json.htm?' + usrinfo + 'type=devices&plan=' + settings['room_plan'] + '&filter=all&used=true&order=Name',
-            type: 'GET',
-            async: true,
-            contentType: "application/json",
-            error: function (jqXHR, textStatus) {
-                if (typeof (textStatus) !== 'undefined' && textStatus === 'abort') {
-                    console.log('Domoticz request cancelled')
-                } else {
-                    console.error("Domoticz error code: " + jqXHR.status + ' ' + textStatus + "!\nPlease, double check the path to Domoticz in Settings!");
-                    infoMessage('<font color="red">Domoticz error code: ' + jqXHR.status + '!', 'double check the path to Domoticz in Settings!</font>');
+
+        if (
+            (
+                settings['auto_positioning'] == 1 &&
+                (
+                    (settings['use_favorites'] == 1 && device['Favorite'] == 1) ||
+                    settings['use_favorites'] == 0
+                )
+            ) ||
+            (
+                settings['auto_positioning'] == 0 &&
+                (
+
+                    $('.block_' + idx).length > 0 ||
+                    $('.block_' + idx + '_1').length > 0 ||
+                    $('.block_' + idx + '_2').length > 0 ||
+                    $('.block_' + idx + '_3').length > 0 ||
+                    $('.block_graph_' + idx).length > 0
+                )
+            )
+        ) {
+            var width = 4;
+            switch (device['SwitchType']) {
+                case 'Selector':
+                    width = 8;
+                    break;
+                case 'Media Player':
+                case 'Dimmer':
+                    width = 12;
+            }
+
+            if (typeof (blocks) !== 'undefined' && typeof (blocks[idx]) !== 'undefined') {
+                if ($(window).width() < 768 && typeof (blocks[idx]['width_smartphone']) !== 'undefined') {
+                    width = blocks[idx]['width_smartphone'];
+                } else if (typeof (blocks[idx]['width']) !== 'undefined') {
+                    width = blocks[idx]['width'];
                 }
-            },
-            success: function (data) {
-                gettingDevices = false;
-                if (!sliding || override) {
-                    $('.solar').remove();
-                    if ($('.sunrise').length > 0) $('.sunrise').html(data.Sunrise);
-                    if ($('.sunset').length > 0) $('.sunset').html(data.Sunset);
+            }
 
-                    $('div.newblocks.plugins').html('');
-                    $('div.newblocks.domoticz').html('');
-                    if (settings['edit_mode']) {
-                        $('div.newblocks.plugins').append('<div data-id="clock"><span class="title">' + language.editmode.clock + '</span></div>');
-                        $('div.newblocks.plugins').append('<div data-id="currentweather_big"><span class="title">' + language.editmode.currentweather_big + '</span></div>');
-                        $('div.newblocks.plugins').append('<div data-id="garbage"><span class="title">' + language.settings.garbage.title + '</span></div>');
-                        $('div.newblocks.plugins').append('<div data-id="streamplayer"><span class="title">Radio</span></div>');
-                        $('div.newblocks.plugins').append('<div data-id="nzbget"><span class="title">NZBget</span></div>');
-                        $('div.newblocks.plugins').append('<div data-id="sunrise"><span class="title">' + language.editmode.sunrise + '</set</span></div>');
-                        $('div.newblocks.plugins').append('<div data-id="weather"><span class="title">' + language.settings.weather.title + '</span></div>');
-                        $('div.newblocks.plugins').append('<div data-id="news"><span class="title">' + language.editmode.news + '</span></div>');
-                    }
-                    //Add all variables to device table
-                    for (var v in allVariables) {
-                        data.result.push(allVariables[v]);
-                    }
-                    for (var r in data.result) {
-                        var device = data.result[r];
-                        var idx = device['idx'];
+            if ($('.block_' + idx).length <= 0) {
+                $(getAutoAppendSelector(device)).append('<div class="mh transbg block_' + idx + '"></div>');
+            }
 
-                        if (device['Type'] === 'Group' || device['Type'] === 'Scene') idx = 's' + device['idx'];
+            $('div.block_' + idx).data('light', idx);
+            if (typeof (settings['default_columns']) == 'undefined' || parseFloat(settings['default_columns']) == 3) $('div.block_' + idx).addClass('col-xs-' + width);
+            else if (parseFloat(settings['default_columns']) == 1) $('div.block_' + idx).addClass('col-xs-3');
+            else if (parseFloat(settings['default_columns']) == 2) $('div.block_' + idx).addClass('col-xs-4');
 
-                        if (typeof (blocks) !== 'undefined' && typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['title']) !== 'undefined') {
-                            device['Name'] = blocks[idx]['title'];
-                        }
+            for (var i = 1; i <= 5; i++) {
+                if ($('div.block_' + idx + '_' + i).length > 0) {
+                    $('div.block_' + idx + '_' + i).data('light', idx);
+                    if (typeof (blocks[idx + '_' + i]) !== 'undefined' && typeof (blocks[idx + '_' + i]['width']) !== 'undefined')
+                        width = blocks[idx + '_' + i]['width'];
+                    $('div.block_' + idx + '_' + i).addClass('col-xs-' + width);
+                    $('div.block_' + idx + '_' + i).html('');
+                }
+            }
 
-                        if (settings['edit_mode']) $('div.newblocks.domoticz').append('<div data-id="' + idx + '"><span class="title">' + device['Name'] + '</span></div>');
-                        alldevices[idx] = device;
+            var addHTML = true;
+            var html = '';
 
-                        if (
-                            (
-                                settings['auto_positioning'] == 1 &&
-                                (
-                                    (settings['use_favorites'] == 1 && device['Favorite'] == 1) ||
-                                    settings['use_favorites'] == 0
-                                )
-                            ) ||
-                            (
-                                settings['auto_positioning'] == 0 &&
-                                (
+            if ($('div.block_graph_' + idx).length > 0) {
+                getGraphs(device, false);
+            }
 
-                                    $('.block_' + idx).length > 0 ||
-                                    $('.block_' + idx + '_1').length > 0 ||
-                                    $('.block_' + idx + '_2').length > 0 ||
-                                    $('.block_' + idx + '_3').length > 0 ||
-                                    $('.block_graph_' + idx).length > 0 
-                                )
-                            )
-                        ) {
-                            if (settings['edit_mode']) $('div.newblocks > div[data-id="' + idx + '"]').remove();
+            triggerStatus(idx, device['LastUpdate'], device);
+            triggerChange(idx, device['LastUpdate'], device);
 
-                            var width = 4;
-                            switch (device['SwitchType']) {
-                                case 'Selector':
-                                    width = 8;
-                                    break;
-                                case 'Media Player':
-                                case 'Dimmer':
-                                    width = 12;
-                            }
+            try {
+                html += eval('getBlock_' + idx + '(device,idx,data.result)');
+            } catch (err) {
+                var response = handleDevice(device, idx);
+                html = response[0];
+                addHTML = response[1];
+            }
 
-                            if (typeof (blocks) !== 'undefined' && typeof (blocks[idx]) !== 'undefined') {
-                                if ($(window).width() < 768 && typeof (blocks[idx]['width_smartphone']) !== 'undefined') {
-                                    width = blocks[idx]['width_smartphone'];
-                                } else if (typeof (blocks[idx]['width']) !== 'undefined') {
-                                    width = blocks[idx]['width'];
-                                }
-                            }
+            if (addHTML) {
+                $('div.block_' + idx).html(html);
+                getBlockClick(idx, device);
+            }
+            if (typeof ($('.block_' + idx).attr('onclick')) !== 'undefined') {
+                $('div.block_' + idx).addClass('hover');
+            }
 
-                            if ($('.block_' + idx).length <= 0) {
-                                $(getAutoAppendSelector(device)).append('<div class="mh transbg block_' + idx + '"></div>');
-                            }
-
-                            $('div.block_' + idx).data('light', idx);
-                            if (typeof (settings['default_columns']) == 'undefined' || parseFloat(settings['default_columns']) == 3) $('div.block_' + idx).addClass('col-xs-' + width);
-                            else if (parseFloat(settings['default_columns']) == 1) $('div.block_' + idx).addClass('col-xs-3');
-                            else if (parseFloat(settings['default_columns']) == 2) $('div.block_' + idx).addClass('col-xs-4');
-
-                            for (var i = 1; i <= 5; i++) {
-                                if ($('div.block_' + idx + '_' + i).length > 0) {
-                                    $('div.block_' + idx + '_' + i).data('light', idx);
-                                    if (typeof (blocks[idx + '_' + i]) !== 'undefined' && typeof (blocks[idx + '_' + i]['width']) !== 'undefined')
-                                        width = blocks[idx + '_' + i]['width'];
-                                    $('div.block_' + idx + '_' + i).addClass('col-xs-' + width);
-                                    $('div.block_' + idx + '_' + i).html('');
-                                }
-                            }
-
-                            var addHTML = true;
-                            var html = '';
-
-                            if ($('div.block_graph_' + idx).length > 0) {
-                                getGraphs(device, false);
-                            }
-
-                            triggerStatus(idx, device['LastUpdate'], device);
-                            triggerChange(idx, device['LastUpdate'], device);
-
-                            try {
-                                html += eval('getBlock_' + idx + '(device,idx,data.result)');
-                            } catch (err) {
-                                var response = handleDevice(device, idx);
-                                html = response[0];
-                                addHTML = response[1];
-                            }
-
-                            if (addHTML) {
-                                $('div.block_' + idx).html(html);
-                                getBlockClick(idx, device);
-                            }
-                            if (typeof ($('.block_' + idx).attr('onclick')) !== 'undefined') {
-                                $('div.block_' + idx).addClass('hover');
-                            }
-
-                            if ($('div.block_' + idx).hasClass('hover')) {
-                                $('.block_' + idx + '.transbg.hover').on('touchstart', function () {
-                                    $(this).addClass('hovered');
-                                    setTimeout(function () {
-                                        $('.transbg.hover').removeClass('hovered');
-                                    }, 200);
-                                });
-                            }
-                        }
-                    }
-					
-					// ##############################################
+            if ($('div.block_' + idx).hasClass('hover')) {
+                $('.block_' + idx + '.transbg.hover').on('touchstart', function () {
+                    $(this).addClass('hovered');
+                    setTimeout(function () {
+                        $('.transbg.hover').removeClass('hovered');
+                    }, 200);
+                });
+            }
+        }
+    }
+    					// ##############################################
 					// MULTIGRAPH START                             #
 					// ##############################################
 					if ($("div[class*='block_multigraph_']").length > 0) {
@@ -1099,51 +1026,42 @@ function getDevices(override) {
 					// ##############################################
 					// MULTIGRAPH END                               #
 					// ##############################################
-					
-                    if (typeof (afterGetDevices) === 'function') afterGetDevices();
-                }
 
-            }
-        });
+    if (typeof (afterGetDevices) === 'function') afterGetDevices();
+}
+
+function getDevices(override) {
+    if (typeof (override) == 'undefined') override = false;
+    if (!sliding || override) {
+        if (typeof (req) !== 'undefined') req.abort();
+        gettingDevices = true;
+
+        var tmpnow = new Date();
+        lastGetDevicesTime = tmpnow.getTime();
+
+        alldevices = Domoticz.getAllDevices()
+        gettingDevices = false;
+        if (!sliding || override) {
+            console.error('Not implemented!')
+        }
     }
 }
 
-function getVariables() {
-    var usrinfo = '';
-    if (typeof (usrEnc) !== 'undefined' && usrEnc !== '') usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
-    $.get({
-        url: settings['domoticz_ip'] + '/json.htm?' + usrinfo + 'type=command&param=getuservariables',
-        type: 'GET',
-        async: true,
-        contentType: "application/json",
-        error: function () {
-            console.error("Domoticz error!\nPlease, double check the path to Domoticz in Settings!");
-            infoMessage('<font color="red">Domoticz error!', 'double check the path to Domoticz in Settings!</font>', 0);
-        },
-        success: function (data) {
-            allVariables = data.result;
-            for (var v in allVariables) {
-                allVariables[v].idx = 'v' + allVariables[v].idx;
-                allVariables[v].Type = 'Variable';
-            }
-        }
-    });
-}
 
 function getDevicesTmr() {
-    if (settings['edit_mode']) return;
     var tmpnow = new Date();
     if (tmpnow.getTime() >= lastGetDevicesTime + settings['domoticz_refresh'] * 1000 - 50) {
         getDevices();
-        getVariables();
     }
 }
 
 function enableRefresh() {
     //only call once
-    setInterval(function () {
-        getDevicesTmr();
-    }, (settings['domoticz_refresh'] * 1000));
+    /*    setInterval(function () {
+            getDevicesTmr();
+        }, (settings['domoticz_refresh'] * 1000));
+        */
+    Domoticz.subscribe(null, '_devices', false, getAllDevicesHandler)
 }
 
 function getAutoAppendSelector(device) {
