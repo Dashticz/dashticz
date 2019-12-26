@@ -1,9 +1,83 @@
-/* global isProtected alldevices triggerChange req:writable settings usrEnc pwdEnc getDevices language infoMessage*/
-
+/* global alldevices showUpdateInformation triggerChange req:writable settings usrEnc pwdEnc getDevices language infoMessage iconORimage getBlockData blocks */
+/* global moment Cookies hexToHsb*/
 // eslint-disable-next-line no-unused-vars
 /* global sliding:writable  slide:writable*/
 
 // eslint-disable-next-line no-unused-vars
+function getDefaultSwitchBlock(device, block, idx, defaultIconOn, defaultIconOff, buttonimg) {
+    /*
+    Return a default switch block
+    parameters:
+        device: The domoticz device info
+        block: The Dashticz block definition
+        idx: idx as used by Dashticz
+        defaultIconOn: Default On icon
+        defaultIconOff: Default Off icon
+        buttonimg: Default image. 
+    */
+    var html = '';
+    if (!isProtected(device,idx)) {
+        var confirmswitch = 0;
+        if (typeof (block) !== 'undefined')
+            if (typeof (block['confirmation']) !== 'undefined') {
+                confirmswitch = block['confirmation'];
+            }
+        var confirm = 'false';
+        var mMode = 'toggle';
+        if (confirmswitch == 1) confirm = 'true';
+        if (device['SwitchType'] == 'Push On Button')
+            mMode = 'on';
+        else if (device['SwitchType'] == 'Push Off Button')
+            mMode = 'off';
+        $('.block_' + idx).attr('onclick', 'switchDevice(this,"' + mMode + '", ' + confirm + ')');
+    }
+    var textOn = language.switches.state_on;
+    var textOff = language.switches.state_off;
+
+    if (typeof (block) !== 'undefined') {
+        if (typeof (block['textOn']) !== 'undefined') {
+            textOn = block['textOn']
+        }
+        if (typeof (block['textOff']) !== 'undefined') {
+            textOff = block['textOff']
+        }
+    }
+
+    var attr = '';
+    if (device['Image'] == 'Alarm') {
+        defaultIconOff = 'fas fa-exclamation-triangle';
+        defaultIconOn = defaultIconOff;
+        if (device['Status'] == 'On')
+            attr = 'style="color:#F05F40;"';
+    }
+
+    var mIcon = (getIconStatusClass(device['Status']) === 'off') ? defaultIconOff : defaultIconOn;
+    html += iconORimage(idx, mIcon, buttonimg, getIconStatusClass(device['Status']) + ' icon', attr);
+    html += getBlockData(device, idx, textOn, textOff);
+
+    return [html, true];
+}
+
+function isProtected(device, idx) {
+    return (blocks[idx] && blocks[idx].protected) || device.Protected;
+}
+
+function getIconStatusClass(deviceStatus) {
+    if (deviceStatus != undefined) {
+        switch (deviceStatus.toLowerCase()) {
+            case 'off':
+            case 'closed':
+            case 'normal':
+            case 'unlocked':
+                return 'off';
+        }
+        return 'on';
+    } else {
+        return "off";
+    }
+}
+
+
 function switchDevice(cur, pMode, pAskConfirm) {
     /* Switch device
         params:
@@ -288,3 +362,222 @@ function switchSecurity(level, pincode) {
         }
     });
 }
+
+function getDimmerBlock(device, idx, buttonimg) {
+    var html = '';
+    var classExtension = isProtected(device, idx) ? ' icon' : ' icon iconslider'; //no pointer in case of protected device
+    if (device['Status'] === 'Off')
+        html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false );"');
+    else
+        html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false);"');
+    html += '<div class="col-xs-10 swiper-no-swiping col-data">';
+    html += '<strong class="title">' + device['Name'];
+    if (typeof (blocks[idx]) == 'undefined' || typeof (blocks[idx]['hide_data']) == 'undefined' || blocks[idx]['hide_data'] == false) {
+        html += ' ' + device['Level'] + '%';
+    }
+    html += '</strong>';
+    if (showUpdateInformation(idx)) {
+        html += ' &nbsp; <span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
+    }
+    html += '<br />';
+    if (isRGBDeviceAndEnabled(device)) {
+        html += '<input type="text" class="rgbw rgbw' + idx + '" data-light="' + device['idx'] + '" />';
+        html += '<div class="slider slider' + device['idx'] + '" style="margin-left:55px;" data-light="' + device['idx'] + '"></div>';
+    } else {
+        html += '<div class="slider slider' + device['idx'] + '" data-light="' + device['idx'] + '"></div>';
+    }
+
+    html += '</div>';
+
+    if (isRGBDeviceAndEnabled(device)) { //we have to manually destroy the previous spectrum color picker
+        $('.rgbw' + idx).spectrum("destroy");
+    }
+
+    $('div.block_' + idx).html(html);
+    if (!isProtected(device, idx)) {
+        $('div.block_' + idx).addClass('hover');
+    }
+
+    if (isRGBDeviceAndEnabled(device)) {
+        $('.rgbw' + idx).spectrum({
+            color: Cookies.get('rgbw_' + idx)
+        });
+
+        $('.rgbw' + idx).on("dragstop.spectrum", function (e, color) {
+            var curidx = $(this).data('light');
+            color = color.toHexString();
+            Cookies.set('rgbw_' + curidx, color);
+            var hue = hexToHsb(color);
+            var bIsWhite = (hue.s < 20);
+
+            sliding = true;
+
+            var usrinfo = '';
+            if (typeof (usrEnc) !== 'undefined' && usrEnc !== '') usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
+
+            var url = settings['domoticz_ip'] + '/json.htm?' + usrinfo + 'type=command&param=setcolbrightnessvalue&idx=' + curidx + '&hue=' + hue.h + '&brightness=' + hue.b + '&iswhite=' + bIsWhite;
+            $.ajax({
+                url: url + '&jsoncallback=?',
+                type: 'GET',
+                async: false,
+                contentType: "application/json",
+                dataType: 'jsonp'
+            });
+        });
+
+        $('.rgbw' + idx).on('hide.spectrum', function () {
+            sliding = false;
+            getDevices(true);
+        });
+
+        $('.rgbw' + idx).on('beforeShow.spectrum', function () {
+            sliding = true;
+        });
+    }
+
+    var slider = {};
+    switch (parseFloat(device['MaxDimLevel'])) {
+        case 100:
+            slider = {
+                value: device['Level'],
+                step: 1,
+                min: 1,
+                max: 100,
+            };
+            break;
+        case 32:
+            slider = {
+                value: Math.ceil((device['Level'] / 100) * 32),
+                step: 1,
+                min: 2,
+                max: 32,
+            };
+            break;
+        default:
+            slider = {
+                value: Math.ceil((device['Level'] / 100) * 16),
+                step: 1,
+                min: 2,
+                max: 15,
+            };
+            break;
+    }
+    slider.disabled = isProtected(device, idx);
+    addSlider(device['idx'], slider);
+
+    return [html, false];
+}
+
+function getBlindsBlock(device, idx, withPercentage) {
+    if (typeof (withPercentage) === 'undefined') withPercentage = false;
+    this.html = '';
+
+    var hidestop = false;
+    var data_class = 'col-data blinds';
+    var button_class;
+    if (typeof (blocks[idx]) == 'undefined' || typeof (blocks[idx]['hide_stop']) == 'undefined' || blocks[idx]['hide_stop'] === false) {
+        data_class += ' right2col';
+        button_class = 'col-button2';
+
+        //        this.html += '<div class="col-button">';
+    } else {
+        hidestop = true;
+        data_class += ' right1col';
+        button_class = 'col-button1';
+        //      this.html += '<div class="col-button hidestop">';
+    }
+
+
+    if (device['Status'] === 'Closed') this.html += iconORimage(idx, '', 'blinds_closed.png', 'off icon', '', 2);
+    else this.html += iconORimage(idx, '', 'blinds_open.png', 'on icon', '', 2);
+    this.html += '<div class="' + data_class + '">';
+    this.title = device['Name'];
+    if (withPercentage) {
+        if (typeof (blocks[idx]) == 'undefined' || typeof (blocks[idx]['hide_data']) == 'undefined' || blocks[idx]['hide_data'] == false) {
+            this.title += ' ' + device['Level'] + '%';
+        }
+        this.value = '<div class="slider slider' + device['idx'] + '  swiper-no-swiping" data-light="' + device['idx'] + '"></div>';
+    } else {
+        if (device['Status'] === 'Closed') this.value = '<span class="state">' + language.switches.state_closed + '</span>';
+        else this.value = '<span class="state">' + language.switches.state_open + '</span>';
+    }
+    if (!withPercentage) {
+        if (typeof (blocks[idx]) == 'undefined' || typeof (blocks[idx]['hide_data']) == 'undefined' || blocks[idx]['hide_data'] == false) {
+            if (device['Status'] === 'Closed') this.value = '<span class="state">' + language.switches.state_closed + '</span>';
+            else this.value = '<span class="state">' + language.switches.state_open + '</span>';
+        } else {
+            this.value = '<span class="state"></span>'
+        }
+    }
+    this.html += '<strong class="title">' + this.title + '</strong><br />';
+    this.html += this.value;
+    this.html += '</div>';
+
+    this.html += '<div class="' + button_class + '">';
+
+    this.upAction = 'Off';
+    this.downAction = 'On';
+    if (device['SwitchType'].toLowerCase().indexOf('inverted') >= 0) {
+        this.upAction = 'On';
+        this.downAction = 'Off';
+    }
+    this.html += '<div class="up"><a href="javascript:void(0)" class="btn btn-number plus" onclick="switchBlinds(' + device['idx'] + ',\'' + this.upAction + '\');">';
+    this.html += '<em class="fas fa-chevron-up fa-small"></em>';
+    this.html += '</a></div>';
+
+    this.html += '<div class="down"><a href="javascript:void(0)" class="btn btn-number min" onclick="switchBlinds(' + device['idx'] + ',\'' + this.downAction + '\');">';
+    this.html += '<em class="fas fa-chevron-down fa-small"></em>';
+    this.html += '</a></div>';
+
+    if (!hidestop) {
+        this.html += '<div class="stop"><a href="javascript:void(0)" class="btn btn-number stop" onclick="switchBlinds(' + device['idx'] + ',\'Stop\');">';
+        this.html += 'STOP';
+        this.html += '</a></div>';
+    }
+
+    this.html += '</div>';
+
+    $('div.block_' + idx).html(this.html);
+
+    if (withPercentage) {
+        addSlider(idx, {
+            value: device['Level'],
+            step: 1,
+            min: 1,
+            max: 100,
+            disabled: isProtected(device, idx)
+        });
+    }
+    return [this.html, false];
+}
+
+function addSlider(idx, sliderValues) {
+    $(".slider" + idx).slider({
+        value: sliderValues.value,
+        step: sliderValues.step,
+        min: sliderValues.min,
+        max: sliderValues.max,
+        disabled: sliderValues.disabled,
+        start: function (event, ui) {
+            sliding = true;
+            slideDeviceExt($(this).data('light'), ui.value, 0);
+        },
+        slide: function (event, ui) {
+            slideDeviceExt($(this).data('light'), ui.value, 1);
+        },
+        change: function (event, ui) {
+            slideDeviceExt($(this).data('light'), ui.value, 2);
+        },
+        stop: function () {
+            sliding = false;
+        }
+    });
+}
+
+function isRGBDeviceAndEnabled(device) {
+    return (typeof (settings['no_rgb']) === 'undefined' ||
+            (typeof (settings['no_rgb']) !== 'undefined' &&
+                parseFloat(settings['no_rgb']) === 0)) &&
+        (device['SubType'] === 'RGBW' || device['SubType'] === 'RGBWW' || device['SubType'] === 'RGB');
+}
+

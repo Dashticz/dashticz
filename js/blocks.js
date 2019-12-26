@@ -1,7 +1,7 @@
 /* eslint-disable no-debugger */
 /*global blocktypes:writable, language, _TEMP_SYMBOL, getExtendedBlockTypes, blocks, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
-/*global getSpotify, loadNZBGET, getCoin, loadChromecast, loadGarbage, loadSonarr, loadMaps */
-/*global Dashticz, getLog, appendHorizon, addCalendar*/
+/*global getSpotify, loadNZBGET, getCoin, loadChromecast, loadGarbage, loadSonarr */
+/*global Dashticz, getLog, addCalendar*/
 /*global alldevices getIconStatusClass*/
 /*global getRandomInt, moment, number_format*/
 
@@ -249,60 +249,156 @@ blocktypes.Name['Mondphase'] = {
 
 blocktypes = getExtendedBlockTypes(blocktypes);
 
+var allblocks = {}; //todo: Can we get rid of this?
+var oldstates = [];
+var onOffstates = [];
+
+
 //var myBlockNumbering = 0; //To give all blocks a unique number
 //class="col-sm-' + cols['width'] + ' col-xs-12 sortable col'
 // eslint-disable-next-line no-unused-vars
 function getBlock(cols, c, screendiv, standby) {
-//    if (c==='bar') debugger;
+    //    if (c==='bar') debugger;
     if (typeof (cols) !== 'undefined') {
         var columndiv = screendiv + ' .row .col' + c;
         var colclass = '';
         if (c === 'bar') colclass = 'transbg dark';
-        var colwidth = 'col-sm-' + (cols.width ? cols.width + ' ': '12 ');
+        var colwidth = 'col-sm-' + (cols.width ? cols.width + ' ' : '12 ');
         if (standby) {
-//            $('div.screenstandby .row').append('<div class="col-xs-' + columns_standby[c]['width'] + ' colstandby' + c + '"></div>');
-            $(screendiv+ ' .row').append('<div class="' + colwidth +  ' col-xs-12 col' + c + '"></div>');
+            //            $('div.screenstandby .row').append('<div class="col-xs-' + columns_standby[c]['width'] + ' colstandby' + c + '"></div>');
+            $(screendiv + ' .row').append('<div class="' + colwidth + ' col-xs-12 col' + c + '"></div>');
         } else {
             $(screendiv + ' .row').append('<div data-colindex="' + c + '" class="' + colwidth + ' col-xs-12 sortable col' + c + ' ' + colclass + '"></div>');
         }
         //if (!standby) $('div.screen' + ' .row').append('<div data-colindex="' + c + '" class="col-sm-' + cols['width'] + ' col-xs-12 sortable col' + c + ' ' + colclass + '"></div>');
         for (var b in cols['blocks']) {
-            var width = 12;
-            switch (cols['blocks'][b]) {
-                case 'logo':
-                case 'settings':
-                    width = 2;
-                    break;
-                case 'flipclock':
-                case 'miniclock':
-                    width = 8;
-                    break;
-            }
-            var blockdef = null;
-            if (typeof (blocks[cols['blocks'][b]]) !== 'undefined')
-                blockdef = blocks[cols['blocks'][b]];
-            if (blockdef && typeof (blockdef.width) !== 'undefined') width = blockdef.width;
             var myblockselector = Dashticz.mountNewContainer(columndiv);
-            if(!Dashticz.mount(myblockselector, cols['blocks'][b]))
+            if (!Dashticz.mount(myblockselector, cols['blocks'][b]))
                 switch (typeof (cols['blocks'][b])) {
                     case 'object':
-                        handleObjectBlock(cols['blocks'][b], myblockselector, width, c);
+                        handleObjectBlock(cols['blocks'][b], myblockselector, c);
                         continue;
 
                     case 'string':
-                        handleStringBlock(cols['blocks'][b], myblockselector, width, c);
+                        handleStringBlock(cols['blocks'][b], myblockselector, c);
                         continue;
 
                     default:
                         $(myblockselector).html('<div data-id="' + cols['blocks'][b] + '" class="mh transbg block_' + cols['blocks'][b] + '"></div>');
+                        addDeviceUpdateHandler(myblockselector, cols['blocks'][b])
                         break;
-            }
+                }
         }
     }
 }
 
+function deviceUpdateHandler(selector, idx, device) {
+    console.log('update ',idx)
+    //debugger
+    var blockdef = (blocks && blocks[idx]) || undefined;
+    if (blockdef && typeof blockdef['title'] !== 'undefined') {
+        device['Name'] = blockdef['title'];
+    }
 
-function handleStringBlock(block, columndiv, width, c) {
+
+    var width = 4;
+    switch (device['SwitchType']) {
+        case 'Selector':
+            width = 8;
+            break;
+        case 'Media Player':
+        case 'Dimmer':
+            width = 12;
+    }
+
+    if (blockdef) {
+        if ($(window).width() < 768 && typeof (blockdef['width_smartphone']) !== 'undefined') {
+            width = blockdef['width_smartphone'];
+        } else if (typeof (blockdef['width']) !== 'undefined') {
+            width = blockdef['width'];
+        }
+    }
+
+    $('div.block_' + idx).data('light', idx);//todo: don't use data('light') to store idx
+    if (typeof (settings['default_columns']) == 'undefined' || parseFloat(settings['default_columns']) == 3) $('div.block_' + idx).addClass('col-xs-' + width);
+    else if (parseFloat(settings['default_columns']) == 1) $('div.block_' + idx).addClass('col-xs-3');
+    else if (parseFloat(settings['default_columns']) == 2) $('div.block_' + idx).addClass('col-xs-4');
+
+    for (var i = 1; i <= 5; i++) {
+        if ($('div.block_' + idx + '_' + i).length > 0) {
+            $('div.block_' + idx + '_' + i).data('light', idx);
+            if (typeof (blocks[idx + '_' + i]) !== 'undefined' && typeof (blocks[idx + '_' + i]['width']) !== 'undefined')
+                width = blocks[idx + '_' + i]['width'];
+            $('div.block_' + idx + '_' + i).addClass('col-xs-' + width);
+            $('div.block_' + idx + '_' + i).html('');
+        }
+    }
+
+    var addHTML = true;
+    var html = '';
+
+    if ($('div.block_graph_' + idx).length > 0) {
+        getGraphs(device, false);
+    }
+
+    triggerStatus(idx, device['LastUpdate'], device);
+    triggerChange(idx, device['LastUpdate'], device);
+
+    try {
+        html += eval('getBlock_' + idx + '(device,idx,data.result)');
+    } catch (err) {
+        var response = handleDevice(device, idx);
+        html = response[0];
+        addHTML = response[1];
+    }
+
+    if (addHTML) {
+        $('div.block_' + idx).html(html);
+        getBlockClick(idx, device);
+    }
+    if (typeof ($('.block_' + idx).attr('onclick')) !== 'undefined') {
+        $('div.block_' + idx).addClass('hover');
+    }
+
+    if ($('div.block_' + idx).hasClass('hover')) {
+        $('.block_' + idx + '.transbg.hover').on('touchstart', function () {
+            $(this).addClass('hovered');
+            setTimeout(function () {
+                $('.transbg.hover').removeClass('hovered');
+            }, 200);
+        });
+    }
+}
+
+
+
+
+function addDeviceUpdateHandler(selector, idx) {
+    console.log("Adding handler for " + idx);
+    Domoticz.subscribe(null, idx, true, function (device) {
+        deviceUpdateHandler(selector, idx, device)
+    })
+}
+
+function getBlockWidth(key, defaultWidth) {
+    return blocks && key && blocks[key] && blocks[key].width ? blocks[key].width : (defaultWidth ? defaultWidth : 12)
+}
+
+function handleStringBlock(block, columndiv, c) {
+    var defaultwidth = 12;
+    switch (block) {
+        case 'logo':
+        case 'settings':
+            defaultwidth = 2;
+            break;
+        case 'flipclock':
+        case 'miniclock':
+            defaultwidth = 8;
+            break;
+    }
+
+    var width = getBlockWidth(block, defaultwidth)
+
     switch (block) {
         case 'logo':
             $(columndiv).append('<div data-id="logo" class="logo col-xs-' + width + '">' + settings['app_title'] + '</div>');
@@ -481,11 +577,11 @@ function handleStringBlock(block, columndiv, width, c) {
             });
             getLog(columndiv);
             return;
-/*            
-        case 'stationclock':
-            appendStationClock(columndiv, block, width);
-            return;
-*/
+            /*            
+                    case 'stationclock':
+                        appendStationClock(columndiv, block, width);
+                        return;
+            */
         case 'sunrise':
             var classes = 'block_' + block + ' col-xs-' + width + ' transbg text-center sunriseholder';
             if (c === 'bar') {
@@ -555,8 +651,9 @@ function handleStringBlock(block, columndiv, width, c) {
     }
 }
 
-function handleObjectBlock(block, columndiv, width) {
+function handleObjectBlock(block, columndiv) {
     var random = getRandomInt(1, 100000);
+    var width = 12;
     if (block.latitude) {
         $(columndiv).append(loadMaps(random, block));
         return;
@@ -577,7 +674,7 @@ function handleObjectBlock(block, columndiv, width) {
         $(columndiv).append(html);
         getCoin(block);
 
-    }  else if (block.icalurl ||
+    } else if (block.icalurl ||
         block.calendars
     ) {
         var dataId = 'calendars.' + key;
@@ -590,7 +687,8 @@ function handleObjectBlock(block, columndiv, width) {
         });
         addCalendar($('.containsicalendar' + random), block);
     } else {
-        Dashticz.mountSpecialBlock(columndiv, block, Dashticz.components["button"]);
+        //        Dashticz.mountSpecialBlock(columndiv, block, Dashticz.components["button"]);
+        Dashticz.mountDefaultBlock(columndiv, block)
         //        $(columndiv).append(loadButton(index, block));
     }
 }
@@ -696,7 +794,7 @@ function getStatusBlock(idx, device, block, c) {
     var attr = '';
     if (typeof (device['Direction']) !== 'undefined' && typeof (device['DirectionStr']) !== 'undefined') {
         attr += ' style="-webkit-transform: rotate(' + (device['Direction'] + 180) + 'deg);-moz-transform: rotate(' + (device['Direction'] + 180) + 'deg);-ms-transform: rotate(' + (device['Direction'] + 180) + 'deg);-o-transform: rotate(' + (device['Direction'] + 180) + 'deg); transform: rotate(' + (device['Direction'] + 180) + 'deg);"';
-        var windspeed=device.Data.split(';')[2]/10;
+        var windspeed = device.Data.split(';')[2] / 10;
         if (settings['use_beaufort'] == 1) {
             value = Beaufort(windspeed) + ', ';
         } else {
@@ -751,12 +849,11 @@ function getBlockClick(idx, device) {
         }
     } else if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['graph']) !== 'undefined' && blocks[idx]['graph'] === false) {
         return;
-    }
-    else if (typeof(device) !== 'undefined') {
-        if (device['SubType'] == 'Percentage' || device['SubType'] == 'Custom Sensor' || device['TypeImg'] == 'counter'
-            || device['Type'] == 'Temp' || device['Type'] == 'Humidity' || device['Type'] == 'Wind' || device['Type'] == 'Rain'
-            || device['Type'] == 'Temp + Humidity' || device['Type'] == 'Temp + Humidity + Baro'
-            || device['SubType'] == 'kWh' || device['SubType'] === 'Lux' || device['SubType'] === 'Solar Radiation' ||
+    } else if (typeof (device) !== 'undefined') {
+        if (device['SubType'] == 'Percentage' || device['SubType'] == 'Custom Sensor' || device['TypeImg'] == 'counter' ||
+            device['Type'] == 'Temp' || device['Type'] == 'Humidity' || device['Type'] == 'Wind' || device['Type'] == 'Rain' ||
+            device['Type'] == 'Temp + Humidity' || device['Type'] == 'Temp + Humidity + Baro' ||
+            device['SubType'] == 'kWh' || device['SubType'] === 'Lux' || device['SubType'] === 'Solar Radiation' ||
             device['SubType'] === 'Barometer'
         ) {
             /* In this case we want to the popup graph*/
