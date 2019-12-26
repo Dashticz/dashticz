@@ -1216,6 +1216,8 @@ function handleDevice(device, idx) {
         case 'Temp + Humidity':
         case 'Temp + Baro':
         case 'Heating':
+            if (device.SubType === 'Zone') //EvoHome device
+                return getEvohomeBlock(device, idx);
         case 'Radiator 1':
             return getTempHumBarBlock(device, idx);
         case 'Thermostat':
@@ -1868,6 +1870,110 @@ function getThermostatBlock(device, idx) {
     }
     return [this.html, false];
 }
+
+function getEvohomeBlock(device, idx) {
+    //debugger
+    var html = '';
+    html += '<div class="col-button1">';
+    html += '<div class="up"><a href="javascript:void(0)" class="btn btn-number plus" data-type="plus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
+    html += '<em class="fas fa-plus fa-small fa-thermostat"></em>';
+    html += '</a></div>';
+    html += '<div class="down"><a href="javascript:void(0)" class="btn btn-number min" data-type="minus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
+    html += '<em class="fas fa-minus fa-small fa-thermostat"></em>';
+    html += '</a></div>';
+    html += '</div>';
+
+    html += iconORimage(idx , '', 'heating.png', 'on icon iconheating', '', '2');
+    html += '<div class="col-xs-8 col-data right1col">';
+
+    var temp=device.Temp;
+    var setpoint= device.SetPoint
+    var title = temp + _TEMP_SYMBOL + ' ('+setpoint+_TEMP_SYMBOL+')';
+    var value = device['Name'];
+    if (titleAndValueSwitch(idx )) {
+        var tmp = title
+        title = value;
+        value = tmp;
+    }
+    html += '<strong class="title input-number title-input" min="' + settings['setpoint_min'] + '" max="' + settings['setpoint_max'] + '" data-light="' + device['idx'] + '">' + title + '</strong>';
+    html += '<div class="state stateheating">' + value + '</div>';
+    html += '</div>';
+
+    $('div.block_' + idx).html(html);
+
+    if (typeof (addedThermostat[idx]) === 'undefined') {
+        addEvoThermostatFunctions('.block_' + idx, idx); //probably won't work. Change it to Evo specific json calls
+        addedThermostat[idx] = true;
+    }
+    return [html, false];
+}
+
+function addEvoThermostatFunctions(thermelement, idx) {
+    $(document).on("click", (thermelement + ' .btn-number'), function () {
+        sliding = true;
+//        var fieldName = $(this).attr('data-field');
+        var type = $(this).attr('data-type');
+        var currentVal = alldevices[idx].SetPoint
+        var temp = alldevices[idx].Temp;
+        var input = $(thermelement + " strong");
+        if (!isNaN(currentVal)) {
+            var newValue = (type === 'minus') ? currentVal - 0.5 : currentVal + 0.5;
+            if (newValue >= input.attr('min') &&
+                newValue <= input.attr('max')
+            ) {
+                    input.text(temp + _TEMP_SYMBOL+ ' ('+number_format(newValue, 1) + _TEMP_SYMBOL + ')').trigger( "change" );
+                //switchThermostat(newValue, input);
+                switchEvoZone(idx, newValue)
+            }
+            if (newValue <= input.attr('min')) {
+                $(this).attr('disabled', true);
+            }
+            if (newValue >= input.attr('max')) {
+                $(this).attr('disabled', true);
+            }
+        } else {
+            input.text(0);
+        }
+    });
+
+    $(thermelement + ' .input-number').on('focusin', function () {
+        $(this).data('oldValue', $(this).text());
+    });
+
+    $(thermelement + ' .input-number').on('change', function () {
+        var minValue = parseFloat($(this).attr('min'));
+        var maxValue = parseFloat($(this).attr('max'));
+        var valueCurrent = parseFloat($(this).text());
+
+//        var name = $(this).attr('name');
+        if (valueCurrent >= minValue) {
+            $(thermelement + " .btn-number[data-type='minus']").removeAttr('disabled')
+        } else {
+            $(this).val($(this).data('oldValue'));
+        }
+        if (valueCurrent <= maxValue) {
+            $(thermelement + " .btn-number[data-type='plus']").removeAttr('disabled')
+        } else {
+            $(this).val($(this).data('oldValue'));
+        }
+    });
+}
+
+function switchEvoZone(idx, setpoint) {
+    sliding = true;
+    $.ajax({
+        url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=setused&idx=' + idx + '&setpoint=' + setpoint + '&mode=TemporaryOverride&used=true&jsoncallback=?',
+        type: 'GET',
+        contentType: 'application/json',
+        dataType: 'jsonp',
+        success: function () {
+            sliding = false;
+            alldevices[idx].SetPoint=setpoint;
+            getEvohomeBlock(alldevices[idx], idx);
+        }
+    });
+}
+
 
 function getDimmerBlock(device, idx, buttonimg) {
     var html = '';

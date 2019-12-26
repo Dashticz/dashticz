@@ -4,6 +4,9 @@ Release Notes
 Latest changes
 ------------------
 
+Enhancements
+  * Evohome support
+
 Fixes
   * Improved error handling
   * Improved handling of chart data
