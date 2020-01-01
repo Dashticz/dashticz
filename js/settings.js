@@ -514,12 +514,22 @@ settingList['other']['title'] = language.settings.other.title;
 settingList['other']['setpoint_min'] = {};
 settingList['other']['setpoint_min']['title'] = language.settings.other.setpoint_min;
 settingList['other']['setpoint_min']['type'] = 'text';
-/* settingList['other']['setpoint_min']['help'] = language.settings.other.setpoint_min_help; */
 
 settingList['other']['setpoint_max'] = {};
 settingList['other']['setpoint_max']['title'] = language.settings.other.setpoint_max;
 settingList['other']['setpoint_max']['type'] = 'text';
-/* settingList['other']['setpoint_max']['help'] = language.settings.other.setpoint_max_help; */
+
+settingList['other']['evohome_status'] = {};
+settingList['other']['evohome_status']['title'] = language.settings.other.evohome_status;
+settingList['other']['evohome_status']['type'] = 'text';
+
+settingList['other']['evohome_boost_zone'] = {};
+settingList['other']['evohome_boost_zone']['title'] = language.settings.other.evohome_boost_zone;
+settingList['other']['evohome_boost_zone']['type'] = 'text';
+
+settingList['other']['evohome_boost_hw'] = {};
+settingList['other']['evohome_boost_hw']['title'] = language.settings.other.evohome_boost_hw;
+settingList['other']['evohome_boost_hw']['type'] = 'text';
 
 settingList['about'] = {};
 settingList['about']['title'] = language.settings.about.title;
@@ -655,6 +665,9 @@ if (typeof(settings['security_button_icons']) === 'undefined') settings['securit
 if (typeof(settings['disable_update_check']) === 'undefined') settings['disable_update_check'] = 0;
 if (typeof(settings['setpoint_min']) === 'undefined') settings['setpoint_min'] = 5;
 if (typeof(settings['setpoint_max']) === 'undefined') settings['setpoint_max'] = 40;
+if (typeof(settings['evohome_status']) === 'undefined') settings['evohome_status'] = 'Auto';
+if (typeof(settings['evohome_boost_zone']) === 'undefined') settings['evohome_boost_zone'] = 1;
+if (typeof(settings['evohome_boost_hw']) === 'undefined') settings['evohome_boost_hw'] = 1;
 if (typeof(settings['login_timeout']) === 'undefined') settings['login_timeout'] = 60;
 
 //The Config settings for all checkbox items will be converted to a number
