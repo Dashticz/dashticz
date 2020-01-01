@@ -1546,6 +1546,33 @@ a:not([href]) {
     cursor: pointer;
 }
 
+/* EVOHOME START */
+.text-grey {
+    color: #626567;
+	white-space:nowrap
+}
+
+.small_fa {
+	font-size:0.9em
+}
+
+.select {
+    background: transparent;
+    border: 0;
+    color: white!important;
+}
+
+.select option {
+	border: 0;
+	color: white!important;
+	background-color: #222222;
+}
+
+.hide{
+	display: none!important;
+}
+/* EVOHOME END */
+
 /* PLUGINS */
 .morris-hover{position:absolute;z-index:1000}.morris-hover.morris-default-style{border-radius:10px;padding:6px;color:#666;background:rgba(255,255,255,0.8);border:solid 2px rgba(230,230,230,0.8);font-family:sans-serif;font-size:12px;text-align:center}.morris-hover.morris-default-style .morris-hover-row-label{font-weight:bold;margin:0.25em 0}
 .morris-hover.morris-default-style .morris-hover-point{white-space:nowrap;margin:0.1em 0}
