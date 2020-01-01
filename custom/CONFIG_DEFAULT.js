@@ -4,6 +4,11 @@ config['domoticz_ip'] = 'http://192.168.1.3:8084';
 config['app_title'] = 'Dashticz V3';
 config['domoticz_refresh'] = '5';
 config['dashticz_refresh'] = '60';
+config['setpoint_min'] = '5';
+config['setpoint_max'] = '40';
+config['evohome_status'] = 'Auto';		
+config['evohome_boost_zone'] = 60; 	// minutes
+config['evohome_boost_hw'] = 15; 	// minutes
 
 /*  REMOVE THIS LINE, INCLUDING THIS TEXT IF YOU WANT TO USE THE CODE BELOW, ALS REMOVE THE LAST LINE OF THIS FILE ( the asterisk * with the slash)
 
