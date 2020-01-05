@@ -1,8 +1,8 @@
 Release Notes
 =============
 
-Latest changes
-------------------
+3.3.0 Beta (5-1-2020)
+---------------------
 
 Enhancements
   * Evohome support
