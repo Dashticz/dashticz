@@ -303,3 +303,28 @@ Example ``custom.css`` (only needed in case you want to change the default flash
     background-color: #0f0 !important;	
   }
   
+.. _Evohome:
+
+Evohome
+~~~~~~~
+
+Dashticz recognizes Evohome devices.
+
+.. image :: img/evohome.png
+
+The following config parameters from CONFIG.js are applicable:
+
+.. list-table:: 
+  :header-rows: 1
+  :widths: 5 30
+  :class: tight-table
+
+  * - Parameter
+    - Description
+  * - evohome_status
+    - ``'Auto'``: 
+  * - evohome_boost_zone
+    - ``<number>``: Zone boost temporary override time in minutes. Default: 60
+  * - evohome_boost_hw
+    - ``<number>``: Hot water boost temporary override time in minutes. Default: 15
+

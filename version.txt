@@ -1,8 +1,9 @@
 {
-"version": "3.2.1",
+"version": "3.3.0",
 "branch": "beta",
-"last_changes": "Update of jQuery version.",
+"last_changes": "Evohome support.",
 "changelog" : {
+            "3.2.1": "Update of jQuery version.",
             "3.2.0": "Change in HTML template for special blocks",
             "3.1.2": "Stable version",
             "3.1.1": "Calendar with table formatting; session time-out setting",
