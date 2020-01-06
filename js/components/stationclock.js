@@ -13,11 +13,11 @@ var DT_stationclock = {
             return 'text-center'
         }
     },
-    get: function () {
-        return '<canvas id="clock" width="150" height="150">Your browser is unfortunately not supported.</canvas>'
+    get: function (me) {
+        return '<canvas id="clock' + me.mountPoint + '" width="150" height="150">Your browser is unfortunately not supported.</canvas>'
     },
-    run: function () {
-        var clock = new StationClock("clock");
+    run: function (me) {
+        var clock = new StationClock("clock"+me.mountPoint);
         clock.body = StationClock.RoundBody;
         clock.dial = StationClock.GermanStrokeDial;
         clock.hourHand = StationClock.PointedHourHand;
