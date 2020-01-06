@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+Latest changes
+--------------
+
+Fixes
+  * Multiple stationclocks
+
 3.3.0 Beta (5-1-2020)
 ---------------------
 
