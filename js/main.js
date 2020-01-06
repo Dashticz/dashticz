@@ -1077,7 +1077,6 @@ function getDevices(override) {
     }
 }
 
-
 function getVariables() {
     var usrinfo = '';
     if (typeof (usrEnc) !== 'undefined' && usrEnc !== '') usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
@@ -1880,14 +1879,12 @@ function getThermostatBlock(device, idx) {
 //#################################################
 
 function getEvohomeZoneBlock(device, idx) {
-
 	var temp		= device.Temp;
     var setpoint	= device.SetPoint;
 	var status		= device.Status;
     var title_temp 	= temp + _TEMP_SYMBOL;
 	var title_setp	= setpoint + _TEMP_SYMBOL;
     var value 		= device['Name'];
-
     if (titleAndValueSwitch(idx )) {
         var tmp 	= title_temp
         title_temp 	= value;
@@ -1913,7 +1910,6 @@ function getEvohomeZoneBlock(device, idx) {
     html += '</div>';
 
     html += iconORimage(idx , '', 'heating.png', 'on icon iconheating', '', '2');
-
     html += '<div class="col-xs-8 col-data right1col">';
     html += '	<div class="title">' + value + '</div>';
 	html += '	<div>';
@@ -1929,7 +1925,6 @@ function getEvohomeZoneBlock(device, idx) {
         addEvohomeZoneFunctions('.block_' + idx, idx); 
         addedThermostat[idx] = true;
     }
-
     return [html, false];
 }
 
@@ -1993,7 +1988,6 @@ function addEvohomeZoneFunctions(thermelement, idx) {
             $(this).val($(this).data('oldValue'));
         }
     });
-
 	$(document).on("click", (thermelement + ' .setpoint'), function () {		
 		if($(this).attr('data-status') == 'TemporaryOverride'){
 			switchEvoZone(idx, $(this).attr('data-setpoint'), false);
@@ -2034,7 +2028,6 @@ function getEvohomeControllerBlock(device, idx) {
         title 	= value;
         value 	= tmp;
     }		
-
     var html = '';
     html += '<div class="col-button1">';
     html += '	<div class="up">';
@@ -2057,19 +2050,16 @@ function getEvohomeControllerBlock(device, idx) {
     html += '</div>';
 
     $('div.block_' + idx).html(html);
-
 	$.each(evoOptions, function(val, text) {
 		$('.block_' + idx + ' .evoSelect').append(
 			$('<option></option>').val(val).html(text)
 		);
 	});
-
 	$('.block_' + idx + ' .evoSelect').blur(function() {
 		sliding = false;
 		$('.block_' + idx + ' title').toggleClass('hide');
 		$('.evoSelect').toggleClass('hide');
 	});
-
 	$('.block_' + idx + ' .evoSelect').on('change', function(e) {
 		var newValue = this.value;
 		var newTitle = $( "#evoSelect option:selected" ).text();
@@ -2083,18 +2073,15 @@ function getEvohomeControllerBlock(device, idx) {
         addEvohomeControllerFunctions('.block_' + idx, idx); 
         addedThermostat[idx] = true;
     }
-
     return [html, false];
 }
 
 function addEvohomeControllerFunctions(thermelement, idx) {
-
 	$(document).on("click", (thermelement + ' .btn-number'), function (e) {	
 		sliding = true;
 		$('.evoSelect').toggleClass('hide');	
 		$(thermelement + ' .input-status').toggleClass('hide');	
 	});
-
 	$(thermelement + ' .input-status').on('focusin', function () {
         $(this).data('oldValue', $(this).text());
     });
@@ -2129,13 +2116,11 @@ function changeEvohomeControllerStatus(idx, status) {
 }
 
 function getEvohomeHotWaterBlock(device, idx) {
-
 	var temp	= device.Temp;
     var state	= device.State;
 	var status	= device.Status;
     var temp 	= temp + _TEMP_SYMBOL;
     var name 	= device['Name'];
-
     if (titleAndValueSwitch(idx )) {
         var tmp = temp
         temp 	= value;
@@ -2156,7 +2141,6 @@ function getEvohomeHotWaterBlock(device, idx) {
     html += '</div>';
 
     html += iconORimage(idx , '', 'hot_water_on.png', 'on icon iconheating', '', '2');
-
     html += '<div class="col-xs-8 col-data right1col">';
     html += '	<div class="title">' + name + '</div>';
 	html += '	<div>';
@@ -2176,7 +2160,6 @@ function getEvohomeHotWaterBlock(device, idx) {
 		});
         addedThermostat[idx] = true;
     }
-
     return [html, false];
 }
 
@@ -2200,7 +2183,6 @@ function switchEvoHotWater(idx, state, override) {
 //#################################################
 // EVOHOME > End                                  #
 //#################################################
-
 
 function getDimmerBlock(device, idx, buttonimg) {
     var html = '';

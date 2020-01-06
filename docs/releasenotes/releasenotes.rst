@@ -5,7 +5,7 @@ Release Notes
 ---------------------
 
 Enhancements
-  * Evohome support
+  * Evohome support. See :ref:`Evohome`
 
 Fixes
   * Improved error handling
