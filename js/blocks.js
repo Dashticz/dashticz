@@ -355,6 +355,11 @@ function handleStringBlock(block, columndiv, width, c) {
                 '<h1 class="clock"></h1><h4 class="weekday"></h4><h4 class="date"></h4>' +
                 '</div>');
             return;
+        case 'responsiveclock':
+            $(columndiv).append('<div data-id="clock" class="transbg block_' + block + ' col-xs-' + width + ' text-center responsive" style="height:250px;">' +
+                '<div class="col no-icon"><h2 class="clock"></h1><h4 class="weekday my-4"></h4><h4 class="date"></h4></div>' +
+                '</div>');
+            return;
         case 'weather':
             if (typeof (loadWeatherFull) !== 'function') {
                 $.ajax({
