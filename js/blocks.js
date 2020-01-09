@@ -463,6 +463,11 @@ function handleStringBlock(block, columndiv, width, c) {
         case 'trafficmap':
             $(columndiv).append('<div data-id="trafficmap" class="mh transbg block_trafficmap col-xs-12"><div id="trafficm" class="trafficmap"></div></div>');
             return;
+        case 'newsplus':
+            if (typeof(getNewsPlus) !== 'function') $.ajax({url: 'js/newsplus.js', async: false, dataType: "script"});
+            $(columndiv).append('<div data-id="news" class="news"></div>');
+            getNewsPlus(columndiv, 'news', settings['default_news_url']);
+            return;
         case 'log':
             if (typeof (getLog) !== 'function') $.ajax({
                 url: 'js/log.js',
