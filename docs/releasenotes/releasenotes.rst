@@ -4,6 +4,9 @@ Release Notes
 Latest changes
 --------------
 
+Enhancements
+  * Complete dimmer block is clickable (not just the icon)
+
 Fixes
   * Multiple stationclocks
   * Background fill complete screen in case of single screen
