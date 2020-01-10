@@ -10,6 +10,7 @@ Enhancements
 Fixes
   * Multiple stationclocks
   * Background fill complete screen in case of single screen
+  * Add dimmer for RGBWWZ devices
 
 3.3.0 Beta (5-1-2020)
 ---------------------
