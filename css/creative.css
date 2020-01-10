@@ -59,7 +59,8 @@
 .swiper-slide {
 	background: #000;
 	overflow-x: hidden;
-	overflow-y: hidden
+	overflow-y: hidden;
+	min-height: 100vh
 }
 
 .swiper-pagination-bullet-active {
