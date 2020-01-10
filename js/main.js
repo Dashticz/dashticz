@@ -60,7 +60,7 @@ function loadFiles(dashtype) {
     if (typeof (dashtype) !== 'undefined' && parseFloat(dashtype) > 1) {
         customfolder = 'custom_' + dashtype;
     }
-    $('<link href="' + 'css/creative.css' + '" rel="stylesheet">').appendTo('head');
+    $('<link href="' + 'css/creative.css?_=' + Date.now() +'" rel="stylesheet">').appendTo('head');
     $.ajax({
             url: customfolder + '/CONFIG.js',
             dataType: 'script'
