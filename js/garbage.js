@@ -88,6 +88,7 @@ function getIcalData(address, date, random, url) {
 }
 
 function getWasteApiData(address, date, random, companyCode) {
+
     $.post('https://wasteapi.2go-mobile.com/api/FetchAdress', {
         'companyCode': companyCode,
         'postCode': address.zipcode,
@@ -113,6 +114,8 @@ function getWasteApiData(address, date, random, companyCode) {
                         'NOTAVAILABLE2': 'Kerstbomen',
                         'NOTAVAILABLE3': 'Restgoed',
                         'PACKAGES': 'Verpakkingen',
+                        'TREE': 'Kerstbomen',
+                        'PAPER': 'Papier'
                     };
                     dataFiltered.push({
                         date: moment(dateElement),
