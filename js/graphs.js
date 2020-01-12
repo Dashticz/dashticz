@@ -491,7 +491,7 @@ function createGraph(graph, data) {
 
 	if (!myLocalProperties.popup) {
 		var graphwidth = $('.block_' + multi + 'graph' + '_' + myLocalProperties.graphIdx + ' .graph').width();
-		var setHeight = Math.min(Math.round(graphwidth / window.innerWidth * window.innerHeight), window.innerHeight - 50);
+		var setHeight = Math.min(Math.round(graphwidth / window.innerWidth * window.innerHeight - 25), window.innerHeight - 50);
 		if (myLocalProperties.height)
 			setHeight = myLocalProperties.height;
 		if (setHeight) $('.block_' + multi + 'graph' + '_' + myLocalProperties.graphIdx).css("height", setHeight);
