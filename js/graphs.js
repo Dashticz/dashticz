@@ -1,15 +1,14 @@
+/* eslint-disable no-prototype-builtins */
 /* global moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL*/
 var dtGraphs = [];
-var _GRAPHREFRESH = 60;
+var _GRAPHREFRESH = 5;
 
 function getGraphs(device, popup, multi) {
-	
     moment.locale(settings['calendarlanguage']);
     var sensor = 'counter';
     var txtUnit = '?';
     var currentValue = device['Data'];
     var decimals = 2;
-	
     switch (device['Type']) {
         case 'Rain':
             sensor = 'rain';
@@ -23,7 +22,7 @@ function getGraphs(device, popup, multi) {
             break;
         case 'Wind':
             sensor = 'wind';
-            var windspeed=device.Data.split(';')[2]/10;
+            var windspeed = device.Data.split(';')[2] / 10;
             if (config['use_beaufort']) {
                 currentValue = Beaufort(windspeed);
                 decimals = 0;
@@ -144,7 +143,7 @@ function getGraphs(device, popup, multi) {
             currentValue = device['CounterToday'].split(' ')[0];
             break;
         case 'Barometer':
-            sensor='temp';
+            sensor = 'temp';
             txtUnit = device['Data'].split(' ')[1];
             break;
 
@@ -153,7 +152,6 @@ function getGraphs(device, popup, multi) {
     currentValue = number_format(currentValue, decimals);
     var graphIdx = device.idx;
     if (popup) graphIdx += 'p';
-	
     if (typeof dtGraphs[graphIdx] == 'undefined') {
         dtGraphs[graphIdx] = {
             idx: device.idx,
@@ -169,48 +167,67 @@ function getGraphs(device, popup, multi) {
             lastRefreshTime: 0,
             forced: false,
             graphIdx: graphIdx
+            // forced: false
         }
     }
-	
     dtGraphs[graphIdx].currentValue = currentValue;
-
 	if(multi) return dtGraphs[graphIdx];
-	showGraph(graphIdx);
+    showGraph(graphIdx);
 }
 
-function getMultiGraphs(devices, selGraph){
-	
+// eslint-disable-next-line no-unused-vars
+function getGraphByIDX(idx) {
+    getGraphs(alldevices[idx], true);
+}
+
+// eslint-disable-next-line no-unused-vars
+function showPopupGraph(idx, subidx) {
+    var device = alldevices[idx];
+    if ($('#opengraph' + device['idx']).length === 0) {
+        var html = '<div class="modal fade opengraph opengraph' + device['idx'] + 'p' + '" data-idx="' + device['idx'] + '" id="opengraph' + device['idx'] + 'p' + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
+        html += '<div class="modal-dialog graphwidth">';
+        html += '<div class="modal-content">';
+        html += '<div class="modal-header graphclose">';
+        html += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
+        html += '</div>';
+        html += '<div class="modal-body block_graph_' + device['idx'] + 'p' + '">' + language.misc.loading;
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+        $('body').append(html);
+    }
+    $("#opengraph" + device['idx'] + 'p').modal();
+    getGraphs(alldevices[idx], true);
+
+}
+
+function getMultiGraphs(devices, selGraph){	
 	var primary = devices[0];
 	var arrIdx = [];
 	var multidata = { "result": [], "status": "OK", "title": "Multigraph day" };
 	var range = (typeof selGraph === 'undefined' ) ? 'day' : selGraph;
 	if(range === 'last') range = 'day';
 	var arrResults = [];
-	
-	$.each(devices, function( i, device ) {
-		
+	var currentValues = [];
+	$.each(devices, function( i, device ) {		
 		var multigraph = dtGraphs[devices[i].idx];
-		arrIdx.push(devices[i].idx);
-		
+		arrIdx.push(devices[i].idx);		
 		if(typeof multigraph === 'undefined'){
 			multigraph = getGraphs(devices[i], false, true);
 		}
-		
-		var deviceNumber = i+1;
-		
+		currentValues.push((parseFloat(multigraph.currentValue.replace(',','.'))).toFixed(2));		
+		var deviceNumber = i+1;		
 		if (typeof selGraph !== 'undefined' ) {
 			multigraph.range = selGraph;
 			multigraph.forced = true;
-		}	
-		
+		}		
 		if (multigraph.lastRefreshTime < (time() - (parseFloat(_GRAPHREFRESH) * 60))) {
 			multigraph.forced = true;
-		}
-				
-		if (dtGraphs[primary.idx].forced) {	
-					
-			var excludeKeys = typeof blocks['multigraph_' + primary.idx].exclude !== 'undefined'? blocks['multigraph_' + primary.idx].exclude : null;
-			
+		}				
+		if (dtGraphs[primary.idx].forced) {
+			var multigraphTypes = typeof blocks['multigraph_' + primary.idx].multigraphTypes !== 'undefined'? blocks['multigraph_' + primary.idx].multigraphTypes : null;
+			var interval = typeof blocks['multigraph_' + primary.idx].interval !== 'undefined'? blocks['multigraph_' + primary.idx].interval : 1;
 			$.ajax({
 				url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=graph&sensor=' + dtGraphs[devices[i].idx].sensor + '&idx=' + dtGraphs[devices[i].idx].idx + '&range=' + range + '&method=1&time=' + new Date().getTime() + '&jsoncallback=?',
 				type: 'GET',
@@ -221,27 +238,19 @@ function getMultiGraphs(devices, selGraph){
 					data.graph = dtGraphs[devices[i].idx];
 					arrResults.push(data);
 				}
-			}).done(function() {
-								
+			}).done(function() {								
 				if(devices.length === deviceNumber){
-					
-					//console.log("Triggered");
-					
 					arrResults.sort(function(a, b) {
 						return b.result.length - a.result.length;
-					});
-					
-					var newKeys = [];
-									
-					$.each(arrResults, function( z, d ) {	
-						
+					});					
+					var newKeys = [];									
+					$.each(arrResults, function( z, d ) {
 						var arrYkeys = [];						
 						var currentKey;
 						var counter = z + 1;
-						
-						if(excludeKeys !== null){
+						if(multigraphTypes !== null){
 							for (var key in d.result[0]) {
-								if($.inArray(key, excludeKeys) === -1 && key !== "d"){									
+								if($.inArray(key, multigraphTypes) !== -1 && key !== "d"){									
 									arrYkeys.push(key);		
 								}
 							}
@@ -251,50 +260,43 @@ function getMultiGraphs(devices, selGraph){
 									arrYkeys.push(key);			
 								}
 							}
-						}
-						
+						}						
 						$.each(d.result, function( x, res ) {
-
-							var valid = false;								
-							
-							if(z==0) {
-								var obj = {};
-								for (var key in res) {
-									if(key ==="d"){
-										obj["d"] = res[key];
-									}
-									if($.inArray(key, arrYkeys) !== -1){
-										currentKey = key + counter;
-										obj[currentKey] = res[key];
-										valid = true;
-										if($.inArray(currentKey, newKeys) === -1) newKeys.push(currentKey);
-									} 
+							var valid = false;
+							interval = multigraph.range === 'last' || multigraph.range === 'month'? 1 : interval;
+							if(x% interval === 0){ 
+								if(z==0) {
+									var obj = {};
+									for (var key in res) {
+										if(key ==="d"){
+											obj["d"] = res[key];
+										}
+										if($.inArray(key, arrYkeys) !== -1){
+											currentKey = key + counter;
+											obj[currentKey] = res[key];
+											valid = true;
+											if($.inArray(currentKey, newKeys) === -1) newKeys.push(currentKey);
+										} 
+									}								
+									if(valid) multidata.result.push(obj);								
+								} else {								
+									for (var key in res) {									
+										if(key !=="d" && $.inArray(key, arrYkeys) !== -1){										
+											$.each(multidata.result, function(index, obj) {
+											   $.each(obj, function(k, v) {
+												   if(k === "d" && v === res["d"]){
+														currentKey = key + counter;
+														multidata.result[index][currentKey] = res[key];
+														if($.inArray(currentKey, newKeys) === -1) newKeys.push(currentKey);
+												   }									  
+											   });
+											});
+										}
+									}								
 								}
-								
-								if(valid) multidata.result.push(obj);
-								
-							} else {
-								
-								for (var key in res) {									
-									if(key !=="d" && $.inArray(key, arrYkeys) !== -1){										
-										$.each(multidata.result, function(index, obj) {
-										   $.each(obj, function(k, v) {
-											   if(k === "d" && v === res["d"]){
-													currentKey = key + counter;
-													multidata.result[index][currentKey] = res[key];
-													valid = true;
-													if($.inArray(currentKey, newKeys) === -1) newKeys.push(currentKey);
-											   }									  
-										   });
-										});
-									}
-								}
-								
-							}														
-						});
-						
-						if(arrResults.length === counter){
-							
+							}							
+						});						
+						if(arrResults.length === counter){							
 							$.each(multidata.result, function(index, obj) {
 								$.each(obj, function(k, v) {
 									for (var n in newKeys) {	
@@ -304,20 +306,17 @@ function getMultiGraphs(devices, selGraph){
 									} 
 								});								
 							});
-
+							dtGraphs[primary.idx].currentValues = currentValues/* .join(' | ') */;
 							showGraph(primary.idx, selGraph, multidata, arrIdx);
 						}						
 					});
 				}  
-			});		
+			});	
 		}
 	});
-	
-	
 }
 
-function showGraph(graphIdx, selGraph, data, arrIdx) {
-	
+function showGraph(graphIdx, selGraph, data, arrIdx) {	
 	var graph = {};
     graph.properties = dtGraphs[graphIdx];
 	graph.multigraph = typeof data !== 'undefined' ? true : false;
@@ -333,11 +332,6 @@ function showGraph(graphIdx, selGraph, data, arrIdx) {
     if (graph.properties.lastRefreshTime < (time() - (parseFloat(_GRAPHREFRESH) * 60))) {
         graph.properties.forced = true;
     }
-
-    if ($('.graphcurrent' + graph.properties.graphIdx).length > 0) {
-        $('.graphcurrent' + graph.properties.graphIdx).html(graph.properties.currentValue + ' ' + graph.properties.txtUnit);
-    }
-
     var isInitial = (graph.properties.range === 'initial');
 
     if (graph.properties.forced || graph.properties.popup) {
@@ -449,9 +443,19 @@ function createGraph(graph, data) {
 	if (graph.blocksConfig && typeof (graph.blocksConfig['title']) !== 'undefined') {
 		baseTitle = graph.blocksConfig['title'];
 	}
+	
+	var iconColour = graph.blocksConfig && isDefined(graph.blocksConfig['iconColour'])? graph.blocksConfig['iconColour'] : '#ccc';
 
-	var title = '<div class="graphheader"><div class="graphtitle">' + baseTitle;
-	if (typeof (graph.properties.currentValue) !== 'undefined' && graph.properties.currentValue !== 'undefined') title += ': <B class="graphcurrent' + graph.properties.idx + '">' + graph.properties.currentValue + ' ' + graph.properties.txtUnit + '</B>';
+	var title = '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar" style="font-size:20px;margin-left:5px;color:' + iconColour + '">&nbsp;</i>' + baseTitle;
+	if(!graph.multigraph){
+		if(isDefined(graph.properties.currentValue)) {
+			title += '&nbsp;<span class="graphcurrent' + graph.properties.idx + '">&nbsp;<i class="fas fa-equals" style="font-size:14px;color:' + iconColour + '">&nbsp;</i>&nbsp;' + graph.properties.currentValue + ' ' + graph.properties.txtUnit + '</span>';
+		}
+	} else {
+		if (isDefined(graph.properties.currentValues)) {
+			title += '&nbsp;<span class="graphcurrent' + graph.properties.idx + '">&nbsp;<i class="fas fa-equals" style="font-size:14px;color:' + iconColour + '">&nbsp;</i>&nbsp;' + graph.properties.currentValues.join('<span style="color:' + iconColour + ';font-weight:900;font-size:16px;"> | </span>') + ' ' + graph.properties.txtUnit + '</span>';
+		}
+	}
 	title += '</div>';
 
 	var width = 12;
@@ -490,7 +494,7 @@ function createGraph(graph, data) {
 		var setHeight = Math.min(Math.round(graphwidth / window.innerWidth * window.innerHeight), window.innerHeight - 50);
 		if (myLocalProperties.height)
 			setHeight = myLocalProperties.height;
-		$('.block_' + multi + 'graph' + '_' + myLocalProperties.graphIdx).css("height", setHeight);
+		if (setHeight) $('.block_' + multi + 'graph' + '_' + myLocalProperties.graphIdx).css("height", setHeight);
 	}
 
 	if (typeof myLocalProperties.legend == 'boolean') {
@@ -498,13 +502,16 @@ function createGraph(graph, data) {
 	}
 
 	var mydatasets = [];
-
+	
 	if (graph.dataFilterCount > 0) {
 		var startMoment = moment().subtract(graph.dataFilterCount, graph.dataFilterUnit).format('YYYY-MM-DD HH:mm');
 		data.result = data.result.filter(function (element) {
 			return element.d > startMoment;
 		});
 	}
+	
+	var isBar  = myLocalProperties.graph == 'bar'?  true : false;
+	var isLine = myLocalProperties.graph == 'line'? true : false;
 	
 	if (graph.graphConfig) {
 		//custom data sets
@@ -517,8 +524,8 @@ function createGraph(graph, data) {
 			mydatasets[element] = {
 				data: [],
 				borderColor: myLocalProperties.datasetColors[index],
-				borderWidth: 0.5,
-				fill: myLocalProperties.fill? myLocalProperties.fill[index] : false,
+				borderWidth: 1,
+				fill: myLocalProperties.lineFill? myLocalProperties.lineFill[index] : false,
 				backgroundColor: myLocalProperties.datasetColors[index],
 				pointRadius: 1,
 				label: element,
@@ -582,27 +589,34 @@ function createGraph(graph, data) {
 				if (idx >= 0)
 					newylabels.push(myLocalProperties.ylabels[idx]);
 			});
-			myLocalProperties.ykeys = myLocalProperties.graphTypes; //for backwards compatibility
+			if(graph.multigraph) myLocalProperties.ykeys = myLocalProperties.graphTypes; //for backwards compatibility
 			myLocalProperties.ylabels = newylabels;
 		}
 
-		myLocalProperties.ykeys.forEach(function(element, index){
+		myLocalProperties.ykeys.forEach(function(element, index){			
 			mydatasets[element] = {
-				data: [],
-				borderColor: myLocalProperties.datasetColors[index],
-				borderWidth: 1,
-				fill: myLocalProperties.fill? myLocalProperties.fill[index] : false,
-				backgroundColor: myLocalProperties.datasetColors[index],
-				pointRadius: 1,
-				label: element,
-				yAxisID: myLocalProperties.ylabels[index]
+				data: 					[],
+				label: 					element,
+				yAxisID: 				myLocalProperties.ylabels[index],
+				backgroundColor: 		myLocalProperties.datasetColors[index],	
+				barPercentage: 			isDefined(myLocalProperties.barWidth) && isBar? myLocalProperties.barWidth : 0.9,
+				borderColor: 			isDefined(myLocalProperties.borderColors)? 		myLocalProperties.borderColors[index] : myLocalProperties.datasetColors[index],
+				borderWidth: 			isDefined(myLocalProperties.borderWidth)?		myLocalProperties.borderWidth : 2,			
+				borderDash:				isDefined(myLocalProperties.borderDash)? 		myLocalProperties.borderDash : [],	
+				pointRadius: 			isDefined(myLocalProperties.pointRadius)? 		myLocalProperties.pointRadius : 0,
+				pointStyle:				isDefined(myLocalProperties.pointStyle)? 		myLocalProperties.pointStyle[index] : 'circle',
+				pointBackgroundColor: 	isDefined(myLocalProperties.pointFillColour)? 	myLocalProperties.pointFillColour[index] : myLocalProperties.datasetColors[index],
+				pointBorderColor:		isDefined(myLocalProperties.pointBorderColor)? 	myLocalProperties.pointBorderColor[index] : '#adadad',
+				pointBorderWidth:		isDefined(myLocalProperties.pointBorderWidth)? 	myLocalProperties.pointBorderWidth : 0, 
+				lineTension:			isDefined(myLocalProperties.lineTension)? 		myLocalProperties.lineTension : 0.1,
+				fill: 					isDefined(myLocalProperties.lineFill) && isLine? myLocalProperties.lineFill[index] : false
 			};
 		});
 		
 		data.result.forEach(function(element){			
 			var valid = false;
 			myLocalProperties.ykeys.forEach(function(el){
-				if (element[el]) {
+				if ( typeof element[el]!=='undefined') {
 					switch (el) {
 						case 'eu':
 						case 'eg':
@@ -679,7 +693,7 @@ function createGraph(graph, data) {
 	uniqueylabels.forEach(function(element, i){
 		var yaxis = {
 			id: element,
-			type: myLocalProperties.cartesian? myLocalProperties.cartesian : 'linear',
+			type: typeof myLocalProperties.cartesian !== 'undefined'? myLocalProperties.cartesian : 'linear',
 			ticks: {
 				reverse: false,
 				fontColor: "white"
@@ -738,10 +752,11 @@ function createGraph(graph, data) {
 
 	}
 
-	/* Check for displayFormats setting */
-	if (typeof myLocalProperties.displayFormats !== 'undefined') {
-		$.extend(graphProperties.options.scales.xAxes[0].time.displayFormats, myLocalProperties.displayFormats)
-	}
+	/* Check for custom options settings */
+	isDefined(myLocalProperties.displayFormats)? 	$.extend(graphProperties.options.scales.xAxes[0].time.displayFormats, myLocalProperties.displayFormats) : graphProperties.options.scales.xAxes[0].time.displayFormats;
+	isDefined(myLocalProperties.maxTicksLimit)? 	graphProperties.options.scales.xAxes[0].ticks.maxTicksLimit = myLocalProperties.maxTicksLimit : null;
+	isDefined(myLocalProperties.reverseTime)? 		graphProperties.options.scales.xAxes[0].ticks.reverse = myLocalProperties.reverseTime : false;
+	isDefined(myLocalProperties.pointStyle)? 		graphProperties.options.legend.labels.usePointStyle = true : graphProperties.options.legend.labels.usePointStyle = false;
 	
 	if(graph.multigraph){
 		//console.log(myLocalProperties);
@@ -749,8 +764,6 @@ function createGraph(graph, data) {
 	}
 	
 	new Chart(chartctx, graphProperties);
-	
-	
 }
 
 function createButtons(myProperties, ranges, customRange, multigraph) {
@@ -801,13 +814,13 @@ function getDefaultGraphProperties(myProperties) {
                 position: 'bottom',
                 display: false
             },
-
             scales: {
-                yAxes: [],
+                yAxes: [{stacked: true}],
 
                 xAxes: [{
                     ticks: {
-                        fontColor: "white"
+                        fontColor: "white",
+						source: "auto"
                     },
                     gridLines: {
                         color: 'rgba(255,255,255,0.2)', //give the needful color
@@ -821,7 +834,7 @@ function getDefaultGraphProperties(myProperties) {
                             'day': 'D MMM'
                         }
                     },
-                    distribution: 'linear'
+                    distribution: 'series'
                 }]
 
             },
@@ -869,114 +882,102 @@ function getGraphProperties(result, graphIdx, multigraph) {
     var myProperties = dtGraphs[graphIdx];
     var label = myProperties.txtUnit;
     var realrange = myProperties.realrange;
-    var graphProperties = {};
-	
+    var graphProperties = {};	
 	if(multigraph){	
-	
 		var arrYkeys = [];
-		var arrYlabels = [];
-		
+		var arrYlabels = [];		
 		for (var key in result) {
 			if(key !== "d"){
 				arrYkeys.push(key);
 				arrYlabels.push(label);					
 			}
 		}
-
 		graphProperties = {
 			ykeys: arrYkeys,
 			ylabels: arrYlabels,
-		};
-	
-	} else {
-		
+		};	
+	} else {		
 		if (typeof result == 'undefined')
 			return graphProperties;
-	
-		if (result.uvi) {
+		if (result.hasOwnProperty('uvi')) {
 			graphProperties = {
 				ykeys: ['uvi'],
 				ylabels: [label],
 			};
-		} else if (result.lux) {
+		} else if (result.hasOwnProperty('lux')) {
 			graphProperties = {
 				ykeys: ['lux'],
 				ylabels: ['Lux'],
 			};
-		} else if (result.lux_avg) {
+		} else if (result.hasOwnProperty('lux_avg')) {
 			graphProperties = {
 				ykeys: ['lux_avg', 'lux_min', 'lux_max'],
 				ylabels: ['Lux average', 'Minimum', 'Maximum'],
 			};
-		} else if (result.gu && result.sp) {
+		} else if (result.hasOwnProperty('gu') && result.hasOwnProperty('sp')) {
 			graphProperties = {
 				ykeys: ['gu', 'sp'],
 				ylabels: ['m/s', 'm/s'],
 			};
-		} else if (result.ba && result.hu && result.te) {
+		} else if (result.hasOwnProperty('ba') && result.hasOwnProperty('hu') && result.hasOwnProperty('te')) {
 			graphProperties = {
 				ykeys: ['ba', 'hu', 'te'],
 				ylabels: ['hPa', '%', _TEMP_SYMBOL],
 			};
-		} else if (result.hu && result.te) {
+		} else if (result.hasOwnProperty('hu') && result.hasOwnProperty('te')) {
 			graphProperties = {
 				ykeys: ['hu', 'te'],
 				ylabels: ['%', _TEMP_SYMBOL],
 			};
-		} else if (result.v1 && result.v2) {
+		} else if (result.hasOwnProperty('ba') && result.hasOwnProperty('te')) {
 			graphProperties = {
-				ykeys: ['v1', 'v2'],
-				ylabels: ['%', '%'],
+				ykeys: ['ba', 'te'],
+				ylabels: ['hPa', _TEMP_SYMBOL],
 			};
-		} else if (result.v_avg1 && result.v_max1 && result.v_min1 && result.v_avg2 && result.v_max2 && result.v_min2) {
-			graphProperties = {
-				ykeys: ['v_avg1', 'v_max1', 'v_min1', 'v_avg2', 'v_max2', 'v_min2'],
-				ylabels: ['%', '%', '%', '%', '%', '%'],
-			};
-		} else if (result.te) {
+		} else if (result.hasOwnProperty('te')) {
 			graphProperties = {
 				ykeys: ['te'],
 				ylabels: [_TEMP_SYMBOL],
 			};
-		} else if (result.hu) {
+		} else if (result.hasOwnProperty('hu')) {
 			graphProperties = {
 				ykeys: ['hu'],
 				ylabels: ['%'],
 			};
-		} else if (result.mm) {
+		} else if (result.hasOwnProperty('mm')) {
 			graphProperties = {
 				ykeys: ['mm'],
 				ylabels: ['mm'],
 			};
-		} else if (result.v_max) {
+		} else if (result.hasOwnProperty('v_max')) {
 			graphProperties = {
 				ykeys: ['v_max'],
 				ylabels: [label],
 			};
-			if (result.v_min) {
+			if (result.hasOwnProperty('v_min')) {
 				graphProperties.ykeys.push('v_min')
 				graphProperties.ylabels.push[label]
 			}
-			if (result.v_avg) {
+			if (result.hasOwnProperty('v_avg')) {
 				graphProperties.ykeys.push('v_avg')
 				graphProperties.ylabels.push[label]
 			}
-		} else if (result.v2) {
+		} else if (result.hasOwnProperty('v2')) {
 			label = 'kWh';
 			if (realrange == 'day') label = 'W';
 			graphProperties = {
 				ykeys: ['v2', 'v'],
 				ylabels: [label, label],
 			};
-			if (result.r2) {
+			if (result.hasOwnProperty('r2')) {
 				graphProperties.ykeys.push('r2');
 				graphProperties.ylabels.push(label);
 			}
-			if (result.r1) {
+			if (result.hasOwnProperty('r1')) {
 				graphProperties.ykeys.push('r1');
 				graphProperties.ylabels.push(label);
 			}
-		} else if (result.v) {
+		} else if (result.hasOwnProperty('v')) {
 			if (label === 'kWh' && realrange === 'day') {
 				graphProperties = {
 					ykeys: ['v'],
@@ -988,66 +989,40 @@ function getGraphProperties(result, graphIdx, multigraph) {
 					ylabels: [label],
 				}
 			}
-		} else if (result.eu) {
+		} else if (result.hasOwnProperty('eu')) {
 			graphProperties = {
 				ykeys: ['eu'],
 				ylabels: [label],
 			};
-		} else if (result.u) {
+		} else if (result.hasOwnProperty('u')) {
 			graphProperties = {
 				ykeys: ['u'],
 				ylabels: [label],
 			};
-		} else if (result.u_max) {
+		} else if (result.hasOwnProperty('u_max')) {
 			graphProperties = {
 				ykeys: ['u_max', 'u_min'],
 				ylabels: ['?', '?'],
 			};
-		} else if (result.co2) {
+		} else if (result.hasOwnProperty('co2')) {
 			graphProperties = {
 				ykeys: ['co2'],
 				ylabels: ['ppm'],
 			};
-		} else if (result.ba) {
+		} else if (result.hasOwnProperty('ba')) {
 			graphProperties = {
 				ykeys: ['ba'],
 				ylabels: [label],
 			};
 		}
-		
-		
-	}
-	
+	}	
     return graphProperties;
 }
 
-function onlyUnique(value, index, self) { 
+function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;
 }
 
-// eslint-disable-next-line no-unused-vars
-function getGraphByIDX(idx) {
-    getGraphs(alldevices[idx], true);
-}
-
-// eslint-disable-next-line no-unused-vars
-function showPopupGraph(idx, subidx) {
-    var device = alldevices[idx];
-    if ($('#opengraph' + device['idx']).length === 0) {
-        var html = '<div class="modal fade opengraph opengraph' + device['idx'] + 'p' + '" data-idx="' + device['idx'] + '" id="opengraph' + device['idx'] + 'p' + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
-        html += '<div class="modal-dialog graphwidth">';
-        html += '<div class="modal-content">';
-        html += '<div class="modal-header graphclose">';
-        html += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
-        html += '</div>';
-        html += '<div class="modal-body block_graph_' + device['idx'] + 'p' + '">' + language.misc.loading;
-        html += '</div>';
-        html += '</div>';
-        html += '</div>';
-        html += '</div>';
-        $('body').append(html);
-    }
-    $("#opengraph" + device['idx'] + 'p').modal();
-    getGraphs(alldevices[idx], true);
-
+function isDefined(prop){
+	return typeof prop !== 'undefined'? true : false;
 }
