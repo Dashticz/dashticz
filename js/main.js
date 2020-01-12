@@ -990,7 +990,8 @@ function getDevices(override) {
                                     $('.block_' + idx + '_1').length > 0 ||
                                     $('.block_' + idx + '_2').length > 0 ||
                                     $('.block_' + idx + '_3').length > 0 ||
-                                    $('.block_graph_' + idx).length > 0
+                                    $('.block_graph_' + idx).length > 0 ||
+									$("div[class*='block_multigraph_']").length > 0
                                 )
                             )
                         ) {
@@ -1039,6 +1040,39 @@ function getDevices(override) {
                             if ($('div.block_graph_' + idx).length > 0) {
                                 getGraphs(device, false);
                             }
+
+							// ##############################################
+							// MULTIGRAPH START                             #
+							// ##############################################
+							if ($("div[class*='block_multigraph_']").length > 0) {
+
+								for(var b in blocks) {
+									if(b.substring(0, 11) === 'multigraph_'){
+
+										var arrMgIdx  = blocks[b]['devices'];
+										var mgId = b.replace('multigraph_','');
+										var arrMgDev = 'arrMgDevices_' + mgId;
+
+										if (typeof ( eval[arrMgDev] ) == 'undefined' ) eval[arrMgDev] = [];	
+
+										if(eval[arrMgDev].length < arrMgIdx.length){											
+											$.each(arrMgIdx, function( index, mgIdx ) {
+												if(mgIdx === parseInt(idx) && $.inArray(mgIdx, eval[arrMgDev]) === -1) {
+													eval[arrMgDev].push(device);											
+												}
+											});
+										}
+
+										if(eval[arrMgDev].length === arrMgIdx.length && data.result.length-1 === parseInt(r)){	
+											getMultiGraphs(eval[arrMgDev] );	
+										} 
+									}
+								}
+							}						
+							// ##############################################
+							// MULTIGRAPH END                               #
+							// ##############################################
+
 
                             triggerStatus(idx, device['LastUpdate'], device);
                             triggerChange(idx, device['LastUpdate'], device);
