@@ -81,7 +81,7 @@ function getGraphs(device, popup, multi) {
         case 'Custom Sensor':
             sensor = 'Percentage';
             txtUnit = device['SensorUnit'];
-            decimals = 1;
+            decimals = 2;
             break;
         case 'Gas':
             txtUnit = 'm3';
@@ -216,7 +216,7 @@ function getMultiGraphs(devices, selGraph){
 		if(typeof multigraph === 'undefined'){
 			multigraph = getGraphs(devices[i], false, true);
 		}
-		currentValues.push((parseFloat(multigraph.currentValue.replace(',','.'))).toFixed(2));		
+		currentValues.push((parseFloat(multigraph.currentValue.replace(',','.'))).toFixed(multigraph.decimals));		
 		var deviceNumber = i+1;		
 		if (typeof selGraph !== 'undefined' ) {
 			multigraph.range = selGraph;
