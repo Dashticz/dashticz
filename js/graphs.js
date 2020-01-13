@@ -488,7 +488,7 @@ function createGraph(graph, data) {
 	html += title + '<div class="graphbuttons" >' + buttons + '</div>';
 	html += '</div>'
 
-	html += '<div class="graph swiper-slide' + (graph.properties.popup ? ' popup graphheight' : '') + '" id="graph' + graph.properties.idx + '">';
+	html += '<div class="graph' + (graph.properties.popup ? ' popup graphheight' : '') + '" id="graph' + graph.properties.idx + '">';
 	html += '<canvas ' + 'id="graphoutput' + graph.properties.graphIdx + '"></canvas>';
 	html += '</div>';
 	var mydiv = $('.block_' + multi + 'graph' + '_' + graph.properties.graphIdx);
