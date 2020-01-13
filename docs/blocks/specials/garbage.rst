@@ -114,6 +114,7 @@ almere                  Almere (NL)
 alphenaandenrijn        Alphen aan de Rijn (NL)
 area
 avalex                  Avalex (NL)
+barafvalbeheer          Bar-afvalbeheer for Barendrecht, Rhoon (NL)
 gemeenteberkelland      Berkelland (NL)
 best                    Best (NL)
 circulusberkel          Circulus Berkel (NL)
