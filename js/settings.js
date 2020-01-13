@@ -436,6 +436,7 @@ settingList['garbage']['garbage_company']['options']['deafvalapp'] = 'Afval App 
 settingList['garbage']['garbage_company']['options']['afvalwijzerarnhem'] = 'Afvalwijzer Arnhem (NL)';
 settingList['garbage']['garbage_company']['options']['alphenaandenrijn'] = 'Alphen aan de Rijn (NL)';
 settingList['garbage']['garbage_company']['options']['avalex'] = 'Avalex (NL)';
+settingList['garbage']['garbage_company']['options']['barafvalbeheer'] = 'Bar-afvalbeheer (Barendrecht, Rhoon)(NL)';
 settingList['garbage']['garbage_company']['options']['gemeenteberkelland'] = 'Berkelland (NL)';
 settingList['garbage']['garbage_company']['options']['best'] = 'Best (NL)';
 settingList['garbage']['garbage_company']['options']['circulusberkel'] = 'Circulus Berkel (NL)';
