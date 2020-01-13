@@ -101,6 +101,94 @@ An example of a more extensive implementation::
 
 Add ``'myblock'`` to the components variable at the start of ``js/dashticz.js``
 
+Github workflow
+---------------
 
+We use a PR (Pull Request) based workflow, with preferably one new/changing feature per branch.
+All work is derived from the beta branch.
+If the beta branch is stable, a master branch will be derived from the beta branch.
+
+For big changes a temporary branch will be created to test the new functionality by a bigger audience.
+
+Basic workflow
+~~~~~~~~~~~~~~~
+
+1. Create an account on Github.com  
+2. Fork the Dashticz repository on github.com
+3. Clone your own repository locally::
+
+    cd <working directory of choice>
+    git clone https://github.com/<username>/dashticz
+    cd dashticz
+
+4. Add the dashticz upstream remote::
+
+    git remote add upstream https://github.com/Dashticz/dashticz
+
+5. Get the latest changes::
+
+    git checkout beta
+    git fetch upstream
+    git merge upstream/beta
+
+6. Create a new branch for your changes::
+
+    git checkout -b mynewfeature
+
+7. Make the changes
+
+8. Add the new files (if any)::
+
+    git add .
+
+9. Commit the changes::
+
+    git commit -am "My new feature"
+
+10. Push the changes to your own Dashticz repository::
+
+      git push mynewfeature
+
+11. On github.com create a Pull Request with the request to merge your own branch into beta
+
+12. Have some patience, and lokonli will merge your PR
+
+After your PR has been merged, you should cleanup your repository.
+
+13. Delete your mynewfeature branch from your Dashticz repository on github.
+
+14. Switch back to the beta branch::
+
+      git checkout beta
+
+15. get the new beta::
+
+      git fetch upstream
+      git merge upstream/beta
+
+16. Delete your local mynewfeature branch. It's not needed anymore, because it has been merged::
+
+      git branch -d mynewfeature
+
+If you want to make additional changes, go back to step 6
+
+Test branch
+~~~~~~~~~~~
+If additional testing is required then lokonli will not merge directly into beta (step 12), but will create a test branch. To continue working on this testbranch::
+
+    git fetch upstream
+    git checkout testbranch
+    git merge upstream/testbranch
+    git checkout -b mynewfeature
+
+Then you have a new branch 'mynewfeature' derived from testbranch. Continue with step 7-10 to make your changes.
+
+On github create a PR with the request to merge your new branch into testbranch.
+
+
+Updating documentation
+~~~~~~~~~~~~~~~~~~~~~~~
+
+If possible update the documentation together with your code changes in the same PR.
 
 
