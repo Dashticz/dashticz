@@ -1,8 +1,12 @@
 Release Notes
 =============
 
-Latest changes
+Recent changes
 --------------
+
+
+3.3.1 Beta (13-1-2020)
+----------------------
 
 Enhancements
   * Complete dimmer block is clickable (not just the icon)
@@ -12,6 +16,7 @@ Fixes
   * Background fill complete screen in case of single screen
   * Add dimmer for RGBWWZ devices
   * TwenteMilieu garbage collection
+  * Bar-afvalbeheer garbage collection (for Barendrecht, Rhoon). Use 'barafvalbeheer' as garbage_company.
 
 3.3.0 Beta (5-1-2020)
 ---------------------
