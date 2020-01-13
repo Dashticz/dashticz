@@ -471,7 +471,7 @@ function handleStringBlock(block, columndiv, width, c) {
         case 'newsplus':
             if (typeof(getNewsPlus) !== 'function') $.ajax({url: 'js/newsplus.js', async: false, dataType: "script"});
             $(columndiv).append('<div data-id="news" class="news"></div>');
-            getNewsPlus(columndiv, 'news', settings['default_news_url']);
+            getNewsPlus(columndiv, 'newsplus', settings['default_news_url']);
             return;
         case 'log':
             if (typeof (getLog) !== 'function') $.ajax({
