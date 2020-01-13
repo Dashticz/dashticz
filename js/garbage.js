@@ -525,6 +525,7 @@ function loadDataForService(service, random) {
         area: {dataHandler: 'getWasteApiData', identifier: 'adc418da-d19b-11e5-ab30-625662870761'},
         almere: {dataHandler: 'getWasteApi2Data', identifier: '53d8db94-7945-42fd-9742-9bbc71dbe4c1'},
         afvalalert: {dataHandler: 'getAfvalAlertData', identifier: ''},
+        barafvalbeheer: {dataHandler: 'getWasteApiData', identifier: 'bb58e633-de14-4b2a-9941-5bc419f1c4b0'}
     };
     window[serviceProperties[service].dataHandler](address, date, random, serviceProperties[service].identifier);
 }
