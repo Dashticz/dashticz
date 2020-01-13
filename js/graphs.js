@@ -152,7 +152,7 @@ function getGraphs(device, popup, multi) {
     currentValue = number_format(currentValue, decimals);
     var graphIdx = device.idx;
     if (popup) graphIdx += 'p';
-    if (typeof dtGraphs[graphIdx] == 'undefined') {
+    if (!isDefined(dtGraphs[graphIdx])) {
         dtGraphs[graphIdx] = {
             idx: device.idx,
             title: device.Name,
@@ -206,19 +206,19 @@ function getMultiGraphs(devices, selGraph){
 	var primary = devices[0];
 	var arrIdx = [];
 	var multidata = { "result": [], "status": "OK", "title": "Multigraph day" };
-	var range = (typeof selGraph === 'undefined' ) ? 'day' : selGraph;
+	var range = isDefined(selGraph)? selGraph : 'day';
 	if(range === 'last') range = 'day';
 	var arrResults = [];
 	var currentValues = [];
 	$.each(devices, function( i, device ) {		
 		var multigraph = dtGraphs[devices[i].idx];
 		arrIdx.push(devices[i].idx);		
-		if(typeof multigraph === 'undefined'){
+		if(!isDefined(multigraph)){
 			multigraph = getGraphs(devices[i], false, true);
 		}
 		currentValues.push((parseFloat(multigraph.currentValue.replace(',','.'))).toFixed(multigraph.decimals));		
 		var deviceNumber = i+1;		
-		if (typeof selGraph !== 'undefined' ) {
+		if (isDefined(selGraph)) {
 			multigraph.range = selGraph;
 			multigraph.forced = true;
 		}		
@@ -226,8 +226,8 @@ function getMultiGraphs(devices, selGraph){
 			multigraph.forced = true;
 		}				
 		if (dtGraphs[primary.idx].forced) {
-			var multigraphTypes = typeof blocks['multigraph_' + primary.idx].multigraphTypes !== 'undefined'? blocks['multigraph_' + primary.idx].multigraphTypes : null;
-			var interval = typeof blocks['multigraph_' + primary.idx].interval !== 'undefined'? blocks['multigraph_' + primary.idx].interval : 1;
+			var multigraphTypes = isDefined(blocks['multigraph_' + primary.idx].multigraphTypes)? blocks['multigraph_' + primary.idx].multigraphTypes : null;
+			var interval = isDefined(blocks['multigraph_' + primary.idx].interval)? blocks['multigraph_' + primary.idx].interval : 1;
 			$.ajax({
 				url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=graph&sensor=' + dtGraphs[devices[i].idx].sensor + '&idx=' + dtGraphs[devices[i].idx].idx + '&range=' + range + '&method=1&time=' + new Date().getTime() + '&jsoncallback=?',
 				type: 'GET',
@@ -319,12 +319,12 @@ function getMultiGraphs(devices, selGraph){
 function showGraph(graphIdx, selGraph, data, arrIdx) {	
 	var graph = {};
     graph.properties = dtGraphs[graphIdx];
-	graph.multigraph = typeof data !== 'undefined' ? true : false;
-	graph.properties.devices = typeof arrIdx !== 'undefined' ? arrIdx : [graphIdx];
+	graph.multigraph = isDefined(data)? true : false;
+	graph.properties.devices = isDefined(arrIdx)? arrIdx : [graphIdx];
 	var multi = graph.multigraph ? 'multi' : '';
 		
     graph.properties.datasetColors = ['red', 'yellow', 'blue', 'orange', 'green', 'purple'];
-    if (typeof selGraph !== 'undefined') {
+    if (isDefined(selGraph)) {
         graph.properties.range = selGraph;
         graph.properties.forced = true;
     }
@@ -360,13 +360,31 @@ function showGraph(graphIdx, selGraph, data, arrIdx) {
             graph.dataFilterUnit = 'hours';
         }
 
-        graph.blocksConfig = typeof (blocks[multi + 'graph_' + graph.properties.idx]) !== 'undefined' ? blocks[multi + 'graph_' + graph.properties.idx] : null;
+        graph.blocksConfig = isDefined(blocks[multi + 'graph_' + graph.properties.idx])? blocks[multi + 'graph_' + graph.properties.idx] : null;
 
         graph.method = 1;
         graph.graphConfig = null;
         if (graph.blocksConfig) {
-            if (typeof (graph.blocksConfig.method) !== 'undefined') graph.method = graph.blocksConfig.method;
-            graph.customRange = false;
+			
+			if (isDefined(graph.blocksConfig.method)) graph.method = graph.blocksConfig.method;
+			
+			// Custom graph buttons
+            graph.properties.buttons = {};
+			if (isDefined(graph.blocksConfig.buttonsText)) 		graph.properties.buttons.text    = graph.blocksConfig.buttonsText;
+			if (isDefined(graph.blocksConfig.buttonsSize)) 		graph.properties.buttons.size    = graph.blocksConfig.buttonsSize;
+			if (isDefined(graph.blocksConfig.buttonsColor)) 	graph.properties.buttons.color   = graph.blocksConfig.buttonsColor;
+			if (isDefined(graph.blocksConfig.buttonsFill)) 		graph.properties.buttons.fill    = graph.blocksConfig.buttonsFill;
+			if (isDefined(graph.blocksConfig.buttonsBorder)) 	graph.properties.buttons.border  = graph.blocksConfig.buttonsBorder;
+			if (isDefined(graph.blocksConfig.buttonsRadius)) 	graph.properties.buttons.radius  = graph.blocksConfig.buttonsRadius;
+			if (isDefined(graph.blocksConfig.buttonsPadX)) 		graph.properties.buttons.padX	 = graph.blocksConfig.buttonsPadX;
+			if (isDefined(graph.blocksConfig.buttonsPadY)) 		graph.properties.buttons.padY  	 = graph.blocksConfig.buttonsPadY;
+			if (isDefined(graph.blocksConfig.buttonsMarginX)) 	graph.properties.buttons.marginX = graph.blocksConfig.buttonsMarginX;
+			if (isDefined(graph.blocksConfig.buttonsMarginY)) 	graph.properties.buttons.marginY = graph.blocksConfig.buttonsMarginY;
+            if (isDefined(graph.blocksConfig.buttonsShadow)) 	graph.properties.buttons.shadow  = graph.blocksConfig.buttonsShadow;
+			
+			
+			graph.customRange = false;
+			
             if (graph.blocksConfig.custom) {
                 if (isInitial) {
                     graph.properties.range = Object.keys(graph.blocksConfig.custom)[0];
@@ -434,39 +452,43 @@ function createGraph(graph, data) {
 	}
 
 	var ranges = ["last", "day", "month"];
-	if (graph.customRange)
+	if (graph.customRange) 
 		ranges = Object.keys(graph.blocksConfig.custom);
+	var buttonIcon = graph.blocksConfig && isDefined(graph.blocksConfig['buttonsIcon'])? graph.blocksConfig['buttonsIcon'] : '#ccc';
+	
+	if(!graph.properties.popup)	graph.properties.buttons.icon = buttonIcon;
 	var buttons = createButtons(graph.properties, ranges, graph.customRange, graph.multigraph);
-
+	
 	var baseTitle = graph.properties.title;
 
-	if (graph.blocksConfig && typeof (graph.blocksConfig['title']) !== 'undefined') {
+	if (graph.blocksConfig && isDefined(graph.blocksConfig['title'])) {
 		baseTitle = graph.blocksConfig['title'];
 	}
-	
-	var iconColour = graph.blocksConfig && isDefined(graph.blocksConfig['iconColour'])? graph.blocksConfig['iconColour'] : '#ccc';
 
-	var title = '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar" style="font-size:20px;margin-left:5px;color:' + iconColour + '">&nbsp;</i>' + baseTitle;
-	if(!graph.multigraph){
+	var title = '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar" style="font-size:20px;margin-left:5px;color:' + buttonIcon + '">&nbsp;</i>' + baseTitle;
+	//if (typeof (graph.properties.currentValue) !== 'undefined' && graph.properties.currentValue !== 'undefined') title += ': <B class="graphcurrent' + graph.properties.idx + '">' + graph.properties.currentValue + ' ' + graph.properties.txtUnit + '</B>'; // <--why this row?
+	var span = '&nbsp;<span class="graphcurrent' + graph.properties.idx + '">&nbsp;<i class="fas fa-equals" style="font-size:14px;color:' + buttonIcon + '">&nbsp;</i>&nbsp;';
+	
+	if(!graph.multigraph ){
 		if(isDefined(graph.properties.currentValue)) {
-			title += '&nbsp;<span class="graphcurrent' + graph.properties.idx + '">&nbsp;<i class="fas fa-equals" style="font-size:14px;color:' + iconColour + '">&nbsp;</i>&nbsp;' + graph.properties.currentValue + ' ' + graph.properties.txtUnit + '</span>';
+			title += span + graph.properties.currentValue + ' ' + graph.properties.txtUnit + '</span>';
 		}
 	} else {
 		if (isDefined(graph.properties.currentValues)) {
-			title += '&nbsp;<span class="graphcurrent' + graph.properties.idx + '">&nbsp;<i class="fas fa-equals" style="font-size:14px;color:' + iconColour + '">&nbsp;</i>&nbsp;' + graph.properties.currentValues.join('<span style="color:' + iconColour + ';font-weight:900;font-size:16px;"> | </span>') + ' ' + graph.properties.txtUnit + '</span>';
+			title += span + graph.properties.currentValues.join('<span style="color:' + graph.properties.buttons.icon + ';font-weight:900;font-size:16px;"> | </span>') + ' ' + graph.properties.txtUnit + '</span>';
 		}
 	}
 	title += '</div>';
 
 	var width = 12;
-	if (graph.blocksConfig && typeof (graph.blocksConfig['width']) !== 'undefined' && !graph.properties.popup) {
+	if (graph.blocksConfig && isDefined(graph.blocksConfig['width']) && !graph.properties.popup) {
 		width = graph.blocksConfig['width'];
 	}
 	var html = '';
 	html += title + '<div class="graphbuttons" >' + buttons + '</div>';
 	html += '</div>'
 
-	html += '<div class="graph swiper-no-swiping' + (graph.properties.popup ? ' popup graphheight' : '') + '" id="graph' + graph.properties.idx + '">';
+	html += '<div class="graph swiper-slide' + (graph.properties.popup ? ' popup graphheight' : '') + '" id="graph' + graph.properties.idx + '">';
 	html += '<canvas ' + 'id="graphoutput' + graph.properties.graphIdx + '"></canvas>';
 	html += '</div>';
 	var mydiv = $('.block_' + multi + 'graph' + '_' + graph.properties.graphIdx);
@@ -482,7 +504,9 @@ function createGraph(graph, data) {
 	$.extend(true, myLocalProperties, graph.properties);    // create a deep copy for temporary use
 	var graphProperties = getDefaultGraphProperties(graph.properties);
 	$.extend(true, graphProperties, graph.blocksConfig);
-	$.extend(myLocalProperties, getGraphProperties(data.result[0], graphIdx, graph.multigraph));			
+	
+	$.extend(myLocalProperties, getGraphProperties(data.result[0], graphIdx, graph.multigraph));	
+	
 	$.extend(true, myLocalProperties, graph.blocksConfig);
 
 	if (graph.graphConfig) {
@@ -515,22 +539,27 @@ function createGraph(graph, data) {
 	
 	if (graph.graphConfig) {
 		//custom data sets
-		console.log("custom data sets");
 		if(graph.graphConfig.ylabels)
 			myLocalProperties.ylabels = graph.graphConfig.ylabels;   //in case ylabels are defined in the custom graph, we take those, instead of the default generated ylabels
 		myLocalProperties.ykeys = Object.keys(graph.graphConfig.data);
 
 		myLocalProperties.ykeys.forEach(function (element, index) {
 			mydatasets[element] = {
-				data: [],
-				borderColor: myLocalProperties.datasetColors[index],
-				borderWidth: 1,
-				fill: myLocalProperties.lineFill? myLocalProperties.lineFill[index] : false,
-				backgroundColor: myLocalProperties.datasetColors[index],
-				pointRadius: 1,
-				label: element,
-				yAxisID: index<myLocalProperties.ylabels? myLocalProperties.ylabels[index] : myLocalProperties.ylabels[0]
-
+				data: 					[],
+				label: 					element,
+				yAxisID: 				myLocalProperties.ylabels[index],
+				backgroundColor: 		myLocalProperties.datasetColors[index],	
+				barPercentage: 			isDefined(myLocalProperties.barWidth) && isBar? myLocalProperties.barWidth : 0.9,
+				borderColor: 			isDefined(myLocalProperties.borderColors)? 		myLocalProperties.borderColors[index] : myLocalProperties.datasetColors[index],
+				borderWidth: 			isDefined(myLocalProperties.borderWidth)?		myLocalProperties.borderWidth : 2,			
+				borderDash:				isDefined(myLocalProperties.borderDash)? 		myLocalProperties.borderDash : [],	
+				pointRadius: 			isDefined(myLocalProperties.pointRadius)? 		myLocalProperties.pointRadius : 0,
+				pointStyle:				isDefined(myLocalProperties.pointStyle)? 		myLocalProperties.pointStyle[index] : 'circle',
+				pointBackgroundColor: 	isDefined(myLocalProperties.pointFillColour)? 	myLocalProperties.pointFillColour[index] : myLocalProperties.datasetColors[index],
+				pointBorderColor:		isDefined(myLocalProperties.pointBorderColor)? 	myLocalProperties.pointBorderColor[index] : '#adadad',
+				pointBorderWidth:		isDefined(myLocalProperties.pointBorderWidth)? 	myLocalProperties.pointBorderWidth : 0, 
+				lineTension:			isDefined(myLocalProperties.lineTension)? 		myLocalProperties.lineTension : 0.1,
+				fill: 					isDefined(myLocalProperties.lineFill) && isLine? myLocalProperties.lineFill[index] : false
 			};
 
 			if (graph.graphConfig.graph) {
@@ -572,7 +601,7 @@ function createGraph(graph, data) {
 
 	} else {
 		
-		if (typeof myLocalProperties.graphTypes == 'undefined') {
+		if (!isDefined(myLocalProperties.graphTypes)) {
 			var mySet = []
 			data.result.forEach(function(element) {
 				Object.keys(element).forEach(function(el){
@@ -616,7 +645,7 @@ function createGraph(graph, data) {
 		data.result.forEach(function(element){			
 			var valid = false;
 			myLocalProperties.ykeys.forEach(function(el){
-				if ( typeof element[el]!=='undefined') {
+				if (isDefined(element[el])) {
 					switch (el) {
 						case 'eu':
 						case 'eg':
@@ -677,7 +706,7 @@ function createGraph(graph, data) {
 	
 	Object.keys(mydatasets).forEach(function(element){
 		if (typeof myLocalProperties.legend == 'object') {
-			if (typeof myLocalProperties.legend[element] !== 'undefined')
+			if (isDefined(myLocalProperties.legend[element]))
 				mydatasets[element].label = myLocalProperties.legend[element];
 			graphProperties.options.legend.display = true;
 		}
@@ -693,7 +722,7 @@ function createGraph(graph, data) {
 	uniqueylabels.forEach(function(element, i){
 		var yaxis = {
 			id: element,
-			type: typeof myLocalProperties.cartesian !== 'undefined'? myLocalProperties.cartesian : 'linear',
+			type: isDefined(myLocalProperties.cartesian)? myLocalProperties.cartesian : 'linear',
 			ticks: {
 				reverse: false,
 				fontColor: "white"
@@ -718,7 +747,7 @@ function createGraph(graph, data) {
 	//extend the y label with all dataset labels
 	if (graphProperties.options.scales.yAxes.length > 1) {
 		graphProperties.options.scales.yAxes.filter(function(element){ //filter the ylabels that have an initial label  
-			return element.scaleLabel && typeof element.scaleLabel.labelString !== "undefined"
+			return element.scaleLabel && isDefined(element.scaleLabel.labelString)
 		}).forEach(function(yAxis){
 			yAxis.scaleLabel.labelString = graphProperties.data.datasets.filter(function(dataset) {
 					return dataset.yAxisID === yAxis.id;
@@ -729,7 +758,7 @@ function createGraph(graph, data) {
 		})
 	}
 
-	if (typeof myLocalProperties.legend !== 'undefined') {
+	if (isDefined(myLocalProperties.legend)) {
 		if ($.isArray(myLocalProperties.legend)) {
 			myLocalProperties.legend.forEach(function (element, idx) {
 				graphProperties.data.datasets[idx].label = element
@@ -766,22 +795,41 @@ function createGraph(graph, data) {
 	new Chart(chartctx, graphProperties);
 }
 
-function createButtons(myProperties, ranges, customRange, multigraph) {
+function createButtons(myProperties, ranges, customRange, multigraph) {	
+    
+	var btn = {};
+	var buttons = '<div class="btn-group" role="group" aria-label="Basic example">';
+	var clickFunction = multigraph ? 'getMgDevices([' + myProperties.devices + ']' : 'showGraph(\'' + myProperties.graphIdx + '\'';
+	var btnIcons = ['fas fa-clock', 'fas fa-calendar-day', 'fas fa-calendar-week'];	
 	
-    var buttons = '<div class="btn-group" role="group" aria-label="Basic example">';
-	var clickFunction = multigraph ? 'getMgDevices([' + myProperties.devices + ']' : 'showGraph(' + myProperties.graphIdx;
+	if(!myProperties.popup){
+		if(isDefined(myProperties.buttons.icon))		btn.icon  	= myProperties.buttons.icon;
+		if(isDefined(myProperties.buttons.text)) 		btn.text  	= myProperties.buttons.text;
+		if(isDefined(myProperties.buttons.size)) 		btn.size  	= 'font-size:' + myProperties.buttons.size + 'px!important;';
+		if(isDefined(myProperties.buttons.color)) 		btn.color 	= 'color:' + myProperties.buttons.color + ';';
+		if(isDefined(myProperties.buttons.fill)) 		btn.fill  	= 'background-color:' + myProperties.buttons.fill + ';';
+		if(isDefined(myProperties.buttons.border)) 		btn.border  = 'border-color:' + myProperties.buttons.border + ';';	
+		if(isDefined(myProperties.buttons.radius)) 		btn.radius  = 'border-radius:' + myProperties.buttons.radius + 'px;';
+		if(isDefined(myProperties.buttons.padX)) 		btn.padX    = 'padding-left:' + myProperties.buttons.padX + 'px;padding-right:' + myProperties.buttons.padX + 'px;';
+		if(isDefined(myProperties.buttons.padY)) 		btn.padY    = 'padding-top:' + myProperties.buttons.padY + 'px;padding-bottom:' + myProperties.buttons.padY + 'px;';
+		if(isDefined(myProperties.buttons.marginX)) 	btn.marginX = 'margin-left:' + myProperties.buttons.marginX + 'px;margin-right:' + myProperties.buttons.marginX + 'px;';
+		if(isDefined(myProperties.buttons.marginY)) 	btn.marginY = 'margin-top:' + myProperties.buttons.marginY + 'px;margin-bottom:' + myProperties.buttons.marginY + 'px;';
+		if(isDefined(myProperties.buttons.shadow)) 		btn.shadow  = 'box-shadow: 0px 8px 15px ' + myProperties.buttons.shadow + ';';
+	}
 
+	var style = 'style="'.concat(btn.size, btn.color, btn.fill, btn.border, btn.radius, btn.padX, btn.padY, btn.marginX, btn.marginY, btn.shadow, '"');    
+	
     var btnTextList = {
-        'last'	: language.graph.last_hours,
-        'day'	: language.graph.today,
-        'month'	: language.graph.last_month
+        'last'	: isDefined(btn.text) && isDefined(btn.text[0])? btn.text[0] : language.graph.last_hours,
+        'day'	: isDefined(btn.text) && isDefined(btn.text[1])? btn.text[1] : language.graph.today,
+        'month'	: isDefined(btn.text) && isDefined(btn.text[2])? btn.text[2] : language.graph.last_month
     }
-		
-    ranges.forEach(function (item) {
-        var btnText = customRange ? item : btnTextList[item];
-        buttons += '<button type="button" class="btn btn-default ';
+			
+    ranges.forEach(function (item, i) {
+        var btnText = customRange? item : btnTextList[item];
+        buttons += '<button type="button" ' + style + ' class="btn btn-default ';
         if (myProperties.range === item) buttons += 'active';
-        buttons += '" onclick="'+clickFunction+',\'' + item + '\');">' + btnText + '</button> ';
+        buttons += '" onclick="' + clickFunction + ',\'' + item + '\');" style="background-color:;color:;"><i class="' + btnIcons[i] + '" style="font-size:14px;color:' + btn.icon + '">&nbsp;</i>' + btnText + '</button> ';
     });
     buttons += '</div>';
 
@@ -860,7 +908,7 @@ function getMgDevices(ids, range){
 				var arrMgIdx  = ids;
 				var arrMgDev = 'arrMgDevices_' + ids[0];
 										
-				if (typeof ( eval[arrMgDev] ) == 'undefined' ) eval[arrMgDev] = [];	
+				if (!isDefined(eval[arrMgDev])) eval[arrMgDev] = [];	
 
 				if(eval[arrMgDev].length < arrMgIdx.length){											
 					$.each(arrMgIdx, function( index, mgIdx ) {
@@ -897,7 +945,7 @@ function getGraphProperties(result, graphIdx, multigraph) {
 			ylabels: arrYlabels,
 		};	
 	} else {		
-		if (typeof result == 'undefined')
+		if (!isDefined(result))
 			return graphProperties;
 		if (result.hasOwnProperty('uvi')) {
 			graphProperties = {
