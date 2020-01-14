@@ -343,7 +343,7 @@ function onLoad() {
             if (standbyActive != true) {
                 if (standbyTime >= ((settings['standby_after'] * 1000) * 60)) {
                     $('body').addClass('standby');
-                    $('.swiper-container').hide();
+                    $('.dt-container').hide();
                     if (objectlength(columns_standby) > 0) buildStandby();
                     if (typeof (_STANDBY_CALL_URL) !== 'undefined' && _STANDBY_CALL_URL !== '') {
                         $.get(_STANDBY_CALL_URL);
@@ -372,7 +372,7 @@ function buildStandby() {
         var screenhtml = '<div class="screen screenstandby swiper-slide slidestandby" style="height:' + $(window).height() + 'px"><div class="row"></div></div>';
         $('div.screen').hide();
         $('#settingspopup').modal('hide');
-        $('div.swiper-container').before(screenhtml);
+        $('div.dt-container').before(screenhtml);
 
         for (var c in columns_standby) {
             getBlock(columns_standby[c], 'standby' + c, 'div.screenstandby', true);
@@ -507,7 +507,7 @@ function buildScreens() {
     }
 
     if (typeof (settings['edit_mode']) !== 'undefined' && settings['edit_mode'] == 1) {
-        $('.swiper-container').addClass('edit');
+        $('.dt-container').addClass('edit');
         setTimeout(function () {
             startSortable();
         }, 2000);
@@ -860,7 +860,7 @@ function disableStandby() {
     }
     $('.screenstandby').remove();
     $('body').removeClass('standby');
-    $('.swiper-container').show();
+    $('.dt-container').show();
     standbyActive = false;
 
 }
