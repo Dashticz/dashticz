@@ -4,6 +4,8 @@ Release Notes
 Recent changes
 --------------
 
+Fixes
+  * Fix standby screen in case of single screen.
 
 3.3.1 Beta (13-1-2020)
 ----------------------
