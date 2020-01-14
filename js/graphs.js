@@ -360,7 +360,7 @@ function showGraph(graphIdx, selGraph, data, arrIdx) {
             graph.dataFilterUnit = 'hours';
         }
 
-        graph.blocksConfig = isDefined(blocks[multi + 'graph_' + graph.properties.idx])? blocks[multi + 'graph_' + graph.properties.idx] : null;
+        graph.blocksConfig = isDefined(blocks[multi + 'graph_' + graph.properties.idx])? blocks[multi + 'graph_' + graph.properties.idx] : {};
 
         graph.method = 1;
         graph.graphConfig = null;
