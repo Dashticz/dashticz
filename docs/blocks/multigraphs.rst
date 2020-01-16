@@ -97,8 +97,8 @@ Set the dataset colors to html colors, hex code, rgb or rgba string::
     datasetColors: [colourBlueLight, colourLightGrey, colourBlue]
     var colourBlueLight= 'rgba(44, 130, 201, 1)';
 
-Examples
----------
+Multigraph Examples
+--------------------
 
 CPU, Memory & HDD::
 
