@@ -159,5 +159,23 @@ This is using the new logarithmic scale (i.e. ``cartesian = logarithmic``). Note
 
 .. image :: img/multigraph5.png
 
+Outside vs Inside Temp::
 
+	blocks['multigraph_72'] = {
+		title: 'Outside vs Inside Temp',
+		devices: [ 72, 152],
+		datasetColors: [colourBlueLight, colourLightGrey, colourBlue, colourOrange, colourRed, colourYellow],
+		exclude: ['ba', 'hu'],
+		graph: 'line',
+		legend: {
+          	'te1'	: 'Outside (max)',	  
+	  	'ta1'	: 'Outside (avg)',
+	  	'tm1'	: 'Outside (min)',
+	  	'te2'	: 'Inside (max)',
+	  	'ta2'	: 'Inside (avg)',
+	  	'tm2'	: 'Inside (min)'
+		}
+	}
+
+.. image :: img/multigraph.png
 
