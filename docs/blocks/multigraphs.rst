@@ -102,31 +102,31 @@ Examples
 
 **CPU, Memory & HDD**::
 
-    blocks['multigraph_17'] = {
-	    title: 'CPU, Memory & HDD',
-	    devices: [ 17, 18, 189 ],
-      datasetColors: [colourRed, colourOrange, colourBlue, colourGreen, colourBlueLight, colourAqua, colourYellow, colourPurple, colourPink],
-      legend: true,
-      cartesian : 'linear', 	
-      graph: 'line',
-      lineFill: true,
-      drawOrderDay:   ['v1', 'v3', 'v2'],
-      drawOrderMonth: ['v_min1', 'v_avg1', 'v_min2', 'v_max1', 'v_avg3', 'v_max3', 'v_min3', 'v_avg2', 'v_max2'],
-      legend: {
-        'v1'		: 'CPU',	  
-        'v_avg1'	: 'CPU avg',
-        'v_max1'	: 'CPU max',
-        'v_min1'	: 'CPU min',
-        'v2'		: 'MEM',
-        'v_avg2'	: 'MEM avg',
-        'v_max2'	: 'MEM max',
-        'v_min2'	: 'MEM min',
-        'v3'		: 'HDD',
-        'v_avg3'	: 'HDD avg',
-        'v_max3'	: 'HDD max',
-        'v_min3'	: 'HDD min'
-    }
-  }
+	blocks['multigraph_17'] = {
+		title: 'CPU, Memory & HDD',
+		devices: [ 17, 18, 189 ],
+		datasetColors: [colourRed, colourOrange, colourBlue, colourGreen, colourBlueLight, colourAqua, colourYellow, colourPurple, colourPink],
+		legend: true,
+		cartesian : 'linear', 	
+		graph: 'line',
+		lineFill: true,
+		drawOrderDay:   ['v1', 'v3', 'v2'],
+		drawOrderMonth: ['v_min1', 'v_avg1', 'v_min2', 'v_max1', 'v_avg3', 'v_max3', 'v_min3', 'v_avg2', 'v_max2'],
+		legend: {
+			'v1'		: 'CPU',	  
+			'v_avg1'	: 'CPU avg',
+			'v_max1'	: 'CPU max',
+			'v_min1'	: 'CPU min',
+			'v2'		: 'MEM',
+			'v_avg2'	: 'MEM avg',
+			'v_max2'	: 'MEM max',
+			'v_min2'	: 'MEM min',
+			'v3'		: 'HDD',
+			'v_avg3'	: 'HDD avg',
+			'v_max3'	: 'HDD max',
+			'v_min3'	: 'HDD min'
+		}
+	}
 
 .. image :: img/multigraph3.png
 
@@ -168,7 +168,7 @@ This is using the new logarithmic scale (i.e. ``cartesian = logarithmic``). Note
 		exclude: ['ba', 'hu'],
 		graph: 'line',
 		legend: {
-          		'te1': 'Outside (max)',	  
+			'te1': 'Outside (max)',	  
 	  		'ta1': 'Outside (avg)',
 	  		'tm1': 'Outside (min)',
 	  		'te2': 'Inside (max)',
