@@ -100,33 +100,82 @@ Set the dataset colors to html colors, hex code, rgb or rgba string::
 Examples
 ---------
 
-CPU, Memory & HDD::
+**CPU, Memory & HDD**::
 
-    blocks['multigraph_17'] = {
-	    title: 'CPU, Memory & HDD',
-	    devices: [ 17, 18, 189 ],
-      datasetColors: [colourRed, colourOrange, colourBlue, colourGreen, colourBlueLight, colourAqua, colourYellow, colourPurple, colourPink],
-      legend: true,
-      cartesian : 'linear', 	
-      graph: 'line',
-      lineFill: true,
-      drawOrderDay:   ['v1', 'v3', 'v2'],
-      drawOrderMonth: ['v_min1', 'v_avg1', 'v_min2', 'v_max1', 'v_avg3', 'v_max3', 'v_min3', 'v_avg2', 'v_max2'],
-      legend: {
-        'v1'		: 'CPU',	  
-        'v_avg1'	: 'CPU avg',
-        'v_max1'	: 'CPU max',
-        'v_min1'	: 'CPU min',
-        'v2'		: 'MEM',
-        'v_avg2'	: 'MEM avg',
-        'v_max2'	: 'MEM max',
-        'v_min2'	: 'MEM min',
-        'v3'		: 'HDD',
-        'v_avg3'	: 'HDD avg',
-        'v_max3'	: 'HDD max',
-        'v_min3'	: 'HDD min'
-    }
-  }
+	blocks['multigraph_17'] = {
+		title: 'CPU, Memory & HDD',
+		devices: [ 17, 18, 189 ],
+		datasetColors: [colourRed, colourOrange, colourBlue, colourGreen, colourBlueLight, colourAqua, colourYellow, colourPurple, colourPink],
+		legend: true,
+		cartesian : 'linear', 	
+		graph: 'line',
+		lineFill: true,
+		drawOrderDay:   ['v1', 'v3', 'v2'],
+		drawOrderMonth: ['v_min1', 'v_avg1', 'v_min2', 'v_max1', 'v_avg3', 'v_max3', 'v_min3', 'v_avg2', 'v_max2'],
+		legend: {
+			'v1'		: 'CPU',	  
+			'v_avg1'	: 'CPU avg',
+			'v_max1'	: 'CPU max',
+			'v_min1'	: 'CPU min',
+			'v2'		: 'MEM',
+			'v_avg2'	: 'MEM avg',
+			'v_max2'	: 'MEM max',
+			'v_min2'	: 'MEM min',
+			'v3'		: 'HDD',
+			'v_avg3'	: 'HDD avg',
+			'v_max3'	: 'HDD max',
+			'v_min3'	: 'HDD min'
+		}
+	}
 
 .. image :: img/multigraph3.png
+
+**Grid vs Solar**::
+
+	blocks['multigraph_1'] = {
+		title: 'Grid vs Solar',
+		devices: [ 162, 1],
+		datasetColors: [colourRed, colourGreen],		
+		lineFill: [true, true],						
+		graph: 'line',				
+		cartesian: 'logarithmic', 				
+		drawOrderLast: ['v2', 'v1'],
+		drawOrderDay: ['v2', 'v1'],
+		drawOrderMonth: ['v1', 'v2', 'c1', 'c2'],
+		legend: {
+			'v1': 'Grid',	
+			'v2': 'Solar', 
+			'c1': 'Solar Cumulative',	  
+			'c2': 'Solar Cumulative'
+		}
+	} 
+
+
+This is using the standard linear scale (i.e. ``cartesian = linear``):
+
+.. image :: img/multigraph6.png
+
+This is using the new logarithmic scale (i.e. ``cartesian = logarithmic``). Note the y axis labelling on the left:
+
+.. image :: img/multigraph5.png
+
+**Outside vs Inside Temp**::
+
+	blocks['multigraph_72'] = {
+		title: 'Outside vs Inside Temp',
+		devices: [ 72, 152],
+		datasetColors: [colourBlueLight, colourLightGrey, colourBlue, colourOrange, colourRed, colourYellow],
+		exclude: ['ba', 'hu'],
+		graph: 'line',
+		legend: {
+			'te1': 'Outside (max)',	  
+	  		'ta1': 'Outside (avg)',
+	  		'tm1': 'Outside (min)',
+	  		'te2': 'Inside (max)',
+	  		'ta2': 'Inside (avg)',
+	  		'tm2': 'Inside (min)'
+		}
+	}
+
+.. image :: img/multigraph4.png
 
