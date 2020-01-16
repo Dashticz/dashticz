@@ -97,8 +97,8 @@ Set the dataset colors to html colors, hex code, rgb or rgba string::
     datasetColors: [colourBlueLight, colourLightGrey, colourBlue]
     var colourBlueLight= 'rgba(44, 130, 201, 1)';
 
-Multigraph Examples
---------------------
+Examples
+---------
 
 CPU, Memory & HDD::
 
@@ -150,6 +150,14 @@ Grid vs Solar::
 		}
 	} 
 
+
+This is using the standard linear scale (i.e. ``cartesian = linear``):
+
 .. image :: img/multigraph6.png
+
+This is using the new logarithmic scale (i.e. ``cartesian = logarithmic``). Note the y axis labelling on the left:
+
+.. image :: img/multigraph5.png
+
 
 
