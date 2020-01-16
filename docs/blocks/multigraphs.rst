@@ -100,7 +100,7 @@ Set the dataset colors to html colors, hex code, rgb or rgba string::
 Examples
 ---------
 
-CPU, Memory & HDD::
+**CPU, Memory & HDD**::
 
     blocks['multigraph_17'] = {
 	    title: 'CPU, Memory & HDD',
@@ -130,7 +130,7 @@ CPU, Memory & HDD::
 
 .. image :: img/multigraph3.png
 
-Grid vs Solar::
+**Grid vs Solar**::
 
 	blocks['multigraph_1'] = {
 		title: 'Grid vs Solar',
@@ -159,7 +159,7 @@ This is using the new logarithmic scale (i.e. ``cartesian = logarithmic``). Note
 
 .. image :: img/multigraph5.png
 
-Outside vs Inside Temp::
+**Outside vs Inside Temp**::
 
 	blocks['multigraph_72'] = {
 		title: 'Outside vs Inside Temp',
