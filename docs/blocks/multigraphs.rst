@@ -8,7 +8,7 @@ Multigraphs can be used to combine the data from several devices into one single
 .. note :: The multigraph functionality has been recently added to Dashticz and is still under development 
 
 Multigraph block parameters
----------------------------
+----------------------------
 
 .. list-table:: 
   :header-rows: 1
@@ -98,7 +98,7 @@ Set the dataset colors to html colors, hex code, rgb or rgba string::
     var colourBlueLight= 'rgba(44, 130, 201, 1)';
 
 Examples
-~~~~~~~~
+---------
 
 CPU, Memory & HDD::
 
