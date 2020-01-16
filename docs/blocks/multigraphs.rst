@@ -130,3 +130,26 @@ CPU, Memory & HDD::
 
 .. image :: img/multigraph3.png
 
+Grid vs Solar::
+
+	blocks['multigraph_1'] = {
+		title: 'Grid vs Solar',
+		devices: [ 162, 1],
+		datasetColors: [colourRed, colourGreen],		
+		lineFill: [true, true],						
+		graph: 'line',				
+		cartesian: 'logarithmic', 				
+		drawOrderLast: ['v2', 'v1'],
+		drawOrderDay: ['v2', 'v1'],
+		drawOrderMonth: ['v1', 'v2', 'c1', 'c2'],
+		legend: {
+			'v1': 'Grid',	
+			'v2': 'Solar', 
+			'c1': 'Solar Cumulative',	  
+			'c2': 'Solar Cumulative'
+		}
+	} 
+
+.. image :: img/multigraph6.png
+
+
