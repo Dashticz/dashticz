@@ -168,12 +168,12 @@ This is using the new logarithmic scale (i.e. ``cartesian = logarithmic``). Note
 		exclude: ['ba', 'hu'],
 		graph: 'line',
 		legend: {
-          		'te1'	: 'Outside (max)',	  
-	  		'ta1'	: 'Outside (avg)',
-	  		'tm1'	: 'Outside (min)',
-	  		'te2'	: 'Inside (max)',
-	  		'ta2'	: 'Inside (avg)',
-	  		'tm2'	: 'Inside (min)'
+          		'te1': 'Outside (max)',	  
+	  		'ta1': 'Outside (avg)',
+	  		'tm1': 'Outside (min)',
+	  		'te2': 'Inside (max)',
+	  		'ta2': 'Inside (avg)',
+	  		'tm2': 'Inside (min)'
 		}
 	}
 
