@@ -177,5 +177,5 @@ Outside vs Inside Temp::
 		}
 	}
 
-.. image :: img/multigraph.png
+.. image :: img/multigraph4.png
 
