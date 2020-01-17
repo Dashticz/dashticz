@@ -990,8 +990,7 @@ function getDevices(override) {
                                     $('.block_' + idx + '_1').length > 0 ||
                                     $('.block_' + idx + '_2').length > 0 ||
                                     $('.block_' + idx + '_3').length > 0 ||
-                                    $('.block_graph_' + idx).length > 0 ||
-									$("div[class*='block_multigraph_']").length > 0
+                                    $('.block_graph_' + idx).length > 0 
                                 )
                             )
                         ) {
@@ -1041,39 +1040,6 @@ function getDevices(override) {
                                 getGraphs(device, false);
                             }
 
-							// ##############################################
-							// MULTIGRAPH START                             #
-							// ##############################################
-							if ($("div[class*='block_multigraph_']").length > 0) {
-
-								for(var b in blocks) {
-									if(b.substring(0, 11) === 'multigraph_'){
-
-										var arrMgIdx  = blocks[b]['devices'];
-										var mgId = b.replace('multigraph_','');
-										var arrMgDev = 'arrMgDevices_' + mgId;
-
-										if (typeof ( eval[arrMgDev] ) == 'undefined' ) eval[arrMgDev] = [];	
-
-										if(eval[arrMgDev].length < arrMgIdx.length){											
-											$.each(arrMgIdx, function( index, mgIdx ) {
-												if(mgIdx === parseInt(idx) && $.inArray(mgIdx, eval[arrMgDev]) === -1) {
-													eval[arrMgDev].push(device);											
-												}
-											});
-										}
-
-										if(eval[arrMgDev].length === arrMgIdx.length && data.result.length-1 === parseInt(r)){	
-											getMultiGraphs(eval[arrMgDev] );	
-										} 
-									}
-								}
-							}						
-							// ##############################################
-							// MULTIGRAPH END                               #
-							// ##############################################
-
-
                             triggerStatus(idx, device['LastUpdate'], device);
                             triggerChange(idx, device['LastUpdate'], device);
 
@@ -1103,6 +1069,38 @@ function getDevices(override) {
                             }
                         }
                     }
+					
+					// ##############################################
+					// MULTIGRAPH START                             #
+					// ##############################################
+					if ($("div[class*='block_multigraph_']").length > 0) {
+
+						for(var b in blocks) {
+							if(b.substring(0, 11) === 'multigraph_'){
+
+								var arrMgIdx  = blocks[b]['devices'];
+								arrMgIdx.sort(function(a, b) {
+									return a - b;
+								});
+								var mgId = parseInt(b.replace('multigraph_',''));
+								var arrMgDev = [];
+
+								$.each(arrMgIdx, function( index, mgIdx ) {
+									var device = data.result.filter(obj => {
+										return parseInt(obj.idx) === mgIdx
+									})
+									device[0].primaryIdx = mgId;
+									arrMgDev.push(device[0]);										
+								});
+								
+								getMultiGraphs(arrMgDev);
+							}
+						}
+					}						
+					// ##############################################
+					// MULTIGRAPH END                               #
+					// ##############################################
+					
                     if (typeof (afterGetDevices) === 'function') afterGetDevices();
                 }
 
@@ -1227,7 +1225,7 @@ function handleDevice(device, idx) {
         html += getStatusBlock(idx, device, blocktypes['Name'][device['Name']]);
         return [html, addHTML];
     }
-
+	
     switch (device['Type']) {
         case 'P1 Smart Meter':
             return getSmartMeterBlock(device, idx);
@@ -1241,7 +1239,7 @@ function handleDevice(device, idx) {
         case 'General':
             if (device['SubType'] === 'kWh') {
                 return getGeneralKwhBlock(device, idx);
-            }
+            }			
             break;
         case 'Humidity':
             return getHumBlock(device, idx);
@@ -1410,7 +1408,7 @@ function handleDevice(device, idx) {
             html += '<br /><span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
         }
         html += '</div>';
-    } else if (device['HardwareName'] == 'Dummy') {
+    } else if (device['HardwareName'] === 'Dummy') {		
         return getDefaultSwitchBlock(device, blocks[idx], idx, 'fas fa-toggle-on', 'fas fa-toggle-off', buttonimg);
     } else {
         return getDefaultSwitchBlock(device, blocks[idx], idx, 'fas fa-lightbulb', 'far fa-lightbulb', buttonimg);

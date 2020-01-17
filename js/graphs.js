@@ -202,21 +202,42 @@ function showPopupGraph(idx, subidx) {
 
 }
 
-function getMultiGraphs(devices, selGraph){	
-	var primary = devices[0];
+function getMultiGraphs(mgDevices, selGraph){	
+	
+	var devices = mgDevices;
 	var arrIdx = [];
 	var multidata = { "result": [], "status": "OK", "title": "Multigraph day" };
 	var range = isDefined(selGraph)? selGraph : 'day';
 	if(range === 'last') range = 'day';
 	var arrResults = [];
 	var currentValues = [];
-	$.each(devices, function( i, device ) {		
-		var multigraph = dtGraphs[devices[i].idx];
+	
+	// Debug toggle
+	var debug = false;
+	
+	// 15/01/2020 - Fix for block id not match 1st device id in devices array
+	if(devices[0].primaryIdx !== parseInt(devices[0].idx) ) {
+		if(debug) console.log('multigraph_' + devices[0].primaryIdx, '1st device in array', devices[0].primaryIdx, 'which is not the primary (', parseInt(devices[0].idx), '), sorting array ...');
+		var primaryDevice = devices.filter(obj => {
+			return parseInt(obj.idx) === devices[0].primaryIdx;
+		})
+		var sortArray = [];
+		sortArray.push(primaryDevice[0]);		
+		$.each(devices, function( i, device ) {	
+			if($.inArray(device, sortArray) === -1){									
+				sortArray.push(device);		
+			}
+		});
+		devices = sortArray;
+	}
+	
+	$.each(devices, function( i, device ) {	
+	
+		var multigraph = isDefined(dtGraphs[devices[i].idx])? dtGraphs[devices[i].idx] : false;
 		arrIdx.push(devices[i].idx);		
-		if(!isDefined(multigraph)){
-			multigraph = getGraphs(devices[i], false, true);
-		}
-		currentValues.push((parseFloat(multigraph.currentValue.replace(',','.'))).toFixed(multigraph.decimals));		
+		if(!multigraph)	multigraph = getGraphs(devices[i], false, true);
+		currentValues.push((parseFloat(multigraph.currentValue.replace(',','.'))).toFixed(multigraph.decimals));
+		
 		var deviceNumber = i+1;		
 		if (isDefined(selGraph)) {
 			multigraph.range = selGraph;
@@ -224,10 +245,12 @@ function getMultiGraphs(devices, selGraph){
 		}		
 		if (multigraph.lastRefreshTime < (time() - (parseFloat(_GRAPHREFRESH) * 60))) {
 			multigraph.forced = true;
-		}				
-		if (dtGraphs[primary.idx].forced) {
-			var multigraphTypes = isDefined(blocks['multigraph_' + primary.idx].multigraphTypes)? blocks['multigraph_' + primary.idx].multigraphTypes : null;
-			var interval = isDefined(blocks['multigraph_' + primary.idx].interval)? blocks['multigraph_' + primary.idx].interval : 1;
+		}		
+
+		if (dtGraphs[device.primaryIdx].forced) {
+			var multigraphTypes = isDefined(blocks['multigraph_' + device.primaryIdx].multigraphTypes)? blocks['multigraph_' + device.primaryIdx].multigraphTypes : null;
+			var interval = isDefined(blocks['multigraph_' + device.primaryIdx].interval)? blocks['multigraph_' + device.primaryIdx].interval : 1;
+			if(debug) console.log('multigraph_' + device.primaryIdx, 'interval:', interval);
 			$.ajax({
 				url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=graph&sensor=' + dtGraphs[devices[i].idx].sensor + '&idx=' + dtGraphs[devices[i].idx].idx + '&range=' + range + '&method=1&time=' + new Date().getTime() + '&jsoncallback=?',
 				type: 'GET',
@@ -243,39 +266,47 @@ function getMultiGraphs(devices, selGraph){
 					arrResults.sort(function(a, b) {
 						return b.result.length - a.result.length;
 					});					
-					var newKeys = [];									
+					var newKeys = [];
+					var arrYkeys = [];						
 					$.each(arrResults, function( z, d ) {
-						var arrYkeys = [];						
+											
 						var currentKey;
 						var counter = z + 1;
 						if(multigraphTypes !== null){
 							for (var key in d.result[0]) {
 								if($.inArray(key, multigraphTypes) !== -1 && key !== "d"){									
-									arrYkeys.push(key);		
+									arrYkeys.push(key);	
+									if(debug) console.log('multigraph_' + device.primaryIdx, z, 'Push old key:', key);
 								}
 							}
 						} else {
 							for (var key in d.result[0]) {							
 								if(key !== "d" ){
-									arrYkeys.push(key);			
+									arrYkeys.push(key);
+									if(debug) console.log('multigraph_' + device.primaryIdx, z, 'Push old key:', key);									
 								}
 							}
-						}						
+						}		
+						
 						$.each(d.result, function( x, res ) {
 							var valid = false;
 							interval = multigraph.range === 'last' || multigraph.range === 'month'? 1 : interval;
+							
 							if(x% interval === 0){ 
-								if(z==0) {
+								if(z==0) {									
 									var obj = {};
 									for (var key in res) {
 										if(key ==="d"){
 											obj["d"] = res[key];
 										}
-										if($.inArray(key, arrYkeys) !== -1){
+										if($.inArray(key, arrYkeys) !== -1){   
 											currentKey = key + counter;
 											obj[currentKey] = res[key];
 											valid = true;
-											if($.inArray(currentKey, newKeys) === -1) newKeys.push(currentKey);
+											if($.inArray(currentKey, newKeys) === -1) {
+												if(debug) console.log('multigraph_' + device.primaryIdx, z, 'Push new key:', currentKey);
+												newKeys.push(currentKey);
+											}
 										} 
 									}								
 									if(valid) multidata.result.push(obj);								
@@ -287,7 +318,10 @@ function getMultiGraphs(devices, selGraph){
 												   if(k === "d" && v === res["d"]){
 														currentKey = key + counter;
 														multidata.result[index][currentKey] = res[key];
-														if($.inArray(currentKey, newKeys) === -1) newKeys.push(currentKey);
+														if($.inArray(currentKey, newKeys) === -1) { // <---- here
+															if(debug) console.log('multigraph_' + device.primaryIdx, z, 'Push new key:', currentKey );
+															newKeys.push(currentKey);
+														}
 												   }									  
 											   });
 											});
@@ -306,10 +340,12 @@ function getMultiGraphs(devices, selGraph){
 									} 
 								});								
 							});
-							dtGraphs[primary.idx].currentValues = currentValues/* .join(' | ') */;
-							showGraph(primary.idx, selGraph, multidata, arrIdx);
+							dtGraphs[device.primaryIdx].currentValues = currentValues ;
+							showGraph(device.primaryIdx, selGraph, multidata, arrIdx);							
 						}						
 					});
+					if(debug) console.log('multigraph_' + device.primaryIdx, 'Old Keys', arrYkeys);
+					if(debug) console.log('multigraph_' + device.primaryIdx, 'New Keys', newKeys);
 				}  
 			});	
 		}
@@ -801,6 +837,7 @@ function createButtons(myProperties, ranges, customRange, multigraph) {
 	var buttons = '<div class="btn-group" role="group" aria-label="Basic example">';
 	var clickFunction = multigraph ? 'getMgDevices([' + myProperties.devices + ']' : 'showGraph(\'' + myProperties.graphIdx + '\'';
 	var btnIcons = ['fas fa-clock', 'fas fa-calendar-day', 'fas fa-calendar-week'];	
+	var style = 'style="';
 	
 	if(!myProperties.popup){
 		if(isDefined(myProperties.buttons.icon))		btn.icon  	= myProperties.buttons.icon;
@@ -815,9 +852,11 @@ function createButtons(myProperties, ranges, customRange, multigraph) {
 		if(isDefined(myProperties.buttons.marginX)) 	btn.marginX = 'margin-left:' + myProperties.buttons.marginX + 'px;margin-right:' + myProperties.buttons.marginX + 'px;';
 		if(isDefined(myProperties.buttons.marginY)) 	btn.marginY = 'margin-top:' + myProperties.buttons.marginY + 'px;margin-bottom:' + myProperties.buttons.marginY + 'px;';
 		if(isDefined(myProperties.buttons.shadow)) 		btn.shadow  = 'box-shadow: 0px 8px 15px ' + myProperties.buttons.shadow + ';';
-	}
+	}	
 
-	var style = 'style="'.concat(btn.size, btn.color, btn.fill, btn.border, btn.radius, btn.padX, btn.padY, btn.marginX, btn.marginY, btn.shadow, '"');    
+	$.each([btn.size, btn.color, btn.fill, btn.border, btn.radius, btn.padX, btn.padY, btn.marginX, btn.marginY, btn.shadow], function(i,s) {	
+		if(isDefined(s)) style += s;
+	});
 	
     var btnTextList = {
         'last'	: isDefined(btn.text) && isDefined(btn.text[0])? btn.text[0] : language.graph.last_hours,
@@ -827,9 +866,9 @@ function createButtons(myProperties, ranges, customRange, multigraph) {
 			
     ranges.forEach(function (item, i) {
         var btnText = customRange? item : btnTextList[item];
-        buttons += '<button type="button" ' + style + ' class="btn btn-default ';
+        buttons += '<button type="button" ' + style + '" class="btn btn-default ';
         if (myProperties.range === item) buttons += 'active';
-        buttons += '" onclick="' + clickFunction + ',\'' + item + '\');" style="background-color:;color:;"><i class="' + btnIcons[i] + '" style="font-size:14px;color:' + btn.icon + '">&nbsp;</i>' + btnText + '</button> ';
+        buttons += '" onclick="' + clickFunction + ',\'' + item + '\');" style="background-color:;color:;"><i class="' + btnIcons[i] + '" style="font-size:14px;color:' + btn.icon + '">&nbsp;</i>&nbsp;' + btnText + '</button> ';
     });
     buttons += '</div>';
 
@@ -892,36 +931,22 @@ function getDefaultGraphProperties(myProperties) {
     }
 }
 
-function getMgDevices(ids, range){
-	
+function getMgDevices(ids, range){	
 	$.ajax({
 		url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=devices&plan=0&filter=all&used=true&order=Name',
 		type: 'GET',
 		async: true,
 		contentType: "application/json",
 		success: function (data) {
-			
-			for (var r in data.result) {
-				
-				var device = data.result[r];
-                var idx = device['idx'];			
-				var arrMgIdx  = ids;
-				var arrMgDev = 'arrMgDevices_' + ids[0];
-										
-				if (!isDefined(eval[arrMgDev])) eval[arrMgDev] = [];	
-
-				if(eval[arrMgDev].length < arrMgIdx.length){											
-					$.each(arrMgIdx, function( index, mgIdx ) {
-						if(mgIdx === parseInt(idx) && $.inArray(mgIdx, eval[arrMgDev]) === -1) {
-							eval[arrMgDev].push(device);											
-						}
-					});
-				}
-				
-				if(eval[arrMgDev].length === arrMgIdx.length && data.result.length-1 === parseInt(r)){
-					getMultiGraphs(eval[arrMgDev], range); 
-				} 
-			}			
+			var arrMgDev = [];
+			$.each(ids, function( index, mgIdx ) {
+				var device = data.result.filter(obj => {
+					return parseInt(obj.idx) === mgIdx;
+				})
+				device[0].primaryIdx = ids[0];
+				arrMgDev.push(device[0]);										
+			});
+			getMultiGraphs(arrMgDev, range);
 		}
 	});
 }
