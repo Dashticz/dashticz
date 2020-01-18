@@ -36,3 +36,10 @@ To change the color of the Streamplayer buttons add the following to your ``cust
 
 This last part is applied if the Streamplayer is in playing state.
 
+To add an image to the Streamplayer add the following to your ``CONFIG.js``::
+
+    blocks['streamplayer'] = {
+        image: 'radio.png'
+    }
+
+If you wanna use an icon instead of an image you have to change ``image`` to ``icon``. You choose an icon from the FontAwesome Free set.

@@ -20,6 +20,8 @@ Before you can use a device in a column you must make it known in your CONFIG.js
     width: 12
    }
    
+If you use anything other than a number you have to put it between quotes: ``['s1']`` ``['v3']`` ``['123_1']``
+
 The number ``123`` is the Domoticz device id. The example above also shows the use of two parameters: ``title`` and ``width``.
 For a full list of parameters see :ref:`dom_blockparameters`.
 
@@ -235,6 +237,18 @@ Example of a more extensive block definition::
       gotoslide: 2            //Goto screen when a device changes
     };  
 
+Blocks with a sub device id
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For a thermostat IDX, IDX_1 or IDX_2 can be used.
+If IDX_1 is used the thermostat +/- buttons will not be shown.
+If IDX_2 is used the icon/image of the block can be changed as in a normal block.
+
+::
+
+    blocks['123_2'] = {
+        image: 'toon.png'
+    } 
 
 .. _openpopup :
 
@@ -289,3 +303,28 @@ Example ``custom.css`` (only needed in case you want to change the default flash
     background-color: #0f0 !important;	
   }
   
+.. _Evohome:
+
+Evohome
+~~~~~~~
+
+Dashticz recognizes Evohome devices.
+
+.. image :: img/evohome.png
+
+The following config parameters from CONFIG.js are applicable:
+
+.. list-table:: 
+  :header-rows: 1
+  :widths: 5 30
+  :class: tight-table
+
+  * - Parameter
+    - Description
+  * - evohome_status
+    - ``'Auto'``: 
+  * - evohome_boost_zone
+    - ``<number>``: Zone boost temporary override time in minutes. Default: 60
+  * - evohome_boost_hw
+    - ``<number>``: Hot water boost temporary override time in minutes. Default: 15
+

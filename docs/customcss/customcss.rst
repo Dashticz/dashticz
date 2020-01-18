@@ -1,6 +1,8 @@
 Styling via custom.css
 ######################
 
+.. note :: In Dashticz v3.2.0 the css-classes for most of the special blocks have been updated. See :ref:`specialclasses`
+
 .. contents::
    
 Almost all visual elements on the Dashticz dashboard are styled via so called style sheets. Normally the abbreviation CSS (Cascading Style Sheets) is used for this.
@@ -199,6 +201,31 @@ Rounded corners for all blocks::
       border-radius: 20px;                            /* Rounded corners */
     }
 
+
+Buttons
+-------
+
+Render the title below the icon (all buttons)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+::
+
+   .button {
+      flex-direction: column;
+      min-height: 85px;
+   }
+
+A Domoticz device block normally has a height of 85 pixels (small devices: 75 pixels).
+
+Render the title below the icon (specific button)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You have to add the key parameter to your button definition.
+::
+
+   [data-id='mykey'].button {
+      flex-direction: column;
+   }
+
+
 Icons
 -----
 
@@ -362,3 +389,46 @@ Remove Swiper Pagination Bullet
     .swiper-pagination-bullet {
         display: none !important
     }
+
+Remove break line
+~~~~~~~~~~~~~~~~~
+::
+
+   .block_107 br:nth-child(2) {
+      display: none
+   }
+
+Change 107 to your own block number
+
+.. _specialclasses:
+
+CSS class definition for special blocks
+---------------------------------------
+
+.. note :: Work in progress
+
+.. image :: specialclasses.jpg
+
+Each top level block has the class ``dt_block`` and the name of block type as class assigned.
+If you have defined this block via ``blocks['mykey']=...`` then the value of the ``data-id`` parameter will be set to ``'mykey'``.
+If you have defined the block by using an object, like ``buttons.buienradar=`` then
+you can define the key by making use of the key-parameter in your block definition.
+
+So if you want to select all blocktitles, add the following to custom.css::
+
+    .blocktitle {
+        background: blue !important;
+    }
+
+If you want to change the title part of all blocktitles::
+
+    .blocktitle .dt_title {
+        font-size: 50px;
+        color: red;
+    }
+
+If you want to change only a specific blocktitle::
+
+        [data-id='title1'].blocktitle {
+            background: yellow !important;
+        }  

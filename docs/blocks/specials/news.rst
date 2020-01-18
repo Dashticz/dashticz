@@ -42,6 +42,28 @@ Config Settings
     - | Enter the ammount in seconds (delay)
       | ``5`` = Scroll the news message every 5 seconds
 
+News Parameters
+---------------
+
+.. list-table:: 
+  :header-rows: 1
+  :widths: 5, 30
+  :class: tight-table
+    
+  * - Parameters
+    - Description
+  * - feed
+    - | URL of the news feed
+      | ``'http://www.nu.nl/rss/algemeen'`` = Example for nu.nl
+  * - maxheight
+    - | Maximum height of the news block in pixels
+  * - title
+    - | Title of the news block
+  * - icon
+    - | ``'fas fa-icon'``: icon to show in the news block
+  * - image
+    - | ``'image.png'``: image to show as icon. Image path is relative to the <dashticz>/img folder.
+
 Example
 -------
 

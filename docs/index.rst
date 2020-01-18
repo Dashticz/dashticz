@@ -17,7 +17,7 @@ Welcome to Dashticz's documentation!
    configuration
    customization
    tipsandtricks
-   releasenotes
+   releasenotes/index
    develop/develop
    
 Indices and tables

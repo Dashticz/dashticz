@@ -1,0 +1,72 @@
+.. _v320:
+
+v3.2.0: Change in HTML template for special blocks
+===================================================
+
+In the last years several special blocks have been added. However, the html templates for each block all were a bit different.
+The usage of css class names was not consistent. This made maintainability difficult as well.
+For that reason I decided to refactor the code towards the usage of a standard html template.
+In this version the following blocks have been migrated to the new format:
+
+  * Block title
+  * Buttons
+  * Frames
+  * Longfonds
+  * News
+  * Public transport
+  * Stationclock
+  * Streamplayer
+  * Traffic
+  * Trafficinfo
+  * Train
+  * TV Guide
+
+Block parameters
+-----------------
+
+For these blocks you can set the following block parameters:
+
+  * icon: Icon name 
+  * image: Image name. Image path is relative to the <dashticz>/img folder.
+  * title
+  * key: Unique identifier
+
+These parameters all work in the same way. The default styling however might be different, depending on the block type.
+
+The following sections provide an overview of additional changes per block type.
+
+
+Button
+~~~~~~~
+
+The current button parameter ``image`` has been renamed to ``btnimage``.
+
+A button block can have a image parameter, which defines the image to be used as icon,
+and a btnimage parameter. This parameter defines the image of the button itself.
+
+Public transport
+~~~~~~~~~~~~~~~~
+
+The icon parameter of the Public transport block now must be set to the full icon name,
+as defined by FontAwesome.
+
+Previous format ::
+
+  icon: 'train', //change: full icon name
+
+New format::
+
+  icon: 'fas fa-train',
+
+
+CSS class definitions
+---------------------
+The CSS class definitions for each element of these blocks (block, icon, title, state) have been made consistent.
+This means you might have to update the styling in your custom.css, or the classes you use in custom.js.
+See :ref:`specialclasses`
+
+
+
+
+  
+

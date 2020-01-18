@@ -1,3 +1,4 @@
+/* eslint-disable no-prototype-builtins */
 /* global moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL*/
 var dtGraphs = [];
 var _GRAPHREFRESH = 5;
@@ -21,7 +22,7 @@ function getGraphs(device, popup) {
             break;
         case 'Wind':
             sensor = 'wind';
-            var windspeed=device.Data.split(';')[2]/10;
+            var windspeed = device.Data.split(';')[2] / 10;
             if (config['use_beaufort']) {
                 currentValue = Beaufort(windspeed);
                 decimals = 0;
@@ -142,7 +143,7 @@ function getGraphs(device, popup) {
             currentValue = device['CounterToday'].split(' ')[0];
             break;
         case 'Barometer':
-            sensor='temp';
+            sensor = 'temp';
             txtUnit = device['Data'].split(' ')[1];
             break;
 
@@ -334,11 +335,14 @@ function showGraph(graphIdx, selGraph) {
                     mydiv.addClass('block_graph');
                 }
                 mydiv.html(html);
-
+                if (!data.result || !data.result.length) { //No data returned
+                    console.log('No graph data for ' + myProperties.graphIdx);
+                    return;
+                }
                 var chartctx = document.getElementById('graphoutput' + myProperties.graphIdx).getContext('2d');
                 var myLocalProperties = {};
-                
-                $.extend(true, myLocalProperties, myProperties);    // create a deep copy for temporary use
+
+                $.extend(true, myLocalProperties, myProperties); // create a deep copy for temporary use
                 var graphProperties = getDefaultGraphProperties(myProperties);
                 $.extend(true, graphProperties, blocksConfig);
 
@@ -355,7 +359,7 @@ function showGraph(graphIdx, selGraph) {
                     var setHeight = Math.min(Math.round(graphwidth / window.innerWidth * window.innerHeight), window.innerHeight - 50);
                     if (myLocalProperties.height)
                         setHeight = myLocalProperties.height;
-                    $('.block_graph' + '_' + myLocalProperties.graphIdx).css("height", setHeight);
+                    if (setHeight) $('.block_graph' + '_' + myLocalProperties.graphIdx).css("height", setHeight);
                 }
 
                 if (typeof myLocalProperties.legend == 'boolean') {
@@ -372,8 +376,8 @@ function showGraph(graphIdx, selGraph) {
                 }
                 if (_graphConfig) {
                     //custom data sets
-                    if(_graphConfig.ylabels)
-                        myLocalProperties.ylabels = _graphConfig.ylabels;   //in case ylabels are defined in the custom graph, we take those, instead of the default generated ylabels
+                    if (_graphConfig.ylabels)
+                        myLocalProperties.ylabels = _graphConfig.ylabels; //in case ylabels are defined in the custom graph, we take those, instead of the default generated ylabels
                     myLocalProperties.ykeys = Object.keys(_graphConfig.data);
 
                     myLocalProperties.ykeys.forEach(function (element, index) {
@@ -385,7 +389,7 @@ function showGraph(graphIdx, selGraph) {
                             fill: false,
                             pointRadius: 1,
                             label: element,
-                            yAxisID: index<myLocalProperties.ylabels? myLocalProperties.ylabels[index] : myLocalProperties.ylabels[0]
+                            yAxisID: index < myLocalProperties.ylabels ? myLocalProperties.ylabels[index] : myLocalProperties.ylabels[0]
 
                         };
 
@@ -395,9 +399,9 @@ function showGraph(graphIdx, selGraph) {
 
                     })
 
-                    data.result.forEach( function(y) {
+                    data.result.forEach(function (y) {
                         var valid = false;
-                        myLocalProperties.ykeys.forEach(function(_value){
+                        myLocalProperties.ykeys.forEach(function (_value) {
                             var customValue = _graphConfig.data[_value];
                             var d = {};
                             for (var key in y) {
@@ -429,8 +433,8 @@ function showGraph(graphIdx, selGraph) {
                 } else {
                     if (typeof myLocalProperties.graphTypes == 'undefined') {
                         var mySet = []
-                        data.result.forEach(function(element) {
-                            Object.keys(element).forEach(function(el){
+                        data.result.forEach(function (element) {
+                            Object.keys(element).forEach(function (el) {
                                 if (el !== 'd') mySet.push(el);
                             })
                         });
@@ -447,7 +451,7 @@ function showGraph(graphIdx, selGraph) {
                         myLocalProperties.ylabels = newylabels;
                     }
 
-                    myLocalProperties.ykeys.forEach(function(element, index){
+                    myLocalProperties.ykeys.forEach(function (element, index) {
                         mydatasets[element] = {
                             data: [],
                             borderColor: myLocalProperties.datasetColors[index],
@@ -460,10 +464,10 @@ function showGraph(graphIdx, selGraph) {
                         };
                     });
 
-                    data.result.forEach(function(element){
+                    data.result.forEach(function (element) {
                         var valid = false;
-                        myLocalProperties.ykeys.forEach(function(el){
-                            if (element[el]) {
+                        myLocalProperties.ykeys.forEach(function (el) {
+                            if ( typeof element[el]!=='undefined') {
                                 switch (el) {
                                     case 'eu':
                                     case 'eg':
@@ -487,7 +491,7 @@ function showGraph(graphIdx, selGraph) {
 
                 }
 
-                Object.keys(mydatasets).forEach(function(element){
+                Object.keys(mydatasets).forEach(function (element) {
                     if (typeof myLocalProperties.legend == 'object') {
                         if (typeof myLocalProperties.legend[element] !== 'undefined')
                             mydatasets[element].label = myLocalProperties.legend[element];
@@ -502,7 +506,7 @@ function showGraph(graphIdx, selGraph) {
                 var labelLeft = true
                 var axisCount = myLocalProperties.options && myLocalProperties.options.scales && myLocalProperties.options.scales.yAxes ? myLocalProperties.options.scales.yAxes.length : 0;
                 graphProperties.options.scales.yAxes = []; // reset to empty
-                uniqueylabels.forEach(function(element, i){
+                uniqueylabels.forEach(function (element, i) {
                     var yaxis = {
                         id: element,
                         ticks: {
@@ -528,10 +532,10 @@ function showGraph(graphIdx, selGraph) {
 
                 //extend the y label with all dataset labels
                 if (graphProperties.options.scales.yAxes.length > 1) {
-                    graphProperties.options.scales.yAxes.filter(function(element){ //filter the ylabels that have an initial label  
+                    graphProperties.options.scales.yAxes.filter(function (element) { //filter the ylabels that have an initial label  
                         return element.scaleLabel && typeof element.scaleLabel.labelString !== "undefined"
-                    }).forEach(function(yAxis){
-                        yAxis.scaleLabel.labelString = graphProperties.data.datasets.filter(function(dataset) {
+                    }).forEach(function (yAxis) {
+                        yAxis.scaleLabel.labelString = graphProperties.data.datasets.filter(function (dataset) {
                                 return dataset.yAxisID === yAxis.id;
                             })
                             .reduce(function (newlabelString, dataset) {
@@ -619,11 +623,11 @@ function getDefaultGraphProperties(myProperties) {
                     time: {
                         displayFormats: {
                             'minute': 'H:mm',
-                            'hour': myProperties.realrange === 'day' ? 'ddd H:mm':'D MMM',
+                            'hour': myProperties.realrange === 'day' ? 'ddd H:mm' : 'D MMM',
                             'day': 'D MMM'
                         }
                     },
-                    distribution: 'linear'
+                    distribution: 'series'
                 }]
 
             },
@@ -663,80 +667,85 @@ function getGraphProperties(result, graphIdx) {
     var graphProperties = {};
     if (typeof result == 'undefined')
         return graphProperties;
-    if (result.uvi) {
+    if (result.hasOwnProperty('uvi')) {
         graphProperties = {
             ykeys: ['uvi'],
             ylabels: [label],
         };
-    } else if (result.lux) {
+    } else if (result.hasOwnProperty('lux')) {
         graphProperties = {
             ykeys: ['lux'],
             ylabels: ['Lux'],
         };
-    } else if (result.lux_avg) {
+    } else if (result.hasOwnProperty('lux_avg')) {
         graphProperties = {
             ykeys: ['lux_avg', 'lux_min', 'lux_max'],
             ylabels: ['Lux average', 'Minimum', 'Maximum'],
         };
-    } else if (result.gu && result.sp) {
+    } else if (result.hasOwnProperty('gu') && result.hasOwnProperty('sp')) {
         graphProperties = {
             ykeys: ['gu', 'sp'],
             ylabels: ['m/s', 'm/s'],
         };
-    } else if (result.ba && result.hu && result.te) {
+    } else if (result.hasOwnProperty('ba') && result.hasOwnProperty('hu') && result.hasOwnProperty('te')) {
         graphProperties = {
             ykeys: ['ba', 'hu', 'te'],
             ylabels: ['hPa', '%', _TEMP_SYMBOL],
         };
-    } else if (result.hu && result.te) {
+    } else if (result.hasOwnProperty('hu') && result.hasOwnProperty('te')) {
         graphProperties = {
             ykeys: ['hu', 'te'],
             ylabels: ['%', _TEMP_SYMBOL],
         };
-    } else if (result.te) {
+    } else if (result.hasOwnProperty('ba') && result.hasOwnProperty('te')) {
+        graphProperties = {
+            ykeys: ['ba', 'te'],
+            ylabels: ['hPa', _TEMP_SYMBOL],
+        };
+    } else if (result.hasOwnProperty('te')) {
         graphProperties = {
             ykeys: ['te'],
             ylabels: [_TEMP_SYMBOL],
         };
-    } else if (result.hu) {
+    } else if (result.hasOwnProperty('hu')) {
         graphProperties = {
             ykeys: ['hu'],
             ylabels: ['%'],
         };
-    } else if (result.mm) {
+    } else if (result.hasOwnProperty('mm')) {
         graphProperties = {
             ykeys: ['mm'],
             ylabels: ['mm'],
         };
-    } else if (result.v_max) {
+    } else if (result.hasOwnProperty('v_max')) {
         graphProperties = {
             ykeys: ['v_max'],
             ylabels: [label],
         };
-        if (result.v_min) {
+        if (result.hasOwnProperty('v_min')) {
             graphProperties.ykeys.push('v_min')
             graphProperties.ylabels.push[label]
         }
-        if (result.v_avg) {
+        if (result.hasOwnProperty('v_avg')) {
             graphProperties.ykeys.push('v_avg')
             graphProperties.ylabels.push[label]
         }
-    } else if (result.v2) {
+    } else if (result.hasOwnProperty('v2')) {
         label = 'kWh';
         if (realrange == 'day') label = 'W';
         graphProperties = {
             ykeys: ['v2', 'v'],
             ylabels: [label, label],
         };
-        if (result.r2) {
+        if (result.hasOwnProperty('r2')) {
             graphProperties.ykeys.push('r2');
             graphProperties.ylabels.push(label);
         }
-        if (result.r1) {
+        if (result.hasOwnProperty('r1')) {
             graphProperties.ykeys.push('r1');
             graphProperties.ylabels.push(label);
         }
-    } else if (result.v) {
+    } else if (result.hasOwnProperty('v')) {
         if (label === 'kWh' && realrange === 'day') {
             graphProperties = {
                 ykeys: ['v'],
@@ -748,27 +757,27 @@ function getGraphProperties(result, graphIdx) {
                 ylabels: [label],
             }
         }
-    } else if (result.eu) {
+    } else if (result.hasOwnProperty('eu')) {
         graphProperties = {
             ykeys: ['eu'],
             ylabels: [label],
         };
-    } else if (result.u) {
+    } else if (result.hasOwnProperty('u')) {
         graphProperties = {
             ykeys: ['u'],
             ylabels: [label],
         };
-    } else if (result.u_max) {
+    } else if (result.hasOwnProperty('u_max')) {
         graphProperties = {
             ykeys: ['u_max', 'u_min'],
             ylabels: ['?', '?'],
         };
-    } else if (result.co2) {
+    } else if (result.hasOwnProperty('co2')) {
         graphProperties = {
             ykeys: ['co2'],
             ylabels: ['ppm'],
         };
-    } else if (result.ba) {
+    } else if (result.hasOwnProperty('ba')) {
         graphProperties = {
             ykeys: ['ba'],
             ylabels: [label],
@@ -777,6 +786,6 @@ function getGraphProperties(result, graphIdx) {
     return graphProperties;
 }
 
-function onlyUnique(value, index, self) { 
+function onlyUnique(value, index, self) {
     return self.indexOf(value) === index;
 }

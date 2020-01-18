@@ -2,12 +2,14 @@
 header("Access-Control-Allow-Origin: *");
 header('Content-Type: application/json');
 require_once('SG_iCal.php');
+if (!empty($argv[1])) {
+	parse_str($argv[1], $_GET);
+  }
 $ICS = $_GET['url'];
 $MAXITEMS = $_GET['maxitems'];
-$ICS = str_replace('#','%23',urldecode($ICS));
+$ICS = str_replace('#','%23',$ICS);
 $ical = new SG_iCalReader($ICS);
 $evts = $ical->getEvents();
-
 $data = array();
 if($evts){
 	foreach($evts as $id => $ev) {
@@ -27,28 +29,22 @@ if($evts){
 		}
 		$count = 0;
 		$start = $ev->getStart();
-
 		if (isset($ev->recurrence)) {
 			$freq = $ev->getFrequency();
-			if ($freq->firstOccurrence() == $start)
-				$data[] = $jsEvt;
 			$currentdate = time();
-			while (($next = $freq->nextOccurrence($start)) > 0 ) {
-				if (!$next or $count >= $MAXITEMS) break;
-				$start = $next;
+			$start=$freq->previousOccurrence($currentdate);
+			while ($start && ($count<$MAXITEMS)) {
 				$jsEvt["start"] = $start;
 				$jsEvt["end"] = $start + $ev->getDuration()-1;
 				$jsEvt["startt"] = date('Y-m-d H:i:s',$jsEvt["start"]);
 				$jsEvt["endt"] = date('Y-m-d H:i:s',$jsEvt["end"]);
-				if($jsEvt["end"]>$currentdate) {
-					$data[$start] = $jsEvt;
-					$count++;
-				}
+				$data[$start] = $jsEvt;
+				$count++;
+				$start=$freq->nextOccurrence($start);
 			}
 		} else {
 			if(date('Y',$start)>2016) $data[$start] = $jsEvt;
 		}
-
 	}
 }
 ksort($data);

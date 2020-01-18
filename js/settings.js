@@ -1,3 +1,4 @@
+/* global language dashticz_version dashticz_branch newVersion config domoversion dzVents python*/
 var settingList = {};
 settingList['general'] = {};
 settingList['general']['title'] = language.settings.general.title;
@@ -125,6 +126,18 @@ settingList['screen']['standby_after']['type'] = 'text';
 settingList['screen']['start_page'] = {};
 settingList['screen']['start_page']['title'] = language.settings.screen.start_page;
 settingList['screen']['start_page']['type'] = 'text';
+
+settingList['screen']['enable_swiper'] = {
+    'title': language.settings.screen.enable_swiper,
+    'type': 'text',
+    'help': language.settings.screen.enable_swiper_help
+}
+
+settingList['screen']['vertical_scroll'] = {
+    'title': language.settings.screen.vertical_scroll,
+    'type': 'text',
+    'help': language.settings.screen.vertical_scroll_help
+}
 
 settingList['screen']['auto_swipe_back_to'] = {};
 settingList['screen']['auto_swipe_back_to']['title'] = language.settings.screen.auto_swipe_back_to;
@@ -423,6 +436,7 @@ settingList['garbage']['garbage_company']['options']['deafvalapp'] = 'Afval App 
 settingList['garbage']['garbage_company']['options']['afvalwijzerarnhem'] = 'Afvalwijzer Arnhem (NL)';
 settingList['garbage']['garbage_company']['options']['alphenaandenrijn'] = 'Alphen aan de Rijn (NL)';
 settingList['garbage']['garbage_company']['options']['avalex'] = 'Avalex (NL)';
+settingList['garbage']['garbage_company']['options']['barafvalbeheer'] = 'Bar-afvalbeheer (Barendrecht, Rhoon)(NL)';
 settingList['garbage']['garbage_company']['options']['gemeenteberkelland'] = 'Berkelland (NL)';
 settingList['garbage']['garbage_company']['options']['best'] = 'Best (NL)';
 settingList['garbage']['garbage_company']['options']['circulusberkel'] = 'Circulus Berkel (NL)';
@@ -514,12 +528,22 @@ settingList['other']['title'] = language.settings.other.title;
 settingList['other']['setpoint_min'] = {};
 settingList['other']['setpoint_min']['title'] = language.settings.other.setpoint_min;
 settingList['other']['setpoint_min']['type'] = 'text';
-/* settingList['other']['setpoint_min']['help'] = language.settings.other.setpoint_min_help; */
 
 settingList['other']['setpoint_max'] = {};
 settingList['other']['setpoint_max']['title'] = language.settings.other.setpoint_max;
 settingList['other']['setpoint_max']['type'] = 'text';
-/* settingList['other']['setpoint_max']['help'] = language.settings.other.setpoint_max_help; */
+
+settingList['other']['evohome_status'] = {};
+settingList['other']['evohome_status']['title'] = language.settings.other.evohome_status;
+settingList['other']['evohome_status']['type'] = 'text';
+
+settingList['other']['evohome_boost_zone'] = {};
+settingList['other']['evohome_boost_zone']['title'] = language.settings.other.evohome_boost_zone;
+settingList['other']['evohome_boost_zone']['type'] = 'text';
+
+settingList['other']['evohome_boost_hw'] = {};
+settingList['other']['evohome_boost_hw']['title'] = language.settings.other.evohome_boost_hw;
+settingList['other']['evohome_boost_hw']['type'] = 'text';
 
 settingList['about'] = {};
 settingList['about']['title'] = language.settings.about.title;
@@ -528,19 +552,18 @@ settingList['about']['about_text'] = {};
 settingList['about']['about_text']['title'] = 'Dashticz V' + dashticz_version + ' ' + dashticz_branch + '<br>' + newVersion;
 
 settingList['about']['about_text2'] = {};
-settingList['about']['about_text2']['title'] = 'Years after developing the old and original Dashticz, I decided to start over.<br><br>For more help visit: <a href="https://dashticz.readthedocs.io/" target="_blank">https://dashticz.readthedocs.io/</a><br>You can also check out our helpful <a href="https://www.domoticz.com/forum/viewforum.php?f=67" target="_blank">community</a> in Dashticz topic on the Domoticz forum.';
+settingList['about']['about_text2']['title'] = '<br>For more help visit: <a href="https://dashticz.readthedocs.io/" target="_blank">https://dashticz.readthedocs.io/</a><br>You can also check out our helpful <a href="https://www.domoticz.com/forum/viewforum.php?f=67" target="_blank">community</a> in Dashticz topic on the Domoticz forum.';
 
 settingList['about']['about_text4'] = {};
 settingList['about']['about_text4']['title'] = 'If you have any issues you can report them in our community thread <a href="https://www.domoticz.com/forum/viewtopic.php?f=67&t=17427" target="_blank">Bug report</a>.'
 
 var settings = {};
 var _CORS_PATH = '';
-doneSettings = false;
+
 if (typeof(Storage) !== "undefined") {
     $.each(localStorage, function (key, value) {
         if (key.substr(0, 9) == 'dashticz_') {
             settings[key.substr(9)] = value;
-            doneSettings = true;
         }
     });
 }
@@ -588,6 +611,8 @@ if (typeof(settings['use_favorites']) === 'undefined') settings['use_favorites']
 if (typeof(settings['translate_windspeed']) === 'undefined') settings['translate_windspeed'] = 1;
 if (typeof(settings['static_weathericons']) === 'undefined') settings['static_weathericons'] = 0;
 if (typeof(settings['last_update']) === 'undefined') settings['last_update'] = 1;
+if (typeof(settings['vertical_scroll']) === 'undefined') settings['vertical_scroll'] = 2
+if (typeof(settings['enable_swiper']) === 'undefined') settings['enable_swiper'] = 2
 if (typeof(settings['auto_swipe_back_after']) === 'undefined') settings['auto_swipe_back_after'] = 10;
 if (typeof(settings['standby_after']) === 'undefined') settings['standby_after'] = 0;
 if (typeof(settings['selector_instead_of_buttons']) === 'undefined') settings['selector_instead_of_buttons'] = 0;
@@ -655,6 +680,9 @@ if (typeof(settings['security_button_icons']) === 'undefined') settings['securit
 if (typeof(settings['disable_update_check']) === 'undefined') settings['disable_update_check'] = 0;
 if (typeof(settings['setpoint_min']) === 'undefined') settings['setpoint_min'] = 5;
 if (typeof(settings['setpoint_max']) === 'undefined') settings['setpoint_max'] = 40;
+if (typeof(settings['evohome_status']) === 'undefined') settings['evohome_status'] = 'Auto';
+if (typeof(settings['evohome_boost_zone']) === 'undefined') settings['evohome_boost_zone'] = 1;
+if (typeof(settings['evohome_boost_hw']) === 'undefined') settings['evohome_boost_hw'] = 1;
 if (typeof(settings['login_timeout']) === 'undefined') settings['login_timeout'] = 60;
 
 //The Config settings for all checkbox items will be converted to a number
@@ -666,6 +694,7 @@ for (var s in settingList){
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 var _TEMP_SYMBOL = '°C';
 if (settings['use_fahrenheit'] === 1) _TEMP_SYMBOL = '°F';
 
@@ -675,6 +704,7 @@ var _PHP_INSTALLED = false;
 
 
 
+// eslint-disable-next-line no-unused-vars
 function loadSettings() {
     return $.ajax({
         url: settings['dashticz_php_path']+'info.php?get=phpversion',
@@ -682,10 +712,10 @@ function loadSettings() {
         success: function (data) {
             phpversion = '<br> PHP version: ' + data;
             _PHP_INSTALLED = true;
-          },
-        error: function () {
-          console.log('PHP not installed.');
-        }
+          }
+    })
+    .catch( function() {
+        console.log('PHP not installed.');
     })
     .then( function() {
         
@@ -715,7 +745,7 @@ function loadSettings() {
 
         html += '<ul class="nav nav-pills">';
         var first = true;
-        for (b in settingList) {
+        for (var b in settingList) {
             var c = '';
             if (first) {
                 c = ' class="active"';
@@ -727,9 +757,9 @@ function loadSettings() {
 
         html += '<div class="tab-content"><br /><br />';
 
-        var first = true;
+        first = true;
         for (b in settingList) {
-            var c = '';
+            c = '';
             if (first) {
                 c = ' active in';
                 first = false;
@@ -753,8 +783,8 @@ function loadSettings() {
                     if (settingList[b][s]['type'] === 'select') {
                         html += '<select name="' + s + '" class="form-control" style="max-width:75%;padding-left: 8px;color: #555 !important;">';
                         html += '<option value=""></option>';
-                        for (o in settingList[b][s]['options']) {
-                            var sel = '';
+                        for (var o in settingList[b][s]['options']) {
+                            sel = '';
                             if (settings[s] == o) sel = 'selected';
                             html += '<option value="' + o + '" ' + sel + '>' + settingList[b][s]['options'][o] + '</option>';
                         }
@@ -786,6 +816,7 @@ function loadSettings() {
 
 }
 
+// eslint-disable-next-line no-unused-vars
 function saveSettings() {
 
     var saveSettings = {};
@@ -793,7 +824,7 @@ function saveSettings() {
     $('div#settingspopup input[type="text"],div#settingspopup select').each(function () {
         if (typeof(Storage) !== "undefined") localStorage.setItem('dashticz_' + $(this).attr('name'), $(this).val());
         if ($(this).val() == 1 || $(this).val() == 0) {
-            val = parseFloat($(this).val());
+            var val = parseFloat($(this).val());
             if (isNaN(val)) val = 0;
             alertSettings += "config['" + $(this).attr('name') + "'] = " + val + ";\n";
             saveSettings[$(this).attr('name')] = val;
@@ -839,6 +870,7 @@ function saveSettings() {
             }, 1000);
         }
         else {
+            // eslint-disable-next-line no-self-assign
             window.location.href = window.location.href;
         }
     });

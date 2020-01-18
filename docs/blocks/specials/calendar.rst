@@ -51,6 +51,8 @@ You have to add the following code into the ``CONFIG.js`` file and define them a
     - | Remove start time for All Day events that are created in a different time zone (only applicable in case ``calFormat: 0``)
       | ``false``: Show the start time for 'All Day'-events in case the start time is not 00:00
       | ``true``: Don't show the start time for 'All Day'-events
+  * - key
+    - | ``'key'``: unique identifier. You can use ``[data-id='calendars.key']`` in your ``custom.css``
   
 And define them in a column like::
 
