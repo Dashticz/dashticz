@@ -6,25 +6,116 @@ var Domoticz = function () {
     var state = {}
     state.devices = deviceObservable._values;
     var initPromise = null;
+    var socket = null;
+    var cfg ={};
+    var useWSS = false;
 
-    function _init() {
+    MSG = {
+        info: 'type=command&param=getversion'
+    }
+
+    function domoticzQuery(query) {
+        return usrinfo + query + (cfg.plan? '&plan=' + cfg.plan:'')
+    }
+    function domoticzRequest(query) {
+        console.log('requesting '+query)
+        return $.get({
+            url: cfg.url + '/json.htm?' + domoticzQuery(query),
+            type: 'GET',
+            async: true,
+            contentType: "application/json",
+            error: function (jqXHR, textStatus) {
+                if (typeof (textStatus) !== 'undefined' && textStatus === 'abort') {
+                    console.log('Domoticz request cancelled')
+                } else {
+                    console.error("Domoticz error code: " + jqXHR.status + ' ' + textStatus + "!\nPlease, double check the path to Domoticz in Settings!");
+                    throw new Error('Domoticz error code: ' + jqXHR.status + '! Double check the path to Domoticz in Settings!');
+                }
+            }
+        })
+
+    }
+
+    function checkWSSSupport() {
+        return domoticzRequest(MSG.info)
+        .then(function(res){
+            console.log(res);
+            if (parseFloat(res.version)>4.011 ) {
+                    useWSS=true;
+                    console.log("Switching to websocket")
+                }
+        })
+    }
+
+    function _init(initcfg) {
         if (!initPromise) {
-            if (typeof (usrEnc) !== 'undefined' && usrEnc !== '') usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
-            path = settings['domoticz_ip'] + '/json.htm?' + usrinfo;
-            initPromise = _update()
-            setInterval(function () {
-                _update();
-            }, 5000)
+            if (!initcfg.url) {
+                throw new Error("Domoticz url not defined")
+            }
+            cfg=initcfg;
+            if (cfg.usrEnc) usrinfo = 'username=' + cfg.usrEnc + '&password=' + cfg.pwdEnc + '&';
+            initPromise = checkWSSSupport()
+            .then(_update);
+
+            setInterval(_update, 50000);
+
 
         }
+//        _connectWebsocket();
         return initPromise;
+    }
+
+    function _connectWebsocket() {
+        socket = new WebSocket("ws://192.168.178.18:8090/json",['domoticz']);
+        //var mysocket=this.socket;
+        socket.onopen = function(e) {
+            console.log(e)
+            console.log("[open] Connection established");
+            var msg = {
+                event: 'request',
+                requestid: 0,
+                query: "type=devices"
+            }
+            socket.send(JSON.stringify(msg))
+          };
+          socket.onmessage = function(event) {
+            alert(`[message] Data received from server: ${event.data}`);
+          };
+          
+          socket.onclose = function(event) {
+            if (event.wasClean) {
+              alert(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+            } else {
+              // e.g. server process killed or network down
+              // event.code is usually 1006 in this case
+              console.log(event)
+              switch(event.code){
+                case 1006: 
+                    console.log('reconnecting')
+                    setTimeout(_connectWebsocket,500); //try to reconnect in 1s
+                    break;
+                default:
+                    alert('[close] Connection died');
+                    break;
+    
+                }
+              
+            }
+          };
+          
+          socket.onerror = function(error) {
+              console.log(error)
+            alert(`[error] ${error.message}`);
+          };
+
+          //socket.addEventListener ('jsonupdate', function(msg) {
+          //  alert(`[jsonupdate] ${msg}`);
+          //});  
     }
 
     function _update() {
         return _updateAllDevices()
-            .then(function () {
-                return _updateAllVariables()
-            })
+            .then( _updateAllVariables)
     }
 
     function _getDevice(idx) {
@@ -36,24 +127,10 @@ var Domoticz = function () {
 
     function _updateAllDevices() {
         console.log('updateAllDevices ' + path);
-        var req = $.get({
-                url: path + 'type=devices&plan=' + settings['room_plan'] + '&filter=all&used=true&order=Name',
-                type: 'GET',
-                async: true,
-                contentType: "application/json",
-                error: function (jqXHR, textStatus) {
-                    if (typeof (textStatus) !== 'undefined' && textStatus === 'abort') {
-                        console.log('Domoticz request cancelled')
-                    } else {
-                        console.error("Domoticz error code: " + jqXHR.status + ' ' + textStatus + "!\nPlease, double check the path to Domoticz in Settings!");
-                        infoMessage('<font color="red">Domoticz error code: ' + jqXHR.status + '!', 'double check the path to Domoticz in Settings!</font>');
-                    }
-                }
-            })
+        return domoticzRequest('type=devices&filter=all&used=true&order=Name')
             .then(function (res) {
                 return _setAllDevices(res)
             });
-        return req
     }
 
     function setOnChange(idx, value) {
@@ -99,24 +176,10 @@ var Domoticz = function () {
 
     function _updateAllVariables() {
         console.log('updateAllVariables ' + path);
-        var req = $.get({
-                url: path + 'type=command&param=getuservariables',
-                type: 'GET',
-                async: true,
-                contentType: "application/json",
-                error: function (jqXHR, textStatus) {
-                    if (typeof (textStatus) !== 'undefined' && textStatus === 'abort') {
-                        console.log('Domoticz request cancelled')
-                    } else {
-                        console.error("Domoticz error code: " + jqXHR.status + ' ' + textStatus + "!\nPlease, double check the path to Domoticz in Settings!");
-                        infoMessage('<font color="red">Domoticz error code: ' + jqXHR.status + '!', 'double check the path to Domoticz in Settings!</font>');
-                    }
-                }
-            })
+        return domoticzRequest('type=command&param=getuservariables')
             .then(function (res) {
                 return _setAllVariables(res)
             });
-        return req
     }
 
     function _setAllVariables(data) {
