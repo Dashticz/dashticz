@@ -97,6 +97,49 @@ Set the dataset colors to html colors, hex code, rgb or rgba string::
     datasetColors: [colourBlueLight, colourLightGrey, colourBlue]
     var colourBlueLight= 'rgba(44, 130, 201, 1)';
 
+Custom button styling
+~~~~~~~~~~~~~~~~~~~~~
+
+
+::
+
+	blocks['multigraph_1'] = {
+        	...
+		buttonsPadX: 10,
+		buttonsPadY: 10,
+		buttonsBorder: 'red',
+		buttonsColor: '#fff',
+		buttonsFill: '#000',
+		buttonsIcon: 'red',
+		buttonsMarginX: 5,
+		buttonsMarginY: 5,
+		buttonsRadius: 20,
+		buttonsShadow: 'rgba(255, 255, 255, 0.1)',
+		buttonsSize: 12,
+		...
+	}
+
+.. image :: img/multigraph_button_styling.jpg
+
+Custom point styling
+~~~~~~~~~~~~~~~~~~~~
+
+
+::
+
+	var hot = new Image();
+	hot.src = "img/hot.png"
+	var cold = new Image();
+	cold.src = "img/cold.png"
+	
+	blocks['multigraph_2'] = {
+	...
+	pointStyle: [cold, hot ],
+	...
+	}
+
+.. image :: img/multigraph_point_styling.jpg
+
 Examples
 ---------
 
