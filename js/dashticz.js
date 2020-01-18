@@ -49,7 +49,11 @@ var Dashticz = function () {
             dataType: 'script'
         })
         .then(function() {
-            return Domoticz.init();
+            return Domoticz.init({url: settings['domoticz_ip'],
+                                plan: settings['room_plan'],
+                                usrEnc: usrEnc,
+                                pwdEnc: pwdEnc
+                            });
         })
     }
 
