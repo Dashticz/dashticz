@@ -16,6 +16,31 @@ And add the tvguide to a column with::
       blocks: [tvguide.dutch]      
     }
 
+TV Guide Parameters
+-------------------
+
+.. list-table:: 
+  :header-rows: 1
+  :widths: 5, 30
+  :class: tight-table
+    
+  * - Parameters
+    - Description
+  * - title
+    - | Title of the TV Guide block.
+  * - width
+    - | ``1..12`` Width of the block.
+  * - key
+    - | ``'key'``: unique identifier.
+  * - icon
+    - | ``'fas fa-icon'``: icon to show in the TV Guide block. You choose an icon from the FontAwesome Free set.
+  * - image
+    - | ``'image.png'``: image to show as icon. Image path is relative to the <dashticz>/img folder.
+  * - maxitems
+    - | Maximum number of items to show.
+  * - channels
+    - | Selected channels. 
+
 The parameter ``channels`` contains an array of the selected channel IDs.  Find the channel ID in the list below:
 
 .. csv-table:: Channel IDs

@@ -1,7 +1,7 @@
 /* eslint-disable no-prototype-builtins */
-/* global getBlockClick customfolder myBlockNumbering:writable objectlength config initVersion loadSettings settings getRandomInt number_format levelNamesEncoded _TEMP_SYMBOL hexToHsb Cookies*/
+/* global getBlockClick  myBlockNumbering:writable objectlength config initVersion loadSettings settings getRandomInt number_format levelNamesEncoded _TEMP_SYMBOL hexToHsb Cookies switchDevice*/
 /* global sessionValid MobileDetect moment getBlock buttons handleObjectBlock getGraphs iconORimage getBlockData titleAndValueSwitch showUpdateInformation getStateBlock addThermostatFunctions*/
-/* global loadWeatherFull loadWeather Swiper ion MoonPhase StationClock*/
+/* global loadWeatherFull loadWeather Swiper ion */
 
 //To refactor later:
 /* global blocktypes afterGetDevices getStatusBlock google slideDeviceExt switchSecurity*/
@@ -11,6 +11,7 @@
 
 /*To be removed from this file: appendHorizon loadMaps*/
 
+/* global Dashticz*/
 var language = {};
 var cache = new Date().getTime();
 
@@ -27,8 +28,6 @@ var columns = {};
 var columns_standby = {};
 var blocks = {};
 var req;
-// eslint-disable-next-line no-unused-vars
-var slide;
 var sliding = false;
 var defaultcolumns = false;
 var allblocks = {};
@@ -39,13 +38,8 @@ var oldstates = [];
 var onOffstates = [];
 var gettingDevices = false;
 var md;
-var usrEnc='';
-var pwdEnc='';
-var _STREAMPLAYER_TRACKS = [
-    {"track":1,"name":"Q-music","file":"http://icecast-qmusic.cdp.triple-it.nl/Qmusic_nl_live_96.mp3"},
-    {"track":2,"name":"100%NL","file":"http://stream.100p.nl/100pctnl.mp3"},
-    {"track":3,"name":"NPO Radio 1","file":"http://icecast.omroep.nl/radio1-bb-mp3"},
- ];
+var usrEnc = '';
+var pwdEnc = '';
 // eslint-disable-next-line no-unused-vars
 var _THOUSAND_SEPARATOR = '.';
 // eslint-disable-next-line no-unused-vars
@@ -54,133 +48,188 @@ var _STANDBY_CALL_URL = '';
 var _END_STANDBY_CALL_URL = '';
 var lastGetDevicesTime = 0;
 var allVariables = {};
-// eslint-disable-next-line no-unused-vars
-var map;
-
+var sessionvalid = false;
 
 function b64_to_utf8(str) {
     return decodeURIComponent(escape(window.atob(str)));
 }
 
 // eslint-disable-next-line no-unused-vars
-function loadFiles() {
-
-    $.ajax({ url: customfolder + '/CONFIG.js', dataType: 'script' })
-    .error(function() {
-        console.log('Error in config.js');
-        $('#hide').show();
-        $('#loaderHolder').fadeOut();
-        return;
-    })
-    .then(function () {
-        setTimeout(function() {
-            $('#loaderHolder').fadeOut();
-        }, 1000);
-        $('body').css('overflow', 'auto');
-    
-        if (objectlength(columns) === 0) defaultcolumns = true;
-
-        //Check language before loading settings and fallback to English when not set
-        var setLang = 'en_US';
-        if (typeof (localStorage.dashticz_language) !== 'undefined') {
-            setLang = localStorage.dashticz_language
-        }
-        else if (typeof (config) !== 'undefined' && typeof (config.language) !== 'undefined') {
-            setLang = config.language;
-        }
-        return $.ajax({
-            url: 'lang/' + setLang + '.json?v=' + cache,  dataType: 'json', success: function (data) {
-                language = data;
+function loadFiles(dashtype) {
+    var customfolder = 'custom';
+    if (typeof (dashtype) !== 'undefined' && parseFloat(dashtype) > 1) {
+        customfolder = 'custom_' + dashtype;
+    }
+    $('<link href="' + 'css/creative.css?_=' + Date.now() +'" rel="stylesheet">').appendTo('head');
+    $.ajax({
+            url: customfolder + '/CONFIG.js',
+            dataType: 'script'
+        })
+        .fail(function () {
+            return $.Deferred()
+                .reject(new Error("Load error in config.js"))
+        })
+        .then(function () {
+            if (typeof config == 'undefined') {
+                return $.Deferred()
+                    .reject(new Error("Error in config.js"))
             }
-        });
-    })
-    .then(function(){
-        return $.ajax({ url: 'js/version.js',  dataType: 'script' });
-    })
-    .then(function() {
-        return initVersion();
-    })
-    .then(function(){
+            setTimeout(function () {
+                $('#loaderHolder').fadeOut();
+            }, 1000);
+            $('body').css('overflow', 'auto');
 
-        return $.ajax({ url: 'js/settings.js', dataType: 'script' });
-    })
-    .then(function () {
-        loadSettings();
-        usrEnc = '';
-        pwdEnc = '';
-        if (typeof (settings['user_name']) !== 'undefined') {
-            usrEnc = window.btoa(settings['user_name']);
-            pwdEnc = window.btoa(settings['pass_word']);
-        }
-        if (typeof (screens) === 'undefined' || objectlength(screens) === 0) {
-            screens = {};
-            screens[1] = {};
-            screens[1]['background'] = settings['background_image'];
-            screens[1]['columns'] = [];
-            if (defaultcolumns === false) {
-                for (var c in columns) {
-                    if (c !== 'bar') screens[1]['columns'].push(c);
+            if (objectlength(columns) === 0) defaultcolumns = true;
+
+            //Check language before loading settings and fallback to English when not set
+            var setLang = 'en_US';
+            if (typeof (localStorage.dashticz_language) !== 'undefined') {
+                setLang = localStorage.dashticz_language
+            } else if (typeof (config) !== 'undefined' && typeof (config.language) !== 'undefined') {
+                setLang = config.language;
+            }
+            return $.ajax({
+                url: 'lang/' + setLang + '.json?v=' + cache,
+                dataType: 'json',
+                success: function (data) {
+                    language = data;
+                }
+            });
+        })
+        .then(function () {
+            return $.ajax({
+                url: 'js/version.js',
+                dataType: 'script'
+            });
+        })
+        .then(function () {
+            return initVersion();
+        })
+        .then(function () {
+
+            return $.ajax({
+                url: 'js/settings.js',
+                dataType: 'script'
+            });
+        })
+        .then(function () {
+            loadSettings();
+            usrEnc = '';
+            pwdEnc = '';
+            if (typeof (settings['user_name']) !== 'undefined') {
+                usrEnc = window.btoa(settings['user_name']);
+                pwdEnc = window.btoa(settings['pass_word']);
+            }
+            if (typeof (screens) === 'undefined' || objectlength(screens) === 0) {
+                screens = {};
+                screens[1] = {};
+                screens[1]['background'] = settings['background_image'];
+                screens[1]['columns'] = [];
+                if (defaultcolumns === false) {
+                    for (var c in columns) {
+                        if (c !== 'bar') screens[1]['columns'].push(c);
+                    }
                 }
             }
-        }
 
-        $('<link href="vendor/weather/css/weather-icons.min.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
+            $('<link href="vendor/weather/css/weather-icons.min.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
 
-        if (settings['theme'] !== 'default') {
-            $('<link rel="stylesheet" type="text/css" href="themes/' + settings['theme'] + '/' + settings['theme'] + '.css?v=' + cache + '" />').appendTo('head');
-        }
-        $('<link href="' + customfolder + '/custom.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
+            if (settings['theme'] !== 'default') {
+                $('<link rel="stylesheet" type="text/css" href="themes/' + settings['theme'] + '/' + settings['theme'] + '.css?v=' + cache + '" />').appendTo('head');
+            }
+            $('<link href="' + customfolder + '/custom.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
 
-        if (typeof (settings['edit_mode']) !== 'undefined' && settings['edit_mode'] == 1) {
-            $('<link href="css/sortable.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
-            $.ajax({ url: 'js/sortable.js', async: false, dataType: 'script' });
+            if (typeof (settings['edit_mode']) !== 'undefined' && settings['edit_mode'] == 1) {
+                $('<link href="css/sortable.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
+                $.ajax({
+                    url: 'js/sortable.js',
+                    async: false,
+                    dataType: 'script'
+                });
 
-            var html = '<div class="newblocksHolder" style="display:none;">';
-            html += '<div class="title">' + language.editmode.add_plugin + '</div>';
-            html += '<div class="newblocks plugins sortable"></div>';
-            html += '<div class="title">' + language.editmode.add_block + '</div>';
-            html += '<div class="newblocks domoticz sortable"></div>';
-            html += '</div>';
+                var html = '<div class="newblocksHolder" style="display:none;">';
+                html += '<div class="title">' + language.editmode.add_plugin + '</div>';
+                html += '<div class="newblocks plugins sortable"></div>';
+                html += '<div class="title">' + language.editmode.add_block + '</div>';
+                html += '<div class="newblocks domoticz sortable"></div>';
+                html += '</div>';
 
-            $('body').prepend(html);
-        }
+                $('body').prepend(html);
+            }
 
-        return $.when(
-            $.ajax({ url: 'js/switches.js', dataType: 'script' }),
-            $.ajax({ url: 'js/thermostat.js', dataType: 'script' })
-        );
-    })
-    .then (function(){
-        return $.ajax({ url: customfolder + '/custom.js?v=' + cache, dataType: 'script' });
-    })
-    .then (function(){
-        return $.when(
-//            $.ajax({ url: 'js/switches.js', async: false, dataType: 'script' });
-            $.ajax({ url: 'js/blocks.js',  dataType: 'script' }),
-            $.ajax({ url: 'js/graphs.js',  dataType: 'script' }),
-            $.ajax({ url: 'js/login.js', dataType: 'script' }),
-            $.ajax({ url: 'js/moon.js',  dataType: 'script' })
-        );
-    })
-    .then(function () {
-
-        sessionValid();
-
-        if (typeof (settings['gm_api']) !== 'undefined' && settings['gm_api'] !== '' && settings['gm_api'] !== 0) {
+            return $.when(
+                $.ajax({
+                    url: 'js/switches.js',
+                    dataType: 'script'
+                }),
+                $.ajax({
+                    url: 'js/thermostat.js',
+                    dataType: 'script'
+                }),
+                $.ajax({
+                    url: 'js/dashticz.js',
+                    dataType: 'script'
+                })
+                .then(function () {
+                    return Dashticz.init()
+                })
+            );
+        })
+        .then(function () {
             return $.ajax({
-                url: 'https://maps.googleapis.com/maps/api/js?key=' + settings['gm_api'],
+                url: customfolder + '/custom.js?v=' + cache,
                 dataType: 'script'
-            }).done(function () {
-                setTimeout(function () {
-                    initMap();
-                }, 2000);
             });
-        }
-    })
-    .then(function() {
-        onLoad();
-    })
+        })
+        .then(function () {
+            if (typeof getExtendedBlockTypes == 'undefined') {
+                return $.Deferred()
+                    .reject(new Error("Error in custom.js"))
+            }
+            return $.when(
+                //            $.ajax({ url: 'js/switches.js', async: false, dataType: 'script' });
+                $.ajax({
+                    url: 'js/blocks.js',
+                    dataType: 'script'
+                }),
+                $.ajax({
+                    url: 'js/graphs.js',
+                    dataType: 'script'
+                }),
+                $.ajax({
+                    url: 'js/login.js',
+                    dataType: 'script'
+                }),
+                $.ajax({
+                    url: 'js/moon.js',
+                    dataType: 'script'
+                })
+            );
+        })
+        .then(function () {
 
+            sessionvalid = sessionValid();
+
+            if (typeof (settings['gm_api']) !== 'undefined' && settings['gm_api'] !== '' && settings['gm_api'] !== 0) {
+                return $.ajax({
+                    url: 'https://maps.googleapis.com/maps/api/js?key=' + settings['gm_api'],
+                    dataType: 'script'
+                }).done(function () {
+                    setTimeout(function () {
+                        initMap();
+                    }, 2000);
+                });
+            }
+        })
+        .then(function () {
+            if(sessionvalid) onLoad();
+        })
+        .catch(function (err) {
+            console.error(err);
+            if (err.message) $('#error').html(err.message);
+            $('#hide').show();
+            $('#loaderHolder').fadeOut();
+        })
 }
 
 function onLoad() {
@@ -198,7 +247,7 @@ function onLoad() {
             '-webkit-user-select': 'none',
             '-ms-user-select': 'none',
             'user-select': 'none'
-        }).bind('selectstart', function () {
+        }).on('selectstart', function () {
             return false;
         });
 
@@ -267,14 +316,14 @@ function onLoad() {
     }
 
     if (md.mobile() == null) {
-        $('body').bind('mousemove', function () {
+        $('body').on('mousemove', function () {
             standbyTime = 0;
             swipebackTime = 0;
             disableStandby();
         });
     }
 
-    $('body').bind('touchend click', function () {
+    $('body').on('touchend click', function () {
         setTimeout(function () {
             standbyTime = 0;
             swipebackTime = 0;
@@ -294,7 +343,7 @@ function onLoad() {
             if (standbyActive != true) {
                 if (standbyTime >= ((settings['standby_after'] * 1000) * 60)) {
                     $('body').addClass('standby');
-                    $('.swiper-container').hide();
+                    $('.dt-container').hide();
                     if (objectlength(columns_standby) > 0) buildStandby();
                     if (typeof (_STANDBY_CALL_URL) !== 'undefined' && _STANDBY_CALL_URL !== '') {
                         $.get(_STANDBY_CALL_URL);
@@ -323,25 +372,21 @@ function buildStandby() {
         var screenhtml = '<div class="screen screenstandby swiper-slide slidestandby" style="height:' + $(window).height() + 'px"><div class="row"></div></div>';
         $('div.screen').hide();
         $('#settingspopup').modal('hide');
-        $('div.swiper-container').before(screenhtml);
+        $('div.dt-container').before(screenhtml);
 
         for (var c in columns_standby) {
-            $('div.screenstandby .row').append('<div class="col-xs-' + columns_standby[c]['width'] + ' colstandby' + c + '"></div>');
-            getBlock(columns_standby[c], c, 'div.screenstandby .row .colstandby' + c, true);
+            getBlock(columns_standby[c], 'standby' + c, 'div.screenstandby', true);
         }
     }
 
 }
 
-//we have to define s globally. Is used in getBlock in blocks.js. Needs to be fixed ...
-var s;
 function buildScreens() {
     var allscreens = {}
     for (var t in screens) {
         if (typeof (screens[t]['maxwidth']) !== 'undefined' && typeof (screens[t]['maxheight']) !== 'undefined') {
             allscreens[screens[t]['maxwidth']] = screens[t];
-        }
-        else {
+        } else {
             var maxwidth = 5000;
             if (typeof (allscreens[maxwidth]) == 'undefined') {
                 allscreens[maxwidth] = {}
@@ -354,7 +399,9 @@ function buildScreens() {
     screens = allscreens;
     var keys = Object.keys(screens);
     var len = keys.length;
-    keys.sort(function (a, b) { return a - b });
+    keys.sort(function (a, b) {
+        return a - b
+    });
     for (var i = 0; i < len; i++) {
         t = keys[i];
         if (
@@ -364,7 +411,7 @@ function buildScreens() {
                 parseFloat(screens[t]['maxheight']) >= $(window).height()
             )
         ) {
-            for (s in screens[t]) {
+            for (var s in screens[t]) {
                 if (s !== 'maxwidth' && s !== 'maxheight') {
                     var screenhtml = '<div class="screen screen' + s + ' swiper-slide slide' + s + '"';
                     if (typeof (screens[t][s]['background']) === 'undefined') {
@@ -373,8 +420,7 @@ function buildScreens() {
                     if (typeof (screens[t][s]['background']) !== 'undefined') {
                         if (screens[t][s]['background'].indexOf("/") > 0) screenhtml += 'style="background-image:url(\'' + screens[t][s]['background'] + '\');"';
                         else screenhtml += 'style="background-image:url(\'img/' + screens[t][s]['background'] + '\');"';
-                    }
-                    else if (typeof (screens[t][s][1]) !== 'undefined' && typeof (screens[t][s][1]['background']) !== 'undefined') {
+                    } else if (typeof (screens[t][s][1]) !== 'undefined' && typeof (screens[t][s][1]['background']) !== 'undefined') {
                         if (screens[t][s][1]['background'].indexOf("/") > 0) screenhtml += 'style="background-image:url(\'' + screens[t][s][1]['background'] + '\');"';
                         else screenhtml += 'style="background-image:url(\'img/' + screens[t][s][1]['background'] + '\');"';
                     }
@@ -388,18 +434,16 @@ function buildScreens() {
                                 columns['bar'] = {}
                                 columns['bar']['blocks'] = ['logo', 'miniclock', 'settings']
                             }
-                            getBlock(columns['bar'], 'bar', 'div.screen' + s + ' .row .colbar', false);
+                            getBlock(columns['bar'], 'bar', 'div.screen' + s, false);
                         }
 
                         for (var cs in screens[t][s]['columns']) {
                             if (typeof (screens[t]) !== 'undefined') {
                                 var c = screens[t][s]['columns'][cs];
-                                getBlock(columns[c], c, 'div.screen' + s + ' .row .col' + c, false);
+                                getBlock(columns[c], c, 'div.screen' + s, false);
                             }
                         }
-                    }
-                    else {
-
+                    } else {
                         if (parseFloat(settings['hide_topbar']) == 0) $('body .row').append('<div class="col-sm-undefined col-xs-12 sortable colbar transbg dark"><div data-id="logo" class="logo col-xs-2">' + settings['app_title'] + '<div></div></div><div data-id="miniclock" class="miniclock col-xs-8 text-center"><span class="weekday"></span> <span class="date"></span> <span>&nbsp;&nbsp;&nbsp;&nbsp;</span> <span class="clock"></span></div><div data-id="settings" class="settings settingsicon text-right" data-toggle="modal" data-target="#settingspopup"><em class="fas fa-cog" /></div></div></div>');
                         if (typeof (settings['default_columns']) == 'undefined' || parseFloat(settings['default_columns']) == 3) {
                             $('body .row').append('<div class="col-xs-5 sortable col1" data-colindex="1"><div class="auto_switches"></div><div class="auto_dimmers"></div></div>');
@@ -445,15 +489,13 @@ function buildScreens() {
                             if (typeof (buttons) !== 'undefined') {
                                 for (var b in buttons) {
                                     $('.col3 .auto_buttons').append('<div id="block_' + myBlockNumbering + '"</div>');
-                                    var myblockselector = '#block_' + myBlockNumbering++;
-                                    handleObjectBlock(buttons[b], b, myblockselector, 12, null);
+                                    handleObjectBlock(buttons[b], Dashticz.mountNewContainer('.col3 .auto_buttons'), 12, null);
+
                                 }
                             }
-                        }
-                        else if (parseFloat(settings['default_columns']) == 1) {
+                        } else if (parseFloat(settings['default_columns']) == 1) {
                             $('body .row').append('<div class="col-xs-12 sortable col1" data-colindex="1"><div class="auto_switches"></div><div class="auto_dimmers"></div></div>');
-                        }
-                        else if (parseFloat(settings['default_columns']) == 2) {
+                        } else if (parseFloat(settings['default_columns']) == 2) {
                             $('body .row').append('<div class="col-xs-6 sortable col1" data-colindex="1"><div class="auto_switches"></div><div class="auto_dimmers"></div></div>');
                             $('body .row').append('<div class="col-xs-6 sortable col2" data-colindex="2"><div class="block_weather containsweatherfull"></div><div class="auto_media"></div><div class="auto_states"></div></div>');
                         }
@@ -465,46 +507,58 @@ function buildScreens() {
     }
 
     if (typeof (settings['edit_mode']) !== 'undefined' && settings['edit_mode'] == 1) {
-        $('.swiper-container').addClass('edit');
+        $('.dt-container').addClass('edit');
         setTimeout(function () {
             startSortable();
         }, 2000);
     }
+    buildSwipingScrolling();
+}
 
-    startSwiper();
+function buildSwipingScrolling() {
+    var enable_swiper = Number(settings['enable_swiper'])
+    var vertical_screen = (window.innerWidth < 768)
+    var multi_screen = $('.dt-container .screen').length > 1
+    var start_swiper = multi_screen &&
+        (
+            (enable_swiper === 2) ||
+            ((enable_swiper === 1) && (!vertical_screen))
+        )
+    if (start_swiper) startSwiper();
+    var vertical_scroll = Number(settings['vertical_scroll']);
+    if (vertical_scroll === 2 || (vertical_scroll === 1 && !start_swiper)) {
+        $('.swiper-slide').addClass('vertical-scroll')
+    }
 }
 
 function startSwiper() {
-    if (md.mobile() == null || md.tablet() !== null) {
-        if ($('.swiper-container .screen').length > 1) {
-            $.ajax({ url: 'vendor/swiper/js/swiper.min.js',  dataType: 'script' }).done(function () {
-                $('<link href="vendor/swiper/css/swiper.min.css" rel="stylesheet">').appendTo("head");
-                setTimeout(function () {
-                    myswiper = new Swiper('.swiper-container', {
-                        pagination: '.swiper-pagination',
-                        paginationClickable: true,
-                        loop: false,
-                        initialSlide: settings['start_page']-1,
-                        effect: settings['slide_effect'],
-                        keyboardControl: true,
-                        onSlideChangeStart: function () {
-                            $('.slide').removeClass('selectedbutton');
-                        },
-                        onSlideChangeEnd: function (swiper) {
-                            //after Event use it for your purpose
-                            $('.slide' + (1 + swiper.activeIndex)).addClass('selectedbutton');
-                        },
-                        onInit: function () {
-                            $('.slide1').addClass('selectedbutton');
-                        }
+    $('.dt-container').addClass('swiper-container');
+    $('.contents').addClass('swiper-wrapper');
+    setTimeout(function () {
+        myswiper = new Swiper('.swiper-container', {
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true
+            },
+            paginationClickable: true,
+            loop: false,
+            initialSlide: settings['start_page'] - 1,
+            effect: settings['slide_effect'],
+            keyboard: {
+                enabled: true,
+                onlyInViewport: false,
+            },
+            direction: 'horizontal',
+        });
+        myswiper.on('transitionStart', function () {
+            $('.slide').removeClass('selectedbutton');
+        });
+        myswiper.on('transitionEnd', function () {
+            $('.slide' + (1 + this.activeIndex)).addClass('selectedbutton');
+        });
+        $('.slide' + settings['start_page']).addClass('selectedbutton');
 
-
-                    });
-
-                }, 100);
-            });
-        }
-    }
+    }, 100);
 }
 
 function initMap() {
@@ -517,22 +571,28 @@ function initMap() {
 }
 
 function showMap(mapid, map) {
-    if (typeof (settings['gm_api']) == 'undefined'
-        || settings['gm_api'] == ""
-        || settings['gm_api'] == 0) {
+    if (typeof (settings['gm_api']) == 'undefined' ||
+        settings['gm_api'] == "" ||
+        settings['gm_api'] == 0) {
         console.log('Please, set Google Maps API KEY!');
         infoMessage('Info:', 'Please, set Google Maps API KEY!', 8000);
         return
     }
     if (typeof (map) !== 'undefined') {
-         map = new google.maps.Map(document.getElementById(mapid), {
+        map = new google.maps.Map(document.getElementById(mapid), {
             zoom: map.zoom,
-            center: { lat: map.latitude, lng: map.longitude }
+            center: {
+                lat: map.latitude,
+                lng: map.longitude
+            }
         });
     } else {
-         map = new google.maps.Map(document.getElementById(mapid), {
+        map = new google.maps.Map(document.getElementById(mapid), {
             zoom: parseFloat(settings['gm_zoomlevel']),
-            center: { lat: parseFloat(settings['gm_latitude']), lng: parseFloat(settings['gm_longitude']) }
+            center: {
+                lat: parseFloat(settings['gm_latitude']),
+                lng: parseFloat(settings['gm_longitude'])
+            }
         });
     }
 
@@ -547,14 +607,11 @@ function setClassByTime() {
 
     if (n >= 20 || n <= 5) {
         newClass = 'night';
-    }
-    else if (n >= 6 && n <= 10) {
+    } else if (n >= 6 && n <= 10) {
         newClass = 'morning';
-    }
-    else if (n >= 11 && n <= 15) {
+    } else if (n >= 11 && n <= 15) {
         newClass = 'noon';
-    }
-    else if (n >= 16 && n <= 19) {
+    } else if (n >= 16 && n <= 19) {
         newClass = 'afternoon';
     }
 
@@ -583,14 +640,14 @@ function infoMessage(sub, msg, timeOut) {
     }
     if (timeOut == 0) {
         $('body').append('<div class="update">' + sub + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + msg + '&nbsp;&nbsp;</div>');
-    }
-    else {
+    } else {
         $('body').append('<div class="update">' + sub + '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' + msg + '&nbsp;&nbsp;</div>');
         setTimeout(function () {
             $(".update").fadeOut();
         }, timeOut);
     }
 }
+
 function infoDevicsSwitch(msg) {
     $('body').append('<div class="update">&nbsp;&nbsp;' + msg + '&nbsp;&nbsp;</div>');
     setTimeout(function () {
@@ -606,7 +663,7 @@ function speak(textToSpeak) {
 }
 
 function playAudio(file) {
-//    var key = $.md5(file);
+    //    var key = $.md5(file);
     file = file.split('/');
 
     var filename = file[(file.length - 1)].split('.');
@@ -615,9 +672,9 @@ function playAudio(file) {
 
     if (!gettingDevices) {
         ion.sound({
-            sounds: [
-                { name: filename }
-            ],
+            sounds: [{
+                name: filename
+            }],
 
             path: file.join('/') + "/",
             preload: true,
@@ -636,7 +693,8 @@ function createModalDialog(dialogClass, dialogId, myFrame) {
     var setWidth = false;
     var setHeight = false;
     var mySetUrl = 'data-popup';
-    var mywidth, myheight;
+    var mywidth = '',
+        myheight = '';
     if (typeof (myFrame.framewidth) !== 'undefined') {
         mywidth = myFrame.framewidth;
         setWidth = true;
@@ -680,8 +738,7 @@ function triggerStatus(idx, value, device) {
         eval('getStatus_' + idx + '(idx,value,device)');
     }
     // eslint-disable-next-line no-empty
-    catch (err) {
-    }
+    catch (err) {}
     if (typeof (onOffstates[idx]) !== 'undefined' && value !== onOffstates[idx]) {
         if (device['Status'] == 'On' || device['Status'] == 'Open') {
             if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['playsoundOn']) !== 'undefined') {
@@ -745,15 +802,15 @@ function triggerStatus(idx, value, device) {
     onOffstates[idx] = value;
 }
 
-function triggerChange(idx, value) {
+// eslint-disable-next-line no-unused-vars
+function triggerChange(idx, value, device) {
     if (typeof (oldstates[idx]) !== 'undefined' && value !== oldstates[idx]) {
         //disableStandby();
         try {
             eval('getChange_' + idx + '(idx,value,device)');
         }
         // eslint-disable-next-line no-empty
-        catch (err) {
-        }
+        catch (err) {}
 
         if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['flash']) !== 'undefined') {
             var flash_value = blocks[idx]['flash'];
@@ -803,7 +860,7 @@ function disableStandby() {
     }
     $('.screenstandby').remove();
     $('body').removeClass('standby');
-    $('.swiper-container').show();
+    $('.dt-container').show();
     standbyActive = false;
 
 }
@@ -823,7 +880,7 @@ function loadMaps(b, map) {
 
     var width = 12;
     if (typeof (map.width) !== 'undefined') width = map.width;
-    var html='';
+    var html = '';
     if (typeof (map.link) !== 'undefined') html = '<div class="col-xs-' + width + ' mh hover swiper-no-swiping transbg block_trafficmap" data-toggle="modal" data-target="#trafficmap_frame_' + b + '" onclick="setSrc(this);" ';
     else html = '<div class="col-xs-' + width + ' mh swiper-no-swiping transbg block_trafficmap" ';
     if (typeof (map.height) !== 'undefined') html += ' style="height:' + map.height + 'px !important;"';
@@ -836,230 +893,8 @@ function loadMaps(b, map) {
     return html;
 }
 
-function buttonLoadFrame(button) //Displays the frame of a button after pressing is
-{
-
-    var random = getRandomInt(1, 100000);
-    $('body').append(createModalDialog('openpopup', 'button_' + random, button));
-    if (button.log == true) {
-        if (typeof (getLog) !== 'function') $.ajax({ url: 'js/log.js', async: false, dataType: 'script' });
-        $('#button_' + random + ' .modal-body').html('');
-        // eslint-disable-next-line no-undef
-        getLog($('#button_' + random + ' .modal-body'), button.level, true);
-    }
-    $('#button_' + random).on('hidden.bs.modal', function () {
-        $(this).data('bs.modal', null);
-        $(this).remove();
-    });
-
-    $('#button_' + random).modal('show');
-
-    if (!button.log && typeof (button.refreshiframe) !== 'undefined' && button.refreshiframe > 0) {
-        setTimeout(function () {
-            refreshButtonFrame(button, random);
-        }, button.refreshiframe);
-    }
-}
-
-function refreshButtonFrame(button, buttonid) {
-    var mydiv = $('#button_' + buttonid).find('iframe');
-    if (mydiv.length > 0) {
-        mydiv.attr('src', checkForceRefresh(button, button.url));
-        setTimeout(function () {
-            refreshButtonFrame(button, buttonid);
-        }, button.refreshiframe);
-    }
-}
-
-// eslint-disable-next-line no-unused-vars
-function buttonOnClick(m_event)
-//button clickhandler. Assumption: button is clickable
-{
-    var button = m_event.data;
-    if (typeof (button.newwindow) !== 'undefined') {
-        window.open(button.url);
-    }
-    else if (typeof (button.slide) !== 'undefined') {
-        toSlide(button.slide - 1);
-    }
-    else {
-        buttonLoadFrame(button);
-    }
-}
-
-function buttonIsClickable(button) {
-    var clickable = typeof (button.url) !== 'undefined' || button.log == true || typeof (button.slide) !== 'undefined';
-    return clickable;
-}
-
-// eslint-disable-next-line no-unused-vars
-function loadButton(b, button) {
-    var width = 12;
-    if (typeof (button.width) !== 'undefined') width = button.width;
-
-    var key = b;
-    if (typeof (button.key) !== 'undefined') key = button.key;
-
-    var slideToext = '';
-
-    if (typeof (button.slide) !== 'undefined') {
-        slideToext = ' slide slide' + button.slide;
-    }
-
-    var html = '<div class="col-xs-' + width + (buttonIsClickable(button) ? ' hover ' : ' ') + ' transbg buttons-' + key + slideToext + '" data-id="buttons.' + key + '">';
-
-    if (button.isimage) {
-        var img = '';
-        if (typeof (button.image) !== 'undefined') {
-            img = button.image;
-        }
-        if (img == 'moon') {
-            img = getMoonInfo(button);
-        }
-        if (typeof (button.forceheight) !== 'undefined') {
-            html += '<img id="buttonimg_' + b + '"src="' + img + '" style="max-width:100%;" width=100% height="' + button.forceheight + '" />';
-        } else {
-            html += '<img id="buttonimg_' + b + '"src="' + img + '" style="max-width:100%;" />';
-        }
-
-        var refreshtime = 60000;
-        if (typeof (button.refresh) !== 'undefined') refreshtime = button.refresh;
-        if (typeof (button.refreshimage) !== 'undefined') refreshtime = button.refreshimage;
-        setInterval(function () {
-            reloadImage(b, button, true);
-        }, refreshtime);
-
-    }
-    else {
-        if (typeof (button.title) !== 'undefined') {
-            html += '<div class="col-xs-4 col-icon">';
-        }
-        else {
-            html += '<div class="col-xs-12 col-icon">';
-        }
-
-        if (typeof (button.image) !== 'undefined') html += '<img class="buttonimg" src="' + button.image + '" />';
-        else html += '<em class="' + button.icon + ' fa-small"></em>';
-        html += '</div>';
-        if (typeof (button.title) !== 'undefined') {
-            html += '<div class="col-xs-8 col-data">';
-            html += '<strong class="title">' + button.title + '</strong><br>';
-            html += '<span class="state"></span>';
-            html += '</div>';
-        }
-    }
-    html += '</div>';
-    return html;
-}
-
-// eslint-disable-next-line no-unused-vars
-function loadFrame(f, frame) {
-
-    var key = 'UNKNOWN';
-    if (typeof (frame.key) !== 'undefined') key = frame.key;
-
-    var width = 12;
-    if (typeof (frame.width) !== 'undefined') width = frame.width;
-    var scrolling = frame.scrollbars === false ? ' scrolling="no"' : '';
-    var html = '<div data-id="frames.' + key + '" class="col-xs-' + width + ' hover transbg swiper-no-swiping imgblock imgblock' + f + '" style="height:' + frame.height + 'px;padding:0px !important;">';
-    html += '<div class="col-xs-12 no-icon" style="padding:0px !important;">';
-    html += '<iframe src="' + frame.frameurl + '"' + scrolling + ' style="width:100%;border:0px;height:' + (frame.height - 14) + 'px;"></iframe>';
-    html += '</div>';
-    html += '</div>';
-
-    var refreshtime = 60000;
-    if (typeof (frame.refreshiframe) !== 'undefined') refreshtime = frame.refreshiframe;
-    setInterval(function () {
-        reloadFrame(f, frame);
-    }, refreshtime);
-
-    return html;
-}
-
-function checkForceRefresh(m_instance, url) {
-    //forcerefresh is set to 1 or true:
-    //   adds current time to an url as second parameter (for webcams)
-    //   adds the timestamp as first parameter if there are no parameters yet
-    //forcerefresh:2
-    //   calls nocache.php and prevent caching by setting headers in php.
-    //forcerefresh:3
-    //   adds timestamp parameter to the end of the url
 
 
-    if (typeof (m_instance.forcerefresh) !== 'undefined') {
-        var str = "" + (new Date()).getTime();
-        var mytimestamp = 't=' + str.substr(str.length - 8, 5);
-        switch (m_instance.forcerefresh) {
-            case true:
-            case 1:
-                //try to add the timestamp as second parameter
-                //it there are no parameters the timestamp will be added.
-                //behavior changed to support cheap webcams
-                if (url.indexOf("?") == -1) //no parameters. We will add the timestamp
-                    url += '?' + mytimestamp;
-                else { //we have at least one parameters
-                    var pos = url.indexOf("&");
-                    if (pos > 0) {
-                        //we have more than one parameter
-                        //insert the timestamp as second
-                        url = url.substr(0, pos + 1) + '&' + mytimestamp + url.substr(pos);
-                    }
-                    else {
-                        //there is only one parameter so we add it to the end
-                        url += '&' + mytimestamp;
-                    }
-
-                }
-                break;
-            case 2:
-                url = settings['dashticz_php_path'] + 'nocache.php?' + url;
-                break;
-            case 3: //add timestamp to the end
-                var sep = '&';
-                if (url.indexOf("?") == -1) { //there is no parameter yet
-                    sep = '?';
-                }
-                url += sep + mytimestamp;
-                break;
-        }
-    }
-    return url;
-}
-
-function reloadFrame(i, frame) {
-    if (typeof (frame.frameurl) !== 'undefined') {
-        $('.imgblock' + i).find('iframe').attr('src', checkForceRefresh(frame, frame.frameurl));
-    }
-}
-
-function reloadImage(i, image) {
-    var src;
-    if (typeof (image.image) !== 'undefined') {
-        if (image.image === 'moon')
-            src = getMoonInfo(image)
-        else
-            src = checkForceRefresh(image, image.image);
-        $('#buttonimg_' + i).attr('src', src);
-    }
-}
-
-/*not used anymore
-function reloadIframe(button, i) {
-//reloads the Iframe of a button if it exists
-    if (typeof(button.url) !== 'undefined') {
-        if (typeof($('.imgblockopens' + i + ' iframe').attr('src') !== 'undefined')) {
-            $('.imgblockopens' + i + ' iframe').attr('src', checkForceRefresh(image, image.url));
-        }
-    }
-}
-*/
-
-function getMoonInfo() {
-    var mymoon = new MoonPhase(new Date());
-    var myphase = parseInt(mymoon.phase() * 100 + 50) % 100;
-    var src = 'img/moon/moon.' + ("0" + myphase).slice(-2) + '.png';
-    return src;
-}
 
 // eslint-disable-next-line no-unused-vars
 function appendHorizon(columndiv) {
@@ -1077,131 +912,7 @@ function appendHorizon(columndiv) {
     $(columndiv).append(html);
 }
 
-// eslint-disable-next-line no-unused-vars
-function appendStationClock(columndiv, col, width) {
-    $(columndiv).append(
-        '<div data-id="clock" class="transbg block_' + col + ' col-xs-' + width + ' text-center">' +
-        '<canvas id="clock" width="150" height="150">Your browser is unfortunately not supported.</canvas>' +
-        '</div>'
-    );
-    if (typeof (StationClock) !== 'function') $.ajax({ url: 'vendor/stationclock.js', async: false, dataType: 'script' });
 
-    var clock = new StationClock("clock");
-    clock.body = StationClock.RoundBody;
-    clock.dial = StationClock.GermanStrokeDial;
-    clock.hourHand = StationClock.PointedHourHand;
-    clock.minuteHand = StationClock.PointedMinuteHand;
-    if (settings['hide_seconds_stationclock']) {
-        clock.secondHand = false;
-    } else {
-        clock.secondHand = StationClock.HoleShapedSecondHand;
-        if (typeof (settings['boss_stationclock']) == 'undefined') clock.boss = StationClock.NoBoss;
-        else if (settings['boss_stationclock'] == 'RedBoss') clock.boss = StationClock.RedBoss;
-    }
-
-    clock.minuteHandBehavoir = StationClock.BouncingMinuteHand;
-    clock.secondHandBehavoir = StationClock.OverhastySecondHand;
-
-    window.setInterval(function () {
-        clock.draw()
-    }, 50);
-}
-
-// eslint-disable-next-line no-unused-vars
-function appendStreamPlayer(columndiv) {
-    var random = getRandomInt(1, 100000);
-    var html = '<div data-id="streamplayer" class="transbg containsstreamplayer' + random + '">'
-        + '<div class="col-xs-12 transbg smalltitle"><h3></h3></div>'
-        + '<audio class="audio1" preload="none"></audio>'
-        + '<div class="col-xs-4 transbg hover text-center btnPrev">'
-        + '<em class="fas fa-chevron-left fa-small"></em>'
-        + '</div>'
-        + '<div class="col-xs-4 transbg hover text-center playStream">'
-        + '<em class="fas fa-play fa-small stateicon"></em>'
-        + '</div>'
-        + '<div class="col-xs-4 transbg hover text-center btnNext">'
-        + '<em class="fas fa-chevron-right fa-small"></em>'
-        + '</div>'
-        + '</div>';
-    $(columndiv).append(html);
-
-    var streamelement = '.containsstreamplayer' + random;
-    var connecting = null;
-
-    var supportsAudio = !!document.createElement('audio').canPlayType;
-    if (supportsAudio) {
-        var index = 0,
-            playing = false,
-            tracks = _STREAMPLAYER_TRACKS,
-            trackCount = tracks.length,
-            npTitle = $(streamelement + ' h3'),
-            audio = $(streamelement + ' .audio1').bind('play', function () {
-                $(streamelement + ' .stateicon').removeClass('fas fa-play');
-                $(streamelement + ' .stateicon').addClass('fas fa-pause');
-                $(streamelement).addClass('playing')
-                playing = true;
-                connecting = setTimeout(function () {
-                    infoMessage("StreamPlayer", "connecting ... ", 0);
-                }, 1000);
-            }).bind('pause', function () {
-                $(streamelement + ' .stateicon').removeClass('fas fa-pause');
-                $(streamelement + ' .stateicon').addClass('fas fa-play');
-                $(streamelement).removeClass('playing')
-
-                playing = false;
-            }).get(0),
-            // eslint-disable-next-line no-unused-vars
-            btnPrev = $(streamelement + ' .btnPrev').click(function () {
-                if ((index - 1) > -1) {
-                    index--;
-                    loadTrack(index);
-                } else {
-                    index = 0
-                    loadTrack(trackCount - 1);
-                }
-                if (playing) {
-                    doPlay();
-                }
-            }),
-            // eslint-disable-next-line no-unused-vars
-            btnNext = $(streamelement + ' .btnNext').click(function () {
-                if ((index + 1) < trackCount) index++;
-                else index = 0;
-
-                loadTrack(index);
-                if (playing) {
-                    doPlay();
-                }
-            }),
-            // eslint-disable-next-line no-unused-vars
-            btnPlay = $(streamelement + ' .playStream').click(function () {
-                if (audio.paused) {
-                    doPlay();
-                } else {
-                    audio.pause();
-                }
-            }),
-            loadTrack = function (id) {
-                npTitle.text(tracks[id].name);
-                index = id;
-                audio.src = tracks[id].file;
-            },
-            doPlay = function () {
-                audio.play()
-                    .then(function () {
-                        clearTimeout(connecting);
-                        $(".update").remove();
-                    })
-                    .catch(function (err) {
-                        console.log(err);
-                        console.log(err.message);
-                        infoMessage("Streamplayer", err.message);
-
-                    })
-            };
-        loadTrack(index);
-    }
-}
 
 function getDevices(override) {
     if (typeof (override) == 'undefined') override = false;
@@ -1216,7 +927,9 @@ function getDevices(override) {
         if (typeof (usrEnc) !== 'undefined' && usrEnc !== '') usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
         req = $.get({
             url: settings['domoticz_ip'] + '/json.htm?' + usrinfo + 'type=devices&plan=' + settings['room_plan'] + '&filter=all&used=true&order=Name',
-            type: 'GET', async: true, contentType: "application/json",
+            type: 'GET',
+            async: true,
+            contentType: "application/json",
             error: function (jqXHR, textStatus) {
                 if (typeof (textStatus) !== 'undefined' && textStatus === 'abort') {
                     console.log('Domoticz request cancelled')
@@ -1296,8 +1009,7 @@ function getDevices(override) {
                             if (typeof (blocks) !== 'undefined' && typeof (blocks[idx]) !== 'undefined') {
                                 if ($(window).width() < 768 && typeof (blocks[idx]['width_smartphone']) !== 'undefined') {
                                     width = blocks[idx]['width_smartphone'];
-                                }
-                                else if (typeof (blocks[idx]['width']) !== 'undefined') {
+                                } else if (typeof (blocks[idx]['width']) !== 'undefined') {
                                     width = blocks[idx]['width'];
                                 }
                             }
@@ -1333,8 +1045,7 @@ function getDevices(override) {
 
                             try {
                                 html += eval('getBlock_' + idx + '(device,idx,data.result)');
-                            }
-                            catch (err) {
+                            } catch (err) {
                                 var response = handleDevice(device, idx);
                                 html = response[0];
                                 addHTML = response[1];
@@ -1366,13 +1077,14 @@ function getDevices(override) {
     }
 }
 
-
 function getVariables() {
     var usrinfo = '';
     if (typeof (usrEnc) !== 'undefined' && usrEnc !== '') usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
     $.get({
         url: settings['domoticz_ip'] + '/json.htm?' + usrinfo + 'type=command&param=getuservariables',
-        type: 'GET', async: true, contentType: "application/json",
+        type: 'GET',
+        async: true,
+        contentType: "application/json",
         error: function () {
             console.error("Domoticz error!\nPlease, double check the path to Domoticz in Settings!");
             infoMessage('<font color="red">Domoticz error!', 'double check the path to Domoticz in Settings!</font>', 0);
@@ -1443,15 +1155,14 @@ function handleDevice(device, idx) {
     if (device['Image'] === 'Heating') buttonimg = 'heating.png';
     var html = '';
     var addHTML = true;
-    if (device.hasOwnProperty('SubType') && device['SubType'] in blocktypes['SubType']) {
+    if (device.SubType && device['SubType'] in blocktypes['SubType']) {
         html += getStatusBlock(idx, device, blocktypes['SubType'][device['SubType']]);
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('HardwareType') && device['HardwareType'] in blocktypes['HardwareType']) {
+    if (device.HardwareType && device['HardwareType'] in blocktypes['HardwareType']) {
         if (typeof (blocktypes['HardwareType'][device['HardwareType']]['icon']) !== 'undefined') {
             html += getStatusBlock(idx, device, blocktypes['HardwareType'][device['HardwareType']]);
-        }
-        else {
+        } else {
             var c = 1;
             for (var de in blocktypes['HardwareType'][device['HardwareType']]) {
                 html = getStatusBlock(idx, device, blocktypes['HardwareType'][device['HardwareType']][de], c);
@@ -1466,19 +1177,19 @@ function handleDevice(device, idx) {
         }
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('HardwareName') && device['HardwareName'] in blocktypes['HardwareName']) {
+    if (device.HardwareName && device['HardwareName'] in blocktypes['HardwareName']) {
         html += getStatusBlock(idx, device, blocktypes['HardwareName'][device['HardwareName']]);
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('SensorUnit') && device['SensorUnit'] in blocktypes['SensorUnit']) {
+    if (device.SensorUnit && device['SensorUnit'] in blocktypes['SensorUnit']) {
         html += getStatusBlock(idx, device, blocktypes['SensorUnit'][device['SensorUnit']]);
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('Type') && device['Type'] in blocktypes['Type']) {
+    if (device.Type && device['Type'] in blocktypes['Type']) {
         html += getStatusBlock(idx, device, blocktypes['Type'][device['Type']]);
         return [html, addHTML];
     }
-    if (device.hasOwnProperty('Name') && device['Name'] in blocktypes['Name']) {
+    if (device.Name && device['Name'] in blocktypes['Name']) {
         html += getStatusBlock(idx, device, blocktypes['Name'][device['Name']]);
         return [html, addHTML];
     }
@@ -1504,28 +1215,34 @@ function handleDevice(device, idx) {
         case 'Temp + Humidity':
         case 'Temp + Baro':
         case 'Heating':
+            if (device.SubType === 'Zone') //EvoHome Zone device
+                return getEvohomeZoneBlock(device, idx);
+			if (device.SubType === 'Evohome') //EvoHome Controller device
+                return getEvohomeControllerBlock(device, idx);
+			if (device.SubType === 'Hot Water') //EvoHome Hot Water device
+                return getEvohomeHotWaterBlock(device, idx);
         case 'Radiator 1':
             return getTempHumBarBlock(device, idx);
         case 'Thermostat':
             return getThermostatBlock(device, idx);
         case 'Group':
         case 'Scene':
-/*
-            if (device['Type'] === 'Group') $('.block_' + idx).attr('onclick', 'switchDevice(this)');
-            if (device['Type'] === 'Scene') $('.block_' + idx).attr('onclick', 'switchScene(this)');
+            /*
+                        if (device['Type'] === 'Group') $('.block_' + idx).attr('onclick', 'switchDevice(this)');
+                        if (device['Type'] === 'Scene') $('.block_' + idx).attr('onclick', 'switchScene(this)');
 
-            if (device['Status'] === 'Off') html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon');
-            else html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon');
-            html += getBlockData(device, idx, language.switches.state_on, language.switches.state_off);
-            return [html, addHTML];
-*/
-            return getDefaultSwitchBlock(device, blocks[idx], idx,'fas fa-lightbulb', 'far fa-lightbulb', buttonimg);
+                        if (device['Status'] === 'Off') html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon');
+                        else html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon');
+                        html += getBlockData(device, idx, language.switches.state_on, language.switches.state_off);
+                        return [html, addHTML];
+            */
+            return getDefaultSwitchBlock(device, blocks[idx], idx, 'fas fa-lightbulb', 'far fa-lightbulb', buttonimg);
     }
 
     switch (device['HardwareType']) {
         case 'Toon Thermostat':
-            if (device['SubType'] !== 'SetPoint'
-                && device['SubType'] !== 'AC'
+            if (device['SubType'] !== 'SetPoint' &&
+                device['SubType'] !== 'AC'
             ) {
                 return getSmartMeterBlock(device, idx);
             }
@@ -1621,8 +1338,7 @@ function handleDevice(device, idx) {
             }
             html += '</select>';
             html += '</div>';
-        }
-        else {
+        } else {
             html += '<div class="col-xs-8 col-data">';
             html += '<strong class="title">' + device['Name'] + '</strong><br />';
             html += '<div class="btn-group" data-toggle="buttons">';
@@ -1640,8 +1356,7 @@ function handleDevice(device, idx) {
             html += '</div>';
         }
 
-    }
-    else if (device['SubType'] == 'Custom Sensor') {
+    } else if (device['SubType'] == 'Custom Sensor') {
         this.icon = 'fas fa-question';
         if (device['Image'] === 'Water') this.icon = 'fas fa-tint';
         else if (device['Image'] === 'Heating') this.icon = 'fas fa-utensils';
@@ -1661,12 +1376,10 @@ function handleDevice(device, idx) {
             html += '<br /><span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
         }
         html += '</div>';
-    }
-    else if (device['HardwareName'] == 'Dummy') { 
-        return getDefaultSwitchBlock(device, blocks[idx], idx,'fas fa-toggle-on', 'fas fa-toggle-off', buttonimg);
-    }
-    else {
-        return getDefaultSwitchBlock(device, blocks[idx], idx,'fas fa-lightbulb', 'far fa-lightbulb', buttonimg);
+    } else if (device['HardwareName'] == 'Dummy') {
+        return getDefaultSwitchBlock(device, blocks[idx], idx, 'fas fa-toggle-on', 'fas fa-toggle-off', buttonimg);
+    } else {
+        return getDefaultSwitchBlock(device, blocks[idx], idx, 'fas fa-lightbulb', 'far fa-lightbulb', buttonimg);
     }
 
     return [html, addHTML];
@@ -1715,16 +1428,17 @@ function getDefaultSwitchBlock(device, block, idx, defaultIconOn, defaultIconOff
     if (device['Image'] == 'Alarm') {
         defaultIconOff = 'fas fa-exclamation-triangle';
         defaultIconOn = defaultIconOff;
-        if (device['Status'] == 'On') 
+        if (device['Status'] == 'On')
             attr = 'style="color:#F05F40;"';
-     }
-    
-    var mIcon = (getIconStatusClass(device['Status']) === 'off') ? defaultIconOff: defaultIconOn;
+    }
+
+    var mIcon = (getIconStatusClass(device['Status']) === 'off') ? defaultIconOff : defaultIconOn;
     html += iconORimage(idx, mIcon, buttonimg, getIconStatusClass(device['Status']) + ' icon', attr);
     html += getBlockData(device, idx, textOn, textOff);
 
     return [html, true];
 }
+
 function isProtected(idx) {
     return (blocks[idx] && blocks[idx].protected) || alldevices[idx].Protected;
 }
@@ -1739,8 +1453,7 @@ function getIconStatusClass(deviceStatus) {
                 return 'off';
         }
         return 'on';
-    }
-    else {
+    } else {
         return "off";
     }
 }
@@ -1781,8 +1494,7 @@ function getSmartMeterBlock(device, idx) {
         }
 
         var data = device['Data'].split(';');
-        var blockValues = [
-            {
+        var blockValues = [{
                 icon: 'fas fa-plug',
                 idx: idx + '_1',
                 title: language.energy.energy_usage,
@@ -1856,8 +1568,7 @@ function getSmartMeterBlock(device, idx) {
         if ($('div.block_' + idx).length > 0) {
             allblocks[idx] = true;
         }
-        var myblockValues = [
-            {
+        var myblockValues = [{
                 icon: 'fas fa-fire',
                 idx: idx + '_1',
                 title: language.energy.gas_usagetoday,
@@ -1922,8 +1633,7 @@ function getRFXMeterCounterBlock(device, idx) {
             break;
     }
 
-    var blockValues = [
-        {
+    var blockValues = [{
             icon: icon,
             idx: idx + '_1',
             title: device['Name'],
@@ -1956,8 +1666,7 @@ function getYouLessBlock(device, idx) {
     if ($('div.block_' + idx).length > 0) {
         allblocks[idx] = true;
     }
-    var blockValues = [
-        {
+    var blockValues = [{
             icon: 'fas fa-fire',
             idx: idx + '_1',
             title: device['Name'],
@@ -1998,8 +1707,8 @@ function createBlocks(blockValues, device) {
         if (!index) {
             if (!$('div.block_' + device['idx']).hasClass('block_' + blockValue.idx)) $('div.block_' + device['idx']).addClass('block_' + blockValue.idx);
         } else {
-            if (typeof (allblocks[device['idx']]) !== 'undefined'
-                && $('div.block_' + blockValue.idx).length == 0
+            if (typeof (allblocks[device['idx']]) !== 'undefined' &&
+                $('div.block_' + blockValue.idx).length == 0
             ) {
 
                 //sometimes there is a block_IDX_3 and block_IDX_6, but no block_IDX_4, therefor, loop to remove classes
@@ -2020,8 +1729,7 @@ function getGeneralKwhBlock(device, idx) {
     if ($('div.block_' + idx).length > 0) {
         allblocks[idx] = true;
     }
-    var blockValues = [
-        {
+    var blockValues = [{
             icon: 'fas fa-fire',
             idx: idx + '_1',
             title: device['Name'] + ' ' + language.energy.energy_now,
@@ -2049,15 +1757,13 @@ function getGeneralKwhBlock(device, idx) {
 
 function getHumBlock(device, idx) {
     this.html = '';
-    var blockValues = [
-        {
-            icon: 'wi wi-humidity',
-            idx: idx,
-            title: device['Name'],
-            value: number_format(device['Humidity'], 0),
-            unit: '%'
-        },
-    ];
+    var blockValues = [{
+        icon: 'wi wi-humidity',
+        idx: idx,
+        title: device['Name'],
+        value: number_format(device['Humidity'], 0),
+        unit: '%'
+    }, ];
     createBlocks(blockValues, device);
     return ['', false];
 }
@@ -2067,20 +1773,18 @@ function getTempHumBarBlock(device, idx) {
     if ($('div.block_' + idx).length > 0) {
         allblocks[idx] = true;
     }
-    var single_block = (typeof (blocks[idx]) !== 'undefined'
-        && typeof (blocks[idx]['single_block']) !== 'undefined'
-        && blocks[idx]['single_block']
+    var single_block = (typeof (blocks[idx]) !== 'undefined' &&
+        typeof (blocks[idx]['single_block']) !== 'undefined' &&
+        blocks[idx]['single_block']
     );
 
-    var blockValues = [
-        {
-            icon: 'fas fa-thermometer-half',
-            idx: idx + '_1',
-            title: device['Name'],
-            value: number_format((typeof (device['Temp']) !== 'undefined') ? device['Temp'] : device['Data'], 1),
-            unit: _TEMP_SYMBOL
-        },
-    ];
+    var blockValues = [{
+        icon: 'fas fa-thermometer-half',
+        idx: idx + '_1',
+        title: device['Name'],
+        value: number_format((typeof (device['Temp']) !== 'undefined') ? device['Temp'] : device['Data'], 1),
+        unit: _TEMP_SYMBOL
+    }, ];
     if (typeof (device['Humidity']) !== 'undefined') {
         if (single_block) {
             blockValues[0].value += ' ' + blockValues[0].unit + ' / ' + number_format(device['Humidity'], 0) + ' %';
@@ -2152,7 +1856,7 @@ function getThermostatBlock(device, idx) {
         this.title = device['Name'];
         this.value = number_format(device['Data'], 1) + _TEMP_SYMBOL;
     }
-    this.html += '<strong class="title input-number title-input" min="' + settings['setpoint_min'] + '" max="' + settings['setpoint_max'] + '" data-light="' + device['idx'] + '">' + this.title + '</strong>';
+    this.html += '<strong class="title input-number" min="' + settings['setpoint_min'] + '" max="' + settings['setpoint_max'] + '" data-light="' + device['idx'] + '">' + this.title + '</strong>';
     this.html += '<div class="state stateheating">' + this.value + '</div>';
     this.html += '</div>';
 
@@ -2170,13 +1874,323 @@ function getThermostatBlock(device, idx) {
     return [this.html, false];
 }
 
+//#################################################
+// EVOHOME > Start                                #
+//#################################################
+
+function getEvohomeZoneBlock(device, idx) {
+	var temp		= device.Temp;
+    var setpoint	= device.SetPoint;
+	var status		= device.Status;
+    var title_temp 	= temp + _TEMP_SYMBOL;
+	var title_setp	= setpoint + _TEMP_SYMBOL;
+    var value 		= device['Name'];
+    if (titleAndValueSwitch(idx )) {
+        var tmp 	= title_temp
+        title_temp 	= value;
+        value 		= tmp;
+    }
+
+	var fa_status = (status == 'TemporaryOverride') ? 'fas fa-stopwatch' : 'far fa-calendar-alt';
+
+	var untilOrLastUpdate = (status == 'Auto' || status == 'TemporaryOverride') ? 'Until ' + moment(device['Until']).format('HH:mm') : moment(device['LastUpdate']).format(settings['timeformat']);
+
+    var html = '';
+    html += '<div class="col-button1">';
+    html += '	<div class="up">';
+	html += '		<a href="javascript:void(0)" class="btn btn-number plus" data-type="plus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
+    html += '			<em class="fas fa-plus fa-small fa-thermostat"></em>';
+    html += '		</a>';
+	html += '	</div>';
+    html += '	<div class="down">';
+	html += '		<a href="javascript:void(0)" class="btn btn-number min" data-type="minus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
+    html += '			<em class="fas fa-minus fa-small fa-thermostat"></em>';
+    html += '		</a>';
+	html += '	</div>';
+    html += '</div>';
+
+    html += iconORimage(idx , '', 'heating.png', 'on icon iconheating', '', '2');
+    html += '<div class="col-xs-8 col-data right1col">';
+    html += '	<div class="title">' + value + '</div>';
+	html += '	<div>';
+    html += '		<span class="state input-number">' + title_temp + '&nbsp;</span>';
+	html += '		<span class="setpoint text-grey input-number" min="' + settings['setpoint_min'] + '" max="' + settings['setpoint_max'] + '" data-light="' + device['idx'] + '" data-status="' + status + '" data-setpoint="' + setpoint + '">&nbsp;<i class="' + fa_status + ' small_fa">&nbsp;</i>&nbsp;' + title_setp +'</span>';
+	html += '	</div>';
+	html += '	<span class="lastupdate">'+ untilOrLastUpdate + '</span>';
+    html += '</div>';
+
+    $('div.block_' + idx).html(html);
+
+    if (typeof (addedThermostat[idx]) === 'undefined') {
+        addEvohomeZoneFunctions('.block_' + idx, idx); 
+        addedThermostat[idx] = true;
+    }
+    return [html, false];
+}
+
+function addEvohomeZoneFunctions(thermelement, idx) {
+
+    $(document).on("click", (thermelement + ' .btn-number'), function () {
+
+        sliding 		= true;
+        var type 		= $(this).attr('data-type');
+        var currentVal 	= alldevices[idx].SetPoint
+        var temp 		= alldevices[idx].Temp;
+        var input 		= $(thermelement + " .setpoint");
+
+        if (!isNaN(currentVal)) {
+
+            var newValue = (type === 'minus') ? currentVal - 0.5 : currentVal + 0.5;
+
+            if ( newValue >= input.attr('min') && newValue <= input.attr('max') ) {
+                input.html( '&nbsp;<i class="fas fa-stopwatch small_fa">&nbsp;</i>' + newValue + _TEMP_SYMBOL ).trigger( "change" );
+                switchEvoZone(idx, newValue, true)
+            }
+
+            if (newValue <= input.attr('min')) {
+                $(this).attr('disabled', true);
+            }
+
+            if (newValue >= input.attr('max')) {
+                $(this).attr('disabled', true);
+            }
+
+        } else {
+            input.text(0);
+        }
+    });
+
+	$(document).on("mouseenter", (thermelement + ' .btn-number'), function () {
+		sliding = true;
+	});
+
+	$(document).on("mouseleave", (thermelement + ' .btn-number'), function () {
+		sliding = false;
+	});
+
+    $(thermelement + ' .input-number').on('focusin', function () {
+        $(this).data('oldValue', $(this).text());
+    });
+
+    $(thermelement + ' .input-number').on('change', function () {
+        var minValue = parseFloat($(this).attr('min'));
+        var maxValue = parseFloat($(this).attr('max'));
+        var valueCurrent = parseFloat($(this).text());
+
+        if (valueCurrent >= minValue) {
+            $(thermelement + " .btn-number[data-type='minus']").removeAttr('disabled')
+        } else {
+            $(this).val($(this).data('oldValue'));
+        }
+        if (valueCurrent <= maxValue) {
+            $(thermelement + " .btn-number[data-type='plus']").removeAttr('disabled')
+        } else {
+            $(this).val($(this).data('oldValue'));
+        }
+    });
+	$(document).on("click", (thermelement + ' .setpoint'), function () {		
+		if($(this).attr('data-status') == 'TemporaryOverride'){
+			switchEvoZone(idx, $(this).attr('data-setpoint'), false);
+		}
+	});
+}
+
+function switchEvoZone(idx, setpoint, override) {
+
+	var mode = override ? '&mode=TemporaryOverride&until='+moment().add(settings['evohome_boost_zone'], 'minutes').toISOString() : '&mode=Auto';
+
+    sliding = true;
+    $.ajax({
+        url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=setused&idx=' + idx + '&setpoint=' + setpoint + mode +'&used=true&jsoncallback=?',
+        type: 'GET',
+        contentType: 'application/json',
+        dataType: 'jsonp',
+        success: function () {
+            sliding = false;
+            alldevices[idx].SetPoint=setpoint;
+            getEvohomeZoneBlock(alldevices[idx], idx);
+        }
+    });
+}
+
+function getEvohomeControllerBlock(device, idx) {
+
+	var evoOptions = { "Auto" : "Auto", "AutoWithEco" : "Econony", "Away" : "Away", "Custom" : "Custom", "DayOff" : "Day Off", "HeatingOff" : "Off" };
+	var status	= device.Status;
+    var value 	= device['Name'];
+
+	$.each(evoOptions, function( val, text ) {
+		if(val == device.Status) title = text;
+	});
+
+    if (titleAndValueSwitch(idx )) {
+        var tmp = title
+        title 	= value;
+        value 	= tmp;
+    }		
+    var html = '';
+    html += '<div class="col-button1">';
+    html += '	<div class="up">';
+	html += '		<a href="javascript:void(0)" class="btn btn-number plus" data-type="status" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
+    html += '			<em class="fas fa-cog fa-small fa-thermostat"></em>';
+    html += '		</a>';
+	html += '	</div>';
+    html += '</div>';
+
+    html += iconORimage(idx , '', 'evohome.png', 'on icon iconheating', '', '2');
+
+    html += '<div class="col-xs-8 col-data right1col">';  
+	html += '	<div class="title">' + value + '</div>';
+	html += '	<div>';
+	html += '		<span class="state">Mode: </span>';
+    html += '		<span class="state input-status" status="' + settings['evohome_status'] + '" data-light="' + device['idx'] + '">' + status + '</span>';
+	html += '		<select class="evoSelect select hide"><option value="" disabled selected>Select</option></select>';    
+	html += '	<div>';
+	html += '	<span class="lastupdate">'+ moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
+    html += '</div>';
+
+    $('div.block_' + idx).html(html);
+	$.each(evoOptions, function(val, text) {
+		$('.block_' + idx + ' .evoSelect').append(
+			$('<option></option>').val(val).html(text)
+		);
+	});
+	$('.block_' + idx + ' .evoSelect').blur(function() {
+		sliding = false;
+		$('.block_' + idx + ' title').toggleClass('hide');
+		$('.evoSelect').toggleClass('hide');
+	});
+	$('.block_' + idx + ' .evoSelect').on('change', function(e) {
+		var newValue = this.value;
+		var newTitle = $( "#evoSelect option:selected" ).text();
+		changeEvohomeControllerStatus(idx, newValue);
+		$('.block_' + idx + ' input-status').text(newValue);			
+		$('.block_' + idx + ' input-status').toggleClass('hide');
+		$('.evoSelect').toggleClass('hide');			
+	})	
+
+    if (typeof (addedThermostat[idx]) === 'undefined') {
+        addEvohomeControllerFunctions('.block_' + idx, idx); 
+        addedThermostat[idx] = true;
+    }
+    return [html, false];
+}
+
+function addEvohomeControllerFunctions(thermelement, idx) {
+	$(document).on("click", (thermelement + ' .btn-number'), function (e) {	
+		sliding = true;
+		$('.evoSelect').toggleClass('hide');	
+		$(thermelement + ' .input-status').toggleClass('hide');	
+	});
+	$(thermelement + ' .input-status').on('focusin', function () {
+        $(this).data('oldValue', $(this).text());
+    });
+
+    $(thermelement + ' .input-status').on('change', function () {
+        var status = $(this).attr('status');       
+        var valueCurrent = $(this).text();
+
+        if (valueCurrent != status) {
+            $(thermelement + " .btn-number[data-type='status']").removeAttr('disabled')
+        } else {
+            $(this).val($(this).data('oldValue'));
+        }        
+    });
+}
+
+function changeEvohomeControllerStatus(idx, status) {
+
+    sliding = true;
+
+    $.ajax({
+        url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=switchmodal&idx=' + idx + '&status=' + status + '&action=1&used=true&jsoncallback=?',
+        type: 'GET',
+        contentType: 'application/json',
+        dataType: 'jsonp',
+        success: function () {
+            sliding = false;
+            alldevices[idx].Status=status;
+            getEvohomeControllerBlock(alldevices[idx], idx);
+        }
+    });
+}
+
+function getEvohomeHotWaterBlock(device, idx) {
+	var temp	= device.Temp;
+    var state	= device.State;
+	var status	= device.Status;
+    var temp 	= temp + _TEMP_SYMBOL;
+    var name 	= device['Name'];
+    if (titleAndValueSwitch(idx )) {
+        var tmp = temp
+        temp 	= value;
+        name 	= tmp;
+    }
+
+	var fa_status = (status == 'TemporaryOverride') ? 'fas fa-stopwatch' : 'far fa-calendar-alt';
+
+	var untilOrLastUpdate = (status == 'Auto' || status == 'TemporaryOverride') ? 'Until ' + moment(device['Until']).format('HH:mm') : moment(device['LastUpdate']).format(settings['timeformat']);
+
+    var html = '';
+    html += '<div class="col-button1">';
+    html += '	<div class="up">';
+	html += '		<a href="javascript:void(0)" class="btn btn-number plus" data-type="on" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
+    html += '			<em class="fas fa-toggle-'+state.toLowerCase()+' fa-small fa-thermostat"></em>';
+    html += '		</a>';
+	html += '	</div>';
+    html += '</div>';
+
+    html += iconORimage(idx , '', 'hot_water_on.png', 'on icon iconheating', '', '2');
+    html += '<div class="col-xs-8 col-data right1col">';
+    html += '	<div class="title">' + name + '</div>';
+	html += '	<div>';
+    html += '		<span class="state input-number">' + state + '</span>';
+	html += '		<span class="hwtemp input-number" data-state"' + state + '" data-temp="' + temp + '">&nbsp;<i class="' + fa_status + ' small_fa">&nbsp;</i>&nbsp;' + temp +'</span>';
+	html += '	</div>';
+	html += '	<span class="lastupdate">'+ untilOrLastUpdate + '</span>';
+    html += '</div>';
+
+    $('div.block_' + idx).html(html);
+
+    if (typeof (addedThermostat[idx]) === 'undefined') {
+		$(document).on("click", ('.block_' + idx + ' .btn-number'), function (e) {	
+			sliding = true;
+			state = (state == 'Off') ? 'On' : 'Off';
+			switchEvoHotWater(idx, state, state == 'On');
+		});
+        addedThermostat[idx] = true;
+    }
+    return [html, false];
+}
+
+function switchEvoHotWater(idx, state, override) {
+
+	var mode = override ? '&mode=TemporaryOverride&until='+moment().add(settings['evohome_boost_hw'], 'minutes').toISOString() : '&mode=Auto';
+    sliding = true;
+
+    $.ajax({
+        url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=setused&idx=' + idx + '&setpoint=60&state='+state + mode + '&used=true&jsoncallback=?',
+        type: 'GET',
+        contentType: 'application/json',
+        dataType: 'jsonp',
+        success: function () {
+            sliding = false;
+            getEvohomeHotWaterBlock(alldevices[idx], idx);
+        }
+    });
+}
+
+//#################################################
+// EVOHOME > End                                  #
+//#################################################
+
 function getDimmerBlock(device, idx, buttonimg) {
     var html = '';
-    var classExtension = isProtected(idx) ? ' icon':' icon iconslider'; //no pointer in case of protected device
+    var classExtension = isProtected(idx) ? ' icon' : ' icon iconslider'; //no pointer in case of protected device
     if (device['Status'] === 'Off')
-        html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false );"');
+        html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" ');
     else
-        html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false);"');
+        html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" ');
     html += '<div class="col-xs-10 swiper-no-swiping col-data">';
     html += '<strong class="title">' + device['Name'];
     if (typeof (blocks[idx]) == 'undefined' || typeof (blocks[idx]['hide_data']) == 'undefined' || blocks[idx]['hide_data'] == false) {
@@ -2190,20 +2204,27 @@ function getDimmerBlock(device, idx, buttonimg) {
     if (isRGBDeviceAndEnabled(device)) {
         html += '<input type="text" class="rgbw rgbw' + idx + '" data-light="' + device['idx'] + '" />';
         html += '<div class="slider slider' + device['idx'] + '" style="margin-left:55px;" data-light="' + device['idx'] + '"></div>';
-    }
-    else {
+    } else {
         html += '<div class="slider slider' + device['idx'] + '" data-light="' + device['idx'] + '"></div>';
     }
 
     html += '</div>';
 
-    if (isRGBDeviceAndEnabled(device)) {  //we have to manually destroy the previous spectrum color picker
+    if (isRGBDeviceAndEnabled(device)) { //we have to manually destroy the previous spectrum color picker
         $('.rgbw' + idx).spectrum("destroy");
     }
 
     $('div.block_' + idx).html(html);
-    if(!isProtected(idx)) {
+
+    var dimmerClickHandler = function() {
+        if (!sliding) switchDevice('.block_'+idx,'toggle', false )
+    }
+
+    $('div.block_' + idx).off('click');
+
+    if (!isProtected(idx)) {
         $('div.block_' + idx).addClass('hover');
+        $('div.block_' + idx).on('click', dimmerClickHandler);
     }
 
     if (isRGBDeviceAndEnabled(device)) {
@@ -2226,7 +2247,10 @@ function getDimmerBlock(device, idx, buttonimg) {
             var url = settings['domoticz_ip'] + '/json.htm?' + usrinfo + 'type=command&param=setcolbrightnessvalue&idx=' + curidx + '&hue=' + hue.h + '&brightness=' + hue.b + '&iswhite=' + bIsWhite;
             $.ajax({
                 url: url + '&jsoncallback=?',
-                type: 'GET', async: false, contentType: "application/json", dataType: 'jsonp'
+                type: 'GET',
+                async: false,
+                contentType: "application/json",
+                dataType: 'jsonp'
             });
         });
 
@@ -2267,10 +2291,10 @@ function getDimmerBlock(device, idx, buttonimg) {
             };
             break;
     }
-    slider.disabled= isProtected(idx);
+    slider.disabled = isProtected(idx);
     addSlider(device['idx'], slider);
 
-    return [this.html, false];
+    return [html, false];
 }
 
 function getBlindsBlock(device, idx, withPercentage) {
@@ -2374,16 +2398,22 @@ function addSlider(idx, sliderValues) {
             slideDeviceExt($(this).data('light'), ui.value, 2);
         },
         stop: function () {
-            sliding = false;
+            setTimeout(function() {
+                sliding = false;
+            }, 100); //prevent clickhandler of container by setting sliding to false only after 100ms
         }
     });
+    $(".slider" + idx).on('click', function(ev) {
+        ev.stopPropagation();
+    })
+
 }
 
 function isRGBDeviceAndEnabled(device) {
-    return (typeof (settings['no_rgb']) === 'undefined'
-        || (typeof (settings['no_rgb']) !== 'undefined'
-            && parseFloat(settings['no_rgb']) === 0))
-        && (device['SubType'] === 'RGBW' || device['SubType'] === 'RGBWW' || device['SubType'] === 'RGB');
+    return (typeof (settings['no_rgb']) === 'undefined' ||
+            (typeof (settings['no_rgb']) !== 'undefined' &&
+                parseFloat(settings['no_rgb']) === 0)) &&
+        (device['SubType'] === 'RGBW' || device['SubType'] === 'RGBWW' || device['SubType'] === 'RGB' || device['SubType'] === 'RGBWWZ' );
 }
 
 function getSecurityBlock(device, idx) {
@@ -2391,7 +2421,7 @@ function getSecurityBlock(device, idx) {
     if (device['Status'] === 'Normal') html += iconORimage(idx, 'fas fa-shield-alt', '', 'off icon', '', 2);
     else html += iconORimage(idx, 'fas fa-shield-alt', '', 'on icon', '', 2);
 
-    var secPanelicons =  (settings['security_button_icons'] === true || settings['security_button_icons'] === 1 || settings['security_button_icons'] === '1') ? true : false;
+    var secPanelicons = (settings['security_button_icons'] === true || settings['security_button_icons'] === 1 || settings['security_button_icons'] === '1') ? true : false;
     var da = 'default';
     var ah = 'default';
     var aa = 'default';

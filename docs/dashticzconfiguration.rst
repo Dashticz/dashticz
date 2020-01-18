@@ -37,6 +37,8 @@ config['domoticz_refresh']        the refresh rate of Dashticz to get informatio
 config['dashticz_refresh']        the refresh rate of the Dashticz Dashboard
 ==========================        =============
 
+.. _ConfigParams :
+
 Config parameters
 #################
 
@@ -87,6 +89,16 @@ Config parameters
   * - start_page
     - | Page to show after starting Dashticz
       | ``1..100`` = Page number
+  * - vertical_scroll
+    - | Enable vertical scroll in case Dashticz dashboard height is more than the screen height
+      | ``0`` = Disable vertical scroll
+      | ``1`` = Enable vertical scroll if swiper is disabled
+      | ``2`` = Enable vertical scroll (=default)
+  * - enable_swiper
+    - | Enable horizontal swiping in case multiple screens have been defined.
+      | ``0`` = Swiper disabled
+      | ``1`` = Swiper enabled if screen width > 760px
+      | ``2`` = Swiper enabled (=default)
   * - auto_swipe_back_to
     - | when no activity, swipe back to the selected page
       | ``1..100`` = page number
@@ -220,6 +232,9 @@ Config parameters
   * - hide_off_button
     - | 0 / 1
       | Hide off button of selector switch
+  * - speak_lang
+    - | Text to speech language
+      | ``'<LANGUAGE>'`` Language options: de-DE, en-US, es-ES, fr-FR, it-IT, nl-NL, pl-PL, ru-RU
 
 Usage
 #####

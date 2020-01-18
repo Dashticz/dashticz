@@ -174,7 +174,11 @@
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Farba a opacita blesku (RGBA)",
             "blink_color_help": "Nastavte farbu a opacitu blesku (červená, zelená, modrá, alfa)",
-            "start_page": "Start page number (First page=1)"
+            "start_page": "Start page number (First page=1)",
+            "enable_swiper": "Enable Swiper",
+            "enable_swiper_help": "0: Disable swiper; 1: Enable on narrow screens; 2: Enable",
+            "vertical_scroll": "Enable vertical scroll",
+            "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",

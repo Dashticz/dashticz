@@ -204,3 +204,43 @@ More about other json commands, you can find in the Domoticz wiki: https://www.d
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This function gets called when the value of a Domoticz device changes.
+
+``Use value of some other IDX``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You could use the getStatus function. Approximately as follows:
+::
+
+    function getStatus_2(idx, value, device) {
+        console.log(device.Level)
+        if (parseFloat(device.Level) === 0) {
+            $('div[data-id="mytitle"] .dt_title').html('level 0')
+            $('div[data-id="mytitle"] .col-icon').html('<em class="fas fa-train"/>')
+
+            blocks['373'].title='also 0'
+            blocks['373'].icon='fas fa-train'
+        } 
+        else {
+            $('div[data-id="mytitle"] .dt_title').html('level is not 0 but ' + device.Level)
+            $('div[data-id="mytitle"] .col-icon').html('<em class="fas fa-bus"/>')
+
+            blocks['373'].title='not 0, but ' + device.Level
+            blocks['373'].icon='fas fa-bus'
+        }
+    }
+
+The ``getChange_2`` function gets called when the data of device with index 2 changes.
+
+This example shows how to update a blocktitle defined as ``blocks['mytitle']``:
+::
+
+    blocks['mytitle'] = {
+        type: 'blocktitle',
+        title: 'Default',
+        icon: 'fas fa-car'
+    }
+
+Not only the blocktitle will change, but also device with index 373.
+
+The domoticz blocks gets updated normally every 5 seconds, depending on the ``config['domoticz_refresh']`` parameter. So it might take 5 seconds until block 373 gets updated after the change of device 1.
+
+The exact code depends on the trigger device, and what kind of block you want to change.

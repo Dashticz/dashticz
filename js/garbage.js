@@ -88,6 +88,7 @@ function getIcalData(address, date, random, url) {
 }
 
 function getWasteApiData(address, date, random, companyCode) {
+
     $.post('https://wasteapi.2go-mobile.com/api/FetchAdress', {
         'companyCode': companyCode,
         'postCode': address.zipcode,
@@ -113,6 +114,8 @@ function getWasteApiData(address, date, random, companyCode) {
                         'NOTAVAILABLE2': 'Kerstbomen',
                         'NOTAVAILABLE3': 'Restgoed',
                         'PACKAGES': 'Verpakkingen',
+                        'TREE': 'Kerstbomen',
+                        'PAPER': 'Papier'
                     };
                     dataFiltered.push({
                         date: moment(dateElement),
@@ -142,16 +145,11 @@ function getWasteApi2Data(address, date, random, companyCode) {
             var dataFiltered = [];
             data.dataList.forEach(function (element) {
                 element.pickupDates.forEach(function (dateElement) {
-                    var pickupTypes = {
-                        PACKAGES: 'Verpakkingen',
-                        PAPER: 'Papier',
-                        GREENGREY: 'GFT & Rest',
-                    };
                     var pickupType = element.description !== 'Null' ? element.description : element._pickupTypeText;
                     dataFiltered.push({
                       date: moment(dateElement),
-                      summary: pickupTypes[pickupType],
-                      garbageType: mapGarbageType(pickupTypes[pickupType])
+                      summary: pickupType,
+                      garbageType: mapGarbageType(pickupType)
                     });
                 });
             });
@@ -412,9 +410,10 @@ function getTrashRow(garbage) {
         this.displayDate = garbage.date.format('dddd');
     }
     var name = settings['garbage'][garbage.garbageType].name;
+    
     var color = ' style="color:' + settings['garbage'][garbage.garbageType].code + '"';
     return '<div class="' + this.rowClass + '"' + (settings['garbage_use_colors'] ? color : '') + '>'
-        + (settings['garbage_use_names'] ? name : (garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)))
+        + ((settings['garbage_use_names'] || !garbage.summary) ? name : (garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)))
         + ': ' + this.displayDate
         + '</div>';
 }
@@ -526,6 +525,7 @@ function loadDataForService(service, random) {
         area: {dataHandler: 'getWasteApiData', identifier: 'adc418da-d19b-11e5-ab30-625662870761'},
         almere: {dataHandler: 'getWasteApi2Data', identifier: '53d8db94-7945-42fd-9742-9bbc71dbe4c1'},
         afvalalert: {dataHandler: 'getAfvalAlertData', identifier: ''},
+        barafvalbeheer: {dataHandler: 'getWasteApiData', identifier: 'bb58e633-de14-4b2a-9941-5bc419f1c4b0'}
     };
     window[serviceProperties[service].dataHandler](address, date, random, serviceProperties[service].identifier);
 }
