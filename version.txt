@@ -1,8 +1,9 @@
 {
-"version": "3.3.1",
+"version": "3.3.2",
 "branch": "beta",
-"last_changes": "Garbage fixes for TwenteMilieu, Barendrecht. RGBWWZ device support.",
+"last_changes": "Beta version, equal to master v3.3.2",
 "changelog" : {
+            "3.3.1": "Garbage fixes for TwenteMilieu, Barendrecht. RGBWWZ device support.",
             "3.3.0": "Evohome support.",
             "3.2.1": "Update of jQuery version.",
             "3.2.0": "Change in HTML template for special blocks",
