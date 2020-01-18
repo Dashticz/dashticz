@@ -1,10 +1,13 @@
 Release Notes
 =============
 
-Recent changes
---------------
+3.3.2 Master (18-1-2020)
+------------------------
+Master version derived from 3.3.1 beta.
 
-Fixes
+If you are upgrading from a previous master version please read :ref:`v320`.
+
+Additional fixes
   * Fix standby screen in case of single screen.
 
 3.3.1 Beta (13-1-2020)
