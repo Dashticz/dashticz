@@ -100,8 +100,8 @@ Set the dataset colors to html colors, hex code, rgb or rgba string::
 Examples
 ---------
 
-**CPU, Memory & HDD**::
-
+**CPU, Memory & HDD**
+::
 	blocks['multigraph_17'] = {
 		title: 'CPU, Memory & HDD',
 		devices: [ 17, 18, 189 ],
@@ -130,8 +130,10 @@ Examples
 
 .. image :: img/multigraph3.png
 
-**Grid vs Solar**::
+**Grid vs Solar**
 
+Due to the low solar output in winter months, comparing solar to grid was often hard to read. The graph needed to be updated to use a logarithmic scale, i.e. a nonlinear scale useful when analysing data with large ranges. The solar device stops recording data at the usual 5 minute intervals when it gets dark. The code inserts intervals (with a value of 0.00) when no data is recorded. In the updated multigraph block below, the *cartesian* property is used, and three *drawOrder* properties.
+::
 	blocks['multigraph_1'] = {
 		title: 'Grid vs Solar',
 		devices: [ 162, 1],
@@ -151,16 +153,18 @@ Examples
 	} 
 
 
-This is using the standard linear scale (i.e. ``cartesian = linear``):
+This is using the standard *linear* scale (i.e. ``cartesian = linear``):
 
 .. image :: img/multigraph6.png
 
-This is using the new logarithmic scale (i.e. ``cartesian = logarithmic``). Note the y axis labelling on the left:
+This is using the new *logarithmic* scale (i.e. ``cartesian = logarithmic``). Note the y axis labelling on the left:
 
 .. image :: img/multigraph5.png
 
-**Outside vs Inside Temp**::
+**Outside vs Inside Temp**
 
+The indoor temp sensor also includes barometric pressure (ba) and humidity (hu), but the outside one is only temperature. In the graph below, the *exclude* property is used to remove this extra unwanted data. Now only the temperature is directly compared.
+::
 	blocks['multigraph_72'] = {
 		title: 'Outside vs Inside Temp',
 		devices: [ 72, 152],
@@ -179,3 +183,17 @@ This is using the new logarithmic scale (i.e. ``cartesian = logarithmic``). Note
 
 .. image :: img/multigraph4.png
 
+
+**Buttons**
+
+Standard buttons:
+
+.. image :: img/graph_buttons1.png
+
+Updated buttons (one of many styles):
+
+.. image :: img/graph_buttons2.png
+
+.. image :: img/graph_buttons3.png
+
+.. image :: img/graph_buttons4.png
