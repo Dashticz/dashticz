@@ -882,7 +882,7 @@ function appendHorizon(columndiv) {
 }
 
 
-function getAllDevicesHandler() {
+function getAllDevicesHandler(value) {
     console.log('devices update');
     alldevices = Domoticz.getAllDevices()
     $('.solar').remove();
@@ -895,7 +895,8 @@ function getAllDevicesHandler() {
     $('div.newblocks.plugins').html('');
     $('div.newblocks.domoticz').html('');
 
-    for (var idx in alldevices) {
+    if(!(value && value.result)) return;
+    for (var idx in value.result) {
         //debugger
         var device = alldevices[idx];
         //iterate over devices and set names
@@ -1042,7 +1043,7 @@ function getDevices(override) {
         alldevices = Domoticz.getAllDevices()
         gettingDevices = false;
         if (!sliding || override) {
-            console.error('Not implemented!')
+            Domoticz.update();
         }
     }
 }

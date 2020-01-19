@@ -9,6 +9,8 @@ var Domoticz = function () {
     var socket = null;
     var cfg ={};
     var useWSS = false;
+    var initialUpdate = $.Deferred();
+    var lastUpdate = {};
 
     MSG = {
         info: 'type=command&param=getversion'
@@ -42,8 +44,12 @@ var Domoticz = function () {
             console.log(res);
             if (parseFloat(res.version)>4.011 ) {
                     useWSS=true;
-                    console.log("Switching to websocket")
+                    console.log("Switching to websocket");
+                    connectWebsocket();
                 }
+            else {
+                setInterval(_update, 5000);
+            }
         })
     }
 
@@ -57,7 +63,6 @@ var Domoticz = function () {
             initPromise = checkWSSSupport()
             .then(_update);
 
-            setInterval(_update, 50000);
 
 
         }
@@ -65,7 +70,7 @@ var Domoticz = function () {
         return initPromise;
     }
 
-    function _connectWebsocket() {
+    function connectWebsocket() {
         socket = new WebSocket("ws://192.168.178.18:8090/json",['domoticz']);
         //var mysocket=this.socket;
         socket.onopen = function(e) {
@@ -79,12 +84,19 @@ var Domoticz = function () {
             socket.send(JSON.stringify(msg))
           };
           socket.onmessage = function(event) {
-            alert(`[message] Data received from server: ${event.data}`);
+              initialUpdate.resolve();
+//            console.log(`[message] Data received from server: ${event.data}`);
+            //console.log(event.data);
+            var res=JSON.parse(event.data);
+            //console.log(res)
+            var res2=JSON.parse(res.data)
+            //console.log(res2)
+            _setAllDevices(res2)
           };
           
           socket.onclose = function(event) {
             if (event.wasClean) {
-              alert(`[close] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+              console.log('[close] Connection closed cleanly, code=', event.code, event.reason);
             } else {
               // e.g. server process killed or network down
               // event.code is usually 1006 in this case
@@ -92,10 +104,10 @@ var Domoticz = function () {
               switch(event.code){
                 case 1006: 
                     console.log('reconnecting')
-                    setTimeout(_connectWebsocket,500); //try to reconnect in 1s
+                    setTimeout(connectWebsocket,1000); //try to reconnect in 1s
                     break;
                 default:
-                    alert('[close] Connection died');
+                    console.error('[close] Connection died');
                     break;
     
                 }
@@ -104,18 +116,17 @@ var Domoticz = function () {
           };
           
           socket.onerror = function(error) {
-              console.log(error)
-            alert(`[error] ${error.message}`);
+              console.error(error)
           };
-
-          //socket.addEventListener ('jsonupdate', function(msg) {
-          //  alert(`[jsonupdate] ${msg}`);
-          //});  
     }
 
-    function _update() {
-        return _updateAllDevices()
-            .then( _updateAllVariables)
+    function _update(forced) {
+
+        if (useWSS==false || forced)
+        return _requestAllDevices()
+            .then( _requestAllVariables)
+        else
+            return initialUpdate;
     }
 
     function _getDevice(idx) {
@@ -125,9 +136,9 @@ var Domoticz = function () {
             })
     }
 
-    function _updateAllDevices() {
+    function _requestAllDevices() {
         console.log('updateAllDevices ' + path);
-        return domoticzRequest('type=devices&filter=all&used=true&order=Name')
+        return domoticzRequest('type=devices&filter=all&used=true&order=Name&lastupdate='+lastUpdate.devices)
             .then(function (res) {
                 return _setAllDevices(res)
             });
@@ -161,6 +172,8 @@ var Domoticz = function () {
     }
 
     function _setAllDevices(data) {
+        console.log(data.ActTime);
+        lastUpdate.devices = data.ActTime;
         setOnChange("_Sunrise", data.Sunrise);
         setOnChange("_Sunset",data.Sunset)
         for (var r in data.result) {
@@ -170,23 +183,27 @@ var Domoticz = function () {
             if (device['Type'] === 'Group' || device['Type'] === 'Scene') idx = 's' + device['idx'];
             setOnChange(idx, device); 
         }
-        setOnChange("_devices", new Date()); //event to trigger that all devices have been updated.
+//        setOnChange("_devices", new Date()); //event to trigger that all devices have been updated.
+        setOnChange("_devices", data);
         return deviceObservable._values
     }
 
-    function _updateAllVariables() {
-        console.log('updateAllVariables ' + path);
-        return domoticzRequest('type=command&param=getuservariables')
+    function _requestAllVariables() {
+//        console.log('requestAllVariables ' + path);
+//        return domoticzRequest('type=command&param=getuservariables&lastupdate='+lastUpdate.variables)
+            return domoticzRequest('type=command&param=getuservariables')
             .then(function (res) {
                 return _setAllVariables(res)
             });
     }
 
     function _setAllVariables(data) {
+        //console.log('Variables:',data)
+        //lastUpdate.variables = data.ActTime;
         for (var r in data.result) {
             var variable = data.result[r];
             variable.Type = 'Variable';
-            setOnChange('v' + variable.idx, variable); //todo: only set after change
+            setOnChange('v' + variable.idx, variable);
         }
         return deviceObservable._values
     }
@@ -204,7 +221,8 @@ var Domoticz = function () {
         getDevice: _getDevice,
         getAllDevices: _getAllDevices,
         state: state,
-        subscribe: _subscribe
+        subscribe: _subscribe,
+        update: _update
     }
 }();
 
