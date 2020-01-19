@@ -43,7 +43,7 @@ Multigraph block parameters
     - the size of each data point, e.g. 3 (default is 1)
   * - pointStyle
     - an array of the shape of each point, such as circle|cross|dash|line|rect|star|triangle, e.g.['star','triangle'] (default is circle)
-  * - pointFillColour
+  * - pointFillColor
     - an array containing the colour of each point, e.g. ['red', 'green', 'blue'] (default uses datasetColors)
   * - pointBorderColor
     - an array containing the border colour of each point, e.g. ['red', 'green', 'blue'] (default is light grey)
@@ -85,6 +85,10 @@ Multigraph block parameters
     - the size of the button, e.g. 12, default is 14
   * - buttonsText
     - change the text displayed on each button in an array, e.g. ['Now', 'Today', 'Month'], default is what you see today
+  * - gradients
+    - an array of arrays, e.g. gradients: [ ['white, 'blue'], ['orange', 'powderblue'] ], default disabled
+  * - gradientHeight
+    - a number showing the height of the gradient split, e.g. 0.8, default 1
 
 datasetColors
 ~~~~~~~~~~~~~
@@ -295,3 +299,26 @@ Updated buttons (one of many styles):
 .. image :: img/graph_buttons3.png
 
 .. image :: img/graph_buttons4.png
+
+More Examples
+-------------
+
+Multigraph includes 2 separate *temperature* sensors, with gradients, custom points (images) and button styling:
+
+.. image :: img/muligraph_patch4_1.png
+
+Multigraph includes 3 separate *percentage* sensors, custom points (images) and button styling:
+
+.. image :: img/muligraph_patch4_2.png
+
+Multigraph includes 2 separate *energy* sensors, subtle gradients, no points and uses the *logarithmic* scale:
+
+.. image :: img/muligraph_patch4_3.png
+
+Multigraph includes 2 separate *counter* sensors, without gradients, but with custom points (images) and button styling:
+
+.. image :: img/muligraph_patch4_4.png
+
+Multigraph uses 2 *temperature* sensors **and** *custom data*, calculating a 3rd virtual dataset, showing the difference between the outside temperature and the inside temperature:
+
+.. image :: img/muligraph_patch4_5.png
