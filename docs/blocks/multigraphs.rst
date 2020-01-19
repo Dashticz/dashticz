@@ -89,6 +89,9 @@ Multigraph block parameters
     - an array of arrays, e.g. gradients: [ ['white, 'blue'], ['orange', 'powderblue'] ], default disabled
   * - gradientHeight
     - a number showing the height of the gradient split, e.g. 0.8, default 1
+  * - spanGaps
+    - If true, lines will be drawn between points with no or null data. If false, points with NaN data will create a break in the line.
+
 
 datasetColors
 ~~~~~~~~~~~~~
