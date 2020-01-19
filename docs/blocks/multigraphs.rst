@@ -123,8 +123,6 @@ Custom button styling
 
 Custom point styling
 ~~~~~~~~~~~~~~~~~~~~
-
-
 ::
 
 	var hot = new Image();
@@ -139,6 +137,63 @@ Custom point styling
 	}
 
 .. image :: img/multigraph_point_styling.jpg
+
+Custom data
+~~~~~~~~~~~
+::
+
+	blocks['multigraph_72'] = {
+		title: 'Outside vs Inside Temp',
+		devices: [ 72, 152],
+		graph: 'line',
+		buttonsBorder: '#ccc',
+		buttonsColor: '#ccc',
+		buttonsFill: 'transparent',
+		buttonsIcon: sBlue,
+		buttonsPadX: 10,
+		buttonsPadY: 5,
+		buttonsMarginX: 5,
+		buttonsMarginY: 2,
+		buttonsRadius: 0,
+		buttonsShadow: 'rgba(2, 117, 216, 0.2)',
+		buttonsSize: 12,
+			custom : {
+				"Last hours": {
+					range: 'day',
+					filter: '6 hours',
+					data: {                
+						te1: 'd.te1',
+						te2: 'd.te2',
+						delta: 'd.te2-d.te1'
+					},
+				},
+				"Last 2 weeks": {
+					range: 'month',
+					filter: '14 days',
+					data: {
+						te1: 'd.te1',
+						te2: 'd.te2',
+						delta: 'd.te2-d.te1'
+					}
+				},
+				"Last 6 months": {
+					range: 'year',
+					filter: '6 months',
+					data: {
+						te1: 'd.te1',
+						te2: 'd.te2',
+						delta: 'd.te2-d.te1'
+					}
+				}
+			},
+		legend: {
+			'te1': 'Outside',	  
+			'te2': 'Inside',
+			'delta': 'Difference'
+		}
+	} 
+
+.. image :: img/multigraph_custom.png
 
 Examples
 ---------
