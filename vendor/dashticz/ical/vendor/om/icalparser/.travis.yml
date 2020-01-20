@@ -1,0 +1,22 @@
+language: php
+php:
+  - 7.1
+  - 7.2
+  - 7.3
+  - 7.4
+  - nightly
+
+matrix:
+  allow_failures:
+    - php: 7.4
+    - php: nightly
+
+script:
+  - vendor/bin/tester tests -s -p php
+
+after_failure:
+  - for i in $(find tests -name \*.actual); do echo "--- $i"; cat $i; echo; echo; done
+
+before_script:
+  - composer self-update
+  - composer update --no-interaction --prefer-source $dependencies
