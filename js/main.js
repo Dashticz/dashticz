@@ -1092,7 +1092,6 @@ function getDevices(override) {
 									device[0].primaryIdx = mgId;
 									arrMgDev.push(device[0]);										
 								});
-								
 								getMultiGraphs(arrMgDev);
 							}
 						}

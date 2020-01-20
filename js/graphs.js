@@ -48,6 +48,12 @@ function getGraphs(device, popup, multi) {
             txtUnit = '%';
             decimals = 1;
             break;
+		case 'Heating':
+            sensor = 'temp';
+            txtUnit = '°C';
+			currentValue = device['Temp'];
+            decimals = 1;
+            break;
         case 'RFXMeter':
             txtUnit = device['CounterToday'].split(' ')[1];
             currentValue = device['CounterToday'].split(' ')[0];
@@ -155,6 +161,11 @@ function getGraphs(device, popup, multi) {
     var graphIdx = device.idx;
     if (popup) graphIdx += p;
 	if (multi) graphIdx += m;
+		
+	if(!popup && isDefined(device.primaryIdx) && parseInt(device.idx) !== device.primaryIdx) {
+		graphIdx += device.primaryIdx;
+	}
+	
     if (!isDefined(dtGraphs[graphIdx])) {
         dtGraphs[graphIdx] = {
             idx: device.idx,
@@ -240,11 +251,13 @@ function getMultiGraphs(devices, selGraph){
 	}
 	
 	$.each(devices, function( i, device ) {	
-	
-		var multigraph = isDefined(dtGraphs[devices[i].idx + m])? dtGraphs[devices[i].idx + m] : false;
+		
+		var mgIdx = parseInt(device.idx) !== device.primaryIdx? device.idx + m + device.primaryIdx : device.idx + m;
+		var multigraph = isDefined(dtGraphs[mgIdx])? dtGraphs[mgIdx] : false;
 		arrIdx.push(devices[i].idx);		
 		if(!multigraph)	multigraph = getGraphs(devices[i], false, true);
 		currentValues.push((parseFloat(multigraph.currentValue.replace(',','.'))).toFixed(multigraph.decimals));
+		multigraph.primaryIdx = device.primaryIdx;
 		
 		var deviceNumber = i+1;		
 		if (isDefined(selGraph)) {
@@ -253,25 +266,25 @@ function getMultiGraphs(devices, selGraph){
 		}		
 		if (multigraph.lastRefreshTime < (time() - (parseFloat(_GRAPHREFRESH) * 60))) {
 			multigraph.forced = true;
-		}		
-
-		if (dtGraphs[device.primaryIdx + m].forced) {
+		}
+		
+		if (dtGraphs[multigraph.primaryIdx + m].forced) {
 			
-			var multigraphTypes = isDefined(blocks['multigraph_' + device.primaryIdx].multigraphTypes)? blocks['multigraph_' + device.primaryIdx].multigraphTypes : null;
-			var custom = isDefined(blocks['multigraph_' + device.primaryIdx].custom)? blocks['multigraph_' + device.primaryIdx].custom : false;			
+			var multigraphTypes = isDefined(blocks['multigraph_' + multigraph.primaryIdx].multigraphTypes)? blocks['multigraph_' + multigraph.primaryIdx].multigraphTypes : null;
+			var custom = isDefined(blocks['multigraph_' + multigraph.primaryIdx].custom)? blocks['multigraph_' + multigraph.primaryIdx].custom : false;			
 			if(custom && selGraph) range = custom[selGraph].range;
-			var interval = isDefined(blocks['multigraph_' + device.primaryIdx].interval)? blocks['multigraph_' + device.primaryIdx].interval : 1;			
-			if(debug) console.log('multigraph_' + device.primaryIdx, 'interval:', interval);
-			
-			$.ajax({
-				url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=graph&sensor=' + dtGraphs[devices[i].idx + m].sensor + '&idx=' + dtGraphs[devices[i].idx + m].idx + '&range=' + range + '&method=1&time=' + new Date().getTime() + '&jsoncallback=?',
+			var interval = isDefined(blocks['multigraph_' + multigraph.primaryIdx].interval)? blocks['multigraph_' + multigraph.primaryIdx].interval : 1;			
+			if(debug) console.log('multigraph_' + multigraph.primaryIdx, 'interval:', interval, 'Primary idx:', multigraph.primaryIdx);
+						
+			$.ajax({			
+				url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=graph&sensor=' + dtGraphs[mgIdx].sensor + '&idx=' + dtGraphs[mgIdx].idx + '&range=' + range + '&method=1&time=' + new Date().getTime() + '&jsoncallback=?',
 				type: 'GET',
 				async: true,
 				contentType: "application/json",
 				dataType: 'jsonp',
 				success: function (data) {	
 					
-					data.graph = dtGraphs[devices[i].idx + m];
+					data.graph = dtGraphs[mgIdx];
 					arrResults.push(data);
 					
 					if(debug) console.log(arrResults.length);
@@ -292,14 +305,14 @@ function getMultiGraphs(devices, selGraph){
 								for (var key in d.result[0]) {
 									if($.inArray(key, multigraphTypes) !== -1 && key !== "d"){									
 										arrYkeys.push(key);	
-										if(debug) console.log('multigraph_' + device.primaryIdx, z, 'Push old key:', key);
+										if(debug) console.log('multigraph_' + multigraph.primaryIdx, z, 'Push old key:', key, 'Primary idx:', multigraph.primaryIdx);
 									}
 								}
 							} else {
 								for (var key in d.result[0]) {							
 									if(key !== "d"){
 										arrYkeys.push(key);
-										if(debug) console.log('multigraph_' + device.primaryIdx, z, 'Push old key:', key, 'Result:', d.result[0]);									
+										if(debug) console.log('multigraph_' + multigraph.primaryIdx, z, 'Push old key:', key, 'Result:', d.result[0]);									
 									}
 								}
 							}		
@@ -320,7 +333,7 @@ function getMultiGraphs(devices, selGraph){
 												obj[currentKey] = res[key];
 												valid = true;
 												if($.inArray(currentKey, newKeys) === -1) {
-													if(debug) console.log('multigraph_' + device.primaryIdx, z, 'Push new key:', currentKey);
+													if(debug) console.log('multigraph_' + multigraph.primaryIdx, z, 'Push new key:', currentKey);
 													newKeys.push(currentKey);
 												}
 											} 
@@ -335,7 +348,7 @@ function getMultiGraphs(devices, selGraph){
 															currentKey = key + counter;
 															multidata.result[index][currentKey] = res[key];
 															if($.inArray(currentKey, newKeys) === -1) { // <---- here
-																if(debug) console.log('multigraph_' + device.primaryIdx, z, 'Push new key:', currentKey );
+																if(debug) console.log('multigraph_' + multigraph.primaryIdx, z, 'Push new key:', currentKey );
 																newKeys.push(currentKey);
 															}
 													   }									  
@@ -351,21 +364,23 @@ function getMultiGraphs(devices, selGraph){
 									$.each(obj, function(k, v) {
 										for (var n in newKeys) {	
 											if(!obj.hasOwnProperty(newKeys[n])) {
-												obj[newKeys[n]] = "0.000";
+												// 19/01/20 - spanGaps fix, change "0.00" to NaN
+												obj[newKeys[n]] = NaN;
 											} 
 										} 
 									});								
 								});
-								dtGraphs[device.primaryIdx + m].currentValues = currentValues;								
+								dtGraphs[multigraph.primaryIdx + m].currentValues = currentValues;								
 								if(debug) {
 									var check = deviceTotal === arrIdx.length === arrYkeys.length
 									if(!check) console.log(deviceTotal, arrIdx.length, arrYkeys.length);
-								}								
-								showGraph(device.primaryIdx + m, selGraph, multidata, arrIdx);									
+								}
+								//console.log(multigraph.primaryIdx + m, mgIdx, arrIdx);
+								showGraph(multigraph.primaryIdx + m, selGraph, multidata, arrIdx);									
 							}						
 						});
-						if(debug) console.log('multigraph_' + device.primaryIdx, 'Old Keys', arrYkeys);
-						if(debug) console.log('multigraph_' + device.primaryIdx, 'New Keys', newKeys);
+						if(debug) console.log('multigraph_' + multigraph.primaryIdx, 'Old Keys', arrYkeys);
+						if(debug) console.log('multigraph_' + multigraph.primaryIdx, 'New Keys', newKeys);
 					}
 				}				
 			});	
@@ -375,10 +390,12 @@ function getMultiGraphs(devices, selGraph){
 
 function showGraph(graphIdx, selGraph, data, arrIdx) {	
 	var graph = {};
+	
     graph.properties = dtGraphs[graphIdx];
 	graph.multigraph = isDefined(data)? true : false;
 	graph.properties.devices = isDefined(arrIdx)? arrIdx : [graphIdx];
 	var multi = graph.multigraph ? 'multi' : '';
+	//if(graph.multigraph) console.log("showGraph", graphIdx, graph.properties);
 		
     graph.properties.datasetColors = ['red', 'yellow', 'blue', 'orange', 'green', 'purple'];
     if (isDefined(selGraph)) {
@@ -510,7 +527,7 @@ function createGraph(graph, data) {
 	var ranges = ["last", "day", "month"];
 	if (graph.customRange) 
 		ranges = Object.keys(graph.blocksConfig.custom);
-	var buttonIcon = graph.blocksConfig && isDefined(graph.blocksConfig['buttonsIcon'])? graph.blocksConfig['buttonsIcon'] : '#ccc';
+	var buttonIcon = graph.blocksConfig && isDefined(graph.blocksConfig['buttonsIcon'])? graph.blocksConfig['buttonsIcon'] : '#aaa';
 	
 	if(!graph.properties.popup)	graph.properties.buttons.icon = buttonIcon;
 	var buttons = createButtons(graph.properties, ranges, graph.customRange, graph.multigraph);
@@ -543,7 +560,7 @@ function createGraph(graph, data) {
 	html += title + '<div class="graphbuttons" >' + buttons + '</div>';
 	html += '</div>'
 
-	html += '<div class="graph' + (graph.properties.popup ? ' popup graphheight' : '') + '" id="graph' + graph.properties.idx + '">';
+	html += '<div class="graph swiper-no-swiping' + (graph.properties.popup ? ' popup graphheight' : '') + '" id="' + multi + 'graph' + graph.properties.idx + '">';
 	html += '<canvas ' + 'id="' + multi + 'graphoutput' + graphIdx + '"></canvas>';
 	html += '</div>';
 	var mydiv = $('.block_' + multi + 'graph' + '_' + graphIdx);
@@ -614,6 +631,7 @@ function createGraph(graph, data) {
 				pointBorderColor:		isDefined(myLocalProperties.pointBorderColor)? 	myLocalProperties.pointBorderColor[index] : '#adadad',
 				pointBorderWidth:		isDefined(myLocalProperties.pointBorderWidth)? 	myLocalProperties.pointBorderWidth : 0, 
 				lineTension:			isDefined(myLocalProperties.lineTension)? 		myLocalProperties.lineTension : 0.1,
+				spanGaps:				isDefined(myLocalProperties.spanGaps)? 			myLocalProperties.spanGaps : false,
 				fill: 					isDefined(myLocalProperties.lineFill) && isLine? myLocalProperties.lineFill[index] : false,
 				yAxisID: 				index < myLocalProperties.ylabels? myLocalProperties.ylabels[index] : myLocalProperties.ylabels[0]
 			};
@@ -694,6 +712,7 @@ function createGraph(graph, data) {
 				pointBorderColor:		isDefined(myLocalProperties.pointBorderColor)? 	myLocalProperties.pointBorderColor[index] : '#adadad',
 				pointBorderWidth:		isDefined(myLocalProperties.pointBorderWidth)? 	myLocalProperties.pointBorderWidth : 0, 
 				lineTension:			isDefined(myLocalProperties.lineTension)? 		myLocalProperties.lineTension : 0.1,
+				spanGaps:				isDefined(myLocalProperties.spanGaps)? 			myLocalProperties.spanGaps : false,
 				fill: 					isDefined(myLocalProperties.lineFill) && isLine? myLocalProperties.lineFill[index] : false
 			};
 		});
@@ -864,16 +883,17 @@ function createGraph(graph, data) {
 			}
 		}]
 	}
-	
 	new Chart(chartctx, graphProperties);
 }
 
 function createButtons(myProperties, ranges, customRange, multigraph) {	
     
 	var btn = {};
-	var buttons = '<div class="btn-group" role="group" aria-label="Basic example">';
+	var buttons = '<div class="btn-group" role="group" aria-label="Graph Buttons">';
 	var clickFunction = multigraph ? 'getMgDevices([' + myProperties.devices + ']' : 'showGraph(\'' + myProperties.graphIdx + '\'';
-	var btnIcons = ['fas fa-clock', 'fas fa-calendar-day', 'fas fa-calendar-week'];	
+	var btnIcons = ['fas fa-clock', 'fas fa-calendar-day', 'fas fa-calendar-week'];
+	var multi = multigraph? 'multi' : '';
+	var popup = myProperties.popup? 'p' : '';
 	var style = 'style="';
 	
 	if(!myProperties.popup){
@@ -900,12 +920,26 @@ function createButtons(myProperties, ranges, customRange, multigraph) {
         'day'	: isDefined(btn.text) && isDefined(btn.text[1])? btn.text[1] : language.graph.today,
         'month'	: isDefined(btn.text) && isDefined(btn.text[2])? btn.text[2] : language.graph.last_month
     }
-			
+	
+	// Reset graph zoom (if enabled)
+	if(isDefined(settings['graph_zoom']) && settings['graph_zoom'] === 1) {
+		buttons += '<button type="button" data-canvas="' + multi + 'graphoutput' + myProperties.idx + popup + '" id="resetZoom' + myProperties.graphIdx +'" ' + style + '" class="btn btn-default">';
+		buttons += '	<i class="fas fa-search-minus" style="font-size:14px;color:' + btn.icon + '"></i>';
+		buttons += '</button>';
+		
+		$(document).on("click", '#resetZoom' + myProperties.graphIdx, function() {
+			Chart.helpers.each(Chart.instances, function(instance){
+				if(instance.chart.canvas.id === $('#resetZoom' + myProperties.graphIdx).data('canvas')){
+					instance.chart.resetZoom();
+				}
+			})
+		})
+	}	
     ranges.forEach(function (item, i) {
         var btnText = customRange? item : btnTextList[item];
-        buttons += '<button type="button" ' + style + '" class="btn btn-default ';
-        if (myProperties.range === item) buttons += 'active';
-        buttons += '" onclick="' + clickFunction + ',\'' + item + '\');" style="background-color:;color:;"><i class="' + btnIcons[i] + '" style="font-size:14px;color:' + btn.icon + '">&nbsp;</i>&nbsp;' + btnText + '</button> ';
+        buttons += '<button type="button" ' + style + '" class="btn btn-default';
+        if (myProperties.range === item) buttons += ' active';
+        buttons += '" onclick="' + clickFunction + ',\'' + item + '\');"><i class="' + btnIcons[i] + '" style="font-size:14px;color:' + btn.icon + '">&nbsp;</i>&nbsp;' + btnText + '</button> ';
     });
     buttons += '</div>';
 
@@ -960,6 +994,18 @@ function getDefaultGraphProperties(myProperties) {
                     distribution: 'series'
                 }]
             },
+			plugins: {
+				zoom: {
+					zoom: {
+						enabled: isDefined(settings['graph_zoom']) && settings['graph_zoom'] === 1,
+						drag: {
+							animationDuration: 1000
+						},
+						mode: 'xy',
+						speed: 0.05
+					}
+				}
+			}
         },
     }
 }
@@ -985,7 +1031,7 @@ function getMgDevices(ids, range){
 }
 
 function getGraphProperties(result, gIdx, mg) {
-	
+
 	if(mg && gIdx.substr(-1) !== m) gIdx += m;	
     var myProperties = dtGraphs[gIdx];
     var label = myProperties.txtUnit;
