@@ -1,0 +1,5 @@
+{
+    "require": {
+        "om/icalparser": "^0.2.6"
+    }
+}
