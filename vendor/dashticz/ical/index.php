@@ -1,14 +1,60 @@
 <?php
+/* Additional dependencies:
+sudo apt-get install php-mbstring
+
+and don't forget to run:
+sudo service apache2 restart
+
+*/
 header("Access-Control-Allow-Origin: *");
 header('Content-Type: application/json');
-require_once('SG_iCal.php');
+
+require_once('./vendor/autoload.php');
 if (!empty($argv[1])) {
 	parse_str($argv[1], $_GET);
   }
 $ICS = $_GET['url'];
+//print "url: ".$ICS . "\n";
+if (!empty($argv[2])) {
+	parse_str($argv[2], $_GET);
+  }
 $MAXITEMS = $_GET['maxitems'];
+//print "maxitems: ".$MAXITEMS . "\n";
 $ICS = str_replace('#','%23',$ICS);
-$ical = new SG_iCalReader($ICS);
+//echo $ICS . "\n";
+try {
+	$cal = new \om\IcalParser();
+	$results = $cal->parseFile( $ICS);
+	$data = array();
+	$id=0;
+	$sorted_events = $cal->getSortedEvents();
+//	var_dump($sorted_events[0]);
+	foreach ( $sorted_events as $ev) {
+		$start=$ev["DTSTART"]->getTimestamp();
+		if ($ev["DTEND"])
+			$end=$ev["DTEND"]->getTimestamp();
+		else
+			$end=$start;
+		if ($end>time()) {
+			$duration = $end-$start;
+			$jsEvt = array(
+				"id" => ($id++),
+				"title" => $ev["SUMMARY"],
+				"start" => $start,
+				"end"   => $end,
+				"allDay" => $duration > 0 && ($duration % 86400) == 0,
+			);
+			$data[$start] = $jsEvt;
+			if ($id>=$MAXITEMS)
+				break;
+		}
+	}
+	die(json_encode($data));
+} catch (\Exception $e) {
+    die($e);
+}
+
+/*$ical = new SG_iCalReader($ICS);
 $evts = $ical->getEvents();
 $data = array();
 if($evts){
@@ -53,3 +99,4 @@ echo '<pre>';
 print_r($data);
 exit();
 ?>
+*/

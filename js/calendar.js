@@ -78,9 +78,9 @@ function addCalendar(calobject, icsUrlorg) {
                 var enddateStamp = event1.end;
 
                 event1.color = colors[$.md5(url)];
-                if (parseFloat(enddateStamp) > moment().format('X')) {
-                    if (typeof (calitems[enddateStamp]) === 'undefined') calitems[enddateStamp] = []
-                    calitems[enddateStamp].push(event1);
+                if (parseFloat(enddateStamp) >= moment().format('X')) {
+                    if (typeof (calitems[event1.start]) === 'undefined') calitems[event1.start] = []
+                    calitems[event1.start].push(event1);
                 }
             }
 
@@ -149,20 +149,20 @@ function insertCalendar(calobject, calitems, calBlock) {
         var items = calitems[check];
         for (var c in items) {
             var item1 = items[c];
-            if (check > moment().format('X') && counter <= calBlock.maxitems) {
+            if ( counter <= calBlock.maxitems) {
                 var styleColor = item1.color !== '' ? ' style="color:' + item1.color + '"' : '';
                 var startDayPart = formatDate(item1.start, calFormat.date);
                 var endDayPart = formatDate(item1.end, calFormat.date);
 
                 if (item1.allDay) {
                     var startTmp = moment.unix(item1.start);
-                    var endTmp = moment.unix(item1.end);
+                    var endTmp = moment.unix(item1.end-1);
                     if (endTmp.diff(startTmp, 'days') === 0) {
                         endDayPart = startDayPart
                     }
                 }
                 var startTimePart = moment.unix(item1.start).format(calFormat.time);
-                var endTimePart = moment.unix(item1.end + 60).format(calFormat.time);
+                var endTimePart = moment.unix(item1.end + 0).format(calFormat.time);
                 var widget = '<tr><td>';
                 if (prevStartDayPart !== startDayPart) {
                     widget += startDayPart
@@ -248,7 +248,7 @@ function insertCalendar_0(calobject, calitems, calBlock, maxitems) {
                 test = test.replace('dd', '');
                 test = test.replace('dddd', '');
                 if (moment(enddate, test).format('YYYY-MM-DD') === moment(startdate, test).format('YYYY-MM-DD')) {
-                    enddate = moment.unix(enddateStamp + 60).format('HH:mm');
+                    enddate = moment.unix(enddateStamp + 0).format('HH:mm');
                 }
                 if (enddate !== '') enddate = ' - ' + enddate;
             } else {
@@ -269,7 +269,7 @@ function insertCalendar_0(calobject, calitems, calBlock, maxitems) {
             item1.enddate = enddate;
             item1.startdate = startdate;
 
-            if (check > moment().format('X') && counter <= maxitems) {
+            if ( counter <= maxitems) {
                 var widget = '<div style="color:' + item1['color'] + '">' + item1['startdate'] + "" + item1['enddate'] + ' - <b>' + item1['title'] + '</b></div>';
                 calobject.find('.items').append(widget);
                 counter++;
