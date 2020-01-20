@@ -1,0 +1,32 @@
+{
+	"name": "om/icalparser",
+	"license": "BSD-3-Clause",
+	"description": "Simple ical parser",
+	"keywords": [
+		"ical",
+		"calendar",
+		"parser"
+	],
+	"authors": [
+		{
+			"name": "Roman Ožana",
+			"email": "roman@omdesign.cz"
+		}
+	],
+	"require": {
+		"php": ">=7.1.0"
+	},
+	"autoload": {
+		"classmap": [
+			"src/"
+		]
+	},
+	"require-dev": {
+		"nette/tester": "v2.3.*"
+	},
+	"scripts": {
+		"tests": [
+			"./vendor/bin/tester tests -s -p php"
+		]
+	}
+}

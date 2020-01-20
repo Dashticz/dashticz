@@ -1,0 +1,48 @@
+[
+    {
+        "name": "om/icalparser",
+        "version": "v0.2.6",
+        "version_normalized": "0.2.6.0",
+        "source": {
+            "type": "git",
+            "url": "https://github.com/OzzyCzech/icalparser.git",
+            "reference": "5209e74ce70d76fe363ec94f80da4b8ea2040f80"
+        },
+        "dist": {
+            "type": "zip",
+            "url": "https://api.github.com/repos/OzzyCzech/icalparser/zipball/5209e74ce70d76fe363ec94f80da4b8ea2040f80",
+            "reference": "5209e74ce70d76fe363ec94f80da4b8ea2040f80",
+            "shasum": ""
+        },
+        "require": {
+            "php": ">=7.1.0"
+        },
+        "require-dev": {
+            "nette/tester": "v2.3.*"
+        },
+        "time": "2019-11-06T10:01:54+00:00",
+        "type": "library",
+        "installation-source": "dist",
+        "autoload": {
+            "classmap": [
+                "src/"
+            ]
+        },
+        "notification-url": "https://packagist.org/downloads/",
+        "license": [
+            "BSD-3-Clause"
+        ],
+        "authors": [
+            {
+                "name": "Roman Ožana",
+                "email": "roman@omdesign.cz"
+            }
+        ],
+        "description": "Simple ical parser",
+        "keywords": [
+            "calendar",
+            "ical",
+            "parser"
+        ]
+    }
+]
