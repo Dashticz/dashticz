@@ -202,6 +202,12 @@ Custom data
 
 .. image :: img/multigraph_custom.png
 
+
+Zoom Graphs
+~~~~~~~~~~~
+
+To enable graph/multigraph zoom add ``config['graph_zoom'] = 1;`` setting to ``config.js``.
+
 Examples
 ---------
 
