@@ -1905,10 +1905,6 @@ function getThermostatBlock(device, idx) {
     return [this.html, false];
 }
 
-//#################################################
-// EVOHOME > Start                                #
-//#################################################
-
 function getEvohomeZoneBlock(device, idx) {
 	var temp		= device.Temp;
     var setpoint	= device.SetPoint;
@@ -1925,7 +1921,7 @@ function getEvohomeZoneBlock(device, idx) {
 	var fa_status = (status == 'TemporaryOverride') ? 'fas fa-stopwatch' : 'far fa-calendar-alt';
 
 	var untilOrLastUpdate = (status == 'Auto' || status == 'TemporaryOverride') ? 'Until ' + moment(device['Until']).format('HH:mm') : moment(device['LastUpdate']).format(settings['timeformat']);
-
+	
     var html = '';
     html += '<div class="col-button1">';
     html += '	<div class="up">';
@@ -2210,10 +2206,6 @@ function switchEvoHotWater(idx, state, override) {
         }
     });
 }
-
-//#################################################
-// EVOHOME > End                                  #
-//#################################################
 
 function getDimmerBlock(device, idx, buttonimg) {
     var html = '';
