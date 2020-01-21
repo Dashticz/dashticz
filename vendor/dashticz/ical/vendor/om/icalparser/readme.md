@@ -36,7 +36,7 @@ The tests can be invoked via [composer](https://getcomposer.org/).
 
 ```bash
 composer update
-composer tests
+composer test
 ```
  
 ## TODO
