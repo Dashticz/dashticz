@@ -154,6 +154,12 @@ function getGraphs(device, popup, multi) {
             sensor = 'temp';
             txtUnit = device['Data'].split(' ')[1];
             break;
+		case 'SetPoint':
+            sensor = 'temp';
+            txtUnit = '°C';
+			currentValue = device['SetPoint'];
+            decimals = 1;
+            break;
 
     }
 	multi = isDefined(multi)? multi : false;
@@ -270,120 +276,132 @@ function getMultiGraphs(devices, selGraph){
 		
 		if (dtGraphs[multigraph.primaryIdx + m].forced) {
 			
-			var multigraphTypes = isDefined(blocks['multigraph_' + multigraph.primaryIdx].multigraphTypes)? blocks['multigraph_' + multigraph.primaryIdx].multigraphTypes : null;
-			var custom = isDefined(blocks['multigraph_' + multigraph.primaryIdx].custom)? blocks['multigraph_' + multigraph.primaryIdx].custom : false;			
-			if(custom && selGraph) range = custom[selGraph].range;
-			var interval = isDefined(blocks['multigraph_' + multigraph.primaryIdx].interval)? blocks['multigraph_' + multigraph.primaryIdx].interval : 1;			
-			if(debug) console.log('multigraph_' + multigraph.primaryIdx, 'interval:', interval, 'Primary idx:', multigraph.primaryIdx);
-						
-			$.ajax({			
-				url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=graph&sensor=' + dtGraphs[mgIdx].sensor + '&idx=' + dtGraphs[mgIdx].idx + '&range=' + range + '&method=1&time=' + new Date().getTime() + '&jsoncallback=?',
-				type: 'GET',
-				async: true,
-				contentType: "application/json",
-				dataType: 'jsonp',
-				success: function (data) {	
-					
-					data.graph = dtGraphs[mgIdx];
-					arrResults.push(data);
-					
-					if(debug) console.log(arrResults.length);
-					
-					if(devices.length === arrResults.length){
-						arrResults.sort(function(a, b) {
-							return b.result.length - a.result.length;
-						});					
-						var newKeys = [];
-						var arrYkeys = [];	
-						
-						$.each(arrResults, function( z, d ) {
-												
-							var currentKey = '';
-							var counter = z + 1;
+			var block = isDefined(blocks['multigraph_' + multigraph.primaryIdx])? blocks['multigraph_' + multigraph.primaryIdx] : false;
+			
+			if(block){
+				
+				var multigraphTypes = isDefined(block.multigraphTypes)? block.multigraphTypes : null;
+				var custom = isDefined(block.custom)? block.custom : false;			
+				if(custom && selGraph) range = custom[selGraph].range;				
+				var interval = isDefined(block.interval)? block.interval : 1;			
+				if(debug) console.log('multigraph_' + multigraph.primaryIdx, 'interval:', interval, 'Primary idx:', multigraph.primaryIdx);
 							
-							if(multigraphTypes !== null){
-								for (var key in d.result[0]) {
-									if($.inArray(key, multigraphTypes) !== -1 && key !== "d"){									
-										arrYkeys.push(key);	
-										if(debug) console.log('multigraph_' + multigraph.primaryIdx, z, 'Push old key:', key, 'Primary idx:', multigraph.primaryIdx);
-									}
-								}
-							} else {
-								for (var key in d.result[0]) {							
-									if(key !== "d"){
-										arrYkeys.push(key);
-										if(debug) console.log('multigraph_' + multigraph.primaryIdx, z, 'Push old key:', key, 'Result:', d.result[0]);									
-									}
-								}
-							}		
+				$.ajax({			
+					url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=graph&sensor=' + dtGraphs[mgIdx].sensor + '&idx=' + dtGraphs[mgIdx].idx + '&range=' + range + '&method=1&time=' + new Date().getTime() + '&jsoncallback=?',
+					type: 'GET',
+					async: true,
+					contentType: "application/json",
+					dataType: 'jsonp',
+					success: function (data) {	
+						
+						data.graph = dtGraphs[mgIdx];
+						arrResults.push(data);
+						
+						if(debug) console.log(arrResults.length);
+						
+						if(devices.length === arrResults.length){
 							
-							$.each(d.result, function( x, res ) {
-								var valid = false;
-								interval = multigraph.range === 'last' || multigraph.range === 'month'? 1 : interval;
-								
-								if(x% interval === 0){ 
-									if(z==0) {									
-										var obj = {};
-										for (var key in res) {
-											if(key ==="d"){
-												obj["d"] = res[key];
-											}
-											if($.inArray(key, arrYkeys) !== -1){   
-												currentKey = key + counter;
-												obj[currentKey] = res[key];
-												valid = true;
-												if($.inArray(currentKey, newKeys) === -1) {
-													if(debug) console.log('multigraph_' + multigraph.primaryIdx, z, 'Push new key:', currentKey);
-													newKeys.push(currentKey);
-												}
-											} 
-										}								
-										if(valid) multidata.result.push(obj);								
-									} else {								
-										for (var key in res) {									
-											if(key !=="d" && $.inArray(key, arrYkeys) !== -1){										
-												$.each(multidata.result, function(index, obj) {
-												   $.each(obj, function(k, v) {
-													   if(k === "d" && v === res["d"]){
-															currentKey = key + counter;
-															multidata.result[index][currentKey] = res[key];
-															if($.inArray(currentKey, newKeys) === -1) { // <---- here
-																if(debug) console.log('multigraph_' + multigraph.primaryIdx, z, 'Push new key:', currentKey );
-																newKeys.push(currentKey);
-															}
-													   }									  
-												   });
-												});
-											}
-										}								
-									}
-								}							
-							});						
-							if(arrResults.length === counter){							
-								$.each(multidata.result, function(index, obj) {
-									$.each(obj, function(k, v) {
-										for (var n in newKeys) {	
-											if(!obj.hasOwnProperty(newKeys[n])) {
-												// 19/01/20 - spanGaps fix, change "0.00" to NaN
-												obj[newKeys[n]] = NaN;
-											} 
-										} 
-									});								
+							// 21/01/2020 - option to sort devices data (if one is longer)
+							if(isDefined(block.sortDevices) && block.sortDevices) {
+								arrResults.sort(function(a, b) {
+									return b.result.length - a.result.length;
 								});
-								dtGraphs[multigraph.primaryIdx + m].currentValues = currentValues;								
-								if(debug) {
-									var check = deviceTotal === arrIdx.length === arrYkeys.length
-									if(!check) console.log(deviceTotal, arrIdx.length, arrYkeys.length);
-								}
-								//console.log(multigraph.primaryIdx + m, mgIdx, arrIdx);
-								showGraph(multigraph.primaryIdx + m, selGraph, multidata, arrIdx);									
-							}						
-						});
-						if(debug) console.log('multigraph_' + multigraph.primaryIdx, 'Old Keys', arrYkeys);
-						if(debug) console.log('multigraph_' + multigraph.primaryIdx, 'New Keys', newKeys);
-					}
-				}				
-			});	
+							}
+							
+							var newKeys = [];
+							var arrYkeys = [];	
+							
+							$.each(arrResults, function( z, d ) {
+													
+								var currentKey = '';
+								var counter = z + 1;
+								
+								if(multigraphTypes !== null){
+									for (var key in d.result[0]) {
+										if($.inArray(key, multigraphTypes) !== -1 && key !== "d"){									
+											arrYkeys.push(key);	
+											if(debug) console.log('multigraph_' + multigraph.primaryIdx, z, 'Push old key:', key, 'Primary idx:', multigraph.primaryIdx);
+										}
+									}
+								} else {
+									for (var key in d.result[0]) {							
+										if(key !== "d"){
+											arrYkeys.push(key);
+											if(debug) console.log('multigraph_' + multigraph.primaryIdx, z, 'Push old key:', key, 'Result:', d.result[0]);									
+										}
+									}
+								}		
+								
+								$.each(d.result, function( x, res ) {
+									var valid = false;
+									interval = multigraph.range === 'last' || multigraph.range === 'month'? 1 : interval;
+									
+									if(x% interval === 0){ 
+										if(z==0) {									
+											var obj = {};
+											for (var key in res) {
+												if(key ==="d"){
+													obj["d"] = res[key];
+												}
+												if($.inArray(key, arrYkeys) !== -1){   
+													currentKey = key + counter;
+													obj[currentKey] = res[key];
+													valid = true;
+													if($.inArray(currentKey, newKeys) === -1) {
+														if(debug) console.log('multigraph_' + multigraph.primaryIdx, z, 'Push new key:', currentKey);
+														newKeys.push(currentKey);
+													}
+												} 
+											}								
+											if(valid) multidata.result.push(obj);								
+										} else {								
+											for (var key in res) {									
+												if(key !=="d" && $.inArray(key, arrYkeys) !== -1){										
+													$.each(multidata.result, function(index, obj) {
+													   $.each(obj, function(k, v) {
+														   if(k === "d" && v === res["d"]){
+																currentKey = key + counter;
+																multidata.result[index][currentKey] = res[key];
+																if($.inArray(currentKey, newKeys) === -1) { // <---- here
+																	if(debug) console.log('multigraph_' + multigraph.primaryIdx, z, 'Push new key:', currentKey );
+																	newKeys.push(currentKey);
+																}
+														   }									  
+													   });
+													});
+												}
+											}								
+										}
+									}							
+								});						
+								if(arrResults.length === counter){							
+									$.each(multidata.result, function(index, obj) {
+										$.each(obj, function(k, v) {
+											for (var n in newKeys) {	
+												if(!obj.hasOwnProperty(newKeys[n])) {
+													// 19/01/20 - spanGaps fix, change "0.00" to NaN
+													obj[newKeys[n]] = NaN;
+												} 
+											} 
+										});								
+									});
+									dtGraphs[multigraph.primaryIdx + m].currentValues = currentValues;								
+									if(debug) {
+										var check = deviceTotal === arrIdx.length === arrYkeys.length
+										if(!check) console.log(deviceTotal, arrIdx.length, arrYkeys.length);
+									}
+									//console.log(multigraph.primaryIdx + m, mgIdx, arrIdx);
+									showGraph(multigraph.primaryIdx + m, selGraph, multidata, arrIdx);									
+								}						
+							});
+							if(debug) console.log('multigraph_' + multigraph.primaryIdx, 'Old Keys', arrYkeys);
+							if(debug) console.log('multigraph_' + multigraph.primaryIdx, 'New Keys', newKeys);
+						}
+					}				
+				});	
+				
+			}
+			
 		}
 	});
 }
