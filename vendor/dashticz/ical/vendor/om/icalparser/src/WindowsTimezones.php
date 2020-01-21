@@ -208,4 +208,5 @@ return [
 	'(UTC+13:00) Nuku\'alofa' => 'Pacific/Tongatapu',
 	'Samoa Standard Time' => 'Pacific/Apia',
 	'(UTC-11:00)Samoa' => 'Pacific/Apia',
+	'W. Europe Standard Time 1' => 'Europe/Berlin',
 ];
