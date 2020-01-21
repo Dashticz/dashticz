@@ -8,23 +8,23 @@
     "packages": [
         {
             "name": "om/icalparser",
-            "version": "v0.2.6",
+            "version": "v0.2.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/OzzyCzech/icalparser.git",
-                "reference": "5209e74ce70d76fe363ec94f80da4b8ea2040f80"
+                "reference": "97e62c6881672852bb8361f0b00e3e571a56ea49"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/OzzyCzech/icalparser/zipball/5209e74ce70d76fe363ec94f80da4b8ea2040f80",
-                "reference": "5209e74ce70d76fe363ec94f80da4b8ea2040f80",
+                "url": "https://api.github.com/repos/OzzyCzech/icalparser/zipball/97e62c6881672852bb8361f0b00e3e571a56ea49",
+                "reference": "97e62c6881672852bb8361f0b00e3e571a56ea49",
                 "shasum": ""
             },
             "require": {
                 "php": ">=7.1.0"
             },
             "require-dev": {
-                "nette/tester": "v2.3.*"
+                "nette/tester": "*"
             },
             "type": "library",
             "autoload": {
@@ -48,7 +48,7 @@
                 "ical",
                 "parser"
             ],
-            "time": "2019-11-06T10:01:54+00:00"
+            "time": "2020-01-21T10:10:53+00:00"
         }
     ],
     "packages-dev": [],

@@ -118,95 +118,34 @@ class Freq {
 		$this->added = $added;
 	}
 
-	/**
-	 * Returns all timestamps array(), build the cache if not made before
-	 *
-	 * @return array
-	 */
-	public function getAllOccurrences() {
-		if (empty($this->cache)) {
-			$cache = [];
-
-			//build cache
-			$next = $this->firstOccurrence();
-			while ($next) {
-				$cache[] = $next;
-				$next = $this->findNext($next);
-			}
-			if (!empty($this->added)) {
-				$cache = array_unique(array_merge($cache, $this->added));
-				asort($cache);
-			}
-			$this->cache = $cache;
+	private function isPrerule($rule, $freq) {
+		if ($rule === 'year') {
+			return false;
+		}
+		if ($rule === 'month' && $freq === 'yearly') {
+			return true;
+		}
+		if ($rule === 'monthday' && in_array($freq, ['yearly', 'monthly']) && !isset($this->rules['byday'])) {
+			return true;
+		}
+		// TODO: is it faster to do monthday first, and ignore day if monthday exists? - prolly by a factor of 4..
+		if ($rule === 'yearday' && $freq === 'yearly') {
+			return true;
+		}
+		if ($rule === 'weekno' && $freq === 'yearly') {
+			return true;
+		}
+		if ($rule === 'day' && in_array($freq, ['yearly', 'monthly', 'weekly'])) {
+			return true;
+		}
+		if ($rule === 'hour' && in_array($freq, ['yearly', 'monthly', 'weekly', 'daily'])) {
+			return true;
+		}
+		if ($rule === 'minute') {
+			return true;
 		}
 
-		return $this->cache;
-	}
-
-	/**
-	 * Returns the previous (most recent) occurrence of the rule from the
-	 * given offset
-	 *
-	 * @param int $offset
-	 * @return int
-	 */
-	public function previousOccurrence($offset) {
-		if (!empty($this->cache)) {
-			$t2 = $this->start;
-			foreach ($this->cache as $ts) {
-				if ($ts >= $offset)
-					return $t2;
-				$t2 = $ts;
-			}
-		} else {
-			$ts = $this->start;
-			while (($t2 = $this->findNext($ts)) < $offset) {
-				if ($t2 == false) {
-					break;
-				}
-				$ts = $t2;
-			}
-		}
-
-		return $ts;
-	}
-
-	/**
-	 * Returns the next occurrence of this rule after the given offset
-	 *
-	 * @param int $offset
-	 * @return int
-	 */
-	public function nextOccurrence($offset) {
-		if ($offset < $this->start)
-			return $this->firstOccurrence();
-		return $this->findNext($offset);
-	}
-
-	/**
-	 * Finds the first occurrence of the rule.
-	 *
-	 * @return int timestamp
-	 */
-	public function firstOccurrence() {
-		$t = $this->start;
-		if (in_array($t, $this->excluded))
-			$t = $this->findNext($t);
-
-		return $t;
-	}
-
-	/**
-	 * Finds the absolute last occurrence of the rule from the given offset.
-	 * Builds also the cache, if not set before...
-	 *
-	 * @return int timestamp
-	 */
-	public function lastOccurrence() {
-		//build cache if not done
-		$this->getAllOccurrences();
-		//return last timestamp in cache
-		return end($this->cache);
+		return false;
 	}
 
 	/**
@@ -235,8 +174,9 @@ class Freq {
 	public function findNext($offset) {
 		if (!empty($this->cache)) {
 			foreach ($this->cache as $ts) {
-				if ($ts > $offset)
+				if ($ts > $offset) {
 					return $ts;
+				}
 			}
 		}
 
@@ -266,8 +206,9 @@ class Freq {
 		if ($this->simpleMode) {
 			if ($offset < $t) {
 				$ts = $t;
-				if ($ts && in_array($ts, $this->excluded))
+				if ($ts && in_array($ts, $this->excluded)) {
 					$ts = $this->findNext($ts);
+				}
 			} else {
 				$ts = $this->findStartingPoint($t, $this->rules['interval'], false);
 				if (!$this->validDate($ts)) {
@@ -300,9 +241,11 @@ class Freq {
 						if ($imm === false) {
 							break;
 						}
-						if ($debug) echo strtoupper($rule) . ': ' . date(
-								'r', $imm
-							) . ' A: ' . ((int)($imm > $offset && $imm < $eop)) . "\n";
+						if ($debug) {
+							echo strtoupper($rule) . ': ' . date(
+									'r', $imm
+								) . ' A: ' . ((int)($imm > $offset && $imm < $eop)) . "\n";
+						}
 						if ($imm > $offset && $imm <= $eop && ($_t == null || $imm < $_t)) {
 							$_t = $imm;
 						}
@@ -330,8 +273,9 @@ class Freq {
 			if ($debug) echo 'Not found' . "\n";
 			$ts = $this->findNext($this->findStartingPoint($offset, $this->rules['interval']));
 		}
-		if ($ts && in_array($ts, $this->excluded))
+		if ($ts && in_array($ts, $this->excluded)) {
 			return $this->findNext($ts);
+		}
 
 		return $ts;
 	}
@@ -362,16 +306,6 @@ class Freq {
 		}
 
 		return $sp;
-	}
-
-	/**
-	 * Finds the earliest timestamp posible outside this perioid
-	 *
-	 * @param int $offset
-	 * @return int
-	 */
-	public function findEndOfPeriod($offset) {
-		return $this->findStartingPoint($offset, 1, false);
 	}
 
 	/**
@@ -413,6 +347,161 @@ class Freq {
 		return $d;
 	}
 
+	private function validDate($t) {
+		if (isset($this->rules['until']) && $t > $this->rules['until']) {
+			return false;
+		}
+
+		if (in_array($t, $this->excluded)) {
+			return false;
+		}
+
+		if (isset($this->rules['bymonth'])) {
+			$months = explode(',', $this->rules['bymonth']);
+			if (!in_array(date('m', $t), $months)) {
+				return false;
+			}
+		}
+		if (isset($this->rules['byday'])) {
+			$days = explode(',', $this->rules['byday']);
+			foreach ($days As $i => $k) {
+				$days[$i] = $this->weekdays[preg_replace('/[^A-Z]/', '', $k)];
+			}
+			if (!in_array(strtolower(date('l', $t)), $days)) {
+				return false;
+			}
+		}
+		if (isset($this->rules['byweekno'])) {
+			$weeks = explode(',', $this->rules['byweekno']);
+			if (!in_array(date('W', $t), $weeks)) {
+				return false;
+			}
+		}
+		if (isset($this->rules['bymonthday'])) {
+			$weekdays = explode(',', $this->rules['bymonthday']);
+			foreach ($weekdays As $i => $k) {
+				if ($k < 0) {
+					$weekdays[$i] = date('t', $t) + $k + 1;
+				}
+			}
+			if (!in_array(date('d', $t), $weekdays)) {
+				return false;
+			}
+		}
+		if (isset($this->rules['byhour'])) {
+			$hours = explode(',', $this->rules['byhour']);
+			if (!in_array(date('H', $t), $hours)) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Finds the earliest timestamp posible outside this perioid
+	 *
+	 * @param int $offset
+	 * @return int
+	 */
+	public function findEndOfPeriod($offset) {
+		return $this->findStartingPoint($offset, 1, false);
+	}
+
+	/**
+	 * Returns the previous (most recent) occurrence of the rule from the
+	 * given offset
+	 *
+	 * @param int $offset
+	 * @return int
+	 */
+	public function previousOccurrence($offset) {
+		if (!empty($this->cache)) {
+			$t2 = $this->start;
+			foreach ($this->cache as $ts) {
+				if ($ts >= $offset) {
+					return $t2;
+				}
+				$t2 = $ts;
+			}
+		} else {
+			$ts = $this->start;
+			while (($t2 = $this->findNext($ts)) < $offset) {
+				if ($t2 == false) {
+					break;
+				}
+				$ts = $t2;
+			}
+		}
+
+		return $ts;
+	}
+
+	/**
+	 * Returns the next occurrence of this rule after the given offset
+	 *
+	 * @param int $offset
+	 * @return int
+	 */
+	public function nextOccurrence($offset) {
+		if ($offset < $this->start) {
+			return $this->firstOccurrence();
+		}
+		return $this->findNext($offset);
+	}
+
+	/**
+	 * Finds the first occurrence of the rule.
+	 *
+	 * @return int timestamp
+	 */
+	public function firstOccurrence() {
+		$t = $this->start;
+		if (in_array($t, $this->excluded)) {
+			$t = $this->findNext($t);
+		}
+
+		return $t;
+	}
+
+	/**
+	 * Finds the absolute last occurrence of the rule from the given offset.
+	 * Builds also the cache, if not set before...
+	 *
+	 * @return int timestamp
+	 */
+	public function lastOccurrence() {
+		//build cache if not done
+		$this->getAllOccurrences();
+		//return last timestamp in cache
+		return end($this->cache);
+	}
+
+	/**
+	 * Returns all timestamps array(), build the cache if not made before
+	 *
+	 * @return array
+	 */
+	public function getAllOccurrences() {
+		if (empty($this->cache)) {
+			$cache = [];
+
+			//build cache
+			$next = $this->firstOccurrence();
+			while ($next) {
+				$cache[] = $next;
+				$next = $this->findNext($next);
+			}
+			if (!empty($this->added)) {
+				$cache = array_unique(array_merge($cache, $this->added));
+				asort($cache);
+			}
+			$this->cache = $cache;
+		}
+
+		return $this->cache;
+	}
+
 	/**
 	 * Applies the BYDAY rule to the given timestamp
 	 *
@@ -421,7 +510,7 @@ class Freq {
 	 * @return int
 	 */
 	private function ruleByday($rule, $t) {
-		$dir = ($rule{0} == '-') ? -1 : 1;
+		$dir = ($rule[0] == '-') ? -1 : 1;
 		$dir_t = ($dir == 1) ? 'next' : 'last';
 
 		$d = $this->weekdays[substr($rule, -2)];
@@ -526,86 +615,5 @@ class Freq {
 		$_t = mktime(date('h', $t), $rule, date('s', $t), date('m', $t), date('d', $t), date('Y', $t));
 
 		return $_t;
-	}
-
-	private function validDate($t) {
-		if (isset($this->rules['until']) && $t > $this->rules['until']) {
-			return false;
-		}
-
-		if (in_array($t, $this->excluded)) {
-			return false;
-		}
-
-		if (isset($this->rules['bymonth'])) {
-			$months = explode(',', $this->rules['bymonth']);
-			if (!in_array(date('m', $t), $months)) {
-				return false;
-			}
-		}
-		if (isset($this->rules['byday'])) {
-			$days = explode(',', $this->rules['byday']);
-			foreach ($days As $i => $k) {
-				$days[$i] = $this->weekdays[preg_replace('/[^A-Z]/', '', $k)];
-			}
-			if (!in_array(strtolower(date('l', $t)), $days)) {
-				return false;
-			}
-		}
-		if (isset($this->rules['byweekno'])) {
-			$weeks = explode(',', $this->rules['byweekno']);
-			if (!in_array(date('W', $t), $weeks)) {
-				return false;
-			}
-		}
-		if (isset($this->rules['bymonthday'])) {
-			$weekdays = explode(',', $this->rules['bymonthday']);
-			foreach ($weekdays As $i => $k) {
-				if ($k < 0) {
-					$weekdays[$i] = date('t', $t) + $k + 1;
-				}
-			}
-			if (!in_array(date('d', $t), $weekdays)) {
-				return false;
-			}
-		}
-		if (isset($this->rules['byhour'])) {
-			$hours = explode(',', $this->rules['byhour']);
-			if (!in_array(date('H', $t), $hours)) {
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	private function isPrerule($rule, $freq) {
-		if ($rule === 'year')
-
-			return false;
-		if ($rule === 'month' && $freq === 'yearly')
-
-			return true;
-		if ($rule === 'monthday' && in_array($freq, ['yearly', 'monthly']) && !isset($this->rules['byday']))
-
-			return true;
-		// TODO: is it faster to do monthday first, and ignore day if monthday exists? - prolly by a factor of 4..
-		if ($rule === 'yearday' && $freq === 'yearly')
-
-			return true;
-		if ($rule === 'weekno' && $freq === 'yearly')
-
-			return true;
-		if ($rule === 'day' && in_array($freq, ['yearly', 'monthly', 'weekly']))
-
-			return true;
-		if ($rule === 'hour' && in_array($freq, ['yearly', 'monthly', 'weekly', 'daily']))
-
-			return true;
-		if ($rule === 'minute')
-
-			return true;
-
-		return false;
 	}
 }

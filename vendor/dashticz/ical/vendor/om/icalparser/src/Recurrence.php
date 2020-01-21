@@ -77,20 +77,12 @@ class Recurrence {
 	}
 
 	/**
-	 * Set the $until member
+	 * Returns the frequency - corresponds to FREQ in RFC 2445.
 	 *
-	 * @param mixed timestamp (int) / Valid DateTime format (string)
+	 * @return mixed string if the member has been set, false otherwise
 	 */
-	public function setUntil($ts) {
-		if ($ts instanceof DateTime) {
-			$dt = $ts;
-		} elseif (is_int($ts)) {
-			$dt = new DateTime('@' . $ts);
-		} else {
-			$dt = new DateTime($ts);
-		}
-		$this->until = $dt->format('Ymd\THisO');
-		$this->rrule['until'] = $this->until;
+	public function getFreq() {
+		return $this->getMember('freq');
 	}
 
 	/**
@@ -107,21 +99,30 @@ class Recurrence {
 	}
 
 	/**
-	 * Returns the frequency - corresponds to FREQ in RFC 2445.
-	 *
-	 * @return mixed string if the member has been set, false otherwise
-	 */
-	public function getFreq() {
-		return $this->getMember('freq');
-	}
-
-	/**
 	 * Returns when the event will go until - corresponds to UNTIL in RFC 2445.
 	 *
 	 * @return mixed string if the member has been set, false otherwise
 	 */
 	public function getUntil() {
 		return $this->getMember('until');
+	}
+
+	/**
+	 * Set the $until member
+	 *
+	 * @param mixed timestamp (int) / Valid DateTime format (string)
+	 * @throws \Exception
+	 */
+	public function setUntil($ts) {
+		if ($ts instanceof DateTime) {
+			$dt = $ts;
+		} elseif (is_int($ts)) {
+			$dt = new DateTime('@' . $ts);
+		} else {
+			$dt = new DateTime($ts);
+		}
+		$this->until = $dt->format('Ymd\THisO');
+		$this->rrule['until'] = $this->until;
 	}
 
 	/**
