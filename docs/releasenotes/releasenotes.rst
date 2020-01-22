@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+3.3.3 Master (22-1-2020)
+------------------------
+
+Fixes
+  * New PHP ical library to solve issue with recurring events. Note: PHP 7 is required.
+
 3.3.2 Master (18-1-2020)
 ------------------------
 Master version derived from 3.3.1 beta.
