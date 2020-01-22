@@ -355,6 +355,11 @@ function handleStringBlock(block, columndiv, width, c) {
                 '<h1 class="clock"></h1><h4 class="weekday"></h4><h4 class="date"></h4>' +
                 '</div>');
             return;
+        case 'responsiveclock':
+            $(columndiv).append('<div data-id="clock" class="transbg block_' + block + ' col-xs-' + width + ' text-center responsive" style="height:250px;">' +
+                '<div class="col no-icon"><h2 class="clock"></h1><h4 class="weekday my-4"></h4><h4 class="date"></h4></div>' +
+                '</div>');
+            return;
         case 'weather':
             if (typeof (loadWeatherFull) !== 'function') {
                 $.ajax({
@@ -462,6 +467,11 @@ function handleStringBlock(block, columndiv, width, c) {
             return;
         case 'trafficmap':
             $(columndiv).append('<div data-id="trafficmap" class="mh transbg block_trafficmap col-xs-12"><div id="trafficm" class="trafficmap"></div></div>');
+            return;
+        case 'newsplus':
+            if (typeof(getNewsPlus) !== 'function') $.ajax({url: 'js/newsplus.js', async: false, dataType: "script"});
+            $(columndiv).append('<div data-id="news" class="news"></div>');
+            getNewsPlus(columndiv, 'newsplus', settings['default_news_url']);
             return;
         case 'log':
             if (typeof (getLog) !== 'function') $.ajax({

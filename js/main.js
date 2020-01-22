@@ -990,7 +990,7 @@ function getDevices(override) {
                                     $('.block_' + idx + '_1').length > 0 ||
                                     $('.block_' + idx + '_2').length > 0 ||
                                     $('.block_' + idx + '_3').length > 0 ||
-                                    $('.block_graph_' + idx).length > 0
+                                    $('.block_graph_' + idx).length > 0 
                                 )
                             )
                         ) {
@@ -1069,6 +1069,37 @@ function getDevices(override) {
                             }
                         }
                     }
+					
+					// ##############################################
+					// MULTIGRAPH START                             #
+					// ##############################################
+					if ($("div[class*='block_multigraph_']").length > 0) {
+
+						for(var b in blocks) {
+							if(b.substring(0, 11) === 'multigraph_'){
+
+								var arrMgIdx  = blocks[b]['devices'];
+								arrMgIdx.sort(function(a, b) {
+									return a - b;
+								});
+								var mgId = parseInt(b.replace('multigraph_',''));
+								var arrMgDev = [];
+
+								$.each(arrMgIdx, function( index, mgIdx ) {
+									var device = data.result.filter(obj => {
+										return parseInt(obj.idx) === mgIdx
+									})
+									device[0].primaryIdx = mgId;
+									arrMgDev.push(device[0]);										
+								});
+								getMultiGraphs(arrMgDev);
+							}
+						}
+					}						
+					// ##############################################
+					// MULTIGRAPH END                               #
+					// ##############################################
+					
                     if (typeof (afterGetDevices) === 'function') afterGetDevices();
                 }
 
@@ -1193,7 +1224,7 @@ function handleDevice(device, idx) {
         html += getStatusBlock(idx, device, blocktypes['Name'][device['Name']]);
         return [html, addHTML];
     }
-
+	
     switch (device['Type']) {
         case 'P1 Smart Meter':
             return getSmartMeterBlock(device, idx);
@@ -1207,7 +1238,7 @@ function handleDevice(device, idx) {
         case 'General':
             if (device['SubType'] === 'kWh') {
                 return getGeneralKwhBlock(device, idx);
-            }
+            }			
             break;
         case 'Humidity':
             return getHumBlock(device, idx);
@@ -1376,7 +1407,7 @@ function handleDevice(device, idx) {
             html += '<br /><span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
         }
         html += '</div>';
-    } else if (device['HardwareName'] == 'Dummy') {
+    } else if (device['HardwareName'] === 'Dummy') {		
         return getDefaultSwitchBlock(device, blocks[idx], idx, 'fas fa-toggle-on', 'fas fa-toggle-off', buttonimg);
     } else {
         return getDefaultSwitchBlock(device, blocks[idx], idx, 'fas fa-lightbulb', 'far fa-lightbulb', buttonimg);
@@ -1874,10 +1905,6 @@ function getThermostatBlock(device, idx) {
     return [this.html, false];
 }
 
-//#################################################
-// EVOHOME > Start                                #
-//#################################################
-
 function getEvohomeZoneBlock(device, idx) {
 	var temp		= device.Temp;
     var setpoint	= device.SetPoint;
@@ -1894,7 +1921,7 @@ function getEvohomeZoneBlock(device, idx) {
 	var fa_status = (status == 'TemporaryOverride') ? 'fas fa-stopwatch' : 'far fa-calendar-alt';
 
 	var untilOrLastUpdate = (status == 'Auto' || status == 'TemporaryOverride') ? 'Until ' + moment(device['Until']).format('HH:mm') : moment(device['LastUpdate']).format(settings['timeformat']);
-
+	
     var html = '';
     html += '<div class="col-button1">';
     html += '	<div class="up">';
@@ -2179,10 +2206,6 @@ function switchEvoHotWater(idx, state, override) {
         }
     });
 }
-
-//#################################################
-// EVOHOME > End                                  #
-//#################################################
 
 function getDimmerBlock(device, idx, buttonimg) {
     var html = '';

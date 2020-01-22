@@ -1,8 +1,10 @@
 {
-"version": "3.3.2",
+"version": "3.3.4",
 "branch": "beta",
-"last_changes": "Beta version, equal to master v3.3.2",
+"last_changes": "Merge of the multigraph branch.",
 "changelog" : {
+            "3.3.3": "New PHP calendar module to fix recurring events",
+            "3.3.2": "Master version",
             "3.3.1": "Garbage fixes for TwenteMilieu, Barendrecht. RGBWWZ device support.",
             "3.3.0": "Evohome support.",
             "3.2.1": "Update of jQuery version.",
