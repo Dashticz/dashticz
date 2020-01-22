@@ -1,8 +1,9 @@
 {
-"version": "3.3.2",
+"version": "3.3.3",
 "branch": "master",
-"last_changes": "Master version",
+"last_changes": "New calendar module to fix recurring events.",
 "changelog" : {
+            "3.3.2": "Master version",
             "3.3.1": "Garbage fixes for TwenteMilieu, Barendrecht. RGBWWZ device support.",
             "3.3.0": "Evohome support.",
             "3.2.1": "Update of jQuery version.",
