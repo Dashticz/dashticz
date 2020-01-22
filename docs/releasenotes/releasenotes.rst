@@ -5,7 +5,7 @@ Release Notes
 ----------------------
 
 Enhancements:
-  * Multigraph functionality
+  * Multigraph functionality. See :ref:`multigraphs`.
 
 3.3.3 Master (22-1-2020)
 ------------------------
