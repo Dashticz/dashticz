@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+3.3.4 Beta (22-1-2020)
+----------------------
+
+Enhancements:
+  * Multigraph functionality
+
 3.3.3 Master (22-1-2020)
 ------------------------
 
