@@ -1,0 +1,34 @@
+#;Setting;Description;Type;Example;Default;Optional;Graph ;Multigraph;Line;Bar
+1;devices;An array of the device ids that you want to report on;Array; [ 17, 18, 189 ];N/A;No;No;Yes;Yes;Yes
+2;multigraphTypes;Similar to graphTypes for the standard graph, an array of values you want to show in the graph;Array; ['te'];All;Yes;No;Yes;Yes;Yes
+3;interval;A time based limiter, to limit time data, e.g. 2 will show 1/2 the time labels, 5 will show 20% of the time labels;Number;2;1;Yes;No;Yes;Yes;Yes
+4;maxTicksLimit;Specifies how many labels (ticks) to display on the X axis, this does not limit the data in the graph;Number;10;All;Yes;Yes;Yes;Yes;Yes
+5;cartesian;Scales the graph with standard 'linear' scale, or 'logarithmic', an algorithm to ensure all data can be seen;String;'logarithmic';'linear';Yes;Yes;Yes;Yes;Yes
+6;iconColour;colors the graph's title icons;String;'red';'grey';Yes;Yes;Yes;Yes;Yes
+7;lineFill;If line graph, this fills the graph, it is an array for each dataset;Array;['true', 'false'];['false'];Yes;Yes;Yes;Yes;No
+8;borderWidth;This is actually the width of the line;Number;5;2;Yes;Yes;Yes;Yes;Yes
+9;borderDash;"Use if you want a dashed line, it takes an array of two values; length of the line and the space";Array; [ 10, 10 ];disabled;Yes;Yes;Yes;Yes;Yes
+10;borderColors;Handy for bar graphs, takes an array of colors like datasetColors;Array;['red', 'green'];datasetColors;Yes;Yes;Yes;Yes;Yes
+11;pointRadius;The size of each data point;Number;3;1;Yes;Yes;Yes;Yes;Yes
+12;pointStyle;An array of the shape of each point, such as circle|cross|dash|line|rect|star|triangle;Array;['star','triangle'];['circle'];Yes;Yes;Yes;Yes;Yes
+13;pointFillColour;An array containing the color of each point;Array;['red', 'green'];datasetColors;Yes;Yes;Yes;Yes;Yes
+14;pointBorderColor;An array containing the border color of each point;Array;['red', 'green'];['grey'];Yes;Yes;Yes;Yes;Yes
+15;pointBorderWidth;The thickness of the point's border;Number;2;0;Yes;Yes;Yes;Yes;Yes
+16;barWidth;If a bar graph, this is the width of each bar, 0-1, so 0.5 is half bar, half gap;Number;0,5;0,9;Yes;Yes;Yes;No;Yes
+17;reverseTime;Use this if you want to reverse your X axis, i.e. setting 'true' would mean the time will be reversed;Number;true;false;Yes;Yes;Yes;Yes;Yes
+18;lineTension;Sets the bezier curve the line is, 0 is straight, 1 is extremely curved;Number;0,4;0,1;Yes;Yes;Yes;Yes;Yes
+19;drawOrderLast;"An array stating the order in which each dataset should be added to the graph for ""last hours""";Array;['v2', 'v1'];disabled;Yes;No;Yes;Yes;Yes
+20;drawOrderDay;"An array stating the order in which each dataset should be added to the graph for ""today""";Array;['v3', 'v1', 'v2'];disabled;Yes;No;Yes;Yes;Yes
+21;drawOrderMonth;"An array stating the order in which each dataset should be added to the graph for ""last month""";Array;['v1', 'v2', 'c1'];disabled;Yes;No;Yes;Yes;Yes
+22;buttonsBorder;A string containing the color of the buttons border;String;'red';'white';Yes;Yes;Yes;Yes;Yes
+23;buttonsColor;A string containing the ccolor of the buttons text;String;'#fff' or 'white';'black';Yes;Yes;Yes;Yes;Yes
+24;buttonsFill;A string containing the ccolor of the buttons background color;String;#000' or 'black';'white';Yes;Yes;Yes;Yes;Yes
+25;buttonsIcon;A string containing the ccolor of the buttons icon;String;'blue';'grey';Yes;Yes;Yes;Yes;Yes
+26;buttonsMarginX;A number specifying the gap (or margin) between the buttons (left and right);Number;5;2;Yes;Yes;Yes;Yes;Yes
+27;buttonsMarginY;A number specifying the gap (or margin) above and below the buttons;Number;5;0;Yes;Yes;Yes;Yes;Yes
+28;buttonsPadX;A number specifying the padding inside the buttons (left and right);Number;10;6;Yes;Yes;Yes;Yes;Yes
+29;buttonsPadY;A number specifying the padding inside the buttons, top and bottom;Number;5;2;Yes;Yes;Yes;Yes;Yes
+30;buttonsRadius;A number specifying the curveture of the corners of the buttons;Number;10;4;Yes;Yes;Yes;Yes;Yes
+31;buttonsShadow;A string containing the the shadow below the button in RGBA format;String;'rgba(0,0,0,0.5)';disabled;Yes;Yes;Yes;Yes;Yes
+32;buttonsSize;A number specifying the size of the button;Number;12;14;Yes;Yes;Yes;Yes;Yes
+33;buttonsText;An array for the text displayed on each button;Array;['Now', 'Today', 'Month'];disabled;Yes;Yes;Yes;Yes;Yes
