@@ -294,6 +294,57 @@ The indoor temp sensor also includes barometric pressure (ba) and humidity (hu),
 
 .. image :: img/multigraph4.png
 
+**Temperature and Setpoint**
+
+Three thermostat devices (Evohome TRVs), each showing their temperature and setpoint.
+::
+	blocks['multigraph_11'] = {
+		title: 'Lounge, Kitchen, Hall Thermostats',
+		devices: [ 11, 12, 152],
+		interval: 2,
+		maxTicksLimit: 12,
+		datasetColors: [sLightGrey, sRed, sGreen, sGreenDark, sBlue],
+		buttonsIcon: sPurple,
+		graph: 'line',
+		lineTension: 0,
+		borderWidth: 2,
+		spanGaps: false,
+		multigraphTypes: ['te', 'se'], 
+		buttonsBorder: '#ccc',
+		buttonsColor: '#ccc',
+		buttonsFill: 'transparent',
+		buttonsIcon: sBlue,
+		buttonsPadX: 10,
+		buttonsPadY: 5,
+		buttonsMarginX: 5,
+		buttonsMarginY: 2,
+		buttonsRadius: 0,
+		buttonsShadow: 'rgba(2, 117, 216, 0.2)',
+		buttonsSize: 12,
+		buttonsText: ['6H', '24H', '1M'],
+		legend: {
+			'se1': 'Lounge (SP)',
+			'sm1': 'Lounge (SP Min)',
+			'sx1': 'Lounge (SP Max)',
+			'te1': 'Lounge (TE)',	 
+			'ta1': 'Lounge (TE Avg)',
+			'tm1': 'Lounge (TE Min)',
+			'se2': 'Kitchen (SP)',
+			'sm2': 'Kitchen (SP Min)',
+			'sx2': 'Kitchen (SP Max)',
+			'te2': 'Kitchen (TE)',
+			'ta2': 'Kitchen (TE Avg)',
+			'tm2': 'Kitchen (TE Min)',
+			'se3': 'Hall (SP)',	
+			'sm3': 'Hall (SP Min)',
+			'sx3': 'Hall (SP Max)',
+			'te3': 'Hall (TE)',	  
+			'ta3': 'Hall (TE Avg)',
+			'tm3': 'Hall (TE Min)'
+		} 
+	} 
+
+.. image :: img/multigraph_setpoints.png
 
 **Buttons**
 
