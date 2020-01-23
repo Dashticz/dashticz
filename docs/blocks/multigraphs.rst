@@ -91,6 +91,8 @@ Multigraph block parameters
     - a number showing the height of the gradient split, e.g. 0.8, default 1
   * - spanGaps
     - If true, lines will be drawn between points with no or null data. If false, points with NaN data will create a break in the line.
+  * - sortDevices
+    - the code automatically calculate if any devices' time data is longer than others. It then use that device's time data, then match all of the devices non-time data to that. This setting allows users to choose to enable or disable that feature (true or false)
 
 
 datasetColors
