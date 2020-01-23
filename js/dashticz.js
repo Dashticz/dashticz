@@ -15,8 +15,7 @@ var Dashticz = function () {
         'blocktitle',
         'tvguide',
         'trafficinfo',
-        'secpanel',
-        'chart'
+        'secpanel'
     ]
     var mountedBlocks = [];
     var blockNumbering = 0;
