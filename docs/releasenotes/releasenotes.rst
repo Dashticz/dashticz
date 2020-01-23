@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+Recent changes
+--------------
+
+Fixes
+  * Garbage Uden
+
 3.3.4 Beta (22-1-2020)
 ----------------------
 
