@@ -12,7 +12,7 @@ var Domoticz = function () {
     var initialUpdate = $.Deferred();
     var lastUpdate = {};
 
-    MSG = {
+    var MSG = {
         info: 'type=command&param=getversion'
     }
 
@@ -22,7 +22,7 @@ var Domoticz = function () {
     function domoticzRequest(query) {
         console.log('requesting '+query)
         return $.get({
-            url: cfg.url + '/json.htm?' + domoticzQuery(query),
+            url: cfg.url + 'json.htm?' + domoticzQuery(query),
             type: 'GET',
             async: true,
             contentType: "application/json",
@@ -47,9 +47,6 @@ var Domoticz = function () {
                     console.log("Switching to websocket");
                     connectWebsocket();
                 }
-            else {
-                setInterval(_update, 5000);
-            }
         })
     }
 
@@ -59,19 +56,22 @@ var Domoticz = function () {
                 throw new Error("Domoticz url not defined")
             }
             cfg=initcfg;
+            if(cfg.url.charAt(cfg.url.length-1)!=='/')
+                cfg.url += '/'
             if (cfg.usrEnc) usrinfo = 'username=' + cfg.usrEnc + '&password=' + cfg.pwdEnc + '&';
             initPromise = checkWSSSupport()
-            .then(_update);
-
-
-
+            .then( function() {
+                    setInterval(_update, 5000);  
+                    return _update()
+            });
         }
 //        _connectWebsocket();
         return initPromise;
     }
 
     function connectWebsocket() {
-        socket = new WebSocket("ws://192.168.178.18:8090/json",['domoticz']);
+        var wsurl = cfg.url.replace('http', 'ws');
+        socket = new WebSocket(wsurl+ "json",['domoticz']);
         //var mysocket=this.socket;
         socket.onopen = function(e) {
             console.log(e)
@@ -126,7 +126,8 @@ var Domoticz = function () {
         return _requestAllDevices()
             .then( _requestAllVariables)
         else
-            return initialUpdate;
+            return initialUpdate
+            .then( _requestAllVariables)
     }
 
     function _getDevice(idx) {
