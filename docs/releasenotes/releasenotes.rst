@@ -1,11 +1,18 @@
 Release Notes
 =============
 
+3.3.3.1 Master (4-2-2020)
+-------------------------
+
+Fixes
+  * Garbage Uden
+  * Reenabled PHP5 calendar module
+
 3.3.3 Master (22-1-2020)
 ------------------------
 
 Fixes
-  * New PHP ical library to solve issue with recurring events. Note: PHP 7 is required.
+  * New PHP ical library to solve issue with recurring events. Note: PHP 7.1 is required.
 
 3.3.2 Master (18-1-2020)
 ------------------------
