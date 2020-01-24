@@ -21,8 +21,6 @@ Multigraph block parameters
     - an array of the device ids that you want to report on, e.g. [ 17, 18, 189 ]
   * - multigraphTypes
     - similar to graphTypes for the standard graph, an array of values you want to show in the graph, e.g. ['te'] (default is all)
-  * - exclude
-    - exclude certain data from being returned from one or more devices, e.g. ['te']
   * - interval
     - a time based limiter, to limit time data, e.g. 2 will show 1/2 the time labels, 5 will show 20% of the time labels (default is 1)
   * - maxTicksLimit
