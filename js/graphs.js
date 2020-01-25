@@ -2,8 +2,8 @@
 /* global moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL*/
 var dtGraphs = [];
 var _GRAPHREFRESH = 5;
-const p = 'p';
-const m = 'm';
+var p = 'p';
+var m = 'm';
 
 function getGraphs(device, popup, multi) {
     moment.locale(settings['calendarlanguage']);
@@ -227,6 +227,7 @@ function getMultiGraphs(devices, selGraph){
 	
 	var arrIdx = [];
 	var multidata = { "result": [], "status": "OK", "title": "Multigraph day" };
+	//todo: in case of custom data set range to first custom key
 	var range = isDefined(selGraph)? selGraph : 'day';
 	if(range === 'last') range = 'day';
 	var arrResults = [];
@@ -241,7 +242,7 @@ function getMultiGraphs(devices, selGraph){
 		
 		if(debug && devices[0].primaryIdx == 72) console.log('multigraph_' + devices[0].primaryIdx, '1st device in array', devices[0].primaryIdx, 'which is not the primary (', parseInt(devices[0].idx), '), sorting array ...');
 		
-		var primaryDevice = devices.filter(obj => {
+		var primaryDevice = devices.filter(function(obj) {
 			return parseInt(obj.idx) === devices[0].primaryIdx;
 		})
 		
@@ -588,6 +589,10 @@ function createGraph(graph, data) {
 	}
 	mydiv.html(html);
 
+	if(!(data.result && data.result.length)) {
+		console.log('No graph data for device '+graphIdx);
+		return;
+	}
 	var chartctx = document.getElementById(multi + 'graphoutput' + graphIdx).getContext('2d');
 	var myLocalProperties = {};
 	
@@ -637,7 +642,6 @@ function createGraph(graph, data) {
 			mydatasets[element] = {
 				data: 					[],
 				label: 					element,
-				yAxisID: 				myLocalProperties.ylabels[index],
 				backgroundColor: 		myLocalProperties.datasetColors[index],	
 				barPercentage: 			isDefined(myLocalProperties.barWidth) && isBar? myLocalProperties.barWidth : 0.9,
 				borderColor: 			isDefined(myLocalProperties.borderColors)? 		myLocalProperties.borderColors[index] : myLocalProperties.datasetColors[index],
@@ -1037,7 +1041,7 @@ function getMgDevices(ids, range){
 		success: function (data) {
 			var arrMgDev = [];
 			$.each(ids, function( index, mgIdx ) {
-				var device = data.result.filter(obj => {
+				var device = data.result.filter(function(obj) {
 					return parseInt(obj.idx) === mgIdx;
 				})
 				device[0].primaryIdx = ids[0];
