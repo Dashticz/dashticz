@@ -99,7 +99,7 @@ Custom colors, defined by the parameter ``datasetColors``::
 
     datasetColors: ['red', 'yellow', 'blue', 'orange', 'green', 'purple']
     
-Set the dataset colors to html colors, hex code, rgb or rgba string::
+Set the variable dataset colors to html colors, hex code, rgb or rgba string::
 
     datasetColors: [colourBlueLight, colourLightGrey, colourBlue]
     var colourBlueLight= 'rgba(44, 130, 201, 1)';
@@ -156,7 +156,7 @@ Custom data
 		buttonsBorder: '#ccc',
 		buttonsColor: '#ccc',
 		buttonsFill: 'transparent',
-		buttonsIcon: sBlue,
+		buttonsIcon: 'Blue',
 		buttonsPadX: 10,
 		buttonsPadY: 5,
 		buttonsMarginX: 5,
@@ -217,7 +217,7 @@ Examples
 	blocks['multigraph_17'] = {
 		title: 'CPU, Memory & HDD',
 		devices: [ 17, 18, 189 ],
-		datasetColors: [colourRed, colourOrange, colourBlue, colourGreen, colourBlueLight, colourAqua, colourYellow, colourPurple, colourPink],
+		datasetColors: ['Red', 'Orange', 'Blue', 'Green', 'LightBlue', 'Aqua', 'Yellow', 'Purple', 'Pink'],
 		legend: true,
 		cartesian : 'linear', 	
 		graph: 'line',
@@ -250,7 +250,7 @@ Due to the low solar output in winter months, comparing solar to grid was often 
 	blocks['multigraph_1'] = {
 		title: 'Grid vs Solar',
 		devices: [ 162, 1],
-		datasetColors: [colourRed, colourGreen],		
+		datasetColors: ['Red', 'Green'],		
 		lineFill: [true, true],						
 		graph: 'line',				
 		cartesian: 'logarithmic', 				
@@ -282,7 +282,7 @@ The indoor temp sensor also includes barometric pressure (ba) and humidity (hu),
 	blocks['multigraph_72'] = {
 		title: 'Outside vs Inside Temp',
 		devices: [ 72, 152],
-		datasetColors: [colourBlueLight, colourLightGrey, colourBlue, colourOrange, colourRed, colourYellow],
+		datasetColors: ['LightBlue', 'LightGrey', 'Blue', 'Orange', 'Red', 'Yellow'],
 		exclude: ['ba', 'hu'],
 		graph: 'line',
 		legend: {
@@ -306,8 +306,8 @@ Three thermostat devices (Evohome TRVs), each showing their temperature and setp
 		devices: [ 11, 12, 152],
 		interval: 2,
 		maxTicksLimit: 12,
-		datasetColors: [sLightGrey, sRed, sGreen, sGreenDark, sBlue],
-		buttonsIcon: sPurple,
+		datasetColors: ['LightGrey', 'Red', 'Green', 'DarkGreen', 'Blue'],
+		buttonsIcon: 'Purple',
 		graph: 'line',
 		lineTension: 0,
 		borderWidth: 2,
@@ -316,7 +316,7 @@ Three thermostat devices (Evohome TRVs), each showing their temperature and setp
 		buttonsBorder: '#ccc',
 		buttonsColor: '#ccc',
 		buttonsFill: 'transparent',
-		buttonsIcon: sBlue,
+		buttonsIcon: 'Blue',
 		buttonsPadX: 10,
 		buttonsPadY: 5,
 		buttonsMarginX: 5,
