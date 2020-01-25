@@ -1,80 +1,106 @@
-/* global blocks settings */
+/* global blocks settings usrEnc pwdEnc*/
+/*from domoticz-api.js*/
+/*global Domoticz*/
 
 // eslint-disable-next-line no-unused-vars
-var Dashticz = {
-    components: [],
-    mountedBlocks: [],
-    blockNumbering: 0,
-    init: function () {
-        var components = [
-            'streamplayer',
-            'button',
-            'frame',
-            'news',
-            'longfonds',
-            'traffic',
-            'train',
-            'publictransport',
-            'stationclock',
-            'blocktitle',
-            'tvguide',
-            'trafficinfo',
-            'secpanel'
-        ]
+var Dashticz = function () {
+    var specials = [
+        'streamplayer',
+        'button',
+        'frame',
+        'news',
+        'longfonds',
+        'traffic',
+        'train',
+        'publictransport',
+        'stationclock',
+        'blocktitle',
+        'tvguide',
+        'trafficinfo',
+        'secpanel'
+    ]
+    var components = []
+    var mountedBlocks = [];
+    var blockNumbering = 0;
+
+    function _init() {
         //the $.ajax().then accepts two functions: Success and Error handler.
         // In the success handler we call the async init function from the component
         //        return Promise.all(components.map(function (component) {
         $(window).on('resize', Dashticz.onResize);
-        return $.when.apply($, components.map(function (component) {
-            return $.ajax({
-                    url: 'js/components/' + component + '.js',
-                    dataType: 'script'
-                })
-                .fail(function (jqXHR, textStatus, errorThrown) {
+        return initDomoticz()
+            .then(function () {
+                $.when.apply($, specials.map(function (component) {
+                    return $.ajax({
+                            url: 'js/components/' + component + '.js',
+                            dataType: 'script'
+                        })
+                        .fail(function (jqXHR, textStatus, errorThrown) {
 
-                    console.error("Error loading: ./js/components/" + component + '.js');
-                    console.error('Error: ', textStatus);
-                    return errorThrown;
-                })
-            //                .done(function () {
-            //                    return Dashticz.components[component].init ? Dashticz.components[component].init() : 'Loaded: ' + component
-            //                })
-        }))
-    },
-    onResize: function () {
-        Object.keys(Dashticz.mountedBlocks).forEach(function (key) {
-            var me = Dashticz.mountedBlocks[key];
-            var comp = Dashticz.components[me.name];
+                            console.error("Error loading: ./js/components/" + component + '.js');
+                            console.error('Error: ', textStatus);
+                            return errorThrown;
+                        })
+                }))
+            });
+    }
+
+    function initDomoticz() {
+        return $.ajax({
+            url: 'js/domoticz-api.js',
+            dataType: 'script'
+        })
+        .then(function() {
+            return Domoticz.init({url: settings['domoticz_ip'],
+                                plan: settings['room_plan'],
+                                usrEnc: usrEnc,
+                                pwdEnc: pwdEnc
+                            });
+        })
+    }
+
+    function _onResize() {
+        Object.keys(mountedBlocks).forEach(function (key) {
+            var me = mountedBlocks[key];
+            var comp = components[me.name];
             if (comp.onResize)
                 comp.onResize(me)
         })
-    },
-    mountSpecialBlock: function (mountPoint, blockdef, special, key) {
+    }
+
+    function _mountSpecialBlock(mountPoint, blockdef, special, key) {
         if (!special.initPromise) special.initPromise = special.init ? $.when(special.init(blockdef)) : $.when();
+        if (!special.initPromise) debugger;
         special.initPromise.done(function () {
-            var me = Dashticz.getDefaultBlockConfig(mountPoint, blockdef, special, key);
-            $(mountPoint).append(Dashticz.getSpecialBlock(me));
+            var me = getDefaultBlockConfig(mountPoint, blockdef, special, key);
+            $(mountPoint).append(getSpecialBlock(me));
             if (me.containerClass)
                 $(mountPoint + ' .dt_block').addClass(me.containerClass(blockdef))
             if (special.get)
                 $(mountPoint + ' .dt_state').append(special.get(me))
             if (special.run) special.run(me);
-            Dashticz.mountedBlocks[mountPoint] = me
+            mountedBlocks[mountPoint] = me
         })
-    },
-    getSpecialBlock: function (me) {
+    }
+
+    function _mountDefaultBlock(mountPoint, blockdef, key) {
+        _mountSpecialBlock(mountPoint, blockdef, components['button'], key)
+    }
+
+    function getSpecialBlock(me) {
         var html = '<div ' +
             (me.key ? ' data-id="' + me.key + '"' : '') +
             ' class="transbg  col-xs-' + me.width + ' ' + me.name + ' dt_block "' +
             (me.containerExtra ? me.containerExtra(me.block) : '') + '>' +
-            Dashticz.getColIcon(me) +
+            getColIcon(me) +
             '<div class="dt_content">' +
-            Dashticz.renderTitle(me) +
-            Dashticz.renderStateDiv(me) +
+            renderTitle(me) +
+            renderStateDiv(me) +
             '</div></div>'
         return html;
-    },
-    getColIcon: function (me) {
+    }
+
+    function getColIcon(me) {
         var icon = me.icon;
         var html = '';
         if (icon) {
@@ -89,17 +115,20 @@ var Dashticz = {
             html += '</div>';
         }
         return html;
-    },
-    renderTitle: function (me) {
+    }
+
+    function renderTitle(me) {
         if (me.title) {
             var res = '<div class="dt_title">' + me.title + '</div>';
             return res;
         } else return ''
-    },
-    renderStateDiv: function () {
+    }
+
+    function renderStateDiv() {
         return '<div class="dt_state"></div>'
-    },
-    getDefaultBlockConfig: function (mountPoint, block, special, key) {
+    }
+
+    function getDefaultBlockConfig(mountPoint, block, special, key) {
         var defaultConfig = {
             width: 12,
             mountPoint: mountPoint,
@@ -128,39 +157,43 @@ var Dashticz = {
             }
         }
         return defaultConfig
-    },
-    register: function (special) {
-        this.components[special.name] = special;
-    },
-    mount: function (mountPoint, selector) {
+    }
+
+    function _register(special) {
+        components[special.name] = special;
+    }
+
+    function _mount(mountPoint, selector) {
         if (typeof selector === 'string') {
-            var def = this.components[selector];
+            var def = components[selector];
             if (def) {
-                this.mountSpecialBlock(mountPoint, blocks[selector], def, selector);
+                _mountSpecialBlock(mountPoint, blocks[selector], def, selector);
                 return true
             }
         }
-        for (var comp in this.components) {
+        for (var comp in components) {
             if (typeof selector === 'object') {
-                if (this.components[comp].canHandle && this.components[comp].canHandle(selector)) {
-                    this.mountSpecialBlock(mountPoint, selector, this.components[comp], '')
+                if (components[comp].canHandle && components[comp].canHandle(selector)) {
+                    _mountSpecialBlock(mountPoint, selector, components[comp], '')
                     return true;
                 }
             } else {
-                if (this.components[comp].canHandle && this.components[comp].canHandle(blocks[selector], selector)) {
-                    this.mountSpecialBlock(mountPoint, blocks[selector], this.components[comp], selector)
+                if (components[comp].canHandle && components[comp].canHandle(blocks[selector], selector)) {
+                    _mountSpecialBlock(mountPoint, blocks[selector], components[comp], selector)
                     return true;
                 }
             }
         }
 
         return false;
-    },
-    mountNewContainer: function (column) {
-        $(column).append('<div id="block_' + Dashticz.blockNumbering + '"</div>');
-        return '#block_' + Dashticz.blockNumbering++;
-    },
-    loadFont: function (fontName, fontURL, fontFormat) {
+    }
+
+    function _mountNewContainer(column) {
+        $(column).append('<div id="block_' + blockNumbering + '"</div>');
+        return '#block_' + blockNumbering++;
+    }
+
+    function _loadFont(fontName, fontURL, fontFormat) {
         var newStyle = document.createElement('style');
         newStyle.appendChild(document.createTextNode("\
             @font-face {\
@@ -170,12 +203,25 @@ var Dashticz = {
         "));
 
         document.head.appendChild(newStyle);
-    },
-    loadCSS: function (filename) {
+    }
+
+    function _loadCSS(filename) {
         $('head').append('<link rel="stylesheet" type="text/css" href="' + filename + '">');
     }
 
-}
+    return {
+        init: _init,
+        onResize: _onResize,
+        mountSpecialBlock: _mountSpecialBlock,
+        mount: _mount,
+        register: _register,
+        mountNewContainer: _mountNewContainer,
+        loadFont: _loadFont,
+        loadCSS: _loadCSS,
+        mountDefaultBlock: _mountDefaultBlock
+    }
+
+}();
 
 // eslint-disable-next-line no-unused-vars
 function checkForceRefresh(m_instance, url) {
@@ -226,3 +272,4 @@ function checkForceRefresh(m_instance, url) {
     }
     return url;
 }
+
