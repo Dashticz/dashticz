@@ -1,14 +1,16 @@
+/*from bundle.js*/
+/* global moment*/
+
 // eslint-disable-next-line no-unused-vars
 var Domoticz = function () {
     var usrinfo = '';
-    var path = '';
     var deviceObservable = new ListObservable()
     var state = {}
     state.devices = deviceObservable._values;
     var initPromise = null;
     var socket = null;
-    var cfg ={};
-    var useWSS = false;
+    var cfg = {};
+    var useWS = false;
     var initialUpdate = $.Deferred();
     var lastUpdate = {};
 
@@ -17,10 +19,11 @@ var Domoticz = function () {
     }
 
     function domoticzQuery(query) {
-        return usrinfo + query + (cfg.plan? '&plan=' + cfg.plan:'')
+        return usrinfo + query + (cfg.plan ? '&plan=' + cfg.plan : '')
     }
+
     function domoticzRequest(query) {
-        console.log('requesting '+query)
+        //        console.log('requesting '+query)
         return $.get({
             url: cfg.url + 'json.htm?' + domoticzQuery(query),
             type: 'GET',
@@ -38,16 +41,16 @@ var Domoticz = function () {
 
     }
 
-    function checkWSSSupport() {
+    function checkWSSupport() {
         return domoticzRequest(MSG.info)
-        .then(function(res){
-            console.log(res);
-            if (parseFloat(res.version)>4.011 ) {
-                    useWSS=true;
+            .then(function (res) {
+                console.log(res);
+                if (parseFloat(res.version) > 4.11) {
+                    useWS = true;
                     console.log("Switching to websocket");
                     connectWebsocket();
                 }
-        })
+            })
     }
 
     function _init(initcfg) {
@@ -55,26 +58,26 @@ var Domoticz = function () {
             if (!initcfg.url) {
                 throw new Error("Domoticz url not defined")
             }
-            cfg=initcfg;
-            if(cfg.url.charAt(cfg.url.length-1)!=='/')
+            cfg = initcfg;
+            if (cfg.url.charAt(cfg.url.length - 1) !== '/')
                 cfg.url += '/'
             if (cfg.usrEnc) usrinfo = 'username=' + cfg.usrEnc + '&password=' + cfg.pwdEnc + '&';
-            initPromise = checkWSSSupport()
-            .then( function() {
-                    setInterval(_update, 5000);  
+            initPromise = checkWSSupport()
+                .then(function () {
+                    setInterval(_update, 5000);
                     return _update()
-            });
+                });
         }
-//        _connectWebsocket();
+        //        _connectWebsocket();
         return initPromise;
     }
 
     function connectWebsocket() {
         var wsurl = cfg.url.replace('http', 'ws');
-        socket = new WebSocket(wsurl+ "json",['domoticz']);
+        socket = new WebSocket(wsurl + "json", ['domoticz']);
         //var mysocket=this.socket;
-        socket.onopen = function(e) {
-            console.log(e)
+        socket.onopen = function () {
+            //            console.log(e)
             console.log("[open] Connection established");
             var msg = {
                 event: 'request',
@@ -82,52 +85,56 @@ var Domoticz = function () {
                 query: "type=devices"
             }
             socket.send(JSON.stringify(msg))
-          };
-          socket.onmessage = function(event) {
-              initialUpdate.resolve();
-//            console.log(`[message] Data received from server: ${event.data}`);
+        };
+        socket.onmessage = function (event) {
+            initialUpdate.resolve();
+            //            console.log(`[message] Data received from server: ${event.data}`);
             //console.log(event.data);
-            var res=JSON.parse(event.data);
+            var res = JSON.parse(event.data);
             //console.log(res)
-            var res2=JSON.parse(res.data)
-            //console.log(res2)
-            _setAllDevices(res2)
-          };
-          
-          socket.onclose = function(event) {
-            if (event.wasClean) {
-              console.log('[close] Connection closed cleanly, code=', event.code, event.reason);
-            } else {
-              // e.g. server process killed or network down
-              // event.code is usually 1006 in this case
-              console.log(event)
-              switch(event.code){
-                case 1006: 
-                    console.log('reconnecting')
-                    setTimeout(connectWebsocket,1000); //try to reconnect in 1s
-                    break;
-                default:
-                    console.error('[close] Connection died');
-                    break;
-    
-                }
-              
+            var res2 = JSON.parse(res.data)
+            // console.log(res2)
+            if (res2)
+                _setAllDevices(res2)
+            else {
+                console.log('no data: ', event.data)
             }
-          };
-          
-          socket.onerror = function(error) {
-              console.error(error)
-          };
+        };
+
+        socket.onclose = function (event) {
+            if (event.wasClean) {
+                console.log('[close] Connection closed cleanly, code=', event.code, event.reason);
+            } else {
+                // e.g. server process killed or network down
+                // event.code is usually 1006 in this case
+                console.log(event)
+                switch (event.code) {
+                    case 1006:
+                        console.log('reconnecting')
+                        setTimeout(connectWebsocket, 1000); //try to reconnect in 1s
+                        break;
+                    default:
+                        console.error('[close] Connection died');
+                        break;
+
+                }
+
+            }
+        };
+
+        socket.onerror = function (error) {
+            console.error(error)
+        };
     }
 
     function _update(forced) {
 
-        if (useWSS==false || forced)
-        return _requestAllDevices()
-            .then( _requestAllVariables)
+        if (useWS == false || forced)
+            return _requestAllDevices()
+                .then(_requestAllVariables)
         else
             return initialUpdate
-            .then( _requestAllVariables)
+                .then(_requestAllVariables)
     }
 
     function _getDevice(idx) {
@@ -138,61 +145,66 @@ var Domoticz = function () {
     }
 
     function _requestAllDevices() {
-        console.log('updateAllDevices ' + path);
-        return domoticzRequest('type=devices&filter=all&used=true&order=Name&lastupdate='+lastUpdate.devices)
+        //        console.log('updateAllDevices ' + path);
+        return domoticzRequest('type=devices&filter=all&used=true&order=Name&lastupdate=' + lastUpdate.devices)
             .then(function (res) {
                 return _setAllDevices(res)
             });
     }
 
     function setOnChange(idx, value) {
-        var current_value=deviceObservable.get(idx);
-        var update=false;
+        if (typeof value === 'undefined') {
+            console.error('setOnChange: value undefined');
+            return;
+        }
+        var current_value = deviceObservable.get(idx);
+        var update = false;
         switch (typeof current_value) {
             case 'undefined':
-                update=true;
+                update = true;
                 break;
             case 'string':
             case 'number':
-                update=value!=current_value;
+                update = value != current_value;
                 break;
             case 'object':
-                if (typeof value.LastUpdate!=='undefined' && typeof current_value.LastUpdate !== 'undefined') {
-                    var newmoment=moment(value.LastUpdate);
-                    var currentmoment=moment(current_value.LastUpdate)
+                if (typeof value.LastUpdate !== 'undefined' && typeof current_value.LastUpdate !== 'undefined') {
+                    var newmoment = moment(value.LastUpdate);
+                    var currentmoment = moment(current_value.LastUpdate)
                     update = newmoment.diff(currentmoment)
-                }
-                else update=true;
+                } else update = true;
                 break;
             default:
-                update=true;
+                update = true;
         }
-        if(update)
+        if (update)
             deviceObservable.set(idx, value); //todo: only set after change
 
     }
 
     function _setAllDevices(data) {
-        console.log(data.ActTime);
+        //        console.log(data.ActTime);
         lastUpdate.devices = data.ActTime;
-        setOnChange("_Sunrise", data.Sunrise);
-        setOnChange("_Sunset",data.Sunset)
+        if (data.Sunrise)
+            setOnChange("_Sunrise", data.Sunrise);
+        if (data.Sunset)
+            setOnChange("_Sunset", data.Sunset)
         for (var r in data.result) {
             var device = data.result[r];
             var idx = device['idx'];
 
             if (device['Type'] === 'Group' || device['Type'] === 'Scene') idx = 's' + device['idx'];
-            setOnChange(idx, device); 
+            setOnChange(idx, device);
         }
-//        setOnChange("_devices", new Date()); //event to trigger that all devices have been updated.
+        //        setOnChange("_devices", new Date()); //event to trigger that all devices have been updated.
         setOnChange("_devices", data);
         return deviceObservable._values
     }
 
     function _requestAllVariables() {
-//        console.log('requestAllVariables ' + path);
-//        return domoticzRequest('type=command&param=getuservariables&lastupdate='+lastUpdate.variables)
-            return domoticzRequest('type=command&param=getuservariables')
+        //        console.log('requestAllVariables ' + path);
+        //        return domoticzRequest('type=command&param=getuservariables&lastupdate='+lastUpdate.variables)
+        return domoticzRequest('type=command&param=getuservariables')
             .then(function (res) {
                 return _setAllVariables(res)
             });
@@ -213,8 +225,8 @@ var Domoticz = function () {
         return deviceObservable._values
     }
 
-    function _subscribe(self, idx, getCurrent, callback) {
-        return deviceObservable.subscribe(self, idx, getCurrent, callback)
+    function _subscribe(idx, getCurrent, callback) {
+        return deviceObservable.subscribe(idx, getCurrent, callback)
     }
 
     return {
@@ -232,15 +244,14 @@ function ListObservable() {
     this._observers = {}
     this._values = {}
 
-    this.subscribe = function (self, idx, getCurrent, callback) {
+    this.subscribe = function (idx, getCurrent, callback) {
         if (typeof this._observers[idx] === 'undefined')
             this._observers[idx] = []
         this._observers[idx].push({
-            this: self,
             callback: callback
         })
         if (getCurrent && typeof this._values[idx] !== 'undefined')
-            callAsync(callback, self, this._values[idx])
+            callAsync(callback, this._values[idx])
         var me = this;
         var observeridx = this._observers[idx].length - 1
         return function () {
@@ -261,18 +272,17 @@ function ListObservable() {
         this._values[idx] = value;
         if (typeof this._observers[idx] !== 'undefined')
             this._observers[idx].forEach(function (el) {
-                callAsync(el.callback, el.self, value)
+                callAsync(el.callback, value)
             })
     }
 
-    function callAsync(callback, self, value) {
-        setTimeout(function() {
-            callback.call(self, value)
-        },0)
+    function callAsync(callback, value) {
+        setTimeout(function () {
+            callback(value)
+        }, 0)
     }
 
     this.get = function (idx) {
         return this._values[idx]
     }
 }
-

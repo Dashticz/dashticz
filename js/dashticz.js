@@ -1,8 +1,10 @@
-/* global blocks settings usrEnc pwdEnc infoMessage*/
+/* global blocks settings usrEnc pwdEnc*/
+/*from domoticz-api.js*/
+/*global Domoticz*/
 
 // eslint-disable-next-line no-unused-vars
 var Dashticz = function () {
-    var components = [
+    var specials = [
         'streamplayer',
         'button',
         'frame',
@@ -17,6 +19,7 @@ var Dashticz = function () {
         'trafficinfo',
         'secpanel'
     ]
+    var components = []
     var mountedBlocks = [];
     var blockNumbering = 0;
 
@@ -27,7 +30,7 @@ var Dashticz = function () {
         $(window).on('resize', Dashticz.onResize);
         return initDomoticz()
             .then(function () {
-                $.when.apply($, components.map(function (component) {
+                $.when.apply($, specials.map(function (component) {
                     return $.ajax({
                             url: 'js/components/' + component + '.js',
                             dataType: 'script'
@@ -67,6 +70,7 @@ var Dashticz = function () {
 
     function _mountSpecialBlock(mountPoint, blockdef, special, key) {
         if (!special.initPromise) special.initPromise = special.init ? $.when(special.init(blockdef)) : $.when();
+        if (!special.initPromise) debugger;
         special.initPromise.done(function () {
             var me = getDefaultBlockConfig(mountPoint, blockdef, special, key);
             $(mountPoint).append(getSpecialBlock(me));

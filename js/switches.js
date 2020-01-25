@@ -1,7 +1,10 @@
 /* global alldevices showUpdateInformation triggerChange req:writable settings usrEnc pwdEnc getDevices language infoMessage iconORimage getBlockData blocks */
 /* global moment Cookies hexToHsb*/
+/* from main.js */
 // eslint-disable-next-line no-unused-vars
 /* global sliding:writable  slide:writable*/
+/* from domoticz-api.js*/
+/* global Domoticz*/
 
 // eslint-disable-next-line no-unused-vars
 function getDefaultSwitchBlock(device, block, idx, defaultIconOn, defaultIconOff, buttonimg) {
@@ -16,7 +19,7 @@ function getDefaultSwitchBlock(device, block, idx, defaultIconOn, defaultIconOff
         buttonimg: Default image. 
     */
     var html = '';
-    if (!isProtected(device,idx)) {
+    if (!isProtected(device, idx)) {
         var confirmswitch = 0;
         if (typeof (block) !== 'undefined')
             if (typeof (block['confirmation']) !== 'undefined') {
@@ -59,7 +62,8 @@ function getDefaultSwitchBlock(device, block, idx, defaultIconOn, defaultIconOff
 }
 
 function isProtected(device, idx) {
-    return (blocks[idx] && blocks[idx].protected) || device.Protected;
+    var dev = Domoticz.getAllDevices()[idx];
+    return (blocks[idx] && blocks[idx].protected) || (dev && dev.Protected);
 }
 
 function getIconStatusClass(deviceStatus) {
@@ -78,6 +82,7 @@ function getIconStatusClass(deviceStatus) {
 }
 
 
+// eslint-disable-next-line no-unused-vars
 function switchDevice(cur, pMode, pAskConfirm) {
     /* Switch device
         params:
@@ -363,6 +368,7 @@ function switchSecurity(level, pincode) {
     });
 }
 
+// eslint-disable-next-line no-unused-vars
 function getDimmerBlock(device, idx, buttonimg) {
     var html = '';
     var classExtension = isProtected(device, idx) ? ' icon' : ' icon iconslider'; //no pointer in case of protected device
@@ -468,6 +474,7 @@ function getDimmerBlock(device, idx, buttonimg) {
     return [html, false];
 }
 
+// eslint-disable-next-line no-unused-vars
 function getBlindsBlock(device, idx, withPercentage) {
     if (typeof (withPercentage) === 'undefined') withPercentage = false;
     this.html = '';
@@ -580,4 +587,3 @@ function isRGBDeviceAndEnabled(device) {
                 parseFloat(settings['no_rgb']) === 0)) &&
         (device['SubType'] === 'RGBW' || device['SubType'] === 'RGBWW' || device['SubType'] === 'RGB');
 }
-
