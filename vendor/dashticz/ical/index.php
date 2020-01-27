@@ -1,27 +1,50 @@
 <?php
-/* Additional dependencies:
-sudo apt-get install php-mbstring
-
-and don't forget to run:
-sudo service apache2 restart
-
-*/
 header("Access-Control-Allow-Origin: *");
 header('Content-Type: application/json');
 
-require_once('./vendor/autoload.php');
+
+if (!defined('PHP_VERSION_ID')) {
+    $version = explode('.', PHP_VERSION);
+
+    define('PHP_VERSION_ID', ($version[0] * 10000 + $version[1] * 100 + $version[2]));
+}
+
+// PHP_VERSION_ID is defined as a number, where the higher the number 
+// is, the newer a PHP version is used. It's defined as used in the above 
+// expression:
+//
+// $version_id = $major_version * 10000 + $minor_version * 100 + $release_version;
+//
+// Now with PHP_VERSION_ID we can check for features this PHP version 
+// may have, this doesn't require to use version_compare() everytime 
+// you check if the current PHP version may not support a feature.
+//
+// For example, we may here define the PHP_VERSION_* constants thats 
+// not available in versions prior to 5.2.7
+
 if (!empty($argv[1])) {
 	parse_str($argv[1], $_GET);
   }
 $ICS = $_GET['url'];
+
 //print "url: ".$ICS . "\n";
 if (!empty($argv[2])) {
 	parse_str($argv[2], $_GET);
   }
 $MAXITEMS = $_GET['maxitems'];
 //print "maxitems: ".$MAXITEMS . "\n";
+
 $ICS = str_replace('#','%23',$ICS);
 //echo $ICS . "\n";
+
+//fallback to previous ical implementation in case PHP version < 7.1
+//Disadvantage: Yearly recurring events don't work very well ...
+if (PHP_VERSION_ID < 70100) {
+	ical5($ICS, $MAXITEMS);
+	exit(0);
+} 
+
+require_once('./vendor/autoload.php');
 try {
 	$cal = new \om\IcalParser();
 	$results = $cal->parseFile( $ICS);
@@ -54,34 +77,39 @@ try {
     die($e);
 }
 
-/*$ical = new SG_iCalReader($ICS);
+function ical5($ICS, $MAXITEMS) {
+	require_once('./ical5/SG_iCal.php');
+	$ical = new SG_iCalReader($ICS);
 $evts = $ical->getEvents();
 $data = array();
 if($evts){
+	$currentdate = time();
 	foreach($evts as $id => $ev) {
+		$start = $ev->getStart();
+		$end = $ev->getEnd();
 		$jsEvt = array(
 			"id" => ($id+1),
 			"title" => $ev->getProperty('summary'),
-			"start" => $ev->getStart(),
-			"end"   => $ev->getEnd()-1,
+			"start" => $start,
+			"end"   => $end,
 			"allDay" => $ev->isWholeDay(),
 		);
 		if($jsEvt["end"]<0) $jsEvt["end"] = $jsEvt["start"];
 		$jsEvt["startt"] = date('Y-m-d H:i:s',$ev->getStart());
-		$jsEvt["endt"] = date('Y-m-d H:i:s',$ev->getEnd()-1);
+		$jsEvt["endt"] = date('Y-m-d H:i:s',$ev->getEnd());
 		if(substr($jsEvt["endt"],0,10)=='1970-01-01'){
 			$jsEvt["endt"] = $jsEvt["startt"];
 			$jsEvt["allDay"]=1;
 		}
 		$count = 0;
-		$start = $ev->getStart();
 		if (isset($ev->recurrence)) {
 			$freq = $ev->getFrequency();
-			$currentdate = time();
-			$start=$freq->previousOccurrence($currentdate);
+			$start = $freq->nextOccurrence($currentdate);
+			$prevstart=$freq->previousOccurrence($currentdate);
+			if ($prevstart && $prevstart + $ev->getDuration() > $currentdate) $start = $prevstart;
 			while ($start && ($count<$MAXITEMS)) {
 				$jsEvt["start"] = $start;
-				$jsEvt["end"] = $start + $ev->getDuration()-1;
+				$jsEvt["end"] = $start + $ev->getDuration();
 				$jsEvt["startt"] = date('Y-m-d H:i:s',$jsEvt["start"]);
 				$jsEvt["endt"] = date('Y-m-d H:i:s',$jsEvt["end"]);
 				$data[$start] = $jsEvt;
@@ -89,14 +117,14 @@ if($evts){
 				$start=$freq->nextOccurrence($start);
 			}
 		} else {
-			if(date('Y',$start)>2016) $data[$start] = $jsEvt;
+			if($end>$currentdate) {
+				$data[$start] = $jsEvt;
+			}
 		}
 	}
 }
 ksort($data);
 die(json_encode($data));
-echo '<pre>';
-print_r($data);
-exit();
-?>
-*/
+
+}
+
