@@ -160,8 +160,9 @@ function toggleItem(cur, currentState) {
 
 // eslint-disable-next-line no-unused-vars
 function switchThermostat(setpoint, cur) {
-    sliding = true;
+//    sliding = true;
     var idx = $(cur).data('light');
+    sliding = idx;
     if (typeof (req) !== 'undefined') req.abort();
     req = $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=setsetpoint&idx=' + idx + '&setpoint=' + setpoint + '&jsoncallback=?',
@@ -316,7 +317,7 @@ function slideDeviceExt(idx, value, sliderState) {
         sliderAction.request = sliderSetValue(idx, value, sliderCallback);
         return;
     }
-    if (sliderState == 1 || sliderState == 2) { //sliding or change at the end
+    if (/*sliderState == 1 ||*/ sliderState == 2) { //change at the end. Temporarily (?) no update while sliding.
         if (sliderAction.request.readyState == 4) {
             sliderAction.request = sliderSetValue(idx, value, sliderCallback);
         } else {
@@ -416,7 +417,7 @@ function getDimmerBlock(device, idx, buttonimg) {
             var hue = hexToHsb(color);
             var bIsWhite = (hue.s < 20);
 
-            sliding = true;
+            sliding = idx;
 
             var usrinfo = '';
             if (typeof (usrEnc) !== 'undefined' && usrEnc !== '') usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
@@ -437,7 +438,7 @@ function getDimmerBlock(device, idx, buttonimg) {
         });
 
         $('.rgbw' + idx).on('beforeShow.spectrum', function () {
-            sliding = true;
+            sliding = idx;
         });
     }
 
@@ -566,7 +567,7 @@ function addSlider(idx, sliderValues) {
         max: sliderValues.max,
         disabled: sliderValues.disabled,
         start: function (event, ui) {
-            sliding = true;
+            sliding = idx;
             slideDeviceExt($(this).data('light'), ui.value, 0);
         },
         slide: function (event, ui) {

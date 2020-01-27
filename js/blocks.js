@@ -317,6 +317,9 @@ function getBlock(cols, c, screendiv, standby) {
 function deviceUpdateHandler(selector, idx, device) {
     //console.log('update ', idx)
     //debugger
+    if(sliding && (''+sliding) === (''+idx)) { //prevent device update while sliding. sliding contains the device idx of the device that is sliding.
+        return;
+    }
     var blockdef = (blocks && blocks[idx]) || undefined;
     if (blockdef && typeof blockdef['title'] !== 'undefined') {
         device['Name'] = blockdef['title'];
