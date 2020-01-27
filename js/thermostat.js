@@ -223,7 +223,7 @@ function addEvohomeZoneFunctions(thermelement, idx) {
 
     $(document).on("click", (thermelement + ' .btn-number'), function () {
 
-        sliding = true;
+        sliding = idx;
         var type = $(this).attr('data-type');
         var currentVal = alldevices[idx].SetPoint
         var temp = alldevices[idx].Temp;
@@ -252,7 +252,7 @@ function addEvohomeZoneFunctions(thermelement, idx) {
     });
 
     $(document).on("mouseenter", (thermelement + ' .btn-number'), function () {
-        sliding = true;
+        sliding = idx;
     });
 
     $(document).on("mouseleave", (thermelement + ' .btn-number'), function () {
@@ -290,7 +290,7 @@ function switchEvoZone(idx, setpoint, override) {
 
     var mode = override ? '&mode=TemporaryOverride&until=' + moment().add(settings['evohome_boost_zone'], 'minutes').toISOString() : '&mode=Auto';
 
-    sliding = true;
+    sliding = idx;
     $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=setused&idx=' + idx + '&setpoint=' + setpoint + mode + '&used=true&jsoncallback=?',
         type: 'GET',
@@ -376,7 +376,7 @@ function getEvohomeControllerBlock(device, idx) {
 
 function addEvohomeControllerFunctions(thermelement, idx) {
     $(document).on("click", (thermelement + ' .btn-number'), function (e) {
-        sliding = true;
+        sliding = idx;
         $('.evoSelect').toggleClass('hide');
         $(thermelement + ' .input-status').toggleClass('hide');
     });
@@ -398,7 +398,7 @@ function addEvohomeControllerFunctions(thermelement, idx) {
 
 function changeEvohomeControllerStatus(idx, status) {
 
-    sliding = true;
+    sliding = idx;
 
     $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=switchmodal&idx=' + idx + '&status=' + status + '&action=1&used=true&jsoncallback=?',
@@ -452,7 +452,7 @@ function getEvohomeHotWaterBlock(device, idx) {
 
     if (typeof (addedThermostat[idx]) === 'undefined') {
         $(document).on("click", ('.block_' + idx + ' .btn-number'), function (e) {
-            sliding = true;
+            sliding = idx;
             state = (state == 'Off') ? 'On' : 'Off';
             switchEvoHotWater(idx, state, state == 'On');
         });
@@ -464,7 +464,7 @@ function getEvohomeHotWaterBlock(device, idx) {
 function switchEvoHotWater(idx, state, override) {
 
     var mode = override ? '&mode=TemporaryOverride&until=' + moment().add(settings['evohome_boost_hw'], 'minutes').toISOString() : '&mode=Auto';
-    sliding = true;
+    sliding = idx;
 
     $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=setused&idx=' + idx + '&setpoint=60&state=' + state + mode + '&used=true&jsoncallback=?',
