@@ -1,8 +1,9 @@
 {
-"version": "3.3.4",
+"version": "3.3.5",
 "branch": "beta",
-"last_changes": "Merge of the multigraph branch.",
+"last_changes": "Restored the PHP5 ical library next to the PHP7 library.",
 "changelog" : {
+            "3.3.4": "Merge of the multigraph branch.",
             "3.3.3": "New PHP calendar module to fix recurring events",
             "3.3.2": "Master version",
             "3.3.1": "Garbage fixes for TwenteMilieu, Barendrecht. RGBWWZ device support.",
