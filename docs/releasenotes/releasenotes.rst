@@ -1,11 +1,14 @@
 Release Notes
 =============
 
-Recent changes
---------------
+3.3.5 Beta (28-1-2020)
+----------------------
 
 Fixes
   * Garbage Uden
+  * Restored PHP5 compatible ical library next to the PHP7 library.
+  The PHP5 library is selected automatically on systems with PHP version lower than 7.1.
+  The PHP5 library doesn't show yearly recurring events correctly.
 
 3.3.4 Beta (22-1-2020)
 ----------------------
@@ -17,7 +20,7 @@ Enhancements:
 ------------------------
 
 Fixes
-  * New PHP ical library to solve issue with recurring events. Note: PHP 7 is required.
+  * New PHP ical library to solve issue with recurring events. Note: PHP 7.1 or higher is required.
 
 3.3.2 Master (18-1-2020)
 ------------------------
