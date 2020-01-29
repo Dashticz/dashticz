@@ -229,13 +229,18 @@ var Domoticz = function () {
         return deviceObservable.subscribe(idx, getCurrent, callback)
     }
 
+    function _setDevice(idx, value) {
+        deviceObservable.set(idx, value);
+    }  
+
     return {
         init: _init,
         getDevice: _getDevice,
         getAllDevices: _getAllDevices,
         state: state,
         subscribe: _subscribe,
-        update: _update
+        update: _update,
+        setDevice: _setDevice
     }
 }();
 

@@ -315,8 +315,6 @@ function getBlock(cols, c, screendiv, standby) {
 }
 
 function deviceUpdateHandler(selector, idx, device) {
-    //console.log('update ', idx)
-    //debugger
     if(sliding && (''+sliding) === (''+idx)) { //prevent device update while sliding. sliding contains the device idx of the device that is sliding.
         return;
     }
@@ -365,9 +363,11 @@ function deviceUpdateHandler(selector, idx, device) {
     //    if ($('div.block_graph_' + idx).length > 0) {
     //        getGraphs(device, false);
     //    }
-
-    triggerStatus(idx, device['LastUpdate'], device);
-    triggerChange(idx, device['LastUpdate'], device);
+    var lastupdate = device['LastUpdate'];
+    if (lastupdate !== '1970-01-01') { //locally generated update is dated 1970-01-01. triggerStatus and triggerChange only will be called after a real update.
+        triggerStatus(idx, lastupdate, device);
+        triggerChange(idx, lastupdate, device);
+    }
 
     try {
         html += eval('getBlock_' + idx + '(device,idx,data.result)');
