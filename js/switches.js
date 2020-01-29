@@ -115,10 +115,10 @@ function switchDevice(cur, pMode, pAskConfirm) {
             console.log("Incorrect mode in SwitchDevice for device " + idx)
             return;
     }
-    triggerChange(idx, doStatus, alldevices[idx]);
-    if (typeof (req) !== 'undefined') {
-        req.abort();
-    }
+    var device=Domoticz.getAllDevices()[idx];
+    device.Status = doStatus;
+    device.LastUpdate = '1970-01-01'; //indicates local device update...
+    Domoticz.setDevice(idx, device); //this setDevice will trigger local changes
     if (typeof (idx) === 'string' && idx.substr(0, 1) === 's') {
         idx = idx.replace('s', '');
         param = 'switchscene';
@@ -128,11 +128,13 @@ function switchDevice(cur, pMode, pAskConfirm) {
     $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=' + param + '&idx=' + idx + '&switchcmd=' + doStatus + '&level=0&passcode=&jsoncallback=?',
         type: 'GET',
-        async: false,
         contentType: 'application/json',
         dataType: 'jsonp',
         success: function () {
             getDevices(true);
+        },
+        error: function() {
+            console.error('Error in switch device.')
         }
     });
 
