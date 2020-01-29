@@ -366,8 +366,8 @@ function deviceUpdateHandler(selector, idx, device) {
     //        getGraphs(device, false);
     //    }
 
-    //    triggerStatus(idx, device['LastUpdate'], device);
-    //    triggerChange(idx, device['LastUpdate'], device);
+    triggerStatus(idx, device['LastUpdate'], device);
+    triggerChange(idx, device['LastUpdate'], device);
 
     try {
         html += eval('getBlock_' + idx + '(device,idx,data.result)');
@@ -970,12 +970,13 @@ function iconORimage(idx, defaulticon, defaultimage, classnames, attr, colwidth,
     var mIcon = defaulticon;
     var mImage = defaultimage;
     var useImage = false;
+    var allDevices = Domoticz.getAllDevices();
     if (defaultimage !== '') {
         useImage = true;
     }
     var isOn = false;
-    if (typeof (alldevices[idx]) !== 'undefined' && typeof (alldevices[idx]['Status']) !== 'undefined')
-        isOn = (getIconStatusClass(alldevices[idx]['Status']) === 'on');
+    if (typeof (allDevices[idx]) !== 'undefined' && typeof (allDevices[idx]['Status']) !== 'undefined')
+        isOn = (getIconStatusClass(allDevices[idx]['Status']) === 'on');
     if (typeof (block) !== 'undefined') {
         if (typeof (block['icon']) !== 'undefined') {
             mIcon = block['icon'];
