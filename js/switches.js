@@ -374,9 +374,9 @@ function getDimmerBlock(device, idx, buttonimg) {
     var html = '';
     var classExtension = isProtected(device, idx) ? ' icon' : ' icon iconslider'; //no pointer in case of protected device
     if (device['Status'] === 'Off')
-        html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false );"');
+        html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" ');
     else
-        html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" onclick="switchDevice(this,\'toggle\', false);"');
+        html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" ');
     html += '<div class="col-xs-10 swiper-no-swiping col-data">';
     html += '<strong class="title">' + device['Name'];
     if (typeof (blocks[idx]) == 'undefined' || typeof (blocks[idx]['hide_data']) == 'undefined' || blocks[idx]['hide_data'] == false) {
@@ -401,8 +401,15 @@ function getDimmerBlock(device, idx, buttonimg) {
     }
 
     $('div.block_' + idx).html(html);
-    if (!isProtected(device, idx)) {
+    var dimmerClickHandler = function() {
+        if (!sliding) switchDevice('.block_'+idx,'toggle', false )
+    }
+
+    $('div.block_' + idx).off('click');
+
+    if (!isProtected(idx)) {
         $('div.block_' + idx).addClass('hover');
+        $('div.block_' + idx).on('click', dimmerClickHandler);
     }
 
     if (isRGBDeviceAndEnabled(device)) {
@@ -580,11 +587,15 @@ function addSlider(idx, sliderValues) {
             sliding = false;
         }
     });
+    $(".slider" + idx).on('click', function(ev) {
+        ev.stopPropagation();
+    })
+
 }
 
 function isRGBDeviceAndEnabled(device) {
     return (typeof (settings['no_rgb']) === 'undefined' ||
             (typeof (settings['no_rgb']) !== 'undefined' &&
                 parseFloat(settings['no_rgb']) === 0)) &&
-        (device['SubType'] === 'RGBW' || device['SubType'] === 'RGBWW' || device['SubType'] === 'RGB');
+        (device['SubType'] === 'RGBW' || device['SubType'] === 'RGBWW' || device['SubType'] === 'RGB' || device['SubType'] === 'RGBWWZ' );
 }
