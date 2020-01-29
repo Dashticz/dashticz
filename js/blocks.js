@@ -366,8 +366,8 @@ function deviceUpdateHandler(selector, idx, device) {
     //        getGraphs(device, false);
     //    }
 
-    //    triggerStatus(idx, device['LastUpdate'], device);
-    //    triggerChange(idx, device['LastUpdate'], device);
+    triggerStatus(idx, device['LastUpdate'], device);
+    triggerChange(idx, device['LastUpdate'], device);
 
     try {
         html += eval('getBlock_' + idx + '(device,idx,data.result)');
