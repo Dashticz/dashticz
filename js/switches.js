@@ -115,7 +115,7 @@ function switchDevice(cur, pMode, pAskConfirm) {
             console.log("Incorrect mode in SwitchDevice for device " + idx)
             return;
     }
-    var device=Domoticz.getAllDevices()[idx];
+    var device = Domoticz.getAllDevices()[idx];
     device.Status = doStatus;
     device.LastUpdate = '1970-01-01'; //indicates local device update...
     Domoticz.setDevice(idx, device); //this setDevice will trigger local changes
@@ -124,7 +124,7 @@ function switchDevice(cur, pMode, pAskConfirm) {
         param = 'switchscene';
     }
 
-
+/*
     $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=' + param + '&idx=' + idx + '&switchcmd=' + doStatus + '&level=0&passcode=&jsoncallback=?',
         type: 'GET',
@@ -133,10 +133,15 @@ function switchDevice(cur, pMode, pAskConfirm) {
         success: function () {
             getDevices(true);
         },
-        error: function() {
+        error: function () {
             console.error('Error in switch device.')
         }
     });
+    */
+    Domoticz.request('type=command&param=' + param + '&idx=' + idx + '&switchcmd=' + doStatus + '&level=0')
+    .then(function() {
+        getDevices(true);
+    })
 
 }
 
@@ -162,7 +167,7 @@ function toggleItem(cur, currentState) {
 
 // eslint-disable-next-line no-unused-vars
 function switchThermostat(setpoint, cur) {
-//    sliding = true;
+    //    sliding = true;
     var idx = $(cur).data('light');
     sliding = idx;
     if (typeof (req) !== 'undefined') req.abort();
@@ -319,7 +324,7 @@ function slideDeviceExt(idx, value, sliderState) {
         sliderAction.request = sliderSetValue(idx, value, sliderCallback);
         return;
     }
-    if (/*sliderState == 1 ||*/ sliderState == 2) { //change at the end. Temporarily (?) no update while sliding.
+    if ( /*sliderState == 1 ||*/ sliderState == 2) { //change at the end. Temporarily (?) no update while sliding.
         if (sliderAction.request.readyState == 4) {
             sliderAction.request = sliderSetValue(idx, value, sliderCallback);
         } else {
@@ -403,8 +408,8 @@ function getDimmerBlock(device, idx, buttonimg) {
     }
 
     $('div.block_' + idx).html(html);
-    var dimmerClickHandler = function() {
-        if (!sliding) switchDevice('.block_'+idx,'toggle', false )
+    var dimmerClickHandler = function () {
+        if (!sliding) switchDevice('.block_' + idx, 'toggle', false)
     }
 
     $('div.block_' + idx).off('click');
@@ -568,6 +573,11 @@ function getBlindsBlock(device, idx, withPercentage) {
     return [this.html, false];
 }
 
+/*previously there was a mechanism to send device update commands while sliding.
+With the new websock interface the slider block didn't update correctly.
+So I've disabled the call to slideDeviceExt function.
+Maybe in the future I'll reenable the functionality.
+*/
 function addSlider(idx, sliderValues) {
     $(".slider" + idx).slider({
         value: sliderValues.value,
@@ -575,21 +585,23 @@ function addSlider(idx, sliderValues) {
         min: sliderValues.min,
         max: sliderValues.max,
         disabled: sliderValues.disabled,
-        start: function (event, ui) {
+        start: function () {
             sliding = idx;
-            slideDeviceExt($(this).data('light'), ui.value, 0);
+            //            slideDeviceExt($(this).data('light'), ui.value, 0);
         },
-        slide: function (event, ui) {
-            slideDeviceExt($(this).data('light'), ui.value, 1);
-        },
+        //        slide: function (event, ui) {
+        //            slideDeviceExt($(this).data('light'), ui.value, 1);
+        //},
         change: function (event, ui) {
-            slideDeviceExt($(this).data('light'), ui.value, 2);
+            //            slideDeviceExt($(this).data('light'), ui.value, 2);
+            slideDevice(idx, ui.value);
         },
         stop: function () {
+            //stop is called before change
             sliding = false;
         }
     });
-    $(".slider" + idx).on('click', function(ev) {
+    $(".slider" + idx).on('click', function (ev) {
         ev.stopPropagation();
     })
 
@@ -599,5 +611,5 @@ function isRGBDeviceAndEnabled(device) {
     return (typeof (settings['no_rgb']) === 'undefined' ||
             (typeof (settings['no_rgb']) !== 'undefined' &&
                 parseFloat(settings['no_rgb']) === 0)) &&
-        (device['SubType'] === 'RGBW' || device['SubType'] === 'RGBWW' || device['SubType'] === 'RGB' || device['SubType'] === 'RGBWWZ' );
+        (device['SubType'] === 'RGBW' || device['SubType'] === 'RGBWW' || device['SubType'] === 'RGB' || device['SubType'] === 'RGBWWZ');
 }
