@@ -13,6 +13,8 @@ var Domoticz = function () {
     var useWS = false;
     var initialUpdate = $.Deferred();
     var lastUpdate = {};
+    var requestid = 0;
+    var callbackList = []
 
     var MSG = {
         info: 'type=command&param=getversion'
@@ -22,8 +24,23 @@ var Domoticz = function () {
         return usrinfo + query + (cfg.plan ? '&plan=' + cfg.plan : '')
     }
 
-    function domoticzRequest(query) {
+    function domoticzRequest(query, id) {
         //        console.log('requesting '+query)
+        if (useWS) {
+            //            console.log('request id '+requestid + ' ' + query);
+
+            var reqPromise = $.Deferred();
+            callbackList[requestid] = reqPromise;
+            var msg = {
+                event: 'request',
+                requestid: requestid,
+                query: domoticzQuery(query)
+            }
+            requestid = (requestid + 1) % 1000;
+            socket.send(JSON.stringify(msg));
+            return reqPromise;
+        }
+
         return $.get({
             url: cfg.url + 'json.htm?' + domoticzQuery(query),
             type: 'GET',
@@ -44,7 +61,7 @@ var Domoticz = function () {
     function checkWSSupport() {
         return domoticzRequest(MSG.info)
             .then(function (res) {
-                console.log(res);
+                //                console.log(res);
                 if (parseFloat(res.version) > 4.11) {
                     useWS = true;
                     console.log("Switching to websocket");
@@ -79,26 +96,46 @@ var Domoticz = function () {
         socket.onopen = function () {
             //            console.log(e)
             console.log("[open] Connection established");
-            var msg = {
-                event: 'request',
-                requestid: 0,
-                query: "type=devices"
-            }
-            socket.send(JSON.stringify(msg))
+            /*            var msg = {
+                            event: 'request',
+                            requestid: 1,
+                            query: "type=devices"
+                        }
+                        socket.send(JSON.stringify(msg))*/
+            /*            domoticzRequest("type=devices", 1)
+                        .then(function(res){
+                            console.log('initial connect data: ', res);
+                        });*/
+            _requestAllDevices();
         };
         socket.onmessage = function (event) {
             initialUpdate.resolve();
             //            console.log(`[message] Data received from server: ${event.data}`);
             //console.log(event.data);
             var res = JSON.parse(event.data);
-            //console.log(res)
-            var res2 = JSON.parse(res.data)
-            // console.log(res2)
-            if (res2)
-                _setAllDevices(res2)
-            else {
-                console.log('no data: ', event.data)
+            var res2;
+            if (res.data)
+                res2 = JSON.parse(res.data);
+            var requestid = res.requestid;
+            if (requestid == -1) { //device update
+                //                console.log('device update ', res2)
+                _setAllDevices(res2);
+                return;
             }
+            if (typeof res.requestid !== 'undefined' && callbackList[requestid]) {
+                callbackList[requestid].resolve(res2)
+            } else {
+                console.log('no requestid or no callback ', res);
+            }
+            /*            //console.log(res)
+                        var res2 = JSON.parse(res.data)
+                        // console.log(res2)
+                        if (res2)
+                            _setAllDevices(res2)
+                        else {
+                            console.log('no data: ', event.data)
+                        }
+                        */
         };
 
         socket.onclose = function (event) {
@@ -231,7 +268,7 @@ var Domoticz = function () {
 
     function _setDevice(idx, value) {
         deviceObservable.set(idx, value);
-    }  
+    }
 
     return {
         init: _init,
@@ -240,7 +277,8 @@ var Domoticz = function () {
         state: state,
         subscribe: _subscribe,
         update: _update,
-        setDevice: _setDevice
+        setDevice: _setDevice,
+        request: domoticzRequest
     }
 }();
 
@@ -266,8 +304,8 @@ function ListObservable() {
 
     this.unsubscribe = function (listidx, observeridx) {
         if (this._observers[listidx]) {
-            if (!this._observers[listidx].splice(observeridx, 1).length);
-            console.log('observer ' + observeridx + ' for list ' + listidx + ' not found.')
+            if (!this._observers[listidx].splice(observeridx, 1).length)
+                console.log('observer ' + observeridx + ' for list ' + listidx + ' not found.')
         } else {
             console.log('List idx ' + listidx + ' not found.')
         }
