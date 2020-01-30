@@ -4,6 +4,10 @@ Release Notes
 Recent changes
 --------------
 
+Enhancements
+  * Websocket interface for Domoticz version > 4.11000
+  * Newsplus, including support for nu.nl
+
 Fixes
   * Garbage Uden
 
