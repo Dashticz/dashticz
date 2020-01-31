@@ -161,10 +161,10 @@ function loadFiles(dashtype) {
                     url: 'js/blocks.js',
                     dataType: 'script'
                 }),
-                $.ajax({
+                /* $.ajax({
                     url: 'js/graphs.js',
                     dataType: 'script'
-                }),
+                }), */
                 $.ajax({
                     url: 'js/login.js',
                     dataType: 'script'

@@ -137,29 +137,30 @@ function getEvohomeZoneBlock(device, idx) {
     var fa_status = (status == 'TemporaryOverride') ? 'fas fa-stopwatch' : 'far fa-calendar-alt';
 
     var untilOrLastUpdate = (status == 'Auto' || status == 'TemporaryOverride') ? 'Until ' + moment(device['Until']).format('HH:mm') : moment(device['LastUpdate']).format(settings['timeformat']);
+    untilOrLastUpdate = status == 'PermanentOverride'? 'Permanent' : untilOrLastUpdate;
 
     var html = '';
-    html += '<div class="col-button1">';
+    html += '<div class="col-button1" data-setpoint="' + setpoint + '"  data-temp="' + temp + '" >';
     html += '	<div class="up">';
-    html += '		<a href="javascript:void(0)" class="btn btn-number plus" data-type="plus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
+	html += '		<a href="javascript:void(0)" class="btn btn-number plus" data-type="plus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
     html += '			<em class="fas fa-plus fa-small fa-thermostat"></em>';
     html += '		</a>';
-    html += '	</div>';
+	html += '	</div>';
     html += '	<div class="down">';
-    html += '		<a href="javascript:void(0)" class="btn btn-number min" data-type="minus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
+	html += '		<a href="javascript:void(0)" class="btn btn-number min"data-type="minus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
     html += '			<em class="fas fa-minus fa-small fa-thermostat"></em>';
     html += '		</a>';
-    html += '	</div>';
+	html += '	</div>';
     html += '</div>';
 
-    html += iconORimage(idx, '', 'heating.png', 'on icon iconheating', '', '2');
+    html += iconORimage(idx , '', 'heating.png', 'on icon iconheating', '', '2');
     html += '<div class="col-xs-8 col-data right1col">';
     html += '	<div class="title">' + value + '</div>';
-    html += '	<div>';
+	html += '	<div>';
     html += '		<span class="state input-number">' + title_temp + '&nbsp;</span>';
-    html += '		<span class="setpoint text-grey input-number" min="' + settings['setpoint_min'] + '" max="' + settings['setpoint_max'] + '" data-light="' + device['idx'] + '" data-status="' + status + '" data-setpoint="' + setpoint + '">&nbsp;<i class="' + fa_status + ' small_fa">&nbsp;</i>&nbsp;' + title_setp + '</span>';
-    html += '	</div>';
-    html += '	<span class="lastupdate">' + untilOrLastUpdate + '</span>';
+	html += '		<span class="setpoint text-grey input-number" min="' + settings['setpoint_min'] + '" max="' + settings['setpoint_max'] + '" data-light="' + device['idx'] + '" data-status="' + status + '" data-setpoint="' + setpoint + '">&nbsp;<i class="' + fa_status + ' small_fa">&nbsp;</i>&nbsp;' + title_setp +'</span>';
+	html += '	</div>';
+	html += '	<span class="lastupdate">'+ untilOrLastUpdate + '</span>';
     html += '</div>';
 
     $('div.block_' + idx).html(html);
@@ -173,26 +174,25 @@ function getEvohomeZoneBlock(device, idx) {
 
 function addEvohomeZoneFunctions(thermelement, idx) {
 
+    var clickTimeout;
+
     $(document).on("click", (thermelement + ' .btn-number'), function () {
 
-        sliding = idx;
-        var device=Domoticz.getAllDevices()[idx];
-        if (!device) {
-            console.error('Evohome device ' + idx + ' not found.');
-            return;
-        }
+        clearTimeout(clickTimeout);
+        sliding = true;
         var type = $(this).attr('data-type');
-        var currentVal = device.SetPoint
-        //var temp = device.Temp;
+        var currentVal = $(this).parents('.col-button1').data('setpoint');
         var input = $(thermelement + " .setpoint");
+        var valid = false;  
 
         if (!isNaN(currentVal)) {
 
             var newValue = (type === 'minus') ? currentVal - 0.5 : currentVal + 0.5;
 
             if (newValue >= input.attr('min') && newValue <= input.attr('max')) {
-                input.html('&nbsp;<i class="fas fa-stopwatch small_fa">&nbsp;</i>' + newValue + _TEMP_SYMBOL).trigger("change");
-                switchEvoZone(idx, newValue, true)
+                input.html('&nbsp;<i class="fas fa-stopwatch small_fa">&nbsp;</i>' + newValue + _TEMP_SYMBOL);
+                $(this).parents('.col-button1').data('setpoint', newValue);
+                valid = true;
             }
 
             if (newValue <= input.attr('min')) {
@@ -203,13 +203,20 @@ function addEvohomeZoneFunctions(thermelement, idx) {
                 $(this).attr('disabled', true);
             }
 
+            clickTimeout = setTimeout(function(){                
+                if(valid) {
+                    console.log(newValue + _TEMP_SYMBOL);
+                    switchEvoZone(idx, newValue, true);
+                    sliding = false;
+                }
+            }, 1000);
         } else {
             input.text(0);
         }
     });
 
     $(document).on("mouseenter", (thermelement + ' .btn-number'), function () {
-        sliding = idx;
+        sliding = true;
     });
 
     $(document).on("mouseleave", (thermelement + ' .btn-number'), function () {
