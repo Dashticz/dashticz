@@ -13,8 +13,6 @@
 /*global getThermostatBlock getEvohomeZoneBlock getEvohomeControllerBlock getEvohomeHotWaterBlock*/
 /*from switches.js*/
 /*global  getIconStatusClass getDefaultSwitchBlock getDimmerBlock getBlindsBlock */
-/*from graph.js*/
-/*global getMultiGraphs*/
 /*from custom.js*/
 /*global afterGetDevices*/
 /*unknown. probably a bug ...*/
@@ -676,13 +674,13 @@ function handleStringBlock(block, columndiv, c) {
             $(columndiv).append('<div data-id="fullscreen" class="col-xs-' + width + ' text-right">' + getFullScreenIcon() + '</div>');
             return;
         default:
-            if (block.substring(0, 6) === 'graph_') {
+            /* if (block.substring(0, 6) === 'graph_') {
                 $(columndiv).append('<div data-id="' + block + '" class="transbg block_' + block + '"></div>');
                 Domoticz.subscribe(block.slice(6), true, function (device) {
                     getGraphs(device, false);
                 });
                 return;
-            }
+            } */
             /*Todo: we could subscribe the multigraph here as well*/
             //debugger;
             /*4 situations:
@@ -1909,7 +1907,7 @@ function getAllDevicesHandler(value) {
     // MULTIGRAPH START                             #
     // ##############################################
     //todo: needs to be refactored. Now the multigraphs get updates after every device update
-    if ($("div[class*='block_multigraph_']").length > 0) {
+    /* if ($("div[class*='block_multigraph_']").length > 0) {
         //debugger;
 
         for (var b in blocks) {
@@ -1923,11 +1921,11 @@ function getAllDevicesHandler(value) {
                 var arrMgDev = [];
 
                 $.each(arrMgIdx, function (index, mgIdx) {
-                    /*                    var device = data.result.filter(function(obj){
-                                            return parseInt(obj.idx) === mgIdx
-                                        })
-                                        device[0].primaryIdx = mgId;
-                                        arrMgDev.push(device[0]);*/
+                                         // var device = data.result.filter(function(obj){
+                                            // return parseInt(obj.idx) === mgIdx
+                                        // })
+                                        // device[0].primaryIdx = mgId;
+                                        // arrMgDev.push(device[0]);
                     var device = $.extend({
                         primaryIdx: mgId
                     }, alldevices[mgIdx]);
@@ -1937,7 +1935,7 @@ function getAllDevicesHandler(value) {
                 getMultiGraphs(arrMgDev);
             }
         }
-    }
+    } */
     // ##############################################
     // MULTIGRAPH END                               #
     // ##############################################
