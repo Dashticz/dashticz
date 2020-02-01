@@ -1,7 +1,7 @@
 /* eslint-disable no-debugger */
 /*global blocktypes:writable, language, _TEMP_SYMBOL, getExtendedBlockTypes, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
 /*global getSpotify, loadNZBGET, getCoin, loadChromecast, loadGarbage, loadSonarr */
-/*global Dashticz, Domoticz, getLog, addCalendar, getGraphs, getNewsPlus */
+/*global Dashticz, Domoticz, getLog, addCalendar, getNewsPlus */
 /*global getRandomInt, moment, number_format */
 /*from bundle.js*/
 /*global ion*/
@@ -266,7 +266,7 @@ blocktypes = getExtendedBlockTypes(blocktypes);
 
 //var blocks = {};
 var alldevices = 'initial value';
-var sliding = false;
+//var sliding = false;
 
 var allblocks = {}; //todo: Can we get rid of this?
 var oldstates = [];
@@ -313,9 +313,6 @@ function getBlock(cols, c, screendiv, standby) {
 }
 
 function deviceUpdateHandler(selector, idx, device) {
-    if(sliding && (''+sliding) === (''+idx)) { //prevent device update while sliding. sliding contains the device idx of the device that is sliding.
-        return;
-    }
     var blockdef = (blocks && blocks[idx]) || undefined;
     if (blockdef && typeof blockdef['title'] !== 'undefined') {
         device['Name'] = blockdef['title'];
@@ -361,11 +358,8 @@ function deviceUpdateHandler(selector, idx, device) {
     //    if ($('div.block_graph_' + idx).length > 0) {
     //        getGraphs(device, false);
     //    }
-    var lastupdate = device['LastUpdate'];
-    if (lastupdate !== '1970-01-01') { //locally generated update is dated 1970-01-01. triggerStatus and triggerChange only will be called after a real update.
-        triggerStatus(idx, lastupdate, device);
-        triggerChange(idx, lastupdate, device);
-    }
+    triggerStatus(idx, device['LastUpdate'], device);
+    triggerChange(idx, device['LastUpdate'], device);
 
     try {
         html += eval('getBlock_' + idx + '(device,idx,data.result)');
@@ -1945,6 +1939,8 @@ function getAllDevicesHandler(value) {
 
 // eslint-disable-next-line no-unused-vars
 function getDevices(override) {
+    Domoticz.update();
+    /*
     if (typeof (override) == 'undefined') override = false;
     if (!sliding || override) {
 
@@ -1953,6 +1949,7 @@ function getDevices(override) {
             Domoticz.update();
         }
     }
+    */
 }
 
 function b64_to_utf8(str) {
