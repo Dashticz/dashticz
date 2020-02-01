@@ -1,4 +1,4 @@
-/* global alldevices showUpdateInformation triggerChange req:writable settings usrEnc pwdEnc getDevices language infoMessage iconORimage getBlockData blocks */
+/* global alldevices showUpdateInformation triggerChange settings usrEnc pwdEnc getDevices language infoMessage iconORimage getBlockData blocks */
 /* global moment Cookies hexToHsb*/
 /* from main.js */
 // eslint-disable-next-line no-unused-vars
@@ -115,10 +115,6 @@ function switchDevice(cur, pMode, pAskConfirm) {
             console.log("Incorrect mode in SwitchDevice for device " + idx)
             return;
     }
-    var device = Domoticz.getAllDevices()[idx];
-    device.Status = doStatus;
-    device.LastUpdate = '1970-01-01'; //indicates local device update...
-    Domoticz.setDevice(idx, device); //this setDevice will trigger local changes
     if (typeof (idx) === 'string' && idx.substr(0, 1) === 's') {
         idx = idx.replace('s', '');
         param = 'switchscene';
@@ -165,23 +161,6 @@ function toggleItem(cur, currentState) {
     return this.newState.charAt(0).toUpperCase() + this.newState.slice(1);
 }
 
-// eslint-disable-next-line no-unused-vars
-function switchThermostat(setpoint, cur) {
-    //    sliding = true;
-    var idx = $(cur).data('light');
-    sliding = idx;
-    if (typeof (req) !== 'undefined') req.abort();
-    req = $.ajax({
-        url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=setsetpoint&idx=' + idx + '&setpoint=' + setpoint + '&jsoncallback=?',
-        type: 'GET',
-        async: false,
-        contentType: 'application/json',
-        dataType: 'jsonp',
-        success: function () {
-            sliding = false;
-        }
-    });
-}
 
 // eslint-disable-next-line no-unused-vars
 function switchBlinds(idx, action) {
@@ -196,7 +175,7 @@ function switchBlinds(idx, action) {
             if (src) src.replace('closed', 'open');
             break;
     }
-
+/*
     if (typeof (req) !== 'undefined') req.abort();
     $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=switchlight&idx=' + idx + '&switchcmd=' + action + '&level=0&passcode=&jsoncallback=?',
@@ -207,27 +186,11 @@ function switchBlinds(idx, action) {
         success: function () {
             getDevices(true);
         }
-    });
-}
-
-// eslint-disable-next-line no-unused-vars
-function switchDeviceBtn(cur, url) {
-    if (url !== "") {
-        sliding = true;
-        if (typeof (req) !== 'undefined') req.abort();
-
-        var decUrl = decodeURIComponent(url);
-        $.ajax({
-            url: decUrl + '&jsoncallback=?',
-            type: 'GET',
-            async: false,
-            contentType: 'application/json',
-            dataType: 'jsonp',
-            done: function () {
-                getDevices(true);
-            }
-        });
-    }
+    });*/
+    Domoticz.request('type=command&param=switchlight&idx=' + idx + '&switchcmd=' + action + '&level=0')
+    .then(function() {
+        getDevices(true)
+    })
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -235,7 +198,7 @@ function switchScene(cur) {
     var idx = $(cur).data('light');
     var doStatus = 'On'; // toggleItem(cur, $(cur).find('img.icon').hasClass('on') ? 'on' : 'off');
     triggerChange(idx, doStatus, alldevices[idx]);
-    if (typeof (req) !== 'undefined') req.abort();
+/*    if (typeof (req) !== 'undefined') req.abort();
     $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=switchscene&idx=' + idx.replace('s', '') + '&switchcmd=' + doStatus + '&level=0&passcode=&jsoncallback=?',
         type: 'GET',
@@ -246,11 +209,16 @@ function switchScene(cur) {
             getDevices(true);
         }
     });
+    */
+    Domoticz.request('type=command&param=switchscene&idx=' + idx.replace('s', '') + '&switchcmd=' + doStatus + '&level=0')
+    .then(function() {
+        getDevices(true);
+    })
 }
 
 // eslint-disable-next-line no-unused-vars
 function slideDevice(idx, status) {
-    if (typeof (slide) !== 'undefined') slide.abort();
+//    if (typeof (slide) !== 'undefined') slide.abort();
 
     $('.block_' + idx).find('.icon').removeClass('off');
     $('.block_' + idx).find('.icon').addClass('on');
@@ -260,7 +228,7 @@ function slideDevice(idx, status) {
     }
 
     $('.block_' + idx).find('.state').html(language.switches.state_on);
-
+/*
     slide = $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=switchlight&idx=' + idx + '&switchcmd=Set%20Level&level=' + status + '&jsoncallback=?',
         type: 'GET',
@@ -271,6 +239,11 @@ function slideDevice(idx, status) {
             getDevices(true);
         }
     });
+    */
+   Domoticz.request('type=command&param=switchlight&idx=' + idx + '&switchcmd=Set%20Level&level=' + status)
+   .then(function() {
+       getDevices(true);
+   });
 }
 
 
@@ -290,7 +263,7 @@ var sliderAction = {
 }
 
 function sliderSetValue(p_idx, p_value, p_Callback) {
-    return $.ajax({
+/*    return $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=switchlight&idx=' + p_idx + '&switchcmd=Set%20Level&level=' + p_value + '&jsoncallback=?',
         type: 'GET',
         async: true,
@@ -299,7 +272,11 @@ function sliderSetValue(p_idx, p_value, p_Callback) {
         success: function () {
             p_Callback();
         }
-    });
+    });*/
+    Domoticz.request('type=command&param=switchlight&idx=' + p_idx + '&switchcmd=Set%20Level&level=' + p_value)
+    .then(function() {
+        p_Callback();
+    })
 }
 
 function sliderCallback() {
@@ -409,7 +386,8 @@ function getDimmerBlock(device, idx, buttonimg) {
 
     $('div.block_' + idx).html(html);
     var dimmerClickHandler = function () {
-        if (!sliding) switchDevice('.block_' + idx, 'toggle', false)
+//        if (!sliding) switchDevice('.block_' + idx, 'toggle', false)
+        switchDevice('.block_' + idx, 'toggle', false)
     }
 
     $('div.block_' + idx).off('click');
@@ -431,7 +409,8 @@ function getDimmerBlock(device, idx, buttonimg) {
             var hue = hexToHsb(color);
             var bIsWhite = (hue.s < 20);
 
-            sliding = idx;
+            //sliding = idx;
+            Domoticz.hold(idx); //hold message queue
 
             var usrinfo = '';
             if (typeof (usrEnc) !== 'undefined' && usrEnc !== '') usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
@@ -447,12 +426,15 @@ function getDimmerBlock(device, idx, buttonimg) {
         });
 
         $('.rgbw' + idx).on('hide.spectrum', function () {
-            sliding = false;
+            //sliding = false;
+            Domoticz.release(idx); //release message queue
+
             getDevices(true);
         });
 
         $('.rgbw' + idx).on('beforeShow.spectrum', function () {
-            sliding = idx;
+            Domoticz.hold(idx); //hold message queue
+            //sliding = idx;
         });
     }
 
@@ -586,7 +568,8 @@ function addSlider(idx, sliderValues) {
         max: sliderValues.max,
         disabled: sliderValues.disabled,
         start: function () {
-            sliding = idx;
+            Domoticz.hold(idx); //hold message queue
+            //sliding = idx;
             //            slideDeviceExt($(this).data('light'), ui.value, 0);
         },
         //        slide: function (event, ui) {
@@ -598,7 +581,9 @@ function addSlider(idx, sliderValues) {
         },
         stop: function () {
             //stop is called before change
-            sliding = false;
+            //sliding = false;
+            Domoticz.release(idx); //release message queue
+
         }
     });
     $(".slider" + idx).on('click', function (ev) {

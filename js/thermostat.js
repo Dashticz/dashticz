@@ -1,9 +1,7 @@
 // eslint-disable-next-line no-unused-vars
-/* global sliding:writable switchThermostat number_format _TEMP_SYMBOL */
+/* global sliding:writable number_format _TEMP_SYMBOL */
 /* from bundle.js */
 /* global moment */
-/* from main.js */
-/* global usrEnc pwdEnc */
 /* from settings.js */
 /* global settings */
 /* from blocks.js */
@@ -14,7 +12,7 @@
 // eslint-disable-next-line no-unused-vars
 function addThermostatFunctions(thermelement) {
     $(document).on("click", (thermelement + ' .btn-number'), function () {
-        sliding = true;
+        //sliding = true;  //not needed here I guess, since update is blocked in switchThermostat function  (called below)
 //        var fieldName = $(this).attr('data-field');
         var type = $(this).attr('data-type');
         var input = $(thermelement + " strong");
@@ -121,6 +119,27 @@ function getThermostatBlock(device, idx) {
     return [this.html, false];
 }
 
+function switchThermostat(setpoint, cur) {
+    //    sliding = true;
+    var idx = $(cur).data('light');
+/*
+    sliding = idx;
+    if (typeof (req) !== 'undefined') req.abort();
+    req = $.ajax({
+        url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=setsetpoint&idx=' + idx + '&setpoint=' + setpoint + '&jsoncallback=?',
+        type: 'GET',
+        async: false,
+        contentType: 'application/json',
+        dataType: 'jsonp',
+        success: function () {
+//            sliding = false;
+            Domoticz.release(idx); //release message queue
+        }
+    });*/
+    Domoticz.syncRequest(idx, 'type=command&param=setsetpoint&idx=' + idx + '&setpoint=' + setpoint)
+}
+
+
 function getEvohomeZoneBlock(device, idx) {
     var temp = device.Temp;
     var setpoint = device.SetPoint;
@@ -179,7 +198,8 @@ function addEvohomeZoneFunctions(thermelement, idx) {
     $(document).on("click", (thermelement + ' .btn-number'), function () {
 
         clearTimeout(clickTimeout);
-        sliding = true;
+        Domoticz.hold(idx); //hold message queue
+        //sliding = true;
         var type = $(this).attr('data-type');
         var currentVal = $(this).parents('.col-button1').data('setpoint');
         var input = $(thermelement + " .setpoint");
@@ -207,7 +227,8 @@ function addEvohomeZoneFunctions(thermelement, idx) {
                 if(valid) {
                     console.log(newValue + _TEMP_SYMBOL);
                     switchEvoZone(idx, newValue, true);
-                    sliding = false;
+                    // sliding = false;
+                    Domoticz.release(idx); //release message queue
                 }
             }, 1000);
         } else {
@@ -216,11 +237,13 @@ function addEvohomeZoneFunctions(thermelement, idx) {
     });
 
     $(document).on("mouseenter", (thermelement + ' .btn-number'), function () {
-        sliding = true;
+        Domoticz.hold(idx); //hold message queue
+        //sliding = true;
     });
 
     $(document).on("mouseleave", (thermelement + ' .btn-number'), function () {
-        sliding = false;
+        //sliding = false;
+        Domoticz.release(idx); //release message queue
     });
 
     $(thermelement + ' .input-number').on('focusin', function () {
@@ -253,20 +276,29 @@ function addEvohomeZoneFunctions(thermelement, idx) {
 function switchEvoZone(idx, setpoint, override) {
 
     var mode = override ? '&mode=TemporaryOverride&until=' + moment().add(settings['evohome_boost_zone'], 'minutes').toISOString() : '&mode=Auto';
-
-    sliding = idx;
+/*
+    //sliding = idx;
+    Domoticz.hold(idx); //hold message queue
     $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=setused&idx=' + idx + '&setpoint=' + setpoint + mode + '&used=true&jsoncallback=?',
         type: 'GET',
         contentType: 'application/json',
         dataType: 'jsonp',
         success: function () {
-            sliding = false;
+            //sliding = false;
+            Domoticz.release(idx); //release message queue
             var device = Domoticz.getAllDevices()[idx];
             device.SetPoint = setpoint;
             getEvohomeZoneBlock(device, idx);
         }
     });
+    */
+    Domoticz.syncRequest(idx, 'type=setused&idx=' + idx + '&setpoint=' + setpoint + mode + '&used=true' )
+    .then(function(){
+        var device = Domoticz.getAllDevices()[idx];
+        device.SetPoint = setpoint;
+        getEvohomeZoneBlock(device, idx);
+    })
 }
 
 function getEvohomeControllerBlock(device, idx) {
@@ -320,7 +352,8 @@ function getEvohomeControllerBlock(device, idx) {
         );
     });
     $('.block_' + idx + ' .evoSelect').blur(function () {
-        sliding = false;
+        //sliding = false;
+        Domoticz.release(idx); //release message queue
         $('.block_' + idx + ' title').toggleClass('hide');
         $('.evoSelect').toggleClass('hide');
     });
@@ -342,7 +375,8 @@ function getEvohomeControllerBlock(device, idx) {
 
 function addEvohomeControllerFunctions(thermelement, idx) {
     $(document).on("click", (thermelement + ' .btn-number'), function () {
-        sliding = idx;
+        Domoticz.hold(idx); //hold message queue
+        //sliding = idx;
         $('.evoSelect').toggleClass('hide');
         $(thermelement + ' .input-status').toggleClass('hide');
     });
@@ -363,8 +397,9 @@ function addEvohomeControllerFunctions(thermelement, idx) {
 }
 
 function changeEvohomeControllerStatus(idx, status) {
-
-    sliding = idx;
+/*
+    Domoticz.hold(idx); //hold message queue
+    //sliding = idx;
 
     $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=switchmodal&idx=' + idx + '&status=' + status + '&action=1&used=true&jsoncallback=?',
@@ -372,12 +407,20 @@ function changeEvohomeControllerStatus(idx, status) {
         contentType: 'application/json',
         dataType: 'jsonp',
         success: function () {
-            sliding = false;
+            //sliding = false;
+            Domoticz.release(idx); //release message queue
             var device = Domoticz.getAllDevices()[idx];
             device.Status = status;
             getEvohomeControllerBlock(device, idx);
         }
     });
+*/
+    Domoticz.syncRequest(idx, 'type=command&param=switchmodal&idx=' + idx + '&status=' + status + '&action=1&used=true')
+    .then(function() {
+        var device = Domoticz.getAllDevices()[idx];
+        device.Status = status;
+        getEvohomeControllerBlock(device, idx);
+    })
 }
 
 function getEvohomeHotWaterBlock(device, idx) {
@@ -418,7 +461,8 @@ function getEvohomeHotWaterBlock(device, idx) {
 
     if (typeof (addedThermostat[idx]) === 'undefined') {
         $(document).on("click", ('.block_' + idx + ' .btn-number'), function () {
-            sliding = idx;
+            //sliding = idx;
+            Domoticz.hold(idx); //hold message queue
             state = (state == 'Off') ? 'On' : 'Off';
             switchEvoHotWater(idx, state, state == 'On');
         });
@@ -430,7 +474,8 @@ function getEvohomeHotWaterBlock(device, idx) {
 function switchEvoHotWater(idx, state, override) {
 
     var mode = override ? '&mode=TemporaryOverride&until=' + moment().add(settings['evohome_boost_hw'], 'minutes').toISOString() : '&mode=Auto';
-    sliding = idx;
+/*    Domoticz.hold(idx); //hold message queue
+    //sliding = idx;
 
     $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=setused&idx=' + idx + '&setpoint=60&state=' + state + mode + '&used=true&jsoncallback=?',
@@ -438,8 +483,13 @@ function switchEvoHotWater(idx, state, override) {
         contentType: 'application/json',
         dataType: 'jsonp',
         success: function () {
-            sliding = false;
+            Domoticz.release(idx); //release message queue
+            //sliding = false;
             getEvohomeHotWaterBlock(Domoticz.getAllDevices()[idx], idx);
         }
-    });
+    });*/
+    Domoticz.syncRequest(idx, 'type=setused&idx=' + idx + '&setpoint=60&state=' + state + mode + '&used=true')
+    .then(function() {
+        getEvohomeHotWaterBlock(Domoticz.getAllDevices()[idx], idx); //needed? The device will not have been updated yet...
+    })
 }
