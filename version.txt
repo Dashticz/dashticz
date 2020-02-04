@@ -1,8 +1,9 @@
 {
-"version": "3.3.3",
+"version": "3.3.3.1",
 "branch": "master",
-"last_changes": "New calendar module to fix recurring events.",
+"last_changes": "Reenabled PHP 5 calendar module. Fix for garbage uden.",
 "changelog" : {
+        	"3.3.3": "New calendar module to fix recurring events.",
             "3.3.2": "Master version",
             "3.3.1": "Garbage fixes for TwenteMilieu, Barendrecht. RGBWWZ device support.",
             "3.3.0": "Evohome support.",
