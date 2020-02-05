@@ -1056,40 +1056,38 @@ function createButtons(graph, ranges, customRange) {
   ];
   var style = 'style="';
 
-  if (!graph.popup) {
-    btn.icon = graph.block.buttonsIcon;
-    btn.text = graph.block.buttonsText;
-    btn.size = "font-size:" + graph.block.buttonsSize + "px!important;";
-    btn.color = "color:" + graph.block.buttonsColor + ";";
-    btn.fill = "background-color:" + graph.block.buttonsFill + ";";
-    btn.border = "border-color:" + graph.block.buttonsBorder + ";";
-    btn.radius = "border-radius:" + graph.block.buttonsRadius + "px;";
-    btn.padX =
-      "padding-left:" +
-      graph.block.buttonsPadX +
-      "px;padding-right:" +
-      graph.block.buttonsPadX +
-      "px;";
-    btn.padY =
-      "padding-top:" +
-      graph.block.buttonsPadY +
-      "px;padding-bottom:" +
-      graph.block.buttonsPadY +
-      "px;";
-    btn.marginX =
-      "margin-left:" +
-      graph.block.buttonsMarginX +
-      "px;margin-right:" +
-      graph.block.buttonsMarginX +
-      "px;";
-    btn.marginY =
-      "margin-top:" +
-      graph.block.buttonsMarginY +
-      "px;margin-bottom:" +
-      graph.block.buttonsMarginY +
-      "px;";
-    btn.shadow = "box-shadow: 0px 8px 15px " + graph.block.buttonsShadow + ";";
-  }
+  btn.icon = graph.block.buttonsIcon;
+  btn.text = graph.block.buttonsText;
+  btn.size = "font-size:" + graph.block.buttonsSize + "px!important;";
+  btn.color = "color:" + graph.block.buttonsColor + ";";
+  btn.fill = "background-color:" + graph.block.buttonsFill + ";";
+  btn.border = "border-color:" + graph.block.buttonsBorder + ";";
+  btn.radius = "border-radius:" + graph.block.buttonsRadius + "px;";
+  btn.padX =
+    "padding-left:" +
+    graph.block.buttonsPadX +
+    "px;padding-right:" +
+    graph.block.buttonsPadX +
+    "px;";
+  btn.padY =
+    "padding-top:" +
+    graph.block.buttonsPadY +
+    "px;padding-bottom:" +
+    graph.block.buttonsPadY +
+    "px;";
+  btn.marginX =
+    "margin-left:" +
+    graph.block.buttonsMarginX +
+    "px;margin-right:" +
+    graph.block.buttonsMarginX +
+    "px;";
+  btn.marginY =
+    "margin-top:" +
+    graph.block.buttonsMarginY +
+    "px;margin-bottom:" +
+    graph.block.buttonsMarginY +
+    "px;";
+  btn.shadow = "box-shadow: 0px 8px 15px " + graph.block.buttonsShadow + ";";
 
   $.each(
     [
