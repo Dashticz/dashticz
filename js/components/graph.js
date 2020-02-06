@@ -59,7 +59,7 @@ function getBlockConfig(me) {
     obj.block = getBlockDefaults(devices, hasBlock, me.block);
 
     var device = $.extend(obj, allDevices[idx]);
-    device.Name = obj.multigraph ? device.block.title : device.Name;
+    device.Name = obj.multigraph ? (device.block.title? device.block.title:device.blockId) : device.Name;  //block.title may be undefined
     device.idx = parseInt(device.idx);
     graphDevices.push(device);
   });
@@ -461,68 +461,70 @@ function getGraphData(devices, selGraph) {
               var currentKey = "";
               var counter = z + 1;
 
-              if (graph.hasBlock && graph.block.graphTypes) {
-                for (var key in d.result[0]) {
-                  if (
-                    $.inArray(key, graph.block.graphTypes) !== -1 &&
-                    key !== "d"
-                  ) {
-                    arrYkeys.push(key);
+              if(d.result && d.result.length>0) { //result may be empty
+                if (graph.hasBlock && graph.block.graphTypes) {
+                  for (var key in d.result[0]) {
+                    if (
+                      $.inArray(key, graph.block.graphTypes) !== -1 &&
+                      key !== "d"
+                    ) {
+                      arrYkeys.push(key);
+                    }
+                  }
+                } else {
+                  for (var key in d.result[0]) {
+                    if (key !== "d") {
+                      arrYkeys.push(key);
+                    }
                   }
                 }
-              } else {
-                for (var key in d.result[0]) {
-                  if (key !== "d") {
-                    arrYkeys.push(key);
-                  }
-                }
-              }
 
-              $.each(d.result, function(x, res) {
-                var valid = false;
-                var interval = 1;
-                if (graph.hasBlock)
-                  interval =
-                    graph.range === "last" || graph.range === "month"
-                      ? 1
-                      : graph.block.interval;
+                $.each(d.result, function(x, res) {
+                  var valid = false;
+                  var interval = 1;
+                  if (graph.hasBlock)
+                    interval =
+                      graph.range === "last" || graph.range === "month"
+                        ? 1
+                        : graph.block.interval;
 
-                if (x % interval === 0) {
-                  if (z == 0) {
-                    var obj = {};
-                    for (var key in res) {
-                      if (key === "d") {
-                        obj["d"] = res[key];
+                  if (x % interval === 0) {
+                    if (z == 0) {
+                      var obj = {};
+                      for (var key in res) {
+                        if (key === "d") {
+                          obj["d"] = res[key];
+                        }
+                        if ($.inArray(key, arrYkeys) !== -1) {
+                          currentKey = key + counter;
+                          obj[currentKey] = res[key];
+                          valid = true;
+                          if ($.inArray(currentKey, newKeys) === -1) {
+                            newKeys.push(currentKey);
+                          }
+                        }
                       }
-                      if ($.inArray(key, arrYkeys) !== -1) {
-                        currentKey = key + counter;
-                        obj[currentKey] = res[key];
-                        valid = true;
-                        if ($.inArray(currentKey, newKeys) === -1) {
-                          newKeys.push(currentKey);
+                      if (valid) multidata.result.push(obj);
+                    } else {
+                      for (var key in res) {
+                        if (key !== "d" && $.inArray(key, arrYkeys) !== -1) {
+                          $.each(multidata.result, function(index, obj) {
+                            $.each(obj, function(k, v) {
+                              if (k === "d" && v === res["d"]) {
+                                currentKey = key + counter;
+                                multidata.result[index][currentKey] = res[key];
+                                if ($.inArray(currentKey, newKeys) === -1) {
+                                  newKeys.push(currentKey);
+                                }
+                              }
+                            });
+                          });
                         }
                       }
                     }
-                    if (valid) multidata.result.push(obj);
-                  } else {
-                    for (var key in res) {
-                      if (key !== "d" && $.inArray(key, arrYkeys) !== -1) {
-                        $.each(multidata.result, function(index, obj) {
-                          $.each(obj, function(k, v) {
-                            if (k === "d" && v === res["d"]) {
-                              currentKey = key + counter;
-                              multidata.result[index][currentKey] = res[key];
-                              if ($.inArray(currentKey, newKeys) === -1) {
-                                newKeys.push(currentKey);
-                              }
-                            }
-                          });
-                        });
-                      }
-                    }
                   }
-                }
-              });
+                });
+              }
               if (arrResults.length === counter) {
                 $.each(multidata.result, function(index, obj) {
                   $.each(obj, function(k, v) {
@@ -1316,3 +1318,5 @@ function getYlabels(g) {
   });
   return l;
 }
+
+//# sourceURL=js/components/graph.js
