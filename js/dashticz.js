@@ -52,11 +52,15 @@ var Dashticz = function () {
             dataType: 'script'
         })
         .then(function() {
-            return Domoticz.init({url: settings['domoticz_ip'],
-                                plan: settings['room_plan'],
-                                usrEnc: usrEnc,
-                                pwdEnc: pwdEnc
-                            });
+            var cfg = {
+                url: settings['domoticz_ip'],
+                plan: settings['room_plan'],
+                usrEnc: usrEnc,
+                pwdEnc: pwdEnc,
+                disable_websocket: settings['disable_websocket'],
+                domoticz_refresh: settings['domoticz_refresh']
+            }
+            return Domoticz.init(cfg);
         })
     }
 
@@ -71,7 +75,6 @@ var Dashticz = function () {
 
     function _mountSpecialBlock(mountPoint, blockdef, special, key) {
         if (!special.initPromise) special.initPromise = special.init ? $.when(special.init(blockdef)) : $.when();
-        if (!special.initPromise) debugger;
         special.initPromise.done(function () {
             var me = getDefaultBlockConfig(mountPoint, blockdef, special, key);
             $(mountPoint).append(getSpecialBlock(me));
@@ -274,3 +277,4 @@ function checkForceRefresh(m_instance, url) {
     return url;
 }
 
+//# sourceURL=js/dashticz.js
