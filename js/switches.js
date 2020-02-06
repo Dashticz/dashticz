@@ -6,18 +6,17 @@
 /* from domoticz-api.js*/
 /* global Domoticz*/
 
+/** Returns a default switch block
+ * 
+ * @param {object} device - The domoticz device info
+ * @param {object} block - The Dashticz block definition
+ * @param {number | string} idx idx as used by Dashticz. Scenes start with 's'. Variables with 'v'
+ * @param {string}   defaultIconOn Default On icon
+ * @param {string}   defaultIconOff Default Off icon
+ * @param {string}   buttonimg Default image. 
+ */
 // eslint-disable-next-line no-unused-vars
 function getDefaultSwitchBlock(device, block, idx, defaultIconOn, defaultIconOff, buttonimg) {
-    /*
-    Return a default switch block
-    parameters:
-        device: The domoticz device info
-        block: The Dashticz block definition
-        idx: idx as used by Dashticz
-        defaultIconOn: Default On icon
-        defaultIconOff: Default Off icon
-        buttonimg: Default image. 
-    */
     var html = '';
     if (!isProtected(device, idx)) {
         var confirmswitch = 0;
@@ -120,24 +119,10 @@ function switchDevice(cur, pMode, pAskConfirm) {
         param = 'switchscene';
     }
 
-/*
-    $.ajax({
-        url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=' + param + '&idx=' + idx + '&switchcmd=' + doStatus + '&level=0&passcode=&jsoncallback=?',
-        type: 'GET',
-        contentType: 'application/json',
-        dataType: 'jsonp',
-        success: function () {
-            getDevices(true);
-        },
-        error: function () {
-            console.error('Error in switch device.')
-        }
-    });
-    */
     Domoticz.request('type=command&param=' + param + '&idx=' + idx + '&switchcmd=' + doStatus + '&level=0')
-    .then(function() {
-        getDevices(true);
-    })
+        .then(function () {
+            getDevices(true);
+        })
 
 }
 
@@ -175,22 +160,11 @@ function switchBlinds(idx, action) {
             if (src) src.replace('closed', 'open');
             break;
     }
-/*
-    if (typeof (req) !== 'undefined') req.abort();
-    $.ajax({
-        url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=switchlight&idx=' + idx + '&switchcmd=' + action + '&level=0&passcode=&jsoncallback=?',
-        type: 'GET',
-        async: false,
-        contentType: 'application/json',
-        dataType: 'jsonp',
-        success: function () {
-            getDevices(true);
-        }
-    });*/
+
     Domoticz.request('type=command&param=switchlight&idx=' + idx + '&switchcmd=' + action + '&level=0')
-    .then(function() {
-        getDevices(true)
-    })
+        .then(function () {
+            getDevices(true)
+        })
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -198,27 +172,15 @@ function switchScene(cur) {
     var idx = $(cur).data('light');
     var doStatus = 'On'; // toggleItem(cur, $(cur).find('img.icon').hasClass('on') ? 'on' : 'off');
     triggerChange(idx, doStatus, alldevices[idx]);
-/*    if (typeof (req) !== 'undefined') req.abort();
-    $.ajax({
-        url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=switchscene&idx=' + idx.replace('s', '') + '&switchcmd=' + doStatus + '&level=0&passcode=&jsoncallback=?',
-        type: 'GET',
-        async: false,
-        contentType: 'application/json',
-        dataType: 'jsonp',
-        success: function () {
-            getDevices(true);
-        }
-    });
-    */
     Domoticz.request('type=command&param=switchscene&idx=' + idx.replace('s', '') + '&switchcmd=' + doStatus + '&level=0')
-    .then(function() {
-        getDevices(true);
-    })
+        .then(function () {
+            getDevices(true);
+        })
 }
 
 // eslint-disable-next-line no-unused-vars
 function slideDevice(idx, status) {
-//    if (typeof (slide) !== 'undefined') slide.abort();
+    //    if (typeof (slide) !== 'undefined') slide.abort();
 
     $('.block_' + idx).find('.icon').removeClass('off');
     $('.block_' + idx).find('.icon').addClass('on');
@@ -228,22 +190,11 @@ function slideDevice(idx, status) {
     }
 
     $('.block_' + idx).find('.state').html(language.switches.state_on);
-/*
-    slide = $.ajax({
-        url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=switchlight&idx=' + idx + '&switchcmd=Set%20Level&level=' + status + '&jsoncallback=?',
-        type: 'GET',
-        async: false,
-        contentType: 'application/json',
-        dataType: 'jsonp',
-        success: function () {
+
+    Domoticz.request('type=command&param=switchlight&idx=' + idx + '&switchcmd=Set%20Level&level=' + status)
+        .then(function () {
             getDevices(true);
-        }
-    });
-    */
-   Domoticz.request('type=command&param=switchlight&idx=' + idx + '&switchcmd=Set%20Level&level=' + status)
-   .then(function() {
-       getDevices(true);
-   });
+        });
 }
 
 
@@ -263,20 +214,10 @@ var sliderAction = {
 }
 
 function sliderSetValue(p_idx, p_value, p_Callback) {
-/*    return $.ajax({
-        url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=switchlight&idx=' + p_idx + '&switchcmd=Set%20Level&level=' + p_value + '&jsoncallback=?',
-        type: 'GET',
-        async: true,
-        contentType: 'application/json',
-        dataType: 'jsonp',
-        success: function () {
-            p_Callback();
-        }
-    });*/
     Domoticz.request('type=command&param=switchlight&idx=' + p_idx + '&switchcmd=Set%20Level&level=' + p_value)
-    .then(function() {
-        p_Callback();
-    })
+        .then(function () {
+            p_Callback();
+        })
 }
 
 function sliderCallback() {
@@ -320,6 +261,7 @@ function ziggoRemote(key) {
 
 // eslint-disable-next-line no-unused-vars
 function controlLogitech(idx, action) {
+    /*
     $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=lmsmediacommand&idx=' + idx + '&action=' + action + '&jsoncallback=?',
         type: 'GET',
@@ -329,14 +271,18 @@ function controlLogitech(idx, action) {
         success: function () {
             getDevices(true);
         }
-    });
+    });*/
+    Domoticz.request('type=command&param=lmsmediacommand&idx=' + idx + '&action=' + action)
+    .then(function() {
+        getDevices(true);
+    })
 }
 var statusmsg = '';
 // eslint-disable-next-line no-unused-vars
 function switchSecurity(level, pincode) {
 
     pincode = $.md5(pincode)
-    $.ajax({
+/*    $.ajax({
         url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=setsecstatus&secstatus=' + level + '&seccode=' + pincode + '&jsoncallback=?',
         type: 'GET',
         async: true,
@@ -350,7 +296,16 @@ function switchSecurity(level, pincode) {
             }
             getDevices(true);
         }
-    });
+    });*/
+    Domoticz.request('type=command&param=setsecstatus&secstatus=' + level + '&seccode=' + pincode)
+    .then(function(data) {
+        if (data.status != "OK") {
+            statusmsg = data.message;
+            if (statusmsg == 'WRONG CODE') statusmsg = language.misc.wrong_code;
+            infoMessage('<font color="red">Alert!</font>', statusmsg, 10000);
+        }
+        getDevices(true);    
+    })
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -386,7 +341,7 @@ function getDimmerBlock(device, idx, buttonimg) {
 
     $('div.block_' + idx).html(html);
     var dimmerClickHandler = function () {
-//        if (!sliding) switchDevice('.block_' + idx, 'toggle', false)
+        //        if (!sliding) switchDevice('.block_' + idx, 'toggle', false)
         switchDevice('.block_' + idx, 'toggle', false)
     }
 
@@ -416,10 +371,12 @@ function getDimmerBlock(device, idx, buttonimg) {
             if (typeof (usrEnc) !== 'undefined' && usrEnc !== '') usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
 
             var url = settings['domoticz_ip'] + '/json.htm?' + usrinfo + 'type=command&param=setcolbrightnessvalue&idx=' + curidx + '&hue=' + hue.h + '&brightness=' + hue.b + '&iswhite=' + bIsWhite;
+            //This is a synchronous request. So it cannot directly be replaced with Domoticz.request
+            // Probably we would need a rate limiter on Domoticz.request
             $.ajax({
                 url: url + '&jsoncallback=?',
                 type: 'GET',
-                async: false,
+                async: false,   
                 contentType: "application/json",
                 dataType: 'jsonp'
             });
@@ -598,3 +555,5 @@ function isRGBDeviceAndEnabled(device) {
                 parseFloat(settings['no_rgb']) === 0)) &&
         (device['SubType'] === 'RGBW' || device['SubType'] === 'RGBWW' || device['SubType'] === 'RGB' || device['SubType'] === 'RGBWWZ');
 }
+
+//# sourceURL=js/switches.js
