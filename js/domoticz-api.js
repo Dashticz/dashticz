@@ -24,49 +24,73 @@ var Domoticz = function () {
         return usrinfo + query + (cfg.plan ? '&plan=' + cfg.plan : '')
     }
 
-    function domoticzRequest(query) {
-        var newPromise;
-        if (useWS) {
-            //            console.log('request id '+requestid + ' ' + query);
+    var requestQueue = [];
+    var lastRequest = $.when();
 
-            newPromise = $.Deferred();
-            callbackList[requestid] = newPromise;
-            var msg = {
-                event: 'request',
-                requestid: requestid,
-                query: domoticzQuery(query)
-            }
-            requestid = (requestid + 1) % 1000;
-            socket.send(JSON.stringify(msg));
-        }
-        else newPromise = $.get({
-            url: cfg.url + 'json.htm?' + domoticzQuery(query),
-            type: 'GET',
-            async: true,
-            contentType: "application/json",
-            error: function (jqXHR, textStatus) {
-                if (typeof (textStatus) !== 'undefined' && textStatus === 'abort') {
-                    console.log('Domoticz request cancelled')
-                } else {
-                    console.error("Domoticz error code: " + jqXHR.status + ' ' + textStatus + "!\nPlease, double check the path to Domoticz in Settings!");
-                    throw new Error('Domoticz error code: ' + jqXHR.status + '! Double check the path to Domoticz in Settings!');
-                }
-            }
-        });
-        
-        return newPromise;
+    /** Start async Domoticz request.
+     * The domoticz request will only start after finishing the previous one.
+     * No timeout handling yet ...
+     * @function
+     * @param {string} query - The domoticz request 
+     * @return {Promise} The JQuery promise of the Domoticz request
+     */
+    function domoticzRequest(query) {
+        requestQueue.push(query);
+
+
+        lastRequest = lastRequest
+            .then(function newRequest() {
+                query = requestQueue.shift();
+                //console.log('query: ', query)
+                var newPromise;
+                if (useWS) {
+                    //            console.log('request id '+requestid + ' ' + query);
+
+                    newPromise = $.Deferred();
+                    callbackList[requestid] = newPromise;
+                    var msg = {
+                        event: 'request',
+                        requestid: requestid,
+                        query: domoticzQuery(query)
+                    }
+                    requestid = (requestid + 1) % 1000;
+                    socket.send(JSON.stringify(msg));
+                } else newPromise = $.get({
+                    url: cfg.url + 'json.htm?' + domoticzQuery(query),
+                    type: 'GET',
+                    async: true,
+                    contentType: "application/json",
+                    error: function (jqXHR, textStatus) {
+                        if (typeof (textStatus) !== 'undefined' && textStatus === 'abort') {
+                            console.log('Domoticz request cancelled')
+                        } else {
+                            console.error("Domoticz error code: " + jqXHR.status + ' ' + textStatus + "!\nPlease, double check the path to Domoticz in Settings!");
+                            throw new Error('Domoticz error code: ' + jqXHR.status + '! Double check the path to Domoticz in Settings!');
+                        }
+                    }
+                });
+                return newPromise;
+            })
+        /*        .then(function requestDone(res) {
+                    console.log('request done')
+                    if (requestQueue.length) {
+                        console.log('queued request should start')
+                    } else
+                        console.log('request queue empty')
+                    return res;
+                })*/
+        return lastRequest;
     }
 
     function checkWSSupport() {
         return domoticzRequest(MSG.info)
             .then(function (res) {
-                if (parseFloat(res.version) > 4.11) {
+                if (parseFloat(res.version) > 4.11 && !cfg.disable_websocket) {
                     useWS = true;
                     console.log("Switching to websocket");
                     connectWebsocket();
-                }
-                else {
-                    setInterval(_requestAllDevices, 5000);
+                } else {
+                    setInterval(_requestAllDevices, cfg.domoticz_refresh * 1000);
                 }
             })
     }
@@ -82,7 +106,7 @@ var Domoticz = function () {
             if (cfg.usrEnc) usrinfo = 'username=' + cfg.usrEnc + '&password=' + cfg.pwdEnc + '&';
             initPromise = checkWSSupport()
                 .then(function () {
-                    setInterval(_requestAllVariables, 5000)
+                    setInterval(_requestAllVariables, cfg.domoticz_refresh * 1000)
                     return _update().then(_requestAllVariables)
                 });
         }
@@ -158,6 +182,10 @@ var Domoticz = function () {
                 }
 
             }
+            //cleanup pending requests
+            requestQueue = [];
+            if (lastRequest && lastRequest.state && lastRequest.state === 'pending')
+                lastRequest.reject()
         };
 
         socket.onerror = function (error) {
@@ -180,7 +208,6 @@ var Domoticz = function () {
     }
 
     function _requestAllDevices() {
-        //        console.log('updateAllDevices ' + path);
         return domoticzRequest('type=devices&filter=all&used=true&order=Name&lastupdate=' + lastUpdate.devices)
             .then(function (res) {
                 return _setAllDevices(res)
@@ -208,13 +235,13 @@ var Domoticz = function () {
                     var currentmoment = moment(current_value.LastUpdate)
                     update = newmoment.diff(currentmoment)
                 } else update = true;
-                update=true;    //with the incremental updates we are receiving it's better to always update
+                update = true; //with the incremental updates we are receiving it's better to always update
                 break;
             default:
                 update = true;
         }
         if (update)
-            deviceObservable.set(idx, value); 
+            deviceObservable.set(idx, value);
 
     }
 
@@ -284,10 +311,10 @@ var Domoticz = function () {
     function _syncRequest(idx, query) {
         _hold(idx);
         return domoticzRequest(query)
-        .then(function(res) {
-            _release(idx);
-            return res
-        })
+            .then(function (res) {
+                _release(idx);
+                return res
+            })
     }
 
     return {
@@ -311,8 +338,8 @@ function ListObservable() {
     this._values = {}
     this._queueState = {}
 
-    this.hold = function(idx) {
-        if(!this._queueState[idx]) this._queueState[idx] = 1; //queue state can be 2 already
+    this.hold = function (idx) {
+        if (!this._queueState[idx]) this._queueState[idx] = 1; //queue state can be 2 already
     }
 
     this.release = function (idx) {
@@ -320,9 +347,9 @@ function ListObservable() {
         if (this._queueState[idx] === 2) { //value was updated while on hold. Send latest value
             value = this._values[idx];
             if (typeof this._observers[idx] !== 'undefined')
-            this._observers[idx].forEach(function (el) {
-                el.callback(value);
-            })
+                this._observers[idx].forEach(function (el) {
+                    el.callback(value);
+                })
 
         }
         this._queueState[idx] = 0;
@@ -354,9 +381,9 @@ function ListObservable() {
 
     this.set = function (idx, value) {
         this._values[idx] = value;
-        if(this._queueState[idx]) {
+        if (this._queueState[idx]) {
             this._queueState[idx] = 2;
-            console.log("postponed "+idx);
+            console.log("postponed " + idx);
             return;
         }
         if (typeof this._observers[idx] !== 'undefined')
@@ -369,3 +396,5 @@ function ListObservable() {
         return this._values[idx]
     }
 }
+
+//# sourceURL=js/domoticz-api.js

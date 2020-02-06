@@ -393,8 +393,9 @@ function deviceUpdateHandler(selector, idx, device) {
 function addDeviceUpdateHandler(selector, idx) {
     if (subscribed[idx]) {
         //        console.log('Already subscribed for '+idx)
+        //currently the deviceUpdateHandler handles updates for all blocks that use device <idx>
+        // so we have to subscribe only once
     } else {
-        console.log("Adding handler for " + idx);
         Domoticz.subscribe(idx, true, function (device) {
             deviceUpdateHandler(selector, idx, device)
         })
@@ -2126,3 +2127,5 @@ function getSecurityBlock(device, idx) {
     }
     return [html, true];
 }
+
+//# sourceURL=js/blocks.js
