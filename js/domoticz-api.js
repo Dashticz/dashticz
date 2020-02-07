@@ -14,7 +14,9 @@ var Domoticz = function () {
     var initialUpdate = $.Deferred();
     var lastUpdate = {};
     var requestid = 0;
-    var callbackList = []
+    var callbackList = [];
+    var reconnectTimeout = 1; //Initial value: 1 sec reconnect timeout
+    var reconnecting = false;
 
     var MSG = {
         info: 'type=command&param=getversion'
@@ -25,7 +27,7 @@ var Domoticz = function () {
     }
 
     var requestQueue = [];
-    var lastRequest = $.when();
+    var lastRequest = $.Deferred().resolve();
 
     /** Start async Domoticz request.
      * The domoticz request will only start after finishing the previous one.
@@ -54,7 +56,12 @@ var Domoticz = function () {
                         query: domoticzQuery(query)
                     }
                     requestid = (requestid + 1) % 1000;
-                    socket.send(JSON.stringify(msg));
+                    try {
+                        socket.send(JSON.stringify(msg))
+                    }
+                    catch (ev){
+                        newPromise.reject('send error')
+                    }
                 } else newPromise = $.get({
                     url: cfg.url + 'json.htm?' + domoticzQuery(query),
                     type: 'GET',
@@ -69,7 +76,18 @@ var Domoticz = function () {
                         }
                     }
                 });
+                setTimeout(function () {
+                    if (newPromise.state() !== 'resolved') {
+//                        console.log('rejected by timeout')
+                        newPromise.reject('timeout');
+                    }
+//                    else
+//                        console.log('was resolved')
+                }, 1000); //reject promise after timeout of 1000ms
                 return newPromise;
+            })
+            .catch(function (err) {
+                if (err) console.error(err) //timeout may be reported here
             })
         /*        .then(function requestDone(res) {
                     console.log('request done')
@@ -79,7 +97,7 @@ var Domoticz = function () {
                         console.log('request queue empty')
                     return res;
                 })*/
-        return lastRequest;
+        return lastRequest.promise();
     }
 
     function checkWSSupport() {
@@ -131,6 +149,13 @@ var Domoticz = function () {
                         .then(function(res){
                             console.log('initial connect data: ', res);
                         });*/
+            requestQueue = [];
+            reconnectTimeout = 1;
+            lastUpdate = {}
+            if (lastRequest && lastRequest.state && lastRequest.state() === 'pending')
+                lastRequest.reject();
+            lastRequest = $.when();
+
             _requestAllDevices();
         };
         socket.onmessage = function (event) {
@@ -172,8 +197,8 @@ var Domoticz = function () {
                 console.log(event)
                 switch (event.code) {
                     case 1006:
-                        console.log('reconnecting')
-                        setTimeout(connectWebsocket, 1000); //try to reconnect in 1s
+                        if(!reconnecting) reconnect();
+                        reconnecting = true;
                         break;
                     default:
                         console.error('[close] Connection died');
@@ -184,13 +209,23 @@ var Domoticz = function () {
             }
             //cleanup pending requests
             requestQueue = [];
-            if (lastRequest && lastRequest.state && lastRequest.state === 'pending')
-                lastRequest.reject()
+            if (lastRequest && lastRequest.state && lastRequest.state() === 'pending')
+                lastRequest.reject();
+            lastRequest = $.Deferred().resolve();
         };
 
         socket.onerror = function (error) {
             console.error(error)
         };
+    }
+
+    function reconnect() {
+        console.log('reconnecting')
+        setTimeout(function() {
+            reconnecting=false;
+            connectWebsocket();
+        }, reconnectTimeout*1000); //try to reconnect after timeout
+        reconnectTimeout = Math.min(reconnectTimeout*2, 60); //increase timeout
     }
 
     function _update(forced) {
@@ -269,7 +304,7 @@ var Domoticz = function () {
         //        return domoticzRequest('type=command&param=getuservariables&lastupdate='+lastUpdate.variables)
         return domoticzRequest('type=command&param=getuservariables')
             .then(function (res) {
-                return _setAllVariables(res)
+                if(res) return _setAllVariables(res)
             });
     }
 
