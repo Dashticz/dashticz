@@ -11,7 +11,9 @@ $.ajax({url: 'vendor/jquery.newsTicker.min.js', async: false, dataType: 'script'
 4. https://metro.co.uk/feed/ (using _CORS_PATH)
 5. https://www.standard.co.uk/rss (using _CORS_PATH)
 6. https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml (using _CORS_PATH)
-7. http://www.politico.eu/feed/ (using _CORS_PATH) */
+7. http://www.politico.eu/feed/ (using _CORS_PATH)
+8. http://www.nu.nl/rss/Algemeen
+*/
 
 function getNewsPlus(columndiv, blockdef, newsfeed) {
     if (typeof(newsfeed) !== 'undefined' && newsfeed!=='') {
@@ -38,8 +40,11 @@ function getNewsPlus(columndiv, blockdef, newsfeed) {
                     var el = $(this);
                     html += '<li data-toggle="modal" data-toggle="modal" data-target="#rssweb" data-link="' + el.find("link").text() + '" onclick="setSrcRss(this);">';
 					html += '	<div class="row">';
-					html += '		<div class="col-xs-2 text-center">';
-					html += '			<img src="' + el.find('media\\:content, content').attr('url') + '" width="90%" height="90%"/>';
+                    html += '		<div class="col-xs-2 text-center">';
+                    var image=el.find('media\\:content, content').attr('url');
+                    if(!image) image=el.find('enclosure').attr('url');
+                    if(image)
+    					html += '			<img src="' + image + '" width="90%" height="90%"/>';
 					html += '		</div>';
 					html += '		<div class="col-xs-10">';
 					html += '			<div class="headline">';
