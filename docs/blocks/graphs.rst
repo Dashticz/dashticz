@@ -6,13 +6,26 @@ Graphs
 If your Domoticz device contains a value (temperature, humidity, power, etc.)
 then when you click on the block a popup window will appear showing a graph of the values of the device.
 
-Besides popup graphs it's also possible to show the graph directly on the dashboard itself,
-by adding the graph-id to a column definition as follows::
+Besides popup graphs it's also possible to show the graph directly on the dashboard itself.
+
+If you want to show the graph of the data of a single device, you can add the graph-id to a column definition as follows::
 
     //Adding a graph of device 691 to column 2
     columns[2]['blocks'] = [
       ...,
       'graph_691',      //691 is the device id for which you want to show the graph
+      ...
+    ]
+
+It's also possible to combine the data from several devices into one graph. In that case you have to add a block definition to CONFIG.js and add the devices-parameter::
+
+    blocks['my_multi_graph'] = { //my_multi_graph can be any name you want, as long as you add 'devices' to the block
+        devices: [691, 692] //691 and 692 are the device id's you want to have combined into one graph
+    }
+
+    columns[2]['blocks'] = [
+      ...,
+      'my_multi_graph', 
       ...
     ]
 
@@ -43,6 +56,81 @@ The following block parameters can be used to configure the graph:
     - Object to set the time display format on the x-axis. See below for an example.
   * - custom
     - Customized graph. See below for examples
+  * - devices
+    - an array of the device ids that you want to report on, e.g. [ 17, 18, 189 ]
+  * - interval
+    - a time based limiter, to limit time data, e.g. 2 will show 1/2 the time labels, 5 will show 20% of the time labels (default is 1)
+  * - maxTicksLimit
+    - specifies how many labels (ticks) to display on the X axis, this does not limit the data in the graph, e.g. 10 (default is all)
+  * - cartesian
+    - scales the graph with standard 'linear' scale, or 'logarithmic', an algorithm to ensure all data can be seen (default is linear)
+  * - iconColour
+    - colours the graph's title icons (default is grey)
+  * - lineFill
+    - if line graph, this fills the graph, it is an array for each dataset, e.g.['true', 'false', 'true'] (default is false)
+  * - borderWidth
+    - this is actually the width of the line (default is 2)
+  * - borderDash
+    - use if you want a dashed line, it takes an array of two values; length of the line and the space, e.g. [ 10, 10 ] (default is off)
+  * - borderColors
+    - handy for bar graphs, takes an array of colours like datasetColors, e.g. ['red', 'green', 'blue'] (default uses datasetColors)
+  * - pointRadius
+    - the size of each data point, e.g. 3 (default is 1)
+  * - pointStyle
+    - an array of the shape of each point, such as circle|cross|dash|line|rect|star|triangle, e.g.['star','triangle'] (default is circle)
+  * - pointFillColor
+    - an array containing the colour of each point, e.g. ['red', 'green', 'blue'] (default uses datasetColors)
+  * - pointBorderColor
+    - an array containing the border colour of each point, e.g. ['red', 'green', 'blue'] (default is light grey)
+  * - pointBorderWidth
+    - the thickness of the point border, e.g. 2 (default is 0)
+  * - barWidth
+    - if a bar graph, this is the width of each bar, 0-1, e.g. 0.5 is half bar, half gap (default is 0.9)
+  * - reverseTime
+    - use this if you want to reverse your X axis, i.e. setting 'true' would mean the time will be reversed (default is false)
+  * - lineTension
+    - sets the bezier curve the line is, 0 is straight, 1 is extremely curved! e.g. 0.4 gives a nice bendy line (default is 0.1)
+  * - drawOrderLast
+    - an array stating the order in which each dataset should be added to the graph for "last hours", e.g. ['v2', 'v1']
+  * - drawOrderDay
+    - an array stating the order in which each dataset should be added to the graph for "today", e.g. ['v3', 'v1', 'v2']
+  * - drawOrderMonth
+    - an array stating the order in which each dataset should be added to the graph for "last month", e.g. ['v1', 'v2', 'c1', 'c2']
+  * - buttonsBorder
+    - color of the buttons border, e.g. 'red', default is 'white'
+  * - buttonsColor
+    - color of the buttons text, e.g. '#fff' or 'white', default is 'black'
+  * - buttonsFill
+    - color of the buttons background colour, e.g '#000' or 'black', default is 'white'
+  * - buttonsIcon
+    - color of the buttons icon, e.g. 'blue', default is 'grey'
+  * - buttonsMarginX
+    - gap (or margin) between the buttons (left and right), e.g. 5, default is 2
+  * - buttonsMarginY
+    - gap (or margin) above and below the buttons, e.g. 5, default is 0
+  * - buttonsPadX
+    - padding inside the buttons (left and right), e.g. 10, default is 6
+  * - buttonsPadY
+    - padding inside the buttons, top and bottom, e.g. 5, default is 2
+  * - buttonsRadius
+    - the curveture of the corners of the buttons, e.g. 10, default is 4
+  * - buttonsShadow
+    - the shadow below the button in RGBA format (last number is opacity), e.g. 'rgba(0,0,0,0.5)', default is off
+  * - buttonsSize
+    - the size of the button, e.g. 12, default is 14
+  * - buttonsText
+    - change the text displayed on each button in an array, e.g. ['Now', 'Today', 'Month'], default is what you see today
+  * - gradients
+    - an array of arrays, e.g. gradients: [ ['white, 'blue'], ['orange', 'powderblue'] ], default disabled
+  * - gradientHeight
+    - a number showing the height of the gradient split, e.g. 0.8, default 1
+  * - spanGaps
+    - If true, lines will be drawn between points with no or null data. If false, points with NaN data will create a break in the line.
+  * - sortDevices
+    - the code automatically calculate if any devices' time data is longer than others. It then use that device's time data, then match all of the devices non-time data to that. This setting allows users to choose to enable or disable that feature (true or false)
+
+
+
 
 We will show the possibilities by showing a:
 
@@ -320,6 +408,8 @@ The previous example sets the time formats to UK style. See https://www.chartjs.
 Modifying the y-axes
 --------------------
 
+.. note :: Still working with the new multigraph implementation?
+
 You can modify the y-axes by setting the options parameter. Below you see an example how to define the min and max values of two y-axes::
 
     blocks['graph_659'] = {
@@ -347,6 +437,8 @@ The ``yAxes`` parameter in the ``options`` block is an array, with an entry for 
 Y-axis for custom graphs
 ------------------------
 
+.. note :: Still working with the new multigraph implementation?
+
 To define the y-axes for a custom graph you can add the ``ylabels`` parameter as follows::
 
     blocks['graph_659'] = {
@@ -367,6 +459,304 @@ To define the y-axes for a custom graph you can add the ``ylabels`` parameter as
 .. image :: img/customlabels.jpg
 
 The parameter ``ylabels`` is an array. You can add a string for each value of the data object. 
+
+datasetColors
+~~~~~~~~~~~~~
+Custom colors, defined by the parameter ``datasetColors``::
+
+    datasetColors: ['red', 'yellow', 'blue', 'orange', 'green', 'purple']
+    
+Set the variable dataset colors to html colors, hex code, rgb or rgba string::
+
+    datasetColors: [colourBlueLight, colourLightGrey, colourBlue]
+    var colourBlueLight= 'rgba(44, 130, 201, 1)';
+
+Custom button styling
+~~~~~~~~~~~~~~~~~~~~~
+
+
+::
+
+	blocks['multigraph_1'] = {
+        	...
+		buttonsPadX: 10,
+		buttonsPadY: 10,
+		buttonsBorder: 'red',
+		buttonsColor: '#fff',
+		buttonsFill: '#000',
+		buttonsIcon: 'red',
+		buttonsMarginX: 5,
+		buttonsMarginY: 5,
+		buttonsRadius: 20,
+		buttonsShadow: 'rgba(255, 255, 255, 0.1)',
+		buttonsSize: 12,
+		...
+	}
+
+.. image :: img/multigraph_button_styling.jpg
+
+Custom point styling
+~~~~~~~~~~~~~~~~~~~~
+::
+
+	var hot = new Image();
+	hot.src = "img/hot.png"
+	var cold = new Image();
+	cold.src = "img/cold.png"
+	
+	blocks['multigraph_2'] = {
+	...
+	pointStyle: [cold, hot ],
+	...
+	}
+
+.. image :: img/multigraph_point_styling.jpg
+
+Custom data
+~~~~~~~~~~~
+::
+
+	blocks['multigraph_72'] = {
+		title: 'Outside vs Inside Temp',
+		devices: [ 72, 152],
+		graph: 'line',
+		buttonsBorder: '#ccc',
+		buttonsColor: '#ccc',
+		buttonsFill: 'transparent',
+		buttonsIcon: 'Blue',
+		buttonsPadX: 10,
+		buttonsPadY: 5,
+		buttonsMarginX: 5,
+		buttonsMarginY: 2,
+		buttonsRadius: 0,
+		buttonsShadow: 'rgba(2, 117, 216, 0.2)',
+		buttonsSize: 12,
+			custom : {
+				"Last hours": {
+					range: 'day',
+					filter: '6 hours',
+					data: {                
+						te1: 'd.te1',
+						te2: 'd.te2',
+						delta: 'd.te2-d.te1'
+					},
+				},
+				"Last 2 weeks": {
+					range: 'month',
+					filter: '14 days',
+					data: {
+						te1: 'd.te1',
+						te2: 'd.te2',
+						delta: 'd.te2-d.te1'
+					}
+				},
+				"Last 6 months": {
+					range: 'year',
+					filter: '6 months',
+					data: {
+						te1: 'd.te1',
+						te2: 'd.te2',
+						delta: 'd.te2-d.te1'
+					}
+				}
+			},
+		legend: {
+			'te1': 'Outside',	  
+			'te2': 'Inside',
+			'delta': 'Difference'
+		}
+	} 
+
+.. image :: img/multigraph_custom.png
+
+
+Zoom Graphs
+~~~~~~~~~~~
+
+To enable graph/multigraph zoom add ``config['graph_zoom'] = 1;`` setting to ``config.js``.
+
+Examples
+---------
+
+**CPU, Memory & HDD**
+::
+
+	blocks['multigraph_17'] = {
+		title: 'CPU, Memory & HDD',
+		devices: [ 17, 18, 189 ],
+		datasetColors: ['Red', 'Orange', 'Blue', 'Green', 'LightBlue', 'Aqua', 'Yellow', 'Purple', 'Pink'],
+		legend: true,
+		cartesian : 'linear', 	
+		graph: 'line',
+		lineFill: true,
+		drawOrderDay:   ['v1', 'v3', 'v2'],
+		drawOrderMonth: ['v_min1', 'v_avg1', 'v_min2', 'v_max1', 'v_avg3', 'v_max3', 'v_min3', 'v_avg2', 'v_max2'],
+		legend: {
+			'v1'		: 'CPU',	  
+			'v_avg1'	: 'CPU avg',
+			'v_max1'	: 'CPU max',
+			'v_min1'	: 'CPU min',
+			'v2'		: 'MEM',
+			'v_avg2'	: 'MEM avg',
+			'v_max2'	: 'MEM max',
+			'v_min2'	: 'MEM min',
+			'v3'		: 'HDD',
+			'v_avg3'	: 'HDD avg',
+			'v_max3'	: 'HDD max',
+			'v_min3'	: 'HDD min'
+		}
+	}
+
+.. image :: img/multigraph3.png
+
+**Grid vs Solar**
+
+Due to the low solar output in winter months, comparing solar to grid was often hard to read. The graph needed to be updated to use a logarithmic scale, i.e. a nonlinear scale useful when analysing data with large ranges. The solar device stops recording data at the usual 5 minute intervals when it gets dark. The code inserts intervals (with a value of 0.00) when no data is recorded. In the updated multigraph block below, the *cartesian* property is used, and three *drawOrder* properties.
+::
+
+	blocks['multigraph_1'] = {
+		title: 'Grid vs Solar',
+		devices: [ 162, 1],
+		datasetColors: ['Red', 'Green'],		
+		lineFill: [true, true],						
+		graph: 'line',				
+		cartesian: 'logarithmic', 				
+		drawOrderLast: ['v2', 'v1'],
+		drawOrderDay: ['v2', 'v1'],
+		drawOrderMonth: ['v1', 'v2', 'c1', 'c2'],
+		legend: {
+			'v1': 'Grid',	
+			'v2': 'Solar', 
+			'c1': 'Solar Cumulative',	  
+			'c2': 'Solar Cumulative'
+		}
+	} 
+
+
+This is using the standard *linear* scale (i.e. ``cartesian = linear``):
+
+.. image :: img/multigraph6.png
+
+This is using the new *logarithmic* scale (i.e. ``cartesian = logarithmic``). Note the y axis labelling on the left:
+
+.. image :: img/multigraph5.png
+
+**Outside vs Inside Temp**
+
+.. note :: Exclude parameter is not supported anymore
+
+The indoor temp sensor also includes barometric pressure (ba) and humidity (hu), but the outside one is only temperature. In the graph below, the *exclude* property is used to remove this extra unwanted data. Now only the temperature is directly compared.
+::
+
+	blocks['multigraph_72'] = {
+		title: 'Outside vs Inside Temp',
+		devices: [ 72, 152],
+		datasetColors: ['LightBlue', 'LightGrey', 'Blue', 'Orange', 'Red', 'Yellow'],
+		exclude: ['ba', 'hu'],
+		graph: 'line',
+		legend: {
+			'te1': 'Outside (max)',	  
+	  		'ta1': 'Outside (avg)',
+	  		'tm1': 'Outside (min)',
+	  		'te2': 'Inside (max)',
+	  		'ta2': 'Inside (avg)',
+	  		'tm2': 'Inside (min)'
+		}
+	}
+
+.. image :: img/multigraph4.png
+
+**Temperature and Setpoint**
+
+Three thermostat devices (Evohome TRVs), each showing their temperature and setpoint.::
+
+	blocks['multigraph_11'] = {
+		title: 'Lounge, Kitchen, Hall Thermostats',
+		devices: [ 11, 12, 152],
+		interval: 2,
+		maxTicksLimit: 12,
+		datasetColors: ['LightGrey', 'Red', 'Green', 'DarkGreen', 'Blue'],
+		buttonsIcon: 'Purple',
+		graph: 'line',
+		lineTension: 0,
+		borderWidth: 2,
+		spanGaps: false,
+		graphTypes: ['te', 'se'], 
+		buttonsBorder: '#ccc',
+		buttonsColor: '#ccc',
+		buttonsFill: 'transparent',
+		buttonsIcon: 'Blue',
+		buttonsPadX: 10,
+		buttonsPadY: 5,
+		buttonsMarginX: 5,
+		buttonsMarginY: 2,
+		buttonsRadius: 0,
+		buttonsShadow: 'rgba(2, 117, 216, 0.2)',
+		buttonsSize: 12,
+		buttonsText: ['6H', '24H', '1M'],
+		legend: {
+			'se1': 'Lounge (SP)',
+			'sm1': 'Lounge (SP Min)',
+			'sx1': 'Lounge (SP Max)',
+			'te1': 'Lounge (TE)',	 
+			'ta1': 'Lounge (TE Avg)',
+			'tm1': 'Lounge (TE Min)',
+			'se2': 'Kitchen (SP)',
+			'sm2': 'Kitchen (SP Min)',
+			'sx2': 'Kitchen (SP Max)',
+			'te2': 'Kitchen (TE)',
+			'ta2': 'Kitchen (TE Avg)',
+			'tm2': 'Kitchen (TE Min)',
+			'se3': 'Hall (SP)',	
+			'sm3': 'Hall (SP Min)',
+			'sx3': 'Hall (SP Max)',
+			'te3': 'Hall (TE)',	  
+			'ta3': 'Hall (TE Avg)',
+			'tm3': 'Hall (TE Min)'
+		} 
+	} 
+
+.. image :: img/multigraph_setpoints.png
+
+**Buttons**
+
+Standard buttons:
+
+.. image :: img/graph_buttons1.png
+
+Updated buttons (one of many styles):
+
+.. image :: img/graph_buttons2.png
+
+.. image :: img/graph_buttons3.png
+
+.. image :: img/graph_buttons4.png
+
+More Examples
+-------------
+
+Multigraph includes 2 separate *temperature* sensors, with gradients, custom points (images) and button styling:
+
+.. image :: img/muligraph_patch4_1.png
+
+Multigraph includes 3 separate *percentage* sensors, custom points (images) and button styling:
+
+.. image :: img/muligraph_patch4_2.png
+
+Multigraph includes 2 separate *energy* sensors, subtle gradients, no points and uses the *logarithmic* scale:
+
+.. image :: img/muligraph_patch4_3.png
+
+Multigraph includes 2 separate *counter* sensors, without gradients, but with custom points (images) and button styling:
+
+.. image :: img/muligraph_patch4_4.png
+
+Multigraph uses 2 *temperature* sensors **and** *custom data*, calculating a 3rd virtual dataset, showing the difference between the outside temperature and the inside temperature:
+
+.. image :: img/muligraph_patch4_5.png
+
+
+
 
 Styling
 -------

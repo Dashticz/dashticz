@@ -4,6 +4,10 @@ Release Notes
 3.3.5 Beta (28-1-2020)
 ----------------------
 
+Enhancements
+  * Websocket interface for Domoticz version > 4.11000
+  * Newsplus, including support for nu.nl
+
 Fixes
   * Garbage Uden
   * Restored PHP5 compatible ical library next to the PHP7 library.

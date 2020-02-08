@@ -8,7 +8,6 @@ The visible elements on the Dashticz dashboard are called blocks. Several block 
    
    domoticzblocks
    graphs
-   multigraphs
    buttons
    frames
    specials
