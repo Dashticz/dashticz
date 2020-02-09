@@ -13,7 +13,9 @@ which can be configured with the parameter ``default_news_url``. See :ref:`newsc
 Additional rss feeds can be defined as well. See below::
 
     blocks['news_tweakers'] = {
-      feed: 'http://feeds.feedburner.com/tweakers/nieuws'
+      feed: 'http://feeds.feedburner.com/tweakers/nieuws',
+      showimages: false,
+      icon: 'fas fa-newspaper'
     }
 
 Add the news blocks to a column as usual::
@@ -60,9 +62,13 @@ News Parameters
   * - title
     - | Title of the news block
   * - icon
-    - | ``'fas fa-icon'``: icon to show in the news block
+    - | ``'fas fa-newspaper'``: icon to show in the news block
   * - image
     - | ``'image.png'``: image to show as icon. Image path is relative to the <dashticz>/img folder.
+  * - showimages
+    - | Show the inline images of the rss feed.
+      | ``false``: Do not show the inline images
+      | ``true`` (=default): Show the inline images
 
 Example
 -------
@@ -105,3 +111,5 @@ Usage
 -----
 
 The news module will download the information via a CORS proxy. The default settings normally work fine. For configuration see :ref:`dom_CORS_proxy`        
+
+Not all rss-feeds support inline images. In that case you can set ``showimages`` to false.

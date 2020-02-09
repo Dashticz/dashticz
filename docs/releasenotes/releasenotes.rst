@@ -1,6 +1,21 @@
 Release Notes
 =============
 
+3.4.0 Beta (8-2-2020)
+---------------------
+
+Enhancements
+  * Websocket interface for Domoticz version > 4.11000 to receive instant device updates. See :ref:`websocket`
+  * The News block will show the inline images. By setting the news block parameter 'showimages: false' the inline images will be hidden.  See :ref:`newsconfig`
+  * graph and multigraph have been combined into the same graph block. See :ref:`dom_graphs`.
+
+In case you update from 3.3.5 beta: The parameter ``multigraphTypes`` has been replaced by ``graphTypes``
+
+Optimizations
+  * Dashticz will only receive the updates for devices that changed since the previous update. This will increase responsiveness. In the previous version Dashticz received all device info at every update (default 5 second cycle).
+
+
+
 3.3.5 Beta (28-1-2020)
 ----------------------
 
