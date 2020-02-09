@@ -11,7 +11,28 @@ I prefer to use Visuals Studio Code.
 Source code
 -----------
 
-ES5 format, checked with eslint
+In general the 'rules' are:
+
+* ES5 compliant
+* Styling if possible via creative.css
+* Server code PHP 5 compliant
+* use 'prettier' for code formatting
+* eslint should give no warnings
+
+Some users still have a ES5 browser, like old Android tablets. In the past I used the ' const' keyword a few times.
+This resulted in complaints.
+
+For ES5 vs ES6 see for instance: http://es6-features.org
+
+We could switch to ES6, but then probably we have to start using Babel as well, to transpile back to ES5.
+This is something I would like to prevent, because it makes the develop/build environment a bit more demanding.
+
+Guidelines:
+
+* No ES6 syntax, like 'const', 'let', arrow functions, class keyword, object spread, Promise.
+* No synchronous AJAX calls.
+* jQuery promises may be used.
+
 
 Dependencies
 -------------
@@ -70,8 +91,10 @@ An example of a more extensive implementation::
 
     var DT_myblock = {
         name: "myblock",
-        canHandle: function (block) {
+        canHandle: function (block, key) {
             //returns a boolean to indicate whether the block can be handled by this component
+            //key is the identifier (string) that is used in the column definition to select a block.
+            //In case an object is provided in the column definitions (like buttons, frames) then key is undefined
         },
         init: function () {
             //Will be called for initialization
