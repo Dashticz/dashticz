@@ -67,10 +67,10 @@ Config parameters
   * - login_timeout
     - | Time to keep Dashticz logged in
       | ``60`` = Time in minutes
-  * - disable_websocket
-    - | Disable Domoticz websocket connection. See :ref:`websocket`
-      | ``false`` = Dashticz will switch to a websocket connection if the Domoticz version is above 4.11000
-      | ``true`` = Dashticz will use a http connection.      
+  * - enable_websocket
+    - | Enable Domoticz websocket connection. See :ref:`websocket`
+      | ``false`` = Dashticz will use a http connection.
+      | ``true`` = Dashticz will switch to a websocket connection if the Domoticz version is above 4.11000.     
   * - app_title
     - | Name of the Dashboard - Title to show in the :ref:`customtopbar`
       | ``'Dashticz'`` = Show 'Dashticz' in the top bar
@@ -278,7 +278,7 @@ The advantages of a websocket connection:
 
 To prevent switching to a websocket connection add the following setting to CONFIG.js::
 
-  config['disable_websocket'] = true;
+  config['enable_websocket'] = false;
 
 In the <gif> below you see the instant updates in action. On the right you see the Domoticz dashboard. On the left Dashticz.
 

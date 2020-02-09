@@ -590,6 +590,7 @@ if (typeof(settings['app_title']) === 'undefined') settings['app_title'] = 'Dash
 if (typeof(settings['domoticz_refresh']) === 'undefined') settings['domoticz_refresh'] = 5;
 if (typeof(settings['dashticz_refresh']) === 'undefined') settings['dashticz_refresh'] = 60;
 if (typeof(settings['dashticz_php_path']) === 'undefined') settings['dashticz_php_path'] = './vendor/dashticz/';
+if (typeof(settings['enable_websocket']) === 'undefined') settings['enable_websocket'] = true;
 if (typeof(settings['wu_api']) === 'undefined') settings['wu_api'] = '';
 if (typeof(settings['wu_country']) === 'undefined') settings['wu_country'] = 'NL';
 if (typeof(settings['wu_city']) === 'undefined') settings['wu_city'] = 'Amsterdam';

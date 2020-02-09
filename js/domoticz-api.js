@@ -103,7 +103,7 @@ var Domoticz = function () {
     function checkWSSupport() {
         return domoticzRequest(MSG.info)
             .then(function (res) {
-                if (parseFloat(res.version) > 4.11 && !cfg.disable_websocket) {
+                if (parseFloat(res.version) > 4.11 && cfg.enable_websocket) {
                     useWS = true;
                     console.log("Switching to websocket");
                     connectWebsocket();
