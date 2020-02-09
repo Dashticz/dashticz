@@ -1,7 +1,7 @@
 /* eslint-disable no-debugger */
 /*global blocktypes:writable, language, _TEMP_SYMBOL, getExtendedBlockTypes, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
 /*global getSpotify, loadNZBGET, getCoin, loadChromecast, loadGarbage, loadSonarr */
-/*global Dashticz, Domoticz, getLog, addCalendar, getNewsPlus */
+/*global Dashticz, Domoticz, getLog, addCalendar */
 /*global getRandomInt, moment, number_format */
 /*from bundle.js*/
 /*global ion*/
@@ -586,15 +586,6 @@ function handleStringBlock(block, columndiv, c) {
             return;
         case 'trafficmap':
             $(columndiv).append('<div data-id="trafficmap" class="mh transbg block_trafficmap col-xs-12"><div id="trafficm" class="trafficmap"></div></div>');
-            return;
-        case 'newsplus':
-            if (typeof (getNewsPlus) !== 'function') $.ajax({
-                url: 'js/newsplus.js',
-                async: false,
-                dataType: "script"
-            });
-            $(columndiv).append('<div data-id="news" class="news"></div>');
-            getNewsPlus(columndiv, 'newsplus', settings['default_news_url']);
             return;
         case 'log':
             if (typeof (getLog) !== 'function') $.ajax({
