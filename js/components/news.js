@@ -12,7 +12,7 @@ var DT_news = {
         });
     },
     default: {
-        icon: 'fas fa-newspaper',
+//        icon: 'fas fa-newspaper',
         containerClass: function () {
             return 'hover'
         },
@@ -38,7 +38,27 @@ var DT_news = {
                 var html = '';
                 $(data).find('item').each(function () { // or "item" or whatever suits your feed
                     var el = $(this);
-                    html += '<li data-toggle="modal" data-target="#rssweb" data-link="' + el.find("link").text() + '" onclick="setSrcRss(this);"><strong>' + el.find("title").text() + '</strong><br />' + el.find("description").text() + '</li>';
+//                    html += '<li data-toggle="modal" data-target="#rssweb" data-link="' + el.find("link").text() + '" onclick="setSrcRss(this);"><strong>' + el.find("title").text() + '</strong><br />' + el.find("description").text() + '</li>';
+                    html += '<li data-toggle="modal" data-toggle="modal" data-target="#rssweb" data-link="' + el.find("link").text() + '" onclick="setSrcRss(this);">';
+                    html += '	<div class="news_row">';
+                    if (!(me.block && typeof me.block.showimages!=='undefined' && !me.block.showimages)) {
+                        html += '		<div class="news_image">';
+                        var image=el.find('media\\:content, content').attr('url');
+                        if(!image) image=el.find('enclosure').attr('url');
+                        if(image)
+                            html += '			<img src="' + image + '"/>';
+                        html += '		</div>';
+                    }
+                    html += '		<div>';
+                    html += '			<div class="headline">';
+                    html += '				<strong class="title">' + el.find("title").text() +'</strong>';
+                    html += '				<hr class="hr_thin">';
+                    html += '				<div class="description">' + el.find("description").text() + '</div>';
+                    html += '				<div class="updated">Updated at ' + moment(el.find('pubDate').text()).format('HH:mm') + '</div>';
+                    html += '			</div>';
+                    html += '		</div>';
+                    html += '	</div>';
+                    html += '</li>';
                 });
 
                 var el = $(me.mountPoint + ' #newsTicker');
