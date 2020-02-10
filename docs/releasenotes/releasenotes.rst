@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+Latest changes
+---------------
+
+Enhancements
+
+  * Support for showing a graph more than once on the dashboard.
+
 3.4.0 Beta (8-2-2020)
 ---------------------
 
