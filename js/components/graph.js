@@ -45,21 +45,20 @@ function getBlockConfig(me) {
 
   $.each(devices, function(i, idx) {
     var obj = {};
-    obj.blockId = me.key;
+    obj.blockId = me.mountPoint;
     obj.hasBlock = hasBlock;
     obj.mountPoint = me.mountPoint;
     obj.multigraph = devices.length > 1;
-    obj.graphIdx = hasBlock ? obj.blockId + devices[i] : obj.blockId;
+    obj.graphIdx = obj.blockId + devices[i]
     obj.primary = i === 0;
     obj.primaryIdx = obj.primary
       ? obj.blockId + devices[i]
       : obj.blockId + devices[0];
-    obj.primaryIdx = !hasBlock ? obj.blockId : obj.primaryIdx;
 
     obj.block = getBlockDefaults(devices, hasBlock, me.block);
 
     var device = $.extend(obj, allDevices[idx]);
-    device.Name = obj.multigraph ? (device.block.title? device.block.title:device.blockId) : device.Name;  //block.title may be undefined
+    device.Name = obj.multigraph ? (device.block.title? device.block.title:me.key) : device.Name;  //block.title may be undefined
     device.idx = parseInt(device.idx);
     graphDevices.push(device);
   });
@@ -374,11 +373,11 @@ function showPopupGraph(idx, subidx) {
   }
 
   var obj = {};
-  obj.graphIdx = device.idx + p;
+  obj.blockId = device.idx + p;
+  obj.graphIdx = obj.blockId + device.idx;
   obj.block = getBlockDefaults([device.idx], false);
-  obj.blockId = obj.graphIdx;
   obj.hasBlock = false;
-  obj.mountPoint = ".block_graph_" + obj.graphIdx;
+  obj.mountPoint = ".block_graph_" + obj.blockId;
   obj.multigraph = false;
   obj.primary = true;
   obj.primaryIdx = obj.graphIdx;
@@ -394,9 +393,7 @@ function getGraphData(devices, selGraph) {
   var currentValues = [];
 
   $.each(devices, function(i, device) {
-    var graphIdx = device.hasBlock
-      ? device.blockId + device.idx
-      : device.blockId;
+    var graphIdx = device.blockId + device.idx;
     var graph = dtGraphs[graphIdx];
     var range = isDefined(selGraph) ? selGraph : "day";
 
@@ -714,9 +711,7 @@ function createGraph(graph) {
     return;
   }
 
-  var chartctx = document
-    .getElementById("graphoutput_" + graphIdx)
-    .getContext("2d");
+  var chartctx = mydiv.find('canvas')[0].getContext("2d");
   var graphProperties = getDefaultGraphProperties(graph);
   $.extend(true, graphProperties, graph.block);
 
@@ -1169,10 +1164,7 @@ function createButtons(graph, ranges, customRange) {
 function updateGraphs(blockId, ids, range, popup) {
   var devices = [];
   $.each(ids, function(i, idx) {
-    var graphIdx =
-      blockId.substring(0, 6) === "graph_" ? blockId : blockId + idx;
-    if (popup === "true") graphIdx = blockId;
-    var device = dtGraphs[graphIdx];
+    var device = dtGraphs[blockId + idx];
     devices.push(device);
   });
   getGraphData(devices, range);
