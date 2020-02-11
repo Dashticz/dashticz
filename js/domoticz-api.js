@@ -33,27 +33,28 @@ var Domoticz = function () {
      * The domoticz request will only start after finishing the previous one.
      * No timeout handling yet ...
      * @function
-     * @param {string} query - The domoticz request 
+     * @param {string} query - The domoticz request
+     * @param {boolean} forcehttp - Force usage of HTTP and not websocket 
      * @return {Promise} The JQuery promise of the Domoticz request
      */
-    function domoticzRequest(query) {
+    function domoticzRequest(query, forcehttp) {
         requestQueue.push(query);
 
 
         lastRequest = lastRequest
             .then(function newRequest() {
-                query = requestQueue.shift();
-                //console.log('query: ', query)
+                var myquery = requestQueue.shift();
+                //console.log('query: ', myquery)
                 var newPromise;
-                if (useWS) {
-                    //            console.log('request id '+requestid + ' ' + query);
+                if (useWS && !forcehttp) {
+                    //            console.log('request id '+requestid + ' ' + myquery);
 
                     newPromise = $.Deferred();
                     callbackList[requestid] = newPromise;
                     var msg = {
                         event: 'request',
                         requestid: requestid,
-                        query: domoticzQuery(query)
+                        query: domoticzQuery(myquery)
                     }
                     requestid = (requestid + 1) % 1000;
                     try {
@@ -63,7 +64,7 @@ var Domoticz = function () {
                         newPromise.reject('send error')
                     }
                 } else newPromise = $.get({
-                    url: cfg.url + 'json.htm?' + domoticzQuery(query),
+                    url: cfg.url + 'json.htm?' + domoticzQuery(myquery),
                     type: 'GET',
                     async: true,
                     contentType: "application/json",
@@ -78,8 +79,8 @@ var Domoticz = function () {
                 });
                 setTimeout(function () {
                     if (newPromise.state() !== 'resolved') {
-//                        console.log('rejected by timeout')
-                        newPromise.reject('timeout');
+                        console.log('rejected by timeout: ', myquery)
+                        newPromise.reject('timeout: '+myquery);
                     }
 //                    else
 //                        console.log('was resolved')
@@ -121,7 +122,7 @@ var Domoticz = function () {
             cfg = initcfg;
             if (cfg.url.charAt(cfg.url.length - 1) !== '/')
                 cfg.url += '/'
-            if (cfg.usrEnc) usrinfo = 'username=' + cfg.usrEnc + '&password=' + cfg.pwdEnc + '&';
+            if (cfg.usrEnc && cfg.usrEnc.length) usrinfo = 'username=' + cfg.usrEnc + '&password=' + cfg.pwdEnc + '&';
             initPromise = checkWSSupport()
                 .then(function () {
                     setInterval(_requestAllVariables, cfg.domoticz_refresh * 1000)
@@ -332,6 +333,7 @@ var Domoticz = function () {
     }
 
     function _hold(idx) {
+        //console.log('hold ', idx);
         deviceObservable.hold(idx);
     }
 
@@ -343,12 +345,17 @@ var Domoticz = function () {
         First block the device updates from idx
         afterwards release the message queue again
     */
-    function _syncRequest(idx, query) {
+    function _syncRequest(idx, query, forcehttp) {
+        //console.log(query);
         _hold(idx);
-        return domoticzRequest(query)
+        return domoticzRequest(query, forcehttp)
             .then(function (res) {
-                _release(idx);
+                //console.log(res);
                 return res
+            })
+            .always(function() {
+                //console.log('release ', idx);
+                _release(idx)
             })
     }
 

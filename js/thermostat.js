@@ -204,7 +204,6 @@ function addEvohomeZoneFunctions(thermelement, idx) {
         var currentVal = $(this).parents('.col-button1').data('setpoint');
         var input = $(thermelement + " .setpoint");
         var valid = false;  
-
         if (!isNaN(currentVal)) {
 
             var newValue = (type === 'minus') ? currentVal - 0.5 : currentVal + 0.5;
@@ -225,25 +224,25 @@ function addEvohomeZoneFunctions(thermelement, idx) {
 
             clickTimeout = setTimeout(function(){                
                 if(valid) {
-                    console.log(newValue + _TEMP_SYMBOL);
+                    //console.log(newValue + _TEMP_SYMBOL);
                     switchEvoZone(idx, newValue, true);
                     // sliding = false;
-                    Domoticz.release(idx); //release message queue
                 }
-            }, 1000);
+                Domoticz.release(idx); //release message queue
+            }, 2000);
         } else {
             input.text(0);
         }
     });
 
     $(document).on("mouseenter", (thermelement + ' .btn-number'), function () {
-        Domoticz.hold(idx); //hold message queue
+        //Domoticz.hold(idx); //hold message queue
         //sliding = true;
     });
 
     $(document).on("mouseleave", (thermelement + ' .btn-number'), function () {
         //sliding = false;
-        Domoticz.release(idx); //release message queue
+        //Domoticz.release(idx); //release message queue
     });
 
     $(thermelement + ' .input-number').on('focusin', function () {
@@ -293,7 +292,7 @@ function switchEvoZone(idx, setpoint, override) {
         }
     });
     */
-    Domoticz.syncRequest(idx, 'type=setused&idx=' + idx + '&setpoint=' + setpoint + mode + '&used=true' )
+    Domoticz.syncRequest(idx, 'type=setused&idx=' + idx + '&setpoint=' + setpoint + mode + '&used=true', true )
     .then(function(){
         var device = Domoticz.getAllDevices()[idx];
         device.SetPoint = setpoint;
@@ -415,7 +414,7 @@ function changeEvohomeControllerStatus(idx, status) {
         }
     });
 */
-    Domoticz.syncRequest(idx, 'type=command&param=switchmodal&idx=' + idx + '&status=' + status + '&action=1&used=true')
+    Domoticz.syncRequest(idx, 'type=command&param=switchmodal&idx=' + idx + '&status=' + status + '&action=1&used=true', true)
     .then(function() {
         var device = Domoticz.getAllDevices()[idx];
         device.Status = status;
@@ -488,8 +487,10 @@ function switchEvoHotWater(idx, state, override) {
             getEvohomeHotWaterBlock(Domoticz.getAllDevices()[idx], idx);
         }
     });*/
-    Domoticz.syncRequest(idx, 'type=setused&idx=' + idx + '&setpoint=60&state=' + state + mode + '&used=true')
+    Domoticz.syncRequest(idx, 'type=setused&idx=' + idx + '&setpoint=60&state=' + state + mode + '&used=true', true)
     .then(function() {
-        getEvohomeHotWaterBlock(Domoticz.getAllDevices()[idx], idx); //needed? The device will not have been updated yet...
+        getEvohomeHotWaterBlock(Domoticz.getAllDevices()[idx], idx); 
     })
 }
+
+//# sourceURL=js/thermostat.js
