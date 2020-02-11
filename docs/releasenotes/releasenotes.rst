@@ -7,6 +7,7 @@ Latest changes
 Enhancements
 
   * Support for showing a graph more than once on the dashboard.
+  * Fix for Evo devices (don't use websocket connection)
 
 3.4.0 Beta (8-2-2020)
 ---------------------
