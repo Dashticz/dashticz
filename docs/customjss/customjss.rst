@@ -94,7 +94,7 @@ Add to ``custom.js`` one of the examples::
     }
 
 
-``function getStatus_IDX(idx,value,device)``
+``function getStatus_IDX(idx,value,device, afterupdate)``
 --------------------------------------------
 
 Just like the function to take action on change of a value, now is extended functionality to do something with a block when it has a specific value.
@@ -103,7 +103,7 @@ Example, add a red background to a switch when energy usage reaches a limit.
 First you'll have to find the correct IDX for the device. To find the correct IDX number, use http://domoticz_url:8080/json.htm?type=devices&filter=all&used=true , you get an overview of the devices, IDX and it's corresponding parameters.
 After you have the correct IDX, you can add this device to the ``custom.js`` according to the following example::
 
-    function getStatus_145(idx,value,device){
+    function getStatus_145(idx,value,device, afterupdate){
        if(parseFloat(device['Data'])>23){
           $('div.block_145').addClass('warning');
        }
@@ -112,7 +112,7 @@ After you have the correct IDX, you can add this device to the ``custom.js`` acc
        }
     }
 
-    function getStatus_286(idx,value,device){
+    function getStatus_286(idx,value,device, afterupdate){
        if(parseFloat(device['Data'])>4){
           $('div.block_286').addClass('warningblue');
        }
@@ -181,6 +181,11 @@ Or if you like a blinking version::
        }
     }
 
+The getStatus_IDX gets called twice. The first time before updating the Dashticz block. The parameter ``afterupdate`` will be set to false.
+The second time after updating the Dashticz block. The parameter 'afterupdate' will be set to true. These two calls are needed,
+because if you change the block definition of the device in the getStatus function then that should be done before updating the block, but applying css classes normally needs to be done after creating the block.
+
+In most cases there is no need for testing the value of ``afterupdate``: You just can apply your changes twice.
 
 ``function getStatus_IDX(idx,value,device)`` triggered by UpdateStatus
 ----------------------------------------------------------------------
@@ -200,10 +205,11 @@ Based on the command ``unix()-(3600*2)`` where 3600*2 = 2 hours it will check th
 
 More about other json commands, you can find in the Domoticz wiki: https://www.domoticz.com/wiki/Domoticz_API/JSON_URL%27s#Get_all_devices_of_a_certain_type
 
-``function getChange_IDX(idx,value,device)``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``function getChange_IDX(idx,value,device, afterupdate)``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This function gets called when the value of a Domoticz device changes.
+This function will only get called after updating the block. If you want to change the block definition as a result of the status you should use the getStatus function as described above. 
 
 ``Use value of some other IDX``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -244,3 +250,5 @@ Not only the blocktitle will change, but also device with index 373.
 The domoticz blocks gets updated normally every 5 seconds, depending on the ``config['domoticz_refresh']`` parameter. So it might take 5 seconds until block 373 gets updated after the change of device 1.
 
 The exact code depends on the trigger device, and what kind of block you want to change.
+
+.. note:: This changed in Dashticz 3.4.0. Updating block definitions of other devices currently is not supported anymore.
