@@ -312,7 +312,22 @@ function getBlock(cols, c, screendiv, standby) {
     }
 }
 
+function getCustomFunction(functionname, idx, device, afterupdate) {
+    var functiondevname = functionname+'_'+idx;
+    if (typeof window[functiondevname] === 'function') {
+        try {
+            window[functiondevname](idx, device.LastUpdate, device, afterupdate)
+        }
+        catch (err) {
+            console.error('Error calling '+functionname, err)
+        }
+    }
+}
+
 function deviceUpdateHandler(selector, idx, device) {
+
+    getCustomFunction('getStatus', idx, device, false);
+
     var blockdef = (blocks && blocks[idx]) || undefined;
     if (blockdef && typeof blockdef['title'] !== 'undefined') {
         device['Name'] = blockdef['title'];
@@ -1120,11 +1135,8 @@ function Beaufort(windSpeed) {
 
 function triggerStatus(idx, value, device) {
     var random = getRandomInt(1, 100000);
-    try {
-        eval('getStatus_' + idx + '(idx,value,device)');
-    }
-    // eslint-disable-next-line no-empty
-    catch (err) {}
+    getCustomFunction('getStatus', idx, device, true);
+
     if (typeof (onOffstates[idx]) !== 'undefined' && value !== onOffstates[idx]) {
         if (device['Status'] == 'On' || device['Status'] == 'Open') {
             if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['playsoundOn']) !== 'undefined') {
@@ -1190,11 +1202,7 @@ function triggerStatus(idx, value, device) {
 function triggerChange(idx, value, device) {
     if (typeof (oldstates[idx]) !== 'undefined' && value !== oldstates[idx]) {
         //disableStandby();
-        try {
-            eval('getChange_' + idx + '(idx,value,device)');
-        }
-        // eslint-disable-next-line no-empty
-        catch (err) {}
+        getCustomFunction('getChange', idx, device, true);
 
         if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['flash']) !== 'undefined') {
             var flash_value = blocks[idx]['flash'];
