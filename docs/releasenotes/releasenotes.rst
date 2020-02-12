@@ -8,6 +8,7 @@ Enhancements
 
   * Support for showing a graph more than once on the dashboard.
   * Fix for Evo devices (don't use websocket connection)
+  * Partial fix for updating devices via getStatus_idx in custom.css
 
 3.4.0 Beta (8-2-2020)
 ---------------------
