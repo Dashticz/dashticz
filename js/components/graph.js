@@ -45,7 +45,7 @@ function getBlockConfig(me) {
 
   $.each(devices, function(i, idx) {
     var obj = {};
-    obj.blockId = me.mountPoint;
+    obj.blockId = me.mountPoint.slice(1);
     obj.hasBlock = hasBlock;
     obj.mountPoint = me.mountPoint;
     obj.multigraph = devices.length > 1;
@@ -442,6 +442,7 @@ function getGraphData(devices, selGraph) {
         contentType: "application/json",
         dataType: "jsonp",
         success: function(data) {
+          data.idx = device.idx;
           arrResults.push(data);
 
           if (devices.length === arrResults.length) {
@@ -458,7 +459,7 @@ function getGraphData(devices, selGraph) {
               var currentKey = "";
               var counter = z + 1;
 
-              if(d.result && d.result.length>0) { //result may be empty
+              if(d.result && d.result.length > 0) {
                 if (graph.hasBlock && graph.block.graphTypes) {
                   for (var key in d.result[0]) {
                     if (
@@ -493,7 +494,7 @@ function getGraphData(devices, selGraph) {
                           obj["d"] = res[key];
                         }
                         if ($.inArray(key, arrYkeys) !== -1) {
-                          currentKey = key + counter;
+                          currentKey = key + '_' + d.idx;
                           obj[currentKey] = res[key];
                           valid = true;
                           if ($.inArray(currentKey, newKeys) === -1) {
@@ -508,7 +509,7 @@ function getGraphData(devices, selGraph) {
                           $.each(multidata.result, function(index, obj) {
                             $.each(obj, function(k, v) {
                               if (k === "d" && v === res["d"]) {
-                                currentKey = key + counter;
+                                currentKey = key + '_' + d.idx;
                                 multidata.result[index][currentKey] = res[key];
                                 if ($.inArray(currentKey, newKeys) === -1) {
                                   newKeys.push(currentKey);
@@ -720,7 +721,7 @@ function createGraph(graph) {
   }
 
   if (!graph.popup) {
-    var graphwidth = $(".block_" + graphIdx + " .graph").width();
+    var graphwidth = $(".block_" + graphIdx).width();
     var setHeight = Math.min(
       Math.round((graphwidth / window.innerWidth) * window.innerHeight - 25),
       window.innerHeight - 50
@@ -744,10 +745,9 @@ function createGraph(graph) {
     });
   }
 
-  if (graph.graphConfig) {
-    //custom data
-
-    if (graph.graphConfig.ylabels) graph.ylabels = graph.graphConfig.ylabels; //in case ylabels are defined in the custom graph, we take those, instead of the default generated ylabels
+  if (graph.graphConfig) { //custom data
+    
+    if (graph.graphConfig.ylabels) graph.ylabels = graph.graphConfig.ylabels;
     graph.ykeys = Object.keys(graph.graphConfig.data);
 
     graph.ykeys.forEach(function(element, index) {
@@ -766,10 +766,8 @@ function createGraph(graph) {
         pointBorderWidth: graph.block.pointBorderWidth,
         lineTension: graph.block.lineTension,
         spanGaps: graph.block.spanGaps,
-        fill:
-          graph.block
-            .lineFill /* ,
-                yAxisID: 				index < graph.ylabels? graph.ylabels[index] : graph.ylabels[0] */
+        fill: graph.block.lineFill? graph.block.lineFill[index] : graph.block.lineFill,
+        yAxisID: index < graph.ylabels? graph.ylabels[index] : graph.ylabels[0]
       };
 
       if (graph.graphConfig.graph) {
@@ -804,8 +802,10 @@ function createGraph(graph) {
     if (graph.graphConfig.graph) {
       graphProperties.type = graph.graphConfig.graph;
     }
-    $.extend(true, graphProperties, graph.graphConfig); //merge the custom settings.
-  } else {
+    $.extend(true, graphProperties, graph.graphConfig); 
+
+  } else { // no custom data
+
     graph.ykeys.forEach(function(element, index) {
       mydatasets[element] = {
         data: [],
@@ -823,7 +823,7 @@ function createGraph(graph) {
         pointBorderWidth: graph.block.pointBorderWidth,
         lineTension: graph.block.lineTension,
         spanGaps: graph.block.spanGaps,
-        fill: graph.block.lineFill
+        fill: graph.block.lineFill? graph.block.lineFill[index] : graph.block.lineFill
       };
     });
 
@@ -885,10 +885,7 @@ function createGraph(graph) {
     if (order) {
       var arr = [];
       for (var keyIdx in order) {
-        var key =
-          drawOrderLast === false &&
-          drawOrderDay === false &&
-          drawOrderMonth === false
+        var key = drawOrderLast === false && drawOrderDay === false && drawOrderMonth === false
             ? keyIdx
             : order[keyIdx];
         Object.keys(mydatasets).forEach(function(element) {
@@ -910,8 +907,7 @@ function createGraph(graph) {
     graphProperties.data.datasets.push(mydatasets[element]);
   });
 
-  //create the y-axes
-  //ylabels contains the labels.
+  //create the y-axes, ylabels contains the labels
   var uniqueylabels = graph.ylabels.filter(onlyUnique);
   var labelLeft = true;
   var axisCount =
@@ -993,9 +989,8 @@ function createGraph(graph) {
         graph.block.displayFormats
       )
     : graphProperties.options.scales.xAxes[0].time.displayFormats;
-  graphProperties.options.scales.xAxes[0].ticks.maxTicksLimit =
-    graph.maxTicksLimit;
-  graphProperties.options.scales.xAxes[0].ticks.reverse = graph.reverseTime;
+  graphProperties.options.scales.xAxes[0].ticks.maxTicksLimit = graph.block.maxTicksLimit;
+  graphProperties.options.scales.xAxes[0].ticks.reverse = graph.block.reverseTime;
   graphProperties.options.legend.labels.usePointStyle = graph.block.pointStyle;
 
   if (graph.block.gradients) {
