@@ -413,7 +413,7 @@ function addDeviceUpdateHandler(selector, idx) {
         //but still we have to update the first time.
         var device = Domoticz.getAllDevices()[idx];
         if(device)
-            deviceUpdateHandler(selector, idx, Domoticz.getAllDevices()[idx]);
+            deviceUpdateHandler(selector, idx, device);
     } else {
         Domoticz.subscribe(idx, true, function (device) {
             deviceUpdateHandler(selector, idx, device)
