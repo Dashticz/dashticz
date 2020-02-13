@@ -410,6 +410,10 @@ function addDeviceUpdateHandler(selector, idx) {
         //        console.log('Already subscribed for '+idx)
         //currently the deviceUpdateHandler handles updates for all blocks that use device <idx>
         // so we have to subscribe only once
+        //but still we have to update the first time.
+        var device = Domoticz.getAllDevices()[idx];
+        if(device)
+            deviceUpdateHandler(selector, idx, Domoticz.getAllDevices()[idx]);
     } else {
         Domoticz.subscribe(idx, true, function (device) {
             deviceUpdateHandler(selector, idx, device)
