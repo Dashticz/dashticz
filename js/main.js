@@ -1,7 +1,7 @@
 /* eslint-disable no-prototype-builtins */
-/* global getAllDevicesHandler   myBlockNumbering:writable objectlength config initVersion loadSettings settings*/
-/* global sessionValid MobileDetect moment getBlock buttons handleObjectBlock */
-/* global loadWeatherFull loadWeather Swiper */
+/* global getAllDevicesHandler objectlength config initVersion loadSettings settings*/
+/* global sessionValid MobileDetect moment getBlock */
+/* global Swiper */
 
 //To refactor later:
 /* global switchSecurity*/
@@ -344,7 +344,43 @@ function buildStandby() {
 
 }
 
+function buildDefaultScreens() {
+    if (!screens[1]) screens[1] = {};
+    screens[1].columns = [1, 2];
+    columns[1] = {
+        blocks: [],
+        width: 10
+    };
+    columns[2] = {
+        blocks: [
+            'clock',
+            {
+                title: 'Dashticz manual',
+                url: 'https://dashticz.readthedocs.io'
+            },
+            {
+                title: 'Dashticz forum',
+                url: 'https://www.domoticz.com/forum/viewforum.php?f=67'
+            },
+            'sunrise', {
+                btnimage: 'moon'
+            }
+        ],
+        width: 2
+    }
+    var alldevices = Domoticz.getAllDevices();
+    $.each(alldevices, function (idx) {
+        var idx_n = parseInt(idx);
+        if (idx_n) {
+            columns[1].blocks.push(idx_n)
+        }
+    })
+}
+
 function buildScreens() {
+    if ((screens[1] && !screens[1].columns.length)) {
+        buildDefaultScreens();
+    }
     var allscreens = {}
     for (var t in screens) {
         if (typeof (screens[t]['maxwidth']) !== 'undefined' && typeof (screens[t]['maxheight']) !== 'undefined') {
@@ -391,81 +427,23 @@ function buildScreens() {
                     screenhtml += '><div class="row"></div></div>';
                     $('div.contents').append(screenhtml);
 
-                    if (defaultcolumns === false) {
-                        if (!parseFloat(settings['hide_topbar']) == 1) {
-                            if (typeof (columns['bar']) == 'undefined') {
-                                columns['bar'] = {}
-                                columns['bar']['blocks'] = ['logo', 'miniclock', 'settings']
-                            }
-                            getBlock(columns['bar'], 'bar', 'div.screen' + s, false);
+                    if (!parseFloat(settings['hide_topbar']) == 1) {
+                        if (typeof (columns['bar']) == 'undefined') {
+                            columns['bar'] = {}
+                            columns['bar']['blocks'] = ['logo', 'miniclock', 'settings']
                         }
+                        getBlock(columns['bar'], 'bar', 'div.screen' + s, false);
+                    }
 
-                        for (var cs in screens[t][s]['columns']) {
-                            if (typeof (screens[t]) !== 'undefined') {
-                                var c = screens[t][s]['columns'][cs];
-                                getBlock(columns[c], c, 'div.screen' + s, false);
-                            }
-                        }
-                    } else {
-                        if (parseFloat(settings['hide_topbar']) == 0) $('body .row').append('<div class="col-sm-undefined col-xs-12 sortable colbar transbg dark"><div data-id="logo" class="logo col-xs-2">' + settings['app_title'] + '<div></div></div><div data-id="miniclock" class="miniclock col-xs-8 text-center"><span class="weekday"></span> <span class="date"></span> <span>&nbsp;&nbsp;&nbsp;&nbsp;</span> <span class="clock"></span></div><div data-id="settings" class="settings settingsicon text-right" data-toggle="modal" data-target="#settingspopup"><em class="fas fa-cog" /></div></div></div>');
-                        if (typeof (settings['default_columns']) == 'undefined' || parseFloat(settings['default_columns']) == 3) {
-                            $('body .row').append('<div class="col-xs-5 sortable col1" data-colindex="1"><div class="auto_switches"></div><div class="auto_dimmers"></div></div>');
-                            $('body .row').append('<div class="col-xs-5 sortable col2" data-colindex="2"><div class="block_weather containsweatherfull"></div><div class="auto_media"></div><div class="auto_states"></div></div>');
-                            $('body .row').append('<div class="col-xs-2 sortable col3" data-colindex="3"><div class="auto_clock"></div><div class="auto_sunrise"></div><div class="auto_buttons"></div></div>');
-
-                            if (typeof (settings['wu_api']) !== 'undefined' && settings['wu_api'] !== "" && settings['wu_api'] !== 0 && typeof (settings['wu_city']) !== 'undefined' && settings['wu_city'] !== "") {
-                                $('.col2').prepend('<div class="mh transbg big block_currentweather_big col-xs-12 containsweather"><div class="col-xs-1"><div class="weather" id="weather"></div></div><div class="col-xs-11"><span class="title weatherdegrees" id="weatherdegrees"></span> <span class="weatherloc" id="weatherloc"></span></div></div>');
-                                if (typeof (loadWeatherFull) !== 'function') $.ajax({
-                                    url: 'js/weather.js',
-                                    async: false,
-                                    dataType: 'script'
-                                });
-
-                                loadWeatherFull(settings['wu_city'], settings['wu_country'], $('#weatherfull'));
-                                loadWeather(settings['wu_city'], settings['wu_country']);
-
-                                setInterval(function () {
-                                    loadWeatherFull(settings['wu_city'], settings['wu_country'], $('#weatherfull'));
-                                    loadWeather(settings['wu_city'], settings['wu_country']);
-                                }, (60000 * 30));
-                            }
-
-                            if (typeof (settings['owm_api']) !== 'undefined' && settings['owm_api'] !== "" && settings['owm_api'] !== 0 && typeof (settings['owm_city']) !== 'undefined' && settings['owm_city'] !== "") {
-                                $('.col2').prepend('<div class="mh transbg big block_currentweather_big col-xs-12 containsweather"><div class="col-xs-1"><div class="weather" id="weather"></div></div><div class="col-xs-11"><span class="title weatherdegrees" id="weatherdegrees"></span> <span class="weatherloc" id="weatherloc"></span></div></div>');
-                                if (typeof (loadWeatherFull) !== 'function') $.ajax({
-                                    url: 'js/weather_owm.js',
-                                    async: false,
-                                    dataType: 'script'
-                                });
-
-                                loadWeatherFull(settings['owm_city'], settings['owm_country'], $('#weatherfull'));
-                                loadWeather(settings['owm_city'], settings['owm_country']);
-
-                                setInterval(function () {
-                                    loadWeatherFull(settings['owm_city'], settings['owm_country'], $('#weatherfull'));
-                                    loadWeather(settings['owm_city'], settings['owm_country']);
-                                }, (60000 * 30));
-                            }
-
-                            $('.col3 .auto_clock').html('<div class="transbg block_clock col-xs-12 text-center"><h1 id="clock" class="clock"></h1><h4 id="weekday" class="weekday"></h4><h4 id="date" class="date"></h4></div>');
-                            $('.col3 .auto_sunrise').html('<div class="block_sunrise col-xs-12 transbg text-center sunriseholder"><em class="wi wi-sunrise"></em><span id="sunrise" class="sunrise"></span><em class="wi wi-sunset"></em><span id="sunset" class="sunset"></span></div>');
-                            if (typeof (buttons) !== 'undefined') {
-                                for (var b in buttons) {
-                                    $('.col3 .auto_buttons').append('<div id="block_' + myBlockNumbering + '"</div>');
-                                    handleObjectBlock(buttons[b], Dashticz.mountNewContainer('.col3 .auto_buttons'), 12, null);
-
-                                }
-                            }
-                        } else if (parseFloat(settings['default_columns']) == 1) {
-                            $('body .row').append('<div class="col-xs-12 sortable col1" data-colindex="1"><div class="auto_switches"></div><div class="auto_dimmers"></div></div>');
-                        } else if (parseFloat(settings['default_columns']) == 2) {
-                            $('body .row').append('<div class="col-xs-6 sortable col1" data-colindex="1"><div class="auto_switches"></div><div class="auto_dimmers"></div></div>');
-                            $('body .row').append('<div class="col-xs-6 sortable col2" data-colindex="2"><div class="block_weather containsweatherfull"></div><div class="auto_media"></div><div class="auto_states"></div></div>');
+                    for (var cs in screens[t][s]['columns']) {
+                        if (typeof (screens[t]) !== 'undefined') {
+                            var c = screens[t][s]['columns'][cs];
+                            getBlock(columns[c], c, 'div.screen' + s, false);
                         }
                     }
                 }
             }
-            break;
+            //        break;
         }
     }
 
