@@ -1894,7 +1894,7 @@ function getAllDevicesHandler(value) {
     alldevices = Domoticz.getAllDevices()
     $('.solar').remove();
     if ($('.sunrise').length > 0) {
-        $('.sunrise').html(alldevices['_Sunset']);
+        $('.sunrise').html(alldevices['_Sunrise']);
     }
     if ($('.sunset').length > 0)
         $('.sunset').html(alldevices['_Sunset']);
