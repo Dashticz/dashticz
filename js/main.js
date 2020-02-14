@@ -369,9 +369,9 @@ function buildDefaultScreens() {
         width: 2
     }
     var alldevices = Domoticz.getAllDevices();
-    $.each(alldevices, function (idx) {
+    $.each(alldevices, function (idx, device) {
         var idx_n = parseInt(idx);
-        if (idx_n) {
+        if (idx_n && (!settings['use_favorites'] || device.Favorite)) {
             columns[1].blocks.push(idx_n)
         }
     })
