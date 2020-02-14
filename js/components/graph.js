@@ -228,6 +228,7 @@ function getDeviceDefaults(device, popup) {
       break;
     case "Gas":
       txtUnit = "m3";
+      currentValue = device["CounterToday"];
       break;
     case "Electric":
       txtUnit = "Watt";
@@ -726,7 +727,7 @@ function createGraph(graph) {
       Math.round((graphwidth / window.innerWidth) * window.innerHeight - 25),
       window.innerHeight - 50
     );
-    if (graph.height) setHeight = graph.height;
+    if (graph.block.height) setHeight = graph.block.height;
     if (setHeight) $(".block_" + graphIdx).css("height", setHeight);
   }
 
@@ -767,7 +768,7 @@ function createGraph(graph) {
         lineTension: graph.block.lineTension,
         spanGaps: graph.block.spanGaps,
         fill: graph.block.lineFill? graph.block.lineFill[index] : graph.block.lineFill,
-        yAxisID: index < graph.ylabels? graph.ylabels[index] : graph.ylabels[0]
+        yAxisID: index <= graph.ylabels.length? graph.ylabels[index] : graph.ylabels[0]
       };
 
       if (graph.graphConfig.graph) {
@@ -784,7 +785,7 @@ function createGraph(graph) {
           if (key !== "d") d[key] = parseFloat(y[key]);
         }
         try {
-          var res = eval(customValue).toPrecision(8);
+          var res = eval(customValue).toFixed(2);
           valid = true;
           var datapoint = {
             x: y.d,
@@ -853,18 +854,10 @@ function createGraph(graph) {
 
   // draw the datasets in custom order
   if (!graph.block.custom) {
-    var legendOrder =
-      typeof graph.block.legend == "object" ? graph.legend : false;
-    var drawOrderLast =
-      typeof graph.block.drawOrderLast == "object"
-        ? graph.drawOrderLast
-        : false;
-    var drawOrderDay =
-      typeof graph.block.drawOrderDay == "object" ? graph.drawOrderDay : false;
-    var drawOrderMonth =
-      typeof graph.block.drawOrderMonth == "object"
-        ? graph.drawOrderMonth
-        : false;
+    var legendOrder = typeof graph.block.legend == "object" ? graph.block.legend : false;
+    var drawOrderLast = typeof graph.block.drawOrderLast == "object"? graph.block.drawOrderLast : false;
+    var drawOrderDay = typeof graph.block.drawOrderDay == "object" ? graph.block.drawOrderDay : false;
+    var drawOrderMonth = typeof graph.block.drawOrderMonth == "object"? graph.block.drawOrderMonth : false;
     var order = false;
 
     if (drawOrderLast || drawOrderDay || drawOrderMonth) {
@@ -884,10 +877,8 @@ function createGraph(graph) {
 
     if (order) {
       var arr = [];
-      for (var keyIdx in order) {
-        var key = drawOrderLast === false && drawOrderDay === false && drawOrderMonth === false
-            ? keyIdx
-            : order[keyIdx];
+      for (var keyIdx in order) {        
+        var key = drawOrderLast === false && drawOrderDay === false && drawOrderMonth === false? keyIdx : order[keyIdx];      
         Object.keys(mydatasets).forEach(function(element) {
           if (mydatasets[element].key == key) {
             arr[key] = mydatasets[key];
@@ -1034,6 +1025,7 @@ function createGraph(graph) {
       }
     ];
   }
+  //console.log(graphProperties)
   new Chart(chartctx, graphProperties);
 }
 
@@ -1248,7 +1240,7 @@ function getYlabels(g) {
   var label = g.txtUnit;
   var l = [];
 
-  $.each(g.keys, function(i, key) {
+  $.each(g.keys, function (i, key) {
     switch (key) {
       case "v":
         label === "kWh" && g.realrange === "day" ? l.push("W") : l.push(label);
@@ -1295,6 +1287,13 @@ function getYlabels(g) {
         break;
       case "v2":
         l.push("kWh");
+        break;
+      case "c1":
+      case "c2":
+      case "c3":
+      case "c4":
+        if(g.subtype === 'Energy') l.push("kWh");
+        if(g.subtype === 'Gas') l.push("m3");
         break;
       case "co2":
         l.push("ppm");
