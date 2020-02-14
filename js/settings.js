@@ -33,6 +33,11 @@ settingList['general']['app_title'] = {};
 settingList['general']['app_title']['title'] = language.settings.general.app_title;
 settingList['general']['app_title']['type'] = 'text';
 
+settingList['general']['enable_websocket'] = {};
+settingList['general']['enable_websocket']['title'] = language.settings.general.enable_websocket;
+settingList['general']['enable_websocket']['type'] = 'checkbox';
+settingList['general']['enable_websocket']['help'] = language.settings.general.enable_websocket_help;
+
 settingList['general']['no_rgb'] = {};
 settingList['general']['no_rgb']['title'] = language.settings.general.no_rgb;
 settingList['general']['no_rgb']['type'] = 'checkbox';
