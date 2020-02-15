@@ -213,7 +213,11 @@
         "other": {
             "title": "Overige",
             "setpoint_min": "Thermostaatinstelling minimum waarde",
-            "setpoint_max": "Thermostaatinstelling maximum waarde"
+            "setpoint_max": "Thermostaatinstelling maximum waarde",
+            "evohome_status": "EvoHome controller status",
+            "evohome_status_help": "Auto, Econony, Away, Custom, Day Off, Off",
+            "evohome_boost_zone": "EvoHome zone boost time in minutes",
+            "evohome_boost_hw": "EvoHome hot water boost time in minutes"
         }
     },
     "switches": {
