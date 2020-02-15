@@ -213,7 +213,11 @@
         "other": {
             "title": "Other",
             "setpoint_min": "Thermostat setpoint minimum value",
-            "setpoint_max": "Thermostat setpoint maximum value"
+            "setpoint_max": "Thermostat setpoint maximum value",
+            "evohome_status": "EvoHome controller status",
+            "evohome_status_help": "Auto, Econony, Away, Custom, Day Off, Off",
+            "evohome_boost_zone": "EvoHome zone boost time in minutes",
+            "evohome_boost_hw": "EvoHome hot water boost time in minutes"
         }
     },
     "switches": {
