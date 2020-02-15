@@ -58,7 +58,9 @@ News Parameters
     - | URL of the news feed
       | ``'http://www.nu.nl/rss/algemeen'`` = Example for nu.nl
   * - maxheight
-    - | Maximum height of the news block in pixels
+    - | ``'max'`` (default) : Adjust the height of the block to the maximum height of all the news items.
+      | ``'auto'`` : Adjust the height to fit the displayed news item.
+      | ``<number>`` : Set the height of the block to ``<number>`` pixels. 
   * - title
     - | Title of the news block
   * - icon
