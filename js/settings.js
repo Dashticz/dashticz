@@ -541,6 +541,7 @@ settingList['other']['setpoint_max']['type'] = 'text';
 settingList['other']['evohome_status'] = {};
 settingList['other']['evohome_status']['title'] = language.settings.other.evohome_status;
 settingList['other']['evohome_status']['type'] = 'text';
+settingList['other']['evohome_status']['help'] = language.settings.other.evohome_status_help;
 
 settingList['other']['evohome_boost_zone'] = {};
 settingList['other']['evohome_boost_zone']['title'] = language.settings.other.evohome_boost_zone;
@@ -687,8 +688,8 @@ if (typeof(settings['disable_update_check']) === 'undefined') settings['disable_
 if (typeof(settings['setpoint_min']) === 'undefined') settings['setpoint_min'] = 5;
 if (typeof(settings['setpoint_max']) === 'undefined') settings['setpoint_max'] = 40;
 if (typeof(settings['evohome_status']) === 'undefined') settings['evohome_status'] = 'Auto';
-if (typeof(settings['evohome_boost_zone']) === 'undefined') settings['evohome_boost_zone'] = 1;
-if (typeof(settings['evohome_boost_hw']) === 'undefined') settings['evohome_boost_hw'] = 1;
+if (typeof(settings['evohome_boost_zone']) === 'undefined') settings['evohome_boost_zone'] = 60;
+if (typeof(settings['evohome_boost_hw']) === 'undefined') settings['evohome_boost_hw'] = 15;
 if (typeof(settings['login_timeout']) === 'undefined') settings['login_timeout'] = 60;
 
 //The Config settings for all checkbox items will be converted to a number
