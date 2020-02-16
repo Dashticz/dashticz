@@ -140,6 +140,7 @@ function getBlockDefaults(devices, hasBlock, b) {
     hasBlock && isDefined(b.sortDevices) ? b.sortDevices : false;
   block.spanGaps = hasBlock && isDefined(b.spanGaps) ? b.spanGaps : false;
   block.title = hasBlock && isDefined(b.title) ? b.title : false;
+  block.toolTipStyle = hasBlock && isDefined(b.toolTipStyle) ? b.toolTipStyle : false;
   block.width = hasBlock && isDefined(b.width) ? b.width : 12;
   return block;
 }
@@ -1168,7 +1169,71 @@ function getDefaultGraphProperties(graph) {
       maintainAspectRatio: false,
       tooltips: {
         mode: "index",
-        intersect: false
+        intersect: false,
+        enabled: !graph.block.toolTipStyle,
+        custom: function (tooltip) {
+
+          if (graph.block.toolTipStyle) {
+
+            var tooltipEl = $('#' + graph.primaryIdx + '_chartjs-tooltip');
+            minWidth = graph.range !== 'day' ? 100 : 135;
+
+            if (tooltipEl.length === 0) {
+              var tt = '<div id="' + graph.primaryIdx + '_chartjs-tooltip" class="chartjs-tooltip" style="midWidth:' + minWidth + '"><table></table></div>';
+              $('#graphoutput_' + graph.primaryIdx).parent().append(tt);
+            }
+
+            if (tooltip.opacity === 0) {
+              tooltipEl.css({ opacity: 0 });
+              return;
+            }
+
+            tooltipEl.removeClass('left right');
+            if (tooltip.yAlign) tooltipEl.addClass(tooltip.xAlign);
+
+            function getBody(bodyItem) {
+              return bodyItem.lines;
+            }
+
+            if (tooltip.body) {
+              var titleLines = tooltip.title || [];
+              var bodyLines = tooltip.body.map(getBody);
+              var html = '<thead style="border-color:' + graph.block.buttonsIcon + '">';
+
+              titleLines.forEach(function (title) {
+                title = graph.range !== 'day' ? moment(title).format("DD/MM/YYYY") : moment(title).format("HH:mm, DD/MM/YYYY");
+                html += '<tr><th colspan="3"><i class="far fa-clock" style="color:' + graph.block.buttonsIcon + '"></i>' + title + '</th></tr>';
+              });
+
+              html += '</thead><tbody>';
+
+              bodyLines.forEach(function (body, i) {
+                var colors = tooltip.labelColors[i];
+                var style = 'background:' + colors.backgroundColor + '; border-color:' + colors.borderColor + ';';
+                var span = '<span class="chartjs-tooltip-key" style="' + style + '"></span>';
+                html += '<tr><td>' + span + '</td>';
+                html += '<td>' + body[0].split(':')[0] + '</td>';
+                html += '<td>' + parseFloat(body[0].split(':')[1].replace('NaN', '0')).toFixed(2) + '</td></tr>';
+              });
+              html += '</tbody>';
+              tooltipEl.find('table').html(html);
+            }
+
+            var positionY = this._chart.canvas.offsetTop;
+            var positionX = this._chart.canvas.offsetLeft;
+
+            tooltipEl.css({
+              opacity: 1,
+              minWidth: minWidth,
+              left: positionX + tooltip.caretX + 'px',
+              top: positionY + tooltip.caretY + 'px',
+              fontFamily: tooltip._bodyFontFamily,
+              fontSize: tooltip.bodyFontSize + 'px',
+              fontStyle: tooltip._bodyFontStyle,
+              xOffset: tooltip.xOffset,
+            });
+          }
+        }
       },
       layout: {
         padding: {
@@ -1243,17 +1308,26 @@ function getYlabels(g) {
   $.each(g.keys, function (i, key) {
     switch (key) {
       case "v":
-        label === "kWh" && g.realrange === "day" ? l.push("W") : l.push(label);
-        break;
-      case "uvi":
-      case "v_min":
-      case "v_max":
-      case "v_avg":
+      case "v2":
+      case "eu":
       case "r1":
       case "r2":
-      case "eu":
-      case "u":
-        l.push(label);
+      case "c":
+      case "c1":
+      case "c2":
+      case "c3":
+      case "c4": 
+      case "v_min":
+      case "v_max":
+      case "v_avg":      
+      case "u":      
+        if (g.subtype === 'Energy'){
+          label === "kWh" && g.realrange === "day" ? l.push("W") : l.push(label);
+        } else if (g.subtype === 'Gas'){
+          l.push("m³");
+        } else {
+          l.push(label);
+        }
         break;
       case "lux":
         l.push("Lux");
@@ -1266,6 +1340,9 @@ function getYlabels(g) {
         break;
       case "lux_max":
         l.push("Lux (max)");
+        break;
+      case "di":
+        l.push("°");
         break;
       case "gu":
       case "sp":
@@ -1285,21 +1362,11 @@ function getYlabels(g) {
       case "sx":
         l.push(_TEMP_SYMBOL);
         break;
-      case "v2":
-        l.push("kWh");
-        break;
-      case "c1":
-      case "c2":
-      case "c3":
-      case "c4":
-        if(g.subtype === 'Energy') l.push("kWh");
-        if(g.subtype === 'Gas') l.push("m3");
-        break;
       case "co2":
         l.push("ppm");
         break;
       default:
-        l.push(key);
+        l.push(label);
     }
   });
   return l;
