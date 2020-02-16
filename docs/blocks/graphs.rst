@@ -8,13 +8,25 @@ then when you click on the block a popup window will appear showing a graph of t
 
 Besides popup graphs it's also possible to show the graph directly on the dashboard itself.
 
-If you want to show the graph of the data of a single device, you can add the graph-id to a column definition as follows::
+If you want to show the (undefined) graph of the data of a single device, you can add the graph-id to a column definition as follows::
 
     //Adding a graph of device 691 to column 2
     columns[2]['blocks'] = [
       ...,
       'graph_691',      //691 is the device id for which you want to show the graph
       ...
+    ]
+
+For a defined graph you have to add a block definition to CONFIG.js and add the devices-parameter::
+
+    blocks['my_graph'] = {     //my_graph can be any name you want, as long as you add 'devices' to the block
+    	...,
+        devices: [691],     //691 is the device id
+	...
+    }
+
+    columns[2]['blocks'] = [
+	...,'my_graph',...
     ]
 
 It's also possible to combine the data from several devices into one graph. In that case you have to add a block definition to CONFIG.js and add the devices-parameter::
@@ -54,6 +66,8 @@ The following block parameters can be used to configure the graph:
       | ``['v2']``, ``['mm']``, ``['eu']``, ``['u']``, ``['u_max']``,``['co2']``
   * - height
     - ``'300px'``: Height of the graph in the graph block
+  * - width
+    - ``'6'``: The width of the block relative to the column width
   * - displayFormats
     - Object to set the time display format on the x-axis. See below for an example.
   * - custom
@@ -262,10 +276,10 @@ So we can add a more meaningful legend as follows::
     blocks['graph_43'] = {
     	devices: [43],
         legend: {
-          v: "Usage 1",
-          v2: "Usage 2",
-          r1: "Return 1",
-          r2: "Return 2"
+          v_43: "Usage 1",
+          v2_43: "Usage 2",
+          r1_43: "Return 1",
+          r2_43: "Return 2"
     }
 
 Resulting in:
@@ -296,27 +310,27 @@ The explanation will follow after that::
                 range: 'day',
                 filter: '24 hours',
                 data: {
-                    nett: 'd.v+d.v2-d.r1-d.r2',
-                    usage: 'd.v+d.v2',
-                    generation: '-d.r1-d.r2'
+                    nett: 'd.v_43+d.v2_43-d.r1_43-d.r2_43',
+                    usage: 'd.v_43+d.v2_43',
+                    generation: '-d.r1_43-d.r2_43'
                 }
             },
             "last 2 weeks": {
                 range: 'month',
                 filter: '14 days',
                 data: {
-                    nett: 'd.v+d.v2-d.r1-d.r2',
-                    usage: 'd.v+d.v2',
-                    generation: '-d.r1-d.r2'
+                    nett: 'd.v_43+d.v2_43-d.r1_43-d.r2_43',
+                    usage: 'd.v_43+d.v2_43',
+                    generation: '-d.r1_43-d.r2_43'
                 }
             },
             "last 6 months": {
                 range: 'year',
                 filter: '6 months',
                 data: {
-                    nett: 'd.v+d.v2-d.r1-d.r2',
-                    usage: 'd.v+d.v2',
-                    generation: '-d.r1-d.r2'
+                    nett: 'd.v_43+d.v2_43-d.r1_43-d.r2_43',
+                    usage: 'd.v_43+d.v2_43',
+                    generation: '-d.r1_43-d.r2_43'
                 }
             }
         },
@@ -345,12 +359,12 @@ A ``custom`` object start with the name of the button. The button should contain
 
 As you can see in the example the first value will have the name 'nett'. The formula to compute the value is::
 
-  'd.v+d.v2-d.r1-d.r2'
+  'd.v_idx+d.v2_idx-d.r1_idx-d.r2_idx'
 
 The ``d`` object contains the data as delivered by Domoticz. As you maybe remember from a previous example
-Domoticz provides the two power usage values (v and v2) and the two power return values (r1 and r2).
+Domoticz provides the two power usage values (v_idx and v2_idx) and the two power return values (r1_idx and r2_idx).
 
-So the first part sums the two power usage values (``d.v+d.v2``) and the last parts substracts the two return values (``-d.r1-d.r2``),
+So the first part sums the two power usage values (``d.v_idx+d.v2_idx``) and the last parts substracts the two return values (``-d.r1_idx-d.r2_idx``),
 
 The two other value-names in the data object (usage and generation) will compute the sum of the power usage values and the power return values respectively.
 
@@ -368,21 +382,21 @@ Below another example to adapt the reported values of a watermeter to liters::
                 range: 'day',
                 filter: '6 hours',
                 data: {
-                    liter: 'd.v*100'            }
+                    liter: 'd.v_903*100'            }
                 },
 
       "today": {
                 range: 'day',
                 filter: '12 hours',
                 data: {
-                    liter: 'd.v*100'            }
+                    liter: 'd.v_903*100'            }
                 },
       
       "last week": {
                 range: 'month',
                 filter: '7 days',
                 data: {
-                    liter: 'd.v*1000'            }
+                    liter: 'd.v_903*1000'            }
                 }
 
 
@@ -458,7 +472,7 @@ To define the y-axes for a custom graph you can add the ``ylabels`` parameter as
             'The Temp': {
                 ylabels: ['yaxis of temp'],
                 data: {
-                    'temp value': 'd.te'
+                    'temp value': 'd.te_659'
                 },
                 range: 'day',
                 filter: '2 days',
@@ -747,23 +761,23 @@ Updated buttons (one of many styles):
 More Examples
 -------------
 
-Multigraph includes 2 separate *temperature* sensors, with gradients, custom points (images) and button styling:
+This graph includes 2 separate *temperature* sensors, with gradients, custom points (images) and button styling:
 
 .. image :: img/muligraph_patch4_1.png
 
-Multigraph includes 3 separate *percentage* sensors, custom points (images) and button styling:
+This graph includes 3 separate *percentage* sensors, custom points (images) and button styling:
 
 .. image :: img/muligraph_patch4_2.png
 
-Multigraph includes 2 separate *energy* sensors, subtle gradients, no points and uses the *logarithmic* scale:
+This graph includes 2 separate *energy* sensors, subtle gradients, no points and uses the *logarithmic* scale:
 
 .. image :: img/muligraph_patch4_3.png
 
-Multigraph includes 2 separate *counter* sensors, without gradients, but with custom points (images) and button styling:
+This graph includes 2 separate *counter* sensors, without gradients, but with custom points (images) and button styling:
 
 .. image :: img/muligraph_patch4_4.png
 
-Multigraph uses 2 *temperature* sensors **and** *custom data*, calculating a 3rd virtual dataset, showing the difference between the outside temperature and the inside temperature:
+This graph uses 2 *temperature* sensors **and** *custom data*, calculating a 3rd virtual dataset, showing the difference between the outside temperature and the inside temperature:
 
 .. image :: img/muligraph_patch4_5.png
 
