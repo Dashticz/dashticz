@@ -1789,6 +1789,131 @@ canvas{
 }
 /* END: TOOLTIPSTYLE */
 
+/* START: GRAPH-MENU MODAL */
+.flex-row {
+	display: -webkit-box;
+	display: -ms-flexbox;
+	display: flex;
+	-ms-flex-wrap: wrap;
+	flex-wrap: wrap;
+}
+
+.flex-column {
+	height: 100%;
+  	min-height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
+.text-yellow {
+	color: #f0ad4e!important;
+}
+
+.text-blue {
+	color: #0275d8!important;
+}
+
+.text-green {
+	color: #5cb85c!important;
+}
+
+.text-red {
+	color: #d9534f!important;
+}
+
+.graph-menu {
+	color: white;
+}
+
+.graphbuttons .dropdown-menu {
+    min-width: 131px!important;
+}
+
+.graph-menu hr {
+    border-width: 1px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.graph-menu .modal-title,
+.graph-menu .fas {
+	font-size: 16px;
+	margin: 0;
+}
+
+.graph-menu .modal-title .fas {
+	padding-right: 5px;
+}
+.graph-menu div:not(.debug) > .fas {
+    padding-right: 5px;
+}
+
+.graph-menu .flex-row {
+	font-size: 14px;
+}
+
+.graph-menu .flex-row.title {
+	justify-content: space-between;
+}
+
+.graph-menu .label {
+	color: #939393;
+	font-size: inherit;
+	padding: 0;
+	margin-right: 10px;
+}
+
+.graph-menu .devices,
+.graph-menu .input-keys,
+.graph-menu .output-keys,
+.graph-menu .ylabels {
+	padding-right: 20px;
+}
+
+.graph-menu .modal-header {
+	padding-top: 20px;
+	padding-bottom: 0px;
+}
+
+.graph-menu .device-list {
+	width: 100%;
+    flex: 1;
+    background: black;
+    padding: 0px 10px;
+    border: solid 0.5px white;
+    border-radius: 3px;
+    margin-right: 10px;
+}
+
+.graph-menu .device-list .device {
+	font-size: 12px;
+	border-bottom: solid 0.5px white;
+    padding: 5px 0px;
+}
+
+.graph-menu .device-list .device .idx {
+	font-size: 12px;
+	margin-right: 5px;
+	float: right!important;
+}
+
+.graph-menu .device-list .device .idx .fas{
+	font-size: 12px;
+	margin-right: 5px;;
+}
+
+.graph-menu textarea {
+	width: 70%;
+	background: black;
+    color: grey;
+}
+
+.graph-menu .btn.debug {
+	color: black;
+	background-color: white;
+}
+/* END: GRAPH-MENU MODAL */
+
 /* PLUGINS */
 .morris-hover{position:absolute;z-index:1000}.morris-hover.morris-default-style{border-radius:10px;padding:6px;color:#666;background:rgba(255,255,255,0.8);border:solid 2px rgba(230,230,230,0.8);font-family:sans-serif;font-size:12px;text-align:center}.morris-hover.morris-default-style .morris-hover-row-label{font-weight:bold;margin:0.25em 0}
 .morris-hover.morris-default-style .morris-hover-point{white-space:nowrap;margin:0.1em 0}

@@ -70,74 +70,48 @@ function getBlockDefaults(devices, hasBlock, b) {
 
   var block = {};
   block.devices = devices;
-  block.datasetColors =
-    hasBlock && isDefined(b.datasetColors) ? b.datasetColors : datasetColors;
+  block.datasetColors = hasBlock && isDefined(b.datasetColors) ? b.datasetColors : datasetColors;
   block.barWidth = hasBlock && isDefined(b.barWidth) ? b.barWidth : 0.9;
-  block.borderColors =
-    hasBlock && isDefined(b.borderColors)
-      ? b.borderColors
-      : block.datasetColors;
+  block.borderColors = hasBlock && isDefined(b.borderColors)? b.borderColors : block.datasetColors;
   block.borderDash = hasBlock && isDefined(b.borderDash) ? b.borderDash : [];
   block.borderWidth = hasBlock && isDefined(b.borderWidth) ? b.borderWidth : 2;
-  block.buttonsBorder =
-    hasBlock && isDefined(b.buttonsBorder) ? b.buttonsBorder : "white";
-  block.buttonsColor =
-    hasBlock && isDefined(b.buttonsColor) ? b.buttonsColor : "black";
-  block.buttonsFill =
-    hasBlock && isDefined(b.buttonsFill) ? b.buttonsFill : "white";
-  block.buttonsIcon =
-    hasBlock && isDefined(b.buttonsIcon) ? b.buttonsIcon : "#686868";
-  block.buttonsMarginX =
-    hasBlock && isDefined(b.buttonsMarginX) ? b.buttonsMarginX : 2;
-  block.buttonsMarginY =
-    hasBlock && isDefined(b.buttonsMarginY) ? b.buttonsMarginY : 0;
+  block.buttonsBorder = hasBlock && isDefined(b.buttonsBorder) ? b.buttonsBorder : "white";
+  block.buttonsColor = hasBlock && isDefined(b.buttonsColor) ? b.buttonsColor : "black";
+  block.buttonsFill = hasBlock && isDefined(b.buttonsFill) ? b.buttonsFill : "white";
+  block.buttonsIcon = hasBlock && isDefined(b.buttonsIcon) ? b.buttonsIcon : "#686868";
+  block.buttonsMarginX = hasBlock && isDefined(b.buttonsMarginX) ? b.buttonsMarginX : 2;
+  block.buttonsMarginY = hasBlock && isDefined(b.buttonsMarginY) ? b.buttonsMarginY : 0;
   block.buttonsPadX = hasBlock && isDefined(b.buttonsPadX) ? b.buttonsPadX : 6;
   block.buttonsPadY = hasBlock && isDefined(b.buttonsPadY) ? b.buttonsPadY : 2;
-  block.buttonsRadius =
-    hasBlock && isDefined(b.buttonsRadius) ? b.buttonsRadius : 4;
-  block.buttonsShadow =
-    hasBlock && isDefined(b.buttonsShadow) ? b.buttonsShadow : false;
+  block.buttonsRadius = hasBlock && isDefined(b.buttonsRadius) ? b.buttonsRadius : 4;
+  block.buttonsShadow = hasBlock && isDefined(b.buttonsShadow) ? b.buttonsShadow : false;
   block.buttonsSize = hasBlock && isDefined(b.buttonsSize) ? b.buttonsSize : 14;
-  block.buttonsText =
-    hasBlock && isDefined(b.buttonsText) ? b.buttonsText : false;
+  block.buttonsText = hasBlock && isDefined(b.buttonsText) ? b.buttonsText : false;
   block.cartesian = hasBlock && isDefined(b.cartesian) ? b.cartesian : "linear";
   block.custom = hasBlock && isDefined(b.custom) ? b.custom : false;
-  block.displayFormats =
-    hasBlock && isDefined(b.displayFormats) ? b.displayFormats : false;
-  block.drawOrderDay =
-    hasBlock && isDefined(b.drawOrderDay) ? b.drawOrderDay : false;
-  block.drawOrderLast =
-    hasBlock && isDefined(b.drawOrderLast) ? b.drawOrderLast : false;
-  block.drawOrderMonth =
-    hasBlock && isDefined(b.drawOrderMonth) ? b.drawOrderMonth : false;
+  block.debugButton = hasBlock && isDefined(b.debugButton) ? b.debugButton : false;
+  block.displayFormats = hasBlock && isDefined(b.displayFormats) ? b.displayFormats : false;
+  block.drawOrderDay = hasBlock && isDefined(b.drawOrderDay) ? b.drawOrderDay : false;
+  block.drawOrderLast = hasBlock && isDefined(b.drawOrderLast) ? b.drawOrderLast : false;
+  block.drawOrderMonth = hasBlock && isDefined(b.drawOrderMonth) ? b.drawOrderMonth : false;
   block.gradients = hasBlock && isDefined(b.gradients) ? b.gradients : false;
   block.graph = hasBlock && isDefined(b.graph) ? b.graph : "line";
   block.graphTypes = hasBlock && isDefined(b.graphTypes) ? b.graphTypes : false;
   block.height = hasBlock && isDefined(b.height) ? b.height : false;
-  block.iconColour =
-    hasBlock && isDefined(b.iconColour) ? b.iconColour : "grey";
+  block.iconColour = hasBlock && isDefined(b.iconColour) ? b.iconColour : "grey";
   block.interval = hasBlock && isDefined(b.interval) ? b.interval : 1;
   block.legend = hasBlock && isDefined(b.legend) ? b.legend : false;
   block.lineFill = hasBlock && isDefined(b.lineFill) ? b.lineFill : false;
-  block.lineTension =
-    hasBlock && isDefined(b.lineTension) ? b.lineTension : 0.1;
-  block.maxTicksLimit =
-    hasBlock && isDefined(b.maxTicksLimit) ? b.maxTicksLimit : null;
+  block.lineTension = hasBlock && isDefined(b.lineTension) ? b.lineTension : 0.1;
+  block.maxTicksLimit = hasBlock && isDefined(b.maxTicksLimit) ? b.maxTicksLimit : null;
   block.method = hasBlock && isDefined(b.method) ? b.method : 1;
-  block.pointBorderColor =
-    hasBlock && isDefined(b.pointBorderColor) ? b.pointBorderColor : ["grey"];
-  block.pointBorderWidth =
-    hasBlock && isDefined(b.pointBorderWidth) ? b.pointBorderWidth : 0;
-  block.pointFillColor =
-    hasBlock && isDefined(b.pointFillColor)
-      ? b.pointFillColor
-      : block.datasetColors;
+  block.pointBorderColor = hasBlock && isDefined(b.pointBorderColor) ? b.pointBorderColor : ["grey"];
+  block.pointBorderWidth = hasBlock && isDefined(b.pointBorderWidth) ? b.pointBorderWidth : 0;
+  block.pointFillColor = hasBlock && isDefined(b.pointFillColor)? b.pointFillColor : block.datasetColors;
   block.pointRadius = hasBlock && isDefined(b.pointRadius) ? b.pointRadius : 0;
   block.pointStyle = hasBlock && isDefined(b.pointStyle) ? b.pointStyle : false;
-  block.reverseTime =
-    hasBlock && isDefined(b.reverseTime) ? b.reverseTime : false;
-  block.sortDevices =
-    hasBlock && isDefined(b.sortDevices) ? b.sortDevices : false;
+  block.reverseTime = hasBlock && isDefined(b.reverseTime) ? b.reverseTime : false;
+  block.sortDevices = hasBlock && isDefined(b.sortDevices) ? b.sortDevices : false;
   block.spanGaps = hasBlock && isDefined(b.spanGaps) ? b.spanGaps : false;
   block.title = hasBlock && isDefined(b.title) ? b.title : false;
   block.toolTipStyle = hasBlock && isDefined(b.toolTipStyle) ? b.toolTipStyle : false;
@@ -538,8 +512,7 @@ function getGraphData(devices, selGraph) {
 
                 graph = dtGraphs[graph.primaryIdx];
                 graph.keys = arrYkeys;
-                graph.ykeys = newKeys;
-                graph.ylabels = getYlabels(graph);
+                graph.ykeys = newKeys;                
                 graph.currentValues = currentValues;
                 graph.data = multidata;
                 showGraph(graph, selGraph);
@@ -582,6 +555,8 @@ function showGraph(graph, selGraph) {
       graph.dataFilterCount = 4;
       graph.dataFilterUnit = "hours";
     }
+
+    graph.ylabels = getYlabels(graph);                
 
     if (graph.block.custom) {
       if (isInitial) {
@@ -1048,30 +1023,10 @@ function createButtons(graph, ranges, customRange) {
   btn.fill = "background-color:" + graph.block.buttonsFill + ";";
   btn.border = "border-color:" + graph.block.buttonsBorder + ";";
   btn.radius = "border-radius:" + graph.block.buttonsRadius + "px;";
-  btn.padX =
-    "padding-left:" +
-    graph.block.buttonsPadX +
-    "px;padding-right:" +
-    graph.block.buttonsPadX +
-    "px;";
-  btn.padY =
-    "padding-top:" +
-    graph.block.buttonsPadY +
-    "px;padding-bottom:" +
-    graph.block.buttonsPadY +
-    "px;";
-  btn.marginX =
-    "margin-left:" +
-    graph.block.buttonsMarginX +
-    "px;margin-right:" +
-    graph.block.buttonsMarginX +
-    "px;";
-  btn.marginY =
-    "margin-top:" +
-    graph.block.buttonsMarginY +
-    "px;margin-bottom:" +
-    graph.block.buttonsMarginY +
-    "px;";
+  btn.padX = "padding-left:" + graph.block.buttonsPadX + "px;padding-right:" + graph.block.buttonsPadX + "px;"; 
+  btn.padY = "padding-top:" + graph.block.buttonsPadY + "px;padding-bottom:" + graph.block.buttonsPadY + "px;";
+  btn.marginX = "margin-left:" + graph.block.buttonsMarginX + "px;margin-right:" + graph.block.buttonsMarginX + "px;";
+  btn.marginY = "margin-top:" + graph.block.buttonsMarginY + "px;margin-bottom:" + graph.block.buttonsMarginY + "px;";
   btn.shadow = "box-shadow: 0px 8px 15px " + graph.block.buttonsShadow + ";";
 
   $.each(
@@ -1099,18 +1054,8 @@ function createButtons(graph, ranges, customRange) {
   };
 
   if (isDefined(settings["graph_zoom"]) && settings["graph_zoom"] === 1) {
-    buttons +=
-      '<button type="button" data-canvas="graphoutput_' +
-      graph.graphIdx +
-      '" id="resetZoom' +
-      graph.graphIdx +
-      '" ' +
-      style +
-      '" class="btn btn-default">';
-    buttons +=
-      '	<i class="fas fa-search-minus" style="font-size:14px;color:' +
-      btn.icon +
-      '"></i>';
+    buttons += '<button type="button" data-canvas="graphoutput_' + graph.graphIdx + '" id="resetZoom' + graph.graphIdx + '" ' + style + '" class="btn btn-default">';
+    buttons += '  <i class="fas fa-search-minus" style="font-size:14px;color:' + btn.icon + '"></i>';
     buttons += "</button>";
 
     $(document).on("click", "#resetZoom" + graph.graphIdx, function() {
@@ -1128,25 +1073,77 @@ function createButtons(graph, ranges, customRange) {
     var btnText = customRange ? item : btnTextList[item];
     buttons += '<button type="button" ' + style + '" class="btn btn-default';
     if (graph.range === item) buttons += " active";
-    buttons +=
-      '" onclick="updateGraphs(\'' +
-      graph.blockId +
-      "', [" +
-      graph.block.devices +
-      "],'" +
-      item +
-      "','" +
-      graph.popup +
-      '\');"><i class="' +
-      btnIcons[i] +
-      '" style="font-size:14px;color:' +
-      btn.icon +
-      '">&nbsp;</i>&nbsp;' +
-      btnText +
-      "</button> ";
+    buttons += '" onclick="updateGraphs(\'' + graph.blockId + "', [" + graph.block.devices + "],'" + item + "','" + graph.popup + '\');"><i class="' + btnIcons[i] + '" style="font-size:14px;color:' + btn.icon + '">&nbsp;</i>&nbsp;' + btnText + "</button> ";
   });
+
+  if(graph.block.debugButton){
+    buttons += '<div class="btn-group">';
+    buttons += '  <button type="button" id="graphMenu_' + graph.graphIdx + '" ' + style + '" class="btn btn-default dropdown-toggle" data-toggle="dropdown">';
+    buttons += '    <i class="fas fa-bars" style="font-size:14px;color:' + btn.icon + '"></i>';
+    buttons += '  </button>';
+    buttons += '  <ul class="dropdown-menu pull-right">';
+    buttons += '    <li><a href="#" onclick="showData(\'' + graph.graphIdx + '\'); return false;"><i class="fas fa-code" style="font-size:14px;color:' + btn.icon + '">&nbsp;</i>&nbsp;Show Data</a></li>';
+    buttons += '  </ul>';
+    buttons += '</div>';
+  }
   buttons += "</div>";
   return buttons;
+}
+
+function showData(graphIdx){
+  var graph = dtGraphs[graphIdx];
+  if($('#modal_' + graphIdx).length === 0){
+    var html = '';
+    html += '<div id="modal_' + graphIdx + '" class="modal graph-menu" tabindex="-1" role="dialog">';
+    html += ' <div class="modal-dialog" role="document">';
+    html += '   <div class="modal-content" style="background-image:url(' + config['background_image'] + ');">';
+    html += '     <div class="modal-header">';
+    html += '       <div class="flex-row title">';
+    html += '         <h5 class="modal-title"><i class="fas fa-chart-line"></i>' + graph.name + '</h5>';
+    html += '         <div class="btn-group" role="group" aria-label="Graph Debug">';
+    html += '           <a type="button" class="btn debug" href="#" onclick="console.log(dtGraphs[\'' + graphIdx + '\']); return false;"><i class="fas fa-code"></i></a>';
+    html += '           <a type="button" class="btn debug" href="data:application/octet-stream;charset=utf-16le;base64,' + btoa(JSON.stringify(dtGraphs[graph.graphIdx], null, 2)) + '" download="' + graphIdx + '.json"><i class="fas fa-save"></i></a>';
+    html += '           <button type="button" class="btn debug" data-dismiss="modal"><i class="fas fa-window-close"></i></button>';
+    html += '         </div>';
+    html += '       </div>';
+    html += '       <hr/>';
+    html += '       <div class="flex-row">';
+    html += '         <div class="devices"><i class="fas fa-bolt text-yellow"></i><span class="label">Devices:</span>' + graph.block.devices.join(', ') + '</div>';
+    html += '         <div class="input-keys"><i class="fas fa-key text-red"></i><span class="label">Input Keys:</span>' + graph.keys.join(', ') + '</div>';
+    html += '         <div class="output-keys"><i class="fas fa-key text-green"></i><span class="label">Output Keys:</span>' + graph.ykeys.join(', ') + '</div>';
+    html += '         <div class="ylabels"><i class="fas fa-balance-scale-right text-blue"></i></i><span class="label">Y Labels:</span>' + graph.ylabels.join(', ') + '</div>';
+    html += '       </div>';
+    html += '     </div>';
+    html += '     <div class="modal-body">';
+    html += '       <div class="flex-row">';
+    html += '         <div class="device-list"></div>';
+    html += '         <textarea class="form-control" rows="20">' + JSON.stringify(graph, null, 2) + '</textarea>';
+    html += '       </div>';
+    html += '     </div>';
+    html += ' </div>';
+    html += '</div>';
+
+    $(html).appendTo('body');
+
+    $.each(graph.block.devices, function (i, idx) {
+      var g = dtGraphs[graph.blockId + idx];
+      var url = config['domoticz_ip'] + '/json.htm?type=devices&rid=' + idx;
+      
+      $.getJSON(url, function( data ) {
+        var device = data.result[0];
+        var d ='';
+        d += '<div class="device">';
+        d += '  <div class="name"><span class="label">Name:</span>' + device.Name + '<a class="idx text-yellow" href="' + url + '" target="_blank"><i class="fas fa-link text-blue"></i>' + device.idx +'</a></div>';
+        d += '  <div class="type"><span class="label">Type:</span>' + device.Type + '</div>';
+        d += '  <div class="subtype"><span class="label">SubType:</span>' + device.SubType + '</div>';
+        d += '  <div class="hardwareName"><span class="label">Hardware Name:</span>' + device.HardwareName + '</div>';
+        d += '  <div class="data"><span class="label">Data:</span>' + device.Data + '</div>';
+        d += '  <div class="lastUpdate"><span class="label">Last Update:</span>' + device.LastUpdate + '</div>';
+        $(d).appendTo('#modal_' + graphIdx + ' .device-list');
+      });
+    });
+  }  
+  $('#modal_' + graphIdx).modal('show');
 }
 
 function updateGraphs(blockId, ids, range, popup) {
@@ -1170,10 +1167,10 @@ function getDefaultGraphProperties(graph) {
       tooltips: {
         mode: "index",
         intersect: false,
-        enabled: !graph.block.toolTipStyle,
+        enabled: !graph.popup? !graph.block.toolTipStyle : false,
         custom: function (tooltip) {
 
-          if (graph.block.toolTipStyle) {
+          if (graph.block.toolTipStyle || graph.popup) {
 
             var tooltipEl = $('#' + graph.primaryIdx + '_chartjs-tooltip');
             minWidth = graph.range !== 'day' ? 100 : 135;
@@ -1321,7 +1318,7 @@ function getYlabels(g) {
       case "v_max":
       case "v_avg":      
       case "u":      
-        if (g.subtype === 'Energy'){
+        if (g.subtype === 'Energy' || g.subtype === 'kWh' ){
           label === "kWh" && g.realrange === "day" ? l.push("W") : l.push(label);
         } else if (g.subtype === 'Gas'){
           l.push("m³");
