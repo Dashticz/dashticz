@@ -91,11 +91,11 @@ The following block parameters can be used to configure the graph:
   * - lineTension
     - sets the bezier curve the line is, 0 is straight, 1 is extremely curved! e.g. 0.4 gives a nice bendy line (default is 0.1)
   * - drawOrderLast
-    - an array stating the order in which each dataset should be added to the graph for "last hours", e.g. ['v2', 'v1']
+    - an array stating the order in which each dataset should be added to the graph for "last hours", e.g. ['v_idx2', 'v_idx1']
   * - drawOrderDay
-    - an array stating the order in which each dataset should be added to the graph for "today", e.g. ['v3', 'v1', 'v2']
+    - an array stating the order in which each dataset should be added to the graph for "today", e.g. ['v_idx3', 'v_idx1', 'v_idx2']
   * - drawOrderMonth
-    - an array stating the order in which each dataset should be added to the graph for "last month", e.g. ['v1', 'v2', 'c1', 'c2']
+    - an array stating the order in which each dataset should be added to the graph for "last month", e.g. ['v_idx1', 'v_idx2', 'c_idx1', 'c_idx2']
   * - buttonsBorder
     - color of the buttons border, e.g. 'red', default is 'white'
   * - buttonsColor
