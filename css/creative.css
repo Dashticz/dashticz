@@ -1705,6 +1705,90 @@ a:not([href]) {
 
 /* end news block */
 
+/* START: TOOLTIPSTYLE */
+canvas{
+	-moz-user-select: none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+}
+
+.chartjs-tooltip {
+	opacity: 1;
+	position: absolute;
+	background: rgba(0, 0, 0, .7);
+	color: white;
+	border-radius: 10px;
+	-webkit-transition: all .1s ease;
+	transition: all .1s ease;
+	pointer-events: none;
+	-webkit-transform: translate(-50%, 0);
+	transform: translate(-50%, 0);
+	padding: 10px;	
+}
+
+.chartjs-tooltip.left {
+	transform: translate(13%, -100%);
+}
+
+.chartjs-tooltip.right {
+    transform: translate(-110%, -100%)
+}
+
+.chartjs-tooltip.left:before,
+.chartjs-tooltip.right:before {
+    border: solid;
+    border-color: #111 transparent;
+    border-color: rgba(0, 0, 0, .8) transparent;
+    border-width: 16px 8px 0 8px;
+    content: "";
+    display: block;	
+	top: 57%;
+    position: absolute;
+}
+.chartjs-tooltip.left:before {
+	left: 0%;
+    transform: rotate(90deg) translate(-100%, 100%);    
+}
+.chartjs-tooltip.right:before {
+	left: 100%;
+    transform: rotate(270deg) translate(100%, 0%);    
+}
+
+.chartjs-tooltip thead {
+	border-collapse:collapse;
+	border-bottom:solid thin; 
+}
+
+.chartjs-tooltip th {
+	padding-bottom: 5px;
+}
+
+.chartjs-tooltip th i{
+	font-size: 12px;
+	padding-right: 5px;
+}
+
+.chartjs-tooltip tbody tr:first-child td {
+	padding-top: 5px;
+}
+
+.chartjs-tooltip tbody tr td:nth-child(2) {
+	padding-right: 5px;
+}
+
+.chartjs-tooltip tbody tr td:nth-child(3) {
+	text-align: end;
+}
+
+.chartjs-tooltip-key {
+	display: inline-block;
+	width: 10px;
+	height: 10px;
+	margin-right: 10px;
+	border-width: 2px;
+}
+/* END: TOOLTIPSTYLE */
+
 /* PLUGINS */
 .morris-hover{position:absolute;z-index:1000}.morris-hover.morris-default-style{border-radius:10px;padding:6px;color:#666;background:rgba(255,255,255,0.8);border:solid 2px rgba(230,230,230,0.8);font-family:sans-serif;font-size:12px;text-align:center}.morris-hover.morris-default-style .morris-hover-row-label{font-weight:bold;margin:0.25em 0}
 .morris-hover.morris-default-style .morris-hover-point{white-space:nowrap;margin:0.1em 0}
