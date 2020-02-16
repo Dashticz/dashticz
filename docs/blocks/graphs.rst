@@ -67,7 +67,7 @@ The following block parameters can be used to configure the graph:
   * - height
     - ``'300px'``: Height of the graph in the graph block
   * - width
-    - ``'6'``: The width of the block relative to the column width
+    - ``6``: The width of the block relative to the column width.
   * - displayFormats
     - Object to set the time display format on the x-axis. See below for an example.
   * - custom
@@ -142,8 +142,8 @@ The following block parameters can be used to configure the graph:
     - If true, lines will be drawn between points with no or null data. If false, points with NaN data will create a break in the line.
   * - sortDevices
     - the code automatically calculate if any devices' time data is longer than others. It then use that device's time data, then match all of the devices non-time data to that. This setting allows users to choose to enable or disable that feature (true or false)
-
-
+  * - toolTipStyle
+    - By default, this is disabled. To enable it, add this to your graph block config: ``toolTipStyle: true,``
 
 
 We will show the possibilities by showing a:
@@ -669,16 +669,14 @@ This is using the new *logarithmic* scale (i.e. ``cartesian = logarithmic``). No
 
 **Outside vs Inside Temp**
 
-.. note :: Exclude parameter is not supported anymore
-
-The indoor temp sensor also includes barometric pressure (ba) and humidity (hu), but the outside one is only temperature. In the graph below, the *exclude* property is used to remove this extra unwanted data. Now only the temperature is directly compared.
+The indoor temp sensor also includes barometric pressure (ba) and humidity (hu), but the outside one is only temperature. In the graph below, the *graphTypes* property is used to remove the extra unwanted data. Now only the temperature is directly compared.
 ::
 
 	blocks['multigraph_72'] = {
 		title: 'Outside vs Inside Temp',
 		devices: [ 72, 152],
 		datasetColors: ['LightBlue', 'LightGrey', 'Blue', 'Orange', 'Red', 'Yellow'],
-		exclude: ['ba', 'hu'],
+		graphTypes: ['te','ta','tm'],
 		graph: 'line',
 		legend: {
 			'te_72': 'Outside (max)',	  
@@ -833,4 +831,3 @@ For internal use::
     block_graph_<idx>     //The div to which the graph needs to be attached.
     #graphoutput<idx>     //The canvas for the graph output
 
-  
