@@ -143,7 +143,9 @@ The following block parameters can be used to configure the graph:
   * - sortDevices
     - the code automatically calculate if any devices' time data is longer than others. It then use that device's time data, then match all of the devices non-time data to that. This setting allows users to choose to enable or disable that feature (true or false)
   * - toolTipStyle
-    - By default, this is disabled. To enable it, add this to your graph block config: ``toolTipStyle: true,``
+    - Display HTML graph tooltips instead of the standard ones, e.g. ``toolTipStyle: true``
+  * - debugButton: true
+    - Users can now debug their graph by setting their graph's block config, e.g. ``debugButton: true``. See below for explanation.
 
 
 We will show the possibilities by showing a:
@@ -831,3 +833,14 @@ For internal use::
     block_graph_<idx>     //The div to which the graph needs to be attached.
     #graphoutput<idx>     //The canvas for the graph output
 
+
+Debug
+-----
+
+``debugButton: true`` adds a button to the top right of the graph. When pressed, a dialog box is displayed with key information about each device and the data that has been generated to show the graph. Each device has a link, this takes you to page showing all data about each device within the graph, using Domoticz api. Across the top shows the original keys and the new keys (appended with the device idx).
+
+There are 3 buttons at the top of the debug window: 
+
+* **DevTools** button - press F12 on the keyboard and then click this to show the graph properties in Dev Tools
+* **Save** button - click this to download your graph properties in JSON format. This will be helpful if you need support.
+* **Close** button - to exit the debug window. Although clicking outside of the window does the same thing.
