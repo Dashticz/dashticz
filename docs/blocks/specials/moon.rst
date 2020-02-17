@@ -9,9 +9,8 @@ to your dashboard. Use the following code::
     buttons = {}
     buttons.moon = {
       width:12,
-      isimage:true,
       refreshimage:60000,
-      image: 'moon'
+      btnimage: 'moon'
     }
     columns[2] = {}
     columns[2]['blocks'] = [ buttons.moon]
