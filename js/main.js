@@ -443,7 +443,7 @@ function buildScreens() {
                     }
                 }
             }
-            //        break;
+            break;
         }
     }
 
