@@ -15,7 +15,7 @@ var Domoticz = function () {
     var lastUpdate = {};
     var requestid = 0;
     var callbackList = [];
-    var reconnectTimeout = 1; //Initial value: 1 sec reconnect timeout
+    var reconnectTimeout = 2; //Initial value: 1 sec reconnect timeout
     var reconnecting = false;
 
     var MSG = {
@@ -26,9 +26,7 @@ var Domoticz = function () {
         return usrinfo + query + (cfg.plan ? '&plan=' + cfg.plan : '')
     }
 
-    var requestQueue = [];
     var lastRequest = $.Deferred().resolve();
-
     /** Start async Domoticz request.
      * The domoticz request will only start after finishing the previous one.
      * No timeout handling yet ...
@@ -38,67 +36,60 @@ var Domoticz = function () {
      * @return {Promise} The JQuery promise of the Domoticz request
      */
     function domoticzRequest(query, forcehttp) {
-        requestQueue.push(query);
-
-
+ //       debugger
+        if (reconnecting) return $.Deferred().reject('reconnecting');
+//      console.log(lastRequest.state(), query);
+        if (lastRequest.state() === 'rejected') {
+            lastRequest = $.Deferred().resolve();
+        }
+        var newPromise = $.Deferred();
         lastRequest = lastRequest
             .then(function newRequest() {
-                var myquery = requestQueue.shift();
-                //console.log('query: ', myquery)
-                var newPromise;
                 if (useWS && !forcehttp) {
-                    //            console.log('request id '+requestid + ' ' + myquery);
-
-                    newPromise = $.Deferred();
                     callbackList[requestid] = newPromise;
                     var msg = {
                         event: 'request',
                         requestid: requestid,
-                        query: domoticzQuery(myquery)
+                        query: domoticzQuery(query)
                     }
                     requestid = (requestid + 1) % 1000;
                     try {
                         socket.send(JSON.stringify(msg))
-                    }
-                    catch (ev){
+                    } catch (ev) {
                         newPromise.reject('send error')
                     }
-                } else newPromise = $.get({
-                    url: cfg.url + 'json.htm?' + domoticzQuery(myquery),
-                    type: 'GET',
-                    async: true,
-                    contentType: "application/json",
-                    error: function (jqXHR, textStatus) {
-                        if (typeof (textStatus) !== 'undefined' && textStatus === 'abort') {
-                            console.log('Domoticz request cancelled')
-                        } else {
-                            console.error("Domoticz error code: " + jqXHR.status + ' ' + textStatus + "!\nPlease, double check the path to Domoticz in Settings!");
-                            throw new Error('Domoticz error code: ' + jqXHR.status + '! Double check the path to Domoticz in Settings!');
+                    setTimeout(function () {
+                        if (newPromise.state() === 'pending') {
+//                            console.log('rejected by timeout: ', query);
+                            newPromise.reject('timeout: ' + query);
                         }
-                    }
-                });
-                setTimeout(function () {
-                    if (newPromise.state() !== 'resolved') {
-                        console.log('rejected by timeout: ', myquery)
-                        newPromise.reject('timeout: '+myquery);
-                    }
-//                    else
-//                        console.log('was resolved')
-                }, 1000); //reject promise after timeout of 1000ms
-                return newPromise;
+                        //                    else
+                        //                        console.log('was resolved or failed already')
+                    }, 2000); //reject promise after timeout of 2000ms
+                } else  $.get({
+                        url: cfg.url + 'json.htm?' + domoticzQuery(query),
+                        type: 'GET',
+                        async: true,
+                        contentType: "application/json",
+                        error: function (jqXHR, textStatus) {
+                            if (typeof (textStatus) !== 'undefined' && textStatus === 'abort') {
+                                console.log('Domoticz request cancelled')
+                            } else {
+                                console.error("Domoticz error code: " + jqXHR.status + ' ' + textStatus + "!\nPlease, double check the path to Domoticz in Settings!");
+                            }
+                            newPromise.reject(query + textStatus);
+                        }
+                    })
+                    .then(function (res) {
+//                        console.log('ajax resolved ' + query);
+                        newPromise.resolve(res);
+                    });
+                  return newPromise;
             })
-            .catch(function (err) {
-                if (err) console.error(err) //timeout may be reported here
+            .fail(function (err) { //to catch or to fail? Probably better to fail to prevent executiong of chained promise.
+                if (err) console.warn(err) //timeout may be reported 
             })
-        /*        .then(function requestDone(res) {
-                    console.log('request done')
-                    if (requestQueue.length) {
-                        console.log('queued request should start')
-                    } else
-                        console.log('request queue empty')
-                    return res;
-                })*/
-        return lastRequest.promise();
+        return lastRequest;
     }
 
     function checkWSSupport() {
@@ -109,7 +100,9 @@ var Domoticz = function () {
                     console.log("Switching to websocket");
                     connectWebsocket();
                 } else {
-                    setInterval(_requestAllDevices, cfg.domoticz_refresh * 1000);
+                    setInterval(function () {
+                        _requestAllDevices();
+                    }, cfg.domoticz_refresh * 1000);
                 }
             })
     }
@@ -125,7 +118,9 @@ var Domoticz = function () {
             if (cfg.usrEnc && cfg.usrEnc.length) usrinfo = 'username=' + cfg.usrEnc + '&password=' + cfg.pwdEnc + '&';
             initPromise = checkWSSupport()
                 .then(function () {
-                    setInterval(_requestAllVariables, cfg.domoticz_refresh * 1000)
+                    setInterval(function () {
+                        _requestAllVariables();
+                    }, cfg.domoticz_refresh * 1000);
                     return _update().then(_requestAllVariables)
                 });
         }
@@ -150,12 +145,11 @@ var Domoticz = function () {
                         .then(function(res){
                             console.log('initial connect data: ', res);
                         });*/
-            requestQueue = [];
-            reconnectTimeout = 1;
+            reconnectTimeout = 2;
             lastUpdate = {}
             if (lastRequest && lastRequest.state && lastRequest.state() === 'pending')
                 lastRequest.reject();
-            lastRequest = $.when();
+            lastRequest = $.Deferred().resolve();
 
             _requestAllDevices();
         };
@@ -172,6 +166,10 @@ var Domoticz = function () {
                 //                console.log('device update ', res2)
                 _setAllDevices(res2);
                 return;
+            }
+            if (res.event === 'date_time') {
+                onDateTime(res);
+                return
             }
             if (typeof res.requestid !== 'undefined' && callbackList[requestid]) {
                 callbackList[requestid].resolve(res2)
@@ -198,7 +196,7 @@ var Domoticz = function () {
                 console.log(event)
                 switch (event.code) {
                     case 1006:
-                        if(!reconnecting) reconnect();
+                        if (!reconnecting) reconnect();
                         reconnecting = true;
                         break;
                     default:
@@ -209,7 +207,6 @@ var Domoticz = function () {
 
             }
             //cleanup pending requests
-            requestQueue = [];
             if (lastRequest && lastRequest.state && lastRequest.state() === 'pending')
                 lastRequest.reject();
             lastRequest = $.Deferred().resolve();
@@ -220,13 +217,20 @@ var Domoticz = function () {
         };
     }
 
+    function onDateTime(data) {
+        if (data.Sunrise)
+            setOnChange("_Sunrise", data.Sunrise);
+        if (data.Sunset)
+            setOnChange("_Sunset", data.Sunset)
+    }
+
     function reconnect() {
         console.log('reconnecting')
-        setTimeout(function() {
-            reconnecting=false;
+        setTimeout(function () {
+            reconnecting = false;
             connectWebsocket();
-        }, reconnectTimeout*1000); //try to reconnect after timeout
-        reconnectTimeout = Math.min(reconnectTimeout*2, 60); //increase timeout
+        }, reconnectTimeout * 1000); //try to reconnect after timeout
+        reconnectTimeout = Math.min(reconnectTimeout * 2, 60); //increase timeout
     }
 
     function _update(forced) {
@@ -283,6 +287,14 @@ var Domoticz = function () {
 
     function _setAllDevices(data) {
         //        console.log(data.ActTime);
+        if (!data) {
+            console.log(' no data');
+            return
+        }
+        if (!data.ActTime) {
+            console.log(' no ActTime');
+            return
+        }
         lastUpdate.devices = data.ActTime;
         if (data.Sunrise)
             setOnChange("_Sunrise", data.Sunrise);
@@ -305,7 +317,7 @@ var Domoticz = function () {
         //        return domoticzRequest('type=command&param=getuservariables&lastupdate='+lastUpdate.variables)
         return domoticzRequest('type=command&param=getuservariables')
             .then(function (res) {
-                if(res) return _setAllVariables(res)
+                if (res) return _setAllVariables(res)
             });
     }
 
@@ -353,7 +365,7 @@ var Domoticz = function () {
                 //console.log(res);
                 return res
             })
-            .always(function() {
+            .always(function () {
                 //console.log('release ', idx);
                 _release(idx)
             })
