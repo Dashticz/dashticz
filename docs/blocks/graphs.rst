@@ -844,3 +844,5 @@ There are 3 buttons at the top of the debug window:
 * **DevTools** button - press F12 on the keyboard and then click this to show the graph properties in Dev Tools
 * **Save** button - click this to download your graph properties in JSON format. This will be helpful if you need support.
 * **Close** button - to exit the debug window. Although clicking outside of the window does the same thing.
+
+.. image :: img/graph_debug.jpg
