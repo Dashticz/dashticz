@@ -7,12 +7,13 @@ Latest changes
 Enhancements
 
   * Support for showing a graph more than once on the dashboard.
+  * Support for RGBWZ devices
+
+Fixes
+
   * Fix for Evo devices
-  * Partial fix for updating devices via getStatus_idx in custom.css
-
-fixes
-
   * Improved the height adjustment of a news block with inline images
+  * Partial fix for updating devices via getStatus_idx in custom.css
 
 3.4.0 Beta (8-2-2020)
 ---------------------
