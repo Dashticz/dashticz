@@ -1,6 +1,8 @@
 /* global blocks settings usrEnc pwdEnc*/
 /*from domoticz-api.js*/
 /*global Domoticz*/
+/*from main.js*/
+/*global infoMessage*/
 
 // eslint-disable-next-line no-unused-vars
 var Dashticz = function () {
@@ -213,6 +215,24 @@ var Dashticz = function () {
         $('head').append('<link rel="stylesheet" type="text/css" href="' + filename + '">');
     }
 
+    /** Prompt for password
+     * @function
+     * @param {string} password Password
+     * @returns {boolean} True: password is correct, or no password required
+     */
+    function _promptPassword(password) {
+        if(password) {
+            var checkpassword = prompt('Enter password');
+            if (!checkpassword) return false;
+            if (checkpassword!==password) {
+                //password incorrect
+                infoMessage('Incorrect password', '', 3000);
+                return false;
+            }
+        }
+        return true;
+    }
+
     return {
         init: _init,
         onResize: _onResize,
@@ -222,7 +242,8 @@ var Dashticz = function () {
         mountNewContainer: _mountNewContainer,
         loadFont: _loadFont,
         loadCSS: _loadCSS,
-        mountDefaultBlock: _mountDefaultBlock
+        mountDefaultBlock: _mountDefaultBlock,
+        promptPassword: _promptPassword
     }
 
 }();
