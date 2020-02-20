@@ -130,7 +130,8 @@ groningen               Groningen (NL)
 heezeleende  
 hvc                     HVC Groep (NL)  
 meerlanden              Meerlanden (NL)  
-mijnafvalwijzer         Mijn Afval Wijzer (NL)  
+mijnafvalwijzer         Mijn Afval Wijzer (NL)
+omrin                   Leeuwarden, Opsterland, Heerenveen, Waadhoeke, ...   
 rd4  
 recyclemanager          Recycle Manager  
 rmn                     RMN (NL)  

@@ -120,9 +120,42 @@ switch($_GET['service']){
 		
 		//$return = json_decode($return,true);
 		break;
+	case 'omrin':
+		$ch = curl_init('https://www.omrin.nl/bij-mij-thuis/afval-regelen/afvalkalender');
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+		$cookie = "address=".urlencode ("a:3:{s:7:\"ziparea\";s:2:\"".substr($_GET['zipcode'],-2)."\";s:9:\"zipnumber\";s:4:\"".substr($_GET['zipcode'],0,4)."\";s:7:\"housenr\";s:1:\"".substr($_GET['nr'],-2)."\";}");
+		curl_setopt($ch,CURLOPT_COOKIE, $cookie);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
+		curl_setopt($ch, CURLINFO_HEADER_OUT, true);
+		$output = curl_exec($ch);
+		curl_close($ch);
+		$key='omrinDataGroups = ';
+		$key2=';';
+		$pos = strpos($output, $key);
+		if($pos!==false) {
+			$pos2=strpos($output, $key2, $pos);
+			if($pos2===false) {
+				die('endkey not found');
+			}
+			$jsondata=substr($output, $pos+strlen($key), $pos2-$pos-strlen($key));
+			$data=json_decode($jsondata);
+			foreach($data as $year => $yeardata) {
+				foreach($yeardata as $garbagetype => $garbagedata ) {
+					$garbagedates = $garbagedata->dates;
+					foreach($garbagedates as $month => $monthdata) {
+						foreach($monthdata as $day ) {
+							$y=$year;
+							$m=str_pad($month, 2, '0', STR_PAD_LEFT);
+							$d=str_pad($day, 2, '0', STR_PAD_LEFT);
+							$allDates[$y.'-'.$m.'-'.$d][$garbagetype] = $y.'-'.$m.'-'.$d;
+						}
+					}
+				}
+			}
+		}
+		break;
 }
-
-$temp = $allDates;
+$temp=$allDates;
 $allDates=array();
 foreach($temp as $date => $items){
 	foreach($items as $title => $date){
@@ -130,8 +163,4 @@ foreach($temp as $date => $items){
 	}	
 }
 die(json_encode($allDates));
-echo '<pre>';
-print_r($allDates);
-print_r($return);
-exit();
 ?>
