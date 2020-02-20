@@ -657,6 +657,9 @@ if (typeof(settings['garbage']) === 'undefined') {
         black: {kliko: 'black', code: '#000000', name: 'Zwart', icon: 'img/garbage/kliko_black.png'},
         milieu: {kliko: 'yellow', code: '#f9e231', name: 'Geel', icon: 'img/garbage/kliko_yellow.png'},
         kerstboom: {kliko: 'green', code: '#375b23', name: 'Kerstboom', icon: 'img/garbage/tree.png'},
+        aeea: {kliko: 'yellow', code: '#f9e231', name: 'AEEA', icon: 'img/garbage/kliko_yellow.png'},
+        textiel: {kliko: 'orange', code: '#db5518', name: 'Textiel', icon: 'img/garbage/kliko_orange.png'},
+        sorti: {kliko: 'brown', code: '#7c3607', name: 'Sorti', icon: 'img/garbage/kliko_brown.png'},
     };
 }
 if (typeof(settings['garbage_mapping']) === 'undefined') {
@@ -670,6 +673,9 @@ if (typeof(settings['garbage_mapping']) === 'undefined') {
         black: ['black', 'zwart'],
         milieu: ['milieu'],
         kerstboom: ['kerst'],
+        aeea: ['aeea'],
+        textiel: ['textiel'],
+        sorti: ['sorti']
     };
 }
 if (typeof(settings['garbage_use_names']) === 'undefined') settings['garbage_use_names'] = 0;

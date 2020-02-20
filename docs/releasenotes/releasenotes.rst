@@ -8,6 +8,7 @@ Enhancements
 
   * Support for showing a graph more than once on the dashboard.
   * Support for RGBWZ devices
+  * Omrin garbage company
 
 Fixes
 
