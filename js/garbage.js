@@ -397,6 +397,10 @@ function getEdgData(address, date, random) {
     getGeneralData('edg',address, date, random);
 }
 
+function getOmrinData(address, date, random) {
+    getGeneralData('omrin',address, date, random);
+}
+
 function getTrashRow(garbage) {
     this.rowClass = 'trashrow';
     this.displayDate = garbage.date.locale(settings['calendarlanguage']).format('l');
@@ -458,6 +462,7 @@ function mapGarbageType(garbageType) {
             });
         });
     }
+    console.log( garbageType + '->' + mappedType);
     return mappedType;
 }
 
@@ -525,7 +530,8 @@ function loadDataForService(service, random) {
         area: {dataHandler: 'getWasteApiData', identifier: 'adc418da-d19b-11e5-ab30-625662870761'},
         almere: {dataHandler: 'getWasteApi2Data', identifier: '53d8db94-7945-42fd-9742-9bbc71dbe4c1'},
         afvalalert: {dataHandler: 'getAfvalAlertData', identifier: ''},
-        barafvalbeheer: {dataHandler: 'getWasteApiData', identifier: 'bb58e633-de14-4b2a-9941-5bc419f1c4b0'}
+        barafvalbeheer: {dataHandler: 'getWasteApiData', identifier: 'bb58e633-de14-4b2a-9941-5bc419f1c4b0'},
+        omrin: {dataHandler: 'getOmrinData', identifier: ''},
     };
     window[serviceProperties[service].dataHandler](address, date, random, serviceProperties[service].identifier);
 }
