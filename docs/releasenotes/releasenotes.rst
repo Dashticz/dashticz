@@ -9,6 +9,7 @@ Enhancements
   * Support for showing a graph more than once on the dashboard.
   * Support for RGBWZ devices
   * Omrin garbage company
+  * Calendar: Optionally display start time only by setting ``startonly`` block parameter
 
 Fixes
 
