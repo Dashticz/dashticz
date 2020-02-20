@@ -462,7 +462,6 @@ function mapGarbageType(garbageType) {
             });
         });
     }
-    console.log( garbageType + '->' + mappedType);
     return mappedType;
 }
 
