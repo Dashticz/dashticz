@@ -5,6 +5,8 @@
 /* global sliding:writable  slide:writable*/
 /* from domoticz-api.js*/
 /* global Domoticz*/
+/* from dashticz.js*/
+/* global Dashticz*/
 
 /** Returns a default switch block
  * 
@@ -94,6 +96,8 @@ function switchDevice(cur, pMode, pAskConfirm) {
     var idx = $(cur).data('light');
     if (isProtected(idx))
         return;
+    var hasPassword = blocks[idx] && blocks[idx].password;
+    if(!Dashticz.promptPassword(hasPassword)) return;    
     var doStatus = '';
     var param = 'switchlight';
     switch (pMode) {
@@ -149,6 +153,9 @@ function toggleItem(cur, currentState) {
 
 // eslint-disable-next-line no-unused-vars
 function switchBlinds(idx, action) {
+    var hasPassword = blocks[idx] && blocks[idx].password;
+    if(!Dashticz.promptPassword(hasPassword)) return;    
+
     var src = $('.block_' + idx).find('.icon').attr('src')
     switch (action.toLowerCase()) {
         case 'off':
@@ -170,6 +177,8 @@ function switchBlinds(idx, action) {
 // eslint-disable-next-line no-unused-vars
 function switchScene(cur) {
     var idx = $(cur).data('light');
+    var hasPassword = blocks[idx] && blocks[idx].password;
+    if(!Dashticz.promptPassword(hasPassword)) return;    
     var doStatus = 'On'; // toggleItem(cur, $(cur).find('img.icon').hasClass('on') ? 'on' : 'off');
     triggerChange(idx, doStatus, alldevices[idx]);
     Domoticz.request('type=command&param=switchscene&idx=' + idx.replace('s', '') + '&switchcmd=' + doStatus + '&level=0')
@@ -359,6 +368,9 @@ function getDimmerBlock(device, idx, buttonimg) {
 
         $('.rgbw' + idx).on("dragstop.spectrum", function (e, color) {
             var curidx = $(this).data('light');
+            var hasPassword = blocks[curidx] && blocks[curidx].password;
+            if(!Dashticz.promptPassword(hasPassword)) return;    
+        
             color = color.toHexString();
             Cookies.set('rgbw_' + curidx, color);
             var hue = hexToHsb(color);
@@ -534,6 +546,9 @@ function addSlider(idx, sliderValues) {
         //},
         change: function (event, ui) {
             //            slideDeviceExt($(this).data('light'), ui.value, 2);
+            var hasPassword = blocks[idx] && blocks[idx].password;
+            if(!Dashticz.promptPassword(hasPassword)) return;    
+        
             slideDevice(idx, ui.value);
         },
         stop: function () {

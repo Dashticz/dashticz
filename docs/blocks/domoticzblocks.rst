@@ -136,6 +136,9 @@ Block parameters
   * - confirmation
     - | ``0`` No confirmation (default)
       | ``1`` Dashticz asks the user for confirmation before changing a switch-device
+  * - password
+    - | Password protect switches, buttons, thermostats, sliders, blinds
+      | ``'secret'``: Password to use
   * - gotoslide
     - | Goto screen when a device changes
       | ``1`` .. ``99``

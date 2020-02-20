@@ -10,6 +10,7 @@ Enhancements
   * Support for RGBWZ devices
   * Omrin garbage company
   * Calendar: Optionally display start time only by setting ``startonly`` block parameter
+  * New block parameter ``password`` to password protect switches, buttons, thermostats, sliders.
 
 Fixes
 

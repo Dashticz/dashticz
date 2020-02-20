@@ -76,8 +76,9 @@ Parameters
     - | ``0``: no new window/frame (for intent handling, api calls)
       | ``1``: open in new window
       | ``2``: open in new frame (default, to prevent a breaking change in default behavior)
-
-    
+  * - password
+  - | Password protect switches, buttons, thermostats, sliders, blinds
+    | ``'secret'``: Password to use
 
 Usage
 -----
