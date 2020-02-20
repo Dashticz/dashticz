@@ -22,6 +22,7 @@ function addCalendar(calobject, icsUrlorg) {
         icsUrl.timeFormat = icsUrlorg.timeFormat;
         icsUrl.dateFormat = icsUrlorg.dateFormat;
         icsUrl.fixAllDay = icsUrlorg.fixAllDay;
+        icsUrl.startonly = icsUrlorg.startonly;
     } else icsUrl = icsUrlorg;
 
     var done = 0;
@@ -171,7 +172,9 @@ function insertCalendar(calobject, calitems, calBlock) {
                 widget += '</td>';
                 widget += '<td' + styleColor + '>';
                 if (item1.allDay == '') {
-                    widget += startTimePart + ' - ' + (startDayPart !== endDayPart ? endDayPart + ' ' : '') + endTimePart
+                    widget += startTimePart + ' ';
+                    if(!calBlock.startonly)
+                        widget += '- ' + (startDayPart !== endDayPart ? endDayPart + ' ' : '') + endTimePart
                 } else {
                     if (startDayPart !== endDayPart) {
                         widget += ' - ' + endDayPart + ' ';
@@ -268,6 +271,8 @@ function insertCalendar_0(calobject, calitems, calBlock, maxitems) {
             }
             item1.enddate = enddate;
             item1.startdate = startdate;
+            if(calBlock.startonly)
+                item1.enddate = '';
 
             if ( counter <= maxitems) {
                 var widget = '<div style="color:' + item1['color'] + '">' + item1['startdate'] + "" + item1['enddate'] + ' - <b>' + item1['title'] + '</b></div>';
