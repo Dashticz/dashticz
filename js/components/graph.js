@@ -56,7 +56,7 @@ function getBlockConfig(me) {
     obj.block = getBlockDefaults(devices, hasBlock, me.block);
 
     var device = $.extend(obj, allDevices[idx]);
-    device.Name = obj.multigraph ? (device.block.title? device.block.title:me.key) : device.Name;
+    device.Name = hasBlock && device.block.title? device.block.title : device.Name;
     device.idx = parseInt(device.idx);
     graphDevices.push(device);
   });
@@ -153,7 +153,7 @@ function getDeviceDefaults(device, popup) {
     case "Temp + Humidity + Baro":
     case "Heating":
       sensor = "temp";
-      txtUnit = "°C";
+      txtUnit = _TEMP_SYMBOL;
       currentValue = device["Temp"];
       decimals = 1;
       break;
@@ -265,14 +265,14 @@ function getDeviceDefaults(device, popup) {
       break;
     case "SetPoint":
       sensor = "temp";
-      txtUnit = "°C";
+      txtUnit = _TEMP_SYMBOL;
       currentValue = device["SetPoint"];
       decimals = 1;
       break;
   }
 
   var graphIdx = device.graphIdx;
-  var multidata = device.Data.split(",").length - 1 > 0;
+  var multidata = device.Data.split(/[,;]+/).length - 1 > 0;
   currentValue = multidata
     ? device.Data
     : number_format(currentValue, decimals).replace(",", ".") + " " + txtUnit;
@@ -597,36 +597,27 @@ function createGraph(graph) {
     buttonIcon +
     '">&nbsp;</i>&nbsp;';
 
-  if (!graph.multigraph) {
-    if (isDefined(graph.currentValue)) {
-      title +=
-        span +
-        graph.currentValue.replace(
-          /, /g,
-          '<span style="color:' +
-            graph.block.buttonsIcon +
-            ';font-weight:900;font-size:16px;"> | </span>'
-        ) +
-        "</span>";
-    }
-  } else {
-    if (isDefined(graph.currentValues)) {
-      title += span;
-      $.each(graph.currentValues, function(i, val) {
-        if (i < graph.currentValues.length - 1) {
-          title +=
-            graph.currentValues[i] +
-            '<span style="color:' +
-            graph.block.buttonsIcon +
-            ';font-weight:900;font-size:16px;"> | </span>' +
-            "</span>";
-        } else {
-          title += graph.currentValues[i];
+    if (!graph.multigraph) {
+      if (isDefined(graph.currentValue)) {
+        if(graph.type === 'Wind'){
+          var v = graph.currentValue.split(';');
+          graph.currentValue = parseFloat(v[0]).toFixed(0) + '°' + ' ' + v[1] + ';' + v[2]/10 + 'm/s;' + v[3]/10 + 'm/s;'+ v[4] + _TEMP_SYMBOL + ';'+ v[5] + _TEMP_SYMBOL;
         }
-      });
+        title += span + graph.currentValue.replace( /,|;/g, '<span style="color:' + graph.block.buttonsIcon + ';font-weight:900;font-size:16px;"> | </span>') + '</span>';
+      }
+    } else {
+      if (isDefined(graph.currentValues)) {
+        title += span;
+        $.each(graph.currentValues, function(i, val) {
+          if (i < graph.currentValues.length - 1) {
+            title += graph.currentValues[i] + '<span style="color:' + graph.block.buttonsIcon + ';font-weight:900;font-size:16px;"> | </span></span>';
+          } else {
+            title += graph.currentValues[i];
+          }
+        });
+      }
     }
-  }
-  title += "</div>";
+    title += "</div>";
 
   var html = "";
   html += title + '<div class="graphbuttons" >' + buttons + "</div>";
@@ -1174,11 +1165,12 @@ function getDefaultGraphProperties(graph) {
 
               bodyLines.forEach(function (body, i) {
                 var colors = tooltip.labelColors[i];
+                var key = body[0].split(':')[0];
                 var style = 'background:' + colors.backgroundColor + '; border-color:' + colors.borderColor + ';';
                 var span = '<span class="chartjs-tooltip-key" style="' + style + '"></span>';
                 html += '<tr><td>' + span + '</td>';
-                html += '<td>' + body[0].split(':')[0] + '</td>';
-                html += '<td>' + parseFloat(body[0].split(':')[1].replace('NaN', '0')).toFixed(2) + '</td></tr>';
+                html += '<td class="popup_' + key + '">' + key + '</td>';
+                html += '<td class="value">' + parseFloat(body[0].split(':')[1].replace('NaN', '0')).toFixed(2) + '</td></tr>';
               });
               html += '</tbody>';
               tooltipEl.find('table').html(html);
