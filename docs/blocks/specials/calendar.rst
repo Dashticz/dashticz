@@ -53,6 +53,10 @@ You have to add the following code into the ``CONFIG.js`` file and define them a
       | ``true``: Don't show the start time for 'All Day'-events
   * - key
     - | ``'key'``: unique identifier. You can use ``[data-id='calendars.key']`` in your ``custom.css``
+  * - startonly
+    - | Display start time only
+      | ``false`` (=default): Display start time and end time
+      | ``true`` : Display start time only
   
 And define them in a column like::
 
