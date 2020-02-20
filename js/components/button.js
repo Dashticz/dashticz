@@ -81,6 +81,9 @@ var DT_button = {
     //button clickhandler. Assumption: button is clickable
     {
         var button = m_event.data;
+        var hasPassword = button.password;
+        if(!Dashticz.promptPassword(hasPassword)) return;    
+            
         if (typeof (button.newwindow) !== 'undefined') {
             if (button.newwindow == '0') {
                 window.open(button.url, '_self');
