@@ -11,6 +11,14 @@ Enhancements
   * Omrin garbage company
   * Calendar: Optionally display start time only by setting ``startonly`` block parameter
   * New block parameter ``password`` to password protect switches, buttons, thermostats, sliders.
+  * Filter parameter for the news block. Define as block parameter. Example::
+
+    blocks['my_news'] {
+      feed: 'http://www.nu.nl/rss/Algemeen',
+      filter : '5 items'  // to only show the 5 latest news items, or:
+      filter: '2 days'    // to only show news items of the last 2 days, or:
+      filter: '1 month'   // to only show news items from last month
+    }
 
 Fixes
 
