@@ -5,4 +5,4 @@ Customizations
   :maxdepth: 2
 
   customcss/customcss
-  customjss/customjss
+  customjs/customjs

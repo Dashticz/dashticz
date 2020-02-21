@@ -316,6 +316,9 @@ function getCustomFunction(functionname, idx, device, afterupdate) {
     var functiondevname = functionname+'_'+idx;
     if (typeof window[functiondevname] === 'function') {
         try {
+            if (functionname === 'getBlock')
+                return window[functiondevname](device, idx);
+
             window[functiondevname](idx, device.LastUpdate, device, afterupdate)
         }
         catch (err) {
@@ -370,15 +373,12 @@ function deviceUpdateHandler(selector, idx, device) {
     var addHTML = true;
     var html = '';
 
-    //    if ($('div.block_graph_' + idx).length > 0) {
-    //        getGraphs(device, false);
-    //    }
     triggerStatus(idx, device['LastUpdate'], device);
     triggerChange(idx, device['LastUpdate'], device);
 
-    try {
-        html += eval('getBlock_' + idx + '(device,idx,data.result)');
-    } catch (err) {
+    html = getCustomFunction('getBlock', idx, device);
+    //getCustomFunction 'getBlock' returns undefined in case function getBlock_<idx> is not defined in custom.js
+    if(!html) {
         var response = handleDevice(device, idx);
         html = response[0];
         addHTML = response[1];
@@ -1901,42 +1901,6 @@ function getAllDevicesHandler(value) {
 
     $('div.newblocks.plugins').html('');
     $('div.newblocks.domoticz').html('');
-    // ##############################################
-    // MULTIGRAPH START                             #
-    // ##############################################
-    //todo: needs to be refactored. Now the multigraphs get updates after every device update
-    /* if ($("div[class*='block_multigraph_']").length > 0) {
-        //debugger;
-
-        for (var b in blocks) {
-            if (b.substring(0, 11) === 'multigraph_') {
-
-                var arrMgIdx = blocks[b]['devices'];
-                arrMgIdx.sort(function (a, b) {
-                    return a - b;
-                });
-                var mgId = parseInt(b.replace('multigraph_', ''));
-                var arrMgDev = [];
-
-                $.each(arrMgIdx, function (index, mgIdx) {
-                                         // var device = data.result.filter(function(obj){
-                                            // return parseInt(obj.idx) === mgIdx
-                                        // })
-                                        // device[0].primaryIdx = mgId;
-                                        // arrMgDev.push(device[0]);
-                    var device = $.extend({
-                        primaryIdx: mgId
-                    }, alldevices[mgIdx]);
-                    arrMgDev.push(device);
-
-                });
-                getMultiGraphs(arrMgDev);
-            }
-        }
-    } */
-    // ##############################################
-    // MULTIGRAPH END                               #
-    // ##############################################
 
     if (typeof (afterGetDevices) === 'function') afterGetDevices();
 }
