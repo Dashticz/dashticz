@@ -1,4 +1,4 @@
-/* global settings _CORS_PATH infoMessage Dashticz*/
+/* global settings _CORS_PATH infoMessage Dashticz moment*/
 // eslint-disable-next-line no-unused-vars
 var DT_news = {
     name: "news",
@@ -36,7 +36,39 @@ var DT_news = {
                 var asAutoHeight = me.block && me.block.maxheight === 'auto';
                 var asFixedHeight = me.block && me.block.maxheight && Number(me.block.maxheight);
                 var html = '';
-                $(data).find('item').each(function () { 
+                var maxItems = 0;
+                var startMoment = 0;
+                var countItems = 0;
+                if (me.block && me.block.filter) {
+                    var filterCount = parseInt(me.block.filter);
+                    var filterUnit = me.block.filter
+                      .split(" ")
+                      .splice(-1)[0];
+                    if (filterUnit === 'items') {
+                        maxItems = filterCount;
+                    }
+                    else {
+                        startMoment = moment().subtract(filterCount, filterUnit)
+                    }
+                  }
+        
+                $(data).find('item')
+                .sort(function(left, right) {
+                    var leftdate=$(left).find('pubDate')[0].innerHTML;
+                    var rightdate= $(right).find('pubDate')[0].innerHTML;
+                    var diff = moment(rightdate)-moment(leftdate);
+                    return diff;
+                }).each(function () { 
+                    if (maxItems && (countItems>=maxItems)) {
+                        return
+                    }
+                    if (startMoment) {
+                        var pubDate = $(this).find('pubDate')[0].innerHTML;
+                        if (moment(pubDate) < startMoment) {
+                            return;
+                        }
+                    }
+                    countItems++;
                     var el = $(this);
                     html += '<li data-toggle="modal" data-toggle="modal" data-target="#rssweb" data-link="' + el.find("link").text() + '" onclick="setSrcRss(this);">';
                     html += '	<div class="news_row">';

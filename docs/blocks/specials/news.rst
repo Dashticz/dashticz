@@ -71,6 +71,11 @@ News Parameters
     - | Show the inline images of the rss feed.
       | ``false``: Do not show the inline images
       | ``true`` (=default): Show the inline images
+  * - filter
+    - | Filter the number of items or filter on publish date of items
+      | ``'5 items'``: Show the 5 most recent news items
+      | ``'3 days'``: Show the news items from the last three days.
+
 
 Example
 -------
