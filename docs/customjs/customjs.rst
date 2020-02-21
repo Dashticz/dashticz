@@ -1,4 +1,4 @@
-Functionality via custom.jss
+Functionality via custom.js
 ############################
 
 There is the possibility to use your own functions in Dashticz.

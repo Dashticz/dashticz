@@ -23,7 +23,7 @@ In this example we use Domoticz device with IDX 120, and a button we call test.
       refresh: 100000,
     }
 
-To change the button image we add the function ``getChange_120`` to the file ``custom/custom.jss``. This function gets called everytime the device with idx=120 changes::
+To change the button image we add the function ``getChange_120`` to the file ``custom/custom.js``. This function gets called everytime the device with idx=120 changes::
 
     function getChange_120(idx,value,device) {
     	buttons.test.image = 'img/moon/moon.02.png';

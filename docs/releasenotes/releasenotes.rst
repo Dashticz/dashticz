@@ -17,6 +17,7 @@ Fixes
   * Fix for Evo devices
   * Improved the height adjustment of a news block with inline images
   * Partial fix for updating devices via getStatus_idx in custom.css
+  * Fix for initial update of block defined by ``getBlock_<idx>()`` in ``custom.js``
 
 3.4.0 Beta (8-2-2020)
 ---------------------
