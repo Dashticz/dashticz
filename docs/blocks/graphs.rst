@@ -292,7 +292,7 @@ However what I would like to see is:
 
 * The sum of Usage 1 and Usage 2
 * The sum of Return 1 and Return 2, but then negative
-* A line to show the nett energy usage: Usage 1 + Usage 2 - Return 1 - Return
+* A line to show the nett energy usage: Usage 1 + Usage 2 - Return 1 - Return 2
 * The usage and return data should be presented as bars. The nett energy as a line.
 
 Can we do that? Yes, with custom graphs!
