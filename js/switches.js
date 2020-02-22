@@ -395,12 +395,15 @@ function getDimmerBlock(block, buttonimg) {
   }
   html += '<br />';
   if (isRGBDeviceAndEnabled(device)) {
+/*
     html +=
       '<input type="text" class="rgbw rgbw' +
       idx +
       '" data-light="' +
       device['idx'] +
-      '" />';
+      '" />';*/
+      html += '<button type="button" class="rgbw rgbw' + idx + '" data-light="' + device['idx'] + '">OO</button>';
+
     html +=
       '<div class="slider slider' +
       device['idx'] +
@@ -445,6 +448,7 @@ function getDimmerBlock(block, buttonimg) {
   }
 
   if (isRGBDeviceAndEnabled(device)) {
+/*
     $rgbdiv.spectrum({
       color: Cookies.get('rgbw_' + idx),
     });
@@ -498,7 +502,9 @@ function getDimmerBlock(block, buttonimg) {
     $rgbdiv.on('beforeShow.spectrum', function () {
       Domoticz.hold(idx); //hold message queue
       //sliding = idx;
-    });
+    });*/
+    var d = new Colorpicker( {container: '.rgbw'+idx, idx: idx});
+
   }
 
   var slider = {};
