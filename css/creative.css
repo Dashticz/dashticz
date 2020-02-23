@@ -712,7 +712,12 @@ a.playlist {
 	font-size: 150%;
 }
 
-.graphbuttons {
+.graphbuttons .btn {
+	opacity: 0.5;
+}
+
+.graphbuttons .btn.active {
+	opacity: 1;
 }
 
 .graph {
@@ -1482,8 +1487,9 @@ fieldset[disabled] .btn-primary.active {
 }
 
 .btn-group .btn.active {
-	font-weight:700;
+	font-weight:700;	
 }
+
 .modal-login {
     max-height: 90%;
     max-width:90%;
@@ -1727,11 +1733,11 @@ canvas{
 }
 
 .chartjs-tooltip.left {
-	transform: translate(13%, -100%);
+	transform: translate(13%, 15%);
 }
 
 .chartjs-tooltip.right {
-    transform: translate(-110%, -100%)
+    transform: translate(-110%, 15%)
 }
 
 .chartjs-tooltip.left:before,
