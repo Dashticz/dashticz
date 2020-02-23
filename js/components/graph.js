@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-/* global Dashticz moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL*/
+/* global Dashticz moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL getWeekNumber*/
 var allDevices = Domoticz.getAllDevices();
 var dtGraphs = [];
 var _GRAPHREFRESH = 5;
@@ -70,6 +70,7 @@ function getBlockDefaults(devices, hasBlock, b) {
   block.devices = devices;
   block.datasetColors = hasBlock && isDefined(b.datasetColors) ? b.datasetColors : datasetColors;
   block.barWidth = hasBlock && isDefined(b.barWidth) ? b.barWidth : 0.9;
+  block.beginAtZero = hasBlock && isDefined(b.beginAtZero) ? b.beginAtZero : false;
   block.borderColors = hasBlock && isDefined(b.borderColors)? b.borderColors : block.datasetColors;
   block.borderDash = hasBlock && isDefined(b.borderDash) ? b.borderDash : [];
   block.borderWidth = hasBlock && isDefined(b.borderWidth) ? b.borderWidth : 2;
@@ -81,7 +82,7 @@ function getBlockDefaults(devices, hasBlock, b) {
   block.buttonsMarginY = hasBlock && isDefined(b.buttonsMarginY) ? b.buttonsMarginY : 0;
   block.buttonsPadX = hasBlock && isDefined(b.buttonsPadX) ? b.buttonsPadX : 6;
   block.buttonsPadY = hasBlock && isDefined(b.buttonsPadY) ? b.buttonsPadY : 2;
-  block.buttonsRadius = hasBlock && isDefined(b.buttonsRadius) ? b.buttonsRadius : 4;
+  block.buttonsRadius = hasBlock && isDefined(b.buttonsRadius) ? b.buttonsRadius : 0;
   block.buttonsShadow = hasBlock && isDefined(b.buttonsShadow) ? b.buttonsShadow : false;
   block.buttonsSize = hasBlock && isDefined(b.buttonsSize) ? b.buttonsSize : 14;
   block.buttonsText = hasBlock && isDefined(b.buttonsText) ? b.buttonsText : false;
@@ -95,6 +96,7 @@ function getBlockDefaults(devices, hasBlock, b) {
   block.gradients = hasBlock && isDefined(b.gradients) ? b.gradients : false;
   block.graph = hasBlock && isDefined(b.graph) ? b.graph : "line";
   block.graphTypes = hasBlock && isDefined(b.graphTypes) ? b.graphTypes : false;
+  block.groupBy = hasBlock && isDefined(b.groupBy) ? b.groupBy : false;
   block.height = hasBlock && isDefined(b.height) ? b.height : false;
   block.iconColour = hasBlock && isDefined(b.iconColour) ? b.iconColour : "grey";
   block.interval = hasBlock && isDefined(b.interval) ? b.interval : 1;
@@ -114,6 +116,7 @@ function getBlockDefaults(devices, hasBlock, b) {
   block.title = hasBlock && isDefined(b.title) ? b.title : false;
   block.toolTipStyle = hasBlock && isDefined(b.toolTipStyle) ? b.toolTipStyle : false;
   block.width = hasBlock && isDefined(b.width) ? b.width : 12;
+  block.zoom = hasBlock && isDefined(b.zoom) ? b.zoom : false;
   return block;
 }
 
@@ -272,7 +275,7 @@ function getDeviceDefaults(device, popup) {
   }
 
   var graphIdx = device.graphIdx;
-  var multidata = device.Data.split(/[,;]+/).length - 1 > 0;
+  var multidata = device.Data.split(',').length - 1 > 0;
   currentValue = multidata
     ? device.Data
     : number_format(currentValue, decimals).replace(",", ".") + " " + txtUnit;
@@ -317,28 +320,13 @@ function getDeviceDefaults(device, popup) {
 function showPopupGraph(idx, subidx) {
   var device = alldevices[idx];
   if ($("#opengraph" + device["idx"]).length === 0) {
-    var html =
-      '<div class="modal fade opengraph opengraph' +
-      device.idx +
-      p +
-      '" data-idx="' +
-      device.idx +
-      '" id="opengraph' +
-      device.idx +
-      p +
-      '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
+    var html = '<div class="modal fade opengraph opengraph' + device.idx + p + '" data-idx="' + device.idx + '" id="opengraph' + device.idx + p + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
     html += '<div class="modal-dialog graphwidth">';
     html += '<div class="modal-content">';
     html += '<div class="modal-header graphclose">';
-    html +=
-      '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
-    html += "</div>";
-    html +=
-      '<div class="modal-body block_graph_' +
-      device.idx +
-      p +
-      '">' +
-      language.misc.loading;
+    html += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
+    html += '</div>';
+    html += '<div class="modal-body block_graph_' + device.idx + p + '">' + language.misc.loading;
     html += "</div>";
     html += "</div>";
     html += "</div>";
@@ -346,11 +334,20 @@ function showPopupGraph(idx, subidx) {
     $("body").append(html);
   }
 
+  var definedPopup = typeof blocks[device.idx].popup !== 'undefined'? blocks[device.idx].popup : false; 
+
   var obj = {};
   obj.blockId = device.idx + p;
   obj.graphIdx = obj.blockId + device.idx;
-  obj.block = getBlockDefaults([device.idx], false);
-  obj.hasBlock = false;
+
+  if(definedPopup){
+    obj.block = getBlockDefaults([device.idx], true, blocks[definedPopup]);
+    obj.hasBlock = true;
+  } else {
+    obj.block = getBlockDefaults([device.idx], false);
+    obj.hasBlock = false;
+  }
+
   obj.mountPoint = ".block_graph_" + obj.blockId;
   obj.multigraph = false;
   obj.primary = true;
@@ -407,6 +404,7 @@ function getGraphData(devices, selGraph) {
       graph.realrange = graph.range;
       graph.dataFilterCount = 0;
       graph.dataFilterUnit = "";
+      graph.groupBy = graph.block.groupBy;
 
       if (graph.range === "last") {
         graph.realrange = "day";
@@ -437,6 +435,9 @@ function getGraphData(devices, selGraph) {
                 break;
               default:
                 console.log("invalid range: " + graph.graphConfig.range);
+            }
+            if (graph.graphConfig.groupBy){
+              graph.groupBy = graph.graphConfig.groupBy;
             }
           }
           if (graph.graphConfig.filter) {
@@ -544,6 +545,7 @@ function getGraphData(devices, selGraph) {
                   }
                 });
               }
+              // All device data collected
               if (arrResults.length === counter) {
                 $.each(multidata.result, function (index, obj) {
                   $.each(obj, function (k, v) {
@@ -560,6 +562,72 @@ function getGraphData(devices, selGraph) {
                 graph.ykeys = newKeys;
                 graph.ylabels = getYlabels(graph);
                 graph.currentValues = currentValues;
+               
+                // 20/02/20: GroupBy - hour|day|week|month
+                if (graph.groupBy) {
+                  var groupArray = [];
+                  var groupObj = {};
+                  var md = multidata.result;
+                  var dayFormat = "YYYY-MM-DD";
+                  var groupStart;
+                  var add =
+                    graph.sensor === "counter" || graph.sensor === "rain"
+                      ? true
+                      : false;
+                  var x = 1;
+
+                  $.each(md, function(i, obj) {
+                    switch (graph.groupBy) {
+                      case "hour":
+                        groupStart = moment(obj.d, dayFormat)
+                          .hour(moment(obj.d, "YYYY-MM-DD HH:mm").hour())
+                          .format("YYYY-MM-DD HH:mm");
+                        break;
+                      case "day":
+                        groupStart = moment(obj.d, dayFormat).format(dayFormat);
+                        break;
+                      case "week":
+                        groupStart = moment(obj.d, dayFormat)
+                          .week(moment(obj.d, dayFormat).week())
+                          .day("Sunday")
+                          .format(dayFormat);                        
+                        break;
+                      case "month":
+                        groupStart = moment(obj.d, dayFormat)
+                          .startOf("month")
+                          .format(dayFormat);
+                        break;
+                    }
+                    for (key in md[0]) {
+                      if (key !== "d") {
+                        var v = parseFloat(obj[key]);
+                        if (
+                          groupObj.hasOwnProperty("d") &&
+                          groupObj["d"] === groupStart
+                        ) {
+                          if (!add) {
+                            groupObj[key] += v;
+                            x++;
+                          }
+                        } else {
+                          if (!$.isEmptyObject(groupObj)) {
+                            groupObj[key] = groupObj[key] / x;
+                            groupArray.push(groupObj);
+                            x = 1;
+                          }
+                          groupObj = {};
+                          groupObj["d"] = groupStart;
+                          groupObj[key] = v;
+                          if (md.length - 1 === i) {
+                            groupObj[key] = groupObj[key] / x;
+                            groupArray.push(groupObj);
+                          }
+                        }
+                      }
+                    }
+                  });
+                  multidata.result = groupArray;
+                }
                 graph.data = multidata;
                 createGraph(graph);
               }
@@ -599,11 +667,7 @@ function createGraph(graph) {
 
     if (!graph.multigraph) {
       if (isDefined(graph.currentValue)) {
-        if(graph.type === 'Wind'){
-          var v = graph.currentValue.split(';');
-          graph.currentValue = parseFloat(v[0]).toFixed(0) + '°' + ' ' + v[1] + ';' + v[2]/10 + 'm/s;' + v[3]/10 + 'm/s;'+ v[4] + _TEMP_SYMBOL + ';'+ v[5] + _TEMP_SYMBOL;
-        }
-        title += span + graph.currentValue.replace( /,|;/g, '<span style="color:' + graph.block.buttonsIcon + ';font-weight:900;font-size:16px;"> | </span>') + '</span>';
+        title += span + graph.currentValue.replace( /, /g, '<span style="color:' + graph.block.buttonsIcon + ';font-weight:900;font-size:16px;"> | </span>') + '</span>';
       }
     } else {
       if (isDefined(graph.currentValues)) {
@@ -623,12 +687,7 @@ function createGraph(graph) {
   html += title + '<div class="graphbuttons" >' + buttons + "</div>";
   html += "</div>";
 
-  html +=
-    '<div class="graph swiper-no-swiping' +
-    (graph.popup ? " popup graphheight" : "") +
-    '" id="' +
-    graphIdx +
-    '">';
+  html += '<div class="graph swiper-no-swiping' + (graph.popup ? " popup graphheight" : "") + '" id="' + graphIdx + '">';
   html += "<canvas " + 'id="graphoutput_' + graphIdx + '"></canvas>';
   html += "</div>";
 
@@ -918,6 +977,7 @@ function createGraph(graph) {
   graphProperties.options.scales.xAxes[0].ticks.maxTicksLimit = graph.block.maxTicksLimit;
   graphProperties.options.scales.xAxes[0].ticks.reverse = graph.block.reverseTime;
   graphProperties.options.legend.labels.usePointStyle = graph.block.pointStyle;
+  graphProperties.options.scales.yAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
 
   if (graph.block.gradients) {
     var prop = graph.block;
@@ -967,7 +1027,7 @@ function createGraph(graph) {
 function createButtons(graph, ranges, customRange) {
   var btn = {};
   var buttons =
-    '<div class="btn-group" role="group" aria-label="Graph Buttons">';
+    '<div class="btn-group graphbuttons" role="group" aria-label="Graph Buttons">';
   var btnIcons = [
     "fas fa-clock",
     "fas fa-calendar-day",
@@ -1012,7 +1072,7 @@ function createButtons(graph, ranges, customRange) {
     month: btn.text !== false ? btn.text[2] : language.graph.last_month
   };
 
-  if (isDefined(settings["graph_zoom"]) && settings["graph_zoom"] === 1) {
+  if (graph.block.zoom) {
     buttons += '<button type="button" data-canvas="graphoutput_' + graph.graphIdx + '" id="resetZoom' + graph.graphIdx + '" ' + style + '" class="btn btn-default">';
     buttons += '  <i class="fas fa-search-minus" style="font-size:14px;color:' + btn.icon + '"></i>';
     buttons += "</button>";
@@ -1126,7 +1186,7 @@ function getDefaultGraphProperties(graph) {
       tooltips: {
         mode: "index",
         intersect: false,
-        enabled: !graph.popup? !graph.block.toolTipStyle : false,
+        enabled: !graph.popup ? !graph.block.toolTipStyle : false,
         custom: function (tooltip) {
 
           if (graph.block.toolTipStyle || graph.popup) {
@@ -1209,6 +1269,7 @@ function getDefaultGraphProperties(graph) {
         yAxes: [],
         xAxes: [
           {
+            offset: true,
             ticks: {
               fontColor: "white",
               source: "auto"
@@ -1232,12 +1293,11 @@ function getDefaultGraphProperties(graph) {
       plugins: {
         zoom: {
           zoom: {
-            enabled:
-              isDefined(settings["graph_zoom"]) && settings["graph_zoom"] === 1,
+            enabled: graph.block.zoom? true : false,
             drag: {
               animationDuration: 1000
             },
-            mode: "xy",
+            mode: graph.block.zoom? graph.block.zoom : 'xy',
             speed: 0.05
           }
         }
@@ -1245,7 +1305,7 @@ function getDefaultGraphProperties(graph) {
       animation: {
         duration: 500,
         easing: 'easeOutSine'
-    },
+      },
     }
   };
 }
@@ -1282,8 +1342,10 @@ function getYlabels(g) {
       case "v_max":
       case "v_avg":      
       case "u":      
-        if (g.subtype === 'Energy' || g.subtype === 'kWh' ){
-          label === "kWh" && g.realrange === "day" ? l.push("W") : l.push(label);
+        if (g.subtype === 'Energy' || g.subtype === 'kWh'){
+          label === "kWh" && g.realrange === "day" ? l.push("Watt") : l.push(label);
+        } else if (g.subtype === 'Electric') {
+          l.push("Watt");
         } else if (g.subtype === 'Gas'){
           l.push("m³");
         } else {
@@ -1332,5 +1394,4 @@ function getYlabels(g) {
   });
   return l;
 }
-
 //# sourceURL=js/components/graph.js
