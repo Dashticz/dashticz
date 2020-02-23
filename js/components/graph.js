@@ -577,6 +577,7 @@ function getGraphData(devices, selGraph) {
                   var x = 1;
 
                   $.each(md, function(i, obj) {
+
                     switch (graph.groupBy) {
                       case "hour":
                         groupStart = moment(obj.d, dayFormat)
@@ -598,31 +599,39 @@ function getGraphData(devices, selGraph) {
                           .format(dayFormat);
                         break;
                     }
-                    for (key in md[0]) {
-                      if (key !== "d") {
-                        var v = parseFloat(obj[key]);
-                        if (
-                          groupObj.hasOwnProperty("d") &&
-                          groupObj["d"] === groupStart
-                        ) {
+
+                    if (groupObj.hasOwnProperty("d") && groupObj["d"] === groupStart) {
+                      $.each(obj, function(key, val) {
+                        if (key !== "d") {
                           if (!add) {
-                            groupObj[key] += v;
+                            groupObj[key] += Number(val) || 0;
                             x++;
                           }
-                        } else {
-                          if (!$.isEmptyObject(groupObj)) {
-                            groupObj[key] = groupObj[key] / x;
-                            groupArray.push(groupObj);
-                            x = 1;
+                        }
+                      });
+                    } else {
+                      if (!$.isEmptyObject(groupObj)) {
+                        $.each(obj, function(key, val) {
+                          if (key !== "d") {
+                            groupObj[key] = Number(groupObj[key] / x);                           
                           }
-                          groupObj = {};
-                          groupObj["d"] = groupStart;
-                          groupObj[key] = v;
+                        });
+                        groupArray.push(groupObj);
+                        x = 1;
+                      }
+                      groupObj = {};
+                      groupObj["d"] = groupStart;
+                      $.each(obj, function(key, val) {
+                        if (key !== "d") {
+                          var v = Number(val) || 0;
+                          groupObj[key] = v;  
                           if (md.length - 1 === i) {
                             groupObj[key] = groupObj[key] / x;
-                            groupArray.push(groupObj);
-                          }
-                        }
+                          }                     
+                        }                        
+                      });
+                      if (md.length - 1 === i) {
+                        groupArray.push(groupObj);
                       }
                     }
                   });
