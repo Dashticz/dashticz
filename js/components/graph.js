@@ -301,6 +301,7 @@ function getDeviceDefaults(device, popup) {
       mountPoint: device.mountPoint,
       multigraph: device.multigraph,
       name: device.Name,
+      params: [],
       popup: popup,
       primary: device.primary,
       primaryIdx: device.primaryIdx,
@@ -310,6 +311,7 @@ function getDeviceDefaults(device, popup) {
       subtype: device.SubType,
       title: device.Name,
       txtUnit: txtUnit,
+      txtUnits: [],
       type: device.Type
     };
   }
@@ -366,7 +368,8 @@ function getGraphData(devices, selGraph) {
 
   $.each(devices, function (i, device) {
     var graphIdx = device.blockId + device.idx;
-    var graph = dtGraphs[graphIdx];
+    var graph = dtGraphs[graphIdx];   
+    dtGraphs[graph.primaryIdx].txtUnits.push(graph.txtUnit);
 
     currentValues.push(
       parseFloat(graph.currentValue.replace(",", ".")).toFixed(graph.decimals) + " " + graph.txtUnit
@@ -382,22 +385,19 @@ function getGraphData(devices, selGraph) {
     }
 
     if (graph.forced) {
-
       graph.isInitial = graph.range === "initial" ? true : false;
       graph.forced = false;
       graph.lastRefreshTime = time();
-
-      if (graph.isInitial) {
+      if (graph.isInitial) {        
         switch (settings["standard_graph"]) {
           case "hours":
             graph.range = "last";
             break;
-          case "day":
-            graph.range = "day";
-            break;
           case "month":
             graph.range = "month";
             break;
+          default:
+            graph.range = "day";
         }
       }
 
@@ -457,8 +457,11 @@ function getGraphData(devices, selGraph) {
         }
       }
 
+      var params = "&type=graph&sensor=" + dtGraphs[graphIdx].sensor + "&idx=" + dtGraphs[graphIdx].idx + "&range=" + graph.realrange;
+      dtGraphs[graph.primaryIdx].params.push(params);      
+
       $.ajax({
-        url: settings["domoticz_ip"] + "/json.htm?username=" + usrEnc + "&password=" + pwdEnc + "&type=graph&sensor=" + dtGraphs[graphIdx].sensor + "&idx=" + dtGraphs[graphIdx].idx + "&range=" + graph.realrange + "&method=1&time=" + new Date().getTime() + "&jsoncallback=?",
+        url: settings["domoticz_ip"] + "/json.htm?username=" + usrEnc + "&password=" + pwdEnc + params + "&method=1&time=" + new Date().getTime() + "&jsoncallback=?",
         type: "GET",
         async: true,
         contentType: "application/json",
@@ -570,13 +573,11 @@ function getGraphData(devices, selGraph) {
                   var md = multidata.result;
                   var dayFormat = "YYYY-MM-DD";
                   var groupStart;
-                  var add =
-                    graph.sensor === "counter" || graph.sensor === "rain"
-                      ? true
-                      : false;
+                  var add = graph.sensor === "counter" || graph.sensor === "rain"? true : false;
                   var x = 1;
 
                   $.each(md, function(i, obj) {
+                    var end = i === md.length - 1;
 
                     switch (graph.groupBy) {
                       case "hour":
@@ -591,7 +592,7 @@ function getGraphData(devices, selGraph) {
                         groupStart = moment(obj.d, dayFormat)
                           .week(moment(obj.d, dayFormat).week())
                           .day("Sunday")
-                          .format(dayFormat);                        
+                          .format(dayFormat);
                         break;
                       case "month":
                         groupStart = moment(obj.d, dayFormat)
@@ -603,18 +604,15 @@ function getGraphData(devices, selGraph) {
                     if (groupObj.hasOwnProperty("d") && groupObj["d"] === groupStart) {
                       $.each(obj, function(key, val) {
                         if (key !== "d") {
-                          if (!add) {
-                            groupObj[key] += Number(val) || 0;
-                            x++;
-                          }
+                          if (!add) end? groupObj[key] = Number(groupObj[key] / x) : groupObj[key] += Number(val) || 0;
                         }
                       });
+                      if (!add) x++;
+                      if (end) groupArray.push(groupObj);
                     } else {
                       if (!$.isEmptyObject(groupObj)) {
                         $.each(obj, function(key, val) {
-                          if (key !== "d") {
-                            groupObj[key] = Number(groupObj[key] / x);                           
-                          }
+                          if (key !== "d") groupObj[key] = Number(groupObj[key] / x);
                         });
                         groupArray.push(groupObj);
                         x = 1;
@@ -623,18 +621,13 @@ function getGraphData(devices, selGraph) {
                       groupObj["d"] = groupStart;
                       $.each(obj, function(key, val) {
                         if (key !== "d") {
-                          var v = Number(val) || 0;
-                          groupObj[key] = v;  
-                          if (md.length - 1 === i) {
-                            groupObj[key] = groupObj[key] / x;
-                          }                     
-                        }                        
+                          groupObj[key] = Number(val) || 0;
+                          if (end) groupObj[key] = groupObj[key] / x;
+                        }
                       });
-                      if (md.length - 1 === i) {
-                        groupArray.push(groupObj);
-                      }
+                      if (end) groupArray.push(groupObj);
                     }
-                  });
+                  });                  
                   multidata.result = groupArray;
                 }
                 graph.data = multidata;
@@ -1135,7 +1128,7 @@ function showData(graphIdx){
     html += '         </div>';
     html += '       </div>';
     html += '       <hr/>';
-    html += '       <div class="flex-row">';
+    html += '       <div class="flex-row">';    
     html += '         <div class="devices"><i class="fas fa-bolt text-yellow"></i><span class="label">Devices:</span>' + graph.block.devices.join(', ') + '</div>';
     html += '         <div class="input-keys"><i class="fas fa-key text-red"></i><span class="label">Input Keys:</span>' + graph.keys.join(', ') + '</div>';
     html += '         <div class="output-keys"><i class="fas fa-key text-green"></i><span class="label">Output Keys:</span>' + graph.ykeys.join(', ') + '</div>';
@@ -1161,12 +1154,13 @@ function showData(graphIdx){
         var device = data.result[0];
         var d ='';
         d += '<div class="device">';
-        d += '  <div class="name"><span class="label">Name:</span>' + device.Name + '<a class="idx text-yellow" href="' + url + '" target="_blank"><i class="fas fa-link text-blue"></i>' + device.idx +'</a></div>';
-        d += '  <div class="type"><span class="label">Type:</span>' + device.Type + '</div>';
-        d += '  <div class="subtype"><span class="label">SubType:</span>' + device.SubType + '</div>';
-        d += '  <div class="hardwareName"><span class="label">Hardware Name:</span>' + device.HardwareName + '</div>';
-        d += '  <div class="data"><span class="label">Data:</span>' + device.Data + '</div>';
-        d += '  <div class="lastUpdate"><span class="label">Last Update:</span>' + device.LastUpdate + '</div>';
+        d += '    <div class="name"><span class="label">Name:</span>' + device.Name + '<a class="idx text-yellow" href="' + url + '" target="_blank"><i class="fas fa-link text-blue"></i>' + device.idx +'</a></div>';
+        d += '    <div class="type"><span class="label">Type:</span>' + device.Type + '</div>';
+        d += '    <div class="subtype"><span class="label">SubType:</span>' + device.SubType + '</div>';
+        d += '    <div class="hardwareName"><span class="label">Hardware Name:</span>' + device.HardwareName + '</div>';
+        d += '    <div class="data"><span class="label">Data:</span>' + device.Data + '</div>';
+        d += '    <div class="lastUpdate"><span class="label">Last Update:</span>' + device.LastUpdate + '</div>';
+        d += '</div>';
         $(d).appendTo('#modal_' + graphIdx + ' .device-list');
       });
     });
@@ -1331,11 +1325,10 @@ function isObject(prop) {
   return typeof prop === "object" ? true : false;
 }
 
-function getYlabels(g) {
-  var label = g.txtUnit;
+function getYlabels(g) {  
   var l = [];
-
   $.each(g.keys, function (i, key) {
+    var label = g.txtUnits[i];
     switch (key) {
       case "v":
       case "v2":
