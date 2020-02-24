@@ -1894,13 +1894,13 @@ canvas{
 .graph-menu .device-list .device {
 	font-size: 12px;
 	border-bottom: solid 0.5px white;
-    padding: 5px 0px;
+	padding: 5px 0px;
+	display: flex;
 }
 
 .graph-menu .device-list .device .idx {
 	font-size: 12px;
 	margin-right: 5px;
-	float: right!important;
 }
 
 .graph-menu .device-list .device .idx .fas{
@@ -1908,8 +1908,15 @@ canvas{
 	margin-right: 5px;;
 }
 
+.graph-menu .device-list .device .col-fas {
+	padding-left: 0!important;
+	padding-right: 0!important;
+	display: flex;
+	flex-direction: column;
+}
+
 .graph-menu textarea {
-	width: 70%;
+	width: 60%;
 	background: black;
     color: grey;
 }
