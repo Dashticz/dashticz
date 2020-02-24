@@ -458,7 +458,7 @@ function getGraphData(devices, selGraph) {
       }
 
       var params = "&type=graph&sensor=" + dtGraphs[graphIdx].sensor + "&idx=" + dtGraphs[graphIdx].idx + "&range=" + graph.realrange;
-      dtGraphs[graph.primaryIdx].params.push(params);      
+      dtGraphs[graph.primaryIdx].params.push(params.slice(1));      
 
       $.ajax({
         url: settings["domoticz_ip"] + "/json.htm?username=" + usrEnc + "&password=" + pwdEnc + params + "&method=1&time=" + new Date().getTime() + "&jsoncallback=?",
@@ -604,15 +604,21 @@ function getGraphData(devices, selGraph) {
                     if (groupObj.hasOwnProperty("d") && groupObj["d"] === groupStart) {
                       $.each(obj, function(key, val) {
                         if (key !== "d") {
-                          if (!add) end? groupObj[key] = Number(groupObj[key] / x) : groupObj[key] += Number(val) || 0;
+                          if(end){
+                            if(!add) groupObj[key] = Number(groupObj[key] / x);
+                          } else {
+                            groupObj[key] += Number(val) || 0;
+                          }
                         }
                       });
-                      if (!add) x++;
+                      x++;
                       if (end) groupArray.push(groupObj);
                     } else {
                       if (!$.isEmptyObject(groupObj)) {
                         $.each(obj, function(key, val) {
-                          if (key !== "d") groupObj[key] = Number(groupObj[key] / x);
+                          if (key !== "d") {
+                            if(!add) groupObj[key] = Number(groupObj[key] / x);
+                          }
                         });
                         groupArray.push(groupObj);
                         x = 1;
@@ -622,7 +628,9 @@ function getGraphData(devices, selGraph) {
                       $.each(obj, function(key, val) {
                         if (key !== "d") {
                           groupObj[key] = Number(val) || 0;
-                          if (end) groupObj[key] = groupObj[key] / x;
+                          if (end) {
+                            if(!add) groupObj[key] = groupObj[key] / x;
+                          }
                         }
                       });
                       if (end) groupArray.push(groupObj);
@@ -1147,19 +1155,25 @@ function showData(graphIdx){
     $(html).appendTo('body');
 
     $.each(graph.block.devices, function (i, idx) {
-      var g = dtGraphs[graph.blockId + idx];
+      var g = dtGraphs[graph.primaryIdx];
       var url = config['domoticz_ip'] + '/json.htm?type=devices&rid=' + idx;
       
       $.getJSON(url, function( data ) {
         var device = data.result[0];
         var d ='';
         d += '<div class="device">';
-        d += '    <div class="name"><span class="label">Name:</span>' + device.Name + '<a class="idx text-yellow" href="' + url + '" target="_blank"><i class="fas fa-link text-blue"></i>' + device.idx +'</a></div>';
+        d += '  <div class="col-md-10">';
+        d += '    <div class="name"><span class="label">Name:</span>' + device.Name + '</div>';
         d += '    <div class="type"><span class="label">Type:</span>' + device.Type + '</div>';
         d += '    <div class="subtype"><span class="label">SubType:</span>' + device.SubType + '</div>';
         d += '    <div class="hardwareName"><span class="label">Hardware Name:</span>' + device.HardwareName + '</div>';
         d += '    <div class="data"><span class="label">Data:</span>' + device.Data + '</div>';
         d += '    <div class="lastUpdate"><span class="label">Last Update:</span>' + device.LastUpdate + '</div>';
+        d += '  </div>';
+        d += '  <div class="col-md-2 col-fas">';
+        d += '    <a class="idx text-yellow" href="' + url + '" target="_blank"><i class="fas fa-info-circle">&nbsp;</i>' + device.idx +'</a>';
+        d += '    <a class="idx text-red" href="' + config['domoticz_ip'] + '/json.htm?' + g.params[i] + '" target="_blank"><i class="fas fa-database">&nbsp;</i>Data</a>';
+        d += '  </div>';
         d += '</div>';
         $(d).appendTo('#modal_' + graphIdx + ' .device-list');
       });
