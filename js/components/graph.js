@@ -414,11 +414,13 @@ function getGraphData(devices, selGraph) {
         graph.dataFilterCount = 4;
         graph.dataFilterUnit = "hours";
       }
-
       if (graph.block.custom) {
         if (isInitial) {
           graph.range = Object.keys(graph.block.custom)[0];
           graph.customRange = true;
+          graph.customRangeName = graph.range;
+        } else {
+          graph.range = selGraph? selGraph : graph.customRangeName;
         }
         if (graph.block.custom[graph.range]) {          
           graph.graphConfig = graph.block.custom[graph.range];
@@ -720,13 +722,14 @@ function createGraph(graph) {
     console.log("No graph data for device " + graphIdx);
     return;
   }
+
   var chartctx = mydiv.find('canvas')[0].getContext("2d");
   var graphProperties = getDefaultGraphProperties(graph);
   $.extend(true, graphProperties, graph.block);
 
-  /*if (graph.graphConfig) {
+  if (graph.graphConfig) {
     $.extend(true, graph, graph.graphConfig);
-  } */
+  }
 
   if (!graph.popup) {
     var graphwidth = $(".block_" + graphIdx).width();
@@ -1032,7 +1035,7 @@ function createGraph(graph) {
       }
     ];
   }
-  //console.log(JSON.stringify(graphProperties));
+  //console.log(graphProperties);
   new Chart(chartctx, graphProperties);
 }
 
