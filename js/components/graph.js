@@ -365,12 +365,12 @@ function getGraphData(devices, selGraph) {
   var multidata = { result: [], status: "OK", title: "Graph day" };
   var arrResults = [];
   var currentValues = [];
+  var txtUnits = [];
 
   $.each(devices, function (i, device) {
     var graphIdx = device.blockId + device.idx;
-    var graph = dtGraphs[graphIdx];   
-    dtGraphs[graph.primaryIdx].txtUnits.push(graph.txtUnit);
-
+    var graph = dtGraphs[graphIdx]; 
+          
     currentValues.push(
       parseFloat(graph.currentValue.replace(",", ".")).toFixed(graph.decimals) + " " + graph.txtUnit
     );
@@ -385,19 +385,22 @@ function getGraphData(devices, selGraph) {
     }
 
     if (graph.forced) {
-      graph.isInitial = graph.range === "initial" ? true : false;
+      var isInitial = graph.range === "initial";
       graph.forced = false;
       graph.lastRefreshTime = time();
-      if (graph.isInitial) {        
+      txtUnits.push(graph.txtUnit);
+
+      if (isInitial) {        
         switch (settings["standard_graph"]) {
           case "hours":
             graph.range = "last";
             break;
+          case "day":
+            graph.range = "day";
+            break;
           case "month":
             graph.range = "month";
             break;
-          default:
-            graph.range = "day";
         }
       }
 
@@ -413,12 +416,11 @@ function getGraphData(devices, selGraph) {
       }
 
       if (graph.block.custom) {
-        if (graph.isInitial) {
+        if (isInitial) {
           graph.range = Object.keys(graph.block.custom)[0];
           graph.customRange = true;
         }
-
-        if (graph.block.custom[graph.range]) {
+        if (graph.block.custom[graph.range]) {          
           graph.graphConfig = graph.block.custom[graph.range];
           graph.customRange = true;
           if (graph.graphConfig.range) {
@@ -439,7 +441,7 @@ function getGraphData(devices, selGraph) {
             if (graph.graphConfig.groupBy){
               graph.groupBy = graph.graphConfig.groupBy;
             }
-          }
+          }          
           if (graph.graphConfig.filter) {
             graph.dataFilterCount = parseInt(graph.graphConfig.filter);
             graph.dataFilterUnit = graph.graphConfig.filter
@@ -563,6 +565,7 @@ function getGraphData(devices, selGraph) {
                 graph = dtGraphs[graph.primaryIdx];
                 graph.keys = arrYkeys;
                 graph.ykeys = newKeys;
+                graph.txtUnits = txtUnits;
                 graph.ylabels = getYlabels(graph);
                 graph.currentValues = currentValues;
                
@@ -638,6 +641,7 @@ function getGraphData(devices, selGraph) {
                   });                  
                   multidata.result = groupArray;
                 }
+                
                 graph.data = multidata;
                 createGraph(graph);
               }
@@ -716,14 +720,13 @@ function createGraph(graph) {
     console.log("No graph data for device " + graphIdx);
     return;
   }
-
   var chartctx = mydiv.find('canvas')[0].getContext("2d");
   var graphProperties = getDefaultGraphProperties(graph);
   $.extend(true, graphProperties, graph.block);
 
-  if (graph.graphConfig) {
+  /*if (graph.graphConfig) {
     $.extend(true, graph, graph.graphConfig);
-  }
+  } */
 
   if (!graph.popup) {
     var graphwidth = $(".block_" + graphIdx).width();
@@ -738,7 +741,6 @@ function createGraph(graph) {
   if (typeof graph.block.legend == "boolean") {
     graphProperties.options.legend.display = graph.block.legend;
   }
-
   var mydatasets = [];
 
   if (graph.dataFilterCount > 0) {
@@ -1030,7 +1032,7 @@ function createGraph(graph) {
       }
     ];
   }
-  //console.log(graphProperties)
+  //console.log(JSON.stringify(graphProperties));
   new Chart(chartctx, graphProperties);
 }
 
