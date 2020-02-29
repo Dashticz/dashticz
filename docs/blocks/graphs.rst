@@ -804,6 +804,8 @@ Alternatively, the param can be applied to custom data as follows::
 		legend: true
 	} 
 
+This results in the "Solar" graph grouping its data by hour, day, week or month - *Week by Day* is shown in the image below:
+
 .. image :: img/graph_groupby_day.png
 
 
