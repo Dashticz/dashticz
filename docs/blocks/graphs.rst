@@ -820,6 +820,29 @@ This results in the "Solar" graph grouping its data by hour, day, week or month 
 
 .. image :: img/graph_groupby_day.png
 
+**Wind (zoom)**
+::
+
+	blocks['wind'] = {
+		title: 'Wind',
+		devices: [73],
+		graph: 'line',
+		zoom: 'xy',
+		legend: {
+			'di_73' : 'Direction',          
+			'sp_73' : 'Speed',
+			'gu_73' : 'Gust'
+		}
+	}
+
+The "Wind" graph before zoom "x":
+
+.. image :: img/graph_zoom_x.jpg
+
+The "Wind" graph after zoom "x":
+
+.. image :: img/graph_zoom_x2.jpg
+
 
 **Buttons**
 
