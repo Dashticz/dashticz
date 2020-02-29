@@ -64,6 +64,10 @@ The following block parameters can be used to configure the graph:
       | ``['gu', 'sp']``: wind guts and speed
       | ``['uvi']``, ``['lux']``, ``['lux_avg']``, ``['mm']``, ``['v_max']``
       | ``['v2']``, ``['mm']``, ``['eu']``, ``['u']``, ``['u_max']``,``['co2']``
+  * - GroupBy
+    - This allows users to group their data by hour, day, week or month, where applicable ranges are used. See below for an example.
+  * - beginAtZero
+    - This forces the Y axis to begin at 0 (zero).
   * - height
     - ``'300px'``: Height of the graph in the graph block
   * - width
