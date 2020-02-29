@@ -1888,7 +1888,9 @@ canvas{
     padding: 0px 10px;
     border: solid 0.5px white;
     border-radius: 3px;
-    margin-right: 10px;
+	margin-right: 10px;
+	overflow: scroll;
+	max-height: 500px;
 }
 
 .graph-menu .device-list .device {

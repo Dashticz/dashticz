@@ -64,7 +64,7 @@ function getBlockConfig(me) {
 }
 
 function getBlockDefaults(devices, hasBlock, b) {
-  var datasetColors = ["red", "yellow", "blue", "orange", "green", "purple"];
+  var datasetColors = ['red', 'yellow', 'blue', 'orange', 'green', 'purple', 'chartreuse', 'aqua', 'teal', 'pink', 'gray', 'fuchsia'];
 
   var block = {};
   block.devices = devices;
@@ -97,6 +97,7 @@ function getBlockDefaults(devices, hasBlock, b) {
   block.graph = hasBlock && isDefined(b.graph) ? b.graph : "line";
   block.graphTypes = hasBlock && isDefined(b.graphTypes) ? b.graphTypes : false;
   block.groupBy = hasBlock && isDefined(b.groupBy) ? b.groupBy : false;
+  block.groupByDevice = hasBlock && isDefined(b.groupByDevice) ? b.groupByDevice : false;
   block.height = hasBlock && isDefined(b.height) ? b.height : false;
   block.iconColour = hasBlock && isDefined(b.iconColour) ? b.iconColour : "grey";
   block.interval = hasBlock && isDefined(b.interval) ? b.interval : 1;
@@ -361,298 +362,303 @@ function showPopupGraph(idx, subidx) {
 }
 
 function getGraphData(devices, selGraph) {
-
-  var multidata = { result: [], status: "OK", title: "Graph day" };
-  var arrResults = [];
-  var currentValues = [];
-  var txtUnits = [];
-
-  $.each(devices, function (i, device) {
-    var graphIdx = device.blockId + device.idx;
-    var graph = dtGraphs[graphIdx]; 
-          
-    currentValues.push(
-      parseFloat(graph.currentValue.replace(",", ".")).toFixed(graph.decimals) + " " + graph.txtUnit
-    );
-
-    if (isDefined(selGraph)) {
-      graph.range = selGraph;
-      graph.forced = true;
-    }
-
-    if (graph.lastRefreshTime < time() - parseFloat(_GRAPHREFRESH) * 60) {
-      graph.forced = true;
-    }
-
-    if (graph.forced) {
-      var isInitial = graph.range === "initial";
-      graph.forced = false;
-      graph.lastRefreshTime = time();
-      txtUnits.push(graph.txtUnit);
-
-      if (isInitial) {        
-        switch (settings["standard_graph"]) {
-          case "hours":
-            graph.range = "last";
-            break;
-          case "day":
-            graph.range = "day";
-            break;
-          case "month":
-            graph.range = "month";
-            break;
-        }
+  if (devices[0].block.groupByDevice){
+    groupByDevice(devices);
+  } else {
+    var multidata = { result: [], status: "OK", title: "Graph day" };
+    var arrResults = [];
+    var currentValues = [];
+    var txtUnits = [];
+  
+    $.each(devices, function (i, device) {
+      var graphIdx = device.blockId + device.idx;
+      var graph = dtGraphs[graphIdx]; 
+            
+      currentValues.push(
+        parseFloat(graph.currentValue.replace(",", ".")).toFixed(graph.decimals) + " " + graph.txtUnit
+      );
+  
+      if (isDefined(selGraph)) {
+        graph.range = selGraph;
+        graph.forced = true;
       }
-
-      graph.realrange = graph.range;
-      graph.dataFilterCount = 0;
-      graph.dataFilterUnit = "";
-      graph.groupBy = graph.block.groupBy;
-
-      if (graph.range === "last") {
-        graph.realrange = "day";
-        graph.dataFilterCount = 4;
-        graph.dataFilterUnit = "hours";
+  
+      if (graph.lastRefreshTime < time() - parseFloat(_GRAPHREFRESH) * 60) {
+        graph.forced = true;
       }
-      if (graph.block.custom) {
-        if (isInitial) {
-          graph.range = Object.keys(graph.block.custom)[0];
-          graph.customRange = true;
-          graph.customRangeName = graph.range;
-        } else {
-          graph.range = selGraph? selGraph : graph.customRangeName;
-        }
-        if (graph.block.custom[graph.range]) {          
-          graph.graphConfig = graph.block.custom[graph.range];
-          graph.customRange = true;
-          if (graph.graphConfig.range) {
-            switch (graph.graphConfig.range) {
-              case "day":
-              case "month":
-              case "year":
-                graph.realrange = graph.graphConfig.range;
-                break;
-              case "last":
-                graph.dataFilterCount = 4;
-                graph.dataFilterUnit = "hours";
-                graph.realrange = "day";
-                break;
-              default:
-                console.log("invalid range: " + graph.graphConfig.range);
-            }
-            if (graph.graphConfig.groupBy){
-              graph.groupBy = graph.graphConfig.groupBy;
-            }
-          }          
-          if (graph.graphConfig.filter) {
-            graph.dataFilterCount = parseInt(graph.graphConfig.filter);
-            graph.dataFilterUnit = graph.graphConfig.filter
-              .split(" ")
-              .splice(-1)[0];
-          }
-          if (graph.graphConfig.method) {
-            graph.block.method = graph.graphConfig.method;
+  
+      if (graph.forced) {
+        var isInitial = graph.range === "initial";
+        graph.forced = false;
+        graph.lastRefreshTime = time();
+        txtUnits.push(graph.txtUnit);
+  
+        if (isInitial) {        
+          switch (settings["standard_graph"]) {
+            case "hours":
+              graph.range = "last";
+              break;
+            case "day":
+              graph.range = "day";
+              break;
+            case "month":
+              graph.range = "month";
+              break;
           }
         }
-        if (!graph.customRange) {
-          console.log(
-            "custom graph, but graph selector " + graph.range + " not found"
-          );
+  
+        graph.realrange = graph.range;
+        graph.dataFilterCount = 0;
+        graph.dataFilterUnit = "";
+        graph.groupBy = graph.block.groupBy;
+  
+        if (graph.range === "last") {
+          graph.realrange = "day";
+          graph.dataFilterCount = 4;
+          graph.dataFilterUnit = "hours";
         }
-      }
-
-      var params = "&type=graph&sensor=" + dtGraphs[graphIdx].sensor + "&idx=" + dtGraphs[graphIdx].idx + "&range=" + graph.realrange;
-      dtGraphs[graph.primaryIdx].params.push(params.slice(1));      
-
-      $.ajax({
-        url: settings["domoticz_ip"] + "/json.htm?username=" + usrEnc + "&password=" + pwdEnc + params + "&method=1&time=" + new Date().getTime() + "&jsoncallback=?",
-        type: "GET",
-        async: true,
-        contentType: "application/json",
-        dataType: "jsonp",
-        success: function (data) {
-          data.idx = device.idx;
-          arrResults.push(data);
-
-          if (devices.length === arrResults.length) {
-            if (graph.sortDevices) {
-              arrResults.sort(function (a, b) {
-                return b.result.length - a.result.length;
-              });
+        if (graph.block.custom) {
+          if (isInitial) {
+            graph.range = Object.keys(graph.block.custom)[0];
+            graph.customRange = true;
+            graph.customRangeName = graph.range;
+          } else {
+            graph.range = selGraph? selGraph : graph.customRangeName;
+          }
+          if (graph.block.custom[graph.range]) {          
+            graph.graphConfig = graph.block.custom[graph.range];
+            graph.customRange = true;
+            if (graph.graphConfig.range) {
+              switch (graph.graphConfig.range) {
+                case "day":
+                case "month":
+                case "year":
+                  graph.realrange = graph.graphConfig.range;
+                  break;
+                case "last":
+                  graph.dataFilterCount = 4;
+                  graph.dataFilterUnit = "hours";
+                  graph.realrange = "day";
+                  break;
+                default:
+                  console.log("invalid range: " + graph.graphConfig.range);
+              }
+              if (graph.graphConfig.groupBy){
+                graph.groupBy = graph.graphConfig.groupBy;
+              }
+            }          
+            if (graph.graphConfig.filter) {
+              graph.dataFilterCount = parseInt(graph.graphConfig.filter);
+              graph.dataFilterUnit = graph.graphConfig.filter
+                .split(" ")
+                .splice(-1)[0];
             }
-
-            var newKeys = [];
-            var arrYkeys = [];
-
-            $.each(arrResults, function (z, d) {
-              var currentKey = "";
-              var counter = z + 1;
-
-              if (d.result && d.result.length > 0) {
-                if (graph.hasBlock && graph.block.graphTypes) {
-                  for (var key in d.result[0]) {
-                    if (
-                      $.inArray(key, graph.block.graphTypes) !== -1 &&
-                      key !== "d"
-                    ) {
-                      arrYkeys.push(key);
-                    }
-                  }
-                } else {
-                  for (var key in d.result[0]) {
-                    if (key !== "d") {
-                      arrYkeys.push(key);
-                    }
-                  }
-                }
-
-                $.each(d.result, function (x, res) {
-                  var valid = false;
-                  var interval = 1;
-                  if (graph.hasBlock)
-                    interval =
-                      graph.range === "last" || graph.range === "month"
-                        ? 1
-                        : graph.block.interval;
-
-                  if (x % interval === 0) {
-                    if (z == 0) {
-                      var obj = {};
-                      for (var key in res) {
-                        if (key === "d") {
-                          obj["d"] = res[key];
-                        }
-                        if ($.inArray(key, arrYkeys) !== -1) {
-                          currentKey = key + '_' + d.idx;
-                          obj[currentKey] = res[key];
-                          valid = true;
-                          if ($.inArray(currentKey, newKeys) === -1) {
-                            newKeys.push(currentKey);
-                          }
-                        }
-                      }
-                      if (valid) multidata.result.push(obj);
-                    } else {
-                      for (var key in res) {
-                        if (key !== "d" && $.inArray(key, arrYkeys) !== -1) {
-                          $.each(multidata.result, function (index, obj) {
-                            $.each(obj, function (k, v) {
-                              if (k === "d" && v === res["d"]) {
-                                currentKey = key + '_' + d.idx;
-                                multidata.result[index][currentKey] = res[key];
-                                if ($.inArray(currentKey, newKeys) === -1) {
-                                  newKeys.push(currentKey);
-                                }
-                              }
-                            });
-                          });
-                        }
-                      }
-                    }
-                  }
+            if (graph.graphConfig.method) {
+              graph.block.method = graph.graphConfig.method;
+            }
+          }
+          if (!graph.customRange) {
+            console.log(
+              "custom graph, but graph selector " + graph.range + " not found"
+            );
+          }
+        }
+  
+        var params = "&type=graph&sensor=" + dtGraphs[graphIdx].sensor + "&idx=" + dtGraphs[graphIdx].idx + "&range=" + graph.realrange;
+        dtGraphs[graph.primaryIdx].params.push(params.slice(1));      
+  
+        $.ajax({
+          url: settings["domoticz_ip"] + "/json.htm?username=" + usrEnc + "&password=" + pwdEnc + params + "&method=1&time=" + new Date().getTime() + "&jsoncallback=?",
+          type: "GET",
+          async: true,
+          contentType: "application/json",
+          dataType: "jsonp",
+          success: function (data) {
+            data.idx = device.idx;
+            arrResults.push(data);
+  
+            if (devices.length === arrResults.length) {
+              if (graph.sortDevices) {
+                arrResults.sort(function (a, b) {
+                  return b.result.length - a.result.length;
                 });
               }
-              // All device data collected
-              if (arrResults.length === counter) {
-                $.each(multidata.result, function (index, obj) {
-                  $.each(obj, function (k, v) {
-                    for (var n in newKeys) {
-                      if (!obj.hasOwnProperty(newKeys[n])) {
-                        obj[newKeys[n]] = NaN;
+  
+              var newKeys = [];
+              var arrYkeys = [];
+  
+              $.each(arrResults, function (z, d) {
+                var currentKey = "";
+                var counter = z + 1;
+  
+                if (d.result && d.result.length > 0) {
+                  if (graph.hasBlock && graph.block.graphTypes) {
+                    for (var key in d.result[0]) {
+                      if (
+                        $.inArray(key, graph.block.graphTypes) !== -1 &&
+                        key !== "d"
+                      ) {
+                        arrYkeys.push(key);
+                      }
+                    }
+                  } else {
+                    for (var key in d.result[0]) {
+                      if (key !== "d") {
+                        arrYkeys.push(key);
+                      }
+                    }
+                  }
+  
+                  $.each(d.result, function (x, res) {
+                    var valid = false;
+                    var interval = 1;
+                    if (graph.hasBlock)
+                      interval =
+                        graph.range === "last" || graph.range === "month"
+                          ? 1
+                          : graph.block.interval;
+  
+                    if (x % interval === 0) {
+                      if (z == 0) {
+                        var obj = {};
+                        for (var key in res) {
+                          if (key === "d") {
+                            obj["d"] = res[key];
+                          }
+                          if ($.inArray(key, arrYkeys) !== -1) {
+                            currentKey = key + '_' + d.idx;
+                            obj[currentKey] = res[key];
+                            valid = true;
+                            if ($.inArray(currentKey, newKeys) === -1) {
+                              newKeys.push(currentKey);
+                            }
+                          }
+                        }
+                        if (valid) multidata.result.push(obj);
+                      } else {
+                        for (var key in res) {
+                          if (key !== "d" && $.inArray(key, arrYkeys) !== -1) {
+                            $.each(multidata.result, function (index, obj) {
+                              $.each(obj, function (k, v) {
+                                if (k === "d" && v === res["d"]) {
+                                  currentKey = key + '_' + d.idx;
+                                  multidata.result[index][currentKey] = res[key];
+                                  if ($.inArray(currentKey, newKeys) === -1) {
+                                    newKeys.push(currentKey);
+                                  }
+                                }
+                              });
+                            });
+                          }
+                        }
                       }
                     }
                   });
-                });
-
-                graph = dtGraphs[graph.primaryIdx];
-                graph.keys = arrYkeys;
-                graph.ykeys = newKeys;
-                graph.txtUnits = txtUnits;
-                graph.ylabels = getYlabels(graph);
-                graph.currentValues = currentValues;
-               
-                // 20/02/20: GroupBy - hour|day|week|month
-                if (graph.groupBy) {
-                  var groupArray = [];
-                  var groupObj = {};
-                  var md = multidata.result;
-                  var dayFormat = "YYYY-MM-DD";
-                  var groupStart;
-                  var add = graph.sensor === "counter" || graph.sensor === "rain"? true : false;
-                  var x = 1;
-
-                  $.each(md, function(i, obj) {
-                    var end = i === md.length - 1;
-
-                    switch (graph.groupBy) {
-                      case "hour":
-                        groupStart = moment(obj.d, dayFormat)
-                          .hour(moment(obj.d, "YYYY-MM-DD HH:mm").hour())
-                          .format("YYYY-MM-DD HH:mm");
-                        break;
-                      case "day":
-                        groupStart = moment(obj.d, dayFormat).format(dayFormat);
-                        break;
-                      case "week":
-                        groupStart = moment(obj.d, dayFormat)
-                          .week(moment(obj.d, dayFormat).week())
-                          .day("Sunday")
-                          .format(dayFormat);
-                        break;
-                      case "month":
-                        groupStart = moment(obj.d, dayFormat)
-                          .startOf("month")
-                          .format(dayFormat);
-                        break;
-                    }
-
-                    if (groupObj.hasOwnProperty("d") && groupObj["d"] === groupStart) {
-                      $.each(obj, function(key, val) {
-                        if (key !== "d") {
-                          if(end){
-                            if(!add) groupObj[key] = Number(groupObj[key] / x);
-                          } else {
-                            groupObj[key] += Number(val) || 0;
-                          }
+                }
+                // All device data collected
+                if (arrResults.length === counter) {
+                  $.each(multidata.result, function (index, obj) {
+                    $.each(obj, function (k, v) {
+                      for (var n in newKeys) {
+                        if (!obj.hasOwnProperty(newKeys[n])) {
+                          obj[newKeys[n]] = NaN;
                         }
-                      });
-                      x++;
-                      if (end) groupArray.push(groupObj);
-                    } else {
-                      if (!$.isEmptyObject(groupObj)) {
+                      }
+                    });
+                  });
+  
+                  graph = dtGraphs[graph.primaryIdx];
+                  graph.keys = arrYkeys;
+                  graph.ykeys = newKeys;
+                  graph.txtUnits = txtUnits;
+                  graph.ylabels = getYlabels(graph);
+                  graph.currentValues = currentValues;
+                 
+                  // 20/02/20: GroupBy - hour|day|week|month
+                  if (graph.groupBy) {
+                    var groupArray = [];
+                    var groupObj = {};
+                    var md = multidata.result;
+                    var dayFormat = "YYYY-MM-DD";
+                    var groupStart;
+                    var add = graph.sensor === "counter" || graph.sensor === "rain"? true : false;
+                    var x = 1;
+  
+                    $.each(md, function(i, obj) {
+                      var end = i === md.length - 1;
+  
+                      switch (graph.groupBy) {
+                        case "hour":
+                          groupStart = moment(obj.d, dayFormat)
+                            .hour(moment(obj.d, "YYYY-MM-DD HH:mm").hour())
+                            .format("YYYY-MM-DD HH:mm");
+                          break;
+                        case "day":
+                          groupStart = moment(obj.d, dayFormat).format(dayFormat);
+                          break;
+                        case "week":
+                          groupStart = moment(obj.d, dayFormat)
+                            .week(moment(obj.d, dayFormat).week())
+                            .day("Sunday")
+                            .format(dayFormat);
+                          break;
+                        case "month":
+                          groupStart = moment(obj.d, dayFormat)
+                            .startOf("month")
+                            .format(dayFormat);
+                          break;
+                      }
+  
+                      if (groupObj.hasOwnProperty("d") && groupObj["d"] === groupStart) {
                         $.each(obj, function(key, val) {
                           if (key !== "d") {
-                            if(!add) groupObj[key] = Number(groupObj[key] / x);
+                            if(end){
+                              if(!add) groupObj[key] = Number(groupObj[key] / x);
+                            } else {
+                              groupObj[key] += Number(val) || 0;
+                            }
                           }
                         });
-                        groupArray.push(groupObj);
-                        x = 1;
-                      }
-                      groupObj = {};
-                      groupObj["d"] = groupStart;
-                      $.each(obj, function(key, val) {
-                        if (key !== "d") {
-                          groupObj[key] = Number(val) || 0;
-                          if (end) {
-                            if(!add) groupObj[key] = groupObj[key] / x;
-                          }
+                        x++;
+                        if (end) groupArray.push(groupObj);
+                      } else {
+                        if (!$.isEmptyObject(groupObj)) {
+                          $.each(obj, function(key, val) {
+                            if (key !== "d") {
+                              if(!add) groupObj[key] = Number(groupObj[key] / x);
+                            }
+                          });
+                          groupArray.push(groupObj);
+                          x = 1;
                         }
-                      });
-                      if (end) groupArray.push(groupObj);
-                    }
-                  });                  
-                  multidata.result = groupArray;
+                        groupObj = {};
+                        groupObj["d"] = groupStart;
+                        $.each(obj, function(key, val) {
+                          if (key !== "d") {
+                            groupObj[key] = Number(val) || 0;
+                            if (end) {
+                              if(!add) groupObj[key] = groupObj[key] / x;
+                            }
+                          }
+                        });
+                        if (end) groupArray.push(groupObj);
+                      }
+                    });                  
+                    multidata.result = groupArray;
+                  }
+                  
+                  graph.data = multidata;
+                  createGraph(graph);
                 }
-                
-                graph.data = multidata;
-                createGraph(graph);
-              }
-            });
+              });
+            }
           }
-        }
-      });
-    }
-  });
+        });
+      }
+    });
+  }
+
+  
 }
 
 function createGraph(graph) {
@@ -665,47 +671,8 @@ function createGraph(graph) {
 
   var ranges = ["last", "day", "month"];
   if (graph.customRange) ranges = Object.keys(graph.block.custom);
-  var buttonIcon = graph.block.buttonsIcon;
   var buttons = createButtons(graph, ranges, graph.customRange);
-
-  var title =
-    '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar" style="font-size:20px;margin-left:5px;color:' +
-    buttonIcon +
-    '">&nbsp;</i>' +
-    graph.name +
-    "";
-  var span =
-    '&nbsp;<span class="graphcurrent' +
-    graphIdx +
-    '">&nbsp;<i class="fas fa-equals" style="font-size:14px;color:' +
-    buttonIcon +
-    '">&nbsp;</i>&nbsp;';
-
-    if (!graph.multigraph) {
-      if (isDefined(graph.currentValue)) {
-        title += span + graph.currentValue.replace( /, /g, '<span style="color:' + graph.block.buttonsIcon + ';font-weight:900;font-size:16px;"> | </span>') + '</span>';
-      }
-    } else {
-      if (isDefined(graph.currentValues)) {
-        title += span;
-        $.each(graph.currentValues, function(i, val) {
-          if (i < graph.currentValues.length - 1) {
-            title += graph.currentValues[i] + '<span style="color:' + graph.block.buttonsIcon + ';font-weight:900;font-size:16px;"> | </span></span>';
-          } else {
-            title += graph.currentValues[i];
-          }
-        });
-      }
-    }
-    title += "</div>";
-
-  var html = "";
-  html += title + '<div class="graphbuttons" >' + buttons + "</div>";
-  html += "</div>";
-
-  html += '<div class="graph swiper-no-swiping' + (graph.popup ? " popup graphheight" : "") + '" id="' + graphIdx + '">';
-  html += "<canvas " + 'id="graphoutput_' + graphIdx + '"></canvas>';
-  html += "</div>";
+  var html = createHeader(graph, true, buttons);
 
   var mydiv = !graph.popup
     ? $(graph.mountPoint + " > div")
@@ -1039,10 +1006,41 @@ function createGraph(graph) {
   new Chart(chartctx, graphProperties);
 }
 
+function createHeader(graph, showValues, buttons){
+  var title = '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar" style="font-size:20px;margin-left:5px;color:' + graph.block.iconColour + '">&nbsp;</i>' + graph.name + '&nbsp;<span class="graphcurrent' + graph.graphIdx + '">';
+  var span = showValues? '&nbsp;<i class="fas fa-equals" style="font-size:14px;color:' + graph.block.iconColour + '">&nbsp;</i>&nbsp;' : '';
+  var btns = isDefined(buttons)? buttons : '';
+
+  if (!graph.multigraph) {
+    if (isDefined(graph.currentValue)) {
+      title += span + (showValues? graph.currentValue.replace( /, /g, '<span style="color:' + graph.block.iconColour + ';font-weight:900;font-size:16px;"> | </span>') + '</span>' : '');
+    }
+  } else {
+    if (isDefined(graph.currentValues)) {
+      title += span;
+      if(showValues){
+        $.each(graph.currentValues, function(i, val) {
+          if (i < graph.currentValues.length - 1) {
+            title += graph.currentValues[i] + '<span style="color:' + graph.block.iconColour + ';font-weight:900;font-size:16px;"> | </span></span>';
+          } else {
+            title += graph.currentValues[i];
+          }
+        });
+      }      
+    }
+  }
+  title += "</div>";
+  var html = "";
+  html += title + '<div class="graphbuttons" >' + btns + "</div>";
+  html += "</div>";
+  html += '<div class="graph swiper-no-swiping' + (graph.popup ? " popup graphheight" : "") + '" id="' + graph.graphIdx + '">';
+  html += "<canvas " + 'id="graphoutput_' + graph.graphIdx + '"></canvas>';
+  return html += "</div>";
+}
+
 function createButtons(graph, ranges, customRange) {
   var btn = {};
-  var buttons =
-    '<div class="btn-group graphbuttons" role="group" aria-label="Graph Buttons">';
+  var buttons = '<div class="btn-group graphbuttons" role="group" aria-label="Graph Buttons">';
   var btnIcons = [
     "fas fa-clock",
     "fas fa-calendar-day",
@@ -1081,34 +1079,36 @@ function createButtons(graph, ranges, customRange) {
     }
   );
 
-  var btnTextList = {
-    last: btn.text !== false ? btn.text[0] : language.graph.last_hours,
-    day: btn.text !== false ? btn.text[1] : language.graph.today,
-    month: btn.text !== false ? btn.text[2] : language.graph.last_month
-  };
-
-  if (graph.block.zoom) {
-    buttons += '<button type="button" data-canvas="graphoutput_' + graph.graphIdx + '" id="resetZoom' + graph.graphIdx + '" ' + style + '" class="btn btn-default">';
-    buttons += '  <i class="fas fa-search-minus" style="font-size:14px;color:' + btn.icon + '"></i>';
-    buttons += "</button>";
-
-    $(document).on("click", "#resetZoom" + graph.graphIdx, function() {
-      Chart.helpers.each(Chart.instances, function(instance) {
-        if (
-          instance.chart.canvas.id ===
-          $("#resetZoom" + graph.graphIdx).data("canvas")
-        ) {
-          instance.chart.resetZoom();
-        }
+  if(isDefined(ranges)){
+    var btnTextList = {
+      last: btn.text !== false ? btn.text[0] : language.graph.last_hours,
+      day: btn.text !== false ? btn.text[1] : language.graph.today,
+      month: btn.text !== false ? btn.text[2] : language.graph.last_month
+    };
+  
+    if (graph.block.zoom) {
+      buttons += '<button type="button" data-canvas="graphoutput_' + graph.graphIdx + '" id="resetZoom' + graph.graphIdx + '" ' + style + '" class="btn btn-default">';
+      buttons += '  <i class="fas fa-search-minus" style="font-size:14px;color:' + btn.icon + '"></i>';
+      buttons += "</button>";
+  
+      $(document).on("click", "#resetZoom" + graph.graphIdx, function() {
+        Chart.helpers.each(Chart.instances, function(instance) {
+          if (
+            instance.chart.canvas.id ===
+            $("#resetZoom" + graph.graphIdx).data("canvas")
+          ) {
+            instance.chart.resetZoom();
+          }
+        });
       });
+    }
+    ranges.forEach(function(item, i) {
+      var btnText = customRange ? item : btnTextList[item];
+      buttons += '<button type="button" ' + style + '" class="btn btn-default';
+      if (graph.range === item) buttons += " active";
+      buttons += '" onclick="updateGraphs(\'' + graph.blockId + "', [" + graph.block.devices + "],'" + item + "','" + graph.popup + '\');"><i class="' + btnIcons[i] + '" style="font-size:14px;color:' + btn.icon + '">&nbsp;</i>&nbsp;' + btnText + "</button> ";
     });
   }
-  ranges.forEach(function(item, i) {
-    var btnText = customRange ? item : btnTextList[item];
-    buttons += '<button type="button" ' + style + '" class="btn btn-default';
-    if (graph.range === item) buttons += " active";
-    buttons += '" onclick="updateGraphs(\'' + graph.blockId + "', [" + graph.block.devices + "],'" + item + "','" + graph.popup + '\');"><i class="' + btnIcons[i] + '" style="font-size:14px;color:' + btn.icon + '">&nbsp;</i>&nbsp;' + btnText + "</button> ";
-  });
 
   if(graph.block.debugButton){
     buttons += '<div class="btn-group">';
@@ -1143,9 +1143,13 @@ function showData(graphIdx){
     html += '       <hr/>';
     html += '       <div class="flex-row">';    
     html += '         <div class="devices"><i class="fas fa-bolt text-yellow"></i><span class="label">Devices:</span>' + graph.block.devices.join(', ') + '</div>';
-    html += '         <div class="input-keys"><i class="fas fa-key text-red"></i><span class="label">Input Keys:</span>' + graph.keys.join(', ') + '</div>';
-    html += '         <div class="output-keys"><i class="fas fa-key text-green"></i><span class="label">Output Keys:</span>' + graph.ykeys.join(', ') + '</div>';
-    html += '         <div class="ylabels"><i class="fas fa-balance-scale-right text-blue"></i></i><span class="label">Y Labels:</span>' + graph.ylabels.join(', ') + '</div>';
+    
+    if(!graph.block.groupByDevice){
+      html += '         <div class="input-keys"><i class="fas fa-key text-red"></i><span class="label">Input Keys:</span>' + graph.keys.join(', ') + '</div>';
+      html += '         <div class="output-keys"><i class="fas fa-key text-green"></i><span class="label">Output Keys:</span>' + graph.ykeys.join(', ') + '</div>';
+      html += '         <div class="ylabels"><i class="fas fa-balance-scale-right text-blue"></i></i><span class="label">Y Labels:</span>' + graph.ylabels.join(', ') + '</div>';
+    }
+    
     html += '       </div>';
     html += '     </div>';
     html += '     <div class="modal-body">';
@@ -1177,7 +1181,9 @@ function showData(graphIdx){
         d += '  </div>';
         d += '  <div class="col-md-2 col-fas">';
         d += '    <a class="idx text-yellow" href="' + url + '" target="_blank"><i class="fas fa-info-circle">&nbsp;</i>' + device.idx +'</a>';
-        d += '    <a class="idx text-red" href="' + config['domoticz_ip'] + '/json.htm?' + g.params[i] + '" target="_blank"><i class="fas fa-database">&nbsp;</i>Data</a>';
+        if(!graph.block.groupByDevice){
+          d += '    <a class="idx text-red" href="' + config['domoticz_ip'] + '/json.htm?' + g.params[i] + '" target="_blank"><i class="fas fa-database">&nbsp;</i>Data</a>';
+        } 
         d += '  </div>';
         d += '</div>';
         $(d).appendTo('#modal_' + graphIdx + ' .device-list');
@@ -1288,7 +1294,18 @@ function getDefaultGraphProperties(graph) {
         display: false
       },
       scales: {
-        yAxes: [],
+        yAxes: [
+          {
+            ticks: {
+              fontColor: "white",
+              source: "auto"
+            },
+            gridLines: {
+              color: "rgba(255,255,255,0.2)",
+              display: true
+            },
+          }
+        ],
         xAxes: [
           {
             offset: true,
@@ -1347,7 +1364,7 @@ function isObject(prop) {
 function getYlabels(g) {  
   var l = [];
   $.each(g.keys, function (i, key) {
-    var label = g.txtUnits[i];
+    var label = isDefined(g.txtUnits[i])? g.txtUnits[i] : g.txtUnit;
     switch (key) {
       case "v":
       case "v2":
@@ -1414,5 +1431,108 @@ function getYlabels(g) {
     }
   });
   return l;
+}
+function groupByDevice(devices) {
+
+  var arrData = [];
+  var arrSetPoint = [];
+  var arrLabels = [];
+  var datasetColors = [];
+  var graphIdx = devices[0].blockId + devices[0].idx;
+  var graph = dtGraphs[graphIdx];
+  var initial = graph.range === "initial" ? true : false;
+
+  if (graph.lastRefreshTime < time() - parseFloat(_GRAPHREFRESH) * 60) {
+    graph.forced = true;
+  }
+
+  if (graph.forced) {
+    graph.forced = false;
+    graph.lastRefreshTime = time();
+    dtGraphs[graphIdx] = graph;
+
+    $.each(devices, function (i, device) {
+      data = allDevices[device.idx];
+      dtGraphs[graph.primaryIdx].currentValues.push(graph.currentValue);
+
+      if (
+        data.CounterToday ||
+        data.Temp ||
+        data.SubType === "Percentage" ||
+        data.SensorUnit === "%"
+      ) {
+        if (data.CounterToday) arrData.push(parseFloat(data.CounterToday));
+        if (data.Temp) {
+          arrData.push(parseFloat(data.Temp));
+          if(data.SetPoint) {
+            arrSetPoint.push(parseFloat(data.SetPoint));
+            if(data.Temp < data.SetPoint) datasetColors.push('blue');
+            if(data.Temp === data.SetPoint) datasetColors.push('orange');
+            if(data.Temp > data.SetPoint) datasetColors.push('red');
+          }
+        }
+        if (data.SubType === "Percentage" || data.SensorUnit === "%") arrData.push(parseFloat(data.Data));        
+        arrLabels.push(data.Name);
+      }
+
+      if (devices.length - 1 === i) {
+        var buttons = createButtons(graph);
+        var html = createHeader(dtGraphs[graph.primaryIdx], false, buttons);
+        var mountPoint = $(graph.mountPoint + " > div");
+
+        if (initial) {
+          mountPoint.addClass("col-xs-" + graph.block.width);
+          mountPoint.addClass("block_graph");
+          mountPoint.addClass("block_" + graphIdx);
+          mountPoint.html(html);
+          var graphwidth = $(".block_" + graphIdx).width();
+          var setHeight = Math.min(Math.round((graphwidth / window.innerWidth) * window.innerHeight - 25), window.innerHeight - 50);
+          setHeight = graph.block.height ? graph.block.height : setHeight;
+          $(".block_" + graphIdx).css("height", setHeight);
+        }
+
+        var graphProperties = getDefaultGraphProperties(graph);
+        var xAxesType = 'category';
+        var graphType = 'bar';
+        var scaleLabel = { labelString : graph.txtUnit, display: true, fontColor: "white" };
+
+        if(graph.block.groupByDevice === 'horizontal'){
+          xAxesType = 'linear';
+          graphType = 'horizontalBar';
+          graphProperties.options.scales.xAxes[0].offset = false;
+          graphProperties.options.scales.xAxes[0].scaleLabel = scaleLabel;
+          graphProperties.options.scales.xAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
+        } else {
+          graphProperties.options.scales.yAxes[0].scaleLabel = scaleLabel;
+          graphProperties.options.scales.yAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
+        }
+        
+        var obj = {};
+        obj.data = arrData;
+        obj.backgroundColor = data.SetPoint? datasetColors : graph.block.datasetColors;
+        obj.label = data.SetPoint? 'Temperature' : graph.txtUnit;
+        graphProperties.data.datasets.push(obj); 
+
+        if(data.SetPoint){
+          var obj = {};
+          obj.data = arrSetPoint;
+          obj.label = 'SetPoint';
+          obj.type = 'line';
+          obj.borderWidth = 0;
+          obj.fill = false;
+          graphProperties.data.datasets.push(obj);   
+        }
+         
+        graphProperties.options.scales.yAxes[0].ticks.fontColor = "white";
+        graphProperties.options.scales.xAxes[0].type = xAxesType;        
+        graphProperties.type = graphType;
+        graphProperties.data.labels = arrLabels;      
+        graphProperties.options.legend = false;
+
+        var chartctx = mountPoint.find("canvas")[0].getContext("2d");
+        new Chart(chartctx, graphProperties);
+      }
+    });
+  }
 }
 //# sourceURL=js/components/graph.js
