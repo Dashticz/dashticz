@@ -157,8 +157,8 @@ The following block parameters can be used to configure the graph:
   * - zoom
     - | Allows graph zoom controls and orientation. See below for an example.
       | ``'x'``: allow zooming on the x axis (left to right)
-      | ``'y'``: Humidity
-      | ``'xy'``: Barometer
+      | ``'y'``: allow zooming on the y axis (top to bottom)
+      | ``'xy'``: allow zooming in any direction
       | ``'false']``: disable zooming, do not show zoom button
   * - debugButton: true
     - Users can now debug their graph by setting their graph's block config, e.g. ``debugButton: true``. See below for explanation.
