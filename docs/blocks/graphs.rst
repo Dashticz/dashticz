@@ -154,6 +154,12 @@ The following block parameters can be used to configure the graph:
     - the code automatically calculate if any devices' time data is longer than others. It then use that device's time data, then match all of the devices non-time data to that. This setting allows users to choose to enable or disable that feature (true or false)
   * - toolTipStyle
     - Display HTML graph tooltips instead of the standard ones, e.g. ``toolTipStyle: true``
+  * - zoom
+    - | Allows graph zoom controls and orientation. See below for an example.
+      | ``'x'``: allow zooming on the x axis (left to right)
+      | ``'y'``: Humidity
+      | ``'xy'``: Barometer
+      | ``'false']``: disable zooming, do not show zoom button
   * - debugButton: true
     - Users can now debug their graph by setting their graph's block config, e.g. ``debugButton: true``. See below for explanation.
 
