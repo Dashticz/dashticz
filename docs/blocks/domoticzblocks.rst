@@ -148,6 +148,9 @@ Block parameters
   * - gotoslideOff
     - | Goto screen when a device changes to off
       | ``1`` .. ``99``
+  * - popup
+    - | This allows the popup to use all the block parameters that a graph block does, allowing users to style the graph.
+      | ``popup: 'popup_your_graph'``
   * - openpopup
     - Open a popup when a device changes. See :ref:`openpopup`
   * - openpopupOn
@@ -252,6 +255,34 @@ If IDX_2 is used the icon/image of the block can be changed as in a normal block
     blocks['123_2'] = {
         image: 'toon.png'
     } 
+
+
+Usage of popup graph window
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With the popup parameter you can configure to open a popup graph window. Example::
+
+   blocks[258] = {
+      title: 'Consumption',
+      flash: 500,
+      width: 4,
+      popup: 'popup_consumption'
+   }
+
+In this example, the specified popup will use a defined graph called 'popup_consumption' instead of the default popup. This defined graph is then added to the config.js just like a normal graph::
+  
+   blocks['popup_consumption'] = {
+      title: 'Energy Consumption Popup',
+      devices: [258],
+      toolTipStyle: true,
+      datasetColors: ['red', 'yellow'],
+      graph: 'line',
+      legend: {
+         'v_258' : 'Usage',          
+         'c_258' : 'Total'
+      }
+   }
+
 
 .. _openpopup :
 
