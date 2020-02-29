@@ -63,7 +63,17 @@ The following block parameters can be used to configure the graph:
       | ``['ba']``: Barometer
       | ``['gu', 'sp']``: wind guts and speed
       | ``['uvi']``, ``['lux']``, ``['lux_avg']``, ``['mm']``, ``['v_max']``
-      | ``['v2']``, ``['mm']``, ``['eu']``, ``['u']``, ``['u_max']``,``['co2']``
+      | ``['v2']``, ``['mm']``, ``['eu']``, ``['u']``, ``['u_max']``, ``['co2']``
+  * - GroupBy
+    - | This allows users to group their data by hour, day, week or month, where applicable ranges are used. See below for an example.
+      | The GroupBy function will either:
+      | - The *Sum* of all values together for that group
+      | - Provide the *Average* of all values for that group
+      | It identifies what type of sensor it is to apply to appropriate calculation.
+      | - Counter, Rain – uses the *Add* calculation
+      | - Temperature, Custom Sensor and Percentage – uses the *Average* calculation
+  * - beginAtZero
+    - This forces the Y axis to begin at 0 (zero).
   * - height
     - ``'300px'``: Height of the graph in the graph block
   * - width
@@ -144,6 +154,12 @@ The following block parameters can be used to configure the graph:
     - the code automatically calculate if any devices' time data is longer than others. It then use that device's time data, then match all of the devices non-time data to that. This setting allows users to choose to enable or disable that feature (true or false)
   * - toolTipStyle
     - Display HTML graph tooltips instead of the standard ones, e.g. ``toolTipStyle: true``
+  * - zoom
+    - | Allows graph zoom controls and orientation. See below for an example.
+      | ``'x'``: allow zooming on the x axis (left to right)
+      | ``'y'``: allow zooming on the y axis (top to bottom)
+      | ``'xy'``: allow zooming in any direction
+      | ``'false']``: disable zooming, do not show zoom button
   * - debugButton: true
     - Users can now debug their graph by setting their graph's block config, e.g. ``debugButton: true``. See below for explanation.
 
@@ -743,6 +759,90 @@ Three thermostat devices (Evohome TRVs), each showing their temperature and setp
 	} 
 
 .. image :: img/multigraph_setpoints.png
+
+**Solar (GroupBy)**
+
+The GroupBy param can be set on the graph block as follows::
+
+	blocks['group_by_solar'] = {    
+		title: ‘Solar',
+		devices: [1],
+		graph: ['bar'],
+		graphTypes: ['v'],
+		groupBy: ‘week’,
+		legend: true
+	} 
+
+Alternatively, the param can be applied to custom data as follows::
+
+	blocks['group_by_solar'] = {    
+		title: 'Grouped: Solar',
+		devices: [1],
+		graph: ['bar'],
+		graphTypes: ['v'],
+		custom : {
+			"Day by Hour": {
+				range: 'last',
+				groupBy: 'hour',
+				filter: '24 hours',
+				data: {
+					Solar: 'd.v_1'
+				},
+			},
+			"Week by Day": {
+				range: 'month',
+				groupBy: 'day',
+				filter: '7 days',
+				data: {
+					Solar: 'd.v_1',
+				}
+			},
+			"Month by Week": {
+				range: 'month',
+				groupBy: 'week',
+				data: {
+					Solar: 'd.v_1',
+				}
+			},
+			"Year by Month": {
+				range: 'year',
+				groupBy: 'month',
+				data: {                
+					Solar: 'd.v_1',
+				}
+			}
+		},
+		datasetColors: ['green'],
+		legend: true
+	} 
+
+This results in the "Solar" graph grouping its data by hour, day, week or month - *Week by Day* is shown in the image below:
+
+.. image :: img/graph_groupby_day.png
+
+**Wind (zoom)**
+::
+
+	blocks['wind'] = {
+		title: 'Wind',
+		devices: [73],
+		graph: 'line',
+		zoom: 'xy',
+		legend: {
+			'di_73' : 'Direction',          
+			'sp_73' : 'Speed',
+			'gu_73' : 'Gust'
+		}
+	}
+
+The "Wind" graph before zoom "x":
+
+.. image :: img/graph_zoom_x.jpg
+
+The "Wind" graph after zoom "x":
+
+.. image :: img/graph_zoom_x2.jpg
+
 
 **Buttons**
 
