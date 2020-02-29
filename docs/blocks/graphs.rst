@@ -67,11 +67,11 @@ The following block parameters can be used to configure the graph:
   * - GroupBy
     - | This allows users to group their data by hour, day, week or month, where applicable ranges are used. See below for an example.
       | The GroupBy function will either:
-      | - The “sum” of all values together for that group
-      | - Provide the “average” of all values for that group
+      | - The *Sum* of all values together for that group
+      | - Provide the *Average* of all values for that group
       | It identifies what type of sensor it is to apply to appropriate calculation.
-      | - Counter, Rain – uses the “Add’ calculation
-      | - Temperature, Custom Sensor and Percentage – uses the “Average” calculation
+      | - Counter, Rain – uses the *Add* calculation
+      | - Temperature, Custom Sensor and Percentage – uses the *Average* calculation
   * - beginAtZero
     - This forces the Y axis to begin at 0 (zero).
   * - height
