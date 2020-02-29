@@ -748,6 +748,65 @@ Three thermostat devices (Evohome TRVs), each showing their temperature and setp
 
 .. image :: img/multigraph_setpoints.png
 
+**Solar (GroupBy)**
+
+The GroupBy param can be set on the graph block as follows::
+
+	blocks['group_by_solar'] = {    
+		title: ‘Solar',
+		devices: [1],
+		graph: ['bar'],
+		graphTypes: ['v'],
+		groupBy: ‘week’,
+		legend: true
+	} 
+
+Alternatively, the param can be applied to custom data as follows::
+
+	blocks['group_by_solar'] = {    
+		title: 'Grouped: Solar',
+		devices: [1],
+		graph: ['bar'],
+		graphTypes: ['v'],
+		custom : {
+			"Day by Hour": {
+				range: 'last',
+				groupBy: 'hour',
+				filter: '24 hours',
+				data: {
+					Solar: 'd.v_1'
+				},
+			},
+			"Week by Day": {
+				range: 'month',
+				groupBy: 'day',
+				filter: '7 days',
+				data: {
+					Solar: 'd.v_1',
+				}
+			},
+			"Month by Week": {
+				range: 'month',
+				groupBy: 'week',
+				data: {
+					Solar: 'd.v_1',
+				}
+			},
+			"Year by Month": {
+				range: 'year',
+				groupBy: 'month',
+				data: {                
+					Solar: 'd.v_1',
+				}
+			}
+		},
+		datasetColors: ['green'],
+		legend: true
+	} 
+
+.. image :: img/graph_groupby_day.png
+
+
 **Buttons**
 
 Standard buttons:
