@@ -165,7 +165,7 @@ The following block parameters can be used to configure the graph:
       | ``'x'``: allow zooming on the x axis (left to right)
       | ``'y'``: allow zooming on the y axis (top to bottom)
       | ``'xy'``: allow zooming in any direction
-      | ``'false']``: disable zooming, do not show zoom button
+      | ``'false'``: disable zooming, do not show zoom button
   * - debugButton: true
     - Users can now debug their graph by setting their graph's block config, e.g. ``debugButton: true``. See below for explanation.
 
@@ -721,9 +721,9 @@ The feature works with device sensors such as counter, percentage and temperatur
 
 With temperature sensors that have setpoints, it calculates whether the device is:
 
-	- Cold - blue
-	- At setpoint - orange
-	- Hot - red
+* Cold - blue
+* At setpoint - orange
+* Hot - red
 
 The office and penthouse rooms are showing red, as the temperature is above the setpoint ...
 
