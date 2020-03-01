@@ -76,8 +76,8 @@ The following block parameters can be used to configure the graph:
     - | allowing user to show the status of several devices in a single graph. Instead of the data being group by time intervals, it is grouped by the devices. See below for an example.
       | ``false``: disables the feature (default)
       | ``true``: enables the feature and display a vertical bar chart, grouped by device
-      | ``'vertical'`` is the same as true
-      | ``'horizontal'`` enables the feature and display a horizontal bar chart, grouped by device
+      | ``'vertical'``: is the same as true
+      | ``'horizontal'``: enables the feature and display a horizontal bar chart, grouped by device
   * - beginAtZero
     - This forces the Y axis to begin at 0 (zero).
   * - height
