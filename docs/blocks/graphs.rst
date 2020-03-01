@@ -506,21 +506,26 @@ To define the y-axes for a custom graph you can add the ``ylabels`` parameter as
 
 The parameter ``ylabels`` is an array. You can add a string for each value of the data object. 
 
-datasetColors
+
+Custom colors
 ~~~~~~~~~~~~~
-Custom colors, defined by the parameter ``datasetColors``::
+Custom colors can be defined by the parameter ``datasetColors``::
 
     datasetColors: ['red', 'yellow', 'blue', 'orange', 'green', 'purple']
     
-Set the variable dataset colors to html colors, hex code, rgb or rgba string::
+If you want to use custom color names you have to set the variable dataset colors to *html colors*, *hex code*, *rgb* or *rgba string*::
 
     datasetColors: [colourBlueLight, colourLightGrey, colourBlue]
-    var colourBlueLight= 'rgba(44, 130, 201, 1)';
+
+::
+
+    var colourBlueLight= 'rgba(44, 130, 201, 1)';	// rgba
+    var colourLightGrey= '#D3D3D3';			// hex code
+    var colourBlue= 'Blue';				// html color
+
 
 Custom button styling
 ~~~~~~~~~~~~~~~~~~~~~
-
-
 ::
 
 	blocks['multigraph_1'] = {
@@ -619,7 +624,8 @@ Custom data
 
 Zoom
 ~~~~
-::
+
+The *zoom* parameter can be set on the graph block as follows::
 
 	blocks['wind'] = {
 		title: 'Wind',
@@ -706,7 +712,8 @@ This results in the "Solar" graph grouping its data by hour, day, week or month 
 
 groupByDevice
 ~~~~~~~~~~~~~
-::
+
+The *GroupByDevice* parameter can be set on the graph block as follows::
 
 	blocks['server_status'] = { 
 		title: 'Server Status',
