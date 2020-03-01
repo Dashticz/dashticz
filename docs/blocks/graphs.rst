@@ -69,9 +69,15 @@ The following block parameters can be used to configure the graph:
       | The GroupBy function will either:
       | - The *Sum* of all values together for that group
       | - Provide the *Average* of all values for that group
-      | It identifies what type of sensor it is to apply to appropriate calculation.
+      | It identifies what type of sensor it is to apply to appropriate calculation:
       | - Counter, Rain – uses the *Add* calculation
       | - Temperature, Custom Sensor and Percentage – uses the *Average* calculation
+  * - groupByDevice
+    - | allowing user to show the status of several devices in a single graph. Instead of the data being group by time intervals, it is grouped by the devices. See below for an example.
+      | ``false``: disables the feature (default)
+      | ``true``: enables the feature and display a vertical bar chart, grouped by device
+      | ``'vertical'``: is the same as true
+      | ``'horizontal'``: enables the feature and display a horizontal bar chart, grouped by device
   * - beginAtZero
     - This forces the Y axis to begin at 0 (zero).
   * - height
@@ -80,6 +86,8 @@ The following block parameters can be used to configure the graph:
     - ``6``: The width of the block relative to the column width.
   * - displayFormats
     - Object to set the time display format on the x-axis. See below for an example.
+  * - ylabels
+    - To define the y-axes for a custom graph. See below for an example.
   * - custom
     - Customized graph. See below for examples
   * - interval
@@ -159,7 +167,7 @@ The following block parameters can be used to configure the graph:
       | ``'x'``: allow zooming on the x axis (left to right)
       | ``'y'``: allow zooming on the y axis (top to bottom)
       | ``'xy'``: allow zooming in any direction
-      | ``'false']``: disable zooming, do not show zoom button
+      | ``'false'``: disable zooming, do not show zoom button
   * - debugButton: true
     - Users can now debug their graph by setting their graph's block config, e.g. ``debugButton: true``. See below for explanation.
 
@@ -450,8 +458,6 @@ The previous example sets the time formats to UK style. See https://www.chartjs.
 Modifying the y-axes
 --------------------
 
-.. note :: Still working with the new multigraph implementation?
-
 You can modify the y-axes by setting the options parameter. Below you see an example how to define the min and max values of two y-axes::
 
     blocks['graph_659'] = {
@@ -480,8 +486,6 @@ The ``yAxes`` parameter in the ``options`` block is an array, with an entry for 
 Y-axis for custom graphs
 ------------------------
 
-.. note :: Still working with the new multigraph implementation?
-
 To define the y-axes for a custom graph you can add the ``ylabels`` parameter as follows::
 
     blocks['graph_659'] = {
@@ -504,21 +508,26 @@ To define the y-axes for a custom graph you can add the ``ylabels`` parameter as
 
 The parameter ``ylabels`` is an array. You can add a string for each value of the data object. 
 
-datasetColors
+
+Custom colors
 ~~~~~~~~~~~~~
-Custom colors, defined by the parameter ``datasetColors``::
+Custom colors can be defined by the parameter ``datasetColors``::
 
     datasetColors: ['red', 'yellow', 'blue', 'orange', 'green', 'purple']
     
-Set the variable dataset colors to html colors, hex code, rgb or rgba string::
+If you want to use custom color names you have to set the variable dataset colors to *html colors*, *hex code*, *rgb* or *rgba string*::
 
     datasetColors: [colourBlueLight, colourLightGrey, colourBlue]
-    var colourBlueLight= 'rgba(44, 130, 201, 1)';
+
+::
+
+    var colourBlueLight= 'rgba(44, 130, 201, 1)';	// rgba
+    var colourLightGrey= '#D3D3D3';			// hex code
+    var colourBlue= 'Blue';				// html color
+
 
 Custom button styling
 ~~~~~~~~~~~~~~~~~~~~~
-
-
 ::
 
 	blocks['multigraph_1'] = {
@@ -555,6 +564,7 @@ Custom point styling
 	}
 
 .. image :: img/multigraph_point_styling.jpg
+
 
 Custom data
 ~~~~~~~~~~~
@@ -614,10 +624,133 @@ Custom data
 .. image :: img/multigraph_custom.png
 
 
-Zoom Graphs
-~~~~~~~~~~~
+Zoom
+~~~~
 
-To enable graph/multigraph zoom add ``config['graph_zoom'] = 1;`` setting to ``config.js``.
+The *zoom* parameter can be set on the graph block as follows::
+
+	blocks['wind'] = {
+		title: 'Wind',
+		devices: [73],
+		graph: 'line',
+		zoom: 'xy',
+		legend: {
+			'di_73' : 'Direction',          
+			'sp_73' : 'Speed',
+			'gu_73' : 'Gust'
+		}
+	}
+
+The "Wind" graph before zoom "x":
+
+.. image :: img/graph_zoom_x.jpg
+
+The "Wind" graph after zoom "x":
+
+.. image :: img/graph_zoom_x2.jpg
+
+
+GroupBy
+~~~~~~~
+
+The *GroupBy* parameter can be set on the graph block as follows::
+
+	blocks['group_by_solar'] = {    
+		title: ‘Solar',
+		devices: [1],
+		graph: ['bar'],
+		graphTypes: ['v'],
+		groupBy: ‘week’,
+		legend: true
+	} 
+
+Alternatively, the param can be applied to custom data as follows::
+
+	blocks['group_by_solar'] = {    
+		title: 'Grouped: Solar',
+		devices: [1],
+		graph: ['bar'],
+		graphTypes: ['v'],
+		custom : {
+			"Day by Hour": {
+				range: 'last',
+				groupBy: 'hour',
+				filter: '24 hours',
+				data: {
+					Solar: 'd.v_1'
+				},
+			},
+			"Week by Day": {
+				range: 'month',
+				groupBy: 'day',
+				filter: '7 days',
+				data: {
+					Solar: 'd.v_1',
+				}
+			},
+			"Month by Week": {
+				range: 'month',
+				groupBy: 'week',
+				data: {
+					Solar: 'd.v_1',
+				}
+			},
+			"Year by Month": {
+				range: 'year',
+				groupBy: 'month',
+				data: {                
+					Solar: 'd.v_1',
+				}
+			}
+		},
+		datasetColors: ['green'],
+		legend: true
+	} 
+
+This results in the "Solar" graph grouping its data by hour, day, week or month - *Week by Day* is shown in the image below:
+
+.. image :: img/graph_groupby_day.png
+
+
+groupByDevice
+~~~~~~~~~~~~~
+
+The block parameter *groupByDevice* is showing the **live** status of several devices in a single graph. Instead of the data being grouped by *time* intervals, it is grouped by the *devices*. Note, unlike other graphs, this type of graph does not report on historic data. I.e. there are no 'last', 'today', 'month' buttons.
+::
+
+	blocks['server_status'] = { 
+		title: 'Server Status',
+		devices: [17, 18, 189, 190, 192],
+		groupByDevice: true,    
+		beginAtZero: true
+	}
+
+.. image :: img/group_by_device_1.png
+
+The feature works with device sensors such as counter, percentage and temperature.
+
+With temperature sensors that have setpoints, it calculates whether the device is:
+
+* Cold - blue
+* At setpoint - orange
+* Hot - red
+
+The office and penthouse rooms are showing red, as the temperature is above the setpoint ...
+
+.. image :: img/group_by_device_2.png
+
+Same as above, but setting *groupByDevice* to *'horizontal'* shows this ...
+::
+
+	blocks['all_zones'] = {	
+		title: 'Room Temperatures',
+		devices: [6, 11, 12, 8, 14, 9, 15, 235, 10, 13],
+		groupByDevice: 'horizontal',	
+		beginAtZero: true
+	} 
+
+.. image :: img/group_by_device_3.png
+
 
 Examples
 ---------
@@ -629,7 +762,7 @@ Examples
 		title: 'CPU, Memory & HDD',
 		devices: [ 17, 18, 189 ],
 		datasetColors: ['Red', 'Orange', 'Blue', 'Green', 'LightBlue', 'Aqua', 'Yellow', 'Purple', 'Pink'],
-		legend: true,
+		legend: true,	
 		cartesian : 'linear', 	
 		graph: 'line',
 		lineFill: true,
@@ -759,89 +892,6 @@ Three thermostat devices (Evohome TRVs), each showing their temperature and setp
 	} 
 
 .. image :: img/multigraph_setpoints.png
-
-**Solar (GroupBy)**
-
-The GroupBy param can be set on the graph block as follows::
-
-	blocks['group_by_solar'] = {    
-		title: ‘Solar',
-		devices: [1],
-		graph: ['bar'],
-		graphTypes: ['v'],
-		groupBy: ‘week’,
-		legend: true
-	} 
-
-Alternatively, the param can be applied to custom data as follows::
-
-	blocks['group_by_solar'] = {    
-		title: 'Grouped: Solar',
-		devices: [1],
-		graph: ['bar'],
-		graphTypes: ['v'],
-		custom : {
-			"Day by Hour": {
-				range: 'last',
-				groupBy: 'hour',
-				filter: '24 hours',
-				data: {
-					Solar: 'd.v_1'
-				},
-			},
-			"Week by Day": {
-				range: 'month',
-				groupBy: 'day',
-				filter: '7 days',
-				data: {
-					Solar: 'd.v_1',
-				}
-			},
-			"Month by Week": {
-				range: 'month',
-				groupBy: 'week',
-				data: {
-					Solar: 'd.v_1',
-				}
-			},
-			"Year by Month": {
-				range: 'year',
-				groupBy: 'month',
-				data: {                
-					Solar: 'd.v_1',
-				}
-			}
-		},
-		datasetColors: ['green'],
-		legend: true
-	} 
-
-This results in the "Solar" graph grouping its data by hour, day, week or month - *Week by Day* is shown in the image below:
-
-.. image :: img/graph_groupby_day.png
-
-**Wind (zoom)**
-::
-
-	blocks['wind'] = {
-		title: 'Wind',
-		devices: [73],
-		graph: 'line',
-		zoom: 'xy',
-		legend: {
-			'di_73' : 'Direction',          
-			'sp_73' : 'Speed',
-			'gu_73' : 'Gust'
-		}
-	}
-
-The "Wind" graph before zoom "x":
-
-.. image :: img/graph_zoom_x.jpg
-
-The "Wind" graph after zoom "x":
-
-.. image :: img/graph_zoom_x2.jpg
 
 
 **Buttons**
