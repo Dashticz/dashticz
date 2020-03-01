@@ -86,6 +86,8 @@ The following block parameters can be used to configure the graph:
     - ``6``: The width of the block relative to the column width.
   * - displayFormats
     - Object to set the time display format on the x-axis. See below for an example.
+  * - ylabels
+    - To define the y-axes for a custom graph. See below for an example.
   * - custom
     - Customized graph. See below for examples
   * - interval
