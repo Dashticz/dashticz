@@ -456,8 +456,6 @@ The previous example sets the time formats to UK style. See https://www.chartjs.
 Modifying the y-axes
 --------------------
 
-.. note :: Still working with the new multigraph implementation?
-
 You can modify the y-axes by setting the options parameter. Below you see an example how to define the min and max values of two y-axes::
 
     blocks['graph_659'] = {
@@ -485,8 +483,6 @@ The ``yAxes`` parameter in the ``options`` block is an array, with an entry for 
 
 Y-axis for custom graphs
 ------------------------
-
-.. note :: Still working with the new multigraph implementation?
 
 To define the y-axes for a custom graph you can add the ``ylabels`` parameter as follows::
 
@@ -562,6 +558,7 @@ Custom point styling
 
 .. image :: img/multigraph_point_styling.jpg
 
+
 Custom data
 ~~~~~~~~~~~
 ::
@@ -618,6 +615,121 @@ Custom data
 	} 
 
 .. image :: img/multigraph_custom.png
+
+
+Zoom
+~~~~
+::
+
+	blocks['wind'] = {
+		title: 'Wind',
+		devices: [73],
+		graph: 'line',
+		zoom: 'xy',
+		legend: {
+			'di_73' : 'Direction',          
+			'sp_73' : 'Speed',
+			'gu_73' : 'Gust'
+		}
+	}
+
+The "Wind" graph before zoom "x":
+
+.. image :: img/graph_zoom_x.jpg
+
+The "Wind" graph after zoom "x":
+
+.. image :: img/graph_zoom_x2.jpg
+
+
+GroupBy
+~~~~~~~
+
+The *GroupBy* parameter can be set on the graph block as follows::
+
+	blocks['group_by_solar'] = {    
+		title: ‘Solar',
+		devices: [1],
+		graph: ['bar'],
+		graphTypes: ['v'],
+		groupBy: ‘week’,
+		legend: true
+	} 
+
+Alternatively, the param can be applied to custom data as follows::
+
+	blocks['group_by_solar'] = {    
+		title: 'Grouped: Solar',
+		devices: [1],
+		graph: ['bar'],
+		graphTypes: ['v'],
+		custom : {
+			"Day by Hour": {
+				range: 'last',
+				groupBy: 'hour',
+				filter: '24 hours',
+				data: {
+					Solar: 'd.v_1'
+				},
+			},
+			"Week by Day": {
+				range: 'month',
+				groupBy: 'day',
+				filter: '7 days',
+				data: {
+					Solar: 'd.v_1',
+				}
+			},
+			"Month by Week": {
+				range: 'month',
+				groupBy: 'week',
+				data: {
+					Solar: 'd.v_1',
+				}
+			},
+			"Year by Month": {
+				range: 'year',
+				groupBy: 'month',
+				data: {                
+					Solar: 'd.v_1',
+				}
+			}
+		},
+		datasetColors: ['green'],
+		legend: true
+	} 
+
+This results in the "Solar" graph grouping its data by hour, day, week or month - *Week by Day* is shown in the image below:
+
+.. image :: img/graph_groupby_day.png
+
+
+groupByDevice
+~~~~~~~~~~~~~
+::
+
+	blocks['server_status'] = { 
+		title: 'Server Status',
+		devices: [17, 18, 189, 190, 192],
+		groupByDevice: true,    
+		beginAtZero: true
+	}
+
+.. image :: img/group_by_device_1.png
+
+The feature works with device sensors such as counter, percentage and temperature.
+
+With temperature sensors that have setpoints, it calculates whether the device is:
+
+	- Cold - blue
+	- At setpoint - orange
+	- Hot - red
+
+The office and penthouse rooms are showing red, as the temperature is above the setpoint ...
+
+.. image :: img/group_by_device_2.png
+
+.. image :: img/group_by_device_3.png
 
 
 Examples
@@ -760,101 +872,6 @@ Three thermostat devices (Evohome TRVs), each showing their temperature and setp
 	} 
 
 .. image :: img/multigraph_setpoints.png
-
-**Solar (GroupBy)**
-
-The GroupBy param can be set on the graph block as follows::
-
-	blocks['group_by_solar'] = {    
-		title: ‘Solar',
-		devices: [1],
-		graph: ['bar'],
-		graphTypes: ['v'],
-		groupBy: ‘week’,
-		legend: true
-	} 
-
-Alternatively, the param can be applied to custom data as follows::
-
-	blocks['group_by_solar'] = {    
-		title: 'Grouped: Solar',
-		devices: [1],
-		graph: ['bar'],
-		graphTypes: ['v'],
-		custom : {
-			"Day by Hour": {
-				range: 'last',
-				groupBy: 'hour',
-				filter: '24 hours',
-				data: {
-					Solar: 'd.v_1'
-				},
-			},
-			"Week by Day": {
-				range: 'month',
-				groupBy: 'day',
-				filter: '7 days',
-				data: {
-					Solar: 'd.v_1',
-				}
-			},
-			"Month by Week": {
-				range: 'month',
-				groupBy: 'week',
-				data: {
-					Solar: 'd.v_1',
-				}
-			},
-			"Year by Month": {
-				range: 'year',
-				groupBy: 'month',
-				data: {                
-					Solar: 'd.v_1',
-				}
-			}
-		},
-		datasetColors: ['green'],
-		legend: true
-	} 
-
-This results in the "Solar" graph grouping its data by hour, day, week or month - *Week by Day* is shown in the image below:
-
-.. image :: img/graph_groupby_day.png
-
-**Wind (zoom)**
-::
-
-	blocks['wind'] = {
-		title: 'Wind',
-		devices: [73],
-		graph: 'line',
-		zoom: 'xy',
-		legend: {
-			'di_73' : 'Direction',          
-			'sp_73' : 'Speed',
-			'gu_73' : 'Gust'
-		}
-	}
-
-The "Wind" graph before zoom "x":
-
-.. image :: img/graph_zoom_x.jpg
-
-The "Wind" graph after zoom "x":
-
-.. image :: img/graph_zoom_x2.jpg
-
-
-**Server Status (groupByDevice)**
-::
-	blocks['server_status'] = { 
-		title: 'Server Status',
-		devices: [17, 18, 189, 190, 192],
-		groupByDevice: true,    
-		beginAtZero: true
-	}
-
-
 
 
 **Buttons**
