@@ -620,11 +620,6 @@ Custom data
 .. image :: img/multigraph_custom.png
 
 
-Zoom Graphs
-~~~~~~~~~~~
-
-To enable graph/multigraph zoom add ``config['graph_zoom'] = 1;`` setting to ``config.js``.
-
 Examples
 ---------
 
@@ -848,6 +843,18 @@ The "Wind" graph before zoom "x":
 The "Wind" graph after zoom "x":
 
 .. image :: img/graph_zoom_x2.jpg
+
+
+**Server Status (groupByDevice)**
+::
+	blocks['server_status'] = { 
+		title: 'Server Status',
+		devices: [17, 18, 189, 190, 192],
+		groupByDevice: true,    
+		beginAtZero: true
+	}
+
+
 
 
 **Buttons**
