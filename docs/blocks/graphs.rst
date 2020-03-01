@@ -69,7 +69,7 @@ The following block parameters can be used to configure the graph:
       | The GroupBy function will either:
       | - The *Sum* of all values together for that group
       | - Provide the *Average* of all values for that group
-      | It identifies what type of sensor it is to apply to appropriate calculation.
+      | It identifies what type of sensor it is to apply to appropriate calculation:
       | - Counter, Rain – uses the *Add* calculation
       | - Temperature, Custom Sensor and Percentage – uses the *Average* calculation
   * - groupByDevice
@@ -713,7 +713,8 @@ This results in the "Solar" graph grouping its data by hour, day, week or month 
 groupByDevice
 ~~~~~~~~~~~~~
 
-The *GroupByDevice* parameter can be set on the graph block as follows::
+The block parameter *groupByDevice* is showing the **live** status of several devices in a single graph. Instead of the data being grouped by *time* intervals, it is grouped by the *devices*. Note, unlike other graphs, this type of graph does not report on historic data. I.e. there are no 'last', 'today', 'month' buttons.
+::
 
 	blocks['server_status'] = { 
 		title: 'Server Status',
@@ -736,6 +737,16 @@ The office and penthouse rooms are showing red, as the temperature is above the 
 
 .. image :: img/group_by_device_2.png
 
+Same as above, but setting *groupByDevice* to *'horizontal'* shows this ...
+::
+
+	blocks['all_zones'] = {	
+		title: 'Room Temperatures',
+		devices: [6, 11, 12, 8, 14, 9, 15, 235, 10, 13],
+		groupByDevice: 'horizontal',	
+		beginAtZero: true
+	} 
+
 .. image :: img/group_by_device_3.png
 
 
@@ -749,7 +760,7 @@ Examples
 		title: 'CPU, Memory & HDD',
 		devices: [ 17, 18, 189 ],
 		datasetColors: ['Red', 'Orange', 'Blue', 'Green', 'LightBlue', 'Aqua', 'Yellow', 'Purple', 'Pink'],
-		legend: true,
+		legend: true,	
 		cartesian : 'linear', 	
 		graph: 'line',
 		lineFill: true,
