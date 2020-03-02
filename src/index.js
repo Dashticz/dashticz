@@ -17,6 +17,10 @@ require('jquery.md5');
 require('js-cookie');
 require("script-loader!./functions.js");
 
+var Handlebars=require("handlebars")
+window.Handlebars = Handlebars;
+
+require('./templateengine.js');
 var Swiper = require('swiper').default;
 window.Swiper = Swiper;
 require( 'swiper/css/swiper.min.css');
