@@ -123,7 +123,9 @@ switch($_GET['service']){
 	case 'omrin':
 		$ch = curl_init('https://www.omrin.nl/bij-mij-thuis/afval-regelen/afvalkalender');
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-		$cookie = "address=".urlencode ("a:3:{s:7:\"ziparea\";s:2:\"".substr($_GET['zipcode'],-2)."\";s:9:\"zipnumber\";s:4:\"".substr($_GET['zipcode'],0,4)."\";s:7:\"housenr\";s:1:\"".substr($_GET['nr'],-2)."\";}");
+		$nr = $_GET['nr'];
+		$len = strlen($nr);
+		$cookie = "address=".urlencode ("a:3:{s:7:\"ziparea\";s:2:\"".substr($_GET['zipcode'],-2)."\";s:9:\"zipnumber\";s:4:\"".substr($_GET['zipcode'],0,4)."\";s:7:\"housenr\";s:".$len.":\"".$_GET['nr']."\";}");
 		curl_setopt($ch,CURLOPT_COOKIE, $cookie);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt($ch, CURLINFO_HEADER_OUT, true);
