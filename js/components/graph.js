@@ -722,9 +722,16 @@ function createGraph(graph) {
     });
   }
 
-  if (graph.graphConfig) { //custom data
-    
-    if (graph.graphConfig.ylabels) graph.ylabels = graph.graphConfig.ylabels;
+  if (graph.graphConfig) { //custom data    
+    if (graph.graphConfig.ylabels) {
+      graph.ylabels = graph.graphConfig.ylabels;
+    } else {
+      graph.keys = [];
+      $.each(Object.values(graph.graphConfig.data), function (i, val) {
+        graph.keys.push(val.split('.')[1].split('_')[0]);
+      });
+      graph.ylabels = getYlabels(graph);
+    }
     graph.ykeys = Object.keys(graph.graphConfig.data);
 
     graph.ykeys.forEach(function(element, index) {
@@ -959,7 +966,20 @@ function createGraph(graph) {
   graphProperties.options.scales.xAxes[0].ticks.maxTicksLimit = graph.block.maxTicksLimit;
   graphProperties.options.scales.xAxes[0].ticks.reverse = graph.block.reverseTime;
   graphProperties.options.legend.labels.usePointStyle = graph.block.pointStyle;
-  graphProperties.options.scales.yAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
+  
+  if(graph.block.beginAtZero){
+    if(graphProperties.options.scales.yAxes.length === 1){
+      graphProperties.options.scales.yAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
+    } else {
+      if(typeof graph.block.beginAtZero === 'object'){        
+        graph.block.beginAtZero.forEach(function(beginAtZero, i){
+          if(i < graphProperties.options.scales.yAxes.length){
+            graphProperties.options.scales.yAxes[i].ticks.beginAtZero = beginAtZero;
+          }          
+        });
+      }
+    } 
+  }
 
   if (graph.block.gradients) {
     var prop = graph.block;
