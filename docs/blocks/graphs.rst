@@ -79,7 +79,7 @@ The following block parameters can be used to configure the graph:
       | ``'vertical'``: is the same as true
       | ``'horizontal'``: enables the feature and display a horizontal bar chart, grouped by device
   * - beginAtZero
-    - This forces the Y axis to begin at 0 (zero).
+    - This forces the Y axis to begin at 0 (zero). The beginAtZero setting can accomodate multiple Y axes. For example, for a graph with 3 Y axes, you can use: ``beginAtZero: [true, false, true]`` For a graph with a single Y axis, you can use: ``beginAtZero: true``
   * - height
     - ``'300px'``: Height of the graph in the graph block
   * - width
