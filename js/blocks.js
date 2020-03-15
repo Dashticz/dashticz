@@ -757,21 +757,22 @@ function handleStringBlock(blocktype, columndiv, c) {
             html='<div data-id="' + block.type + '" class="mh transbg block_' + block.type + '"></div>';
             block.$mountPoint.append(html);
             if (block.idx) { //also a Domoticz device
+                block.width = (blocks[block.type] && blocks[block.type].width) || 4;
                 addDeviceUpdateHandler(block);
                 return; 
             }
             var idx = parseInt(block.type);
             var isDomoticzDevice = !!idx;
-            if (block.type[0] === 's' || block[0] === 'v') { //scene, group or variable
+            if (block.type[0] === 's' || block.type[0] === 'v') { //scene, group or variable
                 idx = parseInt(block.type.slice(1))
                 if (idx) isDomoticzDevice = true;
             }
             if(isDomoticzDevice) {
-                block.width = 4;
+                block.width = (blocks[block.type] && blocks[block.type].width) || 4;
                 block.idx = block.type;
                 addDeviceUpdateHandler(block); 
             }
-            else console.log('unknown string block ' + block);
+            else console.log('unknown string block ', block);
     }
 }
 
