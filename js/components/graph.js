@@ -320,8 +320,8 @@ function getDeviceDefaults(device, popup) {
   if (popup) getGraphData([dtGraphs[graphIdx]]);
 }
 
-function showPopupGraph(idx, subidx) {
-  var device = alldevices[idx];
+function showPopupGraph(blockdef) {
+  var device = blockdef.device;
   if ($("#opengraph" + device["idx"]).length === 0) {
     var html = '<div class="modal fade opengraph opengraph' + device.idx + p + '" data-idx="' + device.idx + '" id="opengraph' + device.idx + p + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
     html += '<div class="modal-dialog graphwidth">';
@@ -337,7 +337,7 @@ function showPopupGraph(idx, subidx) {
     $("body").append(html);
   }
 
-  var definedPopup = typeof blocks[device.idx].popup !== 'undefined'? blocks[device.idx].popup : false; 
+  var definedPopup = typeof blockdef.popup !== 'undefined'? blockdef.popup : false; 
 
   var obj = {};
   obj.blockId = device.idx + p;
@@ -356,7 +356,7 @@ function showPopupGraph(idx, subidx) {
   obj.primary = true;
   obj.primaryIdx = obj.graphIdx;
 
-  var popDevice = $.extend(obj, alldevices[idx]);
+  var popDevice = $.extend(obj, blockdef.device);
   $("#opengraph" + device.idx + p).modal();
   getDeviceDefaults(popDevice, true);
 }
