@@ -10,7 +10,6 @@
 
 /** Returns a default switch block
  * 
- * @param {object} device - The domoticz device info
  * @param {object} block - The Dashticz block definition
  * @param {number | string} idx idx as used by Dashticz. Scenes start with 's'. Variables with 'v'
  * @param {string}   defaultIconOn Default On icon
@@ -18,33 +17,33 @@
  * @param {string}   buttonimg Default image. 
  */
 // eslint-disable-next-line no-unused-vars
-function getDefaultSwitchBlock(device, block, idx, defaultIconOn, defaultIconOff, buttonimg) {
+function getDefaultSwitchBlock(block, defaultIconOn, defaultIconOff, buttonimg) {
+    var device=block.device;
     var html = '';
-    if (!isProtected(device, idx)) {
+    if (!isProtected(block)) {
         var confirmswitch = 0;
         if (typeof (block) !== 'undefined')
             if (typeof (block['confirmation']) !== 'undefined') {
                 confirmswitch = block['confirmation'];
             }
-        var confirm = 'false';
         var mMode = 'toggle';
-        if (confirmswitch == 1) confirm = 'true';
         if (device['SwitchType'] == 'Push On Button')
             mMode = 'on';
         else if (device['SwitchType'] == 'Push Off Button')
             mMode = 'off';
-        $('.block_' + idx).attr('onclick', 'switchDevice(this,"' + mMode + '", ' + confirm + ')');
+        block.$mountPoint.find('.mh').addClass('hover').off("click").click(function() {
+            switchDevice(block, mMode, !!confirmswitch);
+        });
+        
     }
     var textOn = language.switches.state_on;
     var textOff = language.switches.state_off;
 
-    if (typeof (block) !== 'undefined') {
-        if (typeof (block['textOn']) !== 'undefined') {
-            textOn = block['textOn']
-        }
-        if (typeof (block['textOff']) !== 'undefined') {
-            textOff = block['textOff']
-        }
+    if (typeof (block['textOn']) !== 'undefined') {
+        textOn = block['textOn']
+    }
+    if (typeof (block['textOff']) !== 'undefined') {
+        textOff = block['textOff']
     }
 
     var attr = '';
@@ -56,15 +55,14 @@ function getDefaultSwitchBlock(device, block, idx, defaultIconOn, defaultIconOff
     }
 
     var mIcon = (getIconStatusClass(device['Status']) === 'off') ? defaultIconOff : defaultIconOn;
-    html += iconORimage(idx, mIcon, buttonimg, getIconStatusClass(device['Status']) + ' icon', attr);
-    html += getBlockData(device, idx, textOn, textOff);
+    html += iconORimage(block, mIcon, buttonimg, getIconStatusClass(device['Status']) + ' icon', attr);
+    html += getBlockData(block, textOn, textOff);
 
     return [html, true];
 }
 
-function isProtected(device, idx) {
-    var dev = Domoticz.getAllDevices()[idx];
-    return (blocks[idx] && blocks[idx].protected) || (dev && dev.Protected);
+function isProtected(block) {
+    return block.protected || (block.device && block.device.Protected)
 }
 
 function getIconStatusClass(deviceStatus) {
@@ -84,7 +82,7 @@ function getIconStatusClass(deviceStatus) {
 
 
 // eslint-disable-next-line no-unused-vars
-function switchDevice(cur, pMode, pAskConfirm) {
+function switchDevice(block, pMode, pAskConfirm) {
     /* Switch device
         params:
             cur : reference to DOM block 
@@ -93,26 +91,29 @@ function switchDevice(cur, pMode, pAskConfirm) {
     */
     if (pAskConfirm === true && !confirm("Are you sure you want to switch?"))
         return;
-    var idx = $(cur).data('light');
-    if (isProtected(idx))
+    var idx = block.idx;
+    var $div=block.$mountPoint;
+    
+    if (isProtected(block)) 
         return;
-    var hasPassword = blocks[idx] && blocks[idx].password;
+    
+    var hasPassword = block.password;
     if(!Dashticz.promptPassword(hasPassword)) return;    
     var doStatus = '';
     var param = 'switchlight';
     switch (pMode) {
         case 'toggle':
-            if ($(cur).find('.icon').hasClass('on') || $(cur).find('.fa-toggle-on').length > 0) {
-                doStatus = toggleItem(cur, 'on');
+            if ($div.find('.icon').hasClass('on') || $div.find('.fa-toggle-on').length > 0) {
+                doStatus = toggleItem(block, 'on'); 
             } else {
-                doStatus = toggleItem(cur, 'off');
+                doStatus = toggleItem(block, 'off');
             }
             break;
         case 'on':
-            doStatus = toggleItem(cur, 'off');
+            doStatus = toggleItem(block, 'off');
             break;
         case 'off':
-            doStatus = toggleItem(cur, 'on');
+            doStatus = toggleItem(block, 'on');
             break;
         default:
             console.log("Incorrect mode in SwitchDevice for device " + idx)
@@ -131,39 +132,43 @@ function switchDevice(cur, pMode, pAskConfirm) {
 }
 
 
-function toggleItem(cur, currentState) {
+function toggleItem(block, currentState) {
+    var $div = block.$mountPoint;
+    var newState='';
     if (currentState.toLowerCase() === 'off') {
         currentState = 'off';
-        this.newState = 'on';
+        newState = 'on';
     } else {
         currentState = 'on';
-        this.newState = 'off';
+        newState = 'off';
     }
-    if ($(cur).find('.fa-toggle-' + currentState).length > 0) {
-        $(cur).find('.fa-toggle-' + currentState).addClass('fa-toggle-' + this.newState).removeClass('fa-toggle-' + currentState);
+    if ($div.find('.fa-toggle-' + currentState).length > 0) {
+        $div.find('.fa-toggle-' + currentState).addClass('fa-toggle-' + newState).removeClass('fa-toggle-' + currentState);
     }
 
-    $(cur).find('.icon').removeClass(currentState);
-    $(cur).find('.icon').addClass(this.newState);
-    $(cur).find('.state').html(language.switches['state_' + this.newState]);
+    $div.find('.icon').removeClass(currentState);
+    $div.find('.icon').addClass(newState);
+    $div.find('.state').html(language.switches['state_' + newState]);
 
-    return this.newState.charAt(0).toUpperCase() + this.newState.slice(1);
+    return newState.charAt(0).toUpperCase() + newState.slice(1);
 }
 
 
 // eslint-disable-next-line no-unused-vars
-function switchBlinds(idx, action) {
-    var hasPassword = blocks[idx] && blocks[idx].password;
+function switchBlinds(block, action) {
+    var idx = block.idx;
+    var hasPassword = block.password;
     if(!Dashticz.promptPassword(hasPassword)) return;    
 
-    var src = $('.block_' + idx).find('.icon').attr('src')
+    var $icondiv = block.$mountPoint.find('.mh').find('.icon');
+    var src = $icondiv.attr('src')
     switch (action.toLowerCase()) {
         case 'off':
-            $('.block_' + idx).find('.icon').removeClass('on').addClass('off');
+            $icondiv.removeClass('on').addClass('off');
             if (src) src.replace('open', 'closed');
             break;
         case 'on':
-            $('.block_' + idx).find('.icon').removeClass('off').addClass('on');
+            $icondiv.removeClass('off').addClass('on');
             if (src) src.replace('closed', 'open');
             break;
     }
@@ -175,12 +180,12 @@ function switchBlinds(idx, action) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function switchScene(cur) {
-    var idx = $(cur).data('light');
-    var hasPassword = blocks[idx] && blocks[idx].password;
+function switchScene(block) { //todo. function not used anymore?
+    var idx = block.idx;
+    var hasPassword = blocks.password;
     if(!Dashticz.promptPassword(hasPassword)) return;    
     var doStatus = 'On'; // toggleItem(cur, $(cur).find('img.icon').hasClass('on') ? 'on' : 'off');
-    triggerChange(idx, doStatus, alldevices[idx]);
+    triggerChange(block, doStatus, alldevices[idx]); //todo
     Domoticz.request('type=command&param=switchscene&idx=' + idx.replace('s', '') + '&switchcmd=' + doStatus + '&level=0')
         .then(function () {
             getDevices(true);
@@ -188,19 +193,20 @@ function switchScene(cur) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function slideDevice(idx, status) {
+function slideDevice(block, status) {
     //    if (typeof (slide) !== 'undefined') slide.abort();
+    var $div=block.$mountPoint; //todo: assign blockdiv
 
-    $('.block_' + idx).find('.icon').removeClass('off');
-    $('.block_' + idx).find('.icon').addClass('on');
+    $div.find('.icon').removeClass('off');
+    $div.find('.icon').addClass('on');
 
-    if ($('.block_' + idx).find('.fa-toggle-off').length > 0) {
-        $('.block_' + idx).find('.fa-toggle-off').addClass('fa-toggle-on').removeClass('fa-toggle-off');
+    if ($div.find('.fa-toggle-off').length > 0) {
+        $div.find('.fa-toggle-off').addClass('fa-toggle-on').removeClass('fa-toggle-off');
     }
 
-    $('.block_' + idx).find('.state').html(language.switches.state_on);
+    $div.find('.state').html(language.switches.state_on);
 
-    Domoticz.request('type=command&param=switchlight&idx=' + idx + '&switchcmd=Set%20Level&level=' + status)
+    Domoticz.request('type=command&param=switchlight&idx=' + block.idx + '&switchcmd=Set%20Level&level=' + status)
         .then(function () {
             getDevices(true);
         });
@@ -237,26 +243,27 @@ function sliderCallback() {
 }
 
 // eslint-disable-next-line no-unused-vars
-function slideDeviceExt(idx, value, sliderState) {
+function slideDeviceExt(block, value, sliderState) { //todo. Function not used?
+    var $div=block.$mountPoint;
     if (sliderState == 0) { //start sliding 
-        $('.block_' + idx).find('.icon').removeClass('off');
-        $('.block_' + idx).find('.icon').addClass('on');
+        $div.find('.icon').removeClass('off');
+        $div.find('.icon').addClass('on');
 
-        if ($('.block_' + idx).find('.fa-toggle-off').length > 0) {
-            $('.block_' + idx).find('.fa-toggle-off').addClass('fa-toggle-on').removeClass('fa-toggle-off');
+        if ($div.find('.fa-toggle-off').length > 0) {
+            $div.find('.fa-toggle-off').addClass('fa-toggle-on').removeClass('fa-toggle-off');
         }
 
-        $('.block_' + idx).find('.state').html(language.switches.state_on);
+        $div.find('.state').html(language.switches.state_on);
 
-        sliderAction.request = sliderSetValue(idx, value, sliderCallback);
+        sliderAction.request = sliderSetValue(block.idx, value, sliderCallback);
         return;
     }
     if ( /*sliderState == 1 ||*/ sliderState == 2) { //change at the end. Temporarily (?) no update while sliding.
         if (sliderAction.request.readyState == 4) {
-            sliderAction.request = sliderSetValue(idx, value, sliderCallback);
+            sliderAction.request = sliderSetValue(block.idx, value, sliderCallback);
         } else {
             sliderAction.state = 'set';
-            sliderAction.idx = idx;
+            sliderAction.idx = block.idx;
             sliderAction.value = value;
         }
         return;
@@ -291,21 +298,6 @@ var statusmsg = '';
 function switchSecurity(level, pincode) {
 
     pincode = $.md5(pincode)
-/*    $.ajax({
-        url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=setsecstatus&secstatus=' + level + '&seccode=' + pincode + '&jsoncallback=?',
-        type: 'GET',
-        async: true,
-        contentType: 'application/json',
-        dataType: 'jsonp',
-        success: function (data) {
-            if (data.status != "OK") {
-                statusmsg = data.message;
-                if (statusmsg == 'WRONG CODE') statusmsg = language.misc.wrong_code;
-                infoMessage('<font color="red">Alert!</font>', statusmsg, 10000);
-            }
-            getDevices(true);
-        }
-    });*/
     Domoticz.request('type=command&param=setsecstatus&secstatus=' + level + '&seccode=' + pincode)
     .then(function(data) {
         if (data.status != "OK") {
@@ -318,20 +310,23 @@ function switchSecurity(level, pincode) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function getDimmerBlock(device, idx, buttonimg) {
+function getDimmerBlock(block, buttonimg) { //todo: function
+    var device=block.device;
+    var idx=block.idx;
+    var $div=block.$mountPoint.find(".mh");
     var html = '';
-    var classExtension = isProtected(device, idx) ? ' icon' : ' icon iconslider'; //no pointer in case of protected device
+    var classExtension = isProtected(block) ? ' icon' : ' icon iconslider'; //no pointer in case of protected device
     if (device['Status'] === 'Off')
-        html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" ');
+        html += iconORimage(block, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" ');
     else
-        html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" ');
+        html += iconORimage(block, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + classExtension, '', 2, 'data-light="' + device['idx'] + '" ');
     html += '<div class="col-xs-10 swiper-no-swiping col-data">';
     html += '<strong class="title">' + device['Name'];
-    if (typeof (blocks[idx]) == 'undefined' || typeof (blocks[idx]['hide_data']) == 'undefined' || blocks[idx]['hide_data'] == false) {
+    if ( typeof (block['hide_data']) == 'undefined' || blocks['hide_data'] == false) {
         html += ' ' + device['Level'] + '%';
     }
     html += '</strong>';
-    if (showUpdateInformation(idx)) {
+    if (showUpdateInformation(block)) {
         html += ' &nbsp; <span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
     }
     html += '<br />';
@@ -344,35 +339,41 @@ function getDimmerBlock(device, idx, buttonimg) {
 
     html += '</div>';
 
+    var $rgbdiv = $div.find('.rgbw'); //This is the 'old' rgbdiv!
+
     if (isRGBDeviceAndEnabled(device)) { //we have to manually destroy the previous spectrum color picker
-        $('.rgbw' + idx).spectrum("destroy");
+        $rgbdiv.spectrum("destroy");
     }
 
-    $('div.block_' + idx).html(html);
-    var dimmerClickHandler = function () {
+    $div.html(html);
+
+    $rgbdiv = $div.find('.rgbw'); //Now we have the new one.
+
+    function dimmerClickHandler(block) {
         //        if (!sliding) switchDevice('.block_' + idx, 'toggle', false)
-        switchDevice('.block_' + idx, 'toggle', false)
+        switchDevice(block, 'toggle', false) //todo: make block...
     }
 
-    $('div.block_' + idx).off('click');
+    $div.off('click');
 
-    if (!isProtected(idx)) {
-        $('div.block_' + idx).addClass('hover');
-        $('div.block_' + idx).on('click', dimmerClickHandler);
+    if (!isProtected(block)) {
+        $div.addClass('hover');
+        $div.on('click', function() {
+            dimmerClickHandler(block); //todo
+        }).addClass('hover');
     }
 
     if (isRGBDeviceAndEnabled(device)) {
-        $('.rgbw' + idx).spectrum({
+        $rgbdiv.spectrum({
             color: Cookies.get('rgbw_' + idx)
         });
 
-        $('.rgbw' + idx).on("dragstop.spectrum", function (e, color) {
-            var curidx = $(this).data('light');
-            var hasPassword = blocks[curidx] && blocks[curidx].password;
+        $rgbdiv.on("dragstop.spectrum", function (e, color) {
+            var hasPassword = block.password;
             if(!Dashticz.promptPassword(hasPassword)) return;    
         
             color = color.toHexString();
-            Cookies.set('rgbw_' + curidx, color);
+            Cookies.set('rgbw_' + idx, color);
             var hue = hexToHsb(color);
             var bIsWhite = (hue.s < 20);
 
@@ -382,7 +383,7 @@ function getDimmerBlock(device, idx, buttonimg) {
             var usrinfo = '';
             if (typeof (usrEnc) !== 'undefined' && usrEnc !== '') usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
 
-            var url = settings['domoticz_ip'] + '/json.htm?' + usrinfo + 'type=command&param=setcolbrightnessvalue&idx=' + curidx + '&hue=' + hue.h + '&brightness=' + hue.b + '&iswhite=' + bIsWhite;
+            var url = settings['domoticz_ip'] + '/json.htm?' + usrinfo + 'type=command&param=setcolbrightnessvalue&idx=' + idx + '&hue=' + hue.h + '&brightness=' + hue.b + '&iswhite=' + bIsWhite;
             //This is a synchronous request. So it cannot directly be replaced with Domoticz.request
             // Probably we would need a rate limiter on Domoticz.request
             $.ajax({
@@ -394,14 +395,14 @@ function getDimmerBlock(device, idx, buttonimg) {
             });
         });
 
-        $('.rgbw' + idx).on('hide.spectrum', function () {
+        $rgbdiv.on('hide.spectrum', function () {
             //sliding = false;
             Domoticz.release(idx); //release message queue
 
             getDevices(true);
         });
 
-        $('.rgbw' + idx).on('beforeShow.spectrum', function () {
+        $rgbdiv.on('beforeShow.spectrum', function () {
             Domoticz.hold(idx); //hold message queue
             //sliding = idx;
         });
@@ -434,21 +435,24 @@ function getDimmerBlock(device, idx, buttonimg) {
             };
             break;
     }
-    slider.disabled = isProtected(device, idx);
-    addSlider(device['idx'], slider);
+    slider.disabled = isProtected(block);
+    addSlider(block, slider);
 
     return [html, false];
 }
 
 // eslint-disable-next-line no-unused-vars
-function getBlindsBlock(device, idx, withPercentage) {
+function getBlindsBlock(block, withPercentage) { //todo: rewrite
+    var device=block.device;
+    var idx=block.idx;
+    var $mountPoint=block.$mountPoint.find(".mh");
     if (typeof (withPercentage) === 'undefined') withPercentage = false;
-    this.html = '';
+    var html = '';
 
     var hidestop = false;
     var data_class = 'col-data blinds';
     var button_class;
-    if (typeof (blocks[idx]) == 'undefined' || typeof (blocks[idx]['hide_stop']) == 'undefined' || blocks[idx]['hide_stop'] === false) {
+    if ( typeof (block['hide_stop']) == 'undefined' || block['hide_stop'] === false) {
         data_class += ' right2col';
         button_class = 'col-button2';
 
@@ -461,67 +465,77 @@ function getBlindsBlock(device, idx, withPercentage) {
     }
 
 
-    if (device['Status'] === 'Closed') this.html += iconORimage(idx, '', 'blinds_closed.png', 'off icon', '', 2);
-    else this.html += iconORimage(idx, '', 'blinds_open.png', 'on icon', '', 2);
-    this.html += '<div class="' + data_class + '">';
-    this.title = device['Name'];
+    if (device['Status'] === 'Closed') html += iconORimage(block, '', 'blinds_closed.png', 'off icon', '', 2);
+    else html += iconORimage(block, '', 'blinds_open.png', 'on icon', '', 2);
+    html += '<div class="' + data_class + '">';
+    var title = device['Name']; //todo: can we overrule title in blockdef?
+    var value='';
     if (withPercentage) {
-        if (typeof (blocks[idx]) == 'undefined' || typeof (blocks[idx]['hide_data']) == 'undefined' || blocks[idx]['hide_data'] == false) {
-            this.title += ' ' + device['Level'] + '%';
+        if (typeof (block['hide_data']) == 'undefined' || block['hide_data'] == false) {
+            title += ' ' + device['Level'] + '%';
         }
-        this.value = '<div class="slider slider' + device['idx'] + '  swiper-no-swiping" data-light="' + device['idx'] + '"></div>';
+        value = '<div class="slider slider' + idx + '  swiper-no-swiping" data-light="' + idx + '"></div>';
     } else {
-        if (device['Status'] === 'Closed') this.value = '<span class="state">' + language.switches.state_closed + '</span>';
-        else this.value = '<span class="state">' + language.switches.state_open + '</span>';
+        if (device['Status'] === 'Closed') value = '<span class="state">' + language.switches.state_closed + '</span>';
+        else value = '<span class="state">' + language.switches.state_open + '</span>';
     }
     if (!withPercentage) {
-        if (typeof (blocks[idx]) == 'undefined' || typeof (blocks[idx]['hide_data']) == 'undefined' || blocks[idx]['hide_data'] == false) {
-            if (device['Status'] === 'Closed') this.value = '<span class="state">' + language.switches.state_closed + '</span>';
-            else this.value = '<span class="state">' + language.switches.state_open + '</span>';
+        if (typeof (block['hide_data']) == 'undefined' || blocks['hide_data'] == false) {
+            if (device['Status'] === 'Closed') value = '<span class="state">' + language.switches.state_closed + '</span>';
+            else value = '<span class="state">' + language.switches.state_open + '</span>';
         } else {
-            this.value = '<span class="state"></span>'
+            value = '<span class="state"></span>'
         }
     }
-    this.html += '<strong class="title">' + this.title + '</strong><br />';
-    this.html += this.value;
-    this.html += '</div>';
+    html += '<strong class="title">' + title + '</strong><br />';
+    html += value;
+    html += '</div>';
 
-    this.html += '<div class="' + button_class + '">';
+    html += '<div class="' + button_class + '">';
 
-    this.upAction = 'Off';
-    this.downAction = 'On';
+    var upAction = 'Off';
+    var downAction = 'On';
     if (device['SwitchType'].toLowerCase().indexOf('inverted') >= 0) {
-        this.upAction = 'On';
-        this.downAction = 'Off';
+        upAction = 'On';
+        downAction = 'Off';
     }
-    this.html += '<div class="up"><a href="javascript:void(0)" class="btn btn-number plus" onclick="switchBlinds(' + device['idx'] + ',\'' + this.upAction + '\');">';
-    this.html += '<em class="fas fa-chevron-up fa-small"></em>';
-    this.html += '</a></div>';
+    html += '<div class="up"><a href="javascript:void(0)" class="btn btn-number plus">';
+    html += '<em class="fas fa-chevron-up fa-small"></em>';
+    html += '</a></div>';
 
-    this.html += '<div class="down"><a href="javascript:void(0)" class="btn btn-number min" onclick="switchBlinds(' + device['idx'] + ',\'' + this.downAction + '\');">';
-    this.html += '<em class="fas fa-chevron-down fa-small"></em>';
-    this.html += '</a></div>';
+    html += '<div class="down"><a href="javascript:void(0)" class="btn btn-number min">';
+    html += '<em class="fas fa-chevron-down fa-small"></em>';
+    html += '</a></div>';
 
     if (!hidestop) {
-        this.html += '<div class="stop"><a href="javascript:void(0)" class="btn btn-number stop" onclick="switchBlinds(' + device['idx'] + ',\'Stop\');">';
-        this.html += 'STOP';
-        this.html += '</a></div>';
+        html += '<div class="stop"><a href="javascript:void(0)" class="btn btn-number stop">';
+        html += 'STOP';
+        html += '</a></div>';
     }
 
-    this.html += '</div>';
+    html += '</div>';
 
-    $('div.block_' + idx).html(this.html);
+    $mountPoint.html(html);
+    $mountPoint.find('.plus').click( function() {
+        switchBlinds(block, upAction);
+    })
+    $mountPoint.find('.min').click( function() {
+        switchBlinds(block, downAction);
+    })
+    $mountPoint.find('.stop').click( function() {
+        switchBlinds(block, 'Stop');
+    })
 
     if (withPercentage) {
-        addSlider(idx, {
+        addSlider(block, { //todo: function
             value: device['Level'],
             step: 1,
             min: 1,
             max: 100,
-            disabled: isProtected(device, idx)
+            disabled: isProtected(block)
         });
     }
-    return [this.html, false];
+    return [html, false];
 }
 
 /*previously there was a mechanism to send device update commands while sliding.
@@ -529,8 +543,11 @@ With the new websock interface the slider block didn't update correctly.
 So I've disabled the call to slideDeviceExt function.
 Maybe in the future I'll reenable the functionality.
 */
-function addSlider(idx, sliderValues) {
-    $(".slider" + idx).slider({
+function addSlider(block, sliderValues) {
+    var idx = block.idx;
+    var $divslider = block.$mountPoint.find('.slider');
+
+    $divslider.slider({
         value: sliderValues.value,
         step: sliderValues.step,
         min: sliderValues.min,
@@ -546,10 +563,10 @@ function addSlider(idx, sliderValues) {
         //},
         change: function (event, ui) {
             //            slideDeviceExt($(this).data('light'), ui.value, 2);
-            var hasPassword = blocks[idx] && blocks[idx].password;
+            var hasPassword = block.password;
             if(!Dashticz.promptPassword(hasPassword)) return;    
         
-            slideDevice(idx, ui.value);
+            slideDevice(block, ui.value); //todo: update function
         },
         stop: function () {
             //stop is called before change
@@ -558,7 +575,7 @@ function addSlider(idx, sliderValues) {
 
         }
     });
-    $(".slider" + idx).on('click', function (ev) {
+    $divslider.on('click', function (ev) {
         ev.stopPropagation();
     })
 

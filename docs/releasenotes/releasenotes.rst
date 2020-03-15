@@ -1,8 +1,11 @@
 Release Notes
 =============
 
-Latest changes
+3.4.1
 ---------------
+
+Redesign
+  Domoticz blocks: inline blocks. Use ``idx`` as parameter in your block definition to indicate the block is a domoticz device.
 
 Enhancements
 

@@ -268,11 +268,9 @@ blocktypes = getExtendedBlockTypes(blocktypes);
 var alldevices = 'initial value';
 //var sliding = false;
 
-var allblocks = {}; //todo: Can we get rid of this?
 var oldstates = [];
 var onOffstates = [];
-var subscribed = {};
-
+var mountedBlocks={}    //object to store all mounted blocks
 
 //var myBlockNumbering = 0; //To give all blocks a unique number
 //class="col-sm-' + cols['width'] + ' col-xs-12 sortable col'
@@ -303,13 +301,31 @@ function getBlock(cols, c, screendiv, standby) {
                         handleStringBlock(cols['blocks'][b], myblockselector, c);
                         continue;
 
-                    default:
-                        $(myblockselector).html('<div data-id="' + cols['blocks'][b] + '" class="mh transbg block_' + cols['blocks'][b] + '"></div>');
-                        addDeviceUpdateHandler(myblockselector, cols['blocks'][b])
+                    default: //then it's an integer, meaning it's a domoticz device id
+                        var block = {}
+                        block.idx = cols['blocks'][b];
+                        $.extend(block, blocks[block.idx]);
+                        var html = '<div data-id="' + block.idx + '" class="mh transbg block_' + block.idx + '"></div>';
+                        mountBlock(myblockselector, block, html, false );
+                        addDeviceUpdateHandler(block)
                         break;
                 }
         }
     }
+}
+
+function mountBlock(mountPoint, block, html, append){
+    block.$mountPoint = $(mountPoint);
+    if (typeof html !== 'undefined') {
+        if(append) {
+            block.$mountPoint.append(html)
+        }
+        else
+            block.$mountPoint.html(html)
+    }
+    block.mountPoint=mountPoint;
+    block.entry=block.mountPoint.slice(1);
+    mountedBlocks[block.entry] = block;
 }
 
 function getCustomFunction(functionname, idx, device, afterupdate) {
@@ -327,15 +343,23 @@ function getCustomFunction(functionname, idx, device, afterupdate) {
     }
 }
 
-function deviceUpdateHandler(selector, idx, device) {
+function deviceUpdateHandler(blockdef) {
 
-    getCustomFunction('getStatus', idx, device, false);
+    var selector = blockdef.mountPoint;
+    var idx=blockdef.idx;
+    var device=blockdef.device;
+    var subidxStr = '';
+    if (blockdef.subidx) subidxStr='_'+blockdef.subidx;
+    var fullidx = idx + subidxStr;
 
-    var blockdef = (blocks && blocks[idx]) || undefined;
+    getCustomFunction('getStatus', fullidx, device, false);
+    var $selector=$(selector);
     if (blockdef && typeof blockdef['title'] !== 'undefined') {
         device['Name'] = blockdef['title'];
     }
 
+    //var $div=$selector.find('.block_'+fullidx); //doesn't work for blocks['myblock'] kind of definitions
+    var $div=$selector.find('.mh')
 
     var width = 4;
     switch (device['SwitchType']) {
@@ -355,11 +379,12 @@ function deviceUpdateHandler(selector, idx, device) {
         }
     }
 
-    $('div.block_' + idx).data('light', idx); //todo: don't use data('light') to store idx
-    if (typeof (settings['default_columns']) == 'undefined' || parseFloat(settings['default_columns']) == 3) $('div.block_' + idx).addClass('col-xs-' + width);
-    else if (parseFloat(settings['default_columns']) == 1) $('div.block_' + idx).addClass('col-xs-3');
-    else if (parseFloat(settings['default_columns']) == 2) $('div.block_' + idx).addClass('col-xs-4');
+    $div.data('light', idx); //todo: don't use data('light') to store idx
+    if (typeof (settings['default_columns']) == 'undefined' || parseFloat(settings['default_columns']) == 3) $div.addClass('col-xs-' + width);
+    else if (parseFloat(settings['default_columns']) == 1) $div.addClass('col-xs-3');
+    else if (parseFloat(settings['default_columns']) == 2) $div.addClass('col-xs-4');
 
+    /* todo: I now removed this, because it's not logical to do this here.
     for (var i = 1; i <= 5; i++) {
         if ($('div.block_' + idx + '_' + i).length > 0) {
             $('div.block_' + idx + '_' + i).data('light', idx);
@@ -369,6 +394,7 @@ function deviceUpdateHandler(selector, idx, device) {
             $('div.block_' + idx + '_' + i).html('');
         }
     }
+    */
 
     var addHTML = true;
     var html = '';
@@ -379,33 +405,46 @@ function deviceUpdateHandler(selector, idx, device) {
     html = getCustomFunction('getBlock', idx, device);
     //getCustomFunction 'getBlock' returns undefined in case function getBlock_<idx> is not defined in custom.js
     if(!html) {
-        var response = handleDevice(device, idx);
+        var response = handleDevice(blockdef);
         html = response[0];
         addHTML = response[1];
     }
 
     if (addHTML) {
-        $('div.block_' + idx).html(html);
-        getBlockClick(idx, device);
+        $div.html(html);
+        getBlockClick(blockdef);
     }
-    if (typeof ($('.block_' + idx).attr('onclick')) !== 'undefined') {
-        $('div.block_' + idx).addClass('hover');
+    if (typeof ($div.attr('onclick')) !== 'undefined') {
+        $div.addClass('hover');
     }
 
-    if ($('div.block_' + idx).hasClass('hover')) {
-        $('.block_' + idx + '.transbg.hover').on('touchstart', function () {
-            $(this).addClass('hovered');
+    if ($div.hasClass('hover')) {
+        $div.on('touchstart', function () {
+            var $this=$(this);
+            $this.addClass('hovered');
             setTimeout(function () {
-                $('.transbg.hover').removeClass('hovered');
+                $this.removeClass('hovered');
             }, 200);
         });
     }
+    
+    $div.removeClass("on off").addClass(function() {
+        return getBlockClass(blockdef);
+    })
+}
+
+function getBlockClass(blockdef) {
+    var addClass = getIconStatusClass(blockdef.device['Status']);
+    if (blockdef.addClass) {
+        addClass +=' '+blockdef.addClass
+    }
+    return  addClass;
 }
 
 
 
-
-function addDeviceUpdateHandler(selector, idx) {
+function addDeviceUpdateHandler(blockdef) {
+    /*
     if (subscribed[idx]) {
         //        console.log('Already subscribed for '+idx)
         //currently the deviceUpdateHandler handles updates for all blocks that use device <idx>
@@ -419,16 +458,36 @@ function addDeviceUpdateHandler(selector, idx) {
             deviceUpdateHandler(selector, idx, device)
         })
         subscribed[idx] = true;
+    }*/
+    var deviceIdx=blockdef.idx;
+    if (typeof blockdef.idx === 'string') {
+        var idxSplit = blockdef.idx.split('_');
+        if (idxSplit.length == 2 ){
+            var idx = parseInt(idxSplit[0]);
+            var subidx = parseInt(idxSplit[1]);
+            if (typeof idx === 'number' && typeof subidx === 'number') {
+                deviceIdx = idx;
+                blockdef.subidx = subidx;
+            }
+        }
     }
+    Domoticz.subscribe(deviceIdx, true, function (device) {
+        blockdef.device = device;
+        deviceUpdateHandler(blockdef)
+    })
+
 }
 
-function getBlockWidth(key, defaultWidth) {
-    return blocks && key && blocks[key] && blocks[key].width ? blocks[key].width : (defaultWidth ? defaultWidth : 12)
-}
+function handleStringBlock(blocktype, columndiv, c) {
+    
+    var block = {};
+    block.type=blocktype;
+    $.extend(block, blocks[blocktype])
+    block.c = c; //c can be 'bar'. Used for sunriseholder
+    mountBlock(columndiv, block, null, null);
 
-function handleStringBlock(block, columndiv, c) {
     var defaultwidth = 12;
-    switch (block) {
+    switch (block.type) {
         case 'logo':
         case 'settings':
             defaultwidth = 2;
@@ -439,9 +498,10 @@ function handleStringBlock(block, columndiv, c) {
             break;
     }
 
-    var width = getBlockWidth(block, defaultwidth)
+    block.width = block.width || defaultwidth;
+    var width=block.width;
 
-    switch (block) {
+    switch (block.type) {
         case 'logo':
             $(columndiv).append('<div data-id="logo" class="logo col-xs-' + width + '">' + settings['app_title'] + '</div>');
             return;
@@ -472,7 +532,7 @@ function handleStringBlock(block, columndiv, c) {
             return;
         case 'flipclock':
             $('<link href="vendor/flipclock/flipclock.css" rel="stylesheet">').appendTo("head");
-            $(columndiv).append('<div data-id="flipclock" class="transbg block_' + block + ' col-xs-' + width + ' text-center"><div class="flipclock"></div></div>');
+            $(columndiv).append('<div data-id="flipclock" class="transbg block_' + block.type + ' col-xs-' + width + ' text-center"><div class="flipclock"></div></div>');
             if (typeof (FlipClock) !== 'function') $.ajax({
                 url: 'vendor/flipclock/flipclock.min.js',
                 async: false,
@@ -489,12 +549,12 @@ function handleStringBlock(block, columndiv, c) {
                 '</div>');
             return;
         case 'clock':
-            $(columndiv).append('<div data-id="clock" class="transbg block_' + block + ' col-xs-' + width + ' text-center">' +
+            $(columndiv).append('<div data-id="clock" class="transbg block_' + block.type + ' col-xs-' + width + ' text-center">' +
                 '<h1 class="clock"></h1><h4 class="weekday"></h4><h4 class="date"></h4>' +
                 '</div>');
             return;
         case 'responsiveclock':
-            $(columndiv).append('<div data-id="clock" class="transbg block_' + block + ' col-xs-' + width + ' text-center responsive" style="height:250px;">' +
+            $(columndiv).append('<div data-id="clock" class="transbg block_' + block.type + ' col-xs-' + width + ' text-center responsive" style="height:250px;">' +
                 '<div class="col no-icon"><h2 class="clock"></h1><h4 class="weekday my-4"></h4><h4 class="date"></h4></div>' +
                 '</div>');
             return;
@@ -506,7 +566,7 @@ function handleStringBlock(block, columndiv, c) {
                     dataType: "script"
                 });
             }
-            $(columndiv).append('<div data-id="weather" class="block_' + block + ' containsweatherfull"></div>');
+            $(columndiv).append('<div data-id="weather" class="block_' + block.type + ' containsweatherfull"></div>');
             if (settings['wu_api'] !== "" && settings['wu_city'] !== "") loadWeatherFull(settings['wu_city'], settings['wu_country'], $('.weatherfull'));
             return;
         case 'currentweather':
@@ -518,7 +578,7 @@ function handleStringBlock(block, columndiv, c) {
                         dataType: "script"
                     });
                 }
-                $(columndiv).append('<div data-id="currentweather" class="mh transbg block_' + block + ' col-xs-' + width + ' containsweather">' +
+                $(columndiv).append('<div data-id="currentweather" class="mh transbg block_' + block.type + ' col-xs-' + width + ' containsweather">' +
                     '<div class="col-xs-4"><div class="weather" id="weather"></div></div>' +
                     '<div class="col-xs-8"><strong class="title weatherdegrees" id="weatherdegrees"></strong><br /><span class="weatherloc" id="weatherloc"></span></div>' +
                     '</div>');
@@ -534,7 +594,7 @@ function handleStringBlock(block, columndiv, c) {
                         dataType: "script"
                     });
                 }
-                $(columndiv).append('<div data-id="currentweather_big" class="mh transbg big block_' + block + ' col-xs-' + width + ' containsweather">' +
+                $(columndiv).append('<div data-id="currentweather_big" class="mh transbg big block_' + block.type + ' col-xs-' + width + ' containsweather">' +
                     '<div class="col-xs-1"><div class="weather" id="weather"></div></div>' +
                     '<div class="col-xs-11"><span class="title weatherdegrees" id="weatherdegrees"></span> <span class="weatherloc" id="weatherloc"></span></div>' +
                     '</div>');
@@ -550,7 +610,7 @@ function handleStringBlock(block, columndiv, c) {
                     dataType: "script"
                 });
             }
-            $(columndiv).append('<div data-id="weather" class="block_' + block + ' containsweatherfull"></div>');
+            $(columndiv).append('<div data-id="weather" class="block_' + block.type + ' containsweatherfull"></div>');
             if (settings['owm_api'] !== "" && settings['owm_city'] !== "") loadWeatherFull(settings['owm_city'], settings['owm_country'], $('.weatherfull'));
             return;
         case 'currentweather_owm':
@@ -563,7 +623,7 @@ function handleStringBlock(block, columndiv, c) {
                     });
                 }
 
-                $(columndiv).append('<div data-id="currentweather" class="mh transbg block_' + block + ' col-xs-' + width + ' containsweather">' +
+                $(columndiv).append('<div data-id="currentweather" class="mh transbg block_' + block.type + ' col-xs-' + width + ' containsweather">' +
                     '<div class="col-xs-4"><div class="weather" id="weather"></div></div>' +
                     '<div class="col-xs-8"><strong class="title weatherdegrees" id="weatherdegrees"></strong><br /><span class="weatherloc" id="weatherloc"></span></div>' +
                     '</div>');
@@ -579,7 +639,7 @@ function handleStringBlock(block, columndiv, c) {
                         dataType: "script"
                     });
                 }
-                $(columndiv).append('<div data-id="currentweather_big" class="mh transbg big block_' + block + ' col-xs-' + width + ' containsweather">' +
+                $(columndiv).append('<div data-id="currentweather_big" class="mh transbg big block_' + block.type + ' col-xs-' + width + ' containsweather">' +
                     '<div class="col-xs-1"><div class="weather" id="weather"></div></div>' +
                     '<div class="col-xs-11"><span class="title weatherdegrees" id="weatherdegrees"></span> <span class="weatherloc" id="weatherloc"></span></div>' +
                     '</div>');
@@ -620,9 +680,9 @@ function handleStringBlock(block, columndiv, c) {
                         return;
             */
         case 'sunrise':
-            var classes = 'block_' + block + ' col-xs-' + width + ' transbg text-center sunriseholder';
+            var classes = 'block_' + block.type + ' col-xs-' + width + ' transbg text-center sunriseholder';
             if (c === 'bar') {
-                classes = 'block_' + block + ' col-xs-2 text-center sunriseholder';
+                classes = 'block_' + block.type + ' col-xs-2 text-center sunriseholder';
             }
             $(columndiv).append('<div data-id="sunrise" class="' + classes + '">' +
                 '<em class="wi wi-sunrise"></em><span class="sunrise"></span><em class="wi wi-sunset"></em><span class="sunset"></span>' +
@@ -664,7 +724,7 @@ function handleStringBlock(block, columndiv, c) {
                 });
             }
             $(columndiv).append(loadGarbage());
-            getBlockClick('garbage');
+            getBlockClick(block);
             return;
         case 'sonarr':
             if (typeof (loadSonarr) !== 'function') $.ajax({
@@ -673,7 +733,7 @@ function handleStringBlock(block, columndiv, c) {
                 dataType: 'script'
             });
             $(columndiv).append(loadSonarr());
-            getBlockClick('sonarr');
+            getBlockClick(block);
             return;
         case 'fullscreen':
             $(columndiv).append('<div data-id="fullscreen" class="col-xs-' + width + ' text-right">' + getFullScreenIcon() + '</div>');
@@ -694,37 +754,44 @@ function handleStringBlock(block, columndiv, c) {
                 's123': group or scene 123
                 'v123': variable with idx 123
                 */
-            $(columndiv).append('<div data-id="' + block + '" class="mh transbg block_' + block + '"></div>');
-            var idx = parseInt(block);
-            if (idx) {
-                addDeviceUpdateHandler(columndiv, idx);
-                return;
+            html='<div data-id="' + block.type + '" class="mh transbg block_' + block.type + '"></div>';
+            block.$mountPoint.append(html);
+            if (block.idx) { //also a Domoticz device
+                addDeviceUpdateHandler(block);
+                return; 
             }
-            if (block[0] === 's' || block[0] === 'v') { //scene, group or variable
-                idx = parseInt(block.slice(1))
-                if (idx) {
-                    addDeviceUpdateHandler(columndiv, block);
-                    return;
-                }
-
+            var idx = parseInt(block.type);
+            var isDomoticzDevice = !!idx;
+            if (block.type[0] === 's' || block[0] === 'v') { //scene, group or variable
+                idx = parseInt(block.type.slice(1))
+                if (idx) isDomoticzDevice = true;
             }
-            console.log('unknown string block ' + block);
+            if(isDomoticzDevice) {
+                block.width = 4;
+                block.idx = block.type;
+                addDeviceUpdateHandler(block); 
+            }
+            else console.log('unknown string block ' + block);
     }
 }
 
-function handleObjectBlock(block, columndiv) {
+function handleObjectBlock(block, el) {
     var random = getRandomInt(1, 100000);
     var width = 12;
+    var key = el.slice(1);
+    var $el=$(el);
+    mountedBlocks[key]=block;
+    block.mountPoint = el;
+    block.$mountPoint = $el;
+//    $(columndiv).data('block', key);
+    mountBlock(el, block, null, null);
+    if (block.width) width = block['width'];
     if (block.latitude) {
-        $(columndiv).append(loadMaps(random, block));
+        $el.append(loadMaps(random, block));
         return;
     }
-    var key = 'UNKNOWN';
-    if (block.key) key = block['key'];
-    if (block.width) width = block['width'];
-
     if (block.empty) {
-        $(columndiv).append('<div data-id="' + key + '" class="mh transbg col-xs-' + width + '">');
+        $el.append('<div data-id="' + key + '" class="mh transbg col-xs-' + width + '">');
     } else if (block.currency) {
         if (typeof (getCoin) !== 'function') $.ajax({
             url: 'js/coins.js',
@@ -732,7 +799,7 @@ function handleObjectBlock(block, columndiv) {
             dataType: 'script'
         });
         var html = '<div class="col-xs-' + width + ' transbg coins-' + block['key'] + '" data-id="coins.' + block['key'] + '"></div>';
-        $(columndiv).append(html);
+        $el.append(html);
         getCoin(block);
 
     } else if (block.icalurl ||
@@ -740,16 +807,38 @@ function handleObjectBlock(block, columndiv) {
     ) {
         var dataId = 'calendars.' + key;
         var classes = 'transbg containsicalendar containsicalendar' + random;
-        appendTvOrCalendarBlock(dataId, classes, width, block, columndiv);
+        appendTvOrCalendarBlock(dataId, classes, width, block, el);
         if (typeof (addCalendar) !== 'function') $.ajax({
             url: 'js/calendar.js',
             async: false,
             dataType: 'script'
         });
         addCalendar($('.containsicalendar' + random), block);
-    } else {
+    } else if (block.idx) { //+ '" data-block="' + block.key
+        $el.append('<div data-id="' + block.idx +'" class="mh transbg block_' + block.idx + '"></div>');
+        if (typeof block.idx==='number') {
+            addDeviceUpdateHandler(block);
+            return;
+        }
+        var idx = parseInt(block.idx);
+        if (idx) {
+            addDeviceUpdateHandler(block);
+            return;
+        }
+        if (block.idx[0] === 's' || block.idx[0] === 'v') { //scene, group or variable
+            idx = parseInt(block.slice(1))
+            if (idx) {
+                addDeviceUpdateHandler(block);
+                return;
+            }
+
+        }
+
+
+    }
+    else {
         //        Dashticz.mountSpecialBlock(columndiv, block, Dashticz.components["button"]);
-        Dashticz.mountDefaultBlock(columndiv, block)
+        Dashticz.mountDefaultBlock(el, block)
         //        $(columndiv).append(loadButton(index, block));
     }
 }
@@ -780,36 +869,40 @@ function appendTvOrCalendarBlock(dataId, classes, width, block, columndiv) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function getStateBlock(id, icon, title, value, device) {
-    if (typeof (blocks[id]) !== 'undefined' && typeof (blocks[id]['unit']) !== 'undefined') {
-        var unitArray = blocks[id]['unit'].split(";");
-        value = value.replace(unitArray[0], unitArray[1]);
-    }
+function getStateBlock(block) { 
+    //todo: I added valueunit somewhere as concatenation of value+unit. Probably not needed
+    var value = block.value + ' ' + block.unit;
 
-    getBlockClick(id, device);
+    /*
+    if (block.unit) {
+        var unitArray = block.unit.split(";");
+        value = value.replace(unitArray[0], unitArray[1]);
+    }*/
+
+    getBlockClick(block); 
 
     var stateBlock = '<div class="col-xs-4 col-icon">';
-    stateBlock += '<em class="' + icon + '"></em>';
+    stateBlock += '<em class="' + block.icon + '"></em>';
     stateBlock += '</div>';
     stateBlock += '<div class="col-xs-8 col-data">';
 
-    if (titleAndValueSwitch(id)) {
-        if (hideTitle(id)) {
+    if (titleAndValueSwitch(block)) { 
+        if (hideTitle(block)) {
             stateBlock += '<span class="value">' + value + '</span>';
         } else {
-            stateBlock += '<strong class="title">' + title + '</strong><br />';
+            stateBlock += '<strong class="title">' + block.title + '</strong><br />';
             stateBlock += '<span class="value">' + value + '</span>';
         }
     } else {
-        if (hideTitle(id)) {
+        if (hideTitle(block)) {
             stateBlock += '<strong class="title">' + value + '</strong>';
         } else {
             stateBlock += '<strong class="title">' + value + '</strong><br />';
-            stateBlock += '<span class="value">' + title + '</span>';
+            stateBlock += '<span class="value">' + block.title + '</span>';
         }
     }
-    if (showUpdateInformation(id)) {
-        stateBlock += '<br /><span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
+    if (showUpdateInformation(block)) { 
+        stateBlock += '<br /><span class="lastupdate">' + moment(block.device['LastUpdate']).format(settings['timeformat']) + '</span>';
     }
 
     stateBlock += '</div>';
@@ -817,11 +910,16 @@ function getStateBlock(id, icon, title, value, device) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function getStatusBlock(idx, device, block, c) {
-    var value = block.value;
-    var title = block.title;
+function getStatusBlock(blockdef, blockproto) { 
+    var idx=blockdef.idx;
+    var device=blockdef.device;
+    var value = blockdef.value || blockproto.value;
+    var title = blockdef.title || blockproto.title;
+    var format = blockdef.format || blockproto.format;
+    var decimals= blockdef.decimals || blockproto.decimals;
+    var image = blockdef.image || blockproto.image;
+    var icon = blockdef.icon || blockproto.icon;
     var elements = [];
-    if (blocks[idx] && blocks[idx].title) title = blocks[idx].title;
 
     // eslint-disable-next-line no-useless-escape
     var tagRegEx = /<[\w\s="/.':;#-\/\?]+>/gi;
@@ -834,12 +932,12 @@ function getStatusBlock(idx, device, block, c) {
 
     for (var d in elements) {
         var deviceValue = device[elements[d]];
-        if (block.format) {
+        if (format) {
             var unit = '';
             if (isNaN(device[elements[d]])) {
                 unit = ' ' + device[elements[d]].split(' ')[1];
             }
-            deviceValue = number_format(deviceValue, block.decimals) + unit;
+            deviceValue = number_format(deviceValue, decimals) + unit;
         }
         value = value.replace('<' + elements[d] + '>', deviceValue);
         title = title.replace('<' + elements[d] + '>', device[elements[d]]);
@@ -850,7 +948,7 @@ function getStatusBlock(idx, device, block, c) {
         value = value.replace(unitArray[0], unitArray[1]);
     }
 
-    getBlockClick(idx, device);
+    getBlockClick(blockdef); 
 
     var attr = '';
     if (typeof (device['Direction']) !== 'undefined' && typeof (device['DirectionStr']) !== 'undefined') {
@@ -870,19 +968,19 @@ function getStatusBlock(idx, device, block, c) {
     }
 
     var stateBlock = '';
-    if (typeof (block.image) !== 'undefined') stateBlock = iconORimage(idx, '', block.image, 'icon', attr, 4, '');
-    else stateBlock = iconORimage(idx, block.icon, '', 'icon', attr, 4, '');
+    if (typeof (image) !== 'undefined') stateBlock = iconORimage(blockdef, '', image, 'icon', attr, 4, '');
+    else stateBlock = iconORimage(blockdef, icon, '', 'icon', attr, 4, '');
 
     stateBlock += '<div class="col-xs-8 col-data">';
-    if (titleAndValueSwitch(idx)) {
-        if (hideTitle(idx)) {
+    if (titleAndValueSwitch(blockdef)) { 
+        if (hideTitle(blockdef)) { 
             stateBlock += '<span class="value">' + value + '</span>';
         } else {
             stateBlock += '<strong class="title">' + title + '</strong><br />';
             stateBlock += '<span class="value">' + value + '</span>';
         }
     } else {
-        if (hideTitle(idx)) {
+        if (hideTitle(blockdef)) {
             stateBlock += '<strong class="title">' + value + '</strong>';
         } else {
             stateBlock += '<strong class="title">' + value + '</strong><br />';
@@ -890,25 +988,34 @@ function getStatusBlock(idx, device, block, c) {
         }
     }
 
-    if (showUpdateInformation(idx)) {
+    if (showUpdateInformation(blockdef)) {
         stateBlock += '<br /><span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
     }
     stateBlock += '</div>';
     return stateBlock;
 }
 
-function getBlockClick(idx, device) {
-    if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['link']) !== 'undefined' && blocks[idx]['link'] !== "") {
-        if ($('.block_' + idx).length > 0) {
-            $('.block_' + idx).addClass('hover');
+function getBlockClick(blockdef) {
+    var idx = blockdef.idx;
+    var device = blockdef.device;
+    var link = blockdef.link; //todo: undocumented feature
+    var target = blockdef.target;
+    var graph = blockdef.graph;
+    //var blockSel = '.block_'+ blockdef.mountPoint.slice(1);
+    //console.log('getBlockClick for ', blockdef);
+ //   var $div=blockdef.$mountPoint.find('.block_'+blockdef.idx);
+    var $div=blockdef.$mountPoint.find('.mh');
+    if (link) {
+        if ($div.length > 0) {
+            $div.addClass('hover');
 
-            if (typeof (blocks[idx]['target']) == 'undefined' || blocks[idx]['target'] == '_blank') {
-                $('.block_' + idx).attr('onclick', 'window.open(\'' + blocks[idx]['link'] + '\');');
-            } else if (typeof (blocks[idx]['target']) !== 'undefined' && blocks[idx]['target'] == 'iframe') {
-                $('.block_' + idx).attr('onclick', 'addBlockClickFrame(\'' + idx + '\');');
+            if (target == '_blank') {
+                $div.attr('onclick', 'window.open(\'' + link + '\');');
+            } else if (target == 'iframe') {
+                $div.attr('onclick', 'addBlockClickFrame(\'' + idx + '\');'); //todo: check function
             }
         }
-    } else if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['graph']) !== 'undefined' && blocks[idx]['graph'] === false) {
+    } else if (graph === false) {
         return;
     } else if (typeof (device) !== 'undefined') {
         if (device['SubType'] == 'Percentage' || device['SubType'] == 'Custom Sensor' || device['TypeImg'] == 'counter' ||
@@ -918,9 +1025,10 @@ function getBlockClick(idx, device) {
             device['SubType'] === 'Barometer'
         ) {
             /* In this case we want to the popup graph*/
-
-            var blockSel = '.block_' + idx;
-            if ($(blockSel).length == 0) {
+            /* todo: check next three if statements*/
+            /*
+            if ($div.length == 0) {
+                console.error('This should not happen...');
                 blockSel = 0;
             }
             if (blockSel == 0) {
@@ -932,7 +1040,12 @@ function getBlockClick(idx, device) {
             if (blockSel !== 0) {
                 $(blockSel).addClass('hover');
                 $(blockSel).attr('onclick', 'showPopupGraph(\'' + device['idx'] + '\',\'' + idx + '\');');
-            }
+            }*/
+
+            // I've added next click function. Todo: check popup graphs
+            $div.addClass('hover').click(function() {
+                showPopupGraph(blockdef);
+            });
 
         }
     }
@@ -968,18 +1081,18 @@ function addBlockClickFrame(idx) {
  * @param attrcol
  * @returns {string}
  */
-function iconORimage(idx, defaulticon, defaultimage, classnames, attr, colwidth, attrcol) {
-    var block = blocks[idx];
+function iconORimage(block, defaulticon, defaultimage, classnames, attr, colwidth, attrcol) {
     var mIcon = defaulticon;
     var mImage = defaultimage;
     var useImage = false;
-    var allDevices = Domoticz.getAllDevices();
+    //probably yes
+    var device = block.device;
     if (defaultimage !== '') {
         useImage = true;
     }
     var isOn = false;
-    if (typeof (allDevices[idx]) !== 'undefined' && typeof (allDevices[idx]['Status']) !== 'undefined')
-        isOn = (getIconStatusClass(allDevices[idx]['Status']) === 'on');
+    if (device && device.Status)
+        isOn = (getIconStatusClass(device.Status) === 'on');
     if (typeof (block) !== 'undefined') {
         if (typeof (block['icon']) !== 'undefined') {
             mIcon = block['icon'];
@@ -1032,57 +1145,52 @@ function iconORimage(idx, defaulticon, defaultimage, classnames, attr, colwidth,
 }
 
 // eslint-disable-next-line no-unused-vars
-function getBlockData(device, idx, ontxt, offtxt) {
-    this.title = device['Name'];
+function getBlockData(block, textOn, textOff) { 
+    // this.title = device['Name']; // should be the other way around:
+    var title = block.title || block.device['Name']; //but probably this was set earlier already ...
+    var opendiv = '<div class="col-xs-8 col-data">';
+    var closediv = '</div>';
 
-    this.opendiv = '<div class="col-xs-8 col-data">';
-    this.closediv = '</div>';
-
-    if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['hide_data']) !== 'undefined' && blocks[idx]['hide_data'] == true) {
-        return this.opendiv + '<strong class="title">' + this.title + '</strong>' + this.closediv;
+    if (block['hide_data']) {
+        return opendiv + '<strong class="title">' + title + '</strong>' + closediv;
     }
 
-    this.value = ontxt;
-    if (device['Status'] == 'Off' || device['Status'] == 'Closed' || device['Status'] == 'Normal' || device['Status'] == 'Locked' || (device['Status'] == '' && device['InternalState'] == 'Off')) {
-        this.value = offtxt;
+    var value = textOn;
+    var status = block.device.Status;
+    if (status == 'Off' || status == 'Closed' || status == 'Normal' || status == 'Locked' || (status == '' && block.device['InternalState'] == 'Off')) {
+        value = textOff;
     }
 
-    if (titleAndValueSwitch(idx)) {
-        this.title = this.value;
-        this.value = device['Name'];
+    if (titleAndValueSwitch(block)) { 
+        title = value;
+        value = block.title || block.device['Name'];
     }
 
-    this.data = '<strong class="title">' + this.title + '</strong><br />';
-    this.data += '<span class="state">' + this.value + '</span>';
+    var data = '<strong class="title">' + title + '</strong><br />';
+    data += '<span class="state">' + value + '</span>';
 
-    if (showUpdateInformation(idx)) {
-        this.data += '<br /><span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
+    if (showUpdateInformation(block)) {
+        data += '<br /><span class="lastupdate">' + moment(block.device['LastUpdate']).format(settings['timeformat']) + '</span>';
     }
 
-    return this.opendiv + this.data + this.closediv;
+    return opendiv + data + closediv;
 }
 
-function titleAndValueSwitch(idx) {
-    return typeof (blocks[idx]) !== 'undefined' &&
-        typeof (blocks[idx]['switch']) !== 'undefined' &&
-        blocks[idx]['switch'];
+function titleAndValueSwitch(block) {
+    return block.switch;
 }
 
-function hideTitle(idx) {
-    return typeof (blocks[idx]) !== 'undefined' &&
-        typeof (blocks[idx]['hide_title']) !== 'undefined' &&
-        blocks[idx]['hide_title'];
+function hideTitle(block) {
+    return block.hide_title;
 }
 
-function showUpdateInformation(idx) {
+function showUpdateInformation(block) {
     return (settings['last_update'] &&
-            (typeof (blocks[idx]) === 'undefined' ||
-                typeof (blocks[idx]['last_update']) === 'undefined' ||
-                blocks[idx]['last_update'])) ||
+            ( typeof (block['last_update']) === 'undefined' ||
+                blocks['last_update'])) ||
         (!settings['last_update'] &&
-            (typeof (blocks[idx]) !== 'undefined' &&
-                typeof (blocks[idx]['last_update']) !== 'undefined' &&
-                blocks[idx]['last_update'])
+            (  typeof (block['last_update']) !== 'undefined' &&
+                blocks['last_update'])
         );
 }
 
@@ -1242,23 +1350,25 @@ function triggerChange(idx, value, device) {
     oldstates[idx] = value;
 }
 
-function handleDevice(device, idx) {
+function handleDevice(block) {
+    var device=block.device;
+    var idx=block.idx;
     var buttonimg = '';
     if (device['Image'] === 'Fan') buttonimg = 'fan.png';
     if (device['Image'] === 'Heating') buttonimg = 'heating.png';
     var html = '';
     var addHTML = true;
     if (device.SubType && device['SubType'] in blocktypes['SubType']) {
-        html += getStatusBlock(idx, device, blocktypes['SubType'][device['SubType']]);
+        html += getStatusBlock(block, blocktypes['SubType'][device['SubType']]);
         return [html, addHTML];
     }
     if (device.HardwareType && device['HardwareType'] in blocktypes['HardwareType']) {
         if (typeof (blocktypes['HardwareType'][device['HardwareType']]['icon']) !== 'undefined') {
-            html += getStatusBlock(idx, device, blocktypes['HardwareType'][device['HardwareType']]);
+            html += getStatusBlock(block, blocktypes['HardwareType'][device['HardwareType']]);
         } else {
             var c = 1;
             for (var de in blocktypes['HardwareType'][device['HardwareType']]) {
-                html = getStatusBlock(idx, device, blocktypes['HardwareType'][device['HardwareType']][de], c);
+                html = getStatusBlock(block, blocktypes['HardwareType'][device['HardwareType']][de], c);
 
                 triggerStatus(idx + '_' + c, device['LastUpdate'], device);
                 triggerChange(idx + '_' + c, device['LastUpdate'], device);
@@ -1271,53 +1381,53 @@ function handleDevice(device, idx) {
         return [html, addHTML];
     }
     if (device.HardwareName && device['HardwareName'] in blocktypes['HardwareName']) {
-        html += getStatusBlock(idx, device, blocktypes['HardwareName'][device['HardwareName']]);
+        html += getStatusBlock(block, blocktypes['HardwareName'][device['HardwareName']]);
         return [html, addHTML];
     }
     if (device.SensorUnit && device['SensorUnit'] in blocktypes['SensorUnit']) {
-        html += getStatusBlock(idx, device, blocktypes['SensorUnit'][device['SensorUnit']]);
+        html += getStatusBlock(block, blocktypes['SensorUnit'][device['SensorUnit']]);
         return [html, addHTML];
     }
     if (device.Type && device['Type'] in blocktypes['Type']) {
-        html += getStatusBlock(idx, device, blocktypes['Type'][device['Type']]);
+        html += getStatusBlock(block, blocktypes['Type'][device['Type']]);
         return [html, addHTML];
     }
     if (device.Name && device['Name'] in blocktypes['Name']) {
-        html += getStatusBlock(idx, device, blocktypes['Name'][device['Name']]);
+        html += getStatusBlock(block, blocktypes['Name'][device['Name']]);
         return [html, addHTML];
     }
 
     switch (device['Type']) {
         case 'P1 Smart Meter':
-            return getSmartMeterBlock(device, idx);
+            return getSmartMeterBlock(block);
         case 'RFXMeter':
             if (device['SubType'] == 'RFXMeter counter') {
-                return getRFXMeterCounterBlock(device, idx);
+                return getRFXMeterCounterBlock(block);
             }
             break;
         case 'YouLess Meter':
-            return getYouLessBlock(device, idx);
+            return getYouLessBlock(block);
         case 'General':
             if (device['SubType'] === 'kWh') {
-                return getGeneralKwhBlock(device, idx);
+                return getGeneralKwhBlock(block);
             }
             break;
         case 'Humidity':
-            return getHumBlock(device, idx);
+            return getHumBlock(block);
         case 'Temp + Humidity + Baro':
         case 'Temp + Humidity':
         case 'Temp + Baro':
         case 'Radiator 1':
         case 'Heating':
             if (device.SubType === 'Zone') //EvoHome Zone device
-                return getEvohomeZoneBlock(device, idx);
+                return getEvohomeZoneBlock(block);
             if (device.SubType === 'Evohome') //EvoHome Controller device
-                return getEvohomeControllerBlock(device, idx);
+                return getEvohomeControllerBlock(block);
             if (device.SubType === 'Hot Water') //EvoHome Hot Water device
-                return getEvohomeHotWaterBlock(device, idx);
-            return getTempHumBarBlock(device, idx);
+                return getEvohomeHotWaterBlock(block);
+            return getTempHumBarBlock(block);
         case 'Thermostat':
-            return getThermostatBlock(device, idx);
+            return getThermostatBlock(block);
         case 'Group':
         case 'Scene':
             /*
@@ -1329,7 +1439,7 @@ function handleDevice(device, idx) {
                         html += getBlockData(device, idx, language.switches.state_on, language.switches.state_off);
                         return [html, addHTML];
             */
-            return getDefaultSwitchBlock(device, blocks[idx], idx, 'fas fa-lightbulb', 'far fa-lightbulb', buttonimg);
+            return getDefaultSwitchBlock(block, 'fas fa-lightbulb', 'far fa-lightbulb', buttonimg);
     }
 
     switch (device['HardwareType']) {
@@ -1337,31 +1447,31 @@ function handleDevice(device, idx) {
             if (device['SubType'] !== 'SetPoint' &&
                 device['SubType'] !== 'AC'
             ) {
-                return getSmartMeterBlock(device, idx);
+                return getSmartMeterBlock(block);
             }
             if (device['SubType'] === 'SetPoint') {
-                return getThermostatBlock(device, idx);
+                return getThermostatBlock(block);
             }
             break;
         case 'Logitech Media Server':
-            html = getLogitechControls(device);
+            html = getLogitechControls(block);
             $('div.block_' + idx).addClass('with_controls');
             return [html, addHTML];
     }
 
     switch (device['SwitchType']) {
         case 'Dimmer':
-            return getDimmerBlock(device, idx, buttonimg);
+            return getDimmerBlock(block, buttonimg);
         case 'Door Contact':
         case 'Contact':
-            if (device['Status'] === 'Closed') html += iconORimage(idx, 'fas fa-door-closed', '', 'off icon', '', 2);
-            else html += iconORimage(idx, 'fas fa-door-open', '', 'on icon', '', 2);
-            html += getBlockData(device, idx, language.switches.state_open, language.switches.state_closed);
+            if (device['Status'] === 'Closed') html += iconORimage(block, 'fas fa-door-closed', '', 'off icon', '', 2);
+            else html += iconORimage(block, 'fas fa-door-open', '', 'on icon', '', 2);
+            html += getBlockData(block, language.switches.state_open, language.switches.state_closed);
             return [html, addHTML];
         case 'Door Lock':
-            if (device['Status'] === 'Unlocked') html += iconORimage(idx, 'fas fa-unlock', buttonimg, 'on icon', '', 2);
-            else html += iconORimage(idx, 'fas fa-lock', buttonimg, 'off icon', '', 2);
-            html += getBlockData(device, idx, language.switches.state_unlocked, language.switches.state_locked);
+            if (device['Status'] === 'Unlocked') html += iconORimage(block, 'fas fa-unlock', buttonimg, 'on icon', '', 2);
+            else html += iconORimage(block, 'fas fa-lock', buttonimg, 'off icon', '', 2);
+            html += getBlockData(block, language.switches.state_unlocked, language.switches.state_locked);
             return [html, addHTML];
         case 'Venetian Blinds EU':
         case 'Venetian Blinds US':
@@ -1369,33 +1479,33 @@ function handleDevice(device, idx) {
         case 'Venetian Blinds US Inverted':
         case 'Blinds':
         case 'Blinds Inverted':
-            return getBlindsBlock(device, idx, false);
+            return getBlindsBlock(block, false);
         case 'Blinds Percentage':
         case 'Blinds Percentage Inverted':
         case 'Venetian Blinds EU Percentage':
         case 'Venetian Blinds EU Inverted Percentage':
         case 'Venetian Blinds EU Percentage Inverted':
-            return getBlindsBlock(device, idx, true);
+            return getBlindsBlock(block, true);
         case 'Security':
-            return getSecurityBlock(device, idx);
+            return getSecurityBlock(block);
         case 'Motion Sensor':
             html += '<div class="col-xs-4 col-icon">';
             html += '<img src="img/motion_' + getIconStatusClass(device['Status']) + '.png" class="' + getIconStatusClass(device['Status']) + ' icon" style="max-height:35px;" />';
             html += '</div>';
-            html += getBlockData(device, idx, language.switches.state_movement, language.switches.state_nomovement);
+            html += getBlockData(block, language.switches.state_movement, language.switches.state_nomovement);
             return [html, addHTML];
         case 'Smoke Detector':
-            if (device['Status'] == 'Off' || device['Status'] == 'Normal') html += iconORimage(idx, '', 'heating.png', 'off icon', 'style="max-height:35px;"');
-            else html += iconORimage(idx, '', 'heating.png', 'on icon', 'style="max-height:35px;border: 5px solid #F05F40;"');
-            html += getBlockData(device, idx, language.switches.state_smoke, language.switches.state_nosmoke);
+            if (device['Status'] == 'Off' || device['Status'] == 'Normal') html += iconORimage(block, '', 'heating.png', 'off icon', 'style="max-height:35px;"');
+            else html += iconORimage(block, '', 'heating.png', 'on icon', 'style="max-height:35px;border: 5px solid #F05F40;"');
+            html += getBlockData(block, language.switches.state_smoke, language.switches.state_nosmoke);
             return [html, addHTML];
         case 'Doorbell':
-            html += iconORimage(idx, 'fas fa-bell', buttonimg, getIconStatusClass(device['Status']) + ' icon');
-            html += getBlockData(device, idx, '', '');
+            html += iconORimage(block, 'fas fa-bell', buttonimg, getIconStatusClass(device['Status']) + ' icon');
+            html += getBlockData(block, '', '');
             return [html, addHTML];
         case 'Media Player':
-            if (device['HardwareType'] == 'Kodi Media Server') html += iconORimage(idx, '', 'kodi.png', 'on icon', '', 2);
-            else html += iconORimage(idx, 'fas fa-film', '', 'on icon', '', 2);
+            if (device['HardwareType'] == 'Kodi Media Server') html += iconORimage(block, '', 'kodi.png', 'on icon', '', 2);
+            else html += iconORimage(block, 'fas fa-film', '', 'on icon', '', 2);
             html += '<div class="col-xs-10 col-data">';
             html += '<strong class="title">' + device['Name'] + '</strong><br />';
             if (device['Data'] === '') {
@@ -1413,8 +1523,8 @@ function handleDevice(device, idx) {
         if (levelNamesEncoded === true) names = b64_to_utf8(device['LevelNames']).split('|');
         else names = device['LevelNames'].split('|');
 
-        if (device['Status'] === 'Off') html += iconORimage(idx, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon');
-        else html += iconORimage(idx, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon');
+        if (device['Status'] === 'Off') html += iconORimage(block, 'far fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon');
+        else html += iconORimage(block, 'fas fa-lightbulb', buttonimg, getIconStatusClass(device['Status']) + ' icon');
 
         if ((typeof (device['SelectorStyle']) !== 'undefined' && device['SelectorStyle'] == 1)) {
             html += '<div class="col-xs-8 col-data">';
@@ -1450,68 +1560,68 @@ function handleDevice(device, idx) {
         }
 
     } else if (device['SubType'] == 'Custom Sensor') {
-        this.icon = 'fas fa-question';
-        if (device['Image'] === 'Water') this.icon = 'fas fa-tint';
-        else if (device['Image'] === 'Heating') this.icon = 'fas fa-utensils';
+        var defaultIcon = 'fas fa-question';
+        if (device['Image'] === 'Water') defaultIcon = 'fas fa-tint';
+        else if (device['Image'] === 'Heating') defaultIcon = 'fas fa-utensils';
 
-        html += iconORimage(idx, this.icon, '', 'on icon');
+        html += iconORimage(block, defaultIcon, '', 'on icon'); 
         html += '<div class="col-xs-8 col-data">';
-        this.title = device['Name'];
-        this.value = device['Data'];
-        if (titleAndValueSwitch(idx)) {
-            this.title = device['Data'];
-            this.value = device['Name'];
+        var title = device['Name'];
+        var value = device['Data'];
+        if (titleAndValueSwitch(block)) {
+            title = device['Data'];
+            value = device['Name'];
         }
-        html += '<strong class="title">' + this.title + '</strong><br />';
-        html += '<span class="state">' + this.value + '</span>';
+        html += '<strong class="title">' + title + '</strong><br />';
+        html += '<span class="state">' + value + '</span>';
 
-        if (showUpdateInformation(idx)) {
-            html += '<br /><span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
+        if (showUpdateInformation(block)) {
+            html += '<br /><span class="lastupdate">' + moment(block.device['LastUpdate']).format(settings['timeformat']) + '</span>';
         }
         html += '</div>';
     } else if (device['HardwareName'] === 'Dummy') {
-        return getDefaultSwitchBlock(device, blocks[idx], idx, 'fas fa-toggle-on', 'fas fa-toggle-off', buttonimg);
+        return getDefaultSwitchBlock(block, 'fas fa-toggle-on', 'fas fa-toggle-off', buttonimg);
     } else {
-        return getDefaultSwitchBlock(device, blocks[idx], idx, 'fas fa-lightbulb', 'far fa-lightbulb', buttonimg);
+        return getDefaultSwitchBlock(block, 'fas fa-lightbulb', 'far fa-lightbulb', buttonimg);
     }
 
     return [html, addHTML];
 }
 
 
-function getLogitechControls(device) {
-    this.html = '';
-    this.html += iconORimage(device['idx'], 'fas fa-music', '', 'on icon', '', 2);
-    this.html += '<div class="col-xs-10 col-data">';
-    this.html += '<strong class="title">' + device['Name'] + '</strong><br />';
-    this.html += '<span class="h4">' + device['Data'] + '</span>';
-    this.html += '<div>';
-    this.html += '<a href="javascript:controlLogitech(' + device['idx'] + ',\'Rewind\');"><em class="fas fa-arrow-circle-left fa-small"></em></a> ';
-    this.html += '<a href="javascript:controlLogitech(' + device['idx'] + ',\'Stop\');"><em class="fas fa-stop-circle fa-small"></em></a> ';
+function getLogitechControls(block) {
+    var device = block.device;
+    var html = '';
+    html += iconORimage(block, 'fas fa-music', '', 'on icon', '', 2);
+    html += '<div class="col-xs-10 col-data">';
+    html += '<strong class="title">' + device['Name'] + '</strong><br />';
+    html += '<span class="h4">' + device['Data'] + '</span>';
+    html += '<div>';
+    html += '<a href="javascript:controlLogitech(' + device['idx'] + ',\'Rewind\');"><em class="fas fa-arrow-circle-left fa-small"></em></a> ';
+    html += '<a href="javascript:controlLogitech(' + device['idx'] + ',\'Stop\');"><em class="fas fa-stop-circle fa-small"></em></a> ';
     if (device['Status'] === 'Playing') {
-        this.html += '<a href="javascript:controlLogitech(' + device['idx'] + ',\'Pause\');"><em class="fas fa-pause-circle fa-small"></em></a> ';
+        html += '<a href="javascript:controlLogitech(' + device['idx'] + ',\'Pause\');"><em class="fas fa-pause-circle fa-small"></em></a> ';
     } else {
-        this.html += '<a href="javascript:controlLogitech(' + device['idx'] + ',\'Play\');"><em class="fas fa-play-circle fa-small"></em></a> ';
+        html += '<a href="javascript:controlLogitech(' + device['idx'] + ',\'Play\');"><em class="fas fa-play-circle fa-small"></em></a> ';
     }
-    this.html += '<a href="javascript:controlLogitech(' + device['idx'] + ',\'Forward\');"><em class="fas fa-arrow-circle-right fa-small"></em></a>';
-    this.html += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
-    this.html += '<a href="javascript:controlLogitech(' + device['idx'] + ',\'VolumeDown\');"><em class="fas fa-minus-circle fa-small"></em></a>';
-    this.html += '&nbsp;';
-    this.html += '<a href="javascript:controlLogitech(' + device['idx'] + ',\'VolumeUp\');"><em class="fas fa-plus-circle fa-small"></em></a>';
-    this.html += '</div>';
-    this.html += '</div>';
+    html += '<a href="javascript:controlLogitech(' + device['idx'] + ',\'Forward\');"><em class="fas fa-arrow-circle-right fa-small"></em></a>';
+    html += '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;';
+    html += '<a href="javascript:controlLogitech(' + device['idx'] + ',\'VolumeDown\');"><em class="fas fa-minus-circle fa-small"></em></a>';
+    html += '&nbsp;';
+    html += '<a href="javascript:controlLogitech(' + device['idx'] + ',\'VolumeUp\');"><em class="fas fa-plus-circle fa-small"></em></a>';
+    html += '</div>';
+    html += '</div>';
 
-    return this.html;
+    return html;
 }
 
-function getSmartMeterBlock(device, idx) {
+function getSmartMeterBlock(block) {
+    var device=block.device;
+    var idx=device.idx;
     if (device['SubType'] === 'Energy') {
-        if ($('div.block_' + idx).length > 0) {
-            allblocks[idx] = true;
-        }
-        this.usage = device['Usage'];
+        var usage = device['Usage'];
         if (typeof (device['UsageDeliv']) !== 'undefined' && (parseFloat(device['UsageDeliv']) > 0 || parseFloat(device['UsageDeliv']) < 0)) {
-            this.usage = device['UsageDeliv'];
+            usage = device['UsageDeliv'];
         }
 
         var data = device['Data'].split(';');
@@ -1519,7 +1629,7 @@ function getSmartMeterBlock(device, idx) {
                 icon: 'fas fa-plug',
                 idx: idx + '_1',
                 title: language.energy.energy_usage,
-                value: this.usage,
+                value: usage,
                 unit: ''
             },
             {
@@ -1582,13 +1692,10 @@ function getSmartMeterBlock(device, idx) {
                 unit: settings['units'].names.kwh
             });
         }
-        createBlocks(blockValues, device);
+        createBlocks(block, blockValues);
         return ['', false];
     }
     if (device['SubType'] === 'Gas') {
-        if ($('div.block_' + idx).length > 0) {
-            allblocks[idx] = true;
-        }
         var myblockValues = [{
                 icon: 'fas fa-fire',
                 idx: idx + '_1',
@@ -1604,16 +1711,15 @@ function getSmartMeterBlock(device, idx) {
                 unit: 'm3'
             }
         ];
-        createBlocks(myblockValues, device);
+        createBlocks(block, myblockValues);
         return ['', false];
     }
     return ['', false];
 }
 
-function getRFXMeterCounterBlock(device, idx) {
-    if ($('div.block_' + idx).length > 0) {
-        allblocks[idx] = true;
-    }
+function getRFXMeterCounterBlock(block) {
+    var device=block.device;
+    var idx=device.idx;
     var unit = '';
     var decimals = 2;
     var icon = 'fas fa-fire';
@@ -1678,15 +1784,15 @@ function getRFXMeterCounterBlock(device, idx) {
             unit: unit
         })
     }
-    createBlocks(blockValues, device);
+    createBlocks(block, blockValues);
     return ['', false];
 }
 
-function getYouLessBlock(device, idx) {
+function getYouLessBlock(block) {
+    var device=block.device;
+    var idx=device.idx;
+
     this.html = '';
-    if ($('div.block_' + idx).length > 0) {
-        allblocks[idx] = true;
-    }
     var blockValues = [{
             icon: 'fas fa-fire',
             idx: idx + '_1',
@@ -1711,20 +1817,44 @@ function getYouLessBlock(device, idx) {
             unit: settings['units'].names.watt
         })
     }
-    createBlocks(blockValues, device);
+    createBlocks(block, blockValues);
     return ['', false];
 }
 
-function createBlocks(blockValues, device) {
+function createBlocks(blockParent, blockValues) {
+    //I assume this function gets called once per block
+    //That means we first have to remove the previous content
+   // console.log('createBlocks for '+blockParent.idx);
+
+    var device=blockParent.device;
+    var $div=blockParent.$mountPoint;
+    $div.html('') //it would be better for performance to add all changes at once.
+    
     blockValues.forEach(function (blockValue, index) {
+        if(blockParent.subidx && blockParent.idx !== blockValue.idx) return;
+      //  console.log("createBlocks id: ", blockValue.idx)
+        var block={};
+        $.extend(block, blockValue)  //create a block from the prototype
+        $.extend(block, blockParent);
+        $.extend(block, blocks[blockValue.idx]);
+        block.idx = blockValue.idx;
+        var html = '<div class="mh transbg block_'+blockValue.idx+' col-xs-' + block.width+'"/>';
+        $div.append(html);
+        block.mountPoint=blockParent.mountPoint; // +' .block_'+blockValue.idx;
+        block.$mountPoint = $(block.mountPoint);
+//        block.subidx = index;
+//        block.blockdef=blocks[blockValue.idx]; //store a reference of the parent blockdef ? should be in parent already ...
+//        $.extend(block, block.blockdef); //merge all fields
 
-        if (typeof (blocks[blockValue.idx]) !== 'undefined' && typeof (blocks[blockValue.idx]['icon']) !== 'undefined') blockValue.icon = blocks[blockValue.idx]['icon'];
+        triggerStatus(block.idx, device['LastUpdate'], device);
+        triggerChange(block.idx, device['LastUpdate'], device);
 
-        triggerStatus(blockValue.idx, device['LastUpdate'], device);
-        triggerChange(blockValue.idx, device['LastUpdate'], device);
+        block.valueunit=block.value+' '+block.unit;
+        block.device=device;
 
-        if (typeof (blocks[blockValue.idx]) !== 'undefined' && typeof (blocks[blockValue.idx]['title']) !== 'undefined') blockValue.title = blocks[blockValue.idx]['title'];
-        this.html = getStateBlock(blockValue.idx, blockValue.icon, blockValue.title, blockValue.value + ' ' + blockValue.unit, device);
+        html = getStateBlock(block);
+/*
+        //todo: check next few lines;
         if (!index) {
             if (!$('div.block_' + device['idx']).hasClass('block_' + blockValue.idx)) $('div.block_' + device['idx']).addClass('block_' + blockValue.idx);
         } else {
@@ -1741,15 +1871,16 @@ function createBlocks(blockValues, device) {
                 newblock.addClass('block_' + blockValue.idx).insertAfter($('div.block_' + device['idx']).last());
             }
         }
-        $('div.block_' + blockValue.idx).html(this.html);
+        $('div.block_' + block.idx).html(html);*/
+        block.$mountPoint.find('.block_'+block.idx).html(html);
+        //todo: Do we have to store block in mountedBlocks?
     });
 }
 
-function getGeneralKwhBlock(device, idx) {
+function getGeneralKwhBlock(block) {
+    var device=block.device;
+    var idx=device.idx;
     this.html = '';
-    if ($('div.block_' + idx).length > 0) {
-        allblocks[idx] = true;
-    }
     var blockValues = [{
             icon: 'fas fa-fire',
             idx: idx + '_1',
@@ -1772,11 +1903,13 @@ function getGeneralKwhBlock(device, idx) {
             unit: settings['units'].names.kwh
         }
     ];
-    createBlocks(blockValues, device);
+    createBlocks(block, blockValues);
     return ['', false];
 }
 
-function getHumBlock(device, idx) {
+function getHumBlock(block) {
+    var device=block.device;
+    var idx=device.idx;
     this.html = '';
     var blockValues = [{
         icon: 'wi wi-humidity',
@@ -1785,15 +1918,14 @@ function getHumBlock(device, idx) {
         value: number_format(device['Humidity'], 0),
         unit: '%'
     }, ];
-    createBlocks(blockValues, device);
+    createBlocks(block, blockValues);
     return ['', false];
 }
 
-function getTempHumBarBlock(device, idx) {
+function getTempHumBarBlock(block) {
+    var device=block.device;
+    var idx=device.idx;
     this.html = '';
-    if ($('div.block_' + idx).length > 0) {
-        allblocks[idx] = true;
-    }
     var single_block = (typeof (blocks[idx]) !== 'undefined' &&
         typeof (blocks[idx]['single_block']) !== 'undefined' &&
         blocks[idx]['single_block']
@@ -1834,7 +1966,7 @@ function getTempHumBarBlock(device, idx) {
         }
     }
 
-    createBlocks(blockValues, device);
+    createBlocks(block, blockValues);
     return ['', false];
 }
 
@@ -2043,10 +2175,11 @@ function showMap(mapid, map) {
     transitLayer.setMap(map);
 }
 
-function getSecurityBlock(device, idx) {
+function getSecurityBlock(block) { //todo: rewrite
+    var device=block.device;
     var html = '';
-    if (device['Status'] === 'Normal') html += iconORimage(idx, 'fas fa-shield-alt', '', 'off icon', '', 2);
-    else html += iconORimage(idx, 'fas fa-shield-alt', '', 'on icon', '', 2);
+    if (device['Status'] === 'Normal') html += iconORimage(block, 'fas fa-shield-alt', '', 'off icon', '', 2);
+    else html += iconORimage(block, 'fas fa-shield-alt', '', 'on icon', '', 2);
 
     var secPanelicons = (settings['security_button_icons'] === true || settings['security_button_icons'] === 1 || settings['security_button_icons'] === '1') ? true : false;
     var da = 'default';

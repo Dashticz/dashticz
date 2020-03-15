@@ -10,16 +10,15 @@
 /* global Domoticz */
 /* from dashticz.js*/
 /* global Dashticz */
-/* via main.js */
-/* global blocks */
 
 // eslint-disable-next-line no-unused-vars
-function addThermostatFunctions(thermelement) {
-    $(document).on("click", (thermelement + ' .btn-number'), function () {
+function addThermostatFunctions(block, thermelement) {
+    var $el= block.$mountPoint.find('.block_'+thermelement);
+    $el.find('.btn-number').on("click", function () {
         //sliding = true;  //not needed here I guess, since update is blocked in switchThermostat function  (called below)
         //        var fieldName = $(this).attr('data-field');
         var type = $(this).attr('data-type');
-        var input = $(thermelement + " strong");
+        var input = $el.find("strong");
         var currentVal = input.text().split('°');
         currentVal = parseFloat(currentVal[0].replace(',', '.'));
         if (!isNaN(currentVal)) {
@@ -28,7 +27,7 @@ function addThermostatFunctions(thermelement) {
                 newValue <= input.attr('max')
             ) {
                 input.text(number_format(newValue, 1) + _TEMP_SYMBOL).trigger("change");
-                switchThermostat(newValue, input);
+                switchThermostat(block, newValue);
             }
             if (newValue <= input.attr('min')) {
                 $(this).attr('disabled', true);
@@ -41,91 +40,92 @@ function addThermostatFunctions(thermelement) {
         }
     });
 
-    $(thermelement + ' .input-number').on('focusin', function () {
+    $el.find('.input-number').on('focusin', function () {
         $(this).data('oldValue', $(this).text());
     });
 
-    $(thermelement + ' .input-number').on('change', function () {
+    $el.find('.input-number').on('change', function () {
         var minValue = parseFloat($(this).attr('min'));
         var maxValue = parseFloat($(this).attr('max'));
         var valueCurrent = parseFloat($(this).text());
 
         //        var name = $(this).attr('name');
         if (valueCurrent >= minValue) {
-            $(thermelement + " .btn-number[data-type='minus']").removeAttr('disabled')
+            $el.find(".btn-number[data-type='minus']").removeAttr('disabled')
         } else {
             $(this).val($(this).data('oldValue'));
         }
         if (valueCurrent <= maxValue) {
-            $(thermelement + " .btn-number[data-type='plus']").removeAttr('disabled')
+            $el.find(".btn-number[data-type='plus']").removeAttr('disabled')
         } else {
             $(this).val($(this).data('oldValue'));
         }
     });
 }
-var addedThermostat = [];
+//var addedThermostat = [];
 
 // eslint-disable-next-line no-unused-vars
-function getThermostatBlock(device, idx) {
-    this.html = '';
-    this.html += iconORimage(idx + '_1', '', 'heating.png', 'on icon', 'style="max-height:35px;"');
-    this.html += '<div class="col-xs-8 col-data">';
+function getThermostatBlock(block) {
+    var device=block.device;
+    var idx=block.idx;
+    var html = '';
+    html += iconORimage(idx + '_1', '', 'heating.png', 'on icon', 'style="max-height:35px;"');
+    html += '<div class="col-xs-8 col-data">';
 
-    this.title = device['Data'] + _TEMP_SYMBOL;
-    this.value = device['Name'];
+    var title = device['Data'] + _TEMP_SYMBOL;
+    var value = device['Name'];
     if (titleAndValueSwitch(idx + '_1')) {
-        this.title = device['Name'];
-        this.value = device['Data'] + _TEMP_SYMBOL;
+        title = device['Name'];
+        value = device['Data'] + _TEMP_SYMBOL;
     }
-    this.html += '<strong class="title">' + this.title + '</strong><br />';
-    this.html += '<span class="state">' + this.value + '</span>';
+    html += '<strong class="title">' + title + '</strong><br />';
+    html += '<span class="state">' + value + '</span>';
     if (showUpdateInformation(idx)) {
-        this.html += '<br /><span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
+        html += '<br /><span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
     }
-    this.html += '</div>';
+    html += '</div>';
 
-    $('div.block_' + idx + '_1').html(this.html);
+    block.$mountPoint.find('.block_' + idx + '_1').html(html); //This sets the block_<idx>_1 content, only if this block is defined in the DOM!
 
-    this.html = '';
-    this.html += '<div class="col-button1">';
-    this.html += '<div class="up"><a href="javascript:void(0)" class="btn btn-number plus" data-type="plus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
-    this.html += '<em class="fas fa-plus fa-small fa-thermostat"></em>';
-    this.html += '</a></div>';
-    this.html += '<div class="down"><a href="javascript:void(0)" class="btn btn-number min" data-type="minus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
-    this.html += '<em class="fas fa-minus fa-small fa-thermostat"></em>';
-    this.html += '</a></div>';
-    this.html += '</div>';
+    html = '';
+    html += '<div class="col-button1">';
+    html += '<div class="up"><a href="javascript:void(0)" class="btn btn-number plus" data-type="plus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
+    html += '<em class="fas fa-plus fa-small fa-thermostat"></em>';
+    html += '</a></div>';
+    html += '<div class="down"><a href="javascript:void(0)" class="btn btn-number min" data-type="minus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
+    html += '<em class="fas fa-minus fa-small fa-thermostat"></em>';
+    html += '</a></div>';
+    html += '</div>';
 
-    this.html += iconORimage(idx + '_2', '', 'heating.png', 'on icon iconheating', '', '2');
-    this.html += '<div class="col-xs-8 col-data right1col">';
+    html += iconORimage(idx + '_2', '', 'heating.png', 'on icon iconheating', '', '2');
+    html += '<div class="col-xs-8 col-data right1col">';
 
-    this.title = number_format(device['Data'], 1) + _TEMP_SYMBOL;
-    this.value = device['Name'];
+    title = number_format(device['Data'], 1) + _TEMP_SYMBOL;
+    value = device['Name'];
     if (titleAndValueSwitch(idx) || titleAndValueSwitch(idx + '_2')) {
-        this.title = device['Name'];
-        this.value = number_format(device['Data'], 1) + _TEMP_SYMBOL;
+        title = device['Name'];
+        value = number_format(device['Data'], 1) + _TEMP_SYMBOL;
     }
-    this.html += '<strong class="title input-number" min="' + settings['setpoint_min'] + '" max="' + settings['setpoint_max'] + '" data-light="' + device['idx'] + '">' + this.title + '</strong>';
-    this.html += '<div class="state stateheating">' + this.value + '</div>';
-    this.html += '</div>';
+    html += '<strong class="title input-number" min="' + settings['setpoint_min'] + '" max="' + settings['setpoint_max'] + '" data-light="' + device['idx'] + '">' + title + '</strong>';
+    html += '<div class="state stateheating">' + value + '</div>';
+    html += '</div>';
 
-    $('div.block_' + idx + '_2').html(this.html);
-    $('div.block_' + idx).html(this.html);
+    block.$mountPoint.find('.block_' + idx + '_2').html(html);
+    block.$mountPoint.find('.block_' + idx).html(html);
 
-    if (typeof (addedThermostat[idx]) === 'undefined') {
-        addThermostatFunctions('.block_' + idx);
-        addedThermostat[idx] = true;
-    }
-    if (typeof (addedThermostat[idx + '_2']) === 'undefined') {
-        addThermostatFunctions('.block_' + idx + '_2');
-        addedThermostat[idx + '_2'] = true;
-    }
-    return [this.html, false];
+    addThermostatFunctions(block, idx);
+//        addedThermostat[idx] = true;
+//    }
+//    if (typeof (addedThermostat[idx + '_2']) === 'undefined') {
+        addThermostatFunctions(block, idx + '_2');
+//        addedThermostat[idx + '_2'] = true;
+//    }
+    return [html, false];
 }
 
-function switchThermostat(setpoint, cur) {
+function switchThermostat(block, setpoint) { //todo
     //    sliding = true;
-    var idx = $(cur).data('light');
+    var idx = block.idx;
     /*
         sliding = idx;
         if (typeof (req) !== 'undefined') req.abort();
@@ -140,14 +140,16 @@ function switchThermostat(setpoint, cur) {
                 Domoticz.release(idx); //release message queue
             }
         });*/
-    var hasPassword = blocks[idx] && blocks[idx].password;
+    var hasPassword = block.password;
     if (!Dashticz.promptPassword(hasPassword)) return;
 
     Domoticz.syncRequest(idx, 'type=command&param=setsetpoint&idx=' + idx + '&setpoint=' + setpoint)
 }
 
 
-function getEvohomeZoneBlock(device, idx) {
+function getEvohomeZoneBlock(block) {
+    var device=block.device;
+    var idx = block.idx;
     var temp = device.Temp;
     var setpoint = device.SetPoint;
     var status = device.Status;
@@ -189,27 +191,29 @@ function getEvohomeZoneBlock(device, idx) {
     html += '	<span class="lastupdate">' + untilOrLastUpdate + '</span>';
     html += '</div>';
 
-    $('div.block_' + idx).html(html);
+    block.$mountPoint.find('.mh').html(html);
 
-    if (typeof (addedThermostat[idx]) === 'undefined') {
-        addEvohomeZoneFunctions('.block_' + idx, idx);
-        addedThermostat[idx] = true;
-    }
+ //   if (typeof (addedThermostat[idx]) === 'undefined') {
+        addEvohomeZoneFunctions(block);
+//        addedThermostat[idx] = true;
+//    }
     return [html, false];
 }
 
-function addEvohomeZoneFunctions(thermelement, idx) {
+function addEvohomeZoneFunctions(block) { //todo
 
     var clickTimeout;
+    var idx=block.idx;
+    var $div=block.$mountPoint.find('.mh');
 
-    $(document).on("click", (thermelement + ' .btn-number'), function () {
+    $div.find('.btn-number').on("click", function () {
 
         clearTimeout(clickTimeout);
         Domoticz.hold(idx); //hold message queue
         //sliding = true;
         var type = $(this).attr('data-type');
         var currentVal = $(this).parents('.col-button1').data('setpoint');
-        var input = $(thermelement + " .setpoint");
+        var input = $div.find(".setpoint");
         var valid = false;
         if (!isNaN(currentVal)) {
 
@@ -232,7 +236,7 @@ function addEvohomeZoneFunctions(thermelement, idx) {
             clickTimeout = setTimeout(function () {
                 if (valid) {
                     //console.log(newValue + _TEMP_SYMBOL);
-                    switchEvoZone(idx, newValue, true);
+                    switchEvoZone(block, newValue, true);
                     // sliding = false;
                 }
                 Domoticz.release(idx); //release message queue
@@ -242,46 +246,41 @@ function addEvohomeZoneFunctions(thermelement, idx) {
         }
     });
 
-    $(document).on("mouseenter", (thermelement + ' .btn-number'), function () {
+    $div.find('.btn-number').on("mouseenter", function () {
         //Domoticz.hold(idx); //hold message queue
         //sliding = true;
     });
 
-    $(document).on("mouseleave", (thermelement + ' .btn-number'), function () {
-        //sliding = false;
-        //Domoticz.release(idx); //release message queue
-    });
-
-    $(thermelement + ' .input-number').on('focusin', function () {
+    $div.find('.input-number').on('focusin', function () {
         $(this).data('oldValue', $(this).text());
-    });
-
-    $(thermelement + ' .input-number').on('change', function () {
+    })
+    .on('change', function () {
         var minValue = parseFloat($(this).attr('min'));
         var maxValue = parseFloat($(this).attr('max'));
         var valueCurrent = parseFloat($(this).text());
 
         if (valueCurrent >= minValue) {
-            $(thermelement + " .btn-number[data-type='minus']").removeAttr('disabled')
+            $div.find(".btn-number[data-type='minus']").removeAttr('disabled')
         } else {
             $(this).val($(this).data('oldValue'));
         }
         if (valueCurrent <= maxValue) {
-            $(thermelement + " .btn-number[data-type='plus']").removeAttr('disabled')
+            $div.find(".btn-number[data-type='plus']").removeAttr('disabled')
         } else {
             $(this).val($(this).data('oldValue'));
         }
     });
-    $(document).on("click", (thermelement + ' .setpoint'), function () {
+    $div.find('.setpoint').on("click", function () {
         if ($(this).attr('data-status') == 'TemporaryOverride') {
-            switchEvoZone(idx, $(this).attr('data-setpoint'), false);
+            switchEvoZone(block, $(this).attr('data-setpoint'), false);
         }
     });
 }
 
-function switchEvoZone(idx, setpoint, override) {
+function switchEvoZone(block, setpoint, override) { //todo
 
     var mode = override ? '&mode=TemporaryOverride&until=' + moment().add(settings['evohome_boost_zone'], 'minutes').toISOString() : '&mode=Auto';
+    var idx=block.idx;
     /*
         //sliding = idx;
         Domoticz.hold(idx); //hold message queue
@@ -299,22 +298,23 @@ function switchEvoZone(idx, setpoint, override) {
             }
         });
         */
-    var hasPassword = blocks[idx] && blocks[idx].password;
+    var hasPassword = block.password;
     if (!Dashticz.promptPassword(hasPassword)) {
-        var device = Domoticz.getAllDevices()[idx];
-        getEvohomeZoneBlock(device, idx);
+        getEvohomeZoneBlock(block);
         return;
     }
 
     Domoticz.syncRequest(idx, 'type=setused&idx=' + idx + '&setpoint=' + setpoint + mode + '&used=true', true)
         .then(function () {
-            var device = Domoticz.getAllDevices()[idx];
-            device.SetPoint = setpoint;
-            getEvohomeZoneBlock(device, idx);
+            block.device.SetPoint = setpoint;
+            getEvohomeZoneBlock(block);
         })
 }
 
-function getEvohomeControllerBlock(device, idx) {
+function getEvohomeControllerBlock(block) {
+    var device=block.device;
+    var idx=block.idx;
+    var $div=block.$mountPoint.find('.block_'+idx);
 
     var evoOptions = {
         "Auto": "Auto",
@@ -358,99 +358,83 @@ function getEvohomeControllerBlock(device, idx) {
     html += '	<span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
     html += '</div>';
 
-    $('div.block_' + idx).html(html);
+    $div.html(html);
     $.each(evoOptions, function (val, text) {
-        $('.block_' + idx + ' .evoSelect').append(
+        $div.find('.evoSelect').append(
             $('<option></option>').val(val).html(text)
         );
     });
-    $('.block_' + idx + ' .evoSelect').blur(function () {
+    $div.find('.evoSelect').blur(function () {
         //sliding = false;
         Domoticz.release(idx); //release message queue
-        $('.block_' + idx + ' title').toggleClass('hide');
-        $('.evoSelect').toggleClass('hide');
+        $div.find('.title').toggleClass('hide');
+        $div.find('.evoSelect').toggleClass('hide');
     });
-    $('.block_' + idx + ' .evoSelect').on('change', function () {
-        var newValue = this.value;
-        var newTitle = $("#evoSelect option:selected").text(); //bug? newTitle never used
-        changeEvohomeControllerStatus(idx, newValue);
-        $('.block_' + idx + ' input-status').text(newValue);
-        $('.block_' + idx + ' input-status').toggleClass('hide');
-        $('.evoSelect').toggleClass('hide');
+    $div.find('.evoSelect').on('change', function () {
+        var newValue = $(this).val();
+        changeEvohomeControllerStatus(block, newValue);
+        $div.find('.input-status')
+        .text(newValue) //todo: check: do we need a . before input-status?
+        .toggleClass('hide');
+        $div.find('.evoSelect').toggleClass('hide');
     })
 
-    if (typeof (addedThermostat[idx]) === 'undefined') {
-        addEvohomeControllerFunctions('.block_' + idx, idx);
-        addedThermostat[idx] = true;
-    }
+    addEvohomeControllerFunctions(block);
     return [html, false];
 }
 
-function addEvohomeControllerFunctions(thermelement, idx) {
-    $(document).on("click", (thermelement + ' .btn-number'), function () {
-        Domoticz.hold(idx); //hold message queue
+function addEvohomeControllerFunctions(block) { //todo
+    var idx=block.idx;
+    var $div=block.$mountPoint.find('.mh');
+    $div.find('.btn-number').on("click", function () {
+        //Domoticz.hold(idx); //hold message queue // todo: temp disabled
         //sliding = idx;
-        $('.evoSelect').toggleClass('hide');
-        $(thermelement + ' .input-status').toggleClass('hide');
+        $div.find('.evoSelect').toggleClass('hide');
+        $div.find('.input-status').toggleClass('hide');
     });
-    $(thermelement + ' .input-status').on('focusin', function () {
+    $div.find('.input-status').on('focusin', function () {
         $(this).data('oldValue', $(this).text());
     });
 
-    $(thermelement + ' .input-status').on('change', function () {
+    $div.find('.input-status').on('change', function () {
         var status = $(this).attr('status');
         var valueCurrent = $(this).text();
 
         if (valueCurrent != status) {
-            $(thermelement + " .btn-number[data-type='status']").removeAttr('disabled')
+            $div.find(".btn-number[data-type='status']").removeAttr('disabled')
         } else {
             $(this).val($(this).data('oldValue'));
         }
     });
 }
 
-function changeEvohomeControllerStatus(idx, status) {
-    /*
-        Domoticz.hold(idx); //hold message queue
-        //sliding = idx;
-
-        $.ajax({
-            url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=switchmodal&idx=' + idx + '&status=' + status + '&action=1&used=true&jsoncallback=?',
-            type: 'GET',
-            contentType: 'application/json',
-            dataType: 'jsonp',
-            success: function () {
-                //sliding = false;
-                Domoticz.release(idx); //release message queue
-                var device = Domoticz.getAllDevices()[idx];
-                device.Status = status;
-                getEvohomeControllerBlock(device, idx);
-            }
-        });
-    */
-    var hasPassword = blocks[idx] && blocks[idx].password;
+function changeEvohomeControllerStatus(block, status) {
+    var idx=block.idx;
+    var hasPassword = block.password;
     if (!Dashticz.promptPassword(hasPassword)) {
-        var device = Domoticz.getAllDevices()[idx];
-        getEvohomeControllerBlock(device, idx);
+        getEvohomeControllerBlock(block);
         return;
     }
 
     Domoticz.syncRequest(idx, 'type=command&param=switchmodal&idx=' + idx + '&status=' + status + '&action=1&used=true', true)
         .then(function () {
-            var device = Domoticz.getAllDevices()[idx];
-            device.Status = status;
-            getEvohomeControllerBlock(device, idx);
+//            var device = Domoticz.getAllDevices()[idx];
+            block.device.Status=status;
+//            device.Status = status;
+            getEvohomeControllerBlock(block);
         })
 }
 
-function getEvohomeHotWaterBlock(device, idx) {
+function getEvohomeHotWaterBlock(block) {
+    var device=block.device;
+    var idx=block.idx;
     var temp = device.Temp + _TEMP_SYMBOL;
     var state = device.State;
     var status = device.Status;
     var name = device['Name'];
     if (titleAndValueSwitch(idx)) {
         var tmp = temp
-        temp = value; //bug: value is not defined
+        temp = name; 
         name = tmp;
     }
 
@@ -477,22 +461,24 @@ function getEvohomeHotWaterBlock(device, idx) {
     html += '	<span class="lastupdate">' + untilOrLastUpdate + '</span>';
     html += '</div>';
 
-    $('div.block_' + idx).html(html);
+    var $div=block.$mountPoint.find('.mh');
+    $div.html(html);
 
-    if (typeof (addedThermostat[idx]) === 'undefined') {
-        $(document).on("click", ('.block_' + idx + ' .btn-number'), function () {
+//    if (typeof (addedThermostat[idx]) === 'undefined') {
+        $div.find('.btn-number').on("click", function () {
             //sliding = idx;
             Domoticz.hold(idx); //hold message queue
             state = (state == 'Off') ? 'On' : 'Off';
-            switchEvoHotWater(idx, state, state == 'On');
+            switchEvoHotWater(block, state, state == 'On');
         });
-        addedThermostat[idx] = true;
-    }
+//        addedThermostat[idx] = true;
+//    }
     return [html, false];
 }
 
-function switchEvoHotWater(idx, state, override) {
+function switchEvoHotWater(block, state, override) {
 
+    var idx=block.idx;
     var mode = override ? '&mode=TemporaryOverride&until=' + moment().add(settings['evohome_boost_hw'], 'minutes').toISOString() : '&mode=Auto';
     /*    Domoticz.hold(idx); //hold message queue
         //sliding = idx;
@@ -508,16 +494,16 @@ function switchEvoHotWater(idx, state, override) {
                 getEvohomeHotWaterBlock(Domoticz.getAllDevices()[idx], idx);
             }
         });*/
-    var hasPassword = blocks[idx] && blocks[idx].password;
+    var hasPassword = block.password;
     if (!Dashticz.promptPassword(hasPassword)) {
-        getEvohomeHotWaterBlock(Domoticz.getAllDevices()[idx], idx);
+        getEvohomeHotWaterBlock(block);
         return;
     }
 
     
     Domoticz.syncRequest(idx, 'type=setused&idx=' + idx + '&setpoint=60&state=' + state + mode + '&used=true', true)
         .then(function () {
-            getEvohomeHotWaterBlock(Domoticz.getAllDevices()[idx], idx);
+            getEvohomeHotWaterBlock(block);
         })
 }
 
