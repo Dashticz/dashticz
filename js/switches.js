@@ -1,4 +1,4 @@
-/* global alldevices showUpdateInformation triggerChange settings usrEnc pwdEnc getDevices language infoMessage iconORimage getBlockData blocks */
+/* global showUpdateInformation settings usrEnc pwdEnc getDevices language infoMessage iconORimage getBlockData blocks */
 /* global moment Cookies hexToHsb*/
 /* from main.js */
 // eslint-disable-next-line no-unused-vars
@@ -180,22 +180,9 @@ function switchBlinds(block, action) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function switchScene(block) { //todo. function not used anymore?
-    var idx = block.idx;
-    var hasPassword = blocks.password;
-    if(!Dashticz.promptPassword(hasPassword)) return;    
-    var doStatus = 'On'; // toggleItem(cur, $(cur).find('img.icon').hasClass('on') ? 'on' : 'off');
-    triggerChange(block, doStatus, alldevices[idx]); //todo
-    Domoticz.request('type=command&param=switchscene&idx=' + idx.replace('s', '') + '&switchcmd=' + doStatus + '&level=0')
-        .then(function () {
-            getDevices(true);
-        })
-}
-
-// eslint-disable-next-line no-unused-vars
 function slideDevice(block, status) {
     //    if (typeof (slide) !== 'undefined') slide.abort();
-    var $div=block.$mountPoint; //todo: assign blockdiv
+    var $div=block.$mountPoint; 
 
     $div.find('.icon').removeClass('off');
     $div.find('.icon').addClass('on');
@@ -310,7 +297,7 @@ function switchSecurity(level, pincode) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function getDimmerBlock(block, buttonimg) { //todo: function
+function getDimmerBlock(block, buttonimg) { 
     var device=block.device;
     var idx=block.idx;
     var $div=block.$mountPoint.find(".mh");
@@ -350,8 +337,7 @@ function getDimmerBlock(block, buttonimg) { //todo: function
     $rgbdiv = $div.find('.rgbw'); //Now we have the new one.
 
     function dimmerClickHandler(block) {
-        //        if (!sliding) switchDevice('.block_' + idx, 'toggle', false)
-        switchDevice(block, 'toggle', false) //todo: make block...
+        switchDevice(block, 'toggle', false); 
     }
 
     $div.off('click');
@@ -359,7 +345,7 @@ function getDimmerBlock(block, buttonimg) { //todo: function
     if (!isProtected(block)) {
         $div.addClass('hover');
         $div.on('click', function() {
-            dimmerClickHandler(block); //todo
+            dimmerClickHandler(block); 
         }).addClass('hover');
     }
 
@@ -442,7 +428,7 @@ function getDimmerBlock(block, buttonimg) { //todo: function
 }
 
 // eslint-disable-next-line no-unused-vars
-function getBlindsBlock(block, withPercentage) { //todo: rewrite
+function getBlindsBlock(block, withPercentage) {
     var device=block.device;
     var idx=block.idx;
     var $mountPoint=block.$mountPoint.find(".mh");
@@ -455,13 +441,10 @@ function getBlindsBlock(block, withPercentage) { //todo: rewrite
     if ( typeof (block['hide_stop']) == 'undefined' || block['hide_stop'] === false) {
         data_class += ' right2col';
         button_class = 'col-button2';
-
-        //        this.html += '<div class="col-button">';
     } else {
         hidestop = true;
         data_class += ' right1col';
         button_class = 'col-button1';
-        //      this.html += '<div class="col-button hidestop">';
     }
 
 
@@ -527,7 +510,7 @@ function getBlindsBlock(block, withPercentage) { //todo: rewrite
     })
 
     if (withPercentage) {
-        addSlider(block, { //todo: function
+        addSlider(block, { 
             value: device['Level'],
             step: 1,
             min: 1,
@@ -566,7 +549,7 @@ function addSlider(block, sliderValues) {
             var hasPassword = block.password;
             if(!Dashticz.promptPassword(hasPassword)) return;    
         
-            slideDevice(block, ui.value); //todo: update function
+            slideDevice(block, ui.value); 
         },
         stop: function () {
             //stop is called before change

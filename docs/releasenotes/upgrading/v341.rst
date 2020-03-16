@@ -1,0 +1,85 @@
+.. _v341:
+
+v3.4.1: Redesign block definition
+=================================
+
+Although not so visible from the outside v3.4.1 contains a significant design update on how Dashticz blocks are managed internally.
+
+Some advantages:
+
+* You can use the same Domoticz ID with different block settings::
+
+    blocks['first_one'] = {
+        idx: 123,
+        width:4
+    }
+
+    blocks['second'] = {
+        idx: 123,
+        width:12
+    }
+
+    columns[1]['blocks'] = [
+        'first_one', 'second'
+    ]
+
+This will display Domoticz device <123> twice: the first one having width 4, the second one having width 12.
+
+* Inline block definition::
+
+    columns[1]['blocks'] = [
+        { idx: 123, width: 4},
+        { idx: 123, width: 12}
+    ]
+
+This will give the same results as the previous example.
+
+* The ``on`` and ``off`` classes will be added automatically to a switch-block. This enables auto-hide possibility in combination with the ``addClass`` parameter 
+
+::
+
+    blocks[123] = {
+        addClass: 'myClass'
+    }
+
+And in ``custom.css``:
+
+::
+
+    .myClass.off {
+        display: none
+    }
+
+
+Block parameters
+-----------------
+
+A new block parameter:
+
+.. list-table:: 
+  :header-rows: 1
+  :widths: 5 30
+  :class: tight-table
+
+  * - Parameter
+    - Description
+  * - addClass
+    - The CSS class name, that will be added to the block.
+
+custom.js
+---------
+
+There are changes in the function parameters for the following functions:
+
+* getBlock_IDX
+* getStatus_IDX
+* getChange_IDX
+
+The examples in :ref:`custom.js` have been updated.
+
+These functions now receive  ``block`` as parameter, containing all relevant parameters for the block.
+
+
+
+  
+

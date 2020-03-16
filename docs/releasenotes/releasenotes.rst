@@ -1,11 +1,13 @@
 Release Notes
 =============
 
-3.4.1
+3.4.1 (Beta)
 ---------------
 
 Redesign
-  Domoticz blocks: inline blocks. Use ``idx`` as parameter in your block definition to indicate the block is a domoticz device.
+
+  * Domoticz blocks: inline blocks. Use ``idx`` as parameter in your block definition to indicate the block is a domoticz device.
+    See :ref:`v341`
 
 Enhancements
 
@@ -53,14 +55,14 @@ Optimizations
 Fixes
   * Garbage Uden
   * Restored PHP5 compatible ical library next to the PHP7 library.
-  The PHP5 library is selected automatically on systems with PHP version lower than 7.1.
-  The PHP5 library doesn't show yearly recurring events correctly.
+    The PHP5 library is selected automatically on systems with PHP version lower than 7.1.
+    The PHP5 library doesn't show yearly recurring events correctly.
 
 3.3.4 Beta (22-1-2020)
 ----------------------
 
 Enhancements:
-  * Multigraph functionality. See :ref:`multigraphs`.
+  * Multigraph functionality. See :ref:`dom_graphs`.
 
 3.3.3 Master (22-1-2020)
 ------------------------
