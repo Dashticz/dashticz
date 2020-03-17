@@ -12,7 +12,7 @@
 /*from thermostat.js*/
 /*global getThermostatBlock getEvohomeZoneBlock getEvohomeControllerBlock getEvohomeHotWaterBlock*/
 /*from switches.js*/
-/*global  getIconStatusClass getDefaultSwitchBlock getDimmerBlock getBlindsBlock */
+/*global  getIconStatusClass getDefaultSwitchBlock getDimmerBlock getBlindsBlock slideDevice*/
 /*from custom.js*/
 /*global afterGetDevices*/
 /*unknown. probably a bug ...*/
@@ -973,7 +973,6 @@ function getStatusBlock(block, blockproto) {
 }
 
 function getBlockClick(block) {
-    var idx = block.idx;
     var device = block.device;
     var link = block.link; //todo: undocumented feature
     var target = block.target;
@@ -984,13 +983,13 @@ function getBlockClick(block) {
     var $div=block.$mountPoint.find('.mh');
     if (link) {
         if ($div.length > 0) {
-            $div.addClass('hover');
-
-            if (target == '_blank') {
-                $div.attr('onclick', 'window.open(\'' + link + '\');');
-            } else if (target == 'iframe') {
-                $div.attr('onclick', 'addBlockClickFrame(\'' + idx + '\');'); //todo: check function
-            }
+            $div.addClass('hover')
+            .off('click')
+            .click( function() {
+                if (target=== '_blank')
+                    window.open(block.link)
+                else if (target === 'iframe') addBlockClickFrame(block);
+            } );
         }
     } else if (graph === false) {
         return;
@@ -1029,7 +1028,9 @@ function getBlockClick(block) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function addBlockClickFrame(idx) {
+function addBlockClickFrame(block) {
+    var idx=block.idx;
+    var link=block.link;
     $('#button_' + idx).remove();
     var html = '<div class="modal fade" id="button_' + idx + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
     html += '<div class="modal-dialog">';
@@ -1038,7 +1039,7 @@ function addBlockClickFrame(idx) {
     html += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
     html += '</div>';
     html += '<div class="modal-body">';
-    html += '<iframe src="' + blocks[idx]['link'] + '" width="100%" height="570" frameborder="0" allowtransparency="true"></iframe> ';
+    html += '<iframe src="' + link + '" width="100%" height="570" frameborder="0" allowtransparency="true"></iframe> ';
     html += '</div>';
     html += '</div>';
     html += '</div>';
@@ -1508,7 +1509,7 @@ function handleDevice(block) {
         if ((typeof (device['SelectorStyle']) !== 'undefined' && device['SelectorStyle'] == 1)) {
             html += '<div class="col-xs-8 col-data">';
             html += '<strong class="title">' + device['Name'] + '</strong><br />';
-            html += '<select onchange="slideDevice(' + device['idx'] + ',this.value);">';
+            html += '<select>';
             html += '<option value="">' + language.misc.select + '</option>';
             for (var a in names) {
                 if (parseFloat(a) > 0 || (a == 0 && (typeof (device['LevelOffHidden']) == 'undefined' || device['LevelOffHidden'] === false))) {
@@ -1520,6 +1521,11 @@ function handleDevice(block) {
             }
             html += '</select>';
             html += '</div>';
+            block.$mountPoint.find('.mh').off("change")
+            .on("change", 'select', function() {
+                slideDevice(block, $(this).val());
+            })
+    
         } else {
             html += '<div class="col-xs-8 col-data">';
             html += '<strong class="title">' + device['Name'] + '</strong><br />';
@@ -1528,7 +1534,7 @@ function handleDevice(block) {
                 if (parseFloat(a) > 0 || (a == 0 && (typeof (device['LevelOffHidden']) == 'undefined' || device['LevelOffHidden'] === false))) {
                     var st = '';
                     if ((a * 10) == parseFloat(device['Level'])) st = 'active';
-                    html += '<label class="btn btn-default ' + st + '" onclick="slideDevice(' + device['idx'] + ',$(this).children(\'input\').val());">';
+                    html += '<label class="btn btn-default ' + st + '">';
                     html += '<input type="radio" name="options" autocomplete="off" value="' + (a * 10) + '" checked>' + names[a];
                     html += '</label>';
                 }
@@ -1536,6 +1542,12 @@ function handleDevice(block) {
             html += '</select>';
             html += '</div>';
             html += '</div>';
+            block.$mountPoint.find('.mh').off("click")
+            .on("click", '.btn-group', function(ev) {
+                var value=$(ev.target).children('input').val()
+                console.log(value)
+                slideDevice(block, value);
+            })
         }
 
     } else if (device['SubType'] == 'Custom Sensor') {
