@@ -1609,10 +1609,11 @@ function getLogitechControls(block) {
 function getSmartMeterBlock(block) {
     var device=block.device;
     var idx=device.idx;
+    block.width=block.width || 4;
     if (device['SubType'] === 'Energy') {
         var usage = device['Usage'];
         if (typeof (device['UsageDeliv']) !== 'undefined' && (parseFloat(device['UsageDeliv']) > 0 || parseFloat(device['UsageDeliv']) < 0)) {
-            usage = device['UsageDeliv'];
+            usage = '-'+device['UsageDeliv'];
         }
 
         var data = device['Data'].split(';');
