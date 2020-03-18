@@ -1830,7 +1830,7 @@ function createBlocks(blockParent, blockValues) {
         $.extend(block, blockParent);
         $.extend(block, blocks[blockValue.idx]);
         block.idx = blockValue.idx;
-        var html = '<div class="mh transbg block_'+blockValue.idx+' col-xs-' + block.width+'"/>';
+        var html = '<div class="mh transbg block_'+blockValue.idx+' col-xs-' + (block.width || 4) +'"/>';
         $div.append(html);
         block.mountPoint=blockParent.mountPoint; // +' .block_'+blockValue.idx;
         block.$mountPoint = $(block.mountPoint);
