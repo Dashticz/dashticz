@@ -12,8 +12,8 @@
 /* global Dashticz */
 
 // eslint-disable-next-line no-unused-vars
-function addThermostatFunctions(block, thermelement) {
-    var $el= block.$mountPoint.find('.block_'+thermelement);
+function addThermostatFunctions(block) {
+    var $el= block.$mountPoint.find('.block_'+block.idx);
     $el.find('.btn-number').on("click", function () {
         //sliding = true;  //not needed here I guess, since update is blocked in switchThermostat function  (called below)
         //        var fieldName = $(this).attr('data-field');
@@ -23,16 +23,16 @@ function addThermostatFunctions(block, thermelement) {
         currentVal = parseFloat(currentVal[0].replace(',', '.'));
         if (!isNaN(currentVal)) {
             var newValue = (type === 'minus') ? currentVal - 0.5 : currentVal + 0.5;
-            if (newValue >= input.attr('min') &&
-                newValue <= input.attr('max')
+            if (newValue >= block.min &&
+                newValue <= block.max
             ) {
                 input.text(number_format(newValue, 1) + _TEMP_SYMBOL).trigger("change");
                 switchThermostat(block, newValue);
             }
-            if (newValue <= input.attr('min')) {
+            if (newValue <= block.min) {
                 $(this).attr('disabled', true);
             }
-            if (newValue >= input.attr('max')) {
+            if (newValue >= block.max) {
                 $(this).attr('disabled', true);
             }
         } else {
@@ -45,8 +45,8 @@ function addThermostatFunctions(block, thermelement) {
     });
 
     $el.find('.input-number').on('change', function () {
-        var minValue = parseFloat($(this).attr('min'));
-        var maxValue = parseFloat($(this).attr('max'));
+        var minValue = block.min;
+        var maxValue = block.max;
         var valueCurrent = parseFloat($(this).text());
 
         //        var name = $(this).attr('name');
@@ -66,80 +66,67 @@ function addThermostatFunctions(block, thermelement) {
 
 // eslint-disable-next-line no-unused-vars
 function getThermostatBlock(block) {
+    block.min=parseFloat(block.min || settings['setpoint_min'] || 5);
+    block.max=parseFloat(block.max || settings['setpoint_max'] || 40);
     var device=block.device;
     var idx=block.idx;
     var html = '';
-    html += iconORimage(idx + '_1', '', 'heating.png', 'on icon', 'style="max-height:35px;"');
+    html += iconORimage(block, '', 'heating.png', 'on icon', 'style="max-height:35px;"');
     html += '<div class="col-xs-8 col-data">';
 
-    var title = device['Data'] + _TEMP_SYMBOL;
+    var title = number_format(device['Data'], 1) + _TEMP_SYMBOL;
     var value = device['Name'];
-    if (titleAndValueSwitch(idx + '_1')) {
+    if (titleAndValueSwitch(block)) {
         title = device['Name'];
-        value = device['Data'] + _TEMP_SYMBOL;
+        value = number_format(device['Data'], 1) + _TEMP_SYMBOL;
     }
     html += '<strong class="title">' + title + '</strong><br />';
     html += '<span class="state">' + value + '</span>';
-    if (showUpdateInformation(idx)) {
+    if (showUpdateInformation(block)) {
         html += '<br /><span class="lastupdate">' + moment(device['LastUpdate']).format(settings['timeformat']) + '</span>';
     }
     html += '</div>';
 
-    block.$mountPoint.find('.block_' + idx + '_1').html(html); //This sets the block_<idx>_1 content, only if this block is defined in the DOM!
+    block.$mountPoint.find('.block_' + idx ).html(html);
 
-    html = '';
-    html += '<div class="col-button1">';
-    html += '<div class="up"><a href="javascript:void(0)" class="btn btn-number plus" data-type="plus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
-    html += '<em class="fas fa-plus fa-small fa-thermostat"></em>';
-    html += '</a></div>';
-    html += '<div class="down"><a href="javascript:void(0)" class="btn btn-number min" data-type="minus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
-    html += '<em class="fas fa-minus fa-small fa-thermostat"></em>';
-    html += '</a></div>';
-    html += '</div>';
-
-    html += iconORimage(idx + '_2', '', 'heating.png', 'on icon iconheating', '', '2');
-    html += '<div class="col-xs-8 col-data right1col">';
-
-    title = number_format(device['Data'], 1) + _TEMP_SYMBOL;
-    value = device['Name'];
-    if (titleAndValueSwitch(idx) || titleAndValueSwitch(idx + '_2')) {
-        title = device['Name'];
-        value = number_format(device['Data'], 1) + _TEMP_SYMBOL;
+    if(!(block.subidx && block.subidx==1)) {//subidx 1 indicates no buttons
+        html='';
+        html += '<div class="col-button1">';
+        html += '  <div class="up">';
+        html += '    <a href="javascript:void(0)" class="btn btn-number plus" data-type="plus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
+        html += '      <em class="fas fa-plus fa-small fa-thermostat"></em>';
+        html += '    </a>';
+        html += '  </div>';
+        html += '  <div class="down">';
+        html += '    <a href="javascript:void(0)" class="btn btn-number min" data-type="minus" data-field="quant[' + device['idx'] + ']" onclick="this.blur();">';
+        html += '      <em class="fas fa-minus fa-small fa-thermostat"></em>';
+        html += '    </a>';
+        html += '  </div>';
+        html += '</div>';
+        block.$mountPoint.find('.block_' + idx ).append(html);
+        block.$mountPoint.find('.col-data').addClass('right1col');
     }
+/*pieces of the old code 
+    html += iconORimage(idx + '_2', '', 'heating.png', 'on icon iconheating', '', '2');
     html += '<strong class="title input-number" min="' + settings['setpoint_min'] + '" max="' + settings['setpoint_max'] + '" data-light="' + device['idx'] + '">' + title + '</strong>';
     html += '<div class="state stateheating">' + value + '</div>';
     html += '</div>';
 
     block.$mountPoint.find('.block_' + idx + '_2').html(html);
-    block.$mountPoint.find('.block_' + idx).html(html);
+    block.$mountPoint.find('.block_' + idx).html(html);*/
 
-    addThermostatFunctions(block, idx);
+//    addThermostatFunctions(block, idx);
 //        addedThermostat[idx] = true;
 //    }
 //    if (typeof (addedThermostat[idx + '_2']) === 'undefined') {
-        addThermostatFunctions(block, idx + '_2');
+        addThermostatFunctions(block);
 //        addedThermostat[idx + '_2'] = true;
 //    }
-    return [html, false];
+    return ['', false];
 }
 
 function switchThermostat(block, setpoint) { //todo
-    //    sliding = true;
     var idx = block.idx;
-    /*
-        sliding = idx;
-        if (typeof (req) !== 'undefined') req.abort();
-        req = $.ajax({
-            url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=setsetpoint&idx=' + idx + '&setpoint=' + setpoint + '&jsoncallback=?',
-            type: 'GET',
-            async: false,
-            contentType: 'application/json',
-            dataType: 'jsonp',
-            success: function () {
-    //            sliding = false;
-                Domoticz.release(idx); //release message queue
-            }
-        });*/
     var hasPassword = block.password;
     if (!Dashticz.promptPassword(hasPassword)) return;
 
@@ -156,7 +143,7 @@ function getEvohomeZoneBlock(block) {
     var title_temp = temp + _TEMP_SYMBOL;
     var title_setp = setpoint + _TEMP_SYMBOL;
     var value = device['Name'];
-    if (titleAndValueSwitch(idx)) {
+    if (titleAndValueSwitch(block)) {
         var tmp = title_temp
         title_temp = value;
         value = tmp;
@@ -181,7 +168,7 @@ function getEvohomeZoneBlock(block) {
     html += '	</div>';
     html += '</div>';
 
-    html += iconORimage(idx, '', 'heating.png', 'on icon iconheating', '', '2');
+    html += iconORimage(block, '', 'heating.png', 'on icon iconheating', '', '2');
     html += '<div class="col-xs-8 col-data right1col">';
     html += '	<div class="title">' + value + '</div>';
     html += '	<div>';
@@ -332,7 +319,7 @@ function getEvohomeControllerBlock(block) {
         if (val == device.Status) title = text;
     });
 
-    if (titleAndValueSwitch(idx)) {
+    if (titleAndValueSwitch(block)) {
         var tmp = title
         title = value;
         value = tmp;
@@ -346,7 +333,7 @@ function getEvohomeControllerBlock(block) {
     html += '	</div>';
     html += '</div>';
 
-    html += iconORimage(idx, '', 'evohome.png', 'on icon iconheating', '', '2');
+    html += iconORimage(block, '', 'evohome.png', 'on icon iconheating', '', '2');
 
     html += '<div class="col-xs-8 col-data right1col">';
     html += '	<div class="title">' + value + '</div>';
@@ -432,7 +419,7 @@ function getEvohomeHotWaterBlock(block) {
     var state = device.State;
     var status = device.Status;
     var name = device['Name'];
-    if (titleAndValueSwitch(idx)) {
+    if (titleAndValueSwitch(block)) {
         var tmp = temp
         temp = name; 
         name = tmp;
@@ -451,7 +438,7 @@ function getEvohomeHotWaterBlock(block) {
     html += '	</div>';
     html += '</div>';
 
-    html += iconORimage(idx, '', 'hot_water_on.png', 'on icon iconheating', '', '2');
+    html += iconORimage(block, '', 'hot_water_on.png', 'on icon iconheating', '', '2');
     html += '<div class="col-xs-8 col-data right1col">';
     html += '	<div class="title">' + name + '</div>';
     html += '	<div>';
