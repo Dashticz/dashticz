@@ -19,6 +19,7 @@ var Dashticz = function () {
         'blocktitle',
         'tvguide',
         'trafficinfo',
+        'alarmmeldingen',
         'secpanel',
 		'graph'
     ]
