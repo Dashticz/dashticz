@@ -27,6 +27,8 @@ Enhancements
       filter: '1 month',   // to only show news items from last month
     }
 
+  * New special block: alarmmeldingen (Dutch). See <todo>
+
 Fixes
 
   * Fix for Evo devices
