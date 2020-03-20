@@ -9,7 +9,7 @@ Define your "alarmmeldingen" block (optional)::
 
 	blocks['alarmmeldingen'] = {
 		rss: 'https://alarmeringen.nl/feeds/city/venlo.rss',
-		filter: 'Venlo',
+		filter: 'Venlo',   //filter the messages for your town and if you want the cities around you
 		show_lastupdate: true,
 		width: 12,
 		interval: 300,   //refresh rate in seconds
