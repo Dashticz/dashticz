@@ -424,9 +424,6 @@ function deviceUpdateHandler(block) {
 
 function getBlockClass(block) {
     var addClass = getIconStatusClass(block.device['Status']);
-    if (block.addClass) {
-        addClass +=' '+block.addClass
-    }
     return  addClass;
 }
 
