@@ -416,13 +416,14 @@ function deviceUpdateHandler(block) {
     $div.removeClass("on off").addClass(function() {
         return getBlockClass(block);
     })
+    if(block.currentClass != block.addClass) {
+        $div.removeClass(block.currentClass).addClass(block.addClass);
+        block.currentClass = block.addClass;
+    }
 }
 
 function getBlockClass(block) {
     var addClass = getIconStatusClass(block.device['Status']);
-    if (block.addClass) {
-        addClass +=' '+block.addClass
-    }
     return  addClass;
 }
 
