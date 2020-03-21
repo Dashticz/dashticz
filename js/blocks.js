@@ -416,6 +416,10 @@ function deviceUpdateHandler(block) {
     $div.removeClass("on off").addClass(function() {
         return getBlockClass(block);
     })
+    if(block.currentClass != block.addClass) {
+        $div.removeClass(block.currentClass).addClass(block.addClass);
+        block.currentClass = block.addClass;
+    }
 }
 
 function getBlockClass(block) {
