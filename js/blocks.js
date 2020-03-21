@@ -1865,7 +1865,9 @@ function createBlocks(blockParent, blockValues) {
             }
         }
         $('div.block_' + block.idx).html(html);*/
-        block.$mountPoint.find('.block_'+block.idx).html(html);
+        block.$mountPoint.find('.block_'+block.idx).html(html)
+        .addClass(block.addClass);
+
         //todo: Do we have to store block in mountedBlocks?
     });
 }
