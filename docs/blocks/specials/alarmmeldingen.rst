@@ -33,6 +33,7 @@ Parameters
 =======================   ===============================
 Parameter                 Description 
 =======================   ===============================
+title                     ``'<string>'``: Custom title for the block
 rss                       The rss url for your City or Region from https://www.alarmeringen.nl/
 filter                    Add search filters for surrounding cities or special messages mentioned in the alarmmessage like Traumaheli or Brandweer
 show_lastupdate           ``true / false``: To display the ime of the last update of the data displayed
