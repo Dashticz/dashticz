@@ -234,6 +234,45 @@ var Dashticz = function () {
         return true;
     }
 
+    var subscribeBlockList = {}
+
+    function subscribeBlock(key, callback) {
+        if(!subscribeBlockList[key]) subscribeBlockList[key]=[]
+        subscribeBlockList[key].push(callback)        
+    }
+
+    function setBlock(key, state) {
+        var block=blocks[key] || {};
+        var changed=false;
+        if (state) {
+            for (var prop in state) {
+                if (state[prop]!==block[prop]) {
+                    changed = true;
+                    block[prop] = state[prop];
+                }
+            }
+            if(changed) {
+                blocks[key] = block;
+            }    
+        }
+        if(changed || !state) {
+            if (subscribeBlockList[key])
+                subscribeBlockList[key].forEach( function(callback) {
+                    callback(block);
+                })
+            else {
+                var keySplit=key.split('_');
+                if(keySplit.length===2 && subscribeBlockList[keySplit[0]]) {
+                    console.log('Calling parent '+keySplit[0]);
+                    subscribeBlockList[keySplit[0]].forEach( function(callback) {
+                        callback({}); //we call the parent call back with empty block update
+                    })
+                }
+            }
+        }
+    }
+
+
     return {
         init: _init,
         onResize: _onResize,
@@ -244,7 +283,9 @@ var Dashticz = function () {
         loadFont: _loadFont,
         loadCSS: _loadCSS,
         mountDefaultBlock: _mountDefaultBlock,
-        promptPassword: _promptPassword
+        promptPassword: _promptPassword,
+        subscribeBlock: subscribeBlock,
+        setBlock: setBlock
     }
 
 }();

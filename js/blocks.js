@@ -301,6 +301,7 @@ function getBlock(cols, c, screendiv, standby) {
                         var block = {}
                         block.idx = cols['blocks'][b];
                         $.extend(block, blocks[block.idx]);
+                        block.key=block.idx;
                         var html = '<div data-id="' + block.idx + '" class="mh transbg block_' + block.idx + '"></div>';
                         mountBlock(myblockselector, block, html, false );
                         addDeviceUpdateHandler(block)
@@ -429,22 +430,7 @@ function getBlockClass(block) {
 
 
 
-function addDeviceUpdateHandler(block) {
-    /*
-    if (subscribed[idx]) {
-        //        console.log('Already subscribed for '+idx)
-        //currently the deviceUpdateHandler handles updates for all blocks that use device <idx>
-        // so we have to subscribe only once
-        //but still we have to update the first time.
-        var device = Domoticz.getAllDevices()[idx];
-        if(device)
-            deviceUpdateHandler(selector, idx, device);
-    } else {
-        Domoticz.subscribe(idx, true, function (device) {
-            deviceUpdateHandler(selector, idx, device)
-        })
-        subscribed[idx] = true;
-    }*/
+function addDeviceUpdateHandler(block) {   
     var deviceIdx=block.idx;
     if (typeof block.idx === 'string') {
         var idxSplit = block.idx.split('_');
@@ -462,6 +448,17 @@ function addDeviceUpdateHandler(block) {
         deviceUpdateHandler(block)
     })
 
+    if(block.key) {
+        Dashticz.subscribeBlock(block.key, function(blockUpdate){
+            console.log('block update ', block.key)
+            $.extend(block, blockUpdate);
+            deviceUpdateHandler(block)
+        })
+    }
+    else {
+        console.log('key not defined for block ', block.idx);
+    }
+
 }
 
 function handleStringBlock(blocktype, columndiv, c) {
@@ -470,6 +467,7 @@ function handleStringBlock(blocktype, columndiv, c) {
     block.type=blocktype;
     $.extend(block, blocks[blocktype])
     block.c = c; //c can be 'bar'. Used for sunriseholder
+    block.key=block.key || blocktype;
     mountBlock(columndiv, block, null, null);
 
     var defaultwidth = 12;
