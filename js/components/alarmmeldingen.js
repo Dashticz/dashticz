@@ -71,6 +71,8 @@ var DT_alarmmeldingen = {
 					var pubDate = new Date(el.find("pubDate").text());
 					pubDate = pubDate.toString();
 					pubDate = pubDate.split(' ')[4];
+					//remove sevonds from time string
+					pubDate = pubDate.replace(/:[^:]*$/,'');
 					html += '<li><strong>' + pubDate + '&nbsp;&nbsp;&nbsp' + '<a href=' + el.find("link").text() + ' onclick="window.open(this.href); return false;" onkeypress="window.open(this.href); return false;">' + el.find("description").text() + '</a>' + '</strong></li>';
 					aantalMeldingen++;
 				}
