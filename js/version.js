@@ -64,7 +64,7 @@ function initVersion() {
                 domoversion = 'Domoticz version: ' + data.version;
                 dzVents = '<br>dzVents version: ' + data.dzvents_version;
                 python = '<br> Python version: ' + data.python_version;
-                levelNamesEncoded = (Number(data.version) >= Number(levelNamesEncodeVersion));
+                levelNamesEncoded = (parseFloat(data.version) >= parseFloat(levelNamesEncodeVersion));
             }
         });
     });
