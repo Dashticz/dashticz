@@ -8,11 +8,11 @@ var DT_button = {
     },
     defaultCfg: function (button) {
         var cfg = {
-            containerClass: (button && button.slide ? 'slide slide' + button.slide : '') + (DT_button.buttonIsClickable(button) ? ' hover ' : ' ')
-
+            containerClass: (button && button.slide ? 'slide slide' + button.slide : '') + (DT_button.buttonIsClickable(button) ? ' hover ' : ' '),
+            refreshiframe: 60
         }
         if (button.btnimage) {
-            var refreshtime = 60000;
+            var refreshtime = 60;
             if (typeof (button.refreshimage) !== 'undefined') refreshtime = button.refreshimage; //backwards compatibility
             cfg.refresh=refreshtime;
         }
@@ -65,7 +65,7 @@ var DT_button = {
         if (!button.log && typeof (button.refreshiframe) !== 'undefined' && button.refreshiframe > 0) {
             setTimeout(function () {
                 DT_button.refreshButtonFrame(button, random);
-            }, button.refreshiframe);
+            }, button.refreshiframe*1000);
         }
     },
     refreshButtonFrame: function (button, buttonid) {
@@ -74,7 +74,7 @@ var DT_button = {
             mydiv.attr('src', checkForceRefresh(button, button.url));
             setTimeout(function () {
                 DT_button.refreshButtonFrame(button, buttonid);
-            }, button.refreshiframe);
+            }, button.refreshiframe*1000);
         }
     },
     buttonOnClick: function (m_event)

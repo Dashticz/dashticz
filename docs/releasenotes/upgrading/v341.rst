@@ -58,6 +58,7 @@ Block parameters
 .. note:: Breaking change: refresh interval parameter
 
 Setting the refresh interval of a block now has been standardized to the ``refresh`` parameter. You may have to replace ``interval`` by ``refresh`` for some blocks.
+The value represents the refresh interval in seconds.
 
 A new block parameter:
 

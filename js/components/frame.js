@@ -12,7 +12,7 @@ var DT_frame = {
 
         var cfg = {
             containerClass: 'swiper-no-swiping imgblock' + ios,
-            refresh: block.refreshiframe || 60000 //backwards compatibility
+            refresh: block.refreshiframe || 60 //backwards compatibility
         }
         return cfg;
     },
