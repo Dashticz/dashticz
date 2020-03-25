@@ -450,7 +450,6 @@ function addDeviceUpdateHandler(block) {
 
     if(block.key) {
         Dashticz.subscribeBlock(block.key, function(blockUpdate){
-            console.log('block update ', block.key)
             $.extend(block, blockUpdate);
             deviceUpdateHandler(block)
         })

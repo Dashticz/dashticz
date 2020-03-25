@@ -36,7 +36,9 @@ var Domoticz = function () {
      * @return {Promise} The JQuery promise of the Domoticz request
      */
     function domoticzRequest(query, forcehttp) {
- //       debugger
+        var defaulthttp = true; //websocket is not reliable yet for sending requests
+        var selectHTTP = (typeof forcehttp === 'undefined' && defaulthttp) || forcehttp;
+        var selectWS = useWS && !selectHTTP;
         if (reconnecting) return $.Deferred().reject('reconnecting');
 //      console.log(lastRequest.state(), query);
         if (lastRequest.state() === 'rejected') {
@@ -45,7 +47,7 @@ var Domoticz = function () {
         var newPromise = $.Deferred();
         lastRequest = lastRequest
             .then(function newRequest() {
-                if (useWS && !forcehttp) {
+                if (selectWS) {
                     callbackList[requestid] = newPromise;
                     var msg = {
                         event: 'request',
@@ -151,7 +153,7 @@ var Domoticz = function () {
                 lastRequest.reject();
             lastRequest = $.Deferred().resolve();
 
-            _requestAllDevices();
+            _requestAllDevices(false);
         };
         socket.onmessage = function (event) {
             initialUpdate.resolve();
@@ -247,8 +249,8 @@ var Domoticz = function () {
             })
     }
 
-    function _requestAllDevices() {
-        return domoticzRequest('type=devices&filter=all&used=true&order=Name&lastupdate=' + lastUpdate.devices)
+    function _requestAllDevices(forcehttp) {
+        return domoticzRequest('type=devices&filter=all&used=true&order=Name&lastupdate=' + lastUpdate.devices, forcehttp)
             .then(function (res) {
                 return _setAllDevices(res)
             });

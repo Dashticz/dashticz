@@ -3,6 +3,8 @@
 v3.4.1: Redesign block definition
 =================================
 
+.. note:: Breaking changes. See notes below.
+
 Although not so visible from the outside v3.4.1 contains a significant design update on how Dashticz blocks are managed internally.
 
 Some advantages:
@@ -50,9 +52,12 @@ And in ``custom.css``:
         display: none
     }
 
-
 Block parameters
 -----------------
+
+.. note:: Breaking change: refresh interval parameter
+
+Setting the refresh interval of a block now has been standardized to the ``refresh`` parameter. You may have to replace ``interval`` by ``refresh`` for some blocks.
 
 A new block parameter:
 
@@ -69,15 +74,19 @@ A new block parameter:
 custom.js
 ---------
 
+.. note:: Breaking change: getBlock, getStatus and getChange interface in custom.js
+
 There are changes in the function parameters for the following functions:
 
 * getBlock_IDX
 * getStatus_IDX
 * getChange_IDX
 
+These functions now receive  ``block`` as parameter, containing all relevant parameters for the block.
+
 The examples in :ref:`custom.js` have been updated.
 
-These functions now receive  ``block`` as parameter, containing all relevant parameters for the block.
+
 
 
 
