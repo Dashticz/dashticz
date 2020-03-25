@@ -153,9 +153,11 @@ In most cases there is no need for testing the value of ``afterupdate``: You jus
 This function gets called when the value of a Domoticz device changes.
 This function will only get called after updating the block. If you want to change the block definition as a result of the status you should use the getStatus function as described above. 
 
-``Use value of some other IDX``
+.. _setblock:
+
+``Change value of another block``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-You could use the getStatus function. Approximately as follows:
+By calling ``Dashticz.setBlock`` from the getStatus function you can change another block as well. Example:
 ::
 
     function getStatus_2(block) {
@@ -163,24 +165,28 @@ You could use the getStatus function. Approximately as follows:
       var device = block.device;
         console.log(device.Level)
         if (parseFloat(device.Level) === 0) {
-            $('div[data-id="mytitle"] .dt_title').html('level 0')
-            $('div[data-id="mytitle"] .col-icon').html('<em class="fas fa-train"/>')
+            block.title='level 0';
+            block.icon='fas fa-train';
 
-            blocks['373'].title='also 0'
-            blocks['373'].icon='fas fa-train'
+            Dashticz.setBlock('mytitle', {
+                title: 'also 0',
+                icon: 'fas fa-train
+                });
         } 
         else {
-            $('div[data-id="mytitle"] .dt_title').html('level is not 0 but ' + device.Level)
-            $('div[data-id="mytitle"] .col-icon').html('<em class="fas fa-bus"/>')
+            block.title='level is not 0 but ' + device.Level;
+            block.icon="fas fa-bus";
 
-            blocks['373'].title='not 0, but ' + device.Level
-            blocks['373'].icon='fas fa-bus'
+            Dashticz.setBlock('mytitle', {
+                title: 'not 0, but ' + device.Level,
+                icon: 'fas fa-bus
+                });
         }
     }
 
 The ``getChange_2`` function gets called when the data of device with index 2 changes.
 
-This example shows how to update a blocktitle defined as ``blocks['mytitle']``:
+This previous example will also change a block that is defined by ``blocks['mytitle']`` (for instance a blocktitle):
 ::
 
     blocks['mytitle'] = {
@@ -189,10 +195,5 @@ This example shows how to update a blocktitle defined as ``blocks['mytitle']``:
         icon: 'fas fa-car'
     }
 
-Not only the blocktitle will change, but also device with index 373.
+.. note:: Be careful with the Dashticz.setBlock function. You could end in an infinite update loop!
 
-The domoticz blocks gets updated normally every 5 seconds, depending on the ``config['domoticz_refresh']`` parameter. So it might take 5 seconds until block 373 gets updated after the change of device 1.
-
-The exact code depends on the trigger device, and what kind of block you want to change.
-
-.. note:: This changed in Dashticz 3.4.0. Updating block definitions of other devices currently is not supported anymore.
