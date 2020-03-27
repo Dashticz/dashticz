@@ -374,9 +374,7 @@ function getGraphData(devices, selGraph) {
       var graphIdx = device.blockId + device.idx;
       var graph = dtGraphs[graphIdx]; 
             
-      currentValues.push(
-        parseFloat(graph.currentValue.replace(",", ".")).toFixed(graph.decimals) + " " + graph.txtUnit
-      );
+      currentValues.push(graph.currentValue);
   
       if (isDefined(selGraph)) {
         graph.range = selGraph;
