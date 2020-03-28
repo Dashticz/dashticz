@@ -9,12 +9,9 @@ var DT_button = {
     defaultCfg: function (button) {
         var cfg = {
             containerClass: (button && button.slide ? 'slide slide' + button.slide : '') + (DT_button.buttonIsClickable(button) ? ' hover ' : ' '),
-            refreshiframe: 60
         }
         if (button.btnimage) {
-            var refreshtime = 60;
-            if (typeof (button.refreshimage) !== 'undefined') refreshtime = button.refreshimage; //backwards compatibility
-            cfg.refresh=refreshtime;
+            cfg.refresh=60;
         }
         return cfg;
     },

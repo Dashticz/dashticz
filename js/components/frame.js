@@ -7,12 +7,12 @@ var DT_frame = {
         return block && block.frameurl
     },
 
-    defaultCfg: function (block) {
+    defaultCfg: function () {
         var ios = navigator.userAgent.match(/(iPod|iPhone|iPad)/) ? ' ios' : '';
 
         var cfg = {
             containerClass: 'swiper-no-swiping imgblock' + ios,
-            refresh: block.refreshiframe || 60 //backwards compatibility
+            refresh: 300 
         }
         return cfg;
     },
