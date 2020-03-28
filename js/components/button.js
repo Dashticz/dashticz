@@ -6,12 +6,16 @@ var DT_button = {
     canHandle: function (block) {
         return block && (block.btnimage || block.slide)
     },
-    default: {
-        containerClass: function (button) {
-            return (button && button.slide ? 'slide slide' + button.slide : '') + (DT_button.buttonIsClickable(button) ? ' hover ' : ' ')
+    defaultCfg: function (button) {
+        var cfg = {
+            containerClass: (button && button.slide ? 'slide slide' + button.slide : '') + (DT_button.buttonIsClickable(button) ? ' hover ' : ' '),
         }
+        if (button.btnimage) {
+            cfg.refresh=60;
+        }
+        return cfg;
     },
-    get: function (me) {
+    defaultContent: function (me) {
         var button = me.block
         var html = '';
         if (button.btnimage) {
@@ -28,19 +32,12 @@ var DT_button = {
         return html;
     },
     run: function (me) {
-        var button = me.block
-
+        var button = me.block;
         if (DT_button.buttonIsClickable(button))
             $(me.mountPoint + ' .button').on('click', button, DT_button.buttonOnClick);
-
-        if (button.btnimage) {
-            var refreshtime = 60000;
-            if (typeof (button.refresh) !== 'undefined') refreshtime = button.refresh;
-            if (typeof (button.refreshimage) !== 'undefined') refreshtime = button.refreshimage;
-            setInterval(function () {
-                DT_button.reloadImage(me);
-            }, refreshtime);
-        }
+    },
+    refresh: function (me) {
+        DT_button.reloadImage(me);
     },
     buttonLoadFrame: function (button) //Displays the frame of a button after pressing is
     {
@@ -65,7 +62,7 @@ var DT_button = {
         if (!button.log && typeof (button.refreshiframe) !== 'undefined' && button.refreshiframe > 0) {
             setTimeout(function () {
                 DT_button.refreshButtonFrame(button, random);
-            }, button.refreshiframe);
+            }, button.refreshiframe*1000);
         }
     },
     refreshButtonFrame: function (button, buttonid) {
@@ -74,7 +71,7 @@ var DT_button = {
             mydiv.attr('src', checkForceRefresh(button, button.url));
             setTimeout(function () {
                 DT_button.refreshButtonFrame(button, buttonid);
-            }, button.refreshiframe);
+            }, button.refreshiframe*1000);
         }
     },
     buttonOnClick: function (m_event)
@@ -82,8 +79,8 @@ var DT_button = {
     {
         var button = m_event.data;
         var hasPassword = button.password;
-        if(!Dashticz.promptPassword(hasPassword)) return;    
-            
+        if (!Dashticz.promptPassword(hasPassword)) return;
+
         if (typeof (button.newwindow) !== 'undefined') {
             if (button.newwindow == '0') {
                 window.open(button.url, '_self');
@@ -122,3 +119,5 @@ var DT_button = {
 }
 
 Dashticz.register(DT_button);
+
+//# sourceURL=js/components/button.js

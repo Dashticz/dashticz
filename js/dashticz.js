@@ -76,17 +76,44 @@ var Dashticz = function () {
         })
     }
 
+    function renderBlock(me) {
+        var $div=$(me.mountPoint).find('.dt_block');
+        var block=$(getSpecialBlock(me));
+        if (me.block.containerClass)
+            $div.addClass(getProperty(me.block.containerClass, me));
+        if (me.block.addClass) {
+            var addClass = getProperty(me.block.addClass, me)
+            $div.removeClass(me.currentClass).addClass(addClass);
+            me.currentClass=addClass;   //store current class, so that we can remove it on next update.
+        }
+        block.find('.dt_state').append(getProperty( components[me.name].defaultContent, me));
+        $div.html(block);
+    }
+
     function _mountSpecialBlock(mountPoint, blockdef, special, key) {
         if (!special.initPromise) special.initPromise = special.init ? $.when(special.init(blockdef)) : $.when();
         special.initPromise.done(function () {
-            var me = getDefaultBlockConfig(mountPoint, blockdef, special, key);
-            $(mountPoint).append(getSpecialBlock(me));
-            if (me.containerClass)
-                $(mountPoint + ' .dt_block').addClass(me.containerClass(blockdef))
-            if (special.get)
-                $(mountPoint + ' .dt_state').append(special.get(me))
+            var me = createBlock(mountPoint, blockdef, special, key);
+            $(mountPoint).html(getContainer(me));
+//            console.log(me);
+            renderBlock(me);
+            mountedBlocks[me.mountPoint] = me;
             if (special.run) special.run(me);
-            mountedBlocks[mountPoint] = me
+            if(me.block.refresh && special.refresh) { //install refresh handler
+                setInterval(function () {
+                    special.refresh(me);
+                }, (me.block.refresh * 1000));
+                special.refresh(me);        
+            }
+            if (special.refresh) {
+                blocks[me.key]=blockdef;
+                Dashticz.subscribeBlock(me.key, function(block) {
+                    console.log('updating special block', me);
+                    me.block=getBlockConfig(block, components[me.name], me.key);
+                    renderBlock(me);
+                    special.refresh(me)
+                })
+            }
         })
     }
 
@@ -94,28 +121,32 @@ var Dashticz = function () {
         _mountSpecialBlock(mountPoint, blockdef, components['button'], key)
     }
 
-    function getSpecialBlock(me) {
+    function getContainer(me) {
         var html = '<div ' +
             (me.key ? ' data-id="' + me.key + '"' : '') +
-            ' class="transbg  col-xs-' + me.width + ' ' + me.name + ' dt_block "' +
-            (me.containerExtra ? me.containerExtra(me.block) : '') + '>' +
-            getColIcon(me) +
-            '<div class="dt_content">' +
-            renderTitle(me) +
-            renderStateDiv(me) +
-            '</div></div>'
+            ' class="transbg col-xs-' + me.block.width + ' ' + me.name + ' dt_block "' +
+            ( me.block.containerExtra? getProperty(me.block.containerExtra,  me.block) : '') + '></div>'
+        return html        
+    }
+    function getSpecialBlock(me) {
+        var html = '';
+        html += getColIcon(me);
+        html += '<div class="dt_content">';
+        html += renderTitle(me);
+        html += renderStateDiv(me);
+        html += '</div>'
         return html;
     }
 
     function getColIcon(me) {
-        var icon = me.icon;
+        var icon = me.block.icon;
         var html = '';
         if (icon) {
             html += '<div class="col-icon">';
             html += '<em class="' + icon + '"></em>';
             html += '</div>';
         }
-        var image = me.image;
+        var image = me.block.image;
         if (image) {
             html += '<div class="col-icon">';
             html += '<img src="img/' + image + '" class="icon"/>';
@@ -125,8 +156,8 @@ var Dashticz = function () {
     }
 
     function renderTitle(me) {
-        if (me.title) {
-            var res = '<div class="dt_title">' + me.title + '</div>';
+        if (me.block.title) {
+            var res = '<div class="dt_title">' + me.block.title + '</div>';
             return res;
         } else return ''
     }
@@ -135,35 +166,39 @@ var Dashticz = function () {
         return '<div class="dt_state"></div>'
     }
 
-    function getDefaultBlockConfig(mountPoint, block, special, key) {
-        var defaultConfig = {
-            width: 12,
+    function getProperty(fn, me) { //getter functionaly
+        if (typeof fn==='function') 
+            return fn(me);
+        return fn;
+    }
+
+    function getBlockConfig(block, special, key) {
+        var cfg={width:12};
+        $.extend(cfg, getProperty(special.defaultCfg, block));
+        if (block) {
+            if (block.icon) {
+                cfg.image = ''; //reset default image in case icon is set
+            }
+            if (block.image ) {
+                cfg.icon = ''; //reset default icon in case image is set
+            }
+            $.extend(cfg, block);
+        }
+        if(typeof key !== 'undefined' && key !== '') {
+            cfg.key = key;
+        }
+        return cfg;
+    }
+
+    function createBlock(mountPoint, block, special, key) {
+        var blockdef=getBlockConfig(block, special, key);
+        var newblock = {
             mountPoint: mountPoint,
-            block: block,
-            key: key,
+            block: blockdef,
+            key: blockdef.key? blockdef.key:mountPoint,
             name: special.name
         }
-
-        if (special.default)
-            $.extend(defaultConfig, special.default)
-
-        if (block) {
-            if (typeof block.icon !== 'undefined') {
-                defaultConfig.icon = block.icon;
-                defaultConfig.image = ''; //reset default image in case icon is set
-            }
-            if (typeof block.image !== 'undefined') {
-                defaultConfig.image = block.image
-                defaultConfig.icon = ''; //reset default icon in case image is set
-            }
-            if (block.width) defaultConfig.width = block.width;
-            if (block.title) defaultConfig.title = block.title;
-            if (block.key) {
-                defaultConfig.key = block.key;
-                //            defaultConfig.dataId = block.key;
-            }
-        }
-        return defaultConfig
+        return newblock;
     }
 
     function _register(special) {
@@ -234,6 +269,44 @@ var Dashticz = function () {
         return true;
     }
 
+    var subscribeBlockList = {}
+
+    function subscribeBlock(key, callback) {
+        if(!subscribeBlockList[key]) subscribeBlockList[key]=[]
+        subscribeBlockList[key].push(callback)        
+    }
+
+    function setBlock(key, state) {
+        var block=blocks[key] || {};
+        var changed=false;
+        if (state) {
+            for (var prop in state) {
+                if (state[prop]!==block[prop]) {
+                    changed = true;
+                    block[prop] = state[prop];
+                }
+            }
+            if(changed) {
+                blocks[key] = block;
+            }    
+        }
+        if(changed || !state) {
+            if (subscribeBlockList[key])
+                subscribeBlockList[key].forEach( function(callback) {
+                    callback(block);
+                })
+            else {
+                var keySplit=key.split('_');
+                if(keySplit.length===2 && subscribeBlockList[keySplit[0]]) {
+                    subscribeBlockList[keySplit[0]].forEach( function(callback) {
+                        callback({}); //we call the parent call back with empty block update
+                    })
+                }
+            }
+        }
+    }
+
+
     return {
         init: _init,
         onResize: _onResize,
@@ -244,7 +317,9 @@ var Dashticz = function () {
         loadFont: _loadFont,
         loadCSS: _loadCSS,
         mountDefaultBlock: _mountDefaultBlock,
-        promptPassword: _promptPassword
+        promptPassword: _promptPassword,
+        subscribeBlock: subscribeBlock,
+        setBlock: setBlock
     }
 
 }();

@@ -45,6 +45,22 @@ var _END_STANDBY_CALL_URL = '';
 //move var allVariables = {};
 var sessionvalid = false;
 
+//Prevent Chrome warnings on event handlers
+jQuery.event.special.touchstart = 
+{
+  setup: function( _, ns, handle )
+  {
+    if ( ns.includes("noPreventDefault") ) 
+    {
+      this.addEventListener("touchstart", handle, { passive: false });
+    } 
+    else 
+    {
+      this.addEventListener("touchstart", handle, { passive: true });
+    }
+  }
+};
+
 // eslint-disable-next-line no-unused-vars
 function loadFiles(dashtype) {
     var customfolder = 'custom';

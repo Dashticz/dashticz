@@ -5,10 +5,8 @@ var DT_blocktitle = {
     canHandle: function (block) {
         return block && block.type && block.type === 'blocktitle'
     },
-    default: {
-        containerClass: function () {
-            return 'titlegroups'
-        }
+    defaultCfg: {
+        containerClass: 'titlegroups'
     }
 }
 
