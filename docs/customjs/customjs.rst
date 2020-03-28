@@ -155,8 +155,8 @@ This function will only get called after updating the block. If you want to chan
 
 .. _setblock:
 
-``Change value of another block``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Change value of another block
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 By calling ``Dashticz.setBlock`` from the getStatus function you can change another block as well. Example:
 ::
 
