@@ -7,33 +7,30 @@ Release Notes
 .. note:: Breaking changes. See :ref:`v341` for update instuctions
 
 Redesign
-
   * Domoticz blocks: inline blocks. Use ``idx`` as parameter in your block definition to indicate the block is a domoticz device.
-    See :ref:`v341`
+  See :ref:`v341`
 
 Enhancements
-
   * Support for showing a graph more than once on the dashboard.
   * Support for RGBWZ devices
   * Omrin garbage company
   * Calendar: Optionally display start time only by setting ``startonly`` block parameter
   * New block parameter ``password`` to password protect switches, buttons, thermostats, sliders.
   * Filter parameter for the news block. Define as block parameter. Example:
-  
-::  
+    
+  ::  
 
-    blocks['my_news'] {
-      feed: 'http://www.nu.nl/rss/Algemeen',
-      filter : '5 items',  // to only show the 5 latest news items, or:
-      filter: '2 days',    // to only show news items of the last 2 days, or:
-      filter: '1 month',   // to only show news items from last month
-    }
+      blocks['my_news'] {
+        feed: 'http://www.nu.nl/rss/Algemeen',
+        filter : '5 items',  // to only show the 5 latest news items, or:
+        filter: '2 days',    // to only show news items of the last 2 days, or:
+        filter: '1 month',   // to only show news items from last month
+      }
 
-  * New special block: alarmmeldingen (Dutch). See <todo>
+  * New special block: alarmmeldingen (Dutch). See :ref:`customalarmmeldingen`
   * Update other blocks from ``custom.js`` functions by calling ``Dashticz.setBlock``. See :ref:`setblock`
 
 Fixes
-
   * Requests to Domoticz will not be send via a websocket connection (not reliable)
   * Fix for Evo devices
   * Improved the height adjustment of a news block with inline images
