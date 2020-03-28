@@ -12,7 +12,7 @@ Define your "alarmmeldingen" block (optional)::
 		filter: 'Venlo',   //filter the messages for your town and if you want the cities around you
 		show_lastupdate: true,
 		width: 12,
-		interval: 300,   //refresh rate in seconds
+		refresh: 300,   //refresh rate in seconds
 		results: 5   //number of recent results to show
 	}
 
@@ -38,7 +38,7 @@ rss                       The rss url for your City or Region from https://www.a
 filter                    Add search filters for surrounding cities or special messages mentioned in the alarmmessage like Traumaheli or Brandweer
 show_lastupdate           ``true / false``: To display the ime of the last update of the data displayed
 width	            	  The block width
-interval                  The update interval of this block in seconds
+refresh                   The update interval of this block in seconds
 icon                      The icon to show in the block, if you dont want to show an icon use ''
 image                     The image to use instead of an icon. Location is relative to ``./img``
 results                   The number of most recent results found by using the filter parameter
