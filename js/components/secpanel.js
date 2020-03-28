@@ -2,7 +2,7 @@
 
 var DT_secpanel = {
 	name: "secpanel",
-	default: {
+	defaultCfg: {
 		title: 'Domoticz Security Panel'
 	},
 	init: function () {
