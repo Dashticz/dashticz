@@ -27,6 +27,12 @@ For a full list of parameters see :ref:`dom_blockparameters`.
 
 For most devices containing a value, like temperature, power, etc, it's possible to show the data as a graph. See :ref:`dom_graphs`.
 
+You can also use custom names for the block identfier. In that case you have to add the ``idx`` parameter to indicate which Domoticz device you want to use::
+
+   blocks['my device'] = {
+      idx: 123
+   }
+
 Scenes and Groups
 -----------------
 
@@ -73,6 +79,12 @@ Block parameters
     - ``1..12``: The width of the block relative to the column width
   * - title
     - ``'<string>'``: Custom title for the block
+  * - idx
+    - | Index of the Domoticz device id, group/scene id, or variable id you want to use.
+      | ``<idx>`` or ``'<idx>'``: Device idx to use
+      | ``'<idx>_<subidx>'``: To select subdevice from Domoticz device, like temperature/humidity.
+      | ``'s<idx>'``: Select group or scene with id <idx>
+      | ``'v<idx>'``: Select variable with id <idx>
   * - icon
     - | Defines alternative icon of the device instead of the default, choose from: https://fontawesome.com/icons?d=gallery&m=free
       | ``'fas fa-eye'``
@@ -95,7 +107,6 @@ Block parameters
     - Text to display in case the device is on.
   * - textOff
     - Text to display in case the device is off.
-
   * - switch
     - | ``true`` Switch title and data
       | ``false`` (default)
@@ -157,75 +168,15 @@ Block parameters
     - Open a popup when a device changes to on. See :ref:`openpopup`
   * - openpopupOff
     - Open a popup when a device changes to off. See :ref:`openpopup`
-  * - type
-    - Set this parameter to ``'blocktitle'`` if you want to define a block title instead of a normal block. See :ref:`blocktitle`
+  * - addClass
+    - The CSS class name, that will be added to the block.
 
 There are several additional parameters for Graphs. See :ref:`dom_graphs`
       
 Usage
 -----
 
-.. _blocktitle :
-
-Block title
-~~~~~~~~~~~
-
-A special block type is a block title.
-You define a block title as follows::
-
-  blocks['blocktitle_1'] = {  //'blocktitle_1' must be an unique name
-    type: 'blocktitle',       //Set type to 'blocktitle' (required for block title)
-    title: 'Switches',        //The title of the block as shown in the dashboard.
-    width: 6,                 //The width of the block relative to the column width
-    icon: 'far fa-lightbulb', //If you want  to show an icon, choose from: https://fontawesome.com/icons?d=gallery&m=free
-    image: 'lightbulb.png'    //If you want to show an image instead if icon, place image in img/ folder    
-  }
-  
-Full example of one block title and two devices::
-
-    var config = {}
-    config['language : 'nl_NL'; //or: en_US, de_DE, fr_FR, hu_HU, it_IT, pt_PT, sv_SV
-    config['domoticz_ip : 'http://192.168.178.18:8080';
-    config['domoticz_refresh : '5';
-    config['dashticz_refresh : '60';
-
-    config['use_favorites'] = 0; //Request all Domoticz Devices, not only favorites
-
-    //Definition of blocks
-    blocks = {}
-
-    blocks['myblocktitle'] = {
-      type: 'blocktitle',
-      title: 'My Devices Block'
-    }
-
-    blocks[120] = {
-      width: 6
-    }
-
-    blocks[121] = {
-      width: 6
-    }
-
-    //Definition of columns
-    columns = {}
-
-    columns[1] = { 
-      blocks: ['myblocktitle', 120, 121],
-      width: 4
-    }
-
-    //Definition of screens
-    screens = {}
-    screens[1] = {
-      columns: [1]
-    }
-
-This example will give the following result:
-
-.. image :: blocktitle.jpg
-
-Example of a more extensive block definition::
+Example of a block definition::
 
     var blocks = {}
 

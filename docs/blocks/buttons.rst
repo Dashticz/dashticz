@@ -51,7 +51,7 @@ Parameters
   * - btnimage
     - ``'<url>'``: URL of the image to show in the button.
   * - refresh or refreshimage
-    - ``1..99999``: Refresh time of the button image in msec. There is no maximum. The default is 60000 (=1 minute).
+    - ``1..99999``: Refresh time of the button image in seconds. There is no maximum. The default is 60 (=1 minute).
   * - url
     - ``'<url>'``: URL of the page to open in a popup window on click. 
   * - framewidth
@@ -66,7 +66,7 @@ Parameters
       | ``3`` : Prevent caching by adding t=<timestamp> parameter to the end of the url. Not all webservers will handle this correctly.      
   * - refreshiframe
     - | ``0``: No automatic refresh of a button popup frame (default)
-      | ``1..99999``: Refresh time of the button popup frame in msec. There is no maximum. The default is 60000 (=1 minute).   
+      | ``1..99999``: Refresh time of the button popup frame in sec. There is no maximum. The default is 60 (=1 minute).   
   * - log
     - | ``true`` Button will show the Domoticz log info
       | ``false`` Default
@@ -77,8 +77,8 @@ Parameters
       | ``1``: open in new window
       | ``2``: open in new frame (default, to prevent a breaking change in default behavior)
   * - password
-  - | Password protect switches, buttons, thermostats, sliders, blinds
-    | ``'secret'``: Password to use
+    - | Password protect switches, buttons, thermostats, sliders, blinds
+      | ``'secret'``: Password to use
 
 Usage
 -----

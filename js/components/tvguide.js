@@ -6,7 +6,12 @@ var DT_tvguide = {
     canHandle: function (block) {
         return block && block.channels
     },
-    run: function (me) {
+    defaultCfg: {
+        icon: 'fas fa-tv',
+        refresh: 300,
+        maxitems: 10
+    },
+    refresh: function (me) {
         var tvObj = me.block;
         var tvobject = $(me.mountPoint + ' .dt_state');
         loadChannels(me)
@@ -21,8 +26,8 @@ var DT_tvguide = {
                 return $.getJSON(curUrl)
             })
             .then(function (data) {
-                var tvitems = []
-                var maxitems = (tvObj && tvObj.maxitems) || 10;
+                var tvitems = [];
+                var maxitems = tvObj.maxitems;
                 for (var channel in data.data) {
                     for (var e in data.data[channel].prog) {
                         var event = data.data[channel].prog[e];
@@ -55,12 +60,6 @@ var DT_tvguide = {
                 }
 
             });
-
-        setTimeout(function () {
-            DT_tvguide.run(me);
-        }, (60000 * 5));
-
-
 
         function loadChannels() {
             if (typeof (allchannels[1]) !== 'undefined') return $.when();

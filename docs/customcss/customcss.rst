@@ -14,7 +14,7 @@ The default styling is defined in the file ``<dashticz>/css/creative.css``. Whil
 since the default styling can be modified in the file ``custom.css``, located in the folder ``<dashticz v3>/custom``
 
 TIP: Comments can be used to explain the code, and may help when you edit the source code at a later date.
-A CSS comment starts with /* and ends with */. Comments can also span multiple lines::
+A CSS comment starts with ``/*`` and ends with ``*/``. Comments can also span multiple lines::
 
     /* This is a single-line comment */
 

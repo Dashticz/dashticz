@@ -2,54 +2,35 @@
 var DT_alarmmeldingen = {
 	name: "alarmmeldingen",
 	canHandle: function (block) {
-		return block && (block.rss)
+		return block && block.rss
 	},
-	default: {
-		title: "112 Meldingen",
-		containerClass: function () {
-			return 'alarmrow'
-		},
-		icon: 'fas fa-bullhorn'
-	},
-	get: function () {
-		return language.misc.loading
-	},
-	run: function (me) {
-		var alarmobject = {
+	defaultCfg: {
+			title: "112 Meldingen",
+			containerClass: 'alarmrow',
+			icon: 'fas fa-bullhorn',
 			rss: 'https://www.alarmeringen.nl/feeds/all.rss',
 			filter: '',
 			show_lastupdate: true,
 			width: 12,
-			interval: 180,
+			refresh: 180,
 			results: 5,
-		}
-		$.extend(alarmobject, me.block);
-		me.block = alarmobject;
-		var interval = me.block.interval;
-		getAlarmData(me);
-
-		setInterval(function () {
-			getAlarmData(me)
-		}, (interval * 1000));
-		return;
-
-		function getAlarmData(me) {
-			var alarmobject = me.block;
-			var newsfeed = _CORS_PATH + alarmobject.rss;
-			$.ajax(newsfeed, {
-				accepts: {
-					xml: 'application/rss+xml'
-				},
-				dataType: 'xml',
-				success: function (data) {
-					dataAlarmInfo(me, data);
-				},
-				error: function (data) {
-					infoMessage('<font color="red">Alarmeringen.nl feed Error!</font>', 'RSS feed ' + data.statusText + '. Check rss url.', 10000);
-				}
-			});
-		}
-
+		},
+	defaultContent: language.misc.loading,
+	refresh: function (me) {
+		var alarmobject = me.block;
+		var newsfeed = _CORS_PATH + alarmobject.rss;
+		$.ajax(newsfeed, {
+			accepts: {
+				xml: 'application/rss+xml'
+			},
+			dataType: 'xml',
+			success: function (data) {
+				dataAlarmInfo(me, data);
+			},
+			error: function (data) {
+				infoMessage('<font color="red">Alarmeringen.nl feed Error!</font>', 'RSS feed ' + data.statusText + '. Check rss url.', 10000);
+			}
+		});
 
 		function dataAlarmInfo(me, data) {
 			var alarmobject = me.block;

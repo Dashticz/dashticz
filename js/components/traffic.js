@@ -2,16 +2,13 @@
 // eslint-disable-next-line no-unused-vars
 var DT_traffic = {
     name: "traffic",
-    default: {
+    defaultCfg: {
         icon: 'fas fa-car',
-        containerClass: function () {
-            return 'hover trafficrow'
-        },
-        containerExtra: function () {
-            return 'data-toggle="modal" data-target="#trafficweb" onclick="setSrc(this);"'
-        }
+        containerClass: 'hover trafficrow',
+        containerExtra: 'data-toggle="modal" data-target="#trafficweb" onclick="setSrc(this);"',
+        refresh:300
     },
-    run: function (me) {
+    refresh: function (me) {
 
         var rssurl = _CORS_PATH + 'http://www.vid.nl/VI/_rss';
 
@@ -47,10 +44,6 @@ var DT_traffic = {
                 });
 
             });
-
-        setTimeout(function () {
-            DT_traffic.run(me);
-        }, (60000 * 5));
     }
 }
 
