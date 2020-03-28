@@ -5,47 +5,33 @@ var DT_publictransport = {
 	canHandle: function (block) {
 		return block && block.station
 	},
-	get: function () {
-		return language.misc.loading
+	defaultCfg: {
+		refresh: 60
 	},
-	run: function (me) {
-		//Get data every interval and call function to create block
-		var interval = 60;
-		if (typeof (me.block.interval) !== 'undefined') interval = me.block.interval;
-		getData(me);
-
-		if (me.block.provider.toLowerCase() == 'ns') {
-			if (parseFloat(interval) < 60) interval = 60; // limit request because of limitations in NS api for my private key ;)
+	defaultContent: language.misc.loading,
+	refresh: function (me) {
+		var provider = me.block.provider.toLowerCase();
+		var dataURL = '';
+		if (provider == 'vvs') {
+			dataURL = 'https://efa-api.asw.io/api/v1/station/' + me.block.station + '/departures/';
+		} else if (provider == 'mobiliteit') {
+			dataURL = _CORS_PATH + 'http://travelplanner.mobiliteit.lu/restproxy/departureBoard?accessId=cdt&duration=1439&maxJourneys=' + me.block.results + '&format=json&id=A=1@O=' + me.block.station;
+		} else if (provider.slice(0, 4) == '9292') {
+			dataURL = _CORS_PATH + 'http://api.9292.nl/0.1/locations/' + me.block.station + '/departure-times?lang=nl-NL';
+		} else if (provider == 'irailbe') {
+			var date = new Date($.now());
+			var todayDate = moment(date).format('DDMMYY');
+			var todayTime = moment(date).format('HHmm');
+			dataURL = 'https://api.irail.be/liveboard/?station=' + me.block.station + '&date=' + todayDate + '&time=' + todayTime + '&arrdep=departure&lang=nl&format=json&fast=false&alerts=false';
+		} else if (provider == 'delijnbe') {
+			dataURL = _CORS_PATH + 'https://www.delijn.be/rise-api-core/haltes/Multivertrekken/' + me.block.station + '/' + me.block.results;
 		}
 
-		setInterval(function () {
-			getData(me)
-		}, (interval * 1000));
+		$.getJSON(dataURL)
+			.then(function (data) {
+				dataPublicTransport(me, data);
+			});
 
-		function getData(me) {
-			var provider = me.block.provider.toLowerCase();
-			var dataURL = '';
-			if (provider == 'vvs') {
-				dataURL = 'https://efa-api.asw.io/api/v1/station/' + me.block.station + '/departures/';
-			} else if (provider == 'mobiliteit') {
-				dataURL = _CORS_PATH + 'http://travelplanner.mobiliteit.lu/restproxy/departureBoard?accessId=cdt&duration=1439&maxJourneys=' + me.block.results + '&format=json&id=A=1@O=' + me.block.station;
-			} else if (provider.slice(0, 4) == '9292') {
-				dataURL = _CORS_PATH + 'http://api.9292.nl/0.1/locations/' + me.block.station + '/departure-times?lang=nl-NL';
-			} else if (provider == 'irailbe') {
-				var date = new Date($.now());
-				var todayDate = moment(date).format('DDMMYY');
-				var todayTime = moment(date).format('HHmm');
-				dataURL = 'https://api.irail.be/liveboard/?station=' + me.block.station + '&date=' + todayDate + '&time=' + todayTime + '&arrdep=departure&lang=nl&format=json&fast=false&alerts=false';
-			} else if (provider == 'delijnbe') {
-				dataURL = _CORS_PATH + 'https://www.delijn.be/rise-api-core/haltes/Multivertrekken/' + me.block.station + '/' + me.block.results;
-			}
-
-			$.getJSON(dataURL)
-				.then(function (data) {
-					dataPublicTransport(me, data);
-				});
-
-		}
 
 		function dataPublicTransport(me, data) {
 			var transportobject = me.block;

@@ -1,8 +1,9 @@
 {
-"version": "3.4.0",
+"version": "3.4.1",
 "branch": "beta",
-"last_changes": "websocket connection and new graph module.",
+"last_changes": "Domoticz blocks redesign",
 "changelog" : {
+            "3.4.0": "websocket connection and new graph module.",
             "3.3.5": "Restored the PHP5 ical library next to the PHP7 library.",
             "3.3.4": "Merge of the multigraph branch.",
             "3.3.3": "New PHP calendar module to fix recurring events",

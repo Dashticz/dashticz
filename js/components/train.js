@@ -1,16 +1,13 @@
 /* global _CORS_PATH, language, Dashticz */
 var DT_train = {
     name: 'train',
-    default: {
+    defaultCfg: {
         icon: 'fas fa-train',
-        containerClass: function () {
-            return 'hover trainrow'
-        },
-        containerExtra: function () {
-            return 'data-toggle="modal" data-target="#trainweb" onclick="setSrc(this);"'
-        }
+        containerClass: 'hover trainrow',
+        containerExtra:  'data-toggle="modal" data-target="#trainweb" onclick="setSrc(this);"',
+        refresh: 300
     },
-    run: function (me) {
+    refresh: function (me) {
         var rssurl = _CORS_PATH + 'https://www.rijdendetreinen.nl/rss/';
 
         $.ajax(rssurl, {
@@ -46,9 +43,6 @@ var DT_train = {
                     $('body').append(html);
                 }
             });
-        setTimeout(function () {
-            DT_train.run(me);
-        }, (60000 * 5));
     }
 }
 

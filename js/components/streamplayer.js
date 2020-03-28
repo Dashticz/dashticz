@@ -2,7 +2,7 @@
 // eslint-disable-next-line no-unused-vars
 var DT_streamplayer = {
     name: "streamplayer",
-    run: function (me) {
+    defaultCfg: function () {
         var defaultTracks = [{
                 "track": 1,
                 "name": "Q-music",
@@ -24,7 +24,11 @@ var DT_streamplayer = {
                 "file": "http://icecast.omroep.nl/radio1-bb-mp3"
             },
         ]
-
+        return {
+            tracks: typeof _STREAMPLAYER_TRACKS !=='undefined'? _STREAMPLAYER_TRACKS : defaultTracks
+        }
+    },
+    run: function (me) {
         var html = '<h3 class="title"></h3>' +
             '<audio class="audio1" preload="none"></audio>' +
             '<div class="col-xs-4 transbg hover text-center btnPrev">' +
@@ -42,7 +46,7 @@ var DT_streamplayer = {
         var connecting = null;
         var supportsAudio = !!document.createElement('audio').canPlayType;
         if (supportsAudio) {
-            var tracks = typeof _STREAMPLAYER_TRACKS !== 'undefined' ? _STREAMPLAYER_TRACKS : defaultTracks;
+            var tracks = me.block.tracks;
             var index = 0,
                 playing = false,
                 trackCount = tracks.length,
@@ -115,6 +119,5 @@ var DT_streamplayer = {
         }
     }
 }
-
 
 Dashticz.register(DT_streamplayer);

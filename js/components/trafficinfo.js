@@ -1,51 +1,33 @@
 /* global  Dashticz language*/
 var DT_trafficinfo = {
 	name: "trafficinfo",
-	canHandle: function(block) {
+	canHandle: function (block) {
 		return block && (block.trafficJams || block.roadWorks || block.radars)
 	},
-	default: {
-		icon: 'fas fa-car',
-		containerClass: function () {
-			return 'trafficrow'
+	defaultCfg: function (block) {
+		if (block.refresh && parseFloat(block.refresh) < 60) block.refresh = 60;
+		return {
+			icon: 'fas fa-car',
+			containerClass: 'trafficrow',
+			refresh: 60
 		}
 	},
-	get: function () {
-		return language.misc.loading
-	},
-	run: function (me) {
-
-		//Get data every interval and call function to create block
-		var interval = 60;
-		var trafficobject = me.block
-		if (typeof (trafficobject.interval) !== 'undefined') interval = trafficobject.interval;
-		getProviderData(me);
-
-		if (trafficobject.provider.toLowerCase() == 'ns') {
-			if (parseFloat(interval) < 60) interval = 60; // limit request because of limitations in NS api for my private key ;)
+	defaultContent: language.misc.loading,
+	refresh: function (me) {
+		var trafficobject = me.block;
+		var provider = trafficobject.provider.toLowerCase();
+		var dataURL = '';
+		if (provider == 'anwb') {
+			dataURL = 'https://www.anwb.nl/feeds/gethf';
 		}
+		// To do:
+		//else if(provider == 'flitsmeister'){
+		//	dataURL = _CORS_PATH + 'http://tesla.flitsmeister.nl/teslaFeed.json';
+		//}
 
-		setInterval(function () {
-			getProviderData(me)
-		}, (interval * 1000));
-		return;
-
-		function getProviderData(me) {
-			var trafficobject = me.block;
-			var provider = trafficobject.provider.toLowerCase();
-			var dataURL = '';
-			if (provider == 'anwb') {
-				dataURL = 'https://www.anwb.nl/feeds/gethf';
-			}
-			// To do:
-			//else if(provider == 'flitsmeister'){
-			//	dataURL = _CORS_PATH + 'http://tesla.flitsmeister.nl/teslaFeed.json';
-			//}
-
-			$.getJSON(dataURL, function (data) {
-				dataTrafficInfo(me, data);
-			});
-		}
+		$.getJSON(dataURL, function (data) {
+			dataTrafficInfo(me, data);
+		});
 
 
 		function dataTrafficInfo(me, data) {

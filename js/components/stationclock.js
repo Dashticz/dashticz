@@ -8,12 +8,10 @@ var DT_stationclock = {
             dataType: 'script'
         });
     },
-    default: {
-        containerClass: function () {
-            return 'text-center'
-        }
+    defaultCfg: {
+        containerClass: 'text-center'
     },
-    get: function (me) {
+    defaultContent: function (me) {
         return '<canvas id="clock' + me.mountPoint + '" width="150" height="150">Your browser is unfortunately not supported.</canvas>'
     },
     run: function (me) {
