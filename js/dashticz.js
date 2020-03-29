@@ -195,7 +195,7 @@ var Dashticz = function () {
         var newblock = {
             mountPoint: mountPoint,
             block: blockdef,
-            key: blockdef.key? blockdef.key:mountPoint,
+            key: blockdef.key? blockdef.key:mountPoint.slice(1),
             name: special.name
         }
         return newblock;
