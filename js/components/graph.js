@@ -114,6 +114,7 @@ function getBlockDefaults(devices, hasBlock, b) {
   block.reverseTime = hasBlock && isDefined(b.reverseTime) ? b.reverseTime : false;
   block.sortDevices = hasBlock && isDefined(b.sortDevices) ? b.sortDevices : false;
   block.spanGaps = hasBlock && isDefined(b.spanGaps) ? b.spanGaps : false;
+  block.stacked = hasBlock && isDefined(b.stacked) ? b.stacked : false;
   block.title = hasBlock && isDefined(b.title) ? b.title : false;
   block.toolTipStyle = hasBlock && isDefined(b.toolTipStyle) ? b.toolTipStyle : false;
   block.width = hasBlock && isDefined(b.width) ? b.width : 12;
@@ -1104,27 +1105,28 @@ function createButtons(graph, ranges, customRange) {
       month: btn.text !== false ? btn.text[2] : language.graph.last_month
     };
   
-    if (graph.block.zoom) {
-      buttons += '<button type="button" data-canvas="graphoutput_' + graph.graphIdx + '" id="resetZoom' + graph.graphIdx + '" ' + style + '" class="btn btn-default">';
-      buttons += '  <i class="fas fa-search-minus" style="font-size:14px;color:' + btn.icon + '"></i>';
-      buttons += "</button>";
-  
-      $(document).on("click", "#resetZoom" + graph.graphIdx, function() {
-        Chart.helpers.each(Chart.instances, function(instance) {
-          if (
-            instance.chart.canvas.id ===
-            $("#resetZoom" + graph.graphIdx).data("canvas")
-          ) {
-            instance.chart.resetZoom();
-          }
-        });
-      });
-    }
     ranges.forEach(function(item, i) {
       var btnText = customRange ? item : btnTextList[item];
       buttons += '<button type="button" ' + style + '" class="btn btn-default';
       if (graph.range === item) buttons += " active";
       buttons += '" onclick="updateGraphs(\'' + graph.blockId + "', [" + graph.block.devices + "],'" + item + "','" + graph.popup + '\');"><i class="' + btnIcons[i] + '" style="font-size:14px;color:' + btn.icon + '">&nbsp;</i>&nbsp;' + btnText + "</button> ";
+    });
+  }
+
+  if (graph.block.zoom) {
+    buttons += '<button type="button" data-canvas="graphoutput_' + graph.graphIdx + '" id="resetZoom' + graph.graphIdx + '" ' + style + '" class="btn btn-default">';
+    buttons += '  <i class="fas fa-search-minus" style="font-size:14px;color:' + btn.icon + '"></i>';
+    buttons += "</button>";
+
+    $(document).on("click", "#resetZoom" + graph.graphIdx, function() {
+      Chart.helpers.each(Chart.instances, function(instance) {
+        if (
+          instance.chart.canvas.id ===
+          $("#resetZoom" + graph.graphIdx).data("canvas")
+        ) {
+          instance.chart.resetZoom();
+        }
+      });
     });
   }
 
@@ -1251,7 +1253,7 @@ function getDefaultGraphProperties(graph) {
             }
 
             tooltipEl.removeClass('left right');
-            if (tooltip.yAlign) tooltipEl.addClass(tooltip.xAlign);
+            if (tooltip.yAlign) tooltipEl.removeClass('left right center bottom').addClass(tooltip.xAlign).addClass(tooltip.yAlign);
 
             function getBody(bodyItem) {
               return bodyItem.lines;
@@ -1314,6 +1316,7 @@ function getDefaultGraphProperties(graph) {
       scales: {
         yAxes: [
           {
+            stacked: graph.block.stacked,
             ticks: {
               fontColor: "white",
               source: "auto"
@@ -1326,6 +1329,7 @@ function getDefaultGraphProperties(graph) {
         ],
         xAxes: [
           {
+            stacked: graph.block.stacked,
             offset: true,
             ticks: {
               fontColor: "white",
