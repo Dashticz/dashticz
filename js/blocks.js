@@ -776,7 +776,7 @@ function handleObjectBlock(block, el) {
     } else if (block.icalurl ||
         block.calendars
     ) {
-        var dataId = 'calendars.' + key;
+        var dataId = key;
         var classes = 'transbg containsicalendar containsicalendar' + random;
         appendTvOrCalendarBlock(dataId, classes, width, block, el);
         if (typeof (addCalendar) !== 'function') $.ajax({
