@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+Latest changes
+--------------
+
+Enhancements
+  * Add dewpoint block for TempHumBar devices
+
 3.4.1 (Beta)
 ---------------
 
