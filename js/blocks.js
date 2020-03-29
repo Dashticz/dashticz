@@ -753,13 +753,9 @@ function handleStringBlock(blocktype, columndiv, c) {
 function handleObjectBlock(block, el) {
     var random = getRandomInt(1, 100000);
     var width = 12;
-    var key = el.slice(1);
     var $el=$(el);
-    mountedBlocks[key]=block;
-    block.mountPoint = el;
-    block.$mountPoint = $el;
-//    $(columndiv).data('block', key);
     mountBlock(el, block, null, null);
+    var key = block.key || block.entry;
     if (block.width) width = block['width'];
     if (block.latitude) {
         $el.append(loadMaps(random, block));
