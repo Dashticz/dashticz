@@ -39,7 +39,7 @@ $ICS = str_replace('#','%23',$ICS);
 
 //fallback to previous ical implementation in case PHP version < 7.1
 //Disadvantage: Yearly recurring events don't work very well ...
-$debug = 1;
+$debug = 0;
 if (PHP_VERSION_ID < 70100 || $debug) {
 	$errors=array();
 	set_error_handler(function($errno, $errstr, $errfile, $errline, $errcontext) {
