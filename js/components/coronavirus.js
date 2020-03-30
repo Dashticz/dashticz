@@ -8,9 +8,7 @@ var DT_coronavirus = {
   name: "coronavirus",
   canHandle: function(block, key) {
     return (
-      block &&
-      typeof key === "string" &&
-      key.substring(0, 12) === "coronavirus_"
+      block && block.type === 'corona'
     );
   },
   run: function(me) {
