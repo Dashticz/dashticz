@@ -6,6 +6,10 @@ Latest changes
 
 Enhancements
   * Add dewpoint block for TempHumBar devices
+  * Corona block type
+
+Fixes
+  * Calendar recurring events (experimental)
 
 3.4.1 (Beta)
 ---------------
