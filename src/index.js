@@ -1,10 +1,8 @@
 require("chart.js");
 window.moment = require("moment");
-require('jquery');
-//require('jquery-ui')
-require("jquery-ui/ui/widgets/tabs");
-require("jquery-ui/ui/widgets/slider");
-require('jquery-ui/themes/base/all.css');
+var $=require('jquery');
+require('jquery-ui-dist/jquery-ui.min')
+require('jquery-ui-dist/jquery-ui.min.css')
 //require('jquery-migrate')
 require('jquery-ui-touch-punch');
 require('bootstrap');
