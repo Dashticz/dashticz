@@ -2,6 +2,7 @@
 /* global Dashticz moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL getWeekNumber*/
 var allDevices = Domoticz.getAllDevices();
 var dtGraphs = [];
+var charts = [];
 var _GRAPHREFRESH = 5;
 var p = "p";
 
@@ -690,6 +691,7 @@ function createGraph(graph) {
   }
 
   var chartctx = mydiv.find('canvas')[0].getContext("2d");
+  dtGraphs[graphIdx].chartctx = chartctx.canvas.id;
   var graphProperties = getDefaultGraphProperties(graph);
   $.extend(true, graphProperties, graph.block);
 
@@ -891,6 +893,7 @@ function createGraph(graph) {
   uniqueylabels.forEach(function(element, i) {
     var yaxis = {
       id: element,
+      stacked: graph.block.stacked,
       type: graph.block.cartesian,
       ticks: {
         reverse: false,
@@ -1021,8 +1024,9 @@ function createGraph(graph) {
       }
     ];
   }
-  //console.log(graphProperties);
-  new Chart(chartctx, graphProperties);
+  //console.log(graphProperties);  
+  var chart = new Chart(chartctx, graphProperties);
+  //charts[dtGraphs[graphIdx].chartctx] = chart;
 }
 
 function createHeader(graph, showValues, buttons){
@@ -1180,6 +1184,8 @@ function showData(graphIdx){
     html += '     </div>';
     html += ' </div>';
     html += '</div>';
+
+
 
     $(html).appendTo('body');
 
