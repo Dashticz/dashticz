@@ -1276,16 +1276,26 @@ function getDefaultGraphProperties(graph) {
               });
 
               html += '</thead><tbody>';
-
+              var total = 0;
+              
               bodyLines.forEach(function (body, i) {
                 var colors = tooltip.labelColors[i];
-                var key = body[0].split(':')[0];
                 var style = 'background:' + colors.backgroundColor + '; border-color:' + colors.borderColor + ';';
                 var span = '<span class="chartjs-tooltip-key" style="' + style + '"></span>';
+                var key = body[0].split(':')[0];                
+                var val = parseFloat(body[0].split(':')[1].replace('NaN', '0'));
+                total += val;
                 html += '<tr><td>' + span + '</td>';
                 html += '<td class="popup_' + key + '">' + key + '</td>';
-                html += '<td class="value">' + parseFloat(body[0].split(':')[1].replace('NaN', '0')).toFixed(2) + '</td></tr>';
+                html += '<td class="value">' + val.toFixed(2) + '</td></tr>';
               });
+
+              if(graph.block.stacked){
+                html += '<tr><td><span class="chartjs-tooltip-key" style="background:#fff;border-color:#000;"></span></td>';
+                html += '<td>Total</td>';
+                html += '<td class="value">' + total.toFixed(2) + '</td></tr>';
+              }
+
               html += '</tbody>';
               tooltipEl.find('table').html(html);
             }
