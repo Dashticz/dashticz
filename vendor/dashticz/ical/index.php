@@ -39,9 +39,22 @@ $ICS = str_replace('#','%23',$ICS);
 
 //fallback to previous ical implementation in case PHP version < 7.1
 //Disadvantage: Yearly recurring events don't work very well ...
-if (PHP_VERSION_ID < 70100) {
-	ical5($ICS, $MAXITEMS);
-	exit(0);
+$debug = 1;
+if (PHP_VERSION_ID < 70100 || $debug) {
+	$errors=array();
+	set_error_handler(function($errno, $errstr, $errfile, $errline, $errcontext) {
+		// error was suppressed with the @-operator
+//		if (0 === error_reporting()) {
+//			return false;
+//		}
+		$errors[]=$errstr;
+//		throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
+		return false;
+	});
+	
+	@$res = ical5($ICS, $MAXITEMS);
+	$res['_errors'] = $errors;
+	die(json_encode($res));
 } 
 
 require_once('./vendor/autoload.php');
@@ -124,7 +137,6 @@ if($evts){
 	}
 }
 ksort($data);
-die(json_encode($data));
-
+return $data;
 }
 
