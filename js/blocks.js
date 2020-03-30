@@ -1287,7 +1287,7 @@ function triggerStatus(block) {
 
 // eslint-disable-next-line no-unused-vars
 function triggerChange(block) {
-    var idx=block.idx;
+    var idx=block.mountPoint;
     var device=block.device;
     var value=device.LastUpdate;
     var $div=block.$mountPoint.find('.mh');
