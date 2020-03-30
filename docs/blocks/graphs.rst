@@ -78,6 +78,8 @@ The following block parameters can be used to configure the graph:
       | ``true``: enables the feature and display a vertical bar chart, grouped by device
       | ``'vertical'``: is the same as true
       | ``'horizontal'``: enables the feature and display a horizontal bar chart, grouped by device
+  * - stacked
+    - ``true``: Show stacked bar charts. See below for an example.
   * - beginAtZero
     - This forces the Y axis to begin at 0 (zero). The beginAtZero setting can accomodate multiple Y axes. For example, for a graph with 3 Y axes, you can use: ``beginAtZero: [true, false, true]`` For a graph with a single Y axis, you can use: ``beginAtZero: true``
   * - height
@@ -751,6 +753,54 @@ Same as above, but setting *groupByDevice* to *'horizontal'* shows this ...
 
 .. image :: img/group_by_device_3.png
 
+
+stacked
+~~~~~~~
+
+With *stacked: true* parameter graph bars wil be stacked.
+::
+
+	blocks['group_by_solar_vs_grid'] = {	
+		title: 'Consumption vs Generation',
+		devices: [258,1],
+		graph: 'bar',
+		stacked: true,
+		graphTypes: ['v'],
+		toolTipStyle: true,
+		debugButton: true,
+		custom : {
+        	"Last Day": {
+				range: 'last',
+				groupBy: 'hour',
+				filter: '24 hours',
+            	data: {
+					Generation: 'd.v_1',
+					Consumption: 'd.v_258*-1'
+            	},
+			},
+			"Last Week": {
+				range: 'month',
+				groupBy: 'day',
+				filter: '7 days',
+            	data: {
+					Generation: 'd.v_1',
+					Consumption: 'd.v_258*-1'
+            	},
+        	},
+        	"Last Month": {
+				range: 'month',
+				groupBy: 'week',
+            	data: {
+					Generation: 'd.v_1',
+					Consumption: 'd.v_258*-1'
+            	},
+        	}
+		},
+		lineTension: 0.5,
+		datasetColors: ['green', 'red']
+	}  
+
+.. image :: img/graph_stacked.png
 
 Examples
 ---------
