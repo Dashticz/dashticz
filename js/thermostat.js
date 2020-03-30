@@ -126,7 +126,7 @@ function getThermostatBlock(block) {
 }
 
 function switchThermostat(block, setpoint) { //todo
-    var idx = block.idx;
+    var idx = block.device.idx;
     var hasPassword = block.password;
     if (!Dashticz.promptPassword(hasPassword)) return;
 
@@ -136,7 +136,6 @@ function switchThermostat(block, setpoint) { //todo
 
 function getEvohomeZoneBlock(block) {
     var device=block.device;
-    var idx = block.idx;
     var temp = device.Temp;
     var setpoint = device.SetPoint;
     var status = device.Status;
@@ -226,7 +225,7 @@ function addEvohomeZoneFunctions(block) { //todo
                     switchEvoZone(block, newValue, true);
                     // sliding = false;
                 }
-                Domoticz.release(idx); //release message queue
+                Domoticz.release(block.device.idx); //release message queue
             }, 2000);
         } else {
             input.text(0);
@@ -267,7 +266,7 @@ function addEvohomeZoneFunctions(block) { //todo
 function switchEvoZone(block, setpoint, override) { //todo
 
     var mode = override ? '&mode=TemporaryOverride&until=' + moment().add(settings['evohome_boost_zone'], 'minutes').toISOString() : '&mode=Auto';
-    var idx=block.idx;
+    var idx=block.device.idx;
     /*
         //sliding = idx;
         Domoticz.hold(idx); //hold message queue
@@ -353,7 +352,7 @@ function getEvohomeControllerBlock(block) {
     });
     $div.find('.evoSelect').blur(function () {
         //sliding = false;
-        Domoticz.release(idx); //release message queue
+        Domoticz.release(block.device.idx); //release message queue
         $div.find('.title').toggleClass('hide');
         $div.find('.evoSelect').toggleClass('hide');
     });
@@ -371,7 +370,6 @@ function getEvohomeControllerBlock(block) {
 }
 
 function addEvohomeControllerFunctions(block) { //todo
-    var idx=block.idx;
     var $div=block.$mountPoint.find('.mh');
     $div.find('.btn-number').on("click", function () {
         //Domoticz.hold(idx); //hold message queue // todo: temp disabled
@@ -396,7 +394,7 @@ function addEvohomeControllerFunctions(block) { //todo
 }
 
 function changeEvohomeControllerStatus(block, status) {
-    var idx=block.idx;
+    var idx=block.device.idx;
     var hasPassword = block.password;
     if (!Dashticz.promptPassword(hasPassword)) {
         getEvohomeControllerBlock(block);
@@ -414,7 +412,6 @@ function changeEvohomeControllerStatus(block, status) {
 
 function getEvohomeHotWaterBlock(block) {
     var device=block.device;
-    var idx=block.idx;
     var temp = device.Temp + _TEMP_SYMBOL;
     var state = device.State;
     var status = device.Status;
@@ -454,7 +451,7 @@ function getEvohomeHotWaterBlock(block) {
 //    if (typeof (addedThermostat[idx]) === 'undefined') {
         $div.find('.btn-number').on("click", function () {
             //sliding = idx;
-            Domoticz.hold(idx); //hold message queue
+            Domoticz.hold(block.device.idx); //hold message queue
             state = (state == 'Off') ? 'On' : 'Off';
             switchEvoHotWater(block, state, state == 'On');
         });
@@ -465,7 +462,7 @@ function getEvohomeHotWaterBlock(block) {
 
 function switchEvoHotWater(block, state, override) {
 
-    var idx=block.idx;
+    var idx=block.device.idx;
     var mode = override ? '&mode=TemporaryOverride&until=' + moment().add(settings['evohome_boost_hw'], 'minutes').toISOString() : '&mode=Auto';
     /*    Domoticz.hold(idx); //hold message queue
         //sliding = idx;
