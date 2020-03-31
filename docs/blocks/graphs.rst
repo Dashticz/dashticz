@@ -757,7 +757,7 @@ Same as above, but setting *groupByDevice* to *'horizontal'* shows this ...
 stacked
 ~~~~~~~
 
-With *stacked: true* parameter graph bars wil be stacked.
+With *stacked: true* parameter graph bars wil be stacked. To show the total value of the stacked bars on the tooltip you have to add *toolTipStyle: true* to the graph block.
 ::
 
 	blocks['group_by_solar_vs_grid'] = {	
