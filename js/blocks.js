@@ -1955,13 +1955,13 @@ function getTempHumBarBlock(block) {
     }
     if (typeof (device['DewPoint']) !== 'undefined') {
         if (single_block) {
-            blockValues[0].value += ' / ' + device['DewPoint'] + ' °';
+            blockValues[0].value += ' / ' + number_format(device['DewPoint'], 1) + ' °';
         } else {
             blockValues.push({
                 icon: 'wi wi-fog',
                 idx: idx + '_4',
-                title: device['Name']+'x',
-                value: device['DewPoint'],
+                title: device['Name'],
+                value: number_format(device['DewPoint'], 1),
                 unit: _TEMP_SYMBOL
             });
         }
