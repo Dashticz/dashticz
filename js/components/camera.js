@@ -6,7 +6,7 @@ var DT_camera = {
   name: "camera",
 
   canHandle: function(block) {    
-    return block && block.imageUrl;
+    return block && block.type === 'camera';
   },
   run: function(me) {
 
