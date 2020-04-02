@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
-/* global Dashticz moment settings config language time blocks graph Chart _TEMP_SYMBOL getWeekNumber*/
-var api = 'https://coronavirus-tracker-api.herokuapp.com/v2/';
+/* global Dashticz moment settings _CORS_PATH config language time blocks graph Chart _TEMP_SYMBOL getWeekNumber*/
+var api = _CORS_PATH + 'https://coronavirus-tracker-api.herokuapp.com/v2/';
 var flagUrl = 'https://raw.githubusercontent.com/clinkadink/country-flags/master/png100px/';
 var nf = Intl.NumberFormat();
 
@@ -16,6 +16,7 @@ var DT_coronavirus = {
     if (isDefined(me.block.graph) && isDefined(me.block.countryCode)) {
       me.primaryIdx = me.mountPoint.slice(1);
       me.graphIdx = me.primaryIdx;
+      me.multigraph = false;
       me.name = isDefined(me.block.title) ? me.block.title : me.name.toUpperCase();
       $.extend(me.block, getBlockDefaults(false, true, me.block));
       createDashGraph(me);
@@ -35,6 +36,7 @@ function createDashGraph(me) {
   
   $.getJSON(dataUrl, function(json) {
 
+    var d, t;
     var stats = {};
     stats.latestConfirmed = json.latest.confirmed;
     stats.latestDeaths = json.latest.deaths;
@@ -43,23 +45,26 @@ function createDashGraph(me) {
     stats.lastUpdated = moment(json.locations[0].last_updated).format("HH:mm, DD/MM/YYYY");
     stats.ratio = '1:' + (stats.population/stats.latestConfirmed).toFixed(0);
 
-    var template = '<span><img src="{{flag}}.png" class="flag">{{country}}: <i class="fas fa-hospital fx" style="color:{{color}};">&nbsp;</i>{{confirmed}}&nbsp;'
-    template += '<i class="fas fa-skull-crossbones fx" style="color:{{color}};">&nbsp;</i>{{deaths}}&nbsp;'
-    template += '<i class="fas fa-users fx" style="color:{{color}};">&nbsp;</i>{{ratio}}';
-    var data = { 
+    t = '<span>';
+    t += '  <img src="{{flag}}.png" class="flag">{{country}}: <i class="fas fa-hospital fx" style="color:{{color}};">&nbsp;</i>{{confirmed}}&nbsp;'
+    t += '  <i class="fas fa-skull-crossbones fx" style="color:{{color}};">&nbsp;</i>{{deaths}}&nbsp;'
+    t += '  <i class="fas fa-users fx" style="color:{{color}};">&nbsp;</i>{{ratio}}';
+    t += '  <i class="fas fa-angle-double-up fx" style="color:{{color}};">&nbsp;</i>{{doubling}}';
+    t += '</span>';
+
+    d = { 
         flag: flagUrl + me.block.countryCode.toLowerCase(),
         country: stats.country,
         confirmed: nf.format(stats.latestConfirmed),
         deaths: nf.format(stats.latestDeaths),
         ratio: stats.ratio,
-        color: me.block.iconColour
-	  };
-
-    me.currentValue = Handlebars.compile(template)(data);
-
+        color: me.block.iconColour,
+        doubling: getDoublingHours(json)
+    };
+    
     var confirmed = json.locations[0].timelines.confirmed.timeline;
     var deaths = json.locations[0].timelines.deaths.timeline;
-    
+    var startDate = isDefined(me.block.startDate)? me.block.startDate : '22/01/2020';
 
     var graphData = {
       labels: [],
@@ -77,8 +82,6 @@ function createDashGraph(me) {
       ]
     };
 
-    var startDate = isDefined(me.block.startDate)? me.block.startDate : '22/01/2020';
-
     for (var key in confirmed) {
       if(moment(key).isSameOrAfter(moment(startDate, 'DD/MM/YYYY'))){
         graphData.labels.push(moment(key).format("YYYY-MM-DD"));
@@ -93,7 +96,7 @@ function createDashGraph(me) {
     }
 
     var buttons = createButtons(me);
-    var html = createHeader(me, true, buttons);
+    var html = createHeader(me, true, buttons);    
     var mountPoint = $(me.mountPoint + " > div");
     mountPoint.addClass("block_coronavirus").addClass("block_graph");
 
@@ -117,8 +120,16 @@ function createDashGraph(me) {
     );
     setHeight = me.block.height ? me.block.height : setHeight;
     $(me.mountPoint + " .block_coronavirus").css("height", setHeight);
-    mountPoint.html(html);
 
+    mountPoint
+      .html(html)
+      .promise()
+      .done(function() {
+        $(".graphValues" + me.graphIdx).html(
+          Handlebars.compile(t)(d)
+        );
+      });   
+    
     var chartctx = mountPoint.find("canvas")[0].getContext("2d");
     new Chart(chartctx, graphProperties);
   });
@@ -136,14 +147,14 @@ function createReportBlock(me, province){
 
       var template = "";
       template = '<div class="col-lg-2 col-sm-3 vertical-center">';
-      template += '<i class="fas fa-{{icon}} fx"></i>';
+      template += ' <i class="fas fa-{{icon}} fx"></i>';
       template += "</div>";
       template += '<div class="col-lg-6 col-sm-5 col-data">';
-      template += '<strong class="title">{{title}}</strong><br>';
-      template += '<span class="report">{{report}}</span><br>';
+      template += ' <strong class="title">{{title}}</strong><br>';
+      template += ' <span class="report">{{report}}</span><br>';
       template += "</div>";
       template += '<div class="col-lg-4 col-sm-4 vertical-center">';
-      template += '<img src="{{flag}}.png" class="flag">';
+      template += ' <img src="{{flag}}.png" class="flag">';
       template += "</div>";
 
       var report = me.block.report.toLowerCase();
@@ -160,17 +171,7 @@ function createReportBlock(me, province){
       }
 
       if (report === "doubling" && isDefined(me.block.countryCode)) {
-        var timeline = json.locations[0].timelines.confirmed.timeline;
-        var halfLatestConfirmed = json.latest.confirmed / 2;
-        var d = 0;
-        var doublingHours = 0;
-        reverseForIn(timeline, function(key) {
-          if (this[key] <= halfLatestConfirmed && doublingHours === 0) {
-            doublingHours = d * 24;
-          }
-          d++;
-        });
-        data = doublingHours + " hours";
+        data = getDoublingHours(json) + " hours";
         icon = "angle-double-up";
       }
 
@@ -206,3 +207,22 @@ function reverseForIn(obj, f) {
     f.call(obj, arr[i]);
   }
 }
+
+function getDoublingHours(json){
+  var timeline = json.locations[0].timelines.confirmed.timeline;
+  var halfLatestConfirmed = json.latest.confirmed / 2;
+  var d = 0;
+  var doublingHours = 0;
+  reverseForIn(timeline, function(key) {
+    if (this[key] <= halfLatestConfirmed && doublingHours === 0) {
+      var nextDay = Object.values(timeline)[Object.keys(timeline).length-d];
+      var increase = nextDay - this[key];
+      var hours = (halfLatestConfirmed - this[key]) / increase * 24;
+      doublingHours = (d * 24 - hours).toFixed(0);      
+    }
+    d++;
+  });
+  return doublingHours;
+}
+
+

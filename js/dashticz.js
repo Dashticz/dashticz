@@ -22,7 +22,8 @@ var Dashticz = function () {
         'alarmmeldingen',
         'secpanel',
 		'graph',
-        'coronavirus'
+        'coronavirus',
+		'camera'
     ]
     var components = []
     var mountedBlocks = [];
