@@ -4,12 +4,20 @@ Release Notes
 Latest changes
 --------------
 
+3.4.2 (Beta) (3-4-2020)
+------------------------
+
 Enhancements
   * Add dewpoint block for TempHumBar devices
   * Corona block type
+  * Custom header for graph blocks. See ...
+  * Camera block. See ...
 
 Fixes
   * Calendar recurring events (experimental)
+
+Internal
+  * Refactoring blocktypes
 
 3.4.1 (Beta)
 ---------------

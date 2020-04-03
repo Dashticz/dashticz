@@ -89,11 +89,13 @@ function getBlockDefaults(devices, hasBlock, b) {
   block.buttonsText = hasBlock && isDefined(b.buttonsText) ? b.buttonsText : false;
   block.cartesian = hasBlock && isDefined(b.cartesian) ? b.cartesian : "linear";
   block.custom = hasBlock && isDefined(b.custom) ? b.custom : false;
+  block.customHeader = hasBlock && isDefined(b.customHeader) ? b.customHeader : false;
   block.debugButton = hasBlock && isDefined(b.debugButton) ? b.debugButton : false;
   block.displayFormats = hasBlock && isDefined(b.displayFormats) ? b.displayFormats : false;
   block.drawOrderDay = hasBlock && isDefined(b.drawOrderDay) ? b.drawOrderDay : false;
   block.drawOrderLast = hasBlock && isDefined(b.drawOrderLast) ? b.drawOrderLast : false;
   block.drawOrderMonth = hasBlock && isDefined(b.drawOrderMonth) ? b.drawOrderMonth : false;
+  block.flash = hasBlock && isDefined(b.flash) ? b.flash : false;
   block.gradients = hasBlock && isDefined(b.gradients) ? b.gradients : false;
   block.graph = hasBlock && isDefined(b.graph) ? b.graph : "line";
   block.graphTypes = hasBlock && isDefined(b.graphTypes) ? b.graphTypes : false;
@@ -375,8 +377,39 @@ function getGraphData(devices, selGraph) {
     $.each(devices, function (i, device) {
       var graphIdx = device.blockId + device.idx;
       var graph = dtGraphs[graphIdx]; 
+      var header = graph.block.customHeader;
+      var customValues = [];
+
+      // 02/04/2020 - Custom header
+      if (header) {
+        for (key in header) {
+          try {
+            if (device.idx === parseInt(key)) {
+              graph.currentValue = eval(
+                header[key].replace("data", "graph.currentValue")
+              );
+            } else if (isNaN(key)) {
+              header[key] = header[key].replace(
+                "data." + device.idx,
+                'parseFloat("' + graph.currentValue + '")'
+              );
+
+              if (devices.length - 1 === i) {
+                customValues.push(eval(header[key]));
+              }
+            }
+          } catch (error) {
+            console.log("Error in customHeader:", key, header[key]);
+            console.log(error);
+          }
+        }
+      }
             
       currentValues.push(graph.currentValue);
+      $.each(customValues, function(x, customValue ) {
+        currentValues.push(customValue);
+      });        
+      updateHeaderValues(graph, true);
   
       if (isDefined(selGraph)) {
         graph.range = selGraph;
@@ -385,8 +418,8 @@ function getGraphData(devices, selGraph) {
   
       if (graph.lastRefreshTime < time() - parseFloat(_GRAPHREFRESH) * 60) {
         graph.forced = true;
-      }
-  
+      }  
+
       if (graph.forced) {
         var isInitial = graph.range === "initial";
         graph.forced = false;
@@ -646,7 +679,7 @@ function getGraphData(devices, selGraph) {
                     });                  
                     multidata.result = groupArray;
                   }
-                  
+                  if(graph.blockId === 'block_71') console.log(multidata.result[multidata.result.length-1])
                   graph.data = multidata;
                   createGraph(graph);
                 }
@@ -684,6 +717,7 @@ function createGraph(graph) {
     mydiv.addClass("block_" + graphIdx);
   }
   mydiv.html(html);
+  updateHeaderValues(graph, true);
 
   if (!(graph.data.result && graph.data.result.length)) {
     console.log("No graph data for device " + graphIdx);
@@ -1024,35 +1058,15 @@ function createGraph(graph) {
       }
     ];
   }
-  //console.log(graphProperties);  
+  //console.log(graphProperties); 
   var chart = new Chart(chartctx, graphProperties);
   //charts[dtGraphs[graphIdx].chartctx] = chart;
 }
 
 function createHeader(graph, showValues, buttons){
-  var title = '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar" style="font-size:20px;margin-left:5px;color:' + graph.block.iconColour + '">&nbsp;</i>' + graph.name + '&nbsp;<span class="graphcurrent' + graph.graphIdx + '">';
-  var span = showValues? '&nbsp;<i class="fas fa-equals" style="font-size:14px;color:' + graph.block.iconColour + '">&nbsp;</i>&nbsp;' : '';
+  var title = '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar" style="font-size:20px;margin-left:5px;color:' + graph.block.iconColour + '">&nbsp;</i>' + graph.name + '&nbsp;<span class="graphValues' + graph.graphIdx + '">';
   var btns = isDefined(buttons)? buttons : '';
-
-  if (!graph.multigraph) {
-    if (isDefined(graph.currentValue)) {
-      title += span + (showValues? graph.currentValue.replace( /, /g, '<span style="color:' + graph.block.iconColour + ';font-weight:900;font-size:16px;"> | </span>') + '</span>' : '');
-    }
-  } else {
-    if (isDefined(graph.currentValues)) {
-      title += span;
-      if(showValues){
-        $.each(graph.currentValues, function(i, val) {
-          if (i < graph.currentValues.length - 1) {
-            title += graph.currentValues[i] + '<span style="color:' + graph.block.iconColour + ';font-weight:900;font-size:16px;"> | </span></span>';
-          } else {
-            title += graph.currentValues[i];
-          }
-        });
-      }      
-    }
-  }
-  title += "</div>";
+  title += "</span></div>";
   var html = "";
   html += title + '<div class="graphbuttons" >' + btns + "</div>";
   html += "</div>";
@@ -1146,6 +1160,54 @@ function createButtons(graph, ranges, customRange) {
   }
   buttons += "</div>";
   return buttons;
+}
+
+function updateHeaderValues(graph, showValues) {
+
+  var $values = $(".graphValues" + graph.graphIdx);
+ 
+  var t = "";
+  t += "<span>";
+  t += " {{#if show}}";
+  t += "   {{#if mg}}";
+  t += "     {{#if cvs}}";
+  t += '       <i class="fas fa-equals" style="color:{{icon}}">&nbsp;</i>';
+  t += "       {{#each cvs}}";
+  t += '         {{this}}<span style="color:{{icon}}">{{#unless @last}} | </span>{{/unless}}';
+  t += "       {{/each}}";
+  t += "     {{/if}}";
+  t += "   {{else}}";
+  t += "     {{#if cv}}";
+  t += '       &nbsp;<i class="fas fa-equals" style="color:{{icon}}">&nbsp;</i>&nbsp;';
+  t += "       {{cv}}";
+  t += "     {{/if}}";
+  t += "   {{/if}}";
+  t += " {{/if}}";
+  t += "</span>";
+
+  var data = {
+    show: showValues,
+    mg: graph.multigraph,
+    cv: graph.currentValue,
+    cvs: graph.currentValues,
+    icon: graph.block.iconColour
+  };
+
+  $values
+    .empty()
+    .html(Handlebars.compile(t)(data))
+    .promise()
+    .done(function() {
+      if (graph.block.flash && graph.block.flash > 0) {
+        $values
+          .toggleClass("blockchange")
+          .delay(graph.block.flash)
+          .queue(function(next) {
+            $(this).toggleClass("blockchange");
+            next();
+          });
+      }
+    });
 }
 
 function showData(graphIdx){
@@ -1523,6 +1585,7 @@ function groupByDevice(devices) {
           mountPoint.addClass("block_graph");
           mountPoint.addClass("block_" + graphIdx);
           mountPoint.html(html);
+          updateHeaderValues(graph, false);
           var graphwidth = $(".block_" + graphIdx).width();
           var setHeight = Math.min(Math.round((graphwidth / window.innerWidth) * window.innerHeight - 25), window.innerHeight - 50);
           setHeight = graph.block.height ? graph.block.height : setHeight;
