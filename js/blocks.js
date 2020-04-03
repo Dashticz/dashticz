@@ -1477,7 +1477,7 @@ function createBlocks(blockParent, blockValues) {
         var block = {};
         $.extend(block, blockValue) //create a block from the prototype
         $.extend(block, blockParent);
-        $.extend(block, blocks[blockValue.idx]);
+//        $.extend(block, blocks[blockValue.idx]); //I don't think we should do this: It will overwrite block settings of a custom block
         block.idx = blockValue.idx;
         var html = '<div class="mh transbg block_' + blockValue.idx + ' col-xs-' + (block.width || 4) + '"/>';
         $div.append(html);

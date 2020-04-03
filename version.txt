@@ -1,8 +1,9 @@
 {
-"version": "3.4.1",
+"version": "3.4.2",
 "branch": "beta",
-"last_changes": "Domoticz blocks redesign",
+"last_changes": "Corona block, Camera block, Dewpoint, graph custom header",
 "changelog" : {
+            "3.4.1": "Domoticz blocks redesign",
             "3.4.0": "websocket connection and new graph module.",
             "3.3.5": "Restored the PHP5 ical library next to the PHP7 library.",
             "3.3.4": "Merge of the multigraph branch.",
