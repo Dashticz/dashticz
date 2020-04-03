@@ -1486,6 +1486,10 @@ function createBlocks(blockParent, blockValues) {
         $.extend(block, blockValue) //create a block from the prototype
         $.extend(block, blockParent);
 //        $.extend(block, blocks[blockValue.idx]); //I don't think we should do this: It will overwrite block settings of a custom block
+        //Although for subdevices it would be nice to use corresponding block setting
+        //so let's overwrite in case parent and blockvalue idx are different
+        //because in that case we are creating subdevices
+        if(blockParent.idx !== blockValue.idx) $.extend(block, blocks[blockValue.idx]);
         block.idx = blockValue.idx;
         var html = '<div class="mh transbg block_' + blockValue.idx + ' col-xs-' + (block.width || 4) + '"/>';
         $div.append(html);
