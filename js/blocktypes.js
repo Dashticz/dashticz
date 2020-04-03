@@ -273,7 +273,7 @@ function getBlockTypesBlock(block) {
             var blockValues = [];
             var protoblock = blocktypes[field][device[field]];
 
-            if (typeof (protoblock['icon']) !== 'undefined') {
+            if (typeof (protoblock['icon']) !== 'undefined' || typeof (protoblock['image']) !== 'undefined') {
                 //we have a single block
                 var newblock = {};
                 newblock.idx = block.idx
