@@ -616,7 +616,9 @@ function getStatusBlock(block) {
             elements.push(val.replace(/([<,>])+/g, ''));
         });
     }
-
+    if (block.unit && typeof block.unit === 'string') {
+        value+=' '+block.unit;
+    }
     for (var d in elements) {
         var deviceValue = device[elements[d]];
         if (format) {
@@ -630,6 +632,7 @@ function getStatusBlock(block) {
         title = title.replace('<' + elements[d] + '>', device[elements[d]]);
     }
 
+    //todo: this should not be part of blocks I guess. But we've reserved unit already for the 'real' unit for some devices
     if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['unit']) !== 'undefined') {
         var unitArray = blocks[idx]['unit'].split(";");
         value = value.replace(unitArray[0], unitArray[1]);
