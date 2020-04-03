@@ -174,7 +174,7 @@ Basic workflow
 
 10. Push the changes to your own Dashticz repository::
 
-      git push mynewfeature
+      git push origin mynewfeature
 
 11. On github.com create a Pull Request with the request to merge your own branch into beta
 
