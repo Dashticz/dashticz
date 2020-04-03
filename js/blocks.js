@@ -611,7 +611,8 @@ function getStatusBlock(block) {
     // eslint-disable-next-line no-useless-escape
     var tagRegEx = /<[\w\s="/.':;#-\/\?]+>/gi;
     var matches = (title + value).match(tagRegEx)
-    if (matches) {
+    //todo: see dirty hack below with '<br />'
+    if (matches && matches[0] !=='<br />') {
         matches.map(function (val) {
             elements.push(val.replace(/([<,>])+/g, ''));
         });
