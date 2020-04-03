@@ -126,7 +126,7 @@ function getBlockDefaults(devices, hasBlock, b) {
 }
 
 function getDeviceDefaults(device, popup) {
-  moment.locale(settings["calendarlanguage"]);
+  moment.locale(settings["language"]);
   var currentValue = device["Data"];
   var sensor = "counter";
   var txtUnit = "?";
