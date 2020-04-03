@@ -1,5 +1,5 @@
-@import url("/css/plugins.css"); 
-@import url("/css/helpers.css"); 
+@import url("./css/plugins.css"); 
+@import url("./css/helpers.css"); 
 
 #loaderHolder {
   position: absolute;
