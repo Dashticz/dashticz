@@ -596,14 +596,18 @@ function appendTvOrCalendarBlock(dataId, classes, width, block, columndiv) {
 function getStatusBlock(block) {
     var idx = block.idx;
     var device = block.device;
-    var value = block.value;
-    var title = block.title;
+    var value = block.value? block.value:'';
+    var title = block.title? block.title:'';
     var format = block.format;
     var decimals = block.decimals;
     var image = block.image;
     var icon = block.icon;
     var elements = [];
 
+    if(!value && !title) {
+        console.log('No title and no value for block');
+        console.log(block)
+    }
     // eslint-disable-next-line no-useless-escape
     var tagRegEx = /<[\w\s="/.':;#-\/\?]+>/gi;
     var matches = (title + value).match(tagRegEx)
