@@ -166,21 +166,20 @@ function loadFiles(dashtype) {
                 dataType: 'script'
             });
         })
+        .fail(function() {
+            return $.Deferred()
+            .reject(new Error("Error in custom.js"))
+        })
         .then(function () {
-            if (typeof getExtendedBlockTypes == 'undefined') {
-                return $.Deferred()
-                    .reject(new Error("Error in custom.js"))
-            }
             return $.when(
-                //            $.ajax({ url: 'js/switches.js', async: false, dataType: 'script' });
                 $.ajax({
                     url: 'js/blocks.js',
                     dataType: 'script'
                 }),
-                /* $.ajax({
-                    url: 'js/graphs.js',
+                $.ajax({
+                    url: 'js/blocktypes.js',
                     dataType: 'script'
-                }), */
+                }),
                 $.ajax({
                     url: 'js/login.js',
                     dataType: 'script'
