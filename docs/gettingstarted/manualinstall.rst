@@ -114,3 +114,12 @@ Replace 192.168.1.3 with the IP Address (and Port number) for your web server, N
 
 By default, Dashticz will show all your Domoticz favorites on the dashboard.
 
+Troubleshooting
+---------------
+
+After updating my Ubuntu version I had to manually enable php7.3 on Apache::
+
+  sudo a2enmod php7.3
+  sudo systemctl restart apache2
+
+
