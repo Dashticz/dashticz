@@ -11,6 +11,9 @@ Enhancements
 Fixes
   * Calendar recurring events (experimental)
 
+Internal
+  * Refactoring blocktypes
+
 3.4.1 (Beta)
 ---------------
 

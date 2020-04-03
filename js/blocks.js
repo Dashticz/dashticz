@@ -1,5 +1,5 @@
 /* eslint-disable no-debugger */
-/*global blocktypes:writable, language, _TEMP_SYMBOL, getExtendedBlockTypes, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
+/*global getBlockTypesBlock, language, _TEMP_SYMBOL, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
 /*global getSpotify, loadNZBGET, getCoin, loadChromecast, loadGarbage, loadSonarr */
 /*global Dashticz, Domoticz, getLog, addCalendar */
 /*global getRandomInt, moment, number_format */
@@ -22,254 +22,12 @@
 /*from components/graph.js*/
 /*global showPopupGraph*/
 /* Exports: */
-blocktypes = {};
-blocktypes.SubType = {};
-blocktypes.SubType['Visibility'] = {
-    icon: 'fas fa-eye',
-    title: '<Name>',
-    value: '<Data>'
-};
-blocktypes.SubType['Electric'] = {
-    icon: 'fas fa-plug',
-    title: '<Name>',
-    value: '<Data>'
-};
-blocktypes.SubType['Lux'] = {
-    icon: 'fas fa-sun-o',
-    title: '<Name>',
-    value: '<Data>'
-};
-blocktypes.SubType['Pressure'] = {
-    icon: 'wi wi-barometer',
-    title: '<Name>',
-    value: '<Data>',
-    format: true,
-    decimals: 1
-};
-blocktypes.SubType['Barometer'] = {
-    icon: 'wi wi-barometer',
-    title: '<Name>',
-    value: '<Data>'
-};
-blocktypes.SubType['Sound Level'] = {
-    icon: 'fas fa-volume-up',
-    title: '<Name>',
-    value: '<Data>'
-};
-blocktypes.SubType['Distance'] = {
-    icon: 'fas fa-eye',
-    title: '<Name>',
-    value: '<Data>'
-};
-blocktypes.SubType['Alert'] = {
-    icon: 'fas fa-warning',
-    title: '<Data>',
-    value: '<Name>'
-};
-blocktypes.SubType['Percentage'] = {
-    icon: 'fas fa-percent',
-    title: '<Name>',
-    value: '<Data>'
-};
-blocktypes.SubType['Text'] = {
-    icon: 'fas fa-file',
-    title: '<Name>',
-    value: '<Data>'
-};
-blocktypes.SubType['Counter Incremental'] = {
-    icon: 'fa fa-bolt',
-    title: '<Name>',
-    value: '<Data>',
-    format: true,
-    decimals: 2
-};
-blocktypes.SubType['Voltage'] = {
-    icon: 'fas fa-bolt',
-    title: '<Name>',
-    value: '<Data>'
-};
-blocktypes.SubType['Solar Radiation'] = {
-    icon: 'fa fa-sun-o',
-    title: '<Name>',
-    value: '<Data>',
-    format: true,
-    decimals: 0
-};
-blocktypes.SubType['Thermostat Mode'] = {
-    icon: 'fas fa-thermometer-half',
-    title: '<Name>',
-    value: '<Data>'
-};
-
-blocktypes.SensorUnit = {};
-blocktypes.SensorUnit['Fertility'] = {
-    icon: 'fas fa-flask',
-    title: '<Name>',
-    value: '<Data>'
-};
-
-blocktypes.Type = {};
-blocktypes.Type['Rain'] = {
-    icon: 'fas fa-tint',
-    title: '<Name>',
-    value: '<Rain>mm',
-    format: true,
-    decimals: 1
-};
-blocktypes.Type['Wind'] = {
-    icon: 'wi wi-wind-direction',
-    title: language.wind.wind,
-    value: ''
-};
-blocktypes.Type['Temp'] = {
-    icon: 'fas fa-thermometer-half',
-    title: '<Name>',
-    value: '<Temp>' + _TEMP_SYMBOL,
-    format: true,
-    decimals: 1
-};
-blocktypes.Type['Air Quality'] = {
-    image: 'air.png',
-    title: '<Name>',
-    value: '<Data>'
-};
-blocktypes.Type['UV'] = {
-    icon: 'fas fa-sun',
-    title: '<Name>',
-    value: '<Data>'
-};
-blocktypes.Type['Variable'] = {
-    icon: 'fas fa-equals',
-    title: '<Name>',
-    value: '<Value>'
-};
-
-//Recognition of
-//"HardwareType" : "RFXCOM - RFXtrx433 USB 433.92MHz Transceiver",
-//"Type" : "Energy",
-//"SubType" : "CM180",
-blocktypes.Type['Energy'] = {
-    icon: 'fas fa-plug',
-    title: '<Name>',
-    value: '<Data>'
-};
-
-//Recognition of
-//"HardwareType" : "RFXCOM - RFXtrx433 USB 433.92MHz Transceiver",
-//"Type" : "Current/Energy",
-//"SubType" : "CM180i",
-blocktypes.Type['Current/Energy'] = {
-    icon: 'fas fa-plug',
-    title: '<Name>',
-    value: '<Data>'
-};
-
-blocktypes.HardwareType = {};
-blocktypes.HardwareType['Motherboard sensors'] = {
-    icon: 'fas fa-desktop',
-    title: '<Name>',
-    value: '<Data>'
-};
-blocktypes.HardwareType['PVOutput (Input)'] = {};
-blocktypes.HardwareType['PVOutput (Input)']['today'] = {
-    icon: 'fas fa-sun',
-    title: '<Name>',
-    value: '<CounterToday>',
-    format: true,
-    decimals: 1
-};
-blocktypes.HardwareType['PVOutput (Input)']['usage'] = {
-    icon: 'fas fa-sun',
-    title: '<Name>',
-    value: '<Usage>',
-    format: true,
-    decimals: 1
-};
-blocktypes.HardwareType['PVOutput (Input)']['total'] = {
-    icon: 'fas fa-sun',
-    title: '<Name>',
-    value: '<Data>',
-    format: true,
-    decimals: 0
-};
-
-blocktypes.HardwareName = {};
-blocktypes.HardwareName['Rain expected'] = {
-    icon: 'fas fa-tint',
-    title: '<Data>',
-    value: '<Name>'
-};
-
-blocktypes.Name = {};
-blocktypes.Name['Rain Expected'] = {
-    icon: 'fas fa-tint',
-    title: '<Data>',
-    value: '<Name>'
-};
-blocktypes.Name['Rain expected'] = {
-    icon: 'fas fa-tint',
-    title: '<Data>',
-    value: '<Name>'
-};
-blocktypes.Name['Regen mm/uur'] = {
-    icon: 'fas fa-tint',
-    title: '<Data>',
-    value: '<Name>'
-};
-blocktypes.Name['Regen verwacht'] = {
-    icon: 'fas fa-tint',
-    title: '<Data>',
-    value: '<Name>'
-};
-blocktypes.Name['Regen Verwacht'] = {
-    icon: 'fas fa-tint',
-    title: '<Data>',
-    value: '<Name>'
-};
-
-blocktypes.Name['Ping'] = {
-    icon: 'fas fa-arrows-v',
-    title: '<Name>',
-    value: '<Data>'
-};
-blocktypes.Name['Upload'] = {
-    icon: 'fas fa-upload',
-    title: '<Name>',
-    value: '<Data>',
-    format: true,
-    decimals: 3
-};
-blocktypes.Name['Download'] = {
-    icon: 'fas fa-download',
-    title: '<Name>',
-    value: '<Data>',
-    format: true,
-    decimals: 3
-};
-
-blocktypes.Name['Maanfase'] = {
-    icon: 'fas fa-moon',
-    title: '<Data>',
-    value: '<Name>'
-};
-blocktypes.Name['Moon phase'] = {
-    icon: 'fas fa-moon',
-    title: '<Data>',
-    value: '<Name>'
-};
-blocktypes.Name['Mondphase'] = {
-    icon: 'fas fa-moon',
-    title: '<Data>',
-    value: '<Name>'
-};
-
-blocktypes = getExtendedBlockTypes(blocktypes);
 
 var alldevices = 'initial value';
 
 var oldstates = [];
 var onOffstates = [];
-var mountedBlocks={}    //object to store all mounted blocks
+var mountedBlocks = {} //object to store all mounted blocks
 
 
 // eslint-disable-next-line no-unused-vars
@@ -301,9 +59,9 @@ function getBlock(cols, c, screendiv, standby) {
                         var block = {}
                         block.idx = cols['blocks'][b];
                         $.extend(block, blocks[block.idx]);
-                        block.key=block.idx;
+                        block.key = block.idx;
                         var html = '<div data-id="' + block.idx + '" class="mh transbg block_' + block.idx + '"></div>';
-                        mountBlock(myblockselector, block, html, false );
+                        mountBlock(myblockselector, block, html, false);
                         addDeviceUpdateHandler(block)
                         break;
                 }
@@ -311,32 +69,30 @@ function getBlock(cols, c, screendiv, standby) {
     }
 }
 
-function mountBlock(mountPoint, block, html, append){
+function mountBlock(mountPoint, block, html, append) {
     block.$mountPoint = $(mountPoint);
     if (typeof html !== 'undefined') {
-        if(append) {
+        if (append) {
             block.$mountPoint.append(html)
-        }
-        else
+        } else
             block.$mountPoint.html(html)
     }
-    block.mountPoint=mountPoint;
-    block.entry=block.mountPoint.slice(1);
+    block.mountPoint = mountPoint;
+    block.entry = block.mountPoint.slice(1);
     mountedBlocks[block.entry] = block;
 }
 
 function getCustomFunction(functionname, block, afterupdate) {
-    var idx=block.idx;
-    var functiondevname = functionname+'_'+idx;
+    var idx = block.idx;
+    var functiondevname = functionname + '_' + idx;
     if (typeof window[functiondevname] === 'function') {
         try {
             if (functionname === 'getBlock')
                 return window[functiondevname](block);
 
             window[functiondevname](block, afterupdate)
-        }
-        catch (err) {
-            console.error('Error calling '+functionname, err)
+        } catch (err) {
+            console.error('Error calling ' + functionname, err)
         }
     }
 }
@@ -344,20 +100,20 @@ function getCustomFunction(functionname, block, afterupdate) {
 function deviceUpdateHandler(block) {
 
     var selector = block.mountPoint;
-    var idx=block.idx;
-    var device=block.device;
+    var idx = block.idx;
+    var device = block.device;
     var subidxStr = '';
-    if (block.subidx) subidxStr='_'+block.subidx;
+    if (block.subidx) subidxStr = '_' + block.subidx;
     var fullidx = idx + subidxStr;
 
     getCustomFunction('getStatus', fullidx, device, false);
-    var $selector=$(selector);
+    var $selector = $(selector);
     if (block && typeof block['title'] !== 'undefined') {
         device['Name'] = block['title'];
     }
 
     //var $div=$selector.find('.block_'+fullidx); //doesn't work for blocks['myblock'] kind of definitions
-    var $div=$selector.find('.mh')
+    var $div = $selector.find('.mh')
 
     var width = 4;
     switch (device['SwitchType']) {
@@ -390,7 +146,7 @@ function deviceUpdateHandler(block) {
 
     html = getCustomFunction('getBlock', block);
     //getCustomFunction 'getBlock' returns undefined in case function getBlock_<idx> is not defined in custom.js
-    if(!html) {
+    if (!html) {
         var response = handleDevice(block);
         html = response[0];
         addHTML = response[1];
@@ -406,18 +162,18 @@ function deviceUpdateHandler(block) {
 
     if ($div.hasClass('hover')) {
         $div.on('touchstart', function () {
-            var $this=$(this);
+            var $this = $(this);
             $this.addClass('hovered');
             setTimeout(function () {
                 $this.removeClass('hovered');
             }, 200);
         });
     }
-    
-    $div.removeClass("on off").addClass(function() {
+
+    $div.removeClass("on off").addClass(function () {
         return getBlockClass(block);
     })
-    if(block.currentClass != block.addClass) {
+    if (block.currentClass != block.addClass) {
         $div.removeClass(block.currentClass).addClass(block.addClass);
         block.currentClass = block.addClass;
     }
@@ -425,16 +181,16 @@ function deviceUpdateHandler(block) {
 
 function getBlockClass(block) {
     var addClass = getIconStatusClass(block.device['Status']);
-    return  addClass;
+    return addClass;
 }
 
 
 
-function addDeviceUpdateHandler(block) {   
-    var deviceIdx=block.idx;
+function addDeviceUpdateHandler(block) {
+    var deviceIdx = block.idx;
     if (typeof block.idx === 'string') {
         var idxSplit = block.idx.split('_');
-        if (idxSplit.length == 2 ){
+        if (idxSplit.length == 2) {
             var idx = parseInt(idxSplit[0]);
             var subidx = parseInt(idxSplit[1]);
             if (typeof idx === 'number' && typeof subidx === 'number') {
@@ -448,25 +204,24 @@ function addDeviceUpdateHandler(block) {
         deviceUpdateHandler(block)
     })
 
-    if(block.key) {
-        Dashticz.subscribeBlock(block.key, function(blockUpdate){
+    if (block.key) {
+        Dashticz.subscribeBlock(block.key, function (blockUpdate) {
             $.extend(block, blockUpdate);
             deviceUpdateHandler(block)
         })
-    }
-    else {
+    } else {
         console.log('key not defined for block ', block.idx);
     }
 
 }
 
 function handleStringBlock(blocktype, columndiv, c) {
-    
+
     var block = {};
-    block.type=blocktype;
+    block.type = blocktype;
     $.extend(block, blocks[blocktype])
     block.c = c; //c can be 'bar'. Used for sunriseholder
-    block.key=block.key || blocktype;
+    block.key = block.key || blocktype;
     mountBlock(columndiv, block, null, null);
 
     var defaultwidth = 12;
@@ -482,7 +237,7 @@ function handleStringBlock(blocktype, columndiv, c) {
     }
 
     block.width = block.width || defaultwidth;
-    var width=block.width;
+    var width = block.width;
 
     switch (block.type) {
         case 'logo':
@@ -728,12 +483,12 @@ function handleStringBlock(blocktype, columndiv, c) {
                 's123': group or scene 123
                 'v123': variable with idx 123
                 */
-            html='<div data-id="' + block.type + '" class="mh transbg block_' + block.type + '"></div>';
+            html = '<div data-id="' + block.type + '" class="mh transbg block_' + block.type + '"></div>';
             block.$mountPoint.append(html);
             if (block.idx) { //also a Domoticz device
                 block.width = (blocks[block.type] && blocks[block.type].width) || 4;
                 addDeviceUpdateHandler(block);
-                return; 
+                return;
             }
             var idx = parseInt(block.type);
             var isDomoticzDevice = !!idx;
@@ -741,19 +496,18 @@ function handleStringBlock(blocktype, columndiv, c) {
                 idx = parseInt(block.type.slice(1))
                 if (idx) isDomoticzDevice = true;
             }
-            if(isDomoticzDevice) {
+            if (isDomoticzDevice) {
                 block.width = (blocks[block.type] && blocks[block.type].width) || 4;
                 block.idx = block.type;
-                addDeviceUpdateHandler(block); 
-            }
-            else console.log('unknown string block ', block);
+                addDeviceUpdateHandler(block);
+            } else console.log('unknown string block ', block);
     }
 }
 
 function handleObjectBlock(block, el) {
     var random = getRandomInt(1, 100000);
     var width = 12;
-    var $el=$(el);
+    var $el = $(el);
     mountBlock(el, block, null, null);
     var key = block.key || block.entry;
     if (block.width) width = block['width'];
@@ -786,8 +540,8 @@ function handleObjectBlock(block, el) {
         });
         addCalendar($('.containsicalendar' + random), block);
     } else if (block.idx) { //+ '" data-block="' + block.key
-        $el.append('<div data-id="' + block.idx +'" class="mh transbg block_' + block.idx + '"></div>');
-        if (typeof block.idx==='number') {
+        $el.append('<div data-id="' + block.idx + '" class="mh transbg block_' + block.idx + '"></div>');
+        if (typeof block.idx === 'number') {
             addDeviceUpdateHandler(block);
             return;
         }
@@ -806,8 +560,7 @@ function handleObjectBlock(block, el) {
         }
 
 
-    }
-    else {
+    } else {
         //        Dashticz.mountSpecialBlock(columndiv, block, Dashticz.components["button"]);
         Dashticz.mountDefaultBlock(el, block)
         //        $(columndiv).append(loadButton(index, block));
@@ -840,56 +593,15 @@ function appendTvOrCalendarBlock(dataId, classes, width, block, columndiv) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function getStateBlock(block) { 
-    //todo: I added valueunit somewhere as concatenation of value+unit. Probably not needed
-    var value = block.value + ' ' + block.unit;
-
-    /*
-    if (block.unit) {
-        var unitArray = block.unit.split(";");
-        value = value.replace(unitArray[0], unitArray[1]);
-    }*/
-
-    getBlockClick(block); 
-
-    var stateBlock = '<div class="col-xs-4 col-icon">';
-    stateBlock += '<em class="' + block.icon + '"></em>';
-    stateBlock += '</div>';
-    stateBlock += '<div class="col-xs-8 col-data">';
-
-    if (titleAndValueSwitch(block)) { 
-        if (hideTitle(block)) {
-            stateBlock += '<span class="value">' + value + '</span>';
-        } else {
-            stateBlock += '<strong class="title">' + block.title + '</strong><br />';
-            stateBlock += '<span class="value">' + value + '</span>';
-        }
-    } else {
-        if (hideTitle(block)) {
-            stateBlock += '<strong class="title">' + value + '</strong>';
-        } else {
-            stateBlock += '<strong class="title">' + value + '</strong><br />';
-            stateBlock += '<span class="value">' + block.title + '</span>';
-        }
-    }
-    if (showUpdateInformation(block)) { 
-        stateBlock += '<br /><span class="lastupdate">' + moment(block.device['LastUpdate']).format(settings['timeformat']) + '</span>';
-    }
-
-    stateBlock += '</div>';
-    return stateBlock;
-}
-
-// eslint-disable-next-line no-unused-vars
-function getStatusBlock(block, blockproto) { 
-    var idx=block.idx;
-    var device=block.device;
-    var value = block.value || blockproto.value;
-    var title = block.title || blockproto.title;
-    var format = block.format || blockproto.format;
-    var decimals= block.decimals || blockproto.decimals;
-    var image = block.image || blockproto.image;
-    var icon = block.icon || blockproto.icon;
+function getStatusBlock(block) {
+    var idx = block.idx;
+    var device = block.device;
+    var value = block.value;
+    var title = block.title;
+    var format = block.format;
+    var decimals = block.decimals;
+    var image = block.image;
+    var icon = block.icon;
     var elements = [];
 
     // eslint-disable-next-line no-useless-escape
@@ -919,7 +631,7 @@ function getStatusBlock(block, blockproto) {
         value = value.replace(unitArray[0], unitArray[1]);
     }
 
-    getBlockClick(block); 
+    getBlockClick(block);
 
     var attr = '';
     if (typeof (device['Direction']) !== 'undefined' && typeof (device['DirectionStr']) !== 'undefined') {
@@ -943,8 +655,8 @@ function getStatusBlock(block, blockproto) {
     else stateBlock = iconORimage(block, icon, '', 'icon', attr, 4, '');
 
     stateBlock += '<div class="col-xs-8 col-data">';
-    if (titleAndValueSwitch(block)) { 
-        if (hideTitle(block)) { 
+    if (titleAndValueSwitch(block)) {
+        if (hideTitle(block)) {
             stateBlock += '<span class="value">' + value + '</span>';
         } else {
             stateBlock += '<strong class="title">' + title + '</strong><br />';
@@ -973,17 +685,17 @@ function getBlockClick(block) {
     var graph = block.graph;
     //var blockSel = '.block_'+ block.mountPoint.slice(1);
     //console.log('getBlockClick for ', block);
- //   var $div=blockdef.$mountPoint.find('.block_'+blockdef.idx);
-    var $div=block.$mountPoint.find('.mh');
+    //   var $div=blockdef.$mountPoint.find('.block_'+blockdef.idx);
+    var $div = block.$mountPoint.find('.mh');
     if (link) {
         if ($div.length > 0) {
             $div.addClass('hover')
-            .off('click')
-            .click( function() {
-                if (target=== '_blank')
-                    window.open(block.link)
-                else if (target === 'iframe') addBlockClickFrame(block);
-            } );
+                .off('click')
+                .click(function () {
+                    if (target === '_blank')
+                        window.open(block.link)
+                    else if (target === 'iframe') addBlockClickFrame(block);
+                });
         }
     } else if (graph === false) {
         return;
@@ -992,28 +704,9 @@ function getBlockClick(block) {
             device['Type'] == 'Temp' || device['Type'] == 'Humidity' || device['Type'] == 'Wind' || device['Type'] == 'Rain' ||
             device['Type'] == 'Temp + Humidity' || device['Type'] == 'Temp + Humidity + Baro' ||
             device['SubType'] == 'kWh' || device['SubType'] === 'Lux' || device['SubType'] === 'Solar Radiation' ||
-            device['SubType'] === 'Barometer'
+            device['SubType'] === 'Barometer' || device['SubType'] === 'Soil Moisture' || graph
         ) {
-            /* In this case we want to the popup graph*/
-            /* todo: check next three if statements*/
-            /*
-            if ($div.length == 0) {
-                console.error('This should not happen...');
-                blockSel = 0;
-            }
-            if (blockSel == 0) {
-                blockSel = '.block_' + device['idx'];
-                if ($(blockSel).length == 0) {
-                    blockSel = 0
-                }
-            }
-            if (blockSel !== 0) {
-                $(blockSel).addClass('hover');
-                $(blockSel).attr('onclick', 'showPopupGraph(\'' + device['idx'] + '\',\'' + idx + '\');');
-            }*/
-
-            // I've added next click function. Todo: check popup graphs
-            $div.addClass('hover').click(function() {
+            $div.addClass('hover').click(function () {
                 showPopupGraph(block);
             });
 
@@ -1023,8 +716,8 @@ function getBlockClick(block) {
 
 // eslint-disable-next-line no-unused-vars
 function addBlockClickFrame(block) {
-    var idx=block.idx;
-    var link=block.link;
+    var idx = block.idx;
+    var link = block.link;
     $('#button_' + idx).remove();
     var html = '<div class="modal fade" id="button_' + idx + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
     html += '<div class="modal-dialog">';
@@ -1117,7 +810,7 @@ function iconORimage(block, defaulticon, defaultimage, classnames, attr, colwidt
 }
 
 // eslint-disable-next-line no-unused-vars
-function getBlockData(block, textOn, textOff) { 
+function getBlockData(block, textOn, textOff) {
     // this.title = device['Name']; // should be the other way around:
     var title = block.title || block.device['Name']; //but probably this was set earlier already ...
     var opendiv = '<div class="col-xs-8 col-data">';
@@ -1133,7 +826,7 @@ function getBlockData(block, textOn, textOff) {
         value = textOff;
     }
 
-    if (titleAndValueSwitch(block)) { 
+    if (titleAndValueSwitch(block)) {
         title = value;
         value = block.title || block.device['Name'];
     }
@@ -1158,10 +851,10 @@ function hideTitle(block) {
 
 function showUpdateInformation(block) {
     return (settings['last_update'] &&
-            ( typeof (block['last_update']) === 'undefined' ||
+            (typeof (block['last_update']) === 'undefined' ||
                 blocks['last_update'])) ||
         (!settings['last_update'] &&
-            (  typeof (block['last_update']) !== 'undefined' &&
+            (typeof (block['last_update']) !== 'undefined' &&
                 blocks['last_update'])
         );
 }
@@ -1218,9 +911,9 @@ function Beaufort(windSpeed) {
 }
 
 function triggerStatus(block) {
-    var idx=block.idx;
-    var device=block.device
-    var value=device.LastUpdate;
+    var idx = block.idx;
+    var device = block.device
+    var value = device.LastUpdate;
     var random = getRandomInt(1, 100000);
     getCustomFunction('getStatus', block, true);
 
@@ -1235,7 +928,7 @@ function triggerStatus(block) {
             if (block['messageOn']) {
                 infoDevicsSwitch(block['messageOn']);
             }
-            if (block['gotoslideOn']){
+            if (block['gotoslideOn']) {
                 toSlide(block['gotoslideOn'] - 1);
                 disableStandby();
             }
@@ -1287,10 +980,10 @@ function triggerStatus(block) {
 
 // eslint-disable-next-line no-unused-vars
 function triggerChange(block) {
-    var idx=block.mountPoint;
-    var device=block.device;
-    var value=device.LastUpdate;
-    var $div=block.$mountPoint.find('.mh');
+    var idx = block.mountPoint;
+    var device = block.device;
+    var value = device.LastUpdate;
+    var $div = block.$mountPoint.find('.mh');
 
     if (typeof (oldstates[idx]) !== 'undefined' && value !== oldstates[idx]) {
         //disableStandby();
@@ -1312,7 +1005,7 @@ function triggerChange(block) {
         if (block['gotoslide']) {
             toSlide((block['gotoslide'] - 1));
         }
-        if (block['openpopup']){
+        if (block['openpopup']) {
             var random = getRandomInt(1, 100000);
             $('.modal.openpopup,.modal-backdrop').remove();
 
@@ -1331,54 +1024,16 @@ function triggerChange(block) {
 }
 
 function handleDevice(block) {
-    var device=block.device;
-    var idx=block.idx;
+    var device = block.device;
+    var idx = block.idx;
     var buttonimg = '';
     if (device['Image'] === 'Fan') buttonimg = 'fan.png';
     if (device['Image'] === 'Heating') buttonimg = 'heating.png';
     var html = '';
     var addHTML = true;
-    if (device.SubType && device['SubType'] in blocktypes['SubType']) {
-        html += getStatusBlock(block, blocktypes['SubType'][device['SubType']]);
-        return [html, addHTML];
-    }
-    if (device.HardwareType && device['HardwareType'] in blocktypes['HardwareType']) {
-        if (typeof (blocktypes['HardwareType'][device['HardwareType']]['icon']) !== 'undefined') {
-            html += getStatusBlock(block, blocktypes['HardwareType'][device['HardwareType']]);
-        } else {
-            var c = 1;
-            for (var de in blocktypes['HardwareType'][device['HardwareType']]) {
-                var subblock = {}
-                $.extend(subblock, block);
-                subblock.idx +='_'+c;
-                html = getStatusBlock(subblock, blocktypes['HardwareType'][device['HardwareType']][de]);
 
-                triggerStatus(subblock);
-                triggerChange(subblock);
-
-                $('div.block_' + subblock.idx).html(html);
-                addHTML = false;
-                c++;
-            }
-        }
-        return [html, addHTML];
-    }
-    if (device.HardwareName && device['HardwareName'] in blocktypes['HardwareName']) {
-        html += getStatusBlock(block, blocktypes['HardwareName'][device['HardwareName']]);
-        return [html, addHTML];
-    }
-    if (device.SensorUnit && device['SensorUnit'] in blocktypes['SensorUnit']) {
-        html += getStatusBlock(block, blocktypes['SensorUnit'][device['SensorUnit']]);
-        return [html, addHTML];
-    }
-    if (device.Type && device['Type'] in blocktypes['Type']) {
-        html += getStatusBlock(block, blocktypes['Type'][device['Type']]);
-        return [html, addHTML];
-    }
-    if (device.Name && device['Name'] in blocktypes['Name']) {
-        html += getStatusBlock(block, blocktypes['Name'][device['Name']]);
-        return [html, addHTML];
-    }
+    var res = getBlockTypesBlock(block);
+    if (res) return res;
 
     switch (device['Type']) {
         case 'P1 Smart Meter':
@@ -1516,10 +1171,10 @@ function handleDevice(block) {
             html += '</select>';
             html += '</div>';
             block.$mountPoint.find('.mh').off("change")
-            .on("change", 'select', function() {
-                slideDevice(block, $(this).val());
-            })
-    
+                .on("change", 'select', function () {
+                    slideDevice(block, $(this).val());
+                })
+
         } else {
             html += '<div class="col-xs-8 col-data">';
             html += '<strong class="title">' + device['Name'] + '</strong><br />';
@@ -1537,11 +1192,11 @@ function handleDevice(block) {
             html += '</div>';
             html += '</div>';
             block.$mountPoint.find('.mh').off("click")
-            .on("click", '.btn-group', function(ev) {
-                var value=$(ev.target).children('input').val()
-                console.log(value)
-                slideDevice(block, value);
-            })
+                .on("click", '.btn-group', function (ev) {
+                    var value = $(ev.target).children('input').val()
+                    console.log(value)
+                    slideDevice(block, value);
+                })
         }
 
     } else if (device['SubType'] == 'Custom Sensor') {
@@ -1549,7 +1204,7 @@ function handleDevice(block) {
         if (device['Image'] === 'Water') defaultIcon = 'fas fa-tint';
         else if (device['Image'] === 'Heating') defaultIcon = 'fas fa-utensils';
 
-        html += iconORimage(block, defaultIcon, '', 'on icon'); 
+        html += iconORimage(block, defaultIcon, '', 'on icon');
         html += '<div class="col-xs-8 col-data">';
         var title = device['Name'];
         var value = device['Data'];
@@ -1601,13 +1256,13 @@ function getLogitechControls(block) {
 }
 
 function getSmartMeterBlock(block) {
-    var device=block.device;
-    var idx=device.idx;
-    block.width=block.width || 4;
+    var device = block.device;
+    var idx = device.idx;
+    block.width = block.width || 4;
     if (device['SubType'] === 'Energy') {
         var usage = device['Usage'];
         if (typeof (device['UsageDeliv']) !== 'undefined' && (parseFloat(device['UsageDeliv']) > 0 || parseFloat(device['UsageDeliv']) < 0)) {
-            usage = '-'+device['UsageDeliv'];
+            usage = '-' + device['UsageDeliv'];
         }
 
         var data = device['Data'].split(';');
@@ -1704,8 +1359,8 @@ function getSmartMeterBlock(block) {
 }
 
 function getRFXMeterCounterBlock(block) {
-    var device=block.device;
-    var idx=device.idx;
+    var device = block.device;
+    var idx = device.idx;
     var unit = '';
     var decimals = 2;
     var icon = 'fas fa-fire';
@@ -1775,8 +1430,8 @@ function getRFXMeterCounterBlock(block) {
 }
 
 function getYouLessBlock(block) {
-    var device=block.device;
-    var idx=device.idx;
+    var device = block.device;
+    var idx = device.idx;
 
     this.html = '';
     var blockValues = [{
@@ -1810,64 +1465,64 @@ function getYouLessBlock(block) {
 function createBlocks(blockParent, blockValues) {
     //I assume this function gets called once per block
     //That means we first have to remove the previous content
-   // console.log('createBlocks for '+blockParent.idx);
+    // console.log('createBlocks for '+blockParent.idx);
 
-    var device=blockParent.device;
-    var $div=blockParent.$mountPoint;
+    var device = blockParent.device;
+    var $div = blockParent.$mountPoint;
     $div.html('') //it would be better for performance to add all changes at once.
-    
+
     blockValues.forEach(function (blockValue) {
-        if(blockParent.subidx && blockParent.idx !== blockValue.idx) return;
-      //  console.log("createBlocks id: ", blockValue.idx)
-        var block={};
-        $.extend(block, blockValue)  //create a block from the prototype
+        if (blockParent.subidx && blockParent.idx !== blockValue.idx) return;
+        //  console.log("createBlocks id: ", blockValue.idx)
+        var block = {};
+        $.extend(block, blockValue) //create a block from the prototype
         $.extend(block, blockParent);
         $.extend(block, blocks[blockValue.idx]);
         block.idx = blockValue.idx;
-        var html = '<div class="mh transbg block_'+blockValue.idx+' col-xs-' + (block.width || 4) +'"/>';
+        var html = '<div class="mh transbg block_' + blockValue.idx + ' col-xs-' + (block.width || 4) + '"/>';
         $div.append(html);
-        block.mountPoint=blockParent.mountPoint; // +' .block_'+blockValue.idx;
+        block.mountPoint = blockParent.mountPoint; // +' .block_'+blockValue.idx;
         block.$mountPoint = $(block.mountPoint);
-//        block.subidx = index;
-//        block.blockdef=blocks[blockValue.idx]; //store a reference of the parent blockdef ? should be in parent already ...
-//        $.extend(block, block.blockdef); //merge all fields
+        //        block.subidx = index;
+        //        block.blockdef=blocks[blockValue.idx]; //store a reference of the parent blockdef ? should be in parent already ...
+        //        $.extend(block, block.blockdef); //merge all fields
 
         triggerStatus(block);
         triggerChange(block);
 
-        block.valueunit=block.value+' '+block.unit;
-        block.device=device;
+        block.valueunit = block.value + ' ' + block.unit;
+        block.device = device;
 
-        html = getStateBlock(block);
-/*
-        //todo: check next few lines;
-        if (!index) {
-            if (!$('div.block_' + device['idx']).hasClass('block_' + blockValue.idx)) $('div.block_' + device['idx']).addClass('block_' + blockValue.idx);
-        } else {
-            if (typeof (allblocks[device['idx']]) !== 'undefined' &&
-                $('div.block_' + blockValue.idx).length == 0
-            ) {
+        html = getStatusBlock(block);
+        /*
+                //todo: check next few lines;
+                if (!index) {
+                    if (!$('div.block_' + device['idx']).hasClass('block_' + blockValue.idx)) $('div.block_' + device['idx']).addClass('block_' + blockValue.idx);
+                } else {
+                    if (typeof (allblocks[device['idx']]) !== 'undefined' &&
+                        $('div.block_' + blockValue.idx).length == 0
+                    ) {
 
-                //sometimes there is a block_IDX_3 and block_IDX_6, but no block_IDX_4, therefor, loop to remove classes
-                //(e.g. with smart P1 meters, when there's no CounterDeliv value)
-                var newblock = $('div.block_' + device['idx']).last().clone();
-                for (var i = 1; i <= 10; i++) {
-                    newblock.removeClass('block_' + device['idx'] + '_' + i);
+                        //sometimes there is a block_IDX_3 and block_IDX_6, but no block_IDX_4, therefor, loop to remove classes
+                        //(e.g. with smart P1 meters, when there's no CounterDeliv value)
+                        var newblock = $('div.block_' + device['idx']).last().clone();
+                        for (var i = 1; i <= 10; i++) {
+                            newblock.removeClass('block_' + device['idx'] + '_' + i);
+                        }
+                        newblock.addClass('block_' + blockValue.idx).insertAfter($('div.block_' + device['idx']).last());
+                    }
                 }
-                newblock.addClass('block_' + blockValue.idx).insertAfter($('div.block_' + device['idx']).last());
-            }
-        }
-        $('div.block_' + block.idx).html(html);*/
-        block.$mountPoint.find('.block_'+block.idx).html(html)
-        .addClass(block.addClass);
+                $('div.block_' + block.idx).html(html);*/
+        block.$mountPoint.find('.block_' + block.idx).html(html)
+            .addClass(block.addClass);
 
         //todo: Do we have to store block in mountedBlocks?
     });
 }
 
 function getGeneralKwhBlock(block) {
-    var device=block.device;
-    var idx=device.idx;
+    var device = block.device;
+    var idx = device.idx;
     this.html = '';
     var blockValues = [{
             icon: 'fas fa-fire',
@@ -1896,8 +1551,8 @@ function getGeneralKwhBlock(block) {
 }
 
 function getHumBlock(block) {
-    var device=block.device;
-    var idx=device.idx;
+    var device = block.device;
+    var idx = device.idx;
     this.html = '';
     var blockValues = [{
         icon: 'wi wi-humidity',
@@ -1911,8 +1566,8 @@ function getHumBlock(block) {
 }
 
 function getTempHumBarBlock(block) {
-    var device=block.device;
-    var idx=device.idx;
+    var device = block.device;
+    var idx = device.idx;
     this.html = '';
     var single_block = (typeof (blocks[idx]) !== 'undefined' &&
         typeof (blocks[idx]['single_block']) !== 'undefined' &&
@@ -2166,7 +1821,7 @@ function showMap(mapid, map) {
 }
 
 function getSecurityBlock(block) { //todo: rewrite
-    var device=block.device;
+    var device = block.device;
     var html = '';
     if (device['Status'] === 'Normal') html += iconORimage(block, 'fas fa-shield-alt', '', 'off icon', '', 2);
     else html += iconORimage(block, 'fas fa-shield-alt', '', 'on icon', '', 2);
