@@ -7,8 +7,8 @@ Buttons are clickable elements that may show an image. First you have to define 
     buttons.yr = {
     	width: 12,
       isimage: true,
-      refreshimage: 60000,
-    	image: 'https://www.yr.no/sted/Norge/Oppland/%C3%98ystre_Slidre/Beito/advanced_meteogram.png',
+      refreshimage: 60,
+    	btnimage: 'https://www.yr.no/sted/Norge/Oppland/%C3%98ystre_Slidre/Beito/advanced_meteogram.png',
     	url: 'https://www.yr.no/sted/Norge/Oppland/%C3%98ystre_Slidre/Beito/langtidsvarsel.html'
     };
 
@@ -50,7 +50,7 @@ Parameters
     - ``'image.png'``: image to show as icon the button. Image path is relative to the <dashticz>/img folder.
   * - btnimage
     - ``'<url>'``: URL of the image to show in the button.
-  * - refresh or refreshimage
+  * - refresh
     - ``1..99999``: Refresh time of the button image in seconds. There is no maximum. The default is 60 (=1 minute).
   * - url
     - ``'<url>'``: URL of the page to open in a popup window on click. 
