@@ -54,6 +54,9 @@ Parameters
     - ``1..99999``: Refresh time of the button image in seconds. There is no maximum. The default is 60 (=1 minute).
   * - url
     - ``'<url>'``: URL of the page to open in a popup window on click. 
+  * - forceheight
+    - | Set the height of the image in a button
+      | ``'200px'``: Set image height to 200px. 
   * - framewidth
     - ``'<integer>'``: specific width of the popup window on click. 
   * - frameheight
