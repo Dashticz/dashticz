@@ -1,6 +1,6 @@
 /* eslint-disable no-debugger */
 /*global getBlockTypesBlock, language, _TEMP_SYMBOL, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
-/*global getSpotify, loadNZBGET, getCoin, loadChromecast, loadGarbage, loadSonarr */
+/*global getSpotify, getCoin, loadChromecast, loadGarbage, loadSonarr */
 /*global Dashticz, Domoticz, getLog, addCalendar */
 /*global getRandomInt, moment, number_format */
 /*from bundle.js*/
@@ -392,14 +392,6 @@ function handleStringBlock(blocktype, columndiv, c) {
                 dataType: "script"
             });
             getSpotify(columndiv);
-            return;
-        case 'nzbget':
-            if (typeof (loadNZBGET) !== 'function') $.ajax({
-                url: 'js/nzbget.js',
-                async: false,
-                dataType: "script"
-            });
-            loadNZBGET(columndiv);
             return;
         case 'trafficmap':
             $(columndiv).append('<div data-id="trafficmap" class="mh transbg block_trafficmap col-xs-12"><div id="trafficm" class="trafficmap"></div></div>');
