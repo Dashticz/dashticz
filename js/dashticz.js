@@ -23,7 +23,8 @@ var Dashticz = function () {
         'secpanel',
 		'graph',
         'coronavirus',
-		'camera'
+        'camera',
+        'nzbget'
     ]
     var components = []
     var mountedBlocks = [];
