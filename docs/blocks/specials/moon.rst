@@ -9,7 +9,7 @@ to your dashboard. Use the following code::
     buttons = {}
     buttons.moon = {
       width:12,
-      refreshimage:60000,
+      refresh: 3600,
       btnimage: 'moon'
     }
     columns[2] = {}
