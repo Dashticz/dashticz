@@ -121,9 +121,10 @@ var Domoticz = function () {
             initPromise = checkWSSupport()
                 .then(function () {
                     setInterval(function () {
-                        _requestAllVariables();
+                        _requestAllVariables()
+                        .then( requestAllScenes);
                     }, cfg.domoticz_refresh * 1000);
-                    return _update().then(_requestAllVariables)
+                    return _update().then(_requestAllVariables).then( requestAllScenes)
                 });
         }
         //        _connectWebsocket();
@@ -306,12 +307,22 @@ var Domoticz = function () {
             var device = data.result[r];
             var idx = device['idx'];
 
-            if (device['Type'] === 'Group' || device['Type'] === 'Scene') idx = 's' + device['idx'];
+            if (device['Type'] === 'Group' || device['Type'] === 'Scene') {
+                idx = 's' + device['idx'];
+            }
             setOnChange(idx, device);
         }
         //        setOnChange("_devices", new Date()); //event to trigger that all devices have been updated.
         setOnChange("_devices", data);
         return deviceObservable._values
+    }
+
+    function requestAllScenes() {
+        return domoticzRequest('type=scenes', false)
+        .then(function (res) {
+            if(!res) return;
+            return _setAllDevices(res)
+        })
     }
 
     function _requestAllVariables() {

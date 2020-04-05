@@ -4,6 +4,9 @@ Release Notes
 Latest changes
 --------------
 
+Fixes
+  * Group/scene status
+
 3.4.2 (Beta) (3-4-2020)
 ------------------------
 
