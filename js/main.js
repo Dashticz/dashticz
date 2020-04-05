@@ -13,6 +13,8 @@ var language = {};
 // eslint-disable-next-line no-unused-vars
 var blocks = {};
 var cache = new Date().getTime();
+var throwError = null;
+var loadingFilename = null;
 
 // device detection
 // eslint-disable-next-line no-unused-vars
@@ -46,19 +48,18 @@ var _END_STANDBY_CALL_URL = '';
 var sessionvalid = false;
 
 //Prevent Chrome warnings on event handlers
-jQuery.event.special.touchstart = 
-{
-  setup: function( _, ns, handle )
-  {
-    if ( ns.includes("noPreventDefault") ) 
-    {
-      this.addEventListener("touchstart", handle, { passive: false });
-    } 
-    else 
-    {
-      this.addEventListener("touchstart", handle, { passive: true });
+jQuery.event.special.touchstart = {
+    setup: function (_, ns, handle) {
+        if (ns.includes("noPreventDefault")) {
+            this.addEventListener("touchstart", handle, {
+                passive: false
+            });
+        } else {
+            this.addEventListener("touchstart", handle, {
+                passive: true
+            });
+        }
     }
-  }
 };
 
 // eslint-disable-next-line no-unused-vars
@@ -67,16 +68,35 @@ function loadFiles(dashtype) {
     if (typeof (dashtype) !== 'undefined' && parseFloat(dashtype) > 1) {
         customfolder = 'custom_' + dashtype;
     }
+
+    //Set custom error handling to catch syntax errors in CONFIG.js and custom.js
+    window.onerror = function (msg, url, line, col, error) {
+        if (loadingFilename) {
+            var message = 'Error loading ' + loadingFilename + '<br>\n' + msg + ' at line ' + line + ' pos ' + col;
+            console.log(message);
+            throwError = message;
+        } else {
+            console.error(msg);
+        }
+    }
+
     $('<link href="' + 'css/creative.css?_=' + Date.now() + '" rel="stylesheet">').appendTo('head');
+
+    loadingFilename = customfolder + '/CONFIG.js';
     $.ajax({
-            url: customfolder + '/CONFIG.js',
+            url: loadingFilename,
             dataType: 'script'
         })
         .fail(function () {
             return $.Deferred()
-                .reject(new Error("Load error in config.js"))
+                .reject(new Error("Load error in " + loadingFilename))
         })
         .then(function () {
+            loadingFilename = null;
+            if (throwError)
+                return $.Deferred()
+                    .reject(new Error(throwError));
+
             if (typeof config == 'undefined') {
                 return $.Deferred()
                     .reject(new Error("Error in config.js"))
@@ -140,7 +160,16 @@ function loadFiles(dashtype) {
             if (settings['theme'] !== 'default') {
                 $('<link rel="stylesheet" type="text/css" href="themes/' + settings['theme'] + '/' + settings['theme'] + '.css?v=' + cache + '" />').appendTo('head');
             }
-            $('<link href="' + customfolder + '/custom.css?v=' + cache + '" rel="stylesheet">').appendTo('head');
+
+            $.ajax({
+                url: customfolder + '/custom.css?v=' + cache,
+                success: function (data) {
+                    $("<style></style>").appendTo("head").html(data);
+                },
+                error: function () {
+                    console.log('No valid custom.css in folder ' + customfolder + '. Skipping.');
+                }
+            })
 
             return $.when(
                 $.ajax({
@@ -161,14 +190,32 @@ function loadFiles(dashtype) {
             );
         })
         .then(function () {
-            return $.ajax({
-                url: customfolder + '/custom.js?v=' + cache,
-                dataType: 'script'
-            });
-        })
-        .fail(function() {
-            return $.Deferred()
-            .reject(new Error("Error in custom.js"))
+            loadingFilename = customfolder + '/custom.js';
+
+            return $.ajax({     //first test whether the file exists
+                    url: customfolder + '/custom.js?v=' + cache,
+                    type: 'HEAD'
+                })
+                .then(function () {     //if it exists, try to load it
+                    return $.ajax({
+                            url: customfolder + '/custom.js',
+                            dataType: 'script'
+                        })
+                        .then(function () {
+                            loadingFilename = null;
+                            if (throwError) //test whether we've catched an error in the errorhandler
+                                return $.Deferred()
+                                    .reject(new Error(throwError));
+                        })
+                })
+                .catch(function (res) {
+                    if (res.status === 404) { //file doesn't exist
+                        console.log('No custom.js file in folder ' + customfolder + '. Skipping.');
+                    }
+                    var error = res || new Error("Unknown error loading custom.js");
+                    return $.Deferred()
+                        .reject(error)
+                })
         })
         .then(function () {
             return $.when(
@@ -216,10 +263,15 @@ function loadFiles(dashtype) {
         })
         .catch(function (err) {
             console.error(err);
-            if (err.message) $('#error').html(err.message);
-            $('#hide').show();
-            $('#loaderHolder').fadeOut();
+            showError(err.message)
         })
+}
+
+function showError(msg) {
+    if (msg) $('#error').html(msg);
+    $('#hide').show();
+    $('#loaderHolder').fadeOut();
+
 }
 
 function onLoad() {
@@ -592,3 +644,5 @@ function disableStandby() {
 function enableRefresh() {
     Domoticz.subscribe('_devices', true, getAllDevicesHandler)
 }
+
+//# sourceURL=js/main.js 
