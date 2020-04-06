@@ -609,27 +609,43 @@ function getStatusBlock(block) {
             elements.push(val.replace(/([<,>])+/g, ''));
         });
     }
-    if (block.unit && typeof block.unit === 'string') {
+/*    if (block.unit && typeof block.unit === 'string') {
         value+=' '+block.unit;
-    }
-    for (var d in elements) {
-        var deviceValue = device[elements[d]];
-        if (format) {
+    }*/
+    if (elements.length) {
+        var blockunits=[]
+        if (typeof block.unit==='string') {
+            blockunits = block.unit.split(';')
+        }
+        var blockunit=null;
+        if (blockunits.length===1) blockunit=blockunits[0];
+        for (var d in elements) {
+            var deviceValue = device[elements[d]];
             var unit = '';
             if (isNaN(device[elements[d]])) {
                 unit = ' ' + device[elements[d]].split(' ')[1];
             }
-            deviceValue = number_format(deviceValue, decimals) + unit;
+            if (format) {
+                deviceValue = number_format(deviceValue, decimals)
+            }
+            deviceValue= blockunit ? blockunit: ( blockunits[d] ? blockunits[d]: unit);
+            value = value.replace('<' + elements[d] + '>', deviceValue);
+            title = title.replace('<' + elements[d] + '>', device[elements[d]]);
         }
-        value = value.replace('<' + elements[d] + '>', deviceValue);
-        title = title.replace('<' + elements[d] + '>', device[elements[d]]);
+    } else { //not a template function
+        if (block.unit) {
+            if (isNaN(value)) {
+                value = value.split(' ')[0] || value;
+            }
+            value+=' '+block.unit;
+        }
     }
 
     //todo: this should not be part of blocks I guess. But we've reserved unit already for the 'real' unit for some devices
-    if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['unit']) !== 'undefined') {
+/*    if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['unit']) !== 'undefined') {
         var unitArray = blocks[idx]['unit'].split(";");
         value = value.replace(unitArray[0], unitArray[1]);
-    }
+    }*/
 
     getBlockClick(block);
 
