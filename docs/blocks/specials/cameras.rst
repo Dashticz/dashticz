@@ -17,7 +17,7 @@ This has been designed mainly for those users with several cameras, which provid
 
 .. image :: camera_block.gif
 
-**imageUrl** - this is the url for the static **image** of the camera. The refresh property will be used to refresh the image.
-**videoUrl** - this is the url for the fullscreen live **video** stream. I have tested with an mjpeg stream and it works well.
+ **imageUrl** - this is the url for the static **image** of the camera. The refresh property will be used to refresh the image.
+ **videoUrl** - this is the url for the fullscreen live **video** stream. I have tested with an mjpeg stream and it works well.
 
 The above IP camera block will show a preview (image that is refreshed) in your Dashticz screen. When you click on the preview, the camera block will become fullscreen, and switch to the live video stream. There will be a handle at the bottom center of the screen, used to display the camera tray. When clicked any other cameras will be presented in the tray. If you click on them, it will update the fullscreen video stream.
