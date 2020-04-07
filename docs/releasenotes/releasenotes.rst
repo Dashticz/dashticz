@@ -6,6 +6,7 @@ Latest changes
 
 Fixes
   * Group/scene status
+  * Unit parameter, including documentation (see Domoticz blocks)
 
 3.4.2 (Beta) (3-4-2020)
 ------------------------

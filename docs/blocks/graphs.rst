@@ -162,6 +162,8 @@ The following block parameters can be used to configure the graph:
     - If true, lines will be drawn between points with no or null data. If false, points with NaN data will create a break in the line.
   * - sortDevices
     - the code automatically calculate if any devices' time data is longer than others. It then use that device's time data, then match all of the devices non-time data to that. This setting allows users to choose to enable or disable that feature (true or false)
+  * - customHeader
+    - Customized graph header. See below for examples.
   * - toolTipStyle
     - Display HTML graph tooltips instead of the standard ones, e.g. ``toolTipStyle: true``
   * - zoom
@@ -566,6 +568,38 @@ Custom point styling
 	}
 
 .. image :: img/multigraph_point_styling.jpg
+
+
+customHeader
+~~~~~~~~~~~~
+
+Example of graph showing long data values in header:
+
+.. image :: img/graph_customheader_before.png
+
+We can now update the block with the **customHeader** object as shown below::
+
+	blocks['bathroom_wetroom'] = {  
+		title: 'Bathroom vs Wetroom',
+		devices: [12, 13],
+		customHeader: {
+			12: 'data.split(",").slice(0,2)',                     <---- update/format the data for idx 12
+			13: 'data.split(",").slice(0,2)',                     <---- update/format the data for idx 13
+			x:  '(data.12-data.13).toFixed(2) + " C"',            <---- append custom data based on idx 12 and idx 13
+		},
+		toolTipStyle: true,
+		graph: "line",
+		legend: true
+	}
+
+The object accepts key value pairs. Standard Javascript or Jquery code can be used, where 'data' is the data you want to change.
+
+* To format/update the data being displayed by a device, use the idx (**number**) as the key.
+* To add a new 'custom value' that is a calculation of existing device data, use any **letter** as the key.
+
+Using the updated block (above), the graph now displays like this (below). The unwanted data has been removed, and a new value (the delta between the 2 devices), "1.0 C", has been added:
+
+.. image :: img/graph_customheader_after.png
 
 
 Custom data
