@@ -169,7 +169,11 @@ Block parameters
   * - openpopupOff
     - Open a popup when a device changes to off. See :ref:`openpopup`
   * - addClass
-    - The CSS class name, that will be added to the block.
+    - | The CSS class name, that will be added to the block.
+      | ``'myclassname'``: Define 'myclassname' in ``custom.css``
+  * - unit
+    - | String that will be placed behind the device value to indicate the unit.
+      | ``'kilowatt'``: The string will replace the default unit.
 
 There are several additional parameters for Graphs. See :ref:`dom_graphs`
       
@@ -313,3 +317,29 @@ The following config parameters from CONFIG.js are applicable:
   * - evohome_boost_hw
     - ``<number>``: Hot water boost temporary override time in minutes. Default: 15
 
+Formatting
+~~~~~~~~~~
+
+You can define the default unit text and number of decimals to show for some (most?) blocks by adding the following to CONFIG.js::
+
+    config['units'] = {
+      names: {
+      kwh: 'kWh',
+      watt: 'W',
+      gas: 'm3',
+      water: 'l',
+      time: ''
+    },
+    decimals: {
+      kwh: 1,
+      watt: 0,
+      gas: 1,
+      water: 0,
+      time: 0
+    }
+
+You can also define the unit parameter on block level by setting the ``unit`` parameter::
+
+    blocks[123] = {
+      unit: 'Watt'
+    }
