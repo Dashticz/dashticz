@@ -285,7 +285,7 @@ function getBlockTypesBlock(block) {
                     var subblock = {};
                     var protosubblock = protoblock[de]
                     $.extend(subblock, protosubblock);
-                    subblock.idx = block.idx + '_' + c;
+                    subblock.idx = block.device.idx + '_' + c;
                     subblock.subidx = c;
                     blockValues.push(subblock)
                     c++;
