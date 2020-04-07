@@ -24,7 +24,8 @@ var Dashticz = function () {
 		'graph',
         'coronavirus',
         'camera',
-        'nzbget'
+        'nzbget',
+		'calendar'
     ]
     var components = []
     var mountedBlocks = [];

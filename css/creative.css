@@ -435,18 +435,6 @@ next css sets the default height of the frame popup
   color: #727272;
 }
 
-table.calendar {
-  border-collapse: separate;
-  border-spacing: 10px 0px;
-}
-.calendar td {
-  vertical-align: top;
-  white-space: nowrap;
-}
-td.caltitle {
-  white-space: normal;
-}
-
 .containslog.popup {
   height: 100% !important;
   overflow: auto;
@@ -2170,8 +2158,169 @@ canvas {
 }
 /* END: CORONAVIRUS */
 
+/* START: AGENDA */
+table.agenda {
+  border-collapse: separate;
+  border-spacing: 10px 0px;
+}
+.agenda td {
+  vertical-align: top;
+  white-space: nowrap;
+}
+td.agenda-title {
+  white-space: normal;
+}
+/* END: AGENDA */
 
+/* START: CALENDAR */
+.cal_table {
+  border-collapse: collapse;
+  height: 100%!important;
+}
 
+.cal_table tr {
+  display: flex;
+}
 
+.cal_table td {
+  font-family: Arial, sans-serif;
+  padding: 10px 5px;
+  border-style: solid;
+  border-width: 1px;
+  overflow: hidden;
+  word-break: normal;
+  border-color: white;
+  color:white;
+  background-color: #292b2c;
+  display: inline-table
+}
 
+.cal_table td:hover {
+  background-color: #353738;
+}
 
+.cal_table td div {
+  font-size: 1.2em;
+  text-align: left;
+}
+
+.cal_table td > div {  
+  text-align: center;
+}
+
+.cal_table td > div.historic > div {  
+  color: rgba(255, 255, 255, 0.3)!important;
+}
+
+.cal_table td > div.header {  
+  background-color: #484848;
+  max-width: inherit;
+}
+
+.cal_table td > div.today {  
+  background-color: #0275d8;
+}
+
+.cal_table td > div.event:hover,
+.cal_table td > div.event.historic:hover > div {  
+  background-color: #f0ad4e!important;
+  color:#292b2c!important;
+}
+
+.cal_table td > div.allday {  
+  background-color: #d9534f!important;
+  border-radius: 2px;
+}
+
+.cal_table td > div.allday.hol {  
+  background-color: #428442!important;
+  border-radius: 2px;
+}
+
+.cal_table td > div:not(:first-child) {  
+  display: inline-flex;
+  margin: 3px 5px;
+  display: flex;
+}
+
+.cal_table td div div:nth-child(1) {
+  margin-right: 5px;
+}
+
+.cal-modal {
+  position: absolute;
+  width: 30%;
+  height: 30%;
+  background-color: #292b2c;
+  z-index: 100;
+  top: 0;
+  top: 50%;
+  left: 50%;  
+  margin-top: -10%;
+  margin-left: -15%;
+  padding: 1%;
+  box-shadow: 0px 20px 20px 20px rgba(0, 0, 0, 0.5);
+  color: white;
+  border: solid 2px #292b2c;;
+  border-radius: 5px;
+}
+
+.cal-modal > .cal-title {
+  font-size: 1.8em;
+  font-weight: 900;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+}
+
+.cal-modal > .cal-title > .far {
+  float: right!important;
+}
+
+.cal-modal > .cal-info {
+  overflow-y: auto;
+  height: calc(100% - 55px);
+  border-bottom: solid 1px #bebebe;
+  border-top: solid 1px #bebebe;
+  padding-top: 10px;
+}
+
+.cal-modal > .cal-footer {
+  bottom: 0px!important;
+  position: absolute;
+  width: 93%;
+  line-height: 2;
+  text-align: center;
+  height: 30px;
+}
+
+.cal-footer .cal-name {
+  left: 47%;
+  position: absolute;
+}
+
+.cal-modal > .cal-footer a {
+  color: grey;
+}
+
+.cal-modal > .cal-footer a:hover {
+  color: dodgerblue;
+}
+
+.cal-modal > .cal-footer a:nth-child(1){
+  float: left;
+}
+
+.cal-modal > .cal-footer a:nth-child(2){
+  float: right;
+}
+
+@media screen and (max-width: 1400px) and (max-height: 800px){
+  .cal_table td > div:first-child {  
+    text-align: center;
+  }  
+  .cal_table td div {
+    font-size: 0.9em;
+    text-align: left;
+  }
+}
+/* END: CALENDAR */
