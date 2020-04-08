@@ -61,7 +61,7 @@ function prepareCalendar(me) {
   if (cal.icalurls > 1) {
     getCalendarData(cal.icalurl, true, false);
   } else {
-    var y = createCalObject('calendar', cal.icalurl, 'transparent');
+    var y = createCalObject('calendar', cal.icalurl, 'white');
     getCalendarData(y, true, false);
   }
 }
