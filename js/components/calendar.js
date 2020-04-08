@@ -1,5 +1,7 @@
 /* global Dashticz moment settings config language time objectlength ksort infoMessage isDefined setHeight functions*/
 var cal = {};
+var templateEngine = TemplateEngine();
+
 var DT_calendar = {
   name: "calendar",
   canHandle: function(block, key) {
@@ -61,7 +63,7 @@ function prepareCalendar(me) {
   if (cal.icalurls > 1) {
     getCalendarData(cal.icalurl, true, false);
   } else {
-    var y = createCalObject('calendar', cal.icalurl, 'white');
+    var y = createCalObject("calendar", cal.icalurl, "white");
     getCalendarData(y, true, false);
   }
 }
@@ -129,41 +131,19 @@ function getCalendarData(calendars, isnew, ishol) {
  */
 function generateAgenda() {
 
-  var tem = '<div class="col-xs-12 items"></div>';
-  $(cal.mountPoint + ' > div').html(Handlebars.compile(tem));
+  templateEngine.load("agenda_basic").then(function (template) {
+    
+    var data = {
+      maxitems: cal.maxitems,
+      events: cal.events,
+      df: cal.dateFormat,
+      tf: cal.timeFormat,
+      startonly: cal.startonly,
+      entire: language.weekdays.entire_day
+      }
 
-  var t = '';
-  var d = '';
- 
-  t += '  {{#each events as | items |}}';
-  t += '    {{#ifLe @index ../maxitems}}'
-  t += '      {{#each items as | item |}}';
-  t += '        <div style="color:{{item.color}};">';
-  t += '          {{moment item.start input="X" format=../../df}} - ';
-  t += '          {{#unless item.allDay}}';
-  t += '            {{moment item.start input="X" format=../../tf}}';
-  t += '            {{#unless ../../startonly}}';
-  t += '              -{{moment item.end input="X" format=../../tf}} - ';
-  t += '            {{/unless}}';
-  t += '          {{else}}';
-  t += '            {{../../entire}} - ';
-  t += '          {{/unless}}';
-  t += '          {{item.title}}';
-  t += '        </div>';
-  t += '      {{/each}}';
-  t += '    {{/ifLe}}'
-  t += '  {{/each}}';
-
-  d = {
-    maxitems: cal.maxitems,
-    events: cal.events,
-    df: cal.dateFormat,
-    tf: cal.timeFormat,
-    startonly: cal.startonly,
-    entire: language.weekdays.entire_day
-  }
-
-  $(cal.mountPoint + ' .items').html(Handlebars.compile(t)(d));
+    $(cal.mountPoint + ' > div').html(template(data));
+  });
 }
 
 
@@ -172,45 +152,25 @@ function generateAgenda() {
  */
 function generateAgendaHtml() {
 
-  var p = '';
-  var t = '';
-  var d = '';
+  templateEngine.load("agenda_html").then(function (template) {
+    var data_object = {
+      maxitems: cal.maxitems,
+      events: cal.events,
+      df: cal.dateFormat,
+      tf: cal.timeFormat,
+      startonly: cal.startonly,
+      entire: language.weekdays.entire_day
+    }
 
-  t += '<table class="agenda">';
-  t += '  {{#each events as | items |}}';
-  t += '    {{#ifLe @index ../maxitems}}'
-  t += '      {{#each items as | item |}}';
-  t += '        <tr><td class="agenda-date">{{moment item.start input="X" format=../../df}}</td>';
-  t += '        <td class="agenda-time"style="color:{{item.color}};">';
-  t += '          {{#unless item.allDay}}';
-  t += '            {{moment item.start input="X" format=../../tf}}';
-  t += '            {{#unless ../../startonly}}';
-  t += '              - {{moment item.end input="X" format=../../tf}}';
-  t += '            {{/unless}}';
-  t += '          {{else}}';
-  t += '            {{../../entire}}';
-  t += '          {{/unless}}';
-  t += '        </td>';
-  t += '        <td class="agenda-title" style="color:{{item.color}};">{{item.title}}</td></tr>'
-  t += '      {{/each}}';
-  t += '    {{/ifLe}}'
-  t += '  {{/each}}';
-  t += '</table>';
+    $(cal.mountPoint + ' > div').html(template(data_object));
 
-  d = {
-    maxitems: cal.maxitems,
-    events: cal.events,
-    df: cal.dateFormat,
-    tf: cal.timeFormat,
-    startonly: cal.startonly,
-    entire: language.weekdays.entire_day
-  }
+    var p = '';
 
-  $(cal.mountPoint + ' > div').html(Handlebars.compile(t)(d));
-  $.each($('.agenda-date'), function(i, el) {    
-    var dt = $(el).html().trim();
-    if(p === dt) $(el).empty();
-    p = dt;
+    $.each($('.agenda-date'), function(i, el) {    
+      var dt = $(el).html().trim();
+      if(p === dt) $(el).empty();
+      p = dt;
+    });
   });
 }
 
@@ -220,103 +180,82 @@ function generateAgendaHtml() {
  * @param {boolean}  ishol   Is this a public holiday calendar ical url.
  */
 function generateCalendar(isnew, ishol) {
+  
+  templateEngine.load("calendar_template").then(function (template) {
+    
+    var w = cal.width;
+    var h = parseInt(setHeight(cal));
+    $(cal.mountPoint + ' > div').css("height", h);
+      
+    if(isnew){
 
-  if(isnew) addTemplate();
-  cal.events = ksort(cal.events);
+      $(cal.mountPoint + ' > div').html(template({ weeks: cal.weeks }));
+      $(cal.mountPoint + " td").css({ height: h / 5.2, width: w / 7, maxWidth: w / 7 });
 
-  if(cal.update){
+      $(cal.mountPoint + " td").each(function(i, obj) {
+        var start = cal.isoweek? 'isoweek' : 'week';
+        var dt = moment().startOf(start).subtract(cal.history,'days').add(i,'days'); 
+        $(obj).attr('data-id', dt);
+        $(obj).find('div').first().html(dt.format('ddd DD MMM'));
+        if(dt.isSame(moment(), 'd')) $(obj).find('div').first().addClass('today');
+        cal.lastday = dt;
+      });
+    }    
 
-    for (var event in cal.events) {  
+    cal.events = ksort(cal.events);
 
-      var items = cal.events[event];
+    if(cal.update){
+  
+      for (var event in cal.events) {  
+  
+        var items = cal.events[event];
 
-      for (var i in items) {
+        items.forEach(function(item){ 
 
-        var item = items[i];
-
-        if (moment.unix(item.start) < moment.unix(cal.lastday)/1000) {
-
-          $(cal.mountPoint + " td").each(function(i, obj) {
-
-            var m1 = moment.unix($(obj).data('id')/1000);
-            var m2 = moment.unix(item.start);
-            var m3 = moment.unix(item.end);
-            var t = '';
-
-            if(ishol) item.allDay = true;
-            
-            if(m1.date() === m2.date() && m1.month() === m2.month()){
+          if (moment.unix(item.start) < moment.unix(cal.lastday)/1000) {
+  
+            $(cal.mountPoint + " td").each(function(i, obj) {
+  
+              var m1 = moment.unix($(obj).data('id')/1000);
+              var m2 = moment.unix(item.start);
+              var m3 = moment.unix(item.end);
+              var t = '';
+  
+              if(ishol) item.allDay = true;
               
-              t += '<div class="event {{c1}} {{c2}} {{c3}}" style="color:{{col}};" onclick="showInfo(this)"';
-              t += '     data-color="{{col}}" data-name="{{name}}" data-start="{{start}}" data-end="{{end}}"';
-              t += '          data-allday="{{allday}}" data-title="{{title}}" data-info="{{info}}" data-loc="{{loc}}">';
-              t += '  <div>{{start}}</div>';
-              t += '  <div>{{title}}</div>';
-              t += '</div>';
-              
-              var d = {
-                name: item.name,
-                start: !item.allDay? m2.format("HH:mm") : '',
-                end: moment.unix(item.end).format("HH:mm"),
-                allday: item.allDay,
-                title: item.title,
-                info: escape(item.desc),
-                loc: item.location,
-                col: item.color,
-                c1: m3.unix() < moment().unix()? 'historic' : '',
-                c2: item.allDay? 'allday' : '',
-                c3: ishol? 'hol' : ''
-              }
+              if(m1.date() === m2.date() && m1.month() === m2.month()){
 
-              var elem = Handlebars.compile(t)(d);
-              ishol? $(obj).find('.header').after(elem) : $(obj).append(elem);
-            }          
-          });       
-        }
+                templateEngine.load("calendar_event").then(function (template) {
+
+                  var data_object = {
+                    name: item.name,
+                    start: !item.allDay? m2.format("HH:mm") : '',
+                    end: moment.unix(item.end).format("HH:mm"),
+                    allday: item.allDay,
+                    title: item.title,
+                    info: escape(item.desc),
+                    loc: item.location,
+                    col: item.color,
+                    c1: m3.unix() < moment().unix()? 'historic' : '',
+                    c2: item.allDay? 'allday' : '',
+                    c3: ishol? 'hol' : ''
+                  }
+
+                  var elem = template(data_object);
+                  ishol? $(obj).find('.header').after(elem) : $(obj).append(elem);
+                }); 
+              }          
+            });       
+          }
+        });
       }
     }
-  }
-  if(cal.block.holidayurl && cal.update) {
-    var h = createCalObject('holiday', cal.block.holidayurl, '#5cb85c');
-    getCalendarData(h, false, true);
-    if(ishol) cal.update = false;
-  }  
-}
 
-/**
- * Creates the calendar template for the first calendar (ical url) only. 
- */
-function addTemplate(){
-
-  var w = cal.width;
-  var h = parseInt(setHeight(cal));
-  var t = '';
-  var d = '';
-
-  t += '<table class="cal_table">';
-  t += '  {{#times weeks}}';
-  t += '  <tr nowrap>';
-  t += '    {{#times 7}}';
-  t += '    <td>';
-  t += '      <div class="header"></div>';
-  t += '    </td>';
-  t += '    {{/times}}';
-  t += '  </tr>';
-  t += '  {{/times}}';
-  t += '</table>';
-
-  d = { weeks: cal.weeks }
-
-  $(cal.mountPoint + ' > div').css("height", h);
-  $(cal.mountPoint + ' > div').html(Handlebars.compile(t)(d));
-  $(cal.mountPoint + " td").css({ height: h / 5.2, width: w / 7, maxWidth: w / 7 });
-  $(cal.mountPoint + " td").each(function(i, obj) {
-    var start = cal.isoweek? 'isoweek' : 'week';
-    var dt = moment().startOf(start).subtract(cal.history,'days').add(i,'days'); 
-    $(obj).attr('data-id', dt);
-    $(obj).find('div').first().html(dt.format('ddd DD MMM'));
-    if(dt.isSame(moment(), 'd')) $(obj).find('div').first().addClass('today');
-    cal.lastday = dt;
+    if(cal.block.holidayurl && cal.update) {
+      var h = createCalObject('holiday', cal.block.holidayurl, '#5cb85c');
+      getCalendarData(h, false, true);
+      if(ishol) cal.update = false;
+    }     
   });
 }
 
@@ -327,39 +266,31 @@ function addTemplate(){
 function showInfo(pop){
 
   if($('.cal-modal').length > 0) $('.cal-modal').remove();
-
+  
   var info = unescape($(pop).data('info'));
   var loc = $(pop).data('loc');
   var color = $(pop).data('color');
-  var calurl = cal.url;
-  var t = ''; var d = '';
+  var calurl = cal.url; 
 
-  t += '<div class="cal-modal">';
-  t += ' <div class="cal-title">{{title}}{{time}}<i class="far fa-window-close cal-close"></i></div>';
-  t += ' <div class="cal-info"><span>There are no details for this event.</span></div>';
-  t += ' <div class="cal-footer">';
-  t += '  <a href="{{calurl}}" target="_blank">{{caltext}}</a>';
-  t += '  <a class="pull-right" href="{{locurl}}" target="_blank">{{loc}}</a>';
-  t += '</div>';
-
-  d = {
-    title: $(pop).data('title'),
-    time: !$(pop).data('allday')? ': ' + $(pop).data('start') + ' - ' + $(pop).data('end') : '',
-    info: info,
-    name: $(pop).data('name'),
-    caltext: calurl.length > 0? 'Launch full calendar' : 'Add your "[calendarurl]" in config.js',
-    calurl: calurl.length > 0? calurl : 'https://dashticz.readthedocs.io/en/beta/dashticzconfiguration.html#config-parameters',
-    loc: loc,
-    lochide: loc.length === 0? 'loc-hide' : '',
-    locurl: 'https://www.google.com/maps/search/' + loc
-  }
-
-  $(document.body).append(Handlebars.compile(t)(d));
-  if(info.length > 0) $('.cal-info').html($.parseHTML(info));
-  if(color !== 'transparent') $('.cal-modal').css('borderColor', color);;
-  $(document.body).on('click', '.cal-close', function() {
-    $('.cal-modal').remove();
-  });  
+  templateEngine.load("calendar_modal").then(function (template) {
+    var data_object = {
+      title: $(pop).data('title'),
+      time: !$(pop).data('allday')? ': ' + $(pop).data('start') + ' - ' + $(pop).data('end') : '',
+      info: info,
+      name: $(pop).data('name'),
+      caltext: calurl.length > 0? 'Launch full calendar' : 'Add your "[calendarurl]" in config.js',
+      calurl: calurl.length > 0? calurl : 'https://dashticz.readthedocs.io/en/beta/dashticzconfiguration.html#config-parameters',
+      loc: loc,
+      lochide: loc.length === 0? 'loc-hide' : '',
+      locurl: 'https://www.google.com/maps/search/' + loc
+    }
+    $(document.body).append(template(data_object));
+    if(info.length > 0) $('.cal-info').html($.parseHTML(info));
+    if(color !== 'transparent') $('.cal-modal').css('borderColor', color);;
+    $(document.body).on('click', '.cal-close', function() {
+      $('.cal-modal').remove();
+    });  
+  });
 }
 
 /**
@@ -414,6 +345,10 @@ $(document.body).on('click', '.agenda', function() {
   $(cal.mountPoint + ' div').attr('data-target', '#agenda-modal');
 });
 
+/**
+ * Converts a DateTime format to a Date only format.
+ * @param {string}  f  The input DateTime format.
+ */
 function formatDateTimeToDate(f){
   return f
     .split(" ")
