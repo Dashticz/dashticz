@@ -34,6 +34,8 @@ if (!empty($argv[2])) {
 $MAXITEMS = $_GET['maxitems'];
 //print "maxitems: ".$MAXITEMS . "\n";
 
+$HISTORY = $_GET['history'];
+
 $ICS = str_replace('#','%23',$ICS);
 //echo $ICS . "\n";
 
@@ -71,15 +73,19 @@ try {
 			$end=$ev["DTEND"]->getTimestamp();
 		else
 			$end=$start;
-		if ($end>time()) {
+		if ($end>time()-((int)$HISTORY*24*3600)) {
 			$duration = $end-$start;
 			$jsEvt = array(
 				"id" => ($id++),
 				"title" => $ev["SUMMARY"],
+				"desc" => $ev["DESCRIPTION"],
+				"location" => $ev["LOCATION"],
 				"start" => $start,
 				"end"   => $end,
 				"allDay" => $duration > 0 && ($duration % 86400) == 0,
 			);
+/* 			$a=array();
+			array_push($a,$ev["ATTENDEE"]); */
 			$data[$start] = $jsEvt;
 			if ($id>=$MAXITEMS)
 				break;
@@ -95,7 +101,7 @@ function ical5($ICS, $MAXITEMS) {
 	$ical = new SG_iCalReader($ICS);
 $evts = $ical->getEvents();
 $data = array();
-if($evts){
+if($evts){	
 	$currentdate = time();
 	foreach($evts as $id => $ev) {
 		$start = $ev->getStart();
@@ -103,6 +109,7 @@ if($evts){
 		$jsEvt = array(
 			"id" => ($id+1),
 			"title" => $ev->getProperty('summary'),
+			"desc" => $ev->getProperty('description'),
 			"start" => $start,
 			"end"   => $end,
 			"allDay" => $ev->isWholeDay(),
