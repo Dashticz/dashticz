@@ -630,7 +630,7 @@ function getStatusBlock(block) {
                 if (format) {
                     deviceValue = number_format(deviceValue, decimals)
                 }
-                deviceValue += ' ' + blockunit || current_unit
+                deviceValue += ' ' + (blockunit || current_unit);
             }
             value = value.replace('<' + elements[d] + '>', deviceValue);
             title = title.replace('<' + elements[d] + '>', device[elements[d]]);
