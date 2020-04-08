@@ -25,7 +25,7 @@ Dashticz.register(DT_calendar);
  */
 function prepareCalendar(me) {
   
-  moment.locale(settings["language"]);
+  moment.locale(settings["calendarlanguage"]);
 
   cal.url = isDefined(me.block.url)
     ? me.block.url
@@ -36,7 +36,7 @@ function prepareCalendar(me) {
     ? me.block.dateFormat
     : isDefined(settings["calendarformat"]) &&
       settings["calendarformat"].length > 0
-    ? settings["calendarformat"]
+    ? formatDateTimeToDate(settings["calendarformat"])  
     : "ddd DD/MM/YY";
   cal.timeFormat = isDefined(me.block.timeFormat)
     ? me.block.timeFormat
@@ -413,4 +413,14 @@ $(document.body).on('click', '.agenda', function() {
   $(cal.mountPoint + ' div').attr('data-toggle', 'modal');
   $(cal.mountPoint + ' div').attr('data-target', '#agenda-modal');
 });
+
+function formatDateTimeToDate(f){
+  return f
+    .split(" ")
+    .filter(function (a) {
+      return !a.includes(":");
+    })
+    .join(" ")
+    .replace(/a/gi, "");
+}
 //# sourceURL=js/components/calendar.js
