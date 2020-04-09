@@ -2159,7 +2159,7 @@ canvas {
 /* END: CORONAVIRUS */
 
 /* START: AGENDA */
-table.agenda {
+.agenda table {
   border-collapse: separate;
   border-spacing: 10px 0px;
 }
@@ -2172,7 +2172,21 @@ td.agenda-title {
 }
 /* END: AGENDA */
 
-/* START: CALENDAR */
+/* START: OLD CALENDAR */
+table.calendar {
+  border-collapse: separate;
+  border-spacing: 10px 0px;
+}
+.calendar td {
+  vertical-align: top;
+  white-space: nowrap;
+}
+td.caltitle {
+  white-space: normal;
+}
+/* END: OLD CALENDAR */
+
+/* START: NEW CALENDAR */
 .cal_table {
   border-collapse: collapse;
   height: 100%!important;
