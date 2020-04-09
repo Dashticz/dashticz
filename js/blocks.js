@@ -630,7 +630,7 @@ function getStatusBlock(block) {
                 if (format) {
                     deviceValue = number_format(deviceValue, decimals)
                 }
-                deviceValue += ' ' + (blockunit || current_unit);
+                deviceValue += (blockunit || current_unit); //no space between value and unit
             }
             value = value.replace('<' + elements[d] + '>', deviceValue);
             title = title.replace('<' + elements[d] + '>', device[elements[d]]);
@@ -644,7 +644,7 @@ function getStatusBlock(block) {
             if (isNaN(value)) {
                 value = value.split(' ')[0] || value;
             }
-            value += ' ' + block.unit;
+            value += block.unit; //no space between value and unit
         }
     }
 
