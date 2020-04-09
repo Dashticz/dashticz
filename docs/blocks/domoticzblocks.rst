@@ -317,6 +317,8 @@ The following config parameters from CONFIG.js are applicable:
   * - evohome_boost_hw
     - ``<number>``: Hot water boost temporary override time in minutes. Default: 15
 
+.. _formatting:
+
 Formatting
 ~~~~~~~~~~
 
@@ -324,18 +326,19 @@ You can define the default unit text and number of decimals to show for some (mo
 
     config['units'] = {
       names: {
-      kwh: 'kWh',
-      watt: 'W',
-      gas: 'm3',
-      water: 'l',
-      time: ''
-    },
-    decimals: {
-      kwh: 1,
-      watt: 0,
-      gas: 1,
-      water: 0,
-      time: 0
+        kwh: 'kWh',
+        watt: 'W',
+        gas: 'm3',
+        water: 'l',
+        time: ''
+      },
+      decimals: {
+        kwh: 1,
+        watt: 0,
+        gas: 1,
+        water: 0,
+        time: 0
+      }
     }
 
 You can also define the unit parameter on block level by setting the ``unit`` parameter::

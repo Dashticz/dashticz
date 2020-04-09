@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 /* global Dashticz moment settings _CORS_PATH config language time blocks graph Chart _TEMP_SYMBOL getWeekNumber*/
-var api = 'https://coronavirus-tracker-api.herokuapp.com/v2/';
+var api = 'https://cvtapi.nl/v2/';
 var flagUrl = 'https://raw.githubusercontent.com/clinkadink/country-flags/master/png100px/';
 var nf = Intl.NumberFormat();
 

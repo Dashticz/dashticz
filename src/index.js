@@ -17,8 +17,11 @@ require("script-loader!./functions.js");
 
 var Handlebars=require("handlebars")
 window.Handlebars = Handlebars;
+var MomentHandler = require("handlebars.moment");
+window.MomentHandler = MomentHandler;
 
 require('./templateengine.js');
+require('./handlebars-helpers.js');
 var Swiper = require('swiper').default;
 window.Swiper = Swiper;
 require( 'swiper/css/swiper.min.css');

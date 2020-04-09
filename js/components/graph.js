@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-/* global Dashticz moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL getWeekNumber*/
+/* global Dashticz moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL getWeekNumber onlyUnique isDefined isObject setHeight */
 var allDevices = Domoticz.getAllDevices();
 var dtGraphs = [];
 var charts = [];
@@ -679,7 +679,6 @@ function getGraphData(devices, selGraph) {
                     });                  
                     multidata.result = groupArray;
                   }
-                  if(graph.blockId === 'block_71') console.log(multidata.result[multidata.result.length-1])
                   graph.data = multidata;
                   createGraph(graph);
                 }
@@ -714,7 +713,7 @@ function createGraph(graph) {
   if (!graph.popup) {
     mydiv.addClass("col-xs-" + graph.block.width);
     mydiv.addClass("block_graph");
-    mydiv.addClass("block_" + graphIdx);
+    mydiv.addClass(graphIdx);
   }
   mydiv.html(html);
   updateHeaderValues(graph, true);
@@ -734,13 +733,7 @@ function createGraph(graph) {
   }
 
   if (!graph.popup) {
-    var graphwidth = $(".block_" + graphIdx).width();
-    var setHeight = Math.min(
-      Math.round((graphwidth / window.innerWidth) * window.innerHeight - 25),
-      window.innerHeight - 50
-    );
-    if (graph.block.height) setHeight = graph.block.height;
-    if (setHeight) $(".block_" + graphIdx).css("height", setHeight);
+    $("." + graphIdx).css("height", setHeight(graph));
   }
 
   if (typeof graph.block.legend == "boolean") {
@@ -1449,18 +1442,6 @@ function getDefaultGraphProperties(graph) {
   };
 }
 
-function onlyUnique(value, index, self) {
-  return self.indexOf(value) === index;
-}
-
-function isDefined(prop) {
-  return typeof prop !== "undefined" ? true : false;
-}
-
-function isObject(prop) {
-  return typeof prop === "object" ? true : false;
-}
-
 function getYlabels(g) {  
   var l = [];
   $.each(g.keys, function (i, key) {
@@ -1532,6 +1513,7 @@ function getYlabels(g) {
   });
   return l;
 }
+
 function groupByDevice(devices) {
 
   var arrData = [];
@@ -1583,13 +1565,10 @@ function groupByDevice(devices) {
         if (initial) {
           mountPoint.addClass("col-xs-" + graph.block.width);
           mountPoint.addClass("block_graph");
-          mountPoint.addClass("block_" + graphIdx);
+          mountPoint.addClass(graphIdx);
           mountPoint.html(html);
           updateHeaderValues(graph, false);
-          var graphwidth = $(".block_" + graphIdx).width();
-          var setHeight = Math.min(Math.round((graphwidth / window.innerWidth) * window.innerHeight - 25), window.innerHeight - 50);
-          setHeight = graph.block.height ? graph.block.height : setHeight;
-          $(".block_" + graphIdx).css("height", setHeight);
+          $("." + graphIdx).css("height", setHeight(graph));
         }
 
         var graphProperties = getDefaultGraphProperties(graph);
