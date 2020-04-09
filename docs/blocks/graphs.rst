@@ -570,6 +570,8 @@ Custom point styling
 .. image :: img/multigraph_point_styling.jpg
 
 
+.. _customheader:
+
 customHeader
 ~~~~~~~~~~~~
 
