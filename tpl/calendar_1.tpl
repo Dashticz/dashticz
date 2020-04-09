@@ -1,4 +1,4 @@
-<table class="agenda">
+<table>
 	{{#each events as | items |}}
 	  {{#ifLe @index ../maxitems}}
 		{{#each items as | item |}}

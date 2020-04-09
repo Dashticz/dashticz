@@ -1,5 +1,5 @@
 /* global Dashticz moment settings config language time objectlength ksort infoMessage isDefined setHeight functions*/
-var cal = {};
+var cal = [];
 var templateEngine = TemplateEngine();
 
 var DT_calendar = {
@@ -12,7 +12,7 @@ var DT_calendar = {
   run: function(me) {
     if (me.block.type === 'calendar') {
       if (me.block.icalurl) {
-        prepareCalendar(me);
+        prepareCalendar(me, me.key);
       } else {
         infoMessage('<font color="red">Domoticz error!', 'Calendar "icalurl" missing on the calendar block.</font>', 0);
       }
@@ -24,81 +24,84 @@ Dashticz.register(DT_calendar);
 /**
  * Prepares the calendar object and applies block settings.
  * @param {object} me  Core component object.
+ * @param {string} key The block name of the calendar.
  */
-function prepareCalendar(me) {
+function prepareCalendar(me, key) {
   
   moment.locale(settings["calendarlanguage"]);
 
-  cal.url = isDefined(me.block.url)
+  me.url = isDefined(me.block.url)
     ? me.block.url
     : isDefined(settings["calendarurl"]) && settings["calendarurl"].length > 0
     ? settings["calendarurl"]
     : "";
-  cal.dateFormat = isDefined(me.block.dateFormat)
+  me.dateFormat = isDefined(me.block.dateFormat)
     ? me.block.dateFormat
     : isDefined(settings["calendarformat"]) &&
       settings["calendarformat"].length > 0
-    ? formatDateTimeToDate(settings["calendarformat"])  
+    ? formatDateTimeToDate(settings["calendarformat"])
     : "ddd DD/MM/YY";
-  cal.timeFormat = isDefined(me.block.timeFormat)
+  me.timeFormat = isDefined(me.block.timeFormat)
     ? me.block.timeFormat
     : "HH:mm";
-  cal.layout = isDefined(me.block.layout) ? me.block.layout : 0;
-  cal.icalurl = me.block.icalurl;
-  cal.icalurls = isObject(cal.icalurl) ? objectlength(cal.icalurl) : 1;
-  cal.maxitems = isDefined(me.block.maxitems) ? me.block.maxitems : 15;
-  cal.lastweek = isDefined(me.block.lastweek) ? me.block.lastweek : true;
-  cal.weeks = isDefined(me.block.weeks) ? me.block.weeks : 5;
-  cal.isoweek = isDefined(me.block.isoweek) ? me.block.isoweek : false;
-  cal.width = $(me.mountPoint + " > div").width();
-  cal.adjustTZ = isDefined(me.block.adjustTZ) ? me.block.adjustTZ * 60 * 60 : 0;
-  cal.adjustAllDayTZ = isDefined(me.block.adjustAllDayTZ)? me.block.adjustAllDayTZ * 60 * 60 : false;
-  cal.startonly = isDefined(me.block.startonly) ? me.block.startonly : false;
-  cal.history = cal.lastweek ? 7 : 0;
-  cal.update = true;
-  cal.isnew = true;
+  me.layout = isDefined(me.block.layout) ? me.block.layout : 0;
+  me.icalurl = me.block.icalurl;
+  me.icalurls = isObject(me.icalurl) ? objectlength(me.icalurl) : 1;
+  me.maxitems = isDefined(me.block.maxitems) ? me.block.maxitems : 15;
+  me.lastweek = isDefined(me.block.lastweek) ? me.block.lastweek : true;
+  me.weeks = isDefined(me.block.weeks) ? me.block.weeks : 5;
+  me.isoweek = isDefined(me.block.isoweek) ? me.block.isoweek : false;
+  me.width = $(me.mountPoint + " > div").width();
+  me.adjustTZ = isDefined(me.block.adjustTZ) ? me.block.adjustTZ * 60 * 60 : 0;
+  me.adjustAllDayTZ = isDefined(me.block.adjustAllDayTZ)
+    ? me.block.adjustAllDayTZ * 60 * 60
+    : false;
+  me.startonly = isDefined(me.block.startonly) ? me.block.startonly : false;
+  me.history = me.lastweek ? 7 : 0;
+  me.update = true;
+  me.isnew = true;
+  cal[key] = me;
 
-  $.extend(cal, me);
-
-  if (cal.icalurls > 1) {
-    getCalendarData(cal.icalurl, true, false);
+  if (cal[key].icalurls > 1) {
+    getCalendarData(key, cal[key].icalurl, true, false);
   } else {
-    var y = createCalObject("calendar", cal.icalurl, "white");
-    getCalendarData(y, true, false);
+    var y = createCalObject("calendar", cal[key].icalurl, "white");
+    getCalendarData(key, y, true, false);
   }
 }
 
 /**
  * Fetches and parses calendar data using the ical url.
+ * @param {string}   key     The block name of the calendar.
  * @param {string}   url     Calendar ical url that provides the ics file.
  * @param {boolean}  isnew   Does a new calendar template need creating.
  * @param {boolean}  ishol   Is this a public holiday calendar ical url.
  */
-function getCalendarData(calendars, isnew, ishol) {
+function getCalendarData(key, calendars, isnew, ishol) {
   var events = [];
   var counter = 1;
 
   $.each(calendars, function (name, calendar) {
-    url = makeUrl(calendar.ics);
+    url = makeUrl(key, calendar.ics);
 
     $.getJSON(url, function (data) {
       for (var e in data) {
         var ev = data[e];
         var enddate = ev.end;
 
-        cal.adjustTZ =
-          ev.allDay === true && cal.adjustAllDayTZ
-            ? cal.adjustAllDayTZ
-            : cal.adjustTZ;
+        cal[key].adjustTZ =
+          ev.allDay === true && cal[key].adjustAllDayTZ
+            ? cal[key].adjustAllDayTZ
+            : cal[key].adjustTZ;
 
-        ev.start += cal.adjustTZ;
-        ev.end += cal.adjustTZ;
+        ev.start += cal[key].adjustTZ;
+        ev.end += cal[key].adjustTZ;
         ev.name = name;
         ev.color = calendar.color;
 
         if (
           parseFloat(enddate) >=
-          moment().subtract(cal.history, "days").format("X")
+          moment().subtract(cal[key].history, "days").format("X")
         ) {
           if (isDefined(events[ev.start]) !== "undefined")
             events[ev.start] = [];
@@ -106,18 +109,15 @@ function getCalendarData(calendars, isnew, ishol) {
         }
       }
 
-      if (counter === cal.icalurls || ishol) {
-        cal.events = ksort(events);
+      if (counter === cal[key].icalurls || ishol) {
+        cal[key].events = ksort(events);
 
-        switch (Number(cal.layout)) {
-          case 1:
-            generateAgendaHtml();
-            break;
+        switch (Number(cal[key].layout)) {
           case 2:
-            generateCalendar(isnew, ishol);
+            generateCalendar(key, isnew, ishol);
             break;
           default:
-            generateAgenda();
+            generateAgenda(cal[key].layout, key);
         }
       }
       counter++;
@@ -128,93 +128,83 @@ function getCalendarData(calendars, isnew, ishol) {
 }
 /**
  * Option: 0 - Generates all events and adds to the basic text agenda.
+ * Option: 1 - Generates all events and adds to the HTML agenda.
+ * @param {string}  opt  The agenda layout option; (1) basic or (2) table.
+ * @param {string}  key  The block name of the calendar.
  */
-function generateAgenda() {
+function generateAgenda(opt, key) {
 
-  templateEngine.load("agenda_basic").then(function (template) {
+  createModalIframe(key);
+
+  templateEngine.load("calendar_" + opt).then(function (template) {
     
     var data = {
-      maxitems: cal.maxitems,
-      events: cal.events,
-      df: cal.dateFormat,
-      tf: cal.timeFormat,
-      startonly: cal.startonly,
+      maxitems: cal[key].maxitems,
+      events: cal[key].events,
+      df: cal[key].dateFormat,
+      tf: cal[key].timeFormat,
+      startonly: cal[key].startonly,
       entire: language.weekdays.entire_day
       }
+      
+    $(cal[key].mountPoint + " > div")
+      .html(template(data))
+      .addClass('agenda hover')
+      .attr('data-toggle', 'modal')
+      .attr('data-target', '#agenda-modal_' + key)
+      .removeClass("dt_block");
 
-    $(cal.mountPoint + ' > div').html(template(data));
-  });
-}
-
-
-/**
- * Option: 1 - Generates all events and adds to the HTML agenda.
- */
-function generateAgendaHtml() {
-
-  templateEngine.load("agenda_html").then(function (template) {
-    var data_object = {
-      maxitems: cal.maxitems,
-      events: cal.events,
-      df: cal.dateFormat,
-      tf: cal.timeFormat,
-      startonly: cal.startonly,
-      entire: language.weekdays.entire_day
-    }
-
-    $(cal.mountPoint + ' > div').html(template(data_object));
-
-    var p = '';
-
-    $.each($('.agenda-date'), function(i, el) {    
-      var dt = $(el).html().trim();
-      if(p === dt) $(el).empty();
-      p = dt;
-    });
+      if(opt === 1) {
+        var p = '';
+        $.each($(cal[key].mountPoint + ' .agenda-date'), function(i, el) {    
+          var dt = $(el).html().trim();
+          if(p === dt) $(el).empty();
+          p = dt;
+        });
+      }
   });
 }
 
 /**
- * Option: 3 - Generates all events and adds to the HTML calendar.
+ * Option: 2 - Generates all events and adds to the HTML calendar.
+ * @param {string}   key     The block name of the calendar.
  * @param {boolean}  isnew   Does a new calendar template need creating.
  * @param {boolean}  ishol   Is this a public holiday calendar ical url.
  */
-function generateCalendar(isnew, ishol) {
+function generateCalendar(key, isnew, ishol) {
   
-  templateEngine.load("calendar_template").then(function (template) {
+  templateEngine.load("calendar_2_template").then(function (template) {
     
-    var w = cal.width;
-    var h = parseInt(setHeight(cal));
-    $(cal.mountPoint + ' > div').css("height", h);
+    var w = cal[key].width;
+    var h = parseInt(setHeight(cal[key]));
+    $(cal[key].mountPoint + ' > div').css("height", h);
       
     if(isnew){
 
-      $(cal.mountPoint + ' > div').html(template({ weeks: cal.weeks }));
-      $(cal.mountPoint + " td").css({ height: h / 5.2, width: w / 7, maxWidth: w / 7 });
+      $(cal[key].mountPoint + ' > div').html(template({ weeks: cal[key].weeks }));
+      $(cal[key].mountPoint + " td").css({ height: h / 5.2, width: w / 7, maxWidth: w / 7 });
 
-      $(cal.mountPoint + " td").each(function(i, obj) {
-        var start = cal.isoweek? 'isoweek' : 'week';
-        var dt = moment().startOf(start).subtract(cal.history,'days').add(i,'days'); 
+      $(cal[key].mountPoint + " td").each(function(i, obj) {
+        var start = cal[key].isoweek? 'isoweek' : 'week';
+        var dt = moment().startOf(start).subtract(cal[key].history,'days').add(i,'days'); 
         $(obj).attr('data-id', dt);
         $(obj).find('div').first().html(dt.format('ddd DD MMM'));
         if(dt.isSame(moment(), 'd')) $(obj).find('div').first().addClass('today');
-        cal.lastday = dt;
+        cal[key].lastday = dt;
       });
     }    
 
-    cal.events = ksort(cal.events);
-
-    if(cal.update){
+    if(cal[key].update){
   
-      for (var event in cal.events) {  
+      for (var event in cal[key].events) {  
   
-        var items = cal.events[event];
+        var items = cal[key].events[event];
 
         items.forEach(function(item){ 
 
-          if (moment.unix(item.start) < moment.unix(cal.lastday)/1000) {
+          if (moment.unix(item.start) < moment.unix(cal[key].lastday)/1000) {
   
-            $(cal.mountPoint + " td").each(function(i, obj) {
+            $(cal[key].mountPoint + " td").each(function(i, obj) {
   
               var m1 = moment.unix($(obj).data('id')/1000);
               var m2 = moment.unix(item.start);
@@ -225,10 +215,11 @@ function generateCalendar(isnew, ishol) {
               
               if(m1.date() === m2.date() && m1.month() === m2.month()){
 
-                templateEngine.load("calendar_event").then(function (template) {
+                templateEngine.load("calendar_2_event").then(function (template) {
 
                   var data_object = {
                     name: item.name,
+                    key: key,
                     start: !item.allDay? m2.format("HH:mm") : '',
                     end: moment.unix(item.end).format("HH:mm"),
                     allday: item.allDay,
@@ -251,10 +242,10 @@ function generateCalendar(isnew, ishol) {
       }
     }
 
-    if(cal.block.holidayurl && cal.update) {
-      var h = createCalObject('holiday', cal.block.holidayurl, '#5cb85c');
-      getCalendarData(h, false, true);
-      if(ishol) cal.update = false;
+    if(cal[key].block.holidayurl && cal[key].update) {
+      var h = createCalObject('holiday', cal[key].block.holidayurl, '#5cb85c');
+      getCalendarData(key, h, false, true);
+      if(ishol) cal[key].update = false;
     }     
   });
 }
@@ -268,11 +259,12 @@ function showInfo(pop){
   if($('.cal-modal').length > 0) $('.cal-modal').remove();
   
   var info = unescape($(pop).data('info'));
+  var key = $(pop).data('key');
   var loc = $(pop).data('loc');
   var color = $(pop).data('color');
-  var calurl = cal.url; 
+  var calurl = cal[key].url; 
 
-  templateEngine.load("calendar_modal").then(function (template) {
+  templateEngine.load("calendar_2_modal").then(function (template) {
     var data_object = {
       title: $(pop).data('title'),
       time: !$(pop).data('allday')? ': ' + $(pop).data('start') + ' - ' + $(pop).data('end') : '',
@@ -310,40 +302,25 @@ function createCalObject(name, url, color){
 
 /**
  * Constructs the ical url to avoid cross-origin issues.
+ * @param {string}  key  The block name of the calendar.
  * @param {string}  url  The ical url used to fetch the ics file.
  */
-function makeUrl(url){
-  return settings['dashticz_php_path'] + 'ical/?time=' + new Date().getTime() + '&maxitems=' + cal.maxitems + '&history=' + cal.history + '&url=' + url
+function makeUrl(key, url){
+  return settings['dashticz_php_path'] + 'ical/?time=' + new Date().getTime() + '&maxitems=' + cal[key].maxitems + '&history=' + cal[key].history + '&url=' + url
   .replace(/webcal?\:\/\//i, "https://")
   .replace("https://cors-anywhere.herokuapp.com/", "");
 }
 
-/*
-    Creates the modal Dialog to show the url after clicking on the calendar
+/**
+  * Creates the modal Dialog to show the url after clicking on the calendar.
+  * @param {string}  key  The block name of the calendar.
 */
-$(document.body).on('click', '.agenda', function() {
-
-  $('#agenda-modal').remove();
-  var t = '';
-
-  t += '<div class="modal fade" id="agenda-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
-  t += '  <div class="modal-dialog">';
-  t += '    <div class="modal-content">';
-  t += '      <div class="modal-header">';
-  t += '        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
-  t += '      </div>';
-  t += '      <div class="modal-body">';
-  t += '        <iframe src="{{url}}" width="100%" height="570" frameborder="0" allowtransparency="true"></iframe> ';
-  t += '      </div>';
-  t += '    </div>';
-  t += '  </div>';
-  t += '</div>';
-
-  $('body').append(Handlebars.compile(t)({url: cal.url}));
-  $(cal.mountPoint + ' div').addClass('hover');
-  $(cal.mountPoint + ' div').attr('data-toggle', 'modal');
-  $(cal.mountPoint + ' div').attr('data-target', '#agenda-modal');
-});
+function createModalIframe(key){
+  $('#agenda-modal_' + key).remove();
+  templateEngine.load("calendar_modal_iframe").then(function (template) {    
+    $('body').append(template({key:key, url:cal[key].url}));
+  });
+}
 
 /**
  * Converts a DateTime format to a Date only format.
