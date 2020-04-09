@@ -1,0 +1,1 @@
+<img class="{{mount}}_camImage" src="{{image}}" data-video="{{video}}" style="border:0px;;height:{{height}}px;width:100%;">
