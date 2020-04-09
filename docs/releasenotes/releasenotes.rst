@@ -4,9 +4,15 @@ Release Notes
 Latest changes
 --------------
 
+3.4.3 (Beta) (9-4-2020)
+-----------------------
+
+Enhancements
+  * New calendar layout. See ...
+
 Fixes
-  * Group/scene status
-  * Unit parameter, including documentation (see Domoticz blocks)
+  * Group/scene status refresh
+  * Unit parameter, which can be used for formatting the value of some Domoticz devices. See :ref:`formatting`
 
 3.4.2 (Beta) (3-4-2020)
 ------------------------
@@ -14,8 +20,8 @@ Fixes
 Enhancements
   * Add dewpoint block for TempHumBar devices
   * Corona block type
-  * Custom header for graph blocks. See ...
-  * Camera block. See ...
+  * Custom header for graph blocks. See :ref:`customheader`
+  * Camera block. See :ref:`cameras`
 
 Fixes
   * Calendar recurring events (experimental)
