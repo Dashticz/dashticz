@@ -92,7 +92,9 @@ function getCustomFunction(functionname, block, afterupdate) {
 
             window[functiondevname](block, afterupdate)
         } catch (err) {
-            console.error('Error calling ' + functionname, err)
+            console.error('Error calling ' + functionname, err);
+            var line = RegExp('(?::)(.*:.*)\\)').exec(err.stack)[1];
+            infoMessage('Error: '+err.message,'Check function '+functiondevname+ ' in custom.js line '+line,30000);
         }
     }
 }
