@@ -106,7 +106,7 @@ function deviceUpdateHandler(block) {
     if (block.subidx) subidxStr = '_' + block.subidx;
     var fullidx = idx + subidxStr;
 
-    getCustomFunction('getStatus', fullidx, device, false);
+    getCustomFunction('getStatus', block, false);
     var $selector = $(selector);
     if (block && typeof block['title'] !== 'undefined') {
         device['Name'] = block['title'];
