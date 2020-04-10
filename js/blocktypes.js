@@ -159,6 +159,12 @@ blocktypes.Type['Current/Energy'] = {
     value: '<Data>'
 };
 
+blocktypes.Type['Current'] = {
+    icon: 'fas fa-plug',
+    title: '<Name>',
+    value: '<Data>'
+};
+
 blocktypes.HardwareType = {};
 blocktypes.HardwareType['Motherboard sensors'] = {
     icon: 'fas fa-desktop',
@@ -285,7 +291,7 @@ function getBlockTypesBlock(block) {
                     var subblock = {};
                     var protosubblock = protoblock[de]
                     $.extend(subblock, protosubblock);
-                    subblock.idx = block.idx + '_' + c;
+                    subblock.idx = block.device.idx + '_' + c;
                     subblock.subidx = c;
                     blockValues.push(subblock)
                     c++;

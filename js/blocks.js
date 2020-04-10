@@ -106,7 +106,7 @@ function deviceUpdateHandler(block) {
     if (block.subidx) subidxStr = '_' + block.subidx;
     var fullidx = idx + subidxStr;
 
-    getCustomFunction('getStatus', fullidx, device, false);
+    getCustomFunction('getStatus', block, false);
     var $selector = $(selector);
     if (block && typeof block['title'] !== 'undefined') {
         device['Name'] = block['title'];
@@ -586,17 +586,16 @@ function appendTvOrCalendarBlock(dataId, classes, width, block, columndiv) {
 
 // eslint-disable-next-line no-unused-vars
 function getStatusBlock(block) {
-    var idx = block.idx;
     var device = block.device;
-    var value = block.value? block.value:'';
-    var title = block.title? block.title:'';
+    var value = block.value ? block.value : '';
+    var title = block.title ? block.title : '';
     var format = block.format;
     var decimals = block.decimals;
     var image = block.image;
     var icon = block.icon;
     var elements = [];
 
-    if(!value && !title) {
+    if (!value && !title) {
         console.log('No title and no value for block');
         console.log(block)
     }
@@ -604,32 +603,56 @@ function getStatusBlock(block) {
     var tagRegEx = /<[\w\s="/.':;#-\/\?]+>/gi;
     var matches = (title + value).match(tagRegEx)
     //todo: see dirty hack below with '<br />'
-    if (matches && matches[0] !=='<br />') {
+    if (matches && matches[0] !== '<br />') {
         matches.map(function (val) {
             elements.push(val.replace(/([<,>])+/g, ''));
         });
     }
-    if (block.unit && typeof block.unit === 'string') {
-        value+=' '+block.unit;
-    }
-    for (var d in elements) {
-        var deviceValue = device[elements[d]];
-        if (format) {
-            var unit = '';
-            if (isNaN(device[elements[d]])) {
-                unit = ' ' + device[elements[d]].split(' ')[1];
-            }
-            deviceValue = number_format(deviceValue, decimals) + unit;
+    /*    if (block.unit && typeof block.unit === 'string') {
+            value+=' '+block.unit;
+        }*/
+    if (elements.length) {
+        var blockunits = []
+        if (typeof block.unit === 'string') {
+            blockunits = block.unit.split(';')
         }
-        value = value.replace('<' + elements[d] + '>', deviceValue);
-        title = title.replace('<' + elements[d] + '>', device[elements[d]]);
+        var cnt = 0;
+        for (var d in elements) {
+            var deviceValue = device[elements[d]];
+            if (format || typeof decimals !== 'undefined' || block.unit) {
+                var blockunit = blockunits[cnt] || blockunits[0];
+                var current_unit = '';
+                if (isNaN(deviceValue)) {
+                    var valueSplit = deviceValue.split(' ');
+                    deviceValue = valueSplit[0];
+                    current_unit = valueSplit[1] || current_unit;
+                }
+                if (format) {
+                    deviceValue = number_format(deviceValue, decimals)
+                }
+                deviceValue += (blockunit || current_unit); //no space between value and unit
+            }
+            value = value.replace('<' + elements[d] + '>', deviceValue);
+            title = title.replace('<' + elements[d] + '>', device[elements[d]]);
+            cnt++
+        }
+    } else {
+        //not a template function
+        //number_format has been applied already
+        //so we only can change the unit, if needed.
+        if (block.unit) {
+            if (isNaN(value)) {
+                value = value.split(' ')[0] || value;
+            }
+            value += block.unit; //no space between value and unit
+        }
     }
 
     //todo: this should not be part of blocks I guess. But we've reserved unit already for the 'real' unit for some devices
-    if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['unit']) !== 'undefined') {
-        var unitArray = blocks[idx]['unit'].split(";");
-        value = value.replace(unitArray[0], unitArray[1]);
-    }
+    /*    if (typeof (blocks[idx]) !== 'undefined' && typeof (blocks[idx]['unit']) !== 'undefined') {
+            var unitArray = blocks[idx]['unit'].split(";");
+            value = value.replace(unitArray[0], unitArray[1]);
+        }*/
 
     getBlockClick(block);
 
@@ -1477,11 +1500,11 @@ function createBlocks(blockParent, blockValues) {
         var block = {};
         $.extend(block, blockValue) //create a block from the prototype
         $.extend(block, blockParent);
-//        $.extend(block, blocks[blockValue.idx]); //I don't think we should do this: It will overwrite block settings of a custom block
+        //        $.extend(block, blocks[blockValue.idx]); //I don't think we should do this: It will overwrite block settings of a custom block
         //Although for subdevices it would be nice to use corresponding block setting
         //so let's overwrite in case parent and blockvalue idx are different
         //because in that case we are creating subdevices
-        if(blockParent.idx !== blockValue.idx) $.extend(block, blocks[blockValue.idx]);
+        if (blockParent.idx !== blockValue.idx) $.extend(block, blocks[blockValue.idx]);
         block.idx = blockValue.idx;
         var html = '<div class="mh transbg block_' + blockValue.idx + ' col-xs-' + (block.width || 4) + '"/>';
         $div.append(html);

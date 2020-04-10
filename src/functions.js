@@ -44,7 +44,7 @@ function setSrc(cur){
 	});
 	if(typeof($($(cur).data('target')).find('iframe').attr('src'))=='undefined'){
 		
-		$($(cur).data('target')).find('iframe').attr('src',$($(cur).data('target')).find('iframe').data('popup'));
+		$($(cur).data('target')).find('iframe').attr('src', $($(cur).data('target')).find('iframe').data('popup'));
 	}
 }
 
@@ -503,4 +503,28 @@ function URLToArray(url) {
       request[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
    }
    return request;
+}
+
+function onlyUnique(value, index, self) {
+  return self.indexOf(value) === index;
+}
+
+function isDefined(prop) {
+  return typeof prop !== "undefined" ? true : false;
+}
+
+function isObject(prop) {
+  return typeof prop === "object" ? true : false;
+}
+
+function setHeight(obj) {
+  return isDefined(obj.block.height) && obj.block.height
+    ? obj.block.height
+    : Math.min(
+        Math.round(
+          ($(obj.mountPoint).width() / window.innerWidth) * window.innerHeight -
+            25
+        ),
+        window.innerHeight - 50
+      );
 }
