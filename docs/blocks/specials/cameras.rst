@@ -6,7 +6,7 @@ Cameras
 This has been designed mainly for those users with several cameras, which provide both an image stream **and** a video stream.
 ::
 
-	blocks['garage_cam] = {
+	blocks['garage_cam'] = {
 		type: 'camera',
 		imageUrl: 'http://192.168.1.234:5678?res=640x480&snapshot=1',
 		videoUrl: 'http://192.168.1.234:5678?res=1920x1080&fps=15', 
@@ -15,7 +15,7 @@ This has been designed mainly for those users with several cameras, which provid
 		height: 300
 	}
 
-.. image :: camera_block.gif
+.. image :: camera_block.jpg
 .. list-table:: 
   :header-rows: 1
   :widths: 5, 30
