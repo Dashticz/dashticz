@@ -159,6 +159,12 @@ blocktypes.Type['Current/Energy'] = {
     value: '<Data>'
 };
 
+blocktypes.Type['Current'] = {
+    icon: 'fas fa-plug',
+    title: '<Name>',
+    value: '<Data>'
+};
+
 blocktypes.HardwareType = {};
 blocktypes.HardwareType['Motherboard sensors'] = {
     icon: 'fas fa-desktop',
