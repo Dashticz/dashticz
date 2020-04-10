@@ -35,7 +35,7 @@ function isNumeric(n) {
 }
 
 function getOWMurl(makeFull) {
-	var site='https://api.openweathermap.org/data/2.5/' + (makeFull? 'forecast':'weather') + '?';
+	var site= _CORS_PATH + 'https://api.openweathermap.org/data/2.5/' + (makeFull? 'forecast':'weather') + '?';
 	if (isNumeric(settings['owm_city']))
 		site += 'id=' + settings['owm_city']
 	else
