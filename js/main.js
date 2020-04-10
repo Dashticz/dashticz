@@ -72,12 +72,10 @@ function loadFiles(dashtype) {
     //Set custom error handling to catch syntax errors in CONFIG.js and custom.js
     window.onerror = function (msg, url, line, col, error) {
         if (loadingFilename) {
-            var message = 'Error loading ' + loadingFilename + '<br>\n' + msg + ' at line ' + line + ' pos ' + col;
+            var message = 'Error loading ' + loadingFilename + '<br>\n' + msg + ' at line ' + line + ':' + col;
             console.log(message);
             throwError = message;
-        } else {
-            console.error(msg);
-        }
+        } 
     }
 
     $('<link href="' + 'css/creative.css?_=' + Date.now() + '" rel="stylesheet">').appendTo('head');
