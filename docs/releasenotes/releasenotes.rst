@@ -4,6 +4,9 @@ Release Notes
 Latest changes
 --------------
 
+Enhancements
+  * Add 'Current' Domoticz device type.
+
 3.4.3 (Beta) (9-4-2020)
 -----------------------
 
