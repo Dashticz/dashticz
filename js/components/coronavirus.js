@@ -143,8 +143,8 @@ function createReportBlock(me, province){
 
   $.ajax({
     url: dataUrl,
+    dataType: "json",
     success: function(json) {
-
       var template = "";
       template = '<div class="col-lg-2 col-sm-3 vertical-center">';
       template += ' <i class="fas fa-{{icon}} fx"></i>';
