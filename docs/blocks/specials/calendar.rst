@@ -177,3 +177,72 @@ You have to know the correct link to your Google Calendar. You can find them as 
     ``https://calendar.google.com/calendar/ical/yourname%40gmail.com/private-5045b31...........ba/basic.ics``
 
     Use this ical url as icalurl parameter in your calendar block.
+
+
+New Calendar 
+############
+
+The **new** calendar block follows the same look and feel as most other blocks. It uses "type" to tell Dashticz that its a calendar block. The new calendar block can be configured as follows::
+
+	blocks['my_calendar'] = {
+		type: 'calendar',
+		maxitems: 5, 
+		layout: 0,
+		url: 'https://calendar.google.com/calendar/embed?src=_REDACTED_&ctz=Europe%2FLondon',
+		icalurl: 'https://calendar.google.com/calendar/ical/_REDACTED_/private-123456789/basic.ics',
+		holidayurl: 'https://www.calendarlabs.com/ical-calendar/ics/75/UK_Holidays.ics',	
+		weeks: 5,
+		lastweek: false,	
+		isoweek: false,
+		width: 12
+	}
+
+The "calFormat" parameter is now called "layout", it has 3 options:
+
+* layout: 0 - lists an agenda of events in text format
+* layout: 1 - lists an agenda of events in table format
+* layout: 2 - displays a traditional calendar in table format
+
+Other parameters include the following:
+
+* **url** - this can be set on the block or in settings['calendarurl']. Whenever you click the calendar block whilst setting layout 0 or 1, an embedded gmail calendar will display in a popup dialog (modal). Alternatively, when layout 2 is set, when clicking on any event, it will display a popup with the event details and provide a link to the calendar (e.g. gmail).
+* **icalurl** - this can accept either a single url (string) or one or more calendar objects (example below).
+::
+
+	blocks['gmail_calendars'] = {
+		type: 'calendar',
+		layout: 2,
+		icalurl: { 
+			Personal: {
+				ics: 'https://calendar.google.com/calendar/ical/_REDACTED_/private-123456789/basic.ics',
+			color: 'blue'
+			},
+			Business: { 
+				ics: 'https://calendar.google.com/calendar/ical/_REDACTED_/private-123456789/basic.ics',
+				color: 'purple'
+			}
+		},
+		holidayurl: 'https://www.calendarlabs.com/ical-calendar/ics/75/UK_Holidays.ics',	
+		maxitems: 100, 
+		weeks: 5,
+		lastweek: true,	
+		isoweek: false,
+		width: 12
+	} 
+* **holidayurl** this allows users to add public holidays (or other public events) to their calendar.
+* **maxitems** - this limits the number of events that you want to display. When setting layout 2, I set it to 100 to allow for 35 days. Adjust to your own preference.
+* **weeks** - this is how many weeks, or rows of 7 days, you wish to display when layout 2 is selected.
+* **lastweek** - if set to true, this will show the previous week and any events from that week. It accepts true or false. Default is false.
+* **isoweek** - if set to true, the week will start on a Monday. If false, it will start on a Sunday. Accepts true or false. Default is false.
+
+The layout set to 0 will display this:
+.. image :: img/calendar0.png
+
+The layout set to 1 will display this:
+.. image :: img/calendar1.png
+
+The layout set to 2 will display this:
+.. image :: img/calendar2.png
+
+When the user clicks on any events, it opens details about that event. If the event details is already HTML, it will render the HTML event body, including font, tags, anchors/links, etc. The contents of the popup is scrollable. Also included in the popup is a link to source calendar (bottom left), if one has been set in config.js. On the bottom right of the popup, the event location is displayed (if this exists). When clicked, it will take the user to the location on Google maps.
+.. image :: img/calendar2_modal.png
