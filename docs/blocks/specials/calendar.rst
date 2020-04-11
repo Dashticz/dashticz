@@ -236,13 +236,17 @@ Other parameters include the following:
 * **isoweek** - if set to true, the week will start on a Monday. If false, it will start on a Sunday. Accepts true or false. Default is false.
 
 The layout set to 0 will display this:
+
 .. image :: img/calendar0.png
 
 The layout set to 1 will display this:
+
 .. image :: img/calendar1.png
 
 The layout set to 2 will display this:
+
 .. image :: img/calendar2.png
 
 When the user clicks on any events, it opens details about that event. If the event details is already HTML, it will render the HTML event body, including font, tags, anchors/links, etc. The contents of the popup is scrollable. Also included in the popup is a link to source calendar (bottom left), if one has been set in config.js. On the bottom right of the popup, the event location is displayed (if this exists). When clicked, it will take the user to the location on Google maps.
+
 .. image :: img/calendar2_modal.png
