@@ -17,6 +17,7 @@ var DT_coronavirus = {
       me.primaryIdx = me.mountPoint.slice(1);
       me.graphIdx = me.primaryIdx;
       me.multigraph = false;
+      me.colors = isDefined(me.block.datasetColors)? me.block.datasetColors : ['#7fcdbb', '#f03b20', 'yellow', 'red'];
       me.name = isDefined(me.block.title) ? me.block.title : me.name.toUpperCase();
       $.extend(me.block, getBlockDefaults(false, true, me.block));
       createDashGraph(me);
@@ -43,24 +44,7 @@ function createDashGraph(me) {
     stats.country = json.locations[0].country;
     stats.population = json.locations[0].country_population;
     stats.lastUpdated = moment(json.locations[0].last_updated).format("HH:mm, DD/MM/YYYY");
-    stats.ratio = '1:' + (stats.population/stats.latestConfirmed).toFixed(0);
-
-    t = '<span>';
-    t += '  <img src="{{flag}}.png" class="flag">{{country}}: <i class="fas fa-hospital fx" style="color:{{color}};">&nbsp;</i>{{confirmed}}&nbsp;'
-    t += '  <i class="fas fa-skull-crossbones fx" style="color:{{color}};">&nbsp;</i>{{deaths}}&nbsp;'
-    t += '  <i class="fas fa-users fx" style="color:{{color}};">&nbsp;</i>{{ratio}}';
-    t += '  <i class="fas fa-angle-double-up fx" style="color:{{color}};">&nbsp;</i>{{doubling}}';
-    t += '</span>';
-
-    d = { 
-        flag: flagUrl + me.block.countryCode.toLowerCase(),
-        country: stats.country,
-        confirmed: nf.format(stats.latestConfirmed),
-        deaths: nf.format(stats.latestDeaths),
-        ratio: stats.ratio,
-        color: me.block.iconColour,
-        doubling: getDoublingHours(json)
-    };
+    stats.ratio = '1:' + (stats.population/stats.latestConfirmed).toFixed(0);    
     
     var confirmed = json.locations[0].timelines.confirmed.timeline;
     var deaths = json.locations[0].timelines.deaths.timeline;
@@ -70,28 +54,59 @@ function createDashGraph(me) {
       labels: [],
       datasets: [
         {
-          label: "Confirmed",
-          backgroundColor: me.block.datasetColors[0],
-          data: []
+          label: "Confirmed (Total)",
+          backgroundColor: isDefined(me.colors[0])? me.colors[0] : '#3c9a84',
+          data: [],
+          order: 2
         },
         {
-          label: "Deaths",
-          backgroundColor: me.block.datasetColors[1],
-          data: []
+          label: "Deaths (Total)",
+          backgroundColor: isDefined(me.colors[1])? me.colors[1] : '#f03b20',
+          data: [],
+          order: 3
+        },
+        {
+          label: "Confirmed (Day)",
+          backgroundColor: isDefined(me.colors[2])? me.colors[2] : 'yellow',
+          borderColor: isDefined(me.colors[2])? me.colors[2] : 'yellow',
+          data: [],
+          type: 'line',
+          fill: false,
+          order: 1
+        },
+        {
+          label: "Deaths (Day)",
+          backgroundColor: isDefined(me.colors[3])? me.colors[3] : 'red',
+          borderColor: isDefined(me.colors[3])? me.colors[3] : 'red',
+          data: [],
+          type: 'line',
+          fill: false,
+          order: 0
         }
       ]
     };
+
+    var confirmedPrevious = 0;
+    var confirmedGrowth = 0;
 
     for (var key in confirmed) {
       if(moment(key).isSameOrAfter(moment(startDate, 'DD/MM/YYYY'))){
         graphData.labels.push(moment(key).format("YYYY-MM-DD"));
         graphData.datasets[0].data.push(confirmed[key]);
+        confirmedGrowth = confirmed[key] - confirmedPrevious;
+        confirmedPrevious = confirmed[key];
+        graphData.datasets[2].data.push(confirmedGrowth);        
       }
     }
+    var deathsPrevious = 0;
+    var deathsGrowth = 0;
 
     for (var key in deaths) {   
       if(moment(key).isSameOrAfter(moment(startDate, 'DD/MM/YYYY'))){  
         graphData.datasets[1].data.push(deaths[key]);
+        deathsGrowth = deaths[key] - deathsPrevious;
+        deathsPrevious = deaths[key];
+        graphData.datasets[3].data.push(deathsGrowth);       
       }
     }
 
@@ -121,17 +136,28 @@ function createDashGraph(me) {
     setHeight = me.block.height ? me.block.height : setHeight;
     $(me.mountPoint + " .block_coronavirus").css("height", setHeight);
 
-    mountPoint
-      .html(html)
-      .promise()
-      .done(function() {
-        $(".graphValues" + me.graphIdx).html(
-          Handlebars.compile(t)(d)
-        );
-      });   
-    
-    var chartctx = mountPoint.find("canvas")[0].getContext("2d");
-    new Chart(chartctx, graphProperties);
+    templateEngine.load("corona_graph_header").then(function (template) {
+
+      var data = {
+        flag: flagUrl + me.block.countryCode.toLowerCase(),
+        country: stats.country,
+        confirmed: nf.format(stats.latestConfirmed),
+        deaths: nf.format(stats.latestDeaths),
+        ratio: stats.ratio,
+        color: me.block.iconColour,
+        doubling: getDoublingHours(json),
+      };
+
+      mountPoint
+        .html(html)
+        .promise()
+        .done(function () {
+          $(".graphValues" + me.graphIdx).html(template(data));
+        });
+
+      var chartctx = mountPoint.find("canvas")[0].getContext("2d");
+      new Chart(chartctx, graphProperties);
+    });    
   });
 }
 
@@ -144,49 +170,41 @@ function createReportBlock(me, province){
   $.ajax({
     url: dataUrl,
     dataType: "json",
-    success: function(json) {
-      var template = "";
-      template = '<div class="col-lg-2 col-sm-3 vertical-center">';
-      template += ' <i class="fas fa-{{icon}} fx"></i>';
-      template += "</div>";
-      template += '<div class="col-lg-6 col-sm-5 col-data">';
-      template += ' <strong class="title">{{title}}</strong><br>';
-      template += ' <span class="report">{{report}}</span><br>';
-      template += "</div>";
-      template += '<div class="col-lg-4 col-sm-4 vertical-center">';
-      template += ' <img src="{{flag}}.png" class="flag">';
-      template += "</div>";
+    success: function(json) {    
 
-      var report = me.block.report.toLowerCase();
-      var data = nf.format(json.latest[report]);
-      var icon = report === "confirmed" ? "hospital" : "skull-crossbones";
+      templateEngine.load("corona_report").then(function (template) {
 
-      if (report === "ratio") {
-        var population = 7775000000;
-        if (isDefined(me.block.countryCode)) {
-          population = json.locations[0].country_population;
+        var report = me.block.report.toLowerCase();
+        var data = nf.format(json.latest[report]);
+        var icon = report === "confirmed" ? "hospital" : "skull-crossbones";
+
+        if (report === "ratio") {
+          var population = 7775000000;
+          if (isDefined(me.block.countryCode)) {
+            population = json.locations[0].country_population;
+          }
+          data = "1 : " + nf.format((population / json.latest.confirmed).toFixed(0));
+          icon = "users";
         }
-        data = "1 : " + nf.format((population / json.latest.confirmed).toFixed(0));
-        icon = "users";
-      }
 
-      if (report === "doubling" && isDefined(me.block.countryCode)) {
-        data = getDoublingHours(json) + " hours";
-        icon = "angle-double-up";
-      }
+        if (report === "doubling" && isDefined(me.block.countryCode)) {
+          data = getDoublingHours(json) + " hours";
+          icon = "angle-double-up";
+        }
 
-      var data = {
-        width: width,
-        icon: icon,
-        title: (isDefined(me.block.countryCode) ? me.block.countryCode.toUpperCase() : "Global") + ": " + me.block.report,
-        report: data,
-        flag: flagUrl + (isDefined(me.block.countryCode)? me.block.countryCode.toLowerCase() : "world")
-      };
+        var mountPoint = $(me.mountPoint + " > div");
+        mountPoint.addClass("block_report");
 
-      var mountPoint = $(me.mountPoint + " > div");
-      mountPoint.addClass("block_report");
-      mountPoint.html(Handlebars.compile(template)(data));
-      
+        var data = {
+          width: width,
+          icon: icon,
+          title: (isDefined(me.block.countryCode) ? me.block.countryCode.toUpperCase() : "Global") + ": " + me.block.report,
+          report: data,
+          flag: flagUrl + (isDefined(me.block.countryCode)? me.block.countryCode.toLowerCase() : "world")
+        };
+  
+        mountPoint.html(template(data));
+      });   
     },
     complete: function(data) {},
     error: function(xhr, ajaxOptions, thrownError) {
@@ -195,7 +213,6 @@ function createReportBlock(me, province){
       }
     }
   });
-  
 }
 
 function reverseForIn(obj, f) {

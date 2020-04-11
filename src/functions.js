@@ -528,3 +528,17 @@ function setHeight(obj) {
         window.innerHeight - 50
       );
 }
+
+/**
+ * Returns number formatted with thousand seperator with specified decimals.
+ * @param {object} val      The input number to format.
+ * @param {string} decimal  The number of decimal places.
+ */
+function formatThousand(val, decimal){
+  var nf = Intl.NumberFormat();
+  var config = {
+    minimumFractionDigits: decimal,
+    maximumFractionDigits: decimal,
+  };
+  return nf.format(val, config);
+}

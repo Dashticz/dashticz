@@ -435,15 +435,15 @@ next css sets the default height of the frame popup
   color: #727272;
 }
 
-table.calendar {
+.containsicalendar table.calendar {
   border-collapse: separate;
   border-spacing: 10px 0px;
 }
-.calendar td {
+.containsicalendar .calendar td {
   vertical-align: top;
   white-space: nowrap;
 }
-td.caltitle {
+.containsicalendar td.caltitle {
   white-space: normal;
 }
 
@@ -1826,7 +1826,7 @@ canvas {
 .chartjs-tooltip {
   opacity: 1;
   position: absolute;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(0, 0, 0, 0.8);
   color: white;
   border-radius: 10px;
   -webkit-transition: all 0.1s ease;
@@ -1883,6 +1883,10 @@ canvas {
   border-bottom: solid thin;
 }
 
+.chartjs-tooltip tr {
+  padding: 2px 0px;
+}
+
 .chartjs-tooltip th {
   padding-bottom: 5px;
 }
@@ -1897,19 +1901,33 @@ canvas {
 }
 
 .chartjs-tooltip tbody tr td:nth-child(2) {
-  padding-right: 5px;
+  padding-right: 15px;
+  white-space: nowrap;
 }
 
 .chartjs-tooltip tbody tr td:nth-child(3) {
   text-align: end;
 }
 
+.chartjs-tooltip tr.total {
+  border-top: solid thin;
+  border-bottom: solid thin;
+  height: 25px;
+  border-color: grey;
+}
 .chartjs-tooltip-key {
   display: inline-block;
   width: 10px;
   height: 10px;
   margin-right: 10px;
   border-width: 2px;
+}
+
+.chartjs-tooltip-fa {
+  font-size: 15px;
+  margin-left: -2px;
+  margin-top: 1px;
+  margin-right: 5px;  
 }
 /* END: TOOLTIPSTYLE */
 
@@ -2184,20 +2202,6 @@ td.agenda-title {
 }
 /* END: AGENDA */
 
-/* START: OLD CALENDAR */
-table.calendar {
-  border-collapse: separate;
-  border-spacing: 10px 0px;
-}
-.calendar td {
-  vertical-align: top;
-  white-space: nowrap;
-}
-td.caltitle {
-  white-space: normal;
-}
-/* END: OLD CALENDAR */
-
 /* START: NEW CALENDAR */
 .cal_table {
   border-collapse: collapse;
@@ -2232,6 +2236,10 @@ td.caltitle {
 
 .cal_table td > div {  
   text-align: center;
+}
+
+.cal_table table tr div.event {
+  white-space: wrap!important;
 }
 
 .cal_table td > div.historic > div {  
