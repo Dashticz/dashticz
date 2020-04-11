@@ -87,16 +87,29 @@ Add to ``custom.js`` one of the examples::
     }
 
 
-``function getStatus_IDX(block, afterupdate)``
+``function getStatus_IDX(block)``
 ----------------------------------------------
 
 Just like the function to take action on change of a value, now is extended functionality to do something with a block when it has a specific value.
-Example, add a red background to a switch when energy usage reaches a limit.
 
 First you'll have to find the correct IDX for the device. To find the correct IDX number, use http://domoticz_url:8080/json.htm?type=devices&filter=all&used=true , you get an overview of the devices, IDX and it's corresponding parameters.
-After you have the correct IDX, you can add this device to the ``custom.js`` according to the following example::
+After you have the correct IDX, you can add this device to the ``custom.js``.
 
-    function getStatus_145(block, afterupdate){
+Example, change the icon based on the device value (in this case device 413, the first subdevice)::
+
+	function getStatus_413_1(block) {
+	     var usage = block.device.Usage;
+	     if (parseFloat(usage) > 0) {
+		 block.icon = 'fas fa-sun slow-spin'
+	     } else {
+		 block.icon = 'fas fa-sun';
+	     }
+	 }
+ 
+
+Example, add a red background to a switch when energy usage reaches a limit.
+
+    function getStatus_145(block){
     var idx = block.idx;
     var device = block.device;
        if(parseFloat(device['Data'])>23){
@@ -141,13 +154,7 @@ Or if you like a blinking version::
     }
 
 
-The getStatus_IDX gets called twice. The first time before updating the Dashticz block. The parameter ``afterupdate`` will be set to false.
-The second time after updating the Dashticz block. The parameter 'afterupdate' will be set to true. These two calls are needed,
-because if you change the block definition of the device in the getStatus function then that should be done before updating the block, but applying css classes normally needs to be done after creating the block.
-
-In most cases there is no need for testing the value of ``afterupdate``: You just can apply your changes twice.
-
-``function getChange_IDX(block, afterupdate)``
+``function getChange_IDX(block)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This function gets called when the value of a Domoticz device changes.
@@ -194,6 +201,4 @@ This previous example will also change a block that is defined by ``blocks['myti
         title: 'Default',
         icon: 'fas fa-car'
     }
-
-.. note:: Be careful with the Dashticz.setBlock function. You could end in an infinite update loop!
 
