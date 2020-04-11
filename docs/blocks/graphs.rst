@@ -164,8 +164,8 @@ The following block parameters can be used to configure the graph:
     - the code automatically calculate if any devices' time data is longer than others. It then use that device's time data, then match all of the devices non-time data to that. This setting allows users to choose to enable or disable that feature (true or false)
   * - customHeader
     - Customized graph header. See below for examples.
-  * - toolTipStyle
-    - Display HTML graph tooltips instead of the standard ones, e.g. ``toolTipStyle: true``
+  * - tooltiptotal
+    - Display graph tooltiptotal instead of the standard one. ``true``, ``false`` or an array, e.g. ``tooltiptotal: ['Office (Temp)', 'Lounge (Temp)'],`` See below for an example.
   * - zoom
     - | Allows graph zoom controls and orientation. See below for an example.
       | ``'x'``: allow zooming on the x axis (left to right)
@@ -589,7 +589,7 @@ We can now update the block with the **customHeader** object as shown below::
 			13: 'data.split(",").slice(0,2)',                     <---- update/format the data for idx 13
 			x:  '(data.12-data.13).toFixed(2) + " C"',            <---- append custom data based on idx 12 and idx 13
 		},
-		toolTipStyle: true,
+		tooltiptotal: true,
 		graph: "line",
 		legend: true
 	}
@@ -793,7 +793,7 @@ Same as above, but setting *groupByDevice* to *'horizontal'* shows this ...
 stacked
 ~~~~~~~
 
-With *stacked: true* parameter graph bars wil be stacked. To show the total value of the stacked bars on the tooltip you have to add *toolTipStyle: true* to the graph block.
+With *stacked: true* parameter graph bars wil be stacked. To show the total value of the stacked bars on the tooltip you have to add *tooltiptotal: true* to the graph block.
 ::
 
 	blocks['group_by_solar_vs_grid'] = {	
@@ -802,7 +802,7 @@ With *stacked: true* parameter graph bars wil be stacked. To show the total valu
 		graph: 'bar',
 		stacked: true,
 		graphTypes: ['v'],
-		toolTipStyle: true,
+		tooltiptotal: true,
 		debugButton: true,
 		custom : {
         	"Last Day": {
@@ -837,6 +837,27 @@ With *stacked: true* parameter graph bars wil be stacked. To show the total valu
 	}  
 
 .. image :: img/graph_stacked.png
+
+
+
+tooltiptotal
+~~~~~~~~~~~~
+
+``tooltiptotal: false``
+
+.. image :: img/tooltiptotal_false.png
+
+``tooltiptotal: true``
+
+.. image :: img/tooltiptotal_true.png
+
+``tooltiptotal: ['Confirmed (Total)', 'Deaths (Total)']``  
+
+.. image :: img/tooltiptotal_array.png
+
+Basically, if you specify an array, it will only total those datasets, and ignore the other ones.  
+Anything that is being totalled will show a "+" icon.
+
 
 Examples
 ---------
