@@ -107,7 +107,7 @@ Example, change the icon based on the device value (in this case device 413, the
 	 }
  
 
-Example, add a red background to a switch when energy usage reaches a limit.
+Example, add a red background to a switch when energy usage reaches a limit::
 
     function getStatus_145(block){
     var idx = block.idx;
