@@ -119,7 +119,7 @@ function getBlockDefaults(devices, hasBlock, b) {
   block.spanGaps = hasBlock && isDefined(b.spanGaps) ? b.spanGaps : false;
   block.stacked = hasBlock && isDefined(b.stacked) ? b.stacked : false;
   block.title = hasBlock && isDefined(b.title) ? b.title : false;
-  block.toolTipStyle = hasBlock && isDefined(b.toolTipStyle) ? b.toolTipStyle : false;
+  block.tooltiptotal = hasBlock && isDefined(b.tooltiptotal) ? b.tooltiptotal : false;
   block.width = hasBlock && isDefined(b.width) ? b.width : 12;
   block.zoom = hasBlock && isDefined(b.zoom) ? b.zoom : false;
   return block;
@@ -1283,6 +1283,11 @@ function updateGraphs(blockId, ids, range, popup) {
   getGraphData(devices, range);
 }
 
+
+Handlebars.registerHelper("splitString", function (str, cha, options) {
+  return options.fn(str[0].split(cha)[0]);
+});
+
 function getDefaultGraphProperties(graph) {
   return {
     type: "line",
@@ -1295,80 +1300,93 @@ function getDefaultGraphProperties(graph) {
       tooltips: {
         mode: "index",
         intersect: false,
-        enabled: !graph.popup ? !graph.block.toolTipStyle : false,
+        enabled: false,
         custom: function (tooltip) {
+          var tooltipEl = $('#' + graph.primaryIdx + '_chartjs-tooltip');
+          minWidth = graph.range !== 'day' ? 100 : 135;
 
-          if (graph.block.toolTipStyle || graph.popup) {
-
-            var tooltipEl = $('#' + graph.primaryIdx + '_chartjs-tooltip');
-            minWidth = graph.range !== 'day' ? 100 : 135;
-
-            if (tooltipEl.length === 0) {
-              var tt = '<div id="' + graph.primaryIdx + '_chartjs-tooltip" class="chartjs-tooltip" style="midWidth:' + minWidth + '"><table></table></div>';
-              $('#graphoutput_' + graph.primaryIdx).parent().append(tt);
-            }
-
-            if (tooltip.opacity === 0) {
-              tooltipEl.css({ opacity: 0 });
-              return;
-            }
-
-            tooltipEl.removeClass('left right');
-            if (tooltip.yAlign) tooltipEl.removeClass('left right center bottom').addClass(tooltip.xAlign).addClass(tooltip.yAlign);
-
-            function getBody(bodyItem) {
-              return bodyItem.lines;
-            }
-
-            if (tooltip.body) {
-              var titleLines = tooltip.title || [];
-              var bodyLines = tooltip.body.map(getBody);
-              var html = '<thead style="border-color:' + graph.block.buttonsIcon + '">';
-
-              titleLines.forEach(function (title) {
-                title = graph.range !== 'day' ? moment(title).format("DD/MM/YYYY") : moment(title).format("HH:mm, DD/MM/YYYY");
-                html += '<tr><th colspan="3"><i class="far fa-clock" style="color:' + graph.block.buttonsIcon + '"></i>' + title + '</th></tr>';
-              });
-
-              html += '</thead><tbody>';
-              var total = 0;
-              
-              bodyLines.forEach(function (body, i) {
-                var colors = tooltip.labelColors[i];
-                var style = 'background:' + colors.backgroundColor + '; border-color:' + colors.borderColor + ';';
-                var span = '<span class="chartjs-tooltip-key" style="' + style + '"></span>';
-                var key = body[0].split(':')[0];                
-                var val = parseFloat(body[0].split(':')[1].replace('NaN', '0'));
-                total += val;
-                html += '<tr><td>' + span + '</td>';
-                html += '<td class="popup_' + key + '">' + key + '</td>';
-                html += '<td class="value">' + val.toFixed(2) + '</td></tr>';
-              });
-
-              if(graph.block.stacked){
-                html += '<tr><td><span class="chartjs-tooltip-key" style="background:#fff;border-color:#000;"></span></td>';
-                html += '<td>Total</td>';
-                html += '<td class="value">' + total.toFixed(2) + '</td></tr>';
-              }
-
-              html += '</tbody>';
-              tooltipEl.find('table').html(html);
-            }
-
-            var positionY = this._chart.canvas.offsetTop;
-            var positionX = this._chart.canvas.offsetLeft;
-
-            tooltipEl.css({
-              opacity: 1,
-              minWidth: minWidth,
-              left: positionX + tooltip.caretX + 'px',
-              top: positionY + tooltip.caretY + 'px',
-              fontFamily: tooltip._bodyFontFamily,
-              fontSize: tooltip.bodyFontSize + 'px',
-              fontStyle: tooltip._bodyFontStyle,
-              xOffset: tooltip.xOffset,
+          if (tooltipEl.length === 0) {
+            templateEngine.load("graph_tooltip_table").then(function (template) {
+              $('#graphoutput_' + graph.primaryIdx).parent().append(template({
+                idx: graph.primaryIdx,
+                minw: minWidth
+              }));
             });
           }
+
+          if (tooltip.opacity === 0) {
+            tooltipEl.css({ opacity: 0 });
+            return;
+          }
+
+          tooltipEl.removeClass('left right');
+          if (tooltip.yAlign) tooltipEl.removeClass('left right center bottom').addClass(tooltip.xAlign).addClass(tooltip.yAlign);
+
+          function getBody(bodyItem) {
+            return bodyItem.lines;
+          }
+
+          if (tooltip.body) {
+            
+            var isdate = moment(tooltip.title, 'YYYY-MM-DD').isValid();
+            var dformat = graph.range === 'day' || graph.range === 'last'? 'HH:mm, DD/MM/YYYY' : 'DD/MM/YYYY';
+            var bodyLines = tooltip.body.map(getBody);
+            var vals = [];
+            var total = 0;
+
+            bodyLines.forEach(function (body, i) {
+
+              var val = parseFloat(body[0].split(':')[1].replace('NaN', '0'));
+              var obj = {};
+              obj.key = body[0].split(':')[0];
+              obj.val = formatThousand(val, graph.decimals);
+              obj.add = graph.block.tooltiptotal === true || $.inArray(obj.key, graph.block.tooltiptotal) !== -1;
+              obj.col = tooltip.labelColors[i].backgroundColor;
+              obj.fas = 'plus';
+              
+              if(obj.add) total += val;
+              vals.push(obj);
+              
+            });
+
+            if(total > 0) {
+              vals.push({
+                key: "Total",
+                val: formatThousand(total, graph.decimals),
+                col: "white",
+                fas: "equals"
+              });
+            }
+
+            templateEngine.load("graph_tooltip").then(function (template) {
+
+              var data = {
+                icon:   graph.block.buttonsIcon,
+                colors: tooltip.labelColors,          
+                tlines: tooltip.title || [],
+                range:  graph.range,
+                vals:   vals,
+                isdate: isdate,
+                fmt:    dformat
+              }
+
+              tooltipEl.find('table').html(template(data))
+            });
+          }          
+
+          var positionY = this._chart.canvas.offsetTop;
+          var positionX = this._chart.canvas.offsetLeft;
+
+          tooltipEl.css({
+            opacity: 1,
+            minWidth: minWidth,
+            left: positionX + tooltip.caretX + 'px',
+            top: positionY + tooltip.caretY + 'px',
+            fontFamily: tooltip._bodyFontFamily,
+            fontSize: tooltip.bodyFontSize + 'px',
+            fontStyle: tooltip._bodyFontStyle,
+            xOffset: tooltip.xOffset,
+          });    
         }
       },
       layout: {
@@ -1597,6 +1615,7 @@ function groupByDevice(devices) {
           var obj = {};
           obj.data = arrSetPoint;
           obj.label = 'SetPoint';
+          obj.backgroundColor = 'yellow';
           obj.type = 'line';
           obj.borderWidth = 0;
           obj.fill = false;
