@@ -2073,7 +2073,7 @@ canvas {
   top: 0;
   left: 0;
   position: absolute;
-  z-index: 1;
+  z-index: 20;
 }
 
 .cam-container .stream {
@@ -2089,7 +2089,7 @@ canvas {
   bottom: 0;
   color: white;
   text-align: center;
-  z-index: 3;
+  z-index: 30;
 }
 
 .cam-container .cam-tray.open {
@@ -2115,7 +2115,7 @@ canvas {
   border-bottom: 0;
   font-size: larger;
   padding-top: 3px;
-  z-index: 2;
+  z-index: 30;
 }
 
 .cam-container .handle.open {
