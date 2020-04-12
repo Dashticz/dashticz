@@ -4,20 +4,40 @@ var templateEngine = TemplateEngine();
 
 var DT_calendar = {
   name: "calendar",
-  canHandle: function(block, key) {
-    return (
-      block && block.type === 'calendar'
-    );
+  canHandle: function (block, key) {
+    return block && block.type === "calendar";
   },
-  run: function(me) {
-    if (me.block.type === 'calendar') {
+  defaultCfg: {
+    icon: "fas fa-calendar-alt",
+    containerExtra: function (block) {
+      if (block && block.layout === 2) block.icon = "";
+    },
+  },
+  run: function (me) {
+    if (me.block.type === "calendar") {
       if (me.block.icalurl) {
+        if (
+          (me.block.layout === 0 || me.block.layout === 1) &&
+          (me.block.url || settings["calendarurl"])
+        ) {
+          $(me.mountPoint + " .dt_block")
+            .addClass("hover")
+            .attr("data-toggle", "modal")
+            .attr("data-target", "#agenda-modal_" + me.key);
+        }
         prepareCalendar(me, me.key);
       } else {
-        infoMessage('<font color="red">Domoticz error!', 'Calendar "icalurl" missing on the calendar block.</font>', 0);
+        infoMessage(
+          '<font color="red">Domoticz error!',
+          'Calendar "icalurl" missing on the calendar block.</font>',
+          0
+        );
       }
     }
-  }
+  },
+  refresh: function (me) {
+    prepareCalendar(me, me.key);
+  },
 };
 Dashticz.register(DT_calendar);
 
@@ -145,23 +165,20 @@ function generateAgenda(opt, key) {
       tf: cal[key].timeFormat,
       startonly: cal[key].startonly,
       entire: language.weekdays.entire_day
-      }
+    }
       
-    $(cal[key].mountPoint + " > div")
+    $(cal[key].mountPoint + " .dt_state")
       .html(template(data))
-      .addClass('agenda hover')
-      .attr('data-toggle', 'modal')
-      .attr('data-target', '#agenda-modal_' + key)
-      .removeClass("dt_block");
+      .addClass('agenda');
 
-      if(opt === 1) {
-        var p = '';
-        $.each($(cal[key].mountPoint + ' .agenda-date'), function(i, el) {    
-          var dt = $(el).html().trim();
-          if(p === dt) $(el).empty();
-          p = dt;
-        });
-      }
+    if(opt === 1) {
+      var p = '';
+      $.each($(cal[key].mountPoint + ' .agenda-date'), function(i, el) {    
+        var dt = $(el).html().trim();
+        if(p === dt) $(el).empty();
+        p = dt;
+      });
+    }
   });
 }
 
@@ -181,7 +198,7 @@ function generateCalendar(key, isnew, ishol) {
       
     if(isnew){
 
-      $(cal[key].mountPoint + ' > div').html(template({ weeks: cal[key].weeks }));
+      $(cal[key].mountPoint + " .dt_state").html(template({ weeks: cal[key].weeks }));
       $(cal[key].mountPoint + " td").css({ height: h / 5.2, width: w / 7, maxWidth: w / 7 });
 
       $(cal[key].mountPoint + " td").each(function(i, obj) {
