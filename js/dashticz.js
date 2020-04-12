@@ -90,6 +90,8 @@ var Dashticz = function () {
             $div.removeClass(me.currentClass).addClass(addClass);
             me.currentClass = addClass; //store current class, so that we can remove it on next update.
         }
+        if(me.block.template===1)
+            $div.addClass('dt_column');
         block.find('.dt_state').append(getProperty(components[me.name].defaultContent, me));
         $div.html(block);
     }
@@ -135,11 +137,20 @@ var Dashticz = function () {
 
     function getSpecialBlock(me) {
         var html = '';
-        html += getColIcon(me);
-        html += '<div class="dt_content">';
-        html += renderTitle(me);
-        html += renderStateDiv(me);
-        html += '</div>'
+        if(me.block.template===1) {
+            html += '<div class="dt_content">';
+            html += getColIcon(me);
+            html += renderTitle(me);
+            html += '</div>'
+            html += renderStateDiv(me);
+        }
+        else {
+            html += getColIcon(me);
+            html += '<div class="dt_content">';
+            html += renderTitle(me);
+            html += renderStateDiv(me);
+            html += '</div>'
+        }
         return html;
     }
 
