@@ -234,6 +234,8 @@ Other parameters include the following:
 * **weeks** - this is how many weeks, or rows of 7 days, you wish to display when layout 2 is selected.
 * **lastweek** - if set to true, this will show the previous week and any events from that week. It accepts true or false. Default is false.
 * **isoweek** - if set to true, the week will start on a Monday. If false, it will start on a Sunday. Accepts true or false. Default is false.
+* **icon** - Icon name. Example: ``'fas fa-car'``. To display a car icon in the left column.
+* **title** - A title will be shown above the calendar.
 
 The layout set to 0 will display this:
 
