@@ -21,11 +21,11 @@ var Dashticz = function () {
         'trafficinfo',
         'alarmmeldingen',
         'secpanel',
-		'graph',
+        'graph',
         'coronavirus',
         'camera',
         'nzbget',
-		'calendar'
+        'calendar'
     ]
     var components = []
     var mountedBlocks = [];
@@ -55,20 +55,20 @@ var Dashticz = function () {
 
     function initDomoticz() {
         return $.ajax({
-            url: 'js/domoticz-api.js',
-            dataType: 'script'
-        })
-        .then(function() {
-            var cfg = {
-                url: settings['domoticz_ip'],
-                plan: settings['room_plan'],
-                usrEnc: usrEnc,
-                pwdEnc: pwdEnc,
-                enable_websocket: settings['enable_websocket'],
-                domoticz_refresh: settings['domoticz_refresh']
-            }
-            return Domoticz.init(cfg);
-        })
+                url: 'js/domoticz-api.js',
+                dataType: 'script'
+            })
+            .then(function () {
+                var cfg = {
+                    url: settings['domoticz_ip'],
+                    plan: settings['room_plan'],
+                    usrEnc: usrEnc,
+                    pwdEnc: pwdEnc,
+                    enable_websocket: settings['enable_websocket'],
+                    domoticz_refresh: settings['domoticz_refresh']
+                }
+                return Domoticz.init(cfg);
+            })
     }
 
     function _onResize() {
@@ -81,16 +81,16 @@ var Dashticz = function () {
     }
 
     function renderBlock(me) {
-        var $div=$(me.mountPoint).find('.dt_block');
-        var block=$(getSpecialBlock(me));
+        var $div = $(me.mountPoint).find('.dt_block');
+        var block = $(getSpecialBlock(me));
         if (me.block.containerClass)
             $div.addClass(getProperty(me.block.containerClass, me));
         if (me.block.addClass) {
             var addClass = getProperty(me.block.addClass, me)
             $div.removeClass(me.currentClass).addClass(addClass);
-            me.currentClass=addClass;   //store current class, so that we can remove it on next update.
+            me.currentClass = addClass; //store current class, so that we can remove it on next update.
         }
-        block.find('.dt_state').append(getProperty( components[me.name].defaultContent, me));
+        block.find('.dt_state').append(getProperty(components[me.name].defaultContent, me));
         $div.html(block);
     }
 
@@ -99,21 +99,21 @@ var Dashticz = function () {
         special.initPromise.done(function () {
             var me = createBlock(mountPoint, blockdef, special, key);
             $(mountPoint).html(getContainer(me));
-//            console.log(me);
+            //            console.log(me);
             renderBlock(me);
             mountedBlocks[me.mountPoint] = me;
             if (special.run) special.run(me);
-            if(me.block.refresh && special.refresh) { //install refresh handler
+            if (me.block.refresh && special.refresh) { //install refresh handler
                 setInterval(function () {
                     special.refresh(me);
                 }, (me.block.refresh * 1000));
-                special.refresh(me);        
+                special.refresh(me);
             }
             if (special.refresh) {
-                blocks[me.key]=blockdef;
-                Dashticz.subscribeBlock(me.key, function(block) {
+                blocks[me.key] = blockdef;
+                Dashticz.subscribeBlock(me.key, function (block) {
                     console.log('updating special block', me);
-                    me.block=getBlockConfig(block, components[me.name], me.key);
+                    me.block = getBlockConfig(block, components[me.name], me.key);
                     renderBlock(me);
                     special.refresh(me)
                 })
@@ -129,9 +129,10 @@ var Dashticz = function () {
         var html = '<div ' +
             (me.key ? ' data-id="' + me.key + '"' : '') +
             ' class="transbg col-xs-' + me.block.width + ' ' + me.name + ' dt_block "' +
-            ( me.block.containerExtra? getProperty(me.block.containerExtra,  me.block) : '') + '></div>'
-        return html        
+            (me.block.containerExtra ? getProperty(me.block.containerExtra, me.block) : '') + '></div>'
+        return html
     }
+
     function getSpecialBlock(me) {
         var html = '';
         html += getColIcon(me);
@@ -171,35 +172,37 @@ var Dashticz = function () {
     }
 
     function getProperty(fn, me) { //getter functionaly
-        if (typeof fn==='function') 
+        if (typeof fn === 'function')
             return fn(me);
         return fn;
     }
 
     function getBlockConfig(block, special, key) {
-        var cfg={width:12};
+        var cfg = {
+            width: 12
+        };
         $.extend(cfg, getProperty(special.defaultCfg, block));
         if (block) {
             if (block.icon) {
                 cfg.image = ''; //reset default image in case icon is set
             }
-            if (block.image ) {
+            if (block.image) {
                 cfg.icon = ''; //reset default icon in case image is set
             }
             $.extend(cfg, block);
         }
-        if(typeof key !== 'undefined' && key !== '') {
+        if (typeof key !== 'undefined' && key !== '') {
             cfg.key = key;
         }
         return cfg;
     }
 
     function createBlock(mountPoint, block, special, key) {
-        var blockdef=getBlockConfig(block, special, key);
+        var blockdef = getBlockConfig(block, special, key);
         var newblock = {
             mountPoint: mountPoint,
             block: blockdef,
-            key: blockdef.key? blockdef.key:mountPoint.slice(1),
+            key: blockdef.key ? blockdef.key : mountPoint.slice(1),
             name: special.name
         }
         return newblock;
@@ -261,10 +264,10 @@ var Dashticz = function () {
      * @returns {boolean} True: password is correct, or no password required
      */
     function _promptPassword(password) {
-        if(password) {
+        if (password) {
             var checkpassword = prompt('Enter password');
             if (!checkpassword) return false;
-            if (checkpassword!==password) {
+            if (checkpassword !== password) {
                 //password incorrect
                 infoMessage('Incorrect password', '', 3000);
                 return false;
@@ -276,34 +279,38 @@ var Dashticz = function () {
     var subscribeBlockList = {}
 
     function subscribeBlock(key, callback) {
-        if(!subscribeBlockList[key]) subscribeBlockList[key]=[]
-        subscribeBlockList[key].push(callback)        
+        if (!subscribeBlockList[key]) subscribeBlockList[key] = []
+        subscribeBlockList[key].push(callback)
     }
 
     function setBlock(key, state) {
-        var block=blocks[key] || {};
-        var changed=false;
+        var block = blocks[key] || {};
+        var changed = false;
         if (state) {
             for (var prop in state) {
-                if (state[prop]!==block[prop]) {
+                if (state[prop] !== block[prop]) {
                     changed = true;
                     block[prop] = state[prop];
                 }
             }
-            if(changed) {
+            if (changed) {
                 blocks[key] = block;
-            }    
+            }
         }
-        if(changed || !state) {
+        if (changed || !state) {
             if (subscribeBlockList[key])
-                subscribeBlockList[key].forEach( function(callback) {
-                    callback(block);
+                subscribeBlockList[key].forEach(function (callback) {
+                    setTimeout(function () {
+                        callback(block)
+                    }, 0);
                 })
             else {
-                var keySplit=key.split('_');
-                if(keySplit.length===2 && subscribeBlockList[keySplit[0]]) {
-                    subscribeBlockList[keySplit[0]].forEach( function(callback) {
-                        callback({}); //we call the parent call back with empty block update
+                var keySplit = key.split('_');
+                if (keySplit.length === 2 && subscribeBlockList[keySplit[0]]) {
+                    subscribeBlockList[keySplit[0]].forEach(function (callback) {
+                        setTimeout(function () {
+                            callback({}); //we call the parent call back with empty block update
+                        }, 0);
                     })
                 }
             }
