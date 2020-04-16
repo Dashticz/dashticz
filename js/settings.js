@@ -565,14 +565,6 @@ settingList['about']['about_text4']['title'] = 'If you have any issues you can r
 
 var _CORS_PATH = '';
 
-if (typeof(Storage) !== "undefined") {
-    $.each(localStorage, function (key, value) {
-        if (key.substr(0, 9) == 'dashticz_') {
-            settings[key.substr(9)] = value;
-        }
-    });
-}
-
 
 var defaultSettings = {
     language: 'en_US',
@@ -690,6 +682,16 @@ var defaultSettings = {
 }
 
 var settings = {};
+
+/* I don't think this code is needed anymore ...
+if (typeof(Storage) !== "undefined") {
+    $.each(localStorage, function (key, value) {
+        if (key.substr(0, 9) == 'dashticz_') {
+            settings[key.substr(9)] = value;
+        }
+    });
+}*/
+
 $.extend(settings, defaultSettings, config);
 
 //The Config settings for all checkbox items will be converted to a number
