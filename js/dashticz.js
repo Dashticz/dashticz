@@ -65,7 +65,8 @@ var Dashticz = function () {
                     usrEnc: usrEnc,
                     pwdEnc: pwdEnc,
                     enable_websocket: settings['enable_websocket'],
-                    domoticz_refresh: settings['domoticz_refresh']
+                    domoticz_refresh: settings['domoticz_refresh'],
+                    refresh_method: settings['refresh_method']
                 }
                 return Domoticz.init(cfg);
             })
