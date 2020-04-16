@@ -7,6 +7,9 @@ Latest changes
 Enhancements
   * Add 'Current' Domoticz device type.
 
+Fixes
+  * Fix for refresh of Scenes/Groups and some temperature sensors
+
 3.4.3 (Beta) (9-4-2020)
 -----------------------
 

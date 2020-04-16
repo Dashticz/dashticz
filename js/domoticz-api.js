@@ -40,7 +40,7 @@ var Domoticz = function () {
         var selectHTTP = (typeof forcehttp === 'undefined' && defaulthttp) || forcehttp;
         var selectWS = useWS && !selectHTTP;
         if (reconnecting) return $.Deferred().reject('reconnecting');
-//      console.log(lastRequest.state(), query);
+        //      console.log(lastRequest.state(), query);
         if (lastRequest.state() === 'rejected') {
             lastRequest = $.Deferred().resolve();
         }
@@ -62,13 +62,13 @@ var Domoticz = function () {
                     }
                     setTimeout(function () {
                         if (newPromise.state() === 'pending') {
-//                            console.log('rejected by timeout: ', query);
+                            //                            console.log('rejected by timeout: ', query);
                             newPromise.reject('timeout: ' + query);
                         }
                         //                    else
                         //                        console.log('was resolved or failed already')
                     }, 2000); //reject promise after timeout of 2000ms
-                } else  $.get({
+                } else $.get({
                         url: cfg.url + 'json.htm?' + domoticzQuery(query),
                         type: 'GET',
                         async: true,
@@ -83,10 +83,10 @@ var Domoticz = function () {
                         }
                     })
                     .then(function (res) {
-//                        console.log('ajax resolved ' + query);
+                        //                        console.log('ajax resolved ' + query);
                         newPromise.resolve(res);
                     });
-                  return newPromise;
+                return newPromise;
             })
             .fail(function (err) { //to catch or to fail? Probably better to fail to prevent executiong of chained promise.
                 if (err) console.warn(err) //timeout may be reported 
@@ -99,17 +99,13 @@ var Domoticz = function () {
             .then(function (res) {
                 if (parseFloat(res.version) > 4.11 && cfg.enable_websocket) {
                     useWS = true;
-                    console.log("Switching to websocket");
+                    console.log("Setting up websocket");
                     connectWebsocket();
-                } else {
-                    setInterval(function () {
-                        _requestAllDevices();
-                    }, cfg.domoticz_refresh * 1000);
                 }
             })
     }
 
-    function _init(initcfg) {
+    function init(initcfg) {
         if (!initPromise) {
             if (!initcfg.url) {
                 throw new Error("Domoticz url not defined")
@@ -121,14 +117,27 @@ var Domoticz = function () {
             initPromise = checkWSSupport()
                 .then(function () {
                     setInterval(function () {
-                        _requestAllVariables()
-                        .then( requestAllScenes);
+                        refreshAll();
                     }, cfg.domoticz_refresh * 1000);
-                    return _update().then(_requestAllVariables).then( requestAllScenes)
+                    //                    return _update().then(_requestAllVariables).then( requestAllScenes)
+                    return refreshAll();
                 });
         }
         //        _connectWebsocket();
         return initPromise;
+    }
+
+    function refreshAll() {
+        var res = requestAllVariables();
+        if (cfg.refresh_method || !useWS) {
+            res = res.then(
+                function () {
+                    return requestAllDevices()
+                })
+        } else {
+            res = res.then(requestAllScenes)
+        }
+        return res;
     }
 
     function connectWebsocket() {
@@ -150,11 +159,11 @@ var Domoticz = function () {
                         });*/
             reconnectTimeout = 2;
             lastUpdate = {}
-            if (lastRequest && lastRequest.state && lastRequest.state() === 'pending')
+            if (lastRequest && lastRequest.state && lastRequest.state() === 'pending' && lastRequest.reject)
                 lastRequest.reject();
             lastRequest = $.Deferred().resolve();
 
-            _requestAllDevices(false);
+            requestAllDevices(false);
         };
         socket.onmessage = function (event) {
             initialUpdate.resolve();
@@ -210,7 +219,7 @@ var Domoticz = function () {
 
             }
             //cleanup pending requests
-            if (lastRequest && lastRequest.state && lastRequest.state() === 'pending')
+            if (lastRequest && lastRequest.state && lastRequest.state() === 'pending' && lastRequest.reject)
                 lastRequest.reject();
             lastRequest = $.Deferred().resolve();
         };
@@ -236,22 +245,26 @@ var Domoticz = function () {
         reconnectTimeout = Math.min(reconnectTimeout * 2, 60); //increase timeout
     }
 
-    function _update(forced) {
+    function update(forced) {
         if (useWS == false || forced)
-            return _requestAllDevices()
+            return requestAllDevices()
         else
             return initialUpdate
     }
 
-    function _getDevice(idx) {
-        return _init()
+    function getDevice(idx) {
+        return init()
             .then(function () {
                 return state.devices[idx]
             })
     }
 
-    function _requestAllDevices(forcehttp) {
-        return domoticzRequest('type=devices&filter=all&used=true&order=Name&lastupdate=' + lastUpdate.devices, forcehttp)
+    function requestAllDevices(forcehttp) {
+        var timeFilter = '';
+        if (!cfg.refresh_method) {
+            timeFilter = '&lastUpdate=' + lastUpdate.devices;
+        }
+        return domoticzRequest('type=devices&filter=all&used=true&order=Name' + timeFilter, forcehttp)
             .then(function (res) {
                 return _setAllDevices(res)
             });
@@ -319,13 +332,13 @@ var Domoticz = function () {
 
     function requestAllScenes() {
         return domoticzRequest('type=scenes', false)
-        .then(function (res) {
-            if(!res) return;
-            return _setAllDevices(res)
-        })
+            .then(function (res) {
+                if (!res) return;
+                return _setAllDevices(res)
+            })
     }
 
-    function _requestAllVariables() {
+    function requestAllVariables() {
         //        console.log('requestAllVariables ' + path);
         //        return domoticzRequest('type=command&param=getuservariables&lastupdate='+lastUpdate.variables)
         return domoticzRequest('type=command&param=getuservariables')
@@ -345,24 +358,24 @@ var Domoticz = function () {
         return deviceObservable._values
     }
 
-    function _getAllDevices() {
+    function getAllDevices() {
         return deviceObservable._values
     }
 
-    function _subscribe(idx, getCurrent, callback) {
+    function subscribe(idx, getCurrent, callback) {
         return deviceObservable.subscribe(idx, getCurrent, callback)
     }
 
-    function _setDevice(idx, value) {
+    function setDevice(idx, value) {
         deviceObservable.set(idx, value);
     }
 
-    function _hold(idx) {
+    function hold(idx) {
         //console.log('hold ', idx);
         deviceObservable.hold(idx);
     }
 
-    function _release(idx) {
+    function release(idx) {
         deviceObservable.release(idx);
     }
 
@@ -370,9 +383,9 @@ var Domoticz = function () {
         First block the device updates from idx
         afterwards release the message queue again
     */
-    function _syncRequest(idx, query, forcehttp) {
+    function syncRequest(idx, query, forcehttp) {
         //console.log(query);
-        _hold(idx);
+        hold(idx);
         return domoticzRequest(query, forcehttp)
             .then(function (res) {
                 //console.log(res);
@@ -380,22 +393,22 @@ var Domoticz = function () {
             })
             .always(function () {
                 //console.log('release ', idx);
-                _release(idx)
+                release(idx)
             })
     }
 
     return {
-        init: _init,
-        getDevice: _getDevice,
-        getAllDevices: _getAllDevices,
+        init: init,
+        getDevice: getDevice,
+        getAllDevices: getAllDevices,
         state: state,
-        subscribe: _subscribe,
-        update: _update,
-        setDevice: _setDevice,
+        subscribe: subscribe,
+        update: update,
+        setDevice: setDevice,
         request: domoticzRequest,
-        hold: _hold,
-        release: _release,
-        syncRequest: _syncRequest
+        hold: hold,
+        release: release,
+        syncRequest: syncRequest
     }
 }();
 
