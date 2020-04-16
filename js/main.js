@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 /* global getAllDevicesHandler objectlength config initVersion loadSettings settings*/
-/* global sessionValid MobileDetect moment getBlock */
+/* global sessionValid MobileDetect moment getBlock settings*/
 /* global Swiper */
 
 //To refactor later:
@@ -80,7 +80,8 @@ function loadFiles(dashtype) {
 
     $('<link href="' + 'css/creative.css?_=' + Date.now() + '" rel="stylesheet">').appendTo('head');
 
-    loadingFilename = customfolder + '/CONFIG.js';
+    loadingFilename = customfolder + '/CONFIG.js';    
+
     $.ajax({
             url: loadingFilename,
             dataType: 'script'
@@ -135,6 +136,7 @@ function loadFiles(dashtype) {
         })
         .then(function () {
             loadSettings();
+            
             usrEnc = '';
             pwdEnc = '';
             if (typeof (settings['user_name']) !== 'undefined') {
@@ -236,6 +238,9 @@ function loadFiles(dashtype) {
             );
         })
         .then(function () {
+            checkSecurityStatus();
+        })
+        .then(function () {
 
             sessionvalid = sessionValid();
 
@@ -258,11 +263,13 @@ function loadFiles(dashtype) {
                 $('body').css('overflow', 'auto');
                 onLoad();
             }
-        })
+        })        
         .catch(function (err) {
             console.error(err);
             showError(err.message)
         })
+
+        
 }
 
 function showError(msg) {
@@ -392,7 +399,6 @@ function setClockDateWeekday() {
 function toSlide(num) {
     if (typeof (myswiper) !== 'undefined') myswiper.slideTo(num, 1000, true);
 }
-
 
 function buildStandby() {
 
@@ -561,7 +567,6 @@ function startSwiper() {
     }, 100);
 }
 
-
 function setClassByTime() {
     var d = new Date();
     var n = d.getHours();
@@ -616,8 +621,6 @@ function removeLoading() {
     $('#loadingMessage').css('display', 'none');
 }
 
-
-
 function disableStandby() {
     standbyTime = 0;
     if (standbyActive == true) {
@@ -642,5 +645,20 @@ function disableStandby() {
 function enableRefresh() {
     Domoticz.subscribe('_devices', true, getAllDevicesHandler)
 }
+
+/* START: SECURITY PANEL */
+function checkSecurityStatus() {
+  var securl = settings["domoticz_ip"] + "/json.htm?" +
+    (isDefined(usrEnc) && usrEnc
+      ? "username=" + usrEnc + "&password=" + pwdEnc + "&"
+      : "");
+
+  DT_secpanel.CheckStatus(securl);
+}
+
+window.addEventListener("orientationchange", function() {
+    checkSecurityStatus();
+});
+/* END: SECURITY PANEL */
 
 //# sourceURL=js/main.js 

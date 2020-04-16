@@ -2362,3 +2362,424 @@ td.agenda-title {
   }
 }
 /* END: CALENDAR */
+
+/* START: SECURITY PANEL */
+@font-face {
+  font-family: "Audiowide";
+  src: url("../font/Audiowide.eot");
+  src: url("../font/Audiowide.eot?#iefix") format("embedded-opentype"),
+    url("../font/Audiowide.woff") format("woff"),
+    url("../font/Audiowide.ttf") format("truetype"),
+    url("../font/Audiowide.svg#../font/Audiowide-7Italic") format("svg");
+}
+
+.sec-modal {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: #1e1e1e;
+  z-index: 1001;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #bebebe;
+}
+
+.sec-body {
+  background: rgb(31, 31, 31);
+  height: 100%;
+}
+
+.security-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: inherit;
+  color: #bebebe;
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.sec-frame {
+  background-image: url(../img/bg14.jpg);
+  -webkit-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
+  box-shadow: 0px 6px 20px 5px rgba(0, 0, 0, 0.75),
+    inset 0px 5px 7px -2px rgba(252, 252, 252, 0.2),
+    inset 0 -14px 8px 2px rgba(0, 0, 0, 0.7);
+  border-radius: 5px;
+  position: relative;
+  height: 100%;
+}
+
+.sec-frame .keypad-header {
+  display: flex;
+  white-space: nowrap;
+  align-items: center;
+  justify-content: center;
+  height: 5%;
+  position: absolute;
+  width: 100%;
+  top: 7%;
+  font-size: 2vw;
+}
+
+.sec-frame .keypad-header .fas {
+  font-size: 100%;
+}
+
+.sec-frame .keypad-header .text {
+  margin: 0;
+  color: #5a5959;
+  text-shadow: 1px 2px 8px rgba(0, 0, 0, 1);
+}
+.sec-frame .keypad-header .fas {
+  margin-right: 0.3em;
+  -webkit-animation: rotateY 2s infinite linear;
+  animation: rotateY 2s infinite linear;
+  text-transform: uppercase;
+  background: radial-gradient(circle, white, #000);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@-webkit-keyframes rotateY {
+  to {
+    -webkit-transform: rotateY(360deg);
+  }
+}
+@keyframes rotateY {
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+.sec-frame .keypad-footer {
+  color: #494848;
+  text-align: center;
+  font-family: monospace;
+  position: absolute;
+  bottom: 7%;
+  width: 100%;
+  height: 3%;
+  font-size: 0.6vw;
+}
+
+.sec-frame .keypad-input {
+  text-align: left;
+  position: absolute;
+  width: 80%;
+  top: 15%;
+  height: 75%;
+  margin: 0 10%;
+}
+
+.sec-frame .keypad-input table {
+  border-collapse: separate;
+  border-spacing: 1px;
+  width: 100%;
+  position: absolute;
+  top: 12%;
+  margin: 0;
+  height: 82%;
+}
+
+.sec-frame .keypad-input table td {
+  width: 25%;
+  padding: 2%;
+}
+
+.sec-frame .keypad-input table tr {
+  white-space: nowrap;
+  height: 25%;
+}
+
+.sec-frame .keypad-input .input-container {
+  background-color: #161616;
+  position: absolute;
+  overflow: hidden;
+  height: 10%;
+  left: 2%;
+  right: 2%;
+  box-shadow: 0px 2px 9px 1px rgba(0,0,0,0.8);
+}
+
+.sec-frame .keypad-input .key-input {
+  font-family: 'Audiowide'!important;
+  font-size: 2vw;
+  width: 100%;
+  border-radius: 3px;
+  background-color: #161616;
+  border: 0;
+  box-shadow: inset 0px 1px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5),
+    inset 0px 0px 15px 5px rgba(0, 0, 0, 0.8);
+  color: #8fffd0;
+  font-family: monospace;
+  text-align: center;
+  height: 100%;
+}
+
+.text-strobe {
+  background: linear-gradient(to right, #e72a3a 10%, #fff 50%, #5bdaff 60%);
+  background-size: auto auto;
+  background-clip: border-box;
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textclip 1.5s linear infinite;
+}
+
+@keyframes textclip {
+  to {
+    background-position: 200% center;
+  }
+}
+
+.sec-frame .keypad-input .key {
+  vertical-align: middle;
+  background: #0a0a0a;
+  color: #bebebe;
+  border-radius: 5px;
+  touch-action: manipulation;
+  cursor: pointer;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -moz-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  font-family: monospace;
+  text-transform: uppercase;
+  font-weight: 900;
+  font-size: 3.5vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.sec-frame .keypad-input .key:not(.disabled):hover {
+  filter: brightness(110%);
+}
+
+.sec-frame .keypad-input .key:not(.disabled):active {
+  transform: scale(0.9);
+  -webkit-box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -moz-box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+}
+
+.sec-frame .keypad-input .key.h {
+  border: 0 !important;
+  cursor: auto;
+}
+
+.sec-frame .keypad-input .key[data-id="disarm"] {
+  background-color: #1f451f !important;
+}
+
+.sec-frame .keypad-input .key[data-id="armhome"] {
+  background-color: #5f4726 !important;
+}
+
+.sec-frame .keypad-input .key[data-id="armaway"] {
+  background-color: #531e1d !important;
+}
+
+.sec-frame .keypad-input .key[data-id="dashticz"] {
+  background-color: #1a3649 !important;
+}
+
+.sec-frame .keypad-input .digit,
+.sec-frame .keypad-input .cancel,
+.sec-frame .keypad-input .status {
+  text-align: center;
+  height: 100%;
+  width: 100%;
+}
+
+.sec-frame .keypad-input .status:before {
+  position: relative;
+  font-family: "Font Awesome 5 Free";
+  mix-blend-mode: soft-light;
+  font-weight: 900;
+  font-size: 100%;
+  color: rgba(130, 130, 130, 0.8);
+  text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.8), 0 0 0 #000,
+    1px 1px 3px rgba(255, 255, 255, 0.7);
+}
+
+.sec-frame .keypad-input .status[data-id="disarm"]:before {
+  content: "\f09c";
+}
+.sec-frame .keypad-input .status[data-id="armhome"]:before {
+  content: "\f965";
+}
+.sec-frame .keypad-input .status[data-id="armaway"]:before {
+  content: "\f554";
+}
+.sec-frame .keypad-input .status[data-id="dashticz"]:before {
+  content: "\f2f6";
+}
+.sec-frame .keypad-input .key[data-id="cancel"]:before {
+  content: "\f104";
+  font-family: "Font Awesome 5 Free";
+  font-weight: 900;
+  font-size: 100%;
+}
+
+.no-select {
+  -webkit-user-select: none; /* Safari */
+  -ms-user-select: none; /* IE 10+ and Edge */
+  user-select: none; /* Standard syntax */
+}
+
+.screw {
+  position: absolute;
+  width: 5%;
+  height: 4%;
+  border-radius: 100%;
+  background: -moz-linear-gradient(
+    -45deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
+  background: -webkit-gradient(
+    linear,
+    left top,
+    right bottom,
+    color-stop(0%, #adadad),
+    color-stop(51%, #e1e1e1),
+    color-stop(68%, #dddddd),
+    color-stop(100%, #f6f6f6)
+  );
+  background: -webkit-linear-gradient(
+    -45deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
+  background: -o-linear-gradient(
+    -45deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
+  background: -ms-linear-gradient(
+    -45deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
+  background: linear-gradient(
+    135deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#adadad', endColorstr='#f6f6f6',GradientType=1 );
+  -moz-box-shadow: 0px 2px 4px #000;
+  -webkit-box-shadow: 0px 2px 4px #000;
+  box-shadow: 0px 2px 4px #000, -1px 3px 10px 7px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background-image: -webkit-radial-gradient(
+      50% 0%,
+      8% 50%,
+      hsla(0, 0%, 100%, 0.5) 0%,
+      hsla(0, 0%, 100%, 0) 100%
+    ),
+    -webkit-radial-gradient(50% 100%, 12% 50%, hsla(0, 0%, 100%, 0.6) 0%, hsla(
+            0,
+            0%,
+            100%,
+            0
+          )
+          100%),
+    -webkit-radial-gradient(0% 50%, 50% 7%, hsla(0, 0%, 100%, 0.5) 0%, hsla(
+            0,
+            0%,
+            100%,
+            0
+          )
+          100%),
+    -webkit-radial-gradient(100% 50%, 50% 5%, hsla(0, 0%, 100%, 0.5) 0%, hsla(
+            0,
+            0%,
+            100%,
+            0
+          )
+          100%),
+    -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 0%, 0) 0%, hsla(
+            0,
+            0%,
+            0%,
+            0
+          )
+          3%, hsla(0, 0%, 0%, 0.1) 3.5%),
+    -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 100%, 0)
+          0%, hsla(0, 0%, 100%, 0) 6%, hsla(0, 0%, 100%, 0.1) 7.5%),
+    -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 100%, 0)
+          0%, hsla(0, 0%, 100%, 0) 1.2%, hsla(0, 0%, 100%, 0.2) 2.2%),
+    -webkit-radial-gradient(50% 50%, 200% 50%, hsla(0, 0%, 90%, 1) 5%, hsla(
+            0,
+            0%,
+            85%,
+            1
+          )
+          30%, hsla(0, 0%, 60%, 1) 100%);
+  opacity: 0.5;
+}
+
+.indent {
+  -moz-box-shadow: inset 1px -6px 8px #222;
+  -webkit-box-shadow: inset 1px -6px 8px #222;
+  box-shadow: inset 1px -6px 8px #222;
+  transform: rotate(150deg);
+  -ms-transform: rotate(150deg);
+  -webkit-transform: rotate(150deg);
+
+  height: 29%;
+  width: 135%;
+  margin-top: 41%;
+  margin-left: -20%;
+}
+
+.sec-frame .screw.tl {
+  top: 3%;
+  left: 3%;
+}
+
+.sec-frame .screw.tr {
+  top: 3%;
+  right: 3%;
+}
+
+.sec-frame .screw.bl {
+  bottom: 3%;
+  left: 3%;
+}
+
+.sec-frame .screw.br {
+  bottom: 3%;
+  right: 3%;
+}
+
+.sec-frame td .status.key.disabled {
+  background-color: #313131 !important;
+  cursor: not-allowed;
+}
+
+.sec-frame[data-mode="2"] table tr:nth-child(4) td:nth-child(3) {
+  display: none;
+}
+
+/* END: SECURITY PANEL */
