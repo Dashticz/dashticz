@@ -648,12 +648,14 @@ function enableRefresh() {
 
 /* START: SECURITY PANEL */
 function checkSecurityStatus() {
-  var securl = settings["domoticz_ip"] + "/json.htm?" +
-    (isDefined(usrEnc) && usrEnc
-      ? "username=" + usrEnc + "&password=" + pwdEnc + "&"
-      : "");
+  if (settings["security_panel_lock"] === 1) {
+    var securl = settings["domoticz_ip"] + "/json.htm?" +
+      (isDefined(usrEnc) && usrEnc
+        ? "username=" + usrEnc + "&password=" + pwdEnc + "&"
+        : "");
 
-  DT_secpanel.CheckStatus(securl);
+    DT_secpanel.CheckStatus(securl);
+  }
 }
 
 window.addEventListener("orientationchange", function() {
