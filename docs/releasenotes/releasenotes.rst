@@ -1,5 +1,8 @@
 Release Notes
 =============
+Release Notes of Dashticz's **beta** version.
+
+For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 Latest changes
 --------------
