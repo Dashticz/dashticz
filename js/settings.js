@@ -179,6 +179,11 @@ settingList['screen']['security_button_icons'] = {};
 settingList['screen']['security_button_icons']['title'] = language.settings.screen.security_button_icons;
 settingList['screen']['security_button_icons']['type'] = 'checkbox';
 
+settingList['screen']['security_panel_lock'] = {};
+settingList['screen']['security_panel_lock']['title'] = language.settings.screen.security_panel_lock;
+settingList['screen']['security_panel_lock']['type'] = 'checkbox';
+settingList['screen']['security_panel_lock']['help'] = language.settings.screen.security_panel_lock_help;
+
 settingList['screen']['blink_color'] = {};
 settingList['screen']['blink_color']['title'] = language.settings.screen.blink_color;
 settingList['screen']['blink_color']['type'] = 'text';
