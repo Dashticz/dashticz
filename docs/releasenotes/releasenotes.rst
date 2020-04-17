@@ -6,6 +6,7 @@ Latest changes
 
 Enhancements
   * Add 'Current' Domoticz device type.
+  * Improved security panel. See <todo>
 
 Fixes
   * Fix for refresh of Scenes/Groups and some temperature sensors
