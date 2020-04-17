@@ -175,7 +175,7 @@
             "title": "Weergave",
             "security_button_icons": "Pictogrammen in plaats van tekst op beveiligingsschakelaar",
             "security_panel_lock": "Beveiligingspaneel in een volledig scherm laden",
-            "security_panel_lock_help": "Als het Beveiligingspaneel in Domoticz of Dashticz is ingesteld op 'Arm - Away', dan zal Dashticz automatisch in een volledig scherm laden.",
+            "security_panel_lock_help": "Als het Beveiligingspaneel in Domoticz of Dashticz is ingesteld op 'Beveiligd (Afwezig)', dan zal Dashticz automatisch in een volledig scherm laden.",
             "blink_color": "Knipperkleur en ondoorzichtigheid (RBGA)",
             "blink_color_help": "Stel de knipperkleur en ondoorzichtigheid in (rood, groen, blauw, ondoorzichtigheid)",
             "start_page": "Start pagina nummer (Eerste pagina=1)",
