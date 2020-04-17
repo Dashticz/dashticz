@@ -676,6 +676,7 @@ var defaultSettings = {
     background_image: 'img/bg2.jpg',
     loginEnabled: 0,
     security_button_icons: 0,
+    security_panel_lock: 0,
     disable_update_check: 0,
     setpoint_min: 5,
     setpoint_max: 40,
