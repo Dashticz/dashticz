@@ -563,73 +563,60 @@ settingList['about']['about_text2']['title'] = '<br>For more help visit: <a href
 settingList['about']['about_text4'] = {};
 settingList['about']['about_text4']['title'] = 'If you have any issues you can report them in our community thread <a href="https://www.domoticz.com/forum/viewtopic.php?f=67&t=17427" target="_blank">Bug report</a>.'
 
-var settings = {};
 var _CORS_PATH = '';
 
-if (typeof(Storage) !== "undefined") {
-    $.each(localStorage, function (key, value) {
-        if (key.substr(0, 9) == 'dashticz_') {
-            settings[key.substr(9)] = value;
-        }
-    });
-}
 
-if (typeof(config) !== 'undefined') {
-    settings = config;
-}
-
-if (typeof(settings['language']) === 'undefined') settings['language'] = 'en_US';
-if (typeof(settings['speak_lang']) === 'undefined') settings['speak_lang'] = 'en-US';
-if (typeof(settings['timeformat']) === 'undefined') settings['timeformat'] = 'DD-MM-YY HH:mm';
-if (typeof(settings['calendarformat']) === 'undefined') settings['calendarformat'] = 'dd DD.MM HH:mm';
-if (typeof(settings['shortdate']) === 'undefined') settings['shortdate'] = 'D MMM';
-if (typeof(settings['longdate']) === 'undefined') settings['longdate'] = 'D MMMM YYYY';
-if (typeof(settings['shorttime']) === 'undefined') settings['shorttime'] = 'HH:mm';
-if (typeof(settings['longtime']) === 'undefined') settings['longtime'] = 'HH:mm:ss';
-if (typeof(settings['weekday']) === 'undefined') settings['weekday'] = 'dddd';
-if (typeof(settings['calendarlanguage']) === 'undefined') settings['calendarlanguage'] = 'en_US';
-//if (typeof(settings['calendar_parse_localy']) === 'undefined') settings['calendar_parse_localy'] = 0;
-if (typeof(settings['domoticz_ip']) === 'undefined') settings['domoticz_ip'] = 'http://192.168.1.10:1407';
-if (typeof(settings['user_name']) === 'undefined') settings['user_name'] = '';
-if (typeof(settings['pass_word']) === 'undefined') settings['pass_word'] = '';
-if (typeof(settings['app_title']) === 'undefined') settings['app_title'] = 'Dashticz';
-if (typeof(settings['domoticz_refresh']) === 'undefined') settings['domoticz_refresh'] = 5;
-if (typeof(settings['dashticz_refresh']) === 'undefined') settings['dashticz_refresh'] = 60;
-if (typeof(settings['dashticz_php_path']) === 'undefined') settings['dashticz_php_path'] = './vendor/dashticz/';
-if (typeof(settings['enable_websocket']) === 'undefined') settings['enable_websocket'] = true;
-if (typeof(settings['wu_api']) === 'undefined') settings['wu_api'] = '';
-if (typeof(settings['wu_country']) === 'undefined') settings['wu_country'] = 'NL';
-if (typeof(settings['wu_city']) === 'undefined') settings['wu_city'] = 'Amsterdam';
-if (typeof(settings['owm_api']) === 'undefined') settings['owm_api'] = '';
-if (typeof(settings['owm_country']) === 'undefined') settings['owm_country'] = 'de';
-if (typeof(settings['owm_city']) === 'undefined') settings['owm_city'] = 'Mainaschaff';
-if (typeof(settings['owm_days']) === 'undefined') settings['owm_days'] = 0;
-if (typeof(settings['owm_cnt']) === 'undefined') settings['owm_cnt'] = 4;
-if (typeof(settings['boss_stationclock']) === 'undefined') settings['boss_stationclock'] = 'RedBoss';
-if (typeof(settings['use_fahrenheit']) === 'undefined') settings['use_fahrenheit'] = 0;
-if (typeof(settings['use_beaufort']) === 'undefined') settings['use_beaufort'] = 0;
-if (typeof(settings['hide_topbar']) === 'undefined') settings['hide_topbar'] = 0;
-if (typeof(settings['slide_effect']) === 'undefined') settings['slide_effect'] = 'slide';
-if (typeof(settings['hide_mediaplayer']) === 'undefined') settings['hide_mediaplayer'] = 0;
-if (typeof(settings['auto_swipe_back_to']) === 'undefined') settings['auto_swipe_back_to'] = 1;
-if (typeof(settings['start_page']) === 'undefined') settings['start_page'] = 1;
-if (typeof(settings['auto_positioning']) === 'undefined') settings['auto_positioning'] = 1;
-if (typeof(settings['use_favorites']) === 'undefined') settings['use_favorites'] = 1;
-if (typeof(settings['translate_windspeed']) === 'undefined') settings['translate_windspeed'] = 1;
-if (typeof(settings['static_weathericons']) === 'undefined') settings['static_weathericons'] = 0;
-if (typeof(settings['last_update']) === 'undefined') settings['last_update'] = 1;
-if (typeof(settings['vertical_scroll']) === 'undefined') settings['vertical_scroll'] = 2
-if (typeof(settings['enable_swiper']) === 'undefined') settings['enable_swiper'] = 2
-if (typeof(settings['auto_swipe_back_after']) === 'undefined') settings['auto_swipe_back_after'] = 10;
-if (typeof(settings['standby_after']) === 'undefined') settings['standby_after'] = 0;
-if (typeof(settings['selector_instead_of_buttons']) === 'undefined') settings['selector_instead_of_buttons'] = 0;
-if (typeof(settings['default_news_url']) === 'undefined') settings['default_news_url'] = 'http://www.nu.nl/rss/algemeen';
-if (typeof(settings['news_scroll_after']) === 'undefined') settings['news_scroll_after'] = 7;
-if (typeof(settings['standard_graph']) === 'undefined') settings['standard_graph'] = 'hours';
-if (typeof(settings['blink_color']) === 'undefined') settings['blink_color'] = '255, 255, 255, 1';
-if (typeof(settings['edit_mode']) === 'undefined') settings['edit_mode'] = 0;
-if (typeof(settings['units']) === 'undefined') {
-    settings['units'] = {
+var defaultSettings = {
+    language: 'en_US',
+    speak_lang: 'en_US',
+    timeformat: 'DD-MM-YY HH:mm',
+    calendarformat: 'dd DD.MM HH:mm',
+    shortdate:  'D MMM',
+    longdate: 'D MMMM YYYY',
+    shorttime:'HH:mm',
+    longtime: 'HH:mm:ss',
+    weekday:  'dddd',
+    calendarlanguage: 'en_US',
+    domoticz_ip:  'http://192.168.1.10:1407',
+    user_name: '',
+    pass_word:'',
+    app_title: 'Dashticz',
+    domoticz_refresh: 5,
+    dashticz_refresh: 60,
+    dashticz_php_path: './vendor/dashticz/',
+    enable_websocket: true,
+    wu_api: '',
+    wu_country: 'NL',
+    wu_city:  'Amsterdam',
+    owm_api: '',
+    owm_country: 'de',
+    owm_city: 'Mainaschaff',
+    owm_days: 0,
+    owm_cnt:  4,
+    boss_stationclock: 'RedBoss',
+    use_fahrenheit: 0,
+    use_beaufort: 0,
+    hide_topbar: 0,
+    slide_effect: 'slide',
+    hide_mediaplayer: 0,
+    auto_swipe_back_to: 1,
+    start_page: 1,
+    auto_positioning: 1,
+    use_favorites: 1,
+    translate_windspeed: 1,
+    static_weathericons: 0,
+    last_update: 1,
+    vertical_scroll: 2,
+    enable_swiper: 2,
+    auto_swipe_back_after: 10,
+    standby_after: 0,
+    selector_instead_of_buttons: 0,
+    default_news_url: 'http://www.nu.nl/rss/algemeen',
+    news_scroll_after: 7,
+    standard_graph: 'hours',
+    blink_color: '255, 255, 255, 1',
+    edit_mode: 0,
+    units: {
         names: {
             kwh: 'kWh',
             watt: 'W',
@@ -644,10 +631,8 @@ if (typeof(settings['units']) === 'undefined') {
             water: 0,
             time: 0
         }
-    };
-}
-if (typeof(settings['garbage']) === 'undefined') {
-    settings['garbage'] = {
+    },
+    garbage: {
         gft: {kliko: 'green', code: '#375b23', name: 'GFT', icon: 'img/garbage/kliko_green.png'},
         pmd: {kliko: 'orange', code: '#db5518', name: 'PMD', icon: 'img/garbage/kliko_orange.png'},
         rest: {kliko: 'grey', code: '#5e5d5c', name: 'Restafval', icon: 'img/garbage/kliko_grey.png'},
@@ -660,10 +645,8 @@ if (typeof(settings['garbage']) === 'undefined') {
         aeea: {kliko: 'yellow', code: '#f9e231', name: 'AEEA', icon: 'img/garbage/kliko_yellow.png'},
         textiel: {kliko: 'orange', code: '#db5518', name: 'Textiel', icon: 'img/garbage/kliko_orange.png'},
         sorti: {kliko: 'brown', code: '#7c3607', name: 'Sorti', icon: 'img/garbage/kliko_brown.png'},
-    };
-}
-if (typeof(settings['garbage_mapping']) === 'undefined') {
-    settings['garbage_mapping'] = {
+    },
+    garbage_mapping: {
         rest: ['grof', 'grey', 'rest', 'grijs','grijze'],
         gft: ['gft', 'tuin', 'refuse bin', 'green', 'groen', 'Biodégradables', 'snoei'],
         pmd: ['plastic', 'pmd', 'verpakking', 'kunststof', 'valorlux'],
@@ -676,27 +659,40 @@ if (typeof(settings['garbage_mapping']) === 'undefined') {
         aeea: ['aeea'],
         textiel: ['textiel'],
         sorti: ['sorti']
-    };
+    },
+    garbage_use_names: 0,
+    garbage_use_colors: 0,
+    garbage_icon_use_colors: 1,
+    garbage_use_cors_prefix: 1,
+    lineColors: ['#eee', '#eee', '#eee'],
+    pointSize: 3,
+    room_plan: 0,
+    theme: 'default',
+    background_image: 'img/bg2.jpg',
+    loginEnabled: 0,
+    security_button_icons: 0,
+    disable_update_check: 0,
+    setpoint_min: 5,
+    setpoint_max: 40,
+    evohome_status: 'Auto',
+    evohome_boost_zone: 60,
+    evohome_boost_hw: 15,
+    login_timeout: 60,
+    refresh_method: 1
 }
-if (typeof(settings['garbage_use_names']) === 'undefined') settings['garbage_use_names'] = 0;
-if (typeof(settings['garbage_use_colors']) === 'undefined') settings['garbage_use_colors'] = 0;
-if (typeof(settings['garbage_icon_use_colors']) === 'undefined') settings['garbage_icon_use_colors'] = 1;
-if (typeof(settings['garbage_use_cors_prefix']) === 'undefined') settings['garbage_use_cors_prefix'] = 1;
-if (typeof(settings['lineColors']) === 'undefined') settings['lineColors'] = ['#eee', '#eee', '#eee'];
-if (typeof(settings['pointSize']) === 'undefined') settings['pointSize'] = 3;
-if (typeof(settings['room_plan']) === 'undefined') settings['room_plan'] = 0;
-if (typeof(settings['garbage_use_cors_prefix']) === 'undefined') settings['garbage_use_cors_prefix'] = 1;
-if (typeof(settings['theme']) === 'undefined') settings['theme'] = 'default';
-if (typeof(settings['background_image']) === 'undefined') settings['background_image'] = 'img/bg2.jpg';
-if (typeof(settings['loginEnabled']) === 'undefined') settings['loginEnabled'] = 0;
-if (typeof(settings['security_button_icons']) === 'undefined') settings['security_button_icons'] = 0;
-if (typeof(settings['disable_update_check']) === 'undefined') settings['disable_update_check'] = 0;
-if (typeof(settings['setpoint_min']) === 'undefined') settings['setpoint_min'] = 5;
-if (typeof(settings['setpoint_max']) === 'undefined') settings['setpoint_max'] = 40;
-if (typeof(settings['evohome_status']) === 'undefined') settings['evohome_status'] = 'Auto';
-if (typeof(settings['evohome_boost_zone']) === 'undefined') settings['evohome_boost_zone'] = 60;
-if (typeof(settings['evohome_boost_hw']) === 'undefined') settings['evohome_boost_hw'] = 15;
-if (typeof(settings['login_timeout']) === 'undefined') settings['login_timeout'] = 60;
+
+var settings = {};
+
+/* I don't think this code is needed anymore ...
+if (typeof(Storage) !== "undefined") {
+    $.each(localStorage, function (key, value) {
+        if (key.substr(0, 9) == 'dashticz_') {
+            settings[key.substr(9)] = value;
+        }
+    });
+}*/
+
+$.extend(settings, defaultSettings, config);
 
 //The Config settings for all checkbox items will be converted to a number
 for (var s in settingList){
