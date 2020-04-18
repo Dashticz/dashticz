@@ -6,6 +6,9 @@ var nf = Intl.NumberFormat();
 
 var DT_coronavirus = {
   name: "coronavirus",
+  defaultCfg: {
+    title: "Coronavirus",
+  },
   canHandle: function(block, key) {
     return (
       block && block.type === 'corona'
@@ -17,8 +20,9 @@ var DT_coronavirus = {
       me.primaryIdx = me.mountPoint.slice(1);
       me.graphIdx = me.primaryIdx;
       me.multigraph = false;
-      me.colors = isDefined(me.block.datasetColors)? me.block.datasetColors : ['#7fcdbb', '#f03b20', 'yellow', 'red'];
-      me.name = isDefined(me.block.title) ? me.block.title : me.name.toUpperCase();
+      me.colors = isDefined(me.block.datasetColors)? me.block.datasetColors : ['#7fcdbb', '#f03b20', '#2b7865', '#782b2b'];
+      me.title = isDefined(me.block.title) ? me.block.title : me.name.toUpperCase();
+      me.mode = isDefined(me.block.mode)? me.block.mode : 0;
       $.extend(me.block, getBlockDefaults(false, true, me.block));
       createDashGraph(me);
     }
@@ -49,42 +53,74 @@ function createDashGraph(me) {
     var confirmed = json.locations[0].timelines.confirmed.timeline;
     var deaths = json.locations[0].timelines.deaths.timeline;
     var startDate = isDefined(me.block.startDate)? me.block.startDate : '22/01/2020';
+    var scaleLabel = 'Total';
+
+    var CT = {
+      label: "Confirmed (Total)",
+      backgroundColor: isDefined(me.colors[0])? me.colors[0] : '#3c9a84',
+      data: [],
+      yAxisID: 'A',
+      order: 2
+    }
+    
+    var DT = {
+      label: "Deaths (Total)",
+      backgroundColor: isDefined(me.colors[1])? me.colors[1] : '#f03b20',
+      data: [],
+      yAxisID: 'A',
+      order: 3
+    }
+
+    var CD  = {
+      label: "Confirmed (Day)",
+      backgroundColor: isDefined(me.colors[2])? me.colors[2] : '#2b7865',
+      borderColor: isDefined(me.colors[2])? me.colors[2] : '#2b7865',
+      data: [],
+      type: 'line',
+      pointRadius: 0,
+      fill: false,
+      yAxisID: 'B',
+      order: 1
+    }
+
+    var DD = {
+      label: "Deaths (Day)",
+      backgroundColor: isDefined(me.colors[3])? me.colors[3] : '#782b2b',
+      borderColor: isDefined(me.colors[3])? me.colors[3] : '#782b2b',
+      data: [],
+      type: 'line',
+      pointRadius: 0,
+      fill: false,
+      yAxisID: 'B',
+      order: 0
+    }
 
     var graphData = {
       labels: [],
-      datasets: [
-        {
-          label: "Confirmed (Total)",
-          backgroundColor: isDefined(me.colors[0])? me.colors[0] : '#3c9a84',
-          data: [],
-          order: 2
-        },
-        {
-          label: "Deaths (Total)",
-          backgroundColor: isDefined(me.colors[1])? me.colors[1] : '#f03b20',
-          data: [],
-          order: 3
-        },
-        {
-          label: "Confirmed (Day)",
-          backgroundColor: isDefined(me.colors[2])? me.colors[2] : 'yellow',
-          borderColor: isDefined(me.colors[2])? me.colors[2] : 'yellow',
-          data: [],
-          type: 'line',
-          fill: false,
-          order: 1
-        },
-        {
-          label: "Deaths (Day)",
-          backgroundColor: isDefined(me.colors[3])? me.colors[3] : 'red',
-          borderColor: isDefined(me.colors[3])? me.colors[3] : 'red',
-          data: [],
-          type: 'line',
-          fill: false,
-          order: 0
-        }
-      ]
+      datasets: []
     };
+
+    var cg = 0;
+    var dg = 0;
+
+    switch (me.mode) {
+      case 0:
+        graphData.datasets.push(CT, DT, CD, DD);
+        cg = 2;
+        dg = 3;
+        break;
+      case 1:
+        graphData.datasets.push(CT, DT);
+        break;
+      case 2:
+        CD.yAxisID = 'A';
+        DD.yAxisID = 'A';
+        graphData.datasets.push(CD, DD);
+        scaleLabel = 'Day';
+        cg = 0;
+        dg = 1;
+        break;
+    }
 
     var confirmedPrevious = 0;
     var confirmedGrowth = 0;
@@ -92,10 +128,12 @@ function createDashGraph(me) {
     for (var key in confirmed) {
       if(moment(key).isSameOrAfter(moment(startDate, 'DD/MM/YYYY'))){
         graphData.labels.push(moment(key).format("YYYY-MM-DD"));
-        graphData.datasets[0].data.push(confirmed[key]);
-        confirmedGrowth = confirmed[key] - confirmedPrevious;
-        confirmedPrevious = confirmed[key];
-        graphData.datasets[2].data.push(confirmedGrowth);        
+        if(me.mode < 2) graphData.datasets[0].data.push(confirmed[key]);
+        if(me.mode !== 1){
+          confirmedGrowth = confirmed[key] - confirmedPrevious;
+          confirmedPrevious = confirmed[key];
+          graphData.datasets[cg].data.push(confirmedGrowth);  
+        }              
       }
     }
     var deathsPrevious = 0;
@@ -103,10 +141,12 @@ function createDashGraph(me) {
 
     for (var key in deaths) {   
       if(moment(key).isSameOrAfter(moment(startDate, 'DD/MM/YYYY'))){  
-        graphData.datasets[1].data.push(deaths[key]);
-        deathsGrowth = deaths[key] - deathsPrevious;
-        deathsPrevious = deaths[key];
-        graphData.datasets[3].data.push(deathsGrowth);       
+        if(me.mode < 2) graphData.datasets[1].data.push(deaths[key]);
+        if(me.mode !== 1){          
+          deathsGrowth = deaths[key] - deathsPrevious;
+          deathsPrevious = deaths[key];
+          graphData.datasets[dg].data.push(deathsGrowth);   
+        }    
       }
     }
 
@@ -118,15 +158,28 @@ function createDashGraph(me) {
     var graphProperties = getDefaultGraphProperties(me);
     graphProperties.data = graphData;
     graphProperties.type = isDefined(me.block.graph) ? me.block.graph : "bar";
-    graphProperties.options.scales.xAxes[0].stacked = isDefined(me.block.stacked) ? me.block.stacked : true;
-    graphProperties.options.scales.yAxes[0].stacked = isDefined(me.block.stacked) ? me.block.stacked : true;
-    graphProperties.options.scales.yAxes[0].ticks = { 
-      beginAtZero: true,
-      fontColor: "white",
-      callback: function(value, index, values) {
-        return  nf.format((value/1000)) + 'K';
-      }
-    }
+
+    var scales = graphProperties.options.scales;
+
+    scales.yAxes[0].id = 'A';
+    if(me.mode === 0) scales.yAxes.push({ id: 'B', position: 'right' });
+    scales.xAxes[0].stacked = isDefined(me.block.stacked) ? me.block.stacked : true;
+    scales.yAxes[0].stacked = isDefined(me.block.stacked) ? me.block.stacked : true;
+
+    $.each(scales.yAxes, function (i, axis) {
+      scales.yAxes[i].scaleLabel = {
+        labelString: i === 1? 'Day' : scaleLabel,
+        display: true,
+        fontColor: "white",
+      };
+      scales.yAxes[i].ticks = {
+        beginAtZero: true,
+        fontColor: "white",
+        callback: function (value, index, values) {
+          return nf.format(value / 1000) + "K";
+        },
+      };
+    });
 
     var graphwidth = $(me.mountPoint + " .block_coronavirus").width();
     var setHeight = Math.min(
@@ -242,4 +295,4 @@ function getDoublingHours(json){
   return doublingHours;
 }
 
-
+//# sourceURL=js/components/coronavirus.js
