@@ -102,7 +102,9 @@
             "dashticz_php_path": "Dashticz PHP Path",
             "standby_call_url": "URL volaná na začátku pohotovostního režimu",
             "standby_call_url_on_end": "URL volaná na konci pohotovostního režimu",
-            "login_timeout": "Ponechat přihlášeno do Dashticz (minut)"
+            "login_timeout": "Ponechat přihlášeno do Dashticz (minut)",
+            "enable_websocket": "WebSocket",
+            "enable_websocket_help": "Enable\/Disable the WebSocket connection"
         },
         "infosave": "Nastavení se ukládá pouze do právě používaného prohlížeče. Pokud si přejete toto nastavení používat na všech počítačích a prohlížečích, je důležité zkopírovat nastavení do souboru CONFIG.JS",
         "localize": {
@@ -178,7 +180,9 @@
             "enable_swiper": "Povolit Swiper",
             "enable_swiper_help": "0: Zakázat swiper; 1: Povolit na úzkých obrazovkách; 2: Povolit",
             "vertical_scroll": "Povolit svislé posouvání",
-            "vertical_scroll_help": "0: Zakázat svislé posouvání; 1: Povolit svislé posouvání je-li Swiper zakázán; 2: Povolit svislé posouvání"
+            "vertical_scroll_help": "0: Zakázat svislé posouvání; 1: Povolit svislé posouvání je-li Swiper zakázán; 2: Povolit svislé posouvání",
+            "security_panel_lock": "Load Security Panel full screen",
+            "security_panel_lock_help": "If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel."
         },
         "weather": {
             "idx_moonpicture": "IDX měsíce",
@@ -211,7 +215,11 @@
         "other": {
             "title": "Ostatní",
             "setpoint_min": "Minimální požadovaná hodnota termostatu",
-            "setpoint_max": "Maximální hodnota žádané teploty termostatu"
+            "setpoint_max": "Maximální hodnota žádané teploty termostatu",
+            "evohome_status": "EvoHome controller status",
+            "evohome_status_help": "Auto, Econony, Away, Custom, Day Off, Off",
+            "evohome_boost_zone": "EvoHome zone boost time in minutes",
+            "evohome_boost_hw": "EvoHome hot water boost time in minutes"
         }
     },
     "switches": {
