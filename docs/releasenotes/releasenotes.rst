@@ -7,6 +7,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Latest changes
 --------------
 
+3.4.4 (Beta) (18-4-2020)
+-------------------------
+
 Enhancements
   * Add 'Current' Domoticz device type.
   * Improved security panel. See <todo>
@@ -18,7 +21,7 @@ Fixes
 -----------------------
 
 Enhancements
-  * New calendar layout. See ...
+  * New calendar layout. See :ref:`newcalendar`
 
 Fixes
   * Group/scene status refresh
