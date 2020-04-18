@@ -104,7 +104,7 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Keep Dashticz logged in (minutes)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Enable/Disable the WebSocket connection"
+            "enable_websocket_help": "Enable\/Disable the WebSocket connection"
         },
         "infosave": "By default, settings are stored in your browser. Downside of this method is it will only work in your current browser. If that's not a problem, you can proceed. Otherwise, copy code below to your CONFIG.JS to keep settings across all browsers and devices.",
         "localize": {
@@ -174,15 +174,15 @@
             "standby_after": "Standby after (minutes, 0 = never)",
             "title": "Screen",
             "security_button_icons": "Icons instead of text on security switch",
-            "security_panel_lock": "Load Security Panel fullscreen",
-            "security_panel_lock_help": "If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a fullscreen panel.",
             "blink_color": "Flash color and opacity (RGBA)",
             "blink_color_help": "Set flash color and opacity (red, green, blue, alpha)",
             "start_page": "Start page number (First page=1)",
             "enable_swiper": "Enable Swiper",
             "enable_swiper_help": "0: Disable swiper; 1: Enable on narrow screens; 2: Enable",
             "vertical_scroll": "Enable vertical scroll",
-            "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll"
+            "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll",
+            "security_panel_lock": "Load Security Panel full screen",
+            "security_panel_lock_help": "If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel."
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",
