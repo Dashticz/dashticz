@@ -2,10 +2,10 @@ function loadGarbage() {
     var random = getRandomInt(1, 100000);
 
     var width = 12;
-    if (typeof(settings['garbage_width']) !== 'undefined' && parseFloat(settings['garbage_width']) > 0) width = settings['garbage_width'];
+    if (typeof (settings['garbage_width']) !== 'undefined' && parseFloat(settings['garbage_width']) > 0) width = settings['garbage_width'];
 
     var html = '<div class="trash trash' + random + ' block_garbage col-xs-' + width + ' transbg" data-id="garbage">';
-    if (typeof(settings['garbage_hideicon']) !== 'undefined' && parseFloat(settings['garbage_hideicon']) === 1) {
+    if (typeof (settings['garbage_hideicon']) !== 'undefined' && parseFloat(settings['garbage_hideicon']) === 1) {
         html += '<div class="col-xs-12 col-data">';
     } else {
         html += '<div class="col-xs-4 col-icon">';
@@ -44,12 +44,13 @@ function getGoogleCalendarData(address, date, random, calendarId) {
             timeMax: date.end.format('YYYY-MM-DDT00:00:00+00:00'),
             orderBy: 'startTime',
             maxResults: getMaxItems()
-        },error: function(errorData){
-		var msg = errorData.responseJSON.error.message
-		infoMessage('<font color="red">Garbage Error!</font>','Google Calendar ' + msg, 10000);
-	},
+        },
+        error: function (errorData) {
+            var msg = errorData.responseJSON.error.message
+            infoMessage('<font color="red">Garbage Error!</font>', 'Google Calendar ' + msg, 10000);
+        },
         success: function (data) {
-            this.returnDates = data.items.map(function(element) {
+            this.returnDates = data.items.map(function (element) {
                 if (element.start.hasOwnProperty('date')) {
                     this.startDate = moment(element.start.date);
                 } else if (element.start.hasOwnProperty('dateTime')) {
@@ -61,7 +62,7 @@ function getGoogleCalendarData(address, date, random, calendarId) {
                     garbageType: mapGarbageType(element.summary)
                 };
             });
-        addToContainer(random, this.returnDates);
+            addToContainer(random, this.returnDates);
         }
     });
 }
@@ -147,9 +148,9 @@ function getWasteApi2Data(address, date, random, companyCode) {
                 element.pickupDates.forEach(function (dateElement) {
                     var pickupType = element.description !== 'Null' ? element.description : element._pickupTypeText;
                     dataFiltered.push({
-                      date: moment(dateElement),
-                      summary: pickupType,
-                      garbageType: mapGarbageType(pickupType)
+                        date: moment(dateElement),
+                        summary: pickupType,
+                        garbageType: mapGarbageType(pickupType)
                     });
                 });
             });
@@ -185,8 +186,8 @@ function getAfvalAlertData(address, date, random) {
     $.get(getPrefixUrl() + baseURL + '/' + address.zipcode + '/' + address.housenumber + address.housenumberSuffix, function (data) {
         console.log(data);
         data = data.items.filter(function (element) {
-            return moment(element.date, 'YYYY-MM-DD').isBetween(date.start, date.end, null, '[]');
-        })
+                return moment(element.date, 'YYYY-MM-DD').isBetween(date.start, date.end, null, '[]');
+            })
             .map(function (element) {
                 return {
                     date: moment(element.date, 'YYYY-MM-DD'),
@@ -214,15 +215,15 @@ function getAfvalwijzerArnhemData(address, date, random) {
     });
 }
 
-function getGeneralData(service,address, date, random, subservice){
-  if(!_PHP_INSTALLED) {
-    console.error("Domoticz error!\nGarbage requires a PHP enabled web server.");
-    infoMessage('<font color="red">Domoticz error!', 'Garbage requires a PHP enabled web server</font>', 0);
-    return;
-  }
-  var cURI = settings['dashticz_php_path']+'garbage/?service='+service+'&sub='+subservice+'&zipcode=' + address.zipcode + '&nr=' + address.housenumber + '&t=' + address.housenumberSuffix;
-	$.getJSON(cURI, function (data) {
-		 data = data
+function getGeneralData(service, address, date, random, subservice) {
+    if (!_PHP_INSTALLED) {
+        console.error("Domoticz error!\nGarbage requires a PHP enabled web server.");
+        infoMessage('<font color="red">Domoticz error!', 'Garbage requires a PHP enabled web server</font>', 0);
+        return;
+    }
+    var cURI = settings['dashticz_php_path'] + 'garbage/?service=' + service + '&sub=' + subservice + '&zipcode=' + address.zipcode + '&nr=' + address.housenumber + '&t=' + address.housenumberSuffix;
+    $.getJSON(cURI, function (data) {
+        data = data
             .filter(function (element) {
                 return moment(element.date).isBetween(date.start, date.end, null, '[]');
             })
@@ -234,20 +235,20 @@ function getGeneralData(service,address, date, random, subservice){
                 };
             });
         addToContainer(random, data);
-	});
+    });
 }
 
 function getKatwijkData(address, date, random, fetchType) {
     var prefix = 'https://afval.katwijk.nl/';
     $.post(getPrefixUrl() + prefix + 'nc/afvalkalender/', {
-      'tx_windwastecalendar_pi1[action]': 'search',
-      'tx_windwastecalendar_pi1[controller]': 'Zipcode',
-      'tx_windwastecalendar_pi1[Hash]': '40c183c983706ba359f1122b44881a5e',
+        'tx_windwastecalendar_pi1[action]': 'search',
+        'tx_windwastecalendar_pi1[controller]': 'Zipcode',
+        'tx_windwastecalendar_pi1[Hash]': '40c183c983706ba359f1122b44881a5e',
         'tx_windwastecalendar_pi1[zipcode]': address.zipcode,
         'tx_windwastecalendar_pi1[housenumber]': address.housenumber,
     }, function (data) {
-                var elementHref = $(data).find('.ical .link a').attr('href');
-                return getIcalData(address, date, random, prefix + elementHref);
+        var elementHref = $(data).find('.ical .link a').attr('href');
+        return getIcalData(address, date, random, prefix + elementHref);
     });
 }
 
@@ -272,11 +273,11 @@ function getZuidhornData(address, date, random, fetchType) {
                     });
                 });
                 addToContainer(random, dataFiltered);
-            break;
+                break;
             case 'ical':
                 var elementHref = $(data).find('.ical .link a').attr('href');
                 return getIcalData(address, date, random, prefix + elementHref)
-            break;
+                break;
         }
     });
 }
@@ -291,8 +292,7 @@ function getRd4Data(address, date, random) {
             .replace(/<table class="contentTable" (?:.|\n|\r)+?<\/table>/g, "")
             .replace(/<input (?:.|\n|\r)+?\/>/g, "")
             .replace(/<div id="Afvalkalender1_pnlSearch"(?:.|\n|\r)+?<\/div>/g, "")
-            .replace(/<a (?:.|\n|\r)+?<\/a>/g, "")
-        ;
+            .replace(/<a (?:.|\n|\r)+?<\/a>/g, "");
         $(data).find('#Afvalkalender1_pnlAfvalKalender table.plaintextMonth tr').each(function (index, element) {
             if (element.innerText.length) {
                 returnDates.push({
@@ -315,15 +315,14 @@ function getVenloData(address, date, random) {
         data = data
             .replace(/<img .*?>/g, "")
             .replace(/<head>(?:.|\n|\r)+?<\/head>/g, "")
-            .replace(/<script (?:.|\n|\r)+?<\/script>/g, "")
-        ;
+            .replace(/<script (?:.|\n|\r)+?<\/script>/g, "");
         $(data).find('div#block-system-main div.trash-removal-calendar tbody tr').each(function (index, element) {
             var year = $(element).parents('table').find('thead')[0].innerText.substr(-5);
-                returnDates.push({
-                    date: moment($(element).find('td')[0].innerText.trim() + ' ' + year, 'dddd DD MMMM YYYY', 'nl'),
-                    summary: $(element).find('span')[0].innerText,
-                    garbageType: mapGarbageType($(element).find('span')[0].innerText),
-                });
+            returnDates.push({
+                date: moment($(element).find('td')[0].innerText.trim() + ' ' + year, 'dddd DD MMMM YYYY', 'nl'),
+                summary: $(element).find('span')[0].innerText,
+                garbageType: mapGarbageType($(element).find('span')[0].innerText),
+            });
         });
         returnDates = returnDates.filter(function (element) {
             return element.date.isBetween(date.start, date.end, null, '[]');
@@ -340,8 +339,7 @@ function getGroningenData(address, date, random) {
             .replace(/<img .*?>/g, "")
             .replace(/<head>(?:.|\n|\r)+?<\/head>/g, "")
             .replace(/<script (?:.|\n|\r)+?<\/script>/g, "")
-            .replace(/<header (?:.|\n|\r)+?<\/header>/g, "")
-        ;
+            .replace(/<header (?:.|\n|\r)+?<\/header>/g, "");
         $(data).find('table.afvalwijzerData tbody tr.blockWrapper').each(function (index, element) {
             if ($(element).find('h2').length) {
                 var summary = $(element).find('h2')[0].innerText;
@@ -370,35 +368,35 @@ function getGroningenData(address, date, random) {
 
 ///http://dashticz.nl/afval/?service=afvalstromen&sub=alphenaandenrijn&zipcode=2401AR&nr=261&t=
 function getAfvalstromenData(address, date, random, service) {
-    getGeneralData('afvalstromen',address, date, random, service);
+    getGeneralData('afvalstromen', address, date, random, service);
 }
 
 //http://dashticz.nl/afval/?service=deafvalapp&zipcode=5692VG&nr=33&t=
 function getDeAfvalAppData(address, date, random) {
-    getGeneralData('deafvalapp',address, date, random);
+    getGeneralData('deafvalapp', address, date, random);
 }
 
 //http://dashticz.nl/afval/?service=mijnafvalwijzer&zipcode=3825AL&nr=41&t=
 function getMijnAfvalwijzerData(address, date, random) {
-    getGeneralData('mijnafvalwijzer',address, date, random);
+    getGeneralData('mijnafvalwijzer', address, date, random);
 }
 
 //http://dashticz.nl/afval/?service=rova&zipcode=7731ZT&nr=84&t=
 function getRovaData(address, date, random) {
-    getGeneralData('rova',address, date, random);
+    getGeneralData('rova', address, date, random);
 }
 
 //http://dashticz.nl/afval/?service=recyclemanager&zipcode=3161lh&nr=27&t=
 function getRecycleManagerData(address, date, random) {
-    getGeneralData('recyclemanager',address, date, random);
+    getGeneralData('recyclemanager', address, date, random);
 }
 
 function getEdgData(address, date, random) {
-    getGeneralData('edg',address, date, random);
+    getGeneralData('edg', address, date, random);
 }
 
 function getOmrinData(address, date, random) {
-    getGeneralData('omrin',address, date, random);
+    getGeneralData('omrin', address, date, random);
 }
 
 function getTrashRow(garbage) {
@@ -414,17 +412,19 @@ function getTrashRow(garbage) {
         this.displayDate = garbage.date.format('dddd');
     }
     var name = settings['garbage'][garbage.garbageType].name;
-    
+
     var color = ' style="color:' + settings['garbage'][garbage.garbageType].code + '"';
-    return '<div class="' + this.rowClass + '"' + (settings['garbage_use_colors'] ? color : '') + '>'
-        + ((settings['garbage_use_names'] || !garbage.summary) ? name : (garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)))
-        + ': ' + this.displayDate
-        + '</div>';
+    return '<div class="' + this.rowClass + '"' + (settings['garbage_use_colors'] ? color : '') + '>' +
+        ((settings['garbage_use_names'] || !garbage.summary) ? name : (garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1))) +
+        ': ' + this.displayDate +
+        '</div>';
 }
 
 function filterReturnDates(returnDates) {
     return returnDates
-        .sort(function(a,b) {return (a.date > b.date) ? 1 : ((b.date > a.date) ? -1 : 0);} )
+        .sort(function (a, b) {
+            return (a.date > b.date) ? 1 : ((b.date > a.date) ? -1 : 0);
+        })
         .filter(function (element) {
             return settings['garbage'].hasOwnProperty(element.garbageType);
         })
@@ -466,8 +466,8 @@ function mapGarbageType(garbageType) {
 }
 
 function getMaxItems() {
-    if (typeof(settings['garbage_maxitems']) !== 'undefined'
-        && parseFloat(settings['garbage_maxitems']) > 0
+    if (typeof (settings['garbage_maxitems']) !== 'undefined' &&
+        parseFloat(settings['garbage_maxitems']) > 0
     ) {
         return settings['garbage_maxitems'];
     }
@@ -487,50 +487,182 @@ function loadDataForService(service, random) {
     };
 
     var serviceProperties = {
-        googlecalendar: {dataHandler: 'getGoogleCalendarData', identifier: settings['garbage_calendar_id']},
-        ical: {dataHandler: 'getIcalData', identifier: settings['garbage_icalurl']},
-        gemertbakelmaandag: {dataHandler: 'getIcalData', identifier: 'https://calendar.google.com/calendar/ical/o44qrtdhls8saftmesm5rqb85o%40group.calendar.google.com/public/basic.ics'},
-        gemertbakeldinsdag: {dataHandler: 'getIcalData', identifier: 'https://calendar.google.com/calendar/ical/6p8549rssv114ddevingime95o%40group.calendar.google.com/public/basic.ics'},
-        gemertbakelwoensdag: {dataHandler: 'getIcalData', identifier: 'https://calendar.google.com/calendar/ical/cv40f4vaie10v54f72go6ipb78%40group.calendar.google.com/public/basic.ics'},
-        veldhoven: {dataHandler: 'getIcalData', identifier: 'https://www.veldhoven.nl/afvalkalender/' + moment().format('YYYY') + '/' + address.zipcode + '-' + address.housenumber + '.ics'},
-        best: {dataHandler: 'getIcalData', identifier: 'https://www.gemeentebest.nl/afvalkalender/' + moment().format('YYYY') + '/' + address.zipcode + '-' + address.housenumber + '.ics'},
-        uden: {dataHandler: 'getIcalData', identifier: 'https://www.uden.nl/inwoners/afval/ophaaldagen-afval/' + moment().format('YYYY') + '/' + address.zipcode + '-' + address.housenumber + '.ics'},
-        vianen: {dataHandler: 'getIcalData', identifier: 'https://www.vianen.nl/afval/afvalkalender/' + moment().format('YYYY') + address.zipcode + '-' + address.housenumber + '.ics'},
-        goes: {dataHandler: 'getIcalData', identifier: 'http://afvalkalender.goes.nl/' + moment().format('YYYY') + address.zipcode + '-' + address.housenumber + '.ics'},
-        deurne: {dataHandler: 'getIcalData', identifier: 'http://afvalkalender.deurne.nl/Afvalkalender/download_ical.php?p=' + address.zipcode + '&h=' + address.housenumber + '&t=&jaar=' + moment().format('YYYY')},
-        heezeleende: {dataHandler: 'getIcalData', identifier: 'http://afvalkalender.heeze-leende.nl/Afvalkalender/download_ical.php?p=' + address.zipcode + '&h=' + address.housenumber + '&t=&jaar=' + moment().format('YYYY')},
-        twentemilieu: {dataHandler: 'getWasteApiData', identifier: '8d97bb56-5afd-4cbc-a651-b4f7314264b4'},
-        ophaalkalender: {dataHandler: 'getOphaalkalenderData', identifier: ''},
-        afvalwijzerarnhem: {dataHandler: 'getAfvalwijzerArnhemData', identifier: ''},
-        zuidhornical: {dataHandler: 'getZuidhornData', identifier: 'ical'},
-        zuidhorn: {dataHandler: 'getZuidhornData', identifier: 'scrape'},
-        katwijk: {dataHandler: 'getKatwijkData', identifier: ''},
-        deafvalapp: {dataHandler: 'getDeAfvalAppData', identifier: ''},
-        cure: {dataHandler: 'getAfvalstromenData', identifier: 'cure'},
-        cyclusnv: {dataHandler: 'getAfvalstromenData', identifier: 'cyclusnv'},
-        gemeenteberkelland: {dataHandler: 'getAfvalstromenData', identifier: 'gemeenteberkelland'},
-        meerlanden: {dataHandler: 'getAfvalstromenData', identifier: 'meerlanden'},
-        venray: {dataHandler: 'getAfvalstromenData', identifier: 'venray'},
-        circulusberkel: {dataHandler: 'getAfvalstromenData', identifier: 'circulusberkel'},
-        rmn: {dataHandler: 'getAfvalstromenData', identifier: 'rmn'},
-        alphenaandenrijn: {dataHandler: 'getAfvalstromenData', identifier: 'alphenaandenrijn'},
-        sudwestfryslan: {dataHandler: 'getAfvalstromenData', identifier: 'sudwestfryslan'},
-        dar: {dataHandler: 'getAfvalstromenData', identifier: 'dar'},
-        waalre: {dataHandler: 'getAfvalstromenData', identifier: 'waalre'},
-        avalex: {dataHandler: 'getAfvalstromenData', identifier: 'avalex'},
-        hvc: {dataHandler: 'getAfvalstromenData', identifier: 'hvc'},
-        rova: {dataHandler: 'getRovaData', identifier: ''},
-        mijnafvalwijzer: {dataHandler: 'getMijnAfvalwijzerData', identifier: ''},
-        recyclemanager: {dataHandler: 'getRecycleManagerData', identifier: ''},
-        edg: {dataHandler: 'getEdgData', identifier: ''},
-        rd4: {dataHandler: 'getRd4Data', identifier: ''},
-        venlo: {dataHandler: 'getVenloData', identifier: ''},
-        groningen: {dataHandler: 'getGroningenData', identifier: ''},
-        area: {dataHandler: 'getWasteApiData', identifier: 'adc418da-d19b-11e5-ab30-625662870761'},
-        almere: {dataHandler: 'getWasteApi2Data', identifier: '53d8db94-7945-42fd-9742-9bbc71dbe4c1'},
-        afvalalert: {dataHandler: 'getAfvalAlertData', identifier: ''},
-        barafvalbeheer: {dataHandler: 'getWasteApiData', identifier: 'bb58e633-de14-4b2a-9941-5bc419f1c4b0'},
-        omrin: {dataHandler: 'getOmrinData', identifier: ''},
+        googlecalendar: {
+            dataHandler: 'getGoogleCalendarData',
+            identifier: settings['garbage_calendar_id']
+        },
+        ical: {
+            dataHandler: 'getIcalData',
+            identifier: settings['garbage_icalurl']
+        },
+        gemertbakelmaandag: {
+            dataHandler: 'getIcalData',
+            identifier: 'https://calendar.google.com/calendar/ical/o44qrtdhls8saftmesm5rqb85o%40group.calendar.google.com/public/basic.ics'
+        },
+        gemertbakeldinsdag: {
+            dataHandler: 'getIcalData',
+            identifier: 'https://calendar.google.com/calendar/ical/6p8549rssv114ddevingime95o%40group.calendar.google.com/public/basic.ics'
+        },
+        gemertbakelwoensdag: {
+            dataHandler: 'getIcalData',
+            identifier: 'https://calendar.google.com/calendar/ical/cv40f4vaie10v54f72go6ipb78%40group.calendar.google.com/public/basic.ics'
+        },
+        veldhoven: {
+            dataHandler: 'getIcalData',
+            identifier: 'https://www.veldhoven.nl/afvalkalender/' + moment().format('YYYY') + '/' + address.zipcode + '-' + address.housenumber + '.ics'
+        },
+        best: {
+            dataHandler: 'getIcalData',
+            identifier: 'https://www.gemeentebest.nl/afvalkalender/' + moment().format('YYYY') + '/' + address.zipcode + '-' + address.housenumber + '.ics'
+        },
+        uden: {
+            dataHandler: 'getIcalData',
+            identifier: 'https://www.uden.nl/inwoners/afval/ophaaldagen-afval/' + moment().format('YYYY') + '/' + address.zipcode + '-' + address.housenumber + '.ics'
+        },
+        vianen: {
+            dataHandler: 'getIcalData',
+            identifier: 'https://www.vianen.nl/afval/afvalkalender/' + moment().format('YYYY') + address.zipcode + '-' + address.housenumber + '.ics'
+        },
+        goes: {
+            dataHandler: 'getIcalData',
+            identifier: 'http://afvalkalender.goes.nl/' + moment().format('YYYY') + address.zipcode + '-' + address.housenumber + '.ics'
+        },
+        deurne: {
+            dataHandler: 'getIcalData',
+            identifier: 'http://afvalkalender.deurne.nl/Afvalkalender/download_ical.php?p=' + address.zipcode + '&h=' + address.housenumber + '&t=&jaar=' + moment().format('YYYY')
+        },
+        heezeleende: {
+            dataHandler: 'getIcalData',
+            identifier: 'http://afvalkalender.heeze-leende.nl/Afvalkalender/download_ical.php?p=' + address.zipcode + '&h=' + address.housenumber + '&t=&jaar=' + moment().format('YYYY')
+        },
+        twentemilieu: {
+            dataHandler: 'getWasteApiData',
+            identifier: '8d97bb56-5afd-4cbc-a651-b4f7314264b4'
+        },
+        ophaalkalender: {
+            dataHandler: 'getOphaalkalenderData',
+            identifier: ''
+        },
+        afvalwijzerarnhem: {
+            dataHandler: 'getAfvalwijzerArnhemData',
+            identifier: ''
+        },
+        zuidhornical: {
+            dataHandler: 'getZuidhornData',
+            identifier: 'ical'
+        },
+        zuidhorn: {
+            dataHandler: 'getZuidhornData',
+            identifier: 'scrape'
+        },
+        katwijk: {
+            dataHandler: 'getKatwijkData',
+            identifier: ''
+        },
+        deafvalapp: {
+            dataHandler: 'getDeAfvalAppData',
+            identifier: ''
+        },
+        cure: {
+            dataHandler: 'getMijnAfvalwijzerData',
+            identifier: ''
+        },
+        cyclusnv: {
+            dataHandler: 'getAfvalstromenData',
+            identifier: 'cyclusnv'
+        },
+        gemeenteberkelland: {
+            dataHandler: 'getAfvalstromenData',
+            identifier: 'gemeenteberkelland'
+        },
+        meerlanden: {
+            dataHandler: 'getAfvalstromenData',
+            identifier: 'meerlanden'
+        },
+        venray: {
+            dataHandler: 'getAfvalstromenData',
+            identifier: 'venray'
+        },
+        circulusberkel: {
+            dataHandler: 'getAfvalstromenData',
+            identifier: 'circulusberkel'
+        },
+        rmn: {
+            dataHandler: 'getAfvalstromenData',
+            identifier: 'rmn'
+        },
+        alphenaandenrijn: {
+            dataHandler: 'getAfvalstromenData',
+            identifier: 'alphenaandenrijn'
+        },
+        sudwestfryslan: {
+            dataHandler: 'getAfvalstromenData',
+            identifier: 'sudwestfryslan'
+        },
+        dar: {
+            dataHandler: 'getAfvalstromenData',
+            identifier: 'dar'
+        },
+        waalre: {
+            dataHandler: 'getAfvalstromenData',
+            identifier: 'waalre'
+        },
+        avalex: {
+            dataHandler: 'getAfvalstromenData',
+            identifier: 'avalex'
+        },
+        hvc: {
+            dataHandler: 'getAfvalstromenData',
+            identifier: 'hvc'
+        },
+        rova: {
+            dataHandler: 'getRovaData',
+            identifier: ''
+        },
+        mijnafvalwijzer: {
+            dataHandler: 'getMijnAfvalwijzerData',
+            identifier: ''
+        },
+        recyclemanager: {
+            dataHandler: 'getRecycleManagerData',
+            identifier: ''
+        },
+        edg: {
+            dataHandler: 'getEdgData',
+            identifier: ''
+        },
+        rd4: {
+            dataHandler: 'getRd4Data',
+            identifier: ''
+        },
+        venlo: {
+            dataHandler: 'getVenloData',
+            identifier: ''
+        },
+        groningen: {
+            dataHandler: 'getGroningenData',
+            identifier: ''
+        },
+        area: {
+            dataHandler: 'getWasteApiData',
+            identifier: 'adc418da-d19b-11e5-ab30-625662870761'
+        },
+        almere: {
+            dataHandler: 'getWasteApi2Data',
+            identifier: '53d8db94-7945-42fd-9742-9bbc71dbe4c1'
+        },
+        afvalalert: {
+            dataHandler: 'getAfvalAlertData',
+            identifier: ''
+        },
+        barafvalbeheer: {
+            dataHandler: 'getWasteApiData',
+            identifier: 'bb58e633-de14-4b2a-9941-5bc419f1c4b0'
+        },
+        omrin: {
+            dataHandler: 'getOmrinData',
+            identifier: ''
+        },
     };
     window[serviceProperties[service].dataHandler](address, date, random, serviceProperties[service].identifier);
 }
