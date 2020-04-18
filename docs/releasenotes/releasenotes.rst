@@ -7,6 +7,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Latest changes
 --------------
 
+Fixes
+  * Garbage: Cure moved to 'mijnafvalwijzer'
+
 3.4.4 (Beta) (18-4-2020)
 -------------------------
 
