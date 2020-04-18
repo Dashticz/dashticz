@@ -178,6 +178,7 @@ You have to know the correct link to your Google Calendar. You can find them as 
 
     Use this ical url as icalurl parameter in your calendar block.
 
+.. _newcalendar:
 
 New Calendar 
 ############
