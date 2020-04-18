@@ -102,7 +102,9 @@
             "dashticz_php_path": "Dashticz PHP Path",
             "standby_call_url": "URL to be called at start of standby",
             "standby_call_url_on_end": "URL to be called at end of standby",
-            "login_timeout": "Keep Dashticz logged in (minutes)"
+            "login_timeout": "Keep Dashticz logged in (minutes)",
+            "enable_websocket": "WebSocket",
+            "enable_websocket_help": "Enable\/Disable the WebSocket connection"
         },
         "infosave": "Varsayılan olarak, ayarlar tarayıcınızda saklanır. Bu yöntemin dezavantajı yalnızca geçerli tarayıcınızda çalışacak olmasıdır. Bu bir sorun değilse, devam edebilirsiniz. Aksi takdirde, ayarları tüm tarayıcılarda ve aygıtlarda kullanmak için CONFIG.JS dosyasına aşağıdaki kodu kopyalayın.",
         "localize": {
@@ -178,7 +180,9 @@
             "enable_swiper": "Enable Swiper",
             "enable_swiper_help": "0: Disable swiper; 1: Enable on narrow screens; 2: Enable",
             "vertical_scroll": "Enable vertical scroll",
-            "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll"
+            "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll",
+            "security_panel_lock": "Load Security Panel full screen",
+            "security_panel_lock_help": "If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel."
         },
         "weather": {
             "idx_moonpicture": "Ay Evresi Simge IDX",
@@ -211,7 +215,11 @@
         "other": {
             "title": "Diğer",
             "setpoint_min": "Termostat ayar noktası minimum değeri",
-            "setpoint_max": "Termostat ayar noktası maksimum değeri"
+            "setpoint_max": "Termostat ayar noktası maksimum değeri",
+            "evohome_status": "EvoHome controller status",
+            "evohome_status_help": "Auto, Econony, Away, Custom, Day Off, Off",
+            "evohome_boost_zone": "EvoHome zone boost time in minutes",
+            "evohome_boost_hw": "EvoHome hot water boost time in minutes"
         }
     },
     "switches": {
