@@ -18,7 +18,6 @@ var DT_coronavirus = {
       me.graphIdx = me.primaryIdx;
       me.multigraph = false;
       me.colors = isDefined(me.block.datasetColors)? me.block.datasetColors : ['#7fcdbb', '#f03b20', 'yellow', 'red'];
-      me.name = isDefined(me.block.title) ? me.block.title : me.name.toUpperCase();
       $.extend(me.block, getBlockDefaults(false, true, me.block));
       createDashGraph(me);
     }
