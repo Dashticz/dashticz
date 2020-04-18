@@ -185,7 +185,7 @@ var DT_secpanel = {
           $(".sec-frame .status:not(.dashticz)").removeClass("disabled");
           var mode = $(".sec-frame").last().data("mode");
           if (mode === 2 && status === 2) {
-            window.location = "/";
+            location.reload();
           } else {
             DT_secpanel.ShowStatus();
           }
@@ -321,7 +321,7 @@ $('body').on('click', '.sec-frame .key:not(.disabled)', function () {
   }
 
   if(id === 'dashticz'){
-    window.location = "/"; 
+    location.reload();
     return;
   }
 });

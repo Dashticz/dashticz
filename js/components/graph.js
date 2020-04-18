@@ -1057,7 +1057,7 @@ function createGraph(graph) {
 }
 
 function createHeader(graph, showValues, buttons){
-  var title = '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar" style="font-size:20px;margin-left:5px;color:' + graph.block.iconColour + '">&nbsp;</i>' + graph.name + '&nbsp;<span class="graphValues' + graph.graphIdx + '">';
+  var title = '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar" style="font-size:20px;margin-left:5px;color:' + graph.block.iconColour + '">&nbsp;</i>' + graph.title + '&nbsp;<span class="graphValues' + graph.graphIdx + '">';
   var btns = isDefined(buttons)? buttons : '';
   title += "</span></div>";
   var html = "";
@@ -1212,7 +1212,7 @@ function showData(graphIdx){
     html += '   <div class="modal-content" style="background-image:url(' + config['background_image'] + ');">';
     html += '     <div class="modal-header">';
     html += '       <div class="flex-row title">';
-    html += '         <h5 class="modal-title"><i class="fas fa-chart-line"></i>' + graph.name + '</h5>';
+    html += '         <h5 class="modal-title"><i class="fas fa-chart-line"></i>' + graph.title + '</h5>';
     html += '         <div class="btn-group" role="group" aria-label="Graph Debug">';
     html += '           <a type="button" class="btn debug" href="#" onclick="console.log(dtGraphs[\'' + graphIdx + '\']); return false;"><i class="fas fa-code"></i></a>';
     html += '           <a type="button" class="btn debug" href="data:application/octet-stream;charset=utf-16le;base64,' + btoa(JSON.stringify(dtGraphs[graph.graphIdx], null, 2)) + '" download="' + graphIdx + '.json"><i class="fas fa-save"></i></a>';
