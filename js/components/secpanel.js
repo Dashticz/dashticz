@@ -56,11 +56,8 @@ var DT_secpanel = {
             templateEngine.load("secpanel").then(function (template) {
               var md = new MobileDetect(window.navigator.userAgent);
               var data = { mode: 1, wt: 34, ht: 80 };
-              var orientation =
-                (screen.orientation || {}).type ||
-                screen.mozOrientation ||
-                screen.msOrientation;
-              var portrait = orientation.split("-")[0] === "portrait";
+              var mql = window.matchMedia("(orientation: portrait)");
+              var portrait = mql.matches;
 
               if (md.phone()) {
                 data.wt = 95;
@@ -79,9 +76,9 @@ var DT_secpanel = {
                 data.fsInp = portrait ? "5vw" : "3vw";
                 data.fsHdr = portrait ? "4vw" : "3vw";
                 data.fsFtr = portrait ? "2vw" : "1vw";
-              }
-
-              $(".sec-modal").append(template(data));
+              } 
+ 
+              $('.sec-modal').html(template(data));
               DT_secpanel.ShowStatus();
             });
           });
