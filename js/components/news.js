@@ -16,142 +16,114 @@ var DT_news = {
         feed: settings['default_news_url'],
         refresh: 300
     },
-    defaultContent: '<div id="container"><ul id="newsTicker"></div></div>',
+    run: function(me){
+        me.height = me.block.maxheight && Number(me.block.maxheight)? me.block.maxheight : false;
+        me.showImage = isDefined(me.block.showimages)? me.block.showimages : true;
+        me.filter = me.block && me.block.filter? me.block.filter : false;
+        me.filterCount = me.filter? parseInt(me.filter) : false;
+        me.filterUnit = me.filter? me.filter.split(" ").splice(-1)[0] : false;
+        me.maxItems = me.filter && me.filterUnit === 'items'? me.filterCount : 0;
+        me.startDate = me.filter && me.filterUnit !== 'items'? moment().subtract(me.filterCount, me.filterUnit) : 0;
+        me.interval = parseFloat(settings['news_scroll_after'] * 1000);
+    },
     refresh: function (me) {
-        // Some RSS feed doesn't load trough crossorigin.me or vice versa
-        //$.ajax('https://crossorigin.me/'+newsfeed, {
         $.ajax(_CORS_PATH + me.block.feed, {
             accepts: {
                 xml: 'application/rss+xml'
             },
             dataType: 'xml',
             success: function (data) {
-                var asAutoHeight = me.block && me.block.maxheight === 'auto';
-                var asFixedHeight = me.block && me.block.maxheight && Number(me.block.maxheight);
-                var html = '';
-                var maxItems = 0;
-                var startMoment = 0;
                 var countItems = 0;
-                if (me.block && me.block.filter) {
-                    var filterCount = parseInt(me.block.filter);
-                    var filterUnit = me.block.filter
-                        .split(" ")
-                        .splice(-1)[0];
-                    if (filterUnit === 'items') {
-                        maxItems = filterCount;
-                    } else {
-                        startMoment = moment().subtract(filterCount, filterUnit)
-                    }
-                }
-
-                $(data).find('item')
-                    .sort(function (left, right) {
-                        var leftdate = $(left).find('pubDate')[0].innerHTML;
-                        var rightdate = $(right).find('pubDate')[0].innerHTML;
-                        var diff = moment(rightdate) - moment(leftdate);
-                        return diff;
-                    }).each(function () {
-                        if (maxItems && (countItems >= maxItems)) {
-                            return
+                var items = [];
+                
+                $(data)
+                    .find("item")
+                    .sort(function (l, r) {
+                        return (
+                          moment($(r).find("pubDate").html()) -
+                          moment($(l).find("pubDate").html())
+                        );
+                    })
+                    .each(function () {
+                        if (me.maxItems && countItems >= me.maxItems) {
+                            return;
                         }
-                        if (startMoment) {
-                            var pubDate = $(this).find('pubDate')[0].innerHTML;
-                            if (moment(pubDate) < startMoment) {
+                        if (me.startDate) {
+                            var pubDate = $(this).find("pubDate").html();
+                            if (moment(pubDate) < me.startDate) {
                                 return;
                             }
-                        }
+                        }                        
+                        var newsItem = {
+                            show:   me.showImage,
+                            image:  $(this).find("media\\:content, content, enclosure").attr("url"),
+                            title:  $(this).find("title").text(),
+                            link:   $(this).find("link").text(),
+                            desc:   $(this).find("description").text(),
+                            pubd:   moment($(this).find("pubDate").text()).format("llll"),
+                        };
+                        items.push(newsItem);
                         countItems++;
-                        var el = $(this);
-                        html += '<li data-toggle="modal" data-toggle="modal" data-target="#rssweb" data-link="' + el.find("link").text() + '" onclick="setSrcRss(this);">';
-                        html += '	<div class="news_row">';
-                        if (!(me.block && typeof me.block.showimages !== 'undefined' && !me.block.showimages)) {
-                            html += '		<div class="news_image">';
-                            var image = el.find('media\\:content, content').attr('url');
-                            if (!image) image = el.find('enclosure').attr('url');
-                            if (image)
-                                html += '			<img src="' + image + '"/>';
-                            html += '		</div>';
-                        }
-                        html += '		<div>';
-                        html += '			<div class="headline">';
-                        html += '				<strong class="title">' + el.find("title").text() + '</strong>';
-                        html += '				<hr class="hr_thin">';
-                        html += '				<div class="description">' + el.find("description").text() + '</div>';
-                        html += '				<div class="updated">Updated at ' + moment(el.find('pubDate').text()).format('HH:mm') + '</div>';
-                        html += '			</div>';
-                        html += '		</div>';
-                        html += '	</div>';
-                        html += '</li>';
                     });
 
-                var el = $(me.mountPoint + ' #newsTicker');
-                el.html(html);
+                templateEngine.load("news_row").then(function (template) {
+                    $(me.mountPoint + " .dt_state").html(template({ news: items }));
+                    $(me.mountPoint + ' .col-icon').addClass('next');
+                    $(me.mountPoint + ' #container').easyTicker({
+                        direction: 'up',
+                        easing: 'lineair',
+                        speed: 'slow',
+                        interval: me.interval,
+                        visible: 1,
+                        mousePause: true,
+                        controls: { up: '.next' }
+                    });
 
-                if ($('#rssweb').length === 0) {
-                    var htmlRss = '<div class="modal fade" id="rssweb" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
-                    htmlRss += '<div class="modal-dialog">';
-                    htmlRss += '<div class="modal-content">';
-                    htmlRss += '<div class="modal-header">';
-                    htmlRss += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
-                    htmlRss += '</div>';
-                    htmlRss += '<div class="modal-body">';
-                    htmlRss += '<iframe data-popup="" width="100%" height="570" frameborder="0" allowtransparency="true"></iframe> ';
-                    htmlRss += '</div>';
-                    htmlRss += '</div>';
-                    htmlRss += '</div>';
-                    htmlRss += '</div>';
-                    $('body').append(htmlRss);
-                }
-                $(me.mountPoint + ' #container').easyTicker({
-                    direction: 'up',
-                    easing: 'lineair',
-                    speed: 'slow',
-                    interval: parseFloat(settings['news_scroll_after'] * 1000),
-                    visible: 1,
-                    mousePause: 0
-                });
-
-                if (asAutoHeight) return; /*auto adjust news block height*/
-                if (asFixedHeight) {
-                    /*set to fixed height*/
-                    $(me.mountPoint + ' .dt_state').height(asFixedHeight);
-                    return;
-                }
-                /*Adjust height to max height of the news items*/
-                var maxHeight = -1;
-                $(me.mountPoint + ' li').each(function () {
-                    maxHeight = maxHeight > $(this).outerHeight() ? maxHeight : $(this).outerHeight();
-                });
-                if (maxHeight > 0) {
-                    $(me.mountPoint + ' .dt_state').height(maxHeight);
-                }
-
-                //The images may still be loading. Adjust the block height on image load event
-                var images = $(me.mountPoint + ' .news_image img');
-                if (images.length) {
-                    images.each(function () {
-                        this.addEventListener("load", function () {
-                            var mh = $(this).height();
-                            if (mh > maxHeight) {
-                                maxHeight = mh;
-                                $(me.mountPoint + ' .dt_state').height(maxHeight);
-                            }
+                    if ($('#rssweb').length === 0) {
+                        templateEngine.load("news_modal").then(function (template) {
+                            $(document.body).append(template);
                         });
+                    }              
+                    
+                    if (me.height) {
+                        /*set to fixed height*/
+                        $(me.mountPoint + ' .dt_state').height(me.height);
+                        return;
+                    }
+
+                    /*Adjust height to max height of the news items*/
+                    var maxHeight = -1;
+                    $(me.mountPoint + ' li').each(function () {
+                        maxHeight = maxHeight > $(this).outerHeight() ? maxHeight : $(this).outerHeight();
                     });
-                }
+                    if (maxHeight > 0) {
+                        $(me.mountPoint + ' li').height(maxHeight);
+                    }
+    
+                    //The images may still be loading. Adjust the block height on image load event
+                    var images = $(me.mountPoint + ' .news_image img');
+                    if (images.length) {
+                        images.each(function () {
+                            this.addEventListener("load", function () {
+                                var mh = $(this).height();
+                                if (mh > maxHeight) {
+                                    maxHeight = mh;
+                                    $(me.mountPoint + ' .dt_state').height(maxHeight);
+                                }
+                            });
+                        });
+                    }
+                });              
             },
             error: function (data) {
                 infoMessage('<font color="red">News Error!</font>', 'RSS feed ' + data.statusText + '. Check rss url.', 10000);
             }
         });
     }
-
 }
-
 /* callback for newsfeed item onclick*/
 // eslint-disable-next-line no-unused-vars
 function setSrcRss(cur) {
     $($(cur).data('target')).find('iframe').attr('src', $(cur).data('link'));
 }
-
 Dashticz.register(DT_news);
