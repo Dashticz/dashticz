@@ -400,6 +400,28 @@ Remove break line
 
 Change 107 to your own block number
 
+Customized drop down block
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+.. image :: cust_drop_down_block.jpg
+::
+
+   .block_438 .icon {
+      width: 85%;
+      height: auto; 
+   }
+   .block_438 .title,
+   .block_438 br:nth-child(2) {		
+         display: none;
+   }
+   .block_438 .col-data select {
+      font-size: 150%;
+      width: 100%;
+      background-color: rgb(242,242,242);
+   }
+
+Change 438 to your own block number
+
+
 .. _specialclasses:
 
 CSS class definition for special blocks
