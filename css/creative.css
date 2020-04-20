@@ -1738,8 +1738,8 @@ a:not([href]) {
   border: none;
   background-color: #fff;
   opacity: 0.2;
-  margin-bottom: 0.25rem !important;
-  margin-top: 0.25rem !important;
+  margin-bottom: 0.5rem !important;
+  margin-top: 0.5rem !important;
 }
 
 .modal {
@@ -1778,6 +1778,9 @@ a:not([href]) {
   font-size: 14px;
   color: #fff;
   padding-left: 0px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .news .headline {
