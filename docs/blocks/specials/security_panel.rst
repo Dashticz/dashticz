@@ -12,7 +12,7 @@ There are three ways to show the Domoticz Security Panel:
 Security Panel special block
 ----------------------------
 
-You have to add the special block to a column::
+Add the special block to a column::
 
     columns[1]['blocks'] = ['secpanel'];
 
