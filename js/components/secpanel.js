@@ -5,6 +5,8 @@ var DT_secpanel = {
     title: "Dashticz Security Panel",
   },
 
+  locked: false,
+
   init: function () {
     var usrinfo = "";
     if (typeof usrEnc !== "undefined" && usrEnc !== "")
@@ -20,7 +22,9 @@ var DT_secpanel = {
     templateEngine
       .load("secpanel")
       .then(function (template) {
-        $(me.mountPoint + " .dt_content").html(template({ mode: 2 }));
+        $(me.mountPoint + " .dt_content").html(template({
+          mode: 2
+        }));
         $(me.mountPoint + " .dt_block").css("background", "transparent");
         $(me.mountPoint + " .dt_block").css("border", "0");
         DT_secpanel.onResize(me);
@@ -29,6 +33,9 @@ var DT_secpanel = {
         DT_secpanel.ShowStatus();
         DT_secpanel.SetRefreshTimer();
       });
+    Domoticz.subscribe('_secstatus', false, function () {
+      DT_secpanel.ShowStatus();
+    })
   },
 
   onResize: function (me) {
@@ -41,53 +48,49 @@ var DT_secpanel = {
     $(me.mountPoint + " .dt_content").height(h);
   },
 
-  CheckStatus: function (url) {
-    DT_secpanel.url = isDefined(DT_secpanel.url) ? DT_secpanel.url : url;
-    $(".sec-panel").remove();
+  CheckStatus: function (secstatus) { //callback function for main.js
+    if (secstatus == 2) {
+      DT_secpanel.locked = true;
+      templateEngine.load("secpanel_modal").then(function (modal) {
+        $(document.body).append(modal);
+        templateEngine.load("secpanel").then(function (template) {
+          var md = new MobileDetect(window.navigator.userAgent);
+          var data = {
+            mode: 1,
+            wt: 34,
+            ht: 80
+          };
+          var mql = window.matchMedia("(orientation: portrait)");
+          var portrait = mql.matches;
 
-    $.ajax({
-      url: url + "type=command&param=getsecstatus",
-      async: true,
-      dataType: "json",
-      success: function (data) {
-        if (data.secstatus == 2) {
-          templateEngine.load("secpanel_modal").then(function (modal) {
-            $(document.body).append(modal);
-            templateEngine.load("secpanel").then(function (template) {
-              var md = new MobileDetect(window.navigator.userAgent);
-              var data = { mode: 1, wt: 34, ht: 80 };
-              var mql = window.matchMedia("(orientation: portrait)");
-              var portrait = mql.matches;
+          if (md.phone()) {
+            data.wt = 95;
+            data.ht = 95;
+            data.fsKey = "13vw";
+            data.fsInp = "5vw";
+            data.fsHdr = "4vw";
+            data.fsFtr = "2vw";
+            data.htScr = "3%";
+          }
 
-              if (md.phone()) {
-                data.wt = 95;
-                data.ht = 95;
-                data.fsKey = "13vw";
-                data.fsInp = "5vw";
-                data.fsHdr = "4vw";
-                data.fsFtr = "2vw";
-                data.htScr = "3%";
-              }
+          if (md.tablet()) {
+            data.wt = portrait ? 95 : 55;
+            data.ht = 95;
+            data.fsKey = portrait ? "10.5vw" : "5.5vw";
+            data.fsInp = portrait ? "5vw" : "3vw";
+            data.fsHdr = portrait ? "4vw" : "3vw";
+            data.fsFtr = portrait ? "2vw" : "1vw";
+          }
 
-              if (md.tablet()) {
-                data.wt = portrait ? 95 : 55;
-                data.ht = 95;
-                data.fsKey = portrait ? "10.5vw" : "5.5vw";
-                data.fsInp = portrait ? "5vw" : "3vw";
-                data.fsHdr = portrait ? "4vw" : "3vw";
-                data.fsFtr = portrait ? "2vw" : "1vw";
-              } 
- 
-              $('.sec-modal').html(template(data));
-              DT_secpanel.ShowStatus();
-            });
-          });
-        }
-      },
-      error: function (jqXHR, textStatus, errorThrown) {
-        console.log(textStatus, errorThrown);
-      },
-    });
+          $('.sec-modal').html(template(data));
+          DT_secpanel.ShowStatus();
+        });
+      });
+    } else {
+      //      $(".security-panel").remove();
+      if (DT_secpanel.locked)
+        window.location.reload();
+    }
   },
 
   ShowStatus: function () {
@@ -123,9 +126,9 @@ var DT_secpanel = {
           $('.sec-frame td div[data-status="' + data.secstatus + '"]').addClass(
             "disabled"
           );
-          DT_secpanel.secondelay = isDefined(data.secondelay)
-            ? data.secondelay
-            : 5;
+          DT_secpanel.secondelay = isDefined(data.secondelay) ?
+            data.secondelay :
+            5;
         }
         DT_secpanel.SetRefreshTimer();
       },
@@ -157,8 +160,7 @@ var DT_secpanel = {
       CodeSetTimer = clearTimeout(CodeSetTimer);
 
     $.ajax({
-      url:
-        DT_secpanel.url +
+      url: DT_secpanel.url +
         "type=command&param=setsecstatus&secstatus=" +
         status +
         "&seccode=" +
@@ -317,7 +319,7 @@ $('body').on('click', '.sec-frame .key:not(.disabled)', function () {
     return;
   }
 
-  if(id === 'dashticz'){
+  if (id === 'dashticz') {
     location.reload();
     return;
   }
@@ -327,7 +329,7 @@ $('body').on('click', '.sec-frame .screw.bl', function () {
   var md = new MobileDetect(window.navigator.userAgent);
   var orientation = (screen.orientation || {}).type || screen.mozOrientation || screen.msOrientation;
   var msg = 'Mobile: ' + md.mobile() + '\n';
-  msg += 'Phone: ' + md.phone() + '\n'; 
+  msg += 'Phone: ' + md.phone() + '\n';
   msg += 'Tablet: ' + md.tablet() + '\n';
   msg += 'OS: ' + md.os() + '\n';
   msg += 'User Agent: ' + md.userAgent() + '\n';
