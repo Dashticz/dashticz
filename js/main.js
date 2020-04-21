@@ -653,7 +653,7 @@ function checkSecurityStatus(res) {
 }
 
 window.addEventListener("orientationchange", function () {
-    checkSecurityStatus();
+    checkSecurityStatus(Domoticz.getAllDevices()['_secstatus']);
 });
 /* END: SECURITY PANEL */
 
