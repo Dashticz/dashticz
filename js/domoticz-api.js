@@ -17,9 +17,11 @@ var Domoticz = function () {
     var callbackList = [];
     var reconnectTimeout = 2; //Initial value: 1 sec reconnect timeout
     var reconnecting = false;
+    var securityRefresh = null;
 
     var MSG = {
-        info: 'type=command&param=getversion'
+        info: 'type=command&param=getversion',
+        secpanel: 'type=command&param=getsecstatus'
     }
 
     function domoticzQuery(query) {
@@ -121,7 +123,8 @@ var Domoticz = function () {
                     }, cfg.domoticz_refresh * 1000);
                     //                    return _update().then(_requestAllVariables).then( requestAllScenes)
                     return refreshAll();
-                });
+                })
+                .then(requestSecurityStatus);
         }
         //        _connectWebsocket();
         return initPromise;
@@ -362,7 +365,21 @@ var Domoticz = function () {
         return deviceObservable._values
     }
 
+    function requestSecurityStatus() {
+        return domoticzRequest(MSG['secpanel'])
+            .then(function (res) {
+                if (res) {
+                    setOnChange('_secstatus', res.secstatus);
+                    setOnChange('_secondelay', res.secondelay);
+                    return res;
+                }
+            })
+    }
+
     function subscribe(idx, getCurrent, callback) {
+        if (idx === '_secstatus' && !securityRefresh) {
+            securityRefresh = setInterval(requestSecurityStatus, cfg.domoticz_refresh * 1000);
+        }
         return deviceObservable.subscribe(idx, getCurrent, callback)
     }
 
