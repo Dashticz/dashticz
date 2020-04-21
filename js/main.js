@@ -75,12 +75,12 @@ function loadFiles(dashtype) {
             var message = 'Error loading ' + loadingFilename + '<br>\n' + msg + ' at line ' + line + ':' + col;
             console.log(message);
             throwError = message;
-        } 
+        }
     }
 
     $('<link href="' + 'css/creative.css?_=' + Date.now() + '" rel="stylesheet">').appendTo('head');
 
-    loadingFilename = customfolder + '/CONFIG.js';    
+    loadingFilename = customfolder + '/CONFIG.js';
 
     $.ajax({
             url: loadingFilename,
@@ -136,7 +136,7 @@ function loadFiles(dashtype) {
         })
         .then(function () {
             loadSettings();
-            
+
             usrEnc = '';
             pwdEnc = '';
             if (typeof (settings['user_name']) !== 'undefined') {
@@ -192,11 +192,11 @@ function loadFiles(dashtype) {
         .then(function () {
             loadingFilename = customfolder + '/custom.js';
 
-            return $.ajax({     //first test whether the file exists
+            return $.ajax({ //first test whether the file exists
                     url: customfolder + '/custom.js?v=' + cache,
                     type: 'HEAD'
                 })
-                .then(function () {     //if it exists, try to load it
+                .then(function () { //if it exists, try to load it
                     return $.ajax({
                             url: customfolder + '/custom.js',
                             dataType: 'script'
@@ -237,11 +237,12 @@ function loadFiles(dashtype) {
                 })
             );
         })
+        /*        .then(function () {
+                    checkSecurityStatus();
+                }) */
         .then(function () {
-            checkSecurityStatus();
-        })
-        .then(function () {
-
+            if (settings["security_panel_lock"] === 1)
+                Domoticz.subscribe('_secstatus', true, checkSecurityStatus);
             sessionvalid = sessionValid();
 
             if (typeof (settings['gm_api']) !== 'undefined' && settings['gm_api'] !== '' && settings['gm_api'] !== 0) {
@@ -263,13 +264,13 @@ function loadFiles(dashtype) {
                 $('body').css('overflow', 'auto');
                 onLoad();
             }
-        })        
+        })
         .catch(function (err) {
             console.error(err);
             showError(err.message)
         })
 
-        
+
 }
 
 function showError(msg) {
@@ -647,18 +648,11 @@ function enableRefresh() {
 }
 
 /* START: SECURITY PANEL */
-function checkSecurityStatus() {
-  if (settings["security_panel_lock"] === 1) {
-    var securl = settings["domoticz_ip"] + "/json.htm?" +
-      (isDefined(usrEnc) && usrEnc
-        ? "username=" + usrEnc + "&password=" + pwdEnc + "&"
-        : "");
-
-    DT_secpanel.CheckStatus(securl);
-  }
+function checkSecurityStatus(res) {
+    DT_secpanel.CheckStatus(res);
 }
 
-window.addEventListener("orientationchange", function() {
+window.addEventListener("orientationchange", function () {
     checkSecurityStatus();
 });
 /* END: SECURITY PANEL */
