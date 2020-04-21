@@ -69,7 +69,7 @@ try {
 //	var_dump($sorted_events[0]);
 	foreach ( $sorted_events as $ev) {
 		$start=$ev["DTSTART"]->getTimestamp();
-		if (isset($ev->DTEND))
+		if (isset($ev["DTEND"]))
 			$end=$ev["DTEND"]->getTimestamp();
 		else
 			$end=$start;
