@@ -20,8 +20,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Dashticz'
-copyright = '2019, Rob Geerts'
-author = 'Rob Geerts'
+copyright = '2020, Dashticz'
+author = 'Dashticz'
 
 # The short X.Y version
 version = ''
