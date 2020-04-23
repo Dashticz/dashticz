@@ -7,8 +7,13 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Latest changes
 --------------
 
+3.4.5 (Beta) (23-4-2020)
+------------------------
+
 Fixes
   * Garbage: Cure moved to 'mijnafvalwijzer'
+  * Synchronization Domoticz security panel state
+  * Bug fix popup chart refresh
 
 3.4.4 (Beta) (18-4-2020)
 -------------------------
