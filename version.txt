@@ -1,8 +1,9 @@
 {
-"version": "3.4.4",
+"version": "3.4.5",
 "branch": "beta",
-"last_changes": "New security panel; bug fixes",
+"last_changes": "Bug fixes",
 "changelog" : {
+            "3.4.4": "New security panel; bug fixes",
             "3.4.3": "New calendar block; bug fixes",
             "3.4.2": "Corona block, Camera block, Dewpoint, graph custom header",
             "3.4.1": "Domoticz blocks redesign",

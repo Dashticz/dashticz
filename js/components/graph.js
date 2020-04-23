@@ -326,7 +326,7 @@ function getDeviceDefaults(device, popup) {
 
 function showPopupGraph(blockdef) {
   var device = blockdef.device;
-  if ($("#opengraph" + device["idx"]).length === 0) {
+  if ($("#opengraph" + device["idx"]+p).length === 0) {
     var html = '<div class="modal fade opengraph opengraph' + device.idx + p + '" data-idx="' + device.idx + '" id="opengraph' + device.idx + p + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
     html += '<div class="modal-dialog graphwidth">';
     html += '<div class="modal-content">';
