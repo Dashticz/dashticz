@@ -1,4 +1,4 @@
-/* global Dashticz _CORS_PATH moment settings ksort*/
+/* global Dashticz _CORS_PATH moment settings ksort createModalDialog*/
 var allchannels = [];
 
 var DT_tvguide = {
@@ -9,7 +9,8 @@ var DT_tvguide = {
     defaultCfg: {
         icon: 'fas fa-tv',
         refresh: 300,
-        maxitems: 10
+        maxitems: 10,
+        containerClass: 'hover',
     },
     refresh: function (me) {
         var tvObj = me.block;
@@ -38,6 +39,9 @@ var DT_tvguide = {
                             newevent.endtime = moment(event.e, 'X').format('HH:mm');
                             newevent.channel = allchannels[channel];
                             newevent.title = event.title;
+                            newevent.db_id = event.db_id;
+                            newevent.descr = event.descr;
+                            newevent.img = event.img;
                             if (typeof (tvitems[enddateStamp]) === 'undefined') tvitems[enddateStamp] = [];
                             tvitems[enddateStamp].push(newevent);
                         }
@@ -53,7 +57,19 @@ var DT_tvguide = {
                         if (check > moment().format('X') && counter <= maxitems) {
                             //Sometimes there might be no endtime (?). In that case the next line will give an error
                             var widget = '<div>' + item['starttime'] + ' - ' + item['endtime'] + ' - <em>' + item['channel'] + '</em> - <b>' + item['title'] + '</b></div>';
-                            tvobject.append(widget);
+                            $(widget).appendTo(tvobject)
+                                .click(item.db_id, function (evt) {
+                                    var tmp = {
+                                        url: 'https://tvgids.nl/programma/' + evt.data
+                                    }
+                                    $('body').append(createModalDialog('openpopup', 'tvguideModal', tmp));
+                                    $('#tvguideModal').on('hidden.bs.modal', function () {
+                                        $(this).data('bs.modal', null);
+                                        $(this).remove();
+                                    });
+
+                                    $('#tvguideModal').modal('show');
+                                })
                             counter++;
                         }
                     }
