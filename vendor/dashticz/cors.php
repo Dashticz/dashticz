@@ -24,7 +24,9 @@ header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
 $reply = file_get_contents($_SERVER["QUERY_STRING"]);
 $head = parseHeaders($http_response_header);
-header("Content-Type: ".$head["Content-Type"]);
+if (isset($head["Content-Type"])) {
+    header("Content-Type: ".$head["Content-Type"]);
+}
 echo $reply;
 exit();
 ?>
