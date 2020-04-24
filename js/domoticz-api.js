@@ -103,6 +103,7 @@ var Domoticz = function () {
                     useWS = true;
                     console.log("Setting up websocket");
                     connectWebsocket();
+                    return initialUpdate; //initialUpdate will be resolved after the first message from websocket
                 }
             })
     }
@@ -121,26 +122,23 @@ var Domoticz = function () {
                     setInterval(function () {
                         refreshAll();
                     }, cfg.domoticz_refresh * 1000);
-                    //                    return _update().then(_requestAllVariables).then( requestAllScenes)
                     return refreshAll();
                 })
                 .then(requestSecurityStatus);
         }
-        //        _connectWebsocket();
         return initPromise;
     }
 
     function refreshAll() {
-        var res = requestAllVariables();
         if (cfg.refresh_method || !useWS) {
-            res = res.then(
-                function () {
-                    return requestAllDevices()
-                })
+            return requestAllVariables()
+                .then(
+                    function () {
+                        return requestAllDevices()
+                    })
         } else {
-            res = res.then(requestAllScenes)
+            return requestAllVariables().then(requestAllScenes)
         }
-        return res;
     }
 
     function connectWebsocket() {
@@ -169,7 +167,6 @@ var Domoticz = function () {
             requestAllDevices(false);
         };
         socket.onmessage = function (event) {
-            initialUpdate.resolve();
             //            console.log(`[message] Data received from server: ${event.data}`);
             //console.log(event.data);
             var res = JSON.parse(event.data);
@@ -191,6 +188,7 @@ var Domoticz = function () {
             } else {
                 console.log('no requestid or no callback ', res);
             }
+            initialUpdate.resolve();
             /*            //console.log(res)
                         var res2 = JSON.parse(res.data)
                         // console.log(res2)
@@ -292,9 +290,8 @@ var Domoticz = function () {
                 if (typeof value.LastUpdate !== 'undefined' && typeof current_value.LastUpdate !== 'undefined') {
                     var newmoment = moment(value.LastUpdate);
                     var currentmoment = moment(current_value.LastUpdate)
-                    update = newmoment.diff(currentmoment)
+                    update = newmoment.diff(currentmoment) || value.Data !== current_value.Data
                 } else update = true;
-                update = true; //with the incremental updates we are receiving it's better to always update
                 break;
             default:
                 update = true;
@@ -328,13 +325,12 @@ var Domoticz = function () {
             }
             setOnChange(idx, device);
         }
-        //        setOnChange("_devices", new Date()); //event to trigger that all devices have been updated.
-        setOnChange("_devices", data);
+        setOnChange("_devices", data); //event to trigger that all devices have been updated.
         return deviceObservable._values
     }
 
     function requestAllScenes() {
-        return domoticzRequest('type=scenes', false)
+        return domoticzRequest('type=scenes')
             .then(function (res) {
                 if (!res) return;
                 return _setAllDevices(res)
@@ -342,7 +338,6 @@ var Domoticz = function () {
     }
 
     function requestAllVariables() {
-        //        console.log('requestAllVariables ' + path);
         //        return domoticzRequest('type=command&param=getuservariables&lastupdate='+lastUpdate.variables)
         return domoticzRequest('type=command&param=getuservariables')
             .then(function (res) {
@@ -457,7 +452,7 @@ function ListObservable() {
             this._observers[idx] = []
         this._observers[idx].push({
             callback: callback
-        })
+        });
         if (getCurrent && typeof this._values[idx] !== 'undefined')
             callback(this._values[idx])
         var me = this;
