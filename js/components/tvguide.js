@@ -60,7 +60,7 @@ var DT_tvguide = {
                             $(widget).appendTo(tvobject)
                                 .click(item.db_id, function (evt) {
                                     var tmp = {
-                                        url: 'https://tvgids.nl/programma/' + evt.data
+                                        url: tvObj.url || 'https://tvgids.nl/programma/' + evt.data
                                     }
                                     $('body').append(createModalDialog('openpopup', 'tvguideModal', tmp));
                                     $('#tvguideModal').on('hidden.bs.modal', function () {
