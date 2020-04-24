@@ -42,6 +42,7 @@ refresh                   The update interval of this block in seconds
 icon                      The icon to show in the block, if you dont want to show an icon use ''
 image                     The image to use instead of an icon. Location is relative to ``./img``
 results                   The number of most recent results found by using the filter parameter
+timeformat				  Time format template. Default is 'ddd d MMM HH:MM' which will display the time as 'Thu 4 Apr 22:03'.  
 =======================   ===============================
 
 
@@ -57,6 +58,9 @@ If you want to remove the icon, add the following to your block definition::
 To use your own image instead of a FontAwsome Free icon you can add this to your ''CONFIG.js""::
 
 	image: '../custom/img/siren.png',
+
+For more information on time formats see: https://momentjscom.readthedocs.io/en/latest/moment/04-displaying/01-format
+
 
 Styling
 -------
