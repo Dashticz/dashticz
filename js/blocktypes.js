@@ -36,7 +36,8 @@ blocktypes.SubType['Sound Level'] = {
 blocktypes.SubType['Distance'] = {
     icon: 'fas fa-eye',
     title: '<Name>',
-    value: '<Data>'
+    value: '<Data>',
+    graph: true
 };
 blocktypes.SubType['Alert'] = {
     icon: 'fas fa-warning',
@@ -63,7 +64,8 @@ blocktypes.SubType['Counter Incremental'] = {
 blocktypes.SubType['Voltage'] = {
     icon: 'fas fa-bolt',
     title: '<Name>',
-    value: '<Data>'
+    value: '<Data>',
+    graph: true
 };
 blocktypes.SubType['Solar Radiation'] = {
     icon: 'fa fa-sun-o',

@@ -7,6 +7,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Latest changes
 --------------
 
+Enhancements
+  * Enable graphs for Voltage and Distance devices
+
 3.4.5 (Beta) (23-4-2020)
 ------------------------
 
