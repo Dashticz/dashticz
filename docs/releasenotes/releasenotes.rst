@@ -9,6 +9,7 @@ Latest changes
 
 Enhancements
   * Enable graphs for Voltage and Distance devices
+  * Parameter ``timeformat`` to configure time format for 'alarmmeldingen'. See :ref:`customalarmmeldingen`
 
 3.4.5 (Beta) (23-4-2020)
 ------------------------

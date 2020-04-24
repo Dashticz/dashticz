@@ -14,6 +14,7 @@ var DT_alarmmeldingen = {
 			width: 12,
 			refresh: 180,
 			results: 5,
+			timeformat: 'ddd d MMM HH:MM'
 		},
 	defaultContent: language.misc.loading,
 	refresh: function (me) {
@@ -49,12 +50,8 @@ var DT_alarmmeldingen = {
 				if (filterArray.some(function (element) {
 						return description.toLowerCase().includes(element.toLowerCase())
 					}) && (aantalMeldingen - 1) < maxMeldingen) {
-					var pubDate = new Date(el.find("pubDate").text());
-					pubDate = pubDate.toString();
-					pubDate = pubDate.split(' ')[4];
-					//remove sevonds from time string
-					pubDate = pubDate.replace(/:[^:]*$/,'');
-					html += '<li><strong>' + pubDate + '&nbsp;&nbsp;&nbsp' + '<a href=' + el.find("link").text() + ' onclick="window.open(this.href); return false;" onkeypress="window.open(this.href); return false;">' + el.find("description").text() + '</a>' + '</strong></li>';
+					var pubDate = moment(el.find("pubDate").text());
+					html += '<li><strong>' + pubDate.format(alarmobject.timeformat) + '&nbsp;&nbsp;&nbsp' + '<a href=' + el.find("link").text() + ' onclick="window.open(this.href); return false;" onkeypress="window.open(this.href); return false;">' + el.find("description").text() + '</a>' + '</strong></li>';
 					aantalMeldingen++;
 				}
 			});
