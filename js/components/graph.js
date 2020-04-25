@@ -1158,49 +1158,31 @@ function createButtons(graph, ranges, customRange) {
 }
 
 function updateHeaderValues(graph, showValues) {
-
+  
   var $values = $(".graphValues" + graph.graphIdx);
 
-  var t = "";
-  t += "<span>";
-  t += " {{#if show}}";
-  t += "   {{#if mg}}";
-  t += "     {{#if cvs}}";
-  t += '       <i class="fas fa-equals" style="color:{{icon}}">&nbsp;</i>';
-  t += "       {{#each cvs}}";
-  t += '         {{this}}<span style="color:{{icon}}">{{#unless @last}} | </span>{{/unless}}';
-  t += "       {{/each}}";
-  t += "     {{/if}}";
-  t += "   {{else}}";
-  t += "     {{#if cv}}";
-  t += '       &nbsp;<i class="fas fa-equals" style="color:{{icon}}">&nbsp;</i>&nbsp;';
-  t += "       {{cv}}";
-  t += "     {{/if}}";
-  t += "   {{/if}}";
-  t += " {{/if}}";
-  t += "</span>";
+  templateEngine.load("graph_header").then(function (template) {
 
-  var data = {
-    show: showValues,
-    mg: graph.multigraph,
-    cv: graph.currentValue,
-    cvs: graph.currentValues,
-    icon: graph.block.iconColour
-  };
+    var data = {
+      show: showValues,
+      mg: graph.multigraph,
+      cv: graph.currentValue,
+      cvs: graph.currentValues,
+      icon: graph.block.iconColour,
+    };
 
-  $values
-    .empty()
-    .html(Handlebars.compile(t)(data))
+    $values.empty().html(template(data));
 
-  if (graph.block.flash && graph.block.flash > 0) {
-    $(".graphValues" + graph.graphIdx)
-      .toggleClass("blockchange")
-      .delay(graph.block.flash)
-      .queue(function (next) {
-        $(this).toggleClass("blockchange");
-        next();
-      });
-  }
+    if (graph.block.flash && graph.block.flash > 0) {
+      $(".graphValues" + graph.graphIdx)
+        .toggleClass("blockchange")
+        .delay(graph.block.flash)
+        .queue(function (next) {
+          $(this).toggleClass("blockchange");
+          next();
+        });
+    }
+  });
 }
 
 function showData(graphIdx) {
