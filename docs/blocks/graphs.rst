@@ -164,6 +164,8 @@ The following block parameters can be used to configure the graph:
     - the code automatically calculate if any devices' time data is longer than others. It then use that device's time data, then match all of the devices non-time data to that. This setting allows users to choose to enable or disable that feature (true or false)
   * - customHeader
     - Customized graph header. See below for examples.
+  * - popup
+    - Defined Popups. See :ref:`graphs_popups`.
   * - tooltiptotal
     - Display graph tooltiptotal instead of the standard one. ``true``, ``false`` or an array, e.g. ``tooltiptotal: ['Office (Temp)', 'Lounge (Temp)'],`` See below for an example.
   * - zoom
@@ -857,6 +859,34 @@ tooltiptotal
 
 Basically, if you specify an array, it will only total those datasets, and ignore the other ones.  
 Anything that is being totalled will show a "+" icon.
+
+.. _graphs_popups:
+
+Defined Popups
+~~~~~~~~~~~~~~
+Popups can be defined by adding a new block parameter, “popup”, to the block that popup is for. This allows the popup to use all the block parameters that a graph block does, allowing them to style the graph however they want. It also means the legend and tooltips can display custom names (instead of the key names).
+For example, the user has an Energy meter block defined as follows::
+
+	blocks[258] = {
+		title: 'Consumption',
+		flash: 500,
+		width: 4,
+		popup: 'popup_consumption'
+	}
+
+In this example, they have specified that the popup will use a defined graph called  'popup_consumption' instead of the default popup. This defined graph is then added to the config.js just like a normal graph::
+
+	blocks['popup_consumption'] = {
+		title: 'Energy Consumption Popup',
+		devices: [258],
+		toolTipStyle: true,
+		datasetColors: ['red', 'yellow'],
+		graph: 'line',
+		legend: {
+		'v_258' : 'Usage',          
+		'c_258' : 'Total'
+		}
+	}
 
 
 Examples
