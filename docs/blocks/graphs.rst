@@ -4,7 +4,7 @@ Graphs
 ======
 
 If your Domoticz device contains a value (temperature, humidity, power, etc.)
-then when you click on the block a popup window will appear showing a graph of the values of the device.
+then when you click on the block a popup window will appear showing a graph of the values of the device. These popups can be customized by using the 'popup' parameter.
 
 Besides popup graphs it's also possible to show the graph directly on the dashboard itself.
 
@@ -65,7 +65,7 @@ The following block parameters can be used to configure the graph:
       | ``['uvi']``, ``['lux']``, ``['lux_avg']``, ``['mm']``, ``['v_max']``
       | ``['v2']``, ``['mm']``, ``['eu']``, ``['u']``, ``['u_max']``, ``['co2']``
   * - GroupBy
-    - | This allows users to group their data by hour, day, week or month, where applicable ranges are used. See below for an example.
+    - | This allows users to group their data by hour, day, week or month, where applicable ranges are used. See :ref:`groupBy`.
       | The GroupBy function will either:
       | - The *Sum* of all values together for that group
       | - Provide the *Average* of all values for that group
@@ -73,13 +73,13 @@ The following block parameters can be used to configure the graph:
       | - Counter, Rain – uses the *Add* calculation
       | - Temperature, Custom Sensor and Percentage – uses the *Average* calculation
   * - groupByDevice
-    - | allowing user to show the status of several devices in a single graph. Instead of the data being group by time intervals, it is grouped by the devices. See below for an example.
+    - | allowing user to show the status of several devices in a single graph. Instead of the data being group by time intervals, it is grouped by the devices. See :ref:`groupByDevice`.
       | ``false``: disables the feature (default)
       | ``true``: enables the feature and display a vertical bar chart, grouped by device
       | ``'vertical'``: is the same as true
       | ``'horizontal'``: enables the feature and display a horizontal bar chart, grouped by device
   * - stacked
-    - ``true``: Show stacked bar charts. See below for an example.
+    - ``true``: Show stacked bar charts. See :ref:`stacked`.
   * - beginAtZero
     - This forces the Y axis to begin at 0 (zero). The beginAtZero setting can accomodate multiple Y axes. For example, for a graph with 3 Y axes, you can use: ``beginAtZero: [true, false, true]`` For a graph with a single Y axis, you can use: ``beginAtZero: true``
   * - height
@@ -87,11 +87,11 @@ The following block parameters can be used to configure the graph:
   * - width
     - ``6``: The width of the block relative to the column width.
   * - displayFormats
-    - Object to set the time display format on the x-axis. See below for an example.
+    - Object to set the time display format on the x-axis. See :ref:`displayFormats`.
   * - ylabels
-    - To define the y-axes for a custom graph. See below for an example.
+    - To define the y-axes for a custom graph. See :ref:`ylabels`.
   * - custom
-    - Customized graph. See below for examples
+    - Customized graph. See :ref:`custom_graph`.
   * - interval
     - a time based limiter, to limit time data, e.g. 2 will show 1/2 the time labels, 5 will show 20% of the time labels (default is 1)
   * - maxTicksLimit
@@ -163,19 +163,19 @@ The following block parameters can be used to configure the graph:
   * - sortDevices
     - the code automatically calculate if any devices' time data is longer than others. It then use that device's time data, then match all of the devices non-time data to that. This setting allows users to choose to enable or disable that feature (true or false)
   * - customHeader
-    - Customized graph header. See below for examples.
+    - ``customHeader: { ... }`` Customized graph header. See :ref:`customheader`.
   * - popup
-    - Defined Popups. See :ref:`graphs_popups`.
+    - ``popup: 'popup_graph'`` Defined Popups. See :ref:`graphs_popups`.
   * - tooltiptotal
-    - Display graph tooltiptotal instead of the standard one. ``true``, ``false`` or an array, e.g. ``tooltiptotal: ['Office (Temp)', 'Lounge (Temp)'],`` See below for an example.
+    - Display graph tooltiptotal instead of the standard one. ``true``, ``false`` or an array, e.g. ``tooltiptotal: ['Office (Temp)', 'Lounge (Temp)'],`` See :ref:`tooltiptotal`.
   * - zoom
-    - | Allows graph zoom controls and orientation. See below for an example.
+    - | Allows graph zoom controls and orientation. See :ref:`graph_zoom`.
       | ``'x'``: allow zooming on the x axis (left to right)
       | ``'y'``: allow zooming on the y axis (top to bottom)
       | ``'xy'``: allow zooming in any direction
       | ``'false'``: disable zooming, do not show zoom button
   * - debugButton: true
-    - Users can now debug their graph by setting their graph's block config, e.g. ``debugButton: true``. See below for explanation.
+    - Users can now debug their graph by setting their graph's block config, e.g. ``debugButton: true``. See :ref:`graph_debug`.
 
 
 We will show the possibilities by showing a:
@@ -327,6 +327,9 @@ However what I would like to see is:
 
 Can we do that? Yes, with custom graphs!
 
+
+.. _custom_graph:
+
 Custom graphs
 -------------
 
@@ -438,6 +441,8 @@ Below another example to adapt the reported values of a watermeter to liters::
 .. image :: img/water.jpg
 
 
+.. _displayFormats:
+
 Time format on the x-axis
 -------------------------
 
@@ -489,6 +494,9 @@ You can modify the y-axes by setting the options parameter. Below you see an exa
 
 The ``yAxes`` parameter in the ``options`` block is an array, with an entry for each y-axis.
 
+
+.. _ylabels:
+
 Y-axis for custom graphs
 ------------------------
 
@@ -514,6 +522,8 @@ To define the y-axes for a custom graph you can add the ``ylabels`` parameter as
 
 The parameter ``ylabels`` is an array. You can add a string for each value of the data object. 
 
+
+.. _datasetColors:
 
 Custom colors
 ~~~~~~~~~~~~~
@@ -664,6 +674,8 @@ Custom data
 .. image :: img/multigraph_custom.png
 
 
+.. _graph_zoom:
+
 Zoom
 ~~~~
 
@@ -689,6 +701,8 @@ The "Wind" graph after zoom "x":
 
 .. image :: img/graph_zoom_x2.jpg
 
+
+.. _groupBy:
 
 GroupBy
 ~~~~~~~
@@ -752,6 +766,8 @@ This results in the "Solar" graph grouping its data by hour, day, week or month 
 .. image :: img/graph_groupby_day.png
 
 
+.. _groupByDevice:
+
 groupByDevice
 ~~~~~~~~~~~~~
 
@@ -791,6 +807,8 @@ Same as above, but setting *groupByDevice* to *'horizontal'* shows this ...
 
 .. image :: img/group_by_device_3.png
 
+
+.. _stacked:
 
 stacked
 ~~~~~~~
@@ -841,6 +859,7 @@ With *stacked: true* parameter graph bars wil be stacked. To show the total valu
 .. image :: img/graph_stacked.png
 
 
+.. _tooltiptotal:
 
 tooltiptotal
 ~~~~~~~~~~~~
@@ -859,6 +878,7 @@ tooltiptotal
 
 Basically, if you specify an array, it will only total those datasets, and ignore the other ones.  
 Anything that is being totalled will show a "+" icon.
+
 
 .. _graphs_popups:
 
@@ -1120,6 +1140,8 @@ For internal use::
     block_graph_<idx>     //The div to which the graph needs to be attached.
     #graphoutput<idx>     //The canvas for the graph output
 
+
+.. _graph_debug:
 
 Debug
 -----
