@@ -129,7 +129,7 @@ var DT_secpanel = {
             "disabled"
           );
           DT_secpanel.secondelay = isDefined(data.secondelay) ?
-            data.secondelay :
+            data.secondelay + 1:
             5;
         }
         DT_secpanel.SetRefreshTimer();
