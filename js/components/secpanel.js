@@ -9,8 +9,9 @@ var DT_secpanel = {
 
   init: function () {
     var usrinfo = "";
-    if (typeof usrEnc !== "undefined" && usrEnc !== "")
+    if (typeof usrEnc !== "undefined" && usrEnc !== ""){
       usrinfo = "username=" + usrEnc + "&password=" + pwdEnc + "&";
+    }      
     this.url = settings["domoticz_ip"] + "/json.htm?" + usrinfo;
     this.CountdownTimer = 0;
     this.timer = 0;
@@ -48,8 +49,9 @@ var DT_secpanel = {
     $(me.mountPoint + " .dt_content").height(h);
   },
 
-  CheckStatus: function (secstatus) { //callback function for main.js
+  CheckStatus: function (secstatus) { //callback function for main.js    
     if (secstatus == 2) {
+      DT_secpanel.url = getDomCred();
       DT_secpanel.locked = true;
       templateEngine.load("secpanel_modal").then(function (modal) {
         $(document.body).append(modal);
@@ -324,6 +326,16 @@ $('body').on('click', '.sec-frame .key:not(.disabled)', function () {
     return;
   }
 });
+
+function getDomCred(){
+  var usrEnc = window.btoa(settings['user_name']);
+  var pwdEnc = window.btoa(settings['pass_word']);
+  var usrinfo = "";  
+  if (typeof usrEnc !== "undefined" && usrEnc !== ""){
+    usrinfo =  "username=" + usrEnc + "&password=" + pwdEnc + "&";
+  }
+  return settings["domoticz_ip"] + "/json.htm?" + usrinfo;
+}
 
 $('body').on('click', '.sec-frame .screw.bl', function () {
   var md = new MobileDetect(window.navigator.userAgent);
