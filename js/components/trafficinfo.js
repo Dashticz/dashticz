@@ -8,7 +8,7 @@ var DT_trafficinfo = {
 		if (block.refresh && parseFloat(block.refresh) < 60) block.refresh = 60;
 		return {
 			icon: 'fas fa-car',
-			containerClass: 'trafficrow',
+			containerClass: 'trafficinforow',
 			refresh: 60
 		}
 	},
@@ -17,8 +17,9 @@ var DT_trafficinfo = {
 		var trafficobject = me.block;
 		var provider = trafficobject.provider.toLowerCase();
 		var dataURL = '';
+		var CORS_GZIP = './vendor/dashticz/cors_gzip.php?'; 
 		if (provider == 'anwb') {
-			dataURL = 'https://www.anwb.nl/feeds/gethf';
+			dataURL = CORS_GZIP + 'https://api.anwb.nl/v1/incidents?apikey=QYUEE3fEcFD7SGMJ6E7QBCMzdQGqRkAi';
 		}
 		// To do:
 		//else if(provider == 'flitsmeister'){
@@ -37,7 +38,7 @@ var DT_trafficinfo = {
 			var i = 0;
 			for (var d in data) {
 				if (provider == 'anwb') {
-					if (d == 'roadEntries') {
+					if (d == 'roads') {
 						if (typeof (trafficobject.road) != 'undefined') {
 							var roadArray = [];
 							if (trafficobject.road.indexOf(',')) {
@@ -58,47 +59,65 @@ var DT_trafficinfo = {
 							}
 						}
 						for (var t in data[d]) {
-
 							var roadId = data[d][t]['road'];
-
+							var key = roadId;
 							if (typeof (trafficobject.road) == 'undefined' || (typeof (trafficobject.road) != 'undefined' && roadArray.indexOf(roadId) > -1)) {
-								var events = data[d][t]['events'];
+								var segments = data[d][t]['segments'];
 								var header = '';
-								for (var ev in events) {
-									if ((typeof (trafficobject.trafficJams) == 'undefined' || (trafficobject.trafficJams == true && ev == 'trafficJams')) ||
-										(typeof (trafficobject.roadWorks) == 'undefined' || (trafficobject.roadWorks == true && ev == 'roadWorks')) ||
-										(typeof (trafficobject.radars) == 'undefined' || (trafficobject.radars == true && ev == 'radars'))) {
-										i = 0;
-										for (var e in events[ev]) {
-											if ((typeof (trafficobject.segStart) == 'undefined' || (typeof (trafficobject.segStart) != 'undefined' && events[ev][e]['segStart'] == trafficobject.segStart)) &&
-												(typeof (trafficobject.segEnd) == 'undefined' || (typeof (trafficobject.segEnd) != 'undefined' && events[ev][e]['segEnd'] == trafficobject.segEnd))
-											) {
-												key = roadId;
-												if (typeof (dataPart[key]) == 'undefined') {
-													dataPart[key] = [];
+								//i = 0;
+								for (var segment in segments) {
+									for (var seg in segments[segment]) {
+										if ((typeof (trafficobject.trafficJams) == 'undefined' || (trafficobject.trafficJams == true && seg == 'jams')) ||
+											(typeof (trafficobject.roadWorks) == 'undefined' || (trafficobject.roadWorks == true && seg == 'roadworks')) ||
+											(typeof (trafficobject.radars) == 'undefined' || (trafficobject.radars == true && seg == 'radars'))) {
+											for (var s in segments[segment][seg]) {
+												if ((typeof (trafficobject.segStart) == 'undefined' || (typeof (trafficobject.segStart) != 'undefined' && segments[segment]['start'] == trafficobject.segStart)) &&
+													(typeof (trafficobject.segEnd) == 'undefined' || (typeof (trafficobject.segEnd) != 'undefined' && segments[segment]['end'] == trafficobject.segEnd))
+												) {
+													if (typeof (dataPart[key]) == 'undefined') {
+														dataPart[key] = [];
+													}
+													//if (typeof (trafficobject.title) == 'undefined' || (typeof (trafficobject.title) != 'undefined' && typeof (trafficobject.road) == 'undefined')){
+														if (key != header) {
+															dataPart[key][i] = '<div><b>' + roadId + '</b><br>';
+															header = key;
+														} else {
+															dataPart[key][i] = '<br><div>';
+														}
+													//}
+													if (segments[segment][seg][s]['from'] != null) {
+														dataPart[key][i] += segments[segment][seg][s]['from'];
+													}
+													if (segments[segment][seg][s]['to'] != null) {
+														dataPart[key][i] += ' - ' + segments[segment][seg][s]['to'];
+													}
+													if (segments[segment][seg][s]['from'] != null || (segments[segment][seg][s]['to'] != null)){
+														dataPart[key][i] += '<br>';
+													}
+													if (segments[segment][seg][s]['delay'] != null) {
+														var delay = segments[segment][seg][s]['delay'] / 60;
+														dataPart[key][i] += '+ ' + Math.round(delay) + 'min';
+													}													
+													if (segments[segment][seg][s]['distance'] != null) {
+														var distance = segments[segment][seg][s]['distance'] / 1000;
+														dataPart[key][i] += ' - ' + distance.toFixed(1) + 'km';
+													}
+													if (segments[segment][seg][s]['delay'] != null || (segments[segment][seg][s]['distance'] != null)){
+														dataPart[key][i] += '<br>';
+													}
+													
+													if (seg == 'jams' && segments[segment][seg][s]['reason'] == null){
+														if (segments[segment][seg][s]['events'][0]['text'] != null) {
+															dataPart[key][i] += segments[segment][seg][s]['events'][0]['text'] + '<br>';
+														}
+													} else if (seg == 'radars'){
+														dataPart[key][i] += segments[segment][seg][s]['events'][0]['text'] + '. ' + segments[segment][seg][s]['reason'] + '<br>';
+													} else if (segments[segment][seg][s]['reason'] != null) {
+															dataPart[key][i] += segments[segment][seg][s]['reason'] + '<br>';
+													}
+													dataPart[key][i] += '</div>';
+													i++;
 												}
-												dataPart[key][i] = '';
-												if (key != header) {
-													dataPart[key][i] += '<div><b>' + data[d][t]['road'] + '</b><br>';
-													header = key;
-												}
-												if (events[ev][e]['location'] != null) {
-													dataPart[key][i] += events[ev][e]['location'];
-												}
-												if (events[ev][e]['distance'] != null) {
-													var distance = events[ev][e]['distance'] / 1000;
-													dataPart[key][i] += ', ' + distance.toFixed(1) + 'km';
-												}
-												if (events[ev][e]['delay'] != null) {
-													var delay = events[ev][e]['delay'] / 60;
-													dataPart[key][i] += ' - ' + Math.round(delay) + 'min';
-												}
-												dataPart[key][i] += ':<br>';
-												if (events[ev][e]['description'] != null) {
-													dataPart[key][i] += events[ev][e]['description'];
-												}
-												dataPart[key][i] += '<br></div>';
-												i++;
 											}
 										}
 									}
