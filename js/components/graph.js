@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-/* global Dashticz moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL getWeekNumber onlyUnique isDefined isObject setHeight */
+/* global Dashticz moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL getWeekNumber onlyUnique isDefined isObject setHeight allEvoStatus*/
 var allDevices = Domoticz.getAllDevices();
 var dtGraphs = [];
 var charts = [];
@@ -65,7 +65,7 @@ function getBlockConfig(me) {
 }
 
 function getBlockDefaults(devices, hasBlock, b) {
-  var datasetColors = ['red', 'yellow', 'blue', 'orange', 'green', 'purple', 'chartreuse', 'aqua', 'teal', 'pink', 'gray', 'fuchsia'];
+  var datasetColors = ['blue', 'orange', 'red', 'yellow', 'green', 'purple', 'chartreuse', 'aqua', 'teal', 'pink', 'gray', 'fuchsia'];
 
   var block = {};
   block.devices = devices;
@@ -1318,6 +1318,19 @@ function getDefaultGraphProperties(graph) {
             var vals = [];
             var total = 0;
 
+            //  Tooltip title with SetPoint info when using GroupByDevice
+            if(graph.hasSetPoint){
+              var value = graph.currentValues[tooltip.dataPoints[0].index];
+              var status = value.split(',')[2].trim();
+              var s = status.split(' ');
+              if(s.length === 3){
+                var until = moment(s[2]).format('hh:mm a');
+                tooltip.title[0] = allEvoStatus(s[0]) + " > " + until;
+              } else {
+                tooltip.title[0] = allEvoStatus(status);
+              }              
+            }
+
             bodyLines.forEach(function (body, i) {
 
               var val = parseFloat(body[0].split(':')[1].replace('NaN', '0'));
@@ -1533,7 +1546,7 @@ function groupByDevice(devices) {
 
     $.each(devices, function (i, device) {
       data = allDevices[device.idx];
-      dtGraphs[graph.primaryIdx].currentValues.push(graph.currentValue);
+      dtGraphs[graph.primaryIdx].currentValues.push(device.Data);
 
       if (
         data.CounterToday ||
@@ -1545,10 +1558,11 @@ function groupByDevice(devices) {
         if (data.Temp) {
           arrData.push(parseFloat(data.Temp));
           if (data.SetPoint) {
+            dtGraphs[graphIdx].hasSetPoint = true;
             arrSetPoint.push(parseFloat(data.SetPoint));
-            if (data.Temp < data.SetPoint) datasetColors.push('blue');
-            if (data.Temp === data.SetPoint) datasetColors.push('orange');
-            if (data.Temp > data.SetPoint) datasetColors.push('red');
+            if (data.Temp < data.SetPoint) datasetColors.push(graph.block.datasetColors[0]);
+            if (data.Temp === data.SetPoint) datasetColors.push(graph.block.datasetColors[1]);
+            if (data.Temp > data.SetPoint) datasetColors.push(graph.block.datasetColors[2]);
           }
         }
         if (data.SubType === "Percentage" || data.SensorUnit === "%") arrData.push(parseFloat(data.Data));
@@ -1593,16 +1607,21 @@ function groupByDevice(devices) {
         obj.data = arrData;
         obj.backgroundColor = data.SetPoint ? datasetColors : graph.block.datasetColors;
         obj.label = data.SetPoint ? 'Temperature' : graph.txtUnit;
+        obj.order = 1;
         graphProperties.data.datasets.push(obj);
 
         if (data.SetPoint) {
+          var spColor = isDefined(graph.block.datasetColors[3]) ? graph.block.datasetColors[3] : 'yellow';
           var obj = {};
           obj.data = arrSetPoint;
           obj.label = 'SetPoint';
-          obj.backgroundColor = 'yellow';
+          obj.borderColor = spColor;
+          obj.backgroundColor = spColor;
           obj.type = 'line';
-          obj.borderWidth = 0;
+          obj.borderWidth = 2;
+          obj.pointRadius = 0;
           obj.fill = false;
+          obj.order = 0;
           graphProperties.data.datasets.push(obj);
         }
 
