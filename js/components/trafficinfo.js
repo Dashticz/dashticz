@@ -1,4 +1,4 @@
-/* global  Dashticz language*/
+/* global  Dashticz language _CORS_PATH*/
 var DT_trafficinfo = {
 	name: "trafficinfo",
 	canHandle: function (block) {
@@ -17,9 +17,8 @@ var DT_trafficinfo = {
 		var trafficobject = me.block;
 		var provider = trafficobject.provider.toLowerCase();
 		var dataURL = '';
-		var CORS_GZIP = './vendor/dashticz/cors_gzip.php?'; 
 		if (provider == 'anwb') {
-			dataURL = CORS_GZIP + 'https://api.anwb.nl/v1/incidents?apikey=QYUEE3fEcFD7SGMJ6E7QBCMzdQGqRkAi';
+			dataURL = _CORS_PATH + 'https://api.anwb.nl/v1/incidents?apikey=QYUEE3fEcFD7SGMJ6E7QBCMzdQGqRkAi';
 		}
 		// To do:
 		//else if(provider == 'flitsmeister'){
@@ -36,6 +35,7 @@ var DT_trafficinfo = {
 			var provider = trafficobject.provider.toLowerCase();
 			var dataPart = {}
 			var i = 0;
+			var key;
 			for (var d in data) {
 				if (provider == 'anwb') {
 					if (d == 'roads') {
@@ -48,7 +48,7 @@ var DT_trafficinfo = {
 							}
 							roadArray.sort();
 							for (var x = 0; x < roadArray.length; x++) {
-								var key = roadArray[x];
+								key = roadArray[x];
 								if (typeof (dataPart[key]) == 'undefined') {
 									dataPart[key] = [];
 								}
@@ -60,7 +60,7 @@ var DT_trafficinfo = {
 						}
 						for (var t in data[d]) {
 							var roadId = data[d][t]['road'];
-							var key = roadId;
+							key = roadId;
 							if (typeof (trafficobject.road) == 'undefined' || (typeof (trafficobject.road) != 'undefined' && roadArray.indexOf(roadId) > -1)) {
 								var segments = data[d][t]['segments'];
 								var header = '';
@@ -78,12 +78,12 @@ var DT_trafficinfo = {
 														dataPart[key] = [];
 													}
 													//if (typeof (trafficobject.title) == 'undefined' || (typeof (trafficobject.title) != 'undefined' && typeof (trafficobject.road) == 'undefined')){
-														if (key != header) {
-															dataPart[key][i] = '<div><b>' + roadId + '</b><br>';
-															header = key;
-														} else {
-															dataPart[key][i] = '<br><div>';
-														}
+													if (key != header) {
+														dataPart[key][i] = '<div><b>' + roadId + '</b><br>';
+														header = key;
+													} else {
+														dataPart[key][i] = '<br><div>';
+													}
 													//}
 													if (segments[segment][seg][s]['from'] != null) {
 														dataPart[key][i] += segments[segment][seg][s]['from'];
@@ -91,29 +91,29 @@ var DT_trafficinfo = {
 													if (segments[segment][seg][s]['to'] != null) {
 														dataPart[key][i] += ' - ' + segments[segment][seg][s]['to'];
 													}
-													if (segments[segment][seg][s]['from'] != null || (segments[segment][seg][s]['to'] != null)){
+													if (segments[segment][seg][s]['from'] != null || (segments[segment][seg][s]['to'] != null)) {
 														dataPart[key][i] += '<br>';
 													}
 													if (segments[segment][seg][s]['delay'] != null) {
 														var delay = segments[segment][seg][s]['delay'] / 60;
 														dataPart[key][i] += '+ ' + Math.round(delay) + 'min';
-													}													
+													}
 													if (segments[segment][seg][s]['distance'] != null) {
 														var distance = segments[segment][seg][s]['distance'] / 1000;
 														dataPart[key][i] += ' - ' + distance.toFixed(1) + 'km';
 													}
-													if (segments[segment][seg][s]['delay'] != null || (segments[segment][seg][s]['distance'] != null)){
+													if (segments[segment][seg][s]['delay'] != null || (segments[segment][seg][s]['distance'] != null)) {
 														dataPart[key][i] += '<br>';
 													}
-													
-													if (seg == 'jams' && segments[segment][seg][s]['reason'] == null){
+
+													if (seg == 'jams' && segments[segment][seg][s]['reason'] == null) {
 														if (segments[segment][seg][s]['events'][0]['text'] != null) {
 															dataPart[key][i] += segments[segment][seg][s]['events'][0]['text'] + '<br>';
 														}
-													} else if (seg == 'radars'){
+													} else if (seg == 'radars') {
 														dataPart[key][i] += segments[segment][seg][s]['events'][0]['text'] + '. ' + segments[segment][seg][s]['reason'] + '<br>';
 													} else if (segments[segment][seg][s]['reason'] != null) {
-															dataPart[key][i] += segments[segment][seg][s]['reason'] + '<br>';
+														dataPart[key][i] += segments[segment][seg][s]['reason'] + '<br>';
 													}
 													dataPart[key][i] += '</div>';
 													i++;
