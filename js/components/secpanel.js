@@ -1,4 +1,9 @@
-/* global Dashticz usrEnc pwdEnc settings*/
+/* global Dashticz Domoticz settings MobileDetect*/
+/* From bundle:*/
+/* global templateEngine*/
+/* From src/functions.js*/
+/* global isDefined */
+
 var DT_secpanel = {
   name: "secpanel",
   defaultCfg: {
@@ -8,11 +13,6 @@ var DT_secpanel = {
   locked: false,
 
   init: function () {
-    var usrinfo = "";
-    if (typeof usrEnc !== "undefined" && usrEnc !== ""){
-      usrinfo = "username=" + usrEnc + "&password=" + pwdEnc + "&";
-    }      
-    this.url = settings["domoticz_ip"] + "/json.htm?" + usrinfo;
     this.CountdownTimer = 0;
     this.timer = 0;
     this.secondelay = 0;
@@ -51,7 +51,6 @@ var DT_secpanel = {
 
   CheckStatus: function (secstatus) { //callback function for main.js    
     if (secstatus == 2) {
-      DT_secpanel.url = getDomCred();
       DT_secpanel.locked = true;
       templateEngine.load("secpanel_modal").then(function (modal) {
         $(document.body).append(modal);
@@ -96,10 +95,8 @@ var DT_secpanel = {
   },
 
   ShowStatus: function () {
-    $.ajax({
-      url: DT_secpanel.url + "type=command&param=getsecstatus&v=",
-      dataType: "json",
-      success: function (data) {
+    Domoticz.request("type=command&param=getsecstatus&v=")
+      .then(function (data) {
         if (data.status != "OK") {
           DT_secpanel.ShowMsg("NO OK DATA");
           return;
@@ -129,12 +126,12 @@ var DT_secpanel = {
             "disabled"
           );
           DT_secpanel.secondelay = isDefined(data.secondelay) ?
-            data.secondelay + 1:
+            data.secondelay + 1 :
             5;
         }
         DT_secpanel.SetRefreshTimer();
-      },
-      error: function (data) {
+      })
+      .catch(function (data) {
         console.log(data);
         switch (data.status) {
           case 401:
@@ -144,31 +141,29 @@ var DT_secpanel = {
             DT_secpanel.ShowMsg("NO CONNECT");
         }
         return;
-      },
-    });
-    $("#password").val("");
+      })
+      .always(function () {
+        $("#password").val("");
+      })
   },
 
   SetSecStatus: function (status) {
     clearInterval(this.CountdownTimer);
     var seccode = $(".sec-frame #password").val();
     if (isNaN(seccode)) {
-      beep("wrongcode");
+      DT_secpanel.beep("wrongcode");
       return;
     }
-    if (typeof RefreshTimer != "undefined")
-      RefreshTimer = clearTimeout(RefreshTimer);
-    if (typeof CodeSetTimer != "undefined")
-      CodeSetTimer = clearTimeout(CodeSetTimer);
+    if (typeof DT_secpanel.RefreshTimer !== "undefined")
+      DT_secpanel.RefreshTimer = clearTimeout(DT_secpanel.RefreshTimer);
+    if (typeof DT_secpanel.CodeSetTimer !== "undefined")
+      DT_secpanel.CodeSetTimer = clearTimeout(DT_secpanel.CodeSetTimer);
 
-    $.ajax({
-      url: DT_secpanel.url +
-        "type=command&param=setsecstatus&secstatus=" +
+    Domoticz.request("type=command&param=setsecstatus&secstatus=" +
         status +
         "&seccode=" +
-        $.md5(seccode),
-      dataType: "json",
-      success: function (data) {
+        $.md5(seccode))
+      .then(function (data) {
         if (data.status != "OK") {
           if (data.message == "WRONG CODE") {
             DT_secpanel.ShowMsg(data.message);
@@ -185,18 +180,17 @@ var DT_secpanel = {
         } else {
           $(".sec-frame .status:not(.dashticz)").removeClass("disabled");
           var mode = $(".sec-frame").last().data("mode");
-          if (mode === 2 && status === 2) {
+          if (mode === 2 && status === 2 && settings["security_panel_lock"]) {
             location.reload();
           } else {
             DT_secpanel.ShowStatus();
           }
         }
-      },
-      error: function () {
+      })
+      .catch(function () {
         DT_secpanel.ShowMsg("NO CONNECT");
         return;
-      },
-    });
+      });
   },
 
   AddDigit: function (digit) {
@@ -326,16 +320,6 @@ $('body').on('click', '.sec-frame .key:not(.disabled)', function () {
     return;
   }
 });
-
-function getDomCred(){
-  var usrEnc = window.btoa(settings['user_name']);
-  var pwdEnc = window.btoa(settings['pass_word']);
-  var usrinfo = "";  
-  if (typeof usrEnc !== "undefined" && usrEnc !== ""){
-    usrinfo =  "username=" + usrEnc + "&password=" + pwdEnc + "&";
-  }
-  return settings["domoticz_ip"] + "/json.htm?" + usrinfo;
-}
 
 $('body').on('click', '.sec-frame .screw.bl', function () {
   var md = new MobileDetect(window.navigator.userAgent);
