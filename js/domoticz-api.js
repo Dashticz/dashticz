@@ -21,7 +21,8 @@ var Domoticz = function () {
 
     var MSG = {
         info: 'type=command&param=getversion',
-        secpanel: 'type=command&param=getsecstatus'
+        secpanel: 'type=command&param=getsecstatus',
+        getSettings: 'type=settings'
     }
 
     function domoticzQuery(query) {
@@ -103,6 +104,11 @@ var Domoticz = function () {
                     useWS = true;
                     console.log("Setting up websocket");
                     connectWebsocket();
+                    setTimeout(function () { //if not resolved within 2 seconds, there is something wrong with the websocket connection.
+                        if (initialUpdate.state !== 'resolved') {
+                            initialUpdate.reject('connection failed')
+                        }
+                    }, 2000);
                     return initialUpdate; //initialUpdate will be resolved after the first message from websocket
                 }
             })
@@ -118,13 +124,18 @@ var Domoticz = function () {
                 cfg.url += '/'
             if (cfg.usrEnc && cfg.usrEnc.length) usrinfo = 'username=' + cfg.usrEnc + '&password=' + cfg.pwdEnc + '&';
             initPromise = checkWSSupport()
+                .catch(function (res) {
+                    useWS = false;
+                    console.log("Websocket failed, switch back to http. Check IP whitelisting in Domoticz.");
+                })
                 .then(function () {
                     setInterval(function () {
                         refreshAll();
                     }, cfg.domoticz_refresh * 1000);
                     return refreshAll();
                 })
-                .then(requestSecurityStatus);
+                .then(requestSecurityStatus)
+                .then(requestSettings);
         }
         return initPromise;
     }
@@ -201,6 +212,10 @@ var Domoticz = function () {
         };
 
         socket.onclose = function (event) {
+            if (initialUpdate.state !== 'resolved') {
+                console.log('websocket closed before first update.')
+                return;
+            }
             if (event.wasClean) {
                 console.log('[close] Connection closed cleanly, code=', event.code, event.reason);
             } else {
@@ -369,6 +384,15 @@ var Domoticz = function () {
                     return res;
                 }
             })
+    }
+
+    function requestSettings() {
+        return domoticzRequest(MSG['getSettings'])
+            .then(function (res) {
+                if (res) {
+                    setOnChange('_settings', res)
+                }
+            });
     }
 
     function subscribe(idx, getCurrent, callback) {

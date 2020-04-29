@@ -31,12 +31,10 @@ var DT_secpanel = {
         DT_secpanel.onResize(me);
       })
       .done(function () {
-        DT_secpanel.ShowStatus();
-        DT_secpanel.SetRefreshTimer();
+        Domoticz.subscribe('_secstatus', true, function () { //subscribe to the security status, and receive the actual status directly
+          DT_secpanel.ShowStatus();
+        });
       });
-    Domoticz.subscribe('_secstatus', false, function () {
-      DT_secpanel.ShowStatus();
-    })
   },
 
   onResize: function (me) {
@@ -95,6 +93,7 @@ var DT_secpanel = {
   },
 
   ShowStatus: function () {
+    if (DT_secpanel.timer) return; //While we are counting down no refresh
     Domoticz.request("type=command&param=getsecstatus&v=")
       .then(function (data) {
         if (data.status != "OK") {
@@ -129,7 +128,6 @@ var DT_secpanel = {
             data.secondelay + 1 :
             5;
         }
-        DT_secpanel.SetRefreshTimer();
       })
       .catch(function (data) {
         console.log(data);
@@ -151,7 +149,7 @@ var DT_secpanel = {
     clearInterval(this.CountdownTimer);
     var seccode = $(".sec-frame #password").val();
     if (isNaN(seccode)) {
-      DT_secpanel.beep("wrongcode");
+      DT_secpanel.wrongCode();
       return;
     }
     if (typeof DT_secpanel.RefreshTimer !== "undefined")
@@ -166,12 +164,7 @@ var DT_secpanel = {
       .then(function (data) {
         if (data.status != "OK") {
           if (data.message == "WRONG CODE") {
-            DT_secpanel.ShowMsg(data.message);
-            DT_secpanel.CodeSetTimer = setTimeout(function () {
-              DT_secpanel.doRefresh();
-            }, 2000);
-            $(".sec-frame #password").val("");
-            DT_secpanel.beep("wrongcode");
+            DT_secpanel.wrongCode();
           } else {
             DT_secpanel.ShowMsg("NO OK DATA");
             return;
@@ -193,6 +186,18 @@ var DT_secpanel = {
       });
   },
 
+  /** Displays the WRONG CODE message, clears the password, and plays wrongcode sound
+   * 
+   */
+  wrongCode: function () {
+    DT_secpanel.ShowMsg("WRONG CODE");
+    DT_secpanel.CodeSetTimer = setTimeout(function () {
+      DT_secpanel.ShowStatus();
+    }, 2000);
+    $(".sec-frame #password").val("");
+    DT_secpanel.beep("wrongcode");
+  },
+
   AddDigit: function (digit) {
     if (typeof this.CodeSetTimer != "undefined") {
       this.CodeSetTimer = clearTimeout(this.CodeSetTimer);
@@ -205,7 +210,7 @@ var DT_secpanel = {
       DT_secpanel.ShowMsg("");
     }
     this.CodeSetTimer = setTimeout(function () {
-      DT_secpanel.doRefresh();
+      DT_secpanel.ShowStatus();
     }, 10000);
 
     var orgtext = $(".sec-frame #password").val();
@@ -223,22 +228,10 @@ var DT_secpanel = {
 
   ShowMsg: function (val) {
     $(".sec-frame #digitdisplay").val(val);
-    this.RefreshTimer = setTimeout(function () {
-      DT_secpanel.SetRefreshTimer();
-    }, 60000);
-  },
-
-  SetRefreshTimer: function () {
-    if (typeof this.RefreshTimer != "undefined") {
-      this.RefreshTimer = clearTimeout(this.RefreshTimer);
-    }
-    this.RefreshTimer = setTimeout(function () {
-      DT_secpanel.SetRefreshTimer();
-    }, 60000);
   },
 
   countdown: function (status) {
-    if (DT_secpanel.timer > 1) {
+    if (DT_secpanel.timer > 0) {
       DT_secpanel.timer = DT_secpanel.timer - 1;
       DT_secpanel.beep("key");
       DT_secpanel.ShowMsg("Arm Delay: " + DT_secpanel.timer);
@@ -247,7 +240,6 @@ var DT_secpanel = {
       DT_secpanel.beep("arm");
       $(".sec-frame .status").removeClass("disabled");
       DT_secpanel.SetSecStatus(status);
-      DT_secpanel.SetRefreshTimer();
     }
   },
 
@@ -259,10 +251,6 @@ var DT_secpanel = {
     audio.play();
   },
 
-  doRefresh: function () {
-    this.ShowStatus();
-    this.SetRefreshTimer();
-  },
 };
 
 
@@ -288,8 +276,14 @@ $('body').on('click', '.sec-frame .key:not(.disabled)', function () {
         return;
       }, 3000);
     } else {
+      var seccodehash = $.md5(seccode);
+      var codeok = seccodehash === Domoticz.getAllDevices()['_settings'].SecPassword;
+      if (!codeok) { //check code already before counting down
+        DT_secpanel.wrongCode();
+        return;
+      }
+
       if (status === 0) {
-        DT_secpanel.SetRefreshTimer();
         DT_secpanel.SetSecStatus(status);
         DT_secpanel.beep(tone);
       } else {
@@ -308,6 +302,7 @@ $('body').on('click', '.sec-frame .key:not(.disabled)', function () {
   if (id === "cancel") {
     DT_secpanel.ShowMsg("CANCELLED");
     clearInterval(DT_secpanel.CountdownTimer);
+    DT_secpanel.timer = 0; //otherwise the panel will not show the new status.
     setTimeout(function () {
       DT_secpanel.ShowStatus();
       DT_secpanel.beep(tone);
