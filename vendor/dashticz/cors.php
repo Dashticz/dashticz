@@ -18,15 +18,23 @@ function parseHeaders( $headers )
 }
 
 
+//Allow cross origin, prevent caching
 header("Access-Control-Allow-Origin: *");
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);
 header("Pragma: no-cache");
+
+//Copy all relevant headers
 $reply = file_get_contents($_SERVER["QUERY_STRING"]);
 $head = parseHeaders($http_response_header);
-if (isset($head["Content-Type"])) {
-    header("Content-Type: ".$head["Content-Type"]);
+$headerList = ["Content-Type","Content-Encoding"];
+foreach( $headerList as $header) {
+    if (isset($head[$header])) {
+        header($header.": ".$head[$header]);
+    }
 }
+
+//Add the content
 echo $reply;
 exit();
 ?>
