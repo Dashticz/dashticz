@@ -11,6 +11,7 @@ Enhancements
   * Enable graphs for Voltage and Distance devices
   * Parameter ``timeformat`` to configure time format for 'alarmmeldingen'. See :ref:`customalarmmeldingen`
   * TV guide (Dutch: tvgids) made clickable
+  * Fix for ANWB Traffic Info (new API)
 
 3.4.5 (Beta) (23-4-2020)
 ------------------------
