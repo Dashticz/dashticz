@@ -94,7 +94,7 @@ function getCustomFunction(functionname, block, afterupdate) {
         } catch (err) {
             console.error('Error calling ' + functionname, err);
             var line = RegExp('(?::)(.*:.*)\\)').exec(err.stack)[1];
-            infoMessage('Error: '+err.message,'Check function '+functiondevname+ ' in custom.js line '+line,30000);
+            infoMessage('Error: ' + err.message, 'Check function ' + functiondevname + ' in custom.js line ' + line, 30000);
         }
     }
 }
@@ -711,7 +711,8 @@ function getBlockClick(block) {
     //var blockSel = '.block_'+ block.mountPoint.slice(1);
     //console.log('getBlockClick for ', block);
     //   var $div=blockdef.$mountPoint.find('.block_'+blockdef.idx);
-    var $div = block.$mountPoint.find('.mh');
+    //    var $div = block.$mountPoint.find('.mh');
+    var $div = block.$mountPoint.find('.block_' + block.idx);
     if (link) {
         if ($div.length > 0) {
             $div.addClass('hover')
@@ -731,6 +732,7 @@ function getBlockClick(block) {
             device['SubType'] == 'kWh' || device['SubType'] === 'Lux' || device['SubType'] === 'Solar Radiation' ||
             device['SubType'] === 'Barometer' || device['SubType'] === 'Soil Moisture' || graph
         ) {
+            console.log('Aantal: ', $div.length)
             $div.addClass('hover').click(function () {
                 showPopupGraph(block);
             });
