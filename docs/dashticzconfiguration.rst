@@ -121,6 +121,10 @@ Config parameters
   * - standard_graph
     - | Default Graph shown on the Dashticz Dashboard
       | ``'HOUR'``, ``'MONTH'``, ``'DAY'``
+  * - security_panel_lock
+    - | If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel.
+      | ``0`` = Loading Security Panel full screen disabled (default)
+      | ``1`` = Loading Security Panel full screen enabled
   * - language
     - | Default language of Dashticz. See the ``lang`` folder for all supported languages.
       | ``'en_us'`` = default
