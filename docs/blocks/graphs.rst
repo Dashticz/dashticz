@@ -98,6 +98,8 @@ The following block parameters can be used to configure the graph:
     - specifies how many labels (ticks) to display on the X axis, this does not limit the data in the graph, e.g. 10 (default is all)
   * - cartesian
     - scales the graph with standard 'linear' scale, or 'logarithmic', an algorithm to ensure all data can be seen (default is linear)
+  * - datasetColors
+    - ``datasetColors: ['Blue','#D3D3D3','rgb(44,130,201)','rgba(44,130,201,1)']`` Use custom colors for the graph lines/bars. Must be *html colors*, *hex code*, *rgb* or *rgba string*. See :ref:`datasetColors`.
   * - iconColour
     - colours the graph's title icons (default is grey)
   * - lineFill
