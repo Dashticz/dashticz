@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-/* global Dashticz moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL getWeekNumber onlyUnique isDefined isObject setHeight allEvoStatus*/
+/* global Dashticz moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL getWeekNumber onlyUnique isDefined isObject setHeight*/
 var allDevices = Domoticz.getAllDevices();
 var dtGraphs = [];
 var charts = [];
@@ -1325,9 +1325,9 @@ function getDefaultGraphProperties(graph) {
               var s = status.split(' ');
               if(s.length === 3){
                 var until = moment(s[2]).format('hh:mm a');
-                tooltip.title[0] = allEvoStatus(s[0]) + " > " + until;
+                tooltip.title[0] = language.evohome[s[0]] + " > " + until;
               } else {
-                tooltip.title[0] = allEvoStatus(status);
+                tooltip.title[0] = language.evohome[status];
               }              
             }
 
