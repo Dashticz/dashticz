@@ -52,6 +52,33 @@ The secpanel height is based on its width to maintain the correct aspect ratio. 
         width: 148px!important;
     }
 
+So, when the system is "Armed Away", you want the fullscreen security panel to blink if a certain device has been changed state, e.g. closed > open?
+You will need to add the "alarm" class to the fullscreen security panel's modal (background).
+::
+    function getStatus_123(block){
+        if (block.device.Data == 'open') {
+        $('.sec-modal').addClass('alarm');
+        }
+    }
+
+This would need to be added to your custom.css::
+
+    .alarm {
+        -webkit-animation: flash 1s infinite; 	/* Safari 4+ */
+        -moz-animation: flash 1s infinite; 		/* Fx 5+ */
+        -o-animation: flash 1s infinite; 		/* Opera 12+ */
+        animation: flash 1s infinite; 		/* IE 10+, Fx 29+ */
+    }
+
+    @keyframes flash {
+        0%, 49% {
+        background-color: #681717;
+        }
+        50%, 100% {
+        background-color: #e50000;
+        }
+    }
+
 
 Security Panel block
 --------------------
