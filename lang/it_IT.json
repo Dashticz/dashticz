@@ -102,9 +102,9 @@
             "dashticz_php_path": "Dashticz PHP Path",
             "standby_call_url": "URL to be called at start of standby",
             "standby_call_url_on_end": "URL to be called at end of standby",
-            "login_timeout": "Keep Dashticz logged in (minutes)",
+            "login_timeout": "Mantieni connesso Dashticz (minuti)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Enable\/Disable the WebSocket connection"
+            "enable_websocket_help": "Abilita \/ Disabilita la connessione WebSocket"
         },
         "infosave": "Di dafault le impostazioni sono salvate nel browser.Se usi sempre e solo lo stesso browser e lo stesso dispositivo puoi continuare cosi.\nSe usi diversi browser puoi copiare il codice qua sotto all'interno del file CONFIG.JS per mantenere le impostazioni replicate in ogni browser e in ogni dispositivo.",
         "localize": {
@@ -176,13 +176,13 @@
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Colore e opacità del flash (RGBA)",
             "blink_color_help": "Imposta colore e opacità del flash (rosso, verde, blu, alfa)",
-            "start_page": "Start page number (First page=1)",
-            "enable_swiper": "Enable Swiper",
-            "enable_swiper_help": "0: Disable swiper; 1: Enable on narrow screens; 2: Enable",
-            "vertical_scroll": "Enable vertical scroll",
-            "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll",
-            "security_panel_lock": "Load Security Panel full screen",
-            "security_panel_lock_help": "If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel."
+            "start_page": "Numero di pagina iniziale (prima pagina = 1)",
+            "enable_swiper": "Abilita Swiper",
+            "enable_swiper_help": "0: disabilita swiper; 1: Abilita su schermi stretti; 2: Abilita",
+            "vertical_scroll": "Abilita scorrimento verticale",
+            "vertical_scroll_help": "0: disabilita lo scorrimento verticale; 1: Abilita scorrimento verticale se Swiper è disabilitato; 2: abilita lo scorrimento verticale",
+            "security_panel_lock": "Carica il pannello di sicurezza a schermo intero",
+            "security_panel_lock_help": "Se imposta il Pannello di sicurezza in Domoticz o Dashticz su \"Arm - Away\", Dashticz caricherà automaticamente un pannello a schermo intero."
         },
         "weather": {
             "idx_moonpicture": "IDX faselunare",
@@ -216,10 +216,10 @@
             "title": "Altro",
             "setpoint_min": "Valore minimo del setpoint del termostato",
             "setpoint_max": "Valore massimo del setpoint del termostato",
-            "evohome_status": "EvoHome controller status",
-            "evohome_status_help": "Auto, Econony, Away, Custom, Day Off, Off",
-            "evohome_boost_zone": "EvoHome zone boost time in minutes",
-            "evohome_boost_hw": "EvoHome hot water boost time in minutes"
+            "evohome_status": "Stato del controller EvoHome",
+            "evohome_status_help": "Auto, Econony, Away, Personalizzato, Day Off, Off",
+            "evohome_boost_zone": "Tempo di aumento della zona EvoHome in minuti",
+            "evohome_boost_hw": "Tempo di aumento dell'acqua calda EvoHome in minuti"
         }
     },
     "switches": {
@@ -274,11 +274,11 @@
     },
     "evohome": {
         "Auto": "Auto",
-        "AutoWithEco": "Economia",
-        "Away": "Via",
-        "Custom": "Personalizzato",
+        "AutoWithEco": "Econony",
+        "Away": "Lontano",
+        "Custom": "costume",
         "DayOff": "Giorno libero",
-        "HeatingOff": "Fuori",
-        "TemporaryOverride": "prevalere"
+        "HeatingOff": "via",
+        "TemporaryOverride": "Oltrepassare"
     }
 }
