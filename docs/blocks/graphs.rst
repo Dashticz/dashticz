@@ -78,6 +78,8 @@ The following block parameters can be used to configure the graph:
       | ``true``: enables the feature and display a vertical bar chart, grouped by device
       | ``'vertical'``: is the same as true
       | ``'horizontal'``: enables the feature and display a horizontal bar chart, grouped by device
+      | - Setpoint devices will be displayed as a line infront of the bar graph
+      | - For Evohome devices: The tooltip info will display the status and schedule
   * - stacked
     - ``true``: Show stacked bar charts. See :ref:`stacked`.
   * - beginAtZero
