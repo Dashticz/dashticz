@@ -102,9 +102,9 @@
             "dashticz_php_path": "Dashticz PHP kelias",
             "standby_call_url": "URL, kuris bus iškviestas budėjimo režimo pradžioje",
             "standby_call_url_on_end": "URL, kuris bus iškviestas budėjimo režimo pabaigoje",
-            "login_timeout": "Keep Dashticz logged in (minutes)",
-            "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Enable\/Disable the WebSocket connection"
+            "login_timeout": "Laikykite Dašicą prisijungę (minutes)",
+            "enable_websocket": "„WebSocket“",
+            "enable_websocket_help": "Įjungti \/ išjungti „WebSocket“ ryšį"
         },
         "infosave": "Pagal nutylėjimą, nustatymo parametrai yra saugomi jūsų naršyklės. Kitaip nukopijuokite kodą į CONFIG.JS bylą  norėdami išsaugoti parametrus visose naršyklėse.",
         "localize": {
@@ -176,13 +176,13 @@
             "security_button_icons": "Piktogramos vietoj teksto apsaugos jungiklių",
             "blink_color": "Blykstės spalva ir neskaidrumas (RGBA)",
             "blink_color_help": "Nustatykite blykstės spalvą ir neskaidrumą (raudona, žalia, mėlyna, alfa)",
-            "start_page": "Start page number (First page=1)",
-            "enable_swiper": "Enable Swiper",
-            "enable_swiper_help": "0: Disable swiper; 1: Enable on narrow screens; 2: Enable",
-            "vertical_scroll": "Enable vertical scroll",
-            "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll",
-            "security_panel_lock": "Load Security Panel full screen",
-            "security_panel_lock_help": "If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel."
+            "start_page": "Pradinio puslapio numeris (pirmasis puslapis = 1)",
+            "enable_swiper": "Įgalinti „Swiper“",
+            "enable_swiper_help": "0: išjungti megztinį; 1: įgalinti siauruose ekranuose; 2: Įgalinti",
+            "vertical_scroll": "Įgalinti vertikalų slinktį",
+            "vertical_scroll_help": "0: išjungti vertikalų slinkimą; 1: įgalinkite vertikalų slinktį, jei „Swiper“ yra išjungtas; 2: įgalinti vertikalų slinktį",
+            "security_panel_lock": "Įkelti saugos ekraną per visą ekraną",
+            "security_panel_lock_help": "Jei „Domoticz“ arba „Dashticz“ saugos skydelį nustatysite kaip „Įjungti apsaugą“, tada „Dashticz“ automatiškai įkels viso ekrano skydą."
         },
         "weather": {
             "idx_moonpicture": "Mėnulio piktogramų IDX",
@@ -216,10 +216,10 @@
             "title": "Kita",
             "setpoint_min": "Termostato nustatytoji minimali vertė",
             "setpoint_max": "Termostato nustatytoji maksimali vertė",
-            "evohome_status": "EvoHome controller status",
+            "evohome_status": "„EvoHome“ valdiklio būsena",
             "evohome_status_help": "Auto, Econony, Away, Custom, Day Off, Off",
-            "evohome_boost_zone": "EvoHome zone boost time in minutes",
-            "evohome_boost_hw": "EvoHome hot water boost time in minutes"
+            "evohome_boost_zone": "„EvoHome“ zonos padidinimo laikas minutėmis",
+            "evohome_boost_hw": "„EvoHome“ karšto vandens pagaminimo laikas minutėmis"
         }
     },
     "switches": {
@@ -273,12 +273,12 @@
         "wind": "Vėjas"
     },
     "evohome": {
-        "Auto": "Auto",
+        "Auto": "Automatinis",
         "AutoWithEco": "Ekonomika",
-        "Away": "Atokiau",
+        "Away": "Toli",
         "Custom": "Paprotys",
-        "DayOff": "Poilsio diena",
-        "HeatingOff": "Išjungti",
-        "TemporaryOverride": "Nepaisyti"
+        "DayOff": "Laisvadienis",
+        "HeatingOff": "Išjungta",
+        "TemporaryOverride": "Nepaisykite"
     }
 }

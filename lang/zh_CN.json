@@ -102,9 +102,9 @@
             "dashticz_php_path": "Dashticz PHP Path",
             "standby_call_url": "URL to be called at start of standby",
             "standby_call_url_on_end": "URL to be called at end of standby",
-            "login_timeout": "Keep Dashticz logged in (minutes)",
+            "login_timeout": "保持Dashticz登录（分钟）",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Enable\/Disable the WebSocket connection"
+            "enable_websocket_help": "启用\/禁用WebSocket连接"
         },
         "infosave": "By default, settings are stored in your browser. Downside of this method is it will only work in your current browser. If that's not a problem, you can proceed. Otherwise, copy code below to your CONFIG.JS to keep settings across all browsers and devices.",
         "localize": {
@@ -176,13 +176,13 @@
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "闪光颜色和不透明度（RGBA）",
             "blink_color_help": "设置闪光颜色和不透明度（红色，绿色，蓝色，alpha）",
-            "start_page": "Start page number (First page=1)",
-            "enable_swiper": "Enable Swiper",
-            "enable_swiper_help": "0: Disable swiper; 1: Enable on narrow screens; 2: Enable",
-            "vertical_scroll": "Enable vertical scroll",
-            "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll",
-            "security_panel_lock": "Load Security Panel full screen",
-            "security_panel_lock_help": "If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel."
+            "start_page": "起始页码（第一页= 1）",
+            "enable_swiper": "启用刷卡器",
+            "enable_swiper_help": "0：禁用刷卡； 1：在窄屏上启用； 2：启用",
+            "vertical_scroll": "启用垂直滚动",
+            "vertical_scroll_help": "0：禁用垂直滚动； 1：如果禁用了Swiper，则启用垂直滚动； 2：启用垂直滚动",
+            "security_panel_lock": "全屏加载安全面板",
+            "security_panel_lock_help": "如果将Domoticz或Dashticz中的“安全面板”设置为“ Arm-Away”，则Dashticz将自动加载全屏面板。"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",
@@ -216,10 +216,10 @@
             "title": "其他",
             "setpoint_min": "恒温器设定值最小值",
             "setpoint_max": "恒温器设定值最大值",
-            "evohome_status": "EvoHome controller status",
-            "evohome_status_help": "Auto, Econony, Away, Custom, Day Off, Off",
-            "evohome_boost_zone": "EvoHome zone boost time in minutes",
-            "evohome_boost_hw": "EvoHome hot water boost time in minutes"
+            "evohome_status": "EvoHome控制器状态",
+            "evohome_status_help": "自动，经济，离开，自定义，休息日，关闭",
+            "evohome_boost_zone": "EvoHome区域提升时间（以分钟为单位）",
+            "evohome_boost_hw": "EvoHome热水增压时间以分钟为单位"
         }
     },
     "switches": {
@@ -273,12 +273,12 @@
         "wind": "风"
     },
     "evohome": {
-        "Auto": "自动",
-        "AutoWithEco": "经济性",
-        "Away": "离开",
+        "Auto": "汽车",
+        "AutoWithEco": "经济",
+        "Away": "远",
         "Custom": "自订",
-        "DayOff": "输出",
-        "HeatingOff": "关闭",
-        "TemporaryOverride": "重新定义"
+        "DayOff": "休假",
+        "HeatingOff": "关",
+        "TemporaryOverride": "覆写"
     }
 }
