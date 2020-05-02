@@ -533,7 +533,7 @@ Custom colors can be defined by the parameter ``datasetColors``::
 
     datasetColors: ['red', 'yellow', 'blue', 'orange', 'green', 'purple']
     
-If you want to use custom color names you have to set the variable dataset colors to *html colors*, *hex code*, *rgb* or *rgba string*::
+**Optional**: If you want to use *custom color names* you have to set the variable dataset colors to *html colors*, *hex code*, *rgb* or *rgba string*::
 
     datasetColors: [colourBlueLight, colourLightGrey, colourBlue]
 
