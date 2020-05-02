@@ -271,5 +271,14 @@
         "direction_WNW": "vakarų-šiaurės vakarų",
         "direction_WSW": "vakarų-pietvakarių",
         "wind": "Vėjas"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Econony",
+        "Away": "Away",
+        "Custom": "Custom",
+        "DayOff": "Day Off",
+        "HeatingOff": "Off",
+        "TemporaryOverride": "Override"
     }
 }
