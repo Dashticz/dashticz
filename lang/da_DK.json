@@ -271,5 +271,14 @@
         "direction_WNW": "vest-nordvest",
         "direction_WSW": "vest-sydvest",
         "wind": "Vind"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Econony",
+        "Away": "Away",
+        "Custom": "Custom",
+        "DayOff": "Day Off",
+        "HeatingOff": "Off",
+        "TemporaryOverride": "Override"
     }
 }
