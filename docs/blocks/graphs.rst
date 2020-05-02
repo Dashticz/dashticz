@@ -795,11 +795,15 @@ With temperature sensors that have setpoints, it calculates whether the device i
 * At setpoint - orange
 * Hot - red
 
-The office and penthouse rooms are showing red, as the temperature is above the setpoint ...
+- It will show a line displaying the SetPoint values in front of the bar graph for thermostat devices that have SetPoint data.
+- The tooltip will show the status and schedule with EvoHome devices.
+- The block datasetColors parameter can now be used to set the colors for 'below temp', 'at temp', 'above temp' and 'setpoint' (in that order).
 
-.. image :: img/group_by_device_2.png
+The office and kitchen rooms are showing red, as the temperature is above the setpoint ...
 
-Same as above, but setting *groupByDevice* to *'horizontal'* shows this ...
+.. image :: img/graph_groupByDevice_tooltip1.png
+
+Setting *groupByDevice* to *'horizontal'* shows like this ...
 ::
 
 	blocks['all_zones'] = {	
