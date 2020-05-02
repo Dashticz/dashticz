@@ -45,6 +45,13 @@ Or you can have a block defined and disable the fullscreen lock feature with thi
 
   config['security_panel_lock'] = 0;
 
+The secpanel height is based on its width to maintain the correct aspect ratio. The height is 1.35 x the width. You can set the height and width in the block, or in custom.css::
+
+    [data-id='secpanel'] .dt_content {
+        height: 200px!important;
+        width: 148px!important;
+    }
+
 
 Security Panel block
 --------------------
