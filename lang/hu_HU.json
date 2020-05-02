@@ -102,9 +102,9 @@
             "dashticz_php_path": "Dashticz PHP Path",
             "standby_call_url": "URL to be called at start of standby",
             "standby_call_url_on_end": "URL to be called at end of standby",
-            "login_timeout": "Keep Dashticz logged in (minutes)",
+            "login_timeout": "Tartsa bejelentkezve Dashticz-ben (perc)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Enable\/Disable the WebSocket connection"
+            "enable_websocket_help": "A WebSocket kapcsolat engedélyezése \/ letiltása"
         },
         "infosave": "Alapértelmezés szerint a beállítások a böngészőben tárolódnak. E módszer hátránya, hogy csak a jelenlegi böngészőben fog működni. Ha ez nem jelent problémát, továbbléphet. Ellenkező esetben másolja a kódot a CONFIG.JS fájlba, hogy megőrizze a beállításokat az összes böngészőben és eszközön.",
         "localize": {
@@ -176,13 +176,13 @@
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Flash szín és opacitás (RGBA)",
             "blink_color_help": "Állítsa be a vaku színét és az opacitását (piros, zöld, kék, alfa)",
-            "start_page": "Start page number (First page=1)",
-            "enable_swiper": "Enable Swiper",
-            "enable_swiper_help": "0: Disable swiper; 1: Enable on narrow screens; 2: Enable",
-            "vertical_scroll": "Enable vertical scroll",
-            "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll",
-            "security_panel_lock": "Load Security Panel full screen",
-            "security_panel_lock_help": "If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel."
+            "start_page": "Kezdő oldal száma (első oldal = 1)",
+            "enable_swiper": "Engedélyezze a Swiper alkalmazást",
+            "enable_swiper_help": "0: tiltsa le a swipert; 1: Engedélyezés keskeny képernyőkön; 2: Engedélyezés",
+            "vertical_scroll": "Függőleges görgetés engedélyezése",
+            "vertical_scroll_help": "0: a függőleges görgetés letiltása; 1: függőleges görgetés engedélyezése, ha a Swiper le van tiltva; 2: A függőleges görgetés engedélyezése",
+            "security_panel_lock": "Töltse be a biztonsági panelt teljes képernyőn",
+            "security_panel_lock_help": "Ha a Biztonsági panelt Domoticzban vagy Dashticzben „Élesítés” beállításra állítja, akkor a Dashticz automatikusan betölti a teljes képernyőt."
         },
         "weather": {
             "idx_moonpicture": "Holdfotó idxje",
@@ -216,10 +216,10 @@
             "title": "Más",
             "setpoint_min": "Termosztát minimális érték",
             "setpoint_max": "Termosztát maximális érték",
-            "evohome_status": "EvoHome controller status",
-            "evohome_status_help": "Auto, Econony, Away, Custom, Day Off, Off",
-            "evohome_boost_zone": "EvoHome zone boost time in minutes",
-            "evohome_boost_hw": "EvoHome hot water boost time in minutes"
+            "evohome_status": "Az EvoHome vezérlő állapota",
+            "evohome_status_help": "Automatikus, Hangos, Távol, Egyéni, Kikapcsolva, Ki",
+            "evohome_boost_zone": "Az EvoHome zóna növelési ideje percben",
+            "evohome_boost_hw": "Az EvoHome melegvíz-növelési ideje percben"
         }
     },
     "switches": {
@@ -273,12 +273,12 @@
         "wind": "Szél"
     },
     "evohome": {
-        "Auto": "Auto",
-        "AutoWithEco": "Gazdaság",
+        "Auto": "kocsi",
+        "AutoWithEco": "Econony",
         "Away": "El",
-        "Custom": "Egyéni",
+        "Custom": "Egyedi",
         "DayOff": "Szabadnap",
         "HeatingOff": "Ki",
-        "TemporaryOverride": "Felülbírálja"
+        "TemporaryOverride": "felülírása"
     }
 }
