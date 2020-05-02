@@ -271,5 +271,14 @@
         "direction_WNW": "Länsi-luoteeseen",
         "direction_WSW": "Länsi-lounaaseen",
         "wind": "Tuuli"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Talous",
+        "Away": "Pois",
+        "Custom": "Mukautettu",
+        "DayOff": "Lähtö",
+        "HeatingOff": "Pois",
+        "TemporaryOverride": "Ohittaa"
     }
 }

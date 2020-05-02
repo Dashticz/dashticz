@@ -636,7 +636,7 @@ function getGraphData(devices, selGraph) {
                         case "week":
                           groupStart = moment(obj.d, dayFormat)
                             .week(moment(obj.d, dayFormat).week())
-                            .day("Sunday")
+                            .day("Monday")
                             .format(dayFormat);
                           break;
                         case "month":

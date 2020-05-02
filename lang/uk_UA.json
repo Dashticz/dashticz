@@ -271,5 +271,14 @@
         "direction_WNW": "west-northwest",
         "direction_WSW": "west-southwest",
         "wind": "Wind"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Економіки",
+        "Away": "Хв.",
+        "Custom": "Custom",
+        "DayOff": "вихідний",
+        "HeatingOff": "Вимкнути",
+        "TemporaryOverride": "Перевизначити"
     }
 }
