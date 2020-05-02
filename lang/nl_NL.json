@@ -271,5 +271,14 @@
         "direction_WNW": "west-noordwest",
         "direction_WSW": "west-zuidwest",
         "wind": "Kracht"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Economie",
+        "Away": "Weg",
+        "Custom": "Aangepast",
+        "DayOff": "Vrije dag",
+        "HeatingOff": "Uit",
+        "TemporaryOverride": "Overschrijven"
     }
 }

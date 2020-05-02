@@ -271,5 +271,14 @@
         "direction_WNW": "vest-nord-vest",
         "direction_WSW": "vest-sud-vest",
         "wind": "Vant"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Economia",
+        "Away": "Departe",
+        "Custom": "vamal",
+        "DayOff": "Ziua liberă",
+        "HeatingOff": "Off",
+        "TemporaryOverride": "trece peste"
     }
 }

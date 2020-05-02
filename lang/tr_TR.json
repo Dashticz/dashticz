@@ -271,5 +271,14 @@
         "direction_WNW": "batı-kuzeybatı",
         "direction_WSW": "batı-güneybatı",
         "wind": "Rüzgar"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Ekonomi",
+        "Away": "Uzak",
+        "Custom": "görenek",
+        "DayOff": "İzin günü",
+        "HeatingOff": "Kapalı",
+        "TemporaryOverride": "Geçersiz Kıl"
     }
 }
