@@ -271,5 +271,14 @@
         "direction_WNW": "nyugat-északnyugat",
         "direction_WSW": "nyugat-délnyugati",
         "wind": "Szél"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Econony",
+        "Away": "Away",
+        "Custom": "Custom",
+        "DayOff": "Day Off",
+        "HeatingOff": "Off",
+        "TemporaryOverride": "Override"
     }
 }
