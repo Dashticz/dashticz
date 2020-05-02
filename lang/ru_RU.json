@@ -271,5 +271,14 @@
         "direction_WNW": "западно-северо-западный",
         "direction_WSW": "западно-юго-западный",
         "wind": "Ветер"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Econony",
+        "Away": "Away",
+        "Custom": "Custom",
+        "DayOff": "Day Off",
+        "HeatingOff": "Off",
+        "TemporaryOverride": "Override"
     }
 }
