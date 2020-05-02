@@ -271,5 +271,14 @@
         "direction_WNW": "väst-nordväst",
         "direction_WSW": "väst-sydväst",
         "wind": "Vind"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Ekonomin",
+        "Away": "Bort",
+        "Custom": "Anpassad",
+        "DayOff": "Fridag",
+        "HeatingOff": "Av",
+        "TemporaryOverride": "Åsido"
     }
 }
