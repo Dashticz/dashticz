@@ -104,7 +104,7 @@
             "standby_call_url_on_end": "URL volaná na konci pohotovostního režimu",
             "login_timeout": "Ponechat přihlášeno do Dashticz (minut)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Enable\/Disable the WebSocket connection"
+            "enable_websocket_help": "Povolit \/ zakázat připojení WebSocket"
         },
         "infosave": "Nastavení se ukládá pouze do právě používaného prohlížeče. Pokud si přejete toto nastavení používat na všech počítačích a prohlížečích, je důležité zkopírovat nastavení do souboru CONFIG.JS",
         "localize": {
@@ -181,8 +181,8 @@
             "enable_swiper_help": "0: Zakázat swiper; 1: Povolit na úzkých obrazovkách; 2: Povolit",
             "vertical_scroll": "Povolit svislé posouvání",
             "vertical_scroll_help": "0: Zakázat svislé posouvání; 1: Povolit svislé posouvání je-li Swiper zakázán; 2: Povolit svislé posouvání",
-            "security_panel_lock": "Load Security Panel full screen",
-            "security_panel_lock_help": "If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel."
+            "security_panel_lock": "Načíst bezpečnostní panel na celou obrazovku",
+            "security_panel_lock_help": "Pokud nastavíte Zabezpečovací panel v Domoticz nebo Dashticz na 'Arm - Away', pak Dashticz automaticky načte panel celé obrazovky."
         },
         "weather": {
             "idx_moonpicture": "IDX měsíce",
@@ -216,10 +216,10 @@
             "title": "Ostatní",
             "setpoint_min": "Minimální požadovaná hodnota termostatu",
             "setpoint_max": "Maximální hodnota žádané teploty termostatu",
-            "evohome_status": "EvoHome controller status",
-            "evohome_status_help": "Auto, Econony, Away, Custom, Day Off, Off",
-            "evohome_boost_zone": "EvoHome zone boost time in minutes",
-            "evohome_boost_hw": "EvoHome hot water boost time in minutes"
+            "evohome_status": "Stav ovladače EvoHome",
+            "evohome_status_help": "Auto, Econony, Pryč, Vlastní, Den, Vypnuto",
+            "evohome_boost_zone": "Čas rozšíření zóny EvoHome v minutách",
+            "evohome_boost_hw": "EvoHome horká voda zvyšuje čas v minutách"
         }
     },
     "switches": {
@@ -276,8 +276,8 @@
         "Auto": "Auto",
         "AutoWithEco": "Ekonomika",
         "Away": "Pryč",
-        "Custom": "Vlastní",
-        "DayOff": "Výstup",
+        "Custom": "Zvyk",
+        "DayOff": "Volno",
         "HeatingOff": "Vypnuto",
         "TemporaryOverride": "Přepsat"
     }
