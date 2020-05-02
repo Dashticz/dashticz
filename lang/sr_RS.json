@@ -271,5 +271,14 @@
         "direction_WNW": "zapad-severozapad",
         "direction_WSW": "jug-jugozapad",
         "wind": "Vetar"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Економија",
+        "Away": "Аваи",
+        "Custom": "Цустом",
+        "DayOff": "Слободни дан",
+        "HeatingOff": "Офф",
+        "TemporaryOverride": "Оверриде"
     }
 }

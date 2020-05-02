@@ -271,5 +271,14 @@
         "direction_WNW": "west-northwest",
         "direction_WSW": "west-southwest",
         "wind": "Vietor"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Ekonomika",
+        "Away": "Preč",
+        "Custom": "Zvyk",
+        "DayOff": "Deň voľna",
+        "HeatingOff": "Vypnúť",
+        "TemporaryOverride": "Prepis"
     }
 }
