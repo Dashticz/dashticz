@@ -102,9 +102,9 @@
             "dashticz_php_path": "Dashticz PHP Path",
             "standby_call_url": "URL to be called at start of standby",
             "standby_call_url_on_end": "URL to be called at end of standby",
-            "login_timeout": "Keep Dashticz logged in (minutes)",
+            "login_timeout": "Keep Dashticz вошли в систему (минуты)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Enable\/Disable the WebSocket connection"
+            "enable_websocket_help": "Включить \/ отключить соединение WebSocket"
         },
         "infosave": "По умолчанию настройки хранятся в Вашем браузере. Недостатком этого метода является то, что он будет работать только в текущем браузере. Если это не проблема, Вы можете продолжить. В противном случае скопируйте код ниже в CONFIG.JS для сохранения настроек во всех браузерах и устройствах.",
         "localize": {
@@ -176,13 +176,13 @@
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Цвет вспышки и непрозрачность (RGBA)",
             "blink_color_help": "Установите цвет вспышки и непрозрачность (красный, зеленый, синий, альфа)",
-            "start_page": "Start page number (First page=1)",
-            "enable_swiper": "Enable Swiper",
-            "enable_swiper_help": "0: Disable swiper; 1: Enable on narrow screens; 2: Enable",
-            "vertical_scroll": "Enable vertical scroll",
-            "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll",
-            "security_panel_lock": "Load Security Panel full screen",
-            "security_panel_lock_help": "If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel."
+            "start_page": "Номер стартовой страницы (Первая страница = 1)",
+            "enable_swiper": "Включить Swiper",
+            "enable_swiper_help": "0: отключить swiper; 1: включить на узких экранах; 2: Включить",
+            "vertical_scroll": "Включить вертикальную прокрутку",
+            "vertical_scroll_help": "0: отключить вертикальную прокрутку; 1: включить вертикальную прокрутку, если Swiper отключен; 2: Включить вертикальную прокрутку",
+            "security_panel_lock": "Загрузить панель безопасности в полноэкранном режиме",
+            "security_panel_lock_help": "Если для панели безопасности в Domoticz или Dashticz установить «Arm-Away», то Dashticz автоматически загрузит полноэкранную панель."
         },
         "weather": {
             "idx_moonpicture": "IDX картинки луны",
@@ -216,10 +216,10 @@
             "title": "Другой",
             "setpoint_min": "Минимальное значение уставки термостата",
             "setpoint_max": "Максимальное значение уставки термостата",
-            "evohome_status": "EvoHome controller status",
-            "evohome_status_help": "Auto, Econony, Away, Custom, Day Off, Off",
-            "evohome_boost_zone": "EvoHome zone boost time in minutes",
-            "evohome_boost_hw": "EvoHome hot water boost time in minutes"
+            "evohome_status": "Состояние контроллера EvoHome",
+            "evohome_status_help": "Авто, Экономия, В гостях, Обычай, Выходной, Выкл.",
+            "evohome_boost_zone": "Время усиления зоны EvoHome в минутах",
+            "evohome_boost_hw": "Время нагрева горячей воды EvoHome в минутах"
         }
     },
     "switches": {
@@ -273,12 +273,12 @@
         "wind": "Ветер"
     },
     "evohome": {
-        "Auto": "Auto",
-        "AutoWithEco": "Economy",
-        "Away": "Away",
-        "Custom": "Custom",
+        "Auto": "Авто",
+        "AutoWithEco": "Econony",
+        "Away": "Прочь",
+        "Custom": "изготовленный на заказ",
         "DayOff": "Выходной",
         "HeatingOff": "от",
-        "TemporaryOverride": "переопределение"
+        "TemporaryOverride": "Override"
     }
 }
