@@ -803,7 +803,7 @@ The office and kitchen rooms are showing red, as the temperature is above the se
 
 .. image :: img/graph_groupByDevice_tooltip1.png
 
-Same as above, but setting *groupByDevice* to *'horizontal'* shows this ...
+Setting *groupByDevice* to *'horizontal'* shows like this ...
 ::
 
 	blocks['all_zones'] = {	
