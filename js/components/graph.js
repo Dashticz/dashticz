@@ -60,7 +60,7 @@ function getBlockDefaults(me) {
     borderWidth: 2,
     buttonsBorder: "white",
     buttonsColor: "black",
-    buttonsFIll: "white",
+    buttonsFill: "white",
     buttonsIcon: "#686868",
     buttonsMarginX: 2,
     buttonsMarginY: 0,
@@ -606,7 +606,7 @@ function redrawGraph(me) {
     graph.keys = arrYkeys;
     graph.ykeys = newKeys;
     //    graph.txtUnits = txtUnits; //todo: check txtUnits
-    //    graph.txtUnit = graph.txtUnits[0]; //todo: temp fix
+    graph.txtUnit = graph.txtUnits[0]; //todo: temp fix
     graph.ylabels = getYlabels(graph);
     //graph.currentValues = currentValues; //todo: check currentValues
 
@@ -811,7 +811,6 @@ function createGraph(graph) {
     $.extend(true, graphProperties, graph.graphConfig);
 
   } else { // no custom data
-
     graph.ykeys.forEach(function (element, index) {
       mydatasets[element] = {
         data: [],
@@ -1551,6 +1550,7 @@ function groupByDevice(me) {
   var devices = me.graphDevices;
   $.each(devices, function (i, device) {
     var data = allDevices[device.idx];
+    device.currentValue = device.Data;
     me.currentValues.push(device.Data);
 
     if (
@@ -1574,73 +1574,70 @@ function groupByDevice(me) {
       arrLabels.push(data.Name);
     }
 
-    if (devices.length - 1 === i) {
-      var html = createHeader(graph, false);
-
-      var mountPoint = $(graph.mountPoint + " > div");
-
-      mountPoint.html(html);
-      createButtons(graph);
-      updateHeaderValues(graph, false);
-
-
-      mountPoint.addClass("col-xs-" + graph.block.width);
-      mountPoint.addClass("block_graph");
-      mountPoint.addClass(graphIdx);
-      $("." + graphIdx).css("height", setHeight(graph));
-
-      var graphProperties = getDefaultGraphProperties(graph);
-      var xAxesType = 'category';
-      var graphType = 'bar';
-      var scaleLabel = {
-        labelString: graph.txtUnit,
-        display: true,
-        fontColor: "white"
-      };
-
-      if (graph.block.groupByDevice === 'horizontal') {
-        xAxesType = 'linear';
-        graphType = 'horizontalBar';
-        graphProperties.options.scales.xAxes[0].offset = false;
-        graphProperties.options.scales.xAxes[0].scaleLabel = scaleLabel;
-        graphProperties.options.scales.xAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
-      } else {
-        graphProperties.options.scales.yAxes[0].scaleLabel = scaleLabel;
-        graphProperties.options.scales.yAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
-      }
-
-      var obj = {};
-      obj.data = arrData;
-      obj.backgroundColor = data.SetPoint ? datasetColors : graph.block.datasetColors;
-      obj.label = data.SetPoint ? 'Temperature' : graph.txtUnit;
-      obj.order = 1;
-      graphProperties.data.datasets.push(obj);
-
-      if (data.SetPoint) {
-        var spColor = isDefined(graph.block.datasetColors[3]) ? graph.block.datasetColors[3] : 'yellow';
-        var obj = {};
-        obj.data = arrSetPoint;
-        obj.label = 'SetPoint';
-        obj.borderColor = spColor;
-        obj.backgroundColor = spColor;
-        obj.type = 'line';
-        obj.borderWidth = 2;
-        obj.pointRadius = 0;
-        obj.fill = false;
-        obj.order = 0;
-        graphProperties.data.datasets.push(obj);
-      }
-
-      graphProperties.options.scales.yAxes[0].ticks.fontColor = "white";
-      graphProperties.options.scales.xAxes[0].type = xAxesType;
-      graphProperties.type = graphType;
-      graphProperties.data.labels = arrLabels;
-      graphProperties.options.legend = false;
-
-      var chartctx = mountPoint.find("canvas")[0].getContext("2d");
-      new Chart(chartctx, graphProperties);
-    }
   });
+  var html = createHeader(graph, false);
 
+  var mountPoint = $(graph.mountPoint + " > div");
+
+  mountPoint.html(html);
+  createButtons(graph);
+  updateHeaderValues(graph, true);
+
+
+  mountPoint.addClass("col-xs-" + graph.block.width);
+  mountPoint.addClass("block_graph");
+  mountPoint.addClass(graphIdx);
+  $("." + graphIdx).css("height", setHeight(graph));
+
+  var graphProperties = getDefaultGraphProperties(graph);
+  var xAxesType = 'category';
+  var graphType = 'bar';
+  var scaleLabel = {
+    labelString: graph.txtUnit,
+    display: true,
+    fontColor: "white"
+  };
+
+  if (graph.block.groupByDevice === 'horizontal') {
+    xAxesType = 'linear';
+    graphType = 'horizontalBar';
+    graphProperties.options.scales.xAxes[0].offset = false;
+    graphProperties.options.scales.xAxes[0].scaleLabel = scaleLabel;
+    graphProperties.options.scales.xAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
+  } else {
+    graphProperties.options.scales.yAxes[0].scaleLabel = scaleLabel;
+    graphProperties.options.scales.yAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
+  }
+
+  var obj = {};
+  obj.data = arrData;
+  obj.backgroundColor = me.hasSetPoint ? datasetColors : graph.block.datasetColors;
+  obj.label = me.hasSetPoint ? 'Temperature' : graph.txtUnit;
+  obj.order = 1;
+  graphProperties.data.datasets.push(obj);
+
+  if (me.hasSetPoint) {
+    var spColor = isDefined(graph.block.datasetColors[3]) ? graph.block.datasetColors[3] : 'yellow';
+    var obj = {};
+    obj.data = arrSetPoint;
+    obj.label = 'SetPoint';
+    obj.borderColor = spColor;
+    obj.backgroundColor = spColor;
+    obj.type = 'line';
+    obj.borderWidth = 2;
+    obj.pointRadius = 0;
+    obj.fill = false;
+    obj.order = 0;
+    graphProperties.data.datasets.push(obj);
+  }
+
+  graphProperties.options.scales.yAxes[0].ticks.fontColor = "white";
+  graphProperties.options.scales.xAxes[0].type = xAxesType;
+  graphProperties.type = graphType;
+  graphProperties.data.labels = arrLabels;
+  graphProperties.options.legend = false;
+
+  var chartctx = mountPoint.find("canvas")[0].getContext("2d");
+  new Chart(chartctx, graphProperties);
 }
 //# sourceURL=js/components/graph.js
