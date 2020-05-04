@@ -35,7 +35,7 @@ Dashticz.register(DT_graph);
 /** Initialization of the Graph object */
 function Initialize(me) {
   me.graphDevices = [];
-  me.devices = me.devices || [parseInt(me.key.split("_")[1])];
+  me.block.devices = me.block.devices || [parseInt(me.key.split("_")[1])];
   $.each(me.block.devices, function (i, idx) {
     var device = {};
     $.extend(device, allDevices[idx]); //Make a copy of the current device data
@@ -591,100 +591,100 @@ function redrawGraph(me) {
         }
       });
     }
-
-    $.each(multidata.result, function (index, obj) {
-      $.each(obj, function (k, v) {
-        for (var n in newKeys) {
-          if (!obj.hasOwnProperty(newKeys[n])) {
-            obj[newKeys[n]] = NaN;
-          }
-        }
-      });
-    });
-
-    var graph = me; //todo: replace graph with me in all following lines?
-    graph.keys = arrYkeys;
-    graph.ykeys = newKeys;
-    //    graph.txtUnits = txtUnits; //todo: check txtUnits
-    graph.txtUnit = graph.txtUnits[0]; //todo: temp fix
-    graph.ylabels = getYlabels(graph);
-    //graph.currentValues = currentValues; //todo: check currentValues
-
-    // 20/02/20: GroupBy - hour|day|week|month
-    if (graph.groupBy) {
-      var groupArray = [];
-      var groupObj = {};
-      var md = multidata.result;
-      var dayFormat = "YYYY-MM-DD";
-      var groupStart;
-      var add = graph.sensor === "counter" || graph.sensor === "rain" ? true : false;
-      var x = 1;
-
-      $.each(md, function (i, obj) {
-        var end = i === md.length - 1;
-
-        switch (graph.groupBy) {
-          case "hour":
-            groupStart = moment(obj.d, dayFormat)
-              .hour(moment(obj.d, "YYYY-MM-DD HH:mm").hour())
-              .format("YYYY-MM-DD HH:mm");
-            break;
-          case "day":
-            groupStart = moment(obj.d, dayFormat).format(dayFormat);
-            break;
-          case "week":
-            groupStart = moment(obj.d, dayFormat)
-              .week(moment(obj.d, dayFormat).week())
-              .day("Sunday")
-              .format(dayFormat);
-            break;
-          case "month":
-            groupStart = moment(obj.d, dayFormat)
-              .startOf("month")
-              .format(dayFormat);
-            break;
-        }
-
-        if (groupObj.hasOwnProperty("d") && groupObj["d"] === groupStart) {
-          $.each(obj, function (key, val) {
-            if (key !== "d") {
-              if (end) {
-                if (!add) groupObj[key] = Number(groupObj[key] / x);
-              } else {
-                groupObj[key] += Number(val) || 0;
-              }
-            }
-          });
-          x++;
-          if (end) groupArray.push(groupObj);
-        } else {
-          if (!$.isEmptyObject(groupObj)) {
-            $.each(obj, function (key, val) {
-              if (key !== "d") {
-                if (!add) groupObj[key] = Number(groupObj[key] / x);
-              }
-            });
-            groupArray.push(groupObj);
-            x = 1;
-          }
-          groupObj = {};
-          groupObj["d"] = groupStart;
-          $.each(obj, function (key, val) {
-            if (key !== "d") {
-              groupObj[key] = Number(val) || 0;
-              if (end) {
-                if (!add) groupObj[key] = groupObj[key] / x;
-              }
-            }
-          });
-          if (end) groupArray.push(groupObj);
-        }
-      });
-      multidata.result = groupArray;
-    }
-    graph.data = multidata;
-    createGraph(graph);
   });
+
+  $.each(multidata.result, function (index, obj) {
+    $.each(obj, function (k, v) {
+      for (var n in newKeys) {
+        if (!obj.hasOwnProperty(newKeys[n])) {
+          obj[newKeys[n]] = NaN;
+        }
+      }
+    });
+  });
+
+  var graph = me; //todo: replace graph with me in all following lines?
+  graph.keys = arrYkeys;
+  graph.ykeys = newKeys;
+  //    graph.txtUnits = txtUnits; //todo: check txtUnits
+  graph.txtUnit = graph.txtUnits[0]; //todo: temp fix
+  graph.ylabels = getYlabels(graph);
+  //graph.currentValues = currentValues; //todo: check currentValues
+
+  // 20/02/20: GroupBy - hour|day|week|month
+  if (graph.groupBy) {
+    var groupArray = [];
+    var groupObj = {};
+    var md = multidata.result;
+    var dayFormat = "YYYY-MM-DD";
+    var groupStart;
+    var add = graph.sensor === "counter" || graph.sensor === "rain" ? true : false;
+    var x = 1;
+
+    $.each(md, function (i, obj) {
+      var end = i === md.length - 1;
+
+      switch (graph.groupBy) {
+        case "hour":
+          groupStart = moment(obj.d, dayFormat)
+            .hour(moment(obj.d, "YYYY-MM-DD HH:mm").hour())
+            .format("YYYY-MM-DD HH:mm");
+          break;
+        case "day":
+          groupStart = moment(obj.d, dayFormat).format(dayFormat);
+          break;
+        case "week":
+          groupStart = moment(obj.d, dayFormat)
+            .week(moment(obj.d, dayFormat).week())
+            .day("Sunday")
+            .format(dayFormat);
+          break;
+        case "month":
+          groupStart = moment(obj.d, dayFormat)
+            .startOf("month")
+            .format(dayFormat);
+          break;
+      }
+
+      if (groupObj.hasOwnProperty("d") && groupObj["d"] === groupStart) {
+        $.each(obj, function (key, val) {
+          if (key !== "d") {
+            if (end) {
+              if (!add) groupObj[key] = Number(groupObj[key] / x);
+            } else {
+              groupObj[key] += Number(val) || 0;
+            }
+          }
+        });
+        x++;
+        if (end) groupArray.push(groupObj);
+      } else {
+        if (!$.isEmptyObject(groupObj)) {
+          $.each(obj, function (key, val) {
+            if (key !== "d") {
+              if (!add) groupObj[key] = Number(groupObj[key] / x);
+            }
+          });
+          groupArray.push(groupObj);
+          x = 1;
+        }
+        groupObj = {};
+        groupObj["d"] = groupStart;
+        $.each(obj, function (key, val) {
+          if (key !== "d") {
+            groupObj[key] = Number(val) || 0;
+            if (end) {
+              if (!add) groupObj[key] = groupObj[key] / x;
+            }
+          }
+        });
+        if (end) groupArray.push(groupObj);
+      }
+    });
+    multidata.result = groupArray;
+  }
+  graph.data = multidata;
+  createGraph(graph);
 }
 
 function createGraph(graph) {
@@ -1042,7 +1042,7 @@ function createGraph(graph) {
       }
     }];
   }
-  //console.log(graphProperties); 
+  //console.log(graphProperties);
   var chart = new Chart(chartctx, graphProperties);
   //charts[dtGraphs[graphIdx].chartctx] = chart;
 }
@@ -1135,7 +1135,7 @@ function createButtons(graph, ranges, customRange) {
         }
       });
     });
-    $(newButton).appendto($buttons);
+    $(newButton).appendTo($buttons);
   }
 
   if (graph.block.debugButton) {
@@ -1446,7 +1446,7 @@ function getDefaultGraphProperties(graph) {
             drag: {
               animationDuration: 1000
             },
-            mode: graph.block.zoom ? graph.block.zoom : 'xy',
+            mode: typeof graph.block.zoom === 'boolean' ? 'x' : graph.block.zoom,
             speed: 0.05
           }
         }
