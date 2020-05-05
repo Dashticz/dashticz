@@ -47,6 +47,9 @@ function Initialize(me) {
   me.lastRefreshTime = 0;
   me.range = me.block.range;
   me.title = me.block.title || me.graphDevices[0].Name;
+  //next lines are copied from the primary device to configure some defaults
+  var pd = me.graphDevices[0];
+  me.subtype = pd.subtype;
 }
 
 function getBlockDefaults(me) {
@@ -394,6 +397,8 @@ function getGraphData(me, selGraph) {
     */
     if (isDefined(selGraph)) {
       me.range = selGraph;
+    } else {
+      me.range = 'initial'; //Fix to show the correct graph after refresh.
     }
     refreshGraph(me);
   }
@@ -758,6 +763,8 @@ function createGraph(graph) {
       graph.ylabels = getYlabels(graph);
     }
     graph.ykeys = Object.keys(graph.graphConfig.data);
+
+    console.log(graph.ylabels, graph.ykeys);
 
     graph.ykeys.forEach(function (element, index) {
       mydatasets[element] = {
@@ -1209,7 +1216,7 @@ function showData(graph) {
     html += '       <div class="flex-row title">';
     html += '         <h5 class="modal-title"><i class="fas fa-chart-line"></i>' + graph.title + '</h5>';
     html += '         <div class="btn-group" role="group" aria-label="Graph Debug">';
-    html += '           <a type="button" class="btn debug" href="#" onclick="console.log(dtGraphs[\'' + graphIdx + '\']); return false;"><i class="fas fa-code"></i></a>';
+    html += '           <a type="button" id="logbutton" class="btn debug" href="#" ><i class="fas fa-code"></i></a>';
     html += '           <a type="button" class="btn debug" href="data:application/octet-stream;charset=utf-16le;base64,' + btoa(JSON.stringify(graph, null, 2)) + '" download="' + graphIdx + '.json"><i class="fas fa-save"></i></a>';
     html += '           <button type="button" class="btn debug" data-dismiss="modal"><i class="fas fa-window-close"></i></button>';
     html += '         </div>';
@@ -1238,6 +1245,11 @@ function showData(graph) {
 
 
     $(html).appendTo('body');
+
+    $('#modal_' + graphIdx).find('#logbutton').click(function () {
+      console.log(graph);
+      return false;
+    });
 
     $.each(graph.block.devices, function (i, idx) {
       // var g = dtGraphs[graph.primaryIdx]; //todo: I would expect g is just graph
