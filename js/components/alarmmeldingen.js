@@ -14,7 +14,7 @@ var DT_alarmmeldingen = {
 			width: 12,
 			refresh: 180,
 			results: 5,
-			timeformat: 'ddd D MMM HH:MM'
+			timeformat: 'ddd D MMM HH:mm'
 		},
 	defaultContent: language.misc.loading,
 	refresh: function (me) {
