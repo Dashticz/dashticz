@@ -348,7 +348,10 @@ function showPopupGraph(blockdef) { //This function can be called from blocks.js
 function deviceUpdate(me, graphDevice, device) {
   $.extend(graphDevice, device);
   getDeviceDefaults(graphDevice); //In fact we only need a update of currentValue, but this is the most easy way
-  updateHeaderValues(me, true);
+  if (me.block.groupByDevice) {
+    DT_graph.refresh(me)
+  } else
+    updateHeaderValues(me, true);
 }
 /** This function will refresh the complete graph
  * 
@@ -1552,6 +1555,7 @@ function groupByDevice(me) {
     var data = allDevices[device.idx];
     device.currentValue = device.Data;
     me.currentValues.push(device.Data);
+    graph.txtUnit = device.txtUnit;
 
     if (
       data.CounterToday ||
@@ -1581,7 +1585,7 @@ function groupByDevice(me) {
 
   mountPoint.html(html);
   createButtons(graph);
-  updateHeaderValues(graph, true);
+  //updateHeaderValues(graph, false); //For groupByDevices graph no header values
 
 
   mountPoint.addClass("col-xs-" + graph.block.width);
@@ -1593,7 +1597,7 @@ function groupByDevice(me) {
   var xAxesType = 'category';
   var graphType = 'bar';
   var scaleLabel = {
-    labelString: graph.txtUnit,
+    labelString: graph.txtUnit, //It uses the txtUnit of the latest device. Might be incorrect ...
     display: true,
     fontColor: "white"
   };
@@ -1641,3 +1645,9 @@ function groupByDevice(me) {
   new Chart(chartctx, graphProperties);
 }
 //# sourceURL=js/components/graph.js
+
+/* Notes:
+groupByDevices: No header value. (?) Also not after device update.
+That means at a deviceUpdate the complete graph will be updated.
+
+*/
