@@ -16,7 +16,7 @@ var DT_coronavirus = {
       datasetColors: ['#7fcdbb', '#f03b20', '#2b7865', '#782b2b'],
       title: 'Coronavirus',
       mode: 0,
-      startDate: '22/01/2020'
+      startDate: '22/01/2020',
     }
     $.extend(cfg, addCfg);
     return cfg
@@ -27,19 +27,20 @@ var DT_coronavirus = {
     );
   },
   run: function (me) {
-    if (isDefined(me.block.graph) && isDefined(me.block.countryCode)) {
+    if (isDefined(me.block.report)) { //countryCode: ''
+      createReportBlock(me, true);
+    } else {
       if (typeof me.block.graph === 'boolean') {
         me.block.graph = 'bar'; //default graph type
+      }
+      if (typeof me.block.countryCode === 'undefined') {
+        me.block.countryCode = 'NL'; //default graph type
       }
       me.graphIdx = me.mountPoint.slice(1);
       me.colors = me.block.datasetColors;
       me.title = me.block.title;
       me.mode = me.block.mode;
       createDashGraph(me);
-    }
-
-    if (isDefined(me.block.report)) {
-      createReportBlock(me, true);
     }
   }
 };
@@ -261,15 +262,14 @@ function createReportBlock(me, province) {
         mountPoint.addClass("block_report");
 
         /*Todo: data is redefined below, while assigned a value already above*/
-        var data = {
+        var dataObject = {
           width: width,
           icon: icon,
           title: (isDefined(me.block.countryCode) ? me.block.countryCode.toUpperCase() : "Global") + ": " + me.block.report,
           report: data,
           flag: flagUrl + (isDefined(me.block.countryCode) ? me.block.countryCode.toLowerCase() : "world")
         };
-
-        mountPoint.html(template(data));
+        mountPoint.html(template(dataObject));
       });
     },
     complete: function () {},
