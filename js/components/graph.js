@@ -316,6 +316,7 @@ function showPopupGraph(blockdef) { //This function can be called from blocks.js
     graphIdx = blockdef.device.idx + '_popup';
   }
   popupBlock.isPopup = true;
+
   var device = blockdef.device;
   if ($("#opengraph" + graphIdx).length === 0) {
     var html = '<div class="modal fade opengraph opengraph' + graphIdx + '" data-idx="' + device.idx + '" id="opengraph' + graphIdx + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
@@ -328,19 +329,13 @@ function showPopupGraph(blockdef) { //This function can be called from blocks.js
     html += "</div>";
     html += "</div>";
     $("body").append(html);
-    $('#opengraph' + graphIdx).modal('show');
 
-    //Todo: find a more elegant way to set the height of the popup graph
-    $('#opengraph' + graphIdx + ' .modal-content').height('90vh');
+    var myblockselector = Dashticz.mountNewContainer('.opengraph' + graphIdx + ' .modal-content');
 
-    //todo: I had to make use of setTimeout, otherwise the size is not computed correctly
-    setTimeout(function () {
-      var myblockselector = Dashticz.mountNewContainer('.opengraph' + graphIdx + ' .modal-content');
-
-      if (!Dashticz.mount(myblockselector, popupBlock)) {
-        console.log('Error mounting popup graph', popupBlock)
-      }
-    }, 200);
+    if (!Dashticz.mount(myblockselector, popupBlock)) {
+      console.log('Error mounting popup graph', popupBlock)
+    }
+    $(myblockselector).addClass("modal-body"); //modal-body is just for styling, so we have to add it.
   }
 
   $('#opengraph' + graphIdx).modal('show');
@@ -677,11 +672,11 @@ function createGraph(graph) {
   if (graph.customRange) ranges = Object.keys(graph.block.custom);
   var html = createHeader(graph, true);
 
-  var mydiv = !graph.popup ?
+  var mydiv = !graph.block.isPopup ?
     $(graph.mountPoint + " > div") :
     $(graph.mountPoint);
 
-  if (!graph.popup) {
+  if (!graph.block.isPopup) {
     mydiv.addClass("col-xs-" + graph.block.width);
     mydiv.addClass("block_graph");
     mydiv.addClass(graphIdx);
@@ -704,7 +699,7 @@ function createGraph(graph) {
     $.extend(true, graph, graph.graphConfig);
   }
 
-  if (!graph.popup) {
+  if (!graph.block.isPopup) {
     $("." + graphIdx).css("height", setHeight(graph));
   }
 
@@ -1031,7 +1026,7 @@ function createHeader(graph) {
   var html = '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar" style="font-size:20px;margin-left:5px;color:' + graph.block.iconColour + '">&nbsp;</i>' + graph.title + '&nbsp;<span class="graphValues' + graph.graphIdx + '">';
   html += "</span></div>";
   html += "</div>";
-  html += '<div class="graph swiper-no-swiping' + (graph.popup ? " popup graphheight" : "") + '" id="' + graph.graphIdx + '">';
+  html += '<div class="graph swiper-no-swiping' + (graph.block.isPopup ? " popup graphheight" : "") + '" id="' + graph.graphIdx + '">';
   html += "<canvas " + 'id="graphoutput_' + graph.graphIdx + '"></canvas>';
   return html += "</div>";
 }
