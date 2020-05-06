@@ -299,6 +299,7 @@ function getDeviceDefaults(device, popup) {
   };
   //  if (popup) getGraphData([dtGraphs[graphIdx]]); //todo: not here
   $.extend(device, obj)
+  device.idx = parseInt(device.idx);
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -364,37 +365,6 @@ function getGraphData(me, selGraph) {
   if (me.block.groupByDevice) {
     groupByDevice(me);
   } else {
-    //    var currentValues = []; //todo: fix header
-
-    var header = me.block.customHeader;
-
-    /* todo: rewrite customHeader generation 
-    var customValues = [];
-    var key;
-    if (header) {
-      for (key in header) {
-        try {
-          if (device.idx === parseInt(key)) {
-            graph.currentValue = eval(
-              header[key].replace("data", "graph.currentValue")
-            );
-          } else if (isNaN(key)) {
-            header[key] = header[key].replace(
-              "data." + device.idx,
-              'parseFloat("' + graph.currentValue + '")'
-            );
-
-            if (devices.length - 1 === i) {
-              customValues.push(eval(header[key]));
-            }
-          }
-        } catch (error) {
-          console.log("Error in customHeader:", key, header[key]);
-          console.log(error);
-        }
-      }
-    }
-    */
     if (isDefined(selGraph)) {
       me.range = selGraph;
     } else {
@@ -1171,23 +1141,62 @@ function createButtons(graph, ranges, customRange) {
   $buttons.appendTo(graph.mountPoint + ' .graphheader');
 }
 
+function createCurrentValues(me) {
+  //todo: check customHeader generation 
+  var currentValues = [];
+
+  var key;
+  if (me.block.customHeader) {
+    if (typeof me.block.customHeader === "object") {
+      var header = $.extend({}, me.block.customHeader); //Enforce a copy
+      for (key in header) {
+        try {
+          me.graphDevices.forEach(function (device) {
+            if (device.idx === parseInt(key)) { //the header element is the current device. Fill in the current value
+              currentValues.push(eval(header[key].replace("data", "device.currentValue")));
+            } else if (isNaN(key)) {
+              header[key] = header[key].replace( //custom header element. Fill in the current device value if needed
+                "data." + device.idx,
+                'parseFloat("' + device.currentValue + '")'); //was graph.currentValue
+            }
+          });
+          if (isNaN(key)) {
+            currentValues.push(eval(header[key]));
+          }
+        } catch (error) {
+          console.log("Error in customHeader:", key, header[key]);
+          console.log(error);
+        }
+      }
+    } else { //customHeader is a string. We just evaluate the complete string
+      var devices = Domoticz.getAllDevices();
+      try {
+        currentValues.push(eval(me.block.customHeader));
+      } catch (error) {
+        console.log("Error in customHeader:", me.block.customHeader);
+        console.log(error);
+      }
+    }
+  } else { //return the values of all devices
+    me.graphDevices.forEach(function (el) {
+      currentValues.push(el.currentValue);
+    })
+  }
+  return currentValues;
+}
+
 function updateHeaderValues(graph, showValues) {
 
   var $values = $(".graphValues" + graph.graphIdx);
 
   templateEngine.load("graph_header").then(function (template) {
 
-    var currentValues = [];
-    graph.graphDevices.forEach(function (el) {
-      currentValues.push(el.currentValue);
-    })
-
     var data = {
       show: showValues,
       //      mg: graph.multigraph,
       mg: true, //todo: always handle as multigraph. Can be simplified ...
       cv: graph.graphDevices[0].currentValue,
-      cvs: currentValues,
+      cvs: createCurrentValues(graph),
       icon: graph.block.iconColour,
     };
 
