@@ -165,7 +165,7 @@ function createDashGraph(me) {
     var mountPoint = $(me.mountPoint + " > div");
     mountPoint.addClass("block_coronavirus").addClass("block_graph");
 
-    var graphProperties = getDefaultGraphProperties(me);
+    var graphProperties = getDefaultGraphProperties(me, me.block);
     graphProperties.data = graphData;
     graphProperties.type = me.block.graph
     var scales = graphProperties.options.scales;

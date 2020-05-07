@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 /* global Dashticz Domoticz moment settings config Beaufort number_format  language time blocks   Chart _TEMP_SYMBOL  onlyUnique isDefined isObject setHeight*/
-/* global templateEngine Handlebars*/
+/* global templateEngine Handlebars formatThousand*/
 var allDevices = Domoticz.getAllDevices();
 
 moment.locale(settings["language"]);
@@ -52,13 +52,12 @@ function Initialize(me) {
   me.subtype = pd.subtype;
 }
 
-function getBlockDefaults(me) {
+function getBlockDefaults() {
   var datasetColors = ['red', 'yellow', 'blue', 'orange', 'green', 'purple', 'chartreuse', 'aqua', 'teal', 'pink', 'gray', 'fuchsia'];
   var block = {
     datasetColors: datasetColors,
     barWidth: 0.9,
     beginAtZero: false,
-    borderColors: datasetColors,
     borderDash: [],
     borderWidth: 2,
     buttonsBorder: "white",
@@ -97,7 +96,6 @@ function getBlockDefaults(me) {
     method: 1,
     pointBorderColor: ["grey"],
     pointBorderWidth: 0,
-    pointFillColor: datasetColors,
     pointRadius: 0,
     pointStyle: false,
     range: 'initial',
@@ -567,7 +565,7 @@ function redrawGraph(me) {
   });
 
   $.each(multidata.result, function (index, obj) {
-    $.each(obj, function (k, v) {
+    $.each(obj, function () {
       for (var n in newKeys) {
         if (!obj.hasOwnProperty(newKeys[n])) {
           obj[newKeys[n]] = NaN;
@@ -633,7 +631,7 @@ function redrawGraph(me) {
         if (end) groupArray.push(groupObj);
       } else {
         if (!$.isEmptyObject(groupObj)) {
-          $.each(obj, function (key, val) {
+          $.each(obj, function (key) {
             if (key !== "d") {
               if (!add) groupObj[key] = Number(groupObj[key] / x);
             }
@@ -692,19 +690,26 @@ function createGraph(graph) {
 
   var chartctx = mydiv.find('canvas')[0].getContext("2d");
   graph.chartctx = chartctx.canvas.id;
-  var graphProperties = getDefaultGraphProperties(graph);
-  $.extend(true, graphProperties, graph.block);
+
+  //Some block properties can be "overruled" by custom block settings
+  //However, getDefaultGraphProperties now depend on some block settings, without taking custom block settings into account
+  //I don't want to overwrite graph.block, because that contains the original block definition
+  //Let's create a second parameter, containing the merged block
+  var mergedBlock = $.extend(true, {}, graph.block, graph.graphConfig);
+
+  var graphProperties = getDefaultGraphProperties(graph, mergedBlock);
+  $.extend(true, graphProperties, mergedBlock);
 
   if (graph.graphConfig) {
     $.extend(true, graph, graph.graphConfig);
   }
 
-  if (!graph.block.isPopup) {
+  if (!graph.block.isPopup) { //in general we should not use graph.block, but mergedBlock. In this case graph.block is ok, because isPopup should not be used in a custom block def.
     $("." + graphIdx).css("height", setHeight(graph));
   }
 
-  if (typeof graph.block.legend == "boolean") {
-    graphProperties.options.legend.display = graph.block.legend;
+  if (typeof mergedBlock.legend == "boolean") {
+    graphProperties.options.legend.display = mergedBlock.legend;
   }
   var mydatasets = [];
 
@@ -729,30 +734,28 @@ function createGraph(graph) {
     }
     graph.ykeys = Object.keys(graph.graphConfig.data);
 
-    console.log(graph.ylabels, graph.ykeys);
-
     graph.ykeys.forEach(function (element, index) {
       mydatasets[element] = {
         data: [],
         label: element,
-        backgroundColor: graph.block.datasetColors[index],
-        barPercentage: graph.block.barWidth,
-        borderColor: graph.block.borderColors[index],
-        borderWidth: graph.block.borderWidth,
-        borderDash: graph.block.borderDash,
-        pointRadius: graph.block.pointRadius,
-        pointStyle: graph.block.pointStyle[index],
-        pointBackgroundColor: graph.block.pointFillColor[index],
-        pointBorderColor: graph.block.pointBorderColor[index],
-        pointBorderWidth: graph.block.pointBorderWidth,
-        lineTension: graph.block.lineTension,
-        spanGaps: graph.block.spanGaps,
-        fill: graph.block.lineFill ? graph.block.lineFill[index] : graph.block.lineFill,
+        backgroundColor: mergedBlock.datasetColors[index],
+        barPercentage: mergedBlock.barWidth,
+        borderColor: (mergedBlock.borderColors || mergedBlock.datasetColors)[index],
+        borderWidth: mergedBlock.borderWidth,
+        borderDash: mergedBlock.borderDash,
+        pointRadius: mergedBlock.pointRadius,
+        pointStyle: mergedBlock.pointStyle[index],
+        pointBackgroundColor: (mergedBlock.pointFillColor || mergedBlock.datasetColors)[index],
+        pointBorderColor: (mergedBlock.pointBorderColor || mergedBlock.datasetColors)[index],
+        pointBorderWidth: mergedBlock.pointBorderWidth,
+        lineTension: mergedBlock.lineTension,
+        spanGaps: mergedBlock.spanGaps,
+        fill: mergedBlock.lineFill ? mergedBlock.lineFill[index] : mergedBlock.lineFill,
         yAxisID: index <= graph.ylabels.length ? graph.ylabels[index] : graph.ylabels[0]
       };
 
       if (graph.graphConfig.graph) {
-        mydatasets[element].type = graph.graphConfig.graph;
+        mydatasets[element].type = typeof graph.graphConfig.graph === 'string' ? graph.graphConfig.graph : graph.graphConfig.graph[index];
       }
     });
 
@@ -781,29 +784,37 @@ function createGraph(graph) {
     });
 
     if (graph.graphConfig.graph) {
+      //graphProperties.type = typeof graphProperties.graph === 'string' ? graph.graphConfig.graph : graph.graphConfig.graph[index];
       graphProperties.type = graph.graphConfig.graph;
     }
     $.extend(true, graphProperties, graph.graphConfig);
 
   } else { // no custom data
+    var idxArray = Object.keys(mergedBlock.legend);
     graph.ykeys.forEach(function (element, index) {
+      //In case of a legend, not all datasets will be shown, resulting in color mismatch
+      var idx = index;
+      if (idxArray && idxArray.length) {
+        idx = idxArray.indexOf(element);
+      }
+
       mydatasets[element] = {
         data: [],
         label: element,
-        yAxisID: graph.ylabels[index],
-        backgroundColor: graph.block.datasetColors[index],
-        barPercentage: graph.block.barWidth,
-        borderColor: graph.block.borderColors[index],
-        borderWidth: graph.block.borderWidth,
-        borderDash: graph.block.borderDash,
-        pointRadius: graph.block.pointRadius,
-        pointStyle: graph.block.pointStyle[index],
-        pointBackgroundColor: graph.block.pointFillColor[index],
-        pointBorderColor: graph.block.pointBorderColor[index],
-        pointBorderWidth: graph.block.pointBorderWidth,
-        lineTension: graph.block.lineTension,
-        spanGaps: graph.block.spanGaps,
-        fill: graph.block.lineFill ? graph.block.lineFill[index] : graph.block.lineFill
+        yAxisID: graph.ylabels[idx],
+        backgroundColor: mergedBlock.datasetColors[idx],
+        barPercentage: mergedBlock.barWidth,
+        borderColor: (mergedBlock.borderColors || mergedBlock.datasetColors)[idx],
+        borderWidth: mergedBlock.borderWidth,
+        borderDash: mergedBlock.borderDash,
+        pointRadius: mergedBlock.pointRadius,
+        pointStyle: mergedBlock.pointStyle[index],
+        pointBackgroundColor: (mergedBlock.pointFillColor || mergedBlock.datasetColors)[idx],
+        pointBorderColor: (mergedBlock.pointBorderColor || mergedBlock.datasetColors)[idx],
+        pointBorderWidth: mergedBlock.pointBorderWidth,
+        lineTension: mergedBlock.lineTension,
+        spanGaps: mergedBlock.spanGaps,
+        fill: mergedBlock.lineFill ? mergedBlock.lineFill[idx] : mergedBlock.lineFill
       };
     });
 
@@ -869,9 +880,9 @@ function createGraph(graph) {
   }
 
   Object.keys(mydatasets).forEach(function (element) {
-    if (typeof graph.block.legend == "object") {
-      if (isDefined(graph.block.legend[element]))
-        mydatasets[element].label = graph.block.legend[element];
+    if (typeof mergedBlock.legend == "object") {
+      if (isDefined(mergedBlock.legend[element]))
+        mydatasets[element].label = mergedBlock.legend[element];
       graphProperties.options.legend.display = true;
     }
     graphProperties.data.datasets.push(mydatasets[element]);
@@ -888,8 +899,8 @@ function createGraph(graph) {
   uniqueylabels.forEach(function (element, i) {
     var yaxis = {
       id: element,
-      stacked: graph.block.stacked,
-      type: graph.block.cartesian,
+      stacked: graphProperties.stacked, //graphProperties contains all settings including the custom settings
+      type: mergedBlock.cartesian,
       ticks: {
         reverse: false,
         fontColor: "white"
@@ -932,20 +943,20 @@ function createGraph(graph) {
       });
   }
 
-  if (isDefined(graph.block.legend)) {
-    if ($.isArray(graph.block.legend)) {
-      graph.block.legend.forEach(function (element, idx) {
+  if (isDefined(mergedBlock.legend)) {
+    if ($.isArray(mergedBlock.legend)) {
+      mergedBlock.legend.forEach(function (element, idx) {
         graphProperties.data.datasets[idx].label = element;
       });
       graphProperties.options.legend.display = true;
     }
   }
-  switch (typeof graph.block.graph) {
+  switch (typeof mergedBlock.graph) {
     case "string":
-      graphProperties.type = graph.block.graph;
+      graphProperties.type = mergedBlock.graph;
       break;
     case "object":
-      graph.block.graph.forEach(function (element, idx) {
+      mergedBlock.graph.forEach(function (element, idx) {
         graphProperties.data.datasets[idx].type = element;
       });
       graphProperties.type = "bar";
@@ -954,22 +965,22 @@ function createGraph(graph) {
       break;
   }
 
-  graph.block.displayFormats ?
+  mergedBlock.displayFormats ?
     $.extend(
       graphProperties.options.scales.xAxes[0].time.displayFormats,
-      graph.block.displayFormats
+      mergedBlock.displayFormats
     ) :
     graphProperties.options.scales.xAxes[0].time.displayFormats;
-  graphProperties.options.scales.xAxes[0].ticks.maxTicksLimit = graph.block.maxTicksLimit;
-  graphProperties.options.scales.xAxes[0].ticks.reverse = graph.block.reverseTime;
-  graphProperties.options.legend.labels.usePointStyle = graph.block.pointStyle;
+  graphProperties.options.scales.xAxes[0].ticks.maxTicksLimit = mergedBlock.maxTicksLimit;
+  graphProperties.options.scales.xAxes[0].ticks.reverse = mergedBlock.reverseTime;
+  graphProperties.options.legend.labels.usePointStyle = mergedBlock.pointStyle;
 
-  if (graph.block.beginAtZero) {
+  if (mergedBlock.beginAtZero) {
     if (graphProperties.options.scales.yAxes.length === 1) {
-      graphProperties.options.scales.yAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
+      graphProperties.options.scales.yAxes[0].ticks.beginAtZero = mergedBlock.beginAtZero;
     } else {
-      if (typeof graph.block.beginAtZero === 'object') {
-        graph.block.beginAtZero.forEach(function (beginAtZero, i) {
+      if (typeof mergedBlock.beginAtZero === 'object') {
+        mergedBlock.beginAtZero.forEach(function (beginAtZero, i) {
           if (i < graphProperties.options.scales.yAxes.length) {
             graphProperties.options.scales.yAxes[i].ticks.beginAtZero = beginAtZero;
           }
@@ -978,13 +989,13 @@ function createGraph(graph) {
     }
   }
 
-  if (graph.block.gradients) {
-    var prop = graph.block;
+  if (mergedBlock.gradients) {
+    var prop = mergedBlock;
     var gHeight = isDefined(prop.gradientHeight) ? prop.gradientHeight : 1;
     graphProperties.plugins = [{
-      beforeRender: function (x, options) {
+      beforeRender: function (x) {
         var c = x.chart;
-        $.each(prop.ykeys, function (i, key) {
+        $.each(prop.ykeys, function (i) {
           if (isDefined(prop.gradients[i])) {
             if (!isObject(prop.gradients[i]))
               prop.gradients[i] = [
@@ -1018,7 +1029,7 @@ function createGraph(graph) {
     }];
   }
   //console.log(graphProperties);
-  var chart = new Chart(chartctx, graphProperties);
+  new Chart(chartctx, graphProperties);
   //charts[dtGraphs[graphIdx].chartctx] = chart;
 }
 
@@ -1164,7 +1175,8 @@ function createCurrentValues(me) {
         }
       }
     } else { //customHeader is a string. We just evaluate the complete string
-      var devices = Domoticz.getAllDevices();
+      // eslint-disable-next-line no-unused-vars
+      var devices = Domoticz.getAllDevices(); //devices may be used in the eval function
       try {
         currentValues.push(eval(me.block.customHeader));
       } catch (error) {
@@ -1290,7 +1302,7 @@ Handlebars.registerHelper("splitString", function (str, cha, options) {
   return options.fn(str[0].split(cha)[0]);
 });
 
-function getDefaultGraphProperties(graph) {
+function getDefaultGraphProperties(graph, block) {
   return {
     type: "line",
     data: {
@@ -1362,7 +1374,7 @@ function getDefaultGraphProperties(graph) {
               var obj = {};
               obj.key = body[0].split(':')[0];
               obj.val = formatThousand(val, graph.decimals);
-              obj.add = graph.block.tooltiptotal === true || $.inArray(obj.key, graph.block.tooltiptotal) !== -1;
+              obj.add = block.tooltiptotal === true || $.inArray(obj.key, block.tooltiptotal) !== -1;
               obj.col = tooltip.labelColors[i].backgroundColor;
               obj.fas = 'plus';
 
@@ -1426,7 +1438,7 @@ function getDefaultGraphProperties(graph) {
       },
       scales: {
         yAxes: [{
-          stacked: graph.block.stacked,
+          stacked: block.stacked,
           ticks: {
             fontColor: "white",
             source: "auto"
@@ -1437,7 +1449,7 @@ function getDefaultGraphProperties(graph) {
           },
         }],
         xAxes: [{
-          stacked: graph.block.stacked,
+          stacked: block.stacked,
           offset: true,
           ticks: {
             fontColor: "white",
@@ -1461,11 +1473,11 @@ function getDefaultGraphProperties(graph) {
       plugins: {
         zoom: {
           zoom: {
-            enabled: graph.block.zoom ? true : false,
+            enabled: block.zoom ? true : false,
             drag: {
               animationDuration: 1000
             },
-            mode: typeof graph.block.zoom === 'boolean' ? 'x' : graph.block.zoom,
+            mode: typeof block.zoom === 'boolean' ? 'x' : block.zoom,
             speed: 0.05
           }
         }
@@ -1559,7 +1571,6 @@ function groupByDevice(me) {
   //  var graphIdx = devices[0].blockId + devices[0].idx;
   var graphIdx = me.graphIdx;
   var graph = me;
-  var initial = graph.range === "initial" ? true : false;
 
   graph.forced = false;
   graph.lastRefreshTime = time();
@@ -1609,7 +1620,7 @@ function groupByDevice(me) {
   mountPoint.addClass(graphIdx);
   $("." + graphIdx).css("height", setHeight(graph));
 
-  var graphProperties = getDefaultGraphProperties(graph);
+  var graphProperties = getDefaultGraphProperties(graph, graph.block);
   var xAxesType = 'category';
   var graphType = 'bar';
   var scaleLabel = {
@@ -1638,7 +1649,7 @@ function groupByDevice(me) {
 
   if (me.hasSetPoint) {
     var spColor = isDefined(graph.block.datasetColors[3]) ? graph.block.datasetColors[3] : 'yellow';
-    var obj = {};
+    obj = {};
     obj.data = arrSetPoint;
     obj.label = 'SetPoint';
     obj.borderColor = spColor;
