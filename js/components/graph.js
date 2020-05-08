@@ -1,8 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 /* global Dashticz Domoticz moment settings config Beaufort number_format  language time blocks   Chart _TEMP_SYMBOL  onlyUnique isDefined isObject setHeight*/
 /* global templateEngine Handlebars formatThousand*/
-var allDevices = Domoticz.getAllDevices();
-
 moment.locale(settings["language"]);
 
 var DT_graph = {
@@ -38,7 +36,7 @@ function Initialize(me) {
   me.block.devices = me.block.devices || [parseInt(me.key.split("_")[1])];
   $.each(me.block.devices, function (i, idx) {
     var device = {};
-    $.extend(device, allDevices[idx]); //Make a copy of the current device data
+    $.extend(device, Domoticz.getAllDevices()[idx]); //Make a copy of the current device data
     device.idx = parseInt(device.idx);
     getDeviceDefaults(device);
     me.graphDevices.push(device);
@@ -269,25 +267,18 @@ function getDeviceDefaults(device, popup) {
   }
 
   var multidata = device.Data.split(',').length - 1 > 0;
+  /* todo: temporary disable number formatting
   currentValue = multidata ?
     device.Data :
     number_format(currentValue, decimals).replace(",", ".") + " " + txtUnit;
+  */
 
   var obj = {
     currentValue: currentValue,
-    customRange: false,
-    data: {},
-    dataFilterCount: 0,
-    dataFilterUnit: "",
     decimals: decimals,
-    graphConfig: null,
-    idx: device.idx,
-    lastRefreshTime: 0,
+    idx: parseInt(device.idx),
     name: device.Name,
     params: [],
-    popup: popup,
-    range: "initial",
-    realrange: "",
     sensor: sensor,
     subtype: device.SubType,
     title: device.Name,
@@ -295,9 +286,7 @@ function getDeviceDefaults(device, popup) {
     txtUnits: [],
     type: device.Type
   };
-  //  if (popup) getGraphData([dtGraphs[graphIdx]]); //todo: not here
   $.extend(device, obj)
-  device.idx = parseInt(device.idx);
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -361,7 +350,7 @@ function getGraphData(me, selGraph) {
     if (isDefined(selGraph)) {
       me.range = selGraph;
     } else {
-      me.range = 'initial'; //Fix to show the correct graph after refresh.
+      me.range = me.block.range; //Fix to show the correct graph after refresh.
     }
     refreshGraph(me);
   }
@@ -1319,12 +1308,14 @@ function getDefaultGraphProperties(graph, block) {
           var tooltipEl = $('#' + graph.graphIdx + '_chartjs-tooltip');
           var minWidth = graph.range !== 'day' ? 100 : 135;
 
-          if (tooltipEl.length === 0) {
+          if (tooltipEl.length === 0 && !graph.loadingTooltip) {
+            graph.loadingTooltip = true;
             templateEngine.load("graph_tooltip_table").then(function (template) {
               $('#graphoutput_' + graph.graphIdx).parent().append(template({
                 idx: graph.graphIdx,
                 minw: minWidth
               }));
+              graph.loadingTooltip = false;
             });
           }
 
@@ -1392,6 +1383,9 @@ function getDefaultGraphProperties(graph, block) {
               });
             }
 
+            var positionY = this._chart.canvas.offsetTop;
+            var positionX = this._chart.canvas.offsetLeft;
+  
             templateEngine.load("graph_tooltip").then(function (template) {
 
               var data = {
@@ -1408,8 +1402,6 @@ function getDefaultGraphProperties(graph, block) {
             });
           }
 
-          var positionY = this._chart.canvas.offsetTop;
-          var positionX = this._chart.canvas.offsetLeft;
 
           tooltipEl.css({
             opacity: 1,
@@ -1574,12 +1566,11 @@ function groupByDevice(me) {
 
   graph.forced = false;
   graph.lastRefreshTime = time();
-  //  dtGraphs[graphIdx] = graph;
   me.currentValues = [];
 
   var devices = me.graphDevices;
   $.each(devices, function (i, device) {
-    var data = allDevices[device.idx];
+    var data = Domoticz.getAllDevices()[device.idx];
     device.currentValue = device.Data;
     me.currentValues.push(device.Data);
     graph.txtUnit = device.txtUnit;
