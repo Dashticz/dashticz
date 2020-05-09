@@ -38,7 +38,7 @@ function Initialize(me) {
     var device = {};
     $.extend(device, Domoticz.getAllDevices()[idx]); //Make a copy of the current device data
     device.idx = parseInt(device.idx);
-    getDeviceDefaults(device);
+    getDeviceDefaults(me, device);
     me.graphDevices.push(device);
   });
   me.graphIdx = me.mountPoint.slice(1);
@@ -79,6 +79,7 @@ function getBlockDefaults() {
     drawOrderLast: false,
     drawOrderMonth: false,
     flash: false,
+    format: true,
     gradients: false,
     graph: "line",
     graphTypes: false,
@@ -113,7 +114,7 @@ function getBlockDefaults() {
 /** Extends device with all default graph parameters
  * 
  * */
-function getDeviceDefaults(device, popup) {
+function getDeviceDefaults(me, device) {
   var currentValue = device["Data"];
   var sensor = "counter";
   var txtUnit = "?";
@@ -267,15 +268,17 @@ function getDeviceDefaults(device, popup) {
   }
 
   var multidata = device.Data.split(',').length - 1 > 0;
-  /* todo: temporary disable number formatting
+
+  if (typeof me.block.decimals !== 'undefined')
+    decimals = me.block.decimals;
+
   currentValue = multidata ?
     device.Data :
-    number_format(currentValue, decimals).replace(",", ".") + " " + txtUnit;
-  */
+    me.block.format ? number_format(currentValue, decimals) + " " + txtUnit : currentValue;
+
 
   var obj = {
     currentValue: currentValue,
-    decimals: decimals,
     idx: parseInt(device.idx),
     name: device.Name,
     params: [],
@@ -333,7 +336,7 @@ function showPopupGraph(blockdef) { //This function can be called from blocks.js
  * */
 function deviceUpdate(me, graphDevice, device) {
   $.extend(graphDevice, device);
-  getDeviceDefaults(graphDevice); //In fact we only need a update of currentValue, but this is the most easy way
+  getDeviceDefaults(me, graphDevice); //In fact we only need a update of currentValue, but this is the most easy way
   if (me.block.groupByDevice) {
     DT_graph.refresh(me)
   } else
@@ -1142,36 +1145,50 @@ function createCurrentValues(me) {
 
   var key;
   if (me.block.customHeader) {
-    if (typeof me.block.customHeader === "object") {
-      var header = $.extend({}, me.block.customHeader); //Enforce a copy
-      for (key in header) {
-        try {
-          me.graphDevices.forEach(function (device) {
-            if (device.idx === parseInt(key)) { //the header element is the current device. Fill in the current value
-              currentValues.push(eval(header[key].replace("data", "device.currentValue")));
-            } else if (isNaN(key)) {
-              header[key] = header[key].replace( //custom header element. Fill in the current device value if needed
-                "data." + device.idx,
-                'parseFloat("' + device.currentValue + '")'); //was graph.currentValue
+    switch (typeof me.block.customHeader) {
+      case "object":
+        var header = $.extend({}, me.block.customHeader); //Enforce a copy
+        for (key in header) {
+          try {
+            me.graphDevices.forEach(function (device) {
+              if (device.idx === parseInt(key)) { //the header element is the current device. Fill in the current value
+                currentValues.push(eval(header[key].replace("data", "device.currentValue")));
+              } else if (isNaN(key)) {
+                header[key] = header[key].replace( //custom header element. Fill in the current device value if needed
+                  "data." + device.idx,
+                  'parseFloat("' + device.currentValue + '")'); //was graph.currentValue
+              }
+            });
+            if (isNaN(key)) {
+              currentValues.push(eval(header[key]));
             }
-          });
-          if (isNaN(key)) {
-            currentValues.push(eval(header[key]));
+          } catch (error) {
+            console.log("Error in customHeader:", key, header[key]);
+            console.log(error);
           }
+        }
+        break;
+      case "string": //customHeader is a string. We just evaluate the complete string
+        // eslint-disable-next-line no-unused-vars
+        var devices = Domoticz.getAllDevices(); //devices may be used in the eval function
+        try {
+          currentValues.push(eval(me.block.customHeader));
         } catch (error) {
-          console.log("Error in customHeader:", key, header[key]);
+          console.log("Error in customHeader:", me.block.customHeader);
           console.log(error);
         }
-      }
-    } else { //customHeader is a string. We just evaluate the complete string
-      // eslint-disable-next-line no-unused-vars
-      var devices = Domoticz.getAllDevices(); //devices may be used in the eval function
-      try {
-        currentValues.push(eval(me.block.customHeader));
-      } catch (error) {
-        console.log("Error in customHeader:", me.block.customHeader);
-        console.log(error);
-      }
+        break;
+      case "function":
+        var cv = "Invalid customHeader";
+        try {
+          cv = me.block.customHeader(me);
+        } catch (err) {
+          console.log("Invalid customHeader function for block ", me.key);
+        }
+        currentValues.push(cv);
+        break;
+      default:
+        console.log("Unsupported type for customHeader: ", me.block.customHeader)
     }
   } else { //return the values of all devices
     me.graphDevices.forEach(function (el) {
@@ -1385,7 +1402,7 @@ function getDefaultGraphProperties(graph, block) {
 
             var positionY = this._chart.canvas.offsetTop;
             var positionX = this._chart.canvas.offsetLeft;
-  
+
             templateEngine.load("graph_tooltip").then(function (template) {
 
               var data = {
