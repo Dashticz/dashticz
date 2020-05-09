@@ -1,8 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 /* global Dashticz Domoticz moment settings config Beaufort number_format  language time blocks   Chart _TEMP_SYMBOL  onlyUnique isDefined isObject setHeight*/
 /* global templateEngine Handlebars formatThousand*/
-var allDevices = Domoticz.getAllDevices();
-
 moment.locale(settings["language"]);
 
 var DT_graph = {
@@ -38,9 +36,9 @@ function Initialize(me) {
   me.block.devices = me.block.devices || [parseInt(me.key.split("_")[1])];
   $.each(me.block.devices, function (i, idx) {
     var device = {};
-    $.extend(device, allDevices[idx]); //Make a copy of the current device data
+    $.extend(device, Domoticz.getAllDevices()[idx]); //Make a copy of the current device data
     device.idx = parseInt(device.idx);
-    getDeviceDefaults(device);
+    getDeviceDefaults(me, device);
     me.graphDevices.push(device);
   });
   me.graphIdx = me.mountPoint.slice(1);
@@ -81,6 +79,7 @@ function getBlockDefaults() {
     drawOrderLast: false,
     drawOrderMonth: false,
     flash: false,
+    format: true,
     gradients: false,
     graph: "line",
     graphTypes: false,
@@ -115,7 +114,7 @@ function getBlockDefaults() {
 /** Extends device with all default graph parameters
  * 
  * */
-function getDeviceDefaults(device, popup) {
+function getDeviceDefaults(me, device) {
   var currentValue = device["Data"];
   var sensor = "counter";
   var txtUnit = "?";
@@ -269,25 +268,20 @@ function getDeviceDefaults(device, popup) {
   }
 
   var multidata = device.Data.split(',').length - 1 > 0;
+
+  if (typeof me.block.decimals !== 'undefined')
+    decimals = me.block.decimals;
+
   currentValue = multidata ?
     device.Data :
-    number_format(currentValue, decimals).replace(",", ".") + " " + txtUnit;
+    me.block.format ? number_format(currentValue, decimals) + " " + txtUnit : currentValue;
+
 
   var obj = {
     currentValue: currentValue,
-    customRange: false,
-    data: {},
-    dataFilterCount: 0,
-    dataFilterUnit: "",
-    decimals: decimals,
-    graphConfig: null,
-    idx: device.idx,
-    lastRefreshTime: 0,
+    idx: parseInt(device.idx),
     name: device.Name,
     params: [],
-    popup: popup,
-    range: "initial",
-    realrange: "",
     sensor: sensor,
     subtype: device.SubType,
     title: device.Name,
@@ -295,9 +289,7 @@ function getDeviceDefaults(device, popup) {
     txtUnits: [],
     type: device.Type
   };
-  //  if (popup) getGraphData([dtGraphs[graphIdx]]); //todo: not here
   $.extend(device, obj)
-  device.idx = parseInt(device.idx);
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -344,7 +336,7 @@ function showPopupGraph(blockdef) { //This function can be called from blocks.js
  * */
 function deviceUpdate(me, graphDevice, device) {
   $.extend(graphDevice, device);
-  getDeviceDefaults(graphDevice); //In fact we only need a update of currentValue, but this is the most easy way
+  getDeviceDefaults(me, graphDevice); //In fact we only need a update of currentValue, but this is the most easy way
   if (me.block.groupByDevice) {
     DT_graph.refresh(me)
   } else
@@ -361,7 +353,7 @@ function getGraphData(me, selGraph) {
     if (isDefined(selGraph)) {
       me.range = selGraph;
     } else {
-      me.range = 'initial'; //Fix to show the correct graph after refresh.
+      me.range = me.block.range; //Fix to show the correct graph after refresh.
     }
     refreshGraph(me);
   }
@@ -1153,36 +1145,50 @@ function createCurrentValues(me) {
 
   var key;
   if (me.block.customHeader) {
-    if (typeof me.block.customHeader === "object") {
-      var header = $.extend({}, me.block.customHeader); //Enforce a copy
-      for (key in header) {
-        try {
-          me.graphDevices.forEach(function (device) {
-            if (device.idx === parseInt(key)) { //the header element is the current device. Fill in the current value
-              currentValues.push(eval(header[key].replace("data", "device.currentValue")));
-            } else if (isNaN(key)) {
-              header[key] = header[key].replace( //custom header element. Fill in the current device value if needed
-                "data." + device.idx,
-                'parseFloat("' + device.currentValue + '")'); //was graph.currentValue
+    switch (typeof me.block.customHeader) {
+      case "object":
+        var header = $.extend({}, me.block.customHeader); //Enforce a copy
+        for (key in header) {
+          try {
+            me.graphDevices.forEach(function (device) {
+              if (device.idx === parseInt(key)) { //the header element is the current device. Fill in the current value
+                currentValues.push(eval(header[key].replace("data", "device.currentValue")));
+              } else if (isNaN(key)) {
+                header[key] = header[key].replace( //custom header element. Fill in the current device value if needed
+                  "data." + device.idx,
+                  'parseFloat("' + device.currentValue + '")'); //was graph.currentValue
+              }
+            });
+            if (isNaN(key)) {
+              currentValues.push(eval(header[key]));
             }
-          });
-          if (isNaN(key)) {
-            currentValues.push(eval(header[key]));
+          } catch (error) {
+            console.log("Error in customHeader:", key, header[key]);
+            console.log(error);
           }
+        }
+        break;
+      case "string": //customHeader is a string. We just evaluate the complete string
+        // eslint-disable-next-line no-unused-vars
+        var devices = Domoticz.getAllDevices(); //devices may be used in the eval function
+        try {
+          currentValues.push(eval(me.block.customHeader));
         } catch (error) {
-          console.log("Error in customHeader:", key, header[key]);
+          console.log("Error in customHeader:", me.block.customHeader);
           console.log(error);
         }
-      }
-    } else { //customHeader is a string. We just evaluate the complete string
-      // eslint-disable-next-line no-unused-vars
-      var devices = Domoticz.getAllDevices(); //devices may be used in the eval function
-      try {
-        currentValues.push(eval(me.block.customHeader));
-      } catch (error) {
-        console.log("Error in customHeader:", me.block.customHeader);
-        console.log(error);
-      }
+        break;
+      case "function":
+        var cv = "Invalid customHeader";
+        try {
+          cv = me.block.customHeader(me);
+        } catch (err) {
+          console.log("Invalid customHeader function for block ", me.key);
+        }
+        currentValues.push(cv);
+        break;
+      default:
+        console.log("Unsupported type for customHeader: ", me.block.customHeader)
     }
   } else { //return the values of all devices
     me.graphDevices.forEach(function (el) {
@@ -1319,12 +1325,14 @@ function getDefaultGraphProperties(graph, block) {
           var tooltipEl = $('#' + graph.graphIdx + '_chartjs-tooltip');
           var minWidth = graph.range !== 'day' ? 100 : 135;
 
-          if (tooltipEl.length === 0) {
+          if (tooltipEl.length === 0 && !graph.loadingTooltip) {
+            graph.loadingTooltip = true;
             templateEngine.load("graph_tooltip_table").then(function (template) {
               $('#graphoutput_' + graph.graphIdx).parent().append(template({
                 idx: graph.graphIdx,
                 minw: minWidth
               }));
+              graph.loadingTooltip = false;
             });
           }
 
@@ -1392,6 +1400,9 @@ function getDefaultGraphProperties(graph, block) {
               });
             }
 
+            var positionY = this._chart.canvas.offsetTop;
+            var positionX = this._chart.canvas.offsetLeft;
+
             templateEngine.load("graph_tooltip").then(function (template) {
 
               var data = {
@@ -1408,8 +1419,6 @@ function getDefaultGraphProperties(graph, block) {
             });
           }
 
-          var positionY = this._chart.canvas.offsetTop;
-          var positionX = this._chart.canvas.offsetLeft;
 
           tooltipEl.css({
             opacity: 1,
@@ -1574,12 +1583,11 @@ function groupByDevice(me) {
 
   graph.forced = false;
   graph.lastRefreshTime = time();
-  //  dtGraphs[graphIdx] = graph;
   me.currentValues = [];
 
   var devices = me.graphDevices;
   $.each(devices, function (i, device) {
-    var data = allDevices[device.idx];
+    var data = Domoticz.getAllDevices()[device.idx];
     device.currentValue = device.Data;
     me.currentValues.push(device.Data);
     graph.txtUnit = device.txtUnit;

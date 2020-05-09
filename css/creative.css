@@ -1842,6 +1842,7 @@ canvas {
   -webkit-transform: translate(-50%, 0);
   transform: translate(-50%, 0);
   padding: 10px;
+  z-index: 3;
 }
 
 .chartjs-tooltip.left {
