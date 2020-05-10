@@ -10,9 +10,12 @@ use InvalidArgumentException;
 use RuntimeException;
 
 /**
- * Copyright (c) 2004-2015 Roman Ožana (http://www.omdesign.cz)
+ * Copyright (c) 2004-2020 Roman Ožana (https://www.omdesign.cz)
  *
- * @author Roman Ožana <ozana@omdesign.cz>
+ * @author Roman Ožana <roman@omdesign.cz>
+ *
+ * Including recurrence hack for events older than 3 years by lokonli.
+ * 
  */
 class IcalParser {
 
@@ -24,6 +27,8 @@ class IcalParser {
 
 	/** @var array */
 	protected $counters = [];
+
+	/** @var array */
 	protected $arrayKeyMappings = [
 		'ATTACH' => 'ATTACHMENTS',
 		'EXDATE' => 'EXDATES',
@@ -44,7 +49,7 @@ class IcalParser {
 	 * @throws InvalidArgumentException
 	 * @throws Exception
 	 */
-	public function parseFile($file, $callback = null) {
+	public function parseFile($file, $callback = null): array {
 		if (!$handle = fopen($file, 'r')) {
 			throw new RuntimeException('Can\'t open file' . $file . ' for reading');
 		}
@@ -61,7 +66,7 @@ class IcalParser {
 	 * @throws InvalidArgumentException
 	 * @throws Exception
 	 */
-	public function parseString($string, $callback = null, $add = false) {
+	public function parseString($string, $callback = null, $add = false): array {
 		if ($add === false) {
 			// delete old data
 			$this->data = [];
@@ -166,7 +171,7 @@ class IcalParser {
 	 * @return array
 	 * @throws Exception
 	 */
-	public function parseRecurrences($event) {
+	public function parseRecurrences($event): array {
 		$recurring = new Recurrence($event['RRULE']);
 		$exclusions = [];
 		$additions = [];
@@ -197,8 +202,8 @@ class IcalParser {
 
 		$until = $recurring->getUntil();
 		if ($until === false) {
-			//forever... limit to 3 years
-			$end = clone($event['DTSTART']);
+			//forever... limit to 3 years from now
+			$end = new \DateTime('now');
 			$end->add(new DateInterval('P3Y')); // + 3 years
 			$recurring->setUntil($end);
 			$until = $recurring->getUntil();
@@ -232,7 +237,7 @@ class IcalParser {
 	 * @param $row
 	 * @return array
 	 */
-	private function parseRow($row) {
+	private function parseRow($row): array {
 		preg_match('#^([\w-]+);?([\w-]+="[^"]*"|.*?):(.*)$#i', $row, $matches);
 
 		$key = false;
@@ -364,7 +369,7 @@ class IcalParser {
 	/**
 	 * @return array
 	 */
-	public function getTimezones() {
+	public function getTimezones(): array {
 		return isset($this->data['VTIMEZONE']) ? $this->data['VTIMEZONE'] : [];
 	}
 
@@ -373,7 +378,7 @@ class IcalParser {
 	 *
 	 * @return array
 	 */
-	public function getSortedEvents() {
+	public function getSortedEvents(): array {
 		if ($events = $this->getEvents()) {
 			usort(
 				$events, function ($a, $b) {
@@ -388,7 +393,7 @@ class IcalParser {
 	/**
 	 * @return array
 	 */
-	public function getEvents() {
+	public function getEvents(): array {
 		$events = [];
 		if (isset($this->data['VEVENT'])) {
 			for ($i = 0; $i < count($this->data['VEVENT']); $i++) {
@@ -467,7 +472,7 @@ class IcalParser {
 	/**
 	 * @return array
 	 */
-	public function getReverseSortedEvents() {
+	public function getReverseSortedEvents(): array {
 		if ($events = $this->getEvents()) {
 			usort(
 				$events, function ($a, $b) {
