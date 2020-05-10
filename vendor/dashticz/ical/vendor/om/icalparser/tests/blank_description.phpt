@@ -3,6 +3,7 @@
  * @author Roman Ozana <ozana@omdesign.cz>
  */
 
+use om\IcalParser;
 use Tester\Assert;
 use Tester\Environment;
 
@@ -10,7 +11,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 Environment::setup();
 date_default_timezone_set('Europe/Prague');
 
-$cal = new \om\IcalParser();
+$cal = new IcalParser();
 $results = $cal->parseFile(__DIR__ . '/cal/blank_description.ics');
 
 Assert::same('', $results['VEVENT'][0]['DESCRIPTION']);

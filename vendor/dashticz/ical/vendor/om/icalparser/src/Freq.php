@@ -2,6 +2,10 @@
 
 namespace om;
 
+use DateTime;
+use DateTimeZone;
+use Exception;
+
 /**
  * Class taken from https://github.com/coopTilleuls/intouch-iCalendar.git (Freq.php)
  *
@@ -58,6 +62,7 @@ class Freq {
 	 * @param $start int Unix-timestamp (important : Need to be the start of Event)
 	 * @param $excluded array of int (timestamps), see EXDATE documentation
 	 * @param $added array of int (timestamps), see RDATE documentation
+	 * @throws Exception
 	 */
 	public function __construct($rule, $start, $excluded = [], $added = []) {
 		$this->start = $start;
@@ -70,7 +75,7 @@ class Freq {
 
 		if (isset($this->rules['until']) && is_string($this->rules['until'])) {
 			$this->rules['until'] = strtotime($this->rules['until']);
-		} elseif ($this->rules['until'] instanceof \DateTime) {
+		} elseif ($this->rules['until'] instanceof DateTime) {
 			$this->rules['until'] = $this->rules['until']->getTimestamp();
 		}
 		$this->freq = strtolower($this->rules['freq']);
@@ -169,7 +174,8 @@ class Freq {
 	 * next period
 	 *
 	 * @param int $offset
-	 * @return int
+	 * @return int|bool
+	 * @throws Exception
 	 */
 	public function findNext($offset) {
 		if (!empty($this->cache)) {
@@ -220,10 +226,10 @@ class Freq {
 		}
 
 		//EOP needs to have the same TIME as START ($t)
-		$tO = new \DateTime('@' . $t, new \DateTimeZone('UTC'));
+		$tO = new DateTime('@' . $t, new DateTimeZone('UTC'));
 
 		$eop = $this->findEndOfPeriod($offset);
-		$eopO = new \DateTime('@' . $eop, new \DateTimeZone('UTC'));
+		$eopO = new DateTime('@' . $eop, new DateTimeZone('UTC'));
 		$eopO->setTime($tO->format('H'), $tO->format('i'), $tO->format('s'));
 		$eop = $eopO->getTimestamp();
 		unset($eopO);
@@ -399,12 +405,12 @@ class Freq {
 	}
 
 	/**
-	 * Finds the earliest timestamp posible outside this perioid
+	 * Finds the earliest timestamp possible outside this period.
 	 *
 	 * @param int $offset
 	 * @return int
 	 */
-	public function findEndOfPeriod($offset) {
+	public function findEndOfPeriod($offset = 0) {
 		return $this->findStartingPoint($offset, 1, false);
 	}
 
@@ -414,6 +420,7 @@ class Freq {
 	 *
 	 * @param int $offset
 	 * @return int
+	 * @throws Exception
 	 */
 	public function previousOccurrence($offset) {
 		if (!empty($this->cache)) {
@@ -442,6 +449,7 @@ class Freq {
 	 *
 	 * @param int $offset
 	 * @return int
+	 * @throws Exception
 	 */
 	public function nextOccurrence($offset) {
 		if ($offset < $this->start) {
@@ -454,6 +462,7 @@ class Freq {
 	 * Finds the first occurrence of the rule.
 	 *
 	 * @return int timestamp
+	 * @throws Exception
 	 */
 	public function firstOccurrence() {
 		$t = $this->start;
@@ -469,6 +478,7 @@ class Freq {
 	 * Builds also the cache, if not set before...
 	 *
 	 * @return int timestamp
+	 * @throws Exception
 	 */
 	public function lastOccurrence() {
 		//build cache if not done
@@ -481,6 +491,7 @@ class Freq {
 	 * Returns all timestamps array(), build the cache if not made before
 	 *
 	 * @return array
+	 * @throws Exception
 	 */
 	public function getAllOccurrences() {
 		if (empty($this->cache)) {

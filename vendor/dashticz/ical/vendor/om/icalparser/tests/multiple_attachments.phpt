@@ -3,13 +3,15 @@
  * @author PC Drew <pc@soprisapps.com>
  */
 
+use om\IcalParser;
 use Tester\Assert;
+use Tester\Environment;
 
 require_once __DIR__ . '/../vendor/autoload.php';
-\Tester\Environment::setup();
+Environment::setup();
 date_default_timezone_set('Europe/Prague');
 
-$cal = new \om\IcalParser();
+$cal = new IcalParser();
 $results = $cal->parseFile(__DIR__ . '/cal/multiple_attachments.ics');
 
 // Backwards compatibility, there is only ever one key displayed
