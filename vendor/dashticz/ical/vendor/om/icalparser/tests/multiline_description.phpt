@@ -3,6 +3,7 @@
  * @author Aaron Parecki <aaron@parecki.com>
  */
 
+use om\IcalParser;
 use Tester\Assert;
 use Tester\Environment;
 
@@ -11,7 +12,7 @@ Environment::setup();
 date_default_timezone_set('Europe/Prague');
 
 // sort by date
-$cal = new \om\IcalParser();
+$cal = new IcalParser();
 $results = $cal->parseFile(__DIR__ . '/cal/multiline_description.ics');
 $events = $cal->getSortedEvents();
 Assert::same('30.6.2012 06:00:00', $events[0]['DTSTART']->format('j.n.Y H:i:s'));
