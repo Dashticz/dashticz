@@ -697,7 +697,7 @@ function createGraph(graph) {
   }
 
   if (!graph.block.isPopup) { //in general we should not use graph.block, but mergedBlock. In this case graph.block is ok, because isPopup should not be used in a custom block def.
-    $("." + graphIdx).css("height", setHeight(graph));
+    $("." + graphIdx + ' .graphcontent').css("height", setHeight(graph));
   }
 
   if (typeof mergedBlock.legend == "boolean") {
@@ -1029,7 +1029,7 @@ function createHeader(graph) {
   var html = '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar" style="font-size:20px;margin-left:5px;color:' + graph.block.iconColour + '">&nbsp;</i>' + graph.title + '&nbsp;<span class="graphValues' + graph.graphIdx + '">';
   html += "</span></div>";
   html += "</div>";
-  html += '<div class="graph swiper-no-swiping' + (graph.block.isPopup ? " popup graphheight" : "") + '" id="' + graph.graphIdx + '">';
+  html += '<div class="graphcontent swiper-no-swiping' + (graph.block.isPopup ? " popup graphheight" : "") + '" id="' + graph.graphIdx + '">';
   html += "<canvas " + 'id="graphoutput_' + graph.graphIdx + '"></canvas>';
   return html += "</div>";
 }
@@ -1626,7 +1626,7 @@ function groupByDevice(me) {
   mountPoint.addClass("col-xs-" + graph.block.width);
   mountPoint.addClass("block_graph");
   mountPoint.addClass(graphIdx);
-  $("." + graphIdx).css("height", setHeight(graph));
+  $("." + graphIdx + " .graphcontent").css("height", setHeight(graph));
 
   var graphProperties = getDefaultGraphProperties(graph, graph.block);
   var xAxesType = 'category';
