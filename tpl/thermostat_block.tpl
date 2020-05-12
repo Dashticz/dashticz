@@ -14,11 +14,11 @@
     </div>
 </div>
 {{/if}}
-<div class="col-xs-2 col-icon right1col">
-    <img src="img/{{mImage}}" class="on icon">
-    <em class="{{mIcon}} on icon" style="max-height:35px;"></em>
+<div class="col-xs-2 col-icon">
+    {{#if mImage}}<img src="img/{{mImage}}" class="on icon">{{/if}}
+    {{#if mIcon}}<em class="{{mIcon}} on icon" style="max-height:35px;"></em>{{/if}}
 </div>
-<div class="col-xs-8 col-data">
+<div class="col-xs-8 col-data {{#buttons}}right1col{{/buttons}}">
     <strong class="title">{{title}}</strong>
     <br />
     <span class="state">{{value}}</span>
