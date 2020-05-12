@@ -45,6 +45,7 @@ function Initialize(me) {
   me.lastRefreshTime = 0;
   me.range = me.block.range;
   me.title = me.block.title || me.graphDevices[0].Name;
+  me.params = [];
   //next lines are copied from the primary device to configure some defaults
   var pd = me.graphDevices[0];
   me.subtype = pd.subtype;
@@ -281,7 +282,6 @@ function getDeviceDefaults(me, device) {
     currentValue: currentValue,
     idx: parseInt(device.idx),
     name: device.Name,
-    params: [],
     sensor: sensor,
     subtype: device.SubType,
     title: device.Name,
@@ -444,9 +444,9 @@ function refreshGraph(me) {
   }
 
   //Now we request all Graph data sequentially
-  $.when.apply($, me.graphDevices.map(function (device) {
+  $.when.apply($, me.graphDevices.map(function (device, i) {
       me.txtUnits.push(device.txtUnit); //todo: How does this work for tehuba devices?
-      return getDeviceGraphData(me, device)
+      return getDeviceGraphData(me, i)
     }))
     .then(function () {
       redrawGraph(me)
@@ -458,9 +458,10 @@ function refreshGraph(me) {
  * Stores the data in me.data
  * And return a promise.
  */
-function getDeviceGraphData(me, device) {
+function getDeviceGraphData(me, i) {
+  var device = me.graphDevices[i];
   var params = "type=graph&sensor=" + device.sensor + "&idx=" + device.idx + "&range=" + me.realrange + "&method=1"; //todo: check method
-
+  me.params[i] = params;
   return Domoticz.request(params)
     .then(function (data) {
       data.idx = device.idx;
@@ -1273,12 +1274,12 @@ function showData(graph) {
       return false;
     });
 
-    $.each(graph.block.devices, function (i, idx) {
+    $.each(graph.graphDevices, function (i, graphDevice) {
       // var g = dtGraphs[graph.primaryIdx]; //todo: I would expect g is just graph
-      var url = config['domoticz_ip'] + '/json.htm?type=devices&rid=' + idx;
+      var url = config['domoticz_ip'] + '/json.htm?type=devices&rid=' + graphDevice.idx;
 
       $.getJSON(url, function (data) {
-        var device = data.result[0];
+        var device = data.result[0]; //This device should already contain the same info as graphDevice.
         var d = '';
         d += '<div class="device">';
         d += '  <div class="col-md-10">';
@@ -1291,10 +1292,9 @@ function showData(graph) {
         d += '  </div>';
         d += '  <div class="col-md-2 col-fas">';
         d += '    <a class="idx text-yellow" href="' + url + '" target="_blank"><i class="fas fa-info-circle">&nbsp;</i>' + device.idx + '</a>';
-        /* todo: check g.params
         if (!graph.block.groupByDevice) {
-          d += '    <a class="idx text-red" href="' + config['domoticz_ip'] + '/json.htm?' + g.params[i] + '" target="_blank"><i class="fas fa-database">&nbsp;</i>Data</a>';
-        }*/
+          d += '    <a class="idx text-red" href="' + config['domoticz_ip'] + '/json.htm?' + graph.params[i] + '" target="_blank"><i class="fas fa-database">&nbsp;</i>Data</a>';
+        }
         d += '  </div>';
         d += '</div>';
         $(d).appendTo('#modal_' + graphIdx + ' .device-list');

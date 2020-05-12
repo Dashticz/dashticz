@@ -2159,6 +2159,10 @@ canvas {
   margin: 0;
 }
 
+.graph-menu .modal-content {
+  background-color: #222;
+}
+
 .graph-menu .modal-title .fas {
   padding-right: 5px;
 }
@@ -2197,7 +2201,7 @@ canvas {
 .graph-menu .device-list {
   width: 100%;
   flex: 1;
-  background: black;
+  background: #222;
   padding: 0px 10px;
   border: solid 0.5px white;
   border-radius: 3px;
@@ -2232,12 +2236,12 @@ canvas {
 
 .graph-menu textarea {
   width: 60%;
-  background: black;
+  background: #222;
   color: grey;
 }
 
 .graph-menu .btn.debug {
-  color: black;
+  color: #222;
   background-color: white;
 }
 
