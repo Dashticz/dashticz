@@ -732,7 +732,6 @@ function getBlockClick(block) {
             device['SubType'] == 'kWh' || device['SubType'] === 'Lux' || device['SubType'] === 'Solar Radiation' ||
             device['SubType'] === 'Barometer' || device['SubType'] === 'Soil Moisture' || graph
         ) {
-            console.log('Aantal: ', $div.length)
             $div.addClass('hover').click(function () {
                 showPopupGraph(block);
             });
