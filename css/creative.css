@@ -1,5 +1,5 @@
-@import url("./plugins.css"); 
-@import url("./helpers.css"); 
+@import url("./plugins.css");
+@import url("./helpers.css");
 
 #loaderHolder {
   position: absolute;
@@ -21,19 +21,23 @@
   animation: pulsate 2s ease-out;
   animation-iteration-count: infinite;
 }
+
 @keyframes pulsate {
   0% {
     transform: scale(0.1);
     opacity: 0;
   }
+
   50% {
     opacity: 1;
   }
+
   100% {
     transform: scale(0.8);
     opacity: 0;
   }
 }
+
 .loaderHeader {
   color: #fff;
   font-size: 1.5em;
@@ -172,16 +176,19 @@
 .fa-tv:before {
   font-size: 26px;
 }
+
 .col-currency {
   font-size: 18px;
   text-align: right;
 }
+
 .SonarrItem {
   clear: both;
   width: 100%;
   position: relative;
   overflow: hidden;
 }
+
 .SonarrBanner {
   width: 100%;
   padding: 5px;
@@ -191,30 +198,37 @@
   float: Left;
   width: 75%;
 }
+
 .SonarrPoster {
   float: Left;
   width: 25%;
   padding: 0px 5px 5px 10px;
 }
+
 .SonarrData span {
   display: block;
 }
+
 .SonarrBigTitle {
   transform: rotate(90deg);
   padding-top: 15px;
   font-size: 24px;
   text-transform: uppercase;
 }
+
 .SonarrTitleShow {
   font-size: 12px;
   font-weight: bold;
 }
+
 .SonarrEpisode {
   color: darkgray;
 }
+
 .SonarrDownloaded {
   color: lightskyblue;
 }
+
 .SonarrAirDate {
   color: darkgray;
 }
@@ -224,9 +238,11 @@
   max-width: 30px;
   height: auto;
 }
+
 .modal {
   z-index: 9999;
 }
+
 .newblocksHolder {
   display: none;
   width: 220px;
@@ -255,6 +271,7 @@
   overflow-y: scroll;
   overflow-x: hidden;
 }
+
 .newblocksHolder .newblocks > div {
   border: 1px solid #aaa;
   background: rgba(255, 255, 255, 0.2);
@@ -263,6 +280,7 @@
   color: #fff;
   box-sizing: border-box;
 }
+
 .skycon {
   margin: 10px auto 10px auto;
   display: block;
@@ -305,6 +323,7 @@ next css sets the default height of the frame popup
   color: #a80002;
   cursor: help;
 }
+
 .modal-dialog-settings {
   width: 70%;
   margin: 80px auto;
@@ -422,9 +441,11 @@ next css sets the default height of the frame popup
 .containslog .items .level0 {
   color: #c70626;
 }
+
 .containslog .items .level1 {
   color: #067676;
 }
+
 .containslog .items .level2 {
   color: #ffffff;
 }
@@ -432,9 +453,11 @@ next css sets the default height of the frame popup
 .containslog .items .level0.popup {
   color: #c70626;
 }
+
 .containslog .items .level1.popup {
   color: #067676;
 }
+
 .containslog .items .level2.popup {
   color: #727272;
 }
@@ -443,10 +466,12 @@ next css sets the default height of the frame popup
   border-collapse: separate;
   border-spacing: 10px 0px;
 }
+
 .containsicalendar .calendar td {
   vertical-align: top;
   white-space: nowrap;
 }
+
 .containsicalendar td.caltitle {
   white-space: normal;
 }
@@ -455,6 +480,7 @@ next css sets the default height of the frame popup
   height: 100% !important;
   overflow: auto;
 }
+
 .containslog.popup .items {
   min-height: 300px;
 }
@@ -462,12 +488,14 @@ next css sets the default height of the frame popup
 .colbar.transbg {
   padding: 6px 5px !important;
 }
+
 .colbar.transbg .logo {
   font-size: 20px;
   font-weight: bold;
   margin-top: -4px;
   margin-bottom: -4px;
 }
+
 .colbar.transbg .fab,
 .colbar.transbg .fas,
 .colbar.transbg .far {
@@ -475,14 +503,17 @@ next css sets the default height of the frame popup
   font-size: 20px !important;
   margin-left: 10px;
 }
+
 .colbar.transbg .miniclock span {
   font-size: 15px !important;
   font-weight: bold !important;
 }
+
 .colbar span.settings,
 .colbar span.fullscreen {
   cursor: pointer;
 }
+
 a.playlist {
   margin: 5px !important;
   display: inline-block;
@@ -503,11 +534,13 @@ a.playlist {
 .containsspotify #current .current_image img {
   max-width: 64px;
 }
+
 .containsspotify #current .current_info {
   float: left;
   padding-left: 10px;
   width: calc(100% - 72px);
 }
+
 .containsspotify #current .current_artist {
   font-weight: bold;
 }
@@ -521,6 +554,7 @@ a.playlist {
   overflow: hidden;
   max-height: 33px;
 }
+
 .containsspotify .change {
   /*	background-color: #282828;*/
   display: block;
@@ -556,6 +590,7 @@ a.playlist {
 .spotback {
   margin: 5px;
 }
+
 .spottrack {
   background-color: #fff;
   width: 93%;
@@ -563,6 +598,7 @@ a.playlist {
   height: 60px;
   margin: 5px;
 }
+
 .spotlist {
   background-color: #fff;
   width: 93%;
@@ -570,6 +606,7 @@ a.playlist {
   height: 77px;
   margin: 5px;
 }
+
 /* Thermostat CSS: */
 
 .update {
@@ -583,6 +620,7 @@ a.playlist {
   position: absolute;
   z-index: 9999;
 }
+
 .editmode {
   color: white;
   background-color: red;
@@ -666,9 +704,11 @@ a.playlist {
   margin-top: -2px;
   display: inline-block;
 }
+
 .trafficmap {
   height: 100%;
 }
+
 .col-xs-1.block_trafficmap,
 .col-xs-2.block_trafficmap,
 .col-xs-3.block_trafficmap,
@@ -697,6 +737,7 @@ a.playlist {
 
 @media only screen and (max-width: 1000px) {
 }
+
 /************************/
 
 @media only screen and (max-width: 767px) {
@@ -704,6 +745,7 @@ a.playlist {
     font-size: 35px;
   }
 }
+
 .lastupdate {
   font-size: 10px;
   color: #bbb;
@@ -717,13 +759,17 @@ a.playlist {
 }
 */
 
-.modal.opengraph .modal-body {
+.modal.opengraph .modal-content {
   background-color: #222;
   color: white;
   margin: 5px;
 }
 
-.modal .graph {
+.graphcontent {
+  height: 100%;
+}
+
+.modal .graphcontent {
   height: calc(100vh - 250px);
 }
 
@@ -773,6 +819,7 @@ a.playlist {
 .selectedbutton {
   background-color: #abc !important;
 }
+
 .blockchange {
   background-color: #aaa !important;
 }
@@ -784,9 +831,11 @@ body {
   background-color: #000;
   overflow: hidden;
 }
+
 body {
   font-size: 11px;
 }
+
 hr {
   border-color: #fff;
   border-width: 2px;
@@ -800,6 +849,7 @@ hr {
   background-image: none !important;
   background-color: #313131;
 }
+
 .standby .far,
 .standby .far.fa-small,
 .standby .fas,
@@ -827,6 +877,7 @@ a {
 div.morris-hover-point {
   color: #000 !important;
 }
+
 .auto_switches,
 .auto_states,
 .auto_dimmers,
@@ -834,6 +885,7 @@ div.morris-hover-point {
 .auto_buttons {
   clear: both;
 }
+
 a:hover,
 a:focus {
   color: #eb3812;
@@ -843,41 +895,51 @@ a:focus {
 .far.fa-newspaper {
   margin-left: 1px;
 }
+
 .fas.fa-lightbulb,
 .far.fa-lightbulb {
   margin-top: 1px;
   margin-left: 6px;
 }
+
 .hidden {
   display: none;
 }
+
 div.mh {
   height: 85px;
 }
+
 div.mh h3 {
   padding-top: 6px;
 }
+
 div.big {
   padding-top: 20px !important;
   padding-left: 18px !important;
 }
+
 .sunriseholder,
 .sunriseholder .wi {
   font-size: 14px !important;
 }
+
 .sunriseholder .wi-sunset {
   padding-left: 10px;
 }
+
 .sunriseholder .wi {
   padding-right: 5px;
   padding-top: 5px;
 }
+
 select,
 select option {
   color: #000 !important;
   width: auto;
   max-width: 90%;
 }
+
 .title {
   font-size: 12px;
 }
@@ -885,72 +947,93 @@ select option {
 .wi {
   font-size: 30px;
 }
+
 .wi.wi-rain {
   margin-top: 0px;
 }
+
 .fas {
   font-size: 30px;
 }
+
 .far {
   font-size: 30px;
 }
+
 .fab {
   font-size: 30px;
 }
+
 .fas.fa-small {
   font-size: 20px;
 }
+
 .fas.fa-thermometer-half {
   margin-left: 8px;
   margin-top: 2px;
 }
+
 .fas.fa-calendar {
   margin-left: 4px;
   margin-top: 1px;
 }
+
 .fas.fa-thermometer-half.fa-thermometer-half-switch {
   margin-left: 4px;
 }
+
 .fas.fa-desktop {
   margin-top: 5px;
 }
+
 .fas.fa-fire {
   margin-top: 5px;
 }
+
 .fas.fa-plug {
   margin-top: 5px;
 }
+
 .fas.fa-music {
   margin-top: 5px;
 }
+
 .fas.fa-television,
 .fas.fa-microchip {
   margin-left: 3px;
   margin-top: 2px;
 }
+
 .containshorizon .fas {
   margin-top: 8px;
 }
+
 .containsnzbget .fas {
   margin-top: 8px;
 }
+
 .fas.fa-tint {
   margin-left: 5px;
   margin-top: 4px;
 }
+
 .fas.fa-trash {
   margin-left: 8px;
 }
+
 .fas.fa-bolt {
   margin-left: 8px;
 }
+
 .wi.wi-wind-direction {
   margin-left: 4px;
   margin-top: 2px;
 }
+
 .fas.fa-toggle-off {
   opacity: 0.5;
-  filter: alpha(opacity=50); /* For IE8 and earlier */
+  filter: alpha(opacity=50);
+  /* For IE8 and earlier */
 }
 
 h1,
@@ -963,13 +1046,16 @@ h6 {
   margin: 0px;
   margin-left: 15px;
 }
+
 .smalltitle h3 {
   font-size: 12px !important;
   margin-left: 6px;
 }
+
 h1 {
   font-size: 35px;
 }
+
 p {
   font-size: 16px;
   line-height: 1.5;
@@ -984,6 +1070,7 @@ p {
 .clear {
   clear: both;
 }
+
 .transbg.col-xs-1,
 .transbg.col-xs-2,
 .transbg.col-xs-3,
@@ -1064,6 +1151,7 @@ Only add this hover on NON touch devices
 .transbg.hover {
   cursor: pointer;
 }
+
 .transbg.hover.hovered {
   background: rgba(255, 255, 255, 0.1);
   background-clip: padding-box;
@@ -1078,6 +1166,7 @@ Only add this hover on NON touch devices
 .cast-button-container {
   padding: 13px !important;
 }
+
 .cast-button {
   height: 25px;
   width: 25px;
@@ -1109,11 +1198,13 @@ Only add this hover on NON touch devices
   padding-top: 10px !important;
   padding-bottom: 10px !important;
 }
+
 .column1.col-xs-5,
 .column2.col-xs-5,
 .column3.col-xs-2 {
   padding: 0px !important;
 }
+
 .row {
   margin: 0px !important;
 }
@@ -1157,12 +1248,15 @@ Only add this hover on NON touch devices
   margin-top: 7px;
   margin-right: 7px;
 }
+
 .weekday {
   margin-bottom: 5px;
 }
+
 .ui-widget.ui-widget-content {
   background-color: #aaa;
 }
+
 .ui-state-default,
 .ui-widget-content .ui-state-default,
 .ui-widget-header .ui-state-default,
@@ -1174,15 +1268,19 @@ html .ui-button.ui-state-disabled:active {
   margin-top: -4px;
   margin-left: -4px;
 }
+
 .buttonimg {
   max-height: 20px;
 }
+
 .ml {
   margin-left: 10px;
 }
+
 .mr {
   margin-right: 10px;
 }
+
 .navbar-default {
   background-color: white;
   border-color: rgba(34, 34, 34, 0.05);
@@ -1191,22 +1289,26 @@ html .ui-button.ui-state-disabled:active {
   -moz-transition: all 0.35s;
   transition: all 0.35s;
 }
+
 .navbar-default .navbar-header .navbar-brand {
   color: #f05f40;
   font-family: "Open Sans", "Helvetica Neue", Arial, sans-serif;
   font-weight: 700;
   text-transform: uppercase;
 }
+
 .navbar-default .navbar-header .navbar-brand:hover,
 .navbar-default .navbar-header .navbar-brand:focus {
   color: #eb3812;
 }
+
 .navbar-default .navbar-header .navbar-toggle {
   font-weight: 700;
   font-size: 12px;
   color: #222222;
   text-transform: uppercase;
 }
+
 .navbar-default .nav > li > a,
 .navbar-default .nav > li > a:focus {
   text-transform: uppercase;
@@ -1214,55 +1316,68 @@ html .ui-button.ui-state-disabled:active {
   font-size: 13px;
   color: #222222;
 }
+
 .navbar-default .nav > li > a:hover,
 .navbar-default .nav > li > a:focus:hover {
   color: #f05f40;
 }
+
 .navbar-default .nav > li.active > a,
 .navbar-default .nav > li.active > a:focus {
   color: #f05f40 !important;
   background-color: transparent;
 }
+
 .navbar-default .nav > li.active > a:hover,
 .navbar-default .nav > li.active > a:focus:hover {
   background-color: transparent;
 }
+
 @media (min-width: 768px) {
   .navbar-default {
     background-color: transparent;
     border-color: rgba(255, 255, 255, 0.3);
   }
+
   .navbar-default .navbar-header .navbar-brand {
     color: rgba(255, 255, 255, 0.7);
   }
+
   .navbar-default .navbar-header .navbar-brand:hover,
   .navbar-default .navbar-header .navbar-brand:focus {
     color: white;
   }
+
   .navbar-default .nav > li > a,
   .navbar-default .nav > li > a:focus {
     color: rgba(255, 255, 255, 0.7);
   }
+
   .navbar-default .nav > li > a:hover,
   .navbar-default .nav > li > a:focus:hover {
     color: white;
   }
+
   .navbar-default.affix {
     background-color: white;
     border-color: rgba(34, 34, 34, 0.05);
   }
+
   .navbar-default.affix .navbar-header .navbar-brand {
     color: #f05f40;
     font-size: 14px;
   }
+
   .navbar-default.affix .navbar-header .navbar-brand:hover,
   .navbar-default.affix .navbar-header .navbar-brand:focus {
     color: #eb3812;
   }
+
   .navbar-default.affix .nav > li > a,
   .navbar-default.affix .nav > li > a:focus {
     color: #222222;
   }
+
   .navbar-default.affix .nav > li > a:hover,
   .navbar-default.affix .nav > li > a:focus:hover {
     color: #f05f40;
@@ -1300,9 +1415,11 @@ img.icon {
   div.mh {
     height: 75px;
   }
+
   .big .weatherdegrees {
     padding-left: 15px;
   }
+
   .transbg.col-xs-1,
   .transbg.col-xs-2,
   .transbg.col-xs-3,
@@ -1318,9 +1435,11 @@ img.icon {
     padding-top: 7px;
     padding-bottom: 7px;
   }
+
   .dt_block {
     padding: 2px !important;
   }
+
   .dt_title,
   .dt_state {
     margin: 2px 2px;
@@ -1343,10 +1462,12 @@ img.icon {
   .cast-button-container {
     padding: 3px !important;
   }
+
   h1,
   h4 {
     margin-left: 0px !important;
   }
+
   div.big {
     padding-left: 13px !important;
   }
@@ -1362,12 +1483,14 @@ img.icon {
   img.icon {
     max-width: 15px !important;
   }
+
   .fas,
   .far,
   .fab,
   .wi {
     font-size: 15px !important;
   }
+
   .fa-tv:before {
     font-size: 12px;
   }
@@ -1375,9 +1498,11 @@ img.icon {
   .big .wi {
     font-size: 30px !important;
   }
+
   .col-icon {
     max-width: 26px !important;
   }
+
   .col-data {
     width: calc(100% - 30px);
   }
@@ -1414,6 +1539,7 @@ div.screen {
 .big .weatherdegrees {
   padding-right: 10px;
 }
+
 .big .weatherdegrees,
 .big .weatherloc {
   display: inline-block;
@@ -1432,19 +1558,23 @@ div.screen {
   text-align: center;
   color: #fff;
 }
+
 .weatherfull > div div.day {
   margin-top: 0px;
   font-weight: 300;
   font-size: 13px;
 }
+
 .weatherfull > div div.temp span {
   float: none;
   display: inline-block;
 }
+
 .weatherfull > div div.temp {
   font-size: 28px;
   font-weight: 400;
 }
+
 .weatherfull > div div.temp .nightT {
   display: block;
   font-size: 19px;
@@ -1459,6 +1589,7 @@ div.screen {
   height: 48px;
   margin: 0px auto;
 }
+
 .weatherfull > div div.icon i {
   color: #fff !important;
 }
@@ -1468,6 +1599,7 @@ div.screen {
   margin: 5px auto 0 auto;
   opacity: 0.9;
 }
+
 .section-heading {
   margin-top: 0;
 }
@@ -1475,10 +1607,12 @@ div.screen {
 .text-primary {
   color: #f05f40;
 }
+
 .no-gutter > [class*="col-"] {
   padding-right: 0;
   padding-left: 0;
 }
+
 .btn-default {
   color: #222222;
   background-color: white;
@@ -1487,6 +1621,7 @@ div.screen {
   -moz-transition: all 0.35s;
   transition: all 0.35s;
 }
+
 .btn-default:hover,
 .btn-default:focus,
 .btn-default.focus,
@@ -1497,11 +1632,13 @@ div.screen {
   background-color: #f2f2f2;
   border-color: #ededed;
 }
+
 .btn-default:active,
 .btn-default.active,
 .open > .dropdown-toggle.btn-default {
   background-image: none;
 }
+
 .btn-default.disabled,
 .btn-default[disabled],
 fieldset[disabled] .btn-default,
@@ -1523,10 +1660,12 @@ fieldset[disabled] .btn-default.active {
   background-color: white;
   border-color: white;
 }
+
 .btn-default .badge {
   color: white;
   background-color: #222222;
 }
+
 .btn-primary {
   color: white;
   background-color: #f05f40;
@@ -1535,6 +1674,7 @@ fieldset[disabled] .btn-default.active {
   -moz-transition: all 0.35s;
   transition: all 0.35s;
 }
+
 .btn-primary:hover,
 .btn-primary:focus,
 .btn-primary.focus,
@@ -1545,11 +1685,13 @@ fieldset[disabled] .btn-default.active {
   background-color: #ee4b28;
   border-color: #ed431f;
 }
+
 .btn-primary:active,
 .btn-primary.active,
 .open > .dropdown-toggle.btn-primary {
   background-image: none;
 }
+
 .btn-primary.disabled,
 .btn-primary[disabled],
 fieldset[disabled] .btn-primary,
@@ -1571,10 +1713,12 @@ fieldset[disabled] .btn-primary.active {
   background-color: #f05f40;
   border-color: #f05f40;
 }
+
 .btn-primary .badge {
   color: #f05f40;
   background-color: white;
 }
+
 .btn {
   font-family: "Open Sans", "Helvetica Neue", Arial, sans-serif;
   font-weight: 700;
@@ -1583,9 +1727,11 @@ fieldset[disabled] .btn-primary.active {
   font-size: 10px;
   margin-right: 5px;
 }
+
 .btn-xl {
   padding: 15px 30px;
 }
+
 .btn-group .btn {
   font-size: 12px;
   font-weight: 400;
@@ -1610,6 +1756,7 @@ fieldset[disabled] .btn-primary.active {
   margin: 0 auto;
   margin-top: 200px;
 }
+
 .content-login {
   display: block;
   font-family: Verdana;
@@ -1618,10 +1765,12 @@ fieldset[disabled] .btn-primary.active {
   padding: 10px 0 0;
   color: #000;
 }
+
 .login {
   text-align: center;
   padding: 20px;
 }
+
 .login input[type="text"] {
   height: 30px;
   border: 1px solid rgba(0, 0, 0, 0.6);
@@ -1632,6 +1781,7 @@ fieldset[disabled] .btn-primary.active {
   font-weight: 400;
   padding: 4px;
 }
+
 .login input[type="password"] {
   height: 30px;
   border: 1px solid rgba(0, 0, 0, 0.6);
@@ -1643,61 +1793,77 @@ fieldset[disabled] .btn-primary.active {
   padding: 4px;
   margin-top: 10px;
 }
+
 .login input[type="button"] {
   height: 35px;
   padding: 6px;
   margin-top: 10px;
 }
+
 .login input[type="button"]:hover {
   opacity: 0.8;
 }
+
 .login input[type="button"]:active {
   opacity: 0.6;
 }
+
 .login input[type="text"]:focus {
   outline: none;
   border: 1px solid rgba(0, 0, 0, 0.9);
 }
+
 .login input[type="password"]:focus {
   outline: none;
   border: 1px solid rgba(0, 0, 0, 0.9);
 }
+
 .login input[type="button"]:focus {
   outline: none;
 }
+
 ::-webkit-input-placeholder {
   color: rgba(0, 0, 0, 0.6);
 }
+
 ::-moz-input-placeholder {
   color: rgba(0, 0, 0, 0.6);
 }
+
 ::-moz-selection {
   color: white;
   text-shadow: none;
   background: #222222;
 }
+
 ::selection {
   color: white;
   text-shadow: none;
   background: #222222;
 }
+
 img::selection {
   color: white;
   background: transparent;
 }
+
 img::-moz-selection {
   color: white;
   background: transparent;
 }
+
 body {
   webkit-tap-highlight-color: #222222;
 }
+
 #latetrain {
   color: red;
 }
+
 #notlatetrain {
   color: green;
 }
+
 #departureScheduled {
   font-size: 10px !important;
 }
@@ -1731,6 +1897,7 @@ a:not([href]) {
 .hide {
   display: none !important;
 }
+
 /* EVOHOME END */
 
 .hr_thin {
@@ -1761,7 +1928,6 @@ a:not([href]) {
   vertical-align: middle;
   min-width: 50%;
 }
-
 
 /* START: NEWS BLOCK*/
 #newsTicker {
@@ -1842,6 +2008,7 @@ canvas {
   -webkit-transform: translate(-50%, 0);
   transform: translate(-50%, 0);
   padding: 10px;
+  z-index: 3;
 }
 
 .chartjs-tooltip.left {
@@ -1922,6 +2089,7 @@ canvas {
   height: 25px;
   border-color: grey;
 }
+
 .chartjs-tooltip-key {
   display: inline-block;
   width: 10px;
@@ -1934,8 +2102,9 @@ canvas {
   font-size: 15px;
   margin-left: -2px;
   margin-top: 1px;
-  margin-right: 5px;  
+  margin-right: 5px;
 }
+
 /* END: TOOLTIPSTYLE */
 
 /* START: GRAPH-MENU DEBUG */
@@ -1990,9 +2159,14 @@ canvas {
   margin: 0;
 }
 
+.graph-menu .modal-content {
+  background-color: #222;
+}
+
 .graph-menu .modal-title .fas {
   padding-right: 5px;
 }
+
 .graph-menu div:not(.debug) > .fas {
   padding-right: 5px;
 }
@@ -2027,7 +2201,7 @@ canvas {
 .graph-menu .device-list {
   width: 100%;
   flex: 1;
-  background: black;
+  background: #222;
   padding: 0px 10px;
   border: solid 0.5px white;
   border-radius: 3px;
@@ -2062,14 +2236,15 @@ canvas {
 
 .graph-menu textarea {
   width: 60%;
-  background: black;
+  background: #222;
   color: grey;
 }
 
 .graph-menu .btn.debug {
-  color: black;
+  color: #222;
   background-color: white;
 }
+
 /* END: GRAPH-MENU DEBUG */
 
 /* START: CAMERA COMPONENT */
@@ -2193,6 +2368,7 @@ canvas {
   justify-content: center;
   vertical-align: middle;
 }
+
 /* END: CORONAVIRUS */
 
 /* START: AGENDA */
@@ -2200,19 +2376,22 @@ canvas {
   border-collapse: separate;
   border-spacing: 10px 0px;
 }
+
 .agenda td {
   vertical-align: top;
   white-space: nowrap;
 }
+
 td.agenda-title {
   white-space: normal;
 }
+
 /* END: AGENDA */
 
 /* START: NEW CALENDAR */
 .cal_table {
   border-collapse: collapse;
-  height: 100%!important;
+  height: 100% !important;
 }
 
 .cal_table tr {
@@ -2227,9 +2406,9 @@ td.agenda-title {
   overflow: hidden;
   word-break: normal;
   border-color: white;
-  color:white;
+  color: white;
   background-color: #292b2c;
-  display: inline-table
+  display: inline-table;
 }
 
 .cal_table td:hover {
@@ -2241,44 +2420,44 @@ td.agenda-title {
   text-align: left;
 }
 
-.cal_table td > div {  
+.cal_table td > div {
   text-align: center;
 }
 
 .cal_table table tr div.event {
-  white-space: wrap!important;
+  white-space: wrap !important;
 }
 
-.cal_table td > div.historic > div {  
-  color: rgba(255, 255, 255, 0.3)!important;
+.cal_table td > div.historic > div {
+  color: rgba(255, 255, 255, 0.3) !important;
 }
 
-.cal_table td > div.header {  
+.cal_table td > div.header {
   background-color: #484848;
   max-width: inherit;
 }
 
-.cal_table td > div.today {  
+.cal_table td > div.today {
   background-color: #0275d8;
 }
 
 .cal_table td > div.event:hover,
-.cal_table td > div.event.historic:hover > div {  
-  background-color: #f0ad4e!important;
-  color:#292b2c!important;
+.cal_table td > div.event.historic:hover > div {
+  background-color: #f0ad4e !important;
+  color: #292b2c !important;
 }
 
-.cal_table td > div.allday {  
-  background-color: #d9534f!important;
+.cal_table td > div.allday {
+  background-color: #d9534f !important;
   border-radius: 2px;
 }
 
-.cal_table td > div.allday.hol {  
-  background-color: #428442!important;
+.cal_table td > div.allday.hol {
+  background-color: #428442 !important;
   border-radius: 2px;
 }
 
-.cal_table td > div:not(:first-child) {  
+.cal_table td > div:not(:first-child) {
   display: inline-flex;
   margin: 3px 5px;
   display: flex;
@@ -2296,13 +2475,13 @@ td.agenda-title {
   z-index: 100;
   top: 0;
   top: 50%;
-  left: 50%;  
+  left: 50%;
   margin-top: -10%;
   margin-left: -15%;
   padding: 1%;
   box-shadow: 0px 20px 20px 20px rgba(0, 0, 0, 0.5);
   color: white;
-  border: solid 2px #292b2c;;
+  border: solid 2px #292b2c;
   border-radius: 5px;
 }
 
@@ -2314,7 +2493,7 @@ td.agenda-title {
 }
 
 .cal-modal > .cal-title > .far {
-  float: right!important;
+  float: right !important;
 }
 
 .cal-modal > .cal-info {
@@ -2326,7 +2505,7 @@ td.agenda-title {
 }
 
 .cal-modal > .cal-footer {
-  bottom: 0px!important;
+  bottom: 0px !important;
   position: absolute;
   width: 93%;
   line-height: 2;
@@ -2347,23 +2526,25 @@ td.agenda-title {
   color: dodgerblue;
 }
 
-.cal-modal > .cal-footer a:nth-child(1){
+.cal-modal > .cal-footer a:nth-child(1) {
   float: left;
 }
 
-.cal-modal > .cal-footer a:nth-child(2){
+.cal-modal > .cal-footer a:nth-child(2) {
   float: right;
 }
 
-@media screen and (max-width: 1400px) and (max-height: 800px){
-  .cal_table td > div:first-child {  
+@media screen and (max-width: 1400px) and (max-height: 800px) {
+  .cal_table td > div:first-child {
     text-align: center;
-  }  
+  }
+
   .cal_table td div {
     font-size: 0.9em;
     text-align: left;
   }
 }
+
 /* END: CALENDAR */
 
 /* START: SECURITY PANEL */
@@ -2437,6 +2618,7 @@ td.agenda-title {
   color: #5a5959;
   text-shadow: 1px 2px 8px rgba(0, 0, 0, 1);
 }
+
 .sec-frame .keypad-header .fas {
   margin-right: 0.3em;
   -webkit-animation: rotateY 2s infinite linear;
@@ -2453,6 +2635,7 @@ td.agenda-title {
     -webkit-transform: rotateY(360deg);
   }
 }
+
 @keyframes rotateY {
   to {
     transform: rotateY(360deg);
@@ -2506,11 +2689,11 @@ td.agenda-title {
   height: 10%;
   left: 2%;
   right: 2%;
-  box-shadow: 0px 2px 9px 1px rgba(0,0,0,0.8);
+  box-shadow: 0px 2px 9px 1px rgba(0, 0, 0, 0.8);
 }
 
 .sec-frame .keypad-input .key-input {
-  font-family: 'Audiowide'!important;
+  font-family: "Audiowide" !important;
   font-size: 2vw;
   width: 100%;
   border-radius: 3px;
@@ -2552,9 +2735,15 @@ td.agenda-title {
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  -webkit-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  -moz-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -webkit-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -moz-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
   font-family: monospace;
   text-transform: uppercase;
   font-weight: 900;
@@ -2570,9 +2759,15 @@ td.agenda-title {
 
 .sec-frame .keypad-input .key:not(.disabled):active {
   transform: scale(0.9);
-  -webkit-box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  -moz-box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -webkit-box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 1),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -moz-box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 1),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 1),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
 }
 
 .sec-frame .keypad-input .key.h {
@@ -2618,15 +2813,19 @@ td.agenda-title {
 .sec-frame .keypad-input .status[data-id="disarm"]:before {
   content: "\f09c";
 }
+
 .sec-frame .keypad-input .status[data-id="armhome"]:before {
   content: "\f965";
 }
+
 .sec-frame .keypad-input .status[data-id="armaway"]:before {
   content: "\f554";
 }
+
 .sec-frame .keypad-input .status[data-id="dashticz"]:before {
   content: "\f2f6";
 }
+
 .sec-frame .keypad-input .key[data-id="cancel"]:before {
   content: "\f104";
   font-family: "Font Awesome 5 Free";
@@ -2635,9 +2834,12 @@ td.agenda-title {
 }
 
 .no-select {
-  -webkit-user-select: none; /* Safari */
-  -ms-user-select: none; /* IE 10+ and Edge */
-  user-select: none; /* Standard syntax */
+  -webkit-user-select: none;
+  /* Safari */
+  -ms-user-select: none;
+  /* IE 10+ and Edge */
+  user-select: none;
+  /* Standard syntax */
 }
 
 .screw {
@@ -2689,7 +2891,7 @@ td.agenda-title {
     #dddddd 68%,
     #f6f6f6 100%
   );
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#adadad', endColorstr='#f6f6f6',GradientType=1 );
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#adadad', endColorstr='#f6f6f6', GradientType=1);
   -moz-box-shadow: 0px 2px 4px #000;
   -webkit-box-shadow: 0px 2px 4px #000;
   box-shadow: 0px 2px 4px #000, -1px 3px 10px 7px rgba(0, 0, 0, 0.5);
