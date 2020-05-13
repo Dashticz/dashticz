@@ -168,6 +168,9 @@ The following block parameters can be used to configure the graph:
     - the code automatically calculate if any devices' time data is longer than others. It then use that device's time data, then match all of the devices non-time data to that. This setting allows users to choose to enable or disable that feature (true or false)
   * - customHeader
     - ``customHeader: { ... }`` Customized graph header. See :ref:`customheader`.
+  * - format
+    - | ``false`` (default). Show the value in the graph header as reported by Dashticz.
+      | ``true``. Format the graph header value using the ``decimals`` parameter and the config settings ``_THOUSAND_SEPARATOR`` and ``_DECIMAL_POINT``. See (todo)
   * - popup
     - ``popup: 'popup_graph'`` Defined Popups. See :ref:`graphs_popups`.
   * - tooltiptotal
@@ -626,6 +629,9 @@ The object accepts key value pairs. Standard Javascript or Jquery code can be us
 Using the updated block (above), the graph now displays like this (below). The unwanted data has been removed, and a new value (the delta between the 2 devices), "1.0 C", has been added:
 
 .. image :: img/graph_customheader_after.png
+
+
+
 
 
 Custom data
