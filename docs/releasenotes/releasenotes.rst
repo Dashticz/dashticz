@@ -7,10 +7,14 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Latest changes
 --------------
 
+3.4.6 (Beta) (13-5-2020)
+------------------------
+
 Enhancements
   * Enable graphs for Voltage and Distance devices
   * Parameter ``timeformat`` to configure time format for 'alarmmeldingen'. See :ref:`customalarmmeldingen`
   * TV guide (Dutch: tvgids) made clickable
+  * More options to customize the graph header. See :ref:`customheader`
 
 Fixes
   * Fix for ANWB Traffic Info (new API)
