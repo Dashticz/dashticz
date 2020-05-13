@@ -169,8 +169,8 @@ The following block parameters can be used to configure the graph:
   * - customHeader
     - ``customHeader: { ... }`` Customized graph header. See :ref:`customheader`.
   * - format
-	- | ``false`` (default). Show the value in the graph header as reported by Dashticz.
-	  | ``true``. Format the graph header value using the ``decimals`` parameter and the config settings ``_THOUSAND_SEPARATOR`` and ``_DECIMAL_POINT``. See (todo)
+    - | ``false`` (default). Show the value in the graph header as reported by Dashticz.
+      | ``true``. Format the graph header value using the ``decimals`` parameter and the config settings ``_THOUSAND_SEPARATOR`` and ``_DECIMAL_POINT``. See (todo)
   * - popup
     - ``popup: 'popup_graph'`` Defined Popups. See :ref:`graphs_popups`.
   * - tooltiptotal
@@ -595,10 +595,11 @@ customHeader
 ~~~~~~~~~~~~
 
 The parameter ``customheader`` can be a:
-  *  string
-  *  function
-  *  object
-  
+
+* string
+* function
+* object
+
 Examples for each type are presented below.
 
 Example of graph showing long data values in header:
@@ -631,19 +632,19 @@ Using the updated block (above), the graph now displays like this (below). The u
 
 In case ``customHeader`` is a string, string will be evaluated, and the result added to the graph title::
 
-  customHeader: '"Usage: " + devices[6].Usage + "Delivery: " + devices[6].CurrentDeliv'
+	customHeader: '"Usage: " + devices[6].Usage + "Delivery: " + devices[6].CurrentDeliv'
 
 The Domoticz devices can be accessed via ``devices[idx]``, as you can see in the previous example.
 
 In case the formatting and/or computation is more complex, you can define customHeader as function::
 
-  customHeader : function(graph) {
-    var devices = Domoticz.getAllDevices();
-	var solarGeneration = devices[6].Usage;
-	var inflow = devices[43].Usage;
-	var outflow = devices[43].UsageDeliv;
-	var nett = inflow + solarGeneration - outflow;
-	return "Nett: " + nett + " Watt";
+	customHeader : function(graph) {
+		var devices = Domoticz.getAllDevices();
+		var solarGeneration = devices[6].Usage;
+		var inflow = devices[43].Usage;
+		var outflow = devices[43].UsageDeliv;
+		var nett = inflow + solarGeneration - outflow;
+		return "Nett: " + nett + " Watt";
 	},
 
 
