@@ -594,7 +594,12 @@ Custom point styling
 customHeader
 ~~~~~~~~~~~~
 
-The parameter ``customheader`` can be a string, function or object. Examples for each type are presented below.
+The parameter ``customheader`` can be a:
+  *  string
+  *  function
+  *  object
+  
+Examples for each type are presented below.
 
 Example of graph showing long data values in header:
 
