@@ -630,8 +630,22 @@ Using the updated block (above), the graph now displays like this (below). The u
 
 .. image :: img/graph_customheader_after.png
 
+In case ``customHeader`` is a string, string will be evaluated, and the result added to the graph title::
 
+	customHeader: '"Usage: " + devices[6].Usage + "Delivery: " + devices[6].CurrentDeliv'
 
+The Domoticz devices can be accessed via ``devices[idx]``, as you can see in the previous example.
+
+In case the formatting and/or computation is more complex, you can define customHeader as function::
+
+	customHeader : function(graph) {
+		var devices = Domoticz.getAllDevices();
+		var solarGeneration = devices[6].Usage;
+		var inflow = devices[43].Usage;
+		var outflow = devices[43].UsageDeliv;
+		var nett = inflow + solarGeneration - outflow;
+		return "Nett: " + nett + " Watt";
+	},
 
 
 Custom data
