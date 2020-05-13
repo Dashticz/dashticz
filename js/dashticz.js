@@ -253,7 +253,7 @@ var Dashticz = function () {
     }
 
     function _mountNewContainer(column) {
-        $(column).append('<div id="block_' + blockNumbering + '"</div>');
+        $(column).append('<div id="block_' + blockNumbering + '"></div>');
         return '#block_' + blockNumbering++;
     }
 
