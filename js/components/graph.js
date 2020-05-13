@@ -1,10 +1,7 @@
 /* eslint-disable no-prototype-builtins */
-/* global Dashticz moment settings config Beaufort number_format alldevices language time blocks usrEnc pwdEnc Chart _TEMP_SYMBOL getWeekNumber onlyUnique isDefined isObject setHeight*/
-var allDevices = Domoticz.getAllDevices();
-var dtGraphs = [];
-var charts = [];
-var _GRAPHREFRESH = 5;
-var p = "p";
+/* global Dashticz Domoticz moment settings config Beaufort number_format  language time blocks   Chart _TEMP_SYMBOL  onlyUnique isDefined isObject setHeight*/
+/* global templateEngine Handlebars formatThousand*/
+moment.locale(settings["language"]);
 
 var DT_graph = {
   name: "graph",
@@ -14,119 +11,111 @@ var DT_graph = {
       (typeof key === "string" && key.substring(0, 6) === "graph_")
     );
   },
+  defaultCfg: getBlockDefaults,
   run: function (me) {
-    if (
-      (typeof me.block !== "undefined" &&
-        typeof me.block.devices !== "undefined") ||
-      (typeof me.key === "string" && me.key.substring(0, 6) === "graph_")
-    ) {
-      var graphDevices = getBlockConfig(me);
+    Initialize(me);
 
-      $.each(graphDevices, function (i, graphDevice) {
-        Domoticz.subscribe(graphDevice.idx, true, function (device) {
-          getDeviceDefaults(graphDevice);
-          if (graphDevices.length - 1 === i) {
-            getGraphData(graphDevices);
-          }
-        });
+    $.each(me.graphDevices, function (i, graphDevice) { //install the callback handles
+      Domoticz.subscribe(graphDevice.idx, false, function (device) {
+        deviceUpdate(me, graphDevice, device);
       });
-    }
+    });
+  },
+
+  refresh: function (me) {
+    getGraphData(me)
   }
+
 };
 
 Dashticz.register(DT_graph);
 
-function getBlockConfig(me) {
-  var graphDevices = [];
-  var hasBlock = isDefined(me.block) && isDefined(me.block.devices) ? true : false;
-  var graphIdx = hasBlock ? me.block.devices[0] : me.key.split("_")[1];
-  var devices = hasBlock ? me.block.devices : [parseInt(graphIdx)];
-
-  $.each(devices, function (i, idx) {
-    var obj = {};
-    obj.blockId = me.mountPoint.slice(1);
-    obj.hasBlock = hasBlock;
-    obj.mountPoint = me.mountPoint;
-    obj.multigraph = devices.length > 1;
-    obj.graphIdx = obj.blockId + devices[i]
-    obj.primary = i === 0;
-    obj.primaryIdx = obj.primary ?
-      obj.blockId + devices[i] :
-      obj.blockId + devices[0];
-
-    obj.block = getBlockDefaults(devices, hasBlock, me.block);
-
-    var device = $.extend(obj, allDevices[idx]);
-    device.Name = hasBlock && device.block.title ? device.block.title : device.Name;
+/** Initialization of the Graph object */
+function Initialize(me) {
+  me.graphDevices = [];
+  me.block.devices = me.block.devices || [parseInt(me.key.split("_")[1])];
+  $.each(me.block.devices, function (i, idx) {
+    var device = {};
+    $.extend(device, Domoticz.getAllDevices()[idx]); //Make a copy of the current device data
     device.idx = parseInt(device.idx);
-    graphDevices.push(device);
+    getDeviceDefaults(me, device);
+    me.graphDevices.push(device);
   });
-  return graphDevices;
+  me.graphIdx = me.mountPoint.slice(1);
+  me.lastRefreshTime = 0;
+  me.range = me.block.range;
+  me.title = me.block.title || me.graphDevices[0].Name;
+  me.params = [];
+  //next lines are copied from the primary device to configure some defaults
+  var pd = me.graphDevices[0];
+  me.subtype = pd.subtype;
 }
 
-function getBlockDefaults(devices, hasBlock, b) {
-  var datasetColors = ['blue', 'orange', 'red', 'yellow', 'green', 'purple', 'chartreuse', 'aqua', 'teal', 'pink', 'gray', 'fuchsia'];
-
-  var block = {};
-  block.devices = devices;
-  block.datasetColors = hasBlock && isDefined(b.datasetColors) ? b.datasetColors : datasetColors;
-  block.barWidth = hasBlock && isDefined(b.barWidth) ? b.barWidth : 0.9;
-  block.beginAtZero = hasBlock && isDefined(b.beginAtZero) ? b.beginAtZero : false;
-  block.borderColors = hasBlock && isDefined(b.borderColors) ? b.borderColors : block.datasetColors;
-  block.borderDash = hasBlock && isDefined(b.borderDash) ? b.borderDash : [];
-  block.borderWidth = hasBlock && isDefined(b.borderWidth) ? b.borderWidth : 2;
-  block.buttonsBorder = hasBlock && isDefined(b.buttonsBorder) ? b.buttonsBorder : "white";
-  block.buttonsColor = hasBlock && isDefined(b.buttonsColor) ? b.buttonsColor : "black";
-  block.buttonsFill = hasBlock && isDefined(b.buttonsFill) ? b.buttonsFill : "white";
-  block.buttonsIcon = hasBlock && isDefined(b.buttonsIcon) ? b.buttonsIcon : "#686868";
-  block.buttonsMarginX = hasBlock && isDefined(b.buttonsMarginX) ? b.buttonsMarginX : 2;
-  block.buttonsMarginY = hasBlock && isDefined(b.buttonsMarginY) ? b.buttonsMarginY : 0;
-  block.buttonsPadX = hasBlock && isDefined(b.buttonsPadX) ? b.buttonsPadX : 6;
-  block.buttonsPadY = hasBlock && isDefined(b.buttonsPadY) ? b.buttonsPadY : 2;
-  block.buttonsRadius = hasBlock && isDefined(b.buttonsRadius) ? b.buttonsRadius : 0;
-  block.buttonsShadow = hasBlock && isDefined(b.buttonsShadow) ? b.buttonsShadow : false;
-  block.buttonsSize = hasBlock && isDefined(b.buttonsSize) ? b.buttonsSize : 14;
-  block.buttonsText = hasBlock && isDefined(b.buttonsText) ? b.buttonsText : false;
-  block.cartesian = hasBlock && isDefined(b.cartesian) ? b.cartesian : "linear";
-  block.custom = hasBlock && isDefined(b.custom) ? b.custom : false;
-  block.customHeader = hasBlock && isDefined(b.customHeader) ? b.customHeader : false;
-  block.debugButton = hasBlock && isDefined(b.debugButton) ? b.debugButton : false;
-  block.displayFormats = hasBlock && isDefined(b.displayFormats) ? b.displayFormats : false;
-  block.drawOrderDay = hasBlock && isDefined(b.drawOrderDay) ? b.drawOrderDay : false;
-  block.drawOrderLast = hasBlock && isDefined(b.drawOrderLast) ? b.drawOrderLast : false;
-  block.drawOrderMonth = hasBlock && isDefined(b.drawOrderMonth) ? b.drawOrderMonth : false;
-  block.flash = hasBlock && isDefined(b.flash) ? b.flash : false;
-  block.gradients = hasBlock && isDefined(b.gradients) ? b.gradients : false;
-  block.graph = hasBlock && isDefined(b.graph) ? b.graph : "line";
-  block.graphTypes = hasBlock && isDefined(b.graphTypes) ? b.graphTypes : false;
-  block.groupBy = hasBlock && isDefined(b.groupBy) ? b.groupBy : false;
-  block.groupByDevice = hasBlock && isDefined(b.groupByDevice) ? b.groupByDevice : false;
-  block.height = hasBlock && isDefined(b.height) ? b.height : false;
-  block.iconColour = hasBlock && isDefined(b.iconColour) ? b.iconColour : "grey";
-  block.interval = hasBlock && isDefined(b.interval) ? b.interval : 1;
-  block.legend = hasBlock && isDefined(b.legend) ? b.legend : false;
-  block.lineFill = hasBlock && isDefined(b.lineFill) ? b.lineFill : false;
-  block.lineTension = hasBlock && isDefined(b.lineTension) ? b.lineTension : 0.1;
-  block.maxTicksLimit = hasBlock && isDefined(b.maxTicksLimit) ? b.maxTicksLimit : null;
-  block.method = hasBlock && isDefined(b.method) ? b.method : 1;
-  block.pointBorderColor = hasBlock && isDefined(b.pointBorderColor) ? b.pointBorderColor : ["grey"];
-  block.pointBorderWidth = hasBlock && isDefined(b.pointBorderWidth) ? b.pointBorderWidth : 0;
-  block.pointFillColor = hasBlock && isDefined(b.pointFillColor) ? b.pointFillColor : block.datasetColors;
-  block.pointRadius = hasBlock && isDefined(b.pointRadius) ? b.pointRadius : 0;
-  block.pointStyle = hasBlock && isDefined(b.pointStyle) ? b.pointStyle : false;
-  block.reverseTime = hasBlock && isDefined(b.reverseTime) ? b.reverseTime : false;
-  block.sortDevices = hasBlock && isDefined(b.sortDevices) ? b.sortDevices : false;
-  block.spanGaps = hasBlock && isDefined(b.spanGaps) ? b.spanGaps : false;
-  block.stacked = hasBlock && isDefined(b.stacked) ? b.stacked : false;
-  block.title = hasBlock && isDefined(b.title) ? b.title : false;
-  block.tooltiptotal = hasBlock && isDefined(b.tooltiptotal) ? b.tooltiptotal : false;
-  block.width = hasBlock && isDefined(b.width) ? b.width : 12;
-  block.zoom = hasBlock && isDefined(b.zoom) ? b.zoom : false;
+function getBlockDefaults() {
+  var datasetColors = ['red', 'yellow', 'blue', 'orange', 'green', 'purple', 'chartreuse', 'aqua', 'teal', 'pink', 'gray', 'fuchsia'];
+  var block = {
+    datasetColors: datasetColors,
+    barWidth: 0.9,
+    beginAtZero: false,
+    borderDash: [],
+    borderWidth: 2,
+    buttonsBorder: "white",
+    buttonsColor: "black",
+    buttonsFill: "white",
+    buttonsIcon: "#686868",
+    buttonsMarginX: 2,
+    buttonsMarginY: 0,
+    buttonsPadX: 6,
+    buttonsPadY: 2,
+    buttonsRadius: 0,
+    buttonsShadow: false,
+    buttonsSize: 14,
+    buttonsText: false,
+    cartesian: "linear",
+    custom: false,
+    customHeader: false,
+    debugButton: false,
+    displayFormats: false,
+    drawOrderDay: false,
+    drawOrderLast: false,
+    drawOrderMonth: false,
+    flash: false,
+    format: true,
+    gradients: false,
+    graph: "line",
+    graphTypes: false,
+    groupBy: false,
+    groupByDevice: false,
+    height: false,
+    iconColour: "grey",
+    interval: 1,
+    legend: false,
+    lineFill: false,
+    lineTension: 0.1,
+    maxTicksLimit: null,
+    method: 1,
+    pointBorderColor: ["grey"],
+    pointBorderWidth: 0,
+    pointRadius: 0,
+    pointStyle: false,
+    range: 'initial',
+    refresh: 300,
+    reverseTime: false,
+    sortDevices: false,
+    spanGaps: false,
+    stacked: false,
+    title: false,
+    tooltiptotal: false,
+    width: 12,
+    zoom: false
+  }
   return block;
 }
 
-function getDeviceDefaults(device, popup) {
-  moment.locale(settings["language"]);
+/** Extends device with all default graph parameters
+ * 
+ * */
+function getDeviceDefaults(me, device) {
   var currentValue = device["Data"];
   var sensor = "counter";
   var txtUnit = "?";
@@ -279,422 +268,387 @@ function getDeviceDefaults(device, popup) {
       break;
   }
 
-  var graphIdx = device.graphIdx;
   var multidata = device.Data.split(',').length - 1 > 0;
+
+  if (typeof me.block.decimals !== 'undefined')
+    decimals = me.block.decimals;
+
   currentValue = multidata ?
     device.Data :
-    number_format(currentValue, decimals).replace(",", ".") + " " + txtUnit;
-  popup = isDefined(popup) && popup ? true : false;
+    me.block.format ? number_format(currentValue, decimals) + " " + txtUnit : currentValue;
 
-  if (!isDefined(dtGraphs[graphIdx])) {
-    dtGraphs[graphIdx] = {
-      blockId: device.blockId,
-      block: device.block,
-      currentValue: currentValue,
-      currentValues: [],
-      customRange: false,
-      data: {},
-      dataFilterCount: 0,
-      dataFilterUnit: "",
-      decimals: decimals,
-      forced: false,
-      graphConfig: null,
-      graphIdx: graphIdx,
-      hasBlock: device.hasBlock,
-      idx: device.idx,
-      lastRefreshTime: 0,
-      mountPoint: device.mountPoint,
-      multigraph: device.multigraph,
-      name: device.Name,
-      params: [],
-      popup: popup,
-      primary: device.primary,
-      primaryIdx: device.primaryIdx,
-      range: "initial",
-      realrange: "",
-      sensor: sensor,
-      subtype: device.SubType,
-      title: device.Name,
-      txtUnit: txtUnit,
-      txtUnits: [],
-      type: device.Type
-    };
-  }
-  dtGraphs[graphIdx].currentValue = currentValue;
-  if (popup) getGraphData([dtGraphs[graphIdx]]);
+
+  var obj = {
+    currentValue: currentValue,
+    idx: parseInt(device.idx),
+    name: device.Name,
+    sensor: sensor,
+    subtype: device.SubType,
+    title: device.Name,
+    txtUnit: txtUnit,
+    txtUnits: [],
+    type: device.Type
+  };
+  $.extend(device, obj)
 }
 
-function showPopupGraph(blockdef) {
+// eslint-disable-next-line no-unused-vars
+function showPopupGraph(blockdef) { //This function can be called from blocks.js to create the popup graph
+  var popupBlock, graphIdx;
+  if (blockdef.popup) {
+    popupBlock = $.extend({}, blocks[blockdef.popup]);
+    graphIdx = blockdef.popup + '_popup';
+  } else {
+    popupBlock = {
+      devices: [blockdef.device.idx],
+      width: 12
+    };
+    graphIdx = blockdef.device.idx + '_popup';
+  }
+  popupBlock.isPopup = true;
+
   var device = blockdef.device;
-  if ($("#opengraph" + device["idx"] + p).length === 0) {
-    var html = '<div class="modal fade opengraph opengraph' + device.idx + p + '" data-idx="' + device.idx + '" id="opengraph' + device.idx + p + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
+  if ($("#opengraph" + graphIdx).length === 0) {
+    var html = '<div class="modal fade opengraph opengraph' + graphIdx + '" data-idx="' + device.idx + '" id="opengraph' + graphIdx + '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
     html += '<div class="modal-dialog graphwidth">';
     html += '<div class="modal-content">';
     html += '<div class="modal-header graphclose">';
     html += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
     html += '</div>';
-    html += '<div class="modal-body block_graph_' + device.idx + p + '">' + language.misc.loading;
-    html += "</div>";
     html += "</div>";
     html += "</div>";
     html += "</div>";
     $("body").append(html);
+
+    var myblockselector = Dashticz.mountNewContainer('.opengraph' + graphIdx + ' .modal-content');
+
+    if (!Dashticz.mount(myblockselector, popupBlock)) {
+      console.log('Error mounting popup graph', popupBlock)
+    }
+    $(myblockselector).addClass("modal-body"); //modal-body is just for styling, so we have to add it.
   }
 
-  var definedPopup = typeof blockdef.popup !== 'undefined' ? blockdef.popup : false;
-
-  var obj = {};
-  obj.blockId = device.idx + p;
-  obj.graphIdx = obj.blockId + device.idx;
-
-  if (definedPopup) {
-    obj.block = getBlockDefaults([device.idx], true, blocks[definedPopup]);
-    obj.hasBlock = true;
-  } else {
-    obj.block = getBlockDefaults([device.idx], false);
-    obj.hasBlock = false;
-  }
-
-  obj.mountPoint = ".block_graph_" + obj.blockId;
-  obj.multigraph = false;
-  obj.primary = true;
-  obj.primaryIdx = obj.graphIdx;
-
-  var popDevice = $.extend(obj, blockdef.device);
-  $("#opengraph" + device.idx + p).modal();
-  getDeviceDefaults(popDevice, true);
+  $('#opengraph' + graphIdx).modal('show');
 }
 
-function getGraphData(devices, selGraph) {
-  if (devices[0].block.groupByDevice) {
-    groupByDevice(devices);
+/** This function handles a device update
+ * 
+ * */
+function deviceUpdate(me, graphDevice, device) {
+  $.extend(graphDevice, device);
+  getDeviceDefaults(me, graphDevice); //In fact we only need a update of currentValue, but this is the most easy way
+  if (me.block.groupByDevice) {
+    DT_graph.refresh(me)
+  } else
+    updateHeaderValues(me, true);
+}
+/** This function will refresh the complete graph
+ * 
+ * 
+ */
+function getGraphData(me, selGraph) {
+  if (me.block.groupByDevice) {
+    groupByDevice(me);
   } else {
-    var multidata = {
-      result: [],
-      status: "OK",
-      title: "Graph day"
-    };
-    var arrResults = [];
-    var currentValues = [];
-    var txtUnits = [];
+    if (isDefined(selGraph)) {
+      me.range = selGraph;
+    } else {
+      me.range = me.block.range; //Fix to show the correct graph after refresh.
+    }
+    refreshGraph(me);
+  }
+}
 
-    $.each(devices, function (i, device) {
-      var graphIdx = device.blockId + device.idx;
-      var graph = dtGraphs[graphIdx];
-      var header = graph.block.customHeader;
-      var customValues = [];
+/** Pulls all graph data from Domoticz and refreshes the graph
+ * 
+ */
+function refreshGraph(me) {
 
-      // 02/04/2020 - Custom header
-      if (header) {
-        for (key in header) {
-          try {
-            if (device.idx === parseInt(key)) {
-              graph.currentValue = eval(
-                header[key].replace("data", "graph.currentValue")
-              );
-            } else if (isNaN(key)) {
-              header[key] = header[key].replace(
-                "data." + device.idx,
-                'parseFloat("' + graph.currentValue + '")'
-              );
+  var isInitial = me.range === "initial";
+  me.txtUnits = []; //todo: check txtUnits
+  me.data = [];
 
-              if (devices.length - 1 === i) {
-                customValues.push(eval(header[key]));
-              }
-            }
-          } catch (error) {
-            console.log("Error in customHeader:", key, header[key]);
-            console.log(error);
-          }
+  me.lastRefreshTime = time();
+  //  txtUnits.push(me.txtUnit);
+
+  if (isInitial) {
+    switch (settings["standard_graph"]) {
+      case "hours":
+        me.range = "last";
+        break;
+      case "day":
+        me.range = "day";
+        break;
+      case "month":
+        me.range = "month";
+        break;
+    }
+  }
+
+  me.realrange = me.range;
+  me.dataFilterCount = 0;
+  me.dataFilterUnit = "";
+  me.groupBy = me.block.groupBy;
+
+  if (me.range === "last") {
+    me.realrange = "day";
+    me.dataFilterCount = 4;
+    me.dataFilterUnit = "hours";
+  }
+  if (me.block.custom) {
+    if (isInitial) {
+      me.range = Object.keys(me.block.custom)[0];
+      me.customRange = true;
+      me.customRangeName = me.range;
+    } else {
+      //        graph.range = selGraph ? selGraph : graph.customRangeName;
+      me.range = me.range || me.customRangeName; //Needed?
+    }
+    if (me.block.custom[me.range]) {
+      me.graphConfig = me.block.custom[me.range];
+      me.customRange = true;
+      if (me.graphConfig.range) {
+        switch (me.graphConfig.range) {
+          case "day":
+          case "month":
+          case "year":
+            me.realrange = me.graphConfig.range;
+            break;
+          case "last":
+            me.dataFilterCount = 4;
+            me.dataFilterUnit = "hours";
+            me.realrange = "day";
+            break;
+          default:
+            console.log("invalid range: " + me.graphConfig.range);
+        }
+        if (me.graphConfig.groupBy) {
+          me.groupBy = me.graphConfig.groupBy;
         }
       }
-
-      currentValues.push(graph.currentValue);
-      $.each(customValues, function (x, customValue) {
-        currentValues.push(customValue);
-      });
-      updateHeaderValues(graph, true);
-
-      if (isDefined(selGraph)) {
-        graph.range = selGraph;
-        graph.forced = true;
+      if (me.graphConfig.filter) {
+        me.dataFilterCount = parseInt(me.graphConfig.filter);
+        me.dataFilterUnit = me.graphConfig.filter
+          .split(" ")
+          .splice(-1)[0];
       }
-
-      if (graph.lastRefreshTime < time() - parseFloat(_GRAPHREFRESH) * 60) {
-        graph.forced = true;
+      if (me.graphConfig.method) {
+        me.block.method = me.graphConfig.method;
       }
+    }
+    if (!me.customRange) {
+      console.log(
+        "custom graph, but graph selector " + me.range + " not found"
+      );
+    }
+  }
 
-      if (graph.forced) {
-        var isInitial = graph.range === "initial";
-        graph.forced = false;
-        graph.lastRefreshTime = time();
-        txtUnits.push(graph.txtUnit);
+  //Now we request all Graph data sequentially
+  $.when.apply($, me.graphDevices.map(function (device, i) {
+      me.txtUnits.push(device.txtUnit); //todo: How does this work for tehuba devices?
+      return getDeviceGraphData(me, i)
+    }))
+    .then(function () {
+      redrawGraph(me)
+    })
+}
 
-        if (isInitial) {
-          switch (settings["standard_graph"]) {
-            case "hours":
-              graph.range = "last";
-              break;
-            case "day":
-              graph.range = "day";
-              break;
-            case "month":
-              graph.range = "month";
-              break;
-          }
-        }
 
-        graph.realrange = graph.range;
-        graph.dataFilterCount = 0;
-        graph.dataFilterUnit = "";
-        graph.groupBy = graph.block.groupBy;
+/**Request graph data for the device
+ * Stores the data in me.data
+ * And return a promise.
+ */
+function getDeviceGraphData(me, i) {
+  var device = me.graphDevices[i];
+  var params = "type=graph&sensor=" + device.sensor + "&idx=" + device.idx + "&range=" + me.realrange + "&method=1"; //todo: check method
+  me.params[i] = params;
+  return Domoticz.request(params)
+    .then(function (data) {
+      data.idx = device.idx;
+      me.data.push(data);
+    });
+}
 
-        if (graph.range === "last") {
-          graph.realrange = "day";
-          graph.dataFilterCount = 4;
-          graph.dataFilterUnit = "hours";
-        }
-        if (graph.block.custom) {
-          if (isInitial) {
-            graph.range = Object.keys(graph.block.custom)[0];
-            graph.customRange = true;
-            graph.customRangeName = graph.range;
-          } else {
-            graph.range = selGraph ? selGraph : graph.customRangeName;
-          }
-          if (graph.block.custom[graph.range]) {
-            graph.graphConfig = graph.block.custom[graph.range];
-            graph.customRange = true;
-            if (graph.graphConfig.range) {
-              switch (graph.graphConfig.range) {
-                case "day":
-                case "month":
-                case "year":
-                  graph.realrange = graph.graphConfig.range;
-                  break;
-                case "last":
-                  graph.dataFilterCount = 4;
-                  graph.dataFilterUnit = "hours";
-                  graph.realrange = "day";
-                  break;
-                default:
-                  console.log("invalid range: " + graph.graphConfig.range);
-              }
-              if (graph.graphConfig.groupBy) {
-                graph.groupBy = graph.graphConfig.groupBy;
-              }
-            }
-            if (graph.graphConfig.filter) {
-              graph.dataFilterCount = parseInt(graph.graphConfig.filter);
-              graph.dataFilterUnit = graph.graphConfig.filter
-                .split(" ")
-                .splice(-1)[0];
-            }
-            if (graph.graphConfig.method) {
-              graph.block.method = graph.graphConfig.method;
-            }
-          }
-          if (!graph.customRange) {
-            console.log(
-              "custom graph, but graph selector " + graph.range + " not found"
-            );
-          }
-        }
+/** This function will update the graph.
+ * All graph data must be available.
+ */
+function redrawGraph(me) {
+  var multidata = {
+    result: [],
+    status: "OK",
+    title: "Graph day"
+  };
 
-        var params = "&type=graph&sensor=" + dtGraphs[graphIdx].sensor + "&idx=" + dtGraphs[graphIdx].idx + "&range=" + graph.realrange;
-        dtGraphs[graph.primaryIdx].params.push(params.slice(1));
-
-        $.ajax({
-          url: settings["domoticz_ip"] + "/json.htm?username=" + usrEnc + "&password=" + pwdEnc + params + "&method=1&time=" + new Date().getTime() + "&jsoncallback=?",
-          type: "GET",
-          async: true,
-          contentType: "application/json",
-          dataType: "jsonp",
-          success: function (data) {
-            data.idx = device.idx;
-            arrResults.push(data);
-
-            if (devices.length === arrResults.length) {
-              if (graph.sortDevices) {
-                arrResults.sort(function (a, b) {
-                  return b.result.length - a.result.length;
-                });
-              }
-
-              var newKeys = [];
-              var arrYkeys = [];
-
-              $.each(arrResults, function (z, d) {
-                var currentKey = "";
-                var counter = z + 1;
-
-                if (d.result && d.result.length > 0) {
-                  if (graph.hasBlock && graph.block.graphTypes) {
-                    for (var key in d.result[0]) {
-                      if (
-                        $.inArray(key, graph.block.graphTypes) !== -1 &&
-                        key !== "d"
-                      ) {
-                        arrYkeys.push(key);
-                      }
-                    }
-                  } else {
-                    for (var key in d.result[0]) {
-                      if (key !== "d") {
-                        arrYkeys.push(key);
-                      }
-                    }
-                  }
-
-                  $.each(d.result, function (x, res) {
-                    var valid = false;
-                    var interval = 1;
-                    if (graph.hasBlock)
-                      interval =
-                      graph.range === "last" || graph.range === "month" ?
-                      1 :
-                      graph.block.interval;
-
-                    if (x % interval === 0) {
-                      if (z == 0) {
-                        var obj = {};
-                        for (var key in res) {
-                          if (key === "d") {
-                            obj["d"] = res[key];
-                          }
-                          if ($.inArray(key, arrYkeys) !== -1) {
-                            currentKey = key + '_' + d.idx;
-                            obj[currentKey] = res[key];
-                            valid = true;
-                            if ($.inArray(currentKey, newKeys) === -1) {
-                              newKeys.push(currentKey);
-                            }
-                          }
-                        }
-                        if (valid) multidata.result.push(obj);
-                      } else {
-                        for (var key in res) {
-                          if (key !== "d" && $.inArray(key, arrYkeys) !== -1) {
-                            $.each(multidata.result, function (index, obj) {
-                              $.each(obj, function (k, v) {
-                                if (k === "d" && v === res["d"]) {
-                                  currentKey = key + '_' + d.idx;
-                                  multidata.result[index][currentKey] = res[key];
-                                  if ($.inArray(currentKey, newKeys) === -1) {
-                                    newKeys.push(currentKey);
-                                  }
-                                }
-                              });
-                            });
-                          }
-                        }
-                      }
-                    }
-                  });
-                }
-                // All device data collected
-                if (arrResults.length === counter) {
-                  $.each(multidata.result, function (index, obj) {
-                    $.each(obj, function (k, v) {
-                      for (var n in newKeys) {
-                        if (!obj.hasOwnProperty(newKeys[n])) {
-                          obj[newKeys[n]] = NaN;
-                        }
-                      }
-                    });
-                  });
-
-                  graph = dtGraphs[graph.primaryIdx];
-                  graph.keys = arrYkeys;
-                  graph.ykeys = newKeys;
-                  graph.txtUnits = txtUnits;
-                  graph.ylabels = getYlabels(graph);
-                  graph.currentValues = currentValues;
-
-                  // 20/02/20: GroupBy - hour|day|week|month
-                  if (graph.groupBy) {
-                    var groupArray = [];
-                    var groupObj = {};
-                    var md = multidata.result;
-                    var dayFormat = "YYYY-MM-DD";
-                    var groupStart;
-                    var add = graph.sensor === "counter" || graph.sensor === "rain" ? true : false;
-                    var x = 1;
-
-                    $.each(md, function (i, obj) {
-                      var end = i === md.length - 1;
-
-                      switch (graph.groupBy) {
-                        case "hour":
-                          groupStart = moment(obj.d, dayFormat)
-                            .hour(moment(obj.d, "YYYY-MM-DD HH:mm").hour())
-                            .format("YYYY-MM-DD HH:mm");
-                          break;
-                        case "day":
-                          groupStart = moment(obj.d, dayFormat).format(dayFormat);
-                          break;
-                        case "week":
-                          groupStart = moment(obj.d, dayFormat)
-                            .week(moment(obj.d, dayFormat).week())
-                            .day("Monday")
-                            .format(dayFormat);
-                          break;
-                        case "month":
-                          groupStart = moment(obj.d, dayFormat)
-                            .startOf("month")
-                            .format(dayFormat);
-                          break;
-                      }
-
-                      if (groupObj.hasOwnProperty("d") && groupObj["d"] === groupStart) {
-                        $.each(obj, function (key, val) {
-                          if (key !== "d") {
-                            if (end) {
-                              if (!add) groupObj[key] = Number(groupObj[key] / x);
-                            } else {
-                              groupObj[key] += Number(val) || 0;
-                            }
-                          }
-                        });
-                        x++;
-                        if (end) groupArray.push(groupObj);
-                      } else {
-                        if (!$.isEmptyObject(groupObj)) {
-                          $.each(obj, function (key, val) {
-                            if (key !== "d") {
-                              if (!add) groupObj[key] = Number(groupObj[key] / x);
-                            }
-                          });
-                          groupArray.push(groupObj);
-                          x = 1;
-                        }
-                        groupObj = {};
-                        groupObj["d"] = groupStart;
-                        $.each(obj, function (key, val) {
-                          if (key !== "d") {
-                            groupObj[key] = Number(val) || 0;
-                            if (end) {
-                              if (!add) groupObj[key] = groupObj[key] / x;
-                            }
-                          }
-                        });
-                        if (end) groupArray.push(groupObj);
-                      }
-                    });
-                    multidata.result = groupArray;
-                  }
-                  graph.data = multidata;
-                  createGraph(graph);
-                }
-              });
-            }
-          }
-        });
-      }
+  if (me.sortDevices) {
+    me.data.sort(function (a, b) {
+      return b.result.length - a.result.length;
     });
   }
 
+  var newKeys = [];
+  var arrYkeys = [];
 
+  $.each(me.data, function (z, d) {
+    var currentKey = "";
+
+    if (d.result && d.result.length > 0) {
+      if (me.block.graphTypes) {
+        for (var key in d.result[0]) {
+          if (
+            $.inArray(key, me.block.graphTypes) !== -1 &&
+            key !== "d"
+          ) {
+            arrYkeys.push(key);
+          }
+        }
+      } else {
+        for (key in d.result[0]) {
+          if (key !== "d") {
+            arrYkeys.push(key);
+          }
+        }
+      }
+
+      $.each(d.result, function (x, res) {
+        var valid = false;
+        var interval = 1;
+        if (me.hasBlock)
+          interval =
+          me.range === "last" || me.range === "month" ?
+          1 :
+          me.block.interval;
+
+        if (x % interval === 0) {
+          if (z == 0) {
+            var obj = {};
+            for (var key in res) {
+              if (key === "d") {
+                obj["d"] = res[key];
+              }
+              if ($.inArray(key, arrYkeys) !== -1) {
+                currentKey = key + '_' + d.idx;
+                obj[currentKey] = res[key];
+                valid = true;
+                if ($.inArray(currentKey, newKeys) === -1) {
+                  newKeys.push(currentKey);
+                }
+              }
+            }
+            if (valid) multidata.result.push(obj);
+          } else {
+            for (key in res) {
+              if (key !== "d" && $.inArray(key, arrYkeys) !== -1) {
+                $.each(multidata.result, function (index, obj) {
+                  $.each(obj, function (k, v) {
+                    if (k === "d" && v === res["d"]) {
+                      currentKey = key + '_' + d.idx;
+                      multidata.result[index][currentKey] = res[key];
+                      if ($.inArray(currentKey, newKeys) === -1) {
+                        newKeys.push(currentKey);
+                      }
+                    }
+                  });
+                });
+              }
+            }
+          }
+        }
+      });
+    }
+  });
+
+  $.each(multidata.result, function (index, obj) {
+    $.each(obj, function () {
+      for (var n in newKeys) {
+        if (!obj.hasOwnProperty(newKeys[n])) {
+          obj[newKeys[n]] = NaN;
+        }
+      }
+    });
+  });
+
+  var graph = me; //todo: replace graph with me in all following lines?
+  graph.keys = arrYkeys;
+  graph.ykeys = newKeys;
+  //    graph.txtUnits = txtUnits; //todo: check txtUnits
+  graph.txtUnit = graph.txtUnits[0]; //todo: temp fix
+  graph.ylabels = getYlabels(graph);
+  //graph.currentValues = currentValues; //todo: check currentValues
+
+  // 20/02/20: GroupBy - hour|day|week|month
+  if (graph.groupBy) {
+    var groupArray = [];
+    var groupObj = {};
+    var md = multidata.result;
+    var dayFormat = "YYYY-MM-DD";
+    var groupStart;
+    var add = graph.sensor === "counter" || graph.sensor === "rain" ? true : false;
+    var x = 1;
+
+    $.each(md, function (i, obj) {
+      var end = i === md.length - 1;
+
+      switch (graph.groupBy) {
+        case "hour":
+          groupStart = moment(obj.d, dayFormat)
+            .hour(moment(obj.d, "YYYY-MM-DD HH:mm").hour())
+            .format("YYYY-MM-DD HH:mm");
+          break;
+        case "day":
+          groupStart = moment(obj.d, dayFormat).format(dayFormat);
+          break;
+        case "week":
+          groupStart = moment(obj.d, dayFormat)
+            .week(moment(obj.d, dayFormat).week())
+            .day("Sunday")
+            .format(dayFormat);
+          break;
+        case "month":
+          groupStart = moment(obj.d, dayFormat)
+            .startOf("month")
+            .format(dayFormat);
+          break;
+      }
+
+      if (groupObj.hasOwnProperty("d") && groupObj["d"] === groupStart) {
+        $.each(obj, function (key, val) {
+          if (key !== "d") {
+            if (end) {
+              if (!add) groupObj[key] = Number(groupObj[key] / x);
+            } else {
+              groupObj[key] += Number(val) || 0;
+            }
+          }
+        });
+        x++;
+        if (end) groupArray.push(groupObj);
+      } else {
+        if (!$.isEmptyObject(groupObj)) {
+          $.each(obj, function (key) {
+            if (key !== "d") {
+              if (!add) groupObj[key] = Number(groupObj[key] / x);
+            }
+          });
+          groupArray.push(groupObj);
+          x = 1;
+        }
+        groupObj = {};
+        groupObj["d"] = groupStart;
+        $.each(obj, function (key, val) {
+          if (key !== "d") {
+            groupObj[key] = Number(val) || 0;
+            if (end) {
+              if (!add) groupObj[key] = groupObj[key] / x;
+            }
+          }
+        });
+        if (end) groupArray.push(groupObj);
+      }
+    });
+    multidata.result = groupArray;
+  }
+  graph.data = multidata;
+  createGraph(graph);
 }
 
 function createGraph(graph) {
@@ -707,19 +661,19 @@ function createGraph(graph) {
 
   var ranges = ["last", "day", "month"];
   if (graph.customRange) ranges = Object.keys(graph.block.custom);
-  var buttons = createButtons(graph, ranges, graph.customRange);
-  var html = createHeader(graph, true, buttons);
+  var html = createHeader(graph, true);
 
-  var mydiv = !graph.popup ?
+  var mydiv = !graph.block.isPopup ?
     $(graph.mountPoint + " > div") :
     $(graph.mountPoint);
 
-  if (!graph.popup) {
+  if (!graph.block.isPopup) {
     mydiv.addClass("col-xs-" + graph.block.width);
     mydiv.addClass("block_graph");
     mydiv.addClass(graphIdx);
   }
   mydiv.html(html);
+  createButtons(graph, ranges, graph.customRange);
   updateHeaderValues(graph, true);
 
   if (!(graph.data.result && graph.data.result.length)) {
@@ -728,20 +682,27 @@ function createGraph(graph) {
   }
 
   var chartctx = mydiv.find('canvas')[0].getContext("2d");
-  dtGraphs[graphIdx].chartctx = chartctx.canvas.id;
-  var graphProperties = getDefaultGraphProperties(graph);
-  $.extend(true, graphProperties, graph.block);
+  graph.chartctx = chartctx.canvas.id;
+
+  //Some block properties can be "overruled" by custom block settings
+  //However, getDefaultGraphProperties now depend on some block settings, without taking custom block settings into account
+  //I don't want to overwrite graph.block, because that contains the original block definition
+  //Let's create a second parameter, containing the merged block
+  var mergedBlock = $.extend(true, {}, graph.block, graph.graphConfig);
+
+  var graphProperties = getDefaultGraphProperties(graph, mergedBlock);
+  $.extend(true, graphProperties, mergedBlock);
 
   if (graph.graphConfig) {
     $.extend(true, graph, graph.graphConfig);
   }
 
-  if (!graph.popup) {
-    $("." + graphIdx).css("height", setHeight(graph));
+  if (!graph.block.isPopup) { //in general we should not use graph.block, but mergedBlock. In this case graph.block is ok, because isPopup should not be used in a custom block def.
+    $("." + graphIdx + ' .graphcontent').css("height", setHeight(graph));
   }
 
-  if (typeof graph.block.legend == "boolean") {
-    graphProperties.options.legend.display = graph.block.legend;
+  if (typeof mergedBlock.legend == "boolean") {
+    graphProperties.options.legend.display = mergedBlock.legend;
   }
   var mydatasets = [];
 
@@ -770,24 +731,24 @@ function createGraph(graph) {
       mydatasets[element] = {
         data: [],
         label: element,
-        backgroundColor: graph.block.datasetColors[index],
-        barPercentage: graph.block.barWidth,
-        borderColor: graph.block.borderColors[index],
-        borderWidth: graph.block.borderWidth,
-        borderDash: graph.block.borderDash,
-        pointRadius: graph.block.pointRadius,
-        pointStyle: graph.block.pointStyle[index],
-        pointBackgroundColor: graph.block.pointFillColor[index],
-        pointBorderColor: graph.block.pointBorderColor[index],
-        pointBorderWidth: graph.block.pointBorderWidth,
-        lineTension: graph.block.lineTension,
-        spanGaps: graph.block.spanGaps,
-        fill: graph.block.lineFill ? graph.block.lineFill[index] : graph.block.lineFill,
+        backgroundColor: mergedBlock.datasetColors[index],
+        barPercentage: mergedBlock.barWidth,
+        borderColor: (mergedBlock.borderColors || mergedBlock.datasetColors)[index],
+        borderWidth: mergedBlock.borderWidth,
+        borderDash: mergedBlock.borderDash,
+        pointRadius: mergedBlock.pointRadius,
+        pointStyle: mergedBlock.pointStyle[index],
+        pointBackgroundColor: (mergedBlock.pointFillColor || mergedBlock.datasetColors)[index],
+        pointBorderColor: (mergedBlock.pointBorderColor || mergedBlock.datasetColors)[index],
+        pointBorderWidth: mergedBlock.pointBorderWidth,
+        lineTension: mergedBlock.lineTension,
+        spanGaps: mergedBlock.spanGaps,
+        fill: mergedBlock.lineFill ? mergedBlock.lineFill[index] : mergedBlock.lineFill,
         yAxisID: index <= graph.ylabels.length ? graph.ylabels[index] : graph.ylabels[0]
       };
 
       if (graph.graphConfig.graph) {
-        mydatasets[element].type = graph.graphConfig.graph;
+        mydatasets[element].type = typeof graph.graphConfig.graph === 'string' ? graph.graphConfig.graph : graph.graphConfig.graph[index];
       }
     });
 
@@ -816,30 +777,37 @@ function createGraph(graph) {
     });
 
     if (graph.graphConfig.graph) {
+      //graphProperties.type = typeof graphProperties.graph === 'string' ? graph.graphConfig.graph : graph.graphConfig.graph[index];
       graphProperties.type = graph.graphConfig.graph;
     }
     $.extend(true, graphProperties, graph.graphConfig);
 
   } else { // no custom data
-
+    var idxArray = Object.keys(mergedBlock.legend);
     graph.ykeys.forEach(function (element, index) {
+      //In case of a legend, not all datasets will be shown, resulting in color mismatch
+      var idx = index;
+      if (idxArray && idxArray.length) {
+        idx = idxArray.indexOf(element);
+      }
+
       mydatasets[element] = {
         data: [],
         label: element,
-        yAxisID: graph.ylabels[index],
-        backgroundColor: graph.block.datasetColors[index],
-        barPercentage: graph.block.barWidth,
-        borderColor: graph.block.borderColors[index],
-        borderWidth: graph.block.borderWidth,
-        borderDash: graph.block.borderDash,
-        pointRadius: graph.block.pointRadius,
-        pointStyle: graph.block.pointStyle[index],
-        pointBackgroundColor: graph.block.pointFillColor[index],
-        pointBorderColor: graph.block.pointBorderColor[index],
-        pointBorderWidth: graph.block.pointBorderWidth,
-        lineTension: graph.block.lineTension,
-        spanGaps: graph.block.spanGaps,
-        fill: graph.block.lineFill ? graph.block.lineFill[index] : graph.block.lineFill
+        yAxisID: graph.ylabels[idx],
+        backgroundColor: mergedBlock.datasetColors[idx],
+        barPercentage: mergedBlock.barWidth,
+        borderColor: (mergedBlock.borderColors || mergedBlock.datasetColors)[idx],
+        borderWidth: mergedBlock.borderWidth,
+        borderDash: mergedBlock.borderDash,
+        pointRadius: mergedBlock.pointRadius,
+        pointStyle: mergedBlock.pointStyle[index],
+        pointBackgroundColor: (mergedBlock.pointFillColor || mergedBlock.datasetColors)[idx],
+        pointBorderColor: (mergedBlock.pointBorderColor || mergedBlock.datasetColors)[idx],
+        pointBorderWidth: mergedBlock.pointBorderWidth,
+        lineTension: mergedBlock.lineTension,
+        spanGaps: mergedBlock.spanGaps,
+        fill: mergedBlock.lineFill ? mergedBlock.lineFill[idx] : mergedBlock.lineFill
       };
     });
 
@@ -905,9 +873,9 @@ function createGraph(graph) {
   }
 
   Object.keys(mydatasets).forEach(function (element) {
-    if (typeof graph.block.legend == "object") {
-      if (isDefined(graph.block.legend[element]))
-        mydatasets[element].label = graph.block.legend[element];
+    if (typeof mergedBlock.legend == "object") {
+      if (isDefined(mergedBlock.legend[element]))
+        mydatasets[element].label = mergedBlock.legend[element];
       graphProperties.options.legend.display = true;
     }
     graphProperties.data.datasets.push(mydatasets[element]);
@@ -924,8 +892,8 @@ function createGraph(graph) {
   uniqueylabels.forEach(function (element, i) {
     var yaxis = {
       id: element,
-      stacked: graph.block.stacked,
-      type: graph.block.cartesian,
+      stacked: graphProperties.stacked, //graphProperties contains all settings including the custom settings
+      type: mergedBlock.cartesian,
       ticks: {
         reverse: false,
         fontColor: "white"
@@ -968,20 +936,20 @@ function createGraph(graph) {
       });
   }
 
-  if (isDefined(graph.block.legend)) {
-    if ($.isArray(graph.block.legend)) {
-      graph.block.legend.forEach(function (element, idx) {
+  if (isDefined(mergedBlock.legend)) {
+    if ($.isArray(mergedBlock.legend)) {
+      mergedBlock.legend.forEach(function (element, idx) {
         graphProperties.data.datasets[idx].label = element;
       });
       graphProperties.options.legend.display = true;
     }
   }
-  switch (typeof graph.block.graph) {
+  switch (typeof mergedBlock.graph) {
     case "string":
-      graphProperties.type = graph.block.graph;
+      graphProperties.type = mergedBlock.graph;
       break;
     case "object":
-      graph.block.graph.forEach(function (element, idx) {
+      mergedBlock.graph.forEach(function (element, idx) {
         graphProperties.data.datasets[idx].type = element;
       });
       graphProperties.type = "bar";
@@ -990,22 +958,22 @@ function createGraph(graph) {
       break;
   }
 
-  graph.block.displayFormats ?
+  mergedBlock.displayFormats ?
     $.extend(
       graphProperties.options.scales.xAxes[0].time.displayFormats,
-      graph.block.displayFormats
+      mergedBlock.displayFormats
     ) :
     graphProperties.options.scales.xAxes[0].time.displayFormats;
-  graphProperties.options.scales.xAxes[0].ticks.maxTicksLimit = graph.block.maxTicksLimit;
-  graphProperties.options.scales.xAxes[0].ticks.reverse = graph.block.reverseTime;
-  graphProperties.options.legend.labels.usePointStyle = graph.block.pointStyle;
+  graphProperties.options.scales.xAxes[0].ticks.maxTicksLimit = mergedBlock.maxTicksLimit;
+  graphProperties.options.scales.xAxes[0].ticks.reverse = mergedBlock.reverseTime;
+  graphProperties.options.legend.labels.usePointStyle = mergedBlock.pointStyle;
 
-  if (graph.block.beginAtZero) {
+  if (mergedBlock.beginAtZero) {
     if (graphProperties.options.scales.yAxes.length === 1) {
-      graphProperties.options.scales.yAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
+      graphProperties.options.scales.yAxes[0].ticks.beginAtZero = mergedBlock.beginAtZero;
     } else {
-      if (typeof graph.block.beginAtZero === 'object') {
-        graph.block.beginAtZero.forEach(function (beginAtZero, i) {
+      if (typeof mergedBlock.beginAtZero === 'object') {
+        mergedBlock.beginAtZero.forEach(function (beginAtZero, i) {
           if (i < graphProperties.options.scales.yAxes.length) {
             graphProperties.options.scales.yAxes[i].ticks.beginAtZero = beginAtZero;
           }
@@ -1014,13 +982,13 @@ function createGraph(graph) {
     }
   }
 
-  if (graph.block.gradients) {
-    var prop = graph.block;
+  if (mergedBlock.gradients) {
+    var prop = mergedBlock;
     var gHeight = isDefined(prop.gradientHeight) ? prop.gradientHeight : 1;
     graphProperties.plugins = [{
-      beforeRender: function (x, options) {
+      beforeRender: function (x) {
         var c = x.chart;
-        $.each(prop.ykeys, function (i, key) {
+        $.each(prop.ykeys, function (i) {
           if (isDefined(prop.gradients[i])) {
             if (!isObject(prop.gradients[i]))
               prop.gradients[i] = [
@@ -1053,26 +1021,23 @@ function createGraph(graph) {
       }
     }];
   }
-  //console.log(graphProperties); 
-  var chart = new Chart(chartctx, graphProperties);
+  //console.log(graphProperties);
+  new Chart(chartctx, graphProperties);
   //charts[dtGraphs[graphIdx].chartctx] = chart;
 }
 
-function createHeader(graph, showValues, buttons) {
-  var title = '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar" style="font-size:20px;margin-left:5px;color:' + graph.block.iconColour + '">&nbsp;</i>' + graph.title + '&nbsp;<span class="graphValues' + graph.graphIdx + '">';
-  var btns = isDefined(buttons) ? buttons : '';
-  title += "</span></div>";
-  var html = "";
-  html += title + '<div class="graphbuttons" >' + btns + "</div>";
+function createHeader(graph) {
+  var html = '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar" style="font-size:20px;margin-left:5px;color:' + graph.block.iconColour + '">&nbsp;</i>' + graph.title + '&nbsp;<span class="graphValues' + graph.graphIdx + '">';
+  html += "</span></div>";
   html += "</div>";
-  html += '<div class="graph swiper-no-swiping' + (graph.popup ? " popup graphheight" : "") + '" id="' + graph.graphIdx + '">';
+  html += '<div class="graphcontent swiper-no-swiping' + (graph.block.isPopup ? " popup graphheight" : "") + '" id="' + graph.graphIdx + '">';
   html += "<canvas " + 'id="graphoutput_' + graph.graphIdx + '"></canvas>';
   return html += "</div>";
 }
 
 function createButtons(graph, ranges, customRange) {
   var btn = {};
-  var buttons = '<div class="btn-group graphbuttons" role="group" aria-label="Graph Buttons">';
+  var buttons = '<div class="btn-group graphbuttons" role="group" aria-label="Graph Buttons"></div>';
   var btnIcons = [
     "fas fa-clock",
     "fas fa-calendar-day",
@@ -1111,6 +1076,8 @@ function createButtons(graph, ranges, customRange) {
     }
   );
 
+  var $buttons = $(buttons);
+
   if (isDefined(ranges)) {
     var btnTextList = {
       last: btn.text !== false ? btn.text[0] : language.graph.last_hours,
@@ -1120,16 +1087,22 @@ function createButtons(graph, ranges, customRange) {
 
     ranges.forEach(function (item, i) {
       var btnText = customRange ? item : btnTextList[item];
-      buttons += '<button type="button" ' + style + '" class="btn btn-default';
-      if (graph.range === item) buttons += " active";
-      buttons += '" onclick="updateGraphs(\'' + graph.blockId + "', [" + graph.block.devices + "],'" + item + "','" + graph.popup + '\');"><i class="' + btnIcons[i] + '" style="font-size:14px;color:' + btn.icon + '">&nbsp;</i>&nbsp;' + btnText + "</button> ";
+      var newButton = '<button type="button" ' + style + '" class="btn btn-default';
+      if (graph.range === item) newButton += " active";
+      newButton += '"><i class="' + btnIcons[i] + '" style="font-size:14px;color:' + btn.icon + '">&nbsp;</i>&nbsp;' + btnText + "</button> ";
+      $(newButton)
+        .click(function () {
+          getGraphData(graph, item)
+        })
+        .appendTo($buttons)
     });
   }
 
   if (graph.block.zoom) {
-    buttons += '<button type="button" data-canvas="graphoutput_' + graph.graphIdx + '" id="resetZoom' + graph.graphIdx + '" ' + style + '" class="btn btn-default">';
-    buttons += '  <i class="fas fa-search-minus" style="font-size:14px;color:' + btn.icon + '"></i>';
-    buttons += "</button>";
+    var newButton = '';
+    newButton += '<button type="button" data-canvas="graphoutput_' + graph.graphIdx + '" id="resetZoom' + graph.graphIdx + '" ' + style + '" class="btn btn-default">';
+    newButton += '  <i class="fas fa-search-minus" style="font-size:14px;color:' + btn.icon + '"></i>';
+    newButton += "</button>";
 
     $(document).on("click", "#resetZoom" + graph.graphIdx, function () {
       Chart.helpers.each(Chart.instances, function (instance) {
@@ -1141,33 +1114,103 @@ function createButtons(graph, ranges, customRange) {
         }
       });
     });
+    $(newButton).appendTo($buttons);
   }
 
   if (graph.block.debugButton) {
-    buttons += '<div class="btn-group">';
-    buttons += '  <button type="button" id="graphMenu_' + graph.graphIdx + '" ' + style + '" class="btn btn-default dropdown-toggle" data-toggle="dropdown">';
-    buttons += '    <i class="fas fa-bars" style="font-size:14px;color:' + btn.icon + '"></i>';
-    buttons += '  </button>';
-    buttons += '  <ul class="dropdown-menu pull-right">';
-    buttons += '    <li><a href="#" onclick="showData(\'' + graph.graphIdx + '\'); return false;"><i class="fas fa-code" style="font-size:14px;color:' + btn.icon + '">&nbsp;</i>&nbsp;Show Data</a></li>';
-    buttons += '  </ul>';
-    buttons += '</div>';
+    newButton = "";
+    newButton += '<div class="btn-group">';
+    newButton += '  <button type="button" id="graphMenu_' + graph.graphIdx + '" ' + style + '" class="btn btn-default dropdown-toggle" data-toggle="dropdown">';
+    newButton += '    <i class="fas fa-bars" style="font-size:14px;color:' + btn.icon + '"></i>';
+    newButton += '  </button>';
+    newButton += '  <ul class="dropdown-menu pull-right">';
+    newButton += '  </ul>';
+    newButton += '</div>';
+    var newLi = '<li><a href="#" ><i class="fas fa-code" style="font-size:14px;color:' + btn.icon + '">&nbsp;</i>&nbsp;Show Data</a></li>';
+    var $newLi = $(newLi)
+      .click(function () {
+        showData(graph);
+        return false;
+      });
+    var $newButton = $(newButton);
+    $newButton.find('.dropdown-menu').append($newLi);
+
+    $newButton.appendTo($buttons);
   }
-  buttons += "</div>";
-  return buttons;
+  $buttons.appendTo(graph.mountPoint + ' .graphheader');
+}
+
+function createCurrentValues(me) {
+  //todo: check customHeader generation 
+  var currentValues = [];
+
+  var key;
+  if (me.block.customHeader) {
+    switch (typeof me.block.customHeader) {
+      case "object":
+        var header = $.extend({}, me.block.customHeader); //Enforce a copy
+        for (key in header) {
+          try {
+            me.graphDevices.forEach(function (device) {
+              if (device.idx === parseInt(key)) { //the header element is the current device. Fill in the current value
+                currentValues.push(eval(header[key].replace("data", "device.currentValue")));
+              } else if (isNaN(key)) {
+                header[key] = header[key].replace( //custom header element. Fill in the current device value if needed
+                  "data." + device.idx,
+                  'parseFloat("' + device.currentValue + '")'); //was graph.currentValue
+              }
+            });
+            if (isNaN(key)) {
+              currentValues.push(eval(header[key]));
+            }
+          } catch (error) {
+            console.log("Error in customHeader:", key, header[key]);
+            console.log(error);
+          }
+        }
+        break;
+      case "string": //customHeader is a string. We just evaluate the complete string
+        // eslint-disable-next-line no-unused-vars
+        var devices = Domoticz.getAllDevices(); //devices may be used in the eval function
+        try {
+          currentValues.push(eval(me.block.customHeader));
+        } catch (error) {
+          console.log("Error in customHeader:", me.block.customHeader);
+          console.log(error);
+        }
+        break;
+      case "function":
+        var cv = "Invalid customHeader";
+        try {
+          cv = me.block.customHeader(me);
+        } catch (err) {
+          console.log("Invalid customHeader function for block ", me.key);
+        }
+        currentValues.push(cv);
+        break;
+      default:
+        console.log("Unsupported type for customHeader: ", me.block.customHeader)
+    }
+  } else { //return the values of all devices
+    me.graphDevices.forEach(function (el) {
+      currentValues.push(el.currentValue);
+    })
+  }
+  return currentValues;
 }
 
 function updateHeaderValues(graph, showValues) {
-  
+
   var $values = $(".graphValues" + graph.graphIdx);
 
   templateEngine.load("graph_header").then(function (template) {
 
     var data = {
       show: showValues,
-      mg: graph.multigraph,
-      cv: graph.currentValue,
-      cvs: graph.currentValues,
+      //      mg: graph.multigraph,
+      mg: true, //todo: always handle as multigraph. Can be simplified ...
+      cv: graph.graphDevices[0].currentValue,
+      cvs: createCurrentValues(graph),
       icon: graph.block.iconColour,
     };
 
@@ -1185,8 +1228,8 @@ function updateHeaderValues(graph, showValues) {
   });
 }
 
-function showData(graphIdx) {
-  var graph = dtGraphs[graphIdx];
+function showData(graph) {
+  var graphIdx = graph.graphIdx;
   if ($('#modal_' + graphIdx).length === 0) {
     var html = '';
     html += '<div id="modal_' + graphIdx + '" class="modal graph-menu" tabindex="-1" role="dialog">';
@@ -1196,8 +1239,8 @@ function showData(graphIdx) {
     html += '       <div class="flex-row title">';
     html += '         <h5 class="modal-title"><i class="fas fa-chart-line"></i>' + graph.title + '</h5>';
     html += '         <div class="btn-group" role="group" aria-label="Graph Debug">';
-    html += '           <a type="button" class="btn debug" href="#" onclick="console.log(dtGraphs[\'' + graphIdx + '\']); return false;"><i class="fas fa-code"></i></a>';
-    html += '           <a type="button" class="btn debug" href="data:application/octet-stream;charset=utf-16le;base64,' + btoa(JSON.stringify(dtGraphs[graph.graphIdx], null, 2)) + '" download="' + graphIdx + '.json"><i class="fas fa-save"></i></a>';
+    html += '           <a type="button" id="logbutton" class="btn debug" href="#" ><i class="fas fa-code"></i></a>';
+    html += '           <a type="button" class="btn debug" href="data:application/octet-stream;charset=utf-16le;base64,' + btoa(JSON.stringify(graph, null, 2)) + '" download="' + graphIdx + '.json"><i class="fas fa-save"></i></a>';
     html += '           <button type="button" class="btn debug" data-dismiss="modal"><i class="fas fa-window-close"></i></button>';
     html += '         </div>';
     html += '       </div>';
@@ -1226,12 +1269,17 @@ function showData(graphIdx) {
 
     $(html).appendTo('body');
 
-    $.each(graph.block.devices, function (i, idx) {
-      var g = dtGraphs[graph.primaryIdx];
-      var url = config['domoticz_ip'] + '/json.htm?type=devices&rid=' + idx;
+    $('#modal_' + graphIdx).find('#logbutton').click(function () {
+      console.log(graph);
+      return false;
+    });
+
+    $.each(graph.graphDevices, function (i, graphDevice) {
+      // var g = dtGraphs[graph.primaryIdx]; //todo: I would expect g is just graph
+      var url = config['domoticz_ip'] + '/json.htm?type=devices&rid=' + graphDevice.idx;
 
       $.getJSON(url, function (data) {
-        var device = data.result[0];
+        var device = data.result[0]; //This device should already contain the same info as graphDevice.
         var d = '';
         d += '<div class="device">';
         d += '  <div class="col-md-10">';
@@ -1245,7 +1293,7 @@ function showData(graphIdx) {
         d += '  <div class="col-md-2 col-fas">';
         d += '    <a class="idx text-yellow" href="' + url + '" target="_blank"><i class="fas fa-info-circle">&nbsp;</i>' + device.idx + '</a>';
         if (!graph.block.groupByDevice) {
-          d += '    <a class="idx text-red" href="' + config['domoticz_ip'] + '/json.htm?' + g.params[i] + '" target="_blank"><i class="fas fa-database">&nbsp;</i>Data</a>';
+          d += '    <a class="idx text-red" href="' + config['domoticz_ip'] + '/json.htm?' + graph.params[i] + '" target="_blank"><i class="fas fa-database">&nbsp;</i>Data</a>';
         }
         d += '  </div>';
         d += '</div>';
@@ -1256,21 +1304,11 @@ function showData(graphIdx) {
   $('#modal_' + graphIdx).modal('show');
 }
 
-function updateGraphs(blockId, ids, range, popup) {
-  var devices = [];
-  $.each(ids, function (i, idx) {
-    var device = dtGraphs[blockId + idx];
-    devices.push(device);
-  });
-  getGraphData(devices, range);
-}
-
-
 Handlebars.registerHelper("splitString", function (str, cha, options) {
   return options.fn(str[0].split(cha)[0]);
 });
 
-function getDefaultGraphProperties(graph) {
+function getDefaultGraphProperties(graph, block) {
   return {
     type: "line",
     data: {
@@ -1284,15 +1322,17 @@ function getDefaultGraphProperties(graph) {
         intersect: false,
         enabled: false,
         custom: function (tooltip) {
-          var tooltipEl = $('#' + graph.primaryIdx + '_chartjs-tooltip');
-          minWidth = graph.range !== 'day' ? 100 : 135;
+          var tooltipEl = $('#' + graph.graphIdx + '_chartjs-tooltip');
+          var minWidth = graph.range !== 'day' ? 100 : 135;
 
-          if (tooltipEl.length === 0) {
+          if (tooltipEl.length === 0 && !graph.loadingTooltip) {
+            graph.loadingTooltip = true;
             templateEngine.load("graph_tooltip_table").then(function (template) {
-              $('#graphoutput_' + graph.primaryIdx).parent().append(template({
-                idx: graph.primaryIdx,
+              $('#graphoutput_' + graph.graphIdx).parent().append(template({
+                idx: graph.graphIdx,
                 minw: minWidth
               }));
+              graph.loadingTooltip = false;
             });
           }
 
@@ -1319,25 +1359,30 @@ function getDefaultGraphProperties(graph) {
             var total = 0;
 
             //  Tooltip title with SetPoint info when using GroupByDevice
-            if(graph.hasSetPoint){
+            if (graph.hasSetPoint) {
               var value = graph.currentValues[tooltip.dataPoints[0].index];
               var status = value.split(',')[2].trim();
               var s = status.split(' ');
-              if(s.length === 3){
+              if (s.length === 3) {
                 var until = moment(s[2]).format('hh:mm a');
                 tooltip.title[0] = language.evohome[s[0]] + " > " + until;
               } else {
                 tooltip.title[0] = language.evohome[status];
-              }              
+              }
             }
 
             bodyLines.forEach(function (body, i) {
-
-              var val = parseFloat(body[0].split(':')[1].replace('NaN', '0'));
+              var val = parseFloat(body[0]);
+              //todo: next line throws an error. As workaround I've added previous line and the try/catch.
+              try {
+                val = parseFloat(body[0].split(':')[1].replace('NaN', '0'));
+              } catch (err) {
+                console.log('error in tooltip')
+              }
               var obj = {};
               obj.key = body[0].split(':')[0];
               obj.val = formatThousand(val, graph.decimals);
-              obj.add = graph.block.tooltiptotal === true || $.inArray(obj.key, graph.block.tooltiptotal) !== -1;
+              obj.add = block.tooltiptotal === true || $.inArray(obj.key, block.tooltiptotal) !== -1;
               obj.col = tooltip.labelColors[i].backgroundColor;
               obj.fas = 'plus';
 
@@ -1355,6 +1400,9 @@ function getDefaultGraphProperties(graph) {
               });
             }
 
+            var positionY = this._chart.canvas.offsetTop;
+            var positionX = this._chart.canvas.offsetLeft;
+
             templateEngine.load("graph_tooltip").then(function (template) {
 
               var data = {
@@ -1371,8 +1419,6 @@ function getDefaultGraphProperties(graph) {
             });
           }
 
-          var positionY = this._chart.canvas.offsetTop;
-          var positionX = this._chart.canvas.offsetLeft;
 
           tooltipEl.css({
             opacity: 1,
@@ -1401,7 +1447,7 @@ function getDefaultGraphProperties(graph) {
       },
       scales: {
         yAxes: [{
-          stacked: graph.block.stacked,
+          stacked: block.stacked,
           ticks: {
             fontColor: "white",
             source: "auto"
@@ -1412,7 +1458,7 @@ function getDefaultGraphProperties(graph) {
           },
         }],
         xAxes: [{
-          stacked: graph.block.stacked,
+          stacked: block.stacked,
           offset: true,
           ticks: {
             fontColor: "white",
@@ -1436,11 +1482,11 @@ function getDefaultGraphProperties(graph) {
       plugins: {
         zoom: {
           zoom: {
-            enabled: graph.block.zoom ? true : false,
+            enabled: block.zoom ? true : false,
             drag: {
               animationDuration: 1000
             },
-            mode: graph.block.zoom ? graph.block.zoom : 'xy',
+            mode: typeof block.zoom === 'boolean' ? 'x' : block.zoom,
             speed: 0.05
           }
         }
@@ -1525,116 +1571,118 @@ function getYlabels(g) {
   return l;
 }
 
-function groupByDevice(devices) {
+function groupByDevice(me) {
 
   var arrData = [];
   var arrSetPoint = [];
   var arrLabels = [];
   var datasetColors = [];
-  var graphIdx = devices[0].blockId + devices[0].idx;
-  var graph = dtGraphs[graphIdx];
-  var initial = graph.range === "initial" ? true : false;
+  //  var graphIdx = devices[0].blockId + devices[0].idx;
+  var graphIdx = me.graphIdx;
+  var graph = me;
 
-  if (graph.lastRefreshTime < time() - parseFloat(_GRAPHREFRESH) * 60) {
-    graph.forced = true;
-  }
+  graph.forced = false;
+  graph.lastRefreshTime = time();
+  me.currentValues = [];
 
-  if (graph.forced) {
-    graph.forced = false;
-    graph.lastRefreshTime = time();
-    dtGraphs[graphIdx] = graph;
+  var devices = me.graphDevices;
+  $.each(devices, function (i, device) {
+    var data = Domoticz.getAllDevices()[device.idx];
+    device.currentValue = device.Data;
+    me.currentValues.push(device.Data);
+    graph.txtUnit = device.txtUnit;
 
-    $.each(devices, function (i, device) {
-      data = allDevices[device.idx];
-      dtGraphs[graph.primaryIdx].currentValues.push(device.Data);
-
-      if (
-        data.CounterToday ||
-        data.Temp ||
-        data.SubType === "Percentage" ||
-        data.SensorUnit === "%"
-      ) {
-        if (data.CounterToday) arrData.push(parseFloat(data.CounterToday));
-        if (data.Temp) {
-          arrData.push(parseFloat(data.Temp));
-          if (data.SetPoint) {
-            dtGraphs[graphIdx].hasSetPoint = true;
-            arrSetPoint.push(parseFloat(data.SetPoint));
-            if (data.Temp < data.SetPoint) datasetColors.push(graph.block.datasetColors[0]);
-            if (data.Temp === data.SetPoint) datasetColors.push(graph.block.datasetColors[1]);
-            if (data.Temp > data.SetPoint) datasetColors.push(graph.block.datasetColors[2]);
-          }
-        }
-        if (data.SubType === "Percentage" || data.SensorUnit === "%") arrData.push(parseFloat(data.Data));
-        arrLabels.push(data.Name);
-      }
-
-      if (devices.length - 1 === i) {
-        var buttons = createButtons(graph);
-        var html = createHeader(dtGraphs[graph.primaryIdx], false, buttons);
-        var mountPoint = $(graph.mountPoint + " > div");
-
-        if (initial) {
-          mountPoint.addClass("col-xs-" + graph.block.width);
-          mountPoint.addClass("block_graph");
-          mountPoint.addClass(graphIdx);
-          mountPoint.html(html);
-          updateHeaderValues(graph, false);
-          $("." + graphIdx).css("height", setHeight(graph));
-        }
-
-        var graphProperties = getDefaultGraphProperties(graph);
-        var xAxesType = 'category';
-        var graphType = 'bar';
-        var scaleLabel = {
-          labelString: graph.txtUnit,
-          display: true,
-          fontColor: "white"
-        };
-
-        if (graph.block.groupByDevice === 'horizontal') {
-          xAxesType = 'linear';
-          graphType = 'horizontalBar';
-          graphProperties.options.scales.xAxes[0].offset = false;
-          graphProperties.options.scales.xAxes[0].scaleLabel = scaleLabel;
-          graphProperties.options.scales.xAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
-        } else {
-          graphProperties.options.scales.yAxes[0].scaleLabel = scaleLabel;
-          graphProperties.options.scales.yAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
-        }
-
-        var obj = {};
-        obj.data = arrData;
-        obj.backgroundColor = data.SetPoint ? datasetColors : graph.block.datasetColors;
-        obj.label = data.SetPoint ? 'Temperature' : graph.txtUnit;
-        obj.order = 1;
-        graphProperties.data.datasets.push(obj);
-
+    if (
+      data.CounterToday ||
+      data.Temp ||
+      data.SubType === "Percentage" ||
+      data.SensorUnit === "%"
+    ) {
+      if (data.CounterToday) arrData.push(parseFloat(data.CounterToday));
+      if (data.Temp) {
+        arrData.push(parseFloat(data.Temp));
         if (data.SetPoint) {
-          var spColor = isDefined(graph.block.datasetColors[3]) ? graph.block.datasetColors[3] : 'yellow';
-          var obj = {};
-          obj.data = arrSetPoint;
-          obj.label = 'SetPoint';
-          obj.borderColor = spColor;
-          obj.backgroundColor = spColor;
-          obj.type = 'line';
-          obj.borderWidth = 2;
-          obj.pointRadius = 0;
-          obj.fill = false;
-          obj.order = 0;
-          graphProperties.data.datasets.push(obj);
+          me.hasSetPoint = true;
+          arrSetPoint.push(parseFloat(data.SetPoint));
+          if (data.Temp < data.SetPoint) datasetColors.push(graph.block.datasetColors[0]);
+          if (data.Temp === data.SetPoint) datasetColors.push(graph.block.datasetColors[1]);
+          if (data.Temp > data.SetPoint) datasetColors.push(graph.block.datasetColors[2]);
         }
-
-        graphProperties.options.scales.yAxes[0].ticks.fontColor = "white";
-        graphProperties.options.scales.xAxes[0].type = xAxesType;
-        graphProperties.type = graphType;
-        graphProperties.data.labels = arrLabels;
-        graphProperties.options.legend = false;
-
-        var chartctx = mountPoint.find("canvas")[0].getContext("2d");
-        new Chart(chartctx, graphProperties);
       }
-    });
+      if (data.SubType === "Percentage" || data.SensorUnit === "%") arrData.push(parseFloat(data.Data));
+      arrLabels.push(data.Name);
+    }
+
+  });
+  var html = createHeader(graph, false);
+
+  var mountPoint = $(graph.mountPoint + " > div");
+
+  mountPoint.html(html);
+  createButtons(graph);
+  //updateHeaderValues(graph, false); //For groupByDevices graph no header values
+
+
+  mountPoint.addClass("col-xs-" + graph.block.width);
+  mountPoint.addClass("block_graph");
+  mountPoint.addClass(graphIdx);
+  $("." + graphIdx + " .graphcontent").css("height", setHeight(graph));
+
+  var graphProperties = getDefaultGraphProperties(graph, graph.block);
+  var xAxesType = 'category';
+  var graphType = 'bar';
+  var scaleLabel = {
+    labelString: graph.txtUnit, //It uses the txtUnit of the latest device. Might be incorrect ...
+    display: true,
+    fontColor: "white"
+  };
+
+  if (graph.block.groupByDevice === 'horizontal') {
+    xAxesType = 'linear';
+    graphType = 'horizontalBar';
+    graphProperties.options.scales.xAxes[0].offset = false;
+    graphProperties.options.scales.xAxes[0].scaleLabel = scaleLabel;
+    graphProperties.options.scales.xAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
+  } else {
+    graphProperties.options.scales.yAxes[0].scaleLabel = scaleLabel;
+    graphProperties.options.scales.yAxes[0].ticks.beginAtZero = graph.block.beginAtZero;
   }
+
+  var obj = {};
+  obj.data = arrData;
+  obj.backgroundColor = me.hasSetPoint ? datasetColors : graph.block.datasetColors;
+  obj.label = me.hasSetPoint ? 'Temperature' : graph.txtUnit;
+  obj.order = 1;
+  graphProperties.data.datasets.push(obj);
+
+  if (me.hasSetPoint) {
+    var spColor = isDefined(graph.block.datasetColors[3]) ? graph.block.datasetColors[3] : 'yellow';
+    obj = {};
+    obj.data = arrSetPoint;
+    obj.label = 'SetPoint';
+    obj.borderColor = spColor;
+    obj.backgroundColor = spColor;
+    obj.type = 'line';
+    obj.borderWidth = 2;
+    obj.pointRadius = 0;
+    obj.fill = false;
+    obj.order = 0;
+    graphProperties.data.datasets.push(obj);
+  }
+
+  graphProperties.options.scales.yAxes[0].ticks.fontColor = "white";
+  graphProperties.options.scales.xAxes[0].type = xAxesType;
+  graphProperties.type = graphType;
+  graphProperties.data.labels = arrLabels;
+  graphProperties.options.legend = false;
+
+  var chartctx = mountPoint.find("canvas")[0].getContext("2d");
+  new Chart(chartctx, graphProperties);
 }
 //# sourceURL=js/components/graph.js
+
+/* Notes:
+groupByDevices: No header value. (?) Also not after device update.
+That means at a deviceUpdate the complete graph will be updated.
+
+*/
