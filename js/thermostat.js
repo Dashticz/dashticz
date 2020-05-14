@@ -10,7 +10,6 @@
 /* global Domoticz */
 /* from dashticz.js*/
 /* global Dashticz */
-
 // eslint-disable-next-line no-unused-vars
 function addThermostatFunctions(block) {
   var $el = block.$mountPoint.find(".block_" + block.idx);
@@ -216,22 +215,24 @@ function addEvohomeZoneFunctions(block) {
 }
 
 function switchEvoZone(block, setpoint, override) { 
+ 
     var idx = block.device.idx;
+    var dial = block.type === 'zone';
     var hasPassword = block.password;
     var mode = override
       ? "&mode=TemporaryOverride&until=" +
         moment().add(settings["evohome_boost_zone"], "minutes").toISOString()
       : "&mode=Auto";
-
-    if (!Dashticz.promptPassword(hasPassword)) {
-        getEvohomeZoneBlock(block);
-        return;
+      
+    if (!Dashticz.promptPassword(hasPassword)) {          
+      dial? DT_dial.make(block) : getEvohomeZoneBlock(block);
+      return;
     }
-
+    
     Domoticz.syncRequest(idx, 'type=setused&idx=' + idx + '&setpoint=' + setpoint + mode + '&used=true', true)
         .then(function () {
-            block.device.SetPoint = setpoint;
-            getEvohomeZoneBlock(block);
+            if(override) block.device.SetPoint = setpoint;             
+            dial? DT_dial.make(block) : getEvohomeZoneBlock(block);
         })
 }
 
@@ -295,16 +296,17 @@ function addEvohomeControllerFunctions(block) {
 
 function changeEvohomeControllerStatus(block, status) {
     var idx = block.device.idx;
+    var dial = block.type === 'evo';
     var hasPassword = block.password;
     if (!Dashticz.promptPassword(hasPassword)) {
-        getEvohomeControllerBlock(block);
-        return;
+      dial? DT_dial.make(block) : getEvohomeControllerBlock(block);
+      return;
     }
     Domoticz.syncRequest(idx, 'type=command&param=switchmodal&idx=' + idx + '&status=' + status + '&action=1&used=true', true)
-        .then(function () {
-            block.device.Status = status;
-            getEvohomeControllerBlock(block);
-        })
+      .then(function () {
+          block.device.Status = status;
+          dial? DT_dial.make(block) : getEvohomeControllerBlock(block);
+      })
 }
 
 function getEvohomeHotWaterBlock(block) {
@@ -351,7 +353,9 @@ function getEvohomeHotWaterBlock(block) {
 }
 
 function switchEvoHotWater(block, state, override) {
-    var idx=block.device.idx;
+
+    var idx = block.device.idx;
+    var dial = block.type === 'dhw';
     var mode = override
       ? "&mode=TemporaryOverride&until=" +
         moment().add(settings["evohome_boost_hw"], "minutes").toISOString()
@@ -359,12 +363,12 @@ function switchEvoHotWater(block, state, override) {
 
     var hasPassword = block.password;
     if (!Dashticz.promptPassword(hasPassword)) {
-        getEvohomeHotWaterBlock(block);
-        return;
+      dial? DT_dial.make(block) : getEvohomeHotWaterBlock(block);
+      return;
     }    
     Domoticz.syncRequest(idx, 'type=setused&idx=' + idx + '&setpoint=60&state=' + state + mode + '&used=true', true)
-        .then(function () {
-            getEvohomeHotWaterBlock(block);
-        })
+      .then(function () {   
+        dial? DT_dial.make(block) : getEvohomeHotWaterBlock(block);
+      })
 }
 //# sourceURL=js/thermostat.js
