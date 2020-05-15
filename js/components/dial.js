@@ -167,7 +167,7 @@ var DT_dial = {
       })
       .bind("mousemove touchmove", function (event) {    
         if (DT_dial.active) { 
-          DT_dial.isTouch ? DT_dial.angle(me, event.targetTouches[0]) : DT_dial.angle(me, event);
+          DT_dial.isTouch && event.targetTouches ? DT_dial.angle(me, event.targetTouches[0]) : DT_dial.angle(me, event);
         }
         return false;
       })    
