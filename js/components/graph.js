@@ -582,7 +582,19 @@ function redrawGraph(me) {
     var md = multidata.result;
     var dayFormat = "YYYY-MM-DD";
     var groupStart;
-    var add = graph.sensor === "counter" || graph.sensor === "rain" ? true : false;
+    var add;
+    switch(graph.block.aggregate) {
+      case 'sum':
+        add = true;
+        break;
+      case 'avg':
+        add = false;
+        break;
+      default:
+        add = graph.sensor === "counter" || graph.sensor === "rain" ? true : false;
+        break;
+    }
+    
     var x = 1;
 
     $.each(md, function (i, obj) {
