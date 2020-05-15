@@ -24,7 +24,7 @@ var DT_dial = {
     document.addEventListener(
       "touchstart",
       function () {
-        this.isTouch = true;
+        DT_dial.isTouch = true;
       },
       { passive: false }
     );
@@ -195,8 +195,8 @@ var DT_dial = {
    * @param {object} e   The touch or mouse event.
    */
   angle: function (me, e) {
-    var x = DT_dial.isTouch ? e.touches[0].clientX - DT_dial.center.x : e.clientX - DT_dial.center.x;
-    var y = DT_dial.isTouch ? e.touches[0].clientY - DT_dial.center.x : e.clientY - DT_dial.center.y;
+    var x = DT_dial.isTouch && e.touches && e.touches.length ? e.touches[0].clientX - DT_dial.center.x : e.clientX - DT_dial.center.x;
+    var y = DT_dial.isTouch && e.touches && e.touches.length ? e.touches[0].clientY - DT_dial.center.x : e.clientY - DT_dial.center.y;
     me.angle = DT_dial.R2D * Math.atan2(y, x);
     DT_dial.rotate(me);
   },
@@ -376,7 +376,7 @@ var DT_dial = {
           : 30;
       }
     } else {
-      me.value = number_format(device.Data, 1);
+      me.value = number_format(me.device.Data, 1);
     }    
     return;
   },
