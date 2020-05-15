@@ -169,6 +169,7 @@ var DT_dial = {
         if (DT_dial.active) { 
           DT_dial.isTouch ? DT_dial.angle(me, event.targetTouches[0]) : DT_dial.angle(me, event);
         }
+        return false;
       })    
       .bind("mouseup touchend mouseleave", function (event) {
         if (DT_dial.active) DT_dial.stop(me);
