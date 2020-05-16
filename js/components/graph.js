@@ -710,7 +710,9 @@ function createGraph(graph) {
   }
 
   if (!graph.block.isPopup) { //in general we should not use graph.block, but mergedBlock. In this case graph.block is ok, because isPopup should not be used in a custom block def.
-    $("." + graphIdx + ' .graphcontent').css("height", setHeight(graph));
+    var height = setHeight(graph);
+    if (parseInt(height)>0) //only change height is we have a valid height value
+      $("." + graphIdx + ' .graphcontent').css("height", height);
   }
 
   if (typeof mergedBlock.legend == "boolean") {
