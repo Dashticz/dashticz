@@ -518,11 +518,14 @@ function isObject(prop) {
 }
 
 function setHeight(obj) {
+  var width = $(obj.mountPoint).width();
+  if (width) obj._width=width; //store width for later reference
+  else width = obj._width; //use previous value
   return isDefined(obj.block.height) && obj.block.height
     ? obj.block.height
     : Math.min(
         Math.round(
-          ($(obj.mountPoint).width() / window.innerWidth) * window.innerHeight -
+          width / window.innerWidth * window.innerHeight -
             25
         ),
         window.innerHeight - 50
