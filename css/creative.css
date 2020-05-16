@@ -3008,7 +3008,10 @@ td.agenda-title {
 }
 
 .dt_content .dial {
-  position: relative;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   font-size: 240px;
   width: 1em;
   height: 1em;
@@ -3024,22 +3027,6 @@ td.agenda-title {
   justify-content: center;
   box-shadow: 0 5px 10px 2px rgba(0, 0, 0, 0.3),
     inset 0px 0px 6px 0px rgba(0, 0, 0, 1);
-}
-
-.dial.large {
-  font-size: 240px;
-}
-
-.dial.medium {
-  font-size: 200px;
-}
-
-.dial.small {
-  font-size: 130px;
-}
-
-.dial.x-small {
-  font-size: 85px;
 }
 
 .dial:hover {
@@ -3076,7 +3063,7 @@ td.agenda-title {
 
 .dial.p0 .bar,
 .dial.p180 .bar {
-  clip: rect(0em, 0.48em, 1em, 0em);
+  clip: rect(0em, 0.47em, 1em, 0em);
   -webkit-transform: rotate(0deg);
   -moz-transform: rotate(0deg);
   -ms-transform: rotate(0deg);
@@ -3339,52 +3326,28 @@ td.agenda-title {
 .dial .dial-needle::before {
   content: "";
   position: absolute;
-  left: 43%;
+  left: 37%;
   top: -53%;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-bottom: 100px solid;
+  border-left: var(--needle-width) solid transparent;
+  border-right: var(--needle-width) solid transparent;
+  border-bottom: var(--needle-length) solid;
   border-bottom-color: orange!important;
   border-bottom-color: var(--dial-color)!important;
   clip: rect(7px, 1em, 1em, 0em);
   z-index: 2;
 }
 
-.dial.small .dial-needle::before {
-  left: 36%;
-  border-bottom: 80px solid;
-}
-
-.dial.x-small .dial-needle::before {
-  left: 32%;
-  border-bottom: 52px solid;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  clip: rect(2px, 0.5em, 0.5em, 0em);
-  top: -46%;
-}
-
 .dial .dial-needle::after {
   content: "";
   position: absolute;
-  left: 43%;
+  left: 37%;
   top: -53%;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-bottom: 100px solid rgba(0, 0, 0, 1);
+  border-left: var(--needle-width) solid transparent;
+  border-right: var(--needle-width) solid transparent;
+  border-bottom: var(--needle-length) solid rgba(0, 0, 0, 1);
   transform: rotate(3deg);
   filter: blur(2px);
   z-index: 0;
-}
-
-.dial.small .dial-needle::after {
-  left: 36%;
-  border-bottom: 80px solid rgba(0, 0, 0, 1);
-}
-
-.dial.x-small .dial-needle::after {
-  left: 25%;
-  border-bottom: 52px solid rgba(0, 0, 0, 0.7);
 }
 
 .dial .dial-display,
@@ -3468,10 +3431,6 @@ td.agenda-title {
 }
 
 .dial-center.on {
-/*   -webkit-box-shadow: 0 0 1vh 0 #ffa5006b;
-  -moz-box-shadow: 0 0 1vh 0 #ffa5006b;
-  box-shadow: 0 0 1vh 0 #ffa5006b;
-} */
 -webkit-box-shadow: 0 0 1vh 0 var(--dial-rgba);
 -moz-box-shadow: 0 0 1vh 0 var(--dial-rgba);
 box-shadow: 0 0 1vh 0 var(--dial-rgba);
