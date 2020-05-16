@@ -365,6 +365,7 @@ var DT_dial = {
       }
     } else {
       me.value = number_format(me.device.Data, 1);
+      me.isSetpoint = false; //Domoticz standard Thermostat device only has one value (Setpoint=Data)
       me.lastupdate = me.lastupdate;
     }    
     return;
