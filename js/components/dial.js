@@ -20,14 +20,18 @@ var DT_dial = {
     this.active = false
     this.center = { x: 0, y: 0 };
     this.R2D = 180 / Math.PI;
+    this.timeformat = isDefined(settings["timeformat"])
+      ? settings["timeformat"]
+      : "HH:mm, DD/MM/YY";
 
-    document.addEventListener(
-      "touchstart",
-      function () {
+    document.addEventListener("touchstart", function () {
         DT_dial.isTouch = true;
-      },
-      { passive: false }
+      }, { passive: false }
     );
+  },
+  defaultCfg: {
+    title: false,
+    width: 3
   },
 
   /**
@@ -38,12 +42,10 @@ var DT_dial = {
     me.idx = isDefined(me.block.idx) ? me.block.idx : me.key
     me.block.idx = me.idx; /* required for existing functions */
     me.id = "dial_" + me.idx;
-    me.title = isDefined(me.block.title) ? me.block.title : false;
-    me.width = isDefined(me.block.width) ? me.block.width : 3;
-    me.height = isDefined(me.block.height) ? parseInt(me.block.height) : false;
-    me.base = 85;
-    me.minRange = 0;
-    me.maxRange = 100;
+    me.height = isDefined(me.block.height)
+      ? parseInt(me.block.height)
+      : parseInt($(me.mountPoint + " div").css("width"));
+    me.fontsize = 0.8 * me.height;
     me.dialRange = 280;
     me.active = true;
     DT_dial.color(me);
@@ -51,9 +53,9 @@ var DT_dial = {
     Domoticz.subscribe(me.idx, true, function (device) {      
       me.device = device;
       me.isSetpoint = isDefined(me.device.SetPoint);
-      me.lastupdate = moment(me.device.LastUpdate).format("HH:mm, DD/MM/YY");
+      me.lastupdate = moment(me.device.LastUpdate).format(DT_dial.timeformat);
       DT_dial.make(me);
-    });
+    });    
   },
 
   /**
@@ -61,6 +63,7 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   make: function (me) {
+
     DT_dial.resize(me);
 
     if(me.device.Type === "Heating" || me.device.Type === "Thermostat" || me.device.SubType === "SetPoint"){
@@ -73,13 +76,11 @@ var DT_dial = {
       DT_dial.dimmer(me);      
     }
 
-    if(DT_dial.debug) console.log("Make", me);
-
     templateEngine.load("dial").then(function (template) {
       var dataObject = {
         id: me.id,
         size: me.size,
-        name: me.title ? me.title : me.device.Name,
+        name: me.block.title ? me.block.title : me.device.Name,
         min: me.min,
         max: me.max,
         type: me.device.Type,
@@ -94,13 +95,16 @@ var DT_dial = {
         unit: _TEMP_SYMBOL,
         lastupdate: me.lastupdate,
         color: me.color,
-        rgba: me.rgba
+        rgba: me.rgba,
+        fontsize: me.fontsize,
+        needleL: me.height/2,
+        needleW: me.height/17
       };
 
       /* Mount dial */
       var $mount = $(me.mountPoint + " .dt_content");
       $mount.html(template(dataObject));
-      $mount.addClass("block-center swiper-no-swiping");
+      $mount.addClass("swiper-no-swiping");
       $(me.mountPoint + " .dt_block").css("height", me.height + "px");
       if(me.type === 'evo') $(me.select).val(me.status);
 
@@ -115,7 +119,7 @@ var DT_dial = {
       
       DT_dial.tap(me);
       DT_dial.listen(me);
-      DT_dial.rotate(me);
+      DT_dial.rotate(me);      
     });
   },
 
@@ -134,7 +138,7 @@ var DT_dial = {
         DT_dial.update(me);
       }
       if (me.type === 'dim') {
-        me.demand? me.value = 0 : me.value = 100;
+        me.demand? me.value = 0 : me.value = me.device.Level;
         me.demand = !me.demand;
         DT_dial.update(me);
       }
@@ -316,32 +320,15 @@ var DT_dial = {
   },
 
   /**
-   * Ensure all dials are responsive based on column width.
+   * Ensure all dials are responsive based on column width on screen resize.
    * @param {object} me  Core component object.
    */
   resize: function (me) {
-    var h = 0;
-    switch (me.width) {
-      case 2:
-        h = 2;
-        me.size = "x-small";
-        break;
-      case 4:
-      case 5:
-        h = 3;
-        me.size = "medium";
-        break;
-      case 6:
-        h = 4;
-        me.size = "large";
-        break;
-      default:
-        h = 2;
-        me.size = "small";
-    }
-    if(!me.height) me.height = h * me.base;
+    window.addEventListener("resize", function(){
+      DT_dial.run(me);
+    }, true);
   },
-
+ 
   /**
    * Configures the data for Evohome zones/hot water and thermostats.
    * @param {object} me  Core component object.
@@ -361,7 +348,7 @@ var DT_dial = {
       me.override = me.status === "TemporaryOverride";
       me.demand = me.status !== "HeatingOff" && me.value < me.setpoint;
       me.lastupdate = me.until
-        ? moment(me.until).format("HH:mm, DD/MM/YY")
+        ? moment(me.until).format(DT_dial.timeformat)
         : me.lastupdate;
 
       if(me.device.SubType === 'Hot Water'){      
@@ -378,6 +365,7 @@ var DT_dial = {
       }
     } else {
       me.value = number_format(me.device.Data, 1);
+      me.lastupdate = me.lastupdate;
     }    
     return;
   },
@@ -396,7 +384,7 @@ var DT_dial = {
    * Configures the data for devices of dimmer switchtype.
    * @param {object} me  Core component object.
    */
-  dimmer: function (me) {
+  dimmer: function (me) {    
     me.type = 'dim';
     me.min = 0;
     me.max = 100;    
