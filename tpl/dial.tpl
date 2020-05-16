@@ -1,6 +1,6 @@
 <div id="" class="dial {{size}} {{#if controller}}fixed{{/if}}" data-device="{{name}}" data-min="{{min}}" data-max="{{max}}"
     data-type="{{type}}" data-value="{{value}}" data-setpoint="{{setpoint}}" data-status="{{status}}" 
-    data-until="{{until}}" data-unit="{{unit}}" data-info="{{lastupdate}}">
+    data-until="{{until}}" data-unit="{{unit}}" data-info="{{lastupdate}}" style="font-size: {{fontsize}}px;">
     <div class="slice">
         <div class="bar primary" style="--dial-color:{{color}};"></div>
         <div class="fill primary" style="--dial-color:{{color}};"></div>
@@ -9,7 +9,7 @@
         <div class="dial-face"></div>
         {{#unless controller}}
         <div class="draggable">
-            <div class="dial-needle" style="--dial-color: {{color}};"></div>
+            <div class="dial-needle" style="--dial-color: {{color}};--needle-length: {{needleL}}px;--needle-width: {{needleW}}px;"></div>
         </div>
         {{/unless}}
         <div id="{{id}}" class="dial-center {{on}}" style="--dial-rgba: {{rgba}};">
