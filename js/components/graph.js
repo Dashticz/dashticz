@@ -389,6 +389,7 @@ function refreshGraph(me) {
   me.dataFilterCount = 0;
   me.dataFilterUnit = "";
   me.groupBy = me.block.groupBy;
+  me.aggregate = me.block.aggregate;
 
   if (me.range === "last") {
     me.realrange = "day";
@@ -435,6 +436,7 @@ function refreshGraph(me) {
       if (me.graphConfig.method) {
         me.block.method = me.graphConfig.method;
       }
+      me.aggregate = me.graphConfig.aggregate || me.block.aggregate; //todo: we should merge all keys of graphConfig into me at once, or create copy of block (_block) and merge graphProperties and block into _block
     }
     if (!me.customRange) {
       console.log(
@@ -583,7 +585,7 @@ function redrawGraph(me) {
     var dayFormat = "YYYY-MM-DD";
     var groupStart;
     var add;
-    switch(graph.block.aggregate) {
+    switch(graph.aggregate) {
       case 'sum':
         add = true;
         break;
