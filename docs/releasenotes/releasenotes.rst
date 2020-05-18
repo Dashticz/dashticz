@@ -7,6 +7,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Latest changes
 --------------
 
+Enhancements
+  * Support for Dials. See :ref:`dial`
+
 3.4.6 (Beta) (13-5-2020)
 ------------------------
 

@@ -181,25 +181,25 @@ function switchBlinds(block, action) {
 
 // eslint-disable-next-line no-unused-vars
 function slideDevice(block, status) {
-    //    if (typeof (slide) !== 'undefined') slide.abort();
-    var $div=block.$mountPoint; 
 
-    $div.find('.icon').removeClass('off');
-    $div.find('.icon').addClass('on');
+    var dial = block.type === 'dim';
 
-    if ($div.find('.fa-toggle-off').length > 0) {
-        $div.find('.fa-toggle-off').addClass('fa-toggle-on').removeClass('fa-toggle-off');
-    }
+    if(!dial){
+        var $div = block.$mountPoint; 
+        $div.find('.icon').removeClass('off');
+        $div.find('.icon').addClass('on');
 
-    $div.find('.state').html(language.switches.state_on);
+        if ($div.find('.fa-toggle-off').length > 0) {
+            $div.find('.fa-toggle-off').addClass('fa-toggle-on').removeClass('fa-toggle-off');
+        }
+        $div.find('.state').html(language.switches.state_on);
+    }    
 
-    Domoticz.request('type=command&param=switchlight&idx=' + block.idx + '&switchcmd=Set%20Level&level=' + status)
+    Domoticz.syncRequest(block.idx, 'type=command&param=switchlight&idx=' + block.idx + '&switchcmd=Set%20Level&level=' + status)
         .then(function () {
-            getDevices(true);
+            dial? DT_dial.make(block) : getDevices(true);
         });
 }
-
-
 
 /*
 The following slider functions are used to set the slider while sliding.

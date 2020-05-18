@@ -2988,3 +2988,461 @@ td.agenda-title {
 }
 
 /* END: SECURITY PANEL */
+
+/* START: DIAL */
+
+.block-center {
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.mh2 {
+  height: 170px !important;
+}
+
+.mh4 {
+  height: 340px !important;
+}
+
+.dt_content .dial {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 240px;
+  width: 1em;
+  height: 1em;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+  border-radius: 50%;
+  float: left;
+  background-color: #cccccc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 10px 2px rgba(0, 0, 0, 0.3),
+    inset 0px 0px 6px 0px rgba(0, 0, 0, 1);
+}
+
+.dial:hover {
+  cursor: default;
+}
+
+.dial:hover:after {
+  top: 0.11em;
+  left: 0.11em;
+  width: 0.78em;
+  height: 0.78em;
+  -webkit-transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out;
+  -o-transition: all 0.2s ease-out;
+  -ms-transition: all 0.2s ease-out;
+  transition: all 0.2s ease-out;
+}
+
+.dial.p0 .bar,
+.dial.p180 .bar,
+.dial.p180 .fill {
+  position: absolute;
+  border: 0.08em solid #307bbb;
+  width: 0.78em;
+  height: 0.78em;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+  border-radius: 50%;
+  left: 0.03em;
+  top: 0.03em;
+}
+
+.dial.p0 .bar,
+.dial.p180 .bar {
+  clip: rect(0em, 0.47em, 1em, 0em);
+  -webkit-transform: rotate(0deg);
+  -moz-transform: rotate(0deg);
+  -ms-transform: rotate(0deg);
+  -o-transform: rotate(0deg);
+  transform: rotate(0deg);
+}
+
+.dial.p180 .fill {
+  clip: rect(0em, 0.5em, 1em, 0em);
+  -webkit-transform: scaleX(-1) rotate(360deg);
+  -moz-transform: scaleX(-1) rotate(360deg);
+  -ms-transform: scaleX(-1) rotate(360deg);
+  -o-transform: scaleX(-1) rotate(360deg);
+  transform: scaleX(-1) rotate(360deg);
+}
+
+.dial .bar.primary,
+.dial .fill.primary {
+  border-color: #ffa500;
+  border-color: var(--dial-color);
+}
+
+.dial .bar.secondary,
+.dial .fill.secondary {
+  border-color: #307bbb;
+}
+
+.dial.p180 .fill:after {
+  content: "";
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+
+.dial *,
+.dial *:before,
+.dial *:after {
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box;
+}
+
+.dial:after {
+  position: absolute;
+  top: 0.08em;
+  left: 0.08em;
+  display: block;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  -o-border-radius: 50%;
+  border-radius: 50%;
+  background-color: whitesmoke;
+  width: 0.84em;
+  height: 0.84em;
+  -webkit-transition-property: all;
+  -moz-transition-property: all;
+  -o-transition-property: all;
+  transition-property: all;
+  -webkit-transition-duration: 0.2s;
+  -moz-transition-duration: 0.2s;
+  -o-transition-duration: 0.2s;
+  transition-duration: 0.2s;
+  -webkit-transition-timing-function: ease-in;
+  -moz-transition-timing-function: ease-in;
+  -o-transition-timing-function: ease-in;
+  transition-timing-function: ease-in;
+  background-color: transparent;
+}
+
+.dial .slice {
+  position: absolute;
+  width: 1em;
+  height: 1em;
+  transform: rotate(-140deg);
+}
+.dial:not(.p180) .slice,
+.dial.p0 .slice {
+  clip: rect(0em, 1em, 1em, 0.5em);
+}
+.dial.p180 .slice {
+  clip: rect(0em, 1em, 1em, 0em);
+}
+
+.dial .dial-container {
+  position: absolute;
+  width: 94%;
+  height: 94%;
+  top: 3%;
+  left: 3%;
+  -webkit-transition-property: all;
+  -moz-transition-property: all;
+  -o-transition-property: all;
+  transition-property: all;
+  -webkit-transition-duration: 0.2s;
+  -moz-transition-duration: 0.2s;
+  -o-transition-duration: 0.2s;
+  transition-duration: 0.2s;
+  -webkit-transition-timing-function: ease-in;
+  -moz-transition-timing-function: ease-in;
+  -o-transition-timing-function: ease-in;
+  transition-timing-function: ease-in;
+}
+
+.dt_content .dial:not(.fixed):hover .dial-container {
+  width: 87.5%;
+  height: 87.5%;
+  top: 6%;
+  left: 6%;
+  -webkit-transition-property: all;
+  -moz-transition-property: all;
+  -o-transition-property: all;
+  transition-property: all;
+  -webkit-transition-duration: 0.2s;
+  -moz-transition-duration: 0.2s;
+  -o-transition-duration: 0.2s;
+  transition-duration: 0.2s;
+  -webkit-transition-timing-function: ease-in;
+  -moz-transition-timing-function: ease-in;
+  -o-transition-timing-function: ease-in;
+  transition-timing-function: ease-in;
+}
+
+.dial .draggable {
+  width: 100%;
+  height: 100%;
+  top: 0;
+  position: absolute;
+}
+
+.dial .dial-center {
+  width: 75%;
+  height: 75%;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto auto;
+  position: absolute;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: radial-gradient(circle, #333, #444);
+  box-shadow: inset 0 0 3px 0px rgba(0, 0, 0, 0.5),
+    0 0 11px 0px rgba(0, 0, 0, 0.8);
+  -webkit-transition: all 0.2s ease-in;
+  -moz-transition: all 0.2s ease-in;
+  -o-transition: all 0.2s ease-in;
+  -ms-transition: all 0.2s ease-in;
+  transition: all 0.2s ease-in;
+  z-index: 2;
+  user-select: none;
+}
+
+.dt_content .dial:not(.fixed):hover .dial-center {
+  width: 50%;
+  height: 50%;
+  -webkit-transition: all 0.2s ease-in;
+  -moz-transition: all 0.2s ease-in;
+  -o-transition: all 0.2s ease-in;
+  -ms-transition: all 0.2s ease-in;
+  transition: all 0.2s ease-in;
+}
+
+.dt_content .dial.fixed .dial-center {
+  width: 85%;
+  height: 85%;
+}
+
+.dial-menu {
+  justify-content: center;
+  height: 100%;
+  width: 90%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.dial-menu select {
+  width: 100%;
+  height: 90%;
+  max-width: 100%;
+  font-size: 9%;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  text-align: center;
+  text-align-last: center;
+  -moz-text-align-last: center;
+  border-radius: 50%;
+
+  box-shadow: inset 0px 0.5px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 2px rgba(255, 255, 255, 0.5),
+    inset 0px 5px 8px 5px rgba(0, 0, 0, 0.8);
+  color: #cccccc;
+  background-color: #2a2a2a;
+  border: 0;
+  overflow-y: hidden;
+  outline: none;
+}
+
+.dial-menu option {
+  text-align: center;
+  text-align-last: center;
+  -moz-text-align-last: center;
+  max-width: 100% !important;
+  width: 95%;
+  margin: auto;
+}
+
+.dial-menu select option:hover,
+.dial-menu select option:focus,
+.dial-menu select option:active {
+  color: orange !important;
+  color: var(--dial-color) !important;
+}
+
+.dial-menu select option:checked {
+  background: linear-gradient(
+    to right,
+    black 0%,
+    #29261f 8%,
+    var(--dial-color) 50%,
+    #29261f 92%,
+    black 100%
+  );
+  color: orange !important;
+  color: var(--dial-color) !important;
+  -moz-box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.5);
+  box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.5);
+}
+
+.dial .dial-face {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: linear-gradient(0deg, #222, #444, #333);
+  -webkit-box-shadow: inset 0px 0px 20px 5px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: inset 0px 0px 20px 5px rgba(0, 0, 0, 0.5);
+  box-shadow: inset 0px 0px 20px 5px rgba(0, 0, 0, 0.5);
+}
+
+.dial .dial-needle {
+  width: 50%;
+  height: 50%;
+  position: absolute;
+  left: 25%;
+  top: 25%;
+}
+
+.dial .dial-needle::before {
+  content: "";
+  position: absolute;
+  left: 37%;
+  top: -53%;
+  border-left: var(--needle-width) solid transparent;
+  border-right: var(--needle-width) solid transparent;
+  border-bottom: var(--needle-length) solid;
+  border-bottom-color: orange!important;
+  border-bottom-color: var(--dial-color)!important;
+  clip: rect(7px, 1em, 1em, 0em);
+  z-index: 2;
+}
+
+.dial .dial-needle::after {
+  content: "";
+  position: absolute;
+  left: 37%;
+  top: -53%;
+  border-left: var(--needle-width) solid transparent;
+  border-right: var(--needle-width) solid transparent;
+  border-bottom: var(--needle-length) solid rgba(0, 0, 0, 1);
+  transform: rotate(3deg);
+  filter: blur(2px);
+  z-index: 0;
+}
+
+.dial .dial-display,
+.dial .dial-display .value,
+.dial .dial-display .device,
+.dial .dial-display .info {
+  width: 100%;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.dial .dial-display {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  height: 90%;
+}
+
+.dial .dial-display .value {
+  font-size: 0.25em;
+  line-height: 1em;
+  color: #cccccc;
+  -webkit-transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out;
+  -o-transition: all 0.2s ease-out;
+  -ms-transition: all 0.2s ease-out;
+  transition: all 0.2s ease-out;
+  z-index: 5;
+}
+
+.dial .dial-display .device {
+  font-size: 0.07em;
+  color: #ffa500;
+  height: 18%;
+  animation: fadeInLoad 2s;
+  line-height: 2em;
+}
+
+.dial .dial-display .info {
+  font-size: 0.06em;
+  color: grey;
+  height: 16%;
+  animation: fadeInLoad 2s;
+}
+
+.dial .dial-display .info.nosetpoint {
+  margin-bottom: 7px;
+}
+
+.dial .dial-display .setpoint {
+  font-size: 0.06em;
+  color: grey;
+  height: 10%;
+  animation: fadeInLoad 2s;
+  line-height: 0;
+  display: inline-block;
+}
+
+.dial .dial-display .setpoint .fas {
+  font-size: 1em !important;
+}
+
+.dial .dial-display .setpoint.hidden {
+  visibility: hidden;
+}
+
+.dial:hover .dial-display .value {
+  font-size: 0.2em;
+  color: orange;
+  color: var(--dial-color);
+}
+
+.dial:hover .dial-display .info,
+.dial:hover .dial-display .device,
+.dial:hover .dial-display .setpoint {
+  display: none;
+}
+
+.dial-center.on {
+-webkit-box-shadow: 0 0 1vh 0 var(--dial-rgba);
+-moz-box-shadow: 0 0 1vh 0 var(--dial-rgba);
+box-shadow: 0 0 1vh 0 var(--dial-rgba);
+}
+
+@keyframes fadeInLoad {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* END: DIAL */
+
