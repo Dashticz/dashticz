@@ -1,6 +1,16 @@
-
 {
-    "restructuredtext.confPath"               : "${workspaceFolder}/docs",
-    "restructuredtext.updateOnTextChanged"    : "true",
-    "restructuredtext.updateDelay"            : 300
+  "restructuredtext.confPath": "${workspaceFolder}/docs",
+  "restructuredtext.updateOnTextChanged": "true",
+  "restructuredtext.updateDelay": 300,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.formatOnSave": false,
+  "prettier.disableLanguages": ["html", "vue", "markdown"],
+  "beautify.language": {
+    "js": [],
+    "css": [],
+    "html": ["htm", "html"]
+  }
 }
