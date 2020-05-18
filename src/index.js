@@ -1,8 +1,8 @@
-require("chart.js");
-window.moment = require("moment");
-var $=require('jquery');
-require('jquery-ui-dist/jquery-ui.min')
-require('jquery-ui-dist/jquery-ui.min.css')
+require('chart.js');
+window.moment = require('moment');
+var $ = require('jquery');
+require('jquery-ui-dist/jquery-ui.min');
+require('jquery-ui-dist/jquery-ui.min.css');
 //require('jquery-migrate')
 require('jquery-ui-touch-punch');
 require('bootstrap');
@@ -13,20 +13,20 @@ require('mobile-detect');
 /* removed from functions.js */
 require('jquery.md5');
 require('js-cookie');
-require("script-loader!./functions.js");
+require('script-loader!./functions.js');
 
-var Handlebars=require("handlebars")
+var Handlebars = require('handlebars');
 window.Handlebars = Handlebars;
-var MomentHandler = require("handlebars.moment");
+var MomentHandler = require('handlebars.moment');
 window.MomentHandler = MomentHandler;
 
 require('./templateengine.js');
 require('./handlebars-helpers.js');
 var Swiper = require('swiper').default;
 window.Swiper = Swiper;
-require( 'swiper/css/swiper.min.css');
+require('swiper/css/swiper.min.css');
 
-window.Skycons = require("skycons")(window);
+window.Skycons = require('skycons')(window);
 require('spectrum-colorpicker');
 require('ion-sound');
 require('hammerjs');
