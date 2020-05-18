@@ -317,6 +317,10 @@ The following config parameters from CONFIG.js are applicable:
   * - evohome_boost_hw
     - ``<number>``: Hot water boost temporary override time in minutes. Default: 15
 
+The EvoHome devices can be represented as dial by adding ``type: 'dial'`` to the block definition. See :ref:`dial`
+
+.. image :: img/dial.png
+
 .. _formatting:
 
 Formatting

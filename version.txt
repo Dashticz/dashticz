@@ -1,8 +1,9 @@
 {
-"version": "3.4.6",
+"version": "3.4.7",
 "branch": "beta",
-"last_changes": "Update of graph module",
+"last_changes": "Dials",
 "changelog" : {
+            "3.4.6": "Update of graph module",
             "3.4.5": "Bug fixes",
             "3.4.4": "New security panel; bug fixes",
             "3.4.3": "New calendar block; bug fixes",
@@ -14,18 +15,6 @@
             "3.3.3": "New PHP calendar module to fix recurring events",
             "3.3.2": "Master version",
             "3.3.1": "Garbage fixes for TwenteMilieu, Barendrecht. RGBWWZ device support.",
-            "3.3.0": "Evohome support.",
-            "3.2.1": "Update of jQuery version.",
-            "3.2.0": "Change in HTML template for special blocks",
-            "3.1.2": "Stable version",
-            "3.1.1": "Calendar with table formatting; session time-out setting",
-            "3.1.0": "New graph module",
-            "3.0.6": "[enh] OWM city id as city name, icon/images for blocktitles",
-            "3.0.5": "Improve installation script",
-            "3.0.4": "Dashticz moved to new location.",
-            "3.0.3": "Fix for Spotify block; layout improvements",
-            "3.0.2": "Add imageOn/Off, iconOn/Off and textOn/Off block parameters",
-            "3.0.1": "Update install script",
-            "3.0.0": "Dashticz V3"
+            "3.3.0": "Evohome support."
             }
 }
