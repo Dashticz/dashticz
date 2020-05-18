@@ -1,104 +1,123 @@
 /* global Dashticz _CORS_PATH settings*/
 
 var DT_nzbget = {
-    name: "nzbget",
-    defaultContent: '<div id="downloads"></div>',
-    defaultCfg: {
-        containerClass: 'containsnzbget',
-        icon: 'fas fa-cloud',
-        title: 'NZBget',
-        width: 12,
-        refresh: 300
-    },
-    refresh: function (me) {
-        if (!settings['host_nzbget'] || settings['host_nzbget'] === '') {
-            $(me.mountPoint +' .dt_state').html('host_nzbget not defined.')
-            return;
-        }
-//        $(me.mountPoint +' .dt_state').addClass('containsnzbget')
-//        var _data = {"method": "listgroups", "nocache": new Date().getTime(), "params": [100] };
-        var _data = {"method": "listgroups" };
-		NZBGET.rpcUrl = settings['host_nzbget']+'/jsonrpc';
-		NZBGET.call(_data,'returnNZBGET');
+  name: 'nzbget',
+  defaultContent: '<div id="downloads"></div>',
+  defaultCfg: {
+    containerClass: 'containsnzbget',
+    icon: 'fas fa-cloud',
+    title: 'NZBget',
+    width: 12,
+    refresh: 300,
+  },
+  refresh: function (me) {
+    if (!settings['host_nzbget'] || settings['host_nzbget'] === '') {
+      $(me.mountPoint + ' .dt_state').html('host_nzbget not defined.');
+      return;
     }
-}
+    //        $(me.mountPoint +' .dt_state').addClass('containsnzbget')
+    //        var _data = {"method": "listgroups", "nocache": new Date().getTime(), "params": [100] };
+    var _data = { method: 'listgroups' };
+    NZBGET.rpcUrl = settings['host_nzbget'] + '/jsonrpc';
+    NZBGET.call(_data, 'returnNZBGET');
+  },
+};
 
 Dashticz.register(DT_nzbget);
 
-function returnNZBGET(data){
-    if(data.length===0) {
-        var dummy = {
-            NZBName: 'No active downloads, or no connection',
-            DownloadedSizeMB: 0,
-            FileSizeMB: 0,
-            FirstID: 123            
+function returnNZBGET(data) {
+  if (data.length === 0) {
+    var dummy = {
+      NZBName: 'No active downloads, or no connection',
+      DownloadedSizeMB: 0,
+      FileSizeMB: 0,
+      FirstID: 123,
+    };
+    data.push(dummy);
+  }
+  if (
+    typeof blocks['nzbget'] !== 'undefined' &&
+    typeof blocks['nzbget']['downloads_width'] !== 'undefined'
+  ) {
+    width = blocks['nzbget']['downloads_width'];
+  }
+
+  var t = 1;
+  for (var d in data) {
+    var html = '<div class="mh transbg nzbget' + data[d]['FirstID'] + '">';
+    html += '<div class="col-xs-12">';
+    html +=
+      '<strong class="title">' +
+      data[d]['NZBName'] +
+      '</strong><br />' +
+      data[d]['DownloadedSizeMB'] +
+      'MB / ' +
+      data[d]['FileSizeMB'] +
+      'MB';
+    html += '</div>';
+    html += '</div>';
+    if (
+      $('.containsnzbget .dt_state .nzbget' + data[d]['FirstID']).length > 0
+    ) {
+      $('.containsnzbget .dt_state .nzbget' + data[d]['FirstID']).replaceWith(
+        html
+      );
+    } else {
+      $('.containsnzbget .dt_state').append(html);
+    }
+    //		$('.containsnzbget').show();
+
+    t++;
+    if (t == 2) t = 1;
+  }
+}
+
+function resumepauseNZBget(id, func) {
+  _data = {
+    method: 'editqueue',
+    nocache: new Date().getTime(),
+    params: [func, 0, '', [id]],
+  };
+  NZBGET.rpcUrl = _CORS_PATH + settings['host_nzbget'] + '/jsonrpc';
+  NZBGET.call(_data, '');
+  $(
+    '#nzbget-' + id + ' .details.pause,#nzbget-' + id + ' .details.play'
+  ).toggle();
+}
+
+var NZBGET = new (function ($) {
+  'use strict';
+
+  // Properties
+  this.rpcUrl;
+  //this.defaultFailureCallback;
+  this.connectErrorMessage = 'Cannot establish connection';
+  this.call = function (
+    request,
+    completed_callback,
+    failure_callback,
+    timeout
+  ) {
+    $.getJSON(this.rpcUrl + '/' + request.method)
+      .fail(function (res) {
+        console.log('failure');
+        console.log(res);
+      })
+      .then(function (result) {
+        //console.log(result);
+        if (result) {
+          var res;
+          if (result.error == null) {
+            res = result.result;
+            eval(completed_callback + '(res)');
+            return;
+          } else {
+            res = result.error.message + '<br><br>Request: ' + request;
+          }
         }
-        data.push(dummy);
-    }
-	if(typeof(blocks['nzbget'])!=='undefined' && typeof(blocks['nzbget']['downloads_width'])!=='undefined'){
-		width = blocks['nzbget']['downloads_width'];
-	}
-
-	var t=1;
-	for(var d in data){
-		var html = '<div class="mh transbg nzbget'+data[d]['FirstID']+'">';
-			html+='<div class="col-xs-12">';
-				html+='<strong class="title">'+data[d]['NZBName']+'</strong><br />'+data[d]['DownloadedSizeMB']+'MB / '+data[d]['FileSizeMB']+'MB';
-			html+='</div>';
-		html+='</div>';
-		if($('.containsnzbget .dt_state .nzbget'+data[d]['FirstID']).length>0){
-			$('.containsnzbget .dt_state .nzbget'+data[d]['FirstID']).replaceWith(html);
-		}
-		else {
-			$('.containsnzbget .dt_state').append(html);
-		}
-//		$('.containsnzbget').show();
-		
-		t++;
-		if(t==2) t=1;							
-	}
-}
-
-function resumepauseNZBget(id,func){
-	_data = {"method": "editqueue", "nocache": new Date().getTime(), "params": [func, 0, "", [id]] };
-	NZBGET.rpcUrl = _CORS_PATH+settings['host_nzbget']+'/jsonrpc';
-	NZBGET.call(_data,'');
-	$('#nzbget-'+id+' .details.pause,#nzbget-'+id+' .details.play').toggle();
-}
-
-var NZBGET = (new function($)
-{
-	'use strict';
-	
-	// Properties
-	this.rpcUrl;
-	//this.defaultFailureCallback;
-    this.connectErrorMessage = 'Cannot establish connection';
-    this.call = function(request, completed_callback, failure_callback, timeout) {
-        $.getJSON(this.rpcUrl+'/'+request.method )
-        .fail( function(res) {
-            console.log('failure');
-            console.log(res);
-        })
-        .then(function(result) {
-            //console.log(result);
-            if (result)
-						{
-                            var res;
-							if (result.error == null)
-							{
-								res = result.result;
-								eval(completed_callback+'(res)');
-								return;
-							}
-							else
-							{
-								res = result.error.message + '<br><br>Request: ' + request;
-							}
-						}
-        });
-    }
-    /*
+      });
+  };
+  /*
 
 	this.call = function(request, completed_callback, failure_callback, timeout)
 	{
@@ -174,7 +193,7 @@ var NZBGET = (new function($)
 		};
 		xhr.send(request);
 	}*/
-}(jQuery));
+})(jQuery);
 
 /*
 Quick help (from nzbget-directory):
