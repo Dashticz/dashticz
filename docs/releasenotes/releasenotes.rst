@@ -7,6 +7,15 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Latest changes
 --------------
 
+3.4.7 (Beta) (18-5-2020)
+------------------------
+
+Enhancements
+  * Support for Dials. See :ref:`dial`
+
+Fixes
+  * Refresh of graph while in standby
+
 3.4.6 (Beta) (13-5-2020)
 ------------------------
 
