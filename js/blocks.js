@@ -122,9 +122,6 @@ function deviceUpdateHandler(block) {
   var selector = block.mountPoint;
   var idx = block.idx;
   var device = block.device;
-  var subidxStr = '';
-  if (block.subidx) subidxStr = '_' + block.subidx;
-  var fullidx = idx + subidxStr;
 
   getCustomFunction('getStatus', block, false);
   var $selector = $(selector);

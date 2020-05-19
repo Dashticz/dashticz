@@ -1,11 +1,11 @@
+/* global SpotifyWebApi getRandomInt Cookies URLToArray language settings infoMessage*/
 var SpotifyModule = (function () {
   var CUR_URI = window.location.href.split('#');
-  REDIRECT_URI = CUR_URI[0];
+  var REDIRECT_URI = CUR_URI[0];
 
   var accessToken;
   var userinfo;
   var spotifyApi = new SpotifyWebApi();
-  var random;
   var columndiv;
   var spotVolume;
 
@@ -76,7 +76,9 @@ var SpotifyModule = (function () {
       }
     });
   }
+// Todo: columndiv and rand currently are unused
 
+  // eslint-disable-next-line no-unused-vars
   function _getData(columndiv, rand) {
     if ($('select.devices option').length === 0)
       $('select.devices').html(
@@ -91,9 +93,9 @@ var SpotifyModule = (function () {
         var url = _getLoginURL();
         window.location.href = url;
       } else {
-        devices = data.devices;
+        var devices = data.devices;
         var sel = '';
-        for (d in devices) {
+        for (var d in devices) {
           $('select.devices').show();
           $('a.change').show();
 
@@ -144,7 +146,7 @@ var SpotifyModule = (function () {
       html +=
         '<div class="modal-body" style="padding-left:15px;"><div class="row list">';
 
-      for (p in playlists.items) {
+      for (var p in playlists.items) {
         if (
           typeof playlists.items[p] !== 'undefined' &&
           typeof playlists.items[p]['uri'] !== 'undefined' &&
@@ -213,10 +215,10 @@ var SpotifyModule = (function () {
   function _changeDevice(deviceID) {
     var deviceIDs = [];
     deviceIDs.push(deviceID);
-    spotifyApi.transferMyPlayback(deviceIDs, {}, function (err, result) {});
+    spotifyApi.transferMyPlayback(deviceIDs, {}, function () {});
   }
   function _getCurrentHTML(currently, typeAction) {
-    item = currently.item;
+    var item = currently.item;
     spotVolume = Number(currently.device.volume_percent);
     if (typeof typeAction === 'undefined') typeAction = false;
 
@@ -299,24 +301,24 @@ var SpotifyModule = (function () {
 
   function _trackAction(action) {
     if (action == 'Play') {
-      spotifyApi.play(function (err, result) {
+      spotifyApi.play(function () {
         $('.spotpause').show();
         $('.spotplay').hide();
       });
     }
     if (action == 'Pause') {
-      spotifyApi.pause(function (err, result) {
+      spotifyApi.pause(function () {
         $('.spotpause').hide();
         $('.spotplay').show();
       });
     }
     if (action == 'Forward') {
-      spotifyApi.skipToNext(function (err, result) {
+      spotifyApi.skipToNext(function () {
         _getCurrentTrack();
       });
     }
     if (action == 'Rewind') {
-      spotifyApi.skipToPrevious(function (err, result) {
+      spotifyApi.skipToPrevious(function () {
         _getCurrentTrack();
       });
     }
@@ -344,7 +346,7 @@ var SpotifyModule = (function () {
         {
           context_uri: playlist.uri,
         },
-        function (err, result) {
+        function () {
           $('.modal,.modal-backdrop').remove();
         }
       );
@@ -352,7 +354,7 @@ var SpotifyModule = (function () {
   }
 
   function _getTrack(track) {
-    spotifyApi.play({ uris: [track] }, function (err, result) {
+    spotifyApi.play({ uris: [track] }, function () {
       $('.modal,.modal-backdrop').remove();
     });
   }
@@ -387,7 +389,7 @@ var SpotifyModule = (function () {
     $('div.modal-body .row.tracks').html('').hide();
   }
 
-  function _getTrackList(owner, id, back) {
+  function _getTrackList(owner, id) {
     spotifyApi.getPlaylist(id, null, function (err, tracks) {
       tracks = tracks.tracks;
 
@@ -395,7 +397,7 @@ var SpotifyModule = (function () {
         '<div class="col-md-12"><div class="spotback"><a onclick="SpotifyModule.showPlaylists();">&laquo; ' +
         language.misc.spotify_back_to_playlist +
         '</a></div></div>';
-      for (t in tracks.items) {
+      for (var t in tracks.items) {
         if (
           typeof tracks.items[t]['track'] !== 'undefined' &&
           typeof tracks.items[t]['track']['uri'] !== 'undefined'
@@ -433,6 +435,7 @@ var SpotifyModule = (function () {
 })();
 
 //Wrapper function to stay compatible with current module system
+// eslint-disable-next-line no-unused-vars
 function getSpotify(columndiv) {
   return SpotifyModule.getSpotify(columndiv);
 }

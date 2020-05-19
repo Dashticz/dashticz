@@ -132,7 +132,7 @@ var Domoticz = (function () {
       if (cfg.usrEnc && cfg.usrEnc.length)
         usrinfo = 'username=' + cfg.usrEnc + '&password=' + cfg.pwdEnc + '&';
       initPromise = checkWSSupport()
-        .catch(function (res) {
+        .catch(function () {
           useWS = false;
           console.log(
             'Websocket failed, switch back to http. Check IP whitelisting in Domoticz.'

@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 /* global getAllDevicesHandler objectlength config initVersion loadSettings settings*/
-/* global sessionValid MobileDetect moment getBlock settings*/
+/* global sessionValid MobileDetect moment getBlock*/
 /* global Swiper */
 
 //To refactor later:
@@ -8,7 +8,7 @@
 
 /*from blocks.js*/
 /*global initMap */
-/* global Dashticz Domoticz*/
+/* global Dashticz Domoticz DT_secpanel*/
 var language = {};
 // eslint-disable-next-line no-unused-vars
 var blocks = {};
@@ -55,7 +55,7 @@ function loadFiles(dashtype) {
   }
 
   //Set custom error handling to catch syntax errors in CONFIG.js and custom.js
-  window.onerror = function (msg, url, line, col, error) {
+  window.onerror = function (msg, url, line, col) {
     if (loadingFilename) {
       var message =
         'Error loading ' +

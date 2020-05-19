@@ -1,15 +1,19 @@
 // eslint-disable-next-line no-unused-vars
 /* global sliding:writable number_format _TEMP_SYMBOL language*/
 /* from bundle.js */
-/* global moment */
+/* global moment templateEngine*/
 /* from settings.js */
 /* global settings */
 /* from blocks.js */
-/* global iconORimage titleAndValueSwitch showUpdateInformation */
+/* global titleAndValueSwitch showUpdateInformation */
 /* from domoticz-api.js*/
 /* global Domoticz */
 /* from dashticz.js*/
 /* global Dashticz */
+/* from dial.js*/
+/* global DT_dial */
+/* from src/functions.js */
+/* global isDefined */
 // eslint-disable-next-line no-unused-vars
 function addThermostatFunctions(block) {
   var $el = block.$mountPoint.find('.block_' + block.idx);
@@ -342,6 +346,8 @@ function getEvohomeHotWaterBlock(block) {
       ? 'fas fa-stopwatch'
       : 'far fa-calendar-alt';
 
+  var name = device.Name;
+  var temp = device.Temp + _TEMP_SYMBOL;
   if (titleAndValueSwitch(block)) {
     temp = [name, (name = temp)][0];
   }
@@ -350,9 +356,9 @@ function getEvohomeHotWaterBlock(block) {
     var dataObject = {
       idx: device.idx,
       toggle: device.State.toLowerCase(),
-      name: device.Name,
+      name: name,
       state: device.State,
-      temp: device.Temp + _TEMP_SYMBOL,
+      temp: temp,
       fa: faStatus,
       update: untilOrLastUpdate,
       mIcon: isDefined(block.icon) ? block.icon : '',

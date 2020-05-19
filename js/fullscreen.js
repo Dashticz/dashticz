@@ -1,5 +1,6 @@
+// eslint-disable-next-line no-unused-vars
 function getFullScreenIcon() {
-  content =
+  var content =
     '<span data-id="fullscreen" class="fullscreen fullscreenicon text-right">' +
     '<em class="fas fa-expand" id="fullScreenToggleIcon" />' +
     '</span>';
@@ -19,7 +20,7 @@ function isFullScreen() {
 }
 
 function requestFullScreen(element) {
-  fullScreenFunction =
+  var fullScreenFunction =
     element.requestFullscreen ||
     element.webkitRequestFullScreen ||
     element.mozRequestFullScreen ||
@@ -29,7 +30,7 @@ function requestFullScreen(element) {
 }
 
 function exitFullScreen() {
-  exitFullScreenFunction =
+  var exitFullScreenFunction =
     document.exitFullscreen ||
     document.msExitFullscreen ||
     document.mozCancelFullScreen ||

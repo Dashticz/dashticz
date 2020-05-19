@@ -39,6 +39,7 @@ var mecc = 0.0549; // Eccentricity of the Moon's orbit
 var mangsiz = 0.5181; // Moon's angular size at distance a from Earth
 var msmax = 384401; // Semi-major axis of Moon's orbit in km
 
+// eslint-disable-next-line no-unused-vars
 function MoonPhase(dateparam) {
   this._timespace = dateparam.getTime() / 1000;
   this._pdata = utcToJulian(this._timespace);
@@ -91,6 +92,7 @@ function MoonPhase(dateparam) {
   //phaseHunt()
   this._date = dateparam;
 
+  // eslint-disable-next-line no-unused-vars
   function phaseHunt() {
     var sdate = utcToJulian(this._timespace);
     var adate = sdate - 45;
@@ -105,6 +107,7 @@ function MoonPhase(dateparam) {
     adate = nt1;
     var nt2, k2;
 
+    // eslint-disable-next-line no-constant-condition
     while (true) {
       adate += synmonth;
       k2 = k1 + 1;
