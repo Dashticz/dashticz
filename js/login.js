@@ -1,5 +1,9 @@
+/* global settings language infoMessage*/
+
 var attempt = 3; // Variable to count number of attempts.
+// eslint-disable-next-line no-unused-vars
 function validate() {
+  //used by html onclick
   var username = document.getElementById('username').value;
   var password = document.getElementById('password').value;
   if (username == settings['user_name'] && password == settings['pass_word']) {
@@ -8,6 +12,7 @@ function validate() {
     loginDuration.setTime(loginDuration.getTime() + sessionTimeout * 60 * 1000);
     var expires = 'expires=' + loginDuration.toUTCString();
     document.cookie = 'CrewCentreSession=Valid; ' + expires + '; path=/';
+    // eslint-disable-next-line no-self-assign
     window.location.href = window.location.href;
     return false;
   } else {
@@ -26,6 +31,7 @@ function validate() {
     }
   }
 }
+// eslint-disable-next-line no-unused-vars
 function sessionValid() {
   if (
     settings['loginEnabled'] == true &&
@@ -41,9 +47,12 @@ function sessionValid() {
   }
   return true;
 }
+// eslint-disable-next-line no-unused-vars
 function logout() {
+  //used by settings.js html onClick event
   document.cookie =
     'CrewCentreSession=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+  // eslint-disable-next-line no-self-assign
   window.location.href = window.location.href;
 }
 

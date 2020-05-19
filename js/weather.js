@@ -1,5 +1,8 @@
+/* eslint-disable no-prototype-builtins */
+/* global settings _CORS_PATH _TEMP_SYMBOL moment getRandomInt*/
+// eslint-disable-next-line no-unused-vars
 function loadWeather(location, country) {
-  var html = '';
+  /*  var html = '';*/
   if (
     typeof settings['wu_api'] !== 'undefined' &&
     settings['wu_api'] !== '' &&
@@ -16,6 +19,7 @@ function loadWeather(location, country) {
         '.json',
       function (weather) {
         $('.containsweather').each(function () {
+          var currentweather;
           var curfull = $(this);
           if (typeof weather.current_observation === 'undefined') {
             curfull.remove();
@@ -31,17 +35,17 @@ function loadWeather(location, country) {
             var temp = currentweather.temp_c;
             if (settings['use_fahrenheit'] === 1) temp = currentweather.temp_f;
 
-            weatherIcon = '<i class="wi ' + wiclass + '"></i>';
+            var weatherIcon = '<i class="wi ' + wiclass + '"></i>';
             if (settings['static_weathericons'] === 0) {
               weatherIcon = getSkycon(currentweather.icon, 'skyconsmall');
             }
-            html +=
+            /* html +=
               '<h2><span>' +
               Math.round(temp) +
               _TEMP_SYMBOL +
               '</span> ' +
               weatherIcon +
-              '</h2>';
+              '</h2>';*/
             curfull.find('.weather').html(weatherIcon);
             curfull
               .find('.weatherdegrees')
@@ -55,7 +59,7 @@ function loadWeather(location, country) {
             if (
               settings['wu_name'] !== '' &&
               settings['wu_name'] !== 0 &&
-              settings.hasOwnProperty('wu_name')
+              settings.wu_name
             )
               curfull.find('.weatherloc').html(settings['wu_name']);
             else curfull.find('.weatherloc').html(location);
@@ -66,6 +70,7 @@ function loadWeather(location, country) {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 function loadWeatherFull(location, country) {
   if (
     typeof settings['wu_api'] !== 'undefined' &&
@@ -99,7 +104,8 @@ function loadWeatherFull(location, country) {
               start = 1;
             }
             for (var i = start; i < start + 4; i++) {
-              curfor = currentforecast.forecast.simpleforecast.forecastday[i];
+              var curfor =
+                currentforecast.forecast.simpleforecast.forecastday[i];
               var date = moment
                 .unix(curfor.date.epoch)
                 .locale(settings['calendarlanguage']);

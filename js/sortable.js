@@ -1,4 +1,6 @@
 // JavaScript Document
+/* Todo: As far as I know sortable.js currently is not used */
+// eslint-disable-next-line no-unused-vars
 function startSortable() {
   $('.newblocksHolder').show();
   $('.sortable')
