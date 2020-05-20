@@ -839,7 +839,8 @@ function createGraph(graph) {
     $.extend(true, graphProperties, graph.graphConfig);
   } else {
     // no custom data
-    var idxArray = Object.keys(mergedBlock.legend);
+    var idxArray = [];
+    if (typeof mergedBlock.legend === 'object') idxArray=Object.keys(mergedBlock.legend);
     graph.ykeys.forEach(function (element, index) {
       //In case of a legend, not all datasets will be shown, resulting in color mismatch
       var idx = index;
