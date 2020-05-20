@@ -21,6 +21,7 @@ For Dashticz's **master** version documentation go to: https://dashticz.readthed
    customization
    tipsandtricks
    releasenotes/index
+   troubleshooting/index
    develop/develop
    
 Indices and tables
