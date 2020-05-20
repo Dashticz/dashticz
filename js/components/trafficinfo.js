@@ -54,7 +54,7 @@ var DT_trafficinfo = {
                   dataPart[key] = [];
                 }
                 dataPart[key][i] = '';
-                dataPart[key][i] += '<div><b>' + roadArray[x] + '</b><br>';
+                dataPart[key][i] += '<div><b class="title">' + roadArray[x] + '</b><br>';
                 dataPart[key][i] += 'Geen verkeersinformatie';
                 dataPart[key][i] += '<br></div>';
               }
@@ -95,19 +95,19 @@ var DT_trafficinfo = {
                           }
                           //if (typeof (trafficobject.title) == 'undefined' || (typeof (trafficobject.title) != 'undefined' && typeof (trafficobject.road) == 'undefined')){
                           if (key != header) {
-                            dataPart[key][i] = '<div><b>' + roadId + '</b><br>';
+                            dataPart[key][i] = '<div><b class="title">' + roadId + '</b><br>';
                             header = key;
                           } else {
-                            dataPart[key][i] = '<br><div>';
+                            dataPart[key][i] = '<div>';
                           }
                           //}
                           if (segments[segment][seg][s]['from'] != null) {
                             dataPart[key][i] +=
-                              segments[segment][seg][s]['from'];
+                              '<b>' + segments[segment][seg][s]['from'] + '</b>';
                           }
-                          if (segments[segment][seg][s]['to'] != null) {
+                          if (segments[segment][seg][s]['to'] != null && (segments[segment][seg][s]['to'] != segments[segment][seg][s]['from'])) {
                             dataPart[key][i] +=
-                              ' - ' + segments[segment][seg][s]['to'];
+                              '<b> - ' + segments[segment][seg][s]['to'] + '</b>';
                           }
                           if (
                             segments[segment][seg][s]['from'] != null ||
