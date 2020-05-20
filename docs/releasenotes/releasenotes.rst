@@ -7,6 +7,12 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Latest changes
 --------------
 
+Fixes
+  * IE11 support
+
+Code
+  * Standardized formatting of source code  
+
 3.4.7 (Beta) (18-5-2020)
 ------------------------
 

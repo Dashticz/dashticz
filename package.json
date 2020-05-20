@@ -7,7 +7,7 @@
     "doc": "docs"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.13.0",
+    "@fortawesome/fontawesome-free": "5.12.1",
     "bootstrap": "^3.4.1",
     "chart.js": "^2.9.3",
     "chartjs-plugin-zoom": "^0.7.5",

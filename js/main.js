@@ -47,21 +47,6 @@ var _END_STANDBY_CALL_URL = '';
 //move var allVariables = {};
 var sessionvalid = false;
 
-//Prevent Chrome warnings on event handlers
-jQuery.event.special.touchstart = {
-  setup: function (_, ns, handle) {
-    if (ns.includes('noPreventDefault')) {
-      this.addEventListener('touchstart', handle, {
-        passive: false,
-      });
-    } else {
-      this.addEventListener('touchstart', handle, {
-        passive: true,
-      });
-    }
-  },
-};
-
 // eslint-disable-next-line no-unused-vars
 function loadFiles(dashtype) {
   var customfolder = 'custom';
@@ -125,6 +110,12 @@ function loadFiles(dashtype) {
         success: function (data) {
           language = data;
         },
+      });
+    })
+    .then(function () {
+      return $.ajax({
+        url: 'js/polyfills.js',
+        dataType: 'script',
       });
     })
     .then(function () {
@@ -306,7 +297,25 @@ function showError(msg) {
   $('#loaderHolder').fadeOut();
 }
 
+//Prevent Chrome warnings on event handlers
+function defaultPassiveHandlers() {
+  jQuery.event.special.touchstart = {
+    setup: function (_, ns, handle) {
+      if (ns.includes('noPreventDefault')) {
+        this.addEventListener('touchstart', handle, {
+          passive: false,
+        });
+      } else {
+        this.addEventListener('touchstart', handle, {
+          passive: true,
+        });
+      }
+    },
+  };
+}
+
 function onLoad() {
+  defaultPassiveHandlers();
   md = new MobileDetect(window.navigator.userAgent);
 
   $('body')
