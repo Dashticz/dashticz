@@ -9,6 +9,7 @@ Latest changes
 
 Fixes
   * IE11 support
+  * iOS9 support
 
 Code
   * Standardized formatting of source code  

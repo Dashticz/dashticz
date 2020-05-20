@@ -4,11 +4,12 @@
 /* global getBlockDefaults createHeader getDefaultGraphProperties createButtons*/
 /* from bundle.js */
 /* global templateEngine */
+/* from src/functions.js */
+/* global number_format */
 var api = _CORS_PATH + 'https://cvtapi.nl/v2/';
 var flagUrl =
   _CORS_PATH +
   'https://raw.githubusercontent.com/clinkadink/country-flags/master/png100px/';
-var nf = Intl.NumberFormat();
 
 var DT_coronavirus = {
   name: 'coronavirus',
@@ -198,7 +199,7 @@ function createDashGraph(me) {
         beginAtZero: true,
         fontColor: 'white',
         callback: function (value) {
-          return nf.format(value / 1000) + 'K';
+          return number_format(value / 1000) + 'K';
         },
       };
     });
@@ -215,8 +216,8 @@ function createDashGraph(me) {
       var data = {
         flag: flagUrl + me.block.countryCode.toLowerCase(),
         country: stats.country,
-        confirmed: nf.format(stats.latestConfirmed),
-        deaths: nf.format(stats.latestDeaths),
+        confirmed: number_format(stats.latestConfirmed),
+        deaths: number_format(stats.latestDeaths),
         ratio: stats.ratio,
         color: me.block.iconColour,
         doubling: getDoublingHours(json),
@@ -253,7 +254,7 @@ function createReportBlock(me, province) {
     success: function (json) {
       templateEngine.load('corona_report').then(function (template) {
         var report = me.block.report.toLowerCase();
-        var data = nf.format(json.latest[report]);
+        var data = number_format(json.latest[report]);
         var icon = report === 'confirmed' ? 'hospital' : 'skull-crossbones';
 
         if (report === 'ratio') {
@@ -262,7 +263,7 @@ function createReportBlock(me, province) {
             population = json.locations[0].country_population;
           }
           data =
-            '1 : ' + nf.format((population / json.latest.confirmed).toFixed(0));
+            '1 : ' + number_format(population / json.latest.confirmed,0);
           icon = 'users';
         }
 
