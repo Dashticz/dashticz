@@ -72,6 +72,10 @@ The following block parameters can be used to configure the graph:
       | It identifies what type of sensor it is to apply to appropriate calculation:
       | - Counter, Rain – uses the *Add* calculation
       | - Temperature, Custom Sensor and Percentage – uses the *Average* calculation
+  * - aggregate
+    - | In a graph block you can add the parameter 'aggregate' which can have the value *sum* or *avg* to define how to compute the aggregation.
+      | ``sum``: show the sum.
+      | ``avg``: shows the average.
   * - groupByDevice
     - | allowing user to show the status of several devices in a single graph. Instead of the data being group by time intervals, it is grouped by the devices. See :ref:`groupByDevice`.
       | ``false``: disables the feature (default)
