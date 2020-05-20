@@ -1,8 +1,9 @@
 {
-"version": "3.4.7",
+"version": "3.4.8",
 "branch": "beta",
-"last_changes": "Dials",
+"last_changes": "IE11 and iOS9 support. Code maintenance.",
 "changelog" : {
+            "3.4.7": "Dials",
             "3.4.6": "Update of graph module",
             "3.4.5": "Bug fixes",
             "3.4.4": "New security panel; bug fixes",

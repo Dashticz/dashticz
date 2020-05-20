@@ -1,3 +1,8 @@
+/* global settings getRandomInt language _CORS_PATH infoMessage moment ICAL _PHP_INSTALLED */
+
+/*eslint no-prototype-builtins: "off"*/
+
+// eslint-disable-next-line no-unused-vars
 function loadGarbage() {
   var random = getRandomInt(1, 100000);
 
@@ -46,6 +51,7 @@ function getPrefixUrl() {
   return '';
 }
 
+// eslint-disable-next-line no-unused-vars
 function getGoogleCalendarData(address, date, random, calendarId) {
   this.url =
     'https://www.googleapis.com/calendar/v3/calendars/' +
@@ -54,7 +60,7 @@ function getGoogleCalendarData(address, date, random, calendarId) {
   $.ajax({
     url: this.url,
     data: {
-      key: config['google_api_key'],
+      key: settings['google_api_key'],
       singleEvents: true,
       timeMin: date.start.format('YYYY-MM-DDT00:00:00+00:00'),
       timeMax: date.end.format('YYYY-MM-DDT00:00:00+00:00'),
@@ -88,7 +94,7 @@ function getGoogleCalendarData(address, date, random, calendarId) {
 }
 
 function getIcalData(address, date, random, url) {
-  $.get(getPrefixUrl() + url, function (data, textstatus, jqXHR) {
+  $.get(getPrefixUrl() + url, function (data) {
     var jcalData = ICAL.parse(data);
     var vcalendar = new ICAL.Component(jcalData);
     var vevents = vcalendar.getAllSubcomponents('vevent');
@@ -114,6 +120,7 @@ function getIcalData(address, date, random, url) {
   });
 }
 
+// eslint-disable-next-line no-unused-vars
 function getWasteApiData(address, date, random, companyCode) {
   $.post(
     'https://wasteapi.2go-mobile.com/api/FetchAdress',
@@ -166,6 +173,7 @@ function getWasteApiData(address, date, random, companyCode) {
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function getWasteApi2Data(address, date, random, companyCode) {
   $.post(
     'http://wasteapi2.2go-mobile.com/api/FetchAdress',
@@ -206,6 +214,7 @@ function getWasteApi2Data(address, date, random, companyCode) {
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function getOphaalkalenderData(address, date, random) {
   $('.trash' + random + ' .state').html('');
   var baseURL = 'https://www.ophaalkalender.be';
@@ -247,6 +256,7 @@ function getOphaalkalenderData(address, date, random) {
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function getAfvalAlertData(address, date, random) {
   var baseURL = 'https://www.afvalalert.nl/kalender';
   $.get(
@@ -280,6 +290,7 @@ function getAfvalAlertData(address, date, random) {
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function getAfvalwijzerArnhemData(address, date, random) {
   $('.trash' + random + ' .state').html('');
   var baseURL = 'http://www.afvalwijzer-arnhem.nl';
@@ -348,7 +359,8 @@ function getGeneralData(service, address, date, random, subservice) {
   });
 }
 
-function getKatwijkData(address, date, random, fetchType) {
+// eslint-disable-next-line no-unused-vars
+function getKatwijkData(address, date, random) {
   var prefix = 'https://afval.katwijk.nl/';
   $.post(
     getPrefixUrl() + prefix + 'nc/afvalkalender/',
@@ -366,6 +378,7 @@ function getKatwijkData(address, date, random, fetchType) {
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function getZuidhornData(address, date, random, fetchType) {
   var prefix = 'https://afvalkalender.zuidhorn.nl/';
 
@@ -404,12 +417,12 @@ function getZuidhornData(address, date, random, fetchType) {
         case 'ical':
           var elementHref = $(data).find('.ical .link a').attr('href');
           return getIcalData(address, date, random, prefix + elementHref);
-          break;
       }
     }
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function getRd4Data(address, date, random) {
   $.get(
     getPrefixUrl() +
@@ -452,6 +465,7 @@ function getRd4Data(address, date, random) {
   );
 }
 
+// eslint-disable-next-line no-unused-vars
 function getVenloData(address, date, random) {
   $.get(
     getPrefixUrl() +
@@ -491,6 +505,7 @@ function getVenloData(address, date, random) {
 }
 
 // https://gemeente.groningen.nl/afvalwijzer/groningen/9746AG/18/2018/
+// eslint-disable-next-line no-unused-vars
 function getGroningenData(address, date, random) {
   $.get(
     getPrefixUrl() +
@@ -547,34 +562,41 @@ function getGroningenData(address, date, random) {
 }
 
 ///http://dashticz.nl/afval/?service=afvalstromen&sub=alphenaandenrijn&zipcode=2401AR&nr=261&t=
+// eslint-disable-next-line no-unused-vars
 function getAfvalstromenData(address, date, random, service) {
   getGeneralData('afvalstromen', address, date, random, service);
 }
 
 //http://dashticz.nl/afval/?service=deafvalapp&zipcode=5692VG&nr=33&t=
+// eslint-disable-next-line no-unused-vars
 function getDeAfvalAppData(address, date, random) {
   getGeneralData('deafvalapp', address, date, random);
 }
 
 //http://dashticz.nl/afval/?service=mijnafvalwijzer&zipcode=3825AL&nr=41&t=
+// eslint-disable-next-line no-unused-vars
 function getMijnAfvalwijzerData(address, date, random) {
   getGeneralData('mijnafvalwijzer', address, date, random);
 }
 
 //http://dashticz.nl/afval/?service=rova&zipcode=7731ZT&nr=84&t=
+// eslint-disable-next-line no-unused-vars
 function getRovaData(address, date, random) {
   getGeneralData('rova', address, date, random);
 }
 
 //http://dashticz.nl/afval/?service=recyclemanager&zipcode=3161lh&nr=27&t=
+// eslint-disable-next-line no-unused-vars
 function getRecycleManagerData(address, date, random) {
   getGeneralData('recyclemanager', address, date, random);
 }
 
+// eslint-disable-next-line no-unused-vars
 function getEdgData(address, date, random) {
   getGeneralData('edg', address, date, random);
 }
 
+// eslint-disable-next-line no-unused-vars
 function getOmrinData(address, date, random) {
   getGeneralData('omrin', address, date, random);
 }

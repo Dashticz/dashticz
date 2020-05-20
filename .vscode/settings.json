@@ -12,5 +12,6 @@
     "js": [],
     "css": [],
     "html": ["htm", "html"]
-  }
+  },
+  "python.pythonPath": "/bin/python3"
 }

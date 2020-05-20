@@ -7,6 +7,8 @@
 /* global Domoticz*/
 /* from dashticz.js*/
 /* global Dashticz*/
+/* from dial.js */
+/* global DT_dial */
 
 /** Returns a default switch block
  *

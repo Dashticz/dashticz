@@ -1,3 +1,4 @@
+/* global config infoMessage language*/
 /*
 	Check the latest version of dashticz on github.
 	Check domoticz version
@@ -5,16 +6,22 @@
 
 var dashticz_version;
 var dashticz_branch;
+// eslint-disable-next-line no-unused-vars
 var newVersion = '';
 var moved = false;
 var loginCredentials = '';
+// eslint-disable-next-line no-unused-vars
 var domoversion = '';
+// eslint-disable-next-line no-unused-vars
 var dzVents = '';
+// eslint-disable-next-line no-unused-vars
 var python = '';
+// eslint-disable-next-line no-unused-vars
 var levelNamesEncoded = false;
 var levelNamesEncodeVersion =
   '3.9476'; /* Domoticz version above this, level names are encoded */
 
+// eslint-disable-next-line no-unused-vars
 function initVersion() {
   return $.ajax({
     url: 'version.txt',

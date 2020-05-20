@@ -1,5 +1,8 @@
+/* eslint-disable no-prototype-builtins */
+/* global settings _TEMP_SYMBOL _CORS_PATH moment getRandomInt*/
+// eslint-disable-next-line no-unused-vars
 function loadWeather(location, country) {
-  var html = '';
+//  var html = '';
   if (
     typeof settings['owm_api'] !== 'undefined' &&
     settings['owm_api'] !== '' &&
@@ -10,26 +13,24 @@ function loadWeather(location, country) {
         var curfull = $(this);
         if (typeof weather.main === 'undefined') {
           curfull.remove();
-          currentweather = false;
           curfull
             .find('.weather')
             .html('<p style="font-size:10px; width:100px;">Location ERROR</p>');
         } else {
-          currentweather = weather.weather[0];
           var wiclass = getIcon(weather.weather[0].icon);
           var temp = weather.main.temp;
 
-          weatherIcon = '<i class="wi ' + wiclass + '"></i>';
+          var weatherIcon = '<i class="wi ' + wiclass + '"></i>';
           if (settings['static_weathericons'] === 0) {
             weatherIcon = getSkycon(weather.weather[0].icon, 'skycon');
           }
-          html +=
+/*          html +=
             '<h2><span>' +
             Math.round(temp) +
             _TEMP_SYMBOL +
             '</span> ' +
             weatherIcon +
-            '</h2>';
+            '</h2>';*/
           curfull.find('.weather').html(weatherIcon);
           curfull
             .find('.weatherdegrees')
@@ -43,7 +44,7 @@ function loadWeather(location, country) {
           if (
             settings['owm_name'] !== '' &&
             settings['owm_name'] !== 0 &&
-            settings.hasOwnProperty('owm_name')
+            settings.owm_name
           )
             curfull.find('.weatherloc').html(settings['owm_name']);
           else curfull.find('.weatherloc').html(location);
@@ -74,6 +75,7 @@ function getOWMurl(makeFull) {
   return site;
 }
 
+// eslint-disable-next-line no-unused-vars
 function loadWeatherFull(location, country) {
   if (
     typeof settings['owm_api'] !== 'undefined' &&
@@ -85,7 +87,7 @@ function loadWeatherFull(location, country) {
     if (cntSetting > 5 && settings['owm_days'] == 1) cntSetting = 5;
     var ColXs = 'col-xs-2';
     var containsweatherfull = '';
-    for (count = 0; count < cntSetting; count++) {
+    for (var count = 0; count < cntSetting; count++) {
       containsweatherfull +=
         '<div class="col-xs-2 transbg" style="width: ' +
         Math.round((1 / cntSetting) * 100) +
@@ -112,7 +114,7 @@ function loadWeatherFull(location, country) {
           ) {
             //torov5
             for (var i = start; i < start + cntSetting; i++) {
-              curfor = currentforecast.list[i];
+              var curfor = currentforecast.list[i];
               var date = moment
                 .unix(curfor.dt)
                 .locale(settings['calendarlanguage']);
@@ -157,12 +159,12 @@ function loadWeatherFull(location, country) {
             var minTemp = [199, 199, 199, 199, 199];
             var tempTemp = 199;
             var x = -1;
-            for (var i = 0; i < fcNumber; i++) {
+            for ( i = 0; i < fcNumber; i++) {
               curfor = currentforecast.list[i];
-              var date = moment
+              date = moment
                 .unix(curfor.dt)
                 .locale(settings['calendarlanguage']);
-              var temp = curfor.main.temp;
+              temp = curfor.main.temp;
               if (
                 date.format('HH') == '00' ||
                 date.format('HH') == '01' ||
@@ -181,10 +183,10 @@ function loadWeatherFull(location, country) {
             }
             if (minTemp[4] == 199) minTemp[4] = tempTemp;
 
-            var i = 0;
+            i = 0;
             while (start < fcNumber) {
               curfor = currentforecast.list[start];
-              var date = moment
+              date = moment
                 .unix(curfor.dt)
                 .locale(settings['calendarlanguage']);
               if (
@@ -192,10 +194,10 @@ function loadWeatherFull(location, country) {
                 date.format('HH') == '13' ||
                 date.format('HH') == '14'
               ) {
-                var wiclass = getIcon(curfor.weather[0].icon);
-                var temp = curfor.main.temp;
+                wiclass = getIcon(curfor.weather[0].icon);
+                temp = curfor.main.temp;
                 var Wdescription = curfor.weather[0].description;
-                var rain = 0;
+                rain = 0;
                 if (typeof curfor.rain !== 'undefined') {
                   if (typeof curfor.rain['3h'] !== 'undefined') {
                     rain = curfor.rain['3h'];
