@@ -7,12 +7,19 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Latest changes
 --------------
 
+3.4.8 (Beta) (20-5-2020)
+------------------------
+
+Enhancements
+  * Improved trafficinfo layout
+
 Fixes
   * IE11 support
   * iOS9 support
 
 Code
-  * Standardized formatting of source code  
+  * Standardized formatting of source code
+  * Removed eslint warnings (first batch)  
 
 3.4.7 (Beta) (18-5-2020)
 ------------------------
