@@ -1,5 +1,8 @@
+/* global _CORS_PATH number_format*/
+
 var coinsvalue = [];
 
+// eslint-disable-next-line no-unused-vars
 function getCoin(coin) {
   if (coin['source'] == 'litebit') {
     appendLiteBit(coin);
@@ -17,12 +20,13 @@ function appendLiteBit(coin) {
     function (data) {
       var symbol = '€';
       var varname = coin['key'] + 'RateBuyRound';
+      var html = '';
 
       if (
         typeof coin['amount'] !== 'undefined' &&
         parseFloat(coin['amount']) > 0
       ) {
-        var html =
+        html =
           '<div class="col-xs-6 col-data">' +
           coin['key'].toUpperCase() +
           '<br /><strong class="title">' +
@@ -40,7 +44,7 @@ function appendLiteBit(coin) {
           ) +
           '</div>';
       } else {
-        var html =
+        html =
           '<div class="col-xs-12 col-data">' +
           coin['key'].toUpperCase() +
           '<br /><strong class="title">' +
@@ -95,7 +99,7 @@ function appendCoinMarketCap(coin) {
           number_format(data[0][varname] * coin['amount'], 2) +
           '</div>';
       } else {
-        var html =
+        html =
           '<div class="col-xs-12 col-data">' +
           data[0]['symbol'] +
           '<br /><strong class="title">' +

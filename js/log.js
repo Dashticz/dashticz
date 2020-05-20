@@ -1,16 +1,18 @@
+/* global getRandomInt settings usrEnc pwdEnc*/
+// eslint-disable-next-line no-unused-vars
 function getLog(columndiv, level, popup, random) {
-  if (typeof level == 'undefined') var level = 2;
-  if (typeof popup == 'undefined') var popup = false;
-  if (typeof random == 'undefined') var random = getRandomInt(1, 100000);
-
+  if (typeof level == 'undefined') level = 2;
+  if (typeof popup == 'undefined') popup = false;
+  if (typeof random == 'undefined') random = getRandomInt(1, 100000);
+  var html = '';
   if ($('.containslog' + random).length == 0) {
     if (popup)
-      var html =
+      html =
         '<div data-id="log" class="containslog popup containslog' +
         random +
         '">';
     else
-      var html =
+      html =
         '<div data-id="log" class="col-xs-12 transbg containslog containslog' +
         random +
         '">';
@@ -25,6 +27,7 @@ function getLog(columndiv, level, popup, random) {
     $(columndiv).append(html);
   }
 
+  //Todo: Change to Domoticz.request call
   var LOG_URI =
     settings['domoticz_ip'] +
     '/json.htm?username=' +
@@ -41,7 +44,7 @@ function getLog(columndiv, level, popup, random) {
     dataType: 'jsonp',
     success: function (logdata) {
       $('.containslog' + random + ' .items').html('');
-      for (r in logdata.result) {
+      for (var r in logdata.result) {
         var addclass = '';
         if (popup) addclass = 'popup';
         $('.containslog' + random + ' .items').prepend(

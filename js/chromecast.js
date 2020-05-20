@@ -1,9 +1,12 @@
+/* global head getRandomInt cast chrome _STREAMPLAYER_TRACKS log*/
+
 /**
  * The selected stream
  * @type {number}
  */
 var selectedStreamIndex = 0;
 
+// eslint-disable-next-line no-unused-vars
 function loadChromecast(columndiv) {
   console.log('Chromecast temporarily disabled.');
   return;

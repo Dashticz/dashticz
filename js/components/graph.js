@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 /* global Dashticz Domoticz moment settings config Beaufort number_format  language time blocks   Chart _TEMP_SYMBOL  onlyUnique isDefined isObject setHeight*/
-/* global templateEngine Handlebars formatThousand*/
+/* global templateEngine Handlebars*/
 moment.locale(settings['language']);
 
 var DT_graph = {
@@ -839,7 +839,8 @@ function createGraph(graph) {
     $.extend(true, graphProperties, graph.graphConfig);
   } else {
     // no custom data
-    var idxArray = Object.keys(mergedBlock.legend);
+    var idxArray = [];
+    if (typeof mergedBlock.legend === 'object') idxArray=Object.keys(mergedBlock.legend);
     graph.ykeys.forEach(function (element, index) {
       //In case of a legend, not all datasets will be shown, resulting in color mismatch
       var idx = index;
@@ -1606,7 +1607,7 @@ function getDefaultGraphProperties(graph, block) {
               }
               var obj = {};
               obj.key = body[0].split(':')[0];
-              obj.val = formatThousand(val, graph.decimals);
+              obj.val = number_format(val, graph.decimals);
               obj.add =
                 block.tooltiptotal === true ||
                 $.inArray(obj.key, block.tooltiptotal) !== -1;
@@ -1620,7 +1621,7 @@ function getDefaultGraphProperties(graph, block) {
             if (total > 0) {
               vals.push({
                 key: 'Total',
-                val: formatThousand(total, graph.decimals),
+                val: number_format(total, graph.decimals),
                 col: 'white',
                 fas: 'equals',
               });
