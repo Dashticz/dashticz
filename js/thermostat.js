@@ -16,7 +16,7 @@
 /* global isDefined */
 // eslint-disable-next-line no-unused-vars
 function addThermostatFunctions(block) {
-  var $el = block.$mountPoint.find('.block_' + block.idx);
+  var $el = block.$mountPoint.find('.block_' + block.key);
   $el.find('.btn-number').on('click', function () {
     var type = $(this).attr('data-type');
     var input = $el.find('strong');
@@ -88,7 +88,7 @@ function getThermostatBlock(block) {
       mImage: isDefined(block.image) ? block.image : 'heating.png',
     };
     html = template(dataObject);
-    block.$mountPoint.find('.block_' + idx).html(html);
+    block.$mountPoint.find('.block_' + block.key).html(html);
     addThermostatFunctions(block);
   });
   return ['', false];
@@ -251,7 +251,7 @@ function switchEvoZone(block, setpoint, override) {
 function getEvohomeControllerBlock(block) {
   var html = '';
   var device = block.device;
-  var $div = block.$mountPoint.find('.block_' + device.idx);
+  var $div = block.$mountPoint.find('.block_' + block.key);
   var title = device.Name;
 
   templateEngine.load('thermostat_evo_cont').then(function (template) {
