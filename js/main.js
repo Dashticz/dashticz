@@ -480,6 +480,9 @@ function buildStandby() {
       getBlock(columns_standby[c], 'standby' + c, 'div.screenstandby', true);
     }
   }
+  else {
+    $('.screenstandby').show();
+  }
 }
 
 function buildDefaultScreens() {
@@ -741,7 +744,7 @@ function disableStandby() {
   if (objectlength(columns_standby) > 0) {
     $('div.screen').show();
   }
-  $('.screenstandby').remove();
+  $('.screenstandby').hide(); //hide instead of remove, because removing blocks including unsubscribe has not been implemented.
   $('body').removeClass('standby');
   $('.dt-container').show();
   standbyActive = false;
