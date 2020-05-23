@@ -37,9 +37,16 @@ function Initialize(me) {
   $.each(me.block.devices, function (i, idx) {
     var device = {};
     $.extend(device, Domoticz.getAllDevices()[idx]); //Make a copy of the current device data
-    device.idx = parseInt(device.idx);
-    getDeviceDefaults(me, device);
-    me.graphDevices.push(device);
+    if(device.idx) {
+      device.idx = parseInt(device.idx);
+      getDeviceDefaults(me, device);
+      me.graphDevices.push(device);
+    }
+    else {
+      var msg = 'For graph ' + me.key + ' device ' + idx+' does not exist.';
+      console.error(msg);
+      $(me.mountPoint).append(msg);
+    }
   });
   me.graphIdx = me.mountPoint.slice(1);
   me.lastRefreshTime = 0;
@@ -285,6 +292,8 @@ function getDeviceDefaults(me, device) {
 
   if (typeof me.block.decimals !== 'undefined') decimals = me.block.decimals;
 
+  if (typeof me.decimals === 'undefined') me.decimals = decimals;
+
   currentValue = multidata
     ? device.Data
     : me.block.format
@@ -301,6 +310,7 @@ function getDeviceDefaults(me, device) {
     txtUnit: txtUnit,
     txtUnits: [],
     type: device.Type,
+    decimals: decimals
   };
   $.extend(device, obj);
 }
@@ -1597,6 +1607,8 @@ function getDefaultGraphProperties(graph, block) {
               }
             }
 
+            var decimals = graph.decimals;
+            if (typeof block.decimals !== 'undefined') decimals = block.decimals;
             bodyLines.forEach(function (body, i) {
               var val = parseFloat(body[0]);
               //todo: next line throws an error. As workaround I've added previous line and the try/catch.
@@ -1607,7 +1619,7 @@ function getDefaultGraphProperties(graph, block) {
               }
               var obj = {};
               obj.key = body[0].split(':')[0];
-              obj.val = number_format(val, graph.decimals);
+              obj.val = number_format(val, decimals);
               obj.add =
                 block.tooltiptotal === true ||
                 $.inArray(obj.key, block.tooltiptotal) !== -1;
@@ -1621,7 +1633,7 @@ function getDefaultGraphProperties(graph, block) {
             if (total > 0) {
               vals.push({
                 key: 'Total',
-                val: number_format(total, graph.decimals),
+                val: number_format(total, block.decimals),
                 col: 'white',
                 fas: 'equals',
               });
