@@ -174,7 +174,9 @@ The following block parameters can be used to configure the graph:
     - ``customHeader: { ... }`` Customized graph header. See :ref:`customheader`.
   * - format
     - | ``false`` (default). Show the value in the graph header as reported by Dashticz.
-      | ``true``. Format the graph header value using the ``decimals`` parameter and the config settings ``_THOUSAND_SEPARATOR`` and ``_DECIMAL_POINT``. See (todo)
+	  | ``true``. Format the graph header value using the ``decimals`` parameter and the config settings ``_THOUSAND_SEPARATOR`` and ``_DECIMAL_POINT``. See :ref:`graphNumberFormat`
+  * - decimals
+    - ``<number>``. Number of decimals to use in tooltip value, and header value (in case ``format`` is ``true``)
   * - popup
     - ``popup: 'popup_graph'`` Defined Popups. See :ref:`graphs_popups`.
   * - tooltiptotal
@@ -1129,7 +1131,31 @@ This graph uses 2 *temperature* sensors **and** *custom data*, calculating a 3rd
 .. image :: img/muligraph_patch4_5.png
 
 
+.. _graphNumberFormat:
 
+Number format
+-------------
+
+Number formatting is applied to tooltip values and header values.
+
+Number formatting uses two global config parameters:
+
+* ``_DECIMAL_POINT``: Default value is ``','``
+* ``_THOUSAND_SEPARATOR``: Default value is ``'.'``
+
+You can redefine these two config parameters in ``CONFIG.js``::
+
+	_DECIMAL_POINT = '.';
+	_THOUSAND_SEPARATOR = ',';
+
+
+For header values the formatting is only applied in case the block parameter ``format`` is set to true, and the device is a single value device.
+For instance, for a TempHumBar device no formatting will be applied to header values.
+For header values the default number of decimals is derived from the device type. You can overrule the number of decimals with the ``decimals`` block parameter.
+
+For tooltip values the default number of decimals is the decimals value of the first device, which may be overruled by the ``decimals`` parameter.
+
+The values in a tooltip will always have the same number of decimals.
 
 Styling
 -------
