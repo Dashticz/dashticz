@@ -100,7 +100,7 @@ function mountBlock(mountPoint, block, html, append) {
 
 function getCustomFunction(functionname, block, afterupdate) {
   var functiondevname = functionname + '_' + block.key;
-  console.log("calling "+functiondevname + " afterupdate: " + afterupdate);
+//  console.log("calling "+functiondevname + " afterupdate: " + afterupdate);
   if (typeof window[functiondevname] === 'function') {
     try {
       if (functionname === 'getBlock') return window[functiondevname](block);

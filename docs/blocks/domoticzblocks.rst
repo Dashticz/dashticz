@@ -198,8 +198,111 @@ Example of a block definition::
       gotoslide: 2            //Goto screen when a device changes
     };  
 
-Blocks with a sub device id
+Device with subdevices
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If a device consists of several subdevices, like a TempHumBar device or SmartMeter, then for each subdevice a block will be generated.
+
+In this example device device 659 is a TempHumBar device::
+
+  columns[1] = {
+    blocks: [659]
+  }
+
+.. image :: img/block659.jpg
+
+In case I want to show all four subdevices onto one row I've to change the default width from 4 to 3::
+
+  blocks[659] = {
+    width:4
+  }
+  columns[1] = {
+    blocks: [659]
+  }
+
+.. image :: img/block659_w3.jpg
+
+Now assume I want to have the first 3 subdevices on one row, and the fourth device on a new row, full width, with some additional customizations::
+
+  blocks[659] = {
+    width:4
+  }
+
+  blocks['659_4'] = {
+    width:12,
+    title: 'Dew temperature of device 659',
+    icon: 'fas fa-bus',
+    last_update: 'false',
+    switch: true
+  }
+
+  columns[1] = {
+    blocks: [659]
+  }
+
+  In the previous example first the settings of ``block[659]`` will be applied to all subblocks, followed by a subblock if it has been defined.
+  (In this case ``blocks['659_4']``)
+
+.. image :: img/block659_4_custom.jpg
+
+In case you only want to show subdevice 1, the column definition should be as follows::
+
+  columns[1] = {
+    blocks: [ '659_1' ]
+  }
+
+Don't forget the tick marks around ``659_1``
+
+As for single device it's also possible to use a custom block key in combination with the ``idx`` parameter.
+
+To make this visible I've defined two classes in custom.css::
+
+  .css_red {
+    background-color: red !important;
+  }
+
+  .css_green {
+    background-color: green !important;
+  }
+
+Now I'll add the temperature twice, with different backgrounds::
+
+  blocks['659_1'] = {
+    addClass: 'css_red'
+  }
+
+  blocks['another'] = {
+    idx: '659_1',
+    addClass: 'css_green'
+  }
+
+  columns[1] = {
+    blocks: [ '659_1', 'another' ]
+  }
+
+.. image :: img/659_1_2.jpg  
+
+You can also change a subdevice of a block with custom key::
+
+  blocks['another'] = { //This block will show domoticz device 659
+    idx: 659,
+    addClass: 'css_red'
+  }
+
+  blocks['another_1'] = { //This block will be applied to subdevice 1 of "another"
+    addClass: 'css_green'
+  }
+
+  columns[1] = {
+    blocks: [ 'another' ]
+  }
+
+.. image :: img/block_another.jpg
+
+
+
+Thermostat devices
+~~~~~~~~~~~~~~~~~~~
 
 For a thermostat IDX, IDX_1 or IDX_2 can be used.
 If IDX_1 is used the thermostat +/- buttons will not be shown.

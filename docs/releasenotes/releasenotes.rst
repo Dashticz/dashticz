@@ -7,8 +7,12 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Latest changes
 --------------
 
+3.4.9 (Beta) (25-5-2020)
+------------------------
+
 Fixes
   * Improved number formatting for graph header and tooltip. See :ref:`graphNumberFormat`
+  * Block definition with custom keys: consistency in block selection for subdevices, CSS class application and function names in custom.js. This may result in a breaking change. See :ref:`v349`
 
 3.4.8 (Beta) (20-5-2020)
 ------------------------
