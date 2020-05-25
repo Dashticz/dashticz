@@ -7,6 +7,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Latest changes
 --------------
 
+Fixes
+  * Improved number formatting for graph header and tooltip. See :ref:`graphNumberFormat`
+
 3.4.8 (Beta) (20-5-2020)
 ------------------------
 
