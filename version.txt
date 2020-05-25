@@ -1,8 +1,9 @@
 {
-"version": "3.4.8",
+"version": "3.4.9",
 "branch": "beta",
-"last_changes": "IE11 and iOS9 support. Code maintenance.",
+"last_changes": "Bug fixes related to custom block keys",
 "changelog" : {
+            "3.4.8": "IE11 and iOS9 support. Code maintenance.",
             "3.4.7": "Dials",
             "3.4.6": "Update of graph module",
             "3.4.5": "Bug fixes",

@@ -720,6 +720,7 @@ function createGraph(graph) {
     mydiv.addClass('col-xs-' + graph.block.width);
     mydiv.addClass('block_graph');
     mydiv.addClass(graphIdx);
+//    mydiv.addClass(graph.key); //Todo: add graph.key? Also already available via data-id
   }
   mydiv.html(html);
   createButtons(graph, ranges, graph.customRange);
