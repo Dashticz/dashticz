@@ -99,8 +99,8 @@ function mountBlock(mountPoint, block, html, append) {
 }
 
 function getCustomFunction(functionname, block, afterupdate) {
-  var idx = block.idx;
-  var functiondevname = functionname + '_' + idx;
+  var functiondevname = functionname + '_' + block.key;
+//  console.log("calling "+functiondevname + " afterupdate: " + afterupdate);
   if (typeof window[functiondevname] === 'function') {
     try {
       if (functionname === 'getBlock') return window[functiondevname](block);
@@ -125,9 +125,7 @@ function deviceUpdateHandler(block) {
 
   getCustomFunction('getStatus', block, false);
   var $selector = $(selector);
-  if (block && typeof block['title'] !== 'undefined') {
-    device['Name'] = block['title'];
-  }
+  if (typeof block.title === 'undefined') block.title = device.Name;
 
   //var $div=$selector.find('.block_'+fullidx); //doesn't work for blocks['myblock'] kind of definitions
   var $div = $selector.find('.mh');
@@ -602,9 +600,9 @@ function handleStringBlock(blocktype, columndiv, c) {
                 */
       html =
         '<div data-id="' +
-        block.type +
+        (block.idx || block.type) +
         '" class="mh transbg block_' +
-        block.type +
+        block.key +
         '"></div>';
       block.$mountPoint.append(html);
       if (block.idx) {
@@ -673,11 +671,12 @@ function handleObjectBlock(block, el) {
     addCalendar($('.containsicalendar' + random), block);
   } else if (block.idx) {
     //+ '" data-block="' + block.key
+    block.key = block.key || '' + block.idx;
     $el.append(
       '<div data-id="' +
         block.idx +
         '" class="mh transbg block_' +
-        block.idx +
+        block.key +
         '"></div>'
     );
     if (typeof block.idx === 'number') {
@@ -885,8 +884,7 @@ function getBlockClick(block) {
   //var blockSel = '.block_'+ block.mountPoint.slice(1);
   //console.log('getBlockClick for ', block);
   //   var $div=blockdef.$mountPoint.find('.block_'+blockdef.idx);
-  //    var $div = block.$mountPoint.find('.mh');
-  var $div = block.$mountPoint.find('.block_' + block.idx);
+  var $div = block.$mountPoint.find('.mh');
   if (link) {
     if ($div.length > 0) {
       $div
@@ -1451,12 +1449,12 @@ function handleDevice(block) {
         html += iconORimage(block, '', 'kodi.png', 'on icon', '', 2);
       else html += iconORimage(block, 'fas fa-film', '', 'on icon', '', 2);
       html += '<div class="col-xs-10 col-data">';
-      html += '<strong class="title">' + device['Name'] + '</strong><br />';
+      html += '<strong class="title">' + block.title + '</strong><br />';
       if (device['Data'] === '') {
         device['Data'] = language.misc.mediaplayer_nothing_playing;
-        if (settings['hide_mediaplayer'] == 1) $('div.block_' + idx).hide();
+        if (settings['hide_mediaplayer'] == 1) $('div.block_' + block.key).hide();
       } else {
-        $('div.block_' + idx).show();
+        $('div.block_' + block.key).show();
       }
       html += '<span class="h4">' + device['Data'] + '</span>';
       return [html, addHTML];
@@ -1491,7 +1489,7 @@ function handleDevice(block) {
       device['SelectorStyle'] == 1
     ) {
       html += '<div class="col-xs-8 col-data">';
-      html += '<strong class="title">' + device['Name'] + '</strong><br />';
+      html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<select>';
       html += '<option value="">' + language.misc.select + '</option>';
       for (var a in names) {
@@ -1523,7 +1521,7 @@ function handleDevice(block) {
         });
     } else {
       html += '<div class="col-xs-8 col-data">';
-      html += '<strong class="title">' + device['Name'] + '</strong><br />';
+      html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<div class="btn-group" data-toggle="buttons">';
       for (a in names) {
         if (
@@ -1562,11 +1560,11 @@ function handleDevice(block) {
 
     html += iconORimage(block, defaultIcon, '', 'on icon');
     html += '<div class="col-xs-8 col-data">';
-    var title = device['Name'];
+    var title = block.title;
     var value = device['Data'];
     if (titleAndValueSwitch(block)) {
       title = device['Data'];
-      value = device['Name'];
+      value = block.title;
     }
     html += '<strong class="title">' + title + '</strong><br />';
     html += '<span class="state">' + value + '</span>';
@@ -1602,7 +1600,7 @@ function getLogitechControls(block) {
   var html = '';
   html += iconORimage(block, 'fas fa-music', '', 'on icon', '', 2);
   html += '<div class="col-xs-10 col-data">';
-  html += '<strong class="title">' + device['Name'] + '</strong><br />';
+  html += '<strong class="title">' + block.title + '</strong><br />';
   html += '<span class="h4">' + device['Data'] + '</span>';
   html += '<div>';
   html +=
@@ -1662,14 +1660,16 @@ function getSmartMeterBlock(block) {
     var blockValues = [
       {
         icon: 'fas fa-plug',
-        idx: idx + '_1',
+        idx: idx,
+        subidx: 1,
         title: language.energy.energy_usage,
         value: usage,
         unit: '',
       },
       {
         icon: 'fas fa-plug',
-        idx: idx + '_2',
+        idx: idx,
+        subidx: 2,
         title: language.energy.energy_usagetoday,
         value: number_format(
           device['CounterToday'],
@@ -1679,7 +1679,8 @@ function getSmartMeterBlock(block) {
       },
       {
         icon: 'fas fa-plug',
-        idx: idx + '_3',
+        idx: idx,
+        subidx: 3,
         title: language.energy.energy_totals,
         value: number_format(device['Counter'], 0),
         unit: settings['units'].names.kwh,
@@ -1689,14 +1690,16 @@ function getSmartMeterBlock(block) {
     if (parseFloat(device['CounterDeliv']) > 0) {
       blockValues.push({
         icon: 'fas fa-plug',
-        idx: idx + '_4',
+        idx: idx,
+        subidx: 4,
         title: language.energy.energy_delivered,
         value: number_format(device['CounterDeliv'], 0),
         unit: settings['units'].names.kwh,
       });
       blockValues.push({
         icon: 'fas fa-plug',
-        idx: idx + '_5',
+        idx: idx,
+        subidx: 5,
         title: language.energy.energy_deliveredtoday,
         value: number_format(
           device['CounterDelivToday'],
@@ -1711,7 +1714,8 @@ function getSmartMeterBlock(block) {
       data[1] = data[1] / 1000;
       blockValues.push({
         icon: 'fas fa-plug',
-        idx: idx + '_6',
+        idx: idx,
+        subidx: 6,
         title: language.energy.energy_totals,
         value:
           'P1: ' +
@@ -1727,7 +1731,8 @@ function getSmartMeterBlock(block) {
 
       blockValues.push({
         icon: 'fas fa-plug',
-        idx: idx + '_7',
+        idx: idx,
+        subidx: 7,
         title: language.energy.energy_totals + ' P1',
         value: number_format(data[0], 3, '.', ''),
         unit: settings['units'].names.kwh,
@@ -1735,7 +1740,8 @@ function getSmartMeterBlock(block) {
 
       blockValues.push({
         icon: 'fas fa-plug',
-        idx: idx + '_8',
+        idx: idx,
+        subidx: 8,
         title: language.energy.energy_totals + ' P2',
         value: number_format(data[1], 3, '.', ''),
         unit: settings['units'].names.kwh,
@@ -1748,15 +1754,17 @@ function getSmartMeterBlock(block) {
     var myblockValues = [
       {
         icon: 'fas fa-fire',
-        idx: idx + '_1',
+        idx: idx,
+        subidx: 1,
         title: language.energy.gas_usagetoday,
         value: device['CounterToday'],
         unit: '',
       },
       {
         icon: 'fas fa-fire',
-        idx: idx + '_2',
-        title: language.energy.energy_totals + ' ' + device['Name'],
+        idx: idx,
+        subidx: 2,
+        title: language.energy.energy_totals + ' ' + block.title,
         value: device['Counter'],
         unit: 'm3',
       },
@@ -1813,15 +1821,17 @@ function getRFXMeterCounterBlock(block) {
   var blockValues = [
     {
       icon: icon,
-      idx: idx + '_1',
-      title: device['Name'],
+      idx: idx,
+      subidx: 1,
+      title: block.title,
       value: number_format(device['CounterToday'].split(' ')[0], decimals),
       unit: unit,
     },
     {
       icon: icon,
-      idx: idx + '_2',
-      title: language.energy.energy_totals + ' ' + device['Name'],
+      idx: idx,
+      subidx: 2,
+      title: language.energy.energy_totals + ' ' + block.title,
       value: number_format(device['Counter'].split(' ')[0], decimals),
       unit: unit,
     },
@@ -1829,8 +1839,9 @@ function getRFXMeterCounterBlock(block) {
   if (typeof device['Usage'] !== 'undefined') {
     blockValues.push({
       icon: icon,
-      idx: idx + '_3',
-      title: device['Name'],
+      idx: idx,
+      subidx: 3,
+      title: block.title,
       value: number_format(device['Usage'].split(' ')[0], decimals),
       unit: unit,
     });
@@ -1847,8 +1858,9 @@ function getYouLessBlock(block) {
   var blockValues = [
     {
       icon: 'fas fa-fire',
-      idx: idx + '_1',
-      title: device['Name'],
+      idx: idx,
+      subidx: 1,
+      title: block.title,
       value: number_format(
         device['CounterToday'].split(' ')[0],
         settings['units'].decimals.kwh
@@ -1857,8 +1869,9 @@ function getYouLessBlock(block) {
     },
     {
       icon: 'fas fa-fire',
-      idx: idx + '_2',
-      title: language.energy.energy_totals + ' ' + device['Name'],
+      idx: idx,
+      subidx: 2,
+      title: language.energy.energy_totals + ' ' + block.title,
       value: number_format(device['Counter'], settings['units'].decimals.kwh),
       unit: settings['units'].names.kwh,
     },
@@ -1866,8 +1879,9 @@ function getYouLessBlock(block) {
   if (typeof device['Usage'] !== 'undefined') {
     blockValues.push({
       icon: 'fas fa-fire',
-      idx: idx + '_3',
-      title: device['Name'],
+      idx: idx,
+      subidx: 3,
+      title: block.title,
       value: number_format(device['Usage'], settings['units'].decimals.watt),
       unit: settings['units'].names.watt,
     });
@@ -1886,7 +1900,7 @@ function createBlocks(blockParent, blockValues) {
   $div.html(''); //it would be better for performance to add all changes at once.
 
   blockValues.forEach(function (blockValue) {
-    if (blockParent.subidx && blockParent.idx !== blockValue.idx) return;
+    if (blockParent.subidx && blockParent.subidx !== blockValue.subidx) return;
     //  console.log("createBlocks id: ", blockValue.idx)
     var block = {};
     $.extend(block, blockValue); //create a block from the prototype
@@ -1895,12 +1909,17 @@ function createBlocks(blockParent, blockValues) {
     //Although for subdevices it would be nice to use corresponding block setting
     //so let's overwrite in case parent and blockvalue idx are different
     //because in that case we are creating subdevices
-    if (blockParent.idx !== blockValue.idx)
-      $.extend(block, blocks[blockValue.idx]);
+    var key=blockParent.key;
+    if (!blockParent.subidx) {
+      $.extend(block, blocks[blockParent.key + '_' + blockValue.subidx]);
+      key+='_'+blockValue.subidx;
+    }
     block.idx = blockValue.idx;
+    block.subidx = blockValue.subidx;
+    block.key=key;
     var html =
       '<div class="mh transbg block_' +
-      blockValue.idx +
+      key +
       ' col-xs-' +
       (block.width || 4) +
       '"/>';
@@ -1938,7 +1957,7 @@ function createBlocks(blockParent, blockValues) {
                 }
                 $('div.block_' + block.idx).html(html);*/
     block.$mountPoint
-      .find('.block_' + block.idx)
+      .find('.block_' + key)
       .html(html)
       .addClass(block.addClass);
 
@@ -1953,15 +1972,17 @@ function getGeneralKwhBlock(block) {
   var blockValues = [
     {
       icon: 'fas fa-fire',
-      idx: idx + '_1',
-      title: device['Name'] + ' ' + language.energy.energy_now,
+      idx: idx,
+      subidx: 1,
+      title: block.title + ' ' + language.energy.energy_now,
       value: number_format(device['Usage'], settings['units'].decimals.watt),
       unit: settings['units'].names.watt,
     },
     {
       icon: 'fas fa-fire',
-      idx: idx + '_2',
-      title: device['Name'] + ' ' + language.energy.energy_today,
+      idx: idx,
+      subidx: 2,
+      title: block.title + ' ' + language.energy.energy_today,
       value: number_format(
         device['CounterToday'],
         settings['units'].decimals.kwh
@@ -1970,8 +1991,9 @@ function getGeneralKwhBlock(block) {
     },
     {
       icon: 'fas fa-fire',
-      idx: idx + '_3',
-      title: device['Name'] + ' ' + language.energy.energy_total,
+      idx: idx,
+      subidx: 3,
+      title: block.title + ' ' + language.energy.energy_total,
       value: number_format(device['Data'], 2),
       unit: settings['units'].names.kwh,
     },
@@ -1988,7 +2010,7 @@ function getHumBlock(block) {
     {
       icon: 'wi wi-humidity',
       idx: idx,
-      title: device['Name'],
+      title: block.title,
       value: number_format(device['Humidity'], 0),
       unit: '%',
     },
@@ -2009,8 +2031,9 @@ function getTempHumBarBlock(block) {
   var blockValues = [
     {
       icon: 'fas fa-thermometer-half',
-      idx: idx + '_1',
-      title: device['Name'],
+      idx: idx,
+      subidx: 1,
+      title: block.title,
       value: number_format(
         typeof device['Temp'] !== 'undefined' ? device['Temp'] : device['Data'],
         1
@@ -2030,8 +2053,9 @@ function getTempHumBarBlock(block) {
     } else {
       blockValues.push({
         icon: 'wi wi-humidity',
-        idx: idx + '_2',
-        title: device['Name'],
+        idx: idx,
+        subidx: 2,
+        title: block.title,
         value: number_format(device['Humidity'], 0),
         unit: '%',
       });
@@ -2043,8 +2067,9 @@ function getTempHumBarBlock(block) {
     } else {
       blockValues.push({
         icon: 'wi wi-barometer',
-        idx: idx + '_3',
-        title: device['Name'],
+        idx: idx,
+        subidx: 3,
+        title: block.title,
         value: device['Barometer'],
         unit: 'hPa',
       });
@@ -2057,8 +2082,9 @@ function getTempHumBarBlock(block) {
     } else {
       blockValues.push({
         icon: 'wi wi-fog',
-        idx: idx + '_4',
-        title: device['Name'],
+        idx: idx,
+        subidx: 4,
+        title: block.title,
         value: number_format(device['DewPoint'], 1),
         unit: _TEMP_SYMBOL,
       });
@@ -2352,7 +2378,7 @@ function getSecurityBlock(block) {
   }
   if (device['Type'] === 'Security') {
     html += '<div class="col-xs-8 col-data" style="width: calc(100% - 50px);">';
-    html += '<strong class="title">' + device['Name'] + '</strong><br />';
+    html += '<strong class="title">' + block.title + '</strong><br />';
     html += '<div class="btn-group" data-toggle="buttons">';
     html += '<label class="btn btn-' + da + '" onclick="enterCode(0)">';
     html +=

@@ -90,10 +90,7 @@ Add to ``custom.js`` one of the examples::
 ``function getStatus_IDX(block)``
 ----------------------------------------------
 
-Just like the function to take action on change of a value, now is extended functionality to do something with a block when it has a specific value.
-
-First you'll have to find the correct IDX for the device. To find the correct IDX number, use http://domoticz_url:8080/json.htm?type=devices&filter=all&used=true , you get an overview of the devices, IDX and it's corresponding parameters.
-After you have the correct IDX, you can add this device to the ``custom.js``.
+This function is called when a Domoticz device is updated. You can use this function for instance to set specific block parameters depending on the value of the device.
 
 Example, change the icon based on the device value (in this case device 413, the first subdevice)::
 
@@ -153,6 +150,15 @@ Or if you like a blinking version::
        }
     }
 
+In case you have defined a block with a custom key name in combination with the ``idx`` parameter, then the key name will be used in the function call.
+Example: You use the following block definition::
+
+  blocks['myblock'] = {
+    idx: 145
+  }
+
+In the previous example the following function in ``custom.js`` will be called: ``function getStatus_myblock(block)``
+(and not ``function getStatus_145(block)``)
 
 ``function getChange_IDX(block)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
