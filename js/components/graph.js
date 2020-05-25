@@ -649,7 +649,7 @@ function redrawGraph(me) {
         case 'week':
           groupStart = moment(obj.d, dayFormat)
             .week(moment(obj.d, dayFormat).week())
-            .day('Sunday')
+            .day(1)
             .format(dayFormat);
           break;
         case 'month':
