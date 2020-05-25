@@ -41,8 +41,8 @@ blocktypes.SubType['Distance'] = {
 };
 blocktypes.SubType['Alert'] = {
   icon: 'fas fa-warning',
-  title: '<Data>',
-  value: '<Name>',
+  title: '<Name>',
+  value: '<Data>',
 };
 blocktypes.SubType['Percentage'] = {
   icon: 'fas fa-percent',
@@ -55,7 +55,7 @@ blocktypes.SubType['Text'] = {
   value: '<Data>',
 };
 blocktypes.SubType['Counter Incremental'] = {
-  icon: 'fa fa-bolt',
+  icon: 'fas fa-bolt',
   title: '<Name>',
   value: '<Data>',
   format: true,
@@ -68,7 +68,7 @@ blocktypes.SubType['Voltage'] = {
   graph: true,
 };
 blocktypes.SubType['Solar Radiation'] = {
-  icon: 'fa fa-sun-o',
+  icon: 'fas fa-sun-o',
   title: '<Name>',
   value: '<Data>',
   format: true,
@@ -252,18 +252,18 @@ blocktypes.Name['Download'] = {
 
 blocktypes.Name['Maanfase'] = {
   icon: 'fas fa-moon',
-  title: '<Data>',
-  value: '<Name>',
+  title: '<Name>',
+  value: '<Data>',
 };
 blocktypes.Name['Moon phase'] = {
   icon: 'fas fa-moon',
-  title: '<Data>',
-  value: '<Name>',
+  title: '<Name>',
+  value: '<Data>',
 };
 blocktypes.Name['Mondphase'] = {
   icon: 'fas fa-moon',
-  title: '<Data>',
-  value: '<Name>',
+  title: '<Name>',
+  value: '<Data>',
 };
 
 if (typeof getExtendedBlockTypes == 'function') {
@@ -303,7 +303,7 @@ function getBlockTypesBlock(block) {
           var subblock = {};
           var protosubblock = protoblock[de];
           $.extend(subblock, protosubblock);
-          subblock.idx = block.device.idx + '_' + c;
+          subblock.idx = block.device.idx;
           subblock.subidx = c;
           blockValues.push(subblock);
           c++;
