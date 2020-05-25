@@ -850,7 +850,7 @@ function getStatusBlock(block) {
   else stateBlock = iconORimage(block, icon, '', 'icon', attr, 4, '');
 
   stateBlock += '<div class="col-xs-8 col-data">';
-  if (titleAndValueSwitch(block)) {
+  if (!titleAndValueSwitch(block)) {
     if (hideTitle(block)) {
       stateBlock += '<span class="value">' + value + '</span>';
     } else {
@@ -1891,9 +1891,13 @@ function getYouLessBlock(block) {
 }
 
 function createBlocks(blockParent, blockValues) {
-  //I assume this function gets called once per block
-  //That means we first have to remove the previous content
+  /* I assume this function gets called once per block
+  // That means we first have to remove the previous content
   // console.log('createBlocks for '+blockParent.idx);
+  //
+  // blockValues does not always contain a subidx: It can be a prototype from blocktypes.
+  */
+
 
   var device = blockParent.device;
   var $div = blockParent.$mountPoint;
@@ -1910,12 +1914,12 @@ function createBlocks(blockParent, blockValues) {
     //so let's overwrite in case parent and blockvalue idx are different
     //because in that case we are creating subdevices
     var key=blockParent.key;
-    if (!blockParent.subidx) {
+    if (!blockParent.subidx && blockValue.subidx) {
       $.extend(block, blocks[blockParent.key + '_' + blockValue.subidx]);
       key+='_'+blockValue.subidx;
     }
     block.idx = blockValue.idx;
-    block.subidx = blockValue.subidx;
+    if (blockValue.subidx) block.subidx = blockValue.subidx;
     block.key=key;
     var html =
       '<div class="mh transbg block_' +
