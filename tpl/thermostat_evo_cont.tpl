@@ -24,5 +24,5 @@
 			<option value="HeatingOff">Off</option>
 		</select>
 	<div>
-	<span class="lastupdate">{{update}}</span>
+	{{#if showUpdate}}<span class="lastupdate">{{update}}</span>{{/if}}
 </div>
