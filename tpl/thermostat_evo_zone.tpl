@@ -18,12 +18,12 @@
 </div>
 
 <div class="col-xs-8 col-data right1col">
-    <div class="title">{{value}}</div>
+    <div class="title">{{tTemp}}</div>
     <div style="white-space: nowrap;">
-        <span class="state input-number">{{tTemp}}&nbsp;</span>
+        <span class="state input-number">{{value}}&nbsp;</span>
         <span class="setpoint text-grey input-number" min="{{min}}" max="{{max}}" data-light="{{idx}}"
-            data-status="{{status}}" data-setpoint="{{setpoint}}">&nbsp;
-            <i class="{{fa}} small_fa">&nbsp;</i>&nbsp;{{tSetP}}
+            data-status="{{status}}" data-setpoint="{{setpoint}}">
+            <i class="{{fa}} small_fa">&nbsp;</i>{{tSetP}}
         </span>
     </div>
     <span class="lastupdate">{{update}}</span>

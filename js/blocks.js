@@ -100,7 +100,7 @@ function mountBlock(mountPoint, block, html, append) {
 
 function getCustomFunction(functionname, block, afterupdate) {
   var functiondevname = functionname + '_' + block.key;
-//  console.log("calling "+functiondevname + " afterupdate: " + afterupdate);
+  //  console.log("calling "+functiondevname + " afterupdate: " + afterupdate);
   if (typeof window[functiondevname] === 'function') {
     try {
       if (functionname === 'getBlock') return window[functiondevname](block);
@@ -1042,7 +1042,7 @@ function iconORimage(
 // eslint-disable-next-line no-unused-vars
 function getBlockData(block, textOn, textOff) {
   // this.title = device['Name']; // should be the other way around:
-  var title = block.title || block.device['Name']; //but probably this was set earlier already ...
+  var title = getBlockTitle(block); //but probably this was set earlier already ...
   var opendiv = '<div class="col-xs-8 col-data">';
   var closediv = '</div>';
 
@@ -1064,7 +1064,7 @@ function getBlockData(block, textOn, textOff) {
 
   if (titleAndValueSwitch(block)) {
     title = value;
-    value = block.title || block.device['Name'];
+    value = getBlockTitle(block);
   }
 
   var data = '<strong class="title">' + title + '</strong><br />';
@@ -1091,10 +1091,10 @@ function hideTitle(block) {
 function showUpdateInformation(block) {
   return (
     (settings['last_update'] &&
-      (typeof block['last_update'] === 'undefined' || blocks['last_update'])) ||
+      (typeof block['last_update'] === 'undefined' || block['last_update'])) ||
     (!settings['last_update'] &&
       typeof block['last_update'] !== 'undefined' &&
-      blocks['last_update'])
+      block['last_update'])
   );
 }
 
@@ -1452,7 +1452,8 @@ function handleDevice(block) {
       html += '<strong class="title">' + block.title + '</strong><br />';
       if (device['Data'] === '') {
         device['Data'] = language.misc.mediaplayer_nothing_playing;
-        if (settings['hide_mediaplayer'] == 1) $('div.block_' + block.key).hide();
+        if (settings['hide_mediaplayer'] == 1)
+          $('div.block_' + block.key).hide();
       } else {
         $('div.block_' + block.key).show();
       }
@@ -1898,7 +1899,6 @@ function createBlocks(blockParent, blockValues) {
   // blockValues does not always contain a subidx: It can be a prototype from blocktypes.
   */
 
-
   var device = blockParent.device;
   var $div = blockParent.$mountPoint;
   $div.html(''); //it would be better for performance to add all changes at once.
@@ -1913,14 +1913,14 @@ function createBlocks(blockParent, blockValues) {
     //Although for subdevices it would be nice to use corresponding block setting
     //so let's overwrite in case parent and blockvalue idx are different
     //because in that case we are creating subdevices
-    var key=blockParent.key;
+    var key = blockParent.key;
     if (!blockParent.subidx && blockValue.subidx) {
       $.extend(block, blocks[blockParent.key + '_' + blockValue.subidx]);
-      key+='_'+blockValue.subidx;
+      key += '_' + blockValue.subidx;
     }
     block.idx = blockValue.idx;
     if (blockValue.subidx) block.subidx = blockValue.subidx;
-    block.key=key;
+    block.key = key;
     var html =
       '<div class="mh transbg block_' +
       key +
@@ -2403,6 +2403,10 @@ function getSecurityBlock(block) {
     html += '</div>';
   }
   return [html, true];
+}
+
+function getBlockTitle(block) {
+  return typeof block.title !== 'undefined' ? block.title : block.device.Name;
 }
 
 //# sourceURL=js/blocks.js

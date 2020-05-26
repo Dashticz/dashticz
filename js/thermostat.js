@@ -5,7 +5,7 @@
 /* from settings.js */
 /* global settings */
 /* from blocks.js */
-/* global titleAndValueSwitch showUpdateInformation */
+/* global titleAndValueSwitch showUpdateInformation getBlockTitle*/
 /* from domoticz-api.js*/
 /* global Domoticz */
 /* from dashticz.js*/
@@ -19,7 +19,9 @@ function addThermostatFunctions(block) {
   var $el = block.$mountPoint.find('.block_' + block.key);
   $el.find('.btn-number').on('click', function () {
     var type = $(this).attr('data-type');
-    var input = $el.find('strong');
+    var input = titleAndValueSwitch(block)
+      ? $el.find('.title')
+      : $el.find('.state');
     var currentVal = input.text().split('°');
     currentVal = parseFloat(currentVal[0].replace(',', '.'));
     if (!isNaN(currentVal)) {
@@ -69,8 +71,8 @@ function getThermostatBlock(block) {
   var html = '';
   var device = block.device;
   var idx = block.idx;
-  var title = number_format(device.Data, 1) + _TEMP_SYMBOL;
-  var value = device.Name;
+  var value = number_format(device.Data, 1) + _TEMP_SYMBOL;
+  var title = getBlockTitle(block);
 
   if (titleAndValueSwitch(block)) {
     title = [value, (value = title)][0];
@@ -107,8 +109,8 @@ function switchThermostat(block, setpoint) {
 function getEvohomeZoneBlock(block) {
   var html = '';
   var device = block.device;
-  var title = device.Temp + _TEMP_SYMBOL;
-  var value = device.Name;
+  var value = device.Temp + _TEMP_SYMBOL;
+  var title = getBlockTitle(block);
 
   var faStatus =
     device.Status == 'TemporaryOverride'
@@ -168,7 +170,7 @@ function addEvohomeZoneFunctions(block) {
       var newValue = type === 'minus' ? currentVal - 0.5 : currentVal + 0.5;
       if (newValue >= input.attr('min') && newValue <= input.attr('max')) {
         input.html(
-          '&nbsp;<i class="fas fa-stopwatch small_fa">&nbsp;</i>' +
+          '<i class="fas fa-stopwatch small_fa">&nbsp;</i>' +
             newValue +
             _TEMP_SYMBOL
         );
@@ -252,7 +254,7 @@ function getEvohomeControllerBlock(block) {
   var html = '';
   var device = block.device;
   var $div = block.$mountPoint.find('.block_' + block.key);
-  var title = device.Name;
+  var title = getBlockTitle(block);
 
   templateEngine.load('thermostat_evo_cont').then(function (template) {
     var dataObject = {
@@ -262,6 +264,7 @@ function getEvohomeControllerBlock(block) {
       name: title,
       status: language.evohome[device.Status],
       update: moment(device.LastUpdate).format(settings['timeformat']),
+      showUpdate: showUpdateInformation(block),
     };
     html = template(dataObject);
     $div.html(html);
@@ -346,7 +349,7 @@ function getEvohomeHotWaterBlock(block) {
       ? 'fas fa-stopwatch'
       : 'far fa-calendar-alt';
 
-  var name = device.Name;
+  var name = getBlockTitle(block);
   var temp = device.Temp + _TEMP_SYMBOL;
   if (titleAndValueSwitch(block)) {
     temp = [name, (name = temp)][0];
