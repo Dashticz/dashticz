@@ -112,7 +112,14 @@ var DT_dial = {
       $mount.html(template(dataObject));
       $mount.addClass('swiper-no-swiping');
       $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
-      if (me.type === 'evo') $(me.select).val(me.status);
+      //if (me.type === 'evo') $(me.select).val(me.status);
+      if (me.type === 'evo') {
+        $(me.select + ' li').each(function( index ) {
+          if($(this).data('val') === me.status){
+            $(this).addClass('selected');
+          }
+        });
+      }
 
       /* Add dial calculations */
       me.body = $(me.mountPoint + ' .dt_content .dial');
@@ -155,7 +162,10 @@ var DT_dial = {
         switchEvoHotWater(me, me.state, me.demand);
       }
       if (me.type === 'evo') {
-        var status = $(me.select).find(':selected').val();
+        //var status = $(me.select).find(':selected').val();
+        $(me.select + ' li').removeClass("selected"); 
+        $(ev.target).addClass('selected');       
+        var status = $(me.select + ' li.selected').data('val');
         me.device.Status = status;
         changeEvohomeControllerStatus(me, status);
       }

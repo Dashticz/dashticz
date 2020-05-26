@@ -3250,7 +3250,9 @@ td.agenda-title {
   align-items: center;
 }
 
-.dial-menu select {
+.dial-menu .evostatus {
+  list-style-type: none;
+  padding-left: 0;
   width: 100%;
   height: 90%;
   max-width: 100%;
@@ -3262,7 +3264,7 @@ td.agenda-title {
   text-align-last: center;
   -moz-text-align-last: center;
   border-radius: 50%;
-
+  margin-top: 10px;
   box-shadow: inset 0px 0.5px 0px rgba(255, 255, 255, 0.3),
     inset 0px 0px 2px rgba(255, 255, 255, 0.5),
     inset 0px 5px 8px 5px rgba(0, 0, 0, 0.8);
@@ -3273,23 +3275,25 @@ td.agenda-title {
   outline: none;
 }
 
-.dial-menu option {
+.dial-menu .evostatus li {
   text-align: center;
   text-align-last: center;
   -moz-text-align-last: center;
   max-width: 100% !important;
-  width: 95%;
+  width: 98%;
   margin: auto;
+  line-height: 1.35;
 }
 
-.dial-menu select option:hover,
-.dial-menu select option:focus,
-.dial-menu select option:active {
+.dial-menu .evostatus li:hover:not(.selected),
+.dial-menu .evostatus li:focus:not(.selected),
+.dial-menu .evostatus li:active:not(.selected) {
   color: orange !important;
   color: var(--dial-color) !important;
 }
 
-.dial-menu select option:checked {
+
+.dial-menu .evostatus li.selected {
   background: linear-gradient(
     to right,
     black 0%,
@@ -3298,8 +3302,7 @@ td.agenda-title {
     #29261f 92%,
     black 100%
   );
-  color: orange !important;
-  color: var(--dial-color) !important;
+  color: #393939;
   -moz-box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.5);
   -webkit-box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.5);
   box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.5);

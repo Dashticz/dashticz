@@ -15,14 +15,14 @@
         <div id="{{id}}" class="dial-center {{on}}" style="--dial-rgba: {{rgba}};">
             {{#if controller}}
             <div class="dial-menu">   
-                <select class="evostatus" style="--dial-color: {{color}};" multiple>
-                    <option value="Auto">Auto</option>
-                    <option value="AutoWithEco">Economy</option>
-                    <option value="Away">Away</option>
-                    <option value="Custom">Custom</option>
-                    <option value="DayOff">Day Off</option>
-                    <option value="HeatingOff">Off</option>
-                    </select>   
+                <ul class="evostatus" style="--dial-color: {{color}};">
+                    <li data-val="Auto">Auto</li>
+                    <li data-val="AutoWithEco">Economy</li>
+                    <li data-val="Away">Away</li>
+                    <li data-val="Custom">Custom</li>
+                    <li data-val="DayOff">Day Off</li>
+                    <li data-val="HeatingOff">Off</li>
+                </ul>  
             </div>
             {{else}}
             <div class="dial-display">
