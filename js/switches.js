@@ -9,6 +9,8 @@
 /* global Dashticz*/
 /* from dial.js */
 /* global DT_dial */
+/* from blocks.js */
+/* global getBlockTitle */
 
 /** Returns a default switch block
  *
@@ -354,6 +356,7 @@ function getDimmerBlock(block, buttonimg) {
   var idx = block.idx;
   var $div = block.$mountPoint.find('.mh');
   var html = '';
+  var title = getBlockTitle(block);
   var classExtension = isProtected(block) ? ' icon' : ' icon iconslider'; //no pointer in case of protected device
   if (device['Status'] === 'Off')
     html += iconORimage(
@@ -376,7 +379,7 @@ function getDimmerBlock(block, buttonimg) {
       'data-light="' + device['idx'] + '" '
     );
   html += '<div class="col-xs-10 swiper-no-swiping col-data">';
-  html += '<strong class="title">' + device['Name'];
+  html += '<strong class="title">' + title;
   if (
     typeof block['hide_data'] == 'undefined' ||
     blocks['hide_data'] == false
@@ -558,7 +561,7 @@ function getBlindsBlock(block, withPercentage) {
     html += iconORimage(block, '', 'blinds_closed.png', 'off icon', '', 2);
   else html += iconORimage(block, '', 'blinds_open.png', 'on icon', '', 2);
   html += '<div class="' + data_class + '">';
-  var title = device['Name']; //todo: can we overrule title in blockdef?
+  var title = getBlockTitle(block);
   var value = '';
   if (withPercentage) {
     if (
