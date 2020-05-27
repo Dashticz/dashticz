@@ -636,7 +636,7 @@ function getBlindsBlock(block, withPercentage) {
   $mountPoint.find('.min').click(function () {
     switchBlinds(block, downAction);
   });
-  $mountPoint.find('.stop').click(function () {
+  $mountPoint.find('.btn.stop').click(function () {
     switchBlinds(block, 'Stop');
   });
 
