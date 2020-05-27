@@ -7,6 +7,14 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Latest changes
 --------------
 
+Fixes
+  * Stop called twice for Blinds stop button
+
+3.4.9.1 (Beta) (26-5-2020)
+--------------------------
+Fixes
+  * Several bug fixes
+
 3.4.9 (Beta) (25-5-2020)
 ------------------------
 
