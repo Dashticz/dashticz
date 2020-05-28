@@ -1162,13 +1162,13 @@ Styling
 
 For graphs the following css-classes are used:
 
-* .graph_header: The graph header, including title and buttons
-* .graph_title: The title of the graph, including the current value
-* .graph_buttons: The buttons for the graph
+* .graphheader: The graph header, including title and buttons
+* .graphtitle: The title of the graph, including the current value
+* .graphbuttons: The buttons for the graph
 
 You can modify the class definition in custom.css. If you want to hide the header::
 
-  .graph_header {
+  .graphheader {
     display: none;
   }
 
