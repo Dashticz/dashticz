@@ -13,14 +13,20 @@ var DT_graph = {
   },
   defaultCfg: getBlockDefaults,
   run: function (me) {
-    Initialize(me);
+    try {
+      Initialize(me);
 
-    $.each(me.graphDevices, function (i, graphDevice) {
-      //install the callback handles
-      Domoticz.subscribe(graphDevice.idx, false, function (device) {
-        deviceUpdate(me, graphDevice, device);
+      $.each(me.graphDevices, function (i, graphDevice) {
+        //install the callback handles
+        Domoticz.subscribe(graphDevice.idx, false, function (device) {
+          deviceUpdate(me, graphDevice, device);
+        });
       });
-    });
+    }
+    catch (err) {
+      console.warn(err);
+      me.block.refresh=0;//prevent refresh of graph in case of error during initialization
+    }
   },
 
   refresh: function (me) {
@@ -37,15 +43,14 @@ function Initialize(me) {
   $.each(me.block.devices, function (i, idx) {
     var device = {};
     $.extend(device, Domoticz.getAllDevices()[idx]); //Make a copy of the current device data
-    if(device.idx) {
+    if (device.idx) {
       device.idx = parseInt(device.idx);
       getDeviceDefaults(me, device);
       me.graphDevices.push(device);
-    }
-    else {
-      var msg = 'For graph ' + me.key + ' device ' + idx+' does not exist.';
-      console.error(msg);
+    } else {
+      var msg = 'For graph ' + me.key + ' device ' + idx + ' does not exist.';
       $(me.mountPoint).append(msg);
+      throw new Error(msg);
     }
   });
   me.graphIdx = me.mountPoint.slice(1);
@@ -310,7 +315,7 @@ function getDeviceDefaults(me, device) {
     txtUnit: txtUnit,
     txtUnits: [],
     type: device.Type,
-    decimals: decimals
+    decimals: decimals,
   };
   $.extend(device, obj);
 }
@@ -613,91 +618,77 @@ function redrawGraph(me) {
 
   // 20/02/20: GroupBy - hour|day|week|month
   if (graph.groupBy) {
-    var groupArray = [];
-    var groupObj = {};
-    var md = multidata.result;
-    var dayFormat = 'YYYY-MM-DD';
-    var groupStart;
-    var add;
-    switch (graph.aggregate) {
-      case 'sum':
-        add = true;
-        break;
-      case 'avg':
-        add = false;
-        break;
-      default:
-        add =
-          graph.sensor === 'counter' || graph.sensor === 'rain' ? true : false;
-        break;
-    }
-
-    var x = 1;
-
-    $.each(md, function (i, obj) {
-      var end = i === md.length - 1;
-
-      switch (graph.groupBy) {
-        case 'hour':
-          groupStart = moment(obj.d, dayFormat)
-            .hour(moment(obj.d, 'YYYY-MM-DD HH:mm').hour())
-            .format('YYYY-MM-DD HH:mm');
-          break;
-        case 'day':
-          groupStart = moment(obj.d, dayFormat).format(dayFormat);
-          break;
-        case 'week':
-          groupStart = moment(obj.d, dayFormat)
-            .week(moment(obj.d, dayFormat).week())
-            .day(1)
-            .format(dayFormat);
-          break;
-        case 'month':
-          groupStart = moment(obj.d, dayFormat)
-            .startOf('month')
-            .format(dayFormat);
-          break;
-      }
-
-      if (groupObj.hasOwnProperty('d') && groupObj['d'] === groupStart) {
-        $.each(obj, function (key, val) {
-          if (key !== 'd') {
-            if (end) {
-              if (!add) groupObj[key] = Number(groupObj[key] / x);
-            } else {
-              groupObj[key] += Number(val) || 0;
-            }
-          }
-        });
-        x++;
-        if (end) groupArray.push(groupObj);
-      } else {
-        if (!$.isEmptyObject(groupObj)) {
-          $.each(obj, function (key) {
-            if (key !== 'd') {
-              if (!add) groupObj[key] = Number(groupObj[key] / x);
-            }
-          });
-          groupArray.push(groupObj);
-          x = 1;
-        }
-        groupObj = {};
-        groupObj['d'] = groupStart;
-        $.each(obj, function (key, val) {
-          if (key !== 'd') {
-            groupObj[key] = Number(val) || 0;
-            if (end) {
-              if (!add) groupObj[key] = groupObj[key] / x;
-            }
-          }
-        });
-        if (end) groupArray.push(groupObj);
-      }
-    });
-    multidata.result = groupArray;
+    multidata.result = groupData(graph, multidata.result)
   }
   graph.data = multidata;
   createGraph(graph);
+}
+
+function groupData(graph, md) {
+  var returnData = [];
+  var dayFormat = 'YYYY-MM-DD';
+  var groupStart;
+  var add;
+  switch (graph.aggregate) {
+    case 'sum':
+      add = true;
+      break;
+    case 'avg':
+      add = false;
+      break;
+    default:
+      add =
+        graph.sensor === 'counter' || graph.sensor === 'rain' ? true : false;
+      break;
+  }
+
+  var groupedData = {};
+  var groupedCount = {};  //Count objects; needed in case aggregation function is average.
+
+  $.each(md, function (i, obj) {
+
+    switch (graph.groupBy) {
+      case 'hour':
+        groupStart = moment(obj.d, dayFormat)
+          .hour(moment(obj.d, 'YYYY-MM-DD HH:mm').hour())
+          .format('YYYY-MM-DD HH:mm');
+        break;
+      case 'day':
+        groupStart = moment(obj.d, dayFormat).format(dayFormat);
+        break;
+      case 'week':
+        groupStart = moment(obj.d, dayFormat)
+          .weekday(0)
+          .format(dayFormat);
+        break;
+      case 'month':
+        groupStart = moment(obj.d, dayFormat)
+          .startOf('month')
+          .format(dayFormat);
+        break;
+    }
+    if (!groupedData[groupStart]) { //new groupBy element. Initialization.
+      groupedData[groupStart] = {};
+      groupedCount[groupStart] = 0;
+    }
+    groupedCount[groupStart]+=1;
+    var groupObj = groupedData[groupStart];
+    $.each(obj, function (key, val) {
+      groupObj[key] = (groupObj[key]||0) + (Number(val) || 0);
+    });
+  });
+  $.each(groupedData, function (key, obj) {
+    if (!add) {
+      //we have to compute the average
+      var count = groupedCount[key];
+      $.each(obj, function (key) {
+        obj[key] /= count;
+      });
+    }
+    obj.d=key;
+    returnData.push(obj);
+  });
+  return returnData;
 }
 
 function createGraph(graph) {
@@ -720,7 +711,7 @@ function createGraph(graph) {
     mydiv.addClass('col-xs-' + graph.block.width);
     mydiv.addClass('block_graph');
     mydiv.addClass(graphIdx);
-//    mydiv.addClass(graph.key); //Todo: add graph.key? Also already available via data-id
+    //    mydiv.addClass(graph.key); //Todo: add graph.key? Also already available via data-id
   }
   mydiv.html(html);
   createButtons(graph, ranges, graph.customRange);
@@ -851,7 +842,8 @@ function createGraph(graph) {
   } else {
     // no custom data
     var idxArray = [];
-    if (typeof mergedBlock.legend === 'object') idxArray=Object.keys(mergedBlock.legend);
+    if (typeof mergedBlock.legend === 'object')
+      idxArray = Object.keys(mergedBlock.legend);
     graph.ykeys.forEach(function (element, index) {
       //In case of a legend, not all datasets will be shown, resulting in color mismatch
       var idx = index;
@@ -1609,7 +1601,8 @@ function getDefaultGraphProperties(graph, block) {
             }
 
             var decimals = graph.decimals;
-            if (typeof block.decimals !== 'undefined') decimals = block.decimals;
+            if (typeof block.decimals !== 'undefined')
+              decimals = block.decimals;
             bodyLines.forEach(function (body, i) {
               var val = parseFloat(body[0]);
               //todo: next line throws an error. As workaround I've added previous line and the try/catch.
