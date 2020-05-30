@@ -9,6 +9,8 @@ Latest changes
 
 Fixes
   * Stop called twice for Blinds stop button
+  * Improve Dial representation on Android devices
+  * Improved graph groupBy function
 
 3.4.9.1 (Beta) (26-5-2020)
 --------------------------
