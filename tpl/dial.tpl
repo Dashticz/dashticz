@@ -15,13 +15,10 @@
         <div id="{{id}}" class="dial-center {{on}}" style="--dial-rgba: {{rgba}};">
             {{#if controller}}
             <div class="dial-menu">   
-                <ul class="evostatus" style="--dial-color: {{color}};">
-                    <li data-val="Auto">Auto</li>
-                    <li data-val="AutoWithEco">Economy</li>
-                    <li data-val="Away">Away</li>
-                    <li data-val="Custom">Custom</li>
-                    <li data-val="DayOff">Day Off</li>
-                    <li data-val="HeatingOff">Off</li>
+                <ul class="status" style="--dial-color: {{color}};">
+                   {{#each options as |opt|}}
+                    <li data-val="{{opt.val}}">{{opt.text}}</li>
+                    {{/each}}
                 </ul>  
             </div>
             {{else}}

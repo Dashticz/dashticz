@@ -69,13 +69,13 @@ var DT_dial = {
     DT_dial.resize(me);
 
     if (
-      me.device.Type === 'Heating' ||
+      me.device.Type === 'Heating' || 
       me.device.Type === 'Thermostat' ||
       me.device.SubType === 'SetPoint'
     ) {
       DT_dial.heating(me);
     }
-    if (me.device.SubType === 'Evohome') {
+    if (me.device.SubType === 'Evohome'|| me.device.SwitchType === 'Selector' ) {
       DT_dial.control(me);
     }
     if (me.device.SwitchType === 'Dimmer') {
@@ -97,7 +97,8 @@ var DT_dial = {
         status: me.status,
         override: me.override,
         on: me.demand ? 'on' : 'off',
-        controller: me.type === 'evo',
+        controller: me.type === 'evo' || me.type === 'selector',
+        options: me.options,
         unit: _TEMP_SYMBOL,
         lastupdate: me.lastupdate,
         color: me.color,
@@ -112,8 +113,7 @@ var DT_dial = {
       $mount.html(template(dataObject));
       $mount.addClass('swiper-no-swiping');
       $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
-      //if (me.type === 'evo') $(me.select).val(me.status);
-      if (me.type === 'evo') {
+      if (me.type === 'evo' || me.type === 'selector') {
         $(me.select + ' li').each(function( index ) {
           if($(this).data('val') === me.status){
             $(this).addClass('selected');
@@ -161,13 +161,16 @@ var DT_dial = {
         me.demand = !me.demand;
         switchEvoHotWater(me, me.state, me.demand);
       }
-      if (me.type === 'evo') {
-        //var status = $(me.select).find(':selected').val();
+      if (me.type === 'evo' || me.type === 'selector') {
         $(me.select + ' li').removeClass("selected"); 
         $(ev.target).addClass('selected');       
         var status = $(me.select + ' li.selected').data('val');
         me.device.Status = status;
-        changeEvohomeControllerStatus(me, status);
+        if(me.type === 'evo') {          
+          changeEvohomeControllerStatus(me, status);
+        } else {
+          slideDevice(me, status);
+        }        
       }
     });
   },
@@ -410,8 +413,14 @@ var DT_dial = {
           : 30;
       }
     } else {
-      me.value = number_format(me.device.Data, 1);
-      me.isSetpoint = false; //Domoticz standard Thermostat device only has one value (Setpoint=Data)
+      if(isDefined(me.block.temp)){
+        me.value = Domoticz.getAllDevices()[me.block.temp].Temp;
+        me.isSetpoint = true; 
+        me.setpoint = me.device.SetPoint;
+      } else {
+        me.value = number_format(me.device.Data, 1);
+        me.isSetpoint = false;
+      }      
       me.lastupdate = me.lastupdate;
     }
     return;
@@ -422,9 +431,27 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   control: function (me) {
-    me.type = 'evo';
-    me.select = '#' + me.id + ' .evostatus';
-    me.status = me.device.Status;
+    if (me.device.SubType === 'Evohome') {
+      me.type = 'evo';
+      me.status = me.device.Status;
+      me.options = [
+        { val: 'Auto', text: 'Auto' },
+        { val: 'AutoWithEco', text: 'Economy' },
+        { val: 'Away', text: 'Away' },
+        { val: 'Custom', text: 'Custom' },
+        { val: 'DayOff', text: 'Day Off' },
+        { val: 'HeatingOff', text: 'Off' },
+      ];
+    } else {
+      me.type = 'selector';      
+      me.status = me.device.Level;
+      me.options = [];
+      var levelNames = atob(me.device.LevelNames).split('|');
+      $.each(levelNames, function( index, value ) {
+        me.options.push({ val: index * 10, text: value })
+      });
+    }    
+    me.select = '#' + me.id + ' .status';
   },
 
   /**

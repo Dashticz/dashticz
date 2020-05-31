@@ -52,7 +52,7 @@ var DT_camera = {
           var data = {
             src: me.block.videoUrl,
             urls: camUrls,
-            dt: Date.now(),
+            dt: (me.block.imageUrl.includes('?') ? '&t=' : '?t=') + Date.now(),
             mount: me.mountPoint.slice(1),
           };
 
@@ -87,7 +87,7 @@ $('body').on('click', '.cam-container .cam-tray-img', function () {
   clearInterval(interval);
 
   if (mjpeg) {
-    video += '&d=' + Date.now();
+    video += (video.includes('?') ? '&t=' : '?t=') + Date.now();
     $('.cam-container .stream').attr('src', video);
   } else {
     interval = setInterval(function () {

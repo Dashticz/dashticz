@@ -212,7 +212,7 @@ function switchBlinds(block, action) {
 
 // eslint-disable-next-line no-unused-vars
 function slideDevice(block, status) {
-  var dial = block.type === 'dim';
+  var dial = block.type === 'dim' || block.type === 'selector';
 
   if (!dial) {
     var $div = block.$mountPoint;
