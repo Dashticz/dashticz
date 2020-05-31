@@ -3250,7 +3250,7 @@ td.agenda-title {
   align-items: center;
 }
 
-.dial-menu .evostatus {
+.dial-menu .status {
   list-style-type: none;
   padding-left: 0;
   width: 100%;
@@ -3275,7 +3275,7 @@ td.agenda-title {
   outline: none;
 }
 
-.dial-menu .evostatus li {
+.dial-menu .status li {
   text-align: center;
   text-align-last: center;
   -moz-text-align-last: center;
@@ -3285,15 +3285,15 @@ td.agenda-title {
   line-height: 1.35;
 }
 
-.dial-menu .evostatus li:hover:not(.selected),
-.dial-menu .evostatus li:focus:not(.selected),
-.dial-menu .evostatus li:active:not(.selected) {
+.dial-menu .status li:hover:not(.selected),
+.dial-menu .status li:focus:not(.selected),
+.dial-menu .status li:active:not(.selected) {
   color: orange !important;
   color: var(--dial-color) !important;
 }
 
 
-.dial-menu .evostatus li.selected {
+.dial-menu .status li.selected {
   background: linear-gradient(
     to right,
     black 0%,
