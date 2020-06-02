@@ -400,7 +400,10 @@ Example ``custom.css`` (only needed in case you want to change the default flash
 Evohome
 ~~~~~~~
 
-Dashticz recognizes Evohome devices.
+The following Domoticz devices can be represented with a dial. See :ref:`dial`
+   * EvoHome devices
+   * Thermostats
+   * Dimmers
 
 .. image :: img/evohome.png
 
@@ -420,42 +423,9 @@ The following config parameters from CONFIG.js are applicable:
   * - evohome_boost_hw
     - ``<number>``: Hot water boost temporary override time in minutes. Default: 15
 
-The EvoHome devices can be represented as dial by adding ``type: 'dial'`` to the block definition. See :ref:`dial`
+The EvoHome devices can be represented as dial by adding ``type: 'dial'`` to the block definition.
 
 .. image :: img/dial.png
-
-
-.. _Toon:
-
-Toon Thermostat as dial
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. image :: img/toon_dial.png
-
-"SwitchType": "Selector"
-
-::
-
-   blocks['toon_controller'] = {
-	   idx: 419,
-	   title: 'Toon Controller',
-	   type: 'dial',
-      width: 3,
-   }
-
-
-1 = "Type": "Temp", 
-2 = "Type": "Thermostat"
-
-::
-
-   blocks['toon_thermostat_temp'] = {
-	   idx: '421',   // -> 2
-	   title: 'Thermostat',
-	   type: 'dial',
-	   temp: 420,   // -> 1
-	   width: 3,
-   }
 
 
 .. _formatting:
