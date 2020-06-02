@@ -6,7 +6,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 
 Latest changes
 --------------
-
+Enhancements
+  * Japanese language support
+  
 Fixes
   * Stop called twice for Blinds stop button
   * Improve Dial representation on Android devices
