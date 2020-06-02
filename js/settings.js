@@ -268,6 +268,8 @@ settingList['localize']['language']['options']['hu_HU'] =
   language.settings.localize.hu;
 settingList['localize']['language']['options']['it_IT'] =
   language.settings.localize.it;
+settingList['localize']['language']['options']['ja_JP'] =
+  language.settings.localize.ja;
 settingList['localize']['language']['options']['lt_LT'] =
   language.settings.localize.lt;
 settingList['localize']['language']['options']['nl_NL'] =
@@ -326,6 +328,8 @@ settingList['localize']['calendarlanguage']['options']['hu_HU'] =
   language.settings.localize.hu;
 settingList['localize']['calendarlanguage']['options']['it_IT'] =
   language.settings.localize.it;
+settingList['localize']['calendarlanguage']['options']['ja_JP'] =
+  language.settings.localize.ja;
 settingList['localize']['calendarlanguage']['options']['lt_LT'] =
   language.settings.localize.lt;
 settingList['localize']['calendarlanguage']['options']['nl_NL'] =
