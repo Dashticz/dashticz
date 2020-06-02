@@ -1,5 +1,5 @@
-@import url("./plugins.css");
-@import url("./helpers.css");
+@import url('./plugins.css');
+@import url('./helpers.css');
 
 #loaderHolder {
   position: absolute;
@@ -382,7 +382,7 @@ next css sets the default height of the frame popup
   width: 80%;
 }
 
-.material-switch > input[type="checkbox"] {
+.material-switch > input[type='checkbox'] {
   display: none;
 }
 
@@ -397,7 +397,7 @@ next css sets the default height of the frame popup
   background: rgb(0, 0, 0);
   box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
   border-radius: 8px;
-  content: "";
+  content: '';
   height: 16px;
   margin-top: 0px;
   position: absolute;
@@ -410,7 +410,7 @@ next css sets the default height of the frame popup
   background: rgb(255, 255, 255);
   border-radius: 16px;
   box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
-  content: "";
+  content: '';
   height: 24px;
   left: -4px;
   margin-top: 0px;
@@ -420,12 +420,12 @@ next css sets the default height of the frame popup
   width: 24px;
 }
 
-.material-switch > input[type="checkbox"]:checked + label::before {
+.material-switch > input[type='checkbox']:checked + label::before {
   background: inherit;
   opacity: 0.5;
 }
 
-.material-switch > input[type="checkbox"]:checked + label::after {
+.material-switch > input[type='checkbox']:checked + label::after {
   background: inherit;
   left: 20px;
 }
@@ -1042,7 +1042,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: "Open Sans", "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Open Sans', 'Helvetica Neue', Arial, sans-serif;
   margin: 0px;
   margin-left: 15px;
 }
@@ -1284,7 +1284,7 @@ html .ui-button.ui-state-disabled:active {
 .navbar-default {
   background-color: white;
   border-color: rgba(34, 34, 34, 0.05);
-  font-family: "Open Sans", "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Open Sans', 'Helvetica Neue', Arial, sans-serif;
   -webkit-transition: all 0.35s;
   -moz-transition: all 0.35s;
   transition: all 0.35s;
@@ -1292,7 +1292,7 @@ html .ui-button.ui-state-disabled:active {
 
 .navbar-default .navbar-header .navbar-brand {
   color: #f05f40;
-  font-family: "Open Sans", "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Open Sans', 'Helvetica Neue', Arial, sans-serif;
   font-weight: 700;
   text-transform: uppercase;
 }
@@ -1608,7 +1608,7 @@ div.screen {
   color: #f05f40;
 }
 
-.no-gutter > [class*="col-"] {
+.no-gutter > [class*='col-'] {
   padding-right: 0;
   padding-left: 0;
 }
@@ -1720,7 +1720,7 @@ fieldset[disabled] .btn-primary.active {
 }
 
 .btn {
-  font-family: "Open Sans", "Helvetica Neue", Arial, sans-serif;
+  font-family: 'Open Sans', 'Helvetica Neue', Arial, sans-serif;
   font-weight: 700;
   text-transform: uppercase;
   padding: 0px 5px 0px 5px;
@@ -1771,54 +1771,54 @@ fieldset[disabled] .btn-primary.active {
   padding: 20px;
 }
 
-.login input[type="text"] {
+.login input[type='text'] {
   height: 30px;
   border: 1px solid rgba(0, 0, 0, 0.6);
   border-radius: 2px;
   color: #000;
-  font-family: "Exo", sans-serif;
+  font-family: 'Exo', sans-serif;
   font-size: 14px;
   font-weight: 400;
   padding: 4px;
 }
 
-.login input[type="password"] {
+.login input[type='password'] {
   height: 30px;
   border: 1px solid rgba(0, 0, 0, 0.6);
   border-radius: 2px;
   color: #000;
-  font-family: "Exo", sans-serif;
+  font-family: 'Exo', sans-serif;
   font-size: 14px;
   font-weight: 400;
   padding: 4px;
   margin-top: 10px;
 }
 
-.login input[type="button"] {
+.login input[type='button'] {
   height: 35px;
   padding: 6px;
   margin-top: 10px;
 }
 
-.login input[type="button"]:hover {
+.login input[type='button']:hover {
   opacity: 0.8;
 }
 
-.login input[type="button"]:active {
+.login input[type='button']:active {
   opacity: 0.6;
 }
 
-.login input[type="text"]:focus {
+.login input[type='text']:focus {
   outline: none;
   border: 1px solid rgba(0, 0, 0, 0.9);
 }
 
-.login input[type="password"]:focus {
+.login input[type='password']:focus {
   outline: none;
   border: 1px solid rgba(0, 0, 0, 0.9);
 }
 
-.login input[type="button"]:focus {
+.login input[type='button']:focus {
   outline: none;
 }
 
@@ -1917,7 +1917,7 @@ a:not([href]) {
   .modal:before {
     display: inline-block;
     vertical-align: middle;
-    content: " ";
+    content: ' ';
     height: 100%;
   }
 }
@@ -2030,7 +2030,7 @@ canvas {
   border-color: #111 transparent;
   border-color: rgba(0, 0, 0, 0.8) transparent;
   border-width: 16px 8px 0 8px;
-  content: "";
+  content: '';
   display: block;
   top: 57%;
   position: absolute;
@@ -2549,12 +2549,12 @@ td.agenda-title {
 
 /* START: SECURITY PANEL */
 @font-face {
-  font-family: "Audiowide";
-  src: url("../font/Audiowide.eot");
-  src: url("../font/Audiowide.eot?#iefix") format("embedded-opentype"),
-    url("../font/Audiowide.woff") format("woff"),
-    url("../font/Audiowide.ttf") format("truetype"),
-    url("../font/Audiowide.svg#../font/Audiowide-7Italic") format("svg");
+  font-family: 'Audiowide';
+  src: url('../font/Audiowide.eot');
+  src: url('../font/Audiowide.eot?#iefix') format('embedded-opentype'),
+    url('../font/Audiowide.woff') format('woff'),
+    url('../font/Audiowide.ttf') format('truetype'),
+    url('../font/Audiowide.svg#../font/Audiowide-7Italic') format('svg');
 }
 
 .sec-modal {
@@ -2693,7 +2693,7 @@ td.agenda-title {
 }
 
 .sec-frame .keypad-input .key-input {
-  font-family: "Audiowide" !important;
+  font-family: 'Audiowide' !important;
   font-size: 2vw;
   width: 100%;
   border-radius: 3px;
@@ -2775,19 +2775,19 @@ td.agenda-title {
   cursor: auto;
 }
 
-.sec-frame .keypad-input .key[data-id="disarm"] {
+.sec-frame .keypad-input .key[data-id='disarm'] {
   background-color: #1f451f !important;
 }
 
-.sec-frame .keypad-input .key[data-id="armhome"] {
+.sec-frame .keypad-input .key[data-id='armhome'] {
   background-color: #5f4726 !important;
 }
 
-.sec-frame .keypad-input .key[data-id="armaway"] {
+.sec-frame .keypad-input .key[data-id='armaway'] {
   background-color: #531e1d !important;
 }
 
-.sec-frame .keypad-input .key[data-id="dashticz"] {
+.sec-frame .keypad-input .key[data-id='dashticz'] {
   background-color: #1a3649 !important;
 }
 
@@ -2801,7 +2801,7 @@ td.agenda-title {
 
 .sec-frame .keypad-input .status:before {
   position: relative;
-  font-family: "Font Awesome 5 Free";
+  font-family: 'Font Awesome 5 Free';
   mix-blend-mode: soft-light;
   font-weight: 900;
   font-size: 100%;
@@ -2810,25 +2810,25 @@ td.agenda-title {
     1px 1px 3px rgba(255, 255, 255, 0.7);
 }
 
-.sec-frame .keypad-input .status[data-id="disarm"]:before {
-  content: "\f09c";
+.sec-frame .keypad-input .status[data-id='disarm']:before {
+  content: '\f09c';
 }
 
-.sec-frame .keypad-input .status[data-id="armhome"]:before {
-  content: "\f965";
+.sec-frame .keypad-input .status[data-id='armhome']:before {
+  content: '\f965';
 }
 
-.sec-frame .keypad-input .status[data-id="armaway"]:before {
-  content: "\f554";
+.sec-frame .keypad-input .status[data-id='armaway']:before {
+  content: '\f554';
 }
 
-.sec-frame .keypad-input .status[data-id="dashticz"]:before {
-  content: "\f2f6";
+.sec-frame .keypad-input .status[data-id='dashticz']:before {
+  content: '\f2f6';
 }
 
-.sec-frame .keypad-input .key[data-id="cancel"]:before {
-  content: "\f104";
-  font-family: "Font Awesome 5 Free";
+.sec-frame .keypad-input .key[data-id='cancel']:before {
+  content: '\f104';
+  font-family: 'Font Awesome 5 Free';
   font-weight: 900;
   font-size: 100%;
 }
@@ -2983,7 +2983,7 @@ td.agenda-title {
   cursor: not-allowed;
 }
 
-.sec-frame[data-mode="2"] table tr:nth-child(4) td:nth-child(3) {
+.sec-frame[data-mode='2'] table tr:nth-child(4) td:nth-child(3) {
   display: none;
 }
 
@@ -3092,7 +3092,7 @@ td.agenda-title {
 }
 
 .dial.p180 .fill:after {
-  content: "";
+  content: '';
   -webkit-transform: rotate(180deg);
   -moz-transform: rotate(180deg);
   -ms-transform: rotate(180deg);
@@ -3292,7 +3292,6 @@ td.agenda-title {
   color: var(--dial-color) !important;
 }
 
-
 .dial-menu .status li.selected {
   background: linear-gradient(
     to right,
@@ -3327,21 +3326,21 @@ td.agenda-title {
 }
 
 .dial .dial-needle::before {
-  content: "";
+  content: '';
   position: absolute;
   left: 37%;
   top: -53%;
   border-left: var(--needle-width) solid transparent;
   border-right: var(--needle-width) solid transparent;
   border-bottom: var(--needle-length) solid;
-  border-bottom-color: orange!important;
-  border-bottom-color: var(--dial-color)!important;
+  border-bottom-color: orange !important;
+  border-bottom-color: var(--dial-color) !important;
   clip: rect(7px, 1em, 1em, 0em);
   z-index: 2;
 }
 
 .dial .dial-needle::after {
-  content: "";
+  content: '';
   position: absolute;
   left: 37%;
   top: -53%;
@@ -3434,9 +3433,20 @@ td.agenda-title {
 }
 
 .dial-center.on {
--webkit-box-shadow: 0 0 1vh 0 var(--dial-rgba);
--moz-box-shadow: 0 0 1vh 0 var(--dial-rgba);
-box-shadow: 0 0 1vh 0 var(--dial-rgba);
+  -webkit-box-shadow: 0 0 1vh 0 var(--dial-rgba);
+  -moz-box-shadow: 0 0 1vh 0 var(--dial-rgba);
+  box-shadow: 0 0 1vh 0 var(--dial-rgba);
+}
+
+.dial-flash {
+  box-shadow: 0px 0px 30px 0px rgb(255, 165, 0) !important;
+  box-shadow: 0px 0px 30px 0px var(--dial-color) !important;
+}
+
+.show-ring {
+  border-width: 0.1em !important;
+  left: 0.01em !important;
+  top: 0.01em !important;
 }
 
 @keyframes fadeInLoad {
@@ -3448,4 +3458,3 @@ box-shadow: 0 0 1vh 0 var(--dial-rgba);
   }
 }
 /* END: DIAL */
-
