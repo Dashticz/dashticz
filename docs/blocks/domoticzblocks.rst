@@ -425,39 +425,6 @@ The EvoHome devices can be represented as dial by adding ``type: 'dial'`` to the
 .. image :: img/dial.png
 
 
-.. _Toon:
-
-Toon Thermostat as dial
-~~~~~~~~~~~~~~~~~~~~~~~
-
-.. image :: img/toon_dial.png
-
-"SwitchType": "Selector"
-
-::
-
-   blocks['toon_controller'] = {
-	   idx: 419,
-	   title: 'Toon Controller',
-	   type: 'dial',
-      width: 3,
-   }
-
-
-1 = "Type": "Temp", 
-2 = "Type": "Thermostat"
-
-::
-
-   blocks['toon_thermostat_temp'] = {
-	   idx: '421',   // -> 2
-	   title: 'Thermostat',
-	   type: 'dial',
-	   temp: 420,   // -> 1
-	   width: 3,
-   }
-
-
 .. _formatting:
 
 Formatting
