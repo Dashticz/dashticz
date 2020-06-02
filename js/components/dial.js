@@ -35,6 +35,11 @@ var DT_dial = {
   defaultCfg: {
     title: false,
     width: 3,
+    last_update: true,
+    dialicon: 'fas fa-calendar-alt',
+    dialimage: false,
+    flash: 0,
+    showring: false,
   },
 
   /**
@@ -56,7 +61,9 @@ var DT_dial = {
     Domoticz.subscribe(me.idx, true, function (device) {
       me.device = device;
       me.isSetpoint = isDefined(me.device.SetPoint);
-      me.lastupdate = moment(me.device.LastUpdate).format(DT_dial.timeformat);
+      me.lastupdate = me.block.last_update
+        ? moment(me.device.LastUpdate).format(DT_dial.timeformat)
+        : false;
       DT_dial.make(me);
     });
   },
@@ -69,13 +76,16 @@ var DT_dial = {
     DT_dial.resize(me);
 
     if (
-      me.device.Type === 'Heating' || 
+      me.device.Type === 'Heating' ||
       me.device.Type === 'Thermostat' ||
       me.device.SubType === 'SetPoint'
     ) {
       DT_dial.heating(me);
     }
-    if (me.device.SubType === 'Evohome'|| me.device.SwitchType === 'Selector' ) {
+    if (
+      me.device.SubType === 'Evohome' ||
+      me.device.SwitchType === 'Selector'
+    ) {
       DT_dial.control(me);
     }
     if (me.device.SwitchType === 'Dimmer') {
@@ -106,6 +116,8 @@ var DT_dial = {
         fontsize: me.fontsize,
         needleL: me.height / 2,
         needleW: me.height / 17,
+        icon: me.block.dialicon,
+        image: me.block.dialimage,
       };
 
       /* Mount dial */
@@ -114,11 +126,26 @@ var DT_dial = {
       $mount.addClass('swiper-no-swiping');
       $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
       if (me.type === 'evo' || me.type === 'selector') {
-        $(me.select + ' li').each(function( index ) {
-          if($(this).data('val') === me.status){
+        $(me.select + ' li').each(function (index) {
+          if ($(this).data('val') === me.status) {
             $(this).addClass('selected');
           }
         });
+      }
+
+      /* Add flash on update if required */
+      if (me.block.flash > 0) {
+        $(me.mountPoint + ' .dial')
+          .addClass('dial-flash')
+          .delay(me.block.flash)
+          .queue(function () {
+            $(this).removeClass('dial-flash').dequeue();
+          });
+      }
+
+      /* Always show color outer ring if required */
+      if (me.block.showring) {
+        $(me.mountPoint + ' .dial .bar').addClass('show-ring');
       }
 
       /* Add dial calculations */
@@ -162,15 +189,15 @@ var DT_dial = {
         switchEvoHotWater(me, me.state, me.demand);
       }
       if (me.type === 'evo' || me.type === 'selector') {
-        $(me.select + ' li').removeClass("selected"); 
-        $(ev.target).addClass('selected');       
+        $(me.select + ' li').removeClass('selected');
+        $(ev.target).addClass('selected');
         var status = $(me.select + ' li.selected').data('val');
         me.device.Status = status;
-        if(me.type === 'evo') {          
+        if (me.type === 'evo') {
           changeEvohomeControllerStatus(me, status);
         } else {
           slideDevice(me, status);
-        }        
+        }
       }
     });
   },
@@ -396,9 +423,10 @@ var DT_dial = {
       me.status = isDefined(me.device.Status) ? me.device.Status : 'Auto';
       me.override = me.status === 'TemporaryOverride';
       me.demand = me.status !== 'HeatingOff' && me.value < me.setpoint;
-      me.lastupdate = me.until
-        ? moment(me.until).format(DT_dial.timeformat)
-        : me.lastupdate;
+      me.lastupdate =
+        me.lastupdate && me.until
+          ? moment(me.until).format(DT_dial.timeformat)
+          : me.lastupdate;
 
       if (me.device.SubType === 'Hot Water') {
         me.active = false;
@@ -413,15 +441,14 @@ var DT_dial = {
           : 30;
       }
     } else {
-      if(isDefined(me.block.temp)){
+      if (isDefined(me.block.temp)) {
         me.value = Domoticz.getAllDevices()[me.block.temp].Temp;
-        me.isSetpoint = true; 
+        me.isSetpoint = true;
         me.setpoint = me.device.SetPoint;
       } else {
         me.value = number_format(me.device.Data, 1);
         me.isSetpoint = false;
-      }      
-      me.lastupdate = me.lastupdate;
+      }
     }
     return;
   },
@@ -443,14 +470,14 @@ var DT_dial = {
         { val: 'HeatingOff', text: 'Off' },
       ];
     } else {
-      me.type = 'selector';      
+      me.type = 'selector';
       me.status = me.device.Level;
       me.options = [];
       var levelNames = atob(me.device.LevelNames).split('|');
-      $.each(levelNames, function( index, value ) {
-        me.options.push({ val: index * 10, text: value })
+      $.each(levelNames, function (index, value) {
+        me.options.push({ val: index * 10, text: value });
       });
-    }    
+    }
     me.select = '#' + me.id + ' .status';
   },
 
