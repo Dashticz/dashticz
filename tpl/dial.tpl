@@ -1,6 +1,6 @@
 <div id="" class="dial {{size}} {{#if controller}}fixed{{/if}}" data-device="{{name}}" data-min="{{min}}" data-max="{{max}}"
     data-type="{{type}}" data-value="{{value}}" data-setpoint="{{setpoint}}" data-status="{{status}}" 
-    data-until="{{until}}" data-unit="{{unit}}" data-info="{{lastupdate}}" style="font-size: {{fontsize}}px;">
+    data-until="{{until}}" data-unit="{{unit}}" data-info="{{lastupdate}}" style="font-size: {{fontsize}}px;--dial-color: {{rgba}};">
     <div class="slice">
         <div class="bar primary" style="--dial-color:{{color}};"></div>
         <div class="fill primary" style="--dial-color:{{color}};"></div>
@@ -25,13 +25,19 @@
             <div class="dial-display">
                 <span class="device" style="color:{{color}};">{{name}}</span>
                 <span class="value" style="--dial-color: {{color}};">{{value}}</span>
+                {{#if lastupdate}} 
                 <span class="info {{#unless hasSetpoint}}nosetpoint{{/unless}}">{{lastupdate}}</span>
+                {{/if}}
                 {{#if hasSetpoint}}
                 <span class="setpoint vertical-center">
                     {{#if override}}                    
                     <i class="fas fa-stopwatch small_fa">&nbsp;</i>
                     {{else}}
-                    <i class="fas fa-calendar-alt">&nbsp;</i>
+                        {{#unless image}}
+                        <i class="{{icon}}">&nbsp;</i>
+                        {{else}}
+                        <img src="img/{{image}}" style="width:15%;">
+                        {{/unless}}
                     {{/if}}
                     <span>{{setpoint}}{{unit}}</span>
                 </span>
