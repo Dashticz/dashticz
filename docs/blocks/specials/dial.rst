@@ -29,22 +29,29 @@ Block parameters
 
   * - Parameter
     - Description
-  * - width
-    - ``1..12``: The width of the block relative to the column width
+  * - idx
+    - ``<idx>``: IDX of the device (mandatory if named block)
   * - title
-    - ``'<string>'``: Custom title for the block
+    - ``'custom_title'``: Title that will appear on the dial (mandatory)
   * - type
-    - ``'dial'``: To select dial for this block
+    - ``'dial'``: Indentifies this block as a dial (mandatory)
+  * - width
+    - ``1..12``: Dial width (optional, default 3)
+  * - height
+    - ``<number>``: Dial height (optional, default based on width)
+  * - color
+    - ``'<string>'``: Color theme for the dial (default orange). Must be *html color, hex code, rgb or rgba string*
   * - last_update
-    - ``true'``: Same as standard block (default: true)
+    - ``true'``: Shows last update info (default: true)
   * - flash
-    - ``0``: Same as standard block but around the outer dial with user or default color (default: 0)
+    - ``true``: Outer dial will flash with user or default color (default: 0)
   * - dialimage
-    - ``'img/thermostat.png'``: An image instead of the calendar icon (default: false)
+    - ``'img/image.png'``: Show an image instead of the calendar icon (default: false)
   * - dialicon
-    - ``'fas fa-calendar-alt'``: A different font awesome icon instead of the default calendar icon (default: 'fas fa-calendar-alt')
+    - ``'fas fa-icon-alt'``: Show a different font awesome icon (default: 'fas fa-calendar-alt')
   * - showring
-    - ``false``:  Always show the outer color ring (default: false)
+    - ``true``:  Always show the outer color ring (default: false)
+
 
 Usage
 -----
