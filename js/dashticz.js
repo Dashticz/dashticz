@@ -27,6 +27,7 @@ var Dashticz = (function () {
     'nzbget',
     'calendar',
     'dial',
+    'plex'
   ];
   var components = [];
   var mountedBlocks = [];
@@ -413,7 +414,8 @@ function checkForceRefresh(m_instance, url) {
           if (pos > 0) {
             //we have more than one parameter
             //insert the timestamp as second
-            url = url.substr(0, pos + 1) + '&' + mytimestamp + url.substr(pos);
+            /* url = url.substr(0, pos + 1) + '&' + mytimestamp + url.substr(pos); */
+            url = url.substr(0, pos + 1) + mytimestamp + url.substr(pos);
           } else {
             //there is only one parameter so we add it to the end
             url += '&' + mytimestamp;
