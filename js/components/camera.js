@@ -41,7 +41,7 @@ var DT_camera = {
     if (me.block.cameras.length > 0) {
       /* Create new mountpoints for each of the cameras */
       var s = $(me.mountPoint).closest('.screen').data('screenindex');
-      var c = $(me.mountPoint).closest('.col-sm-4').data('colindex');
+      var c = $(me.mountPoint).closest('.col-xs-12').data('colindex');
       var columndiv = 'div.screen' + s + ' .row .col' + c;
       $(me.mountPoint).remove();
 
@@ -291,10 +291,7 @@ var DT_camera = {
       var index = DT_camera.devices.findIndex(function (object) {
         return object.key === key;
       });
-
-      var $cam = $('body').find('#cam' + index);
-      $('.carousel-inner .item').removeClass('active');
-      $cam.parent().addClass('active');
+      $('#camCarousel').carousel(index);
       DT_camera.setStream(me, index, mjpeg);
       DT_camera.trayTimeout();
     });
