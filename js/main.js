@@ -556,7 +556,7 @@ function buildScreens() {
       for (var s in screens[t]) {
         if (s !== 'maxwidth' && s !== 'maxheight') {
           var screenhtml =
-            '<div class="screen screen' + s + ' swiper-slide slide' + s + '"';
+            '<div data-screenindex="'+s+'" class="screen screen' + s + ' swiper-slide slide' + s + '"';
           if (typeof screens[t][s]['background'] === 'undefined') {
             screens[t][s]['background'] = settings['background_image'];
           }
