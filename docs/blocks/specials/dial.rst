@@ -42,7 +42,7 @@ Block parameters
   * - color
     - ``'<string>'``: Color theme for the dial (default orange). Must be *html color, hex code, rgb or rgba string*
   * - last_update
-    - ``true'``: Shows last update info (default: true)
+    - ``true``: Shows last update info (default: true)
   * - flash
     - ``true``: Outer dial will flash with user or default color (default: 0)
   * - dialimage
@@ -51,6 +51,15 @@ Block parameters
     - ``'fas fa-icon-alt'``: Show a different font awesome icon (default: 'fas fa-calendar-alt')
   * - showring
     - ``true``:  Always show the outer color ring (default: false)
+
+
+Custom styling
+~~~~~~~~~~~~~~
+In Domoticz you can hide the Off level of a Selector Switch. In Dashticz you can hide the Off level by adding the following code to your *custom.css*::
+
+	[data-id='<block_name>'] .dial-menu li:nth-child(1){
+		display: none;
+	}
 
 
 Usage
