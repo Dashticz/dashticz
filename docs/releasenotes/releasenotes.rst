@@ -6,6 +6,8 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 
 Latest changes
 --------------
+Enhancements
+  * Improved Camera block . See :ref:`cameras`
 
 Fixes
   * Stop called twice for Blinds stop button
