@@ -1,4 +1,4 @@
-/* global config infoMessage language*/
+/* global config infoMessage language */
 /*
 	Check the latest version of dashticz on github.
 	Check domoticz version
@@ -105,6 +105,13 @@ function initVersion() {
           levelNamesEncoded =
             parseFloat(data.version) >= parseFloat(levelNamesEncodeVersion);
         },
+      }).catch(function (err) {
+        console.log(err);
+        var errorTxt =
+          'Error while requesting Domoticz version. Possible causes:<br> Domoticz offline<br>Domoticz IP incorrect in CONFIG.js<br>User credentials incorrect in CONFIG.js<br>Browser IP not whitelisted in Domoticz.';
+        return $.Deferred().reject(new Error(errorTxt));
       });
     });
 }
+
+//# sourceURL=js/version.js
