@@ -1,8 +1,9 @@
 {
-"version": "3.4.9.1",
+"version": "3.4.10",
 "branch": "beta",
-"last_changes": "Bug fixes",
+"last_changes": "Improved camera module",
 "changelog" : {
+            "3.4.9.1": "Bug fixes",
             "3.4.9": "Bug fixes related to custom block keys",
             "3.4.8": "IE11 and iOS9 support. Code maintenance.",
             "3.4.7": "Dials",
