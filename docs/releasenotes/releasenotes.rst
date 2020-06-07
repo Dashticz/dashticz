@@ -6,8 +6,12 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 
 Latest changes
 --------------
+
+3.4.10 (Beta) (7-6-2020)
+---------------------------
+
 Enhancements
-  * Japanese language support
+  * Japanese language support (preliminary)
   * Improved Camera block . See :ref:`cameras`
 
 Fixes
