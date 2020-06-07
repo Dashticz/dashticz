@@ -4,6 +4,15 @@ Cameras
 #######
 
 This has been designed mainly for those users with several cameras, which provide both an image stream **and** a video stream.
+
+.. image :: camera_block.jpg
+
+1. Each camera can display the title on the top right of the screen and in the tray
+2. You can select the left icon to navigate left on the camera carousel
+3. You can select the right icon to navigate right on the camera carousel
+4. The images in the tray now refresh every n seconds (block refresh parameter)
+
+
 ::
 
 	blocks["cameras"] = {
@@ -32,12 +41,8 @@ This has been designed mainly for those users with several cameras, which provid
 	};
 
 
-.. image :: camera_block.jpg
-
-1. Each camera can display the title on the top right of the screen and in the tray
-2. You can select the left icon to navigate left on the camera carousel
-3. You can select the right icon to navigate right on the camera carousel
-4. The images in the tray now refresh every n seconds (block refresh parameter)
+Camera parameters
+-----------------
 
 .. list-table:: 
   :header-rows: 1
@@ -65,3 +70,17 @@ This has been designed mainly for those users with several cameras, which provid
   * - forcerefresh
     -  ``0``: caching-prevention mechanism of the images (default = 1) See :ref:`buttons`
 
+
+Usage
+-----
+
+Example of a single camera block::
+
+	blocks['garage_cam'] = {
+		type: 'camera',
+		imageUrl: 'http://192.168.1.234:5678?res=640x480&snapshot=1',
+		videoUrl: 'http://192.168.1.234:5678?res=1920x1080&fps=15', 
+		refresh: 1,
+		width: 6,
+		height: 300
+	}
