@@ -8,7 +8,8 @@ Latest changes
 --------------
 Enhancements
   * Japanese language support
-  
+  * Improved Camera block . See :ref:`cameras`
+
 Fixes
   * Stop called twice for Blinds stop button
   * Improve Dial representation on Android devices
@@ -111,8 +112,7 @@ Internal
 .. note:: Breaking changes. See :ref:`v341` for update instuctions
 
 Redesign
-  * Domoticz blocks: inline blocks. Use ``idx`` as parameter in your block definition to indicate the block is a domoticz device.
-  See :ref:`v341`
+  * Domoticz blocks: inline blocks. Use ``idx`` as parameter in your block definition to indicate the block is a domoticz device. See :ref:`v341`
 
 Enhancements
   * Support for showing a graph more than once on the dashboard.
