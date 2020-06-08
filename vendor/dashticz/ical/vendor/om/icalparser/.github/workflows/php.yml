@@ -1,12 +1,16 @@
 name: PHP Tests
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
+
   build:
-
-    runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        operating-system: [ubuntu-latest]
+        php-versions: ['7.2', '7.3', '7.4', '8.0']
+      fail-fast: false
+    runs-on: ${{ matrix.operating-system }}
     steps:
       - uses: actions/checkout@v1
 

@@ -14,7 +14,7 @@ The default styling is defined in the file ``<dashticz>/css/creative.css``. Whil
 since the default styling can be modified in the file ``custom.css``, located in the folder ``<dashticz v3>/custom``
 
 TIP: Comments can be used to explain the code, and may help when you edit the source code at a later date.
-A CSS comment starts with /* and ends with */. Comments can also span multiple lines::
+A CSS comment starts with ``/*`` and ends with ``*/``. Comments can also span multiple lines::
 
     /* This is a single-line comment */
 
@@ -66,6 +66,7 @@ This means: Change the background color to red for the elements with the class `
 
 So remember, blocks can have classes, parameters and id's associated with them. Blocks are selected by choosing the right class, parameter, and/or id.
 
+If you right-click on a block, and select ``Inspect`` you can see the assigned classes in DevTools.
 
 Domoticz blocks
 ---------------
@@ -87,6 +88,30 @@ The whole block has class ``block_120``
 First line: ``title``
 Second line: ``state``
 Third line: ``lastupdate``
+
+Besides the specific block label ``.block_120`` the whole block will also contain the generic css class label ``.mh``.
+
+In case the Domoticz device contains subdevices, like a TempHumBar device, three devices will be created.
+In this case instead of ``.block_120`` the labels ``.block_120_1``, ``.block_120_2` and ``.block_120_3`` will be used. 
+
+If you have used a specific blocks key in combination with the ``idx`` parameter, the key label will be used as CSS class label as well, like this::
+
+    blocks['mydevice'] = {
+      idx: 120,
+      width: 6
+    }
+
+This block will have the CSS class label ``.block_mydevice``. Again, if device 120 has subdevices, the following CSS classes will be assigned:
+``.block_mydevice_1``, ``.block_mydevice_2`` and ``.block_mydevice_3``.
+
+Last variation: A specific blocks key in combination with a specific subdevice::
+
+    blocks['mydevice'] = {
+      idx: '120_2',
+      width: 6
+    }
+
+This block will have the CSS class label ``.block_mydevice``
 
 Background color
 ~~~~~~~~~~~~~~~~
@@ -129,9 +154,55 @@ To change the icon colors for only this block::
 
 In the previous example you can see the ``on`` class or ``off`` class can be used to select a block depending on the state of the Domoticz device.
       
-Block titles
-------------
+.. _specialclasses:
 
+Special blocks
+--------------
+
+CSS class definition for special blocks
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The CSS class approach for special blocks are slightly different as the Domoticz blocks. Also not all special blocks have been transformed to this template yet.
+It's applicable to the following blocks:
+
+* alarmmeldingen, blocktitle, button, calendar, camera, coronavirus, dial, frame, graph, longfonds, news, nzbget, publictransport, secpanel, stationclock, streamplayer, traffic, trafficinfo
+
+Currently it's not applicable to:
+
+* coins, garbage, sonarr, spotify, weather_owm, weather
+
+
+.. image :: specialclasses.jpg
+
+
+
+Each top level block has the class ``dt_block`` and the name of block type as class assigned.
+If you have defined this block via ``blocks['mykey']=...`` then the value of the ``data-id`` parameter will be set to ``'mykey'``.
+If you have defined the block by using an object, like ``buttons.buienradar=`` then
+you can define the key by making use of the key-parameter in your block definition.
+
+So if you want to select all blocktitles, add the following to custom.css::
+
+    .blocktitle {
+        background: blue !important;
+    }
+
+If you want to change the title part of all blocktitles::
+
+    .blocktitle .dt_title {
+        font-size: 50px;
+        color: red;
+    }
+
+If you want to change only a specific blocktitle::
+
+        [data-id='title1'].blocktitle {
+            background: yellow !important;
+        }  
+
+
+Block titles
+~~~~~~~~~~~~
 
 Example block definition::
 
@@ -142,22 +213,20 @@ Example block definition::
 
 To select all the blocktitles and change the background color::
 
-    .titlegroups {background-color: gray !important;}
-
-In the previous example the class ``titlegroups`` is used to select the block.
+    .blocktitle {background-color: gray !important;}
 
 To change the background color for only this block title::
 
-    .titlegroups[data-id='myblocktitle'] {background-color: gray !important;}
+    .dt_block[data-id='myblocktitle'] {background-color: gray !important;}
 
-As you can see in the previous example we select blocks from the class ``titlegroups``
-that has the value ``myblocktitle`` for the parameter ``data-id``. This is the generic way to select a specific title block.
+As you can see in the previous example we use the generic block selector ``dt_block``
+having the value ``myblocktitle`` for the parameter ``data-id``. This is the generic way to select a specific special block.
 
 Font Size
 ~~~~~~~~~~
 To change the font size of this block title::
 
-    .titlegroups[data-id='myblocktitle'] h3 {
+    .dt_block[data-id='myblocktitle'] .dt_title {
       font-size: 30px;
     }
 
@@ -166,10 +235,38 @@ Smaller Title blocks (Height)
 
 ::
 
-    div.mh.titlegroups {
+    .blocktitle {
         height: 60px !important;		/* default height=75px */
-        padding-top: 3px;			/* center text for new height */
+        padding-top: 3px !important;			/* center text for new height */
     }
+
+
+Button: Render the title below the icon (all buttons)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+::
+
+   .button {
+      flex-direction: column !important;
+      min-height: 85px;
+   }
+
+A Domoticz device block normally has a height of 85 pixels (small devices: 75 pixels).
+
+Render the title below the icon (specific button)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+You have to add the key parameter to your button definition in CONFIG.js::
+
+    buttons.mybutton = {
+        key: "mykey",
+        icon: "fas fa-newspaper",
+        title: "newspaper
+    }
+
+And then add the following to ``custom.css``::
+
+   .button[data-id='mykey'] {
+      flex-direction: column !important;
+   }
 
 
 Generic block related
@@ -202,30 +299,6 @@ Rounded corners for all blocks::
     }
 
 
-Buttons
--------
-
-Render the title below the icon (all buttons)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-::
-
-   .button {
-      flex-direction: column;
-      min-height: 85px;
-   }
-
-A Domoticz device block normally has a height of 85 pixels (small devices: 75 pixels).
-
-Render the title below the icon (specific button)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-You have to add the key parameter to your button definition.
-::
-
-   [data-id='mykey'].button {
-      flex-direction: column;
-   }
-
-
 Icons
 -----
 
@@ -246,7 +319,7 @@ Larger (Bulb) icons
 All Icons on the Dashboard Larger
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To make ALL ICONS on the Dashboard larger in one move, just simple add (choose font-size wisely!!)::
+To make all icons on the Dashboard larger in one move, just simple add (choose font-size wisely!!)::
 
     .far,.fas,.wi {
        font-size:24px !important;
@@ -287,7 +360,6 @@ Every block has an unique identifier-classname, which look something like '''.bl
        color:red !important;
     }
 
-    Of course, change 233 to the idx of your choice ;)
 
 Change font size of public transport module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -296,16 +368,6 @@ Change font size of public transport module
 
     .publictransport div {
         font-size: 13px; 
-    }
-
-
-Text Mediaplayer smaller
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-::
-
-    .h4.h4 {
-       font-size:12px;
     }
 
 
@@ -400,35 +462,29 @@ Remove break line
 
 Change 107 to your own block number
 
-.. _specialclasses:
+Customized drop down block
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-CSS class definition for special blocks
----------------------------------------
+.. image :: cust_drop_down_block.jpg
 
-.. note :: Work in progress
+::
 
-.. image :: specialclasses.jpg
+   .block_438 .icon {
+      width: 85%;
+      height: auto; 
+   }
+   .block_438 .title,
+   .block_438 br:nth-child(2) {		
+         display: none;
+   }
+   .block_438 .col-data select {
+      font-size: 150%;
+      width: 100%;
+      background-color: rgb(242,242,242);
+   }
 
-Each top level block has the class ``dt_block`` and the name of block type as class assigned.
-If you have defined this block via ``blocks['mykey']=...`` then the value of the ``data-id`` parameter will be set to ``'mykey'``.
-If you have defined the block by using an object, like ``buttons.buienradar=`` then
-you can define the key by making use of the key-parameter in your block definition.
+Change 438 to your own block number
 
-So if you want to select all blocktitles, add the following to custom.css::
 
-    .blocktitle {
-        background: blue !important;
-    }
 
-If you want to change the title part of all blocktitles::
 
-    .blocktitle .dt_title {
-        font-size: 50px;
-        color: red;
-    }
-
-If you want to change only a specific blocktitle::
-
-        [data-id='title1'].blocktitle {
-            background: yellow !important;
-        }  

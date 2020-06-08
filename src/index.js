@@ -1,26 +1,33 @@
-require("chart.js");
-window.moment = require("moment");
-require('jquery')
-//require('jquery-ui')
-require("jquery-ui/ui/widgets/tabs");
-require("jquery-ui/ui/widgets/slider");
-require('jquery-ui/themes/base/all.css');
+require('chart.js');
+window.moment = require('moment');
+var $ = require('jquery');
+require('jquery-ui-dist/jquery-ui.min');
+require('jquery-ui-dist/jquery-ui.min.css');
 //require('jquery-migrate')
 require('jquery-ui-touch-punch');
 require('bootstrap');
 require('bootstrap/dist/css/bootstrap.min.css');
 window.SpotifyWebApi = require('spotify-web-api-js');
-require('@fortawesome/fontawesome-free/css/all.css')
+require('@fortawesome/fontawesome-free/css/all.css');
 require('mobile-detect');
 /* removed from functions.js */
 require('jquery.md5');
-require('js-cookie')
-require("script-loader!./functions.js")
+require('js-cookie');
+require('script-loader!./functions.js');
 
-var Swiper = require('swiper').default
-window.Swiper = Swiper
-require( 'swiper/css/swiper.min.css')
+var Handlebars = require('handlebars');
+window.Handlebars = Handlebars;
+var MomentHandler = require('handlebars.moment');
+window.MomentHandler = MomentHandler;
 
-window.Skycons = require("skycons")(window)
-require('spectrum-colorpicker')
-require('ion-sound')
+require('./templateengine.js');
+require('./handlebars-helpers.js');
+var Swiper = require('swiper').default;
+window.Swiper = Swiper;
+require('swiper/css/swiper.min.css');
+
+window.Skycons = require('skycons')(window);
+require('spectrum-colorpicker');
+require('ion-sound');
+require('hammerjs');
+require('chartjs-plugin-zoom');

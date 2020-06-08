@@ -3,6 +3,7 @@
 namespace om;
 
 use DateTime;
+use Exception;
 
 /**
  * Class taken from https://github.com/coopTilleuls/intouch-iCalendar.git (Recurrence.php)
@@ -111,7 +112,7 @@ class Recurrence {
 	 * Set the $until member
 	 *
 	 * @param mixed timestamp (int) / Valid DateTime format (string)
-	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function setUntil($ts) {
 		if ($ts instanceof DateTime) {

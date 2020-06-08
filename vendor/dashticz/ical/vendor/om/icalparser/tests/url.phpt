@@ -3,6 +3,7 @@
  * @author Roman Ozana <ozana@omdesign.cz>
  */
 
+use om\IcalParser;
 use Tester\Assert;
 use Tester\Environment;
 
@@ -11,7 +12,7 @@ Environment::setup();
 date_default_timezone_set('Europe/Prague');
 
 // sort by date
-$cal = new \om\IcalParser();
+$cal = new IcalParser();
 $results = $cal->parseFile(__DIR__ . '/cal/url.ics');
 
 Assert::true(isset($results['VEVENT'][0]));

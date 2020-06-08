@@ -1,291 +1,344 @@
-/* global Dashticz usrEnc pwdEnc settings ion*/
+/* global Dashticz Domoticz settings MobileDetect*/
+/* From bundle:*/
+/* global templateEngine*/
+/* From src/functions.js*/
+/* global isDefined */
 
 var DT_secpanel = {
-	name: "secpanel",
-	default: {
-		title: 'Domoticz Security Panel'
-	},
-	init: function () {
-		var usrinfo = '';
-		if (typeof (usrEnc) !== 'undefined' && usrEnc !== '') usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
-		this.url = settings['domoticz_ip'] + '/json.htm?' + usrinfo;
-		ion.sound({
-			sounds: [{
-					name: "arm"
-				},
-				{
-					name: "disarm"
-				},
-				{
-					name: "key"
-				},
-				{
-					name: "wrongcode"
-				}
-			],
+  name: 'secpanel',
+  defaultCfg: {
+    title: 'Dashticz Security Panel',
+  },
 
-			// main config
-			path: "sounds/",
-			preload: true,
-			multiplay: true,
-			volume: 0.9
-		});
-		this.CountdownTimer = 0;
-		this.timer = 0;
-/*		
-*/
-		Dashticz.loadCSS('./css/secpanel.css');
-	},
-	run: function (me) {
-		var secpanel = ' \
-		<div id="main"> \
-			<div class="main-border"> \
-				<div id="keypad"> \
-					<form name="keypadinput"> \
-						<input type="text" id="digitdisplay" value="" name="digitdisplay" disabled="disabled" /> \
-						<input type="hidden" id="password" value="" name="password" /> \
-						<ul class="keypad-keys"> \
-							<li class="digit" onClick="javascript:DT_secpanel.AddDigit(\'1\');">1</li> \
-							<li class="digit" onClick="javascript:DT_secpanel.AddDigit(\'2\');">2</li> \
-							<li class="digit" onClick="javascript:DT_secpanel.AddDigit(\'3\');">3</li> \
-							<li class="secbtn disarm" onClick="javascript:DT_secpanel.SetSecStatus(0);">Disarm</li> \
-						</ul> \
-						<ul class="keypad-keys"> \
-							<li class="digit" onClick="javascript:DT_secpanel.AddDigit(\'4\');">4</li> \
-							<li class="digit" onClick="javascript:DT_secpanel.AddDigit(\'5\');">5</li> \
-							<li class="digit" onClick="javascript:DT_secpanel.AddDigit(\'6\');">6</li> \
-							<li class="secbtn arm" onClick="javascript:DT_secpanel.SetSecStatus(1);">Arm Home</li> \
-						</ul> \
-						<ul class="keypad-keys"> \
-							<li class="digit" onClick="javascript:DT_secpanel.AddDigit(\'7\');">7</li> \
-							<li class="digit" onClick="javascript:DT_secpanel.AddDigit(\'8\');">8</li> \
-							<li class="digit" onClick="javascript:DT_secpanel.AddDigit(\'9\');">9</li> \
-							<li class="secbtn arm" onClick="javascript:DT_secpanel.SetSecStatus(2);">Arm Away</li> \
-						</ul> \
-						<ul class="keypad-keys"> \
-							<li style="visibility: hidden;"></li> \
-							<li class="digit" onClick="javascript:DT_secpanel.AddDigit(\'0\');">0</li> \
-							<li style="visibility: hidden;"></li> \
-							<li class="secbtn cancel" onClick="javascript:DT_secpanel.beep(); DT_secpanel.ShowStatus();">Cancel</li> \
-						</ul> \
-					</form> \
-				</div> \
-			</div> \
-		</div> '
-		$(me.mountPoint + ' .dt_state').html(secpanel);
-		this.onResize(me);
-		this.ShowStatus();
-		this.SetRefreshTimer();
-	},
-	onResize: function(me) {
-		var mywidth = $(me.mountPoint + ' .dt_state').width() / 20;
-		$(me.mountPoint + ' form').css('font', '' + mywidth + 'px/' + mywidth + 'px "Audiowide"');
-		$(me.mountPoint + ' #digitdisplay').css('font', '' + mywidth * 2 + 'px/' + mywidth * 2 + 'px "Digital"')
-		$(me.mountPoint + ' #digitdisplay').height(mywidth * 3)
-		$(me.mountPoint + ' .dt_title').css('font', '' + mywidth * 1 + 'px/' + mywidth * 1 + 'px "Audiowide"');
-		$(me.mountPoint + ' .title').css('font', '' + mywidth * 1 + 'px/' + mywidth * 1 + 'px "Audiowide"');
-	},
-	ShowError: function (error) {
-		if (error == "NoConnect") {
-			$('#digitdisplay').val("no connect");
-		} else if (error == "NoOkData") {
-			$('#digitdisplay').val("no ok data");
-		} else {
-			$('#digitdisplay').val("unkown err");
-		}
-		this.RefreshTimer = setTimeout(function () {
-			DT_secpanel.SetRefreshTimer();
-		}, 60000);
-	},
-	SetRefreshTimer: function () {
-		if (typeof (this.RefreshTimer) != "undefined") {
-			this.RefreshTimer = clearTimeout(this.RefreshTimer);
-		}
-		$.ajax({
-			url: DT_secpanel.url + 'type=command&param=getuservariables',
-			dataType: 'json',
-			success: function (data) {
-				if (data.status != "OK") {
-					DT_secpanel.ShowError('NoOkData');
-					return;
-				} else {
-					var timer = 60000;
-					if (typeof (data.result) != "undefined") {
-						$.each(data.result, function (i, item) {
-							if (item.Name == 'secpanel-autorefresh') {
-								timer = item.Value * 1000;
-							}
-						});
-					}
-					DT_secpanel.RefreshTimer = setTimeout(function () {
-						DT_secpanel.doRefresh()
-					}, timer);
+  locked: false,
 
-				}
-			},
-			error: function () {
-				DT_secpanel.ShowError('NoConnect');
-				return;
-			}
-		});
-	},
+  init: function () {
+    this.CountdownTimer = 0;
+    this.timer = 0;
+    this.secondelay = 0;
+    this.mp = 0;
+  },
 
-	countdown: function () {
-		if (DT_secpanel.timer > 1) {
-			DT_secpanel.timer = DT_secpanel.timer - 1;
-			DT_secpanel.beep('set');
-			$('#digitdisplay').val('Arm Delay: ' + DT_secpanel.timer);
-		} else {
-			clearInterval(DT_secpanel.CountdownTimer);
-			DT_secpanel.beep('in');
-			DT_secpanel.ShowStatus();
-			DT_secpanel.SetRefreshTimer();
-		}
-	},
+  run: function (me) {
+    templateEngine
+      .load('secpanel')
+      .then(function (template) {
+        $(me.mountPoint + ' .dt_content').html(
+          template({
+            mode: 2,
+          })
+        );
+        $(me.mountPoint + ' .dt_block').css('background', 'transparent');
+        $(me.mountPoint + ' .dt_block').css('border', '0');
+        DT_secpanel.onResize(me);
+      })
+      .done(function () {
+        Domoticz.subscribe('_secstatus', true, function () {
+          //subscribe to the security status, and receive the actual status directly
+          DT_secpanel.ShowStatus();
+        });
+      });
+  },
 
-	ArmDelay: function () {
-		var secondelay = 0;
-		$.ajax({
-			url: DT_secpanel.url + "type=settings",
-			//				async: false,
-			dataType: 'json',
-			success: function (data) {
-				if (data.status != "OK") {
-					DT_secpanel.ShowError('NoOkData');
-					return;
-				} else {
-					if (typeof (data.SecOnDelay) != "undefined") {
-						secondelay = data.SecOnDelay;
-					}
-				}
-			},
-			error: function () {
-				DT_secpanel.ShowError('NoConnect');
-				return;
-			}
-		});
-		return secondelay;
-	},
+  onResize: function (me) {
+    var w = $(me.mountPoint + ' .dt_content').width();
+    var h = w * 1.35;
+    $('.sec-frame .key').css('fontSize', h / 12);
+    $('.sec-frame .key-input').css('fontSize', h / 24);
+    $('.sec-frame .keypad-footer').css('fontSize', h / 53);
+    $('.sec-frame .keypad-header').css('fontSize', h / 24);
+    $(me.mountPoint + ' .dt_content').height(h);
+  },
 
-	SetSecStatus: function (status) {
-		clearInterval(this.CountdownTimer);
-		var seccode = $('#password').val();
-		if (isNaN(seccode)) {
-			this.beep('error');
-			return;
-		}
-		if (typeof (this.RefreshTimer) != "undefined") this.RefreshTimer = clearTimeout(this.RefreshTimer);
-		if (typeof (this.CodeSetTimer) != "undefined") this.CodeSetTimer = clearTimeout(this.CodeSetTimer);
+  CheckStatus: function (secstatus) {
+    //callback function for main.js
+    if (secstatus == 2) {
+      DT_secpanel.locked = true;
+      templateEngine.load('secpanel_modal').then(function (modal) {
+        $(document.body).append(modal);
+        templateEngine.load('secpanel').then(function (template) {
+          var md = new MobileDetect(window.navigator.userAgent);
+          var data = {
+            mode: 1,
+            wt: 34,
+            ht: 80,
+          };
+          var mql = window.matchMedia('(orientation: portrait)');
+          var portrait = mql.matches;
 
-		$.ajax({
-			url: DT_secpanel.url + "type=command&param=setsecstatus&secstatus=" + status + "&seccode=" + $.md5(seccode),
-			dataType: 'json',
-			success: function (data) {
-				if (data.status != "OK") {
-					if (data.message == "WRONG CODE") {
-						$('#digitdisplay').val('* WRONG CODE *');
-						DT_secpanel.CodeSetTimer = setTimeout(function () {
-							DT_secpanel.doRefresh()
-						}, 2000);
-						$('#password').val("");
-						DT_secpanel.beep('error');
-					} else {
-						DT_secpanel.ShowError('NoOkData');
-						return;
-					}
-					return;
-				} else {
-					DT_secpanel.ShowStatus();
-					if (status == 1 || status == 2) {
-						DT_secpanel.timer = DT_secpanel.ArmDelay();
-						if (DT_secpanel.timer > 0) {
-							DT_secpanel.CountdownTimer = setInterval(DT_secpanel.countdown(), 1000);
-							DT_secpanel.beep('set');
-						} else {
-							DT_secpanel.beep('in');
-						}
-					} else {
-						DT_secpanel.SetRefreshTimer();
-						DT_secpanel.beep('out');
-					}
-				}
-			},
-			error: function () {
-				DT_secpanel.ShowError('NoConnect');
-				return;
-			}
-		});
-	},
+          if (md.phone()) {
+            data.wt = 95;
+            data.ht = 95;
+            data.fsKey = '13vw';
+            data.fsInp = '5vw';
+            data.fsHdr = '4vw';
+            data.fsFtr = '2vw';
+            data.htScr = '3%';
+          }
 
-	AddDigit: function (digit) {
-		DT_secpanel.beep();
-		if (typeof (this.CodeSetTimer) != "undefined") {
-			this.CodeSetTimer = clearTimeout(this.CodeSetTimer);
-		}
-		if (typeof (this.RefreshTimer) != "undefined") {
-			this.RefreshTimer = clearTimeout(this.RefreshTimer);
-		}
-		if (typeof (this.CountdownTimer) != "undefined") {
-			this.CountdownTimer = clearInterval(this.CountdownTimer)
-			$('#digitdisplay').val("");
-		}
-		this.CodeSetTimer = setTimeout( function() {
-			DT_secpanel.doRefresh()
-		}, 10000);
+          if (md.tablet()) {
+            data.wt = portrait ? 95 : 55;
+            data.ht = 95;
+            data.fsKey = portrait ? '10.5vw' : '5.5vw';
+            data.fsInp = portrait ? '5vw' : '3vw';
+            data.fsHdr = portrait ? '4vw' : '3vw';
+            data.fsFtr = portrait ? '2vw' : '1vw';
+          }
 
-		var orgtext = $('#password').val();
-		if (isNaN(orgtext)) orgtext = "";
+          $('.sec-modal').html(template(data));
+          DT_secpanel.ShowStatus();
+        });
+      });
+    } else {
+      //      $(".security-panel").remove();
+      if (DT_secpanel.locked) window.location.reload();
+    }
+  },
 
-		var newtext = orgtext + digit;
-		var codeinput = "";
-		for (var i = 0; i < newtext.length; i++) {
-			codeinput = codeinput + '#';
-		}
+  ShowStatus: function () {
+    if (DT_secpanel.timer) return; //While we are counting down no refresh
+    Domoticz.request('type=command&param=getsecstatus&v=')
+      .then(function (data) {
+        if (data.status != 'OK') {
+          DT_secpanel.ShowMsg('NO OK DATA');
+          return;
+        } else {
+          $('.sec-frame .status:not(.dashticz)').removeClass('disabled');
+          switch (data.secstatus) {
+            case 0:
+              DT_secpanel.ShowMsg('DISARMED');
+              $('.sec-frame .key-input').removeClass('text-strobe');
+              $('.sec-frame .dashticz').removeClass('disabled');
+              break;
+            case 1:
+              DT_secpanel.ShowMsg('ARMED - HOME');
+              $('.sec-frame .dashticz').removeClass('disabled');
+              $('.sec-frame .key-input').addClass('text-strobe');
+              break;
+            case 2:
+              DT_secpanel.ShowMsg('ARMED - AWAY');
+              $('.sec-frame .dashticz').addClass('disabled');
+              $('.sec-frame .key-input').addClass('text-strobe');
+              break;
+            default:
+              DT_secpanel.ShowMsg('UNKNOWN');
+          }
 
-		$('#digitdisplay').val(codeinput);
-		$('#password').val(newtext);
-	},
-	beep: function (tone) {
-		if (tone == "error") {
-			ion.sound.play("wrongcode");
-		} else if (tone == "set") {
-			ion.sound.play("key");
-		} else if (tone == "in") {
-			ion.sound.play("arm");
-		} else if (tone == "out") {
-			ion.sound.play("disarm");
-		} else {
-			ion.sound.play("key");
-		}
-	},
-	ShowStatus: function () {
-		$.ajax({
-			url: DT_secpanel.url + 'type=command&param=getsecstatus',
-			dataType: 'json',
-			success: function (data) {
-				if (data.status != "OK") {
-					this.ShowError('NoOkData');
-					return;
-				} else {
-					var displaytext = "";
-					if (data.secstatus == 0) displaytext = "DISARMED";
-					else if (data.secstatus == 1) displaytext = "ARM HOME";
-					else if (data.secstatus == 2) displaytext = "ARM AWAY";
-					else displaytext = "UNKNOWN";
-					$('#digitdisplay').val("* " + displaytext + " *");
-				}
-			},
-			error: function () {
-				this.ShowError('NoConnect');
-				return;
-			}
-		});
-		$('#password').val("");
-	},
-	doRefresh: function () {
-		this.ShowStatus();
-		this.SetRefreshTimer()
-	}
-}
+          $('.sec-frame td div[data-status="' + data.secstatus + '"]').addClass(
+            'disabled'
+          );
+          DT_secpanel.secondelay = isDefined(data.secondelay)
+            ? data.secondelay + 1
+            : 5;
+        }
+      })
+      .catch(function (data) {
+        console.log(data);
+        switch (data.status) {
+          case 401:
+            DT_secpanel.ShowMsg('401: UNAUTHORISED');
+            break;
+          default:
+            DT_secpanel.ShowMsg('NO CONNECT');
+        }
+        return;
+      })
+      .always(function () {
+        $('#password').val('');
+      });
+  },
+
+  SetSecStatus: function (status) {
+    clearInterval(this.CountdownTimer);
+    var seccode = $('.sec-frame #password').val();
+    if (isNaN(seccode)) {
+      DT_secpanel.wrongCode();
+      return;
+    }
+    if (typeof DT_secpanel.RefreshTimer !== 'undefined')
+      DT_secpanel.RefreshTimer = clearTimeout(DT_secpanel.RefreshTimer);
+    if (typeof DT_secpanel.CodeSetTimer !== 'undefined')
+      DT_secpanel.CodeSetTimer = clearTimeout(DT_secpanel.CodeSetTimer);
+
+    Domoticz.request(
+      'type=command&param=setsecstatus&secstatus=' +
+        status +
+        '&seccode=' +
+        $.md5(seccode)
+    )
+      .then(function (data) {
+        if (data.status != 'OK') {
+          if (data.message == 'WRONG CODE') {
+            DT_secpanel.wrongCode();
+          } else {
+            DT_secpanel.ShowMsg('NO OK DATA');
+            return;
+          }
+          return;
+        } else {
+          $('.sec-frame .status:not(.dashticz)').removeClass('disabled');
+          var mode = $('.sec-frame').last().data('mode');
+          if (mode === 2 && status === 2 && settings['security_panel_lock']) {
+            location.reload();
+          } else {
+            DT_secpanel.ShowStatus();
+          }
+        }
+      })
+      .catch(function () {
+        DT_secpanel.ShowMsg('NO CONNECT');
+        return;
+      });
+  },
+
+  /** Displays the WRONG CODE message, clears the password, and plays wrongcode sound
+   *
+   */
+  wrongCode: function () {
+    DT_secpanel.ShowMsg('WRONG CODE');
+    DT_secpanel.CodeSetTimer = setTimeout(function () {
+      DT_secpanel.ShowStatus();
+    }, 2000);
+    $('.sec-frame #password').val('');
+    DT_secpanel.beep('wrongcode');
+  },
+
+  AddDigit: function (digit) {
+    if (typeof this.CodeSetTimer != 'undefined') {
+      this.CodeSetTimer = clearTimeout(this.CodeSetTimer);
+    }
+    if (typeof this.RefreshTimer != 'undefined') {
+      this.RefreshTimer = clearTimeout(this.RefreshTimer);
+    }
+    if (typeof this.CountdownTimer != 'undefined') {
+      this.CountdownTimer = clearInterval(this.CountdownTimer);
+      DT_secpanel.ShowMsg('');
+    }
+    this.CodeSetTimer = setTimeout(function () {
+      DT_secpanel.ShowStatus();
+    }, 10000);
+
+    var orgtext = $('.sec-frame #password').val();
+    if (isNaN(orgtext)) orgtext = '';
+
+    var newtext = orgtext + digit;
+    var codeinput = '';
+    for (var i = 0; i < newtext.length; i++) {
+      codeinput = codeinput + '#';
+    }
+
+    DT_secpanel.ShowMsg(codeinput);
+    $('.sec-frame #password').val(newtext);
+  },
+
+  ShowMsg: function (val) {
+    $('.sec-frame #digitdisplay').val(val);
+  },
+
+  countdown: function (status) {
+    if (DT_secpanel.timer > 0) {
+      DT_secpanel.timer = DT_secpanel.timer - 1;
+      DT_secpanel.beep('key');
+      DT_secpanel.ShowMsg('Arm Delay: ' + DT_secpanel.timer);
+    } else {
+      clearInterval(DT_secpanel.CountdownTimer);
+      DT_secpanel.beep('arm');
+      $('.sec-frame .status').removeClass('disabled');
+      DT_secpanel.SetSecStatus(status);
+    }
+  },
+
+  beep: function (tone) {
+    var dt = new Date().getTime();
+    var audio = new Audio(
+      settings['domoticz_ip'] + '/secpanel/media/' + tone + '.mp3?' + dt
+    );
+    audio.play();
+  },
+};
+
+$('body').on('click', '.sec-frame .key:not(.disabled)', function () {
+  var id = $(this).data('id');
+  var tone = $(this).data('tone');
+  var status = $(this).data('status');
+
+  if (id < 10) {
+    DT_secpanel.AddDigit(id);
+    DT_secpanel.beep(tone);
+    return;
+  }
+
+  if (status >= 0) {
+    var seccode = $('.sec-frame #password').val();
+    if (seccode.length === 0) {
+      DT_secpanel.beep('wrongcode');
+      DT_secpanel.ShowMsg('ENTER CODE');
+      setTimeout(function () {
+        DT_secpanel.ShowStatus();
+        return;
+      }, 3000);
+    } else {
+      var seccodehash = $.md5(seccode);
+      var codeok =
+        seccodehash === Domoticz.getAllDevices()['_settings'].SecPassword;
+      if (!codeok) {
+        //check code already before counting down
+        DT_secpanel.wrongCode();
+        return;
+      }
+
+      if (status === 0) {
+        DT_secpanel.SetSecStatus(status);
+        DT_secpanel.beep(tone);
+      } else {
+        DT_secpanel.timer = DT_secpanel.secondelay;
+        if (DT_secpanel.timer > 0) {
+          DT_secpanel.CountdownTimer = setInterval(
+            DT_secpanel.countdown,
+            1000,
+            status
+          );
+          DT_secpanel.beep('key');
+        } else {
+          DT_secpanel.beep(tone);
+        }
+      }
+    }
+    return;
+  }
+
+  if (id === 'cancel') {
+    DT_secpanel.ShowMsg('CANCELLED');
+    clearInterval(DT_secpanel.CountdownTimer);
+    DT_secpanel.timer = 0; //otherwise the panel will not show the new status.
+    setTimeout(function () {
+      DT_secpanel.ShowStatus();
+      DT_secpanel.beep(tone);
+    }, 1000);
+    return;
+  }
+
+  if (id === 'dashticz') {
+    location.reload();
+    return;
+  }
+});
+
+$('body').on('click', '.sec-frame .screw.bl', function () {
+  var md = new MobileDetect(window.navigator.userAgent);
+  var orientation =
+    (screen.orientation || {}).type ||
+    screen.mozOrientation ||
+    screen.msOrientation;
+  var msg = 'Mobile: ' + md.mobile() + '\n';
+  msg += 'Phone: ' + md.phone() + '\n';
+  msg += 'Tablet: ' + md.tablet() + '\n';
+  msg += 'OS: ' + md.os() + '\n';
+  msg += 'User Agent: ' + md.userAgent() + '\n';
+  msg += 'Resolution: ' + screen.width + 'x' + screen.height + '\n';
+  msg += 'Orientation: ' + orientation.split('-')[0];
+  alert(msg);
+});
 
 Dashticz.register(DT_secpanel);
+//# sourceURL=js/components/secpanel.js
