@@ -16,7 +16,7 @@
     "handlebars": "^4.7.6",
     "handlebars.moment": "^1.0.4",
     "ion-sound": "^3.0.7",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "jquery-migrate": "^3.1.0",
     "jquery-ui-dist": "^1.12.1",
     "jquery-ui-touch-punch": "^0.2.3",
