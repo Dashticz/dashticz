@@ -5,7 +5,9 @@
 
 Welcome to Dashticz's documentation!
 ====================================
-This documentation describes how to install and configure Dashticz's **beta** version.
+This documentation describes how to install and configure Dashticz.
+
+For Dashticz's **beta** version documentation go to: https://dashticz.readthedocs.io/en/beta/
 
 For Dashticz's **master** version documentation go to: https://dashticz.readthedocs.io/en/master/
 

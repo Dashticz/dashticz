@@ -1,11 +1,16 @@
 Release Notes
 =============
-Release Notes of Dashticz's **beta** version.
 
+For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedocs.io/en/beta/releasenotes/index.html
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
-Latest changes
+
+3.5 Master
 --------------
+
+New master release derived from 3.4.10 beta.
+
+See the release notes for the beta releases below for all changes.
 
 3.4.10 (Beta) (7-6-2020)
 ---------------------------
@@ -174,6 +179,13 @@ Fixes
 
 Enhancements:
   * Multigraph functionality. See :ref:`dom_graphs`.
+
+3.3.3.1 Master (4-2-2020)
+-------------------------
+
+Fixes
+  * Garbage Uden
+  * Reenabled PHP5 calendar module
 
 3.3.3 Master (22-1-2020)
 ------------------------
