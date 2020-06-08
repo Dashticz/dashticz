@@ -3,13 +3,14 @@
  * @author PC Drew <pc@schoolblocks.com>
  */
 
+use om\IcalParser;
 use Tester\Assert;
 use Tester\Environment;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 Environment::setup();
 
-$cal = new \om\IcalParser();
+$cal = new IcalParser();
 
 
 $results = $cal->parseFile(__DIR__ . '/cal/recur_instances_finite.ics');
@@ -88,7 +89,7 @@ foreach ($events[0]['EXDATES'] as $exDate) {
 
 
 $results = $cal->parseFile(__DIR__ . '/cal/recur_instances_with_modifications.ics');
-$events = $cal->getSortedEvents(true);
+$events = $cal->getSortedEvents();
 
 Assert::false(empty($events[0]['RECURRENCES']));
 // the 12th entry is the modified event, related to the remaining recurring events
@@ -136,7 +137,7 @@ usort($trueEvents, function ($a, $b) {
 	return $a['DTSTART'] > $b['DTSTART'];
 });
 
-$events = $cal->getSortedEvents(true);
+$events = $cal->getSortedEvents();
 Assert::false(empty($events[0]['RECURRENCES']));
 Assert::equal(count($trueEvents), count($events));
 foreach($trueEvents as $index => $trueEvent) {

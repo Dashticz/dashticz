@@ -27,6 +27,12 @@ For a full list of parameters see :ref:`dom_blockparameters`.
 
 For most devices containing a value, like temperature, power, etc, it's possible to show the data as a graph. See :ref:`dom_graphs`.
 
+You can also use custom names for the block identfier. In that case you have to add the ``idx`` parameter to indicate which Domoticz device you want to use::
+
+   blocks['my device'] = {
+      idx: 123
+   }
+
 Scenes and Groups
 -----------------
 
@@ -73,6 +79,12 @@ Block parameters
     - ``1..12``: The width of the block relative to the column width
   * - title
     - ``'<string>'``: Custom title for the block
+  * - idx
+    - | Index of the Domoticz device id, group/scene id, or variable id you want to use.
+      | ``<idx>`` or ``'<idx>'``: Device idx to use
+      | ``'<idx>_<subidx>'``: To select subdevice from Domoticz device, like temperature/humidity.
+      | ``'s<idx>'``: Select group or scene with id <idx>
+      | ``'v<idx>'``: Select variable with id <idx>
   * - icon
     - | Defines alternative icon of the device instead of the default, choose from: https://fontawesome.com/icons?d=gallery&m=free
       | ``'fas fa-eye'``
@@ -95,7 +107,6 @@ Block parameters
     - Text to display in case the device is on.
   * - textOff
     - Text to display in case the device is off.
-
   * - switch
     - | ``true`` Switch title and data
       | ``false`` (default)
@@ -136,6 +147,9 @@ Block parameters
   * - confirmation
     - | ``0`` No confirmation (default)
       | ``1`` Dashticz asks the user for confirmation before changing a switch-device
+  * - password
+    - | Password protect switches, buttons, thermostats, sliders, blinds
+      | ``'secret'``: Password to use
   * - gotoslide
     - | Goto screen when a device changes
       | ``1`` .. ``99``
@@ -145,81 +159,28 @@ Block parameters
   * - gotoslideOff
     - | Goto screen when a device changes to off
       | ``1`` .. ``99``
+  * - popup
+    - | This allows the popup to use all the block parameters that a graph block does, allowing users to style the graph.
+      | ``popup: 'popup_your_graph'``
   * - openpopup
     - Open a popup when a device changes. See :ref:`openpopup`
   * - openpopupOn
     - Open a popup when a device changes to on. See :ref:`openpopup`
   * - openpopupOff
     - Open a popup when a device changes to off. See :ref:`openpopup`
-  * - type
-    - Set this parameter to ``'blocktitle'`` if you want to define a block title instead of a normal block. See :ref:`blocktitle`
+  * - addClass
+    - | The CSS class name, that will be added to the block.
+      | ``'myclassname'``: Define 'myclassname' in ``custom.css``
+  * - unit
+    - | String that will be placed behind the device value to indicate the unit.
+      | ``'kilowatt'``: The string will replace the default unit.
 
 There are several additional parameters for Graphs. See :ref:`dom_graphs`
       
 Usage
 -----
 
-.. _blocktitle :
-
-Block title
-~~~~~~~~~~~
-
-A special block type is a block title.
-You define a block title as follows::
-
-  blocks['blocktitle_1'] = {  //'blocktitle_1' must be an unique name
-    type: 'blocktitle',       //Set type to 'blocktitle' (required for block title)
-    title: 'Switches',        //The title of the block as shown in the dashboard.
-    width: 6,                 //The width of the block relative to the column width
-    icon: 'far fa-lightbulb', //If you want  to show an icon, choose from: https://fontawesome.com/icons?d=gallery&m=free
-    image: 'lightbulb.png'    //If you want to show an image instead if icon, place image in img/ folder    
-  }
-  
-Full example of one block title and two devices::
-
-    var config = {}
-    config['language : 'nl_NL'; //or: en_US, de_DE, fr_FR, hu_HU, it_IT, pt_PT, sv_SV
-    config['domoticz_ip : 'http://192.168.178.18:8080';
-    config['domoticz_refresh : '5';
-    config['dashticz_refresh : '60';
-
-    config['use_favorites'] = 0; //Request all Domoticz Devices, not only favorites
-
-    //Definition of blocks
-    blocks = {}
-
-    blocks['myblocktitle'] = {
-      type: 'blocktitle',
-      title: 'My Devices Block'
-    }
-
-    blocks[120] = {
-      width: 6
-    }
-
-    blocks[121] = {
-      width: 6
-    }
-
-    //Definition of columns
-    columns = {}
-
-    columns[1] = { 
-      blocks: ['myblocktitle', 120, 121],
-      width: 4
-    }
-
-    //Definition of screens
-    screens = {}
-    screens[1] = {
-      columns: [1]
-    }
-
-This example will give the following result:
-
-.. image :: blocktitle.jpg
-
-Example of a more extensive block definition::
+Example of a block definition::
 
     var blocks = {}
 
@@ -237,8 +198,111 @@ Example of a more extensive block definition::
       gotoslide: 2            //Goto screen when a device changes
     };  
 
-Blocks with a sub device id
+Device with subdevices
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If a device consists of several subdevices, like a TempHumBar device or SmartMeter, then for each subdevice a block will be generated.
+
+In this example device device 659 is a TempHumBar device::
+
+  columns[1] = {
+    blocks: [659]
+  }
+
+.. image :: img/block659.jpg
+
+In case I want to show all four subdevices onto one row I've to change the default width from 4 to 3::
+
+  blocks[659] = {
+    width:4
+  }
+  columns[1] = {
+    blocks: [659]
+  }
+
+.. image :: img/block659_w3.jpg
+
+Now assume I want to have the first 3 subdevices on one row, and the fourth device on a new row, full width, with some additional customizations::
+
+  blocks[659] = {
+    width:4
+  }
+
+  blocks['659_4'] = {
+    width:12,
+    title: 'Dew temperature of device 659',
+    icon: 'fas fa-bus',
+    last_update: 'false',
+    switch: true
+  }
+
+  columns[1] = {
+    blocks: [659]
+  }
+
+  In the previous example first the settings of ``block[659]`` will be applied to all subblocks, followed by a subblock if it has been defined.
+  (In this case ``blocks['659_4']``)
+
+.. image :: img/block659_4_custom.jpg
+
+In case you only want to show subdevice 1, the column definition should be as follows::
+
+  columns[1] = {
+    blocks: [ '659_1' ]
+  }
+
+Don't forget the tick marks around ``659_1``
+
+As for single device it's also possible to use a custom block key in combination with the ``idx`` parameter.
+
+To make this visible I've defined two classes in custom.css::
+
+  .css_red {
+    background-color: red !important;
+  }
+
+  .css_green {
+    background-color: green !important;
+  }
+
+Now I'll add the temperature twice, with different backgrounds::
+
+  blocks['659_1'] = {
+    addClass: 'css_red'
+  }
+
+  blocks['another'] = {
+    idx: '659_1',
+    addClass: 'css_green'
+  }
+
+  columns[1] = {
+    blocks: [ '659_1', 'another' ]
+  }
+
+.. image :: img/659_1_2.jpg  
+
+You can also change a subdevice of a block with custom key::
+
+  blocks['another'] = { //This block will show domoticz device 659
+    idx: 659,
+    addClass: 'css_red'
+  }
+
+  blocks['another_1'] = { //This block will be applied to subdevice 1 of "another"
+    addClass: 'css_green'
+  }
+
+  columns[1] = {
+    blocks: [ 'another' ]
+  }
+
+.. image :: img/block_another.jpg
+
+
+
+Thermostat devices
+~~~~~~~~~~~~~~~~~~~
 
 For a thermostat IDX, IDX_1 or IDX_2 can be used.
 If IDX_1 is used the thermostat +/- buttons will not be shown.
@@ -249,6 +313,34 @@ If IDX_2 is used the icon/image of the block can be changed as in a normal block
     blocks['123_2'] = {
         image: 'toon.png'
     } 
+
+
+Usage of popup graph window
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With the popup parameter you can configure to open a popup graph window. Example::
+
+   blocks[258] = {
+      title: 'Consumption',
+      flash: 500,
+      width: 4,
+      popup: 'popup_consumption'
+   }
+
+In this example, the specified popup will use a defined graph called 'popup_consumption' instead of the default popup. This defined graph is then added to the config.js just like a normal graph::
+  
+   blocks['popup_consumption'] = {
+      title: 'Energy Consumption Popup',
+      devices: [258],
+      toolTipStyle: true,
+      datasetColors: ['red', 'yellow'],
+      graph: 'line',
+      legend: {
+         'v_258' : 'Usage',          
+         'c_258' : 'Total'
+      }
+   }
+
 
 .. _openpopup :
 
@@ -308,7 +400,10 @@ Example ``custom.css`` (only needed in case you want to change the default flash
 Evohome
 ~~~~~~~
 
-Dashticz recognizes Evohome devices.
+The following Domoticz devices can be represented with a dial. See :ref:`dial`
+   * EvoHome devices
+   * Thermostats
+   * Dimmers
 
 .. image :: img/evohome.png
 
@@ -328,3 +423,37 @@ The following config parameters from CONFIG.js are applicable:
   * - evohome_boost_hw
     - ``<number>``: Hot water boost temporary override time in minutes. Default: 15
 
+The EvoHome devices can be represented as dial by adding ``type: 'dial'`` to the block definition.
+
+.. image :: img/dial.png
+
+
+.. _formatting:
+
+Formatting
+~~~~~~~~~~
+
+You can define the default unit text and number of decimals to show for some (most?) blocks by adding the following to CONFIG.js::
+
+    config['units'] = {
+      names: {
+        kwh: 'kWh',
+        watt: 'W',
+        gas: 'm3',
+        water: 'l',
+        time: ''
+      },
+      decimals: {
+        kwh: 1,
+        watt: 0,
+        gas: 1,
+        water: 0,
+        time: 0
+      }
+    }
+
+You can also define the unit parameter on block level by setting the ``unit`` parameter::
+
+    blocks[123] = {
+      unit: 'Watt'
+    }

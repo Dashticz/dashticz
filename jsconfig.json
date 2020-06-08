@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+    "module": "none",
+    "target": "ES5",
+//    "lib": ["es6"]
+    },
+    "exclude": [
+    "node_modules",
+    "**/node_modules/*"
+    ]
+    }

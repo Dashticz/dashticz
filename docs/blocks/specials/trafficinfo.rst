@@ -48,7 +48,7 @@ Parameters
   * - icon
     - | The font-awesome icon (including ``fas fa-``)
       | ``'fas fa-car'``, ...
-  * - interval 
+  * - refresh 
     - time in seconds for refreshing the data
   * - results 
     - Number of results to show 

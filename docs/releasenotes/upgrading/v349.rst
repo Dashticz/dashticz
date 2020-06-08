@@ -1,0 +1,25 @@
+.. _v349:
+
+v3.4.9: Custom keys in block definition
+=======================================
+
+.. note:: Breaking changes. See notes below.
+
+In case you have defined a block with a custom key as follows::
+
+    blocks['myblock'] = {
+        idx: 123,
+        width:4
+    }
+
+then this will have the following consequences:
+
+* The block will have the CSS class ``.block_myblock`` and not ``.block_123``. You may have to change something in ``custom.css``
+* If device 123 has subdevices, they will receive the CSS class ``.block_myblock_1`` etc. and not ``.block_123_1``
+* On device change the function ``getStatus_myblock(block)`` in ``custom.js`` will be called, and not ``getStatus_123(block)``
+
+
+
+
+  
+
