@@ -102,7 +102,9 @@
             "dashticz_php_path": "Dashticz PHP Path",
             "standby_call_url": "URL to be called at start of standby",
             "standby_call_url_on_end": "URL to be called at end of standby",
-            "login_timeout": "Keep Dashticz logged in (minutes)"
+            "login_timeout": "Pidä Dashticz kirjautuneena sisään (minuutteina)",
+            "enable_websocket": "WebSocket",
+            "enable_websocket_help": "Ota WebSocket-yhteys käyttöön tai poista se käytöstä"
         },
         "infosave": "Asetukset tallennetaan oletuksena selaimen muistiin. Tämän menetelmän huono puoli on se, että se toimii vain kyseisessä selaimessa. Voit jatkaa mikäli tämä ei ole ongelma. Muussa tapauksessa kopioi alla oleva koodi CONFIG.JS tiedostoon pitääksesi samat asetukset kaikissa selaimissa ja laitteissa",
         "localize": {
@@ -174,11 +176,13 @@
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Salaman väri ja opasiteetti (RGBA)",
             "blink_color_help": "Aseta salaman väri ja opasiteetti (punainen, vihreä, sininen, alfa)",
-            "start_page": "Start page number (First page=1)",
-            "enable_swiper": "Enable Swiper",
-            "enable_swiper_help": "0: Disable swiper; 1: Enable on narrow screens; 2: Enable",
-            "vertical_scroll": "Enable vertical scroll",
-            "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll"
+            "start_page": "Aloitussivun numero (ensimmäinen sivu = 1)",
+            "enable_swiper": "Ota Swiper käyttöön",
+            "enable_swiper_help": "0: Poista swiper käytöstä; 1: Ota käyttöön kapeilla näytöillä; 2: Ota käyttöön",
+            "vertical_scroll": "Ota pystysuuntainen vieritys käyttöön",
+            "vertical_scroll_help": "0: Poista pystysuuntainen vieritys käytöstä; 1: Ota pystysuuntainen vieritys käyttöön, jos Swiper ei ole käytössä; 2: Ota pystysuuntainen vieritys käyttöön",
+            "security_panel_lock": "Lataa suojauspaneeli koko näytöllä",
+            "security_panel_lock_help": "Jos asetat Domoticzin tai Dashticzin suojauspaneeliksi asetukseksi 'Arm - Away', Dashticz lataa automaattisesti koko näytön paneelin."
         },
         "weather": {
             "idx_moonpicture": "Kuun IDX-numero",
@@ -211,7 +215,11 @@
         "other": {
             "title": "muut",
             "setpoint_min": "Termostaatin ohjearvon minimiarvo",
-            "setpoint_max": "Termostaatin asetusarvon enimmäisarvo"
+            "setpoint_max": "Termostaatin asetusarvon enimmäisarvo",
+            "evohome_status": "EvoHome-ohjaimen tila",
+            "evohome_status_help": "Auto, Econony, Poissa, Mukautettu, Päivä, Pois",
+            "evohome_boost_zone": "EvoHome-vyöhykkeen lisäysaika minuutteina",
+            "evohome_boost_hw": "EvoHome kuuman veden tehostusaika minuutteina"
         }
     },
     "switches": {
@@ -263,5 +271,14 @@
         "direction_WNW": "Länsi-luoteeseen",
         "direction_WSW": "Länsi-lounaaseen",
         "wind": "Tuuli"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "talous",
+        "Away": "Pois",
+        "Custom": "Mukautettu",
+        "DayOff": "Vapaapäivä",
+        "HeatingOff": "Vinossa",
+        "TemporaryOverride": "Ohittaa"
     }
 }

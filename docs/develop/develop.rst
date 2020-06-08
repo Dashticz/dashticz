@@ -6,5 +6,6 @@ For Developers
    :caption: Contents:
 
    code
+   design
    translations
    documentation

@@ -16,6 +16,8 @@ And add the tvguide to a column with::
       blocks: [tvguide.dutch]      
     }
 
+When you click on the TV Guide block a *www.tvgids.nl* popup will open (default). You can set your own url via the url parameter (optional).
+
 TV Guide Parameters
 -------------------
 
@@ -38,6 +40,8 @@ TV Guide Parameters
     - | ``'image.png'``: image to show as icon. Image path is relative to the <dashticz>/img folder.
   * - maxitems
     - | Maximum number of items to show.
+  * - url
+    - ``'<url>'``: The web address of the page to open in the popup window when clicking the block.
   * - channels
     - | Selected channels. 
 

@@ -1,23 +1,23 @@
 {
     "_readme": [
         "This file locks the dependencies of your project to a known state",
-        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
     "content-hash": "427a6729ee9cf11e9a840f0de535858d",
     "packages": [
         {
             "name": "om/icalparser",
-            "version": "v0.2.7",
+            "version": "v0.2.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/OzzyCzech/icalparser.git",
-                "reference": "97e62c6881672852bb8361f0b00e3e571a56ea49"
+                "reference": "e84ea05518193010b15d318fe097797c570dd624"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/OzzyCzech/icalparser/zipball/97e62c6881672852bb8361f0b00e3e571a56ea49",
-                "reference": "97e62c6881672852bb8361f0b00e3e571a56ea49",
+                "url": "https://api.github.com/repos/OzzyCzech/icalparser/zipball/e84ea05518193010b15d318fe097797c570dd624",
+                "reference": "e84ea05518193010b15d318fe097797c570dd624",
                 "shasum": ""
             },
             "require": {
@@ -25,6 +25,9 @@
             },
             "require-dev": {
                 "nette/tester": "*"
+            },
+            "suggest": {
+                "ext-dom": "for timezone tool"
             },
             "type": "library",
             "autoload": {
@@ -48,7 +51,7 @@
                 "ical",
                 "parser"
             ],
-            "time": "2020-01-21T10:10:53+00:00"
+            "time": "2020-03-16T07:03:51+00:00"
         }
     ],
     "packages-dev": [],

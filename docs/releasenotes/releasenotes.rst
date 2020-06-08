@@ -1,8 +1,184 @@
 Release Notes
 =============
-Release Notes of Dashticz's **master** version.
 
 For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedocs.io/en/beta/releasenotes/index.html
+For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
+
+
+3.5 Master
+--------------
+
+New master release derived from 3.4.10 beta.
+
+See the release notes for the beta releases below for all changes.
+
+3.4.10 (Beta) (7-6-2020)
+---------------------------
+
+Enhancements
+  * Japanese language support (preliminary)
+  * Improved Camera block . See :ref:`cameras`
+
+Fixes
+  * Stop called twice for Blinds stop button
+  * Improve Dial representation on Android devices
+  * Improved graph groupBy function
+
+3.4.9.1 (Beta) (26-5-2020)
+--------------------------
+Fixes
+  * Several bug fixes
+
+3.4.9 (Beta) (25-5-2020)
+------------------------
+
+Fixes
+  * Improved number formatting for graph header and tooltip. See :ref:`graphNumberFormat`
+  * Block definition with custom keys: consistency in block selection for subdevices, CSS class application and function names in custom.js. This may result in a breaking change. See :ref:`v349`
+
+3.4.8 (Beta) (20-5-2020)
+------------------------
+
+Enhancements
+  * Improved trafficinfo layout
+
+Fixes
+  * IE11 support
+  * iOS9 support
+
+Code
+  * Standardized formatting of source code
+  * Removed eslint warnings (first batch)  
+
+3.4.7 (Beta) (18-5-2020)
+------------------------
+
+Enhancements
+  * Support for Dials. See :ref:`dial`
+
+Fixes
+  * Refresh of graph while in standby
+
+3.4.6 (Beta) (13-5-2020)
+------------------------
+
+Enhancements
+  * Enable graphs for Voltage and Distance devices
+  * Parameter ``timeformat`` to configure time format for 'alarmmeldingen'. See :ref:`customalarmmeldingen`
+  * TV guide (Dutch: tvgids) made clickable
+  * More options to customize the graph header. See :ref:`customheader`
+
+Fixes
+  * Fix for ANWB Traffic Info (new API)
+  * Fix for recurring calendar events (older than 3 year, without end date)
+
+3.4.5 (Beta) (23-4-2020)
+------------------------
+
+Fixes
+  * Garbage: Cure moved to 'mijnafvalwijzer'
+  * Synchronization Domoticz security panel state
+  * Bug fix popup chart refresh
+
+3.4.4 (Beta) (18-4-2020)
+-------------------------
+
+Enhancements
+  * Add 'Current' Domoticz device type.
+  * Improved security panel. See <todo>
+
+Fixes
+  * Fix for refresh of Scenes/Groups and some temperature sensors
+
+3.4.3 (Beta) (9-4-2020)
+-----------------------
+
+Enhancements
+  * New calendar layout. See :ref:`newcalendar`
+
+Fixes
+  * Group/scene status refresh
+  * Unit parameter, which can be used for formatting the value of some Domoticz devices. See :ref:`formatting`
+
+3.4.2 (Beta) (3-4-2020)
+------------------------
+
+Enhancements
+  * Add dewpoint block for TempHumBar devices
+  * Corona block type
+  * Custom header for graph blocks. See :ref:`customheader`
+  * Camera block. See :ref:`cameras`
+
+Fixes
+  * Calendar recurring events (experimental)
+
+Internal
+  * Refactoring blocktypes
+
+3.4.1 (Beta)
+---------------
+
+.. note:: Breaking changes. See :ref:`v341` for update instuctions
+
+Redesign
+  * Domoticz blocks: inline blocks. Use ``idx`` as parameter in your block definition to indicate the block is a domoticz device. See :ref:`v341`
+
+Enhancements
+  * Support for showing a graph more than once on the dashboard.
+  * Support for RGBWZ devices
+  * Omrin garbage company
+  * Calendar: Optionally display start time only by setting ``startonly`` block parameter
+  * New block parameter ``password`` to password protect switches, buttons, thermostats, sliders.
+  * Filter parameter for the news block. Define as block parameter. Example:
+    
+  ::  
+
+      blocks['my_news'] {
+        feed: 'http://www.nu.nl/rss/Algemeen',
+        filter : '5 items',  // to only show the 5 latest news items, or:
+        filter: '2 days',    // to only show news items of the last 2 days, or:
+        filter: '1 month',   // to only show news items from last month
+      }
+
+  * New special block: alarmmeldingen (Dutch). See :ref:`customalarmmeldingen`
+  * Update other blocks from ``custom.js`` functions by calling ``Dashticz.setBlock``. See :ref:`setblock`
+
+Fixes
+  * Requests to Domoticz will not be send via a websocket connection (not reliable)
+  * Fix for Evo devices
+  * Improved the height adjustment of a news block with inline images
+  * Fix for updating devices via ``getStatus_idx`` in ``custom.js``
+  * Fix for initial update of block defined by ``getBlock_<idx>()`` in ``custom.js``
+
+3.4.0 Beta (8-2-2020)
+---------------------
+
+Enhancements
+  * Websocket interface for Domoticz version > 4.11000 to receive instant device updates. See :ref:`websocket`
+  * The News block will show the inline images. By setting the news block parameter 'showimages: false' the inline images will be hidden.  See :ref:`newsconfig`
+  * graph and multigraph have been combined into the same graph block. See :ref:`dom_graphs`.
+
+In case you update from 3.3.5 beta: The parameter ``multigraphTypes`` has been replaced by ``graphTypes``
+
+Optimizations
+  * Dashticz will only receive the updates for devices that changed since the previous update. This will increase responsiveness. In the previous version Dashticz received all device info at every update (default 5 second cycle).
+
+
+
+3.3.5 Beta (28-1-2020)
+----------------------
+
+Fixes
+  * Garbage Uden
+  * Restored PHP5 compatible ical library next to the PHP7 library.
+    The PHP5 library is selected automatically on systems with PHP version lower than 7.1.
+    The PHP5 library doesn't show yearly recurring events correctly.
+
+3.3.4 Beta (22-1-2020)
+----------------------
+
+Enhancements:
+  * Multigraph functionality. See :ref:`dom_graphs`.
 
 3.3.3.1 Master (4-2-2020)
 -------------------------
@@ -15,7 +191,7 @@ Fixes
 ------------------------
 
 Fixes
-  * New PHP ical library to solve issue with recurring events. Note: PHP 7.1 is required.
+  * New PHP ical library to solve issue with recurring events. Note: PHP 7.1 or higher is required.
 
 3.3.2 Master (18-1-2020)
 ------------------------

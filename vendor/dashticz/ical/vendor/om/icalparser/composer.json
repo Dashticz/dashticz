@@ -16,6 +16,9 @@
 	"require": {
 		"php": ">=7.1.0"
 	},
+	"suggest": {
+		"ext-dom": "for timezone tool"
+	},
 	"autoload": {
 		"classmap": [
 			"src/"
