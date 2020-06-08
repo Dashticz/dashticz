@@ -44,8 +44,8 @@ Frame parameters
       - Height of the frame in pixels
     * - scrollbars
       - ``false`` Scrollbars are never shown (even if they are needed) Default: auto
-    * - refreshiframe
-      - Refresh interval (in msec)
+    * - refresh
+      - Refresh interval (in seconds)
     * - forcerefresh
       - | Control the caching-prevention mechanism of the frame content.
         | ``0`` : Normal caching behavior (=default)

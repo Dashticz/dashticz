@@ -67,6 +67,10 @@ Config parameters
   * - login_timeout
     - | Time to keep Dashticz logged in
       | ``60`` = Time in minutes
+  * - enable_websocket
+    - | Enable Domoticz websocket connection. See :ref:`websocket`
+      | ``false`` = Dashticz will use a http connection.
+      | ``true`` = Dashticz will switch to a websocket connection if the Domoticz version is above 4.11000.     
   * - app_title
     - | Name of the Dashboard - Title to show in the :ref:`customtopbar`
       | ``'Dashticz'`` = Show 'Dashticz' in the top bar
@@ -117,6 +121,10 @@ Config parameters
   * - standard_graph
     - | Default Graph shown on the Dashticz Dashboard
       | ``'HOUR'``, ``'MONTH'``, ``'DAY'``
+  * - security_panel_lock
+    - | If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel.
+      | ``0`` = Loading Security Panel full screen disabled (default)
+      | ``1`` = Loading Security Panel full screen enabled
   * - language
     - | Default language of Dashticz. See the ``lang`` folder for all supported languages.
       | ``'en_us'`` = default
@@ -255,3 +263,27 @@ If you prefer to use a different CORS proxy you can define it in ``CONFIG.js`` a
     config['default_cors_url'] = 'http://cors-anywhere.herokuapp.com'
 
 In case PHP is not installed it falls back to the defined CORS proxy in ``config['default_cors_url']``. In case ``config['default_cors_url']`` is not set, it will use ``cors-anywhere.herokuapp.com`` by default.
+
+.. _websocket:
+
+Websocket connection
+---------------------
+
+From v4.11000 Domoticz supports a so called websocket connection next to the standard http(s) connection.
+
+.. note:: Currently the Domoticz stable version is 4.10717 which doesn't support the websocket connection. That means you have to update to the Domoticz develop branch.
+
+.. warning:: The Domoticz develop branch may give issues, especially on Raspberry PI. Make a backup of Domoticz first! If you switch to the develop branch, the Domoticz database will be upgraded as well, and cannot be downgraded.
+
+The advantages of a websocket connection:
+
+* instant updates in Dashticz in case of a changing Domoticz device
+* Faster and less overhead
+
+To prevent switching to a websocket connection add the following setting to CONFIG.js::
+
+  config['enable_websocket'] = false;
+
+In the <gif> below you see the instant updates in action. On the right you see the Domoticz dashboard. On the left Dashticz.
+
+.. image :: img/dashticz-websocket.gif

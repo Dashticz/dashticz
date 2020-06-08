@@ -1,3 +1,5 @@
+.. _buttons:
+
 Buttons
 =======
 
@@ -7,8 +9,8 @@ Buttons are clickable elements that may show an image. First you have to define 
     buttons.yr = {
     	width: 12,
       isimage: true,
-      refreshimage: 60000,
-    	image: 'https://www.yr.no/sted/Norge/Oppland/%C3%98ystre_Slidre/Beito/advanced_meteogram.png',
+      refreshimage: 60,
+    	btnimage: 'https://www.yr.no/sted/Norge/Oppland/%C3%98ystre_Slidre/Beito/advanced_meteogram.png',
     	url: 'https://www.yr.no/sted/Norge/Oppland/%C3%98ystre_Slidre/Beito/langtidsvarsel.html'
     };
 
@@ -50,10 +52,13 @@ Parameters
     - ``'image.png'``: image to show as icon the button. Image path is relative to the <dashticz>/img folder.
   * - btnimage
     - ``'<url>'``: URL of the image to show in the button.
-  * - refresh or refreshimage
-    - ``1..99999``: Refresh time of the button image in msec. There is no maximum. The default is 60000 (=1 minute).
+  * - refresh
+    - ``1..99999``: Refresh time of the button image in seconds. There is no maximum. The default is 60 (=1 minute).
   * - url
     - ``'<url>'``: URL of the page to open in a popup window on click. 
+  * - forceheight
+    - | Set the height of the image in a button
+      | ``'200px'``: Set image height to 200px. 
   * - framewidth
     - ``'<integer>'``: specific width of the popup window on click. 
   * - frameheight
@@ -66,7 +71,7 @@ Parameters
       | ``3`` : Prevent caching by adding t=<timestamp> parameter to the end of the url. Not all webservers will handle this correctly.      
   * - refreshiframe
     - | ``0``: No automatic refresh of a button popup frame (default)
-      | ``1..99999``: Refresh time of the button popup frame in msec. There is no maximum. The default is 60000 (=1 minute).   
+      | ``1..99999``: Refresh time of the button popup frame in sec. There is no maximum. The default is 60 (=1 minute).   
   * - log
     - | ``true`` Button will show the Domoticz log info
       | ``false`` Default
@@ -76,8 +81,9 @@ Parameters
     - | ``0``: no new window/frame (for intent handling, api calls)
       | ``1``: open in new window
       | ``2``: open in new frame (default, to prevent a breaking change in default behavior)
-
-    
+  * - password
+    - | Password protect switches, buttons, thermostats, sliders, blinds
+      | ``'secret'``: Password to use
 
 Usage
 -----
@@ -166,10 +172,10 @@ Examples
 Additional examples of button definitions::
 
     var buttons = {}
-    buttons.buienradar = {width:12, isimage:true, refreshimage:60000, btnimage: 'http://api.buienradar.nl/image/1.0/RadarMapNL?w=285&h=256', url: 'http://www.weer.nl/verwachting/nederland/son/189656/'}
+    buttons.buienradar = {width:12, isimage:true, refreshimage:60, btnimage: 'http://api.buienradar.nl/image/1.0/RadarMapNL?w=285&h=256', url: 'http://www.weer.nl/verwachting/nederland/son/189656/'}
     buttons.radio = {width:12, image: 'radio_on.png', title: 'Radio', url: 'http://nederland.fm'}
     buttons.nunl = {width:12, icon: 'far fa-newspaper', title: 'Nu.nl', url: 'http://www.nu.nl'}
-    buttons.webcam = {width:12, isimage:true, refresh:2000, btnimage: 'http://ip_url_to_webcam', url: 'http://ip_url_to_webcam', framewidth:500, frameheight:400}
+    buttons.webcam = {width:12, isimage:true, refresh:2, btnimage: 'http://ip_url_to_webcam', url: 'http://ip_url_to_webcam', framewidth:500, frameheight:400}
 
 To remove the close button of the button-popup add the following text to custom.css::
 

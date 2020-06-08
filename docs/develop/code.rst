@@ -11,7 +11,28 @@ I prefer to use Visuals Studio Code.
 Source code
 -----------
 
-ES5 format, checked with eslint
+In general the 'rules' are:
+
+* ES5 compliant
+* Styling if possible via creative.css
+* Server code PHP 5 compliant
+* use 'prettier' for code formatting
+* eslint should give no warnings
+
+Some users still have a ES5 browser, like old Android tablets. In the past I used the ' const' keyword a few times.
+This resulted in complaints.
+
+For ES5 vs ES6 see for instance: http://es6-features.org
+
+We could switch to ES6, but then probably we have to start using Babel as well, to transpile back to ES5.
+This is something I would like to prevent, because it makes the develop/build environment a bit more demanding.
+
+Guidelines:
+
+* No ES6 syntax, like 'const', 'let', arrow functions, class keyword, object spread, Promise.
+* No synchronous AJAX calls.
+* jQuery promises may be used.
+
 
 Dependencies
 -------------
@@ -70,23 +91,26 @@ An example of a more extensive implementation::
 
     var DT_myblock = {
         name: "myblock",
-        canHandle: function (block) {
+        canHandle: function (block, key) {
             //returns a boolean to indicate whether the block can be handled by this component
+            //key is the identifier (string) that is used in the column definition to select a block.
+            //In case an object is provided in the column definitions (like buttons, frames) then key is undefined
         },
         init: function () {
             //Will be called for initialization
             //returns a jquery deferred (similar to a Promise)
         },
-        default: { //All optional
+        defaultCfg: { //All optional. defaultCfg can also be a function and then will receive block as parameter.
             icon: 'fas fa-newspaper', // string to define the default icon
             containerClass: function (block) { //function returning a string containing class names that will be added to the block 
                 return 'hover'
-            },
-            containerExtra: function (block) { //function returning additional settings for the container HTML element (dt_block)
+            }, //Or:
+            containerClass: 'hover',
+            containerExtra: function (block) { //function or string returning additional settings for the container HTML element (dt_block)
                 return (block && block.maxheight) ? ' style="max-height:' + block.maxheight + 'px;overflow:hidden;"' : ''
             }
         },
-        get: function () { //Optional. function returning the static content of dt_state
+        defaultContent: function (me) { //Optional. function (or string) returning the static content of dt_state
             return '<ul id="newsTicker"></div>'
         },
         run: function (me) {
@@ -94,6 +118,9 @@ An example of a more extensive implementation::
             //me.mountPoint: Mountpoint of the container (dt_block)
             //For basic usage you will add additional code to $(me.mountPoint + ' .dt_state')
             //me.block: Reference to the block definition in CONFIG.js
+        },
+        refresh: function (me) {
+            // if me.block.refresh is defined, and this function exists, then this function will be called every <me.block.refresh> seconds.
         }
     }
 
@@ -147,7 +174,7 @@ Basic workflow
 
 10. Push the changes to your own Dashticz repository::
 
-      git push mynewfeature
+      git push origin mynewfeature
 
 11. On github.com create a Pull Request with the request to merge your own branch into beta
 
@@ -189,6 +216,6 @@ On github create a PR with the request to merge your new branch into testbranch.
 Updating documentation
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-If possible update the documentation together with your code changes in the same PR.
+If possible update the documentation together with your code changes in the same PR. For updating the documentation see :ref:`documentation`
 
 

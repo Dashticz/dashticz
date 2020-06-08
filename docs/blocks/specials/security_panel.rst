@@ -12,20 +12,74 @@ There are three ways to show the Domoticz Security Panel:
 Security Panel special block
 ----------------------------
 
-You can add the Domoticz Security Panel as special block.
-Define your block (optional)::
-
-  blocks['secpanel'] = {
-    title: 'Sec Panel',
-    width: 3
-  }
-
-And add the special block to a column::
+Add the special block to a column::
 
     columns[1]['blocks'] = ['secpanel'];
 
-This will show a Domoticz like security panel, which automatically scales to the block width.
-The styling can be modified via custom.css.
+This will show a Dashticz security panel, which automatically scales to the column width.
+
+.. image :: secpanel.jpg
+
+Additionally, if you have set your Domoticz security panel to "Armed Away", you can now configure Dashticz to secure automatically by applying the following setting in *CONFIG.js*::
+
+    config['security_panel_lock'] = 1;
+
+If the panel has been set to "Armed Away", it will display a fullscreen panel. The user will need to enter the code and either set "Disarm" or "Armed Home" to enable the blue enter button". Pressing this will then show your Dashticz main screen.
+
+Buttons:
+  * Green: Disarm
+  * Amber: Armed Home
+  * Red: Armed Away
+  * Blue: Enter Dashticz
+
+The countdown delay is set in *Domoticz, Setup > Settings > Security Panel > Delay*. If set to zero, there will be no countdown.
+
+The above fullscreen lock feature does not require you to also have a Security Panel block added in *CONFIG.js*. But if you want one, you can add one::
+
+  blocks['secpanel'] = {
+    title: '',
+    width: 6
+  }
+
+Or you can have a block defined and disable the fullscreen lock feature with this (which is the default if not set)::
+
+  config['security_panel_lock'] = 0;
+
+The secpanel height is based on its width to maintain the correct aspect ratio. The height is 1.35 x the width. You can set the height and width in the block, or in custom.css::
+
+    [data-id='secpanel'] .dt_content {
+        height: 200px!important;
+        width: 148px!important;
+    }
+
+So, when the system is "Armed Away", you want the fullscreen security panel to blink if a certain device has been changed state, e.g. closed > open?
+
+You will need to add the "alarm" class to the fullscreen security panel's modal (background).
+::
+    function getStatus_123(block){
+        if (block.device.Data == 'open') {
+        $('.sec-modal').addClass('alarm');
+        }
+    }
+
+This would need to be added to your custom.css::
+
+    .alarm {
+        -webkit-animation: flash 1s infinite; 	/* Safari 4+ */
+        -moz-animation: flash 1s infinite; 		/* Fx 5+ */
+        -o-animation: flash 1s infinite; 		/* Opera 12+ */
+        animation: flash 1s infinite; 		/* IE 10+, Fx 29+ */
+    }
+
+    @keyframes flash {
+        0%, 49% {
+        background-color: #681717;
+        }
+        50%, 100% {
+        background-color: #e50000;
+        }
+    }
+
 
 Security Panel block
 --------------------

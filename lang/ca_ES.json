@@ -102,7 +102,9 @@
             "dashticz_php_path": "Dashticz PHP Path",
             "standby_call_url": "URL to be called at start of standby",
             "standby_call_url_on_end": "URL to be called at end of standby",
-            "login_timeout": "Keep Dashticz logged in (minutes)"
+            "login_timeout": "Keep Dashticz logged (minutes)",
+            "enable_websocket": "WebSocket",
+            "enable_websocket_help": "Activa \/ desactiva la connexió de WebSocket"
         },
         "infosave": "By default, settings are stored in your browser. Downside of this method is it will only work in your current browser. If that's not a problem, you can proceed. Otherwise, copy code below to your CONFIG.JS to keep settings across all browsers and devices.",
         "localize": {
@@ -174,11 +176,13 @@
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Color i opacitat en flash (RGBA)",
             "blink_color_help": "Establiu el color i l'opacitat de flaix (vermell, verd, blau, alfa)",
-            "start_page": "Start page number (First page=1)",
-            "enable_swiper": "Enable Swiper",
-            "enable_swiper_help": "0: Disable swiper; 1: Enable on narrow screens; 2: Enable",
-            "vertical_scroll": "Enable vertical scroll",
-            "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll"
+            "start_page": "Número de pàgina inicial (Primera pàgina = 1)",
+            "enable_swiper": "Activa el franctirador",
+            "enable_swiper_help": "0: Desactiva el franctirador; 1: Habilita en pantalles estretes; 2: Activa",
+            "vertical_scroll": "Activa el desplaçament vertical",
+            "vertical_scroll_help": "0: Desactiva el desplaçament vertical; 1: Habilita el desplaçament vertical si l'Sniper està desactivat; 2: Habilita el desplaçament vertical",
+            "security_panel_lock": "Carrega el tauler de seguretat a pantalla completa",
+            "security_panel_lock_help": "Si configureu el tauler de seguretat de Domoticz o Dashticz a \"Arm\", Dashticz carregarà automàticament un panell de pantalla completa."
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",
@@ -211,7 +215,11 @@
         "other": {
             "title": "Un altre",
             "setpoint_min": "Valor mínim del punt de consigna del termòstat",
-            "setpoint_max": "Valor màxim del punt de consigna del termòstat"
+            "setpoint_max": "Valor màxim del punt de consigna del termòstat",
+            "evohome_status": "Estat del controlador EvoHome",
+            "evohome_status_help": "Auto, Econony, lluny, personalitzat, dia lliure, desactivat",
+            "evohome_boost_zone": "El temps d'increment de la zona EvoHome en pocs minuts",
+            "evohome_boost_hw": "Temps d'augment d'aigua calenta EvoHome en pocs minuts"
         }
     },
     "switches": {
@@ -263,5 +271,14 @@
         "direction_WNW": "west-northwest",
         "direction_WSW": "west-southwest",
         "wind": "Wind"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Economia",
+        "Away": "Lluny",
+        "Custom": "Personalitzat",
+        "DayOff": "Dia de descans",
+        "HeatingOff": "Desactivat",
+        "TemporaryOverride": "Anular"
     }
 }

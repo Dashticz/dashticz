@@ -11,7 +11,7 @@ $windowstimezonexml = new DOMDocument();
 $windowstimezonexml->load('https://raw.githubusercontent.com/unicode-org/cldr/master/common/supplemental/windowsZones.xml');
 $zones = $windowstimezonexml->getElementsByTagName('mapZone');
 foreach ($zones as $zone) {
-	if ($zone->getAttribute('territory') == '001') {
+	if($zone->getAttribute('territory') === '001') {
 		$windows_timezones[$zone->getAttribute('other')] = $zone->getAttribute('type');
 	}
 }

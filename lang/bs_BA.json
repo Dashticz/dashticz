@@ -102,7 +102,9 @@
             "dashticz_php_path": "Dashticz PHP Path",
             "standby_call_url": "URL to be called at start of standby",
             "standby_call_url_on_end": "URL to be called at end of standby",
-            "login_timeout": "Keep Dashticz logged in (minutes)"
+            "login_timeout": "Dashticz prijavljen (u minutama)",
+            "enable_websocket": "WebSocket",
+            "enable_websocket_help": "Omogući \/ onemogući vezu WebSocket"
         },
         "infosave": "Po zadanom, postavke su pohranjene u vašem pretraživaču. Negativna strana ove metode je da će raditi samo u trenutnom pretraživaču. Ako to nije problem, možete nastaviti. Inače, kopirajte donji kod na svoj CONFIG.JS da biste zadržali postavke na svim pretraživačima i uređajima.",
         "localize": {
@@ -174,11 +176,13 @@
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Boja i neprozirnost bljeskalice (RGBA)",
             "blink_color_help": "Postavite boju i neprozirnost bljeskalice (crvena, zelena, plava, alfa)",
-            "start_page": "Start page number (First page=1)",
-            "enable_swiper": "Enable Swiper",
-            "enable_swiper_help": "0: Disable swiper; 1: Enable on narrow screens; 2: Enable",
-            "vertical_scroll": "Enable vertical scroll",
-            "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll"
+            "start_page": "Broj početne stranice (prva stranica = 1)",
+            "enable_swiper": "Omogući Swiper",
+            "enable_swiper_help": "0: Onemogućite klizač; 1: Omogućavanje na uskim ekranima; 2: Omogući",
+            "vertical_scroll": "Omogući vertikalno pomeranje",
+            "vertical_scroll_help": "0: Onemogući okomito pomicanje; 1: Omogućite vertikalno pomicanje ako je Swiper onemogućen; 2: Omogući vertikalno pomeranje",
+            "security_panel_lock": "Učitajte sigurnosni panel preko cijelog zaslona",
+            "security_panel_lock_help": "Ako sigurnosnu ploču u Domoticzu ili Dashticzu postavite na 'Arm - Away', tada će Dashticz automatski učitati ploču preko cijelog zaslona."
         },
         "weather": {
             "idx_moonpicture": "IDX slike mjeseca",
@@ -211,7 +215,11 @@
         "other": {
             "title": "Drugo",
             "setpoint_min": "Minimalna vrijednost zadane vrijednosti termostata",
-            "setpoint_max": "Maksimalna vrijednost zadane vrijednosti termostata"
+            "setpoint_max": "Maksimalna vrijednost zadane vrijednosti termostata",
+            "evohome_status": "Status kontrolera EvoHome",
+            "evohome_status_help": "Automatski, Ekononija, Gost, Prilagođeno, Dan slobodan, Isključen",
+            "evohome_boost_zone": "Vrijeme pojačanja zone EvoHome u minutima",
+            "evohome_boost_hw": "Vreme pojačanja tople vode EvoHome u minutima"
         }
     },
     "switches": {
@@ -263,5 +271,14 @@
         "direction_WNW": "zapad-severozapad",
         "direction_WSW": "zapad-jugozapad",
         "wind": "Vjetar"
+    },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Ekonomija",
+        "Away": "Away",
+        "Custom": "Custom",
+        "DayOff": "Slobodan dan",
+        "HeatingOff": "Isključeno",
+        "TemporaryOverride": "Prevladati"
     }
 }

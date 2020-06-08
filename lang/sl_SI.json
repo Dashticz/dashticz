@@ -102,7 +102,9 @@
             "dashticz_php_path": "Dashticz PHP Path",
             "standby_call_url": "URL to be called at start of standby",
             "standby_call_url_on_end": "URL to be called at end of standby",
-            "login_timeout": "Keep Dashticz logged in (minutes)"
+            "login_timeout": "Naj bo Dashticz prijavljen (minut)",
+            "enable_websocket": "WebSocket",
+            "enable_websocket_help": "Omogoči \/ onemogoči povezavo WebSocket"
         },
         "infosave": "By default, settings are stored in your browser. Downside of this method is it will only work in your current browser. If that's not a problem, you can proceed. Otherwise, copy code below to your CONFIG.JS to keep settings across all browsers and devices.",
         "localize": {
@@ -174,11 +176,13 @@
             "security_button_icons": "Icons instead of text on security switch",
             "blink_color": "Barva bliskavice in motnost (RGBA)",
             "blink_color_help": "Nastavi barvo in motnost bliskavice (rdeča, zelena, modra, alfa)",
-            "start_page": "Start page number (First page=1)",
-            "enable_swiper": "Enable Swiper",
-            "enable_swiper_help": "0: Disable swiper; 1: Enable on narrow screens; 2: Enable",
-            "vertical_scroll": "Enable vertical scroll",
-            "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll"
+            "start_page": "Številka začetne strani (prva stran = 1)",
+            "enable_swiper": "Omogoči Swiper",
+            "enable_swiper_help": "0: Onemogoči swiper; 1: omogoči na ozkih zaslonih; 2: Omogoči",
+            "vertical_scroll": "Omogoči navpično drsenje",
+            "vertical_scroll_help": "0: onemogoči navpično drsenje; 1: omogočite navpično drsenje, če je Swiper onemogočen; 2: Omogoči navpično drsenje",
+            "security_panel_lock": "Celotni zaslon naložite varnostno ploščo",
+            "security_panel_lock_help": "Če nastavite varnostno ploščo v domeni Domoticz ali Dashticz na 'Arm - Away', potem bo Dashticz samodejno naložil celozaslonsko ploščo."
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",
@@ -211,7 +215,11 @@
         "other": {
             "title": "Drugo",
             "setpoint_min": "Najnižja vrednost nastavljene vrednosti termostata",
-            "setpoint_max": "Najvišja vrednost nastavljene vrednosti termostata"
+            "setpoint_max": "Najvišja vrednost nastavljene vrednosti termostata",
+            "evohome_status": "Status regulatorja EvoHome",
+            "evohome_status_help": "Samodejno, Econoni, Gosti, Po meri, Izklopljeni, Izklopljeni",
+            "evohome_boost_zone": "Čas povečanja območja EvoHome v nekaj minutah",
+            "evohome_boost_hw": "Čas za toplo vodo EvoHome v nekaj minutah poveča čas"
         }
     },
     "switches": {
@@ -263,5 +271,14 @@
         "direction_WNW": "west-northwest",
         "direction_WSW": "west-southwest",
         "wind": "Wind"
+    },
+    "evohome": {
+        "Auto": "Samodejno",
+        "AutoWithEco": "Gospodarstvo",
+        "Away": "Away",
+        "Custom": "Po meri",
+        "DayOff": "Prosti dan",
+        "HeatingOff": "Izklopljeno",
+        "TemporaryOverride": "Preglasiti"
     }
 }
