@@ -4,6 +4,16 @@ Release Notes
 For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedocs.io/en/beta/releasenotes/index.html
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
+Recent changes
+---------------
+
+Fixes
+  * Change traffic info provider for traffic block
+
+3.5.0 Beta
+-----------
+
+Same as 3.5 Master
 
 3.5 Master
 --------------
