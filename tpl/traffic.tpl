@@ -15,5 +15,5 @@
 </table>
 -->
 
-<div>{{numberOfJams}} files, {{totalLengthOfJams}} km</div>
-<div>{{numberOfIncidents}} meldingen</div>
+<div>{{numberOfJams}} files, {{totalLengthOfJams}} km, {{numberOfIncidents}} meldingen</div>
+{{#if show_lastupdate}}<div class="lastupdate">{{lastupdate}}</div>{{/if}}
