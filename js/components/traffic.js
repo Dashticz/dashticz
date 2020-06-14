@@ -1,4 +1,4 @@
-/* global _CORS_PATH Dashticz templateEngine*/
+/* global _CORS_PATH Dashticz templateEngine moment settings*/
 // eslint-disable-next-line no-unused-vars
 var DT_traffic = {
   name: 'traffic',
@@ -10,13 +10,15 @@ var DT_traffic = {
     refresh: 300,
     link: 'https://www.nu.nl/verkeer',
     linkUseCors: false,
+    show_lastupdate: true,
   },
   refresh: function (me) {
     var rssurl = _CORS_PATH + 'https://api.rwsverkeersinfo.nl/api/traffic/';
 
     $.getJSON(rssurl).then(function (data) {
       return templateEngine.load('traffic').then(function (template) {
-        console.log(data);
+        data.show_lastupdate = me.block.show_lastupdate;
+        data.lastupdate = moment().format(settings['timeformat']);
         $(me.mountPoint + ' .dt_state').html(template(data));
       });
     });
