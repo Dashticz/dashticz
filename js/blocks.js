@@ -2201,7 +2201,7 @@ function speak(textToSpeak) {
 }
 
 function playAudio(file) {
-  //    var key = $.md5(file);
+  //    var key = md5(file);
   file = file.split('/');
 
   var filename = file[file.length - 1].split('.');

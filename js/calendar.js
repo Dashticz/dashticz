@@ -60,7 +60,7 @@ function addCalendar(calobject, icsUrlorg) {
 
     curUrl = curUrl.replace('https://cors-anywhere.herokuapp.com/', '');
 
-    colors[$.md5(curUrl)] = color;
+    colors[md5(curUrl)] = color;
     var cache = new Date().getTime();
     curUrl =
       settings['dashticz_php_path'] +
@@ -92,7 +92,7 @@ function addCalendar(calobject, icsUrlorg) {
         event1.end += offset;
         var enddateStamp = event1.end;
 
-        event1.color = colors[$.md5(url)];
+        event1.color = colors[md5(url)];
         if (parseFloat(enddateStamp) >= moment().format('X')) {
           if (typeof calitems[event1.start] === 'undefined')
             calitems[event1.start] = [];

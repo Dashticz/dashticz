@@ -7,6 +7,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Code
+  # Update to jquery 3.5.1
+
 3.5.1 Beta
 -----------
 
