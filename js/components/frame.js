@@ -25,18 +25,20 @@ var DT_frame = {
     var html = '';
     var height = me.block.height ? ';height:' + me.block.height + 'px' : '';
     html +=
-      '<iframe ' +
-      scrolling +
-      ' style="border:0px' +
-      height +
-      ';"></iframe>';
+      '<iframe ' + scrolling + ' style="border:0px' + height + ';"></iframe>';
     return html;
   },
   refresh: function (me) {
     if (typeof me.block.frameurl !== 'undefined') {
       $(me.mountPoint)
         .find('iframe')
-        .attr('src', DT_function.checkForceRefresh(me.block, me.block.frameurl));
+        .attr(
+          'src',
+          DT_function.checkForceRefresh(
+            me.block.frameurl,
+            me.block.forcerefresh
+          )
+        );
     }
   },
 };
