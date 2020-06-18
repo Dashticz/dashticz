@@ -280,7 +280,7 @@ function handleStringBlock(blocktype, columndiv, c) {
         switch (icons[i]) {
           case 'settings':
             content +=
-              '<span class="settings settingsicon" data-id="settings" data-target="#settingspopup" data-toggle="modal"><em class="fas fa-cog"/> </span>';
+              '<span class="settings settingsicon" data-id="settings" data-target="#settingspopup" data-toggle="modal"><em class="fas fa-cog"></em> </span>';
             break;
 
           case 'fullscreen':
