@@ -1,4 +1,4 @@
-/* global getRandomInt createModalDialog getLog checkForceRefresh toSlide MoonPhase Dashticz*/
+/* global getRandomInt DT_function getLog toSlide MoonPhase Dashticz*/
 
 // eslint-disable-next-line no-unused-vars
 var DT_button = {
@@ -55,7 +55,7 @@ var DT_button = {
   ) {
     var random = getRandomInt(1, 100000);
     $('body').append(
-      createModalDialog('openpopup', 'button_' + random, button)
+      DT_function.createModalDialog('openpopup', 'button_' + random, button)
     );
     if (button.log == true) {
       if (typeof getLog !== 'function')
@@ -87,7 +87,7 @@ var DT_button = {
   refreshButtonFrame: function (button, buttonid) {
     var mydiv = $('#button_' + buttonid).find('iframe');
     if (mydiv.length > 0) {
-      mydiv.attr('src', checkForceRefresh(button, button.url));
+      mydiv.attr('src', DT_function.checkForceRefresh(button, button.url));
       setTimeout(function () {
         DT_button.refreshButtonFrame(button, buttonid);
       }, button.refreshiframe * 1000);
@@ -99,7 +99,7 @@ var DT_button = {
   {
     var button = m_event.data;
     var hasPassword = button.password;
-    if (!Dashticz.promptPassword(hasPassword)) return;
+    if (!DT_function.promptPassword(hasPassword)) return;
 
     if (typeof button.newwindow !== 'undefined') {
       if (button.newwindow == '0') {
@@ -129,7 +129,7 @@ var DT_button = {
     if (typeof me.block.btnimage !== 'undefined') {
       if (me.block.btnimage === 'moon')
         src = DT_button.getMoonInfo(me.block.btnimage);
-      else src = checkForceRefresh(me.block, me.block.btnimage);
+      else src = DT_function.checkForceRefresh(me.block, me.block.btnimage);
       $(me.mountPoint + ' .dt_content img').attr('src', src);
     }
   },

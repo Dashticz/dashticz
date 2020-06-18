@@ -1,4 +1,4 @@
-/* global checkForceRefresh settings Dashticz isDefined functions*/
+/* global Dashticz DT_function isDefined templateEngine*/
 // eslint-disable-next-line no-unused-vars
 var DT_camera = {
   name: 'camera',
@@ -85,7 +85,7 @@ var DT_camera = {
           div: cam.multi,
           index: cam.index,
           mount: cam.mountpoint.slice(1),
-          image: checkForceRefresh(me.block, cam.imageUrl),
+          image: DT_function.checkForceRefresh(me.block, cam.imageUrl),
           height: me.block && me.block.height ? me.block.height : 300,
           mjpeg: cam.mjpeg,
           id: cam.key,
@@ -110,7 +110,7 @@ var DT_camera = {
       if (!DT_camera.carousel) {
         $('.' + me.mountpoint.slice(1) + '_camImage').attr(
           'src',
-          checkForceRefresh(me.block, me.imageUrl)
+          DT_function.checkForceRefresh(me.block, me.imageUrl)
         );
       }
     }, me.refresh);
@@ -166,7 +166,7 @@ var DT_camera = {
       DT_camera.streamtimer = setInterval(function () {
         $cam.attr(
           'src',
-          checkForceRefresh(me.block, DT_camera.devices[index].imageUrl)
+          DT_function.checkForceRefresh(me.block, DT_camera.devices[index].imageUrl)
         );
       }, DT_camera.devices[index].refresh);
     }
@@ -222,7 +222,7 @@ var DT_camera = {
       if ($('.cam-tray').hasClass('open')) {
         $('.cam-tray-item .cam-tray-img').each(function (index) {
           if (isDefined(DT_camera.devices[index])) {
-            var refreshUrl = checkForceRefresh(
+            var refreshUrl = DT_function.checkForceRefresh(
               me.block,
               DT_camera.devices[index].imageUrl
             );
@@ -324,7 +324,7 @@ var DT_camera = {
     });
 
     /* Listens when the carousel slides automatically */
-    $('body').on('slide.bs.carousel', '#camCarousel', function (e) {
+    $('body').on('slide.bs.carousel', '#camCarousel', function () {
       DT_camera.slide(me, true);
     });
   },

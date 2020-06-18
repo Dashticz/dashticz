@@ -88,8 +88,8 @@
 #loadingMessage {
   width: 100%;
   height: 100%;
-  z-index: 1000;
-  background: #fff;
+/*  z-index: 1000;*/
+/*  background: #fff;*/
   top: 0px;
   left: 0px;
   position: absolute;
@@ -3586,10 +3586,6 @@ td.agenda-title {
 /* END: DIAL */
 
 /* Traffic */
-.traffic td {
-  padding-right: 5px;
-}
-
 #trafficweb iframe {
   width: 100%;
   height: 575px
