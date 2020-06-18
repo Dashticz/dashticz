@@ -337,7 +337,7 @@ function controlLogitech(idx, action) {
 var statusmsg = '';
 // eslint-disable-next-line no-unused-vars
 function switchSecurity(level, pincode) {
-  pincode = $.md5(pincode);
+  pincode = md5(pincode);
   Domoticz.request(
     'type=command&param=setsecstatus&secstatus=' + level + '&seccode=' + pincode
   ).then(function (data) {

@@ -11,7 +11,7 @@ window.SpotifyWebApi = require('spotify-web-api-js');
 require('@fortawesome/fontawesome-free/css/all.css');
 require('mobile-detect');
 /* removed from functions.js */
-require('jquery.md5');
+window.md5=require('md5');
 require('js-cookie');
 require('script-loader!./functions.js');
 
