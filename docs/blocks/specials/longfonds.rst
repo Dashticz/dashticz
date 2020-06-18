@@ -6,8 +6,9 @@ Longfonds
 .. image :: img/longfonds.jpg
 
 Longfonds shows the air quality as a value from https://www.longfonds.nl/gezondelucht/check
+The air quality is a value from 0 (good) to 11 (very bad).
 
-First you have to set the following config parameters::
+You can use the following config settings or use the block parameters to set the address::
 
 	config['longfonds_zipcode'] = '1234AZ';
 	config['longfonds_housenumber'] = '99';
@@ -32,6 +33,10 @@ Block parameters
 
   * - Parameter
     - Description
+  * - postcode
+    - ``<postcode>``: Zipcode (if not set in config)
+  * - housenumber
+    - ``<housenumber>``: Housenumber (if not set in config)
   * - width
     - ``1..12``: The width of the block relative to the column width
   * - title
