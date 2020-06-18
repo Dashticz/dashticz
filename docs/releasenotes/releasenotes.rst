@@ -7,6 +7,12 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+3.5.1 Beta
+-----------
+
+Enhancements
+  * Domoticz textblocks, traffic, trafficinfo, longfonds and public transport now support the block parameters ``url``, ``newwindow``, ``forcerefresh`` and ``password`` giving it the same behavior as a button if you want to open an url on click.
+
 Fixes
   * Change traffic info provider for traffic block
 

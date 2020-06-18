@@ -1,8 +1,9 @@
 {
-"version": "3.5.0",
+"version": "3.5.1",
 "branch": "beta",
-"last_changes": "Beta version derived from 3.5 master",
+"last_changes": "url block parameter implemented for several blocks, traffic block fix",
 "changelog" : {
+            "3.5.0": "Beta version derived from 3.5 master",
             "3.5": "Master version"
             }
 }

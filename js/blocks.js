@@ -1,7 +1,7 @@
 /* eslint-disable no-debugger */
 /*global getBlockTypesBlock, language, _TEMP_SYMBOL, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
 /*global getSpotify, getCoin, loadChromecast, loadGarbage, loadSonarr */
-/*global Dashticz, Domoticz, getLog, addCalendar */
+/*global Dashticz, DT_function, Domoticz, getLog, addCalendar */
 /*global getRandomInt, moment, number_format */
 /*from bundle.js*/
 /*global ion*/
@@ -878,21 +878,21 @@ function getStatusBlock(block) {
 
 function getBlockClick(block) {
   var device = block.device;
-  var link = block.link; //todo: undocumented feature
-  var target = block.target;
+  var url = block.url; //todo: undocumented feature
   var graph = block.graph;
   //var blockSel = '.block_'+ block.mountPoint.slice(1);
   //console.log('getBlockClick for ', block);
   //   var $div=blockdef.$mountPoint.find('.block_'+blockdef.idx);
   var $div = block.$mountPoint.find('.mh');
-  if (link) {
+  if (url) {
     if ($div.length > 0) {
       $div
         .addClass('hover')
         .off('click')
         .click(function () {
-          if (target === '_blank') window.open(block.link);
-          else if (target === 'iframe') addBlockClickFrame(block);
+/*          if (target === '_blank') window.open(block.link);
+          else if (target === 'iframe') addBlockClickFrame(block);*/
+          DT_function.clickHandler({block:block})
         });
     }
   } else if (graph === false) {
@@ -1175,7 +1175,7 @@ function triggerStatus(block) {
         $('.modal.openpopup,.modal-backdrop').remove();
 
         $('body').append(
-          createModalDialog(
+          DT_function.createModalDialog(
             'openpopup',
             'popup_' + random,
             block['openpopupOn']
@@ -1209,7 +1209,7 @@ function triggerStatus(block) {
         $('.modal.openpopup,.modal-backdrop').remove();
 
         $('body').append(
-          createModalDialog(
+          DT_function.createModalDialog(
             'openpopup',
             'popup_' + random,
             block['openpopupOff']
@@ -1264,7 +1264,7 @@ function triggerChange(block) {
       $('.modal.openpopup,.modal-backdrop').remove();
 
       $('body').append(
-        createModalDialog('openpopup', 'popup_' + random, block['openpopup'])
+        DT_function.createModalDialog('openpopup', 'popup_' + random, block['openpopup'])
       );
 
       $('#popup_' + random).modal('show');
@@ -2102,7 +2102,7 @@ function getTempHumBarBlock(block) {
 function loadMaps(b, map) {
   if (typeof map.link !== 'undefined') {
     map['url'] = map.link;
-    $('body').append(createModalDialog('', 'trafficmap_frame_' + b, map));
+    $('body').append(DT_function.createModalDialog('', 'trafficmap_frame_' + b, map));
   }
 
   var key = 'UNKNOWN';
@@ -2223,57 +2223,6 @@ function playAudio(file) {
   ion.sound.play(filename);
 }
 
-function createModalDialog(dialogClass, dialogId, myFrame) {
-  var setWidth = false;
-  var setHeight = false;
-  var mySetUrl = 'data-popup';
-  var mywidth = '',
-    myheight = '';
-  if (typeof myFrame.framewidth !== 'undefined') {
-    mywidth = myFrame.framewidth;
-    setWidth = true;
-    if (typeof mywidth === 'number') mywidth = mywidth + 'px';
-  }
-  if (typeof myFrame.frameheight !== 'undefined') {
-    myheight = myFrame.frameheight;
-    setHeight = true;
-    if (typeof myheight === 'number') myheight = myheight + 'px';
-  }
-  var html =
-    '<div class="modal fade ' +
-    dialogClass +
-    '" id="' +
-    dialogId +
-    '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
-
-  html += '<div class="modal-dialog modal-dialog-custom" style="';
-  html += setWidth ? 'width: ' + mywidth + '; ' : '';
-  html += '" >';
-
-  html += '<div class="modal-content">';
-  html += '<div class="modal-header frameclose">';
-  html +=
-    '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
-  html += '</div>';
-  html += '<div class="modal-body modalframe">';
-  if (dialogClass === 'openpopup') {
-    mySetUrl = 'src';
-  }
-  html += '<div id="loadingMessage">' + language.misc.loading + '</div>';
-  html +=
-    '<iframe class="popupheight" ' +
-    mySetUrl +
-    '="' +
-    myFrame.url +
-    '" width="100%" height="100%" frameborder="0" allowtransparency="true" style="';
-  html += setHeight ? 'height: ' + myheight + '; ' : '';
-  html += '" onload="removeLoading()" ></iframe> ';
-  html += '</div>';
-  html += '</div>';
-  html += '</div>';
-  html += '</div>';
-  return html;
-}
 
 /*Todo: make map a regular block*/
 // eslint-disable-next-line no-unused-vars
