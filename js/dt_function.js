@@ -1,13 +1,13 @@
 /* global toSlide getRandomInt settings infoMessage language*/
 // eslint-disable-next-line no-unused-vars
 var DT_function = (function () {
-  /**Clickhandler for Dashticz block 
+  /**Clickhandler for Dashticz block
    * @param {object} me Block definition of Dashticz block
    * @param {object} cfg Additional block configuration settings which will be merged (optional).
-  */
+   */
   function clickHandler(me, cfg) {
-    var block = {key: me.key}
-    $.extend(block,me.block, cfg)
+    var block = { key: me.key };
+    $.extend(block, me.block, cfg);
     var hasPassword = block.password;
     if (!promptPassword(hasPassword)) return;
 
@@ -19,7 +19,7 @@ var DT_function = (function () {
       } else if (block.newwindow == '2') {
         blockLoadFrame(block);
       } else if (block.newwindow == '3') {
-        $.ajax(checkForceRefresh(block, block.url));
+        $.ajax(checkForceRefresh(block.url, block.forcerefresh));
       } else {
         blockLoadFrame(block);
       }
@@ -32,20 +32,18 @@ var DT_function = (function () {
 
   function blockLoadFrame(block) {
     //Displays the frame of a block after pressing it
-    var id = 'popup_' + (block.key || getRandomInt(1, 100000))
-    $('body').append(
-      createModalDialog('openpopup', id, block)
-    );
-    $('#'+id).on('hidden.bs.modal', function () {
+    var id = 'popup_' + (block.key || getRandomInt(1, 100000));
+    $('body').append(createModalDialog('openpopup', id, block));
+    $('#' + id).on('hidden.bs.modal', function () {
       $(this).data('bs.modal', null);
       $(this).remove();
     });
 
-    $('#'+id).modal('show');
+    $('#' + id).modal('show');
   }
 
   // eslint-disable-next-line no-unused-vars
-  function checkForceRefresh(m_instance, url) {
+  function checkForceRefresh(url, forcerefresh) {
     //forcerefresh is set to 1 or true:
     //   adds current time to an url as second parameter (for webcams)
     //   adds the timestamp as first parameter if there are no parameters yet
@@ -53,11 +51,11 @@ var DT_function = (function () {
     //   calls nocache.php and prevent caching by setting headers in php.
     //forcerefresh:3
     //   adds timestamp parameter to the end of the url
-
-    if (typeof m_instance.forcerefresh !== 'undefined') {
+    // If forcerefresh is undefined then m_instance.forcerefresh will be used
+    if (typeof forcerefresh !== 'undefined') {
       var str = '' + new Date().getTime();
       var mytimestamp = 't=' + str.substr(str.length - 8, 5);
-      switch (m_instance.forcerefresh) {
+      switch (forcerefresh) {
         case true:
         case 1:
           //try to add the timestamp as second parameter
@@ -147,7 +145,7 @@ var DT_function = (function () {
     var mySetUrl = 'data-popup';
     var mywidth = '';
     var myheight = '';
-    var url = checkForceRefresh(myFrame, myFrame.url);
+    var url = checkForceRefresh(myFrame.url, myFrame.forcerefresh);
     if (typeof myFrame.framewidth !== 'undefined') {
       mywidth = myFrame.framewidth;
       setWidth = true;
@@ -187,7 +185,7 @@ var DT_function = (function () {
       '" width="100%" height="100%" frameborder="0" allowtransparency="true" style="';
     html += setHeight ? 'height: ' + myheight + '; ' : '';
     html += '" onload="removeLoading()"';
-    html+='></iframe> ';
+    html += '></iframe> ';
     html += '</div>';
     html += '</div>';
     html += '</div>';
