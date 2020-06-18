@@ -1,4 +1,4 @@
-/* global checkForceRefresh Dashticz*/
+/* global Dashticz DT_function*/
 // eslint-disable-next-line no-unused-vars
 var DT_frame = {
   name: 'frame',
@@ -25,9 +25,7 @@ var DT_frame = {
     var html = '';
     var height = me.block.height ? ';height:' + me.block.height + 'px' : '';
     html +=
-      '<iframe src="' +
-      me.block.frameurl +
-      '"' +
+      '<iframe ' +
       scrolling +
       ' style="border:0px' +
       height +
@@ -36,11 +34,13 @@ var DT_frame = {
   },
   refresh: function (me) {
     if (typeof me.block.frameurl !== 'undefined') {
-      $(me.containerId)
+      $(me.mountPoint)
         .find('iframe')
-        .attr('src', checkForceRefresh(me.block, me.block.frameurl));
+        .attr('src', DT_function.checkForceRefresh(me.block, me.block.frameurl));
     }
   },
 };
 
 Dashticz.register(DT_frame);
+
+//# sourceURL=js/components/frame.js

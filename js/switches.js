@@ -5,8 +5,8 @@
 /* global sliding:writable  slide:writable*/
 /* from domoticz-api.js*/
 /* global Domoticz*/
-/* from dashticz.js*/
-/* global Dashticz*/
+/* from dt_function.js*/
+/* global DT_function*/
 /* from dial.js */
 /* global DT_dial */
 /* from blocks.js */
@@ -114,7 +114,7 @@ function switchDevice(block, pMode, pAskConfirm) {
   if (isProtected(block)) return;
 
   var hasPassword = block.password;
-  if (!Dashticz.promptPassword(hasPassword)) return;
+  if (!DT_function.promptPassword(hasPassword)) return;
   var doStatus = '';
   var param = 'switchlight';
   switch (pMode) {
@@ -184,7 +184,7 @@ function toggleItem(block, currentState) {
 function switchBlinds(block, action) {
   var idx = block.idx;
   var hasPassword = block.password;
-  if (!Dashticz.promptPassword(hasPassword)) return;
+  if (!DT_function.promptPassword(hasPassword)) return;
 
   var $icondiv = block.$mountPoint.find('.mh').find('.icon');
   var src = $icondiv.attr('src');
@@ -451,7 +451,7 @@ function getDimmerBlock(block, buttonimg) {
 
     $rgbdiv.on('dragstop.spectrum', function (e, color) {
       var hasPassword = block.password;
-      if (!Dashticz.promptPassword(hasPassword)) return;
+      if (!DT_function.promptPassword(hasPassword)) return;
 
       color = color.toHexString();
       Cookies.set('rgbw_' + idx, color);
@@ -678,7 +678,7 @@ function addSlider(block, sliderValues) {
     change: function (event, ui) {
       //            slideDeviceExt($(this).data('light'), ui.value, 2);
       var hasPassword = block.password;
-      if (!Dashticz.promptPassword(hasPassword)) return;
+      if (!DT_function.promptPassword(hasPassword)) return;
 
       slideDevice(block, ui.value);
     },
