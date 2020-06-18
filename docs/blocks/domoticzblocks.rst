@@ -7,6 +7,7 @@ Several types of Domoticz blocks can be defined:
 * Scenes
 * Groups
 * Variables
+* Texts
 
 Devices
 -------
@@ -174,6 +175,13 @@ Block parameters
   * - unit
     - | String that will be placed behind the device value to indicate the unit.
       | ``'kilowatt'``: The string will replace the default unit.
+  * - url
+    - ``'<url>'``: URL of the page to open in a popup frame or new window on click. For text blocks.
+  * - newwindow
+    - | ``0``: no new window/frame (for intent handling, api calls)
+      | ``1``: open in new window
+      | ``2``: open in new frame (default, to prevent a breaking change in default behavior)
+
 
 There are several additional parameters for Graphs. See :ref:`dom_graphs`
       
