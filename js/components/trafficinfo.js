@@ -5,11 +5,17 @@ var DT_trafficinfo = {
     return block && (block.trafficJams || block.roadWorks || block.radars);
   },
   defaultCfg: function (block) {
-    if (block.refresh && parseFloat(block.refresh) < 60) block.refresh = 60;
+    if (block && block.refresh && parseFloat(block.refresh) < 60)
+      block.refresh = 60;
     return {
       icon: 'fas fa-car',
       containerClass: 'trafficinforow',
-      refresh: 60,
+      refresh: 300,
+      url: 'https://www.anwb.nl/verkeer',
+      newwindow: 1,
+      clickHandler: true,
+      provider: 'anwb',
+      results: 50,
     };
   },
   defaultContent: language.misc.loading,
@@ -54,7 +60,8 @@ var DT_trafficinfo = {
                   dataPart[key] = [];
                 }
                 dataPart[key][i] = '';
-                dataPart[key][i] += '<div><b class="title">' + roadArray[x] + '</b><br>';
+                dataPart[key][i] +=
+                  '<div><b class="title">' + roadArray[x] + '</b><br>';
                 dataPart[key][i] += 'Geen verkeersinformatie';
                 dataPart[key][i] += '<br></div>';
               }
@@ -95,7 +102,8 @@ var DT_trafficinfo = {
                           }
                           //if (typeof (trafficobject.title) == 'undefined' || (typeof (trafficobject.title) != 'undefined' && typeof (trafficobject.road) == 'undefined')){
                           if (key != header) {
-                            dataPart[key][i] = '<div><b class="title">' + roadId + '</b><br>';
+                            dataPart[key][i] =
+                              '<div><b class="title">' + roadId + '</b><br>';
                             header = key;
                           } else {
                             dataPart[key][i] = '<div>';
@@ -103,11 +111,19 @@ var DT_trafficinfo = {
                           //}
                           if (segments[segment][seg][s]['from'] != null) {
                             dataPart[key][i] +=
-                              '<b>' + segments[segment][seg][s]['from'] + '</b>';
+                              '<b>' +
+                              segments[segment][seg][s]['from'] +
+                              '</b>';
                           }
-                          if (segments[segment][seg][s]['to'] != null && (segments[segment][seg][s]['to'] != segments[segment][seg][s]['from'])) {
+                          if (
+                            segments[segment][seg][s]['to'] != null &&
+                            segments[segment][seg][s]['to'] !=
+                              segments[segment][seg][s]['from']
+                          ) {
                             dataPart[key][i] +=
-                              '<b> - ' + segments[segment][seg][s]['to'] + '</b>';
+                              '<b> - ' +
+                              segments[segment][seg][s]['to'] +
+                              '</b>';
                           }
                           if (
                             segments[segment][seg][s]['from'] != null ||
@@ -210,3 +226,5 @@ var DT_trafficinfo = {
 };
 
 Dashticz.register(DT_trafficinfo);
+
+//# sourceURL=js/components/trafficinfo.js

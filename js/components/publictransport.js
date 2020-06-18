@@ -5,8 +5,20 @@ var DT_publictransport = {
   canHandle: function (block) {
     return block && block.station;
   },
-  defaultCfg: {
-    refresh: 60,
+  defaultCfg: function (block) {
+    var result = {
+      refresh: 60,
+      provider: '9292',
+      station: 'station-utrecht-centraal',
+      clickHandler: true, //If url is defined in block def then clickHandler will be installed by Dashticz
+      results: 10,
+    };
+    if (!block || !block.station) {
+      result.url =
+        'https://dashticz.readthedocs.io/en/master/blocks/specials/publictransport.html';
+      result.title = 'Example: Utrecht CS';
+    }
+    return result;
   },
   defaultContent: language.misc.loading,
   refresh: function (me) {
@@ -380,3 +392,5 @@ var DT_publictransport = {
 };
 
 Dashticz.register(DT_publictransport);
+
+//# sourceURL=js/components/publictransport.js
