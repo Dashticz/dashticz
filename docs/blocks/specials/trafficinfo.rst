@@ -60,6 +60,12 @@ Parameters
     - ``false`` , ``true``.  To show road work info
   * - radars
     - ``false`` , ``true``.  To show radar info
+  * - url
+    - ``'<url>'``: URL of the page to open in a popup frame or new window on click. 
+  * - newwindow
+    - | ``0``: no new window/frame (for intent handling, api calls)
+      | ``1``: open in new window
+      | ``2``: open in new frame (default, to prevent a breaking change in default behavior)
 
 
 
