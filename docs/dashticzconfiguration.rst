@@ -243,6 +243,13 @@ Config parameters
   * - speak_lang
     - | Text to speech language
       | ``'<LANGUAGE>'`` Language options: de-DE, en-US, es-ES, fr-FR, it-IT, nl-NL, pl-PL, ru-RU
+  * - longfonds_zipcode
+    - | Longfonds (Dutch air quality check) zipcode.
+      | ``'1234AZ'`` Language options
+  * - longfonds_housenumber
+    - | Longfonds (Dutch air quality check) housenumber
+      | ``'123'`` Language options
+      
 
 Usage
 #####
