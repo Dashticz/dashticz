@@ -11,6 +11,7 @@ var DT_button = {
       containerClass:
         (button && button.slide ? 'slide slide' + button.slide : '') +
         (DT_button.buttonIsClickable(button) ? ' hover ' : ' '),
+      forcerefreshiframe: 0,
     };
     if (button.btnimage) {
       cfg.refresh = 60;
@@ -54,8 +55,10 @@ var DT_button = {
     button //Displays the frame of a button after pressing is
   ) {
     var random = getRandomInt(1, 100000);
+    var block = {};
+    $.extend(block, button, { forcerefresh: button.forcerefreshiframe }); //Maybe not the most clean way. Overwrite forcerefresh for iframe
     $('body').append(
-      DT_function.createModalDialog('openpopup', 'button_' + random, button)
+      DT_function.createModalDialog('openpopup', 'button_' + random, block)
     );
     if (button.log == true) {
       if (typeof getLog !== 'function')
@@ -87,16 +90,18 @@ var DT_button = {
   refreshButtonFrame: function (button, buttonid) {
     var mydiv = $('#button_' + buttonid).find('iframe');
     if (mydiv.length > 0) {
-      mydiv.attr('src', DT_function.checkForceRefresh(button, button.url));
+      mydiv.attr(
+        'src',
+        DT_function.checkForceRefresh(button.url, button.forcerefreshiframe)
+      );
       setTimeout(function () {
         DT_button.refreshButtonFrame(button, buttonid);
       }, button.refreshiframe * 1000);
     }
   },
   buttonOnClick: function (
-    m_event
-  ) //button clickhandler. Assumption: button is clickable
-  {
+    m_event //button clickhandler. Assumption: button is clickable
+  ) {
     var button = m_event.data;
     var hasPassword = button.password;
     if (!DT_function.promptPassword(hasPassword)) return;
@@ -129,7 +134,11 @@ var DT_button = {
     if (typeof me.block.btnimage !== 'undefined') {
       if (me.block.btnimage === 'moon')
         src = DT_button.getMoonInfo(me.block.btnimage);
-      else src = DT_function.checkForceRefresh(me.block, me.block.btnimage);
+      else
+        src = DT_function.checkForceRefresh(
+          me.block.btnimage,
+          me.block.forcerefresh
+        );
       $(me.mountPoint + ' .dt_content img').attr('src', src);
     }
   },
