@@ -5,8 +5,10 @@ Longfonds
 
 .. image :: img/longfonds.jpg
 
-Longfonds shows the air quality as a value from https://www.longfonds.nl/gezondelucht/check
-The air quality is a value from 0 (good) to 11 (very bad).
+- Longfonds shows the air quality as a value from https://www.longfonds.nl/gezondelucht/check
+- The air quality is a value from 0 (good) to 11 (very bad)
+
+The current data for this check comes from RIVM. The air quality is continuously measured at more than 100 monitoring stations in the Netherlands by the Dutch air monitoring networks. RIVM also calculates the air quality at your location. The calculated air quality index is based on 3 types of pollution: particulate matter, ozone and nitrogen dioxide. A new value is available every hour.
 
 You can use the following config settings or use the block parameters to set the address::
 
