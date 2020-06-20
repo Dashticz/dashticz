@@ -33,8 +33,8 @@ Block parameters
 
   * - Parameter
     - Description
-  * - postcode
-    - ``<postcode>``: Zipcode (if not set in config)
+  * - zipcode
+    - ``<zipcode>``: Zipcode (if not set in config)
   * - housenumber
     - ``<housenumber>``: Housenumber (if not set in config)
   * - width
