@@ -108,6 +108,8 @@ The following block parameters can be used to configure the graph:
     - ``datasetColors: ['Blue','#D3D3D3','rgb(44,130,201)','rgba(44,130,201,1)']`` Use custom colors for the graph lines/bars. Must be *html colors*, *hex code*, *rgb* or *rgba string*. See :ref:`datasetColors`.
   * - iconColour
     - colours the graph's title icons (default is grey)
+  * - fontColor
+    - font color for the axis ticks and labels (default is white)
   * - lineFill
     - if line graph, this fills the graph, it is an array for each dataset, e.g.['true', 'false', 'true'] (default is false)
   * - borderWidth
