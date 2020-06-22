@@ -1,9 +1,9 @@
-/* global checkForceRefresh settings Dashticz isDefined functions*/
+/* global Dashticz DT_function isDefined templateEngine*/
 // eslint-disable-next-line no-unused-vars
 var DT_camera = {
-    name: "camera",
+    name: 'camera',
     canHandle: function(block) {
-        return block && block.type === "camera";
+        return block && block.type === 'camera';
     },
 
     /**
@@ -24,13 +24,13 @@ var DT_camera = {
      * Default block config for camera functions.
      */
     defaultCfg: {
-        title: "",
+        title: '',
         forcerefresh: 1,
         traytimeout: 5,
         refresh: 1,
         slidedelay: 3,
         cameras: [],
-        width: 6
+        width: 6,
     },
 
     /**
@@ -41,9 +41,9 @@ var DT_camera = {
         /* The camera block contains multiple cameras */
         if (me.block.cameras.length > 0) {
             /* Create new mountpoints for each of the cameras */
-            var s = $(me.mountPoint).closest(".screen").data("screenindex");
-            var c = $(me.mountPoint).closest(".col-xs-12").data("colindex");
-            var columndiv = "div.screen" + s + " .row .col" + c;
+            var s = $(me.mountPoint).closest('.screen').data('screenindex');
+            var c = $(me.mountPoint).closest('.col-xs-12').data('colindex');
+            var columndiv = 'div.screen' + s + ' .row .col' + c;
             $(me.mountPoint).remove();
 
             $.each(me.block.cameras, function(i) {
@@ -81,21 +81,24 @@ var DT_camera = {
         /* Create the thumbs for each camera and add to mountpoint */
         $.each(DT_camera.devices, function(i) {
             var cam = DT_camera.devices[i];
-            templateEngine.load("camera_image").then(function(template) {
+            templateEngine.load('camera_image').then(function(template) {
                 var data = {
                     div: cam.multi,
                     index: cam.index,
                     mount: cam.mountpoint.slice(1),
-                    image: checkForceRefresh(me.block, cam.imageUrl),
+                    image: DT_function.checkForceRefresh(
+                        cam.imageUrl,
+                        me.block.forcerefresh
+                    ),
                     height: me.block && me.block.height ? me.block.height : 300,
                     mjpeg: cam.mjpeg,
                     id: cam.key,
                 };
-                var div = cam.multi ? "" : " > div";
+                var div = cam.multi ? '' : ' > div';
                 $(cam.mountpoint + div).html(template(data));
-                $(cam.mountpoint + " div")
-                    .removeClass("col-xs-6")
-                    .addClass("col-xs-" + me.block.width);
+                $(cam.mountpoint + ' div')
+                    .removeClass('col-xs-6')
+                    .addClass('col-xs-' + me.block.width);
             });
 
             DT_camera.setTrayTimeout(cam);
@@ -112,9 +115,9 @@ var DT_camera = {
     reloadThumb: function(me) {
         DT_camera.thumbtimer = setInterval(function() {
             if (!DT_camera.carousel) {
-                $("." + me.mountpoint.slice(1) + "_camImage").attr(
-                    "src",
-                    checkForceRefresh(me.block, me.imageUrl)
+                $('.' + me.mountpoint.slice(1) + '_camImage').attr(
+                    'src',
+                    DT_function.checkForceRefresh(me.imageUrl, me.block.forcerefresh)
                 );
             }
         }, me.refresh);
@@ -127,7 +130,7 @@ var DT_camera = {
      * @param {boolean}   right   The direction of the carousel.
      */
     slide: function(me, right) {
-        var camindex = $(".carousel-inner .item.active").index();
+        var camindex = $('.carousel-inner .item.active').index();
         DT_camera.streamManager(me, camindex, right);
     },
 
@@ -140,7 +143,7 @@ var DT_camera = {
      * @param {boolean}   right      The direction of the carousel.
      */
     streamManager: function(me, camindex, right) {
-        var mjpeg = $("#cam" + camindex).data("mjpeg");
+        var mjpeg = $('#cam' + camindex).data('mjpeg');
         var direction = right ? 1 : -1;
         var limit = right ? 0 : DT_camera.devices.length - 1;
         var newindex =
@@ -150,7 +153,7 @@ var DT_camera = {
 
         var curr = DT_camera.devices[camindex];
         DT_camera.setStream(me, newindex, mjpeg);
-        $("#cam" + camindex).attr("src", curr.imageUrl);
+        $('#cam' + camindex).attr('src', curr.imageUrl);
         return;
     },
 
@@ -162,15 +165,18 @@ var DT_camera = {
      * @param {boolean}   mjpeg      Whether it's an mjpeg or image stream.
      */
     setStream: function(me, index, mjpeg) {
-        var $cam = $("body").find("#cam" + index);
+        var $cam = $('body').find('#cam' + index);
         if (mjpeg) {
-            $cam.attr("src", DT_camera.devices[index].videoUrl);
+            $cam.attr('src', DT_camera.devices[index].videoUrl);
         } else {
             clearInterval(DT_camera.streamtimer);
             DT_camera.streamtimer = setInterval(function() {
                 $cam.attr(
-                    "src",
-                    checkForceRefresh(me.block, DT_camera.devices[index].imageUrl)
+                    'src',
+                    DT_function.checkForceRefresh(
+                        DT_camera.devices[index].imageUrl,
+                        me.block.forcerefresh
+                    )
                 );
             }, DT_camera.devices[index].refresh);
         }
@@ -193,13 +199,13 @@ var DT_camera = {
      * Opens or closes the tray.
      */
     trayToggle: function() {
-        var $tray = $("#camCarousel > div.cam-tray");
-        if ($tray.hasClass("open")) {
-            $tray.removeClass("open").addClass("shut");
+        var $tray = $('#camCarousel > div.cam-tray');
+        if ($tray.hasClass('open')) {
+            $tray.removeClass('open').addClass('shut');
             clearTimeout(DT_camera.trayopentimer);
             DT_camera.trayopen = false;
         } else {
-            $tray.removeClass("shut").addClass("open");
+            $tray.removeClass('shut').addClass('open');
             DT_camera.trayopen = true;
             DT_camera.trayTimeout();
         }
@@ -223,18 +229,18 @@ var DT_camera = {
      */
     trayRefresh: function(me) {
         DT_camera.trayimgtimer = setInterval(function() {
-            if ($(".cam-tray").hasClass("open")) {
-                $(".cam-tray-item .cam-tray-img").each(function(index) {
+            if ($('.cam-tray').hasClass('open')) {
+                $('.cam-tray-item .cam-tray-img').each(function(index) {
                     if (isDefined(DT_camera.devices[index])) {
-                        var refreshUrl = checkForceRefresh(
-                            me.block,
-                            DT_camera.devices[index].imageUrl
+                        var refreshUrl = DT_function.checkForceRefresh(
+                            DT_camera.devices[index].imageUrl,
+                            me.block.forcerefresh
                         );
                         $(
-                            ".cam-tray.open > .cam-tray-item:nth-child(" +
+                            '.cam-tray.open > .cam-tray-item:nth-child(' +
                             (index + 1) +
-                            ") > img"
-                        ).attr("src", refreshUrl);
+                            ') > img'
+                        ).attr('src', refreshUrl);
                     }
                 });
             }
@@ -247,61 +253,61 @@ var DT_camera = {
      */
     listen: function(me) {
         /* Listens when thumbs are clicked on Dashticz screen */
-        $("body").on(
-            "click",
-            "." + me.mountpoint.slice(1) + "_camImage",
+        $('body').on(
+            'click',
+            '.' + me.mountpoint.slice(1) + '_camImage',
             function() {
                 DT_camera.carousel = true;
-                var mjpeg = $(this).data("mjpeg");
-                var key = $(this).data("id");
+                var mjpeg = $(this).data('mjpeg');
+                var key = $(this).data('id');
                 var index = DT_camera.devices.findIndex(function(object) {
                     return object.key === key;
                 });
 
                 /* Camera carousel opened for the first time */
-                if ($("#camCarousel").length === 0) {
-                    templateEngine.load("camera_video").then(function(template) {
-                        if ($("body #camCarousel").length === 0) {
-                            $("body").append(
+                if ($('#camCarousel').length === 0) {
+                    templateEngine.load('camera_video').then(function(template) {
+                        if ($('body #camCarousel').length === 0) {
+                            $('body').append(
                                 template({
                                     urls: DT_camera.devices,
                                     slide: me.block.slidedelay * 1000,
                                 })
                             );
-                            var $cam = $("body").find("#cam" + index);
-                            var $ind = $("body").find("#ind" + index);
-                            $("#camCarousel").carousel();
-                            $cam.parent().addClass("active");
-                            $ind.addClass("active");
+                            var $cam = $('body').find('#cam' + index);
+                            var $ind = $('body').find('#ind' + index);
+                            $('#camCarousel').carousel();
+                            $cam.parent().addClass('active');
+                            $ind.addClass('active');
                             DT_camera.setStream(me, index, mjpeg);
                         }
                     });
 
                     /* Show existing Camera carousel */
                 } else {
-                    $("#camCarousel").show();
-                    $("#camCarousel").carousel("cycle");
-                    $("#camCarousel").carousel(index);
+                    $('#camCarousel').show();
+                    $('#camCarousel').carousel('cycle');
+                    $('#camCarousel').carousel(index);
                     DT_camera.setStream(me, index, mjpeg);
                 }
             }
         );
 
         /* Listens when an image is selected in the tray */
-        $("body").on("click", ".cam-container .cam-tray-img", function() {
+        $('body').on('click', '.cam-container .cam-tray-img', function() {
             clearTimeout(DT_camera.trayopentimer);
-            var mjpeg = $(this).data("mjpeg");
-            var key = $(this).data("id");
+            var mjpeg = $(this).data('mjpeg');
+            var key = $(this).data('id');
             var index = DT_camera.devices.findIndex(function(object) {
                 return object.key === key;
             });
-            $("#camCarousel").carousel(index);
+            $('#camCarousel').carousel(index);
             DT_camera.setStream(me, index, mjpeg);
             DT_camera.trayTimeout();
         });
 
         /* Listens when the handle of the tray is clicked */
-        $("body").on("click", "#camCarousel > .handle", function() {
+        $('body').on('click', '#camCarousel > .handle', function() {
             if (!DT_camera.trayopen) {
                 DT_camera.trayToggle();
                 DT_camera.trayRefresh(me);
@@ -309,30 +315,30 @@ var DT_camera = {
         });
 
         /* Listens when the active camera in the carousel is clicked */
-        $("body").on(
-            "click",
-            "#camCarousel > div.carousel-inner > div.item.active",
+        $('body').on(
+            'click',
+            '#camCarousel > div.carousel-inner > div.item.active',
             function() {
                 if (DT_camera.carousel) {
-                    $("#camCarousel").hide();
-                    $("#camCarousel").carousel("pause");
+                    $('#camCarousel').hide();
+                    $('#camCarousel').carousel('pause');
                     DT_camera.carousel = false;
                 }
             }
         );
 
         /* Listens when user navigates left in the carousel */
-        $("body").on("click", ".cam-container .left", function() {
+        $('body').on('click', '.cam-container .left', function() {
             DT_camera.slide(me, false);
         });
 
         /* Listens when user navigates right in the carousel */
-        $("body").on("click", ".cam-container .right", function() {
+        $('body').on('click', '.cam-container .right', function() {
             DT_camera.slide(me, true);
         });
 
         /* Listens when the carousel slides automatically */
-        $("body").on("slide.bs.carousel", "#camCarousel", function(e) {
+        $('body').on('slide.bs.carousel', '#camCarousel', function() {
             DT_camera.slide(me, true);
         });
     },
