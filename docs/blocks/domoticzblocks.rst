@@ -178,10 +178,10 @@ Block parameters
   * - url
     - ``'<url>'``: URL of the page to open in a popup frame or new window on click. For text blocks.
   * - newwindow
-    - | ``0``: no new window/frame (for intent handling, api calls)
+    - | ``0``: open in current window
       | ``1``: open in new window
       | ``2``: open in new frame (default, to prevent a breaking change in default behavior)
-
+      | ``3``: no new window/frame (for intent handling, api calls)
 
 There are several additional parameters for Graphs. See :ref:`dom_graphs`
       
