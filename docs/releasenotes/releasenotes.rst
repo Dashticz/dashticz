@@ -7,6 +7,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Fixes
+  * Fix for Omrin garbage provider
+
 Code
   # Update to jquery 3.5.1
 
