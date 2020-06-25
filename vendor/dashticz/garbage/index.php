@@ -149,7 +149,7 @@ switch($_GET['service']){
 							$y=$year;
 							$m=str_pad($month, 2, '0', STR_PAD_LEFT);
 							$d=str_pad($day, 2, '0', STR_PAD_LEFT);
-							$allDates[$y.'-'.$m.'-'.$d][$garbagetype] = $y.'-'.$m.'-'.$d;
+							$allDates[$y.'-'.$m.'-'.$d][$garbagedata->title] = $y.'-'.$m.'-'.$d;
 						}
 					}
 				}
