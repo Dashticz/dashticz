@@ -482,18 +482,15 @@ function getVenloData(address, date, random) {
       $(data)
         .find('div#block-system-main div.trash-removal-calendar tbody tr')
         .each(function (index, element) {
-          var year = $(element)
-            .parents('table')
-            .find('thead')[0]
-            .innerText.substr(-5);
-          returnDates.push({
-            date: moment(
-              $(element).find('td')[0].innerText.trim() + ' ' + year,
-              'dddd DD MMMM YYYY',
-              'nl'
-            ),
-            summary: $(element).find('span')[0].innerText,
-            garbageType: mapGarbageType($(element).find('span')[0].innerText),
+          var $el = $(element);
+          var year = $el.parents('table').find('thead')[0].innerText.substr(-5);
+          var datePart = $el.find('td')[0].innerText.trim();
+          $el.find('span').each(function (index, garbageElement) {
+            returnDates.push({
+              date: moment(datePart + ' ' + year, 'dddd DD MMMM YYYY', 'nl'),
+              summary: garbageElement.innerText,
+              garbageType: mapGarbageType(garbageElement.innerText),
+            });
           });
         });
       returnDates = returnDates.filter(function (element) {
@@ -940,3 +937,4 @@ function loadDataForService(service, random) {
     serviceProperties[service].identifier
   );
 }
+//# sourceURL=js/garbage.js
