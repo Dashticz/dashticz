@@ -9,6 +9,7 @@ Recent changes
 
 Fixes
   * Fix for Omrin garbage provider
+  * Fix for Venlo garbage provider
 
 Code
   # Update to jquery 3.5.1
