@@ -114,6 +114,17 @@ Replace 192.168.1.3 with the IP Address (and Port number) for your web server, N
 
 By default, Dashticz will show all your Domoticz favorites on the dashboard.
 
+
+Updating
+--------
+
+Option 1 - From terminal you can add the following command in Dashticz folder:
+
+``git pull``
+
+Option 2 - Download zip file from GitHub, copy and extract in your Dashticz folder. Create backup of your custom folder(s) first.
+
+
 Troubleshooting
 ---------------
 
