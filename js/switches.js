@@ -1,5 +1,5 @@
 /* global showUpdateInformation settings usrEnc pwdEnc getDevices language infoMessage iconORimage getBlockData blocks */
-/* global moment Cookies hexToHsb*/
+/* global moment Cookies hexToHsb md5*/
 /* from main.js */
 // eslint-disable-next-line no-unused-vars
 /* global sliding:writable  slide:writable*/
@@ -11,6 +11,8 @@
 /* global DT_dial */
 /* from blocks.js */
 /* global getBlockTitle */
+/* from colorpicker.js */
+/* global Colorpicker */
 
 /** Returns a default switch block
  *
@@ -353,7 +355,6 @@ function switchSecurity(level, pincode) {
 // eslint-disable-next-line no-unused-vars
 function getDimmerBlock(block, buttonimg) {
   var device = block.device;
-  var idx = block.idx;
   var $div = block.$mountPoint.find('.mh');
   var html = '';
   var title = getBlockTitle(block);
@@ -394,40 +395,26 @@ function getDimmerBlock(block, buttonimg) {
       '</span>';
   }
   html += '<br />';
-  if (isRGBDeviceAndEnabled(device)) {
-    html +=
-      '<input type="text" class="rgbw rgbw' +
-      idx +
-      '" data-light="' +
-      device['idx'] +
-      '" />';
-    html +=
-      '<div class="slider slider' +
-      device['idx'] +
-      '" style="margin-left:55px;" data-light="' +
-      device['idx'] +
-      '"></div>';
-  } else {
-    html +=
-      '<div class="slider slider' +
-      device['idx'] +
-      '" data-light="' +
-      device['idx'] +
-      '"></div>';
-  }
-
+  html +=  '<div class="rgbcontainer">';
+  if ( isRGBDeviceAndEnabled(block)) html +='<div class="rgbholder"></div>';
+  html +=
+    '<div class="slider slider' +
+    device['idx'] +
+    '" data-light="' +
+    device['idx'] +
+    '"></div>';
+  html += '</div>';
   html += '</div>';
 
+  /* todo: Destroy not really needed
   var $rgbdiv = $div.find('.rgbw'); //This is the 'old' rgbdiv!
 
-  if (isRGBDeviceAndEnabled(device)) {
+  if (isRGBDeviceAndEnabled(block) && $rgbdiv.spectrum) {
     //we have to manually destroy the previous spectrum color picker
     $rgbdiv.spectrum('destroy');
   }
-
+*/
   $div.html(html);
-
-  $rgbdiv = $div.find('.rgbw'); //Now we have the new one.
 
   function dimmerClickHandler(block) {
     switchDevice(block, 'toggle', false);
@@ -436,7 +423,6 @@ function getDimmerBlock(block, buttonimg) {
   $div.off('click');
 
   if (!isProtected(block)) {
-    $div.addClass('hover');
     $div
       .on('click', function () {
         dimmerClickHandler(block);
@@ -444,61 +430,15 @@ function getDimmerBlock(block, buttonimg) {
       .addClass('hover');
   }
 
-  if (isRGBDeviceAndEnabled(device)) {
-    $rgbdiv.spectrum({
-      color: Cookies.get('rgbw_' + idx),
-    });
-
-    $rgbdiv.on('dragstop.spectrum', function (e, color) {
-      var hasPassword = block.password;
-      if (!DT_function.promptPassword(hasPassword)) return;
-
-      color = color.toHexString();
-      Cookies.set('rgbw_' + idx, color);
-      var hue = hexToHsb(color);
-      var bIsWhite = hue.s < 20;
-
-      //sliding = idx;
-      Domoticz.hold(idx); //hold message queue
-
-      var usrinfo = '';
-      if (typeof usrEnc !== 'undefined' && usrEnc !== '')
-        usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
-
-      var url =
-        settings['domoticz_ip'] +
-        '/json.htm?' +
-        usrinfo +
-        'type=command&param=setcolbrightnessvalue&idx=' +
-        idx +
-        '&hue=' +
-        hue.h +
-        '&brightness=' +
-        hue.b +
-        '&iswhite=' +
-        bIsWhite;
-      //This is a synchronous request. So it cannot directly be replaced with Domoticz.request
-      // Probably we would need a rate limiter on Domoticz.request
-      $.ajax({
-        url: url + '&jsoncallback=?',
-        type: 'GET',
-        async: false,
-        contentType: 'application/json',
-        dataType: 'jsonp',
-      });
-    });
-
-    $rgbdiv.on('hide.spectrum', function () {
-      //sliding = false;
-      Domoticz.release(idx); //release message queue
-
-      getDevices(true);
-    });
-
-    $rgbdiv.on('beforeShow.spectrum', function () {
-      Domoticz.hold(idx); //hold message queue
-      //sliding = idx;
-    });
+  switch (isRGBDeviceAndEnabled(block)) {
+    case 1:
+      addSpectrum(block);
+      break;
+    case 2:
+      addColorpicker(block);
+      break;
+    default:
+      break;
   }
 
   var slider = {};
@@ -532,6 +472,82 @@ function getDimmerBlock(block, buttonimg) {
   addSlider(block, slider);
 
   return [html, false];
+}
+
+function addColorpicker(block) {
+  var $rgbcontainer = block.$mountPoint.find('.rgbholder');
+  var html = '';
+  html +=
+    '<div class="sp-replacer sp-light"><div class="sp-preview"><div class="sp-preview-inner"></div></div><div class="sp-dd">▼</div></div>';
+  $rgbcontainer.html(html).addClass('cpholder');
+  new Colorpicker({
+    container: block.mountPoint + ' .rgbholder',
+    block: block,
+  });
+}
+
+function addSpectrum(block) {
+  var idx = block.idx;
+  var $rgbcontainer = block.$mountPoint.find('.rgbholder');
+  var html = '';
+  html +=
+    '<input type="text" class="rgbw rgbw' + idx + '" data-light="' + idx + '">';
+  $rgbcontainer.html(html).addClass('spectrum');
+  var $rgbdiv = block.$mountPoint.find('.rgbw');
+  $rgbdiv.spectrum({
+    color: Cookies.get('rgbw_' + idx),
+  });
+
+  $rgbdiv.on('dragstop.spectrum', function (e, color) {
+    var hasPassword = block.password;
+    if (!DT_function.promptPassword(hasPassword)) return;
+
+    color = color.toHexString();
+    Cookies.set('rgbw_' + idx, color);
+    var hue = hexToHsb(color);
+    var bIsWhite = hue.s < 20;
+
+    //sliding = idx;
+    Domoticz.hold(idx); //hold message queue
+
+    var usrinfo = '';
+    if (typeof usrEnc !== 'undefined' && usrEnc !== '')
+      usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
+
+    var url =
+      settings['domoticz_ip'] +
+      '/json.htm?' +
+      usrinfo +
+      'type=command&param=setcolbrightnessvalue&idx=' +
+      idx +
+      '&hue=' +
+      hue.h +
+      '&brightness=' +
+      hue.b +
+      '&iswhite=' +
+      bIsWhite;
+    //This is a synchronous request. So it cannot directly be replaced with Domoticz.request
+    // Probably we would need a rate limiter on Domoticz.request
+    $.ajax({
+      url: url + '&jsoncallback=?',
+      type: 'GET',
+      async: false,
+      contentType: 'application/json',
+      dataType: 'jsonp',
+    });
+  });
+
+  $rgbdiv.on('hide.spectrum', function () {
+    //sliding = false;
+    Domoticz.release(idx); //release message queue
+
+    getDevices(true);
+  });
+
+  $rgbdiv.on('beforeShow.spectrum', function () {
+    Domoticz.hold(idx); //hold message queue
+    //sliding = idx;
+  });
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -693,17 +709,12 @@ function addSlider(block, sliderValues) {
   });
 }
 
-function isRGBDeviceAndEnabled(device) {
-  return (
-    (typeof settings['no_rgb'] === 'undefined' ||
-      (typeof settings['no_rgb'] !== 'undefined' &&
-        parseFloat(settings['no_rgb']) === 0)) &&
-    (device['SubType'] === 'RGBWZ' ||
-      device['SubType'] === 'RGBW' ||
-      device['SubType'] === 'RGBWW' ||
-      device['SubType'] === 'RGB' ||
-      device['SubType'] === 'RGBWWZ')
-  );
+function isRGBDeviceAndEnabled(block) {
+  var dimmerTypes = ['RGB','RGBW','RGBWW','RGBZ','RGBWZ','RGBWWZ']
+  if (dimmerTypes.indexOf(block.device.SubType)===-1) return false;
+  if (typeof block.colorpicker !== 'undefined') return block.colorpicker;
+  if (typeof settings.colorpicker !== 'undefined') return settings.colorpicker;
+  return settings.no_rgb ? 0 : 1; //Default colorpicker is the old spectrum colorpicker
 }
 
 //# sourceURL=js/switches.js
