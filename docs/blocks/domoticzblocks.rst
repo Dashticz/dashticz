@@ -182,6 +182,11 @@ Block parameters
       | ``1``: open in new window
       | ``2``: open in new frame (default, to prevent a breaking change in default behavior)
       | ``3``: no new window/frame (for intent handling, api calls)
+  * - colorpicker
+    - Choose the RGB colorpicker for RGB devices. See :ref:`colorpicker`
+      | ``0``: No RGB colorpicker
+      | ``1``: Old style RGB colorpicker
+      | ``2``: New style RGB colorpicker
 
 There are several additional parameters for Graphs. See :ref:`dom_graphs`
       
@@ -465,3 +470,41 @@ You can also define the unit parameter on block level by setting the ``unit`` pa
     blocks[123] = {
       unit: 'Watt'
     }
+
+.. _colorpicker:
+
+RGB Color picker
+~~~~~~~~~~~~~~~~
+
+By setting the block parameter ``colorpicker`` to a non-zero value a color picker dropdown button will be added to a RGB device.
+
+With ``colorpicker:1`` the old style colorpicker will be added:
+
+.. image :: img/colorpicker1.jpg
+
+With ``colorpicker:2`` the enhanced colorpicker will be selected.
+The colorpicker configuration depends on the RGB type.
+The behavior is the same as in Domoticz.
+
+
+The following Domoticz RGB devices are supported:
+
+* RGB: Plain RGB dimmer
+* RGBW: RGB dimmer with white modus
+* RGBWW: RGB dimmer with white modus and adjustable white color temperature
+* RGBWZ: Dimmer with seperate adjustable levels for RGB and White leds
+* RGBWWZ: Adjustable levels for RGB and White, adjustable white color temperature
+
+.. figure :: img/cprgb.jpg
+
+   RGB device
+
+.. figure :: img/cprgbw.jpg
+  
+  RGBW device in white modus.
+
+.. figure :: img/cprgbwwz.jpg
+
+   RGBWWZ device in Mixed modus.
+
+   In this last example you see from left to right the RGB color picker, the RGB color level, the white color temperature, the white level and the master level.

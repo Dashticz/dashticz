@@ -249,6 +249,10 @@ function loadFiles(dashtype) {
         $.ajax({
           url: 'js/moon.js',
           dataType: 'script',
+        }),
+        $.ajax({
+          url: 'js/colorpicker.js',
+          dataType: 'script',
         })
       );
     })
@@ -479,8 +483,7 @@ function buildStandby() {
     for (var c in columns_standby) {
       getBlock(columns_standby[c], 'standby' + c, 'div.screenstandby', true);
     }
-  }
-  else {
+  } else {
     $('.screenstandby').show();
   }
 }
@@ -556,7 +559,13 @@ function buildScreens() {
       for (var s in screens[t]) {
         if (s !== 'maxwidth' && s !== 'maxheight') {
           var screenhtml =
-            '<div data-screenindex="'+s+'" class="screen screen' + s + ' swiper-slide slide' + s + '"';
+            '<div data-screenindex="' +
+            s +
+            '" class="screen screen' +
+            s +
+            ' swiper-slide slide' +
+            s +
+            '"';
           if (typeof screens[t][s]['background'] === 'undefined') {
             screens[t][s]['background'] = settings['background_image'];
           }

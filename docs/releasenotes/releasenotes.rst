@@ -7,6 +7,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+  * New colorpicker for RGB devices, including support for whites. See :ref:`colorpicker`
+
 Fixes
   * Fix for Omrin garbage provider
   * Fix for Venlo garbage provider

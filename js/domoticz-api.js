@@ -303,6 +303,15 @@ var Domoticz = (function () {
     });
   }
 
+  function requestDevice(idx, forcehttp) { //not tested
+    return domoticzRequest(
+      'type=devices&rid=' + idx,
+      forcehttp
+    ).then(function (res) {
+      return _setDevice(res);
+    });
+  }
+
   function setOnChange(idx, value) {
     if (typeof value === 'undefined') {
       console.error('setOnChange: value undefined');
@@ -359,6 +368,27 @@ var Domoticz = (function () {
     }
     setOnChange('_devices', data); //event to trigger that all devices have been updated.
     return deviceObservable._values;
+  }
+
+  function _setDevice(data) { //not tested!
+    //        console.log(data.ActTime);
+    if (!data) {
+      console.log(' no data');
+      return;
+    }
+    if(!data.result){
+      console.log(' no result');
+      return;
+    }
+    var r = data.result[0];
+    var device = data.result[r];
+    var idx = device['idx'];
+
+    if (device['Type'] === 'Group' || device['Type'] === 'Scene') {
+      idx = 's' + device['idx'];
+    }
+    setOnChange(idx, device);
+    return deviceObservable._values[idx];
   }
 
   function requestAllScenes() {
@@ -445,9 +475,10 @@ var Domoticz = (function () {
         //console.log(res);
         return res;
       })
-      .always(function () {
+      .always(function (res) {
         //console.log('release ', idx);
         release(idx);
+        return res;
       });
   }
 
