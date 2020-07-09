@@ -53,6 +53,17 @@ settingList['general']['no_rgb'] = {};
 settingList['general']['no_rgb']['title'] = language.settings.general.no_rgb;
 settingList['general']['no_rgb']['type'] = 'checkbox';
 
+settingList['general']['colorpicker'] = {};
+settingList['general']['colorpicker']['title'] =
+  language.settings.general.colorpicker;
+settingList['general']['colorpicker']['help'] =
+  language.settings.general.colorpicker_help;
+settingList['general']['colorpicker']['type'] = 'select';
+settingList['general']['colorpicker']['options'] = {};
+settingList['general']['colorpicker']['options'][0] = 0;
+settingList['general']['colorpicker']['options'][1] = 1;
+settingList['general']['colorpicker']['options'][2] = 2;
+
 settingList['general']['auto_positioning'] = {};
 settingList['general']['auto_positioning']['title'] =
   language.settings.general.auto_positioning;
@@ -804,6 +815,7 @@ var defaultSettings = {
   standard_graph: 'hours',
   blink_color: '255, 255, 255, 1',
   edit_mode: 0,
+  colorpicker: 2,
   units: {
     names: {
       kwh: 'kWh',
