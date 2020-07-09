@@ -711,9 +711,9 @@ function addSlider(block, sliderValues) {
 
 function isRGBDeviceAndEnabled(block) {
   var dimmerTypes = ['RGB','RGBW','RGBWW','RGBZ','RGBWZ','RGBWWZ']
-  if (dimmerTypes.indexOf(block.device.SubType)===-1) return false;
-  if (typeof block.colorpicker !== 'undefined') return block.colorpicker;
-  if (typeof settings.colorpicker !== 'undefined') return settings.colorpicker;
+  if (dimmerTypes.indexOf(block.device.SubType)===-1) return 0;
+  if (typeof block.colorpicker !== 'undefined') return parseInt(block.colorpicker);
+  if (typeof settings.colorpicker !== 'undefined') return parseInt(settings.colorpicker);
   return settings.no_rgb ? 0 : 1; //Default colorpicker is the old spectrum colorpicker
 }
 
