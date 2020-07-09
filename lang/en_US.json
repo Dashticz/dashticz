@@ -88,7 +88,7 @@
             "logout": "Log out",
             "news_scroll_after": "Scroll news after (seconds)",
             "no_rgb": "Do not use colorpicker for RGB devices.",
-            "colorpicker": "Choose the RGB colorpicker for RGB devices.",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
             "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker",
             "pass_word": "Password",
             "room_plan": "Use room plan id (0 = all)",
