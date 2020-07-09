@@ -88,7 +88,7 @@
             "logout": "Uitloggen",
             "news_scroll_after": "Volgende nieuwsbericht na (seconden)",
             "no_rgb": "Gebruik geen colorpicker voor RGB-apparaten.",
-            "colorpicker": "Kies de RGB colorpicker voor RGB devices.",
+            "colorpicker": "Kies de standaard RGB colorpicker voor RGB devices.",
             "colorpicker_help": "0: Géén RGB colorpicker, 1: Oude stijl RGB colorpicker, 2: Nieuwe stijl RGB colorpicker",
             "pass_word": "Wachtwoord",
             "room_plan": "Gebruik kamer plan id (0 = all)",
