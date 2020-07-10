@@ -60,9 +60,9 @@ settingList['general']['colorpicker']['help'] =
   language.settings.general.colorpicker_help;
 settingList['general']['colorpicker']['type'] = 'select';
 settingList['general']['colorpicker']['options'] = {};
-settingList['general']['colorpicker']['options'][0] = 0;
-settingList['general']['colorpicker']['options'][1] = 1;
-settingList['general']['colorpicker']['options'][2] = 2;
+settingList['general']['colorpicker']['options'][0] = language.settings.general.colorpicker_none;
+settingList['general']['colorpicker']['options'][1] = language.settings.general.colorpicker_old;
+settingList['general']['colorpicker']['options'][2] = language.settings.general.colorpicker_new;
 
 settingList['general']['auto_positioning'] = {};
 settingList['general']['auto_positioning']['title'] =
