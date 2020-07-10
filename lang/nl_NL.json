@@ -89,7 +89,7 @@
             "news_scroll_after": "Volgende nieuwsbericht na (seconden)",
             "no_rgb": "Gebruik geen colorpicker voor RGB-apparaten.",
             "colorpicker": "Kies de standaard RGB colorpicker voor RGB devices.",
-            "colorpicker_none": "GÃ©Ã©n RGB colorpicker",
+            "colorpicker_none": "Géén RGB colorpicker",
             "colorpicker_old": "Oude stijl RGB colorpicker",
             "colorpicker_new": "Nieuwe stijl RGB colorpicker",
             "colorpicker_help": "0: Géén RGB colorpicker, 1: Oude stijl RGB colorpicker, 2: Nieuwe stijl RGB colorpicker",
