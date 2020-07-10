@@ -49,9 +49,9 @@ settingList['general']['enable_websocket']['type'] = 'checkbox';
 settingList['general']['enable_websocket']['help'] =
   language.settings.general.enable_websocket_help;
 
-settingList['general']['no_rgb'] = {};
+/* settingList['general']['no_rgb'] = {};
 settingList['general']['no_rgb']['title'] = language.settings.general.no_rgb;
-settingList['general']['no_rgb']['type'] = 'checkbox';
+settingList['general']['no_rgb']['type'] = 'checkbox'; */
 
 settingList['general']['colorpicker'] = {};
 settingList['general']['colorpicker']['title'] =
