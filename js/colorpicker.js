@@ -47,7 +47,7 @@ function Colorpicker(options) {
         ev.stopPropagation
     });*/
 
-  var color = JSON.parse(this.block.device.Color);
+  var color = this.block.device.Color? JSON.parse(this.block.device.Color): {r:255, g:255, b:255, m:3};
   if (color) {
     var thergb;
     switch (color.m) {
