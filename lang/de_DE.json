@@ -104,7 +104,12 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Halten Sie Dashticz eingeloggt (Minuten)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Aktivieren \/ Deaktivieren der WebSocket-Verbindung"
+            "enable_websocket_help": "Aktivieren \/ Deaktivieren der WebSocket-Verbindung",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker"
         },
         "infosave": "Die Einstellungen werden standardmäßig im Browser selber gespeichert. Der Nachteil dieser Methode ist, sie gelten entsprechend nur für den aktuellen Browser. Wenn das kein Problem darstellt, kannst das Fenster schließen und musst nichts weiter unternehmen. Ansonsten kopiere den unten dargestellten Code in deine CONFIG.JS um die Einstellungen für alle Browser und Geräte zu aktivieren.",
         "localize": {
@@ -143,7 +148,8 @@
             "uk": "Ukrainisch",
             "sr": "Serbian",
             "lt": "litauisch",
-            "ro": "rumänisch"
+            "ro": "rumänisch",
+            "ja": "japanisch"
         },
         "media": {
             "hide_mediaplayer": "Mediaplayer ausblenden wenn ausgeschaltet",

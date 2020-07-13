@@ -88,11 +88,6 @@
             "logout": "Uitloggen",
             "news_scroll_after": "Volgende nieuwsbericht na (seconden)",
             "no_rgb": "Gebruik geen colorpicker voor RGB-apparaten.",
-            "colorpicker": "Kies de standaard RGB colorpicker voor RGB devices.",
-            "colorpicker_none": "Géén RGB colorpicker",
-            "colorpicker_old": "Oude stijl RGB colorpicker",
-            "colorpicker_new": "Nieuwe stijl RGB colorpicker",
-            "colorpicker_help": "0: Géén RGB colorpicker, 1: Oude stijl RGB colorpicker, 2: Nieuwe stijl RGB colorpicker",
             "pass_word": "Wachtwoord",
             "room_plan": "Gebruik kamer plan id (0 = all)",
             "room_plan_help": "Wijzig naar het ID van het kamerplan dat u hebt gemaakt in Domoticz, niet gebruiken in combinatie met de favorieten-optie",
@@ -109,7 +104,12 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Laat Dashticz ingelogd (minuten)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Inschakelen\/Uitschakelen van de WebSocket verbinding"
+            "enable_websocket_help": "Inschakelen\/Uitschakelen van de WebSocket verbinding",
+            "colorpicker": "Kies de standaard RGB colorpicker voor RGB devices.",
+            "colorpicker_none": "Géén RGB colorpicker",
+            "colorpicker_old": "Oude stijl RGB colorpicker",
+            "colorpicker_new": "Nieuwe stijl RGB colorpicker",
+            "colorpicker_help": "0: Géén RGB colorpicker, 1: Oude stijl RGB colorpicker, 2: Nieuwe stijl RGB colorpicker"
         },
         "infosave": "Standaard worden de instellingen opgeslagen in uw browser. Nadeel van deze methode is dat het alleen in uw huidige browser werkt. Als dat geen probleem is, kunt u verdergaan. Anders, kopieer onderstaande code naar uw CONFIG.JS om instellingen te gebruiken in alle browsers waarmee u Dashticz opent.",
         "localize": {
@@ -148,7 +148,8 @@
             "uk": "Oekraïens",
             "sr": "Servisch",
             "lt": "Litouws",
-            "ro": "Roemeense"
+            "ro": "Roemeense",
+            "ja": "Japans"
         },
         "media": {
             "hide_mediaplayer": "Verberg mediaspeler wanneer het uit is",
