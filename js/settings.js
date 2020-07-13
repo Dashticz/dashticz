@@ -49,9 +49,20 @@ settingList['general']['enable_websocket']['type'] = 'checkbox';
 settingList['general']['enable_websocket']['help'] =
   language.settings.general.enable_websocket_help;
 
-settingList['general']['no_rgb'] = {};
+/* settingList['general']['no_rgb'] = {};
 settingList['general']['no_rgb']['title'] = language.settings.general.no_rgb;
-settingList['general']['no_rgb']['type'] = 'checkbox';
+settingList['general']['no_rgb']['type'] = 'checkbox'; */
+
+settingList['general']['colorpicker'] = {};
+settingList['general']['colorpicker']['title'] =
+  language.settings.general.colorpicker;
+settingList['general']['colorpicker']['help'] =
+  language.settings.general.colorpicker_help;
+settingList['general']['colorpicker']['type'] = 'select';
+settingList['general']['colorpicker']['options'] = {};
+settingList['general']['colorpicker']['options'][0] = language.settings.general.colorpicker_none;
+settingList['general']['colorpicker']['options'][1] = language.settings.general.colorpicker_old;
+settingList['general']['colorpicker']['options'][2] = language.settings.general.colorpicker_new;
 
 settingList['general']['auto_positioning'] = {};
 settingList['general']['auto_positioning']['title'] =
@@ -804,6 +815,7 @@ var defaultSettings = {
   standard_graph: 'hours',
   blink_color: '255, 255, 255, 1',
   edit_mode: 0,
+  colorpicker: 2,
   units: {
     names: {
       kwh: 'kWh',

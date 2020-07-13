@@ -231,6 +231,9 @@ Config parameters
   * - no_rgb
     - | 0 / 1
       | Hide or show RGB button on switch
+  * - colorpicker
+    - | 0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker
+      | Choose the default RGB colorpicker for RGB devices
   * - standby_call_url'
     - | [URL]
       | Enter the url for adjusting the brightness when entering stand-by mode
