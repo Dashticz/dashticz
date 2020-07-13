@@ -104,7 +104,12 @@
             "standby_call_url_on_end": "URL volaná na konci pohotovostního režimu",
             "login_timeout": "Ponechat přihlášeno do Dashticz (minut)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Povolit \/ zakázat připojení WebSocket"
+            "enable_websocket_help": "Povolit \/ zakázat připojení WebSocket",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker"
         },
         "infosave": "Nastavení se ukládá pouze do právě používaného prohlížeče. Pokud si přejete toto nastavení používat na všech počítačích a prohlížečích, je důležité zkopírovat nastavení do souboru CONFIG.JS",
         "localize": {
@@ -143,7 +148,8 @@
             "uk": "Ukrainian",
             "sr": "Serbian",
             "lt": "Lithuanian",
-            "ro": "rumunština"
+            "ro": "rumunština",
+            "ja": "japonský"
         },
         "media": {
             "hide_mediaplayer": "Skrýt multimediální přehrávač pokud je vypnutý",

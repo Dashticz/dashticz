@@ -104,7 +104,12 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Tartsa bejelentkezve Dashticz-ben (perc)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "A WebSocket kapcsolat engedélyezése \/ letiltása"
+            "enable_websocket_help": "A WebSocket kapcsolat engedélyezése \/ letiltása",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker"
         },
         "infosave": "Alapértelmezés szerint a beállítások a böngészőben tárolódnak. E módszer hátránya, hogy csak a jelenlegi böngészőben fog működni. Ha ez nem jelent problémát, továbbléphet. Ellenkező esetben másolja a kódot a CONFIG.JS fájlba, hogy megőrizze a beállításokat az összes böngészőben és eszközön.",
         "localize": {
@@ -143,7 +148,8 @@
             "uk": "Ukrán",
             "sr": "Serbian",
             "lt": "litván",
-            "ro": "román"
+            "ro": "román",
+            "ja": "japán"
         },
         "media": {
             "hide_mediaplayer": "Médialejátszó elrejtése, amikor ki van kapcsolva",
