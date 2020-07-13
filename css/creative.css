@@ -1,4 +1,4 @@
-Skip to content Search or jump to… Pull requests Issues Marketplace Explore @clinkadink lokonli / dashticz forked from Dashticz/dashticz 0 120 Code Pull requests Actions Projects Wiki Security Insights dashticz/css/creative.css @lokonli lokonli colorpicker changes Latest commit f12c205 18 days ago History 8 contributors @robgeerts@lokonli@clinkadink@aiolos@DewGew@MSe-5-14@Ectholian@DT27 Executable File 3680 lines (3113 sloc) 62.3 KB @import url('./plugins.css');
+@import url('./plugins.css');
 @import url('./helpers.css');
 #loaderHolder {
   position: absolute;
