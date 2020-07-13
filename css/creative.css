@@ -1,4 +1,4 @@
-@import url('./plugins.css');
+Skip to content Search or jump to… Pull requests Issues Marketplace Explore @clinkadink lokonli / dashticz forked from Dashticz/dashticz 0 120 Code Pull requests Actions Projects Wiki Security Insights dashticz/css/creative.css @lokonli lokonli colorpicker changes Latest commit f12c205 18 days ago History 8 contributors @robgeerts@lokonli@clinkadink@aiolos@DewGew@MSe-5-14@Ectholian@DT27 Executable File 3680 lines (3113 sloc) 62.3 KB @import url('./plugins.css');
 @import url('./helpers.css');
 #loaderHolder {
   position: absolute;
@@ -1252,6 +1252,18 @@ Only add this hover on NON touch devices
 .slider {
   margin-top: 7px;
   margin-right: 7px;
+}
+
+.rgbcontainer {
+  display: flex
+}
+
+.rgbcontainer .slider {
+  width: 100%
+}
+
+.rgbcontainer .rgbholder {
+  flex: 0 0 50px
 }
 
 .weekday {
@@ -3939,3 +3951,81 @@ td.agenda-title {
   width: 100%;
   height: 575px
 }
+
+
+/* start colorPicker */
+
+.colorpicker {
+  /*
+  color: black;
+  max-width: 90%;
+  min-width: unset;
+  width: 100%;*/
+}
+
+.colorpicker .modal-header {
+  display: flex
+}
+
+.colorpicker .modal-title {
+  width: 100%
+}
+
+.colorpicker .modal-dialog {
+  max-width: 90%;
+  min-width: unset;
+  width: 90%;
+}
+
+
+/*
+.colorpicker .modal-content {
+  max-width: 90%;
+  min-width: unset;
+  width: 50%;
+}*/
+
+.colorpicker .cp-iro {
+  overflow-x: auto;
+  flex-wrap: wrap
+}
+
+.colorpicker .cp-buttons {
+  margin-bottom: 10px;
+}
+
+.colorpicker .cp-buttonsOnOff {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.colorpicker .cp-buttonsOnOff .btn {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  color: darkgrey;
+  background-color: lightgray
+  /*  margin-top: 10px;
+  margin-bottom: 10px;*/
+  /*width: 48px;*/
+}
+
+.colorpicker .cp-buttonsOnOff .btn.active {
+  /*  background-color: rgba(0,0,0,0.4)*/
+  border-style: solid;
+  border-color: black;
+  border-width: medium;
+  background-color: gray;
+  color: white;
+  /*width: 48px;*/
+}
+
+.cp-iro {
+  display: inline-flex;
+  align-items: center;
+}
+
+.cp-iro>div {
+  margin: 0 10px
+}
+
+
+/*end colorpicker*/
