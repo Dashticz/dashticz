@@ -11,7 +11,7 @@ Recent changes
 -----------
 
 Enhancements
-  * New colorpicker for RGB devices, including support for whites. See :ref:`colorpicker`
+  * New colorpicker for RGB devices, including support for whites. The ``no_rgb`` setting is absolete. See :ref:`colorpicker`
 
 Fixes
   * Fix for Omrin garbage provider

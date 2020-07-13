@@ -104,7 +104,12 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Останите пријављени на Дасхтицз (минута)",
             "enable_websocket": "ВебСоцкет",
-            "enable_websocket_help": "Омогући \/ онемогући везу ВебСоцкет"
+            "enable_websocket_help": "Омогући \/ онемогући везу ВебСоцкет",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker"
         },
         "infosave": "Po podrazumevanim postavkama, postavke se skladište u vašem pregledaču. Negativna strana ove metode je da će raditi samo u trenutnom pregledaču. Ako to nije problem, možete nastaviti. U suprotnom, kopirajte kôd ispod u vaš CONFIG.JS da bi ste zadržali postavke za sve pregledače i uređaje.",
         "localize": {
@@ -143,7 +148,8 @@
             "uk": "Ukrajinski",
             "sr": "Srpski",
             "lt": "Литхуаниан",
-            "ro": "Румунски"
+            "ro": "Румунски",
+            "ja": "Јапански"
         },
         "media": {
             "hide_mediaplayer": "Sakrij mediaplayer kada je isključen",

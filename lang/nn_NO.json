@@ -104,7 +104,12 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Hold Dashticz pålogget (minutter)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Aktiver \/ deaktiver WebSocket-tilkoblingen"
+            "enable_websocket_help": "Aktiver \/ deaktiver WebSocket-tilkoblingen",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker"
         },
         "infosave": "Som standard lagres innstillingene i nettleseren din. Ulempen med denne metoden er at den bare vil fungere i din nåværende nettleser. Hvis det ikke er et problem, kan du fortsette. Ellers kopier koden nedenfor til CONFIG.JS for å holde innstillingene over alle nettlesere og enheter.",
         "localize": {
@@ -143,7 +148,8 @@
             "uk": "ukrainsk",
             "sr": "Serbian",
             "lt": "litauisk",
-            "ro": "rumensk"
+            "ro": "rumensk",
+            "ja": "japansk"
         },
         "media": {
             "hide_mediaplayer": "Skjul mediaplayer når den er av",
