@@ -104,7 +104,12 @@
             "standby_call_url_on_end": "Adresa URL ce va fi accesată la ieșirea din standby",
             "login_timeout": "Țineți Dashticz autentificat (minute)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Activați \/ Dezactivați conexiunea WebSocket"
+            "enable_websocket_help": "Activați \/ Dezactivați conexiunea WebSocket",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker"
         },
         "infosave": "În mod prestabilit, setările sunt stocate în browser. Dezavantajul acestei metode este că va funcționa numai în browserul curent. Dacă nu este o problemă, puteți continua. În caz contrar, copiați codul de mai jos în CONFIG.JS pentru a păstra setările pe toate browserele și dispozitivele.",
         "localize": {
@@ -143,7 +148,8 @@
             "uk": "Ucraineană",
             "sr": "Sârbă",
             "lt": "Lituaniană",
-            "ro": "Română"
+            "ro": "Română",
+            "ja": "japonez"
         },
         "media": {
             "hide_mediaplayer": "Ascunde mediaplayer-ul când este oprit",

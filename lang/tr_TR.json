@@ -104,7 +104,12 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Dashticz'a giriş yapın (dakika)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "WebSocket bağlantısını etkinleştirme \/ devre dışı bırakma"
+            "enable_websocket_help": "WebSocket bağlantısını etkinleştirme \/ devre dışı bırakma",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker"
         },
         "infosave": "Varsayılan olarak, ayarlar tarayıcınızda saklanır. Bu yöntemin dezavantajı yalnızca geçerli tarayıcınızda çalışacak olmasıdır. Bu bir sorun değilse, devam edebilirsiniz. Aksi takdirde, ayarları tüm tarayıcılarda ve aygıtlarda kullanmak için CONFIG.JS dosyasına aşağıdaki kodu kopyalayın.",
         "localize": {
@@ -143,7 +148,8 @@
             "uk": "Ukrayna dili",
             "sr": "Serbian",
             "lt": "Litvanyalı",
-            "ro": "Romen"
+            "ro": "Romen",
+            "ja": "Japonca"
         },
         "media": {
             "hide_mediaplayer": "Mediaplayer kapalıyken gizle",

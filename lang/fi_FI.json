@@ -104,7 +104,12 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Pidä Dashticz kirjautuneena sisään (minuutteina)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Ota WebSocket-yhteys käyttöön tai poista se käytöstä"
+            "enable_websocket_help": "Ota WebSocket-yhteys käyttöön tai poista se käytöstä",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker"
         },
         "infosave": "Asetukset tallennetaan oletuksena selaimen muistiin. Tämän menetelmän huono puoli on se, että se toimii vain kyseisessä selaimessa. Voit jatkaa mikäli tämä ei ole ongelma. Muussa tapauksessa kopioi alla oleva koodi CONFIG.JS tiedostoon pitääksesi samat asetukset kaikissa selaimissa ja laitteissa",
         "localize": {
@@ -143,7 +148,8 @@
             "uk": "Ukraina",
             "sr": "Serbian",
             "lt": "liettualainen",
-            "ro": "romanialainen"
+            "ro": "romanialainen",
+            "ja": "japanilainen"
         },
         "media": {
             "hide_mediaplayer": "Piilota mediasoitin, kun se on pois päältä",

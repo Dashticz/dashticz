@@ -104,7 +104,12 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Залишайте Даштіц увійти (хвилини)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Увімкнення \/ вимкнення з'єднання WebSocket"
+            "enable_websocket_help": "Увімкнення \/ вимкнення з'єднання WebSocket",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker"
         },
         "infosave": "By default, settings are stored in your browser. Downside of this method is it will only work in your current browser. If that's not a problem, you can proceed. Otherwise, copy code below to your CONFIG.JS to keep settings across all browsers and devices.",
         "localize": {
@@ -143,7 +148,8 @@
             "uk": "Ukrainian",
             "sr": "Serbian",
             "lt": "Литовська",
-            "ro": "Румунська"
+            "ro": "Румунська",
+            "ja": "Японці"
         },
         "media": {
             "hide_mediaplayer": "Hide mediaplayer when it's off",

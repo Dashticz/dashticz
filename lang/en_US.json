@@ -88,11 +88,6 @@
             "logout": "Log out",
             "news_scroll_after": "Scroll news after (seconds)",
             "no_rgb": "Do not use colorpicker for RGB devices.",
-            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
-            "colorpicker_none": "No RGB colorpicker",
-            "colorpicker_old": "Old style RGB colorpicker",
-            "colorpicker_new": "New style RGB colorpicker",
-            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker",
             "pass_word": "Password",
             "room_plan": "Use room plan id (0 = all)",
             "room_plan_help": "Change to the id of the room plan you created in Domoticz, do not use with favorites",
@@ -109,7 +104,12 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Keep Dashticz logged in (minutes)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Enable\/Disable the WebSocket connection"
+            "enable_websocket_help": "Enable\/Disable the WebSocket connection",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker"
         },
         "infosave": "By default, settings are stored in your browser. Downside of this method is it will only work in your current browser. If that's not a problem, you can proceed. Otherwise, copy code below to your CONFIG.JS to keep settings across all browsers and devices.",
         "localize": {
@@ -133,7 +133,6 @@
             "hide_seconds_stationclock": "Hide seconds in StationClock",
             "hu": "Hungarian",
             "it": "Italian",
-            "ja": "Japanese",
             "language": "Language",
             "nl": "Dutch",
             "no": "Norwegian",
@@ -149,7 +148,8 @@
             "uk": "Ukrainian",
             "sr": "Serbian",
             "lt": "Lithuanian",
-            "ro": "Romanian"
+            "ro": "Romanian",
+            "ja": "Japanese"
         },
         "media": {
             "hide_mediaplayer": "Hide mediaplayer when it's off",
