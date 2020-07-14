@@ -31,7 +31,7 @@
             </div>
             {{else if onoff}}
             <div class="dial-switch">   
-                <input type="checkbox">
+                <input type="checkbox" {{checked}}>
                 <div class="switch-face">
                     <div class="device" style="color:{{color}}">{{name}}</div>
                     <i class="fas fa-power-off icon-off" style=""color:{{color}}"></i>
