@@ -42,6 +42,7 @@ var DT_dial = {
     showunit: false,
     shownumbers: false,
     offset: 0,
+    group: false,
   },
 
   /**
@@ -102,6 +103,7 @@ var DT_dial = {
       case d.SwitchType === 'Dimmer':
         DT_dial.dimmer(me);
         break;
+      case d.Type === 'Group':
       case d.SwitchType === 'On/Off':
         DT_dial.onoff(me);
         break;
@@ -156,6 +158,7 @@ var DT_dial = {
         class: me.class,
         split: me.splitdial,
         slice: me.slice,
+        checked: me.checked,
       };
 
       /* Mount dial */
@@ -240,6 +243,11 @@ var DT_dial = {
           slideDevice(me, status);
         }
       }
+      if (me.type === 'onoff') {
+        me.cmd = me.state === 'Off' ? 'On' : 'Off';
+        me.demand = me.cmd === 'On';
+        DT_dial.update(me);
+      }
     });
   },
 
@@ -309,7 +317,7 @@ var DT_dial = {
     var $d = $(me.body);
     var a = me.angle;
 
-    if ((a >= -180 && a <= 60) || (a >= 140 && a <= 180)) {
+    if ((a >= -180 && a <= 60) || (a >= 140 && a <= 180) || me.unlimited) {
       /* within valid range */
 
       me.degrees = me.unlimited ?
@@ -422,6 +430,9 @@ var DT_dial = {
         break;
       case 'dim':
         slideDevice(me, Math.ceil((me.maxdim / me.max) * me.value));
+        break;
+      case 'onoff':
+        switchDevice(me, me.cmd);
         break;
     }
   },
@@ -703,6 +714,9 @@ var DT_dial = {
     me.type = 'onoff';
     me.fixed = true;
     me.onoff = true;
+    me.state = me.device.Status;
+    me.demand = me.state === 'On';
+    me.checked = me.state === 'On' ? 'checked' : '';
     return;
   },
 
