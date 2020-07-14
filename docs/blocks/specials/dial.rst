@@ -75,8 +75,7 @@ On/Off Switch
 
 Any devices with this switchtype and type: 'dial' will automatically render as a dial button.
 
-.. image :: ../img/dial_on-of_switch.jpg
-
+.. image :: ./img/dial_on-of_switch.jpg
 ::
 
 	blocks['kitchen_lights'] = {
@@ -93,7 +92,7 @@ Temp + Humidity
 
 Will display temperature as the main value and humidity as extra info below. There is enough room to display last_update with this dial.
 
-.. image :: ../img/dial_temp-humidity.jpg
+.. image :: ./img/dial_temp-humidity.jpg
 ::
 
 	blocks['temp_hum'] = {
@@ -115,7 +114,7 @@ Temp + Humidity + Baro
 
 Similar to above, but with Baro as extra info too. Last_update can be added but it is a tight fit.
 
-.. image :: ../img/dial_temp-hum-baro.jpg
+.. image :: ./img/dial_temp-hum-baro.jpg
 ::
 
 	blocks['temp_hum_baro'] = {
@@ -139,7 +138,7 @@ Wind
 
 This dial has a 360 degree range (like a compass). The wind direction can be set to point to where the wind is blowing from or to, by using the new "offset" parameter. Below I have set the dial to point to which direction the wind is blowing.
 
-.. image :: ../img/dial_wind.jpg
+.. image :: ./img/dial_wind.jpg
 ::
 
 	blocks['wind'] = {
@@ -161,10 +160,10 @@ P1 Smart Meter
 
 Currently this is configured to use the "Today" counters; CounterDelivToday and CounterToday, i.e. production vs consumption. Unlike any other dial, zero is at "12 o'clock" (instead of the tradional dial which starts at "7 o'clock").
 
-.. image :: ../img/dial_p1-meter-cons.jpg
+.. image :: ./img/dial_p1-meter-cons.jpg
 Today's energy consumption is more than production
 
-.. image :: ../img/dial_p1-meter-prod.jpg
+.. image :: ./img/dial_p1-meter-prod.jpg
 Today's energy production is more than consumption
 ::
 
