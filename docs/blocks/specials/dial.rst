@@ -76,6 +76,7 @@ On/Off Switch
 Any devices with this switchtype and type: 'dial' will automatically render as a dial button.
 
 .. image :: ../img/dial_on-of_switch.jpg
+
 ::
 
 	blocks['kitchen_lights'] = {
