@@ -6,9 +6,17 @@ Dial
 .. image :: img/dials.png
 
 The following Domoticz devices can be represented with a dial:
-  * EvoHome devices
-  * Thermostats
-  * Dimmers
+  * Type = 'Heating'
+  * Type = 'P1 Smart Meter'
+  * Type = 'Temp + Humidity + Baro'
+  * Type = 'Temp + Humidity'
+  * Type = 'Thermostat'
+  * Type = 'Wind'
+  * SubType = 'Evohome'
+  * SubType = 'SetPoint'
+  * SwitchType = 'Dimmer
+  * SwitchType = 'On/Off'
+  * SwitchType = 'Selector'
 
 To represent these devices with a dial add ``type:'dial'`` to the block definition::
 
