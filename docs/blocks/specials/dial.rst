@@ -67,7 +67,7 @@ Usage
 Dimmer
 ~~~~~~
 
-You can use the ring just like a dimmer slider. Click on the dial to switch the dimmer on/off. 
+You can use the dial just like a dimmer slider. Click on the dial to switch the dimmer on/off. 
 
 .. image :: ./img/dial_dimmer.jpg
 ::
