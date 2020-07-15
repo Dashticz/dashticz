@@ -21,7 +21,7 @@ The following Domoticz devices can be represented with a dial:
 To represent these devices with a dial add ``type:'dial'`` to the block definition::
 
   blocks['my thermostat'] = {
-    type: 'dial'                //Display as dial  
+    type: 'dial',               //Display as dial  
     idx: 123,                   //The Domoticz device id
     title: 'Device name',       //The title of the block as shown in the dial.
     width: 6,                   //The width of the block relative to the column width
@@ -67,7 +67,7 @@ Usage
 Dimmers
 ~~~~~~~
 
-Click on the dial to switch the dimmer on/off.
+You can use the ring just like a dimmer slider. Click on the dial to switch the dimmer on/off. 
 
 .. image :: ./img/dial_dimmer.jpg
 ::
