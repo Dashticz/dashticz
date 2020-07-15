@@ -3,7 +3,7 @@
 Dial
 =====
 
-.. image :: img/dials.png
+.. image :: img/dials.jpg
 
 The following Domoticz devices can be represented with a dial:
   * Type = 'Heating'
@@ -21,7 +21,7 @@ The following Domoticz devices can be represented with a dial:
 To represent these devices with a dial add ``type:'dial'`` to the block definition::
 
   blocks['my thermostat'] = {
-    type: 'dial'                //Display as dial  
+    type: 'dial',               //Display as dial  
     idx: 123,                   //The Domoticz device id
     title: 'Device name',       //The title of the block as shown in the dial.
     width: 6,                   //The width of the block relative to the column width
@@ -64,11 +64,22 @@ Block parameters
 Usage
 -----
 
-Dimmers
-~~~~~~~
+Dimmer
+~~~~~~
 
-Click on the dial to switch the dimmer on/off.
+You can use the dial just like a dimmer slider. Click on the dial to switch the dimmer on/off. 
 
+.. image :: ./img/dial_dimmer.jpg
+::
+
+	blocks["bathroom_lights"] = {
+		idx: 439,
+		title: "Bathroom",
+		type: "dial",
+		color: "#57c4d6",
+		width: 2,
+	}
+	
 
 On/Off Switch
 ~~~~~~~~~~~~~
@@ -186,7 +197,7 @@ Today's energy production is more than consumption
 Toon Thermostat
 ~~~~~~~~~~~~~~~
 
-.. image :: ../img/toon_dial.png
+.. image :: ./img/toon_dial.jpg
 
 "SwitchType": "Selector"
 
