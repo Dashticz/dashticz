@@ -197,7 +197,7 @@ Today's energy production is more than consumption
 Toon Thermostat
 ~~~~~~~~~~~~~~~
 
-.. image :: ../img/toon_dial.png
+.. image :: ./img/toon_dial.jpg
 
 "SwitchType": "Selector"
 
