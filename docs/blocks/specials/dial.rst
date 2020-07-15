@@ -64,8 +64,8 @@ Block parameters
 Usage
 -----
 
-Dimmers
-~~~~~~~
+Dimmer
+~~~~~~
 
 You can use the ring just like a dimmer slider. Click on the dial to switch the dimmer on/off. 
 
