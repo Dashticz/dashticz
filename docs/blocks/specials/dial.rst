@@ -3,7 +3,7 @@
 Dial
 =====
 
-.. image :: img/dials.png
+.. image :: img/dials.jpg
 
 The following Domoticz devices can be represented with a dial:
   * Type = 'Heating'
