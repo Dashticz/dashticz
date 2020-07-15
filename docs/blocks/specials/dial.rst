@@ -69,6 +69,17 @@ Dimmers
 
 Click on the dial to switch the dimmer on/off.
 
+.. image :: ./img/dial_dimmer.jpg
+::
+
+	blocks["bathroom_lights"] = {
+		idx: 439,
+		title: "Bathroom",
+		type: "dial",
+		color: "#57c4d6",
+		width: 2,
+	}
+	
 
 On/Off Switch
 ~~~~~~~~~~~~~
