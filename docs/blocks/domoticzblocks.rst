@@ -413,11 +413,6 @@ Example ``custom.css`` (only needed in case you want to change the default flash
 Evohome
 ~~~~~~~
 
-The following Domoticz devices can be represented with a dial. See :ref:`dial`
-   * EvoHome devices
-   * Thermostats
-   * Dimmers
-
 .. image :: img/evohome.png
 
 The following config parameters from CONFIG.js are applicable:
@@ -436,7 +431,7 @@ The following config parameters from CONFIG.js are applicable:
   * - evohome_boost_hw
     - ``<number>``: Hot water boost temporary override time in minutes. Default: 15
 
-The EvoHome devices can be represented as dial by adding ``type: 'dial'`` to the block definition.
+The EvoHome devices can be represented as dial by adding ``type: 'dial'`` to the block definition. See :ref:`dial`
 
 .. image :: img/dial.png
 
