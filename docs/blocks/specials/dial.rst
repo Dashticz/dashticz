@@ -264,3 +264,12 @@ To target just one dial, you can prefix the above code snippets with block id of
 	[data-id='temp_hum_baro'] .dial-needle::before {
 		border-bottom-color: lime!important;
 	}
+
+Change the size of the dial-center::
+
+	.dial-center {
+		height: 65%!important;
+		width: 65%!important;
+	}
+
+
