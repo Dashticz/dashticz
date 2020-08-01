@@ -13,7 +13,7 @@ var flagUrl =
 
 var DT_coronavirus = {
   name: 'coronavirus',
-  defaultCfg: function () {
+  defaultCfg: function() {
     var cfg = getBlockDefaults(); //Defaults from DT_graph
     var addCfg = {
       datasetColors: ['#7fcdbb', '#f03b20', '#2b7865', '#782b2b'],
@@ -24,10 +24,10 @@ var DT_coronavirus = {
     $.extend(cfg, addCfg);
     return cfg;
   },
-  canHandle: function (block) {
+  canHandle: function(block) {
     return block && block.type === 'corona';
   },
-  run: function (me) {
+  run: function(me) {
     if (isDefined(me.block.report)) {
       //countryCode: ''
       createReportBlock(me, true);
@@ -56,7 +56,7 @@ function createDashGraph(me) {
     me.block.countryCode +
     '&province&timelines=1';
 
-  $.getJSON(dataUrl, function (json) {
+  $.getJSON(dataUrl, function(json) {
     var stats = {};
     stats.latestConfirmed = json.latest.confirmed;
     stats.latestDeaths = json.latest.deaths;
@@ -141,29 +141,57 @@ function createDashGraph(me) {
 
     var confirmedPrevious = 0;
     var confirmedGrowth = 0;
+    var i = 0;
 
     for (var key in confirmed) {
-      if (moment(key).isSameOrAfter(moment(startDate, 'DD/MM/YYYY'))) {
-        graphData.labels.push(moment(key).format('YYYY-MM-DD'));
-        if (me.mode < 2) graphData.datasets[0].data.push(confirmed[key]);
-        if (me.mode !== 1) {
-          confirmedGrowth = confirmed[key] - confirmedPrevious;
-          confirmedPrevious = confirmed[key];
-          graphData.datasets[cg].data.push(confirmedGrowth);
+      if (
+        moment(key).isSameOrAfter(
+          moment(startDate, 'DD/MM/YYYY').subtract(1, 'days')
+        )
+      ) {
+        if (i > 0) {
+          graphData.labels.push(moment(key).format('YYYY-MM-DD'));
+          if (me.mode < 2) {
+            graphData.datasets[0].data.push(confirmed[key]);
+          }
         }
+        if (me.mode !== 1) {
+          if (i == 0) {
+            confirmedPrevious = confirmed[key];
+          } else {
+            confirmedGrowth = confirmed[key] - confirmedPrevious;
+            confirmedGrowth = confirmedGrowth >= 0 ? confirmedGrowth : 0;
+            confirmedPrevious = confirmed[key];
+            graphData.datasets[cg].data.push(confirmedGrowth);
+          }
+        }
+        i++;
       }
     }
     var deathsPrevious = 0;
     var deathsGrowth = 0;
+    i = 0;
 
     for (key in deaths) {
-      if (moment(key).isSameOrAfter(moment(startDate, 'DD/MM/YYYY'))) {
-        if (me.mode < 2) graphData.datasets[1].data.push(deaths[key]);
-        if (me.mode !== 1) {
-          deathsGrowth = deaths[key] - deathsPrevious;
-          deathsPrevious = deaths[key];
-          graphData.datasets[dg].data.push(deathsGrowth);
+      if (
+        moment(key).isSameOrAfter(
+          moment(startDate, 'DD/MM/YYYY').subtract(1, 'days')
+        )
+      ) {
+        if (i > 0 && me.mode < 2) {
+          graphData.datasets[1].data.push(deaths[key]);
         }
+        if (me.mode !== 1) {
+          if (i == 0) {
+            deathsPrevious = deaths[key];
+          } else {
+            deathsGrowth = deaths[key] - deathsPrevious;
+            deathsGrowth = deathsGrowth >= 0 ? deathsGrowth : 0;
+            deathsPrevious = deaths[key];
+            graphData.datasets[dg].data.push(deathsGrowth);
+          }
+        }
+        i++;
       }
     }
 
@@ -182,14 +210,14 @@ function createDashGraph(me) {
         id: 'B',
         position: 'right',
       });
-    scales.xAxes[0].stacked = isDefined(me.block.stacked)
-      ? me.block.stacked
-      : true;
-    scales.yAxes[0].stacked = isDefined(me.block.stacked)
-      ? me.block.stacked
-      : true;
+    scales.xAxes[0].stacked = isDefined(me.block.stacked) ?
+      me.block.stacked :
+      true;
+    scales.yAxes[0].stacked = isDefined(me.block.stacked) ?
+      me.block.stacked :
+      true;
 
-    $.each(scales.yAxes, function (i) {
+    $.each(scales.yAxes, function(i) {
       scales.yAxes[i].scaleLabel = {
         labelString: i === 1 ? 'Day' : scaleLabel,
         display: true,
@@ -198,8 +226,12 @@ function createDashGraph(me) {
       scales.yAxes[i].ticks = {
         beginAtZero: true,
         fontColor: 'white',
-        callback: function (value) {
-          return number_format(value / 1000) + 'K';
+        callback: function(value) {
+          if (scaleLabel == 'Day') {
+            return number_format(value);
+          } else {
+            return number_format(value / 1000) + 'K';
+          }
         },
       };
     });
@@ -212,7 +244,7 @@ function createDashGraph(me) {
     setHeight = me.block.height ? me.block.height : setHeight;
     $(me.mountPoint + ' .block_coronavirus').css('height', setHeight);
 
-    templateEngine.load('corona_graph_header').then(function (template) {
+    templateEngine.load('corona_graph_header').then(function(template) {
       var data = {
         flag: flagUrl + me.block.countryCode.toLowerCase(),
         country: stats.country,
@@ -226,7 +258,7 @@ function createDashGraph(me) {
       mountPoint
         .html(html)
         .promise()
-        .done(function () {
+        .done(function() {
           $('.graphValues' + me.graphIdx).html(template(data));
           createButtons(me); //We can only add the buttons after the header is mounted in the DOM
         });
@@ -239,20 +271,20 @@ function createDashGraph(me) {
 
 function createReportBlock(me, province) {
   var p = province ? '&province' : '';
-  var dataUrl = isDefined(me.block.countryCode)
-    ? api +
-      'locations?country_code=' +
-      me.block.countryCode +
-      p +
-      '&timelines=1'
-    : api + 'latest';
+  var dataUrl = isDefined(me.block.countryCode) ?
+    api +
+    'locations?country_code=' +
+    me.block.countryCode +
+    p +
+    '&timelines=1' :
+    api + 'latest';
   var width = isDefined(me.block.width) ? me.block.width : 3;
 
   $.ajax({
     url: dataUrl,
     dataType: 'json',
-    success: function (json) {
-      templateEngine.load('corona_report').then(function (template) {
+    success: function(json) {
+      templateEngine.load('corona_report').then(function(template) {
         var report = me.block.report.toLowerCase();
         var data = number_format(json.latest[report]);
         var icon = report === 'confirmed' ? 'hospital' : 'skull-crossbones';
@@ -262,8 +294,7 @@ function createReportBlock(me, province) {
           if (isDefined(me.block.countryCode)) {
             population = json.locations[0].country_population;
           }
-          data =
-            '1 : ' + number_format(population / json.latest.confirmed,0);
+          data = '1 : ' + number_format(population / json.latest.confirmed, 0);
           icon = 'users';
         }
 
@@ -280,23 +311,22 @@ function createReportBlock(me, province) {
           width: width,
           icon: icon,
           title:
-            (isDefined(me.block.countryCode)
-              ? me.block.countryCode.toUpperCase()
-              : 'Global') +
+            (isDefined(me.block.countryCode) ?
+              me.block.countryCode.toUpperCase() :
+              'Global') +
             ': ' +
             me.block.report,
           report: data,
-          flag:
-            flagUrl +
-            (isDefined(me.block.countryCode)
-              ? me.block.countryCode.toLowerCase()
-              : 'world'),
+          flag: flagUrl +
+            (isDefined(me.block.countryCode) ?
+              me.block.countryCode.toLowerCase() :
+              'world'),
         };
         mountPoint.html(template(dataObject));
       });
     },
-    complete: function () {},
-    error: function (xhr) {
+    complete: function() {},
+    error: function(xhr) {
       if (xhr.status == 404) {
         createReportBlock(me, false);
       }
@@ -319,7 +349,7 @@ function getDoublingHours(json) {
   var halfLatestConfirmed = json.latest.confirmed / 2;
   var d = 0;
   var doublingHours = 0;
-  reverseForIn(timeline, function (key) {
+  reverseForIn(timeline, function(key) {
     if (this[key] <= halfLatestConfirmed && doublingHours === 0) {
       var nextDay = Object.values(timeline)[Object.keys(timeline).length - d];
       var increase = nextDay - this[key];
