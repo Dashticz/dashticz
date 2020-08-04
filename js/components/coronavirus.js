@@ -20,6 +20,7 @@ var DT_coronavirus = {
       title: 'Coronavirus',
       mode: 0,
       startDate: '22/01/2020',
+      header: [1, 2, 3, 4],
     };
     $.extend(cfg, addCfg);
     return cfg;
@@ -253,6 +254,14 @@ function createDashGraph(me) {
         ratio: stats.ratio,
         color: me.block.iconColour,
         doubling: getDoublingHours(json),
+        dailyconfirmed: confirmedGrowth,
+        dailydeaths: deathsGrowth,
+        showConfirmed: addHeader(me, 1),
+        showDeaths: addHeader(me, 2),
+        showRatio: addHeader(me, 3),
+        showDoubling: addHeader(me, 4),
+        showDailyConfirmed: addHeader(me, 5),
+        showDailyDeaths: addHeader(me, 6),
       };
 
       mountPoint
@@ -267,6 +276,11 @@ function createDashGraph(me) {
       new Chart(chartctx, graphProperties);
     });
   });
+}
+
+/* Allows user to select which header block they want */
+function addHeader(me, h) {
+  return me.block.header.includes(h);
 }
 
 function createReportBlock(me, province) {
