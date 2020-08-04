@@ -280,7 +280,7 @@ function createDashGraph(me) {
 
 /* Allows user to select which header block they want */
 function addHeader(me, h) {
-  return me.block.header.includes(h) ? 'block' : 'none';
+  return me.block.header.includes(h);
 }
 
 function createReportBlock(me, province) {
