@@ -7,6 +7,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Updates
+  * Update FontAwesome to 5.14.0
+
 3.5.2 Beta
 -----------
 
