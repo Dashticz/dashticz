@@ -1,5 +1,5 @@
-require('chart.js');
 window.moment = require('moment');
+require('chart.js');
 var $ = require('jquery');
 require('jquery-ui-dist/jquery-ui.min');
 require('jquery-ui-dist/jquery-ui.min.css');
@@ -8,9 +8,15 @@ require('jquery-ui-touch-punch');
 require('bootstrap');
 require('bootstrap/dist/css/bootstrap.min.css');
 window.SpotifyWebApi = require('spotify-web-api-js');
-require('@fortawesome/fontawesome-free/css/all.css');
+// Next line doesn't give the right results on IE11
+//require('@fortawesome/fontawesome-free/css/all.min.css');
+//Workaround: manually add the css  in main.js
+// Important!!: Manually copy the fonts from node_modules/@fortawesome/fontawesome-free/webfonts to ./webfonts
+// cp ./node_modules/@fortawesome/fontawesome-free/webfonts/* ./webfonts/
+// and  ./node_modules/@fortawesome/fontawesome-free/css/all.min.css to ./vendor/fontawesome-free/css
+// cp ./node_modules/@fortawesome/fontawesome-free/css/all.min.css ./vendor/fontawesome-free/css/
 require('mobile-detect');
-/* removed from functions.js */
+// removed from functions.js 
 window.md5=require('md5');
 require('js-cookie');
 require('script-loader!./functions.js');

@@ -7,7 +7,7 @@
     "doc": "docs"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "5.12.1",
+    "@fortawesome/fontawesome-free": "^5.14.0",
     "@jaames/iro": "^5.1.8",
     "@popperjs/core": "^2.4.4",
     "bootstrap": "^3.4.1",
@@ -49,7 +49,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
+    "build": "webpack && cp ./node_modules/@fortawesome/fontawesome-free/webfonts/* ./webfonts/ && cp ./node_modules/@fortawesome/fontawesome-free/css/all.min.css ./vendor/fontawesome-free/css/",
     "format": "npm run format:prettier && npm run format:html",
     "format:prettier": "node_modules/.bin/prettier --config .prettierrc \"{js,src}/**/*.{ts,css,less,js}\" --write",
     "format:html": "node bin/glob-ls.js '*.html' | xargs node_modules/.bin/html-beautify -r"
