@@ -25,8 +25,13 @@ module.exports = {
             },
             {
                 test: /\.(woff|woff2|eot|ttf|svg)$/,
-                loader: 'url-loader?limit=100000'
-            },
+//                loader: 'url-loader?limit=100000'
+            loader: 'file-loader',
+            options: {
+                name: '[name].[ext]',
+                outputPath: './assets/fonts/'
+            }
+        },
             {
                 // Exposes jQuery for use outside Webpack build
                 test: require.resolve('jquery'),
@@ -63,6 +68,7 @@ module.exports = {
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
+        publicPath: 'dist/',
     },
     optimization: {
         minimize: true,
