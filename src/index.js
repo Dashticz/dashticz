@@ -9,7 +9,8 @@ require('bootstrap');
 require('bootstrap/dist/css/bootstrap.min.css');
 window.SpotifyWebApi = require('spotify-web-api-js');
 // Next line doesn't give the right results on IE11
-//require('@fortawesome/fontawesome-free/css/all.min.css');
+require('@fortawesome/fontawesome-free/css/all.min.css');
+//require('@fortawesome/fontawesome-free');
 //Workaround: manually add the css  in main.js
 // Important!!: Manually copy the fonts from node_modules/@fortawesome/fontawesome-free/webfonts to ./webfonts
 // cp ./node_modules/@fortawesome/fontawesome-free/webfonts/* ./webfonts/
