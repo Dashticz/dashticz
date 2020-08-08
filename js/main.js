@@ -171,13 +171,13 @@ function loadFiles(dashtype) {
             '" />'
         ).appendTo('head');
       }
-
+/*
       $.ajax ( {
         url: './vendor/fontawesome-free/css/all.min.css',
         success: function (data) {
           $('<style></style>').appendTo('head').html(data);
         },
-      });
+      });*/
       $.ajax({
         url: customfolder + '/custom.css?v=' + cache,
         success: function (data) {
