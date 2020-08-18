@@ -103,6 +103,10 @@ Config parameters
       | ``0`` = Swiper disabled
       | ``1`` = Swiper enabled if screen width > 760px
       | ``2`` = Swiper enabled (=default)
+  * - swiper_touch_move
+    - | Swipe the screen by touch. Only applicable in case swiper is enabled.
+      | ``0`` = Swipe by touch disabled
+      | ``1`` = Swipe by touch enabled
   * - auto_swipe_back_to
     - | when no activity, swipe back to the selected page
       | ``1..100`` = page number
