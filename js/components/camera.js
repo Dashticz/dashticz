@@ -88,9 +88,9 @@ var DT_camera = {
                     mount: cam.mountpoint.slice(1),
                     image: DT_function.checkForceRefresh(
                         cam.imageUrl,
-                        me.block.forcerefresh
+                        cam.block.forcerefresh
                     ),
-                    height: me.block && me.block.height ? me.block.height : 300,
+                    height: cam.block && cam.block.height ? cam.block.height : 300,
                     mjpeg: cam.mjpeg,
                     id: cam.key,
                 };
@@ -98,7 +98,7 @@ var DT_camera = {
                 $(cam.mountpoint + div).html(template(data));
                 $(cam.mountpoint + ' div')
                     .removeClass('col-xs-6')
-                    .addClass('col-xs-' + me.block.width);
+                    .addClass('col-xs-' + cam.block.width);
             });
 
             DT_camera.setTrayTimeout(cam);
