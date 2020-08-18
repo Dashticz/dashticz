@@ -185,6 +185,8 @@
             "start_page": "Start page number (First page=1)",
             "enable_swiper": "Enable Swiper",
             "enable_swiper_help": "0: Disable Swiper; 1: Enable on narrow screens; 2: Enable",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled",
             "vertical_scroll": "Enable vertical scroll",
             "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll",
             "security_panel_lock": "Load Security Panel full screen",
