@@ -181,6 +181,12 @@ settingList['screen']['enable_swiper'] = {
   help: language.settings.screen.enable_swiper_help,
 };
 
+settingList['screen']['swiper_touch_move'] = {
+  title: language.settings.screen.swiper_touch_move,
+  type: 'checkbox',
+  help: language.settings.screen.swiper_touch_move_help,
+};
+
 settingList['screen']['vertical_scroll'] = {
   title: language.settings.screen.vertical_scroll,
   type: 'text',
@@ -807,6 +813,7 @@ var defaultSettings = {
   last_update: 1,
   vertical_scroll: 2,
   enable_swiper: 2,
+  swiper_touch_move: 1,
   auto_swipe_back_after: 10,
   standby_after: 0,
   selector_instead_of_buttons: 0,

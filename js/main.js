@@ -660,6 +660,7 @@ function startSwiper() {
         onlyInViewport: false,
       },
       direction: 'horizontal',
+      allowTouchMove: settings.swiper_touch_move
     });
     myswiper.on('transitionStart', function () {
       $('.slide').removeClass('selectedbutton');
