@@ -7,8 +7,14 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements:
+  * New Dashticz config parameter 'swiper_touch_move' to disable/enable swiping the screen on touch
+
 Updates
   * Update FontAwesome to 5.14.0
+
+Fixes
+  * Camera block settings
 
 3.5.2 Beta
 -----------
