@@ -188,7 +188,9 @@
             "vertical_scroll": "Ativar rolagem vertical",
             "vertical_scroll_help": "0: Desativar rolagem vertical; 1: Ative a rolagem vertical se o Swiper estiver desativado; 2: Ativar rolagem vertical",
             "security_panel_lock": "Carregar painel de segurança em tela cheia",
-            "security_panel_lock_help": "Se definir o Painel de Segurança no Domoticz ou Dashticz como 'Arm-Away', o Dashticz carregará automaticamente um painel em tela cheia."
+            "security_panel_lock_help": "Se definir o Painel de Segurança no Domoticz ou Dashticz como 'Arm-Away', o Dashticz carregará automaticamente um painel em tela cheia.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",

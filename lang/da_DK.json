@@ -188,7 +188,9 @@
             "vertical_scroll": "Aktivér lodret rulle",
             "vertical_scroll_help": "0: Deaktiver lodret rulle; 1: Aktivér lodret rulle, hvis Swiper er deaktiveret; 2: Aktivér lodret rulle",
             "security_panel_lock": "Indlæs sikkerhedspanelets fulde skærm",
-            "security_panel_lock_help": "Hvis du sætter Sikkerhedspanelet i Domoticz eller Dashticz til 'Arm - væk', indlæser Dashticz automatisk et fuldskærmspanel."
+            "security_panel_lock_help": "Hvis du sætter Sikkerhedspanelet i Domoticz eller Dashticz til 'Arm - væk', indlæser Dashticz automatisk et fuldskærmspanel.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX af månebillede",

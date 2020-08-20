@@ -188,7 +188,9 @@
             "vertical_scroll": "Függőleges görgetés engedélyezése",
             "vertical_scroll_help": "0: a függőleges görgetés letiltása; 1: függőleges görgetés engedélyezése, ha a Swiper le van tiltva; 2: A függőleges görgetés engedélyezése",
             "security_panel_lock": "Töltse be a biztonsági panelt teljes képernyőn",
-            "security_panel_lock_help": "Ha a Biztonsági panelt Domoticzban vagy Dashticzben „Élesítés” beállításra állítja, akkor a Dashticz automatikusan betölti a teljes képernyőt."
+            "security_panel_lock_help": "Ha a Biztonsági panelt Domoticzban vagy Dashticzben „Élesítés” beállításra állítja, akkor a Dashticz automatikusan betölti a teljes képernyőt.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "Holdfotó idxje",

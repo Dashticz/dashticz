@@ -188,7 +188,9 @@
             "vertical_scroll": "Activați defilarea verticală",
             "vertical_scroll_help": "0: Dezactivează defilarea verticală; 1: Activați defilarea verticală dacă Swiper este dezactivat; 2: Activați defilarea verticală",
             "security_panel_lock": "Panoul de securitate de încărcare pe ecran complet",
-            "security_panel_lock_help": "Dacă setați Panoul de securitate din Domoticz sau Dashticz pe „Arm - Away”, Dashticz va încărca automat un panou cu ecran complet."
+            "security_panel_lock_help": "Dacă setați Panoul de securitate din Domoticz sau Dashticz pe „Arm - Away”, Dashticz va încărca automat un panou cu ecran complet.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX pentru moonpicture",
