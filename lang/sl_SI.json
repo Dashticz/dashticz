@@ -188,7 +188,9 @@
             "vertical_scroll": "Omogoči navpično drsenje",
             "vertical_scroll_help": "0: onemogoči navpično drsenje; 1: omogočite navpično drsenje, če je Swiper onemogočen; 2: Omogoči navpično drsenje",
             "security_panel_lock": "Celotni zaslon naložite varnostno ploščo",
-            "security_panel_lock_help": "Če nastavite varnostno ploščo v domeni Domoticz ali Dashticz na 'Arm - Away', potem bo Dashticz samodejno naložil celozaslonsko ploščo."
+            "security_panel_lock_help": "Če nastavite varnostno ploščo v domeni Domoticz ali Dashticz na 'Arm - Away', potem bo Dashticz samodejno naložil celozaslonsko ploščo.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",
