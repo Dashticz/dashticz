@@ -188,7 +188,9 @@
             "vertical_scroll": "Įgalinti vertikalų slinktį",
             "vertical_scroll_help": "0: išjungti vertikalų slinkimą; 1: įgalinkite vertikalų slinktį, jei „Swiper“ yra išjungtas; 2: įgalinti vertikalų slinktį",
             "security_panel_lock": "Įkelti saugos ekraną per visą ekraną",
-            "security_panel_lock_help": "Jei „Domoticz“ arba „Dashticz“ saugos skydelį nustatysite kaip „Įjungti apsaugą“, tada „Dashticz“ automatiškai įkels viso ekrano skydą."
+            "security_panel_lock_help": "Jei „Domoticz“ arba „Dashticz“ saugos skydelį nustatysite kaip „Įjungti apsaugą“, tada „Dashticz“ automatiškai įkels viso ekrano skydą.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "Mėnulio piktogramų IDX",

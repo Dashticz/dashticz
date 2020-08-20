@@ -188,7 +188,9 @@
             "vertical_scroll": "Włącz przewijanie w pionie",
             "vertical_scroll_help": "0: Wyłącz przewijanie w pionie; 1: Włącz przewijanie w pionie, jeśli Swiper jest wyłączony; 2: Włącz przewijanie w pionie",
             "security_panel_lock": "Załaduj pełny ekran Security Panel",
-            "security_panel_lock_help": "Jeśli ustawisz Panel bezpieczeństwa w Domoticzu lub Dashticzu na „Uzbrajanie”, wówczas Dashticz automatycznie załaduje panel pełnoekranowy."
+            "security_panel_lock_help": "Jeśli ustawisz Panel bezpieczeństwa w Domoticzu lub Dashticzu na „Uzbrajanie”, wówczas Dashticz automatycznie załaduje panel pełnoekranowy.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX dla obrazu księżyca",

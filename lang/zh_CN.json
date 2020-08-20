@@ -188,7 +188,9 @@
             "vertical_scroll": "启用垂直滚动",
             "vertical_scroll_help": "0：禁用垂直滚动； 1：如果禁用了Swiper，则启用垂直滚动； 2：启用垂直滚动",
             "security_panel_lock": "全屏加载安全面板",
-            "security_panel_lock_help": "如果将Domoticz或Dashticz中的“安全面板”设置为“ Arm-Away”，则Dashticz将自动加载全屏面板。"
+            "security_panel_lock_help": "如果将Domoticz或Dashticz中的“安全面板”设置为“ Arm-Away”，则Dashticz将自动加载全屏面板。",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",

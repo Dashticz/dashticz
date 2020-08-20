@@ -188,7 +188,9 @@
             "vertical_scroll": "Включить вертикальную прокрутку",
             "vertical_scroll_help": "0: отключить вертикальную прокрутку; 1: включить вертикальную прокрутку, если Swiper отключен; 2: Включить вертикальную прокрутку",
             "security_panel_lock": "Загрузить панель безопасности в полноэкранном режиме",
-            "security_panel_lock_help": "Если для панели безопасности в Domoticz или Dashticz установить «Arm-Away», то Dashticz автоматически загрузит полноэкранную панель."
+            "security_panel_lock_help": "Если для панели безопасности в Domoticz или Dashticz установить «Arm-Away», то Dashticz автоматически загрузит полноэкранную панель.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX картинки луны",

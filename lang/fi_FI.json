@@ -188,7 +188,9 @@
             "vertical_scroll": "Ota pystysuuntainen vieritys käyttöön",
             "vertical_scroll_help": "0: Poista pystysuuntainen vieritys käytöstä; 1: Ota pystysuuntainen vieritys käyttöön, jos Swiper ei ole käytössä; 2: Ota pystysuuntainen vieritys käyttöön",
             "security_panel_lock": "Lataa suojauspaneeli koko näytöllä",
-            "security_panel_lock_help": "Jos asetat Domoticzin tai Dashticzin suojauspaneeliksi asetukseksi 'Arm - Away', Dashticz lataa automaattisesti koko näytön paneelin."
+            "security_panel_lock_help": "Jos asetat Domoticzin tai Dashticzin suojauspaneeliksi asetukseksi 'Arm - Away', Dashticz lataa automaattisesti koko näytön paneelin.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "Kuun IDX-numero",

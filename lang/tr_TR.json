@@ -188,7 +188,9 @@
             "vertical_scroll": "Dikey kaydırmayı etkinleştir",
             "vertical_scroll_help": "0: Dikey kaydırmayı devre dışı bırak; 1: Swiper devre dışı bırakılmışsa dikey kaydırmayı etkinleştirin; 2: Dikey kaydırmayı etkinleştir",
             "security_panel_lock": "Güvenlik Panelini tam ekran yükle",
-            "security_panel_lock_help": "Domoticz veya Dashticz'deki Güvenlik Panelini 'Arm - Away' olarak ayarlarsanız, Dashticz otomatik olarak bir tam ekran paneli yükleyecektir."
+            "security_panel_lock_help": "Domoticz veya Dashticz'deki Güvenlik Panelini 'Arm - Away' olarak ayarlarsanız, Dashticz otomatik olarak bir tam ekran paneli yükleyecektir.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "Ay Evresi Simge IDX",
