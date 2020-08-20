@@ -216,6 +216,9 @@ function getWasteApi2Data(address, date, random, companyCode) {
 
 // eslint-disable-next-line no-unused-vars
 function getOphaalkalenderData(address, date, random) {
+  //ophaalkalender.be doesn't work anymore. It has been replaced by recycleapp.be
+  getGeneralData('recycleapp', address, date, random, address.street);
+/*
   $('.trash' + random + ' .state').html('');
   var baseURL = 'https://www.ophaalkalender.be';
 
@@ -254,6 +257,7 @@ function getOphaalkalenderData(address, date, random) {
       );
     }
   );
+  */
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -598,6 +602,11 @@ function getOmrinData(address, date, random) {
   getGeneralData('omrin', address, date, random);
 }
 
+// eslint-disable-next-line no-unused-vars
+function getRecycleApp(address, date, random) {
+  getGeneralData('recycleapp', address, date, random, address.street);
+}
+
 function getTrashRow(garbage) {
   this.rowClass = 'trashrow';
   this.displayDate = garbage.date
@@ -929,6 +938,10 @@ function loadDataForService(service, random) {
       dataHandler: 'getOmrinData',
       identifier: '',
     },
+    recycleapp: {
+      dataHandler: 'getRecycleApp',
+      identified: '',
+    }
   };
   window[serviceProperties[service].dataHandler](
     address,
