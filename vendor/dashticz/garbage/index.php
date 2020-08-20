@@ -156,6 +156,114 @@ switch($_GET['service']){
 			}
 		}
 		break;
+	case 'recycleapp':
+/*
+		First get an access token:
+
+curl -H "x-consumer: recycleapp.be" -H "x-secret: Qp4KmgmK2We1ydc9Hxso5D6K0frz3a9raj2tqLjWN5n53TnEijmmYz78pKlcma54sjKLKogt6f9WdnNUci6Gbujnz6b34hNbYo4DzyYRZL5yzdJyagFHS15PSi2kPUc4v2yMck81yFKhlk2aWCTe93" "https://recycleapp.be/api/app/v1/access-token" > accesstoken.json
+
+//Then get the valid zip codes. As authorization use the obtained token.
+  curl -H "x-consumer: recycleapp.be" -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1OTc4NTA1MTEsImV4cCI6MTU5Nzg1NDExMSwiYXVkIjoicmVjeWNsZWFwcC5iZSJ9.fuHPCfFgLBDgT3BC245pQtdOeeAKDvKE9OjfXnkzfYA" "https://recycleapp.be/api/app/v1/zipcodes?q=8560" > garbagezip.json
+//Find the street within the zipcodes:
+curl -H "x-consumer: recycleapp.be" -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1OTc3ODAwNjgsImV4cCI6MTU5Nzc4MzY2OCwiYXVkIjoicmVjeWNsZWFwcC5iZSJ9.3W2Px8c1K907R73pOahvlkPxxgh9BoY1HU5xgu3f0nQ" "https://recycleapp.be/api/app/v1/streets?q=tarwelaan&zipcodes=8500-34022" > garbagestreet.json
+
+//result: id contains the street id
+
+//Then request the collections for the street id
+  curl -H "x-consumer: recycleapp.be" -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1OTc3ODAwNjgsImV4cCI6MTU5Nzc4MzY2OCwiYXVkIjoicmVjeWNsZWFwcC5iZSJ9.3W2Px8c1K907R73pOahvlkPxxgh9BoY1HU5xgu3f0nQ" "https://recycleapp.be/api/app/v1/collections?zipcodeId=8500-34022&streetId=52738&houseNumber=1&fromDate=2020-08-01&untilDate=2020-09-30&size=100" > garbagefinal.json
+*/
+
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL,"https://recycleapp.be/api/app/v1/access-token");
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		$headers = [
+			'x-consumer: recycleapp.be',
+			'x-secret: Qp4KmgmK2We1ydc9Hxso5D6K0frz3a9raj2tqLjWN5n53TnEijmmYz78pKlcma54sjKLKogt6f9WdnNUci6Gbujnz6b34hNbYo4DzyYRZL5yzdJyagFHS15PSi2kPUc4v2yMck81yFKhlk2aWCTe93'
+		];
+
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+		$server_output = curl_exec ($ch);
+
+		curl_close ($ch);
+
+		$data=json_decode($server_output);
+//		print_r ($data);
+//		print $data->accessToken;
+		$accessToken = $data->accessToken;
+		$ch = curl_init();
+		curl_setopt($ch, CURLOPT_URL,"https://recycleapp.be/api/app/v1/zipcodes?q=".$_GET['zipcode']);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		$headers = [
+			'x-consumer: recycleapp.be',
+			'Authorization: '.$accessToken
+		];
+
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+		$server_output = curl_exec ($ch);
+
+		curl_close ($ch);
+
+		$data=json_decode($server_output);
+//		print_r ($data);
+		$zipcode = $data->items[0]->id;
+//		print_r($zipcode);
+
+		$ch = curl_init();
+		$url = "https://recycleapp.be/api/app/v1/streets?q=".urlencode($_GET['sub'])."&zipcodes=".$zipcode;
+//		print $url;
+		curl_setopt($ch, CURLOPT_URL,$url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		$headers = [
+			'x-consumer: recycleapp.be',
+			'Authorization: '.$accessToken
+		];
+
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+		$server_output = curl_exec ($ch);
+
+		curl_close ($ch);
+
+		$data=json_decode($server_output);
+//		print_r($data);
+		$streetid = $data->items[0]->id;
+//		print $streetid;
+
+		//Now finally get the collection info
+		$ch = curl_init();
+		$url = "https://recycleapp.be/api/app/v1/collections?zipcodeId=".$zipcode."&streetId=".$streetid."&houseNumber=".$_GET['nr']."&fromDate=2020-08-01&untilDate=2020-09-30&size=100";
+//		print $url;
+		curl_setopt($ch, CURLOPT_URL,$url);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		$headers = [
+			'x-consumer: recycleapp.be',
+			'Authorization: '.$accessToken
+		];
+
+		curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+
+		$server_output = curl_exec ($ch);
+
+		curl_close ($ch);
+
+		$data=json_decode($server_output);
+//		print_r($data);
+
+		foreach($data->items as $item) {
+			$date = $item->timestamp;
+			$title = $item->fraction->name->nl;
+//			print $date;
+//			print $title;
+			$allDates[$date][$title] = $date;
+		}
+
+	break;
 }
 $temp=$allDates;
 $allDates=array();

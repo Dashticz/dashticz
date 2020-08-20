@@ -599,8 +599,8 @@ settingList['garbage']['garbage_company']['options']['area'] = 'Area';
 settingList['garbage']['garbage_company']['options']['ical'] = 'iCal';
 settingList['garbage']['garbage_company']['options']['googlecalendar'] =
   'Google Calender';
-settingList['garbage']['garbage_company']['options']['ophaalkalender'] =
-  'Ophaalkalender (BE)';
+settingList['garbage']['garbage_company']['options']['recycleapp'] =
+  'RecycleApp (BE)';
 settingList['garbage']['garbage_company']['options']['edg'] = 'EDG (DE)';
 settingList['garbage']['garbage_company']['options']['deafvalapp'] =
   'Afval App (NL)';
