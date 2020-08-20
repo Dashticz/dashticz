@@ -14,7 +14,8 @@ Updates
   * Update FontAwesome to 5.14.0
 
 Fixes
-  * Camera block settings
+  * Camera block 
+  * Garbage: Ophaalkalender (BE) doesn't work anymore. It has been replaced by recycleapp.
 
 3.5.2 Beta
 -----------
