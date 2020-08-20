@@ -188,7 +188,9 @@
             "vertical_scroll": "Habilitar desplazamiento vertical",
             "vertical_scroll_help": "0: deshabilitar desplazamiento vertical; 1: Habilite el desplazamiento vertical si Swiper está deshabilitado; 2: Habilitar desplazamiento vertical",
             "security_panel_lock": "Cargar panel de seguridad pantalla completa",
-            "security_panel_lock_help": "Si configura el Panel de seguridad en Domoticz o Dashticz en 'Armar - Ausente', Dashticz cargará automáticamente un panel de pantalla completa."
+            "security_panel_lock_help": "Si configura el Panel de seguridad en Domoticz o Dashticz en 'Armar - Ausente', Dashticz cargará automáticamente un panel de pantalla completa.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX de la imagen de la luna",

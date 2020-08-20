@@ -188,7 +188,9 @@
             "vertical_scroll": "Activa el desplaçament vertical",
             "vertical_scroll_help": "0: Desactiva el desplaçament vertical; 1: Habilita el desplaçament vertical si l'Sniper està desactivat; 2: Habilita el desplaçament vertical",
             "security_panel_lock": "Carrega el tauler de seguretat a pantalla completa",
-            "security_panel_lock_help": "Si configureu el tauler de seguretat de Domoticz o Dashticz a \"Arm\", Dashticz carregarà automàticament un panell de pantalla completa."
+            "security_panel_lock_help": "Si configureu el tauler de seguretat de Domoticz o Dashticz a \"Arm\", Dashticz carregarà automàticament un panell de pantalla completa.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",

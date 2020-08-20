@@ -188,7 +188,9 @@
             "vertical_scroll": "Aktivera vertikal rullning",
             "vertical_scroll_help": "0: Inaktivera vertikal rullning; 1: Aktivera vertikal rullning om Swiper är avaktiverat; 2: Aktivera vertikal rullning",
             "security_panel_lock": "Ladda säkerhetspanelens fullskärm",
-            "security_panel_lock_help": "Om du ställer in säkerhetspanelen i Domoticz eller Dashticz till 'Arm - Away', kommer Dashticz automatiskt att ladda en fullskärmspanel."
+            "security_panel_lock_help": "Om du ställer in säkerhetspanelen i Domoticz eller Dashticz till 'Arm - Away', kommer Dashticz automatiskt att ladda en fullskärmspanel.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX på månbild",

@@ -188,7 +188,9 @@
             "vertical_scroll": "Aktivieren Sie den vertikalen Bildlauf",
             "vertical_scroll_help": "0: Vertikales Scrollen deaktivieren; 1: Aktivieren Sie den vertikalen Bildlauf, wenn Swiper deaktiviert ist. 2: Aktivieren Sie den vertikalen Bildlauf",
             "security_panel_lock": "Laden Sie das Vollbild des Security Panels",
-            "security_panel_lock_help": "Wenn Sie das Sicherheitspanel in Domoticz oder Dashticz auf \"Arm - Away\" setzen, lädt Dashticz automatisch ein Vollbildfenster."
+            "security_panel_lock_help": "Wenn Sie das Sicherheitspanel in Domoticz oder Dashticz auf \"Arm - Away\" setzen, lädt Dashticz automatisch ein Vollbildfenster.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX des Mondbildes",

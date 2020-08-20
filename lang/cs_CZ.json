@@ -188,7 +188,9 @@
             "vertical_scroll": "Povolit svislé posouvání",
             "vertical_scroll_help": "0: Zakázat svislé posouvání; 1: Povolit svislé posouvání je-li Swiper zakázán; 2: Povolit svislé posouvání",
             "security_panel_lock": "Načíst bezpečnostní panel na celou obrazovku",
-            "security_panel_lock_help": "Pokud nastavíte Zabezpečovací panel v Domoticz nebo Dashticz na 'Arm - Away', pak Dashticz automaticky načte panel celé obrazovky."
+            "security_panel_lock_help": "Pokud nastavíte Zabezpečovací panel v Domoticz nebo Dashticz na 'Arm - Away', pak Dashticz automaticky načte panel celé obrazovky.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX měsíce",

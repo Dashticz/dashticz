@@ -188,7 +188,9 @@
             "vertical_scroll": "Omogući vertikalno pomeranje",
             "vertical_scroll_help": "0: Onemogući okomito pomicanje; 1: Omogućite vertikalno pomicanje ako je Swiper onemogućen; 2: Omogući vertikalno pomeranje",
             "security_panel_lock": "Učitajte sigurnosni panel preko cijelog zaslona",
-            "security_panel_lock_help": "Ako sigurnosnu ploču u Domoticzu ili Dashticzu postavite na 'Arm - Away', tada će Dashticz automatski učitati ploču preko cijelog zaslona."
+            "security_panel_lock_help": "Ako sigurnosnu ploču u Domoticzu ili Dashticzu postavite na 'Arm - Away', tada će Dashticz automatski učitati ploču preko cijelog zaslona.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX slike mjeseca",

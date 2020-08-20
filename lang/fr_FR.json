@@ -188,7 +188,9 @@
             "vertical_scroll": "Activer le défilement vertical",
             "vertical_scroll_help": "0: désactiver le défilement vertical; 1: activer le défilement vertical si Swiper est désactivé; 2: activer le défilement vertical",
             "security_panel_lock": "Charger le panneau de sécurité en plein écran",
-            "security_panel_lock_help": "Si vous définissez le panneau de sécurité dans Domoticz ou Dashticz sur «Arm - Away», Dashticz chargera automatiquement un panneau plein écran."
+            "security_panel_lock_help": "Si vous définissez le panneau de sécurité dans Domoticz ou Dashticz sur «Arm - Away», Dashticz chargera automatiquement un panneau plein écran.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX de la photo de la lune",
