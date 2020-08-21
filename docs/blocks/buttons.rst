@@ -173,7 +173,7 @@ Examples
 Additional examples of button definitions::
 
     var buttons = {}
-    buttons.buienradar = {width:12, isimage:true, refreshimage:60, btnimage: 'http://api.buienradar.nl/image/1.0/RadarMapNL?w=285&h=256', url: 'http://www.weer.nl/verwachting/nederland/son/189656/'}
+    buttons.buienradar = {width:12, isimage:true, refreshimage:60, btnimage: 'https://image.buienradar.nl/2.0/image/animation/RadarMapRainNL?height=300&width=360&extension=gif&renderBackground=True&renderBranding=False&renderText=True&history=3&forecast=6&skip=1', url: 'https://www.buienalarm.nl/amsterdam-noord-holland-nederland/52.3727,4.8936'}
     buttons.radio = {width:12, image: 'radio_on.png', title: 'Radio', url: 'http://nederland.fm'}
     buttons.nunl = {width:12, icon: 'far fa-newspaper', title: 'Nu.nl', url: 'http://www.nu.nl'}
     buttons.webcam = {width:12, isimage:true, refresh:2, btnimage: 'http://ip_url_to_webcam', url: 'http://ip_url_to_webcam', framewidth:500, frameheight:400}
