@@ -403,7 +403,7 @@ As you can see, the graph has
 
 A ``custom`` object start with the name of the button. The button should contain the following three parameters:
 
-* ``range``. This is the name of the range as requested from Domoticz, and can be ``'day'``, ``'month'`` or ``'year'``.
+* ``range``. This is the name of the range as requested from Domoticz, and can be ``'day'``, ``'today'``, ``'month'`` or ``'year'``.  The range ``'today'`` filters the data to today, independent of the setting in Domoticz, and sets the graph x-axis to the full day.
 * ``filter`` (optional). This limits the amount of data to the period as defined by this parameter. Examples: ``'2 hours'``, ``'4 days'``, ``'3 months'``
 * ``data``. This is an object that defines the values to use for the graph.
 
