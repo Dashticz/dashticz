@@ -17,6 +17,7 @@ Updates
 Fixes
   * Camera block 
   * Garbage: Ophaalkalender (BE) doesn't work anymore. It has been replaced by recycleapp.
+  * Security panel home symbol.
 
 3.5.2 Beta
 -----------
