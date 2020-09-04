@@ -9,6 +9,7 @@ Recent changes
 
 Enhancements:
   * New Dashticz config parameter 'swiper_touch_move' to disable/enable swiping the screen on touch
+  * Graph: The 'today' button now shows the full day data. The range 'day'still exists as well, which still can be used in custom graphs.
 
 Updates
   * Update FontAwesome to 5.14.0

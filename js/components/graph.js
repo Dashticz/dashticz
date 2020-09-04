@@ -419,6 +419,8 @@ function refreshGraph(me) {
             case 'month':
                 me.range = 'month';
                 break;
+            case 'today':
+                me.range = 'today'
         }
     }
 
@@ -432,6 +434,11 @@ function refreshGraph(me) {
         me.realrange = 'day';
         me.dataFilterCount = 4;
         me.dataFilterUnit = 'hours';
+    }
+    if (me.range === 'today') {
+        me.realrange = 'day';
+        me.dataFilterUnit = 'today'
+        me.dataFilterCount = 1;
     }
     if (me.block.custom) {
         if (isInitial) {
@@ -451,6 +458,11 @@ function refreshGraph(me) {
                     case 'month':
                     case 'year':
                         me.realrange = me.graphConfig.range;
+                        break;
+                    case 'today':
+                        me.dataFilterCount = 1;
+                        me.dataFilterUnit = 'today';
+                        me.realrange = 'day';
                         break;
                     case 'last':
                         me.dataFilterCount = 4;
@@ -697,7 +709,7 @@ function createGraph(graph) {
         return;
     }
 
-    var ranges = ['last', 'day', 'month'];
+    var ranges = ['last', 'today', 'month'];
     if (graph.customRange) ranges = Object.keys(graph.block.custom);
     var html = createHeader(graph, true);
 
@@ -750,7 +762,7 @@ function createGraph(graph) {
     var mydatasets = [];
 
     if (graph.dataFilterCount > 0) {
-        var startMoment = moment()
+        var startMoment = graph.dataFilterUnit === 'today'? moment().format('YYYY-MM-DD 00:01'): moment()
             .subtract(graph.dataFilterCount, graph.dataFilterUnit)
             .format('YYYY-MM-DD HH:mm');
         graph.data.result = graph.data.result.filter(function(element) {
@@ -1104,7 +1116,12 @@ function createGraph(graph) {
             },
         }, ];
     }
-    //console.log(graphProperties);
+    if (graph.dataFilterUnit === 'today') {
+        graphProperties.options.scales.xAxes[0].ticks.max=moment().endOf('day');
+        graphProperties.options.scales.xAxes[0].ticks.min=moment().startOf('day');
+        graphProperties.options.scales.xAxes[0].distribution= 'linear';
+
+    }
     new Chart(chartctx, graphProperties);
     Chart.defaults.global.defaultFontColor = graph.block.fontColor;
 }
@@ -1198,6 +1215,7 @@ function createButtons(graph, ranges, customRange) {
         var btnTextList = {
             last: btn.text !== false ? btn.text[0] : language.graph.last_hours,
             day: btn.text !== false ? btn.text[1] : language.graph.today,
+            today: btn.text !== false ? btn.text[1] : language.graph.today,
             month: btn.text !== false ? btn.text[2] : language.graph.last_month,
         };
 
@@ -1698,7 +1716,7 @@ function getDefaultGraphProperties(graph, block) {
                     time: {
                         displayFormats: {
                             minute: 'H:mm',
-                            hour: graph.realrange === 'day' ? 'ddd H:mm' : 'D MMM',
+                            hour: graph.range === 'today' ? 'H:mm' : graph.realrange === 'day' ? 'ddd H:mm' : 'D MMM',
                             day: 'D MMM',
                         },
                     },
