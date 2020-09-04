@@ -2903,7 +2903,7 @@ td.agenda-title {
 }
 
 .sec-frame .keypad-input .status[data-id='armhome']:before {
-  content: '\f965';
+  content: '\e065';
 }
 
 .sec-frame .keypad-input .status[data-id='armaway']:before {
