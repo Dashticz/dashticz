@@ -91,12 +91,15 @@ blocktypes.SubType['Soil Moisture']['advice'] = {
   title: '<Name>',
   value: '<Desc>',
 };
-/*
-blocktypes.SubType['Soil Moisture'] = {
-    icon: 'fas fa-seedling',
-    title: '<Name>',
-    value: '<Data>',
-};*/
+
+blocktypes.SubType['Current'] = {
+  icon: 'fas fa-plug',
+  title: '<Name>',
+  value: '<Data>',
+};
+
+
+
 
 blocktypes.SensorUnit = {};
 blocktypes.SensorUnit['Fertility'] = {
