@@ -350,6 +350,10 @@ function getGeneralData(service, address, date, random, subservice) {
   $.getJSON(cURI, function (data) {
     data = data
       .filter(function (element) {
+        if(element.hasOwnProperty('dt_msg')) {
+          console.log(element);
+          return false;
+        }
         return moment(element.date).isBetween(date.start, date.end, null, '[]');
       })
       .map(function (element) {
@@ -566,6 +570,11 @@ function getGroningenData(address, date, random) {
 // eslint-disable-next-line no-unused-vars
 function getAfvalstromenData(address, date, random, service) {
   getGeneralData('afvalstromen', address, date, random, service);
+}
+
+// eslint-disable-next-line no-unused-vars
+function getXimmioData(address, date, random, service) {
+  getGeneralData('ximmio', address, date, random, service);
 }
 
 //http://dashticz.nl/afval/?service=deafvalapp&zipcode=5692VG&nr=33&t=
@@ -851,7 +860,7 @@ function loadDataForService(service, random) {
       identifier: 'gemeenteberkelland',
     },
     meerlanden: {
-      dataHandler: 'getAfvalstromenData',
+      dataHandler: 'getXimmioData',
       identifier: 'meerlanden',
     },
     venray: {
