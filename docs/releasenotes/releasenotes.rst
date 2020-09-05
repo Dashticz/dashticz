@@ -18,6 +18,7 @@ Fixes
   * Camera block 
   * Garbage: Ophaalkalender (BE) doesn't work anymore. It has been replaced by recycleapp.
   * Security panel home symbol.
+  * Garbage: Meerlanden switched to ximmio as garbage data provider
 
 3.5.2 Beta
 -----------
