@@ -64,7 +64,7 @@ function addCalendar(calobject, icsUrlorg) {
     var cache = new Date().getTime();
     curUrl =
       settings['dashticz_php_path'] +
-      'ical/?time=' +
+      'ical/index.php?time=' +
       cache +
       '&maxitems=' +
       maxitems +
