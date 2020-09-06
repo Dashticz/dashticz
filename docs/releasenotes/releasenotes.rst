@@ -11,6 +11,7 @@ Enhancements:
   * New Dashticz config parameter 'swiper_touch_move' to disable/enable swiping the screen on touch
   * Graph: The 'today' button now shows the full day data. The range 'day'still exists as well, which still can be used in custom graphs.
   * Add support for device with subtype 'Current'
+  * Popup graphs enabled by default for most block types. To disable a popup graph, add ``graph: false`` to the block definition.
 
 Updates
   * Update FontAwesome to 5.14.0
