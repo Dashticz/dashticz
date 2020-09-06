@@ -183,7 +183,7 @@ You have to know the correct link to your Google Calendar. You can find them as 
 New Calendar 
 ############
 
-The **new** calendar block follows the same look and feel as most other blocks. It uses "type" to tell Dashticz that its a calendar block. The new calendar block can be configured as follows::
+The **new calendar** block follows the same look and feel as most other blocks. It uses ``type`` to tell Dashticz that its a calendar block. The **new calendar** block can be configured as follows::
 
 	blocks['my_calendar'] = {
 		type: 'calendar',
@@ -198,16 +198,52 @@ The **new** calendar block follows the same look and feel as most other blocks. 
 		width: 12
 	}
 
-The "calFormat" parameter is now called "layout", it has 3 options:
 
-* layout: 0 - lists an agenda of events in text format
-* layout: 1 - lists an agenda of events in table format
-* layout: 2 - displays a traditional calendar in table format
+.. list-table:: 
+  :header-rows: 1
+  :widths: 5, 30
+  :class: tight-table
+      
+  * - Parameter
+    - Description
+  * - layout
+    - | The "calFormat" parameter for the **new calendar** is called ``layout``, it has 3 options:
+      | ``0``: Lists an agenda of events in text format
+      | ``1``: Lists an agenda of events in table format
+      | ``2``: Displays a traditional calendar in table format
+  * - icalurl
+    - This can accept either a single url (string) or one or more calendar objects (example below)
+  * - ics
+    - Url (string) of the calendar object
+  * - color
+    - Color of the calendar text. Must be *html colors, hex code, rgb* or *rgba string*
+  * - url
+    - This can be set on the block or in settings['calendarurl']. Whenever you click the calendar block whilst setting layout 0 or 1, an embedded gmail calendar will display in a popup dialog (modal). Alternatively, when layout 2 is set, when clicking on any event, it will display a popup with the event details and provide a link to the calendar (e.g. gmail)
+  * - holidayurl
+    - This allows users to add public holidays (or other public events) to their calendar
+  * - maxitems
+    - This limits the number of events that you want to display. When setting layout 2, I set it to 100 to allow for 35 days. Adjust to your own preference
+  * - weeks
+    - This is how many weeks, or rows of 7 days, you wish to display when layout 2 is selected
+  * - lastweek
+    - | Show the previous week and any events from that week
+      | ``true``: Show the previous week
+      | ``false`` (=default): Don't how the previous week
+  * - isoweek
+    - | The week will start on a Sunday or on a Monday
+      | ``true``: Week will start on a Monday
+      | ``false`` (=default): Week will start on a Sunday
+  * - icon
+    - | Icon name. Example:
+      | ``'fas fa-car'``. To display a car icon in the left column
+  * - image
+    - Name of custom image to display in the first column. 
+  * - title
+    - A title will be shown above the calendar
+  * - width
+    - ``1..12``: The width of the block relative to the column width
 
-Other parameters include the following:
 
-* **url** - this can be set on the block or in settings['calendarurl']. Whenever you click the calendar block whilst setting layout 0 or 1, an embedded gmail calendar will display in a popup dialog (modal). Alternatively, when layout 2 is set, when clicking on any event, it will display a popup with the event details and provide a link to the calendar (e.g. gmail).
-* **icalurl** - this can accept either a single url (string) or one or more calendar objects (example below).
 ::
 
 	blocks['gmail_calendars'] = {
@@ -230,25 +266,22 @@ Other parameters include the following:
 		isoweek: false,
 		width: 12
 	} 
-* **holidayurl** this allows users to add public holidays (or other public events) to their calendar.
-* **maxitems** - this limits the number of events that you want to display. When setting layout 2, I set it to 100 to allow for 35 days. Adjust to your own preference.
-* **weeks** - this is how many weeks, or rows of 7 days, you wish to display when layout 2 is selected.
-* **lastweek** - if set to true, this will show the previous week and any events from that week. It accepts true or false. Default is false.
-* **isoweek** - if set to true, the week will start on a Monday. If false, it will start on a Sunday. Accepts true or false. Default is false.
-* **icon** - Icon name. Example: ``'fas fa-car'``. To display a car icon in the left column.
-* **title** - A title will be shown above the calendar.
+
 
 The layout set to 0 will display this:
 
 .. image :: img/calendar0.png
 
+
 The layout set to 1 will display this:
 
 .. image :: img/calendar1.png
 
+
 The layout set to 2 will display this:
 
 .. image :: img/calendar2.png
+
 
 When the user clicks on any events, it opens details about that event. If the event details is already HTML, it will render the HTML event body, including font, tags, anchors/links, etc. The contents of the popup is scrollable. Also included in the popup is a link to source calendar (bottom left), if one has been set in config.js. On the bottom right of the popup, the event location is displayed (if this exists). When clicked, it will take the user to the location on Google maps.
 
