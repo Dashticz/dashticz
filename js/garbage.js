@@ -337,7 +337,7 @@ function getGeneralData(service, address, date, random, subservice) {
   }
   var cURI =
     settings['dashticz_php_path'] +
-    'garbage/?service=' +
+    'garbage/index.php?service=' +
     service +
     '&sub=' +
     subservice +
