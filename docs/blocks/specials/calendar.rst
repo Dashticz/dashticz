@@ -237,9 +237,11 @@ The **new calendar** block follows the same look and feel as most other blocks. 
     - | Icon name. Example:
       | ``'fas fa-car'``. To display a car icon in the left column
   * - image
-    - Name of custom image to display in the first column. 
+    - | If you want to show an image instead of an icon in the left column. Place image in ``img/`` folder
+      | ``'calendar.png'``
   * - title
-    - A title will be shown above the calendar
+    - | A title will be shown above the calendar
+      | ``'<string>'``: Title for the block
   * - width
     - ``1..12``: The width of the block relative to the column width
 
