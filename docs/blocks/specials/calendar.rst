@@ -246,6 +246,9 @@ The **new calendar** block follows the same look and feel as most other blocks. 
     - ``1..12``: The width of the block relative to the column width
 
 
+Example of traditional calendar in table format
+-----------------------------------------------
+
 ::
 
 	blocks['gmail_calendars'] = {
