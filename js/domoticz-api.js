@@ -82,6 +82,10 @@ var Domoticz = (function () {
               if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
                 console.log('Domoticz request cancelled');
               } else {
+                if(jqXHR.status == 401) {
+                  newPromise.reject(new Error('Domoticz authorization error'));
+                  return;
+                }
                 console.error(
                   'Domoticz error code: ' +
                     jqXHR.status +
@@ -90,7 +94,7 @@ var Domoticz = (function () {
                     '!\nPlease, double check the path to Domoticz in Settings!'
                 );
               }
-              newPromise.reject(query + textStatus);
+              newPromise.reject(query + ' ' + textStatus);
             },
           }).then(function (res) {
             //                        console.log('ajax resolved ' + query);
