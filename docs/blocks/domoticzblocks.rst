@@ -163,6 +163,9 @@ Block parameters
   * - popup
     - | This allows the popup to use all the block parameters that a graph block does, allowing users to style the graph.
       | ``popup: 'popup_your_graph'``
+  * - graph
+    - | Popup graphs enabled by default for most block types.
+      | ``graph: false`` will disable a popup graph.
   * - openpopup
     - Open a popup when a device changes. See :ref:`openpopup`
   * - openpopupOn
