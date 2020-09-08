@@ -272,4 +272,8 @@ Change the size of the dial-center::
 		width: 65%!important;
 	}
 
+Hide extra data::
 
+	.dial[data-id='dial_name'] .extra {
+		display: none;
+	}
