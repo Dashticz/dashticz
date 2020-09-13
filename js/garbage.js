@@ -586,7 +586,42 @@ function getDeAfvalAppData(address, date, random) {
 //http://dashticz.nl/afval/?service=mijnafvalwijzer&zipcode=3825AL&nr=41&t=
 // eslint-disable-next-line no-unused-vars
 function getMijnAfvalwijzerData(address, date, random) {
-  getGeneralData('mijnafvalwijzer', address, date, random);
+  //  getGeneralData('mijnafvalwijzer', address, date, random);
+  var url =
+    getPrefixUrl() +
+    'https://www.mijnafvalwijzer.nl/nl/' +
+    address.zipcode +
+    '/' +
+    address.housenumber +
+    '/';
+  $.get(url).then(function (result) {
+    var returnDates = [];
+    var res = $(result).find('.wasteInfoIcon p');
+    res.each(function () {
+      var data = $(this).text().split('\n');
+      var idx = data.length == 2 ? 0 : 1;
+      var collDateSplit = data[idx].split(' ');
+      var collDate = moment(
+        '' +
+          Number(collDateSplit[1]) +
+          ' ' +
+          collDateSplit[2] +
+          ' ' +
+          new Date().getFullYear(),
+        'D MMM YYYY',
+        'nl'
+      );
+      returnDates.push({
+        date: collDate,
+        summary: data[idx + 1].trim(),
+        garbageType: mapGarbageType(data[idx + 1].trim()),
+      });
+    });
+    returnDates = returnDates.filter(function (element) {
+      return element.date.isBetween(date.start, date.end, null, '[]');
+    });
+    addToContainer(random, returnDates);
+  });
 }
 
 //http://dashticz.nl/afval/?service=rova&zipcode=7731ZT&nr=84&t=

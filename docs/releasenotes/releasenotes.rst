@@ -21,6 +21,7 @@ Fixes
   * Garbage: Ophaalkalender (BE) doesn't work anymore. It has been replaced by recycleapp.
   * Security panel home symbol.
   * Garbage: Meerlanden switched to ximmio as garbage data provider
+  * Garbage: Fixed method to retrieve data from mijnafvalwijzer
 
 3.5.2 Beta
 -----------
