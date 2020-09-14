@@ -596,27 +596,39 @@ function getMijnAfvalwijzerData(address, date, random) {
     '/';
   $.get(url).then(function (result) {
     var returnDates = [];
-    var res = $(result).find('.wasteInfoIcon p');
-    res.each(function () {
-      var data = $(this).text().split('\n');
-      var idx = data.length == 2 ? 0 : 1;
-      var collDateSplit = data[idx].split(' ');
-      var collDate = moment(
-        '' +
-          Number(collDateSplit[1]) +
-          ' ' +
-          collDateSplit[2] +
-          ' ' +
-          new Date().getFullYear(),
-        'D MMM YYYY',
-        'nl'
-      );
-      returnDates.push({
-        date: collDate,
-        summary: data[idx + 1].trim(),
-        garbageType: mapGarbageType(data[idx + 1].trim()),
-      });
-    });
+    var newHTMLDocument = document.implementation.createHTMLDocument('scrape');
+    newHTMLDocument.documentElement.innerHTML = result;
+    var first_elt = newHTMLDocument.firstElementChild;
+    var res = first_elt.getElementsByClassName('wasteInfoIcon');
+    var res_length=res.length;
+    for(var idx=0; idx<res_length; idx++) {
+      var el = res[idx];
+      var p = el.getElementsByTagName('p');
+//      console.log(p)
+      var l=p.length;
+      for (var i=0; i<l; i++) {
+        el=p[i];
+        var data = el.innerText.split('\n');
+        var startidx = data.length == 2 ? 0 : 1;
+        var collDateSplit = data[startidx].split(' ');
+        var collDate = moment(
+          '' +
+            Number(collDateSplit[1]) +
+            ' ' +
+            collDateSplit[2] +
+            ' ' +
+            new Date().getFullYear(),
+          'D MMM YYYY',
+          'nl'
+        );
+        returnDates.push({
+          date: collDate,
+          summary: data[startidx + 1].trim(),
+          garbageType: mapGarbageType(data[startidx + 1].trim()),
+        });
+    
+      }
+    }
     returnDates = returnDates.filter(function (element) {
       return element.date.isBetween(date.start, date.end, null, '[]');
     });
