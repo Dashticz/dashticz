@@ -22,6 +22,7 @@ Fixes
   * Security panel home symbol.
   * Garbage: Meerlanden switched to ximmio as garbage data provider
   * Garbage: Fixed method to retrieve data from mijnafvalwijzer
+  * Fixed use_favorites config setting. Changed default to false, meaning all devices will be available for Dashticz.
 
 3.5.2 Beta
 -----------
