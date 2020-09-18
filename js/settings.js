@@ -807,7 +807,7 @@ var defaultSettings = {
   auto_swipe_back_to: 1,
   start_page: 1,
   auto_positioning: 1,
-  use_favorites: 1,
+  use_favorites: 0,
   translate_windspeed: 1,
   static_weathericons: 0,
   last_update: 1,
@@ -955,6 +955,7 @@ var defaultSettings = {
   evohome_boost_hw: 15,
   login_timeout: 60,
   refresh_method: 1,
+  domoticz_timeout: 2000
 };
 
 var settings = {};

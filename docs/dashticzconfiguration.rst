@@ -182,7 +182,7 @@ Config parameters
       | ``0`` Use this if you have defined your own columns
       | ``1`` Default
   * - use_favorites
-    - | ``0`` Show all domoticz devices
+    - | ``0`` Show all domoticz devices (default)
       | ``1`` Only show Domoticz devices marked as favorite in Domoticz
       | If use auto positioning, then this item should be 1
   * - last_update

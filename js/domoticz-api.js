@@ -71,7 +71,7 @@ var Domoticz = (function () {
             }
             //                    else
             //                        console.log('was resolved or failed already')
-          }, 2000); //reject promise after timeout of 2000ms
+          }, cfg.domoticz_timeout); //reject promise after timeout of 2000ms
         } else
           $.get({
             url: cfg.url + 'json.htm?' + domoticzQuery(query),
@@ -120,7 +120,7 @@ var Domoticz = (function () {
           if (initialUpdate.state !== 'resolved') {
             initialUpdate.reject('connection failed');
           }
-        }, 2000);
+        }, cfg.domoticz_timeout);
         return initialUpdate; //initialUpdate will be resolved after the first message from websocket
       }
     });
@@ -300,7 +300,7 @@ var Domoticz = (function () {
       timeFilter = '&lastUpdate=' + lastUpdate.devices;
     }
     return domoticzRequest(
-      'type=devices&filter=all&used=true&order=Name' + timeFilter,
+      'type=devices&filter=all&used=true&order=Name' + (cfg.use_favorites ? '&favorite=1' : '') + timeFilter,
       forcehttp
     ).then(function (res) {
       return _setAllDevices(res);
