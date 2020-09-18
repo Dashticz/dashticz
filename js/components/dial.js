@@ -1,4 +1,4 @@
-/* global settings Domoticz Dashticz moment _TEMP_SYMBOL CircleType*/
+/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format*/
 var DT_dial = {
   name: 'dial',
 
@@ -91,6 +91,8 @@ var DT_dial = {
     var d = me.device;
 
     switch (true) {
+      case me.block.values:
+        DT_dial.defaultDial(me);
       case d.SubType === 'Evohome':
       case d.SwitchType === 'Selector':
         DT_dial.control(me);
@@ -107,6 +109,7 @@ var DT_dial = {
       case d.SwitchType === 'On/Off':
         DT_dial.onoff(me);
         break;
+      case d.Type === 'Temp':
       case d.Type === 'Temp + Humidity':
       case d.Type === 'Temp + Humidity + Baro':
         DT_dial.temperature(me);
@@ -116,6 +119,9 @@ var DT_dial = {
         break;
       case d.Type === 'P1 Smart Meter':
         DT_dial.p1smartmeter(me);
+        break;
+      default:
+        DT_dial.defaultDial(me);
         break;
     }
 
@@ -540,7 +546,7 @@ var DT_dial = {
         me.type = 'dhw';
         me.state = me.device.State;
         me.min = isDefined(me.block.min) ? me.block.min : 20;
-        me.max = isDefined(me.block.min) ? me.block.min : 60;
+        me.max = isDefined(me.block.max) ? me.block.max : 60;
         me.setpoint = 40;
         me.demand = me.device.State === 'On';
         me.boost = isDefined(settings['evohome_boost_hw']) ?
@@ -582,27 +588,66 @@ var DT_dial = {
     me.active = false;
     me.min = isDefined(me.block.min) ? me.block.min : 5;
     me.max = isDefined(me.block.max) ? me.block.max : 35;
-    me.value = me.device.Temp;
+    me.value = typeof me.device['Temp'] !== 'undefined' ? me.device['Temp'] : me.device['Data'];
     me.isSetpoint = true;
     me.setpoint = isDefined(me.block.setpoint) ? me.block.setpoint : 20;
     me.unitvalue = _TEMP_SYMBOL;
 
-    me.info.push({
-      icon: DT_dial.display(me.block.dialicon, 0, 2, 'fas fa-tint'),
-      image: DT_dial.display(me.block.dialimage, 0, 2, false),
-      data: parseFloat(me.device.Data.split(',')[1]),
-      unit: '%',
-    });
+    if (typeof me.device.Humidity !== 'undefined') {
+      me.info.push({
+        icon: DT_dial.display(me.block.dialicon, 0, 2, 'fas fa-tint'),
+        image: DT_dial.display(me.block.dialimage, 0, 2, false),
+        data: number_format(me.device['Humidity'], 0),
+        unit: '%',
+      });
+    }
 
-    if (me.device.Type === 'Temp + Humidity + Baro') {
+    if (typeof me.device.Barometer !== 'undefined') {
       me.info.push({
         icon: DT_dial.display(me.block.dialicon, 1, 2, 'fas fa-cloud'),
         image: DT_dial.display(me.block.dialimage, 1, 2, false),
-        data: parseFloat(me.device.Data.split(',')[2]),
+        data: number_format(me.device['Barometer'], 0),
         unit: 'hPa',
       });
     }
     return;
+  },
+
+  defaultDial: function(me) {
+
+    function getValueInfo(device, id) {
+      var res = {};
+      if(typeof id==='string') {
+        res.value = device[id];
+        res.unit = '';
+        res.icon = '';
+        res.image = '';
+      } else
+      {
+        res.value = device[id.value];
+        res.icon = id.icon;
+        res.image = id.image;
+      }
+      return res;
+    }
+
+    me.type = 'default';
+    me.active = false;
+    me.min = isDefined(me.block.min) ? me.block.min : 0;
+    me.max = isDefined(me.block.max) ? me.block.max : 100;
+    me.value = parseFloat(me.device.Data);
+    var splitData = me.device.Data.split(' ');
+    me.unitvalue = me.block.unitvalue || (splitData.length>1 ? splitData[1]:undefined);
+    me.showunit = isDefined(me.block.showunit) ? me.block.showunit : !!me.unit;
+    me.isSetpoint = true;
+  if(me.block.values) {
+      if(Array.isArray(me.block.values)) {
+        var res = getValueInfo(me.device, me.block.values[0])
+      }
+    }
+    else {
+    }
+
   },
 
   wind: function(me) {
