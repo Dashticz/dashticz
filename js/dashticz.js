@@ -70,6 +70,8 @@ var Dashticz = (function () {
           enable_websocket: settings['enable_websocket'],
           domoticz_refresh: settings['domoticz_refresh'],
           refresh_method: settings['refresh_method'],
+          domoticz_timeout: settings['domoticz_timeout'],
+          use_favorites: settings['use_favorites']
         };
         return Domoticz.init(cfg);
       })
