@@ -641,6 +641,7 @@ settingList['garbage']['garbage_company']['options']['meerlanden'] =
   'Meerlanden (NL)';
 settingList['garbage']['garbage_company']['options']['mijnafvalwijzer'] =
   'Mijn Afval Wijzer (NL)';
+settingList['garbage']['garbage_company']['options']['omrin'] = 'Omrin (NL)';
 settingList['garbage']['garbage_company']['options']['recyclemanager'] =
   'Recycle Manager';
 settingList['garbage']['garbage_company']['options']['rd4'] = 'Rd4';
