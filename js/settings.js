@@ -49,6 +49,13 @@ settingList['general']['enable_websocket']['type'] = 'checkbox';
 settingList['general']['enable_websocket']['help'] =
   language.settings.general.enable_websocket_help;
 
+settingList['general']['domoticz_timeout'] = {};
+settingList['general']['domoticz_timeout']['title'] =
+  language.settings.general.domoticz_timeout;
+settingList['general']['domoticz_timeout']['type'] = 'text';
+settingList['general']['domoticz_timeout']['help'] =
+  language.settings.general.domoticz_timeout_help;
+
 /* settingList['general']['no_rgb'] = {};
 settingList['general']['no_rgb']['title'] = language.settings.general.no_rgb;
 settingList['general']['no_rgb']['type'] = 'checkbox'; */
@@ -634,6 +641,7 @@ settingList['garbage']['garbage_company']['options']['meerlanden'] =
   'Meerlanden (NL)';
 settingList['garbage']['garbage_company']['options']['mijnafvalwijzer'] =
   'Mijn Afval Wijzer (NL)';
+settingList['garbage']['garbage_company']['options']['omrin'] = 'Omrin (NL)';
 settingList['garbage']['garbage_company']['options']['recyclemanager'] =
   'Recycle Manager';
 settingList['garbage']['garbage_company']['options']['rd4'] = 'Rd4';
