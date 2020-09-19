@@ -106,7 +106,7 @@
             "enable_websocket": "WebSocket",
             "enable_websocket_help": "Enable\/Disable the WebSocket connection",
             "domoticz_timeout": "Domoticz timeout",
-            "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTML.",
+            "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
             "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
             "colorpicker_none": "No RGB colorpicker",
             "colorpicker_old": "Old style RGB colorpicker",
