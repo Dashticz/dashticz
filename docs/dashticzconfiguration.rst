@@ -72,7 +72,7 @@ Config parameters
       | ``false`` = Dashticz will use a http connection.
       | ``true`` = Dashticz will switch to a websocket connection if the Domoticz version is above 4.11000.     
   * - domoticz_timeout
-    - | Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTML.
+    - | Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.
       | ``2000`` = Time in <value> milliseconds (default=2000).
   * - app_title
     - | Name of the Dashboard - Title to show in the :ref:`customtopbar`

@@ -106,7 +106,7 @@
             "enable_websocket": "WebSocket",
             "enable_websocket_help": "Inschakelen\/Uitschakelen van de WebSocket verbinding",
             "domoticz_timeout": "Domoticz timeout",
-            "domoticz_timeout_help": "Tijd Dashticz is aan het ophalen van Domoticz-apparaten tijdens de eerste aanvraag. Na deze tijd zal Dashticz terugvallen van websocket naar HTML.",
+            "domoticz_timeout_help": "Tijd Dashticz is aan het ophalen van Domoticz-apparaten tijdens de eerste aanvraag. Na deze tijd zal Dashticz terugvallen van websocket naar HTTP.",
             "colorpicker": "Kies de standaard RGB colorpicker voor RGB devices.",
             "colorpicker_none": "Géén RGB colorpicker",
             "colorpicker_old": "Oude stijl RGB colorpicker",
