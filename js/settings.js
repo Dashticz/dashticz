@@ -49,6 +49,13 @@ settingList['general']['enable_websocket']['type'] = 'checkbox';
 settingList['general']['enable_websocket']['help'] =
   language.settings.general.enable_websocket_help;
 
+settingList['general']['domoticz_timeout'] = {};
+settingList['general']['domoticz_timeout']['title'] =
+  language.settings.general.domoticz_timeout;
+settingList['general']['domoticz_timeout']['type'] = 'text';
+settingList['general']['domoticz_timeout']['help'] =
+  language.settings.general.domoticz_timeout_help;
+
 /* settingList['general']['no_rgb'] = {};
 settingList['general']['no_rgb']['title'] = language.settings.general.no_rgb;
 settingList['general']['no_rgb']['type'] = 'checkbox'; */
