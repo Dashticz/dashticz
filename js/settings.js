@@ -38,6 +38,8 @@ settingList['general']['loginEnabled'] = {};
 settingList['general']['loginEnabled']['title'] =
   language.settings.general.loginEnabled;
 settingList['general']['loginEnabled']['type'] = 'checkbox';
+settingList['general']['loginEnabled']['help'] =
+  language.settings.general.loginEnabled_help;
 
 settingList['general']['login_timeout'] = {};
 settingList['general']['login_timeout']['title'] =
