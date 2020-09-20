@@ -216,7 +216,7 @@
             "owm_days": "Voorspelling in dagen",
             "owm_days_help": "Uitgeschakeld geeft de Open Weather Map standaard 3 uurs voorspelling",
             "owm_min": "Minimum temperatuur op 2e regel",
-            "owm_min_help": "Wordt alleen weergegeven bij voorspelling in dagen",
+            "owm_min_help": "Wordt alleen weergegeven als de voorspelling in dagen is ingeschakeld",
             "owm_lang": "Taal voor de beschrijving (regen, bewolkt, etc.)",
             "owm_lang_help": "Zie voor beschikbare talen https:\/\/openweathermap.org\/forecast5\/#multi",
             "owm_country": "Open Weather Map Land",
