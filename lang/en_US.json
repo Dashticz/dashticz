@@ -87,6 +87,7 @@
             "login": "Log in",
             "login_to_dashticz": "Dashticz Login",
             "loginEnabled": "Dashticz Login enabled",
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard",
             "logout": "Log out",
             "news_scroll_after": "Scroll news after (seconds)",
             "no_rgb": "Do not use colorpicker for RGB devices.",
