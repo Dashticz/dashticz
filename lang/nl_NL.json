@@ -208,7 +208,7 @@
             "wu_api": "Wunderground API-Sleutel",
             "wu_city": "Wunderground Station (Stad of Code)",
             "wu_country": "Wunderground Land",
-            "wu_name": "Weergavenaam",
+            "wu_name": "Weergavenaam Wunderground",
             "owm_api": "Open Weather Map API-Sleutel",
             "owm_city": "Open Weather Map Station (Stad of Code)",
             "owm_cnt": "Open Weather Map voorspelling tellen (4 - 40)",
