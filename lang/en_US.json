@@ -208,7 +208,7 @@
             "wu_api": "Wunderground API Key",
             "wu_city": "Wunderground Station (City or Code)",
             "wu_country": "Wunderground Country",
-            "wu_name": "Display Name",
+            "wu_name": "Display Name Wunderground",
             "owm_api": "Open Weather Map API Key",
             "owm_city": "Open Weather Map Station (City or Code)",
             "owm_cnt": "Open Weather Map forecast count (4 - 40)",
