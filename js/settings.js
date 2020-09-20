@@ -513,13 +513,6 @@ settingList['weather']['owm_min']['type'] = 'checkbox';
 settingList['weather']['owm_min']['help'] =
   language.settings.weather.owm_min_help;
 
-settingList['weather']['idx_moonpicture'] = {};
-settingList['weather']['idx_moonpicture']['title'] =
-  language.settings.weather.idx_moonpicture;
-settingList['weather']['idx_moonpicture']['type'] = 'text';
-settingList['weather']['idx_moonpicture']['help'] =
-  language.settings.weather.idx_moonpicture_help;
-
 settingList['weather']['use_fahrenheit'] = {};
 settingList['weather']['use_fahrenheit']['title'] =
   language.settings.weather.use_fahrenheit;
@@ -541,6 +534,13 @@ settingList['weather']['static_weathericons'] = {};
 settingList['weather']['static_weathericons']['title'] =
   language.settings.weather.static_weathericons;
 settingList['weather']['static_weathericons']['type'] = 'checkbox';
+
+settingList['weather']['idx_moonpicture'] = {};
+settingList['weather']['idx_moonpicture']['title'] =
+  language.settings.weather.idx_moonpicture;
+settingList['weather']['idx_moonpicture']['type'] = 'text';
+settingList['weather']['idx_moonpicture']['help'] =
+  language.settings.weather.idx_moonpicture_help;
 
 settingList['weather']['longfonds_zipcode'] = {};
 settingList['weather']['longfonds_zipcode'] = {
