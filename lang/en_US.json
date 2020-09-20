@@ -216,7 +216,7 @@
             "owm_days": "Forecast in days",
             "owm_days_help": "Off shows the Open Weather Map default 3 hour forecast",
             "owm_min": "Minimum temperature on 2nd row",
-            "owm_min_help": "Only shown when forecast in days",
+            "owm_min_help": "Displayed only when forecast in days enabled",
             "owm_lang": "Set language for the description of the forecast (rain, cloudy, etc.)",
             "owm_lang_help": "For available languages, see https:\/\/openweathermap.org\/forecast5\/#multi",
             "owm_country": "Open Weather Map Country",
