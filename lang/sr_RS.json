@@ -109,7 +109,12 @@
             "colorpicker_none": "No RGB colorpicker",
             "colorpicker_old": "Old style RGB colorpicker",
             "colorpicker_new": "New style RGB colorpicker",
-            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker"
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker",
+            "domoticz_timeout": "Domoticz timeout",
+            "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
+            "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
+            "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
         },
         "infosave": "Po podrazumevanim postavkama, postavke se skladište u vašem pregledaču. Negativna strana ove metode je da će raditi samo u trenutnom pregledaču. Ako to nije problem, možete nastaviti. U suprotnom, kopirajte kôd ispod u vaš CONFIG.JS da bi ste zadržali postavke za sve pregledače i uređaje.",
         "localize": {

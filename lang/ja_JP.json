@@ -109,7 +109,12 @@
             "colorpicker_none": "No RGB colorpicker",
             "colorpicker_old": "Old style RGB colorpicker",
             "colorpicker_new": "New style RGB colorpicker",
-            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker"
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker",
+            "domoticz_timeout": "Domoticz timeout",
+            "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
+            "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
+            "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
         },
         "infosave": "By default, settings are stored in your browser. Downside of this method is it will only work in your current browser. If that's not a problem, you can proceed. Otherwise, copy code below to your CONFIG.JS to keep settings across all browsers and devices.",
         "localize": {
@@ -212,7 +217,7 @@
             "owm_days": "Forecast in days",
             "owm_days_help": "Off shows the Open Weather Map default 3 hour forecast",
             "owm_min": "Minimum temperature on 2nd row",
-            "owm_min_help": "Only shown when forecast in days",
+            "owm_min_help": "Displayed only when forecast in days enabled",
             "owm_lang": "Set language for the description of the forecast (rain, cloudy, etc.)",
             "owm_lang_help": "For available languages, see https:\/\/openweathermap.org\/forecast5\/#multi",
             "owm_country": "Open Weather Map Country",
