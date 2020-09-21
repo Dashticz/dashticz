@@ -1,8 +1,9 @@
 {
-"version": "3.5.2",
-"branch": "beta",
-"last_changes": "RGB Color Picker enhancements",
+"version": "3.6",
+"branch": "master",
+"last_changes": "Master derived from 3.5.2 beta",
 "changelog" : {
+            "3.5.2": "RGB Color Picker enhancements",
             "3.5.1": "url block parameter implemented for several blocks, traffic block fix",
             "3.5.0": "Beta version derived from 3.5 master",
             "3.5": "Master version"
