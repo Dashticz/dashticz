@@ -7,6 +7,13 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+3.6.0 Beta
+----------
+Beta version, same as 3.6 master.
+
+3.6 Master
+----------
+
 Enhancements:
   * New Dashticz config parameter 'swiper_touch_move' to disable/enable swiping the screen on touch
   * Graph: The 'today' button now shows the full day data. The range 'day'still exists as well, which still can be used in custom graphs.
