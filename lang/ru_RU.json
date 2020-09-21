@@ -104,7 +104,17 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Keep Dashticz вошли в систему (минуты)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Включить \/ отключить соединение WebSocket"
+            "enable_websocket_help": "Включить \/ отключить соединение WebSocket",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker",
+            "domoticz_timeout": "Domoticz timeout",
+            "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
+            "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
+            "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
         },
         "infosave": "По умолчанию настройки хранятся в Вашем браузере. Недостатком этого метода является то, что он будет работать только в текущем браузере. Если это не проблема, Вы можете продолжить. В противном случае скопируйте код ниже в CONFIG.JS для сохранения настроек во всех браузерах и устройствах.",
         "localize": {
@@ -143,7 +153,8 @@
             "uk": "Украинский",
             "sr": "Сербский",
             "lt": "Литовский язык",
-            "ro": "румынский"
+            "ro": "румынский",
+            "ja": "Японский"
         },
         "media": {
             "hide_mediaplayer": "Скрывать выключенный медиаплеер",
@@ -182,7 +193,9 @@
             "vertical_scroll": "Включить вертикальную прокрутку",
             "vertical_scroll_help": "0: отключить вертикальную прокрутку; 1: включить вертикальную прокрутку, если Swiper отключен; 2: Включить вертикальную прокрутку",
             "security_panel_lock": "Загрузить панель безопасности в полноэкранном режиме",
-            "security_panel_lock_help": "Если для панели безопасности в Domoticz или Dashticz установить «Arm-Away», то Dashticz автоматически загрузит полноэкранную панель."
+            "security_panel_lock_help": "Если для панели безопасности в Domoticz или Dashticz установить «Arm-Away», то Dashticz автоматически загрузит полноэкранную панель.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX картинки луны",

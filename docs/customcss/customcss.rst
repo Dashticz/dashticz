@@ -486,5 +486,16 @@ Customized drop down block
 Change 438 to your own block number
 
 
+Change size and color of Standby Screen items
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+::
 
-
+   .standby .clock{
+      font-size:250px !important;
+      color: #718084!important;
+   }
+   .standby .weekday,
+   .standby .date {
+      font-size:80px !important;
+      color: #4E585B !important;
+   }

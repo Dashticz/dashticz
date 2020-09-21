@@ -37,7 +37,6 @@ blocktypes.SubType['Distance'] = {
   icon: 'fas fa-eye',
   title: '<Name>',
   value: '<Data>',
-  graph: true,
 };
 blocktypes.SubType['Alert'] = {
   icon: 'fas fa-warning',
@@ -53,6 +52,7 @@ blocktypes.SubType['Text'] = {
   icon: 'fas fa-file',
   title: '<Name>',
   value: '<Data>',
+  graph: false
 };
 blocktypes.SubType['Counter Incremental'] = {
   icon: 'fas fa-bolt',
@@ -65,7 +65,6 @@ blocktypes.SubType['Voltage'] = {
   icon: 'fas fa-bolt',
   title: '<Name>',
   value: '<Data>',
-  graph: true,
 };
 blocktypes.SubType['Solar Radiation'] = {
   icon: 'fas fa-sun-o',
@@ -91,12 +90,15 @@ blocktypes.SubType['Soil Moisture']['advice'] = {
   title: '<Name>',
   value: '<Desc>',
 };
-/*
-blocktypes.SubType['Soil Moisture'] = {
-    icon: 'fas fa-seedling',
-    title: '<Name>',
-    value: '<Data>',
-};*/
+
+blocktypes.SubType['Current'] = {
+  icon: 'fas fa-plug',
+  title: '<Name>',
+  value: '<Data>',
+};
+
+
+
 
 blocktypes.SensorUnit = {};
 blocktypes.SensorUnit['Fertility'] = {
@@ -293,14 +295,14 @@ function getBlockTypesBlock(block) {
         typeof protoblock['image'] !== 'undefined'
       ) {
         //we have a single block
-        var newblock = {};
+        var newblock = {graph: true};
         newblock.idx = block.idx;
         $.extend(newblock, protoblock);
         blockValues.push(newblock);
       } else {
         var c = 1;
         for (var de in protoblock) {
-          var subblock = {};
+          var subblock = {graph: true};
           var protosubblock = protoblock[de];
           $.extend(subblock, protosubblock);
           subblock.idx = block.device.idx;

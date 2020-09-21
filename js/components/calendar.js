@@ -333,7 +333,7 @@ function createCalObject(name, url, color) {
 function makeUrl(key, url) {
   return (
     settings['dashticz_php_path'] +
-    'ical/?time=' +
+    'ical/index.php?time=' +
     new Date().getTime() +
     '&maxitems=' +
     cal[key].maxitems +

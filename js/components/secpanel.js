@@ -164,7 +164,7 @@ var DT_secpanel = {
       'type=command&param=setsecstatus&secstatus=' +
         status +
         '&seccode=' +
-        $.md5(seccode)
+        md5(seccode)
     )
       .then(function (data) {
         if (data.status != 'OK') {
@@ -278,7 +278,7 @@ $('body').on('click', '.sec-frame .key:not(.disabled)', function () {
         return;
       }, 3000);
     } else {
-      var seccodehash = $.md5(seccode);
+      var seccodehash = md5(seccode);
       var codeok =
         seccodehash === Domoticz.getAllDevices()['_settings'].SecPassword;
       if (!codeok) {

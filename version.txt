@@ -1,25 +1,11 @@
 {
-"version": "3.5",
+"version": "3.6",
 "branch": "master",
-"last_changes": "Master version derived from 3.4.10",
+"last_changes": "Master derived from 3.5.2 beta",
 "changelog" : {
-            "3.4.10": "Improved camera module",
-            "3.4.9.1": "Bug fixes",
-            "3.4.9": "Bug fixes related to custom block keys",
-            "3.4.8": "IE11 and iOS9 support. Code maintenance.",
-            "3.4.7": "Dials",
-            "3.4.6": "Update of graph module",
-            "3.4.5": "Bug fixes",
-            "3.4.4": "New security panel; bug fixes",
-            "3.4.3": "New calendar block; bug fixes",
-            "3.4.2": "Corona block, Camera block, Dewpoint, graph custom header",
-            "3.4.1": "Domoticz blocks redesign",
-            "3.4.0": "websocket connection and new graph module.",
-            "3.3.5": "Restored the PHP5 ical library next to the PHP7 library.",
-            "3.3.4": "Merge of the multigraph branch.",
-            "3.3.3": "New PHP calendar module to fix recurring events",
-            "3.3.2": "Master version",
-            "3.3.1": "Garbage fixes for TwenteMilieu, Barendrecht. RGBWWZ device support.",
-            "3.3.0": "Evohome support."
+            "3.5.2": "RGB Color Picker enhancements",
+            "3.5.1": "url block parameter implemented for several blocks, traffic block fix",
+            "3.5.0": "Beta version derived from 3.5 master",
+            "3.5": "Master version"
             }
 }

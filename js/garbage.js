@@ -216,6 +216,9 @@ function getWasteApi2Data(address, date, random, companyCode) {
 
 // eslint-disable-next-line no-unused-vars
 function getOphaalkalenderData(address, date, random) {
+  //ophaalkalender.be doesn't work anymore. It has been replaced by recycleapp.be
+  getGeneralData('recycleapp', address, date, random, address.street);
+/*
   $('.trash' + random + ' .state').html('');
   var baseURL = 'https://www.ophaalkalender.be';
 
@@ -254,6 +257,7 @@ function getOphaalkalenderData(address, date, random) {
       );
     }
   );
+  */
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -333,7 +337,7 @@ function getGeneralData(service, address, date, random, subservice) {
   }
   var cURI =
     settings['dashticz_php_path'] +
-    'garbage/?service=' +
+    'garbage/index.php?service=' +
     service +
     '&sub=' +
     subservice +
@@ -346,6 +350,10 @@ function getGeneralData(service, address, date, random, subservice) {
   $.getJSON(cURI, function (data) {
     data = data
       .filter(function (element) {
+        if(element.hasOwnProperty('dt_msg')) {
+          console.log(element);
+          return false;
+        }
         return moment(element.date).isBetween(date.start, date.end, null, '[]');
       })
       .map(function (element) {
@@ -482,18 +490,15 @@ function getVenloData(address, date, random) {
       $(data)
         .find('div#block-system-main div.trash-removal-calendar tbody tr')
         .each(function (index, element) {
-          var year = $(element)
-            .parents('table')
-            .find('thead')[0]
-            .innerText.substr(-5);
-          returnDates.push({
-            date: moment(
-              $(element).find('td')[0].innerText.trim() + ' ' + year,
-              'dddd DD MMMM YYYY',
-              'nl'
-            ),
-            summary: $(element).find('span')[0].innerText,
-            garbageType: mapGarbageType($(element).find('span')[0].innerText),
+          var $el = $(element);
+          var year = $el.parents('table').find('thead')[0].innerText.substr(-5);
+          var datePart = $el.find('td')[0].innerText.trim();
+          $el.find('span').each(function (index, garbageElement) {
+            returnDates.push({
+              date: moment(datePart + ' ' + year, 'dddd DD MMMM YYYY', 'nl'),
+              summary: garbageElement.innerText,
+              garbageType: mapGarbageType(garbageElement.innerText),
+            });
           });
         });
       returnDates = returnDates.filter(function (element) {
@@ -567,6 +572,11 @@ function getAfvalstromenData(address, date, random, service) {
   getGeneralData('afvalstromen', address, date, random, service);
 }
 
+// eslint-disable-next-line no-unused-vars
+function getXimmioData(address, date, random, service) {
+  getGeneralData('ximmio', address, date, random, service);
+}
+
 //http://dashticz.nl/afval/?service=deafvalapp&zipcode=5692VG&nr=33&t=
 // eslint-disable-next-line no-unused-vars
 function getDeAfvalAppData(address, date, random) {
@@ -576,7 +586,54 @@ function getDeAfvalAppData(address, date, random) {
 //http://dashticz.nl/afval/?service=mijnafvalwijzer&zipcode=3825AL&nr=41&t=
 // eslint-disable-next-line no-unused-vars
 function getMijnAfvalwijzerData(address, date, random) {
-  getGeneralData('mijnafvalwijzer', address, date, random);
+  //  getGeneralData('mijnafvalwijzer', address, date, random);
+  var url =
+    getPrefixUrl() +
+    'https://www.mijnafvalwijzer.nl/nl/' +
+    address.zipcode +
+    '/' +
+    address.housenumber +
+    '/';
+  $.get(url).then(function (result) {
+    var returnDates = [];
+    var newHTMLDocument = document.implementation.createHTMLDocument('scrape');
+    newHTMLDocument.documentElement.innerHTML = result;
+    var first_elt = newHTMLDocument.firstElementChild;
+    var res = first_elt.getElementsByClassName('wasteInfoIcon');
+    var res_length=res.length;
+    for(var idx=0; idx<res_length; idx++) {
+      var el = res[idx];
+      var p = el.getElementsByTagName('p');
+//      console.log(p)
+      var l=p.length;
+      for (var i=0; i<l; i++) {
+        el=p[i];
+        var data = el.innerText.split('\n');
+        var startidx = data.length == 2 ? 0 : 1;
+        var collDateSplit = data[startidx].split(' ');
+        var collDate = moment(
+          '' +
+            Number(collDateSplit[1]) +
+            ' ' +
+            collDateSplit[2] +
+            ' ' +
+            new Date().getFullYear(),
+          'D MMM YYYY',
+          'nl'
+        );
+        returnDates.push({
+          date: collDate,
+          summary: data[startidx + 1].trim(),
+          garbageType: mapGarbageType(data[startidx + 1].trim()),
+        });
+    
+      }
+    }
+    returnDates = returnDates.filter(function (element) {
+      return element.date.isBetween(date.start, date.end, null, '[]');
+    });
+    addToContainer(random, returnDates);
+  });
 }
 
 //http://dashticz.nl/afval/?service=rova&zipcode=7731ZT&nr=84&t=
@@ -599,6 +656,11 @@ function getEdgData(address, date, random) {
 // eslint-disable-next-line no-unused-vars
 function getOmrinData(address, date, random) {
   getGeneralData('omrin', address, date, random);
+}
+
+// eslint-disable-next-line no-unused-vars
+function getRecycleApp(address, date, random) {
+  getGeneralData('recycleapp', address, date, random, address.street);
 }
 
 function getTrashRow(garbage) {
@@ -845,7 +907,7 @@ function loadDataForService(service, random) {
       identifier: 'gemeenteberkelland',
     },
     meerlanden: {
-      dataHandler: 'getAfvalstromenData',
+      dataHandler: 'getXimmioData',
       identifier: 'meerlanden',
     },
     venray: {
@@ -932,6 +994,10 @@ function loadDataForService(service, random) {
       dataHandler: 'getOmrinData',
       identifier: '',
     },
+    recycleapp: {
+      dataHandler: 'getRecycleApp',
+      identified: '',
+    }
   };
   window[serviceProperties[service].dataHandler](
     address,
@@ -940,3 +1006,4 @@ function loadDataForService(service, random) {
     serviceProperties[service].identifier
   );
 }
+//# sourceURL=js/garbage.js

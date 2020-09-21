@@ -71,7 +71,7 @@ var Domoticz = (function () {
             }
             //                    else
             //                        console.log('was resolved or failed already')
-          }, 2000); //reject promise after timeout of 2000ms
+          }, cfg.domoticz_timeout); //reject promise after timeout of 2000ms
         } else
           $.get({
             url: cfg.url + 'json.htm?' + domoticzQuery(query),
@@ -82,6 +82,10 @@ var Domoticz = (function () {
               if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
                 console.log('Domoticz request cancelled');
               } else {
+                if(jqXHR.status == 401) {
+                  newPromise.reject(new Error('Domoticz authorization error'));
+                  return;
+                }
                 console.error(
                   'Domoticz error code: ' +
                     jqXHR.status +
@@ -90,7 +94,7 @@ var Domoticz = (function () {
                     '!\nPlease, double check the path to Domoticz in Settings!'
                 );
               }
-              newPromise.reject(query + textStatus);
+              newPromise.reject(query + ' ' + textStatus);
             },
           }).then(function (res) {
             //                        console.log('ajax resolved ' + query);
@@ -116,7 +120,7 @@ var Domoticz = (function () {
           if (initialUpdate.state !== 'resolved') {
             initialUpdate.reject('connection failed');
           }
-        }, 2000);
+        }, cfg.domoticz_timeout);
         return initialUpdate; //initialUpdate will be resolved after the first message from websocket
       }
     });
@@ -296,10 +300,19 @@ var Domoticz = (function () {
       timeFilter = '&lastUpdate=' + lastUpdate.devices;
     }
     return domoticzRequest(
-      'type=devices&filter=all&used=true&order=Name' + timeFilter,
+      'type=devices&filter=all&used=true&order=Name' + (cfg.use_favorites ? '&favorite=1' : '') + timeFilter,
       forcehttp
     ).then(function (res) {
       return _setAllDevices(res);
+    });
+  }
+
+  function requestDevice(idx, forcehttp) { //not tested
+    return domoticzRequest(
+      'type=devices&rid=' + idx,
+      forcehttp
+    ).then(function (res) {
+      return _setDevice(res);
     });
   }
 
@@ -359,6 +372,27 @@ var Domoticz = (function () {
     }
     setOnChange('_devices', data); //event to trigger that all devices have been updated.
     return deviceObservable._values;
+  }
+
+  function _setDevice(data) { //not tested!
+    //        console.log(data.ActTime);
+    if (!data) {
+      console.log(' no data');
+      return;
+    }
+    if(!data.result){
+      console.log(' no result');
+      return;
+    }
+    var r = data.result[0];
+    var device = data.result[r];
+    var idx = device['idx'];
+
+    if (device['Type'] === 'Group' || device['Type'] === 'Scene') {
+      idx = 's' + device['idx'];
+    }
+    setOnChange(idx, device);
+    return deviceObservable._values[idx];
   }
 
   function requestAllScenes() {
@@ -445,9 +479,10 @@ var Domoticz = (function () {
         //console.log(res);
         return res;
       })
-      .always(function () {
+      .always(function (res) {
         //console.log('release ', idx);
         release(idx);
+        return res;
       });
   }
 
