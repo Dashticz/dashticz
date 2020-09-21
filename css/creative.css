@@ -1,6 +1,5 @@
 @import url('./plugins.css');
 @import url('./helpers.css');
-
 #loaderHolder {
   position: absolute;
   width: 100%;
@@ -27,11 +26,9 @@
     transform: scale(0.1);
     opacity: 0;
   }
-
   50% {
     opacity: 1;
   }
-
   100% {
     transform: scale(0.8);
     opacity: 0;
@@ -88,8 +85,8 @@
 #loadingMessage {
   width: 100%;
   height: 100%;
-  z-index: 1000;
-  background: #fff;
+  /*  z-index: 1000;*/
+  /*  background: #fff;*/
   top: 0px;
   left: 0px;
   position: absolute;
@@ -272,7 +269,7 @@
   overflow-x: hidden;
 }
 
-.newblocksHolder .newblocks > div {
+.newblocksHolder .newblocks>div {
   border: 1px solid #aaa;
   background: rgba(255, 255, 255, 0.2);
   margin: 5px;
@@ -294,17 +291,19 @@
   max-width: 125px;
 }
 
+
 /* BEGIN || Popup modal settings (need to sort and arrange first) */
-.nav-pills > li > a {
+
+.nav-pills>li>a {
   border-radius: 6px 6px 0px 0px;
   color: #000;
   font-size: 16px;
   background-color: #f6f6f6;
 }
 
-.nav-pills > li.active > a,
-.nav-pills > li.active > a:focus,
-.nav-pills > li.active > a:hover {
+.nav-pills>li.active>a,
+.nav-pills>li.active>a:focus,
+.nav-pills>li.active>a:hover {
   background-color: #555;
 }
 
@@ -312,9 +311,11 @@
   border-bottom: 0px !important;
 }
 
+
 /*
 next css sets the default height of the frame popup
 */
+
 .popupheight {
   height: calc(95vh - 150px);
 }
@@ -382,18 +383,18 @@ next css sets the default height of the frame popup
   width: 80%;
 }
 
-.material-switch > input[type='checkbox'] {
+.material-switch>input[type='checkbox'] {
   display: none;
 }
 
-.material-switch > label {
+.material-switch>label {
   cursor: pointer;
   height: 0px;
   position: relative;
   width: 40px;
 }
 
-.material-switch > label::before {
+.material-switch>label::before {
   background: rgb(0, 0, 0);
   box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
   border-radius: 8px;
@@ -406,7 +407,7 @@ next css sets the default height of the frame popup
   width: 40px;
 }
 
-.material-switch > label::after {
+.material-switch>label::after {
   background: rgb(255, 255, 255);
   border-radius: 16px;
   box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
@@ -420,15 +421,16 @@ next css sets the default height of the frame popup
   width: 24px;
 }
 
-.material-switch > input[type='checkbox']:checked + label::before {
+.material-switch>input[type='checkbox']:checked+label::before {
   background: inherit;
   opacity: 0.5;
 }
 
-.material-switch > input[type='checkbox']:checked + label::after {
+.material-switch>input[type='checkbox']:checked+label::after {
   background: inherit;
   left: 20px;
 }
+
 
 /* END || Popup modal settings (need to sort and arrange first) */
 
@@ -577,7 +579,6 @@ a.playlist {
   max-width: 100%;
   color: #fff !important;
   background-color: transparent;
-
   border: 0px;
   padding-left: 0px;
 }
@@ -606,6 +607,7 @@ a.playlist {
   height: 77px;
   margin: 5px;
 }
+
 
 /* Thermostat CSS: */
 
@@ -644,11 +646,9 @@ a.playlist {
   margin: auto;
 }
 
-.btn.plus {
-}
+.btn.plus {}
 
-.btn.min {
-}
+.btn.min {}
 
 .btn.stop {
   transform: rotate(90deg);
@@ -735,8 +735,8 @@ a.playlist {
   line-height: 1em;
 }
 
-@media only screen and (max-width: 1000px) {
-}
+@media only screen and (max-width: 1000px) {}
+
 
 /************************/
 
@@ -751,6 +751,7 @@ a.playlist {
   color: #bbb;
   white-space: nowrap;
 }
+
 
 /*To change the default height of the graph popup adapt the height value in custom.css
   Example:
@@ -773,7 +774,9 @@ a.playlist {
   height: calc(100vh - 250px);
 }
 
+
 /* graphwidth for small screens.*/
+
 .graphwidth {
   min-width: 30px;
   width: 100vw;
@@ -1062,7 +1065,7 @@ p {
   margin-bottom: 20px;
 }
 
-.row > div {
+.row>div {
   padding-right: 0px !important;
   padding-left: 0px !important;
 }
@@ -1126,9 +1129,11 @@ p {
   padding-top: 6px !important;
 }
 
+
 /*
 Only add this hover on NON touch devices
 */
+
 @media (hover: hover) {
   .transbg.col-xs-1.hover:hover,
   .transbg.col-xs-2.hover:hover,
@@ -1249,6 +1254,18 @@ Only add this hover on NON touch devices
   margin-right: 7px;
 }
 
+.rgbcontainer {
+  display: flex
+}
+
+.rgbcontainer .slider {
+  width: 100%
+}
+
+.rgbcontainer .rgbholder {
+  flex: 0 0 50px
+}
+
 .weekday {
   margin-bottom: 5px;
 }
@@ -1309,27 +1326,27 @@ html .ui-button.ui-state-disabled:active {
   text-transform: uppercase;
 }
 
-.navbar-default .nav > li > a,
-.navbar-default .nav > li > a:focus {
+.navbar-default .nav>li>a,
+.navbar-default .nav>li>a:focus {
   text-transform: uppercase;
   font-weight: 700;
   font-size: 13px;
   color: #222222;
 }
 
-.navbar-default .nav > li > a:hover,
-.navbar-default .nav > li > a:focus:hover {
+.navbar-default .nav>li>a:hover,
+.navbar-default .nav>li>a:focus:hover {
   color: #f05f40;
 }
 
-.navbar-default .nav > li.active > a,
-.navbar-default .nav > li.active > a:focus {
+.navbar-default .nav>li.active>a,
+.navbar-default .nav>li.active>a:focus {
   color: #f05f40 !important;
   background-color: transparent;
 }
 
-.navbar-default .nav > li.active > a:hover,
-.navbar-default .nav > li.active > a:focus:hover {
+.navbar-default .nav>li.active>a:hover,
+.navbar-default .nav>li.active>a:focus:hover {
   background-color: transparent;
 }
 
@@ -1338,48 +1355,39 @@ html .ui-button.ui-state-disabled:active {
     background-color: transparent;
     border-color: rgba(255, 255, 255, 0.3);
   }
-
   .navbar-default .navbar-header .navbar-brand {
     color: rgba(255, 255, 255, 0.7);
   }
-
   .navbar-default .navbar-header .navbar-brand:hover,
   .navbar-default .navbar-header .navbar-brand:focus {
     color: white;
   }
-
-  .navbar-default .nav > li > a,
-  .navbar-default .nav > li > a:focus {
+  .navbar-default .nav>li>a,
+  .navbar-default .nav>li>a:focus {
     color: rgba(255, 255, 255, 0.7);
   }
-
-  .navbar-default .nav > li > a:hover,
-  .navbar-default .nav > li > a:focus:hover {
+  .navbar-default .nav>li>a:hover,
+  .navbar-default .nav>li>a:focus:hover {
     color: white;
   }
-
   .navbar-default.affix {
     background-color: white;
     border-color: rgba(34, 34, 34, 0.05);
   }
-
   .navbar-default.affix .navbar-header .navbar-brand {
     color: #f05f40;
     font-size: 14px;
   }
-
   .navbar-default.affix .navbar-header .navbar-brand:hover,
   .navbar-default.affix .navbar-header .navbar-brand:focus {
     color: #eb3812;
   }
-
-  .navbar-default.affix .nav > li > a,
-  .navbar-default.affix .nav > li > a:focus {
+  .navbar-default.affix .nav>li>a,
+  .navbar-default.affix .nav>li>a:focus {
     color: #222222;
   }
-
-  .navbar-default.affix .nav > li > a:hover,
-  .navbar-default.affix .nav > li > a:focus:hover {
+  .navbar-default.affix .nav>li>a:hover,
+  .navbar-default.affix .nav>li>a:focus:hover {
     color: #f05f40;
   }
 }
@@ -1415,11 +1423,9 @@ img.icon {
   div.mh {
     height: 75px;
   }
-
   .big .weatherdegrees {
     padding-left: 15px;
   }
-
   .transbg.col-xs-1,
   .transbg.col-xs-2,
   .transbg.col-xs-3,
@@ -1435,92 +1441,72 @@ img.icon {
     padding-top: 7px;
     padding-bottom: 7px;
   }
-
   .dt_block {
     padding: 2px !important;
   }
-
   .dt_title,
   .dt_state {
     margin: 2px 2px;
   }
-
   .dt_block .col-icon {
     width: 36px !important;
     margin: 2px;
   }
-
   .button .dt_state,
   .frame .dt_state {
     margin: -2px;
   }
-
   .dt_title {
     font-size: 100%;
   }
-
   .cast-button-container {
     padding: 3px !important;
   }
-
   h1,
   h4 {
     margin-left: 0px !important;
   }
-
   div.big {
     padding-left: 13px !important;
   }
-
   .containsweather .col-xs-1 {
     width: 35px;
   }
-
   .containsweather .col-xs-11 {
     width: calc(100% - 35px);
   }
-
   img.icon {
     max-width: 15px !important;
   }
-
   .fas,
   .far,
   .fab,
   .wi {
     font-size: 15px !important;
   }
-
   .fa-tv:before {
     font-size: 12px;
   }
-
   .big .wi {
     font-size: 30px !important;
   }
-
   .col-icon {
     max-width: 26px !important;
   }
-
   .col-data {
     width: calc(100% - 30px);
   }
-
   .btn.stop {
     top: 14px;
     width: 60px;
     right: -14px;
   }
-
   .trashcan {
     max-width: 15px !important;
   }
-
   .iconheating {
     margin-top: 0px;
   }
-
   .title-input {
     font-size: 14px !important;
     margin-top: 0px;
@@ -1554,28 +1540,28 @@ div.screen {
   text-shadow: none;
 }
 
-.weatherfull > div div {
+.weatherfull>div div {
   text-align: center;
   color: #fff;
 }
 
-.weatherfull > div div.day {
+.weatherfull>div div.day {
   margin-top: 0px;
   font-weight: 300;
   font-size: 13px;
 }
 
-.weatherfull > div div.temp span {
+.weatherfull>div div.temp span {
   float: none;
   display: inline-block;
 }
 
-.weatherfull > div div.temp {
+.weatherfull>div div.temp {
   font-size: 28px;
   font-weight: 400;
 }
 
-.weatherfull > div div.temp .nightT {
+.weatherfull>div div.temp .nightT {
   display: block;
   font-size: 19px;
   margin-top: -8px;
@@ -1583,14 +1569,14 @@ div.screen {
   padding-bottom: 0px;
 }
 
-.weatherfull > div div.icon {
+.weatherfull>div div.icon {
   border-radius: 50%;
   width: 75px;
   height: 48px;
   margin: 0px auto;
 }
 
-.weatherfull > div div.icon i {
+.weatherfull>div div.icon i {
   color: #fff !important;
 }
 
@@ -1608,7 +1594,7 @@ div.screen {
   color: #f05f40;
 }
 
-.no-gutter > [class*='col-'] {
+.no-gutter>[class*='col-'] {
   padding-right: 0;
   padding-left: 0;
 }
@@ -1627,7 +1613,7 @@ div.screen {
 .btn-default.focus,
 .btn-default:active,
 .btn-default.active,
-.open > .dropdown-toggle.btn-default {
+.open>.dropdown-toggle.btn-default {
   color: #222222;
   background-color: #f2f2f2;
   border-color: #ededed;
@@ -1635,7 +1621,7 @@ div.screen {
 
 .btn-default:active,
 .btn-default.active,
-.open > .dropdown-toggle.btn-default {
+.open>.dropdown-toggle.btn-default {
   background-image: none;
 }
 
@@ -1680,7 +1666,7 @@ fieldset[disabled] .btn-default.active {
 .btn-primary.focus,
 .btn-primary:active,
 .btn-primary.active,
-.open > .dropdown-toggle.btn-primary {
+.open>.dropdown-toggle.btn-primary {
   color: white;
   background-color: #ee4b28;
   border-color: #ed431f;
@@ -1688,7 +1674,7 @@ fieldset[disabled] .btn-default.active {
 
 .btn-primary:active,
 .btn-primary.active,
-.open > .dropdown-toggle.btn-primary {
+.open>.dropdown-toggle.btn-primary {
   background-image: none;
 }
 
@@ -1872,7 +1858,9 @@ a:not([href]) {
   cursor: pointer;
 }
 
+
 /* EVOHOME START */
+
 .text-grey {
   color: #bbb;
   white-space: nowrap;
@@ -1897,6 +1885,7 @@ a:not([href]) {
 .hide {
   display: none !important;
 }
+
 
 /* EVOHOME END */
 
@@ -1929,7 +1918,9 @@ a:not([href]) {
   min-width: 50%;
 }
 
+
 /* START: NEWS BLOCK*/
+
 #newsTicker {
   margin: 10px 0 0 15px;
   color: #333;
@@ -1987,9 +1978,12 @@ a:not([href]) {
   overflow: hidden;
 }
 
+
 /* END: NEWS BLOCK */
 
+
 /* START: TOOLTIPSTYLE */
+
 canvas {
   -moz-user-select: none;
   -webkit-user-select: none;
@@ -2105,9 +2099,12 @@ canvas {
   margin-right: 5px;
 }
 
+
 /* END: TOOLTIPSTYLE */
 
+
 /* START: GRAPH-MENU DEBUG */
+
 .flex-row {
   display: -webkit-box;
   display: -ms-flexbox;
@@ -2167,7 +2164,7 @@ canvas {
   padding-right: 5px;
 }
 
-.graph-menu div:not(.debug) > .fas {
+.graph-menu div:not(.debug)>.fas {
   padding-right: 5px;
 }
 
@@ -2245,9 +2242,12 @@ canvas {
   background-color: white;
 }
 
+
 /* END: GRAPH-MENU DEBUG */
 
+
 /* START: CAMERA COMPONENT */
+
 .cam-container,
 .cam-container .stream {
   width: 100%;
@@ -2261,7 +2261,7 @@ canvas {
 .cam-container .carousel-inner {
   position: relative;
   width: 100%;
-  overflow: visible!important; 
+  overflow: visible!important;
 }
 
 .cam-container .stream {
@@ -2301,6 +2301,7 @@ canvas {
   position: relative;
   bottom: 15%;
 }
+
 .cam-container .handle {
   position: absolute;
   width: 5%;
@@ -2319,7 +2320,7 @@ canvas {
   border: 0;
   box-shadow: inset 0px 4px 15px 0px rgba(0, 0, 0, 0.7);
   transition: all 0.1s ease-in-out;
-	animation: pulse 2s infinite;
+  animation: pulse 2s infinite;
 }
 
 .cam-container .handle:hover {
@@ -2338,27 +2339,28 @@ canvas {
 
 @-webkit-keyframes pulse {
   0% {
-    -webkit-box-shadow: 0 0 10px 5px rgba(0,0,0,0.4);
+    -webkit-box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.4);
   }
   70% {
-      -webkit-box-shadow: 0 0 6px 3px rgba(0,0,0,0);
+    -webkit-box-shadow: 0 0 6px 3px rgba(0, 0, 0, 0);
   }
   100% {
-      -webkit-box-shadow: 0 0 2px 1px rgba(0,0,0,0);
+    -webkit-box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0);
   }
 }
+
 @keyframes pulse {
   0% {
-    -moz-box-shadow: 0 0 10px 5px rgba(0,0,0,0.4);
-    box-shadow: 0 0 10px 5px rgba(0,0,0,0.4);
+    -moz-box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.4);
   }
   70% {
-      -moz-box-shadow: 0 0 6px 3px rgba(0,0,0,0);
-      box-shadow: 0 0 6px 3px rgba(0,0,0,0);
+    -moz-box-shadow: 0 0 6px 3px rgba(0, 0, 0, 0);
+    box-shadow: 0 0 6px 3px rgba(0, 0, 0, 0);
   }
   100% {
-      -moz-box-shadow: 0 0 2px 1px rgba(0,0,0,0);
-      box-shadow: 0 0 2px 1px rgba(0,0,0,0);
+    -moz-box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0);
+    box-shadow: 0 0 2px 1px rgba(0, 0, 0, 0);
   }
 }
 
@@ -2371,9 +2373,8 @@ canvas {
   height: 13vh;
   width: auto;
   border-radius: 20px;
-  box-shadow: 0px 5px 10px 5px rgba(0,0,0,0.7);
+  box-shadow: 0px 5px 10px 5px rgba(0, 0, 0, 0.7);
 }
-
 
 .cam-container .btn-group {
   top: 0;
@@ -2393,7 +2394,7 @@ canvas {
 .cam-container .cam-caption {
   position: absolute;
   color: #fff;
-  text-shadow: 0 1px 2px rgba(0,0,0,.6);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
   z-index: 30;
   right: 3%;
   margin-top: 1%;
@@ -2408,36 +2409,7 @@ canvas {
 }
 
 .carbon {
-  background:
-    linear-gradient(27deg, 
-      #151515 5px, 
-      transparent 5px
-    ) 0 5px,
-    linear-gradient(207deg, 
-      #151515 5px, 
-      transparent 5px
-    ) 10px 0px,
-    linear-gradient(27deg, 
-      #222 5px, 
-      transparent 5px
-    ) 0px 10px,
-    linear-gradient(207deg, 
-      #222 5px, 
-      transparent 5px
-    ) 10px 5px,
-    linear-gradient(90deg, 
-      #1b1b1b 10px, 
-      transparent 10px
-    ),
-    linear-gradient(
-      #1d1d1d 25%, 
-      #1a1a1a 25%, 
-      #1a1a1a 50%, 
-      transparent 50%, 
-      transparent 75%, 
-      #242424 75%, 
-      #242424
-    );
+  background: linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px, linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px, linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px, linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px, linear-gradient(90deg, #1b1b1b 10px, transparent 10px), linear-gradient( #1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
   background-color: #131313;
   background-size: 20px 20px;
   background-clip: content-box;
@@ -2446,7 +2418,9 @@ canvas {
 
 /* END: CAMERA COMPONENT */
 
+
 /* START: CORONAVIRUS */
+
 .coronavirus .graphheader {
   height: 20px;
 }
@@ -2495,9 +2469,12 @@ canvas {
   vertical-align: middle;
 }
 
+
 /* END: CORONAVIRUS */
 
+
 /* START: AGENDA */
+
 .agenda table {
   border-collapse: separate;
   border-spacing: 10px 0px;
@@ -2512,9 +2489,12 @@ td.agenda-title {
   white-space: normal;
 }
 
+
 /* END: AGENDA */
 
+
 /* START: NEW CALENDAR */
+
 .cal_table {
   border-collapse: collapse;
   height: 100% !important;
@@ -2546,7 +2526,7 @@ td.agenda-title {
   text-align: left;
 }
 
-.cal_table td > div {
+.cal_table td>div {
   text-align: center;
 }
 
@@ -2554,36 +2534,36 @@ td.agenda-title {
   white-space: wrap !important;
 }
 
-.cal_table td > div.historic > div {
+.cal_table td>div.historic>div {
   color: rgba(255, 255, 255, 0.3) !important;
 }
 
-.cal_table td > div.header {
+.cal_table td>div.header {
   background-color: #484848;
   max-width: inherit;
 }
 
-.cal_table td > div.today {
+.cal_table td>div.today {
   background-color: #0275d8;
 }
 
-.cal_table td > div.event:hover,
-.cal_table td > div.event.historic:hover > div {
+.cal_table td>div.event:hover,
+.cal_table td>div.event.historic:hover>div {
   background-color: #f0ad4e !important;
   color: #292b2c !important;
 }
 
-.cal_table td > div.allday {
+.cal_table td>div.allday {
   background-color: #d9534f !important;
   border-radius: 2px;
 }
 
-.cal_table td > div.allday.hol {
+.cal_table td>div.allday.hol {
   background-color: #428442 !important;
   border-radius: 2px;
 }
 
-.cal_table td > div:not(:first-child) {
+.cal_table td>div:not(:first-child) {
   display: inline-flex;
   margin: 3px 5px;
   display: flex;
@@ -2611,18 +2591,18 @@ td.agenda-title {
   border-radius: 5px;
 }
 
-.cal-modal > .cal-title {
+.cal-modal>.cal-title {
   font-size: 1.8em;
   font-weight: 900;
   margin-bottom: 10px;
   padding-bottom: 5px;
 }
 
-.cal-modal > .cal-title > .far {
+.cal-modal>.cal-title>.far {
   float: right !important;
 }
 
-.cal-modal > .cal-info {
+.cal-modal>.cal-info {
   overflow-y: auto;
   height: calc(100% - 55px);
   border-bottom: solid 1px #bebebe;
@@ -2630,7 +2610,7 @@ td.agenda-title {
   padding-top: 10px;
 }
 
-.cal-modal > .cal-footer {
+.cal-modal>.cal-footer {
   bottom: 0px !important;
   position: absolute;
   width: 93%;
@@ -2644,43 +2624,42 @@ td.agenda-title {
   position: absolute;
 }
 
-.cal-modal > .cal-footer a {
+.cal-modal>.cal-footer a {
   color: grey;
 }
 
-.cal-modal > .cal-footer a:hover {
+.cal-modal>.cal-footer a:hover {
   color: dodgerblue;
 }
 
-.cal-modal > .cal-footer a:nth-child(1) {
+.cal-modal>.cal-footer a:nth-child(1) {
   float: left;
 }
 
-.cal-modal > .cal-footer a:nth-child(2) {
+.cal-modal>.cal-footer a:nth-child(2) {
   float: right;
 }
 
 @media screen and (max-width: 1400px) and (max-height: 800px) {
-  .cal_table td > div:first-child {
+  .cal_table td>div:first-child {
     text-align: center;
   }
-
   .cal_table td div {
     font-size: 0.9em;
     text-align: left;
   }
 }
 
+
 /* END: CALENDAR */
 
+
 /* START: SECURITY PANEL */
+
 @font-face {
   font-family: 'Audiowide';
   src: url('../font/Audiowide.eot');
-  src: url('../font/Audiowide.eot?#iefix') format('embedded-opentype'),
-    url('../font/Audiowide.woff') format('woff'),
-    url('../font/Audiowide.ttf') format('truetype'),
-    url('../font/Audiowide.svg#../font/Audiowide-7Italic') format('svg');
+  src: url('../font/Audiowide.eot?#iefix') format('embedded-opentype'), url('../font/Audiowide.woff') format('woff'), url('../font/Audiowide.ttf') format('truetype'), url('../font/Audiowide.svg#../font/Audiowide-7Italic') format('svg');
 }
 
 .sec-modal {
@@ -2715,9 +2694,7 @@ td.agenda-title {
   background-image: url(../img/bg14.jpg);
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
-  box-shadow: 0px 6px 20px 5px rgba(0, 0, 0, 0.75),
-    inset 0px 5px 7px -2px rgba(252, 252, 252, 0.2),
-    inset 0 -14px 8px 2px rgba(0, 0, 0, 0.7);
+  box-shadow: 0px 6px 20px 5px rgba(0, 0, 0, 0.75), inset 0px 5px 7px -2px rgba(252, 252, 252, 0.2), inset 0 -14px 8px 2px rgba(0, 0, 0, 0.7);
   border-radius: 5px;
   position: relative;
   height: 100%;
@@ -2825,9 +2802,7 @@ td.agenda-title {
   border-radius: 3px;
   background-color: #161616;
   border: 0;
-  box-shadow: inset 0px 1px 0px rgba(255, 255, 255, 0.3),
-    inset 0px 0px 3px rgba(255, 255, 255, 0.5),
-    inset 0px 0px 15px 5px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5), inset 0px 0px 15px 5px rgba(0, 0, 0, 0.8);
   color: #8fffd0;
   font-family: monospace;
   text-align: center;
@@ -2861,15 +2836,9 @@ td.agenda-title {
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  -webkit-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4),
-    inset 0px 1px 0px rgba(255, 255, 255, 0.3),
-    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  -moz-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4),
-    inset 0px 1px 0px rgba(255, 255, 255, 0.3),
-    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4),
-    inset 0px 1px 0px rgba(255, 255, 255, 0.3),
-    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -webkit-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -moz-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
   font-family: monospace;
   text-transform: uppercase;
   font-weight: 900;
@@ -2885,15 +2854,9 @@ td.agenda-title {
 
 .sec-frame .keypad-input .key:not(.disabled):active {
   transform: scale(0.9);
-  -webkit-box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4),
-    inset 0px 1px 0px rgba(255, 255, 255, 1),
-    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  -moz-box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4),
-    inset 0px 1px 0px rgba(255, 255, 255, 1),
-    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4),
-    inset 0px 1px 0px rgba(255, 255, 255, 1),
-    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -webkit-box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -moz-box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
 }
 
 .sec-frame .keypad-input .key.h {
@@ -2932,8 +2895,7 @@ td.agenda-title {
   font-weight: 900;
   font-size: 100%;
   color: rgba(130, 130, 130, 0.8);
-  text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.8), 0 0 0 #000,
-    1px 1px 3px rgba(255, 255, 255, 0.7);
+  text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.8), 0 0 0 #000, 1px 1px 3px rgba(255, 255, 255, 0.7);
 }
 
 .sec-frame .keypad-input .status[data-id='disarm']:before {
@@ -2941,7 +2903,7 @@ td.agenda-title {
 }
 
 .sec-frame .keypad-input .status[data-id='armhome']:before {
-  content: '\f965';
+  content: '\e065';
 }
 
 .sec-frame .keypad-input .status[data-id='armaway']:before {
@@ -2973,100 +2935,18 @@ td.agenda-title {
   width: 5%;
   height: 4%;
   border-radius: 100%;
-  background: -moz-linear-gradient(
-    -45deg,
-    #adadad 0%,
-    #e1e1e1 51%,
-    #dddddd 68%,
-    #f6f6f6 100%
-  );
-  background: -webkit-gradient(
-    linear,
-    left top,
-    right bottom,
-    color-stop(0%, #adadad),
-    color-stop(51%, #e1e1e1),
-    color-stop(68%, #dddddd),
-    color-stop(100%, #f6f6f6)
-  );
-  background: -webkit-linear-gradient(
-    -45deg,
-    #adadad 0%,
-    #e1e1e1 51%,
-    #dddddd 68%,
-    #f6f6f6 100%
-  );
-  background: -o-linear-gradient(
-    -45deg,
-    #adadad 0%,
-    #e1e1e1 51%,
-    #dddddd 68%,
-    #f6f6f6 100%
-  );
-  background: -ms-linear-gradient(
-    -45deg,
-    #adadad 0%,
-    #e1e1e1 51%,
-    #dddddd 68%,
-    #f6f6f6 100%
-  );
-  background: linear-gradient(
-    135deg,
-    #adadad 0%,
-    #e1e1e1 51%,
-    #dddddd 68%,
-    #f6f6f6 100%
-  );
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#adadad', endColorstr='#f6f6f6', GradientType=1);
+  background: -moz-linear-gradient( -45deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
+  background: -webkit-gradient( linear, left top, right bottom, color-stop(0%, #adadad), color-stop(51%, #e1e1e1), color-stop(68%, #dddddd), color-stop(100%, #f6f6f6));
+  background: -webkit-linear-gradient( -45deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
+  background: -o-linear-gradient( -45deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
+  background: -ms-linear-gradient( -45deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
+  background: linear-gradient( 135deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
+  filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#adadad', endColorstr='#f6f6f6', GradientType=1);
   -moz-box-shadow: 0px 2px 4px #000;
   -webkit-box-shadow: 0px 2px 4px #000;
   box-shadow: 0px 2px 4px #000, -1px 3px 10px 7px rgba(0, 0, 0, 0.5);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background-image: -webkit-radial-gradient(
-      50% 0%,
-      8% 50%,
-      hsla(0, 0%, 100%, 0.5) 0%,
-      hsla(0, 0%, 100%, 0) 100%
-    ),
-    -webkit-radial-gradient(50% 100%, 12% 50%, hsla(0, 0%, 100%, 0.6) 0%, hsla(
-            0,
-            0%,
-            100%,
-            0
-          )
-          100%),
-    -webkit-radial-gradient(0% 50%, 50% 7%, hsla(0, 0%, 100%, 0.5) 0%, hsla(
-            0,
-            0%,
-            100%,
-            0
-          )
-          100%),
-    -webkit-radial-gradient(100% 50%, 50% 5%, hsla(0, 0%, 100%, 0.5) 0%, hsla(
-            0,
-            0%,
-            100%,
-            0
-          )
-          100%),
-    -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 0%, 0) 0%, hsla(
-            0,
-            0%,
-            0%,
-            0
-          )
-          3%, hsla(0, 0%, 0%, 0.1) 3.5%),
-    -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 100%, 0)
-          0%, hsla(0, 0%, 100%, 0) 6%, hsla(0, 0%, 100%, 0.1) 7.5%),
-    -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 100%, 0)
-          0%, hsla(0, 0%, 100%, 0) 1.2%, hsla(0, 0%, 100%, 0.2) 2.2%),
-    -webkit-radial-gradient(50% 50%, 200% 50%, hsla(0, 0%, 90%, 1) 5%, hsla(
-            0,
-            0%,
-            85%,
-            1
-          )
-          30%, hsla(0, 0%, 60%, 1) 100%);
+  background-image: -webkit-radial-gradient( 50% 0%, 8% 50%, hsla(0, 0%, 100%, 0.5) 0%, hsla(0, 0%, 100%, 0) 100%), -webkit-radial-gradient(50% 100%, 12% 50%, hsla(0, 0%, 100%, 0.6) 0%, hsla( 0, 0%, 100%, 0) 100%), -webkit-radial-gradient(0% 50%, 50% 7%, hsla(0, 0%, 100%, 0.5) 0%, hsla( 0, 0%, 100%, 0) 100%), -webkit-radial-gradient(100% 50%, 50% 5%, hsla(0, 0%, 100%, 0.5) 0%, hsla( 0, 0%, 100%, 0) 100%), -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 0%, 0) 0%, hsla( 0, 0%, 0%, 0) 3%, hsla(0, 0%, 0%, 0.1) 3.5%), -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 100%, 0) 0%, hsla(0, 0%, 100%, 0) 6%, hsla(0, 0%, 100%, 0.1) 7.5%), -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 100%, 0) 0%, hsla(0, 0%, 100%, 0) 1.2%, hsla(0, 0%, 100%, 0.2) 2.2%), -webkit-radial-gradient(50% 50%, 200% 50%, hsla(0, 0%, 90%, 1) 5%, hsla( 0, 0%, 85%, 1) 30%, hsla(0, 0%, 60%, 1) 100%);
   opacity: 0.5;
 }
 
@@ -3077,7 +2957,6 @@ td.agenda-title {
   transform: rotate(150deg);
   -ms-transform: rotate(150deg);
   -webkit-transform: rotate(150deg);
-
   height: 29%;
   width: 135%;
   margin-top: 41%;
@@ -3113,7 +2992,9 @@ td.agenda-title {
   display: none;
 }
 
+
 /* END: SECURITY PANEL */
+
 
 /* START: DIAL */
 
@@ -3147,12 +3028,11 @@ td.agenda-title {
   -o-border-radius: 50%;
   border-radius: 50%;
   float: left;
-  background-color: #cccccc;
+  background-color: #8b8b8b;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 5px 10px 2px rgba(0, 0, 0, 0.3),
-    inset 0px 0px 6px 0px rgba(0, 0, 0, 1);
+  box-shadow: 0 5px 10px 2px rgba(0, 0, 0, 0.3), inset 0px 0px 6px 0px rgba(0, 0, 0, 1);
 }
 
 .dial:hover {
@@ -3173,7 +3053,9 @@ td.agenda-title {
 
 .dial.p0 .bar,
 .dial.p180 .bar,
-.dial.p180 .fill {
+.dial.p180 .fill,
+.dial.p360 .bar,
+.dial.p360 .fill {
   position: absolute;
   border: 0.08em solid #307bbb;
   width: 0.78em;
@@ -3197,13 +3079,19 @@ td.agenda-title {
   transform: rotate(0deg);
 }
 
-.dial.p180 .fill {
+.dial.p180 .fill,
+.dial.p360 .fill {
   clip: rect(0em, 0.5em, 1em, 0em);
   -webkit-transform: scaleX(-1) rotate(360deg);
   -moz-transform: scaleX(-1) rotate(360deg);
   -ms-transform: scaleX(-1) rotate(360deg);
   -o-transform: scaleX(-1) rotate(360deg);
   transform: scaleX(-1) rotate(360deg);
+}
+
+.dial.p360 .bar,
+.dial.p360 .fill {
+  clip: auto;
 }
 
 .dial .bar.primary,
@@ -3215,6 +3103,16 @@ td.agenda-title {
 .dial .bar.secondary,
 .dial .fill.secondary {
   border-color: #307bbb;
+}
+
+.dial .bar.positive,
+.dial .fill.positive {
+  border-color: #28a745;
+}
+
+.dial .bar.negative,
+.dial .fill.negative {
+  border-color: #dc3545;
 }
 
 .dial.p180 .fill:after {
@@ -3264,16 +3162,27 @@ td.agenda-title {
 
 .dial .slice {
   position: absolute;
-  width: 1em;
-  height: 1em;
+  width: 100%;
+  height: 100%;
   transform: rotate(-140deg);
 }
-.dial:not(.p180) .slice,
+
+.dial .slice.splitdial-plus {
+  transform: rotateY(0deg) rotateX(0deg)!important;
+}
+
+.dial .slice.splitdial-minus {
+  transform: rotate(180deg)!important;
+}
+
+.dial:not(.p180):not(.p360) .slice,
 .dial.p0 .slice {
   clip: rect(0em, 1em, 1em, 0.5em);
 }
-.dial.p180 .slice {
-  clip: rect(0em, 1em, 1em, 0em);
+
+.dial.p180 .slice,
+.dial.p360 .slice {
+  clip: rect(0em, 1em, 1em, 0em)!important;
 }
 
 .dial .dial-container {
@@ -3340,8 +3249,7 @@ td.agenda-title {
   justify-content: center;
   border-radius: 50%;
   background: radial-gradient(circle, #333, #444);
-  box-shadow: inset 0 0 3px 0px rgba(0, 0, 0, 0.5),
-    0 0 11px 0px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 0 3px 0px rgba(0, 0, 0, 0.5), 0 0 11px 0px rgba(0, 0, 0, 0.8);
   -webkit-transition: all 0.2s ease-in;
   -moz-transition: all 0.2s ease-in;
   -o-transition: all 0.2s ease-in;
@@ -3391,9 +3299,7 @@ td.agenda-title {
   -moz-text-align-last: center;
   border-radius: 50%;
   margin-top: 10px;
-  box-shadow: inset 0px 0.5px 0px rgba(255, 255, 255, 0.3),
-    inset 0px 0px 2px rgba(255, 255, 255, 0.5),
-    inset 0px 5px 8px 5px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0px 0.5px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 2px rgba(255, 255, 255, 0.5), inset 0px 5px 8px 5px rgba(0, 0, 0, 0.8);
   color: #cccccc;
   background-color: #2a2a2a;
   border: 0;
@@ -3419,14 +3325,7 @@ td.agenda-title {
 }
 
 .dial-menu .status li.selected {
-  background: linear-gradient(
-    to right,
-    black 0%,
-    #29261f 8%,
-    var(--dial-color) 50%,
-    #29261f 92%,
-    black 100%
-  );
+  background: linear-gradient( to right, black 0%, #29261f 8%, var(--dial-color) 50%, #29261f 92%, black 100%);
   color: #393939;
   -moz-box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.5);
   -webkit-box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.5);
@@ -3437,7 +3336,7 @@ td.agenda-title {
   width: 100%;
   height: 100%;
   border-radius: 50%;
-  background: linear-gradient(0deg, #222, #444, #333);
+  background: linear-gradient(0deg, #181818, #444, #4b4b4b);
   -webkit-box-shadow: inset 0px 0px 20px 5px rgba(0, 0, 0, 0.5);
   -moz-box-shadow: inset 0px 0px 20px 5px rgba(0, 0, 0, 0.5);
   box-shadow: inset 0px 0px 20px 5px rgba(0, 0, 0, 0.5);
@@ -3454,7 +3353,7 @@ td.agenda-title {
 .dial .dial-needle::before {
   content: '';
   position: absolute;
-  left: 37%;
+  left: 35%;
   top: -53%;
   border-left: var(--needle-width) solid transparent;
   border-right: var(--needle-width) solid transparent;
@@ -3468,8 +3367,8 @@ td.agenda-title {
 .dial .dial-needle::after {
   content: '';
   position: absolute;
-  left: 37%;
-  top: -53%;
+  left: 36%;
+  top: -49%;
   border-left: var(--needle-width) solid transparent;
   border-right: var(--needle-width) solid transparent;
   border-bottom: var(--needle-length) solid rgba(0, 0, 0, 1);
@@ -3491,6 +3390,7 @@ td.agenda-title {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+  flex-direction: column;
   -ms-flex-wrap: wrap;
   flex-wrap: wrap;
   align-items: center;
@@ -3498,8 +3398,16 @@ td.agenda-title {
   height: 90%;
 }
 
-.dial .dial-display .value {
-  font-size: 0.25em;
+.dial .dial-display .value-unit {
+  position: absolute;
+  top: 30%;
+  display: flex;
+  align-items: center;
+}
+
+.dial .dial-display .value-unit .value,
+.dial .dial-display .value-unit .unit {
+  font-size: 0.22em;
   line-height: 1em;
   color: #cccccc;
   -webkit-transition: all 0.2s ease-out;
@@ -3510,51 +3418,89 @@ td.agenda-title {
   z-index: 5;
 }
 
+.dial .dial-display .value-unit .unit {
+  font-size: 0.1em;
+  color: grey;
+  margin-left: 0.1em;
+  max-width: 30%;
+}
+
 .dial .dial-display .device {
+  position: absolute;
+  top: 7%;
   font-size: 0.07em;
   color: #ffa500;
-  height: 18%;
   animation: fadeInLoad 2s;
   line-height: 2em;
 }
 
 .dial .dial-display .info {
+  position: relative;
+  top: 28%;
   font-size: 0.06em;
   color: grey;
-  height: 16%;
   animation: fadeInLoad 2s;
+  line-height: 2em;
 }
 
 .dial .dial-display .info.nosetpoint {
   margin-bottom: 7px;
 }
 
-.dial .dial-display .setpoint {
+.dial .dial-display .extra {
+  position: relative;
+  top: 28%;
   font-size: 0.06em;
   color: grey;
-  height: 10%;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 85%;
   animation: fadeInLoad 2s;
-  line-height: 0;
-  display: inline-block;
 }
 
-.dial .dial-display .setpoint .fas {
-  font-size: 1em !important;
+.dial .dial-display .extra div {
+  margin-left: 0.25em;
+  margin-right: 0.25em;
 }
 
-.dial .dial-display .setpoint.hidden {
+.dial .dial-display .extra div .data {
+  margin-left: -0.25em;
+}
+
+.dial .dial-display .extra div .unit {
+  font-size: 0.8em;
+  margin-left: -0.25em;
+  margin-right: 0.25em;
+}
+
+.dial .dial-display .extra .fas {
+  font-size: 0.8em !important;
+  margin: 0;
+}
+
+.dial .dial-display .extra img {
+  width: 1em;
+  margin-right: 0.25em;
+}
+
+.dial .dial-display .extra.hidden {
   visibility: hidden;
 }
 
-.dial:hover .dial-display .value {
-  font-size: 0.2em;
+.dial:hover .dial-display .value-unit .value {
+  font-size: 0.15em;
   color: orange;
   color: var(--dial-color);
 }
 
+.dial:hover .dial-display .value-unit .unit {
+  font-size: 0.05em;
+}
+
 .dial:hover .dial-display .info,
 .dial:hover .dial-display .device,
-.dial:hover .dial-display .setpoint {
+.dial:hover .dial-display .extra {
   display: none;
 }
 
@@ -3583,4 +3529,503 @@ td.agenda-title {
     opacity: 1;
   }
 }
+
+.dial-numbers {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+  color: gray;
+}
+
+.dial-numbers span {
+  font-size: 0.06em;
+  width: 15%;
+  text-align: center;
+  position: absolute;
+}
+
+
+/* Dial face 360 degrees with 10 numbers */
+
+.dial-numbers .number.seg_360_10_0 {
+  transform: rotate(0.7rad);
+  left: 12%;
+  top: 78%;
+}
+
+.dial-numbers .number.seg_360_10_1 {
+  transform: rotate(7.7rad);
+  left: -2%;
+  top: 53%;
+}
+
+.dial-numbers .number.seg_360_10_2 {
+  transform: rotate(5.1rad);
+  left: 2%;
+  top: 27%;
+}
+
+.dial-numbers .number.seg_360_10_3 {
+  transform: rotate(5.62rad);
+  left: 18%;
+  top: 8%;
+}
+
+.dial-numbers .number.seg_360_10_4 {
+  transform: rotate(6.27rad);
+  left: 42%;
+  top: 0%;
+}
+
+.dial-numbers .number.seg_360_10_5 {
+  transform: rotate(7rad);
+  left: 67%;
+  top: 8%;
+}
+
+.dial-numbers .number.seg_360_10_6 {
+  transform: rotate(7.4rad);
+  left: 84%;
+  top: 27%;
+}
+
+.dial-numbers .number.seg_360_10_7 {
+  transform: rotate(4.95rad);
+  left: 88%;
+  top: 53%;
+}
+
+.dial-numbers .number.seg_360_10_8 {
+  transform: rotate(5.5rad);
+  left: 74%;
+  top: 78%;
+}
+
+.dial-numbers .number.seg_360_10_9 {
+  transform: rotate(6.28rad);
+  left: 42%;
+  top: 90%;
+}
+
+
+/* Dial face 360 degrees with 12 numbers */
+
+.dial-numbers .number.seg_360_12_0 {
+  transform: rotate(0.64rad);
+  left: 16.5%;
+  top: 81.5%;
+}
+
+.dial-numbers .number.seg_360_12_1 {
+  transform: rotate(7.4rad);
+  left: 2%;
+  top: 65%;
+}
+
+.dial-numbers .number.seg_360_12_2 {
+  transform: rotate(4.7rad);
+  left: -2.5%;
+  top: 45%;
+}
+
+.dial-numbers .number.seg_360_12_3 {
+  transform: rotate(5.25rad);
+  left: 4%;
+  top: 22%;
+}
+
+.dial-numbers .number.seg_360_12_4 {
+  transform: rotate(5.77rad);
+  left: 20.5%;
+  top: 6.4%;
+}
+
+.dial-numbers .number.seg_360_12_5 {
+  transform: rotate(6.26rad);
+  left: 42%;
+  top: 0.5%;
+}
+
+.dial-numbers .number.seg_360_12_6 {
+  transform: rotate(6.85rad);
+  left: 66%;
+  top: 7%;
+}
+
+.dial-numbers .number.seg_360_12_7 {
+  transform: rotate(7.3rad);
+  left: 80.7%;
+  top: 22%;
+}
+
+.dial-numbers .number.seg_360_12_8 {
+  transform: rotate(7.83rad);
+  left: 87%;
+  top: 44%;
+}
+
+.dial-numbers .number.seg_360_12_9 {
+  transform: rotate(5.17rad);
+  left: 83%;
+  top: 65%;
+}
+
+.dial-numbers .number.seg_360_12_10 {
+  transform: rotate(5.65rad);
+  left: 69%;
+  top: 81.5%;
+}
+
+.dial-numbers .number.seg_360_12_11 {
+  transform: rotate(6.28rad);
+  left: 42%;
+  top: 90%;
+}
+
+
+/* Dial face 280 degrees with 10 numbers */
+
+.dial-numbers .number.seg_280_11_0 {
+  transform: rotate(0.7rad);
+  left: 12%;
+  top: 78%;
+}
+
+.dial-numbers .number.seg_280_11_1 {
+  transform: rotate(7.5rad);
+  left: 1%;
+  top: 63%;
+}
+
+.dial-numbers .number.seg_280_11_2 {
+  transform: rotate(4.8rad);
+  left: -2.5%;
+  top: 42%;
+}
+
+.dial-numbers .number.seg_280_11_3 {
+  transform: rotate(5.3rad);
+  left: 5%;
+  top: 21%;
+}
+
+.dial-numbers .number.seg_280_11_4 {
+  transform: rotate(5.7rad);
+  left: 20%;
+  top: 6%;
+}
+
+.dial-numbers .number.seg_280_11_5 {
+  transform: rotate(6.27rad);
+  left: 42%;
+  top: 0%;
+}
+
+.dial-numbers .number.seg_280_11_6 {
+  transform: rotate(6.85rad);
+  left: 65%;
+  top: 6%;
+}
+
+.dial-numbers .number.seg_280_11_7 {
+  transform: rotate(7.27rad);
+  left: 80%;
+  top: 21%;
+}
+
+.dial-numbers .number.seg_280_11_8 {
+  transform: rotate(7.75rad);
+  left: 87.5%;
+  top: 42%;
+}
+
+.dial-numbers .number.seg_280_11_9 {
+  transform: rotate(5.15rad);
+  left: 84%;
+  top: 63%;
+}
+
+.dial-numbers .number.seg_280_11_10 {
+  transform: rotate(5.6rad);
+  left: 71.5%;
+  top: 80%;
+}
+
+.dial-switch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 95%;
+  height: 95%;
+}
+
+.dial-switch input {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  filter: alpha(opacity=0);
+  -moz-opacity: 0;
+  opacity: 0;
+  z-index: 100;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+  margin: 0;
+}
+
+.dial-switch .switch-face {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 50%;
+  background: #b2ac9e;
+  background: -moz-linear-gradient(#333333, #191919);
+  background: -ms-linear-gradient(#333333, #191919);
+  background: -o-linear-gradient(#333333, #191919);
+  background: -webkit-gradient(linear, 0 0, 0 100%, from(#333333), to(#191919));
+  background: -webkit-linear-gradient(#333333, #191919);
+  background: linear-gradient(#333333, #191919);
+  position: relative;
+  color: #a5a39d;
+  text-align: center;
+  -webkit-transition: all 0.2s ease-out;
+  -moz-transition: all 0.2s ease-out;
+  -ms-transition: all 0.2s ease-out;
+  -o-transition: all 0.2s ease-out;
+  transition: all 0.2s ease-out;
+  text-shadow: 0 2px 1px rgba(0, 0, 0, 0.25);
+  box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.13), 0 5px 8px rgba(0, 0, 0, 0.3), 0 10px 10px 4px rgba(0, 0, 0, 0.3);
+  z-index: -1;
+  margin: 0;
+}
+
+.dial-switch .switch-face:after {
+  content: "";
+  position: absolute;
+  left: -20px;
+  right: -20px;
+  top: -20px;
+  bottom: -20px;
+  z-index: -2;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 2px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.15);
+}
+
+.dial-switch .switch-face:before {
+  content: "";
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  top: -10px;
+  bottom: -10px;
+  z-index: -1;
+  border-radius: inherit;
+  box-shadow: inset 0 10px 10px rgba(0, 0, 0, 0.13);
+  -webkit-filter: blur(1px);
+  -moz-filter: blur(1px);
+  -ms-filter: blur(1px);
+  -o-filter: blur(1px);
+  filter: blur(1px);
+}
+
+.dial-switch .switch-face .device {
+  font-size: 12px;
+  font-size: 0.07em;
+  animation: fadeInLoad 2s;
+  position: absolute;
+  top: 25%;
+  -webkit-transition: all 0.1s ease;
+  -moz-transition: all 0.1s ease;
+  -ms-transition: all 0.1s ease;
+  -o-transition: all 0.1s ease;
+  transition: all 0.1s ease;
+}
+
+.dial-switch .switch-face .info {
+  color: grey;
+  line-height: 2em;
+  font-size: 0.05em;
+  animation: fadeInLoad 2s;
+  position: absolute;
+  top: 60%;
+  -webkit-transition: all 0.1s ease;
+  -moz-transition: all 0.1s ease;
+  -ms-transition: all 0.1s ease;
+  -o-transition: all 0.1s ease;
+  transition: all 0.1s ease;
+}
+
+.dial-switch input:checked {
+  width: 99%;
+  height: 99%;
+}
+
+.dial-switch input:checked~.switch-face {
+  box-shadow: 0 0 25px 1px var(--dial-rgba);
+  color: orange;
+  color: var(--dial-color);
+  width: 95%;
+  height: 95%;
+}
+
+.dial-switch .icon-off {
+  font-size: 0.1em;
+  color: #cccccc;
+  -webkit-transition: all 0.1s ease;
+  -moz-transition: all 0.1s ease;
+  -ms-transition: all 0.1s ease;
+  -o-transition: all 0.1s ease;
+  transition: all 0.1s ease;
+}
+
+.dial-switch input:checked~.switch-face .device {
+  font-size: 0.06em;
+  -webkit-transition: all 0.1s ease;
+  -moz-transition: all 0.1s ease;
+  -ms-transition: all 0.1s ease;
+  -o-transition: all 0.1s ease;
+  transition: all 0.1s ease;
+}
+
+.dial-switch input:checked~.switch-face .fas {
+  font-size: 0.08em;
+  color: orange;
+  color: var(--dial-color);
+  -webkit-transition: all 0.1s ease;
+  -moz-transition: all 0.1s ease;
+  -ms-transition: all 0.1s ease;
+  -o-transition: all 0.1s ease;
+  transition: all 0.1s ease;
+}
+
+.dial-switch input:checked~.switch-face .info {
+  font-size: 0.04em;
+  -webkit-transition: all 0.1s ease;
+  -moz-transition: all 0.1s ease;
+  -ms-transition: all 0.1s ease;
+  -o-transition: all 0.1s ease;
+  transition: all 0.1s ease;
+}
+
+.dial-switch .icon-off:after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 70%;
+  height: 70%;
+  left: 50%;
+  top: 50%;
+  z-index: -1;
+  margin: -35% 0 0 -35%;
+  border-radius: 50%;
+  background: #d2cbc3;
+  background: -moz-linear-gradient(#161616, #6c6c6c);
+  background: -ms-linear-gradient(#161616, #6c6c6c);
+  background: -o-linear-gradient(#161616, #6c6c6c);
+  background: -webkit-gradient(linear, 0 0, 0 100%, from(#161616), to(#6c6c6c));
+  background: -webkit-linear-gradient(#161616, #6c6c6c);
+  background: linear-gradient(#161616, #6c6c6c);
+  box-shadow: 0 -2px 5px rgba(255, 255, 255, 0.05), 0 2px 5px rgba(255, 255, 255, 0.1);
+  -webkit-transition: all 0.1s ease;
+  -moz-transition: all 0.1s ease;
+  -ms-transition: all 0.1s ease;
+  -o-transition: all 0.1s ease;
+  transition: all 0.1s ease;
+}
+
+
 /* END: DIAL */
+
+
+/* Traffic */
+
+#trafficweb iframe {
+  width: 100%;
+  height: 575px
+}
+
+
+/* start colorPicker */
+
+.colorpicker {
+  /*
+  color: black;
+  max-width: 90%;
+  min-width: unset;
+  width: 100%;*/
+}
+
+.colorpicker .modal-header {
+  display: flex
+}
+
+.colorpicker .modal-title {
+  width: 100%
+}
+
+.colorpicker .modal-dialog {
+  max-width: 90%;
+  min-width: unset;
+  width: 90%;
+}
+
+
+/*
+.colorpicker .modal-content {
+  max-width: 90%;
+  min-width: unset;
+  width: 50%;
+}*/
+
+.colorpicker .cp-iro {
+  overflow-x: auto;
+  flex-wrap: wrap
+}
+
+.colorpicker .cp-buttons {
+  margin-bottom: 10px;
+}
+
+.colorpicker .cp-buttonsOnOff {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.colorpicker .cp-buttonsOnOff .btn {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  color: darkgrey;
+  background-color: lightgray
+  /*  margin-top: 10px;
+  margin-bottom: 10px;*/
+  /*width: 48px;*/
+}
+
+.colorpicker .cp-buttonsOnOff .btn.active {
+  /*  background-color: rgba(0,0,0,0.4)*/
+  border-style: solid;
+  border-color: black;
+  border-width: medium;
+  background-color: gray;
+  color: white;
+  /*width: 48px;*/
+}
+
+.cp-iro {
+  display: inline-flex;
+  align-items: center;
+}
+
+.cp-iro>div {
+  margin: 0 10px
+}
+
+
+/*end colorpicker*/

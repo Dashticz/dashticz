@@ -105,7 +105,7 @@ Currently supported cities/companies/services
 Company                 City or area
 ===================     =========================
 googlecalendar ical     file in iCal format
-ophaalkalender          Ophaalkalender (BE)
+recycleapp              RecycleApp (BE)
 edg                     EDG (DE)
 deafvalapp              Afval App (NL)
 afvalalert

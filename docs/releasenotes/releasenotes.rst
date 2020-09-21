@@ -4,6 +4,53 @@ Release Notes
 For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedocs.io/en/beta/releasenotes/index.html
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
+Recent changes
+---------------
+
+Enhancements:
+  * New Dashticz config parameter 'swiper_touch_move' to disable/enable swiping the screen on touch
+  * Graph: The 'today' button now shows the full day data. The range 'day'still exists as well, which still can be used in custom graphs.
+  * Add support for device with subtype 'Current'
+  * Popup graphs enabled by default for most block types. To disable a popup graph, add ``graph: false`` to the block definition.
+
+Updates
+  * Update FontAwesome to 5.14.0
+
+Fixes
+  * Camera block 
+  * Garbage: Ophaalkalender (BE) doesn't work anymore. It has been replaced by recycleapp.
+  * Security panel home symbol.
+  * Garbage: Meerlanden switched to ximmio as garbage data provider
+  * Garbage: Fixed method to retrieve data from mijnafvalwijzer
+  * Fixed use_favorites config setting. Changed default to false, meaning all devices will be available for Dashticz.
+  * Remove CORS for OWM data
+
+3.5.2 Beta
+-----------
+
+Enhancements
+  * New colorpicker for RGB devices, including support for whites. The ``no_rgb`` setting is absolete. See :ref:`colorpicker`
+
+Fixes
+  * Fix for Omrin garbage provider
+  * Fix for Venlo garbage provider
+
+Code
+  # Update to jquery 3.5.1
+
+3.5.1 Beta
+-----------
+
+Enhancements
+  * Domoticz textblocks, traffic, trafficinfo, longfonds and public transport now support the block parameters ``url``, ``newwindow``, ``forcerefresh`` and ``password`` giving it the same behavior as a button if you want to open an url on click.
+
+Fixes
+  * Change traffic info provider for traffic block
+
+3.5.0 Beta
+-----------
+
+Same as 3.5 Master
 
 3.5 Master
 --------------

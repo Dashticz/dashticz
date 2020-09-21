@@ -104,7 +104,17 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Nechajte Dashticca prihlásiť sa (minúty)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Povolí alebo zakáže pripojenie WebSocket"
+            "enable_websocket_help": "Povolí alebo zakáže pripojenie WebSocket",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker",
+            "domoticz_timeout": "Domoticz timeout",
+            "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
+            "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
+            "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
         },
         "infosave": "By default, settings are stored in your browser. Downside of this method is it will only work in your current browser. If that's not a problem, you can proceed. Otherwise, copy code below to your CONFIG.JS to keep settings across all browsers and devices.",
         "localize": {
@@ -143,7 +153,8 @@
             "uk": "Ukrainian",
             "sr": "Serbian",
             "lt": "litovský",
-            "ro": "rumunský"
+            "ro": "rumunský",
+            "ja": "japonský"
         },
         "media": {
             "hide_mediaplayer": "Hide mediaplayer when it's off",
@@ -182,7 +193,9 @@
             "vertical_scroll": "Povoliť zvislé posúvanie",
             "vertical_scroll_help": "0: Vypnúť zvislé posúvanie; 1: Povoľte vertikálne posúvanie, ak je funkcia Swiper deaktivovaná; 2: Povoliť vertikálne posúvanie",
             "security_panel_lock": "Načítať zabezpečovací panel na celú obrazovku",
-            "security_panel_lock_help": "Ak je bezpečnostný panel v Domoticz alebo Dashticz nastavený na 'Arm - Away', Dashticz automaticky načíta panel na celú obrazovku."
+            "security_panel_lock_help": "Ak je bezpečnostný panel v Domoticz alebo Dashticz nastavený na 'Arm - Away', Dashticz automaticky načíta panel na celú obrazovku.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",

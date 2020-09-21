@@ -71,6 +71,9 @@ Config parameters
     - | Enable Domoticz websocket connection. See :ref:`websocket`
       | ``false`` = Dashticz will use a http connection.
       | ``true`` = Dashticz will switch to a websocket connection if the Domoticz version is above 4.11000.     
+  * - domoticz_timeout
+    - | Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.
+      | ``2000`` = Time in <value> milliseconds (default=2000).
   * - app_title
     - | Name of the Dashboard - Title to show in the :ref:`customtopbar`
       | ``'Dashticz'`` = Show 'Dashticz' in the top bar
@@ -103,6 +106,10 @@ Config parameters
       | ``0`` = Swiper disabled
       | ``1`` = Swiper enabled if screen width > 760px
       | ``2`` = Swiper enabled (=default)
+  * - swiper_touch_move
+    - | Swipe the screen by touch. Only applicable in case swiper is enabled.
+      | ``0`` = Swipe by touch disabled
+      | ``1`` = Swipe by touch enabled
   * - auto_swipe_back_to
     - | when no activity, swipe back to the selected page
       | ``1..100`` = page number
@@ -178,7 +185,7 @@ Config parameters
       | ``0`` Use this if you have defined your own columns
       | ``1`` Default
   * - use_favorites
-    - | ``0`` Show all domoticz devices
+    - | ``0`` Show all domoticz devices (default)
       | ``1`` Only show Domoticz devices marked as favorite in Domoticz
       | If use auto positioning, then this item should be 1
   * - last_update
@@ -231,6 +238,9 @@ Config parameters
   * - no_rgb
     - | 0 / 1
       | Hide or show RGB button on switch
+  * - colorpicker
+    - | 0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker
+      | Choose the default RGB colorpicker for RGB devices
   * - standby_call_url'
     - | [URL]
       | Enter the url for adjusting the brightness when entering stand-by mode
@@ -243,6 +253,13 @@ Config parameters
   * - speak_lang
     - | Text to speech language
       | ``'<LANGUAGE>'`` Language options: de-DE, en-US, es-ES, fr-FR, it-IT, nl-NL, pl-PL, ru-RU
+  * - longfonds_zipcode
+    - | Longfonds (Dutch air quality check) zipcode.
+      | ``'1234AZ'`` Language options
+  * - longfonds_housenumber
+    - | Longfonds (Dutch air quality check) housenumber
+      | ``'123'`` Language options
+      
 
 Usage
 #####

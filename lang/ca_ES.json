@@ -104,7 +104,17 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Keep Dashticz logged (minutes)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Activa \/ desactiva la connexió de WebSocket"
+            "enable_websocket_help": "Activa \/ desactiva la connexió de WebSocket",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker",
+            "domoticz_timeout": "Domoticz timeout",
+            "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
+            "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
+            "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
         },
         "infosave": "By default, settings are stored in your browser. Downside of this method is it will only work in your current browser. If that's not a problem, you can proceed. Otherwise, copy code below to your CONFIG.JS to keep settings across all browsers and devices.",
         "localize": {
@@ -143,7 +153,8 @@
             "uk": "Ukrainian",
             "sr": "Serbian",
             "lt": "Lituà",
-            "ro": "Romanès"
+            "ro": "Romanès",
+            "ja": "Japonès"
         },
         "media": {
             "hide_mediaplayer": "Hide mediaplayer when it's off",
@@ -182,7 +193,9 @@
             "vertical_scroll": "Activa el desplaçament vertical",
             "vertical_scroll_help": "0: Desactiva el desplaçament vertical; 1: Habilita el desplaçament vertical si l'Sniper està desactivat; 2: Habilita el desplaçament vertical",
             "security_panel_lock": "Carrega el tauler de seguretat a pantalla completa",
-            "security_panel_lock_help": "Si configureu el tauler de seguretat de Domoticz o Dashticz a \"Arm\", Dashticz carregarà automàticament un panell de pantalla completa."
+            "security_panel_lock_help": "Si configureu el tauler de seguretat de Domoticz o Dashticz a \"Arm\", Dashticz carregarà automàticament un panell de pantalla completa.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",
