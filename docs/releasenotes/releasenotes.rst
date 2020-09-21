@@ -11,6 +11,9 @@ Recent changes
 ----------
 Beta version, same as 3.6 master.
 
+Updates
+  * Update of the external js modules
+
 3.6 Master
 ----------
 
