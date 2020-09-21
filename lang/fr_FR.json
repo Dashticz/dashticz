@@ -104,7 +104,17 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Gardez Dashticz connecté (minutes)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Activer \/ désactiver la connexion WebSocket"
+            "enable_websocket_help": "Activer \/ désactiver la connexion WebSocket",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker",
+            "domoticz_timeout": "Domoticz timeout",
+            "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
+            "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
+            "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
         },
         "infosave": "Par défaut, les paramètres sont stockés dans votre navigateur. L'inconvénient de cette méthode est que cela ne fonctionnera que dans votre navigateur actuel. Si ce n'est pas un problème, vous pouvez procéder. Sinon, copiez le code ci-dessous dans votre CONFIG.JS pour garder les paramètres sur tous les navigateurs et périphériques.",
         "localize": {
@@ -143,7 +153,8 @@
             "uk": "Ukrainien",
             "sr": "Serbian",
             "lt": "lituanien",
-            "ro": "roumain"
+            "ro": "roumain",
+            "ja": "Japonais"
         },
         "media": {
             "hide_mediaplayer": "Masquer le mediaplayer quand il est éteint",
@@ -182,7 +193,9 @@
             "vertical_scroll": "Activer le défilement vertical",
             "vertical_scroll_help": "0: désactiver le défilement vertical; 1: activer le défilement vertical si Swiper est désactivé; 2: activer le défilement vertical",
             "security_panel_lock": "Charger le panneau de sécurité en plein écran",
-            "security_panel_lock_help": "Si vous définissez le panneau de sécurité dans Domoticz ou Dashticz sur «Arm - Away», Dashticz chargera automatiquement un panneau plein écran."
+            "security_panel_lock_help": "Si vous définissez le panneau de sécurité dans Domoticz ou Dashticz sur «Arm - Away», Dashticz chargera automatiquement un panneau plein écran.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX de la photo de la lune",

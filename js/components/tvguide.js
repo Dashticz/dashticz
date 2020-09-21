@@ -1,4 +1,4 @@
-/* global Dashticz _CORS_PATH moment settings ksort createModalDialog*/
+/* global Dashticz _CORS_PATH moment settings ksort DT_function*/
 var allchannels = [];
 
 var DT_tvguide = {
@@ -11,10 +11,12 @@ var DT_tvguide = {
     refresh: 300,
     maxitems: 10,
     containerClass: 'hover',
+    channels: [1, 2, 3, 4, 31, 46, 92],
   },
   refresh: function (me) {
     var tvObj = me.block;
     var tvobject = $(me.mountPoint + ' .dt_state');
+    var newObject = $(document.createDocumentFragment()); //Create an empty DOM element.
     loadChannels(me)
       .fail(function () {
         console.log('TVGuide error');
@@ -53,7 +55,6 @@ var DT_tvguide = {
             }
           }
         }
-        tvobject.html('');
         var counter = 1;
         tvitems = ksort(tvitems);
         for (var check in tvitems) {
@@ -73,25 +74,18 @@ var DT_tvguide = {
                 item['title'] +
                 '</b></div>';
               $(widget)
-                .appendTo(tvobject)
+                .appendTo(newObject)
                 .click(item.db_id, function (evt) {
                   var tmp = {
                     url: tvObj.url || 'https://tvgids.nl/programma/' + evt.data,
                   };
-                  $('body').append(
-                    createModalDialog('openpopup', 'tvguideModal', tmp)
-                  );
-                  $('#tvguideModal').on('hidden.bs.modal', function () {
-                    $(this).data('bs.modal', null);
-                    $(this).remove();
-                  });
-
-                  $('#tvguideModal').modal('show');
+                  DT_function.clickHandler(me, tmp);
                 });
               counter++;
             }
           }
         }
+        tvobject.replaceWith(newObject);
       });
 
     function loadChannels() {

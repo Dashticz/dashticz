@@ -171,7 +171,13 @@ function loadFiles(dashtype) {
             '" />'
         ).appendTo('head');
       }
-
+/*
+      $.ajax ( {
+        url: './vendor/fontawesome-free/css/all.min.css',
+        success: function (data) {
+          $('<style></style>').appendTo('head').html(data);
+        },
+      });*/
       $.ajax({
         url: customfolder + '/custom.css?v=' + cache,
         success: function (data) {
@@ -248,6 +254,10 @@ function loadFiles(dashtype) {
         }),
         $.ajax({
           url: 'js/moon.js',
+          dataType: 'script',
+        }),
+        $.ajax({
+          url: 'js/colorpicker.js',
           dataType: 'script',
         })
       );
@@ -479,8 +489,7 @@ function buildStandby() {
     for (var c in columns_standby) {
       getBlock(columns_standby[c], 'standby' + c, 'div.screenstandby', true);
     }
-  }
-  else {
+  } else {
     $('.screenstandby').show();
   }
 }
@@ -556,7 +565,13 @@ function buildScreens() {
       for (var s in screens[t]) {
         if (s !== 'maxwidth' && s !== 'maxheight') {
           var screenhtml =
-            '<div data-screenindex="'+s+'" class="screen screen' + s + ' swiper-slide slide' + s + '"';
+            '<div data-screenindex="' +
+            s +
+            '" class="screen screen' +
+            s +
+            ' swiper-slide slide' +
+            s +
+            '"';
           if (typeof screens[t][s]['background'] === 'undefined') {
             screens[t][s]['background'] = settings['background_image'];
           }
@@ -645,6 +660,7 @@ function startSwiper() {
         onlyInViewport: false,
       },
       direction: 'horizontal',
+      allowTouchMove: settings.swiper_touch_move
     });
     myswiper.on('transitionStart', function () {
       $('.slide').removeClass('selectedbutton');

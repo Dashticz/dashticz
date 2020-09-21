@@ -1,13 +1,21 @@
-/* global Dashticz _CORS_PATH settings*/
+/* global Dashticz DT_function _CORS_PATH settings*/
 
 var DT_longfonds = {
   name: 'longfonds',
   defaultCfg: {
     icon: 'fas fa-cloud',
     title: 'Luchtkwaliteit',
-    zipcode: settings['longfonds_zipcode'],
-    housenumber: settings['longfonds_housenumber'],
+    zipcode: settings['longfonds_zipcode'] || '3512JN',
+    housenumber: settings['longfonds_housenumber'] || 1,
     refresh: 4 * 3600,
+    url: 'https://www.longfonds.nl/gezondelucht',
+    newwindow: 1,
+    containerClass: 'hover',
+  },
+  run: function (me) {
+    $(me.mountPoint).click(function () {
+      DT_function.clickHandler(me);
+    });
   },
   refresh: function (me) {
     if (!me.block.zipcode || !me.block.housenumber) {

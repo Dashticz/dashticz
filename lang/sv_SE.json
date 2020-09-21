@@ -104,7 +104,17 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Håll Dashticz inloggad (minuter)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Aktivera \/ inaktivera WebSocket-anslutningen"
+            "enable_websocket_help": "Aktivera \/ inaktivera WebSocket-anslutningen",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker",
+            "domoticz_timeout": "Domoticz timeout",
+            "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
+            "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
+            "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
         },
         "infosave": "Som standard lagras inställningarna i din webbläsare. Nackdelen med den här metoden är att den bara fungerar i din nuvarande webbläsare. Om det inte är ett problem kan du fortsätta. Annars, kopiera koden nedan till CONFIG.JS för att behålla inställningar i alla webbläsare och enheter.",
         "localize": {
@@ -143,7 +153,8 @@
             "uk": "Ukrainska",
             "sr": "Serbiska",
             "lt": "litauisk",
-            "ro": "rumänska"
+            "ro": "rumänska",
+            "ja": "japansk"
         },
         "media": {
             "hide_mediaplayer": "Dölj mediaplayer när den är avstängd",
@@ -182,7 +193,9 @@
             "vertical_scroll": "Aktivera vertikal rullning",
             "vertical_scroll_help": "0: Inaktivera vertikal rullning; 1: Aktivera vertikal rullning om Swiper är avaktiverat; 2: Aktivera vertikal rullning",
             "security_panel_lock": "Ladda säkerhetspanelens fullskärm",
-            "security_panel_lock_help": "Om du ställer in säkerhetspanelen i Domoticz eller Dashticz till 'Arm - Away', kommer Dashticz automatiskt att ladda en fullskärmspanel."
+            "security_panel_lock_help": "Om du ställer in säkerhetspanelen i Domoticz eller Dashticz till 'Arm - Away', kommer Dashticz automatiskt att ladda en fullskärmspanel.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX på månbild",

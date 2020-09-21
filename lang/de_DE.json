@@ -104,7 +104,17 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Halten Sie Dashticz eingeloggt (Minuten)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Aktivieren \/ Deaktivieren der WebSocket-Verbindung"
+            "enable_websocket_help": "Aktivieren \/ Deaktivieren der WebSocket-Verbindung",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker",
+            "domoticz_timeout": "Domoticz timeout",
+            "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
+            "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
+            "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
         },
         "infosave": "Die Einstellungen werden standardmäßig im Browser selber gespeichert. Der Nachteil dieser Methode ist, sie gelten entsprechend nur für den aktuellen Browser. Wenn das kein Problem darstellt, kannst das Fenster schließen und musst nichts weiter unternehmen. Ansonsten kopiere den unten dargestellten Code in deine CONFIG.JS um die Einstellungen für alle Browser und Geräte zu aktivieren.",
         "localize": {
@@ -143,7 +153,8 @@
             "uk": "Ukrainisch",
             "sr": "Serbian",
             "lt": "litauisch",
-            "ro": "rumänisch"
+            "ro": "rumänisch",
+            "ja": "japanisch"
         },
         "media": {
             "hide_mediaplayer": "Mediaplayer ausblenden wenn ausgeschaltet",
@@ -182,7 +193,9 @@
             "vertical_scroll": "Aktivieren Sie den vertikalen Bildlauf",
             "vertical_scroll_help": "0: Vertikales Scrollen deaktivieren; 1: Aktivieren Sie den vertikalen Bildlauf, wenn Swiper deaktiviert ist. 2: Aktivieren Sie den vertikalen Bildlauf",
             "security_panel_lock": "Laden Sie das Vollbild des Security Panels",
-            "security_panel_lock_help": "Wenn Sie das Sicherheitspanel in Domoticz oder Dashticz auf \"Arm - Away\" setzen, lädt Dashticz automatisch ein Vollbildfenster."
+            "security_panel_lock_help": "Wenn Sie das Sicherheitspanel in Domoticz oder Dashticz auf \"Arm - Away\" setzen, lädt Dashticz automatisch ein Vollbildfenster.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX des Mondbildes",

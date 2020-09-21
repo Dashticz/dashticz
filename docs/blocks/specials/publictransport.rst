@@ -83,6 +83,13 @@ Parameters
     - Number of results to show 
   * - width
     - To customize the width. It's not recommended to change the default value (``12``) because of the size of the output.
+  * - url
+    - ``'<url>'``: URL of the page to open in a popup frame or new window on click. 
+  * - newwindow
+    - | ``0``: open in current window
+      | ``1``: open in new window
+      | ``2``: open in new frame (default, to prevent a breaking change in default behavior)
+      | ``3``: no new window/frame (for intent handling, api calls)
 
 Usage
 -----
