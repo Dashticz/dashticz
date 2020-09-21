@@ -7,6 +7,7 @@ Several types of Domoticz blocks can be defined:
 * Scenes
 * Groups
 * Variables
+* Texts
 
 Devices
 -------
@@ -162,6 +163,9 @@ Block parameters
   * - popup
     - | This allows the popup to use all the block parameters that a graph block does, allowing users to style the graph.
       | ``popup: 'popup_your_graph'``
+  * - graph
+    - | Popup graphs enabled by default for most block types.
+      | ``graph: false`` will disable a popup graph.
   * - openpopup
     - Open a popup when a device changes. See :ref:`openpopup`
   * - openpopupOn
@@ -174,6 +178,18 @@ Block parameters
   * - unit
     - | String that will be placed behind the device value to indicate the unit.
       | ``'kilowatt'``: The string will replace the default unit.
+  * - url
+    - ``'<url>'``: URL of the page to open in a popup frame or new window on click. For text blocks.
+  * - newwindow
+    - | ``0``: open in current window
+      | ``1``: open in new window
+      | ``2``: open in new frame (default, to prevent a breaking change in default behavior)
+      | ``3``: no new window/frame (for intent handling, api calls)
+  * - colorpicker
+    - Choose the RGB colorpicker for RGB devices. See :ref:`colorpicker`
+      | ``0``: No RGB colorpicker
+      | ``1``: Old style RGB colorpicker
+      | ``2``: New style RGB colorpicker
 
 There are several additional parameters for Graphs. See :ref:`dom_graphs`
       
@@ -400,11 +416,6 @@ Example ``custom.css`` (only needed in case you want to change the default flash
 Evohome
 ~~~~~~~
 
-The following Domoticz devices can be represented with a dial. See :ref:`dial`
-   * EvoHome devices
-   * Thermostats
-   * Dimmers
-
 .. image :: img/evohome.png
 
 The following config parameters from CONFIG.js are applicable:
@@ -423,7 +434,7 @@ The following config parameters from CONFIG.js are applicable:
   * - evohome_boost_hw
     - ``<number>``: Hot water boost temporary override time in minutes. Default: 15
 
-The EvoHome devices can be represented as dial by adding ``type: 'dial'`` to the block definition.
+The EvoHome devices can be represented as dial by adding ``type: 'dial'`` to the block definition. See :ref:`dial`
 
 .. image :: img/dial.png
 
@@ -457,3 +468,41 @@ You can also define the unit parameter on block level by setting the ``unit`` pa
     blocks[123] = {
       unit: 'Watt'
     }
+
+.. _colorpicker:
+
+RGB Color picker
+~~~~~~~~~~~~~~~~
+
+By setting the block parameter ``colorpicker`` to a non-zero value a color picker dropdown button will be added to a RGB device.
+
+With ``colorpicker:1`` the old style colorpicker will be added:
+
+.. image :: img/colorpicker1.jpg
+
+With ``colorpicker:2`` the enhanced colorpicker will be selected.
+The colorpicker configuration depends on the RGB type.
+The behavior is the same as in Domoticz.
+
+
+The following Domoticz RGB devices are supported:
+
+* RGB: Plain RGB dimmer
+* RGBW: RGB dimmer with white modus
+* RGBWW: RGB dimmer with white modus and adjustable white color temperature
+* RGBWZ: Dimmer with seperate adjustable levels for RGB and White leds
+* RGBWWZ: Adjustable levels for RGB and White, adjustable white color temperature
+
+.. figure :: img/cprgb.jpg
+
+   RGB device
+
+.. figure :: img/cprgbw.jpg
+  
+  RGBW device in white modus.
+
+.. figure :: img/cprgbwwz.jpg
+
+   RGBWWZ device in Mixed modus.
+
+   In this last example you see from left to right the RGB color picker, the RGB color level, the white color temperature, the white level and the master level.

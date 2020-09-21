@@ -104,7 +104,17 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Laat Dashticz ingelogd (minuten)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Inschakelen\/Uitschakelen van de WebSocket verbinding"
+            "enable_websocket_help": "Inschakelen\/Uitschakelen van de WebSocket verbinding",
+            "colorpicker": "Kies de standaard RGB colorpicker voor RGB devices.",
+            "colorpicker_none": "Géén RGB colorpicker",
+            "colorpicker_old": "Oude stijl RGB colorpicker",
+            "colorpicker_new": "Nieuwe stijl RGB colorpicker",
+            "colorpicker_help": "0: Géén RGB colorpicker, 1: Oude stijl RGB colorpicker, 2: Nieuwe stijl RGB colorpicker",
+            "domoticz_timeout": "Domoticz timeout",
+            "domoticz_timeout_help": "Tijd Dashticz is aan het ophalen van Domoticz-apparaten tijdens de eerste aanvraag. Na deze tijd zal Dashticz terugvallen van websocket naar HTTP.",
+            "dashticz_refresh_help": "Verversingssnelheid van het Dashticz Dashboard",
+            "domoticz_refresh_help": "De verversingssnelheid van Dashticz om informatie te krijgen van Domoticz",
+            "loginEnabled_help": "Activeer als u een aanmeldingsformulier voor het Dashticz Dashboard wilt hebben"
         },
         "infosave": "Standaard worden de instellingen opgeslagen in uw browser. Nadeel van deze methode is dat het alleen in uw huidige browser werkt. Als dat geen probleem is, kunt u verdergaan. Anders, kopieer onderstaande code naar uw CONFIG.JS om instellingen te gebruiken in alle browsers waarmee u Dashticz opent.",
         "localize": {
@@ -143,7 +153,8 @@
             "uk": "Oekraïens",
             "sr": "Servisch",
             "lt": "Litouws",
-            "ro": "Roemeense"
+            "ro": "Roemeense",
+            "ja": "Japans"
         },
         "media": {
             "hide_mediaplayer": "Verberg mediaspeler wanneer het uit is",
@@ -182,7 +193,9 @@
             "vertical_scroll": "Enable vertical scroll",
             "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll",
             "security_panel_lock": "Beveiligingspaneel in een volledig scherm laden",
-            "security_panel_lock_help": "Als het Beveiligingspaneel in Domoticz of Dashticz is ingesteld op 'Beveiligd (Afwezig)', dan zal Dashticz automatisch in een volledig scherm laden."
+            "security_panel_lock_help": "Als het Beveiligingspaneel in Domoticz of Dashticz is ingesteld op 'Beveiligd (Afwezig)', dan zal Dashticz automatisch in een volledig scherm laden.",
+            "swiper_touch_move": "Schuif scherm met vegen.",
+            "swiper_touch_move_help": "0: Uitgeschakeld; 1: Ingeschakeld"
         },
         "weather": {
             "idx_moonpicture": "IDX van maanfoto",
@@ -196,7 +209,7 @@
             "wu_api": "Wunderground API-Sleutel",
             "wu_city": "Wunderground Station (Stad of Code)",
             "wu_country": "Wunderground Land",
-            "wu_name": "Weergavenaam",
+            "wu_name": "Weergavenaam Wunderground",
             "owm_api": "Open Weather Map API-Sleutel",
             "owm_city": "Open Weather Map Station (Stad of Code)",
             "owm_cnt": "Open Weather Map voorspelling tellen (4 - 40)",
@@ -204,7 +217,7 @@
             "owm_days": "Voorspelling in dagen",
             "owm_days_help": "Uitgeschakeld geeft de Open Weather Map standaard 3 uurs voorspelling",
             "owm_min": "Minimum temperatuur op 2e regel",
-            "owm_min_help": "Wordt alleen weergegeven bij voorspelling in dagen",
+            "owm_min_help": "Wordt alleen weergegeven als de voorspelling in dagen is ingeschakeld",
             "owm_lang": "Taal voor de beschrijving (regen, bewolkt, etc.)",
             "owm_lang_help": "Zie voor beschikbare talen https:\/\/openweathermap.org\/forecast5\/#multi",
             "owm_country": "Open Weather Map Land",

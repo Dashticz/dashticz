@@ -104,7 +104,17 @@
             "standby_call_url_on_end": "URL, kuris bus iškviestas budėjimo režimo pabaigoje",
             "login_timeout": "Laikykite Dašicą prisijungę (minutes)",
             "enable_websocket": "„WebSocket“",
-            "enable_websocket_help": "Įjungti \/ išjungti „WebSocket“ ryšį"
+            "enable_websocket_help": "Įjungti \/ išjungti „WebSocket“ ryšį",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker",
+            "domoticz_timeout": "Domoticz timeout",
+            "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
+            "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
+            "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
         },
         "infosave": "Pagal nutylėjimą, nustatymo parametrai yra saugomi jūsų naršyklės. Kitaip nukopijuokite kodą į CONFIG.JS bylą  norėdami išsaugoti parametrus visose naršyklėse.",
         "localize": {
@@ -143,7 +153,8 @@
             "uk": "Ukrainiečių",
             "sr": "Serbų",
             "lt": "Lietuvių",
-            "ro": "Rumunų"
+            "ro": "Rumunų",
+            "ja": "Japonų kalba"
         },
         "media": {
             "hide_mediaplayer": "Slėpti grotuvą, kai jis išjungtas",
@@ -182,7 +193,9 @@
             "vertical_scroll": "Įgalinti vertikalų slinktį",
             "vertical_scroll_help": "0: išjungti vertikalų slinkimą; 1: įgalinkite vertikalų slinktį, jei „Swiper“ yra išjungtas; 2: įgalinti vertikalų slinktį",
             "security_panel_lock": "Įkelti saugos ekraną per visą ekraną",
-            "security_panel_lock_help": "Jei „Domoticz“ arba „Dashticz“ saugos skydelį nustatysite kaip „Įjungti apsaugą“, tada „Dashticz“ automatiškai įkels viso ekrano skydą."
+            "security_panel_lock_help": "Jei „Domoticz“ arba „Dashticz“ saugos skydelį nustatysite kaip „Įjungti apsaugą“, tada „Dashticz“ automatiškai įkels viso ekrano skydą.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "Mėnulio piktogramų IDX",

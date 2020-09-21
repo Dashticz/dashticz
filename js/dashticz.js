@@ -1,8 +1,8 @@
-/* global blocks settings usrEnc pwdEnc*/
+/* global blocks settings usrEnc pwdEnc DT_function*/
 /*from domoticz-api.js*/
 /*global Domoticz*/
 /*from main.js*/
-/*global infoMessage*/
+/*global*/
 
 // eslint-disable-next-line no-unused-vars
 var Dashticz = (function () {
@@ -26,7 +26,7 @@ var Dashticz = (function () {
     'camera',
     'nzbget',
     'calendar',
-    'dial'
+    'dial',
   ];
   var components = [];
   var mountedBlocks = [];
@@ -60,18 +60,24 @@ var Dashticz = (function () {
     return $.ajax({
       url: 'js/domoticz-api.js',
       dataType: 'script',
-    }).then(function () {
-      var cfg = {
-        url: settings['domoticz_ip'],
-        plan: settings['room_plan'],
-        usrEnc: usrEnc,
-        pwdEnc: pwdEnc,
-        enable_websocket: settings['enable_websocket'],
-        domoticz_refresh: settings['domoticz_refresh'],
-        refresh_method: settings['refresh_method'],
-      };
-      return Domoticz.init(cfg);
-    });
+    })
+      .then(function () {
+        var cfg = {
+          url: settings['domoticz_ip'],
+          plan: settings['room_plan'],
+          usrEnc: usrEnc,
+          pwdEnc: pwdEnc,
+          enable_websocket: settings['enable_websocket'],
+          domoticz_refresh: settings['domoticz_refresh'],
+          refresh_method: settings['refresh_method'],
+          domoticz_timeout: settings['domoticz_timeout'],
+          use_favorites: settings['use_favorites']
+        };
+        return Domoticz.init(cfg);
+      })
+      .then(function () {
+        return $.ajax({ url: 'js/dt_function.js', dataType: 'script' });
+      });
   }
 
   function _onResize() {
@@ -103,6 +109,24 @@ var Dashticz = (function () {
     $div.html(block);
   }
 
+  function addClickHandler(me) {
+    var clickHandler = null;
+    if (!me.block.url) return;
+    var bCH = me.block.clickHandler;
+    if (typeof bCH === 'function') {
+      clickHandler = bCH;
+    } else if (bCH) {
+      clickHandler = DT_function.clickHandler;
+    }
+    if (clickHandler) {
+      $(me.mountPoint + ' .dt_block')
+        .click(function () {
+          clickHandler(me);
+        })
+        .addClass('hover');
+    }
+  }
+
   function _mountSpecialBlock(mountPoint, blockdef, special, key) {
     if (!special.initPromise)
       special.initPromise = special.init
@@ -115,6 +139,9 @@ var Dashticz = (function () {
       renderBlock(me);
       mountedBlocks[me.mountPoint] = me;
       if (special.run) special.run(me);
+
+      addClickHandler(me);
+
       if (me.block.refresh && special.refresh) {
         //install refresh handler
         setInterval(function () {
@@ -282,52 +309,6 @@ var Dashticz = (function () {
     return '#block_' + blockNumbering++;
   }
 
-  function _loadFont(fontName, fontURL, fontFormat) {
-    var newStyle = document.createElement('style');
-    newStyle.appendChild(
-      document.createTextNode(
-        '\
-            @font-face {\
-                font-family: ' +
-          fontName +
-          ";\
-                src: url('" +
-          fontURL +
-          "') format('" +
-          fontFormat +
-          "');\
-            }\
-        "
-      )
-    );
-
-    document.head.appendChild(newStyle);
-  }
-
-  function _loadCSS(filename) {
-    $('head').append(
-      '<link rel="stylesheet" type="text/css" href="' + filename + '">'
-    );
-  }
-
-  /** Prompt for password
-   * @function
-   * @param {string} password Password
-   * @returns {boolean} True: password is correct, or no password required
-   */
-  function _promptPassword(password) {
-    if (password) {
-      var checkpassword = prompt('Enter password');
-      if (!checkpassword) return false;
-      if (checkpassword !== password) {
-        //password incorrect
-        infoMessage('Incorrect password', '', 3000);
-        return false;
-      }
-    }
-    return true;
-  }
-
   var subscribeBlockList = {};
 
   function subscribeBlock(key, callback) {
@@ -376,65 +357,10 @@ var Dashticz = (function () {
     mount: _mount,
     register: _register,
     mountNewContainer: _mountNewContainer,
-    loadFont: _loadFont,
-    loadCSS: _loadCSS,
     mountDefaultBlock: _mountDefaultBlock,
-    promptPassword: _promptPassword,
     subscribeBlock: subscribeBlock,
     setBlock: setBlock,
   };
 })();
-
-// eslint-disable-next-line no-unused-vars
-function checkForceRefresh(m_instance, url) {
-  //forcerefresh is set to 1 or true:
-  //   adds current time to an url as second parameter (for webcams)
-  //   adds the timestamp as first parameter if there are no parameters yet
-  //forcerefresh:2
-  //   calls nocache.php and prevent caching by setting headers in php.
-  //forcerefresh:3
-  //   adds timestamp parameter to the end of the url
-
-  if (typeof m_instance.forcerefresh !== 'undefined') {
-    var str = '' + new Date().getTime();
-    var mytimestamp = 't=' + str.substr(str.length - 8, 5);
-    switch (m_instance.forcerefresh) {
-      case true:
-      case 1:
-        //try to add the timestamp as second parameter
-        //it there are no parameters the timestamp will be added.
-        //behavior changed to support cheap webcams
-        if (url.indexOf('?') == -1)
-          //no parameters. We will add the timestamp
-          url += '?' + mytimestamp;
-        else {
-          //we have at least one parameters
-          var pos = url.indexOf('&');
-          if (pos > 0) {
-            //we have more than one parameter
-            //insert the timestamp as second
-            /* url = url.substr(0, pos + 1) + '&' + mytimestamp + url.substr(pos); */
-            url = url.substr(0, pos + 1) + mytimestamp + url.substr(pos);
-          } else {
-            //there is only one parameter so we add it to the end
-            url += '&' + mytimestamp;
-          }
-        }
-        break;
-      case 2:
-        url = settings['dashticz_php_path'] + 'nocache.php?' + url;
-        break;
-      case 3: //add timestamp to the end
-        var sep = '&';
-        if (url.indexOf('?') == -1) {
-          //there is no parameter yet
-          sep = '?';
-        }
-        url += sep + mytimestamp;
-        break;
-    }
-  }
-  return url;
-}
 
 //# sourceURL=js/dashticz.js

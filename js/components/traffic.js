@@ -1,54 +1,32 @@
-/* global _CORS_PATH Dashticz*/
+/* global _CORS_PATH Dashticz templateEngine moment settings*/
 // eslint-disable-next-line no-unused-vars
 var DT_traffic = {
   name: 'traffic',
   defaultCfg: {
     icon: 'fas fa-car',
     containerClass: 'hover trafficrow',
-    containerExtra:
-      'data-toggle="modal" data-target="#trafficweb" onclick="setSrc(this);"',
+    //    containerExtra:
+    //      'data-toggle="modal" data-target="#trafficweb"',
     refresh: 300,
+    url: 'https://rwsverkeersinfo.nl/',
+    newwindow: 1,
+    show_lastupdate: true,
+    clickHandler: true,
   },
   refresh: function (me) {
-    var rssurl = _CORS_PATH + 'http://www.vid.nl/VI/_rss';
+    var rssurl = _CORS_PATH + 'https://api.rwsverkeersinfo.nl/api/traffic/';
 
-    $.ajax(rssurl, {
-      accepts: {
-        xml: 'application/rss+xml',
-      },
-      dataType: 'xml',
-    }).then(function (data) {
-      $(data)
-        .find('item')
-        .each(function () {
-          // or "item" or whatever suits your feed
-          var el = $(this);
-          var text = el.find('title').text();
-          text = text.split(') [');
-          text = text[0] + ')';
-          $(me.mountPoint + ' .dt_state').html(text);
-
-          if ($('#trafficweb').length == 0) {
-            var html =
-              '<div class="modal fade" id="trafficweb" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
-            html += '<div class="modal-dialog">';
-            html += '<div class="modal-content">';
-            html += '<div class="modal-header">';
-            html +=
-              '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
-            html += '</div>';
-            html += '<div class="modal-body">';
-            html +=
-              '<iframe data-popup="http://www.vid.nl/VI/overzicht" width="100%" height="570" frameborder="0" allowtransparency="true"></iframe> ';
-            html += '</div>';
-            html += '</div>';
-            html += '</div>';
-            html += '</div>';
-            $('body').append(html);
-          }
-        });
+    $.getJSON(rssurl).then(function (data) {
+      return templateEngine.load('traffic').then(function (template) {
+        data.show_lastupdate = me.block.show_lastupdate;
+        data.lastupdate = moment().format(settings['timeformat']);
+        data.totalLengthOfJams = Math.ceil(data.totalLengthOfJams / 1000);
+        $(me.mountPoint + ' .dt_state').html(template(data));
+      });
     });
   },
 };
 
 Dashticz.register(DT_traffic);
+
+//# sourceURL=js/components/traffic.js

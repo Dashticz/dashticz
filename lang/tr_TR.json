@@ -104,7 +104,17 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Dashticz'a giriş yapın (dakika)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "WebSocket bağlantısını etkinleştirme \/ devre dışı bırakma"
+            "enable_websocket_help": "WebSocket bağlantısını etkinleştirme \/ devre dışı bırakma",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker",
+            "domoticz_timeout": "Domoticz timeout",
+            "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
+            "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
+            "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
         },
         "infosave": "Varsayılan olarak, ayarlar tarayıcınızda saklanır. Bu yöntemin dezavantajı yalnızca geçerli tarayıcınızda çalışacak olmasıdır. Bu bir sorun değilse, devam edebilirsiniz. Aksi takdirde, ayarları tüm tarayıcılarda ve aygıtlarda kullanmak için CONFIG.JS dosyasına aşağıdaki kodu kopyalayın.",
         "localize": {
@@ -143,7 +153,8 @@
             "uk": "Ukrayna dili",
             "sr": "Serbian",
             "lt": "Litvanyalı",
-            "ro": "Romen"
+            "ro": "Romen",
+            "ja": "Japonca"
         },
         "media": {
             "hide_mediaplayer": "Mediaplayer kapalıyken gizle",
@@ -182,7 +193,9 @@
             "vertical_scroll": "Dikey kaydırmayı etkinleştir",
             "vertical_scroll_help": "0: Dikey kaydırmayı devre dışı bırak; 1: Swiper devre dışı bırakılmışsa dikey kaydırmayı etkinleştirin; 2: Dikey kaydırmayı etkinleştir",
             "security_panel_lock": "Güvenlik Panelini tam ekran yükle",
-            "security_panel_lock_help": "Domoticz veya Dashticz'deki Güvenlik Panelini 'Arm - Away' olarak ayarlarsanız, Dashticz otomatik olarak bir tam ekran paneli yükleyecektir."
+            "security_panel_lock_help": "Domoticz veya Dashticz'deki Güvenlik Panelini 'Arm - Away' olarak ayarlarsanız, Dashticz otomatik olarak bir tam ekran paneli yükleyecektir.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "Ay Evresi Simge IDX",

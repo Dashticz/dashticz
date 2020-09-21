@@ -104,7 +104,17 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Keep Dashticz logged in (minutes)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Enable\/Disable the WebSocket connection"
+            "enable_websocket_help": "Enable\/Disable the WebSocket connection",
+            "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
+            "colorpicker_none": "No RGB colorpicker",
+            "colorpicker_old": "Old style RGB colorpicker",
+            "colorpicker_new": "New style RGB colorpicker",
+            "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker",
+            "domoticz_timeout": "Domoticz timeout",
+            "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
+            "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
+            "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
         },
         "infosave": "By default, settings are stored in your browser. Downside of this method is it will only work in your current browser. If that's not a problem, you can proceed. Otherwise, copy code below to your CONFIG.JS to keep settings across all browsers and devices.",
         "localize": {
@@ -128,7 +138,6 @@
             "hide_seconds_stationclock": "Hide seconds in StationClock",
             "hu": "Hungarian",
             "it": "Italian",
-            "ja": "Japanese",
             "language": "Language",
             "nl": "Dutch",
             "no": "Norwegian",
@@ -144,7 +153,8 @@
             "uk": "Ukrainian",
             "sr": "Serbian",
             "lt": "Lithuanian",
-            "ro": "Romanian"
+            "ro": "Romanian",
+            "ja": "Japanese"
         },
         "media": {
             "hide_mediaplayer": "Hide mediaplayer when it's off",
@@ -183,7 +193,9 @@
             "vertical_scroll": "Enable vertical scroll",
             "vertical_scroll_help": "0: Disable vertical scroll; 1: Enable vertical scroll if Swiper is disabled; 2: Enable vertical scroll",
             "security_panel_lock": "Load Security Panel full screen",
-            "security_panel_lock_help": "If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel."
+            "security_panel_lock_help": "If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel.",
+            "swiper_touch_move": "Swipe screen on touch",
+            "swiper_touch_move_help": "0: Disabled; 1: Enabled"
         },
         "weather": {
             "idx_moonpicture": "IDX of moonpicture",
@@ -197,7 +209,7 @@
             "wu_api": "Wunderground API Key",
             "wu_city": "Wunderground Station (City or Code)",
             "wu_country": "Wunderground Country",
-            "wu_name": "Display Name",
+            "wu_name": "Display Name Wunderground",
             "owm_api": "Open Weather Map API Key",
             "owm_city": "Open Weather Map Station (City or Code)",
             "owm_cnt": "Open Weather Map forecast count (4 - 40)",
@@ -205,7 +217,7 @@
             "owm_days": "Forecast in days",
             "owm_days_help": "Off shows the Open Weather Map default 3 hour forecast",
             "owm_min": "Minimum temperature on 2nd row",
-            "owm_min_help": "Only shown when forecast in days",
+            "owm_min_help": "Displayed only when forecast in days enabled",
             "owm_lang": "Set language for the description of the forecast (rain, cloudy, etc.)",
             "owm_lang_help": "For available languages, see https:\/\/openweathermap.org\/forecast5\/#multi",
             "owm_country": "Open Weather Map Country",
