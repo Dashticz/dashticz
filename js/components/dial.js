@@ -91,8 +91,9 @@ var DT_dial = {
     var d = me.device;
 
     switch (true) {
-      case me.block.values:
+      case typeof me.block.values!== 'undefined':
         DT_dial.defaultDial(me);
+        break;
       case d.SubType === 'Evohome':
       case d.SwitchType === 'Selector':
         DT_dial.control(me);
@@ -139,6 +140,7 @@ var DT_dial = {
         showunit: me.block.showunit,
         type: me.device.Type,
         value: me.value,
+        valueformat: number_format(me.value, 1),
         hasSetpoint: me.isSetpoint || me.subdevice,
         setpoint: me.setpoint,
         until: me.until,
@@ -572,7 +574,7 @@ var DT_dial = {
         });
         /* Standard thermostat device */
       } else {
-        me.value = number_format(me.device.Data, 1);
+        me.value = parseFloat(me.device.Data); //number_format(me.device.Data, 1);
         me.isSetpoint = false;
       }
     }
@@ -618,13 +620,11 @@ var DT_dial = {
     function getValueInfo(device, id) {
       var res = {};
       if(typeof id==='string') {
-        res.value = device[id];
-        res.unit = '';
-        res.icon = '';
-        res.image = '';
+        res.data = device[id];
       } else
       {
-        res.value = device[id.value];
+        res.data = device[id.value];
+        res.unit = id.unit;
         res.icon = id.icon;
         res.image = id.image;
       }
@@ -638,16 +638,26 @@ var DT_dial = {
     me.value = parseFloat(me.device.Data);
     var splitData = me.device.Data.split(' ');
     me.unitvalue = me.block.unitvalue || (splitData.length>1 ? splitData[1]:undefined);
-    me.showunit = isDefined(me.block.showunit) ? me.block.showunit : !!me.unit;
+    if (!me.unitvalue && me.device.SubType == 'Percentage') me.unitvalue = '%';
     me.isSetpoint = true;
+    /* supported formats:
+      values : [ 'temp', 'humidity']   array of strings
+      values: [ { value: 'temp', unit:'km', icon:'fa fa_bulb',image:'my_image'}]  array of objects.
+    */
   if(me.block.values) {
       if(Array.isArray(me.block.values)) {
-        var res = getValueInfo(me.device, me.block.values[0])
+        me.info = me.block.values.map(function(el) {
+          return getValueInfo(me.device, el)            
+        })
+        var res = me.info.shift();
+        if (typeof res.unit !== 'undefined') me.unitvalue = res.unit;
+        me.value = res.data;
+      }
+      else {
+        console.error('values should be an array for ', me.block)
       }
     }
-    else {
-    }
-
+    me.showunit = isDefined(me.block.showunit) ? me.block.showunit : !!me.unitvalue;
   },
 
   wind: function(me) {
