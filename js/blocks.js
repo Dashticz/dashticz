@@ -811,7 +811,7 @@ function getStatusBlock(block) {
             value = value.replace(unitArray[0], unitArray[1]);
         }*/
 
-  getBlockClick(block);
+  getBlockClick(block, '.block_'+block.key);
 
   var attr = '';
   if (
@@ -876,14 +876,16 @@ function getStatusBlock(block) {
   return stateBlock;
 }
 
-function getBlockClick(block) {
+function getBlockClick(block, selector) {
+  //set selector to set the clickhandler to a specific child instead of all .mh childs.
+  //necessary for subdevices.
   var device = block.device;
   var url = block.url; //todo: undocumented feature
   var graph = block.graph;
   //var blockSel = '.block_'+ block.mountPoint.slice(1);
   //console.log('getBlockClick for ', block);
   //   var $div=blockdef.$mountPoint.find('.block_'+blockdef.idx);
-  var $div = block.$mountPoint.find('.mh');
+  var $div = block.$mountPoint.find(typeof selector==='undefined' ? '.mh' : selector);
   if (url) {
     if ($div.length > 0) {
       $div
@@ -1928,7 +1930,7 @@ function createBlocks(blockParent, blockValues) {
       (block.width || 4) +
       '"/>';
     $div.append(html);
-    block.mountPoint = blockParent.mountPoint; // +' .block_'+blockValue.idx;
+    block.mountPoint = blockParent.mountPoint;//  +' .block_'+key;
     block.$mountPoint = $(block.mountPoint);
     //        block.subidx = index;
     //        block.blockdef=blocks[blockValue.idx]; //store a reference of the parent blockdef ? should be in parent already ...
