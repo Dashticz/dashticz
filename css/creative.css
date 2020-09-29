@@ -152,6 +152,10 @@
   max-width: 100%;
 }
 
+.no-margin .dt_state {
+  margin: -5px
+}
+
 .ios .dt_state {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch !important;
