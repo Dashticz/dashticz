@@ -27,6 +27,7 @@ var Dashticz = (function () {
     'nzbget',
     'calendar',
     'dial',
+    'html'
   ];
   var components = [];
   var mountedBlocks = [];

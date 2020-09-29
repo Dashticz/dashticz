@@ -1,8 +1,9 @@
 {
-"version": "3.6.0",
+"version": "3.6.1",
 "branch": "beta",
-"last_changes": "Beta version derived from 3.6 master",
+"last_changes": "Custom HTML block",
 "changelog" : {
+            "3.6.0": "Beta version derived from 3.6 master", 
             "3.6": "Master version"
             }
 }
