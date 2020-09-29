@@ -7,6 +7,12 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+3.6.1 Beta
+----------
+
+Enhancements:
+  * Custom HTML block. See :ref:`customhtml`
+
 3.6.0 Beta
 ----------
 Beta version, same as 3.6 master.
