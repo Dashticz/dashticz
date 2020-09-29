@@ -6,6 +6,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 
 Recent changes
 ---------------
+3.6.2 Beta
+----------
+
+Fixes
+  * Fix for graph issues in 3.6
 
 3.6.1 Beta
 ----------
