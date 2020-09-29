@@ -1,8 +1,9 @@
 {
-"version": "3.6.1",
+"version": "3.6.2",
 "branch": "beta",
-"last_changes": "Custom HTML block",
+"last_changes": "Fix for graph issues in 3.6",
 "changelog" : {
+            "3.6.1": "Custom HTML block",
             "3.6.0": "Beta version derived from 3.6 master", 
             "3.6": "Master version"
             }
