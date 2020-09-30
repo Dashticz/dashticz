@@ -996,7 +996,7 @@ function loadDataForService(service, random) {
     },
     recycleapp: {
       dataHandler: 'getRecycleApp',
-      identified: '',
+      identifier: '',
     }
   };
   window[serviceProperties[service].dataHandler](
