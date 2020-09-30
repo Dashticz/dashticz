@@ -266,7 +266,7 @@ function loadFiles(dashtype) {
                     checkSecurityStatus();
                 }) */
     .then(function () {
-      if (settings['security_panel_lock'] === 1)
+      if (settings['security_panel_lock'] )
         Domoticz.subscribe('_secstatus', true, checkSecurityStatus);
       sessionvalid = sessionValid();
 

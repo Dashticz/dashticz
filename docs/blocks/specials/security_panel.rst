@@ -45,6 +45,10 @@ Or you can have a block defined and disable the fullscreen lock feature with thi
 
   config['security_panel_lock'] = 0;
 
+To activate the security lock while in 'Armed home' mode use the following::
+
+  config['security_panel_lock'] = 2;
+
 The secpanel height is based on its width to maintain the correct aspect ratio. The height is 1.35 x the width. You can set the height and width in the block, or in custom.css::
 
     [data-id='secpanel'] .dt_content {
