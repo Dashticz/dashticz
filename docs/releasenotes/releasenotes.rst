@@ -6,6 +6,10 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 
 Recent changes
 ---------------
+
+Fixes
+  * Remove scroll bar of the modal security panel (security panel lock)
+
 3.6.2 Beta
 ----------
 
