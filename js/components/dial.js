@@ -549,7 +549,7 @@ var DT_dial = {
       }
       me.info.push({
         icon: me.override ? 'fas fa-stopwatch small_fa' : me.dialicon,
-        image: me.override ? 'fas fa-stopwatch small_fa' : me.block.dialimage,
+        image: me.override ? undefined : me.block.dialimage,
         data: me.setpoint,
         unit: _TEMP_SYMBOL,
       });
