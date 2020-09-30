@@ -2685,7 +2685,6 @@ td.agenda-title {
 }
 
 .security-panel {
-  display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
