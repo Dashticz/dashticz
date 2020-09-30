@@ -59,8 +59,7 @@ function isNumeric(n) {
 }
 
 function getOWMurl(makeFull) {
-  var site =
-//    _CORS_PATH +
+  var site = (settings['use_cors'] ? _CORS_PATH : '' ) + 
     'https://api.openweathermap.org/data/2.5/' +
     (makeFull ? 'forecast' : 'weather') +
     '?';

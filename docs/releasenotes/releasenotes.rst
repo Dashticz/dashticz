@@ -9,6 +9,7 @@ Recent changes
 
 Fixes
   * Remove scroll bar of the modal security panel (security panel lock)
+  * New config setting ``use_cors`` to enable CORS proxy for OWM. Set to ``true`` on Android 4.4.2.
 
 3.6.2 Beta
 ----------
