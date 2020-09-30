@@ -8,7 +8,16 @@ function loadWeather(location, country) {
     settings['owm_api'] !== '' &&
     settings['owm_api'] !== 0
   ) {
-    $.getJSON(getOWMurl(false), function (weather) {
+    $.ajax( {
+      url: getOWMurl(false),
+      "method": "POST",
+      dataType: 'json',
+      crossDomain: true,
+        error: function (jqXHR, textStatus, errorThrown) {
+          console.error('OWM error. textStatus=' + textStatus + ' errorThrown=' + errorThrown);
+      }
+    })
+    .then( function (weather) {
       $('.containsweather').each(function () {
         var curfull = $(this);
         if (typeof weather.main === 'undefined') {
