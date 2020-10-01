@@ -343,9 +343,11 @@ curl -H "x-consumer: recycleapp.be" -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5c
 		$streetid = $data->items[0]->id;
 //		print $streetid;
 
+		$startDate=date("Y-m-d");
+		$endDate=date("Y-m-d",time()+28*24*60*60);
 		//Now finally get the collection info
 		$ch = curl_init();
-		$url = "https://recycleapp.be/api/app/v1/collections?zipcodeId=".$zipcode."&streetId=".$streetid."&houseNumber=".$_GET['nr']."&fromDate=2020-08-01&untilDate=2020-09-30&size=100";
+		$url = "https://recycleapp.be/api/app/v1/collections?zipcodeId=".$zipcode."&streetId=".$streetid."&houseNumber=".$_GET['nr']."&fromDate=".$startDate."&untilDate=".$endDate."&size=100";
 //		print $url;
 		curl_setopt($ch, CURLOPT_URL,$url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
