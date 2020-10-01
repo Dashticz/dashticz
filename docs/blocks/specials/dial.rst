@@ -5,7 +5,18 @@ Dial
 
 .. image :: img/dials.jpg
 
-The following Domoticz devices can be represented with a dial:
+Most (all?) Domoticz devices can be represented with a dial. 
+
+To represent these devices with a dial add ``type:'dial'`` to the block definition::
+
+  blocks['my thermostat'] = {
+    type: 'dial',               //Display as dial  
+    idx: 123,                   //The Domoticz device id
+    title: 'Device name',       //The title of the block as shown in the dial.
+    width: 6,                   //The width of the block relative to the column width
+  }
+
+For the following device types a specific dial representation has been defined:
   * Type = 'Heating'
   * Type = 'P1 Smart Meter'
   * Type = 'Temp + Humidity + Baro'
@@ -18,15 +29,7 @@ The following Domoticz devices can be represented with a dial:
   * SwitchType = 'On/Off'
   * SwitchType = 'Selector'
 
-To represent these devices with a dial add ``type:'dial'`` to the block definition::
-
-  blocks['my thermostat'] = {
-    type: 'dial',               //Display as dial  
-    idx: 123,                   //The Domoticz device id
-    title: 'Device name',       //The title of the block as shown in the dial.
-    width: 6,                   //The width of the block relative to the column width
-  }
-
+For other device types a generic dial will be used.
 Block parameters
 ----------------
 
@@ -59,6 +62,14 @@ Block parameters
     - ``'fas fa-icon-alt'``: Show a different font awesome icon (default: 'fas fa-calendar-alt')
   * - showring
     - ``true``:  Always show the outer color ring (default: false)
+  * - min
+	- ``<number>``: Minimum value for the dial ring (if applicable) (default: 0)
+  * - max
+	- ``<number>``: Maximum value for the dial ring (if applicable) (default: 0)
+  * - showunit
+    - ``false | true``: Show unit behind value (if applicable) (default: false)
+  * - values
+    - Used to configure the values to be shown in the dial (generic dial only. See below)
 
 
 Usage
@@ -223,6 +234,43 @@ Toon Thermostat
 	   temp: 420,   // -> 1
 	   width: 3,
    }
+
+.. _genericdial :
+
+Generic dial
+------------
+
+The values to be shown in the dial can be selected via the values parameters as follows::
+
+	blocks[16] = {
+		type:'dial',
+		values:['Humidity','Barometer'],
+		showunit: true
+	}
+
+This will only show the 'Humidity' and 'Barometer' field of device 16. The first field (in this case 'Humidity') will be shown as big number in the middle of the dial.
+
+.. image :: img/hb-dial.jpg
+
+As you can see there are some issues to derive the right unit. Of course you can hide the unit by setting ``showunit: false``, but you can customize the value units by adapting the values array as follows::
+
+	blocks[16] = {
+		type:'dial',
+		title:'HumBar',
+		values: [
+			{
+				value:'Humidity',
+				unit:' %',
+			},
+			{
+				value:'Barometer',
+				unit:' hPa',
+			},
+		],
+		showunit: true
+	}
+
+.. image :: img/humbar-dial.jpg
 
 
 Custom styling

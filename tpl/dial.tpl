@@ -44,7 +44,7 @@
             <div class="dial-display">
                 <span class="device" style="color:{{color}};">{{name}}</span>
                 <div class="value-unit">
-                    <span class="value" style="--dial-color: {{color}};">{{value}}</span>
+                    <span class="value" style="--dial-color: {{color}};">{{valueformat}}</span>
                     {{#if showunit}}
                     <span class="unit" style="--dial-color: {{color}};">{{unitvalue}}</span>
                     {{/if}}

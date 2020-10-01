@@ -4,11 +4,12 @@ Release Notes
 For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedocs.io/en/beta/releasenotes/index.html
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
-Recent changes
----------------
+3.6.3 Beta
+----------
 
 Enhancements
   * Set config setting ``security_panel_lock`` to ``2`` to activate security panel lock in 'Armed Home' mode as well.
+  * Dial type now enabled for most devices. See :ref:`genericdial`
 
 Fixes
   * Remove scroll bar of the modal security panel (security panel lock)
