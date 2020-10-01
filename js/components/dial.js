@@ -636,7 +636,8 @@ var DT_dial = {
     me.min = isDefined(me.block.min) ? me.block.min : 0;
     me.max = isDefined(me.block.max) ? me.block.max : 100;
     me.value = parseFloat(me.device.Data);
-    var splitData = me.device.Data.split(' ');
+    var splitAllData = me.device.Data.split(',');
+    var splitData = splitAllData[0].split(' ');
     me.unitvalue = me.block.unitvalue || (splitData.length>1 ? splitData[1]:undefined);
     if (!me.unitvalue && me.device.SubType == 'Percentage') me.unitvalue = '%';
     me.isSetpoint = true;
