@@ -78,7 +78,6 @@ var DT_dial = {
           me.lastupdate = !me.block.last_update ?
             false :
             moment(me.device.LastUpdate).format(DT_dial.timeformat);
-          me.info = [];
           DT_dial.make(me);
         });
       });
@@ -89,6 +88,7 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   make: function(me) {
+    me.info = [];
     DT_dial.resize(me);
     var d = me.device;
 
