@@ -175,6 +175,7 @@ blocktypes.HardwareType['Motherboard sensors'] = {
   title: '<Name>',
   value: '<Data>',
 };
+/* Removed, since PVOutput can also create temp device
 blocktypes.HardwareType['PVOutput (Input)'] = {};
 blocktypes.HardwareType['PVOutput (Input)']['today'] = {
   icon: 'fas fa-sun',
@@ -197,6 +198,7 @@ blocktypes.HardwareType['PVOutput (Input)']['total'] = {
   format: true,
   decimals: 0,
 };
+*/
 
 blocktypes.HardwareName = {};
 blocktypes.HardwareName['Rain expected'] = {

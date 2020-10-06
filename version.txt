@@ -1,8 +1,9 @@
 {
-"version": "3.6.3",
+"version": "3.6.4",
 "branch": "beta",
-"last_changes": "More dials",
+"last_changes": "PVOutput Temp device",
 "changelog" : {
+            "3.6.3": "More dials",
             "3.6.2": "Fix for graph issues in 3.6",
             "3.6.1": "Custom HTML block",
             "3.6.0": "Beta version derived from 3.6 master", 

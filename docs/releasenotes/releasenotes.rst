@@ -4,50 +4,79 @@ Release Notes
 For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedocs.io/en/beta/releasenotes/index.html
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
-3.6.3 Beta
-----------
-
-Enhancements
-  * Set config setting ``security_panel_lock`` to ``2`` to activate security panel lock in 'Armed Home' mode as well.
-  * Dial type now enabled for most devices. See :ref:`genericdial`
+3.6.4 Beta (6-10-2020)
+----------------------
 
 Fixes
-  * Remove scroll bar of the modal security panel (security panel lock)
-  * New config setting ``use_cors`` to enable CORS proxy for OWM. Set to ``true`` on Android 4.4.2.
-  * Garbage: recycleapp
+~~~~~
+
+* PV Output Temp device.
+  
+Update notes
+~~~~~~~~~~~~
+
+* The icon for PV Output blocks are not automatically set to 'fas fa-sun' anymore. You still can do this manually in a block definition. In a future version I'll improve the default settings for Domoticz device types.
+
+3.6.3 Beta
+-----------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Set config setting ``security_panel_lock`` to ``2`` to activate security panel lock in 'Armed Home' mode as well.
+* Dial type now enabled for most devices. See :ref:`genericdial`
+
+Fixes
+~~~~~
+
+* Remove scroll bar of the modal security panel (security panel lock)
+* New config setting ``use_cors`` to enable CORS proxy for OWM. Set to ``true`` on Android 4.4.2.
+* Garbage: recycleapp
 
 3.6.2 Beta
 ----------
 
 Fixes
-  * Fix for graph issues in 3.6
+~~~~~
+
+* Fix for graph issues in 3.6
 
 3.6.1 Beta
 ----------
 
-Enhancements:
-  * Custom HTML block. See :ref:`customhtml`
+Enhancements
+~~~~~~~~~~~~
+
+* Custom HTML block. See :ref:`customhtml`
 
 3.6.0 Beta
 ----------
 Beta version, same as 3.6 master.
 
-Updates
-  * Update of the external js modules
+Code
+~~~~~
+
+* Update of the external js modules
 
 3.6 Master
 ----------
 
-Enhancements:
-  * New Dashticz config parameter 'swiper_touch_move' to disable/enable swiping the screen on touch
-  * Graph: The 'today' button now shows the full day data. The range 'day'still exists as well, which still can be used in custom graphs.
-  * Add support for device with subtype 'Current'
-  * Popup graphs enabled by default for most block types. To disable a popup graph, add ``graph: false`` to the block definition.
+Enhancements
+~~~~~~~~~~~~
 
-Updates
-  * Update FontAwesome to 5.14.0
+* New Dashticz config parameter 'swiper_touch_move' to disable/enable swiping the screen on touch
+* Graph: The 'today' button now shows the full day data. The range 'day'still exists as well, which still can be used in custom graphs.
+* Add support for device with subtype 'Current'
+* Popup graphs enabled by default for most block types. To disable a popup graph, add ``graph: false`` to the block definition.
+
+Code
+~~~~~
+
+* Update FontAwesome to 5.14.0
 
 Fixes
+~~~~~
+
   * Camera block 
   * Garbage: Ophaalkalender (BE) doesn't work anymore. It has been replaced by recycleapp.
   * Security panel home symbol.
@@ -60,14 +89,20 @@ Fixes
 -----------
 
 Enhancements
-  * New colorpicker for RGB devices, including support for whites. The ``no_rgb`` setting is absolete. See :ref:`colorpicker`
+~~~~~~~~~~~~
+
+* New colorpicker for RGB devices, including support for whites. The ``no_rgb`` setting is absolete. See :ref:`colorpicker`
 
 Fixes
-  * Fix for Omrin garbage provider
-  * Fix for Venlo garbage provider
+~~~~~
+
+* Fix for Omrin garbage provider
+* Fix for Venlo garbage provider
 
 Code
-  # Update to jquery 3.5.1
+~~~~~
+
+* Update to jquery 3.5.1
 
 3.5.1 Beta
 -----------
