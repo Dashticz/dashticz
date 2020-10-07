@@ -2271,7 +2271,10 @@ function showMap(mapid, map) {
 
 function getSecurityBlock(block) {
   //todo: rewrite
+  
   var device = block.device;
+  if (block.protected || device.Protected)
+    return getProtectedSecurityBlock(block);
   var html = '';
   if (device['Status'] === 'Normal')
     html += iconORimage(block, 'fas fa-shield-alt', '', 'off icon', '', 2);
@@ -2292,15 +2295,15 @@ function getSecurityBlock(block) {
 
   if (secPanelicons === true) {
     disarm =
-      '<i class="fa fa-unlock" title="' +
+      '<i class="fas fa-unlock" title="' +
       language.switches.state_disarm +
       '"></i>';
     armhome =
-      '<i class="fa fa-home" title="' +
+      '<i class="fas fa-home" title="' +
       language.switches.state_armhome +
       '"></i>';
     armaway =
-      '<i class="fa fa-home" title="' +
+      '<i class="fas fa-home" title="' +
       language.switches.state_armaway +
       '"></i><i class="fa fa-walking"></i>';
   }
@@ -2354,6 +2357,30 @@ function getSecurityBlock(block) {
     html += '</div>';
   }
   return [html, true];
+}
+
+function getProtectedSecurityBlock(block) {
+  var defaultSettings = {
+    Normal: {
+      iconOff: 'fas fa-shield-alt',
+    },
+    Alarm: {
+      imageOn: 'alarm.png',
+    },
+    'Arm Home': {
+      icon: 'fas fa-home',
+    },
+    'Arm Away': {
+      icon: 'fas fa-walking',
+    },
+  };
+
+  var secBlock = defaultSettings[block.device.Status] || {
+    icon: 'fas fa-shield-alt',
+  };
+  secBlock.value = block.device.Status;
+  $.extend(secBlock, block);
+  return [getStatusBlock(secBlock), true];
 }
 
 function getBlockTitle(block) {
