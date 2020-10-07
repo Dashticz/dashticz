@@ -113,6 +113,10 @@ var DT_button = {
         window.open(button.url);
       } else if (button.newwindow == '2') {
         DT_button.buttonLoadFrame(button);
+      } else if (button.newwindow == '3') {
+        $.ajax(DT_function.checkForceRefresh(button.url, button.forcerefresh));
+      } else if (button.newwindow == '4') {
+        $.post(button.url);
       } else {
         DT_button.buttonLoadFrame(button);
       }

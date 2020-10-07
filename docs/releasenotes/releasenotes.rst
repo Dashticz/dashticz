@@ -4,6 +4,19 @@ Release Notes
 For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedocs.io/en/beta/releasenotes/index.html
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
+Recent changes
+--------------
+
+Fixes
+~~~~~~~
+
+* Button: ``newwindow: 3`` handling is fixed.
+
+Enhancements
+~~~~~~~~~~~~
+
+* Button, special blocks: Initiate the ``url`` parameter as POST request by setting ``newwindow: 4``
+
 3.6.4 Beta (6-10-2020)
 ----------------------
 
