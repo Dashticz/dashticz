@@ -20,6 +20,8 @@ var DT_function = (function () {
         blockLoadFrame(block);
       } else if (block.newwindow == '3') {
         $.ajax(checkForceRefresh(block.url, block.forcerefresh));
+      } else if (block.newwindow == '4') {
+        $.post(block.url);
       } else {
         blockLoadFrame(block);
       }
