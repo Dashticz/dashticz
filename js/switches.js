@@ -40,6 +40,7 @@ function getDefaultSwitchBlock(
     var mMode = 'toggle';
     if (device['SwitchType'] == 'Push On Button') mMode = 'on';
     else if (device['SwitchType'] == 'Push Off Button') mMode = 'off';
+    if (device.Type === 'Scene') mMode = 'on';
     block.$mountPoint
       .find('.mh')
       .addClass('hover')
