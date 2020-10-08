@@ -11,6 +11,7 @@ Fixes
 ~~~~~~~
 
 * Button: ``newwindow: 3`` handling is fixed.
+* Scenes: Switch always on
 
 Enhancements
 ~~~~~~~~~~~~
