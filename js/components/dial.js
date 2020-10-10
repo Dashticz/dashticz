@@ -560,15 +560,15 @@ var DT_dial = {
   heating: function(me) {
     me.type = me.device.Type === 'Heating' ? 'zone' : 'stat';
     me.unitvalue = _TEMP_SYMBOL;
-    me.min = isDefined(settings['setpoint_min']) ?
-      settings['setpoint_min'] :
-      isDefined(me.block.min) ?
+    me.min = isDefined(me.block.min) ?
       me.block.min :
+      isDefined(settings['setpoint_min']) ?
+      settings['setpoint_min'] :
       5;
-    me.max = isDefined(settings['setpoint_max']) ?
-      settings['setpoint_max'] :
-      isDefined(me.block.max) ?
+    me.max = isDefined(me.block.max) ?
       me.block.max :
+      isDefined(settings['setpoint_max']) ?
+      settings['setpoint_max'] :
       35;
 
     me.dialicon = DT_dial.display(
