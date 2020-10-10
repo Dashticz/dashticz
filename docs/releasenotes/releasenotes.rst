@@ -18,6 +18,7 @@ Enhancements
 
 * Button, special blocks: Initiate the ``url`` parameter as POST request by setting ``newwindow: 4``
 * Add support for Domoticz x10 security sensor
+* Dial: Combine data from several devices. See :ref:`genericdial`
 
 3.6.4 Beta (6-10-2020)
 ----------------------
