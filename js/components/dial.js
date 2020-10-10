@@ -71,15 +71,45 @@ var DT_dial = {
         }
       })
       .then(function() {
-        Domoticz.subscribe(me.idx, true, function(device) {
-          me.device = device;
-          me.block.device=device;
-          me.isSetpoint = isDefined(me.device.SetPoint);
-          me.lastupdate = !me.block.last_update ?
-            false :
-            moment(me.device.LastUpdate).format(DT_dial.timeformat);
-          DT_dial.make(me);
-        });
+        me.devices = []
+        if (typeof me.idx === 'number' || parseInt(me.idx))
+          me.devices.push(me.idx)
+        if (me.block.values)
+          me.block.values.forEach(function(el) {
+            if (typeof el === 'object' && el.idx)
+            {//              if (!$.inArray(el.idx, me.devices)) 
+              var idx = parseInt(el.idx);
+              if (me.devices.indexOf(idx)===-1)
+                  me.devices.push(idx);
+            }
+          })
+        if(me.block.temp) {
+          var idx = parseInt(me.block.temp);
+          if (idx && me.devices.indexOf(idx)===-1)
+            me.devices.push(idx);
+        }
+        me.devices.forEach(function(el) {
+          Domoticz.subscribe(el, false, function(device) {
+            if (me.idx===device.idx) {
+              me.device = device;
+              me.block.device=device;
+            }
+            me.lastupdate = !me.block.last_update ?
+              false :
+              moment(me.device.LastUpdate).format(DT_dial.timeformat);
+            DT_dial.make(me);
+          });
+
+        })
+        me.device=Domoticz.getAllDevices()[me.devices[0]];
+        me.block.device=me.device;
+        if(!me.device) {
+          console.log('Device not found: ', me.idx);
+          return
+        }
+        me.isSetpoint = isDefined(me.device.SetPoint);
+        DT_dial.make(me);
+
       });
   },
 
@@ -274,7 +304,9 @@ var DT_dial = {
       });
       me.body
         .bind('mousedown touchstart', function() {
-          Domoticz.hold(me.idx);
+          me.devices.forEach(function(idx ) {
+            Domoticz.hold(idx)
+          });
         })
         .bind('mousemove touchmove', function(event) {
           if (DT_dial.active) {
@@ -417,7 +449,9 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   stop: function(me) {
-    Domoticz.release(me.idx);
+    me.devices.forEach(function(idx) {
+      Domoticz.release(idx)
+    });
     switch (me.type) {
       case 'zone':
         me.setpoint = me.value;
@@ -449,6 +483,17 @@ var DT_dial = {
         break;
       case 'onoff':
         switchDevice(me, me.cmd);
+        break;
+      case 'default':
+        if (me.isSetpoint) {
+          var block = {};
+          $.extend(block, me)
+          if (me.setpointDevice) {
+            block.idx=me.setpointDevice;  //Force that the correct setpoint device is used.
+            block.device = Domoticz.getAllDevices()[me.setpointDevice]
+          }
+          switchThermostat(block, me.value);
+        }
         break;
     }
   },
@@ -687,6 +732,7 @@ var DT_dial = {
     me.active = false;
     me.min = isDefined(me.block.min) ? me.block.min : 0;
     me.max = isDefined(me.block.max) ? me.block.max : 100;
+
     me.value = parseFloat(me.device.Data);
     var splitAllData = me.device.Data.split(',');
     var splitData = splitAllData[0].split(' ');
@@ -698,9 +744,23 @@ var DT_dial = {
       values: [ { value: 'temp', unit:'km', icon:'fa fa_bulb',image:'my_image'}]  array of objects.
     */
   if(me.block.values) {
-      if(Array.isArray(me.block.values)) {
+    var defaultIdx = me.devices[0];
+
+    if(Array.isArray(me.block.values)) {
         me.info = me.block.values.map(function(el) {
-          return getValueInfo(me.device, el)            
+          var idx = defaultIdx;
+          if(typeof el=='object' && el.idx) {
+            idx = el.idx;
+          }
+          var device = Domoticz.getAllDevices()[idx];
+          var valueInfo = getValueInfo(device, el);
+          if (el.isSetpoint) {
+            me.isSetpoint = true;
+            me.active= true;//Dial can be used to set setpoint value
+            me.setpointDevice = idx;
+            me.setpoint = valueInfo.value;
+          }
+          return valueInfo;            
         })
         var res = me.info.shift();
         if (typeof res.unit !== 'undefined') me.unitvalue = res.unit;
