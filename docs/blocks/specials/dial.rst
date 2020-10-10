@@ -281,6 +281,36 @@ As you can see there are some issues to derive the right unit. Of course you can
 
 .. image :: img/humbar-dial.jpg
 
+It's possible to combine data from several devices::
+
+	blocks['mytherm'] = {
+		type: 'dial',
+		min: 5,
+		max: 30,
+		values : [
+			{
+				value: 'Temp',
+				idx: 27
+			},
+			{
+				value: 'Barometer',
+				idx: 659,
+				icon: 'fas fa-cloud',
+				unit: 'hPa'
+			},
+			{
+				value: 'SetPoint',
+				idx: 25,
+				isSetpoint: true,
+				icon: 'fas fa-calendar-alt',
+				unit: 'C'
+			},
+		]
+	}
+
+In this example the temperature value of device 27 is displayed, together with the Barometer value of device 659 and the temperature setpoint of device 25.
+For device 25 the isSetpoint parameter is set, meaning that the dial ring will set the setpoint for this device.
+
 
 Custom styling
 --------------
