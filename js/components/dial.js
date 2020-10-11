@@ -74,6 +74,11 @@ var DT_dial = {
         me.devices = []
         if (typeof me.idx === 'number' || parseInt(me.idx))
           me.devices.push(me.idx)
+        if (typeof me.idx === 'string' && me.idx[0]==='s') {
+          var idx = parseInt(me.idx.slice(1))
+          if (idx)
+            me.devices.push(me.idx)
+        }
         if (me.block.values)
           me.block.values.forEach(function(el) {
             if (typeof el === 'object' && el.idx)
@@ -90,7 +95,7 @@ var DT_dial = {
         }
         me.devices.forEach(function(el) {
           Domoticz.subscribe(el, false, function(device) {
-            if (me.idx===device.idx) {
+            if (me.idx===el) {
               me.device = device;
               me.block.device=device;
             }
@@ -139,6 +144,7 @@ var DT_dial = {
         DT_dial.dimmer(me);
         break;
       case d.Type === 'Group':
+      case d.Type === 'Scene':
       case d.SwitchType === 'On/Off':
         DT_dial.onoff(me);
         break;
@@ -529,13 +535,15 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   resize: function(me) {
+    /* todo: temporarily disabled.
+     * to prevent recreating and resubscribing to domoticz devices
     window.addEventListener(
       'resize',
       function() {
         DT_dial.run(me);
       },
       true
-    );
+    );*/
   },
 
   /**
