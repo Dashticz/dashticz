@@ -289,7 +289,8 @@ var DT_dial = {
         }
       }
       if (me.type === 'onoff') {
-        me.cmd = me.state === 'Off' ? 'On' : 'Off';
+        if (me.device.Type === 'Scene') me.cmd = 'On'
+          else me.cmd = me.state === 'Off' ? 'On' : 'Off';
         me.demand = me.cmd === 'On';
         DT_dial.update(me);
       }
