@@ -693,7 +693,7 @@ var DT_dial = {
       }
       res = data.value.split(' ');
       if(res.length) {
-        var value=Number(res[0]) * dataScale;
+        var value=parseFloat(res[0]) * dataScale;
         var unit =  typeof data.unit !=='undefined' ? data.unit: (res.length > 1 ? res[1] : '');
         return {
           value: value,
