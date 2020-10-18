@@ -446,9 +446,9 @@ var DT_dial = {
     value = isDefined(me.min) && (value < me.min) ? me.min : value;
     value = isDefined(me.max) && (value > me.max) ? me.max : value;
 
-    var deg = value * me.scale;
+    var deg = (value - me.min) * me.scale;
     deg += me.splitdial || deg > 40 ? -220 : 140;
-    return deg - me.min * me.scale;
+    return deg;
   },
 
   /**
