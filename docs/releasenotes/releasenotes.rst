@@ -7,11 +7,15 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 --------------
 
+3.6.5 Beta (22-10-2020)
+------------------------
+
 Fixes
 ~~~~~~~
 
 * Button: ``newwindow: 3`` handling is fixed.
 * Scenes: Switch always on
+* Switched to an alternative server to provide the covid-19 data
 
 Enhancements
 ~~~~~~~~~~~~
