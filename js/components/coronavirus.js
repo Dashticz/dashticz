@@ -6,9 +6,9 @@
 /* global templateEngine */
 /* from src/functions.js */
 /* global number_format */
-var api = _CORS_PATH + 'https://cvtapi.nl/v2/';
+var api = 'https://covid-tracker-us.herokuapp.com/v2/';
 var flagUrl =
-  _CORS_PATH +
+//  _CORS_PATH +
   'https://raw.githubusercontent.com/clinkadink/country-flags/master/png100px/';
 
 var DT_coronavirus = {

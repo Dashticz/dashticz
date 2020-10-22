@@ -1,8 +1,9 @@
 {
-"version": "3.6.4",
+"version": "3.6.5",
 "branch": "beta",
-"last_changes": "PVOutput Temp device",
+"last_changes": "New server to provide covid-19 data",
 "changelog" : {
+            "3.6.4": "PVOutput Temp device",
             "3.6.3": "More dials",
             "3.6.2": "Fix for graph issues in 3.6",
             "3.6.1": "Custom HTML block",
