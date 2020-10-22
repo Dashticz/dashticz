@@ -180,6 +180,9 @@ function deviceUpdateHandler(block) {
     $div.html(html);
     getBlockClick(block);
   }
+  else
+    $div = $selector.find('.mh'); //$div may not exist anymore. Find the new one.
+
   if (typeof $div.attr('onclick') !== 'undefined') {
     $div.addClass('hover');
   }
@@ -201,6 +204,10 @@ function deviceUpdateHandler(block) {
     $div.removeClass(block.currentClass).addClass(block.addClass);
     block.currentClass = block.addClass;
   }
+
+  if(device.HaveTimeout) $div.addClass('timeout')
+  else $div.removeClass('timeout');
+
 }
 
 function getBlockClass(block) {
