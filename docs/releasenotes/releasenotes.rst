@@ -2,10 +2,16 @@ Release Notes
 =============
 
 For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedocs.io/en/beta/releasenotes/index.html
+
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 Recent changes
 --------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Add ``timeout`` CSS class to Domoticz devices in the timeout state. See :ref:`domoticzStyling`
 
 3.6.5 Beta (22-10-2020)
 ------------------------
