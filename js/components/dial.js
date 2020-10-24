@@ -43,7 +43,7 @@ var DT_dial = {
     shownumbers: false,
     offset: 0,
     group: false,
-    animate: true
+    animation: true
   },
 
   /**
@@ -206,7 +206,7 @@ var DT_dial = {
         split: me.splitdial,
         slice: me.slice,
         checked: me.checked,
-        addclass:me.block.animate ? 'animate' :''
+        addclass:me.block.animation ? 'animation' :''
       };
 
       /* Mount dial */
