@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-/* global getAllDevicesHandler objectlength config initVersion loadSettings settings*/
+/* global getAllDevicesHandler objectlength config initVersion loadSettings settings getLocationParameters*/
 /* global sessionValid MobileDetect moment getBlock*/
 /* global Swiper */
 
@@ -47,11 +47,16 @@ var _END_STANDBY_CALL_URL = '';
 //move var allVariables = {};
 var sessionvalid = false;
 
+var _PARAMS = {};
 // eslint-disable-next-line no-unused-vars
 function loadFiles(dashtype) {
-  var customfolder = 'custom';
+  _PARAMS = getLocationParameters();
+
+  console.log(_PARAMS);
+
+  var customfolder = _PARAMS['folder'] || 'custom';
   if (typeof dashtype !== 'undefined' && parseFloat(dashtype) > 1) {
-    customfolder = 'custom_' + dashtype;
+    customfolder += '_' + dashtype;
   }
 
   //Set custom error handling to catch syntax errors in CONFIG.js and custom.js
@@ -75,22 +80,52 @@ function loadFiles(dashtype) {
     '<link href="' + 'css/creative.css?_=' + Date.now() + '" rel="stylesheet">'
   ).appendTo('head');
 
-  loadingFilename = customfolder + '/CONFIG.js';
-
-  $.ajax({
-    url: loadingFilename,
-    dataType: 'script',
-  })
-    .fail(function () {
-      return $.Deferred().reject(new Error('Load error in ' + loadingFilename));
+  var enable_logrocket = _PARAMS['logrocket'];
+  $.when(
+    typeof enable_logrocket !== 'undefined' &&
+      enable_logrocket &&
+      $.ajax({
+        url: 'https://cdn.lr-ingest.io/LogRocket.min.js',
+        dataType: 'script',
+      }).then(enableLogRocket(enable_logrocket))
+  )
+    .then(function () {
+      var configjs = _PARAMS['cfg'] || 'CONFIG.js';
+      loadingFilename = customfolder + '/' + configjs;
+      return $.ajax({
+        url: loadingFilename,
+        dataType: 'script',
+      }).fail(function () {
+        return $.Deferred().reject(
+          new Error('Load error in ' + loadingFilename)
+        );
+      });
     })
     .then(function () {
+      var tmp = loadingFilename;
       loadingFilename = null;
       if (throwError) return $.Deferred().reject(new Error(throwError));
 
       if (typeof config == 'undefined') {
-        return $.Deferred().reject(new Error('Error in config.js'));
+        return $.Deferred().reject(new Error('Error in ' + tmp));
       }
+    })
+    .then(function () {
+      var configjs = _PARAMS['cfg2'];
+      if (!configjs) return;
+      loadingFilename = customfolder + '/' + configjs;
+      return $.ajax({
+        url: loadingFilename,
+        dataType: 'script',
+      }).fail(function () {
+        return $.Deferred().reject(
+          new Error('Load error in ' + loadingFilename)
+        );
+      });
+    })
+    .then(function () {
+      loadingFilename = null;
+      if (throwError) return $.Deferred().reject(new Error(throwError));
 
       if (objectlength(columns) === 0) defaultcolumns = true;
 
@@ -119,29 +154,9 @@ function loadFiles(dashtype) {
       });
     })
     .then(function () {
-      return $.ajax({
-        url: 'js/version.js',
-        dataType: 'script',
-      });
+      return getSettings();
     })
     .then(function () {
-      return initVersion();
-    })
-    .then(function () {
-      return $.ajax({
-        url: 'js/settings.js',
-        dataType: 'script',
-      });
-    })
-    .then(function () {
-      loadSettings();
-
-      usrEnc = '';
-      pwdEnc = '';
-      if (typeof settings['user_name'] !== 'undefined') {
-        usrEnc = window.btoa(settings['user_name']);
-        pwdEnc = window.btoa(settings['pass_word']);
-      }
       if (typeof screens === 'undefined' || objectlength(screens) === 0) {
         screens = {};
         screens[1] = {};
@@ -171,24 +186,8 @@ function loadFiles(dashtype) {
             '" />'
         ).appendTo('head');
       }
-/*
-      $.ajax ( {
-        url: './vendor/fontawesome-free/css/all.min.css',
-        success: function (data) {
-          $('<style></style>').appendTo('head').html(data);
-        },
-      });*/
-      $.ajax({
-        url: customfolder + '/custom.css?v=' + cache,
-        success: function (data) {
-          $('<style></style>').appendTo('head').html(data);
-        },
-        error: function () {
-          console.log(
-            'No valid custom.css in folder ' + customfolder + '. Skipping.'
-          );
-        },
-      });
+
+      loadCustomCss(customfolder);
 
       return $.when(
         $.ajax({
@@ -212,13 +211,13 @@ function loadFiles(dashtype) {
 
       return $.ajax({
         //first test whether the file exists
-        url: customfolder + '/custom.js?v=' + cache,
+        url: loadingFilename + '?v=' + cache,
         type: 'HEAD',
       })
         .then(function () {
           //if it exists, try to load it
           return $.ajax({
-            url: customfolder + '/custom.js',
+            url: loadingFilename,
             dataType: 'script',
           }).then(function () {
             loadingFilename = null;
@@ -266,7 +265,7 @@ function loadFiles(dashtype) {
                     checkSecurityStatus();
                 }) */
     .then(function () {
-      if (settings['security_panel_lock'] )
+      if (settings['security_panel_lock'])
         Domoticz.subscribe('_secstatus', true, checkSecurityStatus);
       sessionvalid = sessionValid();
 
@@ -299,6 +298,61 @@ function loadFiles(dashtype) {
       console.error(err);
       showError(err.message);
     });
+
+  function getSettings() {
+    return $.ajax({
+      url: 'js/version.js',
+      dataType: 'script',
+    })
+      .then(function () {
+        initVersion();
+      })
+      .then(function () {
+        return $.ajax({
+          url: 'js/settings.js',
+          dataType: 'script',
+        });
+      })
+      .then(function () {
+        loadSettings();
+
+        usrEnc = '';
+        pwdEnc = '';
+        if (typeof settings['user_name'] !== 'undefined') {
+          usrEnc = window.btoa(settings['user_name']);
+          pwdEnc = window.btoa(settings['pass_word']);
+        }
+
+        checkCfgSettings();
+      });
+  }
+
+  function checkCfgSettings() {
+    Object.keys(_PARAMS).forEach(function (key) {
+      if (typeof settings[key] !== 'undefined') settings[key] = _PARAMS[key];
+    });
+  }
+}
+
+function loadCustomCss(customfolder) {
+  var customcss = _PARAMS['css'] || 'custom.css';
+  var filename = customfolder + '/' + customcss;
+  $.ajax({
+    url: filename + '?v=' + cache,
+    success: function (data) {
+      $('<style></style>').appendTo('head').html(data);
+    },
+    error: function () {
+      console.log('No valid custom css file: ' + filename + '. Skipping.');
+    },
+  });
+}
+
+function enableLogRocket(enable_logrocket) {
+  console.log('enabling LogRocket');
+  if (!window.LogRocket) return;
+  window.LogRocket.init('ewgztp/dashticz');
+  window.LogRocket.identify(enable_logrocket);
 }
 
 function showError(msg) {
@@ -660,7 +714,7 @@ function startSwiper() {
         onlyInViewport: false,
       },
       direction: 'horizontal',
-      allowTouchMove: settings.swiper_touch_move
+      allowTouchMove: settings.swiper_touch_move,
     });
     myswiper.on('transitionStart', function () {
       $('.slide').removeClass('selectedbutton');
