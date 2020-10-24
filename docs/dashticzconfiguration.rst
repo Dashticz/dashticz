@@ -262,7 +262,45 @@ Config parameters
   * - longfonds_housenumber
     - | Longfonds (Dutch air quality check) housenumber
       | ``'123'`` Language options
-      
+
+
+.. _urlparameters:
+
+Dashticz URL parameters
+#######################
+
+Dashticz parameters can be configured via the Dashticz URL as well. For instance, to start Dashticz with a custom title and set the dashticz refresh period to 300 minutes, use the following URL::
+
+  http://<dashticz-ip:port>/?app_title=Living room&dashticz_refresh=300
+
+Besides the Dashticz configuration parameters, the following additional parameters can be used in the Dashticz URL: 
+
+
+.. list-table:: 
+  :header-rows: 1
+  :widths: 5, 30
+  :class: tight-table
+   
+  * - Parameter
+    - Description
+  * - cfg 
+    - | The Dashticz configuration file to be used instead of CONFIG.js.
+      | ``CONFIG.room2.js``
+  * - cfg2 
+    - | The name of a second configuration file, which will be loaded after CONFIG.js.
+      | ``CONFIG.extra.js``
+  * - css 
+    - | The CSS file to be used instead of custom.css.
+      | ``custom.mobile.css``
+  * - folder 
+    - | The folder containing the configuration files. (Default: ``custom``)
+      | ``custom/room1``
+
+So, to load Dashticz with a different config file, use the following URL::
+
+  http://<dashticz ip:port>/?cfg=CONFIG.room2.js
+
+
 
 Usage
 #####
@@ -307,3 +345,4 @@ To prevent switching to a websocket connection add the following setting to CONF
 In the <gif> below you see the instant updates in action. On the right you see the Domoticz dashboard. On the left Dashticz.
 
 .. image :: img/dashticz-websocket.gif
+
