@@ -300,6 +300,12 @@ So, to load Dashticz with a different config file, use the following URL::
 
   http://<dashticz ip:port>/?cfg=CONFIG.room2.js
 
+The URL parameters can be accessed in CONFIG.js or custom.js via the global variable _PARAMS::
+
+    if (_PARAMS['myownparam']=='2') {
+       screen[2].columns = [2,4,5]
+    }
+      
 
 
 Usage
