@@ -72,6 +72,8 @@ Block parameters
     - ``false | true``: Show unit behind value (if applicable) (default: false)
   * - values
     - Used to configure the values to be shown in the dial (generic dial only. See :ref:`genericdial`)
+  * - animation
+	- ``false | true``: Set to false to disable dial animations on change (default: true)
 
 
 Usage

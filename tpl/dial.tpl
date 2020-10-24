@@ -33,16 +33,16 @@
             <div class="dial-switch">   
                 <input type="checkbox" {{checked}}>
                 <div class="switch-face">
-                    <div class="device" style="color:{{color}}">{{name}}</div>
+                    <div class="device  {{addclass}}" style="color:{{color}}">{{name}}</div>
                     <i class="fas fa-power-off icon-off" style=""color:{{color}}"></i>
                     {{#if lastupdate}} 
-                    <span class="info nosetpoint">{{lastupdate}}</span>
+                    <span class="info nosetpoint {{addclass}}">{{lastupdate}}</span>
                     {{/if}}
                 </div>
             </div>
             {{else}}
             <div class="dial-display">
-                <span class="device" style="color:{{color}};">{{name}}</span>
+                <span class="device {{addclass}}" style="color:{{color}};">{{name}}</span>
                 <div class="value-unit">
                     <span class="value" style="--dial-color: {{color}};">{{valueformat}}</span>
                     {{#if showunit}}
@@ -50,10 +50,10 @@
                     {{/if}}
                 </div>
                 {{#if lastupdate}} 
-                <span class="info {{#unless hasSetpoint}}nosetpoint{{/unless}}">{{lastupdate}}</span>
+                <span class="info {{#unless hasSetpoint}}nosetpoint{{/unless}} {{addclass}}">{{lastupdate}}</span>
                 {{/if}}
                 {{#if hasSetpoint}}
-                <div class="extra">
+                <div class="extra  {{addclass}}">
                     {{#each info}}
                     <div>
                         {{#unless this.image}}
