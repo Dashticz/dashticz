@@ -12,7 +12,8 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Dashticz URL parameters. See :ref:`urlparameters`
-
+* Dials: Set the block parameter ``animation`` to ``true`` or ``false`` to enable/disable dial animations.
+ 
 Fixes
 ~~~~~~~
 

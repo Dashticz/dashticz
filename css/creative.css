@@ -3428,12 +3428,15 @@ td.agenda-title {
   max-width: 30%;
 }
 
+.animation {
+  animation: fadeInLoad 2s;
+}
+
 .dial .dial-display .device {
   position: absolute;
   top: 7%;
   font-size: 0.07em;
   color: #ffa500;
-  animation: fadeInLoad 2s;
   line-height: 2em;
 }
 
@@ -3442,7 +3445,6 @@ td.agenda-title {
   top: 28%;
   font-size: 0.06em;
   color: grey;
-  animation: fadeInLoad 2s;
   line-height: 2em;
 }
 
@@ -3459,7 +3461,6 @@ td.agenda-title {
   flex-wrap: wrap;
   justify-content: center;
   width: 85%;
-  animation: fadeInLoad 2s;
 }
 
 .dial .dial-display .extra div {
@@ -3842,7 +3843,6 @@ td.agenda-title {
 .dial-switch .switch-face .device {
   font-size: 12px;
   font-size: 0.07em;
-  animation: fadeInLoad 2s;
   position: absolute;
   top: 25%;
   -webkit-transition: all 0.1s ease;
@@ -3856,7 +3856,6 @@ td.agenda-title {
   color: grey;
   line-height: 2em;
   font-size: 0.05em;
-  animation: fadeInLoad 2s;
   position: absolute;
   top: 60%;
   -webkit-transition: all 0.1s ease;
