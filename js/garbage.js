@@ -218,7 +218,7 @@ function getWasteApi2Data(address, date, random, companyCode) {
 function getOphaalkalenderData(address, date, random) {
   //ophaalkalender.be doesn't work anymore. It has been replaced by recycleapp.be
   getGeneralData('recycleapp', address, date, random, address.street);
-/*
+  /*
   $('.trash' + random + ' .state').html('');
   var baseURL = 'https://www.ophaalkalender.be';
 
@@ -272,7 +272,6 @@ function getAfvalAlertData(address, date, random) {
       address.housenumber +
       address.housenumberSuffix,
     function (data) {
-      console.log(data);
       data = data.items
         .filter(function (element) {
           return moment(element.date, 'YYYY-MM-DD').isBetween(
@@ -350,8 +349,7 @@ function getGeneralData(service, address, date, random, subservice) {
   $.getJSON(cURI, function (data) {
     data = data
       .filter(function (element) {
-        if(element.hasOwnProperty('dt_msg')) {
-          console.log(element);
+        if (element.hasOwnProperty('dt_msg')) {
           return false;
         }
         return moment(element.date).isBetween(date.start, date.end, null, '[]');
@@ -587,6 +585,18 @@ function getDeAfvalAppData(address, date, random) {
 // eslint-disable-next-line no-unused-vars
 function getMijnAfvalwijzerData(address, date, random) {
   //  getGeneralData('mijnafvalwijzer', address, date, random);
+  function getDate(data, startidx) {
+    var collDateSplit = data[startidx].split(' ');
+    var dateStr =
+      '' +
+      Number(collDateSplit[1]) +
+      ' ' +
+      collDateSplit[2] +
+      ' ' +
+      new Date().getFullYear();
+      return moment(dateStr, 'D MMM YYYY', 'nl');
+  }
+
   var url =
     getPrefixUrl() +
     'https://www.mijnafvalwijzer.nl/nl/' +
@@ -600,33 +610,27 @@ function getMijnAfvalwijzerData(address, date, random) {
     newHTMLDocument.documentElement.innerHTML = result;
     var first_elt = newHTMLDocument.firstElementChild;
     var res = first_elt.getElementsByClassName('wasteInfoIcon');
-    var res_length=res.length;
-    for(var idx=0; idx<res_length; idx++) {
+    var res_length = res.length;
+    for (var idx = 0; idx < res_length; idx++) {
       var el = res[idx];
       var p = el.getElementsByTagName('p');
-//      console.log(p)
-      var l=p.length;
-      for (var i=0; i<l; i++) {
-        el=p[i];
+      var l = p.length;
+      for (var i = 0; i < l; i++) {
+        el = p[i];
         var data = el.innerText.split('\n');
-        var startidx = data.length == 2 ? 0 : 1;
-        var collDateSplit = data[startidx].split(' ');
-        var collDate = moment(
-          '' +
-            Number(collDateSplit[1]) +
-            ' ' +
-            collDateSplit[2] +
-            ' ' +
-            new Date().getFullYear(),
-          'D MMM YYYY',
-          'nl'
-        );
+        var startidx = data[0]? 0:1;
+        var collDate = getDate(data, startidx);
+        if(!collDate.isValid()) {
+          startidx+=1;
+          collDate = getDate(data,startidx);
+        }
+        var summary = data[startidx+1].trim();
+        if (data.length>startidx+2) summary +=data[startidx+2].trim()
         returnDates.push({
           date: collDate,
-          summary: data[startidx + 1].trim(),
-          garbageType: mapGarbageType(data[startidx + 1].trim()),
+          summary: summary,
+          garbageType: mapGarbageType(summary),
         });
-    
       }
     }
     returnDates = returnDates.filter(function (element) {
@@ -997,7 +1001,7 @@ function loadDataForService(service, random) {
     recycleapp: {
       dataHandler: 'getRecycleApp',
       identifier: '',
-    }
+    },
   };
   window[serviceProperties[service].dataHandler](
     address,
