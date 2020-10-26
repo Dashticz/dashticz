@@ -43,7 +43,7 @@ var DT_dial = {
     shownumbers: false,
     offset: 0,
     group: false,
-    animation: true
+    animation: false
   },
 
   /**
@@ -769,7 +769,7 @@ var DT_dial = {
             me.isSetpoint = true;
             me.active= true;//Dial can be used to set setpoint value
             me.setpointDevice = idx;
-            me.setpoint = valueInfo.value;
+            me.setpoint = valueInfo.data;
           }
           return valueInfo;            
         })
