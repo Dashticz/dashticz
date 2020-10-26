@@ -43,7 +43,7 @@ var DT_dial = {
     shownumbers: false,
     offset: 0,
     group: false,
-    animation: false
+    animation: true
   },
 
   /**
