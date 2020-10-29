@@ -232,6 +232,7 @@ function loadFiles(dashtype) {
             console.log(
               'No custom.js file in folder ' + customfolder + '. Skipping.'
             );
+            return;
           }
           var error = res || new Error('Unknown error loading custom.js');
           return $.Deferred().reject(error);
@@ -527,7 +528,7 @@ function setClockDateWeekday() {
 }
 
 function toSlide(num) {
-  if (typeof myswiper !== 'undefined') myswiper.slideTo(num, 1000, true);
+  if (typeof myswiper !== 'undefined') myswiper.slideTo(num, 0, true);
 }
 
 function buildStandby() {
