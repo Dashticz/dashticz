@@ -18,6 +18,7 @@ Fixes
 ~~~~~~~
 
 * Garbage: Fix for Mijnafvalwijzer on iOS
+* Disable Dashticz refresh if `config['dashticz_refresh']` is 0
 
 Enhancements
 ~~~~~~~~~~~~

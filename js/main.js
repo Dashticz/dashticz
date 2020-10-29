@@ -52,8 +52,6 @@ var _PARAMS = {};
 function loadFiles(dashtype) {
   _PARAMS = getLocationParameters();
 
-  console.log(_PARAMS);
-
   var customfolder = _PARAMS['folder'] || 'custom';
   if (typeof dashtype !== 'undefined' && parseFloat(dashtype) > 1) {
     customfolder += '_' + dashtype;
@@ -414,10 +412,14 @@ function onLoad() {
     setClassByTime();
   }, 60000);
 
-  setTimeout(function () {
-    // eslint-disable-next-line no-self-assign
-    window.location.href = window.location.href;
-  }, settings['dashticz_refresh'] * 60 * 1000);
+  var dashticzRefresh = Number(settings['dashticz_refresh']);
+
+  if (dashticzRefresh > 0) {
+    setTimeout(function () {
+      // eslint-disable-next-line no-self-assign
+      window.location.href = window.location.href;
+    }, dashticzRefresh * 60 * 1000);
+  }
 
   if (
     typeof settings['auto_swipe_back_to'] !== 'undefined' &&
