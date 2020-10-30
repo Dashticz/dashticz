@@ -8,22 +8,23 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 --------------
 
+
+3.6.6 Beta (30-10-2020)
+------------------------
+
 Enhancements
 ~~~~~~~~~~~~
 
 * Dashticz URL parameters. See :ref:`urlparameters`
 * Dials: Set the block parameter ``animation`` to ``true`` or ``false`` to enable/disable dial animations.
+* Add ``timeout`` CSS class to Domoticz devices in the timeout state. See :ref:`domoticzStyling`
  
 Fixes
 ~~~~~~~
 
 * Garbage: Fix for Mijnafvalwijzer on iOS
 * Disable Dashticz refresh if `config['dashticz_refresh']` is 0
-
-Enhancements
-~~~~~~~~~~~~
-
-* Add ``timeout`` CSS class to Domoticz devices in the timeout state. See :ref:`domoticzStyling`
+* Bugfix initialization code
 
 3.6.5 Beta (22-10-2020)
 ------------------------
