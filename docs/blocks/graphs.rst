@@ -1176,11 +1176,11 @@ You can modify the class definition in custom.css. If you want to hide the heade
 
 You can also modify the class for a specific graph only ::
 
-  .block_graph_43 .graph_header {
+  [data-id='mygraph'].graph .graphheader {
     display: none;
   }
 
-In the previous example only the graph for device id 43 will be affected.
+In the previous example only the graph created with key 'mygraph' will be affected.
 
 To change the default size of the graph popup windows add the following style blocks to your custom.css::
 
