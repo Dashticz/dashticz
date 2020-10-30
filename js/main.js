@@ -304,7 +304,7 @@ function loadFiles(dashtype) {
       dataType: 'script',
     })
       .then(function () {
-        initVersion();
+        return initVersion();
       })
       .then(function () {
         return $.ajax({
