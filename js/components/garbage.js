@@ -20,7 +20,8 @@ var DT_garbage = (function () {
       maxitems: settings['garbage_maxitems'] || 5,
       param: settings['garbage_calendar_id'] || settings['garbage_icalurl'],
       refresh: 4 * 3600,
-      clickHandler: true
+      clickHandler: true,
+      containerClass: 'trash'
     },
     run: function () {},
     refresh: function (me) {
