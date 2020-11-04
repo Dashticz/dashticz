@@ -597,72 +597,55 @@ settingList['media']['hide_mediaplayer']['title'] =
   language.settings.media.hide_mediaplayer;
 settingList['media']['hide_mediaplayer']['type'] = 'checkbox';
 
-settingList['garbage'] = {};
-settingList['garbage']['title'] = language.settings.garbage.title;
-
-settingList['garbage']['garbage_company'] = {};
-settingList['garbage']['garbage_company']['title'] =
-  language.settings.garbage.garbage_company;
-settingList['garbage']['garbage_company']['type'] = 'select';
-settingList['garbage']['garbage_company']['options'] = {};
-settingList['garbage']['garbage_company']['options']['afvalalert'] =
-  'Afval Alert (NL)';
-settingList['garbage']['garbage_company']['options']['almere'] = 'Almere';
-settingList['garbage']['garbage_company']['options']['area'] = 'Area';
-settingList['garbage']['garbage_company']['options']['ical'] = 'iCal';
-settingList['garbage']['garbage_company']['options']['googlecalendar'] =
-  'Google Calender';
-settingList['garbage']['garbage_company']['options']['recycleapp'] =
-  'RecycleApp (BE)';
-settingList['garbage']['garbage_company']['options']['edg'] = 'EDG (DE)';
-settingList['garbage']['garbage_company']['options']['deafvalapp'] =
-  'Afval App (NL)';
-settingList['garbage']['garbage_company']['options']['afvalwijzerarnhem'] =
-  'Afvalwijzer Arnhem (NL)';
-settingList['garbage']['garbage_company']['options']['alphenaandenrijn'] =
-  'Alphen aan de Rijn (NL)';
-settingList['garbage']['garbage_company']['options']['avalex'] = 'Avalex (NL)';
-settingList['garbage']['garbage_company']['options']['barafvalbeheer'] =
-  'Bar-afvalbeheer (Barendrecht, Rhoon)(NL)';
-settingList['garbage']['garbage_company']['options']['gemeenteberkelland'] =
-  'Berkelland (NL)';
-settingList['garbage']['garbage_company']['options']['best'] = 'Best (NL)';
-settingList['garbage']['garbage_company']['options']['circulusberkel'] =
-  'Circulus Berkel (NL)';
-settingList['garbage']['garbage_company']['options']['cure'] = 'Cure (NL)';
-settingList['garbage']['garbage_company']['options']['cyclusnv'] =
-  'Cyclus NV (NL)';
-settingList['garbage']['garbage_company']['options']['dar'] = 'Dar (NL)';
-settingList['garbage']['garbage_company']['options']['gemertbakelmaandag'] =
-  'Gemert-Bakel, maandag (NL)';
-settingList['garbage']['garbage_company']['options']['gemertbakeldinsdag'] =
-  'Gemert-Bakel, dinsdag (NL)';
-settingList['garbage']['garbage_company']['options']['gemertbakelwoensdag'] =
-  'Gemert-Bakel, woensdag (NL)';
-settingList['garbage']['garbage_company']['options']['goes'] = 'Goes (NL)';
-settingList['garbage']['garbage_company']['options']['hvc'] = 'HVC Groep (NL)';
-settingList['garbage']['garbage_company']['options']['katwijk'] =
-  'Katwijk (NL)';
-settingList['garbage']['garbage_company']['options']['meerlanden'] =
-  'Meerlanden (NL)';
-settingList['garbage']['garbage_company']['options']['mijnafvalwijzer'] =
-  'Mijn Afval Wijzer (NL)';
-settingList['garbage']['garbage_company']['options']['omrin'] = 'Omrin (NL)';
-settingList['garbage']['garbage_company']['options']['recyclemanager'] =
-  'Recycle Manager';
-settingList['garbage']['garbage_company']['options']['rd4'] = 'Rd4';
-settingList['garbage']['garbage_company']['options']['rmn'] = 'RMN (NL)';
-settingList['garbage']['garbage_company']['options']['rova'] = 'Rova (NL)';
-settingList['garbage']['garbage_company']['options']['sudwestfryslan'] =
-  'Sudwest Fryslan (NL)';
-settingList['garbage']['garbage_company']['options']['twentemilieu'] =
-  'Twente Milieu (NL)';
-settingList['garbage']['garbage_company']['options']['uden'] = 'Uden (NL)';
-settingList['garbage']['garbage_company']['options']['veldhoven'] =
-  'Veldhoven (NL)';
-settingList['garbage']['garbage_company']['options']['venlo'] = 'Venlo (NL)';
-settingList['garbage']['garbage_company']['options']['vianen'] = 'Vianen (NL)';
-settingList['garbage']['garbage_company']['options']['waalre'] = 'Waalre (NL)';
+settingList.garbage = {
+  title: language.settings.garbage.title,
+  garbage_company: {
+    title: language.settings.garbage.garbage_company,
+    type: 'select',
+    options: {
+      afvalalert: 'Afval Alert (NL)',
+      afvalwijzerarnhem: 'Afvalwijzer Arnhem (NL)',
+      almere: 'Almere',
+      alphenaandenrijn: 'Alphen aan de Rijn (NL)',
+      area: 'Area',
+      avalex: 'Avalex (NL)',
+      barafvalbeheer: 'Bar-afvalbeheer (Barendrecht, Rhoon)(NL)',
+      best: 'Best (NL)',
+      circulusberkel: 'Circulus Berkel (NL)',
+      cure: 'Cure: Eindhoven, Geldrop-Mierlo, Valkenswaard (NL)',
+      cyclusnv: 'Cyclus NV: Bodegraven-Reeuwijk, Gouda, Kaag en Braassem, Krimpen aan den IJssel, Krimpenerwaard, Montfoort, Nieuwkoop, Waddinxveen en Zuidplas (NL)',
+      dar: 'Dar: Berg en Dal, Beuningen, Druten, Heumen, Nijmegen, Wijchen (NL)',
+      deafvalapp: 'Afval App (NL)',
+      edg: 'EDG (DE)',
+      gemeenteberkelland: 'Berkelland: Borculo, Eibergen, Neede en Ruurlo (NL)',
+      gemertbakelmaandag: 'Gemert-Bakel, maandag (NL)', 
+      gemertbakeldinsdag: 'Gemert-Bakel, dinsdag (NL)',
+      gemertbakelwoensdag: 'Gemert-Bakel, woensdag (NL)',
+      goes: 'Goes (NL)',
+      googlecalendar: 'Google Calender',
+      groningen: 'Groningen (NL)',
+      hvc: 'HVC Groep (NL)',
+      ical: 'iCal',
+      katwijk: 'Katwijk (NL)',
+      meerlanden: 'Meerlanden (NL)',
+      mijnafvalwijzer: 'Mijn Afval Wijzer (NL)',
+      omrin: 'Omrin (NL)',
+      rd4: 'Rd4',
+      recycleapp: 'RecycleApp (BE)',
+      rmn: 'RMN (NL)',
+      rova: 'Rova (NL)',
+      sudwestfryslan: 'Sudwest Fryslan (NL)',
+      twentemilieu: 'Twente Milieu (NL)',
+      uden: 'Uden (NL)',
+      veldhoven: 'Veldhoven (NL)',
+      venlo: 'Venlo (NL)',
+      venray: 'Venray (NL)',
+      vianen: 'Vianen (NL)',
+      waalre: 'Waalre (NL)',
+      waardlanden: 'Waardlanden: Gorinchem, Hardinxveld-Giessendam, Molenlanden en Vijfheerenlanden (NL)',
+    },
+  },
+};
 
 settingList['garbage']['garbage_icalurl'] = {};
 settingList['garbage']['garbage_icalurl']['title'] =
