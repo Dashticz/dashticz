@@ -28,7 +28,8 @@ var Dashticz = (function () {
     'calendar',
     'dial',
     'html',
-    'timegraph'
+    'timegraph',
+    'garbage'
   ];
   var components = [];
   var mountedBlocks = [];

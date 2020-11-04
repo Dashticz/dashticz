@@ -1,6 +1,6 @@
 /* eslint-disable no-debugger */
 /*global getBlockTypesBlock, language, _TEMP_SYMBOL, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
-/*global getSpotify, getCoin, loadChromecast, loadGarbage, loadSonarr */
+/*global getSpotify, getCoin, loadChromecast, loadSonarr */
 /*global Dashticz, DT_function, Domoticz, getLog, addCalendar */
 /*global getRandomInt, moment, number_format */
 /*from bundle.js*/
@@ -562,22 +562,6 @@ function handleStringBlock(blocktype, columndiv, c) {
         dataType: 'script',
       });
       loadChromecast(columndiv);
-      return;
-    case 'garbage':
-      if (typeof loadGarbage !== 'function') {
-        $.ajax({
-          url: 'js/garbage.js',
-          async: false,
-          dataType: 'script',
-        });
-        $.ajax({
-          url: 'vendor/ical/ical.min.js',
-          async: false,
-          dataType: 'script',
-        });
-      }
-      $(columndiv).append(loadGarbage());
-      getBlockClick(block);
       return;
     case 'sonarr':
       if (typeof loadSonarr !== 'function')

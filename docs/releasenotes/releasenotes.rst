@@ -8,6 +8,10 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 --------------
 
+3.6.7 Beta (4-11-2020)
+------------------------
+
+Update of the Garbage module. See :ref:`garbage_upgrade` for upgrade information.
 
 3.6.6 Beta (30-10-2020)
 ------------------------
