@@ -1,8 +1,9 @@
 {
-"version": "3.6.6",
+"version": "3.6.7",
 "branch": "beta",
-"last_changes": "Bug fix Dashticz initialization",
+"last_changes": "Update garbage module",
 "changelog" : {
+            "3.6.6": "Bug fix Dashticz initialization",
             "3.6.5": "New server to provide covid-19 data",
             "3.6.4": "PVOutput Temp device",
             "3.6.3": "More dials",
