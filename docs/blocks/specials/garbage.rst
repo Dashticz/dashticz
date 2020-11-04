@@ -188,5 +188,3 @@ In earlier versions of Dashticz the garbage block was configured via settings in
     config['garbage_width'] = '12';
 
 Although this still is supported, it's recommend to switch to the new block method as described in the first section.
-
-In earlier version the generic CSS class selector for this block was ``.trash``. This has been changed into ``.garbage``
