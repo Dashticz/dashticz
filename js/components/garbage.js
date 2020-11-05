@@ -555,7 +555,7 @@ var DT_garbage = (function () {
 
   //http://dashticz.nl/afval/?service=mijnafvalwijzer&zipcode=3825AL&nr=41&t=
   // eslint-disable-next-line no-unused-vars
-  function getMijnAfvalwijzerData(me) {
+  function getMijnAfvalwijzerData(me, param) {
     //  getGeneralData('mijnafvalwijzer', address, date, random);
     function getDate(data, startidx) {
       var collDateSplit = data[startidx].split(' ');
@@ -571,7 +571,7 @@ var DT_garbage = (function () {
 
     var url =
       getPrefixUrl() +
-      'https://www.mijnafvalwijzer.nl/nl/' +
+      (param || 'https://www.mijnafvalwijzer.nl') + '/nl/' +
       me.block.zipcode +
       '/' +
       me.block.housenumber +
@@ -720,6 +720,10 @@ var DT_garbage = (function () {
       },
       afvalalert: {
         handler: getAfvalAlertData,
+      },
+      afvalstoffendienst: {
+        handler: getMijnAfvalwijzerData,
+        param: 'https://afvalstoffendienstkalender.nl',
       },
       afvalwijzerarnhem: {
         handler: getAfvalwijzerArnhemData,
