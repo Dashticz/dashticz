@@ -21,7 +21,12 @@ var DT_garbage = (function () {
       param: settings['garbage_calendar_id'] || settings['garbage_icalurl'],
       refresh: 4 * 3600,
       clickHandler: true,
-      containerClass: 'trash'
+      containerClass: 'trash',
+      garbage: settings['garbage'],
+      use_cors_prefix: settings['garbage_use_cors_prefix'],
+      use_colors: settings['garbage_use_colors'],
+      use_names: settings['garbage_use_names'],
+      mapping: settings['garbage_mapping'],
     },
     run: function () {},
     refresh: function (me) {
@@ -47,8 +52,8 @@ var DT_garbage = (function () {
     $(me.mountPoint + ' .dt_state').html(html);
   }
 
-  function getPrefixUrl() {
-    if (settings['garbage_use_cors_prefix']) {
+  function getPrefixUrl(me) {
+    if (me.block.use_cors_prefix) {
       return _CORS_PATH;
     }
     return '';
@@ -88,7 +93,6 @@ var DT_garbage = (function () {
           return {
             date: this.startDate,
             summary: element.summary,
-            garbageType: mapGarbageType(element.summary),
           };
         });
         return returnDates;
@@ -97,7 +101,7 @@ var DT_garbage = (function () {
   }
 
   function getIcalData(me, url) {
-    return $.get(getPrefixUrl() + url).then(function (data) {
+    return $.get(getPrefixUrl(me) + url).then(function (data) {
       var jcalData = ICAL.parse(data);
       var vcalendar = new ICAL.Component(jcalData);
       var vevents = vcalendar.getAllSubcomponents('vevent');
@@ -115,9 +119,6 @@ var DT_garbage = (function () {
               'YYYY-MM-DD'
             ),
             summary: vevent.getFirstPropertyValue('summary'),
-            garbageType: mapGarbageType(
-              vevent.getFirstPropertyValue('summary')
-            ),
           };
         });
 
@@ -161,7 +162,6 @@ var DT_garbage = (function () {
             dataFiltered.push({
               date: moment(dateElement),
               summary: pickupTypes[element._pickupTypeText],
-              garbageType: mapGarbageType(pickupTypes[element._pickupTypeText]),
             });
           });
         });
@@ -195,7 +195,6 @@ var DT_garbage = (function () {
             dataFiltered.push({
               date: moment(dateElement),
               summary: pickupType,
-              garbageType: mapGarbageType(pickupType),
             });
           });
         });
@@ -208,7 +207,7 @@ var DT_garbage = (function () {
   function getAfvalAlertData(me) {
     var baseURL = 'https://www.afvalalert.nl/kalender';
     return $.get(
-      getPrefixUrl() +
+      getPrefixUrl(me) +
         baseURL +
         '/' +
         me.block.zipcode +
@@ -229,7 +228,6 @@ var DT_garbage = (function () {
           return {
             date: moment(element.date, 'YYYY-MM-DD'),
             summary: element.type,
-            garbageType: mapGarbageType(element.type),
           };
         });
       return data;
@@ -240,7 +238,7 @@ var DT_garbage = (function () {
   function getAfvalwijzerArnhemData(me) {
     var baseURL = 'http://www.afvalwijzer-arnhem.nl';
     return $.get(
-      getPrefixUrl() +
+      getPrefixUrl(me) +
         baseURL +
         '/applicatie?ZipCode=' +
         me.block.zipcode +
@@ -256,7 +254,7 @@ var DT_garbage = (function () {
           returnDates.push({
             summary: $(element).find('div').remove().html().trim(),
             date: moment($(element).html().trim(), 'D-M-YYYY'),
-            garbageType: mapGarbageType($(element).attr('class')),
+            garbageType: mapGarbageType(me, $(element).attr('class')),
           });
         });
       return returnDates;
@@ -284,7 +282,6 @@ var DT_garbage = (function () {
         returnDates.push({
           summary: garbageType,
           date: garbageDate,
-          garbageType: mapGarbageType(garbageType)
         })
       }
       return returnDates; 
@@ -347,7 +344,6 @@ var DT_garbage = (function () {
           return {
             date: moment(element.date),
             summary: element.title,
-            garbageType: mapGarbageType(element.title),
           };
         });
       return data;
@@ -369,7 +365,7 @@ var DT_garbage = (function () {
     var postfix = 'tx_windwastecalendar_pi1[action]=search&tx_windwastecalendar_pi1[controller]=Zipcode&tx_windwastecalendar_pi1[Hash]=6e6e80066d09747e8df35d5ff2d1e27b' +
     '&tx_windwastecalendar_pi1[zipcode]=' + me.block.zipcode +
     '&tx_windwastecalendar_pi1[housenumber]=' +  me.block.housenumber;
-    return $.post(getPrefixUrl() + prefix + 'nc/afvalkalender/?' + postfix)
+    return $.post(getPrefixUrl(me) + prefix + 'nc/afvalkalender/?' + postfix)
     .then(function (data) {
       var elementHref = $(data).find('.ical .link a').attr('href');
       return getIcalData(me, prefix + elementHref);
@@ -422,7 +418,7 @@ var DT_garbage = (function () {
   // eslint-disable-next-line no-unused-vars
   function getRd4Data(me) {
     return $.get(
-      getPrefixUrl() +
+      getPrefixUrl(me) +
         'https://www.rd4info.nl/NSI/Burger/Aspx/afvalkalender_general_text.aspx?pc=' +
         me.block.zipcode +
         '&nr=' +
@@ -450,7 +446,6 @@ var DT_garbage = (function () {
                 'nl'
               ),
               summary: $(element).find('td')[1].innerText,
-              garbageType: mapGarbageType($(element).find('td')[1].innerText),
             });
           }
         });
@@ -464,7 +459,7 @@ var DT_garbage = (function () {
   // eslint-disable-next-line no-unused-vars
   function getVenloData(me) {
     return $.get(
-      getPrefixUrl() +
+      getPrefixUrl(me) +
         'https://www.venlo.nl/trash-removal-calendar/' +
         me.block.zipcode +
         '/' +
@@ -485,7 +480,6 @@ var DT_garbage = (function () {
             returnDates.push({
               date: moment(datePart + ' ' + year, 'dddd DD MMMM YYYY', 'nl'),
               summary: garbageElement.innerText,
-              garbageType: mapGarbageType(garbageElement.innerText),
             });
           });
         });
@@ -500,7 +494,7 @@ var DT_garbage = (function () {
   // eslint-disable-next-line no-unused-vars
   function getGroningenData(me) {
     return $.get(
-      getPrefixUrl() +
+      getPrefixUrl(me) +
         'https://gemeente.groningen.nl/afvalwijzer/groningen/' +
         me.block.zipcode +
         '/' +
@@ -519,9 +513,6 @@ var DT_garbage = (function () {
         .each(function (index, element) {
           if ($(element).find('h2').length) {
             var summary = $(element).find('h2')[0].innerText;
-            var garbageType = mapGarbageType(
-              $(element).find('h2')[0].innerText
-            );
             $(element)
               .find('td')
               .each(function (dateindex, dateelement) {
@@ -538,7 +529,6 @@ var DT_garbage = (function () {
                           'nl'
                         ),
                         summary: summary,
-                        garbageType: garbageType,
                       });
                     }
                   });
@@ -570,7 +560,7 @@ var DT_garbage = (function () {
     }
 
     var url =
-      getPrefixUrl() +
+      getPrefixUrl(me) +
       (param || 'https://www.mijnafvalwijzer.nl') + '/nl/' +
       me.block.zipcode +
       '/' +
@@ -603,7 +593,6 @@ var DT_garbage = (function () {
           returnDates.push({
             date: collDate,
             summary: summary,
-            garbageType: mapGarbageType(summary),
           });
         }
       }
@@ -613,7 +602,7 @@ var DT_garbage = (function () {
 
   //http://dashticz.nl/afval/?service=rova&zipcode=7731ZT&nr=84&t=
 
-  function getTrashRow(garbage) {
+  function getTrashRow(me, garbage) {
     this.rowClass = 'trashrow';
     this.displayDate = garbage.date
       .locale(settings['calendarlanguage'])
@@ -627,17 +616,18 @@ var DT_garbage = (function () {
     } else if (garbage.date.isBefore(moment().add(1, 'week'))) {
       this.displayDate = garbage.date.format('dddd');
     }
-    var name = settings['garbage'][garbage.garbageType].name;
+    
+    var name = me.block.garbage[garbage.garbageType].name;
 
     var color =
-      ' style="color:' + settings['garbage'][garbage.garbageType].code + '"';
+      ' style="color:' + me.block.garbage[garbage.garbageType].code + '"';
     return (
       '<div class="' +
       this.rowClass +
       '"' +
-      (settings['garbage_use_colors'] ? color : '') +
+      (me.block.use_colors ? color : '') +
       '>' +
-      (settings['garbage_use_names'] || !garbage.summary
+      (me.block.use_names || !garbage.summary
         ? name
         : garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)) +
       ': ' +
@@ -651,9 +641,16 @@ var DT_garbage = (function () {
       .sort(function (a, b) {
         return a.date > b.date ? 1 : b.date > a.date ? -1 : 0;
       })
+      .map(function(element) {
+        return {
+          date: element.date,
+          summary: element.summary,
+          garbageType: element.garbageType || mapGarbageType(me, element.summary)
+        }
+      })
       .filter(function (element) {
         return (
-          settings['garbage'].hasOwnProperty(element.garbageType) &&
+          me.block.garbage.hasOwnProperty(element.garbageType) &&
           element.date.isBetween(me.date.start, me.date.end, null, '[]')
         );
       })
@@ -671,22 +668,22 @@ var DT_garbage = (function () {
     }
     $divState.html('');
 
-    if (settings['garbage_icon_use_colors']) {
+    if (me.block.use_colors) {
       $divImg
-        .attr('src', settings['garbage'][returnDates[0].garbageType]['icon'])
+        .attr('src', me.block.garbage[returnDates[0].garbageType]['icon'])
         .css('opacity', '0.7');
     } else {
       $divImg.css('opacity', '1');
     }
     returnDates.forEach(function (element) {
-      $divState.append(getTrashRow(element));
+      $divState.append(getTrashRow(me, element));
     });
   }
 
-  function mapGarbageType(garbageType) {
+  function mapGarbageType(me, garbageType) {
     var mappedType = 'black';
     if (garbageType) {
-      $.each(settings['garbage_mapping'], function (index, element) {
+      $.each(me.block.mapping, function (index, element) {
         $.each(element, function (index2, element2) {
           var regex = new RegExp(element2, 'i');
           if (garbageType.match(regex)) {
