@@ -25,7 +25,6 @@ var DT_garbage = (function () {
     },
     run: function () {},
     refresh: function (me) {
-        console.log(me);
       renderTemplate(me);
       loadDataForService(me);
     },
@@ -262,6 +261,34 @@ var DT_garbage = (function () {
         });
       return returnDates;
     });
+  }
+
+  function getGarbageData(me, params) {
+    var url = _CORS_PATH + params + '/adres/' + me.block.zipcode + ':' + me.block.housenumber + ':' + me.block.housenumberSuffix;
+    return $.get(url)
+    .then(function(result) {
+//      console.log(result);
+      var newHTMLDocument = document.implementation.createHTMLDocument(
+        'scrape'
+      );
+      newHTMLDocument.documentElement.innerHTML = result;
+      var res = newHTMLDocument.getElementById('ophaaldata').getElementsByTagName('li')
+//      console.log(res);
+      var returnDates=[];
+      for (var idx = 0; idx < res.length; idx++) {
+        var el = res[idx];
+        var garbageType=el.getElementsByTagName('img')[0].alt;
+        var dateStr=el.getElementsByClassName('date')[0].innerHTML;
+        var garbageDate = moment(dateStr, 'ddd D MMM','nl');
+//        console.log(garbageDate.format('DD-MM-YYYY'), garbageType);
+        returnDates.push({
+          summary: garbageType,
+          date: garbageDate,
+          garbageType: mapGarbageType(garbageType)
+        })
+      }
+      return returnDates; 
+    })
   }
 
   function getGeneralData(me, params) {
@@ -767,21 +794,6 @@ var DT_garbage = (function () {
             subservice:  'gemeenteberkelland',
         }
       },
-      gemertbakelmaandag: { //https://www.mijnblink.nl/adres/5421AB:4::/jaarkalender
-        handler: getIcalData,
-        param:
-          'https://calendar.google.com/calendar/ical/o44qrtdhls8saftmesm5rqb85o%40group.calendar.google.com/public/basic.ics',
-      },
-      gemertbakeldinsdag: {
-        handler: getIcalData,
-        param:
-          'https://calendar.google.com/calendar/ical/6p8549rssv114ddevingime95o%40group.calendar.google.com/public/basic.ics',
-      },
-      gemertbakelwoensdag: {
-        handler: getIcalData,
-        param:
-          'https://calendar.google.com/calendar/ical/cv40f4vaie10v54f72go6ipb78%40group.calendar.google.com/public/basic.ics',
-      },
       goes: { //https://afvalkalender.goes.nl/2020/4464AS-43.ics
         handler: getIcalData,
         param:
@@ -795,17 +807,6 @@ var DT_garbage = (function () {
       groningen: {
         handler: getGroningenData,
       },
-      /* blink: werkt niet!
-      heezeleende: {
-        handler: getIcalData,
-        param:
-          'http://afvalkalender.heeze-leende.nl/Afvalkalender/download_ical.php?p=' +
-          zipcode +
-          '&h=' +
-          housenumber +
-          '&t=&jaar=' +
-          moment().format('YYYY'),
-      }, */
       hvc: {
         handler: getGeneralData,
         param: {
@@ -826,6 +827,10 @@ var DT_garbage = (function () {
       mijnafvalwijzer: {
         handler: getMijnAfvalwijzerData,
       },
+      blink: {
+        handler: getGarbageData,
+        param: 'https://mijnblink.nl'
+      },
       omrin: {
         handler: getGeneralData,
         param: 'omrin',
@@ -836,6 +841,10 @@ var DT_garbage = (function () {
             service: 'recycleapp',
             subservice: me.block.street
         }
+      },
+      purmerend: {
+        handler: getGarbageData,
+        param: 'https://afvalkalender.purmerend.nl'
       },
       rd4: {
         handler: getRd4Data,
@@ -864,6 +873,10 @@ var DT_garbage = (function () {
             service: 'afvalstromen',
             subservice: 'sudwestfryslan',
         }
+      },
+      suez: {
+        handler: getGarbageData,
+        param: 'https://inzamelwijzer.suez.nl'
       },
       twentemilieu: {
         handler: getWasteApiData,
@@ -951,7 +964,11 @@ var DT_garbage = (function () {
       .handler(me, serviceProperties[me.block.company].param)
       .then(function (data) {
         addToContainer(me, data);
-      });
+      })
+      .catch(function() {
+        console.error('Error loading garbage: ', me.block);
+        infoMessage('Error loading garbage data');
+      })
   }
   //# sourceURL=js/components/garbage.js
 })();
