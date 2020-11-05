@@ -107,6 +107,7 @@ Currently supported cities/companies/services
 Company                 City or area
 ===================     =========================
 afvalalert              (Not working)
+afvalstoffendienst      Afvalstoffendienst: 's-Hertogenbosch, Vlijmen, ... (NL)
 almere                  Almere (NL)
 alphenaandenrijn        Alphen aan de Rijn (NL)
 area                    Coevorden, Emmen, Hoogeveen (NL)
