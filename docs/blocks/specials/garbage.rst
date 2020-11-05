@@ -107,13 +107,13 @@ Currently supported cities/companies/services
 Company                 City or area
 ===================     =========================
 afvalalert              (Not working)
-afvalwijzerarnhem       Afvalwijzer Arnhem (NL) (Not working)
 almere                  Almere (NL)
 alphenaandenrijn        Alphen aan de Rijn (NL)
 area                    Coevorden, Emmen, Hoogeveen (NL)
 avalex                  Avalex: Delft, ... (NL)
 barafvalbeheer          Bar-afvalbeheer for Barendrecht, Rhoon (NL)
 best                    Best (NL)
+blink                   Blink: Asten, Deurne, Gemert-Bakel, Heeze-Leende, Helmond, Laarbeek, Nuenen, Someren (NL)
 circulusberkel          Circulus Berkel: Apeldoorn, Bronckhorst, Brummen, Deventer, Doesburg, Epe, Lochem, Zutphen en Voorst (NL)
 cure                    Cure: Eindhoven, Geldrop-Mierlo, Valkenswaard (NL)
 cyclusnv                Cyclus NV: Bodegraven-Reeuwijk, Gouda, Kaag en Braassem, Krimpen aan den IJssel, Krimpenerwaard, Montfoort, Nieuwkoop, Waddinxveen en Zuidplas (NL)
@@ -121,22 +121,20 @@ dar                     Dar: Berg en Dal, Beuningen, Druten, Heumen, Nijmegen, W
 deafvalapp              Afval App (NL)
 edg                     EDG (DE)
 gemeenteberkelland      Berkelland: Borculo, Eibergen, Neede en Ruurlo (NL)
-gemertbakelmaandag      Gemert-Bakel, maandag (NL) (Not working)
-gemertbakeldinsdag      Gemert-Bakel, dinsdag (NL) (Not working)
-gemertbakelwoensdag     Gemert-Bakel, woensdag (NL) (Not working)
 goes                    Goes (NL)  
 googlecalendar          file in iCal format
 groningen               Groningen (NL)  
-heezeleende  
 hvc                     HVC Groep: 44 gemeenten in Flevoland, Noord- en Zuid-Holland (NL)  
 ical                    File in iCal format
 meerlanden              Meerlanden: Aalsmeer, Bloemendaal, Diemen, Haarlemmermeer, Heemstede, Hillegom, Lisse, Noordwijk en Zandvoort (NL)  
 mijnafvalwijzer         Mijn Afval Wijzer (NL)
 omrin                   Leeuwarden, Opsterland, Heerenveen, Waadhoeke, ...   
+purmerend               Purmerend (NL)
 rd4                     RD4: Beekdaelen, Brunssum, Eijsden-Margraten, Gulpen-Wittem, Heerlen, Kerkrade, Landgraaf, Simpelveld, Vaals en Voerendaal
 recycleapp              RecycleApp (BE)
 rmn                     RMN: Baarn, Zeist, Nieuwegein,  (NL)  
-rova                    Rova (NL)  
+rova                    Rova (NL)
+suez                    Suez: Arnhem (NL)  
 sudwestfryslan          Sudwest Fryslan (NL)  
 twentemilieu            Twente Milieu (NL)  
 uden                    Uden (NL)  
