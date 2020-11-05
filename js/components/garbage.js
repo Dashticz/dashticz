@@ -25,6 +25,7 @@ var DT_garbage = (function () {
       garbage: settings['garbage'],
       use_cors_prefix: settings['garbage_use_cors_prefix'],
       use_colors: settings['garbage_use_colors'],
+      icon_use_colors: settings['garbage_icon_use_colors'],
       use_names: settings['garbage_use_names'],
       mapping: settings['garbage_mapping'],
     },
@@ -668,7 +669,7 @@ var DT_garbage = (function () {
     }
     $divState.html('');
 
-    if (me.block.use_colors) {
+    if (me.block.icon_use_colors) {
       $divImg
         .attr('src', me.block.garbage[returnDates[0].garbageType]['icon'])
         .css('opacity', '0.7');
