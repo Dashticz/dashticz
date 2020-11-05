@@ -36,15 +36,18 @@ use_names                 ``true / false``: shows name of the garbage type
 use_colors                ``true / false``: shows coloring for complete line
 icon_use_colors           ``true / false``: shows colored or only white trashcan
 title                     Title text
+use_cors_prefix           ``true / false``: use a CORS proxy for getting data from provider. See :ref:`dom_CORS_proxy`
+mapping                   Translation from description of the pickup event to a garbage type.  See :ref:`par_garbage`.
+garbage                   Settings for different garbage types. See :ref:`par_garbage`.
 =======================   ===============================
 
-Besides these block parameters, the following CONFIG.js settings are applicable:
+These block parameters can also be globally via a CONFIG.js setting:
 
 =======================   ===============================
 CONFIG setting            Description 
 =======================   ===============================
 garbage_use_cors_prefix   ``true / false``: use a CORS proxy for getting data from provider. See :ref:`dom_CORS_proxy`
-mapping                   Translation from description of the pickup event to a garbage type.  See :ref:`par_garbage`.
+garbage_mapping           Translation from description of the pickup event to a garbage type.  See :ref:`par_garbage`.
 garbage                   Settings for different garbage types. See :ref:`par_garbage`.
 =======================   ===============================
 
