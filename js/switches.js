@@ -717,8 +717,7 @@ function addSlider(block, sliderValues) {
 }
 
 function isRGBDeviceAndEnabled(block) {
-  var dimmerTypes = ['RGB', 'RGBW', 'RGBWW', 'RGBZ', 'RGBWZ', 'RGBWWZ'];
-  if (dimmerTypes.indexOf(block.device.SubType) === -1) return 0;
+  if (Colorpicker.prototype.dimmerTypes.indexOf(block.device.SubType) === -1) return 0;
   if (typeof block.colorpicker !== 'undefined')
     return parseInt(block.colorpicker);
   if (typeof settings.colorpicker !== 'undefined')
