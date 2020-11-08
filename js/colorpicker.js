@@ -73,14 +73,19 @@ Colorpicker.prototype.buttonDef = {
   White: { img: 'img/coldwarm.jpg', text: 'White<br>' },
 };
 
+var buttonList = {
+  RGB: ['RGB'], //Normal RGB
+  RGBW: ['RGB', 'W'], //RGB mode or White modes
+  RGBWW: ['RGB', 'WW'], //RGB modes, WW/CW slider
+  RGBWZ: ['RGB', 'W', 'WZ'], //
+  RGBWWZ: ['RGB', 'WW', 'WWZ'], //
+  RGBZ: ['RGB', 'WZ'],
+  WW:['WW']
+};
+
+Colorpicker.prototype.dimmerTypes = Object.keys(buttonList);
+
 Colorpicker.prototype.clickHandler = function (ev) {
-  var buttonList = {
-    RGB: ['RGB'], //Normal RGB
-    RGBW: ['RGB', 'W'], //RGB mode or White modes
-    RGBWW: ['RGB', 'WW'], //RGB modes, WW/CW slider
-    RGBWZ: ['RGB', 'W', 'WZ'], //
-    RGBWWZ: ['RGB', 'WW', 'WWZ'], //
-  };
 
   this.mode = 1;
 
