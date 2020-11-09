@@ -124,6 +124,7 @@ cyclusnv                Cyclus NV: Bodegraven-Reeuwijk, Gouda, Kaag en Braassem,
 dar                     Dar: Berg en Dal, Beuningen, Druten, Heumen, Nijmegen, Wijchen (NL)
 deafvalapp              Afval App (NL)
 edg                     EDG (DE)
+gad                     Grondstoffen- en Afvalstoffendienst regio Gooi en Vechtstreek (NL)
 gemeenteberkelland      Berkelland: Borculo, Eibergen, Neede en Ruurlo (NL)
 goes                    Goes (NL)  
 googlecalendar          file in iCal format
