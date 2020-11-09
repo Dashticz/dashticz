@@ -13,6 +13,7 @@ Enhancements
 
 * Garbage: New providers Suez (Arnhem), Blink (Asten, Deurne, Gemert-Bakel, Heeze-Leende, Helmond, Laarbeek, Nuenen, Someren), Purmerend
 * Garbage: New provider afvalstoffendienst
+* Garbage: New provider GAD
 * Colorpicker: Add support for WW dimmers (Philips Hue)
 
 3.6.7 Beta (4-11-2020)
