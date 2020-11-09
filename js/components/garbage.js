@@ -789,6 +789,10 @@ var DT_garbage = (function () {
         handler: getGeneralData,
         param: 'edg'
       },
+      gad: {
+        handler: getGarbageData,
+        param: 'https://inzamelkalender.gad.nl'
+      },
       gemeenteberkelland: {
         handler: getGeneralData,
         param: {
