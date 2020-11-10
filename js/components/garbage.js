@@ -4,7 +4,7 @@ var DT_garbage = (function () {
   return {
     name: 'garbage',
     canHandle: function(block) {
-      return block && block.company && (block.zipcode || block.street)
+      return block && block.company 
     },
     defaultCfg: {
       width: settings['garbage_width'] || 12,
@@ -18,7 +18,8 @@ var DT_garbage = (function () {
       housenumberSuffix: settings['garbage_housenumberadd'] || '',
       zipcode: settings['garbage_zipcode'] || '',
       maxitems: settings['garbage_maxitems'] || 5,
-      param: settings['garbage_calendar_id'] || settings['garbage_icalurl'],
+      calendar_id: settings['garbage_calendar_id'],
+      icalurl: settings['garbage_icalurl'],
       refresh: 4 * 3600,
       clickHandler: true,
       containerClass: 'trash',
@@ -712,9 +713,11 @@ var DT_garbage = (function () {
     var serviceProperties = {
       googlecalendar: {
         handler: getGoogleCalendarData,
+        param: me.block.calendar_id
       },
       ical: {
         handler: getIcalData,
+        param: me.block.icalurl
       },
       afvalalert: {
         handler: getAfvalAlertData,
