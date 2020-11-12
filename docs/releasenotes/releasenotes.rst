@@ -15,6 +15,7 @@ Enhancements
 * Garbage: New provider afvalstoffendienst
 * Garbage: New provider GAD
 * Colorpicker: Add support for WW dimmers (Philips Hue)
+* Chart: For custom graphs you can define the icon to use for each graph button. See :ref:`custom_graph`
 
 3.6.7 Beta (4-11-2020)
 ------------------------
