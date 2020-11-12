@@ -44,9 +44,11 @@ foreach($events as $i => $event) {
 // EXDATE;TZID=America/Los_Angeles:20130402T100000
 // EXDATE;TZID=America/Los_Angeles:20121204T100000
 // EXDATE;TZID=America/Los_Angeles:20130205T100000
-// total = 36 events - 3 exclusions + 3 additions
-//      because there is no "UNTIL", we only calculate the next 3 years of repeating events
-Assert::equal(35, sizeof($recurrences));
+//      because there is no "UNTIL", we calculate until 3 years from now of repeating events
+$now = new \DateTime('now');
+$diff=$now->diff(new \DateTime('20121002T100000'));
+$count = ($diff->y + 3 ) * 12 + $diff->m ;
+Assert::equal($count, sizeof($recurrences));
 Assert::equal('02.10.2012 15:00:00', $recurrences[0]->format('d.m.Y H:i:s'));
 Assert::equal('06.11.2012 20:00:00', $recurrences[1]->format('d.m.Y H:i:s'));
 Assert::equal('10.11.2012 10:00:00', $recurrences[2]->format('d.m.Y H:i:s'));

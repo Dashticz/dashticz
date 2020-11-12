@@ -17,6 +17,12 @@ Enhancements
 * Colorpicker: Add support for WW dimmers (Philips Hue)
 * Chart: For custom graphs you can define the icon to use for each graph button. See :ref:`custom_graph`
 
+Fixes
+~~~~~~
+
+* Calendar: Add 'method:0' to your calendar block definition in case you experience issues with recurring events. Only works for the new calendar block. See :ref:`newcalendar`
+
+
 3.6.7 Beta (4-11-2020)
 ------------------------
 
