@@ -12,6 +12,7 @@ var DT_calendar = {
     containerExtra: function (block) {
       if (block && block.layout === 2) block.icon = '';
     },
+    method: 1
   },
   run: function (me) {
     if (me.block.type === 'calendar') {
@@ -342,7 +343,8 @@ function makeUrl(key, url) {
     '&url=' +
     url
       .replace(/webcal?\:\/\//i, 'https://')
-      .replace('https://cors-anywhere.herokuapp.com/', '')
+      .replace('https://cors-anywhere.herokuapp.com/', '') +
+    '&method=' + cal[key].block.method
   );
 }
 
