@@ -244,6 +244,19 @@ The **new calendar** block follows the same look and feel as most other blocks. 
       | ``'<string>'``: Title for the block
   * - width
     - ``1..12``: The width of the block relative to the column width
+  * - method
+    - | ``0``: ical method 0 (recommended. Default when PHP version < 7.1)
+      | ``1``: ical method 1 (default when PHP version >=  7.1)
+
+Notes
+-----
+
+I did not find an ical library that handles all ical files correctly.
+
+ical method 0 has issues with yearly recurring events.
+
+ical method 1 has issues for recurring events with interval more than 1 (for instance biweekly events)
+
 
 
 Example of traditional calendar in table format
