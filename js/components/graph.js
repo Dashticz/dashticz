@@ -1221,12 +1221,15 @@ function createButtons(graph, ranges, customRange) {
 
         ranges.forEach(function(item, i) {
             var btnText = customRange ? item : btnTextList[item];
+            var icon = btnIcons[i] || 'fas fa-calendar-week';
+            if (graph.block && graph.block.custom && graph.block.custom[item])
+                icon = graph.block.custom[item].buttonIcon || icon ;
             var newButton =
                 '<button type="button" ' + style + '" class="btn btn-default';
             if (graph.range === item) newButton += ' active';
             newButton +=
                 '"><i class="' +
-                btnIcons[i] +
+                icon +
                 '" style="font-size:14px;color:' +
                 btn.icon +
                 '">&nbsp;</i>&nbsp;' +
