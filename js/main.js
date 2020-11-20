@@ -85,7 +85,9 @@ function loadFiles(dashtype) {
       $.ajax({
         url: 'https://cdn.lr-ingest.io/LogRocket.min.js',
         dataType: 'script',
-      }).then(enableLogRocket(enable_logrocket))
+      }).then( function() {
+        enableLogRocket(enable_logrocket)
+      })
   )
     .then(function () {
       var configjs = _PARAMS['cfg'] || 'CONFIG.js';
@@ -709,6 +711,7 @@ function startSwiper() {
         clickable: true,
       },
       paginationClickable: true,
+//      speed: 0,
       loop: false,
       initialSlide: settings['start_page'] - 1,
       effect: settings['slide_effect'],
