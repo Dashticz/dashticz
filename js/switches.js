@@ -93,6 +93,7 @@ function getIconStatusClass(deviceStatus) {
       case 'closed':
       case 'normal':
       case 'unlocked':
+      case 'no motion':
         return 'off';
     }
     return 'on';
