@@ -150,6 +150,19 @@ Or if you like a blinking version::
        }
     }
 
+Example, change the block background color to the setted light RGB color::
+
+	function getStatus_20(block){
+		var color = JSON.parse(block.device.Color);
+		if (block.device.Data!='Off') {
+			var colorStr = `rgb(${color.r},${color.g},${color.b})`;
+			$(block.mountPoint + ' > div').css('background-color', colorStr)
+		}
+		else
+			$(block.mountPoint + ' > div').css('background-color', '')
+	}
+
+
 In case you have defined a block with a custom key name in combination with the ``idx`` parameter, then the key name will be used in the function call.
 Example: You use the following block definition::
 
