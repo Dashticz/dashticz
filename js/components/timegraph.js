@@ -1,5 +1,5 @@
 /* global  Domoticz Dashticz  isDefined Chart*/
-/* global */
+/* global moment*/
 var DT_timegraph = (function () {
   var datasetColors = [
     'red',
@@ -32,7 +32,10 @@ var DT_timegraph = (function () {
       duration: 5 * 60,
       xTicks: 10,
       xLabels: true,
-      yTicks: 5
+      yTicks: 5,
+      animation: 0,
+      lineTension: 0.1,
+      pointRadius: 1,
     },
 
     /**
@@ -96,40 +99,22 @@ var DT_timegraph = (function () {
      * Creates or updates the dial and applies current values.
      * @param {object} me  Core component object.
      */
-    defaultContent: function (me) {
-      /*
-      var style = me.block.height? ' style="height: '+me.block.height+'"':'';
-      return '<canvas' + style + '></canvas>'
-      */
+    defaultContent: function () {
       return '<canvas></canvas>';
     },
 
     createGraph: function (me) {
       var mountPoint = $(me.mountPoint);
       var chartctx = mountPoint.find('canvas')[0].getContext('2d');
-//      mountPoint.find('canvas').css('background-color', 'rgba(0,0,0,0.2)');
-
       var m_moment = moment();
 
       me.graphProperties = {
         type: 'line',
-        data: {
-          //          labels: [moment()],
-          /*
-          datasets: [
-            {
-              //              label: Domoticz.getAllDevices()[me.idx]['Name'],
-              data: [],
-              fill: false,
-              lineTension: 0,
-              backgroundColor: datasetColors[0],
-              borderColor: datasetColors[0],
-            },
-          ],*/
-        },
+        data: {},
         options: {
           animation: {
             easing: 'linear',
+            duration: me.block.animation,
           },
           tooltips: {
             enabled: false,
@@ -179,17 +164,16 @@ var DT_timegraph = (function () {
           },
         },
       };
-      me.graphProperties.data.datasets = me.datasets.map(function (
-        dataset,
-        idx
-      ) {
+      me.graphProperties.data.datasets = me.datasets.map(function (dataset) {
         return {
           label: dataset.label,
           data: [],
           fill: false,
-          lineTension: 0,
+          lineTension: me.block.lineTension,
           backgroundColor: dataset.color,
           borderColor: dataset.color,
+          pointRadius: me.block.pointRadius,
+          pointHoverRadius: me.block.pointRadius,
         };
       });
 
@@ -202,53 +186,6 @@ var DT_timegraph = (function () {
         $(me.mountPoint + ' .dt_state').css('height', me.block.height);
       }
       me.chart = new Chart(chartctx, me.graphProperties);
-    },
-
-    defaultDial: function (me) {
-      me.min = isDefined(me.block.min) ? me.block.min : 0;
-      me.max = isDefined(me.block.max) ? me.block.max : 100;
-
-      me.value = parseFloat(me.device.Data);
-      var splitAllData = me.device.Data.split(',');
-      var splitData = splitAllData[0].split(' ');
-      me.unitvalue =
-        me.block.unitvalue || (splitData.length > 1 ? splitData[1] : undefined);
-      if (!me.unitvalue && me.device.SubType == 'Percentage')
-        me.unitvalue = '%';
-      me.isSetpoint = true;
-      /* supported formats:
-      values : [ 'temp', 'humidity']   array of strings
-      values: [ { value: 'temp', unit:'km', icon:'fa fa_bulb',image:'my_image'}]  array of objects.
-    */
-      if (me.block.values) {
-        var defaultIdx = me.devices[0];
-
-        if (Array.isArray(me.block.values)) {
-          me.info = me.block.values.map(function (el) {
-            var idx = defaultIdx;
-            if (typeof el == 'object' && el.idx) {
-              idx = el.idx;
-            }
-            var device = Domoticz.getAllDevices()[idx];
-            var valueInfo = getValueInfo(device, el);
-            if (el.isSetpoint) {
-              me.isSetpoint = true;
-              me.active = true; //Dial can be used to set setpoint value
-              me.setpointDevice = idx;
-              me.setpoint = valueInfo.value;
-            }
-            return valueInfo;
-          });
-          var res = me.info.shift();
-          if (typeof res.unit !== 'undefined') me.unitvalue = res.unit;
-          me.value = res.data;
-        } else {
-          console.error('values should be an array for ', me.block);
-        }
-      }
-      me.showunit = isDefined(me.block.showunit)
-        ? me.block.showunit
-        : !!me.unitvalue;
     },
   };
 
