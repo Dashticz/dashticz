@@ -151,6 +151,8 @@ waalre                  Waalre (NL)
 waardlanden             Waardlanden: Gorinchem, Hardinxveld-Giessendam, Molenlanden en Vijfheerenlanden (NL)  
 ===================     =========================
 
+.. _garbage_styling :
+
 Styling
 ~~~~~~~
 
@@ -167,12 +169,37 @@ To give the garbage block a fixed height in combination with a vertical scroll b
         overflow: auto
     }
 
+Instead of ``.garbage`` you can also use ``.trash`` which is maintained for backwards compatibility.
+
 Additional CSS classes are applied to the garbage content as follows:
 
 * ``.trashtoday``:  For garbage collection scheduled for today
 * ``.trashtomorrow``: For garbage collection scheduled for tomorrow
 * ``.trashrow``: For garbage collection scheduled for the days after tomorrow
 
+The ``.trashtoday`` and ``.trashtomorrow`` classes are also applied on block level.
+
+To set the block styling depending on the trash today or tomorrow schedule, you can add the following to ``custom.css``::
+
+    /* This will give the block a red border if trash collection is collected for today*/
+    .trash.trashtoday {
+        border-color: red 
+    }
+
+    /* This will give the block a green border if trash collection is collected for tomorrow*/
+    .trash.trashtomorrow {
+        border-color: green 
+    }
+
+    /* This will reduce the opacity in case no trash is scheduled for today or tomorrow */
+    .trash:not(.trashtoday):not(.trashtomorrow) .dt_state {
+        opacity: 0.2 !important;
+    }
+
+    /* This will increase the font of the trash row that is scheduled for today */
+    .dt_state .trashtoday {
+        font-size: 20px
+    }
 
 .. _garbage_upgrade :
 
