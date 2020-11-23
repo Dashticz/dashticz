@@ -3,8 +3,8 @@
 var DT_garbage = (function () {
   return {
     name: 'garbage',
-    canHandle: function(block) {
-      return block && block.company 
+    canHandle: function (block) {
+      return block && block.company;
     },
     defaultCfg: {
       width: settings['garbage_width'] || 12,
@@ -32,8 +32,16 @@ var DT_garbage = (function () {
     },
     run: function () {},
     refresh: function (me) {
+      me.trashToday = false;
+      me.trashTomorrow = false;
       renderTemplate(me);
-      loadDataForService(me);
+      loadDataForService(me).then(function () {
+        var $trash = $(me.mountPoint+' .trash');
+        if (me.trashToday) $trash.addClass('trashtoday');
+        else $trash.removeClass('trashtoday');
+        if (me.trashTomorrow) $trash.addClass('trashtomorrow');
+        else $trash.removeClass('trashtomorrow');
+      });
     },
   };
 
@@ -612,9 +620,11 @@ var DT_garbage = (function () {
     if (garbage.date.isSame(moment(), 'day')) {
       this.displayDate = language.weekdays.today;
       this.rowClass = 'trashtoday';
+      me.trashToday = true;
     } else if (garbage.date.isSame(moment().add(1, 'days'), 'day')) {
       this.displayDate = language.weekdays.tomorrow;
       this.rowClass = 'trashtomorrow';
+      me.trashTomorrow = true;
     } else if (garbage.date.isBefore(moment().add(1, 'week'))) {
       this.displayDate = garbage.date.format('dddd');
     }
@@ -969,7 +979,7 @@ var DT_garbage = (function () {
       infoMessage('Garbage provider not found: ', me.block.company);
       return
     }
-    serviceProperties[me.block.company]
+    return serviceProperties[me.block.company]
       .handler(me, serviceProperties[me.block.company].param)
       .then(function (data) {
         addToContainer(me, data);
@@ -979,7 +989,8 @@ var DT_garbage = (function () {
         infoMessage('Error loading garbage data');
       })
   }
-  //# sourceURL=js/components/garbage.js
 })();
 
 Dashticz.register(DT_garbage);
+
+//# sourceURL=js/components/garbage.js
