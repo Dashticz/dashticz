@@ -29,6 +29,7 @@ var DT_garbage = (function () {
       icon_use_colors: settings['garbage_icon_use_colors'],
       use_names: settings['garbage_use_names'],
       mapping: settings['garbage_mapping'],
+      date_separator: ': '
     },
     run: function () {},
     refresh: function (me) {
@@ -642,7 +643,7 @@ var DT_garbage = (function () {
       (me.block.use_names || !garbage.summary
         ? name
         : garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)) +
-      ': ' +
+      me.block.date_separator +
       this.displayDate +
       '</div>'
     );
