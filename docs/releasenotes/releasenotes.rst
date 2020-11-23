@@ -23,7 +23,7 @@ Fixes
 ~~~~~~
 
 * Calendar: Add 'method:0' to your calendar block definition in case you experience issues with recurring events. Only works for the new calendar block. See :ref:`newcalendar`
-
+* Fix for X10 security motion device.
 
 3.6.7 Beta (4-11-2020)
 ------------------------
