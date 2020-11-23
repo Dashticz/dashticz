@@ -841,6 +841,12 @@ function getStatusBlock(block) {
   else stateBlock = iconORimage(block, icon, '', 'icon', attr, 4, '');
 
   stateBlock += '<div class="col-xs-8 col-data">';
+
+  if(block.textOn && getIconStatusClass(device.Status) === 'on')
+    value = block.textOn;
+  if(block.textOff && getIconStatusClass(device.Status) === 'off')
+    value = block.textOff;
+
   if (!titleAndValueSwitch(block)) {
     if (hideTitle(block)) {
       stateBlock += '<span class="value">' + value + '</span>';
@@ -1050,6 +1056,7 @@ function getBlockData(block, textOn, textOff) {
     status == 'Closed' ||
     status == 'Normal' ||
     status == 'Locked' ||
+    status == 'No Motion' ||
     (status == '' && block.device['InternalState'] == 'Off')
   ) {
     value = textOff;
