@@ -97,8 +97,12 @@ blocktypes.SubType['Current'] = {
   value: '<Data>',
 };
 
-
-
+blocktypes.SubType["X10 security motion"] = {
+  icon: 'fas fa-running',
+  title: '<Name>',
+  value: '<Data>',
+  graph: false
+};
 
 blocktypes.SensorUnit = {};
 blocktypes.SensorUnit['Fertility'] = {
@@ -294,7 +298,11 @@ function getBlockTypesBlock(block) {
 
       if (
         typeof protoblock['icon'] !== 'undefined' ||
-        typeof protoblock['image'] !== 'undefined'
+        typeof protoblock['image'] !== 'undefined' ||
+        typeof protoblock['iconOn'] !== 'undefined' ||
+        typeof protoblock['iconOff'] !== 'undefined' ||
+        typeof protoblock['imageOn'] !== 'undefined' ||
+        typeof protoblock['imageOff'] !== 'undefined' 
       ) {
         //we have a single block
         var newblock = {graph: true};
