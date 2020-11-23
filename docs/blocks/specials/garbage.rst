@@ -39,6 +39,7 @@ title                     Title text
 use_cors_prefix           ``true / false``: use a CORS proxy for getting data from provider. See :ref:`dom_CORS_proxy`
 mapping                   Translation from description of the pickup event to a garbage type.  See :ref:`par_garbage`.
 garbage                   Settings for different garbage types. See :ref:`par_garbage`.
+date_separator            Text to place between the garbage type and date (default ': ')
 =======================   ===============================
 
 These block parameters can also be globally via a CONFIG.js setting:
