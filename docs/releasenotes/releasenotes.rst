@@ -18,6 +18,7 @@ Enhancements
 * Chart: For custom graphs you can define the icon to use for each graph button. See :ref:`custom_graph`
 * Timegraph: New special block to define a moving time graph. See :ref:`timegraph`
 * Garbage: Additional styling. See :ref:`garbage_styling`
+* Garbage: New block parameter ``date_separator`` to configure the text between garbage type and date
 
 Fixes
 ~~~~~~
