@@ -172,7 +172,7 @@ To give the garbage block a fixed height in combination with a vertical scroll b
 
 Instead of ``.garbage`` you can also use ``.trash`` which is maintained for backwards compatibility.
 
-Additional CSS classes are applied to the garbage content as follows:
+Additional CSS classes are applied to the garbage rows as follows:
 
 * ``.trashtoday``:  For garbage collection scheduled for today
 * ``.trashtomorrow``: For garbage collection scheduled for tomorrow
@@ -200,6 +200,21 @@ To set the block styling depending on the trash today or tomorrow schedule, you 
     /* This will increase the font of the trash row that is scheduled for today */
     .dt_state .trashtoday {
         font-size: 20px
+    }
+
+Besides the row styling, you can also make use of column styling. The first column contains the trashtype and can be selected via CSS class ``.trashtype``.
+The second column contains the date separator, and can be selected via class ``.trashsep``.
+The third column contains the date, and can be selected via class ``.trashdate``.
+
+As an example, the default css styling for the columns is as follows::
+
+    .trashsep {
+        width: 10px;
+        text-align: center;
+    }
+
+    .trashdate {
+        text-align: right;
     }
 
 .. _garbage_upgrade :

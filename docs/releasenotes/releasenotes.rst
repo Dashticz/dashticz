@@ -19,6 +19,7 @@ Enhancements
 * Timegraph: New special block to define a moving time graph. See :ref:`timegraph`
 * Garbage: Additional styling. See :ref:`garbage_styling`
 * Garbage: New block parameter ``date_separator`` to configure the text between garbage type and date
+* Garbage: Format as table. See :ref:`garbage_styling`
 
 Fixes
 ~~~~~~
