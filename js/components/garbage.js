@@ -634,19 +634,55 @@ var DT_garbage = (function () {
 
     var color =
       ' style="color:' + me.block.garbage[garbage.garbageType].code + '"';
-    return (
-      '<div class="' +
-      this.rowClass +
-      '"' +
-      (me.block.use_colors ? color : '') +
-      '>' +
-      (me.block.use_names || !garbage.summary
-        ? name
-        : garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)) +
-      me.block.date_separator +
-      this.displayDate +
-      '</div>'
-    );
+    
+    var row='';
+
+//    if(me.block.tabular)
+/*
+      row = ''+
+      '<tr>' + 
+      '   <td>' +
+          ' <div class="trashtype ' +
+            this.rowClass +
+            '"' +
+            (me.block.use_colors ? color : '') +
+            '>' +
+              (me.block.use_names || !garbage.summary
+              ? name
+              : garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)) +
+      '     </div>' +
+      '   </td>' +
+      '   <td>' +
+          ' <div class="trashdate ' +
+            this.rowClass +
+            '"' +
+            (me.block.use_colors ? color : '') +
+            '>' +
+              me.block.date_separator +
+              this.displayDate +
+      '     </div>'+
+      '   </td>' +
+      '</td>'
+*/    
+    row = ''+
+    '<tr class="' +
+    this.rowClass +
+    '" ' +  
+    (me.block.use_colors ? color : '') +
+    '>' + 
+    '   <td class="trashtype">' +
+            (me.block.use_names || !garbage.summary
+            ? name
+            : garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)) +
+    '   </td>' +
+    '   <td class="trashsep">' +
+          me.block.date_separator +
+    '   </td>' +
+    '   <td class="trashdate">' +
+            this.displayDate +
+    '   </td>' +
+    '</td>'
+    return row;
   }
 
   function filterReturnDates(me, returnDates) {
@@ -688,9 +724,11 @@ var DT_garbage = (function () {
     } else {
       $divImg.css('opacity', '1');
     }
+    var $table = $('<table></table>')
     returnDates.forEach(function (element) {
-      $divState.append(getTrashRow(me, element));
+      $table.append(getTrashRow(me, element));
     });
+    $divState.append($table)
   }
 
   function mapGarbageType(me, garbageType) {

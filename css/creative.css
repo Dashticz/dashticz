@@ -4031,3 +4031,14 @@ td.agenda-title {
 
 
 /*end colorpicker*/
+
+/*garbage*/
+.trashsep {
+    width: 10px;
+    text-align: center;
+}
+
+.trashdate {
+    text-align: right;
+}
+/*end garbage*/
