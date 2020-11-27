@@ -1157,7 +1157,7 @@ function triggerStatus(block) {
   getCustomFunction('getStatus', block, true);
 
   if (typeof onOffstates[idx] !== 'undefined' && value !== onOffstates[idx]) {
-    if (device['Status'] == 'On' || device['Status'] == 'Open') {
+    if ( getIconStatusClass( device['Status']) == 'on') {
       if (block['playsoundOn']) {
         playAudio(block['playsoundOn']);
       }
@@ -1191,7 +1191,7 @@ function triggerStatus(block) {
         }
       }
     }
-    if (device['Status'] == 'Off' || device['Status'] == 'Closed') {
+    if (getIconStatusClass( device['Status']) == 'off') {
       if (block['playsoundOff']) {
         playAudio(block['playsoundOff']);
       }
