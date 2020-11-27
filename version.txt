@@ -1,8 +1,9 @@
 {
-"version": "3.6.7",
+"version": "3.6.8",
 "branch": "beta",
-"last_changes": "Update garbage module",
+"last_changes": "Garbage related changes",
 "changelog" : {
+            "3.6.7": "Update garbage module",
             "3.6.6": "Bug fix Dashticz initialization",
             "3.6.5": "New server to provide covid-19 data",
             "3.6.4": "PVOutput Temp device",
