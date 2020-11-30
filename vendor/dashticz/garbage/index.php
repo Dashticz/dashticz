@@ -92,7 +92,7 @@ switch($service){
 		break;
 	
 	case 'deafvalapp': 
-		$url = 'http://dataservice.deafvalapp.nl/dataservice/DataServiceServlet?type=ANDROID&service=OPHAALSCHEMA&land=NL&postcode='.$zipCode.'&straatId=0&huisnr='.$houseNr.'&huisnrtoev='.$houseNrSuf;
+		$url = 'https://dataservice.deafvalapp.nl/dataservice/DataServiceServlet?type=ANDROID&service=OPHAALSCHEMA&land=NL&postcode='.$zipCode.'&straatId=0&huisnr='.$houseNr.'&huisnrtoev='.$houseNrSuf;
 		$return = file_get_contents($url);
 		$return = explode("\n",$return);
 		foreach($return as $row){
