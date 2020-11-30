@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 --------------
 
+Fixes
+~~~~~~
+
+* Garbage: Fix DeAfvalApp (https instead of http)
+
 3.6.8 Beta (27-11-2020)
 ------------------------
 
