@@ -40,6 +40,7 @@ use_cors_prefix           ``true / false``: use a CORS proxy for getting data fr
 mapping                   Translation from description of the pickup event to a garbage type.  See :ref:`par_garbage`.
 garbage                   Settings for different garbage types. See :ref:`par_garbage`.
 date_separator            Text to place between the garbage type and date (default ': ')
+layout                    Layout of the garbage rows: ``0`` for plain text layout, ``1`` for table layout
 =======================   ===============================
 
 These block parameters can also be globally via a CONFIG.js setting:
@@ -116,6 +117,7 @@ almere                  Almere (NL)
 alphenaandenrijn        Alphen aan de Rijn (NL)
 area                    Coevorden, Emmen, Hoogeveen (NL)
 avalex                  Avalex: Delft, ... (NL)
+avri                    Rivierenland (Zaltbommel, ...)(NL)
 barafvalbeheer          Bar-afvalbeheer for Barendrecht, Rhoon (NL)
 best                    Best (NL)
 blink                   Blink: Asten, Deurne, Gemert-Bakel, Heeze-Leende, Helmond, Laarbeek, Nuenen, Someren (NL)
