@@ -1,4 +1,4 @@
-/* global Dashticz _CORS_PATH settings infoMessage moment ICAL _PHP_INSTALLED language*/
+/* global Dashticz _CORS_PATH settings infoMessage moment ICAL _PHP_INSTALLED language templateEngine*/
 
 var DT_garbage = (function () {
   return {
@@ -29,7 +29,8 @@ var DT_garbage = (function () {
       icon_use_colors: settings['garbage_icon_use_colors'],
       use_names: settings['garbage_use_names'],
       mapping: settings['garbage_mapping'],
-      date_separator: ': '
+      date_separator: ': ',
+      layout: 1,
     },
     run: function () {},
     refresh: function (me) {
@@ -37,7 +38,7 @@ var DT_garbage = (function () {
       me.trashTomorrow = false;
       renderTemplate(me);
       loadDataForService(me).then(function () {
-        var $trash = $(me.mountPoint+' .trash');
+        var $trash = $(me.mountPoint + ' .trash');
         if (me.trashToday) $trash.addClass('trashtoday');
         else $trash.removeClass('trashtoday');
         if (me.trashTomorrow) $trash.addClass('trashtomorrow');
@@ -48,17 +49,16 @@ var DT_garbage = (function () {
 
   function renderTemplate(me) {
     var html = '';
-    if (me.block.hideicon) 
- {
-      html += '<div class="col-xs-12 col-data">';
+    if (me.block.hideicon) {
+      html += '<div class="col-xs-12 col-data state">';
     } else {
       html += '<div class="col-xs-4 col-icon">';
       html +=
         '<img class="trashcan" src="img/garbage/kliko.png" style="opacity:0.1" />';
       html += '</div>';
-      html += '<div class="col-xs-8 col-data">';
+      html += '<div class="col-xs-8 col-data state">';
     }
-    html += '<span class="state">' + language.misc.loading + '</span>';
+    html += language.misc.loading;
     html += '</div>';
     $(me.mountPoint + ' .dt_state').html(html);
   }
@@ -273,30 +273,39 @@ var DT_garbage = (function () {
   }
 
   function getGarbageData(me, params) {
-    var url = _CORS_PATH + params + '/adres/' + me.block.zipcode + ':' + me.block.housenumber + ':' + me.block.housenumberSuffix;
-    return $.get(url)
-    .then(function(result) {
-//      console.log(result);
+    var url =
+      _CORS_PATH +
+      params +
+      '/adres/' +
+      me.block.zipcode +
+      ':' +
+      me.block.housenumber +
+      ':' +
+      me.block.housenumberSuffix;
+    return $.get(url).then(function (result) {
+      //      console.log(result);
       var newHTMLDocument = document.implementation.createHTMLDocument(
         'scrape'
       );
       newHTMLDocument.documentElement.innerHTML = result;
-      var res = newHTMLDocument.getElementById('ophaaldata').getElementsByTagName('li')
-//      console.log(res);
-      var returnDates=[];
+      var res = newHTMLDocument
+        .getElementById('ophaaldata')
+        .getElementsByTagName('li');
+      //      console.log(res);
+      var returnDates = [];
       for (var idx = 0; idx < res.length; idx++) {
         var el = res[idx];
-        var garbageType=el.getElementsByTagName('img')[0].alt;
-        var dateStr=el.getElementsByClassName('date')[0].innerHTML;
-        var garbageDate = moment(dateStr, 'ddd D MMM','nl');
-//        console.log(garbageDate.format('DD-MM-YYYY'), garbageType);
+        var garbageType = el.getElementsByTagName('img')[0].alt;
+        var dateStr = el.getElementsByClassName('date')[0].innerHTML;
+        var garbageDate = moment(dateStr, 'ddd D MMM', 'nl');
+        //        console.log(garbageDate.format('DD-MM-YYYY'), garbageType);
         returnDates.push({
           summary: garbageType,
           date: garbageDate,
-        })
+        });
       }
-      return returnDates; 
-    })
+      return returnDates;
+    });
   }
 
   function getGeneralData(me, params) {
@@ -329,7 +338,7 @@ var DT_garbage = (function () {
       settings['dashticz_php_path'] +
       'garbage/index.php?service=' +
       service +
-      (me.block.street? '&street='+me.block.street : '') + 
+      (me.block.street ? '&street=' + me.block.street : '') +
       '&sub=' +
       subservice +
       '&zipcode=' +
@@ -366,18 +375,22 @@ var DT_garbage = (function () {
   //curl -d '{"tx_windwastecalendar_pi1[action]": "search", "tx_windwastecalendar_pi1[controller]": "Zipcode", "tx_windwastecalendar_pi1[Hash]": "40c183c983706ba359f1122b44881a5e", "tx_windwastecalendar_pi1[zipcode]": "2225ZJ","tx_windwastecalendar_pi1[housenumber]": "17"}' -X POST https://afval.katwijk.nl/nc/afvalkalender/
   function getKatwijkData(me) {
     var prefix = 'https://afval.katwijk.nl/';
-/*    return $.post(getPrefixUrl() + prefix + 'nc/afvalkalender/', {
+    /*    return $.post(getPrefixUrl() + prefix + 'nc/afvalkalender/', {
       'tx_windwastecalendar_pi1[action]': 'search',
       'tx_windwastecalendar_pi1[controller]': 'Zipcode',
       'tx_windwastecalendar_pi1[Hash]': '40c183c983706ba359f1122b44881a5e',
       'tx_windwastecalendar_pi1[zipcode]': me.block.zipcode,
       'tx_windwastecalendar_pi1[housenumber]': me.block.housenumber,
 */
-    var postfix = 'tx_windwastecalendar_pi1[action]=search&tx_windwastecalendar_pi1[controller]=Zipcode&tx_windwastecalendar_pi1[Hash]=6e6e80066d09747e8df35d5ff2d1e27b' +
-    '&tx_windwastecalendar_pi1[zipcode]=' + me.block.zipcode +
-    '&tx_windwastecalendar_pi1[housenumber]=' +  me.block.housenumber;
-    return $.post(getPrefixUrl(me) + prefix + 'nc/afvalkalender/?' + postfix)
-    .then(function (data) {
+    var postfix =
+      'tx_windwastecalendar_pi1[action]=search&tx_windwastecalendar_pi1[controller]=Zipcode&tx_windwastecalendar_pi1[Hash]=6e6e80066d09747e8df35d5ff2d1e27b' +
+      '&tx_windwastecalendar_pi1[zipcode]=' +
+      me.block.zipcode +
+      '&tx_windwastecalendar_pi1[housenumber]=' +
+      me.block.housenumber;
+    return $.post(
+      getPrefixUrl(me) + prefix + 'nc/afvalkalender/?' + postfix
+    ).then(function (data) {
       var elementHref = $(data).find('.ical .link a').attr('href');
       return getIcalData(me, prefix + elementHref);
     });
@@ -572,7 +585,8 @@ var DT_garbage = (function () {
 
     var url =
       getPrefixUrl(me) +
-      (param || 'https://www.mijnafvalwijzer.nl') + '/nl/' +
+      (param || 'https://www.mijnafvalwijzer.nl') +
+      '/nl/' +
       me.block.zipcode +
       '/' +
       me.block.housenumber +
@@ -613,89 +627,18 @@ var DT_garbage = (function () {
 
   //http://dashticz.nl/afval/?service=rova&zipcode=7731ZT&nr=84&t=
 
-  function getTrashRow(me, garbage) {
-    this.rowClass = 'trashrow';
-    this.displayDate = garbage.date
-      .locale(settings['calendarlanguage'])
-      .format('l');
-    if (garbage.date.isSame(moment(), 'day')) {
-      this.displayDate = language.weekdays.today;
-      this.rowClass = 'trashtoday';
-      me.trashToday = true;
-    } else if (garbage.date.isSame(moment().add(1, 'days'), 'day')) {
-      this.displayDate = language.weekdays.tomorrow;
-      this.rowClass = 'trashtomorrow';
-      me.trashTomorrow = true;
-    } else if (garbage.date.isBefore(moment().add(1, 'week'))) {
-      this.displayDate = garbage.date.format('dddd');
-    }
-    
-    var name = me.block.garbage[garbage.garbageType].name;
-
-    var color =
-      ' style="color:' + me.block.garbage[garbage.garbageType].code + '"';
-    
-    var row='';
-
-//    if(me.block.tabular)
-/*
-      row = ''+
-      '<tr>' + 
-      '   <td>' +
-          ' <div class="trashtype ' +
-            this.rowClass +
-            '"' +
-            (me.block.use_colors ? color : '') +
-            '>' +
-              (me.block.use_names || !garbage.summary
-              ? name
-              : garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)) +
-      '     </div>' +
-      '   </td>' +
-      '   <td>' +
-          ' <div class="trashdate ' +
-            this.rowClass +
-            '"' +
-            (me.block.use_colors ? color : '') +
-            '>' +
-              me.block.date_separator +
-              this.displayDate +
-      '     </div>'+
-      '   </td>' +
-      '</td>'
-*/    
-    row = ''+
-    '<tr class="' +
-    this.rowClass +
-    '" ' +  
-    (me.block.use_colors ? color : '') +
-    '>' + 
-    '   <td class="trashtype">' +
-            (me.block.use_names || !garbage.summary
-            ? name
-            : garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)) +
-    '   </td>' +
-    '   <td class="trashsep">' +
-          me.block.date_separator +
-    '   </td>' +
-    '   <td class="trashdate">' +
-            this.displayDate +
-    '   </td>' +
-    '</td>'
-    return row;
-  }
-
   function filterReturnDates(me, returnDates) {
     return returnDates
       .sort(function (a, b) {
         return a.date > b.date ? 1 : b.date > a.date ? -1 : 0;
       })
-      .map(function(element) {
+      .map(function (element) {
         return {
           date: element.date,
           summary: element.summary,
-          garbageType: element.garbageType || mapGarbageType(me, element.summary)
-        }
+          garbageType:
+            element.garbageType || mapGarbageType(me, element.summary),
+        };
       })
       .filter(function (element) {
         return (
@@ -704,6 +647,34 @@ var DT_garbage = (function () {
         );
       })
       .slice(0, getMaxItems(me));
+  }
+
+  function mapReturnDates(me, garbage) {
+    var name = me.block.garbage[garbage.garbageType].name;
+    var result = {
+      rowClass: 'trashrow',
+      trashDate: garbage.date.locale(settings['calendarlanguage']).format('l'),
+      trashType:
+        me.block.use_names || !garbage.summary
+          ? name
+          : garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1),
+      color: me.block.use_colors
+        ? ' style="color:' + me.block.garbage[garbage.garbageType].code + '"'
+        : '',
+    };
+    if (garbage.date.isSame(moment(), 'day')) {
+      result.trashDate = language.weekdays.today;
+      result.rowClass = 'trashtoday';
+      me.trashToday = true;
+    } else if (garbage.date.isSame(moment().add(1, 'days'), 'day')) {
+      result.trashDate = language.weekdays.tomorrow;
+      result.rowClass = 'trashtomorrow';
+      me.trashTomorrow = true;
+    } else if (garbage.date.isBefore(moment().add(1, 'week'))) {
+      result.trashDate = garbage.date.format('dddd');
+    }
+
+    return result;
   }
 
   function addToContainer(me, returnDates) {
@@ -715,7 +686,6 @@ var DT_garbage = (function () {
       $divState.html('Geen gegevens gevonden');
       return;
     }
-    $divState.html('');
 
     if (me.block.icon_use_colors) {
       $divImg
@@ -724,11 +694,20 @@ var DT_garbage = (function () {
     } else {
       $divImg.css('opacity', '1');
     }
-    var $table = $('<table></table>')
-    returnDates.forEach(function (element) {
-      $table.append(getTrashRow(me, element));
+
+    var templateName = 'garbage_' + me.block.layout;
+
+    templateEngine.load(templateName).then(function (template) {
+      var data = {
+        trashSep: me.block.date_separator,
+      };
+
+      data.items = returnDates.map(function (el) {
+        return mapReturnDates(me, el);
+      });
+
+      $divState.html(template(data));
     });
-    $divState.append($table)
   }
 
   function mapGarbageType(me, garbageType) {
@@ -762,11 +741,11 @@ var DT_garbage = (function () {
     var serviceProperties = {
       googlecalendar: {
         handler: getGoogleCalendarData,
-        param: me.block.calendar_id
+        param: me.block.calendar_id,
       },
       ical: {
         handler: getIcalData,
-        param: me.block.icalurl
+        param: me.block.icalurl,
       },
       afvalalert: {
         handler: getAfvalAlertData,
@@ -785,9 +764,9 @@ var DT_garbage = (function () {
       alphenaandenrijn: {
         handler: getGeneralData,
         param: {
-            service: 'afvalstromen',
-            subservice:  'alphenaandenrijn',
-        }
+          service: 'afvalstromen',
+          subservice: 'alphenaandenrijn',
+        },
       },
       area: {
         handler: getWasteApiData,
@@ -796,9 +775,16 @@ var DT_garbage = (function () {
       avalex: {
         handler: getGeneralData,
         param: {
-            service: 'afvalstromen',
-            subservice:  'avalex',
-        }
+          service: 'afvalstromen',
+          subservice: 'avalex',
+        },
+      },
+      avri: {
+        handler: getGeneralData,
+        param: {
+          service: 'ximmio',
+          subservice: 'avri',
+        },
       },
       barafvalbeheer: {
         handler: getWasteApiData,
@@ -810,9 +796,9 @@ var DT_garbage = (function () {
       circulusberkel: {
         handler: getGeneralData,
         param: {
-            service: 'afvalstromen',
-            subservice:  'circulusberkel',
-        }
+          service: 'afvalstromen',
+          subservice: 'circulusberkel',
+        },
       },
       cure: {
         handler: getMijnAfvalwijzerData,
@@ -820,43 +806,45 @@ var DT_garbage = (function () {
       cyclusnv: {
         handler: getGeneralData,
         param: {
-            service: 'afvalstromen',
-            subservice: 'cyclusnv',
-        }
+          service: 'afvalstromen',
+          subservice: 'cyclusnv',
+        },
       },
       dar: {
         handler: getGeneralData,
         param: {
-            service: 'afvalstromen',
-            subservice: 'dar',
-        }
+          service: 'afvalstromen',
+          subservice: 'dar',
+        },
       },
       deafvalapp: {
         handler: getGeneralData,
         param: {
-            service: 'deafvalapp',
-        }
+          service: 'deafvalapp',
+        },
       },
       edg: {
         handler: getGeneralData,
-        param: 'edg'
+        param: 'edg',
       },
       gad: {
         handler: getGarbageData,
-        param: 'https://inzamelkalender.gad.nl'
+        param: 'https://inzamelkalender.gad.nl',
       },
       gemeenteberkelland: {
         handler: getGeneralData,
         param: {
-            service: 'afvalstromen',
-            subservice:  'gemeenteberkelland',
-        }
+          service: 'afvalstromen',
+          subservice: 'gemeenteberkelland',
+        },
       },
-      goes: { //https://afvalkalender.goes.nl/2020/4464AS-43.ics
+      goes: {
+        //https://afvalkalender.goes.nl/2020/4464AS-43.ics
         handler: getIcalData,
         param:
           'https://afvalkalender.goes.nl/' +
-          moment().format('YYYY') + '/' +
+          moment().format('YYYY') +
+          '/' +
           zipcode +
           '-' +
           housenumber +
@@ -868,9 +856,9 @@ var DT_garbage = (function () {
       hvc: {
         handler: getGeneralData,
         param: {
-            service: 'afvalstromen',
-            subservice: 'hvc',
-        }
+          service: 'afvalstromen',
+          subservice: 'hvc',
+        },
       },
       katwijk: {
         handler: getKatwijkData,
@@ -878,16 +866,16 @@ var DT_garbage = (function () {
       meerlanden: {
         handler: getGeneralData,
         param: {
-            service: 'ximmio',
-            subservice: 'meerlanden',
-        }
+          service: 'ximmio',
+          subservice: 'meerlanden',
+        },
       },
       mijnafvalwijzer: {
         handler: getMijnAfvalwijzerData,
       },
       blink: {
         handler: getGarbageData,
-        param: 'https://mijnblink.nl'
+        param: 'https://mijnblink.nl',
       },
       omrin: {
         handler: getGeneralData,
@@ -896,13 +884,13 @@ var DT_garbage = (function () {
       ophaalkalender: {
         handler: getGeneralData,
         param: {
-            service: 'recycleapp',
-            subservice: me.block.street
-        }
+          service: 'recycleapp',
+          subservice: me.block.street,
+        },
       },
       purmerend: {
         handler: getGarbageData,
-        param: 'https://afvalkalender.purmerend.nl'
+        param: 'https://afvalkalender.purmerend.nl',
       },
       rd4: {
         handler: getRd4Data,
@@ -910,31 +898,31 @@ var DT_garbage = (function () {
       recycleapp: {
         handler: getGeneralData,
         param: {
-            service: 'recycleapp',
-            subservice: me.block.street
-        }
+          service: 'recycleapp',
+          subservice: me.block.street,
+        },
       },
       rmn: {
         handler: getGeneralData,
         param: {
-            service: 'afvalstromen',
-            subservice: 'rmn',
-        }
+          service: 'afvalstromen',
+          subservice: 'rmn',
+        },
       },
       rova: {
         handler: getGeneralData,
-        param: 'rova'
+        param: 'rova',
       },
       sudwestfryslan: {
         handler: getGeneralData,
         param: {
-            service: 'afvalstromen',
-            subservice: 'sudwestfryslan',
-        }
+          service: 'afvalstromen',
+          subservice: 'sudwestfryslan',
+        },
       },
       suez: {
         handler: getGarbageData,
-        param: 'https://inzamelwijzer.suez.nl'
+        param: 'https://inzamelwijzer.suez.nl',
       },
       twentemilieu: {
         handler: getWasteApiData,
@@ -968,16 +956,16 @@ var DT_garbage = (function () {
       venray: {
         handler: getGeneralData,
         param: {
-            service: 'afvalstromen',
-            subservice:  'venray',
-        }
+          service: 'afvalstromen',
+          subservice: 'venray',
+        },
       },
       vianen: {
         handler: getGeneralData,
         param: {
-            service: 'ximmio',
-            subservice: 'waardlanden',
-        }
+          service: 'ximmio',
+          subservice: 'waardlanden',
+        },
       },
       /*{
         handler: getIcalData,
@@ -992,18 +980,18 @@ var DT_garbage = (function () {
       waalre: {
         handler: getGeneralData,
         param: {
-            service: 'afvalstromen',
-            subservice: 'waalre',
-        }
+          service: 'afvalstromen',
+          subservice: 'waalre',
+        },
       },
       waardlanden: {
         handler: getGeneralData,
         param: {
-            service: 'ximmio',
-            subservice: 'waardlanden',
-        }
+          service: 'ximmio',
+          subservice: 'waardlanden',
+        },
       },
-/*  doesn''t work anymore
+      /*  doesn''t work anymore
       zuidhorn: {
         handler: getZuidhornData,
         param: 'scrape',
@@ -1012,21 +1000,20 @@ var DT_garbage = (function () {
         handler: getZuidhornData,
         param: 'ical',
       },*/
-
     };
     if (!serviceProperties[me.block.company]) {
       infoMessage('Garbage provider not found: ', me.block.company);
-      return
+      return;
     }
     return serviceProperties[me.block.company]
       .handler(me, serviceProperties[me.block.company].param)
       .then(function (data) {
         addToContainer(me, data);
       })
-      .catch(function() {
+      .catch(function () {
         console.error('Error loading garbage: ', me.block);
         infoMessage('Error loading garbage data');
-      })
+      });
   }
 })();
 
