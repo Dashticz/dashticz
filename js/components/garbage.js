@@ -31,6 +31,7 @@ var DT_garbage = (function () {
       mapping: settings['garbage_mapping'],
       date_separator: ': ',
       layout: 1,
+      maxdays: 32
     },
     run: function () {},
     refresh: function (me) {
@@ -732,7 +733,7 @@ var DT_garbage = (function () {
   function loadDataForService(me) {
     me.date = {
       start: moment().startOf('day'),
-      end: moment().add(32, 'days').endOf('day'),
+      end: moment().add(me.block.maxdays-1, 'days').endOf('day'),
     };
 
     var zipcode = me.block.zipcode;

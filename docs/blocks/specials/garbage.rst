@@ -30,6 +30,7 @@ zipcode                   The zipcode
 street                    Your street
 housenumber               Your housenumber
 maxitems                  Number of items to show
+maxdays                   Number of days to show (2 is today and tomorrow). Default: 32
 width                     ``1..12``: Width of the block
 hideicon                  ``true / false``: To hide the garbage icon
 use_names                 ``true / false``: shows name of the garbage type
