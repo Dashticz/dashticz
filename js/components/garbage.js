@@ -574,13 +574,14 @@ var DT_garbage = (function () {
     //  getGeneralData('mijnafvalwijzer', address, date, random);
     function getDate(data, startidx) {
       var collDateSplit = data[startidx].split(' ');
+      var year = collDateSplit.length>3 ? collDateSplit[3]: new Date().getFullYear();
       var dateStr =
         '' +
         Number(collDateSplit[1]) +
         ' ' +
         collDateSplit[2] +
         ' ' +
-        new Date().getFullYear();
+        year;
       return moment(dateStr, 'D MMM YYYY', 'nl');
     }
 

@@ -19,6 +19,7 @@ Fixes
 * Garbage: Fix DeAfvalApp (https instead of http)
 * Garbage: Add avri as garbage company
 * Garbage: add layout as block parameter. Use ``layout: 0`` to format the garbage rows as one string and ``layout: 1`` to use table layout.
+* Garbage: Fix Afvalwijzer 2021 data
 
 3.6.8 Beta (27-11-2020)
 ------------------------
