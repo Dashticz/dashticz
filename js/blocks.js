@@ -189,10 +189,10 @@ function deviceUpdateHandler(block) {
 
   if ($div.hasClass('hover')) {
     $div.on('touchstart', function () {
-      var $this = $(this);
-      $this.addClass('hovered');
+//      var $this = $(this);
+      $div.addClass('hovered');
       setTimeout(function () {
-        $this.removeClass('hovered');
+        $('.hovered').removeClass('hovered');
       }, 200);
     });
   }
