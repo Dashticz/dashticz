@@ -1139,6 +1139,7 @@ Only add this hover on NON touch devices
 */
 
 @media (hover: hover) {
+  /*
   .transbg.col-xs-1.hover:hover,
   .transbg.col-xs-2.hover:hover,
   .transbg.col-xs-3.hover:hover,
@@ -1150,7 +1151,8 @@ Only add this hover on NON touch devices
   .transbg.col-xs-9.hover:hover,
   .transbg.col-xs-10.hover:hover,
   .transbg.col-xs-11.hover:hover,
-  .transbg.col-xs-12.hover:hover {
+  .transbg.col-xs-12.hover:hover */
+  html.non-touch .hover:hover{
     background: rgba(255, 255, 255, 0.1);
     background-clip: padding-box;
     border: 7px solid rgba(255, 255, 255, 0);
