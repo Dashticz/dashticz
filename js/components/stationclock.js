@@ -12,10 +12,12 @@ var DT_stationclock = {
     containerClass: 'text-center',
   },
   defaultContent: function (me) {
+    var width =  me.block.size || $(me.mountPoint).width();
+    var height =  me.block.size || $(me.mountPoint).height() || window.innerHeight;
     return (
       '<canvas id="clock' +
       me.mountPoint +
-      '" width="150" height="150">Your browser is unfortunately not supported.</canvas>'
+      '" width="'+width+'" height="'+height+'">Your browser is unfortunately not supported.</canvas>'
     );
   },
   run: function (me) {
@@ -44,3 +46,4 @@ var DT_stationclock = {
 };
 
 Dashticz.register(DT_stationclock);
+//# sourceURL=js/components/stationclock.js
