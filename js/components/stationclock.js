@@ -8,19 +8,27 @@ var DT_stationclock = {
       dataType: 'script',
     });
   },
+  canHandle: function (block) {
+    return block && block.type && block.type === 'stationclock';
+  },
   defaultCfg: {
     containerClass: 'text-center',
   },
-  defaultContent: function (me) {
-    var width =  me.block.size || $(me.mountPoint).width();
-    var height =  me.block.size || $(me.mountPoint).height() || window.innerHeight;
-    return (
-      '<canvas id="clock' +
-      me.mountPoint +
-      '" width="'+width+'" height="'+height+'">Your browser is unfortunately not supported.</canvas>'
-    );
-  },
   run: function (me) {
+    var width = Math.min(
+      me.block.size || $(me.mountPoint + ' .dt_content').width(),
+      window.innerHeight
+    );
+    $(me.mountPoint + ' .dt_content').html(
+      '<canvas id="clock' +
+        me.mountPoint +
+        '" width="' +
+        width +
+        '" height="' +
+        width +
+        '">Your browser is unfortunately not supported.</canvas>'
+    );
+
     var clock = new StationClock('clock' + me.mountPoint);
     clock.body = StationClock.RoundBody;
     clock.dial = StationClock.GermanStrokeDial;
