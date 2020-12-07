@@ -8,17 +8,27 @@ var DT_stationclock = {
       dataType: 'script',
     });
   },
+  canHandle: function (block) {
+    return block && block.type && block.type === 'stationclock';
+  },
   defaultCfg: {
     containerClass: 'text-center',
   },
-  defaultContent: function (me) {
-    return (
-      '<canvas id="clock' +
-      me.mountPoint +
-      '" width="150" height="150">Your browser is unfortunately not supported.</canvas>'
-    );
-  },
   run: function (me) {
+    var width = Math.min(
+      me.block.size || $(me.mountPoint + ' .dt_content').width(),
+      window.innerHeight
+    );
+    $(me.mountPoint + ' .dt_content').html(
+      '<canvas id="clock' +
+        me.mountPoint +
+        '" width="' +
+        width +
+        '" height="' +
+        width +
+        '">Your browser is unfortunately not supported.</canvas>'
+    );
+
     var clock = new StationClock('clock' + me.mountPoint);
     clock.body = StationClock.RoundBody;
     clock.dial = StationClock.GermanStrokeDial;
@@ -44,3 +54,4 @@ var DT_stationclock = {
 };
 
 Dashticz.register(DT_stationclock);
+//# sourceURL=js/components/stationclock.js
