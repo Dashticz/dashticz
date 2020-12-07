@@ -12,6 +12,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Garbage: New garbage block parameter ``maxdays`` to set the number of days to show the garbage collection info (2 means today and tomorrow) 
+* Stationclock: New block parameter ``size`` to set the size of the clock. See :ref:`stationclock`
 
 Fixes
 ~~~~~~

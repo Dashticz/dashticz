@@ -1,6 +1,8 @@
 Clock and Station Clock
 #######################
 
+.. _stationclock :
+
 Station Clock
 -------------
 
@@ -27,7 +29,9 @@ Config Settings
   * - hide_seconds_stationclock
     - | ``true`` Hides second hand
       | ``false`` Default. Show second hand.
-
+  * - size
+    - | Size of the stationclock in pixels. The default size of the station clock is the column width.
+      | ``200`` The clock will have a width and height of 200 pixels
       
 Clock
 -------------
