@@ -1,8 +1,9 @@
 {
-"version": "3.6.8",
+"version": "3.6.9",
 "branch": "beta",
-"last_changes": "Garbage related changes",
+"last_changes": "Garbage related changes and stationclock enhancements",
 "changelog" : {
+            "3.6.8": "Garbage related changes",
             "3.6.7": "Update garbage module",
             "3.6.6": "Bug fix Dashticz initialization",
             "3.6.5": "New server to provide covid-19 data",
