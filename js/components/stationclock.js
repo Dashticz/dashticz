@@ -13,18 +13,25 @@ var DT_stationclock = {
   },
   defaultCfg: {
     containerClass: 'text-center',
-    body: StationClock.RoundBody,
-    dial: StationClock.GermanStrokeDial,
-    hourhand: StationClock.PointedHourHand,
-    minutehand: StationClock.PointedMinuteHand,
-    secondhand: settings['hide_seconds_stationclock']
-      ? 0
-      : StationClock.HoleShapedSecondHand,
-    boss: settings['boss_stationclock'] || 'NoBoss',
-    minutehandbehavior: StationClock.BouncingMinuteHand,
-    secondhandbehavior: StationClock.OverhastySecondHand,
   },
   run: function (me) {
+    var cfg = {
+      //StationClock may not be loaded in defaultcfg(?)
+      body: StationClock.RoundBody,
+      dial: StationClock.GermanStrokeDial,
+      hourhand: StationClock.PointedHourHand,
+      minutehand: StationClock.PointedMinuteHand,
+      secondhand: settings['hide_seconds_stationclock']
+        ? 0
+        : StationClock.HoleShapedSecondHand,
+      boss: settings['boss_stationclock'] || 'NoBoss',
+      minutehandbehavior: StationClock.BouncingMinuteHand,
+      secondhandbehavior: StationClock.OverhastySecondHand,
+    };
+
+    $.extend(cfg, me.block);
+    me.block = cfg;
+
     function clockSetting(key) {
       return typeof key === 'string' ? StationClock[key] : key;
     }
