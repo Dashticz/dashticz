@@ -13,8 +13,22 @@ var DT_stationclock = {
   },
   defaultCfg: {
     containerClass: 'text-center',
+    body: StationClock.RoundBody,
+    dial: StationClock.GermanStrokeDial,
+    hourhand: StationClock.PointedHourHand,
+    minutehand: StationClock.PointedMinuteHand,
+    secondhand: settings['hide_seconds_stationclock']
+      ? 0
+      : StationClock.HoleShapedSecondHand,
+    boss: settings['boss_stationclock'] || 'NoBoss',
+    minutehandbehavior: StationClock.BouncingMinuteHand,
+    secondhandbehavior: StationClock.OverhastySecondHand,
   },
   run: function (me) {
+    function clockSetting(key) {
+      return typeof key === 'string' ? StationClock[key] : key;
+    }
+
     var width = Math.min(
       me.block.size || $(me.mountPoint + ' .dt_content').width(),
       window.innerHeight
@@ -30,22 +44,16 @@ var DT_stationclock = {
     );
 
     var clock = new StationClock('clock' + me.mountPoint);
-    clock.body = StationClock.RoundBody;
-    clock.dial = StationClock.GermanStrokeDial;
-    clock.hourHand = StationClock.PointedHourHand;
-    clock.minuteHand = StationClock.PointedMinuteHand;
-    if (settings['hide_seconds_stationclock']) {
-      clock.secondHand = false;
-    } else {
-      clock.secondHand = StationClock.HoleShapedSecondHand;
-      if (typeof settings['boss_stationclock'] == 'undefined')
-        clock.boss = StationClock.NoBoss;
-      else if (settings['boss_stationclock'] == 'RedBoss')
-        clock.boss = StationClock.RedBoss;
-    }
+    console.log(me.block);
+    clock.body = clockSetting(me.block.body);
+    clock.dial = clockSetting(me.block.dial);
+    clock.hourHand = clockSetting(me.block.hourhand);
+    clock.minuteHand = clockSetting(me.block.minutehand);
+    clock.secondHand = clockSetting(me.block.secondhand);
+    clock.boss = clockSetting(me.block.boss);
 
-    clock.minuteHandBehavoir = StationClock.BouncingMinuteHand;
-    clock.secondHandBehavoir = StationClock.OverhastySecondHand;
+    clock.minuteHandBehavoir = clockSetting(me.block.minutehandbehavior);
+    clock.secondHandBehavoir = clockSetting(me.block.secondhandbehavior);
 
     window.setInterval(function () {
       clock.draw();
