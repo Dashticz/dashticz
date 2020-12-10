@@ -207,5 +207,5 @@ Example code for the several clocks::
     'miniclock',
   ];
 
-.. image :: img/clocks.jpg
+.. image :: clocks.jpg
 
