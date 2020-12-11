@@ -51,7 +51,6 @@ var DT_stationclock = {
     );
 
     var clock = new StationClock('clock' + me.mountPoint);
-    console.log(me.block);
     clock.body = clockSetting(me.block.body);
     clock.dial = clockSetting(me.block.dial);
     clock.hourHand = clockSetting(me.block.hourhand);
