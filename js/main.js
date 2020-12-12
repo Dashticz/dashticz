@@ -552,6 +552,12 @@ function buildStandby() {
     for (var c in columns_standby) {
       getBlock(columns_standby[c], 'standby' + c, 'div.screenstandby', true);
     }
+
+    $('.screenstandby').on('click', function(event) {
+      disableStandby();
+      event.stopPropagation();
+      return false
+    })
   } else {
     $('.screenstandby').show();
   }
