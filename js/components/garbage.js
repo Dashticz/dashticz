@@ -31,7 +31,7 @@ var DT_garbage = (function () {
       mapping: settings['garbage_mapping'],
       date_separator: ': ',
       layout: 1,
-      maxdays: 32
+      maxdays: 32,
     },
     run: function () {},
     refresh: function (me) {
@@ -574,14 +574,10 @@ var DT_garbage = (function () {
     //  getGeneralData('mijnafvalwijzer', address, date, random);
     function getDate(data, startidx) {
       var collDateSplit = data[startidx].split(' ');
-      var year = collDateSplit.length>3 ? collDateSplit[3]: new Date().getFullYear();
+      var year =
+        collDateSplit.length > 3 ? collDateSplit[3] : new Date().getFullYear();
       var dateStr =
-        '' +
-        Number(collDateSplit[1]) +
-        ' ' +
-        collDateSplit[2] +
-        ' ' +
-        year;
+        '' + Number(collDateSplit[1]) + ' ' + collDateSplit[2] + ' ' + year;
       return moment(dateStr, 'D MMM YYYY', 'nl');
     }
 
@@ -734,7 +730,9 @@ var DT_garbage = (function () {
   function loadDataForService(me) {
     me.date = {
       start: moment().startOf('day'),
-      end: moment().add(me.block.maxdays-1, 'days').endOf('day'),
+      end: moment()
+        .add(me.block.maxdays - 1, 'days')
+        .endOf('day'),
     };
 
     var zipcode = me.block.zipcode;

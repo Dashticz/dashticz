@@ -82,7 +82,7 @@ var Domoticz = (function () {
               if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
                 console.log('Domoticz request cancelled');
               } else {
-                if(jqXHR.status == 401) {
+                if (jqXHR.status == 401) {
                   newPromise.reject(new Error('Domoticz authorization error'));
                   return;
                 }
@@ -300,18 +300,20 @@ var Domoticz = (function () {
       timeFilter = '&lastUpdate=' + lastUpdate.devices;
     }
     return domoticzRequest(
-      'type=devices&filter=all&used=true&order=Name' + (cfg.use_favorites ? '&favorite=1' : '') + timeFilter,
+      'type=devices&filter=all&used=true&order=Name' +
+        (cfg.use_favorites ? '&favorite=1' : '') +
+        timeFilter,
       forcehttp
     ).then(function (res) {
       return _setAllDevices(res);
     });
   }
 
-  function requestDevice(idx, forcehttp) { //not tested
-    return domoticzRequest(
-      'type=devices&rid=' + idx,
-      forcehttp
-    ).then(function (res) {
+  function requestDevice(idx, forcehttp) {
+    //not tested
+    return domoticzRequest('type=devices&rid=' + idx, forcehttp).then(function (
+      res
+    ) {
       return _setDevice(res);
     });
   }
@@ -374,13 +376,14 @@ var Domoticz = (function () {
     return deviceObservable._values;
   }
 
-  function _setDevice(data) { //not tested!
+  function _setDevice(data) {
+    //not tested!
     //        console.log(data.ActTime);
     if (!data) {
       console.log(' no data');
       return;
     }
-    if(!data.result){
+    if (!data.result) {
       console.log(' no result');
       return;
     }

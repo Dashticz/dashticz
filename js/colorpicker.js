@@ -47,7 +47,9 @@ function Colorpicker(options) {
         ev.stopPropagation
     });*/
 
-  var color = this.block.device.Color? JSON.parse(this.block.device.Color): {r:255, g:255, b:255, m:3};
+  var color = this.block.device.Color
+    ? JSON.parse(this.block.device.Color)
+    : { r: 255, g: 255, b: 255, m: 3 };
   if (color) {
     var thergb;
     switch (color.m) {
@@ -80,13 +82,12 @@ var buttonList = {
   RGBWZ: ['RGB', 'W', 'WZ'], //
   RGBWWZ: ['RGB', 'WW', 'WWZ'], //
   RGBZ: ['RGB', 'WZ'],
-  WW:['WW']
+  WW: ['WW'],
 };
 
 Colorpicker.prototype.dimmerTypes = Object.keys(buttonList);
 
 Colorpicker.prototype.clickHandler = function (ev) {
-
   this.mode = 1;
 
   var myButtons = {};
