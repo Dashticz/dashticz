@@ -29,7 +29,7 @@ var Dashticz = (function () {
     'dial',
     'html',
     'timegraph',
-    'garbage'
+    'garbage',
   ];
   var components = [];
   var mountedBlocks = [];
@@ -74,7 +74,7 @@ var Dashticz = (function () {
           domoticz_refresh: settings['domoticz_refresh'],
           refresh_method: settings['refresh_method'],
           domoticz_timeout: settings['domoticz_timeout'],
-          use_favorites: settings['use_favorites']
+          use_favorites: settings['use_favorites'],
         };
         return Domoticz.init(cfg);
       })
