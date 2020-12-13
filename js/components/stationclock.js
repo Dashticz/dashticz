@@ -8,34 +8,58 @@ var DT_stationclock = {
       dataType: 'script',
     });
   },
+  canHandle: function (block) {
+    return block && block.type && block.type === 'stationclock';
+  },
   defaultCfg: {
     containerClass: 'text-center',
   },
-  defaultContent: function (me) {
-    return (
-      '<canvas id="clock' +
-      me.mountPoint +
-      '" width="150" height="150">Your browser is unfortunately not supported.</canvas>'
-    );
-  },
   run: function (me) {
-    var clock = new StationClock('clock' + me.mountPoint);
-    clock.body = StationClock.RoundBody;
-    clock.dial = StationClock.GermanStrokeDial;
-    clock.hourHand = StationClock.PointedHourHand;
-    clock.minuteHand = StationClock.PointedMinuteHand;
-    if (settings['hide_seconds_stationclock']) {
-      clock.secondHand = false;
-    } else {
-      clock.secondHand = StationClock.HoleShapedSecondHand;
-      if (typeof settings['boss_stationclock'] == 'undefined')
-        clock.boss = StationClock.NoBoss;
-      else if (settings['boss_stationclock'] == 'RedBoss')
-        clock.boss = StationClock.RedBoss;
+    var cfg = {
+      //StationClock may not be loaded in defaultcfg(?)
+      body: StationClock.RoundBody,
+      dial: StationClock.GermanStrokeDial,
+      hourhand: StationClock.PointedHourHand,
+      minutehand: StationClock.PointedMinuteHand,
+      secondhand: settings['hide_seconds_stationclock']
+        ? 0
+        : StationClock.HoleShapedSecondHand,
+      boss: settings['boss_stationclock'] || 'NoBoss',
+      minutehandbehavior: StationClock.BouncingMinuteHand,
+      secondhandbehavior: StationClock.OverhastySecondHand,
+    };
+
+    $.extend(cfg, me.block);
+    me.block = cfg;
+
+    function clockSetting(key) {
+      return typeof key === 'string' ? StationClock[key] : key;
     }
 
-    clock.minuteHandBehavoir = StationClock.BouncingMinuteHand;
-    clock.secondHandBehavoir = StationClock.OverhastySecondHand;
+    var width = Math.min(
+      me.block.size || $(me.mountPoint + ' .dt_content').width(),
+      window.innerHeight
+    );
+    $(me.mountPoint + ' .dt_content').html(
+      '<canvas id="clock' +
+        me.mountPoint +
+        '" width="' +
+        width +
+        '" height="' +
+        width +
+        '">Your browser is unfortunately not supported.</canvas>'
+    );
+
+    var clock = new StationClock('clock' + me.mountPoint);
+    clock.body = clockSetting(me.block.body);
+    clock.dial = clockSetting(me.block.dial);
+    clock.hourHand = clockSetting(me.block.hourhand);
+    clock.minuteHand = clockSetting(me.block.minutehand);
+    clock.secondHand = clockSetting(me.block.secondhand);
+    clock.boss = clockSetting(me.block.boss);
+
+    clock.minuteHandBehavoir = clockSetting(me.block.minutehandbehavior);
+    clock.secondHandBehavoir = clockSetting(me.block.secondhandbehavior);
 
     window.setInterval(function () {
       clock.draw();
@@ -44,3 +68,4 @@ var DT_stationclock = {
 };
 
 Dashticz.register(DT_stationclock);
+//# sourceURL=js/components/stationclock.js

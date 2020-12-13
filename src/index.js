@@ -40,3 +40,4 @@ require('hammerjs');
 require('chartjs-plugin-zoom');
 window.Popper=require('@popperjs/core');
 window.iro=require('@jaames/iro').default;
+window.ICAL=require('ical.js');

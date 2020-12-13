@@ -3,19 +3,18 @@ Garbage Collector
 
 If you want to have a block with next pickup dates for your garbage, add the following to ``CONFIG.js``, and change zipcode & housenumber to the correct data::
 
-    var config ={}
-    config['garbage_company'] = 'cure';
-    config['garbage_icalurl'] = 0;
-    config['garbage_zipcode'] = '1234AB';
-    config['garbage_street'] = 'vuilnisstraat';
-    config['garbage_housenumber'] = '1';
-    config['garbage_maxitems'] = '12';
-    config['garbage_width'] = '12';
+    blocks['mygarbage'] = {
+        company: 'cure',
+        zipcode: '1234AB',
+        street: 'vuilnisstraat',
+        housenumber: 1,
+        maxitems: 12,
+        width: 12
+    }
 
 Next, add the garbage to a column, like::
 
-  columns[1]['blocks'] = ['garbage']
-
+  columns[1]['blocks'] = ['mygarbage']
 
 You can change the colors of the trashcan (and/or the complete line) via the parameters in ``CONFIG.js``.
 
@@ -23,19 +22,33 @@ Parameters
 ----------
 
 =======================   ===============================
-Parameter                 Description 
+Block Parameter           Description 
 =======================   ===============================
-garbage_company           Garbage company to use. See :ref:`garbage_companies`
-garbage_icalurl           ``'<url>'``: In case the garbage company is ``url`` the URL of the ical-file.
-garbage_zipcode           The zipcode
-garbage_street            Your street
-garbage_housenumber       Your housenumber
-garbage_maxitems          Number of items to show
-garbage_width             ``1..12``: Width of the block
-garbage_hideicon          ``true / false``: To hide the garbage icon
-garbage_use_names         ``true / false``: shows name of the garbage type
-garbage_use_colors        ``true / false``: shows coloring for complete line
-garbage_icon_use_colors   ``true / false``: shows colored or only white trashcan
+company                   Garbage company to use. See :ref:`garbage_companies`
+icalurl                   ``'<url>'``: In case the garbage company is ``url`` the URL of the ical-file.
+zipcode                   The zipcode
+street                    Your street
+housenumber               Your housenumber
+maxitems                  Number of items to show
+maxdays                   Number of days to show (2 is today and tomorrow). Default: 32
+width                     ``1..12``: Width of the block
+hideicon                  ``true / false``: To hide the garbage icon
+use_names                 ``true / false``: shows name of the garbage type
+use_colors                ``true / false``: shows coloring for complete line
+icon_use_colors           ``true / false``: shows colored or only white trashcan
+title                     Title text
+use_cors_prefix           ``true / false``: use a CORS proxy for getting data from provider. See :ref:`dom_CORS_proxy`
+mapping                   Translation from description of the pickup event to a garbage type.  See :ref:`par_garbage`.
+garbage                   Settings for different garbage types. See :ref:`par_garbage`.
+date_separator            Text to place between the garbage type and date (default ': ')
+layout                    Layout of the garbage rows: ``0`` for plain text layout, ``1`` for table layout, ``2`` for text layou with line break between garbage type and date.
+=======================   ===============================
+
+These block parameters can also be globally via a CONFIG.js setting:
+
+=======================   ===============================
+CONFIG setting            Description 
+=======================   ===============================
 garbage_use_cors_prefix   ``true / false``: use a CORS proxy for getting data from provider. See :ref:`dom_CORS_proxy`
 garbage_mapping           Translation from description of the pickup event to a garbage type.  See :ref:`par_garbage`.
 garbage                   Settings for different garbage types. See :ref:`par_garbage`.
@@ -43,11 +56,6 @@ garbage                   Settings for different garbage types. See :ref:`par_ga
 
 Usage
 -----
-
-.. note:: Garbage collector requires beta 2.4.4 or higher.
-
-Instead of running these requests from the site https://dashticz.nl (free of charge donated by the initiator of Dashticz), the user has to take care of this process by running a PHP-server of choice, locally or remote.
-See :ref:`Installation`.
 
 .. _par_garbage :
 
@@ -104,38 +112,38 @@ Currently supported cities/companies/services
 ===================     =========================
 Company                 City or area
 ===================     =========================
-googlecalendar ical     file in iCal format
-recycleapp              RecycleApp (BE)
-edg                     EDG (DE)
-deafvalapp              Afval App (NL)
-afvalalert
-afvalwijzerarnhem       Afvalwijzer Arnhem (NL)
+afvalalert              (Not working)
+afvalstoffendienst      Afvalstoffendienst: 's-Hertogenbosch, Vlijmen, ... (NL)
 almere                  Almere (NL)
 alphenaandenrijn        Alphen aan de Rijn (NL)
-area
-avalex                  Avalex (NL)
+area                    Coevorden, Emmen, Hoogeveen (NL)
+avalex                  Avalex: Delft, ... (NL)
+avri                    Rivierenland (Zaltbommel, ...)(NL)
 barafvalbeheer          Bar-afvalbeheer for Barendrecht, Rhoon (NL)
-gemeenteberkelland      Berkelland (NL)
 best                    Best (NL)
-circulusberkel          Circulus Berkel (NL)
-cure                    Cure (NL)
-cyclusnv                Cyclus NV (NL)
-deurne                  Deurne (NL)
-dar                     Dar (NL)
-gemertbakelmaandag      Gemert-Bakel, maandag (NL)  
-gemertbakeldinsdag      Gemert-Bakel, dinsdag (NL)  
-gemertbakelwoensdag     Gemert-Bakel, woensdag (NL)  
+blink                   Blink: Asten, Deurne, Gemert-Bakel, Heeze-Leende, Helmond, Laarbeek, Nuenen, Someren (NL)
+circulusberkel          Circulus Berkel: Apeldoorn, Bronckhorst, Brummen, Deventer, Doesburg, Epe, Lochem, Zutphen en Voorst (NL)
+cure                    Cure: Eindhoven, Geldrop-Mierlo, Valkenswaard (NL)
+cyclusnv                Cyclus NV: Bodegraven-Reeuwijk, Gouda, Kaag en Braassem, Krimpen aan den IJssel, Krimpenerwaard, Montfoort, Nieuwkoop, Waddinxveen en Zuidplas (NL)
+dar                     Dar: Berg en Dal, Beuningen, Druten, Heumen, Nijmegen, Wijchen (NL)
+deafvalapp              Afval App (NL)
+edg                     EDG (DE)
+gad                     Grondstoffen- en Afvalstoffendienst regio Gooi en Vechtstreek (NL)
+gemeenteberkelland      Berkelland: Borculo, Eibergen, Neede en Ruurlo (NL)
 goes                    Goes (NL)  
+googlecalendar          file in iCal format
 groningen               Groningen (NL)  
-heezeleende  
-hvc                     HVC Groep (NL)  
-meerlanden              Meerlanden (NL)  
+hvc                     HVC Groep: 44 gemeenten in Flevoland, Noord- en Zuid-Holland (NL)  
+ical                    File in iCal format
+meerlanden              Meerlanden: Aalsmeer, Bloemendaal, Diemen, Haarlemmermeer, Heemstede, Hillegom, Lisse, Noordwijk en Zandvoort (NL)  
 mijnafvalwijzer         Mijn Afval Wijzer (NL)
 omrin                   Leeuwarden, Opsterland, Heerenveen, Waadhoeke, ...   
-rd4  
-recyclemanager          Recycle Manager  
-rmn                     RMN (NL)  
-rova                    Rova (NL)  
+purmerend               Purmerend (NL)
+rd4                     RD4: Beekdaelen, Brunssum, Eijsden-Margraten, Gulpen-Wittem, Heerlen, Kerkrade, Landgraaf, Simpelveld, Vaals en Voerendaal
+recycleapp              RecycleApp (BE)
+rmn                     RMN: Baarn, Zeist, Nieuwegein,  (NL)  
+rova                    Rova (NL)
+suez                    Suez: Arnhem (NL)  
 sudwestfryslan          Sudwest Fryslan (NL)  
 twentemilieu            Twente Milieu (NL)  
 uden                    Uden (NL)  
@@ -143,7 +151,89 @@ veldhoven               Veldhoven (NL)
 venlo                   Venlo (NL)  
 venray                  Venray (NL)  
 vianen                  Vianen (NL)  
-waalre                  Waalre (NL)  
-zuidhornical            Zuidhoorn (NL)  
-zuidhorn                Zuidhoorn (NL)  
+waalre                  Waalre (NL)
+waardlanden             Waardlanden: Gorinchem, Hardinxveld-Giessendam, Molenlanden en Vijfheerenlanden (NL)  
 ===================     =========================
+
+.. _garbage_styling :
+
+Styling
+~~~~~~~
+
+Via ``custom.css`` the appearance of the garbage blocks can be modified.
+
+The generic CSS selector for a garbage block is ``.garbage``. To select a specific garbage block, you can use ::
+
+    [data-id='mygarbage'].garbage
+
+To give the garbage block a fixed height in combination with a vertical scroll bar if needed::
+
+    .garbage {
+        height: 140px;
+        overflow: auto
+    }
+
+Instead of ``.garbage`` you can also use ``.trash`` which is maintained for backwards compatibility.
+
+Additional CSS classes are applied to the garbage rows as follows:
+
+* ``.trashtoday``:  For garbage collection scheduled for today
+* ``.trashtomorrow``: For garbage collection scheduled for tomorrow
+* ``.trashrow``: For garbage collection scheduled for the days after tomorrow
+
+The ``.trashtoday`` and ``.trashtomorrow`` classes are also applied on block level.
+
+To set the block styling depending on the trash today or tomorrow schedule, you can add the following to ``custom.css``::
+
+    /* This will give the block a red border if trash collection is collected for today*/
+    .trash.trashtoday {
+        border-color: red 
+    }
+
+    /* This will give the block a green border if trash collection is collected for tomorrow*/
+    .trash.trashtomorrow {
+        border-color: green 
+    }
+
+    /* This will reduce the opacity in case no trash is scheduled for today or tomorrow */
+    .trash:not(.trashtoday):not(.trashtomorrow) .dt_state {
+        opacity: 0.2 !important;
+    }
+
+    /* This will increase the font of the trash row that is scheduled for today */
+    .dt_state .trashtoday {
+        font-size: 20px
+    }
+
+Besides the row styling, you can also make use of column styling. The first column contains the trashtype and can be selected via CSS class ``.trashtype``.
+The second column contains the date separator, and can be selected via class ``.trashsep``.
+The third column contains the date, and can be selected via class ``.trashdate``.
+
+As an example, the default css styling for the columns is as follows::
+
+    .trashsep {
+        width: 10px;
+        text-align: center;
+    }
+
+    .trashdate {
+        text-align: right;
+    }
+
+.. _garbage_upgrade :
+
+Upgrade from Dashtcz 3.6.6 and earlier
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In earlier versions of Dashticz the garbage block was configured via settings in CONFIG.js as follows::
+
+    var config ={}
+    config['garbage_company'] = 'cure';
+    config['garbage_icalurl'] = 0;
+    config['garbage_zipcode'] = '1234AB';
+    config['garbage_street'] = 'vuilnisstraat';
+    config['garbage_housenumber'] = '1';
+    config['garbage_maxitems'] = '12';
+    config['garbage_width'] = '12';
+
+Although this still is supported, it's recommend to switch to the new block method as described in the first section.

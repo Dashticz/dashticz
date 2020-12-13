@@ -1,17 +1,17 @@
 [
     {
         "name": "om/icalparser",
-        "version": "v0.2.8",
-        "version_normalized": "0.2.8.0",
+        "version": "v0.2.9",
+        "version_normalized": "0.2.9.0",
         "source": {
             "type": "git",
             "url": "https://github.com/OzzyCzech/icalparser.git",
-            "reference": "e84ea05518193010b15d318fe097797c570dd624"
+            "reference": "667aa26e1bd498c3558405f182452beb9d5a8757"
         },
         "dist": {
             "type": "zip",
-            "url": "https://api.github.com/repos/OzzyCzech/icalparser/zipball/e84ea05518193010b15d318fe097797c570dd624",
-            "reference": "e84ea05518193010b15d318fe097797c570dd624",
+            "url": "https://api.github.com/repos/OzzyCzech/icalparser/zipball/667aa26e1bd498c3558405f182452beb9d5a8757",
+            "reference": "667aa26e1bd498c3558405f182452beb9d5a8757",
             "shasum": ""
         },
         "require": {
@@ -23,7 +23,7 @@
         "suggest": {
             "ext-dom": "for timezone tool"
         },
-        "time": "2020-03-16T07:03:51+00:00",
+        "time": "2020-05-13T07:50:23+00:00",
         "type": "library",
         "installation-source": "dist",
         "autoload": {

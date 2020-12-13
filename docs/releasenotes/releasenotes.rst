@@ -2,24 +2,170 @@ Release Notes
 =============
 
 For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedocs.io/en/beta/releasenotes/index.html
+
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 Recent changes
----------------
+--------------
+
+3.6 Master (11-12-2020)
+------------------------
+
+Master version derived from 3.6.9 Beta
+
+3.6.9 Beta (10-12-2020)
+------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Garbage: New garbage block parameter ``maxdays`` to set the number of days to show the garbage collection info (2 means today and tomorrow) 
+* Stationclock: New block parameter ``size`` to set the size of the clock. See :ref:`stationclock`
+* Stationclock: New configuration parameters. See :ref:`stationclock`
+
+Fixes
+~~~~~~
+
+* Garbage: Fix DeAfvalApp (https instead of http)
+* Garbage: Add avri as garbage company
+* Garbage: add layout as block parameter. Use ``layout: 0`` to format the garbage rows as one string and ``layout: 1`` to use table layout.
+* Garbage: Fix Afvalwijzer 2021 data
+* Prevent :hover effect for touch devices
+
+3.6.8 Beta (27-11-2020)
+------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Garbage: New providers Suez (Arnhem), Blink (Asten, Deurne, Gemert-Bakel, Heeze-Leende, Helmond, Laarbeek, Nuenen, Someren), Purmerend
+* Garbage: New provider afvalstoffendienst
+* Garbage: New provider GAD
+* Colorpicker: Add support for WW dimmers (Philips Hue)
+* Chart: For custom graphs you can define the icon to use for each graph button. See :ref:`custom_graph`
+* Timegraph: New special block to define a moving time graph. See :ref:`timegraph`
+* Garbage: Additional styling. See :ref:`garbage_styling`
+* Garbage: New block parameter ``date_separator`` to configure the text between garbage type and date
+* Garbage: Format as table. See :ref:`garbage_styling`
+
+Fixes
+~~~~~~
+
+* Calendar: Add 'method:0' to your calendar block definition in case you experience issues with recurring events. Only works for the new calendar block. See :ref:`newcalendar`
+* Fix for X10 security motion device.
+
+3.6.7 Beta (4-11-2020)
+------------------------
+
+Update of the Garbage module. See :ref:`garbage_upgrade` for upgrade information.
+
+3.6.6 Beta (30-10-2020)
+------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Dashticz URL parameters. See :ref:`urlparameters`
+* Dials: Set the block parameter ``animation`` to ``true`` or ``false`` to enable/disable dial animations.
+* Add ``timeout`` CSS class to Domoticz devices in the timeout state. See :ref:`domoticzStyling`
+ 
+Fixes
+~~~~~~~
+
+* Garbage: Fix for Mijnafvalwijzer on iOS
+* Disable Dashticz refresh if `config['dashticz_refresh']` is 0
+* Bugfix initialization code
+
+3.6.5 Beta (22-10-2020)
+------------------------
+
+Fixes
+~~~~~~~
+
+* Button: ``newwindow: 3`` handling is fixed.
+* Scenes: Switch always on
+* Switched to an alternative server to provide the covid-19 data
+
+Enhancements
+~~~~~~~~~~~~
+
+* Button, special blocks: Initiate the ``url`` parameter as POST request by setting ``newwindow: 4``
+* Add support for Domoticz x10 security sensor
+* Dial: Combine data from several devices. See :ref:`genericdial`
+
+3.6.4 Beta (6-10-2020)
+----------------------
+
+Fixes
+~~~~~
+
+* PV Output Temp device.
+  
+Update notes
+~~~~~~~~~~~~
+
+* The icon for PV Output blocks are not automatically set to 'fas fa-sun' anymore. You still can do this manually in a block definition. In a future version I'll improve the default settings for Domoticz device types.
+
+3.6.3 Beta
+-----------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Set config setting ``security_panel_lock`` to ``2`` to activate security panel lock in 'Armed Home' mode as well.
+* Dial type now enabled for most devices. See :ref:`genericdial`
+
+Fixes
+~~~~~
+
+* Remove scroll bar of the modal security panel (security panel lock)
+* New config setting ``use_cors`` to enable CORS proxy for OWM. Set to ``true`` on Android 4.4.2.
+* Garbage: recycleapp
+
+3.6.2 Beta
+----------
+
+Fixes
+~~~~~
+
+* Fix for graph issues in 3.6
+
+3.6.1 Beta
+----------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Custom HTML block. See :ref:`customhtml`
+
+3.6.0 Beta
+----------
+Beta version, same as 3.6 master.
+
+Code
+~~~~~
+
+* Update of the external js modules
 
 3.6 Master
 ----------
 
-Enhancements:
-  * New Dashticz config parameter 'swiper_touch_move' to disable/enable swiping the screen on touch
-  * Graph: The 'today' button now shows the full day data. The range 'day'still exists as well, which still can be used in custom graphs.
-  * Add support for device with subtype 'Current'
-  * Popup graphs enabled by default for most block types. To disable a popup graph, add ``graph: false`` to the block definition.
+Enhancements
+~~~~~~~~~~~~
 
-Updates
-  * Update FontAwesome to 5.14.0
+* New Dashticz config parameter 'swiper_touch_move' to disable/enable swiping the screen on touch
+* Graph: The 'today' button now shows the full day data. The range 'day'still exists as well, which still can be used in custom graphs.
+* Add support for device with subtype 'Current'
+* Popup graphs enabled by default for most block types. To disable a popup graph, add ``graph: false`` to the block definition.
+
+Code
+~~~~~
+
+* Update FontAwesome to 5.14.0
 
 Fixes
+~~~~~
+
   * Camera block 
   * Garbage: Ophaalkalender (BE) doesn't work anymore. It has been replaced by recycleapp.
   * Security panel home symbol.
@@ -32,14 +178,20 @@ Fixes
 -----------
 
 Enhancements
-  * New colorpicker for RGB devices, including support for whites. The ``no_rgb`` setting is absolete. See :ref:`colorpicker`
+~~~~~~~~~~~~
+
+* New colorpicker for RGB devices, including support for whites. The ``no_rgb`` setting is absolete. See :ref:`colorpicker`
 
 Fixes
-  * Fix for Omrin garbage provider
-  * Fix for Venlo garbage provider
+~~~~~
+
+* Fix for Omrin garbage provider
+* Fix for Venlo garbage provider
 
 Code
-  # Update to jquery 3.5.1
+~~~~~
+
+* Update to jquery 3.5.1
 
 3.5.1 Beta
 -----------

@@ -666,3 +666,19 @@ function formatThousand(val, decimal) {
   };
   return nf.format(val, config);
 }
+
+function getLocationParameters() {
+  function transformToAssocArray( prmstr ) {
+    var params = {};
+    var prmarr = prmstr.split("&");
+    for ( var i = 0; i < prmarr.length; i++) {
+        var tmparr = prmarr[i].split("=");
+        params[tmparr[0]] = decodeURI(tmparr[1]);
+    }
+    return params;
+    }
+  var prmstr = window.location.search.substr(1);
+  return prmstr != null && prmstr != "" ? transformToAssocArray(prmstr) : {};
+}
+
+

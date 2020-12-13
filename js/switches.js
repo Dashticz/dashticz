@@ -40,6 +40,7 @@ function getDefaultSwitchBlock(
     var mMode = 'toggle';
     if (device['SwitchType'] == 'Push On Button') mMode = 'on';
     else if (device['SwitchType'] == 'Push Off Button') mMode = 'off';
+    if (device.Type === 'Scene') mMode = 'on';
     block.$mountPoint
       .find('.mh')
       .addClass('hover')
@@ -92,6 +93,7 @@ function getIconStatusClass(deviceStatus) {
       case 'closed':
       case 'normal':
       case 'unlocked':
+      case 'no motion':
         return 'off';
     }
     return 'on';
@@ -716,8 +718,7 @@ function addSlider(block, sliderValues) {
 }
 
 function isRGBDeviceAndEnabled(block) {
-  var dimmerTypes = ['RGB', 'RGBW', 'RGBWW', 'RGBZ', 'RGBWZ', 'RGBWWZ'];
-  if (dimmerTypes.indexOf(block.device.SubType) === -1) return 0;
+  if (Colorpicker.prototype.dimmerTypes.indexOf(block.device.SubType) === -1) return 0;
   if (typeof block.colorpicker !== 'undefined')
     return parseInt(block.colorpicker);
   if (typeof settings.colorpicker !== 'undefined')

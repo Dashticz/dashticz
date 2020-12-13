@@ -9,7 +9,7 @@ Buttons are clickable elements that may show an image. First you have to define 
     buttons.yr = {
     	width: 12,
       isimage: true,
-      refreshimage: 60,
+      refresh: 60,
     	btnimage: 'https://www.yr.no/sted/Norge/Oppland/%C3%98ystre_Slidre/Beito/advanced_meteogram.png',
     	url: 'https://www.yr.no/sted/Norge/Oppland/%C3%98ystre_Slidre/Beito/langtidsvarsel.html'
     };
@@ -81,7 +81,8 @@ Parameters
     - | ``0``: open in current window
       | ``1``: open in new window
       | ``2``: open in new frame (default, to prevent a breaking change in default behavior)
-      | ``3``: no new window/frame (for intent handling, api calls)
+      | ``3``: no new window/frame (for intent handling, api calls). HTTP get request.
+      | ``4``: no new window/frame (for intent handling, api calls). HTTP post request. (forcerefresh not supported)
   * - password
     - | Password protect switches, buttons, thermostats, sliders, blinds
       | ``'secret'``: Password to use
@@ -173,7 +174,7 @@ Examples
 Additional examples of button definitions::
 
     var buttons = {}
-    buttons.buienradar = {width:12, isimage:true, refreshimage:60, btnimage: 'https://image.buienradar.nl/2.0/image/animation/RadarMapRainNL?height=300&width=360&extension=gif&renderBackground=True&renderBranding=False&renderText=True&history=3&forecast=6&skip=1', url: 'https://www.buienalarm.nl/amsterdam-noord-holland-nederland/52.3727,4.8936'}
+    buttons.buienradar = {width:12, isimage:true, refresh:60, btnimage: 'https://image.buienradar.nl/2.0/image/animation/RadarMapRainNL?height=300&width=360&extension=gif&renderBackground=True&renderBranding=False&renderText=True&history=3&forecast=6&skip=1', url: 'https://www.buienalarm.nl/amsterdam-noord-holland-nederland/52.3727,4.8936'}
     buttons.radio = {width:12, image: 'radio_on.png', title: 'Radio', url: 'http://nederland.fm'}
     buttons.nunl = {width:12, icon: 'far fa-newspaper', title: 'Nu.nl', url: 'http://www.nu.nl'}
     buttons.webcam = {width:12, isimage:true, refresh:2, btnimage: 'http://ip_url_to_webcam', url: 'http://ip_url_to_webcam', framewidth:500, frameheight:400}

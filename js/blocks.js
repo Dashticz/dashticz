@@ -1,6 +1,6 @@
 /* eslint-disable no-debugger */
 /*global getBlockTypesBlock, language, _TEMP_SYMBOL, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
-/*global getSpotify, getCoin, loadChromecast, loadGarbage, loadSonarr */
+/*global getSpotify, getCoin, loadChromecast, loadSonarr */
 /*global Dashticz, DT_function, Domoticz, getLog, addCalendar */
 /*global getRandomInt, moment, number_format */
 /*from bundle.js*/
@@ -180,6 +180,9 @@ function deviceUpdateHandler(block) {
     $div.html(html);
     getBlockClick(block);
   }
+  else
+    $div = $selector.find('.mh'); //$div may not exist anymore. Find the new one.
+
   if (typeof $div.attr('onclick') !== 'undefined') {
     $div.addClass('hover');
   }
@@ -201,6 +204,10 @@ function deviceUpdateHandler(block) {
     $div.removeClass(block.currentClass).addClass(block.addClass);
     block.currentClass = block.addClass;
   }
+
+  if(device.HaveTimeout) $div.addClass('timeout')
+  else $div.removeClass('timeout');
+
 }
 
 function getBlockClass(block) {
@@ -556,22 +563,6 @@ function handleStringBlock(blocktype, columndiv, c) {
       });
       loadChromecast(columndiv);
       return;
-    case 'garbage':
-      if (typeof loadGarbage !== 'function') {
-        $.ajax({
-          url: 'js/garbage.js',
-          async: false,
-          dataType: 'script',
-        });
-        $.ajax({
-          url: 'vendor/ical/ical.min.js',
-          async: false,
-          dataType: 'script',
-        });
-      }
-      $(columndiv).append(loadGarbage());
-      getBlockClick(block);
-      return;
     case 'sonarr':
       if (typeof loadSonarr !== 'function')
         $.ajax({
@@ -811,7 +802,7 @@ function getStatusBlock(block) {
             value = value.replace(unitArray[0], unitArray[1]);
         }*/
 
-  getBlockClick(block);
+  getBlockClick(block, '.block_'+block.key);
 
   var attr = '';
   if (
@@ -850,6 +841,12 @@ function getStatusBlock(block) {
   else stateBlock = iconORimage(block, icon, '', 'icon', attr, 4, '');
 
   stateBlock += '<div class="col-xs-8 col-data">';
+
+  if(block.textOn && getIconStatusClass(device.Status) === 'on')
+    value = block.textOn;
+  if(block.textOff && getIconStatusClass(device.Status) === 'off')
+    value = block.textOff;
+
   if (!titleAndValueSwitch(block)) {
     if (hideTitle(block)) {
       stateBlock += '<span class="value">' + value + '</span>';
@@ -876,14 +873,16 @@ function getStatusBlock(block) {
   return stateBlock;
 }
 
-function getBlockClick(block) {
+function getBlockClick(block, selector) {
+  //set selector to set the clickhandler to a specific child instead of all .mh childs.
+  //necessary for subdevices.
   var device = block.device;
   var url = block.url; //todo: undocumented feature
   var graph = block.graph;
   //var blockSel = '.block_'+ block.mountPoint.slice(1);
   //console.log('getBlockClick for ', block);
   //   var $div=blockdef.$mountPoint.find('.block_'+blockdef.idx);
-  var $div = block.$mountPoint.find('.mh');
+  var $div = block.$mountPoint.find(typeof selector==='undefined' ? '.mh' : selector);
   if (url) {
     if ($div.length > 0) {
       $div
@@ -1057,6 +1056,7 @@ function getBlockData(block, textOn, textOff) {
     status == 'Closed' ||
     status == 'Normal' ||
     status == 'Locked' ||
+    status == 'No Motion' ||
     (status == '' && block.device['InternalState'] == 'Off')
   ) {
     value = textOff;
@@ -1157,7 +1157,7 @@ function triggerStatus(block) {
   getCustomFunction('getStatus', block, true);
 
   if (typeof onOffstates[idx] !== 'undefined' && value !== onOffstates[idx]) {
-    if (device['Status'] == 'On' || device['Status'] == 'Open') {
+    if ( getIconStatusClass( device['Status']) == 'on') {
       if (block['playsoundOn']) {
         playAudio(block['playsoundOn']);
       }
@@ -1191,7 +1191,7 @@ function triggerStatus(block) {
         }
       }
     }
-    if (device['Status'] == 'Off' || device['Status'] == 'Closed') {
+    if (getIconStatusClass( device['Status']) == 'off') {
       if (block['playsoundOff']) {
         playAudio(block['playsoundOff']);
       }
@@ -1928,7 +1928,7 @@ function createBlocks(blockParent, blockValues) {
       (block.width || 4) +
       '"/>';
     $div.append(html);
-    block.mountPoint = blockParent.mountPoint; // +' .block_'+blockValue.idx;
+    block.mountPoint = blockParent.mountPoint;//  +' .block_'+key;
     block.$mountPoint = $(block.mountPoint);
     //        block.subidx = index;
     //        block.blockdef=blocks[blockValue.idx]; //store a reference of the parent blockdef ? should be in parent already ...
@@ -2269,7 +2269,10 @@ function showMap(mapid, map) {
 
 function getSecurityBlock(block) {
   //todo: rewrite
+  
   var device = block.device;
+  if (block.protected || device.Protected)
+    return getProtectedSecurityBlock(block);
   var html = '';
   if (device['Status'] === 'Normal')
     html += iconORimage(block, 'fas fa-shield-alt', '', 'off icon', '', 2);
@@ -2290,15 +2293,15 @@ function getSecurityBlock(block) {
 
   if (secPanelicons === true) {
     disarm =
-      '<i class="fa fa-unlock" title="' +
+      '<i class="fas fa-unlock" title="' +
       language.switches.state_disarm +
       '"></i>';
     armhome =
-      '<i class="fa fa-home" title="' +
+      '<i class="fas fa-home" title="' +
       language.switches.state_armhome +
       '"></i>';
     armaway =
-      '<i class="fa fa-home" title="' +
+      '<i class="fas fa-home" title="' +
       language.switches.state_armaway +
       '"></i><i class="fa fa-walking"></i>';
   }
@@ -2352,6 +2355,30 @@ function getSecurityBlock(block) {
     html += '</div>';
   }
   return [html, true];
+}
+
+function getProtectedSecurityBlock(block) {
+  var defaultSettings = {
+    Normal: {
+      iconOff: 'fas fa-shield-alt',
+    },
+    Alarm: {
+      imageOn: 'alarm.png',
+    },
+    'Arm Home': {
+      icon: 'fas fa-home',
+    },
+    'Arm Away': {
+      icon: 'fas fa-walking',
+    },
+  };
+
+  var secBlock = defaultSettings[block.device.Status] || {
+    icon: 'fas fa-shield-alt',
+  };
+  secBlock.value = block.device.Status;
+  $.extend(secBlock, block);
+  return [getStatusBlock(secBlock), true];
 }
 
 function getBlockTitle(block) {
