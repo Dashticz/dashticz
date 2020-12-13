@@ -41,7 +41,7 @@ use_cors_prefix           ``true / false``: use a CORS proxy for getting data fr
 mapping                   Translation from description of the pickup event to a garbage type.  See :ref:`par_garbage`.
 garbage                   Settings for different garbage types. See :ref:`par_garbage`.
 date_separator            Text to place between the garbage type and date (default ': ')
-layout                    Layout of the garbage rows: ``0`` for plain text layout, ``1`` for table layout
+layout                    Layout of the garbage rows: ``0`` for plain text layout, ``1`` for table layout, ``2`` for text layou with line break between garbage type and date.
 =======================   ===============================
 
 These block parameters can also be globally via a CONFIG.js setting:
