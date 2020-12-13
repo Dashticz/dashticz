@@ -76,7 +76,7 @@ var SpotifyModule = (function () {
       }
     });
   }
-// Todo: columndiv and rand currently are unused
+  // Todo: columndiv and rand currently are unused
 
   // eslint-disable-next-line no-unused-vars
   function _getData(columndiv, rand) {
