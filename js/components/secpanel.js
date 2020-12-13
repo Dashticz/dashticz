@@ -53,7 +53,7 @@ var DT_secpanel = {
   CheckStatus: function (secstatus) {
     //callback function for main.js
     if (
-      secstatus == 2 || /*arm away*/
+      secstatus == 2 /*arm away*/ ||
       (secstatus == 1 && settings['security_panel_lock'] == 2) /*arm home*/
     ) {
       DT_secpanel.locked = true;
@@ -181,8 +181,10 @@ var DT_secpanel = {
         } else {
           $('.sec-frame .status:not(.dashticz)').removeClass('disabled');
           var mode = $('.sec-frame').last().data('mode');
-          if ( (mode === 2 && status === 2 && settings['security_panel_lock']) ||
-            ( status === 1 && settings['security_panel_lock']===2)) {
+          if (
+            (mode === 2 && status === 2 && settings['security_panel_lock']) ||
+            (status === 1 && settings['security_panel_lock'] === 2)
+          ) {
             location.reload();
           } else {
             DT_secpanel.ShowStatus();

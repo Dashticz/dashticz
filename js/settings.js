@@ -104,9 +104,12 @@ settingList['general']['colorpicker']['help'] =
   language.settings.general.colorpicker_help;
 settingList['general']['colorpicker']['type'] = 'select';
 settingList['general']['colorpicker']['options'] = {};
-settingList['general']['colorpicker']['options'][0] = language.settings.general.colorpicker_none;
-settingList['general']['colorpicker']['options'][1] = language.settings.general.colorpicker_old;
-settingList['general']['colorpicker']['options'][2] = language.settings.general.colorpicker_new;
+settingList['general']['colorpicker']['options'][0] =
+  language.settings.general.colorpicker_none;
+settingList['general']['colorpicker']['options'][1] =
+  language.settings.general.colorpicker_old;
+settingList['general']['colorpicker']['options'][2] =
+  language.settings.general.colorpicker_new;
 
 settingList['general']['last_update'] = {};
 settingList['general']['last_update']['title'] =
@@ -604,7 +607,8 @@ settingList.garbage = {
     type: 'select',
     options: {
       afvalalert: 'Afval Alert (NL)',
-      afvalstoffendienst: 'Afvalstoffendienst: Hertogenbosch, Vlijmen, ... (NL)',
+      afvalstoffendienst:
+        'Afvalstoffendienst: Hertogenbosch, Vlijmen, ... (NL)',
       almere: 'Almere',
       alphenaandenrijn: 'Alphen aan de Rijn (NL)',
       area: 'Area',
@@ -612,11 +616,14 @@ settingList.garbage = {
       avri: 'Rivierenland (Zaltbommel, ...)(NL)',
       barafvalbeheer: 'Bar-afvalbeheer (Barendrecht, Rhoon)(NL)',
       best: 'Best (NL)',
-      blink: 'Blink: Asten, Deurne, Gemert-Bakel, Heeze-Leende, Helmond, Laarbeek, Nuenen, Someren (NL)',
+      blink:
+        'Blink: Asten, Deurne, Gemert-Bakel, Heeze-Leende, Helmond, Laarbeek, Nuenen, Someren (NL)',
       circulusberkel: 'Circulus Berkel (NL)',
       cure: 'Cure: Eindhoven, Geldrop-Mierlo, Valkenswaard (NL)',
-      cyclusnv: 'Cyclus NV: Bodegraven-Reeuwijk, Gouda, Kaag en Braassem, Krimpen aan den IJssel, Krimpenerwaard, Montfoort, Nieuwkoop, Waddinxveen en Zuidplas (NL)',
-      dar: 'Dar: Berg en Dal, Beuningen, Druten, Heumen, Nijmegen, Wijchen (NL)',
+      cyclusnv:
+        'Cyclus NV: Bodegraven-Reeuwijk, Gouda, Kaag en Braassem, Krimpen aan den IJssel, Krimpenerwaard, Montfoort, Nieuwkoop, Waddinxveen en Zuidplas (NL)',
+      dar:
+        'Dar: Berg en Dal, Beuningen, Druten, Heumen, Nijmegen, Wijchen (NL)',
       deafvalapp: 'Afval App (NL)',
       edg: 'EDG (DE)',
       gad: 'Grondstoffen- en Afvalstoffendienst regio Gooi en Vechtstreek (NL)',
@@ -644,7 +651,8 @@ settingList.garbage = {
       venray: 'Venray (NL)',
       vianen: 'Vianen (NL)',
       waalre: 'Waalre (NL)',
-      waardlanden: 'Waardlanden: Gorinchem, Hardinxveld-Giessendam, Molenlanden en Vijfheerenlanden (NL)',
+      waardlanden:
+        'Waardlanden: Gorinchem, Hardinxveld-Giessendam, Molenlanden en Vijfheerenlanden (NL)',
     },
   },
 };
@@ -923,8 +931,8 @@ var defaultSettings = {
       'Biodégradables',
       'snoei',
     ],
-    pmd: ['plastic', 'pmd', 'verpakking', 'kunststof', 'valorlux','packages'],
-    papier: ['papier', 'blauw', 'blue', 'recycling bin collection','paper'],
+    pmd: ['plastic', 'pmd', 'verpakking', 'kunststof', 'valorlux', 'packages'],
+    papier: ['papier', 'blauw', 'blue', 'recycling bin collection', 'paper'],
     kca: ['chemisch', 'kca', 'kga'],
     brown: ['brown', 'verre'],
     black: ['black', 'zwart'],
@@ -955,7 +963,7 @@ var defaultSettings = {
   login_timeout: 60,
   refresh_method: 1,
   domoticz_timeout: 2000,
-  use_cors: 0
+  use_cors: 0,
 };
 
 var settings = {};

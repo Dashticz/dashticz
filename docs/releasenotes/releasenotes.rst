@@ -8,6 +8,14 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 --------------
 
+3.7.0 Beta (13-12-2020)
+-----------------------
+
+Code
+~~~~~
+
+* NPM update, code formatting
+
 3.7 Master (13-12-2020)
 ------------------------
 

@@ -85,8 +85,8 @@ function loadFiles(dashtype) {
       $.ajax({
         url: 'https://cdn.lr-ingest.io/LogRocket.min.js',
         dataType: 'script',
-      }).then( function() {
-        enableLogRocket(enable_logrocket)
+      }).then(function () {
+        enableLogRocket(enable_logrocket);
       })
   )
     .then(function () {
@@ -381,9 +381,13 @@ function defaultPassiveHandlers() {
 
 function onLoad() {
   defaultPassiveHandlers();
-  var touchsupport = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)
-  if (!touchsupport){ // browser doesn't support touch
-      document.documentElement.className += " non-touch"
+  var touchsupport =
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.msMaxTouchPoints > 0;
+  if (!touchsupport) {
+    // browser doesn't support touch
+    document.documentElement.className += ' non-touch';
   }
   md = new MobileDetect(window.navigator.userAgent);
 
@@ -553,11 +557,11 @@ function buildStandby() {
       getBlock(columns_standby[c], 'standby' + c, 'div.screenstandby', true);
     }
 
-    $('.screenstandby').on('click', function(event) {
+    $('.screenstandby').on('click', function (event) {
       disableStandby();
       event.stopPropagation();
-      return false
-    })
+      return false;
+    });
   } else {
     $('.screenstandby').show();
   }
@@ -721,7 +725,7 @@ function startSwiper() {
         clickable: true,
       },
       paginationClickable: true,
-//      speed: 0,
+      //      speed: 0,
       loop: false,
       initialSlide: settings['start_page'] - 1,
       effect: settings['slide_effect'],

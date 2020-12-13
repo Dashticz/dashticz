@@ -179,9 +179,7 @@ function deviceUpdateHandler(block) {
   if (addHTML) {
     $div.html(html);
     getBlockClick(block);
-  }
-  else
-    $div = $selector.find('.mh'); //$div may not exist anymore. Find the new one.
+  } else $div = $selector.find('.mh'); //$div may not exist anymore. Find the new one.
 
   if (typeof $div.attr('onclick') !== 'undefined') {
     $div.addClass('hover');
@@ -205,9 +203,8 @@ function deviceUpdateHandler(block) {
     block.currentClass = block.addClass;
   }
 
-  if(device.HaveTimeout) $div.addClass('timeout')
+  if (device.HaveTimeout) $div.addClass('timeout');
   else $div.removeClass('timeout');
-
 }
 
 function getBlockClass(block) {
@@ -802,7 +799,7 @@ function getStatusBlock(block) {
             value = value.replace(unitArray[0], unitArray[1]);
         }*/
 
-  getBlockClick(block, '.block_'+block.key);
+  getBlockClick(block, '.block_' + block.key);
 
   var attr = '';
   if (
@@ -842,9 +839,9 @@ function getStatusBlock(block) {
 
   stateBlock += '<div class="col-xs-8 col-data">';
 
-  if(block.textOn && getIconStatusClass(device.Status) === 'on')
+  if (block.textOn && getIconStatusClass(device.Status) === 'on')
     value = block.textOn;
-  if(block.textOff && getIconStatusClass(device.Status) === 'off')
+  if (block.textOff && getIconStatusClass(device.Status) === 'off')
     value = block.textOff;
 
   if (!titleAndValueSwitch(block)) {
@@ -882,16 +879,18 @@ function getBlockClick(block, selector) {
   //var blockSel = '.block_'+ block.mountPoint.slice(1);
   //console.log('getBlockClick for ', block);
   //   var $div=blockdef.$mountPoint.find('.block_'+blockdef.idx);
-  var $div = block.$mountPoint.find(typeof selector==='undefined' ? '.mh' : selector);
+  var $div = block.$mountPoint.find(
+    typeof selector === 'undefined' ? '.mh' : selector
+  );
   if (url) {
     if ($div.length > 0) {
       $div
         .addClass('hover')
         .off('click')
         .click(function () {
-/*          if (target === '_blank') window.open(block.link);
+          /*          if (target === '_blank') window.open(block.link);
           else if (target === 'iframe') addBlockClickFrame(block);*/
-          DT_function.clickHandler({block:block})
+          DT_function.clickHandler({ block: block });
         });
     }
   } else if (graph === false) {
@@ -1157,7 +1156,7 @@ function triggerStatus(block) {
   getCustomFunction('getStatus', block, true);
 
   if (typeof onOffstates[idx] !== 'undefined' && value !== onOffstates[idx]) {
-    if ( getIconStatusClass( device['Status']) == 'on') {
+    if (getIconStatusClass(device['Status']) == 'on') {
       if (block['playsoundOn']) {
         playAudio(block['playsoundOn']);
       }
@@ -1191,7 +1190,7 @@ function triggerStatus(block) {
         }
       }
     }
-    if (getIconStatusClass( device['Status']) == 'off') {
+    if (getIconStatusClass(device['Status']) == 'off') {
       if (block['playsoundOff']) {
         playAudio(block['playsoundOff']);
       }
@@ -1264,7 +1263,11 @@ function triggerChange(block) {
       $('.modal.openpopup,.modal-backdrop').remove();
 
       $('body').append(
-        DT_function.createModalDialog('openpopup', 'popup_' + random, block['openpopup'])
+        DT_function.createModalDialog(
+          'openpopup',
+          'popup_' + random,
+          block['openpopup']
+        )
       );
 
       $('#popup_' + random).modal('show');
@@ -1928,7 +1931,7 @@ function createBlocks(blockParent, blockValues) {
       (block.width || 4) +
       '"/>';
     $div.append(html);
-    block.mountPoint = blockParent.mountPoint;//  +' .block_'+key;
+    block.mountPoint = blockParent.mountPoint; //  +' .block_'+key;
     block.$mountPoint = $(block.mountPoint);
     //        block.subidx = index;
     //        block.blockdef=blocks[blockValue.idx]; //store a reference of the parent blockdef ? should be in parent already ...
@@ -2102,7 +2105,9 @@ function getTempHumBarBlock(block) {
 function loadMaps(b, map) {
   if (typeof map.link !== 'undefined') {
     map['url'] = map.link;
-    $('body').append(DT_function.createModalDialog('', 'trafficmap_frame_' + b, map));
+    $('body').append(
+      DT_function.createModalDialog('', 'trafficmap_frame_' + b, map)
+    );
   }
 
   var key = 'UNKNOWN';
@@ -2223,7 +2228,6 @@ function playAudio(file) {
   ion.sound.play(filename);
 }
 
-
 /*Todo: make map a regular block*/
 // eslint-disable-next-line no-unused-vars
 function initMap() {
@@ -2269,7 +2273,7 @@ function showMap(mapid, map) {
 
 function getSecurityBlock(block) {
   //todo: rewrite
-  
+
   var device = block.device;
   if (block.protected || device.Protected)
     return getProtectedSecurityBlock(block);

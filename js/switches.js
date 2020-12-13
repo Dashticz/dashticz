@@ -45,7 +45,7 @@ function getDefaultSwitchBlock(
       .find('.mh')
       .addClass('hover')
       .off('click')
-      .click(function() {
+      .click(function () {
         switchDevice(block, mMode, !!confirmswitch);
       });
   }
@@ -67,9 +67,9 @@ function getDefaultSwitchBlock(
   }
 
   var mIcon =
-    getIconStatusClass(device['Status']) === 'off' ?
-    defaultIconOff :
-    defaultIconOn;
+    getIconStatusClass(device['Status']) === 'off'
+      ? defaultIconOff
+      : defaultIconOn;
   html += iconORimage(
     block,
     mIcon,
@@ -154,13 +154,13 @@ function switchDevice(block, pMode, pAskConfirm) {
 
   Domoticz.request(
     'type=command&param=' +
-    param +
-    '&idx=' +
-    idx +
-    '&switchcmd=' +
-    doStatus +
-    '&level=0'
-  ).then(function() {
+      param +
+      '&idx=' +
+      idx +
+      '&switchcmd=' +
+      doStatus +
+      '&level=0'
+  ).then(function () {
     block.device.Status = doStatus;
     dial ? DT_dial.make(block) : getDevices(true);
   });
@@ -211,11 +211,11 @@ function switchBlinds(block, action) {
 
   Domoticz.request(
     'type=command&param=switchlight&idx=' +
-    idx +
-    '&switchcmd=' +
-    action +
-    '&level=0'
-  ).then(function() {
+      idx +
+      '&switchcmd=' +
+      action +
+      '&level=0'
+  ).then(function () {
     getDevices(true);
   });
 }
@@ -241,10 +241,10 @@ function slideDevice(block, status) {
   Domoticz.syncRequest(
     block.idx,
     'type=command&param=switchlight&idx=' +
-    block.idx +
-    '&switchcmd=Set%20Level&level=' +
-    status
-  ).then(function() {
+      block.idx +
+      '&switchcmd=Set%20Level&level=' +
+      status
+  ).then(function () {
     dial ? DT_dial.make(block) : getDevices(true);
   });
 }
@@ -266,10 +266,10 @@ var sliderAction = {
 function sliderSetValue(p_idx, p_value, p_Callback) {
   Domoticz.request(
     'type=command&param=switchlight&idx=' +
-    p_idx +
-    '&switchcmd=Set%20Level&level=' +
-    p_value
-  ).then(function() {
+      p_idx +
+      '&switchcmd=Set%20Level&level=' +
+      p_value
+  ).then(function () {
     p_Callback();
   });
 }
@@ -307,7 +307,7 @@ function slideDeviceExt(block, value, sliderState) {
     sliderAction.request = sliderSetValue(block.idx, value, sliderCallback);
     return;
   }
-  if ( /*sliderState == 1 ||*/ sliderState == 2) {
+  if (/*sliderState == 1 ||*/ sliderState == 2) {
     //change at the end. Temporarily (?) no update while sliding.
     if (sliderAction.request.readyState == 4) {
       sliderAction.request = sliderSetValue(block.idx, value, sliderCallback);
@@ -340,7 +340,7 @@ function controlLogitech(idx, action) {
     });*/
   Domoticz.request(
     'type=command&param=lmsmediacommand&idx=' + idx + '&action=' + action
-  ).then(function() {
+  ).then(function () {
     getDevices(true);
   });
 }
@@ -350,7 +350,7 @@ function switchSecurity(level, pincode) {
   pincode = md5(pincode);
   Domoticz.request(
     'type=command&param=setsecstatus&secstatus=' + level + '&seccode=' + pincode
-  ).then(function(data) {
+  ).then(function (data) {
     if (data.status != 'OK') {
       statusmsg = data.message;
       if (statusmsg == 'WRONG CODE') statusmsg = language.misc.wrong_code;
@@ -432,7 +432,7 @@ function getDimmerBlock(block, buttonimg) {
 
   if (!isProtected(block)) {
     $div
-      .on('click', function() {
+      .on('click', function () {
         dimmerClickHandler(block);
       })
       .addClass('hover');
@@ -506,7 +506,7 @@ function addSpectrum(block) {
     color: Cookies.get('rgbw_' + idx),
   });
 
-  $rgbdiv.on('dragstop.spectrum', function(e, color) {
+  $rgbdiv.on('dragstop.spectrum', function (e, color) {
     var hasPassword = block.password;
     if (!DT_function.promptPassword(hasPassword)) return;
 
@@ -545,14 +545,14 @@ function addSpectrum(block) {
     });
   });
 
-  $rgbdiv.on('hide.spectrum', function() {
+  $rgbdiv.on('hide.spectrum', function () {
     //sliding = false;
     Domoticz.release(idx); //release message queue
 
     getDevices(true);
   });
 
-  $rgbdiv.on('beforeShow.spectrum', function() {
+  $rgbdiv.on('beforeShow.spectrum', function () {
     Domoticz.hold(idx); //hold message queue
     //sliding = idx;
   });
@@ -603,7 +603,7 @@ function getBlindsBlock(block, withPercentage) {
   } else {
     if (device['Status'] === 'Closed')
       value =
-      '<span class="state">' + language.switches.state_closed + '</span>';
+        '<span class="state">' + language.switches.state_closed + '</span>';
     else
       value = '<span class="state">' + language.switches.state_open + '</span>';
   }
@@ -614,10 +614,10 @@ function getBlindsBlock(block, withPercentage) {
     ) {
       if (device['Status'] === 'Closed')
         value =
-        '<span class="state">' + language.switches.state_closed + '</span>';
+          '<span class="state">' + language.switches.state_closed + '</span>';
       else
         value =
-        '<span class="state">' + language.switches.state_open + '</span>';
+          '<span class="state">' + language.switches.state_open + '</span>';
     } else {
       value = '<span class="state"></span>';
     }
@@ -654,13 +654,13 @@ function getBlindsBlock(block, withPercentage) {
   html += '</div>';
 
   $mountPoint.html(html);
-  $mountPoint.find('.plus').click(function() {
+  $mountPoint.find('.plus').click(function () {
     switchBlinds(block, upAction);
   });
-  $mountPoint.find('.min').click(function() {
+  $mountPoint.find('.min').click(function () {
     switchBlinds(block, downAction);
   });
-  $mountPoint.find('.btn.stop').click(function() {
+  $mountPoint.find('.btn.stop').click(function () {
     switchBlinds(block, 'Stop');
   });
 
@@ -691,7 +691,7 @@ function addSlider(block, sliderValues) {
     min: sliderValues.min,
     max: sliderValues.max,
     disabled: sliderValues.disabled,
-    start: function() {
+    start: function () {
       Domoticz.hold(idx); //hold message queue
       //sliding = idx;
       //            slideDeviceExt($(this).data('light'), ui.value, 0);
@@ -699,26 +699,27 @@ function addSlider(block, sliderValues) {
     //        slide: function (event, ui) {
     //            slideDeviceExt($(this).data('light'), ui.value, 1);
     //},
-    change: function(event, ui) {
+    change: function (event, ui) {
       //            slideDeviceExt($(this).data('light'), ui.value, 2);
       var hasPassword = block.password;
       if (!DT_function.promptPassword(hasPassword)) return;
 
       slideDevice(block, ui.value);
     },
-    stop: function() {
+    stop: function () {
       //stop is called before change
       //sliding = false;
       Domoticz.release(idx); //release message queue
     },
   });
-  $divslider.on('click', function(ev) {
+  $divslider.on('click', function (ev) {
     ev.stopPropagation();
   });
 }
 
 function isRGBDeviceAndEnabled(block) {
-  if (Colorpicker.prototype.dimmerTypes.indexOf(block.device.SubType) === -1) return 0;
+  if (Colorpicker.prototype.dimmerTypes.indexOf(block.device.SubType) === -1)
+    return 0;
   if (typeof block.colorpicker !== 'undefined')
     return parseInt(block.colorpicker);
   if (typeof settings.colorpicker !== 'undefined')
