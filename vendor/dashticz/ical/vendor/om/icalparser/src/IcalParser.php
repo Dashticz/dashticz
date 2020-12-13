@@ -13,9 +13,6 @@ use RuntimeException;
  * Copyright (c) 2004-2020 Roman Ožana (https://www.omdesign.cz)
  *
  * @author Roman Ožana <roman@omdesign.cz>
- *
- * Including recurrence hack for events older than 3 years by lokonli.
- * 
  */
 class IcalParser {
 

@@ -92,7 +92,7 @@ switch($service){
 		break;
 	
 	case 'deafvalapp': 
-		$url = 'http://dataservice.deafvalapp.nl/dataservice/DataServiceServlet?type=ANDROID&service=OPHAALSCHEMA&land=NL&postcode='.$zipCode.'&straatId=0&huisnr='.$houseNr.'&huisnrtoev='.$houseNrSuf;
+		$url = 'https://dataservice.deafvalapp.nl/dataservice/DataServiceServlet?type=ANDROID&service=OPHAALSCHEMA&land=NL&postcode='.$zipCode.'&straatId=0&huisnr='.$houseNr.'&huisnrtoev='.$houseNrSuf;
 		$return = file_get_contents($url);
 		$return = explode("\n",$return);
 		foreach($return as $row){
@@ -133,22 +133,18 @@ switch($service){
 			}
 		}
 		break;
-	case 'recyclemanager': 
-		$url = 'https://vpn-wec-api.recyclemanager.nl/v2/calendars?postalcode='.$_GET['zipcode'].'&number='.$_GET['nr'];
-		$return = file_get_contents($url);
-		$return = json_decode($return,true);
-		$return = $return['data'][0]['occurrences'];
-		foreach($return as $row){
-			$title = $row['title'];
-			list($date,$time)=explode('T',$row['from']['date']);
-			if(!empty($date)){
-				$allDates[$date][$title] = $date;
-			}
-		}
-		break;	
 	case 'edg': 
 		$url = 'https://www.edg.de/JsonHandler.ashx?dates=1&street='.$_GET['street'].'&nr='.$_GET['nr'].'&cmd=findtrash&tbio=0&tpapier=1&trest=1&twert=1&feiertag=0';
 		$return = file_get_contents($url);
+		$data=json_decode($return);
+		
+		foreach($data->data as $item) {
+			list($d,$m,$y) = explode('.',$item->date);
+			$date = $y.'-'.$m.'-'.$d;
+			foreach($item->fraktion as $fraktion) {
+				$allDates[$date][$fraktion] = $date;
+			}
+		}
 		break;
 	case 'ximmio': //currently only meerlanden uses Ximmio
 		debugMsg('ximmio');
@@ -157,6 +153,9 @@ switch($service){
 			$companyCode = '';
 			switch($_GET['sub']){
 				case 'meerlanden'; $companyCode = "800bf8d7-6dd1-4490-ba9d-b419d6dc8a45"; break;
+				//https://wasteapi.ximmio.com/api/CallIcal?cn=WaardLanden&x=942abcf6-3775-400d-ae5d-7380d728b23c&ty=Vianen&ua=1200079926&sd=2019-12-21&ed=2023-01-09&path=https://wasteapi.ximmio.com&ln=nl&nt=7
+				case 'waardlanden'; $companyCode = "942abcf6-3775-400d-ae5d-7380d728b23c"; break;
+				case 'avri';  $companyCode = "78cd4156-394b-413d-8936-d407e334559a"; break;
 			}
 			if ($companyCode == '') return;
 			//Web_Data=perform_webquery('--data "companyCode='..companyCode..'&postCode='..Zipcode..'&houseNumber='..Housenr.."&houseNumberAddition="..Housenrsuf..'" "https://wasteapi.2go-mobile.com/api/FetchAdress"')
@@ -187,7 +186,8 @@ switch($service){
 					$allDates[$pickupDate][$title] = $pickupDate;
 				}
 			}
-		}
+		};
+		break;
 	case 'afvalstromen':
 		$baseUrl = '';
 		if(!empty($_GET['sub'])){
@@ -343,9 +343,11 @@ curl -H "x-consumer: recycleapp.be" -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5c
 		$streetid = $data->items[0]->id;
 //		print $streetid;
 
+		$startDate=date("Y-m-d");
+		$endDate=date("Y-m-d",time()+28*24*60*60);
 		//Now finally get the collection info
 		$ch = curl_init();
-		$url = "https://recycleapp.be/api/app/v1/collections?zipcodeId=".$zipcode."&streetId=".$streetid."&houseNumber=".$_GET['nr']."&fromDate=2020-08-01&untilDate=2020-09-30&size=100";
+		$url = "https://recycleapp.be/api/app/v1/collections?zipcodeId=".$zipcode."&streetId=".$streetid."&houseNumber=".$_GET['nr']."&fromDate=".$startDate."&untilDate=".$endDate."&size=100";
 //		print $url;
 		curl_setopt($ch, CURLOPT_URL,$url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

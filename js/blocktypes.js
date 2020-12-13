@@ -97,8 +97,12 @@ blocktypes.SubType['Current'] = {
   value: '<Data>',
 };
 
-
-
+blocktypes.SubType["X10 security motion"] = {
+  icon: 'fas fa-running',
+  title: '<Name>',
+  value: '<Data>',
+  graph: false
+};
 
 blocktypes.SensorUnit = {};
 blocktypes.SensorUnit['Fertility'] = {
@@ -175,6 +179,7 @@ blocktypes.HardwareType['Motherboard sensors'] = {
   title: '<Name>',
   value: '<Data>',
 };
+/* Removed, since PVOutput can also create temp device
 blocktypes.HardwareType['PVOutput (Input)'] = {};
 blocktypes.HardwareType['PVOutput (Input)']['today'] = {
   icon: 'fas fa-sun',
@@ -197,6 +202,7 @@ blocktypes.HardwareType['PVOutput (Input)']['total'] = {
   format: true,
   decimals: 0,
 };
+*/
 
 blocktypes.HardwareName = {};
 blocktypes.HardwareName['Rain expected'] = {
@@ -292,7 +298,11 @@ function getBlockTypesBlock(block) {
 
       if (
         typeof protoblock['icon'] !== 'undefined' ||
-        typeof protoblock['image'] !== 'undefined'
+        typeof protoblock['image'] !== 'undefined' ||
+        typeof protoblock['iconOn'] !== 'undefined' ||
+        typeof protoblock['iconOff'] !== 'undefined' ||
+        typeof protoblock['imageOn'] !== 'undefined' ||
+        typeof protoblock['imageOff'] !== 'undefined' 
       ) {
         //we have a single block
         var newblock = {graph: true};

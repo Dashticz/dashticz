@@ -1,4 +1,5 @@
-/* global settings Domoticz Dashticz moment _TEMP_SYMBOL CircleType*/
+/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer*/
+/* global showPopupGraph switchEvoHotWater changeEvohomeControllerStatus slideDevice switchEvoZone switchThermostat switchDevice isObject*/
 var DT_dial = {
   name: 'dial',
 
@@ -7,7 +8,7 @@ var DT_dial = {
    * @param {object} block  User specified block config.
    * @param {string} key    identifier used for block selection.
    */
-  canHandle: function(block, key) {
+  canHandle: function(block) {
     return block && block.type === 'dial';
   },
 
@@ -39,10 +40,10 @@ var DT_dial = {
     dialimage: false,
     flash: 0,
     showring: false,
-    showunit: false,
     shownumbers: false,
     offset: 0,
     group: false,
+    animation: true
   },
 
   /**
@@ -61,6 +62,7 @@ var DT_dial = {
     me.active = true;
     DT_dial.color(me);
     me.segments = 11;
+    me.showunit = me.block.showunit || false;
 
     /* Get Domoticz setting then make */
     Domoticz.request('type=settings')
@@ -70,15 +72,50 @@ var DT_dial = {
         }
       })
       .then(function() {
-        Domoticz.subscribe(me.idx, true, function(device) {
-          me.device = device;
-          me.isSetpoint = isDefined(me.device.SetPoint);
-          me.lastupdate = !me.block.last_update ?
-            false :
-            moment(me.device.LastUpdate).format(DT_dial.timeformat);
-          me.info = [];
-          DT_dial.make(me);
-        });
+        me.devices = []
+        if (typeof me.idx === 'number' || parseInt(me.idx))
+          me.devices.push(me.idx)
+        if (typeof me.idx === 'string' && me.idx[0]==='s') {
+          var idx = parseInt(me.idx.slice(1))
+          if (idx)
+            me.devices.push(me.idx)
+        }
+        if (me.block.values)
+          me.block.values.forEach(function(el) {
+            if (typeof el === 'object' && el.idx)
+            {//              if (!$.inArray(el.idx, me.devices)) 
+              var idx = parseInt(el.idx);
+              if (me.devices.indexOf(idx)===-1)
+                  me.devices.push(idx);
+            }
+          })
+        if(me.block.temp) {
+          var idx = parseInt(me.block.temp);
+          if (idx && me.devices.indexOf(idx)===-1)
+            me.devices.push(idx);
+        }
+        me.devices.forEach(function(el) {
+          Domoticz.subscribe(el, false, function(device) {
+            if (me.idx===el) {
+              me.device = device;
+              me.block.device=device;
+            }
+            me.lastupdate = !me.block.last_update ?
+              false :
+              moment(me.device.LastUpdate).format(DT_dial.timeformat);
+            DT_dial.make(me);
+          });
+
+        })
+        me.device=Domoticz.getAllDevices()[me.devices[0]];
+        me.block.device=me.device;
+        if(!me.device) {
+          console.log('Device not found: ', me.idx);
+          return
+        }
+        me.isSetpoint = isDefined(me.device.SetPoint);
+        DT_dial.make(me);
+
       });
   },
 
@@ -87,10 +124,14 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   make: function(me) {
+    me.info = [];
     DT_dial.resize(me);
     var d = me.device;
 
     switch (true) {
+      case typeof me.block.values!== 'undefined':
+        DT_dial.defaultDial(me);
+        break;
       case d.SubType === 'Evohome':
       case d.SwitchType === 'Selector':
         DT_dial.control(me);
@@ -104,9 +145,11 @@ var DT_dial = {
         DT_dial.dimmer(me);
         break;
       case d.Type === 'Group':
+      case d.Type === 'Scene':
       case d.SwitchType === 'On/Off':
         DT_dial.onoff(me);
         break;
+      case d.Type === 'Temp':
       case d.Type === 'Temp + Humidity':
       case d.Type === 'Temp + Humidity + Baro':
         DT_dial.temperature(me);
@@ -116,6 +159,9 @@ var DT_dial = {
         break;
       case d.Type === 'P1 Smart Meter':
         DT_dial.p1smartmeter(me);
+        break;
+      default:
+        DT_dial.defaultDial(me);
         break;
     }
 
@@ -130,9 +176,10 @@ var DT_dial = {
         name: me.block.title ? me.block.title : me.device.Name,
         min: me.min,
         max: me.max,
-        showunit: me.block.showunit,
+        showunit: me.showunit,
         type: me.device.Type,
         value: me.value,
+        valueformat: number_format(me.value, 1),
         hasSetpoint: me.isSetpoint || me.subdevice,
         setpoint: me.setpoint,
         until: me.until,
@@ -159,6 +206,7 @@ var DT_dial = {
         split: me.splitdial,
         slice: me.slice,
         checked: me.checked,
+        addclass:me.block.animation ? 'animation' :''
       };
 
       /* Mount dial */
@@ -167,7 +215,7 @@ var DT_dial = {
       $mount.addClass('swiper-no-swiping');
       $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
       if (me.type === 'evo' || me.type === 'selector') {
-        $(me.select + ' li').each(function(index) {
+        $(me.select + ' li').each(function() {
           if ($(this).data('val') === me.status) {
             $(this).addClass('selected');
           }
@@ -214,7 +262,6 @@ var DT_dial = {
   tap: function(me) {
     var d = document.getElementById(me.id);
     var mc = new Hammer(d);
-
     mc.on('tap', function(ev) {
       if (me.status === 'TemporaryOverride') {
         me.override = false;
@@ -244,9 +291,13 @@ var DT_dial = {
         }
       }
       if (me.type === 'onoff') {
-        me.cmd = me.state === 'Off' ? 'On' : 'Off';
+        if (me.device.Type === 'Scene') me.cmd = 'On'
+          else me.cmd = me.state === 'Off' ? 'On' : 'Off';
         me.demand = me.cmd === 'On';
         DT_dial.update(me);
+      }
+      if(me.type === 'default' || me.type === 'temp') {
+        showPopupGraph(me.block);
       }
     });
   },
@@ -261,8 +312,10 @@ var DT_dial = {
         me.control[0].addEventListener(e, DT_dial.start, { passive: false });
       });
       me.body
-        .bind('mousedown touchstart', function(event) {
-          Domoticz.hold(me.idx);
+        .bind('mousedown touchstart', function() {
+          me.devices.forEach(function(idx ) {
+            Domoticz.hold(idx)
+          });
         })
         .bind('mousemove touchmove', function(event) {
           if (DT_dial.active) {
@@ -272,7 +325,7 @@ var DT_dial = {
           }
           return false;
         })
-        .bind('mouseup touchend mouseleave', function(event) {
+        .bind('mouseup touchend mouseleave', function() {
           if (DT_dial.active) DT_dial.stop(me);
         });
     }
@@ -282,7 +335,7 @@ var DT_dial = {
    * Start of dial needle rotation, set active.
    * @param {object} e  The touch or mouse event.
    */
-  start: function(e) {
+  start: function() {
     var bb = this.getBoundingClientRect();
     DT_dial.center = {
       x: bb.left + bb.width / 2,
@@ -382,7 +435,7 @@ var DT_dial = {
         webkitTransform: 'rotate(' + (-140 + me.degrees) + 'deg)',
       });
     } else {
-      console.log(me.block.title + ': angle outside permitted range = ' + a);
+      console.log(me.block.key+' device: '+me.device.Name+ ': angle outside permitted range = ' + a);
     }
   },
 
@@ -391,9 +444,13 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   degrees: function(me) {
-    var deg = me.value * me.scale;
+    var value = me.value;
+    value = isDefined(me.min) && (value < me.min) ? me.min : value;
+    value = isDefined(me.max) && (value > me.max) ? me.max : value;
+
+    var deg = (value - me.min) * me.scale;
     deg += me.splitdial || deg > 40 ? -220 : 140;
-    return deg - me.min * me.scale;
+    return deg;
   },
 
   /**
@@ -401,7 +458,9 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   stop: function(me) {
-    Domoticz.release(me.idx);
+    me.devices.forEach(function(idx) {
+      Domoticz.release(idx)
+    });
     switch (me.type) {
       case 'zone':
         me.setpoint = me.value;
@@ -433,6 +492,17 @@ var DT_dial = {
         break;
       case 'onoff':
         switchDevice(me, me.cmd);
+        break;
+      case 'default':
+        if (me.isSetpoint) {
+          var block = {};
+          $.extend(block, me)
+          if (me.setpointDevice) {
+            block.idx=me.setpointDevice;  //Force that the correct setpoint device is used.
+            block.device = Domoticz.getAllDevices()[me.setpointDevice]
+          }
+          switchThermostat(block, me.value);
+        }
         break;
     }
   },
@@ -468,13 +538,15 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   resize: function(me) {
+    /* todo: temporarily disabled.
+     * to prevent recreating and resubscribing to domoticz devices
     window.addEventListener(
       'resize',
       function() {
         DT_dial.run(me);
       },
       true
-    );
+    );*/
   },
 
   /**
@@ -499,15 +571,15 @@ var DT_dial = {
   heating: function(me) {
     me.type = me.device.Type === 'Heating' ? 'zone' : 'stat';
     me.unitvalue = _TEMP_SYMBOL;
-    me.min = isDefined(settings['setpoint_min']) ?
-      settings['setpoint_min'] :
-      isDefined(me.block.min) ?
+    me.min = isDefined(me.block.min) ?
       me.block.min :
+      isDefined(settings['setpoint_min']) ?
+      settings['setpoint_min'] :
       5;
-    me.max = isDefined(settings['setpoint_max']) ?
-      settings['setpoint_max'] :
-      isDefined(me.block.max) ?
+    me.max = isDefined(me.block.max) ?
       me.block.max :
+      isDefined(settings['setpoint_max']) ?
+      settings['setpoint_max'] :
       35;
 
     me.dialicon = DT_dial.display(
@@ -540,7 +612,7 @@ var DT_dial = {
         me.type = 'dhw';
         me.state = me.device.State;
         me.min = isDefined(me.block.min) ? me.block.min : 20;
-        me.max = isDefined(me.block.min) ? me.block.min : 60;
+        me.max = isDefined(me.block.max) ? me.block.max : 60;
         me.setpoint = 40;
         me.demand = me.device.State === 'On';
         me.boost = isDefined(settings['evohome_boost_hw']) ?
@@ -549,7 +621,7 @@ var DT_dial = {
       }
       me.info.push({
         icon: me.override ? 'fas fa-stopwatch small_fa' : me.dialicon,
-        image: me.override ? 'fas fa-stopwatch small_fa' : me.block.dialimage,
+        image: me.override ? undefined : me.block.dialimage,
         data: me.setpoint,
         unit: _TEMP_SYMBOL,
       });
@@ -566,7 +638,7 @@ var DT_dial = {
         });
         /* Standard thermostat device */
       } else {
-        me.value = number_format(me.device.Data, 1);
+        me.value = parseFloat(me.device.Data); //number_format(me.device.Data, 1);
         me.isSetpoint = false;
       }
     }
@@ -582,27 +654,134 @@ var DT_dial = {
     me.active = false;
     me.min = isDefined(me.block.min) ? me.block.min : 5;
     me.max = isDefined(me.block.max) ? me.block.max : 35;
-    me.value = me.device.Temp;
+    me.value = typeof me.device['Temp'] !== 'undefined' ? me.device['Temp'] : me.device['Data'];
     me.isSetpoint = true;
     me.setpoint = isDefined(me.block.setpoint) ? me.block.setpoint : 20;
     me.unitvalue = _TEMP_SYMBOL;
 
-    me.info.push({
-      icon: DT_dial.display(me.block.dialicon, 0, 2, 'fas fa-tint'),
-      image: DT_dial.display(me.block.dialimage, 0, 2, false),
-      data: parseFloat(me.device.Data.split(',')[1]),
-      unit: '%',
-    });
+    if (typeof me.device.Humidity !== 'undefined') {
+      me.info.push({
+        icon: DT_dial.display(me.block.dialicon, 0, 2, 'fas fa-tint'),
+        image: DT_dial.display(me.block.dialimage, 0, 2, false),
+        data: number_format(me.device['Humidity'], 0),
+        unit: '%',
+      });
+    }
 
-    if (me.device.Type === 'Temp + Humidity + Baro') {
+    if (typeof me.device.Barometer !== 'undefined') {
       me.info.push({
         icon: DT_dial.display(me.block.dialicon, 1, 2, 'fas fa-cloud'),
         image: DT_dial.display(me.block.dialimage, 1, 2, false),
-        data: parseFloat(me.device.Data.split(',')[2]),
+        data: number_format(me.device['Barometer'], 0),
         unit: 'hPa',
       });
     }
     return;
+  },
+
+  defaultDial: function(me) {
+  
+    function getValueUnit(data) {
+      var dataScale = data.scale || 1;
+      if(!data.value) {
+        console.log('Invalid data ', data);
+        return;
+      }
+      if(typeof data.value==='number') {
+        return {
+          value:data.value,
+          unit: data.unit
+        }
+      }
+      res = data.value.split(' ');
+      if(res.length) {
+        var value=parseFloat(res[0]) * dataScale;
+        var unit =  typeof data.unit !=='undefined' ? data.unit: (res.length > 1 ? res[1] : '');
+        return {
+          value: value,
+          unit: unit
+        } 
+      }
+      else {
+        console.log("invalid dial data");
+        return {
+          value: 0,
+          unit: data.unit
+        }
+      }
+    }
+
+    function getValueInfo(device, id) {
+      var res = {};
+      var inputData = {};
+      if (typeof id === 'string') {
+        inputData = {
+          value: device[id],
+        };
+      } else {
+        inputData.value = device[id.value];
+        inputData.unit = id.unit;
+        inputData.decimals = id.decimals;
+        inputData.scale = id.scale;
+        res.icon = id.icon;
+        res.image = id.image;
+      }
+      if (typeof inputData.value === 'undefined') {
+        console.log('Value not found for field ' + id.value+' in device ' + device.idx+':'+device.Name)
+        return {
+          data: 0,
+          unit: ''
+        }
+      }
+      var valueunit = getValueUnit(inputData);
+      res.data = valueunit.value;
+      res.unit = valueunit.unit;
+      return res;
+    }
+
+    me.type = 'default';
+    me.active = false;
+    me.min = isDefined(me.block.min) ? me.block.min : 0;
+    me.max = isDefined(me.block.max) ? me.block.max : 100;
+
+    me.value = parseFloat(me.device.Data);
+    var splitAllData = me.device.Data.split(',');
+    var splitData = splitAllData[0].split(' ');
+    me.unitvalue = me.block.unitvalue || (splitData.length>1 ? splitData[1]:undefined);
+    if (!me.unitvalue && me.device.SubType == 'Percentage') me.unitvalue = '%';
+    me.isSetpoint = true;
+    /* supported formats:
+      values : [ 'temp', 'humidity']   array of strings
+      values: [ { value: 'temp', unit:'km', icon:'fa fa_bulb',image:'my_image'}]  array of objects.
+    */
+  if(me.block.values) {
+    var defaultIdx = me.devices[0];
+
+    if(Array.isArray(me.block.values)) {
+        me.info = me.block.values.map(function(el) {
+          var idx = defaultIdx;
+          if(typeof el=='object' && el.idx) {
+            idx = el.idx;
+          }
+          var device = Domoticz.getAllDevices()[idx];
+          var valueInfo = getValueInfo(device, el);
+          if (el.isSetpoint) {
+            me.isSetpoint = true;
+            me.active= true;//Dial can be used to set setpoint value
+            me.setpointDevice = idx;
+            me.setpoint = valueInfo.data;
+          }
+          return valueInfo;            
+        })
+        var res = me.info.shift();
+        if (typeof res.unit !== 'undefined') me.unitvalue = res.unit;
+        me.value = res.data;
+      }
+      else {
+        console.error('values should be an array for ', me.block)
+      }
+    }
+    me.showunit = isDefined(me.block.showunit) ? me.block.showunit : !!me.unitvalue;
   },
 
   wind: function(me) {

@@ -1,11 +1,18 @@
 {
-"version": "3.6",
+"version": "3.7",
 "branch": "master",
-"last_changes": "Master derived from 3.5.2 beta",
+"last_changes": "Master version derived from 3.6.9 beta",
 "changelog" : {
-            "3.5.2": "RGB Color Picker enhancements",
-            "3.5.1": "url block parameter implemented for several blocks, traffic block fix",
-            "3.5.0": "Beta version derived from 3.5 master",
-            "3.5": "Master version"
+        	"3.6.9": "Garbage related changes and stationclock enhancements",
+            "3.6.8": "Garbage related changes",
+            "3.6.7": "Update garbage module",
+            "3.6.6": "Bug fix Dashticz initialization",
+            "3.6.5": "New server to provide covid-19 data",
+            "3.6.4": "PVOutput Temp device",
+            "3.6.3": "More dials",
+            "3.6.2": "Fix for graph issues in 3.6",
+            "3.6.1": "Custom HTML block",
+            "3.6.0": "Beta version derived from 3.6 master", 
+            "3.6": "Master version"
             }
 }

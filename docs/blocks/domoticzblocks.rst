@@ -184,7 +184,8 @@ Block parameters
     - | ``0``: open in current window
       | ``1``: open in new window
       | ``2``: open in new frame (default, to prevent a breaking change in default behavior)
-      | ``3``: no new window/frame (for intent handling, api calls)
+      | ``3``: no new window/frame (for intent handling, api calls). HTTP get request.
+      | ``4``: no new window/frame (for intent handling, api calls). HTTP post request. (forcerefresh not supported)
   * - colorpicker
     - Choose the RGB colorpicker for RGB devices. See :ref:`colorpicker`
       | ``0``: No RGB colorpicker
@@ -506,3 +507,20 @@ The following Domoticz RGB devices are supported:
    RGBWWZ device in Mixed modus.
 
    In this last example you see from left to right the RGB color picker, the RGB color level, the white color temperature, the white level and the master level.
+
+.. _domoticzStyling:
+
+Styling
+~~~~~~~~
+
+The following CSS classes will be attached to a Domoticz block automatically:
+
+* ``on``. In case a Domoticz switch is in the On (or closed) state
+* ``off``. In case a Domoticz switch is not in the On (or closed) state.
+* ``timeout``. In case the Domoticz device is in timeout state.
+
+To give Domoticz blocks with a device in timeout state a red background, add the following to ``custom.css``::
+
+  .mh.timeout {
+      background-color:rgba(255,0,0,0.3);
+  }
