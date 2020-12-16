@@ -157,6 +157,11 @@ function getDeviceDefaults(me, device) {
       txtUnit = 'Lux';
       decimals = 0;
       break;
+    case 'UV':
+      sensor = 'uv'
+      txtUnit = 'Lux';
+      decimals = 1;
+      break;
     case 'Wind':
       sensor = 'wind';
       var windspeed = device.Data.split(';')[2] / 10;
