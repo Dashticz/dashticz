@@ -98,7 +98,7 @@ function getBlockDefaults() {
     cartesian: 'linear',
     custom: false,
     customHeader: false,
-    debugButton: false,
+    debugButton: true,
     displayFormats: false,
     drawOrderDay: false,
     drawOrderLast: false,
