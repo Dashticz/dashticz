@@ -179,19 +179,23 @@ var DT_function = (function () {
       mySetUrl = 'src';
     }
     html += '<div id="loadingMessage">' + language.misc.loading + '</div>';
+    var htmlel = myFrame.newwindow==5 ? 'img' : 'iframe';
     html +=
-      '<iframe class="popupheight" ' +
+      '<' +
+      htmlel +
+      ' class="popupheight" ' +
       mySetUrl +
       '="' +
       url +
       '" width="100%" height="100%" frameborder="0" allowtransparency="true" style="';
     html += setHeight ? 'height: ' + myheight + '; ' : '';
     html += '" onload="removeLoading()"';
-    html += '></iframe> ';
+    html += '></' + htmlel + '> ';
     html += '</div>';
     html += '</div>';
     html += '</div>';
     html += '</div>';
+    console.log(html);
     return html;
   }
 
