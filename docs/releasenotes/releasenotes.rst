@@ -13,6 +13,7 @@ Enhancements
 
 * Graph: Enable graphs for Lux device type
 * Popup window: Add ``newwindow: 5`` to open an url as image instead of iframe (doc to be updated)
+* Clock: New Hayman clock. Add block 'haymanclock' to a column, or use ``type: 'haymanclock'`` in your block definition.
 
 3.7.0 Beta (13-12-2020)
 -----------------------
