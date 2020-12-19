@@ -26,6 +26,9 @@ Block parameter
   * - size
     - | Size of the stationclock in pixels. The default size of the station clock is the column width.
       | ``200`` The clock will have a width and height of 200 pixels
+  * - scale
+    - | Scale factor for the width of the clock. Should be smaller than 1
+      | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%).
   * - body
     - clock body (Uhrgehäuse)
   * - dial
@@ -118,24 +121,89 @@ To maintain backwards compatibility the station clock defaults can be set with t
       | ``false`` Default. Show second hand.
 
 
-Clock
+Basic clock
 -------------
 
 .. image :: clock.jpg
 
 This is the standard clock. You can add this clock to a column with::
 
-    columns[1]['blocks'] = ['clock'];
+    columns[1]['blocks'] = ['basicclock'];
+
+Block parameter
+^^^^^^^^^^^^^^^
+.. list-table:: 
+  :header-rows: 1
+  :widths: 5, 30
+  :class: tight-table
+      
+  * - Parameter
+    - Description
+  * - width
+    - | block width
+      | ``1 .. 12``: (default ``12``).  
+  * - size
+    - | Size of the stationclock in pixels. The default size of the station clock is the column width.
+      | ``200`` The clock will have a width and height of 200 pixels
+  * - scale
+    - | Scale factor for the width of the clock. Should be smaller than 1
+      | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%).
 
 Flipclock
 -------------
 
 .. image :: img/flipclock.jpg
 
-You can add the miniclock to a column with::
+You can add the flipclock to a column with::
 
-    columns[1]['blocks'] = ['miniclock'];
+    columns[1]['blocks'] = ['flipclock'];
 
+Block parameter
+^^^^^^^^^^^^^^^
+.. list-table:: 
+  :header-rows: 1
+  :widths: 5, 30
+  :class: tight-table
+      
+  * - Parameter
+    - Description
+  * - width
+    - | block width
+      | ``1 .. 12``: (default ``12``).  
+  * - size
+    - | Size of the stationclock in pixels. The default size of the station clock is the column width.
+      | ``200`` The clock will have a width and height of 200 pixels
+  * - scale
+    - | Scale factor for the width of the clock. Should be smaller than 1
+      | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%).
+
+Hayman clock
+-------------
+
+.. image :: img/haymanclock.jpg
+
+You can add the Hayman clock to a column with::
+
+    columns[1]['blocks'] = ['haymanclock'];
+
+Block parameter
+^^^^^^^^^^^^^^^
+.. list-table:: 
+  :header-rows: 1
+  :widths: 5, 30
+  :class: tight-table
+      
+  * - Parameter
+    - Description
+  * - width
+    - | block width
+      | ``1 .. 12``: (default ``12``).  
+  * - size
+    - | Size of the stationclock in pixels. The default size of the station clock is the column width.
+      | ``200`` The clock will have a width and height of 200 pixels
+  * - scale
+    - | Scale factor for the width of the clock. Should be smaller than 1
+      | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%).
 
 Miniclock
 -------------
@@ -149,6 +217,8 @@ You can add the miniclock to a column with::
 
 Usage
 -------
+
+The clock types dtclock, stationclock and flipclock are responsive, meaning they will adapt the size to the block width.
 
 Example code for the several clocks::
 
@@ -203,7 +273,8 @@ Example code for the several clocks::
     'stationclock2',
     'stationclock3',
     'stationclock4',
-    'clock', 'flipclock',
+    'clock',
+    'flipclock',
     'miniclock',
   ];
 
