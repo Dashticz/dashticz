@@ -1,4 +1,4 @@
-<div class="clock-container">
+<div class="clock-container" style="width: {{clockwidth}}; font-size: {{fontsize}}px;">
   <div class="clock-col">
     <p class="clock-day clock-timer">
     </p>

@@ -20,12 +20,15 @@ var DT_haymanclock = {
       hours: getPart(ld.hh),
       minutes: getPart(ld.mm),
       seconds: getPart(ld.ss),
+      scale: 1,
     };
   },
   run: function (me) {
     templateEngine.load('clock_hayman').then(function (template) {
+      var width = me.block.size || $(me.mountPoint + ' .dt_block').width();
+      me.block.clockwidth = me.block.scale * 100 + '%';
+      me.block.fontsize = (width / 40) * me.block.scale;
       $(me.mountPoint + ' .dt_block').html(template(me.block));
-
       function updateTime() {
         document.documentElement.style.setProperty(
           '--timer-day',
@@ -45,8 +48,6 @@ var DT_haymanclock = {
         );
       }
 
-      var width = $(me.mountPoint + ' .dt_block').width();
-      $(me.mountPoint + ' .dt_block').css('font-size', width / 40);
       window.setInterval(function () {
         updateTime();
       }, 1000);
