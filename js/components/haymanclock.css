@@ -1,9 +1,10 @@
-.haymanclock p, .haymanclock div {
-    margin: 0;
-    padding: 0;
-    border: 0;
-    font-size: 100%;
-    vertical-align: baseline;
+.haymanclock p,
+.haymanclock div {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  vertical-align: baseline;
 }
 
 .haymanclock .clock-day:before {
@@ -26,18 +27,16 @@
   justify-content: center;
 }
 
-
 .haymanclock .clock-container {
   border-radius: 5px;
   display: -webkit-box;
   display: flex;
-  width: 100%;
   justify-content: space-evenly;
 }
 .haymanclock .clock-col {
   text-align: center;
   position: relative;
-  flex: 1
+  flex: 1;
 }
 .haymanclock .clock-col:not(:last-child):before,
 .haymanclock .clock-col:not(:last-child):after {
