@@ -1,6 +1,5 @@
-Clock and Station Clock
-#######################
-
+Clocks
+######
 .. _stationclock :
 
 Station Clock
@@ -117,7 +116,6 @@ To maintain backwards compatibility the station clock defaults can be set with t
     - | ``true`` Hides second hand
       | ``false`` Default. Show second hand.
 
-
 Clock
 -------------
 
@@ -135,6 +133,17 @@ Flipclock
 You can add the miniclock to a column with::
 
     columns[1]['blocks'] = ['miniclock'];
+
+CSS Variable-Powered Clock
+--------------------------
+
+.. image :: haymanclock.jpg
+
+Clock by Emily Hayman. Design based off: https://dribbble.com/shots/2271565-Day-095-Time-is-Money You can add this clock to a column with::
+
+    blocks['myclock'] = {
+           type: 'haymanclock'
+    }
 
 
 Miniclock
