@@ -8,6 +8,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 --------------
 
+3.7.1 Beta (19-12-2020)
+-----------------------
+
 Enhancements
 ~~~~~~~~~~~~
 
@@ -15,7 +18,7 @@ Enhancements
 * Popup window: Add ``newwindow: 5`` to open an url as image instead of iframe (doc to be updated)
 * Clock: New Hayman clock. Add block 'haymanclock' to a column, or use ``type: 'haymanclock'`` in your block definition.
 * Clock: New basicclock, which is the same as the normal clock, but then responsive. (scales with the width)
-* Clock parameters: haymanclock, flipclock and basicclock all support the block parameters ``size`` to set the width of the clock and the parameter ``scale`` to scale down the width with a relative factor (``scale: 0.6``)
+* Clock parameters: haymanclock, flipclock, stationclock and basicclock all support the block parameters ``size`` to set the width of the clock and the parameter ``scale`` to scale down the width with a relative factor (``scale: 0.6``)
 
 3.7.0 Beta (13-12-2020)
 -----------------------
