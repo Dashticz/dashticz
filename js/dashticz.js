@@ -30,7 +30,9 @@ var Dashticz = (function () {
     'html',
     'timegraph',
     'garbage',
-    'haymanclock'
+    'haymanclock',
+    'flipclock',
+    'basicclock'
   ];
   var components = [];
   var mountedBlocks = [];

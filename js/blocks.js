@@ -1,5 +1,5 @@
 /* eslint-disable no-debugger */
-/*global getBlockTypesBlock, language, _TEMP_SYMBOL, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
+/*global getBlockTypesBlock, language, _TEMP_SYMBOL, settings, getFullScreenIcon, loadWeatherFull, loadWeather*/
 /*global getSpotify, getCoin, loadChromecast, loadSonarr */
 /*global Dashticz, DT_function, Domoticz, getLog, addCalendar */
 /*global getRandomInt, moment, number_format */
@@ -254,7 +254,6 @@ function handleStringBlock(blocktype, columndiv, c) {
     case 'settings':
       defaultwidth = 2;
       break;
-    case 'flipclock':
     case 'miniclock':
       defaultwidth = 8;
       break;
@@ -299,30 +298,6 @@ function handleStringBlock(blocktype, columndiv, c) {
       }
       content += '</div>';
       $(columndiv).append(content);
-      return;
-    case 'flipclock':
-      $(
-        '<link href="vendor/flipclock/flipclock.css" rel="stylesheet">'
-      ).appendTo('head');
-      $(columndiv).append(
-        '<div data-id="flipclock" class="transbg block_' +
-          block.type +
-          ' col-xs-' +
-          width +
-          ' text-center"><div class="flipclock"></div></div>'
-      );
-      if (typeof FlipClock !== 'function')
-        $.ajax({
-          url: 'vendor/flipclock/flipclock.min.js',
-          async: false,
-          datatype: 'script',
-        });
-      FlipClock($('.flipclock'), {
-        clockFace: settings['shorttime'].match(/A/i)
-          ? 'TwelveHourClock'
-          : 'TwentyFourHourClock',
-        showSeconds: !settings['hide_seconds'],
-      });
       return;
     case 'miniclock':
       $(columndiv).append(
@@ -509,11 +484,6 @@ function handleStringBlock(blocktype, columndiv, c) {
         });
       getLog(columndiv);
       return;
-    /*            
-                    case 'stationclock':
-                        appendStationClock(columndiv, block, width);
-                        return;
-            */
     case 'sunrise':
       var classes =
         'block_' +

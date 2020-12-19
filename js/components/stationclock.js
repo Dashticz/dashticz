@@ -13,6 +13,7 @@ var DT_stationclock = {
   },
   defaultCfg: {
     containerClass: 'text-center',
+    scale: 1
   },
   run: function (me) {
     var cfg = {
@@ -37,7 +38,7 @@ var DT_stationclock = {
     }
 
     var width = Math.min(
-      me.block.size || $(me.mountPoint + ' .dt_content').width(),
+      (me.block.size || $(me.mountPoint + ' .dt_content').width()) * me.block.scale,
       window.innerHeight
     );
     $(me.mountPoint + ' .dt_content').html(
