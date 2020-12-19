@@ -11,6 +11,7 @@
     -ms-backface-visibility: hidden;
     -o-backface-visibility: hidden;
     backface-visibility: hidden;
+    padding: 0px;
 }
 
 .flip-clock-wrapper a {
@@ -51,7 +52,9 @@
   text-align: center;
   position: relative;
   width: 100%;
-  margin: 1em;
+  margin: calc(var(--flipclock-em) * 1);
+  display: flex;
+  justify-content: center;
 }
 
 .flip-clock-wrapper:before,
@@ -63,17 +66,19 @@
     clear: both;
 }
 
+/* assuming flipclock-em==6px */
+
 /* Skeleton */
 .flip-clock-wrapper ul {
   position: relative;
   float: left;
-  margin: 5px;
-  width: 60px;
-  height: 90px;
-  font-size: 80px;
+  margin: calc(var(--flipclock-em) * 5 / 6);
+  width: calc(var(--flipclock-em) * 60 / 6);
+  height: calc(var(--flipclock-em) * 90 / 6);
+  font-size: calc(var(--flipclock-em) * 80 / 6);
   font-weight: bold;
-  line-height: 87px;
-  border-radius: 6px;
+  line-height: calc(var(--flipclock-em) * 87 / 6);
+  border-radius: calc(var(--flipclock-em) * 6 / 6);;
   background: #000;
 }
 
@@ -84,7 +89,8 @@
   top: 0;
   width: 100%;
   height: 100%;
-  line-height: 87px;
+  line-height: calc(var(--flipclock-em) * 87 / 6);
+
   text-decoration: none !important;
 }
 
@@ -94,9 +100,9 @@
 .flip-clock-wrapper ul li a {
   display: block;
   height: 100%;
-  -webkit-perspective: 200px;
-  -moz-perspective: 200px;
-  perspective: 200px;
+  -webkit-perspective: calc(var(--flipclock-em) * 200 / 6);
+  -moz-perspective: calc(var(--flipclock-em) * 200 / 6);
+  perspective: calc(var(--flipclock-em) * 200 / 6);
   margin: 0 !important;
   overflow: visible !important;
   cursor: default !important; }
@@ -107,7 +113,7 @@
   left: 0;
   width: 100%;
   height: 50%;
-  font-size: 80px;
+  font-size: calc(var(--flipclock-em) * 80 / 6);
   overflow: hidden; 
   outline: 1px solid transparent; }
 
@@ -128,11 +134,11 @@
 .flip-clock-wrapper ul li a div.up:after {
   content: "";
   position: absolute;
-  top: 44px;
+  top: calc(var(--flipclock-em) * 44 / 6);
   left: 0;
   z-index: 5;
   width: 100%;
-  height: 3px;
+  height: calc(var(--flipclock-em) * 3 / 6);
   background-color: #000;
   background-color: rgba(0, 0, 0, 0.4); }
 
@@ -143,8 +149,8 @@
   -o-transform-origin: 50% 0;
   transform-origin: 50% 0;
   bottom: 0;
-  border-bottom-left-radius: 6px;
-  border-bottom-right-radius: 6px;
+  border-bottom-left-radius: calc(var(--flipclock-em) * 6 / 6);
+  border-bottom-right-radius: calc(var(--flipclock-em) * 6 / 6);
 }
 
 .flip-clock-wrapper ul li a div div.inn {
@@ -157,8 +163,9 @@
   text-shadow: 0 1px 2px #000;
   text-align: center;
   background-color: #333;
-  border-radius: 6px;
-  font-size: 70px; }
+  border-radius: calc(var(--flipclock-em) * 6 / 6);
+  font-size: calc(var(--flipclock-em) * 70 / 6);
+ }
 
 .flip-clock-wrapper ul li a div.up div.inn {
   top: 0; }
@@ -179,11 +186,10 @@
   z-index: 5; }
 
 .flip-clock-divider {
-  float: left;
   display: inline-block;
   position: relative;
-  width: 20px;
-  height: 100px; }
+  width: calc(var(--flipclock-em) * 20 / 6);
+  height: calc(var(--flipclock-em) * 100 / 6); }
 
 .flip-clock-divider:first-child {
   width: 0; }
@@ -191,31 +197,32 @@
 .flip-clock-dot {
   display: block;
   background: #323434;
-  width: 10px;
-  height: 10px;
+  width: calc(var(--flipclock-em) * 10 / 6);
+  height: calc(var(--flipclock-em) * 10 / 6);
   position: absolute;
   border-radius: 50%;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
-  left: 5px; }
+  left: calc(var(--flipclock-em) * 5 / 6); }
 
 .flip-clock-divider .flip-clock-label {
   position: absolute;
-  top: -1.5em;
-  right: -86px;
+/*  top: -1.5em;*/
+  top: calc(var(--flipclock-em) * -1.5 );
+  right: calc(var(--flipclock-em) * -86 / 6);;
   color: black;
   text-shadow: none; }
 
 .flip-clock-divider.minutes .flip-clock-label {
-  right: -88px; }
+  right: calc(var(--flipclock-em) * -88 / 6); }
 
 .flip-clock-divider.seconds .flip-clock-label {
-  right: -91px; }
+  right: calc(var(--flipclock-em) * -91 / 6);; }
 
 .flip-clock-dot.top {
-  top: 30px; }
+  top: calc(var(--flipclock-em) * 30 / 6); }
 
 .flip-clock-dot.bottom {
-  bottom: 30px; }
+  bottom: calc(var(--flipclock-em) * 30 / 6); }
 
 @-webkit-keyframes asd {
   0% {
