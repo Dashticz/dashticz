@@ -1,6 +1,5 @@
-Clock and Station Clock
-#######################
-
+Clocks
+######
 .. _stationclock :
 
 Station Clock
@@ -120,7 +119,6 @@ To maintain backwards compatibility the station clock defaults can be set with t
     - | ``true`` Hides second hand
       | ``false`` Default. Show second hand.
 
-
 Basic clock
 -------------
 
@@ -182,10 +180,21 @@ Hayman clock
 
 .. image :: img/haymanclock.jpg
 
+Clock by Emily Hayman. Design based off: https://dribbble.com/shots/2271565-Day-095-Time-is-Money
+
 You can add the Hayman clock to a column with::
 
     columns[1]['blocks'] = ['haymanclock'];
 
+Or define a custom block as follows::
+
+    blocks['myclock'] = {
+           type: 'haymanclock'
+    }
+    
+    columns[1]['blocks'] = ['myclock'];
+    
+    
 Block parameter
 ^^^^^^^^^^^^^^^
 .. list-table:: 
