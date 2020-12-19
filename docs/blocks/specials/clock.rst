@@ -139,7 +139,7 @@ CSS Variable-Powered Clock
 
 .. image :: haymanclock.jpg
 
-Clock by Emily Hayman. Design based off: https://dribbble.com/shots/2271565-Day-095-Time-is-Money You can add this clock to a column with::
+Clock by Emily Hayman. Design based off: https://dribbble.com/shots/2271565-Day-095-Time-is-Money Add 'haymanclock' to a column, or define a custom block as follows::
 
     blocks['myclock'] = {
            type: 'haymanclock'
