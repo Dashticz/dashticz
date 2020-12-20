@@ -206,6 +206,8 @@ The **new calendar** block follows the same look and feel as most other blocks. 
       
   * - Parameter
     - Description
+  * - emptytext
+    - The text to show in case there are no appointments. Default: ``'Geen afspraken'``
   * - layout
     - | The "calFormat" parameter for the **new calendar** is called ``layout``, it has 3 options:
       | ``0``: Lists an agenda of events in text format
