@@ -85,7 +85,7 @@ var DT_tvguide = {
             }
           }
         }
-        tvobject.replaceWith(newObject);
+        tvobject.html(newObject);
       });
 
     function loadChannels() {
