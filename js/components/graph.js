@@ -159,7 +159,7 @@ function getDeviceDefaults(me, device) {
       decimals = 0;
       break;
     case 'UV':
-      sensor = 'uv'
+      sensor = 'uv';
       txtUnit = 'Lux';
       decimals = 1;
       break;
@@ -323,7 +323,7 @@ function getDeviceDefaults(me, device) {
     txtUnits: [],
     type: device.Type,
     decimals: decimals,
-    method: method
+    method: method,
   };
   $.extend(device, obj);
 }
@@ -527,7 +527,8 @@ function getDeviceGraphData(me, i) {
     device.idx +
     '&range=' +
     me.realrange +
-    '&method=' + device.method; //todo: check method
+    '&method=' +
+    device.method; //todo: check method
   me.params[i] = params;
   return Domoticz.request(params).then(function (data) {
     data.idx = device.idx;
@@ -580,7 +581,8 @@ function redrawGraph(me) {
             me.range === 'last' || me.range === 'month' ? 1 : me.block.interval;
 
         if (x % interval === 0) {
-          if (z == 0) { //only for the first dataset
+          if (z == 0) {
+            //only for the first dataset
             var obj = {};
             for (var key in res) {
               if (key === 'd') {
@@ -619,13 +621,13 @@ function redrawGraph(me) {
   });
 
   $.each(multidata.result, function (index, obj) {
-//    $.each(obj, function () { //make no sense ...
-      for (var n in newKeys) {
-        if (!obj.hasOwnProperty(newKeys[n])) {
-          obj[newKeys[n]] = NaN;
-        }
+    //    $.each(obj, function () { //make no sense ...
+    for (var n in newKeys) {
+      if (!obj.hasOwnProperty(newKeys[n])) {
+        obj[newKeys[n]] = NaN;
       }
-//    });
+    }
+    //    });
   });
 
   var graph = me; //todo: replace graph with me in all following lines?
@@ -644,28 +646,35 @@ function redrawGraph(me) {
   createGraph(graph);
 }
 
+function getProperty(prop, idx) {
+  if (typeof prop === 'undefined') return undefined;
+  if (Array.isArray(prop)) return prop[idx];
+  return prop;
+}
+
 function groupData(graph, md) {
   var returnData = [];
   var dayFormat = 'YYYY-MM-DD';
   var groupStart;
   var add;
-  switch (graph.aggregate) {
-    case 'sum':
-      add = true;
-      break;
-    case 'avg':
-      add = false;
-      break;
-    default:
-      add =
-        graph.sensor === 'counter' || graph.sensor === 'rain' ? true : false;
-      break;
-  }
 
   var groupedData = {};
   var groupedCount = {}; //Count objects; needed in case aggregation function is average.
 
   $.each(md, function (i, obj) {
+    switch (getProperty(graph.aggregate, i)) {
+      case 'sum':
+        add = true;
+        break;
+      case 'avg':
+        add = false;
+        break;
+      default:
+        add =
+          graph.sensor === 'counter' || graph.sensor === 'rain' ? true : false;
+        break;
+    }
+
     switch (graph.groupBy) {
       case 'hour':
         groupStart = moment(obj.d, dayFormat)

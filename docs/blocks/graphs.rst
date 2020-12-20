@@ -806,6 +806,14 @@ This results in the "Solar" graph grouping its data by hour, day, week or month 
 
 .. image :: img/graph_groupby_day.png
 
+You can use the block parameter 'aggregate' to set the aggregation method as 'sum' or 'avg' (for average).
+
+Instead of a single string the parameter 'aggregate' can also be an array of strings, like ::
+
+	aggregate: ['sum','avg'],
+
+This can be useful in case of a custom graph, showing gas usage and temperature in one graph, because in that situation two different aggregation methods are required.
+
 
 .. _groupByDevice:
 
