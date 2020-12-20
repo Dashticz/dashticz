@@ -580,7 +580,6 @@ function redrawGraph(me) {
             me.range === 'last' || me.range === 'month' ? 1 : me.block.interval;
 
         if (x % interval === 0) {
-          if (z == 0) {
           if (z == 0) { //only for the first dataset
             var obj = {};
             for (var key in res) {
@@ -613,7 +612,7 @@ function redrawGraph(me) {
                 });
               }
             }
-        }
+          }
         }
       });
     }
