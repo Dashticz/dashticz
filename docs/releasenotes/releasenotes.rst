@@ -12,7 +12,12 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Calendar: New block parameter ``emptytext`` to define the text to show where there are no calendar appointments. Only works for the new calendar block. See :ref:`newcalendar`
+* Custom graph: aggregate parameter can be an array to specify different aggregation methods per data element. See :ref:`groupBy`
 
+Fixes
+~~~~~~
+
+* Graph: Fix for data acquistion day graph gas device.
 
 3.7.1 Beta (19-12-2020)
 -----------------------
