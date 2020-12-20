@@ -145,6 +145,7 @@ function getDeviceDefaults(me, device) {
   var sensor = 'counter';
   var txtUnit = '?';
   var decimals = 2;
+  var method = 1;
 
   switch (device['Type']) {
     case 'Rain':
@@ -229,6 +230,7 @@ function getDeviceDefaults(me, device) {
     case 'Gas':
       txtUnit = 'm3';
       currentValue = device['CounterToday'];
+      method = 0;
       break;
     case 'Electric':
       txtUnit = 'Watt';
@@ -321,6 +323,7 @@ function getDeviceDefaults(me, device) {
     txtUnits: [],
     type: device.Type,
     decimals: decimals,
+    method: method
   };
   $.extend(device, obj);
 }
@@ -524,7 +527,7 @@ function getDeviceGraphData(me, i) {
     device.idx +
     '&range=' +
     me.realrange +
-    '&method=1'; //todo: check method
+    '&method=' + device.method; //todo: check method
   me.params[i] = params;
   return Domoticz.request(params).then(function (data) {
     data.idx = device.idx;
@@ -578,6 +581,7 @@ function redrawGraph(me) {
 
         if (x % interval === 0) {
           if (z == 0) {
+          if (z == 0) { //only for the first dataset
             var obj = {};
             for (var key in res) {
               if (key === 'd') {
@@ -609,20 +613,20 @@ function redrawGraph(me) {
                 });
               }
             }
-          }
+        }
         }
       });
     }
   });
 
   $.each(multidata.result, function (index, obj) {
-    $.each(obj, function () {
+//    $.each(obj, function () { //make no sense ...
       for (var n in newKeys) {
         if (!obj.hasOwnProperty(newKeys[n])) {
           obj[newKeys[n]] = NaN;
         }
       }
-    });
+//    });
   });
 
   var graph = me; //todo: replace graph with me in all following lines?
