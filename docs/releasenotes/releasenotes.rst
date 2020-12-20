@@ -8,6 +8,12 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 --------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Calendar: New block parameter ``emptytext`` to define the text to show where there are no calendar appointments. Only works for the new calendar block. See :ref:`newcalendar`
+
+
 3.7.1 Beta (19-12-2020)
 -----------------------
 

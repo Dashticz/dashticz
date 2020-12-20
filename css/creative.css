@@ -2484,6 +2484,7 @@ canvas {
 .agenda table {
   border-collapse: separate;
   border-spacing: 10px 0px;
+  margin-left: -10px;
 }
 
 .agenda td {
