@@ -1,4 +1,4 @@
-/* global Dashticz moment settings config language time objectlength ksort infoMessage isDefined setHeight functions*/
+/* global Dashticz moment settings  language  objectlength ksort infoMessage isDefined setHeight TemplateEngine */
 var cal = [];
 var templateEngine = TemplateEngine();
 
@@ -12,6 +12,7 @@ var DT_calendar = {
     containerExtra: function (block) {
       if (block && block.layout === 2) block.icon = '';
     },
+    emptytext: 'Geen afspraken.',
     method: 1,
   },
   run: function (me) {
@@ -102,7 +103,7 @@ function getCalendarData(key, calendars, isnew, ishol) {
   var counter = 1;
 
   $.each(calendars, function (name, calendar) {
-    url = makeUrl(key, calendar.ics);
+    var url = makeUrl(key, calendar.ics);
 
     $.getJSON(url, function (data) {
       for (var e in data) {
@@ -163,6 +164,7 @@ function generateAgenda(opt, key) {
       tf: cal[key].timeFormat,
       startonly: cal[key].startonly,
       entire: language.weekdays.entire_day,
+      emptyText : cal[key].block.emptytext
     };
 
     $(cal[key].mountPoint + ' .dt_state')
@@ -226,7 +228,6 @@ function generateCalendar(key, isnew, ishol) {
               var m1 = moment.unix($(obj).data('id') / 1000);
               var m2 = moment.unix(item.start);
               var m3 = moment.unix(item.end);
-              var t = '';
 
               if (ishol) item.allDay = true;
 
