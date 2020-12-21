@@ -370,21 +370,21 @@ With the openpopup, openpopupOn and openpopupOff parameter you can configure to 
       url: 'http://www.urltocamera.nl/image.jpg',   //Open a popup window with this url when the device changes
       framewidth:500,                               //specific width of the frame
       frameheight:400,                              //specific height of the frame
-      autoclose: 5                                  //autoclose the popup window after 5 seconds.
+      auto_close: 5                                 //auto close the popup window after 5 seconds.
   } 
   
   blocks[123]['openpopupOn'] = {
       url: 'http://www.urltocamera.nl/image.jpg',   //Open a popup window with this url when the device changes to On
       framewidth:500,                               //specific width of the frame
       frameheight:400,                              //specific height of the frame
-      autoclose: 5                                  //autoclose the popup window after 5 seconds.
+      auto_close: 5                                 //auto close the popup window after 5 seconds.
   } 
   
   blocks[123]['openpopupOff'] = {
       url: 'http://www.urltocamera.nl/image.jpg',   //Open a popup window with this url when the device changes to Off
       framewidth:500,                               //specific width of the frame
       frameheight:400,                              //specific height of the frame
-      autoclose: 5                                  //autoclose the popup window after 5 seconds.
+      auto_close: 5                                 //auto close the popup window after 5 seconds.
   } 
 
 To remove the close button of the block-popup add the following text to custom.css::
