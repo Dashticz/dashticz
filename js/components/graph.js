@@ -241,6 +241,9 @@ function getDeviceDefaults(me, device) {
       txtUnit = 'kWh';
       currentValue = device['CounterToday'];
       break;
+    case 'Managed Counter':
+      txtUnit = 'kWh';
+      break;
     case 'Visibility':
       txtUnit = 'km';
       break;
