@@ -104,6 +104,12 @@ blocktypes.SubType['X10 security motion'] = {
   graph: false,
 };
 
+blocktypes.SubType['Managed Counter'] = {
+  icon: 'fas fa-plug',
+  title: '<Name>',
+  value: '<Data>',
+};
+
 blocktypes.SensorUnit = {};
 blocktypes.SensorUnit['Fertility'] = {
   icon: 'fas fa-flask',
