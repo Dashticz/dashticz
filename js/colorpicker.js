@@ -54,14 +54,38 @@ function Colorpicker(options) {
     var thergb;
     switch (color.m) {
       case 1:
+        thergb = '#FFFFFF';
+        break;
       case 2:
         thergb = '#FFFFFF';
+        if (typeof color.t !== 'undefined') thergb = temp2rgb(color.t, true);
         break;
       default:
         thergb = "'rgb(" + color.r + ',' + color.g + ',' + color.b + ")'";
     }
     $(this.container + ' .sp-preview-inner').css('background-color', thergb);
   }
+}
+
+function temp2rgb(temp, asString) {
+  /*** temp=255 means very warm, so very red
+   *
+   */
+  var r = 255,
+    g = 255,
+    b = 255;
+  var adj;
+  if (temp < 128) {
+    adj = (128 - temp) / 2;
+    r = r - adj;
+    g = g - adj;
+  }
+  if (temp > 128) {
+    adj = (temp - 128) / 2;
+    g = g - adj;
+    b = b - adj;
+  }
+  return asString ? 'rgb(' + r + ',' + g + ',' + b + ')' : { r: r, g: g, b: b };
 }
 
 Colorpicker.prototype.count = 0;
@@ -282,18 +306,14 @@ Colorpicker.prototype.clickHandler = function (ev) {
 
     self.installIROComp(
       {
-        color: {
-          r: currentTemp,
-          g: currentTemp,
-          b: currentTemp,
-        },
+        color: temp2rgb(currentTemp),
         layoutDirection: 'horizontal',
         layout: [
           {
             component: iro.ui.Slider,
             options: {
               sliderType: 'kelvin', // can also be 'saturation', 'value', 'alpha' or 'kelvin',
-              minTemperature: 4000,
+              minTemperature: 4500,
               maxTemperature: 8000,
             },
           },
@@ -508,10 +528,9 @@ Colorpicker.prototype.onChange = function onChange(name) {
 
 Colorpicker.prototype.setDevice = function setDevice() {
   var MAXTEMP = 8000;
-  var MINTEMP = 4000;
+  var MINTEMP = 4500;
   var TEMPSTEP = 255 / (MAXTEMP - MINTEMP);
-  var t = Math.round((MAXTEMP - this.comp['Temp'].color.kelvin) * TEMPSTEP);
-
+  var t = Math.round((MAXTEMP - this.comp['Temp'].color.kelvin) * TEMPSTEP) - 1;
   this.changed = true;
   if (this.requesting) return;
   var idx = this.block.device.idx;
