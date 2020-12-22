@@ -695,7 +695,7 @@ var DT_garbage = (function () {
 
     var templateName = 'garbage_' + me.block.layout;
 
-    templateEngine.load(templateName).then(function (template) {
+    return templateEngine.load(templateName).then(function (template) {
       var data = {
         trashSep: me.block.date_separator,
       };
@@ -1008,7 +1008,7 @@ var DT_garbage = (function () {
     return serviceProperties[me.block.company]
       .handler(me, serviceProperties[me.block.company].param)
       .then(function (data) {
-        addToContainer(me, data);
+        return addToContainer(me, data);
       })
       .catch(function () {
         console.error('Error loading garbage: ', me.block);
