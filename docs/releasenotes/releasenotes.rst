@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 --------------
 
+Fixes
+~~~~~~
+
+* Colorpicker: Some fixes in warm white/cold white color setting.
+
 Enhancements
 ~~~~~~~~~~~~
 
