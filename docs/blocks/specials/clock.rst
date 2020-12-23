@@ -174,6 +174,13 @@ Block parameter
   * - scale
     - | Scale factor for the width of the clock. Should be smaller than 1
       | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%).
+  * - showSeconds
+    - | ``true``: (=default) Show seconds
+      | ``false``: Hide seconds
+  * - clockFace
+    - | ``24``: 24 hour clock
+      | ``12``: 12 hour clock
+      
 
 Hayman clock
 -------------
