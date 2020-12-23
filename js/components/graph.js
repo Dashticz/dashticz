@@ -79,6 +79,8 @@ function getBlockDefaults() {
   ];
   var block = {
     datasetColors: datasetColors,
+    axisRight: false,
+    axisAlternate: true,
     barWidth: 0.9,
     beginAtZero: false,
     borderDash: [],
@@ -997,7 +999,7 @@ function createGraph(graph) {
 
   //create the y-axes, ylabels contains the labels
   var uniqueylabels = graph.ylabels.filter(onlyUnique);
-  var labelLeft = true;
+  var labelLeft = !mergedBlock.axisRight;
   var axisCount =
     graph.options && graph.options.scales && graph.options.scales.yAxes
       ? graph.options.scales.yAxes.length
@@ -1029,7 +1031,7 @@ function createGraph(graph) {
         graphProperties.options.scales.yAxes[i],
         graph.options.scales.yAxes[i]
       );
-    labelLeft = !labelLeft;
+    labelLeft = mergedBlock.axisAlternate? !labelLeft : labelLeft;
   });
 
   //extend the y label with all dataset labels
