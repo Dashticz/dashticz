@@ -112,6 +112,10 @@ The following block parameters can be used to configure the graph:
     - font color for the axis ticks and labels (default is white)
   * - lineFill
     - if line graph, this fills the graph, it is an array for each dataset, e.g.['true', 'false', 'true'] (default is false)
+  * - axisRight
+     - if ``true`` the first Y axis will be shown at the right. (default is false, meaning left)
+  * - axisAlternate
+    - if ``true`` then in case of multiple Y axes they will be shown alternating left/right
   * - borderWidth
     - this is actually the width of the line (default is 2)
   * - borderDash

@@ -18,6 +18,7 @@ Enhancements
 
 * Calendar: New block parameter ``emptytext`` to define the text to show where there are no calendar appointments. Only works for the new calendar block. See :ref:`newcalendar`
 * Custom graph: aggregate parameter can be an array to specify different aggregation methods per data element. See :ref:`groupBy`
+* Graph: New parameters ``axisRight`` to show the first Y axis on the right (default is ``false``), and ``axisAlternating`` to show Y axes alternating left/right (default: ``true``).
 * Support for device (sub)type Managed Counter
 * Flipclock: New block parameters showSeconds (true or false) and clockFace (12 or 24)
 
