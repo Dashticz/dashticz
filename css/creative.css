@@ -315,24 +315,31 @@
   border-bottom: 0px !important;
 }
 
+.graphclose .close{
+  color: white;
+  opacity: 0.7
+ }
+
+ .graphclose .close:focus, .graphclose .close:hover {
+  color: white;
+  opacity: 1
+ }
 
 /*
 next css sets the default height of the frame popup
 */
 
+/*
 .popupheight {
   height: calc(95vh - 150px);
 }
+*/
 
 .modal-body .glyphicon {
   color: #a80002;
   cursor: help;
 }
 
-.modal-dialog-settings {
-  width: 70%;
-  margin: 80px auto;
-}
 
 .nav {
   border-bottom: 1px solid #e5e5e5;
@@ -385,6 +392,8 @@ next css sets the default height of the frame popup
 .modal-dialog-custom {
   min-width: 10px;
   width: 80%;
+  height: 80%;
+  margin: auto;
 }
 
 .material-switch>input[type='checkbox'] {
@@ -763,6 +772,15 @@ a.playlist {
 	height: 300px;
 }
 */
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.modal-body {
+  height: 100%
+}
 
 .modal.opengraph .modal-content {
   background-color: #222;
@@ -783,12 +801,15 @@ a.playlist {
 
 .graphwidth {
   min-width: 30px;
-  width: 100vw;
+  width: 80%;
 }
 
-@media (min-width: 768px) {
-  .graphwidth {
-    width: 80vw;
+@media (max-width: 768px) {
+/*  .graphwidth {
+    width: 100vw;
+  }*/
+  .modal-dialog {
+    width: 100%
   }
 }
 
@@ -1908,6 +1929,15 @@ a:not([href]) {
   text-align: center;
 }
 
+.modal-dialog {
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle;
+  min-width: 50%;
+  margin-left:auto;
+  margin-right: auto;
+}
+
 @media screen and (min-width: 768px) {
   .modal:before {
     display: inline-block;
@@ -1915,15 +1945,12 @@ a:not([href]) {
     content: ' ';
     height: 100%;
   }
-}
 
-.modal-dialog {
-  display: inline-block;
-  text-align: left;
-  vertical-align: middle;
-  min-width: 50%;
+  .modal-dialog-settings {
+    margin: 80px auto;
+    vertical-align: top;
+  }
 }
-
 
 /* START: NEWS BLOCK*/
 
@@ -3983,12 +4010,10 @@ td.agenda-title {
 }
 
 
-/*
+
 .colorpicker .modal-content {
-  max-width: 90%;
-  min-width: unset;
-  width: 50%;
-}*/
+  height: fit-content;
+}
 
 .colorpicker .cp-iro {
   overflow-x: auto;

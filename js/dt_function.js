@@ -167,6 +167,7 @@ var DT_function = (function () {
 
     html += '<div class="modal-dialog modal-dialog-custom" style="';
     html += setWidth ? 'width: ' + mywidth + '; ' : '';
+    html += setHeight ? 'height: ' + myheight + '; ' : '';
     html += '" >';
 
     html += '<div class="modal-content">';
@@ -188,7 +189,7 @@ var DT_function = (function () {
       '="' +
       url +
       '" width="100%" height="100%" frameborder="0" allowtransparency="true" style="';
-    html += setHeight ? 'height: ' + myheight + '; ' : '';
+//    html += setHeight ? 'height: ' + myheight + '; ' : '';
     html += '" onload="removeLoading()"';
     html += '></' + htmlel + '> ';
     html += '</div>';
