@@ -128,6 +128,15 @@ This is the standard clock. You can add this clock to a column with::
 
     columns[1]['blocks'] = ['basicclock'];
 
+Or define a custom block as follows::
+
+    blocks['myclock'] = {
+           type: 'basicclock'
+    }
+    
+    columns[1]['blocks'] = ['myclock'];
+
+
 Block parameter
 ^^^^^^^^^^^^^^^
 .. list-table:: 
@@ -141,8 +150,8 @@ Block parameter
     - | block width
       | ``1 .. 12``: (default ``12``).  
   * - size
-    - | Size of the stationclock in pixels. The default size of the station clock is the column width.
-      | ``200`` The clock will have a width and height of 200 pixels
+    - | Size of the basic clock in pixels. The default size of the basic clock is the column width.
+      | ``200`` The clock will have a width of 200 pixels
   * - scale
     - | Scale factor for the width of the clock. Should be smaller than 1
       | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%).
@@ -156,6 +165,14 @@ You can add the flipclock to a column with::
 
     columns[1]['blocks'] = ['flipclock'];
 
+Or define a custom block as follows::
+
+    blocks['myclock'] = {
+           type: 'flipclock'
+    }
+    
+    columns[1]['blocks'] = ['myclock'];
+
 Block parameter
 ^^^^^^^^^^^^^^^
 .. list-table:: 
@@ -169,8 +186,8 @@ Block parameter
     - | block width
       | ``1 .. 12``: (default ``12``).  
   * - size
-    - | Size of the stationclock in pixels. The default size of the station clock is the column width.
-      | ``200`` The clock will have a width and height of 200 pixels
+    - | Size of the flipclock in pixels. The default size of the flip clock is the column width.
+      | ``200`` The clock will have a width of 200 pixels
   * - scale
     - | Scale factor for the width of the clock. Should be smaller than 1
       | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%).
@@ -215,8 +232,8 @@ Block parameter
     - | block width
       | ``1 .. 12``: (default ``12``).  
   * - size
-    - | Size of the stationclock in pixels. The default size of the station clock is the column width.
-      | ``200`` The clock will have a width and height of 200 pixels
+    - | Size of the Hayman clock in pixels. The default size of the Hayman clock is the column width.
+      | ``200`` The clock will have a width of 200 pixels
   * - scale
     - | Scale factor for the width of the clock. Should be smaller than 1
       | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%).
