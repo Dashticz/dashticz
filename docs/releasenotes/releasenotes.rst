@@ -8,10 +8,31 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 --------------
 
-Fixes
-~~~~~~
+3.7.2 Beta (27-12-2020)
+-----------------------
 
-* Colorpicker: Some fixes in warm white/cold white color setting.
+.. note:: Update instructions.
+
+I've removed custom/custom.css and custom/custom.js from the Dashticz repository,  because these are user configuration files, and should not be part of the Dashticz repository.
+
+However, that means this update cannot be installed with ``git pull`` directly, because then git will report an error if you have modified one or both files.
+
+To solve this, first make a backup of these two files ::
+
+  mv custom/custom.js custom/custom.js.bak
+  mv custom/custom.css custom/custom.css.bak
+
+Then update to the latest version as usual ::
+
+  git pull
+
+And restore your backups:
+
+  mv custom/custom.js.bak custom/custom.js
+  mv custom/custom.css.bak custom/custom.css.bak
+
+You only have to do this once: Next updates can be installed with a normal 'git pull'
+
 
 Enhancements
 ~~~~~~~~~~~~
@@ -26,6 +47,8 @@ Fixes
 ~~~~~~
 
 * Graph: Fix for data acquistion day graph gas device.
+* Colorpicker: Some fixes in warm white/cold white color setting.
+
 
 3.7.1 Beta (19-12-2020)
 -----------------------
