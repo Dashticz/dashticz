@@ -20,6 +20,29 @@ This will show a Dashticz security panel, which automatically scales to the colu
 
 .. image :: secpanel.jpg
 
+
+Block parameter
+^^^^^^^^^^^^^^^
+.. list-table:: 
+  :header-rows: 1
+  :widths: 5, 30
+  :class: tight-table
+      
+  * - Parameter
+    - Description
+  * - decorate 
+    - | ``true``: Show security panel decorated with screws, title, background image. (=default)
+      | ``false`` Remove the decorations. This will result in a block with reduced height.
+  * - scale
+    - | Scale factor for the width of the clock. Should be smaller than 1. Height scales automatically.
+      | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%).
+  * - headerText
+    - | The text to show in the header of the security panel
+      | ``'Dashticz'`` (=default)
+  * - footerText
+    - | The text to show in the header of the security panel
+      | ``'Dashticz Security Panel, 2020'`` (=default)
+
 Additionally, if you have set your Domoticz security panel to "Armed Away", you can now configure Dashticz to secure automatically by applying the following setting in *CONFIG.js*::
 
     config['security_panel_lock'] = 1;

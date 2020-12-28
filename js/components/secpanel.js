@@ -1,4 +1,4 @@
-/* global Dashticz Domoticz settings MobileDetect*/
+/* global Dashticz Domoticz settings MobileDetect blocks md5*/
 /* From bundle:*/
 /* global templateEngine*/
 /* From src/functions.js*/
@@ -6,8 +6,15 @@
 
 var DT_secpanel = {
   name: 'secpanel',
+  canHandle: function (block) {
+    return block && block.type == 'secpanel';
+  },
   defaultCfg: {
     title: 'Dashticz Security Panel',
+    scale: 1,
+    decorate: 1,
+    headerText: 'Dashticz',
+    footerText: 'Dashticz Security Panel, ' + new Date().getFullYear(),
   },
 
   locked: false,
@@ -26,10 +33,14 @@ var DT_secpanel = {
         $(me.mountPoint + ' .dt_content').html(
           template({
             mode: 2,
+            decorate: me.block.decorate,
+            headerText: me.block.headerText,
+            footerText: me.block.footerText,
           })
         );
-        $(me.mountPoint + ' .dt_block').css('background', 'transparent');
-        $(me.mountPoint + ' .dt_block').css('border', '0');
+        if (me.block.decorate)
+          $(me.mountPoint + ' .sec-frame').addClass('decorated');
+        $(me.mountPoint + ' .dt_block').css('background-color', 'transparent');
         DT_secpanel.onResize(me);
       })
       .done(function () {
@@ -41,13 +52,13 @@ var DT_secpanel = {
   },
 
   onResize: function (me) {
-    var w = $(me.mountPoint + ' .dt_content').width();
-    var h = w * 1.35;
-    $('.sec-frame .key').css('fontSize', h / 12);
-    $('.sec-frame .key-input').css('fontSize', h / 24);
-    $('.sec-frame .keypad-footer').css('fontSize', h / 53);
-    $('.sec-frame .keypad-header').css('fontSize', h / 24);
-    $(me.mountPoint + ' .dt_content').height(h);
+    var yfactor = me.block.decorate ? 0.8 : 393 / 346;
+    var w = Math.min(
+      $(me.mountPoint + ' .secpanel').width(),
+      window.innerHeight * yfactor - 50
+    );
+
+    $(me.mountPoint + ' .sec-frame').css('fontSize', (w / 12) * me.block.scale);
   },
 
   CheckStatus: function (secstatus) {
@@ -60,40 +71,29 @@ var DT_secpanel = {
       templateEngine.load('secpanel_modal').then(function (modal) {
         $(document.body).append(modal);
         templateEngine.load('secpanel').then(function (template) {
-          var md = new MobileDetect(window.navigator.userAgent);
+          var block = DT_secpanel.getDefaultCfg;
+          $.extend(block, blocks['secpanel']);
           var data = {
             mode: 1,
-            wt: 34,
-            ht: 80,
+            decorate: block.decorate,
+            headerText: block.headerText,
+            footerText: block.footerText,
           };
-          var mql = window.matchMedia('(orientation: portrait)');
-          var portrait = mql.matches;
 
-          if (md.phone()) {
-            data.wt = 95;
-            data.ht = 95;
-            data.fsKey = '13vw';
-            data.fsInp = '5vw';
-            data.fsHdr = '4vw';
-            data.fsFtr = '2vw';
-            data.htScr = '3%';
-          }
-
-          if (md.tablet()) {
-            data.wt = portrait ? 95 : 55;
-            data.ht = 95;
-            data.fsKey = portrait ? '10.5vw' : '5.5vw';
-            data.fsInp = portrait ? '5vw' : '3vw';
-            data.fsHdr = portrait ? '4vw' : '3vw';
-            data.fsFtr = portrait ? '2vw' : '1vw';
-          }
+          var yFactor = block.decorate ? 0.8 : 1.1;
+          var w = Math.min(
+            window.innerWidth * 0.8,
+            window.innerHeight * yFactor
+          );
+          $('.sec-modal').css('fontSize', (w / 12) * block.scale);
 
           $('.sec-modal').html(template(data));
+          if (block.decorate) $('.sec-modal .sec-frame').addClass('decorated');
+
           DT_secpanel.ShowStatus();
         });
       });
     } else {
-      //      $(".security-panel").remove();
       if (DT_secpanel.locked) window.location.reload();
     }
   },
