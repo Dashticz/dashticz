@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 --------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Calendar: (New calendar block, layout 0 and 1 only) The class 'agenda-empty' is applied to the calendar block in case there are no appointments.
+
 3.7.2 Beta (27-12-2020)
 -----------------------
 
