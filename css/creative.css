@@ -315,24 +315,31 @@
   border-bottom: 0px !important;
 }
 
+.graphclose .close{
+  color: white;
+  opacity: 0.7
+ }
+
+ .graphclose .close:focus, .graphclose .close:hover {
+  color: white;
+  opacity: 1
+ }
 
 /*
 next css sets the default height of the frame popup
 */
 
+/*
 .popupheight {
   height: calc(95vh - 150px);
 }
+*/
 
 .modal-body .glyphicon {
   color: #a80002;
   cursor: help;
 }
 
-.modal-dialog-settings {
-  width: 70%;
-  margin: 80px auto;
-}
 
 .nav {
   border-bottom: 1px solid #e5e5e5;
@@ -385,6 +392,8 @@ next css sets the default height of the frame popup
 .modal-dialog-custom {
   min-width: 10px;
   width: 80%;
+  height: 80%;
+  margin: auto;
 }
 
 .material-switch>input[type='checkbox'] {
@@ -763,6 +772,15 @@ a.playlist {
 	height: 300px;
 }
 */
+.modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.modal-body {
+  height: 100%
+}
 
 .modal.opengraph .modal-content {
   background-color: #222;
@@ -783,12 +801,15 @@ a.playlist {
 
 .graphwidth {
   min-width: 30px;
-  width: 100vw;
+  width: 80%;
 }
 
-@media (min-width: 768px) {
-  .graphwidth {
-    width: 80vw;
+@media (max-width: 768px) {
+/*  .graphwidth {
+    width: 100vw;
+  }*/
+  .modal-dialog {
+    width: 100%
   }
 }
 
@@ -1908,6 +1929,15 @@ a:not([href]) {
   text-align: center;
 }
 
+.modal-dialog {
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle;
+  min-width: 50%;
+  margin-left:auto;
+  margin-right: auto;
+}
+
 @media screen and (min-width: 768px) {
   .modal:before {
     display: inline-block;
@@ -1915,15 +1945,12 @@ a:not([href]) {
     content: ' ';
     height: 100%;
   }
-}
 
-.modal-dialog {
-  display: inline-block;
-  text-align: left;
-  vertical-align: middle;
-  min-width: 50%;
+  .modal-dialog-settings {
+    margin: 80px auto;
+    vertical-align: top;
+  }
 }
-
 
 /* START: NEWS BLOCK*/
 
@@ -2696,14 +2723,27 @@ td.agenda-title {
   background-color: rgba(0, 0, 0, 0.2);
 }
 
+.sec-modal .sec-frame {
+  position: relative
+}
+
 .sec-frame {
+  border-radius: 5px;
+  position: relative;
+  width: 12em;
+  margin: 0 auto
+}
+
+.sec-frame.decorated {
   background-image: url(../img/bg14.jpg);
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
   box-shadow: 0px 6px 20px 5px rgba(0, 0, 0, 0.75), inset 0px 5px 7px -2px rgba(252, 252, 252, 0.2), inset 0 -14px 8px 2px rgba(0, 0, 0, 0.7);
-  border-radius: 5px;
-  position: relative;
-  height: 100%;
+  padding: 1em;
+}
+
+.sec-frame:not(.decorated) {
+  background-color: rgba(0,0,0,0.2);
 }
 
 .sec-frame .keypad-header {
@@ -2711,15 +2751,13 @@ td.agenda-title {
   white-space: nowrap;
   align-items: center;
   justify-content: center;
-  height: 5%;
-  position: absolute;
   width: 100%;
-  top: 7%;
-  font-size: 2vw;
+  height: 2em;
+  font-size: 100%;
 }
 
 .sec-frame .keypad-header .fas {
-  font-size: 100%;
+  font-size: 100% !important;
 }
 
 .sec-frame .keypad-header .text {
@@ -2755,30 +2793,20 @@ td.agenda-title {
   color: #494848;
   text-align: center;
   font-family: monospace;
-  position: absolute;
-  bottom: 7%;
   width: 100%;
-  height: 3%;
-  font-size: 0.6vw;
+  font-size: 50%;
+  line-height: 2;
 }
 
 .sec-frame .keypad-input {
-  text-align: left;
-  position: absolute;
-  width: 80%;
-  top: 15%;
-  height: 75%;
-  margin: 0 10%;
+  margin: 0 2%;
 }
 
 .sec-frame .keypad-input table {
   border-collapse: separate;
   border-spacing: 1px;
   width: 100%;
-  position: absolute;
-  top: 12%;
   margin: 0;
-  height: 82%;
 }
 
 .sec-frame .keypad-input table td {
@@ -2788,22 +2816,19 @@ td.agenda-title {
 
 .sec-frame .keypad-input table tr {
   white-space: nowrap;
-  height: 25%;
 }
 
 .sec-frame .keypad-input .input-container {
-  background-color: #161616;
-  position: absolute;
   overflow: hidden;
-  height: 10%;
-  left: 2%;
-  right: 2%;
+  margin: 0 2%;
+}
+
+.sec-frame.decorated .keypad-input .input-container {
   box-shadow: 0px 2px 9px 1px rgba(0, 0, 0, 0.8);
 }
 
 .sec-frame .keypad-input .key-input {
   font-family: 'Audiowide' !important;
-  font-size: 2vw;
   width: 100%;
   border-radius: 3px;
   background-color: #161616;
@@ -2813,6 +2838,7 @@ td.agenda-title {
   font-family: monospace;
   text-align: center;
   height: 100%;
+  font-size: 70%;
 }
 
 .text-strobe {
@@ -2842,16 +2868,20 @@ td.agenda-title {
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  -webkit-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  -moz-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
   font-family: monospace;
   text-transform: uppercase;
   font-weight: 900;
-  font-size: 3.5vw;
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 100%;
+  line-height: 1.75;
+}
+
+.sec-frame.decorated .keypad-input .key {
+  -webkit-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -moz-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
 }
 
 .sec-frame .keypad-input .key:not(.disabled):hover {
@@ -2938,8 +2968,8 @@ td.agenda-title {
 
 .screw {
   position: absolute;
-  width: 5%;
-  height: 4%;
+  width: 0.5em;
+  height: 0.5em;
   border-radius: 100%;
   background: -moz-linear-gradient( -45deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
   background: -webkit-gradient( linear, left top, right bottom, color-stop(0%, #adadad), color-stop(51%, #e1e1e1), color-stop(68%, #dddddd), color-stop(100%, #f6f6f6));
@@ -2970,23 +3000,23 @@ td.agenda-title {
 }
 
 .sec-frame .screw.tl {
-  top: 3%;
-  left: 3%;
+  top: 0.5em;
+  left: 0.5em;
 }
 
 .sec-frame .screw.tr {
-  top: 3%;
-  right: 3%;
+  top: 0.5em;
+  right: 0.5em;
 }
 
 .sec-frame .screw.bl {
-  bottom: 3%;
-  left: 3%;
+  bottom: 0.5em;
+  left: 0.5em;
 }
 
 .sec-frame .screw.br {
-  bottom: 3%;
-  right: 3%;
+  bottom: 0.5em;
+  right: 0.5em;
 }
 
 .sec-frame td .status.key.disabled {
@@ -3983,12 +4013,10 @@ td.agenda-title {
 }
 
 
-/*
+
 .colorpicker .modal-content {
-  max-width: 90%;
-  min-width: unset;
-  width: 50%;
-}*/
+  height: fit-content;
+}
 
 .colorpicker .cp-iro {
   overflow-x: auto;
