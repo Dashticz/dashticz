@@ -179,6 +179,11 @@ function generateAgenda(opt, key) {
         p = dt;
       });
     }
+
+    if(Object.keys(cal[key].events).length)
+      $(cal[key].mountPoint + ' .dt_block').removeClass('agenda-empty')
+    else
+      $(cal[key].mountPoint + ' .dt_block').addClass('agenda-empty')
   });
 }
 
