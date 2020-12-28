@@ -1439,7 +1439,7 @@ function showData(graph) {
     html +=
       '   <div class="modal-content" style="background-image:url(' +
       config['background_image'] +
-      ');">';
+      '); background-size: cover;">';
     html += '     <div class="modal-header">';
     html += '       <div class="flex-row title">';
     html +=
