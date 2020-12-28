@@ -17,16 +17,16 @@ I've removed custom/custom.css and custom/custom.js from the Dashticz repository
 
 However, that means this update cannot be installed with ``git pull`` directly, because then git will report an error if you have modified one or both files.
 
-To solve this, first make a backup of these two files ::
+To solve this, first make a backup of these two files::
 
   mv custom/custom.js custom/custom.js.bak
   mv custom/custom.css custom/custom.css.bak
 
-Then update to the latest version as usual ::
+Then update to the latest version as usual::
 
   git pull
 
-And restore your backups:
+And restore your backups::
 
   mv custom/custom.js.bak custom/custom.js
   mv custom/custom.css.bak custom/custom.css.bak
@@ -42,12 +42,14 @@ Enhancements
 * Graph: New parameters ``axisRight`` to show the first Y axis on the right (default is ``false``), and ``axisAlternating`` to show Y axes alternating left/right (default: ``true``).
 * Support for device (sub)type Managed Counter
 * Flipclock: New block parameters showSeconds (true or false) and clockFace (12 or 24)
+* Security panel: New block parameters ( ``decorate``, ``headerText``, ``footerText``, ``scale``). See :ref:`secpanel`
 
 Fixes
 ~~~~~~
 
 * Graph: Fix for data acquistion day graph gas device.
 * Colorpicker: Some fixes in warm white/cold white color setting.
+* Improved styling of modal popup windows.
 
 
 3.7.1 Beta (19-12-2020)
