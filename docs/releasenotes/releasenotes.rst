@@ -27,6 +27,11 @@ To solve this, first make a backup of these two files::
   mv custom/custom.js custom/custom.js.bak
   mv custom/custom.css custom/custom.css.bak
 
+In case you use the custom_2 folder, repeat these steps for that folder::
+
+  mv custom_2/custom.js custom_2/custom.js.bak
+  mv custom_2/custom.css custom_2/custom.css.bak
+
 Then update to the latest version as usual::
 
   git pull
@@ -34,7 +39,12 @@ Then update to the latest version as usual::
 And restore your backups::
 
   mv custom/custom.js.bak custom/custom.js
-  mv custom/custom.css.bak custom/custom.css.bak
+  mv custom/custom.css.bak custom/custom.css
+
+And for the custom_2 folder::
+
+  mv custom_2/custom.js.bak custom_2/custom.js
+  mv custom_2/custom.css.bak custom_2/custom.css
 
 You only have to do this once: Next updates can be installed with a normal 'git pull'
 
