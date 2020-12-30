@@ -779,6 +779,7 @@ settingList['about']['about_text4']['title'] =
 var _CORS_PATH = '';
 
 var defaultSettings = {
+  batteryThreshold: 20,
   language: 'en_US',
   speak_lang: 'en_US',
   timeformat: 'DD-MM-YY HH:mm',

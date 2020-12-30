@@ -95,6 +95,8 @@ function mountBlock(mountPoint, block, html, append) {
   }
   block.mountPoint = mountPoint;
   block.entry = block.mountPoint.slice(1);
+  if (typeof block.batteryThreshold === 'undefined')
+    block.batteryThreshold = settings.batteryThreshold;
   mountedBlocks[block.entry] = block;
 }
 
@@ -205,6 +207,49 @@ function deviceUpdateHandler(block) {
 
   if (device.HaveTimeout) $div.addClass('timeout');
   else $div.removeClass('timeout');
+
+  addBatteryLevel($div, block);
+}
+
+/*add the battery level indicator*/
+function addBatteryLevel($div, block) {
+  console.log(block);
+  var device = block.device;
+  var $data = $div; //$div.find('.col-data');
+  var batteryLevel = device.BatteryLevel;
+  if (
+    typeof batteryLevel === 'undefined' ||
+    batteryLevel > block.batteryThreshold
+  )
+    return;
+  var container = $data.find('.battery-level');
+  var html =
+    '<i class="battery-level ' +
+    batteryLevelIcon(batteryLevel) +
+    '"><div class="battery-percentage">' +
+    batteryLevel +
+    '</div></i>';
+  if (!container.length) {
+    $data.append(html);
+  } else container.replace(html);
+}
+
+function batteryLevelIcon(level) {
+  var icons = {
+    'fas fa-battery-empty': 0,
+    'fas fa-battery-quarter': 10,
+    'fas fa-battery-half': 35,
+    'fas fa-battery-three-quarters': 60,
+    'fas fa-battery-full': 90,
+  };
+  var myLevel = typeof level !== 'undefined' ? level : 255;
+  var myIcon = 'fas fa-battery-full';
+
+  Object.keys(icons).forEach(function (key) {
+    if (myLevel >= icons[key]) myIcon = key;
+  });
+
+  return myIcon;
 }
 
 function getBlockClass(block) {
