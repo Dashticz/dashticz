@@ -187,10 +187,15 @@ Block parameters
       | ``3``: no new window/frame (for intent handling, api calls). HTTP get request.
       | ``4``: no new window/frame (for intent handling, api calls). HTTP post request. (forcerefresh not supported)
   * - colorpicker
-    - Choose the RGB colorpicker for RGB devices. See :ref:`colorpicker`
+    - | Choose the RGB colorpicker for RGB devices. See :ref:`colorpicker`
       | ``0``: No RGB colorpicker
       | ``1``: Old style RGB colorpicker
       | ``2``: New style RGB colorpicker
+  * - batteryThreshold
+    - | If the battery level is below ``batteryThreshold`` then a battery icon will be displayed. See :ref:`batterylevel`
+      | Default value is defined by config['batteryThreshold] (=30)
+      | ``15``: Only show the battery icon when the battery level is below 15%.
+
 
 There are several additional parameters for Graphs. See :ref:`dom_graphs`
       
@@ -507,6 +512,70 @@ The following Domoticz RGB devices are supported:
    RGBWWZ device in Mixed modus.
 
    In this last example you see from left to right the RGB color picker, the RGB color level, the white color temperature, the white level and the master level.
+
+
+.. _batterylevel:
+
+Battery level
+~~~~~~~~~~~~~~
+
+A battery level indicator will be displayed when the battery level is below a certain threshold.
+
+.. image :: img/batterylevel.jpg
+
+For battery powerered devices the minimum level is 0, and the maximum level 100. For devices without a battery the battery level will always be 255.
+
+To display the battery indicator for all battery powered devices set the batteryThreshold to 100::
+
+  config['batteryThreshold'] = 100;
+
+or configure it for a specific block::
+
+  blocks[123] =  {
+    batteryThreshold: 100
+  }
+
+The following indicators will be displayed:
+
+.. list-table:: 
+  :header-rows: 1
+  :widths: 10 10 10
+  :class: tight-table
+
+  * - Min battery level
+    - Max battery level
+    - icon
+  * - 0
+    - 10%
+    - fa-battery-empty
+  * - 10%
+    - 35%
+    - fa-battery-quarter
+  * - 35%
+    - 60%
+    - fa-battery-half
+  * - 60%
+    - 90%
+    - fa-battery-three-quarters
+  * - 90%
+    - 100%
+    - fa-battery-full
+
+The battery symbols can be styled in custom.css. As an example the default styling for battery empty::
+
+  .battery-level.fa-battery-empty {
+    color:red;
+    z-index: 15;
+  }
+
+To hide the number, add the following to custom.css::
+
+  .battery-percentage {
+    display:none
+  }
+
+
+
 
 .. _domoticzStyling:
 

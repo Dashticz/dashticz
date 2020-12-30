@@ -4073,3 +4073,31 @@ td.agenda-title {
     text-align: right;
 }
 /*end garbage*/
+
+/*battery level*/
+
+.battery-level {
+  position: absolute;
+  right:0;
+  top:0;
+  color: rgba(255, 255, 255, 0.5);
+  z-index: -1;
+  margin-right: 3px;
+  font-size: 15px
+}
+
+.battery-level.fa-battery-empty {
+  color:red;
+  z-index: 15;
+}
+
+.battery-percentage {
+/*  position: absolute;
+  top: 5px;
+  left: 2px;*/
+  width: 100%;
+  text-align: center;
+  font-size: 10px;
+}
+
+/*end battery level
