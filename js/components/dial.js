@@ -446,7 +446,11 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   degrees: function (me) {
+    if(typeof me.needle !== 'undefined'){
+    var value = me.needle;
+    } else {
     var value = me.value;
+    }
     value = isDefined(me.min) && value < me.min ? me.min : value;
     value = isDefined(me.max) && value > me.max ? me.max : value;
 
@@ -848,6 +852,31 @@ var DT_dial = {
         unit: _TEMP_SYMBOL,
       }
     );
+
+//new layout of wind sensor
+if (me.block.layout == 1) {
+	me.needle = me.device.Direction;
+	me.value = me.device.Speed;
+	me.unitvalue = windUnit;
+	me.info.length = 0;
+ me.info.push({
+      icon: DT_dial.display(me.block.dialicon, 0, 3, 'fas fa-location-arrow'),
+      image: DT_dial.display(me.block.dialimage, 0, 3, false),
+      data: me.device.DirectionStr,
+      unit: '',
+    }, {
+      image: DT_dial.display(me.block.dialimage, 1, 3, false),
+      data: me.device.Direction,
+      unit: '°',
+    }, {
+      icon: DT_dial.display(me.block.dialicon, 2, 3,'fas fa-thermometer-half'),
+      image: DT_dial.display(me.block.dialimage, 0, 3, false),
+      data: me.device.Temp,
+      unit: _TEMP_SYMBOL,
+    }
+);
+
+} 
     return;
   },
 
