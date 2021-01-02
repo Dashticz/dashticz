@@ -4100,3 +4100,28 @@ td.agenda-title {
 }
 
 /*end battery level
+
+/*tvguide*/
+
+.tvguide tr {
+  vertical-align: top
+}
+.tvtime {
+  white-space: nowrap
+}
+.tvchannel {
+  font-style: italic;
+  white-space: nowrap
+}
+
+.tvtitle {
+  font-weight: bold;
+}
+
+.tvsep {
+  width: 1em;
+  text-align: center;
+}
+
+/*end tvguide*/
+

@@ -1,4 +1,5 @@
-/* global Dashticz _CORS_PATH moment settings ksort DT_function*/
+/* global Dashticz _CORS_PATH moment settings ksort DT_function templateEngine*/
+//# sourceURL=js/components/tvguide.js
 var allchannels = [];
 
 var DT_tvguide = {
@@ -12,11 +13,12 @@ var DT_tvguide = {
     maxitems: 10,
     containerClass: 'hover',
     channels: [1, 2, 3, 4, 31, 46, 92],
+    layout: 0,
+    separator: '-',
   },
   refresh: function (me) {
     var tvObj = me.block;
     var tvobject = $(me.mountPoint + ' .dt_state');
-    var newObject = $(document.createDocumentFragment()); //Create an empty DOM element.
     loadChannels(me)
       .fail(function () {
         console.log('TVGuide error');
@@ -57,35 +59,40 @@ var DT_tvguide = {
         }
         var counter = 1;
         tvitems = ksort(tvitems);
+        var filteredItems = [];
         for (var check in tvitems) {
           var items = tvitems[check];
           for (var c in items) {
             var item = items[c];
             if (check > moment().format('X') && counter <= maxitems) {
-              //Sometimes there might be no endtime (?). In that case the next line will give an error
-              var widget =
-                '<div>' +
-                item['starttime'] +
-                ' - ' +
-                item['endtime'] +
-                ' - <em>' +
-                item['channel'] +
-                '</em> - <b>' +
-                item['title'] +
-                '</b></div>';
-              $(widget)
-                .appendTo(newObject)
-                .click(item.db_id, function (evt) {
-                  var tmp = {
-                    url: tvObj.url || 'https://tvgids.nl/programma/' + evt.data,
-                  };
-                  DT_function.clickHandler(me, tmp);
-                });
+              filteredItems.push(item);
               counter++;
             }
           }
         }
-        tvobject.html(newObject);
+
+        templateEngine
+          .load('tvguide_' + me.block.layout)
+          .then(function (template) {
+            var newObject = template({
+              separator: me.block.separator,
+              items: filteredItems,
+            });
+            tvobject.html(newObject);
+
+            tvobject.off(); 
+            //Install clickhandlers
+            if (tvObj.url)
+              tvobject.on('click', function () {
+                DT_function.clickHandler(me, tvObj);
+              });
+            else
+              tvobject.on('click', 'tr', function () {
+                DT_function.clickHandler(me, {
+                  url: 'https://tvgids.nl/programma/' + $(this).data('id'),
+                });
+            });
+          });
       });
 
     function loadChannels() {
