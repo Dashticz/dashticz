@@ -196,7 +196,6 @@ var DT_function = (function () {
     html += '</div>';
     html += '</div>';
     html += '</div>';
-    console.log(html);
     return html;
   }
 
