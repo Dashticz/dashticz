@@ -13,6 +13,7 @@ Enhancements
 
 * Calendar: (New calendar block, layout 0 and 1 only) The class 'agenda-empty' is applied to the calendar block in case there are no appointments.
 * Battery Level indicator for Domoticz devices. Battery icon will be displayed when the battery level is below ``batteryThreshold``. See :ref:`batterylevel`. 
+* TV Guide layout. Documentation ...
 
 3.7.2 Beta (27-12-2020)
 -----------------------
