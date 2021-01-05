@@ -15,6 +15,7 @@ var DT_secpanel = {
     decorate: 1,
     headerText: 'Dashticz',
     footerText: 'Dashticz Security Panel, ' + new Date().getFullYear(),
+    width: 12
   },
 
   locked: false,
@@ -71,7 +72,7 @@ var DT_secpanel = {
       templateEngine.load('secpanel_modal').then(function (modal) {
         $(document.body).append(modal);
         templateEngine.load('secpanel').then(function (template) {
-          var block = DT_secpanel.getDefaultCfg;
+          var block = DT_secpanel.defaultCfg;
           $.extend(block, blocks['secpanel']);
           var data = {
             mode: 1,
