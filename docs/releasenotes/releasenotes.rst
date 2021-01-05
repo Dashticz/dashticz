@@ -14,7 +14,7 @@ Enhancements
 * Calendar: (New calendar block, layout 0 and 1 only) The class 'agenda-empty' is applied to the calendar block in case there are no appointments.
 * Battery Level indicator for Domoticz devices. Battery icon will be displayed when the battery level is below ``batteryThreshold``. See :ref:`batterylevel`. 
 * TV Guide: Block parameter ``layout`` has been added, to display the TV guide with/without channel name. See :ref:`tvguide`
-* Graph: Block parameter ``labels`` has been added, to rename the device names that are used in the graph.
+* Graph: Block parameter ``labels`` has been added, to rename the device names that are used in groupByDevice graphs.
 
 Fixes
 ~~~~~~
