@@ -1059,30 +1059,29 @@ function getBlockData(block, textOn, textOff) {
   var opendiv = '<div class="col-xs-8 col-data">';
   var closediv = '</div>';
 
-  if (block['hide_data']) {
-    return opendiv + '<strong class="title">' + title + '</strong>' + closediv;
-  }
+  var data = '<strong class="title">' + title + '</strong>';
 
-  var value = textOn;
-  var status = block.device.Status;
-  if (
-    status == 'Off' ||
-    status == 'Closed' ||
-    status == 'Normal' ||
-    status == 'Locked' ||
-    status == 'No Motion' ||
-    (status == '' && block.device['InternalState'] == 'Off')
-  ) {
-    value = textOff;
-  }
+  if (!block['hide_data']) {
+    var value = textOn;
+    var status = block.device.Status;
+    if (
+      status == 'Off' ||
+      status == 'Closed' ||
+      status == 'Normal' ||
+      status == 'Locked' ||
+      status == 'No Motion' ||
+      (status == '' && block.device['InternalState'] == 'Off')
+    ) {
+      value = textOff;
+    }
 
-  if (titleAndValueSwitch(block)) {
-    title = value;
-    value = getBlockTitle(block);
-  }
+    if (titleAndValueSwitch(block)) {
+      title = value;
+      value = getBlockTitle(block);
+    }
 
-  var data = '<strong class="title">' + title + '</strong><br />';
-  data += '<span class="state">' + value + '</span>';
+    data += '<br /><span class="state">' + value + '</span>';
+  }
 
   if (showUpdateInformation(block)) {
     data +=
