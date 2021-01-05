@@ -84,6 +84,9 @@ The following block parameters can be used to configure the graph:
       | ``'horizontal'``: enables the feature and display a horizontal bar chart, grouped by device
       | - Setpoint devices will be displayed as a line infront of the bar graph
       | - For Evohome devices: The tooltip info will display the status and schedule
+  * - labels
+	- | An array to rename the device names (groupByDevice charts only)
+	  | ``['Device A', 'Device B']`` The first device will be labeled as ``Device A``, the second as ``Device B``
   * - stacked
     - ``true``: Show stacked bar charts. See :ref:`stacked`.
   * - beginAtZero
