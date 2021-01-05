@@ -1031,7 +1031,7 @@ function createGraph(graph) {
         graphProperties.options.scales.yAxes[i],
         graph.options.scales.yAxes[i]
       );
-    labelLeft = mergedBlock.axisAlternate? !labelLeft : labelLeft;
+    labelLeft = mergedBlock.axisAlternate ? !labelLeft : labelLeft;
   });
 
   //extend the y label with all dataset labels
@@ -1898,7 +1898,8 @@ function groupByDevice(me) {
       }
       if (data.SubType === 'Percentage' || data.SensorUnit === '%')
         arrData.push(parseFloat(data.Data));
-      arrLabels.push(data.Name);
+      if (!me.block.labels) arrLabels.push(data.Name);
+      else arrLabels.push(me.block.labels[i]);
     }
   });
   var html = createHeader(graph, false);
