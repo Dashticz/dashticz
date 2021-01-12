@@ -626,13 +626,11 @@ function redrawGraph(me) {
   });
 
   $.each(multidata.result, function (index, obj) {
-    //    $.each(obj, function () { //make no sense ...
     for (var n in newKeys) {
       if (!obj.hasOwnProperty(newKeys[n])) {
         obj[newKeys[n]] = NaN;
       }
     }
-    //    });
   });
 
   var graph = me; //todo: replace graph with me in all following lines?
@@ -643,10 +641,6 @@ function redrawGraph(me) {
   graph.ylabels = getYlabels(graph);
   //graph.currentValues = currentValues; //todo: check currentValues
 
-  // 20/02/20: GroupBy - hour|day|week|month
-  if (graph.groupBy) {
-    multidata.result = groupData(graph, multidata.result);
-  }
   graph.data = multidata;
   createGraph(graph);
 }
@@ -657,70 +651,101 @@ function getProperty(prop, idx) {
   return prop;
 }
 
-function groupData(graph, md) {
-  var returnData = [];
+function getGroupStart(groupBy, timestamp) {
   var dayFormat = 'YYYY-MM-DD';
   var groupStart;
-  var add;
+  switch (groupBy) {
+    case 'hour':
+      groupStart = moment(timestamp, dayFormat)
+        .hour(moment(timestamp, 'YYYY-MM-DD HH:mm').hour())
+        .format('YYYY-MM-DD HH:mm');
+      break;
+    case 'day':
+      groupStart = moment(timestamp, dayFormat).format(dayFormat);
+      break;
+    case 'week':
+      groupStart = moment(timestamp, dayFormat).weekday(0).format(dayFormat);
+      break;
+    case 'month':
+      groupStart = moment(timestamp, dayFormat)
+        .startOf('month')
+        .format(dayFormat);
+      break;
+  }
+  return groupStart;
+}
 
+/***
+ * @param data: array of datapoints or array of values
+ *
+ * A datapoint is an object containing a x and y value
+ */
+function groupData(graph, idx, data, labels) {
+  var returnData = [];
+
+  if (!data.length) {
+    console.log('dataset without data: No grouping');
+    return;
+  }
+
+  var isObject = typeof data[0] === 'object';
   var groupedData = {};
   var groupedCount = {}; //Count objects; needed in case aggregation function is average.
 
-  $.each(md, function (i, obj) {
-    switch (getProperty(graph.aggregate, i)) {
-      case 'sum':
-        add = true;
-        break;
-      case 'avg':
-        add = false;
-        break;
-      default:
-        add =
-          graph.sensor === 'counter' || graph.sensor === 'rain' ? true : false;
-        break;
-    }
-
-    switch (graph.groupBy) {
-      case 'hour':
-        groupStart = moment(obj.d, dayFormat)
-          .hour(moment(obj.d, 'YYYY-MM-DD HH:mm').hour())
-          .format('YYYY-MM-DD HH:mm');
-        break;
-      case 'day':
-        groupStart = moment(obj.d, dayFormat).format(dayFormat);
-        break;
-      case 'week':
-        groupStart = moment(obj.d, dayFormat).weekday(0).format(dayFormat);
-        break;
-      case 'month':
-        groupStart = moment(obj.d, dayFormat)
-          .startOf('month')
-          .format(dayFormat);
-        break;
-    }
+  $.each(data, function (i, obj) {
+    var timestamp = isObject ? obj.x : labels[i];
+    var groupStart = getGroupStart(graph.groupBy, timestamp);
     if (!groupedData[groupStart]) {
       //new groupBy element. Initialization.
-      groupedData[groupStart] = {};
+      groupedData[groupStart] = 0;
       groupedCount[groupStart] = 0;
     }
     groupedCount[groupStart] += 1;
-    var groupObj = groupedData[groupStart];
-    $.each(obj, function (key, val) {
-      groupObj[key] = (groupObj[key] || 0) + (Number(val) || 0);
-    });
+    var value = isObject ? obj.y : obj;
+    groupedData[groupStart] += Number(value) || 0;
   });
+
+  var add = true;
+  switch (getProperty(graph.aggregate, idx)) {
+    case 'sum':
+      add = true;
+      break;
+    case 'avg':
+      add = false;
+      break;
+    default:
+      add =
+        graph.sensor === ('counter' || graph.sensor === 'rain') ? true : false;
+      break;
+  }
+
   $.each(groupedData, function (key, obj) {
     if (!add) {
       //we have to compute the average
       var count = groupedCount[key];
-      $.each(obj, function (key) {
-        obj[key] /= count;
-      });
+      obj /= count;
     }
-    obj.d = key;
-    returnData.push(obj);
+    var returnValue = isObject ? { x: key, y: obj } : obj;
+    returnData.push(returnValue);
   });
   return returnData;
+}
+
+function groupLabels(graph, labels) {
+  if (!labels.length) {
+    console.log('dataset without labels: No grouping');
+    return [];
+  }
+
+  return labels.reduce(
+    function (acc, el) {
+      var l = acc.length;
+      var groupStart = getGroupStart(graph.groupBy, el);
+      if (acc[l - 1] !== groupStart) acc.push(groupStart);
+      return acc;
+    },
+    [getGroupStart(graph.groupBy, labels[0])]
+  );
 }
 
 function createGraph(graph) {
@@ -781,7 +806,7 @@ function createGraph(graph) {
   if (typeof mergedBlock.legend == 'boolean') {
     graphProperties.options.legend.display = mergedBlock.legend;
   }
-  var mydatasets = [];
+  var mydatasets = {};
 
   if (graph.dataFilterCount > 0) {
     var startMoment =
@@ -870,7 +895,6 @@ function createGraph(graph) {
     });
 
     if (graph.graphConfig.graph) {
-      //graphProperties.type = typeof graphProperties.graph === 'string' ? graph.graphConfig.graph : graph.graphConfig.graph[index];
       graphProperties.type = graph.graphConfig.graph;
     }
     $.extend(true, graphProperties, graph.graphConfig);
@@ -934,6 +958,27 @@ function createGraph(graph) {
       });
       if (valid) graphProperties.data.labels.push(element.d);
     });
+  }
+
+  //Now we have the datasets
+  //Apply groupBy if needed
+  if (graph.groupBy) {
+    //group the data
+    var idx = 0;
+    $.each(mydatasets, function (key, dataset) {
+      dataset.data = groupData(
+        graph,
+        idx,
+        dataset.data,
+        graphProperties.data.labels
+      );
+      idx += 1;
+    });
+    //group the labels
+    graphProperties.data.labels = groupLabels(
+      graph,
+      graphProperties.data.labels
+    );
   }
 
   // draw the datasets in custom order
