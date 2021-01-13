@@ -22,6 +22,7 @@ Fixes
 * Bugfix security panel lock screen default setting
 * Show last update time when last_update is set as block parameter
 * Graph: Fix for block parameter aggregate as array
+* Calendar: Update icalparser for PHP8 compatibility
 
 
 3.7.2 Beta (27-12-2020)
