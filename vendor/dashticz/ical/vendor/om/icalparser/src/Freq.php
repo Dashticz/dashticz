@@ -69,7 +69,7 @@ class Freq {
 		$this->excluded = [];
 
 		$rules = [];
-		foreach ($rule AS $k => $v) {
+		foreach ($rule as $k => $v) {
 			$this->rules[strtolower($k)] = $v;
 		}
 
@@ -80,7 +80,7 @@ class Freq {
 		}
 		$this->freq = strtolower($this->rules['freq']);
 
-		foreach ($this->knownRules AS $rule) {
+		foreach ($this->knownRules as $rule) {
 			if (isset($this->rules['by' . $rule])) {
 				if ($this->isPrerule($rule, $this->freq)) {
 					$this->simpleMode = false;
@@ -237,12 +237,12 @@ class Freq {
 
 		if ($debug) echo 'EOP: ' . date('r', $eop) . "\n";
 
-		foreach ($this->knownRules AS $rule) {
+		foreach ($this->knownRules as $rule) {
 			if ($found && isset($this->rules['by' . $rule])) {
 				if ($this->isPrerule($rule, $this->freq)) {
 					$subrules = explode(',', $this->rules['by' . $rule]);
 					$_t = null;
-					foreach ($subrules AS $subrule) {
+					foreach ($subrules as $subrule) {
 						$imm = call_user_func_array([$this, 'ruleBy' . $rule], [$subrule, $t]);
 						if ($imm === false) {
 							break;
@@ -370,7 +370,7 @@ class Freq {
 		}
 		if (isset($this->rules['byday'])) {
 			$days = explode(',', $this->rules['byday']);
-			foreach ($days As $i => $k) {
+			foreach ($days as $i => $k) {
 				$days[$i] = $this->weekdays[preg_replace('/[^A-Z]/', '', $k)];
 			}
 			if (!in_array(strtolower(date('l', $t)), $days)) {
@@ -385,7 +385,7 @@ class Freq {
 		}
 		if (isset($this->rules['bymonthday'])) {
 			$weekdays = explode(',', $this->rules['bymonthday']);
-			foreach ($weekdays As $i => $k) {
+			foreach ($weekdays as $i => $k) {
 				if ($k < 0) {
 					$weekdays[$i] = date('t', $t) + $k + 1;
 				}

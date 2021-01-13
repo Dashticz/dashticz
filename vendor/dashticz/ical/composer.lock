@@ -4,24 +4,24 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "427a6729ee9cf11e9a840f0de535858d",
+    "content-hash": "2c763420ba039f6f090ade29f07cba96",
     "packages": [
         {
             "name": "om/icalparser",
-            "version": "v0.2.9",
+            "version": "v1.0.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/OzzyCzech/icalparser.git",
-                "reference": "667aa26e1bd498c3558405f182452beb9d5a8757"
+                "reference": "e180dea8447c9e78f92306f892f809d5f5ad2948"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/OzzyCzech/icalparser/zipball/667aa26e1bd498c3558405f182452beb9d5a8757",
-                "reference": "667aa26e1bd498c3558405f182452beb9d5a8757",
+                "url": "https://api.github.com/repos/OzzyCzech/icalparser/zipball/e180dea8447c9e78f92306f892f809d5f5ad2948",
+                "reference": "e180dea8447c9e78f92306f892f809d5f5ad2948",
                 "shasum": ""
             },
             "require": {
-                "php": ">=7.1.0"
+                "php": ">=7.2.0"
             },
             "require-dev": {
                 "nette/tester": "*"
@@ -51,7 +51,7 @@
                 "ical",
                 "parser"
             ],
-            "time": "2020-05-13T07:50:23+00:00"
+            "time": "2020-09-21T09:20:40+00:00"
         }
     ],
     "packages-dev": [],
