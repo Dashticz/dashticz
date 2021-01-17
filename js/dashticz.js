@@ -7,6 +7,7 @@
 // eslint-disable-next-line no-unused-vars
 var Dashticz = (function () {
   var specials = [
+    'domoticzblock',
     'streamplayer',
     'button',
     'frame',
@@ -32,10 +33,12 @@ var Dashticz = (function () {
     'garbage',
     'haymanclock',
     'flipclock',
-    'basicclock'
+    'basicclock',
+    'log',
+    'simpleblock',
   ];
   var components = [];
-  var mountedBlocks = [];
+  var mountedBlocks = {};
   var blockNumbering = 0;
 
   function _init() {
@@ -88,8 +91,8 @@ var Dashticz = (function () {
 
   function _onResize() {
     Object.keys(mountedBlocks).forEach(function (key) {
-      var me = mountedBlocks[key];
-      var comp = components[me.name];
+      var me = mountedBlocks[key].me;
+      var comp = me && me.name && components[me.name];
       if (!comp) {
         console.log('no component for ', key);
         return;
@@ -117,11 +120,11 @@ var Dashticz = (function () {
 
   function addClickHandler(me) {
     var clickHandler = null;
-    if (!me.block.url) return;
+    if (!me.block.url && !me.block.slide && !me.block.popup) return;
     var bCH = me.block.clickHandler;
     if (typeof bCH === 'function') {
       clickHandler = bCH;
-    } else if (bCH) {
+    } else if (typeof bCH === 'undefined' || bCH) {
       clickHandler = DT_function.clickHandler;
     }
     if (clickHandler) {
@@ -131,6 +134,32 @@ var Dashticz = (function () {
         })
         .addClass('hover');
     }
+  }
+
+  function removeBlock(id) {
+    console.log('removing block ', id);
+    mountedBlocks[id].childs.forEach(function (child) {
+      removeBlock(child);
+    });
+    mountedBlocks[id].childs = [];
+    var me=mountedBlocks[id].me;
+    if (me) {
+      me.callbacks.timeoutList.forEach(function (el) {
+        clearTimeout(el);
+      });
+      me.callbacks.intervalList.forEach(function (el) {
+        clearInterval(el);
+      });
+      me.callbacks.subscriptionList.forEach(function (el) {
+        el();
+      });
+      me.callbacks.timeoutList = [];
+      me.callbacks.intervalList = [];
+      me.callbacks.subscriptionList = [];
+    }
+    $(id).remove();
+    delete mountedBlocks[id];
+    console.log('removed ', id);
   }
 
   function _mountSpecialBlock(mountPoint, blockdef, special, key) {
@@ -143,16 +172,14 @@ var Dashticz = (function () {
       $(mountPoint).html(getContainer(me));
       //            console.log(me);
       renderBlock(me);
-      mountedBlocks[me.mountPoint] = me;
+      mountedBlocks[me.mountPoint].me = me;
       if (special.run) special.run(me);
 
       addClickHandler(me);
 
       if (me.block.refresh && special.refresh) {
         //install refresh handler
-        setInterval(function () {
-          special.refresh(me);
-        }, me.block.refresh * 1000);
+        _setInterval(me, special.refresh, me.block.refresh * 1000);
         special.refresh(me);
       }
       if (special.refresh) {
@@ -266,6 +293,11 @@ var Dashticz = (function () {
       block: blockdef,
       key: blockdef.key ? blockdef.key : mountPoint.slice(1),
       name: special.name,
+      callbacks: {
+        timeoutList: [],
+        intervalList: [],
+        subscriptionList: [],
+      },
     };
     return newblock;
   }
@@ -281,6 +313,15 @@ var Dashticz = (function () {
         _mountSpecialBlock(mountPoint, blocks[selector], def, selector);
         return true;
       }
+    }
+    if (typeof selector === 'object' && components[selector.type]) {
+      _mountSpecialBlock(
+        mountPoint,
+        selector,
+        components[selector.type],
+        selector
+      );
+      return true;
     }
     for (var comp in components) {
       if (typeof selector === 'object') {
@@ -311,8 +352,25 @@ var Dashticz = (function () {
   }
 
   function _mountNewContainer(column) {
-    $(column).append('<div id="block_' + blockNumbering + '"></div>');
-    return '#block_' + blockNumbering++;
+    var id = 'block_' + blockNumbering;
+    var _id = '#' + id;
+    $(column).append('<div id="' + id + '"></div>');
+    mountedBlocks[_id] = {
+      parent: column,
+      childs: [],
+    };
+    if (!mountedBlocks[column])
+      mountedBlocks[column] = {
+        childs: [],
+      };
+    mountedBlocks[column].childs.push(_id);
+    /*
+    DT_function.onRemove($(column+' #'+id)[0], function() {
+      console.log('Removed from DOM: ', id);
+    })*/
+    blockNumbering++;
+    console.log('Mounted: ' + id);
+    return _id;
   }
 
   var subscribeBlockList = {};
@@ -356,6 +414,37 @@ var Dashticz = (function () {
     }
   }
 
+  function isMounted(me) {
+    if ($(me.mountPoint).length) 
+      return true;
+    removeBlock(me);
+    return false;
+  }
+
+  function _setTimeout(me, callback, timeout) {
+    me.callbacks.timeoutList.push(
+      setTimeout(function () {
+        if(isMounted(me)) callback(me);
+      }, timeout)
+    );
+  }
+
+  function _setInterval(me, callback, interval) {
+    me.callbacks.intervalList.push(
+      setInterval(function () {
+        if(isMounted(me)) callback(me);
+      }, interval)
+    );
+  }
+
+  function _subscribeDevice(me, callback, idx, getCurrent) {
+    me.callbacks.subscriptionList.push(
+      Domoticz.subscribe(idx, getCurrent, function (data) {
+        if(isMounted(me)) callback(data);
+      })
+    );
+  }
+
   return {
     init: _init,
     onResize: _onResize,
@@ -366,6 +455,10 @@ var Dashticz = (function () {
     mountDefaultBlock: _mountDefaultBlock,
     subscribeBlock: subscribeBlock,
     setBlock: setBlock,
+    setTimeout: _setTimeout,
+    setInterval: _setInterval,
+    subscribeDevice: _subscribeDevice,
+    removeBlock: removeBlock,
   };
 })();
 

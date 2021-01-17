@@ -8,7 +8,7 @@ var DT_graph = {
   canHandle: function (block, key) {
     return (
       (block && block.devices) ||
-      (typeof key === 'string' && key.substring(0, 6) === 'graph_')
+      (typeof block.key === 'string' && block.key.substring(0, 6) === 'graph_')
     );
   },
   defaultCfg: getBlockDefaults,
@@ -801,6 +801,7 @@ function createGraph(graph) {
     if (parseInt(height) > 0)
       //only change height is we have a valid height value
       $('.' + graphIdx + ' .graphcontent').css('height', height);
+      //console.log('test');
   }
 
   if (typeof mergedBlock.legend == 'boolean') {

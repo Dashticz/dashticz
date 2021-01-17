@@ -154,7 +154,7 @@ function getCalendarData(key, calendars, isnew, ishol) {
  * @param {string}  key  The block name of the calendar.
  */
 function generateAgenda(opt, key) {
-  createModalIframe(key);
+//  createModalIframe(key);
 
   templateEngine.load('calendar_' + opt).then(function (template) {
     var data = {
