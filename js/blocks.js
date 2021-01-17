@@ -1059,7 +1059,7 @@ function getBlockData(block, textOn, textOff) {
   var opendiv = '<div class="col-xs-8 col-data">';
   var closediv = '</div>';
 
-  var data = '<strong class="title">' + title + '</strong>';
+  var data='';
 
   if (!block['hide_data']) {
     var value = textOn;
@@ -1080,8 +1080,9 @@ function getBlockData(block, textOn, textOff) {
       value = getBlockTitle(block);
     }
 
-    data += '<br /><span class="state">' + value + '</span>';
+    data = '<br /><span class="state">' + value + '</span>';
   }
+  data = '<strong class="title">' + title + '</strong>' + data; //Attach data part behind title
 
   if (showUpdateInformation(block)) {
     data +=
