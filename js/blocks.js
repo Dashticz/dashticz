@@ -266,34 +266,6 @@ function getBlockClass(block) {
   return addClass;
 }
 
-function addDeviceUpdateHandler(block) {
-  var deviceIdx = block.idx;
-  if (typeof block.idx === 'string') {
-    var idxSplit = block.idx.split('_');
-    if (idxSplit.length == 2) {
-      var idx = parseInt(idxSplit[0]);
-      var subidx = parseInt(idxSplit[1]);
-      if (typeof idx === 'number' && typeof subidx === 'number') {
-        deviceIdx = idx;
-        block.subidx = subidx;
-      }
-    }
-  }
-  Domoticz.subscribe(deviceIdx, true, function (device) {
-    block.device = device;
-    deviceUpdateHandler(block);
-  });
-
-  if (block.key) {
-    Dashticz.subscribeBlock(block.key, function (blockUpdate) {
-      $.extend(block, blockUpdate);
-      deviceUpdateHandler(block);
-    });
-  } else {
-    console.log('key not defined for block ', block.idx);
-  }
-}
-
 function handleObjectBlock(block, el) {}
 
 /** Checks whether key indicates a Domoticz device

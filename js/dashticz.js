@@ -142,7 +142,7 @@ var Dashticz = (function () {
       removeBlock(child);
     });
     mountedBlocks[id].childs = [];
-    var me=mountedBlocks[id].me;
+    var me = mountedBlocks[id].me;
     if (me) {
       me.callbacks.timeoutList.forEach(function (el) {
         clearTimeout(el);
@@ -184,7 +184,7 @@ var Dashticz = (function () {
       }
       if (special.refresh) {
         blocks[me.key] = blockdef;
-        Dashticz.subscribeBlock(me.key, function (block) {
+        Dashticz.subscribeBlock(me, function (block) {
           console.log('updating special block', me);
           me.block = getBlockConfig(block, components[me.name], me.key);
           renderBlock(me);
@@ -375,9 +375,22 @@ var Dashticz = (function () {
 
   var subscribeBlockList = {};
 
-  function subscribeBlock(key, callback) {
-    if (!subscribeBlockList[key]) subscribeBlockList[key] = [];
-    subscribeBlockList[key].push(callback);
+  function subscribeBlock(me, callback) {
+    var key=me.key;
+    if (!subscribeBlockList[key]) subscribeBlockList[key] = $.Callbacks();
+    var cb = function (data) {
+      setTimeout(function () {
+        callback(data);
+      }, 0);
+    };
+    subscribeBlockList[key].add(cb);
+
+    var unsubscribe = function () {
+      console.log('unsubscribe block ', key, callback)
+      subscribeBlockList[key].remove(cb);
+    };
+    me.callbacks.subscriptionList.push(unsubscribe);
+    return unsubscribe;
   }
 
   function setBlock(key, state) {
@@ -395,28 +408,19 @@ var Dashticz = (function () {
       }
     }
     if (changed || !state) {
-      if (subscribeBlockList[key])
-        subscribeBlockList[key].forEach(function (callback) {
-          setTimeout(function () {
-            callback(block);
-          }, 0);
-        });
+      if (subscribeBlockList[key]) subscribeBlockList[key].fire(block);
       else {
         var keySplit = key.split('_');
         if (keySplit.length === 2 && subscribeBlockList[keySplit[0]]) {
-          subscribeBlockList[keySplit[0]].forEach(function (callback) {
-            setTimeout(function () {
-              callback({}); //we call the parent call back with empty block update
-            }, 0);
-          });
+          //we call the parent call back with empty block update
+          subscribeBlockList[keySplit[0]].fire({});
         }
       }
     }
   }
 
   function isMounted(me) {
-    if ($(me.mountPoint).length) 
-      return true;
+    if ($(me.mountPoint).length) return true;
     removeBlock(me);
     return false;
   }
@@ -424,7 +428,7 @@ var Dashticz = (function () {
   function _setTimeout(me, callback, timeout) {
     me.callbacks.timeoutList.push(
       setTimeout(function () {
-        if(isMounted(me)) callback(me);
+        if (isMounted(me)) callback(me);
       }, timeout)
     );
   }
@@ -432,17 +436,17 @@ var Dashticz = (function () {
   function _setInterval(me, callback, interval) {
     me.callbacks.intervalList.push(
       setInterval(function () {
-        if(isMounted(me)) callback(me);
+        if (isMounted(me)) callback(me);
       }, interval)
     );
   }
 
-  function _subscribeDevice(me, callback, idx, getCurrent) {
-    me.callbacks.subscriptionList.push(
-      Domoticz.subscribe(idx, getCurrent, function (data) {
-        if(isMounted(me)) callback(data);
-      })
-    );
+  function _subscribeDevice(me, idx, getCurrent, callback) {
+    var unsubscribe = Domoticz.subscribe(idx, getCurrent, function (data) {
+      if (isMounted(me)) callback(data);
+    });
+    me.callbacks.subscriptionList.push(unsubscribe);
+    return unsubscribe;
   }
 
   return {

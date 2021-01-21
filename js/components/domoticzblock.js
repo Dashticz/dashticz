@@ -31,9 +31,39 @@ var DT_domoticzblock = (function () {
       block.$mountPoint = $mountPoint;
       block.mountPoint = me.mountPoint;
       block.entry = block.mountPoint.slice(1);
-      addDeviceUpdateHandler(block);
+      addDeviceUpdateHandler(me);
     },
   };
+
+  function addDeviceUpdateHandler(me) {
+    var block=me.block;
+    var deviceIdx = block.idx;
+    if (typeof block.idx === 'string') {
+      var idxSplit = block.idx.split('_');
+      if (idxSplit.length == 2) {
+        var idx = parseInt(idxSplit[0]);
+        var subidx = parseInt(idxSplit[1]);
+        if (typeof idx === 'number' && typeof subidx === 'number') {
+          deviceIdx = idx;
+          block.subidx = subidx;
+        }
+      }
+    }
+    Dashticz.subscribeDevice(me, deviceIdx, true, function (device) {
+      block.device = device;
+      deviceUpdateHandler(block);
+    });
+  /*Not needed anymore: already handled in framework
+    if (block.key) {
+      Dashticz.subscribeBlock(me, block.key, function (blockUpdate) {
+        $.extend(block, blockUpdate);
+        deviceUpdateHandler(block);
+      });
+    } else {
+      console.log('key not defined for block ', block.idx);
+    }*/
+  }
+  
 })();
 
 Dashticz.register(DT_domoticzblock);

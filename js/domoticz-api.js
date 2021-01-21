@@ -528,28 +528,21 @@ function ListObservable() {
   };
 
   this.subscribe = function (idx, getCurrent, callback) {
-    if (typeof this._observers[idx] === 'undefined') this._observers[idx] = [];
-    this._observers[idx].push({
-      callback: callback,
-    });
+    console.log('Subscribing ', idx);
+    if (typeof this._observers[idx] === 'undefined') this._observers[idx] = $.Callbacks();
+    this._observers[idx].add(callback);
     if (getCurrent && typeof this._values[idx] !== 'undefined')
       callback(this._values[idx]);
     var me = this;
-    var observeridx = this._observers[idx].length - 1;
     return function () {
-      me.unsubscribe.call(me, idx, observeridx);
+      console.log('unsubscribe ', idx, callback);
+      me._observers[idx].remove(callback);
     };
   };
 
-  this.unsubscribe = function (listidx, observeridx) {
-    if (this._observers[listidx]) {
-      if (!this._observers[listidx].splice(observeridx, 1).length)
-        console.log(
-          'observer ' + observeridx + ' for list ' + listidx + ' not found.'
-        );
-    } else {
-      console.log('List idx ' + listidx + ' not found.');
-    }
+  this.unsubscribe = function (listidx, callback) {
+    console.log('real unsubscribe ', listidx, callback);
+    this._observers[listidx].remove(callback);
   };
 
   this.set = function (idx, value) {
@@ -560,9 +553,7 @@ function ListObservable() {
       return;
     }
     if (typeof this._observers[idx] !== 'undefined')
-      this._observers[idx].forEach(function (el) {
-        el.callback(value);
-      });
+      this._observers[idx].fire(value)
   };
 
   this.get = function (idx) {
