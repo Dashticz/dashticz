@@ -499,3 +499,31 @@ Change size and color of Standby Screen items
       font-size:80px !important;
       color: #4E585B !important;
    }
+
+Popup windows
+-------------
+
+Popup windows have the following class attached to it: ``modal-dialog-custom``.
+
+The popup window contains a div with the class ``modal-content``. Depending on the popup type, the following classes will be applied as well:
+
+* ``modal-url`` For an url opened in a popup window
+* ``modal-graph`` For a graph opened in a popup window
+* ``modal-popup`` For a popup created from the ``popup`` block parameter, except when the ``popup`` parameter refers to a graph block. In the latter case, the ``modal-graph`` parameter will be applied.
+
+A ``modal-url`` popup window, will have a white background, white border, and black 'close' button.
+
+The other popup windows will have a black background, and a white 'close' button.
+
+The default styling is a black background, with white 'close' button.
+
+As an example, to give url-popups a green backgrond with a red close button::
+
+   .modal-content.modal-url {
+      background-color: green
+   }
+
+   .modal-content.modal-url .close {
+      color: red;
+      opacity: 1;
+   }

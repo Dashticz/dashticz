@@ -61,36 +61,27 @@ var DT_function = (function () {
     var id = 'popup_' + (block.key || getRandomInt(1, 100000));
     $('body').append(createModalDialog('openpopup', id, block));
     $('#' + id).modal('show');
-    var container = 0;
-    if (typeof block.popup !== 'undefined') {
-      //Now add the block content
-      /*      if(columns[block.popup]) {
-        var screen = '#' + id + ' .modal-content';
-        $(screen).append('<div class="row"></div>');
-        getBlock(columns[block.popup],'mypopupcolumn', screen);
+    var popupBlock = 0;
+    if(!block.url) {
+      if (typeof block.popup !== 'undefined') {
+        popupBlock = typeof block.popup === 'string' ? convertBlock(block.popup): block.popup;
       }
-      else {
-        var myblockselector = Dashticz.mountNewContainer(
-          '#' + id + ' .modal-content'
-        );
-        if (!Dashticz.mount(myblockselector, block.popup)) {
-          console.log('Error mounting popup block', block.popup);
+      else if(block.idx) {
+        //It's a Domoticz device. We create a graph block
+        popupBlock = {
+          devices: [block.idx],
+          key: block.key + '_popup'
         }
-        $(myblockselector).addClass('modal-body'); //modal-body is just for styling, so we have to add it.
-        $(myblockselector + ' .dt_block').addClass('popup')
-      } */
-      container = '#' + id + ' .modal-content';
-      /*
-      $('#' + id).on('shown.bs.modal', 
-        function() {
-          addBlock2Column(container, 'popup', block.popup);
-        });
-        */
-       setTimeout(function() {
-        addBlock2Column(container, 'popup', block.popup);
-      }, 200);  //after 200ms the modal is visible and has a width.
+      }
     }
     
+    if(popupBlock) {
+      var container = '#' + id + ' .modal-content';
+      setTimeout(function() {
+        addBlock2Column(container, 'popup', popupBlock);
+      }, 200);  //after 200ms the modal is visible and has a width.
+
+    }
     $('#' + id).on('hidden.bs.modal', function () {
       $(this).data('bs.modal', null);
       if(container) Dashticz.removeBlock(container);
@@ -101,6 +92,12 @@ var DT_function = (function () {
       setTimeout(function () {
         $('.modal.openpopup,.modal-backdrop').remove();
       }, parseFloat(block['auto_close']) * 1000);
+    }
+
+    var $modal = $('#' +id + ' .modal-content');
+    if (block.url) $modal.addClass('modal-url');
+    if (popupBlock) {
+      $modal.addClass( DT_graph.canHandle(popupBlock) ? 'modal-graph':'modal-popup');
     }
   }
 
@@ -251,12 +248,13 @@ var DT_function = (function () {
     }
     var html =
       '<div class="modal fade ' +
-      dialogClass +
-      '" id="' +
+      dialogClass;
+      html+= '" id="' +
       dialogId +
       '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
 
-    html += '<div class="modal-dialog modal-dialog-custom" style="';
+    html += '<div class="modal-dialog modal-dialog-custom';
+    html += '" style="';
     html += setWidth ? 'width: ' + mywidth + '; ' : '';
     html += setHeight ? 'height: ' + myheight + '; ' : '';
     html += 'z-index: ' + myFrame.zindex + '; ';

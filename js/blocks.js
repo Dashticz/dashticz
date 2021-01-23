@@ -494,7 +494,7 @@ function getBlockClick(block, selector) {
       graph
     ) {
       $div.addClass('hover').click(function () {
-        showPopupGraph(block);
+        DT_function.clickHandler({ block: block });
       });
     }
   }
