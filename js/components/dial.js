@@ -269,14 +269,17 @@ var DT_dial = {
    */
   tap: function (me) {
     var d = document.getElementById(me.id);
-    var mc = new Hammer(d);
+    if(me.hammer) {
+      me.hammer.destroy();
+    }
+    me.hammer = new Hammer(d);
     var block=me.block;
     if (block.popup || block.url || block.slide) {
       //Clickhandler has been added already!
       //DT_function.clickHandler(me);
       return;
     }
-    mc.on('tap', function (ev) {
+    me.hammer.on('tap', function (ev) {
       if (me.status === 'TemporaryOverride') {
         me.override = false;
         me.demand = false;
@@ -316,7 +319,7 @@ var DT_dial = {
         return;
       }
       // (me.type === 'default' or 'temp' or 'p1' or ...)
-        showPopupGraph(block);
+      DT_function.clickHandler({ block: block })
     });
   },
 

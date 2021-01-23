@@ -311,29 +311,17 @@
   background-color: #555;
 }
 
-.modal-header {
-  border-bottom: 0px !important;
+.modal-dialog-custom .modal-content:not(.modal-url) .close {
+  color: white;
+  opacity: 0.7;
 }
 
-.graphclose .close{
+.modal-dialog-custom .modal-content:not(.modal-url) .close:focus, .modal-dialog-custom .modal-content:not(.modal-url) .close:hover {
   color: white;
-  opacity: 0.7
- }
+  opacity: 1;
+}
 
- .graphclose .close:focus, .graphclose .close:hover {
-  color: white;
-  opacity: 1
- }
 
- .frameclose .close{
-  color: white;
-  opacity: 0.7
- }
-
- .frameclose .close:focus, .frameclose .close:hover {
-  color: white;
-  opacity: 1
- }
 
 
 /*
@@ -405,7 +393,24 @@ next css sets the default height of the frame popup
   width: 80%;
   height: 80%;
   margin: auto;
+  margin: 5px;
 }
+
+.modal-dialog-custom .modal-content:not(.modal-url) {
+  background-color: #222;
+  color: white;
+}
+
+.modal-header {
+  border-bottom: 0px !important;
+}
+
+.modal-content.url {
+  background-color: white;
+  color: black;
+}
+
+
 
 .material-switch>input[type='checkbox'] {
   display: none;
@@ -795,18 +800,6 @@ a.playlist {
 .modal-body {
   height: 100%;
   min-height: 1px
-}
-
-.modal.opengraph .modal-content {
-  background-color: #222;
-  color: white;
-  margin: 5px;
-}
-
-.modal.openpopup .modal-content {
-  background-color: #222;
-  color: white;
-  margin: 5px;
 }
 
 /*
