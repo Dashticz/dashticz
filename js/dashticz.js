@@ -319,7 +319,7 @@ var Dashticz = (function () {
         mountPoint,
         selector,
         components[selector.type],
-        selector
+        ''
       );
       return true;
     }

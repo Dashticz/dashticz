@@ -18,7 +18,7 @@ var DT_graph = {
 
       $.each(me.graphDevices, function (i, graphDevice) {
         //install the callback handles
-        Domoticz.subscribe(graphDevice.idx, false, function (device) {
+        Dashticz.subscribeDevice(me, graphDevice.idx, false, function (device) {
           deviceUpdate(me, graphDevice, device);
         });
       });

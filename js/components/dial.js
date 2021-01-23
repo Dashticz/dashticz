@@ -57,7 +57,12 @@ var DT_dial = {
     me.id = 'dial_' + me.idx;
     me.height = isDefined(me.block.height)
       ? parseInt(me.block.height)
-      : parseInt($(me.mountPoint + ' div').css('width'));
+//      : parseInt($(me.mountPoint + ' div').css('width'));
+    : parseInt($(me.mountPoint + ' div').width());
+    if (me.height<0) {
+      console.log('dial width unknown.')
+      me.height=100;
+    }
     me.fontsize = 0.8 * me.height;
     me.dialRange = 280;
     me.active = true;
@@ -93,7 +98,7 @@ var DT_dial = {
           if (idx && me.devices.indexOf(idx) === -1) me.devices.push(idx);
         }
         me.devices.forEach(function (el) {
-          Domoticz.subscribe(el, false, function (device) {
+          Dashticz.subscribeDevice(me, el, false, function (device) {
             if (me.idx === el) {
               me.device = device;
               me.block.device = device;
@@ -209,6 +214,13 @@ var DT_dial = {
       var $mount = $(me.mountPoint + ' .dt_content');
       $mount.html(template(dataObject));
       $mount.addClass('swiper-no-swiping');
+
+      /*todo: update height*/
+          me.height = isDefined(me.block.height)
+      ? parseInt(me.block.height)
+//      : parseInt($(me.mountPoint + ' div').css('width'));
+    : parseInt($(me.mountPoint + ' div').width());
+
       $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
       if (me.type === 'evo' || me.type === 'selector') {
         $(me.select + ' li').each(function () {
@@ -258,22 +270,31 @@ var DT_dial = {
   tap: function (me) {
     var d = document.getElementById(me.id);
     var mc = new Hammer(d);
+    var block=me.block;
+    if (block.popup || block.url || block.slide) {
+      //Clickhandler has been added already!
+      //DT_function.clickHandler(me);
+      return;
+    }
     mc.on('tap', function (ev) {
       if (me.status === 'TemporaryOverride') {
         me.override = false;
         me.demand = false;
         DT_dial.update(me);
+        return;
       }
       if (me.type === 'dim') {
         me.demand ? (me.value = 0) : (me.value = me.device.Level);
         me.demand = !me.demand;
         DT_dial.update(me);
+        return;
       }
       if (me.type === 'dhw') {
         me.demand = me.state === 'On';
         me.state = me.state === 'On' ? 'Off' : 'On';
         me.demand = !me.demand;
         switchEvoHotWater(me, me.state, me.demand);
+        return;
       }
       if (me.type === 'evo' || me.type === 'selector') {
         $(me.select + ' li').removeClass('selected');
@@ -285,16 +306,17 @@ var DT_dial = {
         } else {
           slideDevice(me, status);
         }
+        return;
       }
       if (me.type === 'onoff') {
         if (me.device.Type === 'Scene') me.cmd = 'On';
         else me.cmd = me.state === 'Off' ? 'On' : 'Off';
         me.demand = me.cmd === 'On';
         DT_dial.update(me);
+        return;
       }
-      if (me.type === 'default' || me.type === 'temp') {
-        showPopupGraph(me.block);
-      }
+      // (me.type === 'default' or 'temp' or 'p1' or ...)
+        showPopupGraph(block);
     });
   },
 

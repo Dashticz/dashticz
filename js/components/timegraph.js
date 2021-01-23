@@ -89,7 +89,7 @@ var DT_timegraph = (function () {
       DT_timegraph.createGraph(me);
 
       me.datasets.forEach(function (dataset, idx) {
-        Domoticz.subscribe(dataset.idx, true, function (device) {
+        Dashticz.subscribeDevice(me, dataset.idx, true, function (device) {
           addData(me, idx, device);
         });
       });

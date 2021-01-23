@@ -1,4 +1,4 @@
-/* global toSlide getRandomInt settings infoMessage language*/
+/* global toSlide getRandomInt settings infoMessage*/
 // eslint-disable-next-line no-unused-vars
 var DT_function = (function () {
   /**Clickhandler for Dashticz block
@@ -60,7 +60,8 @@ var DT_function = (function () {
     //Displays the frame of a block after pressing it
     var id = 'popup_' + (block.key || getRandomInt(1, 100000));
     $('body').append(createModalDialog('openpopup', id, block));
-
+    $('#' + id).modal('show');
+    var container = 0;
     if (typeof block.popup !== 'undefined') {
       //Now add the block content
       /*      if(columns[block.popup]) {
@@ -78,17 +79,24 @@ var DT_function = (function () {
         $(myblockselector).addClass('modal-body'); //modal-body is just for styling, so we have to add it.
         $(myblockselector + ' .dt_block').addClass('popup')
       } */
-      var container = '#' + id + ' .modal-content';
-      addBlock2Column(container, 'popup', block.popup);
+      container = '#' + id + ' .modal-content';
+      /*
+      $('#' + id).on('shown.bs.modal', 
+        function() {
+          addBlock2Column(container, 'popup', block.popup);
+        });
+        */
+       setTimeout(function() {
+        addBlock2Column(container, 'popup', block.popup);
+      }, 200);  //after 200ms the modal is visible and has a width.
     }
-
+    
     $('#' + id).on('hidden.bs.modal', function () {
       $(this).data('bs.modal', null);
-      Dashticz.removeBlock(container);
+      if(container) Dashticz.removeBlock(container);
       $(this).remove();
     });
 
-    $('#' + id).modal('show');
     if (typeof block['auto_close'] !== 'undefined') {
       setTimeout(function () {
         $('.modal.openpopup,.modal-backdrop').remove();

@@ -130,6 +130,7 @@ function getCustomFunction(functionname, block, afterupdate) {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 function deviceUpdateHandler(block) {
   var selector = block.mountPoint;
   var idx = block.idx;
@@ -265,8 +266,6 @@ function getBlockClass(block) {
   var addClass = getIconStatusClass(block.device['Status']);
   return addClass;
 }
-
-function handleObjectBlock(block, el) {}
 
 /** Checks whether key indicates a Domoticz device
  *

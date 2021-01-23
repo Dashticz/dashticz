@@ -128,6 +128,17 @@ An example of a more extensive implementation::
 
 Add ``'myblock'`` to the components variable at the start of ``js/dashticz.js``
 
+The following key words are reserved and should not be modified in ``me`` or ``block``:
+
+* key
+* mountPoint
+* type
+* name
+
+And specifically for ``me``:
+
+* block 
+
 Github workflow
 ---------------
 

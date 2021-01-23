@@ -1,4 +1,4 @@
-/* global Dashticz settings*/
+/* global Dashticz settings deviceUpdateHandler*/
 //# sourceURL=js/components/domoticzblock.js
 var DT_domoticzblock = (function () {
   return {
