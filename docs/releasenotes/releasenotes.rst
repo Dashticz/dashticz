@@ -8,6 +8,12 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 --------------
 
+Code
+~~~~
+
+* Redesign internal block framework
+* Removed old calendar block 'icalendar' and calendarurl config setting
+
 Enhancements
 ~~~~~~~~~~~~
 
