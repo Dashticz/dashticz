@@ -56,6 +56,8 @@ Parameters
     - ``1..99999``: Refresh time of the button image in seconds. There is no maximum. The default is 60 (=1 minute).
   * - url
     - ``'<url>'``: URL of the page to open in a popup window on click. 
+  * - popup
+    - ``'mypopup'``: Opens the  'mypopup' block in a new window on click.
   * - forceheight
     - | Set the height of the image in a button
       | ``'200px'``: Set image height to 200px. 
@@ -72,9 +74,6 @@ Parameters
   * - refreshiframe
     - | ``0``: No automatic refresh of a button popup frame (default)
       | ``1..99999``: Refresh time of the button popup frame in sec. There is no maximum. The default is 60 (=1 minute).   
-  * - log
-    - | ``true`` Button will show the Domoticz log info
-      | ``false`` Default
   * - level
     - Domoticz log level used by the log-button.
   * - newwindow
@@ -83,6 +82,11 @@ Parameters
       | ``2``: open in new frame (default, to prevent a breaking change in default behavior)
       | ``3``: no new window/frame (for intent handling, api calls). HTTP get request.
       | ``4``: no new window/frame (for intent handling, api calls). HTTP post request. (forcerefresh not supported)
+      | ``5``: open in a new browser tab
+  * - auto_close
+    - Closes the opened window after a certain period of time (only applicable when newwindow is 1,2 or 5)
+    - | ``0``: (=Default) No auto close
+      | ``5``: Closes the popup window after 5 seconds.
   * - password
     - | Password protect switches, buttons, thermostats, sliders, blinds
       | ``'secret'``: Password to use

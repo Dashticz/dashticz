@@ -5,7 +5,7 @@ var templateEngine = TemplateEngine();
 var DT_calendar = {
   name: 'calendar',
   canHandle: function (block, key) {
-    return block && block.type === 'calendar';
+    return block && (block.type === 'calendar' || block.icalurl);
   },
   defaultCfg: {
     icon: 'fas fa-calendar-alt',
