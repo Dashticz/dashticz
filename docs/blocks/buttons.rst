@@ -139,26 +139,6 @@ Example on how to use menu buttons::
       columns: ['menu', 5,6]  
     }
 
-
-.. _logbutton :
-
-Domoticz log button
-~~~~~~~~~~~~~~~~~~~
-
-With a log-button you can show the Domoticz log in a popup window::
-
-    var buttons = {}
-    buttons.log = {
-      key:'log',
-      width:12,
-      icon:'fas fa-microchip',
-      title: 'Domoticz Log',
-      log:true,
-      level: 2
-    }
-
-It's also possible to show the Domoticz log directly in the Dashticz dashboard. See :ref:`customlog`
-
 .. _forcerefresh:
 
 forcerefresh
