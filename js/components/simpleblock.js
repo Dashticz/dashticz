@@ -117,7 +117,7 @@ var DT_simpleblock = (function () {
 
   function renderBlock(me, render) {
     var addHTML = render(me);
-    if (addHTML) $(me.mountPoint).html(addHTML);
+    if (addHTML) me.$mountPoint.html(addHTML);
   }
 
   function renderLogo(me) {
@@ -202,7 +202,7 @@ var DT_simpleblock = (function () {
         dataType: 'script',
       });
     }
-    $(me.mountPoint).html(
+    me.$mountPoint.html(
       '<div data-id="weather" class="block_' +
         me.block.type +
         ' containsweatherfull"></div>'
@@ -220,7 +220,7 @@ var DT_simpleblock = (function () {
           dataType: 'script',
         });
       }
-      $(me.mountPoint).html(
+      me.$mountPoint.html(
         '<div data-id="currentweather" class="mh transbg block_' +
           me.block.type +
           ' col-xs-' +
@@ -243,7 +243,7 @@ var DT_simpleblock = (function () {
           dataType: 'script',
         });
       }
-      $(me.mountPoint).html(
+      me.$mountPoint.html(
         '<div data-id="currentweather_big" class="mh transbg big block_' +
           me.block.type +
           ' col-xs-' +
@@ -266,7 +266,7 @@ var DT_simpleblock = (function () {
         dataType: 'script',
       });
     }
-    $(me.mountPoint).html(
+    me.$mountPoint.html(
       '<div data-id="weather" class="block_' +
         me.block.type +
         ' containsweatherfull"></div>'
@@ -289,7 +289,7 @@ var DT_simpleblock = (function () {
         });
       }
 
-      $(me.mountPoint).html(
+      me.$mountPoint.html(
         '<div data-id="currentweather" class="mh transbg block_' +
           me.block.type +
           ' col-xs-' +
@@ -312,7 +312,7 @@ var DT_simpleblock = (function () {
           dataType: 'script',
         });
       }
-      $(me.mountPoint).html(
+      me.$mountPoint.html(
         '<div data-id="currentweather_big" class="mh transbg big block_' +
           me.block.type +
           ' col-xs-' +
@@ -406,7 +406,7 @@ var DT_simpleblock = (function () {
       '" data-id="coins.' +
       me.block.key +
       '"></div>';
-    $(me.mountPoint).html(html);
+    me.$mountPoint.html(html);
     getCoin(me.block);
   }
 

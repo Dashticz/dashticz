@@ -48,7 +48,7 @@ function Initialize(me) {
       me.graphDevices.push(device);
     } else {
       var msg = 'For graph ' + me.key + ' device ' + idx + ' does not exist.';
-      $(me.mountPoint).append(msg);
+      me.$mountPoint.append(msg);
       throw new Error(msg);
     }
   });

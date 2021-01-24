@@ -104,7 +104,7 @@ var DT_timegraph = (function () {
     },
 
     createGraph: function (me) {
-      var mountPoint = $(me.mountPoint);
+      var mountPoint = me.$mountPoint;
       var chartctx = mountPoint.find('canvas')[0].getContext('2d');
       var m_moment = moment();
 
