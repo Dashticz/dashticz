@@ -1,5 +1,7 @@
 .. _customcalendar :
 
+.. note :: From 3.7.3 onwards only the 'new calendar' block is supported.
+
 Calendar 
 ########
 

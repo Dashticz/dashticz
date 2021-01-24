@@ -500,6 +500,8 @@ Change size and color of Standby Screen items
       color: #4E585B !important;
    }
 
+.. _popupstyling:
+
 Popup windows
 -------------
 
