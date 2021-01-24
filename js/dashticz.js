@@ -94,7 +94,6 @@ var Dashticz = (function () {
       var me = mountedBlocks[key].me;
       var comp = me && me.name && components[me.name];
       if (!comp) {
-        console.log('no component for ', key);
         return;
       }
       if (comp.onResize) comp.onResize(me);
@@ -137,7 +136,6 @@ var Dashticz = (function () {
   }
 
   function removeBlock(id) {
-    console.log('removing block ', id);
     mountedBlocks[id].childs.forEach(function (child) {
       removeBlock(child);
     });
@@ -161,7 +159,6 @@ var Dashticz = (function () {
     }
     $(id).remove();
     delete mountedBlocks[id];
-    console.log('removed ', id);
   }
 
   function _mountSpecialBlock(mountPoint, blockdef, special, key) {
@@ -187,7 +184,6 @@ var Dashticz = (function () {
       if (special.refresh) {
         blocks[me.key] = blockdef;
         Dashticz.subscribeBlock(me, function (block) {
-          console.log('updating special block', me);
           me.block = getBlockConfig(block, components[me.name], me.key);
           renderBlock(me);
           special.refresh(me);
@@ -366,7 +362,6 @@ var Dashticz = (function () {
       console.log('Removed from DOM: ', id);
     })*/
     blockNumbering++;
-    console.log('Mounted: ' + id);
     return _id;
   }
 
@@ -383,7 +378,6 @@ var Dashticz = (function () {
     subscribeBlockList[key].add(cb);
 
     var unsubscribe = function () {
-      console.log('unsubscribe block ', key, callback);
       subscribeBlockList[key].remove(cb);
     };
     me.callbacks.subscriptionList.push(unsubscribe);

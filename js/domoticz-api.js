@@ -242,7 +242,6 @@ var Domoticz = (function () {
       } else {
         // e.g. server process killed or network down
         // event.code is usually 1006 in this case
-        console.log(event);
         switch (event.code) {
           case 1006:
             if (!reconnecting) reconnect();
@@ -526,20 +525,17 @@ function ListObservable() {
   };
 
   this.subscribe = function (idx, getCurrent, callback) {
-    console.log('Subscribing ', idx);
     if (typeof this._observers[idx] === 'undefined') this._observers[idx] = $.Callbacks();
     this._observers[idx].add(callback);
     if (getCurrent && typeof this._values[idx] !== 'undefined')
       callback(this._values[idx]);
     var me = this;
     return function () {
-      console.log('unsubscribe ', idx, callback);
       me._observers[idx].remove(callback);
     };
   };
 
   this.unsubscribe = function (listidx, callback) {
-    console.log('real unsubscribe ', listidx, callback);
     this._observers[listidx].remove(callback);
   };
 

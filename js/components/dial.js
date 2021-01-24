@@ -123,7 +123,6 @@ var DT_dial = {
   },
 
   destroy: function(me) {
-    console.log('dial destroy');
     if(me.hammer) {
       me.hammer.destroy();
       me.hammer=0
@@ -231,7 +230,6 @@ var DT_dial = {
 //      : parseInt($(me.mountPoint + ' div').css('width'));
     : parseInt($(me.mountPoint + ' div').outerWidth());
     if (height<0) {
-      console.log('dial width unknown.')
       me.height=me.height || 100;
     }
     else me.height=height;
@@ -286,7 +284,6 @@ var DT_dial = {
     var d = $(me.mountPoint + ' .dial')[0];
     if(me.hammer) {
       me.hammer.destroy();
-      console.log('destroyed hammer');
     }
     me.hammer = new Hammer(d);
     var block=me.block;
