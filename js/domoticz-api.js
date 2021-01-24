@@ -520,9 +520,7 @@ function ListObservable() {
       //value was updated while on hold. Send latest value
       value = this._values[idx];
       if (typeof this._observers[idx] !== 'undefined')
-        this._observers[idx].forEach(function (el) {
-          el.callback(value);
-        });
+        this._observers[idx].fire(value);
     }
     this._queueState[idx] = 0;
   };

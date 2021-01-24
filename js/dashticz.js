@@ -156,6 +156,8 @@ var Dashticz = (function () {
       me.callbacks.timeoutList = [];
       me.callbacks.intervalList = [];
       me.callbacks.subscriptionList = [];
+      var destroy = components[me.name].destroy;
+      if (typeof destroy === 'function') destroy(me);
     }
     $(id).remove();
     delete mountedBlocks[id];
@@ -315,12 +317,7 @@ var Dashticz = (function () {
       }
     }
     if (typeof selector === 'object' && components[selector.type]) {
-      _mountSpecialBlock(
-        mountPoint,
-        selector,
-        components[selector.type],
-        ''
-      );
+      _mountSpecialBlock(mountPoint, selector, components[selector.type], '');
       return true;
     }
     for (var comp in components) {
@@ -376,7 +373,7 @@ var Dashticz = (function () {
   var subscribeBlockList = {};
 
   function subscribeBlock(me, callback) {
-    var key=me.key;
+    var key = me.key;
     if (!subscribeBlockList[key]) subscribeBlockList[key] = $.Callbacks();
     var cb = function (data) {
       setTimeout(function () {
@@ -386,7 +383,7 @@ var Dashticz = (function () {
     subscribeBlockList[key].add(cb);
 
     var unsubscribe = function () {
-      console.log('unsubscribe block ', key, callback)
+      console.log('unsubscribe block ', key, callback);
       subscribeBlockList[key].remove(cb);
     };
     me.callbacks.subscriptionList.push(unsubscribe);
