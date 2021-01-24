@@ -55,15 +55,16 @@ var DT_dial = {
     me.idx = isDefined(me.block.idx) ? me.block.idx : me.key;
     me.block.idx = me.idx; /* required for existing functions */
     me.id = 'dial_' + me.idx;
-    me.height = isDefined(me.block.height)
+    var height = isDefined(me.block.height)
       ? parseInt(me.block.height)
 //      : parseInt($(me.mountPoint + ' div').css('width'));
-    : parseInt($(me.mountPoint + ' div').width());
-    if (me.height<0) {
+    : parseInt($(me.mountPoint + ' div').outerWidth());
+    if (height<0) {
       console.log('dial width unknown.')
-      me.height=100;
+      me.height=me.height || 100;
     }
-    me.fontsize = 0.8 * me.height;
+    else me.height = height;
+    me.fontsize = 0.9 * me.height;
     me.dialRange = 280;
     me.active = true;
     DT_dial.color(me);
@@ -117,7 +118,16 @@ var DT_dial = {
         }
         me.isSetpoint = isDefined(me.device.SetPoint);
         DT_dial.make(me);
+        DT_dial.tap(me);
       });
+  },
+
+  destroy: function(me) {
+    console.log('dial destroy');
+    if(me.hammer) {
+      me.hammer.destroy();
+      me.hammer=0
+    }
   },
 
   /**
@@ -216,10 +226,17 @@ var DT_dial = {
       $mount.addClass('swiper-no-swiping');
 
       /*todo: update height*/
-          me.height = isDefined(me.block.height)
+      var height = isDefined(me.block.height)
       ? parseInt(me.block.height)
 //      : parseInt($(me.mountPoint + ' div').css('width'));
-    : parseInt($(me.mountPoint + ' div').width());
+    : parseInt($(me.mountPoint + ' div').outerWidth());
+    if (height<0) {
+      console.log('dial width unknown.')
+      me.height=me.height || 100;
+    }
+    else me.height=height;
+
+    me.fontsize = 0.9 * me.height;
 
       $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
       if (me.type === 'evo' || me.type === 'selector') {
@@ -246,8 +263,6 @@ var DT_dial = {
         $(me.mountPoint + ' .dial .fill').addClass('show-ring');
       }
 
-      DT_dial.tap(me);
-
       /* Add dial calculations */
       if (!me.onoff && !me.controller) {
         me.body = $(me.mountPoint + ' .dt_content .dial');
@@ -268,9 +283,10 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   tap: function (me) {
-    var d = document.getElementById(me.id);
+    var d = $(me.mountPoint + ' .dial')[0];
     if(me.hammer) {
       me.hammer.destroy();
+      console.log('destroyed hammer');
     }
     me.hammer = new Hammer(d);
     var block=me.block;
