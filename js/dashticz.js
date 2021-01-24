@@ -101,7 +101,7 @@ var Dashticz = (function () {
   }
 
   function renderBlock(me) {
-    var $div = $(me.mountPoint).find('.dt_block');
+    var $div = me.$mountPoint.find('.dt_block');
     var block = $(getSpecialBlock(me));
     if (me.block.containerClass)
       $div.addClass(getProperty(me.block.containerClass, me));
@@ -168,7 +168,8 @@ var Dashticz = (function () {
         : $.when();
     special.initPromise.done(function () {
       var me = createBlock(mountPoint, blockdef, special, key);
-      $(mountPoint).html(getContainer(me));
+      me.$mountPoint = $(mountPoint);
+      me.$mountPoint.html(getContainer(me));
       //            console.log(me);
       renderBlock(me);
       mountedBlocks[me.mountPoint].me = me;
@@ -400,7 +401,7 @@ var Dashticz = (function () {
     }
     if (changed || !state) {
       if (subscribeBlockList[key]) subscribeBlockList[key].fire(block);
-      else {
+      else if (typeof key==='string') {
         var keySplit = key.split('_');
         if (keySplit.length === 2 && subscribeBlockList[keySplit[0]]) {
           //we call the parent call back with empty block update
@@ -411,7 +412,7 @@ var Dashticz = (function () {
   }
 
   function isMounted(me) {
-    if ($(me.mountPoint).length) return true;
+    if (me.$mountPoint.length) return true;
     removeBlock(me);
     return false;
   }

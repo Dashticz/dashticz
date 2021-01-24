@@ -557,7 +557,7 @@ var DT_dial = {
    */
   color: function (me) {
     if (isDefined(me.block.color)) {
-      var c = $(me.mountPoint)
+      var c = me.$mountPoint
         .css('color', me.block.color)
         .css('color'); /* change all formats to rgb */
       me.color = c;
