@@ -349,7 +349,7 @@ Colorpicker.prototype.clickHandler = function (ev) {
     self.setState(data.mode);
     var base = document.querySelector(self.container);
     var pos = base.getBoundingClientRect();
-    var pop = document.querySelector('#' + self.id + ' .modal-content');
+    var pop = document.querySelector('#' + self.id + ' .modal-container');
     var virtualElement = {
       getBoundingClientRect: function () {
         return pos;

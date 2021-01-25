@@ -1,5 +1,6 @@
 <div class="modal colorpicker" id="{{id}}" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
+      <div class="modal-container">
         <div class="modal-content">
         <div class="modal-header">
             <div class="modal-title dt_title">{{title}}</div>
@@ -41,6 +42,7 @@
                   {{/with}}
                 {{/each}}  
               </div>
+            </div>
             </div>
         </div>
     </div>
