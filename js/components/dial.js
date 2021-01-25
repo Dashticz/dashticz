@@ -55,10 +55,16 @@ var DT_dial = {
     me.idx = isDefined(me.block.idx) ? me.block.idx : me.key;
     me.block.idx = me.idx; /* required for existing functions */
     me.id = 'dial_' + me.idx;
-    me.height = isDefined(me.block.height)
+    var height = isDefined(me.block.height)
       ? parseInt(me.block.height)
-      : parseInt($(me.mountPoint + ' div').css('width'));
-    me.fontsize = 0.8 * me.height;
+//      : parseInt($(me.mountPoint + ' div').css('width'));
+    : parseInt($(me.mountPoint + ' div').outerWidth());
+    if (height<0) {
+      console.log('dial width unknown.')
+      me.height=me.height || 100;
+    }
+    else me.height = height;
+    me.fontsize = 0.9 * me.height;
     me.dialRange = 280;
     me.active = true;
     DT_dial.color(me);
@@ -93,7 +99,7 @@ var DT_dial = {
           if (idx && me.devices.indexOf(idx) === -1) me.devices.push(idx);
         }
         me.devices.forEach(function (el) {
-          Domoticz.subscribe(el, false, function (device) {
+          Dashticz.subscribeDevice(me, el, false, function (device) {
             if (me.idx === el) {
               me.device = device;
               me.block.device = device;
@@ -112,7 +118,15 @@ var DT_dial = {
         }
         me.isSetpoint = isDefined(me.device.SetPoint);
         DT_dial.make(me);
+        DT_dial.tap(me);
       });
+  },
+
+  destroy: function(me) {
+    if(me.hammer) {
+      me.hammer.destroy();
+      me.hammer=0
+    }
   },
 
   /**
@@ -209,6 +223,19 @@ var DT_dial = {
       var $mount = $(me.mountPoint + ' .dt_content');
       $mount.html(template(dataObject));
       $mount.addClass('swiper-no-swiping');
+
+      /*todo: update height*/
+      var height = isDefined(me.block.height)
+      ? parseInt(me.block.height)
+//      : parseInt($(me.mountPoint + ' div').css('width'));
+    : parseInt($(me.mountPoint + ' div').outerWidth());
+    if (height<0) {
+      me.height=me.height || 100;
+    }
+    else me.height=height;
+
+    me.fontsize = 0.9 * me.height;
+
       $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
       if (me.type === 'evo' || me.type === 'selector') {
         $(me.select + ' li').each(function () {
@@ -234,8 +261,6 @@ var DT_dial = {
         $(me.mountPoint + ' .dial .fill').addClass('show-ring');
       }
 
-      DT_dial.tap(me);
-
       /* Add dial calculations */
       if (!me.onoff && !me.controller) {
         me.body = $(me.mountPoint + ' .dt_content .dial');
@@ -256,24 +281,36 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   tap: function (me) {
-    var d = document.getElementById(me.id);
-    var mc = new Hammer(d);
-    mc.on('tap', function (ev) {
+    var d = $(me.mountPoint + ' .dial')[0];
+    if(me.hammer) {
+      me.hammer.destroy();
+    }
+    me.hammer = new Hammer(d);
+    var block=me.block;
+    if (block.popup || block.url || block.slide) {
+      //Clickhandler has been added already!
+      //DT_function.clickHandler(me);
+      return;
+    }
+    me.hammer.on('tap', function (ev) {
       if (me.status === 'TemporaryOverride') {
         me.override = false;
         me.demand = false;
         DT_dial.update(me);
+        return;
       }
       if (me.type === 'dim') {
         me.demand ? (me.value = 0) : (me.value = me.device.Level);
         me.demand = !me.demand;
         DT_dial.update(me);
+        return;
       }
       if (me.type === 'dhw') {
         me.demand = me.state === 'On';
         me.state = me.state === 'On' ? 'Off' : 'On';
         me.demand = !me.demand;
         switchEvoHotWater(me, me.state, me.demand);
+        return;
       }
       if (me.type === 'evo' || me.type === 'selector') {
         $(me.select + ' li').removeClass('selected');
@@ -285,16 +322,17 @@ var DT_dial = {
         } else {
           slideDevice(me, status);
         }
+        return;
       }
       if (me.type === 'onoff') {
         if (me.device.Type === 'Scene') me.cmd = 'On';
         else me.cmd = me.state === 'Off' ? 'On' : 'Off';
         me.demand = me.cmd === 'On';
         DT_dial.update(me);
+        return;
       }
-      if (me.type === 'default' || me.type === 'temp') {
-        showPopupGraph(me.block);
-      }
+      // (me.type === 'default' or 'temp' or 'p1' or ...)
+      DT_function.clickHandler({ block: block })
     });
   },
 
@@ -519,7 +557,7 @@ var DT_dial = {
    */
   color: function (me) {
     if (isDefined(me.block.color)) {
-      var c = $(me.mountPoint)
+      var c = me.$mountPoint
         .css('color', me.block.color)
         .css('color'); /* change all formats to rgb */
       me.color = c;

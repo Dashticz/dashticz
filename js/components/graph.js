@@ -8,7 +8,7 @@ var DT_graph = {
   canHandle: function (block, key) {
     return (
       (block && block.devices) ||
-      (typeof key === 'string' && key.substring(0, 6) === 'graph_')
+      (typeof block.key === 'string' && block.key.substring(0, 6) === 'graph_')
     );
   },
   defaultCfg: getBlockDefaults,
@@ -18,7 +18,7 @@ var DT_graph = {
 
       $.each(me.graphDevices, function (i, graphDevice) {
         //install the callback handles
-        Domoticz.subscribe(graphDevice.idx, false, function (device) {
+        Dashticz.subscribeDevice(me, graphDevice.idx, false, function (device) {
           deviceUpdate(me, graphDevice, device);
         });
       });
@@ -48,7 +48,7 @@ function Initialize(me) {
       me.graphDevices.push(device);
     } else {
       var msg = 'For graph ' + me.key + ' device ' + idx + ' does not exist.';
-      $(me.mountPoint).append(msg);
+      me.$mountPoint.append(msg);
       throw new Error(msg);
     }
   });
@@ -331,56 +331,6 @@ function getDeviceDefaults(me, device) {
     method: method,
   };
   $.extend(device, obj);
-}
-
-// eslint-disable-next-line no-unused-vars
-function showPopupGraph(blockdef) {
-  //This function can be called from blocks.js to create the popup graph
-  var popupBlock, graphIdx;
-  if (blockdef.popup) {
-    popupBlock = $.extend({}, blocks[blockdef.popup]);
-    graphIdx = blockdef.popup + '_popup';
-  } else {
-    popupBlock = {
-      devices: [blockdef.device.idx],
-      width: 12,
-    };
-    graphIdx = blockdef.device.idx + '_popup';
-  }
-  popupBlock.isPopup = true;
-
-  var device = blockdef.device;
-  if ($('#opengraph' + graphIdx).length === 0) {
-    var html =
-      '<div class="modal fade opengraph opengraph' +
-      graphIdx +
-      '" data-idx="' +
-      device.idx +
-      '" id="opengraph' +
-      graphIdx +
-      '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
-    html += '<div class="modal-dialog graphwidth">';
-    html += '<div class="modal-content">';
-    html += '<div class="modal-header graphclose">';
-    html +=
-      '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
-    html += '</div>';
-    html += '</div>';
-    html += '</div>';
-    html += '</div>';
-    $('body').append(html);
-
-    var myblockselector = Dashticz.mountNewContainer(
-      '.opengraph' + graphIdx + ' .modal-content'
-    );
-
-    if (!Dashticz.mount(myblockselector, popupBlock)) {
-      console.log('Error mounting popup graph', popupBlock);
-    }
-    $(myblockselector).addClass('modal-body'); //modal-body is just for styling, so we have to add it.
-  }
-
-  $('#opengraph' + graphIdx).modal('show');
 }
 
 /** This function handles a device update
@@ -801,6 +751,7 @@ function createGraph(graph) {
     if (parseInt(height) > 0)
       //only change height is we have a valid height value
       $('.' + graphIdx + ' .graphcontent').css('height', height);
+      //console.log('test');
   }
 
   if (typeof mergedBlock.legend == 'boolean') {

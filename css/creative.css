@@ -311,19 +311,18 @@
   background-color: #555;
 }
 
-.modal-header {
-  border-bottom: 0px !important;
+.modal-dialog-custom .modal-content:not(.modal-url) .close {
+  color: white;
+  opacity: 0.7;
 }
 
-.graphclose .close{
+.modal-dialog-custom .modal-content:not(.modal-url) .close:focus, .modal-dialog-custom .modal-content:not(.modal-url) .close:hover {
   color: white;
-  opacity: 0.7
- }
+  opacity: 1;
+}
 
- .graphclose .close:focus, .graphclose .close:hover {
-  color: white;
-  opacity: 1
- }
+
+
 
 /*
 next css sets the default height of the frame popup
@@ -394,7 +393,24 @@ next css sets the default height of the frame popup
   width: 80%;
   height: 80%;
   margin: auto;
+  margin: 5px;
 }
+
+.modal-dialog-custom .modal-content:not(.modal-url) {
+  background-color: #222;
+  color: white;
+}
+
+.modal-header {
+  border-bottom: 0px !important;
+}
+
+.modal-content.url {
+  background-color: white;
+  color: black;
+}
+
+
 
 .material-switch>input[type='checkbox'] {
   display: none;
@@ -448,9 +464,11 @@ next css sets the default height of the frame popup
 /* END || Popup modal settings (need to sort and arrange first) */
 
 .containslog .items {
-  height: 154px;
   overflow: auto;
-  width: calc(100% - 40px);
+}
+
+.containslog:not(.popup) .items {
+  height: 154px;
 }
 
 .containslog .items .level0 {
@@ -465,16 +483,17 @@ next css sets the default height of the frame popup
   color: #ffffff;
 }
 
-.containslog .items .level0.popup {
-  color: #c70626;
-}
-
-.containslog .items .level1.popup {
-  color: #067676;
-}
-
-.containslog .items .level2.popup {
+.containslog.popup .items .level2 {
   color: #727272;
+}
+
+.containslog .items .timestamp {
+  white-space: nowrap;
+  vertical-align: top;
+}
+
+.containslog .items .sep {
+  width: 5px
 }
 
 .containsicalendar table.calendar {
@@ -497,7 +516,7 @@ next css sets the default height of the frame popup
 }
 
 .containslog.popup .items {
-  min-height: 300px;
+ 
 }
 
 .colbar.transbg {
@@ -779,14 +798,17 @@ a.playlist {
 }
 
 .modal-body {
-  height: 100%
+  height: 100%;
+  min-height: 1px
 }
 
-.modal.opengraph .modal-content {
-  background-color: #222;
-  color: white;
+/*
+.modal.openpopup .frameclose {
+  background-color: #fff;
+  color: black;
   margin: 5px;
 }
+*/
 
 .graphcontent {
   height: 100%;
@@ -1133,6 +1155,10 @@ p {
   border: 7px solid rgba(255, 255, 255, 0);
   background: rgba(0, 0, 0, 0.5);
   background-clip: padding-box;
+}
+
+.dt_block.popup {
+  background:unset;
 }
 
 .weatherfull .transbg {
@@ -3051,7 +3077,7 @@ td.agenda-title {
 }
 
 .dt_content .dial {
-  position: absolute;
+  position: relative;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);

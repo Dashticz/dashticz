@@ -41,10 +41,10 @@ var DT_camera = {
     /* The camera block contains multiple cameras */
     if (me.block.cameras.length > 0) {
       /* Create new mountpoints for each of the cameras */
-      var s = $(me.mountPoint).closest('.screen').data('screenindex');
-      var c = $(me.mountPoint).closest('.col-xs-12').data('colindex');
+      var s = me.$mountPoint.closest('.screen').data('screenindex');
+      var c = me.$mountPoint.closest('.col-xs-12').data('colindex');
       var columndiv = 'div.screen' + s + ' .row .col' + c;
-      $(me.mountPoint).remove();
+      me.$mountPoint.remove();
 
       $.each(me.block.cameras, function (i) {
         var mountpoint = Dashticz.mountNewContainer(columndiv);

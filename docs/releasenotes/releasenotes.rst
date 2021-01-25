@@ -5,8 +5,16 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
-Recent changes
---------------
+v3.7.3 beta (24-1-2021)
+-----------------------
+
+.. note :: Make a backup of CONFIG.js, custom.css and custom.js
+
+Code
+~~~~
+
+* Redesign internal block framework
+* Removed old calendar block 'icalendar' and calendarurl config setting
 
 Enhancements
 ~~~~~~~~~~~~

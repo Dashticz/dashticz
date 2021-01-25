@@ -1,8 +1,9 @@
 {
-"version": "3.7.2",
+"version": "3.7.3",
 "branch": "beta",
-"last_changes": "custom.css and custom.js removed from Dashticz repo",
+"last_changes": "Read upgrade instructions!",
 "changelog" : {
+            "3.7.2": "custom.css and custom.js removed from Dashticz repo",
             "3.7.1": "Clock related changes.",
             "3.7": "Master version"
             }

@@ -6,7 +6,7 @@ var DT_html = {
     return block && block.htmlfile;
   },
   run: function (me) {
-    if (!me.block.border) $(me.mountPoint).addClass('no-margin');
+    if (!me.block.border) me.$mountPoint.addClass('no-margin');
     return $.get({
       url: 'custom/' + me.block.htmlfile,
     }).then(function (res) {
