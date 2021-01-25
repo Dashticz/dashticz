@@ -5,7 +5,7 @@ var templateEngine = TemplateEngine();
 var DT_calendar = {
   name: 'calendar',
   canHandle: function (block, key) {
-    return block && block.type === 'calendar';
+    return block && (block.type === 'calendar' || block.icalurl);
   },
   defaultCfg: {
     icon: 'fas fa-calendar-alt',
@@ -154,7 +154,7 @@ function getCalendarData(key, calendars, isnew, ishol) {
  * @param {string}  key  The block name of the calendar.
  */
 function generateAgenda(opt, key) {
-  createModalIframe(key);
+//  createModalIframe(key);
 
   templateEngine.load('calendar_' + opt).then(function (template) {
     var data = {

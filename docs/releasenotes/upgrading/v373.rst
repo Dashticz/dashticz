@@ -1,0 +1,83 @@
+.. _v373:
+
+v3.7.3: Popup blocks and more
+===================================================
+
+.. note :: Make a backup of the files in the custom folder when updating!
+
+Main changes in v3.7.3 are the following:
+
+* Improved consistency in popup windows
+* Possibility to add one or more Dashticz blocks into a popup window
+
+Both points required some code redesign. Also some cleanup actions were implemented. The main changes are summarized below.
+
+New blocks for 'moon' and 'log'
+-------------------------------
+
+Both blocks now can be added with there name, or by setting the type parameter. Example::
+
+    blocks['moon'] = {
+        width:6
+    }
+
+    blocks['logexample'] = {
+        type: 'log'
+    }
+
+    columns[1] = {
+        blocks: ['moon', 'logexample']
+    }
+
+The previous method to define 'moon' via the btnimage parameter value ``moon`` is not supported anymore.
+
+The 'log' parameter of a button is not supported anymore.
+
+Removal of 'old' calendar block
+-------------------------------
+
+Until now Dashticz supported the 'old' and the 'new' calendar block. The 'old' calendar block has been removed.
+
+See :ref:`newcalendar`
+
+To be able to recognize a calendar block you have to add ``icalurl`` parameter to the block definition.
+
+Styling of popup windows
+------------------------
+
+The CSS classes and default styling for popup windows changed.
+So if you have some custom popup styling in your ``custom.css`` then probably you have to update this.
+
+See :ref:`popupstyling` for additional information.
+
+Popup windows new functionality
+-------------------------------
+
+In the following situation a block click will trigger a new window:
+
+* If the block is a Domoticz block (but not a switch), and the 'graph' parameter is not ``false``, then Dashticz will open a popup graph.
+* The block contains an url parameter. Dashticz will open the url. The ``newwindow`` block parameter determines how the url will be opened.
+* The block contains a ``popup`` parameter. The ``popup`` parameter refers to a block parameter. Dashticz will open the block indicated by the ``popup`` parameter in a popup window.
+
+With the ``newwindow`` block parameter you indicate how the popup will be opened. New option '5' has been added to open the url in a new browser tab.
+
+The 'auto_close' parameter will work on popups with newwindow value 1 (=new window), 2 (=modal popup) and 5 (=new tab)
+
+New block parameter ``blocks``
+------------------------------
+
+With the 'blocks' parameter a block acts in fact like a column definition. Example::
+
+    blocks['mypopup'] = {
+        blocks: [1,2,'mydial','graph_3', 'log']
+    }
+
+In the previous example a block with the name 'mypopup' is created, consisting of two Domoticz devices, a dial, a graph, and a log block.
+
+You can add 'mypopup' to a column, or use is as value for a ``popup`` parameter::
+
+    blocks[123] = {
+        popup: 'mypopup'
+    }
+
+In this example a block for Domoticz device 123 will have a popup block consisting of 5 other blocks.

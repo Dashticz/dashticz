@@ -1,4 +1,4 @@
-/* global toSlide getRandomInt settings infoMessage language*/
+/* global toSlide getRandomInt settings infoMessage*/
 // eslint-disable-next-line no-unused-vars
 var DT_function = (function () {
   /**Clickhandler for Dashticz block
@@ -7,21 +7,45 @@ var DT_function = (function () {
    */
   function clickHandler(me, cfg) {
     var block = { key: me.key };
-    $.extend(block, me.block, cfg);
+    $.extend(
+      block,
+      me.block,
+      me.block && {
+        forcerefresh:
+          me.name == 'button'
+            ? me.block.forcerefreshiframe
+            : me.block.forcerefresh,
+      },
+      cfg,
+      {isPopup: true}
+    );
+    block.zindex = (block.zindex || 2500) + 1;
     var hasPassword = block.password;
     if (!promptPassword(hasPassword)) return;
 
     if (typeof block.newwindow !== 'undefined') {
       if (block.newwindow == '0') {
-        window.open(block.url, '_self');
+        //open in same window
+        blockNewWindow(block, '_self');
       } else if (block.newwindow == '1') {
-        window.open(block.url);
+        //open in new tab
+        blockNewWindow(block, block.title);
       } else if (block.newwindow == '2') {
+        //open in modal iframe
         blockLoadFrame(block);
       } else if (block.newwindow == '3') {
+        //Ajax get request
         $.ajax(checkForceRefresh(block.url, block.forcerefresh));
       } else if (block.newwindow == '4') {
+        //Ajax post request
         $.post(block.url);
+      } else if (block.newwindow == '5') {
+        //open in new window
+        blockNewWindow(
+          block,
+          block.title,
+          'toolbar=yes,menubar=yes,titlebar=yes,statusbar=yes'
+        );
       } else {
         blockLoadFrame(block);
       }
@@ -36,12 +60,54 @@ var DT_function = (function () {
     //Displays the frame of a block after pressing it
     var id = 'popup_' + (block.key || getRandomInt(1, 100000));
     $('body').append(createModalDialog('openpopup', id, block));
+    $('#' + id).modal('show');
+    var popupBlock = 0;
+    if(!block.url) {
+      if (typeof block.popup !== 'undefined') {
+        popupBlock = typeof block.popup === 'string' ? convertBlock(block.popup): block.popup;
+      }
+      else if(block.idx) {
+        //It's a Domoticz device. We create a graph block
+        popupBlock = {
+          devices: [block.idx],
+          key: block.key + '_popup'
+        }
+      }
+    }
+    
+    if(popupBlock) {
+      var container = '#' + id + ' .modal-content';
+      setTimeout(function() {
+        addBlock2Column(container, 'popup', popupBlock);
+      }, 200);  //after 200ms the modal is visible and has a width.
+
+    }
     $('#' + id).on('hidden.bs.modal', function () {
       $(this).data('bs.modal', null);
+      if(container) Dashticz.removeBlock(container);
       $(this).remove();
     });
 
-    $('#' + id).modal('show');
+    if (typeof block['auto_close'] !== 'undefined') {
+      setTimeout(function () {
+        $('.modal.openpopup,.modal-backdrop').remove();
+      }, parseFloat(block['auto_close']) * 1000);
+    }
+
+    var $modal = $('#' +id + ' .modal-content');
+    if (block.url) $modal.addClass('modal-url');
+    if (popupBlock) {
+      $modal.addClass( DT_graph.canHandle(popupBlock) ? 'modal-graph':'modal-popup');
+    }
+  }
+
+  function blockNewWindow(block, title, params) {
+    var newWindow = window.open(block.url, title, params);
+    if (title !== '_self' && block.auto_close && newWindow) {
+      setTimeout(function () {
+        newWindow.close();
+      }, parseFloat(block['auto_close']) * 1000);
+    }
   }
 
   // eslint-disable-next-line no-unused-vars
@@ -95,7 +161,14 @@ var DT_function = (function () {
     }
     return url;
   }
+
+  var loadedResources = {};
+
   function loadFont(fontName, fontURL, fontFormat) {
+    var id = fontName + fontFormat;
+    if (loadedResources[id])
+      return;
+    loadedResources[id] = true;
     var newStyle = document.createElement('style');
     newStyle.appendChild(
       document.createTextNode(
@@ -118,9 +191,24 @@ var DT_function = (function () {
   }
 
   function loadCSS(filename) {
+    var id = filename;
+    if (loadedResources[id])
+      return;
+    loadedResources[id] = true;
+
     $('head').append(
       '<link rel="stylesheet" type="text/css" href="' + filename + '">'
     );
+  }
+
+  function loadScript(filename) {
+    if (!loadedResources[filename]) {
+      loadedResources[filename] = $.ajax({
+        url: filename,
+        dataType: 'script',
+      });
+    }
+    return loadedResources[filename];
   }
 
   /** Prompt for password
@@ -160,14 +248,16 @@ var DT_function = (function () {
     }
     var html =
       '<div class="modal fade ' +
-      dialogClass +
-      '" id="' +
+      dialogClass;
+      html+= '" id="' +
       dialogId +
       '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
 
-    html += '<div class="modal-dialog modal-dialog-custom" style="';
+    html += '<div class="modal-dialog modal-dialog-custom';
+    html += '" style="';
     html += setWidth ? 'width: ' + mywidth + '; ' : '';
     html += setHeight ? 'height: ' + myheight + '; ' : '';
+    html += 'z-index: ' + myFrame.zindex + '; ';
     html += '" >';
 
     html += '<div class="modal-content">';
@@ -175,23 +265,32 @@ var DT_function = (function () {
     html +=
       '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>';
     html += '</div>';
-    html += '<div class="modal-body modalframe">';
-    if (dialogClass === 'openpopup') {
-      mySetUrl = 'src';
+
+    if (myFrame.url) {
+      //block should have url parameter.
+      html += '<div class="modal-body modalframe">';
+      if (dialogClass === 'openpopup') {
+        mySetUrl = 'src';
+      }
+      //    html += '<div id="loadingMessage">' + language.misc.loading + '</div>';
+      var htmlel = myFrame.log
+        ? 'div'
+        : myFrame.newwindow == 5
+        ? 'img'
+        : 'iframe';
+      html +=
+        '<' +
+        htmlel +
+        ' class="popupheight" ' +
+        mySetUrl +
+        '="' +
+        url +
+        '" width="100%" height="100%" frameborder="0" allowtransparency="true"';
+
+      //    html += ' style="'+setHeight ? 'height: ' + myheight + '; ' : '';
+      //    html += '" onload="removeLoading()"';
+      html += '></' + htmlel + '> ';
     }
-    html += '<div id="loadingMessage">' + language.misc.loading + '</div>';
-    var htmlel = myFrame.newwindow==5 ? 'img' : 'iframe';
-    html +=
-      '<' +
-      htmlel +
-      ' class="popupheight" ' +
-      mySetUrl +
-      '="' +
-      url +
-      '" width="100%" height="100%" frameborder="0" allowtransparency="true" style="';
-//    html += setHeight ? 'height: ' + myheight + '; ' : '';
-    html += '" onload="removeLoading()"';
-    html += '></' + htmlel + '> ';
     html += '</div>';
     html += '</div>';
     html += '</div>';
@@ -199,14 +298,49 @@ var DT_function = (function () {
     return html;
   }
 
+  /** Attach callback which will be called when element gets removed from the DOM
+   * @param {object} element - DOM element
+   * @param {function} callback - Callback function
+   *
+   * @example
+   *
+   * onRemove(element, function() {
+   *  releaseAResource(element)
+   * });
+   *
+   */
+  function onRemove(element, callback) {
+    var parent = element.parentNode;
+    if (!parent) throw new Error('The node must already be attached');
+
+    var obs = new MutationObserver(function (mutations) {
+      mutations.forEach(function (mutation) {
+        mutation.removedNodes.forEach(function (el) {
+          if (el === element) {
+            obs.disconnect();
+            callback();
+          }
+        });
+      });
+    });
+    obs.observe(document.body, {
+      //      attributes: true,
+      childList: true,
+      subtree: true,
+      //      characterData: true
+    });
+  }
+
   return {
     clickHandler: clickHandler,
     promptPassword: promptPassword,
     loadFont: loadFont,
     loadCSS: loadCSS,
+    loadScript: loadScript,
     blockLoadFrame: blockLoadFrame,
     checkForceRefresh: checkForceRefresh,
     createModalDialog: createModalDialog,
+    onRemove: onRemove,
   };
 })();
 

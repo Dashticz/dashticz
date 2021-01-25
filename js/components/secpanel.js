@@ -45,7 +45,7 @@ var DT_secpanel = {
         DT_secpanel.onResize(me);
       })
       .done(function () {
-        Domoticz.subscribe('_secstatus', true, function () {
+        Dashticz.subscribeDevice(me, '_secstatus', true, function () {
           //subscribe to the security status, and receive the actual status directly
           DT_secpanel.ShowStatus();
         });

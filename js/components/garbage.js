@@ -676,7 +676,7 @@ var DT_garbage = (function () {
   }
 
   function addToContainer(me, returnDates) {
-    var $div = $(me.mountPoint);
+    var $div = me.$mountPoint;
     var $divState = $div.find('.state');
     var $divImg = $div.find('img.trashcan');
     returnDates = filterReturnDates(me, returnDates);

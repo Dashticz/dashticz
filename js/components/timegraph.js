@@ -89,7 +89,7 @@ var DT_timegraph = (function () {
       DT_timegraph.createGraph(me);
 
       me.datasets.forEach(function (dataset, idx) {
-        Domoticz.subscribe(dataset.idx, true, function (device) {
+        Dashticz.subscribeDevice(me, dataset.idx, true, function (device) {
           addData(me, idx, device);
         });
       });
@@ -104,7 +104,7 @@ var DT_timegraph = (function () {
     },
 
     createGraph: function (me) {
-      var mountPoint = $(me.mountPoint);
+      var mountPoint = me.$mountPoint;
       var chartctx = mountPoint.find('canvas')[0].getContext('2d');
       var m_moment = moment();
 
