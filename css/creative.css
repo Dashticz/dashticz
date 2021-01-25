@@ -791,7 +791,7 @@ a.playlist {
 	height: 300px;
 }
 */
-.modal-content {
+.modal-dialog-custom .modal-content {
   display: flex;
   flex-direction: column;
   height: 100%;
@@ -4034,13 +4034,12 @@ td.agenda-title {
 .colorpicker .modal-dialog {
   max-width: 90%;
   min-width: unset;
-  width: 90%;
+  width: 90%;  
 }
 
-
-
 .colorpicker .modal-content {
-  height: fit-content;
+  position: relative;
+  background-color: white;
 }
 
 .colorpicker .cp-iro {
