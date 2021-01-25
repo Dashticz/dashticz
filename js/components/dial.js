@@ -45,6 +45,7 @@ var DT_dial = {
     offset: 0,
     group: false,
     animation: true,
+    iconSwitch: 'fas fa-power-off'
   },
 
   /**
@@ -217,6 +218,7 @@ var DT_dial = {
         slice: me.slice,
         checked: me.checked,
         addclass: me.block.animation ? 'animation' : '',
+        iconSwitch: me.block.iconSwitch
       };
 
       /* Mount dial */

@@ -5,6 +5,14 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
+Recent changes
+--------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Dial: block parameter ``iconSwitch`` to set the fontawesome icon to use for an on/off switch
+
 v3.7.3 beta (24-1-2021)
 -----------------------
 
