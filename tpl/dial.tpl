@@ -34,7 +34,7 @@
                 <input type="checkbox" {{checked}}>
                 <div class="switch-face">
                     <div class="device  {{addclass}}" style="color:{{color}}">{{name}}</div>
-                    <i class="fas fa-power-off icon-off" style=""color:{{color}}"></i>
+                    <i class="{{iconSwitch}} icon-off" style=""color:{{color}}"></i>
                     {{#if lastupdate}} 
                     <span class="info nosetpoint {{addclass}}">{{lastupdate}}</span>
                     {{/if}}
