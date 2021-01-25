@@ -62,6 +62,10 @@ Block parameters
     - ``'img/image.png'``: Show an image instead of the calendar icon (default: false)
   * - dialicon
     - ``'fas fa-icon-alt'``: Show a different font awesome icon (default: 'fas fa-calendar-alt')
+  * - iconSwitch
+	- | The icon to use for an on/off dial switch.
+	  | ``'fas fa-power-off'``: Dedault icon
+	  | ``'fas fa-volume-up'``: Show a volume icon
   * - showring
     - ``true``:  Always show the outer color ring (default: false)
   * - min
