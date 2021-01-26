@@ -119,6 +119,8 @@
 .dt_content {
   width: 100%;
   margin: 0px 0px;
+  display: flex;
+  flex-direction: column;
 }
 
 .dt_block .col-icon {
@@ -134,6 +136,7 @@
 
 .dt_state {
   margin: 5px 5px;
+  min-height: 1px;
 }
 
 .button .dt_state,
@@ -321,6 +324,12 @@
   opacity: 1;
 }
 
+.modal-popup > [id^="block"] {
+  height: 100%;
+  min-height: 1px;
+  overflow:auto;
+}
+
 
 
 
@@ -463,38 +472,43 @@ next css sets the default height of the frame popup
 
 /* END || Popup modal settings (need to sort and arrange first) */
 
-.containslog .items {
+/* .log */
+
+.log {
+  height: 200px
+}
+
+.log .items {
+  height: 100%; 
   overflow: auto;
 }
 
-.containslog:not(.popup) .items {
-  height: 154px;
+.modal-popup > div > .log {
+  height: 100%
 }
 
-.containslog .items .level0 {
+.log .items .level0 {
   color: #c70626;
 }
 
-.containslog .items .level1 {
+.log .items .level1 {
   color: #067676;
 }
 
-.containslog .items .level2 {
+.log .items .level2 {
   color: #ffffff;
 }
 
-.containslog.popup .items .level2 {
-  color: #727272;
-}
-
-.containslog .items .timestamp {
+.log .items .timestamp {
   white-space: nowrap;
   vertical-align: top;
 }
 
-.containslog .items .sep {
+.log .items .sep {
   width: 5px
 }
+
+/* end log */
 
 .containsicalendar table.calendar {
   border-collapse: separate;
@@ -508,15 +522,6 @@ next css sets the default height of the frame popup
 
 .containsicalendar td.caltitle {
   white-space: normal;
-}
-
-.containslog.popup {
-  height: 100% !important;
-  overflow: auto;
-}
-
-.containslog.popup .items {
- 
 }
 
 .colbar.transbg {
@@ -3058,6 +3063,10 @@ td.agenda-title {
 
 
 /* START: DIAL */
+
+.transbg.dial {
+  background-color: rgba(0,0,0,0);
+}
 
 .block-center {
   display: flex;
