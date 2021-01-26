@@ -39,6 +39,7 @@ var Domoticz = (function () {
    * @return {Promise} The JQuery promise of the Domoticz request
    */
   function domoticzRequest(query, forcehttp) {
+    Debug.log(Debug.REQUEST, query);
     var defaulthttp = true; //websocket is not reliable yet for sending requests
     var selectHTTP =
       (typeof forcehttp === 'undefined' && defaulthttp) || forcehttp;
@@ -93,6 +94,10 @@ var Domoticz = (function () {
                     textStatus +
                     '!\nPlease, double check the path to Domoticz in Settings!'
                 );
+                Debug.log(
+                  Debug.ERROR,
+                  'Domoticz error code: ' + jqXHR.status + ' ' + textStatus
+                );
               }
               newPromise.reject(query + ' ' + textStatus);
             },
@@ -114,6 +119,7 @@ var Domoticz = (function () {
       if (parseFloat(res.version) > 4.11 && cfg.enable_websocket) {
         useWS = true;
         console.log('Setting up websocket');
+        Debug.log('Setting up webksocket');
         connectWebsocket();
         setTimeout(function () {
           //if not resolved within 2 seconds, there is something wrong with the websocket connection.
@@ -171,6 +177,8 @@ var Domoticz = (function () {
     socket.onopen = function () {
       //            console.log(e)
       console.log('[open] Connection established');
+      Debug.log('[open] Connection established');
+
       /*            var msg = {
                             event: 'request',
                             requestid: 1,
@@ -275,6 +283,7 @@ var Domoticz = (function () {
 
   function reconnect() {
     console.log('reconnecting');
+    Debug.log('reconnecting in ' + reconnectTimeout);
     setTimeout(function () {
       reconnecting = false;
       connectWebsocket();
@@ -525,7 +534,8 @@ function ListObservable() {
   };
 
   this.subscribe = function (idx, getCurrent, callback) {
-    if (typeof this._observers[idx] === 'undefined') this._observers[idx] = $.Callbacks();
+    if (typeof this._observers[idx] === 'undefined')
+      this._observers[idx] = $.Callbacks();
     this._observers[idx].add(callback);
     if (getCurrent && typeof this._values[idx] !== 'undefined')
       callback(this._values[idx]);
@@ -547,7 +557,7 @@ function ListObservable() {
       return;
     }
     if (typeof this._observers[idx] !== 'undefined')
-      this._observers[idx].fire(value)
+      this._observers[idx].fire(value);
   };
 
   this.get = function (idx) {
