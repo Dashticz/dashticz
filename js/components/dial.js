@@ -64,7 +64,7 @@ var DT_dial = {
       console.log('dial width unknown.')
       me.height=me.height || 100;
     }
-    else me.height = height;
+    else me.height = height || me.height;
     me.fontsize = 0.85 * me.height;
     me.dialRange = 280;
     me.active = true;
@@ -234,9 +234,12 @@ var DT_dial = {
     if (height<0) {
       me.height=me.height || 100;
     }
-    else me.height=height;
+    else me.height=height || me.height;
 
     me.fontsize = 0.85 * me.height;
+
+    /*Next line is needed for iOS in combination with position: absolute. Don't ask me why ...*/
+    $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
 
       if (me.type === 'evo' || me.type === 'selector') {
         $(me.select + ' li').each(function () {
