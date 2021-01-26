@@ -65,7 +65,7 @@ var DT_dial = {
       me.height=me.height || 100;
     }
     else me.height = height;
-    me.fontsize = 0.9 * me.height;
+    me.fontsize = 0.85 * me.height;
     me.dialRange = 280;
     me.active = true;
     DT_dial.color(me);
@@ -236,9 +236,8 @@ var DT_dial = {
     }
     else me.height=height;
 
-    me.fontsize = 0.9 * me.height;
+    me.fontsize = 0.85 * me.height;
 
-      $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
       if (me.type === 'evo' || me.type === 'selector') {
         $(me.select + ' li').each(function () {
           if ($(this).data('val') === me.status) {
