@@ -328,6 +328,7 @@ var DT_simpleblock = (function () {
   }
 
   function renderSpotify(me) {
+    me.$mountPoint.html('');
     getSpotify(me.mountPoint);
   }
 
