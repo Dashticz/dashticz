@@ -11,7 +11,8 @@ Recent changes
 Fixes
 ~~~~~~
 
-* Fix for Spotify block (additional dummy block)
+* Fix for Spotify block (removed the additional dummy block)
+* Improved error handling in PHP modules for calendar and garbage
 
 Enhancements
 ~~~~~~~~~~~~
