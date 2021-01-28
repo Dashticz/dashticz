@@ -34,9 +34,9 @@ if (!empty($argv[2])) {
 $MAXITEMS = $_GET['maxitems'];
 //print "maxitems: ".$MAXITEMS . "\n";
 
-$HISTORY = $_GET['history'];
+$HISTORY = isset($_GET['history']) ? $_GET['history'] : 0;
 
-$METHOD = $_GET['method'];
+$METHOD = isset($_GET['method']) ? $_GET['method'] : 0;
 
 $ICS = str_replace('#','%23',$ICS);
 //echo $ICS . "\n";
@@ -48,58 +48,60 @@ if (PHP_VERSION_ID < 70100) {
 	$METHOD = 0;
 }
 
-if ( $METHOD==0) {
-	$errors=array();
-	set_error_handler(function($errno, $errstr, $errfile, $errline, $errcontext) {
-		// error was suppressed with the @-operator
-//		if (0 === error_reporting()) {
-//			return false;
-//		}
-		$errors[]=$errstr;
-//		throw new ErrorException($errstr, 0, $errno, $errfile, $errline);
-		return false;
-	});
+$errors=array();
+set_error_handler(function($errno, $errstr, $errfile, $errline, $errcontext) {
+	$errors[]=$errstr;
+	return false;
+});
 	
+if ( $METHOD==0) {
 	@$res = ical5($ICS, $MAXITEMS);
-	$res['_errors'] = $errors;
-	die(json_encode($res));
-} 
+}
+else {
+	@$res = ical7($ICS, $MAXITEMS, $HISTORY);
+}
 
-require_once('./vendor/autoload.php');
-try {
-	$cal = new \om\IcalParser();
-	$results = $cal->parseFile( $ICS);
-	$data = array();
-	$id=0;
-	$sorted_events = $cal->getSortedEvents();
-//	var_dump($sorted_events[0]);
-	foreach ( $sorted_events as $ev) {
-		$start=$ev["DTSTART"]->getTimestamp();
-		if (isset($ev["DTEND"]))
-			$end=$ev["DTEND"]->getTimestamp();
-		else
-			$end=$start;
-		if ($end>time()-((int)$HISTORY*24*3600)) {
-			$duration = $end-$start;
-			$jsEvt = array(
-				"id" => ($id++),
-				"title" => $ev["SUMMARY"],
-				"desc" => $ev["DESCRIPTION"],
-				"location" => $ev["LOCATION"],
-				"start" => $start,
-				"end"   => $end,
-				"allDay" => $duration > 0 && ($duration % 86400) == 0,
-			);
-/* 			$a=array();
-			array_push($a,$ev["ATTENDEE"]); */
-			$data[$start] = $jsEvt;
-			if ($id>=$MAXITEMS)
-				break;
+$res['_errors'] = $errors;
+die(json_encode($res));
+ 
+
+function ical7($ICS, $MAXITEMS, $HISTORY) {
+	require_once('./vendor/autoload.php');
+	try {
+		$cal = new \om\IcalParser();
+		$results = $cal->parseFile( $ICS);
+		$data = array();
+		$id=0;
+		$sorted_events = $cal->getSortedEvents();
+	//	var_dump($sorted_events[0]);
+		foreach ( $sorted_events as $ev) {
+			$start=$ev["DTSTART"]->getTimestamp();
+			if (isset($ev["DTEND"]))
+				$end=$ev["DTEND"]->getTimestamp();
+			else
+				$end=$start;
+			if ($end>time()-((int)$HISTORY*24*3600)) {
+				$duration = $end-$start;
+				$jsEvt = array(
+					"id" => ($id++),
+					"title" => $ev["SUMMARY"],
+					"desc" => isset($ev["DESCRIPTION"]) ? $ev["DESCRIPTION"] : '',
+					"location" => isset($ev["LOCATION"]) ? $ev["LOCATION"] : '',
+					"start" => $start,
+					"end"   => $end,
+					"allDay" => $duration > 0 && ($duration % 86400) == 0,
+				);
+	/* 			$a=array();
+				array_push($a,$ev["ATTENDEE"]); */
+				$data[$start] = $jsEvt;
+				if ($id>=$MAXITEMS)
+					break;
+			}
 		}
+		return $data;
+	} catch (\Exception $e) {
+		die($e);
 	}
-	die(json_encode($data));
-} catch (\Exception $e) {
-    die($e);
 }
 
 function ical5($ICS, $MAXITEMS) {
