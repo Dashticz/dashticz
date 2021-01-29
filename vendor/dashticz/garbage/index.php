@@ -11,7 +11,7 @@ if ($debug==0) error_reporting(E_ERROR | E_PARSE);
 */
 
 $errors=array();
-set_error_handler(function($errno, $errstr, $errfile, $errline, $errcontext) {
+set_error_handler(function($errno, $errstr, $errfile = 0, $errline = 0, $errcontext = 0) {
 	// error was suppressed with the @-operator
 //		if (0 === error_reporting()) {
 //			return false;
@@ -90,12 +90,17 @@ function curlPostJson($url, $data) {
 }
 
 function getCalendar() {
-	$allDates=array();
+	$allDates=array();/*
 	$zipCode = $_GET['zipcode'];
 	$houseNr = $_GET['nr'];
 	$houseNrSuf = $_GET['t'];
 	$sub = $_GET['sub'];
-	$service = $_GET['service'];
+	$service = $_GET['service'];*/
+	$zipCode = '7091xh';
+	$houseNr = 57;
+	$houseNrSuf = '';
+	$sub='';
+	$service='rova';
 	if (!empty($_GET['debug'])) $debug = $_GET['debug'];
 
 	switch($service){
