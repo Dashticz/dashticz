@@ -137,7 +137,7 @@ var SpotifyModule = (function () {
         '<div class="modal fade" id="spotify_' +
         rand +
         '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
-      html += '<div class="modal-dialog">';
+      html += '<div class="modal-dialog modal-spotify">';
       html += '<div class="modal-content">';
       html += '<div class="modal-header">';
       html +=
@@ -152,18 +152,18 @@ var SpotifyModule = (function () {
           typeof playlists.items[p]['uri'] !== 'undefined' &&
           typeof playlists.items[p]['images'][0] !== 'undefined'
         ) {
-          html += '<div class="col-md-3 col-sm-6">';
+          html += '<div class="col-lg-3 col-md-4 col-sm-6">';
           html += '<div class="spotlist">';
           html +=
-            '<div class="col-lg-4 col-md-5 col-sm-4" style="padding:0px;"><a onclick="SpotifyModule.getPlayList(\'' +
+            '<div class="col-xs-4" style="padding:0px;"><a onclick="SpotifyModule.getPlayList(\'' +
             playlists.items[p]['owner']['id'] +
             "','" +
             playlists.items[p]['id'] +
-            '\');"><img style="height:75px;width:75px;" src="' +
+            '\');"><img src="' +
             playlists.items[p]['images'][0]['url'] +
             '" /></a></div>';
           html +=
-            '<div class="col-lg-8 col-md-7 col-sm-8" style="padding:0px;padding-top:5px;padding-right:10px;">';
+            '<div class="col-xs-8 spotify-info" >';
           html +=
             '<a onclick="SpotifyModule.getPlayList(\'' +
             playlists.items[p]['owner']['id'] +
@@ -402,7 +402,7 @@ var SpotifyModule = (function () {
           typeof tracks.items[t]['track'] !== 'undefined' &&
           typeof tracks.items[t]['track']['uri'] !== 'undefined'
         ) {
-          html += '<div class="col-md-3 col-sm-6">';
+          html += '<div class="col-lg-3 col-md-4 col-sm-6">';
           html += '<div class="spottrack">';
           html +=
             '<div style="margin:10px;"><a onclick="SpotifyModule.getTrack(\'' +
