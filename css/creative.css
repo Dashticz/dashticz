@@ -653,10 +653,25 @@ a.playlist {
   background-color: #fff;
   width: 93%;
   border: 1px solid #ccc;
-  height: 77px;
   margin: 5px;
+  display: inline-block;
 }
 
+.modal-dialog.modal-spotify {
+  width: 80%;
+}
+
+.spotlist img {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
+
+.spotlist .spotify-info {
+  padding-left:10px;
+  padding-top:5px;
+  padding-right:10px;
+}
 
 /* Thermostat CSS: */
 
