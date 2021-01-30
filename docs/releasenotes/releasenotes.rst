@@ -12,6 +12,7 @@ Fixes
 ~~~~~~
 
 * Fix for Spotify block (removed the additional dummy block)
+* Spotify: Improved playlist popup layout
 * Improved error handling in PHP modules for calendar and garbage
 
 Enhancements
