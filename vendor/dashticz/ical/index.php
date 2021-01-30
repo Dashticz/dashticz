@@ -1,6 +1,8 @@
 <?php
 header("Access-Control-Allow-Origin: *");
-header('Content-Type: application/json');
+header('Content-Type: text/html');
+http_response_code(500);
+$cleanexit = 0;
 
 
 if (!defined('PHP_VERSION_ID')) {
@@ -21,11 +23,82 @@ if (!defined('PHP_VERSION_ID')) {
 //
 // For example, we may here define the PHP_VERSION_* constants thats 
 // not available in versions prior to 5.2.7
+register_shutdown_function( "fatal_handler" );
+
+function fatal_handler() {
+	global $clean_exit;
+	if ($clean_exit) return;
+    $errfile = "unknown file";
+    $errstr  = "shutdown";
+    $errno   = E_CORE_ERROR;
+    $errline = 0;
+
+    $error = error_get_last();
+
+    if($error !== NULL) {
+        $errno   = $error["type"];
+        $errfile = $error["file"];
+        $errline = $error["line"];
+        $errstr  = $error["message"];
+        print(format_error( $errno, $errstr, $errfile, $errline));
+    }
+}
+
+function format_error( $errno, $errstr, $errfile, $errline ) {
+	global $ICS;
+    $trace = print_r( debug_backtrace( false ), true );
+	$icalurl = isset($ICS) ? $ICS : 'Undefined';
+    $content = "
+    <table>
+        <tbody>
+			<tr>
+				<th>Icalurl</th>
+				<td>$icalurl</td>
+			</tr>
+			<tr>
+                <th>Error</th>
+                <td><pre>$errstr</pre></td>
+            </tr>
+            <tr>
+                <th>Errno</th>
+                <td><pre>$errno</pre></td>
+            </tr>
+            <tr>
+                <th>File</th>
+                <td>$errfile</td>
+            </tr>
+            <tr>
+                <th>Line</th>
+                <td>$errline</td>
+			</tr>
+            <tr>
+                <th>Trace</th>
+                <td><pre>$trace</pre></td>
+            </tr>
+        </tbody>
+    </table>";
+    return $content;
+}
 
 if (!empty($argv[1])) {
 	parse_str($argv[1], $_GET);
   }
 $ICS = $_GET['url'];
+
+$file_headers = @get_headers($ICS);
+if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found') {
+    $exists = false;
+}
+else {
+    $exists = true;
+}
+
+if ( !$exists ) {
+	http_response_code(404);
+	print("Calendar not found: $ICS");
+	$cleanexit = 1;
+	die();
+}
 
 //print "url: ".$ICS . "\n";
 if (!empty($argv[2])) {
@@ -49,19 +122,28 @@ if (PHP_VERSION_ID < 70100) {
 }
 
 $errors=array();
-set_error_handler(function($errno, $errstr, $errfile, $errline, $errcontext) {
+set_error_handler(function($errno, $errstr, $errfile = 0, $errline = 0, $errcontext = 0) {
+	global $errors;
 	$errors[]=$errstr;
 	return false;
 });
-	
-if ( $METHOD==0) {
-	@$res = ical5($ICS, $MAXITEMS);
+
+try {
+	if ( $METHOD==0) {
+		@$res = ical5($ICS, $MAXITEMS);
+	}
+	else {
+		@$res = ical7($ICS, $MAXITEMS, $HISTORY);
+	}
 }
-else {
-	@$res = ical7($ICS, $MAXITEMS, $HISTORY);
-}
+catch (exception $e) {
+    $errors[]='Error';
+} 
 
 $res['_errors'] = $errors;
+header('Content-Type: application/json');
+http_response_code(200);
+$clean_exit=1;
 die(json_encode($res));
  
 

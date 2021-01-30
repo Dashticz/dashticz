@@ -80,7 +80,7 @@ fi
 echo
 echo "Now cloning the Dashticz repository $REPOSITORY"
 echo 
-git clone "$REPOSITORY" -b "$BRANCH" "$NAME" || { echo Error. Something went wrong. Exiting; exit 1; }
+git clone "$REPOSITORY" --depth 1 --no-single-branch -b "$BRANCH" "$NAME" || { echo Error. Something went wrong. Exiting; exit 1; }
 echo
 cd "$NAME"
 chmod a+rX .
