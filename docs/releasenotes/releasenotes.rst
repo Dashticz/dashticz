@@ -19,6 +19,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Dial: block parameter ``iconSwitch`` to set the fontawesome icon to use for an on/off switch
+* Garbage will be sorted in the same order as ``garbage`` block parameter (or ``config['garbage']``)
 
 v3.7.3 beta (24-1-2021)
 -----------------------
