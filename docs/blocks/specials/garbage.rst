@@ -103,6 +103,7 @@ After the mapping on a garbage type, the name, color and icon can be configured 
 The two examples above show the default definition of the ``garbage_mapping`` and ``garbage`` parameters. 
 You can redefine them in your ``CONFIG.js``.
 
+In case there are multiple collection items on the same date, then they will be sorted based on the order of the keys in ``garbage`` parameter.
 
 .. _garbage_companies :
 

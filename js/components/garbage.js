@@ -33,7 +33,9 @@ var DT_garbage = (function () {
       layout: 1,
       maxdays: 32,
     },
-    run: function () {},
+    run: function (me) {
+      me.order = Object.keys(me.block.garbage);
+    },
     refresh: function (me) {
       me.trashToday = false;
       me.trashTomorrow = false;
@@ -627,9 +629,6 @@ var DT_garbage = (function () {
 
   function filterReturnDates(me, returnDates) {
     return returnDates
-      .sort(function (a, b) {
-        return a.date > b.date ? 1 : b.date > a.date ? -1 : 0;
-      })
       .map(function (element) {
         return {
           date: element.date,
@@ -637,6 +636,18 @@ var DT_garbage = (function () {
           garbageType:
             element.garbageType || mapGarbageType(me, element.summary),
         };
+      })
+      .sort(function (a, b) {
+        var res = a.date > b.date ? 1 : b.date > a.date ? -1 : 0;
+        if(res) return res;
+        if(!me.order) return 0;
+        var sort_a = me.order.indexOf(a.garbageType);
+        var sort_b = me.order.indexOf(b.garbageType);
+        if (sort_a===sort_b) return 0;
+        if (sort_a=== -1) return 1;
+        if (sort_b=== -1) return -1;
+        return sort_a>sort_b ? 1: -1;
+
       })
       .filter(function (element) {
         return (
