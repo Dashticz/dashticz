@@ -90,17 +90,17 @@ function curlPostJson($url, $data) {
 }
 
 function getCalendar() {
-	$allDates=array();/*
+	$allDates=array();
 	$zipCode = $_GET['zipcode'];
 	$houseNr = $_GET['nr'];
 	$houseNrSuf = $_GET['t'];
 	$sub = $_GET['sub'];
-	$service = $_GET['service'];*/
-	$zipCode = '7091xh';
+	$service = $_GET['service'];
+/*	$zipCode = '7091xh';
 	$houseNr = 57;
 	$houseNrSuf = '';
 	$sub='';
-	$service='rova';
+	$service='rova';*/
 	if (!empty($_GET['debug'])) $debug = $_GET['debug'];
 
 	switch($service){
