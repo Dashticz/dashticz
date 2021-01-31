@@ -58,7 +58,7 @@ var DT_simpleblock = (function () {
       render: renderHorizon,
     },
     sonarr: {
-      script: 'js/sonar.js',
+      script: 'js/sonarr.js',
       render: renderSonar,
     },
     fullscreen: {
