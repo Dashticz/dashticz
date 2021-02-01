@@ -66,6 +66,7 @@ var DT_dial = {
     }
     else me.height = height || me.height;
     me.fontsize = 0.85 * me.height;
+    $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
     me.dialRange = 280;
     me.active = true;
     DT_dial.color(me);
@@ -227,6 +228,7 @@ var DT_dial = {
       $mount.addClass('swiper-no-swiping');
 
       /*todo: update height*/
+      /* temporarily (?) disable resize after first rendering
       var height = isDefined(me.block.height)
       ? parseInt(me.block.height)
 //      : parseInt($(me.mountPoint + ' div').css('width'));
@@ -236,10 +238,11 @@ var DT_dial = {
     }
     else me.height=height || me.height;
 
-    me.fontsize = 0.85 * me.height;
+    me.fontsize = 0.85 * me.height;*/
 
-    /*Next line is needed for iOS in combination with position: absolute. Don't ask me why ...*/
+    //Next line is needed for iOS in combination with position: absolute. Don't ask me why ...
     $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
+    
 
       if (me.type === 'evo' || me.type === 'selector') {
         $(me.select + ' li').each(function () {
