@@ -14,6 +14,7 @@ Fixes
 * Fix for Spotify block (removed the additional dummy block)
 * Spotify: Improved playlist popup layout
 * Improved error handling in PHP modules for calendar and garbage
+* Dials: Resize disabled (to prevent size changes after first rendering)
 
 Enhancements
 ~~~~~~~~~~~~
