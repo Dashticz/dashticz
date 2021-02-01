@@ -84,8 +84,8 @@ Parameters
       | ``4``: no new window/frame (for intent handling, api calls). HTTP post request. (forcerefresh not supported)
       | ``5``: open in a new browser tab
   * - auto_close
-    - Closes the opened window after a certain period of time (only applicable when newwindow is 1,2 or 5)
-    - | ``0``: (=Default) No auto close
+    - | Closes the opened window after a certain period of time (only applicable when newwindow is 1,2 or 5)
+      | ``0``: (=Default) No auto close
       | ``5``: Closes the popup window after 5 seconds.
   * - password
     - | Password protect switches, buttons, thermostats, sliders, blinds
