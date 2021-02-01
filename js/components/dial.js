@@ -45,7 +45,7 @@ var DT_dial = {
     offset: 0,
     group: false,
     animation: true,
-    iconSwitch: 'fas fa-power-off'
+    iconSwitch: 'fas fa-power-off',
   },
 
   /**
@@ -58,13 +58,12 @@ var DT_dial = {
     me.id = 'dial_' + me.idx;
     var height = isDefined(me.block.height)
       ? parseInt(me.block.height)
-//      : parseInt($(me.mountPoint + ' div').css('width'));
-    : parseInt($(me.mountPoint + ' div').outerWidth());
-    if (height<0) {
-      console.log('dial width unknown.')
-      me.height=me.height || 100;
-    }
-    else me.height = height || me.height;
+      : //      : parseInt($(me.mountPoint + ' div').css('width'));
+        parseInt($(me.mountPoint + ' div').outerWidth());
+    if (height < 0) {
+      console.log('dial width unknown.');
+      me.height = me.height || 100;
+    } else me.height = height || me.height;
     me.fontsize = 0.85 * me.height;
     $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
     me.dialRange = 280;
@@ -124,10 +123,10 @@ var DT_dial = {
       });
   },
 
-  destroy: function(me) {
-    if(me.hammer) {
+  destroy: function (me) {
+    if (me.hammer) {
       me.hammer.destroy();
-      me.hammer=0
+      me.hammer = 0;
     }
   },
 
@@ -219,30 +218,13 @@ var DT_dial = {
         slice: me.slice,
         checked: me.checked,
         addclass: me.block.animation ? 'animation' : '',
-        iconSwitch: me.block.iconSwitch
+        iconSwitch: me.block.iconSwitch,
       };
 
       /* Mount dial */
       var $mount = $(me.mountPoint + ' .dt_content');
       $mount.html(template(dataObject));
       $mount.addClass('swiper-no-swiping');
-
-      /*todo: update height*/
-      /* temporarily (?) disable resize after first rendering
-      var height = isDefined(me.block.height)
-      ? parseInt(me.block.height)
-//      : parseInt($(me.mountPoint + ' div').css('width'));
-    : parseInt($(me.mountPoint + ' div').outerWidth());
-    if (height<0) {
-      me.height=me.height || 100;
-    }
-    else me.height=height || me.height;
-
-    me.fontsize = 0.85 * me.height;*/
-
-    //Next line is needed for iOS in combination with position: absolute. Don't ask me why ...
-    $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
-    
 
       if (me.type === 'evo' || me.type === 'selector') {
         $(me.select + ' li').each(function () {
@@ -289,11 +271,11 @@ var DT_dial = {
    */
   tap: function (me) {
     var d = $(me.mountPoint + ' .dial')[0];
-    if(me.hammer) {
+    if (me.hammer) {
       me.hammer.destroy();
     }
     me.hammer = new Hammer(d);
-    var block=me.block;
+    var block = me.block;
     if (block.popup || block.url || block.slide) {
       //Clickhandler has been added already!
       //DT_function.clickHandler(me);
@@ -339,7 +321,7 @@ var DT_dial = {
         return;
       }
       // (me.type === 'default' or 'temp' or 'p1' or ...)
-      DT_function.clickHandler({ block: block })
+      DT_function.clickHandler({ block: block });
     });
   },
 
@@ -491,10 +473,10 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   degrees: function (me) {
-    if(typeof me.needle !== 'undefined'){
-    var value = me.needle;
+    if (typeof me.needle !== 'undefined') {
+      var value = me.needle;
     } else {
-    var value = me.value;
+      var value = me.value;
     }
     value = isDefined(me.min) && value < me.min ? me.min : value;
     value = isDefined(me.max) && value > me.max ? me.max : value;
@@ -898,30 +880,42 @@ var DT_dial = {
       }
     );
 
-//new layout of wind sensor
-if (me.block.layout == 1) {
-	me.needle = me.device.Direction;
-	me.value = me.device.Speed;
-	me.unitvalue = windUnit;
-	me.info.length = 0;
- me.info.push({
-      icon: DT_dial.display(me.block.dialicon, 0, 3, 'fas fa-location-arrow'),
-      image: DT_dial.display(me.block.dialimage, 0, 3, false),
-      data: me.device.DirectionStr,
-      unit: '',
-    }, {
-      image: DT_dial.display(me.block.dialimage, 1, 3, false),
-      data: me.device.Direction,
-      unit: '°',
-    }, {
-      icon: DT_dial.display(me.block.dialicon, 2, 3,'fas fa-thermometer-half'),
-      image: DT_dial.display(me.block.dialimage, 0, 3, false),
-      data: me.device.Temp,
-      unit: _TEMP_SYMBOL,
+    //new layout of wind sensor
+    if (me.block.layout == 1) {
+      me.needle = me.device.Direction;
+      me.value = me.device.Speed;
+      me.unitvalue = windUnit;
+      me.info.length = 0;
+      me.info.push(
+        {
+          icon: DT_dial.display(
+            me.block.dialicon,
+            0,
+            3,
+            'fas fa-location-arrow'
+          ),
+          image: DT_dial.display(me.block.dialimage, 0, 3, false),
+          data: me.device.DirectionStr,
+          unit: '',
+        },
+        {
+          image: DT_dial.display(me.block.dialimage, 1, 3, false),
+          data: me.device.Direction,
+          unit: '°',
+        },
+        {
+          icon: DT_dial.display(
+            me.block.dialicon,
+            2,
+            3,
+            'fas fa-thermometer-half'
+          ),
+          image: DT_dial.display(me.block.dialimage, 0, 3, false),
+          data: me.device.Temp,
+          unit: _TEMP_SYMBOL,
+        }
+      );
     }
-);
-
-} 
     return;
   },
 
