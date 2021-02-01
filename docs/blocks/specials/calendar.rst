@@ -23,7 +23,7 @@ The following config settings are applicable:
   * - Parameter
     - Description
   * - calendarformat
-    - | Configure the Calendar Date/Time format. Only applicable in case ``calFormat`` is ``0``
+    - | Configure the Calendar Date/Time format.
       | ``'dd DD.MM HH:mm'`` = default
   * - calendarlanguage
     - | Controls the calendar locale
