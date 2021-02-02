@@ -26,11 +26,11 @@ var Dashticz = (function () {
     'coronavirus',
     'camera',
     'nzbget',
+    'garbage',  //place before calendar, to detect company: ical with icalurl as garbage block
     'calendar',
     'dial',
     'html',
     'timegraph',
-    'garbage',
     'haymanclock',
     'flipclock',
     'basicclock',

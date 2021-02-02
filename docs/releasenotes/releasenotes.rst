@@ -15,6 +15,7 @@ Fixes
 * Spotify: Improved playlist popup layout
 * Improved error handling in PHP modules for calendar and garbage
 * Dials: Resize disabled (to prevent size changes after first rendering)
+* Garbage: block with company: 'ical' will now be detected correctly as Garbage block instead of Calendar
 
 Enhancements
 ~~~~~~~~~~~~
