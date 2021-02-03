@@ -18,17 +18,17 @@ To represent these devices with a dial add ``type:'dial'`` to the block definiti
 
 For the following device types a specific dial representation has been defined:
 
-  * Type = 'Heating'
-  * Type = 'P1 Smart Meter'
-  * Type = 'Temp + Humidity + Baro'
-  * Type = 'Temp + Humidity'
-  * Type = 'Thermostat'
-  * Type = 'Wind'
-  * SubType = 'Evohome'
-  * SubType = 'SetPoint'
-  * SwitchType = 'Dimmer
-  * SwitchType = 'On/Off'
-  * SwitchType = 'Selector'
+* Type = 'Heating'
+* Type = 'P1 Smart Meter'
+* Type = 'Temp + Humidity + Baro'
+* Type = 'Temp + Humidity'
+* Type = 'Thermostat'
+* Type = 'Wind'
+* SubType = 'Evohome'
+* SubType = 'SetPoint'
+* SwitchType = 'Dimmer
+* SwitchType = 'On/Off'
+* SwitchType = 'Selector'
 
 For other device types a generic dial will be used.
 
@@ -63,9 +63,9 @@ Block parameters
   * - dialicon
     - ``'fas fa-icon-alt'``: Show a different font awesome icon (default: 'fas fa-calendar-alt')
   * - iconSwitch
-	- | The icon to use for an on/off dial switch.
-	  | ``'fas fa-power-off'``: Dedault icon
-	  | ``'fas fa-volume-up'``: Show a volume icon
+    - | The icon to use for an on/off dial switch.
+      | ``'fas fa-power-off'``: Dedault icon
+      | ``'fas fa-volume-up'``: Show a volume icon
   * - showring
     - ``true``:  Always show the outer color ring (default: false)
   * - min
@@ -77,7 +77,7 @@ Block parameters
   * - values
     - Used to configure the values to be shown in the dial (generic dial only. See :ref:`genericdial`)
   * - animation
-	- ``false | true``: Set to false to disable dial animations on change (default: true)
+    - ``false | true``: Set to false to disable dial animations on change (default: true)
 
 
 Usage
