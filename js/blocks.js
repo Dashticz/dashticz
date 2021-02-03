@@ -199,7 +199,7 @@ function deviceUpdateHandler(block) {
   }
 
   if ($div.hasClass('hover')) {
-    $div.on('touchstart', function () {
+    $div.off('touchstart').on('touchstart', function () {
       var $this = $(this);
       $this.addClass('hovered');
       setTimeout(function () {
@@ -493,7 +493,7 @@ function getBlockClick(block, selector) {
       device['SubType'] === 'Soil Moisture' ||
       graph
     ) {
-      $div.addClass('hover').click(function () {
+      $div.addClass('hover').off('click').click(function () {
         DT_function.clickHandler({ block: block });
       });
     }
