@@ -740,9 +740,11 @@ function triggerStatus(block) {
   onOffstates[idx] = value;
 }
 
+/*
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
+*/
 
 function onOffHandling(block, status) {
   var _status = capitalizeFirstLetter(status);

@@ -1,5 +1,5 @@
 /* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer*/
-/* global showPopupGraph switchEvoHotWater changeEvohomeControllerStatus slideDevice switchEvoZone switchThermostat switchDevice isObject*/
+/* global switchEvoHotWater changeEvohomeControllerStatus slideDevice switchEvoZone switchThermostat switchDevice isObject*/
 var DT_dial = {
   name: 'dial',
 
@@ -54,7 +54,6 @@ var DT_dial = {
    */
   run: function (me) {
     me.idx = isDefined(me.block.idx) ? me.block.idx : me.key;
-    me.block.idx = me.idx; /* required for existing functions */
     me.id = 'dial_' + me.idx;
     var height = isDefined(me.block.height)
       ? parseInt(me.block.height)
@@ -80,11 +79,12 @@ var DT_dial = {
         }
       })
       .then(function () {
+        var idx;
         me.devices = [];
         if (typeof me.idx === 'number' || parseInt(me.idx))
           me.devices.push(me.idx);
         if (typeof me.idx === 'string' && me.idx[0] === 's') {
-          var idx = parseInt(me.idx.slice(1));
+          idx = parseInt(me.idx.slice(1));
           if (idx) me.devices.push(me.idx);
         }
         if (me.block.values)
@@ -96,7 +96,7 @@ var DT_dial = {
             }
           });
         if (me.block.temp) {
-          var idx = parseInt(me.block.temp);
+          idx = parseInt(me.block.temp);
           if (idx && me.devices.indexOf(idx) === -1) me.devices.push(idx);
         }
         me.devices.forEach(function (el) {
@@ -111,13 +111,16 @@ var DT_dial = {
             DT_dial.make(me);
           });
         });
-        me.device = Domoticz.getAllDevices()[me.devices[0]];
-        me.block.device = me.device;
-        if (!me.device) {
-          console.log('Device not found: ', me.idx);
-          return;
+        if (me.devices.length) {
+          me.device = Domoticz.getAllDevices()[me.devices[0]];
+          if (!me.device) {
+            console.log('Device not found: ', me.idx);
+          } else {
+            me.block.idx = me.idx; /* required for existing functions */
+            me.block.device = me.device;
+            me.isSetpoint = isDefined(me.device.SetPoint);
+          }
         }
-        me.isSetpoint = isDefined(me.device.SetPoint);
         DT_dial.make(me);
         DT_dial.tap(me);
       });
@@ -139,41 +142,49 @@ var DT_dial = {
     DT_dial.resize(me);
     var d = me.device;
 
-    switch (true) {
-      case typeof me.block.values !== 'undefined':
-        DT_dial.defaultDial(me);
-        break;
-      case d.SubType === 'Evohome':
-      case d.SwitchType === 'Selector':
-        DT_dial.control(me);
-        break;
-      case d.Type === 'Heating':
-      case d.Type === 'Thermostat':
-      case d.SubType === 'SetPoint':
-        DT_dial.heating(me);
-        break;
-      case d.SwitchType === 'Dimmer':
-        DT_dial.dimmer(me);
-        break;
-      case d.Type === 'Group':
-      case d.Type === 'Scene':
-      case d.SwitchType === 'On/Off':
-        DT_dial.onoff(me);
-        break;
-      case d.Type === 'Temp':
-      case d.Type === 'Temp + Humidity':
-      case d.Type === 'Temp + Humidity + Baro':
-        DT_dial.temperature(me);
-        break;
-      case d.Type === 'Wind':
-        DT_dial.wind(me);
-        break;
-      case d.Type === 'P1 Smart Meter':
-        DT_dial.p1smartmeter(me);
-        break;
-      default:
-        DT_dial.defaultDial(me);
-        break;
+    if(!d) {
+      DT_dial.onoff(me);
+    }
+    else {
+      switch (true) {
+        case typeof me.block.values !== 'undefined':
+          DT_dial.defaultDial(me);
+          break;
+        case d.SubType === 'Evohome':
+        case d.SwitchType === 'Selector':
+          DT_dial.control(me);
+          break;
+        case d.Type === 'Heating':
+        case d.Type === 'Thermostat':
+        case d.SubType === 'SetPoint':
+          DT_dial.heating(me);
+          break;
+        case d.SwitchType === 'Dimmer':
+          DT_dial.dimmer(me);
+          break;
+        case d.Type === 'Group':
+        case d.Type === 'Scene':
+        case d.SwitchType === 'On/Off':
+          DT_dial.onoff(me);
+          break;
+        case d.Type === 'Temp':
+        case d.Type === 'Temp + Humidity':
+        case d.Type === 'Temp + Humidity + Baro':
+          DT_dial.temperature(me);
+          break;
+        case d.Type === 'Wind':
+          DT_dial.wind(me);
+          break;
+        case d.Type === 'P1 Smart Meter':
+          DT_dial.p1smartmeter(me);
+          break;
+        case d.SubType === 'Text':
+          DT_dial.text(me);
+          break;
+        default:
+          DT_dial.defaultDial(me);
+          break;
+      }
     }
 
     if (me.block.shownumbers && me.numbers == undefined) {
@@ -184,13 +195,13 @@ var DT_dial = {
       var dataObject = {
         id: me.id,
         size: me.size,
-        name: me.block.title ? me.block.title : me.device.Name,
+        name: me.block.title ? me.block.title : me.device && me.device.Name,
         min: me.min,
         max: me.max,
         showunit: me.showunit,
-        type: me.device.Type,
+        type: me.device && me.device.Type,
         value: me.value,
-        valueformat: number_format(me.value, 1),
+        valueformat: me.type === 'text'? me.value:number_format(me.value, 1),
         hasSetpoint: me.isSetpoint || me.subdevice,
         setpoint: me.setpoint,
         until: me.until,
@@ -217,7 +228,8 @@ var DT_dial = {
         split: me.splitdial,
         slice: me.slice,
         checked: me.checked,
-        addclass: me.block.animation ? 'animation' : '',
+        addclass: me.type,
+        animation: me.block.animation ? 'animation' : '',
         iconSwitch: me.block.iconSwitch,
       };
 
@@ -250,6 +262,18 @@ var DT_dial = {
         $(me.mountPoint + ' .dial .fill').addClass('show-ring');
       }
 
+      if (me.onoff) {
+        if(me.switchMode!=='Toggle')
+          $(me.mountPoint + ' input').on('click', function () {
+            //          var c = $(this).prop('checked');
+            //          $(this).prop('checked', !c);
+            var el = $(this);
+            var newState = me.switchMode==='On'
+            setTimeout(function () {
+              el.prop('checked', newState);
+            }, 500);
+          });
+      }
       /* Add dial calculations */
       if (!me.onoff && !me.controller) {
         me.body = $(me.mountPoint + ' .dt_content .dial');
@@ -314,14 +338,16 @@ var DT_dial = {
         return;
       }
       if (me.type === 'onoff') {
-        if (me.device.Type === 'Scene') me.cmd = 'On';
-        else me.cmd = me.state === 'Off' ? 'On' : 'Off';
+        if(me.switchMode === 'Toggle')
+          me.cmd = me.state === 'Off' ? 'On' : 'Off';
+        else
+          me.cmd = me.switchMode;
         me.demand = me.cmd === 'On';
         DT_dial.update(me);
         return;
       }
       // (me.type === 'default' or 'temp' or 'p1' or ...)
-      DT_function.clickHandler({ block: block });
+      if (me.block.graph!== false) DT_function.clickHandler({ block: block });
     });
   },
 
@@ -473,10 +499,11 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   degrees: function (me) {
+    var value;
     if (typeof me.needle !== 'undefined') {
-      var value = me.needle;
+      value = me.needle;
     } else {
-      var value = me.value;
+      value = me.value;
     }
     value = isDefined(me.min) && value < me.min ? me.min : value;
     value = isDefined(me.max) && value > me.max ? me.max : value;
@@ -524,7 +551,7 @@ var DT_dial = {
         slideDevice(me, Math.ceil((me.maxdim / me.max) * me.value));
         break;
       case 'onoff':
-        switchDevice(me, me.cmd);
+        if(me.block.idx) switchDevice(me, me.cmd);
         break;
       case 'default':
         if (me.isSetpoint) {
@@ -982,7 +1009,25 @@ var DT_dial = {
     me.type = 'onoff';
     me.fixed = true;
     me.onoff = true;
-    me.state = me.device.Status;
+    var switchMode = capitalizeFirstLetter(me.block.switchMode);
+    if(me.device) {
+      if (me.device.Type === 'Scene' )
+        me.switchMode = 'On';
+      if (me.device.subType === 'Push On Button')
+        me.switchMode = 'On';
+      if (me.device.subType === 'Push Off Button')
+        me.switchMode = 'Off';
+    }
+    switch(switchMode) {
+      case 'On':
+      case 'Off':
+        me.switchMode = switchMode;
+        break;
+      default:
+        me.switchMode = me.switchMode || 'Toggle';
+    }
+    
+    me.state = (me.device && me.device.Status ) || (me.switchMode === 'Toggle' ? 'Off': me.switchMode);
     me.demand = me.state === 'On';
     me.checked = me.state === 'On' ? 'checked' : '';
     return;
@@ -1023,6 +1068,19 @@ var DT_dial = {
         unit: '',
       }
     );
+    return;
+  },
+
+  text: function(me) {
+    me.type = 'text';
+    me.value = me.device.Data; //number_format(me.device.Data, 1);
+    me.isSetpoint = false;
+    me.active = false;
+    me.fixed=true;
+    me.block.graph=false;
+    me.lastupdate = !me.block.last_update
+    ? false
+    : moment(me.device.LastUpdate).format(DT_dial.timeformat);
     return;
   },
 
