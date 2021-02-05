@@ -1,4 +1,4 @@
-<div class="dial {{size}} {{#if fixed}}fixed{{/if}}" data-device="{{name}}" data-min="{{min}}" data-max="{{max}}"
+<div class="dial {{size}} {{#if fixed}}fixed{{/if}} {{addclass}}" data-device="{{name}}" data-min="{{min}}" data-max="{{max}}"
     data-type="{{type}}" data-value="{{value}}" data-setpoint="{{setpoint}}" data-status="{{status}}" 
     data-until="{{until}}" data-unit="{{unit}}" data-info="{{lastupdate}}" style="font-size: {{fontsize}}px;--dial-color: {{rgba}};">
     <div class="slice {{#if split}}{{slice}}{{/if}}">
@@ -33,16 +33,16 @@
             <div class="dial-switch">   
                 <input type="checkbox" {{checked}}>
                 <div class="switch-face">
-                    <div class="device  {{addclass}}" style="color:{{color}}">{{name}}</div>
+                    <div class="device  {{animation}}" style="color:{{color}}">{{name}}</div>
                     <i class="{{iconSwitch}} icon-off" style=""color:{{color}}"></i>
                     {{#if lastupdate}} 
-                    <span class="info nosetpoint {{addclass}}">{{lastupdate}}</span>
+                    <span class="info nosetpoint {{animation}}">{{lastupdate}}</span>
                     {{/if}}
                 </div>
             </div>
             {{else}}
             <div class="dial-display">
-                <span class="device {{addclass}}" style="color:{{color}};">{{name}}</span>
+                <span class="device {{animation}}" style="color:{{color}};">{{name}}</span>
                 <div class="value-unit">
                     <span class="value" style="--dial-color: {{color}};">{{valueformat}}</span>
                     {{#if showunit}}
@@ -50,10 +50,10 @@
                     {{/if}}
                 </div>
                 {{#if lastupdate}} 
-                <span class="info {{#unless hasSetpoint}}nosetpoint{{/unless}} {{addclass}}">{{lastupdate}}</span>
+                <span class="info {{#unless hasSetpoint}}nosetpoint{{/unless}} {{animation}}">{{lastupdate}}</span>
                 {{/if}}
                 {{#if hasSetpoint}}
-                <div class="extra  {{addclass}}">
+                <div class="extra  {{animation}}">
                     {{#each info}}
                     <div>
                         {{#unless this.image}}

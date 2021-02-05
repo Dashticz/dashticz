@@ -3552,6 +3552,15 @@ td.agenda-title {
   line-height: 2em;
 }
 
+.dial.text .dial-display .value-unit {
+  width: 95%;
+  font-size: 50%;
+}
+
+.dial.text .dial-display .value-unit .value {
+  white-space: normal;
+}
+
 .dial .dial-display .info {
   position: relative;
   top: 28%;

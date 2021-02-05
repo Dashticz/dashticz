@@ -26,6 +26,7 @@ For the following device types a specific dial representation has been defined:
 * Type = 'Wind'
 * SubType = 'Evohome'
 * SubType = 'SetPoint'
+* SubType = 'Text'
 * SwitchType = 'Dimmer
 * SwitchType = 'On/Off'
 * SwitchType = 'Selector'
@@ -78,6 +79,11 @@ Block parameters
     - Used to configure the values to be shown in the dial (generic dial only. See :ref:`genericdial`)
   * - animation
     - ``false | true``: Set to false to disable dial animations on change (default: true)
+  * - switchMode
+    - | The switch mode for on/off dial switches and for dials without device.
+      | ``'Toggle'``: Toggle the dial on click (=default for most dials. See next lines for exceptions)
+      | ``'On'``: Switch On (=default for scenes and Push On switches)
+      | ``'Off'``: Switch Off (=default for Push Off switches)
 
 
 Usage
