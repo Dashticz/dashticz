@@ -110,6 +110,9 @@ var DT_simpleblock = (function () {
       if (script)
         DT_function.loadScript(script).then(function () {
           renderBlock(me, render);
+        })
+        .catch(function() {
+          console.log('Error loading script '+script);
         });
       else renderBlock(me, render);
     },
