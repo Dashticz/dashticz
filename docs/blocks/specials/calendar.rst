@@ -84,6 +84,8 @@ The **new calendar** block follows the same look and feel as most other blocks. 
     - | ``0``: Lists an agenda of events in text format
       | ``1``: Lists an agenda of events in table format
       | ``2``: Displays a traditional calendar in table format
+      | ``3``: Lists an agenda of all day events in text format (no time is shown)
+      | ``4``: Lists an agenda of all day events in table format (no time is shown)
   * - icalurl
     - This can accept either a single url (string) or one or more calendar objects (example below)
   * - ics
