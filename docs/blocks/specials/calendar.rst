@@ -197,3 +197,22 @@ The layout set to 2 will display this:
 When the user clicks on any events, it opens details about that event. If the event details is already HTML, it will render the HTML event body, including font, tags, anchors/links, etc. The contents of the popup is scrollable. Also included in the popup is a link to source calendar (bottom left), if one has been set in config.js. On the bottom right of the popup, the event location is displayed (if this exists). When clicked, it will take the user to the location on Google maps.
 
 .. image :: img/calendar2_modal.png
+
+
+Example of a birthday calendar
+------------------------------
+When using ``layout: 3`` or ``layout: 4`` no time will be shown.
+
+.. image :: img/calendar_birtdays.png
+
+::
+
+	blocks['birthdays'] = {
+		type: 'calendar',
+		layout: 4,
+		dateFormat: 'D MMMM',
+		icalurl: 'http://... .../birthdays.ics'
+		maxitems: 5, 
+		icon: 'fas fa-birthday-cake',	
+	}
+
