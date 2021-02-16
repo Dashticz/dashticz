@@ -556,6 +556,13 @@ Colorpicker.prototype.setDevice = function setDevice() {
     color.t = 0;
   }
 
+  if (this.block.mode === 1) {//Hue mode: ww and cw must me 0 in rgb mode
+    if (color.m === 3) { //rgb mode
+      color.ww=0;
+      color.cw=0;
+    }
+  }
+
   var brightness = Math.round(this.comp['Master'].color.value);
 
   var req =
