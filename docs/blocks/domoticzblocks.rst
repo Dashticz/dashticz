@@ -364,6 +364,23 @@ In this example, the specified popup will use a defined graph called 'popup_cons
    }
 
 
+Usage of popup multi block window
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With the popup parameter you can also configure to open a popup multi block window. Example::
+
+   blocks['your_block'] = {
+      popup: 'container',
+      ...
+   }
+
+::
+
+   blocks['container'] = {
+      blocks: [ 'one1', 'two2']   // where 'one1' and 'two2' are other blocks
+   }
+
+
 .. _openpopup :
 
 Usage of openpopup(On)(Off)
