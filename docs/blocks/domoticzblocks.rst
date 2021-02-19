@@ -34,6 +34,27 @@ You can also use custom names for the block identfier. In that case you have to 
       idx: 123
    }
 
+
+Grouped devices
+---------------
+To use grouped devices in a column you must make it known in your CONFIG.js as follows::
+
+   blocks['lights'] = {
+      blocks: [
+      'light_livingroom',
+      'light_kitchen',
+      'light_bathroom'
+      ]
+   }
+   
+Now you can add all 3 light blocks to a column with the following code::
+
+   columns[1] = {}
+      columns[1]['blocks'] = [
+      'lights'
+   ]
+
+
 Scenes and Groups
 -----------------
 
