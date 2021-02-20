@@ -1,6 +1,6 @@
 /* eslint-disable no-debugger */
 /*global getBlockTypesBlock, language, _TEMP_SYMBOL, settings*/
-/*global Dashticz, DT_function, Domoticz */
+/*global Dashticz, DT_function, Domoticz, Debug */
 /*global moment, number_format */
 /*from bundle.js*/
 /*global ion*/
@@ -59,8 +59,12 @@ function getBlock(cols, c, screendiv, standby) {
           '"></div>'
       );
     }
-    cols['blocks'].forEach(function (b) {
-      addBlock2Column(columndiv, c, b);
+    cols['blocks'].forEach(function (b, i) {
+      if(b)
+        addBlock2Column(columndiv, c, b);
+      else {
+        Debug.log(Debug.ERROR, 'Block number '+i+' in column ' + c + ' is undefined.');
+      }
     });
   }
 }
@@ -71,7 +75,14 @@ function getBlock(cols, c, screendiv, standby) {
  *
  * If b is a number then it represents a device id.
  */
+var previousblock=0;
+
 function addBlock2Column(columndiv, c, b) {
+  if(typeof b=== 'undefined') {
+    console.log('Block undefined after block ',previousblock);
+    return;
+  }
+  previousblock=b;
   var myblockselector = Dashticz.mountNewContainer(columndiv);
   var newBlock = b;
   if (typeof b !== 'object') newBlock = convertBlock(b, c);
@@ -283,6 +294,10 @@ function isDomoticzDevice(key) {
   var idx = parseInt(key);
   if (idx) {
     return idx;
+  }
+  if(typeof key === 'undefined') {
+//    debugger;
+    return false;
   }
   if (key[0] === 's' || key[0] === 'v') {
     //scene, group or variable

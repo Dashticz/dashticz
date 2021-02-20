@@ -4212,3 +4212,11 @@ td.agenda-title {
 
 /*end tvguide*/
 
+/*debug*/
+.modal-dialog-custom .tab-content {
+  height: 100%
+}
+
+.modal-dialog-custom .tab-content {
+
+}
