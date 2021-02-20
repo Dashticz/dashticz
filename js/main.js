@@ -156,6 +156,7 @@ function loadFiles(dashtype) {
     .then(function () {
       return getSettings();
     })
+    .then(addDebug)
     .then(function () {
       if (typeof screens === 'undefined' || objectlength(screens) === 0) {
         screens = {};
@@ -354,6 +355,16 @@ function enableLogRocket(enable_logrocket) {
   if (!window.LogRocket) return;
   window.LogRocket.init('ewgztp/dashticz');
   window.LogRocket.identify(enable_logrocket);
+}
+
+function addDebug() {
+  return $.ajax({
+    url: 'js/debug.js',
+    dataType: 'script',
+  })
+    .then(function () {
+      return Debug.init();
+    })
 }
 
 function showError(msg) {
