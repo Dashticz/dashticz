@@ -191,6 +191,9 @@ Block parameters
       | ``0``: No RGB colorpicker
       | ``1``: Old style RGB colorpicker
       | ``2``: New style RGB colorpicker
+  * - mode
+    - | Parameter for specific functionality
+      | ``1``: Set ``mode: 1`` for Hue RGBWW devices having colorpicker: 2
   * - batteryThreshold
     - | If the battery level is below ``batteryThreshold`` then a battery icon will be displayed. See :ref:`batterylevel`
       | Default value is defined by config['batteryThreshold] (=30)
@@ -529,6 +532,10 @@ The following Domoticz RGB devices are supported:
    RGBWWZ device in Mixed modus.
 
    In this last example you see from left to right the RGB color picker, the RGB color level, the white color temperature, the white level and the master level.
+
+For Hue RGBWW device add the following block parameter for correct functioning::
+
+   mode: 1
 
 
 .. _batterylevel:
