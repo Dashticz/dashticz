@@ -1,4 +1,4 @@
-/* global blocks settings usrEnc pwdEnc DT_function*/
+/* global blocks settings usrEnc pwdEnc DT_function getCustomFunction*/
 /*from domoticz-api.js*/
 /*global Domoticz*/
 /*from main.js*/
@@ -26,11 +26,11 @@ var Dashticz = (function () {
     'coronavirus',
     'camera',
     'nzbget',
+    'garbage',  //place before calendar, to detect company: ical with icalurl as garbage block
     'calendar',
     'dial',
     'html',
     'timegraph',
-    'garbage',
     'haymanclock',
     'flipclock',
     'basicclock',

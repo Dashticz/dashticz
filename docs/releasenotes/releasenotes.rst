@@ -14,11 +14,19 @@ Fixes
 * Fix for Spotify block (removed the additional dummy block)
 * Spotify: Improved playlist popup layout
 * Improved error handling in PHP modules for calendar and garbage
+* Dials: Resize disabled (to prevent size changes after first rendering)
+* Garbage: block with company: 'ical' will now be detected correctly as Garbage block instead of Calendar
+* Garbage: recycleapp.be
+* Colorpicker: Add support for Hue RGBWW device by adding mode:1 block parameter
 
 Enhancements
 ~~~~~~~~~~~~
 
 * Dial: block parameter ``iconSwitch`` to set the fontawesome icon to use for an on/off switch
+* Dials: Support added for text devices and for dials without device. 
+* Dials: Text devices will be recognized correctly in default dial as well, meaning you can combine several text devices into one dial.
+* Dials: Set number of decimals with ``decimals`` parameter
+* Garbage will be sorted in the same order as ``garbage`` block parameter (or ``config['garbage']``)
 
 v3.7.3 beta (24-1-2021)
 -----------------------

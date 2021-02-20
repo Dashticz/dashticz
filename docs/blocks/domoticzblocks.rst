@@ -34,6 +34,27 @@ You can also use custom names for the block identfier. In that case you have to 
       idx: 123
    }
 
+
+Grouped devices
+---------------
+To use grouped devices in a column you must make it known in your CONFIG.js as follows::
+
+   blocks['lights'] = {
+      blocks: [
+      'light_livingroom',
+      'light_kitchen',
+      'light_bathroom'
+      ]
+   }
+   
+Now you can add all 3 light blocks to a column with the following code::
+
+   columns[1] = {}
+      columns[1]['blocks'] = [
+      'lights'
+   ]
+
+
 Scenes and Groups
 -----------------
 
@@ -191,6 +212,9 @@ Block parameters
       | ``0``: No RGB colorpicker
       | ``1``: Old style RGB colorpicker
       | ``2``: New style RGB colorpicker
+  * - mode
+    - | Parameter for specific functionality
+      | ``1``: Set ``mode: 1`` for Hue RGBWW devices having colorpicker: 2
   * - batteryThreshold
     - | If the battery level is below ``batteryThreshold`` then a battery icon will be displayed. See :ref:`batterylevel`
       | Default value is defined by config['batteryThreshold] (=30)
@@ -364,6 +388,23 @@ In this example, the specified popup will use a defined graph called 'popup_cons
    }
 
 
+Usage of popup multi block window
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With the popup parameter you can also configure to open a popup multi block window. Example::
+
+   blocks['your_block'] = {
+      popup: 'container',
+      ...
+   }
+
+::
+
+   blocks['container'] = {
+      blocks: [ 'one1', 'two2']   // where 'one1' and 'two2' are other blocks
+   }
+
+
 .. _openpopup :
 
 Usage of openpopup(On)(Off)
@@ -512,6 +553,10 @@ The following Domoticz RGB devices are supported:
    RGBWWZ device in Mixed modus.
 
    In this last example you see from left to right the RGB color picker, the RGB color level, the white color temperature, the white level and the master level.
+
+For Hue RGBWW device add the following block parameter for correct functioning::
+
+   mode: 1
 
 
 .. _batterylevel:

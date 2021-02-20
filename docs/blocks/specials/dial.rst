@@ -18,17 +18,18 @@ To represent these devices with a dial add ``type:'dial'`` to the block definiti
 
 For the following device types a specific dial representation has been defined:
 
-  * Type = 'Heating'
-  * Type = 'P1 Smart Meter'
-  * Type = 'Temp + Humidity + Baro'
-  * Type = 'Temp + Humidity'
-  * Type = 'Thermostat'
-  * Type = 'Wind'
-  * SubType = 'Evohome'
-  * SubType = 'SetPoint'
-  * SwitchType = 'Dimmer
-  * SwitchType = 'On/Off'
-  * SwitchType = 'Selector'
+* Type = 'Heating'
+* Type = 'P1 Smart Meter'
+* Type = 'Temp + Humidity + Baro'
+* Type = 'Temp + Humidity'
+* Type = 'Thermostat'
+* Type = 'Wind'
+* SubType = 'Evohome'
+* SubType = 'SetPoint'
+* SubType = 'Text'
+* SwitchType = 'Dimmer
+* SwitchType = 'On/Off'
+* SwitchType = 'Selector'
 
 For other device types a generic dial will be used.
 
@@ -63,9 +64,9 @@ Block parameters
   * - dialicon
     - ``'fas fa-icon-alt'``: Show a different font awesome icon (default: 'fas fa-calendar-alt')
   * - iconSwitch
-	- | The icon to use for an on/off dial switch.
-	  | ``'fas fa-power-off'``: Dedault icon
-	  | ``'fas fa-volume-up'``: Show a volume icon
+    - | The icon to use for an on/off dial switch.
+      | ``'fas fa-power-off'``: Dedault icon
+      | ``'fas fa-volume-up'``: Show a volume icon
   * - showring
     - ``true``:  Always show the outer color ring (default: false)
   * - min
@@ -77,7 +78,15 @@ Block parameters
   * - values
     - Used to configure the values to be shown in the dial (generic dial only. See :ref:`genericdial`)
   * - animation
-	- ``false | true``: Set to false to disable dial animations on change (default: true)
+    - ``false | true``: Set to false to disable dial animations on change (default: true)
+  * - switchMode
+    - | The switch mode for on/off dial switches and for dials without device.
+      | ``'Toggle'``: Toggle the dial on click (=default for most dials. See next lines for exceptions)
+      | ``'On'``: Switch On (=default for scenes and Push On switches)
+      | ``'Off'``: Switch Off (=default for Push Off switches)
+  * - decimals
+    - | The number of decimals to show for numbers. Default is 1. For humidity, barometer it's 0. 
+      | ``1``: Numbers will be shown with one decimal
 
 
 Usage
@@ -296,7 +305,8 @@ It's possible to combine data from several devices::
 		values : [
 			{
 				value: 'Temp',
-				idx: 27
+				idx: 27,
+				decimals: 0
 			},
 			{
 				value: 'Barometer',
@@ -317,6 +327,27 @@ It's possible to combine data from several devices::
 In this example the temperature value of device 27 is displayed, together with the Barometer value of device 659 and the temperature setpoint of device 25.
 For device 25 the isSetpoint parameter is set, meaning that the dial ring will set the setpoint for this device.
 
+The Temp device will be displayed with 0 decimals, as defined in the Temp value block. 
+
+To combine two text devices into one dial use the following::
+
+	blocks['combinedtext'] = {
+		type: 'dial',
+		values : [
+			{
+				idx: 15,
+			},
+			{
+				idx: 16,
+			},
+		]
+	}
+
+With 15 and 16 two Domoticz Text devices.
+
+By default, the 'Data' field of a device will be used as value. You can overrule this by setting the value parameter in the values object as shown before.
+
+For text devices, the value will be interpreted as text instead of a number. For other devices you can add ``type: 'text'`` to the value object to enforce that the value will be handled as text as well.
 
 Custom styling
 --------------

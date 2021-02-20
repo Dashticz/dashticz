@@ -18,8 +18,6 @@
 /*global google*/
 /*from config.js (or main.js)*/
 /*global blocks*/
-/*from components/graph.js*/
-/*global showPopupGraph*/
 /* Exports: */
 
 var alldevices = 'initial value';
@@ -210,7 +208,7 @@ function deviceUpdateHandler(block) {
   }
 
   if ($div.hasClass('hover')) {
-    $div.on('touchstart', function () {
+    $div.off('touchstart').on('touchstart', function () {
       var $this = $(this);
       $this.addClass('hovered');
       setTimeout(function () {
@@ -509,7 +507,7 @@ function getBlockClick(block, selector) {
       device['SubType'] === 'Soil Moisture' ||
       graph
     ) {
-      $div.addClass('hover').click(function () {
+      $div.addClass('hover').off('click').click(function () {
         DT_function.clickHandler({ block: block });
       });
     }
@@ -756,9 +754,11 @@ function triggerStatus(block) {
   onOffstates[idx] = value;
 }
 
+/*
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
 }
+*/
 
 function onOffHandling(block, status) {
   var _status = capitalizeFirstLetter(status);
