@@ -84,6 +84,9 @@ Block parameters
       | ``'Toggle'``: Toggle the dial on click (=default for most dials. See next lines for exceptions)
       | ``'On'``: Switch On (=default for scenes and Push On switches)
       | ``'Off'``: Switch Off (=default for Push Off switches)
+  * - decimals
+    - | The number of decimals to show for numbers. Default is 1. For humidity, barometer it's 0. 
+      | ``1``: Numbers will be shown with one decimal
 
 
 Usage
@@ -302,7 +305,8 @@ It's possible to combine data from several devices::
 		values : [
 			{
 				value: 'Temp',
-				idx: 27
+				idx: 27,
+				decimals: 0
 			},
 			{
 				value: 'Barometer',
@@ -323,6 +327,27 @@ It's possible to combine data from several devices::
 In this example the temperature value of device 27 is displayed, together with the Barometer value of device 659 and the temperature setpoint of device 25.
 For device 25 the isSetpoint parameter is set, meaning that the dial ring will set the setpoint for this device.
 
+The Temp device will be displayed with 0 decimals, as defined in the Temp value block. 
+
+To combine two text devices into one dial use the following::
+
+	blocks['combinedtext'] = {
+		type: 'dial',
+		values : [
+			{
+				idx: 15,
+			},
+			{
+				idx: 16,
+			},
+		]
+	}
+
+With 15 and 16 two Domoticz Text devices.
+
+By default, the 'Data' field of a device will be used as value. You can overrule this by setting the value parameter in the values object as shown before.
+
+For text devices, the value will be interpreted as text instead of a number. For other devices you can add ``type: 'text'`` to the value object to enforce that the value will be handled as text as well.
 
 Custom styling
 --------------

@@ -18,8 +18,6 @@
 /*global google*/
 /*from config.js (or main.js)*/
 /*global blocks*/
-/*from components/graph.js*/
-/*global showPopupGraph*/
 /* Exports: */
 
 var alldevices = 'initial value';
