@@ -1,6 +1,6 @@
 /* eslint-disable no-debugger */
 /*global getBlockTypesBlock, language, _TEMP_SYMBOL, settings*/
-/*global Dashticz, DT_function, Domoticz */
+/*global Dashticz, DT_function, Domoticz, Debug */
 /*global moment, number_format */
 /*from bundle.js*/
 /*global ion*/
@@ -299,7 +299,6 @@ function isDomoticzDevice(key) {
     debugger;
     return false;
   }
-  console.log(key);
   if (key[0] === 's' || key[0] === 'v') {
     //scene, group or variable
     idx = parseInt(key.slice(1));

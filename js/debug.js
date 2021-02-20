@@ -1,8 +1,7 @@
 //# sourceURL=js/components/debug.js
-/* global */
+/* global TemplateEngine*/
 
 var Debug = (function () {
-  console.log('initializing');
   var templateEngine = TemplateEngine();
   var messages = [];
   var visible = false;
@@ -24,7 +23,6 @@ var Debug = (function () {
   };
 
   function init() {
-    console.log('init debug');
     templateEngine.load('debug').then(function (template) {
       var data = {};
       $('body').append(template(data));
@@ -35,12 +33,10 @@ var Debug = (function () {
       $elbody = $el.find('#debug-items');
       log('init');
       $el.on('show.bs.modal', function () {
-        console.log('update');
         visible = true;
         createDebug();
       })
       $el.on('hide.bs.modal', function () {
-        console.log('hiding');
         visible=false;
       })
 
@@ -107,9 +103,5 @@ var Debug = (function () {
         type: type
     }
     add(item);    
-  }
-
-  function dtLog() {
-    log('Called');
   }
 })();
