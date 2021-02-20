@@ -1,4 +1,4 @@
-/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer*/
+/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer DT_function*/
 /* global switchEvoHotWater changeEvohomeControllerStatus slideDevice switchEvoZone switchThermostat switchDevice isObject*/
 var DT_dial = {
   name: 'dial',
@@ -201,7 +201,7 @@ var DT_dial = {
         showunit: me.showunit,
         type: me.device && me.device.Type,
         value: me.value,
-        valueformat: me.type === 'text'? me.value:number_format(me.value, 1),
+        valueformat: me.type === 'text'? me.value: isDefined(me.decimals) ? number_format(me.value, me.decimals) : me.value,
         hasSetpoint: me.isSetpoint || me.subdevice,
         setpoint: me.setpoint,
         until: me.until,
@@ -475,9 +475,9 @@ var DT_dial = {
         }
       }
 
-      var valueformat =
-        me.value % 1 === 0 ? me.value : number_format(me.value, 1);
-
+//      var valueformat =
+//        me.value % 1 === 0 ? me.value : number_format(me.value, isDefined(me.decimals) ? me.decimals : 1);
+      var valueformat = number_format(me.value, isDefined(me.decimals) ? me.decimals : 1);
       $d.find('.value').text(valueformat).data('value', me.value);
       $d.find('.info').text($d.data('info'));
       $(me.control).css({
@@ -721,12 +721,14 @@ var DT_dial = {
     me.isSetpoint = true;
     me.setpoint = isDefined(me.block.setpoint) ? me.block.setpoint : 20;
     me.unitvalue = _TEMP_SYMBOL;
+    me.decimals = me.block.decimals;
 
     if (typeof me.device.Humidity !== 'undefined') {
       me.info.push({
         icon: DT_dial.display(me.block.dialicon, 0, 2, 'fas fa-tint'),
         image: DT_dial.display(me.block.dialimage, 0, 2, false),
-        data: number_format(me.device['Humidity'], 0),
+        data: number_format(me.device['Humidity'], choose(me.block.decimals, 0)),
+        decimals: 0,
         unit: '%',
       });
     }
@@ -735,7 +737,8 @@ var DT_dial = {
       me.info.push({
         icon: DT_dial.display(me.block.dialicon, 1, 2, 'fas fa-cloud'),
         image: DT_dial.display(me.block.dialimage, 1, 2, false),
-        data: number_format(me.device['Barometer'], 0),
+        data: number_format(me.device['Barometer'], choose(me.block.decimals, 0)),
+        decimals: 0,
         unit: 'hPa',
       });
     }
@@ -754,6 +757,12 @@ var DT_dial = {
           value: data.value,
           unit: data.unit,
         };
+      }
+      if( data.type && data.type==='text') {
+        return {
+          value: data.value,
+          unit: ''
+        }
       }
       res = data.value.split(' ');
       if (res.length) {
@@ -777,38 +786,35 @@ var DT_dial = {
       }
     }
 
-    function getValueInfo(device, id) {
+    function getValueInfo(device, id, preset) {
       var res = {};
       var inputData = {};
       if (typeof id === 'string') {
+        
         inputData = {
           value: device[id],
+          decimals: choose(preset.decimals, DT_dial.getDefaultFormatting(id).decimals),
+          unit: choose(preset.unit, DT_dial.getDefaultFormatting(id).unit)
         };
       } else {
-        inputData.value = device[id.value];
-        inputData.unit = id.unit;
-        inputData.decimals = id.decimals;
+        inputData.value = device[id.value || 'Data']; //if value not defined use 'Data'
+        inputData.unit = choose(id.unit, choose(preset.unit, DT_dial.getDefaultFormatting(id.value).unit));
+        inputData.decimals = choose(id.decimals, choose(preset.decimals, DT_dial.getDefaultFormatting(id.value).decimals));
         inputData.scale = id.scale;
         res.icon = id.icon;
         res.image = id.image;
       }
-      if (typeof inputData.value === 'undefined') {
-        console.log(
-          'Value not found for field ' +
-            id.value +
-            ' in device ' +
-            device.idx +
-            ':' +
-            device.Name
-        );
-        return {
-          data: 0,
-          unit: '',
-        };
+      var inputType = 0;
+      if(device.SubType === 'Text') {
+        inputType = 'text';
       }
+      inputData.type = id.type || inputType;
       var valueunit = getValueUnit(inputData);
       res.data = valueunit.value;
+      res.dataFormat = number_format(res.data, inputData.decimals);
       res.unit = valueunit.unit;
+      res.decimals = inputData.decimals;
+      res.type = inputData.type;
       return res;
     }
 
@@ -818,6 +824,7 @@ var DT_dial = {
     me.max = isDefined(me.block.max) ? me.block.max : 100;
 
     me.value = parseFloat(me.device.Data);
+    me.decimals = me.block.decimals;
     var splitAllData = me.device.Data.split(',');
     var splitData = splitAllData[0].split(' ');
     me.unitvalue =
@@ -838,7 +845,7 @@ var DT_dial = {
             idx = el.idx;
           }
           var device = Domoticz.getAllDevices()[idx];
-          var valueInfo = getValueInfo(device, el);
+          var valueInfo = getValueInfo(device, el, {decimals: me.block.decimals, unit: me.block.unit, type:me.block.valuetype});
           if (el.isSetpoint) {
             me.isSetpoint = true;
             me.active = true; //Dial can be used to set setpoint value
@@ -850,10 +857,22 @@ var DT_dial = {
         var res = me.info.shift();
         if (typeof res.unit !== 'undefined') me.unitvalue = res.unit;
         me.value = res.data;
+        me.decimals = res.decimals;
+        if (res.type)
+          me.type=res.type;
       } else {
         console.error('values should be an array for ', me.block);
       }
     }
+    if(me.type==='text') {
+      me.fixed=true;
+      me.graph = false;
+    }
+
+    me.lastupdate = !me.block.last_update
+    ? false
+    : moment(me.device.LastUpdate).format(DT_dial.timeformat);
+
     me.showunit = isDefined(me.block.showunit)
       ? me.block.showunit
       : !!me.unitvalue;
@@ -1098,6 +1117,32 @@ var DT_dial = {
     }
     return numbers;
   },
+
+  defaultFormatting : {
+    Humidity:  {
+      decimals: 0,
+      unit: '%'
+    },
+    Barometer: {
+      decimals: 0,
+      unit: 'hPa'
+    },
+    Status: {
+      type: 'text'
+    },
+    Level: {
+      decimals: 0,
+      unit: ''
+    }
+  },
+
+  getDefaultFormatting: function(field) {
+    return DT_dial.defaultFormatting[field] || {decimals:1, unit:''};
+  }
 };
 Dashticz.register(DT_dial);
+
+function choose(a,b) {
+  return typeof a === 'undefined' ? b:a;
+}
 //# sourceURL=js/components/dial.js

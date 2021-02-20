@@ -1,4 +1,4 @@
-/* global blocks settings usrEnc pwdEnc DT_function*/
+/* global blocks settings usrEnc pwdEnc DT_function getCustomFunction*/
 /*from domoticz-api.js*/
 /*global Domoticz*/
 /*from main.js*/

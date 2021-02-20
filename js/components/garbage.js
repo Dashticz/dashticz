@@ -115,6 +115,8 @@ var DT_garbage = (function () {
   }
 
   function getIcalData(me, url) {
+    //todo: add recurrence handling
+    // https://github.com/mifi/ical-expander
     return $.get(getPrefixUrl(me) + url).then(function (data) {
       var jcalData = ICAL.parse(data);
       var vcalendar = new ICAL.Component(jcalData);
