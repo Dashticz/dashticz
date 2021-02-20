@@ -1,8 +1,9 @@
 {
-"version": "3.7.3",
+"version": "3.7.4",
 "branch": "beta",
-"last_changes": "Read upgrade instructions!",
+"last_changes": "Dial improvements",
 "changelog" : {
+            "3.7.3": "Redesign of block mechanism",
             "3.7.2": "custom.css and custom.js removed from Dashticz repo",
             "3.7.1": "Clock related changes.",
             "3.7": "Master version"
