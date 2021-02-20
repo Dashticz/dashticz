@@ -296,7 +296,7 @@ function isDomoticzDevice(key) {
     return idx;
   }
   if(typeof key === 'undefined') {
-    debugger;
+//    debugger;
     return false;
   }
   if (key[0] === 's' || key[0] === 'v') {
