@@ -1,4 +1,4 @@
-/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer DT_function*/
+/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer DT_function Debug*/
 /* global switchEvoHotWater changeEvohomeControllerStatus slideDevice switchEvoZone switchThermostat switchDevice isObject*/
 var DT_dial = {
   name: 'dial',
@@ -23,14 +23,12 @@ var DT_dial = {
     this.R2D = 180 / Math.PI;
     this.timeformat = choose(settings['timeformat'], 'HH:mm, DD/MM/YY');
     this.settings = false;
+    this.evHandler = function () {
+      DT_dial.isTouch = true;
+      document.removeEventListener('touchstart', this.evHandler);
+    };
 
-    document.addEventListener(
-      'touchstart',
-      function () {
-        DT_dial.isTouch = true;
-      },
-      { passive: false }
-    );
+    document.addEventListener('touchstart', this.evHandler, { passive: false });
   },
   defaultCfg: {
     title: false,
@@ -188,6 +186,11 @@ var DT_dial = {
     }
 
     templateEngine.load('dial').then(function (template) {
+      me.info.forEach(function (i) {
+        if (i.type === 'text') return;
+        if (!isDefined(i.decimals)) return;
+        i.data = choose(i.dataFormat, number_format(i.dataObject, i.decimals));
+      });
       var dataObject = {
         id: me.id,
         size: me.size,
@@ -783,6 +786,7 @@ var DT_dial = {
     function getValueInfo(device, id, preset) {
       var res = {};
       var inputData = {};
+
       if (typeof id === 'string') {
         inputData = {
           value: device[id],
@@ -792,6 +796,7 @@ var DT_dial = {
           ),
           unit: choose(preset.unit, DT_dial.getDefaultFormatting(id).unit),
         };
+        if (!preset.showunit) inputData.unit = '';
       } else {
         inputData.value = device[id.value || 'Data']; //if value not defined use 'Data'
         inputData.unit = choose(
@@ -808,6 +813,7 @@ var DT_dial = {
         inputData.scale = id.scale;
         res.icon = id.icon;
         res.image = id.image;
+        if (!choose(id.showunit, preset.showunit)) inputData.unit = '';
       }
       var inputType = 0;
       if (device.SubType === 'Text') {
@@ -850,9 +856,21 @@ var DT_dial = {
             idx = el.idx;
           }
           var device = Domoticz.getAllDevices()[idx];
+          if (!device) {
+            console.error('Device not existing: ', idx);
+            Debug.log(
+              Debug.ERROR,
+              'Block ' + me.key + ': Non exisiting device ' + idx
+            );
+            return {
+              data: 'unknown ' + idx,
+              type: 'text',
+            };
+          }
           var valueInfo = getValueInfo(device, el, {
             decimals: me.block.decimals,
             unit: me.block.unit,
+            showunit: choose(me.block.showunit, true),
             type: me.block.valuetype,
           });
           if (el.isSetpoint) {
@@ -1143,7 +1161,7 @@ var DT_dial = {
   },
 
   getDefaultFormatting: function (field) {
-    return DT_dial.defaultFormatting[field] || { decimals: 1, unit: '' };
+    return DT_dial.defaultFormatting[field] || { decimals: 1 };
   },
 };
 Dashticz.register(DT_dial);

@@ -12,6 +12,8 @@ Fixes
 ~~~~~~
 
 * Dials: Fix dimmer decimals
+* Dials: Improved formatting
+* Dials: Improved error handling
 
 v3.7.4 Beta (20-2-2021)
 -----------------------
