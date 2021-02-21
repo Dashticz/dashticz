@@ -21,9 +21,7 @@ var DT_dial = {
     this.active = false;
     this.center = { x: 0, y: 0 };
     this.R2D = 180 / Math.PI;
-    this.timeformat = isDefined(settings['timeformat'])
-      ? settings['timeformat']
-      : 'HH:mm, DD/MM/YY';
+    this.timeformat = choose(settings['timeformat'], 'HH:mm, DD/MM/YY');
     this.settings = false;
 
     document.addEventListener(
@@ -53,12 +51,11 @@ var DT_dial = {
    * @param {object} me  Core component object.
    */
   run: function (me) {
-    me.idx = isDefined(me.block.idx) ? me.block.idx : me.key;
+    me.idx = choose(me.block.idx, me.key);
     me.id = 'dial_' + me.idx;
     var height = isDefined(me.block.height)
       ? parseInt(me.block.height)
-      : //      : parseInt($(me.mountPoint + ' div').css('width'));
-        parseInt($(me.mountPoint + ' div').outerWidth());
+      : parseInt($(me.mountPoint + ' div').outerWidth());
     if (height < 0) {
       console.log('dial width unknown.');
       me.height = me.height || 100;
@@ -118,7 +115,7 @@ var DT_dial = {
           } else {
             me.block.idx = me.idx; /* required for existing functions */
             me.block.device = me.device;
-            me.isSetpoint = isDefined(me.device.SetPoint);
+            me.isSetpoint = !!me.device.SetPoint;
           }
         }
         DT_dial.make(me);
@@ -142,10 +139,9 @@ var DT_dial = {
     DT_dial.resize(me);
     var d = me.device;
 
-    if(!d) {
+    if (!d) {
       DT_dial.onoff(me);
-    }
-    else {
+    } else {
       switch (true) {
         case typeof me.block.values !== 'undefined':
           DT_dial.defaultDial(me);
@@ -201,7 +197,12 @@ var DT_dial = {
         showunit: me.showunit,
         type: me.device && me.device.Type,
         value: me.value,
-        valueformat: me.type === 'text'? me.value: isDefined(me.decimals) ? number_format(me.value, me.decimals) : me.value,
+        valueformat:
+          me.type === 'text'
+            ? me.value
+            : isDefined(me.decimals)
+            ? number_format(me.value, me.decimals)
+            : me.value,
         hasSetpoint: me.isSetpoint || me.subdevice,
         setpoint: me.setpoint,
         until: me.until,
@@ -263,12 +264,12 @@ var DT_dial = {
       }
 
       if (me.onoff) {
-        if(me.switchMode!=='Toggle')
+        if (me.switchMode !== 'Toggle')
           $(me.mountPoint + ' input').on('click', function () {
             //          var c = $(this).prop('checked');
             //          $(this).prop('checked', !c);
             var el = $(this);
-            var newState = me.switchMode==='On'
+            var newState = me.switchMode === 'On';
             setTimeout(function () {
               el.prop('checked', newState);
             }, 500);
@@ -338,16 +339,15 @@ var DT_dial = {
         return;
       }
       if (me.type === 'onoff') {
-        if(me.switchMode === 'Toggle')
+        if (me.switchMode === 'Toggle')
           me.cmd = me.state === 'Off' ? 'On' : 'Off';
-        else
-          me.cmd = me.switchMode;
+        else me.cmd = me.switchMode;
         me.demand = me.cmd === 'On';
         DT_dial.update(me);
         return;
       }
       // (me.type === 'default' or 'temp' or 'p1' or ...)
-      if (me.block.graph!== false) DT_function.clickHandler({ block: block });
+      if (me.block.graph !== false) DT_function.clickHandler({ block: block });
     });
   },
 
@@ -475,9 +475,9 @@ var DT_dial = {
         }
       }
 
-//      var valueformat =
-//        me.value % 1 === 0 ? me.value : number_format(me.value, isDefined(me.decimals) ? me.decimals : 1);
-      var valueformat = number_format(me.value, isDefined(me.decimals) ? me.decimals : 1);
+      //      var valueformat =
+      //        me.value % 1 === 0 ? me.value : number_format(me.value, isDefined(me.decimals) ? me.decimals : 1);
+      var valueformat = number_format(me.value, choose(me.decimals, 1));
       $d.find('.value').text(valueformat).data('value', me.value);
       $d.find('.info').text($d.data('info'));
       $(me.control).css({
@@ -551,7 +551,7 @@ var DT_dial = {
         slideDevice(me, Math.ceil((me.maxdim / me.max) * me.value));
         break;
       case 'onoff':
-        if(me.block.idx) switchDevice(me, me.cmd);
+        if (me.block.idx) switchDevice(me, me.cmd);
         break;
       case 'default':
         if (me.isSetpoint) {
@@ -631,16 +631,8 @@ var DT_dial = {
   heating: function (me) {
     me.type = me.device.Type === 'Heating' ? 'zone' : 'stat';
     me.unitvalue = _TEMP_SYMBOL;
-    me.min = isDefined(me.block.min)
-      ? me.block.min
-      : isDefined(settings['setpoint_min'])
-      ? settings['setpoint_min']
-      : 5;
-    me.max = isDefined(me.block.max)
-      ? me.block.max
-      : isDefined(settings['setpoint_max'])
-      ? settings['setpoint_max']
-      : 35;
+    me.min = choose(me.block.min, choose(settings['setpoint_min'], 5));
+    me.max = choose(me.block.max, choose(settings['setpoint_max'], 35));
 
     me.dialicon = DT_dial.display(
       me.block.dialicon,
@@ -654,11 +646,9 @@ var DT_dial = {
     if (me.type === 'zone') {
       me.value = me.device.Temp;
       me.setpoint = me.isSetpoint ? me.device.SetPoint : 20;
-      me.boost = isDefined(settings['evohome_boost_zone'])
-        ? settings['evohome_boost_zone']
-        : 60;
-      me.until = isDefined(me.device.Until) ? me.device.Until : false;
-      me.status = isDefined(me.device.Status) ? me.device.Status : 'Auto';
+      me.boost = choose(settings['evohome_boost_zone'], 60);
+      me.until = choose(me.device.Until, false);
+      me.status = choose(me.device.Status, 'Auto');
       me.override = me.status === 'TemporaryOverride';
       me.demand = me.status !== 'HeatingOff' && me.value < me.setpoint;
       me.lastupdate =
@@ -671,13 +661,11 @@ var DT_dial = {
         me.active = false;
         me.type = 'dhw';
         me.state = me.device.State;
-        me.min = isDefined(me.block.min) ? me.block.min : 20;
-        me.max = isDefined(me.block.max) ? me.block.max : 60;
+        me.min = choose(me.block.min, 20);
+        me.max = choose(me.block.max, 60);
         me.setpoint = 40;
         me.demand = me.device.State === 'On';
-        me.boost = isDefined(settings['evohome_boost_hw'])
-          ? settings['evohome_boost_hw']
-          : 30;
+        me.boost = choose(settings['evohome_boost_hw'], 30);
       }
       me.info.push({
         icon: me.override ? 'fas fa-stopwatch small_fa' : me.dialicon,
@@ -712,14 +700,14 @@ var DT_dial = {
   temperature: function (me) {
     me.type = 'temp';
     me.active = false;
-    me.min = isDefined(me.block.min) ? me.block.min : 5;
-    me.max = isDefined(me.block.max) ? me.block.max : 35;
+    me.min = choose(me.block.min, 5);
+    me.max = choose(me.block.max, 35);
     me.value =
       typeof me.device['Temp'] !== 'undefined'
         ? me.device['Temp']
         : me.device['Data'];
     me.isSetpoint = true;
-    me.setpoint = isDefined(me.block.setpoint) ? me.block.setpoint : 20;
+    me.setpoint = choose(me.block.setpoint, 20);
     me.unitvalue = _TEMP_SYMBOL;
     me.decimals = me.block.decimals;
 
@@ -727,7 +715,10 @@ var DT_dial = {
       me.info.push({
         icon: DT_dial.display(me.block.dialicon, 0, 2, 'fas fa-tint'),
         image: DT_dial.display(me.block.dialimage, 0, 2, false),
-        data: number_format(me.device['Humidity'], choose(me.block.decimals, 0)),
+        data: number_format(
+          me.device['Humidity'],
+          choose(me.block.decimals, 0)
+        ),
         decimals: 0,
         unit: '%',
       });
@@ -737,7 +728,10 @@ var DT_dial = {
       me.info.push({
         icon: DT_dial.display(me.block.dialicon, 1, 2, 'fas fa-cloud'),
         image: DT_dial.display(me.block.dialimage, 1, 2, false),
-        data: number_format(me.device['Barometer'], choose(me.block.decimals, 0)),
+        data: number_format(
+          me.device['Barometer'],
+          choose(me.block.decimals, 0)
+        ),
         decimals: 0,
         unit: 'hPa',
       });
@@ -758,11 +752,11 @@ var DT_dial = {
           unit: data.unit,
         };
       }
-      if( data.type && data.type==='text') {
+      if (data.type && data.type === 'text') {
         return {
           value: data.value,
-          unit: ''
-        }
+          unit: '',
+        };
       }
       res = data.value.split(' ');
       if (res.length) {
@@ -790,22 +784,33 @@ var DT_dial = {
       var res = {};
       var inputData = {};
       if (typeof id === 'string') {
-        
         inputData = {
           value: device[id],
-          decimals: choose(preset.decimals, DT_dial.getDefaultFormatting(id).decimals),
-          unit: choose(preset.unit, DT_dial.getDefaultFormatting(id).unit)
+          decimals: choose(
+            preset.decimals,
+            DT_dial.getDefaultFormatting(id).decimals
+          ),
+          unit: choose(preset.unit, DT_dial.getDefaultFormatting(id).unit),
         };
       } else {
         inputData.value = device[id.value || 'Data']; //if value not defined use 'Data'
-        inputData.unit = choose(id.unit, choose(preset.unit, DT_dial.getDefaultFormatting(id.value).unit));
-        inputData.decimals = choose(id.decimals, choose(preset.decimals, DT_dial.getDefaultFormatting(id.value).decimals));
+        inputData.unit = choose(
+          id.unit,
+          choose(preset.unit, DT_dial.getDefaultFormatting(id.value).unit)
+        );
+        inputData.decimals = choose(
+          id.decimals,
+          choose(
+            preset.decimals,
+            DT_dial.getDefaultFormatting(id.value).decimals
+          )
+        );
         inputData.scale = id.scale;
         res.icon = id.icon;
         res.image = id.image;
       }
       var inputType = 0;
-      if(device.SubType === 'Text') {
+      if (device.SubType === 'Text') {
         inputType = 'text';
       }
       inputData.type = id.type || inputType;
@@ -820,8 +825,8 @@ var DT_dial = {
 
     me.type = 'default';
     me.active = false;
-    me.min = isDefined(me.block.min) ? me.block.min : 0;
-    me.max = isDefined(me.block.max) ? me.block.max : 100;
+    me.min = choose(me.block.min, 0);
+    me.max = choose(me.block.max, 100);
 
     me.value = parseFloat(me.device.Data);
     me.decimals = me.block.decimals;
@@ -845,7 +850,11 @@ var DT_dial = {
             idx = el.idx;
           }
           var device = Domoticz.getAllDevices()[idx];
-          var valueInfo = getValueInfo(device, el, {decimals: me.block.decimals, unit: me.block.unit, type:me.block.valuetype});
+          var valueInfo = getValueInfo(device, el, {
+            decimals: me.block.decimals,
+            unit: me.block.unit,
+            type: me.block.valuetype,
+          });
           if (el.isSetpoint) {
             me.isSetpoint = true;
             me.active = true; //Dial can be used to set setpoint value
@@ -858,24 +867,21 @@ var DT_dial = {
         if (typeof res.unit !== 'undefined') me.unitvalue = res.unit;
         me.value = res.data;
         me.decimals = res.decimals;
-        if (res.type)
-          me.type=res.type;
+        if (res.type) me.type = res.type;
       } else {
         console.error('values should be an array for ', me.block);
       }
     }
-    if(me.type==='text') {
-      me.fixed=true;
+    if (me.type === 'text') {
+      me.fixed = true;
       me.graph = false;
     }
 
     me.lastupdate = !me.block.last_update
-    ? false
-    : moment(me.device.LastUpdate).format(DT_dial.timeformat);
+      ? false
+      : moment(me.device.LastUpdate).format(DT_dial.timeformat);
 
-    me.showunit = isDefined(me.block.showunit)
-      ? me.block.showunit
-      : !!me.unitvalue;
+    me.showunit = choose(me.block.showunit, !!me.unitvalue);
   },
 
   wind: function (me) {
@@ -890,7 +896,7 @@ var DT_dial = {
     me.segments = 12;
     me.numbers = [210, 240, 270, 300, 330, 0, 30, 60, 90, 120, 150, 180];
     me.subdevice = true;
-    me.setpoint = isDefined(me.block.setpoint) ? me.block.setpoint : 15;
+    me.setpoint = choose(me.block.setpoint, 15);
     me.isSetpoint = true;
     me.temp = me.device.Temp;
 
@@ -1002,8 +1008,9 @@ var DT_dial = {
    */
   dimmer: function (me) {
     me.type = 'dim';
-    me.min = isDefined(me.block.min) ? me.block.min : 0;
-    me.max = isDefined(me.block.max) ? me.block.max : 100;
+    me.min = choose(me.block.min, 0);
+    me.max = choose(me.block.max, 100);
+    me.decimals = choose(me.block.decimals, 0);
     me.value =
       me.device.Data === 'Off'
         ? 0
@@ -1029,15 +1036,12 @@ var DT_dial = {
     me.fixed = true;
     me.onoff = true;
     var switchMode = capitalizeFirstLetter(me.block.switchMode);
-    if(me.device) {
-      if (me.device.Type === 'Scene' )
-        me.switchMode = 'On';
-      if (me.device.subType === 'Push On Button')
-        me.switchMode = 'On';
-      if (me.device.subType === 'Push Off Button')
-        me.switchMode = 'Off';
+    if (me.device) {
+      if (me.device.Type === 'Scene') me.switchMode = 'On';
+      if (me.device.subType === 'Push On Button') me.switchMode = 'On';
+      if (me.device.subType === 'Push Off Button') me.switchMode = 'Off';
     }
-    switch(switchMode) {
+    switch (switchMode) {
       case 'On':
       case 'Off':
         me.switchMode = switchMode;
@@ -1045,8 +1049,10 @@ var DT_dial = {
       default:
         me.switchMode = me.switchMode || 'Toggle';
     }
-    
-    me.state = (me.device && me.device.Status ) || (me.switchMode === 'Toggle' ? 'Off': me.switchMode);
+
+    me.state =
+      (me.device && me.device.Status) ||
+      (me.switchMode === 'Toggle' ? 'Off' : me.switchMode);
     me.demand = me.state === 'On';
     me.checked = me.state === 'On' ? 'checked' : '';
     return;
@@ -1059,8 +1065,8 @@ var DT_dial = {
   p1smartmeter: function (me) {
     me.type = 'p1';
     me.active = false;
-    me.min = isDefined(me.block.min) ? me.block.min : -10;
-    me.max = isDefined(me.block.max) ? me.block.max : 10;
+    me.min = choose(me.block.min, -10);
+    me.max = choose(me.block.max, 10);
     me.value =
       Math.round(
         (parseFloat(me.device.CounterDelivToday) -
@@ -1090,16 +1096,16 @@ var DT_dial = {
     return;
   },
 
-  text: function(me) {
+  text: function (me) {
     me.type = 'text';
     me.value = me.device.Data; //number_format(me.device.Data, 1);
     me.isSetpoint = false;
     me.active = false;
-    me.fixed=true;
-    me.block.graph=false;
+    me.fixed = true;
+    me.block.graph = false;
     me.lastupdate = !me.block.last_update
-    ? false
-    : moment(me.device.LastUpdate).format(DT_dial.timeformat);
+      ? false
+      : moment(me.device.LastUpdate).format(DT_dial.timeformat);
     return;
   },
 
@@ -1118,31 +1124,31 @@ var DT_dial = {
     return numbers;
   },
 
-  defaultFormatting : {
-    Humidity:  {
+  defaultFormatting: {
+    Humidity: {
       decimals: 0,
-      unit: '%'
+      unit: '%',
     },
     Barometer: {
       decimals: 0,
-      unit: 'hPa'
+      unit: 'hPa',
     },
     Status: {
-      type: 'text'
+      type: 'text',
     },
     Level: {
       decimals: 0,
-      unit: ''
-    }
+      unit: '',
+    },
   },
 
-  getDefaultFormatting: function(field) {
-    return DT_dial.defaultFormatting[field] || {decimals:1, unit:''};
-  }
+  getDefaultFormatting: function (field) {
+    return DT_dial.defaultFormatting[field] || { decimals: 1, unit: '' };
+  },
 };
 Dashticz.register(DT_dial);
 
-function choose(a,b) {
-  return typeof a === 'undefined' ? b:a;
+function choose(a, b) {
+  return typeof a === 'undefined' ? b : a;
 }
 //# sourceURL=js/components/dial.js

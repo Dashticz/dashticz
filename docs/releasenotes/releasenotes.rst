@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 --------------
 
+Fixes
+~~~~~~
+
+* Dials: Fix dimmer decimals
+
 v3.7.4 Beta (20-2-2021)
 -----------------------
 
