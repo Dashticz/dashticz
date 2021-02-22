@@ -836,6 +836,7 @@ var DT_dial = {
 
     me.value = parseFloat(me.device.Data);
     me.decimals = me.block.decimals;
+    me.setpoint = me.block.setpoint;
     var splitAllData = me.device.Data.split(',');
     var splitData = splitAllData[0].split(' ');
     me.unitvalue =
