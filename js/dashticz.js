@@ -35,6 +35,7 @@ var Dashticz = (function () {
     'flipclock',
     'basicclock',
     'log',
+    'weather',
     'simpleblock',
   ];
   var components = [];
