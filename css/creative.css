@@ -4220,3 +4220,8 @@ td.agenda-title {
 .modal-dialog-custom .tab-content {
 
 }
+
+/*owm widget*/
+.dt_block.owmwidget {
+  background-color: unset 
+}

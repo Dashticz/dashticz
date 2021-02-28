@@ -34,6 +34,7 @@ var Dashticz = (function () {
     'haymanclock',
     'flipclock',
     'basicclock',
+    'owmwidget',
     'log',
     'simpleblock',
   ];

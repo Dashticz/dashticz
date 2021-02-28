@@ -6,7 +6,15 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 Recent changes
---------------
+---------------
+
+v3.7.5 Beta (28-2-2021)
+-----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* OWM widgets. See :ref:`owmwidgets`
 
 Fixes
 ~~~~~~
