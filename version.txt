@@ -1,8 +1,9 @@
 {
-"version": "3.7.4",
+"version": "3.7.5",
 "branch": "beta",
-"last_changes": "Dial improvements",
+"last_changes": "OWM widgets",
 "changelog" : {
+            "3.7.4": "Dial improvements",
             "3.7.3": "Redesign of block mechanism",
             "3.7.2": "custom.css and custom.js removed from Dashticz repo",
             "3.7.1": "Clock related changes.",
