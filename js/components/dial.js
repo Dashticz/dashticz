@@ -189,7 +189,7 @@ var DT_dial = {
       me.info.forEach(function (i) {
         if (i.type === 'text') return;
         if (!isDefined(i.decimals)) return;
-        i.data = choose(i.dataFormat, number_format(i.dataObject, i.decimals));
+        i.data = choose(i.dataFormat, number_format(i.data, i.decimals));
       });
       var dataObject = {
         id: me.id,
@@ -718,10 +718,7 @@ var DT_dial = {
       me.info.push({
         icon: DT_dial.display(me.block.dialicon, 0, 2, 'fas fa-tint'),
         image: DT_dial.display(me.block.dialimage, 0, 2, false),
-        data: number_format(
-          me.device['Humidity'],
-          choose(me.block.decimals, 0)
-        ),
+        data: me.device['Humidity'],
         decimals: 0,
         unit: '%',
       });
@@ -731,10 +728,7 @@ var DT_dial = {
       me.info.push({
         icon: DT_dial.display(me.block.dialicon, 1, 2, 'fas fa-cloud'),
         image: DT_dial.display(me.block.dialimage, 1, 2, false),
-        data: number_format(
-          me.device['Barometer'],
-          choose(me.block.decimals, 0)
-        ),
+        data: me.device['Barometer'],
         decimals: 0,
         unit: 'hPa',
       });
@@ -1162,7 +1156,7 @@ var DT_dial = {
   },
 
   getDefaultFormatting: function (field) {
-    return DT_dial.defaultFormatting[field] || { decimals: 1 };
+    return DT_dial.defaultFormatting[field] || { decimals: 0 };
   },
 };
 Dashticz.register(DT_dial);
