@@ -8,6 +8,20 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.7.6 Beta (12-3-2021)
+------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Several dial enhancements. See :ref:`dialvalues`
+* Device hook: Function in custom.js which is called on every device update. See :ref:`devicehook`
+
+Fixes
+~~~~~~
+
+* Blinds: Support textOn and textOff block parameters
+
 v3.7.5 Beta (28-2-2021)
 -----------------------
 

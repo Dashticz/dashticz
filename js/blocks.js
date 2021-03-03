@@ -224,6 +224,10 @@ function deviceUpdateHandler(block) {
     $div.removeClass(block.currentClass).addClass(block.addClass);
     block.currentClass = block.addClass;
   }
+  if (block.currentDeviceStatus != device.deviceStatus) {
+    $div.removeClass(block.currentDeviceStatus).addClass(device.deviceStatus);
+    block.currentDeviceStatus = device.deviceStatus;
+  }
 
   if (device.HaveTimeout) $div.addClass('timeout');
   else $div.removeClass('timeout');
