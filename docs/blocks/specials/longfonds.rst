@@ -47,9 +47,6 @@ Block parameters
   * - image
     - | If you want to show an image instead of an icon, place image in ``img/`` folder
       | ``'bulb_off.png'``
-  * - switch
-    - | ``true`` Switch title and data
-      | ``false`` (default)
   * - url
     - ``'<url>'``: URL of the page to open in a popup frame or new window on click. 
   * - newwindow
