@@ -155,6 +155,12 @@ This should give the following result:
 .. image :: guide_step_2.png
 
 
+Retrieve status of a device
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+You can get the status of a specific device with: ``http://192.168.1.3:8084/json.htm?type=devices&rid=IDX``
+
+- Replace 192.168.1.3 with the IP Address (and Port number) for your Domoticz!
+- IDX = id of your device (This number can be found in the Domoticz' devices tab in the column "IDX")
 
 
  
