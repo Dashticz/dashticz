@@ -418,7 +418,7 @@ You can use the following parameters within the values definition of the dial:
 
 The following CSS classes are used:
 
-``.items``: All value items
+``.extra``: All value items
 ``.item``: One value item.
 ``.itemlabel``: The label part of an item
 ``.dataunit``: The combination of value and unit
