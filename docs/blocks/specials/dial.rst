@@ -75,6 +75,8 @@ Block parameters
     - ``<number>``: Maximum value for the dial ring (if applicable) (default: 0)
   * - showunit
     - ``false | true``: Show unit behind value (if applicable) (default: false)
+  * - value
+    - The name of the device field to show as main value (only for default dials. Default: ``'Data'``)
   * - values
     - Used to configure the values to be shown below the main dial value. See :ref:`dialvalues`)
   * - animation
