@@ -603,9 +603,9 @@ function getBlindsBlock(block, withPercentage) {
   } else {
     if (device['Status'] === 'Closed')
       value =
-        '<span class="state">' + language.switches.state_closed + '</span>';
+        '<span class="state">' + (block.textOff || language.switches.state_closed) + '</span>';
     else
-      value = '<span class="state">' + language.switches.state_open + '</span>';
+      value = '<span class="state">' + (block.textOn || language.switches.state_open) + '</span>';
   }
   if (!withPercentage) {
     if (
@@ -614,10 +614,10 @@ function getBlindsBlock(block, withPercentage) {
     ) {
       if (device['Status'] === 'Closed')
         value =
-          '<span class="state">' + language.switches.state_closed + '</span>';
+          '<span class="state">' + (block.textOff || language.switches.state_closed) + '</span>';
       else
         value =
-          '<span class="state">' + language.switches.state_open + '</span>';
+          '<span class="state">' + (block.textOn || language.switches.state_open) + '</span>';
     } else {
       value = '<span class="state"></span>';
     }

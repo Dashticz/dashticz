@@ -1439,6 +1439,11 @@ function createBlocks(blockParent, blockValues) {
     var block = {};
     $.extend(block, blockValue); //create a block from the prototype
     $.extend(block, blockParent);
+    /* Fix icon/image setting*/
+    if(blockParent.image || blockParent.icon) {
+      block.image = blockParent.image;
+      block.icon = blockParent.icon;
+    }
     //        $.extend(block, blocks[blockValue.idx]); //I don't think we should do this: It will overwrite block settings of a custom block
     //Although for subdevices it would be nice to use corresponding block setting
     //so let's overwrite in case parent and blockvalue idx are different
