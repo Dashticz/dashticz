@@ -1,7 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 /* global getAllDevicesHandler objectlength config initVersion loadSettings settings getLocationParameters*/
 /* global sessionValid MobileDetect moment getBlock*/
-/* global Swiper */
+/* global Swiper Debug*/
 
 //To refactor later:
 /* global switchSecurity*/
@@ -158,6 +158,38 @@ function loadFiles(dashtype) {
     })
     .then(addDebug)
     .then(function () {
+      loadingFilename = customfolder + '/custom.js';
+
+      return $.ajax({
+        //first test whether the file exists
+        url: loadingFilename + '?v=' + cache,
+        type: 'HEAD',
+      })
+        .then(function () {
+          //if it exists, try to load it
+          return $.ajax({
+            url: loadingFilename,
+            dataType: 'script',
+          }).then(function () {
+            loadingFilename = null;
+            if (throwError)
+              //test whether we've catched an error in the errorhandler
+              return $.Deferred().reject(new Error(throwError));
+          });
+        })
+        .catch(function (res) {
+          if (res.status === 404) {
+            //file doesn't exist
+            console.log(
+              'No custom.js file in folder ' + customfolder + '. Skipping.'
+            );
+            return;
+          }
+          var error = res || new Error('Unknown error loading custom.js');
+          return $.Deferred().reject(error);
+        });
+    })
+    .then(function () {
       if (typeof screens === 'undefined' || objectlength(screens) === 0) {
         screens = {};
         screens[1] = {};
@@ -206,38 +238,6 @@ function loadFiles(dashtype) {
           return Dashticz.init();
         })
       );
-    })
-    .then(function () {
-      loadingFilename = customfolder + '/custom.js';
-
-      return $.ajax({
-        //first test whether the file exists
-        url: loadingFilename + '?v=' + cache,
-        type: 'HEAD',
-      })
-        .then(function () {
-          //if it exists, try to load it
-          return $.ajax({
-            url: loadingFilename,
-            dataType: 'script',
-          }).then(function () {
-            loadingFilename = null;
-            if (throwError)
-              //test whether we've catched an error in the errorhandler
-              return $.Deferred().reject(new Error(throwError));
-          });
-        })
-        .catch(function (res) {
-          if (res.status === 404) {
-            //file doesn't exist
-            console.log(
-              'No custom.js file in folder ' + customfolder + '. Skipping.'
-            );
-            return;
-          }
-          var error = res || new Error('Unknown error loading custom.js');
-          return $.Deferred().reject(error);
-        });
     })
     .then(function () {
       return $.when(

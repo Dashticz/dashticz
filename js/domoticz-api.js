@@ -1,6 +1,6 @@
 /*from bundle.js*/
 /* global moment*/
-
+/* global Debug*/
 // eslint-disable-next-line no-unused-vars
 var Domoticz = (function () {
   var usrinfo = '';
@@ -18,6 +18,7 @@ var Domoticz = (function () {
   var reconnectTimeout = 2; //Initial value: 1 sec reconnect timeout
   var reconnecting = false;
   var securityRefresh = null;
+  var firstUpdate = true;
 
   var MSG = {
     info: 'type=command&param=getversion',
@@ -355,7 +356,24 @@ var Domoticz = (function () {
       default:
         update = true;
     }
-    if (update) deviceObservable.set(idx, value);
+    if (update) {
+      if(typeof value === 'object') manipulateDevice(value);
+      deviceObservable.set(idx, value);
+    }
+  }
+
+  function manipulateDevice(value) {
+    if (!value.Data) return;
+
+    //Check device hook. Can be defined in custom.js or config.js
+    if(typeof window.deviceHook ===  'function') {
+      window.deviceHook(value)
+    }
+    var data = value.Data.split(';');
+    if (!data.length) return;
+    data.forEach(function (el, i) {
+      value['Data' + i] = el;
+    });
   }
 
   function _setAllDevices(data) {
@@ -381,6 +399,12 @@ var Domoticz = (function () {
       setOnChange(idx, device);
     }
     setOnChange('_devices', data); //event to trigger that all devices have been updated.
+    if(firstUpdate && window.debugDevices) {
+      window.debugDevices.forEach(function(device) {
+        setOnChange(device.idx, device)
+      })
+    }
+    firstUpdate = false;
     return deviceObservable._values;
   }
 
