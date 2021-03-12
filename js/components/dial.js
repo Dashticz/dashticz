@@ -46,6 +46,7 @@ var DT_dial = (function () {
       animation: true,
       iconSwitch: 'fas fa-power-off',
       showvalue: true,
+      value: 'Data'
     },
 
     /**
@@ -770,7 +771,7 @@ var DT_dial = (function () {
     me.min = choose(me.block.min, 0);
     me.max = choose(me.block.max, 100);
 
-    me.value = parseFloat(me.device.Data);
+    me.value = parseFloat(me.device[me.block.value]);
     me.decimals = me.block.decimals;
     me.setpoint = me.block.setpoint;
     var splitAllData = me.device.Data.split(',');
@@ -1101,34 +1102,42 @@ var DT_dial = (function () {
   function p1smartmeter(me) {
     me.type = 'p1';
     me.active = false;
-    me.min = choose(me.block.min, -10);
-    me.max = choose(me.block.max, 10);
-    me.value =
-      Math.round(
-        (parseFloat(me.device.CounterDelivToday) -
-          parseFloat(me.device.CounterToday)) *
-          100
-      ) / 100;
-    me.class = me.value > 0 ? 'positive' : 'negative';
-    me.slice = me.value > 0 ? 'splitdial-plus' : 'splitdial-minus';
-    me.unitvalue = 'kWh';
-    me.subdevice = true;
-    me.splitdial = true;
+    if(me.device.SubType == 'Gas') {
+      me.min = choose(me.block.min, 0);
+      me.max = choose(me.block.max, 20);
+      me.value = parseFloat(me.device.CounterToday);
+      me.unitvalue = 'm3';
+    }
+    else {
+      me.min = choose(me.block.min, -10);
+      me.max = choose(me.block.max, 10);
+      me.value =
+        Math.round(
+          (parseFloat(me.device.CounterDelivToday ) -
+            parseFloat(me.device.CounterToday)) *
+            100
+        ) / 100;
+      me.class = me.value > 0 ? 'positive' : 'negative';
+      me.slice = me.value > 0 ? 'splitdial-plus' : 'splitdial-minus';
+      me.unitvalue = 'kWh';
+      me.subdevice = true;
+      me.splitdial = true;
 
-    me.info.push(
-      {
-        icon: display(me.block.dialicon, 0, 2, 'fas fa-sun'),
-        image: display(me.block.dialimage, 0, 2, false),
-        data: me.device.CounterDelivToday,
-        unit: '',
-      },
-      {
-        icon: display(me.block.dialicon, 1, 2, 'fas fa-bolt'),
-        image: display(me.block.dialimage, 1, 2, false),
-        data: me.device.CounterToday,
-        unit: '',
-      }
-    );
+      me.info.push(
+        {
+          icon: display(me.block.dialicon, 0, 2, 'fas fa-sun'),
+          image: display(me.block.dialimage, 0, 2, false),
+          data: me.device.CounterDelivToday,
+          unit: '',
+        },
+        {
+          icon: display(me.block.dialicon, 1, 2, 'fas fa-bolt'),
+          image: display(me.block.dialimage, 1, 2, false),
+          data: me.device.CounterToday,
+          unit: '',
+        }
+      );
+    }
     return;
   }
 
