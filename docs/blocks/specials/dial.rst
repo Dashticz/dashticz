@@ -364,7 +364,7 @@ And some more tricks::
       ]
   }
 
-.. image :: img/dial_textcombi2.jpg
+.. image :: img/dial_combi2.jpg
 
 The base type of this block is a text block, because device 18 is text device. However, the value of this device is not shown,
 because the parameter ``showvalue`` is set to false.
@@ -402,6 +402,8 @@ You can use the following parameters within the values definition of the dial:
     - Name of the Domoticz device field to use as value
   * - decimals
     - Number of decimals to use while formatting the value (default: 0)
+  * - scale
+    - Multiplication factor for the value (default: 1)
   * - type
     - Set to ``'text'`` to handle value as text instead of number
   * - unit
