@@ -14,6 +14,8 @@ v3.7.6 Beta (12-3-2021)
 Enhancements
 ~~~~~~~~~~~~
 
+.. note:: Breaking changes. See :ref:`v376` for update instuctions
+
 * Several dial enhancements. See :ref:`dialvalues`
 * Device hook: Function in custom.js which is called on every device update. See :ref:`devicehook`
 
