@@ -3521,8 +3521,7 @@ td.agenda-title {
   transform: translate(-50%);
 }
 
-.dial .value-unit .value,
-.dial .value-unit .unit {
+.dial .value-unit {
   font-size: 0.15em;
   line-height: 1em;
   color: #cccccc;
@@ -3534,14 +3533,12 @@ td.agenda-title {
   z-index: 5;
 }
 
-/*
 .dial .unit {
-  font-size: 0.1em;
+  font-size: 0.7em;
   color: grey;
   margin-left: 0.1em;
-  max-width: 30%;
 }
-*/
+
 
 .animation {
   animation: fadeInLoad 2s;
@@ -3563,12 +3560,12 @@ td.agenda-title {
   
 }
 
-.dial.text .dial-display .value-unit {
+.dial.text .value-unit {
   width: 95%;
-  font-size: 70%;
+  font-size: 0.1em;
 }
 
-.dial.text .dial-display .value-unit .value {
+.dial.text .value {
   white-space: normal;
 }
 
@@ -3680,8 +3677,7 @@ td.agenda-title {
   visibility: hidden;
 }
 
-.dial:hover .value-unit .value {
-  font-size: 0.15em;
+.dial:hover .value {
   color: orange;
   color: var(--dial-color);
 }
