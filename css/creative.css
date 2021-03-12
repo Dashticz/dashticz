@@ -3666,12 +3666,13 @@ td.agenda-title {
   margin-right: 0.25em;
 }
 
-.dial .extra.primary{
+.dial .item.primary{
   font-size: 150%;
   color: white;
+  width:100%
 }
 
-.dial .extra.primary .data{
+.dial .item.primary .data{
   font-size: 150%;
 }
 
