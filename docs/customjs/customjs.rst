@@ -183,8 +183,8 @@ This function will only get called after updating the block. If you want to chan
 
 Change value of another block
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-By calling ``Dashticz.setBlock`` from the getStatus function you can change another block as well. Example:
-::
+
+By calling ``Dashticz.setBlock`` from the getStatus function you can change another block as well. Example::
 
     function getStatus_2(block) {
       var idx = block.idx;
@@ -221,3 +221,31 @@ This previous example will also change a block that is defined by ``blocks['myti
         icon: 'fas fa-car'
     }
 
+
+.. _devicehook:
+
+Device hook
+-----------
+
+On every device update the device hook is called first. You can use the device hook to manipulate device data before the update is send to the Dashticz blocks.
+
+Example::
+
+    function deviceHook(device) {
+        if (device.idx==43) {
+            device.NettCalc = parseFloat(device.Usage) - parseFloat(device.UsageDeliv)
+            device.deviceStatus = device.NettCalc >= 0 ? 'positive':'negative';
+        }
+    }
+
+The device parameter contains the device data as received from Domoticz. In the previous example the device field 'NettCalc' is calculated, which can be used in for instance a dial.
+
+You can also call ``Domoticz.setBlock`` functions from the device hook.
+
+You could do something similar in the ``getStatus`` functions, but then it's required that a block is defined that uses that specific device.
+For the device hook function that's not necessary: It will be called on any device update received from Domoticz.
+
+One special functionality is the device field ``deviceStatus``. You can set this field to a certain CSS class name. This CSS class name will be applied to the Dashticz blocks that use this device.
+You could set the value of deviceStatus based on the current device value or based on the value of another device.
+
+Happy hacking :)
