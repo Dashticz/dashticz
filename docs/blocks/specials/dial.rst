@@ -207,13 +207,13 @@ P1 Smart Meter
 
 Currently this is configured to use the "Today" counters; CounterDelivToday and CounterToday, i.e. production vs consumption. Unlike any other dial, zero is at "12 o'clock" (instead of the tradional dial which starts at "7 o'clock").
 
+Today's energy consumption is more than production   
+
 .. image :: ./img/dial_p1-meter-cons.jpg
 
-Today's energy consumption is more than production
+Today's energy production is more than consumption   
 
 .. image :: ./img/dial_p1-meter-prod.jpg
-
-Today's energy production is more than consumption
 ::
 
     blocks['p1'] = {
@@ -228,6 +228,47 @@ Today's energy production is more than consumption
         shownumbers: true,
         last_update: false
     }
+
+Show multiple values of a P1 meter
+
+.. image :: img/dial_p1values.jpg
+::
+
+  blocks['p1counters'] = {
+    type: 'dial',
+    idx: 43,
+    values: [
+      {
+        value: 'Data0',
+        unit: 'kWh',
+        label: 't1',
+        scale: 0.001
+      },
+      {
+        value: 'Data1',
+        unit: 'kWh',
+        label: 't2',
+        scale: 0.001
+      },
+      {
+        value: 'Data2',
+        unit: 'kWh',
+        label: 'ret t1',
+        scale: 0.001
+      },
+      {
+        value: 'Data3',
+        unit: 'kWh',
+        label: 'ret t2',
+        scale: 0.001
+      },
+      ],
+    showvalue: false,
+    animation: false,
+    shownumbers: true,
+    fixed: true,
+    width: 6
+  };
 
 
 .. _Toon:
@@ -375,6 +416,34 @@ Also the temperature of device 16 is displayed, with a custom label and unit. By
 By default, the 'Data' field of a device will be used as value. You can overrule this by setting the value parameter in the values object as shown before.
 
 For text devices, the value will be interpreted as text instead of a number. For other devices you can add ``type: 'text'`` to the value object to enforce that the value will be handled as text as well.
+
+
+Multiple values
+---------------
+
+You can add multiple values to most dial types. Or, add a needle representing the value of another device to for instance a dial switch:
+
+.. image :: img/dial_dialswitch.jpg
+::
+
+  blocks['sw1'] = {
+    idx: 1056,
+    type:'dial',
+    values: [
+      {
+        idx: 1057,
+        isNeedle: true
+      },
+    ],
+    width: 6,
+    showring: true,
+    shownumbers: true,
+    min: 0,
+    max: 10
+  }
+
+
+
 
 .. _valueparams :
 
