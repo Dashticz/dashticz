@@ -3536,12 +3536,8 @@ td.agenda-title {
 .dial .unit {
   font-size: 0.7em;
   color: grey;
-}
-
-.value-unit .unit {
   margin-left: 0.2em;
 }
-
 
 .animation {
   animation: fadeInLoad 2s;
@@ -3635,17 +3631,17 @@ td.agenda-title {
 }
 
 .dial .extra.novalue {
-  top: 35%;
+  top: 30%;
 }
 
 .dial .item {
   display: flex;
   justify-content: center;
-  align-items: baseline;
+  align-items: center;
 }
 
 .dial .itemlabel {
-  margin-right: 0.5em
+  margin-right: 0.3em
 }
 
 .dial .info {
@@ -3668,12 +3664,19 @@ td.agenda-title {
 
 .dial .item.primary{
   font-size: 150%;
-  color: white;
   width:100%
 }
 
-.dial .item.primary .data{
-  font-size: 150%;
+
+.dataunit {
+  display: flex;
+  align-items: center;
+}
+
+.primary .data{
+  font-size: 1.5em;
+  line-height: 1.5em;
+  color: #cccccc;
 }
 
 .dial .extra.hidden {
