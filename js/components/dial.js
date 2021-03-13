@@ -919,6 +919,8 @@ var DT_dial = (function () {
             me.setpointDevice = idx;
             me.setpoint = choose(me.block.setpoint, 0);
             me.value = valueInfo.data;
+            me.needle=me.value;
+            me.splitdial = choose(el.splitdial, me.block.min<0);
           }
           valueInfo.deviceStatus = device.deviceStatus || '';
           return valueInfo;
@@ -926,6 +928,11 @@ var DT_dial = (function () {
       } else {
         console.error('values should be an array for ', me.block);
       }
+    }
+
+    if(me.splitdial) {
+      me.class = me.value > 0 ? 'positive' : 'negative';
+      me.slice = me.value > 0 ? 'splitdial-plus' : 'splitdial-minus';
     }
 
     me.lastupdate =
@@ -1117,8 +1124,6 @@ var DT_dial = (function () {
             parseFloat(me.device.CounterToday)) *
             100
         ) / 100;
-      me.class = me.value > 0 ? 'positive' : 'negative';
-      me.slice = me.value > 0 ? 'splitdial-plus' : 'splitdial-minus';
       me.unitvalue = 'kWh';
       me.subdevice = true;
       me.splitdial = true;

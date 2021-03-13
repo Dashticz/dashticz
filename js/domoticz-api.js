@@ -366,14 +366,24 @@ var Domoticz = (function () {
     if (!value.Data) return;
 
     //Check device hook. Can be defined in custom.js or config.js
-    if(typeof window.deviceHook ===  'function') {
-      window.deviceHook(value)
-    }
     var data = value.Data.split(';');
     if (!data.length) return;
     data.forEach(function (el, i) {
       value['Data' + i] = el;
     });
+
+    //P1 Smart Meter manipulation
+    if (value.Type === 'P1 Smart Meter' && value.SubType === 'Energy') {
+      value.NettUsage = parseFloat(value.Usage) - parseFloat(value.UsageDeliv);
+      value.NettCounterToday = parseFloat(value.CounterToday) - parseFloat(value.CounterDelivToday);
+      value.NettCounter = parseFloat(value.Counter) - parseFloat(value.CounterDeliv);
+    }
+
+    if(typeof window.deviceHook ===  'function') {
+      window.deviceHook(value)
+    }
+
+
   }
 
   function _setAllDevices(data) {
