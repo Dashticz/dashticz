@@ -3536,7 +3536,10 @@ td.agenda-title {
 .dial .unit {
   font-size: 0.7em;
   color: grey;
-  margin-left: 0.1em;
+}
+
+.value-unit .unit {
+  margin-left: 0.2em;
 }
 
 
