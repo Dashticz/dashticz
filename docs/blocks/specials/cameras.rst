@@ -84,3 +84,64 @@ Example of a single camera block::
 		width: 6,
 		height: 300
 	}
+
+Camera troubleshooting
+----------------------
+
+There are several challenges with camera's:
+
+#. Find the right url
+#. Solve authorization (username/password)
+
+Finding the right url
+~~~~~~~~~~~~~~~~~~~~~~
+
+For the ``imageURL`` parameter Dashticz expects a still image, although a mjpeg video will also work.
+For the ``videoURL`` parameter Dashticz expects a video in MJPEG format.
+
+If the video URL is not provided, then Dashticz will use the imageURL instead.
+
+For most camera's the correct URL can be found via the following page:
+
+https://www.ispyconnect.com/
+
+Some cheap camera's only provide a RTSP link. RTSP is not supported in most browsers, and cannot be displayed via Dashticz.
+If you only have a RTSP link you have to use a third-party application for transcoding. See below.
+
+Solve authorization
+~~~~~~~~~~~~~~~~~~~~
+
+Dashticz only supports authorization if the username/password is part of the URL string.
+(something like http://192.168.1.20:81/videostream.cgi?user=username&pwd=password&resolution=32&rate=0)
+
+Basic-auth encoded in the ip address is not supported, since this is blocked by most browsers.
+(http://username:password@192.168.1.20:81/videostream.cgi?resolution=32&rate=0)
+
+Also Basic-auth by setting the authorization http request header is not supported.
+
+
+Solve authorization via Domoticz
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If your camera provides a jpeg and/or mjpeg url, but requires basic authorization, then you can request the image/video via Domoticz.
+Add the camera to Domoticz and use the url for the image/video as provided by Domoticz.
+
+For more info see the Domoticz wiki:
+
+https://www.domoticz.com/wiki/Camera_Setup
+
+Third party video conversion
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If your camara only provides a RTSP stream, then the stream needs recoding into JPEG images and a MJPEG video stream.
+Users reported success with the following tools:
+
+* Motioneye https://github.com/ccrisan/motioneye/wiki
+* Xeoma https://felenasoft.com/xeoma/en/
+
+For Motioneye a Docker image exists, which works very well. Read:
+https://github.com/ccrisan/motioneye/wiki/Install-In-Docker
+
+I'm considering to (optionally) add Motioneye to the Domoticz autoinstall script. If this would be usefull, leave a message in the Dashticz forum.
+
+   
