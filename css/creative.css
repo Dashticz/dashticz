@@ -1564,10 +1564,10 @@ img.icon {
   img.icon {
     max-width: 15px !important;
   }
-  .fas,
-  .far,
-  .fab,
-  .wi {
+  .mh .fas,
+  .mh .far,
+  .mh .fab,
+  .mh .wi {
     font-size: 15px !important;
   }
   .fa-tv:before {
