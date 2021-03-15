@@ -142,6 +142,6 @@ Users reported success with the following tools:
 For Motioneye a Docker image exists, which works very well. Read:
 https://github.com/ccrisan/motioneye/wiki/Install-In-Docker
 
-I'm considering to (optionally) add Motioneye to the Domoticz autoinstall script. If this would be usefull, leave a message in the Dashticz forum.
+I'm considering to (optionally) add Motioneye to the Dashticz autoinstall script. If this would be usefull, leave a message in the Dashticz forum.
 
    
