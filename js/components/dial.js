@@ -578,7 +578,10 @@ var DT_dial = (function () {
         switchThermostat(me, me.value);
         break;
       case 'dim':
-        slideDevice(me, idx, Math.ceil((maxdim / me.max) * me.value));
+        var level = (maxdim / me.max) * me.value;
+        if (level<1) level = 0;
+        if (level>maxdim-1) level = maxdim;
+        slideDevice(me, idx, Math.round(level));
         break;
       case 'onoff':
         if (me.block.idx) switchDevice(me, me.cmd);
@@ -1058,9 +1061,9 @@ var DT_dial = (function () {
     me.value =
       me.device.Data === 'Off'
         ? 0
-        : me.device.Level > me.max * 0.95
+        : me.device.Level > me.max -1
         ? me.max
-        : me.device.Level < me.max * 0.05
+        : me.device.Level < me.min+1
         ? me.min
         : me.device.Level;
     me.demand = me.value > 0;
