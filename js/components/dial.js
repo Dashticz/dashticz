@@ -1071,6 +1071,10 @@ var DT_dial = (function () {
       ? parseInt(me.device.MaxDimLevel)
       : 100;
     me.segments = 11;
+    if(isDefined(me.block.setpoint)) {
+      me.setpoint=me.block.setpoint;
+      me.isSetpoint=true;
+    }
     return;
   }
 
