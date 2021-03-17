@@ -69,6 +69,8 @@ Block parameters
       | ``'fas fa-volume-up'``: Show a volume icon
   * - showring
     - ``true``:  Always show the outer color ring (default: false)
+  * - fixed
+    - ``true``: Removes the needle and numbers around the dial (default: false) 
   * - min
     - ``<number>``: Minimum value for the dial ring (if applicable) (default: 0)
   * - max
