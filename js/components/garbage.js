@@ -32,6 +32,7 @@ var DT_garbage = (function () {
       date_separator: ': ',
       layout: 1,
       maxdays: 32,
+      ignoressl: false,
     },
     run: function (me) {
       me.order = Object.keys(me.block.garbage);
@@ -157,6 +158,7 @@ var DT_garbage = (function () {
           uniqueAddressID: data['dataList'][0]['UniqueId'],
           startDate: me.date.start.format('YYYY-MM-DD'),
           endDate: me.date.end.format('YYYY-MM-DD'),
+          community: data['dataList'][0]['Community']
         });
       })
       .then(function (data) {
@@ -351,7 +353,8 @@ var DT_garbage = (function () {
       '&nr=' +
       me.block.housenumber +
       '&t=' +
-      (me.block.housenumberSuffix || '');
+      (me.block.housenumberSuffix || '') +
+      (me.block.ignoressl ? '&ignoressl=true':'');
     return $.getJSON(cURI).then(function (data) {
       data = data
         .filter(function (element) {
@@ -519,54 +522,6 @@ var DT_garbage = (function () {
     });
   }
 
-  // https://gemeente.groningen.nl/afvalwijzer/groningen/9746AG/18/2018/
-  // eslint-disable-next-line no-unused-vars
-  function getGroningenData(me) {
-    return $.get(
-      getPrefixUrl(me) +
-        'https://gemeente.groningen.nl/afvalwijzer/groningen/' +
-        me.block.zipcode +
-        '/' +
-        me.block.housenumber +
-        '/' +
-        moment().format('YYYY')
-    ).then(function (data) {
-      var returnDates = [];
-      data = data
-        .replace(/<img .*?>/g, '')
-        .replace(/<head>(?:.|\n|\r)+?<\/head>/g, '')
-        .replace(/<script (?:.|\n|\r)+?<\/script>/g, '')
-        .replace(/<header (?:.|\n|\r)+?<\/header>/g, '');
-      $(data)
-        .find('table.afvalwijzerData tbody tr.blockWrapper')
-        .each(function (index, element) {
-          if ($(element).find('h2').length) {
-            var summary = $(element).find('h2')[0].innerText;
-            $(element)
-              .find('td')
-              .each(function (dateindex, dateelement) {
-                var month = dateelement.className.substr(-2);
-                $(dateelement)
-                  .find('li')
-                  .each(function (dayindex, dayelement) {
-                    var day = dayelement.innerText.replace('*', '');
-                    if (!isNaN(day)) {
-                      returnDates.push({
-                        date: moment(
-                          moment().format('YYYY') + '-' + month + '-' + day,
-                          'YYYY-M-D',
-                          'nl'
-                        ),
-                        summary: summary,
-                      });
-                    }
-                  });
-              });
-          }
-        });
-      return returnDates;
-    });
-  }
 
   ///http://dashticz.nl/afval/?service=afvalstromen&sub=alphenaandenrijn&zipcode=2401AR&nr=261&t=
 
@@ -864,7 +819,7 @@ var DT_garbage = (function () {
           '.ics',
       },
       groningen: {
-        handler: getGroningenData,
+        handler: getMijnAfvalwijzerData,
       },
       hvc: {
         handler: getGeneralData,
