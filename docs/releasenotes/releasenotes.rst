@@ -8,10 +8,16 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Fixes
+~~~~~~
+
+* Garbage: Repaired Area, EDG, Groningen, Meerlanden
+
 Enhancements
 ~~~~~~~~~~~~
 
 * P1 Smart Meter: Computed fields 'NettUsage', 'NettCounterToday' and 'NettCounter' which can be used as value in dials.
+* Garbage: Set block parameter 'ignoressl' to true to disable https SSL checks.
   
 v3.7.6 Beta (12-3-2021)
 ------------------------
