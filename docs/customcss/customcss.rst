@@ -443,6 +443,16 @@ Lightbulbs color & Opacity
 Miscellaneous
 -------------
 
+Hide block
+~~~~~~~~~~
+::
+
+   div[data-id='myblock'] {
+      display: none
+   }
+
+Change ``'myblock'`` to your own block name
+
 Remove Swiper Pagination Bullet
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
