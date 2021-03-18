@@ -84,7 +84,8 @@ if (!empty($argv[1])) {
 	parse_str($argv[1], $_GET);
   }
 $ICS = $_GET['url'];
-
+/*
+//temporarily removed. get_headers doesn't work for local files
 $file_headers = @get_headers($ICS);
 if(!$file_headers || $file_headers[0] == 'HTTP/1.1 404 Not Found') {
     $exists = false;
@@ -99,7 +100,7 @@ if ( !$exists ) {
 	$cleanexit = 1;
 	die();
 }
-
+*/
 //print "url: ".$ICS . "\n";
 if (!empty($argv[2])) {
 	parse_str($argv[2], $_GET);
