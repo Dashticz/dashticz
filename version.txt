@@ -1,8 +1,9 @@
 {
-"version": "3.7.6",
+"version": "3.7.7",
 "branch": "beta",
-"last_changes": "Dial updates",
+"last_changes": "Update external modules",
 "changelog" : {
+            "3.7.6": "Dial updates",
             "3.7.5": "OWM widgets",
             "3.7.4": "Dial improvements",
             "3.7.3": "Redesign of block mechanism",

@@ -8,6 +8,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.7.7 Beta (8-4-2021)
+------------------------
+
 Fixes
 ~~~~~~
 
@@ -18,6 +21,11 @@ Enhancements
 
 * P1 Smart Meter: Computed fields 'NettUsage', 'NettCounterToday' and 'NettCounter' which can be used as value in dials.
 * Garbage: Set block parameter 'ignoressl' to true to disable https SSL checks.
+
+Code
+~~~~
+
+* Update of the external npm modules
   
 v3.7.6 Beta (12-3-2021)
 ------------------------
