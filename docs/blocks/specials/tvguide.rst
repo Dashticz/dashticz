@@ -1,4 +1,5 @@
 
+.. _tvguide:
 
 TV Guide
 ========
@@ -32,6 +33,10 @@ TV Guide Parameters
     - | Title of the TV Guide block.
   * - width
     - | ``1..12`` Width of the block.
+  * - layout
+    - | Shows or hides the channel name
+      | ``0``: Shows the channel name (=default)
+      | ``1``: Hides the channel name
   * - key
     - | ``'key'``: unique identifier.
   * - icon
@@ -56,7 +61,7 @@ The parameter ``channels`` contains an array of the selected channel IDs.  Find 
   "2", "NPO 2"
   "3", "NPO 3"
   "4", "RTL 4"
-  "5", "E&eacute;n"
+  "5", "Eén"
   "6", "Canvas"
   "7", "BBC 1"
   "8", "BBC 2"

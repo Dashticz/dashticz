@@ -3,21 +3,17 @@
 Moon 
 ####
 
-Via a special button definition you can add a picture of the current moon phase
+With the moon block you can add a picture of the current moon phase
 to your dashboard. Use the following code::
 
-    buttons = {}
-    buttons.moon = {
-      width:12,
-      refresh: 3600,
-      btnimage: 'moon'
-    }
     columns[2] = {}
-    columns[2]['blocks'] = [ buttons.moon]
+    columns[2]['blocks'] = [ 'moon']
 
-As you can see it's in fact a normal button, but with image name ``'moon'``.
-Dashticz will automatically use the correct image for the current moon phase from the folder
-``<dashticz>/img/moon``
+If needed you can change the width::
+
+  blocks['moon'] = {
+    width: 6
+  }
 
 We have 100 moon images. A moon cycle takes approximately 28 days.
 That means that the moon picture will refresh approximately 4 times a day.

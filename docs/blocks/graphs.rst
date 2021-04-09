@@ -84,6 +84,9 @@ The following block parameters can be used to configure the graph:
       | ``'horizontal'``: enables the feature and display a horizontal bar chart, grouped by device
       | - Setpoint devices will be displayed as a line infront of the bar graph
       | - For Evohome devices: The tooltip info will display the status and schedule
+  * - labels
+    - | An array to rename the device names (groupByDevice charts only)
+      | ``['Device A', 'Device B']`` The first device will be labeled as ``Device A``, the second as ``Device B``
   * - stacked
     - ``true``: Show stacked bar charts. See :ref:`stacked`.
   * - beginAtZero
@@ -112,6 +115,10 @@ The following block parameters can be used to configure the graph:
     - font color for the axis ticks and labels (default is white)
   * - lineFill
     - if line graph, this fills the graph, it is an array for each dataset, e.g.['true', 'false', 'true'] (default is false)
+  * - axisRight
+    - if ``true`` the first Y axis will be shown at the right. (default is false, meaning left)
+  * - axisAlternate
+    - if ``true`` then in case of multiple Y axes they will be shown alternating left/right
   * - borderWidth
     - this is actually the width of the line (default is 2)
   * - borderDash
@@ -805,6 +812,14 @@ Alternatively, the param can be applied to custom data as follows::
 This results in the "Solar" graph grouping its data by hour, day, week or month - *Week by Day* is shown in the image below:
 
 .. image :: img/graph_groupby_day.png
+
+You can use the block parameter 'aggregate' to set the aggregation method as 'sum' or 'avg' (for average).
+
+Instead of a single string the parameter 'aggregate' can also be an array of strings, like ::
+
+	aggregate: ['sum','avg'],
+
+This can be useful in case of a custom graph, showing gas usage and temperature in one graph, because in that situation two different aggregation methods are required.
 
 
 .. _groupByDevice:

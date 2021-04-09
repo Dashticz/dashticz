@@ -29,28 +29,29 @@ You can add a frame to a column in the usual way::
 Frame parameters
 ----------------
 
-  .. list-table:: 
-    :header-rows: 1
-    :widths: 5, 30
-    :class: tight-table
+.. list-table:: 
+  :header-rows: 1
+  :widths: 5 30
+  :class: tight-table
         
-    * - Parameter
-      - Description
-    * - frameurl
-      - The URL to load in the frame
-    * - width
-      - ``1..12`` The width of the frame relative to the column width. 12=100%, 3=25%
-    * - heigth
-      - Height of the frame in pixels
-    * - scrollbars
-      - ``false`` Scrollbars are never shown (even if they are needed) Default: auto
-    * - refresh
-      - Refresh interval (in seconds)
-    * - forcerefresh
-      - | Control the caching-prevention mechanism of the frame content.
-        | ``0`` : Normal caching behavior (=default)
-        | ``1``,  ``true`` : Prevent caching by adding t=<timestamp> parameter to the url. Not all websites will handle this correctly
-        | ``2`` : The frame content is loaded via php, preventing caching. (php must be enabled on your Dashticz server)
+  * - Parameter
+    - Description
+  * - frameurl
+    - The URL to load in the frame
+  * - width
+    - ``1..12`` The width of the frame relative to the column width. 12=100%, 3=25%
+  * - heigth
+    - Height of the frame in pixels
+  * - scrollbars
+    - ``false`` Scrollbars are never shown (even if they are needed) Default: auto
+  * - refresh
+    - Refresh interval (in seconds)
+  * - forcerefresh
+    - | Control the caching-prevention mechanism of the frame content
+      | ``0`` : Normal caching behavior (=default)
+      | ``1``,  ``true`` : Prevent caching by adding t=<timestamp> parameter to the url. Not all websites will handle this correctly
+      | ``2`` : The frame content is loaded via php, preventing caching. (php must be enabled on your Dashticz server)
+
 
 Example
 -------

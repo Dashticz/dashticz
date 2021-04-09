@@ -134,6 +134,7 @@
 
 .dt_state {
   margin: 5px 5px;
+  min-height: 1px;
 }
 
 .button .dt_state,
@@ -311,28 +312,40 @@
   background-color: #555;
 }
 
-.modal-header {
-  border-bottom: 0px !important;
+.modal-dialog-custom .modal-content:not(.modal-url) .close {
+  color: white;
+  opacity: 0.7;
 }
+
+.modal-dialog-custom .modal-content:not(.modal-url) .close:focus, .modal-dialog-custom .modal-content:not(.modal-url) .close:hover {
+  color: white;
+  opacity: 1;
+}
+
+.modal-popup > [id^="block"] {
+  height: 100%;
+  min-height: 1px;
+  overflow:auto;
+}
+
+
 
 
 /*
 next css sets the default height of the frame popup
 */
 
+/*
 .popupheight {
   height: calc(95vh - 150px);
 }
+*/
 
 .modal-body .glyphicon {
   color: #a80002;
   cursor: help;
 }
 
-.modal-dialog-settings {
-  width: 70%;
-  margin: 80px auto;
-}
 
 .nav {
   border-bottom: 1px solid #e5e5e5;
@@ -385,7 +398,26 @@ next css sets the default height of the frame popup
 .modal-dialog-custom {
   min-width: 10px;
   width: 80%;
+  height: 80%;
+  margin: auto;
+  margin: 5px;
 }
+
+.modal-dialog-custom .modal-content:not(.modal-url) {
+  background-color: #222;
+  color: white;
+}
+
+.modal-header {
+  border-bottom: 0px !important;
+}
+
+.modal-content.url {
+  background-color: white;
+  color: black;
+}
+
+
 
 .material-switch>input[type='checkbox'] {
   display: none;
@@ -438,35 +470,57 @@ next css sets the default height of the frame popup
 
 /* END || Popup modal settings (need to sort and arrange first) */
 
-.containslog .items {
-  height: 154px;
-  overflow: auto;
-  width: calc(100% - 40px);
+/* .log */
+
+.log {
+  height: 200px
 }
 
-.containslog .items .level0 {
+/*on IOS display:flex and height have to bubble down*/
+.log .dt_content {
+  height:100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.log .dt_state{
+  display:flex;
+  flex-direction:column;
+  height: 100%;
+}
+
+
+.log .items {
+  height: 100%; 
+  overflow: auto;
+}
+
+.modal-popup > div > .log {
+  height: 100%
+}
+
+.log .items .level0 {
   color: #c70626;
 }
 
-.containslog .items .level1 {
+.log .items .level1 {
   color: #067676;
 }
 
-.containslog .items .level2 {
+.log .items .level2 {
   color: #ffffff;
 }
 
-.containslog .items .level0.popup {
-  color: #c70626;
+.log .items .timestamp {
+  white-space: nowrap;
+  vertical-align: top;
 }
 
-.containslog .items .level1.popup {
-  color: #067676;
+.log .items .sep {
+  width: 5px
 }
 
-.containslog .items .level2.popup {
-  color: #727272;
-}
+/* end log */
 
 .containsicalendar table.calendar {
   border-collapse: separate;
@@ -480,15 +534,6 @@ next css sets the default height of the frame popup
 
 .containsicalendar td.caltitle {
   white-space: normal;
-}
-
-.containslog.popup {
-  height: 100% !important;
-  overflow: auto;
-}
-
-.containslog.popup .items {
-  min-height: 300px;
 }
 
 .colbar.transbg {
@@ -608,10 +653,25 @@ a.playlist {
   background-color: #fff;
   width: 93%;
   border: 1px solid #ccc;
-  height: 77px;
   margin: 5px;
+  display: inline-block;
 }
 
+.modal-dialog.modal-spotify {
+  width: 80%;
+}
+
+.spotlist img {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
+
+.spotlist .spotify-info {
+  padding-left:10px;
+  padding-top:5px;
+  padding-right:10px;
+}
 
 /* Thermostat CSS: */
 
@@ -763,12 +823,23 @@ a.playlist {
 	height: 300px;
 }
 */
+.modal-dialog-custom .modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
-.modal.opengraph .modal-content {
-  background-color: #222;
-  color: white;
+.modal-body {
+  height: 100%;
+}
+
+/*
+.modal.openpopup .frameclose {
+  background-color: #fff;
+  color: black;
   margin: 5px;
 }
+*/
 
 .graphcontent {
   height: 100%;
@@ -783,12 +854,15 @@ a.playlist {
 
 .graphwidth {
   min-width: 30px;
-  width: 100vw;
+  width: 80%;
 }
 
-@media (min-width: 768px) {
-  .graphwidth {
-    width: 80vw;
+@media (max-width: 768px) {
+/*  .graphwidth {
+    width: 100vw;
+  }*/
+  .modal-dialog {
+    width: 100%
   }
 }
 
@@ -1019,10 +1093,12 @@ select option {
   margin-top: 8px;
 }
 
+/*
 .fas.fa-tint {
   margin-left: 5px;
   margin-top: 4px;
 }
+*/
 
 .fas.fa-trash {
   margin-left: 8px;
@@ -1112,6 +1188,10 @@ p {
   border: 7px solid rgba(255, 255, 255, 0);
   background: rgba(0, 0, 0, 0.5);
   background-clip: padding-box;
+}
+
+.dt_block.popup {
+  background:unset;
 }
 
 .weatherfull .transbg {
@@ -1484,10 +1564,10 @@ img.icon {
   img.icon {
     max-width: 15px !important;
   }
-  .fas,
-  .far,
-  .fab,
-  .wi {
+  .mh .fas,
+  .mh .far,
+  .mh .fab,
+  .mh .wi {
     font-size: 15px !important;
   }
   .fa-tv:before {
@@ -1908,6 +1988,15 @@ a:not([href]) {
   text-align: center;
 }
 
+.modal-dialog {
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle;
+  min-width: 50%;
+  margin-left:auto;
+  margin-right: auto;
+}
+
 @media screen and (min-width: 768px) {
   .modal:before {
     display: inline-block;
@@ -1915,15 +2004,12 @@ a:not([href]) {
     content: ' ';
     height: 100%;
   }
-}
 
-.modal-dialog {
-  display: inline-block;
-  text-align: left;
-  vertical-align: middle;
-  min-width: 50%;
+  .modal-dialog-settings {
+    margin: 80px auto;
+    vertical-align: top;
+  }
 }
-
 
 /* START: NEWS BLOCK*/
 
@@ -2484,6 +2570,7 @@ canvas {
 .agenda table {
   border-collapse: separate;
   border-spacing: 10px 0px;
+  margin-left: -10px;
 }
 
 .agenda td {
@@ -2695,14 +2782,27 @@ td.agenda-title {
   background-color: rgba(0, 0, 0, 0.2);
 }
 
+.sec-modal .sec-frame {
+  position: relative
+}
+
 .sec-frame {
+  border-radius: 5px;
+  position: relative;
+  width: 12em;
+  margin: 0 auto
+}
+
+.sec-frame.decorated {
   background-image: url(../img/bg14.jpg);
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
   box-shadow: 0px 6px 20px 5px rgba(0, 0, 0, 0.75), inset 0px 5px 7px -2px rgba(252, 252, 252, 0.2), inset 0 -14px 8px 2px rgba(0, 0, 0, 0.7);
-  border-radius: 5px;
-  position: relative;
-  height: 100%;
+  padding: 1em;
+}
+
+.sec-frame:not(.decorated) {
+  background-color: rgba(0,0,0,0.2);
 }
 
 .sec-frame .keypad-header {
@@ -2710,15 +2810,13 @@ td.agenda-title {
   white-space: nowrap;
   align-items: center;
   justify-content: center;
-  height: 5%;
-  position: absolute;
   width: 100%;
-  top: 7%;
-  font-size: 2vw;
+  height: 2em;
+  font-size: 100%;
 }
 
 .sec-frame .keypad-header .fas {
-  font-size: 100%;
+  font-size: 100% !important;
 }
 
 .sec-frame .keypad-header .text {
@@ -2754,30 +2852,20 @@ td.agenda-title {
   color: #494848;
   text-align: center;
   font-family: monospace;
-  position: absolute;
-  bottom: 7%;
   width: 100%;
-  height: 3%;
-  font-size: 0.6vw;
+  font-size: 50%;
+  line-height: 2;
 }
 
 .sec-frame .keypad-input {
-  text-align: left;
-  position: absolute;
-  width: 80%;
-  top: 15%;
-  height: 75%;
-  margin: 0 10%;
+  margin: 0 2%;
 }
 
 .sec-frame .keypad-input table {
   border-collapse: separate;
   border-spacing: 1px;
   width: 100%;
-  position: absolute;
-  top: 12%;
   margin: 0;
-  height: 82%;
 }
 
 .sec-frame .keypad-input table td {
@@ -2787,22 +2875,19 @@ td.agenda-title {
 
 .sec-frame .keypad-input table tr {
   white-space: nowrap;
-  height: 25%;
 }
 
 .sec-frame .keypad-input .input-container {
-  background-color: #161616;
-  position: absolute;
   overflow: hidden;
-  height: 10%;
-  left: 2%;
-  right: 2%;
+  margin: 0 2%;
+}
+
+.sec-frame.decorated .keypad-input .input-container {
   box-shadow: 0px 2px 9px 1px rgba(0, 0, 0, 0.8);
 }
 
 .sec-frame .keypad-input .key-input {
   font-family: 'Audiowide' !important;
-  font-size: 2vw;
   width: 100%;
   border-radius: 3px;
   background-color: #161616;
@@ -2812,6 +2897,7 @@ td.agenda-title {
   font-family: monospace;
   text-align: center;
   height: 100%;
+  font-size: 70%;
 }
 
 .text-strobe {
@@ -2841,16 +2927,20 @@ td.agenda-title {
   -webkit-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  -webkit-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  -moz-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
   font-family: monospace;
   text-transform: uppercase;
   font-weight: 900;
-  font-size: 3.5vw;
   display: flex;
   justify-content: center;
   align-items: center;
+  font-size: 100%;
+  line-height: 1.75;
+}
+
+.sec-frame.decorated .keypad-input .key {
+  -webkit-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -moz-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
 }
 
 .sec-frame .keypad-input .key:not(.disabled):hover {
@@ -2937,8 +3027,8 @@ td.agenda-title {
 
 .screw {
   position: absolute;
-  width: 5%;
-  height: 4%;
+  width: 0.5em;
+  height: 0.5em;
   border-radius: 100%;
   background: -moz-linear-gradient( -45deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
   background: -webkit-gradient( linear, left top, right bottom, color-stop(0%, #adadad), color-stop(51%, #e1e1e1), color-stop(68%, #dddddd), color-stop(100%, #f6f6f6));
@@ -2969,23 +3059,23 @@ td.agenda-title {
 }
 
 .sec-frame .screw.tl {
-  top: 3%;
-  left: 3%;
+  top: 0.5em;
+  left: 0.5em;
 }
 
 .sec-frame .screw.tr {
-  top: 3%;
-  right: 3%;
+  top: 0.5em;
+  right: 0.5em;
 }
 
 .sec-frame .screw.bl {
-  bottom: 3%;
-  left: 3%;
+  bottom: 0.5em;
+  left: 0.5em;
 }
 
 .sec-frame .screw.br {
-  bottom: 3%;
-  right: 3%;
+  bottom: 0.5em;
+  right: 0.5em;
 }
 
 .sec-frame td .status.key.disabled {
@@ -3002,6 +3092,10 @@ td.agenda-title {
 
 
 /* START: DIAL */
+
+.transbg.dial {
+  background-color: rgba(0,0,0,0);
+}
 
 .block-center {
   display: flex;
@@ -3020,10 +3114,12 @@ td.agenda-title {
 }
 
 .dt_content .dial {
+  
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  
   font-size: 240px;
   width: 1em;
   height: 1em;
@@ -3167,17 +3263,19 @@ td.agenda-title {
 
 .dial .slice {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  transform: rotate(-140deg);
+  width: 1em;
+  height: 1em;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(-140deg);
 }
 
 .dial .slice.splitdial-plus {
-  transform: rotateY(0deg) rotateX(0deg)!important;
+  transform: translate(-50%,-50%) rotateY(0deg) rotateX(0deg)!important;
 }
 
 .dial .slice.splitdial-minus {
-  transform: rotate(180deg)!important;
+  transform: translate(-50%,-50%) rotate(180deg)!important;
 }
 
 .dial:not(.p180):not(.p360) .slice,
@@ -3192,10 +3290,11 @@ td.agenda-title {
 
 .dial .dial-container {
   position: absolute;
-  width: 94%;
-  height: 94%;
-  top: 3%;
-  left: 3%;
+  width: 0.9em;
+  height: 0.9em;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   -webkit-transition-property: all;
   -moz-transition-property: all;
   -o-transition-property: all;
@@ -3211,10 +3310,13 @@ td.agenda-title {
 }
 
 .dt_content .dial:not(.fixed):hover .dial-container {
-  width: 87.5%;
-  height: 87.5%;
-  top: 6%;
-  left: 6%;
+  width: 0.8em;
+  height: 0.8em;
+/*  top: 6%;
+  left: 6%;*/
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   -webkit-transition-property: all;
   -moz-transition-property: all;
   -o-transition-property: all;
@@ -3230,20 +3332,26 @@ td.agenda-title {
 }
 
 .dial .draggable {
-  width: 100%;
-  height: 100%;
-  top: 0;
+  width: 1em;
+  height: 1em;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   position: absolute;
 }
 
 .dial .dial-center {
-  width: 75%;
-  height: 75%;
+  width: 0.75em;
+  height: 0.75em;
+  /*
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  margin: auto auto;
+  margin: auto auto;*/
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   position: absolute;
   display: -webkit-box;
   display: -ms-flexbox;
@@ -3265,8 +3373,8 @@ td.agenda-title {
 }
 
 .dt_content .dial:not(.fixed):hover .dial-center {
-  width: 50%;
-  height: 50%;
+  width: 0.5em;
+  height: 0.5em;
   -webkit-transition: all 0.2s ease-in;
   -moz-transition: all 0.2s ease-in;
   -o-transition: all 0.2s ease-in;
@@ -3275,14 +3383,14 @@ td.agenda-title {
 }
 
 .dt_content .dial.fixed .dial-center {
-  width: 85%;
-  height: 85%;
+  width: 0.85em;
+  height: 0.85em;
 }
 
 .dial-menu {
   justify-content: center;
-  height: 100%;
-  width: 90%;
+  height: 1em;
+  width: 0.9em;
   min-height: 100%;
   display: flex;
   flex-direction: column;
@@ -3292,10 +3400,13 @@ td.agenda-title {
 .dial-menu .status {
   list-style-type: none;
   padding-left: 0;
-  width: 100%;
+  width: 90%;
   height: 90%;
-  max-width: 100%;
   font-size: 9%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -3303,7 +3414,6 @@ td.agenda-title {
   text-align-last: center;
   -moz-text-align-last: center;
   border-radius: 50%;
-  margin-top: 10px;
   box-shadow: inset 0px 0.5px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 2px rgba(255, 255, 255, 0.5), inset 0px 5px 8px 5px rgba(0, 0, 0, 0.8);
   color: #cccccc;
   background-color: #2a2a2a;
@@ -3383,36 +3493,36 @@ td.agenda-title {
 }
 
 .dial .dial-display,
-.dial .dial-display .value,
-.dial .dial-display .device,
-.dial .dial-display .info {
+.dial .value,
+.dial .info {
   width: 100%;
   text-align: center;
   white-space: nowrap;
 }
+
+
 
 .dial .dial-display {
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   flex-direction: column;
-  -ms-flex-wrap: wrap;
-  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   height: 90%;
 }
 
-.dial .dial-display .value-unit {
+.dial .value-unit {
   position: absolute;
   top: 30%;
   display: flex;
   align-items: center;
+  left: 50%;
+  transform: translate(-50%);
 }
 
-.dial .dial-display .value-unit .value,
-.dial .dial-display .value-unit .unit {
-  font-size: 0.22em;
+.dial .value-unit {
+  font-size: 0.15em;
   line-height: 1em;
   color: #cccccc;
   -webkit-transition: all 0.2s ease-out;
@@ -3423,26 +3533,42 @@ td.agenda-title {
   z-index: 5;
 }
 
-.dial .dial-display .value-unit .unit {
-  font-size: 0.1em;
+.dial .unit {
+  font-size: 0.7em;
   color: grey;
-  margin-left: 0.1em;
-  max-width: 30%;
+  margin-left: 0.2em;
 }
 
 .animation {
   animation: fadeInLoad 2s;
 }
 
-.dial .dial-display .device {
+.dial .device {
   position: absolute;
   top: 7%;
-  font-size: 0.07em;
   color: #ffa500;
   line-height: 2em;
+  font-size: 0.07em;
+  white-space: normal;
+  line-height: 1em;
+  width: 80%;
+  text-align: center;
+  left: 50%;
+  transform: translate(-50%);
+
+  
 }
 
-.dial .dial-display .info {
+.dial.text .value-unit {
+  width: 95%;
+  font-size: 0.1em;
+}
+
+.dial.text .value {
+  white-space: normal;
+}
+
+.dial .info {
   position: relative;
   top: 28%;
   font-size: 0.06em;
@@ -3450,10 +3576,11 @@ td.agenda-title {
   line-height: 2em;
 }
 
-.dial .dial-display .info.nosetpoint {
+.dial .info.nosetpoint {
   margin-bottom: 7px;
 }
 
+/*
 .dial .dial-display .extra {
   position: relative;
   top: 28%;
@@ -3489,24 +3616,99 @@ td.agenda-title {
   width: 1em;
   margin-right: 0.25em;
 }
+*/
+.dial .extra {
+  position: absolute;
+  font-size: 0.06em;
+  color: grey;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  top: 60%;
+  line-height: 1.3em;
+  width: 100%;
+  flex-wrap: wrap;
+}
 
-.dial .dial-display .extra.hidden {
+.dial .extra.novalue {
+  top: 30%;
+}
+
+.dial .item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dial .itemlabel {
+  margin-right: 0.3em
+}
+
+.dial .info {
+  margin-top: auto;
+  top: 0px;
+}
+
+.dial:hover .info {
+  display:block
+}
+
+.dial .extra i {
+  font-size: 1em;
+}
+
+.dial .extra img {
+  width: 1em;
+  margin-right: 0.25em;
+}
+
+.dial .item.primary{
+  font-size: 150%;
+  width:100%
+}
+
+
+.dataunit {
+  display: flex;
+  align-items: center;
+}
+
+.primary .data{
+  font-size: 1.5em;
+  line-height: 1.5em;
+  color: #cccccc;
+}
+
+.dial .extra.hidden {
   visibility: hidden;
 }
 
-.dial:hover .dial-display .value-unit .value {
-  font-size: 0.15em;
+.dial:hover .value {
   color: orange;
   color: var(--dial-color);
 }
 
-.dial:hover .dial-display .value-unit .unit {
+.dial-switch .extra {
+  margin-top: 4%
+}
+
+.dial-switch .info {
+  margin-bottom: 1em;
+}
+
+/*Some dial utility classes*/
+
+.dial .w100 {
+  width: 100%
+}
+
+.dial:hover .value-unit .unit {
   font-size: 0.05em;
 }
 
-.dial:hover .dial-display .info,
-.dial:hover .dial-display .device,
-.dial:hover .dial-display .extra {
+.dial:hover .info,
+.dial:hover .device,
+.dial:hover .extra {
   display: none;
 }
 
@@ -3799,7 +4001,6 @@ td.agenda-title {
   background: -webkit-gradient(linear, 0 0, 0 100%, from(#333333), to(#191919));
   background: -webkit-linear-gradient(#333333, #191919);
   background: linear-gradient(#333333, #191919);
-  position: relative;
   color: #a5a39d;
   text-align: center;
   -webkit-transition: all 0.2s ease-out;
@@ -3842,31 +4043,6 @@ td.agenda-title {
   filter: blur(1px);
 }
 
-.dial-switch .switch-face .device {
-  font-size: 12px;
-  font-size: 0.07em;
-  position: absolute;
-  top: 25%;
-  -webkit-transition: all 0.1s ease;
-  -moz-transition: all 0.1s ease;
-  -ms-transition: all 0.1s ease;
-  -o-transition: all 0.1s ease;
-  transition: all 0.1s ease;
-}
-
-.dial-switch .switch-face .info {
-  color: grey;
-  line-height: 2em;
-  font-size: 0.05em;
-  position: absolute;
-  top: 60%;
-  -webkit-transition: all 0.1s ease;
-  -moz-transition: all 0.1s ease;
-  -ms-transition: all 0.1s ease;
-  -o-transition: all 0.1s ease;
-  transition: all 0.1s ease;
-}
-
 .dial-switch input:checked {
   width: 99%;
   height: 99%;
@@ -3881,17 +4057,20 @@ td.agenda-title {
 }
 
 .dial-switch .icon-off {
-  font-size: 0.1em;
+  font-size: 0.18em;
   color: #cccccc;
   -webkit-transition: all 0.1s ease;
   -moz-transition: all 0.1s ease;
   -ms-transition: all 0.1s ease;
   -o-transition: all 0.1s ease;
   transition: all 0.1s ease;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .dial-switch input:checked~.switch-face .device {
-  font-size: 0.06em;
   -webkit-transition: all 0.1s ease;
   -moz-transition: all 0.1s ease;
   -ms-transition: all 0.1s ease;
@@ -3900,7 +4079,7 @@ td.agenda-title {
 }
 
 .dial-switch input:checked~.switch-face .fas {
-  font-size: 0.08em;
+  font-size: 0.18em;
   color: orange;
   color: var(--dial-color);
   -webkit-transition: all 0.1s ease;
@@ -3911,7 +4090,6 @@ td.agenda-title {
 }
 
 .dial-switch input:checked~.switch-face .info {
-  font-size: 0.04em;
   -webkit-transition: all 0.1s ease;
   -moz-transition: all 0.1s ease;
   -ms-transition: all 0.1s ease;
@@ -3923,12 +4101,12 @@ td.agenda-title {
   content: "";
   display: block;
   position: absolute;
-  width: 70%;
-  height: 70%;
+  width: 90%;
+  height: 90%;
   left: 50%;
   top: 50%;
   z-index: -1;
-  margin: -35% 0 0 -35%;
+  margin: -45% 0 0 -45%;
   border-radius: 50%;
   background: #d2cbc3;
   background: -moz-linear-gradient(#161616, #6c6c6c);
@@ -3978,16 +4156,13 @@ td.agenda-title {
 .colorpicker .modal-dialog {
   max-width: 90%;
   min-width: unset;
-  width: 90%;
+  width: 90%;  
 }
 
-
-/*
 .colorpicker .modal-content {
-  max-width: 90%;
-  min-width: unset;
-  width: 50%;
-}*/
+  position: relative;
+  background-color: white;
+}
 
 .colorpicker .cp-iro {
   overflow-x: auto;
@@ -4044,3 +4219,68 @@ td.agenda-title {
     text-align: right;
 }
 /*end garbage*/
+
+/*battery level*/
+
+.battery-level {
+  position: absolute;
+  right:0;
+  top:0;
+  color: rgba(255, 255, 255, 0.5);
+  margin-right: 3px;
+  font-size: 15px
+}
+
+.battery-level.fa-battery-empty {
+  color:red;
+  z-index: 15;
+}
+
+.battery-percentage {
+/*  position: absolute;
+  top: 5px;
+  left: 2px;*/
+  width: 100%;
+  text-align: center;
+  font-size: 10px;
+}
+
+/*end battery level
+
+/*tvguide*/
+
+.tvguide tr {
+  vertical-align: top
+}
+.tvtime {
+  white-space: nowrap
+}
+.tvchannel {
+  font-style: italic;
+  white-space: nowrap
+}
+
+.tvtitle {
+  font-weight: bold;
+}
+
+.tvsep {
+  width: 1em;
+  text-align: center;
+}
+
+/*end tvguide*/
+
+/*debug*/
+.modal-dialog-custom .tab-content {
+  height: 100%
+}
+
+.modal-dialog-custom .tab-content {
+
+}
+
+/*owm widget*/
+.dt_block.owmwidget {
+  background-color: unset 
+}

@@ -2,7 +2,7 @@
 /* global settings _TEMP_SYMBOL _CORS_PATH moment getRandomInt*/
 // eslint-disable-next-line no-unused-vars
 function loadWeather(location, country) {
-//  var html = '';
+  //  var html = '';
   if (
     typeof settings['owm_api'] !== 'undefined' &&
     settings['owm_api'] !== '' &&
@@ -24,7 +24,7 @@ function loadWeather(location, country) {
           if (settings['static_weathericons'] === 0) {
             weatherIcon = getSkycon(weather.weather[0].icon, 'skycon');
           }
-/*          html +=
+          /*          html +=
             '<h2><span>' +
             Math.round(temp) +
             _TEMP_SYMBOL +
@@ -59,7 +59,8 @@ function isNumeric(n) {
 }
 
 function getOWMurl(makeFull) {
-  var site = (settings['use_cors'] ? _CORS_PATH : '' ) + 
+  var site =
+    (settings['use_cors'] ? _CORS_PATH : '') +
     'https://api.openweathermap.org/data/2.5/' +
     (makeFull ? 'forecast' : 'weather') +
     '?';
@@ -158,7 +159,7 @@ function loadWeatherFull(location, country) {
             var minTemp = [199, 199, 199, 199, 199];
             var tempTemp = 199;
             var x = -1;
-            for ( i = 0; i < fcNumber; i++) {
+            for (i = 0; i < fcNumber; i++) {
               curfor = currentforecast.list[i];
               date = moment
                 .unix(curfor.dt)
