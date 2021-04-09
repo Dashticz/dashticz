@@ -32,6 +32,12 @@ var DT_dial = (function () {
       document.addEventListener('touchstart', this.evHandler, {
         passive: false,
       });
+
+      return Domoticz.request('type=settings').then(function (res) {
+        if (res) {
+          DT_dial.settings = res;
+        }
+      });
     },
     defaultCfg: {
       title: false,
@@ -46,7 +52,7 @@ var DT_dial = (function () {
       animation: true,
       iconSwitch: 'fas fa-power-off',
       showvalue: true,
-      value: 'Data'
+      value: 'Data',
     },
 
     /**
@@ -71,59 +77,50 @@ var DT_dial = (function () {
       me.segments = 11;
       me.showunit = me.block.showunit || false;
 
-      /* Get Domoticz setting then make */
-      Domoticz.request('type=settings')
-        .then(function (res) {
-          if (res) {
-            DT_dial.settings = res;
+      var idx;
+      me.devices = [];
+      if (typeof me.idx === 'number' || parseInt(me.idx))
+        me.devices.push(me.idx);
+      if (typeof me.idx === 'string' && me.idx[0] === 's') {
+        idx = parseInt(me.idx.slice(1));
+        if (idx) me.devices.push(me.idx);
+      }
+      if (me.block.values)
+        me.block.values.forEach(function (el) {
+          if (typeof el === 'object' && el.idx) {
+            //              if (!$.inArray(el.idx, me.devices))
+            var idx = parseInt(el.idx);
+            if (me.devices.indexOf(idx) === -1) me.devices.push(idx);
           }
-        })
-        .then(function () {
-          var idx;
-          me.devices = [];
-          if (typeof me.idx === 'number' || parseInt(me.idx))
-            me.devices.push(me.idx);
-          if (typeof me.idx === 'string' && me.idx[0] === 's') {
-            idx = parseInt(me.idx.slice(1));
-            if (idx) me.devices.push(me.idx);
-          }
-          if (me.block.values)
-            me.block.values.forEach(function (el) {
-              if (typeof el === 'object' && el.idx) {
-                //              if (!$.inArray(el.idx, me.devices))
-                var idx = parseInt(el.idx);
-                if (me.devices.indexOf(idx) === -1) me.devices.push(idx);
-              }
-            });
-          if (me.block.temp) {
-            idx = parseInt(me.block.temp);
-            if (idx && me.devices.indexOf(idx) === -1) me.devices.push(idx);
-          }
-          me.devices.forEach(function (el) {
-            Dashticz.subscribeDevice(me, el, false, function (device) {
-              if (me.idx === el) {
-                me.device = device;
-                me.block.device = device;
-              }
-              me.lastupdate = !me.block.last_update
-                ? false
-                : moment(me.device.LastUpdate).format(DT_dial.timeformat);
-              make(me);
-            });
-          });
-          if (me.devices.length) {
-            me.device = Domoticz.getAllDevices()[me.devices[0]];
-            if (!me.device) {
-              console.log('Device not found: ', me.idx);
-            } else {
-              me.block.idx = me.idx; /* required for existing functions */
-              me.block.device = me.device;
-              me.isSetpoint = !!me.device.SetPoint;
-            }
-          }
-          make(me);
-          tap(me);
         });
+      if (me.block.temp) {
+        idx = parseInt(me.block.temp);
+        if (idx && me.devices.indexOf(idx) === -1) me.devices.push(idx);
+      }
+      me.devices.forEach(function (el) {
+        Dashticz.subscribeDevice(me, el, false, function (device) {
+          if (me.idx === el) {
+            me.device = device;
+            me.block.device = device;
+          }
+          me.lastupdate = !me.block.last_update
+            ? false
+            : moment(me.device.LastUpdate).format(DT_dial.timeformat);
+          make(me);
+        });
+      });
+      if (me.devices.length) {
+        me.device = Domoticz.getAllDevices()[me.devices[0]];
+        if (!me.device) {
+          console.log('Device not found: ', me.idx);
+        } else {
+          me.block.idx = me.idx; /* required for existing functions */
+          me.block.device = me.device;
+          me.isSetpoint = !!me.device.SetPoint;
+        }
+      }
+      make(me);
+      tap(me);
     },
 
     destroy: function (me) {
@@ -579,8 +576,8 @@ var DT_dial = (function () {
         break;
       case 'dim':
         var level = (maxdim / me.max) * me.value;
-        if (level<1) level = 0;
-        if (level>maxdim-1) level = maxdim;
+        if (level < 1) level = 0;
+        if (level > maxdim - 1) level = maxdim;
         slideDevice(me, idx, Math.round(level));
         break;
       case 'onoff':
@@ -922,8 +919,8 @@ var DT_dial = (function () {
             me.setpointDevice = idx;
             me.setpoint = choose(me.block.setpoint, 0);
             me.value = valueInfo.data;
-            me.needle=me.value;
-            me.splitdial = choose(el.splitdial, me.block.min<0);
+            me.needle = me.value;
+            me.splitdial = choose(el.splitdial, me.block.min < 0);
           }
           valueInfo.deviceStatus = device.deviceStatus || '';
           return valueInfo;
@@ -933,7 +930,7 @@ var DT_dial = (function () {
       }
     }
 
-    if(me.splitdial) {
+    if (me.splitdial) {
       me.class = me.value > 0 ? 'positive' : 'negative';
       me.slice = me.value > 0 ? 'splitdial-plus' : 'splitdial-minus';
     }
@@ -1061,9 +1058,9 @@ var DT_dial = (function () {
     me.value =
       me.device.Data === 'Off'
         ? 0
-        : me.device.Level > me.max -1
+        : me.device.Level > me.max - 1
         ? me.max
-        : me.device.Level < me.min+1
+        : me.device.Level < me.min + 1
         ? me.min
         : me.device.Level;
     me.demand = me.value > 0;
@@ -1071,9 +1068,9 @@ var DT_dial = (function () {
       ? parseInt(me.device.MaxDimLevel)
       : 100;
     me.segments = 11;
-    if(isDefined(me.block.setpoint)) {
-      me.setpoint=me.block.setpoint;
-      me.isSetpoint=true;
+    if (isDefined(me.block.setpoint)) {
+      me.setpoint = me.block.setpoint;
+      me.isSetpoint = true;
     }
     return;
   }
@@ -1116,18 +1113,17 @@ var DT_dial = (function () {
   function p1smartmeter(me) {
     me.type = 'p1';
     me.active = false;
-    if(me.device.SubType == 'Gas') {
+    if (me.device.SubType == 'Gas') {
       me.min = choose(me.block.min, 0);
       me.max = choose(me.block.max, 20);
       me.value = parseFloat(me.device.CounterToday);
       me.unitvalue = 'm3';
-    }
-    else {
+    } else {
       me.min = choose(me.block.min, -10);
       me.max = choose(me.block.max, 10);
       me.value =
         Math.round(
-          (parseFloat(me.device.CounterDelivToday ) -
+          (parseFloat(me.device.CounterDelivToday) -
             parseFloat(me.device.CounterToday)) *
             100
         ) / 100;
