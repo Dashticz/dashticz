@@ -1,8 +1,9 @@
 {
-"version": "3.7.7",
-"branch": "beta",
-"last_changes": "Update external modules",
+"version": "3.8",
+"branch": "master",
+"last_changes": "Master version derived from v3.7.7 beta",
 "changelog" : {
+            "3.7.7": "Update NPM modules",
             "3.7.6": "Dial updates",
             "3.7.5": "OWM widgets",
             "3.7.4": "Dial improvements",
