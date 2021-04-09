@@ -8,12 +8,12 @@
 /* global number_format */
 var api = 'https://covid-tracker-us.herokuapp.com/v2/';
 var flagUrl =
-//  _CORS_PATH +
+  //  _CORS_PATH +
   'https://raw.githubusercontent.com/clinkadink/country-flags/master/png100px/';
 
 var DT_coronavirus = {
   name: 'coronavirus',
-  defaultCfg: function() {
+  defaultCfg: function () {
     var cfg = getBlockDefaults(); //Defaults from DT_graph
     var addCfg = {
       datasetColors: ['#7fcdbb', '#f03b20', '#2b7865', '#782b2b'],
@@ -25,10 +25,10 @@ var DT_coronavirus = {
     $.extend(cfg, addCfg);
     return cfg;
   },
-  canHandle: function(block) {
+  canHandle: function (block) {
     return block && block.type === 'corona';
   },
-  run: function(me) {
+  run: function (me) {
     if (isDefined(me.block.report)) {
       //countryCode: ''
       createReportBlock(me, true);
@@ -57,7 +57,7 @@ function createDashGraph(me) {
     me.block.countryCode +
     '&province&timelines=1';
 
-  $.getJSON(dataUrl, function(json) {
+  $.getJSON(dataUrl, function (json) {
     var stats = {};
     stats.latestConfirmed = json.latest.confirmed;
     stats.latestDeaths = json.latest.deaths;
@@ -211,14 +211,14 @@ function createDashGraph(me) {
         id: 'B',
         position: 'right',
       });
-    scales.xAxes[0].stacked = isDefined(me.block.stacked) ?
-      me.block.stacked :
-      true;
-    scales.yAxes[0].stacked = isDefined(me.block.stacked) ?
-      me.block.stacked :
-      true;
+    scales.xAxes[0].stacked = isDefined(me.block.stacked)
+      ? me.block.stacked
+      : true;
+    scales.yAxes[0].stacked = isDefined(me.block.stacked)
+      ? me.block.stacked
+      : true;
 
-    $.each(scales.yAxes, function(i) {
+    $.each(scales.yAxes, function (i) {
       scales.yAxes[i].scaleLabel = {
         labelString: i === 1 ? 'Day' : scaleLabel,
         display: true,
@@ -227,7 +227,7 @@ function createDashGraph(me) {
       scales.yAxes[i].ticks = {
         beginAtZero: true,
         fontColor: 'white',
-        callback: function(value) {
+        callback: function (value) {
           if (scaleLabel == 'Day') {
             return number_format(value);
           } else {
@@ -245,7 +245,7 @@ function createDashGraph(me) {
     setHeight = me.block.height ? me.block.height : setHeight;
     $(me.mountPoint + ' .block_coronavirus').css('height', setHeight);
 
-    templateEngine.load('corona_graph_header').then(function(template) {
+    templateEngine.load('corona_graph_header').then(function (template) {
       var data = {
         flag: flagUrl + me.block.countryCode.toLowerCase(),
         country: stats.country,
@@ -267,7 +267,7 @@ function createDashGraph(me) {
       mountPoint
         .html(html)
         .promise()
-        .done(function() {
+        .done(function () {
           $('.graphValues' + me.graphIdx).html(template(data));
           createButtons(me); //We can only add the buttons after the header is mounted in the DOM
         });
@@ -285,20 +285,20 @@ function addHeader(me, h) {
 
 function createReportBlock(me, province) {
   var p = province ? '&province' : '';
-  var dataUrl = isDefined(me.block.countryCode) ?
-    api +
-    'locations?country_code=' +
-    me.block.countryCode +
-    p +
-    '&timelines=1' :
-    api + 'latest';
+  var dataUrl = isDefined(me.block.countryCode)
+    ? api +
+      'locations?country_code=' +
+      me.block.countryCode +
+      p +
+      '&timelines=1'
+    : api + 'latest';
   var width = isDefined(me.block.width) ? me.block.width : 3;
 
   $.ajax({
     url: dataUrl,
     dataType: 'json',
-    success: function(json) {
-      templateEngine.load('corona_report').then(function(template) {
+    success: function (json) {
+      templateEngine.load('corona_report').then(function (template) {
         var report = me.block.report.toLowerCase();
         var data = number_format(json.latest[report]);
         var icon = report === 'confirmed' ? 'hospital' : 'skull-crossbones';
@@ -325,22 +325,23 @@ function createReportBlock(me, province) {
           width: width,
           icon: icon,
           title:
-            (isDefined(me.block.countryCode) ?
-              me.block.countryCode.toUpperCase() :
-              'Global') +
+            (isDefined(me.block.countryCode)
+              ? me.block.countryCode.toUpperCase()
+              : 'Global') +
             ': ' +
             me.block.report,
           report: data,
-          flag: flagUrl +
-            (isDefined(me.block.countryCode) ?
-              me.block.countryCode.toLowerCase() :
-              'world'),
+          flag:
+            flagUrl +
+            (isDefined(me.block.countryCode)
+              ? me.block.countryCode.toLowerCase()
+              : 'world'),
         };
         mountPoint.html(template(dataObject));
       });
     },
-    complete: function() {},
-    error: function(xhr) {
+    complete: function () {},
+    error: function (xhr) {
       if (xhr.status == 404) {
         createReportBlock(me, false);
       }
@@ -363,7 +364,7 @@ function getDoublingHours(json) {
   var halfLatestConfirmed = json.latest.confirmed / 2;
   var d = 0;
   var doublingHours = 0;
-  reverseForIn(timeline, function(key) {
+  reverseForIn(timeline, function (key) {
     if (this[key] <= halfLatestConfirmed && doublingHours === 0) {
       var nextDay = Object.values(timeline)[Object.keys(timeline).length - d];
       var increase = nextDay - this[key];

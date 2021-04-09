@@ -42,6 +42,7 @@ mapping                   Translation from description of the pickup event to a 
 garbage                   Settings for different garbage types. See :ref:`par_garbage`.
 date_separator            Text to place between the garbage type and date (default ': ')
 layout                    Layout of the garbage rows: ``0`` for plain text layout, ``1`` for table layout, ``2`` for text layou with line break between garbage type and date.
+ignoressl                 ``false (default)/ true``: Set to true to disable https SSL checks 
 =======================   ===============================
 
 These block parameters can also be globally via a CONFIG.js setting:
@@ -103,6 +104,7 @@ After the mapping on a garbage type, the name, color and icon can be configured 
 The two examples above show the default definition of the ``garbage_mapping`` and ``garbage`` parameters. 
 You can redefine them in your ``CONFIG.js``.
 
+In case there are multiple collection items on the same date, then they will be sorted based on the order of the keys in ``garbage`` parameter.
 
 .. _garbage_companies :
 

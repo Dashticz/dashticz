@@ -17,9 +17,10 @@
 	<ul>
 		<?php
 
-        use om\IcalParser;
+		use om\IcalParser;
 
-        require_once __DIR__ . '/../vendor/autoload.php';
+		require_once __DIR__ . '/../vendor/autoload.php';
+
 		$cal = new IcalParser();
 		$results = $cal->parseFile(
 			'https://www.google.com/calendar/ical/cs.czech%23holiday%40group.v.calendar.google.com/public/basic.ics'

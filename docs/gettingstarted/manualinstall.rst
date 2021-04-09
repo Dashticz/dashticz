@@ -56,6 +56,12 @@ Quick install for Synology NAS
 - Copy CONFIG_DEFAULT.js to CONFIG.js
 - Edit CONFIG.js to your needs and set write permission
 
+Dashticz installed on ISS
+
+- You have to register a MIME type for tpl extension ``mime-type type="text/x-phpbb-template``
+- See also https://bobcares.com/blog/http-error-404-3-not-found/ and https://forums.iis.net/t/1095097.aspx
+
+
 .. _DashticzInstallation :
 
 Dashticz Installation 

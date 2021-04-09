@@ -16,5 +16,9 @@
 		  <td class="agenda-title" style="color:{{item.color}};">{{item.title}}</td></tr>
 		{{/each}}
 	  {{/ifLe}}
+	{{else}}
+    <div class="agenda-empty">
+      {{emptyText}}
+    </div>
 	{{/each}}
 </table>

@@ -10,15 +10,12 @@
                 </div>
                 {{/if}}
                 {{/if}}
-                <div>
-                    <div class="headline" data-toggle="modal" data-toggle="modal" data-target="#rssweb"
-                        data-link="{{item.link}}" onclick="setSrcRss(this);">
+                    <div class="headline" data-link="{{item.link}}">
                         <strong class="title">{{item.title}}</strong>
                         <hr class="hr_thin">
                         <div class="description">{{{item.desc}}}</div>
                         <div class="updated">Reported {{item.pubd}}</div>
                     </div>
-                </div>
             </div>
         </li>
         {{/each}}

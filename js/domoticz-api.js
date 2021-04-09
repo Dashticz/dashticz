@@ -1,6 +1,6 @@
 /*from bundle.js*/
 /* global moment*/
-
+/* global Debug*/
 // eslint-disable-next-line no-unused-vars
 var Domoticz = (function () {
   var usrinfo = '';
@@ -18,6 +18,7 @@ var Domoticz = (function () {
   var reconnectTimeout = 2; //Initial value: 1 sec reconnect timeout
   var reconnecting = false;
   var securityRefresh = null;
+  var firstUpdate = true;
 
   var MSG = {
     info: 'type=command&param=getversion',
@@ -39,6 +40,7 @@ var Domoticz = (function () {
    * @return {Promise} The JQuery promise of the Domoticz request
    */
   function domoticzRequest(query, forcehttp) {
+    Debug.log(Debug.REQUEST, query);
     var defaulthttp = true; //websocket is not reliable yet for sending requests
     var selectHTTP =
       (typeof forcehttp === 'undefined' && defaulthttp) || forcehttp;
@@ -82,7 +84,7 @@ var Domoticz = (function () {
               if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
                 console.log('Domoticz request cancelled');
               } else {
-                if(jqXHR.status == 401) {
+                if (jqXHR.status == 401) {
                   newPromise.reject(new Error('Domoticz authorization error'));
                   return;
                 }
@@ -92,6 +94,10 @@ var Domoticz = (function () {
                     ' ' +
                     textStatus +
                     '!\nPlease, double check the path to Domoticz in Settings!'
+                );
+                Debug.log(
+                  Debug.ERROR,
+                  'Domoticz error code: ' + jqXHR.status + ' ' + textStatus
                 );
               }
               newPromise.reject(query + ' ' + textStatus);
@@ -114,6 +120,7 @@ var Domoticz = (function () {
       if (parseFloat(res.version) > 4.11 && cfg.enable_websocket) {
         useWS = true;
         console.log('Setting up websocket');
+        Debug.log('Setting up webksocket');
         connectWebsocket();
         setTimeout(function () {
           //if not resolved within 2 seconds, there is something wrong with the websocket connection.
@@ -171,6 +178,8 @@ var Domoticz = (function () {
     socket.onopen = function () {
       //            console.log(e)
       console.log('[open] Connection established');
+      Debug.log('[open] Connection established');
+
       /*            var msg = {
                             event: 'request',
                             requestid: 1,
@@ -242,7 +251,6 @@ var Domoticz = (function () {
       } else {
         // e.g. server process killed or network down
         // event.code is usually 1006 in this case
-        console.log(event);
         switch (event.code) {
           case 1006:
             if (!reconnecting) reconnect();
@@ -276,6 +284,7 @@ var Domoticz = (function () {
 
   function reconnect() {
     console.log('reconnecting');
+    Debug.log('reconnecting in ' + reconnectTimeout);
     setTimeout(function () {
       reconnecting = false;
       connectWebsocket();
@@ -300,18 +309,20 @@ var Domoticz = (function () {
       timeFilter = '&lastUpdate=' + lastUpdate.devices;
     }
     return domoticzRequest(
-      'type=devices&filter=all&used=true&order=Name' + (cfg.use_favorites ? '&favorite=1' : '') + timeFilter,
+      'type=devices&filter=all&used=true&order=Name' +
+        (cfg.use_favorites ? '&favorite=1' : '') +
+        timeFilter,
       forcehttp
     ).then(function (res) {
       return _setAllDevices(res);
     });
   }
 
-  function requestDevice(idx, forcehttp) { //not tested
-    return domoticzRequest(
-      'type=devices&rid=' + idx,
-      forcehttp
-    ).then(function (res) {
+  function requestDevice(idx, forcehttp) {
+    //not tested
+    return domoticzRequest('type=devices&rid=' + idx, forcehttp).then(function (
+      res
+    ) {
       return _setDevice(res);
     });
   }
@@ -345,7 +356,34 @@ var Domoticz = (function () {
       default:
         update = true;
     }
-    if (update) deviceObservable.set(idx, value);
+    if (update) {
+      if(typeof value === 'object') manipulateDevice(value);
+      deviceObservable.set(idx, value);
+    }
+  }
+
+  function manipulateDevice(value) {
+    if (!value.Data) return;
+
+    //Check device hook. Can be defined in custom.js or config.js
+    var data = value.Data.split(';');
+    if (!data.length) return;
+    data.forEach(function (el, i) {
+      value['Data' + i] = el;
+    });
+
+    //P1 Smart Meter manipulation
+    if (value.Type === 'P1 Smart Meter' && value.SubType === 'Energy') {
+      value.NettUsage = parseFloat(value.Usage) - parseFloat(value.UsageDeliv);
+      value.NettCounterToday = parseFloat(value.CounterToday) - parseFloat(value.CounterDelivToday);
+      value.NettCounter = parseFloat(value.Counter) - parseFloat(value.CounterDeliv);
+    }
+
+    if(typeof window.deviceHook ===  'function') {
+      window.deviceHook(value)
+    }
+
+
   }
 
   function _setAllDevices(data) {
@@ -371,16 +409,23 @@ var Domoticz = (function () {
       setOnChange(idx, device);
     }
     setOnChange('_devices', data); //event to trigger that all devices have been updated.
+    if(firstUpdate && window.debugDevices) {
+      window.debugDevices.forEach(function(device) {
+        setOnChange(device.idx, device)
+      })
+    }
+    firstUpdate = false;
     return deviceObservable._values;
   }
 
-  function _setDevice(data) { //not tested!
+  function _setDevice(data) {
+    //not tested!
     //        console.log(data.ActTime);
     if (!data) {
       console.log(' no data');
       return;
     }
-    if(!data.result){
+    if (!data.result) {
       console.log(' no result');
       return;
     }
@@ -517,36 +562,25 @@ function ListObservable() {
       //value was updated while on hold. Send latest value
       value = this._values[idx];
       if (typeof this._observers[idx] !== 'undefined')
-        this._observers[idx].forEach(function (el) {
-          el.callback(value);
-        });
+        this._observers[idx].fire(value);
     }
     this._queueState[idx] = 0;
   };
 
   this.subscribe = function (idx, getCurrent, callback) {
-    if (typeof this._observers[idx] === 'undefined') this._observers[idx] = [];
-    this._observers[idx].push({
-      callback: callback,
-    });
+    if (typeof this._observers[idx] === 'undefined')
+      this._observers[idx] = $.Callbacks();
+    this._observers[idx].add(callback);
     if (getCurrent && typeof this._values[idx] !== 'undefined')
       callback(this._values[idx]);
     var me = this;
-    var observeridx = this._observers[idx].length - 1;
     return function () {
-      me.unsubscribe.call(me, idx, observeridx);
+      me._observers[idx].remove(callback);
     };
   };
 
-  this.unsubscribe = function (listidx, observeridx) {
-    if (this._observers[listidx]) {
-      if (!this._observers[listidx].splice(observeridx, 1).length)
-        console.log(
-          'observer ' + observeridx + ' for list ' + listidx + ' not found.'
-        );
-    } else {
-      console.log('List idx ' + listidx + ' not found.');
-    }
+  this.unsubscribe = function (listidx, callback) {
+    this._observers[listidx].remove(callback);
   };
 
   this.set = function (idx, value) {
@@ -557,9 +591,7 @@ function ListObservable() {
       return;
     }
     if (typeof this._observers[idx] !== 'undefined')
-      this._observers[idx].forEach(function (el) {
-        el.callback(value);
-      });
+      this._observers[idx].fire(value);
   };
 
   this.get = function (idx) {
