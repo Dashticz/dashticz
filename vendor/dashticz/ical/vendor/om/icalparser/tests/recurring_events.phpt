@@ -12,7 +12,6 @@ Environment::setup();
 
 $cal = new IcalParser();
 
-
 $results = $cal->parseFile(__DIR__ . '/cal/recur_instances_finite.ics');
 $events = $cal->getSortedEvents();
 
@@ -32,7 +31,7 @@ $results = $cal->parseFile(__DIR__ . '/cal/recur_instances.ics');
 $events = $cal->getSortedEvents();
 
 $recurrences = [];
-foreach($events as $i => $event) {
+foreach ($events as $i => $event) {
 	$recurrences[] = $event['DTSTART'];
 }
 
@@ -46,8 +45,8 @@ foreach($events as $i => $event) {
 // EXDATE;TZID=America/Los_Angeles:20130205T100000
 //      because there is no "UNTIL", we calculate until 3 years from now of repeating events
 $now = new \DateTime('now');
-$diff=$now->diff(new \DateTime('20121002T100000'));
-$count = ($diff->y + 3 ) * 12 + $diff->m ;
+$diff = $now->diff(new \DateTime('20121002T100000'));
+$count = ($diff->y + 3) * 12 + $diff->m;
 Assert::equal($count, sizeof($recurrences));
 Assert::equal('02.10.2012 15:00:00', $recurrences[0]->format('d.m.Y H:i:s'));
 Assert::equal('06.11.2012 20:00:00', $recurrences[1]->format('d.m.Y H:i:s'));
@@ -89,7 +88,6 @@ foreach ($events[0]['EXDATES'] as $exDate) {
 	Assert::notContains($exDate, $recurrences);
 }
 
-
 $results = $cal->parseFile(__DIR__ . '/cal/recur_instances_with_modifications.ics');
 $events = $cal->getSortedEvents();
 
@@ -109,23 +107,23 @@ Assert::notContains($modifiedEvent['DTSTART'], $recurrences);
 $results = $cal->parseFile(__DIR__ . '/cal/recur_instances_with_modifications_and_interval.ics');
 
 // Build the cache of RECURRENCE-IDs and EXDATES first, so that we can properly determine the interval
-$eventCache = array();
-foreach($results['VEVENT'] as $event) {
+$eventCache = [];
+foreach ($results['VEVENT'] as $event) {
 	$eventSequence = empty($event['SEQUENCE']) ? "0" : $event['SEQUENCE'];
 	$eventRecurrenceID = empty($event['RECURRENCE-ID']) ? "0" : $event['RECURRENCE-ID'];
 
 	$eventCache[$event['UID']][$eventRecurrenceID][$eventSequence] = $event;
 }
-$trueEvents = array();
-foreach($results['VEVENT'] as $event) {
-	if(empty($event['RECURRENCES'])) {
+$trueEvents = [];
+foreach ($results['VEVENT'] as $event) {
+	if (empty($event['RECURRENCES'])) {
 		$trueEvents[] = $event;
 	} else {
 		$eventUID = $event['UID'];
-		foreach($event['RECURRENCES'] as $recurrence) {
+		foreach ($event['RECURRENCES'] as $recurrence) {
 			$eventRecurrenceID = $recurrence->format("Ymd");
-			if(empty($eventCache[$eventUID][$eventRecurrenceID])) {
-				$trueEvents[$eventRecurrenceID] = array('DTSTART' => $recurrence);
+			if (empty($eventCache[$eventUID][$eventRecurrenceID])) {
+				$trueEvents[$eventRecurrenceID] = ['DTSTART' => $recurrence];
 			} else {
 				krsort($eventCache[$eventUID][$eventRecurrenceID]);
 				$keys = array_keys($eventCache[$eventUID][$eventRecurrenceID]);
@@ -135,17 +133,19 @@ foreach($results['VEVENT'] as $event) {
 	}
 }
 
-usort($trueEvents, function ($a, $b) {
-	return $a['DTSTART'] > $b['DTSTART'];
-});
+usort(
+	$trueEvents,
+	static function ($a, $b): int {
+		return ($a['DTSTART'] > $b['DTSTART']) ? 1 : -1;
+	}
+);
 
 $events = $cal->getSortedEvents();
 Assert::false(empty($events[0]['RECURRENCES']));
 Assert::equal(count($trueEvents), count($events));
-foreach($trueEvents as $index => $trueEvent) {
+foreach ($trueEvents as $index => $trueEvent) {
 	Assert::equal($trueEvent['DTSTART']->format("Ymd"), $events[$index]['DTSTART']->format("Ymd"));
 }
-
 
 // There is still an issue that needs to be resolved when modifications are made to the initial event that is the
 // base of the recurrences.  The below ICS file has a great edge case example: one event, no recurrences in the
@@ -159,7 +159,7 @@ Assert::equal(1, count($events));
 $results = $cal->parseFile(__DIR__ . '/cal/daily_recur.ics');
 $events = $cal->getSortedEvents();
 $period = new DatePeriod(new DateTime('20120801T050000'), new DateInterval('P1D'), 365 * 3);
-foreach($period as $i => $day) {
+foreach ($period as $i => $day) {
 	Assert::equal($day->format('j.n.Y H:i:s'), $events[$i]['DTSTART']->format('j.n.Y H:i:s'));
 }
 

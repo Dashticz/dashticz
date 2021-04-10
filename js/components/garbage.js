@@ -31,9 +31,12 @@ var DT_garbage = (function () {
       mapping: settings['garbage_mapping'],
       date_separator: ': ',
       layout: 1,
-      maxdays: 32
+      maxdays: 32,
+      ignoressl: false,
     },
-    run: function () {},
+    run: function (me) {
+      me.order = Object.keys(me.block.garbage);
+    },
     refresh: function (me) {
       me.trashToday = false;
       me.trashTomorrow = false;
@@ -113,6 +116,8 @@ var DT_garbage = (function () {
   }
 
   function getIcalData(me, url) {
+    //todo: add recurrence handling
+    // https://github.com/mifi/ical-expander
     return $.get(getPrefixUrl(me) + url).then(function (data) {
       var jcalData = ICAL.parse(data);
       var vcalendar = new ICAL.Component(jcalData);
@@ -153,6 +158,7 @@ var DT_garbage = (function () {
           uniqueAddressID: data['dataList'][0]['UniqueId'],
           startDate: me.date.start.format('YYYY-MM-DD'),
           endDate: me.date.end.format('YYYY-MM-DD'),
+          community: data['dataList'][0]['Community']
         });
       })
       .then(function (data) {
@@ -347,7 +353,8 @@ var DT_garbage = (function () {
       '&nr=' +
       me.block.housenumber +
       '&t=' +
-      (me.block.housenumberSuffix || '');
+      (me.block.housenumberSuffix || '') +
+      (me.block.ignoressl ? '&ignoressl=true':'');
     return $.getJSON(cURI).then(function (data) {
       data = data
         .filter(function (element) {
@@ -515,54 +522,6 @@ var DT_garbage = (function () {
     });
   }
 
-  // https://gemeente.groningen.nl/afvalwijzer/groningen/9746AG/18/2018/
-  // eslint-disable-next-line no-unused-vars
-  function getGroningenData(me) {
-    return $.get(
-      getPrefixUrl(me) +
-        'https://gemeente.groningen.nl/afvalwijzer/groningen/' +
-        me.block.zipcode +
-        '/' +
-        me.block.housenumber +
-        '/' +
-        moment().format('YYYY')
-    ).then(function (data) {
-      var returnDates = [];
-      data = data
-        .replace(/<img .*?>/g, '')
-        .replace(/<head>(?:.|\n|\r)+?<\/head>/g, '')
-        .replace(/<script (?:.|\n|\r)+?<\/script>/g, '')
-        .replace(/<header (?:.|\n|\r)+?<\/header>/g, '');
-      $(data)
-        .find('table.afvalwijzerData tbody tr.blockWrapper')
-        .each(function (index, element) {
-          if ($(element).find('h2').length) {
-            var summary = $(element).find('h2')[0].innerText;
-            $(element)
-              .find('td')
-              .each(function (dateindex, dateelement) {
-                var month = dateelement.className.substr(-2);
-                $(dateelement)
-                  .find('li')
-                  .each(function (dayindex, dayelement) {
-                    var day = dayelement.innerText.replace('*', '');
-                    if (!isNaN(day)) {
-                      returnDates.push({
-                        date: moment(
-                          moment().format('YYYY') + '-' + month + '-' + day,
-                          'YYYY-M-D',
-                          'nl'
-                        ),
-                        summary: summary,
-                      });
-                    }
-                  });
-              });
-          }
-        });
-      return returnDates;
-    });
-  }
 
   ///http://dashticz.nl/afval/?service=afvalstromen&sub=alphenaandenrijn&zipcode=2401AR&nr=261&t=
 
@@ -574,14 +533,10 @@ var DT_garbage = (function () {
     //  getGeneralData('mijnafvalwijzer', address, date, random);
     function getDate(data, startidx) {
       var collDateSplit = data[startidx].split(' ');
-      var year = collDateSplit.length>3 ? collDateSplit[3]: new Date().getFullYear();
+      var year =
+        collDateSplit.length > 3 ? collDateSplit[3] : new Date().getFullYear();
       var dateStr =
-        '' +
-        Number(collDateSplit[1]) +
-        ' ' +
-        collDateSplit[2] +
-        ' ' +
-        year;
+        '' + Number(collDateSplit[1]) + ' ' + collDateSplit[2] + ' ' + year;
       return moment(dateStr, 'D MMM YYYY', 'nl');
     }
 
@@ -631,9 +586,6 @@ var DT_garbage = (function () {
 
   function filterReturnDates(me, returnDates) {
     return returnDates
-      .sort(function (a, b) {
-        return a.date > b.date ? 1 : b.date > a.date ? -1 : 0;
-      })
       .map(function (element) {
         return {
           date: element.date,
@@ -641,6 +593,18 @@ var DT_garbage = (function () {
           garbageType:
             element.garbageType || mapGarbageType(me, element.summary),
         };
+      })
+      .sort(function (a, b) {
+        var res = a.date > b.date ? 1 : b.date > a.date ? -1 : 0;
+        if(res) return res;
+        if(!me.order) return 0;
+        var sort_a = me.order.indexOf(a.garbageType);
+        var sort_b = me.order.indexOf(b.garbageType);
+        if (sort_a===sort_b) return 0;
+        if (sort_a=== -1) return 1;
+        if (sort_b=== -1) return -1;
+        return sort_a>sort_b ? 1: -1;
+
       })
       .filter(function (element) {
         return (
@@ -680,7 +644,7 @@ var DT_garbage = (function () {
   }
 
   function addToContainer(me, returnDates) {
-    var $div = $(me.mountPoint);
+    var $div = me.$mountPoint;
     var $divState = $div.find('.state');
     var $divImg = $div.find('img.trashcan');
     returnDates = filterReturnDates(me, returnDates);
@@ -699,7 +663,7 @@ var DT_garbage = (function () {
 
     var templateName = 'garbage_' + me.block.layout;
 
-    templateEngine.load(templateName).then(function (template) {
+    return templateEngine.load(templateName).then(function (template) {
       var data = {
         trashSep: me.block.date_separator,
       };
@@ -734,7 +698,9 @@ var DT_garbage = (function () {
   function loadDataForService(me) {
     me.date = {
       start: moment().startOf('day'),
-      end: moment().add(me.block.maxdays-1, 'days').endOf('day'),
+      end: moment()
+        .add(me.block.maxdays - 1, 'days')
+        .endOf('day'),
     };
 
     var zipcode = me.block.zipcode;
@@ -853,7 +819,7 @@ var DT_garbage = (function () {
           '.ics',
       },
       groningen: {
-        handler: getGroningenData,
+        handler: getMijnAfvalwijzerData,
       },
       hvc: {
         handler: getGeneralData,
@@ -1010,7 +976,7 @@ var DT_garbage = (function () {
     return serviceProperties[me.block.company]
       .handler(me, serviceProperties[me.block.company].param)
       .then(function (data) {
-        addToContainer(me, data);
+        return addToContainer(me, data);
       })
       .catch(function () {
         console.error('Error loading garbage: ', me.block);

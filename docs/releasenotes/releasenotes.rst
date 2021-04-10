@@ -6,7 +6,192 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 Recent changes
---------------
+---------------
+
+v3.8 Master (9-4-2021)
+----------------------
+
+Master version derived from v3.7.7 Beta.
+
+If your current Dashticz version is lower than v3.7.2 then before upgrading make a copy of custom/custom.css and custom/custom.js first!
+
+See the upgrade instructions at v3.7.2 below.
+
+v3.7.7 Beta (8-4-2021)
+------------------------
+
+Fixes
+~~~~~~
+
+* Garbage: Repaired Area, EDG, Groningen, Meerlanden
+
+Enhancements
+~~~~~~~~~~~~
+
+* P1 Smart Meter: Computed fields 'NettUsage', 'NettCounterToday' and 'NettCounter' which can be used as value in dials.
+* Garbage: Set block parameter 'ignoressl' to true to disable https SSL checks.
+
+Code
+~~~~
+
+* Update of the external npm modules
+  
+v3.7.6 Beta (12-3-2021)
+------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+.. note:: Breaking changes. See :ref:`v376` for update instuctions
+
+* Several dial enhancements. See :ref:`dialvalues`
+* Device hook: Function in custom.js which is called on every device update. See :ref:`devicehook`
+
+Fixes
+~~~~~~
+
+* Blinds: Support textOn and textOff block parameters
+
+v3.7.5 Beta (28-2-2021)
+-----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* OWM widgets. See :ref:`owmwidgets`
+
+Fixes
+~~~~~~
+
+* Dials: Fix dimmer decimals
+* Dials: Improved formatting
+* Dials: Improved error handling
+* Dials: Support setpoint for default dial
+
+v3.7.4 Beta (20-2-2021)
+-----------------------
+
+Fixes
+~~~~~~
+
+* Fix for Spotify block (removed the additional dummy block)
+* Spotify: Improved playlist popup layout
+* Improved error handling in PHP modules for calendar and garbage
+* Dials: Resize disabled (to prevent size changes after first rendering)
+* Garbage: block with company: 'ical' will now be detected correctly as Garbage block instead of Calendar
+* Garbage: recycleapp.be
+* Colorpicker: Add support for Hue RGBWW device by adding mode:1 block parameter
+
+Enhancements
+~~~~~~~~~~~~
+
+* Dial: block parameter ``iconSwitch`` to set the fontawesome icon to use for an on/off switch
+* Dials: Support added for text devices and for dials without device. 
+* Dials: Text devices will be recognized correctly in default dial as well, meaning you can combine several text devices into one dial.
+* Dials: Set number of decimals with ``decimals`` parameter
+* Garbage will be sorted in the same order as ``garbage`` block parameter (or ``config['garbage']``)
+
+v3.7.3 beta (24-1-2021)
+-----------------------
+
+.. note :: Make a backup of CONFIG.js, custom.css and custom.js
+
+Code
+~~~~
+
+* Redesign internal block framework
+* Removed old calendar block 'icalendar' and calendarurl config setting
+
+Enhancements
+~~~~~~~~~~~~
+
+* Calendar: (New calendar block, layout 0 and 1 only) The class 'agenda-empty' is applied to the calendar block in case there are no appointments.
+* Battery Level indicator for Domoticz devices. Battery icon will be displayed when the battery level is below ``batteryThreshold``. See :ref:`batterylevel`. 
+* TV Guide: Block parameter ``layout`` has been added, to display the TV guide with/without channel name. See :ref:`tvguide`
+* Graph: Block parameter ``labels`` has been added, to rename the device names that are used in groupByDevice graphs.
+
+Fixes
+~~~~~~
+
+* Bugfix security panel lock screen default setting
+* Show last update time when last_update is set as block parameter
+* Graph: Fix for block parameter aggregate as array
+* Calendar: Update icalparser for PHP8 compatibility
+
+
+3.7.2 Beta (27-12-2020)
+-----------------------
+
+.. note:: Update instructions.
+
+I've removed custom/custom.css and custom/custom.js from the Dashticz repository,  because these are user configuration files, and should not be part of the Dashticz repository.
+
+However, that means this update cannot be installed with ``git pull`` directly, because then git will report an error if you have modified one or both files.
+
+To solve this, first make a backup of these two files::
+
+  mv custom/custom.js custom/custom.js.bak
+  mv custom/custom.css custom/custom.css.bak
+
+In case you use the custom_2 folder, repeat these steps for that folder::
+
+  mv custom_2/custom.js custom_2/custom.js.bak
+  mv custom_2/custom.css custom_2/custom.css.bak
+
+Then update to the latest version as usual::
+
+  git pull
+
+And restore your backups::
+
+  mv custom/custom.js.bak custom/custom.js
+  mv custom/custom.css.bak custom/custom.css
+
+And for the custom_2 folder::
+
+  mv custom_2/custom.js.bak custom_2/custom.js
+  mv custom_2/custom.css.bak custom_2/custom.css
+
+You only have to do this once: Next updates can be installed with a normal 'git pull'
+
+
+Enhancements
+~~~~~~~~~~~~
+
+* Calendar: New block parameter ``emptytext`` to define the text to show where there are no calendar appointments. Only works for the new calendar block. See :ref:`newcalendar`
+* Custom graph: aggregate parameter can be an array to specify different aggregation methods per data element. See :ref:`groupBy`
+* Graph: New parameters ``axisRight`` to show the first Y axis on the right (default is ``false``), and ``axisAlternating`` to show Y axes alternating left/right (default: ``true``).
+* Support for device (sub)type Managed Counter
+* Flipclock: New block parameters showSeconds (true or false) and clockFace (12 or 24)
+* Security panel: New block parameters ( ``decorate``, ``headerText``, ``footerText``, ``scale``). See :ref:`secpanel`
+
+Fixes
+~~~~~~
+
+* Graph: Fix for data acquistion day graph gas device.
+* Colorpicker: Some fixes in warm white/cold white color setting.
+* Improved styling of modal popup windows.
+
+
+3.7.1 Beta (19-12-2020)
+-----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Graph: Enable graphs for Lux device type
+* Popup window: Add ``newwindow: 5`` to open an url as image instead of iframe (doc to be updated)
+* Clock: New Hayman clock. Add block 'haymanclock' to a column, or use ``type: 'haymanclock'`` in your block definition.
+* Clock: New basicclock, which is the same as the normal clock, but then responsive. (scales with the width)
+* Clock parameters: haymanclock, flipclock, stationclock and basicclock all support the block parameters ``size`` to set the width of the clock and the parameter ``scale`` to scale down the width with a relative factor (``scale: 0.6``)
+
+3.7.0 Beta (13-12-2020)
+-----------------------
+
+Code
+~~~~~
+
+* NPM update, code formatting
 
 3.7 Master (13-12-2020)
 ------------------------

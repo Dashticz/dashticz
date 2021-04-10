@@ -17,6 +17,7 @@
   TemplateEngine.Defaults = {
     templateDir: './tpl/',
     templateExt: '.tpl',
+    templateVersion: window._DASHTICZ_VERSION || 0
   };
 
   TemplateEngine.prototype = {
@@ -35,7 +36,7 @@
       return !!this._storage[name];
     },
     urlFor: function (name) {
-      return this.settings.templateDir + name + this.settings.templateExt;
+      return this.settings.templateDir + name + this.settings.templateExt + '?'+(window._DASHTICZ_VERSION || this.settings.templateVersion);
     },
   };
 

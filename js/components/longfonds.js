@@ -13,7 +13,7 @@ var DT_longfonds = {
     containerClass: 'hover',
   },
   run: function (me) {
-    $(me.mountPoint).click(function () {
+    me.$mountPoint.click(function () {
       DT_function.clickHandler(me);
     });
   },

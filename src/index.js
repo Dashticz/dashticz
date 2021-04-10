@@ -17,8 +17,8 @@ require('@fortawesome/fontawesome-free/css/all.min.css');
 // and  ./node_modules/@fortawesome/fontawesome-free/css/all.min.css to ./vendor/fontawesome-free/css
 // cp ./node_modules/@fortawesome/fontawesome-free/css/all.min.css ./vendor/fontawesome-free/css/
 require('mobile-detect');
-// removed from functions.js 
-window.md5=require('md5');
+// removed from functions.js
+window.md5 = require('md5');
 require('js-cookie');
 require('script-loader!./functions.js');
 
@@ -38,6 +38,6 @@ require('spectrum-colorpicker');
 require('ion-sound');
 require('hammerjs');
 require('chartjs-plugin-zoom');
-window.Popper=require('@popperjs/core');
-window.iro=require('@jaames/iro').default;
-window.ICAL=require('ical.js');
+window.Popper = require('@popperjs/core');
+window.iro = require('@jaames/iro').default;
+window.ICAL = require('ical.js');

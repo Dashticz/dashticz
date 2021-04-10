@@ -52,7 +52,7 @@ blocktypes.SubType['Text'] = {
   icon: 'fas fa-file',
   title: '<Name>',
   value: '<Data>',
-  graph: false
+  graph: false,
 };
 blocktypes.SubType['Counter Incremental'] = {
   icon: 'fas fa-bolt',
@@ -97,11 +97,17 @@ blocktypes.SubType['Current'] = {
   value: '<Data>',
 };
 
-blocktypes.SubType["X10 security motion"] = {
+blocktypes.SubType['X10 security motion'] = {
   icon: 'fas fa-running',
   title: '<Name>',
   value: '<Data>',
-  graph: false
+  graph: false,
+};
+
+blocktypes.SubType['Managed Counter'] = {
+  icon: 'fas fa-plug',
+  title: '<Name>',
+  value: '<Data>',
 };
 
 blocktypes.SensorUnit = {};
@@ -302,17 +308,17 @@ function getBlockTypesBlock(block) {
         typeof protoblock['iconOn'] !== 'undefined' ||
         typeof protoblock['iconOff'] !== 'undefined' ||
         typeof protoblock['imageOn'] !== 'undefined' ||
-        typeof protoblock['imageOff'] !== 'undefined' 
+        typeof protoblock['imageOff'] !== 'undefined'
       ) {
         //we have a single block
-        var newblock = {graph: true};
+        var newblock = { graph: true };
         newblock.idx = block.idx;
         $.extend(newblock, protoblock);
         blockValues.push(newblock);
       } else {
         var c = 1;
         for (var de in protoblock) {
-          var subblock = {graph: true};
+          var subblock = { graph: true };
           var protosubblock = protoblock[de];
           $.extend(subblock, protosubblock);
           subblock.idx = block.device.idx;

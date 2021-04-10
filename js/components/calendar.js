@@ -1,18 +1,19 @@
-/* global Dashticz moment settings config language time objectlength ksort infoMessage isDefined setHeight functions*/
+/* global Dashticz moment settings  language  objectlength ksort infoMessage isDefined setHeight TemplateEngine */
 var cal = [];
 var templateEngine = TemplateEngine();
 
 var DT_calendar = {
   name: 'calendar',
   canHandle: function (block, key) {
-    return block && block.type === 'calendar';
+    return block && (block.type === 'calendar' || block.icalurl);
   },
   defaultCfg: {
     icon: 'fas fa-calendar-alt',
     containerExtra: function (block) {
       if (block && block.layout === 2) block.icon = '';
     },
-    method: 1
+    emptytext: 'Geen afspraken.',
+    method: 1,
   },
   run: function (me) {
     if (me.block.type === 'calendar') {
@@ -99,51 +100,55 @@ function prepareCalendar(me, key) {
  */
 function getCalendarData(key, calendars, isnew, ishol) {
   var events = [];
-  var counter = 1;
+
+  var promises = [];
 
   $.each(calendars, function (name, calendar) {
-    url = makeUrl(key, calendar.ics);
+    var url = makeUrl(key, calendar.ics);
 
-    $.getJSON(url, function (data) {
-      for (var e in data) {
-        var ev = data[e];
-        var enddate = ev.end;
+    promises.push(
+      $.getJSON(url, function (data) {
+        for (var e in data) {
+          var ev = data[e];
+          var enddate = ev.end;
 
-        cal[key].adjustTZ =
-          ev.allDay === true && cal[key].adjustAllDayTZ
-            ? cal[key].adjustAllDayTZ
-            : cal[key].adjustTZ;
+          cal[key].adjustTZ =
+            ev.allDay === true && cal[key].adjustAllDayTZ
+              ? cal[key].adjustAllDayTZ
+              : cal[key].adjustTZ;
 
-        ev.start += cal[key].adjustTZ;
-        ev.end += cal[key].adjustTZ;
-        ev.name = name;
-        ev.color = calendar.color;
+          ev.start += cal[key].adjustTZ;
+          ev.end += cal[key].adjustTZ;
+          ev.name = name;
+          ev.color = calendar.color;
 
-        if (
-          parseFloat(enddate) >=
-          moment().subtract(cal[key].history, 'days').format('X')
-        ) {
-          if (isDefined(events[ev.start]) !== 'undefined')
-            events[ev.start] = [];
-          events[ev.start].push(ev);
+          if (
+            parseFloat(enddate) >=
+            moment().subtract(cal[key].history, 'days').format('X')
+          ) {
+            if (isDefined(events[ev.start]) !== 'undefined')
+              events[ev.start] = [];
+            events[ev.start].push(ev);
+          }
         }
-      }
-
-      if (counter === cal[key].icalurls || ishol) {
-        cal[key].events = ksort(events);
-
-        switch (Number(cal[key].layout)) {
-          case 2:
-            generateCalendar(key, isnew, ishol);
-            break;
-          default:
-            generateAgenda(cal[key].layout, key);
+      }).catch(function (err) {
+        if (err.status === 404) {
+          infoMessage('Calendar not found', calendar.ics);
         }
-      }
-      counter++;
-    }).catch(function () {
-      console.error('Error in response from calendar with icalurl ' + url);
-    });
+        console.error('Error in response from calendar with icalurl ' + url);
+      })
+    );
+  });
+  $.when.apply($, promises).then(function () {
+    cal[key].events = ksort(events);
+
+    switch (Number(cal[key].layout)) {
+      case 2:
+        generateCalendar(key, isnew, ishol);
+        break;
+      default:
+        generateAgenda(cal[key].layout, key);
+    }
   });
 }
 /**
@@ -153,7 +158,7 @@ function getCalendarData(key, calendars, isnew, ishol) {
  * @param {string}  key  The block name of the calendar.
  */
 function generateAgenda(opt, key) {
-  createModalIframe(key);
+  //  createModalIframe(key);
 
   templateEngine.load('calendar_' + opt).then(function (template) {
     var data = {
@@ -163,6 +168,7 @@ function generateAgenda(opt, key) {
       tf: cal[key].timeFormat,
       startonly: cal[key].startonly,
       entire: language.weekdays.entire_day,
+      emptyText: cal[key].block.emptytext,
     };
 
     $(cal[key].mountPoint + ' .dt_state')
@@ -177,6 +183,10 @@ function generateAgenda(opt, key) {
         p = dt;
       });
     }
+
+    if (Object.keys(cal[key].events).length)
+      $(cal[key].mountPoint + ' .dt_block').removeClass('agenda-empty');
+    else $(cal[key].mountPoint + ' .dt_block').addClass('agenda-empty');
   });
 }
 
@@ -226,7 +236,6 @@ function generateCalendar(key, isnew, ishol) {
               var m1 = moment.unix($(obj).data('id') / 1000);
               var m2 = moment.unix(item.start);
               var m3 = moment.unix(item.end);
-              var t = '';
 
               if (ishol) item.allDay = true;
 
@@ -344,7 +353,8 @@ function makeUrl(key, url) {
     url
       .replace(/webcal?\:\/\//i, 'https://')
       .replace('https://cors-anywhere.herokuapp.com/', '') +
-    '&method=' + cal[key].block.method
+    '&method=' +
+    cal[key].block.method
   );
 }
 
