@@ -1,6 +1,7 @@
 /* global getRandomInt settings usrEnc pwdEnc*/
 // eslint-disable-next-line no-unused-vars
 function getLog(columndiv, level, popup, random) {
+//  console.log(popup);
   if (typeof level == 'undefined') level = 2;
   if (typeof popup == 'undefined') popup = false;
   if (typeof random == 'undefined') random = getRandomInt(1, 100000);
@@ -23,7 +24,8 @@ function getLog(columndiv, level, popup, random) {
     } else {
       html += '<div class="items">';
     }
-    html += '</div>';
+    html += '</div></div>';
+//    console.log(html);
     $(columndiv).append(html);
   }
 

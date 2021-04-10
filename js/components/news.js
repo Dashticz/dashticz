@@ -1,4 +1,5 @@
-/* global settings _CORS_PATH infoMessage Dashticz moment*/
+/* global settings _CORS_PATH infoMessage Dashticz moment isDefined templateEngine DT_function*/
+//# sourceURL=js/components/news.js
 // eslint-disable-next-line no-unused-vars
 var DT_news = {
   name: 'news',
@@ -92,6 +93,10 @@ var DT_news = {
               $(document.body).append(template);
             });
           }
+          $(me.mountPoint + ' .headline').on("click", function() {
+            var url = $(this).data('link');
+            DT_function.clickHandler(me, {url: url})
+          })
 
           if (me.height) {
             /*set to fixed height*/
@@ -136,9 +141,4 @@ var DT_news = {
     });
   },
 };
-/* callback for newsfeed item onclick*/
-// eslint-disable-next-line no-unused-vars
-function setSrcRss(cur) {
-  $($(cur).data('target')).find('iframe').attr('src', $(cur).data('link'));
-}
 Dashticz.register(DT_news);

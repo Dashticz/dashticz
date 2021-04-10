@@ -47,19 +47,45 @@ function Colorpicker(options) {
         ev.stopPropagation
     });*/
 
-  var color = this.block.device.Color? JSON.parse(this.block.device.Color): {r:255, g:255, b:255, m:3};
+  var color = this.block.device.Color
+    ? JSON.parse(this.block.device.Color)
+    : { r: 255, g: 255, b: 255, m: 3 };
   if (color) {
     var thergb;
     switch (color.m) {
       case 1:
+        thergb = '#FFFFFF';
+        break;
       case 2:
         thergb = '#FFFFFF';
+        if (typeof color.t !== 'undefined') thergb = temp2rgb(color.t, true);
         break;
       default:
         thergb = "'rgb(" + color.r + ',' + color.g + ',' + color.b + ")'";
     }
     $(this.container + ' .sp-preview-inner').css('background-color', thergb);
   }
+}
+
+function temp2rgb(temp, asString) {
+  /*** temp=255 means very warm, so very red
+   *
+   */
+  var r = 255,
+    g = 255,
+    b = 255;
+  var adj;
+  if (temp < 128) {
+    adj = (128 - temp) / 2;
+    r = r - adj;
+    g = g - adj;
+  }
+  if (temp > 128) {
+    adj = (temp - 128) / 2;
+    g = g - adj;
+    b = b - adj;
+  }
+  return asString ? 'rgb(' + r + ',' + g + ',' + b + ')' : { r: r, g: g, b: b };
 }
 
 Colorpicker.prototype.count = 0;
@@ -80,13 +106,12 @@ var buttonList = {
   RGBWZ: ['RGB', 'W', 'WZ'], //
   RGBWWZ: ['RGB', 'WW', 'WWZ'], //
   RGBZ: ['RGB', 'WZ'],
-  WW:['WW']
+  WW: ['WW'],
 };
 
 Colorpicker.prototype.dimmerTypes = Object.keys(buttonList);
 
 Colorpicker.prototype.clickHandler = function (ev) {
-
   this.mode = 1;
 
   var myButtons = {};
@@ -281,18 +306,14 @@ Colorpicker.prototype.clickHandler = function (ev) {
 
     self.installIROComp(
       {
-        color: {
-          r: currentTemp,
-          g: currentTemp,
-          b: currentTemp,
-        },
+        color: temp2rgb(currentTemp),
         layoutDirection: 'horizontal',
         layout: [
           {
             component: iro.ui.Slider,
             options: {
               sliderType: 'kelvin', // can also be 'saturation', 'value', 'alpha' or 'kelvin',
-              minTemperature: 4000,
+              minTemperature: 4500,
               maxTemperature: 8000,
             },
           },
@@ -328,7 +349,7 @@ Colorpicker.prototype.clickHandler = function (ev) {
     self.setState(data.mode);
     var base = document.querySelector(self.container);
     var pos = base.getBoundingClientRect();
-    var pop = document.querySelector('#' + self.id + ' .modal-content');
+    var pop = document.querySelector('#' + self.id + ' .modal-container');
     var virtualElement = {
       getBoundingClientRect: function () {
         return pos;
@@ -507,10 +528,9 @@ Colorpicker.prototype.onChange = function onChange(name) {
 
 Colorpicker.prototype.setDevice = function setDevice() {
   var MAXTEMP = 8000;
-  var MINTEMP = 4000;
+  var MINTEMP = 4500;
   var TEMPSTEP = 255 / (MAXTEMP - MINTEMP);
-  var t = Math.round((MAXTEMP - this.comp['Temp'].color.kelvin) * TEMPSTEP);
-
+  var t = Math.round((MAXTEMP - this.comp['Temp'].color.kelvin) * TEMPSTEP) - 1;
   this.changed = true;
   if (this.requesting) return;
   var idx = this.block.device.idx;
@@ -534,6 +554,13 @@ Colorpicker.prototype.setDevice = function setDevice() {
   if (this.switchType === 'RGBWZ') {
     color.cw = color.ww;
     color.t = 0;
+  }
+
+  if (this.block.mode === 1) {//Hue mode: ww and cw must me 0 in rgb mode
+    if (color.m === 3) { //rgb mode
+      color.ww=0;
+      color.cw=0;
+    }
   }
 
   var brightness = Math.round(this.comp['Master'].color.value);

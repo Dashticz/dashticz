@@ -1,0 +1,10 @@
+.. _v376:
+
+v3.7.6: Dial values
+===================
+
+In v3.7.6 there are some changes in the behavior of the ``values`` parameter for a dial block.
+
+The values defined in this parameter will be added just below the main value of a dial: By default the main value will be displayed as well.
+
+To hide the main value, add ``showvalue: false`` to the dial block definition.

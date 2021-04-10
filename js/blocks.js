@@ -1,8 +1,7 @@
 /* eslint-disable no-debugger */
-/*global getBlockTypesBlock, language, _TEMP_SYMBOL, settings, getFullScreenIcon, FlipClock, loadWeatherFull, loadWeather*/
-/*global getSpotify, getCoin, loadChromecast, loadSonarr */
-/*global Dashticz, DT_function, Domoticz, getLog, addCalendar */
-/*global getRandomInt, moment, number_format */
+/*global getBlockTypesBlock, language, _TEMP_SYMBOL, settings*/
+/*global Dashticz, DT_function, Domoticz, Debug */
+/*global moment, number_format */
 /*from bundle.js*/
 /*global ion*/
 /*from main.js*/
@@ -19,16 +18,22 @@
 /*global google*/
 /*from config.js (or main.js)*/
 /*global blocks*/
-/*from components/graph.js*/
-/*global showPopupGraph*/
 /* Exports: */
 
 var alldevices = 'initial value';
 
 var oldstates = [];
 var onOffstates = [];
-var mountedBlocks = {}; //object to store all mounted blocks
 
+/**
+ * Build all the blocks in a column.
+ * @param {array} cols - Array containing all block definitions
+ * @param {string | number} c - Column id
+ * @param {string} screendiv - Screen div must contain row. Blocks will be mounted into
+ * @param {boolean} standby - true if building standby screen
+ *
+ * Build all the blocks in a column
+ */
 // eslint-disable-next-line no-unused-vars
 function getBlock(cols, c, screendiv, standby) {
   //    if (c==='bar') debugger;
@@ -54,48 +59,64 @@ function getBlock(cols, c, screendiv, standby) {
           '"></div>'
       );
     }
-    for (var b in cols['blocks']) {
-      var myblockselector = Dashticz.mountNewContainer(columndiv);
-      if (!Dashticz.mount(myblockselector, cols['blocks'][b]))
-        switch (typeof cols['blocks'][b]) {
-          case 'object':
-            handleObjectBlock(cols['blocks'][b], myblockselector, c);
-            continue;
-
-          case 'string':
-            handleStringBlock(cols['blocks'][b], myblockselector, c);
-            continue;
-
-          default:
-            //then it's an integer, meaning it's a domoticz device id
-            var block = {};
-            block.idx = cols['blocks'][b];
-            $.extend(block, blocks[block.idx]);
-            block.key = block.idx;
-            var html =
-              '<div data-id="' +
-              block.idx +
-              '" class="mh transbg block_' +
-              block.idx +
-              '"></div>';
-            mountBlock(myblockselector, block, html, false);
-            addDeviceUpdateHandler(block);
-            break;
-        }
-    }
+    cols['blocks'].forEach(function (b, i) {
+      if(b)
+        addBlock2Column(columndiv, c, b);
+      else {
+        Debug.log(Debug.ERROR, 'Block number '+i+' in column ' + c + ' is undefined.');
+      }
+    });
   }
 }
+/**Adds a block to a column
+ * @param {string} columndiv - div to add block to
+ * @param {string} c - Column id
+ * @param {object | string | number} b - string, as key for block object, object or number
+ *
+ * If b is a number then it represents a device id.
+ */
+var previousblock=0;
 
-function mountBlock(mountPoint, block, html, append) {
-  block.$mountPoint = $(mountPoint);
-  if (typeof html !== 'undefined') {
-    if (append) {
-      block.$mountPoint.append(html);
-    } else block.$mountPoint.html(html);
+function addBlock2Column(columndiv, c, b) {
+  if(typeof b=== 'undefined') {
+    console.log('Block undefined after block ',previousblock);
+    return;
   }
-  block.mountPoint = mountPoint;
-  block.entry = block.mountPoint.slice(1);
-  mountedBlocks[block.entry] = block;
+  previousblock=b;
+  var myblockselector = Dashticz.mountNewContainer(columndiv);
+  var newBlock = b;
+  if (typeof b !== 'object') newBlock = convertBlock(b, c);
+  if (c === 'popup') newBlock.isPopup = true;
+  if (newBlock.blocks) {
+    newBlock.blocks.forEach(function (aBlock) {
+      addBlock2Column(myblockselector, '', aBlock);
+    });
+    return;
+  }
+  if (Array.isArray(newBlock)) {
+    newBlock.forEach(function (aBlock) {
+      addBlock2Column(myblockselector, '', aBlock);
+    });
+    return;
+  }
+
+  if (!Dashticz.mount(myblockselector, newBlock))
+    Dashticz.mountDefaultBlock(myblockselector, newBlock);
+}
+
+function convertBlock(blocktype, c) {
+  var block = {};
+  block.type = blocktype;
+  $.extend(block, blocks[blocktype]);
+  block.c = c; //c can be 'bar'. Used for sunriseholder
+  block.key = block.key || blocktype;
+
+  //Check for Domoticz device block
+  if (isDomoticzDevice(block.type)) {
+    block.width = (blocks[block.type] && blocks[block.type].width) || 4;
+    block.idx = block.idx || block.type;
+  }
+  return block;
 }
 
 function getCustomFunction(functionname, block, afterupdate) {
@@ -118,6 +139,7 @@ function getCustomFunction(functionname, block, afterupdate) {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 function deviceUpdateHandler(block) {
   var selector = block.mountPoint;
   var idx = block.idx;
@@ -179,16 +201,14 @@ function deviceUpdateHandler(block) {
   if (addHTML) {
     $div.html(html);
     getBlockClick(block);
-  }
-  else
-    $div = $selector.find('.mh'); //$div may not exist anymore. Find the new one.
+  } else $div = $selector.find('.mh'); //$div may not exist anymore. Find the new one.
 
   if (typeof $div.attr('onclick') !== 'undefined') {
     $div.addClass('hover');
   }
 
   if ($div.hasClass('hover')) {
-    $div.on('touchstart', function () {
+    $div.off('touchstart').on('touchstart', function () {
       var $this = $(this);
       $this.addClass('hovered');
       setTimeout(function () {
@@ -204,10 +224,55 @@ function deviceUpdateHandler(block) {
     $div.removeClass(block.currentClass).addClass(block.addClass);
     block.currentClass = block.addClass;
   }
+  if (block.currentDeviceStatus != device.deviceStatus) {
+    $div.removeClass(block.currentDeviceStatus).addClass(device.deviceStatus);
+    block.currentDeviceStatus = device.deviceStatus;
+  }
 
-  if(device.HaveTimeout) $div.addClass('timeout')
+  if (device.HaveTimeout) $div.addClass('timeout');
   else $div.removeClass('timeout');
 
+  addBatteryLevel($div, block);
+}
+
+/*add the battery level indicator*/
+function addBatteryLevel($div, block) {
+  var device = block.device;
+  var $data = $div; //$div.find('.col-data');
+  var batteryLevel = device.BatteryLevel;
+  if (
+    typeof batteryLevel === 'undefined' ||
+    batteryLevel > block.batteryThreshold
+  )
+    return;
+  var container = $data.find('.battery-level');
+  var html =
+    '<i class="battery-level ' +
+    batteryLevelIcon(batteryLevel) +
+    '"><div class="battery-percentage">' +
+    batteryLevel +
+    '</div></i>';
+  if (!container.length) {
+    $data.append(html);
+  } else container.replace(html);
+}
+
+function batteryLevelIcon(level) {
+  var icons = {
+    'fas fa-battery-empty': 0,
+    'fas fa-battery-quarter': 10,
+    'fas fa-battery-half': 35,
+    'fas fa-battery-three-quarters': 60,
+    'fas fa-battery-full': 90,
+  };
+  var myLevel = typeof level !== 'undefined' ? level : 255;
+  var myIcon = 'fas fa-battery-full';
+
+  Object.keys(icons).forEach(function (key) {
+    if (myLevel >= icons[key]) myIcon = key;
+  });
+
+  return myIcon;
 }
 
 function getBlockClass(block) {
@@ -215,521 +280,37 @@ function getBlockClass(block) {
   return addClass;
 }
 
-function addDeviceUpdateHandler(block) {
-  var deviceIdx = block.idx;
-  if (typeof block.idx === 'string') {
-    var idxSplit = block.idx.split('_');
-    if (idxSplit.length == 2) {
-      var idx = parseInt(idxSplit[0]);
-      var subidx = parseInt(idxSplit[1]);
-      if (typeof idx === 'number' && typeof subidx === 'number') {
-        deviceIdx = idx;
-        block.subidx = subidx;
-      }
-    }
+/** Checks whether key indicates a Domoticz device
+ *
+ * 4 situations:
+ *
+ *        '123': Normal Domoticz device id as string
+ *        '123_1': subdevice 1
+ *        's123': group or scene 123
+ *        'v123': variable with idx 123
+ *
+ * @param {string} key - Key identifier to check
+ */
+function isDomoticzDevice(key) {
+  if (typeof key === 'number') {
+    return key;
   }
-  Domoticz.subscribe(deviceIdx, true, function (device) {
-    block.device = device;
-    deviceUpdateHandler(block);
-  });
-
-  if (block.key) {
-    Dashticz.subscribeBlock(block.key, function (blockUpdate) {
-      $.extend(block, blockUpdate);
-      deviceUpdateHandler(block);
-    });
-  } else {
-    console.log('key not defined for block ', block.idx);
+  var idx = parseInt(key);
+  if (idx) {
+    return idx;
   }
-}
-
-function handleStringBlock(blocktype, columndiv, c) {
-  var block = {};
-  block.type = blocktype;
-  $.extend(block, blocks[blocktype]);
-  block.c = c; //c can be 'bar'. Used for sunriseholder
-  block.key = block.key || blocktype;
-  mountBlock(columndiv, block, null, null);
-
-  var defaultwidth = 12;
-  switch (block.type) {
-    case 'logo':
-    case 'settings':
-      defaultwidth = 2;
-      break;
-    case 'flipclock':
-    case 'miniclock':
-      defaultwidth = 8;
-      break;
+  if(typeof key === 'undefined') {
+//    debugger;
+    return false;
   }
-
-  block.width = block.width || defaultwidth;
-  var width = block.width;
-
-  switch (block.type) {
-    case 'logo':
-      $(columndiv).append(
-        '<div data-id="logo" class="logo col-xs-' +
-          width +
-          '">' +
-          settings['app_title'] +
-          '</div>'
-      );
-      return;
-    case 'settings':
-      var icons = ['settings', 'fullscreen'];
-      if (typeof settings['settings_icons'] !== 'undefined') {
-        icons = settings['settings_icons'];
-      }
-      var content =
-        '<div class="col-xs-' + width + ' text-right" data-toggle="modal">';
-      for (var i = 0; i < icons.length; i++) {
-        switch (icons[i]) {
-          case 'settings':
-            content +=
-              '<span class="settings settingsicon" data-id="settings" data-target="#settingspopup" data-toggle="modal"><em class="fas fa-cog"></em> </span>';
-            break;
-
-          case 'fullscreen':
-            $.ajax({
-              url: 'js/fullscreen.js',
-              async: false,
-              dataType: 'script',
-            });
-            content += getFullScreenIcon();
-            break;
-        }
-      }
-      content += '</div>';
-      $(columndiv).append(content);
-      return;
-    case 'flipclock':
-      $(
-        '<link href="vendor/flipclock/flipclock.css" rel="stylesheet">'
-      ).appendTo('head');
-      $(columndiv).append(
-        '<div data-id="flipclock" class="transbg block_' +
-          block.type +
-          ' col-xs-' +
-          width +
-          ' text-center"><div class="flipclock"></div></div>'
-      );
-      if (typeof FlipClock !== 'function')
-        $.ajax({
-          url: 'vendor/flipclock/flipclock.min.js',
-          async: false,
-          datatype: 'script',
-        });
-      FlipClock($('.flipclock'), {
-        clockFace: settings['shorttime'].match(/A/i)
-          ? 'TwelveHourClock'
-          : 'TwentyFourHourClock',
-        showSeconds: !settings['hide_seconds'],
-      });
-      return;
-    case 'miniclock':
-      $(columndiv).append(
-        '<div data-id="miniclock" class="miniclock col-xs-' +
-          width +
-          ' text-center">' +
-          '<span class="weekday"></span> <span class="date"></span> <span>&nbsp;&nbsp;&nbsp;&nbsp;</span> <span class="clock"></span>' +
-          '</div>'
-      );
-      return;
-    case 'clock':
-      $(columndiv).append(
-        '<div data-id="clock" class="transbg block_' +
-          block.type +
-          ' col-xs-' +
-          width +
-          ' text-center">' +
-          '<h1 class="clock"></h1><h4 class="weekday"></h4><h4 class="date"></h4>' +
-          '</div>'
-      );
-      return;
-    case 'responsiveclock':
-      $(columndiv).append(
-        '<div data-id="clock" class="transbg block_' +
-          block.type +
-          ' col-xs-' +
-          width +
-          ' text-center responsive" style="height:250px;">' +
-          '<div class="col no-icon"><h2 class="clock"></h1><h4 class="weekday my-4"></h4><h4 class="date"></h4></div>' +
-          '</div>'
-      );
-      return;
-    case 'weather':
-      if (typeof loadWeatherFull !== 'function') {
-        $.ajax({
-          url: 'js/weather.js',
-          async: false,
-          dataType: 'script',
-        });
-      }
-      $(columndiv).append(
-        '<div data-id="weather" class="block_' +
-          block.type +
-          ' containsweatherfull"></div>'
-      );
-      if (settings['wu_api'] !== '' && settings['wu_city'] !== '')
-        loadWeatherFull(
-          settings['wu_city'],
-          settings['wu_country'],
-          $('.weatherfull')
-        );
-      return;
-    case 'currentweather':
-      if (settings['wu_api'] !== '' && settings['wu_city'] !== '') {
-        if (typeof loadWeather !== 'function') {
-          $.ajax({
-            url: 'js/weather.js',
-            async: false,
-            dataType: 'script',
-          });
-        }
-        $(columndiv).append(
-          '<div data-id="currentweather" class="mh transbg block_' +
-            block.type +
-            ' col-xs-' +
-            width +
-            ' containsweather">' +
-            '<div class="col-xs-4"><div class="weather" id="weather"></div></div>' +
-            '<div class="col-xs-8"><strong class="title weatherdegrees" id="weatherdegrees"></strong><br /><span class="weatherloc" id="weatherloc"></span></div>' +
-            '</div>'
-        );
-        loadWeather(settings['wu_city'], settings['wu_country']);
-      }
-      return;
-    case 'currentweather_big':
-      if (settings['wu_api'] !== '' && settings['wu_city'] !== '') {
-        if (typeof loadWeather !== 'function') {
-          $.ajax({
-            url: 'js/weather.js',
-            async: false,
-            dataType: 'script',
-          });
-        }
-        $(columndiv).append(
-          '<div data-id="currentweather_big" class="mh transbg big block_' +
-            block.type +
-            ' col-xs-' +
-            width +
-            ' containsweather">' +
-            '<div class="col-xs-1"><div class="weather" id="weather"></div></div>' +
-            '<div class="col-xs-11"><span class="title weatherdegrees" id="weatherdegrees"></span> <span class="weatherloc" id="weatherloc"></span></div>' +
-            '</div>'
-        );
-
-        loadWeather(settings['wu_city'], settings['wu_country']);
-      }
-      return;
-    case 'weather_owm':
-      if (typeof loadWeatherFull !== 'function') {
-        $.ajax({
-          url: 'js/weather_owm.js',
-          async: false,
-          dataType: 'script',
-        });
-      }
-      $(columndiv).append(
-        '<div data-id="weather" class="block_' +
-          block.type +
-          ' containsweatherfull"></div>'
-      );
-      if (settings['owm_api'] !== '' && settings['owm_city'] !== '')
-        loadWeatherFull(
-          settings['owm_city'],
-          settings['owm_country'],
-          $('.weatherfull')
-        );
-      return;
-    case 'currentweather_owm':
-      if (settings['owm_api'] !== '' && settings['owm_city'] !== '') {
-        if (typeof loadWeather !== 'function') {
-          $.ajax({
-            url: 'js/weather_owm.js',
-            async: false,
-            dataType: 'script',
-          });
-        }
-
-        $(columndiv).append(
-          '<div data-id="currentweather" class="mh transbg block_' +
-            block.type +
-            ' col-xs-' +
-            width +
-            ' containsweather">' +
-            '<div class="col-xs-4"><div class="weather" id="weather"></div></div>' +
-            '<div class="col-xs-8"><strong class="title weatherdegrees" id="weatherdegrees"></strong><br /><span class="weatherloc" id="weatherloc"></span></div>' +
-            '</div>'
-        );
-        loadWeather(settings['owm_city'], settings['owm_country']);
-      }
-      return;
-    case 'currentweather_big_owm':
-      if (settings['owm_api'] !== '' && settings['owm_city'] !== '') {
-        if (typeof loadWeather !== 'function') {
-          $.ajax({
-            url: 'js/weather_owm.js',
-            async: false,
-            dataType: 'script',
-          });
-        }
-        $(columndiv).append(
-          '<div data-id="currentweather_big" class="mh transbg big block_' +
-            block.type +
-            ' col-xs-' +
-            width +
-            ' containsweather">' +
-            '<div class="col-xs-1"><div class="weather" id="weather"></div></div>' +
-            '<div class="col-xs-11"><span class="title weatherdegrees" id="weatherdegrees"></span> <span class="weatherloc" id="weatherloc"></span></div>' +
-            '</div>'
-        );
-
-        loadWeather(settings['owm_city'], settings['owm_country']);
-      }
-      return;
-    case 'spotify':
-      if (typeof getSpotify !== 'function')
-        $.ajax({
-          url: 'js/spotify.js',
-          async: false,
-          dataType: 'script',
-        });
-      getSpotify(columndiv);
-      return;
-    case 'trafficmap':
-      $(columndiv).append(
-        '<div data-id="trafficmap" class="mh transbg block_trafficmap col-xs-12"><div id="trafficm" class="trafficmap"></div></div>'
-      );
-      return;
-    case 'log':
-      if (typeof getLog !== 'function')
-        $.ajax({
-          url: 'js/log.js',
-          async: false,
-          dataType: 'script',
-        });
-      getLog(columndiv);
-      return;
-    /*            
-                    case 'stationclock':
-                        appendStationClock(columndiv, block, width);
-                        return;
-            */
-    case 'sunrise':
-      var classes =
-        'block_' +
-        block.type +
-        ' col-xs-' +
-        width +
-        ' transbg text-center sunriseholder';
-      if (c === 'bar') {
-        classes = 'block_' + block.type + ' col-xs-2 text-center sunriseholder';
-      }
-      $(columndiv).append(
-        '<div data-id="sunrise" class="' +
-          classes +
-          '">' +
-          '<em class="wi wi-sunrise"></em><span class="sunrise"></span><em class="wi wi-sunset"></em><span class="sunset"></span>' +
-          '</div>'
-      );
-      return;
-    case 'horizon':
-      appendHorizon(columndiv);
-      return;
-    case 'icalendar':
-      var random = getRandomInt(1, 100000);
-      var html =
-        '<div class="col-xs-' +
-        width +
-        ' transbg containsicalendar containsicalendar' +
-        random +
-        '">';
-      html += '<div class="col-xs-2 col-icon">';
-      html += '<em class="fas fa-calendar"></em>';
-      html += '</div>';
-      html +=
-        '<div class="col-xs-10 items">' + language.misc.loading + '</div>';
-      html += '</div>';
-      $(columndiv).append(html);
-      addCalendar($('.containsicalendar' + random), settings['calendarurl']);
-      return;
-    case 'chromecast':
-      $.ajax({
-        url: 'js/chromecast.js',
-        async: false,
-        dataType: 'script',
-      });
-      loadChromecast(columndiv);
-      return;
-    case 'sonarr':
-      if (typeof loadSonarr !== 'function')
-        $.ajax({
-          url: 'js/sonarr.js',
-          async: false,
-          dataType: 'script',
-        });
-      $(columndiv).append(loadSonarr());
-      getBlockClick(block);
-      return;
-    case 'fullscreen':
-      $(columndiv).append(
-        '<div data-id="fullscreen" class="col-xs-' +
-          width +
-          ' text-right">' +
-          getFullScreenIcon() +
-          '</div>'
-      );
-      return;
-    default:
-      /*4 situations:
-                '123': Normal Domoticz device id as string
-                '123_1': subdevice 1
-                's123': group or scene 123
-                'v123': variable with idx 123
-                */
-      html =
-        '<div data-id="' +
-        (block.idx || block.type) +
-        '" class="mh transbg block_' +
-        block.key +
-        '"></div>';
-      block.$mountPoint.append(html);
-      if (block.idx) {
-        //also a Domoticz device
-        block.width = (blocks[block.type] && blocks[block.type].width) || 4;
-        addDeviceUpdateHandler(block);
-        return;
-      }
-      var idx = parseInt(block.type);
-      var isDomoticzDevice = !!idx;
-      if (block.type[0] === 's' || block.type[0] === 'v') {
-        //scene, group or variable
-        idx = parseInt(block.type.slice(1));
-        if (idx) isDomoticzDevice = true;
-      }
-      if (isDomoticzDevice) {
-        block.width = (blocks[block.type] && blocks[block.type].width) || 4;
-        block.idx = block.type;
-        addDeviceUpdateHandler(block);
-      } else console.log('unknown string block ', block);
-  }
-}
-
-function handleObjectBlock(block, el) {
-  var random = getRandomInt(1, 100000);
-  var width = 12;
-  var $el = $(el);
-  mountBlock(el, block, null, null);
-  var key = block.key || block.entry;
-  if (block.width) width = block['width'];
-  if (block.latitude) {
-    $el.append(loadMaps(random, block));
-    return;
-  }
-  if (block.empty) {
-    $el.append(
-      '<div data-id="' + key + '" class="mh transbg col-xs-' + width + '">'
-    );
-  } else if (block.currency) {
-    if (typeof getCoin !== 'function')
-      $.ajax({
-        url: 'js/coins.js',
-        async: false,
-        dataType: 'script',
-      });
-    var html =
-      '<div class="col-xs-' +
-      width +
-      ' transbg coins-' +
-      block['key'] +
-      '" data-id="coins.' +
-      block['key'] +
-      '"></div>';
-    $el.append(html);
-    getCoin(block);
-  } else if (block.icalurl || block.calendars) {
-    var dataId = key;
-    var classes = 'transbg containsicalendar containsicalendar' + random;
-    appendTvOrCalendarBlock(dataId, classes, width, block, el);
-    if (typeof addCalendar !== 'function')
-      $.ajax({
-        url: 'js/calendar.js',
-        async: false,
-        dataType: 'script',
-      });
-    addCalendar($('.containsicalendar' + random), block);
-  } else if (block.idx) {
-    //+ '" data-block="' + block.key
-    block.key = block.key || '' + block.idx;
-    $el.append(
-      '<div data-id="' +
-        block.idx +
-        '" class="mh transbg block_' +
-        block.key +
-        '"></div>'
-    );
-    if (typeof block.idx === 'number') {
-      addDeviceUpdateHandler(block);
-      return;
-    }
-    var idx = parseInt(block.idx);
+  if (key[0] === 's' || key[0] === 'v') {
+    //scene, group or variable
+    idx = parseInt(key.slice(1));
     if (idx) {
-      addDeviceUpdateHandler(block);
-      return;
+      return idx;
     }
-    if (block.idx[0] === 's' || block.idx[0] === 'v') {
-      //scene, group or variable
-      idx = parseInt(block.slice(1));
-      if (idx) {
-        addDeviceUpdateHandler(block);
-        return;
-      }
-    }
-  } else {
-    //        Dashticz.mountSpecialBlock(columndiv, block, Dashticz.components["button"]);
-    Dashticz.mountDefaultBlock(el, block);
-    //        $(columndiv).append(loadButton(index, block));
   }
-}
-/**/
-function appendTvOrCalendarBlock(dataId, classes, width, block, columndiv) {
-  var html = '';
-  if (block.title) {
-    html +=
-      '<div class="col-xs-' +
-      width +
-      ' mh titlegroups transbg"><h3>' +
-      block['title'] +
-      '</h3></div>';
-  }
-
-  html +=
-    '<div data-id="' +
-    dataId +
-    '" class="col-xs-' +
-    width +
-    ' ' +
-    classes +
-    '">';
-  if (block.icon) {
-    html += '<div class="col-xs-2 col-icon">';
-    html += '<em class="' + block['icon'] + '"></em>';
-    html += '</div>';
-    html += '<div class="col-xs-10 items">' + language.misc.loading + '</div>';
-  } else if (block.image) {
-    html += '<div class="col-xs-2 col-icon">';
-    html +=
-      '<img src="img/' + block['image'] + '" class="icon calendar_icon" />';
-    html += '</div>';
-    html += '<div class="col-xs-10 items">' + language.misc.loading + '</div>';
-  } else {
-    html += '<div class="col-xs-12 items">' + language.misc.loading + '</div>';
-  }
-
-  html += '</div>';
-  $(columndiv).append(html);
+  return 0;
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -802,7 +383,7 @@ function getStatusBlock(block) {
             value = value.replace(unitArray[0], unitArray[1]);
         }*/
 
-  getBlockClick(block, '.block_'+block.key);
+  getBlockClick(block, '.block_' + block.key);
 
   var attr = '';
   if (
@@ -842,9 +423,9 @@ function getStatusBlock(block) {
 
   stateBlock += '<div class="col-xs-8 col-data">';
 
-  if(block.textOn && getIconStatusClass(device.Status) === 'on')
+  if (block.textOn && getIconStatusClass(device.Status) === 'on')
     value = block.textOn;
-  if(block.textOff && getIconStatusClass(device.Status) === 'off')
+  if (block.textOff && getIconStatusClass(device.Status) === 'off')
     value = block.textOff;
 
   if (!titleAndValueSwitch(block)) {
@@ -882,16 +463,31 @@ function getBlockClick(block, selector) {
   //var blockSel = '.block_'+ block.mountPoint.slice(1);
   //console.log('getBlockClick for ', block);
   //   var $div=blockdef.$mountPoint.find('.block_'+blockdef.idx);
-  var $div = block.$mountPoint.find(typeof selector==='undefined' ? '.mh' : selector);
+  var $div = block.$mountPoint.find(
+    typeof selector === 'undefined' ? '.mh' : selector
+  );
+  if (block.popup) {
+    if ($div.length > 0) {
+      $div
+        .addClass('hover')
+        .off('click')
+        .click(function () {
+          /*          if (target === '_blank') window.open(block.link);
+          else if (target === 'iframe') addBlockClickFrame(block);*/
+          DT_function.clickHandler({ block: block });
+        });
+    }
+    return;
+  }
   if (url) {
     if ($div.length > 0) {
       $div
         .addClass('hover')
         .off('click')
         .click(function () {
-/*          if (target === '_blank') window.open(block.link);
+          /*          if (target === '_blank') window.open(block.link);
           else if (target === 'iframe') addBlockClickFrame(block);*/
-          DT_function.clickHandler({block:block})
+          DT_function.clickHandler({ block: block });
         });
     }
   } else if (graph === false) {
@@ -914,8 +510,8 @@ function getBlockClick(block, selector) {
       device['SubType'] === 'Soil Moisture' ||
       graph
     ) {
-      $div.addClass('hover').click(function () {
-        showPopupGraph(block);
+      $div.addClass('hover').off('click').click(function () {
+        DT_function.clickHandler({ block: block });
       });
     }
   }
@@ -1045,30 +641,30 @@ function getBlockData(block, textOn, textOff) {
   var opendiv = '<div class="col-xs-8 col-data">';
   var closediv = '</div>';
 
-  if (block['hide_data']) {
-    return opendiv + '<strong class="title">' + title + '</strong>' + closediv;
-  }
+  var data = '';
 
-  var value = textOn;
-  var status = block.device.Status;
-  if (
-    status == 'Off' ||
-    status == 'Closed' ||
-    status == 'Normal' ||
-    status == 'Locked' ||
-    status == 'No Motion' ||
-    (status == '' && block.device['InternalState'] == 'Off')
-  ) {
-    value = textOff;
-  }
+  if (!block['hide_data']) {
+    var value = textOn;
+    var status = block.device.Status;
+    if (
+      status == 'Off' ||
+      status == 'Closed' ||
+      status == 'Normal' ||
+      status == 'Locked' ||
+      status == 'No Motion' ||
+      (status == '' && block.device['InternalState'] == 'Off')
+    ) {
+      value = textOff;
+    }
 
-  if (titleAndValueSwitch(block)) {
-    title = value;
-    value = getBlockTitle(block);
-  }
+    if (titleAndValueSwitch(block)) {
+      title = value;
+      value = getBlockTitle(block);
+    }
 
-  var data = '<strong class="title">' + title + '</strong><br />';
-  data += '<span class="state">' + value + '</span>';
+    data = '<br /><span class="state">' + value + '</span>';
+  }
+  data = '<strong class="title">' + title + '</strong>' + data; //Attach data part behind title
 
   if (showUpdateInformation(block)) {
     data +=
@@ -1153,80 +749,38 @@ function triggerStatus(block) {
   var idx = block.idx;
   var device = block.device;
   var value = device.LastUpdate;
-  var random = getRandomInt(1, 100000);
   getCustomFunction('getStatus', block, true);
 
   if (typeof onOffstates[idx] !== 'undefined' && value !== onOffstates[idx]) {
-    if ( getIconStatusClass( device['Status']) == 'on') {
-      if (block['playsoundOn']) {
-        playAudio(block['playsoundOn']);
-      }
-      if (block['speakOn']) {
-        speak(block['speakOn']);
-      }
-      if (block['messageOn']) {
-        infoDevicsSwitch(block['messageOn']);
-      }
-      if (block['gotoslideOn']) {
-        toSlide(block['gotoslideOn'] - 1);
-        disableStandby();
-      }
-      if (block['openpopupOn']) {
-        $('.modal.openpopup,.modal-backdrop').remove();
-
-        $('body').append(
-          DT_function.createModalDialog(
-            'openpopup',
-            'popup_' + random,
-            block['openpopupOn']
-          )
-        );
-
-        $('#popup_' + random).modal('show');
-
-        if (typeof block['openpopupOn']['auto_close'] !== 'undefined') {
-          setTimeout(function () {
-            $('.modal.openpopup,.modal-backdrop').remove();
-          }, parseFloat(block['openpopupOn']['auto_close']) * 1000);
-        }
-      }
-    }
-    if (getIconStatusClass( device['Status']) == 'off') {
-      if (block['playsoundOff']) {
-        playAudio(block['playsoundOff']);
-      }
-      if (block['speakOff']) {
-        speak(block['speakOff']);
-      }
-      if (block['messageOff']) {
-        infoDevicsSwitch(blocks['messageOff']);
-      }
-      if (block['gotoslideOff']) {
-        toSlide(block['gotoslideOff'] - 1);
-        disableStandby();
-      }
-      if (block['openpopupOff']) {
-        $('.modal.openpopup,.modal-backdrop').remove();
-
-        $('body').append(
-          DT_function.createModalDialog(
-            'openpopup',
-            'popup_' + random,
-            block['openpopupOff']
-          )
-        );
-
-        $('#popup_' + random).modal('show');
-
-        if (block['openpopupOff']['auto_close']) {
-          setTimeout(function () {
-            $('.modal.openpopup,.modal-backdrop').remove();
-          }, parseFloat(block['openpopupOff']['auto_close']) * 1000);
-        }
-      }
-    }
+    onOffHandling(block, getIconStatusClass(device['Status']));
   }
   onOffstates[idx] = value;
+}
+
+/*
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+*/
+
+function onOffHandling(block, status) {
+  var _status = capitalizeFirstLetter(status);
+  if (block['playsound' + _status]) {
+    playAudio(block['playsound' + _status]);
+  }
+  if (block['speak' + _status]) {
+    speak(block['speak' + _status]);
+  }
+  if (block['message' + _status]) {
+    infoDevicsSwitch(block['message' + _status]);
+  }
+  if (block['gotoslide' + _status]) {
+    toSlide(block['gotoslide' + _status] - 1);
+    disableStandby();
+  }
+  if (block['openpopup' + _status]) {
+    DT_function.clickHandler(block, block['openpopup' + _status]);
+  }
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -1250,31 +804,7 @@ function triggerChange(block) {
       }
     }
 
-    if (block['playsound']) {
-      playAudio(block['playsound']);
-    }
-    if (block['speak']) {
-      speak(block['speak']);
-    }
-    if (block['gotoslide']) {
-      toSlide(block['gotoslide'] - 1);
-    }
-    if (block['openpopup']) {
-      var random = getRandomInt(1, 100000);
-      $('.modal.openpopup,.modal-backdrop').remove();
-
-      $('body').append(
-        DT_function.createModalDialog('openpopup', 'popup_' + random, block['openpopup'])
-      );
-
-      $('#popup_' + random).modal('show');
-
-      if (typeof block['openpopup']['auto_close'] !== 'undefined') {
-        setTimeout(function () {
-          $('.modal.openpopup,.modal-backdrop').remove();
-        }, parseFloat(block['openpopup']['auto_close']) * 1000);
-      }
-    }
+    onOffHandling(block, '');
   }
   oldstates[idx] = value;
 }
@@ -1909,6 +1439,11 @@ function createBlocks(blockParent, blockValues) {
     var block = {};
     $.extend(block, blockValue); //create a block from the prototype
     $.extend(block, blockParent);
+    /* Fix icon/image setting*/
+    if(blockParent.image || blockParent.icon) {
+      block.image = blockParent.image;
+      block.icon = blockParent.icon;
+    }
     //        $.extend(block, blocks[blockValue.idx]); //I don't think we should do this: It will overwrite block settings of a custom block
     //Although for subdevices it would be nice to use corresponding block setting
     //so let's overwrite in case parent and blockvalue idx are different
@@ -1928,7 +1463,7 @@ function createBlocks(blockParent, blockValues) {
       (block.width || 4) +
       '"/>';
     $div.append(html);
-    block.mountPoint = blockParent.mountPoint;//  +' .block_'+key;
+    block.mountPoint = blockParent.mountPoint; //  +' .block_'+key;
     block.$mountPoint = $(block.mountPoint);
     //        block.subidx = index;
     //        block.blockdef=blocks[blockValue.idx]; //store a reference of the parent blockdef ? should be in parent already ...
@@ -1964,8 +1499,6 @@ function createBlocks(blockParent, blockValues) {
       .find('.block_' + key)
       .html(html)
       .addClass(block.addClass);
-
-    //todo: Do we have to store block in mountedBlocks?
   });
 }
 
@@ -2102,7 +1635,9 @@ function getTempHumBarBlock(block) {
 function loadMaps(b, map) {
   if (typeof map.link !== 'undefined') {
     map['url'] = map.link;
-    $('body').append(DT_function.createModalDialog('', 'trafficmap_frame_' + b, map));
+    $('body').append(
+      DT_function.createModalDialog('', 'trafficmap_frame_' + b, map)
+    );
   }
 
   var key = 'UNKNOWN';
@@ -2137,25 +1672,6 @@ function loadMaps(b, map) {
     showMap('trafficmap_' + b, map);
   }, 1000);
   return html;
-}
-
-// eslint-disable-next-line no-unused-vars
-function appendHorizon(columndiv) {
-  var html = '<div data-id="horizon" class="containshorizon">';
-  html +=
-    '<div class="col-xs-4 transbg hover text-center" onclick="ziggoRemote(\'E0x07\')">';
-  html += '<em class="fas fa-chevron-left fa-small"></em>';
-  html += '</div>';
-  html +=
-    '<div class="col-xs-4 transbg hover text-center" onclick="ziggoRemote(\'E4x00\')">';
-  html += '<em class="fas fa-pause fa-small"></em>';
-  html += '</div>';
-  html +=
-    '<div class="col-xs-4 transbg hover text-center" onclick="ziggoRemote(\'E0x06\')">';
-  html += '<em class="fas fa-chevron-right fa-small"></em>';
-  html += '</div>';
-  html += '</div>';
-  $(columndiv).append(html);
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -2223,7 +1739,6 @@ function playAudio(file) {
   ion.sound.play(filename);
 }
 
-
 /*Todo: make map a regular block*/
 // eslint-disable-next-line no-unused-vars
 function initMap() {
@@ -2269,7 +1784,7 @@ function showMap(mapid, map) {
 
 function getSecurityBlock(block) {
   //todo: rewrite
-  
+
   var device = block.device;
   if (block.protected || device.Protected)
     return getProtectedSecurityBlock(block);

@@ -30,7 +30,7 @@ var DT_frame = {
   },
   refresh: function (me) {
     if (typeof me.block.frameurl !== 'undefined') {
-      $(me.mountPoint)
+      me.$mountPoint
         .find('iframe')
         .attr(
           'src',

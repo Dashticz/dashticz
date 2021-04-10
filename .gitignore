@@ -3,3 +3,4 @@
 Makefile.ini
 /custom/*
 /custom_2/*
+.env

@@ -1,7 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 /* global getAllDevicesHandler objectlength config initVersion loadSettings settings getLocationParameters*/
 /* global sessionValid MobileDetect moment getBlock*/
-/* global Swiper */
+/* global Swiper Debug*/
 
 //To refactor later:
 /* global switchSecurity*/
@@ -85,8 +85,8 @@ function loadFiles(dashtype) {
       $.ajax({
         url: 'https://cdn.lr-ingest.io/LogRocket.min.js',
         dataType: 'script',
-      }).then( function() {
-        enableLogRocket(enable_logrocket)
+      }).then(function () {
+        enableLogRocket(enable_logrocket);
       })
   )
     .then(function () {
@@ -156,6 +156,39 @@ function loadFiles(dashtype) {
     .then(function () {
       return getSettings();
     })
+    .then(addDebug)
+    .then(function () {
+      loadingFilename = customfolder + '/custom.js';
+
+      return $.ajax({
+        //first test whether the file exists
+        url: loadingFilename + '?v=' + cache,
+        type: 'HEAD',
+      })
+        .then(function () {
+          //if it exists, try to load it
+          return $.ajax({
+            url: loadingFilename,
+            dataType: 'script',
+          }).then(function () {
+            loadingFilename = null;
+            if (throwError)
+              //test whether we've catched an error in the errorhandler
+              return $.Deferred().reject(new Error(throwError));
+          });
+        })
+        .catch(function (res) {
+          if (res.status === 404) {
+            //file doesn't exist
+            console.log(
+              'No custom.js file in folder ' + customfolder + '. Skipping.'
+            );
+            return;
+          }
+          var error = res || new Error('Unknown error loading custom.js');
+          return $.Deferred().reject(error);
+        });
+    })
     .then(function () {
       if (typeof screens === 'undefined' || objectlength(screens) === 0) {
         screens = {};
@@ -205,38 +238,6 @@ function loadFiles(dashtype) {
           return Dashticz.init();
         })
       );
-    })
-    .then(function () {
-      loadingFilename = customfolder + '/custom.js';
-
-      return $.ajax({
-        //first test whether the file exists
-        url: loadingFilename + '?v=' + cache,
-        type: 'HEAD',
-      })
-        .then(function () {
-          //if it exists, try to load it
-          return $.ajax({
-            url: loadingFilename,
-            dataType: 'script',
-          }).then(function () {
-            loadingFilename = null;
-            if (throwError)
-              //test whether we've catched an error in the errorhandler
-              return $.Deferred().reject(new Error(throwError));
-          });
-        })
-        .catch(function (res) {
-          if (res.status === 404) {
-            //file doesn't exist
-            console.log(
-              'No custom.js file in folder ' + customfolder + '. Skipping.'
-            );
-            return;
-          }
-          var error = res || new Error('Unknown error loading custom.js');
-          return $.Deferred().reject(error);
-        });
     })
     .then(function () {
       return $.when(
@@ -356,6 +357,16 @@ function enableLogRocket(enable_logrocket) {
   window.LogRocket.identify(enable_logrocket);
 }
 
+function addDebug() {
+  return $.ajax({
+    url: 'js/debug.js',
+    dataType: 'script',
+  })
+    .then(function () {
+      return Debug.init();
+    })
+}
+
 function showError(msg) {
   if (msg) $('#error').html(msg);
   $('#hide').show();
@@ -381,9 +392,13 @@ function defaultPassiveHandlers() {
 
 function onLoad() {
   defaultPassiveHandlers();
-  var touchsupport = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0)
-  if (!touchsupport){ // browser doesn't support touch
-      document.documentElement.className += " non-touch"
+  var touchsupport =
+    'ontouchstart' in window ||
+    navigator.maxTouchPoints > 0 ||
+    navigator.msMaxTouchPoints > 0;
+  if (!touchsupport) {
+    // browser doesn't support touch
+    document.documentElement.className += ' non-touch';
   }
   md = new MobileDetect(window.navigator.userAgent);
 
@@ -553,11 +568,11 @@ function buildStandby() {
       getBlock(columns_standby[c], 'standby' + c, 'div.screenstandby', true);
     }
 
-    $('.screenstandby').on('click', function(event) {
+    $('.screenstandby').on('click', function (event) {
       disableStandby();
       event.stopPropagation();
-      return false
-    })
+      return false;
+    });
   } else {
     $('.screenstandby').show();
   }
@@ -721,7 +736,7 @@ function startSwiper() {
         clickable: true,
       },
       paginationClickable: true,
-//      speed: 0,
+      //      speed: 0,
       loop: false,
       initialSlide: settings['start_page'] - 1,
       effect: settings['slide_effect'],

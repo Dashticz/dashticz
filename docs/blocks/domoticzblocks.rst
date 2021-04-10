@@ -34,6 +34,27 @@ You can also use custom names for the block identfier. In that case you have to 
       idx: 123
    }
 
+
+Grouped devices
+---------------
+To use grouped devices in a column you must make it known in your CONFIG.js as follows::
+
+   blocks['lights'] = {
+      blocks: [
+      'light_livingroom',
+      'light_kitchen',
+      'light_bathroom'
+      ]
+   }
+   
+Now you can add all 3 light blocks to a column with the following code::
+
+   columns[1] = {}
+      columns[1]['blocks'] = [
+      'lights'
+   ]
+
+
 Scenes and Groups
 -----------------
 
@@ -187,10 +208,18 @@ Block parameters
       | ``3``: no new window/frame (for intent handling, api calls). HTTP get request.
       | ``4``: no new window/frame (for intent handling, api calls). HTTP post request. (forcerefresh not supported)
   * - colorpicker
-    - Choose the RGB colorpicker for RGB devices. See :ref:`colorpicker`
+    - | Choose the RGB colorpicker for RGB devices. See :ref:`colorpicker`
       | ``0``: No RGB colorpicker
       | ``1``: Old style RGB colorpicker
       | ``2``: New style RGB colorpicker
+  * - mode
+    - | Parameter for specific functionality
+      | ``1``: Set ``mode: 1`` for Hue RGBWW devices having colorpicker: 2
+  * - batteryThreshold
+    - | If the battery level is below ``batteryThreshold`` then a battery icon will be displayed. See :ref:`batterylevel`
+      | Default value is defined by config['batteryThreshold] (=30)
+      | ``15``: Only show the battery icon when the battery level is below 15%.
+
 
 There are several additional parameters for Graphs. See :ref:`dom_graphs`
       
@@ -359,6 +388,23 @@ In this example, the specified popup will use a defined graph called 'popup_cons
    }
 
 
+Usage of popup multi block window
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+With the popup parameter you can also configure to open a popup multi block window. Example::
+
+   blocks['your_block'] = {
+      popup: 'container',
+      ...
+   }
+
+::
+
+   blocks['container'] = {
+      blocks: [ 'one1', 'two2']   // where 'one1' and 'two2' are other blocks
+   }
+
+
 .. _openpopup :
 
 Usage of openpopup(On)(Off)
@@ -370,21 +416,21 @@ With the openpopup, openpopupOn and openpopupOff parameter you can configure to 
       url: 'http://www.urltocamera.nl/image.jpg',   //Open a popup window with this url when the device changes
       framewidth:500,                               //specific width of the frame
       frameheight:400,                              //specific height of the frame
-      autoclose: 5                                  //autoclose the popup window after 5 seconds.
+      auto_close: 5                                 //auto close the popup window after 5 seconds.
   } 
   
   blocks[123]['openpopupOn'] = {
       url: 'http://www.urltocamera.nl/image.jpg',   //Open a popup window with this url when the device changes to On
       framewidth:500,                               //specific width of the frame
       frameheight:400,                              //specific height of the frame
-      autoclose: 5                                  //autoclose the popup window after 5 seconds.
+      auto_close: 5                                 //auto close the popup window after 5 seconds.
   } 
   
   blocks[123]['openpopupOff'] = {
       url: 'http://www.urltocamera.nl/image.jpg',   //Open a popup window with this url when the device changes to Off
       framewidth:500,                               //specific width of the frame
       frameheight:400,                              //specific height of the frame
-      autoclose: 5                                  //autoclose the popup window after 5 seconds.
+      auto_close: 5                                 //auto close the popup window after 5 seconds.
   } 
 
 To remove the close button of the block-popup add the following text to custom.css::
@@ -507,6 +553,74 @@ The following Domoticz RGB devices are supported:
    RGBWWZ device in Mixed modus.
 
    In this last example you see from left to right the RGB color picker, the RGB color level, the white color temperature, the white level and the master level.
+
+For Hue RGBWW device add the following block parameter for correct functioning::
+
+   mode: 1
+
+
+.. _batterylevel:
+
+Battery level
+~~~~~~~~~~~~~~
+
+A battery level indicator will be displayed when the battery level is below a certain threshold.
+
+.. image :: img/batterylevel.jpg
+
+For battery powerered devices the minimum level is 0, and the maximum level 100. For devices without a battery the battery level will always be 255.
+
+To display the battery indicator for all battery powered devices set the batteryThreshold to 100::
+
+  config['batteryThreshold'] = 100;
+
+or configure it for a specific block::
+
+  blocks[123] =  {
+    batteryThreshold: 100
+  }
+
+The following indicators will be displayed:
+
+.. list-table:: 
+  :header-rows: 1
+  :widths: 10 10 10
+  :class: tight-table
+
+  * - Min battery level
+    - Max battery level
+    - icon
+  * - 0
+    - 10%
+    - fa-battery-empty
+  * - 10%
+    - 35%
+    - fa-battery-quarter
+  * - 35%
+    - 60%
+    - fa-battery-half
+  * - 60%
+    - 90%
+    - fa-battery-three-quarters
+  * - 90%
+    - 100%
+    - fa-battery-full
+
+The battery symbols can be styled in custom.css. As an example the default styling for battery empty::
+
+  .battery-level.fa-battery-empty {
+    color:red;
+    z-index: 15;
+  }
+
+To hide the number, add the following to custom.css::
+
+  .battery-percentage {
+    display:none
+  }
+
+
+
 
 .. _domoticzStyling:
 

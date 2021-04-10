@@ -4,18 +4,19 @@
 var DT_button = {
   name: 'button',
   canHandle: function (block) {
-    return block && (block.btnimage || block.slide);
+    return block && (block.btnimage || block.slide || block.log);
   },
   defaultCfg: function (button) {
     var cfg = {
       containerClass:
-        (button && button.slide ? 'slide slide' + button.slide : '') +
-        (DT_button.buttonIsClickable(button) ? ' hover ' : ' '),
+        (button && button.slide ? 'slide slide' + button.slide : ''),
       forcerefreshiframe: 0,
     };
     if (button.btnimage) {
       cfg.refresh = 60;
     }
+    if(typeof button.title==='undefined' && typeof button.icon==='undefined' && typeof button.image==='undefined' && typeof button.btnimage==='undefined')
+      button.title = button.key || button.type || 'Button';
     return cfg;
   },
   defaultContent: function (me) {
@@ -40,13 +41,13 @@ var DT_button = {
     return html;
   },
   run: function (me) {
-    var button = me.block;
+/*    var button = me.block;
     if (DT_button.buttonIsClickable(button))
       $(me.mountPoint + ' .button').on(
         'click',
         button,
         DT_button.buttonOnClick
-      );
+      );*/
   },
   refresh: function (me) {
     DT_button.reloadImage(me);
@@ -99,6 +100,7 @@ var DT_button = {
       }, button.refreshiframe * 1000);
     }
   },
+  /*
   buttonOnClick: function (
     m_event //button clickhandler. Assumption: button is clickable
   ) {
@@ -125,14 +127,7 @@ var DT_button = {
     } else {
       DT_button.buttonLoadFrame(button);
     }
-  },
-  buttonIsClickable: function (button) {
-    var clickable =
-      typeof button.url !== 'undefined' ||
-      button.log == true ||
-      typeof button.slide !== 'undefined';
-    return clickable;
-  },
+  },*/
   reloadImage: function (me) {
     var src;
     if (typeof me.block.btnimage !== 'undefined') {
