@@ -8,8 +8,27 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.8.0 Beta (10-4-2021)
+-----------------------
+
+
+
+v3.8 Master (9-4-2021)
+----------------------
+
+Master version derived from v3.7.7 Beta.
+
+If your current Dashticz version is lower than v3.7.2 then before upgrading make a copy of custom/custom.css and custom/custom.js first!
+
+See the upgrade instructions at v3.7.2 below.
+
 v3.7.7 Beta (8-4-2021)
 ------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Auto slide timer configurable per screen via screen parameter ``auto_slide_page``
 
 Fixes
 ~~~~~~

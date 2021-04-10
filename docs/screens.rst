@@ -53,6 +53,9 @@ Screen parameters
   * - columns
     - | Defines which columns are shown on this screen
       | ``[1,2,3]``
+  * - auto_slide_page
+    - Redefines the audo slide time as set in config['auto_slide_pages'] for this screen.
+    - ``3``: The time before auto slide to the next page is 3 seconds.
 
 
 Usage

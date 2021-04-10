@@ -47,6 +47,8 @@ var _END_STANDBY_CALL_URL = '';
 //move var allVariables = {};
 var sessionvalid = false;
 
+var currentScreenSet;
+
 var _PARAMS = {};
 // eslint-disable-next-line no-unused-vars
 function loadFiles(dashtype) {
@@ -390,6 +392,22 @@ function defaultPassiveHandlers() {
   };
 }
 
+function autoSlide(screenId) {
+  var nextSlide=screenId;
+
+  if (typeof myswiper !== 'undefined') {
+    nextSlide=nextSlide+1;
+    toSlide(screenId);
+    if (nextSlide > myswiper.slides.length - 1) {
+      nextSlide = 0;
+    }
+  }
+
+  setTimeout(function () {
+    autoSlide(nextSlide)
+    }, parseFloat(currentScreenSet[screenId].auto_slide_page || settings['auto_slide_pages']) * 1000);
+}
+
 function onLoad() {
   defaultPassiveHandlers();
   var touchsupport =
@@ -483,14 +501,7 @@ function onLoad() {
       typeof settings['auto_swipe_back_after'] == 'undefined') &&
     parseFloat(settings['auto_slide_pages']) > 0
   ) {
-    var nextSlide = 1;
-    setInterval(function () {
-      toSlide(nextSlide);
-      nextSlide++;
-      if (nextSlide > myswiper.slides.length - 1) {
-        nextSlide = 0;
-      }
-    }, parseFloat(settings['auto_slide_pages']) * 1000);
+    autoSlide(1);
   }
 
   if (md.mobile() == null) {
@@ -646,7 +657,9 @@ function buildScreens() {
       (parseFloat(screens[t]['maxwidth']) >= $(window).width() &&
         parseFloat(screens[t]['maxheight']) >= $(window).height())
     ) {
+      currentScreenSet=[]
       for (var s in screens[t]) {
+        currentScreenSet.push(screens[t][s]);
         if (s !== 'maxwidth' && s !== 'maxheight') {
           var screenhtml =
             '<div data-screenindex="' +
