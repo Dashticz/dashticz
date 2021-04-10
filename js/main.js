@@ -501,7 +501,6 @@ function onLoad() {
       typeof settings['auto_swipe_back_after'] == 'undefined') &&
     parseFloat(settings['auto_slide_pages']) > 0
   ) {
-    var nextSlide = 1;
     autoSlide(1);
   }
 

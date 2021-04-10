@@ -119,9 +119,9 @@ Config parameters
       | ``1..9999`` = Swipe back after <value> seconds
   * - auto_slide_pages
     - | Loop all pages and change page every x (min. 5) seconds,
-      |     set ``config['auto_swipe_back_after'] = 0``
+      |     set ``config['auto_swipe_back_after'] = 0``. Also see screen parameter ``auto_slide_page``
       | ``false`` = No auto slide (default)
-      | ``5..9999`` = Auto slide to the next page every <value> second
+      | ``1..9999`` = Auto slide to the next page every <value> second
   * - slide_effect
     - | Control which Screenslider effect you prefer
       | ``'slide'``, ``'fade'``, ``'cube'``, ``'coverflow'``, ``'flip'``
