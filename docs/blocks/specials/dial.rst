@@ -552,3 +552,64 @@ Hide extra data::
     .dial[data-id='dial_name'] .extra {
         display: none;
     }
+
+
+Examples
+---------
+
+**Multicolor Selector Switch**
+
+.. image :: img/multicolor_selector_switch.png
+
+CONFIG.js::
+
+  blocks['selector_switch'] = {
+    idx: 123,
+    type: 'dial',
+    width: 5,
+  }
+  
+  columns[1] = {}
+  columns[1]['blocks'] = ['selector_switch']
+  columns[1]['width'] = 5;
+
+custom.js::
+
+  function deviceHook(device) {
+    if (device.idx==123) {
+      var level=parseInt(device.Level);
+      device.deviceStatus='level'+level
+    }
+  }
+
+custom.css::
+
+  /*ring color*/
+  .level10 .dial-center {
+    box-shadow: 0 0 25px 1px green !important;
+  }
+
+  /*selected item color*/
+  .level10 .status {
+    --dial-color: green !important
+  }
+
+  /*ring color*/
+  .level20 .dial-center {
+    box-shadow: 0 0 25px 1px red !important;
+  }
+
+  /*selected item color*/
+  .level20 .status {
+    --dial-color: red !important
+  }
+
+  /*ring color*/
+  .level30 .dial-center {
+    box-shadow: 0 0 25px 1px blue !important;
+  }
+
+  /*selected item color*/
+  .level30 .status {
+    --dial-color: blue !important
+  }
