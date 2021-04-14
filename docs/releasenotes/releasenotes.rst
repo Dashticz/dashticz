@@ -8,9 +8,21 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.8.1 Beta (14-4-2021)
+-----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Change in auto swipe behavior. See :ref:`autoswipe`.
+
 v3.8.0 Beta (10-4-2021)
 -----------------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Auto slide timer configurable per screen via screen parameter ``auto_slide_page``
 
 
 v3.8 Master (9-4-2021)
@@ -25,10 +37,6 @@ See the upgrade instructions at v3.7.2 below.
 v3.7.7 Beta (8-4-2021)
 ------------------------
 
-Enhancements
-~~~~~~~~~~~~
-
-* Auto slide timer configurable per screen via screen parameter ``auto_slide_page``
 
 Fixes
 ~~~~~~
