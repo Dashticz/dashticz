@@ -1,8 +1,9 @@
 {
-"version": "3.8.0",
+"version": "3.8.1",
 "branch": "beta",
-"last_changes": "Auto slide page parameter per screen",
+"last_changes": "Improved auto slide behavior",
 "changelog" : {
+            "3.8.0": "Auto slide page parameter per screen",
             "3.8": "Master version"
             }
 }
