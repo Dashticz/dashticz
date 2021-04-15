@@ -617,7 +617,7 @@ custom.css::
 
 **Windspeed**
 
-.. image :: img/windspeed.png
+.. image :: img/windknopen.png
 
 CONFIG.js::
 
