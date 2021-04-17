@@ -488,7 +488,6 @@ function onLoad() {
           autoSwipe = true;
           swipebackTime = 0;
         }
-        console.log(swipebackTime, swipeTimeout)
         return;
       }
 
