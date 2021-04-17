@@ -613,3 +613,46 @@ custom.css::
   .level30 .status {
     --dial-color: blue !important
   }
+
+
+**Windspeed**
+
+.. image :: img/windknopen.png
+
+CONFIG.js::
+
+	blocks['wind'] = {
+		idx: 2442,
+		title: 'knopen',
+		type: 'dial',
+		color: '#57c4d6',
+		values: [
+			{
+			value: 'Speed',
+			addClass: 'bigwind',
+			decimals: 0,
+			}
+		],
+		setpoint: 18, // the entire outer ring will change color based on this s
+		offset: 0,  // 0 will point to the wind source, 180 will point to wind d
+		showvalue: false,
+		width: 12,
+		showring: true,
+		showunit: true,
+		shownumbers: true,
+		last_update: false
+	}
+
+custom.css::
+
+	.dial-center {
+		height: 65%!important;width: 65%!important;
+	}
+	[data-id='wind'] .dial-needle::before {
+		border-bottom-color: red!important;
+	}
+	.bigwind {
+		font-size: 300% !important;
+		color: white !important; 
+		height: 40px !important;
+	}

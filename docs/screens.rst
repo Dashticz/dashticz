@@ -128,6 +128,29 @@ The following config settings are applicable to the standby screen:
       | Enter the url for adjusting the brightness when exiting stand-by mode
 
 
+.. _autoswipe:
+
+Auto swipe, auto slide
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Two auto swipe modes exist
+
+1. Auto swipe back to a specific screen (default)
+2. Auto slide to the next screen
+
+The 'swipe back' mode is selected by setting ``config['auto_swipe_back_after']`` to non zero.
+The 'next screen' mode is selected by setting ``config['auto_slide_pages']`` to non zero.
+
+The initial delay before starting 'next screen' mode, can be set via ``config['auto_swipe_back_after']``.
+
+The default timeout which is used for each screen in 'next screen' mode can be defined by ``config['auto_slide_pages']``.
+However, you can overrule this for each screen by adding the ``auto_slide_page`` parameter to the screen block.
+In case the screen parameter ``auto_slide_page`` is 0 , then this screen will be skipped during auto slide.
+
+All timeouts (auto_swipe_back_after, auto_slide_pages, auto_slide_page) are defined in seconds.
+
+The auto swipe countdown timer will reset after mouse moves and screen touches.
+
 Styling
 -------
 
