@@ -527,15 +527,21 @@ function onLoad() {
     $('body').on('mousemove', function () {
       swipebackTime = 0;
       autoSwipe = false;
-      disableStandby();
+      if(standbyActive){
+        Debug.log('Standby: mousemove')
+        disableStandby();
+      }
     });
   }
 
   $('body').on('touchend click', function () {
     setTimeout(function () {
+      if(standbyActive){//should not be activated
+        Debug.log('Standby: touchend click')
+        disableStandby();
+      }
       swipebackTime = 0;
       autoSwipe = false;
-      disableStandby();
     }, 100);
   });
 
@@ -558,8 +564,8 @@ function onLoad() {
             _STANDBY_CALL_URL !== ''
           ) {
             $.get(_STANDBY_CALL_URL);
-            standbyActive = true;
           }
+          standbyActive = true;
         }
       }
     }, 5000);
@@ -600,7 +606,8 @@ function buildStandby() {
       getBlock(columns_standby[c], 'standby' + c, 'div.screenstandby', true);
     }
 
-    $('.screenstandby').on('click', function (event) {
+    $('.screenstandby').on('click touchend', function (event) {
+      Debug.log('Click or touchend in standby')
       disableStandby();
       event.stopPropagation();
       return false;
