@@ -479,15 +479,16 @@ function onLoad() {
       swipebackTime += 1000;
       if (settings.auto_slide_pages > 0) {
         var currentSlide = myswiper.activeIndex;
-        var swipeTimeout = autoSwipe
-          ? currentScreenSet[currentSlide].auto_slide_page ||
-            settings.auto_slide_pages
-          : settings.auto_swipe_back_after;
+        var swipeTimeout =Number(
+          currentScreenSet[currentSlide].auto_slide_page ||
+          settings.auto_slide_pages);
+        if (autoSwipe) swipeTimeout += Number(settings.auto_swipe_back_after);
         if (swipebackTime > swipeTimeout * 1000) {
           autoSlide();
           autoSwipe = true;
           swipebackTime = 0;
         }
+        console.log(swipebackTime, swipeTimeout)
         return;
       }
 
@@ -527,8 +528,8 @@ function onLoad() {
     $('body').on('mousemove', function () {
       swipebackTime = 0;
       autoSwipe = false;
-      if(standbyActive){
-        Debug.log('Standby: mousemove')
+      if (standbyActive) {
+        Debug.log('Standby: mousemove');
         disableStandby();
       }
     });
@@ -536,8 +537,9 @@ function onLoad() {
 
   $('body').on('touchend click', function () {
     setTimeout(function () {
-      if(standbyActive){//should not be activated
-        Debug.log('Standby: touchend click')
+      if (standbyActive) {
+        //should not be activated
+        Debug.log('Standby: touchend click');
         disableStandby();
       }
       swipebackTime = 0;
@@ -607,7 +609,7 @@ function buildStandby() {
     }
 
     $('.screenstandby').on('click touchend', function (event) {
-      Debug.log('Click or touchend in standby')
+      Debug.log('Click or touchend in standby');
       disableStandby();
       event.stopPropagation();
       return false;
