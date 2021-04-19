@@ -148,6 +148,7 @@ function getDeviceDefaults(me, device) {
   var txtUnit = '?';
   var decimals = 2;
   var method = 1;
+  var type;
 
   switch (device['Type']) {
     case 'Rain':
@@ -305,6 +306,14 @@ function getDeviceDefaults(me, device) {
       break;
   }
 
+  if (device.SwitchType) { //device is a switch
+    sensor='';
+    currentValue = device['Data'];
+    decimals = 0;
+    txtUnit = 'level';
+    type='text'
+  }
+
   var multidata = device.Data.split(',').length - 1 > 0;
 
   if (typeof me.block.decimals !== 'undefined') decimals = me.block.decimals;
@@ -313,7 +322,7 @@ function getDeviceDefaults(me, device) {
 
   currentValue = multidata
     ? device.Data
-    : me.block.format
+    : me.block.format && type!=='text'
     ? number_format(currentValue, decimals) + ' ' + txtUnit
     : currentValue;
 
@@ -512,7 +521,7 @@ idx: "11209721"
     var result = data.result.map(function(sample) {
       return {
         d: sample.Date,
-        v: sample.Level
+        l: sample.Level
       }
     })
     return { result:result}
