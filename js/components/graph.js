@@ -965,7 +965,7 @@ function createGraph(graph) {
       mydatasets[element] = {
         data: [],
         label: element,
-        yAxisID: graph.ylabels[idx],
+        yAxisID: graph.ylabels[index],
         backgroundColor: mergedBlock.datasetColors[idx],
         barPercentage: mergedBlock.barWidth,
         borderColor: (mergedBlock.borderColors || mergedBlock.datasetColors)[
@@ -974,7 +974,7 @@ function createGraph(graph) {
         borderWidth: mergedBlock.borderWidth,
         borderDash: mergedBlock.borderDash,
         pointRadius: mergedBlock.pointRadius,
-        pointStyle: mergedBlock.pointStyle[index],
+        pointStyle: mergedBlock.pointStyle[idx],
         pointBackgroundColor: (mergedBlock.pointFillColor ||
           mergedBlock.datasetColors)[idx],
         pointBorderColor: (mergedBlock.pointBorderColor ||
