@@ -220,32 +220,32 @@ function switchBlinds(block, action) {
   });
 }
 
+function reqSlideDevice(idx, level) {
+  return Domoticz.syncRequest(
+    idx,
+    'type=command&param=switchlight&idx=' +
+      idx +
+      '&switchcmd=Set%20Level&level=' +
+      level
+  );
+}
+
 // eslint-disable-next-line no-unused-vars
 function slideDevice(block, status) {
-  var dial = block.type === 'dim' || block.type === 'selector';
+  var $div = block.$mountPoint;
+  $div.find('.icon').removeClass('off');
+  $div.find('.icon').addClass('on');
 
-  if (!dial) {
-    var $div = block.$mountPoint;
-    $div.find('.icon').removeClass('off');
-    $div.find('.icon').addClass('on');
-
-    if ($div.find('.fa-toggle-off').length > 0) {
-      $div
-        .find('.fa-toggle-off')
-        .addClass('fa-toggle-on')
-        .removeClass('fa-toggle-off');
-    }
-    $div.find('.state').html(language.switches.state_on);
+  if ($div.find('.fa-toggle-off').length > 0) {
+    $div
+      .find('.fa-toggle-off')
+      .addClass('fa-toggle-on')
+      .removeClass('fa-toggle-off');
   }
+  $div.find('.state').html(language.switches.state_on);
 
-  Domoticz.syncRequest(
-    block.idx,
-    'type=command&param=switchlight&idx=' +
-      block.idx +
-      '&switchcmd=Set%20Level&level=' +
-      status
-  ).then(function () {
-    dial ? DT_dial.make(block) : getDevices(true);
+  reqSlideDevice(block.idx, status).then(function () {
+    getDevices(true);
   });
 }
 
@@ -603,9 +603,9 @@ function getBlindsBlock(block, withPercentage) {
   } else {
     if (device['Status'] === 'Closed')
       value =
-        '<span class="state">' + language.switches.state_closed + '</span>';
+        '<span class="state">' + (block.textOff || language.switches.state_closed) + '</span>';
     else
-      value = '<span class="state">' + language.switches.state_open + '</span>';
+      value = '<span class="state">' + (block.textOn || language.switches.state_open) + '</span>';
   }
   if (!withPercentage) {
     if (
@@ -614,10 +614,10 @@ function getBlindsBlock(block, withPercentage) {
     ) {
       if (device['Status'] === 'Closed')
         value =
-          '<span class="state">' + language.switches.state_closed + '</span>';
+          '<span class="state">' + (block.textOff || language.switches.state_closed) + '</span>';
       else
         value =
-          '<span class="state">' + language.switches.state_open + '</span>';
+          '<span class="state">' + (block.textOn || language.switches.state_open) + '</span>';
     } else {
       value = '<span class="state"></span>';
     }

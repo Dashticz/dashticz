@@ -1,4 +1,34 @@
-<div class="dial {{size}} {{#if fixed}}fixed{{/if}} {{addclass}}" data-device="{{name}}" data-min="{{min}}" data-max="{{max}}"
+{{#*inline "dialitems"}}
+    <div class="extra  {{animation}} {{#unless showvalue}}novalue{{/unless}}">
+        {{#each info}}
+        <div class="item {{this.addClass}} {{this.deviceStatus}}">
+            &nbsp;
+            {{#if this.label}}
+                <div class="itemlabel">{{this.label}}</div>
+            {{/if}}
+            <div class="dataunit">
+                {{#unless this.image}}
+                <i class="{{this.icon}}"></i>
+                {{else}}
+                <img src="img/{{this.image}}">
+                {{/unless}}                    
+                <span class="data">{{this.data}}</span>
+                <span class="unit">{{this.unit}}</span>
+            </div>
+            &nbsp;
+        </div>
+        {{/each}}             
+    </div>
+    {{#if lastupdate}} 
+        <span class="info {{#unless hasSetpoint}}nosetpoint{{/unless}} {{animation}}">{{lastupdate}}</span>
+    {{/if}}
+{{/inline}}
+
+{{#*inline "dialdevice"}}
+    <span class="device {{animation}}" style="color:{{color}};">{{name}}</span>
+{{/inline}}
+
+<div class="dial {{size}} {{#if fixed}}fixed{{/if}} {{addclass}} {{deviceStatus}}" data-device="{{name}}" data-min="{{min}}" data-max="{{max}}"
     data-type="{{type}}" data-value="{{value}}" data-setpoint="{{setpoint}}" data-status="{{status}}" 
     data-until="{{until}}" data-unit="{{unit}}" data-info="{{lastupdate}}" style="font-size: {{fontsize}}px;--dial-color: {{rgba}};">
     <div class="slice {{#if split}}{{slice}}{{/if}}">
@@ -33,40 +63,26 @@
             <div class="dial-switch">   
                 <input type="checkbox" {{checked}}>
                 <div class="switch-face">
-                    <div class="device  {{animation}}" style="color:{{color}}">{{name}}</div>
-                    <i class="{{iconSwitch}} icon-off" style=""color:{{color}}"></i>
-                    {{#if lastupdate}} 
-                    <span class="info nosetpoint {{animation}}">{{lastupdate}}</span>
-                    {{/if}}
+                        {{> dialdevice}}
+                        {{#if showvalue}}
+                            <i class="{{iconSwitch}} icon-off"></i>
+                        {{/if}}
+                        {{> dialitems}}
                 </div>
             </div>
+
             {{else}}
             <div class="dial-display">
-                <span class="device {{animation}}" style="color:{{color}};">{{name}}</span>
-                <div class="value-unit">
-                    <span class="value" style="--dial-color: {{color}};">{{valueformat}}</span>
-                    {{#if showunit}}
-                    <span class="unit" style="--dial-color: {{color}};">{{unitvalue}}</span>
-                    {{/if}}
-                </div>
-                {{#if lastupdate}} 
-                <span class="info {{#unless hasSetpoint}}nosetpoint{{/unless}} {{animation}}">{{lastupdate}}</span>
-                {{/if}}
-                {{#if hasSetpoint}}
-                <div class="extra  {{animation}}">
-                    {{#each info}}
-                    <div>
-                        {{#unless this.image}}
-                        <i class="{{this.icon}}">&nbsp;</i>
-                        {{else}}
-                        <img src="img/{{this.image}}">
-                        {{/unless}}                    
-                        <span class="data">{{this.data}}</span>
-                        <span class="unit">{{this.unit}}</span>
+                {{> dialdevice}}
+                {{#if showvalue}}
+                    <div class="value-unit">
+                        <span class="value" style="--dial-color: {{color}};">{{valueformat}}</span>
+                        {{#if showunit}}
+                            <span class="unit" style="--dial-color: {{color}};">{{unitvalue}}</span>
+                        {{/if}}
                     </div>
-                    {{/each}}             
-                </div>
                 {{/if}}
+                {{> dialitems}}
             </div>
             {{/if}}
         </div>
