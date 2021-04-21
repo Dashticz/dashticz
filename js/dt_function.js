@@ -58,7 +58,7 @@ var DT_function = (function () {
 
   function blockLoadFrame(block) {
     //Displays the frame of a block after pressing it
-    var id = 'popup_' + (block.key || getRandomInt(1, 100000));
+    var id = 'popup_' + ((''+block.key).replace(' ','_') || getRandomInt(1, 100000));
     $('body').append(createModalDialog('openpopup', id, block));
     $('#' + id).modal('show');
     var popupBlock = 0;

@@ -6,7 +6,82 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 Recent changes
---------------
+---------------
+
+Fixes
+~~~~~~
+
+* Standby: Prevent click to activate a Dashticz block
+
+v3.8.1 Beta (14-4-2021)
+-----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Change in auto swipe behavior. See :ref:`autoswipe`.
+
+v3.8.0 Beta (10-4-2021)
+-----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Auto slide timer configurable per screen via screen parameter ``auto_slide_page``
+
+
+v3.8 Master (9-4-2021)
+----------------------
+
+Master version derived from v3.7.7 Beta.
+
+If your current Dashticz version is lower than v3.7.2 then before upgrading make a copy of custom/custom.css and custom/custom.js first!
+
+See the upgrade instructions at v3.7.2 below.
+
+v3.7.7 Beta (8-4-2021)
+------------------------
+
+
+Fixes
+~~~~~~
+
+* Garbage: Repaired Area, EDG, Groningen, Meerlanden
+
+Enhancements
+~~~~~~~~~~~~
+
+* P1 Smart Meter: Computed fields 'NettUsage', 'NettCounterToday' and 'NettCounter' which can be used as value in dials.
+* Garbage: Set block parameter 'ignoressl' to true to disable https SSL checks.
+
+Code
+~~~~
+
+* Update of the external npm modules
+  
+v3.7.6 Beta (12-3-2021)
+------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+.. note:: Breaking changes. See :ref:`v376` for update instuctions
+
+* Several dial enhancements. See :ref:`dialvalues`
+* Device hook: Function in custom.js which is called on every device update. See :ref:`devicehook`
+
+Fixes
+~~~~~~
+
+* Blinds: Support textOn and textOff block parameters
+
+v3.7.5 Beta (28-2-2021)
+-----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* OWM widgets. See :ref:`owmwidgets`
 
 Fixes
 ~~~~~~
