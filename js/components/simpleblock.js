@@ -32,6 +32,7 @@ var DT_simpleblock = (function () {
       script: 'js/weather.js',
       render: renderCurrentWeather_big,
     },
+/*
     weather_owm: {
       script: 'js/weather_owm.js',
       render: renderWeather_owm,
@@ -44,6 +45,7 @@ var DT_simpleblock = (function () {
       script: 'js/weather_owm.js',
       render: renderCurrentWeather_big_owm,
     },
+    */
     spotify: {
       script: 'js/spotify.js',
       render: renderSpotify,
