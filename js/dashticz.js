@@ -36,6 +36,7 @@ var Dashticz = (function () {
     'basicclock',
     'owmwidget',
     'log',
+    'weather',
     'simpleblock',
   ];
   var components = [];
