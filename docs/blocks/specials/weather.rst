@@ -3,31 +3,93 @@
 Weather forecast
 ################
 
-Dashticz supports two weather forecast providers:
+.. note:: In version 3.8.2 Dashticz switched to the new weather block as described here.
 
-* Weather Underground: https://www.wunderground.com/
+Dashticz supports the following weather forecast provider:
+
 * Open Weather Map: https://openweathermap.org/
 
-Weather Underground doesn't provide new API-keys anymore, so new users should make use of OWM.
+
+Before you can use the weather module, you must request an API key at https://openweathermap.org/
 
 Open Weather Map
 ----------------
 
-The OWM module provides two predefined blocks:
+A basic weather block can be defined as follows::
+
+  blocks['weather'] = {
+    type: 'weather',
+    apikey: 'abc123...xyz', /Your OpenWeatherMap API key
+    city: 'Amsterdam', 
+  }
+
+.. image :: img/weather_default.jpg
+
+Besides the daily forecast, you can also show the current weather or an hourly forecast.
+
+Parameters
+~~~~~~~~~~
 
 .. list-table:: 
   :header-rows: 1
   :widths: 5, 30
   :class: tight-table
       
-  * - Block name
+  * - Block parameter
     - Description
-  * - 'currentweather_big_owm'
-    - Displays the actual weather
-  * - 'weather_owm'
-    - Displays the weather forecast
+  * - type
+    - ``'weather'``. To select a weather block
+  * - width
+    - ``1..12``: Width of the block
+  * - refresh
+    - ``3600`` Update once per hour. (default=3600, minimum=900, 15 minutes)
+  * - scale
+    - | Number between 0 and 1 to make the weather block smaller
+      | ``1`` Normal block width
+      | ``0.5`` 50% width
+  * - apikey
+    - ``'abc123...xyz'``. OWM api key
+  * - city
+    - ``'Amsterdam'``. City name. You can also use the OWM city id code.
+  * - country
+    - ``'nl'``. Country code.
+  * - name
+    - ``'My place'``. Name to use instead of city name on the dashboard.
+  * - lang
+    - ``'nl'``: Language to use for OWM data
+  * - layout
+    - | Choose a layout for the weather block
+      | ``0``: Daily forecast (=default)
+      | ``1``: Hourly forecast
+      | ``2``: Current weather
+      | ``3``: Current weather detailed
+  * - count
+    - ``5``: Number of forecast items to show (default=3). Only for daily and hourly forecast.
+  * - interval
+    - | Use every n-th forecast item.
+      | ``1``. Use every forecast item (=default)
+      | ``3``. Set to 3 to get 3-hourly forecast
+  * - static_weathericons
+    - | ``true`` Static weather settings
+      | ``false`` Animated weather icons (=default)
+  * - decimals
+    - | Number of temperature decimals to show
+      | ``1`` One decimal (=default)  
+  * - showMin
+    - | Show/hide minimum temperature (only for daily forecast)
+      | ``false``: Hide minimum temperature
+      | ``true``: Show minimum temperature (=default)
+  * - showRain
+    - | Show/hide rain rate (only for daily and hourly forecast)
+      | ``false``: Hide rain rate
+      | ``true``: Show rain rate (=default)
+  * - showDescription
+    - | Show/hide weather description (only for daily and hourly forecast)
+      | ``false``: Hide weather description
+      | ``true``: Show weather description
+    
       
-The OWM module makes use of the following CONFIG parameters:
+The weather module makes use of the following CONFIG parameters:
 
 .. list-table:: 
   :header-rows: 1
@@ -51,37 +113,75 @@ The OWM module makes use of the following CONFIG parameters:
   * - owm_lang
     - | Set language for de description of the forecast (rain, cloudy, etc.). For available languages, see https://openweathermap.org/forecast5/#multi
       | ``''`` (empty string, default) Use Dashticz language setting
-  * - owm_days
-    - | ``false`` Show forecast per 3 hour interval
-      | ``true`` Show daily forecast
   * - owm_cnt
     - | Number of forecast elements (3-hour intervals or days) to show
       | ``1..5``
   * - owm_min
-    - | Show minimum temperature on 2nd row (only applicable if ``owm_days`` is set to ``true``
+    - | Show minimum temperature on 2nd row (only for daily forecast)
       | ``false`` / ``true``
   * - static_weathericons
     - | ``true`` Static weather settings
       | ``false`` (default) Animated weather icons 
     
-Complete example::
+Usage
+~~~~~~
 
-    //Configuring the OWM parameters
-    config['owm_api'] = '7c4bd2526cc4b8ed811ddfead1a557c9';
-    config['owm_city'] = 'Mainaschaff';
-    config['owm_name'] = '';
-    config['owm_country'] = 'de';
-    config['owm_lang'] = 'nl';
-    config['owm_cnt'] = '3';
-    config['owm_min'] = true;
-    config['owm_days'] = true;
-    
-    //Adding OWM to a column
-    columns[3] = {}
-    columns[3]['blocks'] = ['currentweather_big_owm','weather_owm']
-    columns[3]['width'] = 3;
+In the next examples the config parameter ``owm_api`` and ``owm_city`` have been set globally, so they are not part of the weather block definitions.
 
-.. image :: weather_owm.png
+To show the hourly forecast with an 3 hour interval::
+
+  blocks['weather1'] = {
+      type: 'weather',
+      layout: 1,
+      count: 7,
+      interval: 3,
+  }
+
+.. image :: img/weather_hourly.jpg
+
+To show the current weather, with a custom name::
+
+  blocks['weather2'] = {
+    type: 'weather',
+    layout: 2,
+    name: 'My place',
+  }
+
+.. image :: img/weather_current.jpg
+
+To show detailed info on the current weather::
+
+  blocks['weather3'] = {
+      type: 'weather',
+      layout: 3,
+      name:'Home is home',
+  }
+
+.. image :: img/weather_detailed.jpg
+
+styling
+~~~~~~~
+
+All blocks have the css class ``weather`` assigned in combination with ``weather_0``, ``weather_1``, ..., where the number indicates the layout number.
+
+Further, all info items have css classes assigned. The names are self explanatory.
+
+* ``icon``: Weather icon
+* ``day``: Day item ('Saturday')
+*  ``time``: Forecast time (hourly forecast only)
+* ``city``: City name
+* ``description``: Weather description
+* ``temp``: temperature
+* ``max``: Max temperature
+* ``min``: Min temperature
+* ``temp``: Current temperature
+* ``feels``: Feel-like temperature
+* ``rain``: Rain rate
+* ``humidity``
+* ``pressure``: Barometric pressure
+* ``windspeed``
+* ``windgust``
+* ``winddirection``
 
 
-.. note :: It's not possible to use OpenWeatherMap and Weather Underground blocks simultaneously
+

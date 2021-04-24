@@ -1,4 +1,4 @@
-/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify*/
+/* global Dashticz DT_function settings choose Skycons Debug number_format _TEMP_SYMBOL moment templateEngine _CORS_PATH language*/
 //# sourceURL=js/components/weather.js
 var DT_weather = (function () {
   var skycons = 0;
@@ -9,13 +9,13 @@ var DT_weather = (function () {
     init: function () {
       return DT_function.loadCSS('./js/components/weather.css');
     },
-      defaultCfg: function (block) {
-      var layout = choose (block && block.layout, 0);
-      return {        
+    defaultCfg: function (block) {
+      var layout = choose(block && block.layout, 0);
+      return {
         layout: 0,
         /*
         0: Day forecast
-        1: Today forecast
+        1: Hourly forercast
         2: Now row
         3: Now column
         */
@@ -23,18 +23,23 @@ var DT_weather = (function () {
         city: settings['owm_city'] || 'Amsterdam',
         country: settings['owm_country'] || 'nl',
         name: settings['owm_name'],
-        count: choose(settings['owm_cnt'], layout < 2 ? 5 : 1), //only valid for layout 0 and 1
         lang: settings['owm_lang'] || 'nl',
-        min: choose(settings['owm_min'], true),
-        days: choose(settings['owm_days'], true),
+        count: choose(settings['owm_cnt'], layout < 2 ? 5 : 1), //only valid for layout 0 and 1
+//        days: choose(settings['owm_days'], true),
+        interval: 1,
         static_weathericons: settings['static_weathericons'],
         refresh: 3600, //update once per hour
         icon: 'fas fa-sun',
         scale: 1,
-        containerClass: 'weather_' + layout
+        containerClass: 'weather_' + layout,
+        decimals: 1,
+        showRain: true,
+        showDescription: true,
+        showMin: choose(settings['owm_min'], true),
       };
     },
     run: function (me) {
+      if (me.block.refresh<60) me.block.refresh=60;
       if (!me.block.static_weathericons && !skycons) {
         //initialize Skycons
         skycons = new Skycons({ color: 'white' });
@@ -43,7 +48,6 @@ var DT_weather = (function () {
       me.$block = me.$mountPoint.find('.dt_block');
     },
     refresh: function (me) {
-      console.log(me);
       if (!me.block.apikey) {
         Debug.log(
           Debug.ERROR,
@@ -54,6 +58,9 @@ var DT_weather = (function () {
       var w = parseInt(me.$mountPoint.width() * me.block.scale);
       if (me.block.scale !== 1) me.$block.css('width', w);
       var fontSize = w / 10;
+      if (me.block.layout === 0 || me.block.layout === 1) {
+        fontSize = fontSize / me.block.count;
+      }
 
       me.$block.css('font-size', fontSize + 'px');
       refreshOWM(me);
@@ -62,64 +69,126 @@ var DT_weather = (function () {
 
   function refreshOWM(me) {
     requestData(me)
-    .then(function() {
-      return formatData(me);
-    })
-    .then(function() {
-      return templateEngine.load('weather_'+me.block.layout);
-    })
-    .then(function(template) {
-      console.log(me);
-      $(me.$block).html(template(me.data))
-    })
-
+      .then(function () {
+        return formatData(me);
+      })
+      .then(function () {
+        return templateEngine.load('weather_' + me.block.layout);
+      })
+      .then(function (template) {
+        var html = template(me.data);
+        $(me.$block).html(html);
+        addWeatherIcons(me);
+      });
   }
 
   /** Load the data that is required for the refresh */
   function requestData(me) {
     me.data = {};
     return $.getJSON(getOWMurl(me, false), function (result) {
-      me.data.weather=result;
-    })
-    .then(function() {
+      me.data.weather = result;
+    }).then(function () {
       return $.getJSON(getOWMurl(me, true), function (result) {
-        me.data.forecast=result;
-      })  
-    })
+        me.data.forecast = result;
+      });
+    });
   }
 
-  function formatData(me) {
+  function formatDailyData(me) {
+    //In principle we now have all data
+    //Now we only have to generate the correct icons
+    var cntSetting = me.block.count;
+    if (cntSetting > 7) cntSetting = 7;
+    var data = [];
+    var daily = me.data.forecast.daily;
+    for (var i = 0; i < cntSetting; i++) {
+      var dayData = {
+        day: moment(daily[i].dt * 1000).format(settings['weekday']),
+        min: number_format(daily[i].temp.min, me.block.decimals) + _TEMP_SYMBOL,
+        max: number_format(daily[i].temp.max, me.block.decimals) + _TEMP_SYMBOL,
+        description: daily[i].weather[0].description,
+        rain: number_format(daily[i].rain || 0, 1),
+        icon: daily[i].weather[0].icon,
+      };
+      data.push(dayData);
+    }
+    me.data.dailyForecast = data;
+    return me;
+  }
+
+  function formatHourlyData(me) {
+    var cntSetting = me.block.count;
+    //    if (cntSetting>14) cntSetting=14;
+    if (cntSetting * me.block.interval > 48)
+      cntSetting = Math.floor(48.0 / me.block.interval);
+    var data = [];
+    var hourly = me.data.forecast.hourly;
+    for (var i = 0; i < cntSetting; i++) {
+      var pos = i * me.block.interval;
+      var dayData = {
+        day: moment(hourly[pos].dt * 1000).format(settings['weekday']),
+        time: moment(hourly[pos].dt * 1000).format('HH:mm'),
+        temp: number_format(hourly[pos].temp, me.block.decimals) + _TEMP_SYMBOL,
+        description: hourly[pos].weather[0].description,
+        rain: number_format(hourly[pos].rain || 0, 1),
+        icon: hourly[pos].weather[0].icon,
+      };
+      data.push(dayData);
+    }
+    me.data.hourlyForecast = data;
+    return me;
+  }
+
+  function formatCurrentData(me) {
+    me.data.current = {
+      icon: me.data.weather.weather[0].icon,
+      city: me.block.name || me.data.weather.name,
+      temp: number_format(me.data.weather.main.temp, me.block.decimals) + _TEMP_SYMBOL,
+      max: number_format(me.data.forecast.daily[0].temp.max, me.block.decimals) + _TEMP_SYMBOL,
+      min: number_format(me.data.forecast.daily[0].temp.min, me.block.decimals) + _TEMP_SYMBOL,
+      rain: (me.data.weather.rain && me.data.weather.rain['1h']) || 0,
+      pressure: me.data.weather.main.pressure,
+      feels: number_format(me.data.weather.main.feels_like, me.block.decimals) + _TEMP_SYMBOL,
+      humidity: me.data.weather.main.humidity,
+      wind: {
+        speed: number_format(me.data.weather.wind.speed, 1),
+        gust: number_format(me.data.weather.wind.gust, 1),
+        deg: me.data.weather.wind.deg,
+        direction: translateWindDegrees(me.data.weather.wind.deg),
+      }
+    }
     return me
   }
 
-  function loadWeatherOwm(me) {
-    $.getJSON(getOWMurl(me), function (weather) {
-      var location = me.block.city;
-      var curfull = me.$block;
-      if (typeof weather.main === 'undefined') {
-        curfull.remove();
-        curfull
-          .find('.dt_content')
-          .html('<p style="font-size:10px; width:100px;">Location ERROR</p>');
-      } else {
-        var temp = weather.main.temp;
-        var icons = [];
-        var iconid = getIconId(me, 0);
-        icons.push(weather.weather[0].icon);
-        var html = '<div id="' + iconid + '" class="icon"></div>';
-        curfull.find('.col-icon').html(html);
-        addIcons(me, icons);
-        curfull
-          .find('.weatherdegrees')
-          .html(
-              Math.round(temp) +
-              _TEMP_SYMBOL 
-          );
+  function defaultFormatHandler(me) {
+    /*We just execute them all ...*/
+    formatDailyData(me);
+    formatHourlyData(me);
+    formatCurrentData(me);
+    return me;
+  }
 
-        var name = me.block.name || location;
-        curfull.find('.weatherloc').html(name);
-      }
-    });
+  function formatData(me) {
+    /*
+        0: Day forecast
+        1: Hourly forercast
+        2: Now row
+        3: Now column
+        */
+
+    var formatHandlers = {
+      0: formatDailyData,
+      1: formatHourlyData,
+      2: formatCurrentData,
+      3: formatCurrentData,
+    };
+    me.data.key = me.mountPoint.slice(1);
+    me.data.showRain = me.block.showRain;
+    me.data.showMin = me.block.showMin;
+    me.data.showDescription = me.block.showDescription;
+
+    var formatHandler = formatHandlers[me.block.layour] || defaultFormatHandler;
+    return formatHandler(me);
   }
 
   function isNumeric(n) {
@@ -132,19 +201,24 @@ var DT_weather = (function () {
     var api = me.block.apikey;
     var lang = me.block.lang;
 
+    var subsite = makeForecast
+      ? 'onecall?lat=' +
+        me.data.weather.coord.lat +
+        '&lon=' +
+        me.data.weather.coord.lon
+      : 'weather?' +
+        (isNumeric(city) ? 'id=' + city : 'q=' + city + ',' + country);
+
     var site =
       (settings['use_cors'] ? _CORS_PATH : '') +
       'https://api.openweathermap.org/data/2.5/' +
-      (makeForecast ? 'forecast' : 'weather') +
-      '?';
-    if (isNumeric(city)) site += 'id=' + city;
-    else site += 'q=' + city + ',' + country;
-    site += '&appid=' + api + '&lang=' + lang;
-    if (settings['use_fahrenheit'] === 1) {
-      site += '&units=imperial';
-    } else {
-      site += '&units=metric';
-    }
+      subsite +
+      '&appid=' +
+      api +
+      '&lang=' +
+      lang +
+      '&units=' +
+      (settings['use_fahrenheit'] === 1 ? 'imperial' : 'metric');
     return site;
   }
 
@@ -306,27 +380,6 @@ var DT_weather = (function () {
     el.html('<i class="wi ' + wiclass + '"></i>');
   }
 
-  function renderWeatherFullOwm(me) {
-    me.$block.addClass('weatherfull');
-  }
-  function renderWeatherCurrentOwm(me) {
-    me.$block
-      .find('.dt_state')
-      .html(
-        '<strong class="weatherdegrees" id="weatherdegrees"></strong><br /><span class="weatherloc" id="weatherloc"></span>'
-      );
-    me.$block.addClass('weathercurrent');
-  }
-
-  function renderWeatherBigOwm(me) {
-    me.$block
-      .find('.dt_state')
-      .html(
-        '<span class="weatherdegrees" id="weatherdegrees"></span> <span class="weatherloc" id="weatherloc"></span>'
-      );
-    me.$block.addClass('weatherbig');
-  }
-
   function getSkycon(el, code, classname) {
     var icon = 'PARTLY_CLOUDY_DAY';
     var icons = {
@@ -422,6 +475,26 @@ var DT_weather = (function () {
       wiclass = icons[code];
     }
     return wiclass;
+  }
+
+  function addWeatherIcons(me) {
+    var iconlist = me.$mountPoint.find('.icon');
+    iconlist.each(function (idx, el) {
+      var $div = $(el);
+      var icon = el.dataset.icon;
+      if (me.block.static_weathericons) {
+        mountIcon($div, icon);
+      } else getSkycon($div, icon, 'skycon');
+    });
+  }
+
+
+  function translateWindDegrees(deg) {
+    /*16 direction. each 16/360=22.5 degrees*/
+    var windTable = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW','N'];
+    var index = Math.round(deg/22.5);
+    var wind=windTable[index];
+    return language.wind['direction_'+wind];
   }
 })();
 
