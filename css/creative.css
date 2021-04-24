@@ -287,7 +287,7 @@
   margin: 10px auto 10px auto;
   display: block;
   width: 100%;
-  max-width: 125px;
+/*  max-width: 125px;*/
 }
 
 .skyconsmall {
@@ -794,11 +794,6 @@ a.playlist {
   margin-top: 2px;
 }
 
-.owmdescription {
-  height: 2.5em;
-  line-height: 1em;
-}
-
 @media only screen and (max-width: 1000px) {}
 
 
@@ -995,10 +990,12 @@ div.mh h3 {
   padding-top: 6px;
 }
 
+/*
 div.big {
   padding-top: 20px !important;
   padding-left: 18px !important;
 }
+*/
 
 .sunriseholder,
 .sunriseholder .wi {
@@ -1192,11 +1189,6 @@ p {
 
 .dt_block.popup {
   background:unset;
-}
-
-.weatherfull .transbg {
-  padding-top: 9px !important;
-  padding-bottom: 10px !important;
 }
 
 .block_clock h1,
@@ -1497,20 +1489,9 @@ img.icon {
   margin-right: 3px !important;
 }
 
-.containsweather .col-xs-1 {
-  width: 50px;
-}
-
-.containsweather .col-xs-11 {
-  width: calc(100% - 50px);
-}
-
 @media (max-width: 975px) {
   div.mh {
     height: 75px;
-  }
-  .big .weatherdegrees {
-    padding-left: 15px;
   }
   .transbg.col-xs-1,
   .transbg.col-xs-2,
@@ -1552,15 +1533,6 @@ img.icon {
   h4 {
     margin-left: 0px !important;
   }
-  div.big {
-    padding-left: 13px !important;
-  }
-  .containsweather .col-xs-1 {
-    width: 35px;
-  }
-  .containsweather .col-xs-11 {
-    width: calc(100% - 35px);
-  }
   img.icon {
     max-width: 15px !important;
   }
@@ -1570,6 +1542,7 @@ img.icon {
   .mh .wi {
     font-size: 15px !important;
   }
+  
   .fa-tv:before {
     font-size: 12px;
   }
@@ -1608,69 +1581,6 @@ div.screen {
   color: white;
 }
 
-.big .weatherdegrees {
-  padding-right: 10px;
-}
-
-.big .weatherdegrees,
-.big .weatherloc {
-  display: inline-block;
-  margin-top: -2px;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.weatherfull {
-  color: #444;
-  text-align: left;
-  text-shadow: none;
-}
-
-.weatherfull>div div {
-  text-align: center;
-  color: #fff;
-}
-
-.weatherfull>div div.day {
-  margin-top: 0px;
-  font-weight: 300;
-  font-size: 13px;
-}
-
-.weatherfull>div div.temp span {
-  float: none;
-  display: inline-block;
-}
-
-.weatherfull>div div.temp {
-  font-size: 28px;
-  font-weight: 400;
-}
-
-.weatherfull>div div.temp .nightT {
-  display: block;
-  font-size: 19px;
-  margin-top: -8px;
-  opacity: 0.7;
-  padding-bottom: 0px;
-}
-
-.weatherfull>div div.icon {
-  border-radius: 50%;
-  width: 75px;
-  height: 48px;
-  margin: 0px auto;
-}
-
-.weatherfull>div div.icon i {
-  color: #fff !important;
-}
-
-.weatherfull i {
-  font-size: 40px !important;
-  margin: 5px auto 0 auto;
-  opacity: 0.9;
-}
 
 .section-heading {
   margin-top: 0;

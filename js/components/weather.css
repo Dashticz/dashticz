@@ -1,0 +1,212 @@
+/*
+.weatherbig .dt_state {
+  vertical-align: middle;
+}
+
+.weatherbig .weatherdegrees {
+  padding-right: 10px;
+}
+
+.weatherbig .weatherdegrees,
+.weatherbig .weatherloc {
+  display: inline-block;
+  margin-top: -2px;
+  font-size: 60%;
+  font-weight: bold;
+  vertical-align: middle;
+}
+
+.dt_block.weatherfull {
+  background: rgba(0, 0, 0, 0);
+  padding: 0px !important;
+}
+
+.dt_block.weather {
+  left: 50%;
+  transform: translate(-50%);
+  align-items: center;
+}
+
+.weather .col-icon {
+  text-align: center;
+}
+
+.weather .col-icon .wi {
+  font-size: 1.2em !important;
+}
+
+.dt_block.weathercurrent {
+  background: unset;
+}
+
+.weathercurrent .col-icon {
+  width: 75% !important;
+  max-width: unset !important;
+}
+
+.weathercurrent .dt_state {
+  font-size: 40%;
+}
+
+.weatherday {
+  width: 100%;
+  margin: 0 2%;
+  background: rgba(0, 0, 0, 0.2);
+  background-clip: padding-box;
+}
+
+.weatherday:first-child {
+  margin-left: 0;
+}
+
+.weatherday:last-child {
+  margin-right: 0;
+}
+
+.weatherfull {
+  color: #444;
+  text-align: left;
+  text-shadow: none;
+}
+
+.weatherfull .weatherday {
+  text-align: center;
+  color: #fff;
+}
+
+.weatherfull .day {
+  font-weight: 300;
+  /*  font-size: 13px;
+}
+
+.weatherfull .temp {
+  font-size: 170%;
+  font-weight: 400;
+}
+
+.weatherfull .temp .sub {
+  font-size: 80%;
+  opacity: 0.7;
+  margin-top: -0.3em;
+  display: block;
+}
+
+.weatherfull .temp .nightT {
+  display: block;
+  font-size: 80%;
+  margin-top: -8px;
+  opacity: 0.7;
+  padding-bottom: 0px;
+}
+
+.weatherfull .icon {
+  border-radius: 50%;
+  /*  width: 75px;
+    height: 48px;
+  margin: 5% auto;
+}
+
+.weatherfull .icon i {
+  color: #fff !important;
+  font-size: 400%;
+}
+
+.weatherfull .weatherday {
+  padding-top: 0.5em !important;
+  padding-bottom: 0.5em !important;
+}
+*/
+
+.dt_block.weather_0, .dt_block.weather_1 {
+  background: rgba(0, 0, 0, 0);
+  padding: 0px !important
+}
+
+.weatherday {
+  width: 100%;
+  margin: 0 1%;
+  background: rgba(0, 0, 0, 0.2);
+  background-clip: padding-box;
+  font-size: 170%;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+}
+
+.weatherday > div {
+  text-align: center
+}
+
+.weatherday:first-child {
+  margin-left: 0;
+}
+
+.weatherday:last-child {
+  margin-right: 0;
+}
+
+.weatherday .day {
+  font-size: 70%;
+  line-height: 1.5em;
+}
+
+.weatherday .min {
+  font-size: 70%
+}
+
+.weatherday .description {
+  font-size: 70%;
+  min-height: 3em;
+}
+
+.weatherday .rain {
+  font-size: 70%
+}
+
+.weatherday .wi {
+  font-size: 250%;
+  padding-top: 0.4em;
+  padding-bottom: 0.4em;
+}
+
+.weathercurrent {
+  display: flex;
+  align-items: center;
+}
+
+.weathercurrent .temp {
+  font-size: 60%;
+  margin-right: 0.5em
+}
+
+.weathercurrent .city {
+  font-size: 50%
+}
+
+.weather_2 .skycon {
+  width: 3em
+}
+
+.weather_3 {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.weather_3 > div {
+  font-size: 40%;
+  width: 33%;
+  text-align: center;
+}
+
+.weather_3 .city {
+  font-size: 60%;
+}
+
+.weather_3 .temp {
+  font-size: 60%;
+}
+
+.weather_3 .description {
+  width: 100%;
+}
