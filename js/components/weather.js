@@ -9,10 +9,16 @@ var DT_weather = (function () {
     init: function () {
       return DT_function.loadCSS('./js/components/weather.css');
     },
+    canHandle: function(block) {
+      var key=block.key;
+      if (key==='weather_owm' || key==='currentweather_owm' || key==='currentweather_big_owm') return true
+    },
     defaultCfg: function (block) {
-      var layout = choose(block && block.layout, 0);
+      var defaultLayout = 0;
+      if(block.key==='currentweather_owm' || block.key==='currentweather_big_owm') defaultLayout=2;
+      var layout = choose(block && block.layout, defaultLayout);
       return {
-        layout: 0,
+        layout: defaultLayout,
         /*
         0: Day forecast
         1: Hourly forercast
