@@ -9,13 +9,22 @@ var DT_weather = (function () {
     init: function () {
       return DT_function.loadCSS('./js/components/weather.css');
     },
-    canHandle: function(block) {
-      var key=block.key;
-      if (key==='weather_owm' || key==='currentweather_owm' || key==='currentweather_big_owm') return true
+    canHandle: function (block) {
+      var key = block.key;
+      if (
+        key === 'weather_owm' ||
+        key === 'currentweather_owm' ||
+        key === 'currentweather_big_owm'
+      )
+        return true;
     },
     defaultCfg: function (block) {
       var defaultLayout = 0;
-      if(block.key==='currentweather_owm' || block.key==='currentweather_big_owm') defaultLayout=2;
+      if (
+        block.key === 'currentweather_owm' ||
+        block.key === 'currentweather_big_owm'
+      )
+        defaultLayout = 2;
       var layout = choose(block && block.layout, defaultLayout);
       return {
         layout: defaultLayout,
@@ -31,7 +40,7 @@ var DT_weather = (function () {
         name: settings['owm_name'],
         lang: settings['owm_lang'] || 'nl',
         count: choose(settings['owm_cnt'], layout < 2 ? 5 : 1), //only valid for layout 0 and 1
-//        days: choose(settings['owm_days'], true),
+        //        days: choose(settings['owm_days'], true),
         interval: 1,
         static_weathericons: settings['static_weathericons'],
         refresh: 3600, //update once per hour
@@ -58,7 +67,8 @@ var DT_weather = (function () {
       }
       var colors={};
       $.extend(colors, defaultColors, me.block.colors);
-      if (me.block.refresh<60) me.block.refresh=60;
+      if (me.block.refresh < 900) me.block.refresh = 900;
+      me.skyconList = [];
       if (!me.block.static_weathericons && !skycons) {
         //initialize Skycons
         skycons = new Skycons({monochrome: me.block.monochrome, colors: colors});
@@ -84,6 +94,9 @@ var DT_weather = (function () {
       me.$block.css('font-size', fontSize + 'px');
       refreshOWM(me);
     },
+    destroy: function(me) {
+      cleanupIcons(me);
+    }
   };
 
   function refreshOWM(me) {
@@ -166,21 +179,29 @@ var DT_weather = (function () {
     me.data.current = {
       icon: me.data.weather.weather[0].icon,
       city: me.block.name || me.data.weather.name,
-      temp: number_format(me.data.weather.main.temp, me.block.decimals) + _TEMP_SYMBOL,
-      max: number_format(me.data.forecast.daily[0].temp.max, me.block.decimals) + _TEMP_SYMBOL,
-      min: number_format(me.data.forecast.daily[0].temp.min, me.block.decimals) + _TEMP_SYMBOL,
+      temp:
+        number_format(me.data.weather.main.temp, me.block.decimals) +
+        _TEMP_SYMBOL,
+      max:
+        number_format(me.data.forecast.daily[0].temp.max, me.block.decimals) +
+        _TEMP_SYMBOL,
+      min:
+        number_format(me.data.forecast.daily[0].temp.min, me.block.decimals) +
+        _TEMP_SYMBOL,
       rain: (me.data.weather.rain && me.data.weather.rain['1h']) || 0,
       pressure: me.data.weather.main.pressure,
-      feels: number_format(me.data.weather.main.feels_like, me.block.decimals) + _TEMP_SYMBOL,
+      feels:
+        number_format(me.data.weather.main.feels_like, me.block.decimals) +
+        _TEMP_SYMBOL,
       humidity: me.data.weather.main.humidity,
       wind: {
         speed: number_format(me.data.weather.wind.speed, 1),
         gust: number_format(me.data.weather.wind.gust, 1),
         deg: me.data.weather.wind.deg,
         direction: translateWindDegrees(me.data.weather.wind.deg),
-      }
-    }
-    return me
+      },
+    };
+    return me;
   }
 
   function defaultFormatHandler(me) {
@@ -251,159 +272,6 @@ var DT_weather = (function () {
     return site;
   }
 
-  // eslint-disable-next-line no-unused-vars
-  function loadWeatherFullOwm(me) {
-    $.getJSON(getOWMurl(me), function (currentforecast) {
-      var cntSetting = me.block.count;
-      var days = me.block.days;
-      if (cntSetting > 40) cntSetting = 40;
-      if (cntSetting > 5 && days == 1) cntSetting = 5;
-      var curfull = me.$block;
-      curfull.removeClass('transbg');
-
-      var html = '';
-      var icons = [];
-      if (typeof currentforecast.list === 'undefined') {
-        curfull.html('');
-        return;
-      }
-      var start = 0;
-
-      if (!days) {
-        //torov5
-        for (var i = start; i < start + cntSetting; i++) {
-          var curfor = currentforecast.list[i];
-          var date = moment
-            .unix(curfor.dt)
-            .locale(settings['calendarlanguage']);
-          var temp = curfor.main.temp;
-
-          var rain = 0;
-          if (typeof curfor.rain !== 'undefined') {
-            if (typeof curfor.rain['3h'] !== 'undefined') {
-              rain = curfor.rain['3h'];
-            }
-          }
-          html +=
-            '<div id=' +
-            getWeatherDayId(me, i) +
-            '" class="weatherday transbg">' +
-            '<div class="day">' +
-            date.format('HH') +
-            ':' +
-            date.format('mm') +
-            //            '<br />' +
-            //            date.format(settings['weekday']) +
-            '</div>';
-          var iconid = getIconId(me, i);
-          icons.push(curfor.weather[0].icon);
-          html += '<div id="' + iconid + '" class="icon"></div>';
-          html +=
-            '<div class="temp"><span class="av_temp">' +
-            Math.round(temp) +
-            _TEMP_SYMBOL +
-            '</span><br /><span class="sub">' +
-            Math.round(rain * 100) / 100 +
-            ' mm' +
-            '</span></div>' +
-            '</div>';
-        }
-        html += '</div>';
-      } else {
-        var fcNumber = currentforecast.cnt;
-        var minTemp = [199, 199, 199, 199, 199];
-        var tempTemp = 199;
-        var x = -1;
-        for (i = 0; i < fcNumber; i++) {
-          curfor = currentforecast.list[i];
-          date = moment.unix(curfor.dt).locale(settings['calendarlanguage']);
-          temp = curfor.main.temp;
-          if (
-            date.format('HH') == '00' ||
-            date.format('HH') == '01' ||
-            date.format('HH') == '02'
-          ) {
-            if (x > -1) minTemp[x] = tempTemp;
-            tempTemp = 199;
-          }
-          if (temp < tempTemp) tempTemp = temp;
-          if (
-            date.format('HH') == '12' ||
-            date.format('HH') == '13' ||
-            date.format('HH') == '14'
-          )
-            x++;
-        }
-        if (minTemp[4] == 199) minTemp[4] = tempTemp;
-
-        i = 0;
-        while (start < fcNumber && i < me.block.count) {
-          curfor = currentforecast.list[start];
-          date = moment.unix(curfor.dt).locale(settings['calendarlanguage']);
-          if (
-            date.format('HH') == '12' ||
-            date.format('HH') == '13' ||
-            date.format('HH') == '14'
-          ) {
-            temp = curfor.main.temp;
-            var Wdescription = curfor.weather[0].description;
-            rain = 0;
-            if (typeof curfor.rain !== 'undefined') {
-              if (typeof curfor.rain['3h'] !== 'undefined') {
-                rain = curfor.rain['3h'];
-              }
-            }
-            html +=
-              '<div id=' +
-              getWeatherDayId(me, i) +
-              '" class="weatherday transbg">' +
-              '<div class="day">' +
-              date.format(settings['weekday']) +
-              '</div>';
-            var iconid = getIconId(me, i);
-            icons.push(curfor.weather[0].icon);
-            html += '<div id="' + iconid + '" class="icon"></div>';
-            html +=
-              '<div class="day owmdescription">' + Wdescription + '</div>';
-            html +=
-              '<div class="temp"><span class="av_temp">' +
-              Math.round(temp) +
-              _TEMP_SYMBOL +
-              '</div>';
-            if (settings['owm_min'] === 1)
-              html +=
-                '<div class="temp"><span class="sub">' +
-                Math.round(minTemp[i]) +
-                _TEMP_SYMBOL +
-                '</div></div>';
-
-            i++;
-          }
-          start++;
-        }
-      }
-      curfull.html(html);
-      addIcons(me, icons);
-    });
-  }
-
-  function addIcons(me, icons) {
-    icons.forEach(function (icon, i) {
-      var $div = $('#' + getIconId(me, i));
-      if (me.block.static_weathericons) {
-        mountIcon($div, icon);
-      } else getSkycon($div, icon, 'skycon');
-    });
-  }
-
-  function getIconId(me, i) {
-    return me.mountPoint.slice(1) + '-icon' + i;
-  }
-
-  function getWeatherDayId(me, i) {
-    return me.mountPoint.slice(1) + '-weather' + i;
-  }
-
   function mountIcon(el, icon) {
     var wiclass = getIcon(icon);
     el.html('<i class="wi ' + wiclass + '"></i>');
@@ -455,17 +323,19 @@ var DT_weather = (function () {
       icon = icons[code];
     }
 
+    var id = "icon"+skyconIndex;
     var skycon =
       '<canvas class="' +
       classname +
       '" data-icon="' +
       icon +
-      '" id="icon' +
-      skyconIndex +
+      '" id="' +
+      id +
       '"></canvas>';
     el.html(skycon);
-    skycons.set('icon' + skyconIndex, Skycons[icon]);
+    skycons.set(id, Skycons[icon]);
     skyconIndex += 1;
+    return id;
     //return skycon;
   }
 
@@ -506,24 +376,58 @@ var DT_weather = (function () {
     return wiclass;
   }
 
+  function deleteSkycon(icon) {
+    skycons.remove(icon);
+  }
+
+  function cleanupIcons(me) {
+    me.skyconList.forEach(function (icon) {
+      deleteSkycon(icon);
+    });
+    me.skyconList=[];
+  }
+
   function addWeatherIcons(me) {
+    //first cleanup
+    cleanupIcons(me);
+
     var iconlist = me.$mountPoint.find('.icon');
     iconlist.each(function (idx, el) {
       var $div = $(el);
       var icon = el.dataset.icon;
       if (me.block.static_weathericons) {
         mountIcon($div, icon);
-      } else getSkycon($div, icon, 'skycon');
+      } else {
+        var id=getSkycon($div, icon, 'skycon');
+        me.skyconList.push(id);
+      }
     });
   }
 
-
   function translateWindDegrees(deg) {
     /*16 direction. each 16/360=22.5 degrees*/
-    var windTable = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW','N'];
-    var index = Math.round(deg/22.5);
-    var wind=windTable[index];
-    return language.wind['direction_'+wind];
+    var windTable = [
+      'N',
+      'NNE',
+      'NE',
+      'ENE',
+      'E',
+      'ESE',
+      'SE',
+      'SSE',
+      'S',
+      'SSW',
+      'SW',
+      'WSW',
+      'W',
+      'WNW',
+      'NW',
+      'NNW',
+      'N',
+    ];
+    var index = Math.round(deg / 22.5);
+    var wind = windTable[index];
+    return language.wind['direction_' + wind];
   }
 })();
 
