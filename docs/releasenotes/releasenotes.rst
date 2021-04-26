@@ -8,6 +8,15 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.8.0.1 Master (26-4-2021)
+---------------------------
+
+Fixes
+-----
+
+* Fix for columns without block parameter
+* Fix for icon size for special blocks on screen width < 975 pixels
+
 v3.8 Master (9-4-2021)
 ----------------------
 
