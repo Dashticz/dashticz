@@ -59,7 +59,7 @@ function getBlock(cols, c, screendiv, standby) {
           '"></div>'
       );
     }
-    cols['blocks'].forEach(function (b, i) {
+    cols.blocks && cols['blocks'].forEach(function (b, i) {
       if(b)
         addBlock2Column(columndiv, c, b);
       else {
