@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Fixes
+~~~~~~
+
+* Weather: Changed styling of current weather block (center the three parts)
+
 v3.8.2 Beta (24-4-2021)
 -----------------------
 
@@ -21,7 +26,7 @@ Enhancements
 Fixes
 ~~~~~~
 
-* Standby: Prevent click to activate a Dashticz block
+* Standby: Prevent click to activate a Dashticz block while in standby
 
 v3.8.1 Beta (14-4-2021)
 -----------------------
