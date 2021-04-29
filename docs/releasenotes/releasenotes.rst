@@ -12,6 +12,7 @@ Fixes
 ~~~~~~
 
 * Weather: Changed styling of current weather block (center the three parts)
+* WeatherL Fix styling of forecast block for white Dashticz template
 
 v3.8.2 Beta (24-4-2021)
 -----------------------
