@@ -42,13 +42,26 @@ var DT_weather = (function () {
         showRain: true,
         showDescription: true,
         showMin: choose(settings['owm_min'], true),
+        monochrome: false,
+        showDetails: true,
+        showDaily: true,
+        showHourly: true,
+        showCurrent: true,
       };
     },
     run: function (me) {
+      var defaultColors = {
+        light_cloud: '#DDD',
+        cloud: '#BBB',
+        dark_cloud: '#999',
+        main: 'white'
+      }
+      var colors={};
+      $.extend(colors, defaultColors, me.block.colors);
       if (me.block.refresh<60) me.block.refresh=60;
       if (!me.block.static_weathericons && !skycons) {
         //initialize Skycons
-        skycons = new Skycons({ color: 'white' });
+        skycons = new Skycons({monochrome: me.block.monochrome, colors: colors});
         skycons.play();
       }
       me.$block = me.$mountPoint.find('.dt_block');
@@ -103,7 +116,7 @@ var DT_weather = (function () {
   function formatDailyData(me) {
     //In principle we now have all data
     //Now we only have to generate the correct icons
-    var cntSetting = me.block.count;
+    var cntSetting = choose(me.block.countDaily, me.block.count);
     if (cntSetting > 7) cntSetting = 7;
     var data = [];
     var daily = me.data.forecast.daily;
@@ -119,11 +132,13 @@ var DT_weather = (function () {
       data.push(dayData);
     }
     me.data.dailyForecast = data;
+    me.data.dailyCount =cntSetting;
+    me.data.dailyScale = Math.round(100/cntSetting);
     return me;
   }
 
   function formatHourlyData(me) {
-    var cntSetting = me.block.count;
+    var cntSetting = choose(me.block.countHourly, me.block.count);
     //    if (cntSetting>14) cntSetting=14;
     if (cntSetting * me.block.interval > 48)
       cntSetting = Math.floor(48.0 / me.block.interval);
@@ -142,6 +157,8 @@ var DT_weather = (function () {
       data.push(dayData);
     }
     me.data.hourlyForecast = data;
+    me.data.hourlyCount =cntSetting;
+    me.data.hourlyScale = Math.round(100/cntSetting);
     return me;
   }
 
@@ -179,7 +196,8 @@ var DT_weather = (function () {
         0: Day forecast
         1: Hourly forercast
         2: Now row
-        3: Now column
+        3: Now details
+        4: All combined
         */
 
     var formatHandlers = {
@@ -192,6 +210,11 @@ var DT_weather = (function () {
     me.data.showRain = me.block.showRain;
     me.data.showMin = me.block.showMin;
     me.data.showDescription = me.block.showDescription;
+    me.data.showDetails = me.block.showDetails;
+    me.data.showCurrent = me.block.showCurrent;
+    me.data.showDaily = me.block.showDaily;
+    me.data.showHourly = me.block.showHourly;
+
 
     var formatHandler = formatHandlers[me.block.layour] || defaultFormatHandler;
     return formatHandler(me);
@@ -419,10 +442,10 @@ var DT_weather = (function () {
       '04n': 'CLOUDY',
       '09d': 'RAIN',
       '09n': 'RAIN',
-      '10d': 'RAIN',
-      '10n': 'RAIN',
-      '11d': 'WIND',
-      '11n': 'WIND',
+      '10d': 'SHOWERS_DAY',
+      '10n': 'SHOWERS_NIGHT',
+      '11d': 'THUNDER',
+      '11n': 'THUNDER',
       '13d': 'SNOW',
       '13n': 'SNOW',
       '50d': 'FOG',
