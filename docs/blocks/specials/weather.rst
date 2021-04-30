@@ -63,6 +63,7 @@ Parameters
       | ``1``: Hourly forecast
       | ``2``: Current weather
       | ``3``: Current weather detailed
+      | ``4``: Combination of 2,3,0,1
   * - count
     - ``5``: Number of forecast items to show (default=3). Only for daily and hourly forecast.
   * - interval
@@ -87,7 +88,19 @@ Parameters
     - | Show/hide weather description (only for daily and hourly forecast)
       | ``false``: Hide weather description
       | ``true``: Show weather description
-    
+  * - monochrome
+    - | ``false``: Show colored icons (animated weather icons only)
+      | ``true``: Show monochrome icons (animated weather icons only)
+  * - colors
+    - Object to color the animated weather icons. See below.
+  * - showCurrent
+    - Set to ``false`` to hide current weather (layout 4 only)    
+  * - showDetails
+    - Set to ``false`` to hide current weather details (layout 4 only)    
+  * - showDaily
+    - Set to ``false`` to hide daily weather forecast (layout 4 only)    
+  * - showHourly
+    - Set to ``false`` to hide hourly weather forecast (layout 4 only)    
       
 The weather module makes use of the following CONFIG parameters:
 
@@ -158,6 +171,50 @@ To show detailed info on the current weather::
   }
 
 .. image :: img/weather_detailed.jpg
+
+Icon colors
+~~~~~~~~~~~~
+
+The default icon colors (animated weather icons only) are as follows::
+
+  {
+    main        :  "#FFF",
+    moon        :  "#353545",
+    fog         :  "#CCC",
+    fogbank     :  "#AAA",
+    light_cloud :  "#DDD",
+    cloud       :  "#BBB",
+    dark_cloud  :  "#999",
+    thunder     :  "#FF0",
+    snow        :  "#C2EEFF",
+    hail        :  "#CCF",
+    sleet       :  "#C2EEFF",
+    wind        :  "#777",
+    leaf        :  "#2C5228",
+    rain        :  "#7FDBFF",
+    sun         :  "#FFDC00"
+  }
+
+You can redefine the default colors via the colors block parameter. For instance, if you would like to have orange clouds (for whatever reason)::
+
+    blocks['weather4'] = {
+        type: 'weather',
+        layout: 4,
+        count: 6,
+        name: 'Amsterdam',
+        showDetails: false,
+        showHourly: false,
+    //    monochrome: true,
+        colors: {
+            cloud: 'orange',
+            light_cloud: 'orange',
+            dark_cloud: 'orange',
+        }
+    }
+
+.. image :: img/orangeclouds.jpg
+
+
 
 styling
 ~~~~~~~

@@ -8,11 +8,17 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Weather: Added layout 4 option. See :ref:`customweather`
+* Weather: Colored icons (animated weather icons only). See :ref:`customweather` 
+
 Fixes
 ~~~~~~
 
 * Weather: Changed styling of current weather block (center the three parts)
-* WeatherL Fix styling of forecast block for white Dashticz template
+* Weather: Fix styling of forecast block for white Dashticz template
 
 v3.8.2 Beta (24-4-2021)
 -----------------------

@@ -33,7 +33,9 @@ var Swiper = require('swiper').default;
 window.Swiper = Swiper;
 require('swiper/css/swiper.min.css');
 
-window.Skycons = require('skycons')(window);
+//window.Skycons =
+var Skycons=require('skycons-color');
+window.Skycons = Skycons;
 require('spectrum-colorpicker');
 require('ion-sound');
 require('hammerjs');
