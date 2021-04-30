@@ -27,7 +27,7 @@
     "md5": "^2.3.0",
     "mobile-detect": "^1.4.4",
     "moment": "^2.29.1",
-    "skycons": "^1.0.0",
+    "skycons-color": "^1.0.0",
     "spectrum-colorpicker": "^1.8.1",
     "spotify-web-api-js": "^1.5.1",
     "swiper": "^5.4.5"
