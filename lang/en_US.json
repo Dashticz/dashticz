@@ -285,6 +285,15 @@
         "direction_WSW": "west-southwest",
         "wind": "Wind"
     },
+    "evohome": {
+        "Auto": "Auto",
+        "AutoWithEco": "Economy",
+        "Away": "Away",
+        "Custom": "Custom",
+        "DayOff": "Day Off",
+        "HeatingOff": "Off",
+        "TemporaryOverride": "Override"
+    },
     "windshort": {
         "direction_E": "E",
         "direction_ENE": "E-NE",
@@ -302,14 +311,5 @@
         "direction_W": "W",
         "direction_WNW": "W-NW",
         "direction_WSW": "W-SW"
-    },
-    "evohome": {
-        "Auto": "Auto",
-        "AutoWithEco": "Economy",
-        "Away": "Away",
-        "Custom": "Custom",
-        "DayOff": "Day Off",
-        "HeatingOff": "Off",
-        "TemporaryOverride": "Override"
     }
 }
