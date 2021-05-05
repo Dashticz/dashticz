@@ -15,8 +15,8 @@
     <div class="rain">{{current.rain}} mm</div>
     <div class="humidity">Hum: {{current.humidity}}%</div>
     <div class="pressure">{{current.pressure}} hPa</div>
-    <div class="windspeed">{{current.wind.speed}} m/s</div>
-    <div class="windgust">Gust: {{current.wind.gust}} m/s</div>
+    <div class="windspeed">{{current.wind.speed}}</div>
+    <div class="windgust">Gust: {{current.wind.gust}}</div>
     <div class="winddirection">{{current.wind.direction}}</div>
 </div>
 {{/if}}
@@ -37,6 +37,12 @@
         {{#if ../showRain}}
         <div class="rain">{{day.rain}}&nbsp;mm</div>
         {{/if}}
+        {{#if ../showWind}}
+        <div>
+            <i class="{{day.wind.icon}}"></i>
+        </div>
+        <div class="wind">{{day.wind.directionShort}} {{day.wind.speed}}</div>
+        {{/if}}
     </div>
     {{/each}}
 </div>
@@ -55,6 +61,12 @@
             <div class="temp">{{day.temp}}</div> 
             {{#if ../showRain}}
             <div class="rain">{{day.rain}}&nbsp;mm</div>
+            {{/if}}
+            {{#if ../showWind}}
+            <div>
+                <i class="{{day.wind.icon}}"></i>
+            </div>
+            <div class="wind">{{day.wind.directionShort}} {{day.wind.speed}}</div>
             {{/if}}
         </div>
     {{/each}}

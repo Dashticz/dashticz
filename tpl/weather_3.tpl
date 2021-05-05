@@ -8,6 +8,6 @@
 <div class="rain">{{current.rain}} mm</div>
 <div class="humidity">Hum: {{current.humidity}}%</div>
 <div class="pressure">{{current.pressure}} hPa</div>
-<div class="windspeed">{{current.wind.speed}} m/s</div>
-<div class="windgust">Gust: {{current.wind.gust}} m/s</div>
+<div class="windspeed">{{current.wind.speed}}</div>
+<div class="windgust">Gust: {{current.wind.gust}}</div>
 <div class="winddirection">{{current.wind.direction}}</div>
