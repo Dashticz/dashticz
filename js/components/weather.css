@@ -14,7 +14,8 @@
 }
 
 .weatherday > div {
-  text-align: center
+  text-align: center;
+  font-size: 70%;
 }
 
 .weatherday:first-child {
@@ -26,27 +27,21 @@
 }
 
 .weatherday .day {
-  font-size: 70%;
   line-height: 1.5em;
 }
 
-.weatherday .min {
-  font-size: 70%
-}
-
 .weatherday .description {
-  font-size: 70%;
   min-height: 3em;
 }
 
-.weatherday .rain {
-  font-size: 70%
-}
-
-.weatherday .wi {
+.weatherday .icon .wi {
   font-size: 250%;
   padding-top: 0.4em;
   padding-bottom: 0.4em;
+}
+
+.weatherday .wi-wind {
+  font-size: 300%;
 }
 
 .weathercurrent {
