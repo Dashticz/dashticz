@@ -702,47 +702,58 @@ function TranslateDirection(directionstr) {
 /**
  * Calculate windspeed in meters per second to Beaufort
  * @param windSpeed in m/s
+ * @returns number Wind speed in Bft
+ */
+
+function toBeaufort(windSpeed) {
+  windSpeed = Math.abs(windSpeed);
+  if (windSpeed <= 0.2) {
+    return 0;
+  }
+  if (windSpeed <= 1.5) {
+    return 1;
+  }
+  if (windSpeed <= 3.3) {
+    return 2;
+  }
+  if (windSpeed <= 5.4) {
+    return 3;
+  }
+  if (windSpeed <= 7.9) {
+    return 4;
+  }
+  if (windSpeed <= 10.7) {
+    return 5;
+  }
+  if (windSpeed <= 13.8) {
+    return 6;
+  }
+  if (windSpeed <= 17.1) {
+    return 7;
+  }
+  if (windSpeed <= 20.7) {
+    return 8;
+  }
+  if (windSpeed <= 24.4) {
+    return 9;
+  }
+  if (windSpeed <= 28.4) {
+    return 10;
+  }
+  if (windSpeed <= 32.6) {
+    return 11;
+  }
+  return 12;
+}
+
+/**
+ * Calculate windspeed in meters per second to Beaufort
+ * @param windSpeed in m/s
  * @returns string Wind speed in Bft
  */
 function Beaufort(windSpeed) {
-  windSpeed = Math.abs(windSpeed);
-  if (windSpeed <= 0.2) {
-    return '0 Bft';
-  }
-  if (windSpeed <= 1.5) {
-    return '1 Bft';
-  }
-  if (windSpeed <= 3.3) {
-    return '2 Bft';
-  }
-  if (windSpeed <= 5.4) {
-    return '3 Bft';
-  }
-  if (windSpeed <= 7.9) {
-    return '4 Bft';
-  }
-  if (windSpeed <= 10.7) {
-    return '5 Bft';
-  }
-  if (windSpeed <= 13.8) {
-    return '6 Bft';
-  }
-  if (windSpeed <= 17.1) {
-    return '7 Bft';
-  }
-  if (windSpeed <= 20.7) {
-    return '8 Bft';
-  }
-  if (windSpeed <= 24.4) {
-    return '9 Bft';
-  }
-  if (windSpeed <= 28.4) {
-    return '10 Bft';
-  }
-  if (windSpeed <= 32.6) {
-    return '11 Bft';
-  }
-  return '12 Bft';
+  return toBeaufort(windSpeed) + ' Bft';
+
 }
 
 function triggerStatus(block) {
