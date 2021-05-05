@@ -13,6 +13,7 @@ Enhancements
 
 * Weather: Added layout 4 option. See :ref:`customweather`
 * Weather: Colored icons (animated weather icons only). See :ref:`customweather` 
+* Weather: show/hide wind dial and wind info, Wind as Beaufort, show/hide first forecast card
 
 Fixes
 ~~~~~~

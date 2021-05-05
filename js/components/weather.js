@@ -3,11 +3,31 @@
 var DT_weather = (function () {
   var skycons = 0;
   var skyconIndex = 0;
+  var windTable = [
+    'N',
+    'NNE',
+    'NE',
+    'ENE',
+    'E',
+    'ESE',
+    'SE',
+    'SSE',
+    'S',
+    'SSW',
+    'SW',
+    'WSW',
+    'W',
+    'WNW',
+    'NW',
+    'NNW',
+    'N',
+  ];
 
   return {
     name: 'weather',
     init: function () {
-      return DT_function.loadCSS('./js/components/weather.css');
+      DT_function.loadCSS('./js/components/weather.css');
+      DT_function.loadCSS('./vendor/weather/css/weather-icons-wind.min.css')
     },
     canHandle: function (block) {
       var key = block.key;
@@ -39,7 +59,7 @@ var DT_weather = (function () {
         country: settings['owm_country'] || 'nl',
         name: settings['owm_name'],
         lang: settings['owm_lang'] || 'nl',
-        count: choose(settings['owm_cnt'], layout < 2 ? 5 : 1), //only valid for layout 0 and 1
+        count: choose(+settings['owm_cnt'], layout < 2 ? 5 : 1), //only valid for layout 0 and 1
         //        days: choose(settings['owm_days'], true),
         interval: 1,
         static_weathericons: settings['static_weathericons'],
@@ -51,11 +71,14 @@ var DT_weather = (function () {
         showRain: true,
         showDescription: true,
         showMin: choose(settings['owm_min'], true),
+        showWind: true,
         monochrome: false,
         showDetails: true,
         showDaily: true,
         showHourly: true,
         showCurrent: true,
+        useBeaufort: settings.use_beaufort || false,
+        skipFirst: false,
       };
     },
     run: function (me) {
@@ -63,15 +86,18 @@ var DT_weather = (function () {
         light_cloud: '#DDD',
         cloud: '#BBB',
         dark_cloud: '#999',
-        main: 'white'
-      }
-      var colors={};
+        main: 'white',
+      };
+      var colors = {};
       $.extend(colors, defaultColors, me.block.colors);
       if (me.block.refresh < 900) me.block.refresh = 900;
       me.skyconList = [];
       if (!me.block.static_weathericons && !skycons) {
         //initialize Skycons
-        skycons = new Skycons({monochrome: me.block.monochrome, colors: colors});
+        skycons = new Skycons({
+          monochrome: me.block.monochrome,
+          colors: colors,
+        });
         skycons.play();
       }
       me.$block = me.$mountPoint.find('.dt_block');
@@ -94,9 +120,9 @@ var DT_weather = (function () {
       me.$block.css('font-size', fontSize + 'px');
       refreshOWM(me);
     },
-    destroy: function(me) {
+    destroy: function (me) {
       cleanupIcons(me);
-    }
+    },
   };
 
   function refreshOWM(me) {
@@ -129,11 +155,12 @@ var DT_weather = (function () {
   function formatDailyData(me) {
     //In principle we now have all data
     //Now we only have to generate the correct icons
+    var start = me.block.skipFirst ? 1 : 0;
     var cntSetting = choose(me.block.countDaily, me.block.count);
-    if (cntSetting > 7) cntSetting = 7;
+    if (cntSetting + start > 7) cntSetting = 7 - start;
     var data = [];
     var daily = me.data.forecast.daily;
-    for (var i = 0; i < cntSetting; i++) {
+    for (var i = start; i < cntSetting + start; i++) {
       var dayData = {
         day: moment(daily[i].dt * 1000).format(settings['weekday']),
         min: number_format(daily[i].temp.min, me.block.decimals) + _TEMP_SYMBOL,
@@ -141,23 +168,33 @@ var DT_weather = (function () {
         description: daily[i].weather[0].description,
         rain: number_format(daily[i].rain || 0, 1),
         icon: daily[i].weather[0].icon,
+        wind: {
+          //          direction:
+          speed: toWindStr(me, daily[i].wind_speed),
+          gust: toWindStr(me, daily[i].wind_gust),
+          deg: daily[i].wind_deg,
+          direction: translateWindDegrees(daily[i].wind_deg),
+          directionShort: translateWindDegreesShort(daily[i].wind_deg),
+          icon: getWindIcon(daily[i].wind_deg),
+        },
       };
       data.push(dayData);
     }
     me.data.dailyForecast = data;
-    me.data.dailyCount =cntSetting;
-    me.data.dailyScale = Math.round(100/cntSetting);
+    me.data.dailyCount = cntSetting;
+    me.data.dailyScale = Math.round(100 / cntSetting);
     return me;
   }
 
   function formatHourlyData(me) {
+    var start = me.block.skipFirst ? 1 : 0;
     var cntSetting = choose(me.block.countHourly, me.block.count);
     //    if (cntSetting>14) cntSetting=14;
-    if (cntSetting * me.block.interval > 48)
-      cntSetting = Math.floor(48.0 / me.block.interval);
+    if ((cntSetting + start) * me.block.interval > 48)
+      cntSetting = Math.floor(48.0 / me.block.interval) - start;
     var data = [];
     var hourly = me.data.forecast.hourly;
-    for (var i = 0; i < cntSetting; i++) {
+    for (var i = start; i < cntSetting + start; i++) {
       var pos = i * me.block.interval;
       var dayData = {
         day: moment(hourly[pos].dt * 1000).format(settings['weekday']),
@@ -166,12 +203,21 @@ var DT_weather = (function () {
         description: hourly[pos].weather[0].description,
         rain: number_format(hourly[pos].rain || 0, 1),
         icon: hourly[pos].weather[0].icon,
+        wind: {
+          //          direction:
+          speed: toWindStr(me, hourly[i].wind_speed),
+          gust: toWindStr(me, hourly[i].wind_gust),
+          deg: hourly[i].wind_deg,
+          direction: translateWindDegrees(hourly[i].wind_deg),
+          directionShort: translateWindDegreesShort(hourly[i].wind_deg),
+          icon: getWindIcon(hourly[i].wind_deg),
+        },
       };
       data.push(dayData);
     }
     me.data.hourlyForecast = data;
-    me.data.hourlyCount =cntSetting;
-    me.data.hourlyScale = Math.round(100/cntSetting);
+    me.data.hourlyCount = cntSetting;
+    me.data.hourlyScale = Math.round(100 / cntSetting);
     return me;
   }
 
@@ -195,13 +241,19 @@ var DT_weather = (function () {
         _TEMP_SYMBOL,
       humidity: me.data.weather.main.humidity,
       wind: {
-        speed: number_format(me.data.weather.wind.speed, 1),
-        gust: number_format(me.data.weather.wind.gust, 1),
+        speed: toWindStr(me, me.data.weather.wind.speed),
+        gust: toWindStr(me, me.data.weather.wind.gust),
         deg: me.data.weather.wind.deg,
         direction: translateWindDegrees(me.data.weather.wind.deg),
       },
     };
     return me;
+  }
+
+  function toWindStr(me, wind) {
+    return me.block.useBeaufort
+      ? toBeaufort(wind) + ' Bft'
+      : number_format(wind, 1) + ' m/s';
   }
 
   function defaultFormatHandler(me) {
@@ -235,7 +287,7 @@ var DT_weather = (function () {
     me.data.showCurrent = me.block.showCurrent;
     me.data.showDaily = me.block.showDaily;
     me.data.showHourly = me.block.showHourly;
-
+    me.data.showWind = me.block.showWind;
 
     var formatHandler = formatHandlers[me.block.layour] || defaultFormatHandler;
     return formatHandler(me);
@@ -323,7 +375,7 @@ var DT_weather = (function () {
       icon = icons[code];
     }
 
-    var id = "icon"+skyconIndex;
+    var id = 'icon' + skyconIndex;
     var skycon =
       '<canvas class="' +
       classname +
@@ -384,7 +436,7 @@ var DT_weather = (function () {
     me.skyconList.forEach(function (icon) {
       deleteSkycon(icon);
     });
-    me.skyconList=[];
+    me.skyconList = [];
   }
 
   function addWeatherIcons(me) {
@@ -398,36 +450,30 @@ var DT_weather = (function () {
       if (me.block.static_weathericons) {
         mountIcon($div, icon);
       } else {
-        var id=getSkycon($div, icon, 'skycon');
+        var id = getSkycon($div, icon, 'skycon');
         me.skyconList.push(id);
       }
     });
   }
 
-  function translateWindDegrees(deg) {
+
+  function getWindCode(deg) {
     /*16 direction. each 16/360=22.5 degrees*/
-    var windTable = [
-      'N',
-      'NNE',
-      'NE',
-      'ENE',
-      'E',
-      'ESE',
-      'SE',
-      'SSE',
-      'S',
-      'SSW',
-      'SW',
-      'WSW',
-      'W',
-      'WNW',
-      'NW',
-      'NNW',
-      'N',
-    ];
     var index = Math.round(deg / 22.5);
-    var wind = windTable[index];
-    return language.wind['direction_' + wind];
+    return windTable[index];
+  }
+
+  function translateWindDegrees(deg) {
+    return language.wind['direction_' + getWindCode(deg)];
+  }
+
+  function getWindIcon(deg) {
+    return   'wi wi-wind wi-from-'+getWindCode(deg).toLowerCase();
+  }
+
+  function translateWindDegreesShort(deg) {
+    /*16 direction. each 16/360=22.5 degrees*/
+    return language.windshort['direction_'  + getWindCode(deg)];
   }
 })();
 

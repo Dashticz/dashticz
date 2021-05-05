@@ -88,6 +88,14 @@ Parameters
     - | Show/hide weather description (only for daily and hourly forecast)
       | ``false``: Hide weather description
       | ``true``: Show weather description
+  * - showWind
+    - | Show/hide wind info and wind dial (daily and hourly forecast only)
+      | ``false``: Hide wind info
+      | ``true``: Show wind info (=default)
+  * - useBeaufort
+    - Set to ``true`` to show wind speed in Beaufort instead of m/s
+  * - skipFirst
+    - Set to ``true`` to skip the first daily/hourly forecast card   
   * - monochrome
     - | ``false``: Show colored icons (animated weather icons only)
       | ``true``: Show monochrome icons (animated weather icons only)
@@ -134,7 +142,12 @@ The weather module makes use of the following CONFIG parameters:
       | ``false`` / ``true``
   * - static_weathericons
     - | ``true`` Static weather settings
-      | ``false`` (default) Animated weather icons 
+      | ``false`` (default) Animated weather icons
+  * - use_beaufort
+    - | This config setting is used as default value for block parameter ``useBeaufort``
+      | ``true`` Use Beaufort for wind speed
+      | ``false`` Use m/s for wind speed
+
     
 Usage
 ~~~~~~
