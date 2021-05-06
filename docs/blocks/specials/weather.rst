@@ -254,4 +254,8 @@ Further, all info items have css classes assigned. The names are self explanator
 * ``winddirection``
 
 
+To capitalize the day of the week have to add the following code to ``custom.css``::
 
+  .weather .day {
+    text-transform: capitalize;
+  }
