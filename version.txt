@@ -1,8 +1,9 @@
 {
-"version": "3.8.0.1",
+"version": "3.8.0.2",
 "branch": "master",
-"last_changes": "Bug fixes",
+"last_changes": "Bug fix in startup behavior",
 "changelog" : {
+            "3.8.0.1": "Bug fixes",
             "3.8": "Master version"
             }
 }
