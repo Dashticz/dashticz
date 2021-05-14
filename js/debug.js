@@ -1,4 +1,4 @@
-//# sourceURL=js/components/debug.js
+//# sourceURL=js/debug.js
 /* global TemplateEngine*/
 
 var Debug = (function () {
@@ -19,11 +19,16 @@ var Debug = (function () {
     INFO: 0,
     REQUEST: 1,
     ERROR: 2,
-    CONFIG: 3
+    CONFIG: 3,
   };
 
   function init() {
-    templateEngine.load('debug').then(function (template) {
+    $('body').on('click', '.logo', function () {
+      $el.modal({
+        show: true,
+      });
+    });
+    return templateEngine.load('debug').then(function (template) {
       var data = {};
       $('body').append(template(data));
       $el = $('#modal-debug');
@@ -35,62 +40,61 @@ var Debug = (function () {
       $el.on('show.bs.modal', function () {
         visible = true;
         createDebug();
-      })
+      });
       $el.on('hide.bs.modal', function () {
-        visible=false;
-      })
-
-    });
-    $('body').on('click', '.logo', function () {
-      $el.modal({
-        show: true,
+        visible = false;
       });
     });
   }
 
   function createDebug() {
-      var html = messages.reduce(function(acc, msg) {
-          return acc + (msg.type===Debug.REQUEST?'':renderDebugRow(msg));
-      },'');
-      $elbody.html(html);
-      updateStatus();
+    var html = messages.reduce(function (acc, msg) {
+      return acc + (msg.type === Debug.REQUEST ? '' : renderDebugRow(msg));
+    }, '');
+    $elbody.html(html);
+    updateStatus();
   }
 
   function renderDebugRow(msg) {
-    return '<div>'+msg.timestamp.toISOString().slice(11, 23)+': ' + msg.msg + '</div>'
+    return (
+      '<div>' +
+      msg.timestamp.toISOString().slice(11, 23) +
+      ': ' +
+      msg.msg +
+      '</div>'
+    );
   }
 
   function add(item) {
     messages.push(item);
-    if (item.type===Debug.REQUEST) {
+    if (item.type === Debug.REQUEST) {
       lastRequest = item;
-      requestCount +=1;
+      requestCount += 1;
       updateStatus();
       return;
     }
 
-    if(visible) {
-        $elbody.append(renderDebugRow(item));
-        updateStatus();
+    if (visible) {
+      $elbody.append(renderDebugRow(item));
+      updateStatus();
     }
-    if(messages.length>1000) {
-        messages.splice(0,1);
-        if(visible)
-            $elbody.find(":first-child").remove();
+    if (messages.length > 1000) {
+      messages.splice(0, 1);
+      if (visible) $elbody.find(':first-child').remove();
     }
   }
 
   function updateStatus() {
-    $el.find('.debug-status').html(requestCount+': '+lastRequest.msg);
+    $el.find('.debug-status').html(requestCount + ': ' + lastRequest.msg);
   }
 
   function log() {
     var msg;
-    var start=0;
-    var type=0;
-    if (arguments.length>1 && typeof arguments[0]==='number') {
-        type = arguments[0];
-        start=1;
+    var start = 0;
+    var type = 0;
+    if (arguments.length > 1 && typeof arguments[0] === 'number') {
+      type = arguments[0];
+      start = 1;
     }
     for (var i = start; i < arguments.length; i++) {
       var arg = arguments[i];
@@ -98,10 +102,10 @@ var Debug = (function () {
       msg = (msg ? msg + ' ' : '') + str;
     }
     var item = {
-        timestamp: new Date(),
-        msg: msg,
-        type: type
-    }
-    add(item);    
+      timestamp: new Date(),
+      msg: msg,
+      type: type,
+    };
+    add(item);
   }
 })();
