@@ -1536,10 +1536,10 @@ img.icon {
   img.icon {
     max-width: 15px !important;
   }
-  .mh .fas,
-  .mh .far,
-  .mh .fab,
-  .mh .wi {
+  .col-icon .fas,
+  .col-icon .far,
+  .col-icon .fab,
+  .col-icon .wi {
     font-size: 15px !important;
   }
   
