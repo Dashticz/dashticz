@@ -8,6 +8,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.8.3 Beta (29-5-2021)
+-----------------------
+
 Enhancements
 ~~~~~~~~~~~~
 
@@ -20,6 +23,12 @@ Fixes
 
 * Weather: Changed styling of current weather block (center the three parts)
 * Weather: Fix styling of forecast block for white Dashticz template
+* Merged changes from master v3.8.0.1 and v3.8.0.2
+
+Code
+~~~~~
+
+* Bump Swiper.js from 5.4.5 to 6.4.2
 
 v3.8.2 Beta (24-4-2021)
 -----------------------
@@ -30,11 +39,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Rewrite of the weather block. See :ref:`customweather`.
-
-Fixes
-~~~~~~
-
-* Standby: Prevent click to activate a Dashticz block while in standby
+  
 
 v3.8.1 Beta (14-4-2021)
 -----------------------
@@ -52,6 +57,24 @@ Enhancements
 
 * Auto slide timer configurable per screen via screen parameter ``auto_slide_page``
 
+* Fix for columns without block parameter
+* Fix for icon size for special blocks on screen width < 975 pixels
+
+v3.8.0.2 Master (14-5-2021)
+---------------------------
+
+Fixes
+~~~~~
+
+* Fix potential error in startup behavior
+
+v3.8.0.1 Master (26-4-2021)
+---------------------------
+
+Fixes
+~~~~~~
+
+* Standby: Prevent click to activate a Dashticz block while in standby
 
 v3.8 Master (9-4-2021)
 ----------------------
