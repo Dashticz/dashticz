@@ -30,7 +30,7 @@
     "skycons-color": "^1.0.0",
     "spectrum-colorpicker": "^1.8.1",
     "spotify-web-api-js": "^1.5.1",
-    "swiper": "^5.4.5"
+    "swiper": "^6.6.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",

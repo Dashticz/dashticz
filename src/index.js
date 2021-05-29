@@ -29,9 +29,9 @@ window.MomentHandler = MomentHandler;
 
 require('./templateengine.js');
 require('./handlebars-helpers.js');
-var Swiper = require('swiper').default;
+var Swiper = require('swiper/bundle').default;
 window.Swiper = Swiper;
-require('swiper/css/swiper.min.css');
+require('swiper/swiper-bundle.min.css');
 
 //window.Skycons =
 var Skycons=require('skycons-color');

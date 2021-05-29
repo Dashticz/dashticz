@@ -8,7 +8,7 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
-v3.8.3 Beta (22-5-2021)
+v3.8.3 Beta (29-5-2021)
 -----------------------
 
 Enhancements
@@ -24,6 +24,11 @@ Fixes
 * Weather: Changed styling of current weather block (center the three parts)
 * Weather: Fix styling of forecast block for white Dashticz template
 * Merged changes from master v3.8.0.1 and v3.8.0.2
+
+Code
+~~~~~
+
+* Bump Swiper.js from 5.4.5 to 6.4.2
 
 v3.8.2 Beta (24-4-2021)
 -----------------------
