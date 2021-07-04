@@ -26,7 +26,7 @@ var DT_trafficinfo = {
     if (provider == 'anwb') {
       dataURL =
         _CORS_PATH +
-        'https://api.anwb.nl/v1/incidents?apikey=QYUEE3fEcFD7SGMJ6E7QBCMzdQGqRkAi';
+        'https://api.anwb.nl/v2/incidents?apikey=QYUEE3fEcFD7SGMJ6E7QBCMzdQGqRkAi';
     }
     // To do:
     //else if(provider == 'flitsmeister'){
