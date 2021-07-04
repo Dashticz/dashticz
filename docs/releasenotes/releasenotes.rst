@@ -12,7 +12,7 @@ Fixes
 ~~~~~~
 
 * ANWB traffic info: Change API v1 to v2
-
+* Garbage: Fix for Rova
 
 v3.8.3 Beta (29-5-2021)
 -----------------------
