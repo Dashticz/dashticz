@@ -8,6 +8,12 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Fixes
+~~~~~~
+
+* ANWB traffic info: Change API v1 to v2
+
+
 v3.8.3 Beta (29-5-2021)
 -----------------------
 
