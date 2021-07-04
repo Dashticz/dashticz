@@ -135,6 +135,7 @@ function getCalendar() {
 
 	switch($service){
 		case 'rova':
+			/*
 			$options = array(
 				CURLOPT_HEADER => 0,
 				CURLOPT_COOKIE => "RovaLc_inwoners={\"Id\":0,\"ZipCode\":\"".$zipCode."\",\"HouseNumber\":\"".$houseNr."\",\"HouseAddition\":null,\"Municipality\":null,\"Province\":null,\"Firstname\":null,\"Lastname\":null,\"UserAgent\":\"\",\"School\":null,\"Street\":null,\"Country\":null,\"Portal\":null,\"AreaLevel\":null,\"City\":null,\"Ip\":null}"
@@ -142,13 +143,22 @@ function getCalendar() {
 			$output = curlWeb(
 				'https://www.rova.nl/api/TrashCalendar/GetCalendarItems?portal=inwoners',
 				$options
-			);
-			$return = json_decode($output,true);
-			foreach($return as $row){
-				$title = $row['GarbageType'];
-				if(!empty($row['Date'])){
-					list($date,$time)=explode('T',$row['Date']);
-					$allDates[$date][$title] = $date;
+			);*/
+			$url = 	'http://api.inzamelkalender.rova.nl/webservices/appsinput/?postcode='.$zipCode.'&street=&huisnummer='.$houseNr.'&toevoeging='.$houseNrSuf.'&apikey=5ef443e778f41c4f75c69459eea6e6ae0c2d92de729aa0fc61653815fbd6a8ca&method=postcodecheck&platform=phone&langs=nl&mobiletype=android&version=3&app_name=rova';
+//			$return = json_decode($output,true);
+			$return = curlWebJson($url);
+//			debugMsg($return);
+			//var_dump($return->data);
+//			var_dump($return->data->ophaaldagen);
+			if ($return->data->ophaaldagen->response == 'OK') {
+				foreach($return->data->ophaaldagen->data as $row){
+					//debugMsg($row);
+//					var_dump($row);
+					$title = $row->nameType;
+					if(!empty($row->date)){
+						list($date,$time)=explode('T',$row->date);
+						$allDates[$date][$title] = $date;
+					}
 				}
 			}
 			break;
