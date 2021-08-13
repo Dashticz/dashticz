@@ -31,7 +31,7 @@ function getDefaultSwitchBlock(
   defaultIconOff,
   buttonimg,
   defaultTextOn,
-  defaultTextOff,
+  defaultTextOff
 ) {
   var device = block.device;
   var html = '';
