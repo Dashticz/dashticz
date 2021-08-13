@@ -121,7 +121,7 @@ $ICS = str_replace('#','%23',$ICS);
 if (PHP_VERSION_ID < 70100) {
 	$METHOD = 0;
 }
-
+//$METHOD = 0;
 $errors=array();
 set_error_handler(function($errno, $errstr, $errfile = 0, $errline = 0, $errcontext = 0) {
 	global $errors;
@@ -156,6 +156,7 @@ function ical7($ICS, $MAXITEMS, $HISTORY) {
 		$data = array();
 		$id=0;
 		$sorted_events = $cal->getSortedEvents();
+//		print_r(json_encode($sorted_events, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 	//	var_dump($sorted_events[0]);
 		foreach ( $sorted_events as $ev) {
 			$start=$ev["DTSTART"]->getTimestamp();
@@ -176,7 +177,7 @@ function ical7($ICS, $MAXITEMS, $HISTORY) {
 				);
 	/* 			$a=array();
 				array_push($a,$ev["ATTENDEE"]); */
-				$data[$start] = $jsEvt;
+				$data[] = $jsEvt;
 				if ($id>=$MAXITEMS)
 					break;
 			}
@@ -215,26 +216,32 @@ if($evts){
 		$count = 0;
 		if (isset($ev->recurrence)) {
 			$freq = $ev->getFrequency();
-			$start = $freq->nextOccurrence($currentdate);
-			$prevstart=$freq->previousOccurrence($currentdate);
-			if ($prevstart && $prevstart + $ev->getDuration() > $currentdate) $start = $prevstart;
+//			$start = $freq->nextOccurrence($currentdate);
+//			$prevstart=$freq->previousOccurrence($currentdate);
+//			echo date('Y-m-d H:i:s',$start).date('Y-m-d H:i:s',$prevstart)."<br>";
+//			echo $ev->getDuration().$jsEvt["title"];
+//			if ($prevstart && $prevstart + $ev->getDuration() > $currentdate) $start = $prevstart;
+//			echo date('Y-m-d H:i:s',$start).date('Y-m-d H:i:s',$prevstart)."<br>";
 			while ($start && ($count<$MAXITEMS)) {
+//				echo date('Y-m-d H:i:s',$start);
 				$jsEvt["start"] = $start;
 				$jsEvt["end"] = $start + $ev->getDuration();
 				$jsEvt["startt"] = date('Y-m-d H:i:s',$jsEvt["start"]);
 				$jsEvt["endt"] = date('Y-m-d H:i:s',$jsEvt["end"]);
-				$data[$start] = $jsEvt;
-				$count++;
+				if($jsEvt["end"] > $currentdate) {
+					$data[] = $jsEvt;
+					$count++;
+				}
 				$start=$freq->nextOccurrence($start);
 			}
 		} else {
 			if($end>$currentdate) {
-				$data[$start] = $jsEvt;
+				$data[] = $jsEvt;
 			}
 		}
 	}
 }
-ksort($data);
+//ksort($data);
 return $data;
 }
 
