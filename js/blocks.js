@@ -906,23 +906,7 @@ function handleDevice(block) {
       );
       return [html, addHTML];
     case 'Door Lock':
-      if (device['Status'] === 'Unlocked')
-        html += iconORimage(
-          block,
-          'fas fa-unlock',
-          buttonimg,
-          'on icon',
-          '',
-          2
-        );
-      else
-        html += iconORimage(block, 'fas fa-lock', buttonimg, 'off icon', '', 2);
-      html += getBlockData(
-        block,
-        language.switches.state_unlocked,
-        language.switches.state_locked
-      );
-      return [html, addHTML];
+      return getDefaultSwitchBlock(block, 'fas fa-lock', 'fas fa-unlock', buttonimg, language.switches.state_unlocked, language.switches.state_locked );
     case 'Venetian Blinds EU':
     case 'Venetian Blinds US':
     case 'Venetian Blinds EU Inverted':

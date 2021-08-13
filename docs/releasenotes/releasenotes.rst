@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Fixes
+~~~~~~
+
+* Make door lock switchable. 
+
 v3.8.4 Beta (13-8-2021)
 -----------------------
 
