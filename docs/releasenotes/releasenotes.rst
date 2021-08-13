@@ -8,9 +8,13 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.8.4 Beta (13-8-2021)
+-----------------------
+
 Fixes
 ~~~~~~
 
+* Calendar fixes (recurring events, multiple events on same moment)
 * ANWB traffic info: Change API v1 to v2
 * Garbage: Fix for Rova
 
