@@ -126,7 +126,7 @@ function getCalendarData(key, calendars, isnew, ishol) {
             parseFloat(enddate) >=
             moment().subtract(cal[key].history, 'days').format('X')
           ) {
-            if (isDefined(events[ev.start]) !== 'undefined')
+            if (!isDefined(events[ev.start]))
               events[ev.start] = [];
             events[ev.start].push(ev);
           }
