@@ -12,6 +12,7 @@ Fixes
 ~~~~~~
 
 * Make door lock switchable. 
+* Garbage: Venlo (new website)
 
 v3.8.4 Beta (13-8-2021)
 -----------------------
