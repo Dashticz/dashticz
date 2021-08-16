@@ -187,7 +187,6 @@ function deviceUpdateHandler(block) {
   var addHTML = true;
   var html = '';
 
-  triggerStatus(block);
   triggerChange(block);
 
   html = getCustomFunction('getBlock', block);
@@ -233,6 +232,7 @@ function deviceUpdateHandler(block) {
   else $div.removeClass('timeout');
 
   addBatteryLevel($div, block);
+  triggerStatus(block); //moved the second call to the end to assure that the block has been created in the DOM completely
 }
 
 /*add the battery level indicator*/
