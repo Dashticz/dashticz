@@ -13,6 +13,7 @@ Fixes
 
 * Make door lock switchable. 
 * Garbage: Venlo (new website)
+* Custom function getStatus will be called twice. Second time after block creation (fixed)
 
 v3.8.4 Beta (13-8-2021)
 -----------------------
