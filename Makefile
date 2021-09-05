@@ -21,6 +21,7 @@ testdocker:
 ifeq ($(CHECKDOCKER),true)
 ifeq (, $(shell which docker))
 	@echo "Let's install docker first"
+	sudo apt update --allow-releaseinfo-change
 	wget -qO- https://get.docker.com/ | sh	
 endif
 endif
