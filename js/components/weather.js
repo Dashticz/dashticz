@@ -196,12 +196,14 @@ var DT_weather = (function () {
     var hourly = me.data.forecast.hourly;
     for (var i = start; i < cntSetting + start; i++) {
       var pos = i * me.block.interval;
+      var hour_data = hourly[pos];
+      var rain = choose (hour_data.rain && hour_data.rain["1h"], hour_data.rain || 0);
       var dayData = {
         day: moment(hourly[pos].dt * 1000).format(settings['weekday']),
         time: moment(hourly[pos].dt * 1000).format('HH:mm'),
         temp: number_format(hourly[pos].temp, me.block.decimals) + _TEMP_SYMBOL,
         description: hourly[pos].weather[0].description,
-        rain: number_format(hourly[pos].rain || 0, 1),
+        rain: number_format(rain, 1),
         icon: hourly[pos].weather[0].icon,
         wind: {
           //          direction:
