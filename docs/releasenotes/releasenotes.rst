@@ -15,6 +15,7 @@ Fixes
 * Garbage: Venlo (new website)
 * Custom function getStatus will be called twice. Second time after block creation (fixed)
 * Weather block: fixed rain rate in hourly forecast
+* Graph: Fix for displaying energy values, for instance for P1 devices
 
 v3.8.4 Beta (13-8-2021)
 -----------------------
