@@ -1,11 +1,11 @@
 /* eslint-disable no-prototype-builtins */
-/* global Dashticz Domoticz moment settings config Beaufort number_format  language time blocks   Chart _TEMP_SYMBOL  onlyUnique isDefined isObject setHeight*/
+/* global Dashticz Domoticz moment settings config Beaufort number_format  language time Chart _TEMP_SYMBOL  onlyUnique isDefined isObject setHeight*/
 /* global templateEngine Handlebars*/
 moment.locale(settings['language']);
 
 var DT_graph = {
   name: 'graph',
-  canHandle: function (block, key) {
+  canHandle: function (block) {
     return (
       (block && block.devices) ||
       (typeof block.key === 'string' && block.key.substring(0, 6) === 'graph_')
@@ -495,6 +495,8 @@ function getDeviceGraphData(me, i) {
  * All graph data must be available.
  */
 function redrawGraph(me) {
+  var tmpResults = {}; //temporary object to hold all data, per date.
+
   var multidata = {
     result: [],
     status: 'OK',
@@ -507,27 +509,14 @@ function redrawGraph(me) {
     });
   }
 
-  var newKeys = [];
-  var arrYkeys = [];
+  var arrYkeys = []; //contains a unique set of keys, for instance ['te','hu', 'ba']
+  var newKeys = []; //newKeys is derived from arrYkeys, but each element is extended with every device_idx, for instance ['te_43','te_44']
 
+  //iterate through all data sets
   $.each(me.data, function (z, d) {
     var currentKey = '';
 
     if (d.result && d.result.length > 0) {
-      if (me.block.graphTypes) {
-        for (var key in d.result[0]) {
-          if ($.inArray(key, me.block.graphTypes) !== -1 && key !== 'd') {
-            arrYkeys.push(key);
-          }
-        }
-      } else {
-        for (key in d.result[0]) {
-          if (key !== 'd') {
-            arrYkeys.push(key);
-          }
-        }
-      }
-
       $.each(d.result, function (x, res) {
         var valid = false;
         var interval = 1;
@@ -536,14 +525,19 @@ function redrawGraph(me) {
             me.range === 'last' || me.range === 'month' ? 1 : me.block.interval;
 
         if (x % interval === 0) {
-          if (z == 0) {
-            //only for the first dataset
-            var obj = {};
+          var sampleDate = res['d'];
+          if (sampleDate) {
+            var obj = tmpResults[sampleDate] || { d: sampleDate }; //if sampleDate already exists use that one, otherwise create new one
             for (var key in res) {
-              if (key === 'd') {
-                obj['d'] = res[key];
-              }
-              if ($.inArray(key, arrYkeys) !== -1) {
+              var mayAdd =
+                key !== 'd' &&
+                (me.block.graphTypes
+                  ? $.inArray(key, me.block.graphTypes) >= 0
+                  : true);
+              if (mayAdd) {
+                if ($.inArray(key, arrYkeys) === -1) {
+                  arrYkeys.push(key);
+                }
                 currentKey = key + '_' + d.idx;
                 obj[currentKey] = res[key];
                 valid = true;
@@ -552,35 +546,22 @@ function redrawGraph(me) {
                 }
               }
             }
-            if (valid) multidata.result.push(obj);
-          } else {
-            for (key in res) {
-              if (key !== 'd' && $.inArray(key, arrYkeys) !== -1) {
-                $.each(multidata.result, function (index, obj) {
-                  $.each(obj, function (k, v) {
-                    if (k === 'd' && v === res['d']) {
-                      currentKey = key + '_' + d.idx;
-                      multidata.result[index][currentKey] = res[key];
-                      if ($.inArray(currentKey, newKeys) === -1) {
-                        newKeys.push(currentKey);
-                      }
-                    }
-                  });
-                });
-              }
-            }
+            if (valid) tmpResults[sampleDate] = obj;
           }
         }
       });
     }
   });
 
-  $.each(multidata.result, function (index, obj) {
+  /*now transform tmpResults object into array*/
+  Object.keys(tmpResults).forEach(function (key) {
+    var obj = tmpResults[key];
     for (var n in newKeys) {
       if (!obj.hasOwnProperty(newKeys[n])) {
         obj[newKeys[n]] = NaN;
       }
     }
+    multidata.result.push(obj);
   });
 
   var graph = me; //todo: replace graph with me in all following lines?
@@ -751,7 +732,7 @@ function createGraph(graph) {
     if (parseInt(height) > 0)
       //only change height is we have a valid height value
       $('.' + graphIdx + ' .graphcontent').css('height', height);
-      //console.log('test');
+    //console.log('test');
   }
 
   if (typeof mergedBlock.legend == 'boolean') {
@@ -1090,9 +1071,8 @@ function createGraph(graph) {
       if (typeof mergedBlock.beginAtZero === 'object') {
         mergedBlock.beginAtZero.forEach(function (beginAtZero, i) {
           if (i < graphProperties.options.scales.yAxes.length) {
-            graphProperties.options.scales.yAxes[
-              i
-            ].ticks.beginAtZero = beginAtZero;
+            graphProperties.options.scales.yAxes[i].ticks.beginAtZero =
+              beginAtZero;
           }
         });
       }
