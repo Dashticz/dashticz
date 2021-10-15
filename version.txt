@@ -1,8 +1,9 @@
 {
-"version": "3.8.4",
+"version": "3.8.5",
 "branch": "beta",
-"last_changes": "Calendar fixes",
+"last_changes": "Several fixes",
 "changelog" : {
+            "3.8.4": "Calendar fixes",
             "3.8.3": "Fixes and minor updates",
             "3.8.2": "New weather block",
             "3.8.1": "Improved auto slide behavior",
