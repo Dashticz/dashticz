@@ -553,6 +553,24 @@ Hide extra data::
         display: none;
     }
 
+Vertical center the dial menu::
+
+	.dial-menu .status {
+		justify-content: center;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.dial-menu .status li {
+		margin: unset
+	}
+
+Change the font of the dial menu text::
+
+    .dial-menu .status li {
+        font-size: 75%
+    }
+
 
 Examples
 ---------
