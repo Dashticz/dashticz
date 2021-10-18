@@ -148,6 +148,7 @@ function getDeviceDefaults(me, device) {
   var txtUnit = '?';
   var decimals = 2;
   var method = 1;
+  var type;
 
   switch (device['Type']) {
     case 'Rain':
@@ -305,6 +306,14 @@ function getDeviceDefaults(me, device) {
       break;
   }
 
+  if (device.SwitchType) { //device is a switch
+    sensor='';
+    currentValue = device['Data'];
+    decimals = 0;
+    txtUnit = 'level';
+    type='text'
+  }
+
   var multidata = device.Data.split(',').length - 1 > 0;
 
   if (typeof me.block.decimals !== 'undefined') decimals = me.block.decimals;
@@ -313,7 +322,7 @@ function getDeviceDefaults(me, device) {
 
   currentValue = multidata
     ? device.Data
-    : me.block.format
+    : me.block.format && type!=='text'
     ? number_format(currentValue, decimals) + ' ' + txtUnit
     : currentValue;
 
@@ -473,7 +482,8 @@ function refreshGraph(me) {
  * Stores the data in me.data
  * And return a promise.
  */
-function getDeviceGraphData(me, i) {
+
+function getRegularGraphData(me, i) {
   var device = me.graphDevices[i];
   var params =
     'type=graph&sensor=' +
@@ -485,10 +495,108 @@ function getDeviceGraphData(me, i) {
     '&method=' +
     device.method; //todo: check method
   me.params[i] = params;
-  return Domoticz.request(params).then(function (data) {
+  return Domoticz.request(params)
+}
+
+function getSwitchGraphData(me, i) {
+  var device = me.graphDevices[i];
+  //http://:8080/json.htm?idx=19&type=lightlog
+  var params =
+    'type=lightlog' +
+    '&idx=' +
+    device.idx
+  me.params[i] = params;
+  return Domoticz.request(params)
+  .then(function(data) {
+    /*
+    Data: "Off"
+Date: "2021-04-12 19:57:39"
+Level: 0
+MaxDimLevel: 15
+Status: "Off"
+User: "OpenTherm"
+idx: "11209721"
+*/
+    console.log(data)
+    var result = data.result.map(function(sample) {
+      return {
+        d: sample.Date,
+        l: sample.Level
+      }
+    })
+    return { result:result}
+  })
+}
+
+function getDeviceGraphData(me, i) {
+  var device = me.graphDevices[i];
+  var res;
+  switch(true) {
+    case !!device.SwitchType:
+      res= getSwitchGraphData(me, i)
+      break;
+    default:
+      res=getRegularGraphData(me, i)
+  }
+
+return res.then(function (data) {
     data.idx = device.idx;
     me.data.push(data);
   });
+}
+
+
+function loopbackup() {
+  $.each(d.result, function (x, res) {
+    var valid = false;
+    var interval = 1;
+    if (me.hasBlock)
+      interval =
+        me.range === 'last' || me.range === 'month' ? 1 : me.block.interval;
+
+    if (x % interval === 0) {
+      if (z == 0) {
+        /* only for the first dataset
+        If it's the first data set we create a new data element, including 'd'.
+        data-values from other datasets will be added to this one.
+        */
+        
+        var obj = {};
+        for (var key in res) {
+          if (key === 'd') {
+            obj['d'] = res[key];
+          }
+          if ($.inArray(key, arrYkeys) !== -1) {
+            currentKey = key + '_' + d.idx;
+            obj[currentKey] = res[key];
+            valid = true;
+            /*check whether v_idx already exists. If not, it will be added to the newKeys array*/
+            if ($.inArray(currentKey, newKeys) === -1) {
+              newKeys.push(currentKey);
+            }
+          }
+        }
+        if (valid) multidata.result.push(obj);
+      } else {
+        for (key in res) {
+          if (key !== 'd' && $.inArray(key, arrYkeys) !== -1) {
+            $.each(multidata.result, function (index, obj) {
+              $.each(obj, function (k, v) {
+                if (k === 'd' && v === res['d']) {
+                  currentKey = key + '_' + d.idx;
+                  multidata.result[index][currentKey] = res[key];
+                  if ($.inArray(currentKey, newKeys) === -1) {
+                    newKeys.push(currentKey);
+                  }
+                }
+              });
+            });
+          }
+        }
+      }
+    }
+  });
+
 }
 
 /** This function will update the graph.
@@ -502,6 +610,8 @@ function redrawGraph(me) {
     status: 'OK',
     title: 'Graph day',
   };
+
+  //var combinedData={} //probably not needed ...
 
   if (me.sortDevices) {
     me.data.sort(function (a, b) {
@@ -549,7 +659,7 @@ function redrawGraph(me) {
             if (valid) tmpResults[sampleDate] = obj;
           }
         }
-      });
+      })
     }
   });
 
@@ -558,17 +668,25 @@ function redrawGraph(me) {
     var obj = tmpResults[key];
     for (var n in newKeys) {
       if (!obj.hasOwnProperty(newKeys[n])) {
-        obj[newKeys[n]] = NaN;
+//        obj[newKeys[n]] = NaN;
       }
     }
     multidata.result.push(obj);
   });
 
+  multidata.result.sort(function(a,b) { return a.d>b.d ? 1 : -1});
+  var latestValues={};  
+  multidata.result=multidata.result.map(function(value) {
+    latestValues=$.extend({}, latestValues, value);
+    return latestValues
+  })
+
+
   var graph = me; //todo: replace graph with me in all following lines?
-  graph.keys = arrYkeys;
-  graph.ykeys = newKeys;
+  graph.keys = arrYkeys; //keys contains all the selected keys, like ['te','l']
+  graph.ykeys = newKeys; //ykeys contains all the keys incl device idx, like ['te_12','te_13','l_3']
   //    graph.txtUnits = txtUnits; //todo: check txtUnits
-  graph.txtUnit = graph.txtUnits[0]; //todo: temp fix
+  graph.txtUnit = graph.txtUnits[0]; //todo: temp fix. txtUnits contains the units belonging to ykeys, like ['°C', '°C', 'level']
   graph.ylabels = getYlabels(graph);
   //graph.currentValues = currentValues; //todo: check currentValues
 
@@ -738,6 +856,9 @@ function createGraph(graph) {
   if (typeof mergedBlock.legend == 'boolean') {
     graphProperties.options.legend.display = mergedBlock.legend;
   }
+
+  if (graphProperties.ylabels)
+    graph.ylabels = graphProperties.ylabels;
   var mydatasets = {};
 
   if (graph.dataFilterCount > 0) {
@@ -837,15 +958,20 @@ function createGraph(graph) {
       idxArray = Object.keys(mergedBlock.legend);
     graph.ykeys.forEach(function (element, index) {
       //In case of a legend, not all datasets will be shown, resulting in color mismatch
+      //so idx should only be used for data relative to legend!
       var idx = index;
       if (idxArray && idxArray.length) {
         idx = idxArray.indexOf(element);
       }
 
+      var  myKey = element.split('_')[0];
+      var asStepped = ['l','eu','eg'];
+      var defaultSteppedLine = asStepped.indexOf(myKey)>=0 ? 'before':false;
+
       mydatasets[element] = {
         data: [],
         label: element,
-        yAxisID: graph.ylabels[idx],
+        yAxisID: graph.ylabels[index], //check: idx iso index
         backgroundColor: mergedBlock.datasetColors[idx],
         barPercentage: mergedBlock.barWidth,
         borderColor: (mergedBlock.borderColors || mergedBlock.datasetColors)[
@@ -854,7 +980,7 @@ function createGraph(graph) {
         borderWidth: mergedBlock.borderWidth,
         borderDash: mergedBlock.borderDash,
         pointRadius: mergedBlock.pointRadius,
-        pointStyle: mergedBlock.pointStyle[index],
+        pointStyle: mergedBlock.pointStyle[idx],  //check: index iso idx
         pointBackgroundColor: (mergedBlock.pointFillColor ||
           mergedBlock.datasetColors)[idx],
         pointBorderColor: (mergedBlock.pointBorderColor ||
@@ -862,9 +988,8 @@ function createGraph(graph) {
         pointBorderWidth: mergedBlock.pointBorderWidth,
         lineTension: mergedBlock.lineTension,
         spanGaps: mergedBlock.spanGaps,
-        fill: mergedBlock.lineFill
-          ? mergedBlock.lineFill[idx]
-          : mergedBlock.lineFill,
+        fill: getProperty(mergedBlock.lineFill, idx),
+        steppedLine: getProperty(defaultSteppedLine || mergedBlock.steppedLine, idx),
       };
     });
 
@@ -1760,6 +1885,9 @@ function getDefaultGraphProperties(graph, block) {
 
 function getYlabels(g) {
   var l = [];
+  if (g.txtUnits && g.txtUnits.length)
+    return g.txtUnits;
+  console.log('txtUnits not defined', g);
   $.each(g.keys, function (i, key) {
     var label = isDefined(g.txtUnits[i]) ? g.txtUnits[i] : g.txtUnit;
     switch (key) {
