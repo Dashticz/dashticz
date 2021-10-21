@@ -179,6 +179,13 @@ The following block parameters can be used to configure the graph:
     - If true, lines will be drawn between points with no or null data. If false, points with NaN data will create a break in the line.
   * - sortDevices
     - the code automatically calculate if any devices' time data is longer than others. It then use that device's time data, then match all of the devices non-time data to that. This setting allows users to choose to enable or disable that feature (true or false)
+  * - steppedLine
+    - | defines the interpolation method. It can be a single value ``'before'``, or an array of values ``['before', false, false]``
+	  | ``false`` (default) No stepped line but interpolation
+	  | ``true`` The line steps just before the new value
+	  | ``'before'`` The line steps just before the new value (same as ``true``)
+	  | ``'after'`` The line steps just after the new value
+	  | ``'middle'`` The line steps between the old and the new value
   * - customHeader
     - ``customHeader: { ... }`` Customized graph header. See :ref:`customheader`.
   * - format
