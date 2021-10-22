@@ -8,6 +8,19 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.8.6 Beta (22-10-2021)
+------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Graphs: Now you can also display switch information in your graphs
+
+Fixes
+~~~~~~
+
+* Graphs: Fixes in y-axes labeling
+
 v3.8.5 Beta (15-10-2021)
 ------------------------
 
