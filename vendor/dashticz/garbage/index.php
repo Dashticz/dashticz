@@ -364,7 +364,7 @@ function getCalendar() {
 //			var_dump($match[1]);
 
 			//step 2: Find secret
-			$match = curlWebMatch("https://recycleapp.be".$match[1],'/var n="(\w*)",c=".api.v1.assets/');
+			$match = curlWebMatch("https://recycleapp.be".$match[1],'/var n="(\w*)",r=".api.v1.assets/');
 //			var_dump($match);
 
 			//step 3: get access token

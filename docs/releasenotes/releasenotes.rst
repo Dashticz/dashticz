@@ -8,6 +8,12 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Fixes
+~~~~~~
+
+* Garbage: Recycleapp (BE)
+
+
 v3.8.6 Beta (22-10-2021)
 ------------------------
 
