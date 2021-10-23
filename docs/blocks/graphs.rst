@@ -979,6 +979,30 @@ In this example, they have specified that the popup will use a defined graph cal
 Examples
 ---------
 
+**Combine two temperature devices with the switch info indicating central heating is on**
+::
+
+	blocks['switchgraph'] = {
+		devices: [
+			31,
+			27,
+			17,
+		],
+		debugButton: true,
+		zoom: true,
+		graph: 'line',
+		legend : {
+			l_17: 'CV On',
+			te_31: 'Return temp',
+			te_27: 'Room temp'
+		},
+		lineFill: [true, false, false],
+		datasetColors: ['rgba(44,130,201,0.5)', 'red', 'blue'],
+	}
+
+.. image :: img/graphswitch.jpg
+
+
 **CPU, Memory & HDD**
 ::
 
