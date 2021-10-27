@@ -11,7 +11,7 @@ Recent changes
 Fixes
 ~~~~~~
 
-* Garbage: Recycleapp (BE), Avalex 
+* Garbage: Recycleapp (BE), Avalex, Suez 
 
 
 v3.8.6 Beta (22-10-2021)
