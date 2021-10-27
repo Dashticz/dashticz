@@ -11,7 +11,7 @@ Recent changes
 Fixes
 ~~~~~~
 
-* Garbage: Recycleapp (BE)
+* Garbage: Recycleapp (BE), Avalex 
 
 
 v3.8.6 Beta (22-10-2021)
