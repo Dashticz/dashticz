@@ -224,7 +224,8 @@ function getCalendar() {
 					case 'meerlanden'; $companyCode = "800bf8d7-6dd1-4490-ba9d-b419d6dc8a45"; break;
 					//https://wasteapi.ximmio.com/api/CallIcal?cn=WaardLanden&x=942abcf6-3775-400d-ae5d-7380d728b23c&ty=Vianen&ua=1200079926&sd=2019-12-21&ed=2023-01-09&path=https://wasteapi.ximmio.com&ln=nl&nt=7
 					case 'waardlanden'; $companyCode = "942abcf6-3775-400d-ae5d-7380d728b23c"; break;
-					case 'avri';  $companyCode = "78cd4156-394b-413d-8936-d407e334559a"; break;
+					case 'avri';  $companyCode = "78cd4156-394b-413d-8936-d407e334559a"; break;			
+					case 'avalex';  $companyCode = "f7a74ad1-fdbf-4a43-9f91-44644f4d4222"; break;
 				}
 				if ($companyCode == '') return;
 				//Web_Data=perform_webquery('--data "companyCode='..companyCode..'&postCode='..Zipcode..'&houseNumber='..Housenr.."&houseNumberAddition="..Housenrsuf..'" "https://wasteapi.2go-mobile.com/api/FetchAdress"')
