@@ -855,7 +855,7 @@ var DT_garbage = (function () {
       },
       suez: {
         handler: getGarbageData,
-        param: 'https://inzamelwijzer.suez.nl',
+        param: 'https://inzamelwijzer.prezero.nl',
       },
       twentemilieu: {
         handler: getWasteApiData,
