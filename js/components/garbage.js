@@ -708,7 +708,7 @@ var DT_garbage = (function () {
       avalex: {
         handler: getGeneralData,
         param: {
-          service: 'afvalstromen',
+          service: 'ximmio',
           subservice: 'avalex',
         },
       },
