@@ -620,6 +620,44 @@ To hide the number, add the following to custom.css::
   }
 
 
+.. _multiplevaluesblock:
+
+Multiple Values Block
+~~~~~~~~~~~~~~~~~~~~~
+
+Assuming your device is a P1 smart meter, you can use the following block definition::
+
+  blocks['customblock'] = {
+    idx: '43_1',
+    title:"Actual: <Usage>",
+    value: "Today: <NettCounterToday> kWh",
+    format:true,
+    decimals: 1
+  }
+
+.. image :: img/p1multi.png
+
+Instead of 43 use the Domoticz device ID of your own device.   
+
+For as well the title field as the value field of a Domoticz block you can indicate to fill in the value of a Domoticz device parameter by using the '<' and '>' symbol.   
+
+For a smart meter device you can use the following device parameters:
+
+* ``Usage`` (=Actual power entering your house)   
+* ``UsageDeliv`` (=Actual power leaving your house)   
+* ``NettUsage`` (=Usage - UsageDeliv)   
+   
+* ``CounterToday`` (=Energy entered your house today)  
+* ``CounterDelivToday`` (=Energy left your house today)  
+* ``NettCounterToday`` (=CounterToday - CounterDelivToday)  
+  
+* ``Counter`` (=Total counter of energy that entered your house)   
+* ``CounterDeliv`` (=Total counter of energy that left your house)   
+* ``NettCounter`` (=Counter - CounterDeliv)   
+   
+All parameter names are case sensitive.   
+
+For more fancy computations you can create your custom getStatus function in custom.js   
 
 
 .. _domoticzStyling:
