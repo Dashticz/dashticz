@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* New upgrade scripts in Makefile (Documentation to be updated)
+  
 Fixes
 ~~~~~~
 
