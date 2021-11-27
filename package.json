@@ -53,7 +53,8 @@
     "build": "webpack",
     "format": "npm run format:prettier && npm run format:html",
     "format:prettier": "node_modules/.bin/prettier --config .prettierrc \"{js,src}/**/*.{ts,css,less,js}\" --write",
-    "format:html": "node bin/glob-ls.js '*.html' | xargs node_modules/.bin/html-beautify -r"
+    "format:html": "node bin/glob-ls.js '*.html' | xargs node_modules/.bin/html-beautify -r",
+    "Update beta after merge": "./scripts/bu.sh"
   },
   "repository": {
     "type": "git",
