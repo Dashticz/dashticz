@@ -218,7 +218,7 @@ When using ``layout: 3`` or ``layout: 4`` no time will be shown.
 		icon: 'fas fa-birthday-cake',	
 	}
 
-.. eventClasses :
+.. _eventClasses :
 
 Event styling
 --------------
@@ -241,8 +241,8 @@ You can customize the event styling by setting the ``eventClasses`` block parame
 
   }
 
-If the calendar text contains the text 'Grand', then the CSS class `important` will be added to the event element.
-If the calendar text contains the text 'Qual', then the CSS class `normal` will be added to the event element.
+If the calendar text contains the text 'Grand', then the CSS class ``important`` will be added to the event element.
+If the calendar text contains the text 'Qual', then the CSS class ``normal`` will be added to the event element.
 
 Add the following to custom.css::
 
@@ -270,7 +270,8 @@ By default each event uses the following CSS classes:
 * eventtime: Time part of event
 * description: Event description
 
-By combining these classes with the classes assigned via eventClass you can customize the styling, as shown in the `custom.css` example above.
+By combining these classes with the classes assigned via eventClass you can customize the styling, as shown in the ``custom.css`` example above.
+
 Then another trick: The values in the eventClasses object are not just strings, but Regular Expressions.
 Assume we define eventClasses as follows::
 

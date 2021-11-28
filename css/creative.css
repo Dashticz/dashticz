@@ -2488,10 +2488,9 @@ canvas {
   white-space: nowrap;
 }
 
-td.agenda-title {
+.event .description {
   white-space: normal;
 }
-
 
 /* END: AGENDA */
 
