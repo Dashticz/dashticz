@@ -140,6 +140,8 @@ The **new calendar** block follows the same look and feel as most other blocks. 
       | ``true``: Don't show the start time for 'All Day'-events
   * - key
     - | ``'key'``: unique identifier. You can use ``[data-id='calendars.key']`` in your ``custom.css``
+  * - eventClasses
+    - Object to add a specific CSS class to an event based on the event description. See :ref:`eventClasses`
 
 
 Notes
@@ -215,4 +217,75 @@ When using ``layout: 3`` or ``layout: 4`` no time will be shown.
 		maxitems: 5, 
 		icon: 'fas fa-birthday-cake',	
 	}
+
+.. eventClasses :
+
+Event styling
+--------------
+
+You can customize the event styling by setting the ``eventClasses`` block parameter. As an example block definition::
+
+  blocks['f1'] = {
+      maxitems: 8,
+      icalurl: 'http://www.f1calendar.com/download/f1-calendar_p1_p2_p3_q_gp_alarm-20.ics',
+      layout: 1,
+      icon: 'fas fa-car',
+      title: 'Formula 1',
+      type: 'calendar',
+      startonly: true,
+      lastweek: false,
+      eventClasses: {
+          important: 'Grand',
+          normal: 'Qual'
+      }
+
+  }
+
+If the calendar text contains the text 'Grand', then the CSS class `important` will be added to the event element.
+If the calendar text contains the text 'Qual', then the CSS class `normal` will be added to the event element.
+
+Add the following to custom.css::
+
+    .event.normal {
+        color: orange !important
+    }
+
+    .event.important {
+        background-color:yellow;
+        color: green !important;
+    }
+
+    .description.important {
+        color: black !important;
+    }
+
+    .eventtime.important {
+        color: red !important;
+    }
+
+By default each event uses the following CSS classes:
+
+* event: Event container
+* eventdate: Date part of event
+* eventtime: Time part of event
+* description: Event description
+
+By combining these classes with the classes assigned via eventClass you can customize the styling, as shown in the `custom.css` example above.
+Then another trick: The values in the eventClasses object are not just strings, but Regular Expressions.
+Assume we define eventClasses as follows::
+
+    eventClasses: {
+      important: '^Grand',
+      normal: /qual/i
+    }
+
+The style ``important`` will be applied to events that **start** with 'Grand'.
+
+The matching of 'qual' now is case insensitive.
+
+.. image :: img/caleventclasses.jpg
+
+
+
+
 
