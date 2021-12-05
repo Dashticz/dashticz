@@ -1,8 +1,7 @@
-/* global Dashticz DT_function settings choose Skycons Debug number_format _TEMP_SYMBOL moment templateEngine _CORS_PATH language*/
+/* global Dashticz DT_function settings choose Debug number_format _TEMP_SYMBOL moment templateEngine _CORS_PATH language*/
 //# sourceURL=js/components/weather.js
 var DT_weather = (function () {
-  var skycons = 0;
-  var skyconIndex = 0;
+  var _DEBUG = false; //set to true to show different weather icons
   var windTable = [
     'N',
     'NNE',
@@ -62,7 +61,6 @@ var DT_weather = (function () {
         count: choose(+settings['owm_cnt'], layout < 2 ? 5 : 1), //only valid for layout 0 and 1
         //        days: choose(settings['owm_days'], true),
         interval: 1,
-        static_weathericons: settings['static_weathericons'],
         refresh: 3600, //update once per hour
         icon: 'fas fa-sun',
         scale: 1,
@@ -79,27 +77,12 @@ var DT_weather = (function () {
         showCurrent: true,
         useBeaufort: settings.use_beaufort || false,
         skipFirst: false,
+        icons: settings.static_weathericons ? 'static' : 'line',
+        iconExt: 'svg'
       };
     },
     run: function (me) {
-      var defaultColors = {
-        light_cloud: '#DDD',
-        cloud: '#BBB',
-        dark_cloud: '#999',
-        main: 'white',
-      };
-      var colors = {};
-      $.extend(colors, defaultColors, me.block.colors);
       if (me.block.refresh < 900) me.block.refresh = 900;
-      me.skyconList = [];
-      if (!me.block.static_weathericons && !skycons) {
-        //initialize Skycons
-        skycons = new Skycons({
-          monochrome: me.block.monochrome,
-          colors: colors,
-        });
-        skycons.play();
-      }
       me.$block = me.$mountPoint.find('.dt_block');
     },
     refresh: function (me) {
@@ -110,7 +93,7 @@ var DT_weather = (function () {
         );
         return;
       }
-      var w = parseInt(me.$mountPoint.width() * me.block.scale);
+      var w = parseInt(me.$mountPoint.width() * me.block.width / 12 * me.block.scale);
       if (me.block.scale !== 1) me.$block.css('width', w);
       var fontSize = w / 10;
       if (me.block.layout === 0 || me.block.layout === 1) {
@@ -119,9 +102,6 @@ var DT_weather = (function () {
 
       me.$block.css('font-size', fontSize + 'px');
       refreshOWM(me);
-    },
-    destroy: function (me) {
-      cleanupIcons(me);
     },
   };
 
@@ -197,7 +177,7 @@ var DT_weather = (function () {
     for (var i = start; i < cntSetting + start; i++) {
       var pos = i * me.block.interval;
       var hour_data = hourly[pos];
-      var rain = choose (hour_data.rain && hour_data.rain["1h"], hour_data.rain || 0);
+      var rain = choose(hour_data.rain && hour_data.rain["1h"], hour_data.rain || 0);
       var dayData = {
         day: moment(hourly[pos].dt * 1000).format(settings['weekday']),
         time: moment(hourly[pos].dt * 1000).format('HH:mm'),
@@ -307,11 +287,11 @@ var DT_weather = (function () {
 
     var subsite = makeForecast
       ? 'onecall?lat=' +
-        me.data.weather.coord.lat +
-        '&lon=' +
-        me.data.weather.coord.lon
+      me.data.weather.coord.lat +
+      '&lon=' +
+      me.data.weather.coord.lon
       : 'weather?' +
-        (isNumeric(city) ? 'id=' + city : 'q=' + city + ',' + country);
+      (isNumeric(city) ? 'id=' + city : 'q=' + city + ',' + country);
 
     var site =
       (settings['use_cors'] ? _CORS_PATH : '') +
@@ -331,67 +311,17 @@ var DT_weather = (function () {
     el.html('<i class="wi ' + wiclass + '"></i>');
   }
 
-  function getSkycon(el, code, classname) {
-    var icon = 'PARTLY_CLOUDY_DAY';
-    var icons = {
-      chanceflurries: 'WIND',
-      chancerain: 'RAIN',
-      chancesleet: 'SLEET',
-      chancesnow: 'SNOW',
-      chancetstorms: 'WIND',
-      clear: 'CLEAR_DAY',
-      cloudy: 'CLOUDY',
-      flurries: 'WIND',
-      fog: 'FOG',
-      hazy: 'PARTLY_CLOUDY_DAY',
-      mostlycloudy: 'CLOUDY',
-      mostlysunny: 'CLEAR_DAY',
-      partlycloudy: 'PARTLY_CLOUDY_DAY',
-      partlysunny: 'PARTLY_CLOUDY_DAY',
-      sleet: 'SLEET',
-      rain: 'RAIN',
-      snow: 'SNOW',
-      sunny: 'CLEAR_DAY',
-      tstorms: 'WIND',
-      //OWM skycons:
-      '01d': 'CLEAR_DAY',
-      '01n': 'CLEAR_NIGHT',
-      '02d': 'PARTLY_CLOUDY_DAY',
-      '02n': 'PARTLY_CLOUDY_NIGHT',
-      '03d': 'CLOUDY',
-      '03n': 'CLOUDY',
-      '04d': 'CLOUDY',
-      '04n': 'CLOUDY',
-      '09d': 'RAIN',
-      '09n': 'RAIN',
-      '10d': 'SHOWERS_DAY',
-      '10n': 'SHOWERS_NIGHT',
-      '11d': 'THUNDER',
-      '11n': 'THUNDER',
-      '13d': 'SNOW',
-      '13n': 'SNOW',
-      '50d': 'FOG',
-      '50n': 'FOG',
-    };
-    if (icons.hasOwnProperty(code)) {
-      icon = icons[code];
-    }
 
-    var id = 'icon' + skyconIndex;
-    var skycon =
-      '<canvas class="' +
-      classname +
-      '" data-icon="' +
-      icon +
-      '" id="' +
-      id +
-      '"></canvas>';
-    el.html(skycon);
-    skycons.set(id, Skycons[icon]);
-    skyconIndex += 1;
-    return id;
-    //return skycon;
+
+  function mountSVGIcon(me, el, icon) {
+    //    var wiclass = getSVGIcon(icon);
+    var predefinedIcons = ['line', 'fill', 'meteo'];
+    var path = predefinedIcons.includes(me.block.icons) ? './img' : './custom';
+    var iconFileName = path + '/weathericons/' + me.block.icons + '/' + icon + '.' + me.block.iconExt;
+    var imgClass = me.block.icons + (me.block.monochrome ? ' mono' : '');
+    el.html('<img class="' + imgClass + '" src="' + iconFileName + '">');
   }
+
 
   function getIcon(code) {
     var wiclass = 'wi-cloudy';
@@ -430,30 +360,25 @@ var DT_weather = (function () {
     return wiclass;
   }
 
-  function deleteSkycon(icon) {
-    skycons.remove(icon);
-  }
-
-  function cleanupIcons(me) {
-    me.skyconList.forEach(function (icon) {
-      deleteSkycon(icon);
-    });
-    me.skyconList = [];
-  }
-
   function addWeatherIcons(me) {
     //first cleanup
-    cleanupIcons(me);
+    //    return;
+    //    cleanupIcons(me);
+
+    var debugIcon = ['01d', '02n', '04d', '11n', '03d', '10n', '13d', '50n'];
 
     var iconlist = me.$mountPoint.find('.icon');
     iconlist.each(function (idx, el) {
       var $div = $(el);
-      var icon = el.dataset.icon;
-      if (me.block.static_weathericons) {
-        mountIcon($div, icon);
-      } else {
-        var id = getSkycon($div, icon, 'skycon');
-        me.skyconList.push(id);
+      var icon = _DEBUG ? debugIcon[idx % debugIcon.length] : el.dataset.icon;
+      idx = idx + 1;
+      switch (me.block.icons) {
+        case 'static': mountIcon($div, icon);
+          break;
+        case 'df':
+          break;
+        default: mountSVGIcon(me, $div, icon)
+
       }
     });
   }
@@ -470,12 +395,12 @@ var DT_weather = (function () {
   }
 
   function getWindIcon(deg) {
-    return   'wi wi-wind wi-from-'+getWindCode(deg).toLowerCase();
+    return 'wi wi-wind wi-from-' + getWindCode(deg).toLowerCase();
   }
 
   function translateWindDegreesShort(deg) {
     /*16 direction. each 16/360=22.5 degrees*/
-    return language.windshort['direction_'  + getWindCode(deg)];
+    return language.windshort['direction_' + getWindCode(deg)];
   }
 })();
 

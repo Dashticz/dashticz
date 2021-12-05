@@ -44,6 +44,20 @@
   font-size: 300%;
 }
 
+.weatherday .icon img {
+  background-size: 100% 100%;
+  width: 100%;
+}
+
+.icon img.meteo {
+  width: 70%;
+  filter: invert(100) grayscale(100);
+}
+
+.icon img.mono {
+  filter: brightness(100) grayscale(100);
+}
+
 .weathercurrent {
   display: flex;
   align-items: center;

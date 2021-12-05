@@ -70,9 +70,6 @@ Parameters
     - | Use every n-th forecast item.
       | ``1``. Use every forecast item (=default)
       | ``3``. Set to 3 to get 3-hourly forecast
-  * - static_weathericons
-    - | ``true`` Static weather settings
-      | ``false`` Animated weather icons (=default)
   * - decimals
     - | Number of temperature decimals to show
       | ``1`` One decimal (=default)  
@@ -99,8 +96,6 @@ Parameters
   * - monochrome
     - | ``false``: Show colored icons (animated weather icons only)
       | ``true``: Show monochrome icons (animated weather icons only)
-  * - colors
-    - Object to color the animated weather icons. See below.
   * - showCurrent
     - Set to ``false`` to hide current weather (layout 4 only)    
   * - showDetails
@@ -108,7 +103,13 @@ Parameters
   * - showDaily
     - Set to ``false`` to hide daily weather forecast (layout 4 only)    
   * - showHourly
-    - Set to ``false`` to hide hourly weather forecast (layout 4 only)    
+    - Set to ``false`` to hide hourly weather forecast (layout 4 only)
+  * - icons
+    - | Icon set to use. See below
+      | ``'line'`` Dynamic line icons    
+      | ``'fill'`` Dynamic filled icons    
+      | ``'static'`` Static icons    
+      | ``'meteo'`` Alternative set of static icons    
       
 The weather module makes use of the following CONFIG parameters:
 
@@ -185,47 +186,23 @@ To show detailed info on the current weather::
 
 .. image :: img/weather_detailed.jpg
 
-Icon colors
-~~~~~~~~~~~~
+.. _weathericons :
 
-The default icon colors (animated weather icons only) are as follows::
+Icons
+~~~~~
 
-  {
-    main        :  "#FFF",
-    moon        :  "#353545",
-    fog         :  "#CCC",
-    fogbank     :  "#AAA",
-    light_cloud :  "#DDD",
-    cloud       :  "#BBB",
-    dark_cloud  :  "#999",
-    thunder     :  "#FF0",
-    snow        :  "#C2EEFF",
-    hail        :  "#CCF",
-    sleet       :  "#C2EEFF",
-    wind        :  "#777",
-    leaf        :  "#2C5228",
-    rain        :  "#7FDBFF",
-    sun         :  "#FFDC00"
-  }
+Via the block parameter icons you can choose one of the predefined icon sets:
 
-You can redefine the default colors via the colors block parameter. For instance, if you would like to have orange clouds (for whatever reason)::
+  * 'line' (=default)
+  * 'fill'
+  * 'static'
+  * 'meteo'
 
-    blocks['weather4'] = {
-        type: 'weather',
-        layout: 4,
-        count: 6,
-        name: 'Amsterdam',
-        showDetails: false,
-        showHourly: false,
-    //    monochrome: true,
-        colors: {
-            cloud: 'orange',
-            light_cloud: 'orange',
-            dark_cloud: 'orange',
-        }
-    }
+By setting the block parameter ``monochrome`` to true the icons will be displayed as monochrome.
 
-.. image :: img/orangeclouds.jpg
+This will give the following icons sets to choose from:
+
+.. image :: img/weather_icons.jpg
 
 
 
