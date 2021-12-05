@@ -8,12 +8,14 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
-.. note:: CSS styling for calendar events changed. See :ref:`eventClasses` 
+.. note:: Weather icons changed. See :ref:`weathericons`
+.. note:: CSS styling for calendar events changed. See :ref:`eventClasses`   
 
 Enhancements
 ~~~~~~~~~~~~
 
 * Calendar: eventClasses block parameter to customize styling based on event description. See :ref:`eventClasses`
+* Weather: New block parameter ``icons`` to set weather icons to 'line', 'fill','static' or 'meteo'. See :ref:`weathericons`
 * New upgrade scripts in Makefile (Documentation to be updated)
   
 Fixes
