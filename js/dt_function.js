@@ -197,7 +197,7 @@ var DT_function = (function () {
     loadedResources[id] = true;
 
     $('head').append(
-      '<link rel="stylesheet" type="text/css" href="' + filename + '">'
+      '<link rel="stylesheet" type="text/css" href="' + filename + '?v=' + _DASHTICZ_VERSION + '">'
     );
   }
 
