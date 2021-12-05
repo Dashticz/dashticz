@@ -8,6 +8,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.8.7 Beta (5-12-2021)
+------------------------
+
 .. note:: Weather icons changed. See :ref:`weathericons`
 .. note:: CSS styling for calendar events changed. See :ref:`eventClasses`   
 
