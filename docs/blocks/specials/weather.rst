@@ -106,7 +106,8 @@ Parameters
     - Set to ``false`` to hide hourly weather forecast (layout 4 only)
   * - icons
     - | Icon set to use. See below
-      | ``'line'`` Dynamic line icons    
+      | ``'line'`` Dynamic line icons
+      | ``'linestatic'`` Static version of the line icons    
       | ``'fill'`` Dynamic filled icons    
       | ``'static'`` Static icons    
       | ``'meteo'`` Alternative set of static icons    
@@ -194,6 +195,7 @@ Icons
 Via the block parameter icons you can choose one of the predefined icon sets:
 
   * 'line' (=default)
+  * 'linestatic'
   * 'fill'
   * 'static'
   * 'meteo'
