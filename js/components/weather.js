@@ -315,7 +315,7 @@ var DT_weather = (function () {
 
   function mountSVGIcon(me, el, icon) {
     //    var wiclass = getSVGIcon(icon);
-    var predefinedIcons = ['line', 'fill', 'meteo'];
+    var predefinedIcons = ['line', 'fill', 'meteo','linestatic'];
     var path = predefinedIcons.includes(me.block.icons) ? './img' : './custom';
     var iconFileName = path + '/weathericons/' + me.block.icons + '/' + icon + '.' + me.block.iconExt;
     var imgClass = me.block.icons + (me.block.monochrome ? ' mono' : '');
