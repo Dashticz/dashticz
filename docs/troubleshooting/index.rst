@@ -6,3 +6,4 @@ Troubleshooting
 
    connection
    docker
+   issues-domoticzblocks
