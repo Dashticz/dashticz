@@ -350,3 +350,9 @@ function capitalizeFirstLetter(string) {
   if(string.lenght===1) return string.toUpperCase;
   return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
+
+function addStyleAttribute($element, styleAttribute) {
+  var currentStyle = $element.attr('style');
+  $element.attr('style', currentStyle ? currentStyle + '; ' + styleAttribute : styleAttribute);
+}
+

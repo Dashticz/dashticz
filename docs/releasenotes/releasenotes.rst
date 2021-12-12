@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Fixes
+~~~~~~
+
+* Dials: Fix for so called splitdial with 0 not at top. For instance: min=-10 and max=50
+ 
 v3.8.7 Beta (5-12-2021)
 ------------------------
 
