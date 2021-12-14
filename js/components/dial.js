@@ -506,7 +506,7 @@ var DT_dial = (function () {
 
     }
     if (me.active)
-      me.value = Math.round((me.degrees / me.scale) * 10) / 10;
+      me.value = angle2Value(me, needleAngle); 
 
     if (me.isSetpoint) {
       if (val >= me.setpoint) {
@@ -531,6 +531,20 @@ var DT_dial = (function () {
 
   }
 
+
+  /**
+   * Calculate value based on given angle.
+   * @param {object} me  Core component object.
+   * @param {number} angle  Needle angle (absolute value)
+   */
+  function angle2Value(me, angle) {
+        /*
+      From angle back to value is not trivial ...
+      */
+     var value = me.splitdial ?  (angle-me.startAngle)/me.scale: (angle-me.startAngle)/me.scale + me.min;
+     return Math.round(value * 10) / 10; //rounded to 1 decimal ... 
+  }
+
   /**
    * Calculate degrees based on device range.
    * @param {object} me  Core component object.
@@ -542,8 +556,8 @@ var DT_dial = (function () {
     } else {
       value = me.value;
     }
-    value = isDefined(me.min) && value < me.min ? me.min : value;
-    value = isDefined(me.max) && value > me.max ? me.max : value;
+    value = (isDefined(me.min) && value < me.min) ? me.min : value;
+    value = (isDefined(me.max) && value > me.max) ? me.max : value;
 
     var angle, startAngle;
 
@@ -561,7 +575,6 @@ var DT_dial = (function () {
     }
     me.angle = angle;
     me.startAngle = startAngle;
-    console.log(me.startAngle, me.angle);
     return;
     /*    
         var deg = (value - me.min) * me.scale;
