@@ -1,8 +1,9 @@
 {
-"version": "3.8.7",
+"version": "3.8.8",
 "branch": "beta",
-"last_changes": "Weather icons update, coloring of agenda events",
+"last_changes": "Dial: Splitdial fix for different min max ring values",
 "changelog" : {
+            "3.8.7": "Weather icons update, coloring of agenda events",
             "3.8.6": "Graph updates",
             "3.8.5": "Several fixes",
             "3.8.4": "Calendar fixes",
