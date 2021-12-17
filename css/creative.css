@@ -3106,23 +3106,23 @@ canvas {
 
 .dial .bar.primary,
 .dial .fill.primary {
-  border-color: #ffa500;
+  border-color: #ffa500 !important;
   border-color: var(--dial-color);
 }
 
 .dial .bar.secondary,
 .dial .fill.secondary {
-  border-color: #307bbb;
+  border-color: #307bbb !important;
 }
 
 .dial .bar.positive,
 .dial .fill.positive {
-  border-color: #28a745;
+  border-color: #28a745 !important;
 }
 
 .dial .bar.negative,
 .dial .fill.negative {
-  border-color: #dc3545;
+  border-color: #dc3545 !important;
 }
 
 .dial.p180 .fill:after {
