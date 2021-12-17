@@ -94,6 +94,8 @@ Block parameters
   * - showvalue
     - | ``true`` (=default). Show the main device value. 
       | ``false``: Don't show the main device value.
+  * - splitdial
+    - Normally the dial ring color will color from the 0 value to the actual value, which can be positive or negative. Set this parameter to false to start coloring the dial ring from the minimum value, also for a negative minimum value.
   
 
 Usage
@@ -511,33 +513,33 @@ In Domoticz you can hide the Off level of a Selector Switch. In Dashticz you can
 To change the grey dial bezel color from grey to red::
 
     .dt_content .dial {
-        background-color: #bb2424;
+        background-color: #bb2424 !important;
     }
 
 To change the outer ring primary color from orange (default) to yellow::
 
     .dial .bar.primary,
     .dial .fill.primary {
-        border-color: #d9e900;
+        border-color: #d9e900 !important;
     }
 
 To change the outer ring secondary color from blue (default) to lime green::
 
     .dial .bar.secondary,
     .dial .fill.secondary {
-        border-color: #26e500;
+        border-color: #26e500 !important;
     }
 
 To change the dial needle color from orange (default) to lime green::
 
     .dial-needle::before {
-        border-bottom-color: lime!important;
+        border-bottom-color: lime !important;
     }
 
 To target just one dial, you can prefix the above code snippets with block id of the dial, for example::
 
     [data-id='temp_hum_baro'] .dial-needle::before {
-        border-bottom-color: lime!important;
+        border-bottom-color: lime p!important;
     }
 
 Change the size of the dial-center::
