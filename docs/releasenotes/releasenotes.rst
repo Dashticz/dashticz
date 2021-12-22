@@ -8,6 +8,12 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Dial: Support for blinds. See :ref:`dialblinds`
+
+
 v3.8.8 Beta (17-12-2021)
 ------------------------
 
