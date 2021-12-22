@@ -3489,43 +3489,7 @@ canvas {
   margin-bottom: 7px;
 }
 
-/*
-.dial .dial-display .extra {
-  position: relative;
-  top: 28%;
-  font-size: 0.06em;
-  color: grey;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  width: 85%;
-}
 
-.dial .dial-display .extra div {
-  margin-left: 0.25em;
-  margin-right: 0.25em;
-}
-
-.dial .dial-display .extra div .data {
-  margin-left: -0.25em;
-}
-
-.dial .dial-display .extra div .unit {
-  font-size: 0.8em;
-  margin-left: -0.25em;
-  margin-right: 0.25em;
-}
-
-.dial .dial-display .extra .fas {
-  font-size: 0.8em !important;
-  margin: 0;
-}
-
-.dial .dial-display .extra img {
-  width: 1em;
-  margin-right: 0.25em;
-}
-*/
 .dial .extra {
   position: absolute;
   font-size: 0.06em;
@@ -4030,6 +3994,123 @@ canvas {
   -ms-transition: all 0.1s ease;
   -o-transition: all 0.1s ease;
   transition: all 0.1s ease;
+}
+
+.dial .blinds {
+  font-size: 7.1%;
+}
+
+.dialbtn.up {
+  background-color: rgba(0, 255, 0, 0.3);
+  line-height: 4em;
+  clip: rect(-2em, 12em, 4em, -2em);
+  transform-origin: top;
+}
+
+.dialbtn.up::after {
+  position: absolute;
+  line-height: 3em;
+  transform-origin: top;
+  content: "";
+  width: calc(100% - 0.7em);
+  height: calc(100% - 0.4em);
+  height: 3.8em;
+  border-bottom: 0.2em solid rgba(0,0,0,0.6);
+}
+
+.dialbtn {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: calc(100% - 0.4rem);
+  border-radius: 50%;
+  border: 0.2rem;
+  border-color: black;
+  border-style: outset;
+  width: calc(100% - 0.4rem);
+
+  font-size: 100%;
+  background-color: green;
+  color: white;
+  cursor: pointer;
+  outline: none;
+  transition: 0.2s all;
+  transition-timing-function: cubic-bezier(.91,.8,.54,1.39);
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+}
+/* Adding transformation when the button is active */
+
+.dialbtn:active,
+.dialbtn.selected {
+  transform: scale(0.9);
+  /* Scaling button to 0.98 to its original size */
+  box-shadow: 3px 2px 22px 1px rgba(0, 0, 0, 0.6);
+  /* Lowering the shadow */
+}
+
+.dialbtn.up {
+  background-color: rgba(64, 64, 64, 0.2);
+  line-height: 4em;
+  clip: rect(-2em, 12em, 4em, -2em);
+  transform-origin: top;
+}
+.dialbtn.selected {
+  background-image: radial-gradient(rgba(255,255,255,0.5), rgba(0,0,0,0));
+}
+
+.dialbtn.up::after {
+  position: absolute;
+  line-height: 3em;
+  transform-origin: top;
+  content: "";
+  width: calc(100% - 0.7em);
+  height: calc(100% - 0.4em);
+  height: 3.8em;
+  border-bottom: 0.2em solid rgba(0,0,0,0.6);
+}
+
+
+.dialbtn.down {
+  background-color: rgba(64, 64, 64, 0.2);
+  clip: rect(8em, 12em, 12em, 0px);
+  align-items: flex-end;
+  line-height: 4em;
+  transform-origin: bottom;
+}
+
+.dialbtn.down::after {
+  position: absolute;
+  line-height: 2em;
+  transform-origin: top;
+  content: "";
+  width: calc(100% - 0.7em);
+  height: calc(100% - 0.4em);
+  height: 3.8em;
+  border-top: 0.2em solid rgba(0,0,0,0.6);;
+}
+
+.dialbtn.middle {
+  background-color: rgba(0, 0, 0, 0.2);
+  align-items: center;
+  clip: rect(4em, 12em, 8em, 0px);
+  display: flex;
+  flex-direction: column;
+}
+
+.dialbtn.middle::after {
+  position: absolute;
+  line-height: 1em;
+  content: "";
+  width: calc(100% - 0.6em);
+  height: 3.8em;
+  border-top: 0.2em solid rgba(0,0,0,0.6);;
+  border-bottom: 0.2em solid rgba(0,0,0,0.6);;
+}
+
+.dialbtn .title {
+  color: yellow;
 }
 
 
