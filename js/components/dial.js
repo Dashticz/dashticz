@@ -54,6 +54,9 @@ var DT_dial = (function () {
       iconSwitch: 'fas fa-power-off',
       showvalue: true,
       value: 'Data',
+      layout: '',
+      textOpen: 'Open',
+      textClose: 'Close'
     },
 
     /**
@@ -77,6 +80,7 @@ var DT_dial = (function () {
       color(me);
       me.segments = 11;
       me.showunit = me.block.showunit || false;
+      me.tpl = 'dial';
 
       var idx;
       me.devices = [];
@@ -107,7 +111,8 @@ var DT_dial = (function () {
           me.lastupdate = !me.block.last_update
             ? false
             : moment(me.device.LastUpdate).format(DT_dial.timeformat);
-          make(me);
+          if (me.update) me.update(me);
+          else make(me);
         });
       });
       if (me.devices.length) {
@@ -120,8 +125,8 @@ var DT_dial = (function () {
           me.isSetpoint = !!me.device.SetPoint;
         }
       }
-      make(me);
-      tap(me);
+      make(me)
+        .then(me.tap);
     },
 
     destroy: function (me) {
@@ -141,6 +146,9 @@ var DT_dial = (function () {
     me.showvalue = me.block.showvalue;
     resize(me);
     var d = me.device;
+    console.log(d);
+    me.tap = tap;
+    me.checkNeedlePos = true;
 
     if (!d) {
       onoff(me);
@@ -164,6 +172,9 @@ var DT_dial = (function () {
         case d.SwitchType === 'Push On Button':
         case d.SwitchType === 'Push Off Button':
           onoff(me);
+          break;
+        case d.SwitchType && d.SwitchType.substr(0, 6) === 'Blinds':
+          makeBlinds(me);
           break;
         case d.Type === 'Temp':
         case d.Type === 'Temp + Humidity':
@@ -194,8 +205,8 @@ var DT_dial = (function () {
     }
 
     //    var templateName = me.block.layout ? 'dial_' + me.block.layout : 'dial';
-    var templateName = 'dial';
-    templateEngine.load(templateName).then(function (template) {
+    var templateName = me.tpl;// + me.block.layout;
+    return templateEngine.load(templateName).then(function (template) {
       me.info.forEach(function (i) {
         if (i.type === 'text') return;
         if (!isDefined(i.decimals)) return;
@@ -248,6 +259,8 @@ var DT_dial = (function () {
         label: me.label,
         deviceStatus: (me.device && me.device.deviceStatus) || '',
         showvalue: me.showvalue, //to show the big value centered in the middle
+        textOpen: me.block.textOpen,
+        textClose: me.block.textClose,
       };
 
       /* Mount dial */
@@ -292,18 +305,22 @@ var DT_dial = (function () {
           });
       }
       /* Add dial calculations */
-      if (!me.controller) {
+      if (me.checkNeedlePos) {
+
         me.body = $(me.mountPoint + ' .dt_content .dial');
-        me.min = me.body.data('min');
-        me.max = me.body.data('max');
         me.scale = me.dialRange / (me.max - me.min);
-        me.value = me.body.data('value');
-        degrees(me);
         me.control = me.body.find('.dial-needle');
         listen(me);
-        rotate(me);
+        updateNeedle(me);
       }
-    });
+      return me
+    })
+  }
+
+  function updateNeedle(me) {
+    degrees(me);
+    rotate(me);
+    return me
   }
 
   /**
@@ -505,11 +522,14 @@ var DT_dial = (function () {
 
 
     }
-    if (me.active)
-      me.value = angle2Value(me, needleAngle); 
+    if (me.active) {
+      me.value = angle2Value(me, needleAngle);
+      var valueformat = number_format(me.value, choose(me.decimals, 1));
+      $d.find('.value').text(valueformat);
+    }
 
     if (me.isSetpoint) {
-      if (val >= me.setpoint) {
+      if (me.value >= me.setpoint) {
         /* at or above setpoint */
 
         $d.find('.bar').addClass('primary').removeClass('secondary');
@@ -522,9 +542,7 @@ var DT_dial = (function () {
       }
     }
 
-    var valueformat = number_format(me.value, choose(me.decimals, 1));
-    $d.find('.value').text(valueformat).data('value', me.value);
-    $d.find('.info').text($d.data('info'));
+    //    $d.find('.info').text($d.data('info'));
     $(me.control).css({
       webkitTransform: 'rotate(' + (me.startAngle + me.degrees) + 'deg)',
     });
@@ -538,11 +556,11 @@ var DT_dial = (function () {
    * @param {number} angle  Needle angle (absolute value)
    */
   function angle2Value(me, angle) {
-        /*
-      From angle back to value is not trivial ...
-      */
-     var value = me.splitdial ?  (angle-me.startAngle)/me.scale: (angle-me.startAngle)/me.scale + me.min;
-     return Math.round(value * 10) / 10; //rounded to 1 decimal ... 
+    /*
+  From angle back to value is not trivial ...
+  */
+    var value = me.splitdial ? (angle - me.startAngle) / me.scale : (angle - me.startAngle) / me.scale + me.min;
+    return Math.round(value * 10) / 10; //rounded to 1 decimal ... 
   }
 
   /**
@@ -656,7 +674,8 @@ var DT_dial = (function () {
 
   function slideDevice(me, idx, level) {
     reqSlideDevice(idx, level).then(function () {
-      make(me);
+      if (me.update) me.update(me);
+      else make(me);
     });
   }
 
@@ -1081,6 +1100,7 @@ var DT_dial = (function () {
   function control(me) {
     me.select = '#' + me.id + ' .status';
     me.controller = true;
+
     me.fixed = true;
     if (me.device.SubType === 'Evohome') {
       me.type = 'evo';
@@ -1165,6 +1185,64 @@ var DT_dial = (function () {
     return;
   }
 
+  function makeBlinds(me) {
+    me.type = 'blinds';
+    me.tpl = 'dialblinds';
+    me.fixed = true;
+    me.active = false;
+    me.tap = tapBlinds;
+    me.update = updateBlinds;
+    me.percentage = me.device.SwitchType.includes('Percentage');
+    me.inverted = me.device.SwitchType.includes('Inverted');
+    me.value = valueBlinds(me);
+    return;
+  }
+
+  function tapBlinds(me) {
+    var $mountPoint = me.$mountPoint;
+    me.$up = $mountPoint.find('.up');
+    me.$down = $mountPoint.find('.down');
+    me.$middle = $mountPoint.find('.middle');
+    me.$up.on('click', function () {
+      $(this).addClass('selected');
+      me.$down.removeClass('selected');
+      var cmd = me.inverted ? 'on' : 'off';
+      var level = me.inverted ? 100 : 0;
+      me.percentage ? slideDevice(me, me.block.idx, level) : switchDevice(me, cmd);
+    });
+    me.$down.on('click', function () {
+      $(this).addClass('selected');
+      me.$up.removeClass('selected');
+      var cmd = me.inverted ? 'off' : 'on';
+      var level = me.inverted ? 0 : 100;
+      me.percentage ? slideDevice(me, me.block.idx, level) : switchDevice(me, cmd);
+    });
+    me.$middle.on('click', function () {
+      me.$up.removeClass('selected');
+      me.$down.removeClass('selected');
+      Domoticz.request(
+        'type=command&param=switchlight&idx=' +
+        me.block.idx +
+        '&switchcmd=' +
+        'stop'
+      )
+    });
+  }
+
+  function updateBlinds(me) {
+    console.log('update blinds', me);
+    me.$middle.find('.value').html(valueBlinds(me))
+  }
+
+  function valueBlinds(me) {
+    if (me.device.Status == 'Open' || me.device.Status === 'Closed')
+      return me.device.Status;
+    switch (me.device.Level) {
+      case 0: return 'Open';
+      case 100: return 'Closed';
+      default: return me.device.Level;
+    }
+  }
   /**
    * Configures the data for devices of P1 Smart Meter type.
    * @param {object} me  Core component object.

@@ -136,6 +136,22 @@ Any devices with this switchtype and type: 'dial' will automatically render as a
         width: 2
     }
 
+.. _dialblinds :
+
+Blinds
+~~~~~~
+
+All four Domoticz blinds types can be rendered as dial:
+
+* Blinds
+* Blinds Percentage
+* Blinds Inverted
+* Blinds Inverted Percentage
+
+.. image :: ./img/dialblinds.jps
+
+The text in the ``up`` and ``down`` buttons can be configured via the block parameters ``textOpen`` and ``textClose`` respectively.
+
 
 Temp + Humidity
 ~~~~~~~~~~~~~~~
@@ -572,6 +588,33 @@ Change the font of the dial menu text::
     .dial-menu .status li {
         font-size: 75%
     }
+
+To change the colors of the blinds buttons::
+
+  .dialbtn.up {
+    background-color: darkgreen;
+  }
+  .dialbtn.middle {
+    background-color: darkblue;
+  }
+  .dialbtn.down {
+    background-color: darkred;
+  }
+
+And for the selected buttons::
+
+  /*Next block is the default styling*/
+  .dialbtn.selected {
+    background-image: radial-gradient(rgba(255,255,255,0.5), rgba(0,0,0,0));
+  }
+
+  .dialbtn.up.selected {
+    background-color: lightgreen;
+  }
+
+  .dialbtn.up.selected {
+    background-color: lightred;
+  }
 
 
 Examples
