@@ -35,7 +35,7 @@ var DT_button = {
           button.forceheight +
           '" />';
       } else {
-        html += '<img src="' + img + '" style="max-width:100%;" />';
+        html += '<img src="' + img + '" style="width:100%;" />';
       }
     }
     return html;

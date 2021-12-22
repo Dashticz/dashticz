@@ -1,4 +1,4 @@
-/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify*/
+/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify DT_button loadSonarr getCoin loadMaps*/
 //# sourceURL=js/components/simpleblock.js
 var DT_simpleblock = (function () {
   var simpleBlocks = {
@@ -32,20 +32,6 @@ var DT_simpleblock = (function () {
       script: 'js/weather.js',
       render: renderCurrentWeather_big,
     },
-/*
-    weather_owm: {
-      script: 'js/weather_owm.js',
-      render: renderWeather_owm,
-    },
-    currentweather_owm: {
-      script: 'js/weather_owm.js',
-      render: renderCurrentWeather_owm,
-    },
-    currentweather_big_owm: {
-      script: 'js/weather_owm.js',
-      render: renderCurrentWeather_big_owm,
-    },
-    */
     spotify: {
       script: 'js/spotify.js',
       render: renderSpotify,
@@ -263,75 +249,7 @@ var DT_simpleblock = (function () {
     }
   }
 
-  function renderWeather_owm(me) {
-    if (typeof loadWeatherFull !== 'function') {
-      $.ajax({
-        url: 'js/weather_owm.js',
-        async: false,
-        dataType: 'script',
-      });
-    }
-    me.$mountPoint.html(
-      '<div data-id="weather" class="block_' +
-        me.block.type +
-        ' containsweatherfull"></div>'
-    );
-    if (settings['owm_api'] !== '' && settings['owm_city'] !== '')
-      loadWeatherFull(
-        settings['owm_city'],
-        settings['owm_country'],
-        $('.weatherfull')
-      );
-  }
-
-  function renderCurrentWeather_owm(me) {
-    if (settings['owm_api'] !== '' && settings['owm_city'] !== '') {
-      if (typeof loadWeather !== 'function') {
-        $.ajax({
-          url: 'js/weather_owm.js',
-          async: false,
-          dataType: 'script',
-        });
-      }
-
-      me.$mountPoint.html(
-        '<div data-id="currentweather" class="mh transbg block_' +
-          me.block.type +
-          ' col-xs-' +
-          me.width +
-          ' containsweather">' +
-          '<div class="col-xs-4"><div class="weather" id="weather"></div></div>' +
-          '<div class="col-xs-8"><strong class="title weatherdegrees" id="weatherdegrees"></strong><br /><span class="weatherloc" id="weatherloc"></span></div>' +
-          '</div>'
-      );
-      loadWeather(settings['owm_city'], settings['owm_country']);
-    }
-  }
-
-  function renderCurrentWeather_big_owm(me) {
-    if (settings['owm_api'] !== '' && settings['owm_city'] !== '') {
-      if (typeof loadWeather !== 'function') {
-        $.ajax({
-          url: 'js/weather_owm.js',
-          async: false,
-          dataType: 'script',
-        });
-      }
-      me.$mountPoint.html(
-        '<div data-id="currentweather_big" class="mh transbg big block_' +
-          me.block.type +
-          ' col-xs-' +
-          me.block.width +
-          ' containsweather">' +
-          '<div class="col-xs-1"><div class="weather" id="weather"></div></div>' +
-          '<div class="col-xs-11"><span class="title weatherdegrees" id="weatherdegrees"></span> <span class="weatherloc" id="weatherloc"></span></div>' +
-          '</div>'
-      );
-
-      loadWeather(settings['owm_city'], settings['owm_country']);
-    }
-  }
-
+  
   function renderSpotify(me) {
     me.$mountPoint.html('');
     getSpotify(me.mountPoint);
@@ -361,7 +279,7 @@ var DT_simpleblock = (function () {
     );
   }
 
-  function renderHorizon(me) {
+  function renderHorizon() {
     var html = '<div data-id="horizon" class="containshorizon">';
     html +=
       '<div class="col-xs-4 transbg hover text-center" onclick="ziggoRemote(\'E0x07\')">';
@@ -379,7 +297,7 @@ var DT_simpleblock = (function () {
     return html;
   }
 
-  function renderSonar(me) {
+  function renderSonar() {
     return loadSonarr();
   }
 
@@ -421,8 +339,20 @@ var DT_simpleblock = (function () {
   }
 
   function renderMoon(me) {
+    
     me.block.btnimage='moon';
-    return DT_button.defaultContent(me);
+   var html =
+      '<div class="col-xs-' +
+      me.block.width +
+      ' moon' +
+      '" data-id="' +
+      me.block.key + 
+      '">' +
+      DT_button.defaultContent(me) +
+      '</div>';
+    return html;
+//    me.$mountPoint.find('.dt_state').html(DT_button.defaultContent(me));
+    //return DT_button.defaultContent(me);
   }
 })();
 
