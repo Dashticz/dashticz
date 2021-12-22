@@ -8,10 +8,17 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+.. note:: Your images in buttons now might scale to the full block width. This is a side effect of the fix of the moon scaling. Reduce the block width in case your image is too wide.
+
 Enhancements
 ~~~~~~~~~~~~
 
 * Dial: Support for blinds. See :ref:`dialblinds`
+
+Fixes
+~~~~~~
+
+* Moon image scaling
 
 
 v3.8.8 Beta (17-12-2021)
