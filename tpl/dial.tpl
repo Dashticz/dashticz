@@ -28,9 +28,7 @@
     <span class="device {{animation}}" style="color:{{color}};">{{name}}</span>
 {{/inline}}
 
-<div class="dial {{size}} {{#if fixed}}fixed{{/if}} {{addclass}} {{deviceStatus}}" data-device="{{name}}" data-min="{{min}}" data-max="{{max}}"
-    data-type="{{type}}" data-value="{{value}}" data-setpoint="{{setpoint}}" data-status="{{status}}" 
-    data-until="{{until}}" data-unit="{{unit}}" data-info="{{lastupdate}}" style="font-size: {{fontsize}}px;--dial-color: {{rgba}};">
+<div class="dial {{size}} {{#if fixed}}fixed{{/if}} {{addclass}} {{deviceStatus}}" style="font-size: {{fontsize}}px;--dial-color: {{rgba}};">
     <div class="slice {{#if split}}{{slice}}{{/if}}">
         <div class="bar primary {{class}}" style="--dial-color:{{color}};"></div>
         <div class="fill primary {{class}}" style="--dial-color:{{color}};"></div>
