@@ -51,6 +51,12 @@ Frame parameters
       | ``0`` : Normal caching behavior (=default)
       | ``1``,  ``true`` : Prevent caching by adding t=<timestamp> parameter to the url. Not all websites will handle this correctly
       | ``2`` : The frame content is loaded via php, preventing caching. (php must be enabled on your Dashticz server)
+  * - scaletofit
+    - | Width of the frame content in pixels, which will be scaled to the block width.
+      | ``256`` : Assuming the width of the frame content is 256 pixels, then the frame will be scaled in such a way that the content will fit the block width.
+  * - aspectratio
+    - The height of the block will be adjusted to a certain aspect ratio, taking scaling via ``scaletofit`` into account.
+
 
 
 Example
@@ -69,9 +75,7 @@ Example
     //Definition of blocks
     blocks = {}
 
-    ////////////////////// FRAMES ///////////////////////////
-    var frames = {}
-    frames.weather = {
+    blocks['weather'] = {
       frameurl:"//forecast.io/embed/#lat=49.2624&lon=-123.1155&name=Vancouver&color=#00aaff&font=Helvetica&fontColor=#ffffff&units=si&text-color=#fff&",
       height: 250
     }
@@ -80,7 +84,7 @@ Example
     columns = {}
 
     columns[1] = { 
-        blocks: [frames.weather],
+        blocks: ['weather'],
         width: 6
     }
 
@@ -93,3 +97,25 @@ Example
 This will give the following result:
 
 .. image :: framesexample.jpg
+
+
+In some cases the frame content doesn't fit well within the block width. The frame content can be scaled by using the block parameters ``scaletofit`` and ``aspectratio``.
+
+For instance, the buienradar widget has a frame width of 256 pixels, and an aspect ratio of 1:1. That means you can define the block as follows::
+
+  blocks['buien'] = {
+    frameurl: 'https://gadgets.buienradar.nl/gadget/zoommap/?lat=52.37403&lng=4.88969&overname=2&zoom=11&naam=amsterdam&size=2&voor=0',
+    scrollbars: false,
+    width:12,
+    scaletofit: 256,
+    aspectratio: 1,
+}
+
+.. image :: img/framescale.jpg
+
+In the example above the 'buien' block has been added to columns of width 1,2 and 4 respectively.
+
+For other buienradar widgets check the following url:
+https://www.buienradar.nl/overbuienradar/gratis-weerdata
+
+Look for the iframe examples and copy/paste the content of the 'src' parameter to the frameurl of your Dashticz block.
