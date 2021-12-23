@@ -153,6 +153,10 @@
   max-width: 100%;
 }
 
+.frame iframe {
+  transform-origin: 0 0;
+}
+
 .no-margin .dt_state {
   margin: -5px
 }
