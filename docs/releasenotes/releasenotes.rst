@@ -14,6 +14,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Dial: Support for blinds. See :ref:`dialblinds`
+* Frame: Add block parameters ``scaletofit`` and ``aspectratio`` to automatically scale the frame content to the block width. See :ref:`Frames`
 
 Fixes
 ~~~~~~
