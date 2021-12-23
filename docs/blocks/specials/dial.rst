@@ -148,7 +148,7 @@ All four Domoticz blinds types can be rendered as dial:
 * Blinds Inverted
 * Blinds Inverted Percentage
 
-.. image :: ./img/dialblinds.jps
+.. image :: ./img/dialblinds.jpg
 
 The text in the ``up`` and ``down`` buttons can be configured via the block parameters ``textOpen`` and ``textClose`` respectively.
 
