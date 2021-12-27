@@ -69,5 +69,9 @@ Parameters
       | ``3``: no new window/frame (for intent handling, api calls). HTTP get request.
       | ``4``: no new window/frame (for intent handling, api calls). HTTP post request. (forcerefresh not supported)
 
+Styling
+--------
 
+In case no info is available then the CSS class ``empty`` will be added to block.
+This can be used to adjust the styling of an empty block via ``custom.css``
 
