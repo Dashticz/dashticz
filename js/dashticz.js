@@ -119,6 +119,14 @@ var Dashticz = (function () {
     $div.html(block);
   }
 
+  function setEmpty(me, state) {
+    var $div = me.$mountPoint.find('.dt_block');
+    if(state)
+      $div.addClass('empty');
+    else
+      $div.removeClass('empty');
+  }
+
   function addClickHandler(me) {
     var clickHandler = null;
     if (!me.block.url && !me.block.slide && !me.block.popup) return;
@@ -457,6 +465,7 @@ var Dashticz = (function () {
     setInterval: _setInterval,
     subscribeDevice: _subscribeDevice,
     removeBlock: removeBlock,
+    setEmpty: setEmpty
   };
 })();
 

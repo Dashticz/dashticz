@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Special blocks: Add class ``empty`` in case the special block is empty. Applicable to alarmmeldingen, calendar, traffic, trafficinfo and train.
+
 v3.8.9 Beta (23-12-2021)
 ------------------------
 

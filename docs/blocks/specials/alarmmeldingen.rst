@@ -76,4 +76,4 @@ To change the color of the alarmmessages add the following to your ``custom.css`
     	display: inline-block;
 	}
 
-
+In case no info is available then the CSS class ``empty`` will be added to block.
