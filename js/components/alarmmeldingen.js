@@ -74,7 +74,9 @@ var DT_alarmmeldingen = {
             aantalMeldingen++;
           }
         });
-      if (aantalMeldingen < 2) {
+      var isEmpty = aantalMeldingen < 2;
+      Dashticz.setEmpty(me, isEmpty);
+      if (isEmpty) {
         html +=
           '<li <strong>' +
           'Geen Actuele Meldingen.....' +

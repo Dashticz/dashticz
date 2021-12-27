@@ -200,9 +200,13 @@ function generateAgenda(opt, key) {
       });
     }
 
-    if (Object.keys(cal[key].events).length)
+    var nrOfEvents = Object.keys(cal[key].events).length;
+
+    if (nrOfEvents)
       $(cal[key].mountPoint + ' .dt_block').removeClass('agenda-empty');
     else $(cal[key].mountPoint + ' .dt_block').addClass('agenda-empty');
+
+    Dashticz.setEmpty(cal[key], !nrOfEvents);
   });
 }
 

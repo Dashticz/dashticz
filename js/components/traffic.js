@@ -17,6 +17,8 @@ var DT_traffic = {
     var rssurl = _CORS_PATH + 'https://api.rwsverkeersinfo.nl/api/traffic/';
 
     $.getJSON(rssurl).then(function (data) {
+      var isEmpty = data.totalLengthOfJams== 0 && data.numberOfJams==0 && data.numberOfIncidents==0;
+      Dashticz.setEmpty(me, isEmpty);
       return templateEngine.load('traffic').then(function (template) {
         data.show_lastupdate = me.block.show_lastupdate;
         data.lastupdate = moment().format(settings['timeformat']);
