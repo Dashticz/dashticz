@@ -43,6 +43,7 @@ var DT_trafficinfo = {
       var dataPart = {};
       var i = 0;
       var key;
+      var noData = true;
       for (var d in data) {
         if (provider == 'anwb') {
           if (d == 'roads') {
@@ -175,6 +176,7 @@ var DT_trafficinfo = {
                           }
                           dataPart[key][i] += '</div>';
                           i++;
+                          noData = false;
                         }
                       }
                     }
@@ -195,6 +197,8 @@ var DT_trafficinfo = {
           c++;
         }
       });
+
+      Dashticz.setEmpty(me, noData);
 
       if (
         typeof trafficobject.show_lastupdate !== 'undefined' &&

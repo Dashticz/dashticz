@@ -286,6 +286,11 @@ The matching of 'qual' now is case insensitive.
 
 .. image :: img/caleventclasses.jpg
 
+Block styling
+-------------
+
+In case no info is available then the CSS class ``empty`` will be added to block.
+This can be used to adjust the styling of an empty block via ``custom.css``
 
 
 
