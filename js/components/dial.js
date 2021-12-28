@@ -196,7 +196,7 @@ var DT_dial = (function () {
       }
     }
 
-    me.splitdial = choose(choose(me.splitdial, me.block.splitdial), me.block.min < 0);
+    me.splitdial = choose(choose(me.splitdial, me.block.splitdial), me.min < 0);
 
     addValues(me);
 
@@ -1280,6 +1280,7 @@ var DT_dial = (function () {
         }
       );
     }
+    me.decimals = me.block.decimals;
     return;
   }
 

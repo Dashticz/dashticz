@@ -19,6 +19,7 @@ Fixes
 ~~~~~~
 
 * Changed dial styling for ring and blinds text. See :ref:`dialstyling`.
+* Dial: P1 decimals configurable via decimals block parameter.
 
 v3.8.9 Beta (23-12-2021)
 ------------------------
