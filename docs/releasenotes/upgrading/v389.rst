@@ -1,0 +1,30 @@
+.. _v389:
+
+v3.8.9: Dial styling
+=====================
+
+In previous versions you had to change the dial ring coloring via::
+
+    .dial .bar.primary,
+    .dial .fill.primary {
+        border-color: #d9e900 !important;
+    }
+
+    .dial .bar.secondary,
+    .dial .fill.secondary {
+        border-color: #26e500 !important;
+    }
+
+From v3.8.9 you have to rewrite this as::
+
+    .slice.primary {
+        color: #d9e900
+    }
+
+    .slice.secondary {
+        color: #26e500
+    }
+
+The same counts for dial rings labeled as ``positive`` or ``negative``
+
+Also see Blinds :ref:`dialstyling`.

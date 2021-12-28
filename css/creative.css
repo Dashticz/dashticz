@@ -3071,7 +3071,7 @@ canvas {
 .dial.p360 .bar,
 .dial.p360 .fill {
   position: absolute;
-  border: 0.08em solid #307bbb;
+  border: 0.08em solid;
   width: 0.78em;
   height: 0.78em;
   -webkit-border-radius: 50%;
@@ -3108,25 +3108,21 @@ canvas {
   clip: auto;
 }
 
-.dial .bar.primary,
-.dial .fill.primary {
-  border-color: #ffa500 !important;
-  border-color: var(--dial-color);
+.slice.primary{
+  color: #ffa500;
+  color: var(--dial-color);
 }
 
-.dial .bar.secondary,
-.dial .fill.secondary {
-  border-color: #307bbb !important;
+.slice.secondary {
+  color: #307bbb;
 }
 
-.dial .bar.positive,
-.dial .fill.positive {
-  border-color: #28a745 !important;
+.slice.positive {
+  color: #28a745;
 }
 
-.dial .bar.negative,
-.dial .fill.negative {
-  border-color: #dc3545 !important;
+.slice.negative{
+  color: #dc3545;
 }
 
 .dial.p180 .fill:after {
