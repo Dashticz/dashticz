@@ -532,13 +532,11 @@ var DT_dial = (function () {
       if (me.value >= me.setpoint) {
         /* at or above setpoint */
 
-        $d.find('.bar').addClass('primary').removeClass('secondary');
-        $d.find('.fill').addClass('primary').removeClass('secondary');
+        $d.find('.slice').addClass('primary').removeClass('secondary');
       } else {
         /* below setpoint */
 
-        $d.find('.bar').addClass('secondary').removeClass('primary');
-        $d.find('.fill').addClass('secondary').removeClass('primary');
+        $d.find('.slice').addClass('secondary').removeClass('primary');
       }
     }
 
