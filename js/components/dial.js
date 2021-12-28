@@ -746,6 +746,7 @@ var DT_dial = (function () {
 
     me.dialicon = display(me.block.dialicon, 0, 1, 'fas fa-calendar-alt');
     me.dialimage = display(me.block.dialimage, 0, 1, false);
+    me.decimals=choose(me.block.decimals, 1);
 
     /* EvoHome Zones */
     if (me.type === 'zone') {
@@ -814,7 +815,7 @@ var DT_dial = (function () {
     me.isSetpoint = true;
     me.setpoint = choose(me.block.setpoint, 20);
     me.unitvalue = _TEMP_SYMBOL;
-    me.decimals = me.block.decimals;
+    me.decimals=choose(me.block.decimals, 1);
 
     if (typeof me.device.Humidity !== 'undefined') {
       me.info.push({
