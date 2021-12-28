@@ -29,9 +29,9 @@
 {{/inline}}
 
 <div class="dial {{size}} {{#if fixed}}fixed{{/if}} {{addclass}} {{deviceStatus}}" style="font-size: {{fontsize}}px;--dial-color: {{rgba}};">
-    <div class="slice {{#if split}}{{slice}}{{/if}}">
-        <div class="bar primary {{class}}" style="--dial-color:{{color}};"></div>
-        <div class="fill primary {{class}}" style="--dial-color:{{color}};"></div>
+    <div class="slice {{#if split}}{{slice}}{{/if}} primary {{class}}">
+        <div class="bar"></div>
+        <div class="fill"></div>
     </div>
     <div class="dial-container">         
         <div id="face{{id}}" class="dial-face">

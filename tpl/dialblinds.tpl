@@ -8,14 +8,22 @@
         </div>        
         <div id="{{id}}" class="dial-center {{on}}" style="--dial-rgba: {{rgba}};{{#if onoff}}background: transparent; box-shadow: none;{{/if}}">
                                 <div class="blinds">   
-                            <div class="dialbtn up">{{textOpen}}</div>
+                            <div class="dialbtn up">
+                                <div class="text">
+                                    {{textOpen}}
+                                </div>
+                            </div>
                             <div class="dialbtn middle">
-                                <span class="" style="color:{{color}};">{{name}}</span>
+                                <span class="text" style="color:{{color}};">{{name}}</span>
                                 {{#if showvalue}}
-                                    <div class="value">{{value}}</div>
+                                    <div class="text value">{{value}}</div>
                                 {{/if}}
                             </div>
-                            <div class="dialbtn down">{{textClose}}</div>
+                            <div class="dialbtn down">
+                                <div class="text">
+                                    {{textClose}}
+                                </div>
+                            </div>
                         </div>
 
         </div>

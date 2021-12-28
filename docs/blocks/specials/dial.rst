@@ -518,7 +518,9 @@ The following CSS classes are used:
 
 The addClass parameter is applied on item level.
 
-Custom styling
+.. _dialstyling :
+
+Custom Styling
 --------------
 In Domoticz you can hide the Off level of a Selector Switch. In Dashticz you can hide the Off level by adding the following code to your *custom.css*::
 
@@ -534,17 +536,27 @@ To change the grey dial bezel color from grey to red::
 
 To change the outer ring primary color from orange (default) to yellow::
 
-    .dial .bar.primary,
-    .dial .fill.primary {
-        border-color: #d9e900 !important;
+    .slice.primary {
+        color: #d9e900;
     }
 
 To change the outer ring secondary color from blue (default) to lime green::
 
-    .dial .bar.secondary,
-    .dial .fill.secondary {
-        border-color: #26e500 !important;
+    .slice.secondary {
+        color: #26e500;
     }
+
+Split dials (dials which may have negative values) will receive the ``negative`` and ``positive`` class as well.
+In case you've redefined the primary or secondary styling in custom.css, then you have to update the positive/negative styling as well::
+
+    .slice.positive {
+        color: red !important;
+    }
+
+    .slice.negative {
+        color: blue !important;
+    }
+
 
 To change the dial needle color from orange (default) to lime green::
 
@@ -616,6 +628,11 @@ And for the selected buttons::
     background-color: lightred;
   }
 
+To change the text size in the up and down buttons of a blinds dial ::
+
+  .up .text, .down .text {
+    font-size: 200%
+  }
 
 Examples
 ---------
