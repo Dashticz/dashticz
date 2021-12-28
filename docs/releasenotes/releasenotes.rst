@@ -8,10 +8,17 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+.. note:: Dial ring styling changed. See :ref:`v389`.
+
 Enhancements
 ~~~~~~~~~~~~
 
 * Special blocks: Add class ``empty`` in case the special block is empty. Applicable to alarmmeldingen, calendar, traffic, trafficinfo and train.
+
+Fixes
+~~~~~~
+
+* Changed dial styling for ring and blinds text. See :ref:`dialstyling`.
 
 v3.8.9 Beta (23-12-2021)
 ------------------------
