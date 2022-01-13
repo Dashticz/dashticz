@@ -21,6 +21,7 @@ Fixes
 
 * Changed dial styling for ring and blinds text. See :ref:`dialstyling`.
 * Dial: P1 decimals configurable via decimals block parameter.
+* Calendar: Fixed issues with some recurring events in ical modules (PHP5 as well as PHP7 version)
 
 v3.8.9 Beta (23-12-2021)
 ------------------------
