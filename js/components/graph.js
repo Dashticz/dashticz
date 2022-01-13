@@ -857,9 +857,11 @@ function createGraph(graph) {
 function createYAxes(graph, mergedBlock, graphProperties) {
   var uniqueylabels = graph.ylabels.filter(onlyUnique);
   var labelLeft = !mergedBlock.axisRight;
-  var axisCount = graph.options && graph.options.scales && graph.options.scales.yAxes
-    ? graph.options.scales.yAxes.length
+  var axisCount = graphProperties.options && graphProperties.options.scales && graphProperties.options.scales.yAxes
+    ? graphProperties.options.scales.yAxes.length
     : 0;
+  var yAxesConfig = axisCount? graphProperties.options.scales.yAxes : [];
+  
   graphProperties.options.scales.yAxes = []; // reset to empty
   uniqueylabels.forEach(function (element, i) {
     var yaxis = {
@@ -885,7 +887,7 @@ function createYAxes(graph, mergedBlock, graphProperties) {
       $.extend(
         true,
         graphProperties.options.scales.yAxes[i],
-        graph.options.scales.yAxes[i]
+        yAxesConfig[i]
       );
     labelLeft = mergedBlock.axisAlternate ? !labelLeft : labelLeft;
   });

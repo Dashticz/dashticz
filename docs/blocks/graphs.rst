@@ -1255,6 +1255,45 @@ For internal use::
     block_graph_<idx>     //The div to which the graph needs to be attached.
     #graphoutput<idx>     //The canvas for the graph output
 
+.. _xyaxesstyling:
+
+Styling of X- and Y- axes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+(advanced customization...)
+
+By setting the ``options`` block parameter most graph properties can be customized.
+For instance to change the font size of the axes, and reduce the width of the graph legend use the following block definition::
+
+	blocks['graph_43'] = {
+		...,
+		options: {
+            scales: {
+                xAxes: [{
+                       ticks: {
+                        fontSize: 7
+                       }
+                }],
+                yAxes: [{
+                    ticks: {
+                     fontSize: 7,
+                    },
+                    scaleLabel: {
+                        fontSize: 7
+                    }
+                }],
+            },
+            legend:{
+                labels:{
+                    fontSize:10,
+                    boxWidth:10
+                },
+            }
+        }
+
+    }
+
+Dashticz uses chartjs version 2.9. Most configuration options can be found via https://www.chartjs.org/docs/2.9.4/, or post your question in the forum.
 
 .. _graph_debug:
 
