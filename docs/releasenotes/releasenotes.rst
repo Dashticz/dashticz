@@ -14,6 +14,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Special blocks: Add class ``empty`` in case the special block is empty. Applicable to alarmmeldingen, calendar, traffic, trafficinfo and train.
+* Graph: Improvement in customized axes styling. See :ref:`xyaxesstyling`
 
 Fixes
 ~~~~~~
