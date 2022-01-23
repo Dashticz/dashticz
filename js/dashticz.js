@@ -129,8 +129,8 @@ var Dashticz = (function () {
 
   function addClickHandler(me) {
     var clickHandler = null;
-    if (!me.block.url && !me.block.slide && !me.block.popup && !typeof bCH ==='function') return;
     var bCH = me.block.clickHandler;
+    if (!me.block.url && !me.block.slide && !me.block.popup) return;
     if (typeof bCH === 'function') {
       clickHandler = bCH;
     } else if (typeof bCH === 'undefined' || bCH) {
