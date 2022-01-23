@@ -906,7 +906,8 @@ function handleDevice(block) {
       );
       return [html, addHTML];
     case 'Door Lock':
-      return getDefaultSwitchBlock(block, 'fas fa-lock', 'fas fa-unlock', buttonimg, language.switches.state_unlocked, language.switches.state_locked );
+    case 'Door Lock Inverted':
+        return getDefaultSwitchBlock(block, 'fas fa-lock', 'fas fa-unlock', buttonimg, language.switches.state_unlocked, language.switches.state_locked );
     case 'Venetian Blinds EU':
     case 'Venetian Blinds US':
     case 'Venetian Blinds EU Inverted':
