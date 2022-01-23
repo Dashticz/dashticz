@@ -8,6 +8,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.8.10 Beta (23-1-2022)
+------------------------
+
 .. note:: Public Transport changed. See :ref:`publictransport`.
 .. note:: Dial ring styling changed. See :ref:`v389`.
 
