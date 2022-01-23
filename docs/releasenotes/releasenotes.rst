@@ -8,6 +8,7 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+.. note:: Public Transport changed. See :ref:`publictransport`.
 .. note:: Dial ring styling changed. See :ref:`v389`.
 
 Enhancements
@@ -15,6 +16,7 @@ Enhancements
 
 * Special blocks: Add class ``empty`` in case the special block is empty. Applicable to alarmmeldingen, calendar, traffic, trafficinfo and train.
 * Graph: Improvement in customized axes styling. See :ref:`xyaxesstyling`
+* Publictransport: Added 'ovapi' and 'treinen' as providers.  Removed 9292, mobiliteit and VVS (non working APIs). Changed rendering. For all changes see :ref:`publictransport`.
 
 Fixes
 ~~~~~~

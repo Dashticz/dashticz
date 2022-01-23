@@ -4274,3 +4274,34 @@ canvas {
 .dt_block.owmwidget {
   background-color: unset 
 }
+
+/*public transport*/
+.publictransport table {
+  border-spacing: 5px 0px;
+  border-collapse: separate;
+}
+
+.publictransport td {vertical-align: top;}
+
+.publictransport .destination {
+  font-style: bold;
+}
+
+.publictransport .via {
+  font-style: italic;
+  color:lightgray;
+}
+
+.publictransport .platform {
+  white-space: nowrap;
+}
+
+.publictransport .transporttype {
+  font-style: italic;
+  color:lightgray;
+}
+
+.publictransport .delay {
+  background-color: red;
+  color: white;
+}
