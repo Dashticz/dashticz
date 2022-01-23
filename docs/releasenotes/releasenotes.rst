@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* New block type 'Door Lock Inverted'
+
 v3.8.10 Beta (23-1-2022)
 ------------------------
 
