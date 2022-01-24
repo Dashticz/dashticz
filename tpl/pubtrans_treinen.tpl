@@ -15,7 +15,9 @@
                 <span class="destination">{{this.destination}}</span>
                 <span class="transporttype">{{this.transportType}}</span>
             </div>
-            <div class="via">{{this.via}}</div>
+            {{#if ../block.show_via}}
+              <div class="via">{{this.via}}</div>
+            {{/if}}
             {{#each remarks }}
             <div>{{this}}</div>
             {{/each}}
