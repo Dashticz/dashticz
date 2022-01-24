@@ -19,6 +19,7 @@
 //        clickHandler: pubtransClick, //If url is defined in block def then clickHandler will be installed by Dashticz
         clickHandler: true,
         results: 10,
+        show_via: true
       };
       if (!block || !block.station) {
         result.url =
@@ -62,7 +63,7 @@
   }
 
   function applyRenderer(me) {
-    return apply(me, me.providerCfg.renderer);
+    return me.providerCfg.renderer(me, me.data); 
   }
 
   function applyFilterer(me) {
@@ -76,7 +77,7 @@
   }
 
   function updateState(me) {
-    Dashticz.setEmpty(!me.data.departures.length);
+    Dashticz.setEmpty(me, !me.data.departures.length);
   }
 
   function getProviderCfg(block) {
@@ -363,15 +364,18 @@ voertuigNummer: "330265"
         '</em>'
       );
     }
+    return me;
   }
 
   function renderTpl(me, data) {
     var tpl = me.providerCfg.tpl;
+    data.block = me.block;
     return templateEngine.load(tpl).then(function (template) {
 
 
       me.$mountPoint.find('.dt_state')
-        .html(template(data))
+        .html(template(data));
+      return me;
     });
   }
 
