@@ -16,7 +16,7 @@
         refresh: 60,
         //        provider: '9292',
         //        station: 'station-utrecht-centraal',
-//        clickHandler: pubtransClick, //If url is defined in block def then clickHandler will be installed by Dashticz
+        //        clickHandler: pubtransClick, //If url is defined in block def then clickHandler will be installed by Dashticz
         clickHandler: true,
         results: 10,
         show_via: true
@@ -44,10 +44,10 @@
   function getArrayFromString(str) {
     if (typeof str === 'undefined') return undefined;
     if (typeof str !== 'string') {
-      console.error('Pubtrans: type of parameter should be string, received '+typeof str);
+      console.error('Pubtrans: type of parameter should be string, received ' + typeof str);
     }
-    var lcstr = str.toLowerCase();
-    return lcstr.indexOf(',') ? lcstr.split(/, |,/) : [lcstr];
+    //var lcstr = str.toLowerCase();
+    return str.indexOf(',') ? str.split(/, |,/) : [str];
   }
 
   function getData(me) {
@@ -63,7 +63,7 @@
   }
 
   function applyRenderer(me) {
-    return me.providerCfg.renderer(me, me.data); 
+    return me.providerCfg.renderer(me, me.data);
   }
 
   function applyFilterer(me) {
@@ -96,8 +96,7 @@
         dataURL: _CORS_PATH +
           'https://www.delijn.be/rise-api-core/haltes/Multivertrekken/' +
           block.station +
-          '/' +
-          block.results,
+          '/1000', //high number: we'll reduce the number of results later, after filtering
         transformer: transformDelijnbe,
         tpl: 'pubtrans_ov',
         renderer: renderTpl
@@ -139,11 +138,9 @@
     var result = {
       departures: []
     };
-    console.log(data);
     if (data.result !== 'OK')
       return ({ res: { res: '<div>Ongeldig resultaat</div>' } })
     data.departures.forEach(function (dep) {
-      if (result.departures.length >= block.results) return;
       var departure = {
         date: dep.serviceDate,
         time: moment(dep.departureTime).format('HH:mm'),
@@ -164,7 +161,6 @@
     var departures = [];
     Object.keys(data).forEach(function (tpc) {
       Object.keys(data[tpc].Passes).forEach(function (service) {
-        if (departures.length >= block.results) return;
         var line = data[tpc].Passes[service];
         departures.push(getOvApiDeparture(line));
       })
@@ -197,7 +193,6 @@
     Object.keys(data).forEach(function (dep) {
       Object.keys(data[dep]).forEach(function (tpc) {
         Object.keys(data[dep][tpc].Passes).forEach(function (service) {
-          if (departures.length >= block.results) return;
           var line = data[dep][tpc].Passes[service];
           departures.push(getOvApiDeparture(line));
         })
@@ -241,16 +236,16 @@ number: "3618"
 shortname: "TRN3618"
 type: "TRN"
 */
-    var dataPart = {departures:[]};
-    for (var j = 0; j < data.departures.departure.length && dataPart.departures.length <= me.block.results; j++) {
-      var dep=data.departures.departure[j];
+    var dataPart = { departures: [] };
+    for (var j = 0; j < data.departures.departure.length; j++) {
+      var dep = data.departures.departure[j];
       var departure = {
         time: moment.unix(dep.time).format('HH:mm'),
-        delay: Math.ceil(dep.delay/60), 
+        delay: Math.ceil(dep.delay / 60),
         platform: dep.platform,
-//        line: dep.lijnNummerPubliek,
+        //        line: dep.lijnNummerPubliek,
         destination: dep.station,
-//        via: dep.omschrijving+ dep.viaBestemming && (' '+dep.viaBestemming)
+        //        via: dep.omschrijving+ dep.viaBestemming && (' '+dep.viaBestemming)
       }
       dataPart.departures.push(departure);
     }
@@ -259,9 +254,9 @@ type: "TRN"
 
 
   function transformDelijnbe(me, data) {
-    var dataPart = {departures:[]};
-    for (var j = 0; j < data.lijnen.length && dataPart.departures.length <= me.block.results; j++) {
-      var dep=data.lijnen[j];
+    var dataPart = { departures: [] };
+    for (var j = 0; j < data.lijnen.length; j++) {
+      var dep = data.lijnen[j];
       /*
       aankomstRealtimeTijdstip: 1642622047000
 aankomstTheoretischTijdstip: 1642621860000
@@ -303,12 +298,12 @@ viaBestemming: ""
 voertuigNummer: "330265"
 */
       var departure = {
-//        time: dep.vertrekTijd,
+        //        time: dep.vertrekTijd,
         time: moment(dep.vertrekTheoretischeTijdstip).format('HH:mm'),
-        delay: formatDelay(dep.vertrekRealtimeTijdstip, dep.vertrekTheoretischeTijdstip), 
+        delay: formatDelay(dep.vertrekRealtimeTijdstip, dep.vertrekTheoretischeTijdstip),
         line: dep.lijnNummerPubliek,
-        destination: 'Lijn '+dep.lijnNummerPubliek+': '+dep.bestemming,
-        via: dep.omschrijving+ dep.viaBestemming && (' '+dep.viaBestemming)
+        destination: 'Lijn ' + dep.lijnNummerPubliek + ': ' + dep.bestemming,
+        via: dep.omschrijving + dep.viaBestemming && (' ' + dep.viaBestemming)
       }
       dataPart.departures.push(departure);
     }
@@ -324,26 +319,23 @@ voertuigNummer: "330265"
     if (me.destinationArray)
       res = res.filter(function (departure) {
         var found = me.destinationArray.reduce(function (acc, filterDest) {
-          return acc || departure.destination.toLowerCase().search(filterDest) !== -1
+          return acc || departure.destination.search(filterDest) !== -1
         }, false);
         if (!found) found = me.destinationArray.reduce(function (acc, filterDest) {
-          return acc || departure.via.toLowerCase().search(filterDest) !== -1
+          return acc || (departure.via && departure.via.search(filterDest) !== -1)
         }, false);
         return found
       });
-    dataPart.departures=res;
+    dataPart.departures = res.slice(0, me.block.results);
     return dataPart
   }
 
   function renderPublicTransport(me, dataPart) {
     $(me.mountPoint + ' .dt_state').html('');
-    var c = 1;
     Object.keys(dataPart).forEach(function (d) {
       //Object.keys(dataPart).sort().forEach(function(d) {
       for (var p in dataPart[d]) {
-        if (c <= me.block.results)
-          $(me.mountPoint + ' .dt_state').append(dataPart[d][p]);
-        c++;
+        $(me.mountPoint + ' .dt_state').append(dataPart[d][p]);
       }
     });
 
@@ -400,14 +392,14 @@ voertuigNummer: "330265"
 
   Dashticz.register(DT_publictransport);
 
-/*  function pubtransClick(me) {
-    var id = 'ovapidlg';
-    $('body').append(DT_function.createModalDialog('openpopup', id, { url: './js/components/pubtrans_ovapidlg.html' }));
-    $('#' + id).modal('show');
-
-
-  }
-*/
+  /*  function pubtransClick(me) {
+      var id = 'ovapidlg';
+      $('body').append(DT_function.createModalDialog('openpopup', id, { url: './js/components/pubtrans_ovapidlg.html' }));
+      $('#' + id).modal('show');
+  
+  
+    }
+  */
 }(Dashticz));
 
 //# sourceURL=js/components/publictransport.js
