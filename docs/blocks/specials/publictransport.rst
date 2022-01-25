@@ -44,7 +44,7 @@ Parameters
   * - Parameter
     - Description
   * - station
-    - The station id, which can be obtained from `VVS <https://efa-api.asw.io/api/v1/station/>`_ (Germany) or `9292.nl <http://api.9292.nl/0.1/locations?lang=nl-NL&q=>`_ (Dutch, add your location to the url)
+    - The station id. See Usage sections below to find how to obtain the right station id.
   * - title
     - Title of the block
   * - show_lastupdate
@@ -57,7 +57,7 @@ Parameters
       | ``'delijnbe'`` Belgium: bus, tram, boat
   * - destination
     - | Set the end destination station name to filter the direction. 
-      | ``'Den Haag De Uithof,Den Haag Loosduinen'`` (comma seperated)
+      | ``'Den Haag De Uithof,Den Haag Loosduinen'`` (comma seperated, case sensitive)
   * - service
     - | Set the specific services (Dutch: lijnnummers) to further filter the result
       | ``'3,4'`` (comma seperated)
