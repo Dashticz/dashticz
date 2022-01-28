@@ -46,7 +46,9 @@ Block parameters
   * - idx
     - ``<idx>``: IDX of the device (mandatory if named block)
   * - title
-    - ``'custom_title'``: Title that will appear on the dial (mandatory)
+    - | ``'custom_title'``: Title that will appear on the dial
+      | ``false``: No title will be shown
+      | ``true``: The device name will be used as title
   * - type
     - ``'dial'``: Indentifies this block as a dial (mandatory)
   * - width
@@ -292,6 +294,31 @@ Show multiple values of a P1 meter
     width: 6
   };
 
+
+.. _dailselector:
+
+Selector switch
+~~~~~~~~~~~~~~~~
+
+Selector switches will be displayed as a menu. The dial menu can be shown with or without (=default) title.
+
+.. image :: ./img/dialmenu.jpg
+
+::
+
+      blocks['dm'] = {
+        idx: 9,
+        type: 'dial',
+        title: true,
+        width:6,
+    }
+
+    blocks['dm-notitle'] = {
+        idx: 9,
+        type: 'dial',
+        width:6,
+    }
+  
 
 .. _Toon:
 
