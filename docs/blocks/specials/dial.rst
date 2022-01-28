@@ -295,7 +295,7 @@ Show multiple values of a P1 meter
   };
 
 
-.. _dailselector:
+.. _dialselector:
 
 Selector switch
 ~~~~~~~~~~~~~~~~
