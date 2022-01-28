@@ -1,8 +1,9 @@
 {
-"version": "3.8.10",
+"version": "3.8.11",
 "branch": "beta",
-"last_changes": "Public transport update",
+"last_changes": "Dial menu title",
 "changelog" : {
+            "3.8.10": "Public transport update",
             "3.8.9": "Frame scaling, dials: blinds supported",
             "3.8.8": "Dial: Splitdial fix for different min max ring values",
             "3.8.7": "Weather icons update, coloring of agenda events",
