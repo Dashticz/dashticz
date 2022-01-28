@@ -41,7 +41,7 @@ var DT_dial = (function () {
       });
     },
     defaultCfg: {
-      title: false,
+//      title: false,
       width: 3,
       last_update: true,
       dialimage: false,
@@ -64,6 +64,10 @@ var DT_dial = (function () {
      * @param {object} me  Core component object.
      */
     run: function (me) {
+      /* keys in the me object:
+          fixed: true, in case there should be no needle at all
+          active: true, means needle can be adjusted
+      */
       me.idx = choose(me.block.idx, me.key);
       me.id = 'dial_' + me.idx;
       var height = isDefined(me.block.height)
@@ -195,6 +199,7 @@ var DT_dial = (function () {
           break;
       }
     }
+    me.title=choose(me.block.title, choose(me.title, true));
 
     me.splitdial = choose(choose(me.splitdial, me.block.splitdial), me.min < 0);
 
@@ -215,7 +220,7 @@ var DT_dial = (function () {
       var dataObject = {
         id: me.id,
         size: me.size,
-        name: me.block.title ? me.block.title : me.device && me.device.Name,
+        name: getName(me),
         min: me.min,
         max: me.max,
         showunit: me.showunit,
@@ -261,6 +266,7 @@ var DT_dial = (function () {
         showvalue: me.showvalue, //to show the big value centered in the middle
         textOpen: me.block.textOpen,
         textClose: me.block.textClose,
+        active: me.active? ' active': ''
       };
 
       /* Mount dial */
@@ -315,6 +321,12 @@ var DT_dial = (function () {
       }
       return me
     })
+  }
+
+  function getName(me) {
+    if(me.title===false) return '';
+    if(me.title===true && me.device) return (me.device && me.device.Name) || '';
+    return me.title ? me.title : me.device && me.device.Name;
   }
 
   function updateNeedle(me) {
@@ -1121,6 +1133,7 @@ var DT_dial = (function () {
         me.options.push({ val: index * 10, text: value });
       });
     }
+    me.title=false; //default no title for controller device
     return;
   }
 
