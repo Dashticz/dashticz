@@ -8,6 +8,17 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Trafficinfo: Add block parameters ``showempty`` and ``showemptyroads`` to control what to show in case of no announcements. See :ref:`trafficinfo`
+
+Fixes
+~~~~~~
+
+* Trafficinfo: Bug fixes (wrong road name if no announcements)
+
+
 v3.8.11 Beta (28-1-2022)
 ------------------------
 
