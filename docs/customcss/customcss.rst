@@ -510,6 +510,39 @@ Change size and color of Standby Screen items
       color: #4E585B !important;
    }
 
+Prevent click handling of a block
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For some blocks you may want to disable click handling, for instance for the news block, or for the frame content. This section describes how this may be achieved.
+
+Assume you've defined your block in CONFIG.js via::
+
+    blocks['news'] = {
+        ...
+    }
+
+then you can disable handling of click events by adding the following to custom.css::
+
+      [data-id="news"].dt_block {
+          pointer-events: none
+      }
+
+or,
+add the addClass block parameter::
+
+      blocks['news'] = {
+         addClass: 'noclick',
+         ....
+      }
+
+and add the following to custom.css::
+
+      .noclick {
+        pointer-events: none
+      }
+
+Both methods also work for frames.
+
 .. _popupstyling:
 
 Popup windows
