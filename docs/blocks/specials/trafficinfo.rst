@@ -37,7 +37,7 @@ Parameters
   * - Parameter
     - Description
   * - road
-    - Name of the road to show, (Example: "A1")
+    - Name of the road(s) to show, comma seperated (Example: "A1, A73")
   * - title
     - Title of the block
   * - show_lastupdate
@@ -60,6 +60,16 @@ Parameters
     - ``false`` , ``true``.  To show road work info
   * - radars
     - ``false`` , ``true``.  To show radar info
+  * - showempty
+    - | Control text to show in case of no traffic announcements
+      | ``false``: Don't show a message in case of no traffic announcements
+      | ``true``: Display default message in case of no traffic announcements
+      | ``'<text>'``: Display <text> in case of no traffic announcements
+  * - showemptyroads
+    - | Control text to show in case of no traffic announcements for a certain road (only applicable in combination with block parameter ``road``)
+      | ``false``: Don't show a message in case of no traffic announcements for a certain road.
+      | ``true``: Display default message in case of no traffic announcements for a certain road.
+      | ``'<text>'``: Display <text> in case of no traffic announcements for a certain road.  
   * - url
     - ``'<url>'``: URL of the page to open in a popup frame or new window on click. 
   * - newwindow
