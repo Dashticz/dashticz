@@ -17,6 +17,7 @@ Fixes
 ~~~~~~
 
 * Trafficinfo: Bug fixes (wrong road name if no announcements)
+* P1 Smart Meter: Display NettUsage as default value (=Usage-Delivery)
 
 
 v3.8.11 Beta (28-1-2022)
