@@ -1174,14 +1174,7 @@ function getSmartMeterBlock(block) {
   var idx = device.idx;
   block.width = block.width || 4;
   if (device['SubType'] === 'Energy') {
-    var usage = device['Usage'];
-    if (
-      typeof device['UsageDeliv'] !== 'undefined' &&
-      (parseFloat(device['UsageDeliv']) > 0 ||
-        parseFloat(device['UsageDeliv']) < 0)
-    ) {
-      usage = '-' + device['UsageDeliv'];
-    }
+    var usage = device.NettUsage + ' ' + settings['units'].names.watt;
 
     var data = device['Data'].split(';');
     var blockValues = [
