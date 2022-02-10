@@ -1,11 +1,11 @@
 /* eslint-disable no-prototype-builtins */
-/* global Dashticz Domoticz moment settings config Beaufort number_format  language time blocks   Chart _TEMP_SYMBOL  onlyUnique isDefined isObject setHeight*/
+/* global Dashticz Domoticz moment settings config Beaufort number_format  language time Chart _TEMP_SYMBOL  onlyUnique isDefined isObject setHeight*/
 /* global templateEngine Handlebars*/
 moment.locale(settings['language']);
 
 var DT_graph = {
   name: 'graph',
-  canHandle: function (block, key) {
+  canHandle: function (block) {
     return (
       (block && block.devices) ||
       (typeof block.key === 'string' && block.key.substring(0, 6) === 'graph_')
@@ -148,6 +148,7 @@ function getDeviceDefaults(me, device) {
   var txtUnit = '?';
   var decimals = 2;
   var method = 1;
+  var type;
 
   switch (device['Type']) {
     case 'Rain':
@@ -305,6 +306,15 @@ function getDeviceDefaults(me, device) {
       break;
   }
 
+  if (device.SwitchType) {
+    //device is a switch
+    sensor = '';
+    currentValue = device['Data'];
+    decimals = 0;
+    txtUnit = 'level';
+    type = 'text';
+  }
+
   var multidata = device.Data.split(',').length - 1 > 0;
 
   if (typeof me.block.decimals !== 'undefined') decimals = me.block.decimals;
@@ -313,7 +323,7 @@ function getDeviceDefaults(me, device) {
 
   currentValue = multidata
     ? device.Data
-    : me.block.format
+    : me.block.format && type !== 'text'
     ? number_format(currentValue, decimals) + ' ' + txtUnit
     : currentValue;
 
@@ -364,6 +374,15 @@ function getGraphData(me, selGraph) {
  *
  */
 function refreshGraph(me) {
+  prepareGraphData(me);
+  //Now we request all Graph data sequentially
+  getAllGraphData(me).then(function () {
+    formatData(me);
+    createGraph(me);
+  });
+}
+
+function prepareGraphData(me) {
   var isInitial = me.range === 'initial';
   me.txtUnits = []; //todo: check txtUnits
   me.data = [];
@@ -454,26 +473,23 @@ function refreshGraph(me) {
       );
     }
   }
+}
 
-  //Now we request all Graph data sequentially
-  $.when
-    .apply(
-      $,
-      me.graphDevices.map(function (device, i) {
-        me.txtUnits.push(device.txtUnit); //todo: How does this work for tehuba devices?
-        return getDeviceGraphData(me, i);
-      })
-    )
-    .then(function () {
-      redrawGraph(me);
-    });
+function getAllGraphData(me) {
+  return $.when.apply(
+    $,
+    me.graphDevices.map(function (device, i) {
+      return getDeviceGraphData(me, i);
+    })
+  );
 }
 
 /**Request graph data for the device
  * Stores the data in me.data
  * And return a promise.
  */
-function getDeviceGraphData(me, i) {
+
+function getRegularGraphData(me, i) {
   var device = me.graphDevices[i];
   var params =
     'type=graph&sensor=' +
@@ -485,8 +501,50 @@ function getDeviceGraphData(me, i) {
     '&method=' +
     device.method; //todo: check method
   me.params[i] = params;
+  return Domoticz.request(params);
+}
+
+function getSwitchGraphData(me, i) {
+  var device = me.graphDevices[i];
+  //http://:8080/json.htm?idx=19&type=lightlog
+  var params = 'type=lightlog' + '&idx=' + device.idx;
+  me.params[i] = params;
   return Domoticz.request(params).then(function (data) {
+    /*
+    Data: "Off"
+Date: "2021-04-12 19:57:39"
+Level: 0
+MaxDimLevel: 15
+Status: "Off"
+User: "OpenTherm"
+idx: "11209721"
+*/
+    var result = data.result.map(function (sample) {
+      return {
+        d: sample.Date,
+        l: sample.Level,
+      };
+    });
+    return { result: result };
+  });
+}
+
+function getDeviceGraphData(me, i) {
+  var device = me.graphDevices[i];
+  var res;
+  switch (true) {
+    case !!device.SwitchType:
+      res = getSwitchGraphData(me, i);
+      break;
+    default:
+      res = getRegularGraphData(me, i);
+  }
+
+  return res.then(function (data) {
+    data.device = device;
     data.idx = device.idx;
+    data.txtUnit = device.txtUnit;
+    data.txtUnits = device.txtUnits;
     me.data.push(data);
   });
 }
@@ -494,12 +552,16 @@ function getDeviceGraphData(me, i) {
 /** This function will update the graph.
  * All graph data must be available.
  */
-function redrawGraph(me) {
+function formatData(me) {
+  var tmpResults = {}; //temporary object to hold all data, per date.
+
   var multidata = {
     result: [],
     status: 'OK',
     title: 'Graph day',
   };
+
+  //var combinedData={} //probably not needed ...
 
   if (me.sortDevices) {
     me.data.sort(function (a, b) {
@@ -507,43 +569,42 @@ function redrawGraph(me) {
     });
   }
 
-  var newKeys = [];
-  var arrYkeys = [];
+  var arrYkeys = []; //contains a unique set of keys, for instance ['te','hu', 'ba']
+  var newKeys = []; //newKeys is derived from arrYkeys, but each element is extended with every device_idx, for instance ['te_43','te_44']
 
+  me.ylabels = [];
+  me.txtUnits = []; //todo: check where txtUnits still is used
+  //iterate through all data sets
   $.each(me.data, function (z, d) {
     var currentKey = '';
 
     if (d.result && d.result.length > 0) {
-      if (me.block.graphTypes) {
-        for (var key in d.result[0]) {
-          if ($.inArray(key, me.block.graphTypes) !== -1 && key !== 'd') {
-            arrYkeys.push(key);
-          }
-        }
-      } else {
-        for (key in d.result[0]) {
-          if (key !== 'd') {
-            arrYkeys.push(key);
-          }
-        }
-      }
-
       $.each(d.result, function (x, res) {
         var valid = false;
         var interval = 1;
+        d.ylabels = [];
+        d.keys = [];
         if (me.hasBlock)
           interval =
             me.range === 'last' || me.range === 'month' ? 1 : me.block.interval;
 
         if (x % interval === 0) {
-          if (z == 0) {
-            //only for the first dataset
-            var obj = {};
+          var sampleDate = res['d'];
+          if (sampleDate) {
+            var obj = tmpResults[sampleDate] || { d: sampleDate }; //if sampleDate already exists use that one, otherwise create new one
             for (var key in res) {
-              if (key === 'd') {
-                obj['d'] = res[key];
-              }
-              if ($.inArray(key, arrYkeys) !== -1) {
+              var mayAdd =
+                key !== 'd' &&
+                (me.block.graphTypes
+                  ? $.inArray(key, me.block.graphTypes) >= 0
+                  : true);
+              if (mayAdd) {
+                if (!d.keys.includes(key)) {
+                  d.keys.push(key);
+                }
+                if ($.inArray(key, arrYkeys) === -1) {
+                  arrYkeys.push(key);
+                }
                 currentKey = key + '_' + d.idx;
                 obj[currentKey] = res[key];
                 valid = true;
@@ -552,47 +613,52 @@ function redrawGraph(me) {
                 }
               }
             }
-            if (valid) multidata.result.push(obj);
-          } else {
-            for (key in res) {
-              if (key !== 'd' && $.inArray(key, arrYkeys) !== -1) {
-                $.each(multidata.result, function (index, obj) {
-                  $.each(obj, function (k, v) {
-                    if (k === 'd' && v === res['d']) {
-                      currentKey = key + '_' + d.idx;
-                      multidata.result[index][currentKey] = res[key];
-                      if ($.inArray(currentKey, newKeys) === -1) {
-                        newKeys.push(currentKey);
-                      }
-                    }
-                  });
-                });
-              }
-            }
+            if (valid) tmpResults[sampleDate] = obj;
           }
         }
+      });
+      d.subtype = d.device.SubType;
+      d.ylabels = getYlabels(d);
+      d.ylabels.forEach(function (lbl) {
+        me.ylabels.push(lbl);
       });
     }
   });
 
-  $.each(multidata.result, function (index, obj) {
+  /*now transform tmpResults object into array*/
+
+  /*
+  Object.keys(tmpResults).forEach(function (key) {
+    var obj = tmpResults[key];
     for (var n in newKeys) {
       if (!obj.hasOwnProperty(newKeys[n])) {
         obj[newKeys[n]] = NaN;
       }
     }
+    multidata.result.push(obj);
   });
+  */
 
-  var graph = me; //todo: replace graph with me in all following lines?
-  graph.keys = arrYkeys;
-  graph.ykeys = newKeys;
+  multidata.result = Object.values(tmpResults);
+
+  multidata.result.sort(function (a, b) {
+    return a.d > b.d ? 1 : -1;
+  });
+  /*  var latestValues={};  
+  multidata.result=multidata.result.map(function(value) {
+    latestValues=$.extend({}, latestValues, value);
+    return latestValues
+  })*/
+
+  me.keys = arrYkeys; //keys contains all the selected keys, like ['te','l']
+  me.ykeys = newKeys; //ykeys contains all the keys incl device idx, like ['te_12','te_13','l_3']
   //    graph.txtUnits = txtUnits; //todo: check txtUnits
-  graph.txtUnit = graph.txtUnits[0]; //todo: temp fix
-  graph.ylabels = getYlabels(graph);
+  //me.txtUnit = me.txtUnits[0]; //todo: temp fix. txtUnits contains the units belonging to ykeys, like ['°C', '°C', 'level']
+  //me.ylabels = getYlabels(me);
   //graph.currentValues = currentValues; //todo: check currentValues
 
-  graph.data = multidata;
-  createGraph(graph);
+  me.txtUnit = me.data[0].txtUnit;
+  me.data = multidata;
 }
 
 function getProperty(prop, idx) {
@@ -699,12 +765,207 @@ function groupLabels(graph, labels) {
 }
 
 function createGraph(graph) {
-  var graphIdx = graph.graphIdx;
+  //Some block properties can be "overruled" by custom block settings
+  //However, getDefaultGraphProperties now depend on some block settings, without taking custom block settings into account
+  //I don't want to overwrite graph.block, because that contains the original block definition
+  //Let's create a second parameter, containing the merged block
+  var mergedBlock = $.extend(true, {}, graph.block, graph.graphConfig);
 
-  if (graph.data.status === 'ERR') {
-    alert('Could not load graph!');
-    return;
+  var graphProperties = getDefaultGraphProperties(graph, mergedBlock);
+  $.extend(true, graphProperties, mergedBlock);
+
+  if (graph.graphConfig) {
+    $.extend(true, graph, graph.graphConfig);
   }
+
+  if (typeof mergedBlock.legend == 'boolean') {
+    graphProperties.options.legend.display = mergedBlock.legend;
+  }
+
+  if (graph.dataFilterCount > 0) filterGraphData(graph);
+
+  if (graph.graphConfig) createCustomData(graph);
+
+  if (graphProperties.ylabels) graph.ylabels = graphProperties.ylabels;
+
+  createDataSets(graph, mergedBlock, graphProperties);
+
+  createYAxes(graph, mergedBlock, graphProperties);
+
+  if (isDefined(mergedBlock.legend)) {
+    if ($.isArray(mergedBlock.legend)) {
+      mergedBlock.legend.forEach(function (element, idx) {
+        graphProperties.data.datasets[idx].label = element;
+      });
+      graphProperties.options.legend.display = true;
+    }
+  }
+  switch (typeof mergedBlock.graph) {
+    case 'string':
+      graphProperties.type = mergedBlock.graph;
+      break;
+    case 'object':
+      mergedBlock.graph.forEach(function (element, idx) {
+        graphProperties.data.datasets[idx].type = element;
+      });
+      graphProperties.type = 'bar';
+      break;
+    default:
+      break;
+  }
+
+  mergedBlock.displayFormats
+    ? $.extend(
+        graphProperties.options.scales.xAxes[0].time.displayFormats,
+        mergedBlock.displayFormats
+      )
+    : graphProperties.options.scales.xAxes[0].time.displayFormats;
+  graphProperties.options.scales.xAxes[0].ticks.maxTicksLimit =
+    mergedBlock.maxTicksLimit;
+  graphProperties.options.scales.xAxes[0].ticks.reverse =
+    mergedBlock.reverseTime;
+  graphProperties.options.legend.labels.usePointStyle = mergedBlock.pointStyle;
+
+  if (mergedBlock.beginAtZero) {
+    if (graphProperties.options.scales.yAxes.length === 1) {
+      graphProperties.options.scales.yAxes[0].ticks.beginAtZero =
+        mergedBlock.beginAtZero;
+    } else {
+      if (typeof mergedBlock.beginAtZero === 'object') {
+        mergedBlock.beginAtZero.forEach(function (beginAtZero, i) {
+          if (i < graphProperties.options.scales.yAxes.length) {
+            graphProperties.options.scales.yAxes[i].ticks.beginAtZero =
+              beginAtZero;
+          }
+        });
+      }
+    }
+  }
+
+  if (mergedBlock.gradients) applyGradients(mergedBlock, graphProperties);
+
+  if (graph.dataFilterUnit === 'today') {
+    graphProperties.options.scales.xAxes[0].ticks.max = moment().endOf('day');
+    graphProperties.options.scales.xAxes[0].ticks.min = moment().startOf('day');
+    graphProperties.options.scales.xAxes[0].distribution = 'linear';
+  }
+
+  graphRender(graph, graphProperties);
+}
+
+//create the y-axes, ylabels contains the labels
+function createYAxes(graph, mergedBlock, graphProperties) {
+  var uniqueylabels = graph.ylabels.filter(onlyUnique);
+  var labelLeft = !mergedBlock.axisRight;
+  var axisCount = graphProperties.options && graphProperties.options.scales && graphProperties.options.scales.yAxes
+    ? graphProperties.options.scales.yAxes.length
+    : 0;
+  var yAxesConfig = axisCount? graphProperties.options.scales.yAxes : [];
+  
+  graphProperties.options.scales.yAxes = []; // reset to empty
+  uniqueylabels.forEach(function (element, i) {
+    var yaxis = {
+      id: element,
+      stacked: graphProperties.stacked,
+      type: mergedBlock.cartesian,
+      ticks: {
+        reverse: false,
+        fontColor: graph.block.fontColor,
+      },
+      gridLines: {
+        color: 'rgba(255,255,255,0.2)',
+      },
+      scaleLabel: {
+        labelString: element,
+        display: true,
+        fontColor: graph.block.fontColor,
+      },
+      position: labelLeft ? 'left' : 'right',
+    };
+    graphProperties.options.scales.yAxes.push(yaxis);
+    if (i < axisCount)
+      $.extend(
+        true,
+        graphProperties.options.scales.yAxes[i],
+        yAxesConfig[i]
+      );
+    labelLeft = mergedBlock.axisAlternate ? !labelLeft : labelLeft;
+  });
+
+  //extend the y label with all dataset labels
+  if (graphProperties.options.scales.yAxes.length > 1) {
+    graphProperties.options.scales.yAxes
+      .filter(function (element) {
+        //filter the ylabels that have an initial label
+        return element.scaleLabel && isDefined(element.scaleLabel.labelString);
+      })
+      .forEach(function (yAxis) {
+        yAxis.scaleLabel.labelString = graphProperties.data.datasets
+          .filter(function (dataset) {
+            return dataset.yAxisID === yAxis.id;
+          })
+          .reduce(function (newlabelString, dataset) {
+            return dataset.label + ' ' + newlabelString;
+          }, '(' + yAxis.scaleLabel.labelString + ')');
+      });
+  }
+}
+
+function applyGradients(mergedBlock, graphProperties) {
+  var prop = mergedBlock;
+  var gHeight = isDefined(prop.gradientHeight) ? prop.gradientHeight : 1;
+  graphProperties.plugins = [
+    {
+      beforeRender: function (x) {
+        var c = x.chart;
+        $.each(prop.ykeys, function (i) {
+          if (isDefined(prop.gradients[i])) {
+            if (!isObject(prop.gradients[i]))
+              prop.gradients[i] = [
+                prop.datasetColors[i],
+                prop.datasetColors[i],
+              ];
+            var yScale = x.scales[prop.txtUnit];
+            var yPos = yScale.getPixelForValue(i);
+            var gradientFill = c.ctx.createLinearGradient(
+              0,
+              0,
+              0,
+              gHeight * yPos
+            );
+            gradientFill.addColorStop(
+              0,
+              prop.gradients[i][0] ? prop.gradients[i][0] : 'red'
+            );
+            gradientFill.addColorStop(
+              1,
+              prop.gradients[i][1] ? prop.gradients[i][1] : 'yellow'
+            );
+            var model =
+              x.data.datasets[i]._meta[Object.keys(x.data.datasets[i]._meta)[0]]
+                .dataset._model;
+            model.backgroundColor = gradientFill;
+          }
+        });
+      },
+    },
+  ];
+}
+
+function filterGraphData(graph) {
+  var startMoment =
+    graph.dataFilterUnit === 'today'
+      ? moment().format('YYYY-MM-DD 00:01')
+      : moment()
+          .subtract(graph.dataFilterCount, graph.dataFilterUnit)
+          .format('YYYY-MM-DD HH:mm');
+  graph.data.result = graph.data.result.filter(function (element) {
+    return element.d > startMoment;
+  });
+}
+
+function graphRender(graph, graphProperties) {
+  var graphIdx = graph.graphIdx;
 
   var ranges = ['last', 'today', 'month'];
   if (graph.customRange) ranges = Object.keys(graph.block.custom);
@@ -729,21 +990,7 @@ function createGraph(graph) {
     return;
   }
 
-  var chartctx = mydiv.find('canvas')[0].getContext('2d');
-  graph.chartctx = chartctx.canvas.id;
-
-  //Some block properties can be "overruled" by custom block settings
-  //However, getDefaultGraphProperties now depend on some block settings, without taking custom block settings into account
-  //I don't want to overwrite graph.block, because that contains the original block definition
-  //Let's create a second parameter, containing the merged block
-  var mergedBlock = $.extend(true, {}, graph.block, graph.graphConfig);
-
-  var graphProperties = getDefaultGraphProperties(graph, mergedBlock);
-  $.extend(true, graphProperties, mergedBlock);
-
-  if (graph.graphConfig) {
-    $.extend(true, graph, graph.graphConfig);
-  }
+  graph.chartctx = mydiv.find('canvas')[0].getContext('2d');
 
   if (!graph.block.isPopup) {
     //in general we should not use graph.block, but mergedBlock. In this case graph.block is ok, because isPopup should not be used in a custom block def.
@@ -751,165 +998,129 @@ function createGraph(graph) {
     if (parseInt(height) > 0)
       //only change height is we have a valid height value
       $('.' + graphIdx + ' .graphcontent').css('height', height);
-      //console.log('test');
+    //console.log('test');
   }
 
-  if (typeof mergedBlock.legend == 'boolean') {
-    graphProperties.options.legend.display = mergedBlock.legend;
+  new Chart(graph.chartctx, graphProperties);
+  Chart.defaults.global.defaultFontColor = graph.block.fontColor;
+}
+
+function createCustomData(graph) {
+  //custom data
+  graph.keys = [];
+  $.each(Object.values(graph.graphConfig.data), function (i, val) {
+    graph.keys.push(val.split('.')[1].split('_')[0]);
+  });
+  graph.ylabels = getYlabels(graph);
+  graph.ykeys = Object.keys(graph.graphConfig.data);
+
+  var d = {}; //object to store the latest value of each key
+  var previousDataPoint;
+  var customResult = [];
+  graph.data.result.forEach(function (y) {
+    var dataPoint = {};
+    $.extend(dataPoint, previousDataPoint);
+    var valid = false;
+    for (var key in y) {
+      if (key !== 'd') d[key] = parseFloat(y[key]);
+    }
+    dataPoint.d = y.d;
+    graph.ykeys.forEach(function (_value) {
+      var customValue = graph.graphConfig.data[_value];
+      try {
+        var res = eval(customValue).toFixed(2);
+        valid = true;
+        dataPoint[_value] = res;
+      } catch (error) {
+        console.log('error in eval ' + customValue);
+        console.log(error);
+      }
+    });
+    if (valid) {
+      customResult.push(dataPoint);
+    }
+    previousDataPoint = dataPoint;
+  });
+  /*
+  if (graph.graphConfig.graph) {
+    graphProperties.type = graph.graphConfig.graph;
   }
+  $.extend(true, graphProperties, graph.graphConfig);
+*/
+  graph.data.result = customResult;
+}
+
+function createDataSets(graph, mergedBlock, graphProperties) {
+  //first determine the correct labels for the y-axes
+  //we want to create a mapping of ykeys value to index
+  var idxArray = [];
+  var labelMapping = {};
+
+  var hasLegend = typeof mergedBlock.legend === 'object';
+  if (hasLegend) {
+    idxArray = Object.keys(mergedBlock.legend);
+  } else {
+    idxArray = graph.ykeys;
+  }
+  idxArray.forEach(function (key, idx) {
+    labelMapping[key] = idx;
+  });
+
+  //now we can safely select only the relevant ykeys
+  graph.ykeys = graph.ykeys.filter(function (el) {
+    return Object.keys(labelMapping).includes(el);
+  });
+
   var mydatasets = {};
 
-  if (graph.dataFilterCount > 0) {
-    var startMoment =
-      graph.dataFilterUnit === 'today'
-        ? moment().format('YYYY-MM-DD 00:01')
-        : moment()
-            .subtract(graph.dataFilterCount, graph.dataFilterUnit)
-            .format('YYYY-MM-DD HH:mm');
-    graph.data.result = graph.data.result.filter(function (element) {
-      return element.d > startMoment;
-    });
-  }
+  graph.ykeys.forEach(function (element, index) {
+    var myKey = element.split('_')[0];
+    var asStepped = ['l', 'eu', 'eg'];
+    var defaultSteppedLine = asStepped.indexOf(myKey) >= 0 ? 'before' : false;
 
-  if (graph.graphConfig) {
-    //custom data
-    if (graph.graphConfig.ylabels) {
-      graph.ylabels = graph.graphConfig.ylabels;
-    } else {
-      graph.keys = [];
-      $.each(Object.values(graph.graphConfig.data), function (i, val) {
-        graph.keys.push(val.split('.')[1].split('_')[0]);
-      });
-      graph.ylabels = getYlabels(graph);
-    }
-    graph.ykeys = Object.keys(graph.graphConfig.data);
+    idx = labelMapping[element];
 
-    graph.ykeys.forEach(function (element, index) {
-      mydatasets[element] = {
-        data: [],
-        label: element,
-        backgroundColor: mergedBlock.datasetColors[index],
-        barPercentage: mergedBlock.barWidth,
-        borderColor: (mergedBlock.borderColors || mergedBlock.datasetColors)[
-          index
-        ],
-        borderWidth: mergedBlock.borderWidth,
-        borderDash: mergedBlock.borderDash,
-        pointRadius: mergedBlock.pointRadius,
-        pointStyle: mergedBlock.pointStyle[index],
-        pointBackgroundColor: (mergedBlock.pointFillColor ||
-          mergedBlock.datasetColors)[index],
-        pointBorderColor: (mergedBlock.pointBorderColor ||
-          mergedBlock.datasetColors)[index],
-        pointBorderWidth: mergedBlock.pointBorderWidth,
-        lineTension: mergedBlock.lineTension,
-        spanGaps: mergedBlock.spanGaps,
-        fill: mergedBlock.lineFill
-          ? mergedBlock.lineFill[index]
-          : mergedBlock.lineFill,
-        yAxisID:
-          index <= graph.ylabels.length
-            ? graph.ylabels[index]
-            : graph.ylabels[0],
-      };
+    mydatasets[element] = {
+      data: [],
+      label: element,
+      yAxisID: mergedBlock.ylabels
+        ? mergedBlock.ylabels[idx]
+        : graph.ylabels[index], //check: idx iso index
+      backgroundColor: mergedBlock.datasetColors[idx],
+      barPercentage: mergedBlock.barWidth,
+      borderColor: (mergedBlock.borderColors || mergedBlock.datasetColors)[idx],
+      borderWidth: mergedBlock.borderWidth,
+      borderDash: mergedBlock.borderDash,
+      pointRadius: mergedBlock.pointRadius,
+      pointStyle: mergedBlock.pointStyle[idx], //check: index iso idx
+      pointBackgroundColor: (mergedBlock.pointFillColor ||
+        mergedBlock.datasetColors)[idx],
+      pointBorderColor: (mergedBlock.pointBorderColor ||
+        mergedBlock.datasetColors)[idx],
+      pointBorderWidth: mergedBlock.pointBorderWidth,
+      lineTension: mergedBlock.lineTension,
+      spanGaps: mergedBlock.spanGaps,
+      fill: getProperty(mergedBlock.lineFill, idx),
+      steppedLine: getProperty(
+        defaultSteppedLine || mergedBlock.steppedLine,
+        idx
+      ),
+    };
+  });
 
-      if (graph.graphConfig.graph) {
-        mydatasets[element].type =
-          typeof graph.graphConfig.graph === 'string'
-            ? graph.graphConfig.graph
-            : graph.graphConfig.graph[index];
+  graph.data.result.forEach(function (element) {
+    var valid = false;
+    graph.ykeys.forEach(function (el) {
+      if (isDefined(element[el])) {
+        valid = true;
+        mydatasets[el].data.push({
+          x: element.d,
+          y: element[el],
+        });
       }
     });
-
-    graph.data.result.forEach(function (y) {
-      var valid = false;
-      graph.ykeys.forEach(function (_value) {
-        var customValue = graph.graphConfig.data[_value];
-        var d = {};
-        for (var key in y) {
-          if (key !== 'd') d[key] = parseFloat(y[key]);
-        }
-        try {
-          var res = eval(customValue).toFixed(2);
-          valid = true;
-          var datapoint = {
-            x: y.d,
-            y: res,
-          };
-          mydatasets[_value].data.push(datapoint);
-        } catch (error) {
-          console.log('error in eval ' + customValue);
-          console.log(error);
-        }
-      });
-      if (valid) graphProperties.data.labels.push(y.d);
-    });
-
-    if (graph.graphConfig.graph) {
-      graphProperties.type = graph.graphConfig.graph;
-    }
-    $.extend(true, graphProperties, graph.graphConfig);
-  } else {
-    // no custom data
-    var idxArray = [];
-    if (typeof mergedBlock.legend === 'object')
-      idxArray = Object.keys(mergedBlock.legend);
-    graph.ykeys.forEach(function (element, index) {
-      //In case of a legend, not all datasets will be shown, resulting in color mismatch
-      var idx = index;
-      if (idxArray && idxArray.length) {
-        idx = idxArray.indexOf(element);
-      }
-
-      mydatasets[element] = {
-        data: [],
-        label: element,
-        yAxisID: graph.ylabels[idx],
-        backgroundColor: mergedBlock.datasetColors[idx],
-        barPercentage: mergedBlock.barWidth,
-        borderColor: (mergedBlock.borderColors || mergedBlock.datasetColors)[
-          idx
-        ],
-        borderWidth: mergedBlock.borderWidth,
-        borderDash: mergedBlock.borderDash,
-        pointRadius: mergedBlock.pointRadius,
-        pointStyle: mergedBlock.pointStyle[index],
-        pointBackgroundColor: (mergedBlock.pointFillColor ||
-          mergedBlock.datasetColors)[idx],
-        pointBorderColor: (mergedBlock.pointBorderColor ||
-          mergedBlock.datasetColors)[idx],
-        pointBorderWidth: mergedBlock.pointBorderWidth,
-        lineTension: mergedBlock.lineTension,
-        spanGaps: mergedBlock.spanGaps,
-        fill: mergedBlock.lineFill
-          ? mergedBlock.lineFill[idx]
-          : mergedBlock.lineFill,
-      };
-    });
-
-    graph.data.result.forEach(function (element) {
-      var valid = false;
-      graph.ykeys.forEach(function (el) {
-        if (isDefined(element[el])) {
-          switch (el) {
-            case 'eu':
-            case 'eg':
-              mydatasets[el].data.push({
-                x: element.d,
-                y: element[el],
-              });
-              break;
-            default:
-              mydatasets[el].data.push(element[el]);
-              mydatasets[el].key = el;
-              valid = true;
-              break;
-          }
-        }
-      });
-      if (valid) graphProperties.data.labels.push(element.d);
-    });
-  }
+    if (valid) graphProperties.data.labels.push(element.d);
+  });
 
   //Now we have the datasets
   //Apply groupBy if needed
@@ -974,11 +1185,7 @@ function createGraph(graph) {
           drawOrderMonth === false
             ? keyIdx
             : order[keyIdx];
-        Object.keys(mydatasets).forEach(function (element) {
-          if (mydatasets[element].key == key) {
-            arr[key] = mydatasets[key];
-          }
-        });
+        arr[key] = mydatasets[key];
       }
       mydatasets = arr;
     }
@@ -992,161 +1199,6 @@ function createGraph(graph) {
     }
     graphProperties.data.datasets.push(mydatasets[element]);
   });
-
-  //create the y-axes, ylabels contains the labels
-  var uniqueylabels = graph.ylabels.filter(onlyUnique);
-  var labelLeft = !mergedBlock.axisRight;
-  var axisCount =
-    graph.options && graph.options.scales && graph.options.scales.yAxes
-      ? graph.options.scales.yAxes.length
-      : 0;
-  graphProperties.options.scales.yAxes = []; // reset to empty
-  uniqueylabels.forEach(function (element, i) {
-    var yaxis = {
-      id: element,
-      stacked: graphProperties.stacked, //graphProperties contains all settings including the custom settings
-      type: mergedBlock.cartesian,
-      ticks: {
-        reverse: false,
-        fontColor: graph.block.fontColor,
-      },
-      gridLines: {
-        color: 'rgba(255,255,255,0.2)',
-      },
-      scaleLabel: {
-        labelString: element,
-        display: true,
-        fontColor: graph.block.fontColor,
-      },
-      position: labelLeft ? 'left' : 'right',
-    };
-    graphProperties.options.scales.yAxes.push(yaxis);
-    if (i < axisCount)
-      $.extend(
-        true,
-        graphProperties.options.scales.yAxes[i],
-        graph.options.scales.yAxes[i]
-      );
-    labelLeft = mergedBlock.axisAlternate ? !labelLeft : labelLeft;
-  });
-
-  //extend the y label with all dataset labels
-  if (graphProperties.options.scales.yAxes.length > 1) {
-    graphProperties.options.scales.yAxes
-      .filter(function (element) {
-        //filter the ylabels that have an initial label
-        return element.scaleLabel && isDefined(element.scaleLabel.labelString);
-      })
-      .forEach(function (yAxis) {
-        yAxis.scaleLabel.labelString = graphProperties.data.datasets
-          .filter(function (dataset) {
-            return dataset.yAxisID === yAxis.id;
-          })
-          .reduce(function (newlabelString, dataset) {
-            return dataset.label + ' ' + newlabelString;
-          }, '(' + yAxis.scaleLabel.labelString + ')');
-      });
-  }
-
-  if (isDefined(mergedBlock.legend)) {
-    if ($.isArray(mergedBlock.legend)) {
-      mergedBlock.legend.forEach(function (element, idx) {
-        graphProperties.data.datasets[idx].label = element;
-      });
-      graphProperties.options.legend.display = true;
-    }
-  }
-  switch (typeof mergedBlock.graph) {
-    case 'string':
-      graphProperties.type = mergedBlock.graph;
-      break;
-    case 'object':
-      mergedBlock.graph.forEach(function (element, idx) {
-        graphProperties.data.datasets[idx].type = element;
-      });
-      graphProperties.type = 'bar';
-      break;
-    default:
-      break;
-  }
-
-  mergedBlock.displayFormats
-    ? $.extend(
-        graphProperties.options.scales.xAxes[0].time.displayFormats,
-        mergedBlock.displayFormats
-      )
-    : graphProperties.options.scales.xAxes[0].time.displayFormats;
-  graphProperties.options.scales.xAxes[0].ticks.maxTicksLimit =
-    mergedBlock.maxTicksLimit;
-  graphProperties.options.scales.xAxes[0].ticks.reverse =
-    mergedBlock.reverseTime;
-  graphProperties.options.legend.labels.usePointStyle = mergedBlock.pointStyle;
-
-  if (mergedBlock.beginAtZero) {
-    if (graphProperties.options.scales.yAxes.length === 1) {
-      graphProperties.options.scales.yAxes[0].ticks.beginAtZero =
-        mergedBlock.beginAtZero;
-    } else {
-      if (typeof mergedBlock.beginAtZero === 'object') {
-        mergedBlock.beginAtZero.forEach(function (beginAtZero, i) {
-          if (i < graphProperties.options.scales.yAxes.length) {
-            graphProperties.options.scales.yAxes[
-              i
-            ].ticks.beginAtZero = beginAtZero;
-          }
-        });
-      }
-    }
-  }
-
-  if (mergedBlock.gradients) {
-    var prop = mergedBlock;
-    var gHeight = isDefined(prop.gradientHeight) ? prop.gradientHeight : 1;
-    graphProperties.plugins = [
-      {
-        beforeRender: function (x) {
-          var c = x.chart;
-          $.each(prop.ykeys, function (i) {
-            if (isDefined(prop.gradients[i])) {
-              if (!isObject(prop.gradients[i]))
-                prop.gradients[i] = [
-                  prop.datasetColors[i],
-                  prop.datasetColors[i],
-                ];
-              var yScale = x.scales[prop.txtUnit];
-              var yPos = yScale.getPixelForValue(i);
-              var gradientFill = c.ctx.createLinearGradient(
-                0,
-                0,
-                0,
-                gHeight * yPos
-              );
-              gradientFill.addColorStop(
-                0,
-                prop.gradients[i][0] ? prop.gradients[i][0] : 'red'
-              );
-              gradientFill.addColorStop(
-                1,
-                prop.gradients[i][1] ? prop.gradients[i][1] : 'yellow'
-              );
-              var model =
-                x.data.datasets[i]._meta[
-                  Object.keys(x.data.datasets[i]._meta)[0]
-                ].dataset._model;
-              model.backgroundColor = gradientFill;
-            }
-          });
-        },
-      },
-    ];
-  }
-  if (graph.dataFilterUnit === 'today') {
-    graphProperties.options.scales.xAxes[0].ticks.max = moment().endOf('day');
-    graphProperties.options.scales.xAxes[0].ticks.min = moment().startOf('day');
-    graphProperties.options.scales.xAxes[0].distribution = 'linear';
-  }
-  new Chart(chartctx, graphProperties);
-  Chart.defaults.global.defaultFontColor = graph.block.fontColor;
 }
 
 function createHeader(graph) {
@@ -1780,6 +1832,7 @@ function getDefaultGraphProperties(graph, block) {
 
 function getYlabels(g) {
   var l = [];
+
   $.each(g.keys, function (i, key) {
     var label = isDefined(g.txtUnits[i]) ? g.txtUnits[i] : g.txtUnit;
     switch (key) {

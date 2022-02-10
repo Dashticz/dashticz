@@ -21,13 +21,17 @@
  * @param {string}   defaultIconOn Default On icon
  * @param {string}   defaultIconOff Default Off icon
  * @param {string}   buttonimg Default image.
+ * @param {string}   defaultTextOn Default On text
+ * @param {string}   defaultTextOff Default Off text
  */
 // eslint-disable-next-line no-unused-vars
 function getDefaultSwitchBlock(
   block,
   defaultIconOn,
   defaultIconOff,
-  buttonimg
+  buttonimg,
+  defaultTextOn,
+  defaultTextOff
 ) {
   var device = block.device;
   var html = '';
@@ -49,8 +53,10 @@ function getDefaultSwitchBlock(
         switchDevice(block, mMode, !!confirmswitch);
       });
   }
-  var textOn = language.switches.state_on;
-  var textOff = language.switches.state_off;
+  var textOn = defaultTextOn || language.switches.state_on;
+  var textOff = defaultTextOff || language.switches.state_off;
+
+
 
   if (typeof block['textOn'] !== 'undefined') {
     textOn = block['textOn'];

@@ -156,9 +156,16 @@ var Domoticz = (function () {
           return refreshAll();
         })
         .then(requestSecurityStatus)
-        .then(requestSettings);
+        .then(requestSettings)
+        .then(addStubDevices);
     }
     return initPromise;
+  }
+
+  function addStubDevices() {
+    if(typeof stubDevices==='object') {
+      _setAllDevices(stubDevices);
+    }
   }
 
   function refreshAll() {

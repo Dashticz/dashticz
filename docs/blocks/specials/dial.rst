@@ -46,7 +46,9 @@ Block parameters
   * - idx
     - ``<idx>``: IDX of the device (mandatory if named block)
   * - title
-    - ``'custom_title'``: Title that will appear on the dial (mandatory)
+    - | ``'custom_title'``: Title that will appear on the dial
+      | ``false``: No title will be shown
+      | ``true``: The device name will be used as title
   * - type
     - ``'dial'``: Indentifies this block as a dial (mandatory)
   * - width
@@ -94,6 +96,8 @@ Block parameters
   * - showvalue
     - | ``true`` (=default). Show the main device value. 
       | ``false``: Don't show the main device value.
+  * - splitdial
+    - Normally the dial ring color will color from the 0 value to the actual value, which can be positive or negative. Set this parameter to false to start coloring the dial ring from the minimum value, also for a negative minimum value.
   
 
 Usage
@@ -133,6 +137,22 @@ Any devices with this switchtype and type: 'dial' will automatically render as a
         color: '#57c4d6',
         width: 2
     }
+
+.. _dialblinds :
+
+Blinds
+~~~~~~
+
+All four Domoticz blinds types can be rendered as dial:
+
+* Blinds
+* Blinds Percentage
+* Blinds Inverted
+* Blinds Inverted Percentage
+
+.. image :: ./img/dialblinds.jpg
+
+The text in the ``up`` and ``down`` buttons can be configured via the block parameters ``textOpen`` and ``textClose`` respectively.
 
 
 Temp + Humidity
@@ -274,6 +294,31 @@ Show multiple values of a P1 meter
     width: 6
   };
 
+
+.. _dialselector:
+
+Selector switch
+~~~~~~~~~~~~~~~~
+
+Selector switches will be displayed as a menu. The dial menu can be shown with or without (=default) title.
+
+.. image :: ./img/dialmenu.jpg
+
+::
+
+      blocks['dm'] = {
+        idx: 9,
+        type: 'dial',
+        title: true,
+        width:6,
+    }
+
+    blocks['dm-notitle'] = {
+        idx: 9,
+        type: 'dial',
+        width:6,
+    }
+  
 
 .. _Toon:
 
@@ -500,7 +545,9 @@ The following CSS classes are used:
 
 The addClass parameter is applied on item level.
 
-Custom styling
+.. _dialstyling :
+
+Custom Styling
 --------------
 In Domoticz you can hide the Off level of a Selector Switch. In Dashticz you can hide the Off level by adding the following code to your *custom.css*::
 
@@ -511,33 +558,43 @@ In Domoticz you can hide the Off level of a Selector Switch. In Dashticz you can
 To change the grey dial bezel color from grey to red::
 
     .dt_content .dial {
-        background-color: #bb2424;
+        background-color: #bb2424 !important;
     }
 
 To change the outer ring primary color from orange (default) to yellow::
 
-    .dial .bar.primary,
-    .dial .fill.primary {
-        border-color: #d9e900;
+    .slice.primary {
+        color: #d9e900;
     }
 
 To change the outer ring secondary color from blue (default) to lime green::
 
-    .dial .bar.secondary,
-    .dial .fill.secondary {
-        border-color: #26e500;
+    .slice.secondary {
+        color: #26e500;
     }
+
+Split dials (dials which may have negative values) will receive the ``negative`` and ``positive`` class as well.
+In case you've redefined the primary or secondary styling in custom.css, then you have to update the positive/negative styling as well::
+
+    .slice.positive {
+        color: red !important;
+    }
+
+    .slice.negative {
+        color: blue !important;
+    }
+
 
 To change the dial needle color from orange (default) to lime green::
 
     .dial-needle::before {
-        border-bottom-color: lime!important;
+        border-bottom-color: lime !important;
     }
 
 To target just one dial, you can prefix the above code snippets with block id of the dial, for example::
 
     [data-id='temp_hum_baro'] .dial-needle::before {
-        border-bottom-color: lime!important;
+        border-bottom-color: lime p!important;
     }
 
 Change the size of the dial-center::
@@ -552,3 +609,157 @@ Hide extra data::
     .dial[data-id='dial_name'] .extra {
         display: none;
     }
+
+Vertical center the dial menu::
+
+	.dial-menu .status {
+		justify-content: center;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.dial-menu .status li {
+		margin: unset
+	}
+
+Change the font of the dial menu text::
+
+    .dial-menu .status li {
+        font-size: 75%
+    }
+
+To change the colors of the blinds buttons::
+
+  .dialbtn.up {
+    background-color: darkgreen;
+  }
+  .dialbtn.middle {
+    background-color: darkblue;
+  }
+  .dialbtn.down {
+    background-color: darkred;
+  }
+
+And for the selected buttons::
+
+  /*Next block is the default styling*/
+  .dialbtn.selected {
+    background-image: radial-gradient(rgba(255,255,255,0.5), rgba(0,0,0,0));
+  }
+
+  .dialbtn.up.selected {
+    background-color: lightgreen;
+  }
+
+  .dialbtn.up.selected {
+    background-color: lightred;
+  }
+
+To change the text size in the up and down buttons of a blinds dial ::
+
+  .up .text, .down .text {
+    font-size: 200%
+  }
+
+Examples
+---------
+
+**Multicolor Selector Switch**
+
+.. image :: img/multicolor_selector_switch.png
+
+CONFIG.js::
+
+  blocks['selector_switch'] = {
+    idx: 123,
+    type: 'dial',
+    width: 5,
+  }
+  
+  columns[1] = {}
+  columns[1]['blocks'] = ['selector_switch']
+  columns[1]['width'] = 5;
+
+custom.js::
+
+  function deviceHook(device) {
+    if (device.idx==123) {
+      var level=parseInt(device.Level);
+      device.deviceStatus='level'+level
+    }
+  }
+
+custom.css::
+
+  /*ring color*/
+  .level10 .dial-center {
+    box-shadow: 0 0 25px 1px green !important;
+  }
+
+  /*selected item color*/
+  .level10 .status {
+    --dial-color: green !important
+  }
+
+  /*ring color*/
+  .level20 .dial-center {
+    box-shadow: 0 0 25px 1px red !important;
+  }
+
+  /*selected item color*/
+  .level20 .status {
+    --dial-color: red !important
+  }
+
+  /*ring color*/
+  .level30 .dial-center {
+    box-shadow: 0 0 25px 1px blue !important;
+  }
+
+  /*selected item color*/
+  .level30 .status {
+    --dial-color: blue !important
+  }
+
+
+**Windspeed**
+
+.. image :: img/windknopen.png
+
+CONFIG.js::
+
+	blocks['wind'] = {
+		idx: 2442,
+		title: 'knopen',
+		type: 'dial',
+		color: '#57c4d6',
+		values: [
+			{
+			value: 'Speed',
+			addClass: 'bigwind',
+			decimals: 0,
+			}
+		],
+		setpoint: 18, // the entire outer ring will change color based on this s
+		offset: 0,  // 0 will point to the wind source, 180 will point to wind d
+		showvalue: false,
+		width: 12,
+		showring: true,
+		showunit: true,
+		shownumbers: true,
+		last_update: false
+	}
+
+custom.css::
+
+	.dial-center {
+		height: 65%!important;width: 65%!important;
+	}
+	[data-id='wind'] .dial-needle::before {
+		border-bottom-color: red!important;
+	}
+	.bigwind {
+		font-size: 300% !important;
+		color: white !important; 
+		height: 40px !important;
+	}
