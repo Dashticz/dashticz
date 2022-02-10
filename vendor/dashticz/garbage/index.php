@@ -135,6 +135,7 @@ function getCalendar() {
 
 	switch($service){
 		case 'rova':
+			/*
 			$options = array(
 				CURLOPT_HEADER => 0,
 				CURLOPT_COOKIE => "RovaLc_inwoners={\"Id\":0,\"ZipCode\":\"".$zipCode."\",\"HouseNumber\":\"".$houseNr."\",\"HouseAddition\":null,\"Municipality\":null,\"Province\":null,\"Firstname\":null,\"Lastname\":null,\"UserAgent\":\"\",\"School\":null,\"Street\":null,\"Country\":null,\"Portal\":null,\"AreaLevel\":null,\"City\":null,\"Ip\":null}"
@@ -142,13 +143,22 @@ function getCalendar() {
 			$output = curlWeb(
 				'https://www.rova.nl/api/TrashCalendar/GetCalendarItems?portal=inwoners',
 				$options
-			);
-			$return = json_decode($output,true);
-			foreach($return as $row){
-				$title = $row['GarbageType'];
-				if(!empty($row['Date'])){
-					list($date,$time)=explode('T',$row['Date']);
-					$allDates[$date][$title] = $date;
+			);*/
+			$url = 	'http://api.inzamelkalender.rova.nl/webservices/appsinput/?postcode='.$zipCode.'&street=&huisnummer='.$houseNr.'&toevoeging='.$houseNrSuf.'&apikey=5ef443e778f41c4f75c69459eea6e6ae0c2d92de729aa0fc61653815fbd6a8ca&method=postcodecheck&platform=phone&langs=nl&mobiletype=android&version=3&app_name=rova';
+//			$return = json_decode($output,true);
+			$return = curlWebJson($url);
+//			debugMsg($return);
+			//var_dump($return->data);
+//			var_dump($return->data->ophaaldagen);
+			if ($return->data->ophaaldagen->response == 'OK') {
+				foreach($return->data->ophaaldagen->data as $row){
+					//debugMsg($row);
+//					var_dump($row);
+					$title = $row->nameType;
+					if(!empty($row->date)){
+						list($date,$time)=explode('T',$row->date);
+						$allDates[$date][$title] = $date;
+					}
 				}
 			}
 			break;
@@ -214,7 +224,8 @@ function getCalendar() {
 					case 'meerlanden'; $companyCode = "800bf8d7-6dd1-4490-ba9d-b419d6dc8a45"; break;
 					//https://wasteapi.ximmio.com/api/CallIcal?cn=WaardLanden&x=942abcf6-3775-400d-ae5d-7380d728b23c&ty=Vianen&ua=1200079926&sd=2019-12-21&ed=2023-01-09&path=https://wasteapi.ximmio.com&ln=nl&nt=7
 					case 'waardlanden'; $companyCode = "942abcf6-3775-400d-ae5d-7380d728b23c"; break;
-					case 'avri';  $companyCode = "78cd4156-394b-413d-8936-d407e334559a"; break;
+					case 'avri';  $companyCode = "78cd4156-394b-413d-8936-d407e334559a"; break;			
+					case 'avalex';  $companyCode = "f7a74ad1-fdbf-4a43-9f91-44644f4d4222"; break;
 				}
 				if ($companyCode == '') return;
 				//Web_Data=perform_webquery('--data "companyCode='..companyCode..'&postCode='..Zipcode..'&houseNumber='..Housenr.."&houseNumberAddition="..Housenrsuf..'" "https://wasteapi.2go-mobile.com/api/FetchAdress"')
@@ -350,12 +361,12 @@ function getCalendar() {
 			*/
 
 			//step 1: Get main js file
-			$match = curlWebMatch("https://recycleapp.be",'/script src="(.static.js.main.*.js)"/');
-//			var_dump($match[1]);
+			$match = curlWebMatch("https://recycleapp.be",'/script src="(.static.js.main.*.chunk.js)"/');
+			//var_dump($match[1]);
 
 			//step 2: Find secret
-			$match = curlWebMatch("https://recycleapp.be".$match[1],'/var n="(\w*)",c=".api.v1.assets/');
-//			var_dump($match);
+			$match = curlWebMatch("https://recycleapp.be".$match[1],'/var n="(\w*)",r="/');
+			//var_dump($match);
 
 			//step 3: get access token
 			$headers = [

@@ -2,8 +2,10 @@
 	{{#each events as | items |}}
 	  {{#ifLe @index ../maxitems}}
 		{{#each items as | item |}}
-		  <tr><td class="agenda-date">{{moment item.start input="X" format=../../df}}</td>
-		  <td class="agenda-title" style="color:{{item.color}};">{{item.title}}</td></tr>
+		  <tr  class="event {{item.addClass}}">
+			  <td class="eventdate {{item.addClass}}">{{moment item.start input="X" format=../../df}}</td>
+		  	  <td class="description {{item.addClass}}" style="color:{{item.color}};">{{item.title}}</td>
+		  </tr>
 		{{/each}}
 	  {{/ifLe}}
 	{{else}}

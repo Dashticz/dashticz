@@ -293,5 +293,23 @@
         "DayOff": "休假",
         "HeatingOff": "关",
         "TemporaryOverride": "覆写"
+    },
+    "windshort": {
+        "direction_E": "E",
+        "direction_ENE": "E-NE",
+        "direction_ESE": "E-SE",
+        "direction_N": "N",
+        "direction_NE": "NE",
+        "direction_NNE": "N-NE",
+        "direction_NNW": "N-NW",
+        "direction_NW": "NW",
+        "direction_S": "S",
+        "direction_SE": "SE",
+        "direction_SSE": "S-SE",
+        "direction_SSW": "S-SW",
+        "direction_SW": "SW",
+        "direction_W": "W",
+        "direction_WNW": "W-NW",
+        "direction_WSW": "W-SW"
     }
 }

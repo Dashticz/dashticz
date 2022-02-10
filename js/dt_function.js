@@ -58,7 +58,7 @@ var DT_function = (function () {
 
   function blockLoadFrame(block) {
     //Displays the frame of a block after pressing it
-    var id = 'popup_' + (block.key || getRandomInt(1, 100000));
+    var id = 'popup_' + ((''+block.key).replace(' ','_') || getRandomInt(1, 100000));
     $('body').append(createModalDialog('openpopup', id, block));
     $('#' + id).modal('show');
     var popupBlock = 0;
@@ -197,7 +197,7 @@ var DT_function = (function () {
     loadedResources[id] = true;
 
     $('head').append(
-      '<link rel="stylesheet" type="text/css" href="' + filename + '">'
+      '<link rel="stylesheet" type="text/css" href="' + filename + '?v=' + _DASHTICZ_VERSION + '">'
     );
   }
 
@@ -350,3 +350,9 @@ function capitalizeFirstLetter(string) {
   if(string.lenght===1) return string.toUpperCase;
   return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
+
+function addStyleAttribute($element, styleAttribute) {
+  var currentStyle = $element.attr('style');
+  $element.attr('style', currentStyle ? currentStyle + '; ' + styleAttribute : styleAttribute);
+}
+

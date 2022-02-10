@@ -179,6 +179,13 @@ The following block parameters can be used to configure the graph:
     - If true, lines will be drawn between points with no or null data. If false, points with NaN data will create a break in the line.
   * - sortDevices
     - the code automatically calculate if any devices' time data is longer than others. It then use that device's time data, then match all of the devices non-time data to that. This setting allows users to choose to enable or disable that feature (true or false)
+  * - steppedLine
+    - | defines the interpolation method. It can be a single value ``'before'``, or an array of values ``['before', false, false]``
+	  | ``false`` (default) No stepped line but interpolation
+	  | ``true`` The line steps just before the new value
+	  | ``'before'`` The line steps just before the new value (same as ``true``)
+	  | ``'after'`` The line steps just after the new value
+	  | ``'middle'`` The line steps between the old and the new value
   * - customHeader
     - ``customHeader: { ... }`` Customized graph header. See :ref:`customheader`.
   * - format
@@ -972,6 +979,30 @@ In this example, they have specified that the popup will use a defined graph cal
 Examples
 ---------
 
+**Combine two temperature devices with the switch info indicating central heating is on**
+::
+
+	blocks['switchgraph'] = {
+		devices: [
+			31,
+			27,
+			17,
+		],
+		debugButton: true,
+		zoom: true,
+		graph: 'line',
+		legend : {
+			l_17: 'CV On',
+			te_31: 'Return temp',
+			te_27: 'Room temp'
+		},
+		lineFill: [true, false, false],
+		datasetColors: ['rgba(44,130,201,0.5)', 'red', 'blue'],
+	}
+
+.. image :: img/graphswitch.jpg
+
+
 **CPU, Memory & HDD**
 ::
 
@@ -1224,6 +1255,45 @@ For internal use::
     block_graph_<idx>     //The div to which the graph needs to be attached.
     #graphoutput<idx>     //The canvas for the graph output
 
+.. _xyaxesstyling:
+
+Styling of X- and Y- axes
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+(advanced customization...)
+
+By setting the ``options`` block parameter most graph properties can be customized.
+For instance to change the font size of the axes, and reduce the width of the graph legend use the following block definition::
+
+	blocks['graph_43'] = {
+		...,
+		options: {
+            scales: {
+                xAxes: [{
+                       ticks: {
+                        fontSize: 7
+                       }
+                }],
+                yAxes: [{
+                    ticks: {
+                     fontSize: 7,
+                    },
+                    scaleLabel: {
+                        fontSize: 7
+                    }
+                }],
+            },
+            legend:{
+                labels:{
+                    fontSize:10,
+                    boxWidth:10
+                },
+            }
+        }
+
+    }
+
+Dashticz uses chartjs version 2.9. Most configuration options can be found via https://www.chartjs.org/docs/2.9.4/, or post your question in the forum.
 
 .. _graph_debug:
 
