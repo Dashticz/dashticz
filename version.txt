@@ -1,19 +1,8 @@
 {
-"version": "3.8.11",
+"version": "3.9.0",
 "branch": "beta",
-"last_changes": "Dial menu title",
+"last_changes": "Beta version derived from 3.9 master",
 "changelog" : {
-            "3.8.10": "Public transport update",
-            "3.8.9": "Frame scaling, dials: blinds supported",
-            "3.8.8": "Dial: Splitdial fix for different min max ring values",
-            "3.8.7": "Weather icons update, coloring of agenda events",
-            "3.8.6": "Graph updates",
-            "3.8.5": "Several fixes",
-            "3.8.4": "Calendar fixes",
-            "3.8.3": "Fixes and minor updates",
-            "3.8.2": "New weather block",
-            "3.8.1": "Improved auto slide behavior",
-            "3.8.0": "Auto slide page parameter per screen",
-            "3.8": "Master version"
+            "3.9": "Master version"
             }
 }
