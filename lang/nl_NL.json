@@ -293,5 +293,23 @@
         "DayOff": "Vrije dag",
         "HeatingOff": "Uit",
         "TemporaryOverride": "Overschrijven"
+    },
+    "windshort": {
+        "direction_E": "O",
+        "direction_ENE": "O-NO",
+        "direction_ESE": "O-ZO",
+        "direction_N": "N",
+        "direction_NE": "NO",
+        "direction_NNE": "N-NO",
+        "direction_NNW": "N-NW",
+        "direction_NW": "NW",
+        "direction_S": "Z",
+        "direction_SE": "ZO",
+        "direction_SSE": "Z-ZO",
+        "direction_SSW": "Z-ZW",
+        "direction_SW": "ZW",
+        "direction_W": "W",
+        "direction_WNW": "W-NW",
+        "direction_WSW": "W-ZW"
     }
 }

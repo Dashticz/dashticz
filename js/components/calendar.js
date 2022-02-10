@@ -14,6 +14,7 @@ var DT_calendar = {
     },
     emptytext: 'Geen afspraken.',
     method: 1,
+    eventClasses: {}
   },
   run: function (me) {
     if (me.block.type === 'calendar') {
@@ -109,6 +110,13 @@ function getCalendarData(key, calendars, isnew, ishol) {
     promises.push(
       $.getJSON(url, function (data) {
         for (var e in data) {
+          if(e=="_errors") {
+            if(data[e].length>0) {
+              console.warn('Warnings for calendar: ', calendar.ics);
+              console.warn(data[e]);
+            }
+            continue;
+          }
           var ev = data[e];
           var enddate = ev.end;
 
@@ -121,12 +129,20 @@ function getCalendarData(key, calendars, isnew, ishol) {
           ev.end += cal[key].adjustTZ;
           ev.name = name;
           ev.color = calendar.color;
+//          var lowerTitle = ev.title.toLowerCase();
+          ev.addClass=Object.keys(cal[key].block.eventClasses).filter(function(eventClass) { //filter keys with string match on item
+            return ev.title.match(cal[key].block.eventClasses[eventClass])
+          }).reduce(function(acc, key ) { //only keep unique keys
+            if(!acc.includes(key)) acc.push(key);
+            return acc;
+          },[])
+          .join(' '); //combine them into one string
 
           if (
             parseFloat(enddate) >=
             moment().subtract(cal[key].history, 'days').format('X')
           ) {
-            if (isDefined(events[ev.start]) !== 'undefined')
+            if (!isDefined(events[ev.start]))
               events[ev.start] = [];
             events[ev.start].push(ev);
           }
@@ -177,16 +193,20 @@ function generateAgenda(opt, key) {
 
     if (opt === 1) {
       var p = '';
-      $.each($(cal[key].mountPoint + ' .agenda-date'), function (i, el) {
+      $.each($(cal[key].mountPoint + ' .eventdate'), function (i, el) {
         var dt = $(el).html().trim();
         if (p === dt) $(el).empty();
         p = dt;
       });
     }
 
-    if (Object.keys(cal[key].events).length)
+    var nrOfEvents = Object.keys(cal[key].events).length;
+
+    if (nrOfEvents)
       $(cal[key].mountPoint + ' .dt_block').removeClass('agenda-empty');
     else $(cal[key].mountPoint + ' .dt_block').addClass('agenda-empty');
+
+    Dashticz.setEmpty(cal[key], !nrOfEvents);
   });
 }
 
@@ -256,6 +276,7 @@ function generateCalendar(key, isnew, ishol) {
                       c1: m3.unix() < moment().unix() ? 'historic' : '',
                       c2: item.allDay ? 'allday' : '',
                       c3: ishol ? 'hol' : '',
+                      addClass: item.addClass
                     };
 
                     var elem = template(data_object);

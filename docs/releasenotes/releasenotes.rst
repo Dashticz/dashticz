@@ -5,8 +5,183 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
-Recent changes
----------------
+v3.9 Master (10-2-2022)
+------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Trafficinfo: Add block parameters ``showempty`` and ``showemptyroads`` to control what to show in case of no announcements. See :ref:`trafficinfo`
+
+Fixes
+~~~~~~
+
+* Trafficinfo: Bug fixes (wrong road name if no announcements)
+* P1 Smart Meter: Display NettUsage as default value (=Usage-Delivery)
+
+
+v3.8.11 Beta (28-1-2022)
+------------------------
+
+.. note:: Some changes in dial styling, especially dial font sizes.
+
+Enhancements
+~~~~~~~~~~~~
+
+* New block type 'Door Lock Inverted'
+* Dial: Selector menu can show title. See :ref:`dialselector`
+
+v3.8.10 Beta (23-1-2022)
+------------------------
+
+.. note:: Public Transport changed. See :ref:`publictransport`.
+.. note:: Dial ring styling changed. See :ref:`v389`.
+
+Enhancements
+~~~~~~~~~~~~
+
+* Special blocks: Add class ``empty`` in case the special block is empty. Applicable to alarmmeldingen, calendar, traffic, trafficinfo and train.
+* Graph: Improvement in customized axes styling. See :ref:`xyaxesstyling`
+* Publictransport: Added 'ovapi' and 'treinen' as providers.  Removed 9292, mobiliteit and VVS (non working APIs). Changed rendering. For all changes see :ref:`publictransport`.
+
+Fixes
+~~~~~~
+
+* Changed dial styling for ring and blinds text. See :ref:`dialstyling`.
+* Dial: P1 decimals configurable via decimals block parameter.
+* Calendar: Fixed issues with some recurring events in ical modules (PHP5 as well as PHP7 version)
+
+v3.8.9 Beta (23-12-2021)
+------------------------
+
+.. note:: Your images in buttons now might scale to the full block width. This is a side effect of the fix of the moon scaling. Reduce the block width in case your image is too wide.
+
+Enhancements
+~~~~~~~~~~~~
+
+* Dial: Support for blinds. See :ref:`dialblinds`
+* Frame: Add block parameters ``scaletofit`` and ``aspectratio`` to automatically scale the frame content to the block width. See :ref:`Frames`
+
+Fixes
+~~~~~~
+
+* Moon image scaling
+
+
+v3.8.8 Beta (17-12-2021)
+------------------------
+
+Fixes
+~~~~~~
+
+* Garbage: Recycleapp (BE)
+* Dials: Fix for so called splitdial with 0 not at top. For instance: min=-10 and max=50
+ 
+v3.8.7 Beta (5-12-2021)
+------------------------
+
+.. note:: Weather icons changed. See :ref:`weathericons`
+.. note:: CSS styling for calendar events changed. See :ref:`eventClasses`   
+
+Enhancements
+~~~~~~~~~~~~
+
+* Calendar: eventClasses block parameter to customize styling based on event description. See :ref:`eventClasses`
+* Weather: New block parameter ``icons`` to set weather icons to 'line', 'linestatic', 'fill','static' or 'meteo'. See :ref:`weathericons`
+* New upgrade scripts in Makefile (Documentation to be updated)
+  
+Fixes
+~~~~~~
+
+* Garbage: Recycleapp (BE), Avalex, Suez 
+
+
+v3.8.6 Beta (22-10-2021)
+------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Graphs: Now you can also display switch information in your graphs
+
+Fixes
+~~~~~~
+
+* Graphs: Fixes in y-axes labeling
+
+v3.8.5 Beta (15-10-2021)
+------------------------
+
+Fixes
+~~~~~~
+
+* Make door lock switchable. 
+* Garbage: Venlo (new website)
+* Custom function getStatus will be called twice. Second time after block creation (fixed)
+* Weather block: fixed rain rate in hourly forecast
+* Graph: Fix for displaying energy values, for instance for P1 devices
+
+v3.8.4 Beta (13-8-2021)
+-----------------------
+
+Fixes
+~~~~~~
+
+* Calendar fixes (recurring events, multiple events on same moment)
+* ANWB traffic info: Change API v1 to v2
+* Garbage: Fix for Rova
+
+v3.8.3 Beta (29-5-2021)
+-----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Weather: Added layout 4 option. See :ref:`customweather`
+* Weather: Colored icons (animated weather icons only). See :ref:`customweather` 
+* Weather: show/hide wind dial and wind info, Wind as Beaufort, show/hide first forecast card
+
+Fixes
+~~~~~~
+
+* Weather: Changed styling of current weather block (center the three parts)
+* Weather: Fix styling of forecast block for white Dashticz template
+* Merged changes from master v3.8.0.1 and v3.8.0.2
+
+Code
+~~~~~
+
+* Bump Swiper.js from 5.4.5 to 6.4.2
+
+v3.8.2 Beta (24-4-2021)
+-----------------------
+
+.. note:: Breaking changes: New weather block.
+
+Enhancements
+~~~~~~~~~~~~
+
+* Rewrite of the weather block. See :ref:`customweather`.
+  
+
+v3.8.1 Beta (14-4-2021)
+-----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Change in auto swipe behavior. See :ref:`autoswipe`.
+
+v3.8.0 Beta (10-4-2021)
+-----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Auto slide timer configurable per screen via screen parameter ``auto_slide_page``
+
+* Fix for columns without block parameter
+* Fix for icon size for special blocks on screen width < 975 pixels
 
 v3.8.0.2 Master (14-5-2021)
 ---------------------------
@@ -22,8 +197,7 @@ v3.8.0.1 Master (26-4-2021)
 Fixes
 ~~~~~~
 
-* Fix for columns without block parameter
-* Fix for icon size for special blocks on screen width < 975 pixels
+* Standby: Prevent click to activate a Dashticz block while in standby
 
 v3.8 Master (9-4-2021)
 ----------------------
@@ -36,6 +210,7 @@ See the upgrade instructions at v3.7.2 below.
 
 v3.7.7 Beta (8-4-2021)
 ------------------------
+
 
 Fixes
 ~~~~~~

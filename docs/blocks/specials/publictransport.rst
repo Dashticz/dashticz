@@ -7,9 +7,8 @@ Dashticz currently supports the following types of public transport info:
 
 #. Public transport timetable, configurable via a public transport block:
 
-   * The public transport company :ref:`VVSsection` (Germany)
-   * :ref:`ns` (Netherlands).
-   * Mobiliteit (Luxembourg).
+   * Train info Netherlands ('treinen')
+   * Bus/tram/boat info Netherlands ('ovapi')
    * irail (Belgium)
    * delijn (Belgium)
 
@@ -20,19 +19,18 @@ Dashticz currently supports the following types of public transport info:
 
 A public transport block can be configured as follows::
 
-   //example station id: station-eindhoven
-   var publictransport = {}
-   publictransport.ovinfo= {
-     station: 'station-eindhoven',
+   //example station id: Utrecht
+   blocks['treinen']= {
+     station: 'UT',
      title:'OV Info',
      show_lastupdate:true,
-     provider: '9292',
+     provider: 'treinen',
      show_via: true,
      icon: 'fas fa-train',
      results: 5
    };
 
-.. image :: custom9292.png
+.. image :: img/treinen.jpg
 
 
 Parameters
@@ -46,29 +44,20 @@ Parameters
   * - Parameter
     - Description
   * - station
-    - The station id, which can be obtained from `VVS <https://efa-api.asw.io/api/v1/station/>`_ (Germany) or `9292.nl <http://api.9292.nl/0.1/locations?lang=nl-NL&q=>`_ (Dutch, add your location to the url)
+    - The station id. See Usage sections below to find how to obtain the right station id.
   * - title
     - Title of the block
   * - show_lastupdate
     - ``false`` , ``true``. To display the time of the last update.
   * - provider
     - | Public transport info provider to use. Choose from
-      | ``'VVS'`` Germany
-      | ``'9292'`` The Netherlands, all transport types
-      | ``'9292-boat'`` The Netherlands, boat only
-      | ``'9292-bus'`` The Netherlands, bus only
-      | ``'9292-metro'`` The Netherlands, metro only
-      | ``'9292-train'`` The Netherlands, train only
-      | ``'9292-tram'`` The Netherlands, tram only      
-      | ``'9292-tram-metro'`` The Netherlands, tram and metro      
-      | ``'9292-tram-bus'`` The Netherlands, tram and bus      
-      | ``'9292-bus-tram'`` The Netherlands, tram and bus      
-      | ``'mobiliteit'`` Luxembourg
-      | ``'irailbe'`` Belgium 
-      | ``'delijnbe'`` Belgium
+      | ``'treinen'`` Netherlands: trains 
+      | ``'ovapi'`` Netherlands: bus, tram, boat
+      | ``'irailbe'`` Belgium: trains 
+      | ``'delijnbe'`` Belgium: bus, tram, boat
   * - destination
     - | Set the end destination station name to filter the direction. 
-      | ``'Den Haag De Uithof,Den Haag Loosduinen'``
+      | ``'Den Haag De Uithof,Den Haag Loosduinen'`` (comma seperated, case sensitive)
   * - service
     - | Set the specific services (Dutch: lijnnummers) to further filter the result
       | ``'3,4'`` (comma seperated)
@@ -95,91 +84,103 @@ Parameters
 Usage
 -----
 
-.. _VVSsection :
+Treinen
+~~~~~~~
 
-VVS
-----
+::
 
-First find the correct station id from: https://efa-api.asw.io/api/v1/station/ 
-So for Stuttgart Central Station the station id is 5006118.
-Use this station id as value for the station parameter in the publictransport block. Example::
+   blocks['treinen']= {
+     station: 'UT',
+     title:'OV Info',
+     show_lastupdate:true,
+     provider: 'treinen',
+     show_via: true,
+     icon: 'fas fa-train',
+     results: 5
+   };
 
-    var publictransport = {}
-    publictransport.hbf= {
-      station: '5006118',
-      title:'Trains',
-      show_lastupdate:true,
-      provider: 'VVS',
-      show_via: true,
-      icon: 'fas fa-train',
-      interval: 15,
-      results: 5
+The station code can be found in search box at: https://www.rijdendetreinen.nl/vertrektijden
+
+The station code is the short code right of the station name:
+
+.. image :: img/treinstations.jpg
+
+Examples:
+  * Utrecht: UT
+  * Amsterdam Centraal: ASD
+
+ovapi
+~~~~~~
+
+Use ovapi to obtain bus/tram/boat departure information::
+
+    blocks['ovapi'] = {
+        station: 'utrlun',   //utrlun, Amstel: 60094
+        title:'Utrech Lunetten',
+        show_lastupdate:true,
+        provider: 'ovapi',
+        show_via: true,
+        icon: 'fas fa-bus',
+        results: 5
     };
 
-.. _ns :
+In the previous example bus station Utrecht Lunetten is used. A bus station can be a collection of several bus stops. For instance, the busstation close to a railway station often has several platforms.
+Or, if there is a busstop at both sides to the road, then this also may be defined as busstation.
 
-9292.nl
--------
-First get the station id from http://api.9292.nl/0.1/locations?lang=nl-NL&q=eindhoven (Change eindhoven to your own search parameter). 
-Then copy the id, and add to CONFIG.js as follows::
+* A bus station has a station code.
+* A bus stop has a so called tpc code.
 
- 
-    //example station id: station-eindhoven
-    var publictransport = {}
-    publictransport.ovinfo= {
-      station: 'station-eindhoven',
-      title:'OV Info',
-      show_lastupdate:true,
-      provider: '9292',
-      show_via: true,
-      icon: 'fas fa-train',
-      results: 5
-    };
-    publictransport.ovinfotrain= {
-      station: 'station-eindhoven',
-      title:'Bus',
-      show_lastupdate:true,
-      provider: '9292-bus',
-      icon: 'fas fa-bus',
-      results: 5
-    };
-    publictransport.ovinfobus= {
-      station: 'station-eindhoven',
-      title:'Trein',
-      show_lastupdate:true,
-      provider: '9292-train',
-      icon: 'fas fa-train',
-      results: 5
+The tpc codes for individual bus stops can be found on https://ovzoeker.nl.
+On the map click on a bus stop. The popup window will show the tpc code, which is the number behind 'haltenummer':
+
+.. image :: img/tpcutrlun.jpg
+
+In the previous example the tpc code for Utrecht Lunetten Perron C is 50006541.
+
+To find the station code follow the following url: https://v0.ovapi.nl/tpc/50006541
+
+In the json code that will be displayed locate the first ``areacode``:
+
+.. image :: img/stoputrlun.jpg
+
+If you want to show all departures from all stops within a station (area) use the area code as ``station`` block parameter, like in the example code block above::
+
+  station: 'utrlun',
+
+If you want to show only the departures from one specific stop or platform, use the tpc code as ``tpc`` block parameter, and remove the ``station`` parameter. Example::
+
+    blocks['mystop'] = {
+        tpc: '50006541',
+        title:'Utrecht Lunetten, perron C',
+        provider: 'ovapi',
+        results: 5
     };
 
-As you can see in the previous example specific transport types can be selected.
+irail
+~~~~~
 
-In the next examples only the filtered results will be shown::
+To find the station code fill in the search box on: https://irail.be/stations/NMBS
 
-    var publictransport = {}
-    publictransport.schiphol= {
-      station: 'station-eindhoven',
-      destination: 'Schiphol Airport,Maastricht',
-      provider: '9292-train',
-      show_lastupdate:false,
-      icon: 'fas fa-train',
-      results: 7
+After selecting your favorite station, and clicking on 'View Liveboard' the station code is the last word in the url in the address bar:
+
+.. image :: img/irailbe.jpg
+
+For Bruxelles Central the station code is ``008813003``::
+
+    blocks['irailbe'] = {
+        station: '008813003',     
+        title:'irailbe Brussel Central',
+        show_lastupdate:true,
+        provider: 'irailbe',
+        show_via: true,
+        icon: 'fas fa-train',
+        results: 5
     };
-    publictransport.ovinfotram = { 
-      show_via: true, 
-      station: 'den-haag/tramhalte-metrostation-leidschenveen', 
-      title:'Station Leidschenveen', 
-      destination:'Den Haag De Uithof,Den Haag Loosduinen', 
-      service:'3,4', 
-      provider: '9292-tram-bus', 
-      show_lastupdate:true, 
-      icon: 'fas fa-bus', 
-      width:12, 
-      results: 8 
-    };
+
+.. image :: img/irailbebrussel.jpg
 
 De lijn
---------
+~~~~~~~~
 
 The station code consists of 6 digits. Search for your station code in the search box on https://delijn.be 
 
@@ -202,6 +203,23 @@ Example for your ''CONFIG.js''::
 
 .. image :: traffictrain.png
 
+.. _VVSsection :
+
+VVS
+----
+
+Not supported anymore (VVS disabled it's api)
+
+.. _ns :
+
+9292.nl
+-------
+
+Not supported anymore. 9292 doesn't provide a public API key.
+
+
+
+
 Styling
 -------
 Font size can be changed by adding this to your ``custom.css`` and change to your own preference::
@@ -209,3 +227,7 @@ Font size can be changed by adding this to your ``custom.css`` and change to you
     .publictransport div {
         font-size: 13px; 
     }
+
+In case no info is available then the CSS class ``empty`` will be added to block.
+This can be used to adjust the styling of an empty block via ``custom.css``
+

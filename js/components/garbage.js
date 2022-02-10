@@ -488,41 +488,6 @@ var DT_garbage = (function () {
     });
   }
 
-  // eslint-disable-next-line no-unused-vars
-  function getVenloData(me) {
-    return $.get(
-      getPrefixUrl(me) +
-        'https://www.venlo.nl/trash-removal-calendar/' +
-        me.block.zipcode +
-        '/' +
-        me.block.housenumber
-    ).then(function (data) {
-      var returnDates = [];
-      data = data
-        .replace(/<img .*?>/g, '')
-        .replace(/<head>(?:.|\n|\r)+?<\/head>/g, '')
-        .replace(/<script (?:.|\n|\r)+?<\/script>/g, '');
-      $(data)
-        .find('div#block-system-main div.trash-removal-calendar tbody tr')
-        .each(function (index, element) {
-          var $el = $(element);
-          var year = $el.parents('table').find('thead')[0].innerText.substr(-5);
-          var datePart = $el.find('td')[0].innerText.trim();
-          $el.find('span').each(function (index, garbageElement) {
-            returnDates.push({
-              date: moment(datePart + ' ' + year, 'dddd DD MMMM YYYY', 'nl'),
-              summary: garbageElement.innerText,
-            });
-          });
-        });
-      returnDates = returnDates.filter(function (element) {
-        return element.date.isBetween(me.date.start, me.date.end, null, '[]');
-      });
-      return returnDates;
-    });
-  }
-
-
   ///http://dashticz.nl/afval/?service=afvalstromen&sub=alphenaandenrijn&zipcode=2401AR&nr=261&t=
 
   //http://dashticz.nl/afval/?service=deafvalapp&zipcode=5692VG&nr=33&t=
@@ -743,7 +708,7 @@ var DT_garbage = (function () {
       avalex: {
         handler: getGeneralData,
         param: {
-          service: 'afvalstromen',
+          service: 'ximmio',
           subservice: 'avalex',
         },
       },
@@ -890,7 +855,7 @@ var DT_garbage = (function () {
       },
       suez: {
         handler: getGarbageData,
-        param: 'https://inzamelwijzer.suez.nl',
+        param: 'https://inzamelwijzer.prezero.nl',
       },
       twentemilieu: {
         handler: getWasteApiData,
@@ -919,7 +884,12 @@ var DT_garbage = (function () {
           '.ics',
       },
       venlo: {
-        handler: getVenloData,
+        handler: getIcalData, //https://www.venlo.nl/trash-calendar/download/5912TN/3
+        param:
+          'https://www.venlo.nl/trash-calendar/download/' +
+          zipcode +
+          '/' +
+          housenumber,
       },
       venray: {
         handler: getGeneralData,

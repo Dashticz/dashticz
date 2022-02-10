@@ -3,19 +3,26 @@ PORT?=8082
 APP?=dtv3-$(PORT)
 TZ?="$(shell cat /etc/timezone)"
 CHECKDOCKER?=true
+FREE = "$(shell df -k --output=avail . | tail -n1)"
+DOCKERIMAGE = "php:7.4-apache"
 
 .PHONY: help
 help:
 	@echo "Installation script"
-	@echo "make help   : Show this info"
-	@echo "make start  : Build Dashticz container and start it on port 8082"
-	@echo "              Parameters: "
-	@echo "              PORT=<port> : Build Dashticz container and start in on the provided port"
-	@echo "make stop    : Stop the Domoticz container"
+	@echo "make help          : Show this info"
+	@echo "make start         : Build Dashticz container and start it on port 8082"
+	@echo "                     Parameters: "
+	@echo "                     PORT=<port> : Build Dashticz container and start in on the provided port"
+	@echo "make stop          : Stop the Domoticz container"
 	@echo
-	@echo "make update  : Update Dashticz to the latest version from Github"
-	@echo "make beta    : Switch to the beta branch"
-	@echo "make master  : Switch to the master branch"
+	@echo "make update        : Update Dashticz to the latest version from Github"
+	@echo "make beta          : Switch to the beta branch"
+	@echo "make master        : Switch to the master branch"
+	@echo
+	@echo "make upgradeimage  : Upgrade Docker image to latest version"
+	@echo "make upgradesystem : Update and upgrade OS"
+	@echo "make fullupgrade   : Update and upgrade OS, including Docker image update"
+	
 
 testdocker:
 ifeq ($(CHECKDOCKER),true)
@@ -118,3 +125,51 @@ master:
 .PHONY: beta
 beta:
 	git checkout master
+
+.PHONY: fullupgrade
+fullupgrade: fullclean testdiskspace upgradesystem upgradeimage dockerprune
+
+.PHONY: testdiskspace
+testdiskspace:
+	@echo "Checking for sufficient diskspace (500MB)"
+#ifeq ($(shell ss -ln src :$(PORT) | grep -Ec -e "\<$(PORT)\>"),0)
+#	@echo "Insufficient disk space."
+#	@exit 201
+#endif
+	
+# @echo $(shell echo $(FREE))
+ifeq ($(shell test $(FREE) -lt 400000; echo $$?),0)
+	@echo "Less than 400MBs free disk space!"
+	@exit 201
+endif 
+
+.PHONY: upgradesystem
+upgradesystem:
+	sudo apt-get -y update
+	sudo apt-get -y upgrade
+
+.PHONY: fullupgradesystem
+fullupgradesystem:
+	sudo apt-get -y --allow-releaseinfo-change update
+	sudo apt-get -y upgrade
+
+.PHONY: upgradeimage
+upgradeimage: stop pullimage
+	make start
+
+.PHONY: pullimage
+pullimage:
+	sudo docker pull $(DOCKERIMAGE)
+
+.PHONY: fullclean
+fullclean: aptclean dockerprune
+
+.PHONY: dockerprune
+dockerprune:
+	@sudo docker image prune -af
+
+.PHONE: aptclean
+aptclean:
+	@sudo apt-get clean
+	@sudo apt-get autoclean
+	

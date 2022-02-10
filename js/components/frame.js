@@ -1,5 +1,6 @@
 /* global Dashticz DT_function*/
 // eslint-disable-next-line no-unused-vars
+// check: https://github.com/niutech/x-frame-bypass
 var DT_frame = {
   name: 'frame',
 
@@ -26,8 +27,41 @@ var DT_frame = {
     var height = me.block.height ? ';height:' + me.block.height + 'px' : '';
     html +=
       '<iframe ' + scrolling + ' style="border:0px' + height + ';"></iframe>';
+//      '<iframe is="x-frame-bypass"' + scrolling + ' style="border:0px' + height + ';"></iframe>';
+
     return html;
   },
+  /*
+  init: function(me) {
+    return DT_function.loadScript('https://unpkg.com/x-frame-bypass');
+  },*/
+  run: function(me) {
+    
+    var hasIcon = me.$mountPoint.find('.col-icon').length;
+    var $iframe = me.$mountPoint.find('iframe');
+    var $dtstate = me.$mountPoint.find('.dt_state');
+    var width = hasIcon ? parseInt(me.$mountPoint.find('.dt_content').outerWidth()) : parseInt(me.$mountPoint.find('div').innerWidth());
+    var scaling = me.block.scaletofit ? width/me.block.scaletofit : 1;
+    var iframeWidth = width/scaling;
+    var dtstatecss={};
+    var iframecss={}
+    var scalingStr = 'scale(' + scaling + ')';
+    if(scaling!==1) {
+      dtstatecss= { };
+      iframecss={'-webkit-transform': scalingStr, transform: scalingStr, width: iframeWidth, maxWidth: iframeWidth};
+      if(hasIcon) {
+        dtstatecss.marginRight='0px';
+        dtstatecss.marginLeft='5px';
+      }
+    }
+    if(me.block.aspectratio) {
+      dtstatecss.height=iframeWidth * me.block.aspectratio * scaling;
+      iframecss.height=iframeWidth * me.block.aspectratio;
+    }
+    $dtstate.css(dtstatecss);
+    $iframe.css(iframecss);
+  },
+
   refresh: function (me) {
     if (typeof me.block.frameurl !== 'undefined') {
       me.$mountPoint
