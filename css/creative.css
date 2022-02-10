@@ -153,6 +153,10 @@
   max-width: 100%;
 }
 
+.frame iframe {
+  transform-origin: 0 0;
+}
+
 .no-margin .dt_state {
   margin: -5px
 }
@@ -287,7 +291,7 @@
   margin: 10px auto 10px auto;
   display: block;
   width: 100%;
-  max-width: 125px;
+/*  max-width: 125px;*/
 }
 
 .skyconsmall {
@@ -794,11 +798,6 @@ a.playlist {
   margin-top: 2px;
 }
 
-.owmdescription {
-  height: 2.5em;
-  line-height: 1em;
-}
-
 @media only screen and (max-width: 1000px) {}
 
 
@@ -995,10 +994,12 @@ div.mh h3 {
   padding-top: 6px;
 }
 
+/*
 div.big {
   padding-top: 20px !important;
   padding-left: 18px !important;
 }
+*/
 
 .sunriseholder,
 .sunriseholder .wi {
@@ -1194,11 +1195,6 @@ p {
   background:unset;
 }
 
-.weatherfull .transbg {
-  padding-top: 9px !important;
-  padding-bottom: 10px !important;
-}
-
 .block_clock h1,
 .block_clock h4 {
   margin-left: 0px !important;
@@ -1237,7 +1233,13 @@ Only add this hover on NON touch devices
     background-clip: padding-box;
     border: 7px solid rgba(255, 255, 255, 0);
   }
+
+  html.non-touch .dial.hover:hover {
+    background: inherit;
+  }
+  
 }
+
 
 .transbg.hover {
   cursor: pointer;
@@ -1497,20 +1499,9 @@ img.icon {
   margin-right: 3px !important;
 }
 
-.containsweather .col-xs-1 {
-  width: 50px;
-}
-
-.containsweather .col-xs-11 {
-  width: calc(100% - 50px);
-}
-
 @media (max-width: 975px) {
   div.mh {
     height: 75px;
-  }
-  .big .weatherdegrees {
-    padding-left: 15px;
   }
   .transbg.col-xs-1,
   .transbg.col-xs-2,
@@ -1552,15 +1543,6 @@ img.icon {
   h4 {
     margin-left: 0px !important;
   }
-  div.big {
-    padding-left: 13px !important;
-  }
-  .containsweather .col-xs-1 {
-    width: 35px;
-  }
-  .containsweather .col-xs-11 {
-    width: calc(100% - 35px);
-  }
   img.icon {
     max-width: 15px !important;
   }
@@ -1570,6 +1552,7 @@ img.icon {
   .col-icon .wi {
     font-size: 15px !important;
   }
+  
   .fa-tv:before {
     font-size: 12px;
   }
@@ -1608,69 +1591,6 @@ div.screen {
   color: white;
 }
 
-.big .weatherdegrees {
-  padding-right: 10px;
-}
-
-.big .weatherdegrees,
-.big .weatherloc {
-  display: inline-block;
-  margin-top: -2px;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.weatherfull {
-  color: #444;
-  text-align: left;
-  text-shadow: none;
-}
-
-.weatherfull>div div {
-  text-align: center;
-  color: #fff;
-}
-
-.weatherfull>div div.day {
-  margin-top: 0px;
-  font-weight: 300;
-  font-size: 13px;
-}
-
-.weatherfull>div div.temp span {
-  float: none;
-  display: inline-block;
-}
-
-.weatherfull>div div.temp {
-  font-size: 28px;
-  font-weight: 400;
-}
-
-.weatherfull>div div.temp .nightT {
-  display: block;
-  font-size: 19px;
-  margin-top: -8px;
-  opacity: 0.7;
-  padding-bottom: 0px;
-}
-
-.weatherfull>div div.icon {
-  border-radius: 50%;
-  width: 75px;
-  height: 48px;
-  margin: 0px auto;
-}
-
-.weatherfull>div div.icon i {
-  color: #fff !important;
-}
-
-.weatherfull i {
-  font-size: 40px !important;
-  margin: 5px auto 0 auto;
-  opacity: 0.9;
-}
 
 .section-heading {
   margin-top: 0;
@@ -2578,10 +2498,9 @@ canvas {
   white-space: nowrap;
 }
 
-td.agenda-title {
+.event .description {
   white-space: normal;
 }
-
 
 /* END: AGENDA */
 
@@ -3140,7 +3059,7 @@ td.agenda-title {
   cursor: default;
 }
 
-.dial:hover:after {
+.dial.active:not(.fixed):hover:after {
   top: 0.11em;
   left: 0.11em;
   width: 0.78em;
@@ -3158,7 +3077,7 @@ td.agenda-title {
 .dial.p360 .bar,
 .dial.p360 .fill {
   position: absolute;
-  border: 0.08em solid #307bbb;
+  border: 0.08em solid;
   width: 0.78em;
   height: 0.78em;
   -webkit-border-radius: 50%;
@@ -3195,25 +3114,21 @@ td.agenda-title {
   clip: auto;
 }
 
-.dial .bar.primary,
-.dial .fill.primary {
-  border-color: #ffa500;
-  border-color: var(--dial-color);
+.slice.primary{
+  color: #ffa500;
+  color: var(--dial-color);
 }
 
-.dial .bar.secondary,
-.dial .fill.secondary {
-  border-color: #307bbb;
+.slice.secondary {
+  color: #307bbb;
 }
 
-.dial .bar.positive,
-.dial .fill.positive {
-  border-color: #28a745;
+.slice.positive {
+  color: #28a745;
 }
 
-.dial .bar.negative,
-.dial .fill.negative {
-  border-color: #dc3545;
+.slice.negative{
+  color: #dc3545;
 }
 
 .dial.p180 .fill:after {
@@ -3290,8 +3205,8 @@ td.agenda-title {
 
 .dial .dial-container {
   position: absolute;
-  width: 0.9em;
-  height: 0.9em;
+  width: 90%;
+  height: 90%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -3309,9 +3224,9 @@ td.agenda-title {
   transition-timing-function: ease-in;
 }
 
-.dt_content .dial:not(.fixed):hover .dial-container {
-  width: 0.8em;
-  height: 0.8em;
+.dt_content .dial.active:not(.fixed):hover .dial-container {
+  width: 80%;
+  height: 80%;
 /*  top: 6%;
   left: 6%;*/
   top: 50%;
@@ -3341,8 +3256,9 @@ td.agenda-title {
 }
 
 .dial .dial-center {
-  width: 0.75em;
-  height: 0.75em;
+  width: 85%;
+  height: 85%;
+  font-size: 10%;
   /*
   top: 0;
   left: 0;
@@ -3372,9 +3288,9 @@ td.agenda-title {
   user-select: none;
 }
 
-.dt_content .dial:not(.fixed):hover .dial-center {
-  width: 0.5em;
-  height: 0.5em;
+.dt_content .dial.active:not(.fixed):hover .dial-center {
+  width: 65%;
+  height: 65%;
   -webkit-transition: all 0.2s ease-in;
   -moz-transition: all 0.2s ease-in;
   -o-transition: all 0.2s ease-in;
@@ -3383,26 +3299,16 @@ td.agenda-title {
 }
 
 .dt_content .dial.fixed .dial-center {
-  width: 0.85em;
-  height: 0.85em;
-}
-
-.dial-menu {
-  justify-content: center;
-  height: 1em;
-  width: 0.9em;
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  width: 95%;
+  height: 95%;
 }
 
 .dial-menu .status {
   list-style-type: none;
   padding-left: 0;
-  width: 90%;
-  height: 90%;
-  font-size: 9%;
+  width: 130%;
+  height: 100%;
+/*  font-size: 9%;*/
   position: absolute;
   top: 50%;
   left: 50%;
@@ -3413,13 +3319,26 @@ td.agenda-title {
   text-align: center;
   text-align-last: center;
   -moz-text-align-last: center;
-  border-radius: 50%;
-  box-shadow: inset 0px 0.5px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 2px rgba(255, 255, 255, 0.5), inset 0px 5px 8px 5px rgba(0, 0, 0, 0.8);
   color: #cccccc;
-  background-color: #2a2a2a;
   border: 0;
   overflow-y: hidden;
   outline: none;
+
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.dial-menu  {
+    height: 90%;
+    width: 90%;
+    position: absolute;
+    top: 5%;
+    left:5%;
+    border-radius: 50%;
+    box-shadow: inset 0px 0.5px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 2px rgba(255, 255, 255, 0.5), inset 0px 5px 8px 5px rgba(0, 0, 0, 0.8);
+    background-color: #2a2a2a;  
+    overflow:hidden;
 }
 
 .dial-menu .status li {
@@ -3428,7 +3347,6 @@ td.agenda-title {
   -moz-text-align-last: center;
   max-width: 100% !important;
   width: 98%;
-  margin: auto;
   line-height: 1.35;
 }
 
@@ -3447,6 +3365,56 @@ td.agenda-title {
   box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.5);
 }
 
+.dial-menu-title {
+ 
+}
+
+.dial-menu-title-text {
+/*
+  position: absolute;
+  text-align: center;
+  bottom:0;
+  width:100%;
+  font-size: 9%;
+  line-height:400%;
+  color: orange;
+  color: var(--dial-color);  
+  */
+}
+
+.dial-menu-title-background {
+  content:'';
+  position: absolute;
+  line-height:400%;
+  bottom:0;
+  left:0;
+  text-align: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+    background: radial-gradient(circle, #333, #444);
+  clip: rect( 6em, 12em, 12em, 0);
+}
+
+.dial-menu-title {
+  position:absolute;
+  width: 100%;
+  height: 27%;
+  bottom: 5%;
+  left: 0;
+  
+/*  background: rgba(0,255,0,0.5);*/
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: orange;
+  color: var(--dial-color);  
+}
+
+.dial-menu.hastitle .status {
+  height:85%;
+  top:35%;
+}
 .dial .dial-face {
   width: 100%;
   height: 100%;
@@ -3522,7 +3490,7 @@ td.agenda-title {
 }
 
 .dial .value-unit {
-  font-size: 0.15em;
+  font-size: 130%;
   line-height: 1em;
   color: #cccccc;
   -webkit-transition: all 0.2s ease-out;
@@ -3547,8 +3515,7 @@ td.agenda-title {
   position: absolute;
   top: 7%;
   color: #ffa500;
-  line-height: 2em;
-  font-size: 0.07em;
+  font-size: 70%;
   white-space: normal;
   line-height: 1em;
   width: 80%;
@@ -3561,7 +3528,7 @@ td.agenda-title {
 
 .dial.text .value-unit {
   width: 95%;
-  font-size: 0.1em;
+/*  font-size: 10%;*/
 }
 
 .dial.text .value {
@@ -3571,7 +3538,7 @@ td.agenda-title {
 .dial .info {
   position: relative;
   top: 28%;
-  font-size: 0.06em;
+  font-size: 60%;
   color: grey;
   line-height: 2em;
 }
@@ -3580,46 +3547,10 @@ td.agenda-title {
   margin-bottom: 7px;
 }
 
-/*
-.dial .dial-display .extra {
-  position: relative;
-  top: 28%;
-  font-size: 0.06em;
-  color: grey;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  width: 85%;
-}
 
-.dial .dial-display .extra div {
-  margin-left: 0.25em;
-  margin-right: 0.25em;
-}
-
-.dial .dial-display .extra div .data {
-  margin-left: -0.25em;
-}
-
-.dial .dial-display .extra div .unit {
-  font-size: 0.8em;
-  margin-left: -0.25em;
-  margin-right: 0.25em;
-}
-
-.dial .dial-display .extra .fas {
-  font-size: 0.8em !important;
-  margin: 0;
-}
-
-.dial .dial-display .extra img {
-  width: 1em;
-  margin-right: 0.25em;
-}
-*/
 .dial .extra {
   position: absolute;
-  font-size: 0.06em;
+  font-size: 60%;
   color: grey;
   display: flex;
   flex-direction: row;
@@ -3683,7 +3614,7 @@ td.agenda-title {
   visibility: hidden;
 }
 
-.dial:hover .value {
+.dial.active:not(.fixed):hover .value {
   color: orange;
   color: var(--dial-color);
 }
@@ -3702,13 +3633,13 @@ td.agenda-title {
   width: 100%
 }
 
-.dial:hover .value-unit .unit {
+.dial.active:not(.fixed):hover .value-unit .unit {
   font-size: 0.05em;
 }
 
-.dial:hover .info,
-.dial:hover .device,
-.dial:hover .extra {
+.dial.active:not(.fixed):hover .info,
+.dial.active:not(.fixed):hover .device,
+.dial.active:not(.fixed):hover .extra {
   display: none;
 }
 
@@ -4014,6 +3945,7 @@ td.agenda-title {
   margin: 0;
 }
 
+/*needed? Remove for now ...
 .dial-switch .switch-face:after {
   content: "";
   position: absolute;
@@ -4025,6 +3957,7 @@ td.agenda-title {
   border-radius: inherit;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 1px 2px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 0, 0, 0.15);
 }
+*/
 
 .dial-switch .switch-face:before {
   content: "";
@@ -4057,8 +3990,8 @@ td.agenda-title {
 }
 
 .dial-switch .icon-off {
-  font-size: 0.18em;
-  color: #cccccc;
+  font-size: 150%;
+  color: rgba(128,128,128,0.5);
   -webkit-transition: all 0.1s ease;
   -moz-transition: all 0.1s ease;
   -ms-transition: all 0.1s ease;
@@ -4079,7 +4012,6 @@ td.agenda-title {
 }
 
 .dial-switch input:checked~.switch-face .fas {
-  font-size: 0.18em;
   color: orange;
   color: var(--dial-color);
   -webkit-transition: all 0.1s ease;
@@ -4121,6 +4053,131 @@ td.agenda-title {
   -ms-transition: all 0.1s ease;
   -o-transition: all 0.1s ease;
   transition: all 0.1s ease;
+}
+
+.dial .blinds {
+/*  font-size: 72%;*/
+}
+
+.dialbtn.up {
+  background-color: rgba(0, 255, 0, 0.3);
+  line-height: 3em;
+  clip: rect(-2em, 12em, 3em, -2em);
+  transform-origin: top;
+}
+
+.dialbtn.up::after {
+  position: absolute;
+  line-height: 3em;
+  transform-origin: top;
+  content: "";
+  width: calc(100% - 0.7em);
+  height: calc(100% - 0.4em);
+  height: 2.8em;
+  border-bottom: 0.2em solid rgba(0,0,0,0.6);
+}
+
+.dialbtn {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  height: calc(100% - 0.4rem);
+  border-radius: 50%;
+  border: 0.2rem;
+  border-color: black;
+  border-style: outset;
+  width: calc(100% - 0.4rem);
+
+  font-size: 100%;
+  background-color: green;
+  color: white;
+  cursor: pointer;
+  outline: none;
+  transition: 0.2s all;
+  transition-timing-function: cubic-bezier(.91,.8,.54,1.39);
+  display: flex;
+  justify-content: center;
+  z-index: 10;
+}
+/* Adding transformation when the button is active */
+
+.dialbtn:active,
+.dialbtn.selected {
+  transform: scale(0.9);
+  /* Scaling button to 0.98 to its original size */
+  box-shadow: 3px 2px 22px 1px rgba(0, 0, 0, 0.6);
+  /* Lowering the shadow */
+}
+
+.dialbtn.up {
+  background-color: rgba(64, 64, 64, 0.2);
+  line-height: 3em;
+  clip: rect(-2em, 10em, 2.9em, -2em);
+  transform-origin: top;
+}
+.dialbtn.selected {
+  background-image: radial-gradient(rgba(255,255,255,0.5), rgba(0,0,0,0));
+}
+
+.dialbtn.up::after {
+  position: absolute;
+  line-height: 3em;
+  transform-origin: top;
+  content: "";
+  width: calc(100% - 0.5em);
+  height: 2.7em;
+  border-bottom: 0.2em solid rgba(0,0,0,0.6);
+  left: 0.25em;
+  top: 0;
+}
+
+
+.dialbtn.down {
+  background-color: rgba(64, 64, 64, 0.2);
+  clip: rect(5.7em, 10em, 10em, 0px);
+  align-items: flex-end;
+  line-height: 3em;
+  transform-origin: bottom;
+}
+
+.dialbtn.down::after {
+  position: absolute;
+  line-height: 3em;
+  transform-origin: top;
+  content: "";
+  width: calc(100% - 0.5em);
+  height: calc(100% - 0.4em);
+  height: 2.7em;
+  border-top: 0.2em solid rgba(0,0,0,0.6);;
+  top: 0em;
+  left: 0em
+}
+
+.dialbtn.middle {
+  background-color: rgba(0, 0, 0, 0.2);
+  align-items: center;
+  clip: rect(2.8em, 10em, 5.7em, 0px);
+  display: flex;
+  flex-direction: column;
+}
+
+.dialbtn.middle::after {
+  position: absolute;
+  line-height: 1em;
+  content: "";
+  width: calc(100% - 0.4em);
+  height: 2.7em;
+  border-top: 0.2em solid rgba(0,0,0,0.6);
+  border-bottom: 0.2em solid rgba(0,0,0,0.6);
+  left: 0;
+}
+
+.dialbtn .title {
+  color: yellow;
+}
+
+.middle .text {
+  font-size: 90%
 }
 
 
@@ -4283,4 +4340,35 @@ td.agenda-title {
 /*owm widget*/
 .dt_block.owmwidget {
   background-color: unset 
+}
+
+/*public transport*/
+.publictransport table {
+  border-spacing: 5px 0px;
+  border-collapse: separate;
+}
+
+.publictransport td {vertical-align: top;}
+
+.publictransport .destination {
+  font-style: bold;
+}
+
+.publictransport .via {
+  font-style: italic;
+  color:lightgray;
+}
+
+.publictransport .platform {
+  white-space: nowrap;
+}
+
+.publictransport .transporttype {
+  font-style: italic;
+  color:lightgray;
+}
+
+.publictransport .delay {
+  background-color: red;
+  color: white;
 }

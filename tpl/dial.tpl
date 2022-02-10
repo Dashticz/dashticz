@@ -28,12 +28,10 @@
     <span class="device {{animation}}" style="color:{{color}};">{{name}}</span>
 {{/inline}}
 
-<div class="dial {{size}} {{#if fixed}}fixed{{/if}} {{addclass}} {{deviceStatus}}" data-device="{{name}}" data-min="{{min}}" data-max="{{max}}"
-    data-type="{{type}}" data-value="{{value}}" data-setpoint="{{setpoint}}" data-status="{{status}}" 
-    data-until="{{until}}" data-unit="{{unit}}" data-info="{{lastupdate}}" style="font-size: {{fontsize}}px;--dial-color: {{rgba}};">
-    <div class="slice {{#if split}}{{slice}}{{/if}}">
-        <div class="bar primary {{class}}" style="--dial-color:{{color}};"></div>
-        <div class="fill primary {{class}}" style="--dial-color:{{color}};"></div>
+<div class="dial {{size}} {{#if fixed}}fixed{{/if}} {{active}} {{addclass}} {{deviceStatus}}" style="font-size: {{fontsize}}px;--dial-color: {{rgba}};">
+    <div class="slice {{#if split}}{{slice}}{{/if}} primary {{class}}">
+        <div class="bar"></div>
+        <div class="fill"></div>
     </div>
     <div class="dial-container">         
         <div id="face{{id}}" class="dial-face">
@@ -52,13 +50,19 @@
         {{/unless}}
         <div id="{{id}}" class="dial-center {{on}}" style="--dial-rgba: {{rgba}};{{#if onoff}}background: transparent; box-shadow: none;{{/if}}">
             {{#if controller}}
-            <div class="dial-menu">   
-                <ul class="status" style="--dial-color: {{color}};">
-                   {{#each options as |opt|}}
-                    <li data-val="{{opt.val}}">{{opt.text}}</li>
-                    {{/each}}
-                </ul>  
-            </div>
+                <div class="dial-menu {{#if name}}hastitle{{/if}}">
+                    <ul class="status" style="--dial-color: {{color}};">
+                    {{#each options as |opt|}}
+                        <li class="text" data-val="{{opt.val}}">{{opt.text}}</li>
+                        {{/each}}
+                    </ul>  
+                </div>
+                {{#if name}}
+                    <div class="dial-menu-title-background"></div>
+                    <div class="dial-menu-title" style="--dial-color: {{color}};">
+                        {{name}}
+                    </div>
+                {{/if}}
             {{else if onoff}}
             <div class="dial-switch">   
                 <input type="checkbox" {{checked}}>

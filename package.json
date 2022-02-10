@@ -27,10 +27,10 @@
     "md5": "^2.3.0",
     "mobile-detect": "^1.4.4",
     "moment": "^2.29.1",
-    "skycons": "^1.0.0",
+    "skycons-color": "^1.0.0",
     "spectrum-colorpicker": "^1.8.1",
     "spotify-web-api-js": "^1.5.1",
-    "swiper": "^5.4.5"
+    "swiper": "^6.6.2"
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
@@ -53,7 +53,8 @@
     "build": "webpack",
     "format": "npm run format:prettier && npm run format:html",
     "format:prettier": "node_modules/.bin/prettier --config .prettierrc \"{js,src}/**/*.{ts,css,less,js}\" --write",
-    "format:html": "node bin/glob-ls.js '*.html' | xargs node_modules/.bin/html-beautify -r"
+    "format:html": "node bin/glob-ls.js '*.html' | xargs node_modules/.bin/html-beautify -r",
+    "Update beta after merge": "./scripts/bu.sh"
   },
   "repository": {
     "type": "git",

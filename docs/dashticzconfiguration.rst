@@ -111,17 +111,17 @@ Config parameters
       | ``0`` = Swipe by touch disabled
       | ``1`` = Swipe by touch enabled
   * - auto_swipe_back_to
-    - | when no activity, swipe back to the selected page
-      | ``1..100`` = page number
+    - | when no activity, swipe back to the selected page. Also see :ref:`autoswipe`
+      | ``1..100`` = page number (default: 1)
   * - auto_swipe_back_after
-    - | The amount of seconds after which Dashticz will swipe back to the default page, as defined by ``auto_swipe_back_to``
-      | ``0`` = No auto swiping back (default)
-      | ``1..9999`` = Swipe back after <value> seconds
+    - | The amount of seconds after which Dashticz will start with auto swipe/auto slide. Also see :ref:`autoswipe`
+      | ``0`` = No auto swiping (default)
+      | ``1..9999`` = Start auto swipe back after <value> seconds the last screen touch/mouse activity.
   * - auto_slide_pages
-    - | Loop all pages and change page every x (min. 5) seconds,
-      |     set ``config['auto_swipe_back_after'] = 0``
-      | ``false`` = No auto slide (default)
-      | ``5..9999`` = Auto slide to the next page every <value> second
+    - | Loop all pages and change page every x seconds,
+      |     set ``config['auto_swipe_back_to'] = 0``. Also see :ref:`autoswipe`
+      | ``0`` = Auto slide is disabled. (=default)
+      | ``1..9999`` = Auto slide to the next page every <value> second
   * - slide_effect
     - | Control which Screenslider effect you prefer
       | ``'slide'``, ``'fade'``, ``'cube'``, ``'coverflow'``, ``'flip'``

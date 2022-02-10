@@ -22,6 +22,7 @@ var standby = true;
 var standbyActive = false;
 var standbyTime = 0;
 var swipebackTime = 0;
+var autoSwipe = false; //will be true when autoSwipe is active
 // eslint-disable-next-line no-unused-vars
 var audio = {};
 var screens = {};
@@ -46,6 +47,8 @@ var _STANDBY_CALL_URL = '';
 var _END_STANDBY_CALL_URL = '';
 //move var allVariables = {};
 var sessionvalid = false;
+
+var currentScreenSet;
 
 var _PARAMS = {};
 // eslint-disable-next-line no-unused-vars
@@ -361,10 +364,9 @@ function addDebug() {
   return $.ajax({
     url: 'js/debug.js',
     dataType: 'script',
-  })
-    .then(function () {
-      return Debug.init();
-    })
+  }).then(function () {
+    return Debug.init();
+  });
 }
 
 function showError(msg) {
@@ -388,6 +390,36 @@ function defaultPassiveHandlers() {
       }
     },
   };
+}
+
+function autoSlide() {
+  if (typeof myswiper === 'undefined') return;
+  var nextSlide = myswiper.activeIndex + 1;
+  var valid = false;
+  while (!valid) {
+    if (nextSlide === myswiper.activeIndex) {
+      console.log(
+        'autoswiping but all auto_slide_page paramaters are 0. Disabling auto swipe'
+      );
+      settings.auto_slide_pages = 0;
+      settings.auto_swipe_back_after = 0;
+      return;
+    }
+    if (nextSlide > myswiper.slides.length - 1) {
+      nextSlide = 0;
+    }
+    valid = true;
+    if (
+      typeof currentScreenSet[nextSlide].auto_slide_page !== 'undefined' &&
+      !currentScreenSet[nextSlide].auto_slide_page
+    ) {
+      //auto_slide_page screen parameter is 0, skipping to next screen
+      nextSlide = nextSlide + 1;
+      valid = false;
+    }
+  }
+
+  toSlide(nextSlide);
 }
 
 function onLoad() {
@@ -442,19 +474,32 @@ function onLoad() {
     }, dashticzRefresh * 60 * 1000);
   }
 
-  if (
-    typeof settings['auto_swipe_back_to'] !== 'undefined' &&
-    typeof settings['auto_swipe_back_after'] !== 'undefined'
-  ) {
-    if (parseFloat(settings['auto_swipe_back_after']) > 0) {
-      setInterval(function () {
-        swipebackTime += 1000;
+  if (settings['auto_swipe_back_after'] > 0 || settings.auto_slide_pages > 0) {
+    setInterval(function () {
+      swipebackTime += 1000;
+      if (settings.auto_slide_pages > 0) {
+        var currentSlide = myswiper.activeIndex;
+        var swipeTimeout =Number(
+          currentScreenSet[currentSlide].auto_slide_page ||
+          settings.auto_slide_pages);
+        if (autoSwipe) swipeTimeout += Number(settings.auto_swipe_back_after);
+        if (swipebackTime > swipeTimeout * 1000) {
+          autoSlide();
+          autoSwipe = true;
+          swipebackTime = 0;
+        }
+        return;
+      }
+
+      if (settings.auto_swipe_back_to > 0) {
+        //swipe back to specified screen
         if (swipebackTime >= settings['auto_swipe_back_after'] * 1000) {
           toSlide(settings['auto_swipe_back_to'] - 1);
           swipebackTime = 0;
         }
-      }, 1000);
-    }
+        return;
+      }
+    }, 1000);
   }
 
   if (
@@ -478,32 +523,26 @@ function onLoad() {
     $('body').prepend(googleAnalytics);
   }
 
-  if (
-    (settings['auto_swipe_back_after'] == 0 ||
-      typeof settings['auto_swipe_back_after'] == 'undefined') &&
-    parseFloat(settings['auto_slide_pages']) > 0
-  ) {
-    var nextSlide = 1;
-    setInterval(function () {
-      toSlide(nextSlide);
-      nextSlide++;
-      if (nextSlide > myswiper.slides.length - 1) {
-        nextSlide = 0;
-      }
-    }, parseFloat(settings['auto_slide_pages']) * 1000);
-  }
-
   if (md.mobile() == null) {
     $('body').on('mousemove', function () {
       swipebackTime = 0;
-      disableStandby();
+      autoSwipe = false;
+      if (standbyActive) {
+        Debug.log('Standby: mousemove');
+        disableStandby();
+      }
     });
   }
 
   $('body').on('touchend click', function () {
     setTimeout(function () {
+      if (standbyActive) {
+        //should not be activated
+        Debug.log('Standby: touchend click');
+        disableStandby();
+      }
       swipebackTime = 0;
-      disableStandby();
+      autoSwipe = false;
     }, 100);
   });
 
@@ -526,8 +565,8 @@ function onLoad() {
             _STANDBY_CALL_URL !== ''
           ) {
             $.get(_STANDBY_CALL_URL);
-            standbyActive = true;
           }
+          standbyActive = true;
         }
       }
     }, 5000);
@@ -568,7 +607,8 @@ function buildStandby() {
       getBlock(columns_standby[c], 'standby' + c, 'div.screenstandby', true);
     }
 
-    $('.screenstandby').on('click', function (event) {
+    $('.screenstandby').on('click touchend', function (event) {
+      Debug.log('Click or touchend in standby');
       disableStandby();
       event.stopPropagation();
       return false;
@@ -646,7 +686,9 @@ function buildScreens() {
       (parseFloat(screens[t]['maxwidth']) >= $(window).width() &&
         parseFloat(screens[t]['maxheight']) >= $(window).height())
     ) {
+      currentScreenSet = [];
       for (var s in screens[t]) {
+        currentScreenSet.push(screens[t][s]);
         if (s !== 'maxwidth' && s !== 'maxheight') {
           var screenhtml =
             '<div data-screenindex="' +
