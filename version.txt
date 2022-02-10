@@ -1,7 +1,7 @@
 {
-"version": "3.8.11",
-"branch": "beta",
-"last_changes": "Dial menu title",
+"version": "3.9",
+"branch": "master",
+"last_changes": "Master version",
 "changelog" : {
             "3.8.10": "Public transport update",
             "3.8.9": "Frame scaling, dials: blinds supported",
