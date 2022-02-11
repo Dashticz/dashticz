@@ -4,7 +4,7 @@
   "restructuredtext.updateDelay": 300,
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
+    "editor.defaultFormatter": "vscode.typescript-language-features"
   },
   "editor.formatOnSave": false,
   "prettier.disableLanguages": ["html", "vue", "markdown"],
@@ -13,5 +13,10 @@
     "css": [],
     "html": ["htm", "html"]
   },
-  "python.pythonPath": "/bin/python3"
+  "python.pythonPath": "/bin/python3",
+  "restructuredtext.languageServer.disabled": true,
+  "svg.preview.background": "white",
+  "[json]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  }
 }

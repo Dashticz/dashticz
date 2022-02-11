@@ -12,7 +12,10 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                loaders: ["style-loader", "css-loader"]
+                use:  [{
+                    loader: "style-loader"
+                },
+                { loader:  "css-loader"}]
             },
             {
                 test: /\.(jpe?g|png|gif)$/i,
@@ -35,28 +38,25 @@ module.exports = {
             {
                 // Exposes jQuery for use outside Webpack build
                 test: require.resolve('jquery'),
-                use: [{
-                    loader: 'expose-loader',
-                    options: 'jQuery'
-                }, {
-                    loader: 'expose-loader',
-                    options: '$'
-                }]
+                loader: 'expose-loader',
+                options: {
+                    exposes: ['jQuery','$']
+                }
             },
             {
                 // Exposes jQuery for use outside Webpack build
                 test: require.resolve('mobile-detect'),
-                use: {
-                    loader: 'expose-loader',
-                    options: 'MobileDetect'
+                loader: 'expose-loader',
+                options: {
+                    exposes: 'MobileDetect'
                 }
             },
             {
                 // Exposes jQuery for use outside Webpack build
                 test: require.resolve('js-cookie'),
-                use: {
-                    loader: 'expose-loader',
-                    options: 'Cookies'
+                loader: 'expose-loader',
+                options: {
+                    exposes: 'Cookies'
                 }
             }
         ],
