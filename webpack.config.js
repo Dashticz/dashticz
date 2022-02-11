@@ -29,11 +29,8 @@ module.exports = {
             {
                 test: /\.(woff|woff2|eot|ttf|svg)$/,
 //                loader: 'url-loader?limit=100000'
-            loader: 'file-loader',
-            options: {
-                name: '[name].[ext]',
-                outputPath: './assets/fonts/'
-            }
+                type: 'asset/resource',
+                dependency: { not: ['url'] },
         },
             {
                 // Exposes jQuery for use outside Webpack build
