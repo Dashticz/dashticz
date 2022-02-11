@@ -22,7 +22,8 @@ window.md5 = require('md5');
 require('js-cookie');
 require('script-loader!./functions.js');
 
-var Handlebars = require('handlebars');
+var Handlebars = require('handlebars/dist/cjs/handlebars');
+//import Handlebars from 'handlebars/dist/cjs/handlebars'
 window.Handlebars = Handlebars;
 var MomentHandler = require('handlebars.moment');
 window.MomentHandler = MomentHandler;
