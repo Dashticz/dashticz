@@ -150,7 +150,6 @@ var DT_dial = (function () {
     me.showvalue = me.block.showvalue;
     resize(me);
     var d = me.device;
-    console.log(d);
     me.tap = tap;
     me.checkNeedlePos = true;
 
