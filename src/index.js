@@ -32,7 +32,8 @@ require('./templateengine.js');
 require('./handlebars-helpers.js');
 var Swiper = require('swiper/bundle').default;
 window.Swiper = Swiper;
-require('swiper/swiper-bundle.min.css');
+//require('swiper/swiper-bundle.min.css');
+import 'swiper/css/bundle'
 
 //window.Skycons =
 var Skycons=require('skycons-color');
