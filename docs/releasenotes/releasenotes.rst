@@ -5,6 +5,14 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
+Recent changes
+---------------
+
+Code
+~~~~
+
+* Update development dependencies
+
 V3.9.0 Beta (10-2-2022)
 -----------------------
 
