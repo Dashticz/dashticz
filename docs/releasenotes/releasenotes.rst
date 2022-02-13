@@ -12,6 +12,7 @@ Code
 ~~~~
 
 * Update development dependencies
+* Update FontAwesome, Popper, IRO and Swiper to latest versions
 
 V3.9.0 Beta (10-2-2022)
 -----------------------
