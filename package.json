@@ -8,8 +8,8 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.0.0",
-    "@jaames/iro": "^5.3.1",
-    "@popperjs/core": "^2.5.4",
+    "@jaames/iro": "^5.5.2",
+    "@popperjs/core": "^2.11.2",
     "bootstrap": "^3.4.1",
     "chart.js": "^2.9.4",
     "chartjs-plugin-zoom": "^0.7.7",
@@ -30,7 +30,7 @@
     "skycons-color": "^1.0.0",
     "spectrum-colorpicker": "^1.8.1",
     "spotify-web-api-js": "^1.5.1",
-    "swiper": "^6.6.2"
+    "swiper": "^8.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.17.2",

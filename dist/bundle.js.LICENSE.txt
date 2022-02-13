@@ -43,7 +43,7 @@
  */
 
 /*!
- * iro.js v5.5.1
+ * iro.js v5.5.2
  * 2016-2021 James Daniel
  * Licensed under MPL 2.0
  * github.com/jaames/iro.js
