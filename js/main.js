@@ -769,14 +769,15 @@ function buildSwipingScrolling() {
 }
 
 function startSwiper() {
-  $('.dt-container').addClass('swiper-container');
+  $('.dt-container').addClass('swiper');
   $('.contents').addClass('swiper-wrapper');
   setTimeout(function () {
-    myswiper = new Swiper('.swiper-container', {
+    myswiper = new Swiper('.swiper', {
       pagination: {
         el: '.swiper-pagination',
         clickable: true,
       },
+      autoHeight: true,
       paginationClickable: true,
       //      speed: 0,
       loop: false,
