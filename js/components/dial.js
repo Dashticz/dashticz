@@ -872,7 +872,7 @@ var DT_dial = (function () {
   function addValues(me) {
     function getValueUnit(data) {
       var dataScale = data.scale || 1;
-      if (!data.value) {
+      if (typeof data.value==='undefined') {
         console.log('Invalid data ', data);
         return {
           value: '',
