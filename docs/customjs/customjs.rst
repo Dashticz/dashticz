@@ -173,6 +173,37 @@ Example: You use the following block definition::
 In the previous example the following function in ``custom.js`` will be called: ``function getStatus_myblock(block)``
 (and not ``function getStatus_145(block)``)
 
+
+Example, Trigger on different text values::
+
+	function getStatus_14146(block){   // where 14146 is your block IDX
+		var idx = block.idx;
+		var device = block.device;
+		var tekst = device['Data'];
+
+		if(device['Data']=="No Data"){
+			block.addClass='none'  
+			block.icon = 'far fa-thumbs-up'
+		}
+		// geen actie
+	
+		else if (tekst.includes('geen waarschuwingen')){
+			block.addClass='none' 
+			block.icon = 'far fa-thumbs-up'
+			block.title = 'Geen Melding'
+		}
+
+		// zware windstoten
+		else if (tekst.includes('Kans op zware windstoten')){
+			block.addClass='warningyellow' 
+			block.icon = 'fas fa-wind'
+			block.title = 'Wind'
+		}
+	}
+
+.. image :: zware_windstoten.png
+
+
 ``function getChange_IDX(block)``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
