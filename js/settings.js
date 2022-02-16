@@ -634,6 +634,7 @@ settingList.garbage = {
       hvc: 'HVC Groep (NL)',
       ical: 'iCal',
       katwijk: 'Katwijk (NL)',
+      maashorst: 'Maashorst (NL)',
       meerlanden: 'Meerlanden (NL)',
       mijnafvalwijzer: 'Mijn Afval Wijzer (NL)',
       omrin: 'Omrin (NL)',
