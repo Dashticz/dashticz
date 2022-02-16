@@ -796,6 +796,16 @@ var DT_garbage = (function () {
       katwijk: {
         handler: getKatwijkData,
       },
+      maashorst: {
+        handler: getIcalData,
+        param: //https://www.gemeentemaashorst.nl/inwoners/afval/afvalkalender/2022/ics/5403VJ/206
+          'https://www.gemeentemaashorst.nl/inwoners/afval/afvalkalender/' +
+          moment().format('YYYY') +
+          '/ics/' +
+          zipcode +
+          '/' +
+          housenumber,
+      },
       meerlanden: {
         handler: getGeneralData,
         param: {
@@ -863,14 +873,13 @@ var DT_garbage = (function () {
       },
       uden: {
         handler: getIcalData,
-        param:
-          'https://www.uden.nl/inwoners/afval/ophaaldagen-afval/' +
+        param: //https://www.gemeentemaashorst.nl/inwoners/afval/afvalkalender/2022/ics/5403VJ/206
+          'https://www.gemeentemaashorst.nl/inwoners/afval/afvalkalender/' +
           moment().format('YYYY') +
-          '/' +
+          '/ics/' +
           zipcode +
-          '-' +
-          housenumber +
-          '.ics',
+          '/' +
+          housenumber,
       },
       veldhoven: {
         handler: getIcalData,
