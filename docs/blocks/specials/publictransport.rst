@@ -156,6 +156,16 @@ If you want to show only the departures from one specific stop or platform, use 
         results: 5
     };
 
+If you want to show all departures from all stops within a station (area), but there's *no station code available* you can use multiple tpc codes. Example::
+
+    blocks['mystops'] = {
+        tpc: '53602050,53602060',
+        title: 'Prof. Waterinklaan',
+        provider: 'ovapi',
+        results: 6
+    };
+
+
 irail
 ~~~~~
 
