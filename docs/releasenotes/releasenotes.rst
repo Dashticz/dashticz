@@ -8,6 +8,16 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Garbage: Added Maashorst (Uden, Volkel, Odiliapeel, Reek, Schaijk en Zeeland)
+
+Fixes
+~~~~~~
+
+* Garbage: Uden (new URL, same as Maashorst)
+
 V3.9.1 Beta (13-2-2022)
 -----------------------
 
