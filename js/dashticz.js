@@ -1,8 +1,8 @@
-/* global blocks settings usrEnc pwdEnc DT_function getCustomFunction*/
+/* global blocks settings usrEnc pwdEnc DT_function*/
 /*from domoticz-api.js*/
 /*global Domoticz*/
 /*from main.js*/
-/*global*/
+/*global workerTimers*/
 
 // eslint-disable-next-line no-unused-vars
 var Dashticz = (function () {
@@ -153,10 +153,10 @@ var Dashticz = (function () {
     var me = mountedBlocks[id].me;
     if (me) {
       me.callbacks.timeoutList.forEach(function (el) {
-        clearTimeout(el);
+        workerTimers.clearTimeout(el);
       });
       me.callbacks.intervalList.forEach(function (el) {
-        clearInterval(el);
+        workerTimers.clearInterval(el);
       });
       me.callbacks.subscriptionList.forEach(function (el) {
         el();
@@ -429,7 +429,7 @@ var Dashticz = (function () {
 
   function _setTimeout(me, callback, timeout) {
     me.callbacks.timeoutList.push(
-      setTimeout(function () {
+      workerTimers.setTimeout(function () {
         if (isMounted(me)) callback(me);
       }, timeout)
     );
@@ -437,7 +437,7 @@ var Dashticz = (function () {
 
   function _setInterval(me, callback, interval) {
     me.callbacks.intervalList.push(
-      setInterval(function () {
+      workerTimers.setInterval(function () {
         if (isMounted(me)) callback(me);
       }, interval)
     );
