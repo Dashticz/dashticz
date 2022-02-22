@@ -18,6 +18,11 @@ Fixes
 
 * Garbage: Uden (new URL, same as Maashorst)
 
+Code
+~~~~
+
+* Switched to worker-timers, to improve background refresh
+
 V3.9.1 Beta (13-2-2022)
 -----------------------
 
