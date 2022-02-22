@@ -1,7 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 /* global getAllDevicesHandler objectlength config initVersion loadSettings settings getLocationParameters*/
 /* global sessionValid MobileDetect moment getBlock*/
-/* global Swiper Debug*/
+/* global Swiper Debug workerTimers*/
 
 //To refactor later:
 /* global switchSecurity*/
@@ -451,7 +451,7 @@ function onLoad() {
   buildScreens();
 
   setClockDateWeekday();
-  setInterval(
+  workerTimers.setInterval(
     function () {
       setClockDateWeekday();
     },
@@ -461,7 +461,7 @@ function onLoad() {
   enableRefresh();
   setClassByTime();
 
-  setInterval(function () {
+  workerTimers.setInterval(function () {
     setClassByTime();
   }, 60000);
 
@@ -475,7 +475,7 @@ function onLoad() {
   }
 
   if (settings['auto_swipe_back_after'] > 0 || settings.auto_slide_pages > 0) {
-    setInterval(function () {
+    workerTimers.setInterval(function () {
       swipebackTime += 1000;
       if (settings.auto_slide_pages > 0) {
         var currentSlide = myswiper.activeIndex;
@@ -553,7 +553,7 @@ function onLoad() {
     if (typeof settings['standby_call_url_on_end'] !== 'undefined') {
       _END_STANDBY_CALL_URL = settings['standby_call_url_on_end'];
     }
-    setInterval(function () {
+    workerTimers.setInterval(function () {
       standbyTime += 5000;
       if (standbyActive != true) {
         if (standbyTime >= settings['standby_after'] * 1000 * 60) {
@@ -571,6 +571,11 @@ function onLoad() {
       }
     }, 5000);
   }
+/*
+  setInterval(function() {
+    console.log('playing');
+    playAudio('sounds/computer_error.mp3');
+  }, 5000)*/
 }
 
 function setClockDateWeekday() {
