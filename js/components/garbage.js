@@ -547,7 +547,29 @@ var DT_garbage = (function () {
     });
   }
 
-  //http://dashticz.nl/afval/?service=rova&zipcode=7731ZT&nr=84&t=
+  function getRovaData(me) {
+    //https://www.rova.nl/api/waste-calendar/upcoming?postalcode=3829BL&houseNumber=17&addition=&take=20
+    //index.php still contains the previous version of Rova
+    var url =
+    getPrefixUrl(me) +
+    'https://www.rova.nl/api/waste-calendar/upcoming?postalcode=' +
+    me.block.zipcode +
+    '&houseNumber=' +
+    me.block.housenumber +
+    '&addition=' +
+    me.block.housenumberSuffix +
+    '&take=' +
+    me.block.maxitems
+
+    return $.getJSON(url).then(function (data) {
+      return data.map(function(el) {
+        return {
+          date: moment(el.date),
+          summary: el.garbageType
+        }
+      })
+    })
+  }
 
   function filterReturnDates(me, returnDates) {
     return returnDates
@@ -853,8 +875,8 @@ var DT_garbage = (function () {
         },
       },
       rova: {
-        handler: getGeneralData,
-        param: 'rova',
+        handler: getRovaData,
+//        param: 'rova',
       },
       sudwestfryslan: {
         handler: getGeneralData,
