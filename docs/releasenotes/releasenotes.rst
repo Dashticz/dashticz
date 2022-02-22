@@ -17,6 +17,7 @@ Fixes
 ~~~~~~
 
 * Garbage: Uden (new URL, same as Maashorst)
+* Garbage: Rova (for some zipcodes)
 
 Code
 ~~~~
