@@ -23,6 +23,7 @@ Code
 ~~~~
 
 * Switched to worker-timers, to improve background refresh
+* Prevent caching index.html
 
 V3.9.1 Beta (13-2-2022)
 -----------------------
