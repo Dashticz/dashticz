@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Velg spilleliste",
         "value": "Verdi",
         "enter_pincode": "Enter pin code",
-        "wrong_code": "Feil pinkode"
+        "wrong_code": "Feil pinkode",
+        "platform": "platform"
     },
     "settings": {
         "about": {

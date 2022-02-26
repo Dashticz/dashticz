@@ -39,7 +39,8 @@
         "spotify_select_playlist": "プレイリストを選択",
         "value": "値",
         "enter_pincode": "PINコードを入力してください",
-        "wrong_code": "PINコードが間違っています"
+        "wrong_code": "PINコードが間違っています",
+        "platform": "platform"
     },
     "settings": {
         "about": {
