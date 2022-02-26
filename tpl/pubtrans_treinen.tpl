@@ -25,7 +25,7 @@
         </td>
         <td class="platform">
             {{#if this.platform}}
-            spoor {{this.platform}}
+            {{../lang.misc.platform}} {{this.platform}}
             {{/if}}
         </td>
     </tr>
