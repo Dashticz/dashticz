@@ -19,13 +19,17 @@
         //        clickHandler: pubtransClick, //If url is defined in block def then clickHandler will be installed by Dashticz
         clickHandler: true,
         results: 10,
-        show_via: true
+        show_via: true,
+        show_direction: false
       };
       if (!block || !block.station) {
         result.url =
           'https://dashticz.readthedocs.io/en/master/blocks/specials/publictransport.html';
         result.title = 'Example: Utrecht CS';
       }
+      var languages = ['ne','en','fr','de'];
+      var language = settings.language.substr(0,2);
+      result.lang = (languages.includes(language) && language) || 'nl';
       return result;
     },
     defaultContent: language.misc.loading,
@@ -130,11 +134,12 @@
       todayDate +
       '&time=' +
       todayTime +
-      '&arrdep=departure&lang=nl&format=json&fast=false&alerts=false';
+      '&arrdep=departure&lang=' +
+      block.lang + 
+      '&format=json&fast=false&alerts=false';
   }
 
   function transformTreinen(me, data) {
-    var block = me.block;
     var result = {
       departures: []
     };
@@ -157,7 +162,6 @@
   }
 
   function transformOvApiTpc(me, data) {
-    var block = me.block;
     var departures = [];
     Object.keys(data).forEach(function (tpc) {
       Object.keys(data[tpc].Passes).forEach(function (service) {
@@ -169,11 +173,12 @@
   }
 
   function formatDelay(actual, planned) {
+    if(!actual) actual=planned;
     var delay = Number((actual - planned) / 60000);
     return delay >= 0 ? (delay > 0 ? '+' + Math.ceil(delay) : '') : Math.floor(delay)
   }
 
-  function getOvApiDeparture(line) {
+  function getOvApiDeparture(line, block) {
     var fulltime = moment(line.TargetDepartureTime);
     var hasNumber = line.LineName.indexOf(line.LinePublicNumber) >= 0;
     var departure = {
@@ -183,6 +188,9 @@
       via: hasNumber ? line.DestinationName50 : line.LineName,
       delay: formatDelay(moment(line.ExpectedDepartureTime), fulltime),
       line: line.LinePublicNumber
+    }
+    if(block && block.show_direction && line.LineDirection) {
+      departure.destination += ' (ri. '+ line.LineDirection + ')';
     }
     return departure
   }
@@ -194,7 +202,7 @@
       Object.keys(data[dep]).forEach(function (tpc) {
         Object.keys(data[dep][tpc].Passes).forEach(function (service) {
           var line = data[dep][tpc].Passes[service];
-          departures.push(getOvApiDeparture(line));
+          departures.push(getOvApiDeparture(line, block));
         })
       })
     });
@@ -303,7 +311,10 @@ voertuigNummer: "330265"
         delay: formatDelay(dep.vertrekRealtimeTijdstip, dep.vertrekTheoretischeTijdstip),
         line: dep.lijnNummerPubliek,
         destination: 'Lijn ' + dep.lijnNummerPubliek + ': ' + dep.bestemming,
-        via: dep.omschrijving + dep.viaBestemming && (' ' + dep.viaBestemming)
+        via: dep.omschrijving + (dep.viaBestemming && (' ' + dep.viaBestemming))
+      }
+      if(me.block && me.block.show_direction && isDefined(dep.richtingCode)) {
+        departure.destination += ' (ri. '+ dep.richtingCode + ')';
       }
       dataPart.departures.push(departure);
     }
@@ -361,6 +372,8 @@ voertuigNummer: "330265"
 
   function renderTpl(me, data) {
     var tpl = me.providerCfg.tpl;
+    data.lang={};
+    data.lang.platform=language.platform || 'spoor';
     data.block = me.block;
     return templateEngine.load(tpl).then(function (template) {
 
