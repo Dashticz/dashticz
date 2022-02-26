@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Выбрать плейлист",
         "value": "Значение",
         "enter_pincode": "Enter pin code",
-        "wrong_code": "Wrong pin code"
+        "wrong_code": "Wrong pin code",
+        "platform": "platform"
     },
     "settings": {
         "about": {

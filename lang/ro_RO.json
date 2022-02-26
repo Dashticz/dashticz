@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Selectaţi playlist",
         "value": "Valoare",
         "enter_pincode": "Introduceți codul PIN",
-        "wrong_code": "Codul PIN greșit"
+        "wrong_code": "Codul PIN greșit",
+        "platform": "platform"
     },
     "settings": {
         "about": {

@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Playlist wählen",
         "value": "Wert",
         "enter_pincode": "Enter pin code",
-        "wrong_code": "Wrong pin code"
+        "wrong_code": "Wrong pin code",
+        "platform": "Gleis"
     },
     "settings": {
         "about": {
