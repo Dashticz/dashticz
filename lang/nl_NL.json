@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Selecteer afspeellijst",
         "value": "Waarde",
         "enter_pincode": "Voer de pincode in",
-        "wrong_code": "Verkeerde pincode"
+        "wrong_code": "Verkeerde pincode",
+        "platform": "spoor"
     },
     "settings": {
         "about": {

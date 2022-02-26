@@ -63,6 +63,11 @@ Parameters
       | ``'3,4'`` (comma seperated)
   * - show_via
     - ``false`` , ``true``. Hide the via-part.
+  * - show_direction
+    - ``false`` , ``true``. Show the line direction (only for ``ovapi`` and ``delijnbe``).
+  * - lang
+    - | ``'nl'``, ``'fr'``, ``'en'``, ``'de'`` :  Set the language for search results (only for ``irailbe``)
+      | Default value is derived from the Dashticz language setting.
   * - icon
     - | The font-awesome icon (including ``fas fa-``)
       | ``'fas fa-bus'``, ``'fas fa-tram'``, ``'fas fa-train'``, ``'fas fa-ship'``, ``'fas fa-subway'``, ...

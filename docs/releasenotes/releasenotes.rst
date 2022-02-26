@@ -12,6 +12,8 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Garbage: Added Maashorst (Uden, Volkel, Odiliapeel, Reek, Schaijk en Zeeland)
+* Public transport: New block parameter ``show_direction`` to show bus line direction.
+* Public transport: New block parameter ``lang`` to set language for search results (for ``irailbe`` only).
 
 Fixes
 ~~~~~~
