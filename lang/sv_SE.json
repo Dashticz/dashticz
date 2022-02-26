@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Välj spellista",
         "value": "Värde",
         "enter_pincode": "Ange PIN-kod",
-        "wrong_code": "Fel PIN-kod"
+        "wrong_code": "Fel PIN-kod",
+        "platform": "platform"
     },
     "settings": {
         "about": {

@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Sélectionnez playlist",
         "value": "Valeur",
         "enter_pincode": "Enter pin code",
-        "wrong_code": "Wrong pin code"
+        "wrong_code": "Wrong pin code",
+        "platform": "voie"
     },
     "settings": {
         "about": {

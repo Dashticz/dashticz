@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Válasszon lejátszási listát",
         "value": "Érték",
         "enter_pincode": "Enter pin code",
-        "wrong_code": "Wrong pin code"
+        "wrong_code": "Wrong pin code",
+        "platform": "platform"
     },
     "settings": {
         "about": {
