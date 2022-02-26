@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Vyberte playlist",
         "value": "Hodnota",
         "enter_pincode": "Vložte PIN",
-        "wrong_code": "Nesprávný PIN"
+        "wrong_code": "Nesprávný PIN",
+        "platform": "platform"
     },
     "settings": {
         "about": {

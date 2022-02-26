@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Pasirinkite grojaraštį",
         "value": "Kaina",
         "enter_pincode": "Įveskite pin kodą",
-        "wrong_code": "Neteisingą pin kodas"
+        "wrong_code": "Neteisingą pin kodas",
+        "platform": "platform"
     },
     "settings": {
         "about": {

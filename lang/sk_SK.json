@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Select playlist",
         "value": "Hodnota",
         "enter_pincode": "Enter pin code",
-        "wrong_code": "Wrong pin code"
+        "wrong_code": "Wrong pin code",
+        "platform": "platform"
     },
     "settings": {
         "about": {
