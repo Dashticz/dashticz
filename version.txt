@@ -1,8 +1,9 @@
 {
-"version": "3.9.1",
+"version": "3.9.2",
 "branch": "beta",
-"last_changes": "Update FontAwesome, Popper, Iro, Swiper",
+"last_changes": "Update caching behavior",
 "changelog" : {
+            "3.9.1": "Update FontAwesome, Popper, Iro, Swiper",
             "3.9.0": "Beta version derived from 3.9 master",
             "3.9": "Master version"
             }
