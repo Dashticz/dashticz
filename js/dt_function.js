@@ -206,9 +206,14 @@ var DT_function = (function () {
       loadedResources[filename] = $.ajax({
         url: filename,
         dataType: 'script',
+        cache: settings.cached_scripts
       });
     }
     return loadedResources[filename];
+  }
+
+  function loadDTScript(filename) {
+    return loadScript(filename + '?v='+_DASHTICZ_VERSION)
   }
 
   /** Prompt for password
@@ -337,6 +342,7 @@ var DT_function = (function () {
     loadFont: loadFont,
     loadCSS: loadCSS,
     loadScript: loadScript,
+    loadDTScript: loadDTScript,
     blockLoadFrame: blockLoadFrame,
     checkForceRefresh: checkForceRefresh,
     createModalDialog: createModalDialog,

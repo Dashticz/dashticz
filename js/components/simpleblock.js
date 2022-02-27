@@ -96,7 +96,7 @@ var DT_simpleblock = (function () {
       var script = thisBlock.script;
       var render = thisBlock.render;
       if (script)
-        DT_function.loadScript(script).then(function () {
+        DT_function.loadDTScript(script).then(function () {
           renderBlock(me, render);
         })
         .catch(function() {
@@ -138,11 +138,6 @@ var DT_simpleblock = (function () {
           break;
 
         case 'fullscreen':
-          $.ajax({
-            url: 'js/fullscreen.js',
-            async: false,
-            dataType: 'script',
-          });
           content += getFullScreenIcon();
           break;
       }

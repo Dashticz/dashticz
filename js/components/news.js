@@ -7,10 +7,7 @@ var DT_news = {
     return block && block.feed;
   },
   init: function () {
-    return $.ajax({
-      url: 'vendor/jquery.newsTicker.min.js',
-      dataType: 'script',
-    });
+    return DT_function.loadScript('vendor/jquery.newsTicker.min.js');
   },
   defaultCfg: {
     containerClass: 'hover',
