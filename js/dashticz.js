@@ -49,29 +49,24 @@ var Dashticz = (function () {
     //        return Promise.all(components.map(function (component) {
     $(window).on('resize', Dashticz.onResize);
     return initDomoticz().then(function () {
-      $.when.apply(
+      return $.when.apply(
         $,
         specials.map(function (component) {
-          return $.ajax({
-            url: 'js/components/' + component + '.js',
-            dataType: 'script',
-          }).fail(function (jqXHR, textStatus, errorThrown) {
-            console.error(
-              'Error loading: ./js/components/' + component + '.js'
-            );
-            console.error('Error: ', textStatus);
-            return errorThrown;
-          });
+          return DT_function.loadDTScript('js/components/' + component + '.js')
+            .fail(function (jqXHR, textStatus, errorThrown) {
+              console.error(
+                'Error loading: ./js/components/' + component + '.js'
+              );
+              console.error('Error: ', textStatus);
+              return errorThrown;
+            });
         })
       );
     });
   }
 
   function initDomoticz() {
-    return $.ajax({
-      url: 'js/domoticz-api.js',
-      dataType: 'script',
-    })
+    return DT_function.loadDTScript('js/domoticz-api.js')
       .then(function () {
         var cfg = {
           url: settings['domoticz_ip'],
@@ -86,9 +81,6 @@ var Dashticz = (function () {
         };
         return Domoticz.init(cfg);
       })
-      .then(function () {
-        return $.ajax({ url: 'js/dt_function.js', dataType: 'script' });
-      });
   }
 
   function _onResize() {
@@ -121,7 +113,7 @@ var Dashticz = (function () {
 
   function setEmpty(me, state) {
     var $div = me.$mountPoint.find('.dt_block');
-    if(state)
+    if (state)
       $div.addClass('empty');
     else
       $div.removeClass('empty');
@@ -411,7 +403,7 @@ var Dashticz = (function () {
     }
     if (changed || !state) {
       if (subscribeBlockList[key]) subscribeBlockList[key].fire(block);
-      else if (typeof key==='string') {
+      else if (typeof key === 'string') {
         var keySplit = key.split('_');
         if (keySplit.length === 2 && subscribeBlockList[keySplit[0]]) {
           //we call the parent call back with empty block update

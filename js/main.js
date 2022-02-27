@@ -1,6 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 /* global getAllDevicesHandler objectlength config initVersion loadSettings settings getLocationParameters*/
-/* global sessionValid MobileDetect moment getBlock*/
+/* global sessionValid MobileDetect moment getBlock DT_function*/
 /* global Swiper Debug workerTimers*/
 
 //To refactor later:
@@ -88,6 +88,7 @@ function loadFiles(dashtype) {
       $.ajax({
         url: 'https://cdn.lr-ingest.io/LogRocket.min.js',
         dataType: 'script',
+        cache: true
       }).then(function () {
         enableLogRocket(enable_logrocket);
       })
@@ -143,7 +144,7 @@ function loadFiles(dashtype) {
         setLang = config.language;
       }
       return $.ajax({
-        url: 'lang/' + setLang + '.json?v=' + cache,
+        url: 'lang/' + setLang + '.json?v=' + _DASHTICZ_VERSION,
         dataType: 'json',
         success: function (data) {
           language = data;
@@ -152,12 +153,20 @@ function loadFiles(dashtype) {
     })
     .then(function () {
       return $.ajax({
-        url: 'js/polyfills.js',
+        url: 'js/polyfills.js?t='+_DASHTICZ_VERSION,
         dataType: 'script',
+        cache: true,
       });
     })
     .then(function () {
       return getSettings();
+    })
+    .then( function() {
+      $.ajax({
+        url: 'js/dt_function.js?t='+_DASHTICZ_VERSION,
+        dataType: 'script',
+        cache: true
+      })
     })
     .then(addDebug)
     .then(function () {
@@ -226,49 +235,20 @@ function loadFiles(dashtype) {
       loadCustomCss(customfolder);
 
       return $.when(
-        $.ajax({
-          url: 'js/switches.js',
-          dataType: 'script',
-        }),
-        $.ajax({
-          url: 'js/thermostat.js',
-          dataType: 'script',
-        }),
-        $.ajax({
-          url: 'js/dashticz.js',
-          dataType: 'script',
-        }).then(function () {
+        DT_function.loadDTScript('js/switches.js'),
+        DT_function.loadDTScript('js/thermostat.js'),
+        DT_function.loadDTScript('js/dashticz.js'),
+        DT_function.loadDTScript('js/blocks.js'),
+        DT_function.loadDTScript('js/blocktypes.js'),
+        DT_function.loadDTScript('js/login.js'),
+        DT_function.loadDTScript('js/moon.js'),
+        DT_function.loadDTScript('js/colorpicker.js'),
+        DT_function.loadDTScript('js/fullscreen.js')
+      )
+        .then(function () {
           return Dashticz.init();
         })
-      );
     })
-    .then(function () {
-      return $.when(
-        $.ajax({
-          url: 'js/blocks.js',
-          dataType: 'script',
-        }),
-        $.ajax({
-          url: 'js/blocktypes.js',
-          dataType: 'script',
-        }),
-        $.ajax({
-          url: 'js/login.js',
-          dataType: 'script',
-        }),
-        $.ajax({
-          url: 'js/moon.js',
-          dataType: 'script',
-        }),
-        $.ajax({
-          url: 'js/colorpicker.js',
-          dataType: 'script',
-        })
-      );
-    })
-    /*        .then(function () {
-                    checkSecurityStatus();
-                }) */
     .then(function () {
       if (settings['security_panel_lock'])
         Domoticz.subscribe('_secstatus', true, checkSecurityStatus);
@@ -283,6 +263,7 @@ function loadFiles(dashtype) {
           url:
             'https://maps.googleapis.com/maps/api/js?key=' + settings['gm_api'],
           dataType: 'script',
+          cache: true,
         }).done(function () {
           setTimeout(function () {
             initMap();
@@ -308,6 +289,7 @@ function loadFiles(dashtype) {
     return $.ajax({
       url: 'js/version.js',
       dataType: 'script',
+      cache: true
     })
       .then(function () {
         return initVersion();
@@ -316,6 +298,7 @@ function loadFiles(dashtype) {
         return $.ajax({
           url: 'js/settings.js',
           dataType: 'script',
+          cache: true
         });
       })
       .then(function () {
@@ -364,6 +347,7 @@ function addDebug() {
   return $.ajax({
     url: 'js/debug.js',
     dataType: 'script',
+    cache: true
   }).then(function () {
     return Debug.init();
   });
