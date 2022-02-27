@@ -967,6 +967,7 @@ var defaultSettings = {
   refresh_method: 1,
   domoticz_timeout: 2000,
   use_cors: 0,
+  cached_scripts: true
 };
 
 var settings = {};

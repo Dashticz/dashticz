@@ -26,6 +26,7 @@ Code
 
 * Switched to worker-timers, to improve background refresh
 * Prevent caching index.html
+* Update caching behavior
 
 V3.9.1 Beta (13-2-2022)
 -----------------------
