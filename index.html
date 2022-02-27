@@ -51,9 +51,6 @@
   <meta name="msapplication-square310x310logo"
     content="img/favicon/largetile.png" />
   <title>Dashticz</title>
-  <script> var _DASHTICZ_VERSION=25;</script>
-  <script src="dist/bundle.js?t=25"></script>
-
 </head>
 
 <body id="page-top">
@@ -73,16 +70,11 @@
 
   <script>
     var dashtype = 1;
-    //DO NOT EDIT BELOW
-    var cache = new Date().getTime();
-    $.ajax({
-        url: "js/main.js?v=" + cache,
-        dataType: 'script'
-      })
-      .then(function() {
-        loadFiles(dashtype)
-      })
-  </script>
+    var head = document.getElementsByTagName('head')[0],
+       script = document.createElement('script');
+    script.src = 'js/loader.js?t='+ new Date().getTime();
+    head.appendChild(script);
+    </script>
 </body>
 
 </html>
