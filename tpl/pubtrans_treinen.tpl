@@ -25,7 +25,7 @@
         </td>
         <td class="platform">
             {{#if this.platform}}
-            {{../lang.misc.platform}} {{this.platform}}
+            {{../lang.platform}} {{this.platform}}
             {{/if}}
         </td>
     </tr>
