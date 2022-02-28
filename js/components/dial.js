@@ -569,6 +569,10 @@ var DT_dial = (function () {
   From angle back to value is not trivial ...
   */
     var value = me.splitdial ? (angle - me.startAngle) / me.scale : (angle - me.startAngle) / me.scale + me.min;
+    if(me.block.steps) {
+      var divider=Math.round(value/me.block.steps);
+      return divider*me.block.steps;
+    }
     return Math.round(value * 10) / 10; //rounded to 1 decimal ... 
   }
 
