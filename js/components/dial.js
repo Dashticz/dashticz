@@ -752,8 +752,8 @@ var DT_dial = (function () {
   function heating(me) {
     me.type = me.device.Type === 'Heating' ? 'zone' : 'stat';
     me.unitvalue = _TEMP_SYMBOL;
-    me.min = choose(me.block.min, choose(settings['setpoint_min'], 5));
-    me.max = choose(me.block.max, choose(settings['setpoint_max'], 35));
+    me.min = parseInt(choose(me.block.min, choose(settings['setpoint_min'], 5)));
+    me.max = parseInt(choose(me.block.max, choose(settings['setpoint_max'], 35)));
 
     me.dialicon = display(me.block.dialicon, 0, 1, 'fas fa-calendar-alt');
     me.dialimage = display(me.block.dialimage, 0, 1, false);
@@ -763,7 +763,7 @@ var DT_dial = (function () {
     if (me.type === 'zone') {
       me.value = me.device.Temp;
       me.setpoint = me.isSetpoint ? me.device.SetPoint : 20;
-      me.boost = choose(settings['evohome_boost_zone'], 60);
+      me.boost = parseInt(choose(settings['evohome_boost_zone'], 60));
       me.until = choose(me.device.Until, false);
       me.status = choose(me.device.Status, 'Auto');
       me.override = me.status === 'TemporaryOverride';
@@ -782,7 +782,7 @@ var DT_dial = (function () {
         me.max = choose(me.block.max, 60);
         me.setpoint = 40;
         me.demand = me.device.State === 'On';
-        me.boost = choose(settings['evohome_boost_hw'], 30);
+        me.boost = parseInt(choose(settings['evohome_boost_hw'], 30));
       }
       me.info.push({
         icon: me.override ? 'fas fa-stopwatch small_fa' : me.dialicon,
