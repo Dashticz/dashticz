@@ -373,7 +373,7 @@ voertuigNummer: "330265"
   function renderTpl(me, data) {
     var tpl = me.providerCfg.tpl;
     data.lang={};
-    data.lang.platform=language.platform || 'spoor';
+    data.lang.platform=language.misc.platform || 'spoor';
     data.block = me.block;
     return templateEngine.load(tpl).then(function (template) {
 
