@@ -1034,27 +1034,41 @@ var DT_dial = (function () {
   }
 
   function wind(me) {
+
+    var windUnit = me.block.windunit;
+    if (DT_dial.settings) {
+      var wind = ['m/s', 'km/h', 'mph', 'Knts', 'Bfrt'];
+      windUnit = wind[DT_dial.settings.WindUnit] || 'm/s';
+    }
+    var defaultMax = {
+      'm/s': 30,
+      'km/h': 100,
+      'mph': 50,
+      'Knts': 50,
+      'Bfrt': 10
+    }
+    
     me.type = 'wind';
-    me.active = false;
-    me.unlimited = true;
-    me.min = 0;
-    me.max = 360;
-    me.dialRange = 360;
-    me.value = me.device.Direction;
-    me.unitvalue = '°';
-    me.segments = 12;
-    me.numbers = [210, 240, 270, 300, 330, 0, 30, 60, 90, 120, 150, 180];
+    me.active=false;
     me.subdevice = true;
     me.setpoint = choose(me.block.setpoint, 15);
     me.isSetpoint = true;
     me.temp = me.device.Temp;
-    me.startAngle = 0;
     me.decimals = choose(me.block.decimals, 0);
-
-    var windUnit = 'm/s';
-    if (DT_dial.settings) {
-      var wind = ['m/s', 'km/h', 'mph', 'Knts', 'Bfrt'];
-      windUnit = wind[DT_dial.settings.WindUnit];
+   if(me.block.subtype==='windspeed') {
+      me.value = me.device.Speed;
+      me.unitvalue = windUnit;
+      me.max = choose(me.block.max, defaultMax[windUnit] || 100);
+    }
+    else {
+      me.unlimited = true;
+      me.max = 360;
+      me.dialRange = 360;
+      me.value = me.device.Direction;
+      me.unitvalue = '°';
+      me.segments = 12;
+      me.numbers = [210, 240, 270, 300, 330, 0, 30, 60, 90, 120, 150, 180];
+      me.startAngle = 0;
     }
 
     me.info.push(
