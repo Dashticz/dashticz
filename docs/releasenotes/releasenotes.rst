@@ -19,6 +19,7 @@ Fixes
 
 * Public transport: Translations
 * Dial: Fix min, max setpoint setting in CONFIG.js
+* Garbage: Fix for Purmerend, Suez, Blink
 
 V3.9.2 Beta (27-2-2022)
 -----------------------

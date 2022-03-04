@@ -279,39 +279,25 @@ var DT_garbage = (function () {
     });
   }
 
+
+  // https://afvalkalender.purmerend.nl/adressen/1441JH:2
+  //response: [{"bagid":"0439200000018093","postcode":"1441JH","huisnummer":2,"huisletter":"","toevoeging":"","description":"Kilstraat 2, 1441JH Purmerend","straat":"Kilstraat","woonplaats":"Purmerend","woonplaatsId":3103,"gemeenteId":439,"latitude":52.50251,"longitude":4.95551}]
+  //then: webcal://afvalkalender.purmerend.nl/ical/0439200000018093
+  //
   function getGarbageData(me, params) {
     var url =
       _CORS_PATH +
       params +
-      '/adres/' +
+      '/adressen/' +
       me.block.zipcode +
       ':' +
       me.block.housenumber +
       ':' +
       me.block.housenumberSuffix;
     return $.get(url).then(function (result) {
-      //      console.log(result);
-      var newHTMLDocument = document.implementation.createHTMLDocument(
-        'scrape'
-      );
-      newHTMLDocument.documentElement.innerHTML = result;
-      var res = newHTMLDocument
-        .getElementById('ophaaldata')
-        .getElementsByTagName('li');
-      //      console.log(res);
-      var returnDates = [];
-      for (var idx = 0; idx < res.length; idx++) {
-        var el = res[idx];
-        var garbageType = el.getElementsByTagName('img')[0].alt;
-        var dateStr = el.getElementsByClassName('date')[0].innerHTML;
-        var garbageDate = moment(dateStr, 'ddd D MMM', 'nl');
-        //        console.log(garbageDate.format('DD-MM-YYYY'), garbageType);
-        returnDates.push({
-          summary: garbageType,
-          date: garbageDate,
-        });
-      }
-      return returnDates;
+      var bagid=result[0].bagid;
+      var ical = params + '/ical/' + bagid;
+      return getIcalData(me, ical);
     });
   }
 
