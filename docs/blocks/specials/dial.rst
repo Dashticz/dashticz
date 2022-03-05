@@ -99,10 +99,10 @@ Block parameters
   * - splitdial
     - Normally the dial ring color will color from the 0 value to the actual value, which can be positive or negative. Set this parameter to false to start coloring the dial ring from the minimum value, also for a negative minimum value.
   * - steps
-      | Step size for needle adjustment. You can use this parameter to set thermostat steps to 0.5
+    - | Step size for needle adjustment. You can use this parameter to set thermostat steps to 0.5
       | ``0.5``: Use step size of 0.5
   * - subtype
-      | For certain dial types you can specify a subtype for a specific layout/format
+    - | For certain dial types you can specify a subtype for a specific layout/format
       | ``'windspeed'``: For wind devices, to show wind speed instead of wind direction as needle position    
   
 
