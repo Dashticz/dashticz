@@ -35,6 +35,7 @@
     defaultContent: language.misc.loading,
     refresh: function (me) {
       me.providerCfg = getProviderCfg(me.block);
+      me.directionArray = getArrayFromString(me.block.direction);
       me.serviceArray = getArrayFromString(me.block.service);
       me.destinationArray = getArrayFromString(me.block.destination);
       getData(me)
@@ -49,6 +50,7 @@
     if (typeof str === 'undefined') return undefined;
     if (typeof str !== 'string') {
       console.error('Pubtrans: type of parameter should be string, received ' + typeof str);
+      str=''+str;
     }
     //var lcstr = str.toLowerCase();
     return str.indexOf(',') ? str.split(/, |,/) : [str];
@@ -187,7 +189,8 @@
       destination: hasNumber ? line.LineName : 'Lijn ' + line.LinePublicNumber + ' ' + line.DestinationName50,
       via: hasNumber ? line.DestinationName50 : line.LineName,
       delay: formatDelay(moment(line.ExpectedDepartureTime), fulltime),
-      line: line.LinePublicNumber
+      line: line.LinePublicNumber,
+      direction: ''+line.LineDirection,
     }
     if(block && block.show_direction && line.LineDirection) {
       departure.destination += ' (ri. '+ line.LineDirection + ')';
@@ -311,7 +314,8 @@ voertuigNummer: "330265"
         delay: formatDelay(dep.vertrekRealtimeTijdstip, dep.vertrekTheoretischeTijdstip),
         line: dep.lijnNummerPubliek,
         destination: 'Lijn ' + dep.lijnNummerPubliek + ': ' + dep.bestemming,
-        via: dep.omschrijving + (dep.viaBestemming && (' ' + dep.viaBestemming))
+        via: dep.omschrijving + (dep.viaBestemming && (' ' + dep.viaBestemming)),
+        direction: ''+dep.richtingCode
       }
       if(me.block && me.block.show_direction && isDefined(dep.richtingCode)) {
         departure.destination += ' (ri. '+ dep.richtingCode + ')';
@@ -323,6 +327,10 @@ voertuigNummer: "330265"
 
   function filterPublicTransport(me, dataPart) {
     var res = dataPart.departures;
+    if (me.directionArray)
+      res = res.filter(function (departure) {
+        return isDefined(departure.direction) && me.directionArray.includes(departure.direction);
+      })
     if (me.serviceArray)
       res = res.filter(function (departure) {
         return !departure.line || me.serviceArray.includes(departure.line);
