@@ -13,6 +13,7 @@ Enhancements
 
 * Dial: Needle step size configurable via ``steps`` block parameter.
 * Dial: For wind device, add block parameter ``subtype: 'windspeed'`` to use wind speed for needle position instead of wind direction.
+* Dial: For wind device, add block parameter ``subtype: 'windgust'`` to use wind gust for needle position instead of wind direction.
 
 Fixes
 ~~~~~~

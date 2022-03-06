@@ -104,6 +104,7 @@ Block parameters
   * - subtype
     - | For certain dial types you can specify a subtype for a specific layout/format
       | ``'windspeed'``: For wind devices, to show wind speed instead of wind direction as needle position    
+      | ``'windgust'``: For wind devices, to show wind gust instead of wind direction as needle position    
   
 
 Usage
