@@ -55,6 +55,10 @@ Parameters
       | ``'ovapi'`` Netherlands: bus, tram, boat
       | ``'irailbe'`` Belgium: trains 
       | ``'delijnbe'`` Belgium: bus, tram, boat
+  * - direction
+    - | Set the line direction(s) to filter the direction. (comma seperated, case sensitive) (for ``ovapi``, ``delijnbe``)
+      | ``'1'`` : Filter on direction 1
+      | ``'1,2'``: Filter on direction 1 or 2
   * - destination
     - | Set the end destination station name to filter the direction. 
       | ``'Den Haag De Uithof,Den Haag Loosduinen'`` (comma seperated, case sensitive)
