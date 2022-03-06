@@ -47,7 +47,7 @@ var DT_dial = (function () {
       dialimage: false,
       flash: 0,
       showring: false,
-      shownumbers: false,
+//      shownumbers: false,
       offset: 0,
       group: false,
       animation: true,
@@ -81,9 +81,10 @@ var DT_dial = (function () {
       $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
       me.dialRange = 280;
       me.active = true;
-      color(me);
+//      color(me);
       me.segments = 11;
       me.showunit = me.block.showunit || false;
+      me.shownumbers = me.block.shownumbers || false;
       me.tpl = 'dial';
 
       var idx;
@@ -201,12 +202,17 @@ var DT_dial = (function () {
     me.title=choose(me.block.title, choose(me.title, true));
 
     me.splitdial = choose(choose(me.splitdial, me.block.splitdial), me.min < 0);
+    me.shownumbers =choose(me.shownumbers, me.block.shownumbers);
 
     addValues(me);
 
-    if (me.block.shownumbers && me.numbers == undefined) {
+    if (me.shownumbers && me.numbers == undefined) {
       me.numbers = numbers(me);
     }
+
+    //makeConfig(me);
+
+    color(me);
 
     //    var templateName = me.block.layout ? 'dial_' + me.block.layout : 'dial';
     var templateName = me.tpl;// + me.block.layout;
@@ -1055,20 +1061,27 @@ var DT_dial = (function () {
     me.isSetpoint = true;
     me.temp = me.device.Temp;
     me.decimals = choose(me.block.decimals, 0);
-   if(me.block.subtype==='windspeed') {
-      me.value = me.device.Speed;
-      me.unitvalue = windUnit;
-      me.max = choose(me.block.max, defaultMax[windUnit] || 100);
-    }
-    else {
-      me.unlimited = true;
-      me.max = 360;
-      me.dialRange = 360;
-      me.value = me.device.Direction;
-      me.unitvalue = '°';
-      me.segments = 12;
-      me.numbers = [210, 240, 270, 300, 330, 0, 30, 60, 90, 120, 150, 180];
-      me.startAngle = 0;
+    me.shownumbers = choose(me.block.shownumbers, true);
+    switch(me.block.subtype) {
+      case 'windspeed':
+        me.value = me.device.Speed;
+        me.unitvalue = windUnit;
+        me.max = choose(me.block.max, defaultMax[windUnit] || 100);
+        break;
+      case 'windgust':
+        me.value = me.device.Gust;
+        me.unitvalue = windUnit;
+        me.max = choose(me.block.max, defaultMax[windUnit] || 100);
+        break;
+      default:  
+        me.unlimited = true;
+        me.max = 360;
+        me.dialRange = 360;
+        me.value = me.device.Direction;
+        me.unitvalue = '°';
+        me.segments = 12;
+        me.numbers = [210, 240, 270, 300, 330, 0, 30, 60, 90, 120, 150, 180];
+        me.startAngle = 0;
     }
 
     me.info.push(
