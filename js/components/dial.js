@@ -1266,7 +1266,7 @@ var DT_dial = (function () {
         'type=command&param=switchlight&idx=' +
         me.block.idx +
         '&switchcmd=' +
-        'stop'
+        'Stop'
       )
     });
   }
