@@ -4176,8 +4176,16 @@ canvas {
   color: yellow;
 }
 
+.middle .icon {
+   font-size: unset
+}
+
 .middle .text {
   font-size: 90%
+}
+
+.dialupdown .up .text, .dialupdown .down .text  {
+  font-size:250%
 }
 
 
