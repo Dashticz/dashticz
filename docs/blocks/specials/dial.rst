@@ -413,7 +413,7 @@ This conflicts with the defaults in Domoticz where 0 is open, and 100 is closed.
 
 For this reason the 'inverted' block parameter by default is set to true for regular Domoticz blinds devices, and set to false for Domoticz Blinds Inverted devices.
 
-By settings the ``steps`` parameter you can adjust the step size. For Thermostats the default step value is 0.5. For Dimmers and Blinds the default step value is 10 (%).
+By setting the ``steps`` parameter you can adjust the step size. For Thermostats the default step value is 0.5. For Dimmers and Blinds the default step value is 10 (%).
 
 .. _dialvalues :
 
