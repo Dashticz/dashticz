@@ -109,7 +109,7 @@ Block parameters
     - | For certain dial types you can specify a subtype for a specific layout/format
       | ``'windspeed'``: For wind devices, to show wind speed instead of wind direction as needle position    
       | ``'windgust'``: For wind devices, to show wind gust instead of wind direction as needle position 
-      | ``'updown'``: For thermostat and blind devices, to render the dial with up and down buttons. See :ref:`updowndials`   
+      | ``'updown'``: For thermostat and blind devices, to render the dial with up and down buttons. See :ref:`updowndial`   
   
 
 Usage
@@ -370,7 +370,7 @@ Toon Thermostat
        width: 3,
    }
 
-.. _updowndials :
+.. _updowndial :
 
 Up-down dials
 -------------
@@ -413,7 +413,7 @@ This conflicts with the defaults in Domoticz where 0 is open, and 100 is closed.
 
 For this reason the 'inverted' block parameter by default is set to true for regular Domoticz blinds devices, and set to false for Domoticz Blinds Inverted devices.
 
-By settings the ``steps`` parameter you can adjust the step size. For Thermostats the default step value is 0.5. For Dimmers and Blinds the default step value is 10 (%).
+By setting the ``steps`` parameter you can adjust the step size. For Thermostats the default step value is 0.5. For Dimmers and Blinds the default step value is 10 (%).
 
 .. _dialvalues :
 
