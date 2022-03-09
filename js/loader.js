@@ -1,6 +1,6 @@
 /*global loadFiles dashtype */
 
-var _DASHTICZ_VERSION=34;
+var _DASHTICZ_VERSION=35;
 var head = document.getElementsByTagName('head')[0],
     script = document.createElement('script');
 script.src = 'dist/bundle.js?t='+_DASHTICZ_VERSION;

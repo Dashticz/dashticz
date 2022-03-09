@@ -269,8 +269,8 @@ var DT_dial = (function () {
         label: me.label,
         deviceStatus: (me.device && me.device.deviceStatus) || '',
         showvalue: me.showvalue, //to show the big value centered in the middle
-        textOpen: me.block.textOpen,
-        textClose: me.block.textClose,
+        textOpen: choose(me.textUp, me.block.textOpen),
+        textClose: choose(me.textDown, me.block.textClose),
         active: me.active? ' active': ''
       };
 
@@ -315,6 +315,9 @@ var DT_dial = (function () {
             }, 500);
           });
       }
+
+      if(me.update) me.update(me); //for UpDown and Blinds
+
       /* Add dial calculations */
       if (me.checkNeedlePos) {
 
@@ -661,6 +664,10 @@ var DT_dial = (function () {
           setpointType = 'stat';
       }
     }
+    if (me.steps) {
+      var divider=Math.round(me.value/me.steps);
+      me.value = divider*me.steps;
+    }
     switch (setpointType) {
       case 'zone':
         switchEvoZone(me, me.setpoint, me.override);
@@ -669,6 +676,7 @@ var DT_dial = (function () {
         switchThermostat(me, me.value);
         break;
       case 'dim':
+      case 'blinds':
         var level = (maxdim / me.max) * me.value;
         if (level < 1) level = 0;
         if (level > maxdim - 1) level = maxdim;
@@ -693,6 +701,7 @@ var DT_dial = (function () {
 
   function slideDevice(me, idx, level) {
     reqSlideDevice(idx, level).then(function () {
+      me.device.Level=level;
       if (me.update) me.update(me);
       else make(me);
     });
@@ -768,6 +777,10 @@ var DT_dial = (function () {
     me.dialicon = display(me.block.dialicon, 0, 1, 'fas fa-calendar-alt');
     me.dialimage = display(me.block.dialimage, 0, 1, false);
     me.decimals=choose(me.block.decimals, 1);
+
+    if(me.block.subtype==='updown') {
+      makeUpDown(me);
+    }
 
     /* EvoHome Zones */
     if (me.type === 'zone') {
@@ -1176,14 +1189,7 @@ var DT_dial = (function () {
     me.min = choose(me.block.min, 0);
     me.max = choose(me.block.max, 100);
     me.decimals = choose(me.block.decimals, 0);
-    me.value =
-      me.device.Data === 'Off'
-        ? 0
-        : me.device.Level > me.max - 1
-          ? me.max
-          : me.device.Level < me.min + 1
-            ? me.min
-            : me.device.Level;
+    me.value = getCurrentValueDim(me);
     me.demand = me.value > 0;
     me.maxdim = isDefined(me.device.MaxDimLevel)
       ? parseInt(me.device.MaxDimLevel)
@@ -1193,6 +1199,8 @@ var DT_dial = (function () {
       me.setpoint = me.block.setpoint;
       me.isSetpoint = true;
     }
+    me.unitvalue = choose(me.block.unitvalue, '%');
+    if(me.block.subtype==='updown') makeUpDownDim(me);
     return;
   }
 
@@ -1237,8 +1245,124 @@ var DT_dial = (function () {
     me.percentage = me.device.SwitchType.includes('Percentage');
     me.inverted = me.device.SwitchType.includes('Inverted');
     me.value = valueBlinds(me);
+    me.maxdim = isDefined(me.device.MaxDimLevel)
+    ? parseInt(me.device.MaxDimLevel)
+    : 100;
+    me.unitvalue='%';
+    me.invertedValue = choose(me.block.inverted,!me.inverted)
+    
+    if(me.block.subtype==="updown") {
+      makeUpDownDim(me);
+      me.middleToggle = false;
+    }
     return;
   }
+
+  function makeUpDown(me) {
+//    me.type = 'updown';
+    me.tpl = 'dialblinds';
+    me.fixed = true;
+    me.active = false;
+    me.tap = tapUpDown;
+    me.update = updateUpDown;
+    me.textUp = choose(me.block.textUp, '+');
+    me.textDown = choose(me.block.textDown, '-');
+    me.steps = choose(me.block.steps, 0.5);
+    me.checkNeedlePos = false;
+    me.getCurrentValue = getCurrentValue;
+//    me.percentage = me.device.SwitchType.includes('Percentage');
+//    me.inverted = me.device.SwitchType.includes('Inverted');
+//    me.value = valueBlinds(me);
+    me.$mountPoint.addClass('dialupdown');
+    return;
+  }
+
+  function makeUpDownDim(me) {
+    makeUpDown(me);
+    me.steps = choose(me.block.steps, 10);
+    me.getCurrentValue = getCurrentValueDim;
+    me.middleToggle = choose(me.block.middletoggle,true);
+  }
+
+  function tapUpDown(me) {
+    me.$up.on('click', function () {
+      if(me.value===0 && me.device.Level) me.value=me.device.Level
+      else me.value=me.invertedValue? me.value-me.steps:me.value+me.steps;
+      update(me);
+    });
+    me.$middle.on('click', function () {
+      if(me.middleToggle) {
+        var cmd = me.value? 'off':'on';
+        switchDevice(me, cmd)
+        //        me.value = me.value? 0 : (me.device.Level || 100);
+//        update(me);
+      }
+      else
+      Domoticz.request(
+        'type=command&param=switchlight&idx=' +
+        me.block.idx +
+        '&switchcmd=' +
+        'Stop'
+      )
+
+
+    });
+    me.$down.on('click', function () {
+      me.value=me.invertedValue? me.value+me.steps:me.value-me.steps
+      update(me)
+    });
+  }
+
+  function updateUpDown(me) {
+    if(!me.$up) {
+      me.$up = me.$mountPoint.find('.up');
+      me.$down = me.$mountPoint.find('.down');
+      me.$middle = me.$mountPoint.find('.middle');
+    }
+
+    me.value = me.getCurrentValue(me);
+
+    me.$middle.find('.value').html(valueUpDown(me))
+  }
+
+  function getCurrentValue(me) {
+    var value;
+    if (me.isSetpoint) {
+      me.setpoint = parseFloat(me.device.SetPoint);
+      value = me.setpoint;
+    }
+    if (isDefined(me.block.temp)) {
+      me.temp = Domoticz.getAllDevices()[me.block.temp].Temp;
+      me.info.push({
+        icon: 'fas fa-calendar-alt',
+        data: me.setpoint,
+        unit: _TEMP_SYMBOL,
+      });
+
+    }
+    else value = parseFloat(me.device.Data);
+    return value
+
+  }
+
+  function getCurrentValueDim(me) {
+    return me.device.Data === 'Off'
+    ? 0
+    : me.device.Level > me.max - 1
+      ? me.max
+      : me.device.Level < me.min + 1
+        ? me.min
+        : me.device.Level;
+  }
+
+  function valueUpDown(me) {
+    if (isDefined(me.block.temp)) {
+      return ''+number_format(me.temp,1) + _TEMP_SYMBOL +'&nbsp; <em class="icon fas fa-calendar-alt"></em>&nbsp;' + number_format(me.setpoint,me.decimals) + me.unitvalue;
+      /* Standard thermostat device */
+    }
+    var value = me.invertedValue ? me.maxdim-me.value: me.value;
+    return number_format(value,me.decimals) + me.unitvalue;
+}
 
   function tapBlinds(me) {
     var $mountPoint = me.$mountPoint;
@@ -1272,7 +1396,12 @@ var DT_dial = (function () {
   }
 
   function updateBlinds(me) {
-    console.log('update blinds', me);
+    if(!me.$up) {
+      me.$up = me.$mountPoint.find('.up');
+      me.$down = me.$mountPoint.find('.down');
+      me.$middle = me.$mountPoint.find('.middle');
+    }
+
     me.$middle.find('.value').html(valueBlinds(me))
   }
 
@@ -1282,7 +1411,7 @@ var DT_dial = (function () {
     switch (me.device.Level) {
       case 0: return 'Open';
       case 100: return 'Closed';
-      default: return me.device.Level;
+      default: return (me.invertedValue? me.maxdim-me.device.Level:me.device.Level)+me.unitvalue;
     }
   }
   /**
