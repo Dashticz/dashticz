@@ -829,3 +829,21 @@ custom.css::
 		color: white !important; 
 		height: 40px !important;
 	}
+
+
+
+**Hide the additional data**
+
+.. image :: img/winddial.png
+
+You can set the values parameter to an empty array to hide the additional data, like this:
+
+CONFIG.js::
+
+	blocks['windspeed'] = {
+		idx: 39,
+		title: 'Vitesse-vent',
+		type: 'dial',
+		subtype: 'windspeed',
+		values:[]
+	}
