@@ -127,6 +127,7 @@ function getCalendarData(key, calendars, isnew, ishol) {
 
           ev.start += cal[key].adjustTZ;
           ev.end += cal[key].adjustTZ;
+          ev.multiday = (ev.end-ev.start) > 86400;
           ev.name = name;
           ev.color = calendar.color;
 //          var lowerTitle = ev.title.toLowerCase();
