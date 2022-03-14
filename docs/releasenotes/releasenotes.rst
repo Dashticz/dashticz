@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Code
+~~~~
+
+* Calendar: New ical module to parse calendar data. Should solve most calendar issues, especially related to recurring events.
+
 V3.9.3 Beta (9-3-2022)
 -----------------------
 
