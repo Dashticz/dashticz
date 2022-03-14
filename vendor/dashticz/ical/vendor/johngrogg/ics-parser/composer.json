@@ -1,0 +1,55 @@
+{
+    "name": "johngrogg/ics-parser",
+    "description": "ICS Parser",
+    "homepage": "https://github.com/u01jmg3/ics-parser",
+    "keywords": [
+        "ical",
+        "ical-parser",
+        "icalendar",
+        "ics",
+        "ics-parser",
+        "ifb"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jonathan Goode",
+            "role": "Developer/Owner"
+        },
+        {
+            "name": "John Grogg",
+            "email": "john.grogg@gmail.com",
+            "role": "Developer/Prior Owner"
+        }
+    ],
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/u01jmg3"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.9",
+        "ext-mbstring": "*"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "~3.6.0",
+        "phpunit/phpunit": "^5"
+    },
+    "autoload": {
+        "psr-0": {
+            "ICal": "src/"
+        }
+    },
+    "config": {
+        "platform": {
+            "php": "5.6"
+        }
+    },
+    "scripts": {
+        "test": [
+            "phpunit --colors=always"
+        ]
+    }
+}

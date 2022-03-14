@@ -1,5 +1,7 @@
 {
     "require": {
-        "om/icalparser": "^1"
+        "om/icalparser": "^1",
+        "johngrogg/ics-parser": "^3"
+
     }
 }

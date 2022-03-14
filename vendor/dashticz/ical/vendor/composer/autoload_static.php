@@ -6,6 +6,16 @@ namespace Composer\Autoload;
 
 class ComposerStaticInit68d7828faead4c2881739c005f6735df
 {
+    public static $prefixesPsr0 = array (
+        'I' => 
+        array (
+            'ICal' => 
+            array (
+                0 => __DIR__ . '/..' . '/johngrogg/ics-parser/src',
+            ),
+        ),
+    );
+
     public static $classMap = array (
         'om\\Freq' => __DIR__ . '/..' . '/om/icalparser/src/Freq.php',
         'om\\IcalParser' => __DIR__ . '/..' . '/om/icalparser/src/IcalParser.php',
@@ -15,6 +25,7 @@ class ComposerStaticInit68d7828faead4c2881739c005f6735df
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
+            $loader->prefixesPsr0 = ComposerStaticInit68d7828faead4c2881739c005f6735df::$prefixesPsr0;
             $loader->classMap = ComposerStaticInit68d7828faead4c2881739c005f6735df::$classMap;
 
         }, null, ClassLoader::class);
