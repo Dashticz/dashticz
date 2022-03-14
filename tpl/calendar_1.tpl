@@ -7,7 +7,7 @@
 			{{#unless item.allDay}}
 			  {{moment item.start input="X" format=../../tf}}
 			  {{#unless ../../startonly}}
-				- {{moment item.end input="X" format=../../tf}}
+				- {{#if item.multiday}}<br/> {{moment item.end input="X" format=../../df}} {{/if}}{{moment item.end input="X" format=../../tf}}
 			  {{/unless}}
 			{{else}}
 			  {{../../entire}}
