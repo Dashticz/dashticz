@@ -766,7 +766,7 @@ function startSwiper() {
         el: '.swiper-pagination',
         clickable: true,
       },
-      autoHeight: true,
+      autoHeight: false,
       paginationClickable: true,
       //      speed: 0,
       loop: false,
