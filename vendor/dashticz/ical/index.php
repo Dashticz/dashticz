@@ -199,7 +199,7 @@ function icaljg($ICS, $MAXITEMS, $HISTORY) {
 				"id" => ($id++),
 				"title" => $event->summary,
 				"desc" => isset($event->description) ? $event->description : '',
-				"location" => isset($event->location) ? $ev->location : '',
+				"location" => isset($event->location) ? $event->location : '',
 				"start" => $start,
 				"end"   => $end,
 				"allDay" => $duration > 0 && ($duration % 86400) == 0,
