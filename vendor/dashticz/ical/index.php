@@ -133,10 +133,13 @@ set_error_handler(function($errno, $errstr, $errfile = 0, $errline = 0, $errcont
 
 try {
 	if ( $METHOD==0) {
+		@$res = ical5($ICS, $MAXITEMS);
+	}
+	elseif ( $METHOD==2) {
 		@$res = icaljg($ICS, $MAXITEMS, $HISTORY);
 	}
 	else {
-		@$res = icaljg($ICS, $MAXITEMS, $HISTORY);
+		@$res = ical7($ICS, $MAXITEMS, $HISTORY);
 	}
 }
 catch (exception $e) {
