@@ -187,7 +187,9 @@ function icaljg($ICS, $MAXITEMS, $HISTORY) {
 		$id=0;
 //		$sorted_events = $ical->events();
 //		$sorted_events = $ical->eventsFromRange($realStart->format('Y-m-d'),$realStart->add(new DateInterval('P1Y'))->format('Y-m-d'));
-		$sorted_events = $ical->eventsFromRange();
+//		$sorted_events = $ical->eventsFromRange();
+		$sorted_events = $ical->sortEventsWithOrder($ical->events());
+
 //		print_r(json_encode($sorted_events, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 	//	var_dump($sorted_events[0]);
 		$data = array();
