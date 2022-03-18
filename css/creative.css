@@ -2547,7 +2547,7 @@ canvas {
 }
 
 .cal_table td>div.historic>div {
-  color: rgba(255, 255, 255, 0.3) !important;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .cal_table td>div.header {
@@ -2561,17 +2561,17 @@ canvas {
 
 .cal_table td>div.event:hover,
 .cal_table td>div.event.historic:hover>div {
-  background-color: #f0ad4e !important;
-  color: #292b2c !important;
+  background-color: #f0ad4e;
+  color: #292b2c;
 }
 
 .cal_table td>div.allday {
-  background-color: #d9534f !important;
+  background-color: #d9534f;
   border-radius: 2px;
 }
 
 .cal_table td>div.allday.hol {
-  background-color: #428442 !important;
+  background-color: #428442;
   border-radius: 2px;
 }
 
