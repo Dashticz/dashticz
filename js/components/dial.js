@@ -701,7 +701,7 @@ var DT_dial = (function () {
 
   function slideDevice(me, idx, level) {
     reqSlideDevice(idx, level).then(function () {
-      me.device.Level=level;
+      //me.device.Level=level;
       if (me.update) me.update(me);
       else make(me);
     });
