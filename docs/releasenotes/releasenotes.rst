@@ -12,6 +12,7 @@ Fixes
 ~~~~~~
 
 * Swiper vertical scroll bar
+* Calendar: Fix styling for some events with customized styling
 
 Code
 ~~~~
