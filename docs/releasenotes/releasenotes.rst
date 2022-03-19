@@ -8,6 +8,12 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Dials: For RGB switches you can open the color selector popup by adding ``switchMode: 'color'`` to the block definition.
+* Dials: Added translations for the EvoHome controller
+
 Fixes
 ~~~~~~
 

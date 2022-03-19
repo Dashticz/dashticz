@@ -316,6 +316,20 @@ var DT_dial = (function () {
           });
       }
 
+      if(me.switchMode==='Color') {
+//        me.$mountPoint.find('.extra').append('<div class="rgbholder"></div>');
+//        addColorpicker(me);
+        var block = {
+          device: me.device,
+          idx: me.idx,
+          title: getName(me)
+        }
+        new Colorpicker({
+          container: me.mountPoint + ' '+me.rgbContainer,
+          block: block,
+        });
+      }
+
       if(me.update) me.update(me); //for UpDown and Blinds
 
       /* Add dial calculations */
@@ -367,6 +381,9 @@ var DT_dial = (function () {
         return;
       }
       if (me.type === 'dim') {
+        if(me.switchMode==='Color') {
+          return;
+        }
         me.demand ? (me.value = 0) : (me.value = me.device.Level);
         me.demand = !me.demand;
         update(me);
@@ -701,7 +718,8 @@ var DT_dial = (function () {
 
   function slideDevice(me, idx, level) {
     reqSlideDevice(idx, level).then(function () {
-      //me.device.Level=level;
+      if(me.slowDevice)
+          me.device.Level = level;
       if (me.update) me.update(me);
       else make(me);
     });
@@ -1160,12 +1178,12 @@ var DT_dial = (function () {
       me.type = 'evo';
       me.status = me.device.Status;
       me.options = [
-        { val: 'Auto', text: 'Auto' },
-        { val: 'AutoWithEco', text: 'Economy' },
-        { val: 'Away', text: 'Away' },
-        { val: 'Custom', text: 'Custom' },
-        { val: 'DayOff', text: 'Day Off' },
-        { val: 'HeatingOff', text: 'Off' },
+        { val: 'Auto', text: language.evohome.Auto },
+        { val: 'AutoWithEco', text: language.evohome.AutoWithEco },
+        { val: 'Away', text: language.evohome.Away },
+        { val: 'Custom', text: language.evohome.Custom },
+        { val: 'DayOff', text: language.evohome.DayOff },
+        { val: 'HeatingOff', text: language.evohome.HeatingOff },
       ];
     } else {
       me.type = 'selector';
@@ -1200,6 +1218,8 @@ var DT_dial = (function () {
       me.isSetpoint = true;
     }
     me.unitvalue = choose(me.block.unitvalue, '%');
+    me.switchMode = capitalizeFirstLetter(me.block.switchMode);
+    me.rgbContainer = '.dial-display';
     if(me.block.subtype==='updown') makeUpDownDim(me);
     return;
   }
@@ -1250,6 +1270,7 @@ var DT_dial = (function () {
     : 100;
     me.unitvalue='%';
     me.invertedValue = choose(me.block.inverted,!me.inverted)
+    me.slowDevice = true;
     
     if(me.block.subtype==="updown") {
       makeUpDownDim(me);
@@ -1282,6 +1303,7 @@ var DT_dial = (function () {
     me.steps = choose(me.block.steps, 10);
     me.getCurrentValue = getCurrentValueDim;
     me.middleToggle = choose(me.block.middletoggle,true);
+    me.rgbContainer = '.middle';
   }
 
   function tapUpDown(me) {
@@ -1291,6 +1313,7 @@ var DT_dial = (function () {
       update(me);
     });
     me.$middle.on('click', function () {
+      if(me.switchMode==='Color') return;
       if(me.middleToggle) {
         var cmd = me.value? 'off':'on';
         switchDevice(me, cmd)
@@ -1317,7 +1340,7 @@ var DT_dial = (function () {
     if(!me.$up) {
       me.$up = me.$mountPoint.find('.up');
       me.$down = me.$mountPoint.find('.down');
-      me.$middle = me.$mountPoint.find('.middle');
+      me.$middle = me.$mountPoint.find('.middle');  
     }
 
     me.value = me.getCurrentValue(me);
