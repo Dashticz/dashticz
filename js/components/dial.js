@@ -1119,7 +1119,7 @@ var DT_dial = (function () {
       {
         icon: display(me.block.dialicon, 0, 3, 'fas fa-location-arrow'),
         image: display(me.block.dialimage, 0, 3, false),
-        data: me.device.DirectionStr,
+        data: TranslateDirection(me.device.DirectionStr),
         unit: '',
       },
       {
