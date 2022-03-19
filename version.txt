@@ -1,8 +1,9 @@
 {
-"version": "3.9.3",
+"version": "3.9.4",
 "branch": "beta",
-"last_changes": "Up/down dials",
+"last_changes": "Color picker for RGB dials",
 "changelog" : {
+            "3.9.3": "Up/down dials",
             "3.9.2": "Update caching behavior",
             "3.9.1": "Update FontAwesome, Popper, Iro, Swiper",
             "3.9.0": "Beta version derived from 3.9 master",
