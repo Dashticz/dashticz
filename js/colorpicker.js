@@ -131,11 +131,12 @@ Colorpicker.prototype.clickHandler = function (ev) {
   this.state.status = device.Status;
 
   this.id = ev.data.ref;
+  this.title = ev.data.block.title;
 
   templateEngine.load('colorpicker').then(function (template) {
     var data = {};
     data.id = self.id;
-    data.title = ev.data.block.title;
+    data.title = self.title;
     data.isOn = self.state.status !== 'Off';
     data.isOff = !data.isOn;
 
