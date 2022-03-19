@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Dials: Translations for wind direction.
+
 V3.9.4 Beta (19-3-2022)
 -----------------------
 
