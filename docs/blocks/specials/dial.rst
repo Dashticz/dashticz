@@ -94,6 +94,7 @@ Block parameters
       | ``'Toggle'``: Toggle the dial on click (=default for most dials. See next lines for exceptions)
       | ``'On'``: Switch On (=default for scenes and Push On switches)
       | ``'Off'``: Switch Off (=default for Push Off switches)
+      | ``'Color'``: On click the color selector popup will open. (Only for RGB switches)
   * - decimals
     - | The number of decimals to show for numbers. Default is 1. For humidity, barometer it's 0. 
       | ``1``: Numbers will be shown with one decimal
