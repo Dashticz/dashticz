@@ -19,6 +19,7 @@ Fixes
 
 * Swiper vertical scroll bar
 * Calendar: Fix styling for some events with customized styling
+* Rova: Re-enabled old API, since new API was not working on all systems (SSL related)
 
 Code
 ~~~~

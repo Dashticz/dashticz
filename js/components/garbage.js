@@ -861,8 +861,11 @@ var DT_garbage = (function () {
         },
       },
       rova: {
+        handler: getGeneralData,
+        param: 'rova',
+      },
+      rova2: { //new(?) API. However, ssl issues with expired certificates on Synology
         handler: getRovaData,
-//        param: 'rova',
       },
       sudwestfryslan: {
         handler: getGeneralData,
