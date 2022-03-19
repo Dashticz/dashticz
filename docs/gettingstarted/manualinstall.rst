@@ -23,7 +23,7 @@ Besides Apache also PHP needs to be installed, since it's used by the Calendar a
 .. code-block:: bash
 
     sudo apt-get update
-    sudo apt-get install apache2 php php-xml php-curl libapache2-mod-php
+    sudo apt-get install apache2 php php-xml php-curl libapache2-mod-php php-mbstring
     sudo systemctl restart apache2
 
 .. note:: On some Raspberry configurations the installation of php is failing. In that case you can try the alternative installs under Advanced Installation below
