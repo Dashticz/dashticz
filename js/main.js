@@ -1,7 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 /* global getAllDevicesHandler objectlength config initVersion loadSettings settings getLocationParameters*/
 /* global sessionValid MobileDetect moment getBlock DT_function*/
-/* global Swiper Debug workerTimers*/
+/* global Swiper Debug*/
 
 //To refactor later:
 /* global switchSecurity*/
@@ -435,7 +435,7 @@ function onLoad() {
   buildScreens();
 
   setClockDateWeekday();
-  workerTimers.setInterval(
+  setInterval(
     function () {
       setClockDateWeekday();
     },
@@ -445,7 +445,7 @@ function onLoad() {
   enableRefresh();
   setClassByTime();
 
-  workerTimers.setInterval(function () {
+  setInterval(function () {
     setClassByTime();
   }, 60000);
 
@@ -459,7 +459,7 @@ function onLoad() {
   }
 
   if (settings['auto_swipe_back_after'] > 0 || settings.auto_slide_pages > 0) {
-    workerTimers.setInterval(function () {
+    setInterval(function () {
       swipebackTime += 1000;
       if (settings.auto_slide_pages > 0) {
         var currentSlide = myswiper.activeIndex;
@@ -537,7 +537,7 @@ function onLoad() {
     if (typeof settings['standby_call_url_on_end'] !== 'undefined') {
       _END_STANDBY_CALL_URL = settings['standby_call_url_on_end'];
     }
-    workerTimers.setInterval(function () {
+    setInterval(function () {
       standbyTime += 5000;
       if (standbyActive != true) {
         if (standbyTime >= settings['standby_after'] * 1000 * 60) {

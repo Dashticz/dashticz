@@ -145,10 +145,10 @@ var Dashticz = (function () {
     var me = mountedBlocks[id].me;
     if (me) {
       me.callbacks.timeoutList.forEach(function (el) {
-        workerTimers.clearTimeout(el);
+        clearTimeout(el);
       });
       me.callbacks.intervalList.forEach(function (el) {
-        workerTimers.clearInterval(el);
+        clearInterval(el);
       });
       me.callbacks.subscriptionList.forEach(function (el) {
         el();
@@ -421,7 +421,7 @@ var Dashticz = (function () {
 
   function _setTimeout(me, callback, timeout) {
     me.callbacks.timeoutList.push(
-      workerTimers.setTimeout(function () {
+      setTimeout(function () {
         if (isMounted(me)) callback(me);
       }, timeout)
     );
@@ -429,7 +429,7 @@ var Dashticz = (function () {
 
   function _setInterval(me, callback, interval) {
     me.callbacks.intervalList.push(
-      workerTimers.setInterval(function () {
+      setInterval(function () {
         if (isMounted(me)) callback(me);
       }, interval)
     );

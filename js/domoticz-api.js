@@ -66,7 +66,7 @@ var Domoticz = (function () {
           } catch (ev) {
             newPromise.reject('send error');
           }
-          workerTimers.setTimeout(function () {
+          setTimeout(function () {
             if (newPromise.state() === 'pending') {
               //                            console.log('rejected by timeout: ', query);
               newPromise.reject('timeout: ' + query);
@@ -122,7 +122,7 @@ var Domoticz = (function () {
         console.log('Setting up websocket');
         Debug.log('Setting up webksocket');
         connectWebsocket();
-        workerTimers.setTimeout(function () {
+        setTimeout(function () {
           //if not resolved within 2 seconds, there is something wrong with the websocket connection.
           if (initialUpdate.state !== 'resolved') {
             initialUpdate.reject('connection failed');
@@ -150,7 +150,7 @@ var Domoticz = (function () {
           );
         })
         .then(function () {
-          workerTimers.setInterval(function () {
+          setInterval(function () {
             refreshAll();
           }, cfg.domoticz_refresh * 1000);
           return refreshAll();
@@ -292,7 +292,7 @@ var Domoticz = (function () {
   function reconnect() {
     console.log('reconnecting');
     Debug.log('reconnecting in ' + reconnectTimeout);
-    workerTimers.setTimeout(function () {
+    setTimeout(function () {
       reconnecting = false;
       connectWebsocket();
     }, reconnectTimeout * 1000); //try to reconnect after timeout
@@ -498,7 +498,7 @@ var Domoticz = (function () {
 
   function subscribe(idx, getCurrent, callback) {
     if (idx === '_secstatus' && !securityRefresh) {
-      securityRefresh = workerTimers.setInterval(
+      securityRefresh = setInterval(
         requestSecurityStatus,
         cfg.domoticz_refresh * 1000
       );
