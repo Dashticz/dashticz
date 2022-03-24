@@ -1,8 +1,8 @@
 /*global loadFiles dashtype */
 
-var _DASHTICZ_VERSION=39;
+var _DASHTICZ_VERSION=40;
 var head = document.getElementsByTagName('head')[0],
-    script = document.createElement('script');
+ script = document.createElement('script');
 script.src = 'dist/bundle.js?t='+_DASHTICZ_VERSION;
 script.onload=loader;
 head.appendChild(script);
@@ -14,7 +14,7 @@ function loader() {
         cache: true
         })
         .then(function() {
-        loadFiles(dashtype)
+            loadFiles(dashtype);
         })
 }
 
