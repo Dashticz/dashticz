@@ -13,6 +13,11 @@ Enhancements
 
 * Dials: Translations for wind direction.
 
+Fixes
+~~~~~
+
+* Rollback upgrade development environment to maintain iOS10 compatibility.
+
 V3.9.4 Beta (19-3-2022)
 -----------------------
 
