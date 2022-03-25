@@ -594,7 +594,7 @@ function formatData(me) {
             var obj = tmpResults[sampleDate] || { d: sampleDate }; //if sampleDate already exists use that one, otherwise create new one
             for (var key in res) {
               var mayAdd =
-                key !== 'd' &&
+                key !== 'd' && (key !== 'c' || me.block.graphTypes || me.block.legend ) &&
                 (me.block.graphTypes
                   ? $.inArray(key, me.block.graphTypes) >= 0
                   : true);

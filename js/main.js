@@ -466,7 +466,7 @@ function onLoad() {
         var swipeTimeout =Number(
           currentScreenSet[currentSlide].auto_slide_page ||
           settings.auto_slide_pages);
-        if (autoSwipe) swipeTimeout += Number(settings.auto_swipe_back_after);
+        if (!autoSwipe) swipeTimeout += Number(settings.auto_swipe_back_after);
         if (swipebackTime > swipeTimeout * 1000) {
           autoSlide();
           autoSwipe = true;
