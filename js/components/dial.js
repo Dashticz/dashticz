@@ -56,7 +56,8 @@ var DT_dial = (function () {
       value: 'Data',
       layout: '',
       textOpen: 'Open',
-      textClose: 'Close'
+      textClose: 'Close',
+      scale: 1
     },
 
     /**
@@ -75,9 +76,9 @@ var DT_dial = (function () {
         : parseInt($(me.mountPoint + ' div').outerWidth());
       if (height < 0) {
         console.log('dial width unknown.');
-        me.height = me.height || 100;
-      } else me.height = height || me.height;
-      me.fontsize = 0.85 * me.height;
+        me.height = me.height * me.block.scale || 100;
+      } else me.height = height * me.block.scale || me.height;
+      me.fontsize = 0.95 * me.height;
       $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
       me.dialRange = 280;
       me.active = true;
