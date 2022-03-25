@@ -12,10 +12,7 @@ module.exports = {
             },
             {
                 test: /\.css$/,
-                use:  [{
-                    loader: "style-loader"
-                },
-                { loader:  "css-loader"}]
+                loaders: ["style-loader", "css-loader"]
             },
             {
                 test: /\.(jpe?g|png|gif)$/i,
@@ -29,31 +26,37 @@ module.exports = {
             {
                 test: /\.(woff|woff2|eot|ttf|svg)$/,
 //                loader: 'url-loader?limit=100000'
-                type: 'asset/resource',
-                dependency: { not: ['url'] },
+            loader: 'file-loader',
+            options: {
+                name: '[name].[ext]',
+                outputPath: './assets/fonts/'
+            }
         },
             {
                 // Exposes jQuery for use outside Webpack build
                 test: require.resolve('jquery'),
-                loader: 'expose-loader',
-                options: {
-                    exposes: ['jQuery','$']
-                }
+                use: [{
+                    loader: 'expose-loader',
+                    options: 'jQuery'
+                }, {
+                    loader: 'expose-loader',
+                    options: '$'
+                }]
             },
             {
                 // Exposes jQuery for use outside Webpack build
                 test: require.resolve('mobile-detect'),
-                loader: 'expose-loader',
-                options: {
-                    exposes: 'MobileDetect'
+                use: {
+                    loader: 'expose-loader',
+                    options: 'MobileDetect'
                 }
             },
             {
                 // Exposes jQuery for use outside Webpack build
                 test: require.resolve('js-cookie'),
-                loader: 'expose-loader',
-                options: {
-                    exposes: 'Cookies'
+                use: {
+                    loader: 'expose-loader',
+                    options: 'Cookies'
                 }
             }
         ],
