@@ -1,8 +1,9 @@
 {
-"version": "3.9.4",
+"version": "3.9.5",
 "branch": "beta",
-"last_changes": "Color picker for RGB dials",
+"last_changes": "iOS 10 compatibility",
 "changelog" : {
+            "3.9.4": "Color picker for RGB dials",
             "3.9.3": "Up/down dials",
             "3.9.2": "Update caching behavior",
             "3.9.1": "Update FontAwesome, Popper, Iro, Swiper",
