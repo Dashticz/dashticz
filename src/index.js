@@ -6,7 +6,7 @@ require('jquery-ui-dist/jquery-ui.min.css');
 //require('jquery-migrate')
 require('jquery-ui-touch-punch');
 require('bootstrap');
-require('bootstrap/dist/css/bootstrap.min.css');
+//require('bootstrap/dist/css/bootstrap.min.css'); //Preloaded via ./css/loader.css
 window.SpotifyWebApi = require('spotify-web-api-js');
 // Next line doesn't give the right results on IE11
 require('@fortawesome/fontawesome-free/css/all.min.css');

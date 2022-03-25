@@ -78,10 +78,10 @@ function loadFiles(dashtype) {
   };
 
   $(
-    '<link href="' + 'css/creative.css?_=' + Date.now() + '" rel="stylesheet">'
+    '<link href="' + 'css/creative.css?_=' + _DASHTICZ_VERSION + '" rel="stylesheet">'
   ).appendTo('head');
 
-  var enable_logrocket = _PARAMS['logrocket'];
+    var enable_logrocket = _PARAMS['logrocket'];
   $.when(
     typeof enable_logrocket !== 'undefined' &&
       enable_logrocket &&
