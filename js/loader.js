@@ -2,13 +2,8 @@
 
 var _DASHTICZ_VERSION=42;
 var head = document.getElementsByTagName('head')[0],
- script = document.createElement('script'), link = document.createElement('link');
- link.rel = 'stylesheet'; 
- link.type = 'text/css';
- link.href = './css/loader.css?t='+_DASHTICZ_VERSION; 
- //preload loader.css, to set correct basic styling
- head.appendChild(link);
-
+ script = document.createElement('script');
+ 
 script.src = 'dist/bundle.js?t='+_DASHTICZ_VERSION;
 script.onload=loader;
 head.appendChild(script);
