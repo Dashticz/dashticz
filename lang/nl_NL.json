@@ -288,12 +288,12 @@
     },
     "evohome": {
         "Auto": "Auto",
-        "AutoWithEco": "Economie",
-        "Away": "Weg",
+        "AutoWithEco": "Eco",
+        "Away": "Afwezig",
         "Custom": "Aangepast",
         "DayOff": "Vrije dag",
         "HeatingOff": "Uit",
-        "TemporaryOverride": "Overschrijven"
+        "TemporaryOverride": "Tijdelijk"
     },
     "windshort": {
         "direction_E": "O",
