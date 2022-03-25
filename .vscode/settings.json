@@ -20,5 +20,5 @@
     "editor.defaultFormatter": "vscode.json-language-features"
   },
   "esbonio.server.enabled": false,
-  "esbonio.sphinx.confDir": "/home/lokies/dev/dashticz/docs"
+  "esbonio.sphinx.confDir": "${workspaceFolder}/docs"
 }
