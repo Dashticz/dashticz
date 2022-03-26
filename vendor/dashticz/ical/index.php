@@ -162,7 +162,7 @@ function icaljg($ICS, $MAXITEMS, $HISTORY) {
 			'defaultWeekStart'            => 'MO',  // Default value
 			'disableCharacterReplacement' => false, // Default value
 			'filterDaysAfter'             => 365,  // Default value
-			'filterDaysBefore'            => (int)$HISTORY+2,  // Default value
+			'filterDaysBefore'            => (int)$HISTORY,  // Default value
 			'skipRecurrence'              => false, // Default value
 		));
 		// $ical->initFile('ICal.ics');
