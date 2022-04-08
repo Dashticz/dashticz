@@ -162,7 +162,7 @@ function icaljg($ICS, $MAXITEMS, $HISTORY) {
 			'defaultWeekStart'            => 'MO',  // Default value
 			'disableCharacterReplacement' => false, // Default value
 			'filterDaysAfter'             => 365,  // Default value
-			'filterDaysBefore'            => (int)$HISTORY,  // Default value
+			'filterDaysBefore'            => (int)$HISTORY+2,
 			'skipRecurrence'              => false, // Default value
 		));
 		// $ical->initFile('ICal.ics');
@@ -200,20 +200,23 @@ function icaljg($ICS, $MAXITEMS, $HISTORY) {
 			else
 				$end=$start;
 			$duration = $end-$start;
-			$jsEvt = array(
-				"id" => ($id++),
-				"title" => $event->summary,
-				"desc" => isset($event->description) ? $event->description : '',
-				"location" => isset($event->location) ? $event->location : '',
-				"start" => $start,
-				"end"   => $end,
-				"allDay" => $duration > 0 && ($duration % 86400) == 0,
-			);
-/* 			$a=array();
-			array_push($a,$ev["ATTENDEE"]); */
-			$data[] = $jsEvt;
-			if ($id>=$MAXITEMS)
-				break;
+
+			if ($end>time()-((int)$HISTORY*24*3600)) {
+				$jsEvt = array(
+					"id" => ($id++),
+					"title" => $event->summary,
+					"desc" => isset($event->description) ? $event->description : '',
+					"location" => isset($event->location) ? $event->location : '',
+					"start" => $start,
+					"end"   => $end,
+					"allDay" => $duration > 0 && ($duration % 86400) == 0,
+				);
+	/* 			$a=array();
+				array_push($a,$ev["ATTENDEE"]); */
+				$data[] = $jsEvt;
+				if ($id>=$MAXITEMS)
+					break;
+			}
 		}
 		return $data;
 	} catch (\Exception $e) {
