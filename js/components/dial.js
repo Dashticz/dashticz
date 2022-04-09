@@ -1534,8 +1534,4 @@ var DT_dial = (function () {
 })();
 
 Dashticz.register(DT_dial);
-
-function choose(a, b) {
-  return typeof a === 'undefined' ? b : a;
-}
 //# sourceURL=js/components/dial.js
