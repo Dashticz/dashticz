@@ -11,6 +11,8 @@ Recent changes
 Fixes
 ~~~~~
 
+* Selector switches: Hide title in case parameter ``hide_title`` is true, ``title`` is 0 or ``title`` is ''
+* Calendar: Fix start date (method:2, layout:2)
 * Switches: Fix textOn textOff block parameter for some switch types
 * Fixes in autoswipe timeout computations
 * Dial: Slightly bigger default size of dial. Set block parameter ``scale: 0.9`` to reduce the dial size.
