@@ -681,7 +681,9 @@ function titleAndValueSwitch(block) {
 }
 
 function hideTitle(block) {
-  return block.hide_title;
+  if (block.hide_title) return true;
+  var title = getBlockTitle(block);
+  return (title===0 || title ==='');
 }
 
 function showUpdateInformation(block) {
@@ -1016,7 +1018,7 @@ function handleDevice(block) {
       device['SelectorStyle'] == 1
     ) {
       html += '<div class="col-xs-8 col-data">';
-      html += '<strong class="title">' + block.title + '</strong><br />';
+      if(!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<select>';
       html += '<option value="">' + language.misc.select + '</option>';
       for (var a in names) {
@@ -1048,7 +1050,7 @@ function handleDevice(block) {
         });
     } else {
       html += '<div class="col-xs-8 col-data">';
-      html += '<strong class="title">' + block.title + '</strong><br />';
+      if(!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<div class="btn-group" data-toggle="buttons">';
       for (a in names) {
         if (
@@ -1886,7 +1888,7 @@ function getProtectedSecurityBlock(block) {
 }
 
 function getBlockTitle(block) {
-  return typeof block.title !== 'undefined' ? block.title : block.device.Name;
+  return choose(block.title, block.device && block.device.Name);
 }
 
 //# sourceURL=js/blocks.js
