@@ -353,7 +353,7 @@ var DT_function = (function () {
 //# sourceURL=js/dt_function.js
 function capitalizeFirstLetter(string) {
   if(!string) return '';
-  if(string.lenght===1) return string.toUpperCase;
+  if(string.length===1) return string.toUpperCase;
   return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
 
@@ -362,3 +362,7 @@ function addStyleAttribute($element, styleAttribute) {
   $element.attr('style', currentStyle ? currentStyle + '; ' + styleAttribute : styleAttribute);
 }
 
+
+function choose(a, b) {
+  return typeof a === 'undefined' ? b : a;
+}

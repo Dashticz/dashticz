@@ -644,7 +644,7 @@ function getBlockData(block, textOn, textOff) {
   var data = '';
 
   if (!block['hide_data']) {
-    var value = textOn;
+    var value = choose(block.textOn, textOn);
     var status = block.device.Status;
     if (
       status == 'Off' ||
@@ -654,7 +654,7 @@ function getBlockData(block, textOn, textOff) {
       status == 'No Motion' ||
       (status == '' && block.device['InternalState'] == 'Off')
     ) {
-      value = textOff;
+      value = choose(block.textOff, textOff);
     }
 
     if (titleAndValueSwitch(block)) {

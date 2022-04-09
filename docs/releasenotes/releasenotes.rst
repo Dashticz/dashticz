@@ -11,6 +11,7 @@ Recent changes
 Fixes
 ~~~~~
 
+* Switches: Fix textOn textOff block parameter for some switch types
 * Fixes in autoswipe timeout computations
 * Dial: Slightly bigger default size of dial. Set block parameter ``scale: 0.9`` to reduce the dial size.
 * Graph: Remove total counter graph line for some dial types, only in case graphTypes and legend have not been defined.
