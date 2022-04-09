@@ -56,15 +56,6 @@ function getDefaultSwitchBlock(
   var textOn = defaultTextOn || language.switches.state_on;
   var textOff = defaultTextOff || language.switches.state_off;
 
-
-
-  if (typeof block['textOn'] !== 'undefined') {
-    textOn = block['textOn'];
-  }
-  if (typeof block['textOff'] !== 'undefined') {
-    textOff = block['textOff'];
-  }
-
   var attr = '';
   if (device['Image'] == 'Alarm') {
     defaultIconOff = 'fas fa-exclamation-triangle';
