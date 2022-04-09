@@ -162,7 +162,7 @@ function icaljg($ICS, $MAXITEMS, $HISTORY) {
 			'defaultWeekStart'            => 'MO',  // Default value
 			'disableCharacterReplacement' => false, // Default value
 			'filterDaysAfter'             => 365,  // Default value
-			'filterDaysBefore'            => (int)$HISTORY+2,
+			'filterDaysBefore'            => (int)$HISTORY+8,	//for the calendar view we may need one additional week
 			'skipRecurrence'              => false, // Default value
 		));
 		// $ical->initFile('ICal.ics');
@@ -201,7 +201,6 @@ function icaljg($ICS, $MAXITEMS, $HISTORY) {
 				$end=$start;
 			$duration = $end-$start;
 
-			if ($end>time()-((int)$HISTORY*24*3600)) {
 				$jsEvt = array(
 					"id" => ($id++),
 					"title" => $event->summary,
@@ -214,9 +213,8 @@ function icaljg($ICS, $MAXITEMS, $HISTORY) {
 	/* 			$a=array();
 				array_push($a,$ev["ATTENDEE"]); */
 				$data[] = $jsEvt;
-				if ($id>=$MAXITEMS)
+				if ($id>=500)		//we limit to 500 events. Should be sufficient ...
 					break;
-			}
 		}
 		return $data;
 	} catch (\Exception $e) {
