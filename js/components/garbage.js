@@ -737,8 +737,8 @@ var DT_garbage = (function () {
       circulusberkel: {
         handler: getGeneralData,
         param: {
-          service: 'afvalstromen',
-          subservice: 'circulusberkel',
+          service: 'circulusberkel',
+//          subservice: 'circulusberkel',
         },
       },
       cure: {
