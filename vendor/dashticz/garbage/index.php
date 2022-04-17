@@ -70,6 +70,22 @@ function logMsg($msg) {
 	report( $msg, 'msg');
 }
 
+$cookies = Array();
+function curlResponseHeaderCallback($ch, $headerLine) {
+    global $cookies;
+
+	preg_match_all('/^Set-Cookie:\s*([^;]*)/mi', $headerLine, $matches);
+	foreach($matches[1] as $item) {
+		parse_str($item, $cookie);
+		$cookies = array_merge($cookies, $cookie);
+	}
+    return strlen($headerLine); // Needed by curl
+}
+
+function addCookie($cookie, $cookies, $key) {
+	return $cookie.'&'.$key.'='.$cookies[$key];
+}
+
 function curlPost($url, $data=0) {
 //Create curl Post request
 	debugMsg($url);
@@ -91,9 +107,12 @@ function fileGetJson($url) {
 
 function curlWeb($url, $options=0) {
 	global $ignoressl;
+	global $cookies;
 	$ch = curl_init();
 	curl_setopt($ch, CURLOPT_URL, $url);
 	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+	curl_setopt($ch, CURLOPT_HEADERFUNCTION, "curlResponseHeaderCallback");
+	$cookies = array();
 	if ($ignoressl) {
 		report('SSL check disabled', 'info');
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
@@ -119,7 +138,10 @@ function curlWebMatch($url, $regexp) {
 	return $match;
 }
 
+
 function getCalendar() {
+	global $cookies;
+
 	$allDates=array();
 	$zipCode = $_GET['zipcode'];
 	$houseNr = $_GET['nr'];
@@ -413,6 +435,47 @@ function getCalendar() {
 			}
 
 		break;
+		case 'circulusberkel':
+			$url = 'https://mijn.circulus.nl/register/zipcode.json';
+			$data = 'authenticityToken=1e1d2d435e5214dcdf453b31aba2f9d1fc5bb7a1&zipCode='.$_GET['zipcode'].'&number='.$_GET['nr'];
+//			var_dump($url);
+//			var_dump($data);
+			$res=curlPost($url, $data);
+//			var_dump($cookies);
+			$cb_session=$cookies['CB_SESSION'];
+//			var_dump($cb_session);
+//			var_dump($res);
+
+			$startDate=date("Y-m-d");
+			$endDate=date("Y-m-d",time()+28*24*60*60);
+			$url='https://mijn.circulus.nl/afvalkalender.json?from='.$startDate.'&till='.$endDate;
+			//selectedHouseNumber=36&selectedZipCode=7325XT&municipality=Apeldoorn&___TS=1650698691422&arisId=1000124990&residence=Apeldoorn&selectedHouseType=0
+			$cookie = "CB_SESSION=".$cb_session;
+			$cookie = addCookie($cookie, $cookies, 'selectedHouseNumber');
+			$cookie = addCookie($cookie, $cookies, 'selectedZipCode');
+			$cookie = addCookie($cookie, $cookies, 'municipality');
+			$cookie = addCookie($cookie, $cookies, '___TS');
+			$cookie = addCookie($cookie, $cookies, 'arisId');
+			$cookie = addCookie($cookie, $cookies, 'residence');
+			$cookie = addCookie($cookie, $cookies, 'selectedHouseType');
+			$options = array(
+				CURLOPT_HTTPHEADER =>
+					'Cookie: '.$cookie
+			);
+
+//			var_dump($url);
+//			var_dump($options);
+
+			$result=curlWebJson($url, $options);
+
+			foreach ($result->customData->response->garbage as $key => $value) {
+				foreach ($value->dates as $date) {
+					$code=$value->code;
+					if($code==='PAP') $code='Papier';
+					$allDates[$date][$code] = $date;
+				}
+			}
+
 	}
 	$temp=$allDates;
 	$allDates=array();
