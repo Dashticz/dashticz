@@ -219,6 +219,8 @@ Block parameters
     - | If the battery level is below ``batteryThreshold`` then a battery icon will be displayed. See :ref:`batterylevel`
       | Default value is defined by config['batteryThreshold] (=30)
       | ``15``: Only show the battery icon when the battery level is below 15%.
+  * - hide_title
+    - | Hide title for selector switch in case parameter hide_title is ``true``, title is ``0`` or title is ``''``
 
 
 There are several additional parameters for Graphs. See :ref:`dom_graphs`
