@@ -625,11 +625,10 @@ function getBlindsBlock(block, withPercentage) {
 
   html += '<div class="' + button_class + '">';
 
-  var upAction = 'Off';
-  var downAction = 'On';
+  var asOn=domoBuild>14560?true:false;
+  
   if (device['SwitchType'].toLowerCase().indexOf('inverted') >= 0) {
-    upAction = 'On';
-    downAction = 'Off';
+    asOn=!asOn;
   }
   html +=
     '<div class="up"><a href="javascript:void(0)" class="btn btn-number plus">';
@@ -652,10 +651,10 @@ function getBlindsBlock(block, withPercentage) {
 
   $mountPoint.html(html);
   $mountPoint.find('.plus').click(function () {
-    switchBlinds(block, upAction);
+    switchBlinds(block, asOn? 'On':'Off');
   });
   $mountPoint.find('.min').click(function () {
-    switchBlinds(block, downAction);
+    switchBlinds(block, asOn? 'Off':'On');
   });
   $mountPoint.find('.btn.stop').click(function () {
     switchBlinds(block, 'Stop');
