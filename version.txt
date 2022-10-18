@@ -1,8 +1,9 @@
 {
-"version": "3.9.5",
+"version": "3.9.6",
 "branch": "beta",
-"last_changes": "iOS 10 compatibility",
+"last_changes": "Fix binds open/close for new Domoticz version (build>14560",
 "changelog" : {
+            "3.9.5": "iOS 10 compatibility",
             "3.9.4": "Color picker for RGB dials",
             "3.9.3": "Up/down dials",
             "3.9.2": "Update caching behavior",
