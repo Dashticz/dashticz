@@ -12,6 +12,7 @@ var moved = false;
 var loginCredentials = '';
 // eslint-disable-next-line no-unused-vars
 var domoversion = '';
+var domoBuild = 0;
 // eslint-disable-next-line no-unused-vars
 var dzVents = '';
 // eslint-disable-next-line no-unused-vars
@@ -100,6 +101,8 @@ function initVersion() {
         dataType: 'json',
         success: function (data) {
           domoversion = 'Domoticz version: ' + data.version;
+          domoBuild = data.version.match(/(?<=build )\d+(?=\))/);
+          console.log('Build: '+domoBuild);
           dzVents = '<br>dzVents version: ' + data.dzvents_version;
           python = '<br> Python version: ' + data.python_version;
           levelNamesEncoded =

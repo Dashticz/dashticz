@@ -918,6 +918,7 @@ function handleDevice(block) {
     case 'Blinds Inverted':
       return getBlindsBlock(block, false);
     case 'Blinds Percentage':
+    case 'Blinds + Stop':
     case 'Blinds Percentage Inverted':
     case 'Venetian Blinds EU Percentage':
     case 'Venetian Blinds EU Inverted Percentage':
