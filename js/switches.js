@@ -625,7 +625,7 @@ function getBlindsBlock(block, withPercentage) {
 
   html += '<div class="' + button_class + '">';
 
-  var asOn=domoBuild>14560?true:false;
+  var asOn=domoBuild>14535?true:false;
   
   if (device['SwitchType'].toLowerCase().indexOf('inverted') >= 0) {
     asOn=!asOn;
