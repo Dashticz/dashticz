@@ -1265,7 +1265,7 @@ var DT_dial = (function () {
     me.update = updateBlinds;
     me.percentage = me.device.SwitchType.includes('Percentage');
     me.inverted = me.device.SwitchType.includes('Inverted');
-    if(domoBuild>14560) me.inverted=!me.inverted;
+    if(domoBuild>14535) me.inverted=!me.inverted;
     me.value = valueBlinds(me);
     me.maxdim = isDefined(me.device.MaxDimLevel)
     ? parseInt(me.device.MaxDimLevel)
