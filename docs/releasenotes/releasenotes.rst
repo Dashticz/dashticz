@@ -21,7 +21,7 @@ Fixes
 * Dial: Slightly bigger default size of dial. Set block parameter ``scale: 0.9`` to reduce the dial size.
 * Graph: Remove total counter graph line for some dial types, only in case graphTypes and legend have not been defined.
 * Garbage: Fix for Circulus-Berkel
-* Blinds: Fix Open/Close in new Domoticz version (build>14560)
+* Blinds: Fix Open/Close in new Domoticz version (build>14535)
 
 V3.9.5 Beta (25-3-2022)
 -----------------------
