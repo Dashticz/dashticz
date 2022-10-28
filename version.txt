@@ -1,8 +1,9 @@
 {
-"version": "3.9.6",
+"version": "3.9.6.1",
 "branch": "beta",
-"last_changes": "Fix binds open/close for new Domoticz version (build>14535)",
+"last_changes": "Fix iOS compatibility",
 "changelog" : {
+            "3.9.6": "Fix blinds open/close for new Domoticz version (build>14535)",
             "3.9.5": "iOS 10 compatibility",
             "3.9.4": "Color picker for RGB dials",
             "3.9.3": "Up/down dials",
