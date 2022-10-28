@@ -101,8 +101,8 @@ function initVersion() {
         dataType: 'json',
         success: function (data) {
           domoversion = 'Domoticz version: ' + data.version;
-          domoBuild = data.version.match(/(?<=build )\d+(?=\))/);
-          console.log('Build: '+domoBuild);
+          domoBuild = parseInt( data.version.match(/build (\d+)(?=\))/)[1]);
+          console.log('Build: ' + domoBuild);
           dzVents = '<br>dzVents version: ' + data.dzvents_version;
           python = '<br> Python version: ' + data.python_version;
           levelNamesEncoded =

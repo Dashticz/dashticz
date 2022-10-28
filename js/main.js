@@ -289,7 +289,7 @@ function loadFiles(dashtype) {
     return $.ajax({
       url: 'js/version.js',
       dataType: 'script',
-      cache: true
+      cache: false
     })
       .then(function () {
         return initVersion();
@@ -298,7 +298,7 @@ function loadFiles(dashtype) {
         return $.ajax({
           url: 'js/settings.js',
           dataType: 'script',
-          cache: true
+          cache: false
         });
       })
       .then(function () {

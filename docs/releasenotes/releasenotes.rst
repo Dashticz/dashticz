@@ -8,6 +8,13 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+V3.9.6.1 Beta (28-10-2022)
+
+Fixes
+~~~~~
+
+* Fixed incompatibility for IOS introduced with v3.9.6
+
 V3.9.6 Beta (18-10-2022)
 -----------------------
 
