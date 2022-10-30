@@ -131,6 +131,9 @@ set_error_handler(function($errno, $errstr, $errfile = 0, $errline = 0, $errcont
 	return false;
 });
 
+//Microsoft expects an useragent 
+ini_set('user_agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0');
+
 try {
 	if ( $METHOD==0) {
 		@$res = ical5($ICS, $MAXITEMS);
