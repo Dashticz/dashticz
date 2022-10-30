@@ -8,7 +8,13 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Fixes
+~~~~~
+
+* Fix for opening Outlook calendar files
+
 V3.9.6.1 Beta (28-10-2022)
+---------------------------
 
 Fixes
 ~~~~~
