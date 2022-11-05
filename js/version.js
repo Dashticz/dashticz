@@ -12,15 +12,17 @@ var moved = false;
 var loginCredentials = '';
 // eslint-disable-next-line no-unused-vars
 var domoversion = '';
-var domoBuild = 0;
+var domoVersion = {
+  build: 0,
+  version: 0,
+  levelNamesEncoded: false,
+  newBlindsBehavior: false
+}
 // eslint-disable-next-line no-unused-vars
 var dzVents = '';
 // eslint-disable-next-line no-unused-vars
 var python = '';
 // eslint-disable-next-line no-unused-vars
-var levelNamesEncoded = false;
-var levelNamesEncodeVersion =
-  '3.9476'; /* Domoticz version above this, level names are encoded */
 
 // eslint-disable-next-line no-unused-vars
 function initVersion() {
@@ -101,12 +103,18 @@ function initVersion() {
         dataType: 'json',
         success: function (data) {
           domoversion = 'Domoticz version: ' + data.version;
-          domoBuild = parseInt( data.version.match(/build (\d+)(?=\))/)[1]);
-          console.log('Build: ' + domoBuild);
+          domoVersion.version = parseFloat(data.version);
+
+          try {
+            domoVersion.build = parseInt( data.version.match(/build (\d+)(?=\))/)[1]);
+          }
+          catch(e) {
+            console.log('Not able to parse Domoticz build number: ', data.version);
+          }
           dzVents = '<br>dzVents version: ' + data.dzvents_version;
           python = '<br> Python version: ' + data.python_version;
-          levelNamesEncoded =
-            parseFloat(data.version) >= parseFloat(levelNamesEncodeVersion);
+          setDomoBehavior();
+          
         },
       }).catch(function (err) {
         console.log(err);
@@ -115,6 +123,28 @@ function initVersion() {
         return $.Deferred().reject(new Error(errorTxt));
       });
     });
+}
+
+/*This function sets certain flags to indicate new behavior has been implemented in the Domoticz version that is used*/
+function setDomoBehavior() {
+  var domoChanges = {
+    newBlindsBehavior: {
+      version: 2022.1,
+      build: 14535
+    },
+    levelNamesEncoded: {
+      version: 3.9476
+    }
+  }
+  
+  Object.keys(domoChanges).forEach(function(key) {
+    var testVersion = 0 || domoChanges[key].version;
+    var testBuild = 0 || domoChanges[key].version;
+    var applicable = (domoVersion.version> testVersion) || ((domoVersion.version == testVersion) && (domoVersion.build>=testBuild));
+    domoVersion[key] = applicable; 
+  });    
+
+  console.log("Domoticz version: ",domoVersion);
 }
 
 //# sourceURL=js/version.js
