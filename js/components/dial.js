@@ -1,4 +1,4 @@
-/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer DT_function Debug*/
+/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer DT_function Debug choose domoVersion language Colorpicker*/
 /* global switchEvoHotWater changeEvohomeControllerStatus reqSlideDevice switchEvoZone switchThermostat switchDevice isObject*/
 /* global addStyleAttribute capitalizeFirstLetter*/
 var DT_dial = (function () {
@@ -518,11 +518,8 @@ var DT_dial = (function () {
 
     me.degrees = a;
 
-    var val = me.value;
-
     if (me.unlimited) {
       /* For dials such as Wind which rotate 360 */
-      val = me.temp;
       $d.addClass('p360');
     } else {
       var _startAngle = me.startAngle;
@@ -1265,7 +1262,7 @@ var DT_dial = (function () {
     me.update = updateBlinds;
     me.percentage = me.device.SwitchType.includes('Percentage');
     me.inverted = me.device.SwitchType.includes('Inverted');
-    if(domoBuild>14535) me.inverted=!me.inverted;
+    if(domoVersion.newBlindsBehavior) me.inverted=!me.inverted;
     me.value = valueBlinds(me);
     me.maxdim = isDefined(me.device.MaxDimLevel)
     ? parseInt(me.device.MaxDimLevel)

@@ -13,6 +13,8 @@
 /* global getBlockTitle */
 /* from colorpicker.js */
 /* global Colorpicker */
+/* from version.js */
+/* global domoVersion */
 
 /** Returns a default switch block
  *
@@ -625,7 +627,7 @@ function getBlindsBlock(block, withPercentage) {
 
   html += '<div class="' + button_class + '">';
 
-  var asOn=domoBuild>14535?true:false;
+  var asOn=domoVersion.newBlindsBehavior;
   
   if (device['SwitchType'].toLowerCase().indexOf('inverted') >= 0) {
     asOn=!asOn;

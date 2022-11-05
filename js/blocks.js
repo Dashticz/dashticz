@@ -7,7 +7,7 @@
 /*from main.js*/
 /*global toSlide disableStandby infoMessage*/
 /*from version.js*/
-/*global levelNamesEncoded*/
+/*global domoVersion*/
 /*from thermostat.js*/
 /*global getThermostatBlock getEvohomeZoneBlock getEvohomeControllerBlock getEvohomeHotWaterBlock*/
 /*from switches.js*/
@@ -995,7 +995,7 @@ function handleDevice(block) {
     device['LevelNames'] !== ''
   ) {
     var names;
-    if (levelNamesEncoded === true)
+    if (domoVersion.levelNamesEncoded)
       names = b64_to_utf8(device['LevelNames']).split('|');
     else names = device['LevelNames'].split('|');
 
