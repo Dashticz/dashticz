@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Weather: Added 'knmi' as weather forecast provider
+
 Fixes
 ~~~~~
 
@@ -22,7 +27,7 @@ Fixes
 * Fixed incompatibility for IOS introduced with v3.9.6
 
 V3.9.6 Beta (18-10-2022)
------------------------
+-------------------------
 
 Fixes
 ~~~~~
