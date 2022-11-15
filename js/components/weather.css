@@ -74,45 +74,43 @@
   margin-right: 0.5em
 }
 
-.weathercurrent .city {
+.weathercurrent .cityholder {
   font-size: 50%;
   width: 50%;
+  text-align: left
+}
+
+.weathercurrent .description {
+  font-size: 80%
 }
 
 .weather_2 .skycon {
   width: 3em
 }
 
-.weather_3 {
+.weatherdetails {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
+
 }
 
-.weather_3 > div {
+.weatherdetails > div {
   font-size: 40%;
   width: 33%;
   text-align: center;
 }
 
-.weather_3 .city {
-  font-size: 60%;
-}
 
-.weather_3 .temp {
-  font-size: 60%;
-}
-
-.weather_3 .description {
-  width: 100%;
-}
-
-.weather_4 {
+.weather_3, .weather_4 {
   display: flex;
   flex-direction:column;
-  width:100%
+}
+
+.weatherdetails .forecast {
+  width: 100%;
 }
 
 .weatherforecast {
