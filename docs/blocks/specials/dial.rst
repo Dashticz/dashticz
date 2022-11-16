@@ -61,6 +61,8 @@ Block parameters
     - ``true``: Shows last update info (default: true)
   * - flash
     - ``true``: Outer dial will flash with user or default color (default: 0)
+  * - delay
+    - ``2``: Only applicable to Blinds Percentage dials. To postpone updating the dial until after a certain delay. See below.
   * - dialimage
     - ``'img/image.png'``: Show an image instead of the calendar icon (default: false)
   * - dialicon
@@ -167,6 +169,10 @@ All four Domoticz blinds types can be rendered as dial:
 
 The text in the ``up`` and ``down`` buttons can be configured via the block parameters ``textOpen`` and ``textClose`` respectively.
 
+For Blinds Percentage, if you press the Up or Down button, a command is send to Domoticz to update the blinds position.
+Pressing these buttons several times in a row may give unpredictable results, because the dial is being rerendered as soon as Domoticz notices the blinds position has been changed.
+To prevent this, the dial will only be updated after a certain delay after the last command has been sent to Domoticz.
+This delay value can be configured via the ``delay`` block parameter. Only applicable to Blinds Percentage devices. The default value is ``2`` (seconds).
 
 Temp + Humidity
 ~~~~~~~~~~~~~~~

@@ -1,6 +1,10 @@
 /* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer DT_function Debug choose domoVersion language Colorpicker*/
-/* global switchEvoHotWater changeEvohomeControllerStatus reqSlideDevice switchEvoZone switchThermostat switchDevice isObject*/
-/* global addStyleAttribute capitalizeFirstLetter*/
+/* global isObject*/
+/* global addStyleAttribute capitalizeFirstLetter createDelayedFunction*/
+/* from blocks.js */
+/* global TranslateDirection */
+/* from switches.js */
+/* global switchEvoHotWater changeEvohomeControllerStatus reqSlideDevice reqSlideDeviceAsync switchEvoZone switchThermostat switchDevice*/
 var DT_dial = (function () {
   return {
     name: 'dial',
@@ -131,6 +135,8 @@ var DT_dial = (function () {
           me.isSetpoint = !!me.device.SetPoint;
         }
       }
+      me.delayedFunction = createDelayedFunction(choose(me.block.delay,0)*1000);
+
       make(me)
         .then(me.tap);
     },
@@ -715,9 +721,32 @@ var DT_dial = (function () {
   }
 
   function slideDevice(me, idx, level) {
-    reqSlideDevice(idx, level).then(function () {
-      if(me.slowDevice)
+    /*
+          if (me.block.delay) {
+          me.delayedFunction(function() {
+            reqSlideDevice(idx, level)
+          });
           me.device.Level = level;
+          if (me.update) me.update(me);
+          else make(me);
+          return
+        }
+        */
+    if (me.block.delay) {
+      Domoticz.hold(idx);
+      reqSlideDeviceAsync(idx, level)
+      me.device.Level = level;
+      if (me.update) me.update(me);
+      else make(me);
+      me.delayedFunction(function () {
+        Domoticz.release(idx);
+      });
+      return
+    }
+
+    reqSlideDevice(idx, level).then(function () {
+      if (me.slowDevice)
+        me.device.Level = level;
       if (me.update) me.update(me);
       else make(me);
     });
