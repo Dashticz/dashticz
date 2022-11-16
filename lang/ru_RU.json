@@ -115,7 +115,9 @@
             "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
             "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
             "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
-            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard",
+            "use_hidden": "Use hidden devices as well",
+            "use_hidden_help": "In Domoticz hidden devices start with $"
         },
         "infosave": "По умолчанию настройки хранятся в Вашем браузере. Недостатком этого метода является то, что он будет работать только в текущем браузере. Если это не проблема, Вы можете продолжить. В противном случае скопируйте код ниже в CONFIG.JS для сохранения настроек во всех браузерах и устройствах.",
         "localize": {
