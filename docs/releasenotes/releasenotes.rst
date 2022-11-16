@@ -11,8 +11,9 @@ Recent changes
 Enhancements
 ~~~~~~~~~~~~
 
-* Weather: Added 'knmi' as weather forecast provider
+* Weather: Added 'knmi' as weather forecast provider.
 * Dials: Add 'delay' parameter to delay the updating of Up/Down percentage blinds.
+* COnfig: New config parameter 'use_hidden' to make use of Domoticz hidden devices as well.
 
 Fixes
 ~~~~~
