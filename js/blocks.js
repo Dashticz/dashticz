@@ -6,6 +6,8 @@
 /*global ion*/
 /*from main.js*/
 /*global toSlide disableStandby infoMessage*/
+/*from dt_function.js*/
+/* global capitalizeFirstLetter choose */
 /*from version.js*/
 /*global domoVersion*/
 /*from thermostat.js*/

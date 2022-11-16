@@ -12,6 +12,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Weather: Added 'knmi' as weather forecast provider
+* Dials: Add 'delay' parameter to delay the updating of Up/Down percentage blinds.
 
 Fixes
 ~~~~~
