@@ -96,6 +96,8 @@
             "title": "General",
             "use_favorites": "Only use favorite devices",
             "use_favorites_help": "Only used when using auto positioning",
+            "use_hidden": "Use hidden devices as well",
+            "use_hidden_help": "In Domoticz hidden devices start with $",
             "user_name": "Username",
             "user_name_help": "Set Dashticz username and password",
             "disable_update_check": "Disable update check",

@@ -188,6 +188,9 @@ Config parameters
     - | ``0`` Show all domoticz devices (default)
       | ``1`` Only show Domoticz devices marked as favorite in Domoticz
       | If use auto positioning, then this item should be 1
+  * - use_hidden
+    - | ``0`` Don't show Domoticz hidden devices (Device name starts with $) (default)
+      | ``1`` Use Domoticz hidden devices as well
   * - use_cors
     - | ``0`` Don't use CORS proxy for OpenWeatherMap (default)
       | ``1`` Use CORS proxy for OpenWeatherMap. Needed on Android 4.4.2.

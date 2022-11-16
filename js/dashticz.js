@@ -1,8 +1,6 @@
 /* global blocks settings usrEnc pwdEnc DT_function*/
 /*from domoticz-api.js*/
 /*global Domoticz*/
-/*from main.js*/
-/*global workerTimers*/
 
 // eslint-disable-next-line no-unused-vars
 var Dashticz = (function () {
@@ -78,6 +76,7 @@ var Dashticz = (function () {
           refresh_method: settings['refresh_method'],
           domoticz_timeout: settings['domoticz_timeout'],
           use_favorites: settings['use_favorites'],
+          use_hidden: settings['use_hidden']
         };
         return Domoticz.init(cfg);
       })

@@ -1,7 +1,8 @@
 /*from bundle.js*/
-/* global moment workerTimers*/
-/* global Debug*/
-// eslint-disable-next-line no-unused-vars
+/* global Debug moment*/
+/* from CONFIG.js*/
+/* global stubDevices*/
+/* exported Domoticz*/
 var Domoticz = (function () {
   var usrinfo = '';
   var deviceObservable = new ListObservable();
@@ -311,14 +312,14 @@ var Domoticz = (function () {
   }
 
   function requestAllDevices(forcehttp) {
-    var timeFilter = '';
-    if (!cfg.refresh_method) {
-      timeFilter = '&lastUpdate=' + lastUpdate.devices;
-    }
+    var timeFilter = cfg.refresh_method ? '':('&lastUpdate=' + lastUpdate.devices);
+    var hiddenFilter = cfg.use_hidden? '&displayhidden=1' : '';
+    var favoriteFilter = cfg.use_favorites? '&favorite=1' : '';
     return domoticzRequest(
       'type=devices&filter=all&used=true&order=Name' +
-        (cfg.use_favorites ? '&favorite=1' : '') +
-        timeFilter,
+        favoriteFilter +
+        timeFilter +
+        hiddenFilter,
       forcehttp
     ).then(function (res) {
       return _setAllDevices(res);
