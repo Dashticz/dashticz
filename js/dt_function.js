@@ -1,4 +1,10 @@
-/* global toSlide getRandomInt settings infoMessage*/
+/* global toSlide getRandomInt settings infoMessage _DASHTICZ_VERSION Dashticz */
+/* from blocks.js */
+/* global convertBlock addBlock2Column*/
+/* from graph.js */
+/* global DT_graph */
+/* exported capitalizeFirstLetter addStyleAttribute choose createDelayedFunction*/
+
 // eslint-disable-next-line no-unused-vars
 var DT_function = (function () {
   /**Clickhandler for Dashticz block
@@ -365,4 +371,21 @@ function addStyleAttribute($element, styleAttribute) {
 
 function choose(a, b) {
   return typeof a === 'undefined' ? b : a;
+}
+
+function createDelayedFunction(timeout) {
+  var m_setTimeout=timeout;
+  var m_timeout=0;
+
+  if (timeout)
+  return function delayedFunction(callback) {
+    if(m_timeout) 
+      clearTimeout(m_timeout);
+    m_timeout = setTimeout(callback, m_setTimeout);
+  }
+  else
+  return function notDelayedFunction(callback) {
+    return callback();
+  }
+
 }
