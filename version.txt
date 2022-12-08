@@ -1,7 +1,7 @@
 {
-"version": "3.9.6.1",
+"version": "3.9.7",
 "branch": "beta",
-"last_changes": "Fix iOS compatibility",
+"last_changes": "KNMI weather, dials update delay",
 "changelog" : {
             "3.9.6": "Fix blinds open/close for new Domoticz version (build>14535)",
             "3.9.5": "iOS 10 compatibility",
