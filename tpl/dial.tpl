@@ -48,7 +48,7 @@
             <div class="dial-needle" style="--dial-color: {{color}};--needle-length: {{needleL}}px;--needle-width: {{needleW}}px;"></div>
         </div>
         {{/unless}}
-        <div id="{{id}}" class="dial-center {{on}}" style="--dial-rgba: {{rgba}};{{#if onoff}}background: transparent; box-shadow: none;{{/if}}">
+        <div id="{{id}}" class="dial-center {{on}}" style="--dial-rgba: {{rgba}};">
             {{#if controller}}
                 <div class="dial-menu {{#if name}}hastitle{{/if}}">
                     <ul class="status" style="--dial-color: {{color}};">

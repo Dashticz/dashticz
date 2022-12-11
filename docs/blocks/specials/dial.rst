@@ -108,6 +108,10 @@ Block parameters
   * - steps
     - | Step size for needle adjustment or up/down adjustment (Up/down dials). You can use this parameter to set thermostat steps to 0.5
       | ``0.5``: Use step size of 0.5
+  * - styleStatus 
+    - | Show colored outer ring if status is 'On' (blinds, dimmers)
+      | ``true`` (=default for dimmers). Show colored outer ring if device status is 'On' 
+      | ``false`` (=default for blinds): Don't color the outside ring
   * - subtype
     - | For certain dial types you can specify a subtype for a specific layout/format
       | ``'windspeed'``: For wind devices, to show wind speed instead of wind direction as needle position    
