@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Dials: Add colored ring to dimmers in on state (optionally to blinds as well)
+
 V3.9.7 Beta (8-12-2022)
 ---------------------------
 

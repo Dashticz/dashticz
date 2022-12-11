@@ -160,6 +160,7 @@ var DT_dial = (function () {
     var d = me.device;
     me.tap = tap;
     me.checkNeedlePos = true;
+    me.styleStatus = choose(me.block.styleStatus, true); //by default apply status indication as CSS style
 
     if (!d) {
       onoff(me);
@@ -1299,6 +1300,7 @@ var DT_dial = (function () {
     me.unitvalue='%';
     me.invertedValue = choose(me.block.inverted,!me.inverted)
     me.slowDevice = true;
+    me.styleStatus = me.block.styleStatus;
     
     if(me.block.subtype==="updown") {
       makeUpDownDim(me);
@@ -1373,7 +1375,8 @@ var DT_dial = (function () {
 
     me.value = me.getCurrentValue(me);
 
-    me.$middle.find('.value').html(valueUpDown(me))
+    me.$middle.find('.value').html(valueUpDown(me));
+    if(me.styleStatus) addDemandClass(me);
   }
 
   function getCurrentValue(me) {
@@ -1452,8 +1455,17 @@ var DT_dial = (function () {
       me.$down = me.$mountPoint.find('.down');
       me.$middle = me.$mountPoint.find('.middle');
     }
+    if(me.styleStatus) addDemandClass(me);
+    me.$middle.find('.value').html(valueBlinds(me));
+  }
 
-    me.$middle.find('.value').html(valueBlinds(me))
+  function addDemandClass(me) {
+    me.previousDemand = me.demand;
+    me.demand=getIconStatusClass(me.device.Status);
+    if(me.previousDemand!==me.demand) {
+      me.$mountPoint.find('.dial-center').removeClass(me.previousDemand).addClass(me.demand);
+    }
+
   }
 
   function valueBlinds(me) {

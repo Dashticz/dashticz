@@ -3588,9 +3588,9 @@ canvas {
 }
 
 .dial-center.on {
-  -webkit-box-shadow: 0 0 1vh 0 var(--dial-rgba);
-  -moz-box-shadow: 0 0 1vh 0 var(--dial-rgba);
-  box-shadow: 0 0 1vh 0 var(--dial-rgba);
+  -webkit-box-shadow: 0 0 0 0.7em var(--dial-rgba);
+  -moz-box-shadow: 0 0 0 0.7em var(--dial-rgba);
+  box-shadow: 0 0 0 0.7em var(--dial-rgba);
 }
 
 .dial-flash {
