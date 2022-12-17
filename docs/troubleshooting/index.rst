@@ -7,3 +7,4 @@ Troubleshooting
    connection
    docker
    issues-domoticzblocks
+   other
