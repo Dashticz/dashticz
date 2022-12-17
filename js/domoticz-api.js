@@ -382,8 +382,8 @@ var Domoticz = (function () {
 
     //P1 Smart Meter manipulation
     if (value.Type === 'P1 Smart Meter' && value.SubType === 'Energy') {
-      value.NettUsage = parseFloat(value.Usage) - parseFloat(value.UsageDeliv);
-      value.NettCounterToday = parseFloat(value.CounterToday) - parseFloat(value.CounterDelivToday);
+      value.NettUsage = (parseFloat(value.Usage) - parseFloat(value.UsageDeliv)) + ' '+value.Usage.split(' ')[1];
+      value.NettCounterToday = (parseFloat(value.CounterToday) - parseFloat(value.CounterDelivToday)) + ' '+value.CounterToday.split(' ')[1];
       value.NettCounter = parseFloat(value.Counter) - parseFloat(value.CounterDeliv);
     }
 

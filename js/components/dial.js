@@ -950,7 +950,7 @@ var DT_dial = (function () {
       }
       if (typeof data.value === 'number') {
         return {
-          value: data.value,
+          value: data.value * dataScale,
           unit: data.unit,
         };
       }

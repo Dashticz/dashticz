@@ -1,5 +1,5 @@
 {
-"version": "3.9.7",
+"version": "3.9.7.1",
 "branch": "beta",
 "last_changes": "KNMI weather, dials update delay",
 "changelog" : {

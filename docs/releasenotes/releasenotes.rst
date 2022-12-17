@@ -13,6 +13,11 @@ Enhancements
 
 * Dials: Add colored ring to dimmers in on state (optionally to blinds as well)
 
+Fixes
+~~~~~
+
+* Dials: Fix scaling parameter for computed values (NettUsage, NettCounterToday, NettCounter) for P1 Smart Meter
+
 V3.9.7 Beta (8-12-2022)
 ---------------------------
 
