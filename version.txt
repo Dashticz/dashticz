@@ -1,8 +1,9 @@
 {
-"version": "3.9.7.1",
+"version": "3.9.8",
 "branch": "beta",
-"last_changes": "KNMI weather, dials update delay",
+"last_changes": "Dials: show on state for dimmers",
 "changelog" : {
+            "3.9.7": "KNMI weather, dials update delay",
             "3.9.6": "Fix blinds open/close for new Domoticz version (build>14535)",
             "3.9.5": "iOS 10 compatibility",
             "3.9.4": "Color picker for RGB dials",
