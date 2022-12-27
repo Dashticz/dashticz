@@ -114,7 +114,7 @@
         renderer: renderTpl
       },
       ovapi: {
-        dataURL: _CORS_PATH + 'https://v0.ovapi.nl/' + (block.tpc ? 'tpc/' + block.tpc : 'stopareacode/' + block.station),
+        dataURL: _CORS_PATH + 'http://v0.ovapi.nl/' + (block.tpc ? 'tpc/' + block.tpc : 'stopareacode/' + block.station),
         transformer: transformOvapi,
         tpl: 'pubtrans_ov',
         renderer: renderTpl
