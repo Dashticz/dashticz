@@ -8,6 +8,14 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.10.0.1 Beta (27-12-2022)
+-------------------------
+
+Fixes
+~~~~~
+
+* Publictransport: Fix for OVAPI (SSL certificate expired)
+
 v3.10.0 Beta (27-12-2022)
 -------------------------
 
