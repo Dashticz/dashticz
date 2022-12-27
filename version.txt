@@ -1,8 +1,9 @@
 {
-"version": "3.9.8",
-"branch": "beta",
-"last_changes": "Dials: show on state for dimmers",
+"version": "3.10",
+"branch": "master",
+"last_changes": "Master version",
 "changelog" : {
+            "3.9.8": "Dials: show on state for dimmers",
             "3.9.7": "KNMI weather, dials update delay",
             "3.9.6": "Fix blinds open/close for new Domoticz version (build>14535)",
             "3.9.5": "iOS 10 compatibility",
