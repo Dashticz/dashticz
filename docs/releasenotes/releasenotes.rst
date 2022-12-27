@@ -8,6 +8,56 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.10.0 Beta (27-12-2022)
+-------------------------
+
+Beta version derived from v3.10 Master.
+
+V3.10 Master (27-12-2022)
+---------------------------
+
+Roll-up of all v3.9.x beta changes,summarized below:
+
+Enhancements
+~~~~~~~~~~~~
+
+* Dials: Add colored ring to dimmers in on state (optionally to blinds as well)
+* Dials: Add 'delay' parameter to delay the updating of Up/Down percentage blinds.
+* Dials: For RGB switches you can open the color selector popup by adding ``switchMode: 'color'`` to the block definition.
+* Dials: Needle step size configurable via ``steps`` block parameter.
+* Dials: For wind device, add block parameter ``subtype: 'windspeed'`` to use wind speed for needle position instead of wind direction.
+* Dials: For wind device, add block parameter ``subtype: 'windgust'`` to use wind gust for needle position instead of wind direction.
+* Dials : Up/down dials for Thermostats, Blinds and Dimmers. See :ref:`updowndial`
+* Garbage: Added Maashorst (Uden, Volkel, Odiliapeel, Reek, Schaijk en Zeeland)
+* Public transport: New block parameter ``show_direction`` to show bus line direction.
+* Public transport: New block parameter ``lang`` to set language for search results (for ``irailbe`` only).
+* Public Transport: New block parameter ``direction`` to filter on line direction number. See :ref:`publictransport`
+* Weather: Added 'knmi' as weather forecast provider.
+* Config: New config parameter 'use_hidden' to make use of Domoticz hidden devices as well.
+
+Fixes
+~~~~~
+
+* Fixes in autoswipe timeout computations
+* Swiper vertical scroll bar
+* Selector switches: Hide title in case parameter ``hide_title`` is true, ``title`` is 0 or ``title`` is ''
+* Switches: Fix textOn textOff block parameter for some switch types
+* Blinds: Fix Open/Close in new Domoticz version (build>14535)
+* Dials: Fix scaling parameter for computed values (NettUsage, NettCounterToday, NettCounter) for P1 Smart Meter
+* Dials: Slightly bigger default size of dial. Set block parameter ``scale: 0.9`` to reduce the dial size.
+* Dials: Fix min, max setpoint setting in CONFIG.js
+* Dials: Translations for wind direction.
+* Dials: Added translations for the EvoHome controller
+* Graph: Remove total counter graph line for some dial types, only in case graphTypes and legend have not been defined.
+* Calendar: Fix for opening Outlook calendar files
+* Calendar: Fix styling for some events with customized styling
+* Calendar: Fix start date (method:2, layout:2)
+* Garbage: Fix for Circulus-Berkel
+* Garbage: Fix for Purmerend, Suez, Blink
+* Garbage: Uden (new URL, same as Maashorst)
+* Public transport: Translations
+
+
 V3.9.8 Beta (27-12-2022)
 ---------------------------
 
