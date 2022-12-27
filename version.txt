@@ -1,17 +1,9 @@
 {
-"version": "3.10",
+"version": "3.10.0.1",
 "branch": "master",
-"last_changes": "Master version",
+"last_changes": "Publictransport: Fix for OVAPI",
 "changelog" : {
-            "3.9.8": "Dials: show on state for dimmers",
-            "3.9.7": "KNMI weather, dials update delay",
-            "3.9.6": "Fix blinds open/close for new Domoticz version (build>14535)",
-            "3.9.5": "iOS 10 compatibility",
-            "3.9.4": "Color picker for RGB dials",
-            "3.9.3": "Up/down dials",
-            "3.9.2": "Update caching behavior",
-            "3.9.1": "Update FontAwesome, Popper, Iro, Swiper",
-            "3.9.0": "Beta version derived from 3.9 master",
-            "3.9": "Master version"
+            "3.10.0": "Beta derived from 3.10",
+            "3.10": "Master version"
             }
 }
