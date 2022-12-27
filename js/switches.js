@@ -13,6 +13,10 @@
 /* global getBlockTitle */
 /* from colorpicker.js */
 /* global Colorpicker */
+/* from version.js */
+/* global domoVersion */
+
+/*exported reqSlideDeviceAsync*/
 
 /** Returns a default switch block
  *
@@ -55,15 +59,6 @@ function getDefaultSwitchBlock(
   }
   var textOn = defaultTextOn || language.switches.state_on;
   var textOff = defaultTextOff || language.switches.state_off;
-
-
-
-  if (typeof block['textOn'] !== 'undefined') {
-    textOn = block['textOn'];
-  }
-  if (typeof block['textOff'] !== 'undefined') {
-    textOff = block['textOff'];
-  }
 
   var attr = '';
   if (device['Image'] == 'Alarm') {
@@ -160,12 +155,12 @@ function switchDevice(block, pMode, pAskConfirm) {
 
   Domoticz.request(
     'type=command&param=' +
-      param +
-      '&idx=' +
-      idx +
-      '&switchcmd=' +
-      doStatus +
-      '&level=0'
+    param +
+    '&idx=' +
+    idx +
+    '&switchcmd=' +
+    doStatus +
+    '&level=0'
   ).then(function () {
     block.device.Status = doStatus;
     dial ? DT_dial.make(block) : getDevices(true);
@@ -217,23 +212,30 @@ function switchBlinds(block, action) {
 
   Domoticz.request(
     'type=command&param=switchlight&idx=' +
-      idx +
-      '&switchcmd=' +
-      action +
-      '&level=0'
+    idx +
+    '&switchcmd=' +
+    action +
+    '&level=0'
   ).then(function () {
     getDevices(true);
   });
 }
 
+function cmdSlideDevice(idx, level) {
+  return 'type=command&param=switchlight&idx=' +
+    idx +
+    '&switchcmd=Set%20Level&level=' +
+    level
+}
+
 function reqSlideDevice(idx, level) {
   return Domoticz.syncRequest(
-    idx,
-    'type=command&param=switchlight&idx=' +
-      idx +
-      '&switchcmd=Set%20Level&level=' +
-      level
+    idx, cmdSlideDevice(idx, level)
   );
+}
+
+function reqSlideDeviceAsync(idx, level) {
+  return Domoticz.request(cmdSlideDevice(idx, level));
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -272,9 +274,9 @@ var sliderAction = {
 function sliderSetValue(p_idx, p_value, p_Callback) {
   Domoticz.request(
     'type=command&param=switchlight&idx=' +
-      p_idx +
-      '&switchcmd=Set%20Level&level=' +
-      p_value
+    p_idx +
+    '&switchcmd=Set%20Level&level=' +
+    p_value
   ).then(function () {
     p_Callback();
   });
@@ -634,11 +636,10 @@ function getBlindsBlock(block, withPercentage) {
 
   html += '<div class="' + button_class + '">';
 
-  var upAction = 'Off';
-  var downAction = 'On';
+  var asOn = domoVersion.newBlindsBehavior;
+
   if (device['SwitchType'].toLowerCase().indexOf('inverted') >= 0) {
-    upAction = 'On';
-    downAction = 'Off';
+    asOn = !asOn;
   }
   html +=
     '<div class="up"><a href="javascript:void(0)" class="btn btn-number plus">';
@@ -661,10 +662,10 @@ function getBlindsBlock(block, withPercentage) {
 
   $mountPoint.html(html);
   $mountPoint.find('.plus').click(function () {
-    switchBlinds(block, upAction);
+    switchBlinds(block, asOn ? 'On' : 'Off');
   });
   $mountPoint.find('.min').click(function () {
-    switchBlinds(block, downAction);
+    switchBlinds(block, asOn ? 'Off' : 'On');
   });
   $mountPoint.find('.btn.stop').click(function () {
     switchBlinds(block, 'Stop');

@@ -6,8 +6,10 @@
 /*global ion*/
 /*from main.js*/
 /*global toSlide disableStandby infoMessage*/
+/*from dt_function.js*/
+/* global capitalizeFirstLetter choose */
 /*from version.js*/
-/*global levelNamesEncoded*/
+/*global domoVersion*/
 /*from thermostat.js*/
 /*global getThermostatBlock getEvohomeZoneBlock getEvohomeControllerBlock getEvohomeHotWaterBlock*/
 /*from switches.js*/
@@ -644,7 +646,7 @@ function getBlockData(block, textOn, textOff) {
   var data = '';
 
   if (!block['hide_data']) {
-    var value = textOn;
+    var value = choose(block.textOn, textOn);
     var status = block.device.Status;
     if (
       status == 'Off' ||
@@ -654,7 +656,7 @@ function getBlockData(block, textOn, textOff) {
       status == 'No Motion' ||
       (status == '' && block.device['InternalState'] == 'Off')
     ) {
-      value = textOff;
+      value = choose(block.textOff, textOff);
     }
 
     if (titleAndValueSwitch(block)) {
@@ -681,7 +683,9 @@ function titleAndValueSwitch(block) {
 }
 
 function hideTitle(block) {
-  return block.hide_title;
+  if (block.hide_title) return true;
+  var title = getBlockTitle(block);
+  return (title===0 || title ==='');
 }
 
 function showUpdateInformation(block) {
@@ -916,6 +920,7 @@ function handleDevice(block) {
     case 'Blinds Inverted':
       return getBlindsBlock(block, false);
     case 'Blinds Percentage':
+    case 'Blinds + Stop':
     case 'Blinds Percentage Inverted':
     case 'Venetian Blinds EU Percentage':
     case 'Venetian Blinds EU Inverted Percentage':
@@ -992,7 +997,7 @@ function handleDevice(block) {
     device['LevelNames'] !== ''
   ) {
     var names;
-    if (levelNamesEncoded === true)
+    if (domoVersion.levelNamesEncoded)
       names = b64_to_utf8(device['LevelNames']).split('|');
     else names = device['LevelNames'].split('|');
 
@@ -1016,7 +1021,7 @@ function handleDevice(block) {
       device['SelectorStyle'] == 1
     ) {
       html += '<div class="col-xs-8 col-data">';
-      html += '<strong class="title">' + block.title + '</strong><br />';
+      if(!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<select>';
       html += '<option value="">' + language.misc.select + '</option>';
       for (var a in names) {
@@ -1048,7 +1053,7 @@ function handleDevice(block) {
         });
     } else {
       html += '<div class="col-xs-8 col-data">';
-      html += '<strong class="title">' + block.title + '</strong><br />';
+      if(!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<div class="btn-group" data-toggle="buttons">';
       for (a in names) {
         if (
@@ -1886,7 +1891,7 @@ function getProtectedSecurityBlock(block) {
 }
 
 function getBlockTitle(block) {
-  return typeof block.title !== 'undefined' ? block.title : block.device.Name;
+  return choose(block.title, block.device && block.device.Name);
 }
 
 //# sourceURL=js/blocks.js

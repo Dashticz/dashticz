@@ -31,10 +31,6 @@ var DT_frame = {
 
     return html;
   },
-  /*
-  init: function(me) {
-    return DT_function.loadScript('https://unpkg.com/x-frame-bypass');
-  },*/
   run: function(me) {
     
     var hasIcon = me.$mountPoint.find('.col-icon').length;

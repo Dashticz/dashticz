@@ -61,6 +61,8 @@ Block parameters
     - ``true``: Shows last update info (default: true)
   * - flash
     - ``true``: Outer dial will flash with user or default color (default: 0)
+  * - delay
+    - ``2``: Only applicable to Blinds Percentage dials. To postpone updating the dial until after a certain delay. See below.
   * - dialimage
     - ``'img/image.png'``: Show an image instead of the calendar icon (default: false)
   * - dialicon
@@ -73,6 +75,10 @@ Block parameters
     - ``true``:  Always show the outer color ring (default: false)
   * - fixed
     - ``true``: Removes the needle and numbers around the dial (default: false) 
+  * - inverted
+    - | Invert the value of Up/Down dials. See :ref:`updowndial`
+      | ``false``: Default for dimmers and Blinds Inverted
+      | ``true``: Default for regular Blinds
   * - min
     - ``<number>``: Minimum value for the dial ring (if applicable) (default: 0)
   * - max
@@ -90,6 +96,7 @@ Block parameters
       | ``'Toggle'``: Toggle the dial on click (=default for most dials. See next lines for exceptions)
       | ``'On'``: Switch On (=default for scenes and Push On switches)
       | ``'Off'``: Switch Off (=default for Push Off switches)
+      | ``'Color'``: On click the color selector popup will open. (Only for RGB switches)
   * - decimals
     - | The number of decimals to show for numbers. Default is 1. For humidity, barometer it's 0. 
       | ``1``: Numbers will be shown with one decimal
@@ -98,6 +105,18 @@ Block parameters
       | ``false``: Don't show the main device value.
   * - splitdial
     - Normally the dial ring color will color from the 0 value to the actual value, which can be positive or negative. Set this parameter to false to start coloring the dial ring from the minimum value, also for a negative minimum value.
+  * - steps
+    - | Step size for needle adjustment or up/down adjustment (Up/down dials). You can use this parameter to set thermostat steps to 0.5
+      | ``0.5``: Use step size of 0.5
+  * - styleStatus 
+    - | Show colored outer ring if status is 'On' (blinds, dimmers)
+      | ``true`` (=default for dimmers). Show colored outer ring if device status is 'On' 
+      | ``false`` (=default for blinds): Don't color the outside ring
+  * - subtype
+    - | For certain dial types you can specify a subtype for a specific layout/format
+      | ``'windspeed'``: For wind devices, to show wind speed instead of wind direction as needle position    
+      | ``'windgust'``: For wind devices, to show wind gust instead of wind direction as needle position 
+      | ``'updown'``: For thermostat and blind devices, to render the dial with up and down buttons. See :ref:`updowndial`   
   
 
 Usage
@@ -154,6 +173,10 @@ All four Domoticz blinds types can be rendered as dial:
 
 The text in the ``up`` and ``down`` buttons can be configured via the block parameters ``textOpen`` and ``textClose`` respectively.
 
+For Blinds Percentage, if you press the Up or Down button, a command is send to Domoticz to update the blinds position.
+Pressing these buttons several times in a row may give unpredictable results, because the dial is being rerendered as soon as Domoticz notices the blinds position has been changed.
+To prevent this, the dial will only be updated after a certain delay after the last command has been sent to Domoticz.
+This delay value can be configured via the ``delay`` block parameter. Only applicable to Blinds Percentage devices. The default value is ``2`` (seconds).
 
 Temp + Humidity
 ~~~~~~~~~~~~~~~
@@ -225,6 +248,10 @@ This dial has a 360 degree range (like a compass). The wind direction can be set
         last_update: false
     }
 
+In case you want to use the wind speed as needle position instead of the wind direction, add the following block parameter::
+
+        subtype: 'windspeed'
+
 
 P1 Smart Meter
 ~~~~~~~~~~~~~~
@@ -238,6 +265,7 @@ Today's energy consumption is more than production
 Today's energy production is more than consumption   
 
 .. image :: ./img/dial_p1-meter-prod.jpg
+
 ::
 
     blocks['p1'] = {
@@ -256,6 +284,7 @@ Today's energy production is more than consumption
 Show multiple values of a P1 meter
 
 .. image :: img/dial_p1values.jpg
+
 ::
 
   blocks['p1counters'] = {
@@ -352,10 +381,57 @@ Toon Thermostat
        width: 3,
    }
 
+.. _updowndial :
+
+Up-down dials
+-------------
+
+You can render a Thermostat as a dial with up-down buttons by setting ``subtype`` to ``updown``::
+
+    blocks['thermupdown'] = {
+        type: 'dial',
+        subtype: 'updown',
+        idx: 15,
+    }
+
+.. image :: img/thermupdown.jpg
+
+You can add the temperature info from another device as well::
+
+    blocks['thermtempupdown'] = {
+      type: 'dial',
+      subtype: 'updown',
+      idx: 15,
+      temp: 36  //Use device 36 as actual temperature sensor
+    }
+
+.. image :: img/thermtempupdown.jpg
+
+Light dimmers and Blinds can be rendered as up-down dials as well.
+
+.. image :: img/updown.jpg
+
+For Light dimmers the middle button will work as on-off switch.
+
+For Blinds the middle button will work as stop button.
+
+With the ``inverted`` block parameter you can invert the values: 10% will become 90%, 70% will become 30%, etc.
+
+I prefer that for an Up Down blinds dial the Up-button will open the blinds.
+The blinds percentage goes from 0% (fully closed) to 100% (fully open).
+
+This conflicts with the defaults in Domoticz where 0 is open, and 100 is closed.
+
+For this reason the 'inverted' block parameter by default is set to true for regular Domoticz blinds devices, and set to false for Domoticz Blinds Inverted devices.
+
+By setting the ``steps`` parameter you can adjust the step size. For Thermostats the default step value is 0.5. For Dimmers and Blinds the default step value is 10 (%).
+
 .. _dialvalues :
 
 Dial values
 ------------
+
+(Not applicable to blinds dials and up-down dials)
 
 Each dial has a main value shown in the middle of the dial.
 
@@ -473,6 +549,7 @@ Multiple values
 You can add multiple values to most dial types. Or, add a needle representing the value of another device to for instance a dial switch:
 
 .. image :: img/dial_dialswitch.jpg
+
 ::
 
   blocks['sw1'] = {
@@ -762,4 +839,22 @@ custom.css::
 		font-size: 300% !important;
 		color: white !important; 
 		height: 40px !important;
+	}
+
+
+
+**Hide the additional data**
+
+.. image :: img/winddial.png
+
+You can set the values parameter to an empty array to hide the additional data, like this:
+
+CONFIG.js::
+
+	blocks['windspeed'] = {
+		idx: 39,
+		title: 'Vitesse-vent',
+		type: 'dial',
+		subtype: 'windspeed',
+		values:[]
 	}

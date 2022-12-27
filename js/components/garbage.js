@@ -279,39 +279,25 @@ var DT_garbage = (function () {
     });
   }
 
+
+  // https://afvalkalender.purmerend.nl/adressen/1441JH:2
+  //response: [{"bagid":"0439200000018093","postcode":"1441JH","huisnummer":2,"huisletter":"","toevoeging":"","description":"Kilstraat 2, 1441JH Purmerend","straat":"Kilstraat","woonplaats":"Purmerend","woonplaatsId":3103,"gemeenteId":439,"latitude":52.50251,"longitude":4.95551}]
+  //then: webcal://afvalkalender.purmerend.nl/ical/0439200000018093
+  //
   function getGarbageData(me, params) {
     var url =
       _CORS_PATH +
       params +
-      '/adres/' +
+      '/adressen/' +
       me.block.zipcode +
       ':' +
       me.block.housenumber +
       ':' +
       me.block.housenumberSuffix;
     return $.get(url).then(function (result) {
-      //      console.log(result);
-      var newHTMLDocument = document.implementation.createHTMLDocument(
-        'scrape'
-      );
-      newHTMLDocument.documentElement.innerHTML = result;
-      var res = newHTMLDocument
-        .getElementById('ophaaldata')
-        .getElementsByTagName('li');
-      //      console.log(res);
-      var returnDates = [];
-      for (var idx = 0; idx < res.length; idx++) {
-        var el = res[idx];
-        var garbageType = el.getElementsByTagName('img')[0].alt;
-        var dateStr = el.getElementsByClassName('date')[0].innerHTML;
-        var garbageDate = moment(dateStr, 'ddd D MMM', 'nl');
-        //        console.log(garbageDate.format('DD-MM-YYYY'), garbageType);
-        returnDates.push({
-          summary: garbageType,
-          date: garbageDate,
-        });
-      }
-      return returnDates;
+      var bagid=result[0].bagid;
+      var ical = params + '/ical/' + bagid;
+      return getIcalData(me, ical);
     });
   }
 
@@ -547,7 +533,29 @@ var DT_garbage = (function () {
     });
   }
 
-  //http://dashticz.nl/afval/?service=rova&zipcode=7731ZT&nr=84&t=
+  function getRovaData(me) {
+    //https://www.rova.nl/api/waste-calendar/upcoming?postalcode=3829BL&houseNumber=17&addition=&take=20
+    //index.php still contains the previous version of Rova
+    var url =
+    getPrefixUrl(me) +
+    'https://www.rova.nl/api/waste-calendar/upcoming?postalcode=' +
+    me.block.zipcode +
+    '&houseNumber=' +
+    me.block.housenumber +
+    '&addition=' +
+    me.block.housenumberSuffix +
+    '&take=' +
+    me.block.maxitems
+
+    return $.getJSON(url).then(function (data) {
+      return data.map(function(el) {
+        return {
+          date: moment(el.date),
+          summary: el.garbageType
+        }
+      })
+    })
+  }
 
   function filterReturnDates(me, returnDates) {
     return returnDates
@@ -729,8 +737,8 @@ var DT_garbage = (function () {
       circulusberkel: {
         handler: getGeneralData,
         param: {
-          service: 'afvalstromen',
-          subservice: 'circulusberkel',
+          service: 'circulusberkel',
+//          subservice: 'circulusberkel',
         },
       },
       cure: {
@@ -796,6 +804,16 @@ var DT_garbage = (function () {
       katwijk: {
         handler: getKatwijkData,
       },
+      maashorst: {
+        handler: getIcalData,
+        param: //https://www.gemeentemaashorst.nl/inwoners/afval/afvalkalender/2022/ics/5403VJ/206
+          'https://www.gemeentemaashorst.nl/inwoners/afval/afvalkalender/' +
+          moment().format('YYYY') +
+          '/ics/' +
+          zipcode +
+          '/' +
+          housenumber,
+      },
       meerlanden: {
         handler: getGeneralData,
         param: {
@@ -846,6 +864,9 @@ var DT_garbage = (function () {
         handler: getGeneralData,
         param: 'rova',
       },
+      rova2: { //new(?) API. However, ssl issues with expired certificates on Synology
+        handler: getRovaData,
+      },
       sudwestfryslan: {
         handler: getGeneralData,
         param: {
@@ -863,14 +884,13 @@ var DT_garbage = (function () {
       },
       uden: {
         handler: getIcalData,
-        param:
-          'https://www.uden.nl/inwoners/afval/ophaaldagen-afval/' +
+        param: //https://www.gemeentemaashorst.nl/inwoners/afval/afvalkalender/2022/ics/5403VJ/206
+          'https://www.gemeentemaashorst.nl/inwoners/afval/afvalkalender/' +
           moment().format('YYYY') +
-          '/' +
+          '/ics/' +
           zipcode +
-          '-' +
-          housenumber +
-          '.ics',
+          '/' +
+          housenumber,
       },
       veldhoven: {
         handler: getIcalData,

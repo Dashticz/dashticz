@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Izaberite spisak numera",
         "value": "Vrednost",
         "enter_pincode": "Enter pin code",
-        "wrong_code": "Wrong pin code"
+        "wrong_code": "Wrong pin code",
+        "platform": "platform"
     },
     "settings": {
         "about": {
@@ -114,7 +115,9 @@
             "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
             "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
             "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
-            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard",
+            "use_hidden": "Use hidden devices as well",
+            "use_hidden_help": "In Domoticz hidden devices start with $"
         },
         "infosave": "Po podrazumevanim postavkama, postavke se skladište u vašem pregledaču. Negativna strana ove metode je da će raditi samo u trenutnom pregledaču. Ako to nije problem, možete nastaviti. U suprotnom, kopirajte kôd ispod u vaš CONFIG.JS da bi ste zadržali postavke za sve pregledače i uređaje.",
         "localize": {

@@ -5,21 +5,27 @@ Weather forecast
 
 .. note:: In version 3.8.2 Dashticz switched to the new weather block as described here.
 
-Dashticz supports the following weather forecast provider:
+Dashticz supports the following weather forecast providers:
 
 * Open Weather Map: https://openweathermap.org/
+* KNMI: https://weerlive.nl/
 
 
-Before you can use the weather module, you must request an API key at https://openweathermap.org/
+Before you can use the weather module, you must request an API key:
 
-Open Weather Map
+* For OpenWeatherMap via https://openweathermap.org/
+* For KNMI via https://weerlive.nl/api/toegang/index.php
+
+.. note:: Since November 2022 OpenWeatherMap doesn't provide anymore new api keys with full functionality
+
+Basic usage
 ----------------
 
 A basic weather block can be defined as follows::
 
   blocks['weather'] = {
     type: 'weather',
-    apikey: 'abc123...xyz', /Your OpenWeatherMap API key
+    apikey: 'abc123...xyz', /Your API key
     city: 'Amsterdam', 
   }
 
@@ -57,10 +63,13 @@ Parameters
     - ``'My place'``. Name to use instead of city name on the dashboard.
   * - lang
     - ``'nl'``: Language to use for OWM data
+  * - provider
+    - | ``owm``: Use OpenWeatherMap as provider
+      | ``knmi``: Use KNMI as provider
   * - layout
     - | Choose a layout for the weather block
       | ``0``: Daily forecast (=default)
-      | ``1``: Hourly forecast
+      | ``1``: Hourly forecast (for OWM only)
       | ``2``: Current weather
       | ``3``: Current weather detailed
       | ``4``: Combination of 2,3,0,1

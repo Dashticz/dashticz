@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Selectaţi playlist",
         "value": "Valoare",
         "enter_pincode": "Introduceți codul PIN",
-        "wrong_code": "Codul PIN greșit"
+        "wrong_code": "Codul PIN greșit",
+        "platform": "platform"
     },
     "settings": {
         "about": {
@@ -114,7 +115,9 @@
             "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
             "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
             "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
-            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard",
+            "use_hidden": "Use hidden devices as well",
+            "use_hidden_help": "In Domoticz hidden devices start with $"
         },
         "infosave": "În mod prestabilit, setările sunt stocate în browser. Dezavantajul acestei metode este că va funcționa numai în browserul curent. Dacă nu este o problemă, puteți continua. În caz contrar, copiați codul de mai jos în CONFIG.JS pentru a păstra setările pe toate browserele și dispozitivele.",
         "localize": {

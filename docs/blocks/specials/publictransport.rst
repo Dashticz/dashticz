@@ -55,6 +55,10 @@ Parameters
       | ``'ovapi'`` Netherlands: bus, tram, boat
       | ``'irailbe'`` Belgium: trains 
       | ``'delijnbe'`` Belgium: bus, tram, boat
+  * - direction
+    - | Set the line direction(s) to filter the direction. (comma seperated) (for ``ovapi``, ``delijnbe``)
+      | ``'1'`` : Filter on direction 1
+      | ``'1,2'``: Filter on direction 1 or 2
   * - destination
     - | Set the end destination station name to filter the direction. 
       | ``'Den Haag De Uithof,Den Haag Loosduinen'`` (comma seperated, case sensitive)
@@ -63,6 +67,11 @@ Parameters
       | ``'3,4'`` (comma seperated)
   * - show_via
     - ``false`` , ``true``. Hide the via-part.
+  * - show_direction
+    - ``false`` , ``true``. Show the line direction (only for ``ovapi`` and ``delijnbe``).
+  * - lang
+    - | ``'nl'``, ``'fr'``, ``'en'``, ``'de'`` :  Set the language for search results (only for ``irailbe``)
+      | Default value is derived from the Dashticz language setting.
   * - icon
     - | The font-awesome icon (including ``fas fa-``)
       | ``'fas fa-bus'``, ``'fas fa-tram'``, ``'fas fa-train'``, ``'fas fa-ship'``, ``'fas fa-subway'``, ...
@@ -155,6 +164,16 @@ If you want to show only the departures from one specific stop or platform, use 
         provider: 'ovapi',
         results: 5
     };
+
+If you want to show all departures from all stops within a station (area), but there's *no station code available* you can use multiple tpc codes. Example::
+
+    blocks['mystops'] = {
+        tpc: '53602050,53602060',
+        title: 'Prof. Waterinklaan',
+        provider: 'ovapi',
+        results: 6
+    };
+
 
 irail
 ~~~~~
