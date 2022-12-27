@@ -1,8 +1,9 @@
 {
-"version": "3.10.0",
+"version": "3.10.0.1",
 "branch": "beta",
-"last_changes": "Beta version derived from 3.10 master",
+"last_changes": "Publictransport: Fix for OVAPI",
 "changelog" : {
+            "3.10.0": "Beta derived from 3.10",
             "3.10": "Master version"
             }
 }
