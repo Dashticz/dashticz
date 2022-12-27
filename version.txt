@@ -1,6 +1,6 @@
 {
 "version": "3.10.0",
-"branch": "Beta",
+"branch": "beta",
 "last_changes": "Beta version derived from 3.10 master",
 "changelog" : {
             "3.10": "Master version"
