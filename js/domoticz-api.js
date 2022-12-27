@@ -1,7 +1,8 @@
 /*from bundle.js*/
-/* global moment*/
-/* global Debug*/
-// eslint-disable-next-line no-unused-vars
+/* global Debug moment*/
+/* from CONFIG.js*/
+/* global stubDevices*/
+/* exported Domoticz*/
 var Domoticz = (function () {
   var usrinfo = '';
   var deviceObservable = new ListObservable();
@@ -311,14 +312,14 @@ var Domoticz = (function () {
   }
 
   function requestAllDevices(forcehttp) {
-    var timeFilter = '';
-    if (!cfg.refresh_method) {
-      timeFilter = '&lastUpdate=' + lastUpdate.devices;
-    }
+    var timeFilter = cfg.refresh_method ? '':('&lastUpdate=' + lastUpdate.devices);
+    var hiddenFilter = cfg.use_hidden? '&displayhidden=1' : '';
+    var favoriteFilter = cfg.use_favorites? '&favorite=1' : '';
     return domoticzRequest(
       'type=devices&filter=all&used=true&order=Name' +
-        (cfg.use_favorites ? '&favorite=1' : '') +
-        timeFilter,
+        favoriteFilter +
+        timeFilter +
+        hiddenFilter,
       forcehttp
     ).then(function (res) {
       return _setAllDevices(res);
@@ -381,8 +382,8 @@ var Domoticz = (function () {
 
     //P1 Smart Meter manipulation
     if (value.Type === 'P1 Smart Meter' && value.SubType === 'Energy') {
-      value.NettUsage = parseFloat(value.Usage) - parseFloat(value.UsageDeliv);
-      value.NettCounterToday = parseFloat(value.CounterToday) - parseFloat(value.CounterDelivToday);
+      value.NettUsage = (parseFloat(value.Usage) - parseFloat(value.UsageDeliv)) + ' '+value.Usage.split(' ')[1];
+      value.NettCounterToday = (parseFloat(value.CounterToday) - parseFloat(value.CounterDelivToday)) + ' '+value.CounterToday.split(' ')[1];
       value.NettCounter = parseFloat(value.Counter) - parseFloat(value.CounterDeliv);
     }
 

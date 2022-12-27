@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Seleziona playlist",
         "value": "Valore",
         "enter_pincode": "Enter pin code",
-        "wrong_code": "Wrong pin code"
+        "wrong_code": "Wrong pin code",
+        "platform": "platform"
     },
     "settings": {
         "about": {
@@ -114,7 +115,9 @@
             "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
             "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
             "domoticz_refresh_help": "The refresh rate of Dashticz to get information from Domoticz",
-            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard"
+            "loginEnabled_help": "Enable if you want a login form to the Dashticz Dashboard",
+            "use_hidden": "Use hidden devices as well",
+            "use_hidden_help": "In Domoticz hidden devices start with $"
         },
         "infosave": "Di dafault le impostazioni sono salvate nel browser.Se usi sempre e solo lo stesso browser e lo stesso dispositivo puoi continuare cosi.\nSe usi diversi browser puoi copiare il codice qua sotto all'interno del file CONFIG.JS per mantenere le impostazioni replicate in ogni browser e in ogni dispositivo.",
         "localize": {

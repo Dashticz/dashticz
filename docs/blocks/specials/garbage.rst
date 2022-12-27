@@ -137,6 +137,7 @@ googlecalendar          file in iCal format
 groningen               Groningen (NL)  
 hvc                     HVC Groep: 44 gemeenten in Flevoland, Noord- en Zuid-Holland (NL)  
 ical                    File in iCal format
+maashorst               Gemeente Maashorst: Uden, Volkel, Odiliapeel, Reek, Schaijk en Zeeland
 meerlanden              Meerlanden: Aalsmeer, Bloemendaal, Diemen, Haarlemmermeer, Heemstede, Hillegom, Lisse, Noordwijk en Zandvoort (NL)  
 mijnafvalwijzer         Mijn Afval Wijzer (NL)
 omrin                   Leeuwarden, Opsterland, Heerenveen, Waadhoeke, ...   

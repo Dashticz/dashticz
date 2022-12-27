@@ -1,63 +1,11 @@
 @import url('./plugins.css');
 @import url('./helpers.css');
-#loaderHolder {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background-color: #000;
-  z-index: 99999;
-  text-align: center;
-}
-
-.loader {
-  margin: 0 auto;
-  border: 10px solid #f3f3f3;
-  border-top: 10px transparent;
-  border-bottom: 10px transparent;
-  border-radius: 50%;
-  width: 320px;
-  height: 320px;
-  animation: pulsate 2s ease-out;
-  animation-iteration-count: infinite;
-}
-
-@keyframes pulsate {
-  0% {
-    transform: scale(0.1);
-    opacity: 0;
-  }
-  50% {
-    opacity: 1;
-  }
-  100% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-}
-
-.loaderHeader {
-  color: #fff;
-  font-size: 1.5em;
-  margin-top: 50px;
-}
-
-#hide {
-  color: white;
-  font-size: 200%;
-  width: 100%;
-  margin: 0;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
 
 .dt-container {
   width: 100%;
 }
 
-.swiper-container {
+.swiper {
   height: 100%;
 }
 
@@ -910,10 +858,6 @@ body {
   width: 100%;
   background-color: #000;
   overflow: hidden;
-}
-
-body {
-  font-size: 11px;
 }
 
 hr {
@@ -2547,7 +2491,7 @@ canvas {
 }
 
 .cal_table td>div.historic>div {
-  color: rgba(255, 255, 255, 0.3) !important;
+  color: rgba(255, 255, 255, 0.3);
 }
 
 .cal_table td>div.header {
@@ -2561,17 +2505,17 @@ canvas {
 
 .cal_table td>div.event:hover,
 .cal_table td>div.event.historic:hover>div {
-  background-color: #f0ad4e !important;
-  color: #292b2c !important;
+  background-color: #f0ad4e;
+  color: #292b2c;
 }
 
 .cal_table td>div.allday {
-  background-color: #d9534f !important;
+  background-color: #d9534f;
   border-radius: 2px;
 }
 
 .cal_table td>div.allday.hol {
-  background-color: #428442 !important;
+  background-color: #428442;
   border-radius: 2px;
 }
 
@@ -3644,9 +3588,9 @@ canvas {
 }
 
 .dial-center.on {
-  -webkit-box-shadow: 0 0 1vh 0 var(--dial-rgba);
-  -moz-box-shadow: 0 0 1vh 0 var(--dial-rgba);
-  box-shadow: 0 0 1vh 0 var(--dial-rgba);
+  -webkit-box-shadow: 0 0 0 0.7em var(--dial-rgba);
+  -moz-box-shadow: 0 0 0 0.7em var(--dial-rgba);
+  box-shadow: 0 0 0 0.7em var(--dial-rgba);
 }
 
 .dial-flash {
@@ -4176,8 +4120,16 @@ canvas {
   color: yellow;
 }
 
+.middle .icon {
+   font-size: unset
+}
+
 .middle .text {
   font-size: 90%
+}
+
+.dialupdown .up .text, .dialupdown .down .text  {
+  font-size:250%
 }
 
 

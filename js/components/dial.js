@@ -1,6 +1,10 @@
-/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer DT_function Debug*/
-/* global switchEvoHotWater changeEvohomeControllerStatus reqSlideDevice switchEvoZone switchThermostat switchDevice isObject*/
-/* global addStyleAttribute capitalizeFirstLetter*/
+/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer DT_function Debug choose domoVersion language Colorpicker*/
+/* global isObject*/
+/* global addStyleAttribute capitalizeFirstLetter createDelayedFunction*/
+/* from blocks.js */
+/* global TranslateDirection */
+/* from switches.js */
+/* global switchEvoHotWater changeEvohomeControllerStatus reqSlideDevice reqSlideDeviceAsync switchEvoZone switchThermostat switchDevice*/
 var DT_dial = (function () {
   return {
     name: 'dial',
@@ -47,7 +51,7 @@ var DT_dial = (function () {
       dialimage: false,
       flash: 0,
       showring: false,
-      shownumbers: false,
+//      shownumbers: false,
       offset: 0,
       group: false,
       animation: true,
@@ -56,7 +60,8 @@ var DT_dial = (function () {
       value: 'Data',
       layout: '',
       textOpen: 'Open',
-      textClose: 'Close'
+      textClose: 'Close',
+      scale: 1
     },
 
     /**
@@ -75,15 +80,16 @@ var DT_dial = (function () {
         : parseInt($(me.mountPoint + ' div').outerWidth());
       if (height < 0) {
         console.log('dial width unknown.');
-        me.height = me.height || 100;
-      } else me.height = height || me.height;
-      me.fontsize = 0.85 * me.height;
+        me.height = me.height * me.block.scale || 100;
+      } else me.height = height * me.block.scale || me.height;
+      me.fontsize = 0.95 * me.height;
       $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
       me.dialRange = 280;
       me.active = true;
-      color(me);
+//      color(me);
       me.segments = 11;
       me.showunit = me.block.showunit || false;
+      me.shownumbers = me.block.shownumbers || false;
       me.tpl = 'dial';
 
       var idx;
@@ -129,6 +135,8 @@ var DT_dial = (function () {
           me.isSetpoint = !!me.device.SetPoint;
         }
       }
+      me.delayedFunction = createDelayedFunction(choose(me.block.delay,0)*1000);
+
       make(me)
         .then(me.tap);
     },
@@ -152,6 +160,7 @@ var DT_dial = (function () {
     var d = me.device;
     me.tap = tap;
     me.checkNeedlePos = true;
+    me.styleStatus = choose(me.block.styleStatus, true); //by default apply status indication as CSS style
 
     if (!d) {
       onoff(me);
@@ -201,12 +210,17 @@ var DT_dial = (function () {
     me.title=choose(me.block.title, choose(me.title, true));
 
     me.splitdial = choose(choose(me.splitdial, me.block.splitdial), me.min < 0);
+    me.shownumbers =choose(me.shownumbers, me.block.shownumbers);
 
     addValues(me);
 
-    if (me.block.shownumbers && me.numbers == undefined) {
+    if (me.shownumbers && me.numbers == undefined) {
       me.numbers = numbers(me);
     }
+
+    //makeConfig(me);
+
+    color(me);
 
     //    var templateName = me.block.layout ? 'dial_' + me.block.layout : 'dial';
     var templateName = me.tpl;// + me.block.layout;
@@ -263,8 +277,8 @@ var DT_dial = (function () {
         label: me.label,
         deviceStatus: (me.device && me.device.deviceStatus) || '',
         showvalue: me.showvalue, //to show the big value centered in the middle
-        textOpen: me.block.textOpen,
-        textClose: me.block.textClose,
+        textOpen: choose(me.textUp, me.block.textOpen),
+        textClose: choose(me.textDown, me.block.textClose),
         active: me.active? ' active': ''
       };
 
@@ -309,6 +323,23 @@ var DT_dial = (function () {
             }, 500);
           });
       }
+
+      if(me.switchMode==='Color') {
+//        me.$mountPoint.find('.extra').append('<div class="rgbholder"></div>');
+//        addColorpicker(me);
+        var block = {
+          device: me.device,
+          idx: me.idx,
+          title: getName(me)
+        }
+        new Colorpicker({
+          container: me.mountPoint + ' '+me.rgbContainer,
+          block: block,
+        });
+      }
+
+      if(me.update) me.update(me); //for UpDown and Blinds
+
       /* Add dial calculations */
       if (me.checkNeedlePos) {
 
@@ -358,6 +389,9 @@ var DT_dial = (function () {
         return;
       }
       if (me.type === 'dim') {
+        if(me.switchMode==='Color') {
+          return;
+        }
         me.demand ? (me.value = 0) : (me.value = me.device.Level);
         me.demand = !me.demand;
         update(me);
@@ -491,11 +525,8 @@ var DT_dial = (function () {
 
     me.degrees = a;
 
-    var val = me.value;
-
     if (me.unlimited) {
       /* For dials such as Wind which rotate 360 */
-      val = me.temp;
       $d.addClass('p360');
     } else {
       var _startAngle = me.startAngle;
@@ -569,6 +600,10 @@ var DT_dial = (function () {
   From angle back to value is not trivial ...
   */
     var value = me.splitdial ? (angle - me.startAngle) / me.scale : (angle - me.startAngle) / me.scale + me.min;
+    if(me.block.steps) {
+      var divider=Math.round(value/me.block.steps);
+      return divider*me.block.steps;
+    }
     return Math.round(value * 10) / 10; //rounded to 1 decimal ... 
   }
 
@@ -651,6 +686,10 @@ var DT_dial = (function () {
           setpointType = 'stat';
       }
     }
+    if (me.steps) {
+      var divider=Math.round(me.value/me.steps);
+      me.value = divider*me.steps;
+    }
     switch (setpointType) {
       case 'zone':
         switchEvoZone(me, me.setpoint, me.override);
@@ -659,6 +698,7 @@ var DT_dial = (function () {
         switchThermostat(me, me.value);
         break;
       case 'dim':
+      case 'blinds':
         var level = (maxdim / me.max) * me.value;
         if (level < 1) level = 0;
         if (level > maxdim - 1) level = maxdim;
@@ -682,7 +722,32 @@ var DT_dial = (function () {
   }
 
   function slideDevice(me, idx, level) {
+    /*
+          if (me.block.delay) {
+          me.delayedFunction(function() {
+            reqSlideDevice(idx, level)
+          });
+          me.device.Level = level;
+          if (me.update) me.update(me);
+          else make(me);
+          return
+        }
+        */
+    if (me.block.delay) {
+      Domoticz.hold(idx);
+      reqSlideDeviceAsync(idx, level)
+      me.device.Level = level;
+      if (me.update) me.update(me);
+      else make(me);
+      me.delayedFunction(function () {
+        Domoticz.release(idx);
+      });
+      return
+    }
+
     reqSlideDevice(idx, level).then(function () {
+      if (me.slowDevice)
+        me.device.Level = level;
       if (me.update) me.update(me);
       else make(me);
     });
@@ -752,18 +817,22 @@ var DT_dial = (function () {
   function heating(me) {
     me.type = me.device.Type === 'Heating' ? 'zone' : 'stat';
     me.unitvalue = _TEMP_SYMBOL;
-    me.min = choose(me.block.min, choose(settings['setpoint_min'], 5));
-    me.max = choose(me.block.max, choose(settings['setpoint_max'], 35));
+    me.min = parseInt(choose(me.block.min, choose(settings['setpoint_min'], 5)));
+    me.max = parseInt(choose(me.block.max, choose(settings['setpoint_max'], 35)));
 
     me.dialicon = display(me.block.dialicon, 0, 1, 'fas fa-calendar-alt');
     me.dialimage = display(me.block.dialimage, 0, 1, false);
     me.decimals=choose(me.block.decimals, 1);
 
+    if(me.block.subtype==='updown') {
+      makeUpDown(me);
+    }
+
     /* EvoHome Zones */
     if (me.type === 'zone') {
       me.value = me.device.Temp;
       me.setpoint = me.isSetpoint ? me.device.SetPoint : 20;
-      me.boost = choose(settings['evohome_boost_zone'], 60);
+      me.boost = parseInt(choose(settings['evohome_boost_zone'], 60));
       me.until = choose(me.device.Until, false);
       me.status = choose(me.device.Status, 'Auto');
       me.override = me.status === 'TemporaryOverride';
@@ -782,7 +851,7 @@ var DT_dial = (function () {
         me.max = choose(me.block.max, 60);
         me.setpoint = 40;
         me.demand = me.device.State === 'On';
-        me.boost = choose(settings['evohome_boost_hw'], 30);
+        me.boost = parseInt(choose(settings['evohome_boost_hw'], 30));
       }
       me.info.push({
         icon: me.override ? 'fas fa-stopwatch small_fa' : me.dialicon,
@@ -872,7 +941,7 @@ var DT_dial = (function () {
   function addValues(me) {
     function getValueUnit(data) {
       var dataScale = data.scale || 1;
-      if (!data.value) {
+      if (typeof data.value==='undefined') {
         console.log('Invalid data ', data);
         return {
           value: '',
@@ -881,7 +950,7 @@ var DT_dial = (function () {
       }
       if (typeof data.value === 'number') {
         return {
-          value: data.value,
+          value: data.value * dataScale,
           unit: data.unit,
         };
       }
@@ -1030,34 +1099,55 @@ var DT_dial = (function () {
   }
 
   function wind(me) {
+
+    var windUnit = me.block.windunit;
+    if (DT_dial.settings) {
+      var wind = ['m/s', 'km/h', 'mph', 'Knts', 'Bfrt'];
+      windUnit = wind[DT_dial.settings.WindUnit] || 'm/s';
+    }
+    var defaultMax = {
+      'm/s': 30,
+      'km/h': 100,
+      'mph': 50,
+      'Knts': 50,
+      'Bfrt': 10
+    }
+    
     me.type = 'wind';
-    me.active = false;
-    me.unlimited = true;
-    me.min = 0;
-    me.max = 360;
-    me.dialRange = 360;
-    me.value = me.device.Direction;
-    me.unitvalue = '°';
-    me.segments = 12;
-    me.numbers = [210, 240, 270, 300, 330, 0, 30, 60, 90, 120, 150, 180];
+    me.active=false;
     me.subdevice = true;
     me.setpoint = choose(me.block.setpoint, 15);
     me.isSetpoint = true;
     me.temp = me.device.Temp;
-    me.startAngle = 0;
     me.decimals = choose(me.block.decimals, 0);
-
-    var windUnit = 'm/s';
-    if (DT_dial.settings) {
-      var wind = ['m/s', 'km/h', 'mph', 'Knts', 'Bfrt'];
-      windUnit = wind[DT_dial.settings.WindUnit];
+    me.shownumbers = choose(me.block.shownumbers, true);
+    switch(me.block.subtype) {
+      case 'windspeed':
+        me.value = me.device.Speed;
+        me.unitvalue = windUnit;
+        me.max = choose(me.block.max, defaultMax[windUnit] || 100);
+        break;
+      case 'windgust':
+        me.value = me.device.Gust;
+        me.unitvalue = windUnit;
+        me.max = choose(me.block.max, defaultMax[windUnit] || 100);
+        break;
+      default:  
+        me.unlimited = true;
+        me.max = 360;
+        me.dialRange = 360;
+        me.value = me.device.Direction;
+        me.unitvalue = '°';
+        me.segments = 12;
+        me.numbers = [210, 240, 270, 300, 330, 0, 30, 60, 90, 120, 150, 180];
+        me.startAngle = 0;
     }
 
     me.info.push(
       {
         icon: display(me.block.dialicon, 0, 3, 'fas fa-location-arrow'),
         image: display(me.block.dialimage, 0, 3, false),
-        data: me.device.DirectionStr,
+        data: TranslateDirection(me.device.DirectionStr),
         unit: '',
       },
       {
@@ -1116,12 +1206,12 @@ var DT_dial = (function () {
       me.type = 'evo';
       me.status = me.device.Status;
       me.options = [
-        { val: 'Auto', text: 'Auto' },
-        { val: 'AutoWithEco', text: 'Economy' },
-        { val: 'Away', text: 'Away' },
-        { val: 'Custom', text: 'Custom' },
-        { val: 'DayOff', text: 'Day Off' },
-        { val: 'HeatingOff', text: 'Off' },
+        { val: 'Auto', text: language.evohome.Auto },
+        { val: 'AutoWithEco', text: language.evohome.AutoWithEco },
+        { val: 'Away', text: language.evohome.Away },
+        { val: 'Custom', text: language.evohome.Custom },
+        { val: 'DayOff', text: language.evohome.DayOff },
+        { val: 'HeatingOff', text: language.evohome.HeatingOff },
       ];
     } else {
       me.type = 'selector';
@@ -1145,14 +1235,7 @@ var DT_dial = (function () {
     me.min = choose(me.block.min, 0);
     me.max = choose(me.block.max, 100);
     me.decimals = choose(me.block.decimals, 0);
-    me.value =
-      me.device.Data === 'Off'
-        ? 0
-        : me.device.Level > me.max - 1
-          ? me.max
-          : me.device.Level < me.min + 1
-            ? me.min
-            : me.device.Level;
+    me.value = getCurrentValueDim(me);
     me.demand = me.value > 0;
     me.maxdim = isDefined(me.device.MaxDimLevel)
       ? parseInt(me.device.MaxDimLevel)
@@ -1162,6 +1245,10 @@ var DT_dial = (function () {
       me.setpoint = me.block.setpoint;
       me.isSetpoint = true;
     }
+    me.unitvalue = choose(me.block.unitvalue, '%');
+    me.switchMode = capitalizeFirstLetter(me.block.switchMode);
+    me.rgbContainer = '.dial-display';
+    if(me.block.subtype==='updown') makeUpDownDim(me);
     return;
   }
 
@@ -1205,9 +1292,131 @@ var DT_dial = (function () {
     me.update = updateBlinds;
     me.percentage = me.device.SwitchType.includes('Percentage');
     me.inverted = me.device.SwitchType.includes('Inverted');
+    if(domoVersion.newBlindsBehavior) me.inverted=!me.inverted;
     me.value = valueBlinds(me);
+    me.maxdim = isDefined(me.device.MaxDimLevel)
+    ? parseInt(me.device.MaxDimLevel)
+    : 100;
+    me.unitvalue='%';
+    me.invertedValue = choose(me.block.inverted,!me.inverted)
+    me.slowDevice = true;
+    me.styleStatus = me.block.styleStatus;
+    
+    if(me.block.subtype==="updown") {
+      makeUpDownDim(me);
+      me.middleToggle = false;
+    }
     return;
   }
+
+  function makeUpDown(me) {
+//    me.type = 'updown';
+    me.tpl = 'dialblinds';
+    me.fixed = true;
+    me.active = false;
+    me.tap = tapUpDown;
+    me.update = updateUpDown;
+    me.textUp = choose(me.block.textUp, '+');
+    me.textDown = choose(me.block.textDown, '-');
+    me.steps = choose(me.block.steps, 0.5);
+    me.checkNeedlePos = false;
+    me.getCurrentValue = getCurrentValue;
+//    me.percentage = me.device.SwitchType.includes('Percentage');
+//    me.inverted = me.device.SwitchType.includes('Inverted');
+//    me.value = valueBlinds(me);
+    me.$mountPoint.addClass('dialupdown');
+    return;
+  }
+
+  function makeUpDownDim(me) {
+    makeUpDown(me);
+    me.steps = choose(me.block.steps, 10);
+    me.getCurrentValue = getCurrentValueDim;
+    me.middleToggle = choose(me.block.middletoggle,true);
+    me.rgbContainer = '.middle';
+  }
+
+  function tapUpDown(me) {
+    me.$up.on('click', function () {
+      if(me.value===0 && me.device.Level) me.value=me.device.Level
+      else me.value=me.invertedValue? me.value-me.steps:me.value+me.steps;
+      update(me);
+    });
+    me.$middle.on('click', function () {
+      if(me.switchMode==='Color') return;
+      if(me.middleToggle) {
+        var cmd = me.value? 'off':'on';
+        switchDevice(me, cmd)
+        //        me.value = me.value? 0 : (me.device.Level || 100);
+//        update(me);
+      }
+      else
+      Domoticz.request(
+        'type=command&param=switchlight&idx=' +
+        me.block.idx +
+        '&switchcmd=' +
+        'Stop'
+      )
+
+
+    });
+    me.$down.on('click', function () {
+      me.value=me.invertedValue? me.value+me.steps:me.value-me.steps
+      update(me)
+    });
+  }
+
+  function updateUpDown(me) {
+    if(!me.$up) {
+      me.$up = me.$mountPoint.find('.up');
+      me.$down = me.$mountPoint.find('.down');
+      me.$middle = me.$mountPoint.find('.middle');  
+    }
+
+    me.value = me.getCurrentValue(me);
+
+    me.$middle.find('.value').html(valueUpDown(me));
+    if(me.styleStatus) addDemandClass(me);
+  }
+
+  function getCurrentValue(me) {
+    var value;
+    if (me.isSetpoint) {
+      me.setpoint = parseFloat(me.device.SetPoint);
+      value = me.setpoint;
+    }
+    if (isDefined(me.block.temp)) {
+      me.temp = Domoticz.getAllDevices()[me.block.temp].Temp;
+      me.info.push({
+        icon: 'fas fa-calendar-alt',
+        data: me.setpoint,
+        unit: _TEMP_SYMBOL,
+      });
+
+    }
+    else value = parseFloat(me.device.Data);
+    return value
+
+  }
+
+  function getCurrentValueDim(me) {
+    return me.device.Data === 'Off'
+    ? 0
+    : me.device.Level > me.max - 1
+      ? me.max
+      : me.device.Level < me.min + 1
+        ? me.min
+        : me.device.Level;
+  }
+
+  function valueUpDown(me) {
+    if (isDefined(me.block.temp)) {
+      return ''+number_format(me.temp,1) + _TEMP_SYMBOL +'&nbsp; <em class="icon fas fa-calendar-alt"></em>&nbsp;' + number_format(me.setpoint,me.decimals) + me.unitvalue;
+      /* Standard thermostat device */
+    }
+    var value = me.invertedValue ? me.maxdim-me.value: me.value;
+    return number_format(value,me.decimals) + me.unitvalue;
+}
 
   function tapBlinds(me) {
     var $mountPoint = me.$mountPoint;
@@ -1235,14 +1444,28 @@ var DT_dial = (function () {
         'type=command&param=switchlight&idx=' +
         me.block.idx +
         '&switchcmd=' +
-        'stop'
+        'Stop'
       )
     });
   }
 
   function updateBlinds(me) {
-    console.log('update blinds', me);
-    me.$middle.find('.value').html(valueBlinds(me))
+    if(!me.$up) {
+      me.$up = me.$mountPoint.find('.up');
+      me.$down = me.$mountPoint.find('.down');
+      me.$middle = me.$mountPoint.find('.middle');
+    }
+    if(me.styleStatus) addDemandClass(me);
+    me.$middle.find('.value').html(valueBlinds(me));
+  }
+
+  function addDemandClass(me) {
+    me.previousDemand = me.demand;
+    me.demand=getIconStatusClass(me.device.Status);
+    if(me.previousDemand!==me.demand) {
+      me.$mountPoint.find('.dial-center').removeClass(me.previousDemand).addClass(me.demand);
+    }
+
   }
 
   function valueBlinds(me) {
@@ -1251,7 +1474,7 @@ var DT_dial = (function () {
     switch (me.device.Level) {
       case 0: return 'Open';
       case 100: return 'Closed';
-      default: return me.device.Level;
+      default: return (me.invertedValue? me.maxdim-me.device.Level:me.device.Level)+me.unitvalue;
     }
   }
   /**
@@ -1350,8 +1573,4 @@ var DT_dial = (function () {
 })();
 
 Dashticz.register(DT_dial);
-
-function choose(a, b) {
-  return typeof a === 'undefined' ? b : a;
-}
 //# sourceURL=js/components/dial.js

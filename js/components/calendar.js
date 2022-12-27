@@ -82,6 +82,15 @@ function prepareCalendar(me, key) {
   me.history = me.lastweek ? 7 : 0;
   me.update = true;
   me.isnew = true;
+  if(me.layout===2) {
+    var start = me.isoweek ? 'isoweek' : 'week';
+    me.startMoment = moment()
+    .startOf(start)
+    .subtract(me.history, 'days');
+  }
+  else
+    me.startMoment = moment()
+    .subtract(me.history, 'days');
   cal[key] = me;
 
   if (cal[key].icalurls > 1) {
@@ -127,6 +136,7 @@ function getCalendarData(key, calendars, isnew, ishol) {
 
           ev.start += cal[key].adjustTZ;
           ev.end += cal[key].adjustTZ;
+          ev.multiday = (ev.end-ev.start) > 86400;
           ev.name = name;
           ev.color = calendar.color;
 //          var lowerTitle = ev.title.toLowerCase();
@@ -140,7 +150,7 @@ function getCalendarData(key, calendars, isnew, ishol) {
 
           if (
             parseFloat(enddate) >=
-            moment().subtract(cal[key].history, 'days').format('X')
+            cal[key].startMoment.format('X')
           ) {
             if (!isDefined(events[ev.start]))
               events[ev.start] = [];
@@ -233,10 +243,7 @@ function generateCalendar(key, isnew, ishol) {
       });
 
       $(cal[key].mountPoint + ' td').each(function (i, obj) {
-        var start = cal[key].isoweek ? 'isoweek' : 'week';
-        var dt = moment()
-          .startOf(start)
-          .subtract(cal[key].history, 'days')
+        var dt = moment(cal[key].startMoment)
           .add(i, 'days');
         $(obj).attr('data-id', dt);
         $(obj).find('div').first().html(dt.format('ddd DD MMM'));

@@ -1,4 +1,10 @@
-/* global toSlide getRandomInt settings infoMessage*/
+/* global toSlide getRandomInt settings infoMessage _DASHTICZ_VERSION Dashticz */
+/* from blocks.js */
+/* global convertBlock addBlock2Column*/
+/* from graph.js */
+/* global DT_graph */
+/* exported capitalizeFirstLetter addStyleAttribute choose createDelayedFunction*/
+
 // eslint-disable-next-line no-unused-vars
 var DT_function = (function () {
   /**Clickhandler for Dashticz block
@@ -206,9 +212,14 @@ var DT_function = (function () {
       loadedResources[filename] = $.ajax({
         url: filename,
         dataType: 'script',
+        cache: settings.cached_scripts
       });
     }
     return loadedResources[filename];
+  }
+
+  function loadDTScript(filename) {
+    return loadScript(filename + '?v='+_DASHTICZ_VERSION)
   }
 
   /** Prompt for password
@@ -337,6 +348,7 @@ var DT_function = (function () {
     loadFont: loadFont,
     loadCSS: loadCSS,
     loadScript: loadScript,
+    loadDTScript: loadDTScript,
     blockLoadFrame: blockLoadFrame,
     checkForceRefresh: checkForceRefresh,
     createModalDialog: createModalDialog,
@@ -347,7 +359,7 @@ var DT_function = (function () {
 //# sourceURL=js/dt_function.js
 function capitalizeFirstLetter(string) {
   if(!string) return '';
-  if(string.lenght===1) return string.toUpperCase;
+  if(string.length===1) return string.toUpperCase;
   return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
 
@@ -356,3 +368,24 @@ function addStyleAttribute($element, styleAttribute) {
   $element.attr('style', currentStyle ? currentStyle + '; ' + styleAttribute : styleAttribute);
 }
 
+
+function choose(a, b) {
+  return typeof a === 'undefined' ? b : a;
+}
+
+function createDelayedFunction(timeout) {
+  var m_setTimeout=timeout;
+  var m_timeout=0;
+
+  if (timeout)
+  return function delayedFunction(callback) {
+    if(m_timeout) 
+      clearTimeout(m_timeout);
+    m_timeout = setTimeout(callback, m_setTimeout);
+  }
+  else
+  return function notDelayedFunction(callback) {
+    return callback();
+  }
+
+}

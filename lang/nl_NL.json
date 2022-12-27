@@ -39,7 +39,8 @@
         "spotify_select_playlist": "Selecteer afspeellijst",
         "value": "Waarde",
         "enter_pincode": "Voer de pincode in",
-        "wrong_code": "Verkeerde pincode"
+        "wrong_code": "Verkeerde pincode",
+        "platform": "spoor"
     },
     "settings": {
         "about": {
@@ -114,7 +115,9 @@
             "domoticz_timeout_help": "Tijd Dashticz is aan het ophalen van Domoticz-apparaten tijdens de eerste aanvraag. Na deze tijd zal Dashticz terugvallen van websocket naar HTTP.",
             "dashticz_refresh_help": "Verversingssnelheid van het Dashticz Dashboard",
             "domoticz_refresh_help": "De verversingssnelheid van Dashticz om informatie te krijgen van Domoticz",
-            "loginEnabled_help": "Activeer als u een aanmeldingsformulier voor het Dashticz Dashboard wilt hebben"
+            "loginEnabled_help": "Activeer als u een aanmeldingsformulier voor het Dashticz Dashboard wilt hebben",
+            "use_hidden": "Gebruik ook verborgen devices",
+            "use_hidden_help": "Namen van verborgen devices beginnen met '$' in Domoticz."
         },
         "infosave": "Standaard worden de instellingen opgeslagen in uw browser. Nadeel van deze methode is dat het alleen in uw huidige browser werkt. Als dat geen probleem is, kunt u verdergaan. Anders, kopieer onderstaande code naar uw CONFIG.JS om instellingen te gebruiken in alle browsers waarmee u Dashticz opent.",
         "localize": {
@@ -287,12 +290,12 @@
     },
     "evohome": {
         "Auto": "Auto",
-        "AutoWithEco": "Economie",
-        "Away": "Weg",
+        "AutoWithEco": "Eco",
+        "Away": "Afwezig",
         "Custom": "Aangepast",
         "DayOff": "Vrije dag",
         "HeatingOff": "Uit",
-        "TemporaryOverride": "Overschrijven"
+        "TemporaryOverride": "Tijdelijk"
     },
     "windshort": {
         "direction_E": "O",

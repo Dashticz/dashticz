@@ -5,6 +5,195 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
+Recent changes
+---------------
+
+V3.10 Master (27-12-2022)
+---------------------------
+
+Roll-up of all v3.9.x beta changes,summarized below:
+
+Enhancements
+~~~~~~~~~~~~
+
+* Dials: Add colored ring to dimmers in on state (optionally to blinds as well)
+* Dials: Add 'delay' parameter to delay the updating of Up/Down percentage blinds.
+* Dials: For RGB switches you can open the color selector popup by adding ``switchMode: 'color'`` to the block definition.
+* Dials: Needle step size configurable via ``steps`` block parameter.
+* Dials: For wind device, add block parameter ``subtype: 'windspeed'`` to use wind speed for needle position instead of wind direction.
+* Dials: For wind device, add block parameter ``subtype: 'windgust'`` to use wind gust for needle position instead of wind direction.
+* Dials : Up/down dials for Thermostats, Blinds and Dimmers. See :ref:`updowndial`
+* Garbage: Added Maashorst (Uden, Volkel, Odiliapeel, Reek, Schaijk en Zeeland)
+* Public transport: New block parameter ``show_direction`` to show bus line direction.
+* Public transport: New block parameter ``lang`` to set language for search results (for ``irailbe`` only).
+* Public Transport: New block parameter ``direction`` to filter on line direction number. See :ref:`publictransport`
+* Weather: Added 'knmi' as weather forecast provider.
+* Config: New config parameter 'use_hidden' to make use of Domoticz hidden devices as well.
+
+Fixes
+~~~~~
+
+* Fixes in autoswipe timeout computations
+* Swiper vertical scroll bar
+* Selector switches: Hide title in case parameter ``hide_title`` is true, ``title`` is 0 or ``title`` is ''
+* Switches: Fix textOn textOff block parameter for some switch types
+* Blinds: Fix Open/Close in new Domoticz version (build>14535)
+* Dials: Fix scaling parameter for computed values (NettUsage, NettCounterToday, NettCounter) for P1 Smart Meter
+* Dials: Slightly bigger default size of dial. Set block parameter ``scale: 0.9`` to reduce the dial size.
+* Dials: Fix min, max setpoint setting in CONFIG.js
+* Dials: Translations for wind direction.
+* Dials: Added translations for the EvoHome controller
+* Graph: Remove total counter graph line for some dial types, only in case graphTypes and legend have not been defined.
+* Calendar: Fix for opening Outlook calendar files
+* Calendar: Fix styling for some events with customized styling
+* Calendar: Fix start date (method:2, layout:2)
+* Garbage: Fix for Circulus-Berkel
+* Garbage: Fix for Purmerend, Suez, Blink
+* Garbage: Uden (new URL, same as Maashorst)
+* Public transport: Translations
+
+
+V3.9.8 Beta (27-12-2022)
+---------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Dials: Add colored ring to dimmers in on state (optionally to blinds as well)
+
+Fixes
+~~~~~
+
+* Dials: Fix scaling parameter for computed values (NettUsage, NettCounterToday, NettCounter) for P1 Smart Meter
+
+V3.9.7 Beta (8-12-2022)
+---------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Weather: Added 'knmi' as weather forecast provider.
+* Dials: Add 'delay' parameter to delay the updating of Up/Down percentage blinds.
+* COnfig: New config parameter 'use_hidden' to make use of Domoticz hidden devices as well.
+
+Fixes
+~~~~~
+
+* Fix for opening Outlook calendar files
+
+V3.9.6.1 Beta (28-10-2022)
+---------------------------
+
+Fixes
+~~~~~
+
+* Fixed incompatibility for IOS introduced with v3.9.6
+
+V3.9.6 Beta (18-10-2022)
+-------------------------
+
+Fixes
+~~~~~
+
+* Selector switches: Hide title in case parameter ``hide_title`` is true, ``title`` is 0 or ``title`` is ''
+* Calendar: Fix start date (method:2, layout:2)
+* Switches: Fix textOn textOff block parameter for some switch types
+* Fixes in autoswipe timeout computations
+* Dial: Slightly bigger default size of dial. Set block parameter ``scale: 0.9`` to reduce the dial size.
+* Graph: Remove total counter graph line for some dial types, only in case graphTypes and legend have not been defined.
+* Garbage: Fix for Circulus-Berkel
+* Blinds: Fix Open/Close in new Domoticz version (build>14535)
+
+V3.9.5 Beta (25-3-2022)
+-----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Dials: Translations for wind direction.
+
+Fixes
+~~~~~
+
+* Rollback upgrade development environment to maintain iOS10 compatibility.
+
+V3.9.4 Beta (19-3-2022)
+-----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Dials: For RGB switches you can open the color selector popup by adding ``switchMode: 'color'`` to the block definition.
+* Dials: Added translations for the EvoHome controller
+
+Fixes
+~~~~~~
+
+* Swiper vertical scroll bar
+* Calendar: Fix styling for some events with customized styling
+* Rova: Re-enabled old API, since new API was not working on all systems (SSL related)
+
+Code
+~~~~
+
+* [Prelim] Calendar: New ical module to parse calendar data. Should solve most calendar issues, especially related to recurring events. Select via ``method:2``
+
+V3.9.3 Beta (9-3-2022)
+-----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Dial: Needle step size configurable via ``steps`` block parameter.
+* Dial: For wind device, add block parameter ``subtype: 'windspeed'`` to use wind speed for needle position instead of wind direction.
+* Dial: For wind device, add block parameter ``subtype: 'windgust'`` to use wind gust for needle position instead of wind direction.
+* Dial: Up/down dials for Thermostats, Blinds and Dimmers. See :ref:`updowndial`
+* Public Transport: New block parameter ``direction`` to filter on line direction number. See :ref:`publictransport`
+
+Fixes
+~~~~~~
+
+* Public transport: Translations
+* Dial: Fix min, max setpoint setting in CONFIG.js
+* Garbage: Fix for Purmerend, Suez, Blink
+
+V3.9.2 Beta (27-2-2022)
+-----------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Garbage: Added Maashorst (Uden, Volkel, Odiliapeel, Reek, Schaijk en Zeeland)
+* Public transport: New block parameter ``show_direction`` to show bus line direction.
+* Public transport: New block parameter ``lang`` to set language for search results (for ``irailbe`` only).
+
+Fixes
+~~~~~~
+
+* Garbage: Uden (new URL, same as Maashorst)
+* Garbage: Rova (for some zipcodes)
+
+Code
+~~~~
+
+* Switched to worker-timers, to improve background refresh
+* Prevent caching index.html
+* Update caching behavior
+
+V3.9.1 Beta (13-2-2022)
+-----------------------
+
+Code
+~~~~
+
+* Update development dependencies
+* Update FontAwesome, Popper, IRO and Swiper to latest versions
+
+V3.9.0 Beta (10-2-2022)
+-----------------------
+
+Beta version derived from v3.9 Master
+
 v3.9 Master (10-2-2022)
 ------------------------
 

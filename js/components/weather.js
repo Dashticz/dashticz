@@ -75,10 +75,12 @@ var DT_weather = (function () {
         showDaily: true,
         showHourly: true,
         showCurrent: true,
+        showForecast: true, //only for KNMI
         useBeaufort: settings.use_beaufort || false,
         skipFirst: false,
         icons: settings.static_weathericons ? 'static' : 'line',
-        iconExt: 'svg'
+        iconExt: 'svg',
+        provider: 'owm'
       };
     },
     run: function (me) {
@@ -94,16 +96,39 @@ var DT_weather = (function () {
         return;
       }
       var w = parseInt(me.$mountPoint.width() * me.block.width / 12 * me.block.scale);
+      console.log('width: ',w, me.$mountPoint.width(),me.block.width, me.block.scale);
       if (me.block.scale !== 1) me.$block.css('width', w);
       var fontSize = w / 10;
       if (me.block.layout === 0 || me.block.layout === 1) {
         fontSize = fontSize / me.block.count;
       }
-
+      console.log("fontsize: ", fontSize);
       me.$block.css('font-size', fontSize + 'px');
-      refreshOWM(me);
+      switch(me.block.provider) {
+        case 'knmi':
+        case 'KNMI':
+          refreshKNMI(me);
+          break;
+        default:
+          refreshOWM(me);
+      }
     },
   };
+
+  function refreshKNMI(me) {
+    requestKNMIData(me)
+    .then(function () {
+      return formatData(me);
+    })
+    .then(function () {
+      return templateEngine.load('weatherknmi_' + me.block.layout);
+    })
+    .then(function (template) {
+      var html = template(me.data);
+      $(me.$block).html(html);
+      addWeatherIcons(me);
+    });
+  }
 
   function refreshOWM(me) {
     requestData(me)
@@ -132,6 +157,143 @@ var DT_weather = (function () {
     });
   }
 
+  function requestKNMIData(me) {
+    me.data = {};
+    return $.getJSON(getKNMIurl(me, false), function (result) {
+      me.data.weather = result;
+    });
+  }
+
+
+  function knmiFormatHandler(me) {
+    /*
+    {
+    "liveweer": [
+        {
+            "plaats": "Amsterdam, nl",
+            "temp": "11.2",
+            "gtemp": "8.8",
+            "samenv": "Licht bewolkt",
+            "lv": "77",
+            "windr": "Oost",
+            "windrgr": "90",
+            "windms": "4",
+            "winds": "3",
+            "windk": "7.8",
+            "windkmh": "14.4",
+            "luchtd": "1022.0",
+            "ldmmhg": "767",
+            "dauwp": "7",
+            "zicht": "45",
+            "verw": "Vanavond en vannacht droog, morgen enige tijd buiige regen",
+            "sup": "08:09",
+            "sunder": "18:38",
+            "image": "wolkennacht",
+            "d0weer": "bewolkt",
+            "d0tmax": "15",
+            "d0tmin": "7",
+            "d0windk": "3",
+            "d0windknp": "10",
+            "d0windms": "5",
+            "d0windkmh": "19",
+            "d0windr": "O",
+            "d0windrgr": "90",
+            "d0neerslag": "0",
+            "d0zon": "15",
+            "d1weer": "regen",
+            "d1tmax": "16",
+            "d1tmin": "9",
+            "d1windk": "3",
+            "d1windknp": "8",
+            "d1windms": "4",
+            "d1windkmh": "15",
+            "d1windr": "ZO",
+            "d1windrgr": "135",
+            "d1neerslag": "70",
+            "d1zon": "30",
+            "d2weer": "regen",
+            "d2tmax": "19",
+            "d2tmin": "13",
+            "d2windk": "2",
+            "d2windknp": "6",
+            "d2windms": "3",
+            "d2windkmh": "11",
+            "d2windr": "Z",
+            "d2windrgr": "180",
+            "d2neerslag": "70",
+            "d2zon": "20",
+            "alarm": "0",
+            "alarmtxt": ""
+        }
+    ]
+}
+*/
+    var start = me.block.skipFirst ? 1 : 0;
+    var cntSetting = choose(me.block.countDaily, me.block.count);
+    if (cntSetting + start > 7) cntSetting = 7 - start;
+    var data = [];
+    var daily = me.data.weather.liveweer[0];
+    for (var i = start; i < cntSetting + start; i++) {
+      
+      var dayStr = 'd'+i;
+      var dayData = {
+      
+        day: moment().add(i,'days').format(settings['weekday']),
+        min: number_format(daily[dayStr+'tmin'], me.block.decimals) + _TEMP_SYMBOL,
+        max: number_format(daily[dayStr+'tmax'], me.block.decimals) + _TEMP_SYMBOL,
+//        description: daily.samenv,
+        rain: number_format(daily[dayStr+'neerslag'] || 0, 0) + '%',
+        icon: getIcon(daily[dayStr+'weer']),
+        wind: {
+          //          direction:
+            speed: toWindStr(me, daily[dayStr+'windk']),
+//          gust: toWindStr(me, daily[i].wind_gust),
+//          deg: daily[i].wind_deg,
+            direction: daily[dayStr+'windr'],
+//          directionShort: translateWindDegreesShort(daily[i].wind_deg),
+//          icon: getWindIcon(daily[i].wind_deg),
+        },
+        
+      };
+      data.push(dayData);
+    }
+    me.data.dailyForecast = data;
+    me.data.dailyCount = cntSetting;
+    me.data.dailyScale = Math.round(100 / cntSetting);
+
+    //current data
+    me.data.current = {
+      icon: getIcon(daily['d0weer']),
+      city: me.block.name || me.block.city,
+      temp:
+        number_format(daily.temp, me.block.decimals) +
+        _TEMP_SYMBOL,
+      max:
+        number_format(daily.d0tmax, me.block.decimals) +
+        _TEMP_SYMBOL,
+      min:
+        number_format(daily.d0tmin, me.block.decimals) +
+        _TEMP_SYMBOL,
+//      rain: (me.data.weather.rain && me.data.weather.rain['1h']) || 0,
+      pressure: daily.luchtd,
+      feels:
+        number_format(daily.gtemp, me.block.decimals) +
+        _TEMP_SYMBOL,
+      humidity: daily.lv,
+      wind: {
+        speed: toWindStr(me, daily.windms),
+//        gust: toWindStr(me, me.data.weather.wind.gust),
+//        deg: me.data.weather.wind.deg,
+        direction: daily.windr
+//        direction: translateWindDegrees(me.data.weather.wind.deg),
+      },
+      description:daily.samenv,
+      forecast: daily.verw
+    };
+
+    return me;
+
+  }
   function formatDailyData(me) {
     //In principle we now have all data
     //Now we only have to generate the correct icons
@@ -270,8 +432,10 @@ var DT_weather = (function () {
     me.data.showDaily = me.block.showDaily;
     me.data.showHourly = me.block.showHourly;
     me.data.showWind = me.block.showWind;
+    me.data.showForecast = me.block.showForecast;
 
-    var formatHandler = formatHandlers[me.block.layour] || defaultFormatHandler;
+    if(me.block.provider==='knmi') return knmiFormatHandler(me);
+    var formatHandler = formatHandlers[me.block.layout] || defaultFormatHandler;
     return formatHandler(me);
   }
 
@@ -305,6 +469,22 @@ var DT_weather = (function () {
       (settings['use_fahrenheit'] === 1 ? 'imperial' : 'metric');
     return site;
   }
+
+  function getKNMIurl(me, makeForecast) {
+    var city = me.block.city;
+    var country = me.block.country;
+    var api = me.block.apikey;
+    var lang = me.block.lang;
+
+    var site =
+      (settings['use_cors'] ? _CORS_PATH : '') +
+      'https://weerlive.nl/api/json-data-10min.php?key=' + 
+      api +
+      '&locatie=' +
+      city + ', '+country
+    return site;
+  }
+
 
   function mountIcon(el, icon) {
     var wiclass = getIcon(icon);
@@ -353,6 +533,22 @@ var DT_weather = (function () {
       '13n': 'wi-snow',
       '50d': 'wi-day-fog',
       '50n': 'wi-night-fog',
+      //knmi icons
+      zonnig: '01d',
+bliksem: '11d',
+'regen': '10d',
+buien: '09d',
+hagel:'13d',
+mist: '50d',
+sneeuw: '13d',
+'bewolkt': '04d',
+lichtbewolkt: '03d',
+halfbewolkt: '03d',
+halfbewolkt_regen: '10d',
+zwaarbewolkt: '04d',
+nachtmist: '50n',
+helderenacht: '01n',
+nachtbewolkt: '02n'
     };
     if (icons.hasOwnProperty(code)) {
       wiclass = icons[code];

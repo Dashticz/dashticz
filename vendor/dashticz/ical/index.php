@@ -3,6 +3,8 @@ header("Access-Control-Allow-Origin: *");
 header('Content-Type: text/html');
 http_response_code(500);
 $cleanexit = 0;
+require_once('./vendor/autoload.php');
+use ICal\ICal;
 
 
 if (!defined('PHP_VERSION_ID')) {
@@ -129,9 +131,15 @@ set_error_handler(function($errno, $errstr, $errfile = 0, $errline = 0, $errcont
 	return false;
 });
 
+//Microsoft expects an useragent 
+ini_set('user_agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0');
+
 try {
 	if ( $METHOD==0) {
 		@$res = ical5($ICS, $MAXITEMS);
+	}
+	elseif ( $METHOD==2) {
+		@$res = icaljg($ICS, $MAXITEMS, $HISTORY);
 	}
 	else {
 		@$res = ical7($ICS, $MAXITEMS, $HISTORY);
@@ -146,7 +154,76 @@ header('Content-Type: application/json');
 http_response_code(200);
 $clean_exit=1;
 die(json_encode($res));
- 
+
+
+function icaljg($ICS, $MAXITEMS, $HISTORY) {
+
+	try {
+		$ical = new ICal(false, array(
+			'defaultSpan'                 => 2,     // Default value
+//			'defaultTimeZone'             => 'UTC',
+			'defaultWeekStart'            => 'MO',  // Default value
+			'disableCharacterReplacement' => false, // Default value
+			'filterDaysAfter'             => 365,  // Default value
+			'filterDaysBefore'            => (int)$HISTORY+8,	//for the calendar view we may need one additional week
+			'skipRecurrence'              => false, // Default value
+		));
+		// $ical->initFile('ICal.ics');
+		$ical->initUrl($ICS, $username = null, $password = null, $userAgent = null);
+//		print_r(json_encode($ical->events(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+
+/*
+    public function eventsFromInterval($interval)
+    {
+        $rangeStart = new \DateTime('now', new \DateTimeZone($this->defaultTimeZone));
+        $rangeEnd   = new \DateTime('now', new \DateTimeZone($this->defaultTimeZone));
+
+        $dateInterval = \DateInterval::createFromDateString($interval);
+        $rangeEnd->add($dateInterval);
+
+        return $this->eventsFromRange($rangeStart->format('Y-m-d'), $rangeEnd->format('Y-m-d'));
+    }
+*/
+		$rangeStart = new \DateTime('now', new \DateTimeZone($ical->defaultTimeZone));
+		$realStart = $rangeStart->sub(new DateInterval('P'.$HISTORY.'D'));
+//		print_r($realStart->format('Y-m-d'));
+		$id=0;
+//		$sorted_events = $ical->events();
+//		$sorted_events = $ical->eventsFromRange($realStart->format('Y-m-d'),$realStart->add(new DateInterval('P1Y'))->format('Y-m-d'));
+//		$sorted_events = $ical->eventsFromRange();
+		$sorted_events = $ical->sortEventsWithOrder($ical->events());
+
+//		print_r(json_encode($sorted_events, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+	//	var_dump($sorted_events[0]);
+		$data = array();
+		foreach ( $sorted_events as $event) {
+			$start=$event->dtstart_array[2];
+			if (isset($event->dtend_array))
+				$end=$event->dtend_array[2];
+			else
+				$end=$start;
+			$duration = $end-$start;
+
+				$jsEvt = array(
+					"id" => ($id++),
+					"title" => $event->summary,
+					"desc" => isset($event->description) ? $event->description : '',
+					"location" => isset($event->location) ? $event->location : '',
+					"start" => $start,
+					"end"   => $end,
+					"allDay" => $duration > 0 && ($duration % 86400) == 0,
+				);
+	/* 			$a=array();
+				array_push($a,$ev["ATTENDEE"]); */
+				$data[] = $jsEvt;
+				if ($id>=500)		//we limit to 500 events. Should be sufficient ...
+					break;
+		}
+		return $data;
+	} catch (\Exception $e) {
+		die($e);
+	}
+}
 
 function ical7($ICS, $MAXITEMS, $HISTORY) {
 	require_once('./vendor/autoload.php');

@@ -1,163 +1,122 @@
 /* global language dashticz_version dashticz_branch newVersion config domoversion dzVents python*/
 var settingList = {};
-settingList['general'] = {};
-settingList['general']['title'] = language.settings.general.title;
-
-settingList['general']['domoticz_ip'] = {};
-settingList['general']['domoticz_ip']['title'] =
-  language.settings.general.domoticz_ip;
-settingList['general']['domoticz_ip']['type'] = 'text';
-settingList['general']['domoticz_ip']['help'] =
-  language.settings.general.domoticz_ip_help;
-
-settingList['general']['app_title'] = {};
-settingList['general']['app_title']['title'] =
-  language.settings.general.app_title;
-settingList['general']['app_title']['type'] = 'text';
-
-settingList['general']['domoticz_refresh'] = {};
-settingList['general']['domoticz_refresh']['title'] =
-  language.settings.general.domoticz_refresh;
-settingList['general']['domoticz_refresh']['type'] = 'text';
-settingList['general']['domoticz_refresh']['help'] =
-  language.settings.general.domoticz_refresh_help;
-
-settingList['general']['dashticz_refresh'] = {};
-settingList['general']['dashticz_refresh']['title'] =
-  language.settings.general.dashticz_refresh;
-settingList['general']['dashticz_refresh']['type'] = 'text';
-settingList['general']['dashticz_refresh']['help'] =
-  language.settings.general.dashticz_refresh_help;
-
-settingList['general']['disable_update_check'] = {};
-settingList['general']['disable_update_check']['title'] =
-  language.settings.general.disable_update_check;
-settingList['general']['disable_update_check']['type'] = 'checkbox';
-
-settingList['general']['loginEnabled'] = {};
-settingList['general']['loginEnabled']['title'] =
-  language.settings.general.loginEnabled;
-settingList['general']['loginEnabled']['type'] = 'checkbox';
-settingList['general']['loginEnabled']['help'] =
-  language.settings.general.loginEnabled_help;
-
-settingList['general']['login_timeout'] = {};
-settingList['general']['login_timeout']['title'] =
-  language.settings.general.login_timeout;
-settingList['general']['login_timeout']['type'] = 'text';
-
-settingList['general']['user_name'] = {};
-settingList['general']['user_name']['title'] =
-  language.settings.general.user_name;
-settingList['general']['user_name']['type'] = 'text';
-settingList['general']['user_name']['help'] =
-  language.settings.general.user_name_help;
-
-settingList['general']['pass_word'] = {};
-settingList['general']['pass_word']['title'] =
-  language.settings.general.pass_word;
-settingList['general']['pass_word']['type'] = 'text';
-
-settingList['general']['enable_websocket'] = {};
-settingList['general']['enable_websocket']['title'] =
-  language.settings.general.enable_websocket;
-settingList['general']['enable_websocket']['type'] = 'checkbox';
-settingList['general']['enable_websocket']['help'] =
-  language.settings.general.enable_websocket_help;
-
-settingList['general']['domoticz_timeout'] = {};
-settingList['general']['domoticz_timeout']['title'] =
-  language.settings.general.domoticz_timeout;
-settingList['general']['domoticz_timeout']['type'] = 'text';
-settingList['general']['domoticz_timeout']['help'] =
-  language.settings.general.domoticz_timeout_help;
-
-/* settingList['general']['no_rgb'] = {};
-settingList['general']['no_rgb']['title'] = language.settings.general.no_rgb;
-settingList['general']['no_rgb']['type'] = 'checkbox'; */
-
-settingList['general']['auto_positioning'] = {};
-settingList['general']['auto_positioning']['title'] =
-  language.settings.general.auto_positioning;
-settingList['general']['auto_positioning']['type'] = 'checkbox';
-settingList['general']['auto_positioning']['help'] =
-  language.settings.general.auto_positioning_help;
-
-settingList['general']['use_favorites'] = {};
-settingList['general']['use_favorites']['title'] =
-  language.settings.general.use_favorites;
-settingList['general']['use_favorites']['type'] = 'checkbox';
-settingList['general']['use_favorites']['help'] =
-  language.settings.general.use_favorites_help;
-
-settingList['general']['room_plan'] = {};
-settingList['general']['room_plan']['title'] =
-  language.settings.general.room_plan;
-settingList['general']['room_plan']['type'] = 'text';
-settingList['general']['room_plan']['help'] =
-  language.settings.general.room_plan_help;
-
-settingList['general']['colorpicker'] = {};
-settingList['general']['colorpicker']['title'] =
-  language.settings.general.colorpicker;
-settingList['general']['colorpicker']['help'] =
-  language.settings.general.colorpicker_help;
-settingList['general']['colorpicker']['type'] = 'select';
-settingList['general']['colorpicker']['options'] = {};
-settingList['general']['colorpicker']['options'][0] =
-  language.settings.general.colorpicker_none;
-settingList['general']['colorpicker']['options'][1] =
-  language.settings.general.colorpicker_old;
-settingList['general']['colorpicker']['options'][2] =
-  language.settings.general.colorpicker_new;
-
-settingList['general']['last_update'] = {};
-settingList['general']['last_update']['title'] =
-  language.settings.general.last_update;
-settingList['general']['last_update']['type'] = 'checkbox';
-
-settingList['general']['default_news_url'] = {};
-settingList['general']['default_news_url']['title'] =
-  language.settings.general.default_news_url;
-settingList['general']['default_news_url']['type'] = 'text';
-
-settingList['general']['news_scroll_after'] = {};
-settingList['general']['news_scroll_after']['title'] =
-  language.settings.general.news_scroll_after;
-settingList['general']['news_scroll_after']['type'] = 'text';
-
-settingList['general']['disable_googleanalytics'] = {};
-settingList['general']['disable_googleanalytics']['title'] =
-  language.settings.general.disable_googleanalytics;
-settingList['general']['disable_googleanalytics']['help'] =
-  language.settings.general.disable_googleanalytics_help;
-settingList['general']['disable_googleanalytics']['type'] = 'checkbox';
-
-settingList['general']['default_cors_url'] = {};
-settingList['general']['default_cors_url']['title'] =
-  language.settings.general.default_cors_url;
-settingList['general']['default_cors_url']['type'] = 'text';
-
-settingList['general']['dashticz_php_path'] = {};
-settingList['general']['dashticz_php_path']['title'] =
-  language.settings.general.dashticz_php_path;
-settingList['general']['dashticz_php_path']['type'] = 'text';
-
-settingList['general']['standby_call_url'] = {
-  title: language.settings.general.standby_call_url,
-  type: 'text',
+settingList.general = {
+  title: language.settings.general.title,
+  domoticz_ip: {
+    title: language.settings.general.domoticz_ip,
+    type: 'text',
+    help: language.settings.general.domoticz_ip_help
+  },
+  app_title: {
+    title:language.settings.general.app_title,
+    type: 'text'
+  },
+  domoticz_refresh: {
+    title: language.settings.general.domoticz_refresh,
+    type: 'text',
+    help: language.settings.general.domoticz_refresh_help,
+  },
+  dashticz_refresh: {
+    title: language.settings.general.dashticz_refresh,
+    type: 'text',
+    help: language.settings.general.dashticz_refresh_help
+  },
+  disable_update_check: {
+    title: language.settings.general.disable_update_check,
+    type: 'checkbox'
+  },
+  loginEnabled: {
+    title: language.settings.general.loginEnabled,
+    type: 'checkbox',
+    help: language.settings.general.loginEnabled_help
+  },
+  login_timeout: {
+    title: language.settings.general.login_timeout,
+    type: 'text'
+  },
+  user_name: {
+    title: language.settings.general.user_name,
+    type: 'text',
+    help: language.settings.general.user_name_help
+  },
+  pass_word: {
+    title: language.settings.general.pass_word,
+    type: 'text',
+  },
+  enable_websocket: {
+    title: language.settings.general.enable_websocket,
+    type: 'checkbox',
+    help: language.settings.general.enable_websocket_help
+  },
+  domoticz_timeout: {
+    title: language.settings.general.domoticz_timeout,
+    type: 'text',
+    help: language.settings.general.domoticz_timeout_help
+  },
+  auto_positioning: {
+    title: language.settings.general.auto_positioning,
+    type: 'checkbox',
+    help: language.settings.general.auto_positioning_help
+  },
+  use_favorites: {
+    title: language.settings.general.use_favorites,
+    type: 'checkbox',
+    help: language.settings.general.use_favorites_help
+  },
+  use_hidden: {
+    title: language.settings.general.use_hidden,
+    type: 'checkbox',
+    help: language.settings.general.use_hidden_help
+  },
+  room_plan: {
+    title: language.settings.general.room_plan,
+    type: 'text',
+    help: language.settings.general.room_plan_help
+  },
+  colorpicker: {
+    title: language.settings.general.colorpicker,
+    help: language.settings.general.colorpicker_help,
+    type: 'select',
+    options: [
+      language.settings.general.colorpicker_none,
+      language.settings.general.colorpicker_old,
+      language.settings.general.colorpicker_new
+    ]
+  },
+  last_update: {
+    title: language.settings.general.last_update,
+    type: 'checkbox'
+  },
+  default_news_url: {
+    title: language.settings.general.default_news_url,
+    type: 'text'
+  },
+  news_scroll_after: {
+    title: language.settings.general.news_scroll_after,
+    type: 'text',
+  },
+  disable_googleanalytics: {
+    title: language.settings.general.disable_googleanalytics,
+    help: language.settings.general.disable_googleanalytics_help,
+    type: 'checkbox'
+  },
+  default_cors_url: {
+    title: language.settings.general.default_cors_url,
+    type: 'text',
+  },
+  dashticz_php_path: {
+    title: language.settings.general.dashticz_php_path,
+    type: 'text'
+  },
+  standby_call_url: {
+    title: language.settings.general.standby_call_url,
+    type: 'text',
+  },
+  standby_call_url_on_end: {
+    title: language.settings.general.standby_call_url_on_end,
+    type: 'text',
+  },
 };
-
-settingList['general']['standby_call_url_on_end'] = {
-  title: language.settings.general.standby_call_url_on_end,
-  type: 'text',
-};
-
-/*
-settingList['general']['hide_off_button'] = {}
-settingList['general']['hide_off_button']['title'] = language.settings.general.hide_off_button;
-settingList['general']['hide_off_button']['type'] = 'checkbox';
-*/
 
 settingList['screen'] = {};
 settingList['screen']['title'] = language.settings.screen.title;
@@ -634,6 +593,7 @@ settingList.garbage = {
       hvc: 'HVC Groep (NL)',
       ical: 'iCal',
       katwijk: 'Katwijk (NL)',
+      maashorst: 'Maashorst (NL)',
       meerlanden: 'Meerlanden (NL)',
       mijnafvalwijzer: 'Mijn Afval Wijzer (NL)',
       omrin: 'Omrin (NL)',
@@ -817,6 +777,7 @@ var defaultSettings = {
   start_page: 1,
   auto_positioning: 1,
   use_favorites: 0,
+  use_hidden: 0,
   translate_windspeed: 1,
   static_weathericons: 0,
   last_update: 1,
@@ -966,6 +927,7 @@ var defaultSettings = {
   refresh_method: 1,
   domoticz_timeout: 2000,
   use_cors: 0,
+  cached_scripts: true
 };
 
 var settings = {};

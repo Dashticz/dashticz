@@ -6,7 +6,7 @@ require('jquery-ui-dist/jquery-ui.min.css');
 //require('jquery-migrate')
 require('jquery-ui-touch-punch');
 require('bootstrap');
-require('bootstrap/dist/css/bootstrap.min.css');
+//require('bootstrap/dist/css/bootstrap.min.css'); //Preloaded via ./css/loader.css
 window.SpotifyWebApi = require('spotify-web-api-js');
 // Next line doesn't give the right results on IE11
 require('@fortawesome/fontawesome-free/css/all.min.css');
@@ -29,10 +29,10 @@ window.MomentHandler = MomentHandler;
 
 require('./templateengine.js');
 require('./handlebars-helpers.js');
-var Swiper = require('swiper/bundle').default;
+var Swiper = require('swiper/swiper-bundle.min.js');
 window.Swiper = Swiper;
 require('swiper/swiper-bundle.min.css');
-
+//import 'swiper/css/bundle';
 //window.Skycons =
 var Skycons=require('skycons-color');
 window.Skycons = Skycons;
