@@ -8,6 +8,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+V3.9.8 Beta (27-12-2022)
+---------------------------
+
 Enhancements
 ~~~~~~~~~~~~
 
