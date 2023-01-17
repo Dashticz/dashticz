@@ -1137,6 +1137,8 @@ var DT_dial = (function () {
         me.max = 360;
         me.dialRange = 360;
         me.value = me.device.Direction;
+//        me.value = (me.device.Direction + me.block.offset)%360;
+        me.needle = (me.device.Direction + me.block.offset)%360;
         me.unitvalue = '°';
         me.segments = 12;
         me.numbers = [210, 240, 270, 300, 330, 0, 30, 60, 90, 120, 150, 180];
@@ -1166,7 +1168,7 @@ var DT_dial = (function () {
 
     //new layout of wind sensor
     if (me.block.layout == 1) {
-      me.needle = me.device.Direction;
+      me.needle = (me.device.Direction + me.block.offset) % 360;
       me.value = me.device.Speed;
       me.unitvalue = windUnit;
       me.info.length = 0;
