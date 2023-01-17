@@ -8,6 +8,13 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Garbage: New block parameter ``defaultGarbage`` to define which garbage type to use in case garbage type is unknown. (default: 'kerstboom') 
+
+See :ref:`v3_10_1` for upgrade instructions in case you see unexpected kerstbomen as garbage collection types.
+
 Fixes
 ~~~~~
 
