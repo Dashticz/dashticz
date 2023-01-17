@@ -42,7 +42,8 @@ mapping                   Translation from description of the pickup event to a 
 garbage                   Settings for different garbage types. See :ref:`par_garbage`.
 date_separator            Text to place between the garbage type and date (default ': ')
 layout                    Layout of the garbage rows: ``0`` for plain text layout, ``1`` for table layout, ``2`` for text layou with line break between garbage type and date.
-ignoressl                 ``false (default)/ true``: Set to true to disable https SSL checks 
+ignoressl                 ``false (default)/ true``: Set to true to disable https SSL checks
+defaultGarbage            Garbage type to use in case garbage type is unknown. (default: 'kerstboom') 
 =======================   ===============================
 
 These block parameters can also be globally via a CONFIG.js setting:

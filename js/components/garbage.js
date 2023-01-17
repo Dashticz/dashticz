@@ -33,6 +33,7 @@ var DT_garbage = (function () {
       layout: 1,
       maxdays: 32,
       ignoressl: false,
+      defaultGarbage: 'kerstboom'
     },
     run: function (me) {
       me.order = Object.keys(me.block.garbage);
@@ -650,7 +651,7 @@ var DT_garbage = (function () {
   }
 
   function mapGarbageType(me, garbageType) {
-    var mappedType = 'black';
+    var mappedType = me.block.defaultGarbage;
     if (garbageType) {
       $.each(me.block.mapping, function (index, element) {
         $.each(element, function (index2, element2) {
