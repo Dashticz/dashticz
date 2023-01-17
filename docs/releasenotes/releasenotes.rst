@@ -8,6 +8,16 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Fixes
+~~~~~
+
+* Dial: Fix for offset parameter wind dial
+
+Code
+~~~~
+
+* Enhanced debug functionality
+
 v3.10.0.1 Beta (27-12-2022)
 -------------------------
 
