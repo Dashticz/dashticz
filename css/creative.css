@@ -4281,12 +4281,65 @@ canvas {
 /*end tvguide*/
 
 /*debug*/
-.modal-dialog-custom .tab-content {
-  height: 100%
+.debug ::selection {
+  color:white;
+  text-shadow: none;
+  background: blue;
+}
+.debug .modal-body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y:auto;
+}
+
+.debug .tab-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y:auto;
+}
+
+.debug #debug-log {
+  height: calc(100% - 2em);
+}
+
+.selectable, .selectable > * {
+  -moz-user-select: text;
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  user-select: text
+}
+
+.debug #debug-items {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.debug .debug-status {
+  height: 2em
+}
+
+.debug #debug-status {
+  height: calc(100% - 2em)
+}
+
+.debug .debug-memory-container {
+  height: calc(100% - 8em)
+}
+
+.debug #debug-save {
+  right: 4em;
+  position: absolute;
+  background: green;
 }
 
 .modal-dialog-custom .tab-content {
 
+}
+
+.modal-dialog-custom .debugitems {
+  overflow-y: auto;
 }
 
 /*owm widget*/

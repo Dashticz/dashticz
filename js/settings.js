@@ -882,6 +882,12 @@ var defaultSettings = {
       name: 'Sorti',
       icon: 'img/garbage/kliko_brown.png',
     },
+    duo: {
+      kliko: 'grey',
+      code: '#5e5d5c',
+      name: 'Duo',
+      icon: 'img/garbage/kliko_grey.png',
+    },
   },
   garbage_mapping: {
     rest: ['grof', 'grey', 'rest', 'grijs', 'grijze'],
@@ -904,6 +910,7 @@ var defaultSettings = {
     aeea: ['aeea'],
     textiel: ['textiel'],
     sorti: ['sorti'],
+    duo: ['duo'],
   },
   garbage_use_names: 0,
   garbage_use_colors: 0,
@@ -927,7 +934,8 @@ var defaultSettings = {
   refresh_method: 1,
   domoticz_timeout: 2000,
   use_cors: 0,
-  cached_scripts: true
+  cached_scripts: true,
+  heartbeat: 0
 };
 
 var settings = {};
