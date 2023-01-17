@@ -442,6 +442,36 @@ var Dashticz = (function () {
     return unsubscribe;
   }
 
+  function isAvailable() {
+      console.log('check domoticzIsAvailable');
+      return $.get({
+        url: window.location.href,
+        type: 'GET',
+        async: true,
+        error: function (jqXHR, textStatus) {
+          if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
+            console.log('Domoticz request cancelled');
+          } else {
+            if (jqXHR.status == 401) {
+              return 'Domoticz authorizaton error';
+            }
+            var errorTxt = 'Domoticz error code: ' + jqXHR.status + ' ' + textStatus;
+            console.error( errorTxt + '!\nPlease, double check the path to Domoticz in Settings!');
+            Debug.log(
+              Debug.ERROR,
+              errorTxt
+            );
+          }
+          console.log('No Domoticz');
+          return textStatus;
+        },
+      }).then(function (res) {
+        //                        console.log('ajax resolved ' + query);
+        console.log('result: ', res);
+        return !!res;
+      });
+  }
+
   return {
     init: _init,
     onResize: _onResize,
@@ -456,7 +486,8 @@ var Dashticz = (function () {
     setInterval: _setInterval,
     subscribeDevice: _subscribeDevice,
     removeBlock: removeBlock,
-    setEmpty: setEmpty
+    setEmpty: setEmpty,
+    isAvailable: isAvailable
   };
 })();
 
