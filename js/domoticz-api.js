@@ -20,6 +20,8 @@ var Domoticz = (function () {
   var reconnecting = false;
   var securityRefresh = null;
   var firstUpdate = true;
+  var previousTime = 0;
+  var myTimer
 
   var MSG = {
     info: 'type=command&param=getversion',
@@ -146,7 +148,7 @@ var Domoticz = (function () {
       initPromise = checkWSSupport()
         .catch(function () {
           useWS = false;
-          console.log(
+          Debug.log(
             'Websocket failed, switch back to http. Check IP whitelisting in Domoticz.'
           );
         })
@@ -218,6 +220,19 @@ var Domoticz = (function () {
       var res2;
       if (res.data) res2 = JSON.parse(res.data);
       var requestid = res.requestid;
+/*
+      var currentTime = Date.now();
+      var diffTime = currentTime - previousTime;
+      if (diffTime > 10000) {
+        Debug.log('Difftime: ' + diffTime/1000);
+        previousTime = currentTime;
+        setTimeout(
+          function() {
+            Debug.log('+5: ' + (Date.now() - previousTime)/1000)
+          }, 5000);
+        
+      }
+*/
       if (requestid == -1) {
         //device update
         //                console.log('device update ', res2)
@@ -246,29 +261,28 @@ var Domoticz = (function () {
     };
 
     socket.onclose = function (event) {
-      if (initialUpdate.state !== 'resolved') {
-        console.log('websocket closed before first update.');
+      Debug.log('websocket closed: ' + event.code + " " + event.reason);
+      if (initialUpdate.state() !== 'resolved') {
+        Debug.log('websocket closed before first update. State: '+initialUpdate.state());
         return;
       }
       if (event.wasClean) {
-        console.log(
-          '[close] Connection closed cleanly, code=',
-          event.code,
-          event.reason
-        );
+        Debug.log('[close] Connection closed cleanly.');
       } else {
         // e.g. server process killed or network down
         // event.code is usually 1006 in this case
         switch (event.code) {
           case 1006:
-            if (!reconnecting) reconnect();
-            reconnecting = true;
+            console.error('[close] Connection died');
             break;
           default:
-            console.error('[close] Connection died');
+            console.error('[close] Connection died: '+event.code);
             break;
         }
       }
+      Debug.log('reconnecting: '+reconnecting);
+      if (!reconnecting) reconnect();
+      reconnecting = true;
       //cleanup pending requests
       if (
         lastRequest &&
@@ -282,6 +296,7 @@ var Domoticz = (function () {
 
     socket.onerror = function (error) {
       console.error(error);
+      Debug.log('Socket error');
     };
   }
 
@@ -294,6 +309,7 @@ var Domoticz = (function () {
     console.log('reconnecting');
     Debug.log('reconnecting in ' + reconnectTimeout);
     setTimeout(function () {
+      Debug.log('trying to reconnect now');
       reconnecting = false;
       connectWebsocket();
     }, reconnectTimeout * 1000); //try to reconnect after timeout

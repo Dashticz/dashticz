@@ -406,6 +406,27 @@ function autoSlide() {
   toSlide(nextSlide);
 }
 
+function tryDashticzRefresh(timeout, msg) {
+
+  setTimeout(function () {
+    console.log(msg);
+    Debug.log(msg);
+    Dashticz.isAvailable()
+    .then(function(res) {
+      if (res)
+        // eslint-disable-next-line no-self-assign
+        window.location.href = window.location.href;
+      else {
+        tryDashticzRefresh(10*1000, "Dashticz not available: postponing refresh");   
+      }
+    })
+    .catch(function(res) {
+      console.log(res);
+      tryDashticzRefresh(10*1000, "Catch: Dashticz not available: postponing refresh");   
+    })
+  }, timeout)
+}
+
 function onLoad() {
   defaultPassiveHandlers();
   var touchsupport =
@@ -428,9 +449,9 @@ function onLoad() {
       '-ms-user-select': 'none',
       'user-select': 'none',
     })
-    .on('selectstart', function () {
-      return false;
-    });
+//    .on('selectstart', function () {
+//      return false;
+//    });
 
   buildScreens();
 
@@ -452,10 +473,7 @@ function onLoad() {
   var dashticzRefresh = Number(settings['dashticz_refresh']);
 
   if (dashticzRefresh > 0) {
-    setTimeout(function () {
-      // eslint-disable-next-line no-self-assign
-      window.location.href = window.location.href;
-    }, dashticzRefresh * 60 * 1000);
+    tryDashticzRefresh(dashticzRefresh * 60 * 1000, 'Trying to refresh Dashticz');
   }
 
   if (settings['auto_swipe_back_after'] > 0 || settings.auto_slide_pages > 0) {
@@ -560,6 +578,23 @@ function onLoad() {
     console.log('playing');
     playAudio('sounds/computer_error.mp3');
   }, 5000)*/
+//  triggerTime();
+}
+
+var oldTime=0;
+
+function triggerTime() {
+  Debug.log('ping');
+  var currentTime = Date.now();
+  var targetTime = oldTime + 10000;
+  var diff = currentTime - oldTime;
+  if (currentTime - oldTime>11000) {
+    Debug.log('Time error: ' + diff/1000);
+  }
+
+  if (currentTime>=targetTime) targetTime=currentTime + 10000;
+  setTimeout(triggerTime, targetTime-currentTime);
+  oldTime = currentTime;
 }
 
 function setClockDateWeekday() {
