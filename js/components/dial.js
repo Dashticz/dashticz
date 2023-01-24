@@ -201,6 +201,7 @@ var DT_dial = (function () {
           p1smartmeter(me);
           break;
         case d.SubType === 'Text':
+        case d.SubType === 'Switch':
           text(me);
           break;
         default:
@@ -1013,7 +1014,7 @@ var DT_dial = (function () {
         res.addClass = id.addClass;
       }
       var inputType = 0;
-      if (device.SubType === 'Text') {
+      if (device.SubType === 'Text' || device.SubType === 'Switch') {
         inputType = 'text';
       }
       inputData.type = id.type || inputType;
