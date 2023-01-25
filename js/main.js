@@ -306,9 +306,14 @@ function loadFiles(dashtype) {
 
         usrEnc = '';
         pwdEnc = '';
+        basicAuthEnc = ''
         if (typeof settings['user_name'] !== 'undefined') {
-          usrEnc = window.btoa(settings['user_name']);
-          pwdEnc = window.btoa(settings['pass_word']);
+          if(typeof settings['auth_mode'] !== 'undefined' && settings['auth_mode'] == 'basic') {
+            basicAuthEnc = window.btoa(settings['user_name'] + ':' + settings['pass_word']);
+          } else if(typeof settings['auth_mode'] === 'undefined' || settings['auth_mode'] == 'url') {
+            usrEnc = window.btoa(settings['user_name']);
+            pwdEnc = window.btoa(settings['pass_word']);
+          }
         }
 
         checkCfgSettings();
