@@ -1494,8 +1494,8 @@ var DT_dial = (function () {
       me.value = parseFloat(me.device.CounterToday);
       me.unitvalue = 'm3';
     } else {
-      me.min = choose(me.block.min, -10);
-      me.max = choose(me.block.max, 10);
+      me.min = choose(me.block.min, 0);
+      me.max = choose(me.block.max, 10000);
       me.value = parseInt(me.device.Usage);
       if(me.value == 0 && 'UsageDeliv' in me.device) {
         me.value = 0-parseInt(me.device.UsageDeliv);
