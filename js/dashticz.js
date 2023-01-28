@@ -71,6 +71,7 @@ var Dashticz = (function () {
           plan: settings['room_plan'],
           usrEnc: usrEnc,
           pwdEnc: pwdEnc,
+          basicAuthEnc: basicAuthEnc,
           enable_websocket: settings['enable_websocket'],
           domoticz_refresh: settings['domoticz_refresh'],
           refresh_method: settings['refresh_method'],

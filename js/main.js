@@ -306,9 +306,14 @@ function loadFiles(dashtype) {
 
         usrEnc = '';
         pwdEnc = '';
+        basicAuthEnc = ''
         if (typeof settings['user_name'] !== 'undefined') {
-          usrEnc = window.btoa(settings['user_name']);
-          pwdEnc = window.btoa(settings['pass_word']);
+          if(domoVersion.basicAuthRequired) {
+            basicAuthEnc = window.btoa(settings['user_name'] + ':' + settings['pass_word']);
+          } else {
+            usrEnc = window.btoa(settings['user_name']);
+            pwdEnc = window.btoa(settings['pass_word']);
+          }
         }
 
         checkCfgSettings();

@@ -134,12 +134,16 @@ function setDomoBehavior() {
     },
     levelNamesEncoded: {
       version: 3.9476
+    },
+    basicAuthRequired: {
+      version: 2022.2,
+      build: 14078
     }
   }
   
   Object.keys(domoChanges).forEach(function(key) {
     var testVersion = 0 || domoChanges[key].version;
-    var testBuild = 0 || domoChanges[key].version;
+    var testBuild = 0 || domoChanges[key].build;
     var applicable = (domoVersion.version> testVersion) || ((domoVersion.version == testVersion) && (domoVersion.build>=testBuild));
     domoVersion[key] = applicable; 
   });    
