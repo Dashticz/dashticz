@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Fixes
+~~~~~
+
+* Dial: Improve handling of Generic/kWh devices (by mce35)
+
 v3.10.1 Beta (28-1-2023)
 ----------------------------
 

@@ -1486,19 +1486,19 @@ var DT_dial = (function () {
    * @param {object} me  Core component object.
    */
   function p1smartmeter(me) {
+    var defaultMin = 0;
+    var defaultMax = 20;
     me.type = 'p1';
     me.active = false;
     if (me.device.SubType == 'Gas') {
-      me.min = choose(me.block.min, 0);
-      me.max = choose(me.block.max, 20);
       me.value = parseFloat(me.device.CounterToday);
       me.unitvalue = 'm3';
     } else {
-      me.min = choose(me.block.min, 0);
-      me.max = choose(me.block.max, 10000);
+      defaultMax = 10000;
       me.value = parseInt(me.device.Usage);
-      if(me.value == 0 && 'UsageDeliv' in me.device) {
-        me.value = 0-parseInt(me.device.UsageDeliv);
+      if('UsageDeliv' in me.device) {
+        me.value = me.value-parseInt(me.device.UsageDeliv);
+        defaultMin = -10000;
       }
       me.unitvalue = 'W';
       me.subdevice = true;
@@ -1524,6 +1524,8 @@ var DT_dial = (function () {
         );
       }
     }
+    me.min = choose(me.block.min, defaultMin);
+    me.max = choose(me.block.max, defaultMax);
     me.decimals = me.block.decimals;
     return;
   }
