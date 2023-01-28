@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-/* global getAllDevicesHandler objectlength config initVersion loadSettings settings getLocationParameters*/
+/* global getAllDevicesHandler objectlength config initVersion loadSettings settings getLocationParameters _DASHTICZ_VERSION*/
 /* global sessionValid MobileDetect moment getBlock DT_function*/
 /* global Swiper Debug*/
 
@@ -35,10 +35,6 @@ var myswiper;
 //move var oldstates = [];
 //move var onOffstates = [];
 var md;
-// eslint-disable-next-line no-unused-vars
-var usrEnc = '';
-// eslint-disable-next-line no-unused-vars
-var pwdEnc = '';
 // eslint-disable-next-line no-unused-vars
 var _THOUSAND_SEPARATOR = '.';
 // eslint-disable-next-line no-unused-vars
@@ -303,19 +299,6 @@ function loadFiles(dashtype) {
       })
       .then(function () {
         loadSettings();
-
-        usrEnc = '';
-        pwdEnc = '';
-        basicAuthEnc = ''
-        if (typeof settings['user_name'] !== 'undefined') {
-          if(domoVersion.basicAuthRequired) {
-            basicAuthEnc = window.btoa(settings['user_name'] + ':' + settings['pass_word']);
-          } else {
-            usrEnc = window.btoa(settings['user_name']);
-            pwdEnc = window.btoa(settings['pass_word']);
-          }
-        }
-
         checkCfgSettings();
       });
   }

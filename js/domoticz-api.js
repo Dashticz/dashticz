@@ -1,7 +1,7 @@
 /*from bundle.js*/
 /* global Debug moment*/
 /* from CONFIG.js*/
-/* global stubDevices*/
+/* global stubDevices */
 /* exported Domoticz*/
 var Domoticz = (function () {
   var usrinfo = '';
@@ -20,8 +20,6 @@ var Domoticz = (function () {
   var reconnecting = false;
   var securityRefresh = null;
   var firstUpdate = true;
-  var previousTime = 0;
-  var myTimer
 
   var MSG = {
     info: 'type=command&param=getversion',
@@ -138,6 +136,7 @@ var Domoticz = (function () {
   }
 
   function init(initcfg) {
+
     if (!initPromise) {
       if (!initcfg.url) {
         throw new Error('Domoticz url not defined');
