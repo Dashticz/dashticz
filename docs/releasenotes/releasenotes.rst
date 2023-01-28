@@ -20,6 +20,7 @@ Fixes
 
 * Dial: Fix for offset parameter wind dial
 * Graph: Unit detection for Youless gas meter
+* Garbage: Uden, Maashorst now use DeAfvalApp
 
 Code
 ~~~~
