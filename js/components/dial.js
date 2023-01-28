@@ -197,9 +197,11 @@ var DT_dial = (function () {
           wind(me);
           break;
         case d.Type === 'P1 Smart Meter':
+        case d.Type === 'General' && d.SubType === 'kWh':
           p1smartmeter(me);
           break;
         case d.SubType === 'Text':
+        case d.SubType === 'Switch':
           text(me);
           break;
         default:
@@ -1012,7 +1014,7 @@ var DT_dial = (function () {
         res.addClass = id.addClass;
       }
       var inputType = 0;
-      if (device.SubType === 'Text') {
+      if (device.SubType === 'Text' || device.SubType === 'Switch') {
         inputType = 'text';
       }
       inputData.type = id.type || inputType;
@@ -1480,44 +1482,50 @@ var DT_dial = (function () {
     }
   }
   /**
-   * Configures the data for devices of P1 Smart Meter type.
+   * Configures the data for devices of P1 Smart Meter and General/kWh type.
    * @param {object} me  Core component object.
    */
   function p1smartmeter(me) {
+    var defaultMin = 0;
+    var defaultMax = 20;
     me.type = 'p1';
     me.active = false;
     if (me.device.SubType == 'Gas') {
-      me.min = choose(me.block.min, 0);
-      me.max = choose(me.block.max, 20);
       me.value = parseFloat(me.device.CounterToday);
       me.unitvalue = 'm3';
     } else {
-      me.min = choose(me.block.min, -10);
-      me.max = choose(me.block.max, 10);
-      me.value =
-        Math.round(
-          (parseFloat(me.device.CounterDelivToday) -
-            parseFloat(me.device.CounterToday)) *
-          100
-        ) / 100;
-      me.unitvalue = 'kWh';
+      defaultMax = 10000;
+      me.value = parseInt(me.device.Usage);
+      if('UsageDeliv' in me.device) {
+        me.value = me.value-parseInt(me.device.UsageDeliv);
+        defaultMin = -10000;
+      }
+      me.unitvalue = 'W';
       me.subdevice = true;
 
-      me.info.push(
-        {
-          icon: display(me.block.dialicon, 0, 2, 'fas fa-sun'),
-          image: display(me.block.dialimage, 0, 2, false),
-          data: me.device.CounterDelivToday,
-          unit: '',
-        },
-        {
-          icon: display(me.block.dialicon, 1, 2, 'fas fa-bolt'),
-          image: display(me.block.dialimage, 1, 2, false),
-          data: me.device.CounterToday,
-          unit: '',
-        }
-      );
+      if('CounterDelivToday' in me.device) {
+        me.info.push(
+          {
+            icon: display(me.block.dialicon, 0, 2, 'fas fa-sun'),
+            image: display(me.block.dialimage, 0, 2, false),
+            data: me.device.CounterDelivToday,
+            unit: '',
+          }
+        );
+      }
+      if('CounterToday' in me.device) {
+        me.info.push(
+          {
+            icon: display(me.block.dialicon, 1, 2, 'fas fa-bolt'),
+            image: display(me.block.dialimage, 1, 2, false),
+            data: me.device.CounterToday,
+            unit: '',
+          }
+        );
+      }
     }
+    me.min = choose(me.block.min, defaultMin);
+    me.max = choose(me.block.max, defaultMax);
     me.decimals = me.block.decimals;
     return;
   }
