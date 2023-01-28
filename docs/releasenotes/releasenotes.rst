@@ -8,6 +8,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.10.1 Beta (28-1-2023)
+----------------------------
+
 Enhancements
 ~~~~~~~~~~~~
 
@@ -21,6 +24,7 @@ Fixes
 * Dial: Fix for offset parameter wind dial
 * Graph: Unit detection for Youless gas meter
 * Garbage: Uden, Maashorst now use DeAfvalApp
+* Domoticz: Support for Domoticz authentication for Domoticz version > 14708 (by mce35)
 
 Code
 ~~~~
@@ -28,7 +32,7 @@ Code
 * Enhanced debug functionality
 
 v3.10.0.1 Beta (27-12-2022)
--------------------------
+----------------------------
 
 Fixes
 ~~~~~
