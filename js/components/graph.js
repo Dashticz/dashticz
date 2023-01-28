@@ -241,7 +241,7 @@ function getDeviceDefaults(me, device) {
     case 'Energy':
     case 'kWh':
     case 'YouLess counter':
-      txtUnit = 'kWh';
+      txtUnit = device.SwitchTypeVal==1 ? 'm3':'kWh'; //SwitchTypeVal 0: Electra; 1: Gas
       currentValue = device['CounterToday'];
       break;
     case 'Managed Counter':
