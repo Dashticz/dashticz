@@ -900,7 +900,7 @@ var defaultSettings = {
       'Biodégradables',
       'snoei',
     ],
-    pmd: ['plastic', 'pmd', 'verpakking', 'kunststof', 'valorlux', 'packages'],
+    pmd: ['plastic', 'pmd', 'verpakking', 'kunststof', 'valorlux', 'packages','pbp'],
     papier: ['papier', 'blauw', 'blue', 'recycling bin collection', 'paper'],
     kca: ['chemisch', 'kca', 'kga'],
     brown: ['brown', 'verre'],
