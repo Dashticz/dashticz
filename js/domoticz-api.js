@@ -82,6 +82,7 @@ var Domoticz = (function () {
             url: cfg.url + 'json.htm?' + domoticzQuery(query),
             type: 'GET',
             async: true,
+            beforeSend: function(xhr) { if(cfg.basicAuthEnc && cfg.basicAuthEnc.length) { xhr.setRequestHeader("Authorization", "Basic " + cfg.basicAuthEnc) } },
             contentType: 'application/json',
             error: function (jqXHR, textStatus) {
               if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
@@ -143,7 +144,7 @@ var Domoticz = (function () {
       }
       cfg = initcfg;
       if (cfg.url.charAt(cfg.url.length - 1) !== '/') cfg.url += '/';
-      if (cfg.usrEnc && cfg.usrEnc.length)
+      if (cfg.usrEnc && cfg.usrEnc.length && !(cfg.basicAuthEnc && cfg.basicAuthEnc.length))
         usrinfo = 'username=' + cfg.usrEnc + '&password=' + cfg.pwdEnc + '&';
       initPromise = checkWSSupport()
         .catch(function () {
