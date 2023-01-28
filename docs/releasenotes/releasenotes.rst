@@ -19,6 +19,7 @@ Fixes
 ~~~~~
 
 * Dial: Fix for offset parameter wind dial
+* Graph: Unit detection for Youless gas meter
 
 Code
 ~~~~
