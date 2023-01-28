@@ -308,9 +308,9 @@ function loadFiles(dashtype) {
         pwdEnc = '';
         basicAuthEnc = ''
         if (typeof settings['user_name'] !== 'undefined') {
-          if(typeof settings['auth_mode'] !== 'undefined' && settings['auth_mode'] == 'basic') {
+          if(domoVersion.basicAuthRequired) {
             basicAuthEnc = window.btoa(settings['user_name'] + ':' + settings['pass_word']);
-          } else if(typeof settings['auth_mode'] === 'undefined' || settings['auth_mode'] == 'url') {
+          } else {
             usrEnc = window.btoa(settings['user_name']);
             pwdEnc = window.btoa(settings['pass_word']);
           }
