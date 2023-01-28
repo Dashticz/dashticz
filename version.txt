@@ -1,7 +1,7 @@
 {
-"version": "3.10.0.2",
+"version": "3.10.1",
 "branch": "beta",
-"last_changes": "Publictransport: Fix for OVAPI",
+"last_changes": "Support for authentication Domoticz>14708",
 "changelog" : {
             "3.10.0": "Beta derived from 3.10",
             "3.10": "Master version"
