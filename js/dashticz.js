@@ -1,4 +1,4 @@
-/* global blocks settings usrEnc pwdEnc DT_function*/
+/* global blocks settings DT_function domoVersion Debug*/
 /*from domoticz-api.js*/
 /*global Domoticz*/
 
@@ -66,9 +66,20 @@ var Dashticz = (function () {
   function initDomoticz() {
     return DT_function.loadDTScript('js/domoticz-api.js')
       .then(function () {
+        var usrEnc = '';
+        var pwdEnc = '';
+        var basicAuthEnc = ''
+        if (typeof settings.user_name !== 'undefined') {
+          if(domoVersion.basicAuthRequired) {
+            basicAuthEnc = window.btoa(settings['user_name'] + ':' + settings['pass_word']);
+          } else {
+            usrEnc = window.btoa(settings['user_name']);
+            pwdEnc = window.btoa(settings['pass_word']);
+          }
+        }
         var cfg = {
-          url: settings['domoticz_ip'],
-          plan: settings['room_plan'],
+          url: settings.domoticz_ip,
+          plan: settings.room_plan,
           usrEnc: usrEnc,
           pwdEnc: pwdEnc,
           basicAuthEnc: basicAuthEnc,
@@ -79,6 +90,7 @@ var Dashticz = (function () {
           use_favorites: settings['use_favorites'],
           use_hidden: settings['use_hidden']
         };
+    
         return Domoticz.init(cfg);
       })
   }
