@@ -17,6 +17,7 @@ Fixes
 ~~~~~
 
 * Dial: Improve handling of Generic/kWh devices (by mce35)
+* Debug: Fix some iOS 7 and 9 incompatibility
 
 v3.10.1 Beta (28-1-2023)
 ----------------------------
