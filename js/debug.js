@@ -239,8 +239,12 @@ var Debug = (function () {
     var start = 0;
     var type = 0;
     var err = new Error('test');
-    msg = err.stack.split('\n')[2].slice(7) + ':';
-
+    try {
+      msg = err.stack ? (err.stack.split('\n')[2].slice(7) + ':'):'';
+    }
+    catch(e) {
+     msg='';   
+    }
     if (arguments.length > 1 && typeof arguments[0] === 'number') {
       type = arguments[0];
       start = 1;
@@ -248,7 +252,7 @@ var Debug = (function () {
     for (var i = start; i < arguments.length; i++) {
       var arg = arguments[i];
       var str = typeof arg === 'object' ? JSON.stringify(arg) : arg;
-      msg = (msg ? msg + ' ' : '') + str;
+      msg = msg + str;
     }
     var item = {
       timestamp: new Date(),
