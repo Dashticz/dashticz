@@ -784,6 +784,8 @@ function createGraph(graph) {
 
   if (graph.dataFilterCount > 0) filterGraphData(graph);
 
+  if(graph.filter==='todaytomorrow') filterGraphDataTodayTomorrow(graph);
+
   if (graph.graphConfig) createCustomData(graph);
 
   if (graphProperties.ylabels) graph.ylabels = graphProperties.ylabels;
@@ -961,6 +963,16 @@ function filterGraphData(graph) {
           .format('YYYY-MM-DD HH:mm');
   graph.data.result = graph.data.result.filter(function (element) {
     return element.d > startMoment;
+  });
+}
+
+function filterGraphDataTodayTomorrow(graph) {
+  var todayDate = moment().startOf('day');
+  var today=todayDate.format('YYYY-MM-DD HH:mm');
+  var tomorrow=todayDate.endOf('day').add(1, 'day').format('YYYY-MM-DD HH:mm');
+  console.log(today, tomorrow);
+  graph.data.result = graph.data.result.filter(function (element) {
+    return (element.d >= today) && (element.d <= tomorrow);
   });
 }
 
