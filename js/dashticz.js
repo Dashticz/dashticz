@@ -500,7 +500,8 @@ var Dashticz = (function () {
     subscribeDevice: _subscribeDevice,
     removeBlock: removeBlock,
     setEmpty: setEmpty,
-    isAvailable: isAvailable
+    isAvailable: isAvailable,
+    mountedBlocks: mountedBlocks
   };
 })();
 
