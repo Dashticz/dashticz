@@ -221,14 +221,18 @@ function deviceUpdateHandler(block) {
   $div.removeClass('on off').addClass(function () {
     return getBlockClass(block);
   });
-  if (block.currentClass != block.addClass) {
-    $div.removeClass(block.currentClass).addClass(block.addClass);
-    block.currentClass = block.addClass;
+  var storedBlock = Dashticz.mountedBlocks[block.mountPoint];
+
+  if (storedBlock && storedBlock.currentClass != block.addClass) {
+    $div.removeClass(storedBlock.currentClass);
+    storedBlock.currentClass = block.addClass;
   }
-  if (block.currentDeviceStatus != device.deviceStatus) {
-    $div.removeClass(block.currentDeviceStatus).addClass(device.deviceStatus);
-    block.currentDeviceStatus = device.deviceStatus;
+  $div.addClass(block.addClass);
+  if (storedBlock && storedBlock.currentDeviceStatus != device.deviceStatus) {
+    $div.removeClass(storedBlock.currentDeviceStatus);
+    storedBlock.currentDeviceStatus = device.deviceStatus;
   }
+  $div.addClass(device.deviceStatus);
 
   if (device.HaveTimeout) $div.addClass('timeout');
   else $div.removeClass('timeout');
