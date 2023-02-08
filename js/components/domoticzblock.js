@@ -60,10 +60,9 @@ var DT_domoticzblock = (function () {
   }
 
   function addDeviceUpdateHandler(me) {
-    var block = me.block;
     Dashticz.subscribeDevice(me, me.deviceIdx, true, function (device) {
-      block.device = device;
-      deviceUpdateHandler(block);
+      me.block.device = device;
+      deviceUpdateHandler(me.block);
     });
   }
 })();
