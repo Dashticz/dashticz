@@ -3451,6 +3451,10 @@ canvas {
   margin-left: 0.2em;
 }
 
+.extra .unit {
+  font-size: unset;
+}
+
 .animation {
   animation: fadeInLoad 2s;
 }

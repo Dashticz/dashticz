@@ -12,6 +12,7 @@ Enhancements
 ~~~~~~~~~~~~~
 
 * Graph: Add filter option ``'todaytomorrow'`` to filter the graph data of today and tomorrow (to be used for dynamic energy pricing)
+* Dial: New subtype options for P1smartmeter and energy devices to show power (Usage) instead of daily energy usage (TodayCounter). See :ref:`dialp1` and :ref:`dialenergy`.
 
 Fixes
 ~~~~~
