@@ -1,8 +1,9 @@
 {
-"version": "3.10.1",
+"version": "3.10.2",
 "branch": "beta",
-"last_changes": "Support for authentication Domoticz>14708",
+"last_changes": "P1 and energy dials: subtype 'power' to show actual power usage.",
 "changelog" : {
+            "3.10.1": "Support for authentication Domoticz>14708",
             "3.10.0": "Beta derived from 3.10",
             "3.10": "Master version"
             }
