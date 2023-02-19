@@ -116,7 +116,8 @@ Block parameters
     - | For certain dial types you can specify a subtype for a specific layout/format
       | ``'windspeed'``: For wind devices, to show wind speed instead of wind direction as needle position    
       | ``'windgust'``: For wind devices, to show wind gust instead of wind direction as needle position 
-      | ``'updown'``: For thermostat and blind devices, to render the dial with up and down buttons. See :ref:`updowndial`   
+      | ``'updown'``: For thermostat and blind devices, to render the dial with up and down buttons. See :ref:`updowndial`
+      | ``'power'``: For p1smartmeter and energy devices, to show actual Usage instead of CounterToday values. See :ref:`dialenergy`
   
 
 Usage
@@ -252,34 +253,35 @@ In case you want to use the wind speed as needle position instead of the wind di
 
         subtype: 'windspeed'
 
+.. _dialp1:
 
 P1 Smart Meter
 ~~~~~~~~~~~~~~
 
-Currently this is configured to use the "Today" counters; CounterDelivToday and CounterToday, i.e. production vs consumption. Unlike any other dial, zero is at "12 o'clock" (instead of the tradional dial which starts at "7 o'clock").
+A P1 Smart Meter will show the total energy usage of today which is the difference between energy usage and energy delivery.
+Unlike most dials, zero is at "12 o'clock", instead of the tradional dial which starts at "7 o'clock".
 
-Today's energy consumption is more than production   
+For P1 Smart Meter you can use some additional block parameters.
 
-.. image :: ./img/dial_p1-meter-cons.jpg
+To show actual power usage, add ``subtype: 'power'`` to the block definition.
 
-Today's energy production is more than consumption   
+To invert plus and minus, add ``inverted: true`` to the block definition.
 
-.. image :: ./img/dial_p1-meter-prod.jpg
+In total this gives 4 variants, which are displayed below:
+
+You can also set the ``min`` and ``max`` parameter.
 
 ::
 
     blocks['p1'] = {
         idx: 454,
-        title: 'P1 Meter',
         type: 'dial',
-        width: 2,
-        min: -10,
-        max: 10,
-        showring: true,
-        showunit: true,
-        shownumbers: true,
-        last_update: false
+        subtype: 'power',  //to show actual power instead of daily energy counter
+        inverted: true     //Value is positive if energy leaving the house is higher than energy consumption
     }
+
+.. image :: img/p1dials.jpg
+
 
 Show multiple values of a P1 meter
 
@@ -322,6 +324,26 @@ Show multiple values of a P1 meter
     fixed: true,
     width: 6
   };
+
+.. _dialenergy:
+
+Energy
+~~~~~~
+
+A energy device will show the total energy usage of today.
+
+For energy devices you can use some additional block parameters.
+
+To show actual power usage instead of daily energy uses, add ``subtype: 'power'`` to the block definition.
+
+To display the values as negative values add ``inverted: true`` to the block definition.
+In this situation the dial will be changed into a split dial (with 0 at top) as well.
+
+In total this gives 4 variants, which are displayed below:
+
+.. image :: img/energydials.jpg
+
+You can also set the ``min`` and ``max`` parameter.
 
 
 .. _dialselector:
