@@ -54,7 +54,7 @@ var DT_dial = (function () {
 //      shownumbers: false,
       offset: 0,
       group: false,
-      animation: true,
+      animation: false,
       iconSwitch: 'fas fa-power-off',
       showvalue: true,
       value: 'Data',
@@ -75,6 +75,7 @@ var DT_dial = (function () {
       */
       me.idx = choose(me.block.idx, me.key);
       me.id = 'dial_' + me.idx;
+      me.layout = parseInt(0+me.block.layout);
       var height = isDefined(me.block.height)
         ? parseInt(me.block.height)
         : parseInt($(me.mountPoint + ' div').outerWidth());
@@ -1481,6 +1482,41 @@ var DT_dial = (function () {
       default: return (me.invertedValue? me.maxdim-me.device.Level:me.device.Level)+me.unitvalue;
     }
   }
+
+  function mapEnergySubtype(subtype) {
+    var energySubtypeMapping = {
+      'usage': 1
+    };
+    if (isFinite(subtype)) return 0+subtype;
+    if (typeof subtype !== 'string') return 0;
+    return energySubtypeMapping[subtype.toLowerCase()]||0;
+  }
+
+  function getEnergyFields(subtype) {
+    var fields = {
+      0: {
+        primPos:"CounterToday",
+        primNeg: "CounterDelivToday",
+        primUnit: "kWh",
+        primMax: 10,
+        primDecimals: 1,
+        secPos: "Usage",
+        secNeg: "UsageDeliv",
+        secUnit: "W"
+      },
+      1: {
+        primPos: "Usage",
+        primNeg: "UsageDeliv",
+        primUnit: "W",
+        primMax: 500,
+        primDecimals: 0,
+        secPos: "CounterToday",
+        secNeg: "CounterDelivToday",
+        secUnit:"kWh"
+      }
+    }
+    return fields[mapEnergySubtype(subtype)];
+  }
   /**
    * Configures the data for devices of P1 Smart Meter and General/kWh type.
    * @param {object} me  Core component object.
@@ -1488,45 +1524,57 @@ var DT_dial = (function () {
   function p1smartmeter(me) {
     var defaultMin = 0;
     var defaultMax = 20;
+    var defaultDecimals = 0;
+    me.shownumbers = choose(me.block.shownumbers, true);
     me.type = 'p1';
     me.active = false;
     if (me.device.SubType == 'Gas') {
       me.value = parseFloat(me.device.CounterToday);
       me.unitvalue = 'm3';
+      defaultDecimals = 3;
     } else {
-      defaultMax = 10000;
-      me.value = parseInt(me.device.Usage);
-      if('UsageDeliv' in me.device) {
-        me.value = me.value-parseInt(me.device.UsageDeliv);
-        defaultMin = -10000;
+      var fieldObj = getEnergyFields(me.block.subtype);
+      defaultMax = fieldObj.primMax;
+      me.value = parseFloat(me.device[fieldObj.primPos]);
+      if(fieldObj.primNeg in me.device) {
+        me.value = me.value-parseFloat(me.device[fieldObj.primNeg]);
+        defaultMin = -fieldObj.primMax;
       }
-      me.unitvalue = 'W';
+      me.unitvalue = fieldObj.primUnit;
       me.subdevice = true;
 
-      if('CounterDelivToday' in me.device) {
+      if(fieldObj.secNeg in me.device) {
         me.info.push(
           {
             icon: display(me.block.dialicon, 0, 2, 'fas fa-sun'),
             image: display(me.block.dialimage, 0, 2, false),
-            data: me.device.CounterDelivToday,
-            unit: '',
+            data: parseFloat(me.device[fieldObj.secNeg]),
+            unit: fieldObj.secUnit,
           }
         );
       }
-      if('CounterToday' in me.device) {
+      //In case no delivery field, and inverted is true, then the secondary value should also be negative
+      var invertedValue = me.block.inverted &&  !(fieldObj.secNeg in me.device) ? -1:1; 
+      if(fieldObj.secPos in me.device) {
         me.info.push(
           {
             icon: display(me.block.dialicon, 1, 2, 'fas fa-bolt'),
             image: display(me.block.dialimage, 1, 2, false),
-            data: me.device.CounterToday,
-            unit: '',
+            data: invertedValue * parseFloat(me.device[fieldObj.secPos]),
+            unit: fieldObj.secUnit,
           }
         );
-      }
+        }
+        defaultDecimals = fieldObj.primDecimals;
+      
+    }
+    if(me.block.inverted) {
+      me.value=-me.value;
+      if (defaultMin===0) defaultMin = -defaultMax;
     }
     me.min = choose(me.block.min, defaultMin);
     me.max = choose(me.block.max, defaultMax);
-    me.decimals = me.block.decimals;
+    me.decimals = choose(me.block.decimals, defaultDecimals);
     return;
   }
 
