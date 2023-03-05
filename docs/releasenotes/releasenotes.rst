@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~~
+
+* Weather: Support for OpenWeatherMap 3 API. See :ref:`owm3`. 
+
 v3.10.2 Beta (19-2-2023)
 -------------------------
 

@@ -766,6 +766,7 @@ var defaultSettings = {
   owm_city: 'Mainaschaff',
   owm_days: 0,
   owm_cnt: 4,
+  owm_min: true,
   boss_stationclock: 'RedBoss',
   use_fahrenheit: 0,
   use_beaufort: 0,
