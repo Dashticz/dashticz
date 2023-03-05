@@ -1,4 +1,4 @@
-/* global Dashticz DT_function settings choose Debug number_format _TEMP_SYMBOL moment templateEngine _CORS_PATH language*/
+/* global Dashticz DT_function settings choose Debug number_format _TEMP_SYMBOL moment templateEngine _CORS_PATH language infoMessage toBeaufort*/
 //# sourceURL=js/components/weather.js
 var DT_weather = (function () {
   var _DEBUG = false; //set to true to show different weather icons
@@ -26,7 +26,7 @@ var DT_weather = (function () {
     name: 'weather',
     init: function () {
       DT_function.loadCSS('./js/components/weather.css');
-      DT_function.loadCSS('./vendor/weather/css/weather-icons-wind.min.css')
+      DT_function.loadCSS('./vendor/weather/css/weather-icons-wind.min.css');
     },
     canHandle: function (block) {
       var key = block.key;
@@ -70,6 +70,7 @@ var DT_weather = (function () {
         showDescription: true,
         showMin: choose(settings['owm_min'], true),
         showWind: true,
+        showGust: true,
         monochrome: false,
         showDetails: true,
         showDaily: true,
@@ -86,6 +87,16 @@ var DT_weather = (function () {
     run: function (me) {
       if (me.block.refresh < 900) me.block.refresh = 900;
       me.$block = me.$mountPoint.find('.dt_block');
+      if(me.block.provider==='owm3') {
+        me.promiseLatLon = getLatLon(me)
+        .catch(function(res) {
+    //      var errorTxt = 'Error getting latlon data from OWM. Check API key';
+          var errorTxt ="Status " + res.status+': '+res.responseJSON && res.responseJSON.message;
+          console.log(errorTxt);
+          infoMessage('Weather', errorTxt);
+          me.$mountPoint.find('.dt_state').html('<div style="font-size:30%">'+errorTxt+'</div>');
+        });
+      }
     },
     refresh: function (me) {
       if (!me.block.apikey) {
@@ -96,24 +107,52 @@ var DT_weather = (function () {
         return;
       }
       var w = parseInt(me.$mountPoint.width() * me.block.width / 12 * me.block.scale);
-      console.log('width: ',w, me.$mountPoint.width(),me.block.width, me.block.scale);
       if (me.block.scale !== 1) me.$block.css('width', w);
       var fontSize = w / 10;
       if (me.block.layout === 0 || me.block.layout === 1) {
         fontSize = fontSize / me.block.count;
       }
-      console.log("fontsize: ", fontSize);
       me.$block.css('font-size', fontSize + 'px');
-      switch(me.block.provider) {
-        case 'knmi':
-        case 'KNMI':
-          refreshKNMI(me);
-          break;
-        default:
-          refreshOWM(me);
-      }
+      refreshProvider(me);
     },
   };
+
+  function refreshProvider(me) {
+    switch(me.block.provider) {
+      case 'knmi':
+      case 'KNMI':
+        refreshKNMI(me);
+        break;
+      case 'owm3':
+        refreshOWM3Init(me)
+        .catch(function(res) {
+                var errorTxt ="Status " + res.status+': '+res.responseJSON && res.responseJSON.message;
+                console.log(errorTxt);
+                infoMessage('Weather', errorTxt);
+                me.$mountPoint.find('.dt_state').html('<div style="font-size:30%">'+errorTxt+'</div>');
+              });
+        break;
+      default:
+        refreshOWM(me);
+    }
+  }
+
+  function getLatLon(me) {
+    if (me.block.lat && me.block.lon) {
+      me.lat = me.block.lat;
+      me.lon = me.block.lon;
+      return $.Deferred().resolve();
+    }
+    var url = 'http://api.openweathermap.org/geo/1.0/direct?q=' +
+              me.block.city + ', ' + me.block.country +
+              '&limit=1&appid=' + me.block.apikey;
+    return $.ajax(url).then(function(res) {
+      if (res && res[0] && res[0].name) {
+        me.lat = res[0].lat;
+        me.lon = res[0].lon;
+      } 
+    })
+  }
 
   function refreshKNMI(me) {
     requestKNMIData(me)
@@ -132,6 +171,27 @@ var DT_weather = (function () {
 
   function refreshOWM(me) {
     requestData(me)
+      .then(function () {
+        return formatData(me);
+      })
+      .then(function () {
+        return templateEngine.load('weather_' + me.block.layout);
+      })
+      .then(function (template) {
+        var html = template(me.data);
+        $(me.$block).html(html);
+        addWeatherIcons(me);
+      });
+  }
+
+  function refreshOWM3Init(me) {
+    return me.promiseLatLon.then( function() {
+      return refreshOWM3(me);
+    });
+  }
+
+  function refreshOWM3(me) {
+    return requestOWM3Data(me)
       .then(function () {
         return formatData(me);
       })
@@ -164,6 +224,13 @@ var DT_weather = (function () {
     });
   }
 
+  function requestOWM3Data(me) {
+    me.data = {};
+    return $.getJSON(getOWM3url(me), function (result) {
+      me.data.weather = result.current;
+      me.data.forecast= result;
+    })
+  }
 
   function knmiFormatHandler(me) {
     /*
@@ -366,29 +433,33 @@ var DT_weather = (function () {
   }
 
   function formatCurrentData(me) {
+    var owm3=me.block.provider==="owm3";
+    var weather = me.data.weather;
+    var currentWeather = owm3?weather:weather.main;
+    var decimals = me.block.decimals;
     me.data.current = {
-      icon: me.data.weather.weather[0].icon,
-      city: me.block.name || me.data.weather.name,
+      icon: weather.weather[0].icon,
+      city: me.block.name || weather.name || me.block.city,
       temp:
-        number_format(me.data.weather.main.temp, me.block.decimals) +
+        number_format(currentWeather.temp, decimals) +
         _TEMP_SYMBOL,
       max:
-        number_format(me.data.forecast.daily[0].temp.max, me.block.decimals) +
+        number_format(me.data.forecast.daily[0].temp.max, decimals) +
         _TEMP_SYMBOL,
       min:
-        number_format(me.data.forecast.daily[0].temp.min, me.block.decimals) +
+        number_format(me.data.forecast.daily[0].temp.min, decimals) +
         _TEMP_SYMBOL,
       rain: (me.data.weather.rain && me.data.weather.rain['1h']) || 0,
-      pressure: me.data.weather.main.pressure,
+      pressure: currentWeather.pressure,
       feels:
-        number_format(me.data.weather.main.feels_like, me.block.decimals) +
+        number_format(currentWeather.feels_like, decimals) +
         _TEMP_SYMBOL,
-      humidity: me.data.weather.main.humidity,
+      humidity: currentWeather.humidity,
       wind: {
-        speed: toWindStr(me, me.data.weather.wind.speed),
-        gust: toWindStr(me, me.data.weather.wind.gust),
-        deg: me.data.weather.wind.deg,
-        direction: translateWindDegrees(me.data.weather.wind.deg),
+        speed: toWindStr(me, owm3? weather.wind_speed:weather.wind.speed),
+        gust: toWindStr(me, owm3? weather.wind_gust: weather.wind.gust),
+        deg: owm3? weather.wind_deg:weather.wind.deg,
+        direction: translateWindDegrees(owm3?weather.wind_deg:weather.wind.deg),
       },
     };
     return me;
@@ -432,6 +503,7 @@ var DT_weather = (function () {
     me.data.showDaily = me.block.showDaily;
     me.data.showHourly = me.block.showHourly;
     me.data.showWind = me.block.showWind;
+    me.data.showGust = me.block.showGust;
     me.data.showForecast = me.block.showForecast;
 
     if(me.block.provider==='knmi') return knmiFormatHandler(me);
@@ -470,11 +542,10 @@ var DT_weather = (function () {
     return site;
   }
 
-  function getKNMIurl(me, makeForecast) {
+  function getKNMIurl(me) {
     var city = me.block.city;
     var country = me.block.country;
     var api = me.block.apikey;
-    var lang = me.block.lang;
 
     var site =
       (settings['use_cors'] ? _CORS_PATH : '') +
@@ -483,6 +554,15 @@ var DT_weather = (function () {
       '&locatie=' +
       city + ', '+country
     return site;
+  }
+
+  function getOWM3url(me) {
+    var url = 'https://api.openweathermap.org/data/3.0/onecall?lat=' + me.lat +
+              '&lon=' + me.lon +
+              '&appid=' + me.block.apikey +
+              '&units=' +
+              (settings['use_fahrenheit'] === 1 ? 'imperial' : 'metric');
+            return url;    
   }
 
 

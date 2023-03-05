@@ -16,7 +16,7 @@ Before you can use the weather module, you must request an API key:
 * For OpenWeatherMap via https://openweathermap.org/
 * For KNMI via https://weerlive.nl/api/toegang/index.php
 
-.. note:: Since November 2022 OpenWeatherMap doesn't provide anymore new api keys with full functionality
+.. note:: Since November 2022 OpenWeatherMap doesn't provide free api keys with full functionality anymore. You can use the OpenWeatherMap 3 which is free for 1000 calls per day.
 
 Basic usage
 ----------------
@@ -65,6 +65,7 @@ Parameters
     - ``'nl'``: Language to use for OWM data
   * - provider
     - | ``owm``: Use OpenWeatherMap as provider
+      | ``owm3``: OpenWeatherMap 3 API. See :ref:`owm3`
       | ``knmi``: Use KNMI as provider
   * - layout
     - | Choose a layout for the weather block
@@ -98,6 +99,10 @@ Parameters
     - | Show/hide wind info and wind dial (daily and hourly forecast only)
       | ``false``: Hide wind info
       | ``true``: Show wind info (=default)
+  * - showGust
+    - | Show/hide wind gust info
+      | ``false``: Hide wind gust info
+      | ``true``: Show wind gust info (=default)
   * - useBeaufort
     - Set to ``true`` to show wind speed in Beaufort instead of m/s
   * - skipFirst
@@ -247,3 +252,19 @@ To capitalize the day of the week have to add the following code to ``custom.css
   .weather .day {
     text-transform: capitalize;
   }
+
+.. _owm3 :
+
+Open Weather Map 3.0
+~~~~~~~~~~~~~~~~~~~~
+
+Via https://openweathermap.org/ you can request a new API key and subscribe to the 3.0 API.
+You have to provide a credit card number. However, the first 2000 API calls are free of charge.
+Further,  on your OpenWeatherMap profile you can limit the number of daily allowed API calls, to prevent you accidentally make use of the service to often.
+
+See https://home.openweathermap.org/subscriptions
+
+.. image :: img/owm3_limits.jpg
+
+If you want to use OpenWeatherMap One Call API 3.0 set ``provider`` to ``owm3`` in your block definition.
+
