@@ -1,5 +1,11 @@
 /* global Dashticz _CORS_PATH settings infoMessage moment ICAL _PHP_INSTALLED language templateEngine*/
-
+/*
+SENSOR_LOCATIONS_TO_URL = {
+    "trashapi": [
+        "http://trashapi.azurewebsites.net/trash?Location={0}&ZipCode={1}&HouseNumber={2}&HouseNumberSuffix={3}&District={4}&DiftarCode={5}&ShowWholeYear={6}"
+    ]
+}https://github.com/heyajohnny/afvalinfo/
+*/
 var DT_garbage = (function () {
   return {
     name: 'garbage',
@@ -377,6 +383,7 @@ var DT_garbage = (function () {
       'tx_windwastecalendar_pi1[zipcode]': me.block.zipcode,
       'tx_windwastecalendar_pi1[housenumber]': me.block.housenumber,
 */
+//https://www.katwijk.nl/wonen-en-verbouwen/afval-inzamelen/afval-kalender?tx_opengemeentenwastemanagement%5Bhousenumber%5D=25&tx_opengemeentenwastemanagement%5Bpostalcode%5D=2225ZJ&type=1650453874&cHash=f486b5188550e7c9c11e7fecd3f1de59
     var postfix =
       'tx_windwastecalendar_pi1[action]=search&tx_windwastecalendar_pi1[controller]=Zipcode&tx_windwastecalendar_pi1[Hash]=6e6e80066d09747e8df35d5ff2d1e27b' +
       '&tx_windwastecalendar_pi1[zipcode]=' +
