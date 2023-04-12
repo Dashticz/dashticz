@@ -381,13 +381,13 @@ function getCalendar() {
 			//Then request the collections for the street id
 			curl -H "x-consumer: recycleapp.be" -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1OTc3ODAwNjgsImV4cCI6MTU5Nzc4MzY2OCwiYXVkIjoicmVjeWNsZWFwcC5iZSJ9.3W2Px8c1K907R73pOahvlkPxxgh9BoY1HU5xgu3f0nQ" "https://recycleapp.be/api/app/v1/collections?zipcodeId=8500-34022&streetId=52738&houseNumber=1&fromDate=2020-08-01&untilDate=2020-09-30&size=100" > garbagefinal.json
 			*/
-
+			$url = "https://www.recycleapp.be";
 			//step 1: Get main js file
-			$match = curlWebMatch("https://recycleapp.be",'/script src="(.static.js.main.*.chunk.js)"/');
+			$match = curlWebMatch($url,'/script src="(.static.js.main.*.chunk.js)"/');
 			//var_dump($match[1]);
 
 			//step 2: Find secret
-			$match = curlWebMatch("https://recycleapp.be".$match[1],'/var n="(\w*)",r="/');
+			$match = curlWebMatch($url.$match[1],'/var n="(\w*)",r="/');
 			//var_dump($match);
 
 			//step 3: get access token
@@ -395,8 +395,8 @@ function getCalendar() {
 				'x-consumer: recycleapp.be',
 				'x-secret: '.$match[1]
 			];
-
-			$data=curlWebJson("https://recycleapp.be/api/app/v1/access-token", $headers);
+			$url = "https://www.recycleapp.be/api/app/v1/";
+			$data=curlWebJson($url."access-token", $headers);
 //			print_r ($data);
 //			print $data->accessToken;
 			$accessToken = $data->accessToken;
@@ -406,15 +406,15 @@ function getCalendar() {
 				'x-consumer: recycleapp.be',
 				'Authorization: '.$accessToken
 			];
-			$data=curlWebJson("https://recycleapp.be/api/app/v1/zipcodes?q=".$_GET['zipcode'],$headers);
+			$data=curlWebJson($url."zipcodes?q=".$_GET['zipcode'],$headers);
 
 //			print_r ($data);
 			$zipcode = $data->items[0]->id;
 //			print_r($zipcode);
 
 			//Step 5: get street
-			$url = "https://recycleapp.be/api/app/v1/streets?q=".urlencode($_GET['sub'])."&zipcodes=".$zipcode;
-			$data = curlWebJson($url, $headers);
+			$urltmp = $url."streets?q=".urlencode($_GET['sub'])."&zipcodes=".$zipcode;
+			$data = curlWebJson($urltmp, $headers);
 //			print_r($data);
 			$streetid = $data->items[0]->id;
 //			print $streetid;
@@ -422,8 +422,8 @@ function getCalendar() {
 			$startDate=date("Y-m-d");
 			$endDate=date("Y-m-d",time()+28*24*60*60);
 			//Now finally get the collection info
-			$url = "https://recycleapp.be/api/app/v1/collections?zipcodeId=".$zipcode."&streetId=".$streetid."&houseNumber=".$_GET['nr']."&fromDate=".$startDate."&untilDate=".$endDate."&size=100";
-			$data=curlWebJson($url, $headers);
+			$urltmp = $url."collections?zipcodeId=".$zipcode."&streetId=".$streetid."&houseNumber=".$_GET['nr']."&fromDate=".$startDate."&untilDate=".$endDate."&size=100";
+			$data=curlWebJson($urltmp, $headers);
 //			print_r($data);
 
 			foreach($data->items as $item) {

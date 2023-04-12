@@ -13,6 +13,11 @@ Enhancements
 
 * Weather: Support for OpenWeatherMap 3 API. See :ref:`owm3`. 
 
+Fixes
+~~~~~
+
+* Garbage: Fix recycleapp (BE)
+
 v3.10.2 Beta (19-2-2023)
 -------------------------
 
