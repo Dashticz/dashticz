@@ -1,16 +1,10 @@
 /* global Dashticz _CORS_PATH settings infoMessage moment ICAL _PHP_INSTALLED language templateEngine*/
-/*
-SENSOR_LOCATIONS_TO_URL = {
-    "trashapi": [
-        "http://trashapi.azurewebsites.net/trash?Location={0}&ZipCode={1}&HouseNumber={2}&HouseNumberSuffix={3}&District={4}&DiftarCode={5}&ShowWholeYear={6}"
-    ]
-}https://github.com/heyajohnny/afvalinfo/
-*/
+
 var DT_garbage = (function () {
   return {
     name: 'garbage',
     canHandle: function (block) {
-      return block && block.company;
+      return block && (block.company || (block.city && ((block.zipcode && block.housenumber) || block.district)));
     },
     defaultCfg: {
       width: settings['garbage_width'] || 12,
@@ -18,7 +12,7 @@ var DT_garbage = (function () {
         typeof settings['garbage_hideicon'] !== 'undefined'
           ? settings['garbage_hideicon']
           : false,
-      company: settings['garbage_company'],
+      company: settings['garbage_company'] || 'afvalinfo',
       street: settings['garbage_street'] || '',
       housenumber: settings['garbage_housenumber'] || '',
       housenumberSuffix: settings['garbage_housenumberadd'] || '',
@@ -257,6 +251,38 @@ var DT_garbage = (function () {
         });
       return data;
     });
+  }
+
+  /*
+SENSOR_LOCATIONS_TO_URL = {
+    "trashapi": [
+        "http://trashapi.azurewebsites.net/trash?Location={0}&ZipCode={1}&HouseNumber={2}&HouseNumberSuffix={3}&District={4}&DiftarCode={5}&ShowWholeYear={6}"
+    ]
+}https://github.com/heyajohnny/afvalinfo/
+
+*/
+
+  function getAfvalInfoData(me, companyCode) {
+    var config = {
+      Location: me.block.city,
+      ZipCode: me.block.zipcode,
+      HouseNumber: me.block.housenumber,
+      houseLetter: '',
+      HouseNumberSuffix: me.block.housenumberSuffix,
+      ShowWholeYear: true
+    }
+    if(me.block.district) config.District = me.block.district;
+    return $.get('http://trashapi.azurewebsites.net/trash', config)
+      .then(function (data) {
+        var dataFiltered = [];
+        data.forEach(function (element) {
+            dataFiltered.push({
+              date: moment(element.date),
+              summary: element.name,
+            });
+        });
+        return dataFiltered;
+      });
   }
 
   // eslint-disable-next-line no-unused-vars
@@ -698,6 +724,9 @@ var DT_garbage = (function () {
       },
       afvalalert: {
         handler: getAfvalAlertData,
+      },
+      afvalinfo: {
+        handler: getAfvalInfoData,
       },
       afvalstoffendienst: {
         handler: getMijnAfvalwijzerData,

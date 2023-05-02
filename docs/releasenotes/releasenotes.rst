@@ -12,6 +12,7 @@ Enhancements
 ~~~~~~~~~~~~~
 
 * Weather: Support for OpenWeatherMap 3 API. See :ref:`owm3`. 
+* Garbage: New generic garbage company ``afvalinfo`` covering 98% of The Netherlands. See :ref:`afvalinfo`
 
 Fixes
 ~~~~~
