@@ -18,17 +18,21 @@ Next, add the garbage to a column, like::
 
 You can change the colors of the trashcan (and/or the complete line) via the parameters in ``CONFIG.js``.
 
+Since Dashticz beta 3.10.3 the default garbage company is ``afvalinfo``. See :ref:`afvalinfo`.
+
 Parameters
 ----------
 
 =======================   ===============================
 Block Parameter           Description 
 =======================   ===============================
-company                   Garbage company to use. See :ref:`garbage_companies`
+company                   Garbage company to use. Default: ``'afvalinfo'``. See :ref:`garbage_companies`
 icalurl                   ``'<url>'``: In case the garbage company is ``url`` the URL of the ical-file.
 zipcode                   The zipcode
-street                    Your street
+City                      City name. Mandatory for company 'afvalinfo'
 housenumber               Your housenumber
+street                    Your street
+district                  When using ``afvalinfo`` then for some cities the district name needs to be provided as well.
 maxitems                  Number of items to show
 maxdays                   Number of days to show (2 is today and tomorrow). Default: 32
 width                     ``1..12``: Width of the block
@@ -58,6 +62,21 @@ garbage                   Settings for different garbage types. See :ref:`par_ga
 
 Usage
 -----
+
+.. _afvalinfo :
+
+afvalinfo
+~~~~~~~~~~
+
+Since Dashticz 3.10.3 beta ``afvalinfo`` has been added as garbage company. Via the afvalinfo API 98% of the Dutch gemeenten are covered.
+
+The ``afvalinfo`` company requires that besides zipcode and housenumber also the city name is provided as block parameter.
+
+For some cities the district name needs to be provided as well via the ``district`` block parameter.
+
+For more info see, and special thanks, see https://github.com/heyajohnny/afvalinfo
+
+If you are happy with ``afvalinfo`` don't forget to support the author `heyajohnny <https://github.com/heyajohnny/afvalinfo>`_ for making this API available.
 
 .. _par_garbage :
 
@@ -116,6 +135,7 @@ Currently supported cities/companies/services
 Company                 City or area
 ===================     =========================
 afvalalert              (Not working)
+afvalinfo               Generic company for NL.
 afvalstoffendienst      Afvalstoffendienst: 's-Hertogenbosch, Vlijmen, ... (NL)
 almere                  Almere (NL)
 alphenaandenrijn        Alphen aan de Rijn (NL)
