@@ -565,6 +565,7 @@ settingList.garbage = {
     title: language.settings.garbage.garbage_company,
     type: 'select',
     options: {
+      afvalinfo:'99% coverage in NL',
       afvalalert: 'Afval Alert (NL)',
       afvalstoffendienst:
         'Afvalstoffendienst: Hertogenbosch, Vlijmen, ... (NL)',
@@ -901,7 +902,7 @@ var defaultSettings = {
       'Biodégradables',
       'snoei',
     ],
-    pmd: ['plastic', 'pmd', 'verpakking', 'kunststof', 'valorlux', 'packages','pbp'],
+    pmd: ['plastic', 'pmd', 'verpakking', 'kunststof', 'valorlux', 'packages','pbp','pbd'],
     papier: ['papier', 'blauw', 'blue', 'recycling bin collection', 'paper'],
     kca: ['chemisch', 'kca', 'kga'],
     brown: ['brown', 'verre'],
