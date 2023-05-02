@@ -74,6 +74,31 @@ The ``afvalinfo`` company requires that besides zipcode and housenumber also the
 
 For some cities the district name needs to be provided as well via the ``district`` block parameter.
 
+For the gemeente Maassluis you need to provide one of the following districts as ``district`` parameter:
+
+    "Binnenstad/centrum"
+    "Componistenwijk"
+    "Dalenbuurt"
+    "Dichtersbuurt"
+    "Drevenbuurt"
+    "Koningshoek"
+    "Maasdijk"
+    "Molenwijk"
+    "Oranjewijk"
+    "Sluispolder Oost"
+    "Vertowijk"
+    "Vogelwijk"
+    "Weverskade"
+    "Wijk 't Hoofd"
+    "Wilgenrijk"
+    "Zeeheldenbuurt"
+    "Zuidbuurt"
+
+For the gemeente ouder-amstel you need to provide one of the following districts as ``district`` parameter:
+
+    "Bebouwde kom"
+    "Buitengebied"
+
 For more info see, and special thanks, see https://github.com/heyajohnny/afvalinfo
 
 If you are happy with ``afvalinfo`` don't forget to support the author `heyajohnny <https://github.com/heyajohnny/afvalinfo>`_ for making this API available.
