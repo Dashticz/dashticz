@@ -272,7 +272,7 @@ SENSOR_LOCATIONS_TO_URL = {
       ShowWholeYear: true
     }
     if(me.block.district) config.District = me.block.district;
-    return $.get('http://trashapi.azurewebsites.net/trash', config)
+    return $.get('https://trashapi.azurewebsites.net/trash', config)
       .then(function (data) {
         var dataFiltered = [];
         data.forEach(function (element) {
