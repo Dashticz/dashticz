@@ -138,6 +138,10 @@ function setDomoBehavior() {
     basicAuthRequired: {
       version: 2022.2,
       build: 14078
+    },
+    newGraphApi: {
+      version: 2023.1,
+      build: 15330
     }
   }
   
