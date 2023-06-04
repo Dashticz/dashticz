@@ -491,8 +491,9 @@ function getAllGraphData(me) {
 
 function getRegularGraphData(me, i) {
   var device = me.graphDevices[i];
-  var params =
-    'type=graph&sensor=' +
+  var cmd = domoVersion.newGraphApi ? 'type=command&param=graph' : 'type=graph';
+  var params = cmd +
+    '&sensor=' +
     device.sensor +
     '&idx=' +
     device.idx +
@@ -507,7 +508,9 @@ function getRegularGraphData(me, i) {
 function getSwitchGraphData(me, i) {
   var device = me.graphDevices[i];
   //http://:8080/json.htm?idx=19&type=lightlog
-  var params = 'type=lightlog' + '&idx=' + device.idx;
+  //todo: check type=command&param=graph for new Domoticz version>=15330
+  var cmd = domoVersion.newGraphApi ? 'param=getlightlog&type=command' : 'type=lightlog';
+  var params = cmd + '&idx=' + device.idx;
   me.params[i] = params;
   return Domoticz.request(params).then(function (data) {
     /*
