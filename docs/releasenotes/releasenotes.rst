@@ -8,6 +8,14 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.10.5 Beta (6-6-2023)
+-------------------------
+
+Fixes
+~~~~~
+
+* Fix for additional changes in Domoticz API (2023.1, build 15327 and up)
+
 v3.10.4 Beta (4-6-2023)
 -------------------------
 
