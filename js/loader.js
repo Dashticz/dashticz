@@ -1,6 +1,6 @@
 /*global loadFiles dashtype */
 
-var _DASHTICZ_VERSION=78;
+var _DASHTICZ_VERSION=79;
 var head = document.getElementsByTagName('head')[0],
  script = document.createElement('script');
  

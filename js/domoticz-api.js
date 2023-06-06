@@ -24,7 +24,9 @@ var Domoticz = (function () {
   var MSG = {
     info: 'type=command&param=getversion',
     secpanel: 'type=command&param=getsecstatus',
-    getSettings: 'type=settings',
+    getSettings: domoVersion.api15330?'type=command&param=getsettings':'type=settings',
+    getDevices: domoVersion.api15330?'type=command&param=getdevices':'type=devices',
+    getScenes: domoVersion.api15330?'type=command&param=getscenes':'type=scenes',  
   };
 
   function domoticzQuery(query) {
@@ -331,8 +333,8 @@ var Domoticz = (function () {
     var timeFilter = cfg.refresh_method ? '':('&lastUpdate=' + lastUpdate.devices);
     var hiddenFilter = cfg.use_hidden? '&displayhidden=1' : '';
     var favoriteFilter = cfg.use_favorites? '&favorite=1' : '';
-    return domoticzRequest(
-      'type=devices&filter=all&used=true&order=Name' +
+    return domoticzRequest(MSG.getDevices + 
+      '&filter=all&used=true&order=Name' +
         favoriteFilter +
         timeFilter +
         hiddenFilter,
@@ -344,7 +346,7 @@ var Domoticz = (function () {
 
   function requestDevice(idx, forcehttp) {
     //not tested
-    return domoticzRequest('type=devices&rid=' + idx, forcehttp).then(function (
+    return domoticzRequest(MSG.getDevices+'&rid=' + idx, forcehttp).then(function (
       res
     ) {
       return _setDevice(res);
@@ -453,8 +455,7 @@ var Domoticz = (function () {
       console.log(' no result');
       return;
     }
-    var r = data.result[0];
-    var device = data.result[r];
+    var device = data.result[0];
     var idx = device['idx'];
 
     if (device['Type'] === 'Group' || device['Type'] === 'Scene') {
@@ -465,7 +466,7 @@ var Domoticz = (function () {
   }
 
   function requestAllScenes() {
-    return domoticzRequest('type=scenes').then(function (res) {
+    return domoticzRequest(MSG.getScenes).then(function (res) {
       if (!res) return;
       return _setAllDevices(res);
     });
@@ -567,6 +568,7 @@ var Domoticz = (function () {
     hold: hold,
     release: release,
     syncRequest: syncRequest,
+    requestDevice: requestDevice,
   };
 })();
 
