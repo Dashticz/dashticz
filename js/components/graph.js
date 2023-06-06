@@ -169,7 +169,7 @@ function getDeviceDefaults(me, device) {
     case 'Wind':
       sensor = 'wind';
       var windspeed = device.Data.split(';')[2] / 10;
-      if (config['use_beaufort']) {
+      if (settings['use_beaufort']) {
         currentValue = Beaufort(windspeed);
         decimals = 0;
         txtUnit = 'Bft';
@@ -491,7 +491,7 @@ function getAllGraphData(me) {
 
 function getRegularGraphData(me, i) {
   var device = me.graphDevices[i];
-  var cmd = domoVersion.newGraphApi ? 'type=command&param=graph' : 'type=graph';
+  var cmd = domoVersion.api15330 ? 'type=command&param=graph' : 'type=graph';
   var params = cmd +
     '&sensor=' +
     device.sensor +
@@ -509,7 +509,7 @@ function getSwitchGraphData(me, i) {
   var device = me.graphDevices[i];
   //http://:8080/json.htm?idx=19&type=lightlog
   //todo: check type=command&param=graph for new Domoticz version>=15330
-  var cmd = domoVersion.newGraphApi ? 'param=getlightlog&type=command' : 'type=lightlog';
+  var cmd = domoVersion.api15330 ? 'param=getlightlog&type=command' : 'type=lightlog';
   var params = cmd + '&idx=' + device.idx;
   me.params[i] = params;
   return Domoticz.request(params).then(function (data) {
@@ -1501,7 +1501,7 @@ function showData(graph) {
     html += ' <div class="modal-dialog" role="document">';
     html +=
       '   <div class="modal-content" style="background-image:url(' +
-      config['background_image'] +
+      settings['background_image'] +
       '); background-size: cover;">';
     html += '     <div class="modal-header">';
     html += '       <div class="flex-row title">';
@@ -1515,7 +1515,7 @@ function showData(graph) {
       '           <a type="button" id="logbutton" class="btn debug" href="#" ><i class="fas fa-code"></i></a>';
     html +=
       '           <a type="button" class="btn debug" href="data:application/octet-stream;charset=utf-16le;base64,' +
-      btoa(JSON.stringify(graph, null, 2)) +
+      btoa(encodeURIComponent(JSON.stringify(graph, null, 2))) +
       '" download="' +
       graphIdx +
       '.json"><i class="fas fa-save"></i></a>';
@@ -1571,7 +1571,9 @@ function showData(graph) {
     $.each(graph.graphDevices, function (i, graphDevice) {
       // var g = dtGraphs[graph.primaryIdx]; //todo: I would expect g is just graph
       var url =
-        config['domoticz_ip'] + '/json.htm?type=devices&rid=' + graphDevice.idx;
+        config['domoticz_ip'] + '/json.htm?' +
+        (domoVersion.api15330?'type=command&param=getdevices':'type=devices') + 
+        '&rid=' + graphDevice.idx;
 
       $.getJSON(url, function (data) {
         var device = data.result[0]; //This device should already contain the same info as graphDevice.

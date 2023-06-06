@@ -139,9 +139,9 @@ function setDomoBehavior() {
       version: 2022.2,
       build: 14078
     },
-    newGraphApi: {
+    api15330: {
       version: 2023.1,
-      build: 15330
+      build: 15327
     }
   }
   
