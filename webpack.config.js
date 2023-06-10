@@ -20,7 +20,7 @@ module.exports = {
               },
             {
                 test: /\.js$/, // Check for all js files
-                exclude: /node_modules\/(?!(dom7|swiper)\/).*/,
+//                exclude: /node_modules\/(?!(dom7|swiper)\/).*/,
                 use: ['babel-loader']
             },
             /*

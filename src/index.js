@@ -1,9 +1,12 @@
-require('./loader.scss');
-window.moment = require('moment');
-require('chart.js');
+//$='empty';
+//import 'es6-promise/auto';
+require('es6-promise/auto');
 import $ from 'jquery';
 window.jQuery = $;
 window.$ = $;
+
+window.moment = require('moment');
+require('chart.js');
 require('jquery-ui-dist/jquery-ui.min');
 require('jquery-ui-dist/jquery-ui.min.css');
 //require('jquery-migrate')
@@ -21,6 +24,7 @@ import 'js-cookie';
 //import './functions.js?raw';
 import('!!raw-loader!./functions.js').then(rawModule => eval.call(null, rawModule.default));
 //var Handlebars = require('handlebars');
+
 import Handlebars from 'handlebars';
 window.Handlebars = Handlebars;
 var MomentHandler = require('handlebars.moment');
@@ -28,12 +32,6 @@ window.MomentHandler = MomentHandler;
 
 require('./templateengine.js');
 require('./handlebars-helpers.js');
-//var Swiper = require('swiper/swiper-bundle.min.js');
-import Swiper from 'swiper/bundle';
-window.Swiper = Swiper;
-//require('swiper/swiper-bundle.min.css');
-import 'swiper/css/bundle';
-//window.Skycons =
 var Skycons=require('skycons-color');
 window.Skycons = Skycons;
 require('spectrum-colorpicker');
@@ -43,3 +41,9 @@ require('chartjs-plugin-zoom');
 window.Popper = require('@popperjs/core');
 window.iro = require('@jaames/iro').default;
 window.ICAL = require('ical.js');
+
+//var Swiper = require('swiper/swiper-bundle.min.js');
+import Swiper from 'swiper/bundle';
+window.Swiper = Swiper;
+//require('swiper/swiper-bundle.min.css');
+import 'swiper/css/bundle';
