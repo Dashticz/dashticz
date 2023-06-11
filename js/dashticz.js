@@ -36,6 +36,7 @@ var Dashticz = (function () {
     'log',
     'weather',
     'simpleblock',
+    'map'
   ];
   var components = [];
   var mountedBlocks = {};
@@ -121,6 +122,11 @@ var Dashticz = (function () {
       .find('.dt_state')
       .append(getProperty(components[me.name].defaultContent, me));
     $div.html(block);
+    if (me.block.aspectratio) {
+      var blockWidth = parseInt($div.outerWidth());
+      $div.css({height:blockWidth * me.block.aspectratio})
+    }
+
   }
 
   function setEmpty(me, state) {
