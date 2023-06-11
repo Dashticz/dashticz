@@ -1,6 +1,3 @@
-//$='empty';
-//import 'es6-promise/auto';
-require('es6-promise/auto');
 import $ from 'jquery';
 window.jQuery = $;
 window.$ = $;
@@ -9,7 +6,6 @@ window.moment = require('moment');
 require('chart.js');
 require('jquery-ui-dist/jquery-ui.min');
 require('jquery-ui-dist/jquery-ui.min.css');
-//require('jquery-migrate')
 require('jquery-ui-touch-punch');
 require('bootstrap');
 //require('bootstrap/dist/css/bootstrap.min.css'); //Preloaded via ./src/loader.scss
