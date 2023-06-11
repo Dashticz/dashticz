@@ -1,18 +1,53 @@
 var path = require('path');
 var TerserPlugin = require('terser-webpack-plugin')
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
-    entry: './src/index.js',
+    plugins: [new MiniCssExtractPlugin()],
+    entry: {
+        bundle: './src/index.js',
+//        loader: './src/loader.scss',
+    },
+    output: {
+        filename: '[name].js',
+        path: path.resolve(__dirname, 'dist'),
+      },
     module: {
         rules: [
             {
+                resourceQuery: /raw/,
+                type: 'asset/source'
+              },
+            {
                 test: /\.js$/, // Check for all js files
-                exclude: /node_modules\/(?!(dom7|swiper)\/).*/,
+//                exclude: /node_modules\/(?!(dom7|swiper)\/).*/,
                 use: ['babel-loader']
             },
+            /*
+            {
+                test: /\.css$/i,
+                use: [MiniCssExtractPlugin.loader, "css-loader"],
+              },
+        */
             {
                 test: /\.css$/,
-                loaders: ["style-loader", "css-loader"]
+                use: [ {
+                    loader: "style-loader"
+                },{
+                    loader: "css-loader"
+                }]
+            },
+            {
+                test: /\.(scss)$/,
+                use: [ {
+                    loader: MiniCssExtractPlugin.loader,
+                },/*{
+                  loader: 'style-loader', // inject CSS to page
+                }, */{
+                  loader: 'css-loader', // translates CSS into CommonJS modules
+                },  {
+                  loader: 'sass-loader' // compiles Sass to CSS
+                }]
             },
             {
                 test: /\.(jpe?g|png|gif)$/i,
@@ -32,44 +67,21 @@ module.exports = {
                 outputPath: './assets/fonts/'
             }
         },
-            {
-                // Exposes jQuery for use outside Webpack build
-                test: require.resolve('jquery'),
-                use: [{
-                    loader: 'expose-loader',
-                    options: 'jQuery'
-                }, {
-                    loader: 'expose-loader',
-                    options: '$'
-                }]
-            },
-            {
-                // Exposes jQuery for use outside Webpack build
-                test: require.resolve('mobile-detect'),
-                use: {
-                    loader: 'expose-loader',
-                    options: 'MobileDetect'
-                }
-            },
-            {
-                // Exposes jQuery for use outside Webpack build
-                test: require.resolve('js-cookie'),
-                use: {
-                    loader: 'expose-loader',
-                    options: 'Cookies'
-                }
-            }
         ],
         
     },
     resolve: {
-        extensions: ['*', '.js']
-    },
+        extensions: ['*', '.js'],
+        fallback: {
+            fs: false,
+          },
+      
+    },/*
     output: {
         filename: 'bundle.js',
         path: path.resolve(__dirname, 'dist'),
         publicPath: 'dist/',
-    },
+    },*/
     optimization: {
         minimize: true,
         minimizer: [
