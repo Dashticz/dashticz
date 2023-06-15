@@ -47,15 +47,15 @@ var sessionvalid = false;
 var currentScreenSet;
 
 var _PARAMS = {};
+var _CFG = {};
+
 // eslint-disable-next-line no-unused-vars
 function loadFiles(dashtype) {
-  _PARAMS = getLocationParameters();
+  loadScripts(['js/functions.js', 'js/polyfills.js'])
+    .then(prepareStart)
+}
 
-  var customfolder = _PARAMS['folder'] || 'custom';
-  if (typeof dashtype !== 'undefined' && parseFloat(dashtype) > 1) {
-    customfolder += '_' + dashtype;
-  }
-
+function createErrorHandler() {
   //Set custom error handling to catch syntax errors in CONFIG.js and custom.js
   window.onerror = function (msg, url, line, col) {
     if (loadingFilename) {
@@ -72,35 +72,40 @@ function loadFiles(dashtype) {
       throwError = message;
     }
   };
+}
 
+function loadStyling() {
   $(
     '<link href="' + 'css/creative.css?_=' + _DASHTICZ_VERSION + '" rel="stylesheet">'
   ).appendTo('head');
+}
 
-    var enable_logrocket = _PARAMS['logrocket'];
-  $.when(
+function loadLogRocket() {
+  var enable_logrocket = _PARAMS['logrocket'];
+  return $.when(
     typeof enable_logrocket !== 'undefined' &&
-      enable_logrocket &&
-      $.ajax({
-        url: 'https://cdn.lr-ingest.io/LogRocket.min.js',
-        dataType: 'script',
-        cache: true
-      }).then(function () {
-        enableLogRocket(enable_logrocket);
-      })
-  )
-    .then(function () {
-      var configjs = _PARAMS['cfg'] || 'CONFIG.js';
-      loadingFilename = customfolder + '/' + configjs;
-      return $.ajax({
-        url: loadingFilename,
-        dataType: 'script',
-      }).fail(function () {
-        return $.Deferred().reject(
-          new Error('Load error in ' + loadingFilename)
-        );
-      });
+    enable_logrocket &&
+    $.ajax({
+      url: 'https://cdn.lr-ingest.io/LogRocket.min.js',
+      dataType: 'script',
+      cache: true
+    }).then(function () {
+      enableLogRocket(enable_logrocket);
     })
+  )
+}
+
+function loadConfig() {
+  var configjs = _PARAMS['cfg'] || 'CONFIG.js';
+  loadingFilename = _CFG.customfolder + '/' + configjs;
+  return $.ajax({
+    url: loadingFilename,
+    dataType: 'script',
+  }).fail(function () {
+    return $.Deferred().reject(
+      new Error('Load error in ' + loadingFilename)
+    );
+  })
     .then(function () {
       var tmp = loadingFilename;
       loadingFilename = null;
@@ -110,141 +115,147 @@ function loadFiles(dashtype) {
         return $.Deferred().reject(new Error('Error in ' + tmp));
       }
     })
+}
+
+function loadConfig2() {
+  var configjs = _PARAMS['cfg2'];
+  if (!configjs) return;
+  loadingFilename = _CFG.customfolder + '/' + configjs;
+  return $.ajax({
+    url: loadingFilename,
+    dataType: 'script',
+  }).fail(function () {
+    return $.Deferred().reject(
+      new Error('Load error in ' + loadingFilename)
+    );
+  }).then(function () {
+    loadingFilename = null;
+    if (throwError) return $.Deferred().reject(new Error(throwError));
+  })
+}
+
+function loadLanguage() {
+  //Check language before loading settings and fallback to English when not set
+  var setLang = 'en_US';
+  if (typeof localStorage.dashticz_language !== 'undefined') {
+    setLang = localStorage.dashticz_language;
+  } else if (
+    typeof config !== 'undefined' &&
+    typeof config.language !== 'undefined'
+  ) {
+    setLang = config.language;
+  }
+  return $.ajax({
+    url: 'lang/' + setLang + '.json?v=' + _DASHTICZ_VERSION,
+    dataType: 'json',
+    success: function (data) {
+      language = data;
+    },
+  });
+}
+
+function loadCustomJS() {
+  loadingFilename = _CFG.customfolder + '/custom.js';
+
+  return $.ajax({
+    //first test whether the file exists
+    url: loadingFilename + '?v=' + cache,
+    type: 'HEAD',
+  })
     .then(function () {
-      var configjs = _PARAMS['cfg2'];
-      if (!configjs) return;
-      loadingFilename = customfolder + '/' + configjs;
+      //if it exists, try to load it
       return $.ajax({
         url: loadingFilename,
         dataType: 'script',
-      }).fail(function () {
-        return $.Deferred().reject(
-          new Error('Load error in ' + loadingFilename)
+      }).then(function () {
+        loadingFilename = null;
+        if (throwError)
+          //test whether we've catched an error in the errorhandler
+          return $.Deferred().reject(new Error(throwError));
+      });
+    })
+    .catch(function (res) {
+      if (res.status === 404) {
+        //file doesn't exist
+        console.log(
+          'No custom.js file in folder ' + _CFG.customfolder + '. Skipping.'
         );
-      });
-    })
-    .then(function () {
-      loadingFilename = null;
-      if (throwError) return $.Deferred().reject(new Error(throwError));
-
-      if (objectlength(columns) === 0) defaultcolumns = true;
-
-      //Check language before loading settings and fallback to English when not set
-      var setLang = 'en_US';
-      if (typeof localStorage.dashticz_language !== 'undefined') {
-        setLang = localStorage.dashticz_language;
-      } else if (
-        typeof config !== 'undefined' &&
-        typeof config.language !== 'undefined'
-      ) {
-        setLang = config.language;
+        return;
       }
-      return $.ajax({
-        url: 'lang/' + setLang + '.json?v=' + _DASHTICZ_VERSION,
-        dataType: 'json',
-        success: function (data) {
-          language = data;
-        },
-      });
-    })
+      var error = res || new Error('Unknown error loading custom.js');
+      return $.Deferred().reject(error);
+    });
+}
+
+function configureDashticz() {
+  if (typeof screens === 'undefined' || objectlength(screens) === 0) {
+    screens = {};
+    screens[1] = {};
+    screens[1]['background'] = settings['background_image'];
+    screens[1]['columns'] = [];
+    if (objectlength(columns) === 0) defaultcolumns = true;
+    if (defaultcolumns === false) {
+      for (var c in columns) {
+        if (c !== 'bar') screens[1]['columns'].push(c);
+      }
+    }
+  }
+
+  $(
+    '<link href="vendor/weather/css/weather-icons.min.css?v=' +
+    cache +
+    '" rel="stylesheet">'
+  ).appendTo('head');
+
+  if (settings['theme'] !== 'default') {
+    $(
+      '<link rel="stylesheet" type="text/css" href="themes/' +
+      settings['theme'] +
+      '/' +
+      settings['theme'] +
+      '.css?v=' +
+      cache +
+      '" />'
+    ).appendTo('head');
+  }
+
+  loadCustomCss();
+
+  return $.when(
+    DT_function.loadDTScript('js/switches.js'),
+    DT_function.loadDTScript('js/thermostat.js'),
+    DT_function.loadDTScript('js/dashticz.js'),
+    DT_function.loadDTScript('js/blocks.js'),
+    DT_function.loadDTScript('js/blocktypes.js'),
+    DT_function.loadDTScript('js/login.js'),
+    DT_function.loadDTScript('js/moon.js'),
+    DT_function.loadDTScript('js/colorpicker.js'),
+    DT_function.loadDTScript('js/fullscreen.js')
+  )
     .then(function () {
-      return $.ajax({
-        url: 'js/polyfills.js?t='+_DASHTICZ_VERSION,
-        dataType: 'script',
-        cache: true,
-      });
+      return Dashticz.init();
     })
-    .then(function () {
-      return getSettings();
-    })
-    .then( function() {
-      $.ajax({
-        url: 'js/dt_function.js?t='+_DASHTICZ_VERSION,
-        dataType: 'script',
-        cache: true
-      })
-    })
+}
+
+function prepareStart() {
+  _PARAMS = getLocationParameters();
+
+  _CFG.customfolder = _PARAMS['folder'] || 'custom';
+  if (typeof dashtype !== 'undefined' && parseFloat(dashtype) > 1) {
+    _CFG.customfolder += '_' + dashtype;
+  }
+
+  createErrorHandler();
+  loadStyling();
+  loadLogRocket()
+    .then(loadConfig)
+    .then(loadConfig2)
+    .then(loadLanguage)
+    .then(getSettings)
+    .then(function () { return loadScript('js/dt_function.js')})
     .then(addDebug)
-    .then(function () {
-      loadingFilename = customfolder + '/custom.js';
-
-      return $.ajax({
-        //first test whether the file exists
-        url: loadingFilename + '?v=' + cache,
-        type: 'HEAD',
-      })
-        .then(function () {
-          //if it exists, try to load it
-          return $.ajax({
-            url: loadingFilename,
-            dataType: 'script',
-          }).then(function () {
-            loadingFilename = null;
-            if (throwError)
-              //test whether we've catched an error in the errorhandler
-              return $.Deferred().reject(new Error(throwError));
-          });
-        })
-        .catch(function (res) {
-          if (res.status === 404) {
-            //file doesn't exist
-            console.log(
-              'No custom.js file in folder ' + customfolder + '. Skipping.'
-            );
-            return;
-          }
-          var error = res || new Error('Unknown error loading custom.js');
-          return $.Deferred().reject(error);
-        });
-    })
-    .then(function () {
-      if (typeof screens === 'undefined' || objectlength(screens) === 0) {
-        screens = {};
-        screens[1] = {};
-        screens[1]['background'] = settings['background_image'];
-        screens[1]['columns'] = [];
-        if (defaultcolumns === false) {
-          for (var c in columns) {
-            if (c !== 'bar') screens[1]['columns'].push(c);
-          }
-        }
-      }
-
-      $(
-        '<link href="vendor/weather/css/weather-icons.min.css?v=' +
-          cache +
-          '" rel="stylesheet">'
-      ).appendTo('head');
-
-      if (settings['theme'] !== 'default') {
-        $(
-          '<link rel="stylesheet" type="text/css" href="themes/' +
-            settings['theme'] +
-            '/' +
-            settings['theme'] +
-            '.css?v=' +
-            cache +
-            '" />'
-        ).appendTo('head');
-      }
-
-      loadCustomCss(customfolder);
-
-      return $.when(
-        DT_function.loadDTScript('js/switches.js'),
-        DT_function.loadDTScript('js/thermostat.js'),
-        DT_function.loadDTScript('js/dashticz.js'),
-        DT_function.loadDTScript('js/blocks.js'),
-        DT_function.loadDTScript('js/blocktypes.js'),
-        DT_function.loadDTScript('js/login.js'),
-        DT_function.loadDTScript('js/moon.js'),
-        DT_function.loadDTScript('js/colorpicker.js'),
-        DT_function.loadDTScript('js/fullscreen.js')
-      )
-        .then(function () {
-          return Dashticz.init();
-        })
-    })
+    .then(loadCustomJS)
+    .then(configureDashticz)
     .then(function () {
       if (settings['security_panel_lock'])
         Domoticz.subscribe('_secstatus', true, checkSecurityStatus);
@@ -310,9 +321,9 @@ function loadFiles(dashtype) {
   }
 }
 
-function loadCustomCss(customfolder) {
+function loadCustomCss() {
   var customcss = _PARAMS['css'] || 'custom.css';
-  var filename = customfolder + '/' + customcss;
+  var filename = _CFG.customfolder + '/' + customcss;
   $.ajax({
     url: filename + '?v=' + cache,
     success: function (data) {
@@ -400,18 +411,18 @@ function tryDashticzRefresh(timeout, msg) {
     console.log(msg);
     Debug.log(msg);
     Dashticz.isAvailable()
-    .then(function(res) {
-      if (res)
-        // eslint-disable-next-line no-self-assign
-        window.location.href = window.location.href;
-      else {
-        tryDashticzRefresh(10*1000, "Dashticz not available: postponing refresh");   
-      }
-    })
-    .catch(function(res) {
-      console.log(res);
-      tryDashticzRefresh(10*1000, "Catch: Dashticz not available: postponing refresh");   
-    })
+      .then(function (res) {
+        if (res)
+          // eslint-disable-next-line no-self-assign
+          window.location.href = window.location.href;
+        else {
+          tryDashticzRefresh(10 * 1000, "Dashticz not available: postponing refresh");
+        }
+      })
+      .catch(function (res) {
+        console.log(res);
+        tryDashticzRefresh(10 * 1000, "Catch: Dashticz not available: postponing refresh");
+      })
   }, timeout)
 }
 
@@ -437,9 +448,9 @@ function onLoad() {
       '-ms-user-select': 'none',
       'user-select': 'none',
     })
-//    .on('selectstart', function () {
-//      return false;
-//    });
+  //    .on('selectstart', function () {
+  //      return false;
+  //    });
 
   buildScreens();
 
@@ -469,7 +480,7 @@ function onLoad() {
       swipebackTime += 1000;
       if (settings.auto_slide_pages > 0) {
         var currentSlide = myswiper.activeIndex;
-        var swipeTimeout =Number(
+        var swipeTimeout = Number(
           currentScreenSet[currentSlide].auto_slide_page ||
           settings.auto_slide_pages);
         if (!autoSwipe) swipeTimeout += Number(settings.auto_swipe_back_after);
@@ -561,27 +572,27 @@ function onLoad() {
       }
     }, 5000);
   }
-/*
-  setInterval(function() {
-    console.log('playing');
-    playAudio('sounds/computer_error.mp3');
-  }, 5000)*/
-//  triggerTime();
+  /*
+    setInterval(function() {
+      console.log('playing');
+      playAudio('sounds/computer_error.mp3');
+    }, 5000)*/
+  //  triggerTime();
 }
 
-var oldTime=0;
+var oldTime = 0;
 
 function triggerTime() {
   Debug.log('ping');
   var currentTime = Date.now();
   var targetTime = oldTime + 10000;
   var diff = currentTime - oldTime;
-  if (currentTime - oldTime>11000) {
-    Debug.log('Time error: ' + diff/1000);
+  if (currentTime - oldTime > 11000) {
+    Debug.log('Time error: ' + diff / 1000);
   }
 
-  if (currentTime>=targetTime) targetTime=currentTime + 10000;
-  setTimeout(triggerTime, targetTime-currentTime);
+  if (currentTime >= targetTime) targetTime = currentTime + 10000;
+  setTimeout(triggerTime, targetTime - currentTime);
   oldTime = currentTime;
 }
 
@@ -862,18 +873,18 @@ function infoMessage(sub, msg, timeOut) {
   if (timeOut == 0) {
     $('body').append(
       '<div class="update">' +
-        sub +
-        '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
-        msg +
-        '&nbsp;&nbsp;</div>'
+      sub +
+      '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+      msg +
+      '&nbsp;&nbsp;</div>'
     );
   } else {
     $('body').append(
       '<div class="update">' +
-        sub +
-        '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
-        msg +
-        '&nbsp;&nbsp;</div>'
+      sub +
+      '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+      msg +
+      '&nbsp;&nbsp;</div>'
     );
     setTimeout(function () {
       $('.update').fadeOut();
