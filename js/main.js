@@ -260,7 +260,7 @@ function prepareStart() {
       if (settings['security_panel_lock'])
         Domoticz.subscribe('_secstatus', true, checkSecurityStatus);
       sessionvalid = sessionValid();
-
+/*
       if (
         typeof settings['gm_api'] !== 'undefined' &&
         settings['gm_api'] !== '' &&
@@ -276,7 +276,7 @@ function prepareStart() {
             initMap();
           }, 2000);
         });
-      }
+      }*/
     })
     .then(function () {
       if (sessionvalid) {
