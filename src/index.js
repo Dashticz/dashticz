@@ -16,9 +16,6 @@ window.MobileDetect=require('mobile-detect');
 window.md5 = require('md5');
 //require('js-cookie');
 import 'js-cookie';
-//require('script-loader!./functions.js');
-//import './functions.js?raw';
-import('!!raw-loader!./functions.js').then(rawModule => eval.call(null, rawModule.default));
 //var Handlebars = require('handlebars');
 
 import Handlebars from 'handlebars';
