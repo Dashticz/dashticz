@@ -748,6 +748,14 @@ a.playlist {
   font-size:200%
 }
 
+.map .state_refresh {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: rgba(0,0,0,0.5);
+  font-size: 290%;
+}
+
 
 .trafficmap {
   height: 100%;

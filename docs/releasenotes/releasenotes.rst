@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~~
+
+* Google maps: Improved block, optionally showing traffic conditions and a route to a destination. See :ref:`googlemaps` 
+
 Fixes
 ~~~~~~
 

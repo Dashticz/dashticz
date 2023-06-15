@@ -36,7 +36,7 @@ function gm_authFailure() {
     },
     defaultCfg: function (block) {
       var result = {
-        refresh: 60,
+        refresh: 600,
         clickHandler: false,
         api: settings['gm_api'],
         width: 12,
@@ -48,7 +48,9 @@ function gm_authFailure() {
         zoom: 15,
         markerSize: 15,
         showtraffic: true,
-        disableDefaultUI: true
+        showUI: false,
+        showrefresh: true,
+        showrouteinfo: true
 
       };
       if (!block.height) result.aspectratio = 0.6;
@@ -56,15 +58,22 @@ function gm_authFailure() {
     },
     defaultContent: language.misc.loading,
     run: function (me) {
+      if (me.block.config < 60) me.block.config = 60;
       var dt_state = me.$mountPoint.find('.dt_state');
-      dt_state.html('<div class="state_map"></div><div class="state_route"></div>');
-      //          dt_content.css({height: me.block.height});
+      dt_state.html('<div class="state_map"></div><div class="state_route"></div>')
+      if (me.block.showrefresh) {
+        dt_state.append('<i class="state_refresh fa-solid fa-arrows-rotate"></i>');
+        //          dt_content.css({height: me.block.height});
+        dt_state.find('.state_refresh').on('click', function () {
+          refresh(me);
+        })
+      }
       var mapdiv = dt_state.find('.state_map')[0];
       me.pointA = new google.maps.LatLng(me.block.latitude, me.block.longitude);
       me.map = new google.maps.Map(mapdiv, {
         zoom: me.block.zoom,
         center: me.pointA,
-        disableDefaultUI: me.block.disableDefaultUI
+        disableDefaultUI: !me.block.showUI
       })
       var markerOptions = {
         position: me.pointA,
@@ -89,42 +98,44 @@ function gm_authFailure() {
 
 
     },
-    refresh: function (me) {
-      console.log('refresh...');
-      if (me.block.showtraffic) {
-        me.trafficLayer = new google.maps.TrafficLayer();
-        me.trafficLayer.setMap(me.map);
-      }
-      if (me.showRoute) {
-        // get route from A to B
-        me.directionsService.route({
-          origin: me.pointA,
-          destination: me.pointB,
-          avoidTolls: true,
-          avoidHighways: false,
-          travelMode: google.maps.TravelMode.DRIVING
-        }, function (response, status) {
-          if (status == google.maps.DirectionsStatus.OK) {
-            me.directionsDisplay.setDirections(response);
-            //Additional info:
-            //response.routes[0].legs[0]
-            /*
-            distance : {text: '132 km', value: 131533}
-            duration: {text: '1 uur 33 min.', value: 5576}
-            */
-           var routeInfo = response.routes[0].legs[0];
-           me.$mountPoint.find('.state_route').html(routeInfo.distance.text + ', '+routeInfo.duration.text);
-          } else {
-            window.alert('Directions request failed due to ' + status);
-          }
-        });
-
-      }
-
-
-
-    },
+    refresh: refresh,
   };
+
+  function refresh(me) {
+    if (me.block.showtraffic) {
+      me.trafficLayer = new google.maps.TrafficLayer();
+      me.trafficLayer.setMap(me.map);
+    }
+    if (me.showRoute) {
+      // get route from A to B
+      me.directionsService.route({
+        origin: me.pointA,
+        destination: me.pointB,
+        avoidTolls: true,
+        avoidHighways: false,
+        travelMode: google.maps.TravelMode.DRIVING
+      }, function (response, status) {
+        if (status == google.maps.DirectionsStatus.OK) {
+          me.directionsDisplay.setDirections(response);
+          //Additional info:
+          //response.routes[0].legs[0]
+          /*
+          distance : {text: '132 km', value: 131533}
+          duration: {text: '1 uur 33 min.', value: 5576}
+          */
+          var routeInfo = response.routes[0].legs[0];
+          if (me.block.showrouteinfo)
+            me.$mountPoint.find('.state_route').html(routeInfo.distance.text + ', ' +
+              routeInfo.duration.text +
+              ' (@' + moment().format('LT') + ')');
+        } else {
+          var msg = 'Directions request failed due to ' + status;
+          me.$mountPoint.find('.state_route').html(msg);
+          console.log(msg);
+        }
+      });
+    }
+  }
 
   Dashticz.register(DT_googlemaps);
 }(Dashticz));
