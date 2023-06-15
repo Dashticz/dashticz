@@ -1,8 +1,9 @@
 {
-"version": "3.10.6",
+"version": "3.10.7",
 "branch": "beta",
-"last_changes": "Bump versions",
+"last_changes": "Google Maps update",
 "changelog" : {
+            "3.10.6": "Bump versions",
             "3.10.5": "Fix for additional Domoticz API changes version>=15327",
             "3.10.4": "Fix graphs for Domoticz version>=15330",
             "3.10.3": "OpenWeaterMap 3.0 API and generic garbage company afvalinfo",

@@ -69,6 +69,12 @@
   margin: 0px 0px;
 }
 
+.fixedheight:not(.dt_column) .dt_content {
+  display: flex;
+  flex-direction: column;
+  height: 100%
+}
+
 .dt_block .col-icon {
   margin-top: 5px;
   width: 45px !important;
@@ -83,6 +89,11 @@
 .dt_state {
   margin: 5px 5px;
   min-height: 1px;
+}
+
+
+.fixedheight .dt_state {
+  height: 100%
 }
 
 .button .dt_state,
@@ -720,6 +731,31 @@ a.playlist {
   margin-top: -2px;
   display: inline-block;
 }
+
+.map .dt_state {
+  position: relative
+}
+
+.map .state_map {
+  height: 100%
+}
+
+.map .state_route {
+  position: absolute;
+  top:0;
+  left:0;
+  background-color:rgba(0,0,0,0.5);
+  font-size:200%
+}
+
+.map .state_refresh {
+  position: absolute;
+  right: 0;
+  top: 0;
+  background: rgba(0,0,0,0.5);
+  font-size: 290%;
+}
+
 
 .trafficmap {
   height: 100%;

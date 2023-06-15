@@ -36,6 +36,7 @@ var Dashticz = (function () {
     'log',
     'weather',
     'simpleblock',
+    'map'
   ];
   var components = [];
   var mountedBlocks = {};
@@ -121,6 +122,18 @@ var Dashticz = (function () {
       .find('.dt_state')
       .append(getProperty(components[me.name].defaultContent, me));
     $div.html(block);
+    var fixedHeight = false;
+    if (me.block.aspectratio) {
+      var blockWidth = parseInt($div.outerWidth());
+      $div.css({height:blockWidth * me.block.aspectratio});
+      fixedHeight = true;
+    }
+    else if (me.block.height) {
+      $div.css({height: me.block.height})
+      fixedHeight = true;
+    }
+    if(fixedHeight) $div.addClass('fixedheight');
+
   }
 
   function setEmpty(me, state) {
