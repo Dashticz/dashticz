@@ -110,11 +110,7 @@ Using Google Maps API costs money. However, you get a monthly credit of $200 for
 If you have a low ``refresh`` block parameter, and show multiple maps simultaneously, you may run out of your monthly credit quite quickly.
 So, especially in the beginning, pay attention to your API usage via the Google dashboard.
 
-To prevent unnecessary cost, I would recommend to set some quotas in the Google Maps dashboard.
-
-I've limited the Maps javascript API as well as the Directions API to 500 requests per day.
-
-That will limit the cost to max $3.50 + $2.50 = $6.00 per day, meaning you will not reach the $200 monthly credit.
+To prevent unnecessary cost, I would recommend to set some quotas in the Google Maps dashboard. For instance, set a limit for the Maps javascript API as well as the Directions API to 500 requests per day. This will limit the cost to max $3.50 + $2.50 = $6.00 per day, meaning you will not reach the $200 monthly credit.
  
 .. _mapsroute :
 
