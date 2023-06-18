@@ -129,8 +129,7 @@
 .ios iframe {
   height: 100%;
   min-width: 100%;
-  width: 100px;
-  *width: 100%;
+  width: 100%;
 }
 
 .streamplayer .title {
@@ -736,24 +735,37 @@ a.playlist {
   position: relative
 }
 
+.map .time {
+  white-space: nowrap;
+}
+
+.map .item {
+  vertical-align: top;
+}
+
+.map td {
+  padding: 2px;
+}
+
 .map .state_map {
   height: 100%
 }
 
-.map .state_route {
+.map .state_info {
   position: absolute;
-  top:0;
-  left:0;
-  background-color:rgba(0,0,0,0.5);
-  font-size:200%
+  left: 10px;
+  bottom: 10px;
+  font-size: 175%;
+  cursor: pointer;
 }
 
-.map .state_refresh {
-  position: absolute;
-  right: 0;
-  top: 0;
-  background: rgba(0,0,0,0.5);
-  font-size: 290%;
+.map .state_info *{
+  color: rgb(80,80,80);
+  background: rgba(255,255,255,0.9);
+}
+
+.map .state_refresh_time {
+  margin-left: 10px;
 }
 
 

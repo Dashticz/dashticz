@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~~
+
+* Google maps: Take actual traffic situation into account when computing optimal route.
+
 v3.10.7 Beta (15-6-2023)
 -------------------------
 
