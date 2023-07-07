@@ -179,6 +179,7 @@ function refresh(me) {
   if (me.block.showmap && me.block.showtraffic) {
     me.trafficLayer = new google.maps.TrafficLayer();
     me.trafficLayer.setMap(me.map);
+    me.$mountPoint.find('.state_refresh_time').html(moment().format('LT'));
   }
   if (me.showRoute) {
     // get route from A to B

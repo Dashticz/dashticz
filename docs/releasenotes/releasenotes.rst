@@ -12,6 +12,7 @@ Enhancements
 ~~~~~~~~~~~~~
 
 * Google maps: Take actual traffic situation into account when computing optimal route.
+* Google maps: Show refresh moment for map without route as well
 
 v3.10.7 Beta (15-6-2023)
 -------------------------
