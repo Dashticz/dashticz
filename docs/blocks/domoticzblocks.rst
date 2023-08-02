@@ -221,7 +221,11 @@ Block parameters
       | ``15``: Only show the battery icon when the battery level is below 15%.
   * - hide_title
     - | Hide title for selector switch in case parameter hide_title is ``true``, title is ``0`` or title is ``''``
-
+  * - sortOrder
+    - | Set sort order for selection switches
+      | ``0``: No sorting (default)
+      | ``1``: Ascending sort order
+      | ``-1``: Descending sort order
 
 There are several additional parameters for Graphs. See :ref:`dom_graphs`
       

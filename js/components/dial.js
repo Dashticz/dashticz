@@ -1226,6 +1226,12 @@ var DT_dial = (function () {
       $.each(levelNames, function (index, value) {
         me.options.push({ val: index * 10, text: value });
       });
+      if(me.block.sortOrder) {
+        me.options.sort(function(a,b) {
+          return a.text.localeCompare(b.text)*me.block.sortOrder;
+        })
+      }
+  
     }
     me.title=false; //default no title for controller device
     return;
