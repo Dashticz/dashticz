@@ -118,6 +118,11 @@ Block parameters
       | ``'windgust'``: For wind devices, to show wind gust instead of wind direction as needle position 
       | ``'updown'``: For thermostat and blind devices, to render the dial with up and down buttons. See :ref:`updowndial`
       | ``'power'``: For p1smartmeter and energy devices, to show actual Usage instead of CounterToday values. See :ref:`dialenergy`
+  * - sortOrder
+    - | Set sort order for selection switches
+      | ``0``: No sorting (default)
+      | ``1``: Ascending sort order
+      | ``-1``: Descending sort order
   
 
 Usage
@@ -370,6 +375,11 @@ Selector switches will be displayed as a menu. The dial menu can be shown with o
         width:6,
     }
   
+You can define the sort order of the selector options via the block parameter ``sortOrder``.
+
+* ``0``: No sorting
+* ``1``: Ascending
+* ``-1``: Descending
 
 .. _Toon:
 
