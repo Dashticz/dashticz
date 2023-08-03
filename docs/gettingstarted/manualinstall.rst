@@ -139,4 +139,22 @@ After updating my Ubuntu version I had to manually enable php7.3 on Apache::
   sudo a2enmod php7.3
   sudo systemctl restart apache2
 
+Domoticz authorization error
+----------------------------
+You have to do all the following things:
 
+In CONFIG.js add the Domoticz username and password, like
+
+.. code-block:: javascript
+
+    config['user_name'] = 'admin';
+    config['pass_word'] = 'domoticz';
+
+In Domoticz->Settings->Security tab:
+
+* Tick 'Allow Basic-Auth authentication over plain HTTP' in Domoticz->Settings->Security->API protection
+* Fill in your local subnet in Trusted Networks
+
+Example of Domoticz settings:
+
+.. image :: apiprotection2.jpg
