@@ -162,5 +162,23 @@ You can get the status of a specific device with: ``http://192.168.1.3:8084/json
 - Replace 192.168.1.3 with the IP Address (and Port number) for your Domoticz!
 - IDX = id of your device (This number can be found in the Domoticz' devices tab in the column "IDX")
 
+Domoticz authorization error
+----------------------------
+You have to do all the following things:
 
+In CONFIG.js add the Domoticz username and password, like
+
+.. code-block:: javascript
+
+    config['user_name'] = 'admin';
+    config['pass_word'] = 'domoticz';
+
+In Domoticz->Settings->Security tab:
+
+* Tick 'Allow Basic-Auth authentication over plain HTTP' in Domoticz->Settings->Security->API protection
+* Fill in your local subnet in Trusted Networks
+
+Example of Domoticz settings:
+
+.. image :: apiprotection2.jpg
  
