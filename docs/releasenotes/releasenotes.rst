@@ -15,6 +15,11 @@ Enhancements
 * Google maps: Show refresh moment for map without route as well
 * Selector switch: New block parameter ``sortOrder`` to sort selector switch options. See :ref:`dom_blockparameters` and :ref:`dialselector`
 
+Fixes
+~~~~~~
+
+* Login from trusted network without username
+
 v3.10.7 Beta (15-6-2023)
 -------------------------
 
