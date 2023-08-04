@@ -70,7 +70,7 @@ var Dashticz = (function () {
         var usrEnc = '';
         var pwdEnc = '';
         var basicAuthEnc = ''
-        if (typeof settings.user_name !== 'undefined') {
+        if (settings.user_name) {
           if(domoVersion.basicAuthRequired) {
             basicAuthEnc = window.btoa(settings['user_name'] + ':' + settings['pass_word']);
           } else {

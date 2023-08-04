@@ -84,7 +84,7 @@ function initVersion() {
     })
     .then(function () {
       if (
-        typeof window.btoa(config['user_name']) !== 'undefined' &&
+        config.user_name && config.pass_word && typeof window.btoa(config['user_name']) !== 'undefined' &&
         window.btoa(config['pass_word']) !== ''
       )
         loginCredentials =
