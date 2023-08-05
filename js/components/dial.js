@@ -38,11 +38,8 @@ var DT_dial = (function () {
         passive: false,
       });
 
-      return Domoticz.request('type=settings').then(function (res) {
-        if (res) {
-          DT_dial.settings = res;
-        }
-      });
+      DT_dial.settings = Domoticz.getAllDevices()['_settings'];
+
     },
     defaultCfg: {
 //      title: false,
