@@ -117,7 +117,7 @@ Block parameters
       | ``'windspeed'``: For wind devices, to show wind speed instead of wind direction as needle position    
       | ``'windgust'``: For wind devices, to show wind gust instead of wind direction as needle position 
       | ``'updown'``: For thermostat and blind devices, to render the dial with up and down buttons. See :ref:`updowndial`
-      | ``'power'``: For p1smartmeter and energy devices, to show actual Usage instead of CounterToday values. See :ref:`dialenergy`
+      | ``'usage'``: For p1smartmeter and energy devices, to show actual Usage instead of CounterToday values. See :ref:`dialenergy`
   * - sortOrder
     - | Set sort order for selection switches
       | ``0``: No sorting (default)
@@ -268,7 +268,7 @@ Unlike most dials, zero is at "12 o'clock", instead of the tradional dial which 
 
 For P1 Smart Meter you can use some additional block parameters.
 
-To show actual power usage, add ``subtype: 'power'`` to the block definition.
+To show actual power usage, add ``subtype: 'usage'`` to the block definition.
 
 To invert plus and minus, add ``inverted: true`` to the block definition.
 
@@ -281,7 +281,7 @@ You can also set the ``min`` and ``max`` parameter.
     blocks['p1'] = {
         idx: 454,
         type: 'dial',
-        subtype: 'power',  //to show actual power instead of daily energy counter
+        subtype: 'usage',  //to show actual power usage instead of daily energy counter
         inverted: true     //Value is positive if energy leaving the house is higher than energy consumption
     }
 
@@ -339,7 +339,7 @@ A energy device will show the total energy usage of today.
 
 For energy devices you can use some additional block parameters.
 
-To show actual power usage instead of daily energy uses, add ``subtype: 'power'`` to the block definition.
+To show actual power usage instead of daily energy uses, add ``subtype: 'usage'`` to the block definition.
 
 To display the values as negative values add ``inverted: true`` to the block definition.
 In this situation the dial will be changed into a split dial (with 0 at top) as well.
