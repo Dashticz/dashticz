@@ -14,6 +14,8 @@ Enhancements
 * Google maps: Take actual traffic situation into account when computing optimal route.
 * Google maps: Show refresh moment for map without route as well
 * Selector switch: New block parameter ``sortOrder`` to sort selector switch options. See :ref:`dom_blockparameters` and :ref:`dialselector`
+* Weather: Add support for OWM free api. See :ref:`customweather`
+* Weather: Autodetect weather forecast provider. No need to set the ``provider`` block parameter anymore.
 
 Fixes
 ~~~~~~

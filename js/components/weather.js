@@ -81,31 +81,33 @@ var DT_weather = (function () {
         skipFirst: false,
         icons: settings.static_weathericons ? 'static' : 'line',
         iconExt: 'svg',
-        provider: 'owm'
+        //        provider: 'owm'
       };
     },
     run: function (me) {
       if (me.block.refresh < 900) me.block.refresh = 900;
       me.$block = me.$mountPoint.find('.dt_block');
-      if(me.block.provider==='owm3') {
-        me.promiseLatLon = getLatLon(me)
-        .catch(function(res) {
-    //      var errorTxt = 'Error getting latlon data from OWM. Check API key';
-          var errorTxt ="Status " + res.status+': '+res.responseJSON && res.responseJSON.message;
-          console.log(errorTxt);
-          infoMessage('Weather', errorTxt);
-          me.$mountPoint.find('.dt_state').html('<div style="font-size:30%">'+errorTxt+'</div>');
-        });
-      }
+      me.runPromise = findProviders(me).then(function () {
+        if (me.provider === 'owm3') {
+          return getLatLon(me)
+            .catch(function (res) {
+              //      var errorTxt = 'Error getting latlon data from OWM. Check API key';
+              var errorTxt = "Status " + res.status + ': ' + res.responseJSON && res.responseJSON.message;
+              console.log(errorTxt);
+              infoMessage('Weather', errorTxt);
+              me.$mountPoint.find('.dt_state').html('<div style="font-size:30%">' + errorTxt + '</div>');
+            });
+        }
+      });
     },
     refresh: function (me) {
-      if (!me.block.apikey) {
-        Debug.log(
-          Debug.ERROR,
-          'apikey not defined for weather block ' + me.block.key
-        );
-        return;
-      }
+      /*      if (!me.block.apikey) {
+              Debug.log(
+                Debug.ERROR,
+                'apikey not defined for weather block ' + me.block.key
+              );
+              return;
+            }*/
       var w = parseInt(me.$mountPoint.width() * me.block.width / 12 * me.block.scale);
       if (me.block.scale !== 1) me.$block.css('width', w);
       var fontSize = w / 10;
@@ -113,27 +115,77 @@ var DT_weather = (function () {
         fontSize = fontSize / me.block.count;
       }
       me.$block.css('font-size', fontSize + 'px');
-      refreshProvider(me);
-    },
-  };
+      me.runPromise
+        .then(function () {
+          return refreshProvider(me);
+        })
+        .catch(function (err) {
+          me.$mountPoint.find('.dt_state').html('<div style="font-size:50%">' + err + '</div>');
+        });
+    }
+  }
+
+  function findProviders(me) {
+    var key = me.block.apikey
+    var providers = [
+      {
+        id: 'owm3',
+        url: 'https://api.openweathermap.org/data/3.0/onecall?appid=' + key
+      },
+      {
+        id: 'owm',
+        url: 'https://api.openweathermap.org/data/2.5/onecall?appid=' + key
+      },
+      {
+        id: 'owmfree',
+        url: 'https://api.openweathermap.org/data/2.5/forecast?appid=' + key
+      },
+      {
+        id: 'knmi',
+        url: 'https://weerlive.nl/api/json-data-10min.php?locatie=amsterdam&key=' + key,
+        json: 'liveweer'
+      },
+    ]
+    var findProviderPromise = providers.reduce(function (acc, provider) {
+      return acc.then(function (res) {
+        if (res) return res;
+        console.log('test weather provider ' + provider.id);
+        return DT_function.cached(provider.url, $.getJSON).then(function (data) {
+          if (data[provider.json]) { //we have a certain json key (currently for knmi)
+            console.log('Valid API key for weather provider: ' + provider.id);
+            return provider.id
+          }
+        })
+          .catch(function (xhr, textStatus) {
+            if (xhr.status && xhr.status === 400) {//we have a valid api (for owm apis)
+              console.log('Valid API key for weather provider: ' + provider.id);
+              return provider.id
+            }
+          })
+      })
+    }, $.Deferred().resolve(me.block.provider));
+
+    return findProviderPromise.then(
+      function (res) {
+        if (res) me.provider = res
+        else {
+          console.error('No valid weather provider found');
+          me.$mountPoint.find('.dt_state').html('<div style="font-size:50%">' + 'No valid weather API key.' + '</div>');
+        }
+      }
+    )
+
+  }
 
   function refreshProvider(me) {
-    switch(me.block.provider) {
+    switch (me.provider) {
       case 'knmi':
       case 'KNMI':
-        refreshKNMI(me);
-        break;
+        return refreshKNMI(me);
       case 'owm3':
-        refreshOWM3Init(me)
-        .catch(function(res) {
-                var errorTxt ="Status " + res.status+': '+res.responseJSON && res.responseJSON.message;
-                console.log(errorTxt);
-                infoMessage('Weather', errorTxt);
-                me.$mountPoint.find('.dt_state').html('<div style="font-size:30%">'+errorTxt+'</div>');
-              });
-        break;
+        return refreshOWM3(me);
       default:
-        refreshOWM(me);
+        return refreshOWM(me);
     }
   }
 
@@ -144,33 +196,33 @@ var DT_weather = (function () {
       return $.Deferred().resolve();
     }
     var url = 'http://api.openweathermap.org/geo/1.0/direct?q=' +
-              me.block.city + ', ' + me.block.country +
-              '&limit=1&appid=' + me.block.apikey;
-    return $.ajax(url).then(function(res) {
+      me.block.city + ', ' + me.block.country +
+      '&limit=1&appid=' + me.block.apikey;
+    return $.ajax(url).then(function (res) {
       if (res && res[0] && res[0].name) {
         me.lat = res[0].lat;
         me.lon = res[0].lon;
-      } 
+      }
     })
   }
 
   function refreshKNMI(me) {
-    requestKNMIData(me)
-    .then(function () {
-      return formatData(me);
-    })
-    .then(function () {
-      return templateEngine.load('weatherknmi_' + me.block.layout);
-    })
-    .then(function (template) {
-      var html = template(me.data);
-      $(me.$block).html(html);
-      addWeatherIcons(me);
-    });
+    return requestKNMIData(me)
+      .then(function () {
+        return formatData(me);
+      })
+      .then(function () {
+        return templateEngine.load('weatherknmi_' + me.block.layout);
+      })
+      .then(function (template) {
+        var html = template(me.data);
+        $(me.$block).html(html);
+        addWeatherIcons(me);
+      });
   }
 
   function refreshOWM(me) {
-    requestData(me)
+    return requestData(me)
       .then(function () {
         return formatData(me);
       })
@@ -181,13 +233,7 @@ var DT_weather = (function () {
         var html = template(me.data);
         $(me.$block).html(html);
         addWeatherIcons(me);
-      });
-  }
-
-  function refreshOWM3Init(me) {
-    return me.promiseLatLon.then( function() {
-      return refreshOWM3(me);
-    });
+      })
   }
 
   function refreshOWM3(me) {
@@ -210,6 +256,10 @@ var DT_weather = (function () {
     me.data = {};
     return $.getJSON(getOWMurl(me, false), function (result) {
       me.data.weather = result;
+    }).catch(function () {
+      var err ='No valid API key?';
+      err+=me.provider? ' ('+me.provider+')':' (autodetect provider)'; 
+      throw new Error(err);
     }).then(function () {
       return $.getJSON(getOWMurl(me, true), function (result) {
         me.data.forecast = result;
@@ -221,6 +271,9 @@ var DT_weather = (function () {
     me.data = {};
     return $.getJSON(getKNMIurl(me, false), function (result) {
       me.data.weather = result;
+    }).catch(function () {
+      var err = me.provider + ' error. No valid API key?';
+      throw new Error(err);
     });
   }
 
@@ -228,7 +281,10 @@ var DT_weather = (function () {
     me.data = {};
     return $.getJSON(getOWM3url(me), function (result) {
       me.data.weather = result.current;
-      me.data.forecast= result;
+      me.data.forecast = result;
+    }).catch(function () {
+      var err = me.provider + ' error. No valid API key?';
+      throw new Error(err);
     })
   }
 
@@ -293,34 +349,34 @@ var DT_weather = (function () {
             "alarmtxt": ""
         }
     ]
-}
-*/
+  }
+  */
     var start = me.block.skipFirst ? 1 : 0;
     var cntSetting = choose(me.block.countDaily, me.block.count);
     if (cntSetting + start > 7) cntSetting = 7 - start;
     var data = [];
     var daily = me.data.weather.liveweer[0];
     for (var i = start; i < cntSetting + start; i++) {
-      
-      var dayStr = 'd'+i;
+
+      var dayStr = 'd' + i;
       var dayData = {
-      
-        day: moment().add(i,'days').format(settings['weekday']),
-        min: number_format(daily[dayStr+'tmin'], me.block.decimals) + _TEMP_SYMBOL,
-        max: number_format(daily[dayStr+'tmax'], me.block.decimals) + _TEMP_SYMBOL,
-//        description: daily.samenv,
-        rain: number_format(daily[dayStr+'neerslag'] || 0, 0) + '%',
-        icon: getIcon(daily[dayStr+'weer']),
+
+        day: moment().add(i, 'days').format(settings['weekday']),
+        min: number_format(daily[dayStr + 'tmin'], me.block.decimals) + _TEMP_SYMBOL,
+        max: number_format(daily[dayStr + 'tmax'], me.block.decimals) + _TEMP_SYMBOL,
+        //        description: daily.samenv,
+        rain: number_format(daily[dayStr + 'neerslag'] || 0, 0) + '%',
+        icon: getIcon(daily[dayStr + 'weer']),
         wind: {
           //          direction:
-            speed: toWindStr(me, daily[dayStr+'windk']),
-//          gust: toWindStr(me, daily[i].wind_gust),
-//          deg: daily[i].wind_deg,
-            direction: daily[dayStr+'windr'],
-//          directionShort: translateWindDegreesShort(daily[i].wind_deg),
-//          icon: getWindIcon(daily[i].wind_deg),
+          speed: toWindStr(me, daily[dayStr + 'windk']),
+          //          gust: toWindStr(me, daily[i].wind_gust),
+          //          deg: daily[i].wind_deg,
+          direction: daily[dayStr + 'windr'],
+          //          directionShort: translateWindDegreesShort(daily[i].wind_deg),
+          //          icon: getWindIcon(daily[i].wind_deg),
         },
-        
+
       };
       data.push(dayData);
     }
@@ -341,7 +397,7 @@ var DT_weather = (function () {
       min:
         number_format(daily.d0tmin, me.block.decimals) +
         _TEMP_SYMBOL,
-//      rain: (me.data.weather.rain && me.data.weather.rain['1h']) || 0,
+      //      rain: (me.data.weather.rain && me.data.weather.rain['1h']) || 0,
       pressure: daily.luchtd,
       feels:
         number_format(daily.gtemp, me.block.decimals) +
@@ -349,12 +405,12 @@ var DT_weather = (function () {
       humidity: daily.lv,
       wind: {
         speed: toWindStr(me, daily.windms),
-//        gust: toWindStr(me, me.data.weather.wind.gust),
-//        deg: me.data.weather.wind.deg,
+        //        gust: toWindStr(me, me.data.weather.wind.gust),
+        //        deg: me.data.weather.wind.deg,
         direction: daily.windr
-//        direction: translateWindDegrees(me.data.weather.wind.deg),
+        //        direction: translateWindDegrees(me.data.weather.wind.deg),
       },
-      description:daily.samenv,
+      description: daily.samenv,
       forecast: daily.verw
     };
 
@@ -395,6 +451,89 @@ var DT_weather = (function () {
     return me;
   }
 
+  function formatDailyFreeData(me) {
+    //In principle we now have all data
+    //We receive forecast per 3 hour interval
+    //daily info will be derived from this
+    var start = me.block.skipFirst ? 1 : 0;
+    var cntSetting = choose(me.block.countDaily, me.block.count);
+    if (cntSetting + start > 7) cntSetting = 7 - start; //max 7 days
+    var data = [];
+    var daily = me.data.forecast.list;
+    var cont = true;
+    var i = 0;
+    var maxi = daily.length;
+    var sampleCount = 0;
+    var currentDay, dayTempMin, dayTempMax, dayDescription, dayWindDeg, dayWindGust, dayWindSpeed, dayIcon, dayMoment;
+    while (i < maxi && cont) {
+      var dtMoment = moment(daily[i].dt * 1000);
+      var startDay = dtMoment.clone().startOf('day').format();
+      if (currentDay !== startDay) {
+        if (currentDay && sampleCount) {
+          if (!(start && moment().startOf('day').format() === startDay)) {
+            var dayData = {
+              day: dayMoment.format(settings['weekday']),
+              min: number_format(dayTempMin, me.block.decimals) + _TEMP_SYMBOL,
+              max: number_format(dayTempMax, me.block.decimals) + _TEMP_SYMBOL,
+              description: dayDescription,
+              rain: number_format(dayRain / sampleCount || 0, 1),
+              icon: dayIcon,
+              wind: {
+                //          direction:
+                speed: toWindStr(me, dayWindSpeed),
+                gust: toWindStr(me, dayWindGust),
+                deg: dayWindDeg,
+                direction: translateWindDegrees(dayWindDeg),
+                directionShort: translateWindDegreesShort(dayWindDeg),
+                icon: getWindIcon(dayWindDeg),
+              },
+            };
+            data.push(dayData);
+            if (data.length > cntSetting) cont = false;
+          }
+          else start = 0;
+        }
+        currentDay = startDay;
+        sampleCount = 0;
+      }
+      var currentHour = dtMoment.hours();
+      var tempMin = daily[i].main.temp_min;
+      var tempMax = daily[i].main.temp_max;
+      var description = daily[i].weather[0].description;
+      var rain = daily[i].rain;
+      var windSpeed = daily[i].wind.speed;
+      var windGust = daily[i].wind.gust;
+      var windDeg = daily[i].wind.deg;
+      var icon = daily[i].weather[0].icon
+      if (!sampleCount) {
+        dayTempMin = tempMin;
+        dayTempMax = tempMax;
+        dayRain = 0;
+      }
+      if (dayTempMin > tempMin) dayTempMin = tempMin;
+      if (dayTempMax < tempMax) dayTempMax = tempMax;
+      if (rain)
+        if (typeof rain === 'object')
+          dayRain += rain["3h"];
+      if ((currentHour >= 12 && currentHour < 15) || !sampleCount) {
+        dayDescription = description;
+        dayWindSpeed = windSpeed;
+        dayWindGust = windGust;
+        dayWindDeg = windDeg;
+        dayIcon = icon;
+        dayMoment = dtMoment;
+      }
+      sampleCount += 1;
+      i += 1;
+    }
+    cntSetting = data.length;
+    me.data.dailyForecast = data;
+    me.data.dailyCount = cntSetting;
+    me.data.dailyScale = Math.round(100 / cntSetting);
+    return me;
+  }
+
+
   function formatHourlyData(me) {
     var start = me.block.skipFirst ? 1 : 0;
     var cntSetting = choose(me.block.countHourly, me.block.count);
@@ -432,11 +571,51 @@ var DT_weather = (function () {
     return me;
   }
 
+  function formatHourlyFreeData(me) {
+    var start = me.block.skipFirst ? 1 : 0;
+    var cntSetting = choose(me.block.countHourly, me.block.count);
+    //    if (cntSetting>14) cntSetting=14;
+    if ((cntSetting + start) * me.block.interval > 48)
+      cntSetting = Math.floor(48.0 / me.block.interval) - start;
+    var data = [];
+    var hourly = me.data.forecast.list;
+    for (var i = start; i < cntSetting + start; i++) {
+      var pos = i * me.block.interval;
+      var hour_data = hourly[pos];
+      var rain = choose(hour_data.rain && hour_data.rain["3h"], hour_data.rain || 0);
+      var dayData = {
+        day: moment(hourly[pos].dt * 1000).format(settings['weekday']),
+        time: moment(hourly[pos].dt * 1000).format('HH:mm'),
+        temp: number_format(hourly[pos].main.temp, me.block.decimals) + _TEMP_SYMBOL,
+        description: hourly[pos].weather[0].description,
+        rain: number_format(rain, 1),
+        icon: hourly[pos].weather[0].icon,
+        wind: {
+          //          direction:
+          speed: toWindStr(me, hourly[i].wind.speed),
+          gust: toWindStr(me, hourly[i].wind.gust),
+          deg: hourly[i].wind.deg,
+          direction: translateWindDegrees(hourly[i].wind.deg),
+          directionShort: translateWindDegreesShort(hourly[i].wind.deg),
+          icon: getWindIcon(hourly[i].wind.deg),
+        },
+      };
+      data.push(dayData);
+    }
+    me.data.hourlyForecast = data;
+    me.data.hourlyCount = cntSetting;
+    me.data.hourlyScale = Math.round(100 / cntSetting);
+    return me;
+  }
+
   function formatCurrentData(me) {
-    var owm3=me.block.provider==="owm3";
+    var owm3 = me.provider === "owm3";
+    var owmfree = me.provider === "owmfree";
     var weather = me.data.weather;
-    var currentWeather = owm3?weather:weather.main;
+    var currentWeather = owm3 ? weather : weather.main;
     var decimals = me.block.decimals;
+    var maxTemp = owmfree ? currentWeather.temp_max : me.data.forecast.daily[0].temp.max;
+    var minTemp = owmfree ? currentWeather.temp_min : me.data.forecast.daily[0].temp.min;
     me.data.current = {
       icon: weather.weather[0].icon,
       city: me.block.name || weather.name || me.block.city,
@@ -444,22 +623,22 @@ var DT_weather = (function () {
         number_format(currentWeather.temp, decimals) +
         _TEMP_SYMBOL,
       max:
-        number_format(me.data.forecast.daily[0].temp.max, decimals) +
+        number_format(maxTemp, decimals) +
         _TEMP_SYMBOL,
       min:
-        number_format(me.data.forecast.daily[0].temp.min, decimals) +
+        number_format(minTemp, decimals) +
         _TEMP_SYMBOL,
-      rain: (me.data.weather.rain && me.data.weather.rain['1h']) || 0,
+      rain: (weather.rain && (weather.rain['1h'] || weather.rain['3h'])) || 0,
       pressure: currentWeather.pressure,
       feels:
         number_format(currentWeather.feels_like, decimals) +
         _TEMP_SYMBOL,
       humidity: currentWeather.humidity,
       wind: {
-        speed: toWindStr(me, owm3? weather.wind_speed:weather.wind.speed),
-        gust: toWindStr(me, owm3? weather.wind_gust: weather.wind.gust),
-        deg: owm3? weather.wind_deg:weather.wind.deg,
-        direction: translateWindDegrees(owm3?weather.wind_deg:weather.wind.deg),
+        speed: toWindStr(me, owm3 ? weather.wind_speed : weather.wind.speed),
+        gust: toWindStr(me, owm3 ? weather.wind_gust : weather.wind.gust),
+        deg: owm3 ? weather.wind_deg : weather.wind.deg,
+        direction: translateWindDegrees(owm3 ? weather.wind_deg : weather.wind.deg),
       },
     };
     return me;
@@ -473,6 +652,12 @@ var DT_weather = (function () {
 
   function defaultFormatHandler(me) {
     /*We just execute them all ...*/
+    if (me.provider === 'owmfree') {
+      formatDailyFreeData(me);
+      formatHourlyData(me);
+      formatCurrentData(me);
+      return me;
+    }
     formatDailyData(me);
     formatHourlyData(me);
     formatCurrentData(me);
@@ -488,7 +673,12 @@ var DT_weather = (function () {
         4: All combined
         */
 
-    var formatHandlers = {
+    var formatHandlers = me.provider === 'owmfree' ? {
+      0: formatDailyFreeData,
+      1: formatHourlyFreeData,
+      2: formatCurrentData,
+      3: formatCurrentData,
+    } : {
       0: formatDailyData,
       1: formatHourlyData,
       2: formatCurrentData,
@@ -506,7 +696,7 @@ var DT_weather = (function () {
     me.data.showGust = me.block.showGust;
     me.data.showForecast = me.block.showForecast;
 
-    if(me.block.provider==='knmi') return knmiFormatHandler(me);
+    if (me.provider === 'knmi') return knmiFormatHandler(me);
     var formatHandler = formatHandlers[me.block.layout] || defaultFormatHandler;
     return formatHandler(me);
   }
@@ -521,8 +711,10 @@ var DT_weather = (function () {
     var api = me.block.apikey;
     var lang = me.block.lang;
 
+    var endPoint = me.provider === 'owm' ? 'onecall' : 'forecast'
+
     var subsite = makeForecast
-      ? 'onecall?lat=' +
+      ? endPoint + '?lat=' +
       me.data.weather.coord.lat +
       '&lon=' +
       me.data.weather.coord.lon
@@ -549,20 +741,20 @@ var DT_weather = (function () {
 
     var site =
       (settings['use_cors'] ? _CORS_PATH : '') +
-      'https://weerlive.nl/api/json-data-10min.php?key=' + 
+      'https://weerlive.nl/api/json-data-10min.php?key=' +
       api +
       '&locatie=' +
-      city + ', '+country
+      city + ', ' + country
     return site;
   }
 
   function getOWM3url(me) {
     var url = 'https://api.openweathermap.org/data/3.0/onecall?lat=' + me.lat +
-              '&lon=' + me.lon +
-              '&appid=' + me.block.apikey +
-              '&units=' +
-              (settings['use_fahrenheit'] === 1 ? 'imperial' : 'metric');
-            return url;    
+      '&lon=' + me.lon +
+      '&appid=' + me.block.apikey +
+      '&units=' +
+      (settings['use_fahrenheit'] === 1 ? 'imperial' : 'metric');
+    return url;
   }
 
 
@@ -575,7 +767,7 @@ var DT_weather = (function () {
 
   function mountSVGIcon(me, el, icon) {
     //    var wiclass = getSVGIcon(icon);
-    var predefinedIcons = ['line', 'fill', 'meteo','linestatic'];
+    var predefinedIcons = ['line', 'fill', 'meteo', 'linestatic'];
     var path = predefinedIcons.includes(me.block.icons) ? './img' : './custom';
     var iconFileName = path + '/weathericons/' + me.block.icons + '/' + icon + '.' + me.block.iconExt;
     var imgClass = me.block.icons + (me.block.monochrome ? ' mono' : '');
@@ -615,20 +807,20 @@ var DT_weather = (function () {
       '50n': 'wi-night-fog',
       //knmi icons
       zonnig: '01d',
-bliksem: '11d',
-'regen': '10d',
-buien: '09d',
-hagel:'13d',
-mist: '50d',
-sneeuw: '13d',
-'bewolkt': '04d',
-lichtbewolkt: '03d',
-halfbewolkt: '03d',
-halfbewolkt_regen: '10d',
-zwaarbewolkt: '04d',
-nachtmist: '50n',
-helderenacht: '01n',
-nachtbewolkt: '02n'
+      bliksem: '11d',
+      'regen': '10d',
+      buien: '09d',
+      hagel: '13d',
+      mist: '50d',
+      sneeuw: '13d',
+      'bewolkt': '04d',
+      lichtbewolkt: '03d',
+      halfbewolkt: '03d',
+      halfbewolkt_regen: '10d',
+      zwaarbewolkt: '04d',
+      nachtmist: '50n',
+      helderenacht: '01n',
+      nachtbewolkt: '02n'
     };
     if (icons.hasOwnProperty(code)) {
       wiclass = icons[code];

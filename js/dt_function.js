@@ -218,6 +218,12 @@ var DT_function = (function () {
     return loadedResources[filename];
   }
 
+  function cached(id, callback) {
+    if(!isDefined(loadedResources[id]))
+      loadedResources[id]=callback(id);
+    return loadedResources[id];
+  }
+
   function loadDTScript(filename) {
     return loadScript(filename + '?v='+_DASHTICZ_VERSION)
   }
@@ -353,6 +359,7 @@ var DT_function = (function () {
     checkForceRefresh: checkForceRefresh,
     createModalDialog: createModalDialog,
     onRemove: onRemove,
+    cached: cached
   };
 })();
 
