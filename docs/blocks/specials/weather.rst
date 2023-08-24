@@ -16,7 +16,7 @@ Before you can use the weather module, you must request an API key:
 * For OpenWeatherMap via https://openweathermap.org/
 * For KNMI via https://weerlive.nl/api/toegang/index.php
 
-.. note:: Since November 2022 OpenWeatherMap doesn't provide free api keys with full functionality anymore. You can use the OpenWeatherMap 3 which is free for 1000 calls per day.
+Dashticz automatically detects the correct weather provider, by validating the API key at each provider.
 
 Basic usage
 ----------------
@@ -64,8 +64,10 @@ Parameters
   * - lang
     - ``'nl'``: Language to use for OWM data
   * - provider
-    - | ``owm``: Use OpenWeatherMap as provider
-      | ``owm3``: OpenWeatherMap 3 API. See :ref:`owm3`
+    - | By default Dashticz will auto-detect the provider of the weather info. You can also choose a specific provider by setting this parameter, but this should not be necessary anymore.
+      | ``owmfree``: Use OpenWeatherMap free account (since beginning 2023). 
+      | ``owm3``: OpenWeatherMap Onecall API 3.0. See :ref:`owm3`
+      | ``owm``: OpenWeatherMap old account (API key requested before 2022)
       | ``knmi``: Use KNMI as provider
   * - layout
     - | Choose a layout for the weather block
@@ -77,9 +79,9 @@ Parameters
   * - count
     - ``5``: Number of forecast items to show (default=3). Only for daily and hourly forecast.
   * - interval
-    - | Use every n-th forecast item.
+    - | Use every n-th forecast item. Only useful for owm3, because owm3 provides hourly forcast info 
       | ``1``. Use every forecast item (=default)
-      | ``3``. Set to 3 to get 3-hourly forecast
+      | ``3``. Set to 3 to get 3-hourly forecast (owm3)
   * - decimals
     - | Number of temperature decimals to show
       | ``1`` One decimal (=default)  
@@ -255,11 +257,29 @@ To capitalize the day of the week have to add the following code to ``custom.css
 
 .. _owm3 :
 
-Open Weather Map 3.0
+Open Weather Map 
 ~~~~~~~~~~~~~~~~~~~~
 
-Via https://openweathermap.org/ you can request a new API key and subscribe to the 3.0 API.
-You have to provide a credit card number. However, the first 2000 API calls are free of charge.
+Via https://openweathermap.org/ you can request a new API key and subscribe to weather API.
+
+At this moment (August 2023) two types of accounts can be created:
+
+  * Free account
+  * Onecall API 3.0
+
+For the differences see https://openweathermap.org/price.
+
+Main differences:
+
+  * Onecall API requires you to provide your credit card info. 
+  * Onecall API provides 8 day weather forecast, free API only a 5 day forecast
+  * Onecall API provides hourly forecast info, while the free API only provides 3-hourly forecast info
+
+In the past it was possible to request a OWM 2.5 account as well.
+
+Dashticz supports all three OWM APIs.
+
+For the Onecall API 3.0 you have to provide a credit card number. However, the first 2000 API calls are free of charge.
 Further,  on your OpenWeatherMap profile you can limit the number of daily allowed API calls, to prevent you accidentally make use of the service to often.
 
 See https://home.openweathermap.org/subscriptions
