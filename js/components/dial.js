@@ -1065,6 +1065,7 @@ var DT_dial = (function () {
             me.active = true; //Dial can be used to set setpoint value
             me.setpointDevice = idx;
             me.setpoint = valueInfo.data;
+            me.needle = valueInfo.data;
           }
           if (el.isNeedle) {
             //use needle, readonly (active = false)
