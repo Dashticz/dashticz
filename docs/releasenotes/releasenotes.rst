@@ -20,7 +20,8 @@ Enhancements
 Fixes
 ~~~~~~
 
-* Login from trusted network without username
+* Login from trusted network without username.
+* Dial: Update custom dial setpoint after Domoticz device update.
 
 v3.10.7 Beta (15-6-2023)
 -------------------------
