@@ -1,8 +1,9 @@
 {
-"version": "3.10.7",
+"version": "3.10.8",
 "branch": "beta",
-"last_changes": "Google Maps update",
+"last_changes": "OWM free API, Google Maps enhancements",
 "changelog" : {
+            "3.10.7": "Google Maps update",
             "3.10.6": "Bump versions",
             "3.10.5": "Fix for additional Domoticz API changes version>=15327",
             "3.10.4": "Fix graphs for Domoticz version>=15330",
