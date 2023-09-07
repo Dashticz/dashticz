@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Fixes
+~~~~~~
+
+* Graph: Fix height computation.
+
 v3.10.8 Beta (5-9-2023)
 -------------------------
 
