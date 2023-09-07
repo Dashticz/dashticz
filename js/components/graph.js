@@ -1007,6 +1007,7 @@ function graphRender(graph, graphProperties) {
 
   graph.chartctx = mydiv.find('canvas')[0].getContext('2d');
 
+  /* Probably not needed anymore since June 2023 (different method for setting block height)
   if (!graph.block.isPopup) {
     //in general we should not use graph.block, but mergedBlock. In this case graph.block is ok, because isPopup should not be used in a custom block def.
     var height = setHeight(graph);
@@ -1015,6 +1016,7 @@ function graphRender(graph, graphProperties) {
       $('.' + graphIdx + ' .graphcontent').css('height', height);
     //console.log('test');
   }
+*/
 
   new Chart(graph.chartctx, graphProperties);
   Chart.defaults.global.defaultFontColor = graph.block.fontColor;
@@ -1979,7 +1981,7 @@ function groupByDevice(me) {
   mountPoint.addClass('col-xs-' + graph.block.width);
   mountPoint.addClass('block_graph');
   mountPoint.addClass(graphIdx);
-  $('.' + graphIdx + ' .graphcontent').css('height', setHeight(graph));
+//  $('.' + graphIdx + ' .graphcontent').css('height', setHeight(graph));
 
   var graphProperties = getDefaultGraphProperties(graph, graph.block);
   var xAxesType = 'category';
