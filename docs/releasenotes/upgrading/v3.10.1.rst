@@ -1,0 +1,18 @@
+.. _v3_10_1:
+
+v3.10.1: Change in HTML template for special blocks
+===================================================
+
+Garbage
+--------
+
+Previously the default garbage type was 'black', meaning in case the garbage type could not be derived from the garbage description the black garbage icon would be selected.
+
+In this release a new block parameter ``defaultGarbage`` has been added to define which garbage type to use in case garbage type is unknown.
+
+The default value is 'kerstboom'. 
+
+(The reason is that there is a garbage provider that didn't provide a garbage description on the day that kerstbomen are being collected)
+
+So if you now see the kerstboom icon appearing at unexpected days just add ``defaultGarbage: 'black'`` as block paramter to get the old behavior.
+

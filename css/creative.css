@@ -69,6 +69,12 @@
   margin: 0px 0px;
 }
 
+.fixedheight:not(.dt_column) .dt_content {
+  display: flex;
+  flex-direction: column;
+  height: 100%
+}
+
 .dt_block .col-icon {
   margin-top: 5px;
   width: 45px !important;
@@ -83,6 +89,11 @@
 .dt_state {
   margin: 5px 5px;
   min-height: 1px;
+}
+
+
+.fixedheight .dt_state {
+  height: 100%
 }
 
 .button .dt_state,
@@ -118,8 +129,7 @@
 .ios iframe {
   height: 100%;
   min-width: 100%;
-  width: 100px;
-  *width: 100%;
+  width: 100%;
 }
 
 .streamplayer .title {
@@ -721,6 +731,44 @@ a.playlist {
   display: inline-block;
 }
 
+.map .dt_state {
+  position: relative
+}
+
+.map .time {
+  white-space: nowrap;
+}
+
+.map .item {
+  vertical-align: top;
+}
+
+.map td {
+  padding: 2px;
+}
+
+.map .state_map {
+  height: 100%
+}
+
+.map .state_info {
+  position: absolute;
+  left: 10px;
+  bottom: 10px;
+  font-size: 175%;
+  cursor: pointer;
+}
+
+.map .state_info *{
+  color: rgb(80,80,80);
+  background: rgba(255,255,255,0.9);
+}
+
+.map .state_refresh_time {
+  margin-left: 10px;
+}
+
+
 .trafficmap {
   height: 100%;
 }
@@ -790,6 +838,7 @@ a.playlist {
 
 .graphcontent {
   height: 100%;
+  min-height: 1px;
 }
 
 .modal .graphcontent {
@@ -3451,6 +3500,10 @@ canvas {
   margin-left: 0.2em;
 }
 
+.extra .unit {
+  font-size: unset;
+}
+
 .animation {
   animation: fadeInLoad 2s;
 }
@@ -4281,12 +4334,65 @@ canvas {
 /*end tvguide*/
 
 /*debug*/
-.modal-dialog-custom .tab-content {
-  height: 100%
+.debug ::selection {
+  color:white;
+  text-shadow: none;
+  background: blue;
+}
+.debug .modal-body {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y:auto;
+}
+
+.debug .tab-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y:auto;
+}
+
+.debug #debug-log {
+  height: calc(100% - 2em);
+}
+
+.selectable, .selectable > * {
+  -moz-user-select: text;
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  user-select: text
+}
+
+.debug #debug-items {
+  height: 100%;
+  overflow-y: auto;
+}
+
+.debug .debug-status {
+  height: 2em
+}
+
+.debug #debug-status {
+  height: calc(100% - 2em)
+}
+
+.debug .debug-memory-container {
+  height: calc(100% - 8em)
+}
+
+.debug #debug-save {
+  right: 4em;
+  position: absolute;
+  background: green;
 }
 
 .modal-dialog-custom .tab-content {
 
+}
+
+.modal-dialog-custom .debugitems {
+  overflow-y: auto;
 }
 
 /*owm widget*/

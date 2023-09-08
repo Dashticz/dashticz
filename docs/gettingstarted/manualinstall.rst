@@ -139,6 +139,7 @@ After updating my Ubuntu version I had to manually enable php7.3 on Apache::
   sudo a2enmod php7.3
   sudo systemctl restart apache2
 
+
 Domoticz authorization error
 ----------------------------
 You have to do all the following things:
@@ -158,3 +159,8 @@ In Domoticz->Settings->Security tab:
 Example of Domoticz settings:
 
 .. image :: apiprotection2.jpg
+
+
+
+
+

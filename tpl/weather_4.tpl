@@ -17,8 +17,13 @@
     <div class="humidity">Hum: {{current.humidity}}%</div>
     <div class="pressure">{{current.pressure}} hPa</div>
     <div class="windspeed">{{current.wind.speed}}</div>
-    <div class="windgust">Gust: {{current.wind.gust}}</div>
+    {{#if showGust}}
+        <div class="windgust">Gust: {{current.wind.gust}}</div>
+    {{/if}}
     <div class="winddirection">{{current.wind.direction}}</div>
+    {{#unless showGust}}
+        <div></div>
+    {{/unless}}
 </div>
 {{/if}}
 

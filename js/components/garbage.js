@@ -4,7 +4,7 @@ var DT_garbage = (function () {
   return {
     name: 'garbage',
     canHandle: function (block) {
-      return block && block.company;
+      return block && (block.company || (block.city && ((block.zipcode && block.housenumber) || block.district)));
     },
     defaultCfg: {
       width: settings['garbage_width'] || 12,
@@ -12,7 +12,7 @@ var DT_garbage = (function () {
         typeof settings['garbage_hideicon'] !== 'undefined'
           ? settings['garbage_hideicon']
           : false,
-      company: settings['garbage_company'],
+      company: settings['garbage_company'] || 'afvalinfo',
       street: settings['garbage_street'] || '',
       housenumber: settings['garbage_housenumber'] || '',
       housenumberSuffix: settings['garbage_housenumberadd'] || '',
@@ -33,6 +33,7 @@ var DT_garbage = (function () {
       layout: 1,
       maxdays: 32,
       ignoressl: false,
+      defaultGarbage: 'kerstboom'
     },
     run: function (me) {
       me.order = Object.keys(me.block.garbage);
@@ -252,6 +253,38 @@ var DT_garbage = (function () {
     });
   }
 
+  /*
+SENSOR_LOCATIONS_TO_URL = {
+    "trashapi": [
+        "http://trashapi.azurewebsites.net/trash?Location={0}&ZipCode={1}&HouseNumber={2}&HouseNumberSuffix={3}&District={4}&DiftarCode={5}&ShowWholeYear={6}"
+    ]
+}https://github.com/heyajohnny/afvalinfo/
+
+*/
+
+  function getAfvalInfoData(me, companyCode) {
+    var config = {
+      Location: me.block.city,
+      ZipCode: me.block.zipcode,
+      HouseNumber: me.block.housenumber,
+      houseLetter: '',
+      HouseNumberSuffix: me.block.housenumberSuffix,
+      ShowWholeYear: true
+    }
+    if(me.block.district) config.District = me.block.district;
+    return $.get('https://trashapi.azurewebsites.net/trash', config)
+      .then(function (data) {
+        var dataFiltered = [];
+        data.forEach(function (element) {
+            dataFiltered.push({
+              date: moment(element.date),
+              summary: element.name,
+            });
+        });
+        return dataFiltered;
+      });
+  }
+
   // eslint-disable-next-line no-unused-vars
   function getAfvalwijzerArnhemData(me) {
     var baseURL = 'http://www.afvalwijzer-arnhem.nl';
@@ -376,6 +409,7 @@ var DT_garbage = (function () {
       'tx_windwastecalendar_pi1[zipcode]': me.block.zipcode,
       'tx_windwastecalendar_pi1[housenumber]': me.block.housenumber,
 */
+//https://www.katwijk.nl/wonen-en-verbouwen/afval-inzamelen/afval-kalender?tx_opengemeentenwastemanagement%5Bhousenumber%5D=25&tx_opengemeentenwastemanagement%5Bpostalcode%5D=2225ZJ&type=1650453874&cHash=f486b5188550e7c9c11e7fecd3f1de59
     var postfix =
       'tx_windwastecalendar_pi1[action]=search&tx_windwastecalendar_pi1[controller]=Zipcode&tx_windwastecalendar_pi1[Hash]=6e6e80066d09747e8df35d5ff2d1e27b' +
       '&tx_windwastecalendar_pi1[zipcode]=' +
@@ -650,7 +684,7 @@ var DT_garbage = (function () {
   }
 
   function mapGarbageType(me, garbageType) {
-    var mappedType = 'black';
+    var mappedType = me.block.defaultGarbage;
     if (garbageType) {
       $.each(me.block.mapping, function (index, element) {
         $.each(element, function (index2, element2) {
@@ -690,6 +724,9 @@ var DT_garbage = (function () {
       },
       afvalalert: {
         handler: getAfvalAlertData,
+      },
+      afvalinfo: {
+        handler: getAfvalInfoData,
       },
       afvalstoffendienst: {
         handler: getMijnAfvalwijzerData,
@@ -805,14 +842,10 @@ var DT_garbage = (function () {
         handler: getKatwijkData,
       },
       maashorst: {
-        handler: getIcalData,
-        param: //https://www.gemeentemaashorst.nl/inwoners/afval/afvalkalender/2022/ics/5403VJ/206
-          'https://www.gemeentemaashorst.nl/inwoners/afval/afvalkalender/' +
-          moment().format('YYYY') +
-          '/ics/' +
-          zipcode +
-          '/' +
-          housenumber,
+        handler: getGeneralData,
+        param: {
+          service: 'deafvalapp',
+        },
       },
       meerlanden: {
         handler: getGeneralData,
@@ -883,14 +916,10 @@ var DT_garbage = (function () {
         param: '8d97bb56-5afd-4cbc-a651-b4f7314264b4',
       },
       uden: {
-        handler: getIcalData,
-        param: //https://www.gemeentemaashorst.nl/inwoners/afval/afvalkalender/2022/ics/5403VJ/206
-          'https://www.gemeentemaashorst.nl/inwoners/afval/afvalkalender/' +
-          moment().format('YYYY') +
-          '/ics/' +
-          zipcode +
-          '/' +
-          housenumber,
+        handler: getGeneralData,
+        param: {
+          service: 'deafvalapp',
+        },
       },
       veldhoven: {
         handler: getIcalData,

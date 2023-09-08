@@ -1,7 +1,7 @@
 /*from bundle.js*/
 /* global Debug moment*/
 /* from CONFIG.js*/
-/* global stubDevices*/
+/* global stubDevices */
 /* exported Domoticz*/
 var Domoticz = (function () {
   var usrinfo = '';
@@ -24,7 +24,9 @@ var Domoticz = (function () {
   var MSG = {
     info: 'type=command&param=getversion',
     secpanel: 'type=command&param=getsecstatus',
-    getSettings: 'type=settings',
+    getSettings: domoVersion.api15330?'type=command&param=getsettings':'type=settings',
+    getDevices: domoVersion.api15330?'type=command&param=getdevices':'type=devices',
+    getScenes: domoVersion.api15330?'type=command&param=getscenes':'type=scenes',  
   };
 
   function domoticzQuery(query) {
@@ -80,6 +82,7 @@ var Domoticz = (function () {
             url: cfg.url + 'json.htm?' + domoticzQuery(query),
             type: 'GET',
             async: true,
+            beforeSend: function(xhr) { if(cfg.basicAuthEnc && cfg.basicAuthEnc.length) { xhr.setRequestHeader("Authorization", "Basic " + cfg.basicAuthEnc) } },
             contentType: 'application/json',
             error: function (jqXHR, textStatus) {
               if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
@@ -135,18 +138,19 @@ var Domoticz = (function () {
   }
 
   function init(initcfg) {
+
     if (!initPromise) {
       if (!initcfg.url) {
         throw new Error('Domoticz url not defined');
       }
       cfg = initcfg;
       if (cfg.url.charAt(cfg.url.length - 1) !== '/') cfg.url += '/';
-      if (cfg.usrEnc && cfg.usrEnc.length)
+      if (cfg.usrEnc && cfg.usrEnc.length && !(cfg.basicAuthEnc && cfg.basicAuthEnc.length))
         usrinfo = 'username=' + cfg.usrEnc + '&password=' + cfg.pwdEnc + '&';
       initPromise = checkWSSupport()
         .catch(function () {
           useWS = false;
-          console.log(
+          Debug.log(
             'Websocket failed, switch back to http. Check IP whitelisting in Domoticz.'
           );
         })
@@ -218,6 +222,19 @@ var Domoticz = (function () {
       var res2;
       if (res.data) res2 = JSON.parse(res.data);
       var requestid = res.requestid;
+/*
+      var currentTime = Date.now();
+      var diffTime = currentTime - previousTime;
+      if (diffTime > 10000) {
+        Debug.log('Difftime: ' + diffTime/1000);
+        previousTime = currentTime;
+        setTimeout(
+          function() {
+            Debug.log('+5: ' + (Date.now() - previousTime)/1000)
+          }, 5000);
+        
+      }
+*/
       if (requestid == -1) {
         //device update
         //                console.log('device update ', res2)
@@ -246,29 +263,28 @@ var Domoticz = (function () {
     };
 
     socket.onclose = function (event) {
-      if (initialUpdate.state !== 'resolved') {
-        console.log('websocket closed before first update.');
+      Debug.log('websocket closed: ' + event.code + " " + event.reason);
+      if (initialUpdate.state() !== 'resolved') {
+        Debug.log('websocket closed before first update. State: '+initialUpdate.state());
         return;
       }
       if (event.wasClean) {
-        console.log(
-          '[close] Connection closed cleanly, code=',
-          event.code,
-          event.reason
-        );
+        Debug.log('[close] Connection closed cleanly.');
       } else {
         // e.g. server process killed or network down
         // event.code is usually 1006 in this case
         switch (event.code) {
           case 1006:
-            if (!reconnecting) reconnect();
-            reconnecting = true;
+            console.error('[close] Connection died');
             break;
           default:
-            console.error('[close] Connection died');
+            console.error('[close] Connection died: '+event.code);
             break;
         }
       }
+      Debug.log('reconnecting: '+reconnecting);
+      if (!reconnecting) reconnect();
+      reconnecting = true;
       //cleanup pending requests
       if (
         lastRequest &&
@@ -282,6 +298,7 @@ var Domoticz = (function () {
 
     socket.onerror = function (error) {
       console.error(error);
+      Debug.log('Socket error');
     };
   }
 
@@ -294,6 +311,7 @@ var Domoticz = (function () {
     console.log('reconnecting');
     Debug.log('reconnecting in ' + reconnectTimeout);
     setTimeout(function () {
+      Debug.log('trying to reconnect now');
       reconnecting = false;
       connectWebsocket();
     }, reconnectTimeout * 1000); //try to reconnect after timeout
@@ -315,8 +333,8 @@ var Domoticz = (function () {
     var timeFilter = cfg.refresh_method ? '':('&lastUpdate=' + lastUpdate.devices);
     var hiddenFilter = cfg.use_hidden? '&displayhidden=1' : '';
     var favoriteFilter = cfg.use_favorites? '&favorite=1' : '';
-    return domoticzRequest(
-      'type=devices&filter=all&used=true&order=Name' +
+    return domoticzRequest(MSG.getDevices + 
+      '&filter=all&used=true&order=Name' +
         favoriteFilter +
         timeFilter +
         hiddenFilter,
@@ -328,7 +346,7 @@ var Domoticz = (function () {
 
   function requestDevice(idx, forcehttp) {
     //not tested
-    return domoticzRequest('type=devices&rid=' + idx, forcehttp).then(function (
+    return domoticzRequest(MSG.getDevices+'&rid=' + idx, forcehttp).then(function (
       res
     ) {
       return _setDevice(res);
@@ -437,8 +455,7 @@ var Domoticz = (function () {
       console.log(' no result');
       return;
     }
-    var r = data.result[0];
-    var device = data.result[r];
+    var device = data.result[0];
     var idx = device['idx'];
 
     if (device['Type'] === 'Group' || device['Type'] === 'Scene') {
@@ -449,7 +466,7 @@ var Domoticz = (function () {
   }
 
   function requestAllScenes() {
-    return domoticzRequest('type=scenes').then(function (res) {
+    return domoticzRequest(MSG.getScenes).then(function (res) {
       if (!res) return;
       return _setAllDevices(res);
     });
@@ -551,6 +568,7 @@ var Domoticz = (function () {
     hold: hold,
     release: release,
     syncRequest: syncRequest,
+    requestDevice: requestDevice,
   };
 })();
 
