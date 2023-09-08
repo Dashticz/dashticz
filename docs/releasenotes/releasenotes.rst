@@ -8,6 +8,38 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+V3.11 Master (8-9-2023)
+---------------------------
+
+Roll-up of all v3.10.x beta changes,summarized below:
+
+Enhancements
+~~~~~~~~~~~~
+
+* Google maps: Improved block, optionally showing traffic conditions and a route to a destination. See :ref:`googlemaps` 
+* Weather: Add support for OWM free api. See :ref:`customweather`
+* Weather: Support for OpenWeatherMap 3 API. See :ref:`owm3`. 
+* Garbage: New generic garbage company ``afvalinfo`` covering 98% of The Netherlands. See :ref:`afvalinfo`
+* Graph: Add filter option ``'todaytomorrow'`` to filter the graph data of today and tomorrow (to be used for dynamic energy pricing)
+* Dial: New subtype options for P1smartmeter and energy devices to show power (Usage) instead of daily energy usage (TodayCounter). See :ref:`dialp1` and :ref:`dialenergy`.
+* Garbage: New block parameter ``defaultGarbage`` to define which garbage type to use in case garbage type is unknown. (default: 'kerstboom') 
+
+Fixes
+~~~~~
+
+* Domoticz: Login from trusted network without username.
+* Domoticz: Support for Domoticz authentication for Domoticz version > 14708 (by mce35)
+* Domoticz devices: Fix for ``setBlock`` functionality
+* Dial: Update custom dial setpoint after Domoticz device update.
+* Dial: Improve handling of Generic/kWh devices (by mce35)
+* Dial: Fix for offset parameter wind dial
+* Graph: Fix for changes in Domoticz API (2023.1, build 15330)
+* Graph: Unit detection for Youless gas meter
+* Garbage: Fix recycleapp (BE)
+* Garbage: Uden, Maashorst now use DeAfvalApp
+* Publictransport: Fix for OVAPI (SSL certificate expired)
+* Debug: Fix some iOS 7 and 9 incompatibility
+
 v3.10.9 Beta (8-9-2023)
 -------------------------
 
