@@ -1,17 +1,8 @@
 {
-"version": "3.10.9",
+"version": "3.11.0",
 "branch": "beta",
-"last_changes": "Graph (fix): Height computation",
+"last_changes": "Beta derived from 3.11",
 "changelog" : {
-            "3.10.8": "OWM free API, Google Maps enhancements",
-            "3.10.7": "Google Maps update",
-            "3.10.6": "Bump versions",
-            "3.10.5": "Fix for additional Domoticz API changes version>=15327",
-            "3.10.4": "Fix graphs for Domoticz version>=15330",
-            "3.10.3": "OpenWeaterMap 3.0 API and generic garbage company afvalinfo",
-            "3.10.2": "P1 and energy dials: subtype 'power' to show actual power usage.",
-            "3.10.1": "Support for authentication Domoticz>14708",
-            "3.10.0": "Beta derived from 3.10",
-            "3.10": "Master version"
+            "3.11": "Master version"
             }
 }
