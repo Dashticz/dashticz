@@ -565,6 +565,7 @@ settingList.garbage = {
     title: language.settings.garbage.garbage_company,
     type: 'select',
     options: {
+      afvalinfo:'99% coverage in NL',
       afvalalert: 'Afval Alert (NL)',
       afvalstoffendienst:
         'Afvalstoffendienst: Hertogenbosch, Vlijmen, ... (NL)',
@@ -766,6 +767,7 @@ var defaultSettings = {
   owm_city: 'Mainaschaff',
   owm_days: 0,
   owm_cnt: 4,
+  owm_min: true,
   boss_stationclock: 'RedBoss',
   use_fahrenheit: 0,
   use_beaufort: 0,
@@ -882,6 +884,12 @@ var defaultSettings = {
       name: 'Sorti',
       icon: 'img/garbage/kliko_brown.png',
     },
+    duo: {
+      kliko: 'grey',
+      code: '#5e5d5c',
+      name: 'Duo',
+      icon: 'img/garbage/kliko_grey.png',
+    },
   },
   garbage_mapping: {
     rest: ['grof', 'grey', 'rest', 'grijs', 'grijze'],
@@ -894,7 +902,7 @@ var defaultSettings = {
       'Biodégradables',
       'snoei',
     ],
-    pmd: ['plastic', 'pmd', 'verpakking', 'kunststof', 'valorlux', 'packages'],
+    pmd: ['plastic', 'pmd', 'verpakking', 'kunststof', 'valorlux', 'packages','pbp','pbd'],
     papier: ['papier', 'blauw', 'blue', 'recycling bin collection', 'paper'],
     kca: ['chemisch', 'kca', 'kga'],
     brown: ['brown', 'verre'],
@@ -904,6 +912,7 @@ var defaultSettings = {
     aeea: ['aeea'],
     textiel: ['textiel'],
     sorti: ['sorti'],
+    duo: ['duo'],
   },
   garbage_use_names: 0,
   garbage_use_colors: 0,
@@ -927,7 +936,8 @@ var defaultSettings = {
   refresh_method: 1,
   domoticz_timeout: 2000,
   use_cors: 0,
-  cached_scripts: true
+  cached_scripts: true,
+  heartbeat: 0
 };
 
 var settings = {};

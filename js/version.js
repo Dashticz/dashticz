@@ -83,24 +83,14 @@ function initVersion() {
       }
     })
     .then(function () {
-      if (
-        typeof window.btoa(config['user_name']) !== 'undefined' &&
-        window.btoa(config['pass_word']) !== ''
-      )
-        loginCredentials =
-          'username=' +
-          window.btoa(config['user_name']) +
-          '&password=' +
-          window.btoa(config['pass_word']) +
-          '&';
+      var basicAuthEnc = config.user_name ? window.btoa(config['user_name'] + ':' + config['pass_word']):'';
 
       return $.ajax({
         url:
           config['domoticz_ip'] +
-          '/json.htm?' +
-          loginCredentials +
-          'type=command&param=getversion',
-        dataType: 'json',
+          '/json.htm?type=command&param=getversion',
+          beforeSend: function(xhr) { if(basicAuthEnc ) { xhr.setRequestHeader("Authorization", "Basic " + basicAuthEnc) } },
+          dataType: 'json',
         success: function (data) {
           domoversion = 'Domoticz version: ' + data.version;
           domoVersion.version = parseFloat(data.version);
@@ -134,12 +124,20 @@ function setDomoBehavior() {
     },
     levelNamesEncoded: {
       version: 3.9476
+    },
+    basicAuthRequired: {
+      version: 2022.2,
+      build: 14078
+    },
+    api15330: {
+      version: 2023.1,
+      build: 15327
     }
   }
   
   Object.keys(domoChanges).forEach(function(key) {
     var testVersion = 0 || domoChanges[key].version;
-    var testBuild = 0 || domoChanges[key].version;
+    var testBuild = 0 || domoChanges[key].build;
     var applicable = (domoVersion.version> testVersion) || ((domoVersion.version == testVersion) && (domoVersion.build>=testBuild));
     domoVersion[key] = applicable; 
   });    
