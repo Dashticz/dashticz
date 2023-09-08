@@ -38,11 +38,8 @@ var DT_dial = (function () {
         passive: false,
       });
 
-      return Domoticz.request('type=settings').then(function (res) {
-        if (res) {
-          DT_dial.settings = res;
-        }
-      });
+      DT_dial.settings = Domoticz.getAllDevices()['_settings'];
+
     },
     defaultCfg: {
 //      title: false,
@@ -54,7 +51,7 @@ var DT_dial = (function () {
 //      shownumbers: false,
       offset: 0,
       group: false,
-      animation: true,
+      animation: false,
       iconSwitch: 'fas fa-power-off',
       showvalue: true,
       value: 'Data',
@@ -75,6 +72,7 @@ var DT_dial = (function () {
       */
       me.idx = choose(me.block.idx, me.key);
       me.id = 'dial_' + me.idx;
+      me.layout = parseInt(0+me.block.layout);
       var height = isDefined(me.block.height)
         ? parseInt(me.block.height)
         : parseInt($(me.mountPoint + ' div').outerWidth());
@@ -197,9 +195,11 @@ var DT_dial = (function () {
           wind(me);
           break;
         case d.Type === 'P1 Smart Meter':
+        case d.Type === 'General' && d.SubType === 'kWh':
           p1smartmeter(me);
           break;
         case d.SubType === 'Text':
+        case d.SubType === 'Switch':
           text(me);
           break;
         default:
@@ -1012,7 +1012,7 @@ var DT_dial = (function () {
         res.addClass = id.addClass;
       }
       var inputType = 0;
-      if (device.SubType === 'Text') {
+      if (device.SubType === 'Text' || device.SubType === 'Switch') {
         inputType = 'text';
       }
       inputData.type = id.type || inputType;
@@ -1065,6 +1065,7 @@ var DT_dial = (function () {
             me.active = true; //Dial can be used to set setpoint value
             me.setpointDevice = idx;
             me.setpoint = valueInfo.data;
+            me.needle = valueInfo.data;
           }
           if (el.isNeedle) {
             //use needle, readonly (active = false)
@@ -1137,6 +1138,8 @@ var DT_dial = (function () {
         me.max = 360;
         me.dialRange = 360;
         me.value = me.device.Direction;
+//        me.value = (me.device.Direction + me.block.offset)%360;
+        me.needle = (me.device.Direction + me.block.offset)%360;
         me.unitvalue = '°';
         me.segments = 12;
         me.numbers = [210, 240, 270, 300, 330, 0, 30, 60, 90, 120, 150, 180];
@@ -1166,7 +1169,7 @@ var DT_dial = (function () {
 
     //new layout of wind sensor
     if (me.block.layout == 1) {
-      me.needle = me.device.Direction;
+      me.needle = (me.device.Direction + me.block.offset) % 360;
       me.value = me.device.Speed;
       me.unitvalue = windUnit;
       me.info.length = 0;
@@ -1221,6 +1224,12 @@ var DT_dial = (function () {
       $.each(levelNames, function (index, value) {
         me.options.push({ val: index * 10, text: value });
       });
+      if(me.block.sortOrder) {
+        me.options.sort(function(a,b) {
+          return a.text.localeCompare(b.text)*me.block.sortOrder;
+        })
+      }
+  
     }
     me.title=false; //default no title for controller device
     return;
@@ -1477,46 +1486,99 @@ var DT_dial = (function () {
       default: return (me.invertedValue? me.maxdim-me.device.Level:me.device.Level)+me.unitvalue;
     }
   }
+
+  function mapEnergySubtype(subtype) {
+    var energySubtypeMapping = {
+      'usage': 1
+    };
+    if (isFinite(subtype)) return 0+subtype;
+    if (typeof subtype !== 'string') return 0;
+    return energySubtypeMapping[subtype.toLowerCase()]||0;
+  }
+
+  function getEnergyFields(subtype) {
+    var fields = {
+      0: {
+        primPos:"CounterToday",
+        primNeg: "CounterDelivToday",
+        primUnit: "kWh",
+        primMax: 10,
+        primDecimals: 1,
+        secPos: "Usage",
+        secNeg: "UsageDeliv",
+        secUnit: "W"
+      },
+      1: {
+        primPos: "Usage",
+        primNeg: "UsageDeliv",
+        primUnit: "W",
+        primMax: 500,
+        primDecimals: 0,
+        secPos: "CounterToday",
+        secNeg: "CounterDelivToday",
+        secUnit:"kWh"
+      }
+    }
+    return fields[mapEnergySubtype(subtype)];
+  }
   /**
-   * Configures the data for devices of P1 Smart Meter type.
+   * Configures the data for devices of P1 Smart Meter and General/kWh type.
    * @param {object} me  Core component object.
    */
   function p1smartmeter(me) {
+    var defaultMin = 0;
+    var defaultMax = 20;
+    var defaultDecimals = 0;
+    me.shownumbers = choose(me.block.shownumbers, true);
     me.type = 'p1';
     me.active = false;
     if (me.device.SubType == 'Gas') {
-      me.min = choose(me.block.min, 0);
-      me.max = choose(me.block.max, 20);
       me.value = parseFloat(me.device.CounterToday);
       me.unitvalue = 'm3';
+      defaultDecimals = 3;
     } else {
-      me.min = choose(me.block.min, -10);
-      me.max = choose(me.block.max, 10);
-      me.value =
-        Math.round(
-          (parseFloat(me.device.CounterDelivToday) -
-            parseFloat(me.device.CounterToday)) *
-          100
-        ) / 100;
-      me.unitvalue = 'kWh';
+      var fieldObj = getEnergyFields(me.block.subtype);
+      defaultMax = fieldObj.primMax;
+      me.value = parseFloat(me.device[fieldObj.primPos]);
+      if(fieldObj.primNeg in me.device) {
+        me.value = me.value-parseFloat(me.device[fieldObj.primNeg]);
+        defaultMin = -fieldObj.primMax;
+      }
+      me.unitvalue = fieldObj.primUnit;
       me.subdevice = true;
 
-      me.info.push(
-        {
-          icon: display(me.block.dialicon, 0, 2, 'fas fa-sun'),
-          image: display(me.block.dialimage, 0, 2, false),
-          data: me.device.CounterDelivToday,
-          unit: '',
-        },
-        {
-          icon: display(me.block.dialicon, 1, 2, 'fas fa-bolt'),
-          image: display(me.block.dialimage, 1, 2, false),
-          data: me.device.CounterToday,
-          unit: '',
+      if(fieldObj.secNeg in me.device) {
+        me.info.push(
+          {
+            icon: display(me.block.dialicon, 0, 2, 'fas fa-sun'),
+            image: display(me.block.dialimage, 0, 2, false),
+            data: parseFloat(me.device[fieldObj.secNeg]),
+            unit: fieldObj.secUnit,
+          }
+        );
+      }
+      //In case no delivery field, and inverted is true, then the secondary value should also be negative
+      var invertedValue = me.block.inverted &&  !(fieldObj.secNeg in me.device) ? -1:1; 
+      if(fieldObj.secPos in me.device) {
+        me.info.push(
+          {
+            icon: display(me.block.dialicon, 1, 2, 'fas fa-bolt'),
+            image: display(me.block.dialimage, 1, 2, false),
+            data: invertedValue * parseFloat(me.device[fieldObj.secPos]),
+            unit: fieldObj.secUnit,
+          }
+        );
         }
-      );
+        defaultDecimals = fieldObj.primDecimals;
+      
     }
-    me.decimals = me.block.decimals;
+    if(me.block.inverted) {
+      me.value=-me.value;
+      if (defaultMin===0) defaultMin = -defaultMax;
+    }
+    me.min = choose(me.block.min, defaultMin);
+    me.max = choose(me.block.max, defaultMax);
+    me.decimals = choose(me.block.decimals, defaultDecimals);
     return;
   }
 

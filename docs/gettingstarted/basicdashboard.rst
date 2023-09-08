@@ -181,4 +181,6 @@ In Domoticz->Settings->Security tab:
 Example of Domoticz settings:
 
 .. image :: apiprotection2.jpg
+
+
  
