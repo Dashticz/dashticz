@@ -8,8 +8,124 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
-v3.10.0.1 Beta (27-12-2022)
+v3.10.9 Beta (8-9-2023)
 -------------------------
+
+Fixes
+~~~~~~
+
+* Graph: Fix height computation.
+
+v3.10.8 Beta (5-9-2023)
+-------------------------
+
+Enhancements
+~~~~~~~~~~~~~
+
+* Google maps: Take actual traffic situation into account when computing optimal route.
+* Google maps: Show refresh moment for map without route as well
+* Selector switch: New block parameter ``sortOrder`` to sort selector switch options. See :ref:`dom_blockparameters` and :ref:`dialselector`
+* Weather: Add support for OWM free api. See :ref:`customweather`
+* Weather: Autodetect weather forecast provider. No need to set the ``provider`` block parameter anymore.
+
+Fixes
+~~~~~~
+
+* Login from trusted network without username.
+* Dial: Update custom dial setpoint after Domoticz device update.
+
+v3.10.7 Beta (15-6-2023)
+-------------------------
+
+Enhancements
+~~~~~~~~~~~~~
+
+* Google maps: Improved block, optionally showing traffic conditions and a route to a destination. See :ref:`googlemaps` 
+
+Fixes
+~~~~~~
+
+* Fix loading problems
+
+v3.10.6 Beta (11-6-2023)
+-------------------------
+
+Code
+~~~~~~
+
+* Bump versions
+
+v3.10.5 Beta (6-6-2023)
+-------------------------
+
+Fixes
+~~~~~
+
+* Fix for additional changes in Domoticz API (2023.1, build 15327 and up)
+
+v3.10.4 Beta (4-6-2023)
+-------------------------
+
+Fixes
+~~~~~
+
+* Graph: Fix for changes in Domoticz API (2023.1, build 15330)
+
+v3.10.3 Beta (2-5-2023)
+-------------------------
+
+Enhancements
+~~~~~~~~~~~~~
+
+* Weather: Support for OpenWeatherMap 3 API. See :ref:`owm3`. 
+* Garbage: New generic garbage company ``afvalinfo`` covering 98% of The Netherlands. See :ref:`afvalinfo`
+
+Fixes
+~~~~~
+
+* Garbage: Fix recycleapp (BE)
+
+v3.10.2 Beta (19-2-2023)
+-------------------------
+
+Enhancements
+~~~~~~~~~~~~~
+
+* Graph: Add filter option ``'todaytomorrow'`` to filter the graph data of today and tomorrow (to be used for dynamic energy pricing)
+* Dial: New subtype options for P1smartmeter and energy devices to show power (Usage) instead of daily energy usage (TodayCounter). See :ref:`dialp1` and :ref:`dialenergy`.
+
+Fixes
+~~~~~
+
+* Dial: Improve handling of Generic/kWh devices (by mce35)
+* Debug: Fix some iOS 7 and 9 incompatibility
+* Domoticz devices: Fix for ``setBlock`` functionality
+
+v3.10.1 Beta (28-1-2023)
+----------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Garbage: New block parameter ``defaultGarbage`` to define which garbage type to use in case garbage type is unknown. (default: 'kerstboom') 
+
+See :ref:`v3_10_1` for upgrade instructions in case you see unexpected kerstbomen as garbage collection types.
+
+Fixes
+~~~~~
+
+* Dial: Fix for offset parameter wind dial
+* Graph: Unit detection for Youless gas meter
+* Garbage: Uden, Maashorst now use DeAfvalApp
+* Domoticz: Support for Domoticz authentication for Domoticz version > 14708 (by mce35)
+
+Code
+~~~~
+
+* Enhanced debug functionality
+
+v3.10.0.1 Beta (27-12-2022)
+----------------------------
 
 Fixes
 ~~~~~

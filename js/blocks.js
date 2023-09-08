@@ -221,14 +221,18 @@ function deviceUpdateHandler(block) {
   $div.removeClass('on off').addClass(function () {
     return getBlockClass(block);
   });
-  if (block.currentClass != block.addClass) {
-    $div.removeClass(block.currentClass).addClass(block.addClass);
-    block.currentClass = block.addClass;
+  var storedBlock = Dashticz.mountedBlocks[block.mountPoint];
+
+  if (storedBlock && storedBlock.currentClass != block.addClass) {
+    $div.removeClass(storedBlock.currentClass);
+    storedBlock.currentClass = block.addClass;
   }
-  if (block.currentDeviceStatus != device.deviceStatus) {
-    $div.removeClass(block.currentDeviceStatus).addClass(device.deviceStatus);
-    block.currentDeviceStatus = device.deviceStatus;
+  $div.addClass(block.addClass);
+  if (storedBlock && storedBlock.currentDeviceStatus != device.deviceStatus) {
+    $div.removeClass(storedBlock.currentDeviceStatus);
+    storedBlock.currentDeviceStatus = device.deviceStatus;
   }
+  $div.addClass(device.deviceStatus);
 
   if (device.HaveTimeout) $div.addClass('timeout');
   else $div.removeClass('timeout');
@@ -996,10 +1000,20 @@ function handleDevice(block) {
     typeof device['LevelActions'] !== 'undefined' &&
     device['LevelNames'] !== ''
   ) {
-    var names;
-    if (domoVersion.levelNamesEncoded)
-      names = b64_to_utf8(device['LevelNames']).split('|');
-    else names = device['LevelNames'].split('|');
+    var names = domoVersion.levelNamesEncoded ? b64_to_utf8(device['LevelNames']) : device['LevelNames'];
+
+    nameValues = names.split('|').map(function(name, idx) {
+      return {
+        name: name,
+        value: idx
+      }
+    })
+
+    if(block.sortOrder) {
+      nameValues.sort(function(a,b) {
+        return a.name.localeCompare(b.name)*block.sortOrder;
+      })
+    }
 
     if (device['Status'] === 'Off')
       html += iconORimage(
@@ -1024,22 +1038,23 @@ function handleDevice(block) {
       if(!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<select>';
       html += '<option value="">' + language.misc.select + '</option>';
-      for (var a in names) {
+      for (var idx in nameValues) {
+        var nv = nameValues[idx];
         if (
-          parseFloat(a) > 0 ||
-          (a == 0 &&
+          parseFloat(nv.value) > 0 ||
+          (nv.value == 0 &&
             (typeof device['LevelOffHidden'] == 'undefined' ||
               device['LevelOffHidden'] === false))
         ) {
           var s = '';
-          if (a * 10 == parseFloat(device['Level'])) s = 'selected';
+          if (nv.value * 10 == parseFloat(device['Level'])) s = 'selected';
           html +=
             '<option value="' +
-            a * 10 +
+            nv.value * 10 +
             '" ' +
             s +
             '>' +
-            names[a] +
+            nv.name +
             '</option>';
         }
       }
@@ -1055,21 +1070,22 @@ function handleDevice(block) {
       html += '<div class="col-xs-8 col-data">';
       if(!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<div class="btn-group" data-toggle="buttons">';
-      for (a in names) {
+      for (idx in nameValues) {
+        var nv = nameValues[idx];
         if (
-          parseFloat(a) > 0 ||
-          (a == 0 &&
+          parseFloat(nv.value) > 0 ||
+          (nv.value == 0 &&
             (typeof device['LevelOffHidden'] == 'undefined' ||
               device['LevelOffHidden'] === false))
         ) {
           var st = '';
-          if (a * 10 == parseFloat(device['Level'])) st = 'active';
+          if (nv.value * 10 == parseFloat(device['Level'])) st = 'active';
           html += '<label class="btn btn-default ' + st + '">';
           html +=
             '<input type="radio" name="options" autocomplete="off" value="' +
-            a * 10 +
+            nv.value * 10 +
             '" checked>' +
-            names[a];
+            nv.name;
           html += '</label>';
         }
       }

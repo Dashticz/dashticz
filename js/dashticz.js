@@ -1,4 +1,4 @@
-/* global blocks settings usrEnc pwdEnc DT_function*/
+/* global blocks settings DT_function domoVersion Debug*/
 /*from domoticz-api.js*/
 /*global Domoticz*/
 
@@ -36,6 +36,7 @@ var Dashticz = (function () {
     'log',
     'weather',
     'simpleblock',
+    'map'
   ];
   var components = [];
   var mountedBlocks = {};
@@ -66,11 +67,23 @@ var Dashticz = (function () {
   function initDomoticz() {
     return DT_function.loadDTScript('js/domoticz-api.js')
       .then(function () {
+        var usrEnc = '';
+        var pwdEnc = '';
+        var basicAuthEnc = ''
+        if (settings.user_name) {
+          if(domoVersion.basicAuthRequired) {
+            basicAuthEnc = window.btoa(settings['user_name'] + ':' + settings['pass_word']);
+          } else {
+            usrEnc = window.btoa(settings['user_name']);
+            pwdEnc = window.btoa(settings['pass_word']);
+          }
+        }
         var cfg = {
-          url: settings['domoticz_ip'],
-          plan: settings['room_plan'],
+          url: settings.domoticz_ip,
+          plan: settings.room_plan,
           usrEnc: usrEnc,
           pwdEnc: pwdEnc,
+          basicAuthEnc: basicAuthEnc,
           enable_websocket: settings['enable_websocket'],
           domoticz_refresh: settings['domoticz_refresh'],
           refresh_method: settings['refresh_method'],
@@ -78,6 +91,7 @@ var Dashticz = (function () {
           use_favorites: settings['use_favorites'],
           use_hidden: settings['use_hidden']
         };
+    
         return Domoticz.init(cfg);
       })
   }
@@ -108,6 +122,18 @@ var Dashticz = (function () {
       .find('.dt_state')
       .append(getProperty(components[me.name].defaultContent, me));
     $div.html(block);
+    var fixedHeight = false;
+    if (me.block.aspectratio) {
+      var blockWidth = parseInt($div.outerWidth());
+      $div.css({height:blockWidth * me.block.aspectratio});
+      fixedHeight = true;
+    }
+    else if (me.block.height) {
+      $div.css({height: me.block.height})
+      fixedHeight = true;
+    }
+    if(fixedHeight) $div.addClass('fixedheight');
+
   }
 
   function setEmpty(me, state) {
@@ -442,6 +468,36 @@ var Dashticz = (function () {
     return unsubscribe;
   }
 
+  function isAvailable() {
+      console.log('check domoticzIsAvailable');
+      return $.get({
+        url: window.location.href,
+        type: 'GET',
+        async: true,
+        error: function (jqXHR, textStatus) {
+          if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
+            console.log('Domoticz request cancelled');
+          } else {
+            if (jqXHR.status == 401) {
+              return 'Domoticz authorizaton error';
+            }
+            var errorTxt = 'Domoticz error code: ' + jqXHR.status + ' ' + textStatus;
+            console.error( errorTxt + '!\nPlease, double check the path to Domoticz in Settings!');
+            Debug.log(
+              Debug.ERROR,
+              errorTxt
+            );
+          }
+          console.log('No Domoticz');
+          return textStatus;
+        },
+      }).then(function (res) {
+        //                        console.log('ajax resolved ' + query);
+        console.log('result: ', res);
+        return !!res;
+      });
+  }
+
   return {
     init: _init,
     onResize: _onResize,
@@ -456,7 +512,9 @@ var Dashticz = (function () {
     setInterval: _setInterval,
     subscribeDevice: _subscribeDevice,
     removeBlock: removeBlock,
-    setEmpty: setEmpty
+    setEmpty: setEmpty,
+    isAvailable: isAvailable,
+    mountedBlocks: mountedBlocks
   };
 })();
 

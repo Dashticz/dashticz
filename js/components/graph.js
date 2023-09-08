@@ -169,7 +169,7 @@ function getDeviceDefaults(me, device) {
     case 'Wind':
       sensor = 'wind';
       var windspeed = device.Data.split(';')[2] / 10;
-      if (config['use_beaufort']) {
+      if (settings['use_beaufort']) {
         currentValue = Beaufort(windspeed);
         decimals = 0;
         txtUnit = 'Bft';
@@ -241,7 +241,7 @@ function getDeviceDefaults(me, device) {
     case 'Energy':
     case 'kWh':
     case 'YouLess counter':
-      txtUnit = 'kWh';
+      txtUnit = device.SwitchTypeVal==1 ? 'm3':'kWh'; //SwitchTypeVal 0: Electra; 1: Gas
       currentValue = device['CounterToday'];
       break;
     case 'Managed Counter':
@@ -491,8 +491,9 @@ function getAllGraphData(me) {
 
 function getRegularGraphData(me, i) {
   var device = me.graphDevices[i];
-  var params =
-    'type=graph&sensor=' +
+  var cmd = domoVersion.api15330 ? 'type=command&param=graph' : 'type=graph';
+  var params = cmd +
+    '&sensor=' +
     device.sensor +
     '&idx=' +
     device.idx +
@@ -507,7 +508,9 @@ function getRegularGraphData(me, i) {
 function getSwitchGraphData(me, i) {
   var device = me.graphDevices[i];
   //http://:8080/json.htm?idx=19&type=lightlog
-  var params = 'type=lightlog' + '&idx=' + device.idx;
+  //todo: check type=command&param=graph for new Domoticz version>=15330
+  var cmd = domoVersion.api15330 ? 'param=getlightlog&type=command' : 'type=lightlog';
+  var params = cmd + '&idx=' + device.idx;
   me.params[i] = params;
   return Domoticz.request(params).then(function (data) {
     /*
@@ -784,6 +787,8 @@ function createGraph(graph) {
 
   if (graph.dataFilterCount > 0) filterGraphData(graph);
 
+  if(graph.filter==='todaytomorrow') filterGraphDataTodayTomorrow(graph);
+
   if (graph.graphConfig) createCustomData(graph);
 
   if (graphProperties.ylabels) graph.ylabels = graphProperties.ylabels;
@@ -964,6 +969,16 @@ function filterGraphData(graph) {
   });
 }
 
+function filterGraphDataTodayTomorrow(graph) {
+  var todayDate = moment().startOf('day');
+  var today=todayDate.format('YYYY-MM-DD HH:mm');
+  var tomorrow=todayDate.endOf('day').add(1, 'day').format('YYYY-MM-DD HH:mm');
+  console.log(today, tomorrow);
+  graph.data.result = graph.data.result.filter(function (element) {
+    return (element.d >= today) && (element.d <= tomorrow);
+  });
+}
+
 function graphRender(graph, graphProperties) {
   var graphIdx = graph.graphIdx;
 
@@ -992,6 +1007,7 @@ function graphRender(graph, graphProperties) {
 
   graph.chartctx = mydiv.find('canvas')[0].getContext('2d');
 
+  /* Probably not needed anymore since June 2023 (different method for setting block height)
   if (!graph.block.isPopup) {
     //in general we should not use graph.block, but mergedBlock. In this case graph.block is ok, because isPopup should not be used in a custom block def.
     var height = setHeight(graph);
@@ -1000,6 +1016,7 @@ function graphRender(graph, graphProperties) {
       $('.' + graphIdx + ' .graphcontent').css('height', height);
     //console.log('test');
   }
+*/
 
   new Chart(graph.chartctx, graphProperties);
   Chart.defaults.global.defaultFontColor = graph.block.fontColor;
@@ -1486,7 +1503,7 @@ function showData(graph) {
     html += ' <div class="modal-dialog" role="document">';
     html +=
       '   <div class="modal-content" style="background-image:url(' +
-      config['background_image'] +
+      settings['background_image'] +
       '); background-size: cover;">';
     html += '     <div class="modal-header">';
     html += '       <div class="flex-row title">';
@@ -1500,7 +1517,7 @@ function showData(graph) {
       '           <a type="button" id="logbutton" class="btn debug" href="#" ><i class="fas fa-code"></i></a>';
     html +=
       '           <a type="button" class="btn debug" href="data:application/octet-stream;charset=utf-16le;base64,' +
-      btoa(JSON.stringify(graph, null, 2)) +
+      btoa(encodeURIComponent(JSON.stringify(graph, null, 2))) +
       '" download="' +
       graphIdx +
       '.json"><i class="fas fa-save"></i></a>';
@@ -1556,7 +1573,9 @@ function showData(graph) {
     $.each(graph.graphDevices, function (i, graphDevice) {
       // var g = dtGraphs[graph.primaryIdx]; //todo: I would expect g is just graph
       var url =
-        config['domoticz_ip'] + '/json.htm?type=devices&rid=' + graphDevice.idx;
+        config['domoticz_ip'] + '/json.htm?' +
+        (domoVersion.api15330?'type=command&param=getdevices':'type=devices') + 
+        '&rid=' + graphDevice.idx;
 
       $.getJSON(url, function (data) {
         var device = data.result[0]; //This device should already contain the same info as graphDevice.
@@ -1962,7 +1981,7 @@ function groupByDevice(me) {
   mountPoint.addClass('col-xs-' + graph.block.width);
   mountPoint.addClass('block_graph');
   mountPoint.addClass(graphIdx);
-  $('.' + graphIdx + ' .graphcontent').css('height', setHeight(graph));
+//  $('.' + graphIdx + ' .graphcontent').css('height', setHeight(graph));
 
   var graphProperties = getDefaultGraphProperties(graph, graph.block);
   var xAxesType = 'category';

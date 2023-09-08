@@ -1,5 +1,5 @@
-/* global showUpdateInformation settings usrEnc pwdEnc getDevices language infoMessage iconORimage getBlockData blocks */
-/* global moment Cookies hexToHsb md5*/
+/* global showUpdateInformation settings getDevices language infoMessage iconORimage getBlockData blocks */
+/* global moment hexToHsb md5*/
 /* from main.js */
 // eslint-disable-next-line no-unused-vars
 /* global sliding:writable  slide:writable*/
@@ -17,6 +17,8 @@
 /* global domoVersion */
 
 /*exported reqSlideDeviceAsync*/
+
+var spectrumColors = {};
 
 /** Returns a default switch block
  *
@@ -335,17 +337,6 @@ function ziggoRemote(key) {
 
 // eslint-disable-next-line no-unused-vars
 function controlLogitech(idx, action) {
-  /*
-    $.ajax({
-        url: settings['domoticz_ip'] + '/json.htm?username=' + usrEnc + '&password=' + pwdEnc + '&type=command&param=lmsmediacommand&idx=' + idx + '&action=' + action + '&jsoncallback=?',
-        type: 'GET',
-        async: true,
-        contentType: 'application/json',
-        dataType: 'jsonp',
-        success: function () {
-            getDevices(true);
-        }
-    });*/
   Domoticz.request(
     'type=command&param=lmsmediacommand&idx=' + idx + '&action=' + action
   ).then(function () {
@@ -503,6 +494,15 @@ function addColorpicker(block) {
 }
 
 function addSpectrum(block) {
+  function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+  }
+  
+  function rgbToHex(r, g, b) {
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+  }
+  
   var idx = block.idx;
   var $rgbcontainer = block.$mountPoint.find('.rgbholder');
   var html = '';
@@ -510,8 +510,15 @@ function addSpectrum(block) {
     '<input type="text" class="rgbw rgbw' + idx + '" data-light="' + idx + '">';
   $rgbcontainer.html(html).addClass('spectrum');
   var $rgbdiv = block.$mountPoint.find('.rgbw');
+  var color = '#FFFFFF';
+  if(block.device.Color ) {
+    var deviceColor = JSON.parse(block.device.Color);
+    if (deviceColor.r && (deviceColor.m==3 || deviceColor.m==4)) {
+      color = rgbToHex(deviceColor.r, deviceColor.g, deviceColor.b);
+    }
+  }
   $rgbdiv.spectrum({
-    color: Cookies.get('rgbw_' + idx),
+    color: color,
   });
 
   $rgbdiv.on('dragstop.spectrum', function (e, color) {
@@ -519,38 +526,23 @@ function addSpectrum(block) {
     if (!DT_function.promptPassword(hasPassword)) return;
 
     color = color.toHexString();
-    Cookies.set('rgbw_' + idx, color);
+    spectrumColors[idx]=color;
     var hue = hexToHsb(color);
     var bIsWhite = hue.s < 20;
 
     //sliding = idx;
     Domoticz.hold(idx); //hold message queue
 
-    var usrinfo = '';
-    if (typeof usrEnc !== 'undefined' && usrEnc !== '')
-      usrinfo = 'username=' + usrEnc + '&password=' + pwdEnc + '&';
+    var cmd = 'type=command&param=setcolbrightnessvalue&idx=' +
+    idx +
+    '&hue=' +
+    hue.h +
+    '&brightness=' +
+    hue.b +
+    '&iswhite=' +
+    bIsWhite;
+    Domoticz.request(cmd);
 
-    var url =
-      settings['domoticz_ip'] +
-      '/json.htm?' +
-      usrinfo +
-      'type=command&param=setcolbrightnessvalue&idx=' +
-      idx +
-      '&hue=' +
-      hue.h +
-      '&brightness=' +
-      hue.b +
-      '&iswhite=' +
-      bIsWhite;
-    //This is a synchronous request. So it cannot directly be replaced with Domoticz.request
-    // Probably we would need a rate limiter on Domoticz.request
-    $.ajax({
-      url: url + '&jsoncallback=?',
-      type: 'GET',
-      async: false,
-      contentType: 'application/json',
-      dataType: 'jsonp',
-    });
   });
 
   $rgbdiv.on('hide.spectrum', function () {

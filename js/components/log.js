@@ -1,5 +1,5 @@
 //# sourceURL=js/components/log.js
-/* global Dashticz DT_function _CORS_PATH settings*/
+/* global Dashticz Domoticz*/
 
 var DT_log = {
   name: 'log',
@@ -12,9 +12,6 @@ var DT_log = {
     ascending: true,
   },
   defaultContent: '<div class="items"></div>',
-  run: function (me) {
-    //    $(me.block.mountPoint + ' .dt_state').addClass('items');
-  },
   refresh: function (me) {
     var LOG_QUERY = 'type=command&param=getlog&loglevel=' + me.block.level;
     //console.log(LOG_QUERY);
