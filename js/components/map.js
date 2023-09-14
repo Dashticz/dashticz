@@ -52,6 +52,7 @@ function gm_authFailure() {
         showrefresh: true,
         showrouteinfo: true,
         showmap: true,
+        showmarker: true,
         travelmode: 'driving',
         instructions: false
 
@@ -146,7 +147,7 @@ function gm_authFailure() {
         url: me.block.markerIconUrl,
         scaledSize: new google.maps.Size(me.block.markerSize, me.block.markerSize)
       };
-    me.marker = new google.maps.Marker(markerOptions);
+    if(me.block.showmarker) me.marker = new google.maps.Marker(markerOptions);
     if (me.showRoute) me.directionsDisplay = new google.maps.DirectionsRenderer({
       map: me.map
     });

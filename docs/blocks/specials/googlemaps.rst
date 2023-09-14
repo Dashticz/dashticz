@@ -54,6 +54,9 @@ The Google Maps module uses the following block parameters:
     - Longitude of the destination  
   * - zoom
     - Zoom level (default ``15``)
+  * - showmarker
+    - | ``true``: Show marker on the map (=default)
+      | ``false``: Don't show the marker
   * - showtraffic
     - | ``true``: Show actual traffic (=default)
       | ``false``: Don't show traffic info
