@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Google Maps: New block parameter ``showmarker`` which can be used to hide the marker by setting this parameter to ``false``
+
 V3.11.0 Beta (8-9-2023)
 ---------------------------
 
