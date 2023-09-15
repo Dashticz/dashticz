@@ -12,6 +12,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Google Maps: New block parameter ``showmarker`` which can be used to hide the marker by setting this parameter to ``false``
+* Domoticz authentication improvements, including oAuth2 support.
 
 V3.11.0 Beta (8-9-2023)
 ---------------------------

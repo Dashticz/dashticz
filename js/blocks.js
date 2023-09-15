@@ -8,8 +8,6 @@
 /*global toSlide disableStandby infoMessage*/
 /*from dt_function.js*/
 /* global capitalizeFirstLetter choose */
-/*from version.js*/
-/*global domoVersion*/
 /*from thermostat.js*/
 /*global getThermostatBlock getEvohomeZoneBlock getEvohomeControllerBlock getEvohomeHotWaterBlock*/
 /*from switches.js*/
@@ -1000,7 +998,7 @@ function handleDevice(block) {
     typeof device['LevelActions'] !== 'undefined' &&
     device['LevelNames'] !== ''
   ) {
-    var names = domoVersion.levelNamesEncoded ? b64_to_utf8(device['LevelNames']) : device['LevelNames'];
+    var names = Domoticz.info.levelNamesEncoded ? b64_to_utf8(device['LevelNames']) : device['LevelNames'];
 
     nameValues = names.split('|').map(function(name, idx) {
       return {
