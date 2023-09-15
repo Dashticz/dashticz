@@ -1,4 +1,4 @@
-/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer DT_function Debug choose domoVersion language Colorpicker*/
+/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer DT_function Debug choose language Colorpicker*/
 /* global isObject*/
 /* global addStyleAttribute capitalizeFirstLetter createDelayedFunction*/
 /* from blocks.js */
@@ -1302,7 +1302,7 @@ var DT_dial = (function () {
     me.update = updateBlinds;
     me.percentage = me.device.SwitchType.includes('Percentage');
     me.inverted = me.device.SwitchType.includes('Inverted');
-    if(domoVersion.newBlindsBehavior) me.inverted=!me.inverted;
+    if(Domoticz.info.newBlindsBehavior) me.inverted=!me.inverted;
     me.value = valueBlinds(me);
     me.maxdim = isDefined(me.device.MaxDimLevel)
     ? parseInt(me.device.MaxDimLevel)
