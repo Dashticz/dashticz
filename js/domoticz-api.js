@@ -32,14 +32,7 @@ var Domoticz = (function () {
   }
 
 
-  var MSG = {
-    info: 'type=command&param=getversion',
-    secpanel: 'type=command&param=getsecstatus',
-    getSettings: info.api15330 ? 'type=command&param=getsettings' : 'type=settings',
-    getDevices: info.api15330 ? 'type=command&param=getdevices' : 'type=devices',
-    getScenes: info.api15330 ? 'type=command&param=getscenes' : 'type=scenes',
-    getAuth: 'type=command&param=getauth'
-  };
+  var MSG = getMSG({}); //Define default Domoticz messages convervatively (compatibility)
 
   function domoticzQuery(query) {
     return usrinfo + query + (cfg.plan ? '&plan=' + cfg.plan : '');
@@ -66,7 +59,7 @@ var Domoticz = (function () {
    */
   function domoticzRequest(query, forcehttp) {
     Debug.log(Debug.REQUEST, query);
-    var defaulthttp = false; //websocket is not reliable yet for sending requests
+    var defaulthttp = true; //websocket is not reliable yet for sending requests
     var selectHTTP =
       (typeof forcehttp === 'undefined' && defaulthttp) || forcehttp;
     var selectWS = useWS && !selectHTTP;
@@ -816,12 +809,19 @@ var Domoticz = (function () {
     });
 
     console.log("Domoticz version info: ", info);
-    MSG.getSettings= info.api15330 ? 'type=command&param=getsettings' : 'type=settings';
-    MSG.getDevices= info.api15330 ? 'type=command&param=getdevices' : 'type=devices';
-    MSG.getScenes= info.api15330 ? 'type=command&param=getscenes' : 'type=scenes';
-
+    MSG = getMSG(info);
   }
 
+  function getMSG(info) {
+    return {
+      info: 'type=command&param=getversion',
+      secpanel: 'type=command&param=getsecstatus',
+      getSettings: info.api15330 ? 'type=command&param=getsettings' : 'type=settings',
+      getDevices: info.api15330 ? 'type=command&param=getdevices' : 'type=devices',
+      getScenes: info.api15330 ? 'type=command&param=getscenes' : 'type=scenes',
+      getAuth: 'type=command&param=getauth'
+    };
+  }
 
   function subscribe(idx, getCurrent, callback) {
     if (idx === '_secstatus' && !securityRefresh) {

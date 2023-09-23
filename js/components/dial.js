@@ -127,6 +127,8 @@ var DT_dial = (function () {
         me.device = Domoticz.getAllDevices()[me.devices[0]];
         if (!me.device) {
           console.log('Device not found: ', me.idx);
+//          me.$mountPoint.find('.dial').html('Device not found: '+me.idx);
+//          return;
         } else {
           me.block.idx = me.idx; /* required for existing functions */
           me.block.device = me.device;
@@ -161,6 +163,9 @@ var DT_dial = (function () {
     me.styleStatus = choose(me.block.styleStatus, true); //by default apply status indication as CSS style
 
     if (!d) {
+      me.checkNeedlePos = false;
+      if (me.block.idx) 
+        me.block.title = (me.block.title || '') + ' Device '+ me.block.idx+ ' not found.'
       onoff(me);
     } else {
       switch (true) {
