@@ -22,12 +22,13 @@ function addThermostatFunctions(block) {
     var input = titleAndValueSwitch(block)
       ? $el.find('.title')
       : $el.find('.state');
-    var currentVal = input.text().split('°');
+    var currentVal = input.text().split(block.unit);
     currentVal = parseFloat(currentVal[0].replace(',', '.'));
+    var setpointStep = choose(block.device.step, 0.5);
     if (!isNaN(currentVal)) {
-      var newValue = type === 'minus' ? currentVal - 0.5 : currentVal + 0.5;
+      var newValue = type === 'minus' ? currentVal - setpointStep : currentVal + setpointStep;
       if (newValue >= block.min && newValue <= block.max) {
-        input.text(number_format(newValue, 1) + _TEMP_SYMBOL).trigger('change');
+        input.text(number_format(newValue, 1) + block.unit).trigger('change');
         switchThermostat(block, newValue);
       }
       if (newValue <= block.min) {
@@ -65,13 +66,14 @@ function addThermostatFunctions(block) {
 
 // eslint-disable-next-line no-unused-vars
 function getThermostatBlock(block) {
-  block.min = parseFloat(block.min || settings['setpoint_min'] || 5);
-  block.max = parseFloat(block.max || settings['setpoint_max'] || 40);
+  block.min = parseFloat(choose(block.min, block.device.min, settings['setpoint_min'], 5));
+  block.max = parseFloat(choose(block.max, block.device.max, settings['setpoint_max'], 40));
+  block.unit = choose(block.unit, block.device.vunit, _TEMP_SYMBOL);
 
   var html = '';
   var device = block.device;
   var idx = block.idx;
-  var value = number_format(device.Data, 1) + _TEMP_SYMBOL;
+  var value = number_format(device.Data, 1) + block.unit;
   var title = getBlockTitle(block);
 
   if (titleAndValueSwitch(block)) {

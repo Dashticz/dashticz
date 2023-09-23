@@ -600,9 +600,10 @@ var DT_dial = (function () {
   From angle back to value is not trivial ...
   */
     var value = me.splitdial ? (angle - me.startAngle) / me.scale : (angle - me.startAngle) / me.scale + me.min;
-    if(me.block.steps) {
-      var divider=Math.round(value/me.block.steps);
-      return divider*me.block.steps;
+    var steps = choose(me.block.steps, me.device.step);
+    if(steps) {
+      var divider=Math.round(value/steps);
+      return divider*steps;
     }
     return Math.round(value * 10) / 10; //rounded to 1 decimal ... 
   }
@@ -817,8 +818,8 @@ var DT_dial = (function () {
   function heating(me) {
     me.type = me.device.Type === 'Heating' ? 'zone' : 'stat';
     me.unitvalue = _TEMP_SYMBOL;
-    me.min = parseInt(choose(me.block.min, choose(settings['setpoint_min'], 5)));
-    me.max = parseInt(choose(me.block.max, choose(settings['setpoint_max'], 35)));
+    me.min = parseInt(choose(me.block.min, me.device.min, settings['setpoint_min'], 5));
+    me.max = parseInt(choose(me.block.max, me.device.max, settings['setpoint_max'], 35));
 
     me.dialicon = display(me.block.dialicon, 0, 1, 'fas fa-calendar-alt');
     me.dialimage = display(me.block.dialimage, 0, 1, false);
@@ -847,8 +848,8 @@ var DT_dial = (function () {
         me.active = false;
         me.type = 'dhw';
         me.state = me.device.State;
-        me.min = choose(me.block.min, 20);
-        me.max = choose(me.block.max, 60);
+        me.min = choose(me.block.min, me.device.min, 20);
+        me.max = choose(me.block.max, me.device.max, 60);
         me.setpoint = 40;
         me.demand = me.device.State === 'On';
         me.boost = parseInt(choose(settings['evohome_boost_hw'], 30));
@@ -886,15 +887,15 @@ var DT_dial = (function () {
   function temperature(me) {
     me.type = 'temp';
     me.active = false;
-    me.min = choose(me.block.min, 5);
-    me.max = choose(me.block.max, 35);
+    me.min = choose(me.block.min, me.device.min, 5);
+    me.max = choose(me.block.max, me.device.max, 35);
     me.value =
       typeof me.device['Temp'] !== 'undefined'
         ? me.device['Temp']
         : me.device['Data'];
     me.isSetpoint = true;
     me.setpoint = choose(me.block.setpoint, 20);
-    me.unitvalue = _TEMP_SYMBOL;
+    me.unitvalue = choose(me.device.vunit, _TEMP_SYMBOL);
     me.decimals=choose(me.block.decimals, 1);
 
     if (typeof me.device.Humidity !== 'undefined') {
@@ -1327,7 +1328,7 @@ var DT_dial = (function () {
     me.update = updateUpDown;
     me.textUp = choose(me.block.textUp, '+');
     me.textDown = choose(me.block.textDown, '-');
-    me.steps = choose(me.block.steps, 0.5);
+    me.steps = choose(me.block.steps, me.device.step, 0.5);
     me.checkNeedlePos = false;
     me.getCurrentValue = getCurrentValue;
 //    me.percentage = me.device.SwitchType.includes('Percentage');
