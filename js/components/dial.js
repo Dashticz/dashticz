@@ -1,4 +1,4 @@
-/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer DT_function Debug choose domoVersion language Colorpicker*/
+/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer DT_function Debug choose language Colorpicker*/
 /* global isObject*/
 /* global addStyleAttribute capitalizeFirstLetter createDelayedFunction*/
 /* from blocks.js */
@@ -127,6 +127,8 @@ var DT_dial = (function () {
         me.device = Domoticz.getAllDevices()[me.devices[0]];
         if (!me.device) {
           console.log('Device not found: ', me.idx);
+//          me.$mountPoint.find('.dial').html('Device not found: '+me.idx);
+//          return;
         } else {
           me.block.idx = me.idx; /* required for existing functions */
           me.block.device = me.device;
@@ -161,6 +163,9 @@ var DT_dial = (function () {
     me.styleStatus = choose(me.block.styleStatus, true); //by default apply status indication as CSS style
 
     if (!d) {
+      me.checkNeedlePos = false;
+      if (me.block.idx) 
+        me.block.title = (me.block.title || '') + ' Device '+ me.block.idx+ ' not found.'
       onoff(me);
     } else {
       switch (true) {
@@ -742,11 +747,15 @@ var DT_dial = (function () {
       else make(me);
       me.delayedFunction(function () {
         Domoticz.release(idx);
+      }).then(function () {
+        getDevices(true);
       });
       return
     }
 
     reqSlideDevice(idx, level).then(function () {
+      getDevices(true);
+    }).then(function () {
       if (me.slowDevice)
         me.device.Level = level;
       if (me.update) me.update(me);
@@ -1302,7 +1311,7 @@ var DT_dial = (function () {
     me.update = updateBlinds;
     me.percentage = me.device.SwitchType.includes('Percentage');
     me.inverted = me.device.SwitchType.includes('Inverted');
-    if(domoVersion.newBlindsBehavior) me.inverted=!me.inverted;
+    if(Domoticz.info.newBlindsBehavior) me.inverted=!me.inverted;
     me.value = valueBlinds(me);
     me.maxdim = isDefined(me.device.MaxDimLevel)
     ? parseInt(me.device.MaxDimLevel)

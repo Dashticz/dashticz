@@ -1,4 +1,4 @@
-/* global language dashticz_version dashticz_branch newVersion config domoversion dzVents python*/
+/* global language dashticz_version dashticz_branch newVersion config dzVents python*/
 var settingList = {};
 settingList.general = {
   title: language.settings.general.title,
@@ -728,7 +728,7 @@ settingList['about']['title'] = language.settings.about.title;
 settingList['about']['about_text'] = {};
 settingList['about']['about_text']['title'] =
   'Dashticz V' + dashticz_version + ' ' + dashticz_branch + '<br>' + newVersion;
-
+/*
 settingList['about']['about_text2'] = {};
 settingList['about']['about_text2']['title'] =
   '<br>For more help visit: <a href="https://dashticz.readthedocs.io/" target="_blank">https://dashticz.readthedocs.io/</a><br>You can also check out our helpful <a href="https://www.domoticz.com/forum/viewforum.php?f=67" target="_blank">community</a> in Dashticz topic on the Domoticz forum.';
@@ -736,7 +736,7 @@ settingList['about']['about_text2']['title'] =
 settingList['about']['about_text4'] = {};
 settingList['about']['about_text4']['title'] =
   'If you have any issues you can report them in our community thread <a href="https://www.domoticz.com/forum/viewtopic.php?f=67&t=17427" target="_blank">Bug report</a>.';
-
+*/
 var _CORS_PATH = '';
 
 var defaultSettings = {
@@ -969,7 +969,7 @@ for (var s in settingList) {
 var _TEMP_SYMBOL = '°C';
 if (settings['use_fahrenheit'] === 1) _TEMP_SYMBOL = '°F';
 
-var phpversion = '<br>PHP not installed!!';
+var phpversion = 'Not installed';
 var _PHP_INSTALLED = false;
 
 // eslint-disable-next-line no-unused-vars
@@ -978,7 +978,7 @@ function loadSettings() {
     url: settings['dashticz_php_path'] + 'info.php?get=phpversion',
     dataType: 'json',
     success: function (data) {
-      phpversion = '<br> PHP version: ' + data;
+      phpversion = data;
       _PHP_INSTALLED = true;
     },
   })
@@ -999,10 +999,6 @@ function loadSettings() {
         }
         //    _CORS_PATH = 'http://192.168.178.18:8081/';
       } else _CORS_PATH = settings['default_cors_url'];
-
-      settingList['about']['about_text5'] = {};
-      settingList['about']['about_text5']['title'] =
-        domoversion + dzVents + python + phpversion;
 
       var html =
         '<div class="modal fade" id="settingspopup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
@@ -1123,6 +1119,10 @@ function loadSettings() {
       setTimeout(function () {
         $('body').append(html);
 
+        addSettingsAboutItems();
+
+        $('#php_version').html(phpversion);
+
         if (typeof settings['domoticz_ip'] === 'undefined') {
           if ($('.settingsicon').length == 0)
             $('body').prepend(
@@ -1130,11 +1130,22 @@ function loadSettings() {
             );
           $('.settingsicon').trigger('click');
         }
-      }, 2000);
+      }, 100);
       $('#tabs').tabs();
     });
 }
 
+function addSettingsAboutItems() {
+  $div=$('#tabs-about');
+  $div.append('<p>');
+  $div.append('<div class="about-item">Domoticz version: <span id="domoticz_version">unknown</span></div>');
+  $div.append('<div class="about-item">dzVents version: <span id="dzvents_version">unknown</span></div>');
+  $div.append('<div class="about-item">Python version: <span id="python_version">unknown</span></div>');
+  $div.append('<div class="about-item">PHP version: <span id="php_version">unknown</span></div>');
+  $div.append('</p>');
+  $div.append(  '<p>For more help visit: <a href="https://dashticz.readthedocs.io/" target="_blank">https://dashticz.readthedocs.io/</a><br>You can also check out our helpful <a href="https://www.domoticz.com/forum/viewforum.php?f=67" target="_blank">community</a> in Dashticz topic on the Domoticz forum.</p>'
+  )
+}
 // eslint-disable-next-line no-unused-vars
 function saveSettings() {
   var saveSettings = {};

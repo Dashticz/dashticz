@@ -157,30 +157,74 @@ This should give the following result:
 
 Retrieve status of a device
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-You can get the status of a specific device with: ``http://192.168.1.3:8084/json.htm?type=devices&rid=IDX``
+You can get the status of a specific device with: ``http://192.168.1.3:8084/json.htm?type=command&param=getdevices&rid=IDX``
 
 - Replace 192.168.1.3 with the IP Address (and Port number) for your Domoticz!
 - IDX = id of your device (This number can be found in the Domoticz' devices tab in the column "IDX")
 
-Domoticz authorization error
-----------------------------
-You have to do all the following things:
+Domoticz authorization 
+-----------------------
 
-In CONFIG.js add the Domoticz username and password, like
+Easy method
+~~~~~~~~~~~~
 
-.. code-block:: javascript
-
-    config['user_name'] = 'admin';
-    config['pass_word'] = 'domoticz';
+The Easy Method is only recommended in case Dashticz is not exposed to the public internet.
 
 In Domoticz->Settings->Security tab:
 
 * Tick 'Allow Basic-Auth authentication over plain HTTP' in Domoticz->Settings->Security->API protection
 * Fill in your local subnet in Trusted Networks
 
+You can add a basic level of user access control by defining a user in Domoticz, and configure Dashticz with the corresponding user credentials:
+
+In CONFIG.js add the Domoticz username and password,
+
+.. code-block:: javascript
+
+    config['user_name'] = 'admin';
+    config['pass_word'] = 'domoticz';
+
+.. note:: To receive instant Domoticz device updates it's necessary to have your Dashticz device IP (or local subnet) is in the Domoticz Trusted Network setting. This is a limitation of the current Domoticz versions.
+
 Example of Domoticz settings:
 
 .. image :: apiprotection2.jpg
+
+.. _oauth2::
+
+Advanced method
+~~~~~~~~~~~~~~~~
+
+Since Domoticz 2023.2 authorization via OAuth2 is supported.
+
+OAuth2 is only supported on https. That means that both Dashticz and Domoticz need to be served from an https address.
+
+Further, the following configurations steps are needed.
+
+In Domoticz create a new user.
+
+In Domoticz - Setup - More Options - Application, create a new application. Example:
+  
+  * Enabled: true
+  * Is Public: false
+  * Application Name: Dashticz (or something else)
+  * Application secret: DashticzPassword (or something else)
+
+In Dashticz CONFIG.js:
+
+  * Remove CONFIG['user_name'] and CONFIG['pass_word']
+  * Add the following::
+
+    CONFIG['client_id'] = 'Dashticz';
+    CONFIG['client_secret'] = 'DashticzPassword';
+
+If you have configured Domoticz and Dashticz as described above, then when you open Dashticz the Domoticz authentication window will be shown, where you can fill in a Domoticz username and password.
+After verifying the user credentials a token will be generated which will be used by Dashticz to get data from Domoticz.
+
+The advantage of the OAuth2 flow is that you don't have to provide user info in CONFIG.js.
+(With the client_id and client_secret info only, it's not possible to retrieve data from Domoticz)
+
+
 
 
  

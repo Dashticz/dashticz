@@ -338,10 +338,6 @@ Websocket connection
 
 From v4.11000 Domoticz supports a so called websocket connection next to the standard http(s) connection.
 
-.. note:: Currently the Domoticz stable version is 4.10717 which doesn't support the websocket connection. That means you have to update to the Domoticz develop branch.
-
-.. warning:: The Domoticz develop branch may give issues, especially on Raspberry PI. Make a backup of Domoticz first! If you switch to the develop branch, the Domoticz database will be upgraded as well, and cannot be downgraded.
-
 The advantages of a websocket connection:
 
 * instant updates in Dashticz in case of a changing Domoticz device

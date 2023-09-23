@@ -491,7 +491,7 @@ function getAllGraphData(me) {
 
 function getRegularGraphData(me, i) {
   var device = me.graphDevices[i];
-  var cmd = domoVersion.api15330 ? 'type=command&param=graph' : 'type=graph';
+  var cmd = Domoticz.info.api15330 ? 'type=command&param=graph' : 'type=graph';
   var params = cmd +
     '&sensor=' +
     device.sensor +
@@ -509,7 +509,7 @@ function getSwitchGraphData(me, i) {
   var device = me.graphDevices[i];
   //http://:8080/json.htm?idx=19&type=lightlog
   //todo: check type=command&param=graph for new Domoticz version>=15330
-  var cmd = domoVersion.api15330 ? 'param=getlightlog&type=command' : 'type=lightlog';
+  var cmd = Domoticz.info.api15330 ? 'param=getlightlog&type=command' : 'type=lightlog';
   var params = cmd + '&idx=' + device.idx;
   me.params[i] = params;
   return Domoticz.request(params).then(function (data) {
@@ -1574,7 +1574,7 @@ function showData(graph) {
       // var g = dtGraphs[graph.primaryIdx]; //todo: I would expect g is just graph
       var url =
         config['domoticz_ip'] + '/json.htm?' +
-        (domoVersion.api15330?'type=command&param=getdevices':'type=devices') + 
+        (Domoticz.info.api15330?'type=command&param=getdevices':'type=devices') + 
         '&rid=' + graphDevice.idx;
 
       $.getJSON(url, function (data) {
