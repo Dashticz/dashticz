@@ -14,7 +14,6 @@
 /* from colorpicker.js */
 /* global Colorpicker */
 /* from version.js */
-/* global domoVersion */
 
 /*exported reqSlideDeviceAsync*/
 
@@ -628,7 +627,7 @@ function getBlindsBlock(block, withPercentage) {
 
   html += '<div class="' + button_class + '">';
 
-  var asOn = domoVersion.newBlindsBehavior;
+  var asOn = Domoticz.info.newBlindsBehavior;
 
   if (device['SwitchType'].toLowerCase().indexOf('inverted') >= 0) {
     asOn = !asOn;
