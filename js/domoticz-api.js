@@ -66,7 +66,7 @@ var Domoticz = (function () {
    */
   function domoticzRequest(query, forcehttp) {
     Debug.log(Debug.REQUEST, query);
-    var defaulthttp = true; //websocket is not reliable yet for sending requests
+    var defaulthttp = false; //websocket is not reliable yet for sending requests
     var selectHTTP =
       (typeof forcehttp === 'undefined' && defaulthttp) || forcehttp;
     var selectWS = useWS && !selectHTTP;
@@ -241,12 +241,17 @@ var Domoticz = (function () {
           if (refreshTimeout)
             clearTimeout(refreshTimeout);
           refreshTimeout = setTimeout(refreshToken, (cfg.tokenRes.expires_in - 3500) * 1000);
-          return res;
         })
         .fail(function (res) {
           console.error('token refresh failed');
           console.log(res);
           throw new Error('token refresh failed');
+        })
+        .then(function() {
+          return domoticzRequest(MSG['getAuth']).then(function(res) {
+            console.log(res);
+          });
+
         })
     }
     else
@@ -811,6 +816,10 @@ var Domoticz = (function () {
     });
 
     console.log("Domoticz version info: ", info);
+    MSG.getSettings= info.api15330 ? 'type=command&param=getsettings' : 'type=settings';
+    MSG.getDevices= info.api15330 ? 'type=command&param=getdevices' : 'type=devices';
+    MSG.getScenes= info.api15330 ? 'type=command&param=getscenes' : 'type=scenes';
+
   }
 
 

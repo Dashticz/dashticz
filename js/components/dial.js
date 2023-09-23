@@ -742,11 +742,15 @@ var DT_dial = (function () {
       else make(me);
       me.delayedFunction(function () {
         Domoticz.release(idx);
+      }).then(function () {
+        getDevices(true);
       });
       return
     }
 
     reqSlideDevice(idx, level).then(function () {
+      getDevices(true);
+    }).then(function () {
       if (me.slowDevice)
         me.device.Level = level;
       if (me.update) me.update(me);
