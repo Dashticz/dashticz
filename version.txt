@@ -1,7 +1,7 @@
 {
-"version": "3.11.0",
+"version": "3.11.1",
 "branch": "beta",
-"last_changes": "Beta derived from 3.11",
+"last_changes": "Changes in authentication",
 "changelog" : {
             "3.11": "Master version"
             }
