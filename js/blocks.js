@@ -873,6 +873,7 @@ function handleDevice(block) {
         return getEvohomeHotWaterBlock(block);
       return getTempHumBarBlock(block);
     case 'Thermostat':
+    case 'Setpoint':
       return getThermostatBlock(block);
     case 'Group':
     case 'Scene':

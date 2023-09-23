@@ -376,8 +376,15 @@ function addStyleAttribute($element, styleAttribute) {
 }
 
 
-function choose(a, b) {
-  return typeof a === 'undefined' ? b : a;
+function choose() {
+  var l=arguments.length;
+  var res = undefined;
+  var i=0;
+  while(typeof res==='undefined' && i<l) {
+    res=arguments[i];
+    i++;
+  }
+  return res;
 }
 
 function createDelayedFunction(timeout) {
