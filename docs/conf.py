@@ -39,6 +39,7 @@ release = 'beta'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    'sphinx_rtd_theme'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -76,7 +77,7 @@ pygments_style = None
 #
 # html_theme = 'alabaster'
 html_theme = "sphinx_rtd_theme"
-html_theme_path = ["_themes", ]
+# html_theme_path = ["_themes", ]
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
