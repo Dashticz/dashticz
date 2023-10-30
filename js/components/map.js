@@ -81,10 +81,23 @@ function gm_authFailure() {
         return
       }
       me.pointA = new google.maps.LatLng(me.block.latitude, me.block.longitude);
+
+      if (me.block.positionidx) {
+        Domoticz.subscribe(me.block.positionidx, true, function(pos) {
+          handlePosDevice(me, pos)
+        });
+      }
+      
       if (me.block.destlongitude && me.block.destlatitude) {
         me.showRoute=true;
         me.pointB = new google.maps.LatLng(me.block.destlatitude || 50.8429, me.block.destlongitude || -0.1313);
         me.directionsService = new google.maps.DirectionsService;
+      }
+
+      if (me.block.destidx) {
+        Domoticz.subscribe(me.block.destidx, true, function(dest) {
+          handleDestDevice(me, dest)
+        });
       }
 
       if(me.block.refreshwindow) {
@@ -180,7 +193,7 @@ function refresh(me) {
   if (me.block.showmap && me.block.showtraffic) {
     me.trafficLayer = new google.maps.TrafficLayer();
     me.trafficLayer.setMap(me.map);
-    me.$mountPoint.find('.state_refresh_time').html(moment().format('LT'));
+    setRefreshTime(me)
   }
   if (me.showRoute) {
     // get route from A to B
@@ -238,7 +251,7 @@ function refresh(me) {
             me.$mountPoint.find('.state_route').append(items);
           }
 
-          me.$mountPoint.find('.state_refresh_time').html(moment().format('LT'));
+          setRefreshTime(me)
         }
       } else {
         var msg = 'Directions request failed due to ' + status;
@@ -267,7 +280,59 @@ function nowInWindow(me) {
   })
   console.log('in window: ', found);
   return found
+}
+
+function handlePosDevice(me, pos) {
+//  console.log(pos); 
+  var coordinates=getCoordinates(pos.Data);
+  if(coordinates) {
+    me.pointA = coordinates;
+    if(me.map) {//if we have a map, update it
+      me.map.setCenter(me.pointA);
+      if(me.marker) me.marker.setPosition(me.pointA);
+      setRefreshTime(me);
+    }
+  }
+}
+
+function handleDestDevice(me, pos) {
+  var coordinates=getCoordinates(pos.Data);
+  if(coordinates) {
+    me.pointB = coordinates;
+    me.showRoute=true;
+    me.directionsService = new google.maps.DirectionsService;
+
+    if(me.map) {//if we have a map, update it
+      refresh(me);
+    }
+  }
 
 }
+
+
+function getCoordinates(data) {
+  if (typeof data!=='string') {
+    console.error('Coordinates device is not a text device');
+    return false;
+  }
+
+  var coordinates = data.split(';');
+  if (coordinates.length!==2)
+    coordinates = data.split(',');
+  if (coordinates.length!==2)
+    coordinates = data.split(' ');
+  if (coordinates.length!==2) {
+    console.error("Coordinates device doesn't contain coordinate info");
+    return false;
+  }
+   return new google.maps.LatLng(parseFloat(coordinates[0]), parseFloat(coordinates[1]));
+
+}
+
+function setRefreshTime(me) {
+  me.$mountPoint.find('.state_refresh_time').html(moment().format('LT'));
+}
+
 Dashticz.register(DT_googlemaps);
 }(Dashticz));
+

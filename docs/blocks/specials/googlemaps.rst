@@ -51,7 +51,11 @@ The Google Maps module uses the following block parameters:
   * - destlatitude
     - Latitude of the destination
   * - destlongitude
-    - Longitude of the destination  
+    - Longitude of the destination
+  * - positionidx
+    - Domoticz text device number containing the marker coordinates. Text device should be formatted like: "52.321;6.3"  
+  * - destidx
+    - Domoticz text device number containing the destination coordinates. Text device should be formatted like: "52.321;6.3"  
   * - zoom
     - Zoom level (default ``15``)
   * - showmarker
@@ -132,3 +136,17 @@ Example of a block to show a route::
 
 .. image :: img/googlemapsroute.jpg
 
+
+.. _mapsdyncoord :
+
+Dynamic coordinates
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For both the marker position as well as the destination position a Domoticz text device can be used to set it's position.
+The text device should contain the cooridinates in the following format "latitude;longitude", like "52.378;4.897" for Amsterdam::
+
+  blocks['dynroute'] = {
+    type: 'map', 
+    positionidx: 23, //Domoticz device idx for the marker position
+    destidx: 24, //Domoticz device idx for the destination postion
+  }
