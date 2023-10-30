@@ -173,6 +173,6 @@ epub_title = project
 # A list of files that should not be packed into the epub file.
 epub_exclude_files = ['search.html']
 
-def setup(app):
-   app.add_stylesheet('css/custom.css')
+#Custom CSS file (changed in a recent RTD/Sphinx version)
+html_css_files = ['css/custom.css']
    
