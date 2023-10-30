@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Google Maps: Coordinates for marker and destination can be set via Domoticz device. See :ref:`mapsdyncoord`
+
 V3.11.1 Beta (23-9-2023)
 ---------------------------
 
