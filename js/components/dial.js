@@ -1430,11 +1430,21 @@ var DT_dial = (function () {
 
   function valueUpDown(me) {
     if (isDefined(me.block.temp)) {
-      return ''+number_format(me.temp,1) + _TEMP_SYMBOL +'&nbsp; <em class="icon fas fa-calendar-alt"></em>&nbsp;' + number_format(me.setpoint,me.decimals) + me.unitvalue;
+      var firstNumber, secondNumber;
+      if (me.block.setpointfirst) {
+        firstNumber = me.setpoint;
+        secondNumber = me.temp;
+      }
+      else {
+        firstNumber = me.temp;
+        secondNumber = me.setpoint;
+      }
+      return ''+number_format(firstNumber, me.decimals) + me.unitvalue +'&nbsp; <em class="icon ' + me.dialicon + '"></em>&nbsp;' + number_format(secondNumber,me.decimals) + me.unitvalue;
       /* Standard thermostat device */
     }
     var value = me.invertedValue ? me.maxdim-me.value: me.value;
-    return number_format(value,me.decimals) + me.unitvalue;
+    var iconEl = me.block.dialicon ? '<em class="icon ' + me.block.dialicon + '"></em>&nbsp;':'';
+    return iconEl + number_format(value,me.decimals) + me.unitvalue;
 }
 
   function tapBlinds(me) {
