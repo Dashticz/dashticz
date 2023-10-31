@@ -100,6 +100,10 @@ Block parameters
   * - decimals
     - | The number of decimals to show for numbers. Default is 1. For humidity, barometer it's 0. 
       | ``1``: Numbers will be shown with one decimal
+  * - setpointfirst
+    - | For an updown dial consisting of a setpoint (Thermostat) and temp device, you can set which number will be shown first.
+      | ``false`` (=default) : Temperature will be shown first
+      | ``true``: Setpoint will be shown first
   * - showvalue
     - | ``true`` (=default). Show the main device value. 
       | ``false``: Don't show the main device value.
