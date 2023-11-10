@@ -182,6 +182,7 @@ function getDeviceDefaults(me, device) {
     case 'Temp':
     case 'Temp + Humidity':
     case 'Temp + Humidity + Baro':
+    case 'Temp + Baro':
     case 'Heating':
       sensor = 'temp';
       txtUnit = _TEMP_SYMBOL;
