@@ -161,6 +161,7 @@ var DT_dial = (function () {
     me.tap = tap;
     me.checkNeedlePos = true;
     me.styleStatus = choose(me.block.styleStatus, true); //by default apply status indication as CSS style
+    me.backgroundselector='.dial-display';
 
     if (!d) {
       me.checkNeedlePos = false;
@@ -343,6 +344,18 @@ var DT_dial = (function () {
         });
       }
 
+      if (me.block.backgroundimage) {
+        if ( Domoticz.getAllDevices()[me.block.backgroundimage]) {
+          Dashticz.subscribeDevice(me, me.block.backgroundimage, true, function (device) {
+            setBackgroundImage(me, device.Data);
+          });
+
+        }
+        else {
+          setBackgroundImage(me, me.block.backgroundImage);
+        }
+      }
+
       if(me.update) me.update(me); //for UpDown and Blinds
 
       /* Add dial calculations */
@@ -356,6 +369,22 @@ var DT_dial = (function () {
       }
       return me
     })
+  }
+
+  function setBackgroundImage(me, url) {
+    //switch: .switch-face
+    //'normal' ? dial: .dial-display
+    //updown: blinds
+    var $face = me.$mountPoint.find(me.backgroundselector);
+    var opacity = me.block.backgroundopacity? '; opacity: ' + me.block.backgroundopacity: '';
+    var bg = '<div class="background" style="background-image: url('+ url + ')' + opacity + '"> </div>';
+//      $face.css( {'background-image': "url(" + url + ")"})
+    $face.prepend(bg);
+    if(me.block.backgroundsize && me.block.backgroundsize!=='cover') {
+//      $face.css('background-size',me.block.backgroundsize)
+      $face.find('.background').css('background-size',me.block.backgroundsize)
+    }
+
   }
 
   function getName(me) {
@@ -1279,6 +1308,8 @@ var DT_dial = (function () {
     me.type = 'onoff';
     me.fixed = true;
     me.onoff = true;
+    me.backgroundselector='.switch-face';
+
     var switchMode = capitalizeFirstLetter(me.block.switchMode);
     if (me.device) {
       if (me.device.Type === 'Scene') me.switchMode = 'On';
@@ -1320,6 +1351,7 @@ var DT_dial = (function () {
     me.invertedValue = choose(me.block.inverted,!me.inverted)
     me.slowDevice = true;
     me.styleStatus = me.block.styleStatus;
+    me.backgroundselector='.blinds';
     
     if(me.block.subtype==="updown") {
       makeUpDownDim(me);
@@ -1340,6 +1372,8 @@ var DT_dial = (function () {
     me.steps = choose(me.block.steps, me.device.step, 0.5);
     me.checkNeedlePos = false;
     me.getCurrentValue = getCurrentValue;
+    me.backgroundselector='.blinds';
+
 //    me.percentage = me.device.SwitchType.includes('Percentage');
 //    me.inverted = me.device.SwitchType.includes('Inverted');
 //    me.value = valueBlinds(me);
