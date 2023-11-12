@@ -55,6 +55,17 @@ Block parameters
     - ``1..12``: Dial width (optional, default 3)
   * - height
     - ``<number>``: Dial height (optional, default based on width)
+  * - backgroundimage
+    - url or Domoticz text device id containing the url of the background image. See :ref:`dialbackground`
+  * - backgroundsize
+    - | Size of the background image. See :ref:`dialbackground`
+      | ``'80%'``: Scale the image to 80% of the dial size
+      | ``'cover'``: Scale the image so that the image completely covers the dial
+      | ``'contain'``: Scale the background image so that the image is contained within the dial
+  * - backgroundopacity
+    - | Sets the opacity of the background image. See :ref:`dialbackground`
+      | ``1`` (=default): Opacity of 100%
+      | ``20%``: Opacity of 20%
   * - color
     - ``'<string>'``: Color theme for the dial (default orange). Must be *html color, hex code, rgb or rgba string*
   * - last_update
@@ -657,6 +668,36 @@ The following CSS classes are used:
 ``.unit``: The unit part of an item
 
 The addClass parameter is applied on item level.
+
+.. _dialbackground :
+
+Dial background image
+----------------------
+
+.. image :: img/dialbg.jpg
+
+Via the ``backgroundimage`` parameter the url of a background image can be defined.
+Instead of an url you can also fill in a Domoticz text device id.
+This Domoticz text device should then contain the url pointing to the image to be used as background for the dial.
+
+The size can be adjusted via the ``backgroundsize`` parameter, and the opacity can be set via the ``backgroundopacity`` parameter.
+
+Example::
+
+  blocks['dialtext'] = {
+      idx: 179,
+      type: 'dial',
+  //    backgroundimage: './img/curtainclosed.png'
+      backgroundimage: 182,
+      backgroundsize: '50%',
+      backgroundopacity: 0.3,
+  }
+
+In the example above Domoticz device 182 is used to obtain the url of the background image.
+
+Example how to set the content of a Domoticz text device::
+
+  http://domoticz:8080/json.htm?type=command&param=udevice&idx=182&nvalue=0&svalue=https://www.schoolplaten.com/afbeelding-huis-dl28257.jpg
 
 .. _dialstyling :
 

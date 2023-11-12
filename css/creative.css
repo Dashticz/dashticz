@@ -3942,6 +3942,17 @@ canvas {
   margin: 0;
 }
 
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  border-radius: 50%
+}
 /*needed? Remove for now ...
 .dial-switch .switch-face:after {
   content: "";
