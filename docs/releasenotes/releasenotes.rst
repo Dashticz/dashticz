@@ -14,6 +14,7 @@ Enhancements
 * Google Maps: Coordinates for marker and destination can be set via Domoticz device. See :ref:`mapsdyncoord`
 * Dial: For a UpDown Setpoint dial with temperature you can swap the setpoint and temp values by setting the block parameter ``setpointfirst`` to ``true``
 * Dials: Support for background images. See :ref:`dialbackground`
+* Log: Change scroll behavior. While scrolling, window will not automatically scroll to end position when updating.
 
 Fixes
 ~~~~~~
