@@ -455,6 +455,21 @@ next css sets the default height of the frame popup
 .log .items {
   height: 100%; 
   overflow: auto;
+  width: 100%;
+  overflow-wrap: anywhere
+}
+
+.log table {
+  width: 100%;
+  min-height: 5px;
+}
+
+.log tbody {
+  width: 100%
+}
+
+.log tr {
+  width: 100%
 }
 
 .modal-popup > div > .log {
