@@ -20,6 +20,7 @@ Fixes
 ~~~~~~
 
 * Graph: Fix for Temp + Baro devices.
+* Local build of documentation. See :ref:`documentation`
 
 V3.11.1 Beta (23-9-2023)
 ---------------------------
