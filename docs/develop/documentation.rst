@@ -19,11 +19,15 @@ For basic modification of the documentation just edit the files in the docs fold
 
 .. rubric:: Advanced
 
-#. install Sphinx::
+#. install Pip::
 
     sudo apt update
     sudo apt install python-pip
-    sudo apt install python-sphinx  
+
+#. install Sphinx and dependencies
+
+    cd [dashticz_folder]/docs
+    pip3 install -r requirements.txt
 
 #. Make changes::
 
