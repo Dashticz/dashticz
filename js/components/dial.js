@@ -455,7 +455,7 @@ var DT_dial = (function () {
           me.cmd = me.state === 'Off' ? 'On' : 'Off';
         else me.cmd = me.switchMode;
         me.demand = me.cmd === 'On';
-        update(me);
+        update(me, 'onoff');
         return;
       }
       // (me.type === 'default' or 'temp' or 'p1' or ...)
@@ -706,11 +706,11 @@ var DT_dial = (function () {
    * Update device with new values post rotation.
    * @param {object} me  Core component object.
    */
-  function update(me) {
+  function update(me, src) {
     var setpointType = me.type; //default assumption
     var idx = me.setpointDevice || me.idx;
     var maxdim = me.maxdim;
-    if (me.setpointDevice) {
+    if (me.setpointDevice && ('onoff'!==src)) {
       var d = Domoticz.getAllDevices()[idx];
       switch (true) {
         case isDefined(d.Level):
