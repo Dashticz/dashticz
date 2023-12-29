@@ -212,6 +212,10 @@ Block parameters
       | ``0``: No RGB colorpicker
       | ``1``: Old style RGB colorpicker
       | ``2``: New style RGB colorpicker
+  * - colorpickerscale
+    - | Sets the relative size of the colorpicker 2 popup window. See :ref:`colorpicker`
+      | ``1`` (=default): Scaling is 100%
+      | ``1.5``: Set scaling to 150%
   * - mode
     - | Parameter for specific functionality
       | ``1``: Set ``mode: 1`` for Hue RGBWW devices having colorpicker: 2
@@ -563,6 +567,16 @@ The following Domoticz RGB devices are supported:
 For Hue RGBWW device add the following block parameter for correct functioning::
 
    mode: 1
+
+On some displays the colorpicker popup window may look too small.
+You can adjust the size of the colorpicker popup window, for colorpicker:2 only, by defining the ``colorpickerscale`` block parameter::
+
+  //example of a block that scales the colorpicker popup size to 150%
+  blocks['rgb'] = {
+    colorpicker: 2,
+    colorpickerscale: 1.5,
+    idx: 14
+}
 
 
 .. _batterylevel:
