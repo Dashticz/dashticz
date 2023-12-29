@@ -576,7 +576,7 @@ You can adjust the size of the colorpicker popup window, for colorpicker:2 only,
     colorpicker: 2,
     colorpickerscale: 1.5,
     idx: 14
-}
+  }
 
 
 .. _batterylevel:
