@@ -247,6 +247,9 @@ Config parameters
   * - colorpicker
     - | 0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker
       | Choose the default RGB colorpicker for RGB devices
+  * - colorpickerscale
+    - | Choose the scaling factor for colorpicker 2 popup window.
+      | ``1.5`` Scaling factor of 150%
   * - standby_call_url'
     - | [URL]
       | Enter the url for adjusting the brightness when entering stand-by mode

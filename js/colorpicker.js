@@ -139,6 +139,7 @@ Colorpicker.prototype.clickHandler = function (ev) {
     data.title = self.title;
     data.isOn = self.state.status !== 'Off';
     data.isOff = !data.isOn;
+    data.fontsize = Math.round((self.block.colorpickerscale || parseFloat(settings.colorpickerscale) || 1) * 100)+'%';
 
     var currentColor = {
       r: 0,
@@ -485,7 +486,8 @@ Colorpicker.prototype.setState = function (subType) {
 };
 
 Colorpicker.prototype.installIROComp = function installIROComp(options, name) {
-  options.width = 150;
+  options.width = 150 * (this.block.colorpickerscale || 1);
+  options.handleRadius = 8 * (this.block.colorpickerscale || 1) ;
   this.comp[name] = new window.iro.ColorPicker(
     '#' + this.id + ' .iro' + name + ' .iro',
     options
