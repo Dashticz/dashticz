@@ -58,7 +58,8 @@ var DT_dial = (function () {
       layout: '',
       textOpen: 'Open',
       textClose: 'Close',
-      scale: 1
+      scale: 1,
+      colorpickerscale: parseFloat(settings.colorpickerscale) || 1,
     },
 
     /**
@@ -336,7 +337,8 @@ var DT_dial = (function () {
         var block = {
           device: me.device,
           idx: me.idx,
-          title: getName(me)
+          title: getName(me),
+          colorpickerscale: me.block.colorpickerscale,
         }
         new Colorpicker({
           container: me.mountPoint + ' '+me.rgbContainer,
