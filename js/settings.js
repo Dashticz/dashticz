@@ -83,6 +83,11 @@ settingList.general = {
       language.settings.general.colorpicker_new
     ]
   },
+  colorpickerscale: {
+    title: language.settings.general.colorpickerscale,
+    type: 'text',
+    help: language.settings.general.colorpickerscale_help
+  },
   last_update: {
     title: language.settings.general.last_update,
     type: 'checkbox'
