@@ -111,6 +111,8 @@
             "colorpicker_old": "Oude stijl RGB colorpicker",
             "colorpicker_new": "Nieuwe stijl RGB colorpicker",
             "colorpicker_help": "0: Géén RGB colorpicker, 1: Oude stijl RGB colorpicker, 2: Nieuwe stijl RGB colorpicker",
+            "colorpickerscale": "Stelt de relatieve grootte van het pop-upvenster Nieuwe stijl RGB colorpicker in.",
+            "colorpickerscale_help": "1 (=standaard): Scaling is 100%, 1.5: Zet scaling op 150%",
             "domoticz_timeout": "Domoticz timeout",
             "domoticz_timeout_help": "Tijd Dashticz is aan het ophalen van Domoticz-apparaten tijdens de eerste aanvraag. Na deze tijd zal Dashticz terugvallen van websocket naar HTTP.",
             "dashticz_refresh_help": "Verversingssnelheid van het Dashticz Dashboard",
