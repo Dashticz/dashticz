@@ -111,6 +111,8 @@
             "colorpicker_old": "Old style RGB colorpicker",
             "colorpicker_new": "New style RGB colorpicker",
             "colorpicker_help": "0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker",
+            "colorpickerscale": "Sets the relative size of the New style RGB colorpicker popup window.",
+            "colorpickerscale_help": "1 (=default): Scaling is 100%, 1.5: Set scaling to 150%",            
             "domoticz_timeout": "Domoticz timeout",
             "domoticz_timeout_help": "Time Dashticz is fetching for Domoticz devices during the initial request. After this time Dashticz falls back from websocket to HTTP.",
             "dashticz_refresh_help": "The refresh rate of the Dashticz Dashboard",
