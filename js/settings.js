@@ -795,6 +795,7 @@ var defaultSettings = {
   blink_color: '255, 255, 255, 1',
   edit_mode: 0,
   colorpicker: 2,
+  colorpickerscale: 1,
   units: {
     names: {
       kwh: 'kWh',

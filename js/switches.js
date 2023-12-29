@@ -516,8 +516,10 @@ function addSpectrum(block) {
       color = rgbToHex(deviceColor.r, deviceColor.g, deviceColor.b);
     }
   }
+
   $rgbdiv.spectrum({
     color: color,
+    appendTo: $rgbcontainer
   });
 
   $rgbdiv.on('dragstop.spectrum', function (e, color) {

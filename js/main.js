@@ -522,7 +522,7 @@ function onLoad() {
       }
     }, 1000);
   }
-
+/* //Error: URL invalid ...
   if (
     typeof settings['disable_googleanalytics'] == 'undefined' ||
     parseFloat(settings['disable_googleanalytics']) == 0
@@ -542,7 +542,7 @@ function onLoad() {
 
     googleAnalytics += '</script>';
     $('body').prepend(googleAnalytics);
-  }
+  }*/
 
   if (md.mobile() == null) {
     $('body').on('mousemove', function () {

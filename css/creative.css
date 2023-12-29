@@ -316,9 +316,9 @@ next css sets the default height of the frame popup
 }
 
 .btn {
-  text-transform: none !important;
-  font-size: 16px !important;
-  font-weight: 400 !important;
+/*  text-transform: none !important;*/
+  font-size: 16px;
+  font-weight: 400;
 }
 
 .btn-secondary {
@@ -1722,9 +1722,8 @@ fieldset[disabled] .btn-primary.active {
 .btn {
   font-family: 'Open Sans', 'Helvetica Neue', Arial, sans-serif;
   font-weight: 700;
-  text-transform: uppercase;
   padding: 0px 5px 0px 5px;
-  font-size: 10px;
+  font-size: 120%;
   margin-right: 5px;
 }
 
@@ -1737,12 +1736,6 @@ fieldset[disabled] .btn-primary.active {
   font-weight: 400;
   padding: 2px 6px;
   margin-right: 2px;
-}
-
-@media (max-width: 975px) {
-  .btn-group .btn {
-    font-size: 12px !important;
-  }
 }
 
 .btn-group .btn.active {
@@ -4259,6 +4252,14 @@ canvas {
 
 .colorpicker .cp-buttons {
   margin-bottom: 10px;
+}
+
+.cp-buttons .btn {
+  width: 4em
+}
+
+.colorpicker img {
+  width: 100%
 }
 
 .colorpicker .cp-buttonsOnOff {
