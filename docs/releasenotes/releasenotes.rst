@@ -15,6 +15,8 @@ Enhancements
 * Dial: For a UpDown Setpoint dial with temperature you can swap the setpoint and temp values by setting the block parameter ``setpointfirst`` to ``true``
 * Dial: Support for background images. See :ref:`dialbackground`
 * Dial: Combine onoff switch with setpoint device now supported
+* Dial: Default min and max values, and the unit (text behind the main value) are derived from the device information
+* Dial: You now can set the min and max values for updown setpoint dial 
 * Log: Change scroll behavior. While scrolling, window will not automatically scroll to end position when updating.
 * Colorpicker: Size of colorpicker popup can now be scaled by setting block parameter ``colorpickerscale``. Type 2 only. See :ref:`colorpicker`
 
