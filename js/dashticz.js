@@ -36,7 +36,8 @@ var Dashticz = (function () {
     'log',
     'weather',
     'simpleblock',
-    'map'
+    'map',
+    'group'
   ];
   var components = [];
   var mountedBlocks = {};

@@ -247,6 +247,7 @@
         "state_nosmoke": "No Smoke",
         "state_off": "OFF",
         "state_on": "ON",
+        "state_mixed": "Mixed",
         "state_open": "OPEN",
         "state_locked": "LOCKED",
         "state_unlocked": "UNLOCKED",
