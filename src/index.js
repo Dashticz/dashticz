@@ -41,3 +41,4 @@ import Swiper from 'swiper/bundle';
 window.Swiper = Swiper;
 //require('swiper/swiper-bundle.min.css');
 import 'swiper/css/bundle';
+require('long-press-event');
