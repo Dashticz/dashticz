@@ -219,6 +219,10 @@ var DT_dial = (function () {
     me.splitdial = choose(choose(me.splitdial, me.block.splitdial), me.min < 0);
     me.shownumbers =choose(me.shownumbers, me.block.shownumbers);
 
+    me.unitvalue = choose(me.block.unit, me.device.vunit, me.unitvalue);
+    me.max=choose(me.block.max, me.device && me.device.max, me.max);
+    me.min=choose(me.block.min, me.device && me.device.min, me.min);
+
     addValues(me);
 
     if (me.shownumbers && me.numbers == undefined) {
@@ -973,7 +977,7 @@ var DT_dial = (function () {
     var splitAllData = me.device.Data.split(',');
     var splitData = splitAllData[0].split(' ');
     me.unitvalue =
-      me.block.unitvalue || (splitData.length > 1 ? splitData[1] : undefined);
+      me.block.unit || (splitData.length > 1 ? splitData[1] : undefined);
     if (!me.unitvalue && me.device.SubType == 'Percentage') me.unitvalue = '%';
     me.isSetpoint = true;
     me.label = me.block.label;
@@ -1295,7 +1299,7 @@ var DT_dial = (function () {
       me.setpoint = me.block.setpoint;
       me.isSetpoint = true;
     }
-    me.unitvalue = choose(me.block.unitvalue, '%');
+    me.unitvalue = choose(me.block.unit, '%');
     me.switchMode = capitalizeFirstLetter(me.block.switchMode);
     me.rgbContainer = '.dial-display';
     if(me.block.subtype==='updown') makeUpDownDim(me);
@@ -1395,6 +1399,7 @@ var DT_dial = (function () {
     me.$up.on('click', function () {
       if(me.value===0 && me.device.Level) me.value=me.device.Level
       else me.value=me.invertedValue? me.value-me.steps:me.value+me.steps;
+      if (isDefined(me.block.max) && me.value > me.block.max) me.value=me.block.max;
       update(me);
     });
     me.$middle.on('click', function () {
@@ -1417,6 +1422,7 @@ var DT_dial = (function () {
     });
     me.$down.on('click', function () {
       me.value=me.invertedValue? me.value+me.steps:me.value-me.steps
+      if (isDefined(me.block.min) && me.value < me.block.min) me.value=me.block.min;
       update(me)
     });
   }
