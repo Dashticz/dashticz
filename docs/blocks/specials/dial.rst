@@ -91,9 +91,9 @@ Block parameters
       | ``false``: Default for dimmers and Blinds Inverted
       | ``true``: Default for regular Blinds
   * - min
-    - ``<number>``: Minimum value for the dial ring (if applicable) (default: 0)
+    - ``<number>``: Minimum value for the dial ring and up/down dials (if applicable) (default: 0)
   * - max
-    - ``<number>``: Maximum value for the dial ring (if applicable) (default: 0)
+    - ``<number>``: Maximum value for the dial ring and up/down dials (if applicable) (default: 0)
   * - showunit
     - ``false | true``: Show unit behind value (if applicable) (default: false)
   * - value
@@ -138,6 +138,8 @@ Block parameters
       | ``0``: No sorting (default)
       | ``1``: Ascending sort order
       | ``-1``: Descending sort order
+  * - unit
+    - The text to put behind the main value
   
 
 Usage
