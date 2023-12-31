@@ -50,6 +50,7 @@ function getDefaultSwitchBlock(
     if (device['SwitchType'] == 'Push On Button') mMode = 'on';
     else if (device['SwitchType'] == 'Push Off Button') mMode = 'off';
     if (device.Type === 'Scene') mMode = 'on';
+    if(!block.clickHandler)
     block.$mountPoint
       .find('.mh')
       .addClass('hover')
@@ -68,10 +69,13 @@ function getDefaultSwitchBlock(
     if (device['Status'] == 'On') attr = 'style="color:#F05F40;"';
   }
 
-  var mIcon =
-    getIconStatusClass(device['Status']) === 'off'
-      ? defaultIconOff
-      : defaultIconOn;
+  var iconLookup = {
+    'on': defaultIconOn,
+    'off': defaultIconOff,
+    'mixed': defaultIconOff,
+    'default': defaultIconOn
+  }
+  var mIcon = iconLookup[getIconStatusClass(device['Status'])] || iconLookup.default;
   html += iconORimage(
     block,
     mIcon,
@@ -97,6 +101,8 @@ function getIconStatusClass(deviceStatus) {
       case 'unlocked':
       case 'no motion':
         return 'off';
+      case 'mixed':
+        return 'mixed';
     }
     return 'on';
   } else {
@@ -117,13 +123,14 @@ function switchDevice(block, pMode, pAskConfirm) {
   var idx = block.idx;
   var $div = block.$mountPoint;
   var dial = block.type === 'onoff';
+  var group = block.type ==='group';
   if (isProtected(block)) return;
 
   var hasPassword = block.password;
   if (!DT_function.promptPassword(hasPassword)) return;
   var doStatus = '';
   var param = 'switchlight';
-  if (!dial) {
+  if (!dial && !group) {
     switch (pMode) {
       case 'toggle':
         if (
