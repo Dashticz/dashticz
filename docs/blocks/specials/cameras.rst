@@ -24,7 +24,7 @@ This has been designed mainly for those users with several cameras, which provid
 				videoUrl: "http://192.168.1.123:4567/videoQW.mjpg?video",
 			},
 			{ 
-				... 
+				... (add further cameras here or remove this line)
 			},
 			{
 				title: "Hall & Front Door",
@@ -35,7 +35,7 @@ This has been designed mainly for those users with several cameras, which provid
 		width: 6,
 		height: 250,
 		refresh: 0.5,
-		traytimeout: 3
+		traytimeout: 3,
 		slidedelay: 3,
 		forcerefresh: 1,
 	};
