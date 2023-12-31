@@ -26,6 +26,7 @@ Fixes
 * Graph: Fix for Temp + Baro devices.
 * Local build of documentation. See :ref:`documentation`
 * Calendar: Fix for error when using eventClasses on empty events
+* Dial: Fix for a needle with a custom setpoint: main value was replaced by the needle value
 
 V3.11.1 Beta (23-9-2023)
 ---------------------------
