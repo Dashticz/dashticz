@@ -60,6 +60,17 @@
   padding: 5px !important;
 }
 
+/* dirty fix for group component ... */
+
+.mh.dt_block {
+  padding-top: 15px !important;
+  padding-bottom: 15px !important;
+}
+
+.mh.dt_block .col-icon {
+  margin-top: 0px;
+}
+
 .dt_column {
   flex-direction: column;
 }
@@ -687,6 +698,42 @@ a.playlist {
   margin: auto;
 }
 
+.col-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+  position: absolute;
+  width: 45px;
+  height: 100%;
+  right: 0px;
+  top: 0px;
+  border: 0px !important;
+}
+
+.col-icondata {
+  width: calc(100% - 45px);
+  margin: -5px;
+  padding: 5px;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.col-icondata.hover {
+  border: 0px !important;
+}
+
+.transbg.longpress::after {
+  content:"";
+  float: left;
+  bottom:0;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  border-right: solid rgba(255,255,255,0.5) 5px;
+  position: absolute;
+}
+
 .btn.plus {}
 
 .btn.min {}
@@ -788,18 +835,7 @@ a.playlist {
   height: 100%;
 }
 
-.col-xs-1.block_trafficmap,
-.col-xs-2.block_trafficmap,
-.col-xs-3.block_trafficmap,
-.col-xs-4.block_trafficmap,
-.col-xs-5.block_trafficmap,
-.col-xs-6.block_trafficmap,
-.col-xs-7.block_trafficmap,
-.col-xs-8.block_trafficmap,
-.col-xs-9.block_trafficmap,
-.col-xs-10.block_trafficmap,
-.col-xs-11.block_trafficmap,
-.col-xs-12.block_trafficmap {
+.block_trafficmap {
   padding-left: 13px !important;
   padding-right: 13px !important;
   height: 200px !important;
@@ -1163,18 +1199,7 @@ p {
   clear: both;
 }
 
-.transbg.col-xs-1,
-.transbg.col-xs-2,
-.transbg.col-xs-3,
-.transbg.col-xs-4,
-.transbg.col-xs-5,
-.transbg.col-xs-6,
-.transbg.col-xs-7,
-.transbg.col-xs-8,
-.transbg.col-xs-9,
-.transbg.col-xs-10,
-.transbg.col-xs-11,
-.transbg.col-xs-12 {
+.transbg {
   padding-top: 15px;
   padding-bottom: 15px;
   border: 7px solid rgba(255, 255, 255, 0);
@@ -1182,21 +1207,8 @@ p {
   background-clip: padding-box;
 }
 
-.transbg.dark.col-xs-1,
-.transbg.dark.col-xs-2,
-.transbg.dark.col-xs-3,
-.transbg.dark.col-xs-4,
-.transbg.dark.col-xs-5,
-.transbg.dark.col-xs-6,
-.transbg.dark.col-xs-7,
-.transbg.dark.col-xs-8,
-.transbg.dark.col-xs-9,
-.transbg.dark.col-xs-10,
-.transbg.dark.col-xs-11,
-.transbg.dark.col-xs-12 {
-  border: 7px solid rgba(255, 255, 255, 0);
+.transbg.dark {
   background: rgba(0, 0, 0, 0.5);
-  background-clip: padding-box;
 }
 
 .dt_block.popup {
@@ -1223,19 +1235,7 @@ Only add this hover on NON touch devices
 */
 
 @media (hover: hover) {
-  /*
-  .transbg.col-xs-1.hover:hover,
-  .transbg.col-xs-2.hover:hover,
-  .transbg.col-xs-3.hover:hover,
-  .transbg.col-xs-4.hover:hover,
-  .transbg.col-xs-5.hover:hover,
-  .transbg.col-xs-6.hover:hover,
-  .transbg.col-xs-7.hover:hover,
-  .transbg.col-xs-8.hover:hover,
-  .transbg.col-xs-9.hover:hover,
-  .transbg.col-xs-10.hover:hover,
-  .transbg.col-xs-11.hover:hover,
-  .transbg.col-xs-12.hover:hover */
+  
   html.non-touch .hover:hover{
     background: rgba(255, 255, 255, 0.1);
     background-clip: padding-box;
@@ -1277,6 +1277,7 @@ Only add this hover on NON touch devices
   --disconnected-color: red;
   --connected-color: green;
 }
+
 
 .col-xs-1,
 .col-xs-2,
@@ -1500,6 +1501,10 @@ img.icon {
   opacity: 1 !important;
 }
 
+.mixed.icon {
+  opacity: 1;
+}
+
 .blinds .fas.fa-arrow-up,
 .blinds .fas.fa-arrow-down,
 .blinds .fas.fa-stop-circle {
@@ -1529,6 +1534,14 @@ img.icon {
   .dt_block {
     padding: 2px !important;
   }
+
+  /* dirty fix for group component ... */
+
+  .mh.dt_block {
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+  }
+
   .dt_title,
   .dt_state {
     margin: 2px 2px;

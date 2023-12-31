@@ -680,3 +680,8 @@ function getLocationParameters() {
   var prmstr = window.location.search.substr(1);
   return prmstr != null && prmstr != '' ? transformToAssocArray(prmstr) : {};
 }
+
+function toLower(str) {
+  if (typeof str==='string') return str.toLowerCase();
+  return str;
+}

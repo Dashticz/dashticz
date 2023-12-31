@@ -1119,8 +1119,16 @@ var DT_dial = (function () {
             me.active = false;
             me.setpointDevice = idx;
             me.setpoint = choose(me.block.setpoint, 0);
-            me.value = valueInfo.data;
-            me.needle = me.value;
+            /*
+            The next two lines were the original lines
+            I don't understand: value should not be overwritten
+            However, probably it had a reason ...
+             me.value = valueInfo.data;
+             me.needle = me.value;
+            */ 
+            // Replaced with: 
+            me.needle = valueInfo.data;
+
             me.splitdial = choose(choose(el.splitdial, me.block.splitdial), me.block.min < 0);
           }
           valueInfo.deviceStatus = device.deviceStatus || '';

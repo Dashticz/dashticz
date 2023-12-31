@@ -649,16 +649,19 @@ function getBlockData(block, textOn, textOff) {
 
   if (!block['hide_data']) {
     var value = choose(block.textOn, textOn);
-    var status = block.device.Status;
+    var status = block.device.Status.toLowerCase();
     if (
-      status == 'Off' ||
-      status == 'Closed' ||
-      status == 'Normal' ||
-      status == 'Locked' ||
-      status == 'No Motion' ||
-      (status == '' && block.device['InternalState'] == 'Off')
+      status == 'off' ||
+      status == 'closed' ||
+      status == 'normal' ||
+      status == 'locked' ||
+      status == 'no motion' ||
+      (status == '' && block.device['InternalState'] == 'off')
     ) {
       value = choose(block.textOff, textOff);
+    }
+    if(status === 'mixed') {
+      value = choose(block.textmixed, language.switches.state_mixed || 'Mixed');
     }
 
     if (titleAndValueSwitch(block)) {

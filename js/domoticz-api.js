@@ -57,8 +57,7 @@ var Domoticz = (function () {
    * @param {boolean} forcehttp - Force usage of HTTP and not websocket
    * @return {Promise} The JQuery promise of the Domoticz request
    */
-  function domoticzRequest(query, forcehttp) {
-    Debug.log(Debug.REQUEST, query);
+  function domoticzRequest(queryInput, forcehttp, params) {
     var defaulthttp = true; //websocket is not reliable yet for sending requests
     var selectHTTP =
       (typeof forcehttp === 'undefined' && defaulthttp) || forcehttp;
@@ -69,6 +68,18 @@ var Domoticz = (function () {
       lastRequest = $.Deferred().resolve();
     }
     var newPromise = $.Deferred();
+
+    try {
+      var query = makeQuery(queryInput, params);
+    }
+    catch(err) {
+      var msg = 'Error in Domoticz query: ' + queryInput+'. '+err;
+      Debug.log(Debug.ERROR, msg);
+      return newPromise.reject(msg);
+    }
+    
+    Debug.log(Debug.REQUEST, query);
+
     lastRequest = lastRequest
       .then(function newRequest() {
         if (selectWS) {
@@ -132,6 +143,24 @@ var Domoticz = (function () {
         if (err) console.warn(err); //timeout may be reported
       });
     return lastRequest;
+  }
+
+  function checkQueryParams(params, keys){
+    if (typeof keys==='string') {
+      if (!isDefined(params[keys])) throw new Error(keys+' not defined.');
+    }
+  }
+
+  function makeQuery(query, params) {
+    switch(query) {
+      case 'getscenedevices':
+        checkQueryParams(params, 'idx');
+        return 'type=command&param=getscenedevices&isscene=true&idx='+params.idx;
+        break;
+      default:
+        return query;
+        break;
+    }
   }
 
   function checkWSSupport() {
