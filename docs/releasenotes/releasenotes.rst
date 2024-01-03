@@ -19,6 +19,7 @@ Enhancements
 * Dial: You now can set the min and max values for updown setpoint dial 
 * Log: Change scroll behavior. While scrolling, window will not automatically scroll to end position when updating.
 * Colorpicker: Size of colorpicker popup can now be scaled by setting block parameter ``colorpickerscale``. Type 2 only. See :ref:`colorpicker`
+* RGBxx blocks: You can now open colorpicker popup instead of switching on/off by setting ``switchMode`` to ``'color'``.
 
 Fixes
 ~~~~~~
