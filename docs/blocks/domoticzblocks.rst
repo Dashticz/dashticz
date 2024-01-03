@@ -230,6 +230,9 @@ Block parameters
       | ``0``: No sorting (default)
       | ``1``: Ascending sort order
       | ``-1``: Descending sort order
+  * - switchMode
+    - | Click behavior RGBxx devices
+      | 'color': Open the colorpicker popup window instead of device switch on/off
 
 There are several additional parameters for Graphs. See :ref:`dom_graphs`
       
@@ -578,6 +581,15 @@ You can adjust the size of the colorpicker popup window, for colorpicker:2 only,
     idx: 14
   }
 
+Normally the dimmer will switch on/off by clicking on the block.
+If you add ``switchMode: 'color'`` to the block definition the colorpicker popup window will open on click::
+
+  blocks['rgb'] = {
+    colorpicker: 2,
+    switchMode: 'color',
+    idx: 14
+  }
+  
 
 .. _batterylevel:
 
