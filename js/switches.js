@@ -436,7 +436,21 @@ function getDimmerBlock(block, buttonimg) {
   $div.off('click');
 
   if (!isProtected(block)) {
-    $div
+    if(typeof block.switchMode==='string' && block.switchMode.toLowerCase()==='color') {
+      //        me.$mountPoint.find('.extra').append('<div class="rgbholder"></div>');
+      //        addColorpicker(me);
+              var popupblock = {
+                device: block.device,
+                idx: block.idx,
+                title: choose(block.title, block.key),
+                colorpickerscale: block.colorpickerscale,
+              }
+              new Colorpicker({
+                container: block.mountPoint + ' .mh',
+                block: popupblock,
+              });
+            }
+    else $div
       .on('click', function () {
         dimmerClickHandler(block);
       })
