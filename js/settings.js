@@ -1158,9 +1158,10 @@ function saveSettings() {
   var alertSettings = 'var config = {}\n';
   $('div#settingspopup input[type="text"],div#settingspopup select').each(
     function () {
+      var val = $(this).val();
       if (typeof Storage !== 'undefined')
-        localStorage.setItem('dashticz_' + $(this).attr('name'), $(this).val());
-      if ($(this).val() == 1 || $(this).val() == 0) {
+        localStorage.setItem('dashticz_' + $(this).attr('name'), val);
+      if (val == 1 || val == 0) {
         var val = parseFloat($(this).val());
         if (isNaN(val)) val = 0;
         alertSettings +=
@@ -1168,8 +1169,9 @@ function saveSettings() {
         saveSettings[$(this).attr('name')] = val;
       } else
         alertSettings +=
-          "config['" + $(this).attr('name') + "'] = '" + $(this).val() + "';\n";
-      saveSettings[$(this).attr('name')] = "'" + $(this).val() + "'";
+          "config['" + $(this).attr('name') + "'] = '" + val + "';\n";
+      if (typeof val === 'string') val = val.replace("'", "\\\'");
+      saveSettings[$(this).attr('name')] = "'" + val + "'";
     }
   );
 
