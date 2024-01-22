@@ -1161,17 +1161,12 @@ function saveSettings() {
       var val = $(this).val();
       if (typeof Storage !== 'undefined')
         localStorage.setItem('dashticz_' + $(this).attr('name'), val);
-      if (val == 1 || val == 0) {
-        var val = parseFloat($(this).val());
-        if (isNaN(val)) val = 0;
-        alertSettings +=
-          "config['" + $(this).attr('name') + "'] = " + val + ';\n';
-        saveSettings[$(this).attr('name')] = val;
-      } else
-        alertSettings +=
-          "config['" + $(this).attr('name') + "'] = '" + val + "';\n";
-      if (typeof val === 'string') val = val.replace("'", "\\\'");
-      saveSettings[$(this).attr('name')] = "'" + val + "'";
+      if (isNumeric(val))
+        val = parseFloat(val);
+      if (typeof val === 'string') val = "'" + val.replace("'", "\\\'") + "'";
+      saveSettings[$(this).attr('name')] = val ;
+      alertSettings +=
+        "config['" + $(this).attr('name') + "'] = " + val + ";\n";
     }
   );
 
@@ -1224,3 +1219,4 @@ function saveSettings() {
     }
   });
 }
+//# sourceURL=js/settings.js
