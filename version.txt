@@ -1,9 +1,8 @@
 {
-"version": "3.11.2",
+"version": "3.12.0",
 "branch": "beta",
-"last_changes": "Domoticz 2024.2, Google Maps, Dial improvements",
+"last_changes": "Beta version, derived from 3.12",
 "changelog" : {
-            "3.11.1": "Changes in authentication",
-            "3.11": "Master version"
+            "3.12": "Master version"
             }
 }
