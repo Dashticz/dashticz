@@ -8,8 +8,6 @@
 /*global toSlide disableStandby infoMessage*/
 /*from dt_function.js*/
 /* global capitalizeFirstLetter choose */
-/*from version.js*/
-/*global domoVersion*/
 /*from thermostat.js*/
 /*global getThermostatBlock getEvohomeZoneBlock getEvohomeControllerBlock getEvohomeHotWaterBlock*/
 /*from switches.js*/
@@ -651,16 +649,19 @@ function getBlockData(block, textOn, textOff) {
 
   if (!block['hide_data']) {
     var value = choose(block.textOn, textOn);
-    var status = block.device.Status;
+    var status = block.device.Status.toLowerCase();
     if (
-      status == 'Off' ||
-      status == 'Closed' ||
-      status == 'Normal' ||
-      status == 'Locked' ||
-      status == 'No Motion' ||
-      (status == '' && block.device['InternalState'] == 'Off')
+      status == 'off' ||
+      status == 'closed' ||
+      status == 'normal' ||
+      status == 'locked' ||
+      status == 'no motion' ||
+      (status == '' && block.device['InternalState'] == 'off')
     ) {
       value = choose(block.textOff, textOff);
+    }
+    if(status === 'mixed') {
+      value = choose(block.textmixed, language.switches.state_mixed || 'Mixed');
     }
 
     if (titleAndValueSwitch(block)) {
@@ -873,6 +874,7 @@ function handleDevice(block) {
         return getEvohomeHotWaterBlock(block);
       return getTempHumBarBlock(block);
     case 'Thermostat':
+    case 'Setpoint':
       return getThermostatBlock(block);
     case 'Group':
     case 'Scene':
@@ -1000,7 +1002,7 @@ function handleDevice(block) {
     typeof device['LevelActions'] !== 'undefined' &&
     device['LevelNames'] !== ''
   ) {
-    var names = domoVersion.levelNamesEncoded ? b64_to_utf8(device['LevelNames']) : device['LevelNames'];
+    var names = Domoticz.info.levelNamesEncoded ? b64_to_utf8(device['LevelNames']) : device['LevelNames'];
 
     nameValues = names.split('|').map(function(name, idx) {
       return {

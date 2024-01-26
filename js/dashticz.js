@@ -1,4 +1,4 @@
-/* global blocks settings DT_function domoVersion Debug*/
+/* global blocks settings DT_function Debug*/
 /*from domoticz-api.js*/
 /*global Domoticz*/
 
@@ -36,7 +36,8 @@ var Dashticz = (function () {
     'log',
     'weather',
     'simpleblock',
-    'map'
+    'map',
+    'group'
   ];
   var components = [];
   var mountedBlocks = {};
@@ -67,23 +68,13 @@ var Dashticz = (function () {
   function initDomoticz() {
     return DT_function.loadDTScript('js/domoticz-api.js')
       .then(function () {
-        var usrEnc = '';
-        var pwdEnc = '';
-        var basicAuthEnc = ''
-        if (settings.user_name) {
-          if(domoVersion.basicAuthRequired) {
-            basicAuthEnc = window.btoa(settings['user_name'] + ':' + settings['pass_word']);
-          } else {
-            usrEnc = window.btoa(settings['user_name']);
-            pwdEnc = window.btoa(settings['pass_word']);
-          }
-        }
         var cfg = {
           url: settings.domoticz_ip,
           plan: settings.room_plan,
-          usrEnc: usrEnc,
-          pwdEnc: pwdEnc,
-          basicAuthEnc: basicAuthEnc,
+          username: settings.user_name,
+          password: settings.pass_word,
+          client_id: settings.client_id,
+          client_secret: settings.client_secret,
           enable_websocket: settings['enable_websocket'],
           domoticz_refresh: settings['domoticz_refresh'],
           refresh_method: settings['refresh_method'],
@@ -91,6 +82,9 @@ var Dashticz = (function () {
           use_favorites: settings['use_favorites'],
           use_hidden: settings['use_hidden']
         };
+        if(settings.code) {
+          cfg.code=settings.code
+        }
     
         return Domoticz.init(cfg);
       })

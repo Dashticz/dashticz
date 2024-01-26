@@ -1,4 +1,4 @@
-<div class="modal colorpicker" id="{{id}}" tabindex="-1" role="dialog">
+<div class="modal colorpicker" id="{{id}}" tabindex="-1" role="dialog" style="font-size: {{fontsize}}">
     <div class="modal-dialog" role="document">
       <div class="modal-container">
         <div class="modal-content">
