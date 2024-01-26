@@ -247,6 +247,9 @@ Config parameters
   * - colorpicker
     - | 0: No RGB colorpicker, 1: Old style RGB colorpicker, 2: New style RGB colorpicker
       | Choose the default RGB colorpicker for RGB devices
+  * - colorpickerscale
+    - | Choose the scaling factor for colorpicker 2 popup window.
+      | ``1.5`` Scaling factor of 150%
   * - standby_call_url'
     - | [URL]
       | Enter the url for adjusting the brightness when entering stand-by mode
@@ -337,10 +340,6 @@ Websocket connection
 ---------------------
 
 From v4.11000 Domoticz supports a so called websocket connection next to the standard http(s) connection.
-
-.. note:: Currently the Domoticz stable version is 4.10717 which doesn't support the websocket connection. That means you have to update to the Domoticz develop branch.
-
-.. warning:: The Domoticz develop branch may give issues, especially on Raspberry PI. Make a backup of Domoticz first! If you switch to the develop branch, the Domoticz database will be upgraded as well, and cannot be downgraded.
 
 The advantages of a websocket connection:
 

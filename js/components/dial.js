@@ -1,4 +1,4 @@
-/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer DT_function Debug choose domoVersion language Colorpicker*/
+/* global settings Domoticz Dashticz moment _TEMP_SYMBOL isDefined number_format templateEngine Hammer DT_function Debug choose language Colorpicker*/
 /* global isObject*/
 /* global addStyleAttribute capitalizeFirstLetter createDelayedFunction*/
 /* from blocks.js */
@@ -58,7 +58,8 @@ var DT_dial = (function () {
       layout: '',
       textOpen: 'Open',
       textClose: 'Close',
-      scale: 1
+      scale: 1,
+      colorpickerscale: parseFloat(settings.colorpickerscale) || 1,
     },
 
     /**
@@ -127,6 +128,8 @@ var DT_dial = (function () {
         me.device = Domoticz.getAllDevices()[me.devices[0]];
         if (!me.device) {
           console.log('Device not found: ', me.idx);
+//          me.$mountPoint.find('.dial').html('Device not found: '+me.idx);
+//          return;
         } else {
           me.block.idx = me.idx; /* required for existing functions */
           me.block.device = me.device;
@@ -159,8 +162,12 @@ var DT_dial = (function () {
     me.tap = tap;
     me.checkNeedlePos = true;
     me.styleStatus = choose(me.block.styleStatus, true); //by default apply status indication as CSS style
+    me.backgroundselector='.dial-display';
 
     if (!d) {
+      me.checkNeedlePos = false;
+      if (me.block.idx) 
+        me.block.title = (me.block.title || '') + ' Device '+ me.block.idx+ ' not found.'
       onoff(me);
     } else {
       switch (true) {
@@ -211,6 +218,10 @@ var DT_dial = (function () {
 
     me.splitdial = choose(choose(me.splitdial, me.block.splitdial), me.min < 0);
     me.shownumbers =choose(me.shownumbers, me.block.shownumbers);
+
+    me.unitvalue = choose(me.block.unit, me.device.vunit, me.unitvalue);
+    me.max=choose(me.block.max, me.device && me.device.max, me.max);
+    me.min=choose(me.block.min, me.device && me.device.min, me.min);
 
     addValues(me);
 
@@ -330,12 +341,25 @@ var DT_dial = (function () {
         var block = {
           device: me.device,
           idx: me.idx,
-          title: getName(me)
+          title: getName(me),
+          colorpickerscale: me.block.colorpickerscale,
         }
         new Colorpicker({
           container: me.mountPoint + ' '+me.rgbContainer,
           block: block,
         });
+      }
+
+      if (me.block.backgroundimage) {
+        if ( Domoticz.getAllDevices()[me.block.backgroundimage]) {
+          Dashticz.subscribeDevice(me, me.block.backgroundimage, true, function (device) {
+            setBackgroundImage(me, device.Data);
+          });
+
+        }
+        else {
+          setBackgroundImage(me, me.block.backgroundImage);
+        }
       }
 
       if(me.update) me.update(me); //for UpDown and Blinds
@@ -351,6 +375,22 @@ var DT_dial = (function () {
       }
       return me
     })
+  }
+
+  function setBackgroundImage(me, url) {
+    //switch: .switch-face
+    //'normal' ? dial: .dial-display
+    //updown: blinds
+    var $face = me.$mountPoint.find(me.backgroundselector);
+    var opacity = me.block.backgroundopacity? '; opacity: ' + me.block.backgroundopacity: '';
+    var bg = '<div class="background" style="background-image: url('+ url + ')' + opacity + '"> </div>';
+//      $face.css( {'background-image': "url(" + url + ")"})
+    $face.prepend(bg);
+    if(me.block.backgroundsize && me.block.backgroundsize!=='cover') {
+//      $face.css('background-size',me.block.backgroundsize)
+      $face.find('.background').css('background-size',me.block.backgroundsize)
+    }
+
   }
 
   function getName(me) {
@@ -421,7 +461,7 @@ var DT_dial = (function () {
           me.cmd = me.state === 'Off' ? 'On' : 'Off';
         else me.cmd = me.switchMode;
         me.demand = me.cmd === 'On';
-        update(me);
+        update(me, 'onoff');
         return;
       }
       // (me.type === 'default' or 'temp' or 'p1' or ...)
@@ -600,9 +640,10 @@ var DT_dial = (function () {
   From angle back to value is not trivial ...
   */
     var value = me.splitdial ? (angle - me.startAngle) / me.scale : (angle - me.startAngle) / me.scale + me.min;
-    if(me.block.steps) {
-      var divider=Math.round(value/me.block.steps);
-      return divider*me.block.steps;
+    var steps = choose(me.block.steps, me.device.step);
+    if(steps) {
+      var divider=Math.round(value/steps);
+      return divider*steps;
     }
     return Math.round(value * 10) / 10; //rounded to 1 decimal ... 
   }
@@ -671,11 +712,11 @@ var DT_dial = (function () {
    * Update device with new values post rotation.
    * @param {object} me  Core component object.
    */
-  function update(me) {
+  function update(me, src) {
     var setpointType = me.type; //default assumption
     var idx = me.setpointDevice || me.idx;
     var maxdim = me.maxdim;
-    if (me.setpointDevice) {
+    if (me.setpointDevice && ('onoff'!==src)) {
       var d = Domoticz.getAllDevices()[idx];
       switch (true) {
         case isDefined(d.Level):
@@ -741,11 +782,15 @@ var DT_dial = (function () {
       else make(me);
       me.delayedFunction(function () {
         Domoticz.release(idx);
+      }).then(function () {
+        getDevices(true);
       });
       return
     }
 
     reqSlideDevice(idx, level).then(function () {
+      getDevices(true);
+    }).then(function () {
       if (me.slowDevice)
         me.device.Level = level;
       if (me.update) me.update(me);
@@ -817,8 +862,8 @@ var DT_dial = (function () {
   function heating(me) {
     me.type = me.device.Type === 'Heating' ? 'zone' : 'stat';
     me.unitvalue = _TEMP_SYMBOL;
-    me.min = parseInt(choose(me.block.min, choose(settings['setpoint_min'], 5)));
-    me.max = parseInt(choose(me.block.max, choose(settings['setpoint_max'], 35)));
+    me.min = parseInt(choose(me.block.min, me.device.min, settings['setpoint_min'], 5));
+    me.max = parseInt(choose(me.block.max, me.device.max, settings['setpoint_max'], 35));
 
     me.dialicon = display(me.block.dialicon, 0, 1, 'fas fa-calendar-alt');
     me.dialimage = display(me.block.dialimage, 0, 1, false);
@@ -847,8 +892,8 @@ var DT_dial = (function () {
         me.active = false;
         me.type = 'dhw';
         me.state = me.device.State;
-        me.min = choose(me.block.min, 20);
-        me.max = choose(me.block.max, 60);
+        me.min = choose(me.block.min, me.device.min, 20);
+        me.max = choose(me.block.max, me.device.max, 60);
         me.setpoint = 40;
         me.demand = me.device.State === 'On';
         me.boost = parseInt(choose(settings['evohome_boost_hw'], 30));
@@ -886,15 +931,15 @@ var DT_dial = (function () {
   function temperature(me) {
     me.type = 'temp';
     me.active = false;
-    me.min = choose(me.block.min, 5);
-    me.max = choose(me.block.max, 35);
+    me.min = choose(me.block.min, me.device.min, 5);
+    me.max = choose(me.block.max, me.device.max, 35);
     me.value =
       typeof me.device['Temp'] !== 'undefined'
         ? me.device['Temp']
         : me.device['Data'];
     me.isSetpoint = true;
     me.setpoint = choose(me.block.setpoint, 20);
-    me.unitvalue = _TEMP_SYMBOL;
+    me.unitvalue = choose(me.device.vunit, _TEMP_SYMBOL);
     me.decimals=choose(me.block.decimals, 1);
 
     if (typeof me.device.Humidity !== 'undefined') {
@@ -932,7 +977,7 @@ var DT_dial = (function () {
     var splitAllData = me.device.Data.split(',');
     var splitData = splitAllData[0].split(' ');
     me.unitvalue =
-      me.block.unitvalue || (splitData.length > 1 ? splitData[1] : undefined);
+      me.block.unit || (splitData.length > 1 ? splitData[1] : undefined);
     if (!me.unitvalue && me.device.SubType == 'Percentage') me.unitvalue = '%';
     me.isSetpoint = true;
     me.label = me.block.label;
@@ -1074,8 +1119,16 @@ var DT_dial = (function () {
             me.active = false;
             me.setpointDevice = idx;
             me.setpoint = choose(me.block.setpoint, 0);
-            me.value = valueInfo.data;
-            me.needle = me.value;
+            /*
+            The next two lines were the original lines
+            I don't understand: value should not be overwritten
+            However, probably it had a reason ...
+             me.value = valueInfo.data;
+             me.needle = me.value;
+            */ 
+            // Replaced with: 
+            me.needle = valueInfo.data;
+
             me.splitdial = choose(choose(el.splitdial, me.block.splitdial), me.block.min < 0);
           }
           valueInfo.deviceStatus = device.deviceStatus || '';
@@ -1254,7 +1307,7 @@ var DT_dial = (function () {
       me.setpoint = me.block.setpoint;
       me.isSetpoint = true;
     }
-    me.unitvalue = choose(me.block.unitvalue, '%');
+    me.unitvalue = choose(me.block.unit, '%');
     me.switchMode = capitalizeFirstLetter(me.block.switchMode);
     me.rgbContainer = '.dial-display';
     if(me.block.subtype==='updown') makeUpDownDim(me);
@@ -1269,6 +1322,8 @@ var DT_dial = (function () {
     me.type = 'onoff';
     me.fixed = true;
     me.onoff = true;
+    me.backgroundselector='.switch-face';
+
     var switchMode = capitalizeFirstLetter(me.block.switchMode);
     if (me.device) {
       if (me.device.Type === 'Scene') me.switchMode = 'On';
@@ -1301,7 +1356,7 @@ var DT_dial = (function () {
     me.update = updateBlinds;
     me.percentage = me.device.SwitchType.includes('Percentage');
     me.inverted = me.device.SwitchType.includes('Inverted');
-    if(domoVersion.newBlindsBehavior) me.inverted=!me.inverted;
+    if(Domoticz.info.newBlindsBehavior) me.inverted=!me.inverted;
     me.value = valueBlinds(me);
     me.maxdim = isDefined(me.device.MaxDimLevel)
     ? parseInt(me.device.MaxDimLevel)
@@ -1310,6 +1365,7 @@ var DT_dial = (function () {
     me.invertedValue = choose(me.block.inverted,!me.inverted)
     me.slowDevice = true;
     me.styleStatus = me.block.styleStatus;
+    me.backgroundselector='.blinds';
     
     if(me.block.subtype==="updown") {
       makeUpDownDim(me);
@@ -1327,9 +1383,11 @@ var DT_dial = (function () {
     me.update = updateUpDown;
     me.textUp = choose(me.block.textUp, '+');
     me.textDown = choose(me.block.textDown, '-');
-    me.steps = choose(me.block.steps, 0.5);
+    me.steps = choose(me.block.steps, me.device.step, 0.5);
     me.checkNeedlePos = false;
     me.getCurrentValue = getCurrentValue;
+    me.backgroundselector='.blinds';
+
 //    me.percentage = me.device.SwitchType.includes('Percentage');
 //    me.inverted = me.device.SwitchType.includes('Inverted');
 //    me.value = valueBlinds(me);
@@ -1349,6 +1407,7 @@ var DT_dial = (function () {
     me.$up.on('click', function () {
       if(me.value===0 && me.device.Level) me.value=me.device.Level
       else me.value=me.invertedValue? me.value-me.steps:me.value+me.steps;
+      if (isDefined(me.block.max) && me.value > me.block.max) me.value=me.block.max;
       update(me);
     });
     me.$middle.on('click', function () {
@@ -1371,6 +1430,7 @@ var DT_dial = (function () {
     });
     me.$down.on('click', function () {
       me.value=me.invertedValue? me.value+me.steps:me.value-me.steps
+      if (isDefined(me.block.min) && me.value < me.block.min) me.value=me.block.min;
       update(me)
     });
   }
@@ -1420,11 +1480,21 @@ var DT_dial = (function () {
 
   function valueUpDown(me) {
     if (isDefined(me.block.temp)) {
-      return ''+number_format(me.temp,1) + _TEMP_SYMBOL +'&nbsp; <em class="icon fas fa-calendar-alt"></em>&nbsp;' + number_format(me.setpoint,me.decimals) + me.unitvalue;
+      var firstNumber, secondNumber;
+      if (me.block.setpointfirst) {
+        firstNumber = me.setpoint;
+        secondNumber = me.temp;
+      }
+      else {
+        firstNumber = me.temp;
+        secondNumber = me.setpoint;
+      }
+      return ''+number_format(firstNumber, me.decimals) + me.unitvalue +'&nbsp; <em class="icon ' + me.dialicon + '"></em>&nbsp;' + number_format(secondNumber,me.decimals) + me.unitvalue;
       /* Standard thermostat device */
     }
     var value = me.invertedValue ? me.maxdim-me.value: me.value;
-    return number_format(value,me.decimals) + me.unitvalue;
+    var iconEl = me.block.dialicon ? '<em class="icon ' + me.block.dialicon + '"></em>&nbsp;':'';
+    return iconEl + number_format(value,me.decimals) + me.unitvalue;
 }
 
   function tapBlinds(me) {

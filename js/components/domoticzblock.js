@@ -6,20 +6,26 @@ var DT_domoticzblock = (function () {
     canHandle: function (block) {
       return block && block.idx;
     },
-    defaultCfg: {
-      width: 4,
-      batteryThreshold: settings.batteryThreshold,
-      icon: 'default',
+    defaultCfg: function(block){
+      return {
+        width: 4,
+        batteryThreshold: settings.batteryThreshold,
+        icon: 'default',
+        longpress: block&&block.idx&&(block.idx[0]==='s')
+      }
     },
     run: function (me) {
       var block = me.block;
+      var longpress = me.block.longpress?' longpress ':'';
+      var longpressdata = me.block.longpress? ' data-long-press-delay="1000" ':'';
       me.$mountPoint.html(
         '<div data-id="' +
-          block.idx +
-          '" class="mh transbg block_' +
-          block.key +
-          '"></div>'
+        block.idx + '"' + longpressdata + 
+        ' class="mh transbg block_' +
+        block.key + longpress + ' col-xs-'+me.block.width +
+        '">Getting device ' + me.block.idx + '</div>'
       );
+        me.$mountPoint.find()
       me.deviceIdx = block.idx;
       if (typeof block.idx === 'string') {
         var idxSplit = block.idx.split('_');
@@ -36,6 +42,22 @@ var DT_domoticzblock = (function () {
 
       fixBlock(me);
       addDeviceUpdateHandler(me);
+      if (me.block.longpress) {
+        me.$mountPoint.find('.block_' + block.key)[0].addEventListener('long-press', function (e) {
+          e.preventDefault();
+          console.log('long press');
+          if (me.deviceIdx[0]==='s') 
+          Domoticz.request('getscenedevices', false, { idx: me.deviceIdx.substring(1)  })
+            .then(function (res) {
+              console.log(res);
+              var devices = res.result.map(function (device) {
+                return device.DevRealIdx
+              });
+              console.log(devices);
+              DT_function.clickHandler(me, { popup: devices })
+            })
+        })
+      }
     },
     refresh: function (me) {
       fixBlock(me);

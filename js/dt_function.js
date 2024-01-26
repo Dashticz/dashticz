@@ -376,23 +376,37 @@ function addStyleAttribute($element, styleAttribute) {
 }
 
 
-function choose(a, b) {
-  return typeof a === 'undefined' ? b : a;
+function choose() {
+  var l=arguments.length;
+  var res = undefined;
+  var i=0;
+  while(typeof res==='undefined' && i<l) {
+    res=arguments[i];
+    i++;
+  }
+  return res;
 }
 
 function createDelayedFunction(timeout) {
   var m_setTimeout=timeout;
   var m_timeout=0;
+  var deferred = $.Deferred();
 
   if (timeout)
   return function delayedFunction(callback) {
     if(m_timeout) 
       clearTimeout(m_timeout);
-    m_timeout = setTimeout(callback, m_setTimeout);
+    m_timeout = setTimeout(function() {
+      return deferred.resolve(callback())}, m_setTimeout);
+    return deferred;
   }
   else
   return function notDelayedFunction(callback) {
-    return callback();
+    return deferred.resolve(callback());
   }
 
+}
+
+function isNumeric(n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
 }
