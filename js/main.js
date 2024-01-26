@@ -240,6 +240,10 @@ function configureDashticz() {
 function prepareStart() {
   _PARAMS = getLocationParameters();
 
+  console.log(_PARAMS);
+//  debugger;
+
+
   _CFG.customfolder = _PARAMS['folder'] || 'custom';
   if (typeof dashtype !== 'undefined' && parseFloat(dashtype) > 1) {
     _CFG.customfolder += '_' + dashtype;
@@ -318,6 +322,22 @@ function prepareStart() {
     Object.keys(_PARAMS).forEach(function (key) {
       if (typeof settings[key] !== 'undefined') settings[key] = _PARAMS[key];
     });
+    if(_PARAMS.code) {
+      settings.code = _PARAMS.code;
+    }
+    settings.state = document.location.href;
+    if(_PARAMS.state) {
+      settings.state = atob(_PARAMS.state);
+      window.history.replaceState({}, null,settings.state);
+    }
+    if(_PARAMS.error) {
+      var err = 'Domoticz authentication problem ('+_PARAMS.error+')';
+      if (_PARAMS.error==='unauthorized_client') {
+        err+='<br>Check client_id in CONFIG.js.<br>Note: OAuth2 flow only is supported for Domoticz >=2023.2<br>'
+      }
+      throw new Error(err);
+      return;
+    }
   }
 }
 
@@ -502,7 +522,7 @@ function onLoad() {
       }
     }, 1000);
   }
-
+/* //Error: URL invalid ...
   if (
     typeof settings['disable_googleanalytics'] == 'undefined' ||
     parseFloat(settings['disable_googleanalytics']) == 0
@@ -522,7 +542,7 @@ function onLoad() {
 
     googleAnalytics += '</script>';
     $('body').prepend(googleAnalytics);
-  }
+  }*/
 
   if (md.mobile() == null) {
     $('body').on('mousemove', function () {

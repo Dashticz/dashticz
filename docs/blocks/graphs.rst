@@ -525,6 +525,25 @@ You can modify the y-axes by setting the options parameter. Below you see an exa
 
 The ``yAxes`` parameter in the ``options`` block is an array, with an entry for each y-axis.
 
+Example to set the step-size of the y-axis::
+
+	blocks['graphstep'] = {
+		devices: [1396],
+		type: 'graph',
+		graphTypes: ['v'],
+		ylabels: ['Watt'],
+		options: {
+			scales: {
+				yAxes: [{
+					ticks: {
+						stepSize: 1000
+					}
+				}],
+			}
+		}
+	}
+
+
 
 .. _ylabels:
 

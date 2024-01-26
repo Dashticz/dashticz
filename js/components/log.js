@@ -10,6 +10,7 @@ var DT_log = {
     containerClass: 'containslog',
     level: 268435455,
     ascending: true,
+    scrolltimeout: 60
   },
   defaultContent: '<div class="items"></div>',
   refresh: function (me) {
@@ -35,7 +36,18 @@ var DT_log = {
             '</td></tr>'
         }, '<table>');
       $items.html(res + '</table>');
-      $items.scrollTop(function() { return this.scrollHeight; });
+      $items.on('scroll', function() {
+        me.scrolling=true;
+      });
+      $items.on('scrollend', function() {
+                me.scrollend = Date.now();
+              });
+      if (me.scrollend && ((Date.now() - me.scrollend) > (me.block.scrolltimeout * 1000))) {
+        me.scrollend = 0;
+        me.scrolling = false;
+      }  
+      if(!me.scrolling)
+        $items.scrollTop(function() { return this.scrollHeight; });
     });
   },
 };

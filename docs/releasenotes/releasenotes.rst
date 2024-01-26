@@ -8,6 +8,81 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+V3.12 Master (26-1-2024)
+---------------------------
+
+Roll-up of all v3.11.x beta changes,summarized below:
+
+Enhancements
+~~~~~~~~~~~~
+
+* Google Maps: Coordinates for marker and destination can be set via Domoticz device. See :ref:`mapsdyncoord`
+* Google Maps: New block parameter ``showmarker`` which can be used to hide the marker by setting this parameter to ``false``
+* Dial: For a UpDown Setpoint dial with temperature you can swap the setpoint and temp values by setting the block parameter ``setpointfirst`` to ``true``
+* Dial: Support for background images. See :ref:`dialbackground`
+* Dial: Combine onoff switch with setpoint device now supported
+* Dial: Default min and max values, and the unit (text behind the main value) are derived from the device information
+* Dial: You now can set the min and max values for updown setpoint dial 
+* Log: Change scroll behavior. While scrolling, window will not automatically scroll to end position when updating.
+* Colorpicker: Size of colorpicker popup can now be scaled by setting block parameter ``colorpickerscale``. Type 2 only. See :ref:`colorpicker`
+* RGBxx blocks: You can now open colorpicker popup instead of switching on/off by setting ``switchMode`` to ``'color'``.
+* Domoticz authentication improvements, including oAuth2 support.
+
+
+Fixes
+~~~~~~
+
+* Graph: Fix for Temp + Baro devices.
+* Local build of documentation. See :ref:`documentation`
+* Calendar: Fix for error when using eventClasses on empty events
+* Dial: Fix for a needle with a custom setpoint: main value was replaced by the needle value
+* Settings: Fix for save settings with setting containing a ' character
+* Setpoint devices: Fix for new Domoticz setpoint devices (Domoticz build 15555)
+
+V3.11.2 Beta (26-1-2024)
+---------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Google Maps: Coordinates for marker and destination can be set via Domoticz device. See :ref:`mapsdyncoord`
+* Dial: For a UpDown Setpoint dial with temperature you can swap the setpoint and temp values by setting the block parameter ``setpointfirst`` to ``true``
+* Dial: Support for background images. See :ref:`dialbackground`
+* Dial: Combine onoff switch with setpoint device now supported
+* Dial: Default min and max values, and the unit (text behind the main value) are derived from the device information
+* Dial: You now can set the min and max values for updown setpoint dial 
+* Log: Change scroll behavior. While scrolling, window will not automatically scroll to end position when updating.
+* Colorpicker: Size of colorpicker popup can now be scaled by setting block parameter ``colorpickerscale``. Type 2 only. See :ref:`colorpicker`
+* RGBxx blocks: You can now open colorpicker popup instead of switching on/off by setting ``switchMode`` to ``'color'``.
+
+Fixes
+~~~~~~
+
+* Graph: Fix for Temp + Baro devices.
+* Local build of documentation. See :ref:`documentation`
+* Calendar: Fix for error when using eventClasses on empty events
+* Dial: Fix for a needle with a custom setpoint: main value was replaced by the needle value
+* Settings: Fix for save settings with setting containing a ' character
+
+V3.11.1 Beta (23-9-2023)
+---------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Google Maps: New block parameter ``showmarker`` which can be used to hide the marker by setting this parameter to ``false``
+* Domoticz authentication improvements, including oAuth2 support.
+
+Fixes
+~~~~~~
+
+* Setpoint devices: Fix for new Domoticz setpoint devices (Domoticz build 15555)
+
+V3.11.0 Beta (8-9-2023)
+---------------------------
+
+Beta version, derived from v3.11 master
+
 V3.11 Master (8-9-2023)
 ---------------------------
 
