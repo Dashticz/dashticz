@@ -140,7 +140,7 @@ function getCalendarData(key, calendars, isnew, ishol) {
           ev.name = name;
           ev.color = calendar.color;
 //          var lowerTitle = ev.title.toLowerCase();
-          ev.addClass=Object.keys(cal[key].block.eventClasses).filter(function(eventClass) { //filter keys with string match on item
+          if (ev.title) ev.addClass=Object.keys(cal[key].block.eventClasses).filter(function(eventClass) { //filter keys with string match on item
             return ev.title.match(cal[key].block.eventClasses[eventClass])
           }).reduce(function(acc, key ) { //only keep unique keys
             if(!acc.includes(key)) acc.push(key);

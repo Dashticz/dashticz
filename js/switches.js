@@ -14,7 +14,6 @@
 /* from colorpicker.js */
 /* global Colorpicker */
 /* from version.js */
-/* global domoVersion */
 
 /*exported reqSlideDeviceAsync*/
 
@@ -51,6 +50,7 @@ function getDefaultSwitchBlock(
     if (device['SwitchType'] == 'Push On Button') mMode = 'on';
     else if (device['SwitchType'] == 'Push Off Button') mMode = 'off';
     if (device.Type === 'Scene') mMode = 'on';
+    if(!block.clickHandler)
     block.$mountPoint
       .find('.mh')
       .addClass('hover')
@@ -69,10 +69,13 @@ function getDefaultSwitchBlock(
     if (device['Status'] == 'On') attr = 'style="color:#F05F40;"';
   }
 
-  var mIcon =
-    getIconStatusClass(device['Status']) === 'off'
-      ? defaultIconOff
-      : defaultIconOn;
+  var iconLookup = {
+    'on': defaultIconOn,
+    'off': defaultIconOff,
+    'mixed': defaultIconOff,
+    'default': defaultIconOn
+  }
+  var mIcon = iconLookup[getIconStatusClass(device['Status'])] || iconLookup.default;
   html += iconORimage(
     block,
     mIcon,
@@ -98,6 +101,8 @@ function getIconStatusClass(deviceStatus) {
       case 'unlocked':
       case 'no motion':
         return 'off';
+      case 'mixed':
+        return 'mixed';
     }
     return 'on';
   } else {
@@ -118,13 +123,14 @@ function switchDevice(block, pMode, pAskConfirm) {
   var idx = block.idx;
   var $div = block.$mountPoint;
   var dial = block.type === 'onoff';
+  var group = block.type ==='group';
   if (isProtected(block)) return;
 
   var hasPassword = block.password;
   if (!DT_function.promptPassword(hasPassword)) return;
   var doStatus = '';
   var param = 'switchlight';
-  if (!dial) {
+  if (!dial && !group) {
     switch (pMode) {
       case 'toggle':
         if (
@@ -430,7 +436,21 @@ function getDimmerBlock(block, buttonimg) {
   $div.off('click');
 
   if (!isProtected(block)) {
-    $div
+    if(typeof block.switchMode==='string' && block.switchMode.toLowerCase()==='color') {
+      //        me.$mountPoint.find('.extra').append('<div class="rgbholder"></div>');
+      //        addColorpicker(me);
+              var popupblock = {
+                device: block.device,
+                idx: block.idx,
+                title: choose(block.title, block.key),
+                colorpickerscale: block.colorpickerscale,
+              }
+              new Colorpicker({
+                container: block.mountPoint + ' .mh',
+                block: popupblock,
+              });
+            }
+    else $div
       .on('click', function () {
         dimmerClickHandler(block);
       })
@@ -517,8 +537,10 @@ function addSpectrum(block) {
       color = rgbToHex(deviceColor.r, deviceColor.g, deviceColor.b);
     }
   }
+
   $rgbdiv.spectrum({
     color: color,
+    appendTo: $rgbcontainer
   });
 
   $rgbdiv.on('dragstop.spectrum', function (e, color) {
@@ -628,7 +650,7 @@ function getBlindsBlock(block, withPercentage) {
 
   html += '<div class="' + button_class + '">';
 
-  var asOn = domoVersion.newBlindsBehavior;
+  var asOn = Domoticz.info.newBlindsBehavior;
 
   if (device['SwitchType'].toLowerCase().indexOf('inverted') >= 0) {
     asOn = !asOn;
