@@ -8,6 +8,14 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+Fixes
+~~~~~~
+
+* P1 block: Fix unit of first value (Nett Energy)
+
 V3.12.0 beta (26-1-2024)
 ---------------------------
 
