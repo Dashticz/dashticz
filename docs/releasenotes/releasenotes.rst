@@ -788,7 +788,7 @@ You only have to do this once: Next updates can be installed with a normal 'git 
 Enhancements
 ~~~~~~~~~~~~
 
-* Calendar: New block parameter ``emptytext`` to define the text to show where there are no calendar appointments. Only works for the new calendar block. See :ref:`newcalendar`
+* Calendar: New block parameter ``emptytext`` to define the text to show where there are no calendar appointments. Only works for the new calendar block. See :ref:'newcalendar'
 * Custom graph: aggregate parameter can be an array to specify different aggregation methods per data element. See :ref:`groupBy`
 * Graph: New parameters ``axisRight`` to show the first Y axis on the right (default is ``false``), and ``axisAlternating`` to show Y axes alternating left/right (default: ``true``).
 * Support for device (sub)type Managed Counter
@@ -866,7 +866,7 @@ Enhancements
 Fixes
 ~~~~~~
 
-* Calendar: Add 'method:0' to your calendar block definition in case you experience issues with recurring events. Only works for the new calendar block. See :ref:`newcalendar`
+* Calendar: Add 'method:0' to your calendar block definition in case you experience issues with recurring events. Only works for the new calendar block. See :ref:'newcalendar'
 * Fix for X10 security motion device.
 
 3.6.7 Beta (4-11-2020)
@@ -906,7 +906,7 @@ Enhancements
 
 * Button, special blocks: Initiate the ``url`` parameter as POST request by setting ``newwindow: 4``
 * Add support for Domoticz x10 security sensor
-* Dial: Combine data from several devices. See :ref:`genericdial`
+* Dial: Combine data from several devices. See :ref:'genericdial'
 
 3.6.4 Beta (6-10-2020)
 ----------------------
@@ -928,7 +928,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Set config setting ``security_panel_lock`` to ``2`` to activate security panel lock in 'Armed Home' mode as well.
-* Dial type now enabled for most devices. See :ref:`genericdial`
+* Dial type now enabled for most devices. See :ref:'genericdial'
 
 Fixes
 ~~~~~
@@ -1111,7 +1111,7 @@ Fixes
 -----------------------
 
 Enhancements
-  * New calendar layout. See :ref:`newcalendar`
+  * New calendar layout. See :ref:'newcalendar'
 
 Fixes
   * Group/scene status refresh
@@ -1285,7 +1285,7 @@ Fixes
 ------------------
 
 Enhancements
-  * Show calendar with table formatting by setting blockparameter ``calFormat:1``. See :ref:`calTable`
+  * Show calendar with table formatting by setting blockparameter ``calFormat:1``. See :ref:'calTable'
   * Session Time Out option
   
 Fixes
