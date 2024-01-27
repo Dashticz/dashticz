@@ -38,7 +38,7 @@ Removal of 'old' calendar block
 
 Until now Dashticz supported the 'old' and the 'new' calendar block. The 'old' calendar block has been removed.
 
-See :ref:`newcalendar`
+See :ref:'newcalendar'
 
 To be able to recognize a calendar block you have to add ``icalurl`` parameter to the block definition.
 
