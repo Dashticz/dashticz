@@ -109,7 +109,7 @@ For instance, the buienradar widget has a frame width of 256 pixels, and an aspe
     width:12,
     scaletofit: 256,
     aspectratio: 1,
-}
+  }
 
 .. image :: img/framescale.jpg
 

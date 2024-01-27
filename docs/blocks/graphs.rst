@@ -419,7 +419,9 @@ A ``custom`` object start with the name of the button. The button should contain
 
 * ``range``. This is the name of the range as requested from Domoticz, and can be ``'day'``, ``'today'``, ``'month'`` or ``'year'``.  The range ``'today'`` filters the data to today, independent of the setting in Domoticz, and sets the graph x-axis to the full day.
 * ``filter`` (optional). This limits the amount of data to the period as defined by this parameter. Examples: ``'2 hours'``, ``'4 days'``, ``'3 months'``
+
 Special filters exist. Value ``'todaytomorrow'`` will filter the graph data of today and tomorrow. This can be used for instance for showing one day ahead dynamic energy prices.
+
 * ``data``. This is an object that defines the values to use for the graph.
 * ``buttonIcon`` (optional). The Fontawesome icon to use for the button. Example ``'fas fa-bus'``
 
