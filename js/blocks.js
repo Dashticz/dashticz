@@ -1197,7 +1197,7 @@ function getSmartMeterBlock(block) {
   var idx = device.idx;
   block.width = block.width || 4;
   if (device['SubType'] === 'Energy') {
-    var usage = device.NettUsage + ' ' + settings['units'].names.watt;
+    var usage = parseFloat(device.NettUsage || '0');
 
     var data = device['Data'].split(';');
     var blockValues = [
@@ -1207,7 +1207,7 @@ function getSmartMeterBlock(block) {
         subidx: 1,
         title: language.energy.energy_usage,
         value: usage,
-        unit: '',
+        unit: settings['units'].names.watt,
       },
       {
         icon: 'fas fa-plug',
