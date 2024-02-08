@@ -190,7 +190,7 @@ Example of Domoticz settings:
 
 .. image :: apiprotection2.jpg
 
-.. _oauth2::
+.. _oauth2 :
 
 Advanced method
 ~~~~~~~~~~~~~~~~
