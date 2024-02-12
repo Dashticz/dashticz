@@ -41,9 +41,9 @@ function Initialize(me) {
   me.block.devices = me.block.devices || [parseInt(me.key.split('_')[1])];
   $.each(me.block.devices, function (i, idx) {
     var device = {};
-    $.extend(device, Domoticz.getAllDevices()[idx]); //Make a copy of the current device data
+    $.extend(device, Domoticz.getAllDevices(idx)); //Make a copy of the current device data
     if (device.idx) {
-      device.idx = parseInt(device.idx);
+//      device.idx = parseInt(device.idx);
       getDeviceDefaults(me, device);
       me.graphDevices.push(device);
     } else {
