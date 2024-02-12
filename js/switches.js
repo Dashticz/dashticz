@@ -97,6 +97,7 @@ function getIconStatusClass(deviceStatus) {
     switch (deviceStatus.toLowerCase()) {
       case 'off':
       case 'closed':
+      case 'close':
       case 'normal':
       case 'unlocked':
       case 'no motion':
