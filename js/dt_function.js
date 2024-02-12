@@ -348,6 +348,24 @@ var DT_function = (function () {
     });
   }
 
+  function idxIsScene(idx) {
+    if(typeof idx!=='string') return false;
+    return 's'===idx[0] && isNumeric(idx.substring(1))
+  }
+
+  /* returns the id that can be used in the subscribe*/
+  function getDomoticzIdx(idx) {
+    if(typeof idx==='number') return idx;
+    if(idxIsScene(idx)) return idx;
+    var devices=Domoticz.getAllDevices();
+    if(devices[idx]) return idx;
+
+    var id = Object.keys(devices).find(function(key) {
+      return idx === devices[key].Name;
+   })
+   if(id>=0) return devices[id].idx;
+  }
+
   return {
     clickHandler: clickHandler,
     promptPassword: promptPassword,
@@ -359,7 +377,9 @@ var DT_function = (function () {
     checkForceRefresh: checkForceRefresh,
     createModalDialog: createModalDialog,
     onRemove: onRemove,
-    cached: cached
+    cached: cached,
+    idxIsScene: idxIsScene,
+    getDomoticzIdx: getDomoticzIdx
   };
 })();
 
