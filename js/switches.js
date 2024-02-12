@@ -157,7 +157,7 @@ function switchDevice(block, pMode, pAskConfirm) {
     doStatus = pMode;
   }
 
-  if (typeof idx === 'string' && idx.substr(0, 1) === 's') {
+  if (DT_function.idxIsScene(idx)) {
     idx = idx.replace('s', '');
     param = 'switchscene';
   }
