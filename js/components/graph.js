@@ -523,10 +523,11 @@ Status: "Off"
 User: "OpenTherm"
 idx: "11209721"
 */
+    var maxDimLevel = data.result && data.result[0].MaxDimLevel; 
     var result = data.result.map(function (sample) {
       return {
         d: sample.Date,
-        l: sample.Level,
+        l: getIconStatusClass(sample.Status)==='off'? 0 : sample.Level || maxDimLevel || 1,
       };
     });
     return { result: result };
