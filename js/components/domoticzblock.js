@@ -11,7 +11,7 @@ var DT_domoticzblock = (function () {
         width: 4,
         batteryThreshold: settings.batteryThreshold,
         icon: 'default',
-        longpress: block&&block.idx&&(block.idx[0]==='s')
+        longpress: block&&DT_function.idxIsScene(block.idx),
       }
     },
     run: function (me) {
@@ -37,6 +37,13 @@ var DT_domoticzblock = (function () {
             me.subidx = subidx;
           }
         }
+        else { //Use device name
+          var idx = DT_function.getDomoticzIdx(block.idx);
+          if(idx) {
+            block.idx = idx;
+            me.deviceIdx = idx;
+          }
+        }
       }
       me.entry = me.mountPoint.slice(1);
 
@@ -46,14 +53,13 @@ var DT_domoticzblock = (function () {
         me.$mountPoint.find('.block_' + block.key)[0].addEventListener('long-press', function (e) {
           e.preventDefault();
           console.log('long press');
-          if (me.deviceIdx[0]==='s') 
+          if (DT_function.idxIsScene(me.deviceIdx)) 
           Domoticz.request('getscenedevices', false, { idx: me.deviceIdx.substring(1)  })
             .then(function (res) {
               console.log(res);
               var devices = res.result.map(function (device) {
                 return device.DevRealIdx
               });
-              console.log(devices);
               DT_function.clickHandler(me, { popup: devices })
             })
         })

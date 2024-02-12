@@ -11,6 +11,8 @@ Recent changes
 Enhancements
 ~~~~~~~~~~~~
 
+* Use device name instead of device idx (undocumented)
+
 Fixes
 ~~~~~~
 
