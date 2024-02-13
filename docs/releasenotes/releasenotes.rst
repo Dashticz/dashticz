@@ -12,6 +12,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Use device name instead of device idx (undocumented)
+* custom.js: New hook which will be called before first Dashticz render: ``beforeFirstRenderHook()``. See :ref:`beforefirstrenderhook`
 
 Fixes
 ~~~~~~
