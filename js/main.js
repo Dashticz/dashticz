@@ -188,18 +188,6 @@ function loadCustomJS() {
 }
 
 function configureDashticz() {
-  if (typeof screens === 'undefined' || objectlength(screens) === 0) {
-    screens = {};
-    screens[1] = {};
-    screens[1]['background'] = settings['background_image'];
-    screens[1]['columns'] = [];
-    if (objectlength(columns) === 0) defaultcolumns = true;
-    if (defaultcolumns === false) {
-      for (var c in columns) {
-        if (c !== 'bar') screens[1]['columns'].push(c);
-      }
-    }
-  }
 
   $(
     '<link href="vendor/weather/css/weather-icons.min.css?v=' +
@@ -232,8 +220,24 @@ function configureDashticz() {
     DT_function.loadDTScript('js/colorpicker.js'),
     DT_function.loadDTScript('js/fullscreen.js')
   )
+    .then(function() {
+      return Dashticz.init()})
     .then(function () {
-      return Dashticz.init();
+      if (typeof beforeFirstRenderHook === 'function') return beforeFirstRenderHook();
+    })
+    .then(function(){
+      if (typeof screens === 'undefined' || objectlength(screens) === 0) {
+        screens = {};
+        screens[1] = {};
+        screens[1]['background'] = settings['background_image'];
+        screens[1]['columns'] = [];
+        if (objectlength(columns) === 0) defaultcolumns = true;
+        if (defaultcolumns === false) {
+          for (var c in columns) {
+            if (c !== 'bar') screens[1]['columns'].push(c);
+          }
+        }
+      }    
     })
 }
 
