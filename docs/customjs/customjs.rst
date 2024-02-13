@@ -291,6 +291,7 @@ Before the first render this hook will be called. Domoticz communication has sta
 This gives the opportunity to update the Dashticz configuration based on information from Domoticz.
 
 Example::
+
     function beforeFirstRenderHook() {
         var myDevice = Domoticz.getAllDevices('My Device');
         blocks['mydevice'] = {
