@@ -14,7 +14,8 @@ var DT_calendar = {
     },
     emptytext: 'Geen afspraken.',
     method: 1,
-    eventClasses: {}
+    eventClasses: {},
+    refresh:600
   },
   run: function (me) {
     if (me.block.type === 'calendar') {
@@ -28,7 +29,7 @@ var DT_calendar = {
             .attr('data-toggle', 'modal')
             .attr('data-target', '#agenda-modal_' + me.key);
         }
-        prepareCalendar(me, me.key);
+//        prepareCalendar(me, me.key);
       } else {
         infoMessage(
           '<font color="red">Domoticz error!',
@@ -39,7 +40,7 @@ var DT_calendar = {
     }
   },
   refresh: function (me) {
-    prepareCalendar(me, me.key);
+    prepareCalendar(me, me.mountPoint);
   },
 };
 Dashticz.register(DT_calendar);
