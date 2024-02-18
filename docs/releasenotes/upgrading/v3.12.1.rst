@@ -48,7 +48,7 @@ That means the block definition above will give the following two datasets::
 New block parameter ``datasets``
 --------------------------------
 
-Use the ``datasets`` block parameter to set options for each dataset
+Use the ``datasets`` block parameter to set options for each dataset::
 
     blocks['three_temp_devices'] = {
        type: 'graph',
