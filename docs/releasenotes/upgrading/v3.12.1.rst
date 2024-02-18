@@ -1,0 +1,80 @@
+.. _v3_12_1:
+
+v3.12.0.1: Update chart module
+===================================================
+
+
+Main changes are summarized below.
+
+Default charts
+---------------
+
+For some device types (P1 smart meter, Temp/Hum/Bar devices) Dashticz will add some default settings.
+
+If you don't want to make use of the default settings add the following block parameter::
+
+    usedefaults: false
+
+The legend will be added by default. To show no legend use the following block parameter::
+
+    legend: false
+
+
+Dataset numbering
+-----------------
+
+Example::
+
+    blocks['three_temp_devices'] = {
+       type: 'graph',
+       devices: [ 12, 13, 14],
+       usedefaults: false
+    }
+
+In previous versions the device idx was added to each dataset label, resulting in the following three datasets::
+
+    te_12
+    te_13
+    te_14
+
+In the current version, no suffix will be added to first the dataset label.
+The dataset of the second graph device will have '_1' as suffix.
+That means the block definition above will give the following two datasets::
+
+    te
+    te_1
+    te_2
+
+New block parameter ``datasets``
+--------------------------------
+
+Use the ``datasets`` block parameter to set options for each dataset
+
+    blocks['three_temp_devices'] = {
+       type: 'graph',
+       devices: [ 12, 13, 14],
+       datasets: {
+          te: {
+            legend: 'Temp 1',
+          },
+          te_1: {
+            legend: 'Temp 2'
+          },
+          te_2: {
+             legend: 'Temp 3'
+          }
+        }     
+    }
+
+Example of the options can be set for each dataset:
+
+    * ``hideData: true`` to hide the dataset completely
+    * ``hidefromlegend: true`` to hide the dataset from the legend only
+    * ``legend: 'Temp 1'`` to set the name of the dataset in the legend
+    * ``yAxis: 'yaxis'`` Name of the y-axis that will be used for this dataset
+    * ``yLabel: '(m3)'`` to use '(m3)' as label behind the data in the tooltip
+
+
+
+
+

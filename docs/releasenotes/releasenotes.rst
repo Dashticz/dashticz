@@ -8,6 +8,12 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Test (V3.12.1 beta) (18-2-2024)
+---------------------------
+A lot of changes for the Dashticz charts.
+
+See :ref:`v3_12_1`
+
 Enhancements
 ~~~~~~~~~~~~
 
