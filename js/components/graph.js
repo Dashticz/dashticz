@@ -1314,26 +1314,25 @@ function createDataSets(graph) {
       yAxisID: graph.datasets[element].yAxis || graph.datasets[element].yLabel,
       xAxisID: graph.datasets[element].xAxis || 'x',
       backgroundColor: choose(graph.datasets[element].backgroundColor, color),
-      barPercentage: block.barWidth,
-      borderColor: block.borderColors?block.borderColors[idx] : color,
-      borderWidth: block.borderWidth,
-      borderDash: block.borderDash,
-      pointRadius: block.pointRadius,
-      pointStyle: block.pointStyle[idx], //check: index iso idx
-      pointBackgroundColor: (block.pointFillColor ||
-        color),
-      pointBorderColor: (block.pointBorderColor ||
-        color),
-      pointBorderWidth: block.pointBorderWidth,
-      lineTension: block.lineTension,
-      spanGaps: block.spanGaps,
+      barPercentage: graph.datasets[element].barPercentage || block.barPercentage,
+      borderColor: graph.datasets[element].borderColor || block.borderColors?block.borderColors[idx] : color,
+      borderWidth: graph.datasets[element].borderWidth || block.borderWidth,
+      borderDash: graph.datasets[element].borderDash || block.borderDash,
+      pointRadius: graph.datasets[element].pointRadius || block.pointRadius,
+      pointStyle: graph.datasets[element].pointStyle || block.pointStyle[idx], 
+      pointBackgroundColor: graph.datasets[element].pointBackgroundColor || block.pointFillColor ||
+        color,
+      pointBorderColor: graph.datasets[element].pointBorderColor || block.pointBorderColor ||
+        color,
+      pointBorderWidth: graph.datasets[element].pointBorderWidth || block.pointBorderWidth,
+      lineTension: graph.datasets[element].lineTension || block.lineTension,
+      spanGaps: graph.datasets[element].spanGaps || block.spanGaps,
       fill: getFillValue(graph, element, idx),
-      stepped: getProperty(
+      stepped: graph.datasets[element].stepped || getProperty(
         defaultSteppedLine || block.steppedLine,
         idx
       ),
       barThickness: 'flex',
-      barPercentage: 0.95,
       categoryPercentage: 1,
       hidden: graph.datasets[element].hideData,
       type: graph.datasets[element].graph || getProperty(graph.graph, idx),

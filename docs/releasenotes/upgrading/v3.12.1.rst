@@ -66,13 +66,29 @@ Use the ``datasets`` block parameter to set options for each dataset::
         }     
     }
 
-Example of the options can be set for each dataset:
+List of options can be set for each dataset:
 
     * ``hideData: true`` to hide the dataset completely
     * ``hidefromlegend: true`` to hide the dataset from the legend only
     * ``legend: 'Temp 1'`` to set the name of the dataset in the legend
     * ``yAxis: 'yaxis'`` Name of the y-axis that will be used for this dataset
     * ``yLabel: '(m3)'`` to use '(m3)' as label behind the data in the tooltip
+    * ``backgroundColor: 'red'``
+    * ``barPercentage: 0.9``
+    * ``borderColor: 'yellow'``
+    * ``borderWidth:`` 
+    * ``borderDash``
+    * ``pointRadius``
+    * ``pointStyle``
+    * ``pointBackgroundColor``
+    * ``pointBorderColor``
+    * ``pointBorderWidth``
+    * ``lineTension``
+    * ``spanGaps``
+    * ``fill``
+    * ``stepped``
+    * ``type: 'line'``
+    * ``order``
 
 
 
