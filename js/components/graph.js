@@ -1335,23 +1335,32 @@ function createDataSets(graph) {
       barThickness: 'flex',
       categoryPercentage: 1,
       hidden: graph.datasets[element].hideData,
-      type: graph.datasets[element].graph || getProperty(graph.graph, idx),
-      order: graph.datasets[element].order || 0
+      type: graph.datasets[element].bubble? 'bubble':graph.datasets[element].graph || getProperty(graph.graph, idx),
+      order: graph.datasets[element].order || 0,
     };
   });
 
-  graph.data.result.forEach(function (element) {
+  graph.data.result.forEach(function (d) {
     var valid = false;
     graph.dataKeys.forEach(function (el) {
-      if (isDefined(element[el])) {
+      if (isDefined(d[el])) {
         valid = true;
-        mydatasets[el].data.push({
-          x: element.d,
-          y: element[el],
-        });
+        var dataPoint = {
+          x: d.d,
+          y: d[el],
+        }
+        if(graph.datasets[el].bubble) {
+          try{
+            dataPoint.r = eval(graph.datasets[el].bubble)
+          }
+          catch(ex) {
+            console.log('error in bubble eval of ', graph.datasets[el].bubble, ' with ', d);
+          }
+        }
+        mydatasets[el].data.push(dataPoint);
       }
     });
-    if (valid) graph.graphProperties.data.labels.push(element.d);
+    if (valid) graph.graphProperties.data.labels.push(d.d);
   });
 
   //Now we have the datasets
@@ -1901,23 +1910,18 @@ function customTooltip(graph, block, context) {
       .addClass(tooltip.xAlign)
       .addClass(tooltip.yAlign);
 
-  function getBody(bodyItem) {
-    return bodyItem.lines;
-  }
-
   if (tooltip.body) {
-    var isdate = moment(tooltip.title, 'YYYY-MM-DD').isValid();
+    var isdate = moment(new Date(tooltip.title)).isValid();
     var dformat =
       graph.range === 'day' || graph.range === 'last'
         ? 'HH:mm, DD/MM/YYYY'
         : 'DD/MM/YYYY';
-    var bodyLines = tooltip.body.map(getBody);
     var vals = [];
     var total = 0;
 
     //  Tooltip title with SetPoint info when using GroupByDevice
     if (graph.hasSetPoint) {
-      var value = graph.currentValues[tooltip.dataPoints[0].index];
+      var value = graph.currentValues[tooltip.dataPoints[0].dataIndex];
       var status = value.split(',')[2].trim();
       var s = status.split(' ');
       if (s.length === 3) {
@@ -1928,21 +1932,15 @@ function customTooltip(graph, block, context) {
       }
     }
 
-    var decimals = graph.decimals;
-    if (typeof block.decimals !== 'undefined')
-      decimals = block.decimals;
-    bodyLines.forEach(function (body, i) {
-      var val = parseFloat(body[0]);
-      //todo: next line throws an error. As workaround I've added previous line and the try/catch.
-      try {
-        val = parseFloat(body[0].split(':')[1].replace('NaN', '0'));
-      } catch (err) {
-        console.log('error in tooltip');
-      }
+    var decimals = choose(block.decimals, graph.decimals);
+
+    tooltip.dataPoints.forEach(function(dataPoint, i) {
+      var val = parseFloat(dataPoint.raw.y)
       var obj = {};
-      obj.key = body[0].split(':')[0];
+      obj.key = dataPoint.dataset.label;
+      var radius = dataPoint.raw.r? ' (' + number_format(parseFloat(dataPoint.raw.r), decimals)+')':'';
       var tooltiplabel = (!graph.datasets[graph.dataKeys[i]].notooltiplabel && graph.datasets[graph.dataKeys[i]].yLabel) || ''
-      obj.val = number_format(val, decimals) + tooltiplabel;
+      obj.val = number_format(val, decimals) + tooltiplabel + radius;
       obj.add =
         block.tooltiptotal === true ||
         $.inArray(obj.key, block.tooltiptotal) !== -1;
@@ -1952,7 +1950,6 @@ function customTooltip(graph, block, context) {
       if (obj.add) total += val;
       vals.push(obj);
     });
-
     if (total > 0) {
       vals.push({
         key: 'Total',
