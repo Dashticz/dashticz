@@ -91,6 +91,26 @@ List of options which can be set for each dataset:
     * ``type: 'line'``
     * ``order``
 
+Display value as categories
+---------------------------
+
+To display the level of a switch as two categories ('On' or 'Off') use the following block definition::
+
+    blocks['gsw'] = {
+    type: 'graph',
+    devices: [1446],
+    categories: {
+        0: 'Off',
+        1: 'On'
+    }
+}
+
+In the example above, if the value of the device>=0, it will be labeled as 'Off'.
+If the value of the device>=1, it will be labed as 'On'
+
+The ``categories`` parameter can also be applied on dataset level.
+
+
 
 
 
