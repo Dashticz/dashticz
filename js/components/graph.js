@@ -1028,6 +1028,17 @@ function createYAxes(graph) {
       );
       */
     labelLeft = block.axisAlternate ? !labelLeft : labelLeft;
+
+    //set y-axis to type category if one of the datasets contains category data
+
+    graphProperties.data.datasets.forEach(function(dataset) {
+      if(dataset.categories) {
+        graphProperties.options.scales[dataset.yAxisID].type='category';
+        graphProperties.options.scales[dataset.yAxisID].labels = Object.values(dataset.categories);
+        graphProperties.options.scales[dataset.yAxisID].reverse = true;
+        graphProperties.options.scales[dataset.yAxisID].title.display = false;
+      }
+    })
   });
 
   /* todo graph4
@@ -1335,8 +1346,10 @@ function createDataSets(graph) {
       barThickness: 'flex',
       categoryPercentage: 1,
       hidden: graph.datasets[element].hideData,
-      type: graph.datasets[element].bubble? 'bubble':graph.datasets[element].graph || getProperty(graph.graph, idx),
+      bubble: graph.datasets[element].bubble || block.bubble,
+      type: (graph.datasets[element].bubble || block.bubble)? 'bubble':graph.datasets[element].graph || getProperty(graph.graph, idx),
       order: graph.datasets[element].order || 0,
+      categories: graph.datasets[element].categories || block.categories
     };
   });
 
@@ -1349,7 +1362,7 @@ function createDataSets(graph) {
           x: d.d,
           y: d[el],
         }
-        if(graph.datasets[el].bubble) {
+        if(mydatasets[el].bubble) {
           try{
             dataPoint.r = eval(graph.datasets[el].bubble)
           }
@@ -1357,6 +1370,16 @@ function createDataSets(graph) {
             console.log('error in bubble eval of ', graph.datasets[el].bubble, ' with ', d);
           }
         }
+
+        if(typeof mydatasets[el].categories==='object' ) {
+          var category = '';
+          Object.keys(mydatasets[el].categories).forEach(function(key) {
+            if(dataPoint.y >= key)
+              category = mydatasets[el].categories[key]
+          })
+          dataPoint.y=category;
+        }
+
         mydatasets[el].data.push(dataPoint);
       }
     });
@@ -1935,12 +1958,15 @@ function customTooltip(graph, block, context) {
     var decimals = choose(block.decimals, graph.decimals);
 
     tooltip.dataPoints.forEach(function(dataPoint, i) {
-      var val = parseFloat(dataPoint.raw.y)
+      var val = parseFloat(dataPoint.raw.y);
+      var dataset = dataPoint.dataset;
+      var formattedVal = dataset.categories ? dataPoint.formattedValue : number_format(val, decimals);
+
       var obj = {};
       obj.key = dataPoint.dataset.label;
       var radius = dataPoint.raw.r? ' (' + number_format(parseFloat(dataPoint.raw.r), decimals)+')':'';
-      var tooltiplabel = (!graph.datasets[graph.dataKeys[i]].notooltiplabel && graph.datasets[graph.dataKeys[i]].yLabel) || ''
-      obj.val = number_format(val, decimals) + tooltiplabel + radius;
+      var tooltiplabel = (!dataset.notooltiplabel && dataset.yLabel) || ''
+      obj.val =  formattedVal + tooltiplabel + radius;
       obj.add =
         block.tooltiptotal === true ||
         $.inArray(obj.key, block.tooltiptotal) !== -1;
