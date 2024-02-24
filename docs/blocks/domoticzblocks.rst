@@ -35,6 +35,8 @@ You can also use custom names for the block identfier. In that case you have to 
    }
 
 
+.. _grouped_devices:
+
 Grouped devices
 ---------------
 To use grouped devices in a column you must make it known in your CONFIG.js as follows::
@@ -54,6 +56,11 @@ Now you can add all 3 light blocks to a column with the following code::
       'lights'
    ]
 
+All the blocks within such a group can be styled in custom.css all at once::
+
+  [data-id='lights'] .title {
+     color: yellow
+  }
 
 Scenes and Groups
 -----------------
