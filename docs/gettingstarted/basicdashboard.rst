@@ -166,7 +166,7 @@ Domoticz authorization
 -----------------------
 
 Easy method
-~~~~~~~~~~~~
+--------------
 
 The Easy Method is only recommended in case Dashticz is not exposed to the public internet.
 
@@ -193,7 +193,7 @@ Example of Domoticz settings:
 .. _oauth2 :
 
 Advanced method
-~~~~~~~~~~~~~~~~
+------------------
 
 Since Domoticz 2023.2 authorization via OAuth2 is supported.
 
