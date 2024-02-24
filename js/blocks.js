@@ -91,6 +91,7 @@ function addBlock2Column(columndiv, c, b) {
     newBlock.blocks.forEach(function (aBlock) {
       addBlock2Column(myblockselector, '', aBlock);
     });
+    $(myblockselector).attr('data-id', newBlock.key);
     return;
   }
   if (Array.isArray(newBlock)) {
