@@ -14,6 +14,7 @@ Enhancements
 * Use device name instead of device idx (undocumented)
 * custom.js: New hook which will be called before first Dashticz render: ``beforeFirstRenderHook()``. See :ref:`beforefirstrenderhook`
 * Styling: Add correct data-id to a Dashticz block consisting of multiple blocks. See :ref:`grouped_devices`
+* World Air Quality Index: Support for the WAQI widgets have been added. See :ref:`waqi`
 
 Fixes
 ~~~~~~
