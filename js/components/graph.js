@@ -1326,7 +1326,7 @@ function createDataSets(graph) {
       xAxisID: graph.datasets[element].xAxis || 'x',
       backgroundColor: choose(graph.datasets[element].backgroundColor, color),
       barPercentage: graph.datasets[element].barPercentage || block.barPercentage,
-      borderColor: graph.datasets[element].borderColor || block.borderColors?block.borderColors[idx] : color,
+      borderColor: graph.datasets[element].borderColor || (block.borderColors?block.borderColors[idx] : color),
       borderWidth: graph.datasets[element].borderWidth || block.borderWidth,
       borderDash: graph.datasets[element].borderDash || block.borderDash,
       pointRadius: graph.datasets[element].pointRadius || block.pointRadius,
