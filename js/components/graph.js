@@ -2094,7 +2094,15 @@ function getDefaultGraphProperties(graph, block) {
             fontSize: 14,
             filter: function (item, data) {
               return labelFilter(graph, item, data)
-            }
+            },
+            generateLabels: function(chart) {
+              return chart.data.datasets.map(function(dataset, i) {
+                return ({
+              datasetIndex: i,
+              text: dataset.label,
+              fillStyle: dataset.backgroundColor,
+              strokeStyle: dataset.borderColor
+            })}) }
           },
           position: 'bottom',
           display: false,
