@@ -1182,15 +1182,17 @@ function createCustomData(graph) {
   graph.ylabels = getYlabels(graph);
   graph.ykeys = Object.keys(graph.graphConfig.data);
 
+  //to stay compatible with old format of custom graph data in which also for the first device '_idx' was added to a data field
+  graph.ykeys.forEach(function (_value) {
+    graph.graphConfig.data[_value] = graph.graphConfig.data[_value].replaceAll('_' + firstDeviceIdx, '');
+  });
+
+  return;
   var d = {}; //object to store the latest value of each key
   var previousDataPoint;
   var customResult = [];
   var firstDeviceIdx = graph.graphDevices[0].idx
 
-  //to stay compatible with old format of custom graph data in which also for the first device '_idx' was added to a data field
-  graph.ykeys.forEach(function (_value) {
-    graph.graphConfig.data[_value] = graph.graphConfig.data[_value].replaceAll('_' + firstDeviceIdx, '');
-  });
 
   graph.data.result.forEach(function (y) {
     var dataPoint = {};
@@ -1268,6 +1270,8 @@ function createDataSets(graph) {
       yLabel: graph.ylabels[i],
       legend: key
     }
+    if(graph.graphConfig && graph.graphConfig.data && graph.graphConfig.data[key])
+      datasets[key].data = graph.graphConfig.data[key];
   })
 
   graph.datasets = $.extend(true, datasets, graph.block.datasets);
@@ -1323,10 +1327,11 @@ function createDataSets(graph) {
         ? block.ylabels[idx]
         : graph.ylabels[index], //check: idx iso index*/
       yAxisID: graph.datasets[element].yAxis || graph.datasets[element].yLabel,
+      yLabel: graph.datasets[element].yLabel,
       xAxisID: graph.datasets[element].xAxis || 'x',
       backgroundColor: choose(graph.datasets[element].backgroundColor, color),
       barPercentage: graph.datasets[element].barPercentage || block.barPercentage,
-      borderColor: graph.datasets[element].borderColor || block.borderColors?block.borderColors[idx] : color,
+      borderColor: graph.datasets[element].borderColor || (block.borderColors?block.borderColors[idx] : color),
       borderWidth: graph.datasets[element].borderWidth || block.borderWidth,
       borderDash: graph.datasets[element].borderDash || block.borderDash,
       pointRadius: graph.datasets[element].pointRadius || block.pointRadius,
@@ -1349,18 +1354,37 @@ function createDataSets(graph) {
       bubble: graph.datasets[element].bubble || block.bubble,
       type: (graph.datasets[element].bubble || block.bubble)? 'bubble':graph.datasets[element].graph || getProperty(graph.graph, idx),
       order: graph.datasets[element].order || 0,
-      categories: graph.datasets[element].categories || block.categories
+      categories: graph.datasets[element].categories || block.categories,
+      compute: graph.datasets[element].data,
     };
   });
+  var d = {}; //object to store the latest value of each key
 
-  graph.data.result.forEach(function (d) {
+  graph.data.result.forEach(function (data) {
     var valid = false;
+    for (var key in data) {
+      d[key] = key==='d'? data[key]:parseFloat(data[key]);
+    }
+
+
     graph.dataKeys.forEach(function (el) {
-      if (isDefined(d[el])) {
+      var customData = mydatasets[el].compute;
+      var yValue;
+      if(customData)
+        try {
+          yValue = eval(customData);
+        }
+        catch(ex) {
+          console.error('Error interpreting '+customData)
+        }
+      else 
+      if (isDefined(d[el])) yValue = d[el]
+      
+      if(isDefined(yValue)) {
         valid = true;
         var dataPoint = {
           x: d.d,
-          y: d[el],
+          y: yValue,
         }
         if(mydatasets[el].bubble) {
           try{
@@ -1384,6 +1408,8 @@ function createDataSets(graph) {
       }
     });
     if (valid) graph.graphProperties.data.labels.push(d.d);
+//    previousDataPoint = dataPoint;
+
   });
 
   //Now we have the datasets
@@ -2101,7 +2127,8 @@ function getDefaultGraphProperties(graph, block) {
               datasetIndex: i,
               text: dataset.label,
               fillStyle: dataset.backgroundColor,
-              strokeStyle: dataset.borderColor
+              strokeStyle: dataset.borderColor,
+              fontColor: block.fontColor,
             })}) }
           },
           position: 'bottom',
