@@ -90,6 +90,9 @@ List of options which can be set for each dataset:
     * ``stepped``
     * ``type: 'line'``
     * ``order``
+    * ``data``: Formula to compute the data for this dataset. Same format as used within the data section of a custom graph.
+
+
 
 Display value as categories
 ---------------------------
@@ -109,6 +112,67 @@ In the example above, if the value of the device>=0, it will be labeled as 'Off'
 If the value of the device>=1, it will be labed as 'On'
 
 The ``categories`` parameter can also be applied on dataset level.
+
+Data parameter in datasets section
+----------------------------------
+
+Example::
+
+    blocks['datasetsdata'] = {
+        devices: [43],
+        height:400,
+        showAllDatasets: false,
+        stacked: true,
+        usedefaults: false,
+        datasets: {
+            nett: {
+                data: 'd.v+d.v2-d.r1-d.r2',
+            },
+            usage: {
+                data: 'd.v+d.v2',
+                graph: 'bar', 
+            } ,
+            generation: {
+                data: '-d.r1-d.r2',
+                graph: 'bar',
+            }
+        },
+    }
+
+or, if you want to make it dependent on the selected menu button::
+
+    blocks['datasetsdata'] = {
+        devices: [43],
+        height:400,
+        showAllDatasets: false,
+        stacked: true,
+        usedefaults: false,
+        custom: {
+            nett: {
+                datasets: {
+                    nett: {
+                        data: 'd.v+d.v2-d.r1-d.r2',
+                    },
+                }
+            },
+            usage: {
+                datasets: {
+                    usage: {
+                        data: 'd.v+d.v2'
+                    }
+                }
+            },
+            generation: {
+                datasets: {
+                    generation: {
+                        data: '-d.r1-d.r2'
+                    }
+                }
+            }
+        }
+    }                 
+
+
 
 
 
