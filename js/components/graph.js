@@ -149,7 +149,8 @@ function getBlockDefaults2(me) {
     legend: true,
     lineTension: 0.1,
     gradients: false,
-    showtooltip: true
+    showtooltip: true,
+    showAllDatasets: true
   }
 }
 
@@ -1265,6 +1266,7 @@ function createDataSets(graph) {
     })
   }*/
   //graph.block.datasets contains the default graph config depending on device type
+  if(choose(graph.block.showAllDatasets, true))
   graph.ykeys.forEach(function (key, i) {
     datasets[key] = {
       yLabel: graph.ylabels[i],
@@ -1320,7 +1322,7 @@ function createDataSets(graph) {
     var color = graph.datasets[element].color || block.datasetColors[idx];
     mydatasets[element] = {
       data: [],
-      label: graph.datasets[element].legend,
+      label: choose(graph.datasets[element].legend, element),
       //      xAxisID: index,
       /*
       yAxisID: block.ylabels
@@ -2190,6 +2192,7 @@ function createDefaultGraph(me) {
 
 function createDefaultGraphP1Energy(me) {
   me.block.custom = {};
+  me.block.stacked = true;
 
   me.block.custom[language.graph.last_hours] = {
     range: 'day',
@@ -2204,22 +2207,16 @@ function createDefaultGraphP1Energy(me) {
       usage: { yLabel: 'Watt', graph: 'bar'},
       generation: { yLabel: 'Watt', graph: 'bar'},
     },
-    stacked: true,
   };
   
   me.block.custom[language.graph.today] = {
     range: 'today',
-    data: {
-      nett: 'd.v+d.v2-d.r1-d.r2',
-      usage: 'd.v+d.v2',
-      generation: '-d.r1-d.r2'
-    },
+    showAllDatasets: false,
     datasets: {
-      nett: { yLabel: 'Watt'},
-      usage: { yLabel: 'Watt', graph: 'bar'},
-      generation: { yLabel: 'Watt', graph: 'bar'},
+      nett: { yLabel: 'Watt', data: 'd.v+d.v2-d.r1-d.r2' },
+      usage: { yLabel: 'Watt', graph: 'bar', data: 'd.v+d.v2'},
+      generation: { yLabel: 'Watt', graph: 'bar', data: '-d.r1-d.r2' },
     },
-    stacked: true
   };
 
   me.block.custom[language.graph.last_month] = {
@@ -2235,7 +2232,6 @@ function createDefaultGraphP1Energy(me) {
       usage: { yLabel: 'kWh', graph: 'bar'},
       generation: { yLabel: 'kWh', graph: 'bar'},
     },
-    stacked: true
   }
 /*
   me.block.options = {
