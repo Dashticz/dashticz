@@ -216,7 +216,7 @@ var DT_dial = (function () {
     me.splitdial = choose(choose(me.splitdial, me.block.splitdial), me.min < 0);
     me.shownumbers =choose(me.shownumbers, me.block.shownumbers);
 
-    me.unitvalue = choose(me.block.unit, me.device.vunit, me.unitvalue);
+    me.unitvalue = choose(me.block.unit, me.device && me.device.vunit, me.unitvalue);
     me.max=choose(me.block.max, me.device && me.device.max, me.max);
     me.min=choose(me.block.min, me.device && me.device.min, me.min);
 
