@@ -22,6 +22,7 @@ Fixes
 * P1 block: Fix unit of first value (Nett Energy)
 * Graph: Fix graph for switches (for Domoticz 2024.1 and higher)
 * Calendar: Fix for showing a calendar block more than once
+* Dial: Prevent error when device is not defined
 
 V3.12.0 beta (26-1-2024)
 ---------------------------
