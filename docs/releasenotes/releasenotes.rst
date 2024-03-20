@@ -23,6 +23,7 @@ Fixes
 * Graph: Fix graph for switches (for Domoticz 2024.1 and higher)
 * Calendar: Fix for showing a calendar block more than once
 * Dial: Prevent error when device is not defined
+* Dial: Fix updown dial (bug introduced by recent change)
 
 V3.12.0 beta (26-1-2024)
 ---------------------------
