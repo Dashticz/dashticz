@@ -862,7 +862,7 @@ var Domoticz = (function () {
       );
     }
     var realidx = DT_function.getDomoticzIdx(idx);
-    return deviceObservable.subscribe(realidx, idx, callback);
+    return deviceObservable.subscribe(realidx, getCurrent, callback);
   }
 
   function setDevice(idx, value) {
