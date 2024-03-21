@@ -61,13 +61,12 @@ Layout
 
 The following layout options are supported:
 
-  * xsmall
-  * small
-  * large
-  * xlarge
-  * xxl
+* xsmall
+* small
+* large
+* xlarge
+* xxl
 
 Below an example of all the layout options:
-
 
 .. image :: img/waqi.jpg
