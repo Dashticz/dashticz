@@ -11,8 +11,9 @@ A WAQI block can be configured as follows::
 
    //example for Amsterdam, large
    blocks['My WAQI']= {
-        layout: 'large',
-        city: 5771
+      type: 'waqi',
+      layout: 'large',
+      city: 5771
    };
 
 .. image :: img/waqi-large.jpg
@@ -27,10 +28,10 @@ Parameters
       
   * - Parameter
     - Description
+  * - type
+    - ``'waqi'``
   * - width
     - Set the width (1 to 12)
-  * - city
-    - WAQI city code. See below
   * - layout
     - | choose from 'xsmall','small','large','xlarge','xxl'
       | ``'small'``: Use small layout 
