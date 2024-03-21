@@ -29,7 +29,7 @@ Parameters
   * - Parameter
     - Description
   * - type
-    - ``'waqi'``
+    - ``'waqi'`` To select a WAQI block.
   * - width
     - Set the width (1 to 12)
   * - layout
