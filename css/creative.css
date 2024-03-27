@@ -4499,3 +4499,8 @@ canvas {
   margin-bottom: 10px;
   margin-right: 10px;
 }
+
+.publictransport .remarks
+{
+  font-style: italic;
+}
