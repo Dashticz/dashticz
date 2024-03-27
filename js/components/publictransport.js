@@ -57,7 +57,8 @@
   }
 
   function getData(me) {
-    return $.getJSON(me.providerCfg.dataURL).then(function (data) {
+    var getter = me.providerCfg.URL ? $.get(me.providerCfg.URL):$.getJSON(me.providerCfg.dataURL);
+    return getter.then(function (data) {
       me.data = data;
       return me
     })
@@ -118,6 +119,12 @@
         transformer: transformOvapi,
         tpl: 'pubtrans_ov',
         renderer: renderTpl
+      },
+      drgl: {
+        URL: _CORS_PATH + 'https://drgl.nl/stop/NL:S:' + block.station + (isNumeric(block.station)?'':'/traindeparturespanel' ),
+        transformer: transformDRGL,
+        tpl: 'pubtrans_ov',
+        renderer: renderTpl,
       }
     }
     var provider = block.provider.toLowerCase();
@@ -223,6 +230,45 @@
     return result;
   }
 
+  function transformDRGL(me, data) {
+    var block = me.block;
+    var result = {
+      departures: []
+    };
+    //console.log(data);
+    $(data).find('.list-group-item').each(function() {
+      var $this = $(this);
+      var timeinfoStr = $this.find('.ott-departure-time').html();
+      var timeinfo=['n.a.'];
+      if(typeof timeinfoStr==='string')
+        timeinfo=timeinfoStr.split(' ');
+      else
+        return;
+      var linenumber = $this.find('.ott-linecode').html();
+      var trainplatform = $this.find('.ott-trainplatform').html();
+      var res = {
+        time: timeinfo[0],
+        delay: timeinfo.length==2?timeinfo[1]: undefined,
+        line: linenumber,
+        destination: (linenumber?linenumber+' ':'') + $this.find('.ott-destination').html(),
+        transportType: $this.find('.ott-productcategory').html(),
+        platform: trainplatform? 'spoor '+trainplatform: $this.find('.ott-platform').html(),
+        remarks: []
+      }
+      $this.find('.notice').each(function() {
+        res.remarks.push($(this).html())
+      })
+      result.departures.push(res);
+    });
+/*    var result = {
+      departures: block.tpc ? transformOvApiTpc(me, data) : transformOvApiStation(me, data)
+    };
+    result.departures.sort(function (l, r) {
+      return l.fulltime - r.fulltime
+    })
+    */
+    return result;
+  }
 
 
   function transformIrailbe(me, data) {
