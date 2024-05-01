@@ -82,6 +82,7 @@ var DT_weather = (function () {
         icons: settings.static_weathericons ? 'static' : 'line',
         iconExt: 'svg',
         //        provider: 'owm'
+        rows: 1
       };
     },
     run: function (me) {
@@ -112,9 +113,23 @@ var DT_weather = (function () {
       if (me.block.scale !== 1) me.$block.css('width', w);
       var fontSize = w / 10;
       if (me.block.layout === 0 || me.block.layout === 1) {
-        fontSize = fontSize / me.block.count;
+        fontSize = fontSize / Math.ceil(me.block.count/me.block.rows);
       }
       me.$block.css('font-size', fontSize + 'px');
+      if(me.block.rows>1) {
+        /*
+        display: grid;
+    grid-template-rows: repeat(2, max-content);
+    grid-auto-flow: column;
+    gap: 0.5rem;
+    */
+        me.$block.css({
+          display: 'grid',
+          'grid-template-rows': 'repeat('+me.block.rows+', max-content)',
+          'grid-auto-flow': 'column',
+          gap: '0.5rem'
+        })
+      }
       me.runPromise
         .then(function () {
           return refreshProvider(me);
@@ -873,3 +888,23 @@ var DT_weather = (function () {
 })();
 
 Dashticz.register(DT_weather);
+
+
+/*
+display: grid;
+    grid-template-rows: repeat(2, max-content);
+    grid-auto-flow: column;
+    gap: 0.5rem;
+    */
+
+/*or:
+parent:
+
+font-size: 4.8px;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+child:
+  width:25%;
+*/
