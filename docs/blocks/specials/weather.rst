@@ -78,6 +78,9 @@ Parameters
       | ``4``: Combination of 2,3,0,1
   * - count
     - ``5``: Number of forecast items to show (default=3). Only for daily and hourly forecast.
+  * - rows
+    - | ``1``: (=default) Display all forecast elements (hours for layout:0, days for layout:1 ) on one row
+      | ``2``: Display the weather forecast elements on two rows
   * - interval
     - | Use every n-th forecast item. Only useful for owm3, because owm3 provides hourly forcast info 
       | ``1``. Use every forecast item (=default)
@@ -222,7 +225,26 @@ This will give the following icons sets to choose from:
 
 .. image :: img/weather_icons.jpg
 
+.. _weatherrows :
 
+Multiple rows
+~~~~~~~~~~~~~
+
+By setting the ``rows`` parameters you can determine how many rows will be used for the weather forecast elements.
+
+Example::
+
+  blocks['weatherfill'] = {
+    type: 'weather',
+    city: 'Amsterdam',
+    apikey: 'secret',
+    width: 12,
+    layout: 1,
+    count: 8,
+    rows: 2,
+  }
+
+.. image :: img/weather-rows.jpg
 
 styling
 ~~~~~~~
