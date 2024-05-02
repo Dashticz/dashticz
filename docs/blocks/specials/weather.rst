@@ -213,11 +213,11 @@ Icons
 
 Via the block parameter icons you can choose one of the predefined icon sets:
 
-  * 'line' (=default)
-  * 'linestatic'
-  * 'fill'
-  * 'static'
-  * 'meteo'
+* 'line' (=default)
+* 'linestatic'
+* 'fill'
+* 'static'
+* 'meteo'
 
 By setting the block parameter ``monochrome`` to true the icons will be displayed as monochrome.
 
@@ -286,16 +286,16 @@ Via https://openweathermap.org/ you can request a new API key and subscribe to w
 
 At this moment (August 2023) two types of accounts can be created:
 
-  * Free account
-  * Onecall API 3.0
+* Free account
+* Onecall API 3.0
 
 For the differences see https://openweathermap.org/price.
 
 Main differences:
 
-  * Onecall API requires you to provide your credit card info. 
-  * Onecall API provides 8 day weather forecast, free API only a 5 day forecast
-  * Onecall API provides hourly forecast info, while the free API only provides 3-hourly forecast info
+* Onecall API requires you to provide your credit card info. 
+* Onecall API provides 8 day weather forecast, free API only a 5 day forecast
+* Onecall API provides hourly forecast info, while the free API only provides 3-hourly forecast info
 
 In the past it was possible to request a OWM 2.5 account as well.
 
