@@ -348,6 +348,33 @@ var DT_function = (function () {
     });
   }
 
+  function idxIsScene(idx) {
+    if(typeof idx!=='string') return false;
+    if ('s'===idx[0] && isNumeric(idx.substring(1))) return idx;
+    var realidx = getIndexFromName(idx);
+    if (realidx && 's'===realidx[0] && isNumeric(realidx.substring(1))) return realidx;
+  }
+
+  /* returns the id that can be used in the subscribe*/
+  function getDomoticzIdx(idx) {
+    if(typeof idx==='number') return idx;
+//    if(idxIsScene(idx)) return idx;
+    return getIndexFromName(idx);
+  }
+
+  function getIndexFromName(idx) {
+    var devices=Domoticz.getAllDevices();
+    if(devices[idx]) return idx;
+    var id = Object.keys(devices).find(function(key) {
+      return idx === devices[key].Name;
+   })
+   if(id) {
+    var device = devices[id]
+    if (device.Type==='Group' || device.Type==='Scene') return 's'+device.idx;
+    return device.idx;
+   }
+  }
+
   return {
     clickHandler: clickHandler,
     promptPassword: promptPassword,
@@ -359,7 +386,9 @@ var DT_function = (function () {
     checkForceRefresh: checkForceRefresh,
     createModalDialog: createModalDialog,
     onRemove: onRemove,
-    cached: cached
+    cached: cached,
+    idxIsScene: idxIsScene,
+    getDomoticzIdx: getDomoticzIdx
   };
 })();
 

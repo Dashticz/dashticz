@@ -9,6 +9,7 @@ Dashticz currently supports the following types of public transport info:
 
    * Train info Netherlands ('treinen')
    * Bus/tram/boat info Netherlands ('ovapi')
+   * openbaar vervoer Netherlands ('drgl')
    * irail (Belgium)
    * delijn (Belgium)
 
@@ -53,6 +54,7 @@ Parameters
     - | Public transport info provider to use. Choose from
       | ``'treinen'`` Netherlands: trains 
       | ``'ovapi'`` Netherlands: bus, tram, boat
+      | ``'drgl'`` Netherlands dienstregeling
       | ``'irailbe'`` Belgium: trains 
       | ``'delijnbe'`` Belgium: bus, tram, boat
   * - direction
@@ -202,6 +204,35 @@ De lijn
 ~~~~~~~~
 
 The station code consists of 6 digits. Search for your station code in the search box on https://delijn.be 
+
+.. _drgl :
+
+drgl
+~~~~
+
+Find your station code via https://drgl.nl
+
+Search for a bus or train station name in the search box.
+
+The browser url will show the station code.
+
+Busstation codes are numeric. Train station codes are textual.
+
+Examples:
+
+* https://drgl.nl/stop/NL:S:asd, This is a trainstation with code ``'asd'`` which is Amsterdam CS
+* https://drgl.nl/stop/NL:S:57005010, This is a busstation with code ``'57005010'`` which is Amsterdam CS busstation
+
+Sometimes you first have to click on a specific line, and then on the busstop or train station you need, to get the right station code.
+
+Block example::
+
+  blocks['drgl'] = {
+    type: 'publictransport',
+    title: 'Utrecht bus centrumzijde',
+    provider: 'drgl',
+    station: '30009500'
+  }
 
 .. _predefpubtrans :
 

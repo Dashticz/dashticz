@@ -11,7 +11,7 @@ For Dashticz's **beta** version documentation go to: https://dashticz.readthedoc
 
 For Dashticz's **master** version documentation go to: https://dashticz.readthedocs.io/en/master/
 
-.. image:: https://camo.githubusercontent.com/d1e6ad3242567a419eb8c6174aca095ec5e1112e/687474703a2f2f692e696d6775722e636f6d2f39444263704e642e6a7067
+.. image :: img/dashticz.jpg
 
 .. toctree::
    :maxdepth: 2
