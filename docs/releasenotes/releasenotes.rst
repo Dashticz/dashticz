@@ -17,6 +17,7 @@ Enhancements
 * World Air Quality Index: Support for the WAQI widgets have been added. See :ref:`waqi`
 * publictransport: ``'drgl'`` as new provider, which will give bus and train departures in the Netherlands. See :ref:`drgl`
 * Weather: Add support by display the weather forecast elements on multiple rows by setting the ``rows`` block parameter. See :ref:`weatherrows`
+* Domoticz device block: Background image can be added. See :ref:`blockbackground`
 
 Fixes
 ~~~~~~
