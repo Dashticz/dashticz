@@ -1,8 +1,8 @@
 {
-"version": "3.12.1",
+"version": "3.13.0",
 "branch": "beta",
-"last_changes": "WAQI (Air Quality), drgl (train info), block and dial background images",
+"last_changes": "Beta version derived from 3.13-master",
 "changelog" : {
-            "3.12.0": "Beta version, derived from 3.12"
+            "3.13": "Master version derived from 3.12.1-beta"
             }
 }
