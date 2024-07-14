@@ -1332,6 +1332,7 @@ Only add this hover on NON touch devices
 .col-data {
   width: calc(100% - 45px);
   float: left;
+  text-shadow: 0px 0px 10px black;
 }
 
 .right2col {
@@ -3972,6 +3973,9 @@ canvas {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+.dial .background {
   border-radius: 50%
 }
 /*needed? Remove for now ...

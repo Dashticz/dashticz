@@ -1,4 +1,4 @@
-/* global Dashticz settings deviceUpdateHandler Domoticz*/
+/* global Dashticz settings deviceUpdateHandler Domoticz DT_function*/
 //# sourceURL=js/components/domoticzblock.js
 var DT_domoticzblock = (function () {
   return {
@@ -64,12 +64,43 @@ var DT_domoticzblock = (function () {
             })
         })
       }
+      me.backgroundselector='.block_' + block.key;
+      if (me.block.backgroundimage) {
+        if ( Domoticz.getAllDevices(me.block.backgroundimage)) {
+          Dashticz.subscribeDevice(me, me.block.backgroundimage, true, function (device) {
+            me.backgroundImage = device.Data;
+            setBackgroundImage(me, device.Data);
+          });
+
+        }
+        else {
+          me.backgroundImage = me.block.backgroundimage;
+          setBackgroundImage(me, me.backgroundImage);
+        }
+      }
+
     },
     refresh: function (me) {
       fixBlock(me);
       deviceUpdateHandler(me.block);
     },
   };
+
+  function setBackgroundImage(me, url) {
+    //switch: .switch-face
+    //'normal' ? dial: .dial-display
+    //updown: blinds
+    var $face = me.$mountPoint.find(me.backgroundselector);
+    var opacity = me.block.backgroundopacity? '; opacity: ' + me.block.backgroundopacity: '';
+    var bg = '<div class="background" style="background-image: url('+ url + ')' + opacity + '"> </div>';
+//      $face.css( {'background-image': "url(" + url + ")"})
+    $face.prepend(bg);
+    if(me.block.backgroundsize && me.block.backgroundsize!=='cover') {
+//      $face.css('background-size',me.block.backgroundsize)
+      $face.find('.background').css('background-size',me.block.backgroundsize)
+    }
+
+  }
 
   function fixBlock(me) {
     //This function is needed to make it work with previous block definition
@@ -91,6 +122,7 @@ var DT_domoticzblock = (function () {
     Dashticz.subscribeDevice(me, me.deviceIdx, true, function (device) {
       me.block.device = device;
       deviceUpdateHandler(me.block);
+      setBackgroundImage(me, me.backgroundImage);
     });
   }
 })();

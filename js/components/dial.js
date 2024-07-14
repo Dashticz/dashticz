@@ -355,7 +355,7 @@ var DT_dial = (function () {
 
         }
         else {
-          setBackgroundImage(me, me.block.backgroundImage);
+          setBackgroundImage(me, me.block.backgroundimage);
         }
       }
 
