@@ -38,7 +38,7 @@ var DT_dial = (function () {
         passive: false,
       });
 
-      DT_dial.settings = Domoticz.getAllDevices()['_settings'];
+      DT_dial.settings = Domoticz.getAllDevices('_settings');
 
     },
     defaultCfg: {
@@ -93,22 +93,19 @@ var DT_dial = (function () {
 
       var idx;
       me.devices = [];
-      if (typeof me.idx === 'number' || parseInt(me.idx))
-        me.devices.push(me.idx);
-      if (typeof me.idx === 'string' && me.idx[0] === 's') {
-        idx = parseInt(me.idx.slice(1));
-        if (idx) me.devices.push(me.idx);
-      }
+      var idx = DT_function.getDomoticzIdx(me.idx);
+      if (idx)
+        me.devices.push(idx);
       if (me.block.values)
         me.block.values.forEach(function (el) {
           if (typeof el === 'object' && el.idx) {
             //              if (!$.inArray(el.idx, me.devices))
-            var idx = parseInt(el.idx);
-            if (me.devices.indexOf(idx) === -1) me.devices.push(idx);
+            var idx = DT_function.getDomoticzIdx(el.idx);
+            if (idx && me.devices.indexOf(idx) === -1) me.devices.push(idx);
           }
         });
       if (me.block.temp) {
-        idx = parseInt(me.block.temp);
+        idx = DT_function.getDomoticzIdx(me.block.temp);
         if (idx && me.devices.indexOf(idx) === -1) me.devices.push(idx);
       }
       me.devices.forEach(function (el) {
@@ -125,7 +122,7 @@ var DT_dial = (function () {
         });
       });
       if (me.devices.length) {
-        me.device = Domoticz.getAllDevices()[me.devices[0]];
+        me.device = Domoticz.getAllDevices(me.devices[0]);
         if (!me.device) {
           console.log('Device not found: ', me.idx);
 //          me.$mountPoint.find('.dial').html('Device not found: '+me.idx);
@@ -219,7 +216,7 @@ var DT_dial = (function () {
     me.splitdial = choose(choose(me.splitdial, me.block.splitdial), me.min < 0);
     me.shownumbers =choose(me.shownumbers, me.block.shownumbers);
 
-    me.unitvalue = choose(me.block.unit, me.device.vunit, me.unitvalue);
+    me.unitvalue = choose(me.block.unit, me.device && me.device.vunit, me.unitvalue);
     me.max=choose(me.block.max, me.device && me.device.max, me.max);
     me.min=choose(me.block.min, me.device && me.device.min, me.min);
 
@@ -351,14 +348,14 @@ var DT_dial = (function () {
       }
 
       if (me.block.backgroundimage) {
-        if ( Domoticz.getAllDevices()[me.block.backgroundimage]) {
+        if ( Domoticz.getAllDevices(me.block.backgroundimage)) {
           Dashticz.subscribeDevice(me, me.block.backgroundimage, true, function (device) {
             setBackgroundImage(me, device.Data);
           });
 
         }
         else {
-          setBackgroundImage(me, me.block.backgroundImage);
+          setBackgroundImage(me, me.block.backgroundimage);
         }
       }
 
@@ -717,7 +714,7 @@ var DT_dial = (function () {
     var idx = me.setpointDevice || me.idx;
     var maxdim = me.maxdim;
     if (me.setpointDevice && ('onoff'!==src)) {
-      var d = Domoticz.getAllDevices()[idx];
+      var d = Domoticz.getAllDevices(idx);
       switch (true) {
         case isDefined(d.Level):
           setpointType = 'dim';
@@ -754,7 +751,7 @@ var DT_dial = (function () {
           $.extend(block, me);
           if (me.setpointDevice) {
             block.idx = me.setpointDevice; //Force that the correct setpoint device is used.
-            block.device = Domoticz.getAllDevices()[me.setpointDevice];
+            block.device = Domoticz.getAllDevices(me.setpointDevice);
           }
           switchThermostat(block, me.value);
         }
@@ -907,7 +904,7 @@ var DT_dial = (function () {
     } else {
       /* Combining Toon Thermostat with Toon Temp device */
       if (isDefined(me.block.temp)) {
-        me.value = Domoticz.getAllDevices()[me.block.temp].Temp;
+        me.value = Domoticz.getAllDevices(me.block.temp).Temp;
         me.isSetpoint = true;
         me.setpoint = me.device.SetPoint;
         me.info.push({
@@ -1085,7 +1082,7 @@ var DT_dial = (function () {
           if (typeof el == 'object' && el.idx) {
             idx = el.idx;
           }
-          var device = Domoticz.getAllDevices()[idx];
+          var device = Domoticz.getAllDevices(idx);
           if (!device) {
             console.error('Device not existing: ', idx);
             Debug.log(
@@ -1455,7 +1452,7 @@ var DT_dial = (function () {
       value = me.setpoint;
     }
     if (isDefined(me.block.temp)) {
-      me.temp = Domoticz.getAllDevices()[me.block.temp].Temp;
+      me.temp = Domoticz.getAllDevices(me.block.temp).Temp;
       me.info.push({
         icon: 'fas fa-calendar-alt',
         data: me.setpoint,

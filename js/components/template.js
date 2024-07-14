@@ -1,8 +1,8 @@
 /* global Dashticz */
 //# sourceURL=js/components/template.js
-var DT_template = (function () {
-
-  return {
+(function (Dashticz) {
+  "use strict";
+  var DT_template = {
     name: 'template',
     canHandle: function (block) {
       return block && false;
@@ -14,7 +14,7 @@ var DT_template = (function () {
     },
     run: function (me) {
     }
-}
-})();
+  }
+  Dashticz.register(DT_template);
+})(Dashticz);
 
-Dashticz.register(DT_simpleblock);

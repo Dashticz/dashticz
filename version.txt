@@ -1,10 +1,8 @@
 {
-"version": "3.12",
+"version": "3.13",
 "branch": "master",
-"last_changes": "Master version, roll-up of all 3.11.x changes",
+"last_changes": "Master version derived from 3.12.1-beta",
 "changelog" : {
-            "3.11.2": "Domoticz 2024.2, Google Maps, Dial improvements",
-            "3.11.1": "Changes in authentication",
-            "3.11": "Master version"
+            "3.12.1": "WAQI (Air Quality), drgl (train info), block and dial background images"
             }
 }

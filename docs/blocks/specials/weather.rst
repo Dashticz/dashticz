@@ -78,6 +78,9 @@ Parameters
       | ``4``: Combination of 2,3,0,1
   * - count
     - ``5``: Number of forecast items to show (default=3). Only for daily and hourly forecast.
+  * - rows
+    - | ``1``: (=default) Display all forecast elements (hours for layout:0, days for layout:1 ) on one row
+      | ``2``: Display the weather forecast elements on two rows
   * - interval
     - | Use every n-th forecast item. Only useful for owm3, because owm3 provides hourly forcast info 
       | ``1``. Use every forecast item (=default)
@@ -210,11 +213,11 @@ Icons
 
 Via the block parameter icons you can choose one of the predefined icon sets:
 
-  * 'line' (=default)
-  * 'linestatic'
-  * 'fill'
-  * 'static'
-  * 'meteo'
+* 'line' (=default)
+* 'linestatic'
+* 'fill'
+* 'static'
+* 'meteo'
 
 By setting the block parameter ``monochrome`` to true the icons will be displayed as monochrome.
 
@@ -222,7 +225,26 @@ This will give the following icons sets to choose from:
 
 .. image :: img/weather_icons.jpg
 
+.. _weatherrows :
 
+Multiple rows
+~~~~~~~~~~~~~
+
+By setting the ``rows`` parameters you can determine how many rows will be used for the weather forecast elements.
+
+Example::
+
+  blocks['weatherfill'] = {
+    type: 'weather',
+    city: 'Amsterdam',
+    apikey: 'secret',
+    width: 12,
+    layout: 1,
+    count: 8,
+    rows: 2,
+  }
+
+.. image :: img/weather-rows.jpg
 
 styling
 ~~~~~~~
@@ -264,16 +286,16 @@ Via https://openweathermap.org/ you can request a new API key and subscribe to w
 
 At this moment (August 2023) two types of accounts can be created:
 
-  * Free account
-  * Onecall API 3.0
+* Free account
+* Onecall API 3.0
 
 For the differences see https://openweathermap.org/price.
 
 Main differences:
 
-  * Onecall API requires you to provide your credit card info. 
-  * Onecall API provides 8 day weather forecast, free API only a 5 day forecast
-  * Onecall API provides hourly forecast info, while the free API only provides 3-hourly forecast info
+* Onecall API requires you to provide your credit card info. 
+* Onecall API provides 8 day weather forecast, free API only a 5 day forecast
+* Onecall API provides hourly forecast info, while the free API only provides 3-hourly forecast info
 
 In the past it was possible to request a OWM 2.5 account as well.
 

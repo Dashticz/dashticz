@@ -280,3 +280,22 @@ One special functionality is the device field ``deviceStatus``. You can set this
 You could set the value of deviceStatus based on the current device value or based on the value of another device.
 
 Happy hacking :)
+
+
+.. _beforefirstrenderhook:
+
+Before first render hook
+-------------------------
+
+Before the first render this hook will be called. Domoticz communication has started. All devices are known.
+This gives the opportunity to update the Dashticz configuration based on information from Domoticz.
+
+Example::
+
+    function beforeFirstRenderHook() {
+        var myDevice = Domoticz.getAllDevices('My Device');
+        blocks['mydevice'] = {
+            title: 'New device idx',
+            idx: myDevice.idx,
+        }
+    }

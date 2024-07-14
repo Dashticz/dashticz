@@ -35,6 +35,8 @@ You can also use custom names for the block identfier. In that case you have to 
    }
 
 
+.. _grouped_devices:
+
 Grouped devices
 ---------------
 To use grouped devices in a column you must make it known in your CONFIG.js as follows::
@@ -54,6 +56,11 @@ Now you can add all 3 light blocks to a column with the following code::
       'lights'
    ]
 
+All the blocks within such a group can be styled in custom.css all at once::
+
+  [data-id='lights'] .title {
+     color: yellow
+  }
 
 Scenes and Groups
 -----------------
@@ -233,6 +240,17 @@ Block parameters
   * - switchMode
     - | Click behavior RGBxx devices
       | 'color': Open the colorpicker popup window instead of device switch on/off
+  * - backgroundimage
+    - url or Domoticz text device id containing the url of the background image. See :ref:`blockbackground`
+  * - backgroundsize
+    - | Size of the background image. See :ref:`blockbackground`
+      | ``'80%'``: Scale the image to 80% of the block size
+      | ``'cover'``: Scale the image so that the image completely covers the block
+      | ``'contain'``: Scale the background image so that the image is contained within the block
+  * - backgroundopacity
+    - | Sets the opacity of the background image. See :ref:`blockbackground`
+      | ``1`` (=default): Opacity of 100%
+      | ``20%``: Opacity of 20%
 
 There are several additional parameters for Graphs. See :ref:`dom_graphs`
       
@@ -690,6 +708,35 @@ For a smart meter device you can use the following device parameters:
 All parameter names are case sensitive.   
 
 For more fancy computations you can create your custom getStatus function in custom.js   
+
+.. _blockbackground :
+
+Block background image
+----------------------
+
+.. image :: img/blockbackground.jpg
+
+Via the ``backgroundimage`` parameter the url of a background image can be defined.
+Instead of an url you can also fill in a Domoticz text device id.
+This Domoticz text device should then contain the url pointing to the image to be used as background for the block.
+
+The size can be adjusted via the ``backgroundsize`` parameter, and the opacity can be set via the ``backgroundopacity`` parameter.
+
+Example::
+
+  blocks['curtains'] = {
+      idx: 179,
+  //    backgroundimage: './img/curtains.png'
+      backgroundimage: 182,
+      backgroundsize: '50%',
+      backgroundopacity: 0.3,
+  }
+
+In the example above Domoticz device 182 is used to obtain the url of the background image.
+
+Example how to set the content of a Domoticz text device::
+
+  http://domoticz:8080/json.htm?type=command&param=udevice&idx=182&nvalue=0&svalue=https://www.schoolplaten.com/afbeelding-huis-dl28257.jpg
 
 
 .. _domoticzStyling:

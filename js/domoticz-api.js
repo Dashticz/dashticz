@@ -764,8 +764,10 @@ var Domoticz = (function () {
     return deviceObservable._values;
   }
 
-  function getAllDevices() {
-    return deviceObservable._values;
+  function getAllDevices(idx) {
+    if(!idx)
+      return deviceObservable._values;
+    return deviceObservable._values[DT_function.getDomoticzIdx(idx)];
   }
 
   function requestSecurityStatus() {
@@ -859,7 +861,8 @@ var Domoticz = (function () {
         cfg.domoticz_refresh * 1000
       );
     }
-    return deviceObservable.subscribe(idx, getCurrent, callback);
+    var realidx = DT_function.getDomoticzIdx(idx);
+    return deviceObservable.subscribe(realidx, getCurrent, callback);
   }
 
   function setDevice(idx, value) {

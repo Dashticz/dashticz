@@ -8,6 +8,39 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+V3.13 master (14-7-2024)
+---------------------------
+
+Same as v3.12.1 beta
+
+V3.12.1 beta (14-7-2024)
+---------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Use device name instead of device idx (undocumented)
+* custom.js: New hook which will be called before first Dashticz render: ``beforeFirstRenderHook()``. See :ref:`beforefirstrenderhook`
+* Styling: Add correct data-id to a Dashticz block consisting of multiple blocks. See :ref:`grouped_devices`
+* World Air Quality Index: Support for the WAQI widgets have been added. See :ref:`waqi`
+* publictransport: ``'drgl'`` as new provider, which will give bus and train departures in the Netherlands. See :ref:`drgl`
+* Weather: Add support by display the weather forecast elements on multiple rows by setting the ``rows`` block parameter. See :ref:`weatherrows`
+* Domoticz device block: Background image can be added. See :ref:`blockbackground`
+
+Fixes
+~~~~~~
+
+* P1 block: Fix unit of first value (Nett Energy)
+* Graph: Fix graph for switches (for Domoticz 2024.1 and higher)
+* Calendar: Fix for showing a calendar block more than once
+* Dial: Prevent error when device is not defined
+* Dial: Fix updown dial (bug introduced by recent change)
+
+V3.12.0 beta (26-1-2024)
+---------------------------
+
+Beta version, derived from v3.12 master
+
 V3.12 Master (26-1-2024)
 ---------------------------
 
@@ -775,7 +808,7 @@ You only have to do this once: Next updates can be installed with a normal 'git 
 Enhancements
 ~~~~~~~~~~~~
 
-* Calendar: New block parameter ``emptytext`` to define the text to show where there are no calendar appointments. Only works for the new calendar block. See :ref:`newcalendar`
+* Calendar: New block parameter ``emptytext`` to define the text to show where there are no calendar appointments. Only works for the new calendar block. See :ref:'newcalendar'
 * Custom graph: aggregate parameter can be an array to specify different aggregation methods per data element. See :ref:`groupBy`
 * Graph: New parameters ``axisRight`` to show the first Y axis on the right (default is ``false``), and ``axisAlternating`` to show Y axes alternating left/right (default: ``true``).
 * Support for device (sub)type Managed Counter
@@ -853,7 +886,7 @@ Enhancements
 Fixes
 ~~~~~~
 
-* Calendar: Add 'method:0' to your calendar block definition in case you experience issues with recurring events. Only works for the new calendar block. See :ref:`newcalendar`
+* Calendar: Add 'method:0' to your calendar block definition in case you experience issues with recurring events. Only works for the new calendar block. See :ref:'newcalendar'
 * Fix for X10 security motion device.
 
 3.6.7 Beta (4-11-2020)
@@ -893,7 +926,7 @@ Enhancements
 
 * Button, special blocks: Initiate the ``url`` parameter as POST request by setting ``newwindow: 4``
 * Add support for Domoticz x10 security sensor
-* Dial: Combine data from several devices. See :ref:`genericdial`
+* Dial: Combine data from several devices. See :ref:'genericdial'
 
 3.6.4 Beta (6-10-2020)
 ----------------------
@@ -915,7 +948,7 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Set config setting ``security_panel_lock`` to ``2`` to activate security panel lock in 'Armed Home' mode as well.
-* Dial type now enabled for most devices. See :ref:`genericdial`
+* Dial type now enabled for most devices. See :ref:'genericdial'
 
 Fixes
 ~~~~~
@@ -1098,7 +1131,7 @@ Fixes
 -----------------------
 
 Enhancements
-  * New calendar layout. See :ref:`newcalendar`
+  * New calendar layout. See :ref:'newcalendar'
 
 Fixes
   * Group/scene status refresh
@@ -1272,7 +1305,7 @@ Fixes
 ------------------
 
 Enhancements
-  * Show calendar with table formatting by setting blockparameter ``calFormat:1``. See :ref:`calTable`
+  * Show calendar with table formatting by setting blockparameter ``calFormat:1``. See :ref:'calTable'
   * Session Time Out option
   
 Fixes

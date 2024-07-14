@@ -166,7 +166,7 @@ Domoticz authorization
 -----------------------
 
 Easy method
-~~~~~~~~~~~~
+--------------
 
 The Easy Method is only recommended in case Dashticz is not exposed to the public internet.
 
@@ -190,10 +190,10 @@ Example of Domoticz settings:
 
 .. image :: apiprotection2.jpg
 
-.. _oauth2::
+.. _oauth2 :
 
 Advanced method
-~~~~~~~~~~~~~~~~
+------------------
 
 Since Domoticz 2023.2 authorization via OAuth2 is supported.
 
@@ -213,10 +213,10 @@ In Domoticz - Setup - More Options - Application, create a new application. Exam
 In Dashticz CONFIG.js:
 
   * Remove CONFIG['user_name'] and CONFIG['pass_word']
-  * Add the following::
+  * Add the following
 
-    CONFIG['client_id'] = 'Dashticz';
-    CONFIG['client_secret'] = 'DashticzPassword';
+  CONFIG['client_id'] = 'Dashticz';
+  CONFIG['client_secret'] = 'DashticzPassword';
 
 If you have configured Domoticz and Dashticz as described above, then when you open Dashticz the Domoticz authentication window will be shown, where you can fill in a Domoticz username and password.
 After verifying the user credentials a token will be generated which will be used by Dashticz to get data from Domoticz.

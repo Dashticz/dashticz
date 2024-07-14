@@ -1332,6 +1332,7 @@ Only add this hover on NON touch devices
 .col-data {
   width: calc(100% - 45px);
   float: left;
+  text-shadow: 0px 0px 10px black;
 }
 
 .right2col {
@@ -3972,6 +3973,9 @@ canvas {
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+.dial .background {
   border-radius: 50%
 }
 /*needed? Remove for now ...
@@ -4469,4 +4473,38 @@ canvas {
 .publictransport .delay {
   background-color: red;
   color: white;
+}
+
+.waqi {
+  background-color: unset;
+  padding: 0px !important;
+  border: 0px;
+}
+
+.waqi .dt_state {
+  margin: 0px;
+}
+
+.waqi.xxl {
+  padding-top: 5px!important;
+  padding-left: 10px!important;
+}
+.waqi.xxl iframe {
+  background-color: #f6f9f7;
+  border: 1px solid white;
+  min-width: 100px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  border-radius: 5px;
+  -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  margin-top: 10px;
+  margin-bottom: 10px;
+  margin-right: 10px;
+}
+
+.publictransport .remarks
+{
+  font-style: italic;
 }
