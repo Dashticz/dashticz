@@ -124,6 +124,7 @@ function curlWeb($url, $options=0) {
 	}
 	$server_output = curl_exec ($ch);
 	curl_close ($ch);
+//	var_dump($server_output);
 	return $server_output;
 
 }
@@ -366,53 +367,37 @@ function getCalendar() {
 			break;
 		case 'recycleapp':
 			/*
-			First find the secret from main js file (step 1 and 2)
-			Then get an access token:
-
-			curl -H "x-consumer: recycleapp.be" -H "x-secret: Qp4KmgmK2We1ydc9Hxso5D6K0frz3a9raj2tqLjWN5n53TnEijmmYz78pKlcma54sjKLKogt6f9WdnNUci6Gbujnz6b34hNbYo4DzyYRZL5yzdJyagFHS15PSi2kPUc4v2yMck81yFKhlk2aWCTe93" "https://recycleapp.be/api/app/v1/access-token" > accesstoken.json
-
-			//Then get the valid zip codes. As authorization use the obtained token.
-			curl -H "x-consumer: recycleapp.be" -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1OTc4NTA1MTEsImV4cCI6MTU5Nzg1NDExMSwiYXVkIjoicmVjeWNsZWFwcC5iZSJ9.fuHPCfFgLBDgT3BC245pQtdOeeAKDvKE9OjfXnkzfYA" "https://recycleapp.be/api/app/v1/zipcodes?q=8560" > garbagezip.json
+			Get the api address via https://www.recycleapp.be/config/app.settings.json
+			//Then get the valid zip codes.
+			curl -H "x-consumer: recycleapp.be"  "https://api.fostplus.be/recyclecms/public/v1/zipcodes?q=8560" > garbagezip.json
 			//Find the street within the zipcodes:
-			curl -H "x-consumer: recycleapp.be" -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1OTc3ODAwNjgsImV4cCI6MTU5Nzc4MzY2OCwiYXVkIjoicmVjeWNsZWFwcC5iZSJ9.3W2Px8c1K907R73pOahvlkPxxgh9BoY1HU5xgu3f0nQ" "https://recycleapp.be/api/app/v1/streets?q=tarwelaan&zipcodes=8500-34022" > garbagestreet.json
+			curl -H "x-consumer: recycleapp.be" "https://api.fostplus.be/recyclecms/public/v1/streets?q=tarwelaan&zipcodes=8500-34022" > garbagestreet.json
 
 			//result: id contains the street id
 
 			//Then request the collections for the street id
-			curl -H "x-consumer: recycleapp.be" -H "Authorization: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpYXQiOjE1OTc3ODAwNjgsImV4cCI6MTU5Nzc4MzY2OCwiYXVkIjoicmVjeWNsZWFwcC5iZSJ9.3W2Px8c1K907R73pOahvlkPxxgh9BoY1HU5xgu3f0nQ" "https://recycleapp.be/api/app/v1/collections?zipcodeId=8500-34022&streetId=52738&houseNumber=1&fromDate=2020-08-01&untilDate=2020-09-30&size=100" > garbagefinal.json
+			curl -H "x-consumer: recycleapp.be"  "https://api.fostplus.be/recyclecms/public/v1/collections?zipcodeId=8500-34022&streetId=52738&houseNumber=1&fromDate=2020-08-01&untilDate=2020-09-30&size=100" > garbagefinal.json
+
 			*/
-			$url = "https://www.recycleapp.be";
-			//step 1: Get main js file
-			$match = curlWebMatch($url,'/script src="(.static.js.main.*.chunk.js)"/');
-			//var_dump($match[1]);
 
-			//step 2: Find secret
-			$match = curlWebMatch($url.$match[1],'/var n="(\w*)",r="/');
-			//var_dump($match);
+			$url = "https://www.recycleapp.be/config/app.settings.json";
+			$data=curlWebJson($url);
+			$url = $data->API."/public/v1/";
 
-			//step 3: get access token
+//			print_r($data);
+//			print_r($url);
+			//*Step 1: get list of addresses
 			$headers = [
 				'x-consumer: recycleapp.be',
-				'x-secret: '.$match[1]
-			];
-			$url = "https://www.recycleapp.be/api/app/v1/";
-			$data=curlWebJson($url."access-token", $headers);
-//			print_r ($data);
-//			print $data->accessToken;
-			$accessToken = $data->accessToken;
-
-			//*Step 4: get list of addresses
-			$headers = [
-				'x-consumer: recycleapp.be',
-				'Authorization: '.$accessToken
 			];
 			$data=curlWebJson($url."zipcodes?q=".$_GET['zipcode'],$headers);
 
 //			print_r ($data);
+
 			$zipcode = $data->items[0]->id;
 //			print_r($zipcode);
 
-			//Step 5: get street
+			//Step 2: get street
 			$urltmp = $url."streets?q=".urlencode($_GET['sub'])."&zipcodes=".$zipcode;
 			$data = curlWebJson($urltmp, $headers);
 //			print_r($data);
