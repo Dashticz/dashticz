@@ -90,6 +90,7 @@ var DT_domoticzblock = (function () {
     //switch: .switch-face
     //'normal' ? dial: .dial-display
     //updown: blinds
+    if(!url) return;
     var $face = me.$mountPoint.find(me.backgroundselector);
     var opacity = me.block.backgroundopacity? '; opacity: ' + me.block.backgroundopacity: '';
     var bg = '<div class="background" style="background-image: url('+ url + ')' + opacity + '"> </div>';
