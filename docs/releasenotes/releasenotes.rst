@@ -12,6 +12,7 @@ Fixes
 ~~~~~~
 
 * Garbage: Fix for recycleapp (BE)
+* Fix for network errors resulting from undefined background image
 
 
 V3.13.0 beta (14-7-2024)
