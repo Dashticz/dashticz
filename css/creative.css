@@ -1331,7 +1331,10 @@ Only add this hover on NON touch devices
 
 .col-data {
   width: calc(100% - 45px);
-  float: left;
+  float: left; 
+}
+
+.hasbackground .col-data {
   text-shadow: 0px 0px 10px black;
 }
 

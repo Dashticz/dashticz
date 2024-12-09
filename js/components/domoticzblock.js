@@ -92,6 +92,7 @@ var DT_domoticzblock = (function () {
     //updown: blinds
     if(!url) return;
     var $face = me.$mountPoint.find(me.backgroundselector);
+    $face.addClass('hasbackground');
     var opacity = me.block.backgroundopacity? '; opacity: ' + me.block.backgroundopacity: '';
     var bg = '<div class="background" style="background-image: url('+ url + ')' + opacity + '"> </div>';
 //      $face.css( {'background-image': "url(" + url + ")"})
