@@ -1271,7 +1271,9 @@ var DT_dial = (function () {
       me.status = me.device.Level;
       me.options = [];
       var levelNames = atob(me.device.LevelNames).split('|');
+      var levelOffHidden = me.device.LevelOffHidden;
       $.each(levelNames, function (index, value) {
+        if (levelOffHidden && index==0) return;
         me.options.push({ val: index * 10, text: value });
       });
       if(me.block.sortOrder) {
