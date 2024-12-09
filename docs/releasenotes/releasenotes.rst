@@ -13,6 +13,7 @@ Fixes
 
 * Garbage: Fix for recycleapp (BE)
 * Fix for network errors resulting from undefined background image
+* Fix: Remove text shadow for blocks without background
 
 
 V3.13.0 beta (14-7-2024)
