@@ -764,9 +764,12 @@ var DT_weather = (function () {
   }
 
   function getOWM3url(me) {
+    var lang = me.block.lang;
     var url = 'https://api.openweathermap.org/data/3.0/onecall?lat=' + me.lat +
       '&lon=' + me.lon +
       '&appid=' + me.block.apikey +
+      '&lang=' +
+      lang +
       '&units=' +
       (settings['use_fahrenheit'] === 1 ? 'imperial' : 'metric');
     return url;
