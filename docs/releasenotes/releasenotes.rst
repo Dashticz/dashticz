@@ -16,6 +16,7 @@ Fixes
 * Fix: Remove text shadow for blocks without background
 * Dials: remove off level for devices with hidden off level
 * Weather: language for owm3
+* Work-around for broken websocket with Domoticz 2024.7
 
 
 V3.13.0 beta (14-7-2024)
