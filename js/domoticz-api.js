@@ -412,6 +412,8 @@ var Domoticz = (function () {
   }
 
   function connectWebsocket() {
+    connectWebSocket2();
+    return;
     /*
     var body = {
       username: encodeURIComponent(window.btoa(settings['user_name'])),
@@ -510,12 +512,23 @@ var Domoticz = (function () {
         onDateTime(res);
         return;
       }
+      var initialError=false;
       if (typeof res.requestid !== 'undefined' && callbackList[requestid]) {
         callbackList[requestid].resolve(res2);
       } else {
         console.log('no requestid or no callback ', res);
+        if (initialUpdate.state() !== 'resolved') {
+          //handle error reply
+          initialError=true;
+
+        }
       }
-      initialUpdate.resolve();
+      if (initialError) {
+        console.log('Closing websocket at initial update.');
+        socket.close();
+      }
+      else
+        initialUpdate.resolve();
       /*            //console.log(res)
                         var res2 = JSON.parse(res.data)
                         // console.log(res2)
