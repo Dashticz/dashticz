@@ -22,7 +22,6 @@ var spectrumColors = {};
 /** Returns a default switch block
  *
  * @param {object} block - The Dashticz block definition
- * @param {number | string} idx idx as used by Dashticz. Scenes start with 's'. Variables with 'v'
  * @param {string}   defaultIconOn Default On icon
  * @param {string}   defaultIconOff Default Off icon
  * @param {string}   buttonimg Default image.

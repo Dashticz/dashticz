@@ -321,7 +321,7 @@ function isDomoticzDevice(key) {
 // eslint-disable-next-line no-unused-vars
 function getStatusBlock(block) {
   var device = block.device;
-  var value = block.value ? block.value : '';
+  var value = block.value ? Dashticz.getProperty(block.value, device) : '';
   var title = block.title ? block.title : '';
   var format = block.format;
   var decimals = block.decimals;
@@ -339,7 +339,7 @@ function getStatusBlock(block) {
   //todo: see dirty hack below with '<br />'
   if (matches && matches[0] !== '<br />') {
     matches.map(function (val) {
-      elements.push(val.replace(/([<,>])+/g, ''));
+      if(val!=='<br />') elements.push(val.replace(/([<,>])+/g, ''));
     });
   }
   /*    if (block.unit && typeof block.unit === 'string') {
@@ -353,13 +353,16 @@ function getStatusBlock(block) {
     var cnt = 0;
     for (var d in elements) {
       var deviceValue = device[elements[d]];
-      if (format || typeof decimals !== 'undefined' || block.unit) {
+      if (format || typeof decimals !== 'undefined' || Dashticz.getProperty(block.unit, device)) {
         var blockunit = blockunits[cnt] || blockunits[0];
         var current_unit = '';
         if (isNaN(deviceValue)) {
           var valueSplit = deviceValue.split(' ');
           deviceValue = valueSplit[0];
           current_unit = valueSplit[1] || current_unit;
+        }
+        if (block.scale) {
+          deviceValue = parseFloat(deviceValue) * block.scale;
         }
         if (format) {
           deviceValue = number_format(deviceValue, decimals);
@@ -583,11 +586,11 @@ function iconORimage(
     isOn = getIconStatusClass(device.Status) === 'on';
   if (typeof block !== 'undefined') {
     if (typeof block['icon'] !== 'undefined') {
-      mIcon = block['icon'];
+      mIcon = Dashticz.getProperty(block['icon'], device);
       useImage = false;
     }
     if (typeof block['image'] !== 'undefined') {
-      mImage = block['image'];
+      mImage = Dashticz.getProperty(block['image'], device);
       useImage = true;
     }
   }
@@ -843,22 +846,6 @@ function handleDevice(block) {
   if (res) return res;
 
   switch (device['Type']) {
-    case 'P1 Smart Meter':
-      return getSmartMeterBlock(block);
-    case 'RFXMeter':
-      if (device['SubType'] == 'RFXMeter counter') {
-        return getRFXMeterCounterBlock(block);
-      }
-      break;
-    case 'YouLess Meter':
-      return getYouLessBlock(block);
-    case 'General':
-      if (device['SubType'] === 'kWh') {
-        return getGeneralKwhBlock(block);
-      }
-      break;
-    case 'Humidity':
-      return getHumBlock(block);
     case 'Temp + Humidity + Baro':
     case 'Temp + Humidity':
     case 'Temp + Baro':
@@ -874,17 +861,6 @@ function handleDevice(block) {
         //EvoHome Hot Water device
         return getEvohomeHotWaterBlock(block);
       return getTempHumBarBlock(block);
-    case 'Thermostat':
-    case 'Setpoint':
-      return getThermostatBlock(block);
-    case 'Group':
-    case 'Scene':
-      return getDefaultSwitchBlock(
-        block,
-        'fas fa-lightbulb',
-        'far fa-lightbulb',
-        buttonimg
-      );
   }
 
   switch (device['HardwareType']) {
@@ -1104,29 +1080,6 @@ function handleDevice(block) {
           slideDevice(block, value);
         });
     }
-  } else if (device['SubType'] == 'Custom Sensor') {
-    var defaultIcon = 'fas fa-question';
-    if (device['Image'] === 'Water') defaultIcon = 'fas fa-tint';
-    else if (device['Image'] === 'Heating') defaultIcon = 'fas fa-utensils';
-
-    html += iconORimage(block, defaultIcon, '', 'on icon');
-    html += '<div class="col-xs-8 col-data">';
-    var title = block.title;
-    var value = device['Data'];
-    if (titleAndValueSwitch(block)) {
-      title = device['Data'];
-      value = block.title;
-    }
-    html += '<strong class="title">' + title + '</strong><br />';
-    html += '<span class="state">' + value + '</span>';
-
-    if (showUpdateInformation(block)) {
-      html +=
-        '<br /><span class="lastupdate">' +
-        moment(block.device['LastUpdate']).format(settings['timeformat']) +
-        '</span>';
-    }
-    html += '</div>';
   } else if (device['HardwareName'] === 'Dummy') {
     return getDefaultSwitchBlock(
       block,
@@ -1193,247 +1146,6 @@ function getLogitechControls(block) {
   return html;
 }
 
-function getSmartMeterBlock(block) {
-  var device = block.device;
-  var idx = device.idx;
-  block.width = block.width || 4;
-  if (device['SubType'] === 'Energy') {
-    var usage = parseFloat(device.NettUsage || '0');
-
-    var data = device['Data'].split(';');
-    var blockValues = [
-      {
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 1,
-        title: language.energy.energy_usage,
-        value: usage,
-        unit: settings['units'].names.watt,
-      },
-      {
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 2,
-        title: language.energy.energy_usagetoday,
-        value: number_format(
-          device['CounterToday'],
-          settings['units'].decimals.kwh
-        ),
-        unit: settings['units'].names.kwh,
-      },
-      {
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 3,
-        title: language.energy.energy_totals,
-        value: number_format(device['Counter'], 0),
-        unit: settings['units'].names.kwh,
-      },
-    ];
-
-    if (parseFloat(device['CounterDeliv']) > 0) {
-      blockValues.push({
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 4,
-        title: language.energy.energy_delivered,
-        value: number_format(device['CounterDeliv'], 0),
-        unit: settings['units'].names.kwh,
-      });
-      blockValues.push({
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 5,
-        title: language.energy.energy_deliveredtoday,
-        value: number_format(
-          device['CounterDelivToday'],
-          settings['units'].decimals.kwh
-        ),
-        unit: settings['units'].names.kwh,
-      });
-    }
-
-    if (typeof data[1] !== 'undefined') {
-      data[0] = data[0] / 1000;
-      data[1] = data[1] / 1000;
-      blockValues.push({
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 6,
-        title: language.energy.energy_totals,
-        value:
-          'P1: ' +
-          number_format(data[0], 3, '.', '') +
-          ' ' +
-          settings['units'].names.kwh +
-          '<br />P2: ' +
-          number_format(data[1], 3, '.', '') +
-          ' ' +
-          settings['units'].names.kwh,
-        unit: '',
-      });
-
-      blockValues.push({
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 7,
-        title: language.energy.energy_totals + ' P1',
-        value: number_format(data[0], 3, '.', ''),
-        unit: settings['units'].names.kwh,
-      });
-
-      blockValues.push({
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 8,
-        title: language.energy.energy_totals + ' P2',
-        value: number_format(data[1], 3, '.', ''),
-        unit: settings['units'].names.kwh,
-      });
-    }
-    createBlocks(block, blockValues);
-    return ['', false];
-  }
-  if (device['SubType'] === 'Gas') {
-    var myblockValues = [
-      {
-        icon: 'fas fa-fire',
-        idx: idx,
-        subidx: 1,
-        title: language.energy.gas_usagetoday,
-        value: device['CounterToday'],
-        unit: '',
-      },
-      {
-        icon: 'fas fa-fire',
-        idx: idx,
-        subidx: 2,
-        title: language.energy.energy_totals + ' ' + block.title,
-        value: device['Counter'],
-        unit: 'm3',
-      },
-    ];
-    createBlocks(block, myblockValues);
-    return ['', false];
-  }
-  return ['', false];
-}
-
-function getRFXMeterCounterBlock(block) {
-  var device = block.device;
-  var idx = device.idx;
-  var unit = '';
-  var decimals = 2;
-  var icon = 'fas fa-fire';
-
-  switch (device['SwitchTypeVal']) {
-    case 0:
-      unit = settings['units'].names.kwh;
-      decimals = settings['units'].decimals.kwh;
-      icon = 'fas fa-bolt';
-      break;
-
-    case 1:
-      unit = settings['units'].names.gas;
-      decimals = settings['units'].decimals.gas;
-      icon = 'fas fa-fire';
-      break;
-
-    case 2:
-      unit = settings['units'].names.water;
-      decimals = settings['units'].decimals.water;
-      icon = 'fas fa-tint';
-      break;
-
-    case 3:
-      unit = device['ValueUnits'];
-      break;
-
-    case 4:
-      unit = settings['units'].names.kwh;
-      decimals = settings['units'].decimals.kwh;
-      icon = 'fas fa-sun';
-      break;
-
-    case 5:
-      unit = settings['units'].names.time;
-      decimals = settings['units'].decimals.time;
-      icon = 'far fa-clock';
-      break;
-  }
-
-  var blockValues = [
-    {
-      icon: icon,
-      idx: idx,
-      subidx: 1,
-      title: block.title,
-      value: number_format(device['CounterToday'].split(' ')[0], decimals),
-      unit: unit,
-    },
-    {
-      icon: icon,
-      idx: idx,
-      subidx: 2,
-      title: language.energy.energy_totals + ' ' + block.title,
-      value: number_format(device['Counter'].split(' ')[0], decimals),
-      unit: unit,
-    },
-  ];
-  if (typeof device['Usage'] !== 'undefined') {
-    blockValues.push({
-      icon: icon,
-      idx: idx,
-      subidx: 3,
-      title: block.title,
-      value: number_format(device['Usage'].split(' ')[0], decimals),
-      unit: unit,
-    });
-  }
-  createBlocks(block, blockValues);
-  return ['', false];
-}
-
-function getYouLessBlock(block) {
-  var device = block.device;
-  var idx = device.idx;
-
-  this.html = '';
-  var blockValues = [
-    {
-      icon: 'fas fa-fire',
-      idx: idx,
-      subidx: 1,
-      title: block.title,
-      value: number_format(
-        device['CounterToday'].split(' ')[0],
-        settings['units'].decimals.kwh
-      ),
-      unit: settings['units'].names.kwh,
-    },
-    {
-      icon: 'fas fa-fire',
-      idx: idx,
-      subidx: 2,
-      title: language.energy.energy_totals + ' ' + block.title,
-      value: number_format(device['Counter'], settings['units'].decimals.kwh),
-      unit: settings['units'].names.kwh,
-    },
-  ];
-  if (typeof device['Usage'] !== 'undefined') {
-    blockValues.push({
-      icon: 'fas fa-fire',
-      idx: idx,
-      subidx: 3,
-      title: block.title,
-      value: number_format(device['Usage'], settings['units'].decimals.watt),
-      unit: settings['units'].names.watt,
-    });
-  }
-  createBlocks(block, blockValues);
-  return ['', false];
-}
-
 function createBlocks(blockParent, blockValues) {
   /* I assume this function gets called once per block
   // That means we first have to remove the previous content
@@ -1449,14 +1161,15 @@ function createBlocks(blockParent, blockValues) {
   blockValues.forEach(function (blockValue) {
     if (blockParent.subidx && blockParent.subidx !== blockValue.subidx) return;
     //  console.log("createBlocks id: ", blockValue.idx)
+    if(blockValue.hideEmpty && typeof device[blockValue.hideEmpty]==='undefined') return;
     var block = {};
-    $.extend(block, blockValue); //create a block from the prototype
-    $.extend(block, blockParent);
+    $.extend(block, blockParent, blockValue); //create a block from the prototype
+//    $.extend(block, blockParent);
     /* Fix icon/image setting*/
-    if(blockParent.image || blockParent.icon) {
-      block.image = blockParent.image;
-      block.icon = blockParent.icon;
-    }
+//    if(blockParent.image || blockParent.icon) {
+//      block.image = blockParent.image;
+//      block.icon = blockParent.icon;
+//    }
     //        $.extend(block, blocks[blockValue.idx]); //I don't think we should do this: It will overwrite block settings of a custom block
     //Although for subdevices it would be nice to use corresponding block setting
     //so let's overwrite in case parent and blockvalue idx are different
@@ -1485,7 +1198,7 @@ function createBlocks(blockParent, blockValues) {
     triggerStatus(block);
     triggerChange(block);
 
-    block.valueunit = block.value + ' ' + block.unit;
+    block.valueunit = block.value + ' ' + Dashticz.getProperty(block.unit, device);
     block.device = device;
 
     html = getStatusBlock(block);
@@ -1513,60 +1226,6 @@ function createBlocks(blockParent, blockValues) {
       .html(html)
       .addClass(block.addClass);
   });
-}
-
-function getGeneralKwhBlock(block) {
-  var device = block.device;
-  var idx = device.idx;
-  this.html = '';
-  var blockValues = [
-    {
-      icon: 'fas fa-fire',
-      idx: idx,
-      subidx: 1,
-      title: block.title + ' ' + language.energy.energy_now,
-      value: number_format(device['Usage'], settings['units'].decimals.watt),
-      unit: settings['units'].names.watt,
-    },
-    {
-      icon: 'fas fa-fire',
-      idx: idx,
-      subidx: 2,
-      title: block.title + ' ' + language.energy.energy_today,
-      value: number_format(
-        device['CounterToday'],
-        settings['units'].decimals.kwh
-      ),
-      unit: settings['units'].names.kwh,
-    },
-    {
-      icon: 'fas fa-fire',
-      idx: idx,
-      subidx: 3,
-      title: block.title + ' ' + language.energy.energy_total,
-      value: number_format(device['Data'], 2),
-      unit: settings['units'].names.kwh,
-    },
-  ];
-  createBlocks(block, blockValues);
-  return ['', false];
-}
-
-function getHumBlock(block) {
-  var device = block.device;
-  var idx = device.idx;
-  this.html = '';
-  var blockValues = [
-    {
-      icon: 'wi wi-humidity',
-      idx: idx,
-      title: block.title,
-      value: number_format(device['Humidity'], 0),
-      unit: '%',
-    },
-  ];
-  createBlocks(block, blockValues);
-  return ['', false];
 }
 
 function getTempHumBarBlock(block) {
