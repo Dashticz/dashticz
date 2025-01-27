@@ -307,6 +307,7 @@ blocktypes.Variable = {
 };
 
 blocktypes['Temp + Humidity + Baro'] = {
+  icon: 'fas fa-thermometer-half',
   SubType : {
     Zone: {
       handler: getEvohomeZoneBlock
@@ -319,7 +320,6 @@ blocktypes['Temp + Humidity + Baro'] = {
     }
   },
   childs: [{
-    icon: 'fas fa-thermometer-half',
     value: function(device) {
       return choose(device.Temp && '<Temp>', '<Data>')
     },
@@ -407,6 +407,10 @@ if (typeof getExtendedBlockTypes == 'function') {
 // eslint-disable-next-line no-unused-vars
 function getBlockTypesBlock(block) {
   var device = block.device;
+  if(block.subidx) {
+    block.idx = isDomoticzDevice(block.idx);
+  }
+
   var newblock = { graph: true, title: '<Name>', value: '<Data>', idx: block.idx };
   var protoBlock = {};
   if (blocktypes[device.Type]) {
@@ -448,7 +452,9 @@ function getBlockTypesBlock(block) {
       c++;
     }
   }
-  createBlocks(block, blockValues);
+  var parentBlock={};
+  $.extend(parentBlock, getSubBlock(protoBlock), block);
+  createBlocks(parentBlock, blockValues);
   return ['', false];
 }
 

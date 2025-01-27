@@ -49,21 +49,21 @@ function getBlock(cols, c, screendiv, standby) {
     } else {
       $(screendiv + ' .row').append(
         '<div data-colindex="' +
-          c +
-          '" class="' +
-          colwidth +
-          ' col-xs-12 sortable col' +
-          c +
-          ' ' +
-          colclass +
-          '"></div>'
+        c +
+        '" class="' +
+        colwidth +
+        ' col-xs-12 sortable col' +
+        c +
+        ' ' +
+        colclass +
+        '"></div>'
       );
     }
     cols.blocks && cols['blocks'].forEach(function (b, i) {
-      if(b)
+      if (b)
         addBlock2Column(columndiv, c, b);
       else {
-        Debug.log(Debug.ERROR, 'Block number '+i+' in column ' + c + ' is undefined.');
+        Debug.log(Debug.ERROR, 'Block number ' + i + ' in column ' + c + ' is undefined.');
       }
     });
   }
@@ -75,14 +75,14 @@ function getBlock(cols, c, screendiv, standby) {
  *
  * If b is a number then it represents a device id.
  */
-var previousblock=0;
+var previousblock = 0;
 
 function addBlock2Column(columndiv, c, b) {
-  if(typeof b=== 'undefined') {
-    console.log('Block undefined after block ',previousblock);
+  if (typeof b === 'undefined') {
+    console.log('Block undefined after block ', previousblock);
     return;
   }
-  previousblock=b;
+  previousblock = b;
   var myblockselector = Dashticz.mountNewContainer(columndiv);
   var newBlock = b;
   if (typeof b !== 'object') newBlock = convertBlock(b, c);
@@ -304,8 +304,8 @@ function isDomoticzDevice(key) {
   if (idx) {
     return idx;
   }
-  if(typeof key === 'undefined') {
-//    debugger;
+  if (typeof key === 'undefined') {
+    //    debugger;
     return false;
   }
   if (key[0] === 's' || key[0] === 'v') {
@@ -319,27 +319,20 @@ function isDomoticzDevice(key) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function getStatusBlock(block) {
-  var device = block.device;
-  var value = block.value ? Dashticz.getProperty(block.value, device) : '';
-  var title = block.title ? block.title : '';
+
+function formatTemplateString(block, device, valueStr, isTitle) {
+  // eslint-disable-next-line no-useless-escape
+  var unit = block.unit;
   var format = block.format;
   var decimals = block.decimals;
-  var image = block.image;
-  var icon = block.icon;
+  var tagRegEx = /<[\w\s="/.':;#-\/\?]+>/gi;
+  var matches = valueStr.match(tagRegEx);
   var elements = [];
 
-  if (!value && !title) {
-    console.log('No title and no value for block');
-    console.log(block);
-  }
-  // eslint-disable-next-line no-useless-escape
-  var tagRegEx = /<[\w\s="/.':;#-\/\?]+>/gi;
-  var matches = (title + value).match(tagRegEx);
   //todo: see dirty hack below with '<br />'
   if (matches && matches[0] !== '<br />') {
-    matches.map(function (val) {
-      if(val!=='<br />') elements.push(val.replace(/([<,>])+/g, ''));
+    matches.forEach(function (val) {
+      if (val !== '<br />') elements.push(val.replace(/([<,>])+/g, ''));
     });
   }
   /*    if (block.unit && typeof block.unit === 'string') {
@@ -347,13 +340,13 @@ function getStatusBlock(block) {
         }*/
   if (elements.length) {
     var blockunits = [];
-    if (typeof block.unit === 'string') {
-      blockunits = block.unit.split(';');
+    if (typeof unit === 'string') {
+      blockunits = unit.split(';');
     }
     var cnt = 0;
     for (var d in elements) {
       var deviceValue = device[elements[d]];
-      if (format || typeof decimals !== 'undefined' || Dashticz.getProperty(block.unit, device)) {
+      if (!isTitle && (format || typeof decimals !== 'undefined' || Dashticz.getProperty(unit, device))) {
         var blockunit = blockunits[cnt] || blockunits[0];
         var current_unit = '';
         if (isNaN(deviceValue)) {
@@ -369,20 +362,44 @@ function getStatusBlock(block) {
         }
         deviceValue += blockunit || current_unit; //no space between value and unit
       }
-      value = value.replace('<' + elements[d] + '>', deviceValue);
-      title = title.replace('<' + elements[d] + '>', device[elements[d]]);
+      valueStr = valueStr.replace('<' + elements[d] + '>', deviceValue);
       cnt++;
     }
-  } else {
+  }   else {
     //not a template function
     //number_format has been applied already
     //so we only can change the unit, if needed.
     if (block.unit) {
-      if (isNaN(value)) {
-        value = value.split(' ')[0] || value;
+      if (isNaN(valueStr)) {
+        valueStr = valueStr.split(' ')[0] || valueStr;
       }
-      value += block.unit; //no space between value and unit
+      valueStr += block.unit; //no space between value and unit
     }
+  }
+
+  return valueStr;
+}
+function formatBlockValues(parentBlock, blockValues) {
+  blockValues.forEach(function (block) {
+    var device = parentBlock.device;
+    if(block.hideEmpty && !device[block.hideEmpty]) return;
+    var value = block.value ? Dashticz.getProperty(block.value, device) : '';
+    var title = block.title ? block.title : '';
+    block.value = formatTemplateString(block, device, value);
+    block.title = formatTemplateString(block, device, title, true);
+  })
+}
+
+function getStatusBlock(block) {
+  var device = block.device;
+  var value = choose(block.value,'');
+  var title = choose(block.title, '');
+  var image = block.image;
+  var icon = block.icon;
+
+  if (!value && !title) {
+    console.log('No title and no value for block');
+    console.log(block);
   }
 
   //todo: this should not be part of blocks I guess. But we've reserved unit already for the 'real' unit for some devices
@@ -664,7 +681,7 @@ function getBlockData(block, textOn, textOff) {
     ) {
       value = choose(block.textOff, textOff);
     }
-    if(status === 'mixed') {
+    if (status === 'mixed') {
       value = choose(block.textmixed, language.switches.state_mixed || 'Mixed');
     }
 
@@ -694,7 +711,7 @@ function titleAndValueSwitch(block) {
 function hideTitle(block) {
   if (block.hide_title) return true;
   var title = getBlockTitle(block);
-  return (title===0 || title ==='');
+  return (title === 0 || title === '');
 }
 
 function showUpdateInformation(block) {
@@ -894,7 +911,7 @@ function handleDevice(block) {
       return [html, addHTML];
     case 'Door Lock':
     case 'Door Lock Inverted':
-        return getDefaultSwitchBlock(block, 'fas fa-lock', 'fas fa-unlock', buttonimg, language.switches.state_unlocked, language.switches.state_locked );
+      return getDefaultSwitchBlock(block, 'fas fa-lock', 'fas fa-unlock', buttonimg, language.switches.state_unlocked, language.switches.state_locked);
     case 'Venetian Blinds EU':
     case 'Venetian Blinds US':
     case 'Venetian Blinds EU Inverted':
@@ -981,16 +998,16 @@ function handleDevice(block) {
   ) {
     var names = Domoticz.info.levelNamesEncoded ? b64_to_utf8(device['LevelNames']) : device['LevelNames'];
 
-    nameValues = names.split('|').map(function(name, idx) {
+    nameValues = names.split('|').map(function (name, idx) {
       return {
         name: name,
         value: idx
       }
     })
 
-    if(block.sortOrder) {
-      nameValues.sort(function(a,b) {
-        return a.name.localeCompare(b.name)*block.sortOrder;
+    if (block.sortOrder) {
+      nameValues.sort(function (a, b) {
+        return a.name.localeCompare(b.name) * block.sortOrder;
       })
     }
 
@@ -1014,7 +1031,7 @@ function handleDevice(block) {
       device['SelectorStyle'] == 1
     ) {
       html += '<div class="col-xs-8 col-data">';
-      if(!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
+      if (!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<select>';
       html += '<option value="">' + language.misc.select + '</option>';
       for (var idx in nameValues) {
@@ -1047,7 +1064,7 @@ function handleDevice(block) {
         });
     } else {
       html += '<div class="col-xs-8 col-data">';
-      if(!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
+      if (!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<div class="btn-group" data-toggle="buttons">';
       for (idx in nameValues) {
         var nv = nameValues[idx];
@@ -1146,14 +1163,38 @@ function getLogitechControls(block) {
   return html;
 }
 
+function getJoinValuesSeperator(block) {
+  if (block.single_block) return '/ ';
+  if (block.multi_line) return '<br/>';
+  if (typeof block.joinsubblocks==='string') return block.joinsubblocks;
+}
+
+function selectBlockValues(parentBlock, blockValues) {
+  var filteredBlockValues = blockValues.filter(function(blockValue) {
+    return !(blockValue.hideEmpty && !isDefined(parentBlock.device[blockValue.hideEmpty]))
+  });
+
+  var seperator=getJoinValuesSeperator(parentBlock);
+  if (seperator) {
+    var value =filteredBlockValues.map ( function(blockValue) {
+      return ((parentBlock.showsubtitles && blockValue.subtitle)? (blockValue.subtitle+': '):'') + blockValue.value;
+    }).join(seperator);
+    var newBlockValue = parentBlock;
+    parentBlock.value = value;
+    return [newBlockValue];
+  };
+  return filteredBlockValues;
+}
+
 function createBlocks(blockParent, blockValues) {
   /* I assume this function gets called once per block
   // That means we first have to remove the previous content
   // console.log('createBlocks for '+blockParent.idx);
   //
-  // blockValues does not always contain a subidx: It can be a prototype from blocktypes.
   */
 
+  formatBlockValues(blockParent, blockValues);
+  blockValues = selectBlockValues(blockParent, blockValues);
   var device = blockParent.device;
   var $div = blockParent.$mountPoint;
   $div.html(''); //it would be better for performance to add all changes at once.
@@ -1161,15 +1202,10 @@ function createBlocks(blockParent, blockValues) {
   blockValues.forEach(function (blockValue) {
     if (blockParent.subidx && blockParent.subidx !== blockValue.subidx) return;
     //  console.log("createBlocks id: ", blockValue.idx)
-    if(blockValue.hideEmpty && typeof device[blockValue.hideEmpty]==='undefined') return;
+    if (blockValue.hideEmpty && typeof device[blockValue.hideEmpty] === 'undefined') return;
     var block = {};
     $.extend(block, blockParent, blockValue); //create a block from the prototype
-//    $.extend(block, blockParent);
-    /* Fix icon/image setting*/
-//    if(blockParent.image || blockParent.icon) {
-//      block.image = blockParent.image;
-//      block.icon = blockParent.icon;
-//    }
+    
     //        $.extend(block, blocks[blockValue.idx]); //I don't think we should do this: It will overwrite block settings of a custom block
     //Although for subdevices it would be nice to use corresponding block setting
     //so let's overwrite in case parent and blockvalue idx are different
@@ -1182,9 +1218,10 @@ function createBlocks(blockParent, blockValues) {
     block.idx = blockValue.idx;
     if (blockValue.subidx) block.subidx = blockValue.subidx;
     block.key = key;
+    var multiline = blockParent.multi_line? ' multiline':'';
     var html =
       '<div class="mh transbg block_' +
-      key +
+      key + multiline + 
       ' col-xs-' +
       (block.width || 4) +
       '"/>';
@@ -1198,29 +1235,10 @@ function createBlocks(blockParent, blockValues) {
     triggerStatus(block);
     triggerChange(block);
 
-    block.valueunit = block.value + ' ' + Dashticz.getProperty(block.unit, device);
     block.device = device;
 
     html = getStatusBlock(block);
-    /*
-                //todo: check next few lines;
-                if (!index) {
-                    if (!$('div.block_' + device['idx']).hasClass('block_' + blockValue.idx)) $('div.block_' + device['idx']).addClass('block_' + blockValue.idx);
-                } else {
-                    if (typeof (allblocks[device['idx']]) !== 'undefined' &&
-                        $('div.block_' + blockValue.idx).length == 0
-                    ) {
 
-                        //sometimes there is a block_IDX_3 and block_IDX_6, but no block_IDX_4, therefor, loop to remove classes
-                        //(e.g. with smart P1 meters, when there's no CounterDeliv value)
-                        var newblock = $('div.block_' + device['idx']).last().clone();
-                        for (var i = 1; i <= 10; i++) {
-                            newblock.removeClass('block_' + device['idx'] + '_' + i);
-                        }
-                        newblock.addClass('block_' + blockValue.idx).insertAfter($('div.block_' + device['idx']).last());
-                    }
-                }
-                $('div.block_' + block.idx).html(html);*/
     block.$mountPoint
       .find('.block_' + key)
       .html(html)
@@ -1467,8 +1485,8 @@ function getSecurityBlock(block) {
 
   var secPanelicons =
     settings['security_button_icons'] === true ||
-    settings['security_button_icons'] === 1 ||
-    settings['security_button_icons'] === '1'
+      settings['security_button_icons'] === 1 ||
+      settings['security_button_icons'] === '1'
       ? true
       : false;
   var da = 'default';
