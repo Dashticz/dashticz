@@ -86,19 +86,19 @@ SubType.kWh = {
   format: true,
   childs: [
     {
-      title: '<Name>: ' + language.energy.energy_now,
+      subtitle: language.energy.energy_now,
       value: '<Usage>',
       decimals: settings['units'].decimals.watt,
       unit: settings['units'].names.watt,
     },
     {
-      title: '<Name>: ' + language.energy.energy_today,
+      subtitle: language.energy.energy_today,
       value: '<CounterToday>',
       decimals: settings['units'].decimals.kwh,
       unit: settings['units'].names.kwh,
     },
     {
-      title: '<Name>: ' + language.energy.energy_total,
+      subtitle: language.energy.energy_total,
       decimals: settings['units'].decimals.kwh,
       unit: settings['units'].names.kwh,
     }
@@ -116,39 +116,40 @@ SubType['Energy'] = {
   icon: 'fas fa-plug',
   childs: [
     {
-      title: '<Name> - ' + language.energy.energy_usage,
+      subtitle: language.energy.energy_usage,
       value: '<NettUsage>',
       unit: settings['units'].names.watt,
     },
     {
-      title: '<Name> - ' + language.energy.energy_usagetoday,
+      subtitle: language.energy.energy_usagetoday,
       value: '<CounterToday>',
       format: true,
       decimals: settings['units'].decimals.kwh,
       unit: settings['units'].names.kwh,
     },
     {
-      title: '<Name> - ' + language.energy.energy_totals,
+      subtitle: language.energy.energy_totals,
       value: '<Counter>',
       format: true,
       unit: settings['units'].names.kwh,
     },
     {
-      title: '<Name> - ' + language.energy.energy_delivered,
+      subtitle: language.energy.energy_delivered,
       value: '<CounterDeliv>',
       hideEmpty: 'CounterDeliv',
       unit: settings['units'].names.kwh,
     },
     {
-      title: '<Name> - ' + language.energy.energy_deliveredtoday,
+      subtitle: language.energy.energy_deliveredtoday,
       value: '<CounterDelivToday>',
       format: true,
       decimals: settings['units'].decimals.kwh,
       hideEmpty: 'CounterDelivToday',
       unit: settings['units'].names.kwh,
     },
+    /*
     {
-      title: '<Name> - ' + language.energy.energy_totals,
+      subtitle: language.energy.energy_totals,
       value: 'P1: <Data0><br />' +
         'P2: <Data1>',
       unit: settings['units'].names.kwh,
@@ -156,9 +157,9 @@ SubType['Energy'] = {
       format: true,
       hideEmpty: 'Data1',
       decimals: 3,
-    },
+    },*/
     {
-      title: '<Name> - ' + language.energy.energy_totals + ' P1',
+      subtitle: language.energy.energy_totals + ' P1',
       value: '<Data0>',
       scale: 0.001,
       decimals: 3,
@@ -166,7 +167,7 @@ SubType['Energy'] = {
       hideEmpty: 'Data1',
     },
     {
-      title: '<Name> - ' + language.energy.energy_totals + ' P2',
+      subtitle: language.energy.energy_totals + ' P2',
       value: '<Data1>',
       scale: 0.001,
       decimals: 3,
@@ -180,11 +181,11 @@ SubType['Gas'] = {
   icon: 'fas fa-fire',
   childs: [
     {
-      title: '<Name> - ' + language.energy.gas_usagetoday,
+      subtitle: language.energy.gas_usagetoday,
       value: '<CounterToday>',
     },
     {
-      title: '<Name> - ' + language.energy.energy_totals,
+      subtitle: language.energy.energy_totals,
       value: '<Counter>',
       unit: ' m3'
     },
@@ -236,10 +237,11 @@ SubType['RFXMeter counter'] = {
   },
   childs: [
     {
+      subtitle: language.energy.energy_today,
       value: '<CounterToday>',
     },
     {
-      title: '<Name>: ' + language.energy.energy_totals,
+      subtitle: language.energy.energy_totals,
       value: '<Counter>'
     },
     {
@@ -263,7 +265,7 @@ blocktypes['YouLess Meter'] = {
       unit: settings['units'].names.kwh,
     },
     {
-      title: '<Name>: ' + language.energy.energy_totals,
+      subtitle: language.energy.energy_totals,
       value: '<Counter>',
       decimals: settings['units'].decimals.kwh,
       unit: settings['units'].names.kwh,
@@ -346,6 +348,7 @@ blocktypes['Temp + Humidity + Baro'] = {
   {
     icon: 'wi wi-fog',
     value: '<DewPoint>',
+    subtitle: language.settings.weather.dewpoint,
     format: true,
     decimals: 1,
     unit: _TEMP_SYMBOL,
@@ -411,7 +414,7 @@ function getBlockTypesBlock(block) {
     block.idx = isDomoticzDevice(block.idx);
   }
 
-  var newblock = { graph: true, title: '<Name>', value: '<Data>', idx: block.idx };
+  var newblock = { graph: true, title: '<Name>', value: '<Data>', idx: block.idx, showsubtitles: true };
   var protoBlock = {};
   if (blocktypes[device.Type]) {
     var protoType = blocktypes[device.Type];
@@ -452,7 +455,7 @@ function getBlockTypesBlock(block) {
       c++;
     }
   }
-  var parentBlock={};
+  var parentBlock={showsubtitles: true, graph: true};
   $.extend(parentBlock, getSubBlock(protoBlock), block);
   createBlocks(parentBlock, blockValues);
   return ['', false];

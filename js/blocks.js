@@ -369,7 +369,7 @@ function formatTemplateString(block, device, valueStr, isTitle) {
     //not a template function
     //number_format has been applied already
     //so we only can change the unit, if needed.
-    if (block.unit) {
+    if (!isTitle && block.unit) {
       if (isNaN(valueStr)) {
         valueStr = valueStr.split(' ')[0] || valueStr;
       }
@@ -381,6 +381,7 @@ function formatTemplateString(block, device, valueStr, isTitle) {
 }
 function formatBlockValues(parentBlock, blockValues) {
   blockValues.forEach(function (block) {
+    $.extend(block, parentBlock); 
     var device = parentBlock.device;
     if(block.hideEmpty && !device[block.hideEmpty]) return;
     var value = block.value ? Dashticz.getProperty(block.value, device) : '';
@@ -396,6 +397,15 @@ function getStatusBlock(block) {
   var title = choose(block.title, '');
   var image = block.image;
   var icon = block.icon;
+
+  if(block.subtitle) switch (block.showsubtitles) {
+    case '2':
+    case 2:
+      value = value + ' ('+block.subtitle+')'
+      break;
+    default:
+      title =title+': '+block.subtitle;
+  }
 
   if (!value && !title) {
     console.log('No title and no value for block');
@@ -1170,6 +1180,15 @@ function getJoinValuesSeperator(block) {
 }
 
 function selectBlockValues(parentBlock, blockValues) {
+
+  if (parentBlock.showvalues) {
+    var selectedBlockValues=[];
+    parentBlock.showvalues.forEach(function(value) {
+      var obj = blockValues[value-1];
+      if (typeof obj==='object') selectedBlockValues.push(obj)
+    });
+    blockValues = selectedBlockValues;
+  }
   var filteredBlockValues = blockValues.filter(function(blockValue) {
     return !(blockValue.hideEmpty && !isDefined(parentBlock.device[blockValue.hideEmpty]))
   });
@@ -1202,9 +1221,14 @@ function createBlocks(blockParent, blockValues) {
   blockValues.forEach(function (blockValue) {
     if (blockParent.subidx && blockParent.subidx !== blockValue.subidx) return;
     //  console.log("createBlocks id: ", blockValue.idx)
-    if (blockValue.hideEmpty && typeof device[blockValue.hideEmpty] === 'undefined') return;
-    var block = {};
-    $.extend(block, blockParent, blockValue); //create a block from the prototype
+//    if (blockValue.hideEmpty && typeof device[blockValue.hideEmpty] === 'undefined') return;
+//    if(blockParent.showvalues && !blockParent.showvalues.includes(blockValue.subidx)) return;
+    var block = blockValue;//{};
+
+    //create a block from the prototype. Remember: blockParent is the instance, so this is right order
+//    $.extend(block, blockValue, blockParent); 
+    //however, blockValue may already contain a subtitle
+    //Maybe I should do the expansion with subtitle below.
     
     //        $.extend(block, blocks[blockValue.idx]); //I don't think we should do this: It will overwrite block settings of a custom block
     //Although for subdevices it would be nice to use corresponding block setting
