@@ -210,7 +210,7 @@ var DT_weather = (function () {
       me.lon = me.block.lon;
       return $.Deferred().resolve();
     }
-    var url = 'http://api.openweathermap.org/geo/1.0/direct?q=' +
+    var url = 'https://api.openweathermap.org/geo/1.0/direct?q=' +
       me.block.city + ', ' + me.block.country +
       '&limit=1&appid=' + me.block.apikey;
     return $.ajax(url).then(function (res) {
