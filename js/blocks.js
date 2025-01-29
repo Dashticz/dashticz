@@ -872,24 +872,6 @@ function handleDevice(block) {
   var res = getBlockTypesBlock(block);
   if (res) return res;
 
-  switch (device['Type']) {
-    case 'Temp + Humidity + Baro':
-    case 'Temp + Humidity':
-    case 'Temp + Baro':
-    case 'Radiator 1':
-    case 'Heating':
-      if (device.SubType === 'Zone')
-        //EvoHome Zone device
-        return getEvohomeZoneBlock(block);
-      if (device.SubType === 'Evohome')
-        //EvoHome Controller device
-        return getEvohomeControllerBlock(block);
-      if (device.SubType === 'Hot Water')
-        //EvoHome Hot Water device
-        return getEvohomeHotWaterBlock(block);
-      return getTempHumBarBlock(block);
-  }
-
   switch (device['HardwareType']) {
     case 'Toon Thermostat':
       if (device['SubType'] !== 'SetPoint' && device['SubType'] !== 'AC') {
@@ -1268,81 +1250,6 @@ function createBlocks(blockParent, blockValues) {
       .html(html)
       .addClass(block.addClass);
   });
-}
-
-function getTempHumBarBlock(block) {
-  var device = block.device;
-  var idx = device.idx;
-  this.html = '';
-  var single_block =
-    typeof blocks[idx] !== 'undefined' &&
-    typeof blocks[idx]['single_block'] !== 'undefined' &&
-    blocks[idx]['single_block'];
-
-  var blockValues = [
-    {
-      icon: 'fas fa-thermometer-half',
-      idx: idx,
-      subidx: 1,
-      title: block.title,
-      value: number_format(
-        typeof device['Temp'] !== 'undefined' ? device['Temp'] : device['Data'],
-        1
-      ),
-      unit: _TEMP_SYMBOL,
-    },
-  ];
-  if (typeof device['Humidity'] !== 'undefined') {
-    if (single_block) {
-      blockValues[0].value +=
-        ' ' +
-        blockValues[0].unit +
-        ' / ' +
-        number_format(device['Humidity'], 0) +
-        ' %';
-      blockValues[0].unit = '';
-    } else {
-      blockValues.push({
-        icon: 'wi wi-humidity',
-        idx: idx,
-        subidx: 2,
-        title: block.title,
-        value: number_format(device['Humidity'], 0),
-        unit: '%',
-      });
-    }
-  }
-  if (typeof device['Barometer'] !== 'undefined') {
-    if (single_block) {
-      blockValues[0].value += ' / ' + device['Barometer'] + ' hPa';
-    } else {
-      blockValues.push({
-        icon: 'wi wi-barometer',
-        idx: idx,
-        subidx: 3,
-        title: block.title,
-        value: device['Barometer'],
-        unit: 'hPa',
-      });
-    }
-  }
-  if (typeof device['DewPoint'] !== 'undefined') {
-    if (single_block) {
-      blockValues[0].value +=
-        ' / ' + number_format(device['DewPoint'], 1) + ' °';
-    } else {
-      blockValues.push({
-        icon: 'wi wi-fog',
-        idx: idx,
-        subidx: 4,
-        title: block.title,
-        value: number_format(device['DewPoint'], 1),
-        unit: _TEMP_SYMBOL,
-      });
-    }
-  }
-  createBlocks(block, blockValues);
-  return ['', false];
 }
 
 // eslint-disable-next-line no-unused-vars

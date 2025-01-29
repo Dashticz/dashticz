@@ -56,7 +56,7 @@ SubType['Thermostat Mode'] = {
 
 SubType['Soil Moisture'] = {
   icon: 'fas fa-seedling',
-  childs: [{
+  values: [{
   },
   {
     value: '<Desc>',
@@ -84,7 +84,7 @@ SubType['Custom Sensor'] = {
 SubType.kWh = {
   icon: 'fas fa-fire',
   format: true,
-  childs: [
+  values: [
     {
       subtitle: language.energy.energy_now,
       value: '<Usage>',
@@ -114,7 +114,7 @@ SubType = {}
 //
 SubType['Energy'] = {
   icon: 'fas fa-plug',
-  childs: [
+  values: [
     {
       subtitle: language.energy.energy_usage,
       value: '<NettUsage>',
@@ -179,7 +179,7 @@ SubType['Energy'] = {
 
 SubType['Gas'] = {
   icon: 'fas fa-fire',
-  childs: [
+  values: [
     {
       subtitle: language.energy.gas_usagetoday,
       value: '<CounterToday>',
@@ -235,7 +235,7 @@ SubType['RFXMeter counter'] = {
       decimals: settings['units'].decimals.time,
     },
   },
-  childs: [
+  values: [
     {
       subtitle: language.energy.energy_today,
       value: '<CounterToday>',
@@ -258,7 +258,7 @@ blocktypes.RFXMeter = {
 blocktypes['YouLess Meter'] = {
   icon: 'fas fa-fire',
   format: true,
-  childs: [
+  values: [
     {
       value: '<CounterToday>',
       decimals: settings['units'].decimals.kwh,
@@ -321,7 +321,7 @@ blocktypes['Temp + Humidity + Baro'] = {
       handler: getEvohomeHotWaterBlock
     }
   },
-  childs: [{
+  values: [{
     value: function(device) {
       return choose(device.Temp && '<Temp>', '<Data>')
     },
@@ -439,16 +439,16 @@ function getBlockTypesBlock(block) {
 
   var blockValues = [];
 
-  if (!protoBlock.childs) {
+  if (!protoBlock.values) {
     //we have a single block
     $.extend(newblock, protoBlock);
     blockValues.push(newblock);
   } else {
     var c = 1;
-    for (var de in protoBlock.childs) {
+    for (var de in protoBlock.values) {
       var subblock = {};
       $.extend(subblock, newblock, getSubBlock(protoBlock));
-      $.extend(subblock, protoBlock.childs[de]);
+      $.extend(subblock, protoBlock.values[de]);
       //          subBlock.idx = block.device.idx;
       subblock.subidx = c;
       blockValues.push(subblock);
@@ -465,9 +465,9 @@ function getBlockTypesBlock(block) {
 
 function getSubBlock(parent) {
   /*
-This function creates a new object (`acc`) that is a copy of the `parent` object, but without the `childs` property. It does this by iterating over the keys of the `parent` object, excluding the `childs` key, and adding the corresponding values to the new object.
+This function creates a new object (`acc`) that is a copy of the `parent` object, but without the `values` property. It does this by iterating over the keys of the `parent` object, excluding the `values` key, and adding the corresponding values to the new object.
 */
-  var exclude = ['childs', 'Type', 'SubType', 'SwitchType']
+  var exclude = ['values', 'Type', 'SubType', 'SwitchType']
 
   return Object.keys(parent).filter(function (key) {
     return !exclude.includes(key)
