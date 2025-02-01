@@ -214,6 +214,10 @@
   height: auto;
 }
 
+.smoke .on.icon {
+  border: 5px solid #F05F40;
+}
+
 .modal {
   z-index: 9999;
 }

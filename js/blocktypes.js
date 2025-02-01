@@ -310,7 +310,7 @@ blocktypes.Variable = {
 
 blocktypes['Temp + Humidity + Baro'] = {
   icon: 'fas fa-thermometer-half',
-  SubType : {
+  SubType: {
     Zone: {
       handler: getEvohomeZoneBlock
     },
@@ -322,7 +322,7 @@ blocktypes['Temp + Humidity + Baro'] = {
     }
   },
   values: [{
-    value: function(device) {
+    value: function (device) {
       return choose(device.Temp && '<Temp>', '<Data>')
     },
     format: true,
@@ -403,6 +403,117 @@ blocktypes.Group = {
 
 blocktypes.Scene = blocktypes.Group;
 
+/*Switches*/
+
+SwitchType = {}
+
+SwitchType['Dimmer'] = {
+  handler: getDimmerBlock
+}
+
+SwitchType['Door Contact'] = {
+  iconOn: 'fas fa-door-open',
+  iconOff: 'fas fa-door-closed',
+  textOn: language.switches.state_open,
+  textOff: language.switches.state_closed,
+  handler: getDefaultSwitchBlock,
+  protected: true,
+}
+SwitchType.Contact = SwitchType['Door Contact'];
+
+SwitchType['Door Lock'] = {
+  iconOn: 'fas fa-lock',
+  iconOff: 'fas fa-unlock',
+  textOn: language.switches.state_unlocked,
+  textOff: language.switches.state_locked,
+  handler: getDefaultSwitchBlock,
+}
+SwitchType['Door Lock Inverted'] = SwitchType['Door Lock'];
+
+SwitchType.Blinds = {
+  handler: getBlindsBlock
+}
+
+var allblinds = ['Venetian Blinds EU',
+  'Venetian Blinds US',
+  'Venetian Blinds EU Inverted',
+  'Venetian Blinds US Inverted',
+  'Blinds',
+  'Blinds Inverted'];
+
+allblinds.forEach(function (id) {
+  SwitchType[id] = SwitchType.Blinds
+});
+
+allblinds = [
+  'Blinds Percentage',
+  'Blinds + Stop',
+  'Blinds Percentage Inverted',
+  'Venetian Blinds EU Percentage',
+  'Venetian Blinds EU Inverted Percentage',
+  'Venetian Blinds EU Percentage Inverted',
+]
+allblinds.forEach(function (id) {
+  SwitchType[id] = {
+    withPercentage: true,
+    handler: getBlindsBlock
+  }
+});
+
+SwitchType.Security = {
+  handler: getSecurityBlock,
+}
+
+SwitchType['Motion Sensor'] = {
+  imageOn: 'motion_on.png',
+  imageOff: 'motion_off.png',
+  textOn: language.switches.state_movement,
+  textOff: language.switches.state_nomovement,
+  handler: getDefaultSwitchBlock,
+  protected: true,
+}
+
+SwitchType['Smoke Detector'] = {
+  image: 'heating.png',
+  textOn: language.switches.state_smoke,
+  textOff: language.switches.state_nosmoke,
+  handler: getDefaultSwitchBlock,
+  protected: true,
+  defaultAddClass: 'smoke',
+}
+
+SwitchType['Doorbell'] = {
+  icon: 'fas fa-bell',
+  handler: getDefaultSwitchBlock,
+  textOn: '',
+  textOff: '',
+  protected: true,
+}
+
+SwitchType['Media Player'] = {
+  width: 12,
+  handler: getMediaPlayer
+}
+
+SwitchType['Selector'] = {
+  handler: getSelectorSwitch
+}
+
+blocktypes.SwitchType = SwitchType;
+
+
+HardwareType = {
+  "Toon Thermostaat" : {
+    handler: getToonThermostat
+  },
+  'Logitech Media Server': {
+    defaultAddClass: 'with_controls',
+    handler: getLogitechMediaServer
+  }
+}
+
+blocktypes.HardwareType = HardwareType;
+
 if (typeof getExtendedBlockTypes == 'function') {
   blocktypes = getExtendedBlockTypes(blocktypes);
 }
@@ -410,13 +521,19 @@ if (typeof getExtendedBlockTypes == 'function') {
 // eslint-disable-next-line no-unused-vars
 function getBlockTypesBlock(block) {
   var device = block.device;
-  if(block.subidx) {
+  if (block.subidx) {
     block.idx = isDomoticzDevice(block.idx);
   }
 
   var newblock = { graph: true, title: '<Name>', value: '<Data>', idx: block.idx, showsubtitles: true };
   var protoBlock = {};
+  var found = false;
+  if (device.SwitchType && blocktypes.SwitchType[device.SwitchType]) {
+    $.extend(protoBlock, blocktypes.SwitchType[device.SwitchType]);
+    found = true;
+  }
   if (blocktypes[device.Type]) {
+    found = true;
     var protoType = blocktypes[device.Type];
     $.extend(protoBlock, protoType);
     if (protoBlock.SubType && protoBlock.SubType[device.SubType]) {
@@ -429,7 +546,11 @@ function getBlockTypesBlock(block) {
       };
     };
   }
-  else return false;
+  if (!found && device.HardwareType && blocktypes.HardwareType[device.HardwareType]) {
+    protoBlock= blocktypes.HardwareType[device.HardwareType];
+    if(protoBlock) found=true;
+  }
+  if (!found) return false;
 
   if (protoBlock.handler) {
     newblock = {};
@@ -455,10 +576,10 @@ function getBlockTypesBlock(block) {
       c++;
     }
   }
-  var parentBlock={showsubtitles: true, graph: true};
+  var parentBlock = { showsubtitles: true, graph: true };
   $.extend(parentBlock, getSubBlock(protoBlock), block);
   createBlocks(parentBlock, blockValues);
-  return ['', false];
+  return true;
 }
 
 
@@ -485,4 +606,16 @@ function iconFromDevice(device) {
   }
   return defaultIcon;
 }
+
+function getToonThermostat(block) {
+  var device = block.device;
+  if (device['SubType'] !== 'SetPoint' && device['SubType'] !== 'AC') {
+    return getSmartMeterBlock(block);
+  }
+  if (device['SubType'] === 'SetPoint') {
+    return getThermostatBlock(block);
+  }
+}
+
+
 //# sourceURL=js/blocktypes.js

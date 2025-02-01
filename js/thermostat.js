@@ -95,7 +95,7 @@ function getThermostatBlock(block) {
     block.$mountPoint.find('.block_' + block.key).html(html);
     addThermostatFunctions(block);
   });
-  return ['', false];
+  return true;
 }
 
 function switchThermostat(block, setpoint) {
@@ -151,7 +151,7 @@ function getEvohomeZoneBlock(block) {
     block.$mountPoint.find('.mh').html(html);
     addEvohomeZoneFunctions(block);
   });
-  return [html, false];
+  return true;
 }
 
 function addEvohomeZoneFunctions(block) {
@@ -289,7 +289,7 @@ function getEvohomeControllerBlock(block) {
 
     addEvohomeControllerFunctions(block);
   });
-  return [html, false];
+  return true;
 }
 
 function addEvohomeControllerFunctions(block) {
@@ -378,7 +378,7 @@ function getEvohomeHotWaterBlock(block) {
       switchEvoHotWater(block, state, state === 'On');
     });
   });
-  return [html, false];
+  return true;
 }
 
 function switchEvoHotWater(block, state, override) {
