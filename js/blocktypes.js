@@ -552,32 +552,33 @@ function getBlockTypesBlock(block) {
   }
   if (!found) return false;
 
-  if (protoBlock.handler) {
-    newblock = {};
-    $.extend(newblock, protoBlock, block);
-    return protoBlock.handler(newblock);
+  var parentBlock = { showsubtitles: true, graph: true };
+  if(block.values && !block.single_block && !block.joinsubblocks) {
+    parentBlock.multi_line = choose(block.multi_line, true);
+  }
+  $.extend(parentBlock, protoBlock, block);
+  if (parentBlock.handler) {
+    return parentBlock.handler(parentBlock);
   }
 
   var blockValues = [];
 
-  if (!protoBlock.values) {
+  if (!parentBlock.values) {
     //we have a single block
     $.extend(newblock, protoBlock);
     blockValues.push(newblock);
   } else {
     var c = 1;
-    for (var de in protoBlock.values) {
+    for (var de in parentBlock.values) {
       var subblock = {};
-      $.extend(subblock, newblock, getSubBlock(protoBlock));
-      $.extend(subblock, protoBlock.values[de]);
+      $.extend(subblock, newblock, getSubBlock(parentBlock));
+      $.extend(subblock, parentBlock.values[de]);
       //          subBlock.idx = block.device.idx;
       subblock.subidx = c;
       blockValues.push(subblock);
       c++;
     }
   }
-  var parentBlock = { showsubtitles: true, graph: true };
-  $.extend(parentBlock, getSubBlock(protoBlock), block);
   createBlocks(parentBlock, blockValues);
   return true;
 }

@@ -379,8 +379,8 @@ function formatTemplateString(block, device, valueStr, isTitle) {
 }
 function formatBlockValues(parentBlock, blockValues) {
   blockValues.forEach(function (block) {
-    $.extend(block, parentBlock);
-    var device = parentBlock.device;
+//    $.extend(block, parentBlock);
+    var device = block.idx!==parentBlock.idx? Domoticz.getAllDevices(block.idx):parentBlock.device;
     if (block.hideEmpty && !device[block.hideEmpty]) return;
     var value = block.value ? Dashticz.getProperty(block.value, device) : '';
     var title = block.title ? block.title : '';
@@ -945,7 +945,15 @@ function selectBlockValues(parentBlock, blockValues) {
   var seperator = getJoinValuesSeperator(parentBlock);
   if (seperator) {
     var value = filteredBlockValues.map(function (blockValue) {
-      return ((parentBlock.showsubtitles && blockValue.subtitle) ? (blockValue.subtitle + ': ') : '') + blockValue.value;
+      if (blockValue.subtitle) {
+        if(parentBlock.showsubtitles===2)
+          return blockValue.value + ' (' + blockValue.subtitle+')';
+        if(parentBlock.showsubtitles)
+          return blockValue.subtitle + ': ' + blockValue.value;
+        return blockValue.value;
+//        return ((parentBlock.showsubtitles && blockValue.subtitle) ? (blockValue.subtitle + ': ') : '') + blockValue.value;
+      }
+      else return blockValue.value;
     }).join(seperator);
     var newBlockValue = parentBlock;
     parentBlock.value = value;
