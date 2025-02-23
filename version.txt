@@ -1,8 +1,9 @@
 {
-"version": "3.13.1",
-"branch": "beta",
-"last_changes": "Bug fixes",
+"version": "3.14",
+"branch": "master",
+"last_changes": "Master version derivce from 3.13.1 beta",
 "changelog" : {
+            "3.13.1": "Bug fixes",
             "3.13.0": "Beta version derived from 3.13-master",
             "3.13": "Master version derived from 3.12.1-beta"
             }
