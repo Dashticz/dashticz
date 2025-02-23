@@ -8,6 +8,30 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.14 master (23-2-2025)
+------------------------
+
+Master version derived from v3.13.1. See below.
+
+V3.13.1 beta (18-2-2025)
+---------------------------
+
+Fixes
+~~~~~~
+
+* Garbage: Fix for recycleapp (BE)
+* Fix for network errors resulting from undefined background image
+* Fix: Remove text shadow for blocks without background
+* Dials: remove off level for devices with hidden off level
+* Weather: language for owm3
+* Work-around for broken websocket with Domoticz 2024.7
+* Weather: Fix for OWM3. (@meal)
+
+V3.13.0 beta (14-7-2024)
+---------------------------
+
+Beta version, derived from v3.13 master
+
 V3.13 master (14-7-2024)
 ---------------------------
 

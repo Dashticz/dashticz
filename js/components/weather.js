@@ -210,7 +210,7 @@ var DT_weather = (function () {
       me.lon = me.block.lon;
       return $.Deferred().resolve();
     }
-    var url = 'http://api.openweathermap.org/geo/1.0/direct?q=' +
+    var url = 'https://api.openweathermap.org/geo/1.0/direct?q=' +
       me.block.city + ', ' + me.block.country +
       '&limit=1&appid=' + me.block.apikey;
     return $.ajax(url).then(function (res) {
@@ -764,9 +764,12 @@ var DT_weather = (function () {
   }
 
   function getOWM3url(me) {
+    var lang = me.block.lang;
     var url = 'https://api.openweathermap.org/data/3.0/onecall?lat=' + me.lat +
       '&lon=' + me.lon +
       '&appid=' + me.block.apikey +
+      '&lang=' +
+      lang +
       '&units=' +
       (settings['use_fahrenheit'] === 1 ? 'imperial' : 'metric');
     return url;
