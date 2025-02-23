@@ -17,6 +17,19 @@ v3.14 master (23-2-2025)
 ------------------------
 
 Master version derived from v3.13.1. See below.
+Enhancements
+~~~~~~~~~~~~
+
+Rework of Domoticz blocks, giving the following new parameters:
+
+* ``values``: To define how (and which) subvalues of a device will be displayed. It's also possible to combine data from several devices in one block.
+* ``multi_line``: Set to ``true`` to show all subvalues as multiple lines in one block
+* ``single_line``: Set to ``true`` to show all subvalues on one line in one block
+* ``showsubtitles``: To show the subtitles of subvalues. Two variants are supported: ``1`` and ``2``
+* ``showvalues``: Array to indicate which subvalues of the device will be displayed (starting at ``1``)
+* ``scale``: Multiplier for the data value
+* ``decimals``: To set the number of decimals for the data value.
+* ``unit``: Text to place behind the data value. 
 
 V3.13.1 beta (18-2-2025)
 ---------------------------

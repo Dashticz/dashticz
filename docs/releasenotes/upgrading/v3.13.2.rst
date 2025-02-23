@@ -1,0 +1,41 @@
+.. _v3_13_2:
+
+v3.13.2: Change in Domoticz blocks
+===================================================
+
+This version contains quite some changes in the handling of Domoticz blocks.
+This version may contain breaking changes.
+
+  * getExtendBlockTypes
+  * block parameters
+
+getExtendedBlockTypes
+---------------------
+
+If you make use of ``getExtendBlockTypes`` in your ``CONFIG.js`` then you have to change your blocktypes definitions.
+
+Creating custom blocktypes derived from the block name is not supported anymore.
+It's suggested to use a regular block definition in ``CONFIG.js``.
+
+In this release additinal block parameters have been defined, which include the parameters that were configurable via the blocktypes.
+
+The configurability of other blocktypes is enhanced.
+If you want to define custom blocktypes via the getExtendedBlockTypes function it's suggested to analyze the code  in ``./js/blocktypes.js``.
+No additional documentation is available at the moment.
+
+Subblock of P1 Smart Meter
+----------------------------
+
+One subblock of a P1 Smart Meter displayed both the P1 and P2 values (high and low tariff).
+This specific subblock is not available anymore.
+You can use the (new) block parameter ``showvalues`` in combination with ``multi_line`` to get a similar block as follows::
+
+    blocks['p1withbothvalues'] = {
+      idx: 43,
+      showvalues: [6,7],
+      multi_line: true,
+    }
+
+You can replace ``multi_line`` with ``single_line`` or combine it with ``showsubtitles`` as needed.
+
+
