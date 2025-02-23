@@ -565,7 +565,7 @@ function getBlockTypesBlock(block) {
 
   if (!parentBlock.values) {
     //we have a single block
-    $.extend(newblock, protoBlock);
+    $.extend(newblock, protoBlock, getSubBlock(parentBlock));
     blockValues.push(newblock);
   } else {
     var c = 1;
