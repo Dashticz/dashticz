@@ -85,7 +85,7 @@ function getThermostatBlock(block) {
       idx: idx,
       value: value,
       title: title,
-      buttons: !(block.subidx && block.subidx === 1),
+      buttons: !choose(block.protected, (block.subidx && block.subidx === 1)),
       showinfo: showUpdateInformation(block) ? true : false,
       lastupdate: moment(device.LastUpdate).format(settings['timeformat']),
       mIcon: isDefined(block.icon) ? block.icon : '',

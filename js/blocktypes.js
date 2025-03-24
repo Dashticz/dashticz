@@ -134,17 +134,17 @@ SubType['Energy'] = {
       unit: settings['units'].names.kwh,
     },
     {
-      subtitle: language.energy.energy_delivered,
-      value: '<CounterDeliv>',
-      hideEmpty: 'CounterDeliv',
-      unit: settings['units'].names.kwh,
-    },
-    {
       subtitle: language.energy.energy_deliveredtoday,
       value: '<CounterDelivToday>',
       format: true,
       decimals: settings['units'].decimals.kwh,
       hideEmpty: 'CounterDelivToday',
+      unit: settings['units'].names.kwh,
+    },
+    {
+      subtitle: language.energy.energy_delivered,
+      value: '<CounterDeliv>',
+      hideEmpty: 'CounterDeliv',
       unit: settings['units'].names.kwh,
     },
     /*
@@ -553,7 +553,7 @@ function getBlockTypesBlock(block) {
   if (!found) return false;
 
   var parentBlock = { showsubtitles: true, graph: true };
-  if(block.values && !block.single_block && !block.joinsubblocks) {
+  if(block.values && !block.single_line && !block.joinsubblocks) {
     parentBlock.multi_line = choose(block.multi_line, true);
   }
   $.extend(parentBlock, protoBlock, block);
@@ -567,7 +567,14 @@ function getBlockTypesBlock(block) {
     //we have a single block
     $.extend(newblock, protoBlock, getSubBlock(parentBlock));
     blockValues.push(newblock);
-  } else {
+  } else if (parentBlock.subidx) {
+    //One specific subblock
+    var subblockProto = parentBlock.values[parentBlock.subidx];
+    var subblock = {};
+    $.extend(newblock, subblockProto, getSubBlock(parentBlock));
+    blockValues.push(newblock);
+  }
+   else {
     var c = 1;
     for (var de in parentBlock.values) {
       var subblock = {};

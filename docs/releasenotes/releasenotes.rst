@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.14.1 beta (24-3-2025)
+------------------------
+
+.. warning :: Some breaking changes. See :ref:`v3_14_1`
+
 Enhancements
 ~~~~~~~~~~~~
 
@@ -22,7 +27,7 @@ Rework of Domoticz blocks, giving the following new parameters:
 * ``decimals``: To set the number of decimals for the data value.
 * ``unit``: Text to place behind the data value. 
 
-
+See :ref:`dom_blockparameters` and :ref:`multiplevaluesblock`
 
 v3.14.0 beta (23-2-2025)
 ------------------------

@@ -251,6 +251,22 @@ Block parameters
     - | Sets the opacity of the background image. See :ref:`blockbackground`
       | ``1`` (=default): Opacity of 100%
       | ``20%``: Opacity of 20%
+  * - values
+    - To define how (and which) subvalues of a device will be displayed. It's also possible to combine data from several devices in one block.
+  * - multi_line
+    - Set to ``true`` to show all subvalues as multiple lines in one block
+  * - single_line
+    - Set to ``true`` to show all subvalues on one line in one block
+  * - showsubtitles
+    - To show the subtitles of subvalues. Two variants are supported: ``1`` and ``2``
+  * - showvalues
+    - Array to indicate which subvalues of the device will be displayed (starting at ``1``)
+  * - scale
+    - Multiplier for the data value
+  * - decimals
+    - To set the number of decimals for the data value.
+  * - unit
+    - Text to place behind the data value. 
 
 There are several additional parameters for Graphs. See :ref:`dom_graphs`
       
@@ -280,55 +296,65 @@ Device with subdevices
 
 If a device consists of several subdevices, like a TempHumBar device or SmartMeter, then for each subdevice a block will be generated.
 
-In this example device device 659 is a TempHumBar device::
+In this example device device 1247 is a TempHumBar device::
 
-  columns[1] = {
-    blocks: [659]
+  blocks['thb'] = {
+    idx: 1247
   }
 
-.. image :: img/block659.jpg
+  columns[1] = {
+    blocks: ['thb']
+  }
+
+.. image :: img/thb.jpg
 
 In case I want to show all four subdevices onto one row I've to change the default width from 4 to 3::
 
-  blocks[659] = {
-    width:4
+  blocks['thb'] = {
+    idx: 1247,
+    width: 3
   }
+
   columns[1] = {
-    blocks: [659]
+    blocks: ['thb']
   }
 
-.. image :: img/block659_w3.jpg
 
-Now assume I want to have the first 3 subdevices on one row, and the fourth device on a new row, full width, with some additional customizations::
+.. image :: img/thb_w3.jpg
 
-  blocks[659] = {
+Now assume you want to have the first 3 subdevices on one row, and the fourth device on a new row, full width, with some additional customizations::
+
+  blocks['thb'] = {
+    idx: 1247,
     width:4
   }
 
-  blocks['659_4'] = {
+  blocks['thb_4'] = {
     width:12,
-    title: 'Dew temperature of device 659',
-    icon: 'fas fa-bus',
-    last_update: 'false',
-    switch: true
+    title: 'Dew temperature of device 1247',  //to define a custom title
+    subtitle:'',                              //to hide the subtitle
+    icon: 'fas fa-bus',                       //custom icon
+    last_update: false,                       //hide the timestamp of the last update
+    switch: true                              //switch position of title and value
   }
 
   columns[1] = {
-    blocks: [659]
+    blocks: ['thb']
   }
 
-  In the previous example first the settings of ``block[659]`` will be applied to all subblocks, followed by a subblock if it has been defined.
-  (In this case ``blocks['659_4']``)
+  In the previous example first the settings of ``block['thb']`` will be applied to all subblocks of device 1247,
+  followed by a subblock specific block definition, if it has been defined.
+  (In this case ``blocks['thb_4']``)
 
-.. image :: img/block659_4_custom.jpg
+.. image :: img/thb_4_custom.jpg
 
 In case you only want to show subdevice 1, the column definition should be as follows::
 
   columns[1] = {
-    blocks: [ '659_1' ]
+    blocks: [ 'thb_1' ]
   }
 
-Don't forget the tick marks around ``659_1``
+Don't forget the tick marks around ``thb_1``
 
 As for single device it's also possible to use a custom block key in combination with the ``idx`` parameter.
 
@@ -381,14 +407,14 @@ You can also change a subdevice of a block with custom key::
 Thermostat devices
 ~~~~~~~~~~~~~~~~~~~
 
-For a thermostat IDX, IDX_1 or IDX_2 can be used.
-If IDX_1 is used the thermostat +/- buttons will not be shown.
-If IDX_2 is used the icon/image of the block can be changed as in a normal block.
+For a thermostat normally '+/-'-buttons are displayed on the right side of a block.
+To hide the '+/-'-buttons add ``protected: true`` to the block definition.
 
 ::
 
-    blocks['123_2'] = {
-        image: 'toon.png'
+    blocks['123'] = {
+        image: 'toon.png',
+        protected: true
     } 
 
 
@@ -675,6 +701,92 @@ To hide the number, add the following to custom.css::
 Multiple Values Block
 ~~~~~~~~~~~~~~~~~~~~~
 
+Some devices contain multiple values. Example:
+
+P1 smart meter, Electrical energy, kWh:
+1. Nett Usage ('NettUsage')
+2. Energy counter today ('CounterToday')
+3. Energy counter total ('Counter')
+4. Energy counter delivered today (only for devices that can deliver) ('CounterDelivToday')
+5. Energy counter delivered total (only for devices that can deliver) ('CounterDeliv')
+6. Energy counter total tariff 1 (only for dual tariff meter) ('Data0')
+7. Energy counter total tariff 2 (only for dual tariff meter) ('Data1')
+
+Gas device:
+1. Gas usage today ('CounterToday')
+2. Gas counter total ('Counter')
+
+Soil Moisture:
+1. Soil moisture value ('Data')
+2. Soil moisture text Description ('Desc')
+
+RFX meter counter, Youless meter:
+1. Energy counter today ('CounterToday')
+2. Energy counter total ('Counter')
+3. Actual (energy) usage ('Usage')
+
+Temperature, Humidity, Barometer:
+1. Temperature ('Temp')
+2. Humidity ('Humidity')
+3. Barometer ('Barometer')
+4. Dew point ('DewPoint')
+
+In the lists above, the number corresponds with the number of the subdevice, which can be used in the ``showvalues`` parameter (see below).
+
+Further, the text between brackets at the end of each line indicates the device field name, which can be used in the ``values`` parameter (see below).
+   
+By default, all values of a device are shown as individual blocks. Subtitles will be added to each individual block when needed. Example for a P1 smart meter:
+
+.. image :: img/p1smartmeter.jpg
+
+To show all values on multiple lines within one block add the ``multi_line`` parameter::
+
+  blocks['p1_combined'] = {
+    idx: 43,
+    multi_line: true,
+  }
+
+.. image :: img/p1_multiline.jpg
+
+To show all values on a single line add the ``single_line`` parameter::
+
+  block['temp_single_line'] = {
+    idx: 708,
+    single_line: true,
+  }
+
+.. image :: img/thb_singleblock.jpg
+
+By default, the '/' symbol is used as value seperator. This can be changed with the ``joinsubblocks`` parameter.
+Normally all values are display. You can select the values to display with the ``showvalues`` parameter.
+
+Example::
+
+  blocks['thb_values'] = {
+    idx: 1247,
+    showvalues: [1,4],
+    joinsubblocks: ' ',
+  }
+
+.. image :: img/thb_showvalues.jpg
+
+To further customize which values to show, the ``values`` parameter can be used. It's possible to select values from multiple devices::
+
+   blocks['combine'] = {
+     idx: 43,
+     values: [
+       {
+         value: '<NettUsage>'
+       },
+       {
+         idx: 1247,
+         value: '<Temp>'
+       }
+     ]
+   }
+
+.. image :: img/combine.jpg
+
 Assuming your device is a P1 smart meter, you can use the following block definition::
 
   blocks['customblock'] = {
@@ -682,7 +794,8 @@ Assuming your device is a P1 smart meter, you can use the following block defini
     title:"Actual: <Usage>",
     value: "Today: <NettCounterToday> kWh",
     format:true,
-    decimals: 1
+    decimals: 1,
+    subtitle: '',
   }
 
 .. image :: img/p1multi.png

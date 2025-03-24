@@ -401,8 +401,14 @@ function getStatusBlock(block) {
     case 2:
       value = value + ' (' + block.subtitle + ')'
       break;
-    default:
+    case 1:
+    case '1':
+    case true:
       title = title + ': ' + block.subtitle;
+      break;
+    case false:
+    case 0:
+
   }
 
   if (!value && !title) {
@@ -923,9 +929,9 @@ function getLogitechMediaServer(block) {
 }
 
 function getJoinValuesSeperator(block) {
-  if (block.single_block) return '/ ';
-  if (block.multi_line) return '<br/>';
   if (typeof block.joinsubblocks === 'string') return block.joinsubblocks;
+  if (block.single_line) return '/ ';
+  if (block.multi_line) return '<br/>';
 }
 
 function selectBlockValues(parentBlock, blockValues) {
@@ -999,7 +1005,7 @@ function createBlocks(blockParent, blockValues) {
     block.idx = blockValue.idx;
     if (blockValue.subidx) block.subidx = blockValue.subidx;
     block.key = key;
-    var multiline = blockParent.multi_line ? ' multiline' : '';
+    var multiline = (blockParent.multi_line || blockParent.single_line) ? ' multiline' : '';
     var html =
       '<div class="mh transbg block_' +
       key + multiline +
