@@ -509,7 +509,8 @@ var Dashticz = (function () {
     removeBlock: removeBlock,
     setEmpty: setEmpty,
     isAvailable: isAvailable,
-    mountedBlocks: mountedBlocks
+    mountedBlocks: mountedBlocks,
+    getProperty: getProperty,
   };
 })();
 

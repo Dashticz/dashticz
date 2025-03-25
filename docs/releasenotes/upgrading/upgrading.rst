@@ -4,6 +4,7 @@ Upgrade instructions
 .. toctree::
    :maxdepth: 2
 
+   v3.14.1
    v3.10.1
    v389
    v376

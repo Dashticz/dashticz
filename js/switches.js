@@ -22,7 +22,6 @@ var spectrumColors = {};
 /** Returns a default switch block
  *
  * @param {object} block - The Dashticz block definition
- * @param {number | string} idx idx as used by Dashticz. Scenes start with 's'. Variables with 'v'
  * @param {string}   defaultIconOn Default On icon
  * @param {string}   defaultIconOff Default Off icon
  * @param {string}   buttonimg Default image.
@@ -59,6 +58,8 @@ function getDefaultSwitchBlock(
         switchDevice(block, mMode, !!confirmswitch);
       });
   }
+  block.defaultAddClass && block.$mountPoint.find('.mh').addClass(block.defaultAddClass);
+
   var textOn = defaultTextOn || language.switches.state_on;
   var textOff = defaultTextOff || language.switches.state_off;
 
@@ -84,8 +85,7 @@ function getDefaultSwitchBlock(
     attr
   );
   html += getBlockData(block, textOn, textOff);
-
-  return [html, true];
+  return html;
 }
 
 function isProtected(block) {
@@ -582,11 +582,11 @@ function addSpectrum(block) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function getBlindsBlock(block, withPercentage) {
+function getBlindsBlock(block, withPercentageParam) {
   var device = block.device;
+  var withPercentage = choose(block.withPercentage, withPercentageParam, false);
   var idx = block.idx;
   var $mountPoint = block.$mountPoint.find('.mh');
-  if (typeof withPercentage === 'undefined') withPercentage = false;
   var html = '';
 
   var hidestop = false;
@@ -695,7 +695,7 @@ function getBlindsBlock(block, withPercentage) {
       disabled: isProtected(block),
     });
   }
-  return [html, false];
+  return true;
 }
 
 /*previously there was a mechanism to send device update commands while sliding.
