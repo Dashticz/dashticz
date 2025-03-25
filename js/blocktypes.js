@@ -297,6 +297,13 @@ blocktypes.Temp = {
   format: true,
   decimals: 1,
 };
+
+blocktypes.Usage = blocktypes.General.SubType.Electric;
+
+blocktypes.Scale = {
+  icon: 'fas fa-weight',
+}
+
 blocktypes['Air Quality'] = {
   image: 'air.png',
 };
@@ -550,7 +557,23 @@ function getBlockTypesBlock(block) {
     protoBlock= blocktypes.HardwareType[device.HardwareType];
     if(protoBlock) found=true;
   }
-  if (!found) return false;
+  if (!found && device.SwitchType) 
+  {
+    protoBlock = {
+      handler: function(block) {
+        return getDefaultSwitchBlock(
+          block,
+          'fas fa-lightbulb',
+          'far fa-lightbulb',
+        );
+      }
+    }
+    found=true;
+  }
+
+  if (!found) {
+    //handle as default block. newblock will be used as protoblock
+  }
 
   var parentBlock = { showsubtitles: true, graph: true };
   if(block.values && !block.single_line && !block.joinsubblocks) {

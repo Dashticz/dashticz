@@ -8,6 +8,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Fixes
+~~~~~~
+
+* Fix for Domoticz device types Usage and Scale
+
 v3.14.1 beta (24-3-2025)
 ------------------------
 
