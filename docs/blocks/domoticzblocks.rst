@@ -704,6 +704,7 @@ Multiple Values Block
 Some devices contain multiple values. Example:
 
 P1 smart meter, Electrical energy, kWh:
+
 1. Nett Usage ('NettUsage')
 2. Energy counter today ('CounterToday')
 3. Energy counter total ('Counter')
@@ -713,19 +714,23 @@ P1 smart meter, Electrical energy, kWh:
 7. Energy counter total tariff 2 (only for dual tariff meter) ('Data1')
 
 Gas device:
+
 1. Gas usage today ('CounterToday')
 2. Gas counter total ('Counter')
 
 Soil Moisture:
+
 1. Soil moisture value ('Data')
 2. Soil moisture text Description ('Desc')
 
 RFX meter counter, Youless meter:
+
 1. Energy counter today ('CounterToday')
 2. Energy counter total ('Counter')
 3. Actual (energy) usage ('Usage')
 
 Temperature, Humidity, Barometer:
+
 1. Temperature ('Temp')
 2. Humidity ('Humidity')
 3. Barometer ('Barometer')
