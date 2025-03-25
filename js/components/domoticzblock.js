@@ -126,6 +126,17 @@ var DT_domoticzblock = (function () {
       deviceUpdateHandler(me.block);
       setBackgroundImage(me, me.backgroundImage);
     });
+    if(me.block.values) {
+      var deviceList = [me.deviceIdx];
+      me.block.values.forEach(function(value) {
+        if (value.idx && !deviceList.includes(value.idx)) {
+          deviceList.push(value.idx);
+          Dashticz.subscribeDevice(me, value.idx, false, function(device) {
+            deviceUpdateHandler(me.block);
+          })
+        }
+      })
+    }
   }
 })();
 

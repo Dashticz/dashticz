@@ -1,8 +1,9 @@
 {
-"version": "3.14.0",
+"version": "3.14.1",
 "branch": "beta",
-"last_changes": "Beta version same as 3.14 master",
+"last_changes": "Domoticz block enhancements",
 "changelog" : {
+            "3.14.0": "Beta version same as 3.14 master",
             "3.14": "Master version derived from 3.13.1 beta"
             }
 }
