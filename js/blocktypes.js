@@ -592,7 +592,7 @@ function getBlockTypesBlock(block) {
     blockValues.push(newblock);
   } else if (parentBlock.subidx) {
     //One specific subblock
-    var subblockProto = parentBlock.values[parentBlock.subidx];
+    var subblockProto = parentBlock.values[parentBlock.subidx-1];
     var subblock = {};
     $.extend(newblock, subblockProto, getSubBlock(parentBlock));
     blockValues.push(newblock);
