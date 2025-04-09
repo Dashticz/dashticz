@@ -81,7 +81,8 @@ var Dashticz = (function () {
           refresh_method: settings['refresh_method'],
           domoticz_timeout: settings['domoticz_timeout'],
           use_favorites: settings['use_favorites'],
-          use_hidden: settings['use_hidden']
+          use_hidden: settings['use_hidden'],
+          fake_domoticz: settings['fake_domoticz'],
         };
         if(settings.code) {
           cfg.code=settings.code
