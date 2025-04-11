@@ -13,20 +13,112 @@ config['fake_domoticz'] = true;
 
 var blocks = {}
 
-blocks['gas'] = {
-    type: 'graph',
-    devices: [44],
+//group with custom icon
+blocks['tc1'] 		= {idx: 's5', width: 2, hide_data : true, last_update : false, icon: 'fas fa-car', title:'Tuin'};
+
+blocks['tc2'] = {
+	//single block THB device
+    idx: 708,
+    single_line:true,
 }
+blocks['tc3'] = {
+	//multiline THB device
+    idx: 708,
+    multi_line:true,
+}
+
+blocks['tc4'] = {
+    idx:'1247_4',
+//    subidx: 4,
+    width:6,
+    title: 'Dew temperature of device 1247',
+    icon: 'fas fa-bus',
+    last_update: false,
+    subtitle:'',
+    switch: true,
+    showsubtitles: false,
+}
+
+blocks['tc5'] = {
+	//normal THB device
+    idx: 1247,
+//    showsubtitles: false,
+//    width: 3
+}
+
+blocks['tc6'] = {
+    idx: '43_1',
+    title:"Actual: <Usage>",
+    value: "Today: <NettCounterToday>",
+    format:true,
+    decimals: 1,
+    subtitle: '',
+  }
+
+  blocks['tc7'] = {
+	//select two values
+    idx: 1247,
+    showvalues: [1,4],
+    joinsubblocks: ' ',
+}
+
+blocks['tc8'] = {
+    idx: 43,
+    title: 'Power and Temp',
+    values: [
+      {
+        value: '<NettUsage>'
+      },
+      {
+        idx: 1247,
+        value: '<Temp>',
+        unit: 'C'
+      }
+    ],
+    joinsubblocks: ' ',
+}
+
+
+
+blocks['dist'] = {
+    idx: '1876',
+    title: 'kilometerstand',
+    icon: 'fas fa-car',
+    showsubtitles: 2,
+    decimals: 0,
+    
+    values: [ {
+        value: '1 '
+    },
+    {
+        idx: 708,
+        value: "<Temp>",
+        subtitle: 'Temp',
+        decimals: 1,
+        unit: 'C',
+    }],
+//    single_line: true,
+    //    showvalues: [2,1],
+}
+
 var columns = {}
 
 columns[1] = {}
 columns[1]['blocks'] = [
-    43,   
+    43,
+	'tc1',
+	'tc2',
+	'tc3',   
+	'tc4',
+	'tc5',
+	'tc6',
 ]
 columns[1]['width'] = 6;
 
 columns[2] = {}
 columns[2]['blocks'] = [
+	'tc7',
+	'tc8',
 
 ]
 columns[2]['width'] = 6;

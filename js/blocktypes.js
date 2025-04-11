@@ -162,6 +162,7 @@ SubType['Energy'] = {
       subtitle: language.energy.energy_totals + ' P1',
       value: '<Data0>',
       scale: 0.001,
+      format: true,
       decimals: 3,
       unit: settings['units'].names.kwh,
       hideEmpty: 'Data1',
@@ -171,6 +172,7 @@ SubType['Energy'] = {
       value: '<Data1>',
       scale: 0.001,
       decimals: 3,
+      format: true,
       unit: settings['units'].names.kwh,
       hideEmpty: 'Data1',
     }

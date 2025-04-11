@@ -61,6 +61,7 @@
     "format:html": "node bin/glob-ls.js '*.html' | xargs node_modules/.bin/html-beautify -r",
     "Update beta after merge": "./scripts/bu.sh",
     "test": "playwright test --project=chromium",
+    "test:update": "playwright test --project=chromium --update-snapshots",
     "test:report": "playwright show-report"
   },
   "repository": {

@@ -1007,7 +1007,7 @@ function createBlocks(blockParent, blockValues) {
     block.key = key;
     var multiline = (blockParent.multi_line || blockParent.single_line) ? ' multiline' : '';
     var html =
-      '<div class="mh transbg block_' +
+      '<div data-id="' + key + '" class="mh transbg block_' +
       key + multiline +
       ' col-xs-' +
       (block.width || 4) +
