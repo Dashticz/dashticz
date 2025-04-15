@@ -943,7 +943,8 @@ var defaultSettings = {
   domoticz_timeout: 2000,
   use_cors: 0,
   cached_scripts: true,
-  heartbeat: 0
+  heartbeat: 0,
+  fake_domoticz: false,
 };
 
 var settings = {};

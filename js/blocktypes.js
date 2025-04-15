@@ -162,6 +162,7 @@ SubType['Energy'] = {
       subtitle: language.energy.energy_totals + ' P1',
       value: '<Data0>',
       scale: 0.001,
+      format: true,
       decimals: 3,
       unit: settings['units'].names.kwh,
       hideEmpty: 'Data1',
@@ -171,6 +172,7 @@ SubType['Energy'] = {
       value: '<Data1>',
       scale: 0.001,
       decimals: 3,
+      format: true,
       unit: settings['units'].names.kwh,
       hideEmpty: 'Data1',
     }
@@ -533,7 +535,7 @@ function getBlockTypesBlock(block) {
   }
 
   var newblock = { graph: true, title: '<Name>', value: '<Data>', idx: block.idx, showsubtitles: true };
-  var protoBlock = {};
+  var protoBlock = {graph: true, title: '<Name>', value: '<Data>', idx: block.idx, showsubtitles: true };
   var found = false;
   if (device.SwitchType && blocktypes.SwitchType[device.SwitchType]) {
     $.extend(protoBlock, blocktypes.SwitchType[device.SwitchType]);
@@ -560,13 +562,9 @@ function getBlockTypesBlock(block) {
   if (!found && device.SwitchType) 
   {
     protoBlock = {
-      handler: function(block) {
-        return getDefaultSwitchBlock(
-          block,
-          'fas fa-lightbulb',
-          'far fa-lightbulb',
-        );
-      }
+      iconOn: 'fas fa-lightbulb',
+      iconOff: 'far fa-lightbulb',
+      handler: getDefaultSwitchBlock,
     }
     found=true;
   }
@@ -575,42 +573,25 @@ function getBlockTypesBlock(block) {
     //handle as default block. newblock will be used as protoblock
   }
 
-  var parentBlock = { showsubtitles: true, graph: true };
-  if(block.values && !block.single_line && !block.joinsubblocks) {
-    parentBlock.multi_line = choose(block.multi_line, true);
-  }
-  $.extend(parentBlock, protoBlock, block);
-  if (parentBlock.handler) {
-    return parentBlock.handler(parentBlock);
-  }
 
   var blockValues = [];
 
-  if (!parentBlock.values) {
+  if (!protoBlock.values) {
     //we have a single block
-    $.extend(newblock, protoBlock, getSubBlock(parentBlock));
+    $.extend(newblock, getSubBlock(protoBlock));
     blockValues.push(newblock);
-  } else if (parentBlock.subidx) {
-    //One specific subblock
-    var subblockProto = parentBlock.values[parentBlock.subidx-1];
-    var subblock = {};
-    $.extend(newblock, subblockProto, getSubBlock(parentBlock));
-    blockValues.push(newblock);
-  }
-   else {
+  } else  {
     var c = 1;
-    for (var de in parentBlock.values) {
+    for (var de in protoBlock.values) {
       var subblock = {};
-      $.extend(subblock, newblock, getSubBlock(parentBlock));
-      $.extend(subblock, parentBlock.values[de]);
-      //          subBlock.idx = block.device.idx;
+      $.extend(subblock, newblock, getSubBlock(protoBlock), getSubBlock(protoBlock.values[de]));
       subblock.subidx = c;
       blockValues.push(subblock);
       c++;
     }
   }
-  createBlocks(parentBlock, blockValues);
-  return true;
+  protoBlock.values = blockValues;
+  return protoBlock;
 }
 
 

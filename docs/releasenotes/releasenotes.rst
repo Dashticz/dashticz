@@ -8,6 +8,19 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.14.1.2 beta (15-4-2025)
+--------------------------
+
+Fixes
+~~~~~~
+
+* Some Domoticz blocks related fixes
+
+Code
+~~~~~
+
+* First version of autotest
+  
 v3.14.1.1 beta (1-4-2025)
 ------------------------
 
