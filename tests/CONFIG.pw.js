@@ -101,28 +101,14 @@ blocks['dist'] = {
     //    showvalues: [2,1],
 }
 
+var testcase;
+//testcase = "tc6";
+
 var columns = {}
 
-columns[1] = {}
-columns[1]['blocks'] = [
-    43,
-	'tc1',
-	'tc2',
-	'tc3',   
-	'tc4',
-	'tc5',
-	'tc6',
-]
-columns[1]['width'] = 6;
+columns[1] = {width: 6};
 
-columns[2] = {}
-columns[2]['blocks'] = [
-	'tc7',
-	'tc8',
-
-]
-columns[2]['width'] = 6;
-
+columns[2] = {width: 6};
 columns[3] = {}
 columns[3]['blocks'] = [
 
@@ -134,6 +120,25 @@ columns[4]['blocks'] = [
 ]
 columns[4]['width'] = 6;
 
+if(testcase) {
+	columns[1].blocks = [ testcase];
+}
+else {	
+
+columns[1]['blocks'] = [
+    43,
+	'tc1',
+	'tc2',
+	'tc3',   
+	'tc4',
+	'tc5',
+	'tc6',
+]
+columns[2]['blocks'] = [
+	'tc7',
+	'tc8',
+]
+}
 //if you want to use multiple screens, use the code below:
 var screens = {}
 screens[1] = {}

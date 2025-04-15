@@ -1,8 +1,9 @@
 {
-"version": "3.14.1.1",
+"version": "3.14.1.2",
 "branch": "beta",
-"last_changes": "Domoticz block bug fixing",
+"last_changes": "Playwright test",
 "changelog" : {
+            "3.14.1.1": "Domoticz block bug fixing",
             "3.14.1": "Domoticz block enhancements",
             "3.14.0": "Beta version same as 3.14 master",
             "3.14": "Master version derived from 3.13.1 beta"
