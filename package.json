@@ -38,6 +38,8 @@
     "@babel/core": "^7.12.10",
     "@babel/node": "^7.12.10",
     "@babel/preset-env": "^7.12.10",
+    "@playwright/test": "^1.51.1",
+    "@types/node": "^22.14.0",
     "babel-loader": "^8.2.2",
     "css-loader": "^3.6.0",
     "eslint": "^6.8.0",
@@ -53,12 +55,14 @@
     "webpack-cli": "^5"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "build": "NODE_ENV=production NODE_OPTIONS=\"--openssl-legacy-provider --trace-deprecation\" webpack",
     "format": "npm run format:prettier && npm run format:html",
     "format:prettier": "node_modules/.bin/prettier --config .prettierrc \"{js,src}/**/*.{ts,css,less,js}\" --write",
     "format:html": "node bin/glob-ls.js '*.html' | xargs node_modules/.bin/html-beautify -r",
-    "Update beta after merge": "./scripts/bu.sh"
+    "Update beta after merge": "./scripts/bu.sh",
+    "test": "playwright test --project=chromium",
+    "test:update": "playwright test --project=chromium --update-snapshots",
+    "test:report": "playwright show-report"
   },
   "repository": {
     "type": "git",

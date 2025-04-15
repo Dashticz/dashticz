@@ -82,6 +82,9 @@ var Domoticz = (function () {
 
     lastRequest = lastRequest
       .then(function newRequest() {
+        if(cfg.fake_domoticz) {
+          return newPromise.resolve('fake_domoticz');
+        }
         if (selectWS) {
           callbackList[requestid] = newPromise;
           var msg = {
