@@ -1329,7 +1329,9 @@ function getProtectedSecurityBlock(block) {
 }
 
 function getBlockTitle(block) {
-  return choose(block.title, block.device && block.device.Name);
+  var protoTitle;
+  if (block.protoBlock && block.protoBlock.title) protoTitle = formatTemplateString(block, block.device, block.protoBlock.title, true);
+  return choose(block.title, block.protoBlock && block.protoBlock.title, block.device && block.device.Name);
 }
 
 function getMediaPlayer(block) {

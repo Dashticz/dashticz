@@ -78,6 +78,9 @@ blocks['tc8'] = {
     joinsubblocks: ' ',
 }
 
+blocks['tc9'] 		= {idx: 's5', width: 2, hide_data : true, last_update : false};
+blocks['tc10']		= {type: 'group', width:2, devices: [373, 688]}
+
 
 
 blocks['dist'] = {
@@ -102,7 +105,7 @@ blocks['dist'] = {
 }
 
 var testcase;
-//testcase = "tc6";
+//testcase = "tc9";
 
 var columns = {}
 
@@ -137,6 +140,8 @@ columns[1]['blocks'] = [
 columns[2]['blocks'] = [
 	'tc7',
 	'tc8',
+	'tc9',
+	'tc10',
 ]
 }
 //if you want to use multiple screens, use the code below:

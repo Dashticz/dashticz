@@ -22,22 +22,18 @@ var spectrumColors = {};
 /** Returns a default switch block
  *
  * @param {object} block - The Dashticz block definition
- * @param {string}   defaultIconOn Default On icon
- * @param {string}   defaultIconOff Default Off icon
- * @param {string}   buttonimg Default image.
- * @param {string}   defaultTextOn Default On text
- * @param {string}   defaultTextOff Default Off text
  */
 // eslint-disable-next-line no-unused-vars
-function getDefaultSwitchBlock(
-  block,
-  defaultIconOn,
-  defaultIconOff,
-  buttonimg,
-  defaultTextOn,
-  defaultTextOff
-) {
+function getDefaultSwitchBlock( block ) {
   var device = block.device;
+  var defaultIconOn=block.protoBlock.iconOn;
+  var defaultIconOff=block.protoBlock.iconOff;
+  var defaultIcon=block.protoBlock.icon;
+  var defaultImageOn=block.protoBlock.imageOn;
+  var defaultImageOff=block.protoBlock.imageOff;
+  var defaultImage=block.protoBlock.image;
+  var defaultTextOn=block.protoBlock.textOn;
+  var defaultTextOff=block.protoBlock.textOff;
   var html = '';
   if (!isProtected(block)) {
     var confirmswitch = 0;
@@ -74,14 +70,22 @@ function getDefaultSwitchBlock(
     'on': defaultIconOn,
     'off': defaultIconOff,
     'mixed': defaultIconOff,
-    'default': defaultIconOn
+    'default': defaultIconOn || defaultIcon
   }
-  var mIcon = iconLookup[getIconStatusClass(device['Status'])] || iconLookup.default;
+  var imageLookup = {
+    'on': defaultImageOn,
+    'off': defaultImageOff,
+    'mixed': defaultImageOff,
+    'default': defaultImageOn || defaultImage
+  }
+  var statusClass = getIconStatusClass(device['Status']);
+  var mIcon = iconLookup[statusClass] || iconLookup.default || defaultIcon;
+  var mImage = imageLookup[statusClass] || imageLookup.default || defaultImage;
   html += iconORimage(
     block,
     mIcon,
-    buttonimg,
-    getIconStatusClass(device['Status']) + ' icon',
+    mImage,
+    statusClass + ' icon',
     attr
   );
   html += getBlockData(block, textOn, textOff);
