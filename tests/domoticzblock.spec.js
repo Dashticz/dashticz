@@ -22,6 +22,8 @@ test.describe('Basic testing', () => {
     await checkBlock(page, 'tc6', 'fa-plug','Actual: 700 Watt','Today: 23,9kWh');
     await checkBlock(page, 'tc7');
     await checkBlock(page, 'tc8');
+    await checkBlock(page, 'tc9', 'fa-lightbulb', 'KeukenLampen');
+    await checkBlock(page, 'tc10', 'fa-lightbulb', 'tc10');
   });
   
 });
@@ -29,7 +31,8 @@ test.describe('Basic testing', () => {
 async function checkBlock(page, key, icon, title, value) {
   var className = '.block_' + key;
   var fileName = 'bl_'+key+'.png';
-  const locator = page.locator(className);
+  //const locator = page.locator(className);
+  const locator = page.locator('css=[data-id="' + key + '"]');
   await expect(locator).toHaveScreenshot(fileName);
   typeof value!=='undefined' && await expect.soft(locator.locator('.value')).toHaveText(value);
   typeof title!=='undefined' && await expect.soft(locator.locator('.title')).toHaveText(title);

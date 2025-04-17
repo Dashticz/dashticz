@@ -8,6 +8,14 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.14.1.3 beta (17-4-2025)
+--------------------------
+
+Fixes
+~~~~~~
+
+* Fix for default icons of a switch block
+
 v3.14.1.2 beta (15-4-2025)
 --------------------------
 
