@@ -100,14 +100,13 @@ var DT_group = (function () {
                 width: me.block.width,
                 title: me.block.title || me.key,
                 showmixedas: me.block.showmixedas,
+                protoBlock: {
+                    iconOn: 'fas fa-lightbulb',
+                    iconOff: 'far fa-lightbulb',
+                }
 
             });
-            var html = getDefaultSwitchBlock(
-                block,
-                'fas fa-lightbulb',
-                'far fa-lightbulb',
-                ''
-            )[0];
+            var html = getDefaultSwitchBlock(block);
             me.$mountPoint.find('.dt_block').html(html);
         })
 
