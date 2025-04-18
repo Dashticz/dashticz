@@ -79,7 +79,7 @@ blocks['tc8'] = {
 }
 
 blocks['tc9'] 		= {idx: 's5', width: 2, hide_data : true, last_update : false};
-blocks['tc10']		= {type: 'group', width:2, devices: [373, 688]}
+blocks['tc10']		= {type: 'group', width:2, last_update: false, devices: [373, 688]}
 
 
 

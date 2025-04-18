@@ -8,6 +8,14 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.14.1.4 beta (18-4-2025)
+--------------------------
+
+Fixes
+~~~~~~
+
+* Fix for Logitech Media Server
+
 v3.14.1.3 beta (17-4-2025)
 --------------------------
 
