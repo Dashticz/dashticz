@@ -537,11 +537,15 @@ function getBlockTypesBlock(block) {
   var newblock = { graph: true, title: '<Name>', value: '<Data>', idx: block.idx, showsubtitles: true };
   var protoBlock = {graph: true, title: '<Name>', value: '<Data>', idx: block.idx, showsubtitles: true };
   var found = false;
-  if (device.SwitchType && blocktypes.SwitchType[device.SwitchType]) {
+  if (!found && device.HardwareType && blocktypes.HardwareType[device.HardwareType]) {
+    protoBlock= blocktypes.HardwareType[device.HardwareType];
+    if(protoBlock) found=true;
+  }
+  if (!found && device.SwitchType && blocktypes.SwitchType[device.SwitchType]) {
     $.extend(protoBlock, blocktypes.SwitchType[device.SwitchType]);
     found = true;
   }
-  if (blocktypes[device.Type]) {
+  if (!found && blocktypes[device.Type]) {
     found = true;
     var protoType = blocktypes[device.Type];
     $.extend(protoBlock, protoType);
@@ -554,10 +558,6 @@ function getBlockTypesBlock(block) {
         $.extend(protoBlock, protoSwitchType);
       };
     };
-  }
-  if (!found && device.HardwareType && blocktypes.HardwareType[device.HardwareType]) {
-    protoBlock= blocktypes.HardwareType[device.HardwareType];
-    if(protoBlock) found=true;
   }
   if (!found && device.SwitchType) 
   {
