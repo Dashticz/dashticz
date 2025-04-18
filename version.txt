@@ -1,8 +1,9 @@
 {
-"version": "3.14.1.3",
+"version": "3.14.1.4",
 "branch": "beta",
-"last_changes": "Fix for default switch block",
+"last_changes": "Fix for Logitech Media Server",
 "changelog" : {
+            "3.14.1.3": "Fix for default switch block",
             "3.14.1.2": "Playwright test",
             "3.14.1.1": "Domoticz block bug fixing",
             "3.14.1": "Domoticz block enhancements",
