@@ -1,24 +1,22 @@
 /* eslint-disable no-debugger */
-/*global getBlockTypesBlock, language, _TEMP_SYMBOL, settings*/
+/*global getBlockTypesBlock, language, settings*/
 /*global Dashticz, DT_function, Domoticz, Debug */
 /*global moment, number_format */
 /*from bundle.js*/
-/*global ion*/
+/*global ion isDefined*/
 /*from main.js*/
 /*global toSlide disableStandby infoMessage*/
 /*from dt_function.js*/
 /* global capitalizeFirstLetter choose */
-/*from thermostat.js*/
-/*global getThermostatBlock getEvohomeZoneBlock getEvohomeControllerBlock getEvohomeHotWaterBlock*/
 /*from switches.js*/
-/*global  getIconStatusClass getDefaultSwitchBlock getDimmerBlock getBlindsBlock slideDevice*/
+/*global  getIconStatusClass slideDevice*/
 /*from custom.js*/
 /*global afterGetDevices*/
 /*unknown. probably a bug ...*/
 /*global google*/
 /*from config.js (or main.js)*/
 /*global blocks*/
-/* Exports: */
+/* exported getSecurityBlock getMediaPlayer getSelectorSwitch*/
 
 var alldevices = 'initial value';
 
@@ -158,7 +156,6 @@ function deviceUpdateHandler(block) {
     case 'Selector':
       width = 8;
       break;
-    case 'Media Player':
     case 'Dimmer':
       width = 12;
   }
@@ -318,12 +315,13 @@ function isDomoticzDevice(key) {
 
 // eslint-disable-next-line no-unused-vars
 
-function formatTemplateString(block, device, valueStr, isTitle) {
+function formatTemplateString(block, device, valueParam, isTitle) {
   // eslint-disable-next-line no-useless-escape
   var unit = block.unit;
   var format = block.format;
   var decimals = block.decimals;
-  var tagRegEx = /<[\w\s="/.':;#-\/\?]+>/gi;
+  var tagRegEx = /<[\w\s="/.':;#-/?]+>/gi;
+  var valueStr = Dashticz.getProperty(valueParam, device);
   var matches = valueStr.match(tagRegEx);
   var elements = [];
 
@@ -379,21 +377,27 @@ function formatTemplateString(block, device, valueStr, isTitle) {
 }
 function formatBlockValues(parentBlock) {
   var blockValues = parentBlock.values;
-  var subidx=1;
+//  var subidx=1;
+  if(!blockValues) return;
   var newBlockValues = [];
   blockValues.forEach(function (block) {
 //    $.extend(block, parentBlock);
     var newBlock = {};
-    $.extend(newBlock, block);
-    if(!newBlock.subidx) newBlock.subidx=subidx;
-    subidx+=1;
-    idx = block.idx || parentBlock.idx;
-    var device = Domoticz.getAllDevices(idx);
-    if (block.hideEmpty && !device[block.hideEmpty]) return;
-    var value = block.value ? Dashticz.getProperty(block.value, device) : '';
-    var title = block.title ? block.title : '';
-    newBlock.value = formatTemplateString(block, device, value);
-    newBlock.title = formatTemplateString(block, device, title, true);
+    $.extend(newBlock, block);//, parentBlock); don't use parentBlock: it may contain icon from protoBlock
+    //parentBlock may contain a custom icon
+    //however, we should use value of block
+    if(block.value) newBlock.value = block.value;
+    if(block.subidx) newBlock.subidx = block.subidx;
+    if(block.idx) newBlock.idx = block.idx;  //parentBlock has values with specific idx
+//    if(!newBlock.subidx) newBlock.subidx=subidx;
+//    subidx+=1;
+//    idx = block.idx || parentBlock.idx;
+    var device = Domoticz.getAllDevices(newBlock.idx);
+    if (newBlock.hideEmpty && !device[newBlock.hideEmpty]) return;
+    var value = Dashticz.getProperty(newBlock.value, device);
+//    var title = block.title ? block.title : '';
+    newBlock.value = formatTemplateString(block, device, ''+value);
+    newBlock.title = formatTemplateString(block, device, newBlock.title || '', true);
     newBlockValues.push(newBlock);
   })
   return newBlockValues;
@@ -874,13 +878,20 @@ function triggerChange(block) {
   oldstates[idx] = value;
 }
 
-function handleDevice(block) {
-  var device = block.device;
-  var idx = block.idx;
-  var buttonimg = '';
-  if (device['Image'] === 'Fan') buttonimg = 'fan.png';
-  if (device['Image'] === 'Heating') buttonimg = 'heating.png';
+function setDefaultImage(block) {
+  var deviceImages = {
+    'Fan': 'fan.png',
+    'Heating': 'heating.png',
+  }
+  var defaultImage;
+  if(block && block.device && block.device.Image)
+    defaultImage = deviceImages[block.device.Image];
+  if(defaultImage && !block.image)
+    block.image = defaultImage;
+}
 
+function handleDevice(block) {
+  setDefaultImage(block);
   block.protoBlock = getBlockTypesBlock(block);
   if(block.values && !block.single_line && !block.joinsubblocks) {
     block.multi_line = choose(block.multi_line, true);
@@ -893,13 +904,10 @@ function handleDevice(block) {
   createBlocks(block);
 }
 
-function getLogitechMediaServer(block) {
+/*exported postHookLogitechMediaServer */
+function postHookLogitechMediaServer(block) {
   var device = block.device;
   var html = '';
-  html += iconORimage(block, 'fas fa-music', '', 'on icon', '', 2);
-  html += '<div class="col-xs-10 col-data">';
-  html += '<strong class="title">' + block.title + '</strong><br />';
-  html += '<span class="h4">' + device['Data'] + '</span>';
   html += '<div>';
   html +=
     '<a href="javascript:controlLogitech(' +
@@ -936,7 +944,7 @@ function getLogitechMediaServer(block) {
     ',\'VolumeUp\');"><em class="fas fa-plus-circle fa-small"></em></a>';
   html += '</div>';
   html += '</div>';
-  return html;
+  block.$mountPoint.find('.col-data').append(html);
 }
 
 function getJoinValuesSeperator(block) {
@@ -946,8 +954,8 @@ function getJoinValuesSeperator(block) {
 }
 
 function selectBlockValues(parentBlock) {
-
   var blockValues = parentBlock.values;
+  if(!blockValues) return;
   if (parentBlock.showvalues) { //showvalues contains a list of subidx devices to show
     var selectedBlockValues = [];
     parentBlock.showvalues.forEach(function (value) {
@@ -963,22 +971,20 @@ function selectBlockValues(parentBlock) {
   var seperator = getJoinValuesSeperator(parentBlock);
   if (seperator) {
     var value = filteredBlockValues.map(function (blockValue) {
+      var localValue = blockValue.value;
       var showsubtitles = choose(parentBlock.showsubtitles, blockValue.showsubtitles);
       if (blockValue.subtitle) {
         if(showsubtitles===2)
-          return blockValue.value + ' (' + blockValue.subtitle+')';
+          return localValue + ' (' + blockValue.subtitle+')';
         if(showsubtitles)
-          return blockValue.subtitle + ': ' + blockValue.value;
-        return blockValue.value;
-//        return ((parentBlock.showsubtitles && blockValue.subtitle) ? (blockValue.subtitle + ': ') : '') + blockValue.value;
+          return blockValue.subtitle + ': ' + localValue;
+        return localValue;
       }
-      else return blockValue.value;
+      else return localValue;
     }).join(seperator);
-    var newBlockValue = {};
-    $.extend(true, newBlockValue, getSubBlock(parentBlock.protoBlock)); //we are creating a new value
     parentBlock.value = value;
-    return [newBlockValue];
-  };
+    return; //values must become undefined
+  }
   return filteredBlockValues;
 }
 
@@ -989,78 +995,109 @@ function createBlocks(origBlock) {
   //
   */
 
-  var block={};
-  $.extend(block, /*origBlock.protoBlock,*/ origBlock);
-  var protoBlock=block.protoBlock;
+  //Four situations:
+  // 1. block.values (protoBlock.value and protoBlock.values will be ignored)
+  // 2. block.value (block.values and protoBlock.values will be ignored)
+  // 3. protoBlock.values
+  // 4. protoBlock.value
 
-  if (block.value) { //create a single subblock in case value parameter is defined
-    var subblock = {};
-    $.extend (subblock, protoBlock, block); //protoblock may contain additional parameters, like icon.
-    block.values = [subblock];
-    block.value = formatTemplateString(block, block.device, block.value);
+
+  var protoBlock = origBlock.protoBlock;
+  var block = {};
+
+  //default should be like this:
+  $.extend(block, protoBlock, origBlock); 
+  //Note: protoBlock may contain an icon, while protoBlock.values also contain icons.
+  //Protoblock.values.icons have priority
+  //while origBlock.icon has priority above protoblock.values.icons
+  //So I think protoBlock.values should be extended with origBlock to get the icon right.
+  //Note: if origBlock contains a value parameter it will overwrite all values.value
+  //That is ok
+
+  if (protoBlock.values && !origBlock.values) {
+    block.values = protoBlock.values.map(function (value) {
+      var newValue = {};
+      $.extend(newValue, value, origBlock);
+      return newValue;
+    });
   }
-  block.title = formatTemplateString(block, block.device, block.title, true);
-  if(!block.values) block.values = protoBlock.values;
-//  $.extend(true, block.blockValues, protoBlock.values, block.values); 
+
+
+  //if protoBlock has values, then these values already have been extended with protoblock in blocktypes.js
+  //however, this is not the case for values of origBlock:
+  if (origBlock.values) {
+    var subidx = 1;
+    block.values = origBlock.values.map(function (value) {
+      var newValue = { subidx: subidx };
+      $.extend(newValue, protoBlock, origBlock, value);
+      subidx += 1;
+      return newValue;
+    });
+  }
+  //the code above also is correct when origBlock uses values with different idx
+
+  //the idea is that at this moment block.values is always correct, and has been expanded.
+  if (origBlock.subidx && block.values) {
+    var newBlock={};
+    $.extend(newBlock, origBlock, block.values[origBlock.subidx-1]); //added origBlock, to keep $mountPoint
+    newBlock.values = undefined;
+    //if block.subidx exists then don't look at block.values anymore!
+    block=newBlock;
+  }
+
+  //Now handle all cases when value has been defined.
+  //protoBlock, inluding value, already has been extended into protoBlock.values, so that should be ok.
+  //In case origBlock contains value, and origBlock doesn't contain values, then remove values
+  //because protoBlock may contain values which shall be overruled by origBlock.value
+  if(origBlock.value && !origBlock.values) block.values = undefined;
+
+  var device = Domoticz.getAllDevices(block.idx);
+  block.device=device;
+  if (block.value) block.value = formatTemplateString(block, device, block.value); //there should always be a block.value
+  if (block.title) block.title = formatTemplateString(block, device, block.title, true);
   block.values = formatBlockValues(block);
   block.values = selectBlockValues(block);
-  var device = block.device;
-  var $div = block.$mountPoint;
-  $div.html(''); //it would be better for performance to add all changes at once.
+  block.$mountPoint.html(''); //it would be better for performance to add all changes at once.
 
-  var blockValues = block.values || [];
-  blockValues.forEach(function (blockValue) {
-    if (block.subidx && block.subidx !== blockValue.subidx) return;
-    //  console.log("createBlocks id: ", blockValue.idx)
-    //    if (blockValue.hideEmpty && typeof device[blockValue.hideEmpty] === 'undefined') return;
-    //    if(blockParent.showvalues && !blockParent.showvalues.includes(blockValue.subidx)) return;
-    var subBlock = {}
-    $.extend(subBlock, blockValue, block);//{};
+  var blockValues = block.values;
+  if (blockValues)
+    blockValues.forEach(function (blockValue) {
+      createSingleBlock(blockValue, false, true);
+    });
+  else
+    createSingleBlock(block, block.multi_line || block.single_line, false);
+  var postHook = protoBlock.postHook;
+  if (postHook)
+    postHook(block);
+}
 
-    //create a block from the prototype. Remember: blockParent is the instance, so this is right order
-    //    $.extend(block, blockValue, blockParent); 
-    //however, blockValue may already contain a subtitle
-    //Maybe I should do the expansion with subtitle below.
+function createSingleBlock(block, asMultiLine, hasSubidx) {
+  if(Dashticz.getProperty(block.hidden, block.device)) return;
+  var key = block.key;
+  if (hasSubidx) {
+    key += '_' + block.subidx;
+    block.key=key;
+    $.extend(block, blocks[key]);
+  }
+  var multiline = asMultiLine ? ' multiline' : '';
+  var html =
+    '<div data-id="' + key + '" class="mh transbg block_' +
+    key + multiline +
+    ' col-xs-' +
+    (block.width || 4) +
+    '"/>';
+  block.$mountPoint.append(html);
 
-    //        $.extend(block, blocks[blockValue.idx]); //I don't think we should do this: It will overwrite block settings of a custom block
-    //Although for subdevices it would be nice to use corresponding block setting
-    //so let's overwrite in case parent and blockvalue idx are different
-    //because in that case we are creating subdevices
-    var key = block.key;
-    if (!block.subidx && blockValue.subidx) {
-      $.extend(subBlock, blocks[block.key + '_' + blockValue.subidx]);
-      key += '_' + blockValue.subidx;
-    }
-    subBlock.idx = choose(blockValue.idx, block.idx);
-    if (blockValue.subidx) subBlock.subidx = blockValue.subidx;
-    subBlock.key = key;
-    var multiline = (block.multi_line || block.single_line) ? ' multiline' : '';
-    var html =
-      '<div data-id="' + key + '" class="mh transbg block_' +
-      key + multiline +
-      ' col-xs-' +
-      (subBlock.width || block.width || 4) +
-      '"/>';
-    $div.append(html);
-    subBlock.mountPoint = block.mountPoint; //  +' .block_'+key;
-    subBlock.$mountPoint = $(block.mountPoint);
-    //        block.subidx = index;
-    //        block.blockdef=blocks[blockValue.idx]; //store a reference of the parent blockdef ? should be in parent already ...
-    //        $.extend(block, block.blockdef); //merge all fields
+  triggerStatus(block);
+  triggerChange(block);
 
-    triggerStatus(subBlock);
-    triggerChange(subBlock);
+  html = getStatusBlock(block);
 
-    subBlock.device = device;
-
-    html = getStatusBlock(subBlock);
-
-    subBlock.$mountPoint
-      .find('.block_' + key)
-      .html(html)
-      .addClass(subBlock.addClass)
-      .addClass(subBlock.defaultAddClass);
-  });
+  block.$mountPoint
+    .find('.block_' + key)
+    .html(html)
+    .addClass(block.addClass)
+    .addClass(block.defaultAddClass);
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -1329,8 +1366,6 @@ function getProtectedSecurityBlock(block) {
 }
 
 function getBlockTitle(block) {
-  var protoTitle;
-  if (block.protoBlock && block.protoBlock.title) protoTitle = formatTemplateString(block, block.device, block.protoBlock.title, true);
   return choose(block.title, block.protoBlock && block.protoBlock.title, block.device && block.device.Name);
 }
 
@@ -1349,13 +1384,14 @@ function getMediaPlayer(block) {
   } else {
     $('div.block_' + block.key).show();
   }
-  html += '<span class="h4">' + device['Data'] + '</span>';
+  html += '<span class="value h4">' + device['Data'] + '</span>';
   return html;
 }
 
 function getSelectorSwitch(block) {
   var device = block.device;
   var html = '';
+  var nameValues;
   if (
     typeof device['LevelActions'] !== 'undefined' &&
     device['LevelNames'] !== ''
@@ -1431,7 +1467,7 @@ function getSelectorSwitch(block) {
       if (!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<div class="btn-group" data-toggle="buttons">';
       for (idx in nameValues) {
-        var nv = nameValues[idx];
+        nv = nameValues[idx];
         if (
           parseFloat(nv.value) > 0 ||
           (nv.value == 0 &&
