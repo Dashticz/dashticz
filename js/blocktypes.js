@@ -1,8 +1,15 @@
 
-/* global getExtendedBlockTypes createBlocks _TEMP_SYMBOL language*/
+/* global getExtendedBlockTypes _TEMP_SYMBOL language settings isDomoticzDevice*/
+/* from thermostat.js: */
+/* global getEvohomeZoneBlock, getEvohomeHotWaterBlock getEvohomeControllerBlock getThermostatBlock*/
+/* from switches.js: */
+/* global getDefaultSwitchBlock getDimmerBlock getBlindsBlock getSelectorSwitch*/
+/* from dt_function.js: */
+/* global choose*/
+/* from blocks.js */
+/* global getSecurityBlock postHookLogitechMediaServer*/
 // Type/SubType/SwitchType
 var blocktypes = {};
-var General = {};
 var SubType = {}
 SubType.Visibility = {
   icon: 'fas fa-eye',
@@ -414,7 +421,7 @@ blocktypes.Scene = blocktypes.Group;
 
 /*Switches*/
 
-SwitchType = {}
+var SwitchType = {}
 
 SwitchType['Dimmer'] = {
   handler: getDimmerBlock
@@ -501,7 +508,17 @@ SwitchType['Doorbell'] = {
 
 SwitchType['Media Player'] = {
   width: 12,
-  handler: getMediaPlayer
+  graph: false,
+  icon: 'fas fa-film',
+  last_update: false,
+  value: function(device) {
+    return device.Data? device.Data: language.misc.mediaplayer_nothing_playing 
+  },
+  hidden: function(device) {
+    return settings['hide_mediaplayer'] && !device.Data
+  }
+
+//  handler: getMediaPlayer
 }
 
 SwitchType['Selector'] = {
@@ -510,14 +527,17 @@ SwitchType['Selector'] = {
 
 blocktypes.SwitchType = SwitchType;
 
-
-HardwareType = {
-  "Toon Thermostaat" : {
+var HardwareType = {
+  /* probably no specifc Toon handler is needed anymore*/
+/*  "Toon Thermostaat" : {
     handler: getToonThermostat
-  },
+  },*/
   'Logitech Media Server': {
     defaultAddClass: 'with_controls',
-    handler: getLogitechMediaServer
+    graph: false,
+    icon: 'fas fa-music',
+    last_update: false,
+    postHook: postHookLogitechMediaServer
   }
 }
 
@@ -538,8 +558,9 @@ function getBlockTypesBlock(block) {
   var protoBlock = {graph: true, title: '<Name>', value: '<Data>', idx: block.idx, showsubtitles: true };
   var found = false;
   if (!found && device.HardwareType && blocktypes.HardwareType[device.HardwareType]) {
-    protoBlock= blocktypes.HardwareType[device.HardwareType];
-    if(protoBlock) found=true;
+//    protoBlock= blocktypes.HardwareType[device.HardwareType];
+    $.extend(protoBlock, blocktypes.HardwareType[device.HardwareType]);
+    found=true;
   }
   if (!found && device.SwitchType && blocktypes.SwitchType[device.SwitchType]) {
     $.extend(protoBlock, blocktypes.SwitchType[device.SwitchType]);
@@ -556,8 +577,8 @@ function getBlockTypesBlock(block) {
       if (protoBlock.SwitchType && protoBlock.SwitchType[device.SwitchType]) {
         var protoSwitchType = protoBlock.SwitchType[device.SwitchType];
         $.extend(protoBlock, protoSwitchType);
-      };
-    };
+      }
+    }
   }
   if (!found && device.SwitchType) 
   {
@@ -573,14 +594,8 @@ function getBlockTypesBlock(block) {
     //handle as default block. newblock will be used as protoblock
   }
 
-
-  var blockValues = [];
-
-  if (!protoBlock.values) {
-    //we have a single block
-    $.extend(newblock, getSubBlock(protoBlock));
-    blockValues.push(newblock);
-  } else  {
+  if (protoBlock.values) {
+    var blockValues = [];
     var c = 1;
     for (var de in protoBlock.values) {
       var subblock = {};
@@ -589,8 +604,8 @@ function getBlockTypesBlock(block) {
       blockValues.push(subblock);
       c++;
     }
+    protoBlock.values = blockValues;
   }
-  protoBlock.values = blockValues;
   return protoBlock;
 }
 
@@ -618,7 +633,7 @@ function iconFromDevice(device) {
   }
   return defaultIcon;
 }
-
+/*
 function getToonThermostat(block) {
   var device = block.device;
   if (device['SubType'] !== 'SetPoint' && device['SubType'] !== 'AC') {
@@ -628,6 +643,6 @@ function getToonThermostat(block) {
     return getThermostatBlock(block);
   }
 }
-
+*/
 
 //# sourceURL=js/blocktypes.js
