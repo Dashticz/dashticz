@@ -9,12 +9,13 @@
 /* from domoticz-api.js*/
 /* global Domoticz */
 /* from dt_function.js*/
-/* global DT_function */
+/* global DT_function choose*/
 /* from dial.js*/
 /* global DT_dial */
 /* from src/functions.js */
 /* global isDefined */
-// eslint-disable-next-line no-unused-vars
+/* exported addThermostatFunctions getThermostatBlock*/
+
 function addThermostatFunctions(block) {
   var $el = block.$mountPoint.find('.block_' + block.key);
   $el.find('.btn-number').on('click', function () {
@@ -64,7 +65,6 @@ function addThermostatFunctions(block) {
   });
 }
 
-// eslint-disable-next-line no-unused-vars
 function getThermostatBlock(block) {
   block.min = parseFloat(choose(block.min, block.device.min, settings['setpoint_min'], 5));
   block.max = parseFloat(choose(block.max, block.device.max, settings['setpoint_max'], 40));

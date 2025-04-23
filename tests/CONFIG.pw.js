@@ -8,6 +8,7 @@ config['domoticz_refresh'] = '500';
 config['dashticz_refresh'] = '600';
 config['cached_scripts'] = false;
 config['fake_domoticz'] = true;
+config['hide_mediaplayer'] = false;
 
 
 
@@ -47,7 +48,7 @@ blocks['tc5'] = {
 }
 
 blocks['tc6'] = {
-    idx: '43_1',
+    idx: '43',
     title:"Actual: <Usage>",
     value: "Today: <NettCounterToday>",
     format:true,
@@ -80,6 +81,10 @@ blocks['tc8'] = {
 
 blocks['tc9'] 		= {idx: 's5', width: 2, hide_data : true, last_update : false};
 blocks['tc10']		= {type: 'group', width:2, last_update: false, devices: [373, 688]}
+blocks['tc11'] 		= {idx: '5000'};
+blocks['tc12'] 		= {idx: 1988};
+blocks['tc13'] 		= {idx: 5001};
+blocks['tc14'] 		= {idx: 993};
 
 
 
@@ -105,7 +110,7 @@ blocks['dist'] = {
 }
 
 var testcase;
-//testcase = "tc9";
+//testcase = 'tc13';
 
 var columns = {}
 
@@ -142,6 +147,10 @@ columns[2]['blocks'] = [
 	'tc8',
 	'tc9',
 	'tc10',
+	'tc11',
+	'tc12',
+	'tc13',
+	993
 ]
 }
 //if you want to use multiple screens, use the code below:
@@ -159,6 +168,7 @@ screens[3] = {
     columns: []
 }
 
+/* exported stubDevices */
 var stubDevices = 
 {
 	"ActTime" : 1744141780,
@@ -20217,7 +20227,112 @@ var stubDevices =
 			"XOffset" : "0",
 			"YOffset" : "0",
 			"idx" : "1994"
-		}
+		},
+		{
+			"AddjMulti" : 1.0,
+			"AddjMulti2" : 1.0,
+			"AddjValue" : 360.0,
+			"AddjValue2" : 0.0,
+			"BatteryLevel" : 255,
+			"CustomImage" : 15,
+			"Data" : "Dummy title playing",
+			"Description" : "",
+			"DimmerType" : "none",
+			"Favorite" : 0,
+			"HardwareDisabled" : false,
+			"HardwareID" : 13,
+			"HardwareName" : "Dummy",
+			"HardwareType" : "Logitech Media Server",
+			"HardwareTypeVal" : 15,
+			"HaveDimmer" : true,
+			"HaveGroupCmd" : true,
+			"HaveTimeout" : false,
+			"ID" : "00014812",
+			"Image" : "Heating",
+			"IsSubDevice" : false,
+			"LastUpdate" : "2025-04-08 07:10:24",
+			"Level" : 0,
+			"LevelInt" : 0,
+			"MaxDimLevel" : 100,
+			"Name" : "LMS",
+			"Notifications" : "false",
+			"PlanID" : "0",
+			"PlanIDs" : 
+			[
+				0
+			],
+			"Protected" : false,
+			"ShowNotifications" : true,
+			"SignalLevel" : "-",
+			"Status" : "",
+			"StrParam1" : "",
+			"StrParam2" : "",
+//			"SubType" : "Switch",
+			"SwitchType" : "Media Player",
+//			"SwitchTypeVal" : 0,
+			"Timers" : "false",
+			"Type" : "Don't care",
+			"TypeImg" : "lightbulb",
+			"Unit" : 1,
+			"Used" : 1,
+			"UsedByCamera" : false,
+			"XOffset" : "0",
+			"YOffset" : "0",
+			"idx" : "5000"
+		},
+		{
+			"AddjMulti" : 1.0,
+			"AddjMulti2" : 1.0,
+			"AddjValue" : 0.0,
+			"AddjValue2" : 0.0,
+			"BatteryLevel" : 255,
+			"CustomImage" : 0,
+			"Data" : "",
+			"Description" : "",
+			"DimmerType" : "none",
+			"Favorite" : 0,
+			"HardwareDisabled" : false,
+			"HardwareID" : 13,
+			"HardwareName" : "Dummy",
+			"HardwareType" : "Dummy (Does nothing, use for virtual switches only)",
+			"HardwareTypeVal" : 15,
+			"HaveDimmer" : true,
+			"HaveGroupCmd" : true,
+			"HaveTimeout" : false,
+			"ID" : "00014814",
+			"Image" : "Light",
+			"IsSubDevice" : false,
+			"LastUpdate" : "2025-01-30 20:54:07",
+			"Level" : 15,
+			"LevelInt" : 15,
+			"MaxDimLevel" : 100,
+			"Name" : "smoke",
+			"Notifications" : "false",
+			"PlanID" : "0",
+			"PlanIDs" : 
+			[
+				0
+			],
+			"Protected" : false,
+			"ShowNotifications" : true,
+			"SignalLevel" : "-",
+			"Status" : "On",
+			"StrParam1" : "",
+			"StrParam2" : "",
+			"SubType" : "Switch",
+			"SwitchType" : "Media Player",
+			"SwitchTypeVal" : 17,
+			"Timers" : "false",
+			"Type" : "Light/Switch",
+			"TypeImg" : "Media",
+			"Unit" : 1,
+			"Used" : 1,
+			"UsedByCamera" : false,
+			"XOffset" : "0",
+			"YOffset" : "0",
+			"idx" : "5001"
+		},
+
 	],
 	"status" : "OK",
 	"title" : "Devices"
