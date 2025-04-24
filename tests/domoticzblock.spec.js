@@ -25,7 +25,6 @@ test.describe('Basic testing', () => {
     await checkBlock(page, 'tc9', 'fa-lightbulb', undefined, 'KeukenLampen');
     await checkBlock(page, 'tc10', 'fa-lightbulb', undefined, 'tc10');
     await checkBlock(page, 'tc11', undefined, 'img/heating.png', 'LMS', 'Dummy title playing');
-//    await expect(page.locator('.block_tc11 .h4')).toHaveText('Dummy title playing');
     await checkBlock(page, 'tc12', 'fa-film', undefined, 'smoke', '15');
     await checkBlock(page, 'tc13', 'fa-film', undefined, 'smoke', 'Nothing is playing right now');
   });
@@ -33,9 +32,7 @@ test.describe('Basic testing', () => {
 });
 
 async function checkBlock(page, key, icon, image, title, value) {
-  var className = '.block_' + key;
   var fileName = 'bl_'+key+'.png';
-  //const locator = page.locator(className);
   const locator = page.locator('css=[data-id="' + key + '"]');
   await expect.soft(locator).toHaveScreenshot(fileName);
   typeof value!=='undefined' && await expect.soft(locator.locator('.value')).toHaveText(value);
