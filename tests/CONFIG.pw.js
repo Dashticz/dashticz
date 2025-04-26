@@ -85,6 +85,8 @@ blocks['tc11'] 		= {idx: '5000'};
 blocks['tc12'] 		= {idx: 1988};
 blocks['tc13'] 		= {idx: 5001};
 blocks['tc14'] 		= {idx: 993};
+blocks['tc15'] 		= {idx: 266};
+blocks['tc16'] 		= {idx: 1411};
 
 
 
@@ -110,7 +112,7 @@ blocks['dist'] = {
 }
 
 var testcase;
-//testcase = 'tc13';
+//testcase = 'tc16';
 
 var columns = {}
 
@@ -150,7 +152,10 @@ columns[2]['blocks'] = [
 	'tc11',
 	'tc12',
 	'tc13',
-	993
+	'tc14',
+	'tc15',
+	'tc16',
+	//993
 ]
 }
 //if you want to use multiple screens, use the code below:
