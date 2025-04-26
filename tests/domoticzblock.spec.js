@@ -29,6 +29,7 @@ test.describe('Basic testing', () => {
     await checkBlock(page, 'tc13', 'fa-film', undefined, 'smoke', 'Nothing is playing right now');
     await checkBlock(page, 'tc16', undefined, 'img/blinds_closed.png', 'blinds test 100%');
     await expect(page.locator('.block_tc16 .slider')).toBeVisible();
+    await checkBlock(page, 'tc17 test', 'fa-film', undefined, 'VLC test', 'Nothing is playing right now');
   });
   
 });
