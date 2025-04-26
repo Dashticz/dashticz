@@ -1094,7 +1094,7 @@ function createSingleBlock(block, asMultiLine, hasSubidx) {
   html = getStatusBlock(block);
 
   block.$mountPoint
-    .find('.block_' + key)
+    .find('[data-id="' + key + '"]')
     .html(html)
     .addClass(block.addClass)
     .addClass(block.defaultAddClass);

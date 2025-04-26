@@ -86,7 +86,10 @@ blocks['tc12'] 		= {idx: 1988};
 blocks['tc13'] 		= {idx: 5001};
 blocks['tc14'] 		= {idx: 993};
 blocks['tc15'] 		= {idx: 266};
+//blocks['tc16'] 		= {idx: 1411, width: 12};
 blocks['tc16'] 		= {idx: 1411};
+blocks['tc17 test'] = {idx: 5002};
+
 
 
 
@@ -112,7 +115,7 @@ blocks['dist'] = {
 }
 
 var testcase;
-//testcase = 'tc16';
+//testcase = 'tc17 test';
 
 var columns = {}
 
@@ -155,6 +158,7 @@ columns[2]['blocks'] = [
 	'tc14',
 	'tc15',
 	'tc16',
+	'tc17 test',
 	//993
 ]
 }
@@ -20337,8 +20341,68 @@ var stubDevices =
 			"YOffset" : "0",
 			"idx" : "5001"
 		},
+		{
+			"AddjMulti" : 1.0,
+			"AddjMulti2" : 1.0,
+			"AddjValue" : 0.0,
+			"AddjValue2" : 0.0,
+			"BatteryLevel" : 255,
+			"CustomImage" : 0,
+			"Data" : "",
+			"Description" : "",
+			"DimmerType" : "none",
+			"Favorite" : 0,
+			"HardwareDisabled" : false,
+			"HardwareID" : 13,
+			"HardwareName" : "Dummy",
+			"HardwareType" : "Dummy (Does nothing, use for virtual switches only)",
+			"HardwareTypeVal" : 15,
+			"HaveDimmer" : true,
+			"HaveGroupCmd" : true,
+			"HaveTimeout" : false,
+			"ID" : "00014814",
+			"Image" : "Light",
+			"IsSubDevice" : false,
+			"LastUpdate" : "2025-01-30 20:54:07",
+			"Level" : 15,
+			"LevelInt" : 15,
+			"MaxDimLevel" : 100,
+			"Name" : "VLC test",
+			"Notifications" : "false",
+			"PlanID" : "0",
+			"PlanIDs" : 
+			[
+				0
+			],
+			"Protected" : false,
+			"ShowNotifications" : true,
+			"SignalLevel" : "-",
+			"Status" : "On",
+			"StrParam1" : "",
+			"StrParam2" : "",
+//			"SubType" : "Switch",
+//			"SwitchType" : "Media Player",
+//			"SwitchTypeVal" : 17,
+//			"Timers" : "false",
+//			"Type" : "Light/Switch",
+//			"TypeImg" : "Media",
+			"Unit" : 1,
+			"Used" : 1,
+			"UsedByCamera" : false,
+			"XOffset" : "0",
+			"YOffset" : "0",
+			"idx" : "5002",
+			//modified
+			"SubType" : "X10",
+			"SwitchType" : "Media Player",
+			"SwitchTypeVal" : 17,
+			"Timers" : "false",
+			"Type" : "Lighting 1",
+			"TypeImg" : "Media",
+		},
 
 	],
 	"status" : "OK",
 	"title" : "Devices"
 }
+
