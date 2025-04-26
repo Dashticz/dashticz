@@ -743,15 +743,15 @@ a.playlist {
 .btn.min {}
 
 .btn.stop {
-  transform: rotate(90deg);
-  top: 19px;
-  width: 70px;
-  height: 33px;
+  top: 0px;
+  height: 100%;
   position: absolute;
-  right: -20px;
+  right: 0px;
   padding-left: 0px;
   padding-right: 0px;
   padding-top: 10px;
+  text-orientation: sideways-right;
+  writing-mode: vertical-rl;
 }
 
 .col-button2 {
@@ -1594,11 +1594,7 @@ img.icon {
   .col-data {
     width: calc(100% - 30px);
   }
-  .btn.stop {
-    top: 14px;
-    width: 60px;
-    right: -14px;
-  }
+
   .trashcan {
     max-width: 15px !important;
   }
