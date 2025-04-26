@@ -6,7 +6,7 @@
 /* from domoticz-api.js*/
 /* global Domoticz*/
 /* from dt_function.js*/
-/* global DT_function*/
+/* global DT_function choose*/
 /* from dial.js */
 /* global DT_dial */
 /* from blocks.js */
@@ -586,7 +586,9 @@ function addSpectrum(block) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function getBlindsBlock(block, withPercentageParam) {
+function getBlindsBlock(parentBlock, withPercentageParam) {
+  var block={};
+  $.extend(block, parentBlock.protoBlock, parentBlock);
   var device = block.device;
   var withPercentage = choose(block.withPercentage, withPercentageParam, false);
   var idx = block.idx;
