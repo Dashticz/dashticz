@@ -28,8 +28,11 @@ test.describe('Basic testing', () => {
     await checkBlock(page, 'tc12', 'fa-film', undefined, 'smoke', '15');
     await checkBlock(page, 'tc13', 'fa-film', undefined, 'smoke', 'Nothing is playing right now');
     await checkBlock(page, 'tc16', undefined, 'img/blinds_closed.png', 'blinds test 100%');
-    await expect(page.locator('.block_tc16 .slider')).toBeVisible();
+    await expect.soft(page.locator('.block_tc16 .slider')).toBeVisible();
     await checkBlock(page, 'tc17 test', 'fa-film', undefined, 'VLC test', 'Nothing is playing right now');
+    await checkBlock(page, 'blinds_nostop', undefined, 'img/blinds_closed.png', 'blinds no stop 100%');
+    await expect.soft(page.locator('.block_blinds_nostop .col-button1')).toBeVisible();
+    await checkBlock(page, 'thermostat', undefined, 'img/heating.png', 'OTGW_Thermostat','19,0°C');
   });
   
 });

@@ -860,7 +860,7 @@ Example how to set the content of a Domoticz text device::
 .. _domoticzStyling:
 
 Styling
-~~~~~~~~
+--------
 
 The following CSS classes will be attached to a Domoticz block automatically:
 
@@ -873,3 +873,30 @@ To give Domoticz blocks with a device in timeout state a red background, add the
   .mh.timeout {
       background-color:rgba(255,0,0,0.3);
   }
+
+.. _blindsstyling:
+
+Blinds styling
+~~~~~~~~~~~~~~~
+
+You can configure the width of the up/down buttons of a blinds block via the ``--col1width`` CSS variable
+and the width of the stop-buttion via the ``--col1width`` CSS variable.
+
+For example, add the following to ``custom.css``::
+
+  .mh {
+    --col1width: 60px;
+    --col2width: 60px;
+  }
+
+  .mh .btn {
+      background-color: #00aaff;
+      border: 1px solid rgba(255,255,255,0.7);
+      border-radius: 5px;
+  }
+
+  .mh .btn.stop {
+      background-color: red;
+  }
+
+This will also change the color and the border of the up/down/stop-buttons.
