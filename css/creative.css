@@ -738,9 +738,9 @@ a.playlist {
   position: absolute;
 }
 
-.btn.plus {}
-
-.btn.min {}
+.btn.plus, .btn.min {
+  width: 100%
+}
 
 .btn.stop {
   top: 0px;
@@ -752,12 +752,17 @@ a.playlist {
   padding-top: 10px;
   text-orientation: sideways-right;
   writing-mode: vertical-rl;
+  width: var(--col2width);
+  font-size:20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .col-button2 {
   z-index: 10;
   position: absolute;
-  width: 62px;
+  width: calc(var(--col1width) + var(--col2width));
   height: 100%;
   right: 0px;
   top: 0px;
@@ -766,7 +771,7 @@ a.playlist {
 .col-button1 {
   z-index: 10;
   position: absolute;
-  width: 31px;
+  width: var(--col1width);
   height: 100%;
   right: 0px;
   top: 0px;
@@ -783,7 +788,7 @@ a.playlist {
 .up,
 .down {
   height: 50%;
-  width: 31px;
+  width: var(--col1width);
 }
 
 .btn-number:hover {
@@ -1032,6 +1037,11 @@ a:focus {
 
 .hidden {
   display: none;
+}
+
+.mh {
+  --col1width: 30px;
+  --col2width: 30px;
 }
 
 div.mh:not(.multiline) {
@@ -1343,11 +1353,11 @@ Only add this hover on NON touch devices
 }
 
 .right2col {
-  padding-right: 70px;
+  padding-right: calc(var(--col1width) + var(--col2width) + 8px);  
 }
 
 .right1col {
-  padding-right: 40px;
+  padding-right: calc(var(--col1width) + 8px);
 }
 
 .no-icon {

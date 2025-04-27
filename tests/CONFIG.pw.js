@@ -89,9 +89,15 @@ blocks['tc15'] 		= {idx: 266};
 //blocks['tc16'] 		= {idx: 1411, width: 12};
 blocks['tc16'] 		= {idx: 1411};
 blocks['tc17 test'] = {idx: 5002};
+blocks['blinds_nostop'] = {
+    idx: 1411,
+	title: 'blinds no stop',
+    hide_stop: true,
+}
 
-
-
+blocks['thermostat'] = {
+    idx: 1498,
+}
 
 blocks['dist'] = {
     idx: '1876',
@@ -159,7 +165,8 @@ columns[2]['blocks'] = [
 	'tc15',
 	'tc16',
 	'tc17 test',
-	//993
+    'blinds_nostop',
+    'thermostat',
 ]
 }
 //if you want to use multiple screens, use the code below:
