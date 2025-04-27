@@ -213,6 +213,9 @@ var Dashticz = (function () {
           special.refresh(me);
         });
       }
+      if (me.block.styling) {
+        console.log('styling', me.block.styling);
+      }
     });
   }
 
