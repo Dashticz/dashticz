@@ -8,6 +8,16 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* Improved styling of blinds and thermostat buttons. See :ref:`blindsstyling`
+
+Code
+~~~~~
+
+* Thermostat styling: CSS class for thermostat value renamed from ``.state`` to ``.value``
+  
 v3.14.1.4 beta (18-4-2025)
 --------------------------
 
