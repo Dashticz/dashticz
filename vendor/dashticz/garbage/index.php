@@ -296,7 +296,7 @@ function getCalendar() {
 					case 'sudwestfryslan'; $baseUrl = 'http://afvalkalender.sudwestfryslan.nl'; break;
 					case 'alphenaandenrijn'; $baseUrl = 'http://afvalkalender.alphenaandenrijn.nl'; break;
 					case 'cure'; $baseUrl = 'https://afvalkalender.cure-afvalbeheer.nl'; break;
-					case 'cyclusnv'; $baseUrl = 'https://afvalkalender.cyclusnv.nl'; break;
+					case 'cyclusnv'; $baseUrl = 'https://cyclusnv.nl'; break;
 					case 'gemeenteberkelland'; $baseUrl = 'https://afvalkalender.gemeenteberkelland.nl'; break;
 					case 'meerlanden'; $baseUrl = 'https://afvalkalender.meerlanden.nl'; break;
 					case 'venray'; $baseUrl = 'https://afvalkalender.venray.nl'; break;
