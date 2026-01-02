@@ -17,7 +17,7 @@ Blocks
 blocks.js is responsible for creating all blocks on the Dashboard. Depending on the block type this responsibility is delegated to helpers.
 
 Switches are handled by switches.js
-Thermostats and EvoHome devices are handled by thermostat.js
+Thermostats and EvoHome devices are handled by tempcontrol.js
 
 Several specific Domoticz devices are handled by block.js itself, like P1 smart meter and  TempHumBar devices.
 
