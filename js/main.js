@@ -211,7 +211,7 @@ function configureDashticz() {
 
   return $.when(
     DT_function.loadDTScript('js/switches.js'),
-    DT_function.loadDTScript('js/tempcontrol.js'),
+    DT_function.loadDTScript('js/thermostat.js'),
     DT_function.loadDTScript('js/dashticz.js'),
     DT_function.loadDTScript('js/blocks.js'),
     DT_function.loadDTScript('js/blocktypes.js'),

@@ -8,7 +8,7 @@
 /*global toSlide disableStandby infoMessage*/
 /*from dt_function.js*/
 /* global capitalizeFirstLetter choose */
-/*from tempcontrol.js*/
+/*from thermostat.js*/
 /*global getThermostatBlock getEvohomeZoneBlock getEvohomeControllerBlock getEvohomeHotWaterBlock*/
 /*from switches.js*/
 /*global  getIconStatusClass getDefaultSwitchBlock getDimmerBlock getBlindsBlock slideDevice*/
