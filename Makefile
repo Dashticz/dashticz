@@ -1,10 +1,12 @@
 -include Makefile.ini
 PORT?=8082
 APP?=dtv3-$(PORT)
-TZ?="$(shell cat /etc/timezone)"
+# Try to get timezone, fallback to Europe/Amsterdam if not available
+TZ?=$(shell if [ -f /etc/timezone ]; then cat /etc/timezone; elif [ -f /etc/localtime ]; then readlink /etc/localtime | sed 's|.*/zoneinfo/||'; else echo "Europe/Amsterdam"; fi)
 CHECKDOCKER?=true
-FREE = "$(shell df -k --output=avail . | tail -n1)"
-DOCKERIMAGE = "php:7.4-apache"
+# Cross-platform disk space check (works on both Linux and macOS)
+FREE = $(shell if command -v df >/dev/null 2>&1 && df --version 2>&1 | grep -q GNU; then df -k --output=avail . | tail -n1; else df -k . | tail -n1 | awk '{print $$4}'; fi)
+DOCKERIMAGE = "php:8.3-fpm-alpine"
 
 .PHONY: help
 help:
@@ -13,7 +15,8 @@ help:
 	@echo "make start         : Build Dashticz container and start it on port 8082"
 	@echo "                     Parameters: "
 	@echo "                     PORT=<port> : Build Dashticz container and start in on the provided port"
-	@echo "make stop          : Stop the Domoticz container"
+	@echo "make stop          : Stop the Dashticz container"
+	@echo "make rebuild       : Stop existing container and rebuild/start it"
 	@echo
 	@echo "make update        : Update Dashticz to the latest version from Github"
 	@echo "make beta          : Switch to the beta branch"
@@ -40,38 +43,24 @@ ifeq (, $(shell which git))
 	sudo apt-get install git
 endif
 
+# Port check removed - Docker will handle port conflicts and provide clear error messages
 testport:
-ifeq ($(shell ss -ln src :$(PORT) | grep -Ec -e "\<$(PORT)\>"),0)
-else
-	@echo
-	@echo "PORT is defined in Makefile.ini as $(PORT)"
-	@echo "This port already is in use"
-	@echo "Please use a different port."
-	@echo "Then restart via: make start"
-	@echo
-	@exit 201
-endif
+	@echo "Port check skipped - Docker will handle port conflicts"
 
 .PHONY: start
-start: testdocker testgit
+start: testdocker testgit testport
 	@echo "Checking container $(APP)"
 ifeq ($(shell sudo docker ps -q -a -f NAME=$(APP) ),)
-	@echo "Checking port $(PORT)"
-
-ifeq ($(shell ss -ln src :$(PORT) | grep -Ec -e "\<$(PORT)\>"),0)
 	sudo docker build --build-arg tz=$(TZ) -t $(APP) .
-	sudo docker run  --restart unless-stopped -v /etc/localtime:/etc/localtime:ro  --name $(APP) -d -p $(PORT):80 --mount type=bind,source="$(CURDIR)",target=/var/www/html $(APP)
+	sudo docker run  --restart unless-stopped -v /etc/localtime:/etc/localtime:ro  --name $(APP) -d -p $(PORT):80 --mount type=bind,source="$(CURDIR)",target=/var/www/html $(APP) || (echo "Failed to start container. Port may be in use or container name conflict." && exit 1)
 	@echo
 	@echo "Dashticz is running at:"
-	@printf "http://%s:`sudo docker inspect -f '{{ (index (index .NetworkSettings.Ports "80/tcp") 0).HostPort }}' $(APP)`\n" `hostname -I | grep -Po '\b(?:\d{1,3}\.){3}\d{1,3}\b'` 
-else
-	@echo
-	@echo "Port $(PORT) already is in use."
-	@echo "If you want to rebuild run the following command first: make stop"
-	@echo "or edit Makefile.ini with a new port and retry via: make start"
-	@echo
-
-endif
+	@echo "http://localhost:$(PORT)"
+	@if command -v hostname >/dev/null 2>&1 && hostname -I >/dev/null 2>&1; then \
+		printf "http://%s:$(PORT)\n" `hostname -I | head -n1 | awk '{print $$1}'`; \
+	elif command -v ipconfig >/dev/null 2>&1; then \
+		printf "http://%s:$(PORT)\n" `ipconfig getifaddr en0 2>/dev/null || ipconfig getifaddr en1 2>/dev/null || echo "localhost"`; \
+	fi
 else
 	@echo
 	@echo "The Docker container $(APP) for Dashticz already exists"
@@ -95,6 +84,9 @@ ifeq (true, $(shell sudo docker inspect -f '{{.State.Running}}' $(APP) 2>/dev/nu
 endif
 	sudo docker rm $(APP)
 endif
+
+.PHONY: rebuild
+rebuild: stop start
 
 
 .PHONY: dockerinstall
