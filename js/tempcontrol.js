@@ -407,4 +407,4 @@ function switchEvoHotWater(block, state, override) {
     dial ? DT_dial.make(block) : getEvohomeHotWaterBlock(block);
   });
 }
-//# sourceURL=js/thermostat.js
+//# sourceURL=js/tempcontrol.js
