@@ -1005,7 +1005,7 @@ function handleDevice(block) {
   ) {
     var names = Domoticz.info.levelNamesEncoded ? b64_to_utf8(device['LevelNames']) : device['LevelNames'];
 
-    nameValues = names.split('|').map(function(name, idx) {
+    var nameValues = names.split('|').map(function(name, idx) {
       return {
         name: name,
         value: idx
@@ -1041,7 +1041,7 @@ function handleDevice(block) {
       if(!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<select>';
       html += '<option value="">' + language.misc.select + '</option>';
-      for (var idx in nameValues) {
+      for (idx in nameValues) {
         var nv = nameValues[idx];
         if (
           parseFloat(nv.value) > 0 ||
@@ -1074,7 +1074,7 @@ function handleDevice(block) {
       if(!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<div class="btn-group" data-toggle="buttons">';
       for (idx in nameValues) {
-        var nv = nameValues[idx];
+        nv = nameValues[idx];
         if (
           parseFloat(nv.value) > 0 ||
           (nv.value == 0 &&

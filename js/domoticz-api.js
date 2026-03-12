@@ -1,5 +1,5 @@
 /*from bundle.js*/
-/* global Debug moment*/
+/* global Debug moment isDefined settings Cookies DT_function*/
 /* from CONFIG.js*/
 /* global stubDevices */
 /* exported Domoticz*/
@@ -156,10 +156,8 @@ var Domoticz = (function () {
       case 'getscenedevices':
         checkQueryParams(params, 'idx');
         return 'type=command&param=getscenedevices&isscene=true&idx='+params.idx;
-        break;
       default:
         return query;
-        break;
     }
   }
 
@@ -194,7 +192,7 @@ var Domoticz = (function () {
         }
         return domoticzRequest(MSG['getAuth'])
       })
-      .catch(function(res) {
+      .catch(function() {
         var err="Can't access Domoticz via " + cfg.url + "<br>Check domoticz_ip in config.js";
         throw new Error(err);
       })
@@ -211,7 +209,6 @@ var Domoticz = (function () {
               if (cfg.code) {
                 console.log('We had a code, but authorization failed');
                 throw new Error('Authorization error after code request');
-                return;
               }
               //Maybe we can use a cookie from a previous session
               var dashticzCookie = Cookies.get('dashticz');
@@ -301,13 +298,13 @@ var Domoticz = (function () {
         }
         else throw new Error(oAuthErrorStr);
       })
-      .catch(function (jqXHR) {
+      .catch(function () {
         console.log('failed.');
         throw new Error(oAuthErrorStr);
       })
   }
 
-  function checkCode(code) {
+  function checkCode() {
     if (cfg.code) {
       /*
         We have received an authorization code
@@ -414,30 +411,6 @@ var Domoticz = (function () {
   function connectWebsocket() {
     connectWebSocket2();
     return;
-    /*
-    var body = {
-      username: encodeURIComponent(window.btoa(settings['user_name'])),
-      password: encodeURIComponent(md5(settings['pass_word'])),
-      rememberme: true     
-    }*/
-    var data = new FormData();
-    data.append('username', encodeURIComponent(window.btoa(settings['user_name'])));
-    data.append('password', encodeURIComponent(md5(settings['pass_word'])));
-    data.append('rememberme', "true");
-    $.ajax({
-      type: 'POST',
-      url: cfg.url + "json.htm?type=command&param=logincheck",
-      data: data,
-      success: function (output, status, xhr) {
-        //          alert(xhr.getResponseHeader('Set-Cookie'));
-      },
-      cache: false,
-      contentType: 'multipart/form-data',
-      processData: false,
-      crossDomain: true,
-      //      xhrFields: { withCredentials: true },
-    })
-      .then(connectWebSocket2);
   }
 
   function connectWebSocket2() {
@@ -797,7 +770,7 @@ var Domoticz = (function () {
     return domoticzRequest(MSG['getSettings']).then(function (res) {
       if (res) {
         setOnChange('_settings', res);
-      };
+      }
     });
   }
 
