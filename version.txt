@@ -1,10 +1,14 @@
 {
-"version": "3.14",
-"branch": "master",
-"last_changes": "Master version derivce from 3.13.1 beta",
+"version": "3.14.1.5",
+"branch": "beta",
+"last_changes": "Improved styling of blinds stop button",
 "changelog" : {
-            "3.13.1": "Bug fixes",
-            "3.13.0": "Beta version derived from 3.13-master",
-            "3.13": "Master version derived from 3.12.1-beta"
+            "3.14.1.4": "Fix for Logitech Media Server",
+            "3.14.1.3": "Fix for default switch block",
+            "3.14.1.2": "Playwright test",
+            "3.14.1.1": "Domoticz block bug fixing",
+            "3.14.1": "Domoticz block enhancements",
+            "3.14.0": "Beta version same as 3.14 master",
+            "3.14": "Master version derived from 3.13.1 beta"
             }
 }

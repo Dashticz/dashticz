@@ -9,12 +9,13 @@
 /* from domoticz-api.js*/
 /* global Domoticz */
 /* from dt_function.js*/
-/* global DT_function */
+/* global DT_function choose*/
 /* from dial.js*/
 /* global DT_dial */
 /* from src/functions.js */
 /* global isDefined */
-// eslint-disable-next-line no-unused-vars
+/* exported addThermostatFunctions getThermostatBlock*/
+
 function addThermostatFunctions(block) {
   var $el = block.$mountPoint.find('.block_' + block.key);
   $el.find('.btn-number').on('click', function () {
@@ -64,7 +65,6 @@ function addThermostatFunctions(block) {
   });
 }
 
-// eslint-disable-next-line no-unused-vars
 function getThermostatBlock(block) {
   block.min = parseFloat(choose(block.min, block.device.min, settings['setpoint_min'], 5));
   block.max = parseFloat(choose(block.max, block.device.max, settings['setpoint_max'], 40));
@@ -85,7 +85,7 @@ function getThermostatBlock(block) {
       idx: idx,
       value: value,
       title: title,
-      buttons: !(block.subidx && block.subidx === 1),
+      buttons: !choose(block.protected, (block.subidx && block.subidx === 1)),
       showinfo: showUpdateInformation(block) ? true : false,
       lastupdate: moment(device.LastUpdate).format(settings['timeformat']),
       mIcon: isDefined(block.icon) ? block.icon : '',
@@ -95,7 +95,7 @@ function getThermostatBlock(block) {
     block.$mountPoint.find('.block_' + block.key).html(html);
     addThermostatFunctions(block);
   });
-  return ['', false];
+  return true;
 }
 
 function switchThermostat(block, setpoint) {
@@ -151,7 +151,7 @@ function getEvohomeZoneBlock(block) {
     block.$mountPoint.find('.mh').html(html);
     addEvohomeZoneFunctions(block);
   });
-  return [html, false];
+  return true;
 }
 
 function addEvohomeZoneFunctions(block) {
@@ -289,7 +289,7 @@ function getEvohomeControllerBlock(block) {
 
     addEvohomeControllerFunctions(block);
   });
-  return [html, false];
+  return true;
 }
 
 function addEvohomeControllerFunctions(block) {
@@ -378,7 +378,7 @@ function getEvohomeHotWaterBlock(block) {
       switchEvoHotWater(block, state, state === 'On');
     });
   });
-  return [html, false];
+  return true;
 }
 
 function switchEvoHotWater(block, state, override) {

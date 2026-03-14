@@ -4,3 +4,10 @@ Makefile.ini
 /custom/*
 /custom_2/*
 .env
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/

@@ -20,7 +20,7 @@ var DT_domoticzblock = (function () {
       var longpressdata = me.block.longpress? ' data-long-press-delay="1000" ':'';
       me.$mountPoint.html(
         '<div data-id="' +
-        block.idx + '"' + longpressdata + 
+        block.key + '"' + longpressdata + 
         ' class="mh transbg block_' +
         block.key + longpress + ' col-xs-'+me.block.width +
         '">Getting device ' + me.block.idx + '</div>'
@@ -126,6 +126,17 @@ var DT_domoticzblock = (function () {
       deviceUpdateHandler(me.block);
       setBackgroundImage(me, me.backgroundImage);
     });
+    if(me.block.values) {
+      var deviceList = [me.deviceIdx];
+      me.block.values.forEach(function(value) {
+        if (value.idx && !deviceList.includes(value.idx)) {
+          deviceList.push(value.idx);
+          Dashticz.subscribeDevice(me, value.idx, false, function(device) {
+            deviceUpdateHandler(me.block);
+          })
+        }
+      })
+    }
   }
 })();
 

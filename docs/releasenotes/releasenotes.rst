@@ -8,6 +8,83 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.14.1.5 beta (29-4-2025)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Improved styling of blinds and thermostat buttons. See :ref:`blindsstyling`
+
+Code
+~~~~~
+
+* Thermostat styling: CSS class for thermostat value renamed from ``.state`` to ``.value``
+  
+v3.14.1.4 beta (18-4-2025)
+--------------------------
+
+Fixes
+~~~~~~
+
+* Fix for Logitech Media Server
+
+v3.14.1.3 beta (17-4-2025)
+--------------------------
+
+Fixes
+~~~~~~
+
+* Fix for default icons of a switch block
+
+v3.14.1.2 beta (15-4-2025)
+--------------------------
+
+Fixes
+~~~~~~
+
+* Some Domoticz blocks related fixes
+
+Code
+~~~~~
+
+* First version of autotest
+  
+v3.14.1.1 beta (1-4-2025)
+------------------------
+
+Fixes
+~~~~~~
+
+* Fix for Domoticz device types Usage and Scale
+* Fix for Domoticz subdevice numbering
+
+v3.14.1 beta (24-3-2025)
+------------------------
+
+.. warning :: Some breaking changes. See :ref:`v3_14_1`
+
+Enhancements
+~~~~~~~~~~~~
+
+Rework of Domoticz blocks, giving the following new parameters:
+
+* ``values``: To define how (and which) subvalues of a device will be displayed. It's also possible to combine data from several devices in one block.
+* ``multi_line``: Set to ``true`` to show all subvalues as multiple lines in one block
+* ``single_line``: Set to ``true`` to show all subvalues on one line in one block
+* ``showsubtitles``: To show the subtitles of subvalues. Two variants are supported: ``1`` and ``2``
+* ``showvalues``: Array to indicate which subvalues of the device will be displayed (starting at ``1``)
+* ``scale``: Multiplier for the data value
+* ``decimals``: To set the number of decimals for the data value.
+* ``unit``: Text to place behind the data value. 
+
+See :ref:`dom_blockparameters` and :ref:`multiplevaluesblock`
+
+v3.14.0 beta (23-2-2025)
+------------------------
+
+Beta version, same as v3.14
+
 v3.14 master (23-2-2025)
 ------------------------
 
