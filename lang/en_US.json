@@ -228,7 +228,8 @@
             "owm_country": "Open Weather Map Country",
             "owm_name": "Display Name Open Weather Map",
             "longfonds_zipcode": "Longfonds zipcode",
-            "longfonds_housenumber": "Longfonds house number"
+            "longfonds_housenumber": "Longfonds house number",
+            "dewpoint": "dewpoint"
         },
         "other": {
             "title": "Other",

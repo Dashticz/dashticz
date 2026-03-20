@@ -6,7 +6,7 @@
 /* from domoticz-api.js*/
 /* global Domoticz*/
 /* from dt_function.js*/
-/* global DT_function*/
+/* global DT_function choose*/
 /* from dial.js */
 /* global DT_dial */
 /* from blocks.js */
@@ -22,23 +22,18 @@ var spectrumColors = {};
 /** Returns a default switch block
  *
  * @param {object} block - The Dashticz block definition
- * @param {number | string} idx idx as used by Dashticz. Scenes start with 's'. Variables with 'v'
- * @param {string}   defaultIconOn Default On icon
- * @param {string}   defaultIconOff Default Off icon
- * @param {string}   buttonimg Default image.
- * @param {string}   defaultTextOn Default On text
- * @param {string}   defaultTextOff Default Off text
  */
 // eslint-disable-next-line no-unused-vars
-function getDefaultSwitchBlock(
-  block,
-  defaultIconOn,
-  defaultIconOff,
-  buttonimg,
-  defaultTextOn,
-  defaultTextOff
-) {
+function getDefaultSwitchBlock( block ) {
   var device = block.device;
+  var defaultIconOn=block.protoBlock.iconOn;
+  var defaultIconOff=block.protoBlock.iconOff;
+  var defaultIcon=block.protoBlock.icon;
+  var defaultImageOn=block.protoBlock.imageOn;
+  var defaultImageOff=block.protoBlock.imageOff;
+  var defaultImage=block.protoBlock.image;
+  var defaultTextOn=block.protoBlock.textOn;
+  var defaultTextOff=block.protoBlock.textOff;
   var html = '';
   if (!isProtected(block)) {
     var confirmswitch = 0;
@@ -59,6 +54,8 @@ function getDefaultSwitchBlock(
         switchDevice(block, mMode, !!confirmswitch);
       });
   }
+  block.defaultAddClass && block.$mountPoint.find('.mh').addClass(block.defaultAddClass);
+
   var textOn = defaultTextOn || language.switches.state_on;
   var textOff = defaultTextOff || language.switches.state_off;
 
@@ -73,19 +70,26 @@ function getDefaultSwitchBlock(
     'on': defaultIconOn,
     'off': defaultIconOff,
     'mixed': defaultIconOff,
-    'default': defaultIconOn
+    'default': defaultIconOn || defaultIcon
   }
-  var mIcon = iconLookup[getIconStatusClass(device['Status'])] || iconLookup.default;
+  var imageLookup = {
+    'on': defaultImageOn,
+    'off': defaultImageOff,
+    'mixed': defaultImageOff,
+    'default': defaultImageOn || defaultImage
+  }
+  var statusClass = getIconStatusClass(device['Status']);
+  var mIcon = iconLookup[statusClass] || iconLookup.default || defaultIcon;
+  var mImage = imageLookup[statusClass] || imageLookup.default || defaultImage;
   html += iconORimage(
     block,
     mIcon,
-    buttonimg,
-    getIconStatusClass(device['Status']) + ' icon',
+    mImage,
+    statusClass + ' icon',
     attr
   );
   html += getBlockData(block, textOn, textOff);
-
-  return [html, true];
+  return html;
 }
 
 function isProtected(block) {
@@ -582,11 +586,13 @@ function addSpectrum(block) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function getBlindsBlock(block, withPercentage) {
+function getBlindsBlock(parentBlock, withPercentageParam) {
+  var block={};
+  $.extend(block, parentBlock.protoBlock, parentBlock);
   var device = block.device;
+  var withPercentage = choose(block.withPercentage, withPercentageParam, false);
   var idx = block.idx;
   var $mountPoint = block.$mountPoint.find('.mh');
-  if (typeof withPercentage === 'undefined') withPercentage = false;
   var html = '';
 
   var hidestop = false;
@@ -695,7 +701,7 @@ function getBlindsBlock(block, withPercentage) {
       disabled: isProtected(block),
     });
   }
-  return [html, false];
+  return true;
 }
 
 /*previously there was a mechanism to send device update commands while sliding.

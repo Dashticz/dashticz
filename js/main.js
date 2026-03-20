@@ -211,15 +211,17 @@ function configureDashticz() {
 
   return $.when(
     DT_function.loadDTScript('js/switches.js'),
-    DT_function.loadDTScript('js/thermostat.js'),
+    DT_function.loadDTScript('js/tempcontrol.js'),
     DT_function.loadDTScript('js/dashticz.js'),
-    DT_function.loadDTScript('js/blocks.js'),
-    DT_function.loadDTScript('js/blocktypes.js'),
+    DT_function.loadDTScript('js/blocks.js'),    
     DT_function.loadDTScript('js/login.js'),
     DT_function.loadDTScript('js/moon.js'),
     DT_function.loadDTScript('js/colorpicker.js'),
     DT_function.loadDTScript('js/fullscreen.js')
   )
+  .then(function() {
+    return DT_function.loadDTScript('js/blocktypes.js')
+  })
     .then(function() {
       return Dashticz.init()})
     .then(function () {
