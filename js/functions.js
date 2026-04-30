@@ -37,7 +37,7 @@ function log(message) {
 function showIt() {
   document.getElementById('hide').style.visibility = 'visible';
 }
-setTimeout('showIt()', 3000); // after 3 sec
+setTimeout(showIt, 3000); // after 3 sec
 
 function setSrc(cur) {
   $($(cur).data('target')).on('hidden.bs.modal', function () {

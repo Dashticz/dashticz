@@ -1,4 +1,4 @@
-/* global Dashticz DT_function settings choose Debug number_format _TEMP_SYMBOL moment templateEngine _CORS_PATH language infoMessage toBeaufort*/
+/* global Dashticz DT_function settings choose number_format _TEMP_SYMBOL moment templateEngine _CORS_PATH language infoMessage toBeaufort*/
 //# sourceURL=js/components/weather.js
 var DT_weather = (function () {
   var _DEBUG = false; //set to true to show different weather icons
@@ -171,7 +171,7 @@ var DT_weather = (function () {
             return provider.id
           }
         })
-          .catch(function (xhr, textStatus) {
+          .catch(function (xhr) {
             if (xhr.status && xhr.status === 400) {//we have a valid api (for owm apis)
               console.log('Valid API key for weather provider: ' + provider.id);
               return provider.id
@@ -479,6 +479,7 @@ var DT_weather = (function () {
     var i = 0;
     var maxi = daily.length;
     var sampleCount = 0;
+    var dayRain = 0;
     var currentDay, dayTempMin, dayTempMax, dayDescription, dayWindDeg, dayWindGust, dayWindSpeed, dayIcon, dayMoment;
     while (i < maxi && cont) {
       var dtMoment = moment(daily[i].dt * 1000);
@@ -840,7 +841,7 @@ var DT_weather = (function () {
       helderenacht: '01n',
       nachtbewolkt: '02n'
     };
-    if (icons.hasOwnProperty(code)) {
+    if (Object.prototype.hasOwnProperty.call(icons, code)) {
       wiclass = icons[code];
     }
     return wiclass;

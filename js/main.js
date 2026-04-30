@@ -211,15 +211,17 @@ function configureDashticz() {
 
   return $.when(
     DT_function.loadDTScript('js/switches.js'),
-    DT_function.loadDTScript('js/thermostat.js'),
+    DT_function.loadDTScript('js/tempcontrol.js'),
     DT_function.loadDTScript('js/dashticz.js'),
-    DT_function.loadDTScript('js/blocks.js'),
-    DT_function.loadDTScript('js/blocktypes.js'),
+    DT_function.loadDTScript('js/blocks.js'),    
     DT_function.loadDTScript('js/login.js'),
     DT_function.loadDTScript('js/moon.js'),
     DT_function.loadDTScript('js/colorpicker.js'),
     DT_function.loadDTScript('js/fullscreen.js')
   )
+  .then(function() {
+    return DT_function.loadDTScript('js/blocktypes.js')
+  })
     .then(function() {
       return Dashticz.init()})
     .then(function () {
@@ -552,6 +554,7 @@ function onLoad() {
     $('body').on('mousemove', function () {
       swipebackTime = 0;
       autoSwipe = false;
+      standbyTime = 0;
       if (standbyActive) {
         Debug.log('Standby: mousemove');
         disableStandby();
@@ -561,6 +564,7 @@ function onLoad() {
 
   $('body').on('touchend click', function () {
     setTimeout(function () {
+      standbyTime = 0;
       if (standbyActive) {
         //should not be activated
         Debug.log('Standby: touchend click');

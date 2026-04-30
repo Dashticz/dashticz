@@ -1,4 +1,4 @@
-/* global language dashticz_version dashticz_branch newVersion config dzVents python*/
+/* global language dashticz_version dashticz_branch newVersion config isNumeric*/
 var settingList = {};
 settingList.general = {
   title: language.settings.general.title,
@@ -939,8 +939,8 @@ var defaultSettings = {
   evohome_boost_zone: 60,
   evohome_boost_hw: 15,
   login_timeout: 60,
-  refresh_method: 1,
-  domoticz_timeout: 2000,
+  refresh_method: 0,
+  domoticz_timeout: 1000,
   use_cors: 0,
   cached_scripts: true,
   heartbeat: 0
@@ -1142,7 +1142,7 @@ function loadSettings() {
 }
 
 function addSettingsAboutItems() {
-  $div=$('#tabs-about');
+  var $div=$('#tabs-about');
   $div.append('<p>');
   $div.append('<div class="about-item">Domoticz version: <span id="domoticz_version">unknown</span></div>');
   $div.append('<div class="about-item">dzVents version: <span id="dzvents_version">unknown</span></div>');
@@ -1163,7 +1163,7 @@ function saveSettings() {
         localStorage.setItem('dashticz_' + $(this).attr('name'), val);
       if (isNumeric(val))
         val = parseFloat(val);
-      if (typeof val === 'string') val = "'" + val.replace("'", "\\\'") + "'";
+      if (typeof val === 'string') val = "'" + val.replace("'", "\\'") + "'";
       saveSettings[$(this).attr('name')] = val ;
       alertSettings +=
         "config['" + $(this).attr('name') + "'] = " + val + ";\n";
