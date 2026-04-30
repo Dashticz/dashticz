@@ -19,11 +19,15 @@ var Domoticz = (function () {
   var lastUpdate = {};
   var requestid = 0;
   var callbackList = [];
-  var reconnectTimeout = 2; //Initial value: 1 sec reconnect timeout
+  var reconnectTimeout = 2; //Initial value: 2 sec reconnect timeout
+  var reconnectCount = 0; //Number of reconnect attempts
   var reconnecting = false;
   var securityRefresh = null;
   var firstUpdate = true;
   var refreshTimeout;
+  var refreshInProgress = false;
+  var MAX_RECONNECT_ATTEMPTS = 10; //Reload the page after this many failed WebSocket reconnects
+  var MIN_WS_POLL_INTERVAL_MS = 30000; //Minimum polling interval (ms) when WebSocket is active
   var info = {
     build: 0,
     version: 0,
@@ -109,13 +113,22 @@ var Domoticz = (function () {
             type: 'GET',
             async: true,
             beforeSend: setHeader,
-            contentType: 'application/json',
             error: function (jqXHR, textStatus) {
               if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
                 console.log('Domoticz request cancelled');
               } else {
                 if (jqXHR.status == 401) {
                   newPromise.reject(new Error('Domoticz authorization error'));
+                  return;
+                }
+                if (jqXHR.status === 0 && cfg.url && cfg.url.toLowerCase().startsWith('https')) {
+                  // Status 0 on an HTTPS URL typically means the browser rejected
+                  // the server certificate (e.g. self-signed / untrusted CA).
+                  // Tell the user how to fix it: open the Domoticz URL once and
+                  // accept the security exception, then reload Dashticz.
+                  console.error('SSL certificate error for ' + cfg.url + '. Open the URL in a new tab and accept the certificate.');
+                  Debug.log(Debug.ERROR, 'SSL certificate error for ' + cfg.url);
+                  newPromise.reject(new Error('SSL_CERT:' + cfg.url));
                   return;
                 }
                 console.error(
@@ -185,16 +198,35 @@ var Domoticz = (function () {
         cfg.authenticationMethod = 'trusted'; //default authentication method
         if (cfg.code) cfg.authenticationMethod = 'code'
         else { //Do we have to try alternative authentication method?
-          if (cfg.username && cfg.password) {//we have a user_name and pass_word. Add basic_auth header
-            cfg.basicAuthEnc = window.btoa(cfg.username + ':' + cfg.password);
+          if (cfg.username && cfg.password) {//we have a user_name and pass_word.
+            // Don't set basicAuthEnc yet. First try without credentials so that
+            // trusted-network setups work without triggering a CORS preflight.
+            // (An Authorization header on the request causes the browser to send
+            // an OPTIONS preflight, which newer Domoticz versions may reject.)
             cfg.authenticationMethod = 'basic';
           }
         }
         return domoticzRequest(MSG['getAuth'])
       })
-      .catch(function() {
-        var err="Can't access Domoticz via " + cfg.url + "<br>Check domoticz_ip in config.js";
-        throw new Error(err);
+      .catch(function(err) {
+        // Re-throw specific errors with their own actionable messages.
+        if (err instanceof Error) {
+          if (err.message && err.message.substring(0, 9) === 'SSL_CERT:') {
+            var certUrl = err.message.substring(9);
+            var apiUrl = certUrl + 'json.htm?type=command&param=getauth&plan=0';
+            var certHost = certUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+            throw new Error(
+              'SSL certificate error: the browser does not trust the Domoticz certificate.<br>' +
+              'Follow these steps:<br>' +
+              '1. Open <a href="' + apiUrl + '" target="_blank">' + apiUrl + '</a> in a new tab.<br>' +
+              '2. Click <b>Advanced</b> &rarr; <b>Proceed to ' + certHost + ' (unsafe)</b>.<br>' +
+              '3. Come back here and click the <b>Retry</b> button below.'
+            );
+          }
+          throw err;
+        }
+        var genericErr="Can't access Domoticz via " + cfg.url + "<br>Check domoticz_ip in config.js";
+        throw new Error(genericErr);
       })
       .then(function (res) {
         console.log('authentication method: ', cfg.authenticationMethod);
@@ -219,12 +251,22 @@ var Domoticz = (function () {
                 return refreshToken();
               }
               if (cfg.authenticationMethod === 'basic') {
-                console.log("Invalid user credentials");
-                var err='Invalid user credentials. Check user_name and pass_word in CONFIG.js.';
-                var ishttp = cfg.url.substring(0, 5).toLowerCase() !== 'https';
-                if(ishttp)
-                  err+='<br>Note: "Enable BasicAuth over plain HTTP" in Domoticz->Setup->Settings->Security';
-                throw new Error(err);
+                // Trusted network check failed. Now activate Basic Auth and retry.
+                console.log('Trusted network not available, retrying with Basic Auth');
+                cfg.basicAuthEnc = window.btoa(cfg.username + ':' + cfg.password);
+                return domoticzRequest(MSG['getAuth'])
+                  .then(function (res2) {
+                    if (res2 && res2.status === "OK" && (res2.user || res2.rights === 2)) {
+                      console.log('Authenticated via Basic Auth!');
+                      return;
+                    }
+                    console.log("Invalid user credentials");
+                    var err='Invalid user credentials. Check user_name and pass_word in CONFIG.js.';
+                    var ishttp = !cfg.url.toLowerCase().startsWith('https');
+                    if(ishttp)
+                      err+='<br>Note: "Enable BasicAuth over plain HTTP" in Domoticz->Setup->Settings->Security';
+                    throw new Error(err);
+                  });
               }
               return domoticzAuthenticate();
             }
@@ -380,9 +422,12 @@ var Domoticz = (function () {
         );
       })
       .then(function () {
+        // When WebSocket is active, poll less frequently (30s) since WS provides real-time updates.
+        // When using HTTP polling only, use the configured domoticz_refresh interval.
+        var pollInterval = useWS ? Math.max(cfg.domoticz_refresh * 1000, MIN_WS_POLL_INTERVAL_MS) : cfg.domoticz_refresh * 1000;
         setInterval(function () {
           refreshAll();
-        }, cfg.domoticz_refresh * 1000);
+        }, pollInterval);
         return refreshAll();
       })
       .then(requestSecurityStatus)
@@ -399,13 +444,22 @@ var Domoticz = (function () {
   }
 
   function refreshAll() {
+    if (refreshInProgress) {
+      Debug.log('refreshAll: skipped, previous refresh still in progress');
+      return $.Deferred().resolve();
+    }
+    refreshInProgress = true;
+    var p;
     if (cfg.refresh_method || !useWS) {
-      return requestAllVariables().then(function () {
+      p = requestAllVariables().then(function () {
         return requestAllDevices();
       });
     } else {
-      return requestAllVariables().then(requestAllScenes);
+      p = requestAllVariables().then(requestAllScenes);
     }
+    return p.always(function () {
+      refreshInProgress = false;
+    });
   }
 
   function connectWebsocket() {
@@ -443,6 +497,7 @@ var Domoticz = (function () {
                             console.log('initial connect data: ', res);
                         });*/
       reconnectTimeout = 2;
+      reconnectCount = 0;
       lastUpdate = {};
       if (
         lastRequest &&
@@ -566,8 +621,16 @@ var Domoticz = (function () {
   }
 
   function reconnect() {
-    console.log('reconnecting');
-    Debug.log('reconnecting in ' + reconnectTimeout);
+    var maxReconnectAttempts = MAX_RECONNECT_ATTEMPTS;
+    reconnectCount++;
+    console.log('reconnecting (attempt ' + reconnectCount + ')');
+    Debug.log('reconnecting in ' + reconnectTimeout + ' (attempt ' + reconnectCount + ')');
+    if (reconnectCount > maxReconnectAttempts) {
+      console.error('Max reconnect attempts reached. Reloading page.');
+      Debug.log('Max reconnect attempts reached. Reloading page.');
+      window.location.reload();
+      return;
+    }
     setTimeout(function () {
       Debug.log('trying to reconnect now');
       reconnecting = false;

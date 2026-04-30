@@ -939,8 +939,8 @@ var defaultSettings = {
   evohome_boost_zone: 60,
   evohome_boost_hw: 15,
   login_timeout: 60,
-  refresh_method: 1,
-  domoticz_timeout: 2000,
+  refresh_method: 0,
+  domoticz_timeout: 1000,
   use_cors: 0,
   cached_scripts: true,
   heartbeat: 0

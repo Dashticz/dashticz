@@ -25,7 +25,6 @@ var DT_domoticzblock = (function () {
         block.key + longpress + ' col-xs-'+me.block.width +
         '">Getting device ' + me.block.idx + '</div>'
       );
-        me.$mountPoint.find()
       me.deviceIdx = block.idx;
       if (typeof block.idx === 'string') {
         var idxSplit = block.idx.split('_');

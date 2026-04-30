@@ -554,6 +554,7 @@ function onLoad() {
     $('body').on('mousemove', function () {
       swipebackTime = 0;
       autoSwipe = false;
+      standbyTime = 0;
       if (standbyActive) {
         Debug.log('Standby: mousemove');
         disableStandby();
@@ -563,6 +564,7 @@ function onLoad() {
 
   $('body').on('touchend click', function () {
     setTimeout(function () {
+      standbyTime = 0;
       if (standbyActive) {
         //should not be activated
         Debug.log('Standby: touchend click');
