@@ -50,7 +50,7 @@ var _PARAMS = {};
 var _CFG = {};
 
 // eslint-disable-next-line no-unused-vars
-function loadFiles(dashtype) {
+function loadFiles() {
   loadScripts(['js/functions.js', 'js/polyfills.js'])
     .then(prepareStart)
 }
@@ -251,9 +251,6 @@ function prepareStart() {
 
 
   _CFG.customfolder = _PARAMS['folder'] || 'custom';
-  if (typeof dashtype !== 'undefined' && parseFloat(dashtype) > 1) {
-    _CFG.customfolder += '_' + dashtype;
-  }
 
   createErrorHandler();
   loadStyling();

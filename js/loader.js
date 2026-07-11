@@ -1,4 +1,4 @@
-/*global loadFiles dashtype */
+/*global loadFiles */
 
 var _DASHTICZ_VERSION = 140;
 var head = document.getElementsByTagName('head')[0],
@@ -39,7 +39,7 @@ function loadScripts(scripts, sequentially) {
 function loader() {
     loadScript('js/main.js')
         .then(function () {
-            loadFiles(dashtype);
+            loadFiles();
         })
 }
 
