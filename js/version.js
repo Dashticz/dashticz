@@ -76,6 +76,10 @@ function initVersion() {
         });
       }
     })
+    .then(null, function () {
+      console.log('Error loading version info. Skipping version check');
+      return $.Deferred().resolve();
+    });
 }
 
 //          'Error while requesting Domoticz version. Possible causes:<br> Domoticz offline<br>Domoticz IP incorrect in CONFIG.js<br>User credentials incorrect in CONFIG.js<br>Browser IP not whitelisted in Domoticz.';
