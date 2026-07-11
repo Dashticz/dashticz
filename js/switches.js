@@ -343,7 +343,11 @@ function slideDeviceExt(block, value, sliderState) {
 
 // eslint-disable-next-line no-unused-vars
 function ziggoRemote(key) {
-  $.get(settings['switch_horizon'] + '?key=' + key);
+  var horizonPath = settings['switch_horizon'];
+  if (horizonPath === 'switch_horizon.php') {
+    horizonPath = 'tools/switch_horizon.php';
+  }
+  $.get(horizonPath + '?key=' + key);
 }
 
 // eslint-disable-next-line no-unused-vars

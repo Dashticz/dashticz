@@ -6,6 +6,14 @@ implementations are intentionally kept intact; historical source copies,
 the bundled documentation website, editor metadata, and example/test suites
 are not part of this fork.
 
+Development configuration lives in `build/`. Optional diagnostic utilities
+live in `tools/`. The root contains only files required by the browser,
+the updater, npm, or backwards-compatible integrations.
+
+The optional Ziggo/UPC helper is available at `tools/switch_horizon.php`.
+Existing configurations that use `switch_horizon.php` are redirected to the
+new location by the dashboard code.
+
 The Dashboard of Domoticz is quite powerful. The disadvantage is that it's only possible to show information known in Domoticz.
 There is where Dashticz steps in. Dashticz is able to show (almost) all Domoticz information.
 In addition to that it's possible to show information from all kind of other sources.

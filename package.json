@@ -47,10 +47,14 @@
     "webpack": "^5",
     "webpack-cli": "^5"
   },
+  "browserslist": [
+    "> 0.25%",
+    "not dead",
+    "ios_saf 9"
+  ],
   "scripts": {
-    "build": "NODE_ENV=production NODE_OPTIONS=\"--openssl-legacy-provider --trace-deprecation\" webpack",
-    "format": "prettier --config .prettierrc \"{js,src}/**/*.{ts,css,less,js}\" \"*.html\" --write",
-    "Update beta after merge": "./scripts/bu.sh"
+    "build": "NODE_ENV=production NODE_OPTIONS=\"--openssl-legacy-provider --trace-deprecation\" webpack --config build/webpack.config.js",
+    "format": "prettier --config build/prettier.json --ignore-path build/prettierignore \"{js,src}/**/*.{ts,css,less,js}\" \"*.html\" \"tools/*.html\" --write"
   },
   "repository": {
     "type": "git",
