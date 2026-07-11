@@ -1284,7 +1284,7 @@ function getSecurityBlock(block) {
     armaway =
       '<i class="fas fa-home" title="' +
       language.switches.state_armaway +
-      '"></i><i class="fa fa-walking"></i>';
+      '"></i><i class="fas fa-person-walking"></i>';
   }
   if (device['Status'] === 'Normal') {
     da = 'warning';

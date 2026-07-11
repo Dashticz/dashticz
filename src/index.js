@@ -10,6 +10,7 @@ require('jquery-ui-touch-punch');
 require('bootstrap');
 window.SpotifyWebApi = require('spotify-web-api-js');
 require('@fortawesome/fontawesome-free/css/all.min.css');
+require('@fortawesome/fontawesome-free/css/v4-shims.min.css');
 window.MobileDetect=require('mobile-detect');
 window.md5 = require('md5');
 import Cookies from 'js-cookie';

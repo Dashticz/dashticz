@@ -50,6 +50,7 @@ module.exports = {
                 type: 'javascript/auto',
                 loader: "file-loader",
                 options: {
+                    esModule: false,
                     name: '[name].[ext]',
                     outputPath: 'assets/images/'
                     //the images will be emited to dist/assets/images/ folder
@@ -60,6 +61,7 @@ module.exports = {
             type: 'javascript/auto',
             loader: 'file-loader',
             options: {
+                esModule: false,
                 name: '[name].[ext]',
                 outputPath: './assets/fonts/'
             }
