@@ -1,6 +1,11 @@
 # Dashticz
 Alternative dashboard for Domoticz.
 
+This repository is a lean runtime-focused fork. The dashboard block
+implementations are intentionally kept intact; historical source copies,
+the bundled documentation website, editor metadata, and example/test suites
+are not part of this fork.
+
 The Dashboard of Domoticz is quite powerful. The disadvantage is that it's only possible to show information known in Domoticz.
 There is where Dashticz steps in. Dashticz is able to show (almost) all Domoticz information.
 In addition to that it's possible to show information from all kind of other sources.

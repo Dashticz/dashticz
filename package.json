@@ -36,14 +36,9 @@
   },
   "devDependencies": {
     "@babel/core": "^7.12.10",
-    "@babel/node": "^7.12.10",
     "@babel/preset-env": "^7.12.10",
-    "@playwright/test": "^1.52.0",
-    "@types/node": "^22.14.0",
     "babel-loader": "^8.2.2",
     "css-loader": "^3.6.0",
-    "eslint": "^6.8.0",
-    "js-beautify": "^1.13.0",
     "mini-css-extract-plugin": "^2.7.6",
     "prettier": "^2.2.1",
     "raw-loader": "^4.0.2",
@@ -56,13 +51,8 @@
   },
   "scripts": {
     "build": "NODE_ENV=production NODE_OPTIONS=\"--openssl-legacy-provider --trace-deprecation\" webpack",
-    "format": "npm run format:prettier && npm run format:html",
-    "format:prettier": "node_modules/.bin/prettier --config .prettierrc \"{js,src}/**/*.{ts,css,less,js}\" --write",
-    "format:html": "node bin/glob-ls.js '*.html' | xargs node_modules/.bin/html-beautify -r",
-    "Update beta after merge": "./scripts/bu.sh",
-    "test": "playwright test --project=chromium",
-    "test:update": "playwright test --project=chromium --update-snapshots",
-    "test:report": "playwright show-report"
+    "format": "prettier --config .prettierrc \"{js,src}/**/*.{ts,css,less,js}\" \"*.html\" --write",
+    "Update beta after merge": "./scripts/bu.sh"
   },
   "repository": {
     "type": "git",
