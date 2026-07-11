@@ -47,6 +47,7 @@ module.exports = {
             },
             {
                 test: /\.(jpe?g|png|gif)$/i,
+                type: 'javascript/auto',
                 loader: "file-loader",
                 options: {
                     name: '[name].[ext]',
@@ -56,6 +57,7 @@ module.exports = {
             },
             {
                 test: /\.(woff|woff2|eot|ttf|svg)$/,
+            type: 'javascript/auto',
             loader: 'file-loader',
             options: {
                 name: '[name].[ext]',
