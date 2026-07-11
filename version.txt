@@ -1,6 +1,6 @@
 {
-"version": "3.14.2.0",
-"branch": "beta",
+"version": "3.15.0",
+"branch": "master",
 "last_changes": "Improved styling of blinds stop button",
 "changelog" : {
             "3.14.2.0": "Fix for Domoticz connection",
