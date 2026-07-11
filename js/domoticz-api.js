@@ -230,7 +230,6 @@ var Domoticz = (function () {
       })
       .then(function (res) {
         console.log('authentication method: ', cfg.authenticationMethod);
-        console.log(res);
         if (res && res.status) {
           if (res.status === "OK") {
             if (res.user || res.rights === 2) {
@@ -295,23 +294,19 @@ var Domoticz = (function () {
       )
         .then(function (res) {
           console.log('token refresh successful');
-          console.log(res);
           cfg.tokenRes = res;
           cfg.tokenRes.validUntil = cfg.tokenRes.expires_in + Math.floor(Date.now() / 1000) - 10;
-          Cookies.set('dashticz', btoa(JSON.stringify(cfg.tokenRes)));
+          Cookies.set('dashticz', btoa(JSON.stringify(cfg.tokenRes)), { sameSite: 'Lax' });
           if (refreshTimeout)
             clearTimeout(refreshTimeout);
           refreshTimeout = setTimeout(refreshToken, (cfg.tokenRes.expires_in - 3500) * 1000);
         })
-        .fail(function (res) {
+        .fail(function () {
           console.error('token refresh failed');
-          console.log(res);
           throw new Error('token refresh failed');
         })
         .then(function() {
-          return domoticzRequest(MSG['getAuth']).then(function(res) {
-            console.log(res);
-          });
+          return domoticzRequest(MSG['getAuth']);
 
         })
     }
@@ -333,7 +328,6 @@ var Domoticz = (function () {
     return $.get(settings.domoticz_ip + '/.well-known/openid-configuration')
       .then(function (res) {
         //check res for whether oauth2 flow is supported
-        //      console.log(res);
         if (res.authorization_endpoint) {
           var url = settings.domoticz_ip + '/oauth2/v1/authorize?redirect_uri=' + currenturl + '&response_type=code&client_id=dashticz&client_secret=dashticz&state=' + btoa(document.location.href);
           window.location.href = url;
@@ -353,7 +347,6 @@ var Domoticz = (function () {
         We have to exchange this into access code
         */
       console.log('Authentication code. Start request for access code');
-      //curl -v 'http://localhost:8080/oauth2/v1/token' --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode 'grant_type=authorization_code' --data-urlencode 'redirect_uri=https://172.16.0.4:8080/' --data-urlencode 'client_id=dashticzApp' --data-urlencode 'client_secret=D@shticz' --data-urlencode 'code=5894171146ab3f6a68005f31bf1f3772'
       var data = {
         grant_type: 'authorization_code',
         redirect_uri: encodeURIComponent(settings.state),
@@ -370,15 +363,13 @@ var Domoticz = (function () {
       )
         .then(function (res) {
           console.log('token request successful');
-          console.log(res);
           cfg.tokenRes = res;
           cfg.tokenRes.validUntil = cfg.tokenRes.expires_in + Math.floor(Date.now() / 1000) - 10;
-          Cookies.set('dashticz', btoa(JSON.stringify(cfg.tokenRes)));
+          Cookies.set('dashticz', btoa(JSON.stringify(cfg.tokenRes)), { sameSite: 'Lax' });
           return res;
         })
-        .catch(function (res) {
+        .catch(function () {
           console.error('Token request failed');
-          console.log(res);
           throw new Error('Token request failed.<br>Check client_id and client_secret in CONFIG.js');
         })
 
@@ -557,15 +548,6 @@ var Domoticz = (function () {
       }
       else
         initialUpdate.resolve();
-      /*            //console.log(res)
-                        var res2 = JSON.parse(res.data)
-                        // console.log(res2)
-                        if (res2)
-                            _setAllDevices(res2)
-                        else {
-                            console.log('no data: ', event.data)
-                        }
-                        */
     };
 
     socket.onclose = function (event) {
@@ -932,15 +914,12 @@ var Domoticz = (function () {
         afterwards release the message queue again
     */
   function syncRequest(idx, query, forcehttp) {
-    //console.log(query);
     hold(idx);
     return domoticzRequest(query, forcehttp)
       .then(function (res) {
-        //console.log(res);
         return res;
       })
       .always(function (res) {
-        //console.log('release ', idx);
         release(idx);
         return res;
       });

@@ -247,7 +247,6 @@ function prepareStart() {
   _PARAMS = getLocationParameters();
 
   console.log(_PARAMS);
-//  debugger;
 
 
   _CFG.customfolder = _PARAMS['folder'] || 'custom';

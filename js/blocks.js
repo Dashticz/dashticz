@@ -34,7 +34,6 @@ var onOffstates = [];
  */
 // eslint-disable-next-line no-unused-vars
 function getBlock(cols, c, screendiv, standby) {
-  //    if (c==='bar') debugger;
   if (typeof cols !== 'undefined') {
     var columndiv = screendiv + ' .row .col' + c;
     var colclass = '';
@@ -300,7 +299,6 @@ function isDomoticzDevice(key) {
     return idx;
   }
   if (typeof key === 'undefined') {
-    //    debugger;
     return false;
   }
   if (key[0] === 's' || key[0] === 'v') {
@@ -1145,7 +1143,6 @@ function loadMaps(b, map) {
 
 // eslint-disable-next-line no-unused-vars
 function getAllDevicesHandler(value) {
-  //    debugger;
   //    console.log('alldevices update');
   alldevices = Domoticz.getAllDevices();
   $('.solar').remove();
