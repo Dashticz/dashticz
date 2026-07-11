@@ -1132,7 +1132,7 @@ function loadSettings() {
         if (typeof settings['domoticz_ip'] === 'undefined') {
           if ($('.settingsicon').length == 0)
             $('body').prepend(
-              '<div data-id="settings" class="settings settingsicon col-xs-12 text-right" data-toggle="modal" data-target="#settingspopup"><em class="fa fa-cog" /><div>'
+              '<div data-id="settings" class="settings settingsicon col-xs-12 text-right" data-toggle="modal" data-target="#settingspopup"><em class="fas fa-cog" /><div>'
             );
           $('.settingsicon').trigger('click');
         }
