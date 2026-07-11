@@ -1,6 +1,6 @@
 
 /* global getExtendedBlockTypes _TEMP_SYMBOL language settings isDomoticzDevice*/
-/* from thermostat.js: */
+/* Thermostat helpers are loaded from tempcontrol.js. */
 /* global getEvohomeZoneBlock, getEvohomeHotWaterBlock getEvohomeControllerBlock getThermostatBlock*/
 /* from switches.js: */
 /* global getDefaultSwitchBlock getDimmerBlock getBlindsBlock getSelectorSwitch*/

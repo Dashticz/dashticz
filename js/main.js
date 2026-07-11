@@ -246,7 +246,6 @@ function configureDashticz() {
 function prepareStart() {
   _PARAMS = getLocationParameters();
 
-  console.log(_PARAMS);
 
 
   _CFG.customfolder = _PARAMS['folder'] || 'custom';
@@ -441,8 +440,8 @@ function tryDashticzRefresh(timeout, msg) {
           tryDashticzRefresh(10 * 1000, "Dashticz not available: postponing refresh");
         }
       })
-      .catch(function (res) {
-        console.log(res);
+      .catch(function () {
+        Debug.log(Debug.ERROR, 'Dashticz refresh failed');
         tryDashticzRefresh(10 * 1000, "Catch: Dashticz not available: postponing refresh");
       })
   }, timeout)
@@ -596,12 +595,6 @@ function onLoad() {
       }
     }, 5000);
   }
-  /*
-    setInterval(function() {
-      console.log('playing');
-      playAudio('sounds/computer_error.mp3');
-    }, 5000)*/
-  //  triggerTime();
 }
 
 var oldTime = 0;

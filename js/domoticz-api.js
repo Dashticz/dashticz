@@ -477,16 +477,6 @@ var Domoticz = (function () {
       console.log('[open] Connection established');
       Debug.log('[open] Connection established');
 
-      /*            var msg = {
-                            event: 'request',
-                            requestid: 1,
-                            query: "type=devices"
-                        }
-                        socket.send(JSON.stringify(msg))*/
-      /*            domoticzRequest("type=devices", 1)
-                        .then(function(res){
-                            console.log('initial connect data: ', res);
-                        });*/
       reconnectTimeout = 2;
       reconnectCount = 0;
       lastUpdate = {};
@@ -523,7 +513,6 @@ var Domoticz = (function () {
       */
       if (requestid == -1) {
         //device update
-        //                console.log('device update ', res2)
         _setAllDevices(res2);
         return;
       }
@@ -535,7 +524,7 @@ var Domoticz = (function () {
       if (typeof res.requestid !== 'undefined' && callbackList[requestid]) {
         callbackList[requestid].resolve(res2);
       } else {
-        console.log('no requestid or no callback ', res);
+        Debug.log(Debug.ERROR, 'No callback for Domoticz websocket response');
         if (initialUpdate.state() !== 'resolved') {
           //handle error reply
           initialError=true;
@@ -870,7 +859,6 @@ var Domoticz = (function () {
       info[key] = applicable;
     });
 
-    console.log("Domoticz version info: ", info);
     MSG = getMSG(info);
   }
 

@@ -48,7 +48,7 @@ var DT_haymanclock = {
         );
       }
 
-      window.setInterval(function () {
+      Dashticz.setInterval(me, function () {
         updateTime();
       }, 1000);
     });

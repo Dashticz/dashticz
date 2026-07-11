@@ -78,7 +78,7 @@ var DT_timegraph = (function () {
           return newValue;
         });
       }
-      me.block.values.forEach(function (el) {
+      (me.block.values || []).forEach(function (el) {
         if (typeof el === 'object' && el.idx) {
           //              if (!$.inArray(el.idx, me.devices))
           var idx = parseInt(el.idx);
@@ -177,7 +177,7 @@ var DT_timegraph = (function () {
         };
       });
 
-      setInterval(function () {
+      Dashticz.setInterval(me, function () {
         addTick(me);
       }, 1000);
 

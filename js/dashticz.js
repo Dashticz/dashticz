@@ -193,7 +193,6 @@ var Dashticz = (function () {
       var me = createBlock(mountPoint, blockdef, special, key);
       me.$mountPoint = $(mountPoint);
       me.$mountPoint.html(getContainer(me));
-      //            console.log(me);
       renderBlock(me);
       mountedBlocks[me.mountPoint].me = me;
       if (special.run) special.run(me);
@@ -212,9 +211,6 @@ var Dashticz = (function () {
           renderBlock(me);
           special.refresh(me);
         });
-      }
-      if (me.block.styling) {
-        console.log('styling', me.block.styling);
       }
     });
   }
@@ -468,14 +464,13 @@ var Dashticz = (function () {
   }
 
   function isAvailable() {
-      console.log('check domoticzIsAvailable');
       return $.get({
         url: window.location.href,
         type: 'GET',
         async: true,
         error: function (jqXHR, textStatus) {
           if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
-            console.log('Domoticz request cancelled');
+            Debug.log('Domoticz request cancelled');
           } else {
             if (jqXHR.status == 401) {
               return 'Domoticz authorizaton error';
@@ -487,12 +482,9 @@ var Dashticz = (function () {
               errorTxt
             );
           }
-          console.log('No Domoticz');
           return textStatus;
         },
       }).then(function (res) {
-        //                        console.log('ajax resolved ' + query);
-        console.log('result: ', res);
         return !!res;
       });
   }
