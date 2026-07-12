@@ -51,8 +51,7 @@ var _CFG = {};
 
 // eslint-disable-next-line no-unused-vars
 function loadFiles() {
-  loadScripts(['js/functions.js', 'js/polyfills.js'])
-    .then(prepareStart)
+  loadScripts(['js/functions.js', 'js/polyfills.js']).then(prepareStart);
 }
 
 function createErrorHandler() {
@@ -76,7 +75,10 @@ function createErrorHandler() {
 
 function loadStyling() {
   $(
-    '<link href="' + 'css/creative.css?_=' + _DASHTICZ_VERSION + '" rel="stylesheet">'
+    '<link href="' +
+      'css/creative.css?_=' +
+      _DASHTICZ_VERSION +
+      '" rel="stylesheet">'
   ).appendTo('head');
 }
 
@@ -84,15 +86,15 @@ function loadLogRocket() {
   var enable_logrocket = _PARAMS['logrocket'];
   return $.when(
     typeof enable_logrocket !== 'undefined' &&
-    enable_logrocket &&
-    $.ajax({
-      url: 'https://cdn.lr-ingest.io/LogRocket.min.js',
-      dataType: 'script',
-      cache: true
-    }).then(function () {
-      enableLogRocket(enable_logrocket);
-    })
-  )
+      enable_logrocket &&
+      $.ajax({
+        url: 'https://cdn.lr-ingest.io/LogRocket.min.js',
+        dataType: 'script',
+        cache: true,
+      }).then(function () {
+        enableLogRocket(enable_logrocket);
+      })
+  );
 }
 
 function loadConfig() {
@@ -101,11 +103,10 @@ function loadConfig() {
   return $.ajax({
     url: loadingFilename,
     dataType: 'script',
-  }).fail(function () {
-    return $.Deferred().reject(
-      new Error('Load error in ' + loadingFilename)
-    );
   })
+    .fail(function () {
+      return $.Deferred().reject(new Error('Load error in ' + loadingFilename));
+    })
     .then(function () {
       var tmp = loadingFilename;
       loadingFilename = null;
@@ -114,7 +115,7 @@ function loadConfig() {
       if (typeof config == 'undefined') {
         return $.Deferred().reject(new Error('Error in ' + tmp));
       }
-    })
+    });
 }
 
 function loadConfig2() {
@@ -124,14 +125,14 @@ function loadConfig2() {
   return $.ajax({
     url: loadingFilename,
     dataType: 'script',
-  }).fail(function () {
-    return $.Deferred().reject(
-      new Error('Load error in ' + loadingFilename)
-    );
-  }).then(function () {
-    loadingFilename = null;
-    if (throwError) return $.Deferred().reject(new Error(throwError));
   })
+    .fail(function () {
+      return $.Deferred().reject(new Error('Load error in ' + loadingFilename));
+    })
+    .then(function () {
+      loadingFilename = null;
+      if (throwError) return $.Deferred().reject(new Error(throwError));
+    });
 }
 
 function loadLanguage() {
@@ -188,22 +189,21 @@ function loadCustomJS() {
 }
 
 function configureDashticz() {
-
   $(
     '<link href="vendor/weather/css/weather-icons.min.css?v=' +
-    cache +
-    '" rel="stylesheet">'
+      cache +
+      '" rel="stylesheet">'
   ).appendTo('head');
 
   if (settings['theme'] !== 'default') {
     $(
       '<link rel="stylesheet" type="text/css" href="themes/' +
-      settings['theme'] +
-      '/' +
-      settings['theme'] +
-      '.css?v=' +
-      cache +
-      '" />'
+        settings['theme'] +
+        '/' +
+        settings['theme'] +
+        '.css?v=' +
+        cache +
+        '" />'
     ).appendTo('head');
   }
 
@@ -213,21 +213,23 @@ function configureDashticz() {
     DT_function.loadDTScript('js/switches.js'),
     DT_function.loadDTScript('js/tempcontrol.js'),
     DT_function.loadDTScript('js/dashticz.js'),
-    DT_function.loadDTScript('js/blocks.js'),    
+    DT_function.loadDTScript('js/blocks.js'),
     DT_function.loadDTScript('js/login.js'),
     DT_function.loadDTScript('js/moon.js'),
     DT_function.loadDTScript('js/colorpicker.js'),
     DT_function.loadDTScript('js/fullscreen.js')
   )
-  .then(function() {
-    return DT_function.loadDTScript('js/blocktypes.js')
-  })
-    .then(function() {
-      return Dashticz.init()})
     .then(function () {
-      if (typeof beforeFirstRenderHook === 'function') return beforeFirstRenderHook();
+      return DT_function.loadDTScript('js/blocktypes.js');
     })
-    .then(function(){
+    .then(function () {
+      return Dashticz.init();
+    })
+    .then(function () {
+      if (typeof beforeFirstRenderHook === 'function')
+        return beforeFirstRenderHook();
+    })
+    .then(function () {
       if (typeof screens === 'undefined' || objectlength(screens) === 0) {
         screens = {};
         screens[1] = {};
@@ -239,14 +241,12 @@ function configureDashticz() {
             if (c !== 'bar') screens[1]['columns'].push(c);
           }
         }
-      }    
-    })
+      }
+    });
 }
 
 function prepareStart() {
   _PARAMS = getLocationParameters();
-
-
 
   _CFG.customfolder = _PARAMS['folder'] || 'custom';
 
@@ -257,7 +257,9 @@ function prepareStart() {
     .then(loadConfig2)
     .then(loadLanguage)
     .then(getSettings)
-    .then(function () { return loadScript('js/dt_function.js')})
+    .then(function () {
+      return loadScript('js/dt_function.js');
+    })
     .then(addDebug)
     .then(loadCustomJS)
     .then(configureDashticz)
@@ -265,7 +267,7 @@ function prepareStart() {
       if (settings['security_panel_lock'])
         Domoticz.subscribe('_secstatus', true, checkSecurityStatus);
       sessionvalid = sessionValid();
-/*
+      /*
       if (
         typeof settings['gm_api'] !== 'undefined' &&
         settings['gm_api'] !== '' &&
@@ -301,7 +303,7 @@ function prepareStart() {
     return $.ajax({
       url: 'js/version.js',
       dataType: 'script',
-      cache: false
+      cache: false,
     })
       .then(function () {
         return initVersion();
@@ -310,7 +312,7 @@ function prepareStart() {
         return $.ajax({
           url: 'js/settings.js',
           dataType: 'script',
-          cache: false
+          cache: false,
         });
       })
       .then(function () {
@@ -323,18 +325,19 @@ function prepareStart() {
     Object.keys(_PARAMS).forEach(function (key) {
       if (typeof settings[key] !== 'undefined') settings[key] = _PARAMS[key];
     });
-    if(_PARAMS.code) {
+    if (_PARAMS.code) {
       settings.code = _PARAMS.code;
     }
     settings.state = document.location.href;
-    if(_PARAMS.state) {
+    if (_PARAMS.state) {
       settings.state = atob(_PARAMS.state);
-      window.history.replaceState({}, null,settings.state);
+      window.history.replaceState({}, null, settings.state);
     }
-    if(_PARAMS.error) {
-      var err = 'Domoticz authentication problem ('+_PARAMS.error+')';
-      if (_PARAMS.error==='unauthorized_client') {
-        err+='<br>Check client_id in CONFIG.js.<br>Note: OAuth2 flow only is supported for Domoticz >=2023.2<br>'
+    if (_PARAMS.error) {
+      var err = 'Domoticz authentication problem (' + _PARAMS.error + ')';
+      if (_PARAMS.error === 'unauthorized_client') {
+        err +=
+          '<br>Check client_id in CONFIG.js.<br>Note: OAuth2 flow only is supported for Domoticz >=2023.2<br>';
       }
       throw new Error(err);
       return;
@@ -367,7 +370,7 @@ function addDebug() {
   return $.ajax({
     url: 'js/debug.js',
     dataType: 'script',
-    cache: true
+    cache: true,
   }).then(function () {
     return Debug.init();
   });
@@ -427,7 +430,6 @@ function autoSlide() {
 }
 
 function tryDashticzRefresh(timeout, msg) {
-
   setTimeout(function () {
     console.log(msg);
     Debug.log(msg);
@@ -437,14 +439,20 @@ function tryDashticzRefresh(timeout, msg) {
           // eslint-disable-next-line no-self-assign
           window.location.href = window.location.href;
         else {
-          tryDashticzRefresh(10 * 1000, "Dashticz not available: postponing refresh");
+          tryDashticzRefresh(
+            10 * 1000,
+            'Dashticz not available: postponing refresh'
+          );
         }
       })
       .catch(function () {
         Debug.log(Debug.ERROR, 'Dashticz refresh failed');
-        tryDashticzRefresh(10 * 1000, "Catch: Dashticz not available: postponing refresh");
-      })
-  }, timeout)
+        tryDashticzRefresh(
+          10 * 1000,
+          'Catch: Dashticz not available: postponing refresh'
+        );
+      });
+  }, timeout);
 }
 
 function onLoad() {
@@ -459,16 +467,14 @@ function onLoad() {
   }
   md = new MobileDetect(window.navigator.userAgent);
 
-  $('body')
-    .attr('unselectable', 'on')
-    .css({
-      '-moz-user-select': 'none',
-      '-o-user-select': 'none',
-      '-khtml-user-select': 'none',
-      '-webkit-user-select': 'none',
-      '-ms-user-select': 'none',
-      'user-select': 'none',
-    })
+  $('body').attr('unselectable', 'on').css({
+    '-moz-user-select': 'none',
+    '-o-user-select': 'none',
+    '-khtml-user-select': 'none',
+    '-webkit-user-select': 'none',
+    '-ms-user-select': 'none',
+    'user-select': 'none',
+  });
   //    .on('selectstart', function () {
   //      return false;
   //    });
@@ -493,7 +499,10 @@ function onLoad() {
   var dashticzRefresh = Number(settings['dashticz_refresh']);
 
   if (dashticzRefresh > 0) {
-    tryDashticzRefresh(dashticzRefresh * 60 * 1000, 'Trying to refresh Dashticz');
+    tryDashticzRefresh(
+      dashticzRefresh * 60 * 1000,
+      'Trying to refresh Dashticz'
+    );
   }
 
   if (settings['auto_swipe_back_after'] > 0 || settings.auto_slide_pages > 0) {
@@ -503,7 +512,8 @@ function onLoad() {
         var currentSlide = myswiper.activeIndex;
         var swipeTimeout = Number(
           currentScreenSet[currentSlide].auto_slide_page ||
-          settings.auto_slide_pages);
+            settings.auto_slide_pages
+        );
         if (!autoSwipe) swipeTimeout += Number(settings.auto_swipe_back_after);
         if (swipebackTime > swipeTimeout * 1000) {
           autoSlide();
@@ -523,7 +533,7 @@ function onLoad() {
       }
     }, 1000);
   }
-/* //Error: URL invalid ...
+  /* //Error: URL invalid ...
   if (
     typeof settings['disable_googleanalytics'] == 'undefined' ||
     parseFloat(settings['disable_googleanalytics']) == 0
@@ -818,7 +828,6 @@ function startSwiper() {
         clickable: true,
       },
       autoHeight: false,
-      paginationClickable: true,
       //      speed: 0,
       loop: false,
       initialSlide: settings['start_page'] - 1,
@@ -890,18 +899,18 @@ function infoMessage(sub, msg, timeOut) {
   if (timeOut == 0) {
     $('body').append(
       '<div class="update">' +
-      sub +
-      '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
-      msg +
-      '&nbsp;&nbsp;</div>'
+        sub +
+        '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+        msg +
+        '&nbsp;&nbsp;</div>'
     );
   } else {
     $('body').append(
       '<div class="update">' +
-      sub +
-      '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
-      msg +
-      '&nbsp;&nbsp;</div>'
+        sub +
+        '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+        msg +
+        '&nbsp;&nbsp;</div>'
     );
     setTimeout(function () {
       $('.update').fadeOut();

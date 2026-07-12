@@ -1,4 +1,5 @@
 import $ from 'jquery';
+import './loader.scss';
 window.jQuery = $;
 window.$ = $;
 
@@ -11,7 +12,7 @@ require('bootstrap');
 window.SpotifyWebApi = require('spotify-web-api-js');
 require('@fortawesome/fontawesome-free/css/all.min.css');
 require('@fortawesome/fontawesome-free/css/v4-shims.min.css');
-window.MobileDetect=require('mobile-detect');
+window.MobileDetect = require('mobile-detect');
 window.md5 = require('md5');
 import Cookies from 'js-cookie';
 window.Cookies = Cookies;
@@ -23,7 +24,7 @@ window.MomentHandler = MomentHandler;
 
 require('./templateengine.js');
 require('./handlebars-helpers.js');
-var Skycons=require('skycons-color');
+var Skycons = require('skycons-color');
 window.Skycons = Skycons;
 require('spectrum-colorpicker');
 require('ion-sound');
