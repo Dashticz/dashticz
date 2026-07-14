@@ -316,8 +316,8 @@ var DT_timegraph = (function () {
   function addTick(me) {
     var timestamp = moment();
     var minTime = timestamp - me.duration;
-    me.chart.options.scales.xAxes[0].ticks.max = timestamp;
-    me.chart.options.scales.xAxes[0].ticks.min = minTime;
+    me.chart.options.scales.x.max = timestamp.valueOf();
+    me.chart.options.scales.x.min = minTime.valueOf();
     me.chart.data.datasets.forEach(function (dataset, setIdx) {
       var length = dataset.data.length;
       if (!length) return; //During initialization there might be no data yet

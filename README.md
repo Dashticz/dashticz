@@ -14,6 +14,41 @@ The optional Ziggo/UPC helper is available at `tools/switch_horizon.php`.
 Existing configurations that use `switch_horizon.php` are redirected to the
 new location by the dashboard code.
 
+## Recent modernization and stability update
+
+This fork includes a broad maintenance update focused on reliability,
+security, and long-term browser compatibility:
+
+- The screensaver timeout is now calculated from the last real user activity.
+  Touching or operating the dashboard after closing the screensaver correctly
+  restarts the inactivity period.
+- Bootstrap has been upgraded from 3.4 to 5.3. Existing dashboards remain
+  supported through compatibility handling for legacy data attributes,
+  jQuery-style component calls, grid classes, buttons, and modals. The camera
+  carousel now uses Bootstrap 5 markup.
+- Chart.js has been upgraded from 2.9 to 4.5, together with the current zoom
+  plugin and date adapter. Existing graph definitions are converted to the new
+  axes, tooltip, font, dataset, and zoom configuration at runtime.
+- Moment.js and `handlebars.moment` have been replaced by Day.js. The existing
+  global `moment(...)` calls and Handlebars templates remain compatible,
+  including localized formats, Unix timestamps, date arithmetic, and custom
+  parsing.
+- The PHP proxy, calendar, settings, and bundled Horizon endpoints now enforce
+  same-origin and CSRF protection where appropriate. Remote URLs are validated
+  and private or reserved destinations are blocked by default to reduce SSRF
+  risk.
+- RSS and OAuth output is escaped or sanitized, and remote news links and
+  images are restricted to HTTP(S) URLs.
+- Block removal, map subscriptions, camera timers and listeners, WebSocket
+  callbacks, authentication refresh, URL parsing, and sequential script
+  loading have received lifecycle and error-handling fixes.
+- The production bundle is rebuilt from the upgraded dependencies. Automated
+  checks cover JavaScript syntax, JSON parsing, URL parsing, endpoint security,
+  dependency versions, compatibility adapters, and LF-only line endings.
+
+Existing login behaviour has deliberately not been redesigned as part of this
+update.
+
 ## Security configuration
 
 The bundled PHP proxy and calendar endpoints only fetch public HTTP(S) URLs.
@@ -35,12 +70,11 @@ regression checks. Run `npm run build` to verify the production bundle.
 
 ## Dependency compatibility
 
-Dependencies are kept on the newest compatible release line. Major upgrades
-of Bootstrap, Chart.js, jQuery, Font Awesome and their related plugins require
-dedicated UI migrations and must not be applied as automated version bumps.
-Bootstrap 3 currently has no patched 3.x release; Dashticz does not use the
-affected tooltip, popover or `data-loading-text` APIs. Swiper is pinned to the
-patched 12.x line to retain broader tablet browser support.
+Bootstrap 5, Chart.js 4, Day.js, jQuery, Font Awesome, and their related
+plugins are kept on compatible maintained release lines. Future major upgrades
+must still be treated as dedicated migrations rather than automated version
+bumps. Swiper remains on the patched 12.x line to retain broader tablet browser
+support.
 
 The Dashboard of Domoticz is quite powerful. The disadvantage is that it's only possible to show information known in Domoticz.
 There is where Dashticz steps in. Dashticz is able to show (almost) all Domoticz information.
