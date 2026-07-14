@@ -145,6 +145,18 @@ test('one failing block cannot stop the remaining screen blocks', () => {
   assert.match(lifecycle, /Device update failed for block/);
 });
 
+test('Hayman clock does not depend on Moment locale internals for rendering', () => {
+  const source = fs.readFileSync(
+    path.join(root, 'js/components/haymanclock.js'),
+    'utf8'
+  );
+  assert.match(source, /typeof value !== 'string'/);
+  assert.match(source, /var now = new Date\(\)/);
+  assert.match(source, /new Intl\.DateTimeFormat/);
+  assert.match(source, /updateTime\(\);\s*Dashticz\.setInterval/);
+  assert.doesNotMatch(source, /moment\(\)\.format\(/);
+});
+
 test('UI dependencies use the intended compatibility versions', () => {
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(root, 'package.json'), 'utf8')
