@@ -82,24 +82,45 @@ function addBlock2Column(columndiv, c, b) {
   previousblock = b;
   var myblockselector = Dashticz.mountNewContainer(columndiv);
   var newBlock = b;
-  if (typeof b !== 'object') newBlock = convertBlock(b, c);
-  if (c === 'popup') newBlock.isPopup = true;
-  if (newBlock.blocks) {
-    newBlock.blocks.forEach(function (aBlock) {
-      addBlock2Column(myblockselector, '', aBlock);
-    });
-    $(myblockselector).attr('data-id', newBlock.key);
-    return;
-  }
-  if (Array.isArray(newBlock)) {
-    newBlock.forEach(function (aBlock) {
-      addBlock2Column(myblockselector, '', aBlock);
-    });
-    return;
-  }
+  try {
+    if (typeof b !== 'object') newBlock = convertBlock(b, c);
+    if (c === 'popup') newBlock.isPopup = true;
+    if (newBlock.blocks) {
+      newBlock.blocks.forEach(function (aBlock) {
+        addBlock2Column(myblockselector, '', aBlock);
+      });
+      $(myblockselector).attr('data-id', newBlock.key);
+      return;
+    }
+    if (Array.isArray(newBlock)) {
+      newBlock.forEach(function (aBlock) {
+        addBlock2Column(myblockselector, '', aBlock);
+      });
+      return;
+    }
 
-  if (!Dashticz.mount(myblockselector, newBlock))
-    Dashticz.mountDefaultBlock(myblockselector, newBlock);
+    if (!Dashticz.mount(myblockselector, newBlock))
+      Dashticz.mountDefaultBlock(myblockselector, newBlock);
+  } catch (error) {
+    renderUnavailableBlock(myblockselector, newBlock, b, error);
+  }
+}
+
+function renderUnavailableBlock(mountPoint, block, key, error) {
+  var blockConfig = block && !Array.isArray(block) ? block : {};
+  var blockKey = blockConfig.key || String(key);
+  var title = blockConfig.title || blockKey;
+  var width = blockConfig.width || 4;
+  var $fallback = $('<div>')
+    .attr('data-id', blockKey)
+    .addClass(
+      'mh transbg dt_block block_unavailable col-xs-' + parseInt(width, 10)
+    )
+    .text(title);
+
+  $(mountPoint).empty().append($fallback);
+  console.error('Unable to mount block ' + blockKey, error);
+  Debug.log(Debug.ERROR, 'Unable to mount block ' + blockKey);
 }
 
 function convertBlock(blocktype, c) {

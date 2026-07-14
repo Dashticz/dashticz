@@ -462,7 +462,14 @@ var Dashticz = (function () {
 
   function _subscribeDevice(me, idx, getCurrent, callback) {
     var unsubscribe = Domoticz.subscribe(idx, getCurrent, function (data) {
-      if (isMounted(me)) callback(data);
+      if (isMounted(me)) {
+        try {
+          callback(data);
+        } catch (error) {
+          console.error('Device update failed for block ' + me.key, error);
+          Debug.log(Debug.ERROR, 'Device update failed for block ' + me.key);
+        }
+      }
     });
     me.callbacks.subscriptionList.push(unsubscribe);
     return unsubscribe;

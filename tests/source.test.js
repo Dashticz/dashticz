@@ -136,6 +136,15 @@ test('security-sensitive regressions stay fixed', () => {
   assert.doesNotMatch(camera, /trayopentimer = setInterval/);
 });
 
+test('one failing block cannot stop the remaining screen blocks', () => {
+  const source = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+  const lifecycle = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  assert.match(source, /catch \(error\) \{\s*renderUnavailableBlock\(/);
+  assert.match(source, /function renderUnavailableBlock\(/);
+  assert.match(source, /Unable to mount block/);
+  assert.match(lifecycle, /Device update failed for block/);
+});
+
 test('UI dependencies use the intended compatibility versions', () => {
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(root, 'package.json'), 'utf8')
