@@ -35,6 +35,22 @@ function parseLocation(search) {
   return Object.assign({}, context.result);
 }
 
+function compareVersions(left, right) {
+  const source = fs.readFileSync(path.join(root, 'js/version.js'), 'utf8');
+  const start = source.indexOf('function compareVersions(left, right)');
+  const end = source.indexOf('\n// eslint-disable-next-line no-unused-vars\nfunction initVersion()', start);
+  assert.notEqual(start, -1);
+  assert.notEqual(end, -1);
+
+  const context = { left, right, result: null };
+  vm.runInNewContext(
+    source.substring(start, end) +
+      '\nresult = compareVersions(left, right);',
+    context
+  );
+  return context.result;
+}
+
 test('all application JavaScript files pass a syntax check', () => {
   const files = [
     ...filesBelow(path.join(root, 'js'), '.js'),
@@ -79,6 +95,23 @@ test('location parameters ignore malformed and prototype keys', () => {
     parseLocation('?bad=%E0%A4%A&__proto__=polluted&constructor=nope&ok=yes'),
     { ok: 'yes' }
   );
+});
+
+test('update check only treats a newer remote version as an update', () => {
+  assert.equal(compareVersions('3.14', '3.15.0'), -1);
+  assert.equal(compareVersions('3.15', '3.15.0'), 0);
+  assert.equal(compareVersions('3.15.0', '3.14.2.0'), 1);
+  assert.equal(compareVersions('3.15.1', '3.15.0'), 1);
+});
+
+test('package and runtime versions remain synchronized', () => {
+  const packageVersion = JSON.parse(
+    fs.readFileSync(path.join(root, 'package.json'), 'utf8')
+  ).version;
+  const runtimeVersion = JSON.parse(
+    fs.readFileSync(path.join(root, 'version.txt'), 'utf8')
+  ).version;
+  assert.equal(runtimeVersion, packageVersion);
 });
 
 test('security-sensitive regressions stay fixed', () => {
