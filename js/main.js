@@ -555,29 +555,26 @@ function onLoad() {
     $('body').prepend(googleAnalytics);
   }*/
 
-  if (md.mobile() == null) {
-    $('body').on('mousemove', function () {
-      swipebackTime = 0;
-      autoSwipe = false;
-      standbyTime = 0;
-      if (standbyActive) {
-        Debug.log('Standby: mousemove');
-        disableStandby();
-      }
-    });
+  function registerUserActivity(event) {
+    standbyTime = 0;
+    swipebackTime = 0;
+    autoSwipe = false;
+
+    if (standbyActive) {
+      Debug.log('Standby: user activity (' + event.type + ')');
+      disableStandby();
+    }
   }
 
-  $('body').on('touchend click', function () {
-    setTimeout(function () {
-      standbyTime = 0;
-      if (standbyActive) {
-        //should not be activated
-        Debug.log('Standby: touchend click');
-        disableStandby();
-      }
-      swipebackTime = 0;
-      autoSwipe = false;
-    }, 100);
+  // Listen in the capture phase so controls that stop event propagation still
+  // count as activity. Pointer events cover mouse, touch and pen input in
+  // modern browsers; the other events are fallbacks for older browsers.
+  var activityEvents = window.PointerEvent
+    ? ['pointerdown', 'pointermove']
+    : ['mousedown', 'mousemove', 'touchstart', 'touchmove'];
+  activityEvents.push('keydown', 'click');
+  activityEvents.forEach(function (eventName) {
+    document.addEventListener(eventName, registerUserActivity, true);
   });
 
   if (parseFloat(settings['standby_after']) > 0) {
