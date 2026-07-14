@@ -114,6 +114,16 @@ test('package and runtime versions remain synchronized', () => {
   assert.equal(runtimeVersion, packageVersion);
 });
 
+test('JavaScript and stylesheet bundles use the same cache version', () => {
+  const loader = fs.readFileSync(path.join(root, 'js/loader.js'), 'utf8');
+  const index = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const loaderVersion = loader.match(/_DASHTICZ_VERSION = (\d+)/);
+  const stylesheetVersion = index.match(/bundle\.css\?v=(\d+)/);
+  assert.ok(loaderVersion);
+  assert.ok(stylesheetVersion);
+  assert.equal(stylesheetVersion[1], loaderVersion[1]);
+});
+
 test('security-sensitive regressions stay fixed', () => {
   const domoticz = fs.readFileSync(path.join(root, 'js/domoticz-api.js'), 'utf8');
   const loader = fs.readFileSync(path.join(root, 'js/loader.js'), 'utf8');
@@ -126,11 +136,11 @@ test('security-sensitive regressions stay fixed', () => {
   assert.doesNotMatch(camera, /trayopentimer = setInterval/);
 });
 
-test('UI dependencies use the maintained major versions', () => {
+test('UI dependencies use the intended compatibility versions', () => {
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(root, 'package.json'), 'utf8')
   );
-  assert.match(packageJson.dependencies.bootstrap, /^\^5\./);
+  assert.match(packageJson.dependencies.bootstrap, /^\^3\.4\./);
   assert.match(packageJson.dependencies['chart.js'], /^\^4\./);
   assert.ok(packageJson.dependencies.dayjs);
   assert.equal(packageJson.dependencies.moment, undefined);
@@ -138,15 +148,9 @@ test('UI dependencies use the maintained major versions', () => {
 });
 
 test('legacy UI configuration is covered by migration adapters', () => {
-  const bootstrap = fs.readFileSync(
-    path.join(root, 'src/bootstrap-compat.js'),
-    'utf8'
-  );
   const chart = fs.readFileSync(path.join(root, 'src/chart-compat.js'), 'utf8');
   const dateTime = fs.readFileSync(path.join(root, 'src/date-time.js'), 'utf8');
 
-  assert.match(bootstrap, /data-bs-toggle/);
-  assert.match(bootstrap, /data-bs-dismiss/);
   assert.match(chart, /xAxes/);
   assert.match(chart, /migrateTooltipCallbacks/);
   assert.match(dateTime, /badMutable/);
@@ -159,7 +163,6 @@ test('migration sources use LF line endings', () => {
     'package.json',
     'package-lock.json',
     'src/index.js',
-    'src/bootstrap-compat.js',
     'src/chart-compat.js',
     'src/date-time.js',
     'src/handlebars-helpers.js',

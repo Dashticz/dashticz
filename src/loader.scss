@@ -1,41 +1,4 @@
 @import "~bootstrap/dist/css/bootstrap.css";
-
-// Temporary Bootstrap 3 utility aliases used by existing custom dashboards.
-.pull-left { float: left !important; }
-.pull-right { float: right !important; }
-.text-left { text-align: left !important; }
-.text-right { text-align: right !important; }
-.btn-default {
-  color: #212529;
-  background-color: #f8f9fa;
-  border-color: #dee2e6;
-}
-.btn-default:hover { background-color: #e2e6ea; }
-.btn-xs { padding: .15rem .35rem; font-size: .75rem; }
-.col-xs-1, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6,
-.col-xs-7, .col-xs-8, .col-xs-9, .col-xs-10, .col-xs-11, .col-xs-12 {
-  position: relative;
-  flex: 0 0 auto;
-}
-.col-xs-1 { width: 8.333333%; }
-.col-xs-2 { width: 16.666667%; }
-.col-xs-3 { width: 25%; }
-.col-xs-4 { width: 33.333333%; }
-.col-xs-5 { width: 41.666667%; }
-.col-xs-6 { width: 50%; }
-.col-xs-7 { width: 58.333333%; }
-.col-xs-8 { width: 66.666667%; }
-.col-xs-9 { width: 75%; }
-.col-xs-10 { width: 83.333333%; }
-.col-xs-11 { width: 91.666667%; }
-.col-xs-12 { width: 100%; }
-.close {
-  float: right;
-  border: 0;
-  background: transparent;
-  font-size: 1.5rem;
-  line-height: 1;
-}
 #loaderHolder {
     position: absolute;
     width: 100%;
@@ -92,4 +55,3 @@
   body {
     font-size: 11px;
   }
-

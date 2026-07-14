@@ -3,6 +3,7 @@
 /package-lock.json text eol=lf
 /README.md text eol=lf
 *.js text eol=lf
+*.html text eol=lf
 *.scss text eol=lf
 *.tpl text eol=lf
 js/savesettings.php text eol=lf

@@ -10,7 +10,7 @@
     "@fortawesome/fontawesome-free": "^6.7.2",
     "@jaames/iro": "^5.5.2",
     "@popperjs/core": "^2.11.8",
-    "bootstrap": "^5.3.8",
+    "bootstrap": "^3.4.1",
     "chart.js": "^4.5.1",
     "chartjs-adapter-date-fns": "^3.0.0",
     "chartjs-plugin-zoom": "^2.2.0",

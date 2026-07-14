@@ -22,10 +22,10 @@ security, and long-term browser compatibility:
 - The screensaver timeout is now calculated from the last real user activity.
   Touching or operating the dashboard after closing the screensaver correctly
   restarts the inactivity period.
-- Bootstrap has been upgraded from 3.4 to 5.3. Existing dashboards remain
-  supported through compatibility handling for legacy data attributes,
-  jQuery-style component calls, grid classes, buttons, and modals. The camera
-  carousel now uses Bootstrap 5 markup.
+- Bootstrap remains on the 3.4 compatibility line because the existing
+  Dashticz themes, grid markup, modals, buttons, and camera carousel depend on
+  Bootstrap 3 layout behaviour. A future Bootstrap 5 upgrade requires a
+  dedicated visual migration of all themes and components.
 - Chart.js has been upgraded from 2.9 to 4.5, together with the current zoom
   plugin and date adapter. Existing graph definitions are converted to the new
   axes, tooltip, font, dataset, and zoom configuration at runtime.
@@ -70,11 +70,12 @@ regression checks. Run `npm run build` to verify the production bundle.
 
 ## Dependency compatibility
 
-Bootstrap 5, Chart.js 4, Day.js, jQuery, Font Awesome, and their related
-plugins are kept on compatible maintained release lines. Future major upgrades
-must still be treated as dedicated migrations rather than automated version
-bumps. Swiper remains on the patched 12.x line to retain broader tablet browser
-support.
+Chart.js 4, Day.js, jQuery, Font Awesome, and their related plugins are kept on
+compatible maintained release lines. Bootstrap remains on 3.4 until the
+dashboard markup and themes receive a complete Bootstrap 5 visual migration.
+Future major upgrades must be treated as dedicated migrations rather than
+automated version bumps. Swiper remains on the patched 12.x line to retain
+broader tablet browser support.
 
 The Dashboard of Domoticz is quite powerful. The disadvantage is that it's only possible to show information known in Domoticz.
 There is where Dashticz steps in. Dashticz is able to show (almost) all Domoticz information.
