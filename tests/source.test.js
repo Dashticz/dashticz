@@ -153,8 +153,21 @@ test('Hayman clock does not depend on Moment locale internals for rendering', ()
   assert.match(source, /typeof value !== 'string'/);
   assert.match(source, /var now = new Date\(\)/);
   assert.match(source, /new Intl\.DateTimeFormat/);
+  assert.match(source, /\.fromNow\(true\)/);
   assert.match(source, /updateTime\(\);\s*Dashticz\.setInterval/);
   assert.doesNotMatch(source, /moment\(\)\.format\(/);
+  assert.doesNotMatch(source, /_relativeTime/);
+});
+
+test('clock components use public date APIs and a valid seconds setting', () => {
+  const dateTime = fs.readFileSync(path.join(root, 'src/date-time.js'), 'utf8');
+  const flipClock = fs.readFileSync(
+    path.join(root, 'js/components/flipclock.js'),
+    'utf8'
+  );
+  assert.doesNotMatch(dateTime, /dayjs\.Ls/);
+  assert.match(flipClock, /showSeconds: !settings\['hide_seconds'\]/);
+  assert.doesNotMatch(flipClock, /showSecoonds/);
 });
 
 test('UI dependencies use the intended compatibility versions', () => {

@@ -28,14 +28,18 @@ dayjs.extend(weekday);
 // Dashticz lets users select any of the locales that Moment used to bundle.
 // Include the Day.js locale catalogue so existing configuration keeps working.
 var localeContext = require.context('dayjs/locale', false, /\.js$/);
-localeContext.keys().forEach(localeContext);
+var availableLocales = { en: true };
+localeContext.keys().forEach(function (key) {
+  availableLocales[key.replace(/^\.\//, '').replace(/\.js$/, '')] = true;
+  localeContext(key);
+});
 
 function resolveLocale(locale) {
   if (!locale) return locale;
   var normalized = String(locale).replace('_', '-').toLowerCase();
-  if (dayjs.Ls[normalized]) return normalized;
+  if (availableLocales[normalized]) return normalized;
   var language = normalized.split('-')[0];
-  return dayjs.Ls[language] ? language : normalized;
+  return availableLocales[language] ? language : normalized;
 }
 
 function momentCompat(input, format, locale, strict) {
@@ -57,9 +61,7 @@ momentCompat.locale = function (locale) {
 };
 momentCompat.localeData = function (locale) {
   var resolved = resolveLocale(locale || dayjs.locale());
-  var data = dayjs().locale(resolved).localeData();
-  data._relativeTime = (dayjs.Ls[resolved] || {}).relativeTime || {};
-  return data;
+  return dayjs().locale(resolved).localeData();
 };
 
 var originalInstanceLocale = dayjs.prototype.locale;

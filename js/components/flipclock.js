@@ -12,7 +12,7 @@ var DT_flipclock = {
     return {
       width: 12,
       scale: 1,
-      showSecoonds: !settings['hide_seconds'],
+      showSeconds: !settings['hide_seconds'],
       clockFace: settings['shorttime'].match(/A/i) ? 12 : 24,
     };
   },

@@ -19,14 +19,22 @@ var DT_haymanclock = {
     var fallback = locale.indexOf('nl') === 0
       ? { day: 'dag', hours: 'uur', minutes: 'minuten', seconds: 'seconden' }
       : { day: 'day', hours: 'hours', minutes: 'minutes', seconds: 'seconds' };
-    var localeData = moment.localeData && moment.localeData();
-    var relativeTime = (localeData && localeData._relativeTime) || {};
+    function getRelativeLabel(amount, unit, fallbackValue) {
+      try {
+        return getPart(
+          moment().add(amount, unit).fromNow(true),
+          fallbackValue
+        );
+      } catch (error) {
+        return fallbackValue;
+      }
+    }
     return {
       containerClass: 'text-center',
-      day: getPart(relativeTime.d, fallback.day),
-      hours: getPart(relativeTime.hh, fallback.hours),
-      minutes: getPart(relativeTime.mm, fallback.minutes),
-      seconds: getPart(relativeTime.ss, fallback.seconds),
+      day: getRelativeLabel(1, 'day', fallback.day),
+      hours: getRelativeLabel(2, 'hours', fallback.hours),
+      minutes: getRelativeLabel(2, 'minutes', fallback.minutes),
+      seconds: getRelativeLabel(2, 'seconds', fallback.seconds),
       scale: 1,
     };
   },
