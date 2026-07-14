@@ -1,1 +1,13 @@
-js/main.js text eol=lf
+/.gitattributes text eol=lf
+/package.json text eol=lf
+/README.md text eol=lf
+*.js text eol=lf
+*.tpl text eol=lf
+js/savesettings.php text eol=lf
+vendor/dashticz/security.php text eol=lf
+vendor/dashticz/cors.php text eol=lf
+vendor/dashticz/info.php text eol=lf
+vendor/dashticz/nocache.php text eol=lf
+vendor/dashticz/ical/index.php text eol=lf
+tools/switch_horizon.php text eol=lf
+/dist/** -text

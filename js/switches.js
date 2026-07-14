@@ -273,10 +273,28 @@ function slideDevice(block, status) {
 // eslint-disable-next-line no-unused-vars
 function ziggoRemote(key) {
   var horizonPath = settings['switch_horizon'];
+  var bundledHelper = false;
   if (horizonPath === 'switch_horizon.php') {
     horizonPath = 'tools/switch_horizon.php';
+    bundledHelper = true;
   }
-  $.get(horizonPath + '?key=' + key);
+  if (!bundledHelper) {
+    $.get(horizonPath + '?key=' + encodeURIComponent(key));
+    return;
+  }
+
+  $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf').then(
+    function (data) {
+      return $.ajax({
+        url: horizonPath,
+        method: 'POST',
+        data: { key: key },
+        headers: {
+          'X-Dashticz-CSRF': data.token,
+        },
+      });
+    }
+  );
 }
 
 // eslint-disable-next-line no-unused-vars

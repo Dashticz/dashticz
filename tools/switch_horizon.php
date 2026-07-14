@@ -1,5 +1,14 @@
 <?php
 
+require_once(__DIR__ . '/../vendor/dashticz/security.php');
+
+dashticz_require_same_origin();
+dashticz_require_csrf();
+
+if (!isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
+    dashticz_json_error(405, 'Only POST requests are allowed.');
+}
+
  
 $localip = "192.168.1.201"; // IP of mediabox
 $localport = 5900; // Controlport of mediabox
@@ -57,9 +66,20 @@ function makeBuffer($data)
     return hex2bin($data);
 }
  
-$key = str_replace('x',' ',$_GET['key']); // Power toggle
+$allowedKeys = array(
+    'E0X00', 'E0X01', 'E0X02', 'E0X06', 'E0X07', 'E0X09', 'E0X0A',
+    'E0X0B', 'E0X0E', 'E0X0F', 'E0X11', 'E0X15', 'E1X00', 'E1X01',
+    'E1X02', 'E1X03', 'E3X00', 'E3X01', 'E3X02', 'E3X03', 'E3X04',
+    'E3X05', 'E3X06', 'E3X07', 'E3X08', 'E3X09', 'E4X00', 'E4X02',
+    'E4X03', 'E4X05', 'E4X07', 'EFX28', 'EFX29', 'EFX2A'
+);
+$requestedKey = isset($_POST['key']) ? strtoupper($_POST['key']) : '';
+if (!in_array($requestedKey, $allowedKeys, true)) {
+    dashticz_json_error(400, 'Invalid remote-control key.');
+}
+$key = str_replace('X', ' ', $requestedKey);
 
-if ($sock = fsockopen($localip, $localport))
+if ($sock = fsockopen($localip, $localport, $errorCode, $errorMessage, 3))
 {
     $data = fgets($sock); // readVersionMsg
     echo "recv version: " . $data . "<br>";

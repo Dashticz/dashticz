@@ -87,10 +87,14 @@ var Domoticz = (function () {
     lastRequest = lastRequest
       .then(function newRequest() {
         if (selectWS) {
-          callbackList[requestid] = newPromise;
+          var currentRequestId = requestid;
+          callbackList[currentRequestId] = newPromise;
+          newPromise.always(function () {
+            delete callbackList[currentRequestId];
+          });
           var msg = {
             event: 'request',
-            requestid: requestid,
+            requestid: currentRequestId,
             query: domoticzQuery(query),
           };
           requestid = (requestid + 1) % 1000;
@@ -183,7 +187,7 @@ var Domoticz = (function () {
         connectWebsocket();
         setTimeout(function () {
           //if not resolved within 2 seconds, there is something wrong with the websocket connection.
-          if (initialUpdate.state !== 'resolved') {
+          if (initialUpdate.state() !== 'resolved') {
             initialUpdate.reject('connection failed');
           }
         }, cfg.domoticz_timeout);
@@ -245,9 +249,14 @@ var Domoticz = (function () {
               var dashticzCookie = Cookies.get('dashticz');
               if (dashticzCookie) {
                 console.log('Cookie found. Refresh token if refresh_token still valid');
-                var authentication = JSON.parse(atob(dashticzCookie));
-                cfg.tokenRes = authentication;
-                return refreshToken();
+                try {
+                  var authentication = JSON.parse(atob(dashticzCookie));
+                  cfg.tokenRes = authentication;
+                  return refreshToken();
+                } catch (error) {
+                  console.warn('Invalid authentication cookie. Removing it.');
+                  Cookies.remove('dashticz');
+                }
               }
               if (cfg.authenticationMethod === 'basic') {
                 // Trusted network check failed. Now activate Basic Auth and retry.
@@ -280,10 +289,10 @@ var Domoticz = (function () {
     if (cfg.tokenRes.validUntil * 1000 > now) {
       var data = {
         grant_type: 'refresh_token',
-        redirect_uri: encodeURIComponent(settings.state),
-        client_id: encodeURIComponent(cfg.client_id),
-        client_secret: encodeURIComponent(cfg.client_secret),
-        refresh_token: encodeURIComponent(cfg.tokenRes.refresh_token)
+        redirect_uri: settings.state,
+        client_id: cfg.client_id,
+        client_secret: cfg.client_secret,
+        refresh_token: cfg.tokenRes.refresh_token
       }
       return $.ajax({
         url: cfg.url + 'oauth2/v1/token',
@@ -296,10 +305,16 @@ var Domoticz = (function () {
           console.log('token refresh successful');
           cfg.tokenRes = res;
           cfg.tokenRes.validUntil = cfg.tokenRes.expires_in + Math.floor(Date.now() / 1000) - 10;
-          Cookies.set('dashticz', btoa(JSON.stringify(cfg.tokenRes)), { sameSite: 'Lax' });
+          Cookies.set('dashticz', btoa(JSON.stringify(cfg.tokenRes)), {
+            sameSite: 'Lax',
+            secure: window.location.protocol === 'https:',
+          });
           if (refreshTimeout)
             clearTimeout(refreshTimeout);
-          refreshTimeout = setTimeout(refreshToken, (cfg.tokenRes.expires_in - 3500) * 1000);
+          refreshTimeout = setTimeout(
+            refreshToken,
+            Math.max(30, cfg.tokenRes.expires_in - 60) * 1000
+          );
         })
         .fail(function () {
           console.error('token refresh failed');
@@ -349,10 +364,10 @@ var Domoticz = (function () {
       console.log('Authentication code. Start request for access code');
       var data = {
         grant_type: 'authorization_code',
-        redirect_uri: encodeURIComponent(settings.state),
-        client_id: encodeURIComponent(cfg.client_id),
-        client_secret: encodeURIComponent(cfg.client_secret),
-        code: encodeURIComponent(cfg.code)
+        redirect_uri: settings.state,
+        client_id: cfg.client_id,
+        client_secret: cfg.client_secret,
+        code: cfg.code
       }
       return $.ajax({
         url: cfg.url + 'oauth2/v1/token',
@@ -365,7 +380,10 @@ var Domoticz = (function () {
           console.log('token request successful');
           cfg.tokenRes = res;
           cfg.tokenRes.validUntil = cfg.tokenRes.expires_in + Math.floor(Date.now() / 1000) - 10;
-          Cookies.set('dashticz', btoa(JSON.stringify(cfg.tokenRes)), { sameSite: 'Lax' });
+          Cookies.set('dashticz', btoa(JSON.stringify(cfg.tokenRes)), {
+            sameSite: 'Lax',
+            secure: window.location.protocol === 'https:',
+          });
           return res;
         })
         .catch(function () {
@@ -494,9 +512,16 @@ var Domoticz = (function () {
     socket.onmessage = function (event) {
       //            console.log(`[message] Data received from server: ${event.data}`);
       //console.log(event.data);
-      var res = JSON.parse(event.data);
+      var res;
       var res2;
-      if (res.data) res2 = JSON.parse(res.data);
+      try {
+        res = JSON.parse(event.data);
+        if (res.data) res2 = JSON.parse(res.data);
+      } catch (error) {
+        console.error('Invalid WebSocket response:', error);
+        Debug.log(Debug.ERROR, 'Invalid WebSocket response');
+        return;
+      }
       var requestid = res.requestid;
       /*
             var currentTime = Date.now();

@@ -668,17 +668,39 @@ function formatThousand(val, decimal) {
 }
 
 function getLocationParameters() {
-  function transformToAssocArray(prmstr) {
-    var params = {};
-    var prmarr = prmstr.split('&');
-    for (var i = 0; i < prmarr.length; i++) {
-      var tmparr = prmarr[i].split('=');
-      params[tmparr[0]] = decodeURI(tmparr[1]);
+  function decodeParameter(value) {
+    try {
+      return decodeURIComponent((value || '').replace(/\+/g, ' '));
+    } catch (error) {
+      return null;
     }
-    return params;
   }
-  var prmstr = window.location.search.substr(1);
-  return prmstr != null && prmstr != '' ? transformToAssocArray(prmstr) : {};
+
+  var params = Object.create(null);
+  var query = window.location.search.substr(1);
+  if (!query) return params;
+
+  query.split('&').forEach(function (part) {
+    if (!part) return;
+    var separator = part.indexOf('=');
+    var rawKey = separator === -1 ? part : part.substring(0, separator);
+    var rawValue = separator === -1 ? '' : part.substring(separator + 1);
+    var key = decodeParameter(rawKey);
+    var value = decodeParameter(rawValue);
+
+    if (
+      key === null ||
+      value === null ||
+      key === '__proto__' ||
+      key === 'prototype' ||
+      key === 'constructor'
+    ) {
+      return;
+    }
+    params[key] = value;
+  });
+
+  return params;
 }
 
 function toLower(str) {

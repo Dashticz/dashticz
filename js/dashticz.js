@@ -159,6 +159,7 @@ var Dashticz = (function () {
   }
 
   function removeBlock(id) {
+    if (!mountedBlocks[id]) return;
     mountedBlocks[id].childs.forEach(function (child) {
       removeBlock(child);
     });
@@ -434,8 +435,12 @@ var Dashticz = (function () {
   }
 
   function isMounted(me) {
-    if (me.$mountPoint.length) return true;
-    removeBlock(me);
+    if (
+      me.$mountPoint.length &&
+      $.contains(document.documentElement, me.$mountPoint[0])
+    )
+      return true;
+    removeBlock(me.mountPoint);
     return false;
   }
 

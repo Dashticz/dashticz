@@ -20,7 +20,7 @@ var loadingFilename = null;
 // eslint-disable-next-line no-unused-vars
 var standby = true;
 var standbyActive = false;
-var standbyTime = 0;
+var lastUserActivity = Date.now();
 var swipebackTime = 0;
 var autoSwipe = false; //will be true when autoSwipe is active
 // eslint-disable-next-line no-unused-vars
@@ -334,7 +334,8 @@ function prepareStart() {
       window.history.replaceState({}, null, settings.state);
     }
     if (_PARAMS.error) {
-      var err = 'Domoticz authentication problem (' + _PARAMS.error + ')';
+      var safeOAuthError = $('<div>').text(_PARAMS.error).html();
+      var err = 'Domoticz authentication problem (' + safeOAuthError + ')';
       if (_PARAMS.error === 'unauthorized_client') {
         err +=
           '<br>Check client_id in CONFIG.js.<br>Note: OAuth2 flow only is supported for Domoticz >=2023.2<br>';
@@ -509,6 +510,7 @@ function onLoad() {
     setInterval(function () {
       swipebackTime += 1000;
       if (settings.auto_slide_pages > 0) {
+        if (typeof myswiper === 'undefined') return;
         var currentSlide = myswiper.activeIndex;
         var swipeTimeout = Number(
           currentScreenSet[currentSlide].auto_slide_page ||
@@ -556,7 +558,7 @@ function onLoad() {
   }*/
 
   function registerUserActivity(event) {
-    standbyTime = 0;
+    lastUserActivity = Date.now();
     swipebackTime = 0;
     autoSwipe = false;
 
@@ -585,9 +587,9 @@ function onLoad() {
       _END_STANDBY_CALL_URL = settings['standby_call_url_on_end'];
     }
     setInterval(function () {
-      standbyTime += 5000;
       if (standbyActive != true) {
-        if (standbyTime >= settings['standby_after'] * 1000 * 60) {
+        var inactiveFor = Date.now() - lastUserActivity;
+        if (inactiveFor >= settings['standby_after'] * 1000 * 60) {
           $('body').addClass('standby');
           $('.dt-container').hide();
           if (objectlength(columns_standby) > 0) buildStandby();
@@ -921,7 +923,7 @@ function removeLoading() {
 }
 
 function disableStandby() {
-  standbyTime = 0;
+  lastUserActivity = Date.now();
   if (standbyActive == true) {
     if (
       typeof _END_STANDBY_CALL_URL !== 'undefined' &&

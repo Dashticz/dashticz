@@ -14,6 +14,25 @@ The optional Ziggo/UPC helper is available at `tools/switch_horizon.php`.
 Existing configurations that use `switch_horizon.php` are redirected to the
 new location by the dashboard code.
 
+## Security configuration
+
+The bundled PHP proxy and calendar endpoints only fetch public HTTP(S) URLs.
+Private, loopback, link-local, and reserved addresses are blocked by default.
+If an internal calendar or feed is intentional, add its exact hostname to the
+web server environment variable `DASHTICZ_ALLOWED_REMOTE_HOSTS`. Separate
+multiple hosts with commas; a leading wildcard such as `*.example.local` is
+also supported.
+
+Saving settings through the browser uses a same-origin CSRF token and safely
+serializes setting names and values. If PHP is unavailable or rejects the
+write, Dashticz shows configuration text that can be copied into
+`custom/CONFIG.js` manually.
+
+## Development checks
+
+Run `npm test` for the source, JSON, URL parsing, and endpoint security
+regression checks. Run `npm run build` to verify the production bundle.
+
 ## Dependency compatibility
 
 Dependencies are kept on the newest compatible release line. Major upgrades

@@ -1,0 +1,94 @@
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
+const { spawnSync } = require('node:child_process');
+const test = require('node:test');
+const vm = require('node:vm');
+
+const root = path.resolve(__dirname, '..');
+
+function filesBelow(directory, extension) {
+  const result = [];
+  for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+    const fullPath = path.join(directory, entry.name);
+    if (entry.isDirectory()) result.push(...filesBelow(fullPath, extension));
+    else if (entry.isFile() && fullPath.endsWith(extension)) result.push(fullPath);
+  }
+  return result;
+}
+
+function parseLocation(search) {
+  const source = fs.readFileSync(path.join(root, 'js/functions.js'), 'utf8');
+  const start = source.indexOf('function getLocationParameters()');
+  const end = source.indexOf('\nfunction toLower', start);
+  assert.notEqual(start, -1);
+  assert.notEqual(end, -1);
+
+  const context = {
+    window: { location: { search } },
+    result: null,
+  };
+  vm.runInNewContext(
+    source.substring(start, end) + '\nresult = getLocationParameters();',
+    context
+  );
+  return Object.assign({}, context.result);
+}
+
+test('all application JavaScript files pass a syntax check', () => {
+  const files = [
+    ...filesBelow(path.join(root, 'js'), '.js'),
+    ...filesBelow(path.join(root, 'src'), '.js'),
+  ];
+  for (const file of files) {
+    const result = spawnSync(process.execPath, ['--check', file], {
+      encoding: 'utf8',
+    });
+    assert.equal(result.status, 0, result.stderr || file);
+  }
+});
+
+test('all project JSON files parse', () => {
+  const ignored = new Set(['node_modules', '.git']);
+  function collect(directory) {
+    const result = [];
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      if (entry.isDirectory() && ignored.has(entry.name)) continue;
+      const fullPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) result.push(...collect(fullPath));
+      else if (entry.isFile() && fullPath.endsWith('.json')) result.push(fullPath);
+    }
+    return result;
+  }
+
+  for (const file of collect(root)) {
+    const source = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '');
+    assert.doesNotThrow(() => JSON.parse(source), file);
+  }
+});
+
+test('location parameters preserve equals signs and decode plus signs', () => {
+  assert.deepEqual(parseLocation('?token=a%3Db%3Dc&name=Jane+Doe'), {
+    token: 'a=b=c',
+    name: 'Jane Doe',
+  });
+});
+
+test('location parameters ignore malformed and prototype keys', () => {
+  assert.deepEqual(
+    parseLocation('?bad=%E0%A4%A&__proto__=polluted&constructor=nope&ok=yes'),
+    { ok: 'yes' }
+  );
+});
+
+test('security-sensitive regressions stay fixed', () => {
+  const domoticz = fs.readFileSync(path.join(root, 'js/domoticz-api.js'), 'utf8');
+  const loader = fs.readFileSync(path.join(root, 'js/loader.js'), 'utf8');
+  const camera = fs.readFileSync(path.join(root, 'js/components/camera.js'), 'utf8');
+
+  assert.match(domoticz, /initialUpdate\.state\(\) !== 'resolved'/);
+  assert.match(domoticz, /delete callbackList\[currentRequestId\]/);
+  assert.match(loader, /}, \$\.Deferred\(\)\.resolve\(\)\)/);
+  assert.match(camera, /trayopentimer = setTimeout/);
+  assert.doesNotMatch(camera, /trayopentimer = setInterval/);
+});

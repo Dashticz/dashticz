@@ -794,7 +794,7 @@ var defaultSettings = {
   auto_swipe_back_after: 0,
   standby_after: 0,
   selector_instead_of_buttons: 0,
-  default_news_url: 'http://www.nu.nl/rss/algemeen',
+  default_news_url: 'https://www.nu.nl/rss/Algemeen',
   news_scroll_after: 7,
   standard_graph: 'hours',
   blink_color: '255, 255, 255, 1',
@@ -1163,10 +1163,11 @@ function saveSettings() {
         localStorage.setItem('dashticz_' + $(this).attr('name'), val);
       if (isNumeric(val))
         val = parseFloat(val);
-      if (typeof val === 'string') val = "'" + val.replace("'", "\\'") + "'";
-      saveSettings[$(this).attr('name')] = val ;
+      var settingName = $(this).attr('name');
+      var serializedValue = JSON.stringify(val);
+      saveSettings[settingName] = serializedValue;
       alertSettings +=
-        "config['" + $(this).attr('name') + "'] = " + val + ";\n";
+        'config[' + JSON.stringify(settingName) + '] = ' + serializedValue + ';\n';
     }
   );
 
@@ -1174,18 +1175,17 @@ function saveSettings() {
     if ($(this).is(':checked')) {
       if (typeof Storage !== 'undefined')
         localStorage.setItem('dashticz_' + $(this).attr('name'), $(this).val());
-      alertSettings += "config['" + $(this).attr('name') + "'] = 1;\n";
-      saveSettings[$(this).attr('name')] = 1;
+      alertSettings += 'config[' + JSON.stringify($(this).attr('name')) + '] = 1;\n';
+      saveSettings[$(this).attr('name')] = JSON.stringify(1);
     } else {
       if (typeof Storage !== 'undefined')
         localStorage.setItem('dashticz_' + $(this).attr('name'), 0);
-      alertSettings += "config['" + $(this).attr('name') + "'] = 0;\n";
-      saveSettings[$(this).attr('name')] = 0;
+      alertSettings += 'config[' + JSON.stringify($(this).attr('name')) + '] = 0;\n';
+      saveSettings[$(this).attr('name')] = JSON.stringify(0);
     }
   });
 
-  $.post('js/savesettings.php', saveSettings, function (data) {
-    if (data !== '') {
+  function showSettingsOutput(saved, errorMessage) {
       var html =
         '<div class="modal fade" id="settingsoutput" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
       html += '<div class="modal-dialog modal-dialog-settings">';
@@ -1194,12 +1194,18 @@ function saveSettings() {
         '<div class="modal-body" style="padding:20px;font-size:14px;"><br>';
       html +=
         '<strong>' +
-        language.settings.infosave +
-        '</strong><br>If you like my work, you can buy me a beer at: <a href="https://www.paypal.me/robgeerts" target="_blank">https://www.paypal.me/robgeerts</a><br><br><textarea style="width:100%;height:500px;" id="codeToCopy">';
+        (saved
+          ? language.settings.infosave
+          : 'Settings were not saved automatically.') +
+        '</strong><br>';
 
-      html += alertSettings;
+      if (!saved) {
+        html +=
+          '<span class="text-danger"></span><br>Copy the configuration below to custom/CONFIG.js.<br><br>';
+      }
 
-      html += '</textarea>';
+      html += '<textarea style="width:100%;height:500px;" id="codeToCopy"></textarea>';
+
       html +=
         '</div><div class="modal-footer"><button onClick="window.location.href=window.location.href;" type="button" class="btn btn-primary" data-dismiss="modal">' +
         language.settings.close_reload +
@@ -1210,13 +1216,39 @@ function saveSettings() {
         '</div><div class="settingsoutput" data-toggle="modal" data-target="#settingsoutput"><em class="fas fa-cog" /><div>';
 
       $('body').append(html);
+      $('#codeToCopy').val(alertSettings);
+      if (!saved) {
+        $('#settingsoutput .text-danger').text(
+          errorMessage || 'Settings could not be saved automatically.'
+        );
+      }
       setTimeout(function () {
         $('.settingsoutput').trigger('click');
       }, 1000);
-    } else {
+  }
+
+  $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
+    .then(function (data) {
+      return $.ajax({
+        url: 'js/savesettings.php',
+        method: 'POST',
+        data: saveSettings,
+        dataType: 'json',
+        headers: {
+          'X-Dashticz-CSRF': data.token,
+        },
+      });
+    })
+    .done(function () {
       // eslint-disable-next-line no-self-assign
       window.location.href = window.location.href;
-    }
-  });
+    })
+    .fail(function (xhr) {
+      var message =
+        xhr.responseJSON && xhr.responseJSON.error
+          ? xhr.responseJSON.error
+          : 'Settings could not be saved automatically.';
+      showSettingsOutput(false, message);
+    });
 }
 //# sourceURL=js/settings.js

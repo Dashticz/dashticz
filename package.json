@@ -56,7 +56,8 @@
   ],
   "scripts": {
     "build": "webpack --config build/webpack.config.js --mode production",
-    "format": "prettier --config build/prettier.json --ignore-path build/prettierignore \"{js,src}/**/*.{ts,css,less,js}\" \"*.html\" \"tools/*.html\" --write"
+    "format": "prettier --config build/prettier.json --ignore-path build/prettierignore \"{js,src}/**/*.{ts,css,less,js}\" \"*.html\" \"tools/*.html\" --write",
+    "test": "node --test \"tests/*.test.js\""
   },
   "repository": {
     "type": "git",
