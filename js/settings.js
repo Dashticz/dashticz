@@ -1051,9 +1051,9 @@ function loadSettings() {
               '</label>';
             if (typeof settingList[b][s]['help'] !== 'undefined')
               html +=
-                '<span class="glyphicon" title="' +
+                '<span class="glyphicon fas fa-info-circle" title="' +
                 settingList[b][s]['help'] +
-                '">&nbsp;&#xe086;</span>';
+                '"></span>';
             html += '</div>';
             html += '<div class="col-xs-7" style="margin-bottom:1px;">';
             var val = '';

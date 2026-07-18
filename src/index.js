@@ -10,7 +10,7 @@ window.Chart = Chart;
 require('jquery-ui-dist/jquery-ui.min');
 require('jquery-ui-dist/jquery-ui.min.css');
 require('jquery-ui-touch-punch');
-require('bootstrap');
+require('./bootstrap-compat.js');
 window.SpotifyWebApi = require('spotify-web-api-js');
 require('@fortawesome/fontawesome-free/css/all.min.css');
 require('@fortawesome/fontawesome-free/css/v4-shims.min.css');

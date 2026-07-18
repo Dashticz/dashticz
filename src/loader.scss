@@ -1,4 +1,24 @@
-@import "~bootstrap/dist/css/bootstrap.css";
+// Retain the Bootstrap 3 breakpoints used by existing Dashticz dashboards
+// while compiling the maintained Bootstrap 5 components.
+$grid-breakpoints: (
+  xs: 0,
+  sm: 768px,
+  md: 992px,
+  lg: 1200px,
+  xl: 1400px,
+  xxl: 1600px
+);
+$container-max-widths: (
+  sm: 750px,
+  md: 970px,
+  lg: 1170px,
+  xl: 1320px,
+  xxl: 1520px
+);
+$grid-gutter-width: 30px;
+
+@import "~bootstrap/scss/bootstrap";
+@import "bootstrap3-compat";
 #loaderHolder {
     position: absolute;
     width: 100%;

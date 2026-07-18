@@ -170,11 +170,11 @@ test('clock components use public date APIs and a valid seconds setting', () => 
   assert.doesNotMatch(flipClock, /showSecoonds/);
 });
 
-test('UI dependencies use the intended compatibility versions', () => {
+test('UI dependencies use the maintained compatibility versions', () => {
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(root, 'package.json'), 'utf8')
   );
-  assert.match(packageJson.dependencies.bootstrap, /^\^3\.4\./);
+  assert.match(packageJson.dependencies.bootstrap, /^\^5\.3\./);
   assert.match(packageJson.dependencies['chart.js'], /^\^4\./);
   assert.ok(packageJson.dependencies.dayjs);
   assert.equal(packageJson.dependencies.moment, undefined);
@@ -182,9 +182,27 @@ test('UI dependencies use the intended compatibility versions', () => {
 });
 
 test('legacy UI configuration is covered by migration adapters', () => {
+  const bootstrap = fs.readFileSync(
+    path.join(root, 'src/bootstrap-compat.js'),
+    'utf8'
+  );
+  const bootstrapStyles = fs.readFileSync(
+    path.join(root, 'src/_bootstrap3-compat.scss'),
+    'utf8'
+  );
   const chart = fs.readFileSync(path.join(root, 'src/chart-compat.js'), 'utf8');
   const dateTime = fs.readFileSync(path.join(root, 'src/date-time.js'), 'utf8');
 
+  assert.match(bootstrap, /data-bs-toggle/);
+  assert.match(bootstrap, /data-bs-backdrop/);
+  assert.match(bootstrap, /installJQueryPlugin/);
+  assert.match(bootstrap, /config === undefined/);
+  assert.match(bootstrap, /MutationObserver/);
+  assert.match(bootstrapStyles, /\.col-xs-12 \{ width: 100%; \}/);
+  assert.match(bootstrapStyles, /\.col-sm-3 \{ width: 25%; \}/);
+  assert.match(bootstrapStyles, /\.col-sm-9 \{ width: 75%; \}/);
+  assert.match(bootstrapStyles, /data-toggle="buttons"/);
+  assert.match(bootstrapStyles, /\.fade\.in/);
   assert.match(chart, /xAxes/);
   assert.match(chart, /migrateTooltipCallbacks/);
   assert.match(dateTime, /badMutable/);
@@ -196,6 +214,8 @@ test('migration sources use LF line endings', () => {
     '.gitattributes',
     'package.json',
     'package-lock.json',
+    'src/_bootstrap3-compat.scss',
+    'src/bootstrap-compat.js',
     'src/index.js',
     'src/chart-compat.js',
     'src/date-time.js',
@@ -203,6 +223,8 @@ test('migration sources use LF line endings', () => {
     'src/loader.scss',
     'js/components/graph.js',
     'js/components/timegraph.js',
+    'js/settings.js',
+    'tpl/camera_video.tpl',
   ]) {
     assert.doesNotMatch(fs.readFileSync(path.join(root, file), 'utf8'), /\r\n/, file);
   }
