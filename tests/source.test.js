@@ -198,6 +198,9 @@ test('legacy UI configuration is covered by migration adapters', () => {
   assert.match(bootstrap, /installJQueryPlugin/);
   assert.match(bootstrap, /config === undefined/);
   assert.match(bootstrap, /MutationObserver/);
+  assert.match(bootstrap, /prepareButtonGroup/);
+  assert.match(bootstrap, /data-bootstrap3-button-group/);
+  assert.match(bootstrap, /input\.name = .*buttonGroupId/);
   assert.match(bootstrapStyles, /\.col-xs-12 \{ width: 100%; \}/);
   assert.match(bootstrapStyles, /\.col-sm-3 \{ width: 25%; \}/);
   assert.match(bootstrapStyles, /\.col-sm-9 \{ width: 75%; \}/);
@@ -207,6 +210,16 @@ test('legacy UI configuration is covered by migration adapters', () => {
   assert.match(chart, /migrateTooltipCallbacks/);
   assert.match(dateTime, /badMutable/);
   assert.match(dateTime, /customParseFormat/);
+});
+
+test('selector buttons isolate radio groups and dispatch their own value', () => {
+  const source = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+
+  assert.match(source, /var checked = st \? ' checked' : ''/);
+  assert.match(source, /change\.selectorButtons/);
+  assert.match(source, /var value = \$\(this\)\.val\(\)/);
+  assert.doesNotMatch(source, /on\('click', '\.btn-group'/);
+  assert.doesNotMatch(source, /\$\(ev\.target\)\.children\('input'\)\.val\(\)/);
 });
 
 test('migration sources use LF line endings', () => {

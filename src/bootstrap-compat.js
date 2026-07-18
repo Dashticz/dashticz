@@ -3,6 +3,8 @@ import * as bootstrap from 'bootstrap';
 
 window.bootstrap = bootstrap;
 
+var buttonGroupId = 0;
+
 var attributeAliases = {
   'data-toggle': 'data-bs-toggle',
   'data-target': 'data-bs-target',
@@ -21,6 +23,42 @@ function syncButtonGroup(group) {
     var input = label.querySelector('input');
     label.classList.toggle('active', Boolean(input && input.checked));
   });
+}
+
+function prepareButtonGroup(group) {
+  if (group.hasAttribute('data-bootstrap3-button-group')) return;
+
+  buttonGroupId += 1;
+  group.setAttribute('data-bootstrap3-button-group', String(buttonGroupId));
+
+  var labels = Array.from(group.querySelectorAll('label.btn'));
+  var inputs = labels
+    .map(function (label) { return label.querySelector('input'); })
+    .filter(Boolean);
+  var activeLabels = labels.filter(function (label) {
+    return label.classList.contains('active');
+  });
+  var declaredChecked = inputs.filter(function (input) {
+    return input.hasAttribute('checked');
+  });
+
+  inputs.forEach(function (input) {
+    if (input.type === 'radio') {
+      input.name = (input.name || 'options') + '-bs3-' + buttonGroupId;
+    }
+
+    if (activeLabels.length > 0) {
+      input.checked = activeLabels.some(function (label) {
+        return label.contains(input);
+      });
+    } else if (declaredChecked.length === 1) {
+      input.checked = declaredChecked[0] === input;
+    } else {
+      input.checked = false;
+    }
+  });
+
+  syncButtonGroup(group);
 }
 
 function translateElement(element) {
@@ -44,7 +82,7 @@ function translateElement(element) {
     }
   }
 
-  if (toggle === 'buttons') syncButtonGroup(element);
+  if (toggle === 'buttons') prepareButtonGroup(element);
 
   if (element.classList.contains('item') && element.closest('.carousel-inner')) {
     element.classList.add('carousel-item');

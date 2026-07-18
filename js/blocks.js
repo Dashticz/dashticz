@@ -1494,23 +1494,24 @@ function getSelectorSwitch(block) {
         ) {
           var st = '';
           if (nv.value * 10 == parseFloat(device['Level'])) st = 'active';
+          var checked = st ? ' checked' : '';
           html += '<label class="btn btn-default ' + st + '">';
           html +=
             '<input type="radio" name="options" autocomplete="off" value="' +
             nv.value * 10 +
-            '" checked>' +
+            '"' + checked + '>' +
             nv.name;
           html += '</label>';
         }
       }
-      html += '</select>';
       html += '</div>';
       html += '</div>';
       block.$mountPoint
         .find('.mh')
-        .off('click')
-        .on('click', '.btn-group', function (ev) {
-          var value = $(ev.target).children('input').val();
+        .off('click', '.btn-group')
+        .off('change.selectorButtons', '.btn-group input[type="radio"]')
+        .on('change.selectorButtons', '.btn-group input[type="radio"]', function () {
+          var value = $(this).val();
           slideDevice(block, value);
         });
     }
