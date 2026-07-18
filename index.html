@@ -4,15 +4,15 @@
 <head>
   <meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta charset="utf-8">
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1, user-scalable=0">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description"
-    content="Dashticz - V3, Custom dashboard for Domoticz">
+    content="Dashticz 3.15 - a customizable dashboard for Domoticz">
   <meta name="author" content="Dashticz">
+  <meta name="theme-color" content="#090b12">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <link rel="shortcut icon" href="img/favicon/favicon.ico"
     type="image/x-icon" />
@@ -42,7 +42,9 @@
     sizes="96x96">
   <link rel="icon" type="image/png"
     href="img/favicon/android-chrome-192x192.png" sizes="192x192">
-  <link rel="stylesheet" type="text/css" href="./dist/bundle.css?v=150">
+  <link rel="preload" href="img/favicon/android-chrome-192x192.png"
+    as="image" type="image/png">
+  <link rel="stylesheet" type="text/css" href="./dist/bundle.css?v=151">
   <meta name="msapplication-square70x70logo"
     content="img/favicon/smalltile.png" />
   <meta name="msapplication-square150x150logo"
@@ -55,26 +57,38 @@
 </head>
 
 <body id="page-top">
-
-  <div id="loaderHolder">
-    <div class="loaderHeader">Dashticz v3 is loading...</div>
-    <div class="loader"></div>
+  <div id="loaderHolder" role="status" aria-live="polite"
+    aria-label="Dashticz is loading">
+    <div class="loaderBackdrop" aria-hidden="true"></div>
+    <div class="loaderPanel">
+      <div class="loaderLogoShell" aria-hidden="true">
+        <span class="loaderOrbit"></span>
+        <img class="loaderLogo"
+          src="img/favicon/android-chrome-192x192.png"
+          width="192" height="192" alt="">
+      </div>
+      <div class="loaderBrand">Dashticz</div>
+      <div class="loaderHeader">Your dashboard is starting</div>
+      <div class="loaderProgress" aria-hidden="true">
+        <span></span>
+      </div>
+      <div class="loaderStatus">
+        Loading<span class="loaderDots" aria-hidden="true"><i></i><i></i><i></i></span>
+      </div>
+      <div class="loaderVersion">Version 3.15.0</div>
+    </div>
   </div>
   <div id="hide" style="display: none">
-    <div id="error">Error</div><br>For more help visit <a
-			href="https://dashticz.readthedocs.io/">Dashticz v3 documentation</a>
+    <div id="error">Error</div><br>
+    For more help, visit the
+    <a href="https://dashticz.readthedocs.io/">Dashticz documentation</a>.
   </div>
   <div class="dt-container">
-    <div class="contents"> </div>
+    <div class="contents"></div>
     <div class="swiper-pagination"></div>
   </div>
 
-  <script>
-    var head = document.getElementsByTagName('head')[0],
-       script = document.createElement('script');
-    script.src = 'js/loader.js?t='+ new Date().getTime();
-    head.appendChild(script);
-    </script>
+  <script src="js/loader.js?t=151"></script>
 </body>
 
 </html>

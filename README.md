@@ -70,6 +70,9 @@ options should continue to work normally.
 
 ### Security and maintenance
 
+- The startup page has optimized metadata and cache handling, preloads the
+  Dashticz logo, and shows a responsive animated splash screen while the
+  dashboard loads. The animation includes a reduced-motion fallback.
 - The PHP proxy, calendar, settings, and bundled Horizon endpoints enforce
   same-origin and CSRF protection where appropriate. Remote URLs are validated
   and private or reserved destinations are blocked by default to reduce SSRF

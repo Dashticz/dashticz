@@ -19,59 +19,294 @@ $grid-gutter-width: 30px;
 
 @import "~bootstrap/scss/bootstrap";
 @import "bootstrap3-compat";
+
 #loaderHolder {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background-color: #000;
-    z-index: 99999;
-    text-align: center;
+  --loader-red: #ff1f35;
+  --loader-red-soft: rgba(255, 31, 53, .38);
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  min-width: 280px;
+  min-height: 360px;
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(circle at 50% 38%, rgba(71, 24, 38, .32), transparent 34%),
+    linear-gradient(145deg, #111520 0%, #090b12 48%, #050608 100%);
+  z-index: 99999;
+  text-align: center;
+  isolation: isolate;
+}
+
+.loaderBackdrop,
+.loaderBackdrop::before,
+.loaderBackdrop::after {
+  position: absolute;
+  inset: -25%;
+  pointer-events: none;
+}
+
+.loaderBackdrop {
+  z-index: -1;
+  opacity: .7;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, .018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, .018) 1px, transparent 1px);
+  background-size: 42px 42px;
+  -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 67%);
+  mask-image: radial-gradient(circle, #000 0%, transparent 67%);
+}
+
+.loaderBackdrop::before {
+  content: "";
+  background: conic-gradient(
+    from 90deg,
+    transparent 0deg,
+    rgba(255, 31, 53, .08) 70deg,
+    transparent 145deg,
+    rgba(105, 130, 255, .06) 250deg,
+    transparent 360deg
+  );
+  animation: loaderBackdropSpin 18s linear infinite;
+}
+
+.loaderBackdrop::after {
+  inset: 35%;
+  content: "";
+  border-radius: 50%;
+  background: var(--loader-red-soft);
+  filter: blur(100px);
+  opacity: .28;
+  animation: loaderAmbientGlow 3.6s ease-in-out infinite;
+}
+
+.loaderPanel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(86vw, 420px);
+  padding: 42px 32px 34px;
+}
+
+.loaderLogoShell {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 174px;
+  height: 174px;
+  margin-bottom: 24px;
+}
+
+.loaderLogoShell::before,
+.loaderLogoShell::after {
+  position: absolute;
+  border-radius: 50%;
+  content: "";
+}
+
+.loaderLogoShell::before {
+  inset: 15px;
+  background: rgba(255, 31, 53, .22);
+  filter: blur(28px);
+  animation: loaderLogoGlow 2.4s ease-in-out infinite;
+}
+
+.loaderLogoShell::after {
+  inset: 28px;
+  box-shadow: 0 0 55px 18px rgba(255, 31, 53, .3);
+}
+
+.loaderLogo {
+  position: relative;
+  z-index: 2;
+  width: 126px;
+  height: 126px;
+  border-radius: 50%;
+  filter:
+    drop-shadow(0 0 10px rgba(255, 76, 94, .95))
+    drop-shadow(0 0 28px rgba(255, 31, 53, .7));
+  animation: loaderLogoFloat 3s ease-in-out infinite;
+}
+
+.loaderOrbit {
+  position: absolute;
+  inset: 2px;
+  z-index: 1;
+  border: 1px solid rgba(255, 255, 255, .1);
+  border-top-color: rgba(255, 94, 110, .95);
+  border-right-color: rgba(255, 31, 53, .35);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(255, 31, 53, .2);
+  animation: loaderOrbitSpin 3.4s linear infinite;
+}
+
+.loaderOrbit::before {
+  position: absolute;
+  top: 12px;
+  right: 20px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 8px #fff,
+    0 0 16px var(--loader-red);
+  content: "";
+}
+
+.loaderBrand {
+  margin: 0;
+  font-size: clamp(30px, 8vw, 42px);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: .18em;
+  text-indent: .18em;
+  text-transform: uppercase;
+  text-shadow: 0 0 24px rgba(255, 255, 255, .16);
+}
+
+.loaderHeader {
+  margin-top: 13px;
+  color: rgba(255, 255, 255, .62);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+
+.loaderProgress {
+  position: relative;
+  width: min(66vw, 260px);
+  height: 2px;
+  margin-top: 28px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .09);
+}
+
+.loaderProgress span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 42%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, #ff5e6e, #fff, #ff3046);
+  box-shadow: 0 0 12px var(--loader-red);
+  animation: loaderProgressSweep 1.8s ease-in-out infinite;
+}
+
+.loaderStatus {
+  display: flex;
+  align-items: center;
+  min-height: 18px;
+  margin-top: 13px;
+  color: rgba(255, 255, 255, .72);
+  font-size: 12px;
+  letter-spacing: .08em;
+}
+
+.loaderDots {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: 7px;
+}
+
+.loaderDots i {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--loader-red);
+  box-shadow: 0 0 7px var(--loader-red);
+  animation: loaderDot 1.2s ease-in-out infinite;
+}
+
+.loaderDots i:nth-child(2) { animation-delay: .16s; }
+.loaderDots i:nth-child(3) { animation-delay: .32s; }
+
+.loaderVersion {
+  margin-top: 22px;
+  color: rgba(255, 255, 255, .3);
+  font-size: 10px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+@keyframes loaderOrbitSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes loaderBackdropSpin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes loaderAmbientGlow {
+  0%, 100% { opacity: .2; transform: scale(.84); }
+  50% { opacity: .42; transform: scale(1.12); }
+}
+
+@keyframes loaderLogoGlow {
+  0%, 100% { opacity: .55; transform: scale(.9); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+@keyframes loaderLogoFloat {
+  0%, 100% { transform: translateY(2px) scale(.98); }
+  50% { transform: translateY(-4px) scale(1.02); }
+}
+
+@keyframes loaderProgressSweep {
+  0% { left: -45%; opacity: 0; }
+  25%, 75% { opacity: 1; }
+  100% { left: 105%; opacity: 0; }
+}
+
+@keyframes loaderDot {
+  0%, 70%, 100% { opacity: .28; transform: translateY(0); }
+  35% { opacity: 1; transform: translateY(-3px); }
+}
+
+@media (max-height: 520px) {
+  .loaderPanel { padding: 20px; }
+  .loaderLogoShell {
+    width: 118px;
+    height: 118px;
+    margin-bottom: 14px;
+  }
+  .loaderLogo { width: 84px; height: 84px; }
+  .loaderHeader { margin-top: 8px; }
+  .loaderProgress { margin-top: 18px; }
+  .loaderVersion { margin-top: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loaderBackdrop::before,
+  .loaderBackdrop::after,
+  .loaderLogoShell::before,
+  .loaderLogo,
+  .loaderOrbit,
+  .loaderProgress span,
+  .loaderDots i {
+    animation: none;
   }
 
-  .loader {
-    margin: 0 auto;
-    border: 10px solid #f3f3f3;
-    border-top: 10px transparent;
-    border-bottom: 10px transparent;
-    border-radius: 50%;
-    width: 320px;
-    height: 320px;
-    animation: pulsate 2s ease-out;
-    animation-iteration-count: infinite;
+  .loaderProgress span {
+    left: 29%;
+    opacity: 1;
   }
-  
-  @keyframes pulsate {
-    0% {
-      transform: scale(0.1);
-      opacity: 0;
-    }
-    50% {
-      opacity: 1;
-    }
-    100% {
-      transform: scale(0.8);
-      opacity: 0;
-    }
-  }
-  
-  .loaderHeader {
-    color: #fff;
-    font-size: 1.5em;
-    margin-top: 50px;
-  }
-  
-  #hide {
-    color: white;
-    font-size: 200%;
-    width: 100%;
-    margin: 0;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-  }
-  
-  body {
-    font-size: 11px;
-  }
+}
+
+#hide {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  margin: 0;
+  color: white;
+  font-size: 200%;
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+body {
+  font-size: 11px;
+}
