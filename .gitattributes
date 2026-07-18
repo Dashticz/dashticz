@@ -6,6 +6,7 @@
 /version.txt text eol=lf
 *.js text eol=lf
 *.html text eol=lf
+*.css text eol=lf
 *.scss text eol=lf
 *.tpl text eol=lf
 js/savesettings.php text eol=lf

@@ -103,6 +103,21 @@ Developers who change files under `src/` should use `npm ci`, run `npm test`,
 and rebuild the committed production bundle with `npm run build`. The
 `node_modules/` directory must not be committed.
 
+## Included themes
+
+The `modern-dark` theme provides a reusable dark dashboard style with clear
+active button states, compact blocks, styled titles, sliders, battery states,
+and a black standby background. Enable it in `custom/CONFIG.js`:
+
+```javascript
+config['theme'] = 'modern-dark';
+```
+
+Theme files contain general-purpose styling only. Dashticz loads
+`custom/custom.css` after the selected theme, so device-specific block rules,
+personal layouts, private URLs, and local overrides can remain in that ignored
+file without being committed to Git.
+
 ## Security configuration
 
 The bundled PHP proxy and calendar endpoints only fetch public HTTP(S) URLs.

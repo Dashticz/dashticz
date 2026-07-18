@@ -222,6 +222,20 @@ test('selector buttons isolate radio groups and dispatch their own value', () =>
   assert.doesNotMatch(source, /\$\(ev\.target\)\.children\('input'\)\.val\(\)/);
 });
 
+test('modern dark theme is portable and documented', () => {
+  const theme = fs.readFileSync(
+    path.join(root, 'themes/modern-dark/modern-dark.css'),
+    'utf8'
+  );
+  const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+
+  assert.match(theme, /--main-bg/);
+  assert.match(theme, /\.mh \.btn\.active/);
+  assert.doesNotMatch(theme, /https?:\/\//i);
+  assert.doesNotMatch(theme, /url\s*\(/i);
+  assert.match(readme, /config\['theme'\] = 'modern-dark'/);
+});
+
 test('migration sources use LF line endings', () => {
   for (const file of [
     '.gitattributes',

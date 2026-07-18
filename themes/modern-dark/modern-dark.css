@@ -1,0 +1,234 @@
+/*
+ * Dashticz Modern Dark theme
+ *
+ * General-purpose styling only. Personal block IDs, device names, URLs and
+ * dashboard-specific layout rules belong in custom/custom.css.
+ */
+
+:root {
+  --main-bg: rgb(35, 37, 47);
+  --main-border: 2px solid rgb(0, 0, 0);
+  --box-border: 1px solid rgb(181, 181, 181);
+  --home-bg: rgb(35, 37, 47);
+  --button-bg: rgb(27, 29, 37);
+  --button-active: rgb(51, 72, 103);
+  --text-light: rgb(255, 255, 255);
+  --text-normal: rgb(255, 255, 255);
+  --text-inactive: rgba(188, 188, 188, .5);
+  --warning-red: rgb(255, 0, 0);
+  --selector-bg: rgb(27, 29, 37);
+  --blocktitle: rgba(130, 130, 130, .2);
+  --radius-border: 5px;
+  --radius-selector: 6px;
+  --font-small: 18px;
+  --font-large: 24px;
+  --border-radius: 10px;
+  --text-title: lightyellow;
+  --text-status: lightgreen;
+  --standby-font: 22px;
+  --height-block-small: 100px;
+  --height-block-default: 120px;
+  --height-block-medium: 130px;
+  --height-block-large: 160px;
+  --height-block-standby-clock: 200px;
+}
+
+.transbg {
+  padding-top: 8px !important;
+  padding-bottom: 6px !important;
+  border: var(--main-border) !important;
+  border-radius: var(--radius-border) !important;
+  background-color: var(--main-bg) !important;
+}
+
+.transbg.blocktitle,
+.blocktitle,
+.miniclock {
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+}
+
+.mh {
+  --col1width: 60px;
+  --col2width: 60px;
+  height: 115px !important;
+  text-align: right !important;
+}
+
+.right2col {
+  padding-right: calc(var(--col1width) + var(--col2width) + 8px);
+}
+
+.col-button2 {
+  width: calc(var(--col1width) + var(--col2width));
+}
+
+.col-button2 .btn-number {
+  width: var(--col1width);
+}
+
+.mh .btn.stop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--col2width);
+  font-size: 20px;
+}
+
+.mh .btn {
+  color: var(--text-inactive);
+  border: var(--box-border);
+  border-radius: var(--radius-selector) !important;
+  background-color: var(--button-bg);
+}
+
+.mh .btn.stop {
+  color: var(--text-normal);
+  background-color: var(--warning-red) !important;
+}
+
+.mh .btn.active {
+  color: var(--text-normal);
+  background-color: var(--button-active);
+}
+
+.mh .fas,
+.mh .far,
+.mh .wi {
+  font-size: 28px !important;
+}
+
+.blocktitle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 40px !important;
+  background-color: var(--blocktitle) !important;
+}
+
+.blocktitle .dt_title {
+  padding-top: 4px !important;
+  color: var(--text-light);
+  font-size: var(--font-large);
+  text-shadow: 4px 4px 4px #000;
+}
+
+.blocktitle img {
+  max-width: 34px !important;
+  padding-bottom: 10px !important;
+}
+
+.miniclock {
+  max-width: 100% !important;
+  height: 40px !important;
+  padding-top: 2px !important;
+  color: var(--text-light) !important;
+  background-color: var(--blocktitle) !important;
+  font-size: var(--font-large) !important;
+  font-weight: 700 !important;
+  text-align: right !important;
+  text-shadow: 4px 4px 4px #000 !important;
+}
+
+.title,
+.state,
+.value {
+  font-size: var(--font-small) !important;
+}
+
+.title {
+  color: var(--text-title) !important;
+}
+
+.state,
+.value {
+  color: var(--text-status) !important;
+}
+
+.icon {
+  font-size: 40px !important;
+}
+
+.col-icon img,
+.icon img {
+  max-width: 65px !important;
+}
+
+.battery-level {
+  margin-right: 10px !important;
+}
+
+.battery-level.fa-battery-empty,
+.battery-level.fa-battery-quarter {
+  z-index: 15;
+  color: red;
+  font-size: 20px !important;
+}
+
+.battery-level.fa-battery-half,
+.battery-level.fa-battery-three-quarters {
+  z-index: 15;
+  color: grey;
+  font-size: 20px !important;
+}
+
+.battery-level.fa-battery-full {
+  z-index: 15;
+  color: green;
+  font-size: 20px !important;
+}
+
+.battery-percentage {
+  color: white;
+}
+
+.fas.fa-chevron-up,
+.fas.fa-chevron-down {
+  color: var(--text-status) !important;
+  font-size: 40px !important;
+}
+
+.ui-slider-horizontal {
+  position: relative;
+  height: 10px !important;
+  margin-top: 20px !important;
+  border: var(--box-border) !important;
+  border-radius: var(--radius-selector) !important;
+  background-color: #6a6a6a !important;
+}
+
+.ui-slider-handle {
+  top: 50% !important;
+  width: 20px !important;
+  height: 40px !important;
+  margin-top: -20px !important;
+  border: var(--box-border) !important;
+  border-radius: 14px !important;
+  background-color: #00aaff !important;
+}
+
+.standby .screenstandby,
+.standby .block,
+.standby [data-id],
+.standby .transbg {
+  color: var(--text-light) !important;
+  background-color: #000 !important;
+}
+
+.message_block {
+  visibility: visible;
+  border: 3px solid rgba(0, 0, 0, .7) !important;
+  border-radius: 1px !important;
+  background: rgba(0, 255, 0, .2) !important;
+  background-clip: border-box;
+}
+
+.warning_block {
+  z-index: 15;
+  visibility: visible;
+  border: 1px solid white !important;
+  border-radius: 15px !important;
+  background: var(--warning-red) !important;
+  background-clip: border-box;
+}
