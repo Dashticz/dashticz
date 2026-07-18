@@ -6,7 +6,7 @@
  */
 
 :root {
-  --main-bg: rgb(32, 33, 42);
+  --main-bg: rgba(32, 33, 42, .88);
   --main-border-color: rgba(91, 98, 117, .42);
   --main-border-width: 1px;
   --block-gap: 3px;
