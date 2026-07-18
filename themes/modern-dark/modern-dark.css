@@ -7,7 +7,7 @@
 
 :root {
   --main-bg: rgba(28, 31, 42, .68);
-  --main-border: 1px solid rgba(255, 255, 255, .14);
+  --main-border: 2px solid rgb(0, 0, 0);
   --box-border: 1px solid rgb(181, 181, 181);
   --home-bg: rgba(28, 31, 42, .74);
   --button-bg: rgb(27, 29, 37);
@@ -233,7 +233,12 @@
 .standby [data-id],
 .standby .transbg {
   color: var(--text-light) !important;
-  background-color: #000 !important;
+  border: 0 !important;
+  background: #000 !important;
+  background-clip: border-box !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
 .message_block {

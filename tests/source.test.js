@@ -230,11 +230,14 @@ test('modern dark theme is portable and documented', () => {
   const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 
   assert.match(theme, /--main-bg/);
+  assert.match(theme, /--main-border: 2px solid rgb\(0, 0, 0\)/);
   assert.match(theme, /--glass-highlight/);
   assert.match(theme, /backdrop-filter: blur\(12px\)/);
   assert.match(theme, /\.mh \.btn\.active/);
   assert.match(theme, /\.titlegroups \.col-icon img\.icon/);
   assert.match(theme, /@media \(max-width: 767\.98px\)/);
+  assert.match(theme, /\.standby \.transbg[\s\S]*background: #000 !important/);
+  assert.match(theme, /\.standby \.transbg[\s\S]*backdrop-filter: none !important/);
   assert.doesNotMatch(theme, /https?:\/\//i);
   assert.doesNotMatch(theme, /url\s*\(/i);
   assert.match(readme, /config\['theme'\] = 'modern-dark'/);
