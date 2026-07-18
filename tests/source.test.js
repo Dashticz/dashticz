@@ -231,6 +231,8 @@ test('modern dark theme is portable and documented', () => {
 
   assert.match(theme, /--main-bg/);
   assert.match(theme, /\.mh \.btn\.active/);
+  assert.match(theme, /\.titlegroups \.col-icon img\.icon/);
+  assert.match(theme, /@media \(max-width: 767\.98px\)/);
   assert.doesNotMatch(theme, /https?:\/\//i);
   assert.doesNotMatch(theme, /url\s*\(/i);
   assert.match(readme, /config\['theme'\] = 'modern-dark'/);

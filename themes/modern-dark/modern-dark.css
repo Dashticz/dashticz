@@ -155,6 +155,17 @@
   max-width: 65px !important;
 }
 
+.titlegroups .col-icon img.icon {
+  max-width: 34px !important;
+  height: auto !important;
+}
+
+@media (max-width: 767.98px) {
+  .titlegroups .col-icon img.icon {
+    max-width: 15px !important;
+  }
+}
+
 .battery-level {
   margin-right: 10px !important;
 }
