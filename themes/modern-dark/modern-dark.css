@@ -6,10 +6,10 @@
  */
 
 :root {
-  --main-bg: rgb(35, 37, 47);
-  --main-border: 2px solid rgb(0, 0, 0);
+  --main-bg: rgba(28, 31, 42, .68);
+  --main-border: 1px solid rgba(255, 255, 255, .14);
   --box-border: 1px solid rgb(181, 181, 181);
-  --home-bg: rgb(35, 37, 47);
+  --home-bg: rgba(28, 31, 42, .74);
   --button-bg: rgb(27, 29, 37);
   --button-active: rgb(51, 72, 103);
   --text-light: rgb(255, 255, 255);
@@ -18,6 +18,9 @@
   --warning-red: rgb(255, 0, 0);
   --selector-bg: rgb(27, 29, 37);
   --blocktitle: rgba(130, 130, 130, .2);
+  --glass-highlight: rgba(255, 255, 255, .09);
+  --glass-shadow: 0 8px 24px rgba(0, 0, 0, .3),
+    inset 0 1px 0 rgba(255, 255, 255, .12);
   --radius-border: 5px;
   --radius-selector: 6px;
   --font-small: 18px;
@@ -38,7 +41,13 @@
   padding-bottom: 6px !important;
   border: var(--main-border) !important;
   border-radius: var(--radius-border) !important;
-  background-color: var(--main-bg) !important;
+  background:
+    linear-gradient(145deg, var(--glass-highlight), rgba(255, 255, 255, .015)),
+    var(--main-bg) !important;
+  background-clip: padding-box !important;
+  box-shadow: var(--glass-shadow) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(125%);
+  backdrop-filter: blur(12px) saturate(125%);
 }
 
 .transbg.blocktitle,
