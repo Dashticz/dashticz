@@ -230,13 +230,16 @@ test('modern dark theme is portable and documented', () => {
   const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 
   assert.match(theme, /--main-bg/);
-  assert.match(theme, /--main-border-color: rgba\(255, 255, 255, \.2\)/);
+  assert.match(theme, /--main-border-color: rgba\(91, 98, 117, \.42\)/);
   assert.match(theme, /--main-border-width: 1px/);
   assert.match(theme, /--block-gap: 3px/);
   assert.match(theme, /border: var\(--block-gap\) solid transparent !important/);
   assert.match(theme, /inset 0 0 0 var\(--main-border-width\) var\(--main-border-color\)/);
-  assert.match(theme, /--glass-highlight/);
-  assert.match(theme, /backdrop-filter: blur\(12px\)/);
+  assert.match(theme, /--radius-border: 16px/);
+  assert.match(theme, /--control-border: rgb\(42, 94, 151\)/);
+  assert.match(theme, /\.transbg \.btn\.active/);
+  assert.match(theme, /\.transbg select/);
+  assert.doesNotMatch(theme, /linear-gradient/);
   assert.match(theme, /\.mh \.btn\.active/);
   assert.match(theme, /\.transbg\.titlegroups/);
   assert.match(theme, /\.titlegroups[\s\S]*background: var\(--blocktitle\) !important/);

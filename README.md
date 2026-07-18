@@ -106,9 +106,9 @@ and rebuild the committed production bundle with `npm run build`. The
 ## Included themes
 
 The `modern-dark` theme provides a reusable dark dashboard style with clear
-active button states, compact glass-style blocks, subtle light borders and
-spacing between blocks, styled titles, sliders, battery states, and a black
-standby background. Enable it in `custom/CONFIG.js`:
+active button states, compact rounded blocks, subtle dark borders and spacing
+between blocks, blue-outlined controls, styled titles, sliders, battery states,
+and a black standby background. Enable it in `custom/CONFIG.js`:
 
 ```javascript
 config['theme'] = 'modern-dark';
