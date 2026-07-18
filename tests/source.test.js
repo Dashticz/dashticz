@@ -83,6 +83,26 @@ test('all project JSON files parse', () => {
   }
 });
 
+test('favicon assets stay minimal and all references resolve', () => {
+  const faviconDirectory = path.join(root, 'img/favicon');
+  assert.deepEqual(fs.readdirSync(faviconDirectory).sort(), [
+    'app-icon-192x192.png',
+    'favicon.ico',
+  ]);
+
+  for (const relativeFile of ['index.html', 'tools/log.html']) {
+    const source = fs.readFileSync(path.join(root, relativeFile), 'utf8');
+    const references = Array.from(
+      source.matchAll(/(?:href|src|content)="(img\/favicon\/[^"?]+)(?:\?[^\"]*)?"/g),
+      (match) => match[1]
+    );
+    assert.ok(references.length >= 2, relativeFile);
+    for (const reference of references) {
+      assert.ok(fs.existsSync(path.join(root, reference)), reference);
+    }
+  }
+});
+
 test('location parameters preserve equals signs and decode plus signs', () => {
   assert.deepEqual(parseLocation('?token=a%3Db%3Dc&name=Jane+Doe'), {
     token: 'a=b=c',
@@ -257,6 +277,7 @@ test('modern dark theme is portable and documented', () => {
 test('migration sources use LF line endings', () => {
   for (const file of [
     '.gitattributes',
+    'index.html',
     'package.json',
     'package-lock.json',
     'src/_bootstrap3-compat.scss',
@@ -267,6 +288,7 @@ test('migration sources use LF line endings', () => {
     'src/handlebars-helpers.js',
     'src/loader.scss',
     'themes/modern-dark/modern-dark.css',
+    'tools/log.html',
     'js/components/graph.js',
     'js/components/timegraph.js',
     'js/settings.js',
