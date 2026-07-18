@@ -7,7 +7,9 @@
 
 :root {
   --main-bg: rgba(28, 31, 42, .68);
-  --main-border: 2px solid rgb(0, 0, 0);
+  --main-border-color: rgba(255, 255, 255, .2);
+  --main-border-width: 1px;
+  --block-gap: 3px;
   --box-border: 1px solid rgb(181, 181, 181);
   --home-bg: rgba(28, 31, 42, .74);
   --button-bg: rgb(27, 29, 37);
@@ -39,13 +41,15 @@
 .transbg {
   padding-top: 8px !important;
   padding-bottom: 6px !important;
-  border: var(--main-border) !important;
+  border: var(--block-gap) solid transparent !important;
   border-radius: var(--radius-border) !important;
   background:
     linear-gradient(145deg, var(--glass-highlight), rgba(255, 255, 255, .015)),
     var(--main-bg) !important;
   background-clip: padding-box !important;
-  box-shadow: var(--glass-shadow) !important;
+  box-shadow:
+    inset 0 0 0 var(--main-border-width) var(--main-border-color),
+    var(--glass-shadow) !important;
   -webkit-backdrop-filter: blur(12px) saturate(125%);
   backdrop-filter: blur(12px) saturate(125%);
 }
