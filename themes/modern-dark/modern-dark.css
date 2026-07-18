@@ -50,12 +50,18 @@
   backdrop-filter: blur(12px) saturate(125%);
 }
 
+.transbg.titlegroups,
+.titlegroups,
 .transbg.blocktitle,
 .blocktitle,
 .miniclock {
   margin: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
+  background: var(--blocktitle) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
 .mh {
@@ -113,7 +119,6 @@
   align-items: center !important;
   justify-content: center !important;
   height: 40px !important;
-  background-color: var(--blocktitle) !important;
 }
 
 .blocktitle .dt_title {
@@ -133,7 +138,6 @@
   height: 40px !important;
   padding-top: 2px !important;
   color: var(--text-light) !important;
-  background-color: var(--blocktitle) !important;
   font-size: var(--font-large) !important;
   font-weight: 700 !important;
   text-align: right !important;
