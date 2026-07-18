@@ -1,4 +1,4 @@
-/* global Dashticz DT_function settings choose number_format _TEMP_SYMBOL moment templateEngine _CORS_PATH language infoMessage toBeaufort*/
+/* global Dashticz DT_function settings choose Debug number_format _TEMP_SYMBOL moment templateEngine _CORS_PATH language infoMessage toBeaufort*/
 //# sourceURL=js/components/weather.js
 var DT_weather = (function () {
   var _DEBUG = false; //set to true to show different weather icons
@@ -157,7 +157,7 @@ var DT_weather = (function () {
       },
       {
         id: 'knmi',
-        url: 'https://weerlive.nl/api/json-data-10min.php?locatie=amsterdam&key=' + key,
+        url: 'https://weerlive.nl/api/weerlive_api_v2.php?locatie=amsterdam&key=' + key,
         json: 'liveweer'
       },
     ]
@@ -171,7 +171,7 @@ var DT_weather = (function () {
             return provider.id
           }
         })
-          .catch(function (xhr) {
+          .catch(function (xhr, textStatus) {
             if (xhr.status && xhr.status === 400) {//we have a valid api (for owm apis)
               console.log('Valid API key for weather provider: ' + provider.id);
               return provider.id
@@ -305,89 +305,75 @@ var DT_weather = (function () {
 
   function knmiFormatHandler(me) {
     /*
+    Weerlive API v2 (weerlive_api_v2.php):
     {
-    "liveweer": [
-        {
-            "plaats": "Amsterdam, nl",
-            "temp": "11.2",
-            "gtemp": "8.8",
-            "samenv": "Licht bewolkt",
-            "lv": "77",
-            "windr": "Oost",
-            "windrgr": "90",
-            "windms": "4",
-            "winds": "3",
-            "windk": "7.8",
-            "windkmh": "14.4",
-            "luchtd": "1022.0",
-            "ldmmhg": "767",
-            "dauwp": "7",
-            "zicht": "45",
-            "verw": "Vanavond en vannacht droog, morgen enige tijd buiige regen",
-            "sup": "08:09",
-            "sunder": "18:38",
-            "image": "wolkennacht",
-            "d0weer": "bewolkt",
-            "d0tmax": "15",
-            "d0tmin": "7",
-            "d0windk": "3",
-            "d0windknp": "10",
-            "d0windms": "5",
-            "d0windkmh": "19",
-            "d0windr": "O",
-            "d0windrgr": "90",
-            "d0neerslag": "0",
-            "d0zon": "15",
-            "d1weer": "regen",
-            "d1tmax": "16",
-            "d1tmin": "9",
-            "d1windk": "3",
-            "d1windknp": "8",
-            "d1windms": "4",
-            "d1windkmh": "15",
-            "d1windr": "ZO",
-            "d1windrgr": "135",
-            "d1neerslag": "70",
-            "d1zon": "30",
-            "d2weer": "regen",
-            "d2tmax": "19",
-            "d2tmin": "13",
-            "d2windk": "2",
-            "d2windknp": "6",
-            "d2windms": "3",
-            "d2windkmh": "11",
-            "d2windr": "Z",
-            "d2windrgr": "180",
-            "d2neerslag": "70",
-            "d2zon": "20",
-            "alarm": "0",
-            "alarmtxt": ""
-        }
-    ]
-  }
-  */
+      "liveweer": [{
+          "plaats": "Amsterdam",
+          "timestamp": 1783779482,
+          "time": "11-07-2026 16:18:02",
+          "temp": 24.6,
+          "gtemp": 22.3,
+          "samenv": "Onbewolkt",
+          "lv": 65,
+          "windr": "ONO",
+          "windrgr": 47.3,
+          "windms": 4.51,
+          "windbft": 3,
+          "windknp": 8.8,
+          "windkmh": 16.2,
+          "luchtd": 1021.62,
+          "ldmmhg": 766,
+          "dauwp": 17.3,
+          "zicht": 25100,
+          "gr": 751,
+          "verw": "Zonnig en warm...",
+          "sup": "05:30",
+          "sunder": "22:02",
+          "image": "zonnig",
+          "alarm": 0,
+          "lkop": "...",
+          "ltekst": "..."
+      }],
+      "wk_verw": [
+          {"dag":"11-07-2026","image":"halfbewolkt","max_temp":30,"min_temp":22,
+           "windbft":3,"windkmh":18,"windknp":10,"windms":5,"windrgr":47,"windr":"NO",
+           "neersl_perc_dag":0,"zond_perc_dag":100},
+          ... in totaal max. 5 dagen (was 3 dagen bij de oude API)
+      ],
+      "uur_verw": [ ... uurverwachting, wordt hier (nog) niet gebruikt ... ],
+      "api": [{ "bron": "...", "disclaimer": "...", "max_verz": 300, "rest_verz": 0 }]
+    }
+
+    Let op t.o.v. de oude json-data-10min.php API:
+    - de dagvelden (d0tmax/d0weer/d0neerslag/...) zitten niet meer in "liveweer",
+      maar per dag als apart object in de nieuwe array "wk_verw".
+    - "wk_verw[0]" is dus vandaag, "wk_verw[1]" morgen, enz. (max. 5 dagen vooruit).
+    */
     var start = me.block.skipFirst ? 1 : 0;
+    var wkVerw = me.data.weather.wk_verw || [];
+    var maxDays = wkVerw.length; //nieuwe API levert max. 5 dagen
     var cntSetting = choose(me.block.countDaily, me.block.count);
-    if (cntSetting + start > 7) cntSetting = 7 - start;
+    if (cntSetting + start > maxDays) cntSetting = maxDays - start;
+    if (cntSetting < 0) cntSetting = 0;
     var data = [];
     var daily = me.data.weather.liveweer[0];
     for (var i = start; i < cntSetting + start; i++) {
 
-      var dayStr = 'd' + i;
+      var dayForecast = wkVerw[i];
       var dayData = {
 
-        day: moment().add(i, 'days').format(settings['weekday']),
-        min: number_format(daily[dayStr + 'tmin'], me.block.decimals) + _TEMP_SYMBOL,
-        max: number_format(daily[dayStr + 'tmax'], me.block.decimals) + _TEMP_SYMBOL,
+        day: moment(dayForecast.dag, 'DD-MM-YYYY').format(settings['weekday']),
+        min: number_format(dayForecast.min_temp, me.block.decimals) + _TEMP_SYMBOL,
+        max: number_format(dayForecast.max_temp, me.block.decimals) + _TEMP_SYMBOL,
         //        description: daily.samenv,
-        rain: number_format(daily[dayStr + 'neerslag'] || 0, 0) + '%',
-        icon: getIcon(daily[dayStr + 'weer']),
+        rain: number_format(dayForecast.neersl_perc_dag || 0, 0) + '%',
+        icon: getIcon(dayForecast.image),
         wind: {
           //          direction:
-          speed: toWindStr(me, daily[dayStr + 'windk']),
+          speed: toWindStr(me, dayForecast.windms),
           //          gust: toWindStr(me, daily[i].wind_gust),
           //          deg: daily[i].wind_deg,
-          direction: daily[dayStr + 'windr'],
+          direction: dayForecast.windr,
           //          directionShort: translateWindDegreesShort(daily[i].wind_deg),
           //          icon: getWindIcon(daily[i].wind_deg),
         },
@@ -397,20 +383,21 @@ var DT_weather = (function () {
     }
     me.data.dailyForecast = data;
     me.data.dailyCount = cntSetting;
-    me.data.dailyScale = Math.round(100 / cntSetting);
+    me.data.dailyScale = cntSetting ? Math.round(100 / cntSetting) : 0;
 
     //current data
+    var today = wkVerw[0] || {};
     me.data.current = {
-      icon: getIcon(daily['d0weer']),
+      icon: getIcon(daily.image),
       city: me.block.name || me.block.city,
       temp:
         number_format(daily.temp, me.block.decimals) +
         _TEMP_SYMBOL,
       max:
-        number_format(daily.d0tmax, me.block.decimals) +
+        number_format(today.max_temp, me.block.decimals) +
         _TEMP_SYMBOL,
       min:
-        number_format(daily.d0tmin, me.block.decimals) +
+        number_format(today.min_temp, me.block.decimals) +
         _TEMP_SYMBOL,
       //      rain: (me.data.weather.rain && me.data.weather.rain['1h']) || 0,
       pressure: daily.luchtd,
@@ -479,7 +466,6 @@ var DT_weather = (function () {
     var i = 0;
     var maxi = daily.length;
     var sampleCount = 0;
-    var dayRain = 0;
     var currentDay, dayTempMin, dayTempMax, dayDescription, dayWindDeg, dayWindGust, dayWindSpeed, dayIcon, dayMoment;
     while (i < maxi && cont) {
       var dtMoment = moment(daily[i].dt * 1000);
@@ -752,15 +738,16 @@ var DT_weather = (function () {
 
   function getKNMIurl(me) {
     var city = me.block.city;
-    var country = me.block.country;
     var api = me.block.apikey;
 
+    //De nieuwe v2 API verwacht enkel een plaatsnaam (of "lat,lon") in 'locatie',
+    //een land is niet (meer) nodig.
     var site =
       (settings['use_cors'] ? _CORS_PATH : '') +
-      'https://weerlive.nl/api/json-data-10min.php?key=' +
+      'https://weerlive.nl/api/weerlive_api_v2.php?key=' +
       api +
       '&locatie=' +
-      city + ', ' + country
+      city;
     return site;
   }
 
@@ -841,7 +828,7 @@ var DT_weather = (function () {
       helderenacht: '01n',
       nachtbewolkt: '02n'
     };
-    if (Object.prototype.hasOwnProperty.call(icons, code)) {
+    if (icons.hasOwnProperty(code)) {
       wiclass = icons[code];
     }
     return wiclass;
