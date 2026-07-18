@@ -98,10 +98,10 @@ test('location parameters ignore malformed and prototype keys', () => {
 });
 
 test('update check only treats a newer remote version as an update', () => {
-  assert.equal(compareVersions('3.14', '3.15.0'), -1);
-  assert.equal(compareVersions('3.15', '3.15.0'), 0);
-  assert.equal(compareVersions('3.15.0', '3.14.2.0'), 1);
-  assert.equal(compareVersions('3.15.1', '3.15.0'), 1);
+  assert.equal(compareVersions('3.19', '3.20.0'), -1);
+  assert.equal(compareVersions('3.20', '3.20.0'), 0);
+  assert.equal(compareVersions('3.20.0', '3.19.2.0'), 1);
+  assert.equal(compareVersions('3.20.1', '3.20.0'), 1);
 });
 
 test('package and runtime versions remain synchronized', () => {

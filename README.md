@@ -14,9 +14,9 @@ The optional Ziggo/UPC helper is available at `tools/switch_horizon.php`.
 Existing configurations that use `switch_horizon.php` are redirected to the
 new location by the dashboard code.
 
-## Version 3.15.0 modernization and stability update
+## Version 3.20.0 modernization and stability update
 
-Version 3.15.0 modernizes the Dashticz runtime while retaining compatibility
+Version 3.20.0 modernizes the Dashticz runtime while retaining compatibility
 with existing dashboards, `CONFIG.js` files, blocks, themes, and custom CSS as
 far as possible. The production bundles are included in the repository, so a
 normal installation does not require Node.js or a local build.
@@ -65,8 +65,8 @@ options should continue to work normally.
   callbacks, authentication refresh, URL parsing, and sequential script
   loading have received lifecycle and error-handling fixes.
 - The update check compares versions correctly and only reports an update when
-  the remote version is newer. For example, version 3.15.0 is no longer told to
-  install version 3.14.
+  the remote version is newer. For example, version 3.20.0 is no longer told to
+  install version 3.19.
 
 ### Security and maintenance
 
