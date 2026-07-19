@@ -98,7 +98,7 @@ var supportedLocaleModules = Array.from(
 var localeContext = require.context(
   'dayjs/locale',
   false,
-  new RegExp('^\\.\\/(' + supportedLocaleModules.join('|') + ')\\.js$')
+  /^\.\/(bs|ca|cs|da|de|es|fi|fr|hu|it|ja|lt|nb|nl|nn|pl|pt|ro|ru|sk|sl|sr|sv|tr|uk|zh-cn)\.js$/
 );
 supportedLocaleModules.forEach(function (locale) {
   localeContext('./' + locale + '.js');
