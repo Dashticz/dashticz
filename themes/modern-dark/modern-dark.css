@@ -13,6 +13,7 @@
   --box-border: 1px solid rgb(181, 181, 181);
   --home-bg: rgba(28, 31, 42, .74);
   --control-border: rgb(42, 94, 151);
+  --control-border-active: rgb(112, 160, 218);
   --button-bg: rgb(29, 43, 63);
   --button-hover: rgb(35, 53, 78);
   --button-active: rgb(49, 76, 108);
@@ -109,6 +110,7 @@
 .transbg .btn:active,
 .transbg .btn[aria-pressed='true'] {
   color: var(--text-normal) !important;
+  border-color: var(--control-border-active) !important;
   background-color: var(--button-active) !important;
 }
 
