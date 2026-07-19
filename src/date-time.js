@@ -25,21 +25,90 @@ dayjs.extend(relativeTime);
 dayjs.extend(utc);
 dayjs.extend(weekday);
 
-// Dashticz lets users select any of the locales that Moment used to bundle.
-// Include the Day.js locale catalogue so existing configuration keeps working.
-var localeContext = require.context('dayjs/locale', false, /\.js$/);
-var availableLocales = { en: true };
-localeContext.keys().forEach(function (key) {
-  availableLocales[key.replace(/^\.\//, '').replace(/\.js$/, '')] = true;
-  localeContext(key);
+// Keep Day.js locale support aligned with the locales that Dashticz ships.
+// This avoids bundling the full Day.js locale catalogue into the main bundle.
+var localeAliases = {
+  bs: 'bs',
+  'bs-ba': 'bs',
+  ca: 'ca',
+  'ca-es': 'ca',
+  cs: 'cs',
+  'cs-cz': 'cs',
+  da: 'da',
+  'da-dk': 'da',
+  de: 'de',
+  'de-de': 'de',
+  en: 'en',
+  'en-us': 'en',
+  es: 'es',
+  'es-es': 'es',
+  fi: 'fi',
+  'fi-fi': 'fi',
+  fr: 'fr',
+  'fr-fr': 'fr',
+  hu: 'hu',
+  'hu-hu': 'hu',
+  it: 'it',
+  'it-it': 'it',
+  ja: 'ja',
+  'ja-jp': 'ja',
+  lt: 'lt',
+  'lt-lt': 'lt',
+  nb: 'nb',
+  'nb-no': 'nb',
+  nl: 'nl',
+  'nl-nl': 'nl',
+  nn: 'nn',
+  'nn-no': 'nn',
+  pl: 'pl',
+  'pl-pl': 'pl',
+  pt: 'pt',
+  'pt-pt': 'pt',
+  ro: 'ro',
+  'ro-ro': 'ro',
+  ru: 'ru',
+  'ru-ru': 'ru',
+  sk: 'sk',
+  'sk-sk': 'sk',
+  sl: 'sl',
+  'sl-si': 'sl',
+  'sl-sl': 'sl',
+  sr: 'sr',
+  'sr-rs': 'sr',
+  sv: 'sv',
+  'sv-se': 'sv',
+  tr: 'tr',
+  'tr-tr': 'tr',
+  uk: 'uk',
+  'uk-ua': 'uk',
+  zh: 'zh-cn',
+  'zh-cn': 'zh-cn',
+};
+var supportedLocaleModules = Array.from(
+  new Set(
+    Object.keys(localeAliases)
+      .map(function (locale) {
+        return localeAliases[locale];
+      })
+      .filter(function (locale) {
+        return locale !== 'en';
+      })
+  )
+);
+var localeContext = require.context(
+  'dayjs/locale',
+  false,
+  new RegExp('^\\.\\/(' + supportedLocaleModules.join('|') + ')\\.js$')
+);
+supportedLocaleModules.forEach(function (locale) {
+  localeContext('./' + locale + '.js');
 });
 
 function resolveLocale(locale) {
   if (!locale) return locale;
   var normalized = String(locale).replace('_', '-').toLowerCase();
-  if (availableLocales[normalized]) return normalized;
   var language = normalized.split('-')[0];
-  return availableLocales[language] ? language : normalized;
+  return localeAliases[normalized] || localeAliases[language] || normalized;
 }
 
 function momentCompat(input, format, locale, strict) {
