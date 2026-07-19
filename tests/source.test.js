@@ -296,8 +296,10 @@ test('settings modal uses compact Bootstrap 5 controls and aligned help icons', 
   assert.match(styles, /\.settings-row\s*\{/);
   assert.match(styles, /grid-template-columns:/);
   assert.match(styles, /\.settings-switch \.form-check-input/);
-  assert.match(styles, /width: 30px;/);
-  assert.match(styles, /height: 16px;/);
+  assert.match(styles, /width: 38px;/);
+  assert.match(styles, /height: 20px;/);
+  assert.match(styles, /width: 32ch;/);
+  assert.match(styles, /font-size: 15px;/);
   assert.match(styles, /\.settings-help \.fas/);
   assert.doesNotMatch(styles, /\.material-switch/);
 });
@@ -321,6 +323,7 @@ test('migration sources use LF line endings', () => {
     'js/components/graph.js',
     'js/components/simpleblock.js',
     'js/components/timegraph.js',
+    'js/loader.js',
     'js/settings.js',
     'tpl/camera_video.tpl',
   ]) {

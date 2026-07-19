@@ -359,7 +359,7 @@ next css sets the default height of the frame popup
   border-radius: 6px;
   color: #343a40;
   background: #f1f3f5;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.2;
   white-space: nowrap;
 }
@@ -398,7 +398,7 @@ next css sets the default height of the frame popup
 
 .settings-row {
   display: grid;
-  grid-template-columns: minmax(190px, .95fr) minmax(260px, 1.15fr) 30px;
+  grid-template-columns: minmax(230px, 320px) minmax(0, 32ch) 26px;
   align-items: center;
   gap: 10px;
   min-height: 42px;
@@ -420,8 +420,8 @@ next css sets the default height of the frame popup
 
 #settingspopup .settings-control .form-control,
 #settingspopup .settings-control .form-select {
-  width: 100%;
-  max-width: none;
+  width: 32ch;
+  max-width: 100%;
   min-height: 34px;
   padding: 5px 10px;
   color: #343a40 !important;
@@ -442,8 +442,8 @@ next css sets the default height of the frame popup
 
 #settingspopup .settings-switch .form-check-input {
   float: none;
-  width: 30px;
-  height: 16px;
+  width: 38px;
+  height: 20px;
   margin: 0;
   border-color: #adb5bd;
   cursor: pointer;
@@ -453,14 +453,14 @@ next css sets the default height of the frame popup
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
+  width: 26px;
 }
 
 .settings-help {
   display: inline-grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   padding: 0;
   border: 0;
   border-radius: 50%;
@@ -478,7 +478,7 @@ next css sets the default height of the frame popup
 
 .settings-help .fas {
   margin: 0 !important;
-  font-size: 16px !important;
+  font-size: 14px !important;
 }
 
 .settings-static {
@@ -511,7 +511,7 @@ next css sets the default height of the frame popup
   }
 
   .settings-row {
-    grid-template-columns: minmax(0, 1fr) 30px;
+    grid-template-columns: minmax(0, 1fr) 26px;
     gap: 4px 8px;
     padding: 7px 0;
   }
