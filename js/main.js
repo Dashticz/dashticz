@@ -821,30 +821,34 @@ function startSwiper() {
   $('.dt-container').addClass('swiper');
   $('.contents').addClass('swiper-wrapper');
   setTimeout(function () {
-    myswiper = new Swiper('.swiper', {
-      pagination: {
-        el: '.swiper-pagination',
-        clickable: true,
-      },
-      autoHeight: false,
-      //      speed: 0,
-      loop: false,
-      initialSlide: settings['start_page'] - 1,
-      effect: settings['slide_effect'],
-      keyboard: {
-        enabled: true,
-        onlyInViewport: false,
-      },
-      direction: 'horizontal',
-      allowTouchMove: settings.swiper_touch_move,
+    window.loadSwiper().then(function (Swiper) {
+      myswiper = new Swiper('.swiper', {
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true,
+        },
+        autoHeight: false,
+        //      speed: 0,
+        loop: false,
+        initialSlide: settings['start_page'] - 1,
+        effect: settings['slide_effect'],
+        keyboard: {
+          enabled: true,
+          onlyInViewport: false,
+        },
+        direction: 'horizontal',
+        allowTouchMove: settings.swiper_touch_move,
+      });
+      myswiper.on('transitionStart', function () {
+        $('.slide').removeClass('selectedbutton');
+      });
+      myswiper.on('transitionEnd', function () {
+        $('.slide' + (1 + this.activeIndex)).addClass('selectedbutton');
+      });
+      $('.slide' + settings['start_page']).addClass('selectedbutton');
+    }).catch(function (err) {
+      console.error('Unable to load Swiper', err);
     });
-    myswiper.on('transitionStart', function () {
-      $('.slide').removeClass('selectedbutton');
-    });
-    myswiper.on('transitionEnd', function () {
-      $('.slide' + (1 + this.activeIndex)).addClass('selectedbutton');
-    });
-    $('.slide' + settings['start_page']).addClass('selectedbutton');
   }, 100);
 }
 

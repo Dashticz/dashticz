@@ -7,12 +7,14 @@
 
 :root {
   --main-bg: rgba(32, 33, 42, .88);
-  --main-border-color: rgba(91, 98, 117, .42);
   --main-border-width: 1px;
   --block-gap: 3px;
   --box-border: 1px solid rgb(181, 181, 181);
   --home-bg: rgba(28, 31, 42, .74);
-  --control-border: rgb(42, 94, 151);
+  --border-color-inactive: rgb(42, 94, 151);
+  --border-color-active: rgb(112, 160, 218);
+  --border-color-block: rgb(55, 55, 55);
+  --border-color-selector: var(--border-color-inactive);
   --button-bg: rgb(29, 43, 63);
   --button-hover: rgb(35, 53, 78);
   --button-active: rgb(49, 76, 108);
@@ -46,7 +48,7 @@
   background: var(--main-bg) !important;
   background-clip: padding-box !important;
   box-shadow:
-    inset 0 0 0 var(--main-border-width) var(--main-border-color),
+    inset 0 0 0 var(--main-border-width) var(--border-color-block),
     var(--panel-shadow) !important;
 }
 
@@ -93,7 +95,7 @@
 
 .transbg .btn {
   color: var(--text-inactive);
-  border: 1px solid var(--control-border) !important;
+  border: 1px solid var(--border-color-inactive) !important;
   border-radius: var(--radius-selector) !important;
   background-color: var(--button-bg) !important;
   transition: color .2s ease, background-color .2s ease;
@@ -109,14 +111,22 @@
 .transbg .btn:active,
 .transbg .btn[aria-pressed='true'] {
   color: var(--text-normal) !important;
+  border-color: var(--border-color-active) !important;
   background-color: var(--button-active) !important;
 }
 
 .transbg select {
   color: var(--text-normal) !important;
-  border: 1px solid var(--control-border) !important;
+  border: 1px solid var(--border-color-selector) !important;
   border-radius: var(--radius-selector) !important;
   background-color: var(--selector-bg) !important;
+}
+
+.transbg select:focus,
+.transbg select:active {
+  border-color: var(--border-color-selector) !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .transbg select option {

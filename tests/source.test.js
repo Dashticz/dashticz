@@ -250,15 +250,21 @@ test('modern dark theme is portable and documented', () => {
   const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
 
   assert.match(theme, /--main-bg/);
-  assert.match(theme, /--main-border-color: rgba\(91, 98, 117, \.42\)/);
   assert.match(theme, /--main-border-width: 1px/);
   assert.match(theme, /--block-gap: 3px/);
+  assert.match(theme, /--border-color-inactive: rgb\(42, 94, 151\)/);
+  assert.match(theme, /--border-color-active: rgb\(112, 160, 218\)/);
+  assert.match(theme, /--border-color-block: var\(--border-color-active\)/);
+  assert.match(theme, /--border-color-selector: var\(--border-color-inactive\)/);
   assert.match(theme, /border: var\(--block-gap\) solid transparent !important/);
-  assert.match(theme, /inset 0 0 0 var\(--main-border-width\) var\(--main-border-color\)/);
+  assert.match(theme, /inset 0 0 0 var\(--main-border-width\) var\(--border-color-block\)/);
   assert.match(theme, /--radius-border: 16px/);
-  assert.match(theme, /--control-border: rgb\(42, 94, 151\)/);
+  assert.match(theme, /\.transbg \.btn[\s\S]*border: 1px solid var\(--border-color-inactive\) !important/);
   assert.match(theme, /\.transbg \.btn\.active/);
+  assert.match(theme, /border-color: var\(--border-color-active\) !important/);
   assert.match(theme, /\.transbg select/);
+  assert.match(theme, /\.transbg select[\s\S]*border: 1px solid var\(--border-color-selector\) !important/);
+  assert.match(theme, /\.transbg select:focus,[\s\S]*border-color: var\(--border-color-selector\) !important/);
   assert.doesNotMatch(theme, /linear-gradient/);
   assert.match(theme, /\.mh \.btn\.active/);
   assert.match(theme, /\.transbg\.titlegroups/);

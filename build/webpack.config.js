@@ -10,6 +10,7 @@ module.exports = {
   },
   output: {
     filename: '[name].js',
+    chunkFilename: '[name].[contenthash:8].js',
     path: path.resolve(rootDir, 'dist'),
   },
   module: {
@@ -33,7 +34,7 @@ module.exports = {
         test: /\.css$/,
         use: [
           {
-            loader: 'style-loader',
+            loader: MiniCssExtractPlugin.loader,
           },
           {
             loader: 'css-loader',
@@ -81,10 +82,20 @@ module.exports = {
     minimizer: [
       new TerserPlugin({
         terserOptions: {
-          keep_classnames: true,
-          keep_fnames: true,
+          keep_classnames: false,
+          keep_fnames: false,
         },
       }),
     ],
+    splitChunks: {
+      chunks: 'async',
+      cacheGroups: {
+        vendors: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          reuseExistingChunk: true,
+        },
+      },
+    },
   },
 };
