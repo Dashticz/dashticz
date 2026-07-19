@@ -288,6 +288,8 @@ test('settings modal uses compact Bootstrap 5 controls and aligned help icons', 
   assert.match(settings, /class="settings-brand"/);
   assert.match(settings, /img\/favicon\/app-icon-192x192\.png/);
   assert.match(settings, /window\.bootstrap\.Tooltip/);
+  assert.match(settings, /data-bs-trigger="click"/);
+  assert.match(settings, /data-bs-custom-class="settings-tooltip"/);
   assert.doesNotMatch(settings, /material-switch/);
 
   assert.match(simpleblock, /data-bs-target="#settingspopup"/);
@@ -298,8 +300,11 @@ test('settings modal uses compact Bootstrap 5 controls and aligned help icons', 
   assert.match(styles, /\.settings-switch \.form-check-input/);
   assert.match(styles, /width: 38px;/);
   assert.match(styles, /height: 20px;/);
-  assert.match(styles, /width: 32ch;/);
+  assert.match(styles, /width: 40ch;/);
   assert.match(styles, /font-size: 15px;/);
+  assert.match(styles, /background: #eef1f4;/);
+  assert.match(styles, /color: #0b6fc2;/);
+  assert.match(styles, /\.settings-tooltip[\s\S]*z-index: 10050;/);
   assert.match(styles, /\.settings-help \.fas/);
   assert.doesNotMatch(styles, /\.material-switch/);
 });

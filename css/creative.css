@@ -337,8 +337,10 @@ next css sets the default height of the frame popup
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-bottom: 10px;
+  padding: 10px 12px;
   border-bottom: 1px solid #dee2e6;
+  border-radius: 6px 6px 0 0;
+  background: #eef1f4;
 }
 
 .settings-tabs {
@@ -358,7 +360,7 @@ next css sets the default height of the frame popup
   border: 0;
   border-radius: 6px;
   color: #343a40;
-  background: #f1f3f5;
+  background: rgba(255, 255, 255, .7);
   font-size: 15px;
   line-height: 1.2;
   white-space: nowrap;
@@ -398,7 +400,7 @@ next css sets the default height of the frame popup
 
 .settings-row {
   display: grid;
-  grid-template-columns: minmax(230px, 320px) minmax(0, 32ch) 26px;
+  grid-template-columns: minmax(230px, 320px) minmax(0, 40ch) 26px;
   align-items: center;
   gap: 10px;
   min-height: 42px;
@@ -420,7 +422,7 @@ next css sets the default height of the frame popup
 
 #settingspopup .settings-control .form-control,
 #settingspopup .settings-control .form-select {
-  width: 32ch;
+  width: 40ch;
   max-width: 100%;
   min-height: 34px;
   padding: 5px 10px;
@@ -464,21 +466,25 @@ next css sets the default height of the frame popup
   padding: 0;
   border: 0;
   border-radius: 50%;
-  color: #a80002;
+  color: #0b6fc2;
   background: transparent;
   cursor: help;
 }
 
 .settings-help:hover,
 .settings-help:focus-visible {
-  color: #7e0001;
-  background: rgba(168, 0, 2, .09);
+  color: #084f8a;
+  background: rgba(11, 111, 194, .11);
   outline: none;
 }
 
 .settings-help .fas {
   margin: 0 !important;
   font-size: 14px !important;
+}
+
+.settings-tooltip {
+  z-index: 10050;
 }
 
 .settings-static {

@@ -1058,7 +1058,8 @@ function renderSettingsRow(settingName, definition) {
     var help = escapeSettingsHtml(definition.help);
     html +=
       '<button type="button" class="settings-help" data-bs-toggle="tooltip" ' +
-      'data-bs-placement="left" title="' +
+      'data-bs-trigger="click" data-bs-placement="right" ' +
+      'data-bs-custom-class="settings-tooltip" title="' +
       help +
       '" aria-label="' +
       help +
