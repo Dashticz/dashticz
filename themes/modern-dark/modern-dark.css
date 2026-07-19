@@ -13,7 +13,7 @@
   --home-bg: rgba(28, 31, 42, .74);
   --border-color-inactive: rgb(42, 94, 151);
   --border-color-active: rgb(112, 160, 218);
-  --border-color-block: rgb(55, 55, 55);
+  --border-color-block: rgb(60, 60, 60);
   --border-color-selector: var(--border-color-inactive);
   --button-bg: rgb(29, 43, 63);
   --button-hover: rgb(35, 53, 78);
