@@ -274,7 +274,7 @@
 }
 
 
-/* BEGIN || Popup modal settings (need to sort and arrange first) */
+/* BEGIN || Settings modal */
 
 .nav-pills>li>a {
   border-radius: 6px 6px 0px 0px;
@@ -321,6 +321,212 @@ next css sets the default height of the frame popup
 .modal-body .glyphicon {
   color: #a80002;
   cursor: help;
+}
+
+#settingspopup .modal-dialog-settings {
+  width: min(1100px, calc(100vw - 2rem));
+  max-width: 1100px;
+  min-width: 0;
+}
+
+#settingspopup .modal-body {
+  padding: 18px 22px 12px;
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.settings-tabs {
+  display: flex;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.settings-tabs .nav-link {
+  padding: 7px;
+  border: 0;
+  border-radius: 6px;
+  color: #343a40;
+  background: #f1f3f5;
+  font-size: 13px;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.settings-tabs .nav-link:hover,
+.settings-tabs .nav-link:focus-visible {
+  color: #000;
+  background: #e2e6ea;
+}
+
+.settings-tabs .nav-link.active {
+  color: #fff;
+  background: #495057;
+}
+
+.settings-brand {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  color: #343a40;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: .02em;
+}
+
+.settings-brand img {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+}
+
+.settings-tab-content {
+  padding-top: 14px;
+}
+
+.settings-row {
+  display: grid;
+  grid-template-columns: minmax(190px, .95fr) minmax(260px, 1.15fr) 30px;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, .055);
+}
+
+.settings-label {
+  margin: 0;
+  color: #343a40;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.settings-control {
+  min-width: 0;
+}
+
+#settingspopup .settings-control .form-control,
+#settingspopup .settings-control .form-select {
+  width: 100%;
+  max-width: none;
+  min-height: 34px;
+  padding: 5px 10px;
+  color: #343a40 !important;
+  font-size: 14px;
+}
+
+.settings-control-switch {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+}
+
+#settingspopup .settings-switch {
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+#settingspopup .settings-switch .form-check-input {
+  float: none;
+  width: 30px;
+  height: 16px;
+  margin: 0;
+  border-color: #adb5bd;
+  cursor: pointer;
+}
+
+.settings-help-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+}
+
+.settings-help {
+  display: inline-grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  color: #a80002;
+  background: transparent;
+  cursor: help;
+}
+
+.settings-help:hover,
+.settings-help:focus-visible {
+  color: #7e0001;
+  background: rgba(168, 0, 2, .09);
+  outline: none;
+}
+
+.settings-help .fas {
+  margin: 0 !important;
+  font-size: 16px !important;
+}
+
+.settings-static {
+  padding: 12px 0;
+  color: #343a40;
+  font-size: 13px;
+}
+
+@media (max-width: 767.98px) {
+  #settingspopup .modal-dialog-settings {
+    width: calc(100vw - 1rem);
+  }
+
+  #settingspopup .modal-body {
+    padding: 12px;
+  }
+
+  .settings-header {
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .settings-brand span {
+    display: none;
+  }
+
+  .settings-brand img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .settings-row {
+    grid-template-columns: minmax(0, 1fr) 30px;
+    gap: 4px 8px;
+    padding: 7px 0;
+  }
+
+  .settings-label {
+    grid-column: 1 / -1;
+  }
+
+  .settings-control {
+    grid-column: 1;
+  }
+
+  .settings-help-slot {
+    grid-column: 2;
+  }
 }
 
 
@@ -396,56 +602,7 @@ next css sets the default height of the frame popup
 
 
 
-.material-switch>input[type='checkbox'] {
-  display: none;
-}
-
-.material-switch>label {
-  cursor: pointer;
-  height: 0px;
-  position: relative;
-  width: 40px;
-}
-
-.material-switch>label::before {
-  background: rgb(0, 0, 0);
-  box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.5);
-  border-radius: 8px;
-  content: '';
-  height: 16px;
-  margin-top: 0px;
-  position: absolute;
-  opacity: 0.3;
-  transition: all 0.4s ease-in-out;
-  width: 40px;
-}
-
-.material-switch>label::after {
-  background: rgb(255, 255, 255);
-  border-radius: 16px;
-  box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
-  content: '';
-  height: 24px;
-  left: -4px;
-  margin-top: 0px;
-  position: absolute;
-  top: -4px;
-  transition: all 0.3s ease-in-out;
-  width: 24px;
-}
-
-.material-switch>input[type='checkbox']:checked+label::before {
-  background: inherit;
-  opacity: 0.5;
-}
-
-.material-switch>input[type='checkbox']:checked+label::after {
-  background: inherit;
-  left: 20px;
-}
-
-
-/* END || Popup modal settings (need to sort and arrange first) */
+/* END || Settings modal */
 
 /* .log */
 

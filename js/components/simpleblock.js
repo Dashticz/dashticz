@@ -129,12 +129,15 @@ var DT_simpleblock = (function () {
     var content =
       '<div class="col-xs-' +
       me.block.width +
-      ' text-right" data-toggle="modal">';
+      ' text-right">';
     for (var i = 0; i < icons.length; i++) {
       switch (icons[i]) {
         case 'settings':
           content +=
-            '<span class="settings settingsicon" data-id="settings" data-target="#settingspopup" data-toggle="modal"><em class="fas fa-cog"></em> </span>';
+            '<span class="settings settingsicon" data-id="settings" ' +
+            'data-bs-target="#settingspopup" data-bs-toggle="modal" ' +
+            'role="button" aria-label="Open settings">' +
+            '<i class="fas fa-cog" aria-hidden="true"></i></span>';
           break;
 
         case 'fullscreen':

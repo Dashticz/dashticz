@@ -978,6 +978,96 @@ if (settings['use_fahrenheit'] === 1) _TEMP_SYMBOL = '°F';
 var phpversion = 'Not installed';
 var _PHP_INSTALLED = false;
 
+function escapeSettingsHtml(value) {
+  return String(value === null || typeof value === 'undefined' ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function renderSettingsRow(settingName, definition) {
+  if (typeof definition.type === 'undefined') {
+    return '<div class="settings-static">' + definition.title + '</div>';
+  }
+
+  var controlId = 'setting-' + settingName;
+  var value = typeof settings[settingName] === 'undefined'
+    ? ''
+    : settings[settingName];
+  var html = '<div class="settings-row">';
+  html +=
+    '<label class="settings-label" for="' +
+    escapeSettingsHtml(controlId) +
+    '">' +
+    definition.title +
+    '</label>';
+  html +=
+    '<div class="settings-control' +
+    (definition.type === 'checkbox' ? ' settings-control-switch' : '') +
+    '">';
+
+  if (definition.type === 'text') {
+    html +=
+      '<input class="form-control" type="text" id="' +
+      escapeSettingsHtml(controlId) +
+      '" name="' +
+      escapeSettingsHtml(settingName) +
+      '" value="' +
+      escapeSettingsHtml(value) +
+      '">';
+  }
+
+  if (definition.type === 'checkbox') {
+    html += '<div class="form-check form-switch settings-switch">';
+    html +=
+      '<input class="form-check-input" type="checkbox" id="' +
+      escapeSettingsHtml(controlId) +
+      '" name="' +
+      escapeSettingsHtml(settingName) +
+      '" value="1"' +
+      (Number(value) === 1 ? ' checked' : '') +
+      '>';
+    html += '</div>';
+  }
+
+  if (definition.type === 'select') {
+    html +=
+      '<select id="' +
+      escapeSettingsHtml(controlId) +
+      '" name="' +
+      escapeSettingsHtml(settingName) +
+      '" class="form-select">';
+    html += '<option value=""></option>';
+    for (var optionValue in definition.options) {
+      html +=
+        '<option value="' +
+        escapeSettingsHtml(optionValue) +
+        '"' +
+        (value == optionValue ? ' selected' : '') +
+        '>' +
+        escapeSettingsHtml(definition.options[optionValue]) +
+        '</option>';
+    }
+    html += '</select>';
+  }
+
+  html += '</div><div class="settings-help-slot">';
+  if (typeof definition.help !== 'undefined') {
+    var help = escapeSettingsHtml(definition.help);
+    html +=
+      '<button type="button" class="settings-help" data-bs-toggle="tooltip" ' +
+      'data-bs-placement="left" title="' +
+      help +
+      '" aria-label="' +
+      help +
+      '"><i class="fas fa-info-circle" aria-hidden="true"></i></button>';
+  }
+  html += '</div></div>';
+  return html;
+}
+
 // eslint-disable-next-line no-unused-vars
 function loadSettings() {
   return $.ajax({
@@ -1007,116 +1097,72 @@ function loadSettings() {
       } else _CORS_PATH = settings['default_cors_url'];
 
       var html =
-        '<div class="modal fade" id="settingspopup" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
-      html += '<div class="modal-dialog modal-dialog-settings">';
+        '<div class="modal fade" id="settingspopup" tabindex="-1" aria-labelledby="settings-title" aria-hidden="true">';
+      html +=
+        '<div class="modal-dialog modal-xl modal-dialog-scrollable modal-dialog-settings">';
       html += '<div class="modal-content">';
-      html += '<div class="modal-body"><br />';
-      html += '<div class="row">';
+      html += '<div class="modal-body">';
+      html +=
+        '<h2 class="visually-hidden" id="settings-title">Dashticz settings</h2>';
+      html += '<div class="settings-header">';
 
-      html += '<ul class="nav nav-pills">';
+      html += '<ul class="nav nav-pills settings-tabs" role="tablist">';
       var first = true;
       for (var b in settingList) {
-        var c = '';
-        if (first) {
-          c = ' class="active"';
-          first = false;
-        }
         html +=
-          '<li' +
-          c +
-          '><a data-toggle="pill" href="#tabs-' +
+          '<li class="nav-item" role="presentation"><button class="nav-link' +
+          (first ? ' active' : '') +
+          '" id="settings-tab-' +
           b +
+          '" data-bs-toggle="pill" data-bs-target="#tabs-' +
+          b +
+          '" type="button" role="tab" aria-controls="tabs-' +
+          b +
+          '" aria-selected="' +
+          (first ? 'true' : 'false') +
           '">' +
-          settingList[b]['title'] +
-          '</a></li>';
+          escapeSettingsHtml(settingList[b]['title']) +
+          '</button></li>';
+        first = false;
       }
       html += '</ul>';
+      html +=
+        '<div class="settings-brand"><img src="img/favicon/app-icon-192x192.png" ' +
+        'width="38" height="38" alt=""><span>Dashticz</span></div>';
+      html += '</div>';
 
-      html += '<div class="tab-content"><br /><br />';
+      html += '<div class="tab-content settings-tab-content">';
 
       first = true;
       for (b in settingList) {
-        c = '';
-        if (first) {
-          c = ' active in';
-          first = false;
-        }
-        html += '<div class="tab-pane fade' + c + '" id="tabs-' + b + '">';
-        for (s in settingList[b]) {
+        html +=
+          '<div class="tab-pane fade' +
+          (first ? ' show active' : '') +
+          '" id="tabs-' +
+          b +
+          '" role="tabpanel" aria-labelledby="settings-tab-' +
+          b +
+          '" tabindex="0">';
+        for (var s in settingList[b]) {
           if (s !== 'title') {
-            html += '<div class="row">';
-            html +=
-              '<div class="col-xs-5" style="margin-bottom:1px;"><label style="margin-top: 6px;font-size: 12px;">' +
-              settingList[b][s]['title'] +
-              '</label>';
-            if (typeof settingList[b][s]['help'] !== 'undefined')
-              html +=
-                '<span class="glyphicon fas fa-info-circle" title="' +
-                settingList[b][s]['help'] +
-                '"></span>';
-            html += '</div>';
-            html += '<div class="col-xs-7" style="margin-bottom:1px;">';
-            var val = '';
-            if (typeof settings[s] !== 'undefined') val = settings[s];
-            if (settingList[b][s]['type'] === 'text')
-              html +=
-                '<div><input class="form-control" type="text" name="' +
-                s +
-                '" value="' +
-                val +
-                '" style="max-width:75%;" /></div>';
-            if (settingList[b][s]['type'] === 'checkbox') {
-              var sel = '';
-              if (settings[s] == 1) sel = 'checked';
-              html +=
-                '<div class="material-switch pull-left"><input type="checkbox" id="' +
-                s +
-                '" name="' +
-                s +
-                '" value="1" ' +
-                sel +
-                ' style="margin-top:11px;" /><label for="' +
-                s +
-                '" class="label-success"></label></div>';
-            }
-            if (settingList[b][s]['type'] === 'select') {
-              html +=
-                '<select name="' +
-                s +
-                '" class="form-control" style="max-width:75%;padding-left: 8px;color: #555 !important;">';
-              html += '<option value=""></option>';
-              for (var o in settingList[b][s]['options']) {
-                sel = '';
-                if (settings[s] == o) sel = 'selected';
-                html +=
-                  '<option value="' +
-                  o +
-                  '" ' +
-                  sel +
-                  '>' +
-                  settingList[b][s]['options'][o] +
-                  '</option>';
-              }
-              html += '</select>';
-            }
-            html += '</div>';
-            html += '</div>';
+            html += renderSettingsRow(s, settingList[b][s]);
           }
         }
         html += '</div>';
+        first = false;
       }
       html += '</div>';
       html +=
-        '</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-dismiss="modal">' +
+        '</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
         language.settings.close +
         '</button> ';
       if (settings['loginEnabled'] == true)
         html +=
-          '<button onClick="logout()" type="button" class="btn btn-primary" data-dismiss="modal">' +
+          '<button onClick="logout()" type="button" class="btn btn-primary" data-bs-dismiss="modal">' +
           language.settings.general.logout +
           '</button> ';
       html +=
-        '<button onClick="saveSettings();" type="button" class="btn btn-primary" data-dismiss="modal">' +
+        '<button onClick="saveSettings();" type="button" class="btn btn-primary" data-bs-dismiss="modal">' +
         language.settings.save +
         '</button></div>';
       html += '</div>';
@@ -1129,15 +1175,22 @@ function loadSettings() {
 
         $('#php_version').html(phpversion);
 
+        if (window.bootstrap && window.bootstrap.Tooltip) {
+          $('#settingspopup [data-bs-toggle="tooltip"]').each(function () {
+            window.bootstrap.Tooltip.getOrCreateInstance(this);
+          });
+        }
+
         if (typeof settings['domoticz_ip'] === 'undefined') {
           if ($('.settingsicon').length == 0)
             $('body').prepend(
-              '<div data-id="settings" class="settings settingsicon col-xs-12 text-right" data-toggle="modal" data-target="#settingspopup"><em class="fas fa-cog" /><div>'
+              '<button type="button" data-id="settings" class="settings settingsicon" ' +
+              'data-bs-toggle="modal" data-bs-target="#settingspopup" ' +
+              'aria-label="Open settings"><i class="fas fa-cog" aria-hidden="true"></i></button>'
             );
           $('.settingsicon').trigger('click');
         }
       }, 100);
-      $('#tabs').tabs();
     });
 }
 
@@ -1187,11 +1240,13 @@ function saveSettings() {
 
   function showSettingsOutput(saved, errorMessage) {
       var html =
-        '<div class="modal fade" id="settingsoutput" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
-      html += '<div class="modal-dialog modal-dialog-settings">';
+        '<div class="modal fade" id="settingsoutput" tabindex="-1" aria-labelledby="settings-output-title" aria-hidden="true">';
+      html +=
+        '<div class="modal-dialog modal-dialog-scrollable modal-dialog-settings">';
       html += '<div class="modal-content">';
       html +=
-        '<div class="modal-body" style="padding:20px;font-size:14px;"><br>';
+        '<div class="modal-body" style="padding:20px;font-size:14px;">' +
+        '<h2 class="visually-hidden" id="settings-output-title">Settings output</h2>';
       html +=
         '<strong>' +
         (saved
@@ -1207,13 +1262,15 @@ function saveSettings() {
       html += '<textarea style="width:100%;height:500px;" id="codeToCopy"></textarea>';
 
       html +=
-        '</div><div class="modal-footer"><button onClick="window.location.href=window.location.href;" type="button" class="btn btn-primary" data-dismiss="modal">' +
+        '</div><div class="modal-footer"><button onClick="window.location.href=window.location.href;" type="button" class="btn btn-primary" data-bs-dismiss="modal">' +
         language.settings.close_reload +
         '</button></div>';
       html += '</div>';
       html += '</div>';
       html +=
-        '</div><div class="settingsoutput" data-toggle="modal" data-target="#settingsoutput"><em class="fas fa-cog" /><div>';
+        '</div><button type="button" class="settingsoutput" hidden ' +
+        'data-bs-toggle="modal" data-bs-target="#settingsoutput" ' +
+        'aria-label="Open settings output"></button>';
 
       $('body').append(html);
       $('#codeToCopy').val(alertSettings);
