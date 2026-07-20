@@ -1,8 +1,10 @@
 {
-"version": "3.14.1.5",
+"version": "3.20.0",
 "branch": "beta",
-"last_changes": "Improved styling of blinds stop button",
+"last_changes": "Merged MadPatrick fork: Bootstrap 5 compatibility, modernized build system and theme overhaul",
 "changelog" : {
+            "3.20.0": "MadPatrick fork: modernized stable release with Bootstrap 5 compatibility",
+            "3.14.2.0": "Fix for Domoticz connection",
             "3.14.1.4": "Fix for Logitech Media Server",
             "3.14.1.3": "Fix for default switch block",
             "3.14.1.2": "Playwright test",

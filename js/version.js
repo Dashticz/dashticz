@@ -16,8 +16,30 @@ var loginCredentials = '';
 //var dzVents = '';
 // eslint-disable-next-line no-unused-vars
 //var python = '';
-// eslint-disable-next-line no-unused-vars
 
+function compareVersions(left, right) {
+  var leftParts = String(left || '')
+    .replace(/^v/i, '')
+    .split('.')
+    .map(function (part) {
+      return parseInt(part, 10) || 0;
+    });
+  var rightParts = String(right || '')
+    .replace(/^v/i, '')
+    .split('.')
+    .map(function (part) {
+      return parseInt(part, 10) || 0;
+    });
+  var length = Math.max(leftParts.length, rightParts.length);
+
+  for (var index = 0; index < length; index++) {
+    var leftPart = leftParts[index] || 0;
+    var rightPart = rightParts[index] || 0;
+    if (leftPart > rightPart) return 1;
+    if (leftPart < rightPart) return -1;
+  }
+  return 0;
+}
 // eslint-disable-next-line no-unused-vars
 function initVersion() {
   return $.ajax({
@@ -45,7 +67,12 @@ function initVersion() {
           success: function (data) {
             var message = 'Latest changes made: ' + data.last_changes;
 
-            if (dashticz_version !== data.version) {
+            var versionComparison = compareVersions(
+              data.version,
+              dashticz_version
+            );
+
+            if (versionComparison > 0) {
               moved = true;
               newVersion =
                 '<br><i>Version ' +
@@ -55,9 +82,12 @@ function initVersion() {
                 '" target="_blank">Click here to download</a></i><br><i>' +
                 message +
                 '</i>';
-            } else if (dashticz_version === data.version) {
+            } else {
               moved = false;
-              newVersion = '<br><i>You are running latest version.</i>';
+              newVersion =
+                versionComparison < 0
+                  ? '<br><i>You are running a newer local version.</i>'
+                  : '<br><i>You are running latest version.</i>';
             }
             if (moved == true) {
               infoMessage(
@@ -76,6 +106,10 @@ function initVersion() {
         });
       }
     })
+    .then(null, function () {
+      console.log('Error loading version info. Skipping version check');
+      return $.Deferred().resolve();
+    });
 }
 
 //          'Error while requesting Domoticz version. Possible causes:<br> Domoticz offline<br>Domoticz IP incorrect in CONFIG.js<br>User credentials incorrect in CONFIG.js<br>Browser IP not whitelisted in Domoticz.';

@@ -1,0 +1,299 @@
+/*
+ * Dashticz Modern Dark theme
+ *
+ * General-purpose styling only. Personal block IDs, device names, URLs and
+ * dashboard-specific layout rules belong in custom/custom.css.
+ */
+
+:root {
+  --main-bg: rgba(32, 33, 42, .88);
+  --main-border-width: 1px;
+  --block-gap: 3px;
+  --box-border: 1px solid rgb(181, 181, 181);
+  --home-bg: rgba(28, 31, 42, .74);
+  --border-color-inactive: rgb(42, 94, 151);
+  --border-color-active: rgb(112, 160, 218);
+  --border-color-block: rgb(60, 60, 60);
+  --border-color-selector: var(--border-color-inactive);
+  --button-bg: rgb(29, 43, 63);
+  --button-hover: rgb(35, 53, 78);
+  --button-active: rgb(49, 76, 108);
+  --text-light: rgb(255, 255, 255);
+  --text-normal: rgb(255, 255, 255);
+  --text-inactive: rgba(188, 188, 188, .5);
+  --warning-red: rgb(255, 0, 0);
+  --selector-bg: rgb(29, 43, 63);
+  --blocktitle: rgba(130, 130, 130, .2);
+  --panel-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+  --radius-border: 16px;
+  --radius-selector: 10px;
+  --font-small: 18px;
+  --font-large: 24px;
+  --border-radius: 10px;
+  --text-title: lightyellow;
+  --text-status: lightgreen;
+  --standby-font: 22px;
+  --height-block-small: 100px;
+  --height-block-default: 120px;
+  --height-block-medium: 130px;
+  --height-block-large: 160px;
+  --height-block-standby-clock: 200px;
+}
+
+.transbg {
+  padding-top: 8px !important;
+  padding-bottom: 6px !important;
+  border: var(--block-gap) solid transparent !important;
+  border-radius: var(--radius-border) !important;
+  background: var(--main-bg) !important;
+  background-clip: padding-box !important;
+  box-shadow:
+    inset 0 0 0 var(--main-border-width) var(--border-color-block),
+    var(--panel-shadow) !important;
+}
+
+.transbg.titlegroups,
+.titlegroups,
+.transbg.blocktitle,
+.blocktitle,
+.miniclock {
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--blocktitle) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.mh {
+  --col1width: 60px;
+  --col2width: 60px;
+  height: 115px !important;
+  text-align: right !important;
+}
+
+.right2col {
+  padding-right: calc(var(--col1width) + var(--col2width) + 8px);
+}
+
+.col-button2 {
+  width: calc(var(--col1width) + var(--col2width));
+}
+
+.col-button2 .btn-number {
+  width: var(--col1width);
+}
+
+.mh .btn.stop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--col2width);
+  font-size: 20px;
+}
+
+.transbg .btn {
+  color: var(--text-inactive);
+  border: 1px solid var(--border-color-inactive) !important;
+  border-radius: var(--radius-selector) !important;
+  background-color: var(--button-bg) !important;
+  transition: color .2s ease, background-color .2s ease;
+}
+
+.transbg .btn:hover,
+.transbg .btn:focus {
+  color: var(--text-normal) !important;
+  background-color: var(--button-hover) !important;
+}
+
+.transbg .btn.active,
+.transbg .btn:active,
+.transbg .btn[aria-pressed='true'] {
+  color: var(--text-normal) !important;
+  border-color: var(--border-color-active) !important;
+  background-color: var(--button-active) !important;
+}
+
+.transbg select {
+  color: var(--text-normal) !important;
+  border: 1px solid var(--border-color-selector) !important;
+  border-radius: var(--radius-selector) !important;
+  background-color: var(--selector-bg) !important;
+}
+
+.transbg select:focus,
+.transbg select:active {
+  border-color: var(--border-color-selector) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.transbg select option {
+  color: var(--text-normal) !important;
+  background-color: var(--selector-bg) !important;
+}
+
+.mh .btn.stop {
+  color: var(--text-normal);
+  background-color: var(--warning-red) !important;
+}
+
+.mh .btn.active {
+  color: var(--text-normal);
+  background-color: var(--button-active) !important;
+}
+
+.mh .fas,
+.mh .far,
+.mh .wi {
+  font-size: 28px !important;
+}
+
+.blocktitle {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 40px !important;
+}
+
+.blocktitle .dt_title {
+  padding-top: 4px !important;
+  color: var(--text-light);
+  font-size: var(--font-large);
+  text-shadow: 4px 4px 4px #000;
+}
+
+.blocktitle img {
+  max-width: 34px !important;
+  padding-bottom: 10px !important;
+}
+
+.miniclock {
+  max-width: 100% !important;
+  height: 40px !important;
+  padding-top: 2px !important;
+  color: var(--text-light) !important;
+  font-size: var(--font-large) !important;
+  font-weight: 700 !important;
+  text-align: right !important;
+  text-shadow: 4px 4px 4px #000 !important;
+}
+
+.title,
+.state,
+.value {
+  font-size: var(--font-small) !important;
+}
+
+.title {
+  color: var(--text-title) !important;
+}
+
+.state,
+.value {
+  color: var(--text-status) !important;
+}
+
+.icon {
+  font-size: 40px !important;
+}
+
+.col-icon img,
+.icon img {
+  max-width: 65px !important;
+}
+
+.titlegroups .col-icon img.icon {
+  max-width: 34px !important;
+  height: auto !important;
+}
+
+@media (max-width: 767.98px) {
+  .titlegroups .col-icon img.icon {
+    max-width: 15px !important;
+  }
+}
+
+.battery-level {
+  margin-right: 10px !important;
+}
+
+.battery-level.fa-battery-empty,
+.battery-level.fa-battery-quarter {
+  z-index: 15;
+  color: red;
+  font-size: 20px !important;
+}
+
+.battery-level.fa-battery-half,
+.battery-level.fa-battery-three-quarters {
+  z-index: 15;
+  color: grey;
+  font-size: 20px !important;
+}
+
+.battery-level.fa-battery-full {
+  z-index: 15;
+  color: green;
+  font-size: 20px !important;
+}
+
+.battery-percentage {
+  color: white;
+}
+
+.fas.fa-chevron-up,
+.fas.fa-chevron-down {
+  color: var(--text-status) !important;
+  font-size: 40px !important;
+}
+
+.ui-slider-horizontal {
+  position: relative;
+  height: 10px !important;
+  margin-top: 20px !important;
+  border: var(--box-border) !important;
+  border-radius: var(--radius-selector) !important;
+  background-color: #6a6a6a !important;
+}
+
+.ui-slider-handle {
+  top: 50% !important;
+  width: 20px !important;
+  height: 40px !important;
+  margin-top: -20px !important;
+  border: var(--box-border) !important;
+  border-radius: 14px !important;
+  background-color: #00aaff !important;
+}
+
+.standby .screenstandby,
+.standby .block,
+.standby [data-id],
+.standby .transbg {
+  color: var(--text-light) !important;
+  border: 0 !important;
+  background: #000 !important;
+  background-clip: border-box !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.message_block {
+  visibility: visible;
+  border: 3px solid rgba(0, 0, 0, .7) !important;
+  border-radius: 1px !important;
+  background: rgba(0, 255, 0, .2) !important;
+  background-clip: border-box;
+}
+
+.warning_block {
+  z-index: 15;
+  visibility: visible;
+  border: 1px solid white !important;
+  border-radius: 15px !important;
+  background: var(--warning-red) !important;
+  background-clip: border-box;
+}

@@ -1,0 +1,223 @@
+// Bootstrap 3 class aliases still emitted by Dashticz and user dashboards.
+.pull-left { float: left !important; }
+.pull-right { float: right !important; }
+.text-left { text-align: left !important; }
+.text-right { text-align: right !important; }
+.center-block {
+  display: block;
+  margin-right: auto;
+  margin-left: auto;
+}
+.img-responsive {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.btn-default {
+  --bs-btn-color: #333;
+  --bs-btn-bg: #fff;
+  --bs-btn-border-color: #ccc;
+  --bs-btn-hover-color: #333;
+  --bs-btn-hover-bg: #e6e6e6;
+  --bs-btn-hover-border-color: #adadad;
+  --bs-btn-active-color: #333;
+  --bs-btn-active-bg: #d4d4d4;
+  --bs-btn-active-border-color: #8c8c8c;
+}
+.btn-xs {
+  padding: 1px 5px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 3px;
+}
+.btn-block {
+  display: block;
+  width: 100%;
+}
+
+.close {
+  float: right;
+  padding: 0;
+  color: #000;
+  background: transparent;
+  border: 0;
+  font-size: 21px;
+  font-weight: 700;
+  line-height: 1;
+  opacity: .5;
+  text-shadow: 0 1px 0 #fff;
+}
+.close:hover,
+.close:focus {
+  color: #000;
+  cursor: pointer;
+  opacity: .75;
+  text-decoration: none;
+}
+
+// Bootstrap 5 calls the smallest grid classes col-*. Dashticz and existing
+// CONFIG.js files use the Bootstrap 3 col-xs-* spelling.
+.col-xs-1, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6,
+.col-xs-7, .col-xs-8, .col-xs-9, .col-xs-10, .col-xs-11, .col-xs-12 {
+  position: relative;
+  float: left;
+  flex: 0 0 auto;
+  min-height: 1px;
+  padding-right: calc(var(--bs-gutter-x) * .5);
+  padding-left: calc(var(--bs-gutter-x) * .5);
+}
+.col-xs-1 { width: 8.33333333%; }
+.col-xs-2 { width: 16.66666667%; }
+.col-xs-3 { width: 25%; }
+.col-xs-4 { width: 33.33333333%; }
+.col-xs-5 { width: 41.66666667%; }
+.col-xs-6 { width: 50%; }
+.col-xs-7 { width: 58.33333333%; }
+.col-xs-8 { width: 66.66666667%; }
+.col-xs-9 { width: 75%; }
+.col-xs-10 { width: 83.33333333%; }
+.col-xs-11 { width: 91.66666667%; }
+.col-xs-12 { width: 100%; }
+
+// These responsive rules intentionally follow col-xs. Dashticz combines
+// col-xs-12 with col-sm-*; the larger breakpoint must win, as in Bootstrap 3.
+@media (min-width: 768px) {
+  [class*="col-sm-"] { float: left; }
+  .col-sm-1 { width: 8.33333333%; }
+  .col-sm-2 { width: 16.66666667%; }
+  .col-sm-3 { width: 25%; }
+  .col-sm-4 { width: 33.33333333%; }
+  .col-sm-5 { width: 41.66666667%; }
+  .col-sm-6 { width: 50%; }
+  .col-sm-7 { width: 58.33333333%; }
+  .col-sm-8 { width: 66.66666667%; }
+  .col-sm-9 { width: 75%; }
+  .col-sm-10 { width: 83.33333333%; }
+  .col-sm-11 { width: 91.66666667%; }
+  .col-sm-12 { width: 100%; }
+}
+@media (min-width: 992px) {
+  [class*="col-md-"] { float: left; }
+  .col-md-1 { width: 8.33333333%; }
+  .col-md-2 { width: 16.66666667%; }
+  .col-md-3 { width: 25%; }
+  .col-md-4 { width: 33.33333333%; }
+  .col-md-5 { width: 41.66666667%; }
+  .col-md-6 { width: 50%; }
+  .col-md-7 { width: 58.33333333%; }
+  .col-md-8 { width: 66.66666667%; }
+  .col-md-9 { width: 75%; }
+  .col-md-10 { width: 83.33333333%; }
+  .col-md-11 { width: 91.66666667%; }
+  .col-md-12 { width: 100%; }
+}
+@media (min-width: 1200px) {
+  [class*="col-lg-"] { float: left; }
+  .col-lg-1 { width: 8.33333333%; }
+  .col-lg-2 { width: 16.66666667%; }
+  .col-lg-3 { width: 25%; }
+  .col-lg-4 { width: 33.33333333%; }
+  .col-lg-5 { width: 41.66666667%; }
+  .col-lg-6 { width: 50%; }
+  .col-lg-7 { width: 58.33333333%; }
+  .col-lg-8 { width: 66.66666667%; }
+  .col-lg-9 { width: 75%; }
+  .col-lg-10 { width: 83.33333333%; }
+  .col-lg-11 { width: 91.66666667%; }
+  .col-lg-12 { width: 100%; }
+}
+@media (min-width: 1400px) {
+  [class*="col-xl-"] { float: left; }
+  .col-xl-1 { width: 8.33333333%; }
+  .col-xl-2 { width: 16.66666667%; }
+  .col-xl-3 { width: 25%; }
+  .col-xl-4 { width: 33.33333333%; }
+  .col-xl-5 { width: 41.66666667%; }
+  .col-xl-6 { width: 50%; }
+  .col-xl-7 { width: 58.33333333%; }
+  .col-xl-8 { width: 66.66666667%; }
+  .col-xl-9 { width: 75%; }
+  .col-xl-10 { width: 83.33333333%; }
+  .col-xl-11 { width: 91.66666667%; }
+  .col-xl-12 { width: 100%; }
+}
+@media (min-width: 1600px) {
+  [class*="col-xxl-"] { float: left; }
+  .col-xxl-1 { width: 8.33333333%; }
+  .col-xxl-2 { width: 16.66666667%; }
+  .col-xxl-3 { width: 25%; }
+  .col-xxl-4 { width: 33.33333333%; }
+  .col-xxl-5 { width: 41.66666667%; }
+  .col-xxl-6 { width: 50%; }
+  .col-xxl-7 { width: 58.33333333%; }
+  .col-xxl-8 { width: 66.66666667%; }
+  .col-xxl-9 { width: 75%; }
+  .col-xxl-10 { width: 83.33333333%; }
+  .col-xxl-11 { width: 91.66666667%; }
+  .col-xxl-12 { width: 100%; }
+}
+
+// Bootstrap 3 button groups visually hid native radio/checkbox inputs.
+.btn-group[data-toggle="buttons"] > .btn > input,
+.btn-group[data-bs-toggle="buttons"] > .btn > input,
+.btn-group-vertical[data-toggle="buttons"] > .btn > input,
+.btn-group-vertical[data-bs-toggle="buttons"] > .btn > input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+// Legacy state names used by tabs and collapsible content.
+.fade.in { opacity: 1; }
+.collapse.in { display: block; }
+.tab-content > .tab-pane.in.active { display: block; }
+.dropdown-menu.pull-right {
+  right: 0;
+  left: auto;
+}
+
+// Bootstrap 3 tabs put active on the list item; the JS adapter mirrors it.
+.nav-tabs > li,
+.nav-pills > li { float: left; }
+.nav-tabs > li > a,
+.nav-pills > li > a {
+  display: block;
+  padding: 10px 15px;
+  text-decoration: none;
+}
+.nav-tabs > li.active > a,
+.nav-tabs > li.active > a:hover,
+.nav-tabs > li.active > a:focus {
+  color: #555;
+  cursor: default;
+  background-color: #fff;
+  border-color: #ddd #ddd transparent;
+}
+
+// Bootstrap 5 carousel aliases for the legacy camera selectors.
+.carousel-inner > .item {
+  position: relative;
+  display: none;
+  width: 100%;
+  backface-visibility: hidden;
+  transition: transform .6s ease-in-out;
+}
+.carousel-inner > .item.active,
+.carousel-inner > .item-next,
+.carousel-inner > .item-prev { display: block; }

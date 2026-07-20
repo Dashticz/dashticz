@@ -62,7 +62,7 @@ var DT_stationclock = {
     clock.minuteHandBehavoir = clockSetting(me.block.minutehandbehavior);
     clock.secondHandBehavoir = clockSetting(me.block.secondhandbehavior);
 
-    window.setInterval(function () {
+    Dashticz.setInterval(me, function () {
       clock.draw();
     }, 50);
   },

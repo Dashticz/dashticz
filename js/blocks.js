@@ -34,7 +34,6 @@ var onOffstates = [];
  */
 // eslint-disable-next-line no-unused-vars
 function getBlock(cols, c, screendiv, standby) {
-  //    if (c==='bar') debugger;
   if (typeof cols !== 'undefined') {
     var columndiv = screendiv + ' .row .col' + c;
     var colclass = '';
@@ -83,24 +82,45 @@ function addBlock2Column(columndiv, c, b) {
   previousblock = b;
   var myblockselector = Dashticz.mountNewContainer(columndiv);
   var newBlock = b;
-  if (typeof b !== 'object') newBlock = convertBlock(b, c);
-  if (c === 'popup') newBlock.isPopup = true;
-  if (newBlock.blocks) {
-    newBlock.blocks.forEach(function (aBlock) {
-      addBlock2Column(myblockselector, '', aBlock);
-    });
-    $(myblockselector).attr('data-id', newBlock.key);
-    return;
-  }
-  if (Array.isArray(newBlock)) {
-    newBlock.forEach(function (aBlock) {
-      addBlock2Column(myblockselector, '', aBlock);
-    });
-    return;
-  }
+  try {
+    if (typeof b !== 'object') newBlock = convertBlock(b, c);
+    if (c === 'popup') newBlock.isPopup = true;
+    if (newBlock.blocks) {
+      newBlock.blocks.forEach(function (aBlock) {
+        addBlock2Column(myblockselector, '', aBlock);
+      });
+      $(myblockselector).attr('data-id', newBlock.key);
+      return;
+    }
+    if (Array.isArray(newBlock)) {
+      newBlock.forEach(function (aBlock) {
+        addBlock2Column(myblockselector, '', aBlock);
+      });
+      return;
+    }
 
-  if (!Dashticz.mount(myblockselector, newBlock))
-    Dashticz.mountDefaultBlock(myblockselector, newBlock);
+    if (!Dashticz.mount(myblockselector, newBlock))
+      Dashticz.mountDefaultBlock(myblockselector, newBlock);
+  } catch (error) {
+    renderUnavailableBlock(myblockselector, newBlock, b, error);
+  }
+}
+
+function renderUnavailableBlock(mountPoint, block, key, error) {
+  var blockConfig = block && !Array.isArray(block) ? block : {};
+  var blockKey = blockConfig.key || String(key);
+  var title = blockConfig.title || blockKey;
+  var width = blockConfig.width || 4;
+  var $fallback = $('<div>')
+    .attr('data-id', blockKey)
+    .addClass(
+      'mh transbg dt_block block_unavailable col-xs-' + parseInt(width, 10)
+    )
+    .text(title);
+
+  $(mountPoint).empty().append($fallback);
+  console.error('Unable to mount block ' + blockKey, error);
+  Debug.log(Debug.ERROR, 'Unable to mount block ' + blockKey);
 }
 
 function convertBlock(blocktype, c) {
@@ -300,7 +320,6 @@ function isDomoticzDevice(key) {
     return idx;
   }
   if (typeof key === 'undefined') {
-    //    debugger;
     return false;
   }
   if (key[0] === 's' || key[0] === 'v') {
@@ -1145,7 +1164,6 @@ function loadMaps(b, map) {
 
 // eslint-disable-next-line no-unused-vars
 function getAllDevicesHandler(value) {
-  //    debugger;
   //    console.log('alldevices update');
   alldevices = Domoticz.getAllDevices();
   $('.solar').remove();
@@ -1287,7 +1305,7 @@ function getSecurityBlock(block) {
     armaway =
       '<i class="fas fa-home" title="' +
       language.switches.state_armaway +
-      '"></i><i class="fa fa-walking"></i>';
+      '"></i><i class="fas fa-person-walking"></i>';
   }
   if (device['Status'] === 'Normal') {
     da = 'warning';
@@ -1476,23 +1494,24 @@ function getSelectorSwitch(block) {
         ) {
           var st = '';
           if (nv.value * 10 == parseFloat(device['Level'])) st = 'active';
+          var checked = st ? ' checked' : '';
           html += '<label class="btn btn-default ' + st + '">';
           html +=
             '<input type="radio" name="options" autocomplete="off" value="' +
             nv.value * 10 +
-            '" checked>' +
+            '"' + checked + '>' +
             nv.name;
           html += '</label>';
         }
       }
-      html += '</select>';
       html += '</div>';
       html += '</div>';
       block.$mountPoint
         .find('.mh')
-        .off('click')
-        .on('click', '.btn-group', function (ev) {
-          var value = $(ev.target).children('input').val();
+        .off('click', '.btn-group')
+        .off('change.selectorButtons', '.btn-group input[type="radio"]')
+        .on('change.selectorButtons', '.btn-group input[type="radio"]', function () {
+          var value = $(this).val();
           slideDevice(block, value);
         });
     }

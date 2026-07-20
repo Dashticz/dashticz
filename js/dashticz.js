@@ -159,6 +159,7 @@ var Dashticz = (function () {
   }
 
   function removeBlock(id) {
+    if (!mountedBlocks[id]) return;
     mountedBlocks[id].childs.forEach(function (child) {
       removeBlock(child);
     });
@@ -193,7 +194,6 @@ var Dashticz = (function () {
       var me = createBlock(mountPoint, blockdef, special, key);
       me.$mountPoint = $(mountPoint);
       me.$mountPoint.html(getContainer(me));
-      //            console.log(me);
       renderBlock(me);
       mountedBlocks[me.mountPoint].me = me;
       if (special.run) special.run(me);
@@ -438,8 +438,12 @@ var Dashticz = (function () {
   }
 
   function isMounted(me) {
-    if (me.$mountPoint.length) return true;
-    removeBlock(me);
+    if (
+      me.$mountPoint.length &&
+      $.contains(document.documentElement, me.$mountPoint[0])
+    )
+      return true;
+    removeBlock(me.mountPoint);
     return false;
   }
 
@@ -461,21 +465,27 @@ var Dashticz = (function () {
 
   function _subscribeDevice(me, idx, getCurrent, callback) {
     var unsubscribe = Domoticz.subscribe(idx, getCurrent, function (data) {
-      if (isMounted(me)) callback(data);
+      if (isMounted(me)) {
+        try {
+          callback(data);
+        } catch (error) {
+          console.error('Device update failed for block ' + me.key, error);
+          Debug.log(Debug.ERROR, 'Device update failed for block ' + me.key);
+        }
+      }
     });
     me.callbacks.subscriptionList.push(unsubscribe);
     return unsubscribe;
   }
 
   function isAvailable() {
-      console.log('check domoticzIsAvailable');
       return $.get({
         url: window.location.href,
         type: 'GET',
         async: true,
         error: function (jqXHR, textStatus) {
           if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
-            console.log('Domoticz request cancelled');
+            Debug.log('Domoticz request cancelled');
           } else {
             if (jqXHR.status == 401) {
               return 'Domoticz authorizaton error';
@@ -487,12 +497,9 @@ var Dashticz = (function () {
               errorTxt
             );
           }
-          console.log('No Domoticz');
           return textStatus;
         },
       }).then(function (res) {
-        //                        console.log('ajax resolved ' + query);
-        console.log('result: ', res);
         return !!res;
       });
   }

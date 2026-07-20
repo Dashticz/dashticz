@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Cache-control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="utf-8">
+  <base href="../">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1, user-scalable=0">
+  <meta name="description"
+    content="Dashticz - V3, Custom dashboard for Domoticz">
+  <meta name="author" content="Dashticz">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <link rel="shortcut icon" href="img/favicon/favicon.ico"
+    type="image/x-icon" />
+  <link rel="apple-touch-icon"
+    href="img/favicon/app-icon-192x192.png">
+  <link rel="icon" type="image/png"
+    href="img/favicon/app-icon-192x192.png" sizes="192x192">
+  <link rel="stylesheet" type="text/css" href="dist/bundle.css">
+  <script src="https://cdn.lr-ingest.io/LogRocket.min.js"></script>
+  <script>
+    var code = prompt('Provide a new LogRocket identifier:','dashticz');
+    if (window.LogRocket) {
+        window.LogRocket.init('ewgztp/dashticz');
+        window.LogRocket.identify(code);
+    }
+  </script>
+  <title>Dashticz</title>
+</head>
+
+<body id="page-top">
+
+  <div id="loaderHolder">
+    <div class="loaderHeader">Dashticz v3 is loading...</div>
+    <div class="loader"></div>
+  </div>
+  <div id="hide" style="display: none">
+    <div id="error">Error</div><br>For more help visit <a
+			href="https://dashticz.readthedocs.io/">Dashticz v3 documentation</a>
+  </div>
+  <div class="dt-container">
+    <div class="contents"> </div>
+    <div class="swiper-pagination"></div>
+  </div>
+
+  <script>
+    var head = document.getElementsByTagName('head')[0],
+       script = document.createElement('script');
+    script.src = 'js/loader.js?t='+ new Date().getTime();
+    head.appendChild(script);
+    </script>
+</body>
+
+</html>

@@ -1,8 +1,10 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header('Content-Type: text/html');
+require_once(__DIR__ . '/../security.php');
+
+dashticz_require_same_origin();
+header('Content-Type: application/json');
 http_response_code(500);
-$cleanexit = 0;
+$clean_exit = 0;
 require_once('./vendor/autoload.php');
 use ICal\ICal;
 
@@ -13,79 +15,36 @@ if (!defined('PHP_VERSION_ID')) {
     define('PHP_VERSION_ID', ($version[0] * 10000 + $version[1] * 100 + $version[2]));
 }
 
-// PHP_VERSION_ID is defined as a number, where the higher the number 
-// is, the newer a PHP version is used. It's defined as used in the above 
+// PHP_VERSION_ID is defined as a number, where the higher the number
+// is, the newer a PHP version is used. It's defined as used in the above
 // expression:
 //
 // $version_id = $major_version * 10000 + $minor_version * 100 + $release_version;
 //
-// Now with PHP_VERSION_ID we can check for features this PHP version 
-// may have, this doesn't require to use version_compare() everytime 
+// Now with PHP_VERSION_ID we can check for features this PHP version
+// may have, this doesn't require to use version_compare() everytime
 // you check if the current PHP version may not support a feature.
 //
-// For example, we may here define the PHP_VERSION_* constants thats 
+// For example, we may here define the PHP_VERSION_* constants thats
 // not available in versions prior to 5.2.7
 register_shutdown_function( "fatal_handler" );
 
 function fatal_handler() {
 	global $clean_exit;
 	if ($clean_exit) return;
-    $errfile = "unknown file";
-    $errstr  = "shutdown";
-    $errno   = E_CORE_ERROR;
-    $errline = 0;
-
     $error = error_get_last();
-
     if($error !== NULL) {
-        $errno   = $error["type"];
-        $errfile = $error["file"];
-        $errline = $error["line"];
-        $errstr  = $error["message"];
-        print(format_error( $errno, $errstr, $errfile, $errline));
+        http_response_code(500);
+        print(json_encode(array(
+            '_errors' => array('Calendar processing failed.'),
+        )));
     }
-}
-
-function format_error( $errno, $errstr, $errfile, $errline ) {
-	global $ICS;
-    $trace = print_r( debug_backtrace( false ), true );
-	$icalurl = isset($ICS) ? $ICS : 'Undefined';
-    $content = "
-    <table>
-        <tbody>
-			<tr>
-				<th>Icalurl</th>
-				<td>$icalurl</td>
-			</tr>
-			<tr>
-                <th>Error</th>
-                <td><pre>$errstr</pre></td>
-            </tr>
-            <tr>
-                <th>Errno</th>
-                <td><pre>$errno</pre></td>
-            </tr>
-            <tr>
-                <th>File</th>
-                <td>$errfile</td>
-            </tr>
-            <tr>
-                <th>Line</th>
-                <td>$errline</td>
-			</tr>
-            <tr>
-                <th>Trace</th>
-                <td><pre>$trace</pre></td>
-            </tr>
-        </tbody>
-    </table>";
-    return $content;
 }
 
 if (!empty($argv[1])) {
 	parse_str($argv[1], $_GET);
   }
-$ICS = $_GET['url'];
+$ICS = isset($_GET['url']) ? $_GET['url'] : '';
 /*
 //temporarily removed. get_headers doesn't work for local files
 $file_headers = @get_headers($ICS);
@@ -107,7 +66,7 @@ if ( !$exists ) {
 if (!empty($argv[2])) {
 	parse_str($argv[2], $_GET);
   }
-$MAXITEMS = $_GET['maxitems'];
+$MAXITEMS = isset($_GET['maxitems']) ? max(1, min(500, (int) $_GET['maxitems'])) : 100;
 //print "maxitems: ".$MAXITEMS . "\n";
 
 $HISTORY = isset($_GET['history']) ? $_GET['history'] : 0;
@@ -128,26 +87,29 @@ $errors=array();
 set_error_handler(function($errno, $errstr, $errfile = 0, $errline = 0, $errcontext = 0) {
 	global $errors;
 	$errors[]=$errstr;
-	return false;
+	return true;
 });
 
-//Microsoft expects an useragent 
+//Microsoft expects an useragent
 ini_set('user_agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:72.0) Gecko/20100101 Firefox/72.0');
 
 try {
+	$remoteCalendar = dashticz_fetch_remote($ICS, 2097152);
+	$calendarContent = $remoteCalendar['body'];
 	if ( $METHOD==0) {
-		@$res = ical5($ICS, $MAXITEMS);
+		$res = ical5($calendarContent, $MAXITEMS);
 	}
 	elseif ( $METHOD==2) {
-		@$res = icaljg($ICS, $MAXITEMS, $HISTORY);
+		$res = icaljg($calendarContent, $MAXITEMS, $HISTORY);
 	}
 	else {
-		@$res = ical7($ICS, $MAXITEMS, $HISTORY);
+		$res = ical7($calendarContent, $MAXITEMS, $HISTORY);
 	}
 }
-catch (exception $e) {
-    $errors[]='Error';
-} 
+catch (Exception $e) {
+    $errors[]='Unable to load or parse the calendar.';
+	$res = array();
+}
 
 $res['_errors'] = $errors;
 header('Content-Type: application/json');
@@ -156,7 +118,7 @@ $clean_exit=1;
 die(json_encode($res));
 
 
-function icaljg($ICS, $MAXITEMS, $HISTORY) {
+function icaljg($calendarContent, $MAXITEMS, $HISTORY) {
 
 	try {
 		$ical = new ICal(false, array(
@@ -169,7 +131,7 @@ function icaljg($ICS, $MAXITEMS, $HISTORY) {
 			'skipRecurrence'              => false, // Default value
 		));
 		// $ical->initFile('ICal.ics');
-		$ical->initUrl($ICS, $username = null, $password = null, $userAgent = null);
+		$ical->initString($calendarContent);
 //		print_r(json_encode($ical->events(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
 /*
@@ -221,15 +183,15 @@ function icaljg($ICS, $MAXITEMS, $HISTORY) {
 		}
 		return $data;
 	} catch (\Exception $e) {
-		die($e);
+		throw $e;
 	}
 }
 
-function ical7($ICS, $MAXITEMS, $HISTORY) {
+function ical7($calendarContent, $MAXITEMS, $HISTORY) {
 	require_once('./vendor/autoload.php');
 	try {
 		$cal = new \om\IcalParser();
-		$results = $cal->parseFile( $ICS);
+		$results = $cal->parseString($calendarContent);
 		$data = array();
 		$id=0;
 		$sorted_events = $cal->getSortedEvents();
@@ -261,16 +223,17 @@ function ical7($ICS, $MAXITEMS, $HISTORY) {
 		}
 		return $data;
 	} catch (\Exception $e) {
-		die($e);
+		throw $e;
 	}
 }
 
-function ical5($ICS, $MAXITEMS) {
+function ical5($calendarContent, $MAXITEMS) {
 	require_once('./ical5/SG_iCal.php');
-	$ical = new SG_iCalReader($ICS);
+	$ical = new SG_iCalReader(false);
+	SG_iCal_Parser::ParseString($calendarContent, $ical);
 $evts = $ical->getEvents();
 $data = array();
-if($evts){	
+if($evts){
 	$currentdate = time();
 	foreach($evts as $id => $ev) {
 		$start = $ev->getStart();
@@ -321,4 +284,3 @@ if($evts){
 //ksort($data);
 return $data;
 }
-

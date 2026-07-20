@@ -129,12 +129,15 @@ var DT_simpleblock = (function () {
     var content =
       '<div class="col-xs-' +
       me.block.width +
-      ' text-right" data-toggle="modal">';
+      ' text-right">';
     for (var i = 0; i < icons.length; i++) {
       switch (icons[i]) {
         case 'settings':
           content +=
-            '<span class="settings settingsicon" data-id="settings" data-target="#settingspopup" data-toggle="modal"><em class="fas fa-cog"></em> </span>';
+            '<span class="settings settingsicon" data-id="settings" ' +
+            'data-bs-target="#settingspopup" data-bs-toggle="modal" ' +
+            'role="button" aria-label="Open settings">' +
+            '<i class="fas fa-cog" aria-hidden="true"></i></span>';
           break;
 
         case 'fullscreen':
@@ -180,67 +183,78 @@ var DT_simpleblock = (function () {
     );
   }
 
+  function loadWeatherScript(callback) {
+    $.ajax({
+      url: 'js/weather.js',
+      dataType: 'script',
+      success: callback,
+      error: function () {
+        console.error('Failed to load weather.js');
+      },
+    });
+  }
+
   function renderWeather(me) {
-    if (typeof loadWeatherFull !== 'function') {
-      $.ajax({
-        url: 'js/weather.js',
-        async: false,
-        dataType: 'script',
-      });
+    function doRender() {
+      me.$mountPoint.html(
+        '<div data-id="weather" class="block_' +
+          me.block.type +
+          ' containsweatherfull"></div>'
+      );
+      if (settings['wu_api'] !== '' && settings['wu_city'] !== '')
+        loadWeatherFull(settings['wu_city'], settings['wu_country']);
     }
-    me.$mountPoint.html(
-      '<div data-id="weather" class="block_' +
-        me.block.type +
-        ' containsweatherfull"></div>'
-    );
-    if (settings['wu_api'] !== '' && settings['wu_city'] !== '')
-      loadWeatherFull(settings['wu_city'], settings['wu_country']);
+    if (typeof loadWeatherFull !== 'function') {
+      loadWeatherScript(doRender);
+    } else {
+      doRender();
+    }
   }
 
   function renderCurrentWeather(me) {
     if (settings['wu_api'] !== '' && settings['wu_city'] !== '') {
-      if (typeof loadWeather !== 'function') {
-        $.ajax({
-          url: 'js/weather.js',
-          async: false,
-          dataType: 'script',
-        });
+      function doRender() {
+        me.$mountPoint.html(
+          '<div data-id="currentweather" class="mh transbg block_' +
+            me.block.type +
+            ' col-xs-' +
+            me.block.width +
+            ' containsweather">' +
+            '<div class="col-xs-4"><div class="weather" id="weather"></div></div>' +
+            '<div class="col-xs-8"><strong class="title weatherdegrees" id="weatherdegrees"></strong><br /><span class="weatherloc" id="weatherloc"></span></div>' +
+            '</div>'
+        );
+        loadWeather(settings['wu_city'], settings['wu_country']);
       }
-      me.$mountPoint.html(
-        '<div data-id="currentweather" class="mh transbg block_' +
-          me.block.type +
-          ' col-xs-' +
-          me.block.width +
-          ' containsweather">' +
-          '<div class="col-xs-4"><div class="weather" id="weather"></div></div>' +
-          '<div class="col-xs-8"><strong class="title weatherdegrees" id="weatherdegrees"></strong><br /><span class="weatherloc" id="weatherloc"></span></div>' +
-          '</div>'
-      );
-      loadWeather(settings['wu_city'], settings['wu_country']);
+      if (typeof loadWeather !== 'function') {
+        loadWeatherScript(doRender);
+      } else {
+        doRender();
+      }
     }
   }
 
   function renderCurrentWeather_big(me) {
     if (settings['wu_api'] !== '' && settings['wu_city'] !== '') {
-      if (typeof loadWeather !== 'function') {
-        $.ajax({
-          url: 'js/weather.js',
-          async: false,
-          dataType: 'script',
-        });
-      }
-      me.$mountPoint.html(
-        '<div data-id="currentweather_big" class="mh transbg big block_' +
-          me.block.type +
-          ' col-xs-' +
-          me.block.width +
-          ' containsweather">' +
-          '<div class="col-xs-1"><div class="weather" id="weather"></div></div>' +
-          '<div class="col-xs-11"><span class="title weatherdegrees" id="weatherdegrees"></span> <span class="weatherloc" id="weatherloc"></span></div>' +
-          '</div>'
-      );
+      function doRender() {
+        me.$mountPoint.html(
+          '<div data-id="currentweather_big" class="mh transbg big block_' +
+            me.block.type +
+            ' col-xs-' +
+            me.block.width +
+            ' containsweather">' +
+            '<div class="col-xs-1"><div class="weather" id="weather"></div></div>' +
+            '<div class="col-xs-11"><span class="title weatherdegrees" id="weatherdegrees"></span> <span class="weatherloc" id="weatherloc"></span></div>' +
+            '</div>'
+        );
 
-      loadWeather(settings['wu_city'], settings['wu_country']);
+        loadWeather(settings['wu_city'], settings['wu_country']);
+      }
+      if (typeof loadWeather !== 'function') {
+        loadWeatherScript(doRender);
+      } else {
+        doRender();
+      }
     }
   }
 

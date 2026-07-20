@@ -1020,8 +1020,8 @@ function graphRender(graph, graphProperties) {
   }
 */
 
+  Chart.defaults.color = graph.block.fontColor;
   new Chart(graph.chartctx, graphProperties);
-  Chart.defaults.global.defaultFontColor = graph.block.fontColor;
 }
 
 function createCustomData(graph) {
@@ -1354,14 +1354,10 @@ function createButtons(graph, ranges, customRange) {
     newButton += '</button>';
 
     $(document).on('click', '#resetZoom' + graph.graphIdx, function () {
-      Chart.helpers.each(Chart.instances, function (instance) {
-        if (
-          instance.chart.canvas.id ===
-          $('#resetZoom' + graph.graphIdx).data('canvas')
-        ) {
-          instance.chart.resetZoom();
-        }
-      });
+      var instance = Chart.getChart(
+        $('#resetZoom' + graph.graphIdx).data('canvas')
+      );
+      if (instance) instance.resetZoom();
     });
     $(newButton).appendTo($buttons);
   }

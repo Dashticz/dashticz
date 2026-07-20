@@ -1,4 +1,4 @@
-/* global Dashticz moment templateEngine DT_function*/
+/* global Dashticz moment templateEngine DT_function settings*/
 
 var DT_haymanclock = {
   name: 'haymanclock',
@@ -10,16 +10,31 @@ var DT_haymanclock = {
     return block && block.type && block.type === 'haymanclock';
   },
   defaultCfg: function () {
-    function getPart(str) {
-      return str.split(' ')[1] || '';
+    function getPart(value, fallback) {
+      if (typeof value !== 'string') return fallback;
+      var parts = value.trim().split(/\s+/);
+      return parts[parts.length - 1] || fallback;
     }
-    var ld = moment.localeData()._relativeTime;
+    var locale = String(settings.language || 'en').toLowerCase();
+    var fallback = locale.indexOf('nl') === 0
+      ? { day: 'dag', hours: 'uur', minutes: 'minuten', seconds: 'seconden' }
+      : { day: 'day', hours: 'hours', minutes: 'minutes', seconds: 'seconds' };
+    function getRelativeLabel(amount, unit, fallbackValue) {
+      try {
+        return getPart(
+          moment().add(amount, unit).fromNow(true),
+          fallbackValue
+        );
+      } catch (error) {
+        return fallbackValue;
+      }
+    }
     return {
       containerClass: 'text-center',
-      day: getPart(ld.d),
-      hours: getPart(ld.hh),
-      minutes: getPart(ld.mm),
-      seconds: getPart(ld.ss),
+      day: getRelativeLabel(1, 'day', fallback.day),
+      hours: getRelativeLabel(2, 'hours', fallback.hours),
+      minutes: getRelativeLabel(2, 'minutes', fallback.minutes),
+      seconds: getRelativeLabel(2, 'seconds', fallback.seconds),
       scale: 1,
     };
   },
@@ -30,25 +45,40 @@ var DT_haymanclock = {
       me.block.fontsize = (width / 40) * me.block.scale;
       $(me.mountPoint + ' .dt_block').html(template(me.block));
       function updateTime() {
-        document.documentElement.style.setProperty(
+        var now = new Date();
+        var hours = now.getHours() || 24;
+        var locale = String(settings.language || 'en').replace('_', '-');
+        var clockElement = me.$mountPoint[0];
+        var day = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][
+          now.getDay()
+        ];
+        try {
+          day = new Intl.DateTimeFormat(locale, { weekday: 'short' }).format(
+            now
+          );
+        } catch (error) {
+          console.warn('Unable to format Hayman clock locale ' + locale, error);
+        }
+        clockElement.style.setProperty(
           '--timer-day',
-          "'" + moment().format('dd') + "'"
+          "'" + day + "'"
         );
-        document.documentElement.style.setProperty(
+        clockElement.style.setProperty(
           '--timer-hours',
-          "'" + moment().format('k') + "'"
+          "'" + hours + "'"
         );
-        document.documentElement.style.setProperty(
+        clockElement.style.setProperty(
           '--timer-minutes',
-          "'" + moment().format('mm') + "'"
+          "'" + ('0' + now.getMinutes()).slice(-2) + "'"
         );
-        document.documentElement.style.setProperty(
+        clockElement.style.setProperty(
           '--timer-seconds',
-          "'" + moment().format('ss') + "'"
+          "'" + ('0' + now.getSeconds()).slice(-2) + "'"
         );
       }
 
-      window.setInterval(function () {
+      updateTime();
+      Dashticz.setInterval(me, function () {
         updateTime();
       }, 1000);
     });

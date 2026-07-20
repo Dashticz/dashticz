@@ -1,5 +1,5 @@
 /*from bundle.js*/
-/* global Debug moment*/
+/* global Debug moment isDefined settings Cookies DT_function*/
 /* from CONFIG.js*/
 /* global stubDevices */
 /* exported Domoticz*/
@@ -19,11 +19,15 @@ var Domoticz = (function () {
   var lastUpdate = {};
   var requestid = 0;
   var callbackList = [];
-  var reconnectTimeout = 2; //Initial value: 1 sec reconnect timeout
+  var reconnectTimeout = 2; //Initial value: 2 sec reconnect timeout
+  var reconnectCount = 0; //Number of reconnect attempts
   var reconnecting = false;
   var securityRefresh = null;
   var firstUpdate = true;
   var refreshTimeout;
+  var refreshInProgress = false;
+  var MAX_RECONNECT_ATTEMPTS = 10; //Reload the page after this many failed WebSocket reconnects
+  var MIN_WS_POLL_INTERVAL_MS = 30000; //Minimum polling interval (ms) when WebSocket is active
   var info = {
     build: 0,
     version: 0,
@@ -86,10 +90,14 @@ var Domoticz = (function () {
           return newPromise.resolve('fake_domoticz');
         }
         if (selectWS) {
-          callbackList[requestid] = newPromise;
+          var currentRequestId = requestid;
+          callbackList[currentRequestId] = newPromise;
+          newPromise.always(function () {
+            delete callbackList[currentRequestId];
+          });
           var msg = {
             event: 'request',
-            requestid: requestid,
+            requestid: currentRequestId,
             query: domoticzQuery(query),
           };
           requestid = (requestid + 1) % 1000;
@@ -112,13 +120,22 @@ var Domoticz = (function () {
             type: 'GET',
             async: true,
             beforeSend: setHeader,
-            contentType: 'application/json',
             error: function (jqXHR, textStatus) {
               if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
                 console.log('Domoticz request cancelled');
               } else {
                 if (jqXHR.status == 401) {
                   newPromise.reject(new Error('Domoticz authorization error'));
+                  return;
+                }
+                if (jqXHR.status === 0 && cfg.url && cfg.url.toLowerCase().startsWith('https')) {
+                  // Status 0 on an HTTPS URL typically means the browser rejected
+                  // the server certificate (e.g. self-signed / untrusted CA).
+                  // Tell the user how to fix it: open the Domoticz URL once and
+                  // accept the security exception, then reload Dashticz.
+                  console.error('SSL certificate error for ' + cfg.url + '. Open the URL in a new tab and accept the certificate.');
+                  Debug.log(Debug.ERROR, 'SSL certificate error for ' + cfg.url);
+                  newPromise.reject(new Error('SSL_CERT:' + cfg.url));
                   return;
                 }
                 console.error(
@@ -159,10 +176,8 @@ var Domoticz = (function () {
       case 'getscenedevices':
         checkQueryParams(params, 'idx');
         return 'type=command&param=getscenedevices&isscene=true&idx='+params.idx;
-        break;
       default:
         return query;
-        break;
     }
   }
 
@@ -175,7 +190,7 @@ var Domoticz = (function () {
         connectWebsocket();
         setTimeout(function () {
           //if not resolved within 2 seconds, there is something wrong with the websocket connection.
-          if (initialUpdate.state !== 'resolved') {
+          if (initialUpdate.state() !== 'resolved') {
             initialUpdate.reject('connection failed');
           }
         }, cfg.domoticz_timeout);
@@ -190,20 +205,38 @@ var Domoticz = (function () {
         cfg.authenticationMethod = 'trusted'; //default authentication method
         if (cfg.code) cfg.authenticationMethod = 'code'
         else { //Do we have to try alternative authentication method?
-          if (cfg.username && cfg.password) {//we have a user_name and pass_word. Add basic_auth header
-            cfg.basicAuthEnc = window.btoa(cfg.username + ':' + cfg.password);
+          if (cfg.username && cfg.password) {//we have a user_name and pass_word.
+            // Don't set basicAuthEnc yet. First try without credentials so that
+            // trusted-network setups work without triggering a CORS preflight.
+            // (An Authorization header on the request causes the browser to send
+            // an OPTIONS preflight, which newer Domoticz versions may reject.)
             cfg.authenticationMethod = 'basic';
           }
         }
         return domoticzRequest(MSG['getAuth'])
       })
-      .catch(function(res) {
-        var err="Can't access Domoticz via " + cfg.url + "<br>Check domoticz_ip in config.js";
-        throw new Error(err);
+      .catch(function(err) {
+        // Re-throw specific errors with their own actionable messages.
+        if (err instanceof Error) {
+          if (err.message && err.message.substring(0, 9) === 'SSL_CERT:') {
+            var certUrl = err.message.substring(9);
+            var apiUrl = certUrl + 'json.htm?type=command&param=getauth&plan=0';
+            var certHost = certUrl.replace(/^https?:\/\//, '').replace(/\/$/, '');
+            throw new Error(
+              'SSL certificate error: the browser does not trust the Domoticz certificate.<br>' +
+              'Follow these steps:<br>' +
+              '1. Open <a href="' + apiUrl + '" target="_blank">' + apiUrl + '</a> in a new tab.<br>' +
+              '2. Click <b>Advanced</b> &rarr; <b>Proceed to ' + certHost + ' (unsafe)</b>.<br>' +
+              '3. Come back here and click the <b>Retry</b> button below.'
+            );
+          }
+          throw err;
+        }
+        var genericErr="Can't access Domoticz via " + cfg.url + "<br>Check domoticz_ip in config.js";
+        throw new Error(genericErr);
       })
       .then(function (res) {
         console.log('authentication method: ', cfg.authenticationMethod);
-        console.log(res);
         if (res && res.status) {
           if (res.status === "OK") {
             if (res.user || res.rights === 2) {
@@ -214,23 +247,37 @@ var Domoticz = (function () {
               if (cfg.code) {
                 console.log('We had a code, but authorization failed');
                 throw new Error('Authorization error after code request');
-                return;
               }
               //Maybe we can use a cookie from a previous session
               var dashticzCookie = Cookies.get('dashticz');
               if (dashticzCookie) {
                 console.log('Cookie found. Refresh token if refresh_token still valid');
-                var authentication = JSON.parse(atob(dashticzCookie));
-                cfg.tokenRes = authentication;
-                return refreshToken();
+                try {
+                  var authentication = JSON.parse(atob(dashticzCookie));
+                  cfg.tokenRes = authentication;
+                  return refreshToken();
+                } catch (error) {
+                  console.warn('Invalid authentication cookie. Removing it.');
+                  Cookies.remove('dashticz');
+                }
               }
               if (cfg.authenticationMethod === 'basic') {
-                console.log("Invalid user credentials");
-                var err='Invalid user credentials. Check user_name and pass_word in CONFIG.js.';
-                var ishttp = cfg.url.substring(0, 5).toLowerCase() !== 'https';
-                if(ishttp)
-                  err+='<br>Note: "Enable BasicAuth over plain HTTP" in Domoticz->Setup->Settings->Security';
-                throw new Error(err);
+                // Trusted network check failed. Now activate Basic Auth and retry.
+                console.log('Trusted network not available, retrying with Basic Auth');
+                cfg.basicAuthEnc = window.btoa(cfg.username + ':' + cfg.password);
+                return domoticzRequest(MSG['getAuth'])
+                  .then(function (res2) {
+                    if (res2 && res2.status === "OK" && (res2.user || res2.rights === 2)) {
+                      console.log('Authenticated via Basic Auth!');
+                      return;
+                    }
+                    console.log("Invalid user credentials");
+                    var err='Invalid user credentials. Check user_name and pass_word in CONFIG.js.';
+                    var ishttp = !cfg.url.toLowerCase().startsWith('https');
+                    if(ishttp)
+                      err+='<br>Note: "Enable BasicAuth over plain HTTP" in Domoticz->Setup->Settings->Security';
+                    throw new Error(err);
+                  });
               }
               return domoticzAuthenticate();
             }
@@ -245,10 +292,10 @@ var Domoticz = (function () {
     if (cfg.tokenRes.validUntil * 1000 > now) {
       var data = {
         grant_type: 'refresh_token',
-        redirect_uri: encodeURIComponent(settings.state),
-        client_id: encodeURIComponent(cfg.client_id),
-        client_secret: encodeURIComponent(cfg.client_secret),
-        refresh_token: encodeURIComponent(cfg.tokenRes.refresh_token)
+        redirect_uri: settings.state,
+        client_id: cfg.client_id,
+        client_secret: cfg.client_secret,
+        refresh_token: cfg.tokenRes.refresh_token
       }
       return $.ajax({
         url: cfg.url + 'oauth2/v1/token',
@@ -259,23 +306,25 @@ var Domoticz = (function () {
       )
         .then(function (res) {
           console.log('token refresh successful');
-          console.log(res);
           cfg.tokenRes = res;
           cfg.tokenRes.validUntil = cfg.tokenRes.expires_in + Math.floor(Date.now() / 1000) - 10;
-          Cookies.set('dashticz', btoa(JSON.stringify(cfg.tokenRes)));
+          Cookies.set('dashticz', btoa(JSON.stringify(cfg.tokenRes)), {
+            sameSite: 'Lax',
+            secure: window.location.protocol === 'https:',
+          });
           if (refreshTimeout)
             clearTimeout(refreshTimeout);
-          refreshTimeout = setTimeout(refreshToken, (cfg.tokenRes.expires_in - 3500) * 1000);
+          refreshTimeout = setTimeout(
+            refreshToken,
+            Math.max(30, cfg.tokenRes.expires_in - 60) * 1000
+          );
         })
-        .fail(function (res) {
+        .fail(function () {
           console.error('token refresh failed');
-          console.log(res);
           throw new Error('token refresh failed');
         })
         .then(function() {
-          return domoticzRequest(MSG['getAuth']).then(function(res) {
-            console.log(res);
-          });
+          return domoticzRequest(MSG['getAuth']);
 
         })
     }
@@ -297,33 +346,31 @@ var Domoticz = (function () {
     return $.get(settings.domoticz_ip + '/.well-known/openid-configuration')
       .then(function (res) {
         //check res for whether oauth2 flow is supported
-        //      console.log(res);
         if (res.authorization_endpoint) {
           var url = settings.domoticz_ip + '/oauth2/v1/authorize?redirect_uri=' + currenturl + '&response_type=code&client_id=dashticz&client_secret=dashticz&state=' + btoa(document.location.href);
           window.location.href = url;
         }
         else throw new Error(oAuthErrorStr);
       })
-      .catch(function (jqXHR) {
+      .catch(function () {
         console.log('failed.');
         throw new Error(oAuthErrorStr);
       })
   }
 
-  function checkCode(code) {
+  function checkCode() {
     if (cfg.code) {
       /*
         We have received an authorization code
         We have to exchange this into access code
         */
       console.log('Authentication code. Start request for access code');
-      //curl -v 'http://localhost:8080/oauth2/v1/token' --header 'Content-Type: application/x-www-form-urlencoded' --data-urlencode 'grant_type=authorization_code' --data-urlencode 'redirect_uri=https://172.16.0.4:8080/' --data-urlencode 'client_id=dashticzApp' --data-urlencode 'client_secret=D@shticz' --data-urlencode 'code=5894171146ab3f6a68005f31bf1f3772'
       var data = {
         grant_type: 'authorization_code',
-        redirect_uri: encodeURIComponent(settings.state),
-        client_id: encodeURIComponent(cfg.client_id),
-        client_secret: encodeURIComponent(cfg.client_secret),
-        code: encodeURIComponent(cfg.code)
+        redirect_uri: settings.state,
+        client_id: cfg.client_id,
+        client_secret: cfg.client_secret,
+        code: cfg.code
       }
       return $.ajax({
         url: cfg.url + 'oauth2/v1/token',
@@ -334,15 +381,16 @@ var Domoticz = (function () {
       )
         .then(function (res) {
           console.log('token request successful');
-          console.log(res);
           cfg.tokenRes = res;
           cfg.tokenRes.validUntil = cfg.tokenRes.expires_in + Math.floor(Date.now() / 1000) - 10;
-          Cookies.set('dashticz', btoa(JSON.stringify(cfg.tokenRes)));
+          Cookies.set('dashticz', btoa(JSON.stringify(cfg.tokenRes)), {
+            sameSite: 'Lax',
+            secure: window.location.protocol === 'https:',
+          });
           return res;
         })
-        .catch(function (res) {
+        .catch(function () {
           console.error('Token request failed');
-          console.log(res);
           throw new Error('Token request failed.<br>Check client_id and client_secret in CONFIG.js');
         })
 
@@ -386,9 +434,12 @@ var Domoticz = (function () {
         );
       })
       .then(function () {
+        // When WebSocket is active, poll less frequently (30s) since WS provides real-time updates.
+        // When using HTTP polling only, use the configured domoticz_refresh interval.
+        var pollInterval = useWS ? Math.max(cfg.domoticz_refresh * 1000, MIN_WS_POLL_INTERVAL_MS) : cfg.domoticz_refresh * 1000;
         setInterval(function () {
           refreshAll();
-        }, cfg.domoticz_refresh * 1000);
+        }, pollInterval);
         return refreshAll();
       })
       .then(requestSecurityStatus)
@@ -405,42 +456,27 @@ var Domoticz = (function () {
   }
 
   function refreshAll() {
+    if (refreshInProgress) {
+      Debug.log('refreshAll: skipped, previous refresh still in progress');
+      return $.Deferred().resolve();
+    }
+    refreshInProgress = true;
+    var p;
     if (cfg.refresh_method || !useWS) {
-      return requestAllVariables().then(function () {
+      p = requestAllVariables().then(function () {
         return requestAllDevices();
       });
     } else {
-      return requestAllVariables().then(requestAllScenes);
+      p = requestAllVariables().then(requestAllScenes);
     }
+    return p.always(function () {
+      refreshInProgress = false;
+    });
   }
 
   function connectWebsocket() {
     connectWebSocket2();
     return;
-    /*
-    var body = {
-      username: encodeURIComponent(window.btoa(settings['user_name'])),
-      password: encodeURIComponent(md5(settings['pass_word'])),
-      rememberme: true     
-    }*/
-    var data = new FormData();
-    data.append('username', encodeURIComponent(window.btoa(settings['user_name'])));
-    data.append('password', encodeURIComponent(md5(settings['pass_word'])));
-    data.append('rememberme', "true");
-    $.ajax({
-      type: 'POST',
-      url: cfg.url + "json.htm?type=command&param=logincheck",
-      data: data,
-      success: function (output, status, xhr) {
-        //          alert(xhr.getResponseHeader('Set-Cookie'));
-      },
-      cache: false,
-      contentType: 'multipart/form-data',
-      processData: false,
-      crossDomain: true,
-      //      xhrFields: { withCredentials: true },
-    })
-      .then(connectWebSocket2);
   }
 
   function connectWebSocket2() {
@@ -462,17 +498,8 @@ var Domoticz = (function () {
       console.log('[open] Connection established');
       Debug.log('[open] Connection established');
 
-      /*            var msg = {
-                            event: 'request',
-                            requestid: 1,
-                            query: "type=devices"
-                        }
-                        socket.send(JSON.stringify(msg))*/
-      /*            domoticzRequest("type=devices", 1)
-                        .then(function(res){
-                            console.log('initial connect data: ', res);
-                        });*/
       reconnectTimeout = 2;
+      reconnectCount = 0;
       lastUpdate = {};
       if (
         lastRequest &&
@@ -488,9 +515,16 @@ var Domoticz = (function () {
     socket.onmessage = function (event) {
       //            console.log(`[message] Data received from server: ${event.data}`);
       //console.log(event.data);
-      var res = JSON.parse(event.data);
+      var res;
       var res2;
-      if (res.data) res2 = JSON.parse(res.data);
+      try {
+        res = JSON.parse(event.data);
+        if (res.data) res2 = JSON.parse(res.data);
+      } catch (error) {
+        console.error('Invalid WebSocket response:', error);
+        Debug.log(Debug.ERROR, 'Invalid WebSocket response');
+        return;
+      }
       var requestid = res.requestid;
       /*
             var currentTime = Date.now();
@@ -507,7 +541,6 @@ var Domoticz = (function () {
       */
       if (requestid == -1) {
         //device update
-        //                console.log('device update ', res2)
         _setAllDevices(res2);
         return;
       }
@@ -519,7 +552,7 @@ var Domoticz = (function () {
       if (typeof res.requestid !== 'undefined' && callbackList[requestid]) {
         callbackList[requestid].resolve(res2);
       } else {
-        console.log('no requestid or no callback ', res);
+        Debug.log(Debug.ERROR, 'No callback for Domoticz websocket response');
         if (initialUpdate.state() !== 'resolved') {
           //handle error reply
           initialError=true;
@@ -532,15 +565,6 @@ var Domoticz = (function () {
       }
       else
         initialUpdate.resolve();
-      /*            //console.log(res)
-                        var res2 = JSON.parse(res.data)
-                        // console.log(res2)
-                        if (res2)
-                            _setAllDevices(res2)
-                        else {
-                            console.log('no data: ', event.data)
-                        }
-                        */
     };
 
     socket.onclose = function (event) {
@@ -596,8 +620,16 @@ var Domoticz = (function () {
   }
 
   function reconnect() {
-    console.log('reconnecting');
-    Debug.log('reconnecting in ' + reconnectTimeout);
+    var maxReconnectAttempts = MAX_RECONNECT_ATTEMPTS;
+    reconnectCount++;
+    console.log('reconnecting (attempt ' + reconnectCount + ')');
+    Debug.log('reconnecting in ' + reconnectTimeout + ' (attempt ' + reconnectCount + ')');
+    if (reconnectCount > maxReconnectAttempts) {
+      console.error('Max reconnect attempts reached. Reloading page.');
+      Debug.log('Max reconnect attempts reached. Reloading page.');
+      window.location.reload();
+      return;
+    }
     setTimeout(function () {
       Debug.log('trying to reconnect now');
       reconnecting = false;
@@ -800,7 +832,7 @@ var Domoticz = (function () {
     return domoticzRequest(MSG['getSettings']).then(function (res) {
       if (res) {
         setOnChange('_settings', res);
-      };
+      }
     });
   }
 
@@ -855,7 +887,6 @@ var Domoticz = (function () {
       info[key] = applicable;
     });
 
-    console.log("Domoticz version info: ", info);
     MSG = getMSG(info);
   }
 
@@ -899,15 +930,12 @@ var Domoticz = (function () {
         afterwards release the message queue again
     */
   function syncRequest(idx, query, forcehttp) {
-    //console.log(query);
     hold(idx);
     return domoticzRequest(query, forcehttp)
       .then(function (res) {
-        //console.log(res);
         return res;
       })
       .always(function (res) {
-        //console.log('release ', idx);
         release(idx);
         return res;
       });

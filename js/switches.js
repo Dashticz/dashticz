@@ -270,80 +270,31 @@ function slideDevice(block, status) {
   });
 }
 
-/*
-The following slider functions are used to set the slider while sliding.
-On the first change an async request is send to Domoticz.
-On succuueding changes first itś checked whether the previous request did finish.
-If not, the new value is buffered, and will be send by sliderCallback after the previous request finished..
-*/
-
-var sliderAction = {
-  state: 'idle',
-  idx: 0,
-  value: 0,
-  request: 0,
-};
-
-function sliderSetValue(p_idx, p_value, p_Callback) {
-  Domoticz.request(
-    'type=command&param=switchlight&idx=' +
-    p_idx +
-    '&switchcmd=Set%20Level&level=' +
-    p_value
-  ).then(function () {
-    p_Callback();
-  });
-}
-
-function sliderCallback() {
-  if (sliderAction.state == 'set') {
-    //check whether we have to set another value
-    sliderAction.request = sliderSetValue(
-      sliderAction.idx,
-      sliderAction.value,
-      sliderCallback
-    );
-    sliderAction.state = 'idle';
-  }
-}
-
-// eslint-disable-next-line no-unused-vars
-function slideDeviceExt(block, value, sliderState) {
-  //todo. Function not used?
-  var $div = block.$mountPoint;
-  if (sliderState == 0) {
-    //start sliding
-    $div.find('.icon').removeClass('off');
-    $div.find('.icon').addClass('on');
-
-    if ($div.find('.fa-toggle-off').length > 0) {
-      $div
-        .find('.fa-toggle-off')
-        .addClass('fa-toggle-on')
-        .removeClass('fa-toggle-off');
-    }
-
-    $div.find('.state').html(language.switches.state_on);
-
-    sliderAction.request = sliderSetValue(block.idx, value, sliderCallback);
-    return;
-  }
-  if (/*sliderState == 1 ||*/ sliderState == 2) {
-    //change at the end. Temporarily (?) no update while sliding.
-    if (sliderAction.request.readyState == 4) {
-      sliderAction.request = sliderSetValue(block.idx, value, sliderCallback);
-    } else {
-      sliderAction.state = 'set';
-      sliderAction.idx = block.idx;
-      sliderAction.value = value;
-    }
-    return;
-  }
-}
-
 // eslint-disable-next-line no-unused-vars
 function ziggoRemote(key) {
-  $.get(settings['switch_horizon'] + '?key=' + key);
+  var horizonPath = settings['switch_horizon'];
+  var bundledHelper = false;
+  if (horizonPath === 'switch_horizon.php') {
+    horizonPath = 'tools/switch_horizon.php';
+    bundledHelper = true;
+  }
+  if (!bundledHelper) {
+    $.get(horizonPath + '?key=' + encodeURIComponent(key));
+    return;
+  }
+
+  $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf').then(
+    function (data) {
+      return $.ajax({
+        url: horizonPath,
+        method: 'POST',
+        data: { key: key },
+        headers: {
+          'X-Dashticz-CSRF': data.token,
+        },
+      });
+    }
+  );
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -704,11 +655,6 @@ function getBlindsBlock(parentBlock, withPercentageParam) {
   return true;
 }
 
-/*previously there was a mechanism to send device update commands while sliding.
-With the new websock interface the slider block didn't update correctly.
-So I've disabled the call to slideDeviceExt function.
-Maybe in the future I'll reenable the functionality.
-*/
 function addSlider(block, sliderValues) {
   var idx = block.idx;
   var $divslider = block.$mountPoint.find('.slider');
@@ -721,14 +667,8 @@ function addSlider(block, sliderValues) {
     disabled: sliderValues.disabled,
     start: function () {
       Domoticz.hold(idx); //hold message queue
-      //sliding = idx;
-      //            slideDeviceExt($(this).data('light'), ui.value, 0);
     },
-    //        slide: function (event, ui) {
-    //            slideDeviceExt($(this).data('light'), ui.value, 1);
-    //},
     change: function (event, ui) {
-      //            slideDeviceExt($(this).data('light'), ui.value, 2);
       var hasPassword = block.password;
       if (!DT_function.promptPassword(hasPassword)) return;
 
@@ -736,7 +676,6 @@ function addSlider(block, sliderValues) {
     },
     stop: function () {
       //stop is called before change
-      //sliding = false;
       Domoticz.release(idx); //release message queue
     },
   });
