@@ -1,8 +1,9 @@
 {
-"version": "3.20.1",
+"version": "3.20.2",
 "branch": "beta",
-"last_changes": "Added HVC waste collection provider (me-processware)",
+"last_changes": "Doc fix: thermostat.js reference updated to tempcontrol.js (jgaalen)",
 "changelog" : {
+            "3.20.2": "Doc fix: thermostat.js reference updated to tempcontrol.js (jgaalen)",
             "3.20.1": "Added HVC waste collection provider (me-processware)",
             "3.20.0": "MadPatrick fork: modernized stable release with Bootstrap 5 compatibility",
             "3.14.2.0": "Fix for Domoticz connection",

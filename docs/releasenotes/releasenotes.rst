@@ -8,6 +8,14 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.20.2 beta (20-7-2026)
+--------------------------
+
+Code
+~~~~~
+
+* Docs: Fixed remaining ``thermostat.js`` reference to ``tempcontrol.js`` (contributed by jgaalen)
+
 v3.20.1 beta (20-7-2026)
 --------------------------
 
