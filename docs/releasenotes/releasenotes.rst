@@ -8,6 +8,27 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.20.1 beta (20-7-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Garbage: Added HVC waste collection provider (contributed by me-processware)
+
+v3.20.0 beta (20-7-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Merged MadPatrick fork: Bootstrap 5 compatibility, modernized build tooling (webpack/babel/sass upgrades) and a new optional "modern dark" theme
+
+Code
+~~~~~
+
+* Build tooling moved to the ``build/`` folder (webpack, babel and prettier configs)
+
 v3.14.1.5 beta (29-4-2025)
 --------------------------
 
