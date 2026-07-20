@@ -116,7 +116,7 @@ master:
 
 .PHONY: beta
 beta:
-	git checkout master
+	git checkout beta
 
 .PHONY: fullupgrade
 fullupgrade: fullclean testdiskspace upgradesystem upgradeimage dockerprune

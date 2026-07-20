@@ -8,6 +8,19 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.20.3 beta (20-7-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Docker: Migrated to a PHP 8.3-FPM Alpine + Nginx based image, plus a ``docker-compose.yaml`` (contributed by jgaalen)
+
+Code
+~~~~~
+
+* Makefile: Rewritten container management targets (contributed by jgaalen)
+
 v3.20.2 beta (20-7-2026)
 --------------------------
 
