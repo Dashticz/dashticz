@@ -20,14 +20,6 @@ Several files were removed because they were either dead code, personal test
 data, or duplicate backup copies that no longer serve any purpose in the
 project.
 
-#### Personal images (`img/patrick/`)
-
-All images in the `img/patrick/` folder have been removed.  These were personal
-device icons (fans, lamps, garden, alarms, BMW/Mini logos, etc.) that were
-accidentally included in the shared repository.  **If you referenced any of
-these images in `custom/CONFIG.js` or `custom/custom.css` you must replace the
-path with an image from your own `custom/` folder or use a Font Awesome icon
-instead.**
 
 #### Dead/backup JavaScript source files
 
@@ -99,7 +91,6 @@ new location, so no configuration change is required for Ziggo/UPC users.
 
 | Page | What to add / change |
 |---|---|
-| **Configuration / blocks** — any page that shows `img/patrick/` as an example | Replace example paths with paths inside `custom/` |
 | **Getting started / Installation** | Mention that `index2.html` no longer exists; only `index.html` is used |
 | **Configuration / Blocks / Switch** (`switch_horizon.php`) | Note that the helper has moved to `tools/switch_horizon.php`; existing configs are auto-redirected |
 | **Development** (if it exists) | Build config files are now in the `build/` directory instead of the project root |
@@ -367,7 +358,6 @@ compatibility.
 | `js/domoticz-api.js_org` and other `*.js_org` files | Backup copies |
 | `index2.html` | Undocumented second entry point |
 | `vendor/dashticz/upload.php` | Unauthenticated upload helper |
-| `img/patrick/*` | Personal images |
 | `docs/` folder | RST docs removed (maintained separately at readthedocs.io) |
 | `scripts/` folder | Installer/backup scripts |
 | `Makefile`, `Dockerfile`, `nginx.conf` | Infrastructure files not part of standard install |
