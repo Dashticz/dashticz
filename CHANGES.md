@@ -334,7 +334,6 @@ compatibility.
 | `data-dismiss` | `data-bs-dismiss` | HTML attributes | Auto-translated by compat layer |
 | Chart.js v2 axis options | Chart.js v4 axis options | Graph block | Auto-converted at run time |
 | `handlebars.moment` helper | Day.js-backed moment | Templates | Existing templates unchanged |
-| `img/patrick/` images | User's own `custom/` folder | Image paths in CONFIG.js | **Must be updated manually** |
 | `switch_horizon.php` (root) | `tools/switch_horizon.php` | Ziggo/UPC helper | Auto-redirected; no change required |
 
 ---
