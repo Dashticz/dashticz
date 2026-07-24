@@ -15,6 +15,7 @@ var blocks = {};
 var cache = new Date().getTime();
 var throwError = null;
 var loadingFilename = null;
+var firstRunSetupRequired = false;
 
 // device detection
 // eslint-disable-next-line no-unused-vars
@@ -103,19 +104,50 @@ function loadConfig() {
   return $.ajax({
     url: loadingFilename,
     dataType: 'script',
-  })
-    .fail(function () {
-      return $.Deferred().reject(new Error('Load error in ' + loadingFilename));
-    })
-    .then(function () {
-      var tmp = loadingFilename;
-      loadingFilename = null;
-      if (throwError) return $.Deferred().reject(new Error(throwError));
-
-      if (typeof config == 'undefined') {
-        return $.Deferred().reject(new Error('Error in ' + tmp));
+    dataFilter: function (source) {
+      if (
+        source.trim() === '#EMPTY#' &&
+        !_PARAMS['cfg'] &&
+        _CFG.customfolder === 'custom'
+      ) {
+        // A tracked placeholder CONFIG.js must not be executed as JavaScript.
+        // Treat it exactly like a missing first-run configuration instead.
+        window.config = {};
+        firstRunSetupRequired = true;
+        return '';
       }
-    });
+      return source;
+    },
+  })
+    .then(
+      function () {
+        var tmp = loadingFilename;
+        loadingFilename = null;
+        if (throwError) return $.Deferred().reject(new Error(throwError));
+
+        if (typeof config == 'undefined') {
+          return $.Deferred().reject(new Error('Error in ' + tmp));
+        }
+      },
+      function (xhr) {
+        loadingFilename = null;
+        if (xhr.status === 404 && !_PARAMS['cfg'] && _CFG.customfolder === 'custom') {
+          // CONFIG.js not found in the default folder.
+          window.config = {};
+          firstRunSetupRequired = true;
+          return;
+        }
+        return $.Deferred().reject(new Error('Load error in ' + loadingFilename));
+      }
+    );
+}
+
+function clearLegacyStoredSetupConfig() {
+  try {
+    localStorage.removeItem('dashticz_setup_config');
+  } catch (err) {
+    console.warn('Could not remove legacy Dashticz setup data.', err);
+  }
 }
 
 function loadConfig2() {
@@ -156,6 +188,10 @@ function loadLanguage() {
 }
 
 function loadCustomJS() {
+  if (firstRunSetupRequired) {
+    return checkSetupWriteAccess();
+  }
+
   loadingFilename = _CFG.customfolder + '/custom.js';
 
   return $.ajax({
@@ -177,7 +213,7 @@ function loadCustomJS() {
     })
     .catch(function (res) {
       if (res.status === 404) {
-        //file doesn't exist
+        // file doesn't exist
         console.log(
           'No custom.js file in folder ' + _CFG.customfolder + '. Skipping.'
         );
@@ -186,6 +222,342 @@ function loadCustomJS() {
       var error = res || new Error('Unknown error loading custom.js');
       return $.Deferred().reject(error);
     });
+}
+
+function checkSetupWriteAccess() {
+  var deferred = $.Deferred();
+
+  function showPermissionError(message) {
+    $('#loaderHolder').hide();
+
+    if ($('#dt-setup-permission').length === 0) {
+      $('body').append(
+        '<div class="modal fade" id="dt-setup-permission" tabindex="-1"' +
+          ' aria-labelledby="dt-setup-permission-label" aria-modal="true" role="dialog">' +
+          '<div class="modal-dialog modal-dialog-centered">' +
+          '<div class="modal-content">' +
+          '<div class="modal-header">' +
+          '<h5 class="modal-title" id="dt-setup-permission-label">Configuration permissions</h5>' +
+          '</div>' +
+          '<div class="modal-body">' +
+          '<p id="dt-setup-permission-message"></p>' +
+          '</div>' +
+          '<div class="modal-footer">' +
+          '<button type="button" class="btn btn-primary" id="dt-setup-permission-retry">Check again</button>' +
+          '</div>' +
+          '</div>' +
+          '</div>' +
+          '</div>'
+      );
+    }
+
+    $('#dt-setup-permission-message').text(message);
+    $('#dt-setup-permission-retry')
+      .prop('disabled', false)
+      .off('click.setupPermission')
+      .on('click.setupPermission', function () {
+        $(this).prop('disabled', true);
+        verifyAccess(true);
+      });
+
+    bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('dt-setup-permission'),
+      { backdrop: 'static', keyboard: false }
+    ).show();
+  }
+
+  function verifyAccess(reloadWhenWritable) {
+    $.ajax({
+      url: 'js/checkconfigaccess.php',
+      dataType: 'json',
+      cache: false,
+    })
+      .done(function (result) {
+        if (result.writable) {
+          if (reloadWhenWritable) {
+            window.location.reload();
+          } else {
+            showSetupWizard();
+          }
+          return;
+        }
+
+        showPermissionError(
+          result.message ||
+            'custom/CONFIG.js is not writable by the web server. Correct the file permissions before continuing.'
+        );
+      })
+      .fail(function () {
+        showPermissionError(
+          'Dashticz could not verify write access to custom/CONFIG.js. Make sure PHP is enabled and the file is writable before continuing.'
+        );
+      });
+  }
+
+  verifyAccess(false);
+  return deferred.promise();
+}
+
+function showSetupWizard() {
+  var deferred = $.Deferred();
+
+  $('#loaderHolder').hide();
+
+  // Field definitions: type 'text' = text input, 'toggle01' = 0/1 toggle switch,
+  // 'select' = named string options, 'selectstr' = named string options stored as-is.
+  var wizardFields = [
+    { section: 'Connection (Domoticz)' },
+    {
+      id: 'domoticz_ip',
+      label: 'Domoticz URL *',
+      type: 'text',
+      def: 'http://192.168.1.5:8080',
+      help: 'URL and port of your Domoticz server',
+      required: true,
+    },
+    {
+      id: 'loginEnabled',
+      label: 'Login required',
+      type: 'toggle01',
+      def: '0',
+    },
+    {
+      id: 'client_id',
+      label: 'OAuth client ID',
+      type: 'text',
+      def: 'Dashticz',
+    },
+    {
+      id: 'client_secret',
+      label: 'OAuth client secret',
+      type: 'text',
+      def: 'DashticzPassword',
+    },
+
+    { section: 'General' },
+    {
+      id: 'app_title',
+      label: 'Dashboard name',
+      type: 'text',
+      def: 'Dashticz',
+    },
+    {
+      id: 'language',
+      label: 'Language',
+      type: 'select',
+      def: 'nl_NL',
+      options: [
+        ['nl_NL', 'Nederlands'],
+        ['en_US', 'English'],
+        ['de_DE', 'Deutsch'],
+        ['fr_FR', 'Français'],
+      ],
+    },
+    {
+      id: 'theme',
+      label: 'Theme',
+      type: 'select',
+      def: 'modern-dark',
+      options: [
+        ['modern-dark', 'Modern Dark'],
+        ['default', 'Default'],
+        ['white', 'White'],
+      ],
+    },
+    {
+      id: 'topbar_timeout',
+      label: 'Topbar auto-hide (s, 0=off)',
+      type: 'text',
+      def: '0',
+    },
+    {
+      id: 'use_favorites',
+      label: 'Use Favorites',
+      type: 'toggle01',
+      def: '0',
+    },
+  ];
+
+  function escapeSetupHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function fieldId(key) {
+    return 'dt-setup-' + key.replace(/_/g, '-');
+  }
+
+  function renderField(field) {
+    var id = fieldId(field.id);
+    var html = '<div class="py-2 border-bottom row gx-0 align-items-center">';
+    html +=
+      '<label for="' +
+      id +
+      '" class="col-6 col-form-label col-form-label-sm pe-2">' +
+      field.label +
+      '</label>';
+    html += '<div class="col-6">';
+
+    if (field.type === 'text') {
+      html +=
+        '<input type="text" class="form-control form-control-sm" id="' +
+        id +
+        '" value="' +
+        escapeSetupHtml(field.def) +
+        '">';
+    } else if (field.type === 'toggle01') {
+      html +=
+        '<div class="form-check form-switch mt-1">' +
+        '<input class="form-check-input" type="checkbox" role="switch" id="' +
+        id + '"' + (field.def === '1' ? ' checked' : '') + ' style="width:4em;height:2em;">' +
+        '</div>';
+    } else if (field.type === 'select01') {
+      html += '<select class="form-select form-select-sm" id="' + id + '">';
+      html +=
+        '<option value="0"' +
+        (field.def === '0' ? ' selected' : '') +
+        '>No (0)</option>';
+      html +=
+        '<option value="1"' +
+        (field.def === '1' ? ' selected' : '') +
+        '>Yes (1)</option>';
+      html += '</select>';
+    } else if (field.type === 'selectbool') {
+      html += '<select class="form-select form-select-sm" id="' + id + '">';
+      html +=
+        '<option value="false"' +
+        (field.def === 'false' ? ' selected' : '') +
+        '>No</option>';
+      html +=
+        '<option value="true"' +
+        (field.def === 'true' ? ' selected' : '') +
+        '>Yes</option>';
+      html += '</select>';
+    } else if (field.type === 'select' || field.type === 'selectstr') {
+      html += '<select class="form-select form-select-sm" id="' + id + '">';
+      field.options.forEach(function (option) {
+        html +=
+          '<option value="' +
+          escapeSetupHtml(option[0]) +
+          '"' +
+          (field.def === option[0] ? ' selected' : '') +
+          '>' +
+          escapeSetupHtml(option[1]) +
+          '</option>';
+      });
+      html += '</select>';
+    }
+
+    if (field.help) html += '<div class="form-text">' + field.help + '</div>';
+    html += '</div></div>';
+    return html;
+  }
+
+  var body =
+    '<p class="text-muted small">Configure the basic settings to connect to Domoticz.</p>';
+  wizardFields.forEach(function (field) {
+    if (field.section !== undefined) {
+      body +=
+        '<h6 class="border-bottom pb-1 mt-3 mb-2 small fw-bold">' +
+        field.section +
+        '</h6>';
+    } else {
+      body += renderField(field);
+    }
+  });
+
+  var html =
+    '<div class="modal fade" id="dt-setup-wizard" tabindex="-1"' +
+    ' aria-labelledby="dt-setup-label" aria-modal="true" role="dialog">' +
+    '<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">' +
+    '<div class="modal-content">' +
+    '<div class="modal-header py-2">' +
+    '<h5 class="modal-title" id="dt-setup-label">Dashticz Setup</h5>' +
+    '</div>' +
+    '<div class="modal-body py-2">' +
+    body +
+    '<div class="alert alert-danger d-none mt-2" id="dt-setup-error" role="alert"></div>' +
+    '</div>' +
+    '<div class="modal-footer py-2">' +
+    '<button type="button" class="btn btn-primary btn-sm" id="dt-setup-save">Save &amp; Start</button>' +
+    '</div>' +
+    '</div>' +
+    '</div>' +
+    '</div>';
+
+  $('body').append(html);
+
+  var modalElement = document.getElementById('dt-setup-wizard');
+  var modal = new bootstrap.Modal(modalElement, {
+    backdrop: 'static',
+    keyboard: false,
+  });
+  modal.show();
+
+  $('#dt-setup-save').on('click', function () {
+    var $error = $('#dt-setup-error');
+    $error.addClass('d-none').text('');
+
+    var ip = $('#' + fieldId('domoticz_ip')).val().trim();
+    if (!ip) {
+      $error.removeClass('d-none').text('Enter the Domoticz URL.');
+      return;
+    }
+
+    var postData = {};
+    wizardFields.forEach(function (field) {
+      if (!field.id) return;
+      var value = $('#' + fieldId(field.id)).val();
+      if (value === null || value === undefined) return;
+      if (
+        field.type === 'text' ||
+        field.type === 'select' ||
+        field.type === 'selectstr'
+      ) {
+        postData[field.id] = JSON.stringify(
+          value.trim ? value.trim() : value
+        );
+      } else if (field.type === 'select01') {
+        postData[field.id] = JSON.stringify(parseInt(value, 10));
+      } else if (field.type === 'selectbool') {
+        postData[field.id] = JSON.stringify(value === 'true');
+      } else if (field.type === 'toggle01') {
+        postData[field.id] = JSON.stringify(
+          $('#' + fieldId(field.id)).is(':checked') ? 1 : 0
+        );
+      }
+    });
+
+    $('#dt-setup-save').prop('disabled', true);
+
+    $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
+      .then(function (data) {
+        return $.ajax({
+          url: 'js/savesettings.php',
+          method: 'POST',
+          data: postData,
+          dataType: 'json',
+          headers: { 'X-Dashticz-CSRF': data.token },
+        });
+      })
+      .done(function () {
+        window.location.reload();
+      })
+      .fail(function (xhr) {
+        var message =
+          xhr.responseJSON && xhr.responseJSON.error
+            ? xhr.responseJSON.error
+            : 'Settings could not be saved. Check if PHP is enabled.';
+        $error.removeClass('d-none').text(message);
+        $('#dt-setup-save').prop('disabled', false);
+      });
+  });
+
+  // Keep the normal startup chain paused until saving reloads the page.
+  return deferred.promise();
 }
 
 function configureDashticz() {
@@ -249,6 +621,8 @@ function prepareStart() {
   _PARAMS = getLocationParameters();
 
   _CFG.customfolder = _PARAMS['folder'] || 'custom';
+  // First-run settings must live in CONFIG.js, never in browser storage.
+  clearLegacyStoredSetupConfig();
 
   createErrorHandler();
   loadStyling();
@@ -481,6 +855,9 @@ function onLoad() {
   //    });
 
   buildScreens();
+  DT_function.loadDTScript('js/topbar.js').then(function () {
+    DashticzTopbar.init();
+  });
 
   setClockDateWeekday();
   setInterval(
@@ -702,7 +1079,7 @@ function buildDefaultScreens() {
 }
 
 function buildScreens() {
-  if (screens[1] && !screens[1].columns.length) {
+  if (screens[1] && !screens[1].columns.length && settings['auto_positioning']) {
     buildDefaultScreens();
   }
   var allscreens = {};
@@ -780,7 +1157,10 @@ function buildScreens() {
           screenhtml += '><div class="row"></div></div>';
           $('div.contents').append(screenhtml);
 
-          if (!parseFloat(settings['hide_topbar']) == 1) {
+          if (
+            Number(settings['hide_topbar']) !== 1 ||
+            Number(settings['topbar_timeout']) > 0
+          ) {
             if (typeof columns['bar'] == 'undefined') {
               columns['bar'] = {};
               columns['bar']['blocks'] = ['logo', 'miniclock', 'settings'];
