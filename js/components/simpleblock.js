@@ -1,4 +1,4 @@
-/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify DT_button loadSonarr getCoin loadMaps*/
+/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor*/
 //# sourceURL=js/components/simpleblock.js
 var DT_simpleblock = (function () {
   var simpleBlocks = {
@@ -134,10 +134,15 @@ var DT_simpleblock = (function () {
       switch (icons[i]) {
         case 'settings':
           content +=
+            '<span class="settings deviceeditoricon" data-id="deviceeditor" ' +
+            'role="button" aria-label="Open device editor">' +
+            '<i class="fas fa-pencil-alt" aria-hidden="true"></i></span>';
+          content +=
             '<span class="settings settingsicon" data-id="settings" ' +
             'data-bs-target="#settingspopup" data-bs-toggle="modal" ' +
             'role="button" aria-label="Open settings">' +
             '<i class="fas fa-cog" aria-hidden="true"></i></span>';
+          _registerDeviceEditorClick();
           break;
 
         case 'fullscreen':
@@ -147,6 +152,14 @@ var DT_simpleblock = (function () {
     }
     content += '</div>';
     return content;
+  }
+
+  function _registerDeviceEditorClick() {
+    $(document).off('click.deviceeditor').on('click.deviceeditor', '.deviceeditoricon', function () {
+      DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+        DashticzDeviceEditor.open();
+      });
+    });
   }
 
   function renderMiniclock(me) {

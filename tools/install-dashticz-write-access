@@ -1,0 +1,78 @@
+#!/bin/sh
+# Prepare custom/ for a native Apache/PHP installation.
+# The Dashticz directory is derived from this script's own location, so the
+# repository can be cloned anywhere.
+
+set -eu
+
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+INSTALL_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd -P)
+
+if [ ! -f "$INSTALL_DIR/index.html" ] || \
+   [ ! -f "$INSTALL_DIR/js/savesettings.php" ]; then
+    echo "Could not determine the Dashticz installation directory" >&2
+    exit 66
+fi
+
+if [ "$(id -u)" -ne 0 ]; then
+    if [ -n "${DASHTICZ_WEB_USER:-}" ]; then
+        exec sudo -- env DASHTICZ_WEB_USER="$DASHTICZ_WEB_USER" sh "$0" "$@"
+    fi
+    exec sudo -- sh "$0" "$@"
+fi
+
+if [ -n "${DASHTICZ_WEB_USER:-}" ]; then
+    WEB_USER="$DASHTICZ_WEB_USER"
+else
+    WEB_USER=
+    for candidate in www-data apache http nginx; do
+        if id "$candidate" >/dev/null 2>&1; then
+            WEB_USER="$candidate"
+            break
+        fi
+    done
+fi
+
+if [ -z "$WEB_USER" ]; then
+    echo "Could not detect the web-server user; set DASHTICZ_WEB_USER and retry" >&2
+    exit 67
+fi
+
+WEB_GROUP=$(id -gn "$WEB_USER")
+CUSTOM_DIR="$INSTALL_DIR/custom"
+CONFIG_FILE="$CUSTOM_DIR/CONFIG.js"
+
+if [ -L "$CUSTOM_DIR" ]; then
+    echo "Refusing symlink: $CUSTOM_DIR" >&2
+    exit 65
+fi
+
+if [ ! -d "$CUSTOM_DIR" ]; then
+    install -d -o root -g "$WEB_GROUP" -m 2775 "$CUSTOM_DIR"
+else
+    chgrp "$WEB_GROUP" "$CUSTOM_DIR"
+    chmod 2775 "$CUSTOM_DIR"
+fi
+
+if [ -e "$CONFIG_FILE" ]; then
+    if [ -L "$CONFIG_FILE" ]; then
+        echo "Refusing symlink: $CONFIG_FILE" >&2
+        exit 65
+    fi
+    chgrp "$WEB_GROUP" "$CONFIG_FILE"
+    chmod 0664 "$CONFIG_FILE"
+fi
+
+if command -v runuser >/dev/null 2>&1; then
+    TEST_FILE="$CUSTOM_DIR/.dashticz-write-test.$$"
+    if ! runuser -u "$WEB_USER" -- touch "$TEST_FILE"; then
+        echo "The custom directory is still not writable by $WEB_USER" >&2
+        exit 73
+    fi
+    rm -f "$TEST_FILE"
+else
+    echo "Warning: runuser not found; could not verify access as $WEB_USER" >&2
+fi
+
+echo "Dashticz custom directory prepared for $WEB_USER:$WEB_GROUP"
+echo "The setup wizard can now create $CONFIG_FILE"

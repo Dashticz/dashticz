@@ -196,9 +196,9 @@ Config parameters
       | ``1`` Use CORS proxy for OpenWeatherMap. Needed on Android 4.4.2.
   * - last_update
     - ``0`` / ``1`` To show the time when the device was updated for the last time
-  * - hide_topbar
-    - | 0 / 1
-      | Hide or Show :ref:`customtopbar`
+  * - topbar_timeout
+    - | Number of seconds after which the topbar is automatically hidden (0 = always visible)
+      | The topbar reappears when the mouse moves to the top of the screen.
   * - hide_seconds
     - | 0 / 1
       | Show the seconds of the clock

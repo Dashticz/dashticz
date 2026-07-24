@@ -183,6 +183,21 @@ function dashticz_header_value($headers, $name)
     return null;
 }
 
+function dashticz_owner_info($path)
+{
+    if (!function_exists('fileowner') || !function_exists('posix_getpwuid') || !function_exists('posix_geteuid')) {
+        return '';
+    }
+    $ownerUid = @fileowner($path);
+    $ownerName = $ownerUid !== false
+        ? (($pw = @posix_getpwuid($ownerUid)) ? $pw['name'] : (string) $ownerUid)
+        : 'onbekend';
+    $phpUid = posix_geteuid();
+    $phpPw = @posix_getpwuid($phpUid);
+    $phpName = $phpPw ? $phpPw['name'] : (string) $phpUid;
+    return ' (eigenaar: ' . $ownerName . ', PHP-gebruiker: ' . $phpName . ')';
+}
+
 function dashticz_fetch_remote($url, $maxBytes = 5242880, $maxRedirects = 3)
 {
     for ($redirects = 0; $redirects <= $maxRedirects; $redirects++) {
