@@ -38,13 +38,14 @@ Applicable config-parameters from ``CONFIG.js``:
   * - app_title
     - | Name of the Dashboard - Title to show in the :ref:`customtopbar`
       | ``'Dashticz'`` = Show 'Dashticz' in the top bar
-  * - hide_topbar
-    - | 0 / 1
-      | Hide or Show :ref:`customtopbar`
+  * - topbar_timeout
+    - | Number of seconds after which the topbar is automatically hidden (0 = always visible)
+      | The topbar reappears when the mouse moves to the top of the screen.
+      | Example: ``config['topbar_timeout'] = 20;``
 
 Complete example::
 
-    config['hide_topbar'] = 0;
+    config['topbar_timeout'] = 20;
     config['app_title'] = 'Dashticz';
 
     var columns = {}

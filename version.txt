@@ -1,8 +1,9 @@
 {
-"version": "3.20.3",
+"version": "3.20.4",
 "branch": "beta",
-"last_changes": "Added Docker Alpine+nginx+PHP8.3 image and docker-compose setup (jgaalen)",
+"last_changes": "Device Editor: generate named blocks, grouped columns, and proper screens[1] in CONFIG.js",
 "changelog" : {
+            "3.20.4": "Device Editor: generate named blocks, grouped columns, and proper screens[1] in CONFIG.js",
             "3.20.3": "Added Docker Alpine+nginx+PHP8.3 image and docker-compose setup (jgaalen)",
             "3.20.2": "Doc fix: thermostat.js reference updated to tempcontrol.js (jgaalen)",
             "3.20.1": "Added HVC waste collection provider (me-processware)",
