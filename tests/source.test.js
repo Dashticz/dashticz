@@ -64,6 +64,34 @@ test('all application JavaScript files pass a syntax check', () => {
   }
 });
 
+test('first-run setup uses its own wizard and removes the legacy browser fallback', () => {
+  const source = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+
+  assert.match(source, /localStorage\.removeItem\('dashticz_setup_config'\)/);
+  assert.match(source, /source\.trim\(\) === '#EMPTY#'/);
+  assert.match(source, /dataFilter: function \(source\)/);
+  assert.match(source, /firstRunSetupRequired = true/);
+  assert.match(source, /return checkSetupWriteAccess\(\)/);
+  assert.match(source, /url: 'js\/checkconfigaccess\.php'/);
+  assert.match(source, /Configuration permissions/);
+  assert.match(source, /Check again/);
+  assert.match(source, /showSetupWizard\(\)/);
+  assert.match(source, /id="dt-setup-wizard"/);
+  assert.match(source, /url: 'js\/savesettings\.php'/);
+  assert.doesNotMatch(source, /section: 'Scherm &amp; Navigatie'/);
+  assert.doesNotMatch(source, /section: 'Weergave &amp; Overig'/);
+  assert.doesNotMatch(settings, /firstRunSetupRequired/);
+  assert.match(settings, /id="settingspopup"/);
+  assert.doesNotMatch(
+    settings,
+    /getOrCreateInstance\(\s*document\.getElementById\('settingspopup'\)/
+  );
+  assert.doesNotMatch(settings, /localStorage\.setItem\('dashticz_'/);
+  assert.doesNotMatch(source, /localStorage\.setItem\('dashticz_setup_config'/);
+  assert.doesNotMatch(source, /storeSetupConfig/);
+});
+
 test('all project JSON files parse', () => {
   const ignored = new Set(['node_modules', '.git']);
   function collect(directory) {
@@ -163,6 +191,29 @@ test('one failing block cannot stop the remaining screen blocks', () => {
   assert.match(source, /function renderUnavailableBlock\(/);
   assert.match(source, /Unable to mount block/);
   assert.match(lifecycle, /Device update failed for block/);
+});
+
+test('configured topbar timeout loads and initializes the auto-hide behavior', () => {
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const topbar = fs.readFileSync(path.join(root, 'js/topbar.js'), 'utf8');
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+
+  assert.match(
+    main,
+    /buildScreens\(\);\s*DT_function\.loadDTScript\('js\/topbar\.js'\)\.then/
+  );
+  assert.match(main, /DashticzTopbar\.init\(\)/);
+  assert.match(
+    main,
+    /Number\(settings\['hide_topbar'\]\) !== 1 \|\|\s*Number\(settings\['topbar_timeout'\]\) > 0/
+  );
+  assert.match(topbar, /settings\['topbar_timeout'\]/);
+  assert.match(topbar, /getBars\(\)\.slideUp\(400\)/);
+  assert.match(topbar, /getBars\(\)\.slideDown\(400\)/);
+  assert.doesNotMatch(main, /id: 'editmode'/);
+  assert.equal(fs.existsSync(path.join(root, 'js/editmode.js')), false);
+  assert.match(settings, /settingList\['screen'\]\['topbar_timeout'\]/);
+  assert.match(settings, /topbar_timeout: 0/);
 });
 
 test('Hayman clock does not depend on Moment locale internals for rendering', () => {
@@ -269,6 +320,7 @@ test('modern dark theme is portable and documented', () => {
   assert.match(theme, /\.mh \.btn\.active/);
   assert.match(theme, /\.transbg\.titlegroups/);
   assert.match(theme, /\.titlegroups[\s\S]*background: var\(--blocktitle\) !important/);
+  assert.match(theme, /\.colbar \.miniclock[\s\S]*background: transparent !important/);
   assert.match(theme, /\.titlegroups[\s\S]*box-shadow: none !important/);
   assert.match(theme, /\.titlegroups \.col-icon img\.icon/);
   assert.match(theme, /@media \(max-width: 767\.98px\)/);
