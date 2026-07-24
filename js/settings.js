@@ -126,10 +126,14 @@ settingList.general = {
 settingList['screen'] = {};
 settingList['screen']['title'] = language.settings.screen.title;
 
-settingList['screen']['hide_topbar'] = {};
-settingList['screen']['hide_topbar']['title'] =
-  language.settings.screen.hide_topbar;
-settingList['screen']['hide_topbar']['type'] = 'checkbox';
+settingList['screen']['topbar_timeout'] = {};
+settingList['screen']['topbar_timeout']['title'] =
+  language.settings.screen.topbar_timeout ||
+  'Topbar auto-hide (seconds, 0 = off)';
+settingList['screen']['topbar_timeout']['type'] = 'text';
+settingList['screen']['topbar_timeout']['help'] =
+  language.settings.screen.topbar_timeout_help ||
+  'Hide the topbar after this many seconds. Move the pointer to the top of the screen to show it again.';
 
 settingList['screen']['theme'] = {};
 settingList['screen']['theme']['title'] =
@@ -776,13 +780,13 @@ var defaultSettings = {
   boss_stationclock: 'RedBoss',
   use_fahrenheit: 0,
   use_beaufort: 0,
-  hide_topbar: 0,
   slide_effect: 'slide',
   hide_mediaplayer: 0,
   auto_swipe_back_to: 1,
   auto_slide_pages: 0,
   start_page: 1,
-  auto_positioning: 1,
+  auto_positioning: 0,
+  topbar_timeout: 0,
   use_favorites: 0,
   use_hidden: 0,
   translate_windspeed: 1,
@@ -928,7 +932,7 @@ var defaultSettings = {
   pointSize: 3,
   room_plan: 0,
   theme: 'default',
-  background_image: 'img/bg2.jpg',
+  background_image: 'img/bg11.jpg',
   loginEnabled: 0,
   security_button_icons: 0,
   security_panel_lock: 0,
@@ -1154,8 +1158,9 @@ function loadSettings() {
         first = false;
       }
       html += '</div>';
+      html += '</div><div class="modal-footer">';
       html +=
-        '</div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+        '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
         language.settings.close +
         '</button> ';
       if (settings['loginEnabled'] == true)
@@ -1182,16 +1187,6 @@ function loadSettings() {
             window.bootstrap.Tooltip.getOrCreateInstance(this);
           });
         }
-
-        if (typeof settings['domoticz_ip'] === 'undefined') {
-          if ($('.settingsicon').length == 0)
-            $('body').prepend(
-              '<button type="button" data-id="settings" class="settings settingsicon" ' +
-              'data-bs-toggle="modal" data-bs-target="#settingspopup" ' +
-              'aria-label="Open settings"><i class="fas fa-cog" aria-hidden="true"></i></button>'
-            );
-          $('.settingsicon').trigger('click');
-        }
       }, 100);
     });
 }
@@ -1214,8 +1209,6 @@ function saveSettings() {
   $('div#settingspopup input[type="text"],div#settingspopup select').each(
     function () {
       var val = $(this).val();
-      if (typeof Storage !== 'undefined')
-        localStorage.setItem('dashticz_' + $(this).attr('name'), val);
       if (isNumeric(val))
         val = parseFloat(val);
       var settingName = $(this).attr('name');
@@ -1228,13 +1221,9 @@ function saveSettings() {
 
   $('div#settingspopup input[type="checkbox"]').each(function () {
     if ($(this).is(':checked')) {
-      if (typeof Storage !== 'undefined')
-        localStorage.setItem('dashticz_' + $(this).attr('name'), $(this).val());
       alertSettings += 'config[' + JSON.stringify($(this).attr('name')) + '] = 1;\n';
       saveSettings[$(this).attr('name')] = JSON.stringify(1);
     } else {
-      if (typeof Storage !== 'undefined')
-        localStorage.setItem('dashticz_' + $(this).attr('name'), 0);
       alertSettings += 'config[' + JSON.stringify($(this).attr('name')) + '] = 0;\n';
       saveSettings[$(this).attr('name')] = JSON.stringify(0);
     }

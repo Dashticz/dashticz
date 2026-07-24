@@ -8,6 +8,23 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.20.4 beta (24-7-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Device Editor: a pencil icon has been added to the topbar (left of the settings gear). Clicking it opens a modal that lists all Domoticz devices currently shown in Dashticz, and provides a dropdown to select additional Domoticz devices and add them with the **+** button. Each listed device has a **−** button to remove it from Dashticz; the removed device is restored to the "Add device" dropdown. Added/remaining devices are saved to ``custom/CONFIG.js`` as named ``blocks[...]`` entries grouped into ``columns[de_colN]`` definitions (up to 4 blocks per column), and ``screens[1]`` is created or extended automatically. Requires PHP to be installed.
+* Settings: ``auto_positioning`` (add all devices automatically) and ``use_favorites`` both default to **off** (0). With both options off no devices are shown automatically; add devices explicitly via the Device Editor.
+* Screens: ``buildDefaultScreens`` is only called when ``auto_positioning`` is enabled, preventing automatic device injection on a fresh install.
+
+Fixes
+~~~~~
+
+* Device Editor save: ``managedDevices`` is now initialised from **all** devices currently shown in Dashticz (previously it only read from the ``device_editor`` column, so the list was always empty on first use and nothing was written to CONFIG.js).
+* Device Editor save: blocks are now written as proper named ``blocks['Name'] = {idx, …}`` entries with grouped columns and a ``screens[1]`` initialisation; previously only a raw IDX array was written to a single ``columns['device_editor']`` entry and ``screens[1]`` was never created on a fresh CONFIG.js.
+* Device Editor remove: restoring a removed device back into the ``available[]`` array so that subsequent **+** dropdown rows correctly include it.
+
 v3.20.3 beta (20-7-2026)
 --------------------------
 
