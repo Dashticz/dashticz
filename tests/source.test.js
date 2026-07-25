@@ -311,6 +311,10 @@ test('modern dark theme is portable and documented', () => {
   assert.match(theme, /inset 0 0 0 var\(--main-border-width\) var\(--border-color-block\)/);
   assert.match(theme, /--radius-border: 16px/);
   assert.match(theme, /\.transbg \.btn[\s\S]*border: 1px solid var\(--border-color-inactive\) !important/);
+  assert.match(theme, /\.transbg \.selector-buttons \.btn/);
+  assert.match(theme, /min-width: 56px/);
+  assert.match(theme, /min-height: 44px/);
+  assert.match(theme, /font-size: 18px !important/);
   assert.match(theme, /\.transbg \.btn\.active/);
   assert.match(theme, /border-color: var\(--border-color-active\) !important/);
   assert.match(theme, /\.transbg select/);
