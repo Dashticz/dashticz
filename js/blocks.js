@@ -1483,7 +1483,7 @@ function getSelectorSwitch(block) {
     } else {
       html += '<div class="col-xs-8 col-data">';
       if (!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
-      html += '<div class="btn-group" data-toggle="buttons">';
+      html += '<div class="btn-group selector-buttons" data-toggle="buttons">';
       for (idx in nameValues) {
         nv = nameValues[idx];
         if (
