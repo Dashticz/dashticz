@@ -9,6 +9,8 @@
 *.css text eol=lf
 *.scss text eol=lf
 *.tpl text eol=lf
+*.sh text eol=lf
+*.rst text eol=lf
 js/savesettings.php text eol=lf
 vendor/dashticz/security.php text eol=lf
 vendor/dashticz/cors.php text eol=lf

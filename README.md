@@ -103,6 +103,58 @@ Developers who change files under `src/` should use `npm ci`, run `npm test`,
 and rebuild the committed production bundle with `npm run build`. The
 `node_modules/` directory must not be committed.
 
+## Browser configuration and Device Editor
+
+When `custom/CONFIG.js` is missing or contains only `#EMPTY#`, Dashticz opens a
+first-run wizard. The wizard creates a real `CONFIG.js` containing the Domoticz
+connection, dashboard name, language, theme, and other basic settings. PHP must
+be enabled and `custom/CONFIG.js` must be writable by the web-server account.
+
+After Dashticz has started, select the pencil icon next to the settings icon in
+the topbar to open the **Device Editor**. The editor can:
+
+- add devices and sub-devices detected in Domoticz;
+- remove devices from the generated dashboard configuration;
+- change the order by dragging device rows;
+- set each block width from 1 through 12.
+
+Select **Save** to write the generated blocks and columns to
+`custom/CONFIG.js`. The editor owns only the section between
+`// [device-editor-start]` and `// [device-editor-end]`; configuration outside
+those markers is preserved. Generated columns are added to screen 1 and the
+dashboard reloads after saving. Back up an existing `CONFIG.js` before first
+using the editor.
+
+The pencil icon is part of the `settings` topbar block. A custom topbar must
+therefore include `settings`:
+
+```javascript
+var columns = {};
+columns['bar'] = {
+  blocks: ['logo', 'miniclock', 'settings']
+};
+```
+
+### Briefly show the topbar
+
+Set `topbar_timeout` to the number of seconds that the topbar should remain
+visible. It is shown when the dashboard opens and then automatically slides
+out. Move the pointer to the top edge of the screen to show it again.
+
+```javascript
+config['topbar_timeout'] = 10;
+```
+
+Use `0` to keep the topbar permanently visible:
+
+```javascript
+config['topbar_timeout'] = 0;
+```
+
+The same value can be changed through **Settings → Screen → Topbar auto-hide**.
+Existing configurations that still contain `config['hide_topbar']` should
+remove that legacy setting when switching to `topbar_timeout`.
+
 ## Included themes
 
 The `modern-dark` theme provides a reusable dark dashboard style with clear
@@ -162,21 +214,19 @@ Got to the installation path where you want to install Dashticz
 for example /var/www/html
 
 ```sh
-bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/main/install.sh)"
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/master/install.sh)"
 ```
-For beta branch go to your Dashiticz install and run
-```
-./updatebeta.sh
-```
-For updates
-```
-./update.sh
-```
+The installer clones the latest stable `master` branch into `dashticz` and creates
+`custom/CONFIG.js` with the content `#EMPTY#` and file mode `0755`.
 
-The script requests `sudo` when necessary, derives the Dashticz directory from
-its own location, detects the Apache/PHP account, prepares only `custom/`, and
-verifies write access as that account. The wizard then creates a real
-`custom/CONFIG.js`; no privileged runtime helper or browser storage is used.
+For the beta branch, go to your Dashticz installation and run:
+```
+sh updatebeta.sh
+```
+For stable updates, run:
+```
+sh update.sh
+```
 
 # Documentation and support
 Documentation can be found on:

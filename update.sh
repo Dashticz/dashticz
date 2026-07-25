@@ -10,8 +10,8 @@ if [ ! -d ".git" ]; then
 fi
 
 git fetch origin
-git checkout main
-git pull origin main
+git checkout master
+git pull origin master
 
 echo
 echo "Dashticz has been updated to the latest stable version."
