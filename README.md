@@ -158,11 +158,19 @@ In addition to that it's possible to show information from all kind of other sou
 # Installation instructions
 See https://dashticz.readthedocs.io/en/master/gettingstarted/
 
-For native Apache/PHP installations that use the first-run setup wizard, finish
-the Git installation with:
+Got to the installation path where you want to install Dashticz
+for example /var/www/html
 
 ```sh
-sh tools/install-dashticz-write-access
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/main/install.sh)"
+```
+For beta branch go to your Dashiticz install and run
+```
+./updatebeta.sh
+```
+For updates
+```
+./update.sh
 ```
 
 The script requests `sudo` when necessary, derives the Dashticz directory from
