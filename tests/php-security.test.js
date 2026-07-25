@@ -87,6 +87,9 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(source, /is_int\(\$entry\)/);
   assert.match(source, /\$entry\['idx'\]/);
   assert.match(source, /function _chunkBlockKeysByWidth/);
+  assert.match(source, /array_key_exists\('height'/);
+  assert.match(source, /round\(\$height \/ 10\) \* 10/);
+  assert.match(source, /,height:/);
   assert.doesNotMatch(source, /array_chunk\(\$blockKeys,\s*4\)/);
   /* no raw IDX-only column block from the old implementation */
   assert.doesNotMatch(source, /columns\['device_editor'\]/);

@@ -24,7 +24,7 @@ You can customize the Topbar with the following settings in ``CONFIG.js``::
   * - miniclock
     - Clock in Topbar
   * - settings
-    - Settings & Fullscreen button in Topbar
+    - Device Editor, Visual Layout Editor, Settings & Fullscreen buttons in Topbar
 
 Applicable config-parameters from ``CONFIG.js``:
 

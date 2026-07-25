@@ -138,11 +138,16 @@ var DT_simpleblock = (function () {
             'role="button" aria-label="Open device editor">' +
             '<i class="fas fa-pencil-alt" aria-hidden="true"></i></span>';
           content +=
+            '<span class="settings layouteditoricon" data-id="layouteditor" ' +
+            'role="button" aria-label="Open visual layout editor">' +
+            '<i class="fas fa-arrows-alt" aria-hidden="true"></i></span>';
+          content +=
             '<span class="settings settingsicon" data-id="settings" ' +
             'data-bs-target="#settingspopup" data-bs-toggle="modal" ' +
             'role="button" aria-label="Open settings">' +
             '<i class="fas fa-cog" aria-hidden="true"></i></span>';
           _registerDeviceEditorClick();
+          _registerLayoutEditorClick();
           break;
 
         case 'fullscreen':
@@ -160,6 +165,16 @@ var DT_simpleblock = (function () {
         DashticzDeviceEditor.open();
       });
     });
+  }
+
+  function _registerLayoutEditorClick() {
+    $(document)
+      .off('click.layouteditoricon')
+      .on('click.layouteditoricon', '.layouteditoricon', function () {
+        DT_function.loadDTScript('js/layouteditor.js').then(function () {
+          DashticzLayoutEditor.open();
+        });
+      });
   }
 
   function renderMiniclock(me) {

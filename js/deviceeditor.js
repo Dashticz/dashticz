@@ -8,6 +8,7 @@ var DashticzDeviceEditor = (function () {
   var managedDevices = [];   // composite keys managed by the device editor
   var deviceNames    = {};   // composite key -> device name
   var deviceWidths   = {};   // composite key -> block width (1..12)
+  var deviceHeights  = {};   // composite key -> optional block height
 
   /* ── public API ─────────────────────────────────────────────── */
   function open() {
@@ -20,6 +21,7 @@ var DashticzDeviceEditor = (function () {
     managedDevices = _getAllManagedKeys();
     deviceNames    = {};
     deviceWidths   = {};
+    deviceHeights  = {};
   }
 
   /* ── composite key helpers ──────────────────────────────────── */
@@ -167,6 +169,7 @@ var DashticzDeviceEditor = (function () {
       var d = allDomoticz[String(p.idx)] || allDomoticz[p.idx];
       deviceNames[ck]  = d ? (d.Name || ('Device ' + p.idx)) : ('Device ' + p.idx);
       deviceWidths[ck] = _getConfiguredWidthForCk(ck);
+      deviceHeights[ck] = _getConfiguredHeightForCk(ck);
     });
 
     $('body').append(_buildModalHtml(managedKeys, available, allDomoticz));
@@ -292,6 +295,7 @@ var DashticzDeviceEditor = (function () {
       if (pos > -1) managedDevices.splice(pos, 1);
       delete deviceNames[ck];
       delete deviceWidths[ck];
+      delete deviceHeights[ck];
 
       /* remove item from device-list */
       $(this).closest('.de-device-item').remove();
@@ -466,6 +470,7 @@ var DashticzDeviceEditor = (function () {
         width: _parseWidth(deviceWidths[ck]),
       };
       if (p.subidx) entry.subidx = p.subidx;
+      if (deviceHeights[ck]) entry.height = deviceHeights[ck];
       return entry;
     });
 
@@ -549,6 +554,38 @@ var DashticzDeviceEditor = (function () {
       }
     }
     return 2;
+  }
+
+  function _getConfiguredHeightForCk(ck) {
+    if (typeof columns !== 'undefined') {
+      var colKeys = Object.keys(columns);
+      for (var i = 0; i < colKeys.length; i++) {
+        var col = columns[colKeys[i]];
+        if (!col || !Array.isArray(col.blocks)) continue;
+        for (var j = 0; j < col.blocks.length; j++) {
+          var ref = col.blocks[j];
+          var block = null;
+          var refCk = _toCompositeKey(ref);
+          if (!refCk && typeof ref === 'string' &&
+              typeof blocks !== 'undefined' && blocks[ref]) {
+            block = blocks[ref];
+            refCk = _toCompositeKey(block);
+          } else if (typeof ref === 'object' && ref !== null) {
+            block = ref;
+          }
+          if (refCk === ck && block && typeof block.height !== 'undefined') {
+            return _parseHeight(block.height);
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  function _parseHeight(value) {
+    var height = parseInt(value, 10);
+    if (!(height > 0)) return null;
+    return Math.max(50, Math.min(2000, Math.round(height / 10) * 10));
   }
 
   return { open: open };

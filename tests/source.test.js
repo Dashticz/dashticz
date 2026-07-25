@@ -216,6 +216,32 @@ test('configured topbar timeout loads and initializes the auto-hide behavior', (
   assert.match(settings, /topbar_timeout: 0/);
 });
 
+test('visual layout editor is limited to generated device columns and uses a 10px height grid', () => {
+  const simpleBlock = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const editor = fs.readFileSync(
+    path.join(root, 'js/layouteditor.js'),
+    'utf8'
+  );
+  const domoticzBlock = fs.readFileSync(
+    path.join(root, 'js/components/domoticzblock.js'),
+    'utf8'
+  );
+
+  assert.match(simpleBlock, /layouteditoricon/);
+  assert.match(simpleBlock, /js\/layouteditor\.js/);
+  assert.match(editor, /var HEIGHT_STEP = 10/);
+  assert.match(editor, /\/\^de_col\\d\+\$\//);
+  assert.match(editor, /col-xs-/);
+  assert.match(editor, /entry\.height = item\.height/);
+  assert.match(editor, /dle-cancel/);
+  assert.match(editor, /X-Dashticz-CSRF/);
+  assert.match(domoticzBlock, /applyConfiguredHeight/);
+  assert.match(domoticzBlock, /setProperty\('height'.*'important'\)/s);
+});
+
 test('Hayman clock does not depend on Moment locale internals for rendering', () => {
   const source = fs.readFileSync(
     path.join(root, 'js/components/haymanclock.js'),

@@ -721,9 +721,153 @@ next css sets the default height of the frame popup
 }
 
 /* ── Device Editor icon ──────────────────────────────────────── */
-.colbar span.deviceeditoricon {
+.colbar span.deviceeditoricon,
+.colbar span.layouteditoricon {
   cursor: pointer;
   margin-right: 4px;
+}
+
+/* Visual Layout Editor */
+body.dle-active {
+  user-select: none;
+}
+
+.dle-canvas {
+  position: relative;
+}
+
+.dle-block {
+  position: relative;
+  outline: 2px dashed rgba(13, 110, 253, 0.9);
+  outline-offset: -2px;
+}
+
+.dle-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1000;
+  cursor: grab;
+  touch-action: none;
+  background: rgba(13, 110, 253, 0.08);
+}
+
+.dle-overlay:active {
+  cursor: grabbing;
+}
+
+.dle-drag-icon,
+.dle-size-label {
+  position: absolute;
+  top: 4px;
+  z-index: 2;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #fff;
+  background: rgba(13, 24, 40, 0.88);
+  line-height: 18px;
+}
+
+.dle-drag-icon {
+  left: 4px;
+}
+
+.dle-drag-icon .fas {
+  margin: 0 !important;
+  font-size: 16px !important;
+}
+
+.dle-size-label {
+  right: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.dle-resize-handle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  width: 28px;
+  height: 28px;
+  cursor: nwse-resize;
+  background:
+    linear-gradient(
+      135deg,
+      transparent 0 45%,
+      rgba(255, 255, 255, 0.95) 46% 54%,
+      transparent 55% 64%,
+      rgba(255, 255, 255, 0.95) 65% 73%,
+      rgba(13, 110, 253, 0.9) 74%
+    );
+  border-radius: 0 0 5px 0;
+}
+
+.dle-dragging {
+  opacity: 0.35;
+}
+
+.dle-drop-before {
+  box-shadow: inset 5px 0 0 #20c997 !important;
+}
+
+.dle-drop-after {
+  box-shadow: inset -5px 0 0 #20c997 !important;
+}
+
+.dle-toolbar {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  z-index: 20000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: calc(100vw - 24px);
+  padding: 8px 10px;
+  color: #fff;
+  background: rgba(13, 24, 40, 0.96);
+  border: 1px solid #5aa2ff;
+  border-radius: 8px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38);
+  transform: translateX(-50%);
+}
+
+.dle-toolbar-title {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.dle-toolbar-title .fas {
+  margin-right: 5px;
+}
+
+.dle-toolbar-help {
+  font-size: 12px;
+}
+
+.dle-drag-ghost {
+  position: fixed;
+  z-index: 21000;
+  max-width: 260px;
+  padding: 6px 10px;
+  color: #fff;
+  background: rgba(13, 110, 253, 0.92);
+  border-radius: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
+}
+
+@media (max-width: 767.98px) {
+  .dle-toolbar {
+    bottom: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .dle-toolbar-help {
+    flex-basis: 100%;
+    text-align: center;
+  }
 }
 
 /* ── Device Editor modal ─────────────────────────────────────── */
