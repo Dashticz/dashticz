@@ -125,7 +125,22 @@ those markers is preserved. Generated columns are added to screen 1 and the
 dashboard reloads after saving. Back up an existing `CONFIG.js` before first
 using the editor.
 
-The pencil icon is part of the `settings` topbar block. A custom topbar must
+Select the arrows icon next to the pencil to open the **Visual Layout Editor**
+on screen 1. Blocks created by the Device Editor receive a blue edit overlay:
+
+- drag a block to change its position;
+- drag the bottom-right corner to change its width and height;
+- width snaps to the 12-column dashboard grid;
+- height snaps to steps of 10 pixels;
+- select **Save** to update `custom/CONFIG.js`, or **Cancel**/Escape to restore
+  the original layout.
+
+Only blocks inside generated `de_col*` columns are editable. Manually configured
+blocks, special widgets, and topbar blocks are deliberately left unchanged.
+Saved heights are applied to classic Domoticz device blocks as well as the
+`modern-dark` theme.
+
+The pencil and arrows icons are part of the `settings` topbar block. A custom topbar must
 therefore include `settings`:
 
 ```javascript
