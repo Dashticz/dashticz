@@ -271,6 +271,68 @@ test('visual layout editor is limited to generated device columns and uses a 10p
   assert.match(domoticzBlock, /setProperty\('height'.*'important'\)/s);
 });
 
+test('widget editor exposes the supported catalog and keeps legacy options out of settings UI', () => {
+  const simpleBlock = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const widgetEditor = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const weather = fs.readFileSync(
+    path.join(root, 'js/components/weather.js'),
+    'utf8'
+  );
+  const garbage = fs.readFileSync(
+    path.join(root, 'js/components/garbage.js'),
+    'utf8'
+  );
+  const sonarr = fs.readFileSync(path.join(root, 'js/sonarr.js'), 'utf8');
+
+  assert.match(simpleBlock, /widgeteditoricon/);
+  assert.match(simpleBlock, /fas fa-puzzle-piece/);
+  assert.match(simpleBlock, /js\/widgeteditor\.js/);
+  for (const id of [
+    'weather',
+    'garbage',
+    'spotify',
+    'sonarr',
+    'clock',
+    'calendar',
+  ]) {
+    assert.match(widgetEditor, new RegExp(`id: '${id}'`));
+  }
+  assert.match(widgetEditor, /OpenWeather/);
+  assert.match(widgetEditor, /Weather Underground/);
+  assert.match(widgetEditor, /we-calendar-url/);
+  assert.match(widgetEditor, /js\/savewidgets\.php/);
+  assert.match(widgetEditor, /X-Dashticz-CSRF/);
+  assert.match(styles, /\.we-widget-grid/);
+  assert.match(styles, /\.we-widget-card\.we-selected/);
+  assert.match(weather, /block\.widget_provider === 'openweather'/);
+  assert.match(garbage, /block\.type === 'garbage'/);
+  assert.match(sonarr, /function loadSonarr\(me\)/);
+
+  for (const key of [
+    'auto_positioning',
+    'use_favorites',
+    'use_hidden',
+    'room_plan',
+    'colorpicker',
+    'colorpickerscale',
+  ]) {
+    assert.doesNotMatch(
+      settings,
+      new RegExp(`^\\s{2}${key}: \\{`, 'm')
+    );
+  }
+  assert.doesNotMatch(main, /id: 'use_favorites'/);
+});
+
 test('Hayman clock does not depend on Moment locale internals for rendering', () => {
   const source = fs.readFileSync(
     path.join(root, 'js/components/haymanclock.js'),

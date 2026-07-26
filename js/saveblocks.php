@@ -157,7 +157,20 @@ if (!empty($devices)) {
     }
 
     $section .= $endMarker;
-    $config  .= $section;
+
+    /*
+     * Keep device columns before widget columns. Both editors append their
+     * columns to screen 1, so their CONFIG.js section order determines the
+     * visible dashboard order after either editor saves.
+     */
+    $widgetStartPos = strpos($config, '// [widget-editor-start]');
+    if ($widgetStartPos !== false) {
+        $beforeWidgets = rtrim(substr($config, 0, $widgetStartPos));
+        $widgetSection = ltrim(substr($config, $widgetStartPos));
+        $config = $beforeWidgets . $section . "\n\n" . $widgetSection;
+    } else {
+        $config .= $section;
+    }
 }
 
 /* ---- write CONFIG.js --------------------------------------------------- */

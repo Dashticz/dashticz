@@ -83,6 +83,7 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(source, /typeof columns/);
   assert.match(source, /typeof screens/);
   assert.match(source, /device-editor-start/);
+  assert.match(source, /widget-editor-start/);
   /* accepts both legacy bare integers and {idx,name} objects */
   assert.match(source, /is_int\(\$entry\)/);
   assert.match(source, /\$entry\['idx'\]/);
@@ -93,4 +94,27 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.doesNotMatch(source, /array_chunk\(\$blockKeys,\s*4\)/);
   /* no raw IDX-only column block from the old implementation */
   assert.doesNotMatch(source, /columns\['device_editor'\]/);
+});
+
+test('widget writer whitelists widgets and protects CONFIG.js writes', () => {
+  const source = read('js/savewidgets.php');
+  assert.match(source, /dashticz_require_same_origin\(\)/);
+  assert.match(source, /dashticz_require_csrf\(\)/);
+  assert.match(source, /REQUEST_METHOD.*POST/);
+  assert.match(source, /\$catalog = \[/);
+  for (const id of [
+    'weather',
+    'garbage',
+    'spotify',
+    'sonarr',
+    'clock',
+    'calendar',
+  ]) {
+    assert.match(source, new RegExp(`'${id}'\\s*=>`));
+  }
+  assert.match(source, /Unknown widget id/);
+  assert.match(source, /Unknown weather provider/);
+  assert.match(source, /Calendar requires a valid http\(s\) ICS URL/);
+  assert.match(source, /widget-editor-start/);
+  assert.match(source, /file_put_contents\(\$configPath, \$config \. "\\n", LOCK_EX\)/);
 });

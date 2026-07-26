@@ -126,8 +126,19 @@ those markers is preserved. Generated columns are added to screen 1 and the
 dashboard reloads after saving. Back up an existing `CONFIG.js` before first
 using the editor.
 
-Select the arrows icon next to the plus to open the **Visual Layout Editor**
-on screen 1. Blocks created by the Device Editor receive a blue edit overlay:
+Select the puzzle-piece icon to open the **Widget Editor**. It provides a tile
+catalog for Weather (OpenWeather or Weather Underground), Garbage, Spotify,
+Sonarr, Clock, and an ICS Calendar. Select a tile and then **Save** to add it to
+screen 1; select an added tile again to remove it. The calendar tile requires
+an HTTP(S) ICS URL. API keys, addresses, and server URLs remain configurable in
+the relevant Weather, Garbage, Media, and Localization settings sections.
+
+The Widget Editor owns only the section between `// [widget-editor-start]` and
+`// [widget-editor-end]` in `custom/CONFIG.js`, so manual configuration outside
+those markers is preserved.
+
+Select the arrows icon in the topbar to open the **Visual Layout Editor** on
+screen 1. Blocks created by the Device Editor receive a blue edit overlay:
 
 - drag a block to change its position;
 - drag the bottom-right corner to change its width and height;
@@ -142,8 +153,8 @@ blocks, special widgets, and topbar blocks are deliberately left unchanged.
 Saved heights are applied to classic Domoticz device blocks as well as the
 `modern-dark` theme.
 
-The plus and arrows icons are part of the `settings` topbar block. A custom topbar must
-therefore include `settings`:
+The plus, puzzle-piece, and arrows icons are part of the `settings` topbar
+block. A custom topbar must therefore include `settings`:
 
 ```javascript
 var columns = {};
