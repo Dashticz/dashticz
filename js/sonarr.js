@@ -8,6 +8,12 @@ function loadSonarr(me) {
   var sonarrTitlePosition = 'left';
   var sonarrTitleObject = 'Upcoming&nbsp;shows';
   var block = me && me.block ? me.block : {};
+  var fixedHeight = parseInt(block.height, 10);
+  var heightClass = fixedHeight > 0 ? ' fixedheight' : '';
+  var heightStyle =
+    fixedHeight > 0
+      ? ' style="height:' + fixedHeight + 'px !important"'
+      : '';
 
   // lets get all the user settings if they exist
   if (typeof block.width !== 'undefined') {
@@ -30,7 +36,14 @@ function loadSonarr(me) {
       sonarrTitleObject +
       '</h3></div>';
   }
-  html += '<div class="sonarrMain block_sonarr col-xs-' + width + ' transbg">';
+  html +=
+    '<div class="sonarrMain mh dt_block block_sonarr col-xs-' +
+    width +
+    ' transbg' +
+    heightClass +
+    '"' +
+    heightStyle +
+    '>';
 
   if (sonarrTitlePosition == 'left') {
     html +=

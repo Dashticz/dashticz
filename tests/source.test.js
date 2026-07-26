@@ -220,7 +220,7 @@ test('configured topbar timeout loads and initializes the auto-hide behavior', (
   assert.match(settings, /topbar_timeout: 0/);
 });
 
-test('visual layout editor is limited to generated device columns and uses a 10px height grid', () => {
+test('visual layout editor handles generated devices and widgets on a 10px height grid', () => {
   const simpleBlock = fs.readFileSync(
     path.join(root, 'js/components/simpleblock.js'),
     'utf8'
@@ -246,13 +246,16 @@ test('visual layout editor is limited to generated device columns and uses a 10p
   assert.match(simpleBlock, /fas fa-plus/);
   assert.match(simpleBlock, /js\/layouteditor\.js/);
   assert.match(editor, /var HEIGHT_STEP = 10/);
-  assert.match(editor, /\/\^de_col\\d\+\$\//);
+  assert.match(editor, /\/\^\(de\|we\|le\)_col\\d\+\$\//);
   assert.match(editor, /col-xs-/);
-  assert.match(editor, /entry\.height = item\.height/);
+  assert.match(editor, /(?:widgetEntry|deviceEntry)\.height = item\.height/);
   assert.match(editor, /dle-cancel/);
   assert.match(editor, /function _moveDraggedItem/);
   assert.match(editor, /function _removeItem/);
   assert.match(editor, /dle-remove-button/);
+  assert.match(editor, /js\/savewidgets\.php/);
+  assert.match(editor, /js\/savelayout\.php/);
+  assert.match(editor, /widgetResult\.blockKeys/);
   assert.match(editor, /_startDrag\(event, item, \$canvas\[0\]\)/);
   assert.match(editor, /\$\(item\.visibleBlocks\)[\s\S]*children\('\.dle-overlay'\)/);
   assert.match(editor, /appendChild\(item\.wrapper\)/);
@@ -263,10 +266,14 @@ test('visual layout editor is limited to generated device columns and uses a 10p
   assert.match(stylesheet, /\.dle-item-wrapper > \.dle-block/);
   assert.match(stylesheet, /\.dle-remove-button/);
   assert.match(stylesheet, /background: #dc3545/);
+  assert.match(stylesheet, /\.dle-size-label \{[\s\S]*bottom: 4px/);
   assert.match(
     deviceEditor,
     /var ck\s+= String\(\$\(this\)\.attr\('data-ck'\)\)/
   );
+  assert.match(deviceEditor, /screens\[1\]\.columns/);
+  assert.match(deviceEditor, /\$activeScreen\.find\('\[data-colindex\]'\)/);
+  assert.match(deviceEditor, /ordered\.push\(ck\)/);
   assert.match(domoticzBlock, /applyConfiguredHeight/);
   assert.match(domoticzBlock, /setProperty\('height'.*'important'\)/s);
 });
@@ -292,6 +299,10 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
     'utf8'
   );
   const sonarr = fs.readFileSync(path.join(root, 'js/sonarr.js'), 'utf8');
+  const fullscreen = fs.readFileSync(
+    path.join(root, 'js/fullscreen.js'),
+    'utf8'
+  );
 
   assert.match(simpleBlock, /widgeteditoricon/);
   assert.match(simpleBlock, /fas fa-puzzle-piece/);
@@ -308,12 +319,20 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   }
   assert.match(widgetEditor, /OpenWeather/);
   assert.match(widgetEditor, /Weather Underground/);
+  assert.match(widgetEditor, /Stationsklok/);
+  assert.match(widgetEditor, /Flipclock/);
+  assert.match(widgetEditor, /Hayman clock/);
+  assert.match(widgetEditor, /Miniclock/);
   assert.match(widgetEditor, /we-calendar-url/);
+  assert.match(widgetEditor, /we-clock-type/);
   assert.match(widgetEditor, /js\/savewidgets\.php/);
   assert.match(widgetEditor, /X-Dashticz-CSRF/);
   assert.match(styles, /\.we-widget-grid/);
   assert.match(styles, /\.we-widget-card\.we-selected/);
   assert.match(weather, /block\.widget_provider === 'openweather'/);
+  assert.match(simpleBlock, /wunderground/);
+  assert.match(simpleBlock, /title="Widgets toevoegen"/);
+  assert.match(fullscreen, /title="Volledig scherm"/);
   assert.match(garbage, /block\.type === 'garbage'/);
   assert.match(sonarr, /function loadSonarr\(me\)/);
 

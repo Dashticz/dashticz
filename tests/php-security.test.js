@@ -84,6 +84,8 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(source, /typeof screens/);
   assert.match(source, /device-editor-start/);
   assert.match(source, /widget-editor-start/);
+  assert.match(source, /layout-editor-start/);
+  assert.match(source, /blockKeys/);
   /* accepts both legacy bare integers and {idx,name} objects */
   assert.match(source, /is_int\(\$entry\)/);
   assert.match(source, /\$entry\['idx'\]/);
@@ -114,7 +116,21 @@ test('widget writer whitelists widgets and protects CONFIG.js writes', () => {
   }
   assert.match(source, /Unknown widget id/);
   assert.match(source, /Unknown weather provider/);
+  assert.match(source, /Unknown clock type/);
   assert.match(source, /Calendar requires a valid http\(s\) ICS URL/);
   assert.match(source, /widget-editor-start/);
+  assert.match(source, /layout-editor-start/);
+  assert.match(source, /blockKeys/);
+  assert.match(source, /file_put_contents\(\$configPath, \$config \. "\\n", LOCK_EX\)/);
+});
+
+test('layout writer only stores safe managed block references', () => {
+  const source = read('js/savelayout.php');
+  assert.match(source, /dashticz_require_same_origin\(\)/);
+  assert.match(source, /dashticz_require_csrf\(\)/);
+  assert.match(source, /REQUEST_METHOD.*POST/);
+  assert.match(source, /\^\[A-Za-z_\]\[A-Za-z0-9_\]\*\$/);
+  assert.match(source, /layout-editor-start/);
+  assert.match(source, /\(de\|we\|le\)_col/);
   assert.match(source, /file_put_contents\(\$configPath, \$config \. "\\n", LOCK_EX\)/);
 });

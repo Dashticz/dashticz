@@ -132,6 +132,7 @@ Sonarr, Clock, and an ICS Calendar. Select a tile and then **Save** to add it to
 screen 1; select an added tile again to remove it. The calendar tile requires
 an HTTP(S) ICS URL. API keys, addresses, and server URLs remain configurable in
 the relevant Weather, Garbage, Media, and Localization settings sections.
+The Clock tile offers Basic, Station, Flip, Hayman, and Mini clock variants.
 
 The Widget Editor owns only the section between `// [widget-editor-start]` and
 `// [widget-editor-end]` in `custom/CONFIG.js`, so manual configuration outside
@@ -148,13 +149,16 @@ screen 1. Blocks created by the Device Editor receive a blue edit overlay:
 - select **Save** to update `custom/CONFIG.js`, or **Cancel**/Escape to restore
   the original layout.
 
-Only blocks inside generated `de_col*` columns are editable. Manually configured
-blocks, special widgets, and topbar blocks are deliberately left unchanged.
-Saved heights are applied to classic Domoticz device blocks as well as the
-`modern-dark` theme.
+Blocks inside generated `de_col*`, `we_col*`, and combined `le_col*` columns
+are editable. This includes devices and widgets created by either editor.
+Their mixed order is stored separately so the dashboard and Device Editor show
+the same ordering. Manually configured blocks and topbar blocks are deliberately
+left unchanged. Saved heights are applied to classic Domoticz device blocks as
+well as the `modern-dark` theme.
 
 The plus, puzzle-piece, and arrows icons are part of the `settings` topbar
-block. A custom topbar must therefore include `settings`:
+block and show their function on hover. A custom topbar must therefore include
+`settings`:
 
 ```javascript
 var columns = {};

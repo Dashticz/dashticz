@@ -50,8 +50,15 @@ foreach ($data['widgets'] as $entry) {
     $widget = [
         'id' => $id,
         'key' => $catalog[$id]['key'],
-        'width' => $catalog[$id]['width'],
+        'width' => isset($entry['width'])
+            ? max(1, min(12, (int)$entry['width']))
+            : $catalog[$id]['width'],
+        'height' => null,
     ];
+    if (array_key_exists('height', $entry) && $entry['height'] !== null && $entry['height'] !== '') {
+        $height = (int)(round(((int)$entry['height']) / 10) * 10);
+        $widget['height'] = max(50, min(2000, $height));
+    }
 
     if ($id === 'weather') {
         $provider = isset($entry['provider']) && is_string($entry['provider'])
@@ -73,6 +80,17 @@ foreach ($data['widgets'] as $entry) {
         $widget['icalurl'] = $icalurl;
     }
 
+    if ($id === 'clock') {
+        $clockType = isset($entry['clockType']) && is_string($entry['clockType'])
+            ? $entry['clockType']
+            : 'basicclock';
+        $allowedClockTypes = ['basicclock', 'stationclock', 'flipclock', 'haymanclock', 'miniclock'];
+        if (!in_array($clockType, $allowedClockTypes, true)) {
+            dashticz_json_error(400, 'Unknown clock type.');
+        }
+        $widget['clockType'] = $clockType;
+    }
+
     $widgets[] = $widget;
 }
 
@@ -90,6 +108,12 @@ if (file_exists($configPath)) {
 } else {
     $config = "var config = {}\n";
 }
+
+$config = _widgetRemoveSection(
+    $config,
+    '// [layout-editor-start]',
+    '// [layout-editor-end]'
+);
 
 $startMarker = '// [widget-editor-start]';
 $endMarker = '// [widget-editor-end]';
@@ -110,29 +134,39 @@ if (!empty($widgets)) {
     $section .= "if(typeof blocks==='undefined') var blocks={};\n";
 
     foreach ($widgets as $widget) {
+        $width = $widget['width'];
+        $height = $widget['height'] !== null
+            ? ",height:" . $widget['height']
+            : '';
         $section .= "blocks['" . $widget['key'] . "']=";
         switch ($widget['id']) {
             case 'weather':
-                $section .= "{type:'weather',widget_provider:'"
+                $weatherType = $widget['provider'] === 'wunderground'
+                    ? 'wunderground'
+                    : 'weather';
+                $section .= "{type:'" . $weatherType . "',widget_provider:'"
                     . $widget['provider']
-                    . "',width:12,title:'Weer'}";
+                    . "',width:" . $width . ",title:'Weer'" . $height . "}";
                 break;
             case 'garbage':
-                $section .= "{type:'garbage',width:6,title:'Afval'}";
+                $section .= "{type:'garbage',width:" . $width . ",title:'Afval'" . $height . "}";
                 break;
             case 'spotify':
-                $section .= "{type:'spotify',width:6,title:'Spotify'}";
+                $section .= "{type:'spotify',width:" . $width . ",title:'Spotify'" . $height . "}";
                 break;
             case 'sonarr':
-                $section .= "{type:'sonarr',width:8,title:'Sonarr',title_position:'left',view:'banner'}";
+                $section .= "{type:'sonarr',width:" . $width
+                    . ",title:'Sonarr',title_position:'left',view:'banner'" . $height . "}";
                 break;
             case 'clock':
-                $section .= "{type:'basicclock',width:4,title:'Klok'}";
+                $section .= "{type:'" . $widget['clockType'] . "',width:"
+                    . $width . ",title:'Klok'" . $height . "}";
                 break;
             case 'calendar':
-                $section .= "{type:'calendar',width:8,title:'Kalender',icalurl:'"
+                $section .= "{type:'calendar',width:" . $width
+                    . ",title:'Kalender',icalurl:'"
                     . _widgetJsStringEscape($widget['icalurl'])
-                    . "'}";
+                    . "'" . $height . "}";
                 break;
         }
         $section .= ";\n";
@@ -190,7 +224,26 @@ if (file_put_contents($configPath, $config . "\n", LOCK_EX) === false) {
 @chmod($configPath, 0664);
 
 header('Content-Type: application/json');
-echo json_encode(['success' => true]);
+echo json_encode([
+    'success' => true,
+    'blockKeys' => array_map(function ($widget) {
+        return $widget['key'];
+    }, $widgets),
+]);
+
+function _widgetRemoveSection($config, $startMarker, $endMarker)
+{
+    $startPos = strpos($config, $startMarker);
+    if ($startPos === false) {
+        return $config;
+    }
+    $endPos = strpos($config, $endMarker, $startPos);
+    if ($endPos === false) {
+        return substr($config, 0, $startPos);
+    }
+    return substr($config, 0, $startPos)
+        . substr($config, $endPos + strlen($endMarker));
+}
 
 function _widgetJsStringEscape($value)
 {
