@@ -368,13 +368,49 @@ test('Hayman clock does not depend on Moment locale internals for rendering', ()
 
 test('clock components use public date APIs and a valid seconds setting', () => {
   const dateTime = fs.readFileSync(path.join(root, 'src/date-time.js'), 'utf8');
+  const basicClock = fs.readFileSync(
+    path.join(root, 'js/components/basicclock.js'),
+    'utf8'
+  );
+  const stationClock = fs.readFileSync(
+    path.join(root, 'js/components/stationclock.js'),
+    'utf8'
+  );
   const flipClock = fs.readFileSync(
     path.join(root, 'js/components/flipclock.js'),
     'utf8'
   );
   assert.doesNotMatch(dateTime, /dayjs\.Ls/);
+  assert.match(basicClock, /maxFontSize: 42/);
+  assert.match(basicClock, /Math\.min\(fontSize, me\.block\.maxFontSize\)/);
+  assert.match(stationClock, /maxSize: 160/);
+  assert.match(flipClock, /minEmSize: 3\.5/);
+  assert.match(flipClock, /maxEmSize: 7/);
+  assert.match(flipClock, /FlipClock\(\$content, 0,/);
   assert.match(flipClock, /showSeconds: !settings\['hide_seconds'\]/);
   assert.doesNotMatch(flipClock, /showSecoonds/);
+});
+
+test('legacy expert settings stay configurable but are hidden from the settings menu', () => {
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  for (const key of [
+    'blink_color',
+    'edit_mode',
+    'boss_stationclock',
+    'speak_lang',
+    'idx_moonpicture',
+    'longfonds_zipcode',
+    'longfonds_housenumber',
+  ]) {
+    assert.doesNotMatch(
+      settings,
+      new RegExp(`settingList\\[[^\\n]+\\]\\['${key}'\\]`)
+    );
+  }
+  assert.match(settings, /boss_stationclock: 'RedBoss'/);
+  assert.match(settings, /blink_color: '255, 255, 255, 1'/);
+  assert.match(settings, /edit_mode: 0/);
+  assert.match(settings, /speak_lang: 'en_US'/);
 });
 
 test('UI dependencies use the maintained compatibility versions', () => {
@@ -435,6 +471,7 @@ test('modern dark theme is portable and documented', () => {
     'utf8'
   );
   const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+  const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
 
   assert.match(theme, /--main-bg/);
   assert.match(theme, /--main-border-width: 1px/);
@@ -469,6 +506,10 @@ test('modern dark theme is portable and documented', () => {
   assert.match(theme, /\.standby \.transbg[\s\S]*background: #000 !important/);
   assert.match(theme, /\.standby \.transbg[\s\S]*border: 0 !important/);
   assert.match(theme, /\.standby \.transbg[\s\S]*backdrop-filter: none !important/);
+  assert.match(
+    blocks,
+    /!block\['hide_data'\] \|\| settings\['theme'\] === 'modern-dark'/
+  );
   assert.doesNotMatch(theme, /https?:\/\//i);
   assert.doesNotMatch(theme, /url\s*\(/i);
   assert.match(readme, /config\['theme'\] = 'modern-dark'/);
