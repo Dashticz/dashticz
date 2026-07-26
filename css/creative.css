@@ -702,6 +702,22 @@ next css sets the default height of the frame popup
   margin-bottom: -4px;
 }
 
+.logo-icon {
+  height: 28px;
+  width: 28px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+.logo-version {
+  font-size: 11px;
+  font-weight: normal;
+  opacity: 0.6;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
 .colbar.transbg .fab,
 .colbar.transbg .fas,
 .colbar.transbg .far {
@@ -721,195 +737,9 @@ next css sets the default height of the frame popup
 }
 
 /* ── Device Editor icon ──────────────────────────────────────── */
-.colbar span.deviceeditoricon,
-.colbar span.layouteditoricon {
+.colbar span.deviceeditoricon {
   cursor: pointer;
   margin-right: 4px;
-}
-
-/* Visual Layout Editor */
-body.dle-active {
-  user-select: none;
-}
-
-.dle-canvas {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(12, minmax(0, 1fr));
-  grid-auto-flow: row;
-  align-items: start;
-  width: 100%;
-}
-
-.dle-canvas > .dle-item-wrapper {
-  display: contents;
-}
-
-.dle-canvas > .dle-item-wrapper > .dle-block {
-  grid-column: span var(--dle-column-span, 2);
-  float: none !important;
-  min-width: 0;
-  width: 100% !important;
-}
-
-.dle-block {
-  position: relative;
-  outline: 2px dashed rgba(13, 110, 253, 0.9);
-  outline-offset: -2px;
-}
-
-.dle-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 1000;
-  cursor: grab;
-  touch-action: none;
-  background: rgba(13, 110, 253, 0.08);
-}
-
-.dle-overlay:active {
-  cursor: grabbing;
-}
-
-.dle-drag-icon,
-.dle-size-label {
-  position: absolute;
-  top: 4px;
-  z-index: 2;
-  padding: 2px 6px;
-  border-radius: 4px;
-  color: #fff;
-  background: rgba(13, 24, 40, 0.88);
-  line-height: 18px;
-}
-
-.dle-drag-icon {
-  left: 4px;
-}
-
-.dle-drag-icon .fas {
-  margin: 0 !important;
-  font-size: 16px !important;
-}
-
-.dle-size-label {
-  top: auto;
-  right: 34px;
-  bottom: 4px;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.dle-remove-button {
-  position: absolute;
-  bottom: 4px;
-  left: 4px;
-  z-index: 4;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  color: #fff;
-  background: #dc3545;
-  border: 1px solid #ff8b96;
-  border-radius: 50%;
-  cursor: pointer;
-}
-
-.dle-remove-button:hover,
-.dle-remove-button:focus {
-  background: #b02a37;
-  outline: 2px solid #fff;
-  outline-offset: 1px;
-}
-
-.dle-remove-button .fas {
-  margin: 0 !important;
-  font-size: 16px !important;
-}
-
-.dle-resize-handle {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  z-index: 3;
-  width: 28px;
-  height: 28px;
-  cursor: nwse-resize;
-  background:
-    linear-gradient(
-      135deg,
-      transparent 0 45%,
-      rgba(255, 255, 255, 0.95) 46% 54%,
-      transparent 55% 64%,
-      rgba(255, 255, 255, 0.95) 65% 73%,
-      rgba(13, 110, 253, 0.9) 74%
-    );
-  border-radius: 0 0 5px 0;
-}
-
-.dle-dragging {
-  opacity: 0.62;
-  outline: 3px solid #20c997;
-  outline-offset: -3px;
-}
-
-.dle-toolbar {
-  position: fixed;
-  bottom: 18px;
-  left: 50%;
-  z-index: 20000;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  max-width: calc(100vw - 24px);
-  padding: 8px 10px;
-  color: #fff;
-  background: rgba(13, 24, 40, 0.96);
-  border: 1px solid #5aa2ff;
-  border-radius: 8px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.38);
-  transform: translateX(-50%);
-}
-
-.dle-toolbar-title {
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.dle-toolbar-title .fas {
-  margin-right: 5px;
-}
-
-.dle-toolbar-help {
-  font-size: 12px;
-}
-
-.dle-drag-ghost {
-  position: fixed;
-  z-index: 21000;
-  max-width: 260px;
-  padding: 6px 10px;
-  color: #fff;
-  background: rgba(13, 110, 253, 0.92);
-  border-radius: 5px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-  pointer-events: none;
-}
-
-@media (max-width: 767.98px) {
-  .dle-toolbar {
-    bottom: 10px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .dle-toolbar-help {
-    flex-basis: 100%;
-    text-align: center;
-  }
 }
 
 /* ── Device Editor modal ─────────────────────────────────────── */
@@ -945,19 +775,6 @@ body.dle-active {
 .de-device-item-new {
   background: #d4edda;
   border-color: #c3e6cb;
-}
-
-.de-widget-item {
-  background: #eef4ff;
-  border-color: #c9d9f2;
-}
-
-.de-widget-managed {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 31px;
-  color: #6c757d;
 }
 
 .de-device-idx {
@@ -1052,105 +869,6 @@ body.dle-active {
 
 .de-nophp {
   font-size: 12px;
-}
-
-/* Widget Editor modal */
-.we-widget-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 14px;
-}
-
-.we-widget-card {
-  position: relative;
-  display: flex;
-  min-height: 180px;
-  padding: 18px 16px 38px;
-  color: #212529;
-  background: #f8f9fa;
-  border: 2px solid #dee2e6;
-  border-radius: 12px;
-  cursor: pointer;
-  transition:
-    border-color 0.15s ease,
-    background-color 0.15s ease,
-    box-shadow 0.15s ease;
-}
-
-.we-widget-card:hover,
-.we-widget-card:focus {
-  border-color: #6ea8fe;
-  outline: none;
-  box-shadow: 0 5px 14px rgba(13, 110, 253, 0.16);
-}
-
-.we-widget-card.we-selected {
-  background: #e8f5ee;
-  border-color: #198754;
-}
-
-.we-widget-icon {
-  flex: 0 0 56px;
-  padding-top: 2px;
-  color: #0d6efd;
-  font-size: 38px;
-  line-height: 1;
-  text-align: center;
-}
-
-.we-widget-card.we-selected .we-widget-icon {
-  color: #198754;
-}
-
-.we-widget-content {
-  flex: 1 1 auto;
-  min-width: 0;
-  padding-left: 12px;
-}
-
-.we-widget-title {
-  margin-bottom: 5px;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.we-widget-description {
-  min-height: 42px;
-  color: #6c757d;
-  font-size: 13px;
-  line-height: 1.35;
-}
-
-.we-widget-status {
-  position: absolute;
-  right: 14px;
-  bottom: 10px;
-  color: #6c757d;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.we-widget-card.we-selected .we-widget-status {
-  color: #146c43;
-}
-
-.we-field-label {
-  display: block;
-  margin: 10px 0 3px;
-  color: #495057;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.we-widget-field {
-  position: relative;
-  z-index: 2;
-}
-
-.we-message {
-  min-height: 22px;
-  margin-top: 12px;
-  font-size: 13px;
 }
 
 a.playlist {
