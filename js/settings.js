@@ -1247,7 +1247,7 @@ function saveSettings() {
 
       if (!saved) {
         html +=
-          '<span class="text-danger"></span><br>Copy the configuration below to custom/CONFIG.js.<br><br>';
+          '<span class="text-danger"></span><br>Copy the configuration below to custom/' + cfgFile + '.<br><br>';
       }
 
       html += '<textarea style="width:100%;height:500px;" id="codeToCopy"></textarea>';
@@ -1275,10 +1275,12 @@ function saveSettings() {
       }, 1000);
   }
 
+  var cfgFile = (typeof _PARAMS !== 'undefined' && _PARAMS['cfg']) || 'CONFIG.js';
+
   $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
     .then(function (data) {
       return $.ajax({
-        url: 'js/savesettings.php',
+        url: 'js/savesettings.php?cfg=' + encodeURIComponent(cfgFile),
         method: 'POST',
         data: saveSettings,
         dataType: 'json',
