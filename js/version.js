@@ -49,6 +49,7 @@ function initVersion() {
     success: function (localdata) {
       dashticz_version = localdata.version;
       dashticz_branch = localdata.branch;
+      $('.loaderVersion').text('Version ' + dashticz_version);
     },
   })
     .then(function () {
