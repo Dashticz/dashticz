@@ -798,6 +798,36 @@ body.dle-active {
   font-weight: 600;
 }
 
+.dle-remove-button {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  color: #fff;
+  background: #dc3545;
+  border: 1px solid #ff8b96;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.dle-remove-button:hover,
+.dle-remove-button:focus {
+  background: #b02a37;
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+
+.dle-remove-button .fas {
+  margin: 0 !important;
+  font-size: 16px !important;
+}
+
 .dle-resize-handle {
   position: absolute;
   right: 0;

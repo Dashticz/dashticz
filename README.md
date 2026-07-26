@@ -131,6 +131,7 @@ on screen 1. Blocks created by the Device Editor receive a blue edit overlay:
 
 - drag a block to change its position;
 - drag the bottom-right corner to change its width and height;
+- select the red minus button at the bottom-left to remove a device;
 - width snaps to the 12-column dashboard grid;
 - height snaps to steps of 10 pixels;
 - select **Save** to update `custom/CONFIG.js`, or **Cancel**/Escape to restore
