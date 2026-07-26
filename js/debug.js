@@ -263,32 +263,22 @@ var Debug = (function () {
   }
 
   function saveDebug() {
-    // (A) CREATE BLOB OBJECT
     var debugData = {
       messages: messages.map(function (res) { return res.timestamp.toISOString().slice(11, 23) + ' ' + res.msg + '\n' }),
       config: filteredConfig,
       blocks: blocks,
-    }
+    };
     var debugTxt = JSON.stringify(debugData,null, 2).split('\n').map(function(res) {
-      return res+'\n'
+      return res+'\n';
     });
-    var myBlob = new Blob(debugTxt);
-//    var myBlob = new Blob(messages.map(function (res) { return res.timestamp.toISOString().slice(11, 23) + ' ' + res.msg + '\n' }), { type: "text/plain", filename: 'test.txt' });
-    // (B) FORM DATA
-    var data = new FormData();
-    data.append("upfile", myBlob, "debug." + moment().format('YYYY-MM-DD-HH-mm-ss') + ".txt");
-
-    // (C) AJAX UPLOAD TO SERVER
-    fetch(settings['dashticz_php_path'] + "upload.php", {
-      method: "POST",
-      body: data
-    })
-      .then(function (res) {
-        return res.text();
-      })
-      .then(function(txt) {
-        Debug.log(txt)
-      });
+    var blobUrl = URL.createObjectURL(new Blob(debugTxt, { type: 'text/plain' }));
+    var download = document.createElement('a');
+    download.href = blobUrl;
+    download.download = 'debug.' + moment().format('YYYY-MM-DD-HH-mm-ss') + '.txt';
+    document.body.appendChild(download);
+    download.click();
+    download.remove();
+    URL.revokeObjectURL(blobUrl);
   }
 
 })();

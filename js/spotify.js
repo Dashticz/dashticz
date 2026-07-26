@@ -17,7 +17,7 @@ var SpotifyModule = (function () {
     ) {
       if (typeof CUR_URI[1] !== 'undefined') {
         var hash = URLToArray(CUR_URI[1]);
-        Cookies.set('spotifyToken', hash.access_token);
+        Cookies.set('spotifyToken', hash.access_token, { sameSite: 'Lax' });
         window.location.href = CUR_URI[0];
       }
       accessToken = Cookies.get('spotifyToken');

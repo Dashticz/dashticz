@@ -31,6 +31,22 @@ var DT_news = {
     me.interval = parseFloat(settings['news_scroll_after'] * 1000);
   },
   refresh: function (me) {
+    function safeExternalUrl(value) {
+      try {
+        var parsed = new URL(value, window.location.href);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+          ? parsed.href
+          : '';
+      } catch (error) {
+        return '';
+      }
+    }
+
+    function plainText(value) {
+      var parsed = new DOMParser().parseFromString(value || '', 'text/html');
+      return parsed.body.textContent || '';
+    }
+
     $.ajax(_CORS_PATH + me.block.feed, {
       accepts: {
         xml: 'application/rss+xml',
@@ -60,12 +76,14 @@ var DT_news = {
             }
             var newsItem = {
               show: me.showImage,
-              image: $(this)
-                .find('media\\:content, content, enclosure')
-                .attr('url'),
+              image: safeExternalUrl(
+                $(this)
+                  .find('media\\:content, content, enclosure')
+                  .attr('url')
+              ),
               title: $(this).find('title').text(),
-              link: $(this).find('link').text(),
-              desc: $(this).find('description').text(),
+              link: safeExternalUrl($(this).find('link').text()),
+              desc: plainText($(this).find('description').text()),
               pubd: moment($(this).find('pubDate').text()).format('llll'),
             };
             items.push(newsItem);

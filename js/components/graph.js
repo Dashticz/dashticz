@@ -658,7 +658,7 @@ function formatData(me) {
   me.keys = arrYkeys; //keys contains all the selected keys, like ['te','l']
   me.ykeys = newKeys; //ykeys contains all the keys incl device idx, like ['te_12','te_13','l_3']
   //    graph.txtUnits = txtUnits; //todo: check txtUnits
-  //me.txtUnit = me.txtUnits[0]; //todo: temp fix. txtUnits contains the units belonging to ykeys, like ['°C', '°C', 'level']
+  //me.txtUnit = me.txtUnits[0]; //todo: temp fix. txtUnits contains the units belonging to ykeys, like ['Â°C', 'Â°C', 'level']
   //me.ylabels = getYlabels(me);
   //graph.currentValues = currentValues; //todo: check currentValues
 
@@ -1020,8 +1020,8 @@ function graphRender(graph, graphProperties) {
   }
 */
 
+  Chart.defaults.color = graph.block.fontColor;
   new Chart(graph.chartctx, graphProperties);
-  Chart.defaults.global.defaultFontColor = graph.block.fontColor;
 }
 
 function createCustomData(graph) {
@@ -1354,14 +1354,10 @@ function createButtons(graph, ranges, customRange) {
     newButton += '</button>';
 
     $(document).on('click', '#resetZoom' + graph.graphIdx, function () {
-      Chart.helpers.each(Chart.instances, function (instance) {
-        if (
-          instance.chart.canvas.id ===
-          $('#resetZoom' + graph.graphIdx).data('canvas')
-        ) {
-          instance.chart.resetZoom();
-        }
-      });
+      var instance = Chart.getChart(
+        $('#resetZoom' + graph.graphIdx).data('canvas')
+      );
+      if (instance) instance.resetZoom();
     });
     $(newButton).appendTo($buttons);
   }
@@ -1822,9 +1818,9 @@ function getDefaultGraphProperties(graph, block) {
                   graph.range === 'today'
                     ? 'H:mm'
                     : graph.realrange === 'day'
-                    ? 'ddd H:mm'
-                    : 'D MMM',
-                day: 'D MMM',
+                    ? 'EEE H:mm'
+                    : 'd MMM',
+                day: 'd MMM',
               },
             },
             distribution: 'series',
@@ -1878,7 +1874,7 @@ function getYlabels(g) {
         } else if (g.subtype === 'Electric') {
           l.push('Watt');
         } else if (g.subtype === 'Gas') {
-          l.push('m³');
+          l.push('mÂ³');
         } else {
           l.push(label);
         }
@@ -1896,7 +1892,7 @@ function getYlabels(g) {
         l.push('Lux (max)');
         break;
       case 'di':
-        l.push('°');
+        l.push('Â°');
         break;
       case 'gu':
       case 'sp':

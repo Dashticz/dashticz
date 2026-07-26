@@ -19,7 +19,7 @@ var DT_nzbget = {
     //        var _data = {"method": "listgroups", "nocache": new Date().getTime(), "params": [100] };
     var _data = { method: 'listgroups' };
     NZBGET.rpcUrl = settings['host_nzbget'] + '/jsonrpc';
-    NZBGET.call(_data, 'returnNZBGET');
+    NZBGET.call(_data, returnNZBGET);
   },
 };
 
@@ -35,20 +35,14 @@ function returnNZBGET(data) {
     };
     data.push(dummy);
   }
-  if (
-    typeof blocks['nzbget'] !== 'undefined' &&
-    typeof blocks['nzbget']['downloads_width'] !== 'undefined'
-  ) {
-    width = blocks['nzbget']['downloads_width'];
-  }
-
-  var t = 1;
   for (var d in data) {
-    var html = '<div class="mh transbg nzbget' + data[d]['FirstID'] + '">';
+    var itemId = String(data[d]['FirstID']).replace(/[^a-zA-Z0-9_-]/g, '');
+    var safeName = $('<div>').text(data[d]['NZBName']).html();
+    var html = '<div class="mh transbg nzbget' + itemId + '">';
     html += '<div class="col-xs-12">';
     html +=
       '<strong class="title">' +
-      data[d]['NZBName'] +
+      safeName +
       '</strong><br />' +
       data[d]['DownloadedSizeMB'] +
       'MB / ' +
@@ -57,23 +51,19 @@ function returnNZBGET(data) {
     html += '</div>';
     html += '</div>';
     if (
-      $('.containsnzbget .dt_state .nzbget' + data[d]['FirstID']).length > 0
+      $('.containsnzbget .dt_state .nzbget' + itemId).length > 0
     ) {
-      $('.containsnzbget .dt_state .nzbget' + data[d]['FirstID']).replaceWith(
+      $('.containsnzbget .dt_state .nzbget' + itemId).replaceWith(
         html
       );
     } else {
       $('.containsnzbget .dt_state').append(html);
     }
-    //		$('.containsnzbget').show();
-
-    t++;
-    if (t == 2) t = 1;
   }
 }
 
 function resumepauseNZBget(id, func) {
-  _data = {
+  var _data = {
     method: 'editqueue',
     nocache: new Date().getTime(),
     params: [func, 0, '', [id]],
@@ -88,122 +78,20 @@ function resumepauseNZBget(id, func) {
 var NZBGET = new (function ($) {
   'use strict';
 
-  // Properties
   this.rpcUrl;
-  //this.defaultFailureCallback;
-  this.connectErrorMessage = 'Cannot establish connection';
-  this.call = function (
-    request,
-    completed_callback,
-    failure_callback,
-    timeout
-  ) {
+  this.call = function (request, completedCallback) {
     $.getJSON(this.rpcUrl + '/' + request.method)
-      .fail(function (res) {
-        console.log('failure');
-        console.log(res);
+      .fail(function () {
+        console.error('NZBGet request failed');
       })
       .then(function (result) {
-        //console.log(result);
-        if (result) {
-          var res;
-          if (result.error == null) {
-            res = result.result;
-            eval(completed_callback + '(res)');
-            return;
-          } else {
-            res = result.error.message + '<br><br>Request: ' + request;
-          }
+        if (
+          result &&
+          result.error == null &&
+          typeof completedCallback === 'function'
+        ) {
+          completedCallback(result.result);
         }
       });
   };
-  /*
-
-	this.call = function(request, completed_callback, failure_callback, timeout)
-	{
-		request = JSON.stringify(request);
-		var _this = this;
-		
-		//var request = JSON.stringify({nocache: new Date().getTime(), method: method, params: params});
-		var xhr = new XMLHttpRequest();
-
-		xhr.open('post', this.rpcUrl);
-		
-		if (timeout)
-		{
-			xhr.timeout = timeout;
-		}
-
-		xhr.onreadystatechange = function()
-		{
-            debugger;
-			if (xhr.readyState === 4)
-			{
-				var res = 'Unknown error';
-				var result;
-				if (xhr.status === 200)
-				{
-					if (xhr.responseText != '')
-					{
-						try
-						{
-							result = JSON.parse(xhr.responseText);
-						}
-						catch (e)
-						{
-							res = e;
-						}
-						if (result)
-						{
-							if (result.error == null)
-							{
-								res = result.result;
-								eval(completed_callback+'(res)');
-								return;
-							}
-							else
-							{
-								res = result.error.message + '<br><br>Request: ' + request;
-							}
-						}
-					}
-					else
-					{
-						res = 'No response received.';
-					}
-				}
-				else if (xhr.status === 0)
-				{
-					res = _this.connectErrorMessage;
-				}
-				else
-				{
-					res = 'Invalid Status: ' + xhr.status;
-				}
-
-				if (failure_callback)
-				{
-					failure_callback(res, result);
-				}
-				else
-				{
-					//_this.defaultFailureCallback(res, result);
-				}
-			}
-		};
-		xhr.send(request);
-	}*/
 })(jQuery);
-
-/*
-Quick help (from nzbget-directory):
-   ./nzbget -s        - start nzbget in console mode
-   ./nzbget -D        - start nzbget in daemon mode (in background)
-   ./nzbget -C        - connect to background process
-   ./nzbget -Q        - stop background process
-   ./nzbget -h        - help screen with all commands
-
-Successfully installed into /home/pi/dev/nzbget/nzbget
-Web-interface is on http://localhost:6789 (login:nzbget, password:tegbzn6789)
-For support please visit http://nzbget.net/forum
-*/

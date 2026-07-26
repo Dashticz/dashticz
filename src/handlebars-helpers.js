@@ -1,9 +1,19 @@
 /* global Dashticz moment settings config language time objectlength ksort*/
 
 /**
- * Moment  https://github.com/solidgoldpig/handlebars.moment.
+ * Backwards-compatible replacement for the handlebars.moment helper.
  */
-MomentHandler.registerHelpers(Handlebars);
+Handlebars.registerHelper('moment', function (value, options) {
+  if (value && value.hash && !options) {
+    options = value;
+    value = undefined;
+  }
+  options = options || {};
+  var inputFormat = options.hash && options.hash.input;
+  var outputFormat = options.hash && options.hash.format;
+  if (options.hash && options.hash.date !== undefined) value = options.hash.date;
+  return moment(value, inputFormat).format(outputFormat || undefined);
+});
 
 Handlebars.registerHelper('times', function (n, options) {
   var accum = '';

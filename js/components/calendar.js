@@ -5,7 +5,7 @@ var templateEngine = TemplateEngine();
 var DT_calendar = {
   name: 'calendar',
   canHandle: function (block, key) {
-    return block && (block.type === 'calendar' || block.icalurl);
+    return block && (block.type === 'calendar' || block.icalurl || (block.calendars && block.calendars.length > 0));
   },
   defaultCfg: {
     icon: 'fas fa-calendar-alt',
@@ -19,7 +19,7 @@ var DT_calendar = {
   },
   run: function (me) {
     if (me.block.type === 'calendar') {
-      if (me.block.icalurl) {
+      if (me.block.icalurl || (me.block.calendars && me.block.calendars.length > 0)) {
         if (
           (me.block.layout === 0 || me.block.layout === 1) &&
           (me.block.url || settings['calendarurl'])
@@ -52,6 +52,29 @@ Dashticz.register(DT_calendar);
  */
 function prepareCalendar(me, key) {
   moment.locale(settings['calendarlanguage']);
+
+  // Backward compat: convert old 'calendars' array format to new icalurl object format
+  if (!me.block.icalurl && me.block.calendars && me.block.calendars.length > 0) {
+    var legacyIcalurl = {};
+    for (var i = 0; i < me.block.calendars.length; i++) {
+      var legacyCal = me.block.calendars[i];
+      var legacyCalDef = legacyCal.calendar || {};
+      var legacyName = 'calendar' + i;
+      legacyIcalurl[legacyName] = {
+        ics: legacyCalDef.icalurl,
+        color: legacyCal.color || 'white'
+      };
+      if (!isDefined(me.block.adjustTZ) && isDefined(legacyCalDef.adjustTZ))
+        me.block.adjustTZ = legacyCalDef.adjustTZ;
+      if (!isDefined(me.block.adjustAllDayTZ) && isDefined(legacyCalDef.adjustAllDayTZ))
+        me.block.adjustAllDayTZ = legacyCalDef.adjustAllDayTZ;
+    }
+    me.block.icalurl = legacyIcalurl;
+  }
+
+  // Backward compat: old 'calFormat' property maps to new 'layout' property
+  if (!isDefined(me.block.layout) && isDefined(me.block.calFormat))
+    me.block.layout = me.block.calFormat;
 
   me.url = isDefined(me.block.url)
     ? me.block.url

@@ -1,4 +1,4 @@
-/* global  Dashticz language _CORS_PATH*/
+/* global  Dashticz language settings _CORS_PATH*/
 var DT_trafficinfo = {
   name: 'trafficinfo',
   canHandle: function (block) {
@@ -16,6 +16,7 @@ var DT_trafficinfo = {
       newwindow: 1,
       clickHandler: true,
       provider: 'anwb',
+      apikey: settings.anwb_apikey || '',
       results: 50,
       showempty: showempty,
       showemptyroads: false,
@@ -26,9 +27,16 @@ var DT_trafficinfo = {
   },
   defaultContent: language.misc.loading,
   refresh: function (me) {
+    if (!me.block.apikey) {
+      me.$mountPoint
+        .find('.dt_state')
+        .text('ANWB API key not configured (trafficinfo.apikey).');
+      return;
+    }
     var dataURL =
       _CORS_PATH +
-      'https://api.anwb.nl/v2/incidents?apikey=QYUEE3fEcFD7SGMJ6E7QBCMzdQGqRkAi';
+      'https://api.anwb.nl/v2/incidents?apikey=' +
+      encodeURIComponent(me.block.apikey);
 
     $.getJSON(dataURL, function (data) {
       dataTrafficInfo(me, data);
