@@ -69,7 +69,7 @@
 .mh {
   --col1width: 60px;
   --col2width: 60px;
-  height: 115px !important;
+  height: var(--height-block-default) !important;
   text-align: right !important;
 }
 
