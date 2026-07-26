@@ -1,4 +1,4 @@
-/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor*/
+/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor DashticzWidgetEditor*/
 //# sourceURL=js/components/simpleblock.js
 var DT_simpleblock = (function () {
   var simpleBlocks = {
@@ -21,6 +21,10 @@ var DT_simpleblock = (function () {
       render: renderResponsiveClock,
     },
     weather: {
+      script: 'js/weather.js',
+      render: renderWeather,
+    },
+    wunderground: {
       script: 'js/weather.js',
       render: renderWeather,
     },
@@ -135,14 +139,24 @@ var DT_simpleblock = (function () {
         case 'settings':
           content +=
             '<span class="settings deviceeditoricon" data-id="deviceeditor" ' +
-            'role="button" aria-label="Open device editor">' +
-            '<i class="fas fa-pencil-alt" aria-hidden="true"></i></span>';
+            'role="button" aria-label="Open device editor" title="Devices toevoegen">' +
+            '<i class="fas fa-plus" aria-hidden="true"></i></span>';
+          content +=
+            '<span class="settings widgeteditoricon" data-id="widgeteditor" ' +
+            'role="button" aria-label="Open widget editor" title="Widgets toevoegen">' +
+            '<i class="fas fa-puzzle-piece" aria-hidden="true"></i></span>';
+          content +=
+            '<span class="settings layouteditoricon" data-id="layouteditor" ' +
+            'role="button" aria-label="Open visual layout editor" title="Tegels verplaatsen en schalen">' +
+            '<i class="fas fa-arrows-alt" aria-hidden="true"></i></span>';
           content +=
             '<span class="settings settingsicon" data-id="settings" ' +
             'data-bs-target="#settingspopup" data-bs-toggle="modal" ' +
-            'role="button" aria-label="Open settings">' +
+            'role="button" aria-label="Open settings" title="Instellingen">' +
             '<i class="fas fa-cog" aria-hidden="true"></i></span>';
           _registerDeviceEditorClick();
+          _registerWidgetEditorClick();
+          _registerLayoutEditorClick();
           break;
 
         case 'fullscreen':
@@ -162,11 +176,41 @@ var DT_simpleblock = (function () {
     });
   }
 
+  function _registerLayoutEditorClick() {
+    $(document)
+      .off('click.layouteditoricon')
+      .on('click.layouteditoricon', '.layouteditoricon', function () {
+        DT_function.loadDTScript('js/layouteditor.js').then(function () {
+          DashticzLayoutEditor.open();
+        });
+      });
+  }
+
+  function _registerWidgetEditorClick() {
+    $(document)
+      .off('click.widgeteditor')
+      .on('click.widgeteditor', '.widgeteditoricon', function () {
+        DT_function.loadDTScript('js/widgeteditor.js').then(function () {
+          DashticzWidgetEditor.open();
+        });
+      });
+  }
+
   function renderMiniclock(me) {
+    var fixedHeight = parseInt(me.block.height, 10);
+    var heightClass = fixedHeight > 0 ? ' fixedheight' : '';
+    var heightStyle =
+      fixedHeight > 0
+        ? ' style="height:' + fixedHeight + 'px !important"'
+        : '';
     return (
-      '<div data-id="miniclock" class="miniclock col-xs-' +
+      '<div data-id="miniclock" class="miniclock mh dt_block col-xs-' +
       me.block.width +
-      ' text-center">' +
+      ' text-center' +
+      heightClass +
+      '"' +
+      heightStyle +
+      '>' +
       '<span class="weekday"></span> <span class="date"></span> <span>&nbsp;&nbsp;&nbsp;&nbsp;</span> <span class="clock"></span>' +
       '</div>'
     );
@@ -209,13 +253,30 @@ var DT_simpleblock = (function () {
 
   function renderWeather(me) {
     function doRender() {
+      var fixedHeight = parseInt(me.block.height, 10);
+      var heightClass = fixedHeight > 0 ? ' fixedheight' : '';
+      var heightStyle =
+        fixedHeight > 0
+          ? ' style="height:' + fixedHeight + 'px !important"'
+          : '';
       me.$mountPoint.html(
-        '<div data-id="weather" class="block_' +
+        '<div data-id="weather" class="mh transbg dt_block block_' +
           me.block.type +
-          ' containsweatherfull"></div>'
+          ' col-xs-' +
+          me.block.width +
+          ' containsweatherfull' +
+          heightClass +
+          '"' +
+          heightStyle +
+          '></div>'
       );
-      if (settings['wu_api'] !== '' && settings['wu_city'] !== '')
+      if (settings['wu_api'] && settings['wu_city']) {
         loadWeatherFull(settings['wu_city'], settings['wu_country']);
+      } else {
+        me.$mountPoint
+          .find('.containsweatherfull')
+          .html('<div class="dt_state">Weather Underground-instellingen ontbreken.</div>');
+      }
     }
     if (typeof loadWeatherFull !== 'function') {
       loadWeatherScript(doRender);
@@ -274,7 +335,7 @@ var DT_simpleblock = (function () {
   
   function renderSpotify(me) {
     me.$mountPoint.html('');
-    getSpotify(me.mountPoint);
+    getSpotify(me.mountPoint, me.block);
   }
 
   function renderTrafficMap(me) {
@@ -319,8 +380,8 @@ var DT_simpleblock = (function () {
     return html;
   }
 
-  function renderSonar() {
-    return loadSonarr();
+  function renderSonar(me) {
+    return loadSonarr(me);
   }
 
   function renderFullScreen(me) {

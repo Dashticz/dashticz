@@ -79,6 +79,10 @@ test('first-run setup uses its own wizard and removes the legacy browser fallbac
   assert.match(source, /showSetupWizard\(\)/);
   assert.match(source, /id="dt-setup-wizard"/);
   assert.match(source, /url: 'js\/savesettings\.php'/);
+  assert.match(
+    source,
+    /id: 'topbar_timeout',[\s\S]*?def: '5'/
+  );
   assert.doesNotMatch(source, /section: 'Scherm &amp; Navigatie'/);
   assert.doesNotMatch(source, /section: 'Weergave &amp; Overig'/);
   assert.doesNotMatch(settings, /firstRunSetupRequired/);
@@ -216,6 +220,158 @@ test('configured topbar timeout loads and initializes the auto-hide behavior', (
   assert.match(settings, /topbar_timeout: 0/);
 });
 
+test('visual layout editor handles generated devices and widgets on a 10px height grid', () => {
+  const simpleBlock = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const editor = fs.readFileSync(
+    path.join(root, 'js/layouteditor.js'),
+    'utf8'
+  );
+  const domoticzBlock = fs.readFileSync(
+    path.join(root, 'js/components/domoticzblock.js'),
+    'utf8'
+  );
+  const stylesheet = fs.readFileSync(
+    path.join(root, 'css/creative.css'),
+    'utf8'
+  );
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const modernDark = fs.readFileSync(
+    path.join(root, 'themes/modern-dark/modern-dark.css'),
+    'utf8'
+  );
+
+  assert.match(simpleBlock, /layouteditoricon/);
+  assert.match(simpleBlock, /fas fa-plus/);
+  assert.match(simpleBlock, /js\/layouteditor\.js/);
+  assert.match(editor, /var HEIGHT_STEP = 10/);
+  assert.match(editor, /\/\^\(de\|we\|le\)_col\\d\+\$\//);
+  assert.match(editor, /col-xs-/);
+  assert.match(editor, /(?:widgetEntry|deviceEntry)\.height = item\.height/);
+  assert.match(editor, /dle-cancel/);
+  assert.match(editor, /function _moveDraggedItem/);
+  assert.match(editor, /function _removeItem/);
+  assert.match(editor, /dle-remove-button/);
+  assert.match(editor, /js\/savewidgets\.php/);
+  assert.match(editor, /js\/savelayout\.php/);
+  assert.match(editor, /widgetResult\.blockKeys/);
+  assert.match(editor, /_startDrag\(event, item, \$canvas\[0\]\)/);
+  assert.match(editor, /\$\(item\.visibleBlocks\)[\s\S]*children\('\.dle-overlay'\)/);
+  assert.match(editor, /appendChild\(item\.wrapper\)/);
+  assert.match(editor, /--dle-column-span/);
+  assert.match(editor, /X-Dashticz-CSRF/);
+  assert.match(stylesheet, /grid-template-columns: repeat\(12/);
+  assert.match(stylesheet, /\.dle-item-wrapper \{\s*display: contents/);
+  assert.match(stylesheet, /\.dle-item-wrapper > \.dle-block/);
+  assert.match(stylesheet, /\.dle-remove-button/);
+  assert.match(stylesheet, /background: #dc3545/);
+  assert.match(stylesheet, /\.dle-size-label \{[\s\S]*bottom: 4px/);
+  assert.match(
+    deviceEditor,
+    /var ck\s+= String\(\$\(this\)\.attr\('data-ck'\)\)/
+  );
+  assert.match(deviceEditor, /screens\[1\]\.columns/);
+  assert.match(deviceEditor, /\$activeScreen\.find\('\[data-colindex\]'\)/);
+  assert.match(deviceEditor, /function _widgetFromReference/);
+  assert.match(deviceEditor, /Widget - /);
+  assert.match(deviceEditor, /var managedOrder/);
+  assert.match(deviceEditor, /js\/savewidgets\.php/);
+  assert.match(deviceEditor, /js\/savelayout\.php/);
+  assert.match(deviceEditor, /data-order-key/);
+  assert.match(deviceEditor, /de-width-input[\s\S]*value="3"/);
+  assert.match(deviceEditor, /if \(!width\) width = 3/);
+  assert.match(modernDark, /--height-block-default: 120px/);
+  assert.match(
+    modernDark,
+    /\.mh \{[\s\S]*height: var\(--height-block-default\) !important/
+  );
+  assert.match(domoticzBlock, /applyConfiguredHeight/);
+  assert.match(domoticzBlock, /setProperty\('height'.*'important'\)/s);
+});
+
+test('widget editor exposes the supported catalog and keeps legacy options out of settings UI', () => {
+  const simpleBlock = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const widgetEditor = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const weather = fs.readFileSync(
+    path.join(root, 'js/components/weather.js'),
+    'utf8'
+  );
+  const garbage = fs.readFileSync(
+    path.join(root, 'js/components/garbage.js'),
+    'utf8'
+  );
+  const sonarr = fs.readFileSync(path.join(root, 'js/sonarr.js'), 'utf8');
+  const fullscreen = fs.readFileSync(
+    path.join(root, 'js/fullscreen.js'),
+    'utf8'
+  );
+
+  assert.match(simpleBlock, /widgeteditoricon/);
+  assert.match(simpleBlock, /fas fa-puzzle-piece/);
+  assert.match(simpleBlock, /js\/widgeteditor\.js/);
+  for (const id of [
+    'weather',
+    'garbage',
+    'spotify',
+    'sonarr',
+    'clock',
+    'calendar',
+  ]) {
+    assert.match(widgetEditor, new RegExp(`id: '${id}'`));
+  }
+  assert.match(widgetEditor, /OpenWeather/);
+  assert.match(widgetEditor, /Weather Underground/);
+  assert.match(widgetEditor, /Stationsklok/);
+  assert.match(widgetEditor, /Flipclock/);
+  assert.match(widgetEditor, /Hayman clock/);
+  assert.match(widgetEditor, /Miniclock/);
+  assert.match(widgetEditor, /we-calendar-url/);
+  assert.match(widgetEditor, /we-clock-type/);
+  assert.match(widgetEditor, /js\/savewidgets\.php/);
+  assert.match(widgetEditor, /js\/savelayout\.php/);
+  assert.match(widgetEditor, /var layoutOrder = \[\]/);
+  assert.match(widgetEditor, /if \(!selectedWidgets\[item\.widgetId\]\) return/);
+  assert.match(widgetEditor, /layoutItems\.push\(\{ ref: item\.ref, width: item\.width \}\)/);
+  assert.match(widgetEditor, /X-Dashticz-CSRF/);
+  assert.match(styles, /\.we-widget-grid/);
+  assert.match(styles, /\.we-widget-card\.we-selected/);
+  assert.match(weather, /block\.widget_provider === 'openweather'/);
+  assert.match(simpleBlock, /wunderground/);
+  assert.match(simpleBlock, /title="Widgets toevoegen"/);
+  assert.match(fullscreen, /title="Volledig scherm"/);
+  assert.match(garbage, /block\.type === 'garbage'/);
+  assert.match(sonarr, /function loadSonarr\(me\)/);
+
+  for (const key of [
+    'auto_positioning',
+    'use_favorites',
+    'use_hidden',
+    'room_plan',
+    'colorpicker',
+    'colorpickerscale',
+  ]) {
+    assert.doesNotMatch(
+      settings,
+      new RegExp(`^\\s{2}${key}: \\{`, 'm')
+    );
+  }
+  assert.doesNotMatch(main, /id: 'use_favorites'/);
+});
+
 test('Hayman clock does not depend on Moment locale internals for rendering', () => {
   const source = fs.readFileSync(
     path.join(root, 'js/components/haymanclock.js'),
@@ -232,13 +388,49 @@ test('Hayman clock does not depend on Moment locale internals for rendering', ()
 
 test('clock components use public date APIs and a valid seconds setting', () => {
   const dateTime = fs.readFileSync(path.join(root, 'src/date-time.js'), 'utf8');
+  const basicClock = fs.readFileSync(
+    path.join(root, 'js/components/basicclock.js'),
+    'utf8'
+  );
+  const stationClock = fs.readFileSync(
+    path.join(root, 'js/components/stationclock.js'),
+    'utf8'
+  );
   const flipClock = fs.readFileSync(
     path.join(root, 'js/components/flipclock.js'),
     'utf8'
   );
   assert.doesNotMatch(dateTime, /dayjs\.Ls/);
+  assert.match(basicClock, /maxFontSize: 42/);
+  assert.match(basicClock, /Math\.min\(fontSize, me\.block\.maxFontSize\)/);
+  assert.match(stationClock, /maxSize: 160/);
+  assert.match(flipClock, /minEmSize: 3\.5/);
+  assert.match(flipClock, /maxEmSize: 7/);
+  assert.match(flipClock, /FlipClock\(\$content, 0,/);
   assert.match(flipClock, /showSeconds: !settings\['hide_seconds'\]/);
   assert.doesNotMatch(flipClock, /showSecoonds/);
+});
+
+test('legacy expert settings stay configurable but are hidden from the settings menu', () => {
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  for (const key of [
+    'blink_color',
+    'edit_mode',
+    'boss_stationclock',
+    'speak_lang',
+    'idx_moonpicture',
+    'longfonds_zipcode',
+    'longfonds_housenumber',
+  ]) {
+    assert.doesNotMatch(
+      settings,
+      new RegExp(`settingList\\[[^\\n]+\\]\\['${key}'\\]`)
+    );
+  }
+  assert.match(settings, /boss_stationclock: 'RedBoss'/);
+  assert.match(settings, /blink_color: '255, 255, 255, 1'/);
+  assert.match(settings, /edit_mode: 0/);
+  assert.match(settings, /speak_lang: 'en_US'/);
 });
 
 test('UI dependencies use the maintained compatibility versions', () => {
@@ -299,6 +491,7 @@ test('modern dark theme is portable and documented', () => {
     'utf8'
   );
   const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+  const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
 
   assert.match(theme, /--main-bg/);
   assert.match(theme, /--main-border-width: 1px/);
@@ -319,6 +512,8 @@ test('modern dark theme is portable and documented', () => {
   assert.match(theme, /border-color: var\(--border-color-active\) !important/);
   assert.match(theme, /\.transbg select/);
   assert.match(theme, /\.transbg select[\s\S]*border: 1px solid var\(--border-color-selector\) !important/);
+  assert.match(theme, /\.transbg \.col-data > select/);
+  assert.match(theme, /\.transbg \.col-data > select[\s\S]*min-height: 44px/);
   assert.match(theme, /\.transbg select:focus,[\s\S]*border-color: var\(--border-color-selector\) !important/);
   assert.doesNotMatch(theme, /linear-gradient/);
   assert.match(theme, /\.mh \.btn\.active/);
@@ -331,6 +526,10 @@ test('modern dark theme is portable and documented', () => {
   assert.match(theme, /\.standby \.transbg[\s\S]*background: #000 !important/);
   assert.match(theme, /\.standby \.transbg[\s\S]*border: 0 !important/);
   assert.match(theme, /\.standby \.transbg[\s\S]*backdrop-filter: none !important/);
+  assert.match(
+    blocks,
+    /!block\['hide_data'\] \|\| settings\['theme'\] === 'modern-dark'/
+  );
   assert.doesNotMatch(theme, /https?:\/\//i);
   assert.doesNotMatch(theme, /url\s*\(/i);
   assert.match(readme, /config\['theme'\] = 'modern-dark'/);

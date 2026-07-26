@@ -715,7 +715,7 @@ function getBlockData(block, textOn, textOff) {
 
   var data = '';
 
-  if (!block['hide_data']) {
+  if (!block['hide_data'] || settings['theme'] === 'modern-dark') {
     var value = choose(block.textOn, textOn);
     var status = block.device.Status.toLowerCase();
     if (

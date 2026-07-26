@@ -15,7 +15,7 @@ if ($debug==0) error_reporting(E_ERROR | E_PARSE);
 */
 
 $errors=array();
-set_error_handler(function($errno, $errstr, $errfile = 0, $errline = 0, $errcontext = 0) {
+set_error_handler(function($errno, $errstr, $errfile = 0, $errline = 0, $errcontext = 0) use (&$errors) {
 	// error was suppressed with the @-operator
 //		if (0 === error_reporting()) {
 //			return false;
@@ -105,46 +105,6 @@ function fileGetJson($url) {
 	return json_decode(file_get_contents($url), true);
 }
 
-// NEW: Special function for HVC that uses cURL instead of file_get_contents
-function curlGetJson($url) {
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-	curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-	curl_setopt($ch, CURLOPT_USERAGENT, 'Mozilla/5.0 (compatible; Dashticz-HVC/1.0)');
-	curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Fix for SSL issues in Docker
-	curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-	
-	$result = curl_exec($ch);
-	$httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-	$error = curl_error($ch);
-	curl_close($ch);
-	
-	if ($error) {
-		debugMsg('cURL Error: ' . $error);
-		return false;
-	}
-	
-	if ($httpCode !== 200) {
-		debugMsg('HTTP Error: ' . $httpCode);
-		return false;
-	}
-	
-	if ($result === false) {
-		debugMsg('cURL returned false');
-		return false;
-	}
-	
-	$decoded = json_decode($result, true);
-	if ($decoded === null) {
-		debugMsg('JSON decode error: ' . json_last_error_msg());
-		debugMsg('Raw response: ' . substr($result, 0, 200));
-		return false;
-	}
-	
-	return $decoded;
-}
-
 function curlWeb($url, $options=0) {
 	global $ignoressl;
 	global $cookies;
@@ -169,7 +129,7 @@ function curlWeb($url, $options=0) {
 
 }
 
-function curlWebJson($url, $headers=0) {
+function curlWebJson($url, $headers=[]) {
 	return json_decode(curlWeb($url, array( CURLOPT_HTTPHEADER=>$headers)));
 }
 
@@ -229,7 +189,7 @@ function getCalendar() {
 		case 'deafvalapp': 
 			$url = 'https://dataservice.deafvalapp.nl/dataservice/DataServiceServlet?type=ANDROID&service=OPHAALSCHEMA&land=NL&postcode='.$zipCode.'&straatId=0&huisnr='.$houseNr.'&huisnrtoev='.$houseNrSuf;
 			$return = file_get_contents($url);
-			$return = exploded("\n",$return);
+			$return = explode("\n",$return);
 			foreach($return as $row){
 				$row = explode(';',$row);
 				$title = $row[0];
@@ -254,48 +214,15 @@ function getCalendar() {
 			
 			break;	
 		case 'hvc': 
-			// FIXED: Updated to use cURL instead of file_get_contents for SSL compatibility
-			// Step 1: Get bag ID using the new API endpoint
-			$url = 'https://inzamelkalender.hvcgroep.nl/rest/adressen/'.$_GET['zipcode'].'-'.$_GET['nr'];
-			debugMsg('Fetching address data from: ' . $url);
-			$return = curlGetJson($url);
-			
-			// Handle the new response format (array instead of single object)
-			if (empty($return) || !is_array($return) || count($return) == 0) {
-				debugMsg('No address data found for HVC');
-				break;
-			}
-			
-			// Take the first element from the array
-			$addressData = $return[0];
-			
-			// Check for bagId (note the capital I)
-			if (empty($addressData['bagId'])) {
-				debugMsg('No bagId found in HVC response');
-				break;
-			}
-			
-			$bagId = $addressData['bagId'];
-			debugMsg('Found bagId: ' . $bagId);
-			
-			// Step 2: Get waste collection data using the bag ID
-			$url = 'https://inzamelkalender.hvcgroep.nl/rest/adressen/'.$bagId.'/afvalstromen';
-			debugMsg('Fetching waste data from: ' . $url);
-			$return = curlGetJson($url);
-			
-			if (empty($return)) {
-				debugMsg('No waste collection data found for HVC');
-				break;
-			}
-			
-			debugMsg('Found ' . count($return) . ' waste collection items');
-			
+			$url = 'http://inzamelkalender.hvcgroep.nl/push/calendar?postcode='.$_GET['zipcode'].'&huisnummer='.$_GET['nr'];
+			$return = fileGetJson($url);
 			foreach($return as $row){
-				$title = $row['title'];
-				$date = $row['ophaaldatum'];
-				if(!empty($date)){
-					debugMsg('Adding collection: ' . $title . ' on ' . $date);
-					$allDates[$date][$title] = $date;
+				$title = $row['naam'];
+				foreach($row['dateTime'] as $date){
+					if(!empty($date['date'])){
+						list($date,$time)=explode(' ',$date['date']);
+						$allDates[$date][$title] = $date;
+					}
 				}
 			}
 			break;
@@ -369,7 +296,7 @@ function getCalendar() {
 					case 'sudwestfryslan'; $baseUrl = 'http://afvalkalender.sudwestfryslan.nl'; break;
 					case 'alphenaandenrijn'; $baseUrl = 'http://afvalkalender.alphenaandenrijn.nl'; break;
 					case 'cure'; $baseUrl = 'https://afvalkalender.cure-afvalbeheer.nl'; break;
-					case 'cyclusnv'; $baseUrl = 'https://afvalkalender.cyclusnv.nl'; break;
+					case 'cyclusnv'; $baseUrl = 'https://cyclusnv.nl'; break;
 					case 'gemeenteberkelland'; $baseUrl = 'https://afvalkalender.gemeenteberkelland.nl'; break;
 					case 'meerlanden'; $baseUrl = 'https://afvalkalender.meerlanden.nl'; break;
 					case 'venray'; $baseUrl = 'https://afvalkalender.venray.nl'; break;
@@ -378,49 +305,18 @@ function getCalendar() {
 					case 'dar'; $baseUrl = 'https://afvalkalender.dar.nl'; break;
 					case 'waalre'; $baseUrl = 'https://afvalkalender.waalre.nl'; break;
 					case 'avalex'; $baseUrl = 'https://www.avalex.nl'; break;
-					case 'hvc'; $baseUrl = 'https://inzamelkalender.hvcgroep.nl'; break; // FIXED: Updated URL
+					case 'hvc'; $baseUrl = 'https://apps.hvcgroep.nl'; break;
 				}
 			}
 			
 			$url = $baseUrl.'/rest/adressen/'.$_GET['zipcode'].'-'.$_GET['nr'];
-			
-			// FIXED: Use cURL for HVC in afvalstromen case too
-			if ($_GET['sub'] == 'hvc') {
-				$return = curlGetJson($url);
-			} else {
-				$return = fileGetJson($url);
+			$return = fileGetJson($url);
+			if( empty($return[0]['bagId'])){
+				$return = '';
+				break;
 			}
-			
-			// FIXED: Handle new response format for HVC (array instead of single object)
-			if ($_GET['sub'] == 'hvc') {
-				if (empty($return) || !is_array($return) || count($return) == 0) {
-					debugMsg('No address data found for HVC afvalstromen');
-					break;
-				}
-				// Take the first element from the array and check for bagId (capital I)
-				$addressData = $return[0];
-				if (empty($addressData['bagId'])) {
-					debugMsg('No bagId found in HVC afvalstromen response');
-					break;
-				}
-				$bagId = $addressData['bagId'];
-			} else {
-				// Original logic for other services
-				if (empty($return[0]['bagId'])) {
-					$return = '';
-					break;
-				}
-				$bagId = $return[0]['bagId'];
-			}
-			
-			$url = $baseUrl.'/rest/adressen/'.$bagId.'/afvalstromen';
-			
-			// FIXED: Use cURL for HVC in afvalstromen case too
-			if ($_GET['sub'] == 'hvc') {
-				$return = curlGetJson($url);
-			} else {
-				$return = fileGetJson($url);
-			}
+			$url = $baseUrl.'/rest/adressen/'.$return[0]['bagId'].'/afvalstromen';
+			$return = fileGetJson($url);
 			
 			foreach($return as $row){
 				$title = $row['title'];
@@ -440,7 +336,7 @@ function getCalendar() {
 			$options = array(
 				CURLOPT_COOKIE => $cookie,
 				CURLOPT_FOLLOWLOCATION => 1,
-				CURLINFO_HEADER_OUT, true
+				CURLINFO_HEADER_OUT => true
 			);
 
 			$output = curlWeb($url, $options);
@@ -548,8 +444,9 @@ function getCalendar() {
 			$cookie = addCookie($cookie, $cookies, 'residence');
 			$cookie = addCookie($cookie, $cookies, 'selectedHouseType');
 			$options = array(
-				CURLOPT_HTTPHEADER =>
+				CURLOPT_HTTPHEADER => [
 					'Cookie: '.$cookie
+				]
 			);
 
 //			var_dump($url);
@@ -579,4 +476,3 @@ function getCalendar() {
 	return $allDates;
 }
 ?>
-
