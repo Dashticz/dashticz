@@ -10,6 +10,7 @@ var DashticzWidgetEditor = (function () {
       title: 'Weer',
       description: 'Weersverwachting via OpenWeather of Weather Underground.',
       icon: 'fas fa-cloud-sun',
+      width: 12,
     },
     {
       id: 'garbage',
@@ -17,6 +18,7 @@ var DashticzWidgetEditor = (function () {
       title: 'Afval',
       description: 'Aankomende afvalinzamelingen.',
       icon: 'fas fa-trash-alt',
+      width: 6,
     },
     {
       id: 'spotify',
@@ -24,6 +26,7 @@ var DashticzWidgetEditor = (function () {
       title: 'Spotify',
       description: 'Spotify Connect-afstandsbediening.',
       icon: 'fab fa-spotify',
+      width: 6,
     },
     {
       id: 'sonarr',
@@ -31,6 +34,7 @@ var DashticzWidgetEditor = (function () {
       title: 'Sonarr',
       description: 'Aankomende afleveringen uit Sonarr.',
       icon: 'fas fa-tv',
+      width: 8,
     },
     {
       id: 'clock',
@@ -38,6 +42,7 @@ var DashticzWidgetEditor = (function () {
       title: 'Klok',
       description: 'Grote klok met datum en weekdag.',
       icon: 'far fa-clock',
+      width: 4,
     },
     {
       id: 'calendar',
@@ -45,11 +50,13 @@ var DashticzWidgetEditor = (function () {
       title: 'Kalender (ICS)',
       description: 'Afspraken uit een online ICS-agenda.',
       icon: 'fas fa-calendar-alt',
+      width: 8,
     },
   ];
 
   var selectedWidgets = {};
   var widgetDimensions = {};
+  var layoutOrder = [];
   var weatherProvider = 'openweather';
   var calendarUrl = '';
   var clockType = 'basicclock';
@@ -62,6 +69,7 @@ var DashticzWidgetEditor = (function () {
   function _readConfiguredWidgets() {
     selectedWidgets = {};
     widgetDimensions = {};
+    layoutOrder = [];
     weatherProvider =
       settings['owm_api'] || !settings['wu_api']
         ? 'openweather'
@@ -70,6 +78,8 @@ var DashticzWidgetEditor = (function () {
     clockType = 'basicclock';
 
     if (typeof columns === 'undefined') return;
+
+    _readManagedLayoutOrder();
 
     _orderedColumnKeys().forEach(function (columnKey) {
       var column = columns[columnKey];
@@ -135,6 +145,39 @@ var DashticzWidgetEditor = (function () {
       if (catalog[i].blockKey === blockKey) return catalog[i];
     }
     return null;
+  }
+
+  function _readManagedLayoutOrder() {
+    var seen = {};
+    _orderedColumnKeys().forEach(function (columnKey) {
+      if (!/^(de|we|le)_col\d+$/.test(String(columnKey))) return;
+      var column = columns[columnKey];
+      if (!column || !Array.isArray(column.blocks)) return;
+
+      column.blocks.forEach(function (reference) {
+        if (
+          typeof reference !== 'string' ||
+          !/^[A-Za-z_][A-Za-z0-9_]*$/.test(reference) ||
+          seen[reference]
+        ) {
+          return;
+        }
+        var definition =
+          typeof blocks !== 'undefined' && blocks[reference]
+            ? blocks[reference]
+            : {};
+        var widget = _catalogItemByBlockKey(reference);
+        seen[reference] = true;
+        layoutOrder.push({
+          ref: reference,
+          widgetId: widget ? widget.id : null,
+          width: Math.max(
+            1,
+            Math.min(12, parseInt(definition.width, 10) || 3)
+          ),
+        });
+      });
+    });
   }
 
   function _buildAndShowModal() {
@@ -303,7 +346,7 @@ var DashticzWidgetEditor = (function () {
       if (!selectedWidgets[item.id]) return;
       var entry = { id: item.id };
       var dimensions = widgetDimensions[item.id] || {};
-      if (dimensions.width) entry.width = dimensions.width;
+      entry.width = dimensions.width || item.width;
       if (dimensions.height) entry.height = dimensions.height;
       if (item.id === 'weather') entry.provider = weatherProvider;
       if (item.id === 'calendar') entry.icalurl = calendarUrl;
@@ -316,13 +359,47 @@ var DashticzWidgetEditor = (function () {
 
     $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
       .then(function (data) {
-        return $.ajax({
-          url: 'js/savewidgets.php',
-          method: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({ widgets: payload }),
-          dataType: 'json',
-          headers: { 'X-Dashticz-CSRF': data.token },
+        var token = data.token;
+        return _postWidgetData(
+          'js/savewidgets.php',
+          { widgets: payload },
+          token
+        ).then(function (widgetResult) {
+          var widgetRefs = {};
+          var widgetWidths = {};
+          payload.forEach(function (entry, index) {
+            widgetRefs[entry.id] = widgetResult.blockKeys[index];
+            widgetWidths[entry.id] = entry.width;
+          });
+
+          var includedWidgets = {};
+          var layoutItems = [];
+          layoutOrder.forEach(function (item) {
+            if (item.widgetId) {
+              if (!selectedWidgets[item.widgetId]) return;
+              includedWidgets[item.widgetId] = true;
+              layoutItems.push({
+                ref: widgetRefs[item.widgetId],
+                width: widgetWidths[item.widgetId],
+              });
+              return;
+            }
+            layoutItems.push({ ref: item.ref, width: item.width });
+          });
+
+          payload.forEach(function (entry) {
+            if (includedWidgets[entry.id]) return;
+            layoutItems.push({
+              ref: widgetRefs[entry.id],
+              width: entry.width,
+            });
+          });
+
+          return _postWidgetData(
+            'js/savelayout.php',
+            { items: layoutItems },
+            token
+          );
         });
       })
       .done(function () {
@@ -339,6 +416,17 @@ var DashticzWidgetEditor = (function () {
         $('.we-message').addClass('text-danger').text(message);
         $save.prop('disabled', false).text('Opslaan');
       });
+  }
+
+  function _postWidgetData(url, payload, token) {
+    return $.ajax({
+      url: url,
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(payload),
+      dataType: 'json',
+      headers: { 'X-Dashticz-CSRF': token },
+    });
   }
 
   function _esc(value) {

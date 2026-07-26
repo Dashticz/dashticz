@@ -283,6 +283,8 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(deviceEditor, /js\/savewidgets\.php/);
   assert.match(deviceEditor, /js\/savelayout\.php/);
   assert.match(deviceEditor, /data-order-key/);
+  assert.match(deviceEditor, /de-width-input[\s\S]*value="3"/);
+  assert.match(deviceEditor, /if \(!width\) width = 3/);
   assert.match(modernDark, /--height-block-default: 120px/);
   assert.match(
     modernDark,
@@ -340,6 +342,10 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(widgetEditor, /we-calendar-url/);
   assert.match(widgetEditor, /we-clock-type/);
   assert.match(widgetEditor, /js\/savewidgets\.php/);
+  assert.match(widgetEditor, /js\/savelayout\.php/);
+  assert.match(widgetEditor, /var layoutOrder = \[\]/);
+  assert.match(widgetEditor, /if \(!selectedWidgets\[item\.widgetId\]\) return/);
+  assert.match(widgetEditor, /layoutItems\.push\(\{ ref: item\.ref, width: item\.width \}\)/);
   assert.match(widgetEditor, /X-Dashticz-CSRF/);
   assert.match(styles, /\.we-widget-grid/);
   assert.match(styles, /\.we-widget-card\.we-selected/);

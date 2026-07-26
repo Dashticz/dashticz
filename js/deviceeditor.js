@@ -405,7 +405,7 @@ var DashticzDeviceEditor = (function () {
       html += '<option value="' + _esc(d.key) + '">' + _esc(d.name) + ' (IDX\u00a0' + dispIdx + ')</option>';
     });
     html += '</select>';
-    html += '<input type="number" class="form-control form-control-sm de-width-input" min="1" max="12" value="2" title="Column width (1-12)" aria-label="Column width">';
+    html += '<input type="number" class="form-control form-control-sm de-width-input" min="1" max="12" value="3" title="Column width (1-12)" aria-label="Column width">';
     html += '<button type="button" class="btn btn-success btn-sm de-add-btn ms-2" title="Add device">';
     html += '<i class="fas fa-plus" aria-hidden="true"></i>';
     html += '</button>';
@@ -727,7 +727,7 @@ var DashticzDeviceEditor = (function () {
 
   function _parseWidth(value) {
     var width = parseInt(value, 10);
-    if (!width) width = 2;
+    if (!width) width = 3;
     return Math.max(1, Math.min(12, width));
   }
 
@@ -764,7 +764,7 @@ var DashticzDeviceEditor = (function () {
         }
       }
     }
-    return 2;
+    return 3;
   }
 
   function _getConfiguredHeightForCk(ck) {
