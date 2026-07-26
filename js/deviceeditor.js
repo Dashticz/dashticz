@@ -290,7 +290,7 @@ var DashticzDeviceEditor = (function () {
   function _attachHandlers(available, allDomoticz) {
     /* - (remove) button */
     $('#de-device-list').on('click', '.de-remove-btn', function () {
-      var ck  = $(this).data('ck');
+      var ck  = String($(this).attr('data-ck'));
       var pos = managedDevices.indexOf(ck);
       if (pos > -1) managedDevices.splice(pos, 1);
       delete deviceNames[ck];

@@ -197,6 +197,12 @@ var DashticzLayoutEditor = (function () {
 
       item.visibleBlocks.forEach(function (block, index) {
         var $block = $(block).addClass('dle-block');
+        var removeButton =
+          index === 0
+            ? '<button type="button" class="dle-remove-button" title="Remove device" aria-label="Remove ' +
+              _escapeHtml(item.name) +
+              '"><i class="fas fa-minus" aria-hidden="true"></i></button>'
+            : '';
         var resizeHandle =
           index === item.visibleBlocks.length - 1
             ? '<span class="dle-resize-handle" title="Resize width and height" aria-hidden="true"></span>'
@@ -207,6 +213,7 @@ var DashticzLayoutEditor = (function () {
           '">' +
           '<span class="dle-drag-icon" aria-hidden="true"><i class="fas fa-arrows-alt"></i></span>' +
           '<span class="dle-size-label"></span>' +
+          removeButton +
           resizeHandle +
           '</div>';
         $block.append(overlay);
@@ -234,16 +241,21 @@ var DashticzLayoutEditor = (function () {
       .on('click.layouteditor', function (event) {
         event.preventDefault();
         event.stopPropagation();
+        if ($(event.target).closest('.dle-remove-button').length) {
+          var item = itemById[String($(this).data('dle-id'))];
+          if (item) _removeItem(item);
+        }
       })
       .on('pointerdown.layouteditor', function (event) {
         event.preventDefault();
         event.stopPropagation();
         var item = itemById[String($(this).data('dle-id'))];
         if (!item) return;
+        if ($(event.target).closest('.dle-remove-button').length) return;
         if ($(event.target).closest('.dle-resize-handle').length) {
-          _startResize(event, item, this);
+          _startResize(event, item, $canvas[0]);
         } else {
-          _startDrag(event, item, this);
+          _startDrag(event, item, $canvas[0]);
         }
       });
 
@@ -258,6 +270,24 @@ var DashticzLayoutEditor = (function () {
     $toolbar
       .on('click.layouteditor', '.dle-cancel', _cancel)
       .on('click.layouteditor', '.dle-save', _save);
+  }
+
+  function _removeItem(item) {
+    if (pointerState && pointerState.item === item) {
+      _finishPointerAction();
+    }
+    if (item.wrapper.parentNode) {
+      item.wrapper.parentNode.removeChild(item.wrapper);
+    }
+
+    var remaining = _orderedItems().length;
+    $toolbar
+      .find('.dle-toolbar-help')
+      .text(
+        remaining
+          ? 'Device removed. Save to keep this change, or Cancel to restore it.'
+          : 'No devices remain. Save to remove them all, or Cancel to restore them.'
+      );
   }
 
   function _startDrag(event, item, captureElement) {
@@ -551,9 +581,12 @@ var DashticzLayoutEditor = (function () {
     _finishPointerAction();
 
     $(document).off('.layouteditor');
-    $('.dle-overlay').off('.layouteditor').remove();
 
     items.forEach(function (item) {
+      $(item.visibleBlocks)
+        .children('.dle-overlay')
+        .off('.layouteditor')
+        .remove();
       item.wrapper.classList.remove('dle-item-wrapper');
       item.wrapper.style.removeProperty('--dle-column-span');
       item.originalBlocks.forEach(function (original) {

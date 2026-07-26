@@ -237,6 +237,10 @@ test('visual layout editor is limited to generated device columns and uses a 10p
     path.join(root, 'css/creative.css'),
     'utf8'
   );
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
 
   assert.match(simpleBlock, /layouteditoricon/);
   assert.match(simpleBlock, /fas fa-plus/);
@@ -247,12 +251,22 @@ test('visual layout editor is limited to generated device columns and uses a 10p
   assert.match(editor, /entry\.height = item\.height/);
   assert.match(editor, /dle-cancel/);
   assert.match(editor, /function _moveDraggedItem/);
+  assert.match(editor, /function _removeItem/);
+  assert.match(editor, /dle-remove-button/);
+  assert.match(editor, /_startDrag\(event, item, \$canvas\[0\]\)/);
+  assert.match(editor, /\$\(item\.visibleBlocks\)[\s\S]*children\('\.dle-overlay'\)/);
   assert.match(editor, /appendChild\(item\.wrapper\)/);
   assert.match(editor, /--dle-column-span/);
   assert.match(editor, /X-Dashticz-CSRF/);
   assert.match(stylesheet, /grid-template-columns: repeat\(12/);
   assert.match(stylesheet, /\.dle-item-wrapper \{\s*display: contents/);
   assert.match(stylesheet, /\.dle-item-wrapper > \.dle-block/);
+  assert.match(stylesheet, /\.dle-remove-button/);
+  assert.match(stylesheet, /background: #dc3545/);
+  assert.match(
+    deviceEditor,
+    /var ck\s+= String\(\$\(this\)\.attr\('data-ck'\)\)/
+  );
   assert.match(domoticzBlock, /applyConfiguredHeight/);
   assert.match(domoticzBlock, /setProperty\('height'.*'important'\)/s);
 });
