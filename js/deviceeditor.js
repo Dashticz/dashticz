@@ -6,9 +6,13 @@ var DashticzDeviceEditor = (function () {
   /* ── state ──────────────────────────────────────────────────── */
   /* Composite keys: '493' for plain devices, '1298_1' for sub-devices */
   var managedDevices = [];   // composite keys managed by the device editor
+  var managedOrder   = [];   // device:<ck> and widget:<id> in screen order
+  var managedWidgets = {};   // order key -> widget metadata
   var deviceNames    = {};   // composite key -> device name
   var deviceWidths   = {};   // composite key -> block width (1..12)
   var deviceHeights  = {};   // composite key -> optional block height
+  var widgetWidths   = {};   // widget order key -> block width (1..12)
+  var widgetHeights  = {};   // widget order key -> optional block height
 
   /* ── public API ─────────────────────────────────────────────── */
   function open() {
@@ -18,10 +22,25 @@ var DashticzDeviceEditor = (function () {
 
   /* ── initialise managed-device list from ALL current Dashticz devices ── */
   function _init() {
-    managedDevices = _getAllManagedKeys();
+    managedDevices = [];
+    managedOrder   = [];
+    managedWidgets = {};
     deviceNames    = {};
     deviceWidths   = {};
     deviceHeights  = {};
+    widgetWidths   = {};
+    widgetHeights  = {};
+
+    _getAllManagedItems().forEach(function (item) {
+      managedOrder.push(item.orderKey);
+      if (item.kind === 'widget') {
+        managedWidgets[item.orderKey] = item;
+        widgetWidths[item.orderKey] = _parseWidth(item.definition.width);
+        widgetHeights[item.orderKey] = _parseHeight(item.definition.height);
+      } else {
+        managedDevices.push(item.ck);
+      }
+    });
   }
 
   /* ── composite key helpers ──────────────────────────────────── */
@@ -71,7 +90,43 @@ var DashticzDeviceEditor = (function () {
   }
 
   /* ── collect every managed device from all columns ─────────── */
-  function _getAllManagedKeys() {
+  function _deviceOrderKey(ck) {
+    return 'device:' + ck;
+  }
+
+  function _widgetOrderKey(id) {
+    return 'widget:' + id;
+  }
+
+  function _widgetFromReference(reference) {
+    var catalog = {
+      widget_weather: { id: 'weather', title: 'Weer' },
+      widget_garbage: { id: 'garbage', title: 'Afval' },
+      widget_spotify: { id: 'spotify', title: 'Spotify' },
+      widget_sonarr: { id: 'sonarr', title: 'Sonarr' },
+      widget_clock: { id: 'clock', title: 'Klok' },
+      widget_calendar: { id: 'calendar', title: 'Kalender' },
+    };
+    var catalogItem = catalog[String(reference)];
+    if (
+      !catalogItem ||
+      typeof blocks === 'undefined' ||
+      !blocks[reference]
+    ) {
+      return null;
+    }
+    var definition = blocks[reference];
+    return {
+      kind: 'widget',
+      id: catalogItem.id,
+      orderKey: _widgetOrderKey(catalogItem.id),
+      reference: String(reference),
+      title: definition.title || catalogItem.title,
+      definition: definition,
+    };
+  }
+
+  function _getAllManagedItems() {
     var seen = {};
     var ordered = [];
     if (typeof columns !== 'undefined') {
@@ -111,9 +166,23 @@ var DashticzDeviceEditor = (function () {
                 typeof blocks !== 'undefined' && blocks[b]) {
               ck = _toCompositeKey(blocks[b]);
             }
-            if (ck && !seen[ck]) {
-              seen[ck] = true;
-              ordered.push(ck);
+            if (ck) {
+              var deviceKey = _deviceOrderKey(ck);
+              if (!seen[deviceKey]) {
+                seen[deviceKey] = true;
+                ordered.push({
+                  kind: 'device',
+                  ck: ck,
+                  orderKey: deviceKey,
+                });
+              }
+              return;
+            }
+
+            var widget = _widgetFromReference(b);
+            if (widget && !seen[widget.orderKey]) {
+              seen[widget.orderKey] = true;
+              ordered.push(widget);
             }
           });
         }
@@ -187,7 +256,7 @@ var DashticzDeviceEditor = (function () {
   function _buildAndShowModal() {
     $('#deviceeditorpopup').remove();
 
-    var managedKeys = _getAllManagedKeys();
+    var managedKeys = managedDevices.slice();
     var allDomoticz = Domoticz.getAllDevices();
     var available   = _getAvailableDevices(managedKeys);
 
@@ -200,7 +269,7 @@ var DashticzDeviceEditor = (function () {
       deviceHeights[ck] = _getConfiguredHeightForCk(ck);
     });
 
-    $('body').append(_buildModalHtml(managedKeys, available, allDomoticz));
+    $('body').append(_buildModalHtml(available, allDomoticz));
     _attachHandlers(available, allDomoticz);
 
     var el = document.getElementById('deviceeditorpopup');
@@ -210,7 +279,7 @@ var DashticzDeviceEditor = (function () {
   }
 
   /* ── build the full modal HTML string ──────────────────────── */
-  function _buildModalHtml(managedKeys, available, allDomoticz) {
+  function _buildModalHtml(available, allDomoticz) {
     var html = '';
     html += '<div class="modal fade" id="deviceeditorpopup" tabindex="-1"';
     html += ' aria-labelledby="de-title" aria-hidden="true">';
@@ -229,13 +298,17 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="modal-body">';
 
     /* section 1 – current devices */
-    html += '<h6 class="de-section-title">Devices in Dashticz</h6>';
+    html += '<h6 class="de-section-title">Devices and widgets in Dashticz</h6>';
     html += '<div id="de-device-list" class="de-device-list">';
-    if (managedKeys.length === 0) {
-      html += '<div class="de-empty">No devices configured in Dashticz.</div>';
+    if (managedOrder.length === 0) {
+      html += '<div class="de-empty">No devices or widgets configured in Dashticz.</div>';
     } else {
-      managedKeys.forEach(function (ck) {
-        html += _deviceItemHtml(ck, allDomoticz, false);
+      managedOrder.forEach(function (orderKey) {
+        if (orderKey.indexOf('widget:') === 0) {
+          html += _widgetItemHtml(orderKey);
+        } else {
+          html += _deviceItemHtml(orderKey.slice(7), allDomoticz, false);
+        }
       });
     }
     html += '</div>';
@@ -276,7 +349,9 @@ var DashticzDeviceEditor = (function () {
     var type   = device ? _esc(device.Type)  : '';
     var dispIdx = p.subidx ? (p.idx + '_' + p.subidx) : String(p.idx);
     var cls    = 'de-device-item' + (isNew ? ' de-device-item-new' : '');
-    var html   = '<div class="' + cls + '" data-ck="' + _esc(ck) + '" draggable="true">';
+    var orderKey = _deviceOrderKey(ck);
+    var html   = '<div class="' + cls + '" data-ck="' + _esc(ck) +
+      '" data-order-key="' + _esc(orderKey) + '" draggable="true">';
     html += '<span class="de-drag-handle" title="Drag to reorder"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
     html += '<span class="de-device-idx">IDX\u00a0' + dispIdx + '</span>';
     html += '<span class="de-device-name">' + name + (p.subidx ? '\u00a0(' + p.subidx + ')' : '') + '</span>';
@@ -284,11 +359,35 @@ var DashticzDeviceEditor = (function () {
     html += '<span class="de-device-width-wrap">';
     html += '<label class="de-device-width-label" for="de-width-' + _esc(ck) + '">Width</label>';
     html += '<input type="number" id="de-width-' + _esc(ck) + '" class="form-control form-control-sm de-device-width" ';
-    html += 'data-ck="' + _esc(ck) + '" min="1" max="12" value="' + _parseWidth(deviceWidths[ck]) + '">';
+    html += 'data-ck="' + _esc(ck) + '" data-order-key="' + _esc(orderKey) +
+      '" min="1" max="12" value="' + _parseWidth(deviceWidths[ck]) + '">';
     html += '</span>';
     html += '<button type="button" class="btn btn-danger btn-sm de-remove-btn ms-auto" data-ck="' + _esc(ck) + '" title="Remove device">';
     html += '<i class="fas fa-minus" aria-hidden="true"></i>';
     html += '</button>';
+    html += '</div>';
+    return html;
+  }
+
+  function _widgetItemHtml(orderKey) {
+    var widget = managedWidgets[orderKey];
+    if (!widget) return '';
+    var html = '<div class="de-device-item de-widget-item" data-order-key="' +
+      _esc(orderKey) + '" draggable="true">';
+    html += '<span class="de-drag-handle" title="Drag to reorder"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
+    html += '<span class="de-device-idx"><i class="fas fa-puzzle-piece me-1" aria-hidden="true"></i>Widget</span>';
+    html += '<span class="de-device-name">Widget - ' + _esc(widget.title) + '</span>';
+    html += '<span class="de-device-type">' +
+      _esc(widget.definition.type || widget.id) + '</span>';
+    html += '<span class="de-device-width-wrap">';
+    html += '<label class="de-device-width-label" for="de-width-' +
+      _esc(widget.id) + '">Width</label>';
+    html += '<input type="number" id="de-width-' + _esc(widget.id) +
+      '" class="form-control form-control-sm de-device-width" data-order-key="' +
+      _esc(orderKey) + '" min="1" max="12" value="' +
+      _parseWidth(widgetWidths[orderKey]) + '">';
+    html += '</span>';
+    html += '<span class="de-widget-managed" title="Remove this widget from the Widgets menu"><i class="fas fa-lock" aria-hidden="true"></i></span>';
     html += '</div>';
     return html;
   }
@@ -321,6 +420,8 @@ var DashticzDeviceEditor = (function () {
       var ck  = String($(this).attr('data-ck'));
       var pos = managedDevices.indexOf(ck);
       if (pos > -1) managedDevices.splice(pos, 1);
+      var orderPos = managedOrder.indexOf(_deviceOrderKey(ck));
+      if (orderPos > -1) managedOrder.splice(orderPos, 1);
       delete deviceNames[ck];
       delete deviceWidths[ck];
       delete deviceHeights[ck];
@@ -328,7 +429,7 @@ var DashticzDeviceEditor = (function () {
       /* remove item from device-list */
       $(this).closest('.de-device-item').remove();
       if ($('#de-device-list .de-device-item').length === 0) {
-        $('#de-device-list').html('<div class="de-empty">No devices configured in Dashticz.</div>');
+        $('#de-device-list').html('<div class="de-empty">No devices or widgets configured in Dashticz.</div>');
       }
 
       /* restore device in add-row dropdown and in available[] */
@@ -371,10 +472,14 @@ var DashticzDeviceEditor = (function () {
     });
 
     $('#de-device-list').on('input change', '.de-device-width', function () {
-      var ck = $(this).data('ck');
-      if (!ck) return;
+      var orderKey = String($(this).attr('data-order-key') || '');
+      if (!orderKey) return;
       var width = _parseWidth($(this).val());
-      deviceWidths[ck] = width;
+      if (orderKey.indexOf('widget:') === 0) {
+        widgetWidths[orderKey] = width;
+      } else {
+        deviceWidths[orderKey.slice(7)] = width;
+      }
       $(this).val(width);
     });
 
@@ -386,6 +491,9 @@ var DashticzDeviceEditor = (function () {
       if (!ck) return;
 
       if (managedDevices.indexOf(ck) < 0) managedDevices.push(ck);
+      if (managedOrder.indexOf(_deviceOrderKey(ck)) < 0) {
+        managedOrder.push(_deviceOrderKey(ck));
+      }
       deviceWidths[ck] = _parseWidth($row.find('.de-width-input').val());
 
       /* record the device name for this composite key */
@@ -432,7 +540,10 @@ var DashticzDeviceEditor = (function () {
     $list.on('dragstart', '.de-device-item', function (e) {
       dragSrcEl = this;
       e.originalEvent.dataTransfer.effectAllowed = 'move';
-      e.originalEvent.dataTransfer.setData('text/plain', String($(this).data('ck')));
+      e.originalEvent.dataTransfer.setData(
+        'text/plain',
+        String($(this).attr('data-order-key'))
+      );
       $(this).addClass('de-drag-dragging');
     });
 
@@ -470,10 +581,10 @@ var DashticzDeviceEditor = (function () {
         $(this).after(dragSrcEl);
       }
       $(this).removeClass('de-drag-over-top de-drag-over-bottom');
-      /* sync managedDevices order from DOM */
-      managedDevices = [];
+      /* sync the combined device/widget order from the DOM */
+      managedOrder = [];
       $list.find('.de-device-item').each(function () {
-        managedDevices.push(String($(this).data('ck')));
+        managedOrder.push(String($(this).attr('data-order-key')));
       });
     });
 
@@ -490,7 +601,14 @@ var DashticzDeviceEditor = (function () {
   function _save() {
     var $btn = $('#de-save-btn').prop('disabled', true).text('Saving\u2026');
 
-    var payload = managedDevices.map(function (ck) {
+    var orderedDeviceKeys = managedOrder
+      .filter(function (orderKey) {
+        return orderKey.indexOf('device:') === 0;
+      })
+      .map(function (orderKey) {
+        return orderKey.slice(7);
+      });
+    var devicePayload = orderedDeviceKeys.map(function (ck) {
       var p   = _parseCk(ck);
       var entry = {
         idx:   p.idx,
@@ -502,15 +620,69 @@ var DashticzDeviceEditor = (function () {
       return entry;
     });
 
+    var orderedWidgetKeys = managedOrder.filter(function (orderKey) {
+      return orderKey.indexOf('widget:') === 0;
+    });
+    var widgetPayload = orderedWidgetKeys.map(function (orderKey) {
+      var widget = managedWidgets[orderKey];
+      var entry = {
+        id: widget.id,
+        width: _parseWidth(widgetWidths[orderKey]),
+      };
+      if (widgetHeights[orderKey]) entry.height = widgetHeights[orderKey];
+      if (widget.id === 'weather') {
+        entry.provider =
+          widget.definition.widget_provider ||
+          (widget.definition.type === 'wunderground'
+            ? 'wunderground'
+            : 'openweather');
+      } else if (widget.id === 'calendar') {
+        entry.icalurl = widget.definition.icalurl || '';
+      } else if (widget.id === 'clock') {
+        entry.clockType = widget.definition.type || 'basicclock';
+      }
+      return entry;
+    });
+
     $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
       .then(function (data) {
-        return $.ajax({
-          url:         'js/saveblocks.php',
-          method:      'POST',
-          contentType: 'application/json',
-          data:        JSON.stringify({ devices: payload }),
-          dataType:    'json',
-          headers:     { 'X-Dashticz-CSRF': data.token },
+        var token = data.token;
+        return _postEditorData(
+          'js/saveblocks.php',
+          { devices: devicePayload },
+          token
+        ).then(function (deviceResult) {
+          return _postEditorData(
+            'js/savewidgets.php',
+            { widgets: widgetPayload },
+            token
+          ).then(function (widgetResult) {
+            var deviceRefs = {};
+            var widgetRefs = {};
+            orderedDeviceKeys.forEach(function (ck, index) {
+              deviceRefs[_deviceOrderKey(ck)] = deviceResult.blockKeys[index];
+            });
+            orderedWidgetKeys.forEach(function (orderKey, index) {
+              widgetRefs[orderKey] = widgetResult.blockKeys[index];
+            });
+            var layoutItems = managedOrder.map(function (orderKey) {
+              return {
+                ref:
+                  orderKey.indexOf('widget:') === 0
+                    ? widgetRefs[orderKey]
+                    : deviceRefs[orderKey],
+                width:
+                  orderKey.indexOf('widget:') === 0
+                    ? _parseWidth(widgetWidths[orderKey])
+                    : _parseWidth(deviceWidths[orderKey.slice(7)]),
+              };
+            });
+            return _postEditorData(
+              'js/savelayout.php',
+              { items: layoutItems },
+              token
+            );
+          });
         });
       })
       .done(function () {
@@ -531,6 +703,17 @@ var DashticzDeviceEditor = (function () {
         $btn.prop('disabled', false).text('Save');
         alert('Error: ' + msg);
       });
+  }
+
+  function _postEditorData(url, payload, token) {
+    return $.ajax({
+      url: url,
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(payload),
+      dataType: 'json',
+      headers: { 'X-Dashticz-CSRF': token },
+    });
   }
 
   /* ── HTML-escape helper ─────────────────────────────────────── */

@@ -241,6 +241,10 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
     path.join(root, 'js/deviceeditor.js'),
     'utf8'
   );
+  const modernDark = fs.readFileSync(
+    path.join(root, 'themes/modern-dark/modern-dark.css'),
+    'utf8'
+  );
 
   assert.match(simpleBlock, /layouteditoricon/);
   assert.match(simpleBlock, /fas fa-plus/);
@@ -273,7 +277,17 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   );
   assert.match(deviceEditor, /screens\[1\]\.columns/);
   assert.match(deviceEditor, /\$activeScreen\.find\('\[data-colindex\]'\)/);
-  assert.match(deviceEditor, /ordered\.push\(ck\)/);
+  assert.match(deviceEditor, /function _widgetFromReference/);
+  assert.match(deviceEditor, /Widget - /);
+  assert.match(deviceEditor, /var managedOrder/);
+  assert.match(deviceEditor, /js\/savewidgets\.php/);
+  assert.match(deviceEditor, /js\/savelayout\.php/);
+  assert.match(deviceEditor, /data-order-key/);
+  assert.match(modernDark, /--height-block-default: 120px/);
+  assert.match(
+    modernDark,
+    /\.mh \{[\s\S]*height: var\(--height-block-default\) !important/
+  );
   assert.match(domoticzBlock, /applyConfiguredHeight/);
   assert.match(domoticzBlock, /setProperty\('height'.*'important'\)/s);
 });

@@ -947,6 +947,19 @@ body.dle-active {
   border-color: #c3e6cb;
 }
 
+.de-widget-item {
+  background: #eef4ff;
+  border-color: #c9d9f2;
+}
+
+.de-widget-managed {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 31px;
+  color: #6c757d;
+}
+
 .de-device-idx {
   flex: 0 0 auto;
   min-width: 70px;
