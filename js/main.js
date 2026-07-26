@@ -15,12 +15,13 @@ var blocks = {};
 var cache = new Date().getTime();
 var throwError = null;
 var loadingFilename = null;
+var firstRunSetupRequired = false;
 
 // device detection
 // eslint-disable-next-line no-unused-vars
 var standby = true;
 var standbyActive = false;
-var standbyTime = 0;
+var lastUserActivity = Date.now();
 var swipebackTime = 0;
 var autoSwipe = false; //will be true when autoSwipe is active
 // eslint-disable-next-line no-unused-vars
@@ -50,9 +51,8 @@ var _PARAMS = {};
 var _CFG = {};
 
 // eslint-disable-next-line no-unused-vars
-function loadFiles(dashtype) {
-  loadScripts(['js/functions.js', 'js/polyfills.js'])
-    .then(prepareStart)
+function loadFiles() {
+  loadScripts(['js/functions.js', 'js/polyfills.js']).then(prepareStart);
 }
 
 function createErrorHandler() {
@@ -76,7 +76,10 @@ function createErrorHandler() {
 
 function loadStyling() {
   $(
-    '<link href="' + 'css/creative.css?_=' + _DASHTICZ_VERSION + '" rel="stylesheet">'
+    '<link href="' +
+      'css/creative.css?_=' +
+      _DASHTICZ_VERSION +
+      '" rel="stylesheet">'
   ).appendTo('head');
 }
 
@@ -84,15 +87,15 @@ function loadLogRocket() {
   var enable_logrocket = _PARAMS['logrocket'];
   return $.when(
     typeof enable_logrocket !== 'undefined' &&
-    enable_logrocket &&
-    $.ajax({
-      url: 'https://cdn.lr-ingest.io/LogRocket.min.js',
-      dataType: 'script',
-      cache: true
-    }).then(function () {
-      enableLogRocket(enable_logrocket);
-    })
-  )
+      enable_logrocket &&
+      $.ajax({
+        url: 'https://cdn.lr-ingest.io/LogRocket.min.js',
+        dataType: 'script',
+        cache: true,
+      }).then(function () {
+        enableLogRocket(enable_logrocket);
+      })
+  );
 }
 
 function loadConfig() {
@@ -101,20 +104,50 @@ function loadConfig() {
   return $.ajax({
     url: loadingFilename,
     dataType: 'script',
-  }).fail(function () {
-    return $.Deferred().reject(
-      new Error('Load error in ' + loadingFilename)
-    );
-  })
-    .then(function () {
-      var tmp = loadingFilename;
-      loadingFilename = null;
-      if (throwError) return $.Deferred().reject(new Error(throwError));
-
-      if (typeof config == 'undefined') {
-        return $.Deferred().reject(new Error('Error in ' + tmp));
+    dataFilter: function (source) {
+      if (
+        source.trim() === '#EMPTY#' &&
+        !_PARAMS['cfg'] &&
+        _CFG.customfolder === 'custom'
+      ) {
+        // A tracked placeholder CONFIG.js must not be executed as JavaScript.
+        // Treat it exactly like a missing first-run configuration instead.
+        window.config = {};
+        firstRunSetupRequired = true;
+        return '';
       }
-    })
+      return source;
+    },
+  })
+    .then(
+      function () {
+        var tmp = loadingFilename;
+        loadingFilename = null;
+        if (throwError) return $.Deferred().reject(new Error(throwError));
+
+        if (typeof config == 'undefined') {
+          return $.Deferred().reject(new Error('Error in ' + tmp));
+        }
+      },
+      function (xhr) {
+        loadingFilename = null;
+        if (xhr.status === 404 && !_PARAMS['cfg'] && _CFG.customfolder === 'custom') {
+          // CONFIG.js not found in the default folder.
+          window.config = {};
+          firstRunSetupRequired = true;
+          return;
+        }
+        return $.Deferred().reject(new Error('Load error in ' + loadingFilename));
+      }
+    );
+}
+
+function clearLegacyStoredSetupConfig() {
+  try {
+    localStorage.removeItem('dashticz_setup_config');
+  } catch (err) {
+    console.warn('Could not remove legacy Dashticz setup data.', err);
+  }
 }
 
 function loadConfig2() {
@@ -124,14 +157,14 @@ function loadConfig2() {
   return $.ajax({
     url: loadingFilename,
     dataType: 'script',
-  }).fail(function () {
-    return $.Deferred().reject(
-      new Error('Load error in ' + loadingFilename)
-    );
-  }).then(function () {
-    loadingFilename = null;
-    if (throwError) return $.Deferred().reject(new Error(throwError));
   })
+    .fail(function () {
+      return $.Deferred().reject(new Error('Load error in ' + loadingFilename));
+    })
+    .then(function () {
+      loadingFilename = null;
+      if (throwError) return $.Deferred().reject(new Error(throwError));
+    });
 }
 
 function loadLanguage() {
@@ -155,6 +188,10 @@ function loadLanguage() {
 }
 
 function loadCustomJS() {
+  if (firstRunSetupRequired) {
+    return checkSetupWriteAccess();
+  }
+
   loadingFilename = _CFG.customfolder + '/custom.js';
 
   return $.ajax({
@@ -176,7 +213,7 @@ function loadCustomJS() {
     })
     .catch(function (res) {
       if (res.status === 404) {
-        //file doesn't exist
+        // file doesn't exist
         console.log(
           'No custom.js file in folder ' + _CFG.customfolder + '. Skipping.'
         );
@@ -187,23 +224,358 @@ function loadCustomJS() {
     });
 }
 
-function configureDashticz() {
+function checkSetupWriteAccess() {
+  var deferred = $.Deferred();
 
+  function showPermissionError(message) {
+    $('#loaderHolder').hide();
+
+    if ($('#dt-setup-permission').length === 0) {
+      $('body').append(
+        '<div class="modal fade" id="dt-setup-permission" tabindex="-1"' +
+          ' aria-labelledby="dt-setup-permission-label" aria-modal="true" role="dialog">' +
+          '<div class="modal-dialog modal-dialog-centered">' +
+          '<div class="modal-content">' +
+          '<div class="modal-header">' +
+          '<h5 class="modal-title" id="dt-setup-permission-label">Configuration permissions</h5>' +
+          '</div>' +
+          '<div class="modal-body">' +
+          '<p id="dt-setup-permission-message"></p>' +
+          '</div>' +
+          '<div class="modal-footer">' +
+          '<button type="button" class="btn btn-primary" id="dt-setup-permission-retry">Check again</button>' +
+          '</div>' +
+          '</div>' +
+          '</div>' +
+          '</div>'
+      );
+    }
+
+    $('#dt-setup-permission-message').text(message);
+    $('#dt-setup-permission-retry')
+      .prop('disabled', false)
+      .off('click.setupPermission')
+      .on('click.setupPermission', function () {
+        $(this).prop('disabled', true);
+        verifyAccess(true);
+      });
+
+    bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('dt-setup-permission'),
+      { backdrop: 'static', keyboard: false }
+    ).show();
+  }
+
+  function verifyAccess(reloadWhenWritable) {
+    $.ajax({
+      url: 'js/checkconfigaccess.php',
+      dataType: 'json',
+      cache: false,
+    })
+      .done(function (result) {
+        if (result.writable) {
+          if (reloadWhenWritable) {
+            window.location.reload();
+          } else {
+            showSetupWizard();
+          }
+          return;
+        }
+
+        showPermissionError(
+          result.message ||
+            'custom/CONFIG.js is not writable by the web server. Correct the file permissions before continuing.'
+        );
+      })
+      .fail(function () {
+        showPermissionError(
+          'Dashticz could not verify write access to custom/CONFIG.js. Make sure PHP is enabled and the file is writable before continuing.'
+        );
+      });
+  }
+
+  verifyAccess(false);
+  return deferred.promise();
+}
+
+function showSetupWizard() {
+  var deferred = $.Deferred();
+
+  $('#loaderHolder').hide();
+
+  // Field definitions: type 'text' = text input, 'toggle01' = 0/1 toggle switch,
+  // 'select' = named string options, 'selectstr' = named string options stored as-is.
+  var wizardFields = [
+    { section: 'Connection (Domoticz)' },
+    {
+      id: 'domoticz_ip',
+      label: 'Domoticz URL *',
+      type: 'text',
+      def: 'http://192.168.1.5:8080',
+      help: 'URL and port of your Domoticz server',
+      required: true,
+    },
+    {
+      id: 'loginEnabled',
+      label: 'Login required',
+      type: 'toggle01',
+      def: '0',
+    },
+    {
+      id: 'client_id',
+      label: 'OAuth client ID',
+      type: 'text',
+      def: 'Dashticz',
+    },
+    {
+      id: 'client_secret',
+      label: 'OAuth client secret',
+      type: 'text',
+      def: 'DashticzPassword',
+    },
+
+    { section: 'General' },
+    {
+      id: 'app_title',
+      label: 'Dashboard name',
+      type: 'text',
+      def: 'Dashticz',
+    },
+    {
+      id: 'language',
+      label: 'Language',
+      type: 'select',
+      def: 'nl_NL',
+      options: [
+        ['nl_NL', 'Nederlands'],
+        ['en_US', 'English'],
+        ['de_DE', 'Deutsch'],
+        ['fr_FR', 'Français'],
+      ],
+    },
+    {
+      id: 'theme',
+      label: 'Theme',
+      type: 'select',
+      def: 'modern-dark',
+      options: [
+        ['modern-dark', 'Modern Dark'],
+        ['default', 'Default'],
+        ['white', 'White'],
+      ],
+    },
+    {
+      id: 'topbar_timeout',
+      label: 'Topbar auto-hide (s, 0=off)',
+      type: 'text',
+      def: '0',
+    },
+    {
+      id: 'use_favorites',
+      label: 'Use Favorites',
+      type: 'toggle01',
+      def: '0',
+    },
+  ];
+
+  function escapeSetupHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function fieldId(key) {
+    return 'dt-setup-' + key.replace(/_/g, '-');
+  }
+
+  function renderField(field) {
+    var id = fieldId(field.id);
+    var html = '<div class="py-2 border-bottom row gx-0 align-items-center">';
+    html +=
+      '<label for="' +
+      id +
+      '" class="col-6 col-form-label col-form-label-sm pe-2">' +
+      field.label +
+      '</label>';
+    html += '<div class="col-6">';
+
+    if (field.type === 'text') {
+      html +=
+        '<input type="text" class="form-control form-control-sm" id="' +
+        id +
+        '" value="' +
+        escapeSetupHtml(field.def) +
+        '">';
+    } else if (field.type === 'toggle01') {
+      html +=
+        '<div class="form-check form-switch mt-1">' +
+        '<input class="form-check-input" type="checkbox" role="switch" id="' +
+        id + '"' + (field.def === '1' ? ' checked' : '') + ' style="width:4em;height:2em;">' +
+        '</div>';
+    } else if (field.type === 'select01') {
+      html += '<select class="form-select form-select-sm" id="' + id + '">';
+      html +=
+        '<option value="0"' +
+        (field.def === '0' ? ' selected' : '') +
+        '>No (0)</option>';
+      html +=
+        '<option value="1"' +
+        (field.def === '1' ? ' selected' : '') +
+        '>Yes (1)</option>';
+      html += '</select>';
+    } else if (field.type === 'selectbool') {
+      html += '<select class="form-select form-select-sm" id="' + id + '">';
+      html +=
+        '<option value="false"' +
+        (field.def === 'false' ? ' selected' : '') +
+        '>No</option>';
+      html +=
+        '<option value="true"' +
+        (field.def === 'true' ? ' selected' : '') +
+        '>Yes</option>';
+      html += '</select>';
+    } else if (field.type === 'select' || field.type === 'selectstr') {
+      html += '<select class="form-select form-select-sm" id="' + id + '">';
+      field.options.forEach(function (option) {
+        html +=
+          '<option value="' +
+          escapeSetupHtml(option[0]) +
+          '"' +
+          (field.def === option[0] ? ' selected' : '') +
+          '>' +
+          escapeSetupHtml(option[1]) +
+          '</option>';
+      });
+      html += '</select>';
+    }
+
+    if (field.help) html += '<div class="form-text">' + field.help + '</div>';
+    html += '</div></div>';
+    return html;
+  }
+
+  var body =
+    '<p class="text-muted small">Configure the basic settings to connect to Domoticz.</p>';
+  wizardFields.forEach(function (field) {
+    if (field.section !== undefined) {
+      body +=
+        '<h6 class="border-bottom pb-1 mt-3 mb-2 small fw-bold">' +
+        field.section +
+        '</h6>';
+    } else {
+      body += renderField(field);
+    }
+  });
+
+  var html =
+    '<div class="modal fade" id="dt-setup-wizard" tabindex="-1"' +
+    ' aria-labelledby="dt-setup-label" aria-modal="true" role="dialog">' +
+    '<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">' +
+    '<div class="modal-content">' +
+    '<div class="modal-header py-2">' +
+    '<h5 class="modal-title" id="dt-setup-label">Dashticz Setup</h5>' +
+    '</div>' +
+    '<div class="modal-body py-2">' +
+    body +
+    '<div class="alert alert-danger d-none mt-2" id="dt-setup-error" role="alert"></div>' +
+    '</div>' +
+    '<div class="modal-footer py-2">' +
+    '<button type="button" class="btn btn-primary btn-sm" id="dt-setup-save">Save &amp; Start</button>' +
+    '</div>' +
+    '</div>' +
+    '</div>' +
+    '</div>';
+
+  $('body').append(html);
+
+  var modalElement = document.getElementById('dt-setup-wizard');
+  var modal = new bootstrap.Modal(modalElement, {
+    backdrop: 'static',
+    keyboard: false,
+  });
+  modal.show();
+
+  $('#dt-setup-save').on('click', function () {
+    var $error = $('#dt-setup-error');
+    $error.addClass('d-none').text('');
+
+    var ip = $('#' + fieldId('domoticz_ip')).val().trim();
+    if (!ip) {
+      $error.removeClass('d-none').text('Enter the Domoticz URL.');
+      return;
+    }
+
+    var postData = {};
+    wizardFields.forEach(function (field) {
+      if (!field.id) return;
+      var value = $('#' + fieldId(field.id)).val();
+      if (value === null || value === undefined) return;
+      if (
+        field.type === 'text' ||
+        field.type === 'select' ||
+        field.type === 'selectstr'
+      ) {
+        postData[field.id] = JSON.stringify(
+          value.trim ? value.trim() : value
+        );
+      } else if (field.type === 'select01') {
+        postData[field.id] = JSON.stringify(parseInt(value, 10));
+      } else if (field.type === 'selectbool') {
+        postData[field.id] = JSON.stringify(value === 'true');
+      } else if (field.type === 'toggle01') {
+        postData[field.id] = JSON.stringify(
+          $('#' + fieldId(field.id)).is(':checked') ? 1 : 0
+        );
+      }
+    });
+
+    $('#dt-setup-save').prop('disabled', true);
+
+    $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
+      .then(function (data) {
+        return $.ajax({
+          url: 'js/savesettings.php',
+          method: 'POST',
+          data: postData,
+          dataType: 'json',
+          headers: { 'X-Dashticz-CSRF': data.token },
+        });
+      })
+      .done(function () {
+        window.location.reload();
+      })
+      .fail(function (xhr) {
+        var message =
+          xhr.responseJSON && xhr.responseJSON.error
+            ? xhr.responseJSON.error
+            : 'Settings could not be saved. Check if PHP is enabled.';
+        $error.removeClass('d-none').text(message);
+        $('#dt-setup-save').prop('disabled', false);
+      });
+  });
+
+  // Keep the normal startup chain paused until saving reloads the page.
+  return deferred.promise();
+}
+
+function configureDashticz() {
   $(
     '<link href="vendor/weather/css/weather-icons.min.css?v=' +
-    cache +
-    '" rel="stylesheet">'
+      cache +
+      '" rel="stylesheet">'
   ).appendTo('head');
 
   if (settings['theme'] !== 'default') {
     $(
       '<link rel="stylesheet" type="text/css" href="themes/' +
-      settings['theme'] +
-      '/' +
-      settings['theme'] +
-      '.css?v=' +
-      cache +
-      '" />'
+        settings['theme'] +
+        '/' +
+        settings['theme'] +
+        '.css?v=' +
+        cache +
+        '" />'
     ).appendTo('head');
   }
 
@@ -211,21 +583,25 @@ function configureDashticz() {
 
   return $.when(
     DT_function.loadDTScript('js/switches.js'),
-    DT_function.loadDTScript('js/thermostat.js'),
+    DT_function.loadDTScript('js/tempcontrol.js'),
     DT_function.loadDTScript('js/dashticz.js'),
     DT_function.loadDTScript('js/blocks.js'),
-    DT_function.loadDTScript('js/blocktypes.js'),
     DT_function.loadDTScript('js/login.js'),
     DT_function.loadDTScript('js/moon.js'),
     DT_function.loadDTScript('js/colorpicker.js'),
     DT_function.loadDTScript('js/fullscreen.js')
   )
-    .then(function() {
-      return Dashticz.init()})
     .then(function () {
-      if (typeof beforeFirstRenderHook === 'function') return beforeFirstRenderHook();
+      return DT_function.loadDTScript('js/blocktypes.js');
     })
-    .then(function(){
+    .then(function () {
+      return Dashticz.init();
+    })
+    .then(function () {
+      if (typeof beforeFirstRenderHook === 'function')
+        return beforeFirstRenderHook();
+    })
+    .then(function () {
       if (typeof screens === 'undefined' || objectlength(screens) === 0) {
         screens = {};
         screens[1] = {};
@@ -237,21 +613,16 @@ function configureDashticz() {
             if (c !== 'bar') screens[1]['columns'].push(c);
           }
         }
-      }    
-    })
+      }
+    });
 }
 
 function prepareStart() {
   _PARAMS = getLocationParameters();
 
-  console.log(_PARAMS);
-//  debugger;
-
-
   _CFG.customfolder = _PARAMS['folder'] || 'custom';
-  if (typeof dashtype !== 'undefined' && parseFloat(dashtype) > 1) {
-    _CFG.customfolder += '_' + dashtype;
-  }
+  // First-run settings must live in CONFIG.js, never in browser storage.
+  clearLegacyStoredSetupConfig();
 
   createErrorHandler();
   loadStyling();
@@ -260,7 +631,9 @@ function prepareStart() {
     .then(loadConfig2)
     .then(loadLanguage)
     .then(getSettings)
-    .then(function () { return loadScript('js/dt_function.js')})
+    .then(function () {
+      return loadScript('js/dt_function.js');
+    })
     .then(addDebug)
     .then(loadCustomJS)
     .then(configureDashticz)
@@ -268,7 +641,7 @@ function prepareStart() {
       if (settings['security_panel_lock'])
         Domoticz.subscribe('_secstatus', true, checkSecurityStatus);
       sessionvalid = sessionValid();
-/*
+      /*
       if (
         typeof settings['gm_api'] !== 'undefined' &&
         settings['gm_api'] !== '' &&
@@ -304,7 +677,7 @@ function prepareStart() {
     return $.ajax({
       url: 'js/version.js',
       dataType: 'script',
-      cache: false
+      cache: false,
     })
       .then(function () {
         return initVersion();
@@ -313,7 +686,7 @@ function prepareStart() {
         return $.ajax({
           url: 'js/settings.js',
           dataType: 'script',
-          cache: false
+          cache: false,
         });
       })
       .then(function () {
@@ -326,18 +699,20 @@ function prepareStart() {
     Object.keys(_PARAMS).forEach(function (key) {
       if (typeof settings[key] !== 'undefined') settings[key] = _PARAMS[key];
     });
-    if(_PARAMS.code) {
+    if (_PARAMS.code) {
       settings.code = _PARAMS.code;
     }
     settings.state = document.location.href;
-    if(_PARAMS.state) {
+    if (_PARAMS.state) {
       settings.state = atob(_PARAMS.state);
-      window.history.replaceState({}, null,settings.state);
+      window.history.replaceState({}, null, settings.state);
     }
-    if(_PARAMS.error) {
-      var err = 'Domoticz authentication problem ('+_PARAMS.error+')';
-      if (_PARAMS.error==='unauthorized_client') {
-        err+='<br>Check client_id in CONFIG.js.<br>Note: OAuth2 flow only is supported for Domoticz >=2023.2<br>'
+    if (_PARAMS.error) {
+      var safeOAuthError = $('<div>').text(_PARAMS.error).html();
+      var err = 'Domoticz authentication problem (' + safeOAuthError + ')';
+      if (_PARAMS.error === 'unauthorized_client') {
+        err +=
+          '<br>Check client_id in CONFIG.js.<br>Note: OAuth2 flow only is supported for Domoticz >=2023.2<br>';
       }
       throw new Error(err);
       return;
@@ -370,7 +745,7 @@ function addDebug() {
   return $.ajax({
     url: 'js/debug.js',
     dataType: 'script',
-    cache: true
+    cache: true,
   }).then(function () {
     return Debug.init();
   });
@@ -430,7 +805,6 @@ function autoSlide() {
 }
 
 function tryDashticzRefresh(timeout, msg) {
-
   setTimeout(function () {
     console.log(msg);
     Debug.log(msg);
@@ -440,14 +814,20 @@ function tryDashticzRefresh(timeout, msg) {
           // eslint-disable-next-line no-self-assign
           window.location.href = window.location.href;
         else {
-          tryDashticzRefresh(10 * 1000, "Dashticz not available: postponing refresh");
+          tryDashticzRefresh(
+            10 * 1000,
+            'Dashticz not available: postponing refresh'
+          );
         }
       })
-      .catch(function (res) {
-        console.log(res);
-        tryDashticzRefresh(10 * 1000, "Catch: Dashticz not available: postponing refresh");
-      })
-  }, timeout)
+      .catch(function () {
+        Debug.log(Debug.ERROR, 'Dashticz refresh failed');
+        tryDashticzRefresh(
+          10 * 1000,
+          'Catch: Dashticz not available: postponing refresh'
+        );
+      });
+  }, timeout);
 }
 
 function onLoad() {
@@ -462,21 +842,22 @@ function onLoad() {
   }
   md = new MobileDetect(window.navigator.userAgent);
 
-  $('body')
-    .attr('unselectable', 'on')
-    .css({
-      '-moz-user-select': 'none',
-      '-o-user-select': 'none',
-      '-khtml-user-select': 'none',
-      '-webkit-user-select': 'none',
-      '-ms-user-select': 'none',
-      'user-select': 'none',
-    })
+  $('body').attr('unselectable', 'on').css({
+    '-moz-user-select': 'none',
+    '-o-user-select': 'none',
+    '-khtml-user-select': 'none',
+    '-webkit-user-select': 'none',
+    '-ms-user-select': 'none',
+    'user-select': 'none',
+  });
   //    .on('selectstart', function () {
   //      return false;
   //    });
 
   buildScreens();
+  DT_function.loadDTScript('js/topbar.js').then(function () {
+    DashticzTopbar.init();
+  });
 
   setClockDateWeekday();
   setInterval(
@@ -496,17 +877,22 @@ function onLoad() {
   var dashticzRefresh = Number(settings['dashticz_refresh']);
 
   if (dashticzRefresh > 0) {
-    tryDashticzRefresh(dashticzRefresh * 60 * 1000, 'Trying to refresh Dashticz');
+    tryDashticzRefresh(
+      dashticzRefresh * 60 * 1000,
+      'Trying to refresh Dashticz'
+    );
   }
 
   if (settings['auto_swipe_back_after'] > 0 || settings.auto_slide_pages > 0) {
     setInterval(function () {
       swipebackTime += 1000;
       if (settings.auto_slide_pages > 0) {
+        if (typeof myswiper === 'undefined') return;
         var currentSlide = myswiper.activeIndex;
         var swipeTimeout = Number(
           currentScreenSet[currentSlide].auto_slide_page ||
-          settings.auto_slide_pages);
+            settings.auto_slide_pages
+        );
         if (!autoSwipe) swipeTimeout += Number(settings.auto_swipe_back_after);
         if (swipebackTime > swipeTimeout * 1000) {
           autoSlide();
@@ -526,7 +912,7 @@ function onLoad() {
       }
     }, 1000);
   }
-/* //Error: URL invalid ...
+  /* //Error: URL invalid ...
   if (
     typeof settings['disable_googleanalytics'] == 'undefined' ||
     parseFloat(settings['disable_googleanalytics']) == 0
@@ -548,27 +934,26 @@ function onLoad() {
     $('body').prepend(googleAnalytics);
   }*/
 
-  if (md.mobile() == null) {
-    $('body').on('mousemove', function () {
-      swipebackTime = 0;
-      autoSwipe = false;
-      if (standbyActive) {
-        Debug.log('Standby: mousemove');
-        disableStandby();
-      }
-    });
+  function registerUserActivity(event) {
+    lastUserActivity = Date.now();
+    swipebackTime = 0;
+    autoSwipe = false;
+
+    if (standbyActive) {
+      Debug.log('Standby: user activity (' + event.type + ')');
+      disableStandby();
+    }
   }
 
-  $('body').on('touchend click', function () {
-    setTimeout(function () {
-      if (standbyActive) {
-        //should not be activated
-        Debug.log('Standby: touchend click');
-        disableStandby();
-      }
-      swipebackTime = 0;
-      autoSwipe = false;
-    }, 100);
+  // Listen in the capture phase so controls that stop event propagation still
+  // count as activity. Pointer events cover mouse, touch and pen input in
+  // modern browsers; the other events are fallbacks for older browsers.
+  var activityEvents = window.PointerEvent
+    ? ['pointerdown', 'pointermove']
+    : ['mousedown', 'mousemove', 'touchstart', 'touchmove'];
+  activityEvents.push('keydown', 'click');
+  activityEvents.forEach(function (eventName) {
+    document.addEventListener(eventName, registerUserActivity, true);
   });
 
   if (parseFloat(settings['standby_after']) > 0) {
@@ -579,9 +964,9 @@ function onLoad() {
       _END_STANDBY_CALL_URL = settings['standby_call_url_on_end'];
     }
     setInterval(function () {
-      standbyTime += 5000;
       if (standbyActive != true) {
-        if (standbyTime >= settings['standby_after'] * 1000 * 60) {
+        var inactiveFor = Date.now() - lastUserActivity;
+        if (inactiveFor >= settings['standby_after'] * 1000 * 60) {
           $('body').addClass('standby');
           $('.dt-container').hide();
           if (objectlength(columns_standby) > 0) buildStandby();
@@ -596,12 +981,6 @@ function onLoad() {
       }
     }, 5000);
   }
-  /*
-    setInterval(function() {
-      console.log('playing');
-      playAudio('sounds/computer_error.mp3');
-    }, 5000)*/
-  //  triggerTime();
 }
 
 var oldTime = 0;
@@ -700,7 +1079,7 @@ function buildDefaultScreens() {
 }
 
 function buildScreens() {
-  if (screens[1] && !screens[1].columns.length) {
+  if (screens[1] && !screens[1].columns.length && settings['auto_positioning']) {
     buildDefaultScreens();
   }
   var allscreens = {};
@@ -778,7 +1157,10 @@ function buildScreens() {
           screenhtml += '><div class="row"></div></div>';
           $('div.contents').append(screenhtml);
 
-          if (!parseFloat(settings['hide_topbar']) == 1) {
+          if (
+            Number(settings['hide_topbar']) !== 1 ||
+            Number(settings['topbar_timeout']) > 0
+          ) {
             if (typeof columns['bar'] == 'undefined') {
               columns['bar'] = {};
               columns['bar']['blocks'] = ['logo', 'miniclock', 'settings'];
@@ -819,31 +1201,34 @@ function startSwiper() {
   $('.dt-container').addClass('swiper');
   $('.contents').addClass('swiper-wrapper');
   setTimeout(function () {
-    myswiper = new Swiper('.swiper', {
-      pagination: {
-        el: '.swiper-pagination',
-        clickable: true,
-      },
-      autoHeight: false,
-      paginationClickable: true,
-      //      speed: 0,
-      loop: false,
-      initialSlide: settings['start_page'] - 1,
-      effect: settings['slide_effect'],
-      keyboard: {
-        enabled: true,
-        onlyInViewport: false,
-      },
-      direction: 'horizontal',
-      allowTouchMove: settings.swiper_touch_move,
+    window.loadSwiper().then(function (Swiper) {
+      myswiper = new Swiper('.swiper', {
+        pagination: {
+          el: '.swiper-pagination',
+          clickable: true,
+        },
+        autoHeight: false,
+        //      speed: 0,
+        loop: false,
+        initialSlide: settings['start_page'] - 1,
+        effect: settings['slide_effect'],
+        keyboard: {
+          enabled: true,
+          onlyInViewport: false,
+        },
+        direction: 'horizontal',
+        allowTouchMove: settings.swiper_touch_move,
+      });
+      myswiper.on('transitionStart', function () {
+        $('.slide').removeClass('selectedbutton');
+      });
+      myswiper.on('transitionEnd', function () {
+        $('.slide' + (1 + this.activeIndex)).addClass('selectedbutton');
+      });
+      $('.slide' + settings['start_page']).addClass('selectedbutton');
+    }).catch(function (err) {
+      console.error('Unable to load Swiper', err);
     });
-    myswiper.on('transitionStart', function () {
-      $('.slide').removeClass('selectedbutton');
-    });
-    myswiper.on('transitionEnd', function () {
-      $('.slide' + (1 + this.activeIndex)).addClass('selectedbutton');
-    });
-    $('.slide' + settings['start_page']).addClass('selectedbutton');
   }, 100);
 }
 
@@ -897,18 +1282,18 @@ function infoMessage(sub, msg, timeOut) {
   if (timeOut == 0) {
     $('body').append(
       '<div class="update">' +
-      sub +
-      '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
-      msg +
-      '&nbsp;&nbsp;</div>'
+        sub +
+        '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+        msg +
+        '&nbsp;&nbsp;</div>'
     );
   } else {
     $('body').append(
       '<div class="update">' +
-      sub +
-      '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
-      msg +
-      '&nbsp;&nbsp;</div>'
+        sub +
+        '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;' +
+        msg +
+        '&nbsp;&nbsp;</div>'
     );
     setTimeout(function () {
       $('.update').fadeOut();
@@ -922,7 +1307,7 @@ function removeLoading() {
 }
 
 function disableStandby() {
-  standbyTime = 0;
+  lastUserActivity = Date.now();
   if (standbyActive == true) {
     if (
       typeof _END_STANDBY_CALL_URL !== 'undefined' &&

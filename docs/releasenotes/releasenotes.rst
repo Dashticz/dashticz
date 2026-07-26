@@ -8,6 +8,142 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.20.4 beta (24-7-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Device Editor: a pencil icon has been added to the topbar (left of the settings gear). Clicking it opens a modal that lists all Domoticz devices currently shown in Dashticz, and provides a dropdown to select additional Domoticz devices and add them with the **+** button. Each listed device has a **−** button to remove it from Dashticz; the removed device is restored to the "Add device" dropdown. Added/remaining devices are saved to ``custom/CONFIG.js`` as named ``blocks[...]`` entries grouped into ``columns[de_colN]`` definitions (up to 4 blocks per column), and ``screens[1]`` is created or extended automatically. Requires PHP to be installed.
+* Settings: ``auto_positioning`` (add all devices automatically) and ``use_favorites`` both default to **off** (0). With both options off no devices are shown automatically; add devices explicitly via the Device Editor.
+* Screens: ``buildDefaultScreens`` is only called when ``auto_positioning`` is enabled, preventing automatic device injection on a fresh install.
+
+Fixes
+~~~~~
+
+* Device Editor save: ``managedDevices`` is now initialised from **all** devices currently shown in Dashticz (previously it only read from the ``device_editor`` column, so the list was always empty on first use and nothing was written to CONFIG.js).
+* Device Editor save: blocks are now written as proper named ``blocks['Name'] = {idx, …}`` entries with grouped columns and a ``screens[1]`` initialisation; previously only a raw IDX array was written to a single ``columns['device_editor']`` entry and ``screens[1]`` was never created on a fresh CONFIG.js.
+* Device Editor remove: restoring a removed device back into the ``available[]`` array so that subsequent **+** dropdown rows correctly include it.
+
+v3.20.3 beta (20-7-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Docker: Migrated to a PHP 8.3-FPM Alpine + Nginx based image, plus a ``docker-compose.yaml`` (contributed by jgaalen)
+
+Code
+~~~~~
+
+* Makefile: Rewritten container management targets (contributed by jgaalen)
+
+v3.20.2 beta (20-7-2026)
+--------------------------
+
+Code
+~~~~~
+
+* Docs: Fixed remaining ``thermostat.js`` reference to ``tempcontrol.js`` (contributed by jgaalen)
+
+v3.20.1 beta (20-7-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Garbage: Added HVC waste collection provider (contributed by me-processware)
+
+v3.20.0 beta (20-7-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Merged MadPatrick fork: Bootstrap 5 compatibility, modernized build tooling (webpack/babel/sass upgrades) and a new optional "modern dark" theme
+
+Code
+~~~~~
+
+* Build tooling moved to the ``build/`` folder (webpack, babel and prettier configs)
+
+v3.14.1.5 beta (29-4-2025)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Improved styling of blinds and thermostat buttons. See :ref:`blindsstyling`
+
+Code
+~~~~~
+
+* Thermostat styling: CSS class for thermostat value renamed from ``.state`` to ``.value``
+  
+v3.14.1.4 beta (18-4-2025)
+--------------------------
+
+Fixes
+~~~~~~
+
+* Fix for Logitech Media Server
+
+v3.14.1.3 beta (17-4-2025)
+--------------------------
+
+Fixes
+~~~~~~
+
+* Fix for default icons of a switch block
+
+v3.14.1.2 beta (15-4-2025)
+--------------------------
+
+Fixes
+~~~~~~
+
+* Some Domoticz blocks related fixes
+
+Code
+~~~~~
+
+* First version of autotest
+  
+v3.14.1.1 beta (1-4-2025)
+------------------------
+
+Fixes
+~~~~~~
+
+* Fix for Domoticz device types Usage and Scale
+* Fix for Domoticz subdevice numbering
+
+v3.14.1 beta (24-3-2025)
+------------------------
+
+.. warning :: Some breaking changes. See :ref:`v3_14_1`
+
+Enhancements
+~~~~~~~~~~~~
+
+Rework of Domoticz blocks, giving the following new parameters:
+
+* ``values``: To define how (and which) subvalues of a device will be displayed. It's also possible to combine data from several devices in one block.
+* ``multi_line``: Set to ``true`` to show all subvalues as multiple lines in one block
+* ``single_line``: Set to ``true`` to show all subvalues on one line in one block
+* ``showsubtitles``: To show the subtitles of subvalues. Two variants are supported: ``1`` and ``2``
+* ``showvalues``: Array to indicate which subvalues of the device will be displayed (starting at ``1``)
+* ``scale``: Multiplier for the data value
+* ``decimals``: To set the number of decimals for the data value.
+* ``unit``: Text to place behind the data value. 
+
+See :ref:`dom_blockparameters` and :ref:`multiplevaluesblock`
+
+v3.14.0 beta (23-2-2025)
+------------------------
+
+Beta version, same as v3.14
+
 v3.14 master (23-2-2025)
 ------------------------
 

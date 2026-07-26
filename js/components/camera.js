@@ -15,9 +15,9 @@ var DT_camera = {
     this.trayimgtimer = 0;
     this.trayopentimer = 0;
     this.streamtimer = 0;
-    this.thumbtimer = 0;
     this.trayopen = false;
     this.carousel = false;
+    this.listenersBound = false;
   },
 
   /**
@@ -38,6 +38,7 @@ var DT_camera = {
    * @param {object}  me  Core component object.
    */
   run: function (me) {
+    var newDevices = [];
     /* The camera block contains multiple cameras */
     if (me.block.cameras.length > 0) {
       /* Create new mountpoints for each of the cameras */
@@ -48,7 +49,7 @@ var DT_camera = {
 
       $.each(me.block.cameras, function (i) {
         var mountpoint = Dashticz.mountNewContainer(columndiv);
-        var cam = me.block.cameras[i];
+        var cam = $.extend({}, me.block.cameras[i]);
         cam.key = me.key.slice(0, -1) + i;
         cam.mjpeg = isDefined(cam.videoUrl);
         cam.videoUrl = cam.mjpeg ? cam.videoUrl : cam.imageUrl;
@@ -56,15 +57,17 @@ var DT_camera = {
         cam.mountpoint = mountpoint;
         cam.block = me.block;
         cam.multi = true;
-        cam.index = i;
+        cam.index = DT_camera.devices.length;
+        cam.owner = me;
         DT_camera.devices.push(cam);
+        newDevices.push(cam);
       });
 
       /* The camera block has only one camera */
     } else {
       me.mjpeg = isDefined(me.block.videoUrl);
       me.block.videoUrl = me.mjpeg ? me.block.videoUrl : me.block.imageUrl;
-      DT_camera.devices.push({
+      var camera = {
         key: me.key,
         imageUrl: me.block.imageUrl,
         videoUrl: me.mjpeg ? me.block.videoUrl : me.block.imageUrl,
@@ -74,13 +77,15 @@ var DT_camera = {
         mountpoint: me.mountPoint,
         block: me.block,
         multi: false,
-        index: 0,
-      });
+        index: DT_camera.devices.length,
+        owner: me,
+      };
+      DT_camera.devices.push(camera);
+      newDevices.push(camera);
     }
 
     /* Create the thumbs for each camera and add to mountpoint */
-    $.each(DT_camera.devices, function (i) {
-      var cam = DT_camera.devices[i];
+    $.each(newDevices, function (i, cam) {
       templateEngine.load('camera_image').then(function (template) {
         var data = {
           div: cam.multi,
@@ -103,8 +108,25 @@ var DT_camera = {
 
       DT_camera.setTrayTimeout(cam);
       DT_camera.reloadThumb(cam);
-      DT_camera.listen(cam);
     });
+    DT_camera.listen();
+  },
+
+  destroy: function (me) {
+    DT_camera.devices = DT_camera.devices.filter(function (camera) {
+      if (camera.owner !== me) return true;
+      clearInterval(camera.thumbtimer);
+      return false;
+    });
+    DT_camera.devices.forEach(function (camera, index) {
+      camera.index = index;
+    });
+    clearInterval(DT_camera.streamtimer);
+    clearInterval(DT_camera.trayimgtimer);
+    clearTimeout(DT_camera.trayopentimer);
+    $('#camCarousel').remove();
+    DT_camera.carousel = false;
+    DT_camera.trayopen = false;
   },
 
   /**
@@ -113,7 +135,8 @@ var DT_camera = {
    * @param {object}  me  Core component object.
    */
   reloadThumb: function (me) {
-    DT_camera.thumbtimer = setInterval(function () {
+    clearInterval(me.thumbtimer);
+    me.thumbtimer = setInterval(function () {
       if (!DT_camera.carousel) {
         $('.' + me.mountpoint.slice(1) + '_camImage').attr(
           'src',
@@ -129,9 +152,9 @@ var DT_camera = {
    * @param {object}    me      Core component object.
    * @param {boolean}   right   The direction of the carousel.
    */
-  slide: function (me, right) {
+  slide: function (right) {
     var camindex = $('.carousel-inner .item.active').index();
-    DT_camera.streamManager(me, camindex, right);
+    DT_camera.streamManager(camindex, right);
   },
 
   /**
@@ -142,8 +165,7 @@ var DT_camera = {
    * @param {number}    camindex   The index of the current camera.
    * @param {boolean}   right      The direction of the carousel.
    */
-  streamManager: function (me, camindex, right) {
-    var mjpeg = $('#cam' + camindex).data('mjpeg');
+  streamManager: function (camindex, right) {
     var direction = right ? 1 : -1;
     var limit = right ? 0 : DT_camera.devices.length - 1;
     var newindex =
@@ -152,7 +174,7 @@ var DT_camera = {
         : limit;
 
     var curr = DT_camera.devices[camindex];
-    DT_camera.setStream(me, newindex, mjpeg);
+    DT_camera.setStream(newindex);
     $('#cam' + camindex).attr('src', curr.imageUrl);
     return;
   },
@@ -162,23 +184,25 @@ var DT_camera = {
    * Image streams are refreshed with the setinterval timer.
    * @param {object}    me         Core component object.
    * @param {number}    index      The index of the camera to activate.
-   * @param {boolean}   mjpeg      Whether it's an mjpeg or image stream.
    */
-  setStream: function (me, index, mjpeg) {
+  setStream: function (index) {
     var $cam = $('body').find('#cam' + index);
-    if (mjpeg) {
-      $cam.attr('src', DT_camera.devices[index].videoUrl);
+    var camera = DT_camera.devices[index];
+    if (!camera) return;
+    if (camera.mjpeg) {
+      clearInterval(DT_camera.streamtimer);
+      $cam.attr('src', camera.videoUrl);
     } else {
       clearInterval(DT_camera.streamtimer);
       DT_camera.streamtimer = setInterval(function () {
         $cam.attr(
           'src',
           DT_function.checkForceRefresh(
-            DT_camera.devices[index].imageUrl,
-            me.block.forcerefresh
+            camera.imageUrl,
+            camera.block.forcerefresh
           )
         );
-      }, DT_camera.devices[index].refresh);
+      }, camera.refresh);
     }
     return;
   },
@@ -203,6 +227,7 @@ var DT_camera = {
     if ($tray.hasClass('open')) {
       $tray.removeClass('open').addClass('shut');
       clearTimeout(DT_camera.trayopentimer);
+      clearInterval(DT_camera.trayimgtimer);
       DT_camera.trayopen = false;
     } else {
       $tray.removeClass('shut').addClass('open');
@@ -217,24 +242,28 @@ var DT_camera = {
    * Block parameter: traytimeout (in seconds)
    */
   trayTimeout: function () {
-    DT_camera.trayopentimer = setInterval(function () {
-      DT_camera.trayToggle();
+    clearTimeout(DT_camera.trayopentimer);
+    DT_camera.trayopentimer = setTimeout(function () {
+      if (DT_camera.trayopen) DT_camera.trayToggle();
     }, DT_camera.traytimeout * 1000);
-    //return;
   },
 
   /**
    * Refreshes images at user specified interval when tray is open.
    * @param {object}  me  Core component object.
    */
-  trayRefresh: function (me) {
+  trayRefresh: function () {
+    clearInterval(DT_camera.trayimgtimer);
+    var refresh = DT_camera.devices.reduce(function (current, camera) {
+      return Math.min(current, camera.refresh);
+    }, 60000);
     DT_camera.trayimgtimer = setInterval(function () {
       if ($('.cam-tray').hasClass('open')) {
         $('.cam-tray-item .cam-tray-img').each(function (index) {
           if (isDefined(DT_camera.devices[index])) {
             var refreshUrl = DT_function.checkForceRefresh(
               DT_camera.devices[index].imageUrl,
-              me.block.forcerefresh
+              DT_camera.devices[index].block.forcerefresh
             );
             $(
               '.cam-tray.open > .cam-tray-item:nth-child(' +
@@ -244,25 +273,28 @@ var DT_camera = {
           }
         });
       }
-    }, me.refresh);
+    }, refresh);
     return;
   },
   /**
    * Listens for user interaction; thumbs, tray and carousel.
    * @param {object}  me  Core component object.
    */
-  listen: function (me) {
+  listen: function () {
+    if (DT_camera.listenersBound) return;
+    DT_camera.listenersBound = true;
     /* Listens when thumbs are clicked on Dashticz screen */
     $('body').on(
       'click',
-      '.' + me.mountpoint.slice(1) + '_camImage',
+      '.dt-camera-thumb',
       function () {
         DT_camera.carousel = true;
-        var mjpeg = $(this).data('mjpeg');
         var key = $(this).data('id');
         var index = DT_camera.devices.findIndex(function (object) {
           return object.key === key;
         });
+        var camera = DT_camera.devices[index];
+        if (!camera) return;
 
         /* Camera carousel opened for the first time */
         if ($('#camCarousel').length === 0) {
@@ -271,7 +303,7 @@ var DT_camera = {
               $('body').append(
                 template({
                   urls: DT_camera.devices,
-                  slide: me.block.slidedelay * 1000,
+                  slide: camera.block.slidedelay * 1000,
                 })
               );
               var $cam = $('body').find('#cam' + index);
@@ -279,7 +311,7 @@ var DT_camera = {
               $('#camCarousel').carousel();
               $cam.parent().addClass('active');
               $ind.addClass('active');
-              DT_camera.setStream(me, index, mjpeg);
+              DT_camera.setStream(index);
             }
           });
 
@@ -288,7 +320,7 @@ var DT_camera = {
           $('#camCarousel').show();
           $('#camCarousel').carousel('cycle');
           $('#camCarousel').carousel(index);
-          DT_camera.setStream(me, index, mjpeg);
+          DT_camera.setStream(index);
         }
       }
     );
@@ -296,13 +328,12 @@ var DT_camera = {
     /* Listens when an image is selected in the tray */
     $('body').on('click', '.cam-container .cam-tray-img', function () {
       clearTimeout(DT_camera.trayopentimer);
-      var mjpeg = $(this).data('mjpeg');
       var key = $(this).data('id');
       var index = DT_camera.devices.findIndex(function (object) {
         return object.key === key;
       });
       $('#camCarousel').carousel(index);
-      DT_camera.setStream(me, index, mjpeg);
+      DT_camera.setStream(index);
       DT_camera.trayTimeout();
     });
 
@@ -310,7 +341,7 @@ var DT_camera = {
     $('body').on('click', '#camCarousel > .handle', function () {
       if (!DT_camera.trayopen) {
         DT_camera.trayToggle();
-        DT_camera.trayRefresh(me);
+        DT_camera.trayRefresh();
       }
     });
 
@@ -322,6 +353,8 @@ var DT_camera = {
         if (DT_camera.carousel) {
           $('#camCarousel').hide();
           $('#camCarousel').carousel('pause');
+          clearInterval(DT_camera.streamtimer);
+          clearInterval(DT_camera.trayimgtimer);
           DT_camera.carousel = false;
         }
       }
@@ -329,17 +362,17 @@ var DT_camera = {
 
     /* Listens when user navigates left in the carousel */
     $('body').on('click', '.cam-container .left', function () {
-      DT_camera.slide(me, false);
+      DT_camera.slide(false);
     });
 
     /* Listens when user navigates right in the carousel */
     $('body').on('click', '.cam-container .right', function () {
-      DT_camera.slide(me, true);
+      DT_camera.slide(true);
     });
 
     /* Listens when the carousel slides automatically */
     $('body').on('slide.bs.carousel', '#camCarousel', function () {
-      DT_camera.slide(me, true);
+      DT_camera.slide(true);
     });
   },
 };

@@ -83,7 +83,7 @@ function gm_authFailure() {
       me.pointA = new google.maps.LatLng(me.block.latitude, me.block.longitude);
 
       if (me.block.positionidx) {
-        Domoticz.subscribe(me.block.positionidx, true, function(pos) {
+        Dashticz.subscribeDevice(me, me.block.positionidx, true, function(pos) {
           handlePosDevice(me, pos)
         });
       }
@@ -95,7 +95,7 @@ function gm_authFailure() {
       }
 
       if (me.block.destidx) {
-        Domoticz.subscribe(me.block.destidx, true, function(dest) {
+        Dashticz.subscribeDevice(me, me.block.destidx, true, function(dest) {
           handleDestDevice(me, dest)
         });
       }

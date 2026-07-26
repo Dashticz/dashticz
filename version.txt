@@ -1,10 +1,20 @@
 {
-"version": "3.14",
-"branch": "master",
-"last_changes": "Master version derivce from 3.13.1 beta",
+"version": "3.20.4",
+"branch": "beta",
+"last_changes": "Device Editor: generate named blocks, grouped columns, and proper screens[1] in CONFIG.js",
 "changelog" : {
-            "3.13.1": "Bug fixes",
-            "3.13.0": "Beta version derived from 3.13-master",
-            "3.13": "Master version derived from 3.12.1-beta"
+            "3.20.4": "Device Editor: generate named blocks, grouped columns, and proper screens[1] in CONFIG.js",
+            "3.20.3": "Added Docker Alpine+nginx+PHP8.3 image and docker-compose setup (jgaalen)",
+            "3.20.2": "Doc fix: thermostat.js reference updated to tempcontrol.js (jgaalen)",
+            "3.20.1": "Added HVC waste collection provider (me-processware)",
+            "3.20.0": "MadPatrick fork: modernized stable release with Bootstrap 5 compatibility",
+            "3.14.2.0": "Fix for Domoticz connection",
+            "3.14.1.4": "Fix for Logitech Media Server",
+            "3.14.1.3": "Fix for default switch block",
+            "3.14.1.2": "Playwright test",
+            "3.14.1.1": "Domoticz block bug fixing",
+            "3.14.1": "Domoticz block enhancements",
+            "3.14.0": "Beta version same as 3.14 master",
+            "3.14": "Master version derived from 3.13.1 beta"
             }
 }

@@ -1,10 +1,10 @@
-/* global Dashticz */
+/* global Dashticz Domoticz DT_function createDelayedFunction getIconStatusClass getDefaultSwitchBlock toLower switchDevice */
 //# sourceURL=js/components/group.js
 var DT_group = (function () {
 
     return {
         name: 'group',
-        defaultCfg: function (block) {
+        defaultCfg: function () {
             return {
                 width: 4,
                 refresh: 3600,
@@ -80,7 +80,7 @@ var DT_group = (function () {
 
         me.mixed = me.block.mixed.toLowerCase();
 
-        me.devicesPromise.then(function (res) {
+        me.devicesPromise.then(function () {
 
             me.groupState = me.devices.reduce(function (acc, idx) {
                 if (acc === 'mixed') return 'mixed';
@@ -100,14 +100,13 @@ var DT_group = (function () {
                 width: me.block.width,
                 title: me.block.title || me.key,
                 showmixedas: me.block.showmixedas,
+                protoBlock: {
+                    iconOn: 'fas fa-lightbulb',
+                    iconOff: 'far fa-lightbulb',
+                }
 
             });
-            var html = getDefaultSwitchBlock(
-                block,
-                'fas fa-lightbulb',
-                'far fa-lightbulb',
-                ''
-            )[0];
+            var html = getDefaultSwitchBlock(block);
             me.$mountPoint.find('.dt_block').html(html);
         })
 
