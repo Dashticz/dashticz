@@ -1,4 +1,4 @@
-/* global settings columns blocks */
+/* global settings columns blocks screens */
 // eslint-disable-next-line no-unused-vars
 var DashticzWidgetEditor = (function () {
   'use strict';
@@ -49,8 +49,10 @@ var DashticzWidgetEditor = (function () {
   ];
 
   var selectedWidgets = {};
+  var widgetDimensions = {};
   var weatherProvider = 'openweather';
   var calendarUrl = '';
+  var clockType = 'basicclock';
 
   function open() {
     _readConfiguredWidgets();
@@ -59,16 +61,17 @@ var DashticzWidgetEditor = (function () {
 
   function _readConfiguredWidgets() {
     selectedWidgets = {};
+    widgetDimensions = {};
     weatherProvider =
       settings['owm_api'] || !settings['wu_api']
         ? 'openweather'
         : 'wunderground';
     calendarUrl = '';
+    clockType = 'basicclock';
 
     if (typeof columns === 'undefined') return;
 
-    Object.keys(columns).forEach(function (columnKey) {
-      if (!/^we_col\d+$/.test(columnKey)) return;
+    _orderedColumnKeys().forEach(function (columnKey) {
       var column = columns[columnKey];
       if (!column || !Array.isArray(column.blocks)) return;
 
@@ -82,6 +85,10 @@ var DashticzWidgetEditor = (function () {
           typeof blocks !== 'undefined' && blocks[reference]
             ? blocks[reference]
             : {};
+        widgetDimensions[item.id] = {
+          width: parseInt(definition.width, 10) || null,
+          height: parseInt(definition.height, 10) || null,
+        };
         if (
           item.id === 'weather' &&
           definition.widget_provider === 'wunderground'
@@ -94,8 +101,33 @@ var DashticzWidgetEditor = (function () {
         ) {
           calendarUrl = definition.icalurl;
         }
+        if (
+          item.id === 'clock' &&
+          /^(basicclock|stationclock|flipclock|haymanclock|miniclock)$/.test(
+            definition.type
+          )
+        ) {
+          clockType = definition.type;
+        }
       });
     });
+  }
+
+  function _orderedColumnKeys() {
+    var result = [];
+    if (
+      typeof screens !== 'undefined' &&
+      screens[1] &&
+      Array.isArray(screens[1].columns)
+    ) {
+      result = screens[1].columns.map(String);
+    }
+    Object.keys(columns).forEach(function (columnKey) {
+      if (result.indexOf(String(columnKey)) < 0) {
+        result.push(String(columnKey));
+      }
+    });
+    return result;
   }
 
   function _catalogItemByBlockKey(blockKey) {
@@ -159,6 +191,16 @@ var DashticzWidgetEditor = (function () {
         'placeholder="https://…/calendar.ics" value="' +
         _esc(calendarUrl) +
         '">';
+    } else if (item.id === 'clock') {
+      extra =
+        '<label class="we-field-label" for="we-clock-type">Kloktype</label>' +
+        '<select class="form-select form-select-sm we-widget-field" id="we-clock-type">' +
+        _clockOption('basicclock', 'Basic clock') +
+        _clockOption('stationclock', 'Stationsklok') +
+        _clockOption('flipclock', 'Flipclock') +
+        _clockOption('haymanclock', 'Hayman clock') +
+        _clockOption('miniclock', 'Miniclock') +
+        '</select>';
     }
 
     return (
@@ -181,6 +223,18 @@ var DashticzWidgetEditor = (function () {
       '</div><div class="we-widget-status">' +
       (selected ? 'Toegevoegd' : 'Klik om toe te voegen') +
       '</div></div>'
+    );
+  }
+
+  function _clockOption(value, label) {
+    return (
+      '<option value="' +
+      value +
+      '"' +
+      (clockType === value ? ' selected' : '') +
+      '>' +
+      label +
+      '</option>'
     );
   }
 
@@ -231,6 +285,7 @@ var DashticzWidgetEditor = (function () {
   function _save() {
     weatherProvider = $('#we-weather-provider').val() || 'openweather';
     calendarUrl = $.trim($('#we-calendar-url').val() || '');
+    clockType = $('#we-clock-type').val() || 'basicclock';
 
     if (
       selectedWidgets.calendar &&
@@ -247,8 +302,12 @@ var DashticzWidgetEditor = (function () {
     catalog.forEach(function (item) {
       if (!selectedWidgets[item.id]) return;
       var entry = { id: item.id };
+      var dimensions = widgetDimensions[item.id] || {};
+      if (dimensions.width) entry.width = dimensions.width;
+      if (dimensions.height) entry.height = dimensions.height;
       if (item.id === 'weather') entry.provider = weatherProvider;
       if (item.id === 'calendar') entry.icalurl = calendarUrl;
+      if (item.id === 'clock') entry.clockType = clockType;
       payload.push(entry);
     });
 

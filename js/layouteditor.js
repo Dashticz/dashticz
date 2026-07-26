@@ -22,19 +22,19 @@ var DashticzLayoutEditor = (function () {
     if (!$screen.length) $screen = $('.screen:visible').first();
 
     var $managedColumns = $screen.find('[data-colindex]').filter(function () {
-      return /^de_col\d+$/.test(String($(this).data('colindex')));
+      return /^(de|we|le)_col\d+$/.test(String($(this).data('colindex')));
     });
 
     if (!$managedColumns.length) {
       alert(
-        'No Device Editor blocks are available on this screen. Open screen 1 or add devices with the Device Editor first.'
+        'No editable devices or widgets are available on this screen.'
       );
       return;
     }
 
     _collectItems($managedColumns);
     if (!items.length) {
-      alert('No editable Device Editor blocks were found on this screen.');
+      alert('No editable devices or widgets were found on this screen.');
       return;
     }
 
@@ -78,10 +78,11 @@ var DashticzLayoutEditor = (function () {
         var resolved = _resolveBlock(refs[index]);
         if (!resolved) return;
 
-        var visibleBlocks = $(wrapper)
-          .children()
-          .filter('.mh, .dt_block')
-          .toArray();
+        var $wrapperChildren = $(wrapper).children();
+        var visibleBlocks = $wrapperChildren.filter('.mh, .dt_block').toArray();
+        if (!visibleBlocks.length) {
+          visibleBlocks = $wrapperChildren.toArray();
+        }
         if (!visibleBlocks.length) return;
 
         var item = {
@@ -90,6 +91,10 @@ var DashticzLayoutEditor = (function () {
           visibleBlocks: visibleBlocks,
           idx: resolved.idx,
           subidx: resolved.subidx,
+          kind: resolved.kind,
+          reference: resolved.reference,
+          widgetId: resolved.widgetId,
+          definition: resolved.definition,
           name: resolved.name,
           width: _configuredWidth(resolved.definition, visibleBlocks[0]),
           height: _configuredHeight(resolved.definition),
@@ -129,7 +134,19 @@ var DashticzLayoutEditor = (function () {
 
     var rawIdx = typeof definition.idx !== 'undefined' ? definition.idx : ref;
     var match = String(rawIdx).match(/^(\d+)(?:_(\d+))?$/);
-    if (!match || parseInt(match[1], 10) < 1) return null;
+    if (!match || parseInt(match[1], 10) < 1) {
+      var widgetId = _widgetIdFromReference(ref);
+      if (!widgetId || !definition) return null;
+      return {
+        definition: definition,
+        kind: 'widget',
+        reference: String(ref),
+        widgetId: widgetId,
+        idx: null,
+        subidx: 0,
+        name: definition.title || String(ref),
+      };
+    }
 
     var idx = parseInt(match[1], 10);
     var subidx = match[2] ? parseInt(match[2], 10) : 0;
@@ -146,10 +163,25 @@ var DashticzLayoutEditor = (function () {
 
     return {
       definition: definition,
+      kind: 'device',
+      reference: key,
+      widgetId: null,
       idx: idx,
       subidx: subidx,
       name: name,
     };
+  }
+
+  function _widgetIdFromReference(reference) {
+    var widgetReferences = {
+      widget_weather: 'weather',
+      widget_garbage: 'garbage',
+      widget_spotify: 'spotify',
+      widget_sonarr: 'sonarr',
+      widget_clock: 'clock',
+      widget_calendar: 'calendar',
+    };
+    return widgetReferences[String(reference)] || null;
   }
 
   function _configuredWidth(definition, block) {
@@ -199,7 +231,7 @@ var DashticzLayoutEditor = (function () {
         var $block = $(block).addClass('dle-block');
         var removeButton =
           index === 0
-            ? '<button type="button" class="dle-remove-button" title="Remove device" aria-label="Remove ' +
+            ? '<button type="button" class="dle-remove-button" title="Tegel verwijderen" aria-label="Remove ' +
               _escapeHtml(item.name) +
               '"><i class="fas fa-minus" aria-hidden="true"></i></button>'
             : '';
@@ -227,7 +259,7 @@ var DashticzLayoutEditor = (function () {
     $toolbar = $(
       '<div class="dle-toolbar" role="toolbar" aria-label="Visual layout editor">' +
         '<span class="dle-toolbar-title"><i class="fas fa-arrows-alt" aria-hidden="true"></i> Layout Editor</span>' +
-        '<span class="dle-toolbar-help">Drag blocks. Resize from the bottom-right corner. Height snaps to 10 px.</span>' +
+        '<span class="dle-toolbar-help">Sleep tegels. Schaal vanuit de rechteronderhoek. Hoogte springt per 10 px.</span>' +
         '<button type="button" class="btn btn-secondary btn-sm dle-cancel">Cancel</button>' +
         '<button type="button" class="btn btn-primary btn-sm dle-save">Save</button>' +
         '</div>'
@@ -285,8 +317,8 @@ var DashticzLayoutEditor = (function () {
       .find('.dle-toolbar-help')
       .text(
         remaining
-          ? 'Device removed. Save to keep this change, or Cancel to restore it.'
-          : 'No devices remain. Save to remove them all, or Cancel to restore them.'
+          ? 'Tegel verwijderd. Kies Save om dit te bewaren, of Cancel om te herstellen.'
+          : 'Geen tegels meer over. Kies Save om alles te verwijderen, of Cancel om te herstellen.'
       );
   }
 
@@ -536,26 +568,66 @@ var DashticzLayoutEditor = (function () {
     $toolbar.find('.dle-cancel').prop('disabled', true);
     $toolbar.find('.dle-toolbar-help').text('Saving layout…');
 
-    var payload = _orderedItems().map(function (item) {
-      var entry = {
+    var ordered = _orderedItems();
+    var devices = [];
+    var widgets = [];
+    ordered.forEach(function (item) {
+      if (item.kind === 'widget') {
+        var widgetEntry = {
+          id: item.widgetId,
+          width: item.width,
+        };
+        if (item.height !== null) widgetEntry.height = item.height;
+        if (item.widgetId === 'weather') {
+          widgetEntry.provider =
+            item.definition.widget_provider || 'openweather';
+        } else if (item.widgetId === 'calendar') {
+          widgetEntry.icalurl = item.definition.icalurl || '';
+        } else if (item.widgetId === 'clock') {
+          widgetEntry.clockType = item.definition.type || 'basicclock';
+        }
+        widgets.push(widgetEntry);
+        return;
+      }
+
+      var deviceEntry = {
         idx: item.idx,
         name: item.name,
         width: item.width,
       };
-      if (item.subidx) entry.subidx = item.subidx;
-      if (item.height !== null) entry.height = item.height;
-      return entry;
+      if (item.subidx) deviceEntry.subidx = item.subidx;
+      if (item.height !== null) deviceEntry.height = item.height;
+      devices.push(deviceEntry);
     });
 
     $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
       .then(function (data) {
-        return $.ajax({
-          url: 'js/saveblocks.php',
-          method: 'POST',
-          contentType: 'application/json',
-          data: JSON.stringify({ devices: payload }),
-          dataType: 'json',
-          headers: { 'X-Dashticz-CSRF': data.token },
+        var token = data.token;
+        return _postLayoutData(
+          'js/saveblocks.php',
+          { devices: devices },
+          token
+        ).then(function (deviceResult) {
+          return _postLayoutData(
+            'js/savewidgets.php',
+            { widgets: widgets },
+            token
+          ).then(function (widgetResult) {
+            var deviceIndex = 0;
+            var widgetIndex = 0;
+            var layoutItems = ordered.map(function (item) {
+              var ref =
+                item.kind === 'widget'
+                  ? widgetResult.blockKeys[widgetIndex++]
+                  : deviceResult.blockKeys[deviceIndex++];
+              return { ref: ref, width: item.width };
+            });
+            return _postLayoutData(
+              'js/savelayout.php',
+              { items: layoutItems },
+              token
+            );
+          });
         });
       })
       .done(function () {
@@ -574,6 +646,17 @@ var DashticzLayoutEditor = (function () {
         $save.prop('disabled', false);
         $toolbar.find('.dle-cancel').prop('disabled', false);
       });
+  }
+
+  function _postLayoutData(url, payload, token) {
+    return $.ajax({
+      url: url,
+      method: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(payload),
+      dataType: 'json',
+      headers: { 'X-Dashticz-CSRF': token },
+    });
   }
 
   function _cancel() {

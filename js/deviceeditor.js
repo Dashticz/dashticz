@@ -1,4 +1,4 @@
-/* global Domoticz settings columns blocks blocktypes */
+/* global Domoticz settings columns blocks blocktypes screens */
 // eslint-disable-next-line no-unused-vars
 var DashticzDeviceEditor = (function () {
   'use strict';
@@ -73,8 +73,35 @@ var DashticzDeviceEditor = (function () {
   /* ── collect every managed device from all columns ─────────── */
   function _getAllManagedKeys() {
     var seen = {};
+    var ordered = [];
     if (typeof columns !== 'undefined') {
+      var columnKeys = [];
+      var $activeScreen = $('.screen.swiper-slide-active');
+      if (!$activeScreen.length) $activeScreen = $('.screen:visible').first();
+      $activeScreen.find('[data-colindex]').each(function () {
+        var columnKey = String($(this).attr('data-colindex'));
+        if (columnKeys.indexOf(columnKey) < 0) {
+          columnKeys.push(columnKey);
+        }
+      });
+      if (
+        typeof screens !== 'undefined' &&
+        screens[1] &&
+        Array.isArray(screens[1].columns)
+      ) {
+        screens[1].columns.forEach(function (columnKey) {
+          columnKey = String(columnKey);
+          if (columnKeys.indexOf(columnKey) < 0) {
+            columnKeys.push(columnKey);
+          }
+        });
+      }
       Object.keys(columns).forEach(function (colKey) {
+        if (columnKeys.indexOf(String(colKey)) < 0) {
+          columnKeys.push(String(colKey));
+        }
+      });
+      columnKeys.forEach(function (colKey) {
         var col = columns[colKey];
         if (col && Array.isArray(col.blocks)) {
           col.blocks.forEach(function (b) {
@@ -84,14 +111,15 @@ var DashticzDeviceEditor = (function () {
                 typeof blocks !== 'undefined' && blocks[b]) {
               ck = _toCompositeKey(blocks[b]);
             }
-            if (ck) seen[ck] = true;
+            if (ck && !seen[ck]) {
+              seen[ck] = true;
+              ordered.push(ck);
+            }
           });
         }
       });
     }
-    return Object.keys(seen).sort(function (a, b) {
-      return _parseCk(a).idx - _parseCk(b).idx;
-    });
+    return ordered;
   }
 
   /* ── count how many sub-values a device type has (0/1 = single) ── */

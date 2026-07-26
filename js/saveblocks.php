@@ -85,6 +85,20 @@ if (file_exists($configPath)) {
     $config = "var config = {}\n";
 }
 
+/* A direct Device Editor save invalidates a previously combined layout. */
+$layoutStartMarker = '// [layout-editor-start]';
+$layoutEndMarker = '// [layout-editor-end]';
+$layoutStartPos = strpos($config, $layoutStartMarker);
+if ($layoutStartPos !== false) {
+    $layoutEndPos = strpos($config, $layoutEndMarker, $layoutStartPos);
+    if ($layoutEndPos !== false) {
+        $config = substr($config, 0, $layoutStartPos)
+            . substr($config, $layoutEndPos + strlen($layoutEndMarker));
+    } else {
+        $config = substr($config, 0, $layoutStartPos);
+    }
+}
+
 /* ---- remove existing device-editor section ----------------------------- */
 $startMarker = '// [device-editor-start]';
 $endMarker   = '// [device-editor-end]';
@@ -195,7 +209,12 @@ if (file_put_contents($configPath, $config . "\n", LOCK_EX) === false) {
 @chmod($configPath, 0664);
 
 header('Content-Type: application/json');
-echo json_encode(array('success' => true));
+echo json_encode(array(
+    'success' => true,
+    'blockKeys' => array_map(function ($device) {
+        return isset($device['key']) ? $device['key'] : null;
+    }, $devices),
+));
 
 /* ---- helpers ----------------------------------------------------------- */
 

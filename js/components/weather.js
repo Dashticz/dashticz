@@ -89,6 +89,14 @@ var DT_weather = (function () {
     run: function (me) {
       if (me.block.refresh < 900) me.block.refresh = 900;
       me.$block = me.$mountPoint.find('.dt_block');
+      me.$mountPoint.find('.dt_state').text('Weer laden\u2026');
+      if (!me.block.apikey) {
+        me.$mountPoint
+          .find('.dt_state')
+          .text('OpenWeather API-key ontbreekt.');
+        me.runPromise = $.Deferred().resolve();
+        return;
+      }
       me.runPromise = findProviders(me).then(function () {
         if (me.provider === 'owm3') {
           return getLatLon(me)
