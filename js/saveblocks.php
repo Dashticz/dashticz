@@ -27,7 +27,7 @@ if (!is_array($data['devices'])) {
 $devices = [];
 foreach ($data['devices'] as $entry) {
     if (is_int($entry) && $entry > 0) {
-        $devices[] = ['idx' => $entry, 'subidx' => 0, 'name' => 'Device ' . $entry, 'width' => 2, 'height' => null];
+        $devices[] = ['idx' => $entry, 'subidx' => 0, 'name' => 'Device ' . $entry, 'width' => 3, 'height' => null];
     } elseif (is_array($entry)
         && isset($entry['idx']) && is_int($entry['idx']) && $entry['idx'] > 0
     ) {
@@ -37,7 +37,7 @@ foreach ($data['devices'] as $entry) {
         if ($name === '') {
             $name = 'Device ' . $entry['idx'];
         }
-        $width = 2;
+        $width = 3;
         if (isset($entry['width'])) {
             $width = (int)$entry['width'];
         }
@@ -126,7 +126,7 @@ if (!empty($devices)) {
     unset($d);
 
     $columnWidth      = 12;
-    $defaultBlockWidth = 2;
+    $defaultBlockWidth = 3;
     $chunks           = _chunkBlockKeysByWidth($devices, $columnWidth, $defaultBlockWidth);
 
     $section  = "\n\n" . $startMarker . "\n";
