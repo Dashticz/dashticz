@@ -1,4 +1,4 @@
-/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor*/
+/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor DashticzWidgetEditor*/
 //# sourceURL=js/components/simpleblock.js
 var DT_simpleblock = (function () {
   var simpleBlocks = {
@@ -138,6 +138,10 @@ var DT_simpleblock = (function () {
             'role="button" aria-label="Open device editor">' +
             '<i class="fas fa-plus" aria-hidden="true"></i></span>';
           content +=
+            '<span class="settings widgeteditoricon" data-id="widgeteditor" ' +
+            'role="button" aria-label="Open widget editor">' +
+            '<i class="fas fa-puzzle-piece" aria-hidden="true"></i></span>';
+          content +=
             '<span class="settings layouteditoricon" data-id="layouteditor" ' +
             'role="button" aria-label="Open visual layout editor">' +
             '<i class="fas fa-arrows-alt" aria-hidden="true"></i></span>';
@@ -147,6 +151,7 @@ var DT_simpleblock = (function () {
             'role="button" aria-label="Open settings">' +
             '<i class="fas fa-cog" aria-hidden="true"></i></span>';
           _registerDeviceEditorClick();
+          _registerWidgetEditorClick();
           _registerLayoutEditorClick();
           break;
 
@@ -173,6 +178,16 @@ var DT_simpleblock = (function () {
       .on('click.layouteditoricon', '.layouteditoricon', function () {
         DT_function.loadDTScript('js/layouteditor.js').then(function () {
           DashticzLayoutEditor.open();
+        });
+      });
+  }
+
+  function _registerWidgetEditorClick() {
+    $(document)
+      .off('click.widgeteditor')
+      .on('click.widgeteditor', '.widgeteditoricon', function () {
+        DT_function.loadDTScript('js/widgeteditor.js').then(function () {
+          DashticzWidgetEditor.open();
         });
       });
   }
@@ -334,8 +349,8 @@ var DT_simpleblock = (function () {
     return html;
   }
 
-  function renderSonar() {
-    return loadSonarr();
+  function renderSonar(me) {
+    return loadSonarr(me);
   }
 
   function renderFullScreen(me) {

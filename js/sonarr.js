@@ -1,33 +1,25 @@
-/* global blocks language settings moment _CORS_PATH*/
+/* global language settings moment _CORS_PATH*/
 // eslint-disable-next-line no-unused-vars
-function loadSonarr() {
+function loadSonarr(me) {
   // Default value for user settings
   var html = '';
   var width = 12;
   var sonarrColSize = 12;
   var sonarrTitlePosition = 'left';
   var sonarrTitleObject = 'Upcoming&nbsp;shows';
+  var block = me && me.block ? me.block : {};
 
   // lets get all the user settings if they exist
-  if (
-    typeof blocks['sonarr'] !== 'undefined' &&
-    typeof blocks['sonarr']['width'] !== 'undefined'
-  ) {
-    width = blocks['sonarr']['width'];
+  if (typeof block.width !== 'undefined') {
+    width = block.width;
   }
 
-  if (
-    typeof blocks['sonarr'] !== 'undefined' &&
-    typeof blocks['sonarr']['title_position'] !== 'undefined'
-  ) {
-    sonarrTitlePosition = blocks['sonarr']['title_position'].toLowerCase();
+  if (typeof block.title_position !== 'undefined') {
+    sonarrTitlePosition = block.title_position.toLowerCase();
   }
 
-  if (
-    typeof blocks['sonarr'] !== 'undefined' &&
-    typeof blocks['sonarr']['title'] !== 'undefined'
-  ) {
-    sonarrTitleObject = blocks['sonarr']['title'];
+  if (typeof block.title !== 'undefined') {
+    sonarrTitleObject = block.title;
     sonarrTitleObject = sonarrTitleObject.replace(/ /g, '&nbsp;');
   }
 
@@ -55,12 +47,12 @@ function loadSonarr() {
     '</span></div>';
   html += '</div>';
 
-  getSonarrCalendar();
+  getSonarrCalendar(block);
 
   return html;
 }
 
-function getSonarrCalendar() {
+function getSonarrCalendar(block) {
   var maxItems = 5;
   if (
     typeof settings['sonarr_maxitems'] !== 'undefined' &&
@@ -69,11 +61,8 @@ function getSonarrCalendar() {
     maxItems = settings['sonarr_maxitems'];
 
   var view = 'Poster';
-  if (
-    typeof blocks['sonarr'] !== 'undefined' &&
-    typeof blocks['sonarr']['view'] !== 'undefined'
-  ) {
-    view = blocks['sonarr']['view'].toLowerCase();
+  if (typeof block.view !== 'undefined') {
+    view = block.view.toLowerCase();
   }
 
   // generate Url
@@ -180,7 +169,7 @@ function getSonarrCalendar() {
 
     // Every 15 min recheck
     setTimeout(function () {
-      var data = getSonarrCalendar();
+      var data = getSonarrCalendar(block);
       $('.sonarrMain .state').replaceWith(data);
     }, 60000 * 15);
   });

@@ -53,41 +53,6 @@ settingList.general = {
     type: 'text',
     help: language.settings.general.domoticz_timeout_help
   },
-  auto_positioning: {
-    title: language.settings.general.auto_positioning,
-    type: 'checkbox',
-    help: language.settings.general.auto_positioning_help
-  },
-  use_favorites: {
-    title: language.settings.general.use_favorites,
-    type: 'checkbox',
-    help: language.settings.general.use_favorites_help
-  },
-  use_hidden: {
-    title: language.settings.general.use_hidden,
-    type: 'checkbox',
-    help: language.settings.general.use_hidden_help
-  },
-  room_plan: {
-    title: language.settings.general.room_plan,
-    type: 'text',
-    help: language.settings.general.room_plan_help
-  },
-  colorpicker: {
-    title: language.settings.general.colorpicker,
-    help: language.settings.general.colorpicker_help,
-    type: 'select',
-    options: [
-      language.settings.general.colorpicker_none,
-      language.settings.general.colorpicker_old,
-      language.settings.general.colorpicker_new
-    ]
-  },
-  colorpickerscale: {
-    title: language.settings.general.colorpickerscale,
-    type: 'text',
-    help: language.settings.general.colorpickerscale_help
-  },
   last_update: {
     title: language.settings.general.last_update,
     type: 'checkbox'

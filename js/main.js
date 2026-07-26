@@ -370,12 +370,6 @@ function showSetupWizard() {
       type: 'text',
       def: '5',
     },
-    {
-      id: 'use_favorites',
-      label: 'Use Favorites',
-      type: 'toggle01',
-      def: '0',
-    },
   ];
 
   function escapeSetupHtml(value) {

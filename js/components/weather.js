@@ -31,6 +31,7 @@ var DT_weather = (function () {
     canHandle: function (block) {
       var key = block.key;
       if (
+        block.widget_provider === 'openweather' ||
         key === 'weather_owm' ||
         key === 'currentweather_owm' ||
         key === 'currentweather_big_owm'
