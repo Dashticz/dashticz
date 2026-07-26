@@ -133,6 +133,14 @@
   background-color: var(--selector-bg) !important;
 }
 
+.transbg .col-data > select {
+  min-width: 120px;
+  min-height: 44px;
+  padding: 8px 38px 8px 12px !important;
+  font-size: 18px !important;
+  line-height: 1.2;
+}
+
 .transbg select:focus,
 .transbg select:active {
   border-color: var(--border-color-selector) !important;

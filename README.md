@@ -109,6 +109,7 @@ When `custom/CONFIG.js` is missing or contains only `#EMPTY#`, Dashticz opens a
 first-run wizard. The wizard creates a real `CONFIG.js` containing the Domoticz
 connection, dashboard name, language, theme, and other basic settings. PHP must
 be enabled and `custom/CONFIG.js` must be writable by the web-server account.
+The topbar auto-hide time defaults to 5 seconds in this wizard.
 
 After Dashticz has started, select the plus icon next to the settings icon in
 the topbar to open the **Device Editor**. The editor can:
