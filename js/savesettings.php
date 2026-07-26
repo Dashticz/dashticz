@@ -9,21 +9,34 @@ if (!isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] !== 'POST')
 }
 
 $customDir = __DIR__ . '/../custom';
-$configPath = $customDir . '/CONFIG.js';
+
+// Which config file are we editing? Matches js/main.js's loadConfig(), which
+// reads ?cfg=... and falls back to CONFIG.js when absent.
+$cfgFile = isset($_GET['cfg']) ? $_GET['cfg'] : 'CONFIG.js';
+
+// Security: only allow a bare filename ending in .js, no path separators or
+// traversal sequences, so this endpoint can never be tricked into writing
+// outside custom/ (e.g. ?cfg=../../../../etc/passwd).
+$cfgFile = basename($cfgFile);
+if (!preg_match('/^[A-Za-z0-9_\-]+\.js$/', $cfgFile)) {
+    dashticz_json_error(400, 'Invalid cfg filename.');
+}
+
+$configPath = $customDir . '/' . $cfgFile;
 $before = '';
 $rows = [];
 
 if (file_exists($configPath)) {
     $config = @file_get_contents($configPath);
     if ($config === false) {
-        dashticz_json_error(500, 'Unable to read CONFIG.js.');
+        dashticz_json_error(500, 'Unable to read ' . $cfgFile . '.');
     }
 
     if (trim($config) !== '#EMPTY#') {
         $marker = 'var config = {}';
         $markerPosition = strpos($config, $marker);
         if ($markerPosition === false) {
-            dashticz_json_error(409, 'CONFIG.js does not contain the expected config marker.');
+            dashticz_json_error(409, $cfgFile . ' does not contain the expected config marker.');
         }
 
         $before = substr($config, 0, $markerPosition);
@@ -65,14 +78,14 @@ if (file_exists($configPath) && !is_writable($configPath)) {
     // Succeeds when PHP is the file owner (e.g. when running as root during setup).
     @chmod($configPath, 0664);
     if (!is_writable($configPath)) {
-        dashticz_json_error(500, 'CONFIG.js is not writable' .
+        dashticz_json_error(500, $cfgFile . ' is not writable' .
             dashticz_owner_info($configPath) .
             '. From the Dashticz directory, run: sh tools/install-dashticz-write-access');
     }
 }
 
 if (file_put_contents($configPath, $newContents, LOCK_EX) === false) {
-    dashticz_json_error(500, 'Unable to write CONFIG.js.');
+    dashticz_json_error(500, 'Unable to write ' . $cfgFile . '.');
 }
 @chmod($configPath, 0664);
 

@@ -53,6 +53,41 @@ settingList.general = {
     type: 'text',
     help: language.settings.general.domoticz_timeout_help
   },
+  auto_positioning: {
+    title: language.settings.general.auto_positioning,
+    type: 'checkbox',
+    help: language.settings.general.auto_positioning_help
+  },
+  use_favorites: {
+    title: language.settings.general.use_favorites,
+    type: 'checkbox',
+    help: language.settings.general.use_favorites_help
+  },
+  use_hidden: {
+    title: language.settings.general.use_hidden,
+    type: 'checkbox',
+    help: language.settings.general.use_hidden_help
+  },
+  room_plan: {
+    title: language.settings.general.room_plan,
+    type: 'text',
+    help: language.settings.general.room_plan_help
+  },
+  colorpicker: {
+    title: language.settings.general.colorpicker,
+    help: language.settings.general.colorpicker_help,
+    type: 'select',
+    options: [
+      language.settings.general.colorpicker_none,
+      language.settings.general.colorpicker_old,
+      language.settings.general.colorpicker_new
+    ]
+  },
+  colorpickerscale: {
+    title: language.settings.general.colorpickerscale,
+    type: 'text',
+    help: language.settings.general.colorpickerscale_help
+  },
   last_update: {
     title: language.settings.general.last_update,
     type: 'checkbox'
@@ -194,6 +229,18 @@ settingList['screen']['security_panel_lock']['type'] = 'checkbox';
 settingList['screen']['security_panel_lock']['help'] =
   language.settings.screen.security_panel_lock_help;
 
+settingList['screen']['blink_color'] = {};
+settingList['screen']['blink_color']['title'] =
+  language.settings.screen.blink_color;
+settingList['screen']['blink_color']['type'] = 'text';
+settingList['screen']['blink_color']['help'] =
+  language.settings.screen.blink_color_help;
+
+settingList['screen']['edit_mode'] = {};
+settingList['screen']['edit_mode']['title'] =
+  language.settings.screen.edit_mode;
+settingList['screen']['edit_mode']['type'] = 'checkbox';
+
 settingList['localize'] = {};
 settingList['localize']['title'] = language.settings.localize.title;
 
@@ -328,6 +375,11 @@ settingList['localize']['hide_seconds_stationclock']['title'] =
   language.settings.localize.hide_seconds_stationclock;
 settingList['localize']['hide_seconds_stationclock']['type'] = 'checkbox';
 
+settingList['localize']['boss_stationclock'] = {};
+settingList['localize']['boss_stationclock']['title'] =
+  language.settings.localize.boss_stationclock;
+settingList['localize']['boss_stationclock']['type'] = 'text';
+
 settingList['localize']['gm_api'] = {};
 settingList['localize']['gm_api']['title'] = language.settings.localize.gm_api;
 settingList['localize']['gm_api']['type'] = 'text';
@@ -346,6 +398,28 @@ settingList['localize']['gm_longitude'] = {};
 settingList['localize']['gm_longitude']['title'] =
   language.settings.localize.gm_longitude;
 settingList['localize']['gm_longitude']['type'] = 'text';
+
+settingList['localize']['speak_lang'] = {};
+settingList['localize']['speak_lang']['title'] =
+  language.settings.localize.speak_language;
+settingList['localize']['speak_lang']['type'] = 'select';
+settingList['localize']['speak_lang']['options'] = {};
+settingList['localize']['speak_lang']['options']['de-DE'] =
+  language.settings.localize.de;
+settingList['localize']['speak_lang']['options']['en-US'] =
+  language.settings.localize.en;
+settingList['localize']['speak_lang']['options']['es-ES'] =
+  language.settings.localize.es;
+settingList['localize']['speak_lang']['options']['fr-FR'] =
+  language.settings.localize.fr;
+settingList['localize']['speak_lang']['options']['it-IT'] =
+  language.settings.localize.it;
+settingList['localize']['speak_lang']['options']['nl-NL'] =
+  language.settings.localize.nl;
+settingList['localize']['speak_lang']['options']['pl-PL'] =
+  language.settings.localize.pl;
+settingList['localize']['speak_lang']['options']['ru-RU'] =
+  language.settings.localize.ru;
 
 settingList['weather'] = {};
 settingList['weather']['title'] = language.settings.weather.title;
@@ -433,6 +507,24 @@ settingList['weather']['static_weathericons'] = {};
 settingList['weather']['static_weathericons']['title'] =
   language.settings.weather.static_weathericons;
 settingList['weather']['static_weathericons']['type'] = 'checkbox';
+
+settingList['weather']['idx_moonpicture'] = {};
+settingList['weather']['idx_moonpicture']['title'] =
+  language.settings.weather.idx_moonpicture;
+settingList['weather']['idx_moonpicture']['type'] = 'text';
+settingList['weather']['idx_moonpicture']['help'] =
+  language.settings.weather.idx_moonpicture_help;
+
+settingList['weather']['longfonds_zipcode'] = {};
+settingList['weather']['longfonds_zipcode'] = {
+  title: language.settings.weather.longfonds_zipcode,
+  type: 'text',
+};
+settingList['weather']['longfonds_housenumber'] = {};
+settingList['weather']['longfonds_housenumber'] = {
+  title: language.settings.weather.longfonds_housenumber,
+  type: 'text',
+};
 
 settingList['media'] = {};
 settingList['media']['title'] = language.settings.media.title;
@@ -1155,7 +1247,7 @@ function saveSettings() {
 
       if (!saved) {
         html +=
-          '<span class="text-danger"></span><br>Copy the configuration below to custom/CONFIG.js.<br><br>';
+          '<span class="text-danger"></span><br>Copy the configuration below to custom/' + cfgFile + '.<br><br>';
       }
 
       html += '<textarea style="width:100%;height:500px;" id="codeToCopy"></textarea>';
@@ -1183,10 +1275,12 @@ function saveSettings() {
       }, 1000);
   }
 
+  var cfgFile = (typeof _PARAMS !== 'undefined' && _PARAMS['cfg']) || 'CONFIG.js';
+
   $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
     .then(function (data) {
       return $.ajax({
-        url: 'js/savesettings.php',
+        url: 'js/savesettings.php?cfg=' + encodeURIComponent(cfgFile),
         method: 'POST',
         data: saveSettings,
         dataType: 'json',
