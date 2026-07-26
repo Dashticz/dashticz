@@ -11,9 +11,9 @@
   --block-gap: 3px;
   --box-border: 1px solid rgb(181, 181, 181);
   --home-bg: rgba(28, 31, 42, .74);
-  --border-color-inactive: rgb(42, 94, 151);
-  --border-color-active: rgb(112, 160, 218);
-  --border-color-block: var(--border-color-active);
+  --border-color-inactive: rgb(42, 94, 151,.5);
+  --border-color-active: rgb(112, 160, 218,.5);
+  --border-color-block: rgb(112, 160, 218,.2);
   --border-color-selector: var(--border-color-inactive);
   --button-bg: rgb(29, 43, 63);
   --button-hover: rgb(35, 53, 78);
@@ -99,17 +99,6 @@
   border-radius: var(--radius-selector) !important;
   background-color: var(--button-bg) !important;
   transition: color .2s ease, background-color .2s ease;
-}
-
-.transbg .selector-buttons .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 56px;
-  min-height: 44px;
-  padding: 10px 14px !important;
-  font-size: 18px !important;
-  line-height: 1.2;
 }
 
 .transbg .btn:hover,
