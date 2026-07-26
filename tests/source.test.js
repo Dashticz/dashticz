@@ -79,6 +79,10 @@ test('first-run setup uses its own wizard and removes the legacy browser fallbac
   assert.match(source, /showSetupWizard\(\)/);
   assert.match(source, /id="dt-setup-wizard"/);
   assert.match(source, /url: 'js\/savesettings\.php'/);
+  assert.match(
+    source,
+    /id: 'topbar_timeout',[\s\S]*?def: '5'/
+  );
   assert.doesNotMatch(source, /section: 'Scherm &amp; Navigatie'/);
   assert.doesNotMatch(source, /section: 'Weergave &amp; Overig'/);
   assert.doesNotMatch(settings, /firstRunSetupRequired/);
@@ -229,6 +233,10 @@ test('visual layout editor is limited to generated device columns and uses a 10p
     path.join(root, 'js/components/domoticzblock.js'),
     'utf8'
   );
+  const stylesheet = fs.readFileSync(
+    path.join(root, 'css/creative.css'),
+    'utf8'
+  );
 
   assert.match(simpleBlock, /layouteditoricon/);
   assert.match(simpleBlock, /fas fa-plus/);
@@ -240,7 +248,11 @@ test('visual layout editor is limited to generated device columns and uses a 10p
   assert.match(editor, /dle-cancel/);
   assert.match(editor, /function _moveDraggedItem/);
   assert.match(editor, /appendChild\(item\.wrapper\)/);
+  assert.match(editor, /--dle-column-span/);
   assert.match(editor, /X-Dashticz-CSRF/);
+  assert.match(stylesheet, /grid-template-columns: repeat\(12/);
+  assert.match(stylesheet, /\.dle-item-wrapper \{\s*display: contents/);
+  assert.match(stylesheet, /\.dle-item-wrapper > \.dle-block/);
   assert.match(domoticzBlock, /applyConfiguredHeight/);
   assert.match(domoticzBlock, /setProperty\('height'.*'important'\)/s);
 });
@@ -348,6 +360,8 @@ test('modern dark theme is portable and documented', () => {
   assert.match(theme, /border-color: var\(--border-color-active\) !important/);
   assert.match(theme, /\.transbg select/);
   assert.match(theme, /\.transbg select[\s\S]*border: 1px solid var\(--border-color-selector\) !important/);
+  assert.match(theme, /\.transbg \.col-data > select/);
+  assert.match(theme, /\.transbg \.col-data > select[\s\S]*min-height: 44px/);
   assert.match(theme, /\.transbg select:focus,[\s\S]*border-color: var\(--border-color-selector\) !important/);
   assert.doesNotMatch(theme, /linear-gradient/);
   assert.match(theme, /\.mh \.btn\.active/);

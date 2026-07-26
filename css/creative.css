@@ -734,6 +734,22 @@ body.dle-active {
 
 .dle-canvas {
   position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-auto-flow: row;
+  align-items: start;
+  width: 100%;
+}
+
+.dle-canvas > .dle-item-wrapper {
+  display: contents;
+}
+
+.dle-canvas > .dle-item-wrapper > .dle-block {
+  grid-column: span var(--dle-column-span, 2);
+  float: none !important;
+  min-width: 0;
+  width: 100% !important;
 }
 
 .dle-block {

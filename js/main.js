@@ -368,7 +368,7 @@ function showSetupWizard() {
       id: 'topbar_timeout',
       label: 'Topbar auto-hide (s, 0=off)',
       type: 'text',
-      def: '0',
+      def: '5',
     },
     {
       id: 'use_favorites',

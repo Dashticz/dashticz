@@ -181,6 +181,8 @@ var DashticzLayoutEditor = (function () {
     $canvas = $managedColumns.first().addClass('dle-canvas');
 
     items.forEach(function (item) {
+      item.wrapper.classList.add('dle-item-wrapper');
+      item.wrapper.style.setProperty('--dle-column-span', item.width);
       $canvas.append(item.wrapper);
     });
 
@@ -440,6 +442,7 @@ var DashticzLayoutEditor = (function () {
 
   function _applyWidth(item, width) {
     item.width = Math.max(1, Math.min(12, parseInt(width, 10) || 1));
+    item.wrapper.style.setProperty('--dle-column-span', item.width);
     item.visibleBlocks.forEach(function (block) {
       Array.prototype.slice.call(block.classList).forEach(function (className) {
         if (/^col-xs-\d+$/.test(className)) block.classList.remove(className);
@@ -551,6 +554,8 @@ var DashticzLayoutEditor = (function () {
     $('.dle-overlay').off('.layouteditor').remove();
 
     items.forEach(function (item) {
+      item.wrapper.classList.remove('dle-item-wrapper');
+      item.wrapper.style.removeProperty('--dle-column-span');
       item.originalBlocks.forEach(function (original) {
         var block = original.block;
         block.classList.remove(
