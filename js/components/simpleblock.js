@@ -120,6 +120,7 @@ var DT_simpleblock = (function () {
       '<div data-id="logo" class="logo col-xs-' +
       me.block.width +
       '">' +
+      '<img class="logo-icon" src="img/dashticz.png" alt="" />' +
       settings['app_title'] +
       '</div>'
     );
