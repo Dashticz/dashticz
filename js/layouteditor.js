@@ -263,8 +263,9 @@ var DashticzLayoutEditor = (function () {
       mode: 'drag',
       pointerId: event.originalEvent.pointerId,
       item: item,
-      target: null,
-      before: false,
+      startX: event.originalEvent.clientX,
+      startY: event.originalEvent.clientY,
+      moved: false,
       captureElement: captureElement,
     };
 
@@ -330,41 +331,17 @@ var DashticzLayoutEditor = (function () {
     }
 
     _positionGhost(clientX, clientY);
-    _clearDropTarget();
-
-    var element = document.elementFromPoint(clientX, clientY);
-    var overlay = element ? $(element).closest('.dle-overlay')[0] : null;
-    if (!overlay) {
-      pointerState.target = null;
+    var distanceX = clientX - pointerState.startX;
+    var distanceY = clientY - pointerState.startY;
+    if (
+      !pointerState.moved &&
+      distanceX * distanceX + distanceY * distanceY < 36
+    ) {
       return;
     }
 
-    var target = itemById[String($(overlay).data('dle-id'))];
-    if (!target || target === pointerState.item) {
-      pointerState.target = null;
-      return;
-    }
-
-    var rect = overlay.getBoundingClientRect();
-    var sameRow =
-      Math.abs(
-        rect.top +
-          rect.height / 2 -
-          (pointerState.item.visibleBlocks[0].getBoundingClientRect().top +
-            pointerState.item.visibleBlocks[0].getBoundingClientRect().height /
-              2)
-      ) <
-      Math.min(rect.height, pointerState.item.visibleBlocks[0].offsetHeight) /
-        2;
-    var before = sameRow
-      ? clientX < rect.left + rect.width / 2
-      : clientY < rect.top + rect.height / 2;
-
-    pointerState.target = target;
-    pointerState.before = before;
-    target.visibleBlocks[0].classList.add(
-      before ? 'dle-drop-before' : 'dle-drop-after'
-    );
+    pointerState.moved = true;
+    _moveDraggedItem(pointerState.item, clientX, clientY);
   }
 
   function _pointerEnd(event) {
@@ -375,24 +352,61 @@ var DashticzLayoutEditor = (function () {
       return;
     }
 
-    if (
-      event.type !== 'pointercancel' &&
-      pointerState.mode === 'drag' &&
-      pointerState.target
-    ) {
-      var itemWrapper = pointerState.item.wrapper;
-      var targetWrapper = pointerState.target.wrapper;
-      if (pointerState.before) {
-        targetWrapper.parentNode.insertBefore(itemWrapper, targetWrapper);
-      } else {
-        targetWrapper.parentNode.insertBefore(
-          itemWrapper,
-          targetWrapper.nextSibling
-        );
+    _finishPointerAction();
+  }
+
+  function _moveDraggedItem(item, clientX, clientY) {
+    var candidates = _orderedItems().filter(function (candidate) {
+      return candidate !== item;
+    });
+    var rows = [];
+
+    candidates.forEach(function (candidate) {
+      var rect = candidate.visibleBlocks[0].getBoundingClientRect();
+      var row = rows.length ? rows[rows.length - 1] : null;
+      if (!row || Math.abs(rect.top - row.top) > 15) {
+        row = {
+          top: rect.top,
+          bottom: rect.bottom,
+          items: [],
+        };
+        rows.push(row);
       }
+      row.bottom = Math.max(row.bottom, rect.bottom);
+      row.items.push({ item: candidate, rect: rect });
+    });
+
+    var reference = null;
+    for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+      var row = rows[rowIndex];
+      if (clientY > row.bottom) continue;
+
+      if (clientY < row.top) {
+        reference = row.items[0].item.wrapper;
+        break;
+      }
+
+      for (var itemIndex = 0; itemIndex < row.items.length; itemIndex++) {
+        var rowItem = row.items[itemIndex];
+        if (clientX < rowItem.rect.left + rowItem.rect.width / 2) {
+          reference = rowItem.item.wrapper;
+          break;
+        }
+      }
+
+      if (!reference && rowIndex + 1 < rows.length) {
+        reference = rows[rowIndex + 1].items[0].item.wrapper;
+      }
+      break;
     }
 
-    _finishPointerAction();
+    if (reference) {
+      if (item.wrapper.nextSibling !== reference) {
+        reference.parentNode.insertBefore(item.wrapper, reference);
+      }
+    } else if (item.wrapper !== $canvas[0].lastElementChild) {
+      $canvas[0].appendChild(item.wrapper);
+    }
   }
 
   function _finishPointerAction() {
@@ -414,14 +428,7 @@ var DashticzLayoutEditor = (function () {
       block.classList.remove('dle-dragging');
     });
     $('.dle-drag-ghost').remove();
-    _clearDropTarget();
     pointerState = null;
-  }
-
-  function _clearDropTarget() {
-    $('.dle-drop-before, .dle-drop-after').removeClass(
-      'dle-drop-before dle-drop-after'
-    );
   }
 
   function _positionGhost(x, y) {

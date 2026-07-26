@@ -231,12 +231,15 @@ test('visual layout editor is limited to generated device columns and uses a 10p
   );
 
   assert.match(simpleBlock, /layouteditoricon/);
+  assert.match(simpleBlock, /fas fa-plus/);
   assert.match(simpleBlock, /js\/layouteditor\.js/);
   assert.match(editor, /var HEIGHT_STEP = 10/);
   assert.match(editor, /\/\^de_col\\d\+\$\//);
   assert.match(editor, /col-xs-/);
   assert.match(editor, /entry\.height = item\.height/);
   assert.match(editor, /dle-cancel/);
+  assert.match(editor, /function _moveDraggedItem/);
+  assert.match(editor, /appendChild\(item\.wrapper\)/);
   assert.match(editor, /X-Dashticz-CSRF/);
   assert.match(domoticzBlock, /applyConfiguredHeight/);
   assert.match(domoticzBlock, /setProperty\('height'.*'important'\)/s);

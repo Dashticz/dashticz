@@ -110,7 +110,7 @@ first-run wizard. The wizard creates a real `CONFIG.js` containing the Domoticz
 connection, dashboard name, language, theme, and other basic settings. PHP must
 be enabled and `custom/CONFIG.js` must be writable by the web-server account.
 
-After Dashticz has started, select the pencil icon next to the settings icon in
+After Dashticz has started, select the plus icon next to the settings icon in
 the topbar to open the **Device Editor**. The editor can:
 
 - add devices and sub-devices detected in Domoticz;
@@ -125,7 +125,7 @@ those markers is preserved. Generated columns are added to screen 1 and the
 dashboard reloads after saving. Back up an existing `CONFIG.js` before first
 using the editor.
 
-Select the arrows icon next to the pencil to open the **Visual Layout Editor**
+Select the arrows icon next to the plus to open the **Visual Layout Editor**
 on screen 1. Blocks created by the Device Editor receive a blue edit overlay:
 
 - drag a block to change its position;
@@ -140,7 +140,7 @@ blocks, special widgets, and topbar blocks are deliberately left unchanged.
 Saved heights are applied to classic Domoticz device blocks as well as the
 `modern-dark` theme.
 
-The pencil and arrows icons are part of the `settings` topbar block. A custom topbar must
+The plus and arrows icons are part of the `settings` topbar block. A custom topbar must
 therefore include `settings`:
 
 ```javascript

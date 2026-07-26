@@ -803,15 +803,9 @@ body.dle-active {
 }
 
 .dle-dragging {
-  opacity: 0.35;
-}
-
-.dle-drop-before {
-  box-shadow: inset 5px 0 0 #20c997 !important;
-}
-
-.dle-drop-after {
-  box-shadow: inset -5px 0 0 #20c997 !important;
+  opacity: 0.62;
+  outline: 3px solid #20c997;
+  outline-offset: -3px;
 }
 
 .dle-toolbar {
