@@ -4,7 +4,11 @@ var DT_garbage = (function () {
   return {
     name: 'garbage',
     canHandle: function (block) {
-      return block && (block.company || (block.city && ((block.zipcode && block.housenumber) || block.district)));
+      return block && (
+        block.type === 'garbage' ||
+        block.company ||
+        (block.city && ((block.zipcode && block.housenumber) || block.district))
+      );
     },
     defaultCfg: {
       width: settings['garbage_width'] || 12,
