@@ -702,6 +702,22 @@ next css sets the default height of the frame popup
   margin-bottom: -4px;
 }
 
+.logo-icon {
+  height: 28px;
+  width: 28px;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 8px;
+}
+
+.logo-version {
+  font-size: 11px;
+  font-weight: normal;
+  opacity: 0.6;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
 .colbar.transbg .fab,
 .colbar.transbg .fas,
 .colbar.transbg .far {
