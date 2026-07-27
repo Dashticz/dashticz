@@ -204,7 +204,7 @@ There is where Dashticz steps in. Dashticz is able to show (almost) all Domoticz
 In addition to that it's possible to show information from all kind of other sources.
 
 # Screenshots
-<img width="632" height="459" alt="image" src="https://github.com/user-attachments/assets/9a1b6dfb-475e-402d-922e-1b97d4fbc92b" />
+<img width="632" height="459" alt="image" src="https://github.com/user-attachments/assets/b4aee392-f753-4d44-b428-694f166fb57c" />
 
 
 # Installation instructions
