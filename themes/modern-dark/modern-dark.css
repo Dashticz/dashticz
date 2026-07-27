@@ -22,7 +22,7 @@
   --text-normal: rgb(255, 255, 255);
   --text-inactive: rgba(188, 188, 188, .5);
   --warning-red: rgb(255, 0, 0);
-  --selector-bg: rgb(29, 43, 63);
+  --selector-bg: rgb(21, 31, 46);
   --blocktitle: rgba(130, 130, 130, .2);
   --panel-shadow: 0 8px 24px rgba(0, 0, 0, .28);
   --radius-border: 16px;
@@ -69,7 +69,7 @@
 .mh {
   --col1width: 60px;
   --col2width: 60px;
-  height: 115px !important;
+  height: var(--height-block-default) !important;
   text-align: right !important;
 }
 
@@ -120,6 +120,14 @@
   border: 1px solid var(--border-color-selector) !important;
   border-radius: var(--radius-selector) !important;
   background-color: var(--selector-bg) !important;
+}
+
+.transbg .col-data > select {
+  min-width: 120px;
+  min-height: 44px;
+  padding: 8px 38px 8px 12px !important;
+  font-size: 18px !important;
+  line-height: 1.2;
 }
 
 .transbg select:focus,
