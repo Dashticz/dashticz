@@ -786,7 +786,7 @@ var defaultSettings = {
   auto_slide_pages: 0,
   start_page: 1,
   auto_positioning: 0,
-  topbar_timeout: 0,
+  topbar_timeout: 5,
   use_favorites: 0,
   use_hidden: 0,
   translate_windspeed: 1,
