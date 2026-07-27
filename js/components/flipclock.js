@@ -12,18 +12,26 @@ var DT_flipclock = {
     return {
       width: 12,
       scale: 1,
+      minEmSize: 3.5,
+      maxEmSize: 7,
       showSeconds: !settings['hide_seconds'],
       clockFace: settings['shorttime'].match(/A/i) ? 12 : 24,
     };
   },
   run: function (me) {
-    var width = me.block.size || $(me.mountPoint + ' .dt_content').width();
-    document.documentElement.style.setProperty(
-      '--flipclock-em',
-      (width / 82) * me.block.scale + 'px'
+    var $content = $(me.mountPoint + ' .dt_content');
+    var width =
+      me.block.size ||
+      $(me.mountPoint + ' .dt_block').width() ||
+      $content.width() ||
+      320;
+    var emSize = Math.max(
+      me.block.minEmSize,
+      Math.min(me.block.maxEmSize, (width / 82) * me.block.scale)
     );
+    $content.css('--flipclock-em', emSize + 'px');
 
-    FlipClock($(me.mountPoint + ' .dt_content'), {
+    FlipClock($content, 0, {
       clockFace:
         me.block.clockFace == 12 ? 'TwelveHourClock' : 'TwentyFourHourClock',
       showSeconds: me.block.showSeconds,
