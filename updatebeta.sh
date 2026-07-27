@@ -31,7 +31,8 @@ git merge --ff-only origin/beta
 
 # --- Configuration check and update ---
 CONFIG_FILE="custom/CONFIG.js"
-CONFIG_LINE='config["topbar_timeout"] = 5;'
+CONFIG_LINE_1='config["topbar_timeout"] = 5;'
+CONFIG_LINE_2="config['hide_topbar'] = 0;"
 
 echo
 echo "Checking $CONFIG_FILE..."
@@ -44,12 +45,20 @@ if [ ! -f "$CONFIG_FILE" ]; then
     touch "$CONFIG_FILE"
 fi
 
-# Check if the setting is already in the file
+# Check and add topbar_timeout if missing
 if ! grep -qF 'config["topbar_timeout"]' "$CONFIG_FILE"; then
-    echo "Adding configuration line to $CONFIG_FILE..."
-    echo "$CONFIG_LINE" >> "$CONFIG_FILE"
+    echo "Adding topbar_timeout to $CONFIG_FILE..."
+    echo "$CONFIG_LINE_1" >> "$CONFIG_FILE"
 else
-    echo "Configuration is already present in $CONFIG_FILE."
+    echo "topbar_timeout is already present in $CONFIG_FILE."
+fi
+
+# Check and add hide_topbar if missing
+if ! grep -qF "config['hide_topbar']" "$CONFIG_FILE"; then
+    echo "Adding hide_topbar to $CONFIG_FILE..."
+    echo "$CONFIG_LINE_2" >> "$CONFIG_FILE"
+else
+    echo "hide_topbar is already present in $CONFIG_FILE."
 fi
 # --------------------------------------
 
