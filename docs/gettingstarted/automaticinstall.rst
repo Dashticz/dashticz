@@ -10,12 +10,27 @@ run the installer:
 
    bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/master/install.sh)"
 
+To install directly into a different directory, pass the target path after
+``--``:
+
+.. code-block:: sh
+
+   bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/master/install.sh)" -- --directory /var/www/html/my-dashboard
+
+The shorter positional form is also supported:
+
+.. code-block:: sh
+
+   bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/master/install.sh)" -- /var/www/html/my-dashboard
+
 The installer:
 
 * installs Git when necessary and supported by the operating system;
-* clones the stable ``master`` branch into a new ``dashticz`` directory;
-* creates ``dashticz/custom/CONFIG.js`` with the content ``#EMPTY#``;
-* gives ``CONFIG.js`` file mode ``0755``.
+* clones the stable ``master`` branch into the selected directory (``dashticz``
+  by default);
+* creates ``custom/CONFIG.js`` below that directory with the content
+  ``#EMPTY#``;
+* gives ``CONFIG.js`` file mode ``0644``.
 
 The target directory must not exist yet. To update an existing stable
 installation, run:
