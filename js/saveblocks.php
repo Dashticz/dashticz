@@ -87,12 +87,6 @@ if ($readError !== null) {
     dashticz_json_error(500, $readError);
 }
 
-$config = configwriter_remove_section(
-    $config,
-    '// [layout-editor-start]',
-    '// [layout-editor-end]'
-);
-
 $startMarker = '// [device-editor-start]';
 $endMarker = '// [device-editor-end]';
 $config = configwriter_remove_section($config, $startMarker, $endMarker);

@@ -31,6 +31,16 @@ if ($readError !== null) {
 }
 
 $blockLines = configwriter_extract_block_lines($config);
+$widgetSettings = configwriter_extract_section_config_settings(
+    $config,
+    '// [widget-editor-start]',
+    '// [widget-editor-end]'
+);
+$standbySection = configwriter_extract_wrapped_section(
+    $config,
+    '// [standby-editor-start]',
+    '// [standby-editor-end]'
+);
 
 $items = [];
 foreach ($data['items'] as $entry) {
@@ -61,36 +71,38 @@ foreach ($data['items'] as $entry) {
 }
 
 /*
- * Only replace the layout section. Device/widget sections (and their
- * widget-specific config settings) must stay intact.
+ * Every visual editor finishes with this endpoint. Consolidate the temporary
+ * device/widget sections and any older layout section into one readable
+ * generated area: all blocks, then columns, then screens. Widget settings are
+ * moved into the regular config group above it.
  */
-$startMarker = '// [layout-editor-start]';
-$endMarker = '// [layout-editor-end]';
-$config = configwriter_remove_section($config, $startMarker, $endMarker);
+$startMarker = '// [dashboard-editor-start]';
+$endMarker = '// [dashboard-editor-end]';
+$config = configwriter_remove_editor_sections($config);
+$config = configwriter_remove_section(
+    $config,
+    '// [standby-editor-start]',
+    '// [standby-editor-end]'
+);
+$config = configwriter_upsert_root_config_settings(
+    $config,
+    $widgetSettings,
+    true
+);
 $config = rtrim($config);
 
 if (!empty($items)) {
-    $section = configwriter_section_header('COLUMNS') . "\n";
-    $section .= "if (typeof columns === 'undefined') var columns = {}\n";
-
-    $columnKeys = [];
-    /*
-     * Height-aware packing emits columns whose widths sum to 12 when a tall
-     * tile creates a virtual side column. See configwriter_pack_columns_by_height().
-     */
-    foreach (configwriter_pack_columns_by_height($items, 12, 'le_col') as $column) {
-        $columnKeys[] = $column['key'];
-        $section .= configwriter_emit_column_line(
-            $column['key'],
-            $column['blocks'],
-            $column['width']
-        );
-    }
-
-    $section .= "\n" . configwriter_section_header('SCREENS') . "\n";
-    $section .= configwriter_emit_screen_columns(1, $columnKeys, 'replace');
+    list($section, $columnKeys) = configwriter_build_layout_section(
+        $blockLines,
+        $items,
+        1,
+        12
+    );
 
     $config .= configwriter_wrap_section($startMarker, $endMarker, $section);
+}
+if ($standbySection !== '') {
+    $config = rtrim($config) . "\n\n" . $standbySection;
 }
 
 $writeError = configwriter_write_config($configPath, $customDir, $config);

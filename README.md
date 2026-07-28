@@ -86,11 +86,9 @@ the topbar to open the **Device Editor**. The editor can:
   correct position. Remove widgets through the Widget Editor.
 
 Select **Save** to write the generated blocks and columns to
-`custom/CONFIG.js`. The editor owns only the section between
-`// [device-editor-start]` and `// [device-editor-end]`; configuration outside
-those markers is preserved. Generated columns are added to screen 1 and the
-dashboard reloads after saving. Back up an existing `CONFIG.js` before first
-using the editor.
+`custom/CONFIG.js`. Generated columns are added to screen 1 and the dashboard
+reloads after saving. Back up an existing `CONFIG.js` before first using the
+editor.
 
 ### Widget Editor
 
@@ -118,9 +116,8 @@ Widget Editor.
 | Moon | Domoticz IDX for the moon image |
 | News | RSS URL and automatic-scroll interval |
 
-The Widget Editor owns only the section between `// [widget-editor-start]` and
-`// [widget-editor-end]` in `custom/CONFIG.js`, so manual configuration outside
-those markers is preserved.
+Widget-specific settings are kept together with the other `config[...]`
+settings at the top of `custom/CONFIG.js`.
 
 ### Visual Layout Editor
 
@@ -141,6 +138,14 @@ Their mixed order is stored separately so the dashboard and Device Editor show
 the same ordering. Manually configured blocks and topbar blocks are deliberately
 left unchanged. Saved heights are applied to classic Domoticz device blocks as
 well as the `modern-dark` theme.
+
+After any visual editor is saved, Dashticz automatically consolidates its
+generated output between `// [dashboard-editor-start]` and
+`// [dashboard-editor-end]`. Inside that section all `blocks[...]` definitions
+are grouped first, followed by all `columns[...]` definitions and finally the
+`screens[...]` wiring. Older separate device, widget and layout sections are
+migrated on the next save. Hand-written configuration outside the generated
+section is preserved.
 
 ### Briefly show the topbar
 

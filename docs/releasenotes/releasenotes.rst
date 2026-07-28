@@ -8,6 +8,14 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.21.2 beta (28-7-2026)
+--------------------------
+
+Fixes
+~~~~~
+
+* CONFIG.js: visual editor saves now consolidate generated output into one section with settings at the top, followed by grouped blocks, columns and screens. Existing separate Device, Widget and Layout Editor sections are migrated automatically on the next save.
+
 v3.21.1 beta (28-7-2026)
 --------------------------
 

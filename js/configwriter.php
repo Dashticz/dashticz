@@ -60,12 +60,32 @@ function configwriter_remove_section($config, $startMarker, $endMarker)
         . substr($config, $endPos + strlen($endMarker));
 }
 
+function configwriter_extract_wrapped_section($config, $startMarker, $endMarker)
+{
+    $startPos = strpos($config, $startMarker);
+    if ($startPos === false) {
+        return '';
+    }
+
+    $endPos = strpos($config, $endMarker, $startPos);
+    if ($endPos === false) {
+        return '';
+    }
+
+    return trim(substr(
+        $config,
+        $startPos,
+        $endPos + strlen($endMarker) - $startPos
+    ));
+}
+
 function configwriter_remove_editor_sections($config)
 {
     $markers = [
         ['// [device-editor-start]', '// [device-editor-end]'],
         ['// [widget-editor-start]', '// [widget-editor-end]'],
         ['// [layout-editor-start]', '// [layout-editor-end]'],
+        ['// [dashboard-editor-start]', '// [dashboard-editor-end]'],
     ];
 
     foreach ($markers as $markerPair) {
@@ -73,6 +93,89 @@ function configwriter_remove_editor_sections($config)
     }
 
     return rtrim($config);
+}
+
+/**
+ * Move editor-owned config values into the main config block.
+ *
+ * Older Widget Editor output stored its settings between the widget markers,
+ * below the generated blocks and columns. Keeping those values immediately
+ * after the regular config assignments makes CONFIG.js readable without
+ * changing hand-written content outside the editor sections.
+ */
+function configwriter_upsert_root_config_settings($config, $settings, $raw = false)
+{
+    if (empty($settings)) {
+        return $config;
+    }
+
+    $lines = [];
+    foreach ($settings as $key => $value) {
+        if (!preg_match('/^[A-Za-z0-9_]+$/', (string)$key)) {
+            continue;
+        }
+
+        $pattern = '/^[ \t]*config\[([\'"])'
+            . preg_quote((string)$key, '/')
+            . '\1\]\s*=\s*[^;\r\n]+;[ \t]*(?:\r?\n|$)/m';
+        $config = preg_replace($pattern, '', $config);
+
+        $expression = $raw
+            ? trim((string)$value)
+            : json_encode(
+                $value,
+                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+            );
+        $lines[] = 'config[' . json_encode((string)$key) . '] = '
+            . $expression . ';';
+    }
+
+    if (empty($lines)) {
+        return $config;
+    }
+
+    $marker = 'var config = {}';
+    $markerPos = strpos($config, $marker);
+    if ($markerPos === false) {
+        return $config;
+    }
+
+    /*
+     * Find the last regular config assignment before generated layout content.
+     * This preserves the existing setting order and keeps every setting in one
+     * contiguous group at the top of normal editor-generated CONFIG.js files.
+     */
+    $generatedPos = strlen($config);
+    foreach ([
+        '// [standby-editor-start]',
+        '// [dashboard-editor-start]',
+        '// [device-editor-start]',
+        '// [widget-editor-start]',
+        '// [layout-editor-start]',
+    ] as $generatedMarker) {
+        $pos = strpos($config, $generatedMarker);
+        if ($pos !== false && $pos < $generatedPos) {
+            $generatedPos = $pos;
+        }
+    }
+
+    $root = substr($config, 0, $generatedPos);
+    $insertAt = $markerPos + strlen($marker);
+    if (preg_match_all(
+        '/^[ \t]*config\[([\'"])[A-Za-z0-9_]+\1\]\s*=\s*[^;\r\n]+;[ \t]*$/m',
+        $root,
+        $matches,
+        PREG_OFFSET_CAPTURE
+    )) {
+        $last = end($matches[0]);
+        $insertAt = $last[1] + strlen($last[0]);
+    }
+
+    $before = rtrim(substr($config, 0, $insertAt));
+    $after = ltrim(substr($config, $insertAt), "\r\n");
+
+    return $before . "\n" . implode("\n", $lines) . "\n"
+        . ($after === '' ? '' : $after);
 }
 
 /**
