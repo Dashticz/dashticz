@@ -354,12 +354,6 @@ if ($readError !== null) {
     dashticz_json_error(500, $readError);
 }
 
-$config = configwriter_remove_section(
-    $config,
-    '// [layout-editor-start]',
-    '// [layout-editor-end]'
-);
-
 $startMarker = '// [widget-editor-start]';
 $endMarker = '// [widget-editor-end]';
 

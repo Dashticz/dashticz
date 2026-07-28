@@ -97,7 +97,6 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(writer, /typeof screens/);
   assert.match(source, /device-editor-start/);
   assert.match(source, /widget-editor-start/);
-  assert.match(source, /layout-editor-start/);
   assert.match(source, /blockKeys/);
   /* accepts both legacy bare integers and {idx,name} objects */
   assert.match(source, /is_int\(\$entry\)/);
@@ -145,25 +144,48 @@ test('widget writer whitelists widgets and protects CONFIG.js writes', () => {
   assert.match(source, /Calendar requires a valid http\(s\) ICS URL/);
   assert.match(source, /Camera requires a valid http\(s\) image URL/);
   assert.match(source, /widget-editor-start/);
-  assert.match(source, /layout-editor-start/);
   assert.match(source, /blockKeys/);
   assert.match(source, /configwriter_write_config/);
 });
 
-test('layout writer only stores safe managed block references', () => {
+test('layout writer stores safe references in one grouped dashboard section', () => {
   const source = read('js/savelayout.php');
   const writer = read('js/configwriter.php');
   assert.match(source, /dashticz_require_same_origin\(\)/);
   assert.match(source, /dashticz_require_csrf\(\)/);
   assert.match(source, /REQUEST_METHOD.*POST/);
   assert.match(source, /\^\[A-Za-z_\]\[A-Za-z0-9_\]\*\$/);
-  assert.match(source, /layout-editor-start/);
+  assert.match(source, /dashboard-editor-start/);
   assert.match(source, /configwriter\.php/);
-  /* Must not wipe device/widget sections (that deletes widget settings). */
-  assert.doesNotMatch(source, /configwriter_remove_editor_sections/);
+  assert.match(source, /configwriter_extract_section_config_settings/);
+  assert.match(source, /configwriter_extract_wrapped_section/);
+  assert.match(source, /configwriter_remove_editor_sections/);
+  assert.match(source, /configwriter_upsert_root_config_settings/);
+  assert.match(source, /configwriter_build_layout_section/);
+  assert.match(writer, /function configwriter_upsert_root_config_settings/);
+  assert.match(writer, /function configwriter_extract_wrapped_section/);
+  assert.match(writer, /dashboard-editor-start/);
+  assert.match(writer, /configwriter_section_header\('BLOCKS'\)/);
+  assert.match(writer, /configwriter_section_header\('COLUMNS'\)/);
+  assert.match(writer, /configwriter_section_header\('SCREENS'\)/);
   assert.match(writer, /\(de\|we\|le\)_col/);
   assert.match(writer, /le_col/);
   assert.match(source, /configwriter_write_config/);
+});
+
+test('device and widget writers keep the grouped layout until consolidation', () => {
+  const devices = read('js/saveblocks.php');
+  const widgets = read('js/savewidgets.php');
+  for (const source of [devices, widgets]) {
+    assert.doesNotMatch(
+      source,
+      /configwriter_remove_section\(\s*\$config,\s*['"]\/\/ \[layout-editor-start\]/
+    );
+    assert.doesNotMatch(
+      source,
+      /configwriter_remove_section\(\s*\$config,\s*['"]\/\/ \[dashboard-editor-start\]/
+    );
+  }
 });
 
 test('layout writer packs tall blocks into virtual side columns', () => {
@@ -174,7 +196,7 @@ test('layout writer packs tall blocks into virtual side columns', () => {
   assert.match(writer, /virtual tall column/);
   assert.match(writer, /rowsBeside/);
   assert.match(writer, /append every side-pocket tile into the same short column/);
-  assert.match(layout, /configwriter_pack_columns_by_height/);
+  assert.match(layout, /configwriter_build_layout_section/);
   assert.match(layout, /height/);
   assert.match(styles, /display: contents/);
   assert.match(styles, /id\^=\"block_\"/);
