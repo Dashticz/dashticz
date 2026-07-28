@@ -96,6 +96,25 @@ test('first-run setup uses its own wizard and removes the legacy browser fallbac
   assert.doesNotMatch(source, /storeSetupConfig/);
 });
 
+test('installer accepts an optional target directory', () => {
+  const installer = fs.readFileSync(path.join(root, 'install.sh'), 'utf8');
+  const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+  const installDocs = fs.readFileSync(
+    path.join(root, 'docs/gettingstarted/automaticinstall.rst'),
+    'utf8'
+  );
+
+  assert.match(installer, /INSTALL_DIR="\$\{DASHTICZ_INSTALL_DIR:-dashticz\}"/);
+  assert.match(installer, /-d\|--directory/);
+  assert.match(installer, /--directory=\*/);
+  assert.match(installer, /Only one installation directory can be specified/);
+  assert.match(installer, /git clone[\s\S]*"\$INSTALL_DIR"/);
+  assert.match(readme, /-- --directory \/var\/www\/html\/my-dashboard/);
+  assert.match(installDocs, /-- --directory \/var\/www\/html\/my-dashboard/);
+  assert.match(readme, /file mode `0644`/);
+  assert.match(installDocs, /file mode ``0644``/);
+});
+
 test('all project JSON files parse', () => {
   const ignored = new Set(['node_modules', '.git']);
   function collect(directory) {

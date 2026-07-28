@@ -4,9 +4,70 @@ set -eu
 
 REPOSITORY="https://github.com/dashticz/dashticz.git"
 BRANCH="master"
-INSTALL_DIR="dashticz"
+INSTALL_DIR="${DASHTICZ_INSTALL_DIR:-dashticz}"
+INSTALL_DIR_SET=0
+
+show_help() {
+    printf '%s\n' \
+        'Usage:' \
+        '  sh install.sh [--directory PATH]' \
+        '  bash -c "$(curl -fsSL INSTALLER_URL)" -- [--directory] PATH' \
+        '' \
+        'Options:' \
+        '  -d, --directory PATH  Install Dashticz in PATH instead of ./dashticz.' \
+        '  -h, --help            Show this help.' \
+        '' \
+        'The environment variable DASHTICZ_INSTALL_DIR can also set the target path.'
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        -d|--directory)
+            if [ "$#" -lt 2 ] || [ -z "$2" ]; then
+                echo "Option '$1' requires a directory path." >&2
+                exit 2
+            fi
+            INSTALL_DIR="$2"
+            INSTALL_DIR_SET=1
+            shift 2
+            ;;
+        --directory=*)
+            INSTALL_DIR="${1#*=}"
+            if [ -z "$INSTALL_DIR" ]; then
+                echo "Option '--directory' requires a directory path." >&2
+                exit 2
+            fi
+            INSTALL_DIR_SET=1
+            shift
+            ;;
+        -h|--help)
+            show_help
+            exit 0
+            ;;
+        -*)
+            echo "Unknown option: $1" >&2
+            show_help >&2
+            exit 2
+            ;;
+        *)
+            if [ "$INSTALL_DIR_SET" -eq 1 ]; then
+                echo "Only one installation directory can be specified." >&2
+                exit 2
+            fi
+            INSTALL_DIR="$1"
+            INSTALL_DIR_SET=1
+            shift
+            ;;
+    esac
+done
+
+if [ -z "$INSTALL_DIR" ]; then
+    echo "The installation directory cannot be empty." >&2
+    exit 2
+fi
 
 echo "=== Dashticz Installer ==="
+echo "Installation directory: $INSTALL_DIR"
 
 if ! command -v git >/dev/null 2>&1; then
     echo "Git is not installed. Installing Git..."

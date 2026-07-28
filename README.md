@@ -248,8 +248,21 @@ for example /var/www/html
 ```sh
 bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/master/install.sh)"
 ```
-The installer clones the latest stable `master` branch into `dashticz` and creates
-`custom/CONFIG.js` with the content `#EMPTY#` and file mode `0755`.
+The installer clones the latest stable `master` branch into `dashticz`. To
+install directly into another directory, pass that path after `--`:
+
+```sh
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/master/install.sh)" -- --directory /var/www/html/my-dashboard
+```
+
+The shorter positional form is also supported:
+
+```sh
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/master/install.sh)" -- /var/www/html/my-dashboard
+```
+
+The target directory must not exist yet. The installer creates
+`custom/CONFIG.js` with the content `#EMPTY#` and file mode `0644`.
 
 For the beta branch, go to your Dashticz installation and run:
 ```
