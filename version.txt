@@ -1,8 +1,9 @@
 {
-"version": "3.21.0",
+"version": "3.21.1",
 "branch": "beta",
-"last_changes": "Background BG_ pickers, clock fit-to-tile, topbar logo, optional topbar clock, git update safe.directory",
+"last_changes": "Restore large Modern Dark selector buttons and document the complete browser editors and installer",
 "changelog" : {
+            "3.21.1": "Restore large Modern Dark selector buttons and document the complete browser editors and installer",
             "3.21.0": "Background BG_ pickers, clock fit-to-tile, topbar logo, optional topbar clock, git update safe.directory",
             "3.20.5": "Blocks configuration editor with block sizing",
             "3.20.4": "Device Editor: generate named blocks, grouped columns, and proper screens[1] in CONFIG.js",
