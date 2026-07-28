@@ -9,17 +9,19 @@ var DT_basicclock = {
     return block && block.type && block.type === 'basicclock';
   },
   defaultCfg: {
-      scale: 1,
-      width: 12,
-      containerClass: 'text-center'
+    scale: 1,
+    width: 12,
+    maxFontSize: 42,
+    containerClass: 'text-center',
   },
   run: function (me) {
-
-      var width = me.block.size || $(me.mountPoint + ' .dt_block').width();
-      $(me.mountPoint + ' .dt_block').css('font-size', width / 6 * me.block.scale);
-      $(me.mountPoint + ' .dt_content').html(
-        '<div class="clock"></div><div class="weekday"></div><div class="date"></div>'
-      )
+    var $block = $(me.mountPoint + ' .dt_block');
+    var width = me.block.size || $block.width();
+    var fontSize = (width / 6) * me.block.scale;
+    $block.css('font-size', Math.min(fontSize, me.block.maxFontSize));
+    $(me.mountPoint + ' .dt_content').html(
+      '<div class="clock"></div><div class="weekday"></div><div class="date"></div>'
+    );
   },
 };
 
