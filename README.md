@@ -109,8 +109,9 @@ When `custom/CONFIG.js` is missing or contains only `#EMPTY#`, Dashticz opens a
 first-run wizard. The wizard creates a real `CONFIG.js` containing the Domoticz
 connection, dashboard name, language, theme, and other basic settings. PHP must
 be enabled and `custom/CONFIG.js` must be writable by the web-server account.
+The topbar auto-hide time defaults to 5 seconds in this wizard.
 
-After Dashticz has started, select the pencil icon next to the settings icon in
+After Dashticz has started, select the plus icon next to the settings icon in
 the topbar to open the **Device Editor**. The editor can:
 
 - add devices and sub-devices detected in Domoticz;
@@ -125,8 +126,39 @@ those markers is preserved. Generated columns are added to screen 1 and the
 dashboard reloads after saving. Back up an existing `CONFIG.js` before first
 using the editor.
 
-The pencil icon is part of the `settings` topbar block. A custom topbar must
-therefore include `settings`:
+Select the puzzle-piece icon to open the **Widget Editor**. It provides a tile
+catalog for Weather (OpenWeather or Weather Underground), Garbage, Spotify,
+Sonarr, Clock, and an ICS Calendar. Select a tile and then **Save** to add it to
+screen 1; select an added tile again to remove it. The calendar tile requires
+an HTTP(S) ICS URL. API keys, addresses, and server URLs remain configurable in
+the relevant Weather, Garbage, Media, and Localization settings sections.
+The Clock tile offers Basic, Station, Flip, Hayman, and Mini clock variants.
+
+The Widget Editor owns only the section between `// [widget-editor-start]` and
+`// [widget-editor-end]` in `custom/CONFIG.js`, so manual configuration outside
+those markers is preserved.
+
+Select the arrows icon in the topbar to open the **Visual Layout Editor** on
+screen 1. Blocks created by the Device Editor receive a blue edit overlay:
+
+- drag a block to change its position;
+- drag the bottom-right corner to change its width and height;
+- select the red minus button at the bottom-left to remove a device;
+- width snaps to the 12-column dashboard grid;
+- height snaps to steps of 10 pixels;
+- select **Save** to update `custom/CONFIG.js`, or **Cancel**/Escape to restore
+  the original layout.
+
+Blocks inside generated `de_col*`, `we_col*`, and combined `le_col*` columns
+are editable. This includes devices and widgets created by either editor.
+Their mixed order is stored separately so the dashboard and Device Editor show
+the same ordering. Manually configured blocks and topbar blocks are deliberately
+left unchanged. Saved heights are applied to classic Domoticz device blocks as
+well as the `modern-dark` theme.
+
+The plus, puzzle-piece, and arrows icons are part of the `settings` topbar
+block and show their function on hover. A custom topbar must therefore include
+`settings`:
 
 ```javascript
 var columns = {};

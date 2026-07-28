@@ -27,7 +27,7 @@ if (!is_array($data['devices'])) {
 $devices = [];
 foreach ($data['devices'] as $entry) {
     if (is_int($entry) && $entry > 0) {
-        $devices[] = ['idx' => $entry, 'subidx' => 0, 'name' => 'Device ' . $entry, 'width' => 2];
+        $devices[] = ['idx' => $entry, 'subidx' => 0, 'name' => 'Device ' . $entry, 'width' => 3, 'height' => null];
     } elseif (is_array($entry)
         && isset($entry['idx']) && is_int($entry['idx']) && $entry['idx'] > 0
     ) {
@@ -37,7 +37,7 @@ foreach ($data['devices'] as $entry) {
         if ($name === '') {
             $name = 'Device ' . $entry['idx'];
         }
-        $width = 2;
+        $width = 3;
         if (isset($entry['width'])) {
             $width = (int)$entry['width'];
         }
@@ -53,7 +53,17 @@ foreach ($data['devices'] as $entry) {
                 $subidx = 0;
             }
         }
-        $devices[] = ['idx' => $entry['idx'], 'subidx' => $subidx, 'name' => $name, 'width' => $width];
+        $height = null;
+        if (array_key_exists('height', $entry) && $entry['height'] !== null && $entry['height'] !== '') {
+            $height = (int)$entry['height'];
+            $height = (int)(round($height / 10) * 10);
+            if ($height < 50) {
+                $height = 50;
+            } elseif ($height > 2000) {
+                $height = 2000;
+            }
+        }
+        $devices[] = ['idx' => $entry['idx'], 'subidx' => $subidx, 'name' => $name, 'width' => $width, 'height' => $height];
     } else {
         dashticz_json_error(400, 'Each device entry must be a positive integer or an object with an integer idx.');
     }
@@ -73,6 +83,20 @@ if (file_exists($configPath)) {
     }
 } else {
     $config = "var config = {}\n";
+}
+
+/* A direct Device Editor save invalidates a previously combined layout. */
+$layoutStartMarker = '// [layout-editor-start]';
+$layoutEndMarker = '// [layout-editor-end]';
+$layoutStartPos = strpos($config, $layoutStartMarker);
+if ($layoutStartPos !== false) {
+    $layoutEndPos = strpos($config, $layoutEndMarker, $layoutStartPos);
+    if ($layoutEndPos !== false) {
+        $config = substr($config, 0, $layoutStartPos)
+            . substr($config, $layoutEndPos + strlen($layoutEndMarker));
+    } else {
+        $config = substr($config, 0, $layoutStartPos);
+    }
 }
 
 /* ---- remove existing device-editor section ----------------------------- */
@@ -102,7 +126,7 @@ if (!empty($devices)) {
     unset($d);
 
     $columnWidth      = 12;
-    $defaultBlockWidth = 2;
+    $defaultBlockWidth = 3;
     $chunks           = _chunkBlockKeysByWidth($devices, $columnWidth, $defaultBlockWidth);
 
     $section  = "\n\n" . $startMarker . "\n";
@@ -121,7 +145,11 @@ if (!empty($devices)) {
         } else {
             $blockDef = "{idx:" . $idx;
         }
-        $blockDef .= ",width:" . $blockWidth . ",hide_data:true,last_update:false,title:'" . $title . "'}";
+        $blockDef .= ",width:" . $blockWidth . ",hide_data:true,last_update:false,title:'" . $title . "'";
+        if (isset($d['height']) && is_int($d['height'])) {
+            $blockDef .= ",height:" . $d['height'];
+        }
+        $blockDef .= "}";
         $section .= "blocks['" . $key . "']=" . $blockDef . ";\n";
     }
 
@@ -143,7 +171,20 @@ if (!empty($devices)) {
     }
 
     $section .= $endMarker;
-    $config  .= $section;
+
+    /*
+     * Keep device columns before widget columns. Both editors append their
+     * columns to screen 1, so their CONFIG.js section order determines the
+     * visible dashboard order after either editor saves.
+     */
+    $widgetStartPos = strpos($config, '// [widget-editor-start]');
+    if ($widgetStartPos !== false) {
+        $beforeWidgets = rtrim(substr($config, 0, $widgetStartPos));
+        $widgetSection = ltrim(substr($config, $widgetStartPos));
+        $config = $beforeWidgets . $section . "\n\n" . $widgetSection;
+    } else {
+        $config .= $section;
+    }
 }
 
 /* ---- write CONFIG.js --------------------------------------------------- */
@@ -168,7 +209,12 @@ if (file_put_contents($configPath, $config . "\n", LOCK_EX) === false) {
 @chmod($configPath, 0664);
 
 header('Content-Type: application/json');
-echo json_encode(array('success' => true));
+echo json_encode(array(
+    'success' => true,
+    'blockKeys' => array_map(function ($device) {
+        return isset($device['key']) ? $device['key'] : null;
+    }, $devices),
+));
 
 /* ---- helpers ----------------------------------------------------------- */
 

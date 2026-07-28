@@ -14,13 +14,20 @@ v3.20.4 beta (24-7-2026)
 Enhancements
 ~~~~~~~~~~~~
 
-* Device Editor: a pencil icon has been added to the topbar (left of the settings gear). Clicking it opens a modal that lists all Domoticz devices currently shown in Dashticz, and provides a dropdown to select additional Domoticz devices and add them with the **+** button. Each listed device has a **−** button to remove it from Dashticz; the removed device is restored to the "Add device" dropdown. Added/remaining devices are saved to ``custom/CONFIG.js`` as named ``blocks[...]`` entries grouped into ``columns[de_colN]`` definitions (up to 4 blocks per column), and ``screens[1]`` is created or extended automatically. Requires PHP to be installed.
-* Settings: ``auto_positioning`` (add all devices automatically) and ``use_favorites`` both default to **off** (0). With both options off no devices are shown automatically; add devices explicitly via the Device Editor.
+* Widget Editor: a puzzle-piece icon in the topbar opens a tile catalog for Weather (OpenWeather or Weather Underground), Garbage, Spotify, Sonarr, Clock, and ICS Calendar widgets. The clock widget supports Basic, Station, Flip, Hayman, and Mini clock variants. Selected widgets are stored in a separate managed section in ``custom/CONFIG.js`` and added to screen 1.
+* Visual Layout Editor: an arrows icon has been added to the topbar. Generated device and widget blocks on screen 1 can be reordered and resized directly on the dashboard. The editor uses the same 12-column grid as the normal dashboard, so opening it keeps positions stable. Blocks visibly move to their new position while dragging and can also be dropped in empty grid space. A red minus button at the bottom-left removes a tile from the saved layout. Width snaps to the 12-column grid, height snaps in 10-pixel steps, and the size label is shown at the bottom-right. **Save** persists the mixed device/widget order to ``custom/CONFIG.js``; the Device Editor uses that same visual order. **Cancel** or Escape restores the original layout.
+* Topbar: editor, settings, and fullscreen icons now show a description on hover.
+
+* Device Editor: a plus icon has been added to the topbar (left of the layout and settings icons). Clicking it opens a modal that lists all Domoticz devices currently shown in Dashticz, and provides a dropdown to select additional Domoticz devices and add them with the **+** button. Each listed device has a **−** button to remove it from Dashticz; numeric device IDs are now removed correctly instead of being recreated as ``Device IDX`` entries. The removed device is restored to the "Add device" dropdown. Added/remaining devices are saved to ``custom/CONFIG.js`` as named ``blocks[...]`` entries grouped into ``columns[de_colN]`` definitions (up to 4 blocks per column), and ``screens[1]`` is created or extended automatically. Requires PHP to be installed.
+* First-run setup: the topbar auto-hide time now defaults to 5 seconds.
+* Modern Dark: selector dropdowns now use the same larger touch target and font size as selector buttons.
+* Settings: the legacy automatic-device, favorites, hidden-device, room-plan, RGB colorpicker, and colorpicker-scale controls have been removed from the visible settings menu. Their internal defaults remain available for backward compatibility.
 * Screens: ``buildDefaultScreens`` is only called when ``auto_positioning`` is enabled, preventing automatic device injection on a fresh install.
 
 Fixes
 ~~~~~
 
+* Widget Weather: Weather Underground now uses its legacy renderer, while OpenWeather displays a visible loading or missing-API-key state instead of an empty area.
 * Device Editor save: ``managedDevices`` is now initialised from **all** devices currently shown in Dashticz (previously it only read from the ``device_editor`` column, so the list was always empty on first use and nothing was written to CONFIG.js).
 * Device Editor save: blocks are now written as proper named ``blocks['Name'] = {idx, …}`` entries with grouped columns and a ``screens[1]`` initialisation; previously only a raw IDX array was written to a single ``columns['device_editor']`` entry and ``screens[1]`` was never created on a fresh CONFIG.js.
 * Device Editor remove: restoring a removed device back into the ``available[]`` array so that subsequent **+** dropdown rows correctly include it.
