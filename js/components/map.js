@@ -20,7 +20,7 @@ function gm_authFailure() {
   var DT_googlemaps = {
     name: 'map',
     canHandle: function (block) {
-      return block && (block.latitude && block.longitude);
+      return block && (block.type === 'map' || (block.latitude && block.longitude));
     },
     init: function (block) {
       if (!Dashticz.googleMapsPromise) {

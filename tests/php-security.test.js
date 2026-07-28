@@ -39,7 +39,19 @@ test('settings writes require CSRF and serialize values as JSON', () => {
   assert.match(source, /if \(file_exists\(\$configPath\)\)/);
   assert.match(source, /trim\(\$config\) !== '#EMPTY#'/);
   assert.match(source, /!file_exists\(\$configPath\) && !is_writable\(\$customDir\)/);
+  assert.match(source, /\$customMode/);
   assert.doesNotMatch(source, /\$newconf\.="config/);
+});
+
+test('config mode writer only accepts custom or wizard', () => {
+  const source = read('js/saveconfigmode.php');
+  assert.match(source, /dashticz_require_same_origin\(\)/);
+  assert.match(source, /dashticz_require_csrf\(\)/);
+  assert.match(source, /REQUEST_METHOD.*POST/);
+  assert.match(source, /config_mode/);
+  assert.match(source, /custom/);
+  assert.match(source, /wizard/);
+  assert.match(source, /configwriter_write_config/);
 });
 
 test('first-run access check verifies CONFIG.js as the web server user', () => {
@@ -74,14 +86,15 @@ test('bundled Horizon remote requires POST, CSRF and a key allowlist', () => {
 
 test('blocks writer requires CSRF, POST, and generates named block definitions', () => {
   const source = read('js/saveblocks.php');
+  const writer = read('js/configwriter.php');
   assert.match(source, /dashticz_require_same_origin\(\)/);
   assert.match(source, /dashticz_require_csrf\(\)/);
   assert.match(source, /REQUEST_METHOD.*POST/);
-  assert.match(source, /file_put_contents\(\$configPath,.*LOCK_EX\)/);
+  assert.match(source, /configwriter_write_config/);
   /* generates named block entries, not raw IDX arrays */
-  assert.match(source, /typeof blocks/);
-  assert.match(source, /typeof columns/);
-  assert.match(source, /typeof screens/);
+  assert.match(writer, /typeof blocks/);
+  assert.match(writer, /typeof columns/);
+  assert.match(writer, /typeof screens/);
   assert.match(source, /device-editor-start/);
   assert.match(source, /widget-editor-start/);
   assert.match(source, /layout-editor-start/);
@@ -89,12 +102,11 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   /* accepts both legacy bare integers and {idx,name} objects */
   assert.match(source, /is_int\(\$entry\)/);
   assert.match(source, /\$entry\['idx'\]/);
-  assert.match(source, /function _chunkBlockKeysByWidth/);
-  assert.match(source, /\$defaultBlockWidth = 3/);
+  assert.match(writer, /function configwriter_chunk_items_by_width/);
   assert.match(source, /array_key_exists\('height'/);
   assert.match(source, /round\(\$height \/ 10\) \* 10/);
-  assert.match(source, /,height:/);
-  assert.doesNotMatch(source, /array_chunk\(\$blockKeys,\s*4\)/);
+  assert.match(writer, /height/);
+  assert.doesNotMatch(source, /array_chunk\(\$.*,\s*4\)/);
   /* no raw IDX-only column block from the old implementation */
   assert.doesNotMatch(source, /columns\['device_editor'\]/);
 });
@@ -112,26 +124,102 @@ test('widget writer whitelists widgets and protects CONFIG.js writes', () => {
     'sonarr',
     'clock',
     'calendar',
+    'secpanel',
+    'publictransport',
+    'trafficinfo',
+    'alarmmeldingen',
+    'camera',
+    'map',
+    'longfonds',
+    'moon',
+    'news',
   ]) {
     assert.match(source, new RegExp(`'${id}'\\s*=>`));
   }
+  assert.match(source, /weather_icons/);
+  assert.match(source, /showGust/);
+  assert.match(source, /allowedWeatherIcons/);
   assert.match(source, /Unknown widget id/);
   assert.match(source, /Unknown weather provider/);
   assert.match(source, /Unknown clock type/);
   assert.match(source, /Calendar requires a valid http\(s\) ICS URL/);
+  assert.match(source, /Camera requires a valid http\(s\) image URL/);
   assert.match(source, /widget-editor-start/);
   assert.match(source, /layout-editor-start/);
   assert.match(source, /blockKeys/);
-  assert.match(source, /file_put_contents\(\$configPath, \$config \. "\\n", LOCK_EX\)/);
+  assert.match(source, /configwriter_write_config/);
 });
 
 test('layout writer only stores safe managed block references', () => {
   const source = read('js/savelayout.php');
+  const writer = read('js/configwriter.php');
   assert.match(source, /dashticz_require_same_origin\(\)/);
   assert.match(source, /dashticz_require_csrf\(\)/);
   assert.match(source, /REQUEST_METHOD.*POST/);
   assert.match(source, /\^\[A-Za-z_\]\[A-Za-z0-9_\]\*\$/);
   assert.match(source, /layout-editor-start/);
-  assert.match(source, /\(de\|we\|le\)_col/);
-  assert.match(source, /file_put_contents\(\$configPath, \$config \. "\\n", LOCK_EX\)/);
+  assert.match(source, /configwriter\.php/);
+  /* Must not wipe device/widget sections (that deletes widget settings). */
+  assert.doesNotMatch(source, /configwriter_remove_editor_sections/);
+  assert.match(writer, /\(de\|we\|le\)_col/);
+  assert.match(writer, /le_col/);
+  assert.match(source, /configwriter_write_config/);
+});
+
+test('layout writer packs tall blocks into virtual side columns', () => {
+  const writer = read('js/configwriter.php');
+  const layout = read('js/savelayout.php');
+  const styles = read('css/creative.css');
+  assert.match(writer, /function configwriter_pack_columns_by_height/);
+  assert.match(writer, /virtual tall column/);
+  assert.match(writer, /rowsBeside/);
+  assert.match(writer, /append every side-pocket tile into the same short column/);
+  assert.match(layout, /configwriter_pack_columns_by_height/);
+  assert.match(layout, /height/);
+  assert.match(styles, /display: contents/);
+  assert.match(styles, /id\^=\"block_\"/);
+});
+
+test('widget writer preserves existing settings when none are posted', () => {
+  const source = read('js/savewidgets.php');
+  const writer = read('js/configwriter.php');
+  assert.match(source, /configwriter_extract_section_config_settings/);
+  assert.match(source, /existingSettings/);
+  assert.match(writer, /function configwriter_extract_section_config_settings/);
+  assert.match(writer, /function configwriter_emit_config_settings/);
+});
+
+test('git update endpoint allowlists branches and requires CSRF', () => {
+  const source = read('js/update.php');
+  assert.match(source, /dashticz_require_same_origin\(\)/);
+  assert.match(source, /dashticz_require_csrf\(\)/);
+  assert.match(source, /REQUEST_METHOD.*POST/);
+  assert.match(source, /branchMap/);
+  assert.match(source, /'beta'\s*=>\s*'beta'/);
+  assert.match(source, /'main'\s*=>\s*'master'/);
+  assert.match(source, /pull',\s*'--ff-only'/);
+  assert.match(source, /bypass_shell/);
+  assert.match(source, /safe\.directory/);
+  assert.match(source, /dashticz_git_writable_check/);
+  assert.match(source, /Permission denied/);
+  assert.doesNotMatch(source, /shell_exec|exec\(|passthru|system\(/);
+});
+
+test('settings writer persists columns_standby from standby_blocks', () => {
+  const source = read('js/savesettings.php');
+  const writer = read('js/configwriter.php');
+  assert.match(source, /standby_blocks/);
+  assert.match(source, /configwriter_replace_standby_section/);
+  assert.match(writer, /function configwriter_replace_standby_section/);
+  assert.match(writer, /standby-editor-start/);
+  assert.match(writer, /columns_standby/);
+});
+
+test('background list endpoint only exposes img/bg* files', () => {
+  const source = read('js/listbackgrounds.php');
+  assert.match(source, /dashticz_require_same_origin\(\)/);
+  assert.match(source, /REQUEST_METHOD.*GET/);
+  assert.match(source, /preg_match\(\'\/\^\(bg/);
+  assert.doesNotMatch(source, /\$_GET\[/);
+  assert.doesNotMatch(source, /\$_POST\[/);
 });

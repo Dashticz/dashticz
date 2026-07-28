@@ -21,8 +21,9 @@ var DashticzLayoutEditor = (function () {
     var $screen = $('.screen.swiper-slide-active');
     if (!$screen.length) $screen = $('.screen:visible').first();
 
+    var managedColumnRe = /^(de|we|le)_col\d+$|^col_\d+$/;
     var $managedColumns = $screen.find('[data-colindex]').filter(function () {
-      return /^(de|we|le)_col\d+$/.test(String($(this).data('colindex')));
+      return managedColumnRe.test(String($(this).attr('data-colindex')));
     });
 
     if (!$managedColumns.length) {
@@ -58,7 +59,7 @@ var DashticzLayoutEditor = (function () {
 
     $managedColumns.each(function () {
       var $column = $(this);
-      var columnKey = String($column.data('colindex'));
+      var columnKey = String($column.attr('data-colindex'));
       var refs =
         typeof columns !== 'undefined' &&
         columns[columnKey] &&
@@ -180,8 +181,79 @@ var DashticzLayoutEditor = (function () {
       widget_sonarr: 'sonarr',
       widget_clock: 'clock',
       widget_calendar: 'calendar',
+      widget_secpanel: 'secpanel',
+      widget_publictransport: 'publictransport',
+      widget_trafficinfo: 'trafficinfo',
+      widget_alarmmeldingen: 'alarmmeldingen',
+      widget_cameras: 'camera',
+      widget_map: 'map',
+      widget_longfonds: 'longfonds',
+      widget_moon: 'moon',
+      widget_news: 'news',
     };
     return widgetReferences[String(reference)] || null;
+  }
+
+  function _copyDefinedWidgetProperties(entry, definition, properties) {
+    properties.forEach(function (property) {
+      if (typeof definition[property] !== 'undefined') {
+        entry[property] = definition[property];
+      }
+    });
+  }
+
+  function _widgetPayload(item) {
+    var definition = item.definition || {};
+    var entry = {
+      id: item.widgetId,
+      width: item.width,
+    };
+    if (item.height !== null) entry.height = item.height;
+
+    if (item.widgetId === 'weather') {
+      entry.provider =
+        definition.widget_provider ||
+        (definition.type === 'wunderground'
+          ? 'wunderground'
+          : 'openweather');
+      _copyDefinedWidgetProperties(entry, definition, [
+        'showRain',
+        'showDescription',
+        'showWind',
+        'showGust',
+        'icons',
+      ]);
+    } else if (item.widgetId === 'calendar') {
+      entry.icalurl = definition.icalurl || '';
+    } else if (item.widgetId === 'clock') {
+      entry.clockType = definition.type || 'basicclock';
+      _copyDefinedWidgetProperties(entry, definition, [
+        'size',
+        'scale',
+        'showSeconds',
+        'clockFace',
+        'body',
+        'dial',
+        'hourhand',
+        'minutehand',
+        'secondhand',
+        'boss',
+        'minutehandbehavior',
+        'secondhandbehavior',
+      ]);
+    } else if (item.widgetId === 'publictransport') {
+      entry.station = definition.station || 'UT';
+      entry.provider = definition.provider || 'treinen';
+    } else if (item.widgetId === 'camera') {
+      entry.imageUrl = definition.imageUrl || '';
+      if (definition.videoUrl) entry.videoUrl = definition.videoUrl;
+    } else if (item.widgetId === 'alarmmeldingen') {
+      entry.rss =
+        definition.rss || 'https://www.alarmeringen.nl/feeds/all.rss';
+      if (definition.filter) entry.filter = definition.filter;
+    }
+
+    return entry;
   }
 
   function _configuredWidth(definition, block) {
@@ -573,20 +645,7 @@ var DashticzLayoutEditor = (function () {
     var widgets = [];
     ordered.forEach(function (item) {
       if (item.kind === 'widget') {
-        var widgetEntry = {
-          id: item.widgetId,
-          width: item.width,
-        };
-        if (item.height !== null) widgetEntry.height = item.height;
-        if (item.widgetId === 'weather') {
-          widgetEntry.provider =
-            item.definition.widget_provider || 'openweather';
-        } else if (item.widgetId === 'calendar') {
-          widgetEntry.icalurl = item.definition.icalurl || '';
-        } else if (item.widgetId === 'clock') {
-          widgetEntry.clockType = item.definition.type || 'basicclock';
-        }
-        widgets.push(widgetEntry);
+        widgets.push(_widgetPayload(item));
         return;
       }
 
@@ -620,7 +679,9 @@ var DashticzLayoutEditor = (function () {
                 item.kind === 'widget'
                   ? widgetResult.blockKeys[widgetIndex++]
                   : deviceResult.blockKeys[deviceIndex++];
-              return { ref: ref, width: item.width };
+              var entry = { ref: ref, width: item.width };
+              if (item.height !== null) entry.height = item.height;
+              return entry;
             });
             return _postLayoutData(
               'js/savelayout.php',

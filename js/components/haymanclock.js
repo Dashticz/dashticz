@@ -29,7 +29,7 @@ var DT_haymanclock = {
         return fallbackValue;
       }
     }
-    return {
+    var cfg = {
       containerClass: 'text-center',
       day: getRelativeLabel(1, 'day', fallback.day),
       hours: getRelativeLabel(2, 'hours', fallback.hours),
@@ -37,12 +37,29 @@ var DT_haymanclock = {
       seconds: getRelativeLabel(2, 'seconds', fallback.seconds),
       scale: 1,
     };
+    if (settings['clock_scale'] !== '' && settings['clock_scale'] != null) {
+      var scale = Number(settings['clock_scale']);
+      if (isFinite(scale) && scale > 0) cfg.scale = scale;
+    }
+    if (settings['clock_size'] !== '' && settings['clock_size'] != null) {
+      var size = Number(settings['clock_size']);
+      if (isFinite(size) && size > 0) cfg.size = size;
+    }
+    return cfg;
   },
   run: function (me) {
     templateEngine.load('clock_hayman').then(function (template) {
-      var width = me.block.size || $(me.mountPoint + ' .dt_block').width();
-      me.block.clockwidth = me.block.scale * 100 + '%';
-      me.block.fontsize = (width / 40) * me.block.scale;
+      var $block = $(me.mountPoint + ' .dt_block');
+      var availW = $block.width() || $(me.mountPoint).width() || 120;
+      var availH = $block.height() || $(me.mountPoint).height() || 0;
+      var scale = Number(me.block.scale);
+      if (!isFinite(scale) || scale <= 0) scale = 1;
+      var base = me.block.size || (availH > 0 ? Math.min(availW, availH) : availW);
+      var width = base * scale;
+      if (availW > 0) width = Math.min(width, availW);
+      if (availH > 0) width = Math.min(width, availH);
+      me.block.clockwidth = Math.min(100, scale * 100) + '%';
+      me.block.fontsize = Math.max(8, (width / 40));
       $(me.mountPoint + ' .dt_block').html(template(me.block));
       function updateTime() {
         var now = new Date();

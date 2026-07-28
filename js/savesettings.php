@@ -1,5 +1,6 @@
 <?php
 require_once(__DIR__ . '/../vendor/dashticz/security.php');
+require_once(__DIR__ . '/configwriter.php');
 
 dashticz_require_same_origin();
 dashticz_require_csrf();
@@ -26,6 +27,28 @@ $configPath = $customDir . '/' . $cfgFile;
 $before = '';
 $rows = [];
 
+// standby_blocks is a layout field for columns_standby[], not a config[...] key.
+$standbyBlocksPosted = array_key_exists('standby_blocks', $_POST);
+$standbyBlockKeys = [];
+if ($standbyBlocksPosted) {
+    $standbyRaw = json_decode($_POST['standby_blocks'], true);
+    if (json_last_error() !== JSON_ERROR_NONE || (!is_string($standbyRaw) && !is_numeric($standbyRaw))) {
+        dashticz_json_error(400, 'Invalid value for setting standby_blocks.');
+    }
+    $parts = preg_split('/\s*,\s*/', trim((string)$standbyRaw));
+    foreach ($parts as $part) {
+        if ($part === '') {
+            continue;
+        }
+        // Only allow safe block reference identifiers.
+        if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $part)) {
+            dashticz_json_error(400, 'Invalid standby block reference: ' . $part);
+        }
+        $standbyBlockKeys[] = $part;
+    }
+    unset($_POST['standby_blocks']);
+}
+
 if (file_exists($configPath)) {
     $config = @file_get_contents($configPath);
     if ($config === false) {
@@ -42,11 +65,26 @@ if (file_exists($configPath)) {
         $before = substr($config, 0, $markerPosition);
         $conf = substr($config, $markerPosition + strlen($marker));
         $rows = preg_split('/\r\n|\r|\n/', $conf);
+        $inWidgetEditorSection = false;
+        $customMode = false;
+        if (isset($_POST['config_mode'])) {
+            $modeValue = json_decode($_POST['config_mode'], true);
+            $customMode = is_string($modeValue) && strtolower($modeValue) === 'custom';
+        }
         foreach ($rows as $index => $row) {
-            if (substr($row, 0, 17) !== "config['garbage']") {
-                if (substr($row, 0, 6) === 'config' || substr($row, 0, 8) === '//config') {
+            if (strpos($row, '// [widget-editor-start]') !== false) {
+                $inWidgetEditorSection = true;
+            }
+            $isConfigLine = substr($row, 0, 6) === 'config' || substr($row, 0, 8) === '//config';
+            if ($isConfigLine && substr($row, 0, 17) !== "config['garbage']") {
+                // In Custom mode the settings menu is authoritative: drop
+                // leftover widget-section config overrides as well.
+                if (!$inWidgetEditorSection || $customMode) {
                     unset($rows[$index]);
                 }
+            }
+            if (strpos($row, '// [widget-editor-end]') !== false) {
+                $inWidgetEditorSection = false;
             }
         }
     }
@@ -68,6 +106,12 @@ foreach ($_POST as $name => $serializedValue) {
 }
 
 $newContents = $before . $newConfig . implode("\n", $rows);
+
+// Persist columns_standby when the Standby settings tile posted block refs.
+if ($standbyBlocksPosted) {
+    $newContents = configwriter_replace_standby_section($newContents, $standbyBlockKeys, 12);
+}
+
 if (!file_exists($configPath) && !is_writable($customDir)) {
     dashticz_json_error(500, 'The directory "custom/" is not writable by the web server' .
         dashticz_owner_info($customDir) .

@@ -92,14 +92,6 @@ settingList.general = {
     title: language.settings.general.last_update,
     type: 'checkbox'
   },
-  default_news_url: {
-    title: language.settings.general.default_news_url,
-    type: 'text'
-  },
-  news_scroll_after: {
-    title: language.settings.general.news_scroll_after,
-    type: 'text',
-  },
   disable_googleanalytics: {
     title: language.settings.general.disable_googleanalytics,
     help: language.settings.general.disable_googleanalytics_help,
@@ -112,14 +104,6 @@ settingList.general = {
   dashticz_php_path: {
     title: language.settings.general.dashticz_php_path,
     type: 'text'
-  },
-  standby_call_url: {
-    title: language.settings.general.standby_call_url,
-    type: 'text',
-  },
-  standby_call_url_on_end: {
-    title: language.settings.general.standby_call_url_on_end,
-    type: 'text',
   },
 };
 
@@ -135,6 +119,16 @@ settingList['screen']['topbar_timeout']['help'] =
   language.settings.screen.topbar_timeout_help ||
   'Hide the topbar after this many seconds. Move the pointer to the top of the screen to show it again.';
 
+settingList['screen']['show_topbar_clock'] = {
+  title:
+    language.settings.screen.show_topbar_clock ||
+    'Show clock in topbar',
+  type: 'checkbox',
+  help:
+    language.settings.screen.show_topbar_clock_help ||
+    'Show the date/time clock in the topbar.',
+};
+
 settingList['screen']['theme'] = {};
 settingList['screen']['theme']['title'] =
   language.settings.screen.dashticz_themes;
@@ -148,11 +142,7 @@ settingList['screen']['background_image']['title'] =
 settingList['screen']['background_image']['type'] = 'text';
 settingList['screen']['background_image']['help'] =
   language.settings.screen.background_image.help;
-
-settingList['screen']['standby_after'] = {};
-settingList['screen']['standby_after']['title'] =
-  language.settings.screen.standby_after;
-settingList['screen']['standby_after']['type'] = 'text';
+settingList['screen']['background_image']['picker'] = true;
 
 settingList['screen']['start_page'] = {};
 settingList['screen']['start_page']['title'] =
@@ -216,18 +206,6 @@ settingList['screen']['standard_graph']['options']['month'] =
   language.graph.last_month;
 settingList['screen']['standard_graph']['options']['day'] =
   language.graph.today;
-
-settingList['screen']['security_button_icons'] = {};
-settingList['screen']['security_button_icons']['title'] =
-  language.settings.screen.security_button_icons;
-settingList['screen']['security_button_icons']['type'] = 'checkbox';
-
-settingList['screen']['security_panel_lock'] = {};
-settingList['screen']['security_panel_lock']['title'] =
-  language.settings.screen.security_panel_lock;
-settingList['screen']['security_panel_lock']['type'] = 'checkbox';
-settingList['screen']['security_panel_lock']['help'] =
-  language.settings.screen.security_panel_lock_help;
 
 settingList['screen']['blink_color'] = {};
 settingList['screen']['blink_color']['title'] =
@@ -301,103 +279,11 @@ settingList['localize']['timeformat']['title'] =
   language.settings.localize.timeformat;
 settingList['localize']['timeformat']['type'] = 'text';
 
-settingList['localize']['calendarformat'] = {};
-settingList['localize']['calendarformat']['title'] =
-  language.settings.localize.calendarformat;
-settingList['localize']['calendarformat']['type'] = 'text';
-
-settingList['localize']['calendarlanguage'] = {};
-settingList['localize']['calendarlanguage']['title'] =
-  language.settings.localize.calendarlanguage;
-settingList['localize']['calendarlanguage']['type'] = 'select';
-settingList['localize']['calendarlanguage']['options'] = {};
-settingList['localize']['calendarlanguage']['options']['zh_CN'] =
-  language.settings.localize.cn;
-settingList['localize']['calendarlanguage']['options']['da_DK'] =
-  language.settings.localize.da;
-settingList['localize']['calendarlanguage']['options']['de_DE'] =
-  language.settings.localize.de;
-settingList['localize']['calendarlanguage']['options']['en_US'] =
-  language.settings.localize.en;
-settingList['localize']['calendarlanguage']['options']['es_ES'] =
-  language.settings.localize.es;
-settingList['localize']['calendarlanguage']['options']['fi_FI'] =
-  language.settings.localize.fi;
-settingList['localize']['calendarlanguage']['options']['fr_FR'] =
-  language.settings.localize.fr;
-settingList['localize']['calendarlanguage']['options']['hu_HU'] =
-  language.settings.localize.hu;
-settingList['localize']['calendarlanguage']['options']['it_IT'] =
-  language.settings.localize.it;
-settingList['localize']['calendarlanguage']['options']['ja_JP'] =
-  language.settings.localize.ja;
-settingList['localize']['calendarlanguage']['options']['lt_LT'] =
-  language.settings.localize.lt;
-settingList['localize']['calendarlanguage']['options']['nl_NL'] =
-  language.settings.localize.nl;
-settingList['localize']['calendarlanguage']['options']['nb_NO'] =
-  language.settings.localize.no;
-settingList['localize']['calendarlanguage']['options']['pl_PL'] =
-  language.settings.localize.pl;
-settingList['localize']['calendarlanguage']['options']['pt_PT'] =
-  language.settings.localize.pt;
-settingList['localize']['calendarlanguage']['options']['ro_RO'] =
-  language.settings.localize.ro;
-settingList['localize']['calendarlanguage']['options']['ru_RU'] =
-  language.settings.localize.ru;
-settingList['localize']['calendarlanguage']['options']['sk_SK'] =
-  language.settings.localize.sk;
-settingList['localize']['calendarlanguage']['options']['sl_SL'] =
-  language.settings.localize.sl;
-settingList['localize']['calendarlanguage']['options']['sv_SE'] =
-  language.settings.localize.sv;
-settingList['localize']['calendarlanguage']['options']['uk_UA'] =
-  language.settings.localize.uk;
-
-settingList['localize']['calendarurl'] = {};
-settingList['localize']['calendarurl']['title'] =
-  language.settings.localize.calendarurl;
-settingList['localize']['calendarurl']['type'] = 'text';
-
-/* Not used anymore
-settingList['localize']['calendar_parse_localy'] = {};
-settingList['localize']['calendar_parse_localy']['title'] = language.settings.localize.calendar_parse_localy;
-settingList['localize']['calendar_parse_localy']['type'] = 'checkbox';
+/* Moved to widget editor (calendar widget settings)
+settingList['localize']['calendarformat'] = ...
+settingList['localize']['calendarlanguage'] = ...
+settingList['localize']['calendarurl'] = ...
 */
-
-settingList['localize']['hide_seconds'] = {};
-settingList['localize']['hide_seconds']['title'] =
-  language.settings.localize.hide_seconds;
-settingList['localize']['hide_seconds']['type'] = 'checkbox';
-
-settingList['localize']['hide_seconds_stationclock'] = {};
-settingList['localize']['hide_seconds_stationclock']['title'] =
-  language.settings.localize.hide_seconds_stationclock;
-settingList['localize']['hide_seconds_stationclock']['type'] = 'checkbox';
-
-settingList['localize']['boss_stationclock'] = {};
-settingList['localize']['boss_stationclock']['title'] =
-  language.settings.localize.boss_stationclock;
-settingList['localize']['boss_stationclock']['type'] = 'text';
-
-settingList['localize']['gm_api'] = {};
-settingList['localize']['gm_api']['title'] = language.settings.localize.gm_api;
-settingList['localize']['gm_api']['type'] = 'text';
-
-settingList['localize']['gm_zoomlevel'] = {};
-settingList['localize']['gm_zoomlevel']['title'] =
-  language.settings.localize.gm_zoomlevel;
-settingList['localize']['gm_zoomlevel']['type'] = 'text';
-
-settingList['localize']['gm_latitude'] = {};
-settingList['localize']['gm_latitude']['title'] =
-  language.settings.localize.gm_latitude;
-settingList['localize']['gm_latitude']['type'] = 'text';
-
-settingList['localize']['gm_longitude'] = {};
-settingList['localize']['gm_longitude']['title'] =
-  language.settings.localize.gm_longitude;
-settingList['localize']['gm_longitude']['type'] = 'text';
 
 settingList['localize']['speak_lang'] = {};
 settingList['localize']['speak_lang']['title'] =
@@ -421,111 +307,6 @@ settingList['localize']['speak_lang']['options']['pl-PL'] =
 settingList['localize']['speak_lang']['options']['ru-RU'] =
   language.settings.localize.ru;
 
-settingList['weather'] = {};
-settingList['weather']['title'] = language.settings.weather.title;
-
-settingList['weather']['wu_api'] = {};
-settingList['weather']['wu_api']['title'] = language.settings.weather.wu_api;
-settingList['weather']['wu_api']['type'] = 'text';
-
-settingList['weather']['wu_city'] = {};
-settingList['weather']['wu_city']['title'] = language.settings.weather.wu_city;
-settingList['weather']['wu_city']['type'] = 'text';
-
-settingList['weather']['wu_name'] = {};
-settingList['weather']['wu_name']['title'] = language.settings.weather.wu_name;
-settingList['weather']['wu_name']['type'] = 'text';
-
-settingList['weather']['wu_country'] = {};
-settingList['weather']['wu_country']['title'] =
-  language.settings.weather.wu_country;
-settingList['weather']['wu_country']['type'] = 'text';
-
-settingList['weather']['owm_api'] = {};
-settingList['weather']['owm_api']['title'] = language.settings.weather.owm_api;
-settingList['weather']['owm_api']['type'] = 'text';
-
-settingList['weather']['owm_city'] = {};
-settingList['weather']['owm_city']['title'] =
-  language.settings.weather.owm_city;
-settingList['weather']['owm_city']['type'] = 'text';
-
-settingList['weather']['owm_name'] = {};
-settingList['weather']['owm_name']['title'] =
-  language.settings.weather.owm_name;
-settingList['weather']['owm_name']['type'] = 'text';
-
-settingList['weather']['owm_country'] = {};
-settingList['weather']['owm_country']['title'] =
-  language.settings.weather.owm_country;
-settingList['weather']['owm_country']['type'] = 'text';
-
-settingList['weather']['owm_lang'] = {};
-settingList['weather']['owm_lang']['title'] =
-  language.settings.weather.owm_lang;
-settingList['weather']['owm_lang']['type'] = 'text';
-settingList['weather']['owm_lang']['help'] =
-  language.settings.weather.owm_lang_help;
-
-settingList['weather']['owm_days'] = {};
-settingList['weather']['owm_days']['title'] =
-  language.settings.weather.owm_days;
-settingList['weather']['owm_days']['type'] = 'checkbox';
-settingList['weather']['owm_days']['help'] =
-  language.settings.weather.owm_days_help;
-
-settingList['weather']['owm_cnt'] = {};
-settingList['weather']['owm_cnt']['title'] = language.settings.weather.owm_cnt;
-settingList['weather']['owm_cnt']['type'] = 'text';
-settingList['weather']['owm_cnt']['help'] =
-  language.settings.weather.owm_cnt_help;
-
-settingList['weather']['owm_min'] = {};
-settingList['weather']['owm_min']['title'] = language.settings.weather.owm_min;
-settingList['weather']['owm_min']['type'] = 'checkbox';
-settingList['weather']['owm_min']['help'] =
-  language.settings.weather.owm_min_help;
-
-settingList['weather']['use_fahrenheit'] = {};
-settingList['weather']['use_fahrenheit']['title'] =
-  language.settings.weather.use_fahrenheit;
-settingList['weather']['use_fahrenheit']['type'] = 'checkbox';
-
-settingList['weather']['use_beaufort'] = {};
-settingList['weather']['use_beaufort']['title'] =
-  language.settings.weather.use_beaufort;
-settingList['weather']['use_beaufort']['type'] = 'checkbox';
-
-settingList['weather']['translate_windspeed'] = {};
-settingList['weather']['translate_windspeed']['title'] =
-  language.settings.weather.translate_windspeed;
-settingList['weather']['translate_windspeed']['type'] = 'checkbox';
-settingList['weather']['translate_windspeed']['help'] =
-  language.settings.weather.translate_windspeed_help;
-
-settingList['weather']['static_weathericons'] = {};
-settingList['weather']['static_weathericons']['title'] =
-  language.settings.weather.static_weathericons;
-settingList['weather']['static_weathericons']['type'] = 'checkbox';
-
-settingList['weather']['idx_moonpicture'] = {};
-settingList['weather']['idx_moonpicture']['title'] =
-  language.settings.weather.idx_moonpicture;
-settingList['weather']['idx_moonpicture']['type'] = 'text';
-settingList['weather']['idx_moonpicture']['help'] =
-  language.settings.weather.idx_moonpicture_help;
-
-settingList['weather']['longfonds_zipcode'] = {};
-settingList['weather']['longfonds_zipcode'] = {
-  title: language.settings.weather.longfonds_zipcode,
-  type: 'text',
-};
-settingList['weather']['longfonds_housenumber'] = {};
-settingList['weather']['longfonds_housenumber'] = {
-  title: language.settings.weather.longfonds_housenumber,
-  type: 'text',
-};
-
 settingList['media'] = {};
 settingList['media']['title'] = language.settings.media.title;
 
@@ -543,165 +324,452 @@ settingList['media']['host_nzbget']['type'] = 'text';
 settingList['media']['host_nzbget']['help'] =
   language.settings.media.host_nzbget_help;
 
-settingList['media']['spot_clientid'] = {};
-settingList['media']['spot_clientid']['title'] =
-  language.settings.media.spot_clientid;
-settingList['media']['spot_clientid']['type'] = 'text';
-
-settingList['media']['sonarr_url'] = {};
-settingList['media']['sonarr_url']['title'] =
-  language.settings.media.sonarr_url;
-settingList['media']['sonarr_url']['type'] = 'text';
-
-settingList['media']['sonarr_apikey'] = {};
-settingList['media']['sonarr_apikey']['title'] =
-  language.settings.media.sonarr_apikey;
-settingList['media']['sonarr_apikey']['type'] = 'text';
-
-settingList['media']['sonarr_maxitems'] = {};
-settingList['media']['sonarr_maxitems']['title'] =
-  language.settings.media.sonarr_maxitems;
-settingList['media']['sonarr_maxitems']['type'] = 'text';
-
 settingList['media']['hide_mediaplayer'] = {};
 settingList['media']['hide_mediaplayer']['title'] =
   language.settings.media.hide_mediaplayer;
 settingList['media']['hide_mediaplayer']['type'] = 'checkbox';
 
-settingList.garbage = {
-  title: language.settings.garbage.title,
-  garbage_company: {
-    title: language.settings.garbage.garbage_company,
-    type: 'select',
-    options: {
-      afvalinfo:'99% coverage in NL',
-      afvalalert: 'Afval Alert (NL)',
-      afvalstoffendienst:
-        'Afvalstoffendienst: Hertogenbosch, Vlijmen, ... (NL)',
-      almere: 'Almere',
-      alphenaandenrijn: 'Alphen aan de Rijn (NL)',
-      area: 'Area',
-      avalex: 'Avalex (NL)',
-      avri: 'Rivierenland (Zaltbommel, ...)(NL)',
-      barafvalbeheer: 'Bar-afvalbeheer (Barendrecht, Rhoon)(NL)',
-      best: 'Best (NL)',
-      blink:
-        'Blink: Asten, Deurne, Gemert-Bakel, Heeze-Leende, Helmond, Laarbeek, Nuenen, Someren (NL)',
-      circulusberkel: 'Circulus Berkel (NL)',
-      cure: 'Cure: Eindhoven, Geldrop-Mierlo, Valkenswaard (NL)',
-      cyclusnv:
-        'Cyclus NV: Bodegraven-Reeuwijk, Gouda, Kaag en Braassem, Krimpen aan den IJssel, Krimpenerwaard, Montfoort, Nieuwkoop, Waddinxveen en Zuidplas (NL)',
-      dar:
-        'Dar: Berg en Dal, Beuningen, Druten, Heumen, Nijmegen, Wijchen (NL)',
-      deafvalapp: 'Afval App (NL)',
-      edg: 'EDG (DE)',
-      gad: 'Grondstoffen- en Afvalstoffendienst regio Gooi en Vechtstreek (NL)',
-      gemeenteberkelland: 'Berkelland: Borculo, Eibergen, Neede en Ruurlo (NL)',
-      goes: 'Goes (NL)',
-      googlecalendar: 'Google Calender',
-      groningen: 'Groningen (NL)',
-      hvc: 'HVC Groep (NL)',
-      ical: 'iCal',
-      katwijk: 'Katwijk (NL)',
-      maashorst: 'Maashorst (NL)',
-      meerlanden: 'Meerlanden (NL)',
-      mijnafvalwijzer: 'Mijn Afval Wijzer (NL)',
-      omrin: 'Omrin (NL)',
-      purmerend: 'Purmerend',
-      rd4: 'Rd4',
-      recycleapp: 'RecycleApp (BE)',
-      rmn: 'RMN (NL)',
-      rova: 'Rova (NL)',
-      sudwestfryslan: 'Sudwest Fryslan (NL)',
-      suez: 'Suez: Arnhem (NL)',
-      twentemilieu: 'Twente Milieu (NL)',
-      uden: 'Uden (NL)',
-      veldhoven: 'Veldhoven (NL)',
-      venlo: 'Venlo (NL)',
-      venray: 'Venray (NL)',
-      vianen: 'Vianen (NL)',
-      waalre: 'Waalre (NL)',
-      waardlanden:
-        'Waardlanden: Gorinchem, Hardinxveld-Giessendam, Molenlanden en Vijfheerenlanden (NL)',
-    },
-  },
+/* Widget settings shown as tiles in Custom mode (not Wizard). */
+var weatherIconOptions = {
+  line: 'Dynamic line icons',
+  linestatic: 'Static version of the line icons',
+  fill: 'Dynamic filled icons',
+  static: 'Static icons',
+  meteo: 'Alternative set of static icons',
 };
 
-settingList['garbage']['garbage_icalurl'] = {};
-settingList['garbage']['garbage_icalurl']['title'] =
-  language.settings.garbage.garbage_icalurl;
-settingList['garbage']['garbage_icalurl']['type'] = 'text';
+var widgetSettingTiles = [
+  {
+    id: 'weather',
+    title: language.settings.weather.title,
+    icon: 'fas fa-cloud-sun-rain',
+    settings: {
+      owm_api: { title: language.settings.weather.owm_api, type: 'text' },
+      owm_city: { title: language.settings.weather.owm_city, type: 'text' },
+      owm_name: { title: language.settings.weather.owm_name, type: 'text' },
+      owm_country: { title: language.settings.weather.owm_country, type: 'text' },
+      owm_lang: {
+        title: language.settings.weather.owm_lang,
+        type: 'text',
+        help: language.settings.weather.owm_lang_help,
+      },
+      owm_cnt: {
+        title: language.settings.weather.owm_cnt,
+        type: 'text',
+        help: language.settings.weather.owm_cnt_help,
+      },
+      owm_days: {
+        title: language.settings.weather.owm_days,
+        type: 'checkbox',
+        help: language.settings.weather.owm_days_help,
+      },
+      owm_min: {
+        title: language.settings.weather.owm_min,
+        type: 'checkbox',
+        help: language.settings.weather.owm_min_help,
+      },
+      weather_show_rain: {
+        title:
+          (language.settings.weather && language.settings.weather.show_rain) ||
+          'Show rain',
+        type: 'checkbox',
+      },
+      weather_show_description: {
+        title:
+          (language.settings.weather &&
+            language.settings.weather.show_description) ||
+          'Show description',
+        type: 'checkbox',
+      },
+      weather_show_wind: {
+        title:
+          (language.settings.weather && language.settings.weather.show_wind) ||
+          'Show wind',
+        type: 'checkbox',
+      },
+      weather_show_gust: {
+        title:
+          (language.settings.weather && language.settings.weather.show_gust) ||
+          'Show gust',
+        type: 'checkbox',
+      },
+      weather_icons: {
+        title:
+          (language.settings.weather && language.settings.weather.icons) ||
+          'Weather icons',
+        type: 'select',
+        options: weatherIconOptions,
+      },
+      wu_api: { title: language.settings.weather.wu_api, type: 'text' },
+      wu_city: { title: language.settings.weather.wu_city, type: 'text' },
+      wu_name: { title: language.settings.weather.wu_name, type: 'text' },
+      wu_country: { title: language.settings.weather.wu_country, type: 'text' },
+      use_fahrenheit: {
+        title: language.settings.weather.use_fahrenheit,
+        type: 'checkbox',
+      },
+      use_beaufort: {
+        title: language.settings.weather.use_beaufort,
+        type: 'checkbox',
+      },
+      translate_windspeed: {
+        title: language.settings.weather.translate_windspeed,
+        type: 'checkbox',
+        help: language.settings.weather.translate_windspeed_help,
+      },
+    },
+  },
+  {
+    id: 'clock',
+    title: language.editmode.clock || 'Clock',
+    icon: 'fas fa-clock',
+    settings: {
+      clock_size: {
+        title:
+          (language.settings.widgets && language.settings.widgets.clock_size) ||
+          'Size (px)',
+        type: 'text',
+        help:
+          (language.settings.widgets &&
+            language.settings.widgets.clock_size_help) ||
+          'Empty = fit to tile width. Example: 120',
+      },
+      clock_scale: {
+        title:
+          (language.settings.widgets && language.settings.widgets.clock_scale) ||
+          'Scale',
+        type: 'text',
+        help:
+          (language.settings.widgets &&
+            language.settings.widgets.clock_scale_help) ||
+          'Relative scale factor, e.g. 0.75 (default 1)',
+      },
+      boss_stationclock: {
+        title: language.settings.localize.boss_stationclock,
+        type: 'select',
+        options: {
+          NoBoss: 'NoBoss',
+          BlackBoss: 'BlackBoss',
+          RedBoss: 'RedBoss',
+          ViennaBoss: 'ViennaBoss',
+        },
+      },
+      hide_seconds: {
+        title: language.settings.localize.hide_seconds,
+        type: 'checkbox',
+      },
+      hide_seconds_stationclock: {
+        title: language.settings.localize.hide_seconds_stationclock,
+        type: 'checkbox',
+      },
+    },
+  },
+  {
+    id: 'garbage',
+    title: language.settings.garbage.title,
+    icon: 'fas fa-trash-alt',
+    settings: {
+      garbage_company: {
+        title: language.settings.garbage.garbage_company,
+        type: 'text',
+      },
+      garbage_zipcode: {
+        title: language.settings.garbage.garbage_zipcode,
+        type: 'text',
+      },
+      garbage_street: {
+        title: language.settings.garbage.garbage_street,
+        type: 'text',
+      },
+      garbage_housenumber: {
+        title: language.settings.garbage.garbage_housenumber,
+        type: 'text',
+      },
+      garbage_housenumberadd: {
+        title: language.settings.garbage.garbage_housenumberaddition,
+        type: 'text',
+      },
+      garbage_maxitems: {
+        title: language.settings.garbage.garbage_maxitems,
+        type: 'text',
+      },
+      garbage_width: {
+        title: language.settings.garbage.garbage_width,
+        type: 'text',
+      },
+      garbage_icalurl: {
+        title: language.settings.garbage.garbage_icalurl,
+        type: 'text',
+      },
+      google_api_key: {
+        title: language.settings.garbage.google_api_key,
+        type: 'text',
+        help: language.settings.garbage.google_api_key_help,
+      },
+      garbage_calendar_id: {
+        title: language.settings.garbage.garbage_calendar_id,
+        type: 'text',
+        help: language.settings.garbage.garbage_calendar_id_help,
+      },
+      garbage_hideicon: {
+        title: language.settings.garbage.garbage_hideicon,
+        type: 'checkbox',
+      },
+      garbage_icon_use_colors: {
+        title: language.settings.garbage.garbage_icon_use_colors,
+        type: 'checkbox',
+      },
+      garbage_use_colors: {
+        title: language.settings.garbage.garbage_use_colors,
+        type: 'checkbox',
+      },
+      garbage_use_names: {
+        title: language.settings.garbage.garbage_use_names,
+        type: 'checkbox',
+      },
+      garbage_use_cors_prefix: {
+        title: language.settings.garbage.garbage_use_cors_prefix,
+        type: 'checkbox',
+        help: language.settings.garbage.garbage_use_prefix_help,
+      },
+    },
+  },
+  {
+    id: 'calendar',
+    title: 'Calendar',
+    icon: 'fas fa-calendar-alt',
+    settings: {
+      calendarformat: {
+        title: language.settings.localize.calendarformat,
+        type: 'text',
+      },
+      calendarlanguage: {
+        title: language.settings.localize.calendarlanguage,
+        type: 'text',
+      },
+      calendarurl: {
+        title: language.settings.localize.calendarurl || 'Calendar URL',
+        type: 'text',
+      },
+    },
+  },
+  {
+    id: 'sonarr',
+    title: 'Sonarr',
+    icon: 'fas fa-tv',
+    settings: {
+      sonarr_url: {
+        title: language.settings.media.sonarr_url,
+        type: 'text',
+      },
+      sonarr_apikey: {
+        title: language.settings.media.sonarr_apikey,
+        type: 'text',
+      },
+      sonarr_maxitems: {
+        title: language.settings.media.sonarr_maxitems,
+        type: 'text',
+      },
+    },
+  },
+  {
+    id: 'spotify',
+    title: 'Spotify',
+    icon: 'fab fa-spotify',
+    settings: {
+      spot_clientid: {
+        title: language.settings.media.spot_clientid,
+        type: 'text',
+      },
+    },
+  },
+  {
+    id: 'secpanel',
+    title:
+      (language.settings.widgets && language.settings.widgets.secpanel) ||
+      'Security panel',
+    icon: 'fas fa-shield-alt',
+    settings: {
+      security_button_icons: {
+        title: language.settings.screen.security_button_icons,
+        type: 'checkbox',
+      },
+      security_panel_lock: {
+        title: language.settings.screen.security_panel_lock,
+        type: 'checkbox',
+        help: language.settings.screen.security_panel_lock_help,
+      },
+    },
+  },
+  {
+    id: 'publictransport',
+    title:
+      (language.settings.widgets && language.settings.widgets.publictransport) ||
+      'Public transport',
+    icon: 'fas fa-train',
+    settings: {},
+  },
+  {
+    id: 'trafficinfo',
+    title:
+      (language.settings.widgets && language.settings.widgets.trafficinfo) ||
+      'Traffic info',
+    icon: 'fas fa-car',
+    settings: {
+      anwb_apikey: {
+        title:
+          (language.settings.widgets && language.settings.widgets.anwb_apikey) ||
+          'ANWB API key',
+        type: 'text',
+        help:
+          (language.settings.widgets &&
+            language.settings.widgets.anwb_apikey_help) ||
+          'API key for ANWB traffic info (trafficinfo widget).',
+      },
+    },
+  },
+  {
+    id: 'alarmmeldingen',
+    title:
+      (language.settings.widgets && language.settings.widgets.alarmmeldingen) ||
+      '112',
+    icon: 'fas fa-bullhorn',
+    settings: {},
+  },
+  {
+    id: 'camera',
+    title:
+      (language.settings.widgets && language.settings.widgets.camera) ||
+      'Cameras',
+    icon: 'fas fa-video',
+    settings: {},
+  },
+  {
+    id: 'map',
+    title:
+      (language.settings.widgets && language.settings.widgets.map) ||
+      'Google Maps',
+    icon: 'fas fa-map-marked-alt',
+    settings: {
+      gm_api: {
+        title: language.settings.localize.gm_api,
+        type: 'text',
+      },
+      gm_zoomlevel: {
+        title: language.settings.localize.gm_zoomlevel,
+        type: 'text',
+      },
+      gm_latitude: {
+        title: language.settings.localize.gm_latitude,
+        type: 'text',
+      },
+      gm_longitude: {
+        title: language.settings.localize.gm_longitude,
+        type: 'text',
+      },
+    },
+  },
+  {
+    id: 'longfonds',
+    title:
+      (language.settings.widgets && language.settings.widgets.longfonds) ||
+      'Air Quality',
+    icon: 'fas fa-wind',
+    settings: {
+      longfonds_zipcode: {
+        title: language.settings.weather.longfonds_zipcode,
+        type: 'text',
+      },
+      longfonds_housenumber: {
+        title: language.settings.weather.longfonds_housenumber,
+        type: 'text',
+      },
+    },
+  },
+  {
+    id: 'moon',
+    title:
+      (language.settings.widgets && language.settings.widgets.moon) || 'Moon',
+    icon: 'fas fa-moon',
+    settings: {
+      idx_moonpicture: {
+        title: language.settings.weather.idx_moonpicture,
+        type: 'text',
+        help: language.settings.weather.idx_moonpicture_help,
+      },
+    },
+  },
+  {
+    id: 'news',
+    title:
+      (language.settings.widgets && language.settings.widgets.news) || 'News',
+    icon: 'fas fa-newspaper',
+    settings: {
+      default_news_url: {
+        title: language.settings.general.default_news_url,
+        type: 'text',
+      },
+      news_scroll_after: {
+        title: language.settings.general.news_scroll_after,
+        type: 'text',
+      },
+    },
+  },
+];
 
-settingList['garbage']['google_api_key'] = {};
-settingList['garbage']['google_api_key']['title'] =
-  language.settings.garbage.google_api_key;
-settingList['garbage']['google_api_key']['type'] = 'text';
-settingList['garbage']['google_api_key']['help'] =
-  language.settings.garbage.google_api_key_help;
+function isCustomConfigMode() {
+  return String(settings['config_mode'] || 'wizard').toLowerCase() === 'custom';
+}
 
-settingList['garbage']['garbage_calendar_id'] = {};
-settingList['garbage']['garbage_calendar_id']['title'] =
-  language.settings.garbage.garbage_calendar_id;
-settingList['garbage']['garbage_calendar_id']['type'] = 'text';
-settingList['garbage']['garbage_calendar_id']['help'] =
-  language.settings.garbage.garbage_calendar_id_help;
+var settingsCategoryIcons = {
+  general: 'fas fa-sliders-h',
+  screen: 'fas fa-desktop',
+  standby: 'fas fa-moon',
+  localize: 'fas fa-globe',
+  media: 'fas fa-film',
+  widgets: 'fas fa-puzzle-piece',
+  other: 'fas fa-ellipsis-h',
+  about: 'fas fa-info-circle',
+};
 
-settingList['garbage']['garbage_zipcode'] = {};
-settingList['garbage']['garbage_zipcode']['title'] =
-  language.settings.garbage.garbage_zipcode;
-settingList['garbage']['garbage_zipcode']['type'] = 'text';
-
-settingList['garbage']['garbage_street'] = {};
-settingList['garbage']['garbage_street']['title'] =
-  language.settings.garbage.garbage_street;
-settingList['garbage']['garbage_street']['type'] = 'text';
-
-settingList['garbage']['garbage_housenumber'] = {};
-settingList['garbage']['garbage_housenumber']['title'] =
-  language.settings.garbage.garbage_housenumber;
-settingList['garbage']['garbage_housenumber']['type'] = 'text';
-
-settingList['garbage']['garbage_housenumberadd'] = {};
-settingList['garbage']['garbage_housenumberadd']['title'] =
-  language.settings.garbage.garbage_housenumberaddition;
-settingList['garbage']['garbage_housenumberadd']['type'] = 'text';
-
-settingList['garbage']['garbage_maxitems'] = {};
-settingList['garbage']['garbage_maxitems']['title'] =
-  language.settings.garbage.garbage_maxitems;
-settingList['garbage']['garbage_maxitems']['type'] = 'text';
-
-settingList['garbage']['garbage_width'] = {};
-settingList['garbage']['garbage_width']['title'] =
-  language.settings.garbage.garbage_width;
-settingList['garbage']['garbage_width']['type'] = 'text';
-
-settingList['garbage']['garbage_hideicon'] = {};
-settingList['garbage']['garbage_hideicon']['title'] =
-  language.settings.garbage.garbage_hideicon;
-settingList['garbage']['garbage_hideicon']['type'] = 'checkbox';
-
-settingList['garbage']['garbage_icon_use_colors'] = {};
-settingList['garbage']['garbage_icon_use_colors']['title'] =
-  language.settings.garbage.garbage_icon_use_colors;
-settingList['garbage']['garbage_icon_use_colors']['type'] = 'checkbox';
-
-settingList['garbage']['garbage_use_colors'] = {};
-settingList['garbage']['garbage_use_colors']['title'] =
-  language.settings.garbage.garbage_use_colors;
-settingList['garbage']['garbage_use_colors']['type'] = 'checkbox';
-
-settingList['garbage']['garbage_use_names'] = {};
-settingList['garbage']['garbage_use_names']['title'] =
-  language.settings.garbage.garbage_use_names;
-settingList['garbage']['garbage_use_names']['type'] = 'checkbox';
-
-settingList['garbage']['garbage_use_cors_prefix'] = {};
-settingList['garbage']['garbage_use_cors_prefix']['title'] =
-  language.settings.garbage.garbage_use_cors_prefix;
-settingList['garbage']['garbage_use_cors_prefix']['type'] = 'checkbox';
-settingList['garbage']['garbage_use_cors_prefix']['help'] =
-  language.settings.garbage.garbage_use_prefix_help;
+settingList['standby'] = {
+  title:
+    (language.settings.standby && language.settings.standby.title) || 'Standby',
+  standby_after: {
+    title:
+      (language.settings.standby && language.settings.standby.standby_after) ||
+      language.settings.screen.standby_after,
+    type: 'text',
+    help:
+      (language.settings.standby &&
+        language.settings.standby.standby_after_help) ||
+      'Enter standby mode after this many minutes. Use 0 to disable.',
+  },
+  standby_call_url: {
+    title:
+      (language.settings.standby && language.settings.standby.standby_call_url) ||
+      language.settings.general.standby_call_url,
+    type: 'text',
+  },
+  standby_call_url_on_end: {
+    title:
+      (language.settings.standby &&
+        language.settings.standby.standby_call_url_on_end) ||
+      language.settings.general.standby_call_url_on_end,
+    type: 'text',
+  },
+  standby_background: {
+    title:
+      (language.settings.standby && language.settings.standby.path_url) ||
+      'Pad/URL',
+    type: 'text',
+    help:
+      (language.settings.standby &&
+        language.settings.standby.standby_background_help) ||
+      'Path or URL for the standby screen background, e.g. img/bg11.jpg',
+    picker: true,
+  },
+};
 
 settingList['other'] = {};
 settingList['other']['title'] = language.settings.other.title;
@@ -777,7 +845,14 @@ var defaultSettings = {
   owm_days: 0,
   owm_cnt: 4,
   owm_min: true,
+  weather_show_rain: 1,
+  weather_show_description: 1,
+  weather_show_wind: 0,
+  weather_show_gust: 0,
+  weather_icons: 'line',
   boss_stationclock: 'RedBoss',
+  clock_size: '',
+  clock_scale: 1,
   use_fahrenheit: 0,
   use_beaufort: 0,
   slide_effect: 'slide',
@@ -787,6 +862,7 @@ var defaultSettings = {
   start_page: 1,
   auto_positioning: 0,
   topbar_timeout: 5,
+  show_topbar_clock: 0,
   use_favorites: 0,
   use_hidden: 0,
   translate_windspeed: 1,
@@ -797,6 +873,9 @@ var defaultSettings = {
   swiper_touch_move: 1,
   auto_swipe_back_after: 0,
   standby_after: 0,
+  standby_background: '',
+  anwb_apikey: '',
+  config_mode: 'wizard',
   selector_instead_of_buttons: 0,
   default_news_url: 'https://www.nu.nl/rss/Algemeen',
   news_scroll_after: 7,
@@ -1111,54 +1190,48 @@ function loadSettings() {
       html +=
         '<h2 class="visually-hidden" id="settings-title">Dashticz settings</h2>';
       html += '<div class="settings-header">';
-
-      html += '<ul class="nav nav-pills settings-tabs" role="tablist">';
-      var first = true;
-      for (var b in settingList) {
-        html +=
-          '<li class="nav-item" role="presentation"><button class="nav-link' +
-          (first ? ' active' : '') +
-          '" id="settings-tab-' +
-          b +
-          '" data-bs-toggle="pill" data-bs-target="#tabs-' +
-          b +
-          '" type="button" role="tab" aria-controls="tabs-' +
-          b +
-          '" aria-selected="' +
-          (first ? 'true' : 'false') +
-          '">' +
-          escapeSettingsHtml(settingList[b]['title']) +
-          '</button></li>';
-        first = false;
-      }
-      html += '</ul>';
       html +=
         '<div class="settings-brand"><img src="img/favicon/app-icon-192x192.png" ' +
         'width="38" height="38" alt=""><span>Dashticz</span></div>';
       html += '</div>';
 
-      html += '<div class="tab-content settings-tab-content">';
-
-      first = true;
-      for (b in settingList) {
-        html +=
-          '<div class="tab-pane fade' +
-          (first ? ' show active' : '') +
-          '" id="tabs-' +
-          b +
-          '" role="tabpanel" aria-labelledby="settings-tab-' +
-          b +
-          '" tabindex="0">';
-        for (var s in settingList[b]) {
-          if (s !== 'title') {
-            html += renderSettingsRow(s, settingList[b][s]);
-          }
-        }
-        html += '</div>';
-        first = false;
-      }
+      html += '<div class="settings-tab-content">';
+      html +=
+        '<input type="hidden" name="config_mode" value="' +
+        escapeSettingsHtml(settings['config_mode'] || 'wizard') +
+        '">';
+      html += renderSettingsCategoryHome();
       html += '</div>';
-      html += '</div><div class="modal-footer">';
+      html += '</div><div class="modal-footer settings-footer">';
+      html +=
+        '<div class="settings-update" id="settings-update">' +
+        '<button type="button" class="btn btn-outline-secondary settings-update-btn" id="settings-update-toggle">' +
+        escapeSettingsHtml(
+          (language.settings.update && language.settings.update.button) ||
+            'Update'
+        ) +
+        '</button>' +
+        '<div class="settings-update-panel" id="settings-update-panel">' +
+        '<label class="settings-update-label" for="settings-update-branch">' +
+        escapeSettingsHtml(
+          (language.settings.update && language.settings.update.branch) ||
+            'Branch'
+        ) +
+        '</label>' +
+        '<select id="settings-update-branch" class="form-select">' +
+        '<option value="beta">Beta</option>' +
+        '<option value="main">Main</option>' +
+        '</select>' +
+        '<button type="button" class="btn btn-primary settings-update-run" id="settings-update-run">' +
+        escapeSettingsHtml(
+          (language.settings.update && language.settings.update.run) ||
+            'Run update'
+        ) +
+        '</button>' +
+        '</div>' +
+        '<pre class="settings-update-log d-none" id="settings-update-log"></pre>' +
+        '</div>';
+      html += '<div class="settings-footer-actions">';
       html +=
         '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
         language.settings.close +
@@ -1171,7 +1244,7 @@ function loadSettings() {
       html +=
         '<button onClick="saveSettings();" type="button" class="btn btn-primary" data-bs-dismiss="modal">' +
         language.settings.save +
-        '</button></div>';
+        '</button></div></div>';
       html += '</div>';
       html += '</div>';
       html += '</div>';
@@ -1179,6 +1252,11 @@ function loadSettings() {
         $('body').append(html);
 
         addSettingsAboutItems();
+        bindSettingsCategoryTiles();
+        bindBackgroundPickers();
+        bindSettingsUpdateControls();
+        bindWeatherProviderToggle();
+        bindClockTypeToggle();
 
         $('#php_version').html(phpversion);
 
@@ -1191,8 +1269,791 @@ function loadSettings() {
     });
 }
 
+function getSettingsCategories() {
+  var preferred = [
+    'general',
+    'screen',
+    'standby',
+    'localize',
+    'media',
+    'widgets',
+    'other',
+    'about',
+  ];
+  var tabs = [];
+  preferred.forEach(function (id) {
+    if (id === 'widgets') {
+      if (isCustomConfigMode()) {
+        tabs.push(id);
+      }
+      return;
+    }
+    if (settingList[id]) {
+      tabs.push(id);
+    }
+  });
+  for (var settingGroup in settingList) {
+    if (tabs.indexOf(settingGroup) === -1) {
+      tabs.push(settingGroup);
+    }
+  }
+  return tabs;
+}
+
+function getSettingsCategoryTitle(id) {
+  if (id === 'widgets') {
+    return (
+      (language.settings.widgets && language.settings.widgets.title) || 'Widgets'
+    );
+  }
+  return settingList[id] && settingList[id].title
+    ? settingList[id].title
+    : id;
+}
+
+function renderSettingsCategoryHome() {
+  var backLabel = language.settings.back || 'Back';
+  var chooseLabel =
+    language.settings.choose || 'Choose a category to configure.';
+  var tabs = getSettingsCategories();
+  var html =
+    '<div id="settings-home">' +
+    '<p class="settings-intro">' +
+    escapeSettingsHtml(chooseLabel) +
+    '</p>' +
+    '<div class="settings-tiles" id="settings-category-tiles">';
+
+  for (var ti = 0; ti < tabs.length; ti++) {
+    var id = tabs[ti];
+    var title = getSettingsCategoryTitle(id);
+    var icon = settingsCategoryIcons[id] || 'fas fa-cog';
+    html +=
+      '<button type="button" class="settings-tile" data-settings-category="' +
+      escapeSettingsHtml(id) +
+      '">' +
+      '<i class="' +
+      escapeSettingsHtml(icon) +
+      '" aria-hidden="true"></i>' +
+      '<span>' +
+      escapeSettingsHtml(title) +
+      '</span></button>';
+  }
+  html += '</div></div>';
+
+  for (ti = 0; ti < tabs.length; ti++) {
+    id = tabs[ti];
+    title = getSettingsCategoryTitle(id);
+    icon = settingsCategoryIcons[id] || 'fas fa-cog';
+    html +=
+      '<div class="settings-category-panel d-none" id="settings-category-' +
+      escapeSettingsHtml(id) +
+      '" data-settings-panel="' +
+      escapeSettingsHtml(id) +
+      '">';
+    html +=
+      '<button type="button" class="btn btn-sm btn-outline-secondary settings-category-back mb-3">' +
+      '<i class="fas fa-arrow-left me-1" aria-hidden="true"></i>' +
+      escapeSettingsHtml(backLabel) +
+      '</button>';
+    html +=
+      '<h5 class="settings-panel-title"><i class="' +
+      escapeSettingsHtml(icon) +
+      ' me-2" aria-hidden="true"></i>' +
+      escapeSettingsHtml(title) +
+      '</h5>';
+    if (id === 'widgets') {
+      html += renderWidgetSettingsTab();
+    } else {
+      for (var s in settingList[id]) {
+        if (s !== 'title') {
+          // Standby path field is rendered under the picker after the blocks row.
+          if (id === 'standby' && s === 'standby_background') {
+            continue;
+          }
+          if (settingList[id][s] && settingList[id][s].picker) {
+            html += renderBackgroundPicker(s, settingList[id][s]);
+            continue;
+          }
+          html += renderSettingsRow(s, settingList[id][s]);
+        }
+      }
+      if (id === 'standby') {
+        html += renderStandbyExtras();
+        html += renderBackgroundPicker(
+          'standby_background',
+          settingList.standby.standby_background
+        );
+      }
+    }
+    html += '</div>';
+  }
+
+  return html;
+}
+
+function getStandbyBlocksValue() {
+  if (
+    typeof columns_standby === 'undefined' ||
+    !columns_standby ||
+    !columns_standby[1] ||
+    !columns_standby[1].blocks
+  ) {
+    return '';
+  }
+  return columns_standby[1].blocks.join(', ');
+}
+
+function renderStandbyExtras() {
+  var blocksLabel =
+    (language.settings.standby && language.settings.standby.blocks) ||
+    'Standby blocks';
+  var blocksHelp =
+    (language.settings.standby && language.settings.standby.blocks_help) ||
+    'Comma-separated block keys for columns_standby, e.g. clock, currentweather_big, weather';
+  var html = '';
+
+  html += '<div class="settings-row">';
+  html +=
+    '<label class="settings-label" for="setting-standby_blocks">' +
+    escapeSettingsHtml(blocksLabel) +
+    '</label>';
+  html += '<div class="settings-control">';
+  html +=
+    '<input class="form-control" type="text" id="setting-standby_blocks" ' +
+    'name="standby_blocks" value="' +
+    escapeSettingsHtml(getStandbyBlocksValue()) +
+    '">';
+  html += '</div><div class="settings-help-slot">';
+  html +=
+    '<button type="button" class="settings-help" data-bs-toggle="tooltip" ' +
+    'data-bs-trigger="click" data-bs-placement="right" ' +
+    'data-bs-custom-class="settings-tooltip" title="' +
+    escapeSettingsHtml(blocksHelp) +
+    '" aria-label="' +
+    escapeSettingsHtml(blocksHelp) +
+    '"><i class="fas fa-info-circle" aria-hidden="true"></i></button>';
+  html += '</div></div>';
+
+  return html;
+}
+
+function backgroundOptionLabel(imagePath) {
+  var name = String(imagePath || '')
+    .replace(/^img\//i, '')
+    .replace(/\.[^.]+$/, '');
+  if (/^bg_?/i.test(name)) {
+    return 'BG_' + name.replace(/^bg_?/i, '');
+  }
+  return name || imagePath;
+}
+
+function resolveBackgroundUrl(path) {
+  var value = String(path || '').trim();
+  if (!value) return '';
+  if (/^(https?:)?\/\//i.test(value) || value.indexOf('/') >= 0) {
+    return value;
+  }
+  return 'img/' + value;
+}
+
+function renderBackgroundPicker(settingName, definition) {
+  var pickLabel =
+    (language.settings.standby && language.settings.standby.pick_background) ||
+    'Choose background image';
+  var pathLabel =
+    (language.settings.standby && language.settings.standby.path_url) ||
+    definition.title ||
+    'Pad/URL';
+  var customLabel =
+    (language.settings.standby && language.settings.standby.custom_path) ||
+    'Custom path / URL';
+  var current = typeof settings[settingName] !== 'undefined' && settings[settingName] !== null
+    ? String(settings[settingName])
+    : '';
+  var help = definition.help || '';
+  var pickId = 'setting-' + settingName + '_pick';
+  var pathId = 'setting-' + settingName;
+  var previewId = 'settings-bg-preview-' + settingName;
+  var html = '';
+
+  html += '<div class="settings-row settings-bg-picker-row">';
+  html +=
+    '<label class="settings-label" for="' +
+    escapeSettingsHtml(pickId) +
+    '">' +
+    escapeSettingsHtml(pickLabel) +
+    '</label>';
+  html += '<div class="settings-control">';
+  html +=
+    '<select id="' +
+    escapeSettingsHtml(pickId) +
+    '" class="form-select settings-bg-pick" data-bg-target="' +
+    escapeSettingsHtml(settingName) +
+    '">' +
+    '<option value="">' +
+    escapeSettingsHtml(customLabel) +
+    '</option></select>';
+  html +=
+    '<div class="settings-standby-bg-preview settings-bg-preview" id="' +
+    escapeSettingsHtml(previewId) +
+    '" data-bg-preview="' +
+    escapeSettingsHtml(settingName) +
+    '" aria-hidden="true"></div>';
+  html += '</div><div class="settings-help-slot"></div></div>';
+
+  html += '<div class="settings-row settings-bg-path-row" data-bg-path-row="' +
+    escapeSettingsHtml(settingName) +
+    '">';
+  html +=
+    '<label class="settings-label" for="' +
+    escapeSettingsHtml(pathId) +
+    '">' +
+    escapeSettingsHtml(pathLabel) +
+    '</label>';
+  html += '<div class="settings-control">';
+  html +=
+    '<input class="form-control settings-bg-path" type="text" id="' +
+    escapeSettingsHtml(pathId) +
+    '" name="' +
+    escapeSettingsHtml(settingName) +
+    '" value="' +
+    escapeSettingsHtml(current) +
+    '" placeholder="img/bg11.jpg or https://…">';
+  html += '</div><div class="settings-help-slot">';
+  if (help) {
+    html +=
+      '<button type="button" class="settings-help" data-bs-toggle="tooltip" ' +
+      'data-bs-trigger="click" data-bs-placement="right" ' +
+      'data-bs-custom-class="settings-tooltip" title="' +
+      escapeSettingsHtml(help) +
+      '" aria-label="' +
+      escapeSettingsHtml(help) +
+      '"><i class="fas fa-info-circle" aria-hidden="true"></i></button>';
+  }
+  html += '</div></div>';
+
+  return html;
+}
+
+function renderWidgetSettingsTab() {
+  var backLabel =
+    (language.settings.widgets && language.settings.widgets.back) ||
+    language.settings.back ||
+    'Back';
+  var chooseLabel =
+    (language.settings.widgets && language.settings.widgets.choose) ||
+    'Choose a widget to configure its settings.';
+  var html =
+    '<p class="settings-intro settings-widgets-intro">' +
+    escapeSettingsHtml(chooseLabel) +
+    '</p>';
+  html +=
+    '<div class="settings-tiles settings-widget-tiles" id="settings-widget-tiles">';
+  widgetSettingTiles.forEach(function (tile) {
+    html +=
+      '<button type="button" class="settings-tile settings-widget-tile" data-widget-id="' +
+      escapeSettingsHtml(tile.id) +
+      '">' +
+      '<i class="' +
+      escapeSettingsHtml(tile.icon) +
+      '" aria-hidden="true"></i>' +
+      '<span>' +
+      escapeSettingsHtml(tile.title) +
+      '</span></button>';
+  });
+  html += '</div>';
+
+  widgetSettingTiles.forEach(function (tile) {
+    html +=
+      '<div class="settings-widget-panel d-none" id="settings-widget-panel-' +
+      escapeSettingsHtml(tile.id) +
+      '" data-widget-panel="' +
+      escapeSettingsHtml(tile.id) +
+      '">';
+    html +=
+      '<button type="button" class="btn btn-sm btn-outline-secondary settings-widget-back mb-3">' +
+      '<i class="fas fa-arrow-left me-1" aria-hidden="true"></i>' +
+      escapeSettingsHtml(backLabel) +
+      '</button>';
+    html +=
+      '<h5 class="settings-panel-title settings-widget-panel-title"><i class="' +
+      escapeSettingsHtml(tile.icon) +
+      ' me-2" aria-hidden="true"></i>' +
+      escapeSettingsHtml(tile.title) +
+      '</h5>';
+    if (tile.id === 'weather') {
+      html += renderWeatherWidgetSettings(tile);
+    } else if (tile.id === 'clock') {
+      html += renderClockWidgetSettings(tile);
+    } else {
+      for (var key in tile.settings) {
+        html += renderSettingsRow(key, tile.settings[key]);
+      }
+      if (!Object.keys(tile.settings).length) {
+        html +=
+          '<p class="settings-intro">' +
+          escapeSettingsHtml(
+            (language.settings.widgets &&
+              language.settings.widgets.no_global_settings) ||
+              'This widget has no global settings. Configure it in the Widget editor or in CONFIG.js.'
+          ) +
+          '</p>';
+      }
+    }
+    html += '</div>';
+  });
+
+  return html;
+}
+
+function getWeatherProviderPreference() {
+  if (settings['owm_api'] || !settings['wu_api']) {
+    return 'openweather';
+  }
+  return 'wunderground';
+}
+
+function renderClockWidgetSettings(tile) {
+  var html =
+    '<div class="settings-row">' +
+    '<label class="settings-label" for="setting-clock_type_ui">Type</label>' +
+    '<div class="settings-control">' +
+    '<select id="setting-clock_type_ui" class="form-select settings-clock-type">' +
+    '<option value="basicclock">Basic clock</option>' +
+    '<option value="stationclock" selected>Stationsklok</option>' +
+    '<option value="flipclock">Flipclock</option>' +
+    '<option value="haymanclock">Hayman clock</option>' +
+    '<option value="miniclock">Miniclock</option>' +
+    '</select></div><div class="settings-help-slot"></div></div>';
+
+  html +=
+    '<div class="settings-clock-size-group">';
+  html += '<h6 class="settings-weather-heading">Weergave</h6>';
+  if (tile.settings.clock_size) {
+    html += renderSettingsRow('clock_size', tile.settings.clock_size);
+  }
+  if (tile.settings.clock_scale) {
+    html += renderSettingsRow('clock_scale', tile.settings.clock_scale);
+  }
+  html += '</div>';
+
+  html +=
+    '<div class="settings-clock-group" data-clock-type="flipclock" style="display:none">';
+  html += '<h6 class="settings-weather-heading">Flipclock</h6>';
+  if (tile.settings.hide_seconds) {
+    html += renderSettingsRow('hide_seconds', tile.settings.hide_seconds);
+  }
+  html += '</div>';
+
+  html +=
+    '<div class="settings-clock-group" data-clock-type="stationclock">';
+  html += '<h6 class="settings-weather-heading">Stationsklok</h6>';
+  if (tile.settings.boss_stationclock) {
+    html += renderSettingsRow('boss_stationclock', tile.settings.boss_stationclock);
+  }
+  if (tile.settings.hide_seconds_stationclock) {
+    html += renderSettingsRow(
+      'hide_seconds_stationclock',
+      tile.settings.hide_seconds_stationclock
+    );
+  }
+  html += '</div>';
+
+  html +=
+    '<div class="settings-clock-group" data-clock-type="miniclock" style="display:none">' +
+    '<p class="settings-intro">' +
+    escapeSettingsHtml(
+      (language.settings.widgets && language.settings.widgets.miniclock_note) ||
+        'Miniclock has no extra display options.'
+    ) +
+    '</p></div>';
+
+  return html;
+}
+
+function bindClockTypeToggle() {
+  var $popup = $('#settingspopup');
+  if (!$popup.length) return;
+
+  $popup
+    .off('change.clocktype')
+    .on('change.clocktype', '.settings-clock-type', function () {
+      var type = $(this).val() || 'stationclock';
+      $popup.find('.settings-clock-group').each(function () {
+        $(this).toggle(String($(this).data('clock-type')) === type);
+      });
+      $popup.find('.settings-clock-size-group').toggle(type !== 'miniclock');
+    });
+}
+
+function renderWeatherWidgetSettings(tile) {
+  var provider = getWeatherProviderPreference();
+  var html =
+    '<div class="settings-row">' +
+    '<label class="settings-label" for="setting-weather_provider_ui">Provider</label>' +
+    '<div class="settings-control">' +
+    '<select id="setting-weather_provider_ui" class="form-select settings-weather-provider">' +
+    '<option value="openweather"' +
+    (provider === 'openweather' ? ' selected' : '') +
+    '>OpenWeather</option>' +
+    '<option value="wunderground"' +
+    (provider === 'wunderground' ? ' selected' : '') +
+    '>Weather Underground</option>' +
+    '</select></div><div class="settings-help-slot"></div></div>';
+
+  var owmKeys = [
+    'owm_api',
+    'owm_city',
+    'owm_name',
+    'owm_country',
+    'owm_lang',
+    'owm_cnt',
+    'owm_days',
+    'owm_min',
+    'weather_show_rain',
+    'weather_show_description',
+    'weather_show_wind',
+    'weather_show_gust',
+    'weather_icons',
+  ];
+  var wuKeys = ['wu_api', 'wu_city', 'wu_name', 'wu_country'];
+  var sharedKeys = ['use_fahrenheit', 'use_beaufort', 'translate_windspeed'];
+
+  html +=
+    '<div class="settings-weather-group" data-weather-provider="openweather"' +
+    (provider === 'openweather' ? '' : ' style="display:none"') +
+    '>';
+  html += '<h6 class="settings-weather-heading">OpenWeather</h6>';
+  owmKeys.forEach(function (key) {
+    if (tile.settings[key]) {
+      html += renderSettingsRow(key, tile.settings[key]);
+    }
+  });
+  html += '</div>';
+
+  html +=
+    '<div class="settings-weather-group" data-weather-provider="wunderground"' +
+    (provider === 'wunderground' ? '' : ' style="display:none"') +
+    '>';
+  html += '<h6 class="settings-weather-heading">Weather Underground</h6>';
+  wuKeys.forEach(function (key) {
+    if (tile.settings[key]) {
+      html += renderSettingsRow(key, tile.settings[key]);
+    }
+  });
+  html += '</div>';
+
+  html += '<h6 class="settings-weather-heading">Display</h6>';
+  sharedKeys.forEach(function (key) {
+    if (tile.settings[key]) {
+      html += renderSettingsRow(key, tile.settings[key]);
+    }
+  });
+
+  return html;
+}
+
+function bindWeatherProviderToggle() {
+  var $popup = $('#settingspopup');
+  if (!$popup.length) return;
+
+  $popup
+    .off('change.weatherprovider')
+    .on('change.weatherprovider', '.settings-weather-provider', function () {
+      var provider = $(this).val() === 'wunderground' ? 'wunderground' : 'openweather';
+      $popup.find('.settings-weather-group').each(function () {
+        var group = String($(this).data('weather-provider'));
+        $(this).toggle(group === provider);
+      });
+    });
+}
+
+function showSettingsHome() {
+  var $popup = $('#settingspopup');
+  $popup.find('.settings-category-panel, .settings-widget-panel').addClass('d-none');
+  $popup.find('#settings-home').removeClass('d-none');
+  $popup
+    .find('#settings-widget-tiles, .settings-widgets-intro')
+    .removeClass('d-none');
+}
+
+function showSettingsCategory(id) {
+  var $popup = $('#settingspopup');
+  $popup.find('#settings-home').addClass('d-none');
+  $popup.find('.settings-category-panel, .settings-widget-panel').addClass('d-none');
+  $popup.find('#settings-category-' + id).removeClass('d-none');
+  $popup
+    .find('#settings-widget-tiles, .settings-widgets-intro')
+    .removeClass('d-none');
+  $popup
+    .find('#settings-category-widgets > .settings-category-back, #settings-category-widgets > .settings-panel-title')
+    .removeClass('d-none');
+}
+
+function bindSettingsCategoryTiles() {
+  var $popup = $('#settingspopup');
+  if (!$popup.length) return;
+
+  $popup.off('click.settingsnav');
+  $popup.on('click.settingsnav', '.settings-tile[data-settings-category]', function () {
+    showSettingsCategory(String($(this).data('settings-category')));
+  });
+  $popup.on('click.settingsnav', '.settings-category-back', function () {
+    showSettingsHome();
+  });
+  $popup.on('click.settingsnav', '.settings-widget-tile', function () {
+    var id = String($(this).data('widget-id'));
+    $popup.find('#settings-widget-tiles, .settings-widgets-intro').addClass('d-none');
+    $popup
+      .find(
+        '#settings-category-widgets > .settings-category-back, #settings-category-widgets > .settings-panel-title'
+      )
+      .addClass('d-none');
+    $popup.find('.settings-widget-panel').addClass('d-none');
+    $popup.find('#settings-widget-panel-' + id).removeClass('d-none');
+  });
+  $popup.on('click.settingsnav', '.settings-widget-back', function () {
+    $popup.find('.settings-widget-panel').addClass('d-none');
+    $popup
+      .find('#settings-widget-tiles, .settings-widgets-intro')
+      .removeClass('d-none');
+    $popup
+      .find(
+        '#settings-category-widgets > .settings-category-back, #settings-category-widgets > .settings-panel-title'
+      )
+      .removeClass('d-none');
+  });
+}
+
+function bindBackgroundPickers() {
+  var $popup = $('#settingspopup');
+  if (!$popup.length) return;
+
+  var $picks = $popup.find('.settings-bg-pick');
+  if (!$picks.length) return;
+
+  function syncPreview(settingName, path) {
+    var $preview = $popup.find('[data-bg-preview="' + settingName + '"]');
+    if (!$preview.length) return;
+    if (!path) {
+      $preview.removeClass('is-visible').css('background-image', '');
+      return;
+    }
+    $preview
+      .addClass('is-visible')
+      .css('background-image', "url('" + resolveBackgroundUrl(path) + "')");
+  }
+
+  function selectMatchingOption($pick, path) {
+    var match = false;
+    var normalized = String(path || '').trim();
+    $pick.find('option').each(function () {
+      var optionVal = String($(this).val() || '');
+      if (
+        optionVal &&
+        (optionVal === normalized ||
+          optionVal === resolveBackgroundUrl(normalized) ||
+          resolveBackgroundUrl(optionVal) === resolveBackgroundUrl(normalized))
+      ) {
+        match = true;
+        $pick.val(optionVal);
+        return false;
+      }
+    });
+    if (!match) {
+      $pick.val('');
+    }
+  }
+
+  function syncPathVisibility(settingName, isCustom) {
+    var $row = $popup.find('[data-bg-path-row="' + settingName + '"]');
+    // Always show Pad/URL so custom values stay editable; emphasize when custom.
+    $row.toggleClass('is-custom', !!isCustom);
+  }
+
+  $.getJSON('js/listbackgrounds.php')
+    .done(function (data) {
+      var images = (data && data.images) || [];
+      $picks.each(function () {
+        var $pick = $(this);
+        var settingName = String($pick.data('bg-target') || '');
+        var $path = $popup.find('#setting-' + settingName);
+        images.forEach(function (imagePath) {
+          var exists = false;
+          $pick.find('option').each(function () {
+            if ($(this).val() === imagePath) {
+              exists = true;
+              return false;
+            }
+          });
+          if (exists) return;
+          $pick.append(
+            $('<option></option>')
+              .attr('value', imagePath)
+              .text(backgroundOptionLabel(imagePath))
+          );
+        });
+        selectMatchingOption($pick, $path.val());
+        syncPreview(settingName, $path.val());
+        syncPathVisibility(settingName, !$pick.val());
+      });
+    })
+    .fail(function () {
+      $picks.each(function () {
+        var $pick = $(this);
+        var settingName = String($pick.data('bg-target') || '');
+        var $path = $popup.find('#setting-' + settingName);
+        selectMatchingOption($pick, $path.val());
+        syncPreview(settingName, $path.val());
+        syncPathVisibility(settingName, true);
+      });
+    });
+
+  $popup
+    .off('change.bgpick')
+    .on('change.bgpick', '.settings-bg-pick', function () {
+      var $pick = $(this);
+      var settingName = String($pick.data('bg-target') || '');
+      var $path = $popup.find('#setting-' + settingName);
+      var value = $pick.val();
+      if (value) {
+        $path.val(value);
+        syncPreview(settingName, value);
+        syncPathVisibility(settingName, false);
+      } else {
+        // Custom path / URL: keep current value for editing and focus the field.
+        syncPreview(settingName, $path.val());
+        syncPathVisibility(settingName, true);
+        $path.trigger('focus');
+      }
+    });
+
+  $popup
+    .off('input.bgpath')
+    .on('input.bgpath', '.settings-bg-path', function () {
+      var $path = $(this);
+      var settingName = String($path.attr('name') || '');
+      var $pick = $popup.find('.settings-bg-pick[data-bg-target="' + settingName + '"]');
+      selectMatchingOption($pick, $path.val());
+      syncPreview(settingName, $path.val());
+      syncPathVisibility(settingName, !$pick.val());
+    });
+}
+
+function bindSettingsUpdateControls() {
+  var $popup = $('#settingspopup');
+  if (!$popup.length) return;
+
+  $popup.off('click.settingsupdate change.settingsupdate');
+  // Keep the Update label as a focus helper: scroll/show the log area.
+  $popup.on('click.settingsupdate', '#settings-update-toggle', function () {
+    $popup.find('#settings-update-log').removeClass('d-none');
+  });
+  $popup.on('click.settingsupdate', '#settings-update-run', function () {
+    runDashticzUpdate($popup.find('#settings-update-branch').val());
+  });
+}
+
+// eslint-disable-next-line no-unused-vars
+function runDashticzUpdate(branch) {
+  var $log = $('#settings-update-log');
+  var $run = $('#settings-update-run');
+  branch = String(branch || 'beta').toLowerCase() === 'main' ? 'main' : 'beta';
+
+  $run.prop('disabled', true);
+  $log
+    .removeClass('d-none text-danger text-success')
+    .text(
+      (language.settings.update && language.settings.update.running) ||
+        'Updating…'
+    );
+
+  $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
+    .then(function (data) {
+      return $.ajax({
+        url: 'js/update.php',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ branch: branch }),
+        headers: {
+          'X-Dashticz-CSRF': data && data.token ? data.token : '',
+        },
+      });
+    })
+    .done(function (result) {
+      var lines = [];
+      if (result && result.log) {
+        result.log.forEach(function (entry) {
+          lines.push('$ git ' + entry.command);
+          if (entry.stdout) lines.push(entry.stdout);
+          if (entry.stderr) lines.push(entry.stderr);
+        });
+      }
+      if (result && result.success) {
+        $log
+          .addClass('text-success')
+          .text(
+            ((language.settings.update && language.settings.update.success) ||
+              'Update completed. Reload Dashticz to use the new version.') +
+              '\n\n' +
+              lines.join('\n')
+          );
+      } else {
+        var failText =
+          ((result && result.error) ||
+            (language.settings.update && language.settings.update.failed) ||
+            'Update failed.') +
+          '\n\n' +
+          lines.join('\n');
+        if (result && result.hint) {
+          failText += '\n\n' + result.hint;
+        }
+        $log.addClass('text-danger').text(failText);
+      }
+    })
+    .fail(function (xhr) {
+      var message =
+        (xhr.responseJSON && xhr.responseJSON.error) ||
+        (language.settings.update && language.settings.update.failed) ||
+        'Update failed.';
+      $log.addClass('text-danger').text(message);
+    })
+    .always(function () {
+      $run.prop('disabled', false);
+    });
+}
+
+// eslint-disable-next-line no-unused-vars
+function setConfigMode(mode) {
+  mode = String(mode || '').toLowerCase() === 'custom' ? 'custom' : 'wizard';
+  settings['config_mode'] = mode;
+
+  $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
+    .then(function (data) {
+      return $.ajax({
+        url: 'js/saveconfigmode.php',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ config_mode: mode }),
+        dataType: 'json',
+        headers: { 'X-Dashticz-CSRF': data.token },
+      });
+    })
+    .done(function () {
+      window.location.reload();
+    })
+    .fail(function (xhr) {
+      var message =
+        xhr.responseJSON && xhr.responseJSON.error
+          ? xhr.responseJSON.error
+          : 'Could not save config mode.';
+      alert(message);
+    });
+}
+
 function addSettingsAboutItems() {
-  var $div=$('#tabs-about');
+  var $div = $('#settings-category-about');
+  if (!$div.length) $div = $('#tabs-about');
   $div.append('<p>');
   $div.append('<div class="about-item">Domoticz version: <span id="domoticz_version">unknown</span></div>');
   $div.append('<div class="about-item">dzVents version: <span id="dzvents_version">unknown</span></div>');
@@ -1206,13 +2067,29 @@ function addSettingsAboutItems() {
 function saveSettings() {
   var saveSettings = {};
   var alertSettings = 'var config = {}\n';
-  $('div#settingspopup input[type="text"],div#settingspopup select').each(
+  var standbyBlocksValue = null;
+  $('div#settingspopup input[type="text"],div#settingspopup input[type="hidden"],div#settingspopup select').each(
     function () {
+        // Skip UI-only controls that must not become config[...] keys.
+        if (
+          !$(this).attr('name') ||
+          $(this).is(
+            '#settings-update-branch, #setting-standby_background_pick, #setting-background_image_pick, #setting-weather_provider_ui, #setting-clock_type_ui'
+          )
+        ) {
+          return;
+        }
       var val = $(this).val();
       if (isNumeric(val))
         val = parseFloat(val);
       var settingName = $(this).attr('name');
       var serializedValue = JSON.stringify(val);
+      if (settingName === 'standby_blocks') {
+        // Written by savesettings.php as columns_standby, not config[].
+        standbyBlocksValue = String($(this).val() || '');
+        saveSettings[settingName] = JSON.stringify(standbyBlocksValue);
+        return;
+      }
       saveSettings[settingName] = serializedValue;
       alertSettings +=
         'config[' + JSON.stringify(settingName) + '] = ' + serializedValue + ';\n';
@@ -1228,6 +2105,26 @@ function saveSettings() {
       saveSettings[$(this).attr('name')] = JSON.stringify(0);
     }
   });
+
+  if (standbyBlocksValue !== null) {
+    var blockParts = standbyBlocksValue
+      .split(',')
+      .map(function (part) {
+        return part.trim();
+      })
+      .filter(Boolean);
+    alertSettings +=
+      '\nif (typeof columns_standby === \'undefined\') var columns_standby = {};\n' +
+      'columns_standby[1] = {};\n' +
+      "columns_standby[1]['blocks'] = [" +
+      blockParts
+        .map(function (key) {
+          return JSON.stringify(key);
+        })
+        .join(', ') +
+      "];\n" +
+      "columns_standby[1]['width'] = 12;\n";
+  }
 
   function showSettingsOutput(saved, errorMessage) {
       var html =

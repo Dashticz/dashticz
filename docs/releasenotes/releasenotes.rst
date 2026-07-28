@@ -8,6 +8,22 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.21.0 beta (28-7-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Settings: the Update button is larger, with Beta/Main branch selection and **Update uitvoeren** shown beside it.
+* Settings Widgets: category tiles for widget-related settings (including Weather provider groups and Clock type-specific defaults).
+* Widget Editor / Clock: selecting a clock type shows the relevant options from the clock docs — size and scale for Basic/Hayman/Flip/Station; Flipclock ``showSeconds`` and ``clockFace``; Stationclock body, dial, hands, boss, and hand behavior. Values are saved on the clock block in ``CONFIG.js``.
+* Widget catalog: additional widgets (security panel, public transport, traffic, 112/alarmmeldingen, camera, map, longfonds, moon, news) and OpenWeather display options (rain, description, wind, gust, icon set).
+* Standby: standby screen settings available as a Settings tile.
+* Settings → Weergave: background image uses the same pulldown as Standby (``BG_*`` labels for ``img/bg*`` files), with a **Pad/URL** field underneath for custom paths or full URLs. Standby uses the same pattern.
+* Settings → Widgets → Clock: **Grootte** and **Schaal** apply as defaults; clocks (especially station clock) fit inside the device tile.
+* Topbar: Dashticz logo is shown before the app title. The topbar clock is optional via Settings → Weergave (default off).
+* Settings Update: Git commands pass ``safe.directory`` for the Dashticz checkout so updates work when the web-server user does not own the files (e.g. Docker / www-data). Permission errors show a fix hint; use ``tools/install-dashticz-write-access --git-update`` to grant write access. ``install.sh`` runs that helper after a fresh clone so first installs can use Settings → Update.
+
 v3.20.4 beta (24-7-2026)
 --------------------------
 

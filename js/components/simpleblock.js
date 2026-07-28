@@ -1,4 +1,4 @@
-/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor DashticzWidgetEditor*/
+/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor DashticzWidgetEditor isCustomConfigMode setConfigMode language */
 //# sourceURL=js/components/simpleblock.js
 var DT_simpleblock = (function () {
   var simpleBlocks = {
@@ -116,13 +116,17 @@ var DT_simpleblock = (function () {
   }
 
   function renderLogo(me) {
+    var title = settings['app_title'] || 'Dashticz';
     return (
       '<div data-id="logo" class="logo col-xs-' +
       me.block.width +
       '">' +
-      '<img class="logo-icon" src="img/dashticz.png" alt="" />' +
-      settings['app_title'] +
-      '</div>'
+      '<img class="logo-image" src="img/dashticz.png" alt="' +
+      $('<div>').text(title).html() +
+      '">' +
+      '<span class="logo-title">' +
+      $('<div>').text(title).html() +
+      '</span></div>'
     );
   }
 
@@ -131,33 +135,65 @@ var DT_simpleblock = (function () {
     if (typeof settings['settings_icons'] !== 'undefined') {
       icons = settings['settings_icons'];
     }
+    var customMode = typeof isCustomConfigMode === 'function' && isCustomConfigMode();
+    var modeLabelCustom =
+      (language.settings &&
+        language.settings.config_mode &&
+        language.settings.config_mode.custom) ||
+      'Custom';
+    var modeLabelWizard =
+      (language.settings &&
+        language.settings.config_mode &&
+        language.settings.config_mode.wizard) ||
+      'Wizard';
     var content =
       '<div class="col-xs-' +
       me.block.width +
-      ' text-right">';
+      ' text-right topbar-settings-wrap">';
+    content +=
+      '<span class="settings config-mode-switch" role="group" aria-label="Config mode">' +
+      '<button type="button" class="config-mode-btn' +
+      (customMode ? ' active' : '') +
+      '" data-mode="custom" title="' +
+      modeLabelCustom +
+      '">' +
+      modeLabelCustom +
+      '</button>' +
+      '<button type="button" class="config-mode-btn' +
+      (!customMode ? ' active' : '') +
+      '" data-mode="wizard" title="' +
+      modeLabelWizard +
+      '">' +
+      modeLabelWizard +
+      '</button></span>';
     for (var i = 0; i < icons.length; i++) {
       switch (icons[i]) {
         case 'settings':
-          content +=
-            '<span class="settings deviceeditoricon" data-id="deviceeditor" ' +
-            'role="button" aria-label="Open device editor" title="Devices toevoegen">' +
-            '<i class="fas fa-plus" aria-hidden="true"></i></span>';
-          content +=
-            '<span class="settings widgeteditoricon" data-id="widgeteditor" ' +
-            'role="button" aria-label="Open widget editor" title="Widgets toevoegen">' +
-            '<i class="fas fa-puzzle-piece" aria-hidden="true"></i></span>';
-          content +=
-            '<span class="settings layouteditoricon" data-id="layouteditor" ' +
-            'role="button" aria-label="Open visual layout editor" title="Tegels verplaatsen en schalen">' +
-            '<i class="fas fa-arrows-alt" aria-hidden="true"></i></span>';
+          if (!customMode) {
+            content +=
+              '<span class="settings deviceeditoricon" data-id="deviceeditor" ' +
+              'role="button" aria-label="Open device editor" title="Devices toevoegen">' +
+              '<i class="fas fa-plus" aria-hidden="true"></i></span>';
+            content +=
+              '<span class="settings widgeteditoricon" data-id="widgeteditor" ' +
+              'role="button" aria-label="Open widget editor" title="Widgets toevoegen">' +
+              '<i class="fas fa-puzzle-piece" aria-hidden="true"></i></span>';
+            content +=
+              '<span class="settings layouteditoricon" data-id="layouteditor" ' +
+              'role="button" aria-label="Open visual layout editor" title="Tegels verplaatsen en schalen">' +
+              '<i class="fas fa-arrows-alt" aria-hidden="true"></i></span>';
+          }
           content +=
             '<span class="settings settingsicon" data-id="settings" ' +
             'data-bs-target="#settingspopup" data-bs-toggle="modal" ' +
             'role="button" aria-label="Open settings" title="Instellingen">' +
             '<i class="fas fa-cog" aria-hidden="true"></i></span>';
-          _registerDeviceEditorClick();
-          _registerWidgetEditorClick();
-          _registerLayoutEditorClick();
+          if (!customMode) {
+            _registerDeviceEditorClick();
+            _registerWidgetEditorClick();
+            _registerLayoutEditorClick();
+          }
+          _registerConfigModeClick();
           break;
 
         case 'fullscreen':
@@ -167,6 +203,17 @@ var DT_simpleblock = (function () {
     }
     content += '</div>';
     return content;
+  }
+
+  function _registerConfigModeClick() {
+    $(document)
+      .off('click.configmode')
+      .on('click.configmode', '.config-mode-btn', function () {
+        var mode = String($(this).data('mode') || 'wizard');
+        if (typeof setConfigMode === 'function') {
+          setConfigMode(mode);
+        }
+      });
   }
 
   function _registerDeviceEditorClick() {

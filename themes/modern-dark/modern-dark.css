@@ -11,9 +11,9 @@
   --block-gap: 3px;
   --box-border: 1px solid rgb(181, 181, 181);
   --home-bg: rgba(28, 31, 42, .74);
-  --border-color-inactive: rgb(42, 94, 151,.5);
-  --border-color-active: rgb(112, 160, 218,.5);
-  --border-color-block: rgb(112, 160, 218,.2);
+  --border-color-inactive: rgba(42, 94, 151, .5);
+  --border-color-active: rgba(112, 160, 218, .5);
+  --border-color-block: rgba(112, 160, 218, .2);
   --border-color-selector: var(--border-color-inactive);
   --button-bg: rgb(29, 43, 63);
   --button-hover: rgb(35, 53, 78);
@@ -286,11 +286,20 @@
 .standby .transbg {
   color: var(--text-light) !important;
   border: 0 !important;
-  background: #000 !important;
   background-clip: border-box !important;
   box-shadow: none !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
+}
+
+.standby .screenstandby {
+  background-color: #000 !important;
+}
+
+.standby .block,
+.standby [data-id],
+.standby .transbg {
+  background: #000 !important;
 }
 
 .message_block {

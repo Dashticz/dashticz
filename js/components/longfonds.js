@@ -2,6 +2,9 @@
 
 var DT_longfonds = {
   name: 'longfonds',
+  canHandle: function (block) {
+    return block && block.type === 'longfonds';
+  },
   defaultCfg: {
     icon: 'fas fa-cloud',
     title: 'Luchtkwaliteit',

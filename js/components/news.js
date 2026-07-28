@@ -4,7 +4,7 @@
 var DT_news = {
   name: 'news',
   canHandle: function (block) {
-    return block && block.feed;
+    return block && (block.type === 'news' || block.feed);
   },
   init: function () {
     return DT_function.loadScript('vendor/jquery.newsTicker.min.js');

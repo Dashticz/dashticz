@@ -9,7 +9,7 @@ var DT_flipclock = {
     return block && block.type && block.type === 'flipclock';
   },
   defaultCfg: function () {
-    return {
+    var cfg = {
       width: 12,
       scale: 1,
       minEmSize: 3.5,
@@ -17,17 +17,31 @@ var DT_flipclock = {
       showSeconds: !settings['hide_seconds'],
       clockFace: settings['shorttime'].match(/A/i) ? 12 : 24,
     };
+    if (settings['clock_scale'] !== '' && settings['clock_scale'] != null) {
+      var scale = Number(settings['clock_scale']);
+      if (isFinite(scale) && scale > 0) cfg.scale = scale;
+    }
+    if (settings['clock_size'] !== '' && settings['clock_size'] != null) {
+      var size = Number(settings['clock_size']);
+      if (isFinite(size) && size > 0) cfg.size = size;
+    }
+    return cfg;
   },
   run: function (me) {
     var $content = $(me.mountPoint + ' .dt_content');
-    var width =
-      me.block.size ||
-      $(me.mountPoint + ' .dt_block').width() ||
-      $content.width() ||
-      320;
+    var $block = $(me.mountPoint + ' .dt_block');
+    var availW =
+      $block.width() || $content.width() || $(me.mountPoint).width() || 320;
+    var availH = $block.height() || $(me.mountPoint).height() || 0;
+    var scale = Number(me.block.scale);
+    if (!isFinite(scale) || scale <= 0) scale = 1;
+    var base = me.block.size || (availH > 0 ? Math.min(availW, availH) : availW);
+    var width = base * scale;
+    if (availW > 0) width = Math.min(width, availW);
+    if (availH > 0) width = Math.min(width, availH);
     var emSize = Math.max(
       me.block.minEmSize,
-      Math.min(me.block.maxEmSize, (width / 82) * me.block.scale)
+      Math.min(me.block.maxEmSize, width / 82)
     );
     $content.css('--flipclock-em', emSize + 'px');
 

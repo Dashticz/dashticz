@@ -15,19 +15,24 @@ fi
 # The installer creates a single-branch clone of master. Add beta to the
 # configured fetch refspec so Git recognizes origin/beta as a tracking branch.
 BETA_REFSPEC="+refs/heads/beta:refs/remotes/origin/beta"
-if ! git config --get-all remote.origin.fetch | grep -Fqx "$BETA_REFSPEC"; then
-    git config --add remote.origin.fetch "$BETA_REFSPEC"
+if ! git -c "safe.directory=$SCRIPT_DIR" config --get-all remote.origin.fetch | grep -Fqx "$BETA_REFSPEC"; then
+    git -c "safe.directory=$SCRIPT_DIR" config --add remote.origin.fetch "$BETA_REFSPEC"
 fi
 
-git fetch origin beta
+git -c "safe.directory=$SCRIPT_DIR" fetch origin beta
 
-if git show-ref --verify --quiet refs/heads/beta; then
-    git checkout beta
+if git -c "safe.directory=$SCRIPT_DIR" show-ref --verify --quiet refs/heads/beta; then
+    git -c "safe.directory=$SCRIPT_DIR" checkout beta
 else
-    git checkout --track -b beta origin/beta
+    git -c "safe.directory=$SCRIPT_DIR" checkout --track -b beta origin/beta
 fi
 
-git merge --ff-only origin/beta
+git -c "safe.directory=$SCRIPT_DIR" merge --ff-only origin/beta
+
+# --- Configuration check and update ---
+CONFIG_FILE="custom/CONFIG.js"
+CONFIG_LINE_1='config["topbar_timeout"] = 5;'
+CONFIG_LINE_2="config['hide_topbar'] = 0;"
 
 # --- Configuration check and update ---
 CONFIG_FILE="custom/CONFIG.js"

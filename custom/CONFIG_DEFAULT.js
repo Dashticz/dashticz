@@ -35,7 +35,7 @@ blocks['blocktitle_1']['title'] = 'Example';
 
 var columns = {}
 columns['bar'] = {}
-columns['bar']['blocks'] = ['logo','miniclock','settings']
+columns['bar']['blocks'] = ['logo','settings']
 					
 columns[1] = {}
 columns[1]['blocks'] = ['currentweather_big','weather']
