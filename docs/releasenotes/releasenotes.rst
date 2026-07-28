@@ -8,6 +8,20 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.21.1 beta (28-7-2026)
+--------------------------
+
+Fixes
+~~~~~
+
+* Modern Dark: restored the larger 56 x 44 pixel selector-button touch targets that were accidentally removed while adjusting the theme colours.
+
+Documentation
+~~~~~~~~~~~~~
+
+* README: documents the first-run wizard, Wizard/Custom modes, all topbar editors, the complete 15-widget catalog, standby settings, browser updates, and every supported installer directory option.
+* Automatic installer guide: documents ``-d``, ``--directory``, ``--directory=PATH``, a positional directory, ``DASHTICZ_INSTALL_DIR``, and ``--help``.
+
 v3.21.0 beta (28-7-2026)
 --------------------------
 

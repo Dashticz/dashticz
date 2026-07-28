@@ -101,6 +101,17 @@
   transition: color .2s ease, background-color .2s ease;
 }
 
+.transbg .selector-buttons .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  min-height: 44px;
+  padding: 10px 14px !important;
+  font-size: 18px !important;
+  line-height: 1.2;
+}
+
 .transbg .btn:hover,
 .transbg .btn:focus {
   color: var(--text-normal) !important;

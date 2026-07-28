@@ -111,6 +111,12 @@ test('installer accepts an optional target directory', () => {
   assert.match(installer, /git clone[\s\S]*"\$INSTALL_DIR"/);
   assert.match(readme, /-- --directory \/var\/www\/html\/my-dashboard/);
   assert.match(installDocs, /-- --directory \/var\/www\/html\/my-dashboard/);
+  assert.match(readme, /-- -d \/var\/www\/html\/my-dashboard/);
+  assert.match(readme, /-- --directory=\/var\/www\/html\/my-dashboard/);
+  assert.match(readme, /DASHTICZ_INSTALL_DIR=\/var\/www\/html\/my-dashboard/);
+  assert.match(readme, /-- --help/);
+  assert.match(installDocs, /-- -d \/var\/www\/html\/my-dashboard/);
+  assert.match(installDocs, /DASHTICZ_INSTALL_DIR=\/var\/www\/html\/my-dashboard/);
   assert.match(readme, /file mode `0644`/);
   assert.match(installDocs, /file mode ``0644``/);
 });
