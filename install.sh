@@ -48,10 +48,29 @@ git clone \
     "$REPOSITORY" \
     "$INSTALL_DIR"
 
+# Maak de custom map en het configuratiebestand aan
 mkdir -p "$INSTALL_DIR/custom"
 printf '%s\n' '#EMPTY#' > "$INSTALL_DIR/custom/CONFIG.js"
-chmod 0755 "$INSTALL_DIR/custom/CONFIG.js"
+chmod 0644 "$INSTALL_DIR/custom/CONFIG.js"
+
+echo
+echo "Configuring write access for the web-server user..."
+WRITE_ACCESS="$INSTALL_DIR/tools/install-dashticz-write-access"
+if [ -f "$WRITE_ACCESS" ]; then
+    # Grants custom/ + .git write access so Settings → Update works.
+    # Soft-fail: web server may not be installed yet on a fresh host.
+    if sh "$WRITE_ACCESS" --git-update; then
+        echo "Web-server write access configured (CONFIG.js + Git updates)."
+    else
+        echo "Warning: could not configure web-server write access automatically."
+        echo "After your web server is installed, run:"
+        echo "  sudo sh $WRITE_ACCESS --git-update"
+    fi
+else
+    echo "Warning: write-access helper not found at $WRITE_ACCESS"
+fi
 
 echo
 echo "Dashticz has been installed in '$INSTALL_DIR'."
 echo "The empty configuration is '$INSTALL_DIR/custom/CONFIG.js'."
+echo "Point your web server at that directory, then open Dashticz in a browser."

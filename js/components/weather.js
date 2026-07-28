@@ -67,11 +67,15 @@ var DT_weather = (function () {
         scale: 1,
         containerClass: 'weather_' + layout,
         decimals: 1,
-        showRain: true,
-        showDescription: true,
+        showRain: choose(block.showRain, settings['weather_show_rain'], 1),
+        showDescription: choose(
+          block.showDescription,
+          settings['weather_show_description'],
+          1
+        ),
         showMin: choose(settings['owm_min'], true),
-        showWind: true,
-        showGust: true,
+        showWind: choose(block.showWind, settings['weather_show_wind'], 0),
+        showGust: choose(block.showGust, settings['weather_show_gust'], 0),
         monochrome: false,
         showDetails: true,
         showDaily: true,
@@ -80,7 +84,10 @@ var DT_weather = (function () {
         showForecast: true, //only for KNMI
         useBeaufort: settings.use_beaufort || false,
         skipFirst: false,
-        icons: settings.static_weathericons ? 'static' : 'line',
+        icons:
+          block.icons ||
+          settings['weather_icons'] ||
+          (settings.static_weathericons ? 'static' : 'line'),
         iconExt: 'svg',
         //        provider: 'owm'
         rows: 1

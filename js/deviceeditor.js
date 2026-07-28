@@ -106,6 +106,15 @@ var DashticzDeviceEditor = (function () {
       widget_sonarr: { id: 'sonarr', title: 'Sonarr' },
       widget_clock: { id: 'clock', title: 'Klok' },
       widget_calendar: { id: 'calendar', title: 'Kalender' },
+      widget_secpanel: { id: 'secpanel', title: 'Security panel' },
+      widget_publictransport: { id: 'publictransport', title: 'Openbaar vervoer' },
+      widget_trafficinfo: { id: 'trafficinfo', title: 'Verkeersinfo' },
+      widget_alarmmeldingen: { id: 'alarmmeldingen', title: '112' },
+      widget_cameras: { id: 'camera', title: "Camera's" },
+      widget_map: { id: 'map', title: 'Google Maps' },
+      widget_longfonds: { id: 'longfonds', title: 'Luchtkwaliteit' },
+      widget_moon: { id: 'moon', title: 'Maan' },
+      widget_news: { id: 'news', title: 'Nieuws' },
     };
     var catalogItem = catalog[String(reference)];
     if (
@@ -124,6 +133,69 @@ var DashticzDeviceEditor = (function () {
       title: definition.title || catalogItem.title,
       definition: definition,
     };
+  }
+
+  function _copyDefinedWidgetProperties(entry, definition, properties) {
+    properties.forEach(function (property) {
+      if (typeof definition[property] !== 'undefined') {
+        entry[property] = definition[property];
+      }
+    });
+  }
+
+  function _widgetPayload(orderKey) {
+    var widget = managedWidgets[orderKey];
+    var definition = widget.definition || {};
+    var entry = {
+      id: widget.id,
+      width: _parseWidth(widgetWidths[orderKey]),
+    };
+    if (widgetHeights[orderKey]) entry.height = widgetHeights[orderKey];
+
+    if (widget.id === 'weather') {
+      entry.provider =
+        definition.widget_provider ||
+        (definition.type === 'wunderground'
+          ? 'wunderground'
+          : 'openweather');
+      _copyDefinedWidgetProperties(entry, definition, [
+        'showRain',
+        'showDescription',
+        'showWind',
+        'showGust',
+        'icons',
+      ]);
+    } else if (widget.id === 'calendar') {
+      entry.icalurl = definition.icalurl || '';
+    } else if (widget.id === 'clock') {
+      entry.clockType = definition.type || 'basicclock';
+      _copyDefinedWidgetProperties(entry, definition, [
+        'size',
+        'scale',
+        'showSeconds',
+        'clockFace',
+        'body',
+        'dial',
+        'hourhand',
+        'minutehand',
+        'secondhand',
+        'boss',
+        'minutehandbehavior',
+        'secondhandbehavior',
+      ]);
+    } else if (widget.id === 'publictransport') {
+      entry.station = definition.station || 'UT';
+      entry.provider = definition.provider || 'treinen';
+    } else if (widget.id === 'camera') {
+      entry.imageUrl = definition.imageUrl || '';
+      if (definition.videoUrl) entry.videoUrl = definition.videoUrl;
+    } else if (widget.id === 'alarmmeldingen') {
+      entry.rss =
+        definition.rss || 'https://www.alarmeringen.nl/feeds/all.rss';
+      if (definition.filter) entry.filter = definition.filter;
+    }
+
+    return entry;
   }
 
   function _getAllManagedItems() {
@@ -624,24 +696,7 @@ var DashticzDeviceEditor = (function () {
       return orderKey.indexOf('widget:') === 0;
     });
     var widgetPayload = orderedWidgetKeys.map(function (orderKey) {
-      var widget = managedWidgets[orderKey];
-      var entry = {
-        id: widget.id,
-        width: _parseWidth(widgetWidths[orderKey]),
-      };
-      if (widgetHeights[orderKey]) entry.height = widgetHeights[orderKey];
-      if (widget.id === 'weather') {
-        entry.provider =
-          widget.definition.widget_provider ||
-          (widget.definition.type === 'wunderground'
-            ? 'wunderground'
-            : 'openweather');
-      } else if (widget.id === 'calendar') {
-        entry.icalurl = widget.definition.icalurl || '';
-      } else if (widget.id === 'clock') {
-        entry.clockType = widget.definition.type || 'basicclock';
-      }
-      return entry;
+      return _widgetPayload(orderKey);
     });
 
     $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
@@ -666,16 +721,18 @@ var DashticzDeviceEditor = (function () {
               widgetRefs[orderKey] = widgetResult.blockKeys[index];
             });
             var layoutItems = managedOrder.map(function (orderKey) {
-              return {
-                ref:
-                  orderKey.indexOf('widget:') === 0
-                    ? widgetRefs[orderKey]
-                    : deviceRefs[orderKey],
-                width:
-                  orderKey.indexOf('widget:') === 0
-                    ? _parseWidth(widgetWidths[orderKey])
-                    : _parseWidth(deviceWidths[orderKey.slice(7)]),
+              var isWidget = orderKey.indexOf('widget:') === 0;
+              var entry = {
+                ref: isWidget ? widgetRefs[orderKey] : deviceRefs[orderKey],
+                width: isWidget
+                  ? _parseWidth(widgetWidths[orderKey])
+                  : _parseWidth(deviceWidths[orderKey.slice(7)]),
               };
+              var height = isWidget
+                ? widgetHeights[orderKey]
+                : deviceHeights[orderKey.slice(7)];
+              if (height) entry.height = height;
+              return entry;
             });
             return _postEditorData(
               'js/savelayout.php',

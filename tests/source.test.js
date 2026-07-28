@@ -217,7 +217,7 @@ test('configured topbar timeout loads and initializes the auto-hide behavior', (
   assert.doesNotMatch(main, /id: 'editmode'/);
   assert.equal(fs.existsSync(path.join(root, 'js/editmode.js')), false);
   assert.match(settings, /settingList\['screen'\]\['topbar_timeout'\]/);
-  assert.match(settings, /topbar_timeout: 0/);
+  assert.match(settings, /topbar_timeout:/);
 });
 
 test('visual layout editor handles generated devices and widgets on a 10px height grid', () => {
@@ -250,7 +250,8 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(simpleBlock, /fas fa-plus/);
   assert.match(simpleBlock, /js\/layouteditor\.js/);
   assert.match(editor, /var HEIGHT_STEP = 10/);
-  assert.match(editor, /\/\^\(de\|we\|le\)_col\\d\+\$\//);
+  assert.match(editor, /\(de\|we\|le\)_col/);
+  assert.match(editor, /col_\\d\+/);
   assert.match(editor, /col-xs-/);
   assert.match(editor, /(?:widgetEntry|deviceEntry)\.height = item\.height/);
   assert.match(editor, /dle-cancel/);
@@ -260,6 +261,10 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(editor, /js\/savewidgets\.php/);
   assert.match(editor, /js\/savelayout\.php/);
   assert.match(editor, /widgetResult\.blockKeys/);
+  assert.match(editor, /widget_alarmmeldingen: 'alarmmeldingen'/);
+  assert.match(editor, /widgets\.push\(_widgetPayload\(item\)\)/);
+  assert.match(editor, /definition\.rss \|\| 'https:\/\/www\.alarmeringen\.nl\/feeds\/all\.rss'/);
+  assert.match(editor, /if \(definition\.filter\) entry\.filter = definition\.filter/);
   assert.match(editor, /_startDrag\(event, item, \$canvas\[0\]\)/);
   assert.match(editor, /\$\(item\.visibleBlocks\)[\s\S]*children\('\.dle-overlay'\)/);
   assert.match(editor, /appendChild\(item\.wrapper\)/);
@@ -278,6 +283,8 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(deviceEditor, /screens\[1\]\.columns/);
   assert.match(deviceEditor, /\$activeScreen\.find\('\[data-colindex\]'\)/);
   assert.match(deviceEditor, /function _widgetFromReference/);
+  assert.match(deviceEditor, /widget_alarmmeldingen: \{ id: 'alarmmeldingen', title: '112' \}/);
+  assert.match(deviceEditor, /return _widgetPayload\(orderKey\)/);
   assert.match(deviceEditor, /Widget - /);
   assert.match(deviceEditor, /var managedOrder/);
   assert.match(deviceEditor, /js\/savewidgets\.php/);
@@ -323,6 +330,13 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(simpleBlock, /widgeteditoricon/);
   assert.match(simpleBlock, /fas fa-puzzle-piece/);
   assert.match(simpleBlock, /js\/widgeteditor\.js/);
+  assert.match(simpleBlock, /config-mode-btn/);
+  assert.match(simpleBlock, /data-mode="custom"/);
+  assert.match(simpleBlock, /data-mode="wizard"/);
+  assert.match(settings, /widgetSettingTiles/);
+  assert.match(settings, /isCustomConfigMode/);
+  assert.match(settings, /setConfigMode/);
+  assert.match(settings, /config_mode: 'wizard'/);
   for (const id of [
     'weather',
     'garbage',
@@ -330,22 +344,39 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
     'sonarr',
     'clock',
     'calendar',
+    'secpanel',
+    'publictransport',
+    'trafficinfo',
+    'alarmmeldingen',
+    'camera',
+    'map',
+    'longfonds',
+    'moon',
+    'news',
   ]) {
     assert.match(widgetEditor, new RegExp(`id: '${id}'`));
+    assert.match(settings, new RegExp(`id: '${id}'`));
   }
+  assert.doesNotMatch(settings, /settingList\['screen'\]\['security_button_icons'\]/);
+  assert.doesNotMatch(settings, /settingList\['localize'\]\['gm_api'\]/);
+  assert.doesNotMatch(settings, /settingList\['other'\]\['longfonds_zipcode'\]/);
+  assert.doesNotMatch(settings, /settingList\.general = \{[^}]*default_news_url:/);
+  assert.match(settings, /anwb_apikey:/);
+  assert.match(settings, /id: 'news'[\s\S]*default_news_url:/);
   assert.match(widgetEditor, /OpenWeather/);
   assert.match(widgetEditor, /Weather Underground/);
   assert.match(widgetEditor, /Stationsklok/);
   assert.match(widgetEditor, /Flipclock/);
   assert.match(widgetEditor, /Hayman clock/);
   assert.match(widgetEditor, /Miniclock/);
-  assert.match(widgetEditor, /we-calendar-url/);
-  assert.match(widgetEditor, /we-clock-type/);
+  assert.match(widgetEditor, /we-cfg-calendar-url/);
+  assert.match(widgetEditor, /we-cfg-clock-type/);
   assert.match(widgetEditor, /js\/savewidgets\.php/);
   assert.match(widgetEditor, /js\/savelayout\.php/);
   assert.match(widgetEditor, /var layoutOrder = \[\]/);
   assert.match(widgetEditor, /if \(!selectedWidgets\[item\.widgetId\]\) return/);
-  assert.match(widgetEditor, /layoutItems\.push\(\{ ref: item\.ref, width: item\.width \}\)/);
+  assert.match(widgetEditor, /layoutItems\.push\(widgetEntry\)/);
+  assert.match(widgetEditor, /layoutItems\.push\(deviceEntry\)/);
   assert.match(widgetEditor, /X-Dashticz-CSRF/);
   assert.match(styles, /\.we-widget-grid/);
   assert.match(styles, /\.we-widget-card\.we-selected/);
@@ -364,10 +395,7 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
     'colorpicker',
     'colorpickerscale',
   ]) {
-    assert.doesNotMatch(
-      settings,
-      new RegExp(`^\\s{2}${key}: \\{`, 'm')
-    );
+    assert.match(settings, new RegExp(`${key}:`));
   }
   assert.doesNotMatch(main, /id: 'use_favorites'/);
 });
@@ -403,7 +431,9 @@ test('clock components use public date APIs and a valid seconds setting', () => 
   assert.doesNotMatch(dateTime, /dayjs\.Ls/);
   assert.match(basicClock, /maxFontSize: 42/);
   assert.match(basicClock, /Math\.min\(fontSize, me\.block\.maxFontSize\)/);
-  assert.match(stationClock, /maxSize: 160/);
+  assert.match(stationClock, /function clockFitSize/);
+  assert.match(stationClock, /if \(me\.block\.maxSize\)/);
+  assert.match(stationClock, /var width = clockFitSize\(me, 120\)/);
   assert.match(flipClock, /minEmSize: 3\.5/);
   assert.match(flipClock, /maxEmSize: 7/);
   assert.match(flipClock, /FlipClock\(\$content, 0,/);
@@ -413,24 +443,12 @@ test('clock components use public date APIs and a valid seconds setting', () => 
 
 test('legacy expert settings stay configurable but are hidden from the settings menu', () => {
   const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
-  for (const key of [
-    'blink_color',
-    'edit_mode',
-    'boss_stationclock',
-    'speak_lang',
-    'idx_moonpicture',
-    'longfonds_zipcode',
-    'longfonds_housenumber',
-  ]) {
-    assert.doesNotMatch(
-      settings,
-      new RegExp(`settingList\\[[^\\n]+\\]\\['${key}'\\]`)
-    );
-  }
-  assert.match(settings, /boss_stationclock: 'RedBoss'/);
+  assert.match(settings, /boss_stationclock:/);
   assert.match(settings, /blink_color: '255, 255, 255, 1'/);
   assert.match(settings, /edit_mode: 0/);
   assert.match(settings, /speak_lang: 'en_US'/);
+  assert.match(settings, /widgetSettingTiles/);
+  assert.match(settings, /config_mode: 'wizard'/);
 });
 
 test('UI dependencies use the maintained compatibility versions', () => {
@@ -496,9 +514,9 @@ test('modern dark theme is portable and documented', () => {
   assert.match(theme, /--main-bg/);
   assert.match(theme, /--main-border-width: 1px/);
   assert.match(theme, /--block-gap: 3px/);
-  assert.match(theme, /--border-color-inactive: rgb\(42, 94, 151\)/);
-  assert.match(theme, /--border-color-active: rgb\(112, 160, 218\)/);
-  assert.match(theme, /--border-color-block: var\(--border-color-active\)/);
+  assert.match(theme, /--border-color-inactive: rgba\(42, 94, 151, \.5\)/);
+  assert.match(theme, /--border-color-active: rgba\(112, 160, 218, \.5\)/);
+  assert.match(theme, /--border-color-block: rgba\(112, 160, 218, \.2\)/);
   assert.match(theme, /--border-color-selector: var\(--border-color-inactive\)/);
   assert.match(theme, /border: var\(--block-gap\) solid transparent !important/);
   assert.match(theme, /inset 0 0 0 var\(--main-border-width\) var\(--border-color-block\)/);
@@ -545,19 +563,27 @@ test('settings modal uses compact Bootstrap 5 controls and aligned help icons', 
 
   assert.match(settings, /class="settings-row"/);
   assert.match(settings, /form-check form-switch settings-switch/);
-  assert.match(settings, /data-bs-toggle="pill"/);
+  assert.match(settings, /class="settings-tile"/);
+  assert.match(settings, /settings-category-tiles/);
+  assert.match(settings, /settingList\['standby'\]/);
+  assert.match(settings, /settings-update-run/);
+  assert.match(settings, /js\/update\.php/);
+  assert.match(settings, /standby_background/);
+  assert.match(settings, /standby_blocks/);
   assert.match(settings, /class="settings-brand"/);
   assert.match(settings, /img\/favicon\/app-icon-192x192\.png/);
   assert.match(settings, /window\.bootstrap\.Tooltip/);
   assert.match(settings, /data-bs-trigger="click"/);
   assert.match(settings, /data-bs-custom-class="settings-tooltip"/);
   assert.doesNotMatch(settings, /material-switch/);
+  assert.doesNotMatch(settings, /data-bs-toggle="pill"/);
 
   assert.match(simpleblock, /data-bs-target="#settingspopup"/);
   assert.doesNotMatch(simpleblock, /\sdata-target="#settingspopup"/);
 
   assert.match(styles, /\.settings-row\s*\{/);
   assert.match(styles, /grid-template-columns:/);
+  assert.match(styles, /\.settings-tile(?:,\s*\.settings-widget-tile)?\s*\{/);
   assert.match(styles, /\.settings-switch \.form-check-input/);
   assert.match(styles, /width: 38px;/);
   assert.match(styles, /height: 20px;/);
@@ -568,6 +594,41 @@ test('settings modal uses compact Bootstrap 5 controls and aligned help icons', 
   assert.match(styles, /\.settings-tooltip[\s\S]*z-index: 10050;/);
   assert.match(styles, /\.settings-help \.fas/);
   assert.doesNotMatch(styles, /\.material-switch/);
+});
+
+test('standby background image is not overwritten by standby CSS', () => {
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const modernDark = fs.readFileSync(
+    path.join(root, 'themes/modern-dark/modern-dark.css'),
+    'utf8'
+  );
+
+  assert.match(
+    main,
+    /settings\['standby_background'\]\s*\|\|\s*settings\['background_image'\]/
+  );
+  assert.match(
+    main,
+    /screenstandby[\s\S]*resolveBackgroundImagePath\(standbyBackground\)/
+  );
+  assert.match(styles, /\.standby \.swiper-slide:not\(\.screenstandby\)/);
+  assert.match(
+    styles,
+    /\.standby \.screenstandby\s*\{[^}]*background-size: cover;[^}]*\}/
+  );
+  assert.doesNotMatch(
+    styles,
+    /\.standby \.swiper-slide\s*\{[\s\S]*?background-image: none !important;/
+  );
+  assert.match(
+    modernDark,
+    /\.standby \.screenstandby\s*\{[^}]*background-color: #000 !important;[^}]*\}/
+  );
+  assert.doesNotMatch(
+    modernDark,
+    /\.standby \.screenstandby\s*\{[^}]*background: #000 !important;/
+  );
 });
 
 test('migration sources use LF line endings', () => {

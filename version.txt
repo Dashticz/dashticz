@@ -1,8 +1,9 @@
 {
-"version": "3.20.5",
+"version": "3.21.0",
 "branch": "beta",
-"last_changes": "Blocks configuration editor with block sizing",
+"last_changes": "Background BG_ pickers, clock fit-to-tile, topbar logo, optional topbar clock, git update safe.directory",
 "changelog" : {
+            "3.21.0": "Background BG_ pickers, clock fit-to-tile, topbar logo, optional topbar clock, git update safe.directory",
             "3.20.5": "Blocks configuration editor with block sizing",
             "3.20.4": "Device Editor: generate named blocks, grouped columns, and proper screens[1] in CONFIG.js",
             "3.20.3": "Added Docker Alpine+nginx+PHP8.3 image and docker-compose setup (jgaalen)",

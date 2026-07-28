@@ -2,6 +2,9 @@
 
 set -e
 
+SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+cd "$SCRIPT_DIR"
+
 echo "=== Dashticz Stable Updater ==="
 
 if [ ! -d ".git" ]; then
@@ -9,9 +12,14 @@ if [ ! -d ".git" ]; then
     exit 1
 fi
 
-git fetch origin
-git checkout master
-git pull origin master
+git -c "safe.directory=$SCRIPT_DIR" fetch origin
+git -c "safe.directory=$SCRIPT_DIR" checkout master
+git -c "safe.directory=$SCRIPT_DIR" pull origin master
+
+# --- Configuration check and update ---
+CONFIG_FILE="custom/CONFIG.js"
+CONFIG_LINE_1='config["topbar_timeout"] = 5;'
+CONFIG_LINE_2="config['hide_topbar'] = 0;"
 
 # --- Configuration check and update ---
 CONFIG_FILE="custom/CONFIG.js"

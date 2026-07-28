@@ -1009,16 +1009,85 @@ function setClockDateWeekday() {
   );
 }
 
+function resolveBackgroundImagePath(path) {
+  var value = String(path || '').trim();
+  if (!value) return '';
+  if (/^(https?:)?\/\//i.test(value) || value.indexOf('/') >= 0) {
+    return value;
+  }
+  return 'img/' + value;
+}
+
+function isMiniclockBlock(ref) {
+  return (
+    ref === 'miniclock' ||
+    (ref && typeof ref === 'object' && ref.type === 'miniclock')
+  );
+}
+
+function buildTopbarBlocks(existingBlocks) {
+  var showClock = Number(settings['show_topbar_clock']) === 1;
+  var blocks = Array.isArray(existingBlocks) ? existingBlocks.slice() : null;
+
+  if (!blocks) {
+    return showClock
+      ? ['logo', 'miniclock', 'settings']
+      : [{ type: 'logo', width: 10 }, 'settings'];
+  }
+
+  blocks = blocks.filter(function (ref) {
+    return !isMiniclockBlock(ref);
+  });
+
+  if (showClock) {
+    var logoIdx = -1;
+    for (var i = 0; i < blocks.length; i++) {
+      if (
+        blocks[i] === 'logo' ||
+        (blocks[i] && typeof blocks[i] === 'object' && blocks[i].type === 'logo')
+      ) {
+        logoIdx = i;
+        break;
+      }
+    }
+    blocks.splice(logoIdx >= 0 ? logoIdx + 1 : 0, 0, 'miniclock');
+  } else {
+    // Give the logo more room when the clock is hidden.
+    blocks = blocks.map(function (ref) {
+      if (ref === 'logo') {
+        return { type: 'logo', width: 10 };
+      }
+      if (ref && typeof ref === 'object' && ref.type === 'logo' && !ref.width) {
+        return $.extend({}, ref, { width: 10 });
+      }
+      return ref;
+    });
+  }
+
+  return blocks;
+}
+
 function toSlide(num) {
   if (typeof myswiper !== 'undefined') myswiper.slideTo(num, 0, true);
 }
 
 function buildStandby() {
   if ($('.screenstandby').length == 0) {
+    var standbyBackground =
+      settings['standby_background'] || settings['background_image'] || '';
+    var backgroundStyle = '';
+    if (standbyBackground) {
+      backgroundStyle =
+        'background-image:url(\'' +
+        resolveBackgroundImagePath(standbyBackground) +
+        '\');';
+    }
     var screenhtml =
       '<div class="screen screenstandby swiper-slide slidestandby" style="height:' +
       $(window).height() +
-      'px"><div class="row"></div></div>';
+      'px;' +
+      backgroundStyle +
+      '"><div class="row"></div></div>';
     $('div.screen').hide();
     $('#settingspopup').modal('hide');
     $('div.dt-container').before(screenhtml);
@@ -1122,30 +1191,18 @@ function buildScreens() {
             screens[t][s]['background'] = settings['background_image'];
           }
           if (typeof screens[t][s]['background'] !== 'undefined') {
-            if (screens[t][s]['background'].indexOf('/') > 0)
-              screenhtml +=
-                'style="background-image:url(\'' +
-                screens[t][s]['background'] +
-                '\');"';
-            else
-              screenhtml +=
-                'style="background-image:url(\'img/' +
-                screens[t][s]['background'] +
-                '\');"';
+            screenhtml +=
+              'style="background-image:url(\'' +
+              resolveBackgroundImagePath(screens[t][s]['background']) +
+              '\');"';
           } else if (
             typeof screens[t][s][1] !== 'undefined' &&
             typeof screens[t][s][1]['background'] !== 'undefined'
           ) {
-            if (screens[t][s][1]['background'].indexOf('/') > 0)
-              screenhtml +=
-                'style="background-image:url(\'' +
-                screens[t][s][1]['background'] +
-                '\');"';
-            else
-              screenhtml +=
-                'style="background-image:url(\'img/' +
-                screens[t][s][1]['background'] +
-                '\');"';
+            screenhtml +=
+              'style="background-image:url(\'' +
+              resolveBackgroundImagePath(screens[t][s][1]['background']) +
+              '\');"';
           }
 
           screenhtml += '><div class="row"></div></div>';
@@ -1157,8 +1214,8 @@ function buildScreens() {
           ) {
             if (typeof columns['bar'] == 'undefined') {
               columns['bar'] = {};
-              columns['bar']['blocks'] = ['logo', 'miniclock', 'settings'];
             }
+            columns['bar']['blocks'] = buildTopbarBlocks(columns['bar']['blocks']);
             getBlock(columns['bar'], 'bar', 'div.screen' + s, false);
           }
 
@@ -1244,16 +1301,12 @@ function setClassByTime() {
   for (var t in screens) {
     for (var s in screens[t]) {
       if (typeof screens[t][s]['background_' + newClass] !== 'undefined') {
-        if (screens[t][s]['background_' + newClass].indexOf('/') > 0)
-          $('.screen.screen' + s).css(
-            'background-image',
-            "url('" + screens[t][s]['background_' + newClass] + "')"
-          );
-        else
-          $('.screen.screen' + s).css(
-            'background-image',
-            "url('img/" + screens[t][s]['background_' + newClass] + "')"
-          );
+        $('.screen.screen' + s).css(
+          'background-image',
+          "url('" +
+            resolveBackgroundImagePath(screens[t][s]['background_' + newClass]) +
+            "')"
+        );
       }
     }
   }

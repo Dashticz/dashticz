@@ -343,40 +343,6 @@ next css sets the default height of the frame popup
   background: #eef1f4;
 }
 
-.settings-tabs {
-  display: flex;
-  flex: 1 1 auto;
-  flex-wrap: nowrap;
-  gap: 3px;
-  margin: 0;
-  padding: 0;
-  border: 0;
-  overflow-x: auto;
-  scrollbar-width: thin;
-}
-
-.settings-tabs .nav-link {
-  padding: 7px;
-  border: 0;
-  border-radius: 6px;
-  color: #343a40;
-  background: rgba(255, 255, 255, .7);
-  font-size: 15px;
-  line-height: 1.2;
-  white-space: nowrap;
-}
-
-.settings-tabs .nav-link:hover,
-.settings-tabs .nav-link:focus-visible {
-  color: #000;
-  background: #e2e6ea;
-}
-
-.settings-tabs .nav-link.active {
-  color: #fff;
-  background: #495057;
-}
-
 .settings-brand {
   display: flex;
   flex: 0 0 auto;
@@ -396,6 +362,201 @@ next css sets the default height of the frame popup
 
 .settings-tab-content {
   padding-top: 14px;
+}
+
+.settings-tiles,
+.settings-widget-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+.settings-tile,
+.settings-widget-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 110px;
+  padding: 16px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 10px;
+  background: #f8f9fa;
+  color: #212529;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, transform .15s ease;
+}
+
+.settings-tile:hover,
+.settings-tile:focus-visible,
+.settings-widget-tile:hover,
+.settings-widget-tile:focus-visible {
+  background: #fff;
+  border-color: #495057;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.settings-tile i,
+.settings-widget-tile i {
+  font-size: 28px;
+  color: #495057;
+}
+
+.settings-tile span,
+.settings-widget-tile span {
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.settings-panel-title,
+.settings-widget-panel-title {
+  margin: 0 0 14px;
+  font-size: 18px;
+}
+
+.settings-intro,
+.settings-widgets-intro {
+  margin: 0 0 14px;
+  color: #495057;
+  font-size: 14px;
+}
+
+.config-mode-switch {
+  display: inline-flex;
+  align-items: stretch;
+  margin-right: 8px;
+  vertical-align: middle;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.config-mode-btn {
+  border: 0;
+  margin: 0;
+  padding: 4px 10px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.config-mode-btn.active {
+  background: rgba(255, 255, 255, 0.92);
+  color: #212529;
+}
+
+.config-mode-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -2px;
+}
+
+.settings-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.settings-footer-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.settings-update {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  max-width: 100%;
+}
+
+.settings-update-btn {
+  padding: 0.7rem 1.4rem;
+  font-size: 1.15rem;
+  font-weight: 700;
+  line-height: 1.2;
+  min-height: 2.75rem;
+}
+
+.settings-update-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-update-label {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.settings-update-panel .form-select {
+  width: auto;
+  min-width: 8rem;
+}
+
+.settings-update-run {
+  padding: 0.45rem 0.9rem;
+  font-weight: 600;
+}
+
+.settings-update-log {
+  flex: 1 0 100%;
+  width: 100%;
+  max-height: 160px;
+  margin: 4px 0 0;
+  padding: 8px;
+  overflow: auto;
+  border-radius: 6px;
+  background: #212529;
+  color: #f8f9fa;
+  font-size: 12px;
+  white-space: pre-wrap;
+}
+
+.settings-standby-bg-preview {
+  display: none;
+  width: 100%;
+  max-width: 40ch;
+  height: 72px;
+  margin-top: 8px;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+}
+
+.settings-standby-bg-preview.is-visible,
+.settings-bg-preview.is-visible {
+  display: block;
+}
+
+.settings-bg-path-row.is-custom .settings-bg-path {
+  border-color: #0d6efd;
+  box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+}
+
+.settings-weather-heading {
+  margin: 16px 0 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #495057;
+}
+
+.topbar-settings-wrap .settings {
+  vertical-align: middle;
 }
 
 .settings-row {
@@ -708,36 +869,28 @@ next css sets the default height of the frame popup
 }
 
 .colbar.transbg .logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 20px;
   font-weight: bold;
   margin-top: -4px;
   margin-bottom: -4px;
-  display: flex;
-  align-items: center;
+  min-height: 28px;
 }
 
-.logo-icon {
+.colbar.transbg .logo .logo-image {
+  display: block;
   height: 28px;
-  width: 28px;
-  object-fit: contain;
-  vertical-align: middle;
-  margin-right: 8px;
+  width: auto;
+  flex: 0 0 auto;
 }
 
-.logo-icon {
-  height: 28px;
-  width: 28px;
-  object-fit: contain;
-  vertical-align: middle;
-  margin-right: 8px;
-}
-
-.logo-version {
-  font-size: 11px;
-  font-weight: normal;
-  opacity: 0.6;
-  margin-left: 6px;
-  vertical-align: middle;
+.colbar.transbg .logo .logo-title {
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .colbar.transbg .fab,
@@ -1170,6 +1323,49 @@ body.dle-active {
 
 .we-widget-card.we-selected .we-widget-status {
   color: #146c43;
+}
+
+.we-config-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  color: #6c757d;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+  z-index: 3;
+}
+
+.we-config-btn:hover,
+.we-config-btn:focus {
+  color: #0d6efd;
+  background: rgba(13, 110, 253, 0.08);
+  border-color: rgba(13, 110, 253, 0.25);
+  outline: none;
+}
+
+.we-widget-card.we-selected .we-config-btn {
+  color: #198754;
+}
+
+.we-widget-card.we-selected .we-config-btn:hover,
+.we-widget-card.we-selected .we-config-btn:focus {
+  color: #146c43;
+  background: rgba(25, 135, 84, 0.1);
+  border-color: rgba(25, 135, 84, 0.3);
 }
 
 .we-field-label {
@@ -1612,9 +1808,16 @@ hr {
   margin-bottom: 20px;
 }
 
-.standby .swiper-slide {
+.standby .swiper-slide:not(.screenstandby) {
   background-image: none !important;
   background-color: #313131;
+}
+
+.standby .screenstandby {
+  background-color: #313131;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .standby .far,
@@ -1841,6 +2044,27 @@ p {
 .row>div {
   padding-right: 0px !important;
   padding-left: 0px !important;
+}
+
+/*
+ * Block mount wrappers (#block_N) are only organizational for Dashticz's
+ * mount/unsubscribe bookkeeping. As normal block boxes they each span the
+ * full column width, so a tall floated tile (e.g. APC UPS) pushes the next
+ * wrapper down and leaves a gap under the shorter neighbour (e.g. Afval → BMW).
+ *
+ * display: contents makes the floated .mh.col-xs-* tiles participate in the
+ * column's own float context, so the next short tile can rise beside the tall
+ * one. The layout editor overrides this while .dle-item-wrapper is active.
+ */
+.screen .row > [data-colindex] > [id^="block_"]:not(.dle-item-wrapper) {
+  display: contents;
+}
+
+/* Ensure the column grows to enclose its floated tiles. */
+.screen .row > [data-colindex]::after {
+  content: '';
+  display: table;
+  clear: both;
 }
 
 .clear {

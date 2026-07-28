@@ -1,5 +1,54 @@
 /* global Dashticz StationClock settings*/
 
+function clockDefaultSizeScale() {
+  var cfg = {
+    containerClass: 'text-center',
+    scale: 1,
+  };
+  if (settings['clock_scale'] !== '' && settings['clock_scale'] != null) {
+    var scale = Number(settings['clock_scale']);
+    if (isFinite(scale) && scale > 0) {
+      cfg.scale = scale;
+    }
+  }
+  if (settings['clock_size'] !== '' && settings['clock_size'] != null) {
+    var size = Number(settings['clock_size']);
+    if (isFinite(size) && size > 0) {
+      cfg.size = size;
+    }
+  }
+  return cfg;
+}
+
+function clockFitSize(me, fallback) {
+  var $mount = $(me.mountPoint);
+  var $block = $mount.find('.dt_block').first();
+  var $content = $mount.find('.dt_content').first();
+  var availW = Math.max(
+    $content.innerWidth() || 0,
+    $block.innerWidth() || 0,
+    $mount.innerWidth() || 0,
+    fallback || 0
+  );
+  var availH = Math.max(
+    $content.innerHeight() || 0,
+    $block.innerHeight() || 0,
+    $mount.innerHeight() || 0
+  );
+  var scale = Number(me.block.scale);
+  if (!isFinite(scale) || scale <= 0) scale = 1;
+  var base = Number(me.block.size);
+  if (!isFinite(base) || base <= 0) {
+    base = availH > 0 ? Math.min(availW, availH) : availW;
+  }
+  var width = base * scale;
+  if (availW > 0) width = Math.min(width, availW);
+  if (availH > 0) width = Math.min(width, availH);
+  if (me.block.maxSize) width = Math.min(width, Number(me.block.maxSize) || width);
+  width = Math.min(width, window.innerHeight || width);
+  return Math.max(32, Math.floor(width));
+}
+
 var DT_stationclock = {
   name: 'stationclock',
   init: function () {
@@ -11,11 +60,7 @@ var DT_stationclock = {
   canHandle: function (block) {
     return block && block.type && block.type === 'stationclock';
   },
-  defaultCfg: {
-    containerClass: 'text-center',
-    scale: 1,
-    maxSize: 160,
-  },
+  defaultCfg: clockDefaultSizeScale,
   run: function (me) {
     var cfg = {
       //StationClock may not be loaded in defaultcfg(?)
@@ -38,11 +83,7 @@ var DT_stationclock = {
       return typeof key === 'string' ? StationClock[key] : key;
     }
 
-    var width = Math.min(
-      (me.block.size || $(me.mountPoint + ' .dt_content').width()) * me.block.scale,
-      me.block.maxSize,
-      window.innerHeight
-    );
+    var width = clockFitSize(me, 120);
     $(me.mountPoint + ' .dt_content').html(
       '<canvas id="clock' +
         me.mountPoint +
@@ -50,7 +91,7 @@ var DT_stationclock = {
         width +
         '" height="' +
         width +
-        '">Your browser is unfortunately not supported.</canvas>'
+        '" style="max-width:100%;max-height:100%;">Your browser is unfortunately not supported.</canvas>'
     );
 
     var clock = new StationClock('clock' + me.mountPoint);
