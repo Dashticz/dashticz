@@ -852,6 +852,11 @@ function onLoad() {
   DT_function.loadDTScript('js/topbar.js').then(function () {
     DashticzTopbar.init();
   });
+  DT_function.loadDTScript('js/screenswitcher.js').then(function () {
+    if (typeof DashticzScreenSwitcher !== 'undefined') {
+      DashticzScreenSwitcher.init();
+    }
+  });
 
   setClockDateWeekday();
   setInterval(
@@ -933,7 +938,15 @@ function onLoad() {
     swipebackTime = 0;
     autoSwipe = false;
 
-    if (standbyActive) {
+    // Manual Standby (S) is an editable screen — do not exit on mouse/keyboard.
+    if (
+      standbyActive &&
+      !(
+        typeof DashticzScreenSwitcher !== 'undefined' &&
+        DashticzScreenSwitcher.isStandbyEditMode &&
+        DashticzScreenSwitcher.isStandbyEditMode()
+      )
+    ) {
       Debug.log('Standby: user activity (' + event.type + ')');
       disableStandby();
     }
@@ -1030,41 +1043,67 @@ function buildTopbarBlocks(existingBlocks) {
   var blocks = Array.isArray(existingBlocks) ? existingBlocks.slice() : null;
 
   if (!blocks) {
-    return showClock
-      ? ['logo', 'miniclock', 'settings']
-      : [{ type: 'logo', width: 10 }, 'settings'];
-  }
+    blocks = showClock
+      ? ['logo', 'screenswitcher', 'miniclock', 'settings']
+      : [{ type: 'logo', width: 8 }, 'screenswitcher', 'settings'];
+  } else {
+    blocks = blocks.filter(function (ref) {
+      return !isMiniclockBlock(ref) && !isScreenSwitcherBlock(ref);
+    });
 
-  blocks = blocks.filter(function (ref) {
-    return !isMiniclockBlock(ref);
-  });
-
-  if (showClock) {
-    var logoIdx = -1;
+    // Keep the screen switcher left of the settings cluster.
+    var settingsIdx = -1;
     for (var i = 0; i < blocks.length; i++) {
       if (
-        blocks[i] === 'logo' ||
-        (blocks[i] && typeof blocks[i] === 'object' && blocks[i].type === 'logo')
+        blocks[i] === 'settings' ||
+        (blocks[i] &&
+          typeof blocks[i] === 'object' &&
+          blocks[i].type === 'settings')
       ) {
-        logoIdx = i;
+        settingsIdx = i;
         break;
       }
     }
-    blocks.splice(logoIdx >= 0 ? logoIdx + 1 : 0, 0, 'miniclock');
-  } else {
-    // Give the logo more room when the clock is hidden.
-    blocks = blocks.map(function (ref) {
-      if (ref === 'logo') {
-        return { type: 'logo', width: 10 };
+    blocks.splice(
+      settingsIdx >= 0 ? settingsIdx : blocks.length,
+      0,
+      'screenswitcher'
+    );
+
+    if (showClock) {
+      var logoIdx = -1;
+      for (var j = 0; j < blocks.length; j++) {
+        if (
+          blocks[j] === 'logo' ||
+          (blocks[j] && typeof blocks[j] === 'object' && blocks[j].type === 'logo')
+        ) {
+          logoIdx = j;
+          break;
+        }
       }
-      if (ref && typeof ref === 'object' && ref.type === 'logo' && !ref.width) {
-        return $.extend({}, ref, { width: 10 });
-      }
-      return ref;
-    });
+      blocks.splice(logoIdx >= 0 ? logoIdx + 1 : 0, 0, 'miniclock');
+    } else {
+      // Give the logo more room when the clock is hidden.
+      blocks = blocks.map(function (ref) {
+        if (ref === 'logo') {
+          return { type: 'logo', width: 8 };
+        }
+        if (ref && typeof ref === 'object' && ref.type === 'logo' && !ref.width) {
+          return $.extend({}, ref, { width: 8 });
+        }
+        return ref;
+      });
+    }
   }
 
   return blocks;
+}
+
+function isScreenSwitcherBlock(ref) {
+  return (
+    ref === 'screenswitcher' ||
+    (ref && typeof ref === 'object' && ref.type === 'screenswitcher')
+  );
 }
 
 function toSlide(num) {
@@ -1097,6 +1136,25 @@ function buildStandby() {
     }
 
     $('.screenstandby').on('click touchend', function (event) {
+      // Keep switcher/editor/layout-editor clicks from exiting standby.
+      if (
+        $(event.target).closest(
+          '.dt-screen-switcher, .dt-screen-btn, .dt-standby-editor-icons, .settings, .modal, .dle-toolbar, .dle-overlay, .dle-block, .dle-canvas, .dle-item-wrapper'
+        ).length
+      ) {
+        return;
+      }
+      if ($('body').hasClass('dle-active')) {
+        return;
+      }
+      // In manual edit mode (opened via S) clicks must not exit standby.
+      if (
+        typeof DashticzScreenSwitcher !== 'undefined' &&
+        DashticzScreenSwitcher.isStandbyEditMode &&
+        DashticzScreenSwitcher.isStandbyEditMode()
+      ) {
+        return;
+      }
       Debug.log('Click or touchend in standby');
       disableStandby();
       event.stopPropagation();
@@ -1104,6 +1162,11 @@ function buildStandby() {
     });
   } else {
     $('.screenstandby').show();
+  }
+
+  if (typeof DashticzScreenSwitcher !== 'undefined') {
+    DashticzScreenSwitcher.mountIntoStandby();
+    DashticzScreenSwitcher.updateActive();
   }
 }
 
@@ -1364,13 +1427,18 @@ function disableStandby() {
     }
   }
 
-  if (objectlength(columns_standby) > 0) {
-    $('div.screen').show();
-  }
+  // Restore regular screens after standby (manual switch or idle timeout).
+  $('div.dt-container .screen').show();
   $('.screenstandby').hide(); //hide instead of remove, because removing blocks including unsubscribe has not been implemented.
-  $('body').removeClass('standby');
+  $('body').removeClass('standby standby-edit');
   $('.dt-container').show();
   standbyActive = false;
+  if (typeof DashticzScreenSwitcher !== 'undefined') {
+    if (DashticzScreenSwitcher.setStandbyEditMode) {
+      DashticzScreenSwitcher.setStandbyEditMode(false);
+    }
+    DashticzScreenSwitcher.updateActive();
+  }
 }
 
 //END OF STANDBY FUNCTION

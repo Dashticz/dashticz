@@ -918,6 +918,109 @@ next css sets the default height of the frame popup
   margin-right: 4px;
 }
 
+/* Screen switcher lives in its own topbar block, left of settings */
+.colbar > div:has(.dt-screen-switcher-host) {
+  flex: 0 0 auto;
+  margin-left: auto;
+  margin-right: 12px;
+}
+
+.colbar > div:has(.topbar-settings-wrap) {
+  margin-left: 0;
+}
+
+.dt-screen-switcher-host {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  min-height: 28px;
+}
+
+.dt-screen-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  vertical-align: middle;
+}
+
+.dt-screen-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  margin: 0;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.dt-screen-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dt-screen-btn.active {
+  background: rgba(255, 255, 255, 0.92);
+  color: #212529;
+  border-color: #fff;
+}
+
+.dt-screen-btn.dt-screen-add {
+  font-size: 16px;
+  font-weight: 700;
+  border-style: dashed;
+  opacity: 0.9;
+}
+
+.dt-screen-btn:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Standby chrome: S/1/2/+ next to editor icons; auto-hide unless hovered */
+.dt-screen-switcher-bar {
+  position: relative;
+  z-index: 20;
+  display: none;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 8px 12px 0;
+  pointer-events: auto;
+}
+
+body.standby-edit .dt-screen-switcher-bar.is-visible {
+  display: flex;
+}
+
+.dt-standby-editor-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.dt-standby-editor-icons .settings {
+  cursor: pointer;
+  color: #fff;
+  font-size: 18px;
+}
+
+.screenstandby .dt-screen-switcher-bar .dt-screen-btn {
+  border-color: rgba(255, 255, 255, 0.9);
+}
+
+body.standby-edit {
+  cursor: default;
+}
+
 /* Visual Layout Editor */
 body.dle-active {
   user-select: none;

@@ -275,8 +275,11 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(simpleBlock, /fas fa-plus/);
   assert.match(simpleBlock, /js\/layouteditor\.js/);
   assert.match(editor, /var HEIGHT_STEP = 10/);
+  assert.match(editor, /\(de\|we\|le\)_s\\d\+_col/);
   assert.match(editor, /\(de\|we\|le\)_col/);
   assert.match(editor, /col_\\d\+/);
+  assert.match(editor, /screen: screenNumber/);
+  assert.match(editor, /function _activeScreenPayload/);
   assert.match(editor, /col-xs-/);
   assert.match(editor, /(?:widgetEntry|deviceEntry)\.height = item\.height/);
   assert.match(editor, /dle-cancel/);
@@ -305,8 +308,10 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
     deviceEditor,
     /var ck\s+= String\(\$\(this\)\.attr\('data-ck'\)\)/
   );
-  assert.match(deviceEditor, /screens\[1\]\.columns/);
+  assert.match(deviceEditor, /function _activeScreenPayload/);
+  assert.match(deviceEditor, /function _activeScreenDom/);
   assert.match(deviceEditor, /\$activeScreen\.find\('\[data-colindex\]'\)/);
+  assert.match(deviceEditor, /screen: _activeScreenPayload\(\)/);
   assert.match(deviceEditor, /function _widgetFromReference/);
   assert.match(deviceEditor, /widget_alarmmeldingen: \{ id: 'alarmmeldingen', title: '112' \}/);
   assert.match(deviceEditor, /return _widgetPayload\(orderKey\)/);
@@ -654,6 +659,55 @@ test('standby background image is not overwritten by standby CSS', () => {
     modernDark,
     /\.standby \.screenstandby\s*\{[^}]*background: #000 !important;/
   );
+});
+
+test('topbar screen switcher supports standby and extra screens', () => {
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const switcher = fs.readFileSync(
+    path.join(root, 'js/screenswitcher.js'),
+    'utf8'
+  );
+  const simpleBlock = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const savescreens = fs.readFileSync(
+    path.join(root, 'js/savescreens.php'),
+    'utf8'
+  );
+  const writer = fs.readFileSync(path.join(root, 'js/configwriter.php'), 'utf8');
+
+  assert.match(main, /js\/screenswitcher\.js/);
+  assert.match(main, /DashticzScreenSwitcher\.init\(\)/);
+  assert.match(main, /DashticzScreenSwitcher\.mountIntoStandby\(\)/);
+  assert.match(main, /screenswitcher/);
+  assert.match(main, /isStandbyEditMode/);
+  assert.match(simpleBlock, /dt-screen-switcher-host/);
+  assert.match(simpleBlock, /screenswitcher/);
+  assert.match(switcher, /data-screen="standby"/);
+  assert.match(switcher, /title="Standby">S</);
+  assert.match(switcher, /dt-screen-add/);
+  assert.match(switcher, /js\/savescreens\.php/);
+  assert.match(switcher, /enterStandbyManual/);
+  assert.match(switcher, /standbyEditMode/);
+  assert.match(styles, /\.dt-screen-btn\s*\{/);
+  assert.match(styles, /border-radius: 4px/);
+  assert.match(styles, /\.dt-screen-btn\.active/);
+  assert.match(styles, /dt-screen-switcher-host/);
+  assert.match(savescreens, /dashticz_require_csrf\(\)/);
+  assert.match(savescreens, /action.*add/);
+  assert.match(writer, /function configwriter_replace_screens_section/);
+  assert.match(writer, /function configwriter_emit_new_screen/);
+  assert.match(writer, /function configwriter_editor_markers/);
+  assert.match(writer, /function configwriter_column_prefix/);
+  assert.match(writer, /function configwriter_build_standby_layout_section/);
+  assert.match(writer, /do not coerce to 1/);
+  assert.match(styles, /body\.standby-edit \.dt-screen-switcher-bar\.is-visible/);
+  assert.match(switcher, /mountEditorIcons\(\$bar\)/);
+  assert.match(switcher, /setStandbyBarVisible/);
+  assert.match(switcher, /bindStandbyBarHover/);
+  assert.match(switcher, /clientY\s*<\s*56/);
 });
 
 test('migration sources use LF line endings', () => {

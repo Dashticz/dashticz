@@ -1,4 +1,4 @@
-/* global Domoticz settings columns blocks blocktypes screens */
+/* global Domoticz settings columns columns_standby blocks blocktypes screens DashticzScreenSwitcher standbyActive */
 // eslint-disable-next-line no-unused-vars
 var DashticzDeviceEditor = (function () {
   'use strict';
@@ -198,68 +198,121 @@ var DashticzDeviceEditor = (function () {
     return entry;
   }
 
+  function _activeScreenTarget() {
+    if (
+      typeof DashticzScreenSwitcher !== 'undefined' &&
+      DashticzScreenSwitcher.getActiveScreenNumber
+    ) {
+      return DashticzScreenSwitcher.getActiveScreenNumber();
+    }
+    if (typeof standbyActive !== 'undefined' && standbyActive) {
+      return 'standby';
+    }
+    var $active = $('.dt-container .screen.swiper-slide-active[data-screenindex]');
+    if (!$active.length) {
+      $active = $('.dt-container .screen[data-screenindex]:visible').first();
+    }
+    if ($('.screenstandby:visible').length) return 'standby';
+    var fromDom = parseInt($active.attr('data-screenindex'), 10);
+    return fromDom > 0 ? fromDom : 1;
+  }
+
+  /** Numeric screen for PHP endpoints; standby is sent as the string "standby". */
+  function _activeScreenPayload() {
+    var target = _activeScreenTarget();
+    return target === 'standby' ? 'standby' : parseInt(target, 10) || 1;
+  }
+
+  function _activeScreenDom() {
+    if (_activeScreenTarget() === 'standby') {
+      var $standby = $('.screenstandby:visible');
+      if ($standby.length) return $standby;
+      return $('.screenstandby').first();
+    }
+    var num = _activeScreenPayload();
+    var $byIndex = $(
+      '.dt-container .screen[data-screenindex="' + num + '"]'
+    );
+    if ($byIndex.length) return $byIndex.first();
+    var $active = $('.dt-container .screen.swiper-slide-active');
+    if ($active.length) return $active;
+    return $('.dt-container .screen:visible').first();
+  }
+
   function _getAllManagedItems() {
     var seen = {};
     var ordered = [];
-    if (typeof columns !== 'undefined') {
-      var columnKeys = [];
-      var $activeScreen = $('.screen.swiper-slide-active');
-      if (!$activeScreen.length) $activeScreen = $('.screen:visible').first();
-      $activeScreen.find('[data-colindex]').each(function () {
-        var columnKey = String($(this).attr('data-colindex'));
-        if (columnKeys.indexOf(columnKey) < 0) {
-          columnKeys.push(columnKey);
-        }
-      });
-      if (
-        typeof screens !== 'undefined' &&
-        screens[1] &&
-        Array.isArray(screens[1].columns)
-      ) {
-        screens[1].columns.forEach(function (columnKey) {
-          columnKey = String(columnKey);
-          if (columnKeys.indexOf(columnKey) < 0) {
-            columnKeys.push(columnKey);
+    if (typeof columns === 'undefined') return ordered;
+
+    var columnKeys = [];
+    var $activeScreen = _activeScreenDom();
+    $activeScreen.find('[data-colindex]').each(function () {
+      var columnKey = String($(this).attr('data-colindex'));
+      if (columnKeys.indexOf(columnKey) < 0) {
+        columnKeys.push(columnKey);
+      }
+    });
+
+    // Standby uses columns_standby, not screens[].
+    if (_activeScreenTarget() === 'standby') {
+      if (typeof columns_standby !== 'undefined' && columns_standby) {
+        Object.keys(columns_standby).forEach(function (colKey) {
+          if (columnKeys.indexOf(String(colKey)) < 0) {
+            columnKeys.push(String(colKey));
           }
         });
       }
-      Object.keys(columns).forEach(function (colKey) {
-        if (columnKeys.indexOf(String(colKey)) < 0) {
-          columnKeys.push(String(colKey));
-        }
-      });
-      columnKeys.forEach(function (colKey) {
-        var col = columns[colKey];
-        if (col && Array.isArray(col.blocks)) {
-          col.blocks.forEach(function (b) {
-            var ck = _toCompositeKey(b);
-            /* non-numeric string block keys → look up in global blocks object */
-            if (!ck && typeof b === 'string' &&
-                typeof blocks !== 'undefined' && blocks[b]) {
-              ck = _toCompositeKey(blocks[b]);
-            }
-            if (ck) {
-              var deviceKey = _deviceOrderKey(ck);
-              if (!seen[deviceKey]) {
-                seen[deviceKey] = true;
-                ordered.push({
-                  kind: 'device',
-                  ck: ck,
-                  orderKey: deviceKey,
-                });
-              }
-              return;
-            }
-
-            var widget = _widgetFromReference(b);
-            if (widget && !seen[widget.orderKey]) {
-              seen[widget.orderKey] = true;
-              ordered.push(widget);
-            }
-          });
-        }
-      });
     }
+
+    columnKeys.forEach(function (colKey) {
+      var lookupKey = String(colKey);
+      if (
+        _activeScreenTarget() === 'standby' &&
+        /^standby/.test(lookupKey)
+      ) {
+        lookupKey = lookupKey.replace(/^standby/, '');
+      }
+      var col =
+        _activeScreenTarget() === 'standby' &&
+        typeof columns_standby !== 'undefined' &&
+        columns_standby[lookupKey]
+          ? columns_standby[lookupKey]
+          : columns[colKey];
+      if (!col && typeof columns !== 'undefined') {
+        col = columns[lookupKey];
+      }
+      if (col && Array.isArray(col.blocks)) {
+        col.blocks.forEach(function (b) {
+          var ck = _toCompositeKey(b);
+          if (
+            !ck &&
+            typeof b === 'string' &&
+            typeof blocks !== 'undefined' &&
+            blocks[b]
+          ) {
+            ck = _toCompositeKey(blocks[b]);
+          }
+          if (ck) {
+            var deviceKey = _deviceOrderKey(ck);
+            if (!seen[deviceKey]) {
+              seen[deviceKey] = true;
+              ordered.push({
+                kind: 'device',
+                ck: ck,
+                orderKey: deviceKey,
+              });
+            }
+            return;
+          }
+
+          var widget = _widgetFromReference(b);
+          if (widget && !seen[widget.orderKey]) {
+            seen[widget.orderKey] = true;
+            ordered.push(widget);
+          }
+        });
+      }
+    });
     return ordered;
   }
 
@@ -704,12 +757,12 @@ var DashticzDeviceEditor = (function () {
         var token = data.token;
         return _postEditorData(
           'js/saveblocks.php',
-          { devices: devicePayload },
+          { devices: devicePayload, screen: _activeScreenPayload() },
           token
         ).then(function (deviceResult) {
           return _postEditorData(
             'js/savewidgets.php',
-            { widgets: widgetPayload },
+            { widgets: widgetPayload, screen: _activeScreenPayload() },
             token
           ).then(function (widgetResult) {
             var deviceRefs = {};
@@ -734,9 +787,12 @@ var DashticzDeviceEditor = (function () {
               if (height) entry.height = height;
               return entry;
             });
+            if (_activeScreenTarget() === 'standby') {
+              layoutItems = _preserveStandbyExtraBlocks(layoutItems);
+            }
             return _postEditorData(
               'js/savelayout.php',
-              { items: layoutItems },
+              { items: layoutItems, screen: _activeScreenPayload() },
               token
             );
           });
@@ -760,6 +816,29 @@ var DashticzDeviceEditor = (function () {
         $btn.prop('disabled', false).text('Save');
         alert('Error: ' + msg);
       });
+  }
+
+  function _preserveStandbyExtraBlocks(layoutItems) {
+    var known = {};
+    layoutItems.forEach(function (item) {
+      if (item && item.ref) known[item.ref] = true;
+    });
+    var preserved = [];
+    if (
+      typeof columns_standby !== 'undefined' &&
+      columns_standby &&
+      columns_standby[1] &&
+      Array.isArray(columns_standby[1].blocks)
+    ) {
+      columns_standby[1].blocks.forEach(function (ref) {
+        if (typeof ref !== 'string' || known[ref]) return;
+        // Keep simple/hand-written standby blocks (clock, weather, …).
+        if (_toCompositeKey(ref) || _widgetFromReference(ref)) return;
+        preserved.push({ ref: ref, width: 12 });
+        known[ref] = true;
+      });
+    }
+    return preserved.concat(layoutItems);
   }
 
   function _postEditorData(url, payload, token) {
