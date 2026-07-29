@@ -69,9 +69,7 @@
             "standby_background_help": "Path or URL for the standby screen background, e.g. img\/bg11.jpg or https:\/\/example.com\/image.jpg",
             "pick_background": "Choose background image",
             "path_url": "Path\/URL",
-            "custom_path": "Custom path \/ URL",
-            "blocks": "Standby blocks",
-            "blocks_help": "Comma-separated block keys for columns_standby, e.g. clock, currentweather_big, weather"
+            "custom_path": "Custom path \/ URL"
         },
         "config_mode": {
             "custom": "Custom",

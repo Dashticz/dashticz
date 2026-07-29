@@ -620,7 +620,7 @@ test('settings modal uses compact Bootstrap 5 controls and aligned help icons', 
   assert.match(settings, /settings-update-run/);
   assert.match(settings, /js\/update\.php/);
   assert.match(settings, /standby_background/);
-  assert.match(settings, /standby_blocks/);
+  assert.doesNotMatch(settings, /standby_blocks/);
   assert.match(settings, /class="settings-brand"/);
   assert.match(settings, /img\/favicon\/app-icon-192x192\.png/);
   assert.match(settings, /window\.bootstrap\.Tooltip/);

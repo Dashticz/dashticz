@@ -248,14 +248,11 @@ test('standby editor section removal does not target screen 1', () => {
   assert.match(writer, /\$n === 0[\s\S]{0,80}editor-standby-start/);
 });
 
-test('settings writer persists columns_standby from standby_blocks', () => {
+test('settings writer leaves the standby layout untouched', () => {
   const source = read('js/savesettings.php');
-  const writer = read('js/configwriter.php');
-  assert.match(source, /standby_blocks/);
-  assert.match(source, /configwriter_replace_standby_section/);
-  assert.match(writer, /function configwriter_replace_standby_section/);
-  assert.match(writer, /standby-editor-start/);
-  assert.match(writer, /columns_standby/);
+  assert.doesNotMatch(source, /standby_blocks/);
+  assert.doesNotMatch(source, /configwriter_replace_standby_section/);
+  assert.doesNotMatch(source, /configwriter\.php/);
 });
 
 test('background list endpoint only exposes img/bg* files', () => {

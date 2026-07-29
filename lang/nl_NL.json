@@ -69,9 +69,7 @@
             "standby_background_help": "Pad of URL voor de standby-achtergrond, bijv. img\/bg11.jpg of https:\/\/voorbeeld.nl\/beeld.jpg",
             "pick_background": "Kies achtergrondafbeelding",
             "path_url": "Pad\/URL",
-            "custom_path": "Aangepast pad \/ URL",
-            "blocks": "Standby-blokken",
-            "blocks_help": "Kommagescheiden block-keys voor columns_standby, bijv. clock, currentweather_big, weather"
+            "custom_path": "Aangepast pad \/ URL"
         },
         "config_mode": {
             "custom": "Custom",

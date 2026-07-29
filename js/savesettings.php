@@ -1,6 +1,5 @@
 <?php
 require_once(__DIR__ . '/../vendor/dashticz/security.php');
-require_once(__DIR__ . '/configwriter.php');
 
 dashticz_require_same_origin();
 dashticz_require_csrf();
@@ -26,28 +25,6 @@ if (!preg_match('/^[A-Za-z0-9_\-]+\.js$/', $cfgFile)) {
 $configPath = $customDir . '/' . $cfgFile;
 $before = '';
 $rows = [];
-
-// standby_blocks is a layout field for columns_standby[], not a config[...] key.
-$standbyBlocksPosted = array_key_exists('standby_blocks', $_POST);
-$standbyBlockKeys = [];
-if ($standbyBlocksPosted) {
-    $standbyRaw = json_decode($_POST['standby_blocks'], true);
-    if (json_last_error() !== JSON_ERROR_NONE || (!is_string($standbyRaw) && !is_numeric($standbyRaw))) {
-        dashticz_json_error(400, 'Invalid value for setting standby_blocks.');
-    }
-    $parts = preg_split('/\s*,\s*/', trim((string)$standbyRaw));
-    foreach ($parts as $part) {
-        if ($part === '') {
-            continue;
-        }
-        // Only allow safe block reference identifiers.
-        if (!preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $part)) {
-            dashticz_json_error(400, 'Invalid standby block reference: ' . $part);
-        }
-        $standbyBlockKeys[] = $part;
-    }
-    unset($_POST['standby_blocks']);
-}
 
 if (file_exists($configPath)) {
     $config = @file_get_contents($configPath);
@@ -106,11 +83,6 @@ foreach ($_POST as $name => $serializedValue) {
 }
 
 $newContents = $before . $newConfig . implode("\n", $rows);
-
-// Persist columns_standby when the Standby settings tile posted block refs.
-if ($standbyBlocksPosted) {
-    $newContents = configwriter_replace_standby_section($newContents, $standbyBlockKeys, 12);
-}
 
 if (!file_exists($configPath) && !is_writable($customDir)) {
     dashticz_json_error(500, 'The directory "custom/" is not writable by the web server' .

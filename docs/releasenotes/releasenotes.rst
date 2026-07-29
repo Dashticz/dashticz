@@ -11,6 +11,14 @@ Recent changes
 v3.21.3 beta (29-7-2026)
 --------------------------
 
+Fixes
+~~~~~
+
+* Standby settings: changing the background no longer rebuilds or clears ``columns_standby``, so standby blocks remain accessible and retain their configured widths and positions.
+* Standby settings: removed the redundant **Standby blocks** text field; standby content is managed through the Device, Widget and Layout editors.
+
+
+
 Enhancements
 ~~~~~~~~~~~~
 
