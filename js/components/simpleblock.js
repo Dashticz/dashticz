@@ -1,10 +1,14 @@
-/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor DashticzWidgetEditor isCustomConfigMode setConfigMode language */
+/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor DashticzWidgetEditor DashticzLayoutEditor isCustomConfigMode setConfigMode language DashticzScreenSwitcher */
 //# sourceURL=js/components/simpleblock.js
 var DT_simpleblock = (function () {
   var simpleBlocks = {
     logo: {
       defaultWidth: 2,
       render: renderLogo,
+    },
+    screenswitcher: {
+      defaultWidth: 2,
+      render: renderScreenSwitcher,
     },
     settings: {
       defaultWidth: 2,
@@ -128,6 +132,25 @@ var DT_simpleblock = (function () {
       $('<div>').text(title).html() +
       '</span></div>'
     );
+  }
+
+  function renderScreenSwitcher(me) {
+    var content =
+      '<div class="col-xs-' +
+      me.block.width +
+      ' dt-screen-switcher-host"></div>';
+    setTimeout(function () {
+      if (typeof DashticzScreenSwitcher !== 'undefined') {
+        DashticzScreenSwitcher.init();
+      } else {
+        DT_function.loadDTScript('js/screenswitcher.js').then(function () {
+          if (typeof DashticzScreenSwitcher !== 'undefined') {
+            DashticzScreenSwitcher.init();
+          }
+        });
+      }
+    }, 0);
+    return content;
   }
 
   function renderSettings(me) {

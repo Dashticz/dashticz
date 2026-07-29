@@ -4,6 +4,9 @@ Screens
 There is the ability to use multiple screens within Dashticz. Each screen can use it's own background.
 The background can also automatically change for the part of the day.
 
+In Wizard mode the topbar shows square buttons for **S** (Standby), **1** (Screen 1), and any extra screens.
+Screen 1 is always present. Use the **+** button to add Screen 2, 3, and so on. Those screens can hold the same kind of device and widget tiles as Screen 1; the Device / Widget / Layout editors apply to the screen that is currently active.
+
 ::
 
     //if you want to use multiple screens, use the code below:
@@ -97,7 +100,9 @@ To setup, use this code in config.js, change according your own needs::
 Standby Screen
 ~~~~~~~~~~~~~~
 There is the ability to let Dashticz go into standby mode. This defined with the ``config['standby_after']`` parameter in the CONFIG.js file.
-The screen get sort of grayed out and you can show items on the standby theme. These items MUST have been declared and used in the Dashboard::
+The screen get sort of grayed out and you can show items on the standby theme. These items MUST have been declared and used in the Dashboard.
+
+You can also open Standby manually with the **S** button in the topbar screen switcher (and return with **1**, **2**, …)::
 
     config['standby_after'] = 5;  //Enter standby mode after 5 minutes
     

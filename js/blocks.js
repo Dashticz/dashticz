@@ -39,23 +39,20 @@ function getBlock(cols, c, screendiv, standby) {
     var colclass = '';
     if (c === 'bar') colclass = 'transbg dark';
     var colwidth = 'col-sm-' + (cols.width ? cols.width + ' ' : '12 ');
-    if (standby) {
-      $(screendiv + ' .row').append(
-        '<div class="' + colwidth + ' col-xs-12 col' + c + '"></div>'
-      );
-    } else {
-      $(screendiv + ' .row').append(
-        '<div data-colindex="' +
+    // data-colindex is required for layout/device/widget editors (incl. standby).
+    $(screendiv + ' .row').append(
+      '<div data-colindex="' +
         c +
         '" class="' +
         colwidth +
-        ' col-xs-12 sortable col' +
+        ' col-xs-12 ' +
+        (standby ? '' : 'sortable ') +
+        'col' +
         c +
         ' ' +
         colclass +
         '"></div>'
-      );
-    }
+    );
     cols.blocks && cols['blocks'].forEach(function (b, i) {
       if (b)
         addBlock2Column(columndiv, c, b);

@@ -25,6 +25,8 @@ You can customize the Topbar with the following settings in ``CONFIG.js``::
     - Clock in Topbar
   * - settings
     - Device Editor, Visual Layout Editor, Settings & Fullscreen buttons in Topbar
+  * - (screen switcher)
+    - Built into the settings area: square ``S`` / ``1`` / ``2`` … buttons to switch Standby and screens; ``+`` adds a screen in Wizard mode
 
 Applicable config-parameters from ``CONFIG.js``:
 

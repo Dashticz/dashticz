@@ -1,4 +1,4 @@
-/* global Domoticz settings columns blocks myswiper */
+/* global Domoticz settings columns columns_standby blocks myswiper DashticzScreenSwitcher standbyActive */
 // eslint-disable-next-line no-unused-vars
 var DashticzLayoutEditor = (function () {
   'use strict';
@@ -18,12 +18,18 @@ var DashticzLayoutEditor = (function () {
   function open() {
     if (active) return;
 
-    var $screen = $('.screen.swiper-slide-active');
-    if (!$screen.length) $screen = $('.screen:visible').first();
+    var $screen = _activeScreenDom();
+    if (!$screen.length) {
+      alert('No active screen found.');
+      return;
+    }
 
-    var managedColumnRe = /^(de|we|le)_col\d+$|^col_\d+$/;
+    var managedColumnRe = /^(de|we|le)_s\d+_col\d+$|^(de|we|le)_col\d+$|^col_\d+$/;
+    var isStandby = _activeScreenTarget() === 'standby';
     var $managedColumns = $screen.find('[data-colindex]').filter(function () {
-      return managedColumnRe.test(String($(this).attr('data-colindex')));
+      var key = String($(this).attr('data-colindex'));
+      if (isStandby) return true;
+      return managedColumnRe.test(key);
     });
 
     if (!$managedColumns.length) {
@@ -52,19 +58,70 @@ var DashticzLayoutEditor = (function () {
     }
   }
 
+  function _activeScreenTarget() {
+    if (
+      typeof DashticzScreenSwitcher !== 'undefined' &&
+      DashticzScreenSwitcher.getActiveScreenNumber
+    ) {
+      return DashticzScreenSwitcher.getActiveScreenNumber();
+    }
+    if (typeof standbyActive !== 'undefined' && standbyActive) {
+      return 'standby';
+    }
+    if ($('.screenstandby:visible').length) return 'standby';
+    var $active = $('.dt-container .screen.swiper-slide-active[data-screenindex]');
+    if (!$active.length) {
+      $active = $('.dt-container .screen[data-screenindex]:visible').first();
+    }
+    var fromDom = parseInt($active.attr('data-screenindex'), 10);
+    return fromDom > 0 ? fromDom : 1;
+  }
+
+  function _activeScreenPayload() {
+    var target = _activeScreenTarget();
+    return target === 'standby' ? 'standby' : parseInt(target, 10) || 1;
+  }
+
+  function _activeScreenDom() {
+    if (_activeScreenTarget() === 'standby') {
+      var $standby = $('.screenstandby:visible');
+      if ($standby.length) return $standby;
+      return $('.screenstandby').first();
+    }
+    var num = _activeScreenPayload();
+    var $byIndex = $(
+      '.dt-container .screen[data-screenindex="' + num + '"]'
+    );
+    if ($byIndex.length) return $byIndex.first();
+    var $active = $('.dt-container .screen.swiper-slide-active');
+    if ($active.length) return $active;
+    return $('.dt-container .screen:visible').first();
+  }
+
   function _collectItems($managedColumns) {
     items = [];
     itemById = {};
     originalColumns = [];
+    var isStandby = _activeScreenTarget() === 'standby';
 
     $managedColumns.each(function () {
       var $column = $(this);
       var columnKey = String($column.attr('data-colindex'));
+      var sourceColumns = isStandby ? columns_standby : columns;
+      var lookupKey = columnKey;
+      if (
+        isStandby &&
+        (!sourceColumns || !sourceColumns[lookupKey]) &&
+        /^standby/.test(columnKey)
+      ) {
+        lookupKey = columnKey.replace(/^standby/, '');
+      }
       var refs =
-        typeof columns !== 'undefined' &&
-        columns[columnKey] &&
-        Array.isArray(columns[columnKey].blocks)
-          ? columns[columnKey].blocks
+        typeof sourceColumns !== 'undefined' &&
+        sourceColumns &&
+        sourceColumns[lookupKey] &&
+        Array.isArray(sourceColumns[lookupKey].blocks)
+          ? sourceColumns[lookupKey].blocks
           : [];
       var wrappers = $column.children('div[id^="block_"]').toArray();
 
@@ -635,6 +692,10 @@ var DashticzLayoutEditor = (function () {
       });
   }
 
+  function _activeScreenNumber() {
+    return _activeScreenPayload();
+  }
+
   function _save() {
     var $save = $toolbar.find('.dle-save').prop('disabled', true);
     $toolbar.find('.dle-cancel').prop('disabled', true);
@@ -659,17 +720,19 @@ var DashticzLayoutEditor = (function () {
       devices.push(deviceEntry);
     });
 
+    var screenNumber = _activeScreenPayload();
+
     $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
       .then(function (data) {
         var token = data.token;
         return _postLayoutData(
           'js/saveblocks.php',
-          { devices: devices },
+          { devices: devices, screen: screenNumber },
           token
         ).then(function (deviceResult) {
           return _postLayoutData(
             'js/savewidgets.php',
-            { widgets: widgets },
+            { widgets: widgets, screen: screenNumber },
             token
           ).then(function (widgetResult) {
             var deviceIndex = 0;
@@ -685,7 +748,7 @@ var DashticzLayoutEditor = (function () {
             });
             return _postLayoutData(
               'js/savelayout.php',
-              { items: layoutItems },
+              { items: layoutItems, screen: screenNumber },
               token
             );
           });

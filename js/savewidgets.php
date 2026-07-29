@@ -354,18 +354,27 @@ if ($readError !== null) {
     dashticz_json_error(500, $readError);
 }
 
-$startMarker = '// [widget-editor-start]';
-$endMarker = '// [widget-editor-end]';
+$screenNumber = configwriter_parse_screen_number($data, 1);
+list($startMarker, $endMarker) = configwriter_editor_markers('widget', $screenNumber);
 
 /*
  * Device/layout editors call this endpoint without a settings payload.
  * Keep previously saved widget config settings unless new ones are provided.
+ * Settings are global, so also fall back to the screen-1 widget section.
  */
 $existingSettings = configwriter_extract_section_config_settings(
     $config,
     $startMarker,
     $endMarker
 );
+if (empty($existingSettings) && $screenNumber !== 1) {
+    list($s1Start, $s1End) = configwriter_editor_markers('widget', 1);
+    $existingSettings = configwriter_extract_section_config_settings(
+        $config,
+        $s1Start,
+        $s1End
+    );
+}
 
 $config = configwriter_remove_section($config, $startMarker, $endMarker);
 $config = rtrim($config);
@@ -392,7 +401,8 @@ if (!empty($widgets)) {
         return $item;
     }, $widgets);
     $columnKeys = [];
-    foreach (configwriter_pack_columns_by_height($layoutItems, 12, 'we_col') as $column) {
+    $prefix = configwriter_column_prefix('we', $screenNumber);
+    foreach (configwriter_pack_columns_by_height($layoutItems, 12, $prefix) as $column) {
         $columnKeys[] = $column['key'];
         $section .= configwriter_emit_column_line(
             $column['key'],
@@ -401,8 +411,10 @@ if (!empty($widgets)) {
         );
     }
 
-    $section .= "\n" . configwriter_section_header('SCREENS') . "\n";
-    $section .= configwriter_emit_screen_columns(1, $columnKeys, 'merge');
+    if ($screenNumber > 0) {
+        $section .= "\n" . configwriter_section_header('SCREENS') . "\n";
+        $section .= configwriter_emit_screen_columns($screenNumber, $columnKeys, 'merge');
+    }
 
     if (!empty($configSettings)) {
         $section .= configwriter_emit_config_settings($configSettings, false);
