@@ -113,6 +113,7 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
 
 test('widget writer whitelists widgets and protects CONFIG.js writes', () => {
   const source = read('js/savewidgets.php');
+  const writer = read('js/configwriter.php');
   assert.match(source, /dashticz_require_same_origin\(\)/);
   assert.match(source, /dashticz_require_csrf\(\)/);
   assert.match(source, /REQUEST_METHOD.*POST/);
@@ -144,6 +145,9 @@ test('widget writer whitelists widgets and protects CONFIG.js writes', () => {
   assert.match(source, /Unknown clock type/);
   assert.match(source, /Calendar requires a valid http\(s\) ICS URL/);
   assert.match(source, /Camera requires a valid http\(s\) image URL/);
+  assert.match(source, /A camera widget supports up to 12 cameras/);
+  assert.match(source, /\$props\['cameras'\] = \$widget\['cameras'\]/);
+  assert.match(writer, /is_array\(\$value\)/);
   assert.match(source, /configwriter_editor_markers\('widget'/);
   assert.match(source, /blockKeys/);
   assert.match(source, /configwriter_write_config/);
@@ -190,14 +194,13 @@ test('device and widget writers keep the grouped layout until consolidation', ()
   }
 });
 
-test('layout writer packs tall blocks into virtual side columns', () => {
+test('layout writer keeps tall blocks on the same full-width grid', () => {
   const writer = read('js/configwriter.php');
   const layout = read('js/savelayout.php');
   const styles = read('css/creative.css');
   assert.match(writer, /function configwriter_pack_columns_by_height/);
-  assert.match(writer, /virtual tall column/);
   assert.match(writer, /rowsBeside/);
-  assert.match(writer, /append every side-pocket tile into the same short column/);
+  assert.match(writer, /Keep every tile in one full-width parent column/);
   assert.match(layout, /configwriter_build_layout_section/);
   assert.match(layout, /height/);
   assert.match(styles, /display: contents/);

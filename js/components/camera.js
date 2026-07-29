@@ -30,7 +30,8 @@ var DT_camera = {
     refresh: 1,
     slidedelay: 3,
     cameras: [],
-    width: 6,
+    width: 4,
+    height: 320,
   },
 
   /**

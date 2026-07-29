@@ -8,6 +8,20 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 Recent changes
 ---------------
 
+v3.21.3 beta (29-7-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Widget defaults: Google Maps, Camera, Air Quality, News, Weather, Spotify, Sonarr, Calendar, Public Transport, Traffic Information and 112 now use compact 4/12 widths and the requested rounded default heights.
+* Camera widget: the Widget Editor can configure multiple named cameras with image and optional MJPEG URLs, using the existing camera carousel.
+
+Fixes
+~~~~~
+
+* Visual editors: saving a layout with tall and short tiles now keeps every tile on the same 12-column grid, preserving its configured width, order and height after reload.
+
 v3.21.2 beta (28-7-2026)
 --------------------------
 

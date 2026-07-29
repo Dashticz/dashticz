@@ -153,21 +153,21 @@ if (isset($data['settings']) && is_array($data['settings'])) {
 }
 
 $catalog = [
-    'weather' => ['key' => 'widget_weather', 'width' => 12],
+    'weather' => ['key' => 'widget_weather', 'width' => 4, 'height' => 120],
     'garbage' => ['key' => 'widget_garbage', 'width' => 6],
-    'spotify' => ['key' => 'widget_spotify', 'width' => 6],
-    'sonarr' => ['key' => 'widget_sonarr', 'width' => 8],
+    'spotify' => ['key' => 'widget_spotify', 'width' => 4, 'height' => 120],
+    'sonarr' => ['key' => 'widget_sonarr', 'width' => 4, 'height' => 120],
     'clock' => ['key' => 'widget_clock', 'width' => 4],
-    'calendar' => ['key' => 'widget_calendar', 'width' => 8],
+    'calendar' => ['key' => 'widget_calendar', 'width' => 4, 'height' => 120],
     'secpanel' => ['key' => 'widget_secpanel', 'width' => 12],
-    'publictransport' => ['key' => 'widget_publictransport', 'width' => 12],
-    'trafficinfo' => ['key' => 'widget_trafficinfo', 'width' => 12],
-    'alarmmeldingen' => ['key' => 'widget_alarmmeldingen', 'width' => 12],
-    'camera' => ['key' => 'widget_cameras', 'width' => 6],
-    'map' => ['key' => 'widget_map', 'width' => 12],
-    'longfonds' => ['key' => 'widget_longfonds', 'width' => 6],
+    'publictransport' => ['key' => 'widget_publictransport', 'width' => 4, 'height' => 260],
+    'trafficinfo' => ['key' => 'widget_trafficinfo', 'width' => 4, 'height' => 260],
+    'alarmmeldingen' => ['key' => 'widget_alarmmeldingen', 'width' => 4, 'height' => 160],
+    'camera' => ['key' => 'widget_cameras', 'width' => 4, 'height' => 320],
+    'map' => ['key' => 'widget_map', 'width' => 4, 'height' => 500],
+    'longfonds' => ['key' => 'widget_longfonds', 'width' => 4, 'height' => 120],
     'moon' => ['key' => 'widget_moon', 'width' => 3],
-    'news' => ['key' => 'widget_news', 'width' => 12],
+    'news' => ['key' => 'widget_news', 'width' => 4, 'height' => 240],
 ];
 
 $widgets = [];
@@ -192,7 +192,9 @@ foreach ($data['widgets'] as $entry) {
         'width' => isset($entry['width'])
             ? max(1, min(12, (int)$entry['width']))
             : $catalog[$id]['width'],
-        'height' => null,
+        'height' => isset($catalog[$id]['height'])
+            ? $catalog[$id]['height']
+            : null,
     ];
     if (array_key_exists('height', $entry) && $entry['height'] !== null && $entry['height'] !== '') {
         $height = (int)(round(((int)$entry['height']) / 10) * 10);
@@ -316,17 +318,63 @@ foreach ($data['widgets'] as $entry) {
     }
 
     if ($id === 'camera') {
-        $imageUrl = isset($entry['imageUrl']) && is_string($entry['imageUrl'])
-            ? trim($entry['imageUrl'])
-            : '';
-        if ($imageUrl === '' || strlen($imageUrl) > 2048 || !preg_match('#^https?://[^\s]+$#i', $imageUrl)) {
-            dashticz_json_error(400, 'Camera requires a valid http(s) image URL.');
+        $cameraList = isset($entry['cameras']) && is_array($entry['cameras'])
+            ? $entry['cameras']
+            : [];
+        if (count($cameraList) > 12) {
+            dashticz_json_error(400, 'A camera widget supports up to 12 cameras.');
         }
-        $widget['imageUrl'] = $imageUrl;
-        if (isset($entry['videoUrl']) && is_string($entry['videoUrl'])) {
-            $videoUrl = trim($entry['videoUrl']);
-            if ($videoUrl !== '' && strlen($videoUrl) <= 2048 && preg_match('#^https?://[^\s]+$#i', $videoUrl)) {
-                $widget['videoUrl'] = $videoUrl;
+        if (!empty($cameraList)) {
+            $widget['cameras'] = [];
+            foreach ($cameraList as $index => $camera) {
+                if (!is_array($camera)) {
+                    dashticz_json_error(400, 'Each camera requires valid settings.');
+                }
+                $imageUrl = isset($camera['imageUrl']) && is_string($camera['imageUrl'])
+                    ? trim($camera['imageUrl'])
+                    : '';
+                if ($imageUrl === '' || strlen($imageUrl) > 2048 || !preg_match('#^https?://[^\s]+$#i', $imageUrl)) {
+                    dashticz_json_error(400, 'Camera ' . ($index + 1) . ' requires a valid http(s) image URL.');
+                }
+                $cameraEntry = [
+                    'title' => isset($camera['title']) && is_string($camera['title'])
+                        ? trim($camera['title'])
+                        : 'Camera ' . ($index + 1),
+                    'imageUrl' => $imageUrl,
+                ];
+                if ($cameraEntry['title'] === '' || strlen($cameraEntry['title']) > 100) {
+                    $cameraEntry['title'] = 'Camera ' . ($index + 1);
+                }
+                if (isset($camera['videoUrl']) && is_string($camera['videoUrl'])) {
+                    $videoUrl = trim($camera['videoUrl']);
+                    if ($videoUrl !== '' && (strlen($videoUrl) > 2048 || !preg_match('#^https?://[^\s]+$#i', $videoUrl))) {
+                        dashticz_json_error(400, 'Camera ' . ($index + 1) . ' requires a valid http(s) video URL.');
+                    }
+                    if ($videoUrl !== '') {
+                        $cameraEntry['videoUrl'] = $videoUrl;
+                    }
+                }
+                $widget['cameras'][] = $cameraEntry;
+            }
+        } else {
+            $imageUrl = isset($entry['imageUrl']) && is_string($entry['imageUrl'])
+                ? trim($entry['imageUrl'])
+                : '';
+            if ($imageUrl === '' || strlen($imageUrl) > 2048 || !preg_match('#^https?://[^\s]+$#i', $imageUrl)) {
+                dashticz_json_error(400, 'Camera requires a valid http(s) image URL.');
+            }
+            $widget['imageUrl'] = $imageUrl;
+            if (isset($entry['title']) && is_string($entry['title'])) {
+                $title = trim($entry['title']);
+                if ($title !== '' && strlen($title) <= 100) {
+                    $widget['cameraTitle'] = $title;
+                }
+            }
+            if (isset($entry['videoUrl']) && is_string($entry['videoUrl'])) {
+                $videoUrl = trim($entry['videoUrl']);
+                if ($videoUrl !== '' && strlen($videoUrl) <= 2048 && preg_match('#^https?://[^\s]+$#i', $videoUrl)) {
+                    $widget['videoUrl'] = $videoUrl;
+                }
             }
         }
     }
@@ -539,10 +587,16 @@ function _widgetBlockProps($widget)
             break;
         case 'camera':
             $props['type'] = 'camera';
-            $props['title'] = 'Camera';
-            $props['imageUrl'] = $widget['imageUrl'];
-            if (!empty($widget['videoUrl'])) {
-                $props['videoUrl'] = $widget['videoUrl'];
+            $props['title'] = isset($widget['cameraTitle'])
+                ? $widget['cameraTitle']
+                : 'Camera';
+            if (!empty($widget['cameras'])) {
+                $props['cameras'] = $widget['cameras'];
+            } else {
+                $props['imageUrl'] = $widget['imageUrl'];
+                if (!empty($widget['videoUrl'])) {
+                    $props['videoUrl'] = $widget['videoUrl'];
+                }
             }
             break;
         case 'map':

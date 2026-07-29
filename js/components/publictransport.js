@@ -20,7 +20,9 @@
         clickHandler: true,
         results: 10,
         show_via: true,
-        show_direction: false
+        show_direction: false,
+        width: 4,
+        height: 260
       };
       if (!block || !block.station) {
         result.url =

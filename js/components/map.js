@@ -39,8 +39,8 @@ function gm_authFailure() {
         refresh: 600,
         clickHandler: false,
         api: settings['gm_api'],
-        width: 6,
-        //            height: '400px',
+        width: 4,
+        height: 500,
         //            aspectratio:0.5,
         containerClass: 'swiper-no-swiping',
         longitude: parseFloat(Domoticz.getAllDevices()['_settings'].Location.Longitude),
@@ -58,8 +58,7 @@ function gm_authFailure() {
 
       };
       if(choose(block.showmap, true)) {
-        result.width=12;
-        if (!block.height) result.aspectratio = 0.6;
+        result.width=4;
       }
       else {
         result.icon='fas fa-solid fa-route'
@@ -335,4 +334,3 @@ function setRefreshTime(me) {
 
 Dashticz.register(DT_googlemaps);
 }(Dashticz));
-
