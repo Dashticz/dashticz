@@ -22,7 +22,9 @@ var DT_trafficinfo = {
       showemptyroads: false,
       trafficJams: true,
       roadWorks: true,
-      radars: true
+      radars: true,
+      width: 4,
+      height: 260
     };
   },
   defaultContent: language.misc.loading,

@@ -13,6 +13,8 @@ var DT_news = {
     containerClass: 'hover',
     feed: settings['default_news_url'],
     refresh: 300,
+    width: 4,
+    height: 240,
   },
   run: function (me) {
     me.height =

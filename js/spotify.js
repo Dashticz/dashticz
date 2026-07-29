@@ -12,11 +12,11 @@ var SpotifyModule = (function () {
   function _getSpotify(columndiv, block) {
     var random = getRandomInt(1, 100000);
     block = block || {};
-    var fixedHeight = parseInt(block.height, 10);
+    var fixedHeight = parseInt(block.height, 10) || 120;
     var heightClass = fixedHeight > 0 ? ' fixedheight' : '';
     var heightStyle =
       fixedHeight > 0 ? 'height:' + fixedHeight + 'px !important;' : '';
-    var width = Math.max(1, Math.min(12, parseInt(block.width, 10) || 12));
+    var width = Math.max(1, Math.min(12, parseInt(block.width, 10) || 4));
     if (
       typeof Cookies.get('spotifyToken') !== 'undefined' ||
       typeof CUR_URI[1] !== 'undefined'

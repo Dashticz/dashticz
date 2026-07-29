@@ -40,9 +40,9 @@ assert_pack(
     ]
 );
 
-// Tall right tile: side-pocket shorts join the short column (no flex gap).
+// Tall right tile: keep one full-width parent so child widths are not scaled.
 assert_pack(
-    'tall block creates virtual side column',
+    'tall block keeps full-width parent column',
     [
         ['ref' => 'BLOK1', 'width' => 4, 'height' => 120],
         ['ref' => 'BLOK2', 'width' => 4, 'height' => 120],
@@ -51,12 +51,11 @@ assert_pack(
         ['ref' => 'BLOK5', 'width' => 4, 'height' => 120],
     ],
     [
-        ['blocks' => ['BLOK1', 'BLOK2', 'BLOK4', 'BLOK5'], 'width' => 8],
-        ['blocks' => ['BLOK3'], 'width' => 4],
+        ['blocks' => ['BLOK1', 'BLOK2', 'BLOK3', 'BLOK4', 'BLOK5'], 'width' => 12],
     ]
 );
 
-// Triple-height tall tile fills two side pockets inside the short column.
+// Triple-height tall tile and side-pocket items retain their original order.
 assert_pack(
     'triple height fills two side rows',
     [
@@ -66,8 +65,7 @@ assert_pack(
         ['ref' => 'C', 'width' => 6, 'height' => 120],
     ],
     [
-        ['blocks' => ['A', 'B', 'C'], 'width' => 6],
-        ['blocks' => ['T'], 'width' => 6],
+        ['blocks' => ['A', 'T', 'B', 'C'], 'width' => 12],
     ]
 );
 

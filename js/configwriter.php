@@ -266,6 +266,13 @@ function configwriter_format_props($props)
             $parts[] = $key . ':' . $value;
             continue;
         }
+        if (is_array($value)) {
+            $parts[] = $key . ':' . json_encode(
+                $value,
+                JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
+            );
+            continue;
+        }
         $parts[] = $key . ":'" . configwriter_js_string_escape((string)$value) . "'";
     }
 
@@ -404,7 +411,7 @@ function configwriter_pack_columns_by_height($items, $columnWidth = 12, $keyPref
 
         /*
          * Step 2 — decide whether this row contains a tall block that should
-         * become a virtual side column.
+         * allow following short tiles to fill the space beside it.
          *
          * Base height = the tallest *short* tile on the row (or the default row
          * height when every tile shares the max). A tile is "tall" when it is
@@ -440,30 +447,20 @@ function configwriter_pack_columns_by_height($items, $columnWidth = 12, $keyPref
         }
 
         $tall = $row[$tallIndex];
-        $shortBlocks = [];
-        foreach ($row as $i => $item) {
-            if ($i === $tallIndex) {
-                continue;
-            }
-            $shortBlocks[] = $item['ref'];
-        }
+        $packedBlocks = array_map(function ($item) {
+            return $item['ref'];
+        }, $row);
 
         /*
-         * Step 3 — shrink the short column and add the virtual tall column.
+         * Step 3 — calculate the short-tile space beside the tall tile.
          *
-         * Current column width becomes (gridWidth - tallWidth) so the short
-         * tiles sit on one side. The tall tile gets its own column of width
-         * tallWidth. Together they still sum to the full grid width.
+         * Child widths remain based on the full grid; this value is used only
+         * to decide how many following tiles fit beside the tall tile.
          *
-         * IMPORTANT (Bootstrap 5 flex rows): do NOT emit the side-pocket short
-         * tiles as separate columns. A new flex line always starts below the
-         * tallest item of the previous line, which leaves a gap under the
-         * short tiles (e.g. BMW sitting below APC instead of under Afval).
-         * Instead, append every side-pocket tile into the same short column so
-         * they stack (or float-pack) directly under the opening short tiles.
+         * The full-width parent column lets the dashboard's float layout place
+         * the side-pocket tiles without scaling their configured widths.
          */
         $sideWidth = max(1, $columnWidth - $tall['width']);
-        $tallWidth = $tall['width'];
 
         /*
          * Step 4 — how many extra short rows still fit beside the tall tile?
@@ -471,7 +468,7 @@ function configwriter_pack_columns_by_height($items, $columnWidth = 12, $keyPref
          * rowsBeside = floor(tallHeight / baseHeight) - 1
          * (the first baseHeight unit was already consumed by the short tiles
          * on the opening row). Pull those tiles now and append them to
-         * shortBlocks before emitting the short column.
+         * packedBlocks before emitting the full-width parent column.
          */
         $rowsBeside = (int)floor($maxHeight / max(1, $baseHeight)) - 1;
         for ($rowSlot = 0; $rowSlot < $rowsBeside; $rowSlot++) {
@@ -491,7 +488,7 @@ function configwriter_pack_columns_by_height($items, $columnWidth = 12, $keyPref
                     // Too wide for the pocket — leave it for a later full-width pass.
                     break;
                 }
-                $shortBlocks[] = $candidate['ref'];
+                $packedBlocks[] = $candidate['ref'];
                 $sideRowWidth += $candidate['width'];
                 $added++;
                 $index++;
@@ -502,18 +499,17 @@ function configwriter_pack_columns_by_height($items, $columnWidth = 12, $keyPref
             }
         }
 
-        if (!empty($shortBlocks)) {
-            $packed[] = [
-                'key' => $keyPrefix . $columnNumber++,
-                'blocks' => $shortBlocks,
-                'width' => $sideWidth,
-            ];
-        }
-
+        /*
+         * Keep every tile in one full-width parent column. Tile widths are
+         * already expressed on the same 12-column grid; nesting them inside
+         * narrower side columns scales them a second time and changes both
+         * their visual width and order after saving. The dashboard's float
+         * layout packs the short tiles beside the tall tile within this column.
+         */
         $packed[] = [
             'key' => $keyPrefix . $columnNumber++,
-            'blocks' => [$tall['ref']],
-            'width' => $tallWidth,
+            'blocks' => $packedBlocks,
+            'width' => $columnWidth,
         ];
     }
 

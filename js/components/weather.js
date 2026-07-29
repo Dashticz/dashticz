@@ -64,6 +64,8 @@ var DT_weather = (function () {
         interval: 1,
         refresh: 3600, //update once per hour
         icon: 'fas fa-sun',
+        width: 4,
+        height: 120,
         scale: 1,
         containerClass: 'weather_' + layout,
         decimals: 1,

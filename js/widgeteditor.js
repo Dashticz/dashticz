@@ -10,7 +10,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Weer',
       description: 'Weersverwachting via OpenWeather of Weather Underground.',
       icon: 'fas fa-cloud-sun',
-      width: 12,
+      width: 4,
+      height: 120,
     },
     {
       id: 'garbage',
@@ -26,7 +27,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Spotify',
       description: 'Spotify Connect-afstandsbediening.',
       icon: 'fab fa-spotify',
-      width: 6,
+      width: 4,
+      height: 120,
     },
     {
       id: 'sonarr',
@@ -34,7 +36,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Sonarr',
       description: 'Aankomende afleveringen uit Sonarr.',
       icon: 'fas fa-tv',
-      width: 8,
+      width: 4,
+      height: 120,
     },
     {
       id: 'clock',
@@ -50,7 +53,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Kalender (ICS)',
       description: 'Afspraken uit een online ICS-agenda.',
       icon: 'fas fa-calendar-alt',
-      width: 8,
+      width: 4,
+      height: 120,
     },
     {
       id: 'secpanel',
@@ -66,7 +70,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Openbaar vervoer',
       description: 'Vertrektijden van treinen, bus of tram.',
       icon: 'fas fa-train',
-      width: 12,
+      width: 4,
+      height: 260,
     },
     {
       id: 'trafficinfo',
@@ -74,7 +79,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Verkeersinfo',
       description: 'ANWB files, werkzaamheden en radars.',
       icon: 'fas fa-car',
-      width: 12,
+      width: 4,
+      height: 260,
     },
     {
       id: 'alarmmeldingen',
@@ -82,7 +88,8 @@ var DashticzWidgetEditor = (function () {
       title: '112',
       description: 'Nederlandse 112-meldingen (alarmeringen.nl).',
       icon: 'fas fa-bullhorn',
-      width: 12,
+      width: 4,
+      height: 160,
     },
     {
       id: 'camera',
@@ -90,7 +97,8 @@ var DashticzWidgetEditor = (function () {
       title: "Camera's",
       description: 'Camera-beeld of MJPEG-stream.',
       icon: 'fas fa-video',
-      width: 6,
+      width: 4,
+      height: 320,
     },
     {
       id: 'map',
@@ -98,7 +106,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Google Maps',
       description: 'Kaart met optioneel verkeer en route.',
       icon: 'fas fa-map-marked-alt',
-      width: 12,
+      width: 4,
+      height: 500,
     },
     {
       id: 'longfonds',
@@ -106,7 +115,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Luchtkwaliteit',
       description: 'Longfonds / RIVM luchtkwaliteit op postcode.',
       icon: 'fas fa-wind',
-      width: 6,
+      width: 4,
+      height: 120,
     },
     {
       id: 'moon',
@@ -122,7 +132,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Nieuws',
       description: 'RSS-nieuwsfeed met automatische scroll.',
       icon: 'fas fa-newspaper',
-      width: 12,
+      width: 4,
+      height: 240,
     },
   ];
 
@@ -205,8 +216,7 @@ var DashticzWidgetEditor = (function () {
   var clockType = 'basicclock';
   var publicTransportStation = 'UT';
   var publicTransportProvider = 'treinen';
-  var cameraImageUrl = '';
-  var cameraVideoUrl = '';
+  var cameraConfigs = [];
   var alarmRss = 'https://www.alarmeringen.nl/feeds/all.rss';
   var alarmFilter = '';
   var widgetConfigs = {};
@@ -228,8 +238,7 @@ var DashticzWidgetEditor = (function () {
     clockType = 'basicclock';
     publicTransportStation = 'UT';
     publicTransportProvider = 'treinen';
-    cameraImageUrl = '';
-    cameraVideoUrl = '';
+    cameraConfigs = [{ title: 'Camera 1', imageUrl: '', videoUrl: '' }];
     alarmRss = 'https://www.alarmeringen.nl/feeds/all.rss';
     alarmFilter = '';
 
@@ -441,11 +450,37 @@ var DashticzWidgetEditor = (function () {
           }
         }
         if (item.id === 'camera') {
-          if (typeof definition.imageUrl === 'string') {
-            cameraImageUrl = definition.imageUrl;
-          }
-          if (typeof definition.videoUrl === 'string') {
-            cameraVideoUrl = definition.videoUrl;
+          if (Array.isArray(definition.cameras) && definition.cameras.length) {
+            cameraConfigs = definition.cameras.map(function (camera, index) {
+              return {
+                title:
+                  camera && typeof camera.title === 'string'
+                    ? camera.title
+                    : 'Camera ' + (index + 1),
+                imageUrl:
+                  camera && typeof camera.imageUrl === 'string'
+                    ? camera.imageUrl
+                    : '',
+                videoUrl:
+                  camera && typeof camera.videoUrl === 'string'
+                    ? camera.videoUrl
+                    : '',
+              };
+            });
+          } else if (typeof definition.imageUrl === 'string') {
+            cameraConfigs = [
+              {
+                title:
+                  typeof definition.title === 'string'
+                    ? definition.title
+                    : 'Camera',
+                imageUrl: definition.imageUrl,
+                videoUrl:
+                  typeof definition.videoUrl === 'string'
+                    ? definition.videoUrl
+                    : '',
+              },
+            ];
           }
         }
         if (item.id === 'alarmmeldingen') {
@@ -458,6 +493,10 @@ var DashticzWidgetEditor = (function () {
         }
       });
     });
+
+    if (!cameraConfigs.length) {
+      cameraConfigs = [{ title: 'Camera 1', imageUrl: '', videoUrl: '' }];
+    }
   }
 
   function _activeScreenTarget() {
@@ -696,6 +735,33 @@ var DashticzWidgetEditor = (function () {
 
   function _cfgHeading(text) {
     return '<h6 class="mt-3 mb-2" style="font-size:13px;font-weight:700;color:#495057">' + text + '</h6>';
+  }
+
+  function _cameraRowHtml(camera, index) {
+    camera = camera || {};
+    return (
+      '<div class="we-camera-row border rounded p-2 mb-2" data-camera-index="' +
+      index +
+      '">' +
+      '<div class="d-flex align-items-center justify-content-between mb-2">' +
+      '<strong>Camera ' +
+      (index + 1) +
+      '</strong>' +
+      '<button type="button" class="btn btn-sm btn-outline-danger we-camera-remove" aria-label="Camera verwijderen">' +
+      '<i class="fas fa-minus" aria-hidden="true"></i></button></div>' +
+      '<div class="mb-2"><label class="form-label we-field-label">Naam</label>' +
+      '<input type="text" class="form-control form-control-sm we-camera-title" maxlength="100" value="' +
+      _esc(camera.title || 'Camera ' + (index + 1)) +
+      '"></div>' +
+      '<div class="mb-2"><label class="form-label we-field-label">Image URL</label>' +
+      '<input type="url" class="form-control form-control-sm we-camera-image" value="' +
+      _esc(camera.imageUrl || '') +
+      '"></div>' +
+      '<div><label class="form-label we-field-label">Video URL (optioneel, MJPEG)</label>' +
+      '<input type="url" class="form-control form-control-sm we-camera-video" value="' +
+      _esc(camera.videoUrl || '') +
+      '"></div></div>'
+    );
   }
 
   function _buildConfigModalHtml(item) {
@@ -953,18 +1019,14 @@ var DashticzWidgetEditor = (function () {
         '<div class="form-text" style="font-size:11px;color:#6c757d">Kommagescheiden zoektermen, bijv. Amsterdam, Utrecht.</div></div>';
 
     } else if (item.id === 'camera') {
+      fields += '<div id="we-cfg-camera-list">';
+      cameraConfigs.forEach(function (camera, index) {
+        fields += _cameraRowHtml(camera, index);
+      });
       fields +=
-        '<div class="mb-3">' +
-        '<label class="form-label we-field-label" for="we-cfg-camera-image">Image URL</label>' +
-        '<input type="url" class="form-control form-control-sm we-widget-field" id="we-cfg-camera-image" value="' +
-        _esc(cameraImageUrl) +
-        '"></div>';
-      fields +=
-        '<div class="mb-3">' +
-        '<label class="form-label we-field-label" for="we-cfg-camera-video">Video URL (optioneel, MJPEG)</label>' +
-        '<input type="url" class="form-control form-control-sm we-widget-field" id="we-cfg-camera-video" value="' +
-        _esc(cameraVideoUrl) +
-        '"></div>';
+        '</div>' +
+        '<button type="button" class="btn btn-sm btn-outline-primary" id="we-camera-add">' +
+        '<i class="fas fa-plus me-1" aria-hidden="true"></i>Camera toevoegen</button>';
 
     } else if (item.id === 'map') {
       var mcfg = widgetConfigs.map || {};
@@ -1040,6 +1102,40 @@ var DashticzWidgetEditor = (function () {
       $cfgModal.find('.we-clock-size-group').toggle(type !== 'miniclock');
     });
 
+    $cfgModal.on('click', '#we-camera-add', function () {
+      var index = $cfgModal.find('.we-camera-row').length;
+      $('#we-cfg-camera-list').append(
+        _cameraRowHtml(
+          { title: 'Camera ' + (index + 1), imageUrl: '', videoUrl: '' },
+          index
+        )
+      );
+      $cfgModal.find('.we-camera-remove').prop(
+        'disabled',
+        $cfgModal.find('.we-camera-row').length <= 1
+      );
+    });
+
+    $cfgModal.on('click', '.we-camera-remove', function () {
+      if ($cfgModal.find('.we-camera-row').length <= 1) return;
+      $(this).closest('.we-camera-row').remove();
+      $cfgModal.find('.we-camera-row').each(function (index) {
+        $(this).attr('data-camera-index', index);
+        $(this)
+          .find('strong')
+          .text('Camera ' + (index + 1));
+      });
+      $cfgModal.find('.we-camera-remove').prop(
+        'disabled',
+        $cfgModal.find('.we-camera-row').length <= 1
+      );
+    });
+
+    $cfgModal.find('.we-camera-remove').prop(
+      'disabled',
+      $cfgModal.find('.we-camera-row').length <= 1
+    );
+
     $cfgModal.on('click', '#we-cfg-ok-btn', function () {
       var valid = true;
 
@@ -1093,14 +1189,34 @@ var DashticzWidgetEditor = (function () {
           alarmFilter = $.trim($('#we-cfg-alarm-filter').val() || '');
         }
       } else if (widgetId === 'camera') {
-        var imageUrl = $.trim($('#we-cfg-camera-image').val() || '');
-        if (!imageUrl || !/^https?:\/\/\S+$/i.test(imageUrl)) {
-          $('.we-cfg-message').addClass('text-danger').text('Vul een geldige http(s)-image-URL in.');
-          valid = false;
-        } else {
-          cameraImageUrl = imageUrl;
-          cameraVideoUrl = $.trim($('#we-cfg-camera-video').val() || '');
-        }
+        var cameras = [];
+        $cfgModal.find('.we-camera-row').each(function (index) {
+          var imageUrl = $.trim($(this).find('.we-camera-image').val() || '');
+          var videoUrl = $.trim($(this).find('.we-camera-video').val() || '');
+          if (
+            !imageUrl ||
+            !/^https?:\/\/\S+$/i.test(imageUrl) ||
+            (videoUrl && !/^https?:\/\/\S+$/i.test(videoUrl))
+          ) {
+            $('.we-cfg-message')
+              .addClass('text-danger')
+              .text(
+                'Vul voor camera ' +
+                  (index + 1) +
+                  ' geldige http(s)-URL(s) in.'
+              );
+            valid = false;
+            return false;
+          }
+          cameras.push({
+            title:
+              $.trim($(this).find('.we-camera-title').val() || '') ||
+              'Camera ' + (index + 1),
+            imageUrl: imageUrl,
+            videoUrl: videoUrl,
+          });
+        });
+        if (valid) cameraConfigs = cameras;
       } else if (widgetId === 'map') {
         widgetConfigs.map = collected;
       } else if (widgetId === 'longfonds') {
@@ -1212,7 +1328,17 @@ var DashticzWidgetEditor = (function () {
         .text('Vul voor Kalender een geldige http(s)-ICS-URL in.');
       return;
     }
-    if (selectedWidgets.camera && !/^https?:\/\/\S+$/i.test(cameraImageUrl)) {
+    if (
+      selectedWidgets.camera &&
+      (!cameraConfigs.length ||
+        cameraConfigs.some(function (camera) {
+          return (
+            !/^https?:\/\/\S+$/i.test(camera.imageUrl || '') ||
+            (camera.videoUrl &&
+              !/^https?:\/\/\S+$/i.test(camera.videoUrl))
+          );
+        }))
+    ) {
       $('.we-message')
         .addClass('text-danger')
         .text("Vul bij Camera's een geldige image-URL in (tandwiel).");
@@ -1250,7 +1376,9 @@ var DashticzWidgetEditor = (function () {
       var entry = { id: item.id };
       var dimensions = widgetDimensions[item.id] || {};
       entry.width = dimensions.width || item.width;
-      if (dimensions.height) entry.height = dimensions.height;
+      if (dimensions.height || item.height) {
+        entry.height = dimensions.height || item.height;
+      }
       if (item.id === 'weather') entry.provider = weatherProvider;
       if (item.id === 'weather' && widgetConfigs.weather) {
         var wcfg = widgetConfigs.weather;
@@ -1292,8 +1420,15 @@ var DashticzWidgetEditor = (function () {
         entry.provider = publicTransportProvider;
       }
       if (item.id === 'camera') {
-        entry.imageUrl = cameraImageUrl;
-        if (cameraVideoUrl) entry.videoUrl = cameraVideoUrl;
+        if (cameraConfigs.length === 1) {
+          entry.title = cameraConfigs[0].title;
+          entry.imageUrl = cameraConfigs[0].imageUrl;
+          if (cameraConfigs[0].videoUrl) {
+            entry.videoUrl = cameraConfigs[0].videoUrl;
+          }
+        } else {
+          entry.cameras = cameraConfigs;
+        }
       }
       if (item.id === 'alarmmeldingen') {
         entry.rss = alarmRss;

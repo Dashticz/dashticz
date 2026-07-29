@@ -401,6 +401,27 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(widgetEditor, /Miniclock/);
   assert.match(widgetEditor, /we-cfg-calendar-url/);
   assert.match(widgetEditor, /we-cfg-clock-type/);
+  assert.match(widgetEditor, /id="we-camera-add"/);
+  assert.match(widgetEditor, /class="we-camera-row/);
+  assert.match(widgetEditor, /entry\.cameras = cameraConfigs/);
+  for (const [id, width, height] of [
+    ['weather', 4, 120],
+    ['spotify', 4, 120],
+    ['sonarr', 4, 120],
+    ['calendar', 4, 120],
+    ['publictransport', 4, 260],
+    ['trafficinfo', 4, 260],
+    ['alarmmeldingen', 4, 160],
+    ['camera', 4, 320],
+    ['map', 4, 500],
+    ['longfonds', 4, 120],
+    ['news', 4, 240],
+  ]) {
+    assert.match(
+      widgetEditor,
+      new RegExp(`id: '${id}'[\\s\\S]*?width: ${width},[\\s\\S]*?height: ${height},`)
+    );
+  }
   assert.match(widgetEditor, /js\/savewidgets\.php/);
   assert.match(widgetEditor, /js\/savelayout\.php/);
   assert.match(widgetEditor, /var layoutOrder = \[\]/);

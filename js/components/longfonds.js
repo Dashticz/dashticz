@@ -14,6 +14,8 @@ var DT_longfonds = {
     url: 'https://www.longfonds.nl/gezondelucht',
     newwindow: 1,
     containerClass: 'hover',
+    width: 4,
+    height: 120,
   },
   run: function (me) {
     me.$mountPoint.click(function () {

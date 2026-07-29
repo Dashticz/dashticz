@@ -15,7 +15,9 @@ var DT_calendar = {
     emptytext: 'Geen afspraken.',
     method: 1,
     eventClasses: {},
-    refresh:600
+    refresh:600,
+    width: 4,
+    height: 120
   },
   run: function (me) {
     if (me.block.type === 'calendar') {
