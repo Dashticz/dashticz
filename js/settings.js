@@ -1366,7 +1366,7 @@ function renderSettingsCategoryHome() {
     } else {
       for (var s in settingList[id]) {
         if (s !== 'title') {
-          // Standby path field is rendered under the picker after the blocks row.
+          // Standby path field is rendered as part of the background picker.
           if (id === 'standby' && s === 'standby_background') {
             continue;
           }
@@ -1378,7 +1378,6 @@ function renderSettingsCategoryHome() {
         }
       }
       if (id === 'standby') {
-        html += renderStandbyExtras();
         html += renderBackgroundPicker(
           'standby_background',
           settingList.standby.standby_background
@@ -1387,52 +1386,6 @@ function renderSettingsCategoryHome() {
     }
     html += '</div>';
   }
-
-  return html;
-}
-
-function getStandbyBlocksValue() {
-  if (
-    typeof columns_standby === 'undefined' ||
-    !columns_standby ||
-    !columns_standby[1] ||
-    !columns_standby[1].blocks
-  ) {
-    return '';
-  }
-  return columns_standby[1].blocks.join(', ');
-}
-
-function renderStandbyExtras() {
-  var blocksLabel =
-    (language.settings.standby && language.settings.standby.blocks) ||
-    'Standby blocks';
-  var blocksHelp =
-    (language.settings.standby && language.settings.standby.blocks_help) ||
-    'Comma-separated block keys for columns_standby, e.g. clock, currentweather_big, weather';
-  var html = '';
-
-  html += '<div class="settings-row">';
-  html +=
-    '<label class="settings-label" for="setting-standby_blocks">' +
-    escapeSettingsHtml(blocksLabel) +
-    '</label>';
-  html += '<div class="settings-control">';
-  html +=
-    '<input class="form-control" type="text" id="setting-standby_blocks" ' +
-    'name="standby_blocks" value="' +
-    escapeSettingsHtml(getStandbyBlocksValue()) +
-    '">';
-  html += '</div><div class="settings-help-slot">';
-  html +=
-    '<button type="button" class="settings-help" data-bs-toggle="tooltip" ' +
-    'data-bs-trigger="click" data-bs-placement="right" ' +
-    'data-bs-custom-class="settings-tooltip" title="' +
-    escapeSettingsHtml(blocksHelp) +
-    '" aria-label="' +
-    escapeSettingsHtml(blocksHelp) +
-    '"><i class="fas fa-info-circle" aria-hidden="true"></i></button>';
-  html += '</div></div>';
 
   return html;
 }
@@ -2067,7 +2020,6 @@ function addSettingsAboutItems() {
 function saveSettings() {
   var saveSettings = {};
   var alertSettings = 'var config = {}\n';
-  var standbyBlocksValue = null;
   $('div#settingspopup input[type="text"],div#settingspopup input[type="hidden"],div#settingspopup select').each(
     function () {
         // Skip UI-only controls that must not become config[...] keys.
@@ -2084,12 +2036,6 @@ function saveSettings() {
         val = parseFloat(val);
       var settingName = $(this).attr('name');
       var serializedValue = JSON.stringify(val);
-      if (settingName === 'standby_blocks') {
-        // Written by savesettings.php as columns_standby, not config[].
-        standbyBlocksValue = String($(this).val() || '');
-        saveSettings[settingName] = JSON.stringify(standbyBlocksValue);
-        return;
-      }
       saveSettings[settingName] = serializedValue;
       alertSettings +=
         'config[' + JSON.stringify(settingName) + '] = ' + serializedValue + ';\n';
@@ -2105,26 +2051,6 @@ function saveSettings() {
       saveSettings[$(this).attr('name')] = JSON.stringify(0);
     }
   });
-
-  if (standbyBlocksValue !== null) {
-    var blockParts = standbyBlocksValue
-      .split(',')
-      .map(function (part) {
-        return part.trim();
-      })
-      .filter(Boolean);
-    alertSettings +=
-      '\nif (typeof columns_standby === \'undefined\') var columns_standby = {};\n' +
-      'columns_standby[1] = {};\n' +
-      "columns_standby[1]['blocks'] = [" +
-      blockParts
-        .map(function (key) {
-          return JSON.stringify(key);
-        })
-        .join(', ') +
-      "];\n" +
-      "columns_standby[1]['width'] = 12;\n";
-  }
 
   function showSettingsOutput(saved, errorMessage) {
       var html =
