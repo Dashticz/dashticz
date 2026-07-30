@@ -334,6 +334,21 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(editor, /dle-remove-button/);
   assert.match(editor, /js\/savewidgets\.php/);
   assert.match(editor, /js\/savelayout\.php/);
+  assert.match(editor, /js\/savegridlayout\.php/);
+  assert.match(editor, /function _collectGridItems/);
+  assert.match(editor, /function convertCurrentScreenToGrid/);
+  assert.match(editor, /function _buildColumnGridConversion/);
+  assert.match(editor, /function _firstFreeGridPosition/);
+  assert.match(editor, /function _moveGridItem/);
+  assert.match(editor, /function _resizeGridItem/);
+  assert.match(editor, /function _saveGrid/);
+  assert.match(editor, /--dt-grid-x/);
+  assert.match(editor, /--dt-grid-h/);
+  assert.match(simpleBlock, /Wizard gebruikt altijd een vrije grid-layout/);
+  assert.match(
+    simpleBlock,
+    /convertCurrentScreenToGrid\(\s*true,\s*'wizard'/
+  );
   assert.match(editor, /widgetResult\.blockKeys/);
   assert.match(editor, /widget_alarmmeldingen: 'alarmmeldingen'/);
   assert.match(editor, /widgets\.push\(_widgetPayload\(item\)\)/);
@@ -360,11 +375,14 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(deviceEditor, /screen: _activeScreenPayload\(\)/);
   assert.match(deviceEditor, /function _widgetFromReference/);
   assert.match(deviceEditor, /widget_alarmmeldingen: \{ id: 'alarmmeldingen', title: '112' \}/);
-  assert.match(deviceEditor, /return _widgetPayload\(orderKey\)/);
+  assert.match(deviceEditor, /_widgetPayload\(orderKey\)/);
   assert.match(deviceEditor, /Widget - /);
   assert.match(deviceEditor, /var managedOrder/);
   assert.match(deviceEditor, /js\/savewidgets\.php/);
   assert.match(deviceEditor, /js\/savelayout\.php/);
+  assert.match(deviceEditor, /js\/savegridlayout\.php/);
+  assert.match(deviceEditor, /blocksOnly: gridMode/);
+  assert.match(deviceEditor, /function _getAllManagedGridItems/);
   assert.match(deviceEditor, /data-order-key/);
   assert.match(deviceEditor, /de-width-input[\s\S]*value="3"/);
   assert.match(deviceEditor, /if \(!width\) width = 3/);
@@ -481,6 +499,9 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   }
   assert.match(widgetEditor, /js\/savewidgets\.php/);
   assert.match(widgetEditor, /js\/savelayout\.php/);
+  assert.match(widgetEditor, /js\/savegridlayout\.php/);
+  assert.match(widgetEditor, /blocksOnly: gridMode/);
+  assert.match(widgetEditor, /function _readGridConfiguredWidgets/);
   assert.match(widgetEditor, /var layoutOrder = \[\]/);
   assert.match(widgetEditor, /if \(!selectedWidgets\[item\.widgetId\]\) return/);
   assert.match(widgetEditor, /layoutItems\.push\(widgetEntry\)/);
@@ -730,6 +751,11 @@ test('standby background image is not overwritten by standby CSS', () => {
     styles,
     /\.standby \.screenstandby\s*\{[^}]*background-size: cover;[^}]*\}/
   );
+  assert.match(
+    styles,
+    /\.standby \.screenstandby\s*\{[^}]*position: fixed;[^}]*inset: 0;[^}]*max-width: 100vw;[^}]*max-height: 100dvh;[^}]*overflow: hidden;[^}]*background-size: cover;[^}]*\}/
+  );
+  assert.doesNotMatch(main, /screenstandby[^]*style="height:/);
   assert.doesNotMatch(
     styles,
     /\.standby \.swiper-slide\s*\{[\s\S]*?background-image: none !important;/
@@ -776,6 +802,9 @@ test('topbar screen switcher supports standby and extra screens', () => {
   assert.match(main, /js\/screenswitcher\.js/);
   assert.match(main, /DashticzScreenSwitcher\.init\(\)/);
   assert.match(main, /DashticzScreenSwitcher\.mountIntoStandby\(\)/);
+  assert.match(main, /var standby_screen = \{\}/);
+  assert.match(main, /function hasStandbyContent/);
+  assert.match(main, /DashticzGridLayout\.renderGridScreen\(\s*standby_screen/);
   assert.match(main, /screenswitcher/);
   assert.match(main, /isStandbyEditMode/);
   assert.match(simpleBlock, /dt-screen-switcher-host/);

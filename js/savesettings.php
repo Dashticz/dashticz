@@ -1,5 +1,6 @@
 <?php
 require_once(__DIR__ . '/../vendor/dashticz/security.php');
+require_once(__DIR__ . '/configwriter.php');
 
 dashticz_require_same_origin();
 dashticz_require_csrf();
@@ -23,51 +24,7 @@ if (!preg_match('/^[A-Za-z0-9_\-]+\.js$/', $cfgFile)) {
 }
 
 $configPath = $customDir . '/' . $cfgFile;
-$before = '';
-$rows = [];
-
-if (file_exists($configPath)) {
-    $config = @file_get_contents($configPath);
-    if ($config === false) {
-        dashticz_json_error(500, 'Unable to read ' . $cfgFile . '.');
-    }
-
-    if (trim($config) !== '#EMPTY#') {
-        $marker = 'var config = {}';
-        $markerPosition = strpos($config, $marker);
-        if ($markerPosition === false) {
-            dashticz_json_error(409, $cfgFile . ' does not contain the expected config marker.');
-        }
-
-        $before = substr($config, 0, $markerPosition);
-        $conf = substr($config, $markerPosition + strlen($marker));
-        $rows = preg_split('/\r\n|\r|\n/', $conf);
-        $inWidgetEditorSection = false;
-        $customMode = false;
-        if (isset($_POST['config_mode'])) {
-            $modeValue = json_decode($_POST['config_mode'], true);
-            $customMode = is_string($modeValue) && strtolower($modeValue) === 'custom';
-        }
-        foreach ($rows as $index => $row) {
-            if (strpos($row, '// [widget-editor-start]') !== false) {
-                $inWidgetEditorSection = true;
-            }
-            $isConfigLine = substr($row, 0, 6) === 'config' || substr($row, 0, 8) === '//config';
-            if ($isConfigLine && substr($row, 0, 17) !== "config['garbage']") {
-                // In Custom mode the settings menu is authoritative: drop
-                // leftover widget-section config overrides as well.
-                if (!$inWidgetEditorSection || $customMode) {
-                    unset($rows[$index]);
-                }
-            }
-            if (strpos($row, '// [widget-editor-end]') !== false) {
-                $inWidgetEditorSection = false;
-            }
-        }
-    }
-}
-
-$newConfig = "var config = {}\n";
+$submittedSettings = [];
 foreach ($_POST as $name => $serializedValue) {
     if (!preg_match('/^[A-Za-z0-9_]+$/', $name)) {
         dashticz_json_error(400, 'Invalid setting name.');
@@ -78,32 +35,25 @@ foreach ($_POST as $name => $serializedValue) {
         dashticz_json_error(400, 'Invalid value for setting ' . $name . '.');
     }
 
-    $newConfig .= 'config[' . json_encode($name) . '] = ' .
-        json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) . ";\n";
+    $submittedSettings[$name] = $value;
 }
 
-$newContents = $before . $newConfig . implode("\n", $rows);
-
-if (!file_exists($configPath) && !is_writable($customDir)) {
-    dashticz_json_error(500, 'The directory "custom/" is not writable by the web server' .
-        dashticz_owner_info($customDir) .
-        '. From the Dashticz directory, run: sh tools/install-dashticz-write-access');
+list($config, $readError) = configwriter_read_config($configPath);
+if ($readError !== null) {
+    dashticz_json_error(500, $readError);
 }
-
-if (file_exists($configPath) && !is_writable($configPath)) {
-    // Succeeds when PHP is the file owner (e.g. when running as root during setup).
-    @chmod($configPath, 0664);
-    if (!is_writable($configPath)) {
-        dashticz_json_error(500, $cfgFile . ' is not writable' .
-            dashticz_owner_info($configPath) .
-            '. From the Dashticz directory, run: sh tools/install-dashticz-write-access');
-    }
+if (strpos($config, 'var config = {}') === false) {
+    dashticz_json_error(409, $cfgFile . ' does not contain the expected config marker.');
 }
-
-if (file_put_contents($configPath, $newContents, LOCK_EX) === false) {
-    dashticz_json_error(500, 'Unable to write ' . $cfgFile . '.');
+$config = configwriter_upsert_root_config_settings(
+    $config,
+    $submittedSettings,
+    false
+);
+$writeError = configwriter_write_config($configPath, $customDir, $config);
+if ($writeError !== null) {
+    dashticz_json_error(500, $writeError);
 }
-@chmod($configPath, 0664);
 
 header('Content-Type: application/json');
 echo json_encode(array('success' => true));

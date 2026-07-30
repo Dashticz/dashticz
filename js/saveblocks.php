@@ -32,6 +32,7 @@ foreach ($data['devices'] as $entry) {
             'name' => 'Device ' . $entry,
             'width' => 3,
             'height' => null,
+            'key' => null,
         ];
     } elseif (is_array($entry)
         && isset($entry['idx']) && is_int($entry['idx']) && $entry['idx'] > 0
@@ -74,6 +75,11 @@ foreach ($data['devices'] as $entry) {
             'name' => $name,
             'width' => $width,
             'height' => $height,
+            'key' => isset($entry['key'])
+                && is_string($entry['key'])
+                && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $entry['key'])
+                    ? $entry['key']
+                    : null,
         ];
     } else {
         dashticz_json_error(400, 'Each device entry must be a positive integer or an object with an integer idx.');
@@ -93,10 +99,17 @@ $config = configwriter_remove_section($config, $startMarker, $endMarker);
 $config = rtrim($config);
 
 $blockKeys = [];
+$blocksOnly = !empty($data['blocksOnly']);
 if (!empty($devices)) {
-    $usedKeys = [];
+    $usedKeys = array_keys(configwriter_extract_declared_block_refs($config));
+    $requestKeys = [];
     foreach ($devices as &$device) {
-        $device['key'] = configwriter_make_block_key($device['name'], $usedKeys);
+        if ($device['key'] !== null && !isset($requestKeys[$device['key']])) {
+            $requestKeys[$device['key']] = true;
+        } else {
+            $device['key'] = configwriter_make_block_key($device['name'], $usedKeys);
+            $requestKeys[$device['key']] = true;
+        }
         $blockKeys[] = $device['key'];
     }
     unset($device);
@@ -110,32 +123,34 @@ if (!empty($devices)) {
         );
     }
 
-    $section .= "\n" . configwriter_section_header('COLUMNS') . "\n";
-    $section .= "if (typeof columns === 'undefined') var columns = {}\n";
-    $layoutItems = array_map(function ($device) {
-        $item = [
-            'ref' => $device['key'],
-            'width' => $device['width'],
-        ];
-        if (isset($device['height']) && is_int($device['height'])) {
-            $item['height'] = $device['height'];
+    if (!$blocksOnly) {
+        $section .= "\n" . configwriter_section_header('COLUMNS') . "\n";
+        $section .= "if (typeof columns === 'undefined') var columns = {}\n";
+        $layoutItems = array_map(function ($device) {
+            $item = [
+                'ref' => $device['key'],
+                'width' => $device['width'],
+            ];
+            if (isset($device['height']) && is_int($device['height'])) {
+                $item['height'] = $device['height'];
+            }
+            return $item;
+        }, $devices);
+        $columnKeys = [];
+        $prefix = configwriter_column_prefix('de', $screenNumber);
+        foreach (configwriter_pack_columns_by_height($layoutItems, 12, $prefix) as $column) {
+            $columnKeys[] = $column['key'];
+            $section .= configwriter_emit_column_line(
+                $column['key'],
+                $column['blocks'],
+                $column['width']
+            );
         }
-        return $item;
-    }, $devices);
-    $columnKeys = [];
-    $prefix = configwriter_column_prefix('de', $screenNumber);
-    foreach (configwriter_pack_columns_by_height($layoutItems, 12, $prefix) as $column) {
-        $columnKeys[] = $column['key'];
-        $section .= configwriter_emit_column_line(
-            $column['key'],
-            $column['blocks'],
-            $column['width']
-        );
-    }
 
-    if ($screenNumber > 0) {
-        $section .= "\n" . configwriter_section_header('SCREENS') . "\n";
-        $section .= configwriter_emit_screen_columns($screenNumber, $columnKeys, 'merge');
+        if ($screenNumber > 0) {
+            $section .= "\n" . configwriter_section_header('SCREENS') . "\n";
+            $section .= configwriter_emit_screen_columns($screenNumber, $columnKeys, 'merge');
+        }
     }
 
     $wrapped = configwriter_wrap_section($startMarker, $endMarker, $section);

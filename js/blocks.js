@@ -66,18 +66,20 @@ function getBlock(cols, c, screendiv, standby) {
  * @param {string} columndiv - div to add block to
  * @param {string} c - Column id
  * @param {object | string | number} b - string, as key for block object, object or number
+ * @param {function} prepareContainer - optional hook before the component mounts
  *
  * If b is a number then it represents a device id.
  */
 var previousblock = 0;
 
-function addBlock2Column(columndiv, c, b) {
+function addBlock2Column(columndiv, c, b, prepareContainer) {
   if (typeof b === 'undefined') {
     console.log('Block undefined after block ', previousblock);
-    return;
+    return null;
   }
   previousblock = b;
   var myblockselector = Dashticz.mountNewContainer(columndiv);
+  if (prepareContainer) prepareContainer(myblockselector);
   var newBlock = b;
   try {
     if (typeof b !== 'object') newBlock = convertBlock(b, c);
@@ -87,13 +89,13 @@ function addBlock2Column(columndiv, c, b) {
         addBlock2Column(myblockselector, '', aBlock);
       });
       $(myblockselector).attr('data-id', newBlock.key);
-      return;
+      return myblockselector;
     }
     if (Array.isArray(newBlock)) {
       newBlock.forEach(function (aBlock) {
         addBlock2Column(myblockselector, '', aBlock);
       });
-      return;
+      return myblockselector;
     }
 
     if (!Dashticz.mount(myblockselector, newBlock))
@@ -101,6 +103,7 @@ function addBlock2Column(columndiv, c, b) {
   } catch (error) {
     renderUnavailableBlock(myblockselector, newBlock, b, error);
   }
+  return myblockselector;
 }
 
 function renderUnavailableBlock(mountPoint, block, key, error) {

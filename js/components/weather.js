@@ -127,7 +127,10 @@ var DT_weather = (function () {
               );
               return;
             }*/
-      var w = parseInt(me.$mountPoint.width() * me.block.width / 12 * me.block.scale);
+      var widthFactor = me.$mountPoint.hasClass('dt-grid-item')
+        ? 1
+        : me.block.width / 12;
+      var w = parseInt(me.$mountPoint.width() * widthFactor * me.block.scale);
       if (me.block.scale !== 1) me.$block.css('width', w);
       var fontSize = w / 10;
       if (me.block.layout === 0 || me.block.layout === 1) {

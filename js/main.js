@@ -8,7 +8,7 @@
 
 /*from blocks.js*/
 /*global initMap */
-/* global Dashticz Domoticz DT_secpanel*/
+/* global Dashticz DashticzGridLayout Domoticz DT_secpanel*/
 var language = {};
 // eslint-disable-next-line no-unused-vars
 var blocks = {};
@@ -29,6 +29,7 @@ var audio = {};
 var screens = {};
 var columns = {};
 var columns_standby = {};
+var standby_screen = {};
 var defaultcolumns = false;
 //move var allblocks = {};
 var myswiper;
@@ -580,6 +581,7 @@ function configureDashticz() {
     DT_function.loadDTScript('js/tempcontrol.js'),
     DT_function.loadDTScript('js/dashticz.js'),
     DT_function.loadDTScript('js/blocks.js'),
+    DT_function.loadDTScript('js/gridlayout.js'),
     DT_function.loadDTScript('js/login.js'),
     DT_function.loadDTScript('js/moon.js'),
     DT_function.loadDTScript('js/colorpicker.js'),
@@ -976,7 +978,7 @@ function onLoad() {
         if (inactiveFor >= settings['standby_after'] * 1000 * 60) {
           $('body').addClass('standby');
           $('.dt-container').hide();
-          if (objectlength(columns_standby) > 0) buildStandby();
+          if (hasStandbyContent()) buildStandby();
           if (
             typeof _STANDBY_CALL_URL !== 'undefined' &&
             _STANDBY_CALL_URL !== ''
@@ -1110,6 +1112,15 @@ function toSlide(num) {
   if (typeof myswiper !== 'undefined') myswiper.slideTo(num, 0, true);
 }
 
+function hasStandbyContent() {
+  return (
+    (standby_screen &&
+      standby_screen.layout === 'grid' &&
+      Array.isArray(standby_screen.blocks)) ||
+    objectlength(columns_standby) > 0
+  );
+}
+
 function buildStandby() {
   if ($('.screenstandby').length == 0) {
     var standbyBackground =
@@ -1122,17 +1133,26 @@ function buildStandby() {
         '\');';
     }
     var screenhtml =
-      '<div class="screen screenstandby swiper-slide slidestandby" style="height:' +
-      $(window).height() +
-      'px;' +
+      '<div class="screen screenstandby swiper-slide slidestandby" style="' +
       backgroundStyle +
       '"><div class="row"></div></div>';
     $('div.screen').hide();
     $('#settingspopup').modal('hide');
     $('div.dt-container').before(screenhtml);
 
-    for (var c in columns_standby) {
-      getBlock(columns_standby[c], 'standby' + c, 'div.screenstandby', true);
+    if (
+      standby_screen &&
+      standby_screen.layout === 'grid' &&
+      Array.isArray(standby_screen.blocks)
+    ) {
+      DashticzGridLayout.renderGridScreen(
+        standby_screen,
+        'div.screenstandby'
+      );
+    } else {
+      for (var c in columns_standby) {
+        getBlock(columns_standby[c], 'standby' + c, 'div.screenstandby', true);
+      }
     }
 
     $('.screenstandby').on('click touchend', function (event) {
@@ -1205,7 +1225,12 @@ function buildDefaultScreens() {
 }
 
 function buildScreens() {
-  if (screens[1] && !screens[1].columns.length && settings['auto_positioning']) {
+  if (
+    screens[1] &&
+    screens[1].layout !== 'grid' &&
+    (!Array.isArray(screens[1].columns) || !screens[1].columns.length) &&
+    settings['auto_positioning']
+  ) {
     buildDefaultScreens();
   }
   var allscreens = {};
@@ -1282,10 +1307,18 @@ function buildScreens() {
             getBlock(columns['bar'], 'bar', 'div.screen' + s, false);
           }
 
-          for (var cs in screens[t][s]['columns']) {
-            if (typeof screens[t] !== 'undefined') {
-              var c = screens[t][s]['columns'][cs];
-              getBlock(columns[c], c, 'div.screen' + s, false);
+          if (screens[t][s].layout === 'grid') {
+            DashticzGridLayout.renderGridScreen(
+              screens[t][s],
+              'div.screen' + s
+            );
+          } else {
+            var screenColumns = screens[t][s]['columns'] || [];
+            for (var cs in screenColumns) {
+              if (typeof screens[t] !== 'undefined') {
+                var c = screenColumns[cs];
+                getBlock(columns[c], c, 'div.screen' + s, false);
+              }
             }
           }
         }

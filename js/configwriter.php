@@ -95,6 +95,26 @@ function configwriter_remove_editor_sections($config, $screenNumber = 1)
     return rtrim($config);
 }
 
+function configwriter_set_config_mode($config, $mode)
+{
+    $value = strtolower((string)$mode) === 'custom' ? 'custom' : 'wizard';
+    $line = 'config["config_mode"] = ' . json_encode($value) . ';';
+    $config = preg_replace(
+        '/^[ \t]*config\[[\'"]config_mode[\'"]\]\s*=\s*[^;]+;[ \t]*(?:(?:\/\/)[^\r\n]*)?(?:\r?\n|$)/m',
+        '',
+        $config
+    );
+    $marker = 'var config = {}';
+    $pos = strpos($config, $marker);
+    if ($pos === false) {
+        return null;
+    }
+    $insertAt = $pos + strlen($marker);
+    return substr($config, 0, $insertAt)
+        . "\n" . $line
+        . substr($config, $insertAt);
+}
+
 /**
  * Move editor-owned config values into the main config block.
  *
@@ -103,6 +123,160 @@ function configwriter_remove_editor_sections($config, $screenNumber = 1)
  * after the regular config assignments makes CONFIG.js readable without
  * changing hand-written content outside the editor sections.
  */
+function configwriter_remove_assignment_statements(
+    $config,
+    $pattern,
+    $allowLineEnd = false
+)
+{
+    if (!preg_match_all(
+        $pattern,
+        $config,
+        $matches,
+        PREG_SET_ORDER | PREG_OFFSET_CAPTURE
+    )) {
+        return $config;
+    }
+
+    for ($matchIndex = count($matches) - 1; $matchIndex >= 0; $matchIndex--) {
+        $start = $matches[$matchIndex][0][1];
+        $scan = $start + strlen($matches[$matchIndex][0][0]);
+        $quote = null;
+        $escaped = false;
+        $lineComment = false;
+        $blockComment = false;
+        $regexLiteral = false;
+        $regexClass = false;
+        $lastSignificant = null;
+        $parentheses = 0;
+        $brackets = 0;
+        $braces = 0;
+        $length = strlen($config);
+        for (; $scan < $length; $scan++) {
+            $char = $config[$scan];
+            $next = $scan + 1 < $length ? $config[$scan + 1] : '';
+            if ($lineComment) {
+                if ($char === "\n" || $char === "\r") {
+                    $lineComment = false;
+                }
+                continue;
+            }
+            if ($blockComment) {
+                if ($char === '*' && $next === '/') {
+                    $blockComment = false;
+                    $scan++;
+                }
+                continue;
+            }
+            if ($regexLiteral) {
+                if ($escaped) {
+                    $escaped = false;
+                } elseif ($char === '\\') {
+                    $escaped = true;
+                } elseif ($char === '[') {
+                    $regexClass = true;
+                } elseif ($char === ']') {
+                    $regexClass = false;
+                } elseif ($char === '/' && !$regexClass) {
+                    $regexLiteral = false;
+                    $lastSignificant = '/';
+                }
+                continue;
+            }
+            if ($quote !== null) {
+                if ($escaped) {
+                    $escaped = false;
+                } elseif ($char === '\\') {
+                    $escaped = true;
+                } elseif ($char === $quote) {
+                    $quote = null;
+                }
+                continue;
+            }
+            if ($char === '/' && $next === '/') {
+                $lineComment = true;
+                $scan++;
+                continue;
+            }
+            if ($char === '/' && $next === '*') {
+                $blockComment = true;
+                $scan++;
+                continue;
+            }
+            $prefix = substr($config, max($start, $scan - 16), min(16, $scan - $start));
+            if ($char === '/'
+                && ($lastSignificant === null
+                    || strpos('=(:,[!&|?{;', $lastSignificant) !== false
+                    || preg_match('/\b(?:return|case|throw)\s*$/', $prefix)
+                )
+            ) {
+                $regexLiteral = true;
+                $regexClass = false;
+                $escaped = false;
+                continue;
+            }
+            if ($char === "'" || $char === '"' || $char === '`') {
+                $quote = $char;
+                continue;
+            }
+            if ($char === '(') {
+                $parentheses++;
+            } elseif ($char === ')') {
+                $parentheses = max(0, $parentheses - 1);
+            } elseif ($char === '[') {
+                $brackets++;
+            } elseif ($char === ']') {
+                $brackets = max(0, $brackets - 1);
+            } elseif ($char === '{') {
+                $braces++;
+            } elseif ($char === '}') {
+                $braces = max(0, $braces - 1);
+            }
+            if (!ctype_space($char)) {
+                $lastSignificant = $char;
+            }
+            $endsWithSemicolon = $char === ';';
+            $endsWithLine = $allowLineEnd
+                && ($char === "\n" || $char === "\r");
+            if ((!$endsWithSemicolon && !$endsWithLine)
+                || $parentheses > 0
+                || $brackets > 0
+                || $braces > 0) {
+                continue;
+            }
+
+            $end = $scan + 1;
+            if ($char === "\r"
+                && $end < $length
+                && $config[$end] === "\n"
+            ) {
+                $end++;
+            }
+            while ($end < $length && ($config[$end] === ' ' || $config[$end] === "\t")) {
+                $end++;
+            }
+            if (substr($config, $end, 2) !== '//') {
+                if (substr($config, $end, 2) === "\r\n") {
+                    $end += 2;
+                } elseif ($end < $length && ($config[$end] === "\n" || $config[$end] === "\r")) {
+                    $end++;
+                }
+            }
+            $config = substr($config, 0, $start) . substr($config, $end);
+            break;
+        }
+    }
+    return $config;
+}
+
+function configwriter_remove_config_key($config, $key)
+{
+    $pattern = '/^[ \t]*config\[\s*([\'"])'
+        . preg_quote((string)$key, '/')
+        . '\1\s*\]\s*=/m';
+    return configwriter_remove_assignment_statements($config, $pattern);
+}
+
 function configwriter_upsert_root_config_settings($config, $settings, $raw = false)
 {
     if (empty($settings)) {
@@ -115,10 +289,7 @@ function configwriter_upsert_root_config_settings($config, $settings, $raw = fal
             continue;
         }
 
-        $pattern = '/^[ \t]*config\[([\'"])'
-            . preg_quote((string)$key, '/')
-            . '\1\]\s*=\s*[^;\r\n]+;[ \t]*(?:\r?\n|$)/m';
-        $config = preg_replace($pattern, '', $config);
+        $config = configwriter_remove_config_key($config, $key);
 
         $expression = $raw
             ? trim((string)$value)
@@ -235,7 +406,11 @@ function configwriter_emit_config_settings($settings, $raw = false)
 
 function configwriter_js_string_escape($value)
 {
-    return str_replace(['\\', "'"], ['\\\\', "\\'"], $value);
+    return str_replace(
+        ['\\', "'", "\r", "\n", "\u{2028}", "\u{2029}"],
+        ['\\\\', "\\'", '\\r', '\\n', '\\u2028', '\\u2029'],
+        $value
+    );
 }
 
 function configwriter_managed_column_pattern()
@@ -596,6 +771,108 @@ function configwriter_column_prefix($kind, $screenNumber = 1)
 }
 
 /**
+ * Return the numbered dashboard screens referenced anywhere in CONFIG.js.
+ */
+function configwriter_extract_numbered_screens($config)
+{
+    if (!preg_match_all(
+        '/\bscreens\s*\[\s*(\d{1,2})\s*\]/',
+        $config,
+        $matches
+    )) {
+        return [];
+    }
+
+    $screens = [];
+    foreach ($matches[1] as $screenNumber) {
+        $n = (int)$screenNumber;
+        if ($n >= 1 && $n <= 99) {
+            $screens[$n] = true;
+        }
+    }
+    $screens = array_keys($screens);
+    sort($screens, SORT_NUMERIC);
+    return $screens;
+}
+
+/**
+ * Remove one numbered screen and compact every higher editor/runtime reference.
+ */
+function configwriter_remove_numbered_screen_and_compact($config, $screenNumber)
+{
+    $removed = (int)$screenNumber;
+    if ($removed < 1 || $removed > 99) {
+        return $config;
+    }
+
+    foreach (['device', 'widget', 'layout', 'dashboard', 'grid-layout'] as $kind) {
+        list($startMarker, $endMarker) = configwriter_editor_markers(
+            $kind,
+            $removed
+        );
+        $config = configwriter_remove_section($config, $startMarker, $endMarker);
+    }
+
+    $screenPattern = '/^[ \t]*screens\s*\[\s*'
+        . $removed
+        . '\s*\](?:\s*\[\s*([\'"])[A-Za-z0-9_]+\1\s*\])?\s*=/m';
+    $config = configwriter_remove_assignment_statements(
+        $config,
+        $screenPattern,
+        true
+    );
+
+    // Generated screen initialisers and column guards are single-line statements.
+    $config = preg_replace(
+        '/^[ \t]*if\s*\([^\r\n]*\bscreens\s*\[\s*'
+            . $removed
+            . '\s*\][^\r\n]*(?:\r?\n|$)/m',
+        '',
+        $config
+    );
+
+    $config = preg_replace_callback(
+        '/\bscreens\s*\[\s*(\d{1,2})\s*\]/',
+        function ($match) use ($removed) {
+            $n = (int)$match[1];
+            return $n > $removed ? 'screens[' . ($n - 1) . ']' : $match[0];
+        },
+        $config
+    );
+
+    $config = preg_replace_callback(
+        '/\/\/ \[(device|widget|layout|dashboard|grid-layout)-editor-s(\d{1,2})-(start|end)\]/',
+        function ($match) use ($removed) {
+            $n = (int)$match[2];
+            if ($n <= $removed) {
+                return $match[0];
+            }
+            $newNumber = $n - 1;
+            $suffix = $newNumber === 1 ? '' : '-s' . $newNumber;
+            return '// [' . $match[1] . '-editor' . $suffix . '-' . $match[3] . ']';
+        },
+        $config
+    );
+
+    $config = preg_replace_callback(
+        '/\b(de|we|le)_s(\d{1,2})_col\b/',
+        function ($match) use ($removed) {
+            $n = (int)$match[2];
+            if ($n <= $removed) {
+                return $match[0];
+            }
+            $newNumber = $n - 1;
+            return $match[1]
+                . ($newNumber === 1 ? '' : '_s' . $newNumber)
+                . '_col';
+        },
+        $config
+    );
+
+    return rtrim($config);
+}
+
+/**
  * Normalize and validate a screen number from request JSON.
  * Returns 0 for standby, or 1..99 for numbered screens.
  */
@@ -832,20 +1109,150 @@ function configwriter_strip_legacy_columns_standby($config)
     return $config;
 }
 
+function configwriter_extract_declared_block_refs($config)
+{
+    $refs = [];
+    if (preg_match_all(
+        '/blocks\s*\[\s*([\'"])([A-Za-z_][A-Za-z0-9_]*)\1\s*\]\s*=/',
+        $config,
+        $matches
+    )) {
+        foreach ($matches[2] as $ref) {
+            $refs[$ref] = true;
+        }
+    }
+    return $refs;
+}
+
+function configwriter_normalise_grid_position($grid, $gridColumns, $fallbackY = 1)
+{
+    $columns = max(1, min(100, (int)$gridColumns));
+    $x = isset($grid['x']) ? (int)$grid['x'] : 1;
+    $y = isset($grid['y']) ? (int)$grid['y'] : (int)$fallbackY;
+    $w = isset($grid['w']) ? (int)$grid['w'] : $columns;
+    $h = isset($grid['h']) ? (int)$grid['h'] : 1;
+
+    $x = max(1, min($columns, $x));
+    $y = max(1, min(10000, $y));
+    $w = max(1, min($columns - $x + 1, $w));
+    $h = max(1, min(1000, $h));
+
+    return ['x' => $x, 'y' => $y, 'w' => $w, 'h' => $h];
+}
+
+function configwriter_build_grid_layout_section(
+    $items,
+    $screenNumber,
+    $gridColumns,
+    $rowHeight,
+    $gap,
+    $mobileLayout = 'stack'
+) {
+    $n = max(0, min(99, (int)$screenNumber));
+    $columns = max(1, min(100, (int)$gridColumns));
+    $row = max(1, min(2000, (int)$rowHeight));
+    $gridGap = max(0, min(200, (float)$gap));
+    $mobile = $mobileLayout === 'stack' ? 'stack' : 'stack';
+    $refs = [];
+
+    $section = configwriter_section_header('GRID LAYOUT') . "\n";
+    $section .= "if (typeof blocks === 'undefined') var blocks = {}\n";
+    foreach ($items as $index => $item) {
+        $ref = $item['ref'];
+        $position = configwriter_normalise_grid_position(
+            $item['grid'],
+            $columns,
+            $index + 1
+        );
+        $refs[] = $ref;
+        if (isset($item['propsLiteral']) && is_string($item['propsLiteral'])) {
+            $section .= "blocks['" . $ref . "'] = "
+                . $item['propsLiteral'] . ";\n";
+            $section .= "blocks['" . $ref . "']['grid'] = "
+                . configwriter_format_props($position) . ";\n";
+        } elseif (isset($item['props']) && is_array($item['props'])) {
+            $props = $item['props'];
+            $props['grid'] = $position;
+            $section .= configwriter_emit_block_line($ref, $props);
+        } else {
+            $section .= "blocks['" . $ref . "']['grid'] = "
+                . configwriter_format_props($position) . ";\n";
+        }
+    }
+
+    $quotedRefs = array_map(function ($ref) {
+        return "'" . configwriter_js_string_escape($ref) . "'";
+    }, $refs);
+    if ($n === 0) {
+        $section .= "\nif (typeof standby_screen === 'undefined') var standby_screen = {}\n";
+        $target = 'standby_screen';
+    } else {
+        $section .= "\nif (typeof screens === 'undefined') var screens = {}\n";
+        $section .= "if (typeof screens[" . $n . "] === 'undefined') screens[" . $n . "] = {};\n";
+        $target = 'screens[' . $n . ']';
+    }
+    $section .= $target . "['layout'] = 'grid';\n";
+    $section .= $target . "['gridColumns'] = " . $columns . ";\n";
+    $section .= $target . "['rowHeight'] = " . $row . ";\n";
+    $section .= $target . "['gap'] = " . $gridGap . ";\n";
+    $section .= $target . "['mobileLayout'] = '" . $mobile . "';\n";
+    $section .= $target . "['blocks'] = ["
+        . implode(', ', $quotedRefs) . "];\n";
+
+    return $section;
+}
+
 function configwriter_extract_block_lines($config)
 {
     $blocks = [];
     if (!preg_match_all(
-        "/blocks\\['([^']+)'\\]\\s*=\\s*(\\{[^;]*\\})\\s*;?/",
+        '/blocks\s*\[\s*([\'"])([^\'"]+)\1\s*\]\s*=\s*\{/',
         $config,
         $matches,
-        PREG_SET_ORDER
+        PREG_SET_ORDER | PREG_OFFSET_CAPTURE
     )) {
         return $blocks;
     }
 
     foreach ($matches as $match) {
-        $blocks[$match[1]] = $match[2];
+        $key = $match[2][0];
+        $matchText = $match[0][0];
+        $objectStart = $match[0][1] + strrpos($matchText, '{');
+        $depth = 0;
+        $quote = null;
+        $escaped = false;
+        $length = strlen($config);
+
+        for ($index = $objectStart; $index < $length; $index++) {
+            $char = $config[$index];
+            if ($quote !== null) {
+                if ($escaped) {
+                    $escaped = false;
+                } elseif ($char === '\\') {
+                    $escaped = true;
+                } elseif ($char === $quote) {
+                    $quote = null;
+                }
+                continue;
+            }
+            if ($char === "'" || $char === '"' || $char === '`') {
+                $quote = $char;
+                continue;
+            }
+            if ($char === '{') {
+                $depth++;
+            } elseif ($char === '}') {
+                $depth--;
+                if ($depth === 0) {
+                    $blocks[$key] = substr(
+                        $config,
+                        $objectStart,
+                        $index - $objectStart + 1
+                    );
+                    break;
+                }
+            }
+        }
     }
 
     return $blocks;

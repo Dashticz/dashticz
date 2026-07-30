@@ -6,6 +6,57 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.22.0 beta (30-7-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Standby: Wizard Standby now uses the same free-positioned, editable CSS Grid layout as numbered screens. Existing ``columns_standby`` layouts can be converted after confirmation.
+* Grid editors: Device and Widget Editors can add, remove and configure tiles on numbered and Standby grids while retaining existing positions; newly added tiles use the first free cells.
+* Grid Layout Editor: vertical placement and resizing now use 20 px rows, giving twice the precision while the horizontal grid remains 24 columns.
+
+Fixes
+~~~~~
+
+* General Settings: Save now updates only submitted settings instead of rebuilding all root configuration, preserving Garbage, Weather and other widget settings plus custom arrays and objects.
+* Screens: saving an empty numbered grid removes that screen and renumbers every following screen sequentially from 1, including its generated editor sections and column references.
+* Grid Layout Editor: existing screens that explicitly stored the former 40 px row default are migrated to 20 px rows without shrinking their blocks.
+* Standby: the S-screen is constrained to the viewport; oversized background images use centered ``cover`` cropping and can no longer enlarge the standby canvas beyond the display resolution.
+
+v3.21.7 beta (30-7-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Wizard layout: opening a legacy columns screen now offers a confirmed conversion to a compact 24-column grid, including named, numeric and inline blocks. Switching from Custom to Wizard performs the same conversion, ensuring Wizard uses free grid placement.
+
+v3.21.6 beta (30-7-2026)
+--------------------------
+
+Fixes
+~~~~~
+
+* Grid Layout Editor: the editing canvas now exposes and dynamically adds empty rows, scrolls automatically near the viewport edge, and keeps pointer capture outside the original block area so blocks can be dropped at any grid coordinate.
+
+v3.21.5 beta (30-7-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Grid Layout Editor: named blocks on a grid screen can be dragged to new ``x``/``y`` coordinates and resized in ``w``/``h`` grid units. Save persists a safe grid-only override in ``CONFIG.js``; Cancel restores the original layout.
+
+v3.21.4 beta (30-7-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Screens: optional CSS Grid layouts place blocks at explicit ``x``, ``y``, ``w`` and ``h`` coordinates while preserving empty cells. Grid dimensions, row height and gap are configurable per screen.
+* Grid screens: invalid positions receive safe fallbacks with console warnings, overlapping blocks remain rendered and are marked for diagnosis, mobile screens stack blocks in configured order, and column-based Device/Widget editors are disabled to protect grid configuration.
+
 v3.21.3 beta (30-7-2026)
 --------------------------
 

@@ -1,4 +1,4 @@
-/* global Domoticz settings columns columns_standby blocks blocktypes screens DashticzScreenSwitcher standbyActive */
+/* global Domoticz settings columns columns_standby blocks blocktypes screens standby_screen DashticzScreenSwitcher standbyActive */
 // eslint-disable-next-line no-unused-vars
 var DashticzDeviceEditor = (function () {
   'use strict';
@@ -13,9 +13,15 @@ var DashticzDeviceEditor = (function () {
   var deviceHeights  = {};   // composite key -> optional block height
   var widgetWidths   = {};   // widget order key -> block width (1..12)
   var widgetHeights  = {};   // widget order key -> optional block height
+  var gridMode       = false;
+  var gridConfig     = null;
+  var gridPositions  = {};   // order key -> {x,y,w,h}
+  var gridRefs       = {};   // order key -> block reference
+  var gridExtras     = [];   // non-device/widget blocks
 
   /* ── public API ─────────────────────────────────────────────── */
   function open() {
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
     _init();
     _buildAndShowModal();
   }
@@ -30,9 +36,17 @@ var DashticzDeviceEditor = (function () {
     deviceHeights  = {};
     widgetWidths   = {};
     widgetHeights  = {};
+    gridPositions  = {};
+    gridRefs       = {};
+    gridExtras     = [];
+    gridConfig     = gridMode ? _readGridConfig() : null;
 
-    _getAllManagedItems().forEach(function (item) {
+    (gridMode ? _getAllManagedGridItems() : _getAllManagedItems()).forEach(function (item) {
       managedOrder.push(item.orderKey);
+      if (gridMode) {
+        gridPositions[item.orderKey] = item.grid;
+        gridRefs[item.orderKey] = item.reference;
+      }
       if (item.kind === 'widget') {
         managedWidgets[item.orderKey] = item;
         widgetWidths[item.orderKey] = _parseWidth(item.definition.width);
@@ -116,15 +130,39 @@ var DashticzDeviceEditor = (function () {
       widget_moon: { id: 'moon', title: 'Maan' },
       widget_news: { id: 'news', title: 'Nieuws' },
     };
-    var catalogItem = catalog[String(reference)];
-    if (
-      !catalogItem ||
-      typeof blocks === 'undefined' ||
-      !blocks[reference]
-    ) {
+    if (typeof blocks === 'undefined' || !blocks[reference]) {
       return null;
     }
     var definition = blocks[reference];
+    var catalogItem = catalog[String(reference)];
+    if (!catalogItem) {
+      var type = String(definition.type || '').toLowerCase();
+      var typeMap = {
+        weather: 'weather',
+        wunderground: 'weather',
+        garbage: 'garbage',
+        spotify: 'spotify',
+        sonarr: 'sonarr',
+        calendar: 'calendar',
+        secpanel: 'secpanel',
+        publictransport: 'publictransport',
+        trafficinfo: 'trafficinfo',
+        alarmmeldingen: 'alarmmeldingen',
+        camera: 'camera',
+        map: 'map',
+        longfonds: 'longfonds',
+        moon: 'moon',
+        news: 'news',
+        basicclock: 'clock',
+        stationclock: 'clock',
+        flipclock: 'clock',
+        haymanclock: 'clock',
+        miniclock: 'clock',
+      };
+      var id = typeMap[type];
+      if (!id) return null;
+      catalogItem = { id: id, title: definition.title || id };
+    }
     return {
       kind: 'widget',
       id: catalogItem.id,
@@ -237,6 +275,99 @@ var DashticzDeviceEditor = (function () {
     var $active = $('.dt-container .screen.swiper-slide-active');
     if ($active.length) return $active;
     return $('.dt-container .screen:visible').first();
+  }
+
+  function _readGridConfig() {
+    var $grid = _activeScreenDom().children('.dt-grid-layout').first();
+    function number(property, fallback) {
+      var value = parseFloat(
+        $grid[0] ? getComputedStyle($grid[0]).getPropertyValue(property) : ''
+      );
+      return isFinite(value) ? value : fallback;
+    }
+    return {
+      gridColumns: number('--dt-grid-columns', 24),
+      rowHeight: number('--dt-grid-row-height', 20),
+      gap: number('--dt-grid-gap', 0),
+      mobileLayout: $grid.hasClass('dt-grid-mobile-stack') ? 'stack' : 'stack',
+    };
+  }
+
+  function _getAllManagedGridItems() {
+    var ordered = [];
+    var seen = {};
+    _activeScreenDom()
+      .children('.dt-grid-layout')
+      .children('.dt-grid-item')
+      .each(function (index) {
+        var reference = String($(this).attr('data-grid-block') || '');
+        var definition =
+          typeof blocks !== 'undefined' && blocks[reference]
+            ? blocks[reference]
+            : null;
+        if (!definition) return;
+        var grid = {
+          x: _gridValue(this, '--dt-grid-x', 1),
+          y: _gridValue(this, '--dt-grid-y', index + 1),
+          w: _gridValue(this, '--dt-grid-w', 1),
+          h: _gridValue(this, '--dt-grid-h', 1),
+        };
+        var ck = _toCompositeKey(definition);
+        if (ck) {
+          var deviceKey = _deviceOrderKey(ck);
+          if (!seen[deviceKey]) {
+            seen[deviceKey] = true;
+            ordered.push({
+              kind: 'device',
+              ck: ck,
+              orderKey: deviceKey,
+              reference: reference,
+              grid: grid,
+            });
+          }
+          return;
+        }
+        var widget = _widgetFromReference(reference);
+        if (widget && !seen[widget.orderKey]) {
+          seen[widget.orderKey] = true;
+          widget.reference = reference;
+          widget.grid = grid;
+          ordered.push(widget);
+          return;
+        }
+        gridExtras.push({ ref: reference, grid: grid });
+      });
+    return ordered;
+  }
+
+  function _gridValue(element, property, fallback) {
+    var value = parseInt(element.style.getPropertyValue(property), 10);
+    return value > 0 ? value : fallback;
+  }
+
+  function _gridOverlap(left, right) {
+    return (
+      left.x < right.x + right.w &&
+      left.x + left.w > right.x &&
+      left.y < right.y + right.h &&
+      left.y + left.h > right.y
+    );
+  }
+
+  function _firstFreeGridPosition(occupied, width, height) {
+    for (var y = 1; y < 10000; y++) {
+      for (var x = 1; x <= gridConfig.gridColumns - width + 1; x++) {
+        var candidate = { x: x, y: y, w: width, h: height };
+        if (
+          !occupied.some(function (position) {
+            return _gridOverlap(candidate, position);
+          })
+        ) {
+          return candidate;
+        }
+      }
+    }
+    return { x: 1, y: 10000, w: width, h: height };
   }
 
   function _getAllManagedItems() {
@@ -550,6 +681,8 @@ var DashticzDeviceEditor = (function () {
       delete deviceNames[ck];
       delete deviceWidths[ck];
       delete deviceHeights[ck];
+      delete gridPositions[_deviceOrderKey(ck)];
+      delete gridRefs[_deviceOrderKey(ck)];
 
       /* remove item from device-list */
       $(this).closest('.de-device-item').remove();
@@ -742,6 +875,9 @@ var DashticzDeviceEditor = (function () {
       };
       if (p.subidx) entry.subidx = p.subidx;
       if (deviceHeights[ck]) entry.height = deviceHeights[ck];
+      if (gridMode && gridRefs[_deviceOrderKey(ck)]) {
+        entry.key = gridRefs[_deviceOrderKey(ck)];
+      }
       return entry;
     });
 
@@ -749,7 +885,9 @@ var DashticzDeviceEditor = (function () {
       return orderKey.indexOf('widget:') === 0;
     });
     var widgetPayload = orderedWidgetKeys.map(function (orderKey) {
-      return _widgetPayload(orderKey);
+      var entry = _widgetPayload(orderKey);
+      if (gridMode && gridRefs[orderKey]) entry.key = gridRefs[orderKey];
+      return entry;
     });
 
     $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
@@ -757,14 +895,31 @@ var DashticzDeviceEditor = (function () {
         var token = data.token;
         return _postEditorData(
           'js/saveblocks.php',
-          { devices: devicePayload, screen: _activeScreenPayload() },
+          {
+            devices: devicePayload,
+            screen: _activeScreenPayload(),
+            blocksOnly: gridMode,
+          },
           token
         ).then(function (deviceResult) {
-          return _postEditorData(
-            'js/savewidgets.php',
-            { widgets: widgetPayload, screen: _activeScreenPayload() },
-            token
-          ).then(function (widgetResult) {
+          var widgetSave = gridMode
+            ? $.Deferred()
+                .resolve({
+                  blockKeys: orderedWidgetKeys.map(function (orderKey) {
+                    return gridRefs[orderKey];
+                  }),
+                })
+                .promise()
+            : _postEditorData(
+                'js/savewidgets.php',
+                {
+                  widgets: widgetPayload,
+                  screen: _activeScreenPayload(),
+                  blocksOnly: false,
+                },
+                token
+              );
+          return widgetSave.then(function (widgetResult) {
             var deviceRefs = {};
             var widgetRefs = {};
             orderedDeviceKeys.forEach(function (ck, index) {
@@ -773,6 +928,68 @@ var DashticzDeviceEditor = (function () {
             orderedWidgetKeys.forEach(function (orderKey, index) {
               widgetRefs[orderKey] = widgetResult.blockKeys[index];
             });
+            if (gridMode) {
+              var occupied = gridExtras
+                .map(function (item) {
+                  return item.grid;
+                })
+                .concat(
+                  Object.keys(gridPositions).map(function (orderKey) {
+                    return gridPositions[orderKey];
+                  })
+                );
+              var gridItems = managedOrder.map(function (orderKey) {
+                var isWidget = orderKey.indexOf('widget:') === 0;
+                var ref = isWidget
+                  ? widgetRefs[orderKey]
+                  : deviceRefs[orderKey];
+                var position = gridPositions[orderKey];
+                if (!position) {
+                  var width12 = isWidget
+                    ? _parseWidth(widgetWidths[orderKey])
+                    : _parseWidth(deviceWidths[orderKey.slice(7)]);
+                  var pixelHeight = isWidget
+                    ? widgetHeights[orderKey]
+                    : deviceHeights[orderKey.slice(7)];
+                  var width = Math.max(
+                    1,
+                    Math.min(
+                      gridConfig.gridColumns,
+                      Math.round(
+                        (width12 * gridConfig.gridColumns) / 12
+                      )
+                    )
+                  );
+                  var height = Math.max(
+                    1,
+                    Math.ceil(
+                      ((pixelHeight || 120) + gridConfig.gap) /
+                        (gridConfig.rowHeight + gridConfig.gap)
+                    )
+                  );
+                  position = _firstFreeGridPosition(
+                    occupied,
+                    width,
+                    height
+                  );
+                  occupied.push(position);
+                }
+                return { ref: ref, grid: $.extend({}, position) };
+              });
+              gridItems = gridItems.concat(gridExtras);
+              return _postEditorData(
+                'js/savegridlayout.php',
+                {
+                  items: gridItems,
+                  screen: _activeScreenPayload(),
+                  gridColumns: gridConfig.gridColumns,
+                  rowHeight: gridConfig.rowHeight,
+                  gap: gridConfig.gap,
+                  mobileLayout: gridConfig.mobileLayout,
+                },
+                token
+              );
+            }
             var layoutItems = managedOrder.map(function (orderKey) {
               var isWidget = orderKey.indexOf('widget:') === 0;
               var entry = {
