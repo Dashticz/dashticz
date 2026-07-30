@@ -1923,12 +1923,12 @@ hr {
   background-size: cover;
 }
 
-.standby .far,
-.standby .far.fa-small,
-.standby .fas,
-.standby .fas.fa-small,
-.standby .fab,
-.standby .fab.fa-small {
+.standby .screenstandby .far,
+.standby .screenstandby .far.fa-small,
+.standby .screenstandby .fas,
+.standby .screenstandby .fas.fa-small,
+.standby .screenstandby .fab,
+.standby .screenstandby .fab.fa-small {
   color: #fff !important;
 }
 
