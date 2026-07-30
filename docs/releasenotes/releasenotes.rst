@@ -16,6 +16,8 @@ Fixes
 * Standby settings: removed the redundant **Standby blocks** text field; standby content is managed through the Device, Widget and Layout editors.
 * Localization: the language selected in **Settings → Localize** now takes precedence over a stale browser language value after saving and reloading.
 * Widget editor: widget names, descriptions, controls, statuses and validation messages now use the language JSON files. English and Dutch translations are included.
+* Info: Domoticz, dzVents, Python and PHP versions are retained until the Info panel opens; the server operating system, version and architecture are now shown as well.
+* Version check: the comparison now follows the current Git checkout's preferred remote and branch, and its status text is translated.
 
 
 Enhancements

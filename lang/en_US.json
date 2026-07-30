@@ -31,6 +31,11 @@
         "loading": "Loading...",
         "mediaplayer_nothing_playing": "Nothing is playing right now",
         "new_version": "New version is available",
+        "latest_changes": "Latest changes",
+        "version": "Version",
+        "is_available": "is available",
+        "newer_local_version": "Your local version is newer than",
+        "latest_version": "You are running the latest version from",
         "notifications_ns": "notifications added by NS",
         "scheduled": "Scheduled",
         "select": "Select",
@@ -43,8 +48,18 @@
         "platform": "platform"
     },
     "settings": {
+        "title": "Dashticz settings",
         "about": {
-            "title": "Info"
+            "title": "Info",
+            "domoticz_version": "Domoticz version",
+            "dzvents_version": "dzVents version",
+            "python_version": "Python version",
+            "php_version": "PHP version",
+            "os_version": "Operating system",
+            "unknown": "Unknown",
+            "help_intro": "For more help visit:",
+            "community_intro": "You can also visit the Dashticz community forum.",
+            "community": "Community"
         },
         "blocksave": "Save the code below to your CONFIG.js to apply the changes. Reload Dashticz afterwards.",
         "close": "Close",
