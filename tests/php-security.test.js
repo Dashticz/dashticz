@@ -166,6 +166,14 @@ test('layout writer stores safe references in one grouped dashboard section', ()
   assert.match(source, /configwriter_extract_wrapped_section/);
   assert.match(source, /configwriter_remove_editor_sections/);
   assert.match(source, /configwriter_upsert_root_config_settings/);
+  assert.match(
+    source,
+    /configwriter_upsert_root_config_settings\([\s\S]*?if \(\$screenNumber === 0\)/
+  );
+  assert.doesNotMatch(
+    source,
+    /if \(\$screenNumber === 1\)\s*\{[\s\S]*?configwriter_upsert_root_config_settings/
+  );
   assert.match(source, /configwriter_build_layout_section/);
   assert.match(source, /configwriter_parse_screen_number/);
   assert.match(writer, /function configwriter_upsert_root_config_settings/);
