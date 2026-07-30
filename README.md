@@ -176,11 +176,12 @@ The **Settings → Standby** category contains:
 - an optional URL to call when standby ends;
 - standby content managed through the Device, Widget and Layout editors;
 - a background selected from the bundled `img/bg*` files, a personal image
-  placed in `img/custom`, or a custom path/URL, with a preview.
+  named `BG_*` and placed in `img/custom`, or a custom path/URL, with a preview.
 
 The standby background is independent from the normal screen background.
 Files placed in `img/custom` are ignored by Git, remain in place during Git
-updates and appear in both the Screen and Standby background selectors.
+updates, and appear in both the Screen and Standby background selectors only
+when their filename starts with `BG_`.
 
 ### Settings and updates
 

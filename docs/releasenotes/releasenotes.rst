@@ -14,7 +14,7 @@ Enhancements
 
 * Widget defaults: Google Maps, Camera, Air Quality, News, Weather, Spotify, Sonarr, Calendar, Public Transport, Traffic Information and 112 now use compact 4/12 widths and the requested rounded default heights.
 * Camera widget: the Widget Editor can configure multiple named cameras with image and optional MJPEG URLs, using the existing camera carousel.
-* Backgrounds: personal images placed in ``img/custom`` appear in both the **Screen** and **Standby** background selectors and are ignored by Git, so updates leave them untouched.
+* Backgrounds: personal images named ``BG_*`` and placed in ``img/custom`` appear in both the **Screen** and **Standby** background selectors. Other filenames stay hidden, and all files in this directory are ignored by Git so updates leave them untouched.
 
 Fixes
 ~~~~~
