@@ -5,19 +5,8 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
-Recent changes
----------------
 
-v3.21.5 beta (30-7-2026)
---------------------------
-
-Fixes
-~~~~~
-
-* Localization: the language selected in **Settings → Localize** now takes precedence over a stale browser language value after saving and reloading.
-* Widget editor: widget names, descriptions, controls, statuses and validation messages now use the language JSON files. English and Dutch translations are included.
-
-v3.21.4 beta (29-7-2026)
+v3.21.3 beta (29-7-2026)
 --------------------------
 
 Fixes
@@ -25,7 +14,8 @@ Fixes
 
 * Standby settings: changing the background no longer rebuilds or clears ``columns_standby``, so standby blocks remain accessible and retain their configured widths and positions.
 * Standby settings: removed the redundant **Standby blocks** text field; standby content is managed through the Device, Widget and Layout editors.
-
+* Localization: the language selected in **Settings → Localize** now takes precedence over a stale browser language value after saving and reloading.
+* Widget editor: widget names, descriptions, controls, statuses and validation messages now use the language JSON files. English and Dutch translations are included.
 
 
 Enhancements
