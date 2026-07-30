@@ -1,9 +1,10 @@
 {
-"version": "3.21.3",
+"version": "3.21.5",
 "branch": "beta",
-"last_changes": "Keep standby blocks editable and sized when changing the background",
+"last_changes": "Localize the Widget editor and honor the selected Settings language",
 "changelog" : {
-            "3.21.3": "Keep standby blocks editable and sized when changing the background",
+            "3.21.5": "Localize the Widget editor and honor the selected Settings language",
+            "3.21.4": "Keep standby blocks editable and sized when changing the background",
             "3.21.3": "Use compact widget defaults, multi-camera configuration, and stable layout saves",
             "3.21.2": "Keep CONFIG.js settings, blocks, columns, and screens grouped after editor saves",
             "3.21.1": "Restore large Modern Dark selector buttons and document the complete browser editors and installer",

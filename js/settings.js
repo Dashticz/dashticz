@@ -338,10 +338,13 @@ var weatherIconOptions = {
   meteo: 'Alternative set of static icons',
 };
 
+var widgetEditorTranslations =
+  (language.settings && language.settings.widgeteditor) || {};
+
 var widgetSettingTiles = [
   {
     id: 'weather',
-    title: language.settings.weather.title,
+    title: widgetEditorTranslations.weather_title || 'Weather',
     icon: 'fas fa-cloud-sun-rain',
     settings: {
       owm_api: { title: language.settings.weather.owm_api, type: 'text' },
@@ -421,7 +424,7 @@ var widgetSettingTiles = [
   },
   {
     id: 'clock',
-    title: language.editmode.clock || 'Clock',
+    title: widgetEditorTranslations.clock_title || 'Clock',
     icon: 'fas fa-clock',
     settings: {
       clock_size: {
@@ -466,7 +469,7 @@ var widgetSettingTiles = [
   },
   {
     id: 'garbage',
-    title: language.settings.garbage.title,
+    title: widgetEditorTranslations.garbage_title || 'Garbage',
     icon: 'fas fa-trash-alt',
     settings: {
       garbage_company: {
@@ -536,7 +539,7 @@ var widgetSettingTiles = [
   },
   {
     id: 'calendar',
-    title: 'Calendar',
+    title: widgetEditorTranslations.calendar_title || 'Calendar',
     icon: 'fas fa-calendar-alt',
     settings: {
       calendarformat: {
@@ -555,7 +558,7 @@ var widgetSettingTiles = [
   },
   {
     id: 'sonarr',
-    title: 'Sonarr',
+    title: widgetEditorTranslations.sonarr_title || 'Sonarr',
     icon: 'fas fa-tv',
     settings: {
       sonarr_url: {
@@ -574,7 +577,7 @@ var widgetSettingTiles = [
   },
   {
     id: 'spotify',
-    title: 'Spotify',
+    title: widgetEditorTranslations.spotify_title || 'Spotify',
     icon: 'fab fa-spotify',
     settings: {
       spot_clientid: {
@@ -585,9 +588,7 @@ var widgetSettingTiles = [
   },
   {
     id: 'secpanel',
-    title:
-      (language.settings.widgets && language.settings.widgets.secpanel) ||
-      'Security panel',
+    title: widgetEditorTranslations.secpanel_title || 'Security panel',
     icon: 'fas fa-shield-alt',
     settings: {
       security_button_icons: {
@@ -604,16 +605,13 @@ var widgetSettingTiles = [
   {
     id: 'publictransport',
     title:
-      (language.settings.widgets && language.settings.widgets.publictransport) ||
-      'Public transport',
+      widgetEditorTranslations.publictransport_title || 'Public transport',
     icon: 'fas fa-train',
     settings: {},
   },
   {
     id: 'trafficinfo',
-    title:
-      (language.settings.widgets && language.settings.widgets.trafficinfo) ||
-      'Traffic info',
+    title: widgetEditorTranslations.trafficinfo_title || 'Traffic information',
     icon: 'fas fa-car',
     settings: {
       anwb_apikey: {
@@ -630,25 +628,19 @@ var widgetSettingTiles = [
   },
   {
     id: 'alarmmeldingen',
-    title:
-      (language.settings.widgets && language.settings.widgets.alarmmeldingen) ||
-      '112',
+    title: widgetEditorTranslations.alarmmeldingen_title || '112',
     icon: 'fas fa-bullhorn',
     settings: {},
   },
   {
     id: 'camera',
-    title:
-      (language.settings.widgets && language.settings.widgets.camera) ||
-      'Cameras',
+    title: widgetEditorTranslations.camera_title || 'Cameras',
     icon: 'fas fa-video',
     settings: {},
   },
   {
     id: 'map',
-    title:
-      (language.settings.widgets && language.settings.widgets.map) ||
-      'Google Maps',
+    title: widgetEditorTranslations.map_title || 'Google Maps',
     icon: 'fas fa-map-marked-alt',
     settings: {
       gm_api: {
@@ -671,9 +663,7 @@ var widgetSettingTiles = [
   },
   {
     id: 'longfonds',
-    title:
-      (language.settings.widgets && language.settings.widgets.longfonds) ||
-      'Air Quality',
+    title: widgetEditorTranslations.longfonds_title || 'Air quality',
     icon: 'fas fa-wind',
     settings: {
       longfonds_zipcode: {
@@ -688,8 +678,7 @@ var widgetSettingTiles = [
   },
   {
     id: 'moon',
-    title:
-      (language.settings.widgets && language.settings.widgets.moon) || 'Moon',
+    title: widgetEditorTranslations.moon_title || 'Moon',
     icon: 'fas fa-moon',
     settings: {
       idx_moonpicture: {
@@ -701,8 +690,7 @@ var widgetSettingTiles = [
   },
   {
     id: 'news',
-    title:
-      (language.settings.widgets && language.settings.widgets.news) || 'News',
+    title: widgetEditorTranslations.news_title || 'News',
     icon: 'fas fa-newspaper',
     settings: {
       default_news_url: {
@@ -1581,7 +1569,12 @@ function renderClockWidgetSettings(tile) {
 
   html +=
     '<div class="settings-clock-size-group">';
-  html += '<h6 class="settings-weather-heading">Weergave</h6>';
+  html +=
+    '<h6 class="settings-weather-heading">' +
+    ((language.settings.widgeteditor &&
+      language.settings.widgeteditor.display) ||
+      'Display') +
+    '</h6>';
   if (tile.settings.clock_size) {
     html += renderSettingsRow('clock_size', tile.settings.clock_size);
   }
@@ -2113,6 +2106,10 @@ function saveSettings() {
       });
     })
     .done(function () {
+      var selectedLanguage = saveSettings.language;
+      if (selectedLanguage) {
+        localStorage.dashticz_language = JSON.parse(selectedLanguage);
+      }
       // eslint-disable-next-line no-self-assign
       window.location.href = window.location.href;
     })

@@ -170,13 +170,13 @@ function loadConfig2() {
 function loadLanguage() {
   //Check language before loading settings and fallback to English when not set
   var setLang = 'en_US';
-  if (typeof localStorage.dashticz_language !== 'undefined') {
-    setLang = localStorage.dashticz_language;
-  } else if (
+  if (
     typeof config !== 'undefined' &&
     typeof config.language !== 'undefined'
   ) {
     setLang = config.language;
+  } else if (typeof localStorage.dashticz_language !== 'undefined') {
+    setLang = localStorage.dashticz_language;
   }
   return $.ajax({
     url: 'lang/' + setLang + '.json?v=' + _DASHTICZ_VERSION,
