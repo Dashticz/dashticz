@@ -40,7 +40,7 @@ $customEntries = @scandir($customDir);
 if (is_array($customEntries)) {
     foreach ($customEntries as $entry) {
         // Only expose direct, simply named image files; never accept a path.
-        if (!preg_match('/^([\w.-]+\.(?:jpe?g|png|webp|gif))$/i', $entry)) {
+        if (!preg_match('/^([a-z0-9][a-z0-9._ -]*\.(?:jpe?g|png|webp|gif))$/i', $entry)) {
             continue;
         }
         $full = $customDir . DIRECTORY_SEPARATOR . $entry;
