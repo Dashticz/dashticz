@@ -31,6 +31,11 @@
         "loading": "Laden...",
         "mediaplayer_nothing_playing": "Er wordt momenteel niets afgespeeld",
         "new_version": "Nieuwe versie is beschikbaar",
+        "latest_changes": "Laatste wijzigingen",
+        "version": "Versie",
+        "is_available": "is beschikbaar",
+        "newer_local_version": "Uw lokale versie is nieuwer dan",
+        "latest_version": "U gebruikt de nieuwste versie van",
         "notifications_ns": "meldingen geplaatst door de NS",
         "scheduled": "Gepland",
         "select": "Selecteer",
@@ -43,8 +48,18 @@
         "platform": "spoor"
     },
     "settings": {
+        "title": "Dashticz-instellingen",
         "about": {
-            "title": "Info"
+            "title": "Info",
+            "domoticz_version": "Domoticz-versie",
+            "dzvents_version": "dzVents-versie",
+            "python_version": "Python-versie",
+            "php_version": "PHP-versie",
+            "os_version": "Besturingssysteem",
+            "unknown": "Onbekend",
+            "help_intro": "Ga voor meer hulp naar:",
+            "community_intro": "U kunt ook het Dashticz-communityforum bezoeken.",
+            "community": "Community"
         },
         "blocksave": "Sla de onderstaande code op in uw CONFIG.js om de wijzigingen toe te passen en herlaad Dashticz!",
         "close": "Sluiten",

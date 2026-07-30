@@ -198,6 +198,35 @@ test('update check only treats a newer remote version as an update', () => {
   assert.equal(compareVersions('3.20.1', '3.20.0'), 1);
 });
 
+test('info panel retains versions and follows the checkout remote', () => {
+  const domoticz = fs.readFileSync(
+    path.join(root, 'js/domoticz-api.js'),
+    'utf8'
+  );
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const version = fs.readFileSync(path.join(root, 'js/version.js'), 'utf8');
+  const info = fs.readFileSync(
+    path.join(root, 'vendor/dashticz/info.php'),
+    'utf8'
+  );
+
+  assert.match(domoticz, /versionText: ''/);
+  assert.match(domoticz, /dzVentsVersion: ''/);
+  assert.match(domoticz, /pythonVersion: ''/);
+  assert.match(settings, /info\.php\?get=systeminfo/);
+  assert.match(settings, /formatSystemInfo/);
+  assert.match(settings, /domoticzInfo\.versionText/);
+  assert.match(settings, /about\.os_version/);
+  assert.match(version, /info\.php\?get=gitinfo/);
+  assert.match(version, /source\.owner/);
+  assert.match(version, /source\.repository/);
+  assert.match(info, /case 'systeminfo'/);
+  assert.match(info, /case 'gitinfo'/);
+  assert.match(info, /PHP_OS_FAMILY/);
+  assert.match(info, /\/etc\/os-release/);
+  assert.doesNotMatch(info, /shell_exec|exec\(|passthru|system\(/);
+});
+
 test('package and runtime versions remain synchronized', () => {
   const packageVersion = JSON.parse(
     fs.readFileSync(path.join(root, 'package.json'), 'utf8')

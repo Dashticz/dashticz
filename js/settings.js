@@ -1,4 +1,4 @@
-/* global language dashticz_version dashticz_branch newVersion config isNumeric*/
+/* global language dashticz_version dashticz_branch newVersion config isNumeric Domoticz*/
 var settingList = {};
 settingList.general = {
   title: language.settings.general.title,
@@ -1048,6 +1048,7 @@ var _TEMP_SYMBOL = '°C';
 if (settings['use_fahrenheit'] === 1) _TEMP_SYMBOL = '°F';
 
 var phpversion = 'Not installed';
+var systemInfo = null;
 var _PHP_INSTALLED = false;
 
 function escapeSettingsHtml(value) {
@@ -1057,6 +1058,15 @@ function escapeSettingsHtml(value) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+function formatSystemInfo(fallback) {
+  if (!systemInfo) return fallback;
+  return (
+    (systemInfo.os_name || systemInfo.os_family || fallback) +
+    (systemInfo.os_version ? ' ' + systemInfo.os_version : '') +
+    (systemInfo.architecture ? ' (' + systemInfo.architecture + ')' : '')
+  );
 }
 
 function renderSettingsRow(settingName, definition) {
@@ -1144,11 +1154,14 @@ function renderSettingsRow(settingName, definition) {
 // eslint-disable-next-line no-unused-vars
 function loadSettings() {
   return $.ajax({
-    url: settings['dashticz_php_path'] + 'info.php?get=phpversion',
+    url: settings['dashticz_php_path'] + 'info.php?get=systeminfo',
     dataType: 'json',
     success: function (data) {
-      phpversion = data;
+      systemInfo = data;
+      phpversion = data.php_version;
       _PHP_INSTALLED = true;
+      $('#php_version').text(phpversion);
+      $('#os_version').text(formatSystemInfo('Unknown'));
     },
   })
     .catch(function () {
@@ -1176,7 +1189,9 @@ function loadSettings() {
       html += '<div class="modal-content">';
       html += '<div class="modal-body">';
       html +=
-        '<h2 class="visually-hidden" id="settings-title">Dashticz settings</h2>';
+        '<h2 class="visually-hidden" id="settings-title">' +
+        escapeSettingsHtml(language.settings.title || 'Dashticz settings') +
+        '</h2>';
       html += '<div class="settings-header">';
       html +=
         '<div class="settings-brand"><img src="img/favicon/app-icon-192x192.png" ' +
@@ -2000,14 +2015,89 @@ function setConfigMode(mode) {
 function addSettingsAboutItems() {
   var $div = $('#settings-category-about');
   if (!$div.length) $div = $('#tabs-about');
+  var about =
+    (language.settings && language.settings.about) || {};
+  var unknown = about.unknown || 'Unknown';
+  var domoticzInfo =
+    typeof Domoticz !== 'undefined' && Domoticz.info ? Domoticz.info : {};
+  var osText = formatSystemInfo(unknown);
+  var aboutItems = [
+    {
+      id: 'domoticz_version',
+      label: about.domoticz_version || 'Domoticz version',
+      value: domoticzInfo.versionText || domoticzInfo.version || unknown,
+    },
+    {
+      id: 'dzvents_version',
+      label: about.dzvents_version || 'dzVents version',
+      value: domoticzInfo.dzVentsVersion || unknown,
+    },
+    {
+      id: 'python_version',
+      label: about.python_version || 'Python version',
+      value: domoticzInfo.pythonVersion || unknown,
+    },
+    {
+      id: 'php_version',
+      label: about.php_version || 'PHP version',
+      value: phpversion || unknown,
+    },
+    {
+      id: 'os_version',
+      label: about.os_version || 'Operating system',
+      value: osText,
+    },
+  ];
+
   $div.append('<p>');
-  $div.append('<div class="about-item">Domoticz version: <span id="domoticz_version">unknown</span></div>');
-  $div.append('<div class="about-item">dzVents version: <span id="dzvents_version">unknown</span></div>');
-  $div.append('<div class="about-item">Python version: <span id="python_version">unknown</span></div>');
-  $div.append('<div class="about-item">PHP version: <span id="php_version">unknown</span></div>');
+  aboutItems.forEach(function (item) {
+    $div.append(
+      '<div class="about-item">' +
+        escapeSettingsHtml(item.label) +
+        ': <span id="' +
+        item.id +
+        '">' +
+        escapeSettingsHtml(item.value) +
+        '</span></div>'
+    );
+  });
   $div.append('</p>');
-  $div.append(  '<p>For more help visit: <a href="https://dashticz.readthedocs.io/" target="_blank">https://dashticz.readthedocs.io/</a><br>You can also check out our helpful <a href="https://www.domoticz.com/forum/viewforum.php?f=67" target="_blank">community</a> in Dashticz topic on the Domoticz forum.</p>'
-  )
+  $div.append(
+    '<p>' +
+      escapeSettingsHtml(
+        about.help_intro || 'For more help visit:'
+      ) +
+      ' <a href="https://dashticz.readthedocs.io/" target="_blank">https://dashticz.readthedocs.io/</a><br>' +
+      escapeSettingsHtml(
+        about.community_intro ||
+          'You can also visit the Dashticz community forum.'
+      ) +
+      ' <a href="https://www.domoticz.com/forum/viewforum.php?f=67" target="_blank">' +
+      escapeSettingsHtml(about.community || 'Community') +
+      '</a></p>'
+  );
+  refreshAboutDomoticzVersions();
+}
+
+function refreshAboutDomoticzVersions() {
+  if (
+    typeof Domoticz === 'undefined' ||
+    !Domoticz.request ||
+    !$('#domoticz_version').length
+  ) {
+    return;
+  }
+
+  Domoticz.request('type=command&param=getversion').then(function (data) {
+    if (!data) return;
+    if (data.version) $('#domoticz_version').text(data.version);
+    if (data.dzvents_version) {
+      $('#dzvents_version').text(data.dzvents_version);
+    }
+    if (data.python_version) {
+      $('#python_version').text(data.python_version);
+    }
+  });
 }
 // eslint-disable-next-line no-unused-vars
 function saveSettings() {
