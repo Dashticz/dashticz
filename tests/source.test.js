@@ -140,6 +140,23 @@ test('all project JSON files parse', () => {
   }
 });
 
+test('the saved Settings language overrides a stale browser language', () => {
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const configLanguage = main.indexOf('setLang = config.language');
+  const browserLanguage = main.indexOf(
+    'setLang = localStorage.dashticz_language'
+  );
+
+  assert.notEqual(configLanguage, -1);
+  assert.notEqual(browserLanguage, -1);
+  assert.ok(configLanguage < browserLanguage);
+  assert.match(
+    settings,
+    /localStorage\.dashticz_language = JSON\.parse\(selectedLanguage\)/
+  );
+});
+
 test('favicon assets stay minimal and all references resolve', () => {
   const faviconDirectory = path.join(root, 'img/favicon');
   assert.deepEqual(fs.readdirSync(faviconDirectory).sort(), [
@@ -356,6 +373,12 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
     path.join(root, 'js/fullscreen.js'),
     'utf8'
   );
+  const english = JSON.parse(
+    fs.readFileSync(path.join(root, 'lang/en_US.json'), 'utf8')
+  );
+  const dutch = JSON.parse(
+    fs.readFileSync(path.join(root, 'lang/nl_NL.json'), 'utf8')
+  );
 
   assert.match(simpleBlock, /widgeteditoricon/);
   assert.match(simpleBlock, /fas fa-puzzle-piece/);
@@ -395,7 +418,8 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(settings, /id: 'news'[\s\S]*default_news_url:/);
   assert.match(widgetEditor, /OpenWeather/);
   assert.match(widgetEditor, /Weather Underground/);
-  assert.match(widgetEditor, /Stationsklok/);
+  assert.match(widgetEditor, /_widgetEditorLanguage/);
+  assert.match(widgetEditor, /_t\('station_clock', 'Station clock'\)/);
   assert.match(widgetEditor, /Flipclock/);
   assert.match(widgetEditor, /Hayman clock/);
   assert.match(widgetEditor, /Miniclock/);
@@ -404,6 +428,10 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(widgetEditor, /id="we-camera-add"/);
   assert.match(widgetEditor, /class="we-camera-row/);
   assert.match(widgetEditor, /entry\.cameras = cameraConfigs/);
+  assert.equal(english.settings.widgeteditor.weather_title, 'Weather');
+  assert.equal(english.settings.widgeteditor.camera_title, 'Cameras');
+  assert.equal(dutch.settings.widgeteditor.weather_title, 'Weer');
+  assert.equal(dutch.settings.widgeteditor.camera_title, "Camera's");
   for (const [id, width, height] of [
     ['weather', 4, 120],
     ['spotify', 4, 120],

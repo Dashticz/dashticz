@@ -7,8 +7,8 @@ var DashticzWidgetEditor = (function () {
     {
       id: 'weather',
       blockKey: 'widget_weather',
-      title: 'Weer',
-      description: 'Weersverwachting via OpenWeather of Weather Underground.',
+      title: 'Weather',
+      description: 'Weather forecast via OpenWeather or Weather Underground.',
       icon: 'fas fa-cloud-sun',
       width: 4,
       height: 120,
@@ -16,8 +16,8 @@ var DashticzWidgetEditor = (function () {
     {
       id: 'garbage',
       blockKey: 'widget_garbage',
-      title: 'Afval',
-      description: 'Aankomende afvalinzamelingen.',
+      title: 'Garbage',
+      description: 'Upcoming waste collections.',
       icon: 'fas fa-trash-alt',
       width: 6,
     },
@@ -25,7 +25,7 @@ var DashticzWidgetEditor = (function () {
       id: 'spotify',
       blockKey: 'widget_spotify',
       title: 'Spotify',
-      description: 'Spotify Connect-afstandsbediening.',
+      description: 'Spotify Connect remote control.',
       icon: 'fab fa-spotify',
       width: 4,
       height: 120,
@@ -34,7 +34,7 @@ var DashticzWidgetEditor = (function () {
       id: 'sonarr',
       blockKey: 'widget_sonarr',
       title: 'Sonarr',
-      description: 'Aankomende afleveringen uit Sonarr.',
+      description: 'Upcoming episodes from Sonarr.',
       icon: 'fas fa-tv',
       width: 4,
       height: 120,
@@ -42,16 +42,16 @@ var DashticzWidgetEditor = (function () {
     {
       id: 'clock',
       blockKey: 'widget_clock',
-      title: 'Klok',
-      description: 'Grote klok met datum en weekdag.',
+      title: 'Clock',
+      description: 'Large clock with date and weekday.',
       icon: 'far fa-clock',
       width: 4,
     },
     {
       id: 'calendar',
       blockKey: 'widget_calendar',
-      title: 'Kalender (ICS)',
-      description: 'Afspraken uit een online ICS-agenda.',
+      title: 'Calendar (ICS)',
+      description: 'Events from an online ICS calendar.',
       icon: 'fas fa-calendar-alt',
       width: 4,
       height: 120,
@@ -60,15 +60,15 @@ var DashticzWidgetEditor = (function () {
       id: 'secpanel',
       blockKey: 'widget_secpanel',
       title: 'Security panel',
-      description: 'Domoticz security panel met pincode.',
+      description: 'Domoticz security panel with PIN code.',
       icon: 'fas fa-shield-alt',
       width: 12,
     },
     {
       id: 'publictransport',
       blockKey: 'widget_publictransport',
-      title: 'Openbaar vervoer',
-      description: 'Vertrektijden van treinen, bus of tram.',
+      title: 'Public transport',
+      description: 'Departure times for trains, buses or trams.',
       icon: 'fas fa-train',
       width: 4,
       height: 260,
@@ -76,8 +76,8 @@ var DashticzWidgetEditor = (function () {
     {
       id: 'trafficinfo',
       blockKey: 'widget_trafficinfo',
-      title: 'Verkeersinfo',
-      description: 'ANWB files, werkzaamheden en radars.',
+      title: 'Traffic information',
+      description: 'ANWB traffic jams, roadworks and speed cameras.',
       icon: 'fas fa-car',
       width: 4,
       height: 260,
@@ -86,7 +86,7 @@ var DashticzWidgetEditor = (function () {
       id: 'alarmmeldingen',
       blockKey: 'widget_alarmmeldingen',
       title: '112',
-      description: 'Nederlandse 112-meldingen (alarmeringen.nl).',
+      description: 'Dutch emergency alerts from alarmeringen.nl.',
       icon: 'fas fa-bullhorn',
       width: 4,
       height: 160,
@@ -94,8 +94,8 @@ var DashticzWidgetEditor = (function () {
     {
       id: 'camera',
       blockKey: 'widget_cameras',
-      title: "Camera's",
-      description: 'Camera-beeld of MJPEG-stream.',
+      title: 'Cameras',
+      description: 'Camera image or MJPEG stream.',
       icon: 'fas fa-video',
       width: 4,
       height: 320,
@@ -104,7 +104,7 @@ var DashticzWidgetEditor = (function () {
       id: 'map',
       blockKey: 'widget_map',
       title: 'Google Maps',
-      description: 'Kaart met optioneel verkeer en route.',
+      description: 'Map with optional traffic and directions.',
       icon: 'fas fa-map-marked-alt',
       width: 4,
       height: 500,
@@ -112,8 +112,8 @@ var DashticzWidgetEditor = (function () {
     {
       id: 'longfonds',
       blockKey: 'widget_longfonds',
-      title: 'Luchtkwaliteit',
-      description: 'Longfonds / RIVM luchtkwaliteit op postcode.',
+      title: 'Air quality',
+      description: 'Longfonds / RIVM air quality by postcode.',
       icon: 'fas fa-wind',
       width: 4,
       height: 120,
@@ -121,45 +121,73 @@ var DashticzWidgetEditor = (function () {
     {
       id: 'moon',
       blockKey: 'widget_moon',
-      title: 'Maan',
-      description: 'Huidige maanstand.',
+      title: 'Moon',
+      description: 'Current moon phase.',
       icon: 'fas fa-moon',
       width: 3,
     },
     {
       id: 'news',
       blockKey: 'widget_news',
-      title: 'Nieuws',
-      description: 'RSS-nieuwsfeed met automatische scroll.',
+      title: 'News',
+      description: 'RSS news feed with automatic scrolling.',
       icon: 'fas fa-newspaper',
       width: 4,
       height: 240,
     },
   ];
 
-  var _CALENDAR_LANGUAGES = {
-    zh_CN: 'Chinese',
-    da_DK: 'Danish',
-    de_DE: 'Duits',
-    en_US: 'Engels',
-    es_ES: 'Spaans',
-    fi_FI: 'Fins',
-    fr_FR: 'Frans',
-    hu_HU: 'Hongaars',
-    it_IT: 'Italiaans',
-    ja_JP: 'Japans',
-    lt_LT: 'Litouws',
-    nl_NL: 'Nederlands',
-    nb_NO: 'Noors',
-    pl_PL: 'Pools',
-    pt_PT: 'Portugees',
-    ro_RO: 'Roemeens',
-    ru_RU: 'Russisch',
-    sk_SK: 'Slowaaks',
-    sl_SL: 'Sloveens',
-    sv_SE: 'Zweeds',
-    uk_UA: 'Oekraïens',
-  };
+  function _widgetEditorLanguage() {
+    return (
+      (typeof language !== 'undefined' &&
+        language.settings &&
+        language.settings.widgeteditor) ||
+      {}
+    );
+  }
+
+  function _t(key, fallback) {
+    return _widgetEditorLanguage()[key] || fallback;
+  }
+
+  function _widgetTitle(item) {
+    return _t(item.id + '_title', item.title);
+  }
+
+  function _widgetDescription(item) {
+    return _t(item.id + '_description', item.description);
+  }
+
+  function _calendarLanguages() {
+    var localize =
+      (typeof language !== 'undefined' &&
+        language.settings &&
+        language.settings.localize) ||
+      {};
+    return {
+      zh_CN: localize.cn || 'Chinese',
+      da_DK: localize.da || 'Danish',
+      de_DE: localize.de || 'German',
+      en_US: localize.en || 'English',
+      es_ES: localize.es || 'Spanish',
+      fi_FI: localize.fi || 'Finnish',
+      fr_FR: localize.fr || 'French',
+      hu_HU: localize.hu || 'Hungarian',
+      it_IT: localize.it || 'Italian',
+      ja_JP: localize.ja || 'Japanese',
+      lt_LT: localize.lt || 'Lithuanian',
+      nl_NL: localize.nl || 'Dutch',
+      nb_NO: localize.no || 'Norwegian',
+      pl_PL: localize.pl || 'Polish',
+      pt_PT: localize.pt || 'Portuguese',
+      ro_RO: localize.ro || 'Romanian',
+      ru_RU: localize.ru || 'Russian',
+      sk_SK: localize.sk || 'Slovak',
+      sl_SL: localize.sl || 'Slovenian',
+      sv_SE: localize.sv || 'Swedish',
+      uk_UA: localize.uk || 'Ukrainian',
+    };
+  }
 
   var _GARBAGE_COMPANIES = {
     afvalinfo: '99% coverage in NL',
@@ -625,11 +653,17 @@ var DashticzWidgetEditor = (function () {
       '<div class="modal-dialog modal-xl modal-dialog-scrollable">' +
       '<div class="modal-content">' +
       '<div class="modal-header">' +
-      '<h5 class="modal-title" id="we-title"><i class="fas fa-puzzle-piece me-2" aria-hidden="true"></i>Widgets</h5>' +
-      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>' +
+      '<h5 class="modal-title" id="we-title"><i class="fas fa-puzzle-piece me-2" aria-hidden="true"></i>' +
+      _t('title', 'Widgets') +
+      '</h5>' +
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _t('close', 'Close') +
+      '"></button>' +
       '</div>' +
       '<div class="modal-body">' +
-      '<p class="text-muted">Kies de functies die als tegel op scherm 1 moeten staan.</p>' +
+      '<p class="text-muted">' +
+      _t('choose', 'Choose the functions to show as tiles on screen 1.') +
+      '</p>' +
       '<div class="we-widget-grid">';
 
     catalog.forEach(function (item) {
@@ -639,8 +673,12 @@ var DashticzWidgetEditor = (function () {
     html +=
       '</div><div class="we-message" role="status"></div></div>' +
       '<div class="modal-footer">' +
-      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Sluiten</button>' +
-      '<button type="button" class="btn btn-primary" id="we-save-btn">Opslaan</button>' +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      _t('close', 'Close') +
+      '</button>' +
+      '<button type="button" class="btn btn-primary" id="we-save-btn">' +
+      _t('save', 'Save') +
+      '</button>' +
       '</div></div></div></div>';
 
     $('body').append(html);
@@ -672,11 +710,16 @@ var DashticzWidgetEditor = (function () {
 
   function _widgetCardHtml(item) {
     var selected = !!selectedWidgets[item.id];
+    var itemTitle = _widgetTitle(item);
     var configBtn = _widgetHasConfig(item.id)
       ? '<button type="button" class="we-config-btn" data-widget-id="' +
         item.id +
-        '" title="Instellingen" aria-label="Instellingen voor ' +
-        item.title +
+        '" title="' +
+        _t('settings', 'Settings') +
+        '" aria-label="' +
+        _t('settings_for', 'Settings for') +
+        ' ' +
+        itemTitle +
         '"><i class="fas fa-cog" aria-hidden="true"></i></button>'
       : '';
 
@@ -693,12 +736,12 @@ var DashticzWidgetEditor = (function () {
       item.icon +
       '" aria-hidden="true"></i></div>' +
       '<div class="we-widget-content"><div class="we-widget-title">' +
-      item.title +
+      itemTitle +
       '</div><div class="we-widget-description">' +
-      item.description +
+      _widgetDescription(item) +
       '</div></div>' +
       '<div class="we-widget-status">' +
-      (selected ? 'Toegevoegd' : 'Klik om toe te voegen') +
+      (selected ? _t('added', 'Added') : _t('click_to_add', 'Click to add')) +
       '</div></div>'
     );
   }
@@ -744,20 +787,28 @@ var DashticzWidgetEditor = (function () {
       index +
       '">' +
       '<div class="d-flex align-items-center justify-content-between mb-2">' +
-      '<strong>Camera ' +
+      '<strong>' +
+      _t('camera', 'Camera') +
+      ' ' +
       (index + 1) +
       '</strong>' +
-      '<button type="button" class="btn btn-sm btn-outline-danger we-camera-remove" aria-label="Camera verwijderen">' +
+      '<button type="button" class="btn btn-sm btn-outline-danger we-camera-remove" aria-label="' +
+      _t('camera_remove', 'Remove camera') +
+      '">' +
       '<i class="fas fa-minus" aria-hidden="true"></i></button></div>' +
-      '<div class="mb-2"><label class="form-label we-field-label">Naam</label>' +
+      '<div class="mb-2"><label class="form-label we-field-label">' +
+      _t('name', 'Name') +
+      '</label>' +
       '<input type="text" class="form-control form-control-sm we-camera-title" maxlength="100" value="' +
-      _esc(camera.title || 'Camera ' + (index + 1)) +
+      _esc(camera.title || _t('camera', 'Camera') + ' ' + (index + 1)) +
       '"></div>' +
       '<div class="mb-2"><label class="form-label we-field-label">Image URL</label>' +
       '<input type="url" class="form-control form-control-sm we-camera-image" value="' +
       _esc(camera.imageUrl || '') +
       '"></div>' +
-      '<div><label class="form-label we-field-label">Video URL (optioneel, MJPEG)</label>' +
+      '<div><label class="form-label we-field-label">' +
+      _t('video_url_optional', 'Video URL (optional, MJPEG)') +
+      '</label>' +
       '<input type="url" class="form-control form-control-sm we-camera-video" value="' +
       _esc(camera.videoUrl || '') +
       '"></div></div>'
@@ -794,19 +845,19 @@ var DashticzWidgetEditor = (function () {
         '>';
       fields += _cfgHeading('OpenWeather');
       fields += _cfgField('owm_api', lw.owm_api || 'OpenWeather API key', 'text', cfg.owm_api);
-      fields += _cfgField('owm_city', lw.owm_city || 'Stad', 'text', cfg.owm_city);
-      fields += _cfgField('owm_name', lw.owm_name || 'Weergavenaam', 'text', cfg.owm_name);
-      fields += _cfgField('owm_country', lw.owm_country || 'Landcode', 'text', cfg.owm_country);
-      fields += _cfgField('owm_lang', lw.owm_lang || 'Taalcode', 'text', cfg.owm_lang, null, lw.owm_lang_help || '');
-      fields += _cfgField('owm_cnt', lw.owm_cnt || 'Aantal perioden', 'text', cfg.owm_cnt, null, lw.owm_cnt_help || '');
-      fields += _cfgField('owm_days', lw.owm_days || 'Daagse voorspelling', 'checkbox', cfg.owm_days, null, lw.owm_days_help || '');
-      fields += _cfgField('owm_min', lw.owm_min || 'Minimumtemperatuur tonen', 'checkbox', cfg.owm_min, null, lw.owm_min_help || '');
-      fields += _cfgHeading(lw.display || 'Weergave (OWM)');
-      fields += _cfgField('weather_show_rain', lw.show_rain || 'Regen tonen', 'checkbox', cfg.weather_show_rain);
-      fields += _cfgField('weather_show_description', lw.show_description || 'Beschrijving tonen', 'checkbox', cfg.weather_show_description);
-      fields += _cfgField('weather_show_wind', lw.show_wind || 'Wind tonen', 'checkbox', cfg.weather_show_wind);
-      fields += _cfgField('weather_show_gust', lw.show_gust || 'Windstoten tonen', 'checkbox', cfg.weather_show_gust);
-      fields += _cfgField('weather_icons', lw.icons || 'Weericonen', 'select', cfg.weather_icons || 'line', iconOpts);
+      fields += _cfgField('owm_city', lw.owm_city || 'City', 'text', cfg.owm_city);
+      fields += _cfgField('owm_name', lw.owm_name || 'Display name', 'text', cfg.owm_name);
+      fields += _cfgField('owm_country', lw.owm_country || 'Country code', 'text', cfg.owm_country);
+      fields += _cfgField('owm_lang', lw.owm_lang || 'Language code', 'text', cfg.owm_lang, null, lw.owm_lang_help || '');
+      fields += _cfgField('owm_cnt', lw.owm_cnt || 'Number of periods', 'text', cfg.owm_cnt, null, lw.owm_cnt_help || '');
+      fields += _cfgField('owm_days', lw.owm_days || 'Daily forecast', 'checkbox', cfg.owm_days, null, lw.owm_days_help || '');
+      fields += _cfgField('owm_min', lw.owm_min || 'Show minimum temperature', 'checkbox', cfg.owm_min, null, lw.owm_min_help || '');
+      fields += _cfgHeading(lw.display || _t('display', 'Display'));
+      fields += _cfgField('weather_show_rain', lw.show_rain || 'Show rain', 'checkbox', cfg.weather_show_rain);
+      fields += _cfgField('weather_show_description', lw.show_description || 'Show description', 'checkbox', cfg.weather_show_description);
+      fields += _cfgField('weather_show_wind', lw.show_wind || 'Show wind', 'checkbox', cfg.weather_show_wind);
+      fields += _cfgField('weather_show_gust', lw.show_gust || 'Show gusts', 'checkbox', cfg.weather_show_gust);
+      fields += _cfgField('weather_icons', lw.icons || 'Weather icons', 'select', cfg.weather_icons || 'line', iconOpts);
       fields += '</div>';
       fields +=
         '<div class="we-weather-group" data-weather-provider="wunderground"' +
@@ -814,14 +865,14 @@ var DashticzWidgetEditor = (function () {
         '>';
       fields += _cfgHeading('Weather Underground');
       fields += _cfgField('wu_api', lw.wu_api || 'Weather Underground API key', 'text', cfg.wu_api);
-      fields += _cfgField('wu_city', lw.wu_city || 'Stad (WU)', 'text', cfg.wu_city);
-      fields += _cfgField('wu_name', lw.wu_name || 'Weergavenaam (WU)', 'text', cfg.wu_name);
-      fields += _cfgField('wu_country', lw.wu_country || 'Landcode (WU)', 'text', cfg.wu_country);
+      fields += _cfgField('wu_city', lw.wu_city || 'City (WU)', 'text', cfg.wu_city);
+      fields += _cfgField('wu_name', lw.wu_name || 'Display name (WU)', 'text', cfg.wu_name);
+      fields += _cfgField('wu_country', lw.wu_country || 'Country code (WU)', 'text', cfg.wu_country);
       fields += '</div>';
-      fields += _cfgHeading(lw.shared_display || 'Algemene weergave');
-      fields += _cfgField('use_fahrenheit', lw.use_fahrenheit || 'Fahrenheit gebruiken', 'checkbox', cfg.use_fahrenheit);
-      fields += _cfgField('use_beaufort', lw.use_beaufort || 'Beaufort gebruiken', 'checkbox', cfg.use_beaufort);
-      fields += _cfgField('translate_windspeed', lw.translate_windspeed || 'Windsnelheid vertalen', 'checkbox', cfg.translate_windspeed, null, lw.translate_windspeed_help || '');
+      fields += _cfgHeading(lw.shared_display || _t('general_display', 'General display'));
+      fields += _cfgField('use_fahrenheit', lw.use_fahrenheit || 'Use Fahrenheit', 'checkbox', cfg.use_fahrenheit);
+      fields += _cfgField('use_beaufort', lw.use_beaufort || 'Use Beaufort', 'checkbox', cfg.use_beaufort);
+      fields += _cfgField('translate_windspeed', lw.translate_windspeed || 'Translate wind speed', 'checkbox', cfg.translate_windspeed, null, lw.translate_windspeed_help || '');
 
     } else if (item.id === 'calendar') {
       var ccal = widgetConfigs.calendar || {};
@@ -830,71 +881,82 @@ var DashticzWidgetEditor = (function () {
         '<label class="form-label we-field-label" for="we-cfg-calendar-url">ICS-URL</label>' +
         '<input type="url" class="form-control form-control-sm we-widget-field" id="we-cfg-calendar-url" ' +
         'placeholder="https://…/calendar.ics" value="' + _esc(calendarUrl) + '"></div>';
-      fields += _cfgField('calendarformat', ll.calendarformat || 'Kalender weergave', 'text', ccal.calendarformat);
-      fields += _cfgField('calendarlanguage', ll.calendarlanguage || 'Taal van kalender', 'select', ccal.calendarlanguage, _CALENDAR_LANGUAGES);
+      fields += _cfgField('calendarformat', ll.calendarformat || 'Calendar format', 'text', ccal.calendarformat);
+      fields += _cfgField(
+        'calendarlanguage',
+        ll.calendarlanguage || 'Calendar language',
+        'select',
+        ccal.calendarlanguage,
+        _calendarLanguages()
+      );
 
     } else if (item.id === 'clock') {
       var ccfg = widgetConfigs.clock || {};
       var bodyOpts = {
-        NoBody: 'Geen behuizing',
-        SmallWhiteBody: 'Klein wit',
-        RoundBody: 'Rond',
-        RoundGreenBody: 'Rond groen',
-        SquareBody: 'Vierkant',
-        ViennaBody: 'Wenen',
+        NoBody: _t('clock_no_body', 'No body'),
+        SmallWhiteBody: _t('clock_small_white_body', 'Small white'),
+        RoundBody: _t('clock_round_body', 'Round'),
+        RoundGreenBody: _t('clock_round_green_body', 'Round green'),
+        SquareBody: _t('clock_square_body', 'Square'),
+        ViennaBody: _t('clock_vienna', 'Vienna'),
       };
       var dialOpts = {
-        NoDial: 'Geen wijzerplaat',
-        GermanHourStrokeDial: 'Duits (uren)',
-        GermanStrokeDial: 'Duits',
-        AustriaStrokeDial: 'Oostenrijk',
-        SwissStrokeDial: 'Zwitsers',
-        ViennaStrokeDial: 'Wenen',
+        NoDial: _t('clock_no_dial', 'No dial'),
+        GermanHourStrokeDial: _t('clock_german_hours', 'German (hours)'),
+        GermanStrokeDial: _t('clock_german', 'German'),
+        AustriaStrokeDial: _t('clock_austrian', 'Austrian'),
+        SwissStrokeDial: _t('clock_swiss', 'Swiss'),
+        ViennaStrokeDial: _t('clock_vienna', 'Vienna'),
       };
       var hourOpts = {
-        PointedHourHand: 'Punt',
-        BarHourHand: 'Balk',
-        SwissHourHand: 'Zwitsers',
-        ViennaHourHand: 'Wenen',
+        PointedHourHand: _t('clock_pointed', 'Pointed'),
+        BarHourHand: _t('clock_bar', 'Bar'),
+        SwissHourHand: _t('clock_swiss', 'Swiss'),
+        ViennaHourHand: _t('clock_vienna', 'Vienna'),
       };
       var minuteOpts = {
-        PointedMinuteHand: 'Punt',
-        BarMinuteHand: 'Balk',
-        SwissMinuteHand: 'Zwitsers',
-        ViennaMinuteHand: 'Wenen',
+        PointedMinuteHand: _t('clock_pointed', 'Pointed'),
+        BarMinuteHand: _t('clock_bar', 'Bar'),
+        SwissMinuteHand: _t('clock_swiss', 'Swiss'),
+        ViennaMinuteHand: _t('clock_vienna', 'Vienna'),
       };
       var secondOpts = {
-        NoSecondHand: 'Geen',
-        BarSecondHand: 'Balk',
-        HoleShapedSecondHand: 'Gat',
-        NewHoleShapedSecondHand: 'Gat (nieuw)',
-        SwissSecondHand: 'Zwitsers',
+        NoSecondHand: _t('none', 'None'),
+        BarSecondHand: _t('clock_bar', 'Bar'),
+        HoleShapedSecondHand: _t('clock_hole', 'Hole'),
+        NewHoleShapedSecondHand: _t('clock_hole_new', 'Hole (new)'),
+        SwissSecondHand: _t('clock_swiss', 'Swiss'),
       };
       var bossOpts = {
-        NoBoss: 'Geen',
-        BlackBoss: 'Zwart',
-        RedBoss: 'Rood',
-        ViennaBoss: 'Wenen',
+        NoBoss: _t('none', 'None'),
+        BlackBoss: _t('black', 'Black'),
+        RedBoss: _t('red', 'Red'),
+        ViennaBoss: _t('clock_vienna', 'Vienna'),
       };
       var minuteBehOpts = {
-        CreepingMinuteHand: 'Kruipend',
-        BouncingMinuteHand: 'Stuiterend',
-        ElasticBouncingMinuteHand: 'Elastisch',
+        CreepingMinuteHand: _t('clock_creeping', 'Creeping'),
+        BouncingMinuteHand: _t('clock_bouncing', 'Bouncing'),
+        ElasticBouncingMinuteHand: _t('clock_elastic', 'Elastic'),
       };
       var secondBehOpts = {
-        CreepingSecondHand: 'Kruipend',
-        BouncingSecondHand: 'Stuiterend',
-        ElasticBouncingSecondHand: 'Elastisch',
-        OverhastySecondHand: 'Haastig',
+        CreepingSecondHand: _t('clock_creeping', 'Creeping'),
+        BouncingSecondHand: _t('clock_bouncing', 'Bouncing'),
+        ElasticBouncingSecondHand: _t('clock_elastic', 'Elastic'),
+        OverhastySecondHand: _t('clock_overhasty', 'Overhasty'),
       };
-      var clockFaceOpts = { '24': '24-uurs', '12': '12-uurs' };
+      var clockFaceOpts = {
+        '24': _t('clock_24_hour', '24-hour'),
+        '12': _t('clock_12_hour', '12-hour'),
+      };
       var showSizeScale = clockType !== 'miniclock';
       fields +=
         '<div class="mb-3">' +
-        '<label class="form-label we-field-label" for="we-cfg-clock-type">Kloktype</label>' +
+        '<label class="form-label we-field-label" for="we-cfg-clock-type">' +
+        _t('clock_type', 'Clock type') +
+        '</label>' +
         '<select class="form-select form-select-sm we-widget-field" id="we-cfg-clock-type">' +
         _clockOption('basicclock', 'Basic clock') +
-        _clockOption('stationclock', 'Stationsklok') +
+        _clockOption('stationclock', _t('station_clock', 'Station clock')) +
         _clockOption('flipclock', 'Flipclock') +
         _clockOption('haymanclock', 'Hayman clock') +
         _clockOption('miniclock', 'Miniclock') +
@@ -904,8 +966,22 @@ var DashticzWidgetEditor = (function () {
         '<div class="we-clock-size-group"' +
         (showSizeScale ? '' : ' style="display:none"') +
         '>';
-      fields += _cfgField('size', 'Grootte (px)', 'text', ccfg.size, null, 'Leeg = kolombreedte');
-      fields += _cfgField('scale', 'Schaal', 'text', ccfg.scale, null, 'Bijv. 0.75 (default 1)');
+      fields += _cfgField(
+        'size',
+        _t('size_px', 'Size (px)'),
+        'text',
+        ccfg.size,
+        null,
+        _t('size_help', 'Empty = column width')
+      );
+      fields += _cfgField(
+        'scale',
+        _t('scale', 'Scale'),
+        'text',
+        ccfg.scale,
+        null,
+        _t('scale_help', 'For example 0.75 (default 1)')
+      );
       fields += '</div>';
 
       fields +=
@@ -913,8 +989,19 @@ var DashticzWidgetEditor = (function () {
         (clockType === 'flipclock' ? '' : ' style="display:none"') +
         '>';
       fields += _cfgHeading('Flipclock');
-      fields += _cfgField('showSeconds', 'Seconden tonen', 'checkbox', ccfg.showSeconds);
-      fields += _cfgField('clockFace', 'Wijzerplaat', 'select', ccfg.clockFace || '24', clockFaceOpts);
+      fields += _cfgField(
+        'showSeconds',
+        _t('show_seconds', 'Show seconds'),
+        'checkbox',
+        ccfg.showSeconds
+      );
+      fields += _cfgField(
+        'clockFace',
+        _t('clock_face', 'Clock face'),
+        'select',
+        ccfg.clockFace || '24',
+        clockFaceOpts
+      );
       fields += _cfgField('hide_seconds', ll.hide_seconds || 'Default: seconden verbergen', 'checkbox', ccfg.hide_seconds);
       fields += '</div>';
 
@@ -922,15 +1009,15 @@ var DashticzWidgetEditor = (function () {
         '<div class="we-clock-group" data-clock-type="stationclock"' +
         (clockType === 'stationclock' ? '' : ' style="display:none"') +
         '>';
-      fields += _cfgHeading('Stationsklok');
-      fields += _cfgField('body', 'Behuizing', 'select', ccfg.body || 'RoundBody', bodyOpts);
-      fields += _cfgField('dial', 'Wijzerplaat', 'select', ccfg.dial || 'GermanStrokeDial', dialOpts);
-      fields += _cfgField('hourhand', 'Uurwijzer', 'select', ccfg.hourhand || 'PointedHourHand', hourOpts);
-      fields += _cfgField('minutehand', 'Minutenwijzer', 'select', ccfg.minutehand || 'PointedMinuteHand', minuteOpts);
-      fields += _cfgField('secondhand', 'Secondenwijzer', 'select', ccfg.secondhand || 'HoleShapedSecondHand', secondOpts);
-      fields += _cfgField('boss', 'As-kap', 'select', ccfg.boss || 'RedBoss', bossOpts);
-      fields += _cfgField('minutehandbehavior', 'Minuten-gedrag', 'select', ccfg.minutehandbehavior || 'BouncingMinuteHand', minuteBehOpts);
-      fields += _cfgField('secondhandbehavior', 'Seconden-gedrag', 'select', ccfg.secondhandbehavior || 'OverhastySecondHand', secondBehOpts);
+      fields += _cfgHeading(_t('station_clock', 'Station clock'));
+      fields += _cfgField('body', _t('clock_body', 'Body'), 'select', ccfg.body || 'RoundBody', bodyOpts);
+      fields += _cfgField('dial', _t('clock_dial', 'Dial'), 'select', ccfg.dial || 'GermanStrokeDial', dialOpts);
+      fields += _cfgField('hourhand', _t('clock_hour_hand', 'Hour hand'), 'select', ccfg.hourhand || 'PointedHourHand', hourOpts);
+      fields += _cfgField('minutehand', _t('clock_minute_hand', 'Minute hand'), 'select', ccfg.minutehand || 'PointedMinuteHand', minuteOpts);
+      fields += _cfgField('secondhand', _t('clock_second_hand', 'Second hand'), 'select', ccfg.secondhand || 'HoleShapedSecondHand', secondOpts);
+      fields += _cfgField('boss', _t('clock_boss', 'Boss'), 'select', ccfg.boss || 'RedBoss', bossOpts);
+      fields += _cfgField('minutehandbehavior', _t('clock_minute_behavior', 'Minute-hand behavior'), 'select', ccfg.minutehandbehavior || 'BouncingMinuteHand', minuteBehOpts);
+      fields += _cfgField('secondhandbehavior', _t('clock_second_behavior', 'Second-hand behavior'), 'select', ccfg.secondhandbehavior || 'OverhastySecondHand', secondBehOpts);
       fields += _cfgField('boss_stationclock', ll.boss_stationclock || 'Default as-kap (config)', 'select', ccfg.boss_stationclock || 'RedBoss', bossOpts);
       fields += _cfgField('hide_seconds_stationclock', ll.hide_seconds_stationclock || 'Default: seconden verbergen', 'checkbox', ccfg.hide_seconds_stationclock);
       fields += '</div>';
@@ -940,28 +1027,33 @@ var DashticzWidgetEditor = (function () {
         (clockType === 'miniclock' ? '' : ' style="display:none"') +
         '>';
       fields +=
-        '<p class="form-text" style="font-size:12px;color:#6c757d">Miniclock heeft geen extra weergave-opties. Stel breedte/hoogte in via de layout editor.</p>';
+        '<p class="form-text" style="font-size:12px;color:#6c757d">' +
+        _t(
+          'miniclock_note',
+          'Miniclock has no extra display options. Set width and height in the layout editor.'
+        ) +
+        '</p>';
       fields += '</div>';
 
     } else if (item.id === 'garbage') {
       var gcfg = widgetConfigs.garbage || {};
-      fields += _cfgField('garbage_company', lg.garbage_company || 'Afvalverwerker', 'select', gcfg.garbage_company, _GARBAGE_COMPANIES);
+      fields += _cfgField('garbage_company', lg.garbage_company || 'Company / Service', 'select', gcfg.garbage_company, _GARBAGE_COMPANIES);
       fields += _cfgField('garbage_zipcode', lg.garbage_zipcode || 'Postcode', 'text', gcfg.garbage_zipcode);
-      fields += _cfgField('garbage_street', lg.garbage_street || 'Straatnaam', 'text', gcfg.garbage_street);
-      fields += _cfgField('garbage_housenumber', lg.garbage_housenumber || 'Huisnummer', 'text', gcfg.garbage_housenumber);
-      fields += _cfgField('garbage_housenumberadd', lg.garbage_housenumberaddition || 'Huisnummertoevoeging', 'text', gcfg.garbage_housenumberadd);
+      fields += _cfgField('garbage_street', lg.garbage_street || 'Street', 'text', gcfg.garbage_street);
+      fields += _cfgField('garbage_housenumber', lg.garbage_housenumber || 'House number', 'text', gcfg.garbage_housenumber);
+      fields += _cfgField('garbage_housenumberadd', lg.garbage_housenumberaddition || 'House-number addition', 'text', gcfg.garbage_housenumberadd);
       fields += _cfgField('garbage_maxitems', lg.garbage_maxitems || 'Maximum items', 'text', gcfg.garbage_maxitems);
-      fields += _cfgField('garbage_width', lg.garbage_width || 'Breedte', 'text', gcfg.garbage_width);
+      fields += _cfgField('garbage_width', lg.garbage_width || 'Width', 'text', gcfg.garbage_width);
       fields += _cfgHeading('iCal / Google');
       fields += _cfgField('garbage_icalurl', lg.garbage_icalurl || 'iCal URL', 'text', gcfg.garbage_icalurl);
       fields += _cfgField('google_api_key', lg.google_api_key || 'Google API key', 'text', gcfg.google_api_key);
-      fields += _cfgField('garbage_calendar_id', lg.garbage_calendar_id || 'Google Agenda ID', 'text', gcfg.garbage_calendar_id, null, lg.garbage_calendar_id_help || '');
-      fields += _cfgHeading('Weergave');
-      fields += _cfgField('garbage_hideicon', lg.garbage_hideicon || 'Icoon verbergen', 'checkbox', gcfg.garbage_hideicon);
-      fields += _cfgField('garbage_icon_use_colors', lg.garbage_icon_use_colors || 'Kleur voor icoon', 'checkbox', gcfg.garbage_icon_use_colors);
-      fields += _cfgField('garbage_use_colors', lg.garbage_use_colors || 'Kleuren gebruiken', 'checkbox', gcfg.garbage_use_colors);
-      fields += _cfgField('garbage_use_names', lg.garbage_use_names || 'Namen gebruiken', 'checkbox', gcfg.garbage_use_names);
-      fields += _cfgField('garbage_use_cors_prefix', lg.garbage_use_cors_prefix || 'CORS-prefix gebruiken', 'checkbox', gcfg.garbage_use_cors_prefix);
+      fields += _cfgField('garbage_calendar_id', lg.garbage_calendar_id || 'Google Calendar ID', 'text', gcfg.garbage_calendar_id, null, lg.garbage_calendar_id_help || '');
+      fields += _cfgHeading(_t('display', 'Display'));
+      fields += _cfgField('garbage_hideicon', lg.garbage_hideicon || 'Hide icon', 'checkbox', gcfg.garbage_hideicon);
+      fields += _cfgField('garbage_icon_use_colors', lg.garbage_icon_use_colors || 'Use icon colors', 'checkbox', gcfg.garbage_icon_use_colors);
+      fields += _cfgField('garbage_use_colors', lg.garbage_use_colors || 'Use colors', 'checkbox', gcfg.garbage_use_colors);
+      fields += _cfgField('garbage_use_names', lg.garbage_use_names || 'Use names', 'checkbox', gcfg.garbage_use_names);
+      fields += _cfgField('garbage_use_cors_prefix', lg.garbage_use_cors_prefix || 'Use CORS prefix', 'checkbox', gcfg.garbage_use_cors_prefix);
 
     } else if (item.id === 'sonarr') {
       var scfg = widgetConfigs.sonarr || {};
@@ -984,7 +1076,7 @@ var DashticzWidgetEditor = (function () {
         '<div class="mb-3">' +
         '<label class="form-label we-field-label" for="we-cfg-pt-provider">Provider</label>' +
         '<select class="form-select form-select-sm we-widget-field" id="we-cfg-pt-provider">' +
-        _ptOption('treinen', 'Treinen (NL)') +
+        _ptOption('treinen', _t('trains_nl', 'Trains (NL)')) +
         _ptOption('ovapi', 'OV API (NL)') +
         _ptOption('drgl', 'DRGL (NL)') +
         _ptOption('irailbe', 'iRail (BE)') +
@@ -992,11 +1084,15 @@ var DashticzWidgetEditor = (function () {
         '</select></div>';
       fields +=
         '<div class="mb-3">' +
-        '<label class="form-label we-field-label" for="we-cfg-pt-station">Station / halte</label>' +
+        '<label class="form-label we-field-label" for="we-cfg-pt-station">' +
+        _t('station_stop', 'Station / stop') +
+        '</label>' +
         '<input type="text" class="form-control form-control-sm we-widget-field" id="we-cfg-pt-station" value="' +
         _esc(publicTransportStation) +
         '">' +
-        '<div class="form-text" style="font-size:11px;color:#6c757d">Bijv. UT voor Utrecht Centraal (treinen).</div></div>';
+        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
+        _t('station_help', 'For example UT for Utrecht Centraal (trains).') +
+        '</div></div>';
 
     } else if (item.id === 'trafficinfo') {
       var tcfg = widgetConfigs.trafficinfo || {};
@@ -1012,11 +1108,18 @@ var DashticzWidgetEditor = (function () {
         '"></div>';
       fields +=
         '<div class="mb-3">' +
-        '<label class="form-label we-field-label" for="we-cfg-alarm-filter">Filter (optioneel)</label>' +
+        '<label class="form-label we-field-label" for="we-cfg-alarm-filter">' +
+        _t('filter_optional', 'Filter (optional)') +
+        '</label>' +
         '<input type="text" class="form-control form-control-sm we-widget-field" id="we-cfg-alarm-filter" value="' +
         _esc(alarmFilter) +
         '">' +
-        '<div class="form-text" style="font-size:11px;color:#6c757d">Kommagescheiden zoektermen, bijv. Amsterdam, Utrecht.</div></div>';
+        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
+        _t(
+          'filter_help',
+          'Comma-separated search terms, for example Amsterdam, Utrecht.'
+        ) +
+        '</div></div>';
 
     } else if (item.id === 'camera') {
       fields += '<div id="we-cfg-camera-list">';
@@ -1026,19 +1129,21 @@ var DashticzWidgetEditor = (function () {
       fields +=
         '</div>' +
         '<button type="button" class="btn btn-sm btn-outline-primary" id="we-camera-add">' +
-        '<i class="fas fa-plus me-1" aria-hidden="true"></i>Camera toevoegen</button>';
+        '<i class="fas fa-plus me-1" aria-hidden="true"></i>' +
+        _t('camera_add', 'Add camera') +
+        '</button>';
 
     } else if (item.id === 'map') {
       var mcfg = widgetConfigs.map || {};
       fields += _cfgField('gm_api', ll.gm_api || 'Google Maps API key', 'text', mcfg.gm_api);
       fields += _cfgField('gm_zoomlevel', ll.gm_zoomlevel || 'Zoomniveau', 'text', mcfg.gm_zoomlevel);
-      fields += _cfgField('gm_latitude', ll.gm_latitude || 'Breedtegraad', 'text', mcfg.gm_latitude);
-      fields += _cfgField('gm_longitude', ll.gm_longitude || 'Lengtegraad', 'text', mcfg.gm_longitude);
+      fields += _cfgField('gm_latitude', ll.gm_latitude || 'Latitude', 'text', mcfg.gm_latitude);
+      fields += _cfgField('gm_longitude', ll.gm_longitude || 'Longitude', 'text', mcfg.gm_longitude);
 
     } else if (item.id === 'longfonds') {
       var lcfg = widgetConfigs.longfonds || {};
       fields += _cfgField('longfonds_zipcode', lw.longfonds_zipcode || 'Postcode', 'text', lcfg.longfonds_zipcode);
-      fields += _cfgField('longfonds_housenumber', lw.longfonds_housenumber || 'Huisnummer', 'text', lcfg.longfonds_housenumber);
+      fields += _cfgField('longfonds_housenumber', lw.longfonds_housenumber || 'House number', 'text', lcfg.longfonds_housenumber);
 
     } else if (item.id === 'moon') {
       var mooncfg = widgetConfigs.moon || {};
@@ -1056,17 +1161,23 @@ var DashticzWidgetEditor = (function () {
       '<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">' +
       '<div class="modal-content">' +
       '<div class="modal-header">' +
-      '<h5 class="modal-title" id="we-cfg-title"><i class="fas fa-cog me-2" aria-hidden="true"></i>Instellingen — ' +
-      item.title +
+      '<h5 class="modal-title" id="we-cfg-title"><i class="fas fa-cog me-2" aria-hidden="true"></i>' +
+      _t('settings', 'Settings') +
+      ' — ' +
+      _widgetTitle(item) +
       '</h5>' +
-      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Sluiten"></button>' +
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _t('close', 'Close') +
+      '"></button>' +
       '</div>' +
       '<div class="modal-body">' +
       fields +
       '<div class="we-cfg-message" role="status"></div>' +
       '</div>' +
       '<div class="modal-footer">' +
-      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuleren</button>' +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      _t('cancel', 'Cancel') +
+      '</button>' +
       '<button type="button" class="btn btn-primary" id="we-cfg-ok-btn">OK</button>' +
       '</div></div></div></div>'
     );
@@ -1106,7 +1217,11 @@ var DashticzWidgetEditor = (function () {
       var index = $cfgModal.find('.we-camera-row').length;
       $('#we-cfg-camera-list').append(
         _cameraRowHtml(
-          { title: 'Camera ' + (index + 1), imageUrl: '', videoUrl: '' },
+          {
+            title: _t('camera', 'Camera') + ' ' + (index + 1),
+            imageUrl: '',
+            videoUrl: '',
+          },
           index
         )
       );
@@ -1123,7 +1238,7 @@ var DashticzWidgetEditor = (function () {
         $(this).attr('data-camera-index', index);
         $(this)
           .find('strong')
-          .text('Camera ' + (index + 1));
+          .text(_t('camera', 'Camera') + ' ' + (index + 1));
       });
       $cfgModal.find('.we-camera-remove').prop(
         'disabled',
@@ -1156,7 +1271,9 @@ var DashticzWidgetEditor = (function () {
       } else if (widgetId === 'calendar') {
         var url = $.trim($('#we-cfg-calendar-url').val() || '');
         if (url && !/^https?:\/\/\S+$/i.test(url)) {
-          $('.we-cfg-message').addClass('text-danger').text('Vul een geldige http(s)-ICS-URL in.');
+          $('.we-cfg-message')
+            .addClass('text-danger')
+            .text(_t('invalid_calendar_url', 'Enter a valid HTTP(S) ICS URL.'));
           $('#we-cfg-calendar-url').trigger('focus');
           valid = false;
         } else {
@@ -1182,7 +1299,9 @@ var DashticzWidgetEditor = (function () {
       } else if (widgetId === 'alarmmeldingen') {
         var rss = $.trim($('#we-cfg-alarm-rss').val() || '');
         if (!rss || !/^https?:\/\/\S+$/i.test(rss)) {
-          $('.we-cfg-message').addClass('text-danger').text('Vul een geldige http(s)-RSS-URL in.');
+          $('.we-cfg-message')
+            .addClass('text-danger')
+            .text(_t('invalid_rss_url', 'Enter a valid HTTP(S) RSS URL.'));
           valid = false;
         } else {
           alarmRss = rss;
@@ -1201,9 +1320,13 @@ var DashticzWidgetEditor = (function () {
             $('.we-cfg-message')
               .addClass('text-danger')
               .text(
-                'Vul voor camera ' +
+                _t(
+                  'invalid_camera_url_prefix',
+                  'Enter valid HTTP(S) URL(s) for camera'
+                ) +
+                  ' ' +
                   (index + 1) +
-                  ' geldige http(s)-URL(s) in.'
+                  '.'
               );
             valid = false;
             return false;
@@ -1211,7 +1334,7 @@ var DashticzWidgetEditor = (function () {
           cameras.push({
             title:
               $.trim($(this).find('.we-camera-title').val() || '') ||
-              'Camera ' + (index + 1),
+              _t('camera', 'Camera') + ' ' + (index + 1),
             imageUrl: imageUrl,
             videoUrl: videoUrl,
           });
@@ -1314,7 +1437,9 @@ var DashticzWidgetEditor = (function () {
       .toggleClass('we-selected', selected)
       .attr('aria-pressed', selected ? 'true' : 'false')
       .find('.we-widget-status')
-      .text(selected ? 'Toegevoegd' : 'Klik om toe te voegen');
+      .text(
+        selected ? _t('added', 'Added') : _t('click_to_add', 'Click to add')
+      );
   }
 
   function _save() {
@@ -1325,7 +1450,12 @@ var DashticzWidgetEditor = (function () {
     ) {
       $('.we-message')
         .addClass('text-danger')
-        .text('Vul voor Kalender een geldige http(s)-ICS-URL in.');
+        .text(
+          _t(
+            'calendar_needs_url',
+            'Enter a valid HTTP(S) ICS URL for Calendar.'
+          )
+        );
       return;
     }
     if (
@@ -1341,7 +1471,12 @@ var DashticzWidgetEditor = (function () {
     ) {
       $('.we-message')
         .addClass('text-danger')
-        .text("Vul bij Camera's een geldige image-URL in (tandwiel).");
+        .text(
+          _t(
+            'camera_needs_url',
+            'Enter a valid image URL for Cameras in its settings.'
+          )
+        );
       return;
     }
 
@@ -1437,7 +1572,9 @@ var DashticzWidgetEditor = (function () {
       payload.push(entry);
     });
 
-    var $save = $('#we-save-btn').prop('disabled', true).text('Opslaan…');
+    var $save = $('#we-save-btn')
+      .prop('disabled', true)
+      .text(_t('saving', 'Saving…'));
     $('.we-message').removeClass('text-danger').text('');
     var screenNumber = _activeScreenPayload();
 
@@ -1494,7 +1631,10 @@ var DashticzWidgetEditor = (function () {
         });
       })
       .done(function () {
-        $save.removeClass('btn-primary').addClass('btn-success').text('Opgeslagen');
+        $save
+          .removeClass('btn-primary')
+          .addClass('btn-success')
+          .text(_t('saved', 'Saved'));
         setTimeout(function () {
           window.location.reload();
         }, 700);
@@ -1503,9 +1643,9 @@ var DashticzWidgetEditor = (function () {
         var message =
           xhr.responseJSON && xhr.responseJSON.error
             ? xhr.responseJSON.error
-            : 'De widgets konden niet worden opgeslagen.';
+            : _t('save_failed', 'The widgets could not be saved.');
         $('.we-message').addClass('text-danger').text(message);
-        $save.prop('disabled', false).text('Opslaan');
+        $save.prop('disabled', false).text(_t('save', 'Save'));
       });
   }
 
