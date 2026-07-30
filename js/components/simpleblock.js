@@ -215,6 +215,7 @@ var DT_simpleblock = (function () {
             _registerDeviceEditorClick();
             _registerWidgetEditorClick();
             _registerLayoutEditorClick();
+            _openPendingGridEditor();
           }
           _registerConfigModeClick();
           break;
@@ -233,6 +234,45 @@ var DT_simpleblock = (function () {
       .off('click.configmode')
       .on('click.configmode', '.config-mode-btn', function () {
         var mode = String($(this).data('mode') || 'wizard');
+        var currentMode =
+          typeof isCustomConfigMode === 'function' && isCustomConfigMode()
+            ? 'custom'
+            : 'wizard';
+        if (mode === currentMode) return;
+        if (mode === 'wizard') {
+          if (
+            !window.confirm(
+              'Wizard gebruikt altijd een vrije grid-layout. Het huidige columns-scherm wordt geconverteerd voordat Wizard wordt ingeschakeld. Doorgaan?'
+            )
+          ) {
+            return;
+          }
+          DT_function.loadDTScript('js/layouteditor.js').then(function () {
+            DashticzLayoutEditor.convertCurrentScreenToGrid(
+              true,
+              'wizard'
+            ).done(function (result) {
+              try {
+                sessionStorage.setItem(
+                  'dashticz_open_grid_editor',
+                  String((result && result.gridScreen) || '1')
+                );
+              } catch (error) {
+                // Session storage is optional.
+              }
+              if (
+                result &&
+                result.alreadyGrid &&
+                typeof setConfigMode === 'function'
+              ) {
+                setConfigMode('wizard');
+              } else {
+                window.location.reload();
+              }
+            });
+          });
+          return;
+        }
         if (typeof setConfigMode === 'function') {
           setConfigMode(mode);
         }
@@ -245,6 +285,36 @@ var DT_simpleblock = (function () {
         DashticzDeviceEditor.open();
       });
     });
+  }
+
+  function _openPendingGridEditor() {
+    var pendingScreen = '';
+    try {
+      pendingScreen =
+        sessionStorage.getItem('dashticz_open_grid_editor') || '';
+      if (pendingScreen) {
+        sessionStorage.removeItem('dashticz_open_grid_editor');
+      }
+    } catch (error) {
+      return;
+    }
+    if (!pendingScreen) return;
+    setTimeout(function () {
+      if (
+        pendingScreen === 'standby' &&
+        typeof DashticzScreenSwitcher !== 'undefined'
+      ) {
+        DashticzScreenSwitcher.goToScreen('standby');
+      } else if (
+        parseInt(pendingScreen, 10) > 0 &&
+        typeof DashticzScreenSwitcher !== 'undefined'
+      ) {
+        DashticzScreenSwitcher.goToScreen(parseInt(pendingScreen, 10));
+      }
+      DT_function.loadDTScript('js/layouteditor.js').then(function () {
+        DashticzLayoutEditor.open();
+      });
+    }, 300);
   }
 
   function _registerLayoutEditorClick() {

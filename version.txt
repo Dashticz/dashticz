@@ -1,8 +1,13 @@
 {
-"version": "3.21.3",
+"version": "3.22.0",
 "branch": "beta",
-"last_changes": "Use compact widget defaults, multi-camera configuration, and stable layout saves",
+"last_changes": "Preserve widget settings and add Standby grid parity",
 "changelog" : {
+            "3.22.0": "Preserve widget settings and add Standby grid parity",
+            "3.21.7": "Make Wizard convert column screens to compact free-positioned grids",
+            "3.21.6": "Allow grid blocks to be dragged into arbitrary empty rows",
+            "3.21.5": "Add drag-and-resize editing and persistence for grid screens",
+            "3.21.4": "Add optional free-positioned CSS Grid screens with mobile stacking",
             "3.21.3": "Use compact widget defaults, multi-camera configuration, and stable layout saves",
             "3.21.2": "Keep CONFIG.js settings, blocks, columns, and screens grouped after editor saves",
             "3.21.1": "Restore large Modern Dark selector buttons and document the complete browser editors and installer",

@@ -43,10 +43,18 @@ var DT_camera = {
     /* The camera block contains multiple cameras */
     if (me.block.cameras.length > 0) {
       /* Create new mountpoints for each of the cameras */
-      var s = me.$mountPoint.closest('.screen').data('screenindex');
-      var c = me.$mountPoint.closest('.col-xs-12').data('colindex');
-      var columndiv = 'div.screen' + s + ' .row .col' + c;
-      me.$mountPoint.remove();
+      var isGridItem = me.$mountPoint.hasClass('dt-grid-item');
+      var columndiv;
+      if (isGridItem) {
+        /* Keep all camera thumbnails inside their positioned grid item. */
+        me.$mountPoint.empty();
+        columndiv = me.mountPoint;
+      } else {
+        var s = me.$mountPoint.closest('.screen').data('screenindex');
+        var c = me.$mountPoint.closest('.col-xs-12').data('colindex');
+        columndiv = 'div.screen' + s + ' .row .col' + c;
+        me.$mountPoint.remove();
+      }
 
       $.each(me.block.cameras, function (i) {
         var mountpoint = Dashticz.mountNewContainer(columndiv);

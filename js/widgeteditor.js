@@ -1,4 +1,4 @@
-/* global settings columns columns_standby blocks screens language DashticzScreenSwitcher standbyActive */
+/* global settings columns columns_standby blocks screens standby_screen language DashticzScreenSwitcher standbyActive */
 // eslint-disable-next-line no-unused-vars
 var DashticzWidgetEditor = (function () {
   'use strict';
@@ -248,8 +248,13 @@ var DashticzWidgetEditor = (function () {
   var alarmRss = 'https://www.alarmeringen.nl/feeds/all.rss';
   var alarmFilter = '';
   var widgetConfigs = {};
+  var gridMode = false;
+  var gridConfig = null;
+  var gridPositions = {};
+  var widgetBlockRefs = {};
 
   function open() {
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
     _readConfiguredWidgets();
     _buildAndShowModal();
   }
@@ -258,6 +263,9 @@ var DashticzWidgetEditor = (function () {
     selectedWidgets = {};
     widgetDimensions = {};
     layoutOrder = [];
+    gridPositions = {};
+    widgetBlockRefs = {};
+    gridConfig = gridMode ? _readGridConfig() : null;
     weatherProvider =
       settings['owm_api'] || !settings['wu_api']
         ? 'openweather'
@@ -374,6 +382,13 @@ var DashticzWidgetEditor = (function () {
       },
     };
 
+    if (gridMode) {
+      _readGridConfiguredWidgets();
+      if (!cameraConfigs.length) {
+        cameraConfigs = [{ title: 'Camera 1', imageUrl: '', videoUrl: '' }];
+      }
+      return;
+    }
     if (typeof columns === 'undefined') return;
 
     _readManagedLayoutOrder();
@@ -595,6 +610,184 @@ var DashticzWidgetEditor = (function () {
       if (catalog[i].blockKey === blockKey) return catalog[i];
     }
     return null;
+  }
+
+  function _catalogItemForDefinition(reference, definition) {
+    var byKey = _catalogItemByBlockKey(reference);
+    if (byKey) return byKey;
+    var type = String((definition && definition.type) || '').toLowerCase();
+    var typeMap = {
+      weather: 'weather',
+      wunderground: 'weather',
+      garbage: 'garbage',
+      spotify: 'spotify',
+      sonarr: 'sonarr',
+      calendar: 'calendar',
+      secpanel: 'secpanel',
+      publictransport: 'publictransport',
+      trafficinfo: 'trafficinfo',
+      alarmmeldingen: 'alarmmeldingen',
+      camera: 'camera',
+      map: 'map',
+      longfonds: 'longfonds',
+      moon: 'moon',
+      news: 'news',
+      basicclock: 'clock',
+      stationclock: 'clock',
+      flipclock: 'clock',
+      haymanclock: 'clock',
+      miniclock: 'clock',
+    };
+    var id = typeMap[type];
+    if (!id) return null;
+    return catalog.find(function (item) {
+      return item.id === id;
+    });
+  }
+
+  function _readGridConfig() {
+    var $grid = _activeScreenDom().children('.dt-grid-layout').first();
+    function number(property, fallback) {
+      var value = parseFloat(
+        $grid[0] ? getComputedStyle($grid[0]).getPropertyValue(property) : ''
+      );
+      return isFinite(value) ? value : fallback;
+    }
+    return {
+      gridColumns: number('--dt-grid-columns', 24),
+      rowHeight: number('--dt-grid-row-height', 20),
+      gap: number('--dt-grid-gap', 0),
+      mobileLayout: $grid.hasClass('dt-grid-mobile-stack') ? 'stack' : 'stack',
+    };
+  }
+
+  function _readGridConfiguredWidgets() {
+    _activeScreenDom()
+      .children('.dt-grid-layout')
+      .children('.dt-grid-item')
+      .each(function (index) {
+        var reference = String($(this).attr('data-grid-block') || '');
+        var definition =
+          typeof blocks !== 'undefined' && blocks[reference]
+            ? blocks[reference]
+            : {};
+        var item = _catalogItemForDefinition(reference, definition);
+        var grid = {
+          x: _gridValue(this, '--dt-grid-x', 1),
+          y: _gridValue(this, '--dt-grid-y', index + 1),
+          w: _gridValue(this, '--dt-grid-w', 1),
+          h: _gridValue(this, '--dt-grid-h', 1),
+        };
+        layoutOrder.push({
+          ref: reference,
+          widgetId: item ? item.id : null,
+          width: parseInt(definition.width, 10) || 3,
+          height: parseInt(definition.height, 10) || null,
+          grid: grid,
+        });
+        gridPositions[reference] = grid;
+        if (!item) return;
+        selectedWidgets[item.id] = true;
+        widgetBlockRefs[item.id] = reference;
+        widgetDimensions[item.id] = {
+          width: parseInt(definition.width, 10) || item.width,
+          height: parseInt(definition.height, 10) || item.height || null,
+        };
+        _hydrateGridWidget(item, definition);
+      });
+  }
+
+  function _gridValue(element, property, fallback) {
+    var value = parseInt(element.style.getPropertyValue(property), 10);
+    return value > 0 ? value : fallback;
+  }
+
+  function _hydrateGridWidget(item, definition) {
+    if (item.id === 'weather') {
+      weatherProvider =
+        definition.widget_provider ||
+        (definition.type === 'wunderground' ? 'wunderground' : 'openweather');
+      [
+        ['showRain', 'weather_show_rain'],
+        ['showDescription', 'weather_show_description'],
+        ['showWind', 'weather_show_wind'],
+        ['showGust', 'weather_show_gust'],
+      ].forEach(function (mapping) {
+        if (typeof definition[mapping[0]] !== 'undefined') {
+          widgetConfigs.weather[mapping[1]] = Number(definition[mapping[0]])
+            ? 1
+            : 0;
+        }
+      });
+      if (typeof definition.icons === 'string') {
+        widgetConfigs.weather.weather_icons = definition.icons;
+      }
+    } else if (item.id === 'calendar' && typeof definition.icalurl === 'string') {
+      calendarUrl = definition.icalurl;
+    } else if (item.id === 'clock') {
+      clockType = definition.type || 'basicclock';
+      [
+        'size',
+        'scale',
+        'showSeconds',
+        'clockFace',
+        'body',
+        'dial',
+        'hourhand',
+        'minutehand',
+        'secondhand',
+        'boss',
+        'minutehandbehavior',
+        'secondhandbehavior',
+      ].forEach(function (property) {
+        if (typeof definition[property] !== 'undefined') {
+          widgetConfigs.clock[property] = definition[property];
+        }
+      });
+    } else if (item.id === 'publictransport') {
+      publicTransportStation = definition.station || 'UT';
+      publicTransportProvider = definition.provider || 'treinen';
+    } else if (item.id === 'camera') {
+      if (Array.isArray(definition.cameras) && definition.cameras.length) {
+        cameraConfigs = definition.cameras;
+      } else if (definition.imageUrl) {
+        cameraConfigs = [
+          {
+            title: definition.title || 'Camera',
+            imageUrl: definition.imageUrl,
+            videoUrl: definition.videoUrl || '',
+          },
+        ];
+      }
+    } else if (item.id === 'alarmmeldingen') {
+      alarmRss = definition.rss || alarmRss;
+      alarmFilter = definition.filter || '';
+    }
+  }
+
+  function _gridOverlap(left, right) {
+    return (
+      left.x < right.x + right.w &&
+      left.x + left.w > right.x &&
+      left.y < right.y + right.h &&
+      left.y + left.h > right.y
+    );
+  }
+
+  function _firstFreeGridPosition(occupied, width, height) {
+    for (var y = 1; y < 10000; y++) {
+      for (var x = 1; x <= gridConfig.gridColumns - width + 1; x++) {
+        var candidate = { x: x, y: y, w: width, h: height };
+        if (
+          !occupied.some(function (position) {
+            return _gridOverlap(candidate, position);
+          })
+        ) {
+          return candidate;
+        }
+      }
+    }
+    return { x: 1, y: 10000, w: width, h: height };
   }
 
   function _readManagedLayoutOrder() {
@@ -1509,6 +1702,9 @@ var DashticzWidgetEditor = (function () {
     catalog.forEach(function (item) {
       if (!selectedWidgets[item.id]) return;
       var entry = { id: item.id };
+      if (gridMode && widgetBlockRefs[item.id]) {
+        entry.key = widgetBlockRefs[item.id];
+      }
       var dimensions = widgetDimensions[item.id] || {};
       entry.width = dimensions.width || item.width;
       if (dimensions.height || item.height) {
@@ -1583,7 +1779,12 @@ var DashticzWidgetEditor = (function () {
         var token = data.token;
         return _postWidgetData(
           'js/savewidgets.php',
-          { widgets: payload, settings: configSettings, screen: screenNumber },
+          {
+            widgets: payload,
+            settings: configSettings,
+            screen: screenNumber,
+            blocksOnly: gridMode,
+          },
           token
         ).then(function (widgetResult) {
           var widgetRefs = {};
@@ -1594,6 +1795,68 @@ var DashticzWidgetEditor = (function () {
           });
 
           var includedWidgets = {};
+          if (gridMode) {
+            var occupied = layoutOrder.map(function (item) {
+              return item.grid;
+            });
+            var gridItems = [];
+            layoutOrder.forEach(function (item) {
+              if (item.widgetId) {
+                if (!selectedWidgets[item.widgetId]) return;
+                includedWidgets[item.widgetId] = true;
+                gridItems.push({
+                  ref: widgetRefs[item.widgetId] || item.ref,
+                  grid: $.extend({}, item.grid),
+                });
+                return;
+              }
+              gridItems.push({
+                ref: item.ref,
+                grid: $.extend({}, item.grid),
+              });
+            });
+            payload.forEach(function (entry) {
+              if (includedWidgets[entry.id]) return;
+              var width = Math.max(
+                1,
+                Math.min(
+                  gridConfig.gridColumns,
+                  Math.round(
+                    ((entry.width || 3) * gridConfig.gridColumns) / 12
+                  )
+                )
+              );
+              var height = Math.max(
+                1,
+                Math.ceil(
+                  ((entry.height || 120) + gridConfig.gap) /
+                    (gridConfig.rowHeight + gridConfig.gap)
+                )
+              );
+              var position = _firstFreeGridPosition(
+                occupied,
+                width,
+                height
+              );
+              occupied.push(position);
+              gridItems.push({
+                ref: widgetRefs[entry.id],
+                grid: position,
+              });
+            });
+            return _postWidgetData(
+              'js/savegridlayout.php',
+              {
+                items: gridItems,
+                screen: screenNumber,
+                gridColumns: gridConfig.gridColumns,
+                rowHeight: gridConfig.rowHeight,
+                gap: gridConfig.gap,
+                mobileLayout: gridConfig.mobileLayout,
+              },
+              token
+            );
+          }
           var layoutItems = [];
           layoutOrder.forEach(function (item) {
             if (item.widgetId) {

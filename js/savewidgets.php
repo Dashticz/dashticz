@@ -188,7 +188,11 @@ foreach ($data['widgets'] as $entry) {
 
     $widget = [
         'id' => $id,
-        'key' => $catalog[$id]['key'],
+        'key' => isset($entry['key'])
+            && is_string($entry['key'])
+            && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $entry['key'])
+                ? $entry['key']
+                : $catalog[$id]['key'],
         'width' => isset($entry['width'])
             ? max(1, min(12, (int)$entry['width']))
             : $catalog[$id]['width'],
@@ -426,6 +430,7 @@ if (empty($existingSettings) && $screenNumber !== 1) {
 
 $config = configwriter_remove_section($config, $startMarker, $endMarker);
 $config = rtrim($config);
+$blocksOnly = !empty($data['blocksOnly']);
 
 if (!empty($widgets)) {
     $section = configwriter_section_header('BLOCKS') . "\n";
@@ -436,32 +441,34 @@ if (!empty($widgets)) {
         $section .= configwriter_emit_block_line($widget['key'], $props);
     }
 
-    $section .= "\n" . configwriter_section_header('COLUMNS') . "\n";
-    $section .= "if (typeof columns === 'undefined') var columns = {}\n";
-    $layoutItems = array_map(function ($widget) {
-        $item = [
-            'ref' => $widget['key'],
-            'width' => $widget['width'],
-        ];
-        if ($widget['height'] !== null) {
-            $item['height'] = $widget['height'];
+    if (!$blocksOnly) {
+        $section .= "\n" . configwriter_section_header('COLUMNS') . "\n";
+        $section .= "if (typeof columns === 'undefined') var columns = {}\n";
+        $layoutItems = array_map(function ($widget) {
+            $item = [
+                'ref' => $widget['key'],
+                'width' => $widget['width'],
+            ];
+            if ($widget['height'] !== null) {
+                $item['height'] = $widget['height'];
+            }
+            return $item;
+        }, $widgets);
+        $columnKeys = [];
+        $prefix = configwriter_column_prefix('we', $screenNumber);
+        foreach (configwriter_pack_columns_by_height($layoutItems, 12, $prefix) as $column) {
+            $columnKeys[] = $column['key'];
+            $section .= configwriter_emit_column_line(
+                $column['key'],
+                $column['blocks'],
+                $column['width']
+            );
         }
-        return $item;
-    }, $widgets);
-    $columnKeys = [];
-    $prefix = configwriter_column_prefix('we', $screenNumber);
-    foreach (configwriter_pack_columns_by_height($layoutItems, 12, $prefix) as $column) {
-        $columnKeys[] = $column['key'];
-        $section .= configwriter_emit_column_line(
-            $column['key'],
-            $column['blocks'],
-            $column['width']
-        );
-    }
 
-    if ($screenNumber > 0) {
-        $section .= "\n" . configwriter_section_header('SCREENS') . "\n";
-        $section .= configwriter_emit_screen_columns($screenNumber, $columnKeys, 'merge');
+        if ($screenNumber > 0) {
+            $section .= "\n" . configwriter_section_header('SCREENS') . "\n";
+            $section .= configwriter_emit_screen_columns($screenNumber, $columnKeys, 'merge');
+        }
     }
 
     if (!empty($configSettings)) {

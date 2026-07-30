@@ -30,6 +30,75 @@
   overflow-y: auto;
 }
 
+/* Optional screen-level grid. Legacy column screens never receive these classes. */
+.dt-grid-screen > .dt-grid-layout {
+  display: grid;
+  grid-template-columns: repeat(var(--dt-grid-columns, 24), minmax(0, 1fr));
+  grid-auto-rows: var(--dt-grid-row-height, 20px);
+  gap: var(--dt-grid-gap, 0);
+  align-items: stretch;
+  width: 100%;
+}
+
+.dt-grid-screen > .dt-grid-topbar:empty {
+  display: none;
+}
+
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item {
+  grid-column-start: var(--dt-grid-x);
+  grid-column-end: span var(--dt-grid-w);
+  grid-row-start: var(--dt-grid-y);
+  grid-row-end: span var(--dt-grid-h);
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* A grid item owns the width; Bootstrap block widths remain local to columns. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > [class*='col-'] {
+  float: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .dt_block,
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .mh {
+  box-sizing: border-box;
+  min-height: 100%;
+}
+
+.dt-grid-screen > .dt-grid-layout > .dt-grid-overlap {
+  outline: 1px dashed rgba(255, 165, 0, 0.8);
+  outline-offset: -1px;
+}
+
+@media (max-width: 767.98px) {
+  .dt-grid-screen > .dt-grid-layout.dt-grid-mobile-stack {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .dt-grid-screen > .dt-grid-layout.dt-grid-mobile-stack > .dt-grid-item {
+    flex: 0 0 auto;
+    width: 100%;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .dt-grid-screen
+    > .dt-grid-layout.dt-grid-mobile-stack
+    > .dt-grid-item
+    > .dt_block,
+  .dt-grid-screen > .dt-grid-layout.dt-grid-mobile-stack > .dt-grid-item > .mh {
+    min-height: 0;
+  }
+
+  .dt-grid-screen.swiper-slide {
+    overflow-y: auto;
+  }
+}
+
 #loadingMessage {
   width: 100%;
   height: 100%;
@@ -1021,6 +1090,13 @@ body.standby-edit {
   cursor: default;
 }
 
+body.standby {
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+}
+
 /* Visual Layout Editor */
 body.dle-active {
   user-select: none;
@@ -1044,6 +1120,34 @@ body.dle-active {
   float: none !important;
   min-width: 0;
   width: 100% !important;
+}
+
+.dt-grid-layout.dle-grid-canvas {
+  position: relative;
+  min-height: var(--dle-grid-editor-min-height, 100vh);
+  background-color: rgba(13, 110, 253, 0.04);
+  background-image:
+    linear-gradient(rgba(90, 162, 255, 0.2) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(90, 162, 255, 0.2) 1px, transparent 1px);
+  background-size:
+    var(--dle-grid-column-stride, 40px)
+      calc(var(--dt-grid-row-height, 20px) + var(--dt-grid-gap, 0px));
+}
+
+.dt-grid-screen.dle-grid-screen-editing {
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+
+.dt-grid-layout.dle-grid-canvas > .dt-grid-item {
+  overflow: hidden;
+}
+
+@media (max-width: 767.98px) {
+  .dt-grid-screen
+    > .dt-grid-layout.dt-grid-mobile-stack.dle-grid-canvas {
+    display: grid;
+  }
 }
 
 .dle-block {
@@ -1917,10 +2021,26 @@ hr {
 }
 
 .standby .screenstandby {
+  position: fixed;
+  inset: 0;
+  box-sizing: border-box;
+  width: 100vw;
+  max-width: 100vw;
+  height: 100vh !important;
+  height: 100dvh !important;
+  min-height: 0;
+  max-height: 100vh;
+  max-height: 100dvh;
+  overflow: hidden;
   background-color: #313131;
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+}
+
+body.standby-edit .screenstandby.dle-grid-screen-editing {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .standby .screenstandby .far,

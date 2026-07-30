@@ -31,22 +31,9 @@ if ($readError !== null) {
     dashticz_json_error(500, $readError);
 }
 
-$line = 'config["config_mode"] = ' . json_encode($mode) . ';';
-if (preg_match('/config\[[\'"]config_mode[\'"]\]\s*=\s*[^;]+;/', $config)) {
-    $config = preg_replace(
-        '/config\[[\'"]config_mode[\'"]\]\s*=\s*[^;]+;/',
-        $line,
-        $config,
-        1
-    );
-} else {
-    $marker = 'var config = {}';
-    $pos = strpos($config, $marker);
-    if ($pos === false) {
-        dashticz_json_error(409, 'CONFIG.js does not contain the expected config marker.');
-    }
-    $insertAt = $pos + strlen($marker);
-    $config = substr($config, 0, $insertAt) . "\n" . $line . substr($config, $insertAt);
+$config = configwriter_set_config_mode($config, $mode);
+if ($config === null) {
+    dashticz_json_error(409, 'CONFIG.js does not contain the expected config marker.');
 }
 
 $writeError = configwriter_write_config($configPath, $customDir, $config);
