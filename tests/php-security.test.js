@@ -261,6 +261,7 @@ test('background list endpoint safely exposes bundled and custom images', () => 
   assert.match(source, /REQUEST_METHOD.*GET/);
   assert.match(source, /preg_match\(\'\/\^\(bg/);
   assert.match(source, /\$customDir = \$imgDir \. DIRECTORY_SEPARATOR \. 'custom'/);
+  assert.match(source, /preg_match\(\'\/\^\(bg_\[a-z0-9\]/);
   assert.match(source, /\$images\[\] = 'img\/custom\/' \. \$entry/);
   assert.match(source, /is_link\(\$full\)/);
   assert.doesNotMatch(source, /\$_GET\[/);

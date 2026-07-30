@@ -2,7 +2,7 @@
 /**
  * List bundled and user background images for the Settings background pickers.
  * Read-only: same-origin only (no CSRF) so the settings UI can populate the select.
- * Returns bundled img/bg* files and images placed directly in img/custom/.
+ * Returns bundled img/bg* files and BG_* images placed directly in img/custom/.
  */
 require_once(__DIR__ . '/../vendor/dashticz/security.php');
 
@@ -39,8 +39,8 @@ $customDir = $imgDir . DIRECTORY_SEPARATOR . 'custom';
 $customEntries = @scandir($customDir);
 if (is_array($customEntries)) {
     foreach ($customEntries as $entry) {
-        // Only expose direct, simply named image files; never accept a path.
-        if (!preg_match('/^([a-z0-9][a-z0-9._ -]*\.(?:jpe?g|png|webp|gif))$/i', $entry)) {
+        // Personal backgrounds must use the BG_ prefix and a direct, safe name.
+        if (!preg_match('/^(bg_[a-z0-9][a-z0-9._ -]*\.(?:jpe?g|png|webp|gif))$/i', $entry)) {
             continue;
         }
         $full = $customDir . DIRECTORY_SEPARATOR . $entry;
