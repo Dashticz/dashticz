@@ -90,7 +90,15 @@ foreach ($data['items'] as $entry) {
  * Every visual editor finishes with this endpoint. Consolidate the temporary
  * device/widget sections for the active screen into one readable generated
  * area. Standby (screen 0) writes columns_standby instead of screens[].
+ * Widget settings are global, so retain them in the root config for every
+ * screen before removing the active screen's temporary widget section.
  */
+$config = configwriter_upsert_root_config_settings(
+    $config,
+    $widgetSettings,
+    true
+);
+
 if ($screenNumber === 0) {
     // $blockLines was extracted at request start, after saveblocks/savewidgets
     // already wrote the new block definitions into temporary editor sections.
@@ -131,11 +139,6 @@ if ($screenNumber === 1) {
         $config,
         '// [standby-editor-start]',
         '// [standby-editor-end]'
-    );
-    $config = configwriter_upsert_root_config_settings(
-        $config,
-        $widgetSettings,
-        true
     );
 }
 $config = rtrim($config);

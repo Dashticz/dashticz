@@ -24,6 +24,7 @@ Fixes
 * Localization: the language selected in **Settings → Localize** now takes precedence over a stale browser language value after saving and reloading.
 * Widget editor: widget names, descriptions, controls, statuses and validation messages now use the language JSON files. English and Dutch translations are included.
 * Widget editor: opening the widget menu from Standby no longer makes its blue widget icons and grey settings icons white or invisible.
+* Widget editor: settings entered while adding a widget to screen 2, another numbered screen or Standby are now retained in ``CONFIG.js`` just like settings entered on screen 1.
 * Info: Domoticz, dzVents, Python and PHP versions are retained until the Info panel opens; the server operating system, version and architecture are now shown as well.
 * Version check: the comparison now follows the current Git checkout's preferred remote and branch, and its status text is translated.
 * Visual editors: saving a layout with tall and short tiles now keeps every tile on the same 12-column grid, preserving its configured width, order and height after reload.
