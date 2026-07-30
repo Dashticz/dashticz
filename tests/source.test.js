@@ -739,6 +739,15 @@ test('standby background image is not overwritten by standby CSS', () => {
   );
 });
 
+test('standby icon colors stay scoped to the standby screen', () => {
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  assert.match(styles, /\.standby \.screenstandby \.fas[\s\S]*color: #fff !important;/);
+  assert.doesNotMatch(styles, /\.standby \.fas(?:,|\s*\{)/);
+  assert.match(styles, /\.we-widget-icon\s*\{[^}]*color: #0d6efd;/);
+  assert.match(styles, /\.we-config-btn\s*\{[^}]*color: #6c757d;/);
+});
+
 test('topbar screen switcher supports standby and extra screens', () => {
   const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
   const switcher = fs.readFileSync(
