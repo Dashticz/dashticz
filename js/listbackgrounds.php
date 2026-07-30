@@ -1,8 +1,8 @@
 <?php
 /**
- * List bundled background images under img/ for the Settings background pickers.
+ * List bundled and user background images for the Settings background pickers.
  * Read-only: same-origin only (no CSRF) so the settings UI can populate the select.
- * Returns img/bg*.{jpg,png,...} entries shown as BG_* labels in the UI.
+ * Returns bundled img/bg* files and images placed directly in img/custom/.
  */
 require_once(__DIR__ . '/../vendor/dashticz/security.php');
 
@@ -23,7 +23,7 @@ $images = [];
 $entries = @scandir($imgDir);
 if (is_array($entries)) {
     foreach ($entries as $entry) {
-        // Only expose simple image files from img/ (no path traversal).
+        // Bundled backgrounds must keep their existing bg* naming convention.
         if (!preg_match('/^(bg[\w.-]*\.(?:jpe?g|png|webp|gif))$/i', $entry)) {
             continue;
         }
@@ -32,6 +32,22 @@ if (is_array($entries)) {
             continue;
         }
         $images[] = 'img/' . $entry;
+    }
+}
+
+$customDir = $imgDir . DIRECTORY_SEPARATOR . 'custom';
+$customEntries = @scandir($customDir);
+if (is_array($customEntries)) {
+    foreach ($customEntries as $entry) {
+        // Only expose direct, simply named image files; never accept a path.
+        if (!preg_match('/^([\w.-]+\.(?:jpe?g|png|webp|gif))$/i', $entry)) {
+            continue;
+        }
+        $full = $customDir . DIRECTORY_SEPARATOR . $entry;
+        if (!is_file($full) || is_link($full)) {
+            continue;
+        }
+        $images[] = 'img/custom/' . $entry;
     }
 }
 

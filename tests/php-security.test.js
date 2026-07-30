@@ -255,11 +255,14 @@ test('settings writer leaves the standby layout untouched', () => {
   assert.doesNotMatch(source, /configwriter\.php/);
 });
 
-test('background list endpoint only exposes img/bg* files', () => {
+test('background list endpoint safely exposes bundled and custom images', () => {
   const source = read('js/listbackgrounds.php');
   assert.match(source, /dashticz_require_same_origin\(\)/);
   assert.match(source, /REQUEST_METHOD.*GET/);
   assert.match(source, /preg_match\(\'\/\^\(bg/);
+  assert.match(source, /\$customDir = \$imgDir \. DIRECTORY_SEPARATOR \. 'custom'/);
+  assert.match(source, /\$images\[\] = 'img\/custom\/' \. \$entry/);
+  assert.match(source, /is_link\(\$full\)/);
   assert.doesNotMatch(source, /\$_GET\[/);
   assert.doesNotMatch(source, /\$_POST\[/);
 });

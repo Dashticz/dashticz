@@ -174,12 +174,13 @@ The **Settings → Standby** category contains:
 - the inactivity time in minutes (`0` disables standby);
 - an optional URL to call when standby starts;
 - an optional URL to call when standby ends;
-- a comma-separated list of standby block keys, for example
-  `clock, currentweather_big, weather`;
-- a background selected from the bundled `img/bg*` files or a custom path/URL,
-  with a preview.
+- standby content managed through the Device, Widget and Layout editors;
+- a background selected from the bundled `img/bg*` files, a personal image
+  placed in `img/custom`, or a custom path/URL, with a preview.
 
 The standby background is independent from the normal screen background.
+Files placed in `img/custom` are ignored by Git, remain in place during Git
+updates and appear in both the Screen and Standby background selectors.
 
 ### Settings and updates
 
