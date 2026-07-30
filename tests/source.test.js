@@ -706,6 +706,7 @@ test('settings modal uses compact Bootstrap 5 controls and aligned help icons', 
 
 test('standby background image is not overwritten by standby CSS', () => {
   const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
   const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
   const modernDark = fs.readFileSync(
     path.join(root, 'themes/modern-dark/modern-dark.css'),
@@ -737,6 +738,7 @@ test('standby background image is not overwritten by standby CSS', () => {
     modernDark,
     /\.standby \.screenstandby\s*\{[^}]*background: #000 !important;/
   );
+  assert.match(settings, /return 'CUSTOM_' \+ name\.replace\(\/\^custom\\\//);
 });
 
 test('standby icon colors stay scoped to the standby screen', () => {

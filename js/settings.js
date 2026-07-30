@@ -1397,6 +1397,9 @@ function backgroundOptionLabel(imagePath) {
   var name = String(imagePath || '')
     .replace(/^img\//i, '')
     .replace(/\.[^.]+$/, '');
+  if (/^custom\//i.test(name)) {
+    return 'CUSTOM_' + name.replace(/^custom\//i, '');
+  }
   if (/^bg_?/i.test(name)) {
     return 'BG_' + name.replace(/^bg_?/i, '');
   }
