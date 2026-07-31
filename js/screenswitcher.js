@@ -153,6 +153,11 @@ var DashticzScreenSwitcher = (function () {
     });
 
     if (!customMode) {
+      if (typeof active === 'number' && active > 1) {
+        html +=
+          '<button type="button" class="dt-screen-btn dt-screen-delete" data-screen="delete" ' +
+          'title="Screen verwijderen" aria-label="Screen verwijderen">&minus;</button>';
+      }
       html +=
         '<button type="button" class="dt-screen-btn dt-screen-add" data-screen="add" ' +
         'title="Screen toevoegen" aria-label="Screen toevoegen">+</button>';
@@ -305,7 +310,7 @@ var DashticzScreenSwitcher = (function () {
     $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
       .then(function (data) {
         return $.ajax({
-          url: 'js/savescreens.php',
+          url: configEditorUrl('js/savescreens.php'),
           method: 'POST',
           contentType: 'application/json',
           data: JSON.stringify({ action: 'add', screen: next }),
@@ -323,6 +328,39 @@ var DashticzScreenSwitcher = (function () {
           xhr.responseJSON && xhr.responseJSON.error
             ? xhr.responseJSON.error
             : 'Could not add screen.';
+        alert('Error: ' + msg);
+      });
+  }
+
+  function deleteScreen() {
+    if (addingScreen) return;
+    var screenNumber = getActiveScreenNumber();
+    if (typeof screenNumber !== 'number' || screenNumber < 2) return;
+    if (!window.confirm('Screen ' + screenNumber + ' verwijderen?')) return;
+
+    addingScreen = true;
+    $('.dt-screen-delete, .dt-screen-add').prop('disabled', true);
+    $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
+      .then(function (data) {
+        return $.ajax({
+          url: configEditorUrl('js/savescreens.php'),
+          method: 'POST',
+          contentType: 'application/json',
+          data: JSON.stringify({ action: 'delete', screen: screenNumber }),
+          dataType: 'json',
+          headers: { 'X-Dashticz-CSRF': data.token },
+        });
+      })
+      .done(function () {
+        window.location.reload();
+      })
+      .fail(function (xhr) {
+        addingScreen = false;
+        $('.dt-screen-delete, .dt-screen-add').prop('disabled', false);
+        var msg =
+          xhr.responseJSON && xhr.responseJSON.error
+            ? xhr.responseJSON.error
+            : 'Could not delete screen.';
         alert('Error: ' + msg);
       });
   }
@@ -346,6 +384,10 @@ var DashticzScreenSwitcher = (function () {
           var screen = String($(this).data('screen') || '');
           if (screen === 'add') {
             addScreen();
+            return;
+          }
+          if (screen === 'delete') {
+            deleteScreen();
             return;
           }
           goToScreen(screen);

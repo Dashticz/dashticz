@@ -78,7 +78,7 @@ test('first-run setup uses its own wizard and removes the legacy browser fallbac
   assert.match(source, /Check again/);
   assert.match(source, /showSetupWizard\(\)/);
   assert.match(source, /id="dt-setup-wizard"/);
-  assert.match(source, /url: 'js\/savesettings\.php'/);
+  assert.match(source, /url: configEditorUrl\('js\/savesettings\.php'\)/);
   assert.match(
     source,
     /id: 'topbar_timeout',[\s\S]*?def: '5'/

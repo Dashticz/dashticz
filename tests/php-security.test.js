@@ -46,6 +46,29 @@ test('settings writes require CSRF and serialize values as JSON', () => {
   assert.doesNotMatch(source, /unset\(\$rows/);
 });
 
+test('every configuration editor writes to the active safe cfg file', () => {
+  const writer = read('js/configwriter.php');
+  assert.match(writer, /function configwriter_resolve_config_path/);
+  assert.match(writer, /basename\(\$cfgFile\) !== \$cfgFile/);
+  assert.match(writer, /\^\[A-Za-z0-9_-\]\+\\\.js\$/);
+
+  [
+    'saveblocks.php',
+    'savewidgets.php',
+    'savelayout.php',
+    'savegridlayout.php',
+    'saveconfigmode.php',
+    'savescreens.php',
+    'savesettings.php',
+  ].forEach((file) => {
+    assert.match(
+      read('js/' + file),
+      /configwriter_resolve_config_path\(\$customDir\)/,
+      file + ' must honor ?cfg='
+    );
+  });
+});
+
 test('config mode writer only accepts custom or wizard', () => {
   const source = read('js/saveconfigmode.php');
   const writer = read('js/configwriter.php');

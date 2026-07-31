@@ -24,7 +24,7 @@ if (json_last_error() !== JSON_ERROR_NONE
 }
 
 $customDir = __DIR__ . '/../custom';
-$configPath = $customDir . '/CONFIG.js';
+list($configPath, $cfgFile) = configwriter_resolve_config_path($customDir);
 list($config, $readError) = configwriter_read_config($configPath);
 if ($readError !== null) {
     dashticz_json_error(500, $readError);

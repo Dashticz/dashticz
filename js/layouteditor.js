@@ -1518,7 +1518,7 @@ var DashticzLayoutEditor = (function () {
 
   function _postLayoutData(url, payload, token) {
     return $.ajax({
-      url: url,
+      url: configEditorUrl(url),
       method: 'POST',
       contentType: 'application/json',
       data: JSON.stringify(payload),

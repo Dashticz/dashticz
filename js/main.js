@@ -143,6 +143,17 @@ function loadConfig() {
     );
 }
 
+/**
+ * Add the active configuration filename to editor requests. Keeping this in
+ * one helper prevents a dashboard opened with ?cfg=CONFIG2.js from silently
+ * writing its changes to CONFIG.js.
+ */
+function configEditorUrl(url) {
+  var cfgFile = _PARAMS['cfg'] || 'CONFIG.js';
+  return url + (url.indexOf('?') === -1 ? '?' : '&') +
+    'cfg=' + encodeURIComponent(cfgFile);
+}
+
 function clearLegacyStoredSetupConfig() {
   try {
     localStorage.removeItem('dashticz_setup_config');
@@ -531,7 +542,7 @@ function showSetupWizard() {
     $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
       .then(function (data) {
         return $.ajax({
-          url: 'js/savesettings.php',
+          url: configEditorUrl('js/savesettings.php'),
           method: 'POST',
           data: postData,
           dataType: 'json',
@@ -1020,7 +1031,7 @@ function setClockDateWeekday() {
     moment().locale(settings['language']).format(settings['longdate'])
   );
   $('.weekday').html(
-    moment().locale(settings['language']).format(settings['weekday'])
+    moment().locale(settings['language']).format(settings['weekday']) + '&nbsp;'
   );
 }
 

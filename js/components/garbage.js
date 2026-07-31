@@ -1,6 +1,20 @@
 /* global Dashticz _CORS_PATH settings infoMessage moment ICAL _PHP_INSTALLED language templateEngine*/
 
 var DT_garbage = (function () {
+  function garbageText(key, fallback) {
+    return language.garbage && language.garbage[key]
+      ? language.garbage[key]
+      : fallback;
+  }
+
+  function garbageTypeName(type) {
+    return language.garbage &&
+      language.garbage.types &&
+      language.garbage.types[type]
+      ? language.garbage.types[type]
+      : null;
+  }
+
   return {
     name: 'garbage',
     canHandle: function (block) {
@@ -628,13 +642,17 @@ SENSOR_LOCATIONS_TO_URL = {
 
   function mapReturnDates(me, garbage) {
     var name = me.block.garbage[garbage.garbageType].name;
+    var localizedName = garbageTypeName(garbage.garbageType);
     var result = {
       rowClass: 'trashrow',
       trashDate: garbage.date.locale(settings['calendarlanguage']).format('l'),
       trashType:
-        me.block.use_names || !garbage.summary
+        me.block.use_names
           ? name
-          : garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1),
+          : localizedName ||
+            (garbage.summary
+              ? garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)
+              : name),
       color: me.block.use_colors
         ? ' style="color:' + me.block.garbage[garbage.garbageType].code + '"'
         : '',
@@ -660,7 +678,7 @@ SENSOR_LOCATIONS_TO_URL = {
     var $divImg = $div.find('img.trashcan');
     returnDates = filterReturnDates(me, returnDates);
     if (!returnDates.length) {
-      $divState.html('Geen gegevens gevonden');
+      $divState.text(garbageText('no_data', 'No collection data found'));
       return;
     }
 
@@ -993,7 +1011,10 @@ SENSOR_LOCATIONS_TO_URL = {
       },*/
     };
     if (!serviceProperties[me.block.company]) {
-      infoMessage('Garbage provider not found: ', me.block.company);
+      infoMessage(
+        garbageText('provider_not_found', 'Garbage provider not found') + ':',
+        me.block.company
+      );
       return;
     }
     return serviceProperties[me.block.company]
@@ -1003,7 +1024,7 @@ SENSOR_LOCATIONS_TO_URL = {
       })
       .catch(function () {
         console.error('Error loading garbage: ', me.block);
-        infoMessage('Error loading garbage data');
+        infoMessage(garbageText('load_error', 'Error loading garbage data'));
       });
   }
 })();

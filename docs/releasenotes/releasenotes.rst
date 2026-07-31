@@ -15,14 +15,23 @@ Enhancements
 * Standby: Wizard Standby now uses the same free-positioned, editable CSS Grid layout as numbered screens. Existing ``columns_standby`` layouts can be converted after confirmation.
 * Grid editors: Device and Widget Editors can add, remove and configure tiles on numbered and Standby grids while retaining existing positions; newly added tiles use the first free cells.
 * Grid Layout Editor: vertical placement and resizing now use 20 px rows, giving twice the precision while the horizontal grid remains 24 columns.
+* OpenWeather: Config and Widget Editors expose ``showGust`` (No), ``showWind`` (No), ``showDescription`` (Yes), ``showRain`` (Yes), plus a five-choice icon dropdown (``line``, ``linestatic``, ``fill``, ``static`` and ``meteo``).
+* Updates: the Update control now appears only in the Info tile; newer versions produce a persistent lower-right overlay notification.
 
 Fixes
 ~~~~~
 
 * General Settings: Save now updates only submitted settings instead of rebuilding all root configuration, preserving Garbage, Weather and other widget settings plus custom arrays and objects.
+* Configuration editors: every save endpoint now follows ``?cfg=...`` (for example ``CONFIG2.js``), validates the filename, and leaves unchanged settings untouched.
+* Configuration output: editor-owned settings remain deduplicated and generated layout output stays grouped as blocks, columns and screens without rewriting hand-written content.
 * Screens: saving an empty numbered grid removes that screen and renumbers every following screen sequentially from 1, including its generated editor sections and column references.
+* Screens: an explicit minus control now removes the active extra screen; screen 1 remains protected.
 * Grid Layout Editor: existing screens that explicitly stored the former 40 px row default are migrated to 20 px rows without shrinking their blocks.
+* Grid Layout Editor: resize and remove controls remain reachable on one-row tiles, and Domoticz flash updates no longer turn tiles grey while they are being moved.
 * Standby: the S-screen is constrained to the viewport; oversized background images use centered ``cover`` cropping and can no longer enlarge the standby canvas beyond the display resolution.
+* Topbar and Calendar: restored spacing between weekday and date, and constrained overflowing agenda text to the configured tile background.
+* Clock settings: repeated saves now compare against the rendered values and persist each new change.
+* Garbage: built-in collection names, empty/error states and provider errors now use language JSON entries (English and Dutch included).
 
 v3.21.7 beta (30-7-2026)
 --------------------------

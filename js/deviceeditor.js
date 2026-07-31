@@ -1060,7 +1060,7 @@ var DashticzDeviceEditor = (function () {
 
   function _postEditorData(url, payload, token) {
     return $.ajax({
-      url: url,
+      url: configEditorUrl(url),
       method: 'POST',
       contentType: 'application/json',
       data: JSON.stringify(payload),
