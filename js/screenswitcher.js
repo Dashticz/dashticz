@@ -153,14 +153,16 @@ var DashticzScreenSwitcher = (function () {
     });
 
     if (!customMode) {
-      if (typeof active === 'number' && active > 1) {
-        html +=
-          '<button type="button" class="dt-screen-btn dt-screen-delete" data-screen="delete" ' +
-          'title="Screen verwijderen" aria-label="Screen verwijderen">&minus;</button>';
-      }
       html +=
         '<button type="button" class="dt-screen-btn dt-screen-add" data-screen="add" ' +
         'title="Screen toevoegen" aria-label="Screen toevoegen">+</button>';
+      var canDelete =
+        screens.length > 1 && typeof active === 'number' && active > 1;
+      html +=
+        '<button type="button" class="dt-screen-btn dt-screen-delete" data-screen="delete" ' +
+        'title="Screen verwijderen" aria-label="Screen verwijderen"' +
+        (canDelete ? '' : ' disabled aria-disabled="true"') +
+        '>&minus;</button>';
     }
 
     html += '</div>';
@@ -184,6 +186,15 @@ var DashticzScreenSwitcher = (function () {
     var active = getActiveScreenNumber();
     $('.dt-screen-btn').removeClass('active');
     $('.dt-screen-btn[data-screen="' + active + '"]').addClass('active');
+    // Screen navigation does not rebuild the switcher, so keep the delete
+    // button state synchronized with the newly active screen.
+    var canDelete =
+      getScreenNumbers().length > 1 &&
+      typeof active === 'number' &&
+      active > 1;
+    $('.dt-screen-delete')
+      .prop('disabled', !canDelete)
+      .attr('aria-disabled', canDelete ? 'false' : 'true');
   }
 
   function mountEditorIcons($bar) {
@@ -335,7 +346,13 @@ var DashticzScreenSwitcher = (function () {
   function deleteScreen() {
     if (addingScreen) return;
     var screenNumber = getActiveScreenNumber();
-    if (typeof screenNumber !== 'number' || screenNumber < 2) return;
+    if (
+      getScreenNumbers().length <= 1 ||
+      typeof screenNumber !== 'number' ||
+      screenNumber < 2
+    ) {
+      return;
+    }
     if (!window.confirm('Screen ' + screenNumber + ' verwijderen?')) return;
 
     addingScreen = true;

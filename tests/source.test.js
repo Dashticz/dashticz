@@ -812,6 +812,14 @@ test('topbar screen switcher supports standby and extra screens', () => {
   assert.match(switcher, /data-screen="standby"/);
   assert.match(switcher, /title="Standby">S</);
   assert.match(switcher, /dt-screen-add/);
+  assert.match(switcher, /dt-screen-delete/);
+  assert.match(switcher, /screens\.length > 1/);
+  assert.match(switcher, /disabled aria-disabled="true"/);
+  assert.match(switcher, /\.dt-screen-delete'[\s\S]*\.prop\('disabled', !canDelete\)/);
+  assert.ok(
+    switcher.indexOf('dt-screen-add') < switcher.indexOf('dt-screen-delete'),
+    'the minus button must render directly after the plus button'
+  );
   assert.match(switcher, /js\/savescreens\.php/);
   assert.match(switcher, /enterStandbyManual/);
   assert.match(switcher, /standbyEditMode/);
