@@ -927,7 +927,6 @@ next css sets the default height of the frame popup
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  position: relative;
   width: 100%;
 }
 
@@ -944,20 +943,14 @@ next css sets the default height of the frame popup
   width: auto;
 }
 
-/* Center the optional clock against the complete topbar instead of letting
-   the widths of the left and right controls influence its position. */
-.colbar > div:has(.miniclock) {
-  position: absolute;
-  left: 50%;
-  z-index: 1;
-  transform: translateX(-50%);
+/* Match the original topbar proportions: reserve two Bootstrap columns for
+   the logo and start the optional clock immediately after that area. */
+.colbar > div:has(.logo) {
+  flex: 0 0 16.666667%;
 }
 
-/* Only the configuration wrapper consumes the remaining space. The logo and
-   screen selector stay together on the left; all configuration icons stay at
-   the far-right edge. */
+/* Screen selection and configuration controls form one right-aligned cluster. */
 .colbar > div:has(.text-right) {
-  margin-left: auto;
   margin-right: -5px;
 }
 
@@ -1017,15 +1010,15 @@ next css sets the default height of the frame popup
   margin-right: 4px;
 }
 
-/* Screen switcher lives beside the logo, independently of the centered clock. */
+/* Screen switcher precedes Custom/Wizard and the icons at the right edge. */
 .colbar > div:has(.dt-screen-switcher-host) {
   flex: 0 0 auto;
-  margin-left: 12px;
+  margin-left: auto;
   margin-right: 12px;
 }
 
 .colbar > div:has(.topbar-settings-wrap) {
-  margin-left: auto;
+  margin-left: 0;
 }
 
 .dt-screen-switcher-host {

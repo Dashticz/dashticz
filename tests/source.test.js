@@ -837,10 +837,12 @@ test('topbar screen switcher supports standby and extra screens', () => {
 test('topbar and layout editor keep controls usable', () => {
   const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
   const editor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
 
   assert.match(styles, /\.colbar\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*nowrap;/s);
-  assert.match(styles, /\.colbar > div:has\(\.miniclock\)[^}]*position:\s*absolute;[^}]*left:\s*50%;/s);
-  assert.match(styles, /\.colbar > div:has\(\.topbar-settings-wrap\)[^}]*margin-left:\s*auto;/s);
+  assert.match(styles, /\.colbar > div:has\(\.logo\)[^}]*flex:\s*0 0 16\.666667%;/s);
+  assert.match(styles, /\.colbar > div:has\(\.dt-screen-switcher-host\)[^}]*margin-left:\s*auto;/s);
+  assert.match(main, /\['logo', 'miniclock', 'screenswitcher', 'settings'\]/);
   assert.match(editor, /var MIN_GRID_SPAN = 2;/);
   assert.match(editor, /item\.grid\.w < MIN_GRID_SPAN \|\| item\.grid\.h < MIN_GRID_SPAN/);
   assert.match(editor, /width = Math\.max\(\s*MIN_GRID_SPAN,/s);

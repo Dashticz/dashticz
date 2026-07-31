@@ -1057,7 +1057,7 @@ function buildTopbarBlocks(existingBlocks) {
 
   if (!blocks) {
     blocks = showClock
-      ? ['logo', 'screenswitcher', 'miniclock', 'settings']
+      ? ['logo', 'miniclock', 'screenswitcher', 'settings']
       : [{ type: 'logo', width: 8 }, 'screenswitcher', 'settings'];
   } else {
     blocks = blocks.filter(function (ref) {
