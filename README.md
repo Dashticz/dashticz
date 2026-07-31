@@ -73,8 +73,9 @@ columns['bar'] = {
 };
 ```
 
-Enabling the optional topbar clock keeps it directly beside the dashboard
-title. The screen selector and menu icons remain aligned to the far-right edge.
+Enabling the optional topbar clock keeps the logo and screen selector on the
+left, centers the clock in the full topbar and aligns all configuration
+controls to the far-right edge.
 
 ### Device Editor
 
