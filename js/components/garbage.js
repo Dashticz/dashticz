@@ -643,9 +643,11 @@ SENSOR_LOCATIONS_TO_URL = {
   function mapReturnDates(me, garbage) {
     var name = me.block.garbage[garbage.garbageType].name;
     var localizedName = garbageTypeName(garbage.garbageType);
+    // Garbage dates follow the selected Dashticz locale, just like their labels.
+    var localizedDate = garbage.date.locale(settings['language']);
     var result = {
       rowClass: 'trashrow',
-      trashDate: garbage.date.locale(settings['calendarlanguage']).format('l'),
+      trashDate: localizedDate.format('l'),
       trashType:
         me.block.use_names
           ? name
@@ -666,7 +668,7 @@ SENSOR_LOCATIONS_TO_URL = {
       result.rowClass = 'trashtomorrow';
       me.trashTomorrow = true;
     } else if (garbage.date.isBefore(moment().add(1, 'week'))) {
-      result.trashDate = garbage.date.format('dddd');
+      result.trashDate = localizedDate.format('dddd');
     }
 
     return result;

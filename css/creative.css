@@ -921,13 +921,31 @@ next css sets the default height of the frame popup
   white-space: normal;
 }
 
-/* Keep the settings/fullscreen icons pinned to the right edge,
-   independent of the (now absolutely positioned) miniclock block.
-   The margin-left:auto must sit on the actual flex item (the wrapper
-   div Dashticz mounts each block in), not on the nested .text-right
-   element itself, or it has no effect on the flex layout. */
+/* Keep every topbar block on one row. The mount wrappers do not receive
+   Bootstrap column classes themselves, so flexbox owns their positioning. */
+.colbar {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  width: 100%;
+}
+
+.colbar > div {
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.colbar .logo,
+.colbar .miniclock,
+.colbar .dt-screen-switcher-host,
+.colbar .topbar-settings-wrap {
+  float: none;
+  width: auto;
+}
+
+/* Keep the screen and settings controls at the far right while the optional
+   miniclock remains directly beside the dashboard title. */
 .colbar > div:has(.text-right) {
-  margin-left: auto;
   margin-right: -5px;
 }
 

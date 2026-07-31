@@ -834,6 +834,28 @@ test('topbar screen switcher supports standby and extra screens', () => {
   assert.match(switcher, /clientY\s*<\s*56/);
 });
 
+test('topbar and layout editor keep controls usable', () => {
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const editor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+
+  assert.match(styles, /\.colbar\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*nowrap;/s);
+  assert.match(styles, /\.colbar > div:has\(\.dt-screen-switcher-host\)[^}]*margin-left:\s*auto;/s);
+  assert.match(editor, /var MIN_GRID_SPAN = 2;/);
+  assert.match(editor, /item\.grid\.w < MIN_GRID_SPAN \|\| item\.grid\.h < MIN_GRID_SPAN/);
+  assert.match(editor, /width = Math\.max\(\s*MIN_GRID_SPAN,/s);
+  assert.match(editor, /height = Math\.max\(MIN_GRID_SPAN,/);
+});
+
+test('garbage dates use the selected interface language', () => {
+  const garbage = fs.readFileSync(
+    path.join(root, 'js/components/garbage.js'),
+    'utf8'
+  );
+
+  assert.match(garbage, /garbage\.date\.locale\(settings\['language'\]\)/);
+  assert.match(garbage, /localizedDate\.format\('dddd'\)/);
+});
+
 test('migration sources use LF line endings', () => {
   for (const file of [
     '.gitattributes',
