@@ -73,6 +73,9 @@ columns['bar'] = {
 };
 ```
 
+Enabling the optional topbar clock keeps it directly beside the dashboard
+title. The screen selector and menu icons remain aligned to the far-right edge.
+
 ### Device Editor
 
 After Dashticz has started, select the plus icon next to the settings icon in
@@ -136,6 +139,7 @@ screen 1. Blocks created by the Device Editor receive a blue edit overlay:
 - select the red minus button at the bottom-left to remove a device;
 - width snaps to the 12-column dashboard grid;
 - height snaps to steps of 10 pixels;
+- free-grid blocks cannot be resized below 2x2 grid cells;
 - select **Save** to update `custom/CONFIG.js`, or **Cancel**/Escape to restore
   the original layout.
 

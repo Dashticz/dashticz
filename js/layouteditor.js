@@ -6,6 +6,7 @@ var DashticzLayoutEditor = (function () {
   var HEIGHT_STEP = 10;
   var MIN_HEIGHT = 50;
   var MAX_HEIGHT = 2000;
+  var MIN_GRID_SPAN = 2;
   var active = false;
   var items = [];
   var itemById = {};
@@ -820,6 +821,24 @@ var DashticzLayoutEditor = (function () {
     );
     items.forEach(function (item) {
       item.wrapper.classList.add('dle-item-wrapper');
+      // Normalize legacy one-cell blocks when editing. Cancel still restores
+      // originalGrid, while Save persists the safe minimum dimensions.
+      if (item.grid.w < MIN_GRID_SPAN || item.grid.h < MIN_GRID_SPAN) {
+        item.grid = {
+          x: Math.min(
+            item.grid.x,
+            Math.max(1, gridConfig.gridColumns - MIN_GRID_SPAN + 1)
+          ),
+          y: item.grid.y,
+          w: Math.min(
+            gridConfig.gridColumns,
+            Math.max(MIN_GRID_SPAN, item.grid.w)
+          ),
+          h: Math.max(MIN_GRID_SPAN, item.grid.h),
+        };
+        item.width = item.grid.w;
+        DashticzGridLayout.applyGridPosition(item.wrapper, item.grid);
+      }
     });
     var occupiedRows = items.reduce(function (highest, item) {
       return Math.max(highest, item.grid.y + item.grid.h - 1);
@@ -1178,17 +1197,25 @@ var DashticzLayoutEditor = (function () {
   function _resizeGridItem(item, clientX, clientY) {
     var metrics = _gridMetrics();
     var start = pointerState.startGrid;
+    var x = Math.min(
+      start.x,
+      Math.max(1, metrics.columns - MIN_GRID_SPAN + 1)
+    );
     var width =
       start.w +
       Math.round((clientX - pointerState.startX) / metrics.columnStride);
     var height =
       start.h +
       Math.round((clientY - pointerState.startY) / metrics.rowStride);
-    width = Math.max(1, Math.min(metrics.columns - start.x + 1, width));
-    height = Math.max(1, Math.min(1000, height));
+    // Grid blocks must remain large enough to expose their editor controls.
+    width = Math.max(
+      MIN_GRID_SPAN,
+      Math.min(metrics.columns - x + 1, width)
+    );
+    height = Math.max(MIN_GRID_SPAN, Math.min(1000, height));
     _ensureGridCanvasRows(start.y + height + 8);
     _applyGridPosition(item, {
-      x: start.x,
+      x: x,
       y: start.y,
       w: width,
       h: height,
