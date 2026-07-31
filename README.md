@@ -73,9 +73,10 @@ columns['bar'] = {
 };
 ```
 
-Enabling the optional topbar clock keeps the logo and screen selector on the
-left, centers the clock in the full topbar and aligns all configuration
-controls to the far-right edge.
+Enabling the optional topbar clock keeps the original layout: the logo stays
+left and the clock starts after the reserved logo area. The screen selector,
+Custom/Wizard switch and configuration icons form a single right-aligned
+cluster.
 
 ### Device Editor
 

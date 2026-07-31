@@ -2,8 +2,8 @@
 
 ## Additional 3.22.0 beta fixes (31-7-2026)
 
-- Kept the logo and screen selector left, centered the optional clock, and
-  aligned all configuration controls at the far-right edge.
+- Restored the original logo/clock proportions and grouped the screen selector,
+  Custom/Wizard switch and configuration icons at the far-right edge.
 - Enforced a 2x2-cell minimum while resizing blocks in the grid editor.
 - Made garbage collection date names use the selected interface locale.
 - Added the advanced OpenWeather display defaults and five-option icon selector.
