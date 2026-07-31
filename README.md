@@ -74,7 +74,7 @@ columns['bar'] = {
 ```
 
 Enabling the optional topbar clock keeps the original layout: the logo stays
-left and the clock starts after the reserved logo area. The screen selector,
+in its left-hand lane and the clock starts directly after that lane. The screen selector,
 Custom/Wizard switch and configuration icons form a single right-aligned
 cluster.
 
