@@ -31,7 +31,10 @@ var DashticzTopbar = (function () {
     }
 
     function showBars() {
-      getBars().slideDown(400);
+      getBars().slideDown(400, function () {
+        // slideDown restores display:block; flex keeps the topbar alignment.
+        $(this).css('display', 'flex');
+      });
       resetTimer();
     }
 
