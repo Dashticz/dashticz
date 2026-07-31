@@ -838,12 +838,15 @@ test('topbar and layout editor keep controls usable', () => {
   const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
   const editor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
   const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
 
-  assert.match(styles, /\.colbar\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*nowrap;/s);
-  assert.match(styles, /\.colbar > div:has\(\.logo\)[^}]*order:\s*1;[^}]*flex:\s*0 0 15%;/s);
-  assert.match(styles, /\.colbar > div:has\(\.miniclock\)[^}]*order:\s*2;/s);
-  assert.match(styles, /\.colbar > div:has\(\.dt-screen-switcher-host\)[^}]*order:\s*3;[^}]*margin-left:\s*auto;/s);
-  assert.match(styles, /\.colbar > div:has\(\.topbar-settings-wrap\)[^}]*order:\s*4;/s);
+  assert.match(styles, /\.colbar\s*\{[^}]*display:\s*flex !important;[^}]*flex-wrap:\s*nowrap;/s);
+  assert.match(styles, /\.dt-topbar-logo,[\s\S]*order:\s*1;[\s\S]*flex:\s*0 0 15%;/);
+  assert.match(styles, /\.dt-topbar-miniclock,[\s\S]*order:\s*2;[\s\S]*flex:\s*1 1 0;/);
+  assert.match(styles, /\.dt-topbar-screenswitcher,[\s\S]*order:\s*3;[\s\S]*margin-left:\s*auto;/);
+  assert.match(styles, /\.dt-topbar-settings,[\s\S]*order:\s*4;[\s\S]*flex-shrink:\s*0;/);
+  assert.match(styles, /div:first-child:nth-last-child\(4\) \+ div \+ div[\s\S]*margin-left:\s*auto;/);
+  assert.match(blocks, /dt-topbar-item dt-topbar-/);
   assert.match(main, /\['logo', 'miniclock', 'screenswitcher', 'settings'\]/);
   assert.match(editor, /var MIN_GRID_SPAN = 2;/);
   assert.match(editor, /item\.grid\.w < MIN_GRID_SPAN \|\| item\.grid\.h < MIN_GRID_SPAN/);
