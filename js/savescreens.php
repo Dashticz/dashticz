@@ -22,7 +22,7 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
 $action = isset($data['action']) && is_string($data['action'])
     ? strtolower(trim($data['action']))
     : '';
-if ($action !== 'add') {
+if ($action !== 'add' && $action !== 'delete') {
     dashticz_json_error(400, 'Unsupported screens action.');
 }
 
@@ -32,10 +32,35 @@ if ($screenNumber < 2) {
 }
 
 $customDir = __DIR__ . '/../custom';
-$configPath = $customDir . '/CONFIG.js';
+list($configPath, $cfgFile) = configwriter_resolve_config_path($customDir);
 list($config, $readError) = configwriter_read_config($configPath);
 if ($readError !== null) {
     dashticz_json_error(500, $readError);
+}
+
+if ($action === 'delete') {
+    $numberedScreens = configwriter_extract_numbered_screens($config);
+    if (count($numberedScreens) <= 1
+        || !in_array($screenNumber, $numberedScreens, true)
+    ) {
+        dashticz_json_error(400, 'The selected extra screen cannot be deleted.');
+    }
+    $config = configwriter_remove_numbered_screen_and_compact(
+        $config,
+        $screenNumber
+    );
+    $writeError = configwriter_write_config($configPath, $customDir, $config);
+    if ($writeError !== null) {
+        dashticz_json_error(500, $writeError);
+    }
+
+    header('Content-Type: application/json');
+    echo json_encode([
+        'success' => true,
+        'deletedScreen' => $screenNumber,
+        'screens' => range(1, count($numberedScreens) - 1),
+    ]);
+    exit;
 }
 
 // Prefer the configured dashboard background when creating a new screen.

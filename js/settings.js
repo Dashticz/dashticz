@@ -1206,34 +1206,6 @@ function loadSettings() {
       html += renderSettingsCategoryHome();
       html += '</div>';
       html += '</div><div class="modal-footer settings-footer">';
-      html +=
-        '<div class="settings-update" id="settings-update">' +
-        '<button type="button" class="btn btn-outline-secondary settings-update-btn" id="settings-update-toggle">' +
-        escapeSettingsHtml(
-          (language.settings.update && language.settings.update.button) ||
-            'Update'
-        ) +
-        '</button>' +
-        '<div class="settings-update-panel" id="settings-update-panel">' +
-        '<label class="settings-update-label" for="settings-update-branch">' +
-        escapeSettingsHtml(
-          (language.settings.update && language.settings.update.branch) ||
-            'Branch'
-        ) +
-        '</label>' +
-        '<select id="settings-update-branch" class="form-select">' +
-        '<option value="beta">Beta</option>' +
-        '<option value="main">Main</option>' +
-        '</select>' +
-        '<button type="button" class="btn btn-primary settings-update-run" id="settings-update-run">' +
-        escapeSettingsHtml(
-          (language.settings.update && language.settings.update.run) ||
-            'Run update'
-        ) +
-        '</button>' +
-        '</div>' +
-        '<pre class="settings-update-log d-none" id="settings-update-log"></pre>' +
-        '</div>';
       html += '<div class="settings-footer-actions">';
       html +=
         '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
@@ -1918,6 +1890,30 @@ function bindSettingsUpdateControls() {
   });
 }
 
+function renderSettingsUpdateControls() {
+  var update = (language.settings && language.settings.update) || {};
+  return (
+    '<div class="settings-update settings-about-update" id="settings-update">' +
+    '<button type="button" class="btn btn-outline-secondary settings-update-btn" id="settings-update-toggle">' +
+    escapeSettingsHtml(update.button || 'Update') +
+    '</button>' +
+    '<div class="settings-update-panel" id="settings-update-panel">' +
+    '<label class="settings-update-label" for="settings-update-branch">' +
+    escapeSettingsHtml(update.branch || 'Branch') +
+    '</label>' +
+    '<select id="settings-update-branch" class="form-select">' +
+    '<option value="beta">Beta</option>' +
+    '<option value="main">Main</option>' +
+    '</select>' +
+    '<button type="button" class="btn btn-primary settings-update-run" id="settings-update-run">' +
+    escapeSettingsHtml(update.run || 'Run update') +
+    '</button>' +
+    '</div>' +
+    '<pre class="settings-update-log d-none" id="settings-update-log"></pre>' +
+    '</div>'
+  );
+}
+
 // eslint-disable-next-line no-unused-vars
 function runDashticzUpdate(branch) {
   var $log = $('#settings-update-log');
@@ -1995,7 +1991,7 @@ function setConfigMode(mode) {
   $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
     .then(function (data) {
       return $.ajax({
-        url: 'js/saveconfigmode.php',
+        url: configEditorUrl('js/saveconfigmode.php'),
         method: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({ config_mode: mode }),
@@ -2079,6 +2075,8 @@ function addSettingsAboutItems() {
       escapeSettingsHtml(about.community || 'Community') +
       '</a></p>'
   );
+  // Update is intentionally available only from the Info tile.
+  $div.append(renderSettingsUpdateControls());
   refreshAboutDomoticzVersions();
 }
 
@@ -2106,6 +2104,16 @@ function refreshAboutDomoticzVersions() {
 function saveSettings() {
   var saveSettings = {};
   var alertSettings = 'var config = {}\n';
+
+  // Submit only controls that differ from the values rendered in the modal.
+  // Untouched assignments and hand-written variables remain intact.
+  function addChangedSetting(settingName, value) {
+    if (JSON.stringify(settings[settingName]) === JSON.stringify(value)) return;
+    var serializedValue = JSON.stringify(value);
+    saveSettings[settingName] = serializedValue;
+    alertSettings +=
+      'config[' + JSON.stringify(settingName) + '] = ' + serializedValue + ';\n';
+  }
   $('div#settingspopup input[type="text"],div#settingspopup input[type="hidden"],div#settingspopup select').each(
     function () {
         // Skip UI-only controls that must not become config[...] keys.
@@ -2121,21 +2129,14 @@ function saveSettings() {
       if (isNumeric(val))
         val = parseFloat(val);
       var settingName = $(this).attr('name');
-      var serializedValue = JSON.stringify(val);
-      saveSettings[settingName] = serializedValue;
-      alertSettings +=
-        'config[' + JSON.stringify(settingName) + '] = ' + serializedValue + ';\n';
+      addChangedSetting(settingName, val);
     }
   );
 
   $('div#settingspopup input[type="checkbox"]').each(function () {
-    if ($(this).is(':checked')) {
-      alertSettings += 'config[' + JSON.stringify($(this).attr('name')) + '] = 1;\n';
-      saveSettings[$(this).attr('name')] = JSON.stringify(1);
-    } else {
-      alertSettings += 'config[' + JSON.stringify($(this).attr('name')) + '] = 0;\n';
-      saveSettings[$(this).attr('name')] = JSON.stringify(0);
-    }
+    var settingName = $(this).attr('name');
+    if (!settingName) return;
+    addChangedSetting(settingName, $(this).is(':checked') ? 1 : 0);
   });
 
   function showSettingsOutput(saved, errorMessage) {
@@ -2189,7 +2190,7 @@ function saveSettings() {
   $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
     .then(function (data) {
       return $.ajax({
-        url: 'js/savesettings.php?cfg=' + encodeURIComponent(cfgFile),
+        url: configEditorUrl('js/savesettings.php'),
         method: 'POST',
         data: saveSettings,
         dataType: 'json',

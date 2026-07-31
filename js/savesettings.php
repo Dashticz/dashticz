@@ -10,20 +10,7 @@ if (!isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] !== 'POST')
 }
 
 $customDir = __DIR__ . '/../custom';
-
-// Which config file are we editing? Matches js/main.js's loadConfig(), which
-// reads ?cfg=... and falls back to CONFIG.js when absent.
-$cfgFile = isset($_GET['cfg']) ? $_GET['cfg'] : 'CONFIG.js';
-
-// Security: only allow a bare filename ending in .js, no path separators or
-// traversal sequences, so this endpoint can never be tricked into writing
-// outside custom/ (e.g. ?cfg=../../../../etc/passwd).
-$cfgFile = basename($cfgFile);
-if (!preg_match('/^[A-Za-z0-9_\-]+\.js$/', $cfgFile)) {
-    dashticz_json_error(400, 'Invalid cfg filename.');
-}
-
-$configPath = $customDir . '/' . $cfgFile;
+list($configPath, $cfgFile) = configwriter_resolve_config_path($customDir);
 $submittedSettings = [];
 foreach ($_POST as $name => $serializedValue) {
     if (!preg_match('/^[A-Za-z0-9_]+$/', $name)) {

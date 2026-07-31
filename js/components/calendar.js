@@ -12,7 +12,7 @@ var DT_calendar = {
     containerExtra: function (block) {
       if (block && block.layout === 2) block.icon = '';
     },
-    emptytext: 'Geen afspraken.',
+    emptytext: language.misc.no_appointments || 'No appointments.',
     method: 1,
     eventClasses: {},
     refresh:600,
@@ -35,7 +35,7 @@ var DT_calendar = {
       } else {
         infoMessage(
           '<font color="red">Domoticz error!',
-          'Calendar "icalurl" missing on the calendar block.</font>',
+          (language.misc.calendar_missing || 'Calendar URL is missing.') + '</font>',
           0
         );
       }

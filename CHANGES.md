@@ -1,5 +1,20 @@
 # Dashticz — Change log for recent update work
 
+## Additional 3.22.0 beta fixes (31-7-2026)
+
+- Added the advanced OpenWeather display defaults and five-option icon selector.
+- Made all browser editors honor `?cfg=CONFIG2.js`, save only changed settings,
+  retain hand-written configuration, and deduplicate editor-owned keys.
+- Moved Update to the Info tile and made new-version notifications persistent
+  at the lower-right of the dashboard.
+- Kept grid resize/remove controls usable on very short blocks, prevented grey
+  refresh flashes while moving blocks, fixed topbar spacing and agenda overflow,
+  and added an explicit extra-screen delete control.
+- Fixed repeated Clock settings saves and localized Garbage collection labels
+  and status messages through the language JSON files.
+
+The runtime and package version remain `3.22.0` for this beta maintenance set.
+
 > **Version: 3.20.0**  
 > This document describes every change made during three related tasks:
 > 1. [Cleaning up unused files in the project](#1-cleaning-up-unused-files)

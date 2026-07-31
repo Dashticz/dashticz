@@ -80,7 +80,7 @@ var DT_alarmmeldingen = {
       if (isEmpty) {
         html +=
           '<li <strong>' +
-          'Geen Actuele Meldingen.....' +
+          (language.misc.no_alerts || 'No current alerts.') +
           '</strong><br />' +
           '</li>';
       }

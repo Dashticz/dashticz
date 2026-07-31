@@ -1140,7 +1140,8 @@ body.dle-active {
 }
 
 .dt-grid-layout.dle-grid-canvas > .dt-grid-item {
-  overflow: hidden;
+  /* Editor controls may extend beyond a one-row tile and must stay usable. */
+  overflow: visible;
 }
 
 @media (max-width: 767.98px) {
@@ -1154,6 +1155,21 @@ body.dle-active {
   position: relative;
   outline: 2px dashed rgba(13, 110, 253, 0.9);
   outline-offset: -2px;
+}
+
+/* Domoticz flash updates must not recolour blocks while they are being moved. */
+body.dle-active .dle-block.blockchange {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Keep long agenda content inside the tile background at configured heights. */
+.dt_block.calendar.fixedheight .dt_content {
+  min-height: 0;
+  overflow: auto;
+}
+
+.dt_block.calendar.fixedheight .dt_state {
+  height: auto;
 }
 
 .dle-overlay {
@@ -1712,8 +1728,10 @@ a.playlist {
   font-weight: bold;
   right: 0;
   padding: 10px;
-  position: absolute;
+  position: fixed;
   z-index: 9999;
+  max-width: min(460px, calc(100vw - 20px));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
 }
 
 .editmode {

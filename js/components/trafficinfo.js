@@ -7,7 +7,8 @@ var DT_trafficinfo = {
   defaultCfg: function (block) {
     if (block && block.refresh && parseFloat(block.refresh) < 60)
       block.refresh = 60;
-    var showempty = (block && block.showemptyroads) ? false : 'No traffic announcements';
+    var noTraffic = language.misc.no_traffic || 'No traffic announcements';
+    var showempty = (block && block.showemptyroads) ? false : noTraffic;
     return {
       icon: 'fas fa-car',
       containerClass: 'trafficinforow',
@@ -32,7 +33,7 @@ var DT_trafficinfo = {
     if (!me.block.apikey) {
       me.$mountPoint
         .find('.dt_state')
-        .text('ANWB API key not configured (trafficinfo.apikey).');
+        .text(language.misc.traffic_api_missing || 'ANWB API key is not configured.');
       return;
     }
     var dataURL =
@@ -60,7 +61,9 @@ var DT_trafficinfo = {
         }
         roadArray.sort();
         if (trafficobject.showemptyroads) {
-          var showempty = typeof trafficobject.showemptyroads === 'string' ? trafficobject.showemptyroads : 'Geen verkeersinformatie';
+          var showempty = typeof trafficobject.showemptyroads === 'string'
+            ? trafficobject.showemptyroads
+            : language.misc.no_traffic || 'No traffic announcements';
           for (var x = 0; x < roadArray.length; x++) {
             key = roadArray[x];
             var html = '<div><b class="title">' + key + '</b><br>' +
@@ -202,7 +205,9 @@ var DT_trafficinfo = {
       });
 
       if (noData && me.block.showempty) {
-        var emptyblock = typeof me.block.showempty === 'string' ? me.block.showempty : 'No traffic announcements';
+        var emptyblock = typeof me.block.showempty === 'string'
+          ? me.block.showempty
+          : language.misc.no_traffic || 'No traffic announcements';
         $(me.mountPoint + ' .dt_state').append('<div class="empty">' + emptyblock + '</div>');
       }
 

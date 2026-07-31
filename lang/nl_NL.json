@@ -25,6 +25,26 @@
         "last_month": "afgelopen maand",
         "today": "vandaag"
     },
+    "garbage": {
+        "no_data": "Geen ophaalgegevens gevonden",
+        "provider_not_found": "Afvaldienst niet gevonden",
+        "load_error": "Fout bij het laden van afvalgegevens",
+        "types": {
+            "gft": "GFT",
+            "pmd": "PMD",
+            "rest": "Restafval",
+            "papier": "Papier",
+            "kca": "Klein chemisch afval",
+            "brown": "Bruine container",
+            "black": "Zwarte container",
+            "milieu": "Milieu-afval",
+            "kerstboom": "Kerstboom",
+            "aeea": "Elektrische apparaten",
+            "textiel": "Textiel",
+            "sorti": "Gesorteerd afval",
+            "duo": "Duobak"
+        }
+    },
     "misc": {
         "download": "Klik hier om te downloaden",
         "last_update": "Laatste update",
@@ -45,7 +65,16 @@
         "value": "Waarde",
         "enter_pincode": "Voer de pincode in",
         "wrong_code": "Verkeerde pincode",
-        "platform": "spoor"
+        "platform": "spoor",
+        "no_appointments": "Geen afspraken.",
+        "calendar_missing": "Agenda-URL ontbreekt.",
+        "no_traffic": "Geen verkeersinformatie",
+        "traffic_api_missing": "ANWB API-sleutel is niet ingesteld.",
+        "no_alerts": "Geen actuele meldingen.",
+        "weather_loading": "Weer laden...",
+        "weather_api_missing": "Geen geldige weer-API-sleutel.",
+        "no_downloads": "Geen actieve downloads of geen verbinding",
+        "nzbget_host_missing": "NZBGet-host is niet ingesteld."
     },
     "settings": {
         "title": "Dashticz-instellingen",

@@ -119,6 +119,13 @@ Widget Editor.
 Widget-specific settings are kept together with the other `config[...]`
 settings at the top of `custom/CONFIG.js`.
 
+For OpenWeather, `showDescription` and `showRain` default to **Yes**, while
+`showWind` and `showGust` default to **No**. The icon selector provides
+`line`, `linestatic`, `fill`, `static` and `meteo` with their descriptive
+labels. Garbage collection names and status messages use the selected language
+when translations are available; custom names still take precedence when
+`use_names` is enabled.
+
 ### Visual Layout Editor
 
 Select the arrows icon in the topbar to open the **Visual Layout Editor** on
@@ -138,6 +145,10 @@ Their mixed order is stored separately so the dashboard and Device Editor show
 the same ordering. Manually configured blocks and topbar blocks are deliberately
 left unchanged. Saved heights are applied to classic Domoticz device blocks as
 well as the `modern-dark` theme.
+
+Use the minus control beside the screen selector to delete the active extra
+screen. Screen 1 cannot be deleted; higher screen numbers are compacted after
+deletion.
 
 After any visual editor is saved, Dashticz automatically consolidates its
 generated output between `// [dashboard-editor-start]` and
@@ -187,9 +198,16 @@ when their filename starts with `BG_`.
 
 Settings are grouped into General, Screen, Standby, Localization, Media,
 Widgets (Custom mode), Other and About tiles. Background fields support a
-built-in image selector and a custom path/URL. The footer can update directly
-to either the **Beta** or **Main** branch when the web-server account has write
-access to the Git checkout.
+built-in image selector and a custom path/URL. The update control is available
+only inside the **Info** tile and can update directly to either the **Beta** or
+**Main** branch when the web-server account has write access to the Git
+checkout. When a newer version is detected, a persistent notification is shown
+over the dashboard at the lower-right.
+
+Settings saves are delta-based: only changed controls are replaced or added,
+so hand-written variables and untouched values remain intact. Every visual
+editor follows the configuration selected in the URL; for example,
+`?cfg=CONFIG2.js` reads and writes `custom/CONFIG2.js` rather than `CONFIG.js`.
 
 ## Included themes
 

@@ -98,11 +98,13 @@ var DT_weather = (function () {
     run: function (me) {
       if (me.block.refresh < 900) me.block.refresh = 900;
       me.$block = me.$mountPoint.find('.dt_block');
-      me.$mountPoint.find('.dt_state').text('Weer laden\u2026');
+      me.$mountPoint
+        .find('.dt_state')
+        .text(language.misc.weather_loading || 'Loading weather...');
       if (!me.block.apikey) {
         me.$mountPoint
           .find('.dt_state')
-          .text('OpenWeather API-key ontbreekt.');
+          .text(language.misc.weather_api_missing || 'No valid weather API key.');
         me.runPromise = $.Deferred().resolve();
         return;
       }
@@ -206,7 +208,13 @@ var DT_weather = (function () {
         if (res) me.provider = res
         else {
           console.error('No valid weather provider found');
-          me.$mountPoint.find('.dt_state').html('<div style="font-size:50%">' + 'No valid weather API key.' + '</div>');
+          me.$mountPoint
+            .find('.dt_state')
+            .html(
+              '<div style="font-size:50%">' +
+                (language.misc.weather_api_missing || 'No valid weather API key.') +
+                '</div>'
+            );
         }
       }
     )

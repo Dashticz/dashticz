@@ -19,6 +19,24 @@ function configwriter_read_config($configPath)
     return ["var config = {}\n", null];
 }
 
+/**
+ * Resolve the configuration file selected by main.js (?cfg=CONFIG2.js).
+ * Only a bare JavaScript filename is accepted so editor writes stay inside
+ * custom/ and every editor targets the same file that the dashboard loaded.
+ */
+function configwriter_resolve_config_path($customDir)
+{
+    $cfgFile = isset($_GET['cfg']) ? $_GET['cfg'] : 'CONFIG.js';
+    if (!is_string($cfgFile)
+        || basename($cfgFile) !== $cfgFile
+        || !preg_match('/^[A-Za-z0-9_-]+\.js$/', $cfgFile)
+    ) {
+        dashticz_json_error(400, 'Invalid cfg filename.');
+    }
+
+    return [$customDir . '/' . $cfgFile, $cfgFile];
+}
+
 function configwriter_write_config($configPath, $customDir, $config)
 {
     if (!file_exists($configPath) && !is_writable($customDir)) {

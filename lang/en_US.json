@@ -25,6 +25,26 @@
         "last_month": "last month",
         "today": "today"
     },
+    "garbage": {
+        "no_data": "No collection data found",
+        "provider_not_found": "Garbage provider not found",
+        "load_error": "Error loading garbage data",
+        "types": {
+            "gft": "Organic waste",
+            "pmd": "Plastic, metal and drink cartons",
+            "rest": "Residual waste",
+            "papier": "Paper",
+            "kca": "Chemical waste",
+            "brown": "Brown bin",
+            "black": "Black bin",
+            "milieu": "Recyclables",
+            "kerstboom": "Christmas tree",
+            "aeea": "Electrical waste",
+            "textiel": "Textiles",
+            "sorti": "Sorted waste",
+            "duo": "Duo bin"
+        }
+    },
     "misc": {
         "download": "Click here to download",
         "last_update": "Last update",
@@ -45,7 +65,16 @@
         "value": "Value",
         "enter_pincode": "Enter pin code",
         "wrong_code": "Wrong pin code",
-        "platform": "platform"
+        "platform": "platform",
+        "no_appointments": "No appointments.",
+        "calendar_missing": "Calendar URL is missing.",
+        "no_traffic": "No traffic announcements",
+        "traffic_api_missing": "ANWB API key is not configured.",
+        "no_alerts": "No current alerts.",
+        "weather_loading": "Loading weather...",
+        "weather_api_missing": "No valid weather API key.",
+        "no_downloads": "No active downloads, or no connection",
+        "nzbget_host_missing": "NZBGet host is not configured."
     },
     "settings": {
         "title": "Dashticz settings",

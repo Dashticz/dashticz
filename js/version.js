@@ -178,7 +178,8 @@ function initVersion() {
                     encodeURIComponent(source.branch) +
                     '" target="_blank">' +
                     language.misc.download +
-                    '</a>'
+                    '</a>',
+                  0
                 );
               }
             },
