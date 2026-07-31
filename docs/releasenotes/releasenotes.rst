@@ -32,7 +32,7 @@ Fixes
 * Topbar and Calendar: restored spacing between weekday and date, and constrained overflowing agenda text to the configured tile background.
 * Clock settings: repeated saves now compare against the rendered values and persist each new change.
 * Garbage: built-in collection names, empty/error states and provider errors now use language JSON entries (English and Dutch included).
-* Topbar: enabling the optional clock keeps it beside the title while screen and menu controls remain at the far-right edge.
+* Topbar: enabling the optional clock keeps the logo and screen selector left, centers the clock, and keeps all configuration controls at the far-right edge.
 * Grid Layout Editor: blocks cannot be resized below two columns by two rows.
 * Garbage: collection date names now explicitly follow the language selected under Settings > Localize.
 

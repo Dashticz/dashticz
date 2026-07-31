@@ -927,6 +927,7 @@ next css sets the default height of the frame popup
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
+  position: relative;
   width: 100%;
 }
 
@@ -943,9 +944,20 @@ next css sets the default height of the frame popup
   width: auto;
 }
 
-/* Keep the screen and settings controls at the far right while the optional
-   miniclock remains directly beside the dashboard title. */
+/* Center the optional clock against the complete topbar instead of letting
+   the widths of the left and right controls influence its position. */
+.colbar > div:has(.miniclock) {
+  position: absolute;
+  left: 50%;
+  z-index: 1;
+  transform: translateX(-50%);
+}
+
+/* Only the configuration wrapper consumes the remaining space. The logo and
+   screen selector stay together on the left; all configuration icons stay at
+   the far-right edge. */
 .colbar > div:has(.text-right) {
+  margin-left: auto;
   margin-right: -5px;
 }
 
@@ -1005,15 +1017,15 @@ next css sets the default height of the frame popup
   margin-right: 4px;
 }
 
-/* Screen switcher lives in its own topbar block, left of settings */
+/* Screen switcher lives beside the logo, independently of the centered clock. */
 .colbar > div:has(.dt-screen-switcher-host) {
   flex: 0 0 auto;
-  margin-left: auto;
+  margin-left: 12px;
   margin-right: 12px;
 }
 
 .colbar > div:has(.topbar-settings-wrap) {
-  margin-left: 0;
+  margin-left: auto;
 }
 
 .dt-screen-switcher-host {
