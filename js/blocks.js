@@ -84,6 +84,18 @@ function addBlock2Column(columndiv, c, b, prepareContainer) {
   try {
     if (typeof b !== 'object') newBlock = convertBlock(b, c);
     if (c === 'popup') newBlock.isPopup = true;
+    if (
+      c === 'bar' &&
+      newBlock &&
+      typeof newBlock.type === 'string' &&
+      /^[a-z0-9_-]+$/i.test(newBlock.type)
+    ) {
+      // Stable wrapper classes keep topbar layout independent of :has()
+      // support and nested Bootstrap percentage widths.
+      $(myblockselector).addClass(
+        'dt-topbar-item dt-topbar-' + newBlock.type.toLowerCase()
+      );
+    }
     if (newBlock.blocks) {
       newBlock.blocks.forEach(function (aBlock) {
         addBlock2Column(myblockselector, '', aBlock);

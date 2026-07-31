@@ -123,6 +123,7 @@
 
 .dt_block {
   display: flex;
+  align-items: flex-start;
   background: rgba(0, 0, 0, 0.2);
   background-clip: padding-box;
   border: 7px solid rgba(255, 255, 255, 0);
@@ -921,43 +922,56 @@ next css sets the default height of the frame popup
   white-space: normal;
 }
 
-/* Keep every topbar block on one row. The mount wrappers do not receive
-   Bootstrap column classes themselves, so flexbox owns their positioning. */
+/* Keep every topbar block on one row.
+   IMPORTANT: Dashticz mounts each block in a wrapper div (#block_0, #block_1,
+   ...) that has `display: contents` (confirmed via devtools). An element
+   with display:contents generates no box of its own, so ANY box-level CSS
+   put on ".colbar > div" (margin, flex-shrink, order, width, ...) is silently
+   ignored - the browser only lays out the wrapper's *children* as the real
+   flex items of .colbar. Every rule below therefore targets those inner
+   elements (.logo, .miniclock, .dt-screen-switcher-host,
+   .topbar-settings-wrap) directly instead of their wrapper. */
 .colbar {
-  display: flex;
+  /* !important beats the inline display:block that jQuery's .show() writes
+     onto this element when the bar is revealed. */
+  display: flex !important;
   flex-wrap: nowrap;
   align-items: center;
   width: 100%;
 }
 
-.colbar > div {
-  flex: 0 0 auto;
+.colbar .logo {
+  order: 1;
+  flex: 0 1 auto;
   min-width: 0;
 }
 
-.colbar .logo,
-.colbar .miniclock,
-.colbar .dt-screen-switcher-host,
-.colbar .topbar-settings-wrap {
-  float: none;
-  width: auto;
-}
-
-/* Match the reference topbar: reserve a fixed left lane for the logo and
-   start the optional clock immediately after it. Explicit ordering also keeps
-   older custom columns['bar'] definitions visually compatible. */
-.colbar > div:has(.logo) {
-  order: 1;
-  flex: 0 0 15%;
-}
-
-.colbar > div:has(.miniclock) {
+/* The date/clock may shrink (and ellipsis) before anything else - this
+   guarantees the screen-switcher and settings icons never get pushed off
+   the right edge of the bar when space is tight. */
+.colbar .miniclock {
   order: 2;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Screen selection and configuration controls form one right-aligned cluster. */
-.colbar > div:has(.text-right) {
-  margin-right: -5px;
+/* Screen selection and configuration controls form one right-aligned
+   cluster: margin-left:auto on the first of the two pushes both all the
+   way to the right edge, and neither is allowed to shrink or wrap. */
+.colbar .dt-screen-switcher-host {
+  order: 3;
+  flex: 0 0 auto;
+  margin-left: auto;
+  margin-right: 12px;
+}
+
+.colbar .topbar-settings-wrap {
+  order: 4;
+  flex: 0 0 auto;
+  margin-left: 0;
 }
 
 .colbar .text-right {
@@ -1014,19 +1028,6 @@ next css sets the default height of the frame popup
 .colbar span.layouteditoricon {
   cursor: pointer;
   margin-right: 4px;
-}
-
-/* Screen switcher precedes Custom/Wizard and the icons at the right edge. */
-.colbar > div:has(.dt-screen-switcher-host) {
-  order: 3;
-  flex: 0 0 auto;
-  margin-left: auto;
-  margin-right: 12px;
-}
-
-.colbar > div:has(.topbar-settings-wrap) {
-  order: 4;
-  margin-left: 0;
 }
 
 .dt-screen-switcher-host {
@@ -1171,8 +1172,7 @@ body.dle-active {
 }
 
 .dt-grid-layout.dle-grid-canvas > .dt-grid-item {
-  /* Editor controls may extend beyond a one-row tile and must stay usable. */
-  overflow: visible;
+  overflow: hidden;
 }
 
 @media (max-width: 767.98px) {
@@ -1186,21 +1186,6 @@ body.dle-active {
   position: relative;
   outline: 2px dashed rgba(13, 110, 253, 0.9);
   outline-offset: -2px;
-}
-
-/* Domoticz flash updates must not recolour blocks while they are being moved. */
-body.dle-active .dle-block.blockchange {
-  background-color: rgba(0, 0, 0, 0.2) !important;
-}
-
-/* Keep long agenda content inside the tile background at configured heights. */
-.dt_block.calendar.fixedheight .dt_content {
-  min-height: 0;
-  overflow: auto;
-}
-
-.dt_block.calendar.fixedheight .dt_state {
-  height: auto;
 }
 
 .dle-overlay {
@@ -1759,10 +1744,8 @@ a.playlist {
   font-weight: bold;
   right: 0;
   padding: 10px;
-  position: fixed;
+  position: absolute;
   z-index: 9999;
-  max-width: min(460px, calc(100vw - 20px));
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
 }
 
 .editmode {
