@@ -141,7 +141,7 @@ screen 1. Blocks created by the Device Editor receive a blue edit overlay:
 - select the red minus button at the bottom-left to remove a device;
 - width snaps to the 12-column dashboard grid;
 - height snaps to steps of 10 pixels;
-- free-grid blocks cannot be resized below 2x2 grid cells;
+- free-grid blocks cannot be resized below 2x4 grid cells;
 - select **Save** to update `custom/CONFIG.js`, or **Cancel**/Escape to restore
   the original layout.
 

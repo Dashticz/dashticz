@@ -33,7 +33,7 @@ Fixes
 * Clock settings: repeated saves now compare against the rendered values and persist each new change.
 * Garbage: built-in collection names, empty/error states and provider errors now use language JSON entries (English and Dutch included).
 * Topbar: restored the original logo and clock proportions while grouping the screen selector, Custom/Wizard switch and configuration icons at the far-right edge.
-* Grid Layout Editor: blocks cannot be resized below two columns by two rows.
+* Grid Layout Editor: blocks cannot be resized below two columns by four rows.
 * Garbage: collection date names now explicitly follow the language selected under Settings > Localize.
 
 v3.21.7 beta (30-7-2026)

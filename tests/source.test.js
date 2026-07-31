@@ -841,17 +841,17 @@ test('topbar and layout editor keep controls usable', () => {
   const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
 
   assert.match(styles, /\.colbar\s*\{[^}]*display:\s*flex !important;[^}]*flex-wrap:\s*nowrap;/s);
-  assert.match(styles, /\.dt-topbar-logo,[\s\S]*order:\s*1;[\s\S]*flex:\s*0 0 15%;/);
-  assert.match(styles, /\.dt-topbar-miniclock,[\s\S]*order:\s*2;[\s\S]*flex:\s*1 1 0;/);
-  assert.match(styles, /\.dt-topbar-screenswitcher,[\s\S]*order:\s*3;[\s\S]*margin-left:\s*auto;/);
-  assert.match(styles, /\.dt-topbar-settings,[\s\S]*order:\s*4;[\s\S]*flex-shrink:\s*0;/);
-  assert.match(styles, /div:first-child:nth-last-child\(4\) \+ div \+ div[\s\S]*margin-left:\s*auto;/);
+  assert.match(styles, /\.colbar \.logo\s*\{[^}]*order:\s*1;[^}]*flex:\s*0 1 auto;/s);
+  assert.match(styles, /\.colbar \.miniclock\s*\{[^}]*order:\s*2;[^}]*flex:\s*1 1 auto;/s);
+  assert.match(styles, /\.colbar \.dt-screen-switcher-host\s*\{[^}]*order:\s*3;[^}]*margin-left:\s*auto;/s);
+  assert.match(styles, /\.colbar \.topbar-settings-wrap\s*\{[^}]*order:\s*4;[^}]*flex:\s*0 0 auto;/s);
   assert.match(blocks, /dt-topbar-item dt-topbar-/);
   assert.match(main, /\['logo', 'miniclock', 'screenswitcher', 'settings'\]/);
-  assert.match(editor, /var MIN_GRID_SPAN = 2;/);
-  assert.match(editor, /item\.grid\.w < MIN_GRID_SPAN \|\| item\.grid\.h < MIN_GRID_SPAN/);
-  assert.match(editor, /width = Math\.max\(\s*MIN_GRID_SPAN,/s);
-  assert.match(editor, /height = Math\.max\(MIN_GRID_SPAN,/);
+  assert.match(editor, /var MIN_GRID_WIDTH = 2;/);
+  assert.match(editor, /var MIN_GRID_HEIGHT = 4;/);
+  assert.match(editor, /item\.grid\.w < MIN_GRID_WIDTH \|\| item\.grid\.h < MIN_GRID_HEIGHT/);
+  assert.match(editor, /width = Math\.max\(\s*MIN_GRID_WIDTH,/s);
+  assert.match(editor, /height = Math\.max\(MIN_GRID_HEIGHT,/);
 });
 
 test('garbage dates use the selected interface language', () => {
