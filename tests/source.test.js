@@ -272,6 +272,7 @@ test('configured topbar timeout loads and initializes the auto-hide behavior', (
   const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
   const topbar = fs.readFileSync(path.join(root, 'js/topbar.js'), 'utf8');
   const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
 
   assert.match(
     main,
@@ -284,7 +285,12 @@ test('configured topbar timeout loads and initializes the auto-hide behavior', (
   );
   assert.match(topbar, /settings\['topbar_timeout'\]/);
   assert.match(topbar, /getBars\(\)\.slideUp\(400\)/);
-  assert.match(topbar, /getBars\(\)\.slideDown\(400\)/);
+  assert.match(topbar, /getBars\(\)\.slideDown\(400,/);
+  assert.match(topbar, /\.css\('display', 'flex'\)/);
+  assert.doesNotMatch(
+    styles,
+    /\.colbar\s*\{[^}]*display:\s*flex !important;/s
+  );
   assert.doesNotMatch(main, /id: 'editmode'/);
   assert.equal(fs.existsSync(path.join(root, 'js/editmode.js')), false);
   assert.match(settings, /settingList\['screen'\]\['topbar_timeout'\]/);
@@ -848,7 +854,7 @@ test('topbar and layout editor keep controls usable', () => {
   const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
   const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
 
-  assert.match(styles, /\.colbar\s*\{[^}]*display:\s*flex !important;[^}]*flex-wrap:\s*nowrap;/s);
+  assert.match(styles, /\.colbar\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*nowrap;/s);
   assert.match(styles, /\.colbar \.logo\s*\{[^}]*order:\s*1;[^}]*flex:\s*0 1 auto;/s);
   assert.match(styles, /\.colbar \.miniclock\s*\{[^}]*order:\s*2;[^}]*flex:\s*1 1 auto;/s);
   assert.match(styles, /\.colbar \.dt-screen-switcher-host\s*\{[^}]*order:\s*3;[^}]*margin-left:\s*auto;/s);

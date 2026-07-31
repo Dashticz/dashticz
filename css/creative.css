@@ -932,9 +932,8 @@ next css sets the default height of the frame popup
    elements (.logo, .miniclock, .dt-screen-switcher-host,
    .topbar-settings-wrap) directly instead of their wrapper. */
 .colbar {
-  /* !important beats the inline display:block that jQuery's .show() writes
-     onto this element when the bar is revealed. */
-  display: flex !important;
+  /* Do not use !important here: topbar auto-hide needs inline display:none. */
+  display: flex;
   flex-wrap: nowrap;
   align-items: center;
   width: 100%;
