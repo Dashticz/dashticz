@@ -4,7 +4,7 @@
 
 - Restored the original logo/clock proportions and grouped the screen selector,
   Custom/Wizard switch and configuration icons at the far-right edge.
-- Enforced a 2x2-cell minimum while resizing blocks in the grid editor.
+- Enforced a 2x4-cell minimum while resizing blocks in the grid editor.
 - Made garbage collection date names use the selected interface locale.
 - Added the advanced OpenWeather display defaults and five-option icon selector.
 - Made all browser editors honor `?cfg=CONFIG2.js`, save only changed settings,
