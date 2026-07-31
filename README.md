@@ -152,9 +152,9 @@ the same ordering. Manually configured blocks and topbar blocks are deliberately
 left unchanged. Saved heights are applied to classic Domoticz device blocks as
 well as the `modern-dark` theme.
 
-Use the minus control beside the screen selector to delete the active extra
-screen. Screen 1 cannot be deleted; higher screen numbers are compacted after
-deletion.
+Use the minus control directly beside the plus control to delete the active
+extra screen. The minus control is disabled for Standby, screen 1 and when only
+one numbered screen remains. Higher screen numbers are compacted after deletion.
 
 After any visual editor is saved, Dashticz automatically consolidates its
 generated output between `// [dashboard-editor-start]` and
