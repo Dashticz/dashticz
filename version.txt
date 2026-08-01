@@ -1,8 +1,9 @@
 {
-"version": "3.22.1",
+"version": "3.22.2",
 "branch": "beta",
-"last_changes": "Always show editor delete button; calendar agenda auto-expands to fit content",
+"last_changes": "Auto-detect custom mode when config_mode is absent from CONFIG.js",
 "changelog" : {
+            "3.22.2": "Auto-detect custom mode when config_mode is absent from CONFIG.js",
             "3.22.1": "Always show editor delete button; calendar agenda auto-expands to fit content",
             "3.22.0": "Preserve widget settings and add Standby grid parity",
             "3.21.7": "Make Wizard convert column screens to compact free-positioned grids",

@@ -706,7 +706,7 @@ var widgetSettingTiles = [
 ];
 
 function isCustomConfigMode() {
-  return String(settings['config_mode'] || 'wizard').toLowerCase() === 'custom';
+  return String(settings['config_mode'] || 'custom').toLowerCase() === 'custom';
 }
 
 var settingsCategoryIcons = {
@@ -1023,6 +1023,13 @@ if (typeof(Storage) !== "undefined") {
 
 $.extend(settings, defaultSettings, config);
 
+// When config_mode is not explicitly set in CONFIG.js, default to custom
+// mode (user is editing by hand) rather than wizard.
+var _configModeAutoDetected = (typeof config === 'undefined' || typeof config['config_mode'] === 'undefined');
+if (_configModeAutoDetected) {
+  settings['config_mode'] = 'custom';
+}
+
 //The Config settings for all checkbox items will be converted to a number
 for (var s in settingList) {
   for (var t in settingList[s]) {
@@ -1160,6 +1167,11 @@ function loadSettings() {
       console.log('PHP not installed.');
     })
     .then(function () {
+      // If config_mode was not explicitly set in CONFIG.js, persist the
+      // auto-detected value (custom) so subsequent loads read it directly.
+      if (_configModeAutoDetected && _PHP_INSTALLED) {
+        _persistAutoDetectedConfigMode();
+      }
       if (
         typeof settings['default_cors_url'] === 'undefined' ||
         settings['default_cors_url'] === ''
@@ -1193,7 +1205,7 @@ function loadSettings() {
       html += '<div class="settings-tab-content">';
       html +=
         '<input type="hidden" name="config_mode" value="' +
-        escapeSettingsHtml(settings['config_mode'] || 'wizard') +
+        escapeSettingsHtml(settings['config_mode'] || 'custom') +
         '">';
       html += renderSettingsCategoryHome();
       html += '</div>';
@@ -2003,6 +2015,29 @@ function setConfigMode(mode) {
     });
 }
 
+/**
+ * Silently persist the auto-detected config_mode to CONFIG.js without
+ * triggering a page reload. Called once on startup when config_mode was
+ * absent from CONFIG.js and PHP is available.
+ */
+function _persistAutoDetectedConfigMode() {
+  var mode = settings['config_mode'];
+  $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
+    .then(function (data) {
+      return $.ajax({
+        url: configEditorUrl('js/saveconfigmode.php'),
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ config_mode: mode }),
+        dataType: 'json',
+        headers: { 'X-Dashticz-CSRF': data.token },
+      });
+    })
+    .fail(function () {
+      // Non-critical: config_mode will be re-detected on the next load.
+    });
+}
+
 function addSettingsAboutItems() {
   var $div = $('#settings-category-about');
   if (!$div.length) $div = $('#tabs-about');
@@ -2178,6 +2213,14 @@ function saveSettings() {
   }
 
   var cfgFile = (typeof _PARAMS !== 'undefined' && _PARAMS['cfg']) || 'CONFIG.js';
+
+  // When config_mode was not in CONFIG.js, force-persist it now so the file
+  // reflects the auto-detected value even if nothing else changed.
+  if (_configModeAutoDetected && typeof saveSettings['config_mode'] === 'undefined') {
+    var _modeValue = JSON.stringify(settings['config_mode']);
+    saveSettings['config_mode'] = _modeValue;
+    alertSettings += 'config["config_mode"] = ' + _modeValue + ';\n';
+  }
 
   $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
     .then(function (data) {
