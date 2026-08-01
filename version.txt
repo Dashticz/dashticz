@@ -1,7 +1,7 @@
 {
-    "version": "3.22.4",
+    "version": "3.22.3",
     "branch": "beta",
-    "last_changes": "Widget titles always reflect the active language, ignoring any hardcoded title in CONFIG.js",
+    "last_changes": "Device Editor: sort available devices as Groups, Scenes, then Devices",
     "changelog": {
         "3.22.2": "Auto-detect custom mode when config_mode is absent from CONFIG.js",
         "3.22.1": "Always show editor delete button; calendar agenda auto-expands to fit content",
@@ -29,6 +29,8 @@
         "3.14.0": "Beta version same as 3.14 master",
         "3.14": "Master version derived from 3.13.1 beta",
         "3.22.3": "Translate widget catalog and editor-icon tooltips using the active language file",
-        "3.22.4": "Widget titles always reflect the active language, ignoring any hardcoded title in CONFIG.js"
+        "3.22.4": "Widget titles always reflect the active language, ignoring any hardcoded title in CONFIG.js",
+        "3.22.5": "Device Editor: add Domoticz groups and scenes to the device list",
+        "3.22.6": "Device Editor: sort available devices as Groups, Scenes, then Devices"
     }
 }

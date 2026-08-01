@@ -1316,8 +1316,11 @@ function configwriter_make_block_key($name, &$usedKeys)
 
 function configwriter_device_block_props($device, $defaultWidth = 3)
 {
-    $idx = (int)$device['idx'];
-    $title = isset($device['name']) ? (string)$device['name'] : ('Device ' . $idx);
+    $rawIdx = $device['idx'];
+    $isGroup = !empty($device['isGroup'])
+        || (is_string($rawIdx) && preg_match('/^s\d+$/', $rawIdx));
+
+    $title = isset($device['name']) ? (string)$device['name'] : ($isGroup ? (string)$rawIdx : ('Device ' . (int)$rawIdx));
     $width = isset($device['width']) ? (int)$device['width'] : $defaultWidth;
     $width = max(1, min(12, $width));
 
@@ -1328,11 +1331,16 @@ function configwriter_device_block_props($device, $defaultWidth = 3)
         'title' => $title,
     ];
 
-    if (!empty($device['subidx']) && (int)$device['subidx'] > 0) {
-        $props['idx'] = $idx . '_' . (int)$device['subidx'];
-    } else {
-        $props['idx'] = $idx;
+    if (!$isGroup) {
+        $idx = (int)$rawIdx;
+        if (!empty($device['subidx']) && (int)$device['subidx'] > 0) {
+            $props['idx'] = $idx . '_' . (int)$device['subidx'];
+        } else {
+            $props['idx'] = $idx;
+        }
     }
+    /* For groups/scenes the block key is the scene reference (e.g. 's1'),
+     * so no idx property is needed in the block definition itself. */
 
     if (isset($device['height']) && is_int($device['height'])) {
         $props['height'] = $device['height'];

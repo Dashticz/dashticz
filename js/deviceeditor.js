@@ -65,11 +65,36 @@ var DashticzDeviceEditor = (function () {
 
   /* Parse a composite key back into {idx, subidx} */
   function _parseCk(ck) {
+    /* group/scene key e.g. 's1' */
+    if (/^s\d+$/.test(String(ck))) {
+      return { idx: String(ck), subidx: 0 };
+    }
     var parts = String(ck).split('_');
     return {
       idx:    parseInt(parts[0], 10),
       subidx: parts.length === 2 ? parseInt(parts[1], 10) : 0,
     };
+  }
+
+  /* Return true when ck is a group/scene composite key (e.g. 's1') */
+  function _isGroupCk(ck) {
+    return /^s\d+$/.test(String(ck));
+  }
+
+  /* Sort rank for available-device list: Groups first, Scenes second, Devices last */
+  function _typeOrder(type) {
+    if (type === 'Group') return 0;
+    if (type === 'Scene') return 1;
+    return 2;
+  }
+
+  /* Sort available[] by category (Group < Scene < Device) then alphabetically */
+  function _sortAvailable(list) {
+    list.sort(function (a, b) {
+      var diff = _typeOrder(a.type) - _typeOrder(b.type);
+      if (diff !== 0) return diff;
+      return a.name.localeCompare(b.name);
+    });
   }
 
   /* Convert a block reference (number / string / object) to a composite key */
@@ -79,6 +104,8 @@ var DashticzDeviceEditor = (function () {
       var n = parseInt(b, 10);
       /* pure numeric string e.g. '493' */
       if (n > 0 && String(n) === b) return b;
+      /* group/scene key e.g. 's1' */
+      if (/^s\d+$/.test(b)) return b;
       /* compound string e.g. '1298_1' */
       var parts = b.split('_');
       if (parts.length === 2) {
@@ -512,6 +539,23 @@ var DashticzDeviceEditor = (function () {
     var available = [];
     Object.keys(all).forEach(function (key) {
       if (!key || key[0] === '_') return;   /* internal entries */
+
+      /* group/scene key e.g. 's1' */
+      if (_isGroupCk(key)) {
+        if (managedSet[key]) return;
+        var d    = all[key];
+        var type = d.Type || 'Group';
+        var prefix = type === 'Scene' ? 'Scene_' : 'Group_';
+        var plainName = d.Name || key;
+        available.push({
+          key: key, idx: key, subidx: 0,
+          name: prefix + plainName,
+          plainName: plainName,
+          type: type,
+        });
+        return;
+      }
+
       var idx = parseInt(key, 10);
       if (!(idx > 0 && String(idx) === String(key))) return;
       if (managedFullIdx[idx]) return;      /* whole base device is already managed */
@@ -527,18 +571,18 @@ var DashticzDeviceEditor = (function () {
           var ck = _ck(idx, s);
           if (!managedSet[ck]) {
             available.push({ key: ck, idx: idx, subidx: s,
-                             name: name + '\u00a0(' + s + ')', type: type });
+                             name: name + '\u00a0(' + s + ')', plainName: null, type: type });
           }
         }
       } else {
         var ck = _ck(idx, 0);
         if (!managedSet[ck]) {
-          available.push({ key: ck, idx: idx, subidx: 0, name: name, type: type });
+          available.push({ key: ck, idx: idx, subidx: 0, name: name, plainName: null, type: type });
         }
       }
     });
 
-    available.sort(function (a, b) { return a.name.localeCompare(b.name); });
+    _sortAvailable(available);
     return available;
   }
 
@@ -634,17 +678,20 @@ var DashticzDeviceEditor = (function () {
   /* ── HTML for a single device-list row ─────────────────────── */
   function _deviceItemHtml(ck, allDomoticz, isNew) {
     var p      = _parseCk(ck);
-    var device = allDomoticz[String(p.idx)] || allDomoticz[p.idx];
-    var name   = device ? _esc(device.Name)  : 'Unknown device';
-    var type   = device ? _esc(device.Type)  : '';
-    var dispIdx = p.subidx ? (p.idx + '_' + p.subidx) : String(p.idx);
+    var isGroup = _isGroupCk(ck);
+    var device = isGroup ? allDomoticz[ck] : (allDomoticz[String(p.idx)] || allDomoticz[p.idx]);
+    var rawName = device ? device.Name : (isGroup ? ck : ('Device ' + p.idx));
+    var type   = device ? _esc(device.Type)  : (isGroup ? 'Group' : '');
+    var prefix = isGroup ? (type === 'Scene' ? 'Scene_' : 'Group_') : '';
+    var name   = _esc(prefix + rawName);
+    var dispIdx = isGroup ? ck : (p.subidx ? (p.idx + '_' + p.subidx) : String(p.idx));
     var cls    = 'de-device-item' + (isNew ? ' de-device-item-new' : '');
     var orderKey = _deviceOrderKey(ck);
     var html   = '<div class="' + cls + '" data-ck="' + _esc(ck) +
       '" data-order-key="' + _esc(orderKey) + '" draggable="true">';
     html += '<span class="de-drag-handle" title="Drag to reorder"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
-    html += '<span class="de-device-idx">IDX\u00a0' + dispIdx + '</span>';
-    html += '<span class="de-device-name">' + name + (p.subidx ? '\u00a0(' + p.subidx + ')' : '') + '</span>';
+    html += '<span class="de-device-idx">IDX\u00a0' + _esc(dispIdx) + '</span>';
+    html += '<span class="de-device-name">' + name + (!isGroup && p.subidx ? '\u00a0(' + p.subidx + ')' : '') + '</span>';
     if (type) html += '<span class="de-device-type">' + type + '</span>';
     html += '<span class="de-device-width-wrap">';
     html += '<label class="de-device-width-label" for="de-width-' + _esc(ck) + '">Width</label>';
@@ -692,7 +739,7 @@ var DashticzDeviceEditor = (function () {
     html += '<option value="">— Select a device —</option>';
     deviceList.forEach(function (d) {
       var dispIdx = d.subidx ? (d.idx + '_' + d.subidx) : String(d.idx);
-      html += '<option value="' + _esc(d.key) + '">' + _esc(d.name) + ' (IDX\u00a0' + dispIdx + ')</option>';
+      html += '<option value="' + _esc(d.key) + '" data-type-order="' + _typeOrder(d.type) + '">' + _esc(d.name) + ' (IDX\u00a0' + dispIdx + ')</option>';
     });
     html += '</select>';
     html += '<input type="number" class="form-control form-control-sm de-width-input" min="1" max="12" value="3" title="Column width (1-12)" aria-label="Column width">';
@@ -726,28 +773,37 @@ var DashticzDeviceEditor = (function () {
 
       /* restore device in add-row dropdown and in available[] */
       var p      = _parseCk(ck);
-      var device = allDomoticz[String(p.idx)] || allDomoticz[p.idx];
-      var name   = device ? device.Name : ('Device ' + p.idx);
-      var type   = device ? (device.Type || '') : '';
-      var displayName = name + (p.subidx ? '\u00a0(' + p.subidx + ')' : '');
-      var dispIdx     = p.subidx ? (p.idx + '_' + p.subidx) : String(p.idx);
+      var isGroup = _isGroupCk(ck);
+      var device = isGroup ? allDomoticz[ck] : (allDomoticz[String(p.idx)] || allDomoticz[p.idx]);
+      var rawName = device ? device.Name : (isGroup ? ck : ('Device ' + p.idx));
+      var type   = device ? (device.Type || '') : (isGroup ? 'Group' : '');
+      var groupPrefix = isGroup ? (type === 'Scene' ? 'Scene_' : 'Group_') : '';
+      var displayName = groupPrefix + rawName + (!isGroup && p.subidx ? '\u00a0(' + p.subidx + ')' : '');
+      var dispIdx     = isGroup ? ck : (p.subidx ? (p.idx + '_' + p.subidx) : String(p.idx));
 
       /* keep available[] in sync so subsequent + rows include this device */
       if (!available.some(function (d) { return d.key === ck; })) {
         available.push({ key: ck, idx: p.idx, subidx: p.subidx,
-                         name: displayName, type: type });
-        available.sort(function (a, b) { return a.name.localeCompare(b.name); });
+                         name: displayName, plainName: isGroup ? rawName : null, type: type });
+        _sortAvailable(available);
       }
 
-      var optHtml = '<option value="' + _esc(ck) + '">' + _esc(displayName) +
-                    ' (IDX\u00a0' + dispIdx + ')</option>';
+      var newTypeOrder = _typeOrder(type);
+      var newText = displayName + ' (IDX\u00a0' + dispIdx + ')';
+      var optHtml = '<option value="' + _esc(ck) + '" data-type-order="' + newTypeOrder + '">' +
+                    _esc(displayName) + ' (IDX\u00a0' + dispIdx + ')</option>';
 
       var $select = $('#de-add-rows .de-device-select');
       if ($select.length) {
-        /* insert in alphabetical order */
+        /* insert in category + alphabetical order */
         var inserted = false;
         $select.find('option').each(function () {
-          if ($(this).val() && $(this).text().localeCompare(displayName + ' (IDX\u00a0' + dispIdx + ')') > 0) {
+          if (!$(this).val()) return;
+          var optTypeOrder = parseInt($(this).attr('data-type-order') || '2', 10);
+          var cmp = newTypeOrder !== optTypeOrder
+            ? newTypeOrder - optTypeOrder
+            : newText.localeCompare($(this).text());
+          if (cmp < 0) {
             $(this).before(optHtml);
             inserted = true;
             return false;
@@ -759,7 +815,7 @@ var DashticzDeviceEditor = (function () {
       } else {
         /* no add-row exists yet — create one with this single device */
         $('#de-add-rows').html(_addRowHtml([{ key: ck, idx: p.idx, subidx: p.subidx,
-                                              name: displayName, type: type }]));
+                                              name: displayName, plainName: isGroup ? rawName : null, type: type }]));
       }
     });
 
@@ -789,10 +845,11 @@ var DashticzDeviceEditor = (function () {
       deviceWidths[ck] = _parseWidth($row.find('.de-width-input').val());
 
       /* record the device name for this composite key */
-      var addedName = 'Device ' + _parseCk(ck).idx;
+      /* for groups, use plainName (without Group_/Scene_ prefix) so the block title is clean */
+      var addedName = _isGroupCk(ck) ? ck : ('Device ' + _parseCk(ck).idx);
       for (var di = 0; di < available.length; di++) {
         if (available[di].key === ck) {
-          addedName = available[di].name;
+          addedName = available[di].plainName || available[di].name;
           break;
         }
       }
@@ -1128,10 +1185,9 @@ var DashticzDeviceEditor = (function () {
           var ref   = col.blocks[j];
           var block = null;
           var refCk = _toCompositeKey(ref);
-          if (!refCk && typeof ref === 'string' &&
-              typeof blocks !== 'undefined' && blocks[ref]) {
+          if (typeof ref === 'string' && typeof blocks !== 'undefined' && blocks[ref]) {
             block = blocks[ref];
-            refCk = _toCompositeKey(block);
+            if (!refCk) refCk = _toCompositeKey(block);
           } else if (typeof ref === 'object' && ref !== null) {
             block = ref;
           }
@@ -1164,10 +1220,9 @@ var DashticzDeviceEditor = (function () {
           var ref = col.blocks[j];
           var block = null;
           var refCk = _toCompositeKey(ref);
-          if (!refCk && typeof ref === 'string' &&
-              typeof blocks !== 'undefined' && blocks[ref]) {
+          if (typeof ref === 'string' && typeof blocks !== 'undefined' && blocks[ref]) {
             block = blocks[ref];
-            refCk = _toCompositeKey(block);
+            if (!refCk) refCk = _toCompositeKey(block);
           } else if (typeof ref === 'object' && ref !== null) {
             block = ref;
           }
