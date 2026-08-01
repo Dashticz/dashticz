@@ -586,6 +586,54 @@ test('legacy expert settings stay configurable but are hidden from the settings 
   assert.match(settings, /config_mode: 'wizard'/);
 });
 
+test('config_mode auto-detects as custom when absent from CONFIG.js', () => {
+  const settingsSource = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+
+  // Verify the auto-detect logic is present in the source.
+  assert.match(settingsSource, /_configModeAutoDetected/);
+  assert.match(settingsSource, /typeof config\['config_mode'\] === 'undefined'/);
+  assert.match(settingsSource, /_persistAutoDetectedConfigMode/);
+
+  // Extract and evaluate just the settings-merge block in isolation.
+  // We need: defaultSettings definition, $.extend, and the auto-detect code.
+  const startDefault = settingsSource.indexOf('var defaultSettings = {');
+  const endExtend = settingsSource.indexOf(
+    'if (_configModeAutoDetected) {',
+    settingsSource.indexOf('$.extend(settings, defaultSettings, config)')
+  );
+  const endBlock = settingsSource.indexOf('\n}', endExtend) + 2;
+  assert.notEqual(startDefault, -1, 'defaultSettings block not found');
+  assert.notEqual(endExtend, -1, 'auto-detect block not found');
+
+  const snippet = settingsSource.substring(startDefault, endBlock);
+
+  function runWithConfig(configObj) {
+    const ctx = {
+      $: { extend: Object.assign },
+      config: configObj,
+      settings: {},
+      _configModeAutoDetected: undefined,
+    };
+    vm.runInNewContext(snippet, ctx);
+    return { settings: ctx.settings, autoDetected: ctx._configModeAutoDetected };
+  }
+
+  // No config_mode in CONFIG.js → auto-detect custom.
+  const noMode = runWithConfig({});
+  assert.equal(noMode.settings['config_mode'], 'custom');
+  assert.equal(noMode.autoDetected, true);
+
+  // config_mode explicitly set to wizard → keep wizard.
+  const wizardMode = runWithConfig({ config_mode: 'wizard' });
+  assert.equal(wizardMode.settings['config_mode'], 'wizard');
+  assert.equal(wizardMode.autoDetected, false);
+
+  // config_mode explicitly set to custom → keep custom.
+  const customMode = runWithConfig({ config_mode: 'custom' });
+  assert.equal(customMode.settings['config_mode'], 'custom');
+  assert.equal(customMode.autoDetected, false);
+});
+
 test('UI dependencies use the maintained compatibility versions', () => {
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(root, 'package.json'), 'utf8')

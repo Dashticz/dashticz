@@ -6,6 +6,15 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.22.2 beta (1-8-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* Config mode: the Custom/Wizard switch now defaults to **Custom** when ``config["config_mode"]`` is absent from CONFIG.js (hand-written configs are treated as Custom). On startup and on every settings save the auto-detected value is written back to CONFIG.js so that subsequent loads resolve it directly.
+
+
 v3.22.1 beta (1-8-2026)
 --------------------------
 
