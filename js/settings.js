@@ -1204,7 +1204,7 @@ function addSettingsAboutItems() {
 }
 // eslint-disable-next-line no-unused-vars
 function saveSettings() {
-  var saveSettings = {};
+  var savePayload = {};
   var alertSettings = 'var config = {}\n';
   $('div#settingspopup input[type="text"],div#settingspopup select').each(
     function () {
@@ -1213,7 +1213,7 @@ function saveSettings() {
         val = parseFloat(val);
       var settingName = $(this).attr('name');
       var serializedValue = JSON.stringify(val);
-      saveSettings[settingName] = serializedValue;
+      savePayload[settingName] = serializedValue;
       alertSettings +=
         'config[' + JSON.stringify(settingName) + '] = ' + serializedValue + ';\n';
     }
@@ -1222,10 +1222,10 @@ function saveSettings() {
   $('div#settingspopup input[type="checkbox"]').each(function () {
     if ($(this).is(':checked')) {
       alertSettings += 'config[' + JSON.stringify($(this).attr('name')) + '] = 1;\n';
-      saveSettings[$(this).attr('name')] = JSON.stringify(1);
+      savePayload[$(this).attr('name')] = JSON.stringify(1);
     } else {
       alertSettings += 'config[' + JSON.stringify($(this).attr('name')) + '] = 0;\n';
-      saveSettings[$(this).attr('name')] = JSON.stringify(0);
+      savePayload[$(this).attr('name')] = JSON.stringify(0);
     }
   });
 
@@ -1282,7 +1282,7 @@ function saveSettings() {
       return $.ajax({
         url: 'js/savesettings.php?cfg=' + encodeURIComponent(cfgFile),
         method: 'POST',
-        data: saveSettings,
+        data: savePayload,
         dataType: 'json',
         headers: {
           'X-Dashticz-CSRF': data.token,
