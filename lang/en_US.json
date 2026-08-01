@@ -8,6 +8,12 @@
         "news": "News",
         "sunrise": "Sunrise"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Screen",
+        "add_screen": "Add screen",
+        "delete_screen": "Delete screen"
+    },
     "energy": {
         "energy_delivered": "Total delivered",
         "energy_deliveredtoday": "Delivered today",

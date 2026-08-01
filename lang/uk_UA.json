@@ -8,6 +8,12 @@
         "news": "News",
         "sunrise": "Sunrise"
     },
+    "screenswitcher": {
+        "standby": "Очікування",
+        "screen": "Екран",
+        "add_screen": "Додати екран",
+        "delete_screen": "Видалити екран"
+    },
     "energy": {
         "energy_delivered": "Total delivered",
         "energy_deliveredtoday": "Delivered today",

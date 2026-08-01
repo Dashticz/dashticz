@@ -6,6 +6,34 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.23.3 beta (1-8-2026)
+--------------------------
+
+Fixes
+~~~~~
+
+* **Topbar screen-switcher PNG icons**: when **Custom iconen topbalk** is enabled, the Standby and screen buttons now automatically use the bundled ``Standby.png``, ``One.png``, ``Two.png``, ``Three.png``, and ``Four.png`` assets when no explicit per-screen icon is configured.  These screen-switcher PNG icons now render at 30px.
+
+v3.23.2 beta (1-8-2026)
+--------------------------
+
+Fixes
+~~~~~
+
+* **Topbar custom icons**: renamed the topbar icon setting from *"Default iconen topbalk"* to **"Custom iconen topbalk"** and corrected the logic so that **off** (default) keeps Font Awesome icons and **on** switches to custom PNG images from ``img/icons/``.  The fix applies consistently to the main topbar, the Standby-screen editor icons, and the fullscreen toggle.
+
+v3.23.1 beta (1-8-2026)
+--------------------------
+
+Enhancements
+~~~~~~~~~~~~
+
+* **Topbar icons — PNG mode**: a new setting **"Default iconen topbalk"** (``topbar_use_png_icons``) has been added to the *Screen* settings tab.  When the checkbox is **on** (default), the topbar action buttons (Add devices +, Add widgets 🧩, Move tiles ✤, Settings ⚙, Fullscreen ⛶) continue to use Font Awesome icons as before.  When it is **off**, they switch to custom image files from ``img/icons/``: ``Plus.png``, ``Puzzle.png``, ``Arrows.png``, ``Cog.png``, ``Expand.png`` (and ``Minus.png`` for the compressed-fullscreen state).  The setting also applies to the editor icons shown on the Standby screen.  Existing configs without the setting behave exactly as before.
+
+~~~~~~~~~~~~
+
+
+
 v3.23.0 beta (1-8-2026)
 --------------------------
 
@@ -13,6 +41,10 @@ Enhancements
 ~~~~~~~~~~~~
 
 * Widget editor / screenswitcher: widget tile names and editor-icon tooltips ("Add devices", "Add widgets", "Move and scale tiles") are now translated using the active language file (``/lang/<locale>.json``).  English is used as fallback when a key is missing.  New keys ``add_devices``, ``add_widgets``, and ``move_tiles`` have been added under ``settings.widgeteditor`` for ``en_US``, ``nl_NL``, and ``fr_FR``.
+
+* **Screen-switcher icons**: the topbar buttons for Screen 1, 2, 3 … and the Standby button now support custom icons.  Set ``screens[n]['icon']`` in ``CONFIG.js`` to any Font Awesome class string (``'fas fa-home'``) or an image path relative to the Dashticz root (``'img/icons/home.svg'``).  For the Standby button use ``standby_screen['icon']`` or ``config['standby_icon']``.  A new ``img/icons/`` directory is provided for local icon storage; SVG, PNG, and other image formats are all supported.  All existing configs without ``icon`` keys continue to work unchanged — the buttons fall back to the original number/letter text.
+
+* **Screenswitcher i18n**: the topbar screen-switcher button labels (Standby, Screen #, Add screen, Delete screen) are now driven by a new ``screenswitcher`` section in each ``/lang/<locale>.json`` file.  Previously the "Add screen" and "Delete screen" tooltips were hard-coded in Dutch.  All 28 bundled language files have been updated.  English is the automatic fallback when a key is absent.
 
 * Device Editor: the "Add device from Domoticz" dropdown now lists items in the order Groups, Scenes, then Devices (each group alphabetically), instead of a flat alphabetical sort across all types.
 * Device Editor: Domoticz groups and scenes are now listed in the "Add device from Domoticz" dropdown with a ``Group_`` (or ``Scene_``) prefix so they can be added to any screen.  Saved group blocks use the group's scene key (e.g. ``s1``) directly as the block reference, matching the hand-written CONFIG.js convention.

@@ -8,6 +8,12 @@
         "news": "Nyheter",
         "sunrise": "Soluppgång"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Skärm",
+        "add_screen": "Lägg till skärm",
+        "delete_screen": "Ta bort skärm"
+    },
     "energy": {
         "energy_delivered": "Levererad",
         "energy_deliveredtoday": "Levererade idag",

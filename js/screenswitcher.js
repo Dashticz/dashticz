@@ -1,4 +1,5 @@
 /* global settings toSlide buildStandby disableStandby standbyActive myswiper isCustomConfigMode */
+/* global screens standby_screen config screenswitcherTranslations */
 // eslint-disable-next-line no-unused-vars
 var DashticzScreenSwitcher = (function () {
   'use strict';
@@ -126,43 +127,137 @@ var DashticzScreenSwitcher = (function () {
     updateActive();
   }
 
+  function usePngScreenIcons() {
+    return (
+      typeof settings !== 'undefined' &&
+      Number(settings['topbar_use_png_icons']) === 1
+    );
+  }
+
+  function getDefaultScreenIconPath(screenNum) {
+    if (!usePngScreenIcons()) return null;
+    var defaultIcons = {
+      standby: 'Standby',
+      1: 'One',
+      2: 'Two',
+      3: 'Three',
+      4: 'Four',
+    };
+    var iconName = defaultIcons[screenNum];
+    return iconName ? 'img/icons/' + iconName + '.png' : null;
+  }
+
+  /**
+   * Resolve the icon HTML for a given screen button.
+   * Supports Font Awesome class strings (e.g. 'fas fa-home') and
+   * image paths stored in img/icons/ (e.g. 'img/icons/home.svg').
+   * Returns null when no icon is configured so the caller falls back to the
+   * default text label (screen number or 'S').
+   *
+   * Configuration in CONFIG.js:
+   *   screens[1]['icon'] = 'fas fa-home';          // Font Awesome
+   *   screens[2]['icon'] = 'img/icons/film.svg';   // Local image in img/icons/
+   *   standby_screen['icon'] = 'fas fa-moon';      // Standby button
+   *   config['standby_icon'] = 'fas fa-moon';      // Alternative for standby
+   *
+   * @param {number|'standby'} screenNum
+   * @returns {string|null}
+   */
+  function getScreenIconHtml(screenNum) {
+    var icon = null;
+
+    if (screenNum === 'standby') {
+      // Check standby_screen['icon'] first, then config['standby_icon']
+      if (typeof standby_screen !== 'undefined' && standby_screen && standby_screen.icon) {
+        icon = standby_screen.icon;
+      } else if (typeof config !== 'undefined' && config && config['standby_icon']) {
+        icon = config['standby_icon'];
+      }
+    } else {
+      // Check screens[n]['icon'] from CONFIG.js
+      if (typeof screens !== 'undefined' && screens && screens[screenNum] && screens[screenNum]['icon']) {
+        icon = screens[screenNum]['icon'];
+      }
+    }
+
+    if (!icon) {
+      icon = getDefaultScreenIconPath(screenNum);
+    }
+
+    if (!icon) return null;
+
+    // Font Awesome icon: class string such as 'fas fa-home', 'fab fa-github', 'fa-home'
+    if (/^fa[srlbd]?\s+fa-/.test(icon) || /^fa[srlbd]?-/.test(icon)) {
+      return '<i class="' + icon + '" aria-hidden="true"></i>';
+    }
+
+    // Image path (e.g. 'img/icons/home.svg' or 'img/icons/home.png')
+    return '<img src="' + icon + '" class="dt-screen-icon-img dt-screen-main-icon-img" alt="" aria-hidden="true">';
+  }
+
   function buildButtonsHtml() {
-    var screens = getScreenNumbers();
+    // screenNums is a local array; the global `screens` object (from CONFIG.js)
+    // is accessed separately for per-screen icon configuration.
+    var screenNums = getScreenNumbers();
     var active = getActiveScreenNumber();
     var customMode =
       typeof isCustomConfigMode === 'function' && isCustomConfigMode();
+    // Use translated button labels when available; fall back to English.
+    var st =
+      typeof screenswitcherTranslations !== 'undefined'
+        ? screenswitcherTranslations
+        : {};
     var html =
       '<div class="dt-screen-switcher" role="group" aria-label="Screens">';
 
+    // Standby button — show custom icon if configured, otherwise 'S'
+    var standbyLabel = st.standby || 'Standby';
+    var standbyContent = getScreenIconHtml('standby') || 'S';
     html +=
       '<button type="button" class="dt-screen-btn' +
       (active === 'standby' ? ' active' : '') +
-      '" data-screen="standby" title="Standby">S</button>';
+      '" data-screen="standby" title="' + standbyLabel + '">' +
+      standbyContent +
+      '</button>';
 
-    screens.forEach(function (n) {
+    // Per-screen buttons — show custom icon if configured, otherwise the number
+    screenNums.forEach(function (n) {
+      var screenLabel = (st.screen || 'Screen') + ' ' + n;
+      var screenContent = getScreenIconHtml(n) || String(n);
       html +=
         '<button type="button" class="dt-screen-btn' +
         (String(active) === String(n) ? ' active' : '') +
         '" data-screen="' +
         n +
-        '" title="Screen ' +
-        n +
+        '" title="' +
+        screenLabel +
         '">' +
-        n +
+        screenContent +
         '</button>';
     });
 
     if (!customMode) {
+      var usePng =
+        typeof settings !== 'undefined' &&
+        Number(settings['topbar_use_png_icons']) === 1;
+      var addLabel = st.add_screen || 'Add screen';
+      var addContent = usePng
+        ? '<img src="img/icons/Add_layer.png" class="dt-screen-icon-img" aria-hidden="true" alt="">'
+        : '+';
       html +=
         '<button type="button" class="dt-screen-btn dt-screen-add" data-screen="add" ' +
-        'title="Screen toevoegen" aria-label="Screen toevoegen">+</button>';
+        'title="' + addLabel + '" aria-label="' + addLabel + '">' + addContent + '</button>';
       var canDelete =
-        screens.length > 1 && typeof active === 'number' && active > 1;
+        screenNums.length > 1 && typeof active === 'number' && active > 1;
+      var delLabel = st.delete_screen || 'Delete screen';
+      var delContent = usePng
+        ? '<img src="img/icons/Minus.png" class="dt-screen-icon-img" aria-hidden="true" alt="">'
+        : '&minus;';
       html +=
         '<button type="button" class="dt-screen-btn dt-screen-delete" data-screen="delete" ' +
-        'title="Screen verwijderen" aria-label="Screen verwijderen"' +
+        'title="' + delLabel + '" aria-label="' + delLabel + '"' +
         (canDelete ? '' : ' disabled aria-disabled="true"') +
-        '>&minus;</button>';
+        '>' + delContent + '</button>';
     }
 
     html += '</div>';
@@ -207,17 +302,25 @@ var DashticzScreenSwitcher = (function () {
     // widgetEditorTranslations is a global set by settings.js from /lang/<locale>.json.
     var t =
       typeof widgetEditorTranslations !== 'undefined' ? widgetEditorTranslations : {};
+    var usePng =
+      typeof settings !== 'undefined' &&
+      Number(settings['topbar_use_png_icons']) === 1;
+    function _icon(faClass, imgSrc) {
+      return usePng
+        ? '<img src="' + imgSrc + '" class="dt-topbar-icon-img" aria-hidden="true" alt="">'
+        : '<i class="' + faClass + '" aria-hidden="true"></i>';
+    }
     var html =
       '<span class="dt-standby-editor-icons">' +
       '<span class="settings deviceeditoricon" role="button" title="' +
         (t.add_devices || 'Add devices') + '">' +
-      '<i class="fas fa-plus" aria-hidden="true"></i></span>' +
+      _icon('fas fa-plus', 'img/icons/Plus.png') + '</span>' +
       '<span class="settings widgeteditoricon" role="button" title="' +
         (t.add_widgets || 'Add widgets') + '">' +
-      '<i class="fas fa-puzzle-piece" aria-hidden="true"></i></span>' +
+      _icon('fas fa-puzzle-piece', 'img/icons/Puzzle.png') + '</span>' +
       '<span class="settings layouteditoricon" role="button" title="' +
         (t.move_tiles || 'Move and scale tiles') + '">' +
-      '<i class="fas fa-arrows-alt" aria-hidden="true"></i></span>' +
+      _icon('fas fa-arrows-alt', 'img/icons/Arrows.png') + '</span>' +
       '</span>';
     $bar.append(html);
   }

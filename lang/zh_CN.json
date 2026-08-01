@@ -8,6 +8,12 @@
         "news": "News",
         "sunrise": "Sunrise"
     },
+    "screenswitcher": {
+        "standby": "待机",
+        "screen": "屏幕",
+        "add_screen": "添加屏幕",
+        "delete_screen": "删除屏幕"
+    },
     "energy": {
         "energy_delivered": "Total delivered",
         "energy_deliveredtoday": "Delivered today",

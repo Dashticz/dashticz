@@ -8,6 +8,12 @@
         "news": "ニュース",
         "sunrise": "日の出"
     },
+    "screenswitcher": {
+        "standby": "スタンバイ",
+        "screen": "画面",
+        "add_screen": "画面を追加",
+        "delete_screen": "画面を削除"
+    },
     "energy": {
         "energy_delivered": "Total delivered",
         "energy_deliveredtoday": "Delivered today",

@@ -8,6 +8,12 @@
         "news": "Nyheter",
         "sunrise": "Soloppgang"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Skjerm",
+        "add_screen": "Legg til skjerm",
+        "delete_screen": "Slett skjerm"
+    },
     "energy": {
         "energy_delivered": "Totalt levert",
         "energy_deliveredtoday": "Leveres i dag",

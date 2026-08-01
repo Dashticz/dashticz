@@ -8,6 +8,12 @@
         "news": "Novinky",
         "sunrise": "Východ slunce"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Obrazovka",
+        "add_screen": "Přidat obrazovku",
+        "delete_screen": "Smazat obrazovku"
+    },
     "energy": {
         "energy_delivered": "Celkem dodáno",
         "energy_deliveredtoday": "Dodáno dnes",

@@ -8,6 +8,12 @@
         "news": "Nachrichten",
         "sunrise": "Sonnenaufgang"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Bildschirm",
+        "add_screen": "Bildschirm hinzufügen",
+        "delete_screen": "Bildschirm löschen"
+    },
     "energy": {
         "energy_delivered": "Insgesamt verbraucht",
         "energy_deliveredtoday": "Verbrauch heute",

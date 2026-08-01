@@ -8,6 +8,12 @@
         "news": "Notizie",
         "sunrise": "Alba"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Schermo",
+        "add_screen": "Aggiungi schermo",
+        "delete_screen": "Elimina schermo"
+    },
     "energy": {
         "energy_delivered": "Consumo totale",
         "energy_deliveredtoday": "Consumo odierno",

@@ -8,6 +8,12 @@
         "news": "Haberler",
         "sunrise": "Gün Doğumu"
     },
+    "screenswitcher": {
+        "standby": "Bekleme",
+        "screen": "Ekran",
+        "add_screen": "Ekran ekle",
+        "delete_screen": "Ekranı sil"
+    },
     "energy": {
         "energy_delivered": "Toplam gönderilen",
         "energy_deliveredtoday": "Bugün gönderilen",

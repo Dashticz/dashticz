@@ -8,6 +8,12 @@
         "news": "News",
         "sunrise": "Sunrise"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Näyttö",
+        "add_screen": "Lisää näyttö",
+        "delete_screen": "Poista näyttö"
+    },
     "energy": {
         "energy_delivered": "Total delivered",
         "energy_deliveredtoday": "Delivered today",

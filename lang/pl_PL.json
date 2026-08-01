@@ -8,6 +8,12 @@
         "news": "Wiadomości",
         "sunrise": "Wschód słońca"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Ekran",
+        "add_screen": "Dodaj ekran",
+        "delete_screen": "Usuń ekran"
+    },
     "energy": {
         "energy_delivered": "Pobór całkowity",
         "energy_deliveredtoday": "Pobór dzisiaj",
