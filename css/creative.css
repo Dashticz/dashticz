@@ -1171,7 +1171,9 @@ body.dle-active {
 }
 
 .dt-grid-layout.dle-grid-canvas > .dt-grid-item {
-  overflow: hidden;
+  /* Allow overflow so the delete and resize editor controls remain visible
+     even when a grid item is resized very small or its content overflows. */
+  overflow: visible;
 }
 
 @media (max-width: 767.98px) {

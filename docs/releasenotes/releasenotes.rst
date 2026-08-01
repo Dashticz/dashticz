@@ -6,6 +6,16 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.22.1 beta (1-8-2026)
+--------------------------
+
+Fixes
+~~~~~
+
+* Grid Layout Editor: the delete (remove) and resize handles are no longer clipped when a grid item is resized very small or its content overflows the tile boundary — ``overflow`` on the grid item is now ``visible`` while the editor is active.
+* Calendar (agenda layouts 0 and 1): the block background now expands to fit all displayed agenda items instead of being capped at a fixed 120 px default.  Users who want a fixed-height scrollable agenda can still set ``height`` explicitly in their block config; layout 2 (monthly view) is unaffected.
+
+
 v3.22.0 beta (30-7-2026)
 --------------------------
 

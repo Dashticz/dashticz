@@ -17,7 +17,10 @@ var DT_calendar = {
     eventClasses: {},
     refresh:600,
     width: 4,
-    height: 120
+    // No default fixed height for agenda layouts (layout 0/1) — the block
+    // auto-expands to show all items.  Users who need a fixed height can set
+    // it explicitly in their block config.  Layout 2 (monthly view) always
+    // calculates its own height in generateCalendar() via setHeight().
   },
   run: function (me) {
     if (me.block.type === 'calendar') {
