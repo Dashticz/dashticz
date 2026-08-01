@@ -146,6 +146,15 @@ var DashticzWidgetEditor = (function () {
       width: 6,
       height: 400,
     },
+    {
+      id: 'xmltvguide',
+      blockKey: 'widget_xmltvguide',
+      title: 'XMLTV TV Guide',
+      description: 'TV programme guide from an XMLTV-format URL.',
+      icon: 'fas fa-tv',
+      width: 6,
+      height: 300,
+    },
   ];
 
   function _widgetEditorLanguage() {
@@ -400,6 +409,12 @@ var DashticzWidgetEditor = (function () {
         forcerefresh: 0,
         refresh: '300',
       },
+      // xmltvguide widget block properties (block-specific, not global config settings)
+      xmltvguide: {
+        xmltvurl: '',
+        channels: '',
+        maxitems: '10',
+      },
     };
 
     if (gridMode) {
@@ -575,6 +590,20 @@ var DashticzWidgetEditor = (function () {
             widgetConfigs.iframe.refresh = String(definition.refresh);
           }
         }
+        // Hydrate xmltvguide widget settings from an existing block definition (managed layout)
+        if (item.id === 'xmltvguide') {
+          if (typeof definition.xmltvurl === 'string') {
+            widgetConfigs.xmltvguide.xmltvurl = definition.xmltvurl;
+          }
+          if (Array.isArray(definition.channels)) {
+            widgetConfigs.xmltvguide.channels = definition.channels.join(', ');
+          } else if (typeof definition.channels === 'string') {
+            widgetConfigs.xmltvguide.channels = definition.channels;
+          }
+          if (typeof definition.maxitems !== 'undefined') {
+            widgetConfigs.xmltvguide.maxitems = String(definition.maxitems);
+          }
+        }
       });
     });
 
@@ -659,6 +688,10 @@ var DashticzWidgetEditor = (function () {
     // Blocks identified by a frameurl property (no type needed) map to iframe
     if (definition && typeof definition.frameurl === 'string') {
       return catalog.find(function (item) { return item.id === 'iframe'; }) || null;
+    }
+    // Blocks identified by an xmltvurl property map to xmltvguide
+    if (definition && typeof definition.xmltvurl === 'string') {
+      return catalog.find(function (item) { return item.id === 'xmltvguide'; }) || null;
     }
     var type = String((definition && definition.type) || '').toLowerCase();
     var typeMap = {
@@ -829,6 +862,19 @@ var DashticzWidgetEditor = (function () {
       if (typeof definition.refresh !== 'undefined') {
         widgetConfigs.iframe.refresh = String(definition.refresh);
       }
+    } else if (item.id === 'xmltvguide') {
+      // Hydrate xmltvguide widget settings from an existing block definition
+      if (typeof definition.xmltvurl === 'string') {
+        widgetConfigs.xmltvguide.xmltvurl = definition.xmltvurl;
+      }
+      if (Array.isArray(definition.channels)) {
+        widgetConfigs.xmltvguide.channels = definition.channels.join(', ');
+      } else if (typeof definition.channels === 'string') {
+        widgetConfigs.xmltvguide.channels = definition.channels;
+      }
+      if (typeof definition.maxitems !== 'undefined') {
+        widgetConfigs.xmltvguide.maxitems = String(definition.maxitems);
+      }
     }
   }
 
@@ -965,7 +1011,8 @@ var DashticzWidgetEditor = (function () {
       id === 'longfonds' ||
       id === 'moon' ||
       id === 'news' ||
-      id === 'iframe'
+      id === 'iframe' ||
+      id === 'xmltvguide'
     );
   }
 
@@ -1439,6 +1486,25 @@ var DashticzWidgetEditor = (function () {
       fields += _cfgField('iframe_forcerefresh', li.iframe_forcerefresh || 'Force cache refresh', 'checkbox', icfg.forcerefresh);
       fields += _cfgField('iframe_refresh', li.iframe_refresh || 'Refresh interval (seconds)', 'text', icfg.refresh,
         null, li.iframe_refresh_help || 'How often to reload the iframe. Default: 300 seconds.');
+    } else if (item.id === 'xmltvguide') {
+      // Config fields for the XMLTV TV Guide widget
+      var xcfg = widgetConfigs.xmltvguide || {};
+      var lx = lng.widgeteditor || {};
+      fields +=
+        '<div class="mb-3">' +
+        '<label class="form-label we-field-label" for="we-cfg-xmltv-url">' +
+        (lx.xmltv_url || 'XMLTV URL') +
+        ' <span class="text-danger" aria-hidden="true">*</span></label>' +
+        '<input type="url" class="form-control form-control-sm we-widget-field" id="we-cfg-xmltv-url" ' +
+        'data-cfg-key="xmltvurl" placeholder="http://my-epg-server/guide.xml" value="' + _esc(String(xcfg.xmltvurl || '')) + '">' +
+        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
+        (lx.xmltv_url_help || 'URL of an XMLTV-format XML file (e.g. from Jellyfin, Emby, WebGrab+).') +
+        '</div></div>';
+      fields += _cfgField('xmltv_channels', lx.xmltv_channels || 'Channels (comma-separated)',
+        'text', xcfg.channels, null,
+        lx.xmltv_channels_help || 'Channel IDs or display-names to show, separated by commas. Leave empty to show all channels.');
+      fields += _cfgField('xmltv_maxitems', lx.xmltv_maxitems || 'Max items', 'text', xcfg.maxitems,
+        null, lx.xmltv_maxitems_help || 'Maximum number of programme rows to display (default: 10).');
     }
 
     return (
@@ -1652,6 +1718,22 @@ var DashticzWidgetEditor = (function () {
             refresh: $.trim($cfgModal.find('[data-cfg-key="iframe_refresh"]').val() || '') || '300',
           };
         }
+      } else if (widgetId === 'xmltvguide') {
+        // Validate and store xmltvguide-specific config
+        var xmltvUrl = $.trim($('#we-cfg-xmltv-url').val() || '');
+        if (!xmltvUrl) {
+          $('.we-cfg-message')
+            .addClass('text-danger')
+            .text(_t('invalid_xmltv_url', 'Enter a valid URL for the XMLTV TV Guide (e.g. http://my-epg-server/guide.xml).'));
+          $('#we-cfg-xmltv-url').trigger('focus');
+          valid = false;
+        } else {
+          widgetConfigs.xmltvguide = {
+            xmltvurl: xmltvUrl,
+            channels: $.trim($cfgModal.find('[data-cfg-key="xmltv_channels"]').val() || ''),
+            maxitems: $.trim($cfgModal.find('[data-cfg-key="xmltv_maxitems"]').val() || '') || '10',
+          };
+        }
       }
 
       if (valid) {
@@ -1790,6 +1872,13 @@ var DashticzWidgetEditor = (function () {
         .text(_t('iframe_needs_url', 'Enter a URL for the iFrame widget in its settings.'));
       return;
     }
+    // Validate that a URL has been configured for the xmltvguide widget
+    if (selectedWidgets.xmltvguide && !widgetConfigs.xmltvguide.xmltvurl) {
+      $('.we-message')
+        .addClass('text-danger')
+        .text(_t('xmltvguide_needs_url', 'Enter an XMLTV URL for the TV Guide widget in its settings.'));
+      return;
+    }
 
     // Collect flattened config settings from all widget configs
     var configSettings = {};
@@ -1901,6 +1990,17 @@ var DashticzWidgetEditor = (function () {
         if (icfg.refresh && icfg.refresh !== '') {
           entry.refresh = parseInt(icfg.refresh, 10) || 300;
         }
+      }
+      // Add xmltvguide-specific block properties to the widget payload entry
+      if (item.id === 'xmltvguide') {
+        var xcfg = widgetConfigs.xmltvguide || {};
+        entry.xmltvurl = xcfg.xmltvurl || '';
+        if (xcfg.channels && xcfg.channels !== '') {
+          entry.channels = xcfg.channels.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+        } else {
+          entry.channels = [];
+        }
+        entry.maxitems = parseInt(xcfg.maxitems, 10) || 10;
       }
       payload.push(entry);
     });

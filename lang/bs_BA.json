@@ -52,7 +52,7 @@
         "garbage": {
             "garbage_calendar_id": "ID Google kalendara",
             "garbage_calendar_id_help": "Vaš ID kalendara je pronađen u postavkama kalendara",
-            "garbage_company": "Kompanija \/ Služba",
+            "garbage_company": "Kompanija / Služba",
             "garbage_hideicon": "Sakrij ikonu u bloku",
             "garbage_housenumber": "Kućni broj",
             "garbage_housenumberaddition": "Dodatak kućnom broju",
@@ -79,10 +79,10 @@
             "disable_googleanalytics": "Onemogućite Google analitiku",
             "disable_googleanalytics_help": "Samo za programera da prate broj korisnika i koje uređaje koristite za fino podešavanje Dashticz-a.",
             "domoticz_ip": "URL Domoticz-a",
-            "domoticz_ip_help": "Unesite Domoticz url, na primjer: http:\/\/192.168.1.1:8080. Također možete unijeti korisničke nazive i lozinke, na primjer: http: \/\/ korisnik:lozinka@192.168.1.1: 8080",
+            "domoticz_ip_help": "Unesite Domoticz url, na primjer: http://192.168.1.1:8080. Također možete unijeti korisničke nazive i lozinke, na primjer: http: // korisnik:lozinka@192.168.1.1: 8080",
             "domoticz_refresh": "Osvježavanje Domoticz-a (u sekundama)",
             "hide_off_button": "Sakrij dugme gasi na selektoru prekidača",
-            "last_update": "Prikaži posljednje vrijeme ažuriranja \/ datum",
+            "last_update": "Prikaži posljednje vrijeme ažuriranja / datum",
             "login": "Prijava",
             "login_to_dashticz": "Dashticz prijava",
             "loginEnabled": "Prijava preko Dashticz-a je omogućena",
@@ -105,7 +105,7 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Dashticz prijavljen (u minutama)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Omogući \/ onemogući vezu WebSocket",
+            "enable_websocket_help": "Omogući / onemogući vezu WebSocket",
             "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
             "colorpicker_none": "No RGB colorpicker",
             "colorpicker_old": "Old style RGB colorpicker",
@@ -164,12 +164,12 @@
         "media": {
             "hide_mediaplayer": "Sakrij medijaplayer kada je isključen",
             "host_nzbget": "NZBget pravac",
-            "host_nzbget_help": "Ako koristite NZBget, unesite ip adresu i port, npr: http:\/\/192.168.1.32:8080",
+            "host_nzbget_help": "Ako koristite NZBget, unesite ip adresu i port, npr: http://192.168.1.32:8080",
             "sonarr_apikey": "API ključ Sonarr-a",
             "sonarr_maxitems": "Max stavki na listi Sonarr-a",
             "sonarr_url": "URL Sonarr-a",
             "spot_clientid": "ID Spotify klije3nta",
-            "switch_horizon": "Ziggo\/UPC Mediabox pravac",
+            "switch_horizon": "Ziggo/UPC Mediabox pravac",
             "switch_horizon_help": "Ako imate mediabox od ZIGGO ili UPC (Horizon), kopiraj switch_horizon.php na web server unutar vaše mreže i promijeniti IP (na Horizon-u) u toj datoteci.",
             "title": "Mediji"
         },
@@ -180,7 +180,7 @@
             "auto_swipe_back_to": "Automatsko vraćanje na ekran #",
             "auto_swipe_back_to_help": "Kada nema aktivnosti vrati se na glavni ekran poslije x sekundi",
             "background_image": "Pozadinska slika",
-            "background_image_help": "Postavite putanju za pozadinsku sliku npr. img\/bg2.jpg ili http:\/\/vasaslika.com\/slika.jpg",
+            "background_image_help": "Postavite putanju za pozadinsku sliku npr. img/bg2.jpg ili http://vasaslika.com/slika.jpg",
             "dashticz_themes": "Dashticz teme",
             "dashticz_themes_help": "Postavite naziv teme (npr. Bijela) tema će biti nadjačana od custom.css",
             "edit_mode": "Idi na uređivanje",
@@ -209,7 +209,7 @@
             "title": "Vremenska prognoza",
             "translate_windspeed": "Prevedi brzinu vjetra",
             "translate_windspeed_help": "'Sjever sjeverozapad' umjesto 'NNW'",
-            "use_beaufort": "Koristi Bft umjesto m\/s.",
+            "use_beaufort": "Koristi Bft umjesto m/s.",
             "use_fahrenheit": "Koristite Fahrenheit umjesto Celzija",
             "wu_api": "Wunderground API ključ",
             "wu_city": "Wunderground stanica (grad ili poštanski broj)",
@@ -224,7 +224,7 @@
             "owm_min": "Minimum temperature on 2nd row",
             "owm_min_help": "Only shown when forecast in days",
             "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
-            "owm_lang_help": "For available languages, see https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_lang_help": "For available languages, see https://openweathermap.org/forecast5/#multi",
             "owm_country": "Država za Open Weather Map",
             "owm_name": "Prikaži naziv Open Weather Map",
             "longfonds_zipcode": "Longfonds zipcode",
@@ -316,5 +316,10 @@
         "direction_W": "W",
         "direction_WNW": "W-NW",
         "direction_WSW": "W-SW"
+    },
+    "xmltvguide": {
+        "error": "Greška pri učitavanju TV vodiča.",
+        "no_programs": "Nije pronađen nijedan predstojeći program.",
+        "loading": "Učitavanje TV vodiča..."
     }
 }

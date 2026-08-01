@@ -5504,6 +5504,40 @@ canvas {
 
 /*end tvguide*/
 
+/*xmltvguide*/
+
+.xmltvguide tr {
+  vertical-align: top
+}
+.xmltv-time {
+  white-space: nowrap
+}
+.xmltv-channel {
+  font-style: italic;
+  white-space: nowrap
+}
+.xmltv-title {
+  font-weight: bold;
+}
+.xmltv-subtitle {
+  font-weight: normal;
+  font-style: italic;
+}
+.xmltv-sep {
+  width: 1em;
+  text-align: center;
+}
+.xmltv-loading,
+.xmltv-error {
+  display: block;
+  padding: 4px 8px;
+}
+.xmltv-error {
+  color: #e74c3c;
+}
+
+/*end xmltvguide*/
+
 /*debug*/
 .debug ::selection {
   color:white;

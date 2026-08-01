@@ -1,9 +1,9 @@
 {
     "version": "3.23.0",
     "branch": "beta",
-    "last_changes": "Version alignment: set all version references to 3.23.0",
+    "last_changes": "Add XMLTV TV Guide widget (DT_xmltvguide)",
     "changelog": {
-        "3.23.0": "Version alignment: set all version references to 3.23.0",
+        "3.23.0": "Add XMLTV TV Guide widget (DT_xmltvguide) with multi-language support",
         "3.22.2": "Auto-detect custom mode when config_mode is absent from CONFIG.js",
         "3.22.1": "Always show editor delete button; calendar agenda auto-expands to fit content",
         "3.22.0": "Preserve widget settings and add Standby grid parity",

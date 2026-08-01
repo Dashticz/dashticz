@@ -536,5 +536,10 @@
         "direction_W": "W",
         "direction_WNW": "W-NW",
         "direction_WSW": "W-SW"
+    },
+    "xmltvguide": {
+        "error": "Error loading TV guide.",
+        "no_programs": "No upcoming programs found.",
+        "loading": "Loading TV guide..."
     }
 }

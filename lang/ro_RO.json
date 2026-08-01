@@ -52,7 +52,7 @@
         "garbage": {
             "garbage_calendar_id": "ID-ul Calenderului Google",
             "garbage_calendar_id_help": "Calendar id-ul a fost găsit în setările pentru calendar",
-            "garbage_company": "Compania \/ Domeniu",
+            "garbage_company": "Compania / Domeniu",
             "garbage_hideicon": "Ascundeți pictograma în bloc",
             "garbage_housenumber": "Numărul de casă",
             "garbage_housenumberaddition": "Numărul de casă suplimentar",
@@ -79,10 +79,10 @@
             "disable_googleanalytics": "Dezactivați Google Analytics",
             "disable_googleanalytics_help": "Utilizat numai pentru dezvoltatori pentru a urmări numărul de utilizatori și dispozitive care utilizează Dashticz.",
             "domoticz_ip": "Domoticz URL",
-            "domoticz_ip_help": "Introduceţi URL-ul Domoticz, de exemplu: http:\/\/192.168.1.1:8080. Aveţi posibilitatea să introduceţi utilizatorilor şi parola, de exemplu: http:\/\/user:password@192.168.1.1:8080",
+            "domoticz_ip_help": "Introduceţi URL-ul Domoticz, de exemplu: http://192.168.1.1:8080. Aveţi posibilitatea să introduceţi utilizatorilor şi parola, de exemplu: http://user:password@192.168.1.1:8080",
             "domoticz_refresh": "Reîmprospătare Domoticz (secunde)",
             "hide_off_button": "Ascundeți butonul de OFF la Selector Switches",
-            "last_update": "Arată Ultima actualizare ora\/data",
+            "last_update": "Arată Ultima actualizare ora/data",
             "login": "Autentificare",
             "login_to_dashticz": "Autentificare Dashticz",
             "loginEnabled": "Activati autentificarea",
@@ -105,7 +105,7 @@
             "standby_call_url_on_end": "Adresa URL ce va fi accesată la ieșirea din standby",
             "login_timeout": "Țineți Dashticz autentificat (minute)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Activați \/ Dezactivați conexiunea WebSocket",
+            "enable_websocket_help": "Activați / Dezactivați conexiunea WebSocket",
             "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
             "colorpicker_none": "No RGB colorpicker",
             "colorpicker_old": "Old style RGB colorpicker",
@@ -164,12 +164,12 @@
         "media": {
             "hide_mediaplayer": "Ascunde mediaplayer-ul când este oprit",
             "host_nzbget": "Cale catre NZBget",
-            "host_nzbget_help": "Dacă utilizați NZBget, introduceți adresa IP și portul, de exemplu: http:\/\/192.168.1.32:8080",
+            "host_nzbget_help": "Dacă utilizați NZBget, introduceți adresa IP și portul, de exemplu: http://192.168.1.32:8080",
             "sonarr_apikey": "Sonarr ApiKey",
             "sonarr_maxitems": "Sonarr, nr. maxim de elemente in lista",
             "sonarr_url": "Sonarr URL",
             "spot_clientid": "Spotify ClientID",
-            "switch_horizon": "Calea catre Ziggo \/ UPC Mediabox",
+            "switch_horizon": "Calea catre Ziggo / UPC Mediabox",
             "switch_horizon_help": "Dacă aveți un mediabox de la ZIGGO sau UPC (Horizon), copiați switch_horizon.php pe un server web in cadrul rețelei dvs. și modificați IP-ul (din Horizon) în interiorul acestui fișier.",
             "title": "Media"
         },
@@ -180,7 +180,7 @@
             "auto_swipe_back_to": "Autoglisare la ecranul #",
             "auto_swipe_back_to_help": "Când nu se efectuează nicio activitate, autoglisare înapoi în ecranul principal după \"x\" secunde",
             "background_image": "Imagine de fundal",
-            "background_image_help": "Setați calea spre imaginea de fundal, de ex. img \/ bg2.jpg sau http:\/\/yourimage.com\/image.jpg",
+            "background_image_help": "Setați calea spre imaginea de fundal, de ex. img / bg2.jpg sau http://yourimage.com/image.jpg",
             "dashticz_themes": "Tema Dashticz",
             "dashticz_themes_help": "Setați numele temei (de ex.white) tema va fi suprascrisă de custom.css",
             "edit_mode": "Du-te la modul de editare",
@@ -209,7 +209,7 @@
             "title": "Vremea",
             "translate_windspeed": "Transformati viteza vântului",
             "translate_windspeed_help": "\"Nord, Nord-Vest\" în loc de \"NNW\"",
-            "use_beaufort": "Utilizeaza Bft in loc de m\/s",
+            "use_beaufort": "Utilizeaza Bft in loc de m/s",
             "use_fahrenheit": "Utilizeaza Fahrenheit inloc de Celcius",
             "wu_api": "Wunderground API Key",
             "wu_city": "Wunderground Station (City or Code)",
@@ -224,7 +224,7 @@
             "owm_min": "Temperatura minimă pe al doilea rând",
             "owm_min_help": "Se afișează numai când este prognozată în zile",
             "owm_lang": "Setați limba pentru descrierea prognozei (ploaie, noros etc.)",
-            "owm_lang_help": "Pentru limbile disponibile, consultați https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_lang_help": "Pentru limbile disponibile, consultați https://openweathermap.org/forecast5/#multi",
             "owm_country": "Țara pe harta Open Weather ",
             "owm_name": "Afisare nume pe harta Open Weather",
             "longfonds_zipcode": "Longfonds zipcode",
@@ -316,5 +316,10 @@
         "direction_W": "W",
         "direction_WNW": "W-NW",
         "direction_WSW": "W-SW"
+    },
+    "xmltvguide": {
+        "error": "Eroare la încărcarea ghidului TV.",
+        "no_programs": "Nu s-au găsit programe viitoare.",
+        "loading": "Se încarcă ghidul TV..."
     }
 }
