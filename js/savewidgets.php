@@ -168,6 +168,8 @@ $catalog = [
     'longfonds' => ['key' => 'widget_longfonds', 'width' => 4, 'height' => 120],
     'moon' => ['key' => 'widget_moon', 'width' => 3],
     'news' => ['key' => 'widget_news', 'width' => 4, 'height' => 240],
+    // iframe widget: embeds any URL in an inline frame
+    'iframe' => ['key' => 'widget_iframe', 'width' => 6, 'height' => 400],
 ];
 
 $widgets = [];
@@ -402,6 +404,49 @@ foreach ($data['widgets'] as $entry) {
         }
     }
 
+    // Validate and store iframe-specific block properties
+    if ($id === 'iframe') {
+        $frameurl = isset($entry['frameurl']) && is_string($entry['frameurl'])
+            ? trim($entry['frameurl'])
+            : '';
+        if ($frameurl === '' || strlen($frameurl) > 2048) {
+            dashticz_json_error(400, 'iFrame requires a non-empty URL (max 2048 characters).');
+        }
+        $widget['frameurl'] = $frameurl;
+
+        // Optional: scrollbars (boolean, default true)
+        $widget['scrollbars'] = !isset($entry['scrollbars']) || (bool)$entry['scrollbars'];
+
+        // Optional: height in pixels
+        if (isset($entry['iframeHeight']) && is_numeric($entry['iframeHeight'])) {
+            $h = (int)$entry['iframeHeight'];
+            if ($h > 0 && $h <= 5000) {
+                $widget['iframeHeight'] = $h;
+            }
+        }
+
+        // Optional: scale-to-fit width
+        if (isset($entry['scaletofit']) && is_numeric($entry['scaletofit'])) {
+            $s = (int)$entry['scaletofit'];
+            if ($s > 0 && $s <= 10000) {
+                $widget['scaletofit'] = $s;
+            }
+        }
+
+        // Optional: force cache refresh
+        if (!empty($entry['forcerefresh'])) {
+            $widget['forcerefresh'] = true;
+        }
+
+        // Optional: refresh interval in seconds
+        if (isset($entry['refresh']) && is_numeric($entry['refresh'])) {
+            $r = (int)$entry['refresh'];
+            if ($r > 0 && $r <= 86400) {
+                $widget['refresh'] = $r;
+            }
+        }
+    }
+
     $widgets[] = $widget;
 }
 
@@ -628,6 +673,25 @@ function _widgetBlockProps($widget)
         case 'news':
             $props['type'] = 'news';
             $props['title'] = 'News';
+            break;
+        case 'iframe':
+            // iframe widget: generates a block with frameurl for the DT_frame component
+            $props['title'] = 'iFrame';
+            $props['frameurl'] = $widget['frameurl'];
+            $props['scrollbars'] = !empty($widget['scrollbars']);
+            if (!empty($widget['iframeHeight'])) {
+                // Override the column height with the configured iframe height
+                $props['height'] = $widget['iframeHeight'];
+            }
+            if (!empty($widget['scaletofit'])) {
+                $props['scaletofit'] = $widget['scaletofit'];
+            }
+            if (!empty($widget['forcerefresh'])) {
+                $props['forcerefresh'] = true;
+            }
+            if (!empty($widget['refresh'])) {
+                $props['refresh'] = $widget['refresh'];
+            }
             break;
     }
 

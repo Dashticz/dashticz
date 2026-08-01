@@ -1,8 +1,9 @@
 {
-    "version": "3.22.3",
+    "version": "3.23.0",
     "branch": "beta",
-    "last_changes": "Device Editor: sort available devices as Groups, Scenes, then Devices",
+    "last_changes": "Version alignment: set all version references to 3.23.0",
     "changelog": {
+        "3.23.0": "Version alignment: set all version references to 3.23.0",
         "3.22.2": "Auto-detect custom mode when config_mode is absent from CONFIG.js",
         "3.22.1": "Always show editor delete button; calendar agenda auto-expands to fit content",
         "3.22.0": "Preserve widget settings and add Standby grid parity",

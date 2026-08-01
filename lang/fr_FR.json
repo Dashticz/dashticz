@@ -244,7 +244,21 @@
             "news_description": "Flux RSS d’actualités avec défilement automatique.",
             "add_devices": "Ajouter des appareils",
             "add_widgets": "Ajouter des widgets",
-            "move_tiles": "Déplacer et redimensionner les tuiles"
+            "move_tiles": "Déplacer et redimensionner les tuiles",
+            "iframe_title": "iFrame",
+            "iframe_description": "Intégrez n'importe quel site ou URL locale dans un cadre en ligne.",
+            "iframe_url": "URL",
+            "iframe_url_help": "URL complète avec http(s)://. Le serveur doit autoriser l'intégration (pas de X-Frame-Options: DENY).",
+            "iframe_height": "Hauteur (px)",
+            "iframe_height_help": "Hauteur de l'iframe en pixels. Laissez vide pour utiliser la hauteur du bloc.",
+            "iframe_scrollbars": "Afficher les barres de défilement",
+            "iframe_scaletofit": "Largeur de mise à l'échelle (px)",
+            "iframe_scaletofit_help": "Largeur de conception de la page intégrée (ex. 1024). La page sera mise à l'échelle pour s'adapter à la tuile. Laissez vide pour désactiver.",
+            "iframe_forcerefresh": "Forcer le rechargement du cache",
+            "iframe_refresh": "Intervalle de rechargement (secondes)",
+            "iframe_refresh_help": "Fréquence de rechargement de l'iframe. Par défaut : 300 secondes.",
+            "invalid_iframe_url": "Saisissez une URL pour l'iFrame (ex. http://192.168.1.x:8080).",
+            "iframe_needs_url": "Saisissez une URL pour le widget iFrame dans ses paramètres."
         },
         "garbage": {
             "garbage_calendar_id": "ID calendrier Google",
