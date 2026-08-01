@@ -1048,8 +1048,8 @@ next css sets the default height of the frame popup
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   padding: 0;
   margin: 0;
   border: 2px solid rgba(255, 255, 255, 0.85);
@@ -1083,6 +1083,37 @@ next css sets the default height of the frame popup
 .dt-screen-btn:focus-visible {
   outline: 2px solid #fff;
   outline-offset: 2px;
+}
+
+/* Custom icon image inside a screen-switcher button (e.g. from img/icons/) */
+.dt-screen-btn .dt-screen-icon-img {
+  display: block;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
+.dt-screen-btn .dt-screen-main-icon-img {
+  width: 30px;
+  height: 30px;
+}
+
+/* PNG icon images used in topbar action buttons (settings, editor, fullscreen) */
+.dt-topbar-icon-img {
+  display: inline-block;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  pointer-events: none;
+  vertical-align: middle;
+}
+
+/* Font Awesome icons inside screen-switcher buttons */
+.dt-screen-btn i[aria-hidden] {
+  pointer-events: none;
+  font-size: 13px;
+  line-height: 1;
 }
 
 /* Standby chrome: S/1/2/+ next to editor icons; auto-hide unless hovered */

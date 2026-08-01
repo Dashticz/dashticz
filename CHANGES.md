@@ -1,6 +1,12 @@
 # Dashticz — Change log for recent update work
 
-## Additional 3.22.0 beta fixes (31-7-2026)
+## 3.23.0 — Screen-switcher icons & i18n (1-8-2026)
+
+- **Per-screen custom icons**: topbar screen buttons (1, 2, 3 … and Standby) now support custom icons via `screens[n]['icon']` in `CONFIG.js`. Accepts Font Awesome class strings (`'fas fa-home'`) or image paths relative to the Dashticz root (e.g. `'img/icons/home.svg'`). The Standby button icon is set with `standby_screen['icon']` or `config['standby_icon']`. Existing configs without `icon` keys are unaffected.
+- **`img/icons/` directory**: new directory provided for local custom icon storage. SVG, PNG, and other image formats are supported. Includes a README with usage examples and links to free icon sources.
+- **Screenswitcher i18n**: "Add screen" and "Delete screen" button tooltips were previously hard-coded in Dutch. All screenswitcher labels (Standby, Screen #, Add screen, Delete screen) are now driven by a `screenswitcher` section in each `/lang/<locale>.json`. All 28 bundled language files have been updated. English is the automatic fallback when a key is absent.
+
+
 
 - Restored the original logo/clock proportions and grouped the screen selector,
   Custom/Wizard switch and configuration icons at the far-right edge.

@@ -8,6 +8,12 @@
         "news": "Știri",
         "sunrise": "Răsărit"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Ecran",
+        "add_screen": "Adaugă ecran",
+        "delete_screen": "Șterge ecran"
+    },
     "energy": {
         "energy_delivered": "Total livrari",
         "energy_deliveredtoday": "Livrate azi",

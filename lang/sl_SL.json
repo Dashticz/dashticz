@@ -8,6 +8,12 @@
         "news": "News",
         "sunrise": "Sunrise"
     },
+    "screenswitcher": {
+        "standby": "Pripravljenost",
+        "screen": "Zaslon",
+        "add_screen": "Dodaj zaslon",
+        "delete_screen": "Izbriši zaslon"
+    },
     "energy": {
         "energy_delivered": "Total delivered",
         "energy_deliveredtoday": "Delivered today",

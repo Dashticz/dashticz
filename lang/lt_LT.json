@@ -8,6 +8,12 @@
         "news": "Naujienos",
         "sunrise": "Saulėtekis"
     },
+    "screenswitcher": {
+        "standby": "Budėjimas",
+        "screen": "Ekranas",
+        "add_screen": "Pridėti ekraną",
+        "delete_screen": "Ištrinti ekraną"
+    },
     "energy": {
         "energy_delivered": "Iš viso pagaminta",
         "energy_deliveredtoday": "Pagaminta elektros šiandien",

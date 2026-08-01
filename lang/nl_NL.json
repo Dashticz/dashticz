@@ -8,6 +8,12 @@
         "news": "Nieuws",
         "sunrise": "Zonsopkomst"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Scherm",
+        "add_screen": "Scherm toevoegen",
+        "delete_screen": "Scherm verwijderen"
+    },
     "energy": {
         "energy_delivered": "Totaal geleverd",
         "energy_deliveredtoday": "Vandaag geleverd",

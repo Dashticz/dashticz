@@ -196,21 +196,21 @@ var DT_simpleblock = (function () {
             content +=
               '<span class="settings deviceeditoricon" data-id="deviceeditor" ' +
               'role="button" aria-label="Open device editor" title="Devices toevoegen">' +
-              '<i class="fas fa-plus" aria-hidden="true"></i></span>';
+              _topbarIconHtml('fas fa-plus', 'img/icons/Plus.png') + '</span>';
             content +=
               '<span class="settings widgeteditoricon" data-id="widgeteditor" ' +
               'role="button" aria-label="Open widget editor" title="Widgets toevoegen">' +
-              '<i class="fas fa-puzzle-piece" aria-hidden="true"></i></span>';
+              _topbarIconHtml('fas fa-puzzle-piece', 'img/icons/Puzzle.png') + '</span>';
             content +=
               '<span class="settings layouteditoricon" data-id="layouteditor" ' +
               'role="button" aria-label="Open visual layout editor" title="Tegels verplaatsen en schalen">' +
-              '<i class="fas fa-arrows-alt" aria-hidden="true"></i></span>';
+              _topbarIconHtml('fas fa-arrows-alt', 'img/icons/Arrows.png') + '</span>';
           }
           content +=
             '<span class="settings settingsicon" data-id="settings" ' +
             'data-bs-target="#settingspopup" data-bs-toggle="modal" ' +
             'role="button" aria-label="Open settings" title="Instellingen">' +
-            '<i class="fas fa-cog" aria-hidden="true"></i></span>';
+            _topbarIconHtml('fas fa-cog', 'img/icons/Cog.png') + '</span>';
           if (!customMode) {
             _registerDeviceEditorClick();
             _registerWidgetEditorClick();
@@ -227,6 +227,21 @@ var DT_simpleblock = (function () {
     }
     content += '</div>';
     return content;
+  }
+
+  /**
+   * Returns icon HTML for a topbar button.
+   * When settings['topbar_use_png_icons'] is 1 (or true), uses a custom PNG <img> from img/icons/.
+   * When it is 0 (or falsy, the default), uses a Font Awesome <i> element.
+   * @param {string} faClass  e.g. 'fas fa-cog'
+   * @param {string} imgSrc   e.g. 'img/icons/Cog.png'
+   * @returns {string}
+   */
+  function _topbarIconHtml(faClass, imgSrc) {
+    if (Number(settings['topbar_use_png_icons']) === 1) {
+      return '<img src="' + imgSrc + '" class="dt-topbar-icon-img" aria-hidden="true" alt="">';
+    }
+    return '<i class="' + faClass + '" aria-hidden="true"></i>';
   }
 
   function _registerConfigModeClick() {

@@ -8,6 +8,12 @@
         "news": "Hírek",
         "sunrise": "Napkelte"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Képernyő",
+        "add_screen": "Képernyő hozzáadása",
+        "delete_screen": "Képernyő törlése"
+    },
     "energy": {
         "energy_delivered": "Összesen leszállított",
         "energy_deliveredtoday": "Ma szállították",

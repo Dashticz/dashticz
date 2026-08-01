@@ -8,6 +8,12 @@
         "news": "Vijest",
         "sunrise": "Zora"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Ekran",
+        "add_screen": "Dodaj ekran",
+        "delete_screen": "Obriši ekran"
+    },
     "energy": {
         "energy_delivered": "Ukupno dostavljeno",
         "energy_deliveredtoday": "Dostavljeno danas",

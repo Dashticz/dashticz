@@ -8,6 +8,12 @@
         "news": "Новости",
         "sunrise": "Восход"
     },
+    "screenswitcher": {
+        "standby": "Ожидание",
+        "screen": "Экран",
+        "add_screen": "Добавить экран",
+        "delete_screen": "Удалить экран"
+    },
     "energy": {
         "energy_delivered": "Потреблено",
         "energy_deliveredtoday": "Потреблено сегодня",

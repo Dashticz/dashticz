@@ -8,6 +8,12 @@
         "news": "Actualités",
         "sunrise": "Lever du soleil"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Écran",
+        "add_screen": "Ajouter un écran",
+        "delete_screen": "Supprimer un écran"
+    },
     "energy": {
         "energy_delivered": "Total livré",
         "energy_deliveredtoday": "Livré aujourd’hui",

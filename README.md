@@ -185,6 +185,47 @@ The same value can be changed through **Settings → Screen → Topbar auto-hide
 Existing configurations that still contain `config['hide_topbar']` should
 remove that legacy setting when switching to `topbar_timeout`.
 
+### Custom icons on screen-switcher buttons
+
+By default the topbar screen-switcher shows the screen number (1, 2, 3 …) and
+the letter **S** for the Standby button. You can replace those labels with any
+**Font Awesome** icon or a custom **image file** stored in `img/icons/`.
+
+#### Font Awesome icons
+
+Use the Font Awesome class string as the `icon` value:
+
+```javascript
+screens[1]['icon'] = 'fas fa-home';
+screens[2]['icon'] = 'fas fa-film';
+screens[3]['icon'] = 'fas fa-music';
+
+// Standby button
+standby_screen['icon'] = 'fas fa-moon';
+// or equivalently:
+config['standby_icon'] = 'fas fa-moon';
+```
+
+Browse free icons at <https://fontawesome.com/icons>.
+
+#### Custom image files (SVG, PNG …)
+
+Download or create icon files and place them in the `img/icons/` directory,
+then reference them by path:
+
+```javascript
+screens[1]['icon'] = 'img/icons/home.svg';
+screens[2]['icon'] = 'img/icons/camera.png';
+standby_screen['icon'] = 'img/icons/sleep.svg';
+```
+
+SVG files are recommended because they scale crisply at any size. Good free
+sources include [Font Awesome SVG downloads](https://fontawesome.com/icons) and
+[Streamline HQ Core Duo Free](https://www.streamlinehq.com/icons/core-duo-free).
+
+Screens without an `icon` key continue to show the original number label — the
+feature is fully **opt-in** and backward compatible.
+
 ### Standby screen
 
 The **Settings → Standby** category contains:
