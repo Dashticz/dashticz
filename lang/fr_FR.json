@@ -25,7 +25,7 @@
         "last_month": "dernier mois",
         "today": "aujourd’hui"
     },
-   "garbage": {
+    "garbage": {
         "no_data": "Aucune donnée de collecte trouvée",
         "provider_not_found": "Fournisseur de collecte des déchets introuvable",
         "load_error": "Erreur lors du chargement des données de collecte",
@@ -241,7 +241,10 @@
             "moon_title": "Lune",
             "moon_description": "Phase actuelle de la lune.",
             "news_title": "Actualités",
-            "news_description": "Flux RSS d’actualités avec défilement automatique."
+            "news_description": "Flux RSS d’actualités avec défilement automatique.",
+            "add_devices": "Ajouter des appareils",
+            "add_widgets": "Ajouter des widgets",
+            "move_tiles": "Déplacer et redimensionner les tuiles"
         },
         "garbage": {
             "garbage_calendar_id": "ID calendrier Google",

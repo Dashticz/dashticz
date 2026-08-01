@@ -113,22 +113,50 @@ var DashticzDeviceEditor = (function () {
   }
 
   function _widgetFromReference(reference) {
+    // Use translations from the active language file (widgetEditorTranslations is defined
+    // in settings.js and populated from /lang/<locale>.json settings.widgeteditor section).
+    // Fall back to English when the key is missing or the variable is not yet available.
+    var t =
+      typeof widgetEditorTranslations !== 'undefined' ? widgetEditorTranslations : {};
+
+    // Translated display titles keyed by widget type id.
+    // This map is used both for named catalog entries (widget_xxx) and for
+    // type-mapped blocks so that language changes always take effect immediately,
+    // regardless of any hardcoded title stored in CONFIG.js.
+    var translatedTitles = {
+      weather:        t.weather_title        || 'Weather',
+      garbage:        t.garbage_title        || 'Garbage',
+      spotify:        t.spotify_title        || 'Spotify',
+      sonarr:         t.sonarr_title         || 'Sonarr',
+      clock:          t.clock_title          || 'Clock',
+      calendar:       t.calendar_title       || 'Calendar (ICS)',
+      secpanel:       t.secpanel_title       || 'Security panel',
+      publictransport: t.publictransport_title || 'Public transport',
+      trafficinfo:    t.trafficinfo_title    || 'Traffic information',
+      alarmmeldingen: t.alarmmeldingen_title || '112',
+      camera:         t.camera_title         || 'Cameras',
+      map:            t.map_title            || 'Google Maps',
+      longfonds:      t.longfonds_title      || 'Air quality',
+      moon:           t.moon_title           || 'Moon',
+      news:           t.news_title           || 'News',
+    };
+
     var catalog = {
-      widget_weather: { id: 'weather', title: 'Weer' },
-      widget_garbage: { id: 'garbage', title: 'Afval' },
-      widget_spotify: { id: 'spotify', title: 'Spotify' },
-      widget_sonarr: { id: 'sonarr', title: 'Sonarr' },
-      widget_clock: { id: 'clock', title: 'Klok' },
-      widget_calendar: { id: 'calendar', title: 'Kalender' },
-      widget_secpanel: { id: 'secpanel', title: 'Security panel' },
-      widget_publictransport: { id: 'publictransport', title: 'Openbaar vervoer' },
-      widget_trafficinfo: { id: 'trafficinfo', title: 'Verkeersinfo' },
-      widget_alarmmeldingen: { id: 'alarmmeldingen', title: '112' },
-      widget_cameras: { id: 'camera', title: "Camera's" },
-      widget_map: { id: 'map', title: 'Google Maps' },
-      widget_longfonds: { id: 'longfonds', title: 'Luchtkwaliteit' },
-      widget_moon: { id: 'moon', title: 'Maan' },
-      widget_news: { id: 'news', title: 'Nieuws' },
+      widget_weather:         { id: 'weather',         title: translatedTitles.weather },
+      widget_garbage:         { id: 'garbage',         title: translatedTitles.garbage },
+      widget_spotify:         { id: 'spotify',         title: translatedTitles.spotify },
+      widget_sonarr:          { id: 'sonarr',          title: translatedTitles.sonarr },
+      widget_clock:           { id: 'clock',           title: translatedTitles.clock },
+      widget_calendar:        { id: 'calendar',        title: translatedTitles.calendar },
+      widget_secpanel:        { id: 'secpanel',        title: translatedTitles.secpanel },
+      widget_publictransport: { id: 'publictransport', title: translatedTitles.publictransport },
+      widget_trafficinfo:     { id: 'trafficinfo',     title: translatedTitles.trafficinfo },
+      widget_alarmmeldingen:  { id: 'alarmmeldingen',  title: translatedTitles.alarmmeldingen },
+      widget_cameras:         { id: 'camera',          title: translatedTitles.camera },
+      widget_map:             { id: 'map',             title: translatedTitles.map },
+      widget_longfonds:       { id: 'longfonds',       title: translatedTitles.longfonds },
+      widget_moon:            { id: 'moon',            title: translatedTitles.moon },
+      widget_news:            { id: 'news',            title: translatedTitles.news },
     };
     if (typeof blocks === 'undefined' || !blocks[reference]) {
       return null;
@@ -161,14 +189,19 @@ var DashticzDeviceEditor = (function () {
       };
       var id = typeMap[type];
       if (!id) return null;
-      catalogItem = { id: id, title: definition.title || id };
+      // Use the translated title for the widget type; fall back to the CONFIG.js
+      // title only if the type is not in the translations map.
+      catalogItem = { id: id, title: translatedTitles[id] || definition.title || id };
     }
     return {
       kind: 'widget',
       id: catalogItem.id,
       orderKey: _widgetOrderKey(catalogItem.id),
       reference: String(reference),
-      title: definition.title || catalogItem.title,
+      // Always prefer the translated catalog title so that language changes in
+      // Settings are immediately reflected, regardless of any title hardcoded
+      // in CONFIG.js (e.g. title:'Afval' written in a previous language).
+      title: catalogItem.title,
       definition: definition,
     };
   }
@@ -189,6 +222,7 @@ var DashticzDeviceEditor = (function () {
       width: _parseWidth(widgetWidths[orderKey]),
     };
     if (widgetHeights[orderKey]) entry.height = widgetHeights[orderKey];
+    if (widget.id === 'garbage') entry.displayTitle = widget.title;
 
     if (widget.id === 'weather') {
       entry.provider =

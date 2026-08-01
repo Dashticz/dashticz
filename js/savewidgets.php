@@ -154,7 +154,7 @@ if (isset($data['settings']) && is_array($data['settings'])) {
 
 $catalog = [
     'weather' => ['key' => 'widget_weather', 'width' => 4, 'height' => 120],
-    'garbage' => ['key' => 'widget_garbage', 'width' => 6],
+    'garbage' => ['key' => 'widget_garbage', 'width' => 5, 'height' => 160],
     'spotify' => ['key' => 'widget_spotify', 'width' => 4, 'height' => 120],
     'sonarr' => ['key' => 'widget_sonarr', 'width' => 4, 'height' => 120],
     'clock' => ['key' => 'widget_clock', 'width' => 4],
@@ -200,6 +200,12 @@ foreach ($data['widgets'] as $entry) {
             ? $catalog[$id]['height']
             : null,
     ];
+    if ($id === 'garbage' && isset($entry['displayTitle']) && is_string($entry['displayTitle'])) {
+        $displayTitle = trim($entry['displayTitle']);
+        if ($displayTitle !== '' && strlen($displayTitle) <= 100) {
+            $widget['displayTitle'] = $displayTitle;
+        }
+    }
     if (array_key_exists('height', $entry) && $entry['height'] !== null && $entry['height'] !== '') {
         $height = (int)(round(((int)$entry['height']) / 10) * 10);
         $widget['height'] = max(50, min(2000, $height));
@@ -518,7 +524,7 @@ function _widgetBlockProps($widget)
             break;
         case 'garbage':
             $props['type'] = 'garbage';
-            $props['title'] = 'Afval';
+            $props['title'] = isset($widget['displayTitle']) ? $widget['displayTitle'] : 'Afval';
             break;
         case 'spotify':
             $props['type'] = 'spotify';
