@@ -702,6 +702,7 @@ var DashticzLayoutEditor = (function () {
       widget_longfonds: 'longfonds',
       widget_moon: 'moon',
       widget_news: 'news',
+      widget_xmltvguide: 'xmltvguide',
     };
     return widgetReferences[String(reference)] || null;
   }
@@ -774,6 +775,14 @@ var DashticzLayoutEditor = (function () {
       entry.rss =
         definition.rss || 'https://www.alarmeringen.nl/feeds/all.rss';
       if (definition.filter) entry.filter = definition.filter;
+    } else if (item.widgetId === 'xmltvguide') {
+      entry.xmltvurl = definition.xmltvurl || '';
+      if (Array.isArray(definition.channels)) {
+        entry.channels = definition.channels;
+      }
+      if (definition.maxitems) {
+        entry.maxitems = definition.maxitems;
+      }
     }
 
     return entry;

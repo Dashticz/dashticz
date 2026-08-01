@@ -52,7 +52,7 @@
         "garbage": {
             "garbage_calendar_id": "ID kalendarza Google",
             "garbage_calendar_id_help": "ID kalendarza znajdziesz w ustawieniach kalendarza",
-            "garbage_company": "Firma \/ Serwis",
+            "garbage_company": "Firma / Serwis",
             "garbage_hideicon": "Ukryj ikonę w bloku",
             "garbage_housenumber": "Numer domu",
             "garbage_housenumberaddition": "Dodaj numer domu",
@@ -79,10 +79,10 @@
             "disable_googleanalytics": "Wyłącz Google Analytics",
             "disable_googleanalytics_help": "Używane przez developera do śledzenia liczby użytkowników, używanych urządzeń oraz do ulepszania Dashticz",
             "domoticz_ip": "Adres URL Domoticz",
-            "domoticz_ip_help": "Wprowadź URL Domoticz, na przykład http:\/\/192.168.1.1:8080. Możesz dodać użytkownika i hasło, np. http:\/\/user:password@192.168.1.1:8080",
+            "domoticz_ip_help": "Wprowadź URL Domoticz, na przykład http://192.168.1.1:8080. Możesz dodać użytkownika i hasło, np. http://user:password@192.168.1.1:8080",
             "domoticz_refresh": "Odświeżanie Domoticz (sekundy)",
             "hide_off_button": "Ukryj opcję wyłączania w przełącznikach wyboru",
-            "last_update": "Pokaż godzinę\/datę ostatniej aktualizacji",
+            "last_update": "Pokaż godzinę/datę ostatniej aktualizacji",
             "login": "Zaloguj",
             "login_to_dashticz": "Logowanie do Dashticz",
             "loginEnabled": "Logowanie do Dashticz włączone",
@@ -105,7 +105,7 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Trzymaj Dashticza zalogowany (minuty)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Włącz \/ wyłącz połączenie WebSocket",
+            "enable_websocket_help": "Włącz / wyłącz połączenie WebSocket",
             "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
             "colorpicker_none": "No RGB colorpicker",
             "colorpicker_old": "Old style RGB colorpicker",
@@ -164,12 +164,12 @@
         "media": {
             "hide_mediaplayer": "Ukryj odtwarzacz, gdy jest wyłączony",
             "host_nzbget": "Ścieżka do NZBget",
-            "host_nzbget_help": "Jeśli używasz programu NZBget, wpisz adres IP i port, np .: http:\/\/192.168.1.32:8080",
+            "host_nzbget_help": "Jeśli używasz programu NZBget, wpisz adres IP i port, np .: http://192.168.1.32:8080",
             "sonarr_apikey": "Klucz API aplikacji Sonarr",
             "sonarr_maxitems": "Maksymalna liczba elementów w liście Sonarr",
             "sonarr_url": "Adres URL do Sonarr",
             "spot_clientid": "ClientID dla usługi Spotify",
-            "switch_horizon": "Ścieżka do Ziggo\/UPC Mediabox",
+            "switch_horizon": "Ścieżka do Ziggo/UPC Mediabox",
             "switch_horizon_help": "Jeśli masz mediabox ZIGGO lub UPC (Horizon), skopiuj switch_horizon.php na serwer WWW wewnątrz sieci i zmień adres IP (urządzenia Horizon) w tym pliku.",
             "title": "Multimedia"
         },
@@ -180,7 +180,7 @@
             "auto_swipe_back_to": "Automatycznie przewiń do ekranu nr ",
             "auto_swipe_back_to_help": "Gdy nie ma aktywności, przewiń do ekranu głównego po x sekundach",
             "background_image": "Tapeta",
-            "background_image_help": "Ustaw ścieżkę do pliku tapety, np. img\/bg2.jpg lub http:\/\/twojobraz.com\/image.jpg",
+            "background_image_help": "Ustaw ścieżkę do pliku tapety, np. img/bg2.jpg lub http://twojobraz.com/image.jpg",
             "dashticz_themes": "Motyw Dashticz",
             "dashticz_themes_help": "Określ nazwę motywu (np. Biały), motyw zostanie zastąpiony przez custom.css",
             "edit_mode": "Przejść w tryb edycji",
@@ -209,7 +209,7 @@
             "title": "Pogoda",
             "translate_windspeed": "Opisowe kierunki wiatru",
             "translate_windspeed_help": "'Północno-północno-zachodni' zamiast 'NNW'",
-            "use_beaufort": "Używaj skali Beauforta zamiast m\/s",
+            "use_beaufort": "Używaj skali Beauforta zamiast m/s",
             "use_fahrenheit": "Używaj stopni Fahrenheita zamiast Celciusa",
             "wu_api": "Klucz API programu Wunderground",
             "wu_city": "Stacja Wunderground (miasto lub kod)",
@@ -224,7 +224,7 @@
             "owm_min": "Minimum temperature on 2nd row",
             "owm_min_help": "Only shown when forecast in days",
             "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
-            "owm_lang_help": "For available languages, see https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_lang_help": "For available languages, see https://openweathermap.org/forecast5/#multi",
             "owm_country": "Kraj Open Weather Map",
             "owm_name": "Wyświetlana nazwa Open Weather Map",
             "longfonds_zipcode": "Longfonds zipcode",
@@ -316,5 +316,10 @@
         "direction_W": "W",
         "direction_WNW": "W-NW",
         "direction_WSW": "W-SW"
+    },
+    "xmltvguide": {
+        "error": "Błąd ładowania programu TV.",
+        "no_programs": "Nie znaleziono nadchodzących programów.",
+        "loading": "Ładowanie programu TV..."
     }
 }

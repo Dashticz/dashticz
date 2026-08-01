@@ -120,6 +120,7 @@ Widget Editor.
 | Air quality | Longfonds postcode and house number |
 | Moon | Domoticz IDX for the moon image |
 | News | RSS URL and automatic-scroll interval |
+| XMLTV TV Guide | XMLTV source URL; channel filter (id or display-name); maximum items, layout and refresh interval |
 
 Widget-specific settings are kept together with the other `config[...]`
 settings at the top of `custom/CONFIG.js`.

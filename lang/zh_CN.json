@@ -52,7 +52,7 @@
         "garbage": {
             "garbage_calendar_id": "Google Calender ID",
             "garbage_calendar_id_help": "Your calendar id is found in calendar settings",
-            "garbage_company": "Company \/ Service",
+            "garbage_company": "Company / Service",
             "garbage_hideicon": "Hide icon in block",
             "garbage_housenumber": "House number",
             "garbage_housenumberaddition": "Housenumber addition",
@@ -79,10 +79,10 @@
             "disable_googleanalytics": "Disable Google Analytics",
             "disable_googleanalytics_help": "Only used for developer to track the amount of users and wich device you are using for finetuning Dashticz.",
             "domoticz_ip": "Domoticz 网址",
-            "domoticz_ip_help": "Enter Domoticz url, for example: http:\/\/192.168.1.1:8080. You can also enter users and password, for example: http:\/\/user:password@192.168.1.1:8080",
+            "domoticz_ip_help": "Enter Domoticz url, for example: http://192.168.1.1:8080. You can also enter users and password, for example: http://user:password@192.168.1.1:8080",
             "domoticz_refresh": "Refresh Domoticz (seconds)",
             "hide_off_button": "Hide off button at Selector Switches",
-            "last_update": "Show last update time\/date",
+            "last_update": "Show last update time/date",
             "login": "Log in",
             "login_to_dashticz": "Dashticz Login",
             "loginEnabled": "Dashticz Login enabled",
@@ -105,7 +105,7 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "保持Dashticz登录（分钟）",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "启用\/禁用WebSocket连接",
+            "enable_websocket_help": "启用/禁用WebSocket连接",
             "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
             "colorpicker_none": "No RGB colorpicker",
             "colorpicker_old": "Old style RGB colorpicker",
@@ -164,12 +164,12 @@
         "media": {
             "hide_mediaplayer": "Hide mediaplayer when it's off",
             "host_nzbget": "NZBget Path",
-            "host_nzbget_help": "If you use NZBget, enter the ip-address and port, e.g.: http:\/\/192.168.1.32:8080",
+            "host_nzbget_help": "If you use NZBget, enter the ip-address and port, e.g.: http://192.168.1.32:8080",
             "sonarr_apikey": "Sonarr ApiKey",
             "sonarr_maxitems": "Sonarr max items in list",
             "sonarr_url": "Sonarr URL",
             "spot_clientid": "Spotify ClientID",
-            "switch_horizon": "商务\/刚果爱国者联盟的媒体框路径",
+            "switch_horizon": "商务/刚果爱国者联盟的媒体框路径",
             "switch_horizon_help": "If you have a mediabox from ZIGGO or UPC (Horizon), copy switch_horizon.php on a webserver inside your network and change the IP (of Horizon) inside this file.",
             "title": "媒体"
         },
@@ -180,7 +180,7 @@
             "auto_swipe_back_to": "Auto swipe back to screen #",
             "auto_swipe_back_to_help": "When no activity, swipe back to main screen after x seconds",
             "background_image": "Background Image",
-            "background_image_help": "Set path to background image eg. img\/bg2.jpg or http:\/\/yourimage.com\/image.jpg",
+            "background_image_help": "Set path to background image eg. img/bg2.jpg or http://yourimage.com/image.jpg",
             "dashticz_themes": "Dashticz Theme",
             "dashticz_themes_help": "Set the name of the theme (eg. white) the theme will be overide by custom.css",
             "edit_mode": "Go to edit mode",
@@ -209,7 +209,7 @@
             "title": "Weather",
             "translate_windspeed": "Translate wind speed",
             "translate_windspeed_help": "'North northwest' instead of 'NNW'",
-            "use_beaufort": "Use Bft instead of m\/s",
+            "use_beaufort": "Use Bft instead of m/s",
             "use_fahrenheit": "Use Fahrenheit instead of Celcius",
             "wu_api": "Wunderground API密钥",
             "wu_city": "Wunderground站（城市或代码）",
@@ -224,7 +224,7 @@
             "owm_min": "Minimum temperature on 2nd row",
             "owm_min_help": "Only shown when forecast in days",
             "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
-            "owm_lang_help": "For available languages, see https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_lang_help": "For available languages, see https://openweathermap.org/forecast5/#multi",
             "owm_country": "Open Weather Map Country",
             "owm_name": "显示名称 Open Weather Map",
             "longfonds_zipcode": "Longfonds zipcode",
@@ -316,5 +316,10 @@
         "direction_W": "W",
         "direction_WNW": "W-NW",
         "direction_WSW": "W-SW"
+    },
+    "xmltvguide": {
+        "error": "加载电视节目单时出错。",
+        "no_programs": "未找到即将播出的节目。",
+        "loading": "正在加载电视节目单..."
     }
 }

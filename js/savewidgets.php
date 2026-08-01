@@ -170,6 +170,8 @@ $catalog = [
     'news' => ['key' => 'widget_news', 'width' => 4, 'height' => 240],
     // iframe widget: embeds any URL in an inline frame
     'iframe' => ['key' => 'widget_iframe', 'width' => 6, 'height' => 400],
+    // xmltvguide widget: TV programme guide from an XMLTV-format URL
+    'xmltvguide' => ['key' => 'widget_xmltvguide', 'width' => 6, 'height' => 300],
 ];
 
 $widgets = [];
@@ -447,6 +449,39 @@ foreach ($data['widgets'] as $entry) {
         }
     }
 
+    // Validate and store xmltvguide-specific block properties
+    if ($id === 'xmltvguide') {
+        $xmltvurl = isset($entry['xmltvurl']) && is_string($entry['xmltvurl'])
+            ? trim($entry['xmltvurl'])
+            : '';
+        if ($xmltvurl === '' || strlen($xmltvurl) > 2048) {
+            dashticz_json_error(400, 'XMLTV TV Guide requires a non-empty XMLTV URL (max 2048 characters).');
+        }
+        $widget['xmltvurl'] = $xmltvurl;
+
+        // Optional: channel filter (array of channel IDs or display-names)
+        if (isset($entry['channels']) && is_array($entry['channels'])) {
+            $channels = [];
+            foreach ($entry['channels'] as $ch) {
+                if (is_string($ch) && strlen($ch) > 0 && strlen($ch) <= 256) {
+                    $channels[] = $ch;
+                }
+            }
+            if (count($channels) > 100) {
+                dashticz_json_error(400, 'XMLTV TV Guide supports up to 100 channels.');
+            }
+            $widget['channels'] = $channels;
+        }
+
+        // Optional: max items
+        if (isset($entry['maxitems']) && is_numeric($entry['maxitems'])) {
+            $m = (int)$entry['maxitems'];
+            if ($m > 0 && $m <= 500) {
+                $widget['maxitems'] = $m;
+            }
+        }
+    }
+
     $widgets[] = $widget;
 }
 
@@ -691,6 +726,17 @@ function _widgetBlockProps($widget)
             }
             if (!empty($widget['refresh'])) {
                 $props['refresh'] = $widget['refresh'];
+            }
+            break;
+        case 'xmltvguide':
+            // xmltvguide widget: TV programme guide from an XMLTV-format URL
+            $props['title'] = 'TV Guide';
+            $props['xmltvurl'] = $widget['xmltvurl'];
+            if (!empty($widget['channels'])) {
+                $props['channels'] = $widget['channels'];
+            }
+            if (!empty($widget['maxitems'])) {
+                $props['maxitems'] = $widget['maxitems'];
             }
             break;
     }

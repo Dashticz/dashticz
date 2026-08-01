@@ -17,6 +17,7 @@ var Dashticz = (function () {
     'stationclock',
     'blocktitle',
     'tvguide',
+    'xmltvguide',
     'trafficinfo',
     'alarmmeldingen',
     'secpanel',

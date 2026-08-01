@@ -52,7 +52,7 @@
         "garbage": {
             "garbage_calendar_id": "Google Calender ID",
             "garbage_calendar_id_help": "Your calendar id is found in calendar settings",
-            "garbage_company": "Empresa \/ Servicio",
+            "garbage_company": "Empresa / Servicio",
             "garbage_hideicon": "Ocultar icono en bloque",
             "garbage_housenumber": "El número de la casa",
             "garbage_housenumberaddition": "Housenumber addition",
@@ -79,10 +79,10 @@
             "disable_googleanalytics": "Disable Google Analytics",
             "disable_googleanalytics_help": "Only used for developer to track the amount of users and wich device you are using for finetuning Dashticz.",
             "domoticz_ip": "Domoticz URL",
-            "domoticz_ip_help": "Enter Domoticz url, for example: http:\/\/192.168.1.1:8080. You can also enter users and password, for example: http:\/\/user:password@192.168.1.1:8080",
+            "domoticz_ip_help": "Enter Domoticz url, for example: http://192.168.1.1:8080. You can also enter users and password, for example: http://user:password@192.168.1.1:8080",
             "domoticz_refresh": "Actualizar Domoticz (segundos)",
             "hide_off_button": "Ocultar botón de apagado en Interruptores de selección",
-            "last_update": "Mostrar fecha \/ hora de la última actualización",
+            "last_update": "Mostrar fecha / hora de la última actualización",
             "login": "Log in",
             "login_to_dashticz": "Dashticz Login",
             "loginEnabled": "Dashticz Login enabled",
@@ -105,7 +105,7 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Mantenga a Dashticz conectado (minutos)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Habilitar \/ deshabilitar la conexión WebSocket",
+            "enable_websocket_help": "Habilitar / deshabilitar la conexión WebSocket",
             "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
             "colorpicker_none": "No RGB colorpicker",
             "colorpicker_old": "Old style RGB colorpicker",
@@ -164,12 +164,12 @@
         "media": {
             "hide_mediaplayer": "Ocultar mediaplayer cuando está apagado",
             "host_nzbget": "Ruta de NZBget",
-            "host_nzbget_help": "Si utiliza NZBget, introduzca la dirección ip y el puerto, por ejemplo: http:\/\/192.168.1.32:8080",
+            "host_nzbget_help": "Si utiliza NZBget, introduzca la dirección ip y el puerto, por ejemplo: http://192.168.1.32:8080",
             "sonarr_apikey": "Sonarr ApiKey",
             "sonarr_maxitems": "Sonarr max elementos en la lista",
             "sonarr_url": "Sonarr URL",
             "spot_clientid": "Spotify ClientID",
-            "switch_horizon": "Ziggo\/UPC Mediabox Camino",
+            "switch_horizon": "Ziggo/UPC Mediabox Camino",
             "switch_horizon_help": "Si tienes un mediabox de ZIGGO o UPC (Horizon), copia change_horizon.php en un servidor web dentro de tu red y cambia la IP (de Horizon) dentro de este archivo.",
             "title": "Medios de comunicación"
         },
@@ -180,7 +180,7 @@
             "auto_swipe_back_to": "Auto pase de nuevo a la pantalla #",
             "auto_swipe_back_to_help": "Cuando no hay actividad, vuelva a la pantalla principal después de x segundos",
             "background_image": "Background Image",
-            "background_image_help": "Set path to background image eg. img\/bg2.jpg or http:\/\/yourimage.com\/image.jpg",
+            "background_image_help": "Set path to background image eg. img/bg2.jpg or http://yourimage.com/image.jpg",
             "dashticz_themes": "Dashticz Theme",
             "dashticz_themes_help": "Set the name of the theme (eg. white) the theme will be overide by custom.css",
             "edit_mode": "Ir al modo de edición",
@@ -209,7 +209,7 @@
             "title": "Clima",
             "translate_windspeed": "Traducir velocidad del viento",
             "translate_windspeed_help": "'Noroeste norte' en lugar de 'NO'",
-            "use_beaufort": "Utilice Bft en lugar de m \/ s",
+            "use_beaufort": "Utilice Bft en lugar de m / s",
             "use_fahrenheit": "Utilice Fahrenheit en lugar de Celcius",
             "wu_api": "Wunderground Clave de API",
             "wu_city": "Wunderground de la Estación (Ciudad o Código)",
@@ -224,7 +224,7 @@
             "owm_min": "Minimum temperature on 2nd row",
             "owm_min_help": "Only shown when forecast in days",
             "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
-            "owm_lang_help": "For available languages, see https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_lang_help": "For available languages, see https://openweathermap.org/forecast5/#multi",
             "owm_country": "Open Weather Map País",
             "owm_name": "Nombre para mostrar Open Weather Map",
             "longfonds_zipcode": "Longfonds zipcode",
@@ -316,5 +316,10 @@
         "direction_W": "W",
         "direction_WNW": "W-NW",
         "direction_WSW": "W-SW"
+    },
+    "xmltvguide": {
+        "error": "Error al cargar la guía de TV.",
+        "no_programs": "No se encontraron programas próximos.",
+        "loading": "Cargando guía de TV..."
     }
 }
