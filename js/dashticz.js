@@ -308,6 +308,32 @@ var Dashticz = (function () {
     if (typeof key !== 'undefined' && key !== '') {
       cfg.key = key;
     }
+    if (
+      special &&
+      special.name === 'garbage' &&
+      (
+        typeof block === 'undefined' ||
+        typeof block.title === 'undefined' ||
+        block.title === 'Afval'
+      )
+    ) {
+      cfg.title =
+        (
+          typeof language !== 'undefined' &&
+          language &&
+          language.settings &&
+          language.settings.widgeteditor &&
+          language.settings.widgeteditor.garbage_title
+        ) ||
+        (
+          typeof language !== 'undefined' &&
+          language &&
+          language.settings &&
+          language.settings.garbage &&
+          language.settings.garbage.title
+        ) ||
+        'Garbage';
+    }
     return cfg;
   }
 

@@ -19,7 +19,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Garbage',
       description: 'Upcoming waste collections.',
       icon: 'fas fa-trash-alt',
-      width: 6,
+      width: 5,
+      height: 160,
     },
     {
       id: 'spotify',
@@ -1710,6 +1711,7 @@ var DashticzWidgetEditor = (function () {
       if (dimensions.height || item.height) {
         entry.height = dimensions.height || item.height;
       }
+      if (item.id === 'garbage') entry.displayTitle = _widgetTitle(item);
       if (item.id === 'weather') entry.provider = weatherProvider;
       if (item.id === 'weather' && widgetConfigs.weather) {
         var wcfg = widgetConfigs.weather;

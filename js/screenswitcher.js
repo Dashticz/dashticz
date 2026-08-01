@@ -203,13 +203,20 @@ var DashticzScreenSwitcher = (function () {
       return;
     }
     if ($bar.children('.dt-standby-editor-icons').length) return;
+    // Use translated tooltip labels from the active language file.
+    // widgetEditorTranslations is a global set by settings.js from /lang/<locale>.json.
+    var t =
+      typeof widgetEditorTranslations !== 'undefined' ? widgetEditorTranslations : {};
     var html =
       '<span class="dt-standby-editor-icons">' +
-      '<span class="settings deviceeditoricon" role="button" title="Devices toevoegen">' +
+      '<span class="settings deviceeditoricon" role="button" title="' +
+        (t.add_devices || 'Add devices') + '">' +
       '<i class="fas fa-plus" aria-hidden="true"></i></span>' +
-      '<span class="settings widgeteditoricon" role="button" title="Widgets toevoegen">' +
+      '<span class="settings widgeteditoricon" role="button" title="' +
+        (t.add_widgets || 'Add widgets') + '">' +
       '<i class="fas fa-puzzle-piece" aria-hidden="true"></i></span>' +
-      '<span class="settings layouteditoricon" role="button" title="Tegels verplaatsen en schalen">' +
+      '<span class="settings layouteditoricon" role="button" title="' +
+        (t.move_tiles || 'Move and scale tiles') + '">' +
       '<i class="fas fa-arrows-alt" aria-hidden="true"></i></span>' +
       '</span>';
     $bar.append(html);

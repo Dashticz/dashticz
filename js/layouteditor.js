@@ -721,6 +721,17 @@ var DashticzLayoutEditor = (function () {
       width: item.width,
     };
     if (item.height !== null) entry.height = item.height;
+    if (item.widgetId === 'garbage') {
+      entry.displayTitle =
+        (
+          typeof language !== 'undefined' &&
+          language &&
+          language.settings &&
+          language.settings.widgeteditor &&
+          language.settings.widgeteditor.garbage_title
+        ) ||
+        'Garbage';
+    }
 
     if (item.widgetId === 'weather') {
       entry.provider =

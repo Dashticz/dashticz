@@ -380,7 +380,7 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(deviceEditor, /\$activeScreen\.find\('\[data-colindex\]'\)/);
   assert.match(deviceEditor, /screen: _activeScreenPayload\(\)/);
   assert.match(deviceEditor, /function _widgetFromReference/);
-  assert.match(deviceEditor, /widget_alarmmeldingen: \{ id: 'alarmmeldingen', title: '112' \}/);
+  assert.match(deviceEditor, /widget_alarmmeldingen:\s+\{ id: 'alarmmeldingen',\s+title: translatedTitles\.alarmmeldingen \}/);
   assert.match(deviceEditor, /_widgetPayload\(orderKey\)/);
   assert.match(deviceEditor, /Widget - /);
   assert.match(deviceEditor, /var managedOrder/);
@@ -410,6 +410,19 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
     path.join(root, 'js/widgeteditor.js'),
     'utf8'
   );
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const layouteditor = fs.readFileSync(
+    path.join(root, 'js/layouteditor.js'),
+    'utf8'
+  );
+  const savewidgets = fs.readFileSync(
+    path.join(root, 'js/savewidgets.php'),
+    'utf8'
+  );
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
   const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
   const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
   const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
@@ -487,6 +500,7 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.equal(dutch.settings.widgeteditor.camera_title, "Camera's");
   for (const [id, width, height] of [
     ['weather', 4, 120],
+    ['garbage', 5, 160],
     ['spotify', 4, 120],
     ['sonarr', 4, 120],
     ['calendar', 4, 120],
@@ -503,6 +517,13 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
       new RegExp(`id: '${id}'[\\s\\S]*?width: ${width},[\\s\\S]*?height: ${height},`)
     );
   }
+  assert.match(widgetEditor, /if \(item\.id === 'garbage'\) entry\.displayTitle = _widgetTitle\(item\);/);
+  assert.match(deviceEditor, /if \(widget\.id === 'garbage'\) entry\.displayTitle = widget\.title;/);
+  assert.match(layouteditor, /if \(item\.widgetId === 'garbage'\) \{[\s\S]*?entry\.displayTitle[\s\S]*?garbage_title/s);
+  assert.match(savewidgets, /'garbage' => \['key' => 'widget_garbage', 'width' => 5, 'height' => 160\],/);
+  assert.match(savewidgets, /\$id === 'garbage' && isset\(\$entry\['displayTitle'\]\)/);
+  assert.match(savewidgets, /\$props\['title'\] = isset\(\$widget\['displayTitle'\]\) \? \$widget\['displayTitle'\] : 'Afval';/);
+  assert.match(dashticz, /special\.name === 'garbage'[\s\S]*block\.title === 'Afval'[\s\S]*garbage_title/s);
   assert.match(widgetEditor, /js\/savewidgets\.php/);
   assert.match(widgetEditor, /js\/savelayout\.php/);
   assert.match(widgetEditor, /js\/savegridlayout\.php/);
