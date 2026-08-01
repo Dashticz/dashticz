@@ -1,8 +1,9 @@
 {
-"version": "3.22.0",
+"version": "3.22.1",
 "branch": "beta",
-"last_changes": "Preserve widget settings and add Standby grid parity",
+"last_changes": "Always show editor delete button; calendar agenda auto-expands to fit content",
 "changelog" : {
+            "3.22.1": "Always show editor delete button; calendar agenda auto-expands to fit content",
             "3.22.0": "Preserve widget settings and add Standby grid parity",
             "3.21.7": "Make Wizard convert column screens to compact free-positioned grids",
             "3.21.6": "Allow grid blocks to be dragged into arbitrary empty rows",
