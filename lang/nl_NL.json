@@ -244,7 +244,21 @@
             "news_description": "RSS-nieuwsfeed met automatische scroll.",
             "add_devices": "Devices toevoegen",
             "add_widgets": "Widgets toevoegen",
-            "move_tiles": "Tegels verplaatsen en schalen"
+            "move_tiles": "Tegels verplaatsen en schalen",
+            "iframe_title": "iFrame",
+            "iframe_description": "Sluit een website of lokale URL in als inline frame.",
+            "iframe_url": "URL",
+            "iframe_url_help": "Volledige URL inclusief http(s)://. De server moet insluiten toestaan (geen X-Frame-Options: DENY).",
+            "iframe_height": "Hoogte (px)",
+            "iframe_height_help": "Hoogte van het iframe in pixels. Laat leeg om de blokhoogte te gebruiken.",
+            "iframe_scrollbars": "Schuifbalken tonen",
+            "iframe_scaletofit": "Schaal-naar-breedte (px)",
+            "iframe_scaletofit_help": "Ontwerp-breedte van de ingesloten pagina (bijv. 1024). Schaalt de pagina zodat hij in de tegel past. Laat leeg om schalen uit te zetten.",
+            "iframe_forcerefresh": "Cache vernieuwen",
+            "iframe_refresh": "Verversingsinterval (seconden)",
+            "iframe_refresh_help": "Hoe vaak het iframe wordt herladen. Standaard: 300 seconden.",
+            "invalid_iframe_url": "Voer een URL in voor het iFrame (bijv. http://192.168.1.x:8080).",
+            "iframe_needs_url": "Voer via de instellingen een URL in voor het iFrame-widget."
         },
         "garbage": {
             "garbage_calendar_id": "Google Agenda-ID",

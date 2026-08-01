@@ -244,7 +244,21 @@
             "news_description": "RSS news feed with automatic scrolling.",
             "add_devices": "Add devices",
             "add_widgets": "Add widgets",
-            "move_tiles": "Move and scale tiles"
+            "move_tiles": "Move and scale tiles",
+            "iframe_title": "iFrame",
+            "iframe_description": "Embed any website or local URL in an inline frame.",
+            "iframe_url": "URL",
+            "iframe_url_help": "Full URL including http(s)://. The remote server must allow embedding (no X-Frame-Options: DENY).",
+            "iframe_height": "Height (px)",
+            "iframe_height_help": "Height of the iframe in pixels. Leave empty to use the block height.",
+            "iframe_scrollbars": "Show scrollbars",
+            "iframe_scaletofit": "Scale-to-fit width (px)",
+            "iframe_scaletofit_help": "Design width of the embedded page (e.g. 1024). Scales the page to fit the tile width. Leave empty to disable scaling.",
+            "iframe_forcerefresh": "Force cache refresh",
+            "iframe_refresh": "Refresh interval (seconds)",
+            "iframe_refresh_help": "How often to reload the iframe. Default: 300 seconds.",
+            "invalid_iframe_url": "Enter a URL for the iFrame (e.g. http://192.168.1.x:8080).",
+            "iframe_needs_url": "Enter a URL for the iFrame widget in its settings."
         },
         "garbage": {
             "garbage_calendar_id": "Google Calendar ID",
