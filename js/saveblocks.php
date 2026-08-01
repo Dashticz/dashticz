@@ -28,6 +28,7 @@ foreach ($data['devices'] as $entry) {
     if (is_int($entry) && $entry > 0) {
         $devices[] = [
             'idx' => $entry,
+            'isGroup' => false,
             'subidx' => 0,
             'name' => 'Device ' . $entry,
             'width' => 3,
@@ -71,6 +72,7 @@ foreach ($data['devices'] as $entry) {
         }
         $devices[] = [
             'idx' => $entry['idx'],
+            'isGroup' => false,
             'subidx' => $subidx,
             'name' => $name,
             'width' => $width,
@@ -80,6 +82,47 @@ foreach ($data['devices'] as $entry) {
                 && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $entry['key'])
                     ? $entry['key']
                     : null,
+        ];
+    } elseif (is_array($entry)
+        && isset($entry['idx'])
+        && is_string($entry['idx'])
+        && preg_match('/^s\d+$/', $entry['idx'])
+    ) {
+        /* Domoticz group/scene — the idx is the scene key e.g. 's1' */
+        $groupKey = $entry['idx'];
+        $name = (isset($entry['name']) && is_string($entry['name']))
+            ? substr(trim($entry['name']), 0, 100)
+            : $groupKey;
+        if ($name === '') {
+            $name = $groupKey;
+        }
+        $width = 3;
+        if (isset($entry['width'])) {
+            $width = (int)$entry['width'];
+        }
+        if ($width < 1) {
+            $width = 1;
+        } elseif ($width > 12) {
+            $width = 12;
+        }
+        $height = null;
+        if (array_key_exists('height', $entry) && $entry['height'] !== null && $entry['height'] !== '') {
+            $height = (int)$entry['height'];
+            $height = (int)(round($height / 10) * 10);
+            if ($height < 50) {
+                $height = 50;
+            } elseif ($height > 2000) {
+                $height = 2000;
+            }
+        }
+        $devices[] = [
+            'idx' => $groupKey,
+            'isGroup' => true,
+            'subidx' => 0,
+            'name' => $name,
+            'width' => $width,
+            'height' => $height,
+            'key' => $groupKey,  /* block key IS the group reference */
         ];
     } else {
         dashticz_json_error(400, 'Each device entry must be a positive integer or an object with an integer idx.');
@@ -104,7 +147,10 @@ if (!empty($devices)) {
     $usedKeys = array_keys(configwriter_extract_declared_block_refs($config));
     $requestKeys = [];
     foreach ($devices as &$device) {
-        if ($device['key'] !== null && !isset($requestKeys[$device['key']])) {
+        if (!empty($device['isGroup'])) {
+            /* group/scene: the key is fixed to the group reference (e.g. 's1') */
+            $requestKeys[$device['key']] = true;
+        } elseif ($device['key'] !== null && !isset($requestKeys[$device['key']])) {
             $requestKeys[$device['key']] = true;
         } else {
             $device['key'] = configwriter_make_block_key($device['name'], $usedKeys);
