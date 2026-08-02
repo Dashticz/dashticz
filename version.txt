@@ -1,8 +1,9 @@
 {
-    "version": "3.23.6",
+    "version": "3.23.7",
     "branch": "beta",
-    "last_changes": "Store XMLTV widget editor settings in global config entries for consistency with other widgets",
+    "last_changes": "Fix topbar block order so custom bars render blocks in config order",
     "changelog": {
+        "3.23.7": "Fix topbar block order so custom bars render blocks in config order",
         "3.23.6": "Store XMLTV widget editor settings in global config entries for consistency with other widgets",
         "3.23.5": "Fix XMLTV widget URL not saved or read back when changed in grid-mode widget editor settings",
         "3.23.4": "Fix the XMLTV widget so it keeps its own source/settings and supports cached XML, GZ and ZIP feeds",
