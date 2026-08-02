@@ -862,6 +862,19 @@ test('settings modal uses compact Bootstrap 5 controls and aligned help icons', 
   assert.doesNotMatch(styles, /\.material-switch/);
 });
 
+test('settings theme selector loads valid installed themes', () => {
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+
+  assert.match(
+    settings,
+    /settingList\['screen'\]\['theme'\]\['type'\] = 'select'/
+  );
+  assert.match(settings, /bindThemePicker\(\)/);
+  assert.match(settings, /js\/listthemes\.php/);
+  assert.match(settings, /settings\['theme'\] \|\| 'default'/);
+  assert.match(settings, /\$select\.val\(currentTheme\)/);
+});
+
 test('standby background image is not overwritten by standby CSS', () => {
   const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
   const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');

@@ -366,6 +366,18 @@ test('background list endpoint safely exposes bundled and custom images', () => 
   assert.doesNotMatch(source, /\$_POST\[/);
 });
 
+test('theme list endpoint exposes only valid direct theme directories', () => {
+  const source = read('js/listthemes.php');
+
+  assert.match(source, /dashticz_require_same_origin\(\)/);
+  assert.match(source, /REQUEST_METHOD.*GET/);
+  assert.match(source, /realpath\(__DIR__ \. '\/\.\.\/themes'\)/);
+  assert.match(source, /preg_match\('\/\^\[a-z0-9\]\[a-z0-9_-\]\*\$\/i'/);
+  assert.match(source, /\$entry \. '\.css'/);
+  assert.match(source, /is_link\(\$themeDir\)/);
+  assert.match(source, /is_link\(\$themeCss\)/);
+});
+
 test('screens writer can add extra screens with CSRF protection', () => {
   const source = read('js/savescreens.php');
   const writer = read('js/configwriter.php');
