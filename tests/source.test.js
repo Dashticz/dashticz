@@ -871,6 +871,9 @@ test('modern dark theme is portable and documented', () => {
   );
   assert.match(theme, /\.titlegroups \.dt_content,[\s\S]*justify-content: flex-start !important/);
   assert.match(theme, /\.titlegroups \.dt_title,[\s\S]*text-align: left !important/);
+  assert.match(theme, /\.trash \.state \{[\s\S]*text-align: right !important/);
+  assert.match(theme, /\.trash \.state table \{[\s\S]*margin-left: auto !important/);
+  assert.match(theme, /\.trash \.trashtype,[\s\S]*\.trash \.trashdate \{[\s\S]*text-align: right !important/);
   assert.match(theme, /\.titlegroups \.dt_state,[\s\S]*display: none !important/);
   assert.match(theme, /\.transbg\.titlegroups/);
   assert.match(theme, /\.titlegroups[\s\S]*background: var\(--main-bg\) !important/);

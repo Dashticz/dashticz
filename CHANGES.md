@@ -2,6 +2,9 @@
 
 ## 3.23.6 — Device Editor helper blocks
 
+- **Modern Dark garbage alignment**: collection types and dates are aligned at
+  the right side of the data column while the garbage icon remains on the left.
+
 - **Live Domoticz updates in movement mode**: device refreshes now preserve
   the Layout Editor overlay and its drag/resize controls. They no longer
   reapply the saved fixed pixel height while an edit is in progress.

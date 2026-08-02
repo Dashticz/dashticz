@@ -9,6 +9,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 v3.23.6 beta (1-8-2026)
 --------------------------
 
+* **Modern Dark garbage alignment**: the Garbage widget now right-aligns its
+  collection text while retaining the garbage icon on the left.
+
 * **Movement mode and live updates**: Domoticz device refreshes no longer
   remove the editor overlay or restore the old fixed pixel height. Updated
   blocks therefore remain draggable and resizable throughout the edit.
