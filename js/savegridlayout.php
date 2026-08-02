@@ -223,20 +223,19 @@ $config = configwriter_upsert_root_config_settings(
     $widgetSettings,
     true
 );
-list($deviceStartMarker, $deviceEndMarker) = configwriter_editor_markers(
-    'device',
-    $screenNumber
-);
-$config = configwriter_remove_section(
-    $config,
-    $deviceStartMarker,
-    $deviceEndMarker
-);
-$config = configwriter_remove_section(
-    $config,
-    $widgetStartMarker,
-    $widgetEndMarker
-);
+
+/* A grid layout supersedes the generated column layout for the same screen.
+ * Remove all temporary and consolidated editor sections before emitting the
+ * grid section; otherwise an IDX-key migration leaves the old name-keyed
+ * blocks in dashboard-editor and creates duplicate device definitions. */
+$config = configwriter_remove_editor_sections($config, $screenNumber);
+if ($screenNumber === 0) {
+    $config = configwriter_remove_section(
+        $config,
+        '// [standby-editor-start]',
+        '// [standby-editor-end]'
+    );
+}
 $config = configwriter_remove_section($config, $startMarker, $endMarker);
 $section = configwriter_build_grid_layout_section(
     $items,

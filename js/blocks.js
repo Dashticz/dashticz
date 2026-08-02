@@ -178,7 +178,23 @@ function deviceUpdateHandler(block) {
 
   getCustomFunction('getStatus', block, false);
   var $selector = $(selector);
-  if (typeof block.title === 'undefined') block.title = device.Name;
+  if (!Object.prototype.hasOwnProperty.call(block, '_dashticzAutoTitle')) {
+    // Remember whether CONFIG.js supplied an explicit title. The marker is
+    // non-enumerable so editor serialization never writes this runtime state.
+    Object.defineProperty(block, '_dashticzAutoTitle', {
+      value: typeof block.title === 'undefined',
+      enumerable: false,
+    });
+  }
+  if (block._dashticzAutoTitle) {
+    // Keep the live Domoticz title out of serialized block definitions.
+    Object.defineProperty(block, 'title', {
+      value: device.Name,
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
+  }
 
   //var $div=$selector.find('.block_'+fullidx); //doesn't work for blocks['myblock'] kind of definitions
   var $div = $selector.find('.mh');

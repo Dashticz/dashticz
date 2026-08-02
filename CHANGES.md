@@ -2,6 +2,15 @@
 
 ## 3.23.6 — Device Editor helper blocks
 
+- **Stable Domoticz device keys**: Device Editor output now uses
+  `device_<IDX>` (and `device_<IDX>_<subidx>`) instead of mutable device names.
+  Normal device definitions omit `title` so later Domoticz renames appear on
+  the dashboard automatically; explicit titles remain backwards compatible.
+  Grid saves remove the superseded generated column section, preventing old
+  name-based blocks from remaining beside their new IDX-based replacements.
+  Repeated saves also reuse the same IDX key instead of creating suffixed
+  variants such as `device_1498_2`.
+
 - **Modern Dark garbage alignment**: collection types and dates are aligned at
   the right side of the data column while the garbage icon remains on the left.
 

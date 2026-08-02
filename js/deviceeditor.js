@@ -1205,9 +1205,8 @@ var DashticzDeviceEditor = (function () {
       };
       if (p.subidx) entry.subidx = p.subidx;
       if (deviceHeights[ck]) entry.height = deviceHeights[ck];
-      if (gridMode && gridRefs[_deviceOrderKey(ck)]) {
-        entry.key = gridRefs[_deviceOrderKey(ck)];
-      }
+      // Device keys are generated from IDX by saveblocks.php. Do not retain a
+      // legacy name-based grid reference, because Domoticz names may change.
       return entry;
     });
 

@@ -9,6 +9,15 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 v3.23.6 beta (1-8-2026)
 --------------------------
 
+* **Stable Domoticz device keys**: blocks written by the Device Editor now use
+  ``device_<IDX>`` or ``device_<IDX>_<subidx>`` instead of a mutable Domoticz
+  name. Generated normal-device blocks omit ``title``, so the dashboard follows
+  later Domoticz renames. Existing hand-written keys and explicit titles remain
+  supported and editor-managed layouts migrate on their next save. Grid saves
+  also remove their superseded generated column section, preventing duplicate
+  old-name and IDX-key definitions. Repeated saves reuse the same IDX key rather
+  than producing suffixed duplicates such as ``device_1498_2``.
+
 * **Modern Dark garbage alignment**: the Garbage widget now right-aligns its
   collection text while retaining the garbage icon on the left.
 
