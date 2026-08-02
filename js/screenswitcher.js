@@ -537,17 +537,17 @@ var DashticzScreenSwitcher = (function () {
     });
 
     if (typeof myswiper !== 'undefined' && myswiper) {
-      myswiper.off('slideChange.screenswitcher');
-      myswiper.off('transitionEnd.screenswitcher');
-      myswiper.on('slideChange.screenswitcher', onSwiperChange);
-      myswiper.on('transitionEnd.screenswitcher', onSwiperChange);
+      myswiper.off('slideChange', onSwiperChange);
+      myswiper.off('transitionEnd', onSwiperChange);
+      myswiper.on('slideChange', onSwiperChange);
+      myswiper.on('transitionEnd', onSwiperChange);
     } else {
       setTimeout(function () {
         if (typeof myswiper !== 'undefined' && myswiper) {
-          myswiper.off('slideChange.screenswitcher');
-          myswiper.off('transitionEnd.screenswitcher');
-          myswiper.on('slideChange.screenswitcher', onSwiperChange);
-          myswiper.on('transitionEnd.screenswitcher', onSwiperChange);
+          myswiper.off('slideChange', onSwiperChange);
+          myswiper.off('transitionEnd', onSwiperChange);
+          myswiper.on('slideChange', onSwiperChange);
+          myswiper.on('transitionEnd', onSwiperChange);
         }
       }, 500);
     }

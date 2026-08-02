@@ -64,6 +64,17 @@ test('all application JavaScript files pass a syntax check', () => {
   }
 });
 
+test('screen switcher subscribes to Swiper events using Swiper event names', () => {
+  const source = fs.readFileSync(
+    path.join(root, 'js/screenswitcher.js'),
+    'utf8'
+  );
+
+  assert.match(source, /myswiper\.on\('slideChange', onSwiperChange\)/);
+  assert.match(source, /myswiper\.on\('transitionEnd', onSwiperChange\)/);
+  assert.doesNotMatch(source, /myswiper\.on\('(?:slideChange|transitionEnd)\.screenswitcher'/);
+});
+
 test('first-run setup uses its own wizard and removes the legacy browser fallback', () => {
   const source = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
   const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
