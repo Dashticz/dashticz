@@ -41,6 +41,26 @@ The ``xmltvurl`` property is the only required setting.  It must point to a
 valid XMLTV XML file.  If the file is on a different origin you may need to
 prefix it with ``_CORS_PATH`` (see the Dashticz CORS settings).
 
+When you use the Widget Editor / Settings UI, Dashticz stores these widget
+settings as global ``config[...]`` values for consistency with widgets such as
+Sonarr::
+
+    config['xmltv_url'] = 'http://my-epg-server/guide.xml';
+    config['xmltv_channels'] = 'BBC One, ITV, Channel 4';
+    config['xmltv_maxitems'] = 10;
+    config['xmltv_layout'] = 0;
+    config['xmltv_separator'] = '-';
+    config['xmltv_refresh'] = 3600;
+
+    blocks['widget_xmltvguide'] = {
+        type: 'xmltvguide',
+        width: 12,
+        title: 'TV Guide'
+    }
+
+Hand-written block-local settings (``xmltvurl``, ``channels``, etc.) remain
+supported and override the global ``config[...]`` values for that block.
+
 Parameters
 ----------
 
