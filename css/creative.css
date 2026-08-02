@@ -939,6 +939,13 @@ next css sets the default height of the frame popup
   width: 100%;
 }
 
+/* Match the compact Modern Dark dimensions without resizing other blocks. */
+.colbar.transbg {
+  padding-top: 8px;
+  padding-bottom: 6px;
+  border: 3px solid transparent;
+}
+
 .colbar .logo {
   order: 1;
   flex: 0 1 auto;
@@ -951,6 +958,12 @@ next css sets the default height of the frame popup
 .colbar .miniclock {
   order: 2;
   flex: 1 1 auto;
+  box-sizing: border-box;
+  height: 40px !important;
+  margin: 0;
+  padding-top: 2px !important;
+  padding-bottom: 2px !important;
+  border: 0;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

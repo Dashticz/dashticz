@@ -78,6 +78,9 @@ in its left-hand lane and the clock starts directly after that lane. The screen 
 Custom/Wizard switch and configuration icons form a single right-aligned
 cluster.
 
+The default topbar uses the same compact height as the Modern Dark theme,
+including when no explicit theme is selected.
+
 ### Device Editor
 
 After Dashticz has started, select the plus icon next to the settings icon in
