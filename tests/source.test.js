@@ -385,6 +385,8 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   );
   assert.match(deviceEditor, /function _activeScreenPayload/);
   assert.match(deviceEditor, /function _activeScreenDom/);
+  assert.match(deviceEditor, /Device keys are generated from IDX by saveblocks\.php/);
+  assert.doesNotMatch(deviceEditor, /entry\.key = gridRefs\[_deviceOrderKey\(ck\)\]/);
   assert.match(deviceEditor, /\$activeScreen\.find\('\[data-colindex\]'\)/);
   assert.match(deviceEditor, /screen: _activeScreenPayload\(\)/);
   assert.match(deviceEditor, /function _widgetFromReference/);
@@ -407,6 +409,9 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   );
   assert.match(domoticzBlock, /applyConfiguredHeight/);
   assert.match(domoticzBlock, /setProperty\('height'.*'important'\)/s);
+  assert.match(blocksSource, /Object\.defineProperty\(block, '_dashticzAutoTitle'/);
+  assert.match(blocksSource, /value: typeof block\.title === 'undefined'/);
+  assert.match(blocksSource, /Object\.defineProperty\(block, 'title',[\s\S]*value: device\.Name[\s\S]*enumerable: false/);
 });
 
 test('device editor supports translated dummy and title blocks', () => {

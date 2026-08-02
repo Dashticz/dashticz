@@ -189,7 +189,36 @@ $config = rtrim($config);
 $blockKeys = [];
 $blocksOnly = !empty($data['blocksOnly']);
 if (!empty($devices)) {
-    $usedKeys = array_keys(configwriter_extract_declared_block_refs($config));
+    $keyCollisionConfig = $config;
+    if ($blocksOnly) {
+        /* The active screen's editor sections are replaced by savegridlayout.php
+         * immediately after this request. Ignore their keys for collision
+         * detection so device_1498 is reused instead of becoming device_1498_2.
+         * Hand-written blocks outside these sections still reserve their keys. */
+        $keyCollisionConfig = configwriter_remove_editor_sections(
+            $keyCollisionConfig,
+            $screenNumber
+        );
+        list($gridStartMarker, $gridEndMarker) = configwriter_editor_markers(
+            'grid-layout',
+            $screenNumber
+        );
+        $keyCollisionConfig = configwriter_remove_section(
+            $keyCollisionConfig,
+            $gridStartMarker,
+            $gridEndMarker
+        );
+        if ($screenNumber === 0) {
+            $keyCollisionConfig = configwriter_remove_section(
+                $keyCollisionConfig,
+                '// [standby-editor-start]',
+                '// [standby-editor-end]'
+            );
+        }
+    }
+    $usedKeys = array_keys(
+        configwriter_extract_declared_block_refs($keyCollisionConfig)
+    );
     $requestKeys = [];
     foreach ($devices as &$device) {
         if (isset($device['kind']) && in_array($device['kind'], ['dummy', 'title'], true)) {
@@ -207,7 +236,14 @@ if (!empty($devices)) {
         } elseif ($device['key'] !== null && !isset($requestKeys[$device['key']])) {
             $requestKeys[$device['key']] = true;
         } else {
-            $device['key'] = configwriter_make_block_key($device['name'], $usedKeys);
+            /* Domoticz names are mutable (for example event devices). Use the
+             * immutable IDX for editor-generated keys so references stay clear
+             * and predictable when a device is renamed. */
+            $device['key'] = configwriter_make_device_block_key(
+                $device['idx'],
+                $device['subidx'],
+                $usedKeys
+            );
             $requestKeys[$device['key']] = true;
         }
         $blockKeys[] = $device['key'];

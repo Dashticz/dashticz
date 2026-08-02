@@ -1314,6 +1314,16 @@ function configwriter_make_block_key($name, &$usedKeys)
     return $key;
 }
 
+/** Build a stable editor-managed key from a Domoticz IDX and optional sub-IDX. */
+function configwriter_make_device_block_key($idx, $subidx, &$usedKeys)
+{
+    $key = 'device_' . (int)$idx;
+    if ((int)$subidx > 0) {
+        $key .= '_' . (int)$subidx;
+    }
+    return configwriter_make_block_key($key, $usedKeys);
+}
+
 function configwriter_device_block_props($device, $defaultWidth = 3)
 {
     $rawIdx = $device['idx'];
@@ -1328,7 +1338,6 @@ function configwriter_device_block_props($device, $defaultWidth = 3)
         'width' => $width,
         'hide_data' => true,
         'last_update' => false,
-        'title' => $title,
     ];
 
     if (!$isGroup) {
@@ -1341,6 +1350,9 @@ function configwriter_device_block_props($device, $defaultWidth = 3)
     }
     /* For groups/scenes the block key is the scene reference (e.g. 's1'),
      * so no idx property is needed in the block definition itself. */
+    if ($isGroup) {
+        $props['title'] = $title;
+    }
 
     if (isset($device['height']) && is_int($device['height'])) {
         $props['height'] = $device['height'];
