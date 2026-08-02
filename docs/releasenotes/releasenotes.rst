@@ -6,6 +6,30 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.23.6 beta (1-8-2026)
+--------------------------
+
+Fixes
+~~~~~
+
+* **XMLTV TV Guide — consistent setting storage**: the Widget Editor now stores the XMLTV widget's URL, channel filter, maximum items, layout, separator, and refresh interval as global ``config['xmltv_*']`` settings, matching the pattern already used by widgets such as Sonarr.  Generated XMLTV blocks now use ``type: 'xmltvguide'`` and read those shared settings automatically, while existing hand-written blocks that keep ``xmltvurl`` / ``channels`` / ``maxitems`` directly on the block remain supported as overrides.
+
+v3.23.5 beta (1-8-2026)
+--------------------------
+
+Fixes
+~~~~~
+
+* **XMLTV TV Guide — settings not saved**: in grid mode, changing the XMLTV URL (or any other XMLTV widget setting) via the widget-editor settings popup now persists correctly.  Previously ``savegridlayout.php`` would re-apply the stale block definition from the old grid-layout section of ``CONFIG.js`` instead of the freshly-saved definition written by ``savewidgets.php``, silently discarding the change.  Additionally, the widget editor now reads back ``layout``, ``separator`` and ``refresh`` from an existing saved block when the settings popup is opened in grid mode.
+
+v3.23.4 beta (1-8-2026)
+--------------------------
+
+Fixes
+~~~~~
+
+* **XMLTV TV Guide**: the XMLTV widget now stays on its own XMLTV data path instead of falling back to the legacy ``tvgids.nl`` JSON API when ``channels`` is configured.  Widget saves now preserve the XMLTV-specific ``layout``, ``separator`` and ``refresh`` options during Widget/Layout Editor updates.  Public XMLTV feeds can now be fetched through a dedicated PHP endpoint that caches downloads for 24 hours and accepts plain XML plus ``.gz`` and ``.zip`` guide files.
+
 v3.23.3 beta (1-8-2026)
 --------------------------
 

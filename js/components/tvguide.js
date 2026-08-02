@@ -5,7 +5,7 @@ var allchannels = [];
 var DT_tvguide = {
   name: 'tvguide',
   canHandle: function (block) {
-    return block && block.channels;
+    return block && block.channels && typeof block.xmltvurl === 'undefined';
   },
   defaultCfg: {
     icon: 'fas fa-tv',
