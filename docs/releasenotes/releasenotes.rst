@@ -9,6 +9,11 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 v3.23.6 beta (1-8-2026)
 --------------------------
 
+Enhancements
+~~~~~~~~~~~~
+
+* **Dynamic theme selector**: **Settings > Display > Dashticz-Theme** is now a dropdown populated from valid theme folders in ``themes/``. A theme is listed when ``themes/<name>/<name>.css`` exists; **Default** and existing manually configured values remain available.
+
 Fixes
 ~~~~~
 

@@ -262,6 +262,10 @@ editor follows the configuration selected in the URL; for example,
 
 ## Included themes
 
+The **Dashticz-Theme** field under Settings > Display is a dropdown populated
+from valid subdirectories in `themes/`. A directory is listed when it contains
+`themes/<name>/<name>.css`; `Default` remains available for the built-in style.
+
 The `modern-dark` theme provides a reusable dark dashboard style with clear
 active button states, compact rounded blocks, subtle dark borders and spacing
 between blocks, larger selector buttons and pull-down controls, switch status

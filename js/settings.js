@@ -142,7 +142,10 @@ settingList['screen']['topbar_use_png_icons'] = {
 settingList['screen']['theme'] = {};
 settingList['screen']['theme']['title'] =
   language.settings.screen.dashticz_themes;
-settingList['screen']['theme']['type'] = 'text';
+settingList['screen']['theme']['type'] = 'select';
+settingList['screen']['theme']['options'] = {
+  default: 'Default',
+};
 settingList['screen']['theme']['help'] =
   language.settings.screen.dashticz_themes_help;
 
@@ -1297,6 +1300,7 @@ function loadSettings() {
 
         addSettingsAboutItems();
         bindSettingsCategoryTiles();
+        bindThemePicker();
         bindBackgroundPickers();
         bindSettingsUpdateControls();
         bindWeatherProviderToggle();
@@ -1827,6 +1831,56 @@ function bindSettingsCategoryTiles() {
         '#settings-category-widgets > .settings-category-back, #settings-category-widgets > .settings-panel-title'
       )
       .removeClass('d-none');
+  });
+}
+
+function themeOptionLabel(themeName) {
+  return String(themeName || '')
+    .split(/[-_]+/)
+    .map(function (part) {
+      return part ? part.charAt(0).toUpperCase() + part.slice(1) : '';
+    })
+    .join(' ');
+}
+
+function bindThemePicker() {
+  var $select = $('#settingspopup #setting-theme');
+  if (!$select.length) return;
+
+  var currentTheme = String(settings['theme'] || 'default');
+
+  function addThemeOption(themeName, suffix) {
+    var safeName = String(themeName || '').trim();
+    var $existingOption = $select.find('option').filter(function () {
+      return String($(this).val()) === safeName;
+    });
+    if (!safeName) return;
+
+    if ($existingOption.length) {
+      // Remove the fallback marker when the configured theme is installed.
+      if (!suffix) $existingOption.text(themeOptionLabel(safeName));
+      return;
+    }
+
+    $select.append(
+      $('<option></option>')
+        .attr('value', safeName)
+        .text(themeOptionLabel(safeName) + (suffix || ''))
+    );
+  }
+
+  // Preserve a hand-written CONFIG.js value even when its folder is absent.
+  if (currentTheme !== 'default') {
+    addThemeOption(currentTheme, ' (configured)');
+  }
+  $select.val(currentTheme);
+
+  $.getJSON('js/listthemes.php').done(function (data) {
+    var themes = (data && data.themes) || [];
+    themes.forEach(function (themeName) {
+      addThemeOption(themeName, '');
+    });
+    $select.val(currentTheme);
   });
 }
 
