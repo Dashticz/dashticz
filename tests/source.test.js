@@ -1197,7 +1197,9 @@ test('topbar and layout editor keep controls usable', () => {
   assert.match(editor, /var MIN_GRID_WIDTH = 2;/);
   assert.match(editor, /var MIN_GRID_HEIGHT = 4;/);
   assert.match(editor, /var MIN_TITLE_GRID_HEIGHT = 3;/);
+  assert.match(editor, /var MIN_MINICLOCK_GRID_HEIGHT = 2;/);
   assert.match(editor, /function _minimumGridHeight/);
+  assert.match(editor, /type === 'miniclock'\) return MIN_MINICLOCK_GRID_HEIGHT;/);
   assert.match(editor, /item\.grid\.w < MIN_GRID_WIDTH \|\| item\.grid\.h < minimumHeight/);
   assert.match(editor, /width = Math\.max\(\s*MIN_GRID_WIDTH,/s);
   assert.match(editor, /height = Math\.max\(_minimumGridHeight\(item\),/);
