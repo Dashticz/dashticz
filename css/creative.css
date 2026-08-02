@@ -121,13 +121,13 @@
 .currencydown {
   background: rgba(132, 22, 12, 0.7) !important;
   background-clip: padding-box;
-  border: 7px solid rgba(255, 255, 255, 0);
+  border: 3px solid rgba(255, 255, 255, 0);
 }
 
 .currencyup {
   background: rgba(0, 128, 0, 0.7) !important;
   background-clip: padding-box;
-  border: 7px solid rgba(255, 255, 255, 0);
+  border: 3px solid rgba(255, 255, 255, 0);
 }
 
 .dt_block {
@@ -135,7 +135,7 @@
   align-items: flex-start;
   background: rgba(0, 0, 0, 0.2);
   background-clip: padding-box;
-  border: 7px solid rgba(255, 255, 255, 0);
+  border: 3px solid rgba(255, 255, 255, 0);
   padding: 5px !important;
 }
 
@@ -2405,7 +2405,7 @@ p {
 .transbg {
   padding-top: 15px;
   padding-bottom: 15px;
-  border: 7px solid rgba(255, 255, 255, 0);
+  border: 3px solid rgba(255, 255, 255, 0);
   background: rgba(0, 0, 0, 0.2);
   background-clip: padding-box;
 }
@@ -2442,7 +2442,7 @@ Only add this hover on NON touch devices
   html.non-touch .hover:hover{
     background: rgba(255, 255, 255, 0.1);
     background-clip: padding-box;
-    border: 7px solid rgba(255, 255, 255, 0);
+    border: 3px solid rgba(255, 255, 255, 0);
   }
 
   html.non-touch .dial.hover:hover {
@@ -2459,7 +2459,7 @@ Only add this hover on NON touch devices
 .transbg.hover.hovered {
   background: rgba(255, 255, 255, 0.1);
   background-clip: padding-box;
-  border: 7px solid rgba(255, 255, 255, 0);
+  border: 3px solid rgba(255, 255, 255, 0);
   cursor: pointer;
 }
 
