@@ -979,6 +979,9 @@ next css sets the default height of the frame popup
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  /* A topbar clock is part of the bar, including in Custom mode. */
+  background: transparent !important;
+  box-shadow: none !important;
 }
 
 /* Screen selection and configuration controls form one right-aligned

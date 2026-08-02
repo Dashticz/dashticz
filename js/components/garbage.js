@@ -35,7 +35,7 @@ var DT_garbage = (function () {
       housenumber: settings['garbage_housenumber'] || '',
       housenumberSuffix: settings['garbage_housenumberadd'] || '',
       zipcode: settings['garbage_zipcode'] || '',
-      maxitems: settings['garbage_maxitems'] || 5,
+      maxitems: settings['garbage_maxitems'] || 4,
       calendar_id: settings['garbage_calendar_id'],
       icalurl: settings['garbage_icalurl'],
       refresh: 4 * 3600,
@@ -49,7 +49,7 @@ var DT_garbage = (function () {
       mapping: settings['garbage_mapping'],
       date_separator: ': ',
       layout: 1,
-      maxdays: 32,
+      maxdays: settings['garbage_maxdays'] || 32,
       ignoressl: false,
       defaultGarbage: 'kerstboom'
     },

@@ -201,6 +201,11 @@ test('widget writer whitelists widgets and protects CONFIG.js writes', () => {
   assert.match(source, /weather_icons/);
   assert.match(source, /showGust/);
   assert.match(source, /allowedWeatherIcons/);
+  assert.match(source, /'garbage_maxdays'\s*=>\s*'number'/);
+  assert.match(source, /'calendar_maxitems'\s*=>\s*'number'/);
+  assert.match(source, /\$props\['maxdays'\] = \$widget\['maxdays'\]/);
+  assert.match(source, /\$props\['maxitems'\] = \$widget\['maxitems'\]/);
+  assert.match(source, /\$props\['aspectratio'\] = \$widget\['aspectratio'\]/);
   assert.match(source, /Unknown widget id/);
   assert.match(source, /Unknown weather provider/);
   assert.match(source, /Unknown clock type/);

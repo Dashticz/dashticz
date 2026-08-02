@@ -63,6 +63,7 @@ $allowedSettings = [
     'garbage_housenumber'    => 'string',
     'garbage_housenumberadd' => 'string',
     'garbage_maxitems'       => 'number',
+    'garbage_maxdays'        => 'number',
     'garbage_width'          => 'number',
     'garbage_hideicon'       => 'bool',
     'garbage_icon_use_colors'=> 'bool',
@@ -78,6 +79,7 @@ $allowedSettings = [
     // calendar
     'calendarformat'         => 'string',
     'calendarlanguage'       => 'calendar_language',
+    'calendar_maxitems'      => 'number',
     // security panel
     'security_button_icons'  => 'bool',
     'security_panel_lock'    => 'bool',
@@ -217,6 +219,16 @@ foreach ($data['widgets'] as $entry) {
             $widget['displayTitle'] = $displayTitle;
         }
     }
+    if ($id === 'garbage') {
+        $maxitems = isset($entry['maxitems']) && is_numeric($entry['maxitems'])
+            ? (int)$entry['maxitems']
+            : 4;
+        $maxdays = isset($entry['maxdays']) && is_numeric($entry['maxdays'])
+            ? (int)$entry['maxdays']
+            : 32;
+        $widget['maxitems'] = max(1, min(500, $maxitems));
+        $widget['maxdays'] = max(1, min(3660, $maxdays));
+    }
     if (array_key_exists('height', $entry) && $entry['height'] !== null && $entry['height'] !== '') {
         $height = (int)(round(((int)$entry['height']) / 10) * 10);
         $widget['height'] = max(50, min(2000, $height));
@@ -260,6 +272,10 @@ foreach ($data['widgets'] as $entry) {
             dashticz_json_error(400, 'Calendar requires a valid http(s) ICS URL.');
         }
         $widget['icalurl'] = $icalurl;
+        $maxitems = isset($entry['maxitems']) && is_numeric($entry['maxitems'])
+            ? (int)$entry['maxitems']
+            : 15;
+        $widget['maxitems'] = max(1, min(500, $maxitems));
     }
 
     if ($id === 'clock') {
@@ -439,6 +455,15 @@ foreach ($data['widgets'] as $entry) {
             $s = (int)$entry['scaletofit'];
             if ($s > 0 && $s <= 10000) {
                 $widget['scaletofit'] = $s;
+            }
+        }
+
+        // Optional: responsive iframe height expressed as height / width.
+        if (isset($entry['aspectratio']) && is_numeric($entry['aspectratio'])) {
+            $ratio = (float)$entry['aspectratio'];
+            if ($ratio > 0 && $ratio <= 10) {
+                $widget['aspectratio'] = $ratio;
+                unset($widget['iframeHeight']);
             }
         }
 
@@ -627,6 +652,8 @@ function _widgetBlockProps($widget)
         case 'garbage':
             $props['type'] = 'garbage';
             $props['title'] = isset($widget['displayTitle']) ? $widget['displayTitle'] : 'Afval';
+            $props['maxitems'] = $widget['maxitems'];
+            $props['maxdays'] = $widget['maxdays'];
             break;
         case 'spotify':
             $props['type'] = 'spotify';
@@ -672,6 +699,7 @@ function _widgetBlockProps($widget)
             $props['type'] = 'calendar';
             $props['title'] = 'Kalender';
             $props['icalurl'] = $widget['icalurl'];
+            $props['maxitems'] = $widget['maxitems'];
             break;
         case 'secpanel':
             $props['type'] = 'secpanel';
@@ -744,6 +772,11 @@ function _widgetBlockProps($widget)
             }
             if (!empty($widget['scaletofit'])) {
                 $props['scaletofit'] = $widget['scaletofit'];
+            }
+            if (!empty($widget['aspectratio'])) {
+                // Responsive sizing takes precedence over the legacy fixed height.
+                unset($props['height']);
+                $props['aspectratio'] = $widget['aspectratio'];
             }
             if (!empty($widget['forcerefresh'])) {
                 $props['forcerefresh'] = true;

@@ -9,6 +9,16 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 v3.23.7 beta (2-8-2026)
 --------------------------
 
+* **Topbar clock and widget sizing options**: the topbar Mini clock now has a
+  transparent background in Custom mode. Calendar exposes a visible-row limit
+  (``maxitems``, default 15). Garbage exposes both ``maxitems`` (default 4) and
+  ``maxdays`` (default 32), and stores both properties in the generated block.
+
+* **Responsive iframe defaults**: newly added iframe widgets now default to
+  ``scaletofit: 300`` and ``aspectratio: 0.9`` and omit a fixed ``height``.
+  Existing iframe blocks that use only ``height`` remain unchanged and fully
+  supported.
+
 * **Fix topbar block order**: blocks listed in ``columns['bar']['blocks']``
   now appear in the configured order. Previously ``sunriseholder`` (and any
   other block without an explicit CSS ``order`` value) defaulted to ``order:0``

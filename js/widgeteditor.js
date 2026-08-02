@@ -365,7 +365,8 @@ var DashticzWidgetEditor = (function () {
         garbage_street: _s('garbage_street'),
         garbage_housenumber: _s('garbage_housenumber'),
         garbage_housenumberadd: _s('garbage_housenumberadd'),
-        garbage_maxitems: _s('garbage_maxitems', '3'),
+        garbage_maxitems: _s('garbage_maxitems', '4'),
+        garbage_maxdays: _s('garbage_maxdays', '32'),
         garbage_width: _s('garbage_width'),
         garbage_hideicon: _n('garbage_hideicon'),
         garbage_icon_use_colors: _n('garbage_icon_use_colors', 1),
@@ -385,6 +386,7 @@ var DashticzWidgetEditor = (function () {
         icalurl: '',
         calendarformat: _s('calendarformat', 'dd DD.MM HH:mm'),
         calendarlanguage: _s('calendarlanguage', 'en_US'),
+        calendar_maxitems: _s('calendar_maxitems', '15'),
       },
       publictransport: {
         provider: 'treinen',
@@ -424,9 +426,10 @@ var DashticzWidgetEditor = (function () {
       // iframe widget block properties (block-specific, not global config settings)
       iframe: {
         frameurl: '',
-        height: '400',
+        height: '',
         scrollbars: 1,
-        scaletofit: '',
+        scaletofit: '300',
+        aspectratio: '0.9',
         forcerefresh: 0,
         refresh: '300',
       },
@@ -499,6 +502,17 @@ var DashticzWidgetEditor = (function () {
           typeof definition.icalurl === 'string'
         ) {
           widgetConfigs.calendar.icalurl = definition.icalurl;
+        }
+        if (item.id === 'calendar' && typeof definition.maxitems !== 'undefined') {
+          widgetConfigs.calendar.calendar_maxitems = String(definition.maxitems);
+        }
+        if (item.id === 'garbage') {
+          if (typeof definition.maxitems !== 'undefined') {
+            widgetConfigs.garbage.garbage_maxitems = String(definition.maxitems);
+          }
+          if (typeof definition.maxdays !== 'undefined') {
+            widgetConfigs.garbage.garbage_maxdays = String(definition.maxdays);
+          }
         }
         if (
           item.id === 'clock' &&
@@ -602,15 +616,21 @@ var DashticzWidgetEditor = (function () {
           if (typeof definition.frameurl === 'string') {
             widgetConfigs.iframe.frameurl = definition.frameurl;
           }
-          if (typeof definition.height !== 'undefined') {
-            widgetConfigs.iframe.height = String(definition.height);
-          }
+          widgetConfigs.iframe.height =
+            typeof definition.height !== 'undefined'
+              ? String(definition.height)
+              : '';
           if (typeof definition.scrollbars !== 'undefined') {
             widgetConfigs.iframe.scrollbars = definition.scrollbars === false ? 0 : 1;
           }
-          if (typeof definition.scaletofit !== 'undefined') {
-            widgetConfigs.iframe.scaletofit = String(definition.scaletofit);
-          }
+          widgetConfigs.iframe.scaletofit =
+            typeof definition.scaletofit !== 'undefined'
+              ? String(definition.scaletofit)
+              : '';
+          widgetConfigs.iframe.aspectratio =
+            typeof definition.aspectratio !== 'undefined'
+              ? String(definition.aspectratio)
+              : '';
           if (typeof definition.forcerefresh !== 'undefined') {
             widgetConfigs.iframe.forcerefresh = definition.forcerefresh ? 1 : 0;
           }
@@ -865,8 +885,20 @@ var DashticzWidgetEditor = (function () {
       if (typeof definition.icons === 'string') {
         widgetConfigs.weather.weather_icons = definition.icons;
       }
-    } else if (item.id === 'calendar' && typeof definition.icalurl === 'string') {
-      widgetConfigs.calendar.icalurl = definition.icalurl;
+    } else if (item.id === 'calendar') {
+      if (typeof definition.icalurl === 'string') {
+        widgetConfigs.calendar.icalurl = definition.icalurl;
+      }
+      if (typeof definition.maxitems !== 'undefined') {
+        widgetConfigs.calendar.calendar_maxitems = String(definition.maxitems);
+      }
+    } else if (item.id === 'garbage') {
+      if (typeof definition.maxitems !== 'undefined') {
+        widgetConfigs.garbage.garbage_maxitems = String(definition.maxitems);
+      }
+      if (typeof definition.maxdays !== 'undefined') {
+        widgetConfigs.garbage.garbage_maxdays = String(definition.maxdays);
+      }
     } else if (item.id === 'clock') {
       widgetConfigs.clock.clockType = definition.type || 'basicclock';
       [
@@ -911,15 +943,19 @@ var DashticzWidgetEditor = (function () {
       if (typeof definition.frameurl === 'string') {
         widgetConfigs.iframe.frameurl = definition.frameurl;
       }
-      if (typeof definition.height !== 'undefined') {
-        widgetConfigs.iframe.height = String(definition.height);
-      }
+      widgetConfigs.iframe.height =
+        typeof definition.height !== 'undefined' ? String(definition.height) : '';
       if (typeof definition.scrollbars !== 'undefined') {
         widgetConfigs.iframe.scrollbars = definition.scrollbars === false ? 0 : 1;
       }
-      if (typeof definition.scaletofit !== 'undefined') {
-        widgetConfigs.iframe.scaletofit = String(definition.scaletofit);
-      }
+      widgetConfigs.iframe.scaletofit =
+        typeof definition.scaletofit !== 'undefined'
+          ? String(definition.scaletofit)
+          : '';
+      widgetConfigs.iframe.aspectratio =
+        typeof definition.aspectratio !== 'undefined'
+          ? String(definition.aspectratio)
+          : '';
       if (typeof definition.forcerefresh !== 'undefined') {
         widgetConfigs.iframe.forcerefresh = definition.forcerefresh ? 1 : 0;
       }
@@ -1270,6 +1306,14 @@ var DashticzWidgetEditor = (function () {
         ccal.calendarlanguage,
         _calendarLanguages()
       );
+      fields += _cfgField(
+        'calendar_maxitems',
+        ll.calendar_maxitems || 'Visible calendar rows',
+        'text',
+        ccal.calendar_maxitems,
+        null,
+        ll.calendar_maxitems_help || 'Maximum number of calendar rows to display. Default: 15.'
+      );
 
     } else if (item.id === 'clock') {
       var ccfg = widgetConfigs.clock || {};
@@ -1425,6 +1469,8 @@ var DashticzWidgetEditor = (function () {
       fields += _cfgField('garbage_housenumber', lg.garbage_housenumber || 'House number', 'text', gcfg.garbage_housenumber);
       fields += _cfgField('garbage_housenumberadd', lg.garbage_housenumberaddition || 'House-number addition', 'text', gcfg.garbage_housenumberadd);
       fields += _cfgField('garbage_maxitems', lg.garbage_maxitems || 'Maximum items', 'text', gcfg.garbage_maxitems);
+      fields += _cfgField('garbage_maxdays', lg.garbage_maxdays || 'Maximum days', 'text', gcfg.garbage_maxdays,
+        null, lg.garbage_maxdays_help || 'Maximum number of days ahead to search. Default: 32.');
       fields += _cfgField('garbage_width', lg.garbage_width || 'Width', 'text', gcfg.garbage_width);
       fields += _cfgHeading('iCal / Google');
       fields += _cfgField('garbage_icalurl', lg.garbage_icalurl || 'iCal URL', 'text', gcfg.garbage_icalurl);
@@ -1555,11 +1601,14 @@ var DashticzWidgetEditor = (function () {
         (li.iframe_url_help || 'Full URL including http(s)://. The remote server must allow embedding (no X-Frame-Options: DENY).') +
         '</div></div>';
       fields += _cfgField('iframe_height', li.iframe_height || 'Height (px)', 'text', icfg.height,
-        null, li.iframe_height_help || 'Height of the iframe in pixels. Leave empty to use the block height.');
+        null, li.iframe_height_help || 'Optional legacy fixed height. Leave empty when using aspect ratio.');
       fields += _cfgField('iframe_scrollbars', li.iframe_scrollbars || 'Show scrollbars', 'checkbox', icfg.scrollbars);
       fields += _cfgField('iframe_scaletofit', li.iframe_scaletofit || 'Scale-to-fit width (px)',
         'text', icfg.scaletofit, null,
         li.iframe_scaletofit_help || 'Design width of the embedded page (e.g. 1024). The page will be scaled so it fits the tile width. Leave empty to disable scaling.');
+      fields += _cfgField('iframe_aspectratio', li.iframe_aspectratio || 'Aspect ratio',
+        'text', icfg.aspectratio, null,
+        li.iframe_aspectratio_help || 'Height divided by width (for example 0.9). When set, no fixed height is written.');
       fields += _cfgField('iframe_forcerefresh', li.iframe_forcerefresh || 'Force cache refresh', 'checkbox', icfg.forcerefresh);
       fields += _cfgField('iframe_refresh', li.iframe_refresh || 'Refresh interval (seconds)', 'text', icfg.refresh,
         null, li.iframe_refresh_help || 'How often to reload the iframe. Default: 300 seconds.');
@@ -1815,9 +1864,10 @@ var DashticzWidgetEditor = (function () {
         } else {
           widgetConfigs.iframe = {
             frameurl: iframeUrl,
-            height: $.trim($cfgModal.find('[data-cfg-key="iframe_height"]').val() || '') || '400',
+            height: $.trim($cfgModal.find('[data-cfg-key="iframe_height"]').val() || ''),
             scrollbars: $cfgModal.find('[data-cfg-key="iframe_scrollbars"]').is(':checked') ? 1 : 0,
             scaletofit: $.trim($cfgModal.find('[data-cfg-key="iframe_scaletofit"]').val() || ''),
+            aspectratio: $.trim($cfgModal.find('[data-cfg-key="iframe_aspectratio"]').val() || ''),
             forcerefresh: $cfgModal.find('[data-cfg-key="iframe_forcerefresh"]').is(':checked') ? 1 : 0,
             refresh: $.trim($cfgModal.find('[data-cfg-key="iframe_refresh"]').val() || '') || '300',
           };
@@ -2024,6 +2074,7 @@ var DashticzWidgetEditor = (function () {
         'garbage_housenumber',
         'garbage_housenumberadd',
         'garbage_maxitems',
+        'garbage_maxdays',
         'garbage_width',
         'garbage_hideicon',
         'garbage_icon_use_colors',
@@ -2033,7 +2084,7 @@ var DashticzWidgetEditor = (function () {
       ],
       sonarr: ['sonarr_url', 'sonarr_apikey', 'sonarr_maxitems'],
       spotify: ['spot_clientid'],
-      calendar: ['calendarformat', 'calendarlanguage'],
+      calendar: ['calendarformat', 'calendarlanguage', 'calendar_maxitems'],
       secpanel: ['security_button_icons', 'security_panel_lock'],
       trafficinfo: ['anwb_apikey'],
       map: ['gm_api', 'gm_zoomlevel', 'gm_latitude', 'gm_longitude'],
@@ -2071,7 +2122,11 @@ var DashticzWidgetEditor = (function () {
       if (dimensions.height || item.height) {
         entry.height = dimensions.height || item.height;
       }
-      if (item.id === 'garbage') entry.displayTitle = _widgetTitle(item);
+      if (item.id === 'garbage') {
+        entry.displayTitle = _widgetTitle(item);
+        entry.maxitems = parseInt(widgetConfigs.garbage.garbage_maxitems, 10) || 4;
+        entry.maxdays = parseInt(widgetConfigs.garbage.garbage_maxdays, 10) || 32;
+      }
       if (item.id === 'weather') entry.provider = widgetConfigs.weather.provider;
       if (item.id === 'weather' && widgetConfigs.weather) {
         var wcfg = widgetConfigs.weather;
@@ -2081,7 +2136,10 @@ var DashticzWidgetEditor = (function () {
         entry.showGust = Number(wcfg.weather_show_gust) ? 1 : 0;
         entry.icons = wcfg.weather_icons || 'line';
       }
-      if (item.id === 'calendar') entry.icalurl = widgetConfigs.calendar.icalurl;
+      if (item.id === 'calendar') {
+        entry.icalurl = widgetConfigs.calendar.icalurl;
+        entry.maxitems = parseInt(widgetConfigs.calendar.calendar_maxitems, 10) || 15;
+      }
       if (item.id === 'clock') {
         var clockType = widgetConfigs.clock.clockType || 'basicclock';
         entry.clockType = clockType;
@@ -2141,6 +2199,10 @@ var DashticzWidgetEditor = (function () {
         }
         if (icfg.scaletofit && icfg.scaletofit !== '') {
           entry.scaletofit = parseInt(icfg.scaletofit, 10) || 0;
+        }
+        if (icfg.aspectratio && icfg.aspectratio !== '') {
+          entry.aspectratio = parseFloat(icfg.aspectratio) || 0;
+          delete entry.iframeHeight;
         }
         if (Number(icfg.forcerefresh)) {
           entry.forcerefresh = true;

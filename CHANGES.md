@@ -2,6 +2,15 @@
 
 ## 3.23.7 — Editor add regression
 
+- **Responsive iframe defaults and row limits**: new iframe widgets use
+  `scaletofit: 300` and `aspectratio: 0.9` without forcing a fixed `height`.
+  Existing height-only iframe blocks remain supported. Calendar now exposes a
+  visible-row limit (default 15), while Garbage stores both `maxitems` (default
+  4) and the new `maxdays` search window (default 32) in its generated block.
+
+- **Transparent Custom-mode topbar clock**: the Mini clock inside the topbar
+  no longer receives an opaque block background in Custom mode.
+
 - **Device and widget additions restored**: newly selected devices now carry
   their stable `device_<IDX>` reference through the complete save operation.
   New widgets likewise use their catalog reference immediately, while existing
