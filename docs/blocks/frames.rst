@@ -115,6 +115,21 @@ For instance, the buienradar widget has a frame width of 256 pixels, and an aspe
 
 In the example above the 'buien' block has been added to columns of width 1,2 and 4 respectively.
 
+The Widget Editor uses responsive iframe sizing by default and therefore does
+not write a fixed ``height``. For example::
+
+  blocks['buien'] = {
+    frameurl: 'https://api.buienradar.nl/image/1.0/radarmapbe?width=300',
+    scrollbars: false,
+    scaletofit: 300,
+    aspectratio: 0.9,
+    refresh: 600,
+  }
+
+Here ``aspectratio`` is height divided by width. Existing blocks with an
+explicit ``height`` remain supported; leave ``aspectratio`` empty in the
+Widget Editor when the fixed-height behavior is preferred.
+
 For other buienradar widgets check the following url:
 https://www.buienradar.nl/overbuienradar/gratis-weerdata
 

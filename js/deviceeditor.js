@@ -332,7 +332,10 @@ var DashticzDeviceEditor = (function () {
       width: _parseWidth(widgetWidths[orderKey]),
     };
     if (widgetHeights[orderKey]) entry.height = widgetHeights[orderKey];
-    if (widget.id === 'garbage') entry.displayTitle = widget.title;
+    if (widget.id === 'garbage') {
+      entry.displayTitle = widget.title;
+      _copyDefinedWidgetProperties(entry, definition, ['maxitems', 'maxdays']);
+    }
 
     if (widget.id === 'weather') {
       entry.provider =
@@ -349,6 +352,7 @@ var DashticzDeviceEditor = (function () {
       ]);
     } else if (widget.id === 'calendar') {
       entry.icalurl = definition.icalurl || '';
+      _copyDefinedWidgetProperties(entry, definition, ['maxitems']);
     } else if (widget.id === 'clock') {
       entry.clockType = definition.type || 'basicclock';
       _copyDefinedWidgetProperties(entry, definition, [

@@ -768,6 +768,7 @@ var DashticzLayoutEditor = (function () {
           language.settings.widgeteditor.garbage_title
         ) ||
         'Garbage';
+      _copyDefinedWidgetProperties(entry, definition, ['maxitems', 'maxdays']);
     }
 
     if (item.widgetId === 'weather') {
@@ -785,6 +786,7 @@ var DashticzLayoutEditor = (function () {
       ]);
     } else if (item.widgetId === 'calendar') {
       entry.icalurl = definition.icalurl || '';
+      _copyDefinedWidgetProperties(entry, definition, ['maxitems']);
     } else if (item.widgetId === 'clock') {
       entry.clockType = definition.type || 'basicclock';
       _copyDefinedWidgetProperties(entry, definition, [

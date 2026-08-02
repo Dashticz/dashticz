@@ -514,6 +514,12 @@ var widgetSettingTiles = [
         title: language.settings.garbage.garbage_maxitems,
         type: 'text',
       },
+      garbage_maxdays: {
+        title:
+          language.settings.garbage.garbage_maxdays ||
+          'Maximum number of days to search',
+        type: 'text',
+      },
       garbage_width: {
         title: language.settings.garbage.garbage_width,
         type: 'text',
@@ -570,6 +576,12 @@ var widgetSettingTiles = [
       },
       calendarurl: {
         title: language.settings.localize.calendarurl || 'Calendar URL',
+        type: 'text',
+      },
+      calendar_maxitems: {
+        title:
+          language.settings.localize.calendar_maxitems ||
+          'Visible calendar rows',
         type: 'text',
       },
     },
@@ -877,12 +889,15 @@ var defaultSettings = {
   speak_lang: 'en_US',
   timeformat: 'DD-MM-YY HH:mm',
   calendarformat: 'dd DD.MM HH:mm',
+  calendar_maxitems: 15,
   shortdate: 'D MMM',
   longdate: 'D MMMM YYYY',
   shorttime: 'HH:mm',
   longtime: 'HH:mm:ss',
   weekday: 'dddd',
   calendarlanguage: 'en_US',
+  garbage_maxitems: 4,
+  garbage_maxdays: 32,
   domoticz_ip: 'http://192.168.1.10:1407',
   user_name: '',
   pass_word: '',

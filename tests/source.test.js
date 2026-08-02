@@ -493,6 +493,10 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
     path.join(root, 'js/components/garbage.js'),
     'utf8'
   );
+  const calendar = fs.readFileSync(
+    path.join(root, 'js/components/calendar.js'),
+    'utf8'
+  );
   const sonarr = fs.readFileSync(path.join(root, 'js/sonarr.js'), 'utf8');
   const fullscreen = fs.readFileSync(
     path.join(root, 'js/fullscreen.js'),
@@ -586,12 +590,24 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
       new RegExp(`id: '${id}'[\\s\\S]*?width: ${width},[\\s\\S]*?height: ${height},`)
     );
   }
-  assert.match(widgetEditor, /if \(item\.id === 'garbage'\) entry\.displayTitle = _widgetTitle\(item\);/);
-  assert.match(deviceEditor, /if \(widget\.id === 'garbage'\) entry\.displayTitle = widget\.title;/);
+  assert.match(widgetEditor, /if \(item\.id === 'garbage'\) \{[\s\S]*entry\.displayTitle = _widgetTitle\(item\);/);
+  assert.match(deviceEditor, /if \(widget\.id === 'garbage'\) \{[\s\S]*entry\.displayTitle = widget\.title;/);
   assert.match(layouteditor, /if \(item\.widgetId === 'garbage'\) \{[\s\S]*?entry\.displayTitle[\s\S]*?garbage_title/s);
   assert.match(savewidgets, /'garbage' => \['key' => 'widget_garbage', 'width' => 5, 'height' => 160\],/);
   assert.match(savewidgets, /\$id === 'garbage' && isset\(\$entry\['displayTitle'\]\)/);
   assert.match(savewidgets, /\$props\['title'\] = isset\(\$widget\['displayTitle'\]\) \? \$widget\['displayTitle'\] : 'Afval';/);
+  assert.match(widgetEditor, /garbage_maxitems: _s\('garbage_maxitems', '4'\)/);
+  assert.match(widgetEditor, /garbage_maxdays: _s\('garbage_maxdays', '32'\)/);
+  assert.match(widgetEditor, /calendar_maxitems: _s\('calendar_maxitems', '15'\)/);
+  assert.match(widgetEditor, /scaletofit: '300'/);
+  assert.match(widgetEditor, /aspectratio: '0\.9'/);
+  assert.match(widgetEditor, /delete entry\.iframeHeight/);
+  assert.match(savewidgets, /unset\(\$props\['height'\]\)/);
+  assert.equal(english.settings.garbage.garbage_maxdays, 'Maximum days ahead');
+  assert.equal(dutch.settings.localize.calendar_maxitems, 'Zichtbare kalenderregels');
+  assert.match(garbage, /maxitems: settings\['garbage_maxitems'\] \|\| 4/);
+  assert.match(garbage, /maxdays: settings\['garbage_maxdays'\] \|\| 32/);
+  assert.match(calendar, /isDefined\(settings\['calendar_maxitems'\]\)/);
   assert.match(dashticz, /special\.name === 'garbage'[\s\S]*block\.title === 'Afval'[\s\S]*garbage_title/s);
   assert.match(widgetEditor, /js\/savewidgets\.php/);
   assert.match(widgetEditor, /js\/savelayout\.php/);
@@ -1101,6 +1117,7 @@ test('topbar and layout editor keep controls usable', () => {
   assert.match(styles, /\.colbar \.logo\s*\{[^}]*flex:\s*0 1 auto;/s);
   assert.match(styles, /\.colbar\.transbg\s*\{[^}]*padding-top:\s*8px;[^}]*padding-bottom:\s*6px;[^}]*border:\s*3px solid transparent;/s);
   assert.match(styles, /\.colbar \.miniclock\s*\{[^}]*flex:\s*1 1 auto;[^}]*height:\s*40px !important;/s);
+  assert.match(styles, /\.colbar \.miniclock\s*\{[^}]*background:\s*transparent !important;[^}]*box-shadow:\s*none !important;/s);
   assert.match(styles, /\.colbar \.dt-screen-switcher-host\s*\{[^}]*order:\s*99;[^}]*margin-left:\s*auto;/s);
   assert.match(styles, /\.colbar \.topbar-settings-wrap\s*\{[^}]*order:\s*100;[^}]*flex:\s*0 0 auto;/s);
   assert.match(blocks, /dt-topbar-item dt-topbar-/);

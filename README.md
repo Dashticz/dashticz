@@ -140,11 +140,11 @@ Widget Editor.
 | Widget | Available options |
 | --- | --- |
 | Weather | OpenWeather or Weather Underground; API key and location; forecast count; daily/minimum temperature; rain, description, wind and gust display; icon set; Fahrenheit, Beaufort and wind-speed translation |
-| Garbage | Waste company; address; maximum items and width; iCal or Google Calendar details; icon, colour, name and CORS-prefix display options |
+| Garbage | Waste company; address; maximum visible items (default 4), maximum days ahead (default 32) and width; iCal or Google Calendar details; icon, colour, name and CORS-prefix display options |
 | Spotify | Spotify client ID |
 | Sonarr | Server URL, API key and maximum items |
 | Clock | Basic, Station, Flip, Hayman or Mini clock; size and scale; 12/24-hour flipclock with optional seconds; station body, dial, hands, boss and hand behaviour |
-| Calendar (ICS) | HTTP(S) ICS URL, date format and calendar language |
+| Calendar (ICS) | HTTP(S) ICS URL, date format, calendar language and maximum visible rows (default 15) |
 | Security panel | Button icons and fullscreen lock |
 | Public transport | Train, OV API, DRGL, iRail or De Lijn provider and station/stop |
 | Traffic information | ANWB API key |
@@ -154,6 +154,7 @@ Widget Editor.
 | Air quality | Longfonds postcode and house number |
 | Moon | Domoticz IDX for the moon image |
 | News | RSS URL and automatic-scroll interval |
+| iFrame | URL, scrollbars, scale-to-fit width, aspect ratio, optional legacy fixed height and refresh interval |
 | XMLTV TV Guide | XMLTV source URL; channel filter (id or display-name); maximum items, layout and refresh interval |
 
 In grid layouts, the XMLTV TV Guide follows its assigned row height. It shows
@@ -162,6 +163,11 @@ enlarging the tile makes the additional rows visible again.
 
 Widget-specific settings are kept together with the other `config[...]`
 settings at the top of `custom/CONFIG.js`.
+
+New iframe widgets use responsive sizing by default: `scaletofit: 300` and
+`aspectratio: 0.9`, without a fixed `height`. The ratio is height divided by
+width. Existing iframe blocks with an explicit `height` remain supported; leave
+the aspect-ratio field empty to keep that legacy sizing method.
 
 For OpenWeather, `showDescription` and `showRain` default to **Yes**, while
 `showWind` and `showGust` default to **No**. The icon selector provides

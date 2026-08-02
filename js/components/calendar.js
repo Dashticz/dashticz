@@ -98,7 +98,11 @@ function prepareCalendar(me, key) {
   me.layout = isDefined(me.block.layout) ? me.block.layout : 0;
   me.icalurl = me.block.icalurl;
   me.icalurls = isObject(me.icalurl) ? objectlength(me.icalurl) : 1;
-  me.maxitems = isDefined(me.block.maxitems) ? me.block.maxitems : 15;
+  me.maxitems = isDefined(me.block.maxitems)
+    ? me.block.maxitems
+    : isDefined(settings['calendar_maxitems'])
+    ? settings['calendar_maxitems']
+    : 15;
   me.lastweek = isDefined(me.block.lastweek) ? me.block.lastweek : true;
   me.weeks = isDefined(me.block.weeks) ? me.block.weeks : 5;
   me.isoweek = isDefined(me.block.isoweek) ? me.block.isoweek : false;
