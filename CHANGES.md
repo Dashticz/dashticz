@@ -1,5 +1,20 @@
 # Dashticz — Change log for recent update work
 
+## 3.23.6 — Device Editor helper blocks
+
+- **XMLTV grid sizing**: the rendered TV Guide tile now matches its saved row
+  span in movement mode and on the dashboard. Partially clipped programme rows
+  are hidden, return automatically when enlarged, and no internal scrollbar is
+  shown.
+
+- **Device Editor helper blocks**: the add selector now offers a Dummy device
+  with a user-entered IDX and a Title block with user-entered text, above the
+  Group/Scene/Device entries. Both types remain editable in column and grid
+  layouts and use localized labels with an English fallback. Title blocks
+  default to 120px; Modern Dark gives them its panel background and border,
+  with the title text aligned at the top left. Grid titles default to three
+  rows and suppress scrollbars when displayed at that smaller height.
+
 ## 3.23.0 — Screen-switcher icons & i18n (1-8-2026)
 
 - **Compact default topbar**: the topbar now uses the same height, padding and
@@ -27,7 +42,7 @@
 - Fixed repeated Clock settings saves and localized Garbage collection labels
   and status messages through the language JSON files.
 
-The runtime and package version remain `3.22.0` for this beta maintenance set.
+The runtime and package version remain `3.23.6` for this beta maintenance set.
 
 > **Version: 3.20.0**  
 > This document describes every change made during three related tasks:

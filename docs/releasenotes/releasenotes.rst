@@ -9,10 +9,17 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 v3.23.6 beta (1-8-2026)
 --------------------------
 
+* **XMLTV grid sizing**: the TV Guide tile now follows its assigned grid row
+  span in both movement mode and the dashboard. Only programme rows that fit
+  completely are shown, extra rows return when enlarged, and no internal
+  scrollbar is displayed.
+
 Enhancements
 ~~~~~~~~~~~~
 
 * **Dynamic theme selector**: **Settings > Display > Dashticz-Theme** is now a dropdown populated from valid theme folders in ``themes/``. A theme is listed when ``themes/<name>/<name>.css`` exists; **Default** and existing manually configured values remain available.
+
+* **Device Editor helper blocks**: the add selector now starts with **Dummy device** and **Title**, separated from Groups, Scenes and Devices by divider rows. Dummy devices request a positive IDX and generate ``blocks['dummyblock_N']`` with ``hide_data: true``; titles request text and generate an IDX-free ``blocks['Title_N']`` with ``type: 'blocktitle'``, width 12 and height 120px. Both types work in column and grid layouts. Grid titles default to three rows, may be resized down to three rows and do not show a scrollbar at that height. Modern Dark title blocks use the theme panel background, border, radius and shadow, with title text at the top left. Dutch, English and French strings are included; other locales safely use the English fallback.
 
 Fixes
 ~~~~~

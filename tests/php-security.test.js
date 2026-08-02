@@ -149,6 +149,16 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(source, /array_key_exists\('height'/);
   assert.match(source, /round\(\$height \/ 10\) \* 10/);
   assert.match(writer, /height/);
+  /* Device Editor helper blocks are explicitly validated and whitelisted. */
+  assert.match(source, /in_array\(\$entry\['kind'\], \['dummy', 'title'\], true\)/);
+  assert.match(source, /\^dummyblock_/);
+  assert.match(source, /\^Title_/);
+  assert.match(source, /positive integer idx/);
+  assert.match(source, /configwriter_special_block_props/);
+  assert.match(source, /\$height = \$kind === 'title' \? 120 : null/);
+  assert.match(source, /Special block key already exists/);
+  assert.match(source, /\$device\['preserveExisting'\] = in_array/);
+  assert.match(source, /if \(!empty\(\$device\['preserveExisting'\]\)\)/);
   assert.doesNotMatch(source, /array_chunk\(\$.*,\s*4\)/);
   /* no raw IDX-only column block from the old implementation */
   assert.doesNotMatch(source, /columns\['device_editor'\]/);

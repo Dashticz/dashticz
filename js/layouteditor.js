@@ -8,6 +8,7 @@ var DashticzLayoutEditor = (function () {
   var MAX_HEIGHT = 2000;
   var MIN_GRID_WIDTH = 2;
   var MIN_GRID_HEIGHT = 4;
+  var MIN_TITLE_GRID_HEIGHT = 3;
   var active = false;
   var items = [];
   var itemById = {};
@@ -26,6 +27,13 @@ var DashticzLayoutEditor = (function () {
   var edgeScrollFrame = null;
   var edgeScrollDirection = 0;
   var lastPointerPosition = null;
+
+  function _minimumGridHeight(item) {
+    return item && item.definition &&
+      String(item.definition.type || '').toLowerCase() === 'blocktitle'
+      ? MIN_TITLE_GRID_HEIGHT
+      : MIN_GRID_HEIGHT;
+  }
 
   function open() {
     if (active) return;
@@ -863,9 +871,10 @@ var DashticzLayoutEditor = (function () {
     );
     items.forEach(function (item) {
       item.wrapper.classList.add('dle-item-wrapper');
+      var minimumHeight = _minimumGridHeight(item);
       // Normalize legacy one-cell blocks when editing. Cancel still restores
       // originalGrid, while Save persists the safe minimum dimensions.
-      if (item.grid.w < MIN_GRID_WIDTH || item.grid.h < MIN_GRID_HEIGHT) {
+      if (item.grid.w < MIN_GRID_WIDTH || item.grid.h < minimumHeight) {
         item.grid = {
           x: Math.min(
             item.grid.x,
@@ -876,7 +885,7 @@ var DashticzLayoutEditor = (function () {
             gridConfig.gridColumns,
             Math.max(MIN_GRID_WIDTH, item.grid.w)
           ),
-          h: Math.max(MIN_GRID_HEIGHT, item.grid.h),
+          h: Math.max(minimumHeight, item.grid.h),
         };
         item.width = item.grid.w;
         DashticzGridLayout.applyGridPosition(item.wrapper, item.grid);
@@ -1254,7 +1263,7 @@ var DashticzLayoutEditor = (function () {
       MIN_GRID_WIDTH,
       Math.min(metrics.columns - x + 1, width)
     );
-    height = Math.max(MIN_GRID_HEIGHT, Math.min(1000, height));
+    height = Math.max(_minimumGridHeight(item), Math.min(1000, height));
     _ensureGridCanvasRows(start.y + height + 8);
     _applyGridPosition(item, {
       x: x,
