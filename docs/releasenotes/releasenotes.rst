@@ -9,6 +9,10 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 v3.23.6 beta (1-8-2026)
 --------------------------
 
+* **Movement mode and live updates**: Domoticz device refreshes no longer
+  remove the editor overlay or restore the old fixed pixel height. Updated
+  blocks therefore remain draggable and resizable throughout the edit.
+
 * **XMLTV grid sizing**: the TV Guide tile now follows its assigned grid row
   span in both movement mode and the dashboard. Only programme rows that fit
   completely are shown, extra rows return when enlarged, and no internal
