@@ -22,6 +22,19 @@ test('remote proxy endpoints use the validated fetch helper', () => {
   }
 });
 
+test('xmltv proxy validates remote URLs and keeps cache handling local', () => {
+  const source = read('vendor/dashticz/xmltv.php');
+  assert.match(source, /dashticz_require_same_origin\(\)/);
+  assert.match(source, /dashticz_validate_remote_url\(\$url,\s*true\)/);
+  assert.match(source, /dashticz_fetch_remote\(\$url,\s*52428800,\s*3,\s*true\)/);
+  assert.match(source, /sha1\(\$url\)/);
+  assert.match(source, /86400/);
+  assert.match(source, /gzdecode/);
+  assert.match(source, /ZipArchive/);
+  assert.match(source, /file_put_contents\(\$tmpFile,\s*\$xml,\s*LOCK_EX\)/);
+  assert.doesNotMatch(source, /shell_exec|exec\(|passthru|system\(/);
+});
+
 test('calendar fetching is URL validated and does not expose stack traces', () => {
   const source = read('vendor/dashticz/ical/index.php');
   assert.match(source, /dashticz_fetch_remote\(/);
@@ -164,6 +177,7 @@ test('widget writer whitelists widgets and protects CONFIG.js writes', () => {
     'longfonds',
     'moon',
     'news',
+    'xmltvguide',
   ]) {
     assert.match(source, new RegExp(`'${id}'\\s*=>`));
   }

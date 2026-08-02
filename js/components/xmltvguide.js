@@ -27,32 +27,37 @@
 var DT_xmltvguide = {
   name: 'xmltvguide',
 
-  /** Activate for any block that carries an xmltvurl property. */
+  /** Activate for xmltvguide blocks or legacy blocks that carry an xmltvurl property. */
   canHandle: function (block) {
-    return block && typeof block.xmltvurl === 'string' && block.xmltvurl !== '';
+    return block && (
+      block.type === 'xmltvguide' ||
+      (typeof block.xmltvurl === 'string' && block.xmltvurl !== '')
+    );
   },
 
   defaultCfg: {
+    type: 'xmltvguide',
     icon: 'fas fa-tv',
+    xmltvurl: _xmltvSettingString('xmltv_url', ''),
     /** Refresh interval in seconds (default 1 hour – XMLTV data is large). */
-    refresh: 3600,
+    refresh: _xmltvSettingNumber('xmltv_refresh', 3600),
     /** Maximum number of programme rows to display. */
-    maxitems: 10,
+    maxitems: _xmltvSettingNumber('xmltv_maxitems', 10),
     containerClass: 'hover',
     /**
      * Channel filter.  Accepts an array of channel IDs (as defined in the
      * XMLTV <channel id="…"> attribute) or display-names.
      * When omitted or empty all channels in the file are shown.
      */
-    channels: [],
+    channels: _xmltvSettingChannels(),
     /**
      * Display layout:
      *   0 – show time, channel name, programme title (default)
      *   1 – show time and programme title only (no channel column)
      */
-    layout: 0,
+    layout: _xmltvSettingLayout(),
     /** Separator character shown between columns. */
-    separator: '-',
+    separator: _xmltvSettingString('xmltv_separator', '-'),
   },
 
   refresh: function (me) {
@@ -61,23 +66,23 @@ var DT_xmltvguide = {
 
     // Resolve language strings with fallback to English literals.
     var lang_loading =
-      (language.misc && language.misc.loading) || 'Loading…';
+      (language.xmltvguide && language.xmltvguide.loading) ||
+      (language.misc && language.misc.loading) ||
+      'Loading…';
     var lang_error =
       (language.xmltvguide && language.xmltvguide.error) ||
       'Error loading TV guide.';
     var lang_no_programs =
       (language.xmltvguide && language.xmltvguide.no_programs) ||
+      (language.misc && language.misc.no_alerts) ||
       'No upcoming programs found.';
 
     tvobject.html('<span class="xmltv-loading">' + lang_loading + '</span>');
 
-    var url = _CORS_PATH + block.xmltvurl;
+    var proxyUrl = _xmltvRequestUrl(block.xmltvurl);
+    var fallbackUrl = _CORS_PATH + block.xmltvurl;
 
-    $.ajax({
-      url: url,
-      dataType: 'text',
-      cache: true,
-    })
+    _fetchXmltvText(proxyUrl, fallbackUrl)
       .done(function (responseText) {
         var parsed = _parseXmltvData(responseText, block, lang_no_programs);
         if (!parsed) {
@@ -113,11 +118,73 @@ var DT_xmltvguide = {
           });
       })
       .fail(function () {
-        console.error('[xmltvguide] Failed to load XMLTV data from:', url);
+        console.error(
+          '[xmltvguide] Failed to load XMLTV data from:',
+          block.xmltvurl
+        );
         tvobject.html('<span class="xmltv-error">' + lang_error + '</span>');
       });
   },
 };
+
+function _xmltvSettingString(key, fallback) {
+  if (
+    typeof settings !== 'undefined' &&
+    typeof settings[key] === 'string' &&
+    settings[key] !== ''
+  ) {
+    return settings[key];
+  }
+  return fallback;
+}
+
+function _xmltvSettingNumber(key, fallback) {
+  var value =
+    typeof settings !== 'undefined' ? parseInt(settings[key], 10) : NaN;
+  return value > 0 ? value : fallback;
+}
+
+function _xmltvSettingLayout() {
+  return _xmltvSettingNumber('xmltv_layout', 0) === 1 ? 1 : 0;
+}
+
+function _xmltvSettingChannels() {
+  if (typeof settings === 'undefined') return [];
+  var channels = settings['xmltv_channels'];
+  if (Array.isArray(channels)) return channels;
+  if (typeof channels !== 'string' || channels.trim() === '') return [];
+  return channels.split(',').map(function (channel) {
+    return channel.trim();
+  }).filter(Boolean);
+}
+
+function _xmltvRequestUrl(xmltvurl) {
+  var phpPath =
+    typeof settings !== 'undefined' && settings['dashticz_php_path']
+      ? settings['dashticz_php_path']
+      : '';
+  if (phpPath) {
+    return phpPath + 'xmltv.php?url=' + encodeURIComponent(xmltvurl);
+  }
+  return _CORS_PATH + xmltvurl;
+}
+
+function _fetchXmltvText(primaryUrl, fallbackUrl) {
+  return $.ajax({
+    url: primaryUrl,
+    dataType: 'text',
+    cache: true,
+  }).then(null, function () {
+    if (fallbackUrl && fallbackUrl !== primaryUrl) {
+      return $.ajax({
+        url: fallbackUrl,
+        dataType: 'text',
+        cache: true,
+      });
+    }
+    return $.Deferred().reject().promise();
+  });
+}
 
 /**
  * Parse raw XMLTV XML text and return an array of programme objects that

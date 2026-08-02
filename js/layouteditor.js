@@ -776,12 +776,33 @@ var DashticzLayoutEditor = (function () {
         definition.rss || 'https://www.alarmeringen.nl/feeds/all.rss';
       if (definition.filter) entry.filter = definition.filter;
     } else if (item.widgetId === 'xmltvguide') {
-      entry.xmltvurl = definition.xmltvurl || '';
+      entry.xmltvurl = definition.xmltvurl || settings['xmltv_url'] || '';
       if (Array.isArray(definition.channels)) {
         entry.channels = definition.channels;
+      } else if (typeof definition.channels === 'string') {
+        entry.channels = definition.channels;
+      } else if (typeof settings['xmltv_channels'] === 'string') {
+        entry.channels = settings['xmltv_channels'];
       }
       if (definition.maxitems) {
         entry.maxitems = definition.maxitems;
+      } else if (typeof settings['xmltv_maxitems'] !== 'undefined') {
+        entry.maxitems = settings['xmltv_maxitems'];
+      }
+      if (typeof definition.layout !== 'undefined') {
+        entry.layout = definition.layout;
+      } else if (typeof settings['xmltv_layout'] !== 'undefined') {
+        entry.layout = settings['xmltv_layout'];
+      }
+      if (typeof definition.separator === 'string') {
+        entry.separator = definition.separator;
+      } else if (typeof settings['xmltv_separator'] === 'string') {
+        entry.separator = settings['xmltv_separator'];
+      }
+      if (typeof definition.refresh !== 'undefined') {
+        entry.refresh = definition.refresh;
+      } else if (typeof settings['xmltv_refresh'] !== 'undefined') {
+        entry.refresh = settings['xmltv_refresh'];
       }
     }
 

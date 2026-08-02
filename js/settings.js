@@ -602,6 +602,55 @@ var widgetSettingTiles = [
     },
   },
   {
+    id: 'xmltvguide',
+    title: widgetEditorTranslations.xmltvguide_title || 'TV Guide',
+    icon: 'fas fa-tv',
+    settings: {
+      xmltv_url: {
+        title: widgetEditorTranslations.xmltv_url || 'XMLTV URL',
+        type: 'text',
+        help:
+          widgetEditorTranslations.xmltv_url_help ||
+          'URL of an XMLTV-format XML file (for example from Jellyfin, Emby or WebGrab+).',
+      },
+      xmltv_channels: {
+        title: widgetEditorTranslations.xmltv_channels || 'Channels (comma-separated)',
+        type: 'text',
+        help:
+          widgetEditorTranslations.xmltv_channels_help ||
+          'Channel IDs or display names to show, separated by commas. Leave empty to show all channels.',
+      },
+      xmltv_maxitems: {
+        title: widgetEditorTranslations.xmltv_maxitems || 'Max items',
+        type: 'text',
+        help:
+          widgetEditorTranslations.xmltv_maxitems_help ||
+          'Maximum number of programme rows to display.',
+      },
+      xmltv_layout: {
+        title: widgetEditorTranslations.xmltv_layout || 'Layout',
+        type: 'text',
+        help:
+          widgetEditorTranslations.xmltv_layout_help ||
+          '0 shows time, channel and title; 1 shows time and title only.',
+      },
+      xmltv_separator: {
+        title: widgetEditorTranslations.xmltv_separator || 'Separator',
+        type: 'text',
+        help:
+          widgetEditorTranslations.xmltv_separator_help ||
+          'Character shown between the columns.',
+      },
+      xmltv_refresh: {
+        title: widgetEditorTranslations.xmltv_refresh || 'Refresh interval (seconds)',
+        type: 'text',
+        help:
+          widgetEditorTranslations.xmltv_refresh_help ||
+          'How often to refresh the widget from the cached XMLTV data.',
+      },
+    },
+  },
+  {
     id: 'secpanel',
     title: widgetEditorTranslations.secpanel_title || 'Security panel',
     icon: 'fas fa-shield-alt',

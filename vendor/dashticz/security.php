@@ -119,7 +119,7 @@ function dashticz_ip_is_public($ip)
     ) !== false;
 }
 
-function dashticz_validate_remote_url($url)
+function dashticz_validate_remote_url($url, $allowPrivate = false)
 {
     if (!is_string($url) || strlen($url) > 4096) {
         throw new RuntimeException('Invalid remote URL.');
@@ -143,7 +143,7 @@ function dashticz_validate_remote_url($url)
     }
 
     if (filter_var($host, FILTER_VALIDATE_IP)) {
-        if (!dashticz_ip_is_public($host)) {
+        if (!$allowPrivate && !dashticz_ip_is_public($host)) {
             throw new RuntimeException('Private and reserved addresses are blocked.');
         }
         return $url;
@@ -165,7 +165,7 @@ function dashticz_validate_remote_url($url)
 
     foreach ($records as $record) {
         $ip = isset($record['ip']) ? $record['ip'] : (isset($record['ipv6']) ? $record['ipv6'] : null);
-        if ($ip && !dashticz_ip_is_public($ip)) {
+        if ($ip && !$allowPrivate && !dashticz_ip_is_public($ip)) {
             throw new RuntimeException('Remote host resolves to a private or reserved address.');
         }
     }
@@ -198,10 +198,10 @@ function dashticz_owner_info($path)
     return ' (eigenaar: ' . $ownerName . ', PHP-gebruiker: ' . $phpName . ')';
 }
 
-function dashticz_fetch_remote($url, $maxBytes = 5242880, $maxRedirects = 3)
+function dashticz_fetch_remote($url, $maxBytes = 5242880, $maxRedirects = 3, $allowPrivate = false)
 {
     for ($redirects = 0; $redirects <= $maxRedirects; $redirects++) {
-        $url = dashticz_validate_remote_url($url);
+        $url = dashticz_validate_remote_url($url, $allowPrivate);
         $context = stream_context_create(array(
             'http' => array(
                 'follow_location' => 0,

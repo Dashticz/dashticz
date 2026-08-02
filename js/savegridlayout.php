@@ -155,10 +155,13 @@ foreach ($data['items'] as $index => $entry) {
             $requestedRef !== '' ? $requestedRef : $name,
             $usedBlockKeys
         );
+    } elseif (isset($allBlockLines[$ref])) {
+        // Prefer the full-config block line (picks up any block written by
+        // savewidgets.php in the same request chain) over the stale props
+        // extracted from the previous grid-layout section alone.
+        $propsLiteral = $allBlockLines[$ref];
     } elseif (isset($existingGridBlocks[$ref])) {
         $propsLiteral = $existingGridBlocks[$ref];
-    } elseif (isset($allBlockLines[$ref])) {
-        $propsLiteral = $allBlockLines[$ref];
     }
     if (isset($usedRefs[$ref])) {
         dashticz_json_error(400, 'Duplicate grid block reference.');
