@@ -935,7 +935,8 @@ test('topbar and layout editor keep controls usable', () => {
 
   assert.match(styles, /\.colbar\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*nowrap;/s);
   assert.match(styles, /\.colbar \.logo\s*\{[^}]*order:\s*1;[^}]*flex:\s*0 1 auto;/s);
-  assert.match(styles, /\.colbar \.miniclock\s*\{[^}]*order:\s*2;[^}]*flex:\s*1 1 auto;/s);
+  assert.match(styles, /\.colbar\.transbg\s*\{[^}]*padding-top:\s*8px;[^}]*padding-bottom:\s*6px;[^}]*border:\s*3px solid transparent;/s);
+  assert.match(styles, /\.colbar \.miniclock\s*\{[^}]*order:\s*2;[^}]*flex:\s*1 1 auto;[^}]*height:\s*40px !important;/s);
   assert.match(styles, /\.colbar \.dt-screen-switcher-host\s*\{[^}]*order:\s*3;[^}]*margin-left:\s*auto;/s);
   assert.match(styles, /\.colbar \.topbar-settings-wrap\s*\{[^}]*order:\s*4;[^}]*flex:\s*0 0 auto;/s);
   assert.match(blocks, /dt-topbar-item dt-topbar-/);

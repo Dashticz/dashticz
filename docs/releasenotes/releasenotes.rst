@@ -12,6 +12,7 @@ v3.23.3 beta (1-8-2026)
 Fixes
 ~~~~~
 
+* **Default topbar height**: when no theme is selected, the topbar now uses the same compact height as Modern Dark.
 * **Topbar screen-switcher PNG icons**: when **Custom iconen topbalk** is enabled, the Standby and screen buttons now automatically use the bundled ``Standby.png``, ``One.png``, ``Two.png``, ``Three.png``, and ``Four.png`` assets when no explicit per-screen icon is configured.  These screen-switcher PNG icons now render at 30px.
 
 v3.23.2 beta (1-8-2026)
