@@ -380,3 +380,11 @@
   background: var(--warning-red) !important;
   background-clip: border-box;
 }
+
+.weatherday {
+	border-radius: 16px !important;
+}
+
+.frame iframe {	 /* All iframe */		
+	border-radius: 16px !important;
+}
