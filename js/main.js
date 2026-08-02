@@ -1052,8 +1052,21 @@ function isMiniclockBlock(ref) {
 }
 
 function buildTopbarBlocks(existingBlocks) {
-  var showClock = Number(settings['show_topbar_clock']) === 1;
   var blocks = Array.isArray(existingBlocks) ? existingBlocks.slice() : null;
+  var configuredClock = !!(
+    blocks &&
+    blocks.some(function (ref) {
+      return isMiniclockBlock(ref);
+    })
+  );
+  var customMode =
+    String(settings['config_mode'] || 'custom').toLowerCase() === 'custom';
+  // An explicit Custom-mode topbar is authoritative. The setting still adds
+  // the clock automatically for default/Wizard bars and Custom bars that do
+  // not already list a miniclock.
+  var showClock =
+    Number(settings['show_topbar_clock']) === 1 ||
+    (customMode && configuredClock);
 
   if (!blocks) {
     blocks = showClock
