@@ -493,7 +493,17 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(widgetEditor, /we-cfg-clock-type/);
   assert.match(widgetEditor, /id="we-camera-add"/);
   assert.match(widgetEditor, /class="we-camera-row/);
-  assert.match(widgetEditor, /entry\.cameras = cameraConfigs/);
+  assert.match(widgetEditor, /weather:\s*\{[\s\S]*provider:/);
+  assert.match(widgetEditor, /clock:\s*\{[\s\S]*clockType:\s*'basicclock'/);
+  assert.match(widgetEditor, /calendar:\s*\{[\s\S]*icalurl:\s*''/);
+  assert.match(widgetEditor, /publictransport:\s*\{[\s\S]*provider:\s*'treinen'[\s\S]*station:\s*'UT'/);
+  assert.match(widgetEditor, /alarmmeldingen:\s*\{[\s\S]*rss:\s*'https:\/\/www\.alarmeringen\.nl\/feeds\/all\.rss'[\s\S]*filter:\s*''/);
+  assert.match(widgetEditor, /camera:\s*\{[\s\S]*cameras:\s*_defaultCameraConfigs\(\)/);
+  assert.match(widgetEditor, /entry\.cameras = cameras/);
+  assert.doesNotMatch(widgetEditor, /var weatherProvider =/);
+  assert.doesNotMatch(widgetEditor, /var calendarUrl =/);
+  assert.doesNotMatch(widgetEditor, /var publicTransportStation =/);
+  assert.doesNotMatch(widgetEditor, /var alarmRss =/);
   assert.equal(english.settings.widgeteditor.weather_title, 'Weather');
   assert.equal(english.settings.widgeteditor.camera_title, 'Cameras');
   assert.equal(dutch.settings.widgeteditor.weather_title, 'Weer');
@@ -554,6 +564,58 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
     assert.match(settings, new RegExp(`${key}:`));
   }
   assert.doesNotMatch(main, /id: 'use_favorites'/);
+});
+
+test('xmltv widget uses its own proxy and preserves optional block settings', () => {
+  const xmltv = fs.readFileSync(
+    path.join(root, 'js/components/xmltvguide.js'),
+    'utf8'
+  );
+  const tvguide = fs.readFileSync(
+    path.join(root, 'js/components/tvguide.js'),
+    'utf8'
+  );
+  const widgetEditor = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+  const layouteditor = fs.readFileSync(
+    path.join(root, 'js/layouteditor.js'),
+    'utf8'
+  );
+  const savewidgets = fs.readFileSync(
+    path.join(root, 'js/savewidgets.php'),
+    'utf8'
+  );
+  const savegridlayout = fs.readFileSync(
+    path.join(root, 'js/savegridlayout.php'),
+    'utf8'
+  );
+
+  assert.match(tvguide, /typeof block\.xmltvurl === 'undefined'/);
+  assert.match(xmltv, /xmltv\.php\?url=/);
+  assert.match(xmltv, /function _fetchXmltvText/);
+  assert.match(widgetEditor, /xmltvguide:\s*\{[\s\S]*xmltvurl:\s*_s\('xmltv_url'\)[\s\S]*layout:\s*_s\('xmltv_layout', '0'\)[\s\S]*separator:\s*_s\('xmltv_separator', '-'\)[\s\S]*refresh:\s*_s\('xmltv_refresh', '3600'\)/);
+  assert.match(widgetEditor, /data-cfg-key="xmltv_layout"/);
+  assert.match(widgetEditor, /data-cfg-key="xmltv_separator"/);
+  assert.match(widgetEditor, /data-cfg-key="xmltv_refresh"/);
+  assert.match(widgetEditor, /configSettings\.xmltv_url = widgetConfigs\.xmltvguide\.xmltvurl \|\| '';/);
+  assert.match(widgetEditor, /configSettings\.xmltv_layout = widgetConfigs\.xmltvguide\.layout \|\| '0';/);
+  assert.match(widgetEditor, /configSettings\.xmltv_refresh = widgetConfigs\.xmltvguide\.refresh \|\| '3600';/);
+  assert.match(widgetEditor, /entry\.layout = parseInt\(xcfg\.layout, 10\) === 1 \? 1 : 0;/);
+  assert.match(widgetEditor, /entry\.separator = xcfg\.separator \|\| '-';/);
+  assert.match(widgetEditor, /entry\.refresh = parseInt\(xcfg\.refresh, 10\) \|\| 3600;/);
+  // _hydrateGridWidget must read back layout, separator and refresh so reopening
+  // the settings popup shows the previously saved values in grid mode.
+  assert.match(widgetEditor, /item\.id === 'xmltvguide'[\s\S]*widgetConfigs\.xmltvguide\.layout[\s\S]*widgetConfigs\.xmltvguide\.separator[\s\S]*widgetConfigs\.xmltvguide\.refresh/s);
+  assert.match(layouteditor, /item\.widgetId === 'xmltvguide'[\s\S]*settings\['xmltv_url'\][\s\S]*settings\['xmltv_layout'\][\s\S]*settings\['xmltv_refresh'\]/s);
+  assert.match(savewidgets, /'xmltv_url'\s*=>\s*'string'/);
+  assert.match(savewidgets, /\$id === 'xmltvguide'[\s\S]*\$widget\['layout'\][\s\S]*\$widget\['separator'\][\s\S]*\$widget\['refresh'\]/s);
+  assert.match(savewidgets, /case 'xmltvguide':[\s\S]*\$props\['type'\] = 'xmltvguide';[\s\S]*\$props\['title'\] = 'TV Guide';/s);
+  // savegridlayout must prefer $allBlockLines over $existingGridBlocks so that a
+  // URL change saved by savewidgets.php (blocksOnly) is not silently discarded
+  // when savegridlayout.php runs immediately afterwards.
+  assert.match(savegridlayout, /isset\(\$allBlockLines\[[\s\S]*?\$propsLiteral = \$allBlockLines\[[\s\S]*?isset\(\$existingGridBlocks\[/s);
 });
 
 test('Hayman clock does not depend on Moment locale internals for rendering', () => {

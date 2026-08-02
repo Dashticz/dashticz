@@ -96,6 +96,13 @@ $allowedSettings = [
     // news
     'default_news_url'       => 'string',
     'news_scroll_after'      => 'number',
+    // xmltvguide
+    'xmltv_url'              => 'string',
+    'xmltv_channels'         => 'string',
+    'xmltv_maxitems'         => 'number',
+    'xmltv_layout'           => 'number',
+    'xmltv_separator'        => 'string',
+    'xmltv_refresh'          => 'number',
 ];
 
 $allowedGarbageCompanies = [
@@ -480,6 +487,21 @@ foreach ($data['widgets'] as $entry) {
                 $widget['maxitems'] = $m;
             }
         }
+        if (isset($entry['layout']) && is_numeric($entry['layout'])) {
+            $widget['layout'] = ((int)$entry['layout'] === 1) ? 1 : 0;
+        }
+        if (isset($entry['separator']) && is_string($entry['separator'])) {
+            $separator = trim($entry['separator']);
+            if ($separator !== '' && strlen($separator) <= 10) {
+                $widget['separator'] = $separator;
+            }
+        }
+        if (isset($entry['refresh']) && is_numeric($entry['refresh'])) {
+            $r = (int)$entry['refresh'];
+            if ($r > 0 && $r <= 86400) {
+                $widget['refresh'] = $r;
+            }
+        }
     }
 
     $widgets[] = $widget;
@@ -656,6 +678,7 @@ function _widgetBlockProps($widget)
             $props['title'] = 'Security Panel';
             break;
         case 'publictransport':
+            $props['type'] = 'publictransport';
             $props['title'] = 'OV';
             $props['provider'] = $widget['provider'];
             $props['station'] = $widget['station'];
@@ -671,6 +694,7 @@ function _widgetBlockProps($widget)
             $props['results'] = 50;
             break;
         case 'alarmmeldingen':
+            $props['type'] = 'alarmmeldingen';
             $props['title'] = '112';
             $props['rss'] = $widget['rss'];
             $props['results'] = 5;
@@ -729,15 +753,9 @@ function _widgetBlockProps($widget)
             }
             break;
         case 'xmltvguide':
+            $props['type'] = 'xmltvguide';
             // xmltvguide widget: TV programme guide from an XMLTV-format URL
             $props['title'] = 'TV Guide';
-            $props['xmltvurl'] = $widget['xmltvurl'];
-            if (!empty($widget['channels'])) {
-                $props['channels'] = $widget['channels'];
-            }
-            if (!empty($widget['maxitems'])) {
-                $props['maxitems'] = $widget['maxitems'];
-            }
             break;
     }
 
