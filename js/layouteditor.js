@@ -9,6 +9,7 @@ var DashticzLayoutEditor = (function () {
   var MIN_GRID_WIDTH = 2;
   var MIN_GRID_HEIGHT = 4;
   var MIN_TITLE_GRID_HEIGHT = 3;
+  var MIN_MINICLOCK_GRID_HEIGHT = 2;
   var active = false;
   var items = [];
   var itemById = {};
@@ -42,10 +43,13 @@ var DashticzLayoutEditor = (function () {
   }
 
   function _minimumGridHeight(item) {
-    return item && item.definition &&
-      String(item.definition.type || '').toLowerCase() === 'blocktitle'
-      ? MIN_TITLE_GRID_HEIGHT
-      : MIN_GRID_HEIGHT;
+    var type =
+      item && item.definition
+        ? String(item.definition.type || '').toLowerCase()
+        : '';
+    if (type === 'blocktitle') return MIN_TITLE_GRID_HEIGHT;
+    if (type === 'miniclock') return MIN_MINICLOCK_GRID_HEIGHT;
+    return MIN_GRID_HEIGHT;
   }
 
   function open() {
