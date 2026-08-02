@@ -1,5 +1,19 @@
 # Dashticz — Change log for recent update work
 
+## 3.23.7 — Editor add regression
+
+- **Device and widget additions restored**: newly selected devices now carry
+  their stable `device_<IDX>` reference through the complete save operation.
+  New widgets likewise use their catalog reference immediately, while existing
+  custom widget references remain unchanged. This restores adding tiles from
+  both the Device Editor and Widget Editor after the IDX-key migration.
+
+- **Empty CONFIG.js can enter Wizard mode**: when no dashboard blocks exist,
+  the mode switch now creates an empty screen 1 grid instead of aborting the
+  conversion. Device Editor and Widget Editor can then populate that clean
+  dashboard normally. An empty Wizard bootstrap is never mistaken for the
+  existing delete-screen action.
+
 ## 3.23.6 — Device Editor helper blocks
 
 - **Stable Domoticz device keys**: Device Editor output now uses
@@ -58,7 +72,7 @@
 - Fixed repeated Clock settings saves and localized Garbage collection labels
   and status messages through the language JSON files.
 
-The runtime and package version remain `3.23.6` for this beta maintenance set.
+The runtime and package version remain `3.23.7` for this beta maintenance set.
 
 > **Version: 3.20.0**  
 > This document describes every change made during three related tasks:

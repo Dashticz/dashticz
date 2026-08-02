@@ -129,6 +129,58 @@ test.describe('optional screen grid layout', () => {
     expect(separateModeWrites).toBe(0);
   });
 
+  test('creates an empty Wizard grid from a clean configuration', async ({
+    page,
+  }) => {
+    let conversionRequest = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks = {};
+columns = {};
+screens = {};
+config['config_mode'] = 'custom';
+config['auto_positioning'] = 0;
+`,
+      });
+    });
+    await page.route('**/info.php?get=csrf', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'empty-wizard-token' }),
+      });
+    });
+    await page.route('**/js/savegridlayout.php*', async (route) => {
+      conversionRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blocks: [] }),
+      });
+    });
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    page.once('dialog', async (dialog) => {
+      await dialog.accept();
+    });
+    await page
+      .locator('.screen1 .config-mode-btn[data-mode="wizard"]')
+      .first()
+      .click();
+
+    await expect.poll(() => conversionRequest).not.toBeNull();
+    expect(conversionRequest.screen).toBe(1);
+    expect(conversionRequest.configMode).toBe('wizard');
+    expect(conversionRequest.items).toEqual([]);
+    expect(conversionRequest.gridColumns).toBe(24);
+  });
+
   test('converts legacy Standby columns to the same Wizard grid', async ({
     page,
   }) => {

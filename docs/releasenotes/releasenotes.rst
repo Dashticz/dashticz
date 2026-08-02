@@ -17,6 +17,19 @@ v3.23.7 beta (2-8-2026)
   matches the config), while only the screen-switcher and settings cluster are
   pinned to the far right via high CSS order values.
 
+* **Restore adding devices and widgets**: the Device Editor now sends the
+  immutable ``device_<IDX>`` reference with every selected Domoticz device for
+  the complete blocks/layout save sequence. The Widget Editor similarly gives
+  new widgets their catalog reference immediately and retains existing custom
+  widget references. Adding tiles therefore works again after the IDX-key
+  migration in both column and grid layouts.
+
+* **Start Wizard with an empty configuration**: switching an otherwise empty
+  ``CONFIG.js`` to Wizard now creates an empty grid for screen 1 instead of
+  reporting that no blocks could be converted. The Device and Widget editors
+  can immediately populate the new screen. This empty bootstrap remains
+  separate from the delete-screen operation.
+
 v3.23.6 beta (1-8-2026)
 --------------------------
 

@@ -464,6 +464,9 @@ var DashticzWidgetEditor = (function () {
         if (!item) return;
 
         selectedWidgets[item.id] = true;
+        // Keep an existing custom reference, while new widgets use the stable
+        // catalog reference before the blocks/layout save chain starts.
+        widgetBlockRefs[item.id] = reference;
         widgetDimensions[item.id] = {
           width: parseInt(definition.width, 10) || null,
           height: parseInt(definition.height, 10) || null,
@@ -2059,10 +2062,10 @@ var DashticzWidgetEditor = (function () {
     var payload = [];
     catalog.forEach(function (item) {
       if (!selectedWidgets[item.id]) return;
-      var entry = { id: item.id };
-      if (gridMode && widgetBlockRefs[item.id]) {
-        entry.key = widgetBlockRefs[item.id];
-      }
+      var entry = {
+        id: item.id,
+        key: widgetBlockRefs[item.id] || item.blockKey,
+      };
       var dimensions = widgetDimensions[item.id] || {};
       entry.width = dimensions.width || item.width;
       if (dimensions.height || item.height) {

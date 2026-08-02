@@ -352,6 +352,9 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(editor, /function _collectGridItems/);
   assert.match(editor, /function convertCurrentScreenToGrid/);
   assert.match(editor, /function _buildColumnGridConversion/);
+  assert.match(editor, /function _emptyGridConversion/);
+  assert.match(editor, /var allowEmpty = targetMode === 'wizard'/);
+  assert.match(editor, /if \(allowEmpty\) return _emptyGridConversion\(screenNumber\)/);
   assert.match(editor, /function _firstFreeGridPosition/);
   assert.match(editor, /function _moveGridItem/);
   assert.match(editor, /function _resizeGridItem/);
@@ -385,7 +388,8 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   );
   assert.match(deviceEditor, /function _activeScreenPayload/);
   assert.match(deviceEditor, /function _activeScreenDom/);
-  assert.match(deviceEditor, /Device keys are generated from IDX by saveblocks\.php/);
+  assert.match(deviceEditor, /function _stableDeviceReference/);
+  assert.match(deviceEditor, /key:\s+_stableDeviceReference\(ck\)/);
   assert.doesNotMatch(deviceEditor, /entry\.key = gridRefs\[_deviceOrderKey\(ck\)\]/);
   assert.match(deviceEditor, /\$activeScreen\.find\('\[data-colindex\]'\)/);
   assert.match(deviceEditor, /screen: _activeScreenPayload\(\)/);
@@ -593,6 +597,10 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(widgetEditor, /js\/savelayout\.php/);
   assert.match(widgetEditor, /js\/savegridlayout\.php/);
   assert.match(widgetEditor, /blocksOnly: gridMode/);
+  assert.match(
+    widgetEditor,
+    /key:\s*widgetBlockRefs\[item\.id\]\s*\|\|\s*item\.blockKey/
+  );
   assert.match(widgetEditor, /function _readGridConfiguredWidgets/);
   assert.match(widgetEditor, /var layoutOrder = \[\]/);
   assert.match(widgetEditor, /if \(!selectedWidgets\[item\.widgetId\]\) return/);
@@ -1090,11 +1098,11 @@ test('topbar and layout editor keep controls usable', () => {
   const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
 
   assert.match(styles, /\.colbar\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*nowrap;/s);
-  assert.match(styles, /\.colbar \.logo\s*\{[^}]*order:\s*1;[^}]*flex:\s*0 1 auto;/s);
+  assert.match(styles, /\.colbar \.logo\s*\{[^}]*flex:\s*0 1 auto;/s);
   assert.match(styles, /\.colbar\.transbg\s*\{[^}]*padding-top:\s*8px;[^}]*padding-bottom:\s*6px;[^}]*border:\s*3px solid transparent;/s);
-  assert.match(styles, /\.colbar \.miniclock\s*\{[^}]*order:\s*2;[^}]*flex:\s*1 1 auto;[^}]*height:\s*40px !important;/s);
-  assert.match(styles, /\.colbar \.dt-screen-switcher-host\s*\{[^}]*order:\s*3;[^}]*margin-left:\s*auto;/s);
-  assert.match(styles, /\.colbar \.topbar-settings-wrap\s*\{[^}]*order:\s*4;[^}]*flex:\s*0 0 auto;/s);
+  assert.match(styles, /\.colbar \.miniclock\s*\{[^}]*flex:\s*1 1 auto;[^}]*height:\s*40px !important;/s);
+  assert.match(styles, /\.colbar \.dt-screen-switcher-host\s*\{[^}]*order:\s*99;[^}]*margin-left:\s*auto;/s);
+  assert.match(styles, /\.colbar \.topbar-settings-wrap\s*\{[^}]*order:\s*100;[^}]*flex:\s*0 0 auto;/s);
   assert.match(blocks, /dt-topbar-item dt-topbar-/);
   assert.match(main, /\['logo', 'miniclock', 'screenswitcher', 'settings'\]/);
   assert.match(editor, /var MIN_GRID_WIDTH = 2;/);

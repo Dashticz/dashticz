@@ -270,7 +270,10 @@ test('grid layout writer validates and stores positions without column packing',
   assert.match(source, /configwriter_normalise_grid_position/);
   assert.match(source, /configwriter_build_grid_layout_section/);
   assert.match(source, /configwriter_editor_markers\(\s*'grid-layout'/);
-  assert.match(source, /empty\(\$items\)/);
+  assert.match(
+    source,
+    /empty\(\$items\) && !isset\(\$data\['configMode'\]\)/
+  );
   assert.match(source, /configwriter_extract_numbered_screens/);
   assert.match(source, /configwriter_remove_numbered_screen_and_compact/);
   assert.match(source, /'removedScreen'\s*=>\s*\$screenNumber/);

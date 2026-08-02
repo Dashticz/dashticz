@@ -46,6 +46,10 @@ The mode switch in the topbar selects how the dashboard is managed:
   settings catalog, including the widget settings. Use this mode for a
   hand-written configuration.
 
+A valid but otherwise empty `CONFIG.js` can also be switched from Custom to
+Wizard. Dashticz creates an empty grid for screen 1, after which devices and
+widgets can be added with the topbar editors.
+
 Changing mode is saved in `custom/CONFIG.js` and reloads the dashboard. The
 regular settings menu remains available in both modes.
 
@@ -108,6 +112,10 @@ generated definitions omit `title`, allowing the displayed name to follow a
 later rename in Domoticz automatically. Existing hand-written name-based keys
 and explicit custom titles remain supported. Saving an existing editor-managed
 layout once migrates those device blocks to the stable key format.
+The stable reference is assigned before the editor starts its save sequence,
+so newly selected devices remain available while the blocks and layout are
+written. The Widget Editor applies the same rule to new catalog widgets while
+preserving an existing custom widget reference.
 When that screen uses a grid layout, the save also removes its superseded
 generated column section so the old name-based and new IDX-based definitions
 cannot coexist as duplicate blocks. Repeated saves reuse the same IDX key and
