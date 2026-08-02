@@ -91,7 +91,9 @@ var DT_stationclock = {
         width +
         '" height="' +
         width +
-        '" style="max-width:100%;max-height:100%;">Your browser is unfortunately not supported.</canvas>'
+        '" style="max-width:100%;max-height:100%;">' +
+        language.misc.browser_not_supported +
+        '</canvas>'
     );
 
     var clock = new StationClock('clock' + me.mountPoint);

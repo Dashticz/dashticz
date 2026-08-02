@@ -1,4 +1,4 @@
-/* global Domoticz settings columns columns_standby blocks myswiper DashticzGridLayout DashticzScreenSwitcher isCustomConfigMode standbyActive */
+/* global Domoticz settings columns columns_standby blocks myswiper DashticzGridLayout DashticzScreenSwitcher isCustomConfigMode standbyActive language */
 // eslint-disable-next-line no-unused-vars
 var DashticzLayoutEditor = (function () {
   'use strict';
@@ -28,6 +28,19 @@ var DashticzLayoutEditor = (function () {
   var edgeScrollDirection = 0;
   var lastPointerPosition = null;
 
+  function _translations() {
+    return (
+      (typeof language !== 'undefined' &&
+        language.settings &&
+        language.settings.layouteditor) ||
+      {}
+    );
+  }
+
+  function _t(key) {
+    return _translations()[key] || '';
+  }
+
   function _minimumGridHeight(item) {
     return item && item.definition &&
       String(item.definition.type || '').toLowerCase() === 'blocktitle'
@@ -40,7 +53,7 @@ var DashticzLayoutEditor = (function () {
 
     var $screen = _activeScreenDom();
     if (!$screen.length) {
-      alert('No active screen found.');
+      alert(_t('no_active_screen'));
       return;
     }
     editingScreen = _activeScreenPayload();
@@ -51,7 +64,7 @@ var DashticzLayoutEditor = (function () {
       _collectGridItems($grid);
       if (gridCollectionError || !items.length) {
         alert(
-          'Grid editing requires every screen block to have a mounted, safely named blocks["name"] definition. Wait for the screen to finish loading and try again.'
+          _t('invalid_grid_blocks')
         );
         gridMode = false;
         editingScreen = null;
@@ -94,14 +107,14 @@ var DashticzLayoutEditor = (function () {
 
     if (!$managedColumns.length) {
       alert(
-        'No editable devices or widgets are available on this screen.'
+        _t('no_editable_screen')
       );
       return;
     }
 
     _collectItems($managedColumns);
     if (!items.length) {
-      alert('No editable devices or widgets were found on this screen.');
+      alert(_t('no_editable_items'));
       return;
     }
 
@@ -169,7 +182,7 @@ var DashticzLayoutEditor = (function () {
     var conversion;
     if (!$screen.length) {
       if (!allowEmpty) {
-        alert('Er is geen normaal scherm gevonden om naar grid om te zetten.');
+        alert(_t('no_screen_to_convert'));
         deferred.reject();
         return deferred.promise();
       }
@@ -196,7 +209,7 @@ var DashticzLayoutEditor = (function () {
     }
     if (!conversion.empty && window.innerWidth < 768) {
       alert(
-        'Zet het scherm minimaal 768 pixels breed voordat je een columns-layout naar grid omzet.'
+        _t('conversion_width')
       );
       deferred.reject();
       return deferred.promise();
@@ -204,7 +217,7 @@ var DashticzLayoutEditor = (function () {
     if (
       !skipConfirmation &&
       !window.confirm(
-        'Wizard gebruikt een vrije grid-layout. Het huidige columns-scherm wordt naar een 24-koloms grid omgezet. Doorgaan?'
+        _t('conversion_confirm')
       )
     ) {
       deferred.reject();
@@ -230,7 +243,7 @@ var DashticzLayoutEditor = (function () {
         var message =
           xhr.responseJSON && xhr.responseJSON.error
             ? xhr.responseJSON.error
-            : 'Het columns-scherm kon niet naar grid worden omgezet.';
+            : _t('conversion_failed');
         alert(message);
         deferred.reject(xhr);
       });
@@ -310,22 +323,21 @@ var DashticzLayoutEditor = (function () {
                     ? { type: safeReference }
                     : null;
           if (!definition) {
-            error = 'Conversie gestopt: een block kon niet worden herkend.';
+            error = _t('conversion_unrecognized');
             return;
           }
           if (safeReference && usedReferences[safeReference]) {
-            error =
-              'Conversie gestopt: block "' +
-              safeReference +
-              '" staat meerdere keren op hetzelfde scherm.';
+            error = _t('conversion_duplicate').replace(
+              '{block}',
+              safeReference
+            );
             return;
           }
           if (safeReference) usedReferences[safeReference] = true;
 
           var rect = _wrapperContentRect(wrapper);
           if (!rect) {
-            error =
-              'Conversie gestopt: wacht tot alle blocks geladen zijn en probeer opnieuw.';
+            error = _t('conversion_wait_blocks');
             return;
           }
           var width12 = _configuredWidth(definition, rect.element);
@@ -366,10 +378,10 @@ var DashticzLayoutEditor = (function () {
             !create &&
             (!safeReference || screenNumber === 'standby')
           ) {
-            error =
-              'Conversie gestopt: block "' +
-              (safeReference || index + 1) +
-              '" bevat functies of andere instellingen die niet veilig automatisch kunnen worden omgezet.';
+            error = _t('conversion_unsafe').replace(
+              '{block}',
+              safeReference || index + 1
+            );
             return;
           }
           var entry = {
@@ -385,7 +397,7 @@ var DashticzLayoutEditor = (function () {
     if (error) return { error: error };
     if (!converted.length) {
       if (allowEmpty) return _emptyGridConversion(screenNumber);
-      return { error: 'Er zijn geen blocks gevonden om naar grid om te zetten.' };
+      return { error: _t('no_blocks_to_convert') };
     }
     return {
       payload: {
@@ -963,13 +975,19 @@ var DashticzLayoutEditor = (function () {
         var $block = $(block).addClass('dle-block');
         var removeButton =
           index === 0
-            ? '<button type="button" class="dle-remove-button" title="Tegel verwijderen" aria-label="Remove ' +
+            ? '<button type="button" class="dle-remove-button" title="' +
+              _escapeHtml(_t('remove_title')) +
+              '" aria-label="' +
+              _escapeHtml(_t('remove_aria')) +
+              ' ' +
               _escapeHtml(item.name) +
               '"><i class="fas fa-minus" aria-hidden="true"></i></button>'
             : '';
         var resizeHandle =
           index === item.visibleBlocks.length - 1
-            ? '<span class="dle-resize-handle" title="Resize width and height" aria-hidden="true"></span>'
+            ? '<span class="dle-resize-handle" title="' +
+              _escapeHtml(_t('resize_title')) +
+              '" aria-hidden="true"></span>'
             : '';
         var overlay =
           '<div class="dle-overlay" data-dle-id="' +
@@ -988,17 +1006,23 @@ var DashticzLayoutEditor = (function () {
   }
 
   function _buildToolbar() {
-    var help = gridMode
-      ? 'Sleep tegels naar een gridcel. Schaal breedte en rijhoogte vanuit de rechteronderhoek.'
-      : 'Sleep tegels. Schaal vanuit de rechteronderhoek. Hoogte springt per 10 px.';
+    var help = gridMode ? _t('help_grid') : _t('help_columns');
     $toolbar = $(
-      '<div class="dle-toolbar" role="toolbar" aria-label="Visual layout editor">' +
-        '<span class="dle-toolbar-title"><i class="fas fa-arrows-alt" aria-hidden="true"></i> Layout Editor</span>' +
+      '<div class="dle-toolbar" role="toolbar" aria-label="' +
+        _escapeHtml(_t('toolbar_aria')) +
+        '">' +
+        '<span class="dle-toolbar-title"><i class="fas fa-arrows-alt" aria-hidden="true"></i> ' +
+        _escapeHtml(_t('title')) +
+        '</span>' +
         '<span class="dle-toolbar-help">' +
         help +
         '</span>' +
-        '<button type="button" class="btn btn-secondary btn-sm dle-cancel">Cancel</button>' +
-        '<button type="button" class="btn btn-primary btn-sm dle-save">Save</button>' +
+        '<button type="button" class="btn btn-secondary btn-sm dle-cancel">' +
+        _escapeHtml(_t('cancel')) +
+        '</button>' +
+        '<button type="button" class="btn btn-primary btn-sm dle-save">' +
+        _escapeHtml(_t('save')) +
+        '</button>' +
         '</div>'
     );
     $('body').append($toolbar);
@@ -1055,8 +1079,8 @@ var DashticzLayoutEditor = (function () {
       .find('.dle-toolbar-help')
       .text(
         remaining
-          ? 'Tegel verwijderd. Kies Save om dit te bewaren, of Cancel om te herstellen.'
-          : 'Geen tegels meer over. Kies Save om alles te verwijderen, of Cancel om te herstellen.'
+          ? _t('removed_one')
+          : _t('removed_all')
       );
   }
 
@@ -1472,7 +1496,7 @@ var DashticzLayoutEditor = (function () {
     );
     var heightLabel =
       item.height === null
-        ? 'auto (' + measuredHeight + 'px)'
+        ? _t('auto_height') + ' (' + measuredHeight + 'px)'
         : item.height + 'px';
     item.visibleBlocks.forEach(function (block) {
       $(block)
@@ -1510,7 +1534,7 @@ var DashticzLayoutEditor = (function () {
     }
     var $save = $toolbar.find('.dle-save').prop('disabled', true);
     $toolbar.find('.dle-cancel').prop('disabled', true);
-    $toolbar.find('.dle-toolbar-help').text('Saving layout…');
+    $toolbar.find('.dle-toolbar-help').text(_t('saving_layout'));
 
     var ordered = _orderedItems();
     var devices = [];
@@ -1566,8 +1590,8 @@ var DashticzLayoutEditor = (function () {
         });
       })
       .done(function () {
-        $toolbar.find('.dle-toolbar-help').text('Saved. Reloading dashboard…');
-        $save.removeClass('btn-primary').addClass('btn-success').text('Saved');
+        $toolbar.find('.dle-toolbar-help').text(_t('saved_reloading'));
+        $save.removeClass('btn-primary').addClass('btn-success').text(_t('saved'));
         setTimeout(function () {
           window.location.reload();
         }, 700);
@@ -1576,7 +1600,7 @@ var DashticzLayoutEditor = (function () {
         var message =
           xhr.responseJSON && xhr.responseJSON.error
             ? xhr.responseJSON.error
-            : 'The layout could not be saved.';
+            : _t('save_failed');
         $toolbar.find('.dle-toolbar-help').text(message);
         $save.prop('disabled', false);
         $toolbar.find('.dle-cancel').prop('disabled', false);
@@ -1586,7 +1610,7 @@ var DashticzLayoutEditor = (function () {
   function _saveGrid() {
     var $save = $toolbar.find('.dle-save').prop('disabled', true);
     $toolbar.find('.dle-cancel').prop('disabled', true);
-    $toolbar.find('.dle-toolbar-help').text('Saving grid layout…');
+    $toolbar.find('.dle-toolbar-help').text(_t('saving_grid'));
 
     var payload = {
       screen: editingScreen,
@@ -1607,8 +1631,8 @@ var DashticzLayoutEditor = (function () {
         return _postLayoutData('js/savegridlayout.php', payload, data.token);
       })
       .done(function () {
-        $toolbar.find('.dle-toolbar-help').text('Saved. Reloading dashboard…');
-        $save.removeClass('btn-primary').addClass('btn-success').text('Saved');
+        $toolbar.find('.dle-toolbar-help').text(_t('saved_reloading'));
+        $save.removeClass('btn-primary').addClass('btn-success').text(_t('saved'));
         setTimeout(function () {
           window.location.reload();
         }, 700);
@@ -1617,7 +1641,7 @@ var DashticzLayoutEditor = (function () {
         var message =
           xhr.responseJSON && xhr.responseJSON.error
             ? xhr.responseJSON.error
-            : 'The grid layout could not be saved.';
+            : _t('grid_save_failed');
         $toolbar.find('.dle-toolbar-help').text(message);
         $save.prop('disabled', false);
         $toolbar.find('.dle-cancel').prop('disabled', false);

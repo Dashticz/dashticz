@@ -155,7 +155,7 @@
       departures: []
     };
     if (data.result !== 'OK')
-      return ({ res: { res: '<div>Ongeldig resultaat</div>' } })
+      return ({ res: { res: '<div>' + language.misc.invalid_result + '</div>' } })
     data.departures.forEach(function (dep) {
       var departure = {
         date: dep.serviceDate,

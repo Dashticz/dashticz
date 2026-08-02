@@ -157,6 +157,55 @@ test('the saved Settings language overrides a stale browser language', () => {
   );
 });
 
+test('settings and widget UI use JSON translations with an English base', () => {
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const settingsSource = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const widgetEditor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const layoutEditor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const simpleBlock = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const english = JSON.parse(
+    fs.readFileSync(path.join(root, 'lang/en_US.json'), 'utf8')
+  );
+  const french = JSON.parse(
+    fs.readFileSync(path.join(root, 'lang/fr_FR.json'), 'utf8')
+  );
+
+  assert.match(main, /url: 'lang\/en_US\.json/);
+  assert.match(main, /\$\.extend\(true, \{\}, english, selected\)/);
+  assert.match(main, /language = english/);
+  assert.ok(english.settings.layouteditor);
+  assert.ok(english.settings.output);
+  assert.ok(english.settings.widgeteditor.xmltvguide_title);
+  assert.ok(english.settings.screen.topbar_use_png_icons_help);
+  assert.ok(french.settings.layouteditor.conversion_confirm);
+  assert.ok(french.settings.screen.topbar_use_png_icons_help);
+
+  const widgetKeys = Array.from(
+    widgetEditor.matchAll(/_t\(\s*['"]([^'"]+)['"]/g),
+    (match) => match[1]
+  );
+  for (const key of new Set(widgetKeys)) {
+    assert.ok(
+      english.settings.widgeteditor[key],
+      `missing English widget-editor translation: ${key}`
+    );
+  }
+
+  for (const source of [settingsSource, widgetEditor, deviceEditor, layoutEditor, simpleBlock]) {
+    assert.doesNotMatch(
+      source,
+      /Wizard gebruikt|Tegel verwijderd|Geen tegels|Devices toevoegen|Widgets toevoegen|Tegels verplaatsen|Custom iconen topbalk|Aan: Custom iconen/
+    );
+  }
+  assert.match(layoutEditor, /language\.settings\.layouteditor/);
+  assert.match(deviceEditor, /language\.settings\.deviceeditor/);
+  assert.match(simpleBlock, /language\.settings\.config_mode\.confirm_wizard/);
+});
+
 test('favicon assets stay minimal and all references resolve', () => {
   const faviconDirectory = path.join(root, 'img/favicon');
   assert.deepEqual(fs.readdirSync(faviconDirectory).sort(), [
@@ -361,7 +410,7 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(editor, /function _saveGrid/);
   assert.match(editor, /--dt-grid-x/);
   assert.match(editor, /--dt-grid-h/);
-  assert.match(simpleBlock, /Wizard gebruikt altijd een vrije grid-layout/);
+  assert.match(simpleBlock, /language\.settings\.config_mode\.confirm_wizard/);
   assert.match(
     simpleBlock,
     /convertCurrentScreenToGrid\(\s*true,\s*'wizard'/
@@ -396,7 +445,7 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(deviceEditor, /function _widgetFromReference/);
   assert.match(deviceEditor, /widget_alarmmeldingen:\s+\{ id: 'alarmmeldingen',\s+title: translatedTitles\.alarmmeldingen \}/);
   assert.match(deviceEditor, /_widgetPayload\(orderKey\)/);
-  assert.match(deviceEditor, /Widget - /);
+  assert.match(deviceEditor, /widget_prefix/);
   assert.match(deviceEditor, /var managedOrder/);
   assert.match(deviceEditor, /js\/savewidgets\.php/);
   assert.match(deviceEditor, /js\/savelayout\.php/);
@@ -627,8 +676,8 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(styles, /\.we-widget-card\.we-selected/);
   assert.match(weather, /block\.widget_provider === 'openweather'/);
   assert.match(simpleBlock, /wunderground/);
-  assert.match(simpleBlock, /title="Widgets toevoegen"/);
-  assert.match(fullscreen, /title="Volledig scherm"/);
+  assert.match(simpleBlock, /editorLabels\.add_widgets/);
+  assert.match(fullscreen, /language\.settings\.widgeteditor\.fullscreen/);
   assert.match(garbage, /block\.type === 'garbage'/);
   assert.match(sonarr, /function loadSonarr\(me\)/);
 

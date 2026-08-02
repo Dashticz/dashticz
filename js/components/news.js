@@ -150,7 +150,7 @@ var DT_news = {
       },
       error: function (data) {
         infoMessage(
-          '<font color="red">News Error!</font>',
+          '<font color="red">' + language.misc.news_error + '</font>',
           'RSS feed ' + data.statusText + '. Check rss url.',
           10000
         );

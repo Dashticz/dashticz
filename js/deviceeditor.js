@@ -46,6 +46,15 @@ var DashticzDeviceEditor = (function () {
         save: 'Save',
         saving: 'Saving…',
         saved: 'Saved!',
+        drag_to_reorder: 'Drag to reorder',
+        widget: 'Widget',
+        widget_prefix: 'Widget -',
+        managed_widget: 'Remove this widget from the Widgets menu',
+        select_aria: 'Select device to add',
+        column_width: 'Column width (1-12)',
+        add_device: 'Add device',
+        save_failed: 'Devices could not be saved automatically.',
+        error_prefix: 'Error:',
       },
       configured
     );
@@ -726,7 +735,7 @@ var DashticzDeviceEditor = (function () {
     html += '<h5 class="modal-title" id="de-title">';
     html += '<i class="fas fa-pencil-alt me-2" aria-hidden="true"></i>' + _esc(t.editor_title);
     html += '</h5>';
-    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>';
+    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button>';
     html += '</div>';
 
     /* body */
@@ -793,7 +802,7 @@ var DashticzDeviceEditor = (function () {
     var orderKey = _deviceOrderKey(ck);
     var html   = '<div class="' + cls + '" data-ck="' + _esc(ck) +
       '" data-order-key="' + _esc(orderKey) + '" draggable="true">';
-    html += '<span class="de-drag-handle" title="Drag to reorder"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
+    html += '<span class="de-drag-handle" title="' + _esc(t.drag_to_reorder) + '"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
     html += '<span class="de-device-idx">IDX\u00a0' + _esc(dispIdx) + '</span>';
     html += '<span class="de-device-name">' + name + (!isGroup && p.subidx ? '\u00a0(' + p.subidx + ')' : '') + '</span>';
     if (type) html += '<span class="de-device-type">' + type + '</span>';
@@ -816,9 +825,9 @@ var DashticzDeviceEditor = (function () {
     var t = _translations();
     var html = '<div class="de-device-item de-widget-item" data-order-key="' +
       _esc(orderKey) + '" draggable="true">';
-    html += '<span class="de-drag-handle" title="Drag to reorder"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
-    html += '<span class="de-device-idx"><i class="fas fa-puzzle-piece me-1" aria-hidden="true"></i>Widget</span>';
-    html += '<span class="de-device-name">Widget - ' + _esc(widget.title) + '</span>';
+    html += '<span class="de-drag-handle" title="' + _esc(t.drag_to_reorder) + '"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
+    html += '<span class="de-device-idx"><i class="fas fa-puzzle-piece me-1" aria-hidden="true"></i>' + _esc(t.widget) + '</span>';
+    html += '<span class="de-device-name">' + _esc(t.widget_prefix) + ' ' + _esc(widget.title) + '</span>';
     html += '<span class="de-device-type">' +
       _esc(widget.definition.type || widget.id) + '</span>';
     html += '<span class="de-device-width-wrap">';
@@ -829,7 +838,7 @@ var DashticzDeviceEditor = (function () {
       _esc(orderKey) + '" min="1" max="12" value="' +
       _parseWidth(widgetWidths[orderKey]) + '">';
     html += '</span>';
-    html += '<span class="de-widget-managed" title="Remove this widget from the Widgets menu"><i class="fas fa-lock" aria-hidden="true"></i></span>';
+    html += '<span class="de-widget-managed" title="' + _esc(t.managed_widget) + '"><i class="fas fa-lock" aria-hidden="true"></i></span>';
     html += '</div>';
     return html;
   }
@@ -844,7 +853,7 @@ var DashticzDeviceEditor = (function () {
     var html = '<div class="de-device-item de-special-item" data-special-key="' +
       _esc(special.reference) + '" data-order-key="' + _esc(orderKey) +
       '" draggable="true">';
-    html += '<span class="de-drag-handle" title="Drag to reorder"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
+    html += '<span class="de-drag-handle" title="' + _esc(t.drag_to_reorder) + '"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
     html += '<span class="de-device-idx"><i class="fas ' +
       (isTitle ? 'fa-heading' : 'fa-cube') + ' me-1" aria-hidden="true"></i>' +
       _esc(label) + '</span>';
@@ -866,7 +875,7 @@ var DashticzDeviceEditor = (function () {
   function _addRowHtml(deviceList) {
     var t = _translations();
     var html = '<div class="de-add-row">';
-    html += '<select class="form-select de-device-select" aria-label="Select device to add">';
+    html += '<select class="form-select de-device-select" aria-label="' + _esc(t.select_aria) + '">';
     html += '<option value="">— ' + _esc(t.select_item) + ' —</option>';
     html += '<option value="__dummy__">' + _esc(t.dummy_device) + '</option>';
     html += '<option value="" disabled>------</option>';
@@ -878,8 +887,8 @@ var DashticzDeviceEditor = (function () {
     });
     html += '</select>';
     html += '<input type="text" class="form-control form-control-sm de-special-value d-none" aria-label="">';
-    html += '<input type="number" class="form-control form-control-sm de-width-input" min="1" max="12" value="3" title="Column width (1-12)" aria-label="Column width">';
-    html += '<button type="button" class="btn btn-success btn-sm de-add-btn ms-2" title="Add device">';
+    html += '<input type="number" class="form-control form-control-sm de-width-input" min="1" max="12" value="3" title="' + _esc(t.column_width) + '" aria-label="' + _esc(t.width) + '">';
+    html += '<button type="button" class="btn btn-success btn-sm de-add-btn ms-2" title="' + _esc(t.add_device) + '">';
     html += '<i class="fas fa-plus" aria-hidden="true"></i>';
     html += '</button>';
     html += '</div>';
@@ -936,7 +945,7 @@ var DashticzDeviceEditor = (function () {
       /* remove item from device-list */
       $(this).closest('.de-device-item').remove();
       if ($('#de-device-list .de-device-item').length === 0) {
-        $('#de-device-list').html('<div class="de-empty">No devices or widgets configured in Dashticz.</div>');
+        $('#de-device-list').html('<div class="de-empty">' + _esc(_translations().empty_items) + '</div>');
       }
 
       /* restore device in add-row dropdown and in available[] */
@@ -1368,9 +1377,9 @@ var DashticzDeviceEditor = (function () {
       .fail(function (xhr) {
         var msg = xhr.responseJSON && xhr.responseJSON.error
           ? xhr.responseJSON.error
-          : 'Devices could not be saved automatically.';
+          : t.save_failed;
         $btn.prop('disabled', false).text(t.save);
-        alert('Error: ' + msg);
+        alert(t.error_prefix + ' ' + msg);
       });
   }
 

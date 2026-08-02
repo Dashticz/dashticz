@@ -9,6 +9,13 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 v3.23.7 beta (2-8-2026)
 --------------------------
 
+* **Consistent localization for settings and widgets**: user-facing text in
+  Settings, Device Editor, Widget Editor, Layout Editor, screen controls and
+  widget status/error messages is now sourced from ``/lang/*.json``. Dashticz
+  always loads ``en_US.json`` as the base and recursively overlays the selected
+  locale. Missing locale entries therefore fall back to English without mixing
+  in hard-coded Dutch or French text.
+
 * **Topbar clock and widget sizing options**: the topbar Mini clock now has a
   transparent background in Custom mode. Calendar exposes a visible-row limit
   (``maxitems``, default 15). Garbage exposes both ``maxitems`` (default 4) and

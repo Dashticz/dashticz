@@ -180,7 +180,8 @@ function loadConfig2() {
 }
 
 function loadLanguage() {
-  //Check language before loading settings and fallback to English when not set
+  // Always load English first. The selected locale overrides it recursively,
+  // so every missing translation has one consistent JSON-backed fallback.
   var setLang = 'en_US';
   if (
     typeof config !== 'undefined' &&
@@ -191,11 +192,27 @@ function loadLanguage() {
     setLang = localStorage.dashticz_language;
   }
   return $.ajax({
-    url: 'lang/' + setLang + '.json?v=' + _DASHTICZ_VERSION,
+    url: 'lang/en_US.json?v=' + _DASHTICZ_VERSION,
     dataType: 'json',
-    success: function (data) {
-      language = data;
-    },
+  }).then(function (english) {
+    if (setLang === 'en_US') {
+      language = english;
+      return language;
+    }
+    return $.ajax({
+      url: 'lang/' + setLang + '.json?v=' + _DASHTICZ_VERSION,
+      dataType: 'json',
+    }).then(
+      function (selected) {
+        language = $.extend(true, {}, english, selected);
+        return language;
+      },
+      function () {
+        // An unavailable locale must never leave the interface untranslated.
+        language = english;
+        return language;
+      }
+    );
   });
 }
 
