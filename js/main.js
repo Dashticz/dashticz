@@ -1316,21 +1316,12 @@ function buildScreens() {
             ' swiper-slide slide' +
             s +
             '"';
-          if (typeof screens[t][s]['background'] === 'undefined') {
-            screens[t][s]['background'] = settings['background_image'];
-          }
-          if (typeof screens[t][s]['background'] !== 'undefined') {
+          // All regular screens share the setting-level background. Only the
+          // standby screen may use a separate background.
+          if (typeof settings['background_image'] !== 'undefined') {
             screenhtml +=
               'style="background-image:url(\'' +
-              resolveBackgroundImagePath(screens[t][s]['background']) +
-              '\');"';
-          } else if (
-            typeof screens[t][s][1] !== 'undefined' &&
-            typeof screens[t][s][1]['background'] !== 'undefined'
-          ) {
-            screenhtml +=
-              'style="background-image:url(\'' +
-              resolveBackgroundImagePath(screens[t][s][1]['background']) +
+              resolveBackgroundImagePath(settings['background_image']) +
               '\');"';
           }
 
