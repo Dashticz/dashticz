@@ -217,6 +217,16 @@ test('settings and widget UI use JSON translations with an English base', () => 
   assert.match(simpleBlock, /language\.settings\.config_mode\.confirm_wizard/);
 });
 
+test('built-in widget titles use the active language', () => {
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+
+  assert.match(dashticz, /function getWidgetTitle\(block, special\)/);
+  assert.match(dashticz, /garbage: 'garbage_title'/);
+  assert.match(dashticz, /weather: 'weather_title'/);
+  assert.match(dashticz, /cfg\.title = widgetTitle/);
+  assert.doesNotMatch(dashticz, /block\.title === 'Afval'/);
+});
+
 test('favicon assets stay minimal and all references resolve', () => {
   const faviconDirectory = path.join(root, 'img/favicon');
   assert.deepEqual(fs.readdirSync(faviconDirectory).sort(), [
@@ -668,7 +678,9 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(garbage, /maxitems: settings\['garbage_maxitems'\] \|\| 4/);
   assert.match(garbage, /maxdays: settings\['garbage_maxdays'\] \|\| 32/);
   assert.match(calendar, /isDefined\(settings\['calendar_maxitems'\]\)/);
-  assert.match(dashticz, /special\.name === 'garbage'[\s\S]*block\.title === 'Afval'[\s\S]*garbage_title/s);
+  assert.match(dashticz, /function getWidgetTitle\(block, special\)/);
+  assert.match(dashticz, /garbage: 'garbage_title'/);
+  assert.match(dashticz, /cfg\.title = widgetTitle/);
   assert.match(widgetEditor, /js\/savewidgets\.php/);
   assert.match(widgetEditor, /js\/savelayout\.php/);
   assert.match(widgetEditor, /js\/savegridlayout\.php/);
