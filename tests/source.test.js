@@ -401,6 +401,48 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(domoticzBlock, /setProperty\('height'.*'important'\)/s);
 });
 
+test('device editor supports translated dummy and title blocks', () => {
+  const editor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const writer = fs.readFileSync(
+    path.join(root, 'js/configwriter.php'),
+    'utf8'
+  );
+
+  assert.match(editor, /value="__dummy__"/);
+  assert.match(editor, /value="__title__"/);
+  assert.match(editor, />------<\/option>/);
+  assert.match(editor, /placeholder: t\.enter_idx/);
+  assert.match(editor, /placeholder: t\.enter_title/);
+  assert.match(editor, /'dummyblock_'/);
+  assert.match(editor, /'Title_'/);
+  assert.match(editor, /kind: special\.specialType/);
+  assert.match(editor, /language\.settings\.deviceeditor/);
+  assert.match(writer, /function configwriter_special_block_props/);
+  assert.match(writer, /'type' => 'blocktitle'/);
+  assert.match(writer, /'hide_data' => true/);
+  assert.match(editor, /height: specialType === 'title' \? 120 : null/);
+  assert.match(editor, /var TITLE_GRID_HEIGHT = 3/);
+  assert.match(editor, /isTitleBlock[\s\S]*\? TITLE_GRID_HEIGHT/);
+  assert.match(writer, /'height' =>[\s\S]*: 120/);
+  assert.match(
+    writer,
+    /'idx' => \(int\)\$block\['idx'\][\s\S]*'width' => \$width[\s\S]*'hide_data' => true[\s\S]*'title' => \$title/
+  );
+
+  for (const locale of ['en_US', 'nl_NL', 'fr_FR']) {
+    const translations = JSON.parse(
+      fs.readFileSync(path.join(root, 'lang', `${locale}.json`), 'utf8')
+    ).settings.deviceeditor;
+    assert.ok(translations.dummy_device, `${locale} dummy translation`);
+    assert.ok(translations.title_block, `${locale} title translation`);
+    assert.ok(translations.enter_idx, `${locale} IDX translation`);
+    assert.ok(translations.enter_title, `${locale} title-field translation`);
+  }
+});
+
 test('widget editor exposes the supported catalog and keeps legacy options out of settings UI', () => {
   const simpleBlock = fs.readFileSync(
     path.join(root, 'js/components/simpleblock.js'),
@@ -618,6 +660,20 @@ test('xmltv widget uses its own proxy and preserves optional block settings', ()
   assert.match(savegridlayout, /isset\(\$allBlockLines\[[\s\S]*?\$propsLiteral = \$allBlockLines\[[\s\S]*?isset\(\$existingGridBlocks\[/s);
 });
 
+test('XMLTV grid tiles fit complete rows without an internal scrollbar', () => {
+  const component = fs.readFileSync(
+    path.join(root, 'js/components/xmltvguide.js'),
+    'utf8'
+  );
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  assert.match(component, /new ResizeObserver\(function \(\) \{[\s\S]*_fitXmltvRows\(me\)/);
+  assert.match(component, /function _fitXmltvRows\(me\)/);
+  assert.match(component, /getBoundingClientRect\(\)\.bottom > availableBottom/);
+  assert.match(css, /> \.xmltvguide \{[\s\S]*height: 100% !important;[\s\S]*overflow: hidden !important;/);
+  assert.match(css, /\.xmltvguide \.dt_state \{[\s\S]*overflow: hidden !important;/);
+});
+
 test('Hayman clock does not depend on Moment locale internals for rendering', () => {
   const source = fs.readFileSync(
     path.join(root, 'js/components/haymanclock.js'),
@@ -801,10 +857,19 @@ test('modern dark theme is portable and documented', () => {
   assert.match(theme, /\.transbg select:focus,[\s\S]*border-color: var\(--border-color-selector\) !important/);
   assert.doesNotMatch(theme, /linear-gradient/);
   assert.match(theme, /\.mh \.btn\.active/);
+  assert.match(
+    theme,
+    /\.transbg\.titlegroups,[\s\S]*height: var\(--height-block-default\) !important[\s\S]*min-height: var\(--height-block-default\) !important/
+  );
+  assert.match(theme, /\.titlegroups \.dt_content,[\s\S]*justify-content: flex-start !important/);
+  assert.match(theme, /\.titlegroups \.dt_title,[\s\S]*text-align: left !important/);
+  assert.match(theme, /\.titlegroups \.dt_state,[\s\S]*display: none !important/);
   assert.match(theme, /\.transbg\.titlegroups/);
-  assert.match(theme, /\.titlegroups[\s\S]*background: var\(--blocktitle\) !important/);
+  assert.match(theme, /\.titlegroups[\s\S]*background: var\(--main-bg\) !important/);
+  assert.match(theme, /\.titlegroups[\s\S]*border: var\(--block-gap\) solid transparent !important/);
+  assert.match(theme, /\.titlegroups[\s\S]*border-radius: var\(--radius-border\) !important/);
   assert.match(theme, /\.colbar \.miniclock[\s\S]*background: transparent !important/);
-  assert.match(theme, /\.titlegroups[\s\S]*box-shadow: none !important/);
+  assert.match(theme, /\.titlegroups[\s\S]*var\(--panel-shadow\) !important/);
   assert.match(theme, /\.titlegroups \.col-icon img\.icon/);
   assert.match(theme, /@media \(max-width: 767\.98px\)/);
   assert.match(theme, /\.standby \.transbg[\s\S]*background: #000 !important/);
@@ -1018,9 +1083,15 @@ test('topbar and layout editor keep controls usable', () => {
   assert.match(main, /\['logo', 'miniclock', 'screenswitcher', 'settings'\]/);
   assert.match(editor, /var MIN_GRID_WIDTH = 2;/);
   assert.match(editor, /var MIN_GRID_HEIGHT = 4;/);
-  assert.match(editor, /item\.grid\.w < MIN_GRID_WIDTH \|\| item\.grid\.h < MIN_GRID_HEIGHT/);
+  assert.match(editor, /var MIN_TITLE_GRID_HEIGHT = 3;/);
+  assert.match(editor, /function _minimumGridHeight/);
+  assert.match(editor, /item\.grid\.w < MIN_GRID_WIDTH \|\| item\.grid\.h < minimumHeight/);
   assert.match(editor, /width = Math\.max\(\s*MIN_GRID_WIDTH,/s);
-  assert.match(editor, /height = Math\.max\(MIN_GRID_HEIGHT,/);
+  assert.match(editor, /height = Math\.max\(_minimumGridHeight\(item\),/);
+  assert.match(
+    styles,
+    /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.titlegroups,[\s\S]*height: 100% !important;[\s\S]*min-height: 0 !important;[\s\S]*overflow: hidden !important;/
+  );
 });
 
 test('garbage dates use the selected interface language', () => {

@@ -147,6 +147,25 @@
             "clock_scale_help": "Relatieve schaalfactor, bijv. 0.75 (standaard 1)",
             "miniclock_note": "Miniclock heeft geen extra weergave-opties."
         },
+        "deviceeditor": {
+            "editor_title": "Device-editor",
+            "configured_items": "Devices en widgets in Dashticz",
+            "empty_items": "Geen devices of widgets geconfigureerd in Dashticz.",
+            "add_item": "Device of block toevoegen",
+            "select_item": "Selecteer een device of block",
+            "dummy_device": "Dummy-device",
+            "title_block": "Titel",
+            "enter_idx": "Vul IDX in",
+            "enter_title": "Vul titel in",
+            "invalid_idx": "Vul een geldige positieve IDX in.",
+            "invalid_title": "Vul een titel in.",
+            "width": "Breedte",
+            "remove": "Block verwijderen",
+            "close": "Sluiten",
+            "save": "Opslaan",
+            "saving": "Opslaan…",
+            "saved": "Opgeslagen!"
+        },
         "widgeteditor": {
             "title": "Widgets",
             "choose": "Kies de functies die als tegel op scherm 1 moeten staan.",

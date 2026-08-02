@@ -52,10 +52,6 @@
     var(--panel-shadow) !important;
 }
 
-.transbg.titlegroups,
-.titlegroups,
-.transbg.blocktitle,
-.blocktitle,
 .miniclock {
   margin: 0 !important;
   border: 0 !important;
@@ -169,18 +165,58 @@
   font-size: 28px !important;
 }
 
+.transbg.titlegroups,
+.titlegroups,
+.transbg.blocktitle,
 .blocktitle {
+  box-sizing: border-box !important;
   display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  height: 40px !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  height: var(--height-block-default) !important;
+  min-height: var(--height-block-default) !important;
+  margin: 0 !important;
+  padding: 8px 10px 6px !important;
+  border: var(--block-gap) solid transparent !important;
+  border-radius: var(--radius-border) !important;
+  background: var(--main-bg) !important;
+  background-clip: padding-box !important;
+  box-shadow:
+    inset 0 0 0 var(--main-border-width) var(--border-color-block),
+    var(--panel-shadow) !important;
+  text-align: left !important;
 }
 
+.titlegroups .dt_content,
+.blocktitle .dt_content {
+  display: flex !important;
+  flex: 1 1 auto !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.titlegroups .dt_title,
 .blocktitle .dt_title {
-  padding-top: 4px !important;
-  color: var(--text-light);
-  font-size: var(--font-large);
-  text-shadow: 4px 4px 4px #000;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  width: 100% !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  color: var(--text-light) !important;
+  font-size: var(--font-large) !important;
+  line-height: 1.2 !important;
+  text-align: left !important;
+  text-shadow: 4px 4px 4px #000 !important;
+}
+
+.titlegroups .dt_state,
+.blocktitle .dt_state {
+  display: none !important;
 }
 
 .blocktitle img {

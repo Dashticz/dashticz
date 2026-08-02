@@ -25,7 +25,52 @@ if (!is_array($data['devices'])) {
 
 $devices = [];
 foreach ($data['devices'] as $entry) {
-    if (is_int($entry) && $entry > 0) {
+    if (is_array($entry)
+        && isset($entry['kind'])
+        && in_array($entry['kind'], ['dummy', 'title'], true)
+    ) {
+        /* Dummy/title entries are managed by the Device Editor but are not
+         Domoticz devices. Keep their explicit block type and safe key. */
+        $kind = $entry['kind'];
+        $keyPattern = $kind === 'dummy'
+            ? '/^dummyblock_\d+$/'
+            : '/^Title_\d+$/';
+        if (!isset($entry['key'])
+            || !is_string($entry['key'])
+            || !preg_match($keyPattern, $entry['key'])
+        ) {
+            dashticz_json_error(400, 'Invalid special block key.');
+        }
+        $title = isset($entry['title']) && is_string($entry['title'])
+            ? substr(trim($entry['title']), 0, 100)
+            : '';
+        if ($title === '') {
+            dashticz_json_error(400, 'A special block title is required.');
+        }
+        $width = isset($entry['width']) ? (int)$entry['width'] : ($kind === 'title' ? 12 : 3);
+        $width = max(1, min(12, $width));
+        $height = $kind === 'title' ? 120 : null;
+        if (array_key_exists('height', $entry) && $entry['height'] !== null && $entry['height'] !== '') {
+            $height = max(50, min(2000, (int)(round((int)$entry['height'] / 10) * 10)));
+        }
+        $idx = null;
+        if ($kind === 'dummy') {
+            if (!isset($entry['idx']) || !is_int($entry['idx']) || $entry['idx'] < 1) {
+                dashticz_json_error(400, 'A dummy block requires a positive integer idx.');
+            }
+            $idx = $entry['idx'];
+        }
+        $devices[] = [
+            'kind' => $kind,
+            'idx' => $idx,
+            'isGroup' => false,
+            'subidx' => 0,
+            'name' => $title,
+            'width' => $width,
+            'height' => $height,
+            'key' => $entry['key'],
+        ];
+    } elseif (is_int($entry) && $entry > 0) {
         $devices[] = [
             'idx' => $entry,
             'isGroup' => false,
@@ -147,7 +192,16 @@ if (!empty($devices)) {
     $usedKeys = array_keys(configwriter_extract_declared_block_refs($config));
     $requestKeys = [];
     foreach ($devices as &$device) {
-        if (!empty($device['isGroup'])) {
+        if (isset($device['kind']) && in_array($device['kind'], ['dummy', 'title'], true)) {
+            /* The browser generates stable numbered keys for special blocks. */
+            if (isset($requestKeys[$device['key']])) {
+                dashticz_json_error(409, 'Special block key already exists.');
+            }
+            /* Reuse an equivalent hand-written CONFIG.js block without
+             * overwriting or duplicating its additional custom properties. */
+            $device['preserveExisting'] = in_array($device['key'], $usedKeys, true);
+            $requestKeys[$device['key']] = true;
+        } elseif (!empty($device['isGroup'])) {
             /* group/scene: the key is fixed to the group reference (e.g. 's1') */
             $requestKeys[$device['key']] = true;
         } elseif ($device['key'] !== null && !isset($requestKeys[$device['key']])) {
@@ -163,9 +217,14 @@ if (!empty($devices)) {
     $section = configwriter_section_header('BLOCKS') . "\n";
     $section .= "if (typeof blocks === 'undefined') var blocks = {}\n";
     foreach ($devices as $device) {
+        if (!empty($device['preserveExisting'])) {
+            continue;
+        }
         $section .= configwriter_emit_block_line(
             $device['key'],
-            configwriter_device_block_props($device)
+            isset($device['kind'])
+                ? configwriter_special_block_props($device)
+                : configwriter_device_block_props($device)
         );
     }
 

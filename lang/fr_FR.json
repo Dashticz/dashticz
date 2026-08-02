@@ -147,6 +147,25 @@
             "clock_scale_help": "Facteur d’échelle relatif, ex : 0.75 (défaut 1)",
             "miniclock_note": "Miniclock n’a pas d’options d’affichage supplémentaires."
         },
+        "deviceeditor": {
+            "editor_title": "Éditeur d’appareils",
+            "configured_items": "Appareils et widgets dans Dashticz",
+            "empty_items": "Aucun appareil ou widget configuré dans Dashticz.",
+            "add_item": "Ajouter un appareil ou un bloc",
+            "select_item": "Sélectionner un appareil ou un bloc",
+            "dummy_device": "Appareil factice",
+            "title_block": "Titre",
+            "enter_idx": "Saisir l’IDX",
+            "enter_title": "Saisir le titre",
+            "invalid_idx": "Saisissez un IDX positif valide.",
+            "invalid_title": "Saisissez un titre.",
+            "width": "Largeur",
+            "remove": "Supprimer le bloc",
+            "close": "Fermer",
+            "save": "Enregistrer",
+            "saving": "Enregistrement…",
+            "saved": "Enregistré !"
+        },
         "widgeteditor": {
             "title": "Widgets",
             "choose": "Choisissez les fonctions à afficher comme tuiles sur l’écran actuellement ouvert.",

@@ -1,4 +1,4 @@
-/* global Dashticz _CORS_PATH moment settings language DT_function templateEngine */
+/* global Dashticz _CORS_PATH moment settings language DT_function templateEngine ResizeObserver */
 //# sourceURL=js/components/xmltvguide.js
 
 /**
@@ -60,6 +60,28 @@ var DT_xmltvguide = {
     separator: _xmltvSettingString('xmltv_separator', '-'),
   },
 
+  run: function (me) {
+    // Keep the visible programme rows synchronized with live grid resizing.
+    // ResizeObserver is optional so older browsers retain the normal widget.
+    if (typeof ResizeObserver !== 'undefined') {
+      me.xmltvResizeObserver = new ResizeObserver(function () {
+        _fitXmltvRows(me);
+      });
+      me.xmltvResizeObserver.observe(me.$mountPoint[0]);
+    }
+  },
+
+  onResize: function (me) {
+    _fitXmltvRows(me);
+  },
+
+  destroy: function (me) {
+    if (me.xmltvResizeObserver) {
+      me.xmltvResizeObserver.disconnect();
+      me.xmltvResizeObserver = null;
+    }
+  },
+
   refresh: function (me) {
     var tvobject = $(me.mountPoint + ' .dt_state');
     var block = me.block;
@@ -101,6 +123,12 @@ var DT_xmltvguide = {
             });
             tvobject.html(html);
 
+            // Wait for the template to be laid out before removing rows that
+            // would otherwise be clipped by a short grid tile.
+            setTimeout(function () {
+              _fitXmltvRows(me);
+            }, 0);
+
             // Install click handlers.
             tvobject.off();
             if (block.url) {
@@ -126,6 +154,25 @@ var DT_xmltvguide = {
       });
   },
 };
+
+/**
+ * Show only programme rows that fit completely inside the available state
+ * area. All rows are restored before measuring, which also makes them return
+ * automatically when the user enlarges the tile in the Layout Editor.
+ */
+function _fitXmltvRows(me) {
+  if (!me || !me.$mountPoint) return;
+  var state = me.$mountPoint.find('.xmltvguide .dt_state')[0];
+  if (!state || state.clientHeight <= 0) return;
+
+  var rows = $(state).find('tr.xmltv-row').css('display', '');
+  var availableBottom = state.getBoundingClientRect().bottom + 0.5;
+  rows.each(function () {
+    if (this.getBoundingClientRect().bottom > availableBottom) {
+      this.style.display = 'none';
+    }
+  });
+}
 
 function _xmltvSettingString(key, fallback) {
   if (

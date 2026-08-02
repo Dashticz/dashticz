@@ -67,6 +67,15 @@
   min-height: 100%;
 }
 
+/* Grid title bars follow their assigned row height instead of forcing their
+   CONFIG.js pixel height and creating a scrollbar in a shorter grid cell. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .titlegroups,
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .blocktitle {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
 .dt-grid-screen > .dt-grid-layout > .dt-grid-overlap {
   outline: 1px dashed rgba(255, 165, 0, 0.8);
   outline-offset: -1px;
@@ -1491,6 +1500,16 @@ body.dle-active {
 
 .de-add-row .de-width-input {
   flex: 0 0 78px;
+}
+
+.de-add-row .de-special-value {
+  flex: 0 1 180px;
+  min-width: 110px;
+}
+
+.de-special-item {
+  background: #fff8e1;
+  border-color: #ffe082;
 }
 
 .de-empty {
@@ -5578,6 +5597,25 @@ canvas {
 }
 .xmltv-error {
   color: #e74c3c;
+}
+
+/* In a grid the XMLTV tile must follow the saved row span instead of its
+   legacy pixel height. Programme rows are fitted by the component, so a
+   scrollbar would only make the editor and dashboard layouts disagree. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .xmltvguide {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .xmltvguide .dt_content {
+  min-height: 0;
+  overflow: hidden;
+}
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .xmltvguide .dt_state {
+  flex: 1 1 auto;
+  height: auto !important;
+  min-height: 0;
+  overflow: hidden !important;
 }
 
 /*end xmltvguide*/

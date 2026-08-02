@@ -147,6 +147,25 @@
             "clock_scale_help": "Relative scale factor, e.g. 0.75 (default 1)",
             "miniclock_note": "Miniclock has no extra display options."
         },
+        "deviceeditor": {
+            "editor_title": "Device Editor",
+            "configured_items": "Devices and widgets in Dashticz",
+            "empty_items": "No devices or widgets configured in Dashticz.",
+            "add_item": "Add device or block",
+            "select_item": "Select a device or block",
+            "dummy_device": "Dummy device",
+            "title_block": "Title",
+            "enter_idx": "Enter IDX",
+            "enter_title": "Enter title",
+            "invalid_idx": "Enter a valid positive IDX.",
+            "invalid_title": "Enter a title.",
+            "width": "Width",
+            "remove": "Remove block",
+            "close": "Close",
+            "save": "Save",
+            "saving": "Saving…",
+            "saved": "Saved!"
+        },
         "widgeteditor": {
             "title": "Widgets",
             "choose": "Choose the functions to show as tiles on screen 1.",

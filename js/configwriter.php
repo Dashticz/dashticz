@@ -1348,3 +1348,35 @@ function configwriter_device_block_props($device, $defaultWidth = 3)
 
     return $props;
 }
+
+/** Build the exact CONFIG.js properties for Device Editor helper blocks. */
+function configwriter_special_block_props($block)
+{
+    $kind = isset($block['kind']) ? $block['kind'] : '';
+    $width = isset($block['width']) ? (int)$block['width'] : ($kind === 'title' ? 12 : 3);
+    $width = max(1, min(12, $width));
+    $title = isset($block['name']) ? (string)$block['name'] : '';
+
+    if ($kind === 'title') {
+        $props = [
+            'width' => $width,
+            'type' => 'blocktitle',
+            'title' => $title,
+            'height' => isset($block['height']) && is_int($block['height'])
+                ? $block['height']
+                : 120,
+        ];
+    } else {
+        $props = [
+            'idx' => (int)$block['idx'],
+            'width' => $width,
+            'hide_data' => true,
+            'title' => $title,
+        ];
+    }
+
+    if ($kind !== 'title' && isset($block['height']) && is_int($block['height'])) {
+        $props['height'] = $block['height'];
+    }
+    return $props;
+}
