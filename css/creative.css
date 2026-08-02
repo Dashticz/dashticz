@@ -939,7 +939,11 @@ next css sets the default height of the frame popup
    ignored - the browser only lays out the wrapper's *children* as the real
    flex items of .colbar. Every rule below therefore targets those inner
    elements (.logo, .miniclock, .dt-screen-switcher-host,
-   .topbar-settings-wrap) directly instead of their wrapper. */
+   .topbar-settings-wrap) directly instead of their wrapper.
+   User-configured content blocks (logo, miniclock, sunrise, …) carry no
+   explicit CSS order so they appear in DOM order, which matches the order
+   in columns['bar']['blocks']. Only the screen-switcher and settings cluster
+   are pinned to the far right via high order values + margin-left:auto. */
 .colbar {
   /* Do not use !important here: topbar auto-hide needs inline display:none. */
   display: flex;
@@ -956,7 +960,6 @@ next css sets the default height of the frame popup
 }
 
 .colbar .logo {
-  order: 1;
   flex: 0 1 auto;
   min-width: 0;
 }
@@ -965,7 +968,6 @@ next css sets the default height of the frame popup
    guarantees the screen-switcher and settings icons never get pushed off
    the right edge of the bar when space is tight. */
 .colbar .miniclock {
-  order: 2;
   flex: 1 1 auto;
   box-sizing: border-box;
   height: 40px !important;
@@ -983,14 +985,14 @@ next css sets the default height of the frame popup
    cluster: margin-left:auto on the first of the two pushes both all the
    way to the right edge, and neither is allowed to shrink or wrap. */
 .colbar .dt-screen-switcher-host {
-  order: 3;
+  order: 99;
   flex: 0 0 auto;
   margin-left: auto;
   margin-right: 12px;
 }
 
 .colbar .topbar-settings-wrap {
-  order: 4;
+  order: 100;
   flex: 0 0 auto;
   margin-left: 0;
 }

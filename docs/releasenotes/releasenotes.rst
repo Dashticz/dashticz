@@ -6,6 +6,17 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.23.7 beta (2-8-2026)
+--------------------------
+
+* **Fix topbar block order**: blocks listed in ``columns['bar']['blocks']``
+  now appear in the configured order. Previously ``sunriseholder`` (and any
+  other block without an explicit CSS ``order`` value) defaulted to ``order:0``
+  and was always placed before ``logo`` and ``miniclock``, regardless of their
+  position in the config. Content blocks now rely on DOM order (which already
+  matches the config), while only the screen-switcher and settings cluster are
+  pinned to the far right via high CSS order values.
+
 v3.23.6 beta (1-8-2026)
 --------------------------
 
