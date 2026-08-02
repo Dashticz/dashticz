@@ -169,12 +169,21 @@ var DT_simpleblock = (function () {
         language.settings.config_mode &&
         language.settings.config_mode.wizard) ||
       'Wizard';
+    var modeAria =
+      (language.settings &&
+        language.settings.config_mode &&
+        language.settings.config_mode.aria_label) ||
+      'Configuration mode';
+    var editorLabels =
+      (language.settings && language.settings.widgeteditor) || {};
     var content =
       '<div class="col-xs-' +
       me.block.width +
       ' text-right topbar-settings-wrap">';
     content +=
-      '<span class="settings config-mode-switch" role="group" aria-label="Config mode">' +
+      '<span class="settings config-mode-switch" role="group" aria-label="' +
+      modeAria +
+      '">' +
       '<button type="button" class="config-mode-btn' +
       (customMode ? ' active' : '') +
       '" data-mode="custom" title="' +
@@ -195,21 +204,37 @@ var DT_simpleblock = (function () {
           if (!customMode) {
             content +=
               '<span class="settings deviceeditoricon" data-id="deviceeditor" ' +
-              'role="button" aria-label="Open device editor" title="Devices toevoegen">' +
+              'role="button" aria-label="' +
+              (editorLabels.open_device_editor || 'Open Device Editor') +
+              '" title="' +
+              (editorLabels.add_devices || 'Add devices') +
+              '">' +
               _topbarIconHtml('fas fa-plus', 'img/icons/Plus.png') + '</span>';
             content +=
               '<span class="settings widgeteditoricon" data-id="widgeteditor" ' +
-              'role="button" aria-label="Open widget editor" title="Widgets toevoegen">' +
+              'role="button" aria-label="' +
+              (editorLabels.open_widget_editor || 'Open Widget Editor') +
+              '" title="' +
+              (editorLabels.add_widgets || 'Add widgets') +
+              '">' +
               _topbarIconHtml('fas fa-puzzle-piece', 'img/icons/Puzzle.png') + '</span>';
             content +=
               '<span class="settings layouteditoricon" data-id="layouteditor" ' +
-              'role="button" aria-label="Open visual layout editor" title="Tegels verplaatsen en schalen">' +
+              'role="button" aria-label="' +
+              (editorLabels.open_layout_editor || 'Open Layout Editor') +
+              '" title="' +
+              (editorLabels.move_tiles || 'Move and scale tiles') +
+              '">' +
               _topbarIconHtml('fas fa-arrows-alt', 'img/icons/Arrows.png') + '</span>';
           }
           content +=
             '<span class="settings settingsicon" data-id="settings" ' +
             'data-bs-target="#settingspopup" data-bs-toggle="modal" ' +
-            'role="button" aria-label="Open settings" title="Instellingen">' +
+            'role="button" aria-label="' +
+            (editorLabels.open_settings || 'Open settings') +
+            '" title="' +
+            (editorLabels.settings_title || 'Settings') +
+            '">' +
             _topbarIconHtml('fas fa-cog', 'img/icons/Cog.png') + '</span>';
           if (!customMode) {
             _registerDeviceEditorClick();
@@ -256,9 +281,7 @@ var DT_simpleblock = (function () {
         if (mode === currentMode) return;
         if (mode === 'wizard') {
           if (
-            !window.confirm(
-              'Wizard gebruikt altijd een vrije grid-layout. Het huidige columns-scherm wordt geconverteerd voordat Wizard wordt ingeschakeld. Doorgaan?'
-            )
+            !window.confirm(language.settings.config_mode.confirm_wizard)
           ) {
             return;
           }
@@ -431,7 +454,7 @@ var DT_simpleblock = (function () {
       } else {
         me.$mountPoint
           .find('.containsweatherfull')
-          .html('<div class="dt_state">Weather Underground-instellingen ontbreken.</div>');
+          .html('<div class="dt_state">' + language.misc.wu_settings_missing + '</div>');
       }
     }
     if (typeof loadWeatherFull !== 'function') {

@@ -88,7 +88,8 @@
     refresh: function(me) {
         var iframe = '<script type="text/javascript" src="https://widgets.waqi.info/jswgt/?size=' + 
         me.block.layout + '&city=@' + me.block.city +
-        '"></script><noscript>Not seeing a widget? (<a href="https://aqicn.org/">More info</a>)</noscript></iframe>';
+        '"></script><noscript>' + language.misc.widget_not_visible + ' (<a href="https://aqicn.org/">' +
+        language.misc.more_info + '</a>)</noscript></iframe>';
         var doc = document.getElementById(me.iframeid).contentWindow.document;
         doc.open();
         doc.write(iframe);
@@ -97,4 +98,3 @@
   }
   Dashticz.register(DT_waqi);
 })(Dashticz);
-

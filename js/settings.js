@@ -132,11 +132,11 @@ settingList['screen']['show_topbar_clock'] = {
 settingList['screen']['topbar_use_png_icons'] = {
   title:
     language.settings.screen.topbar_use_png_icons ||
-    'Custom iconen topbalk',
+    'Use custom topbar icons',
   type: 'checkbox',
   help:
     language.settings.screen.topbar_use_png_icons_help ||
-    'Aan: Custom iconen uit img/icons/ (Plus.png, Puzzle.png, Arrows.png, Cog.png, Expand.png, Minus.png). Uit (standaard): Font Awesome iconen.',
+    'On: use custom icons from img/icons. Off: use Font Awesome icons.',
 };
 
 settingList['screen']['theme'] = {};
@@ -144,7 +144,7 @@ settingList['screen']['theme']['title'] =
   language.settings.screen.dashticz_themes;
 settingList['screen']['theme']['type'] = 'select';
 settingList['screen']['theme']['options'] = {
-  default: 'Default',
+  default: language.settings.screen.default_theme,
 };
 settingList['screen']['theme']['help'] =
   language.settings.screen.dashticz_themes_help;
@@ -154,7 +154,7 @@ settingList['screen']['background_image']['title'] =
   language.settings.screen.background_image;
 settingList['screen']['background_image']['type'] = 'text';
 settingList['screen']['background_image']['help'] =
-  language.settings.screen.background_image.help;
+  language.settings.screen.background_image_help;
 settingList['screen']['background_image']['picker'] = true;
 
 settingList['screen']['start_page'] = {};
@@ -344,11 +344,11 @@ settingList['media']['hide_mediaplayer']['type'] = 'checkbox';
 
 /* Widget settings shown as tiles in Custom mode (not Wizard). */
 var weatherIconOptions = {
-  line: 'Dynamic line icons',
-  linestatic: 'Static version of the line icons',
-  fill: 'Dynamic filled icons',
-  static: 'Static icons',
-  meteo: 'Alternative set of static icons',
+  line: language.settings.weather.icons_line,
+  linestatic: language.settings.weather.icons_linestatic,
+  fill: language.settings.weather.icons_fill,
+  static: language.settings.weather.icons_static,
+  meteo: language.settings.weather.icons_meteo,
 };
 
 var widgetEditorTranslations =
@@ -1129,7 +1129,7 @@ for (var s in settingList) {
 var _TEMP_SYMBOL = '°C';
 if (settings['use_fahrenheit'] === 1) _TEMP_SYMBOL = '°F';
 
-var phpversion = 'Not installed';
+var phpversion = language.settings.about.not_installed;
 var systemInfo = null;
 var _PHP_INSTALLED = false;
 
@@ -1243,7 +1243,7 @@ function loadSettings() {
       phpversion = data.php_version;
       _PHP_INSTALLED = true;
       $('#php_version').text(phpversion);
-      $('#os_version').text(formatSystemInfo('Unknown'));
+      $('#os_version').text(formatSystemInfo(language.settings.about.unknown));
     },
   })
     .catch(function () {
@@ -1633,16 +1633,19 @@ function getWeatherProviderPreference() {
 }
 
 function renderClockWidgetSettings(tile) {
+  var wt = widgetEditorTranslations;
   var html =
     '<div class="settings-row">' +
-    '<label class="settings-label" for="setting-clock_type_ui">Type</label>' +
+    '<label class="settings-label" for="setting-clock_type_ui">' +
+    escapeSettingsHtml(wt.clock_type) +
+    '</label>' +
     '<div class="settings-control">' +
     '<select id="setting-clock_type_ui" class="form-select settings-clock-type">' +
-    '<option value="basicclock">Basic clock</option>' +
-    '<option value="stationclock" selected>Stationsklok</option>' +
-    '<option value="flipclock">Flipclock</option>' +
-    '<option value="haymanclock">Hayman clock</option>' +
-    '<option value="miniclock">Miniclock</option>' +
+    '<option value="basicclock">' + escapeSettingsHtml(wt.basic_clock) + '</option>' +
+    '<option value="stationclock" selected>' + escapeSettingsHtml(wt.station_clock) + '</option>' +
+    '<option value="flipclock">' + escapeSettingsHtml(wt.flipclock) + '</option>' +
+    '<option value="haymanclock">' + escapeSettingsHtml(wt.hayman_clock) + '</option>' +
+    '<option value="miniclock">' + escapeSettingsHtml(wt.miniclock) + '</option>' +
     '</select></div><div class="settings-help-slot"></div></div>';
 
   html +=
@@ -1663,7 +1666,7 @@ function renderClockWidgetSettings(tile) {
 
   html +=
     '<div class="settings-clock-group" data-clock-type="flipclock" style="display:none">';
-  html += '<h6 class="settings-weather-heading">Flipclock</h6>';
+  html += '<h6 class="settings-weather-heading">' + escapeSettingsHtml(wt.flipclock) + '</h6>';
   if (tile.settings.hide_seconds) {
     html += renderSettingsRow('hide_seconds', tile.settings.hide_seconds);
   }
@@ -1671,7 +1674,7 @@ function renderClockWidgetSettings(tile) {
 
   html +=
     '<div class="settings-clock-group" data-clock-type="stationclock">';
-  html += '<h6 class="settings-weather-heading">Stationsklok</h6>';
+  html += '<h6 class="settings-weather-heading">' + escapeSettingsHtml(wt.station_clock) + '</h6>';
   if (tile.settings.boss_stationclock) {
     html += renderSettingsRow('boss_stationclock', tile.settings.boss_stationclock);
   }
@@ -1712,17 +1715,20 @@ function bindClockTypeToggle() {
 
 function renderWeatherWidgetSettings(tile) {
   var provider = getWeatherProviderPreference();
+  var wt = widgetEditorTranslations;
   var html =
     '<div class="settings-row">' +
-    '<label class="settings-label" for="setting-weather_provider_ui">Provider</label>' +
+    '<label class="settings-label" for="setting-weather_provider_ui">' +
+    escapeSettingsHtml(wt.provider) +
+    '</label>' +
     '<div class="settings-control">' +
     '<select id="setting-weather_provider_ui" class="form-select settings-weather-provider">' +
     '<option value="openweather"' +
     (provider === 'openweather' ? ' selected' : '') +
-    '>OpenWeather</option>' +
+    '>' + escapeSettingsHtml(wt.openweather) + '</option>' +
     '<option value="wunderground"' +
     (provider === 'wunderground' ? ' selected' : '') +
-    '>Weather Underground</option>' +
+    '>' + escapeSettingsHtml(wt.weather_underground) + '</option>' +
     '</select></div><div class="settings-help-slot"></div></div>';
 
   var owmKeys = [
@@ -1747,7 +1753,7 @@ function renderWeatherWidgetSettings(tile) {
     '<div class="settings-weather-group" data-weather-provider="openweather"' +
     (provider === 'openweather' ? '' : ' style="display:none"') +
     '>';
-  html += '<h6 class="settings-weather-heading">OpenWeather</h6>';
+  html += '<h6 class="settings-weather-heading">' + escapeSettingsHtml(wt.openweather) + '</h6>';
   owmKeys.forEach(function (key) {
     if (tile.settings[key]) {
       html += renderSettingsRow(key, tile.settings[key]);
@@ -1759,7 +1765,7 @@ function renderWeatherWidgetSettings(tile) {
     '<div class="settings-weather-group" data-weather-provider="wunderground"' +
     (provider === 'wunderground' ? '' : ' style="display:none"') +
     '>';
-  html += '<h6 class="settings-weather-heading">Weather Underground</h6>';
+  html += '<h6 class="settings-weather-heading">' + escapeSettingsHtml(wt.weather_underground) + '</h6>';
   wuKeys.forEach(function (key) {
     if (tile.settings[key]) {
       html += renderSettingsRow(key, tile.settings[key]);
@@ -1767,7 +1773,7 @@ function renderWeatherWidgetSettings(tile) {
   });
   html += '</div>';
 
-  html += '<h6 class="settings-weather-heading">Display</h6>';
+  html += '<h6 class="settings-weather-heading">' + escapeSettingsHtml(wt.display) + '</h6>';
   sharedKeys.forEach(function (key) {
     if (tile.settings[key]) {
       html += renderSettingsRow(key, tile.settings[key]);
@@ -2040,8 +2046,8 @@ function renderSettingsUpdateControls() {
     escapeSettingsHtml(update.branch || 'Branch') +
     '</label>' +
     '<select id="settings-update-branch" class="form-select">' +
-    '<option value="beta">Beta</option>' +
-    '<option value="main">Main</option>' +
+    '<option value="beta">' + escapeSettingsHtml(update.beta) + '</option>' +
+    '<option value="main">' + escapeSettingsHtml(update.main) + '</option>' +
     '</select>' +
     '<button type="button" class="btn btn-primary settings-update-run" id="settings-update-run">' +
     escapeSettingsHtml(update.run || 'Run update') +
@@ -2144,7 +2150,7 @@ function setConfigMode(mode) {
       var message =
         xhr.responseJSON && xhr.responseJSON.error
           ? xhr.responseJSON.error
-          : 'Could not save config mode.';
+          : language.settings.config_mode.save_failed;
       alert(message);
     });
 }
@@ -2308,17 +2314,21 @@ function saveSettings() {
       html += '<div class="modal-content">';
       html +=
         '<div class="modal-body" style="padding:20px;font-size:14px;">' +
-        '<h2 class="visually-hidden" id="settings-output-title">Settings output</h2>';
+        '<h2 class="visually-hidden" id="settings-output-title">' +
+        escapeSettingsHtml(language.settings.output.title) +
+        '</h2>';
       html +=
         '<strong>' +
         (saved
           ? language.settings.infosave
-          : 'Settings were not saved automatically.') +
+          : language.settings.output.not_saved) +
         '</strong><br>';
 
       if (!saved) {
         html +=
-          '<span class="text-danger"></span><br>Copy the configuration below to custom/' + cfgFile + '.<br><br>';
+          '<span class="text-danger"></span><br>' +
+          escapeSettingsHtml(language.settings.output.copy_to).replace('{file}', 'custom/' + cfgFile) +
+          '<br><br>';
       }
 
       html += '<textarea style="width:100%;height:500px;" id="codeToCopy"></textarea>';
@@ -2332,13 +2342,15 @@ function saveSettings() {
       html +=
         '</div><button type="button" class="settingsoutput" hidden ' +
         'data-bs-toggle="modal" data-bs-target="#settingsoutput" ' +
-        'aria-label="Open settings output"></button>';
+        'aria-label="' +
+        escapeSettingsHtml(language.settings.output.open_aria) +
+        '"></button>';
 
       $('body').append(html);
       $('#codeToCopy').val(alertSettings);
       if (!saved) {
         $('#settingsoutput .text-danger').text(
-          errorMessage || 'Settings could not be saved automatically.'
+          errorMessage || language.settings.output.save_failed
         );
       }
       setTimeout(function () {

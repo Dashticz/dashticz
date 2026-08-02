@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-/* global Dashticz moment _CORS_PATH  Chart isDefined*/
+/* global Dashticz moment _CORS_PATH Chart isDefined language */
 /* from graph.js : */
 /* global getBlockDefaults createHeader getDefaultGraphProperties createButtons*/
 /* from bundle.js */
@@ -220,7 +220,7 @@ function createDashGraph(me) {
 
     $.each(scales.yAxes, function (i) {
       scales.yAxes[i].scaleLabel = {
-        labelString: i === 1 ? 'Day' : scaleLabel,
+        labelString: i === 1 ? language.graph.day : scaleLabel,
         display: true,
         fontColor: 'white',
       };

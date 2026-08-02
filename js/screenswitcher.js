@@ -11,6 +11,12 @@ var DashticzScreenSwitcher = (function () {
   /** Manual S-edit mode: mouse/keyboard must not exit standby. */
   var standbyEditMode = false;
 
+  function _strings() {
+    return typeof screenswitcherTranslations !== 'undefined'
+      ? screenswitcherTranslations
+      : {};
+  }
+
   function getScreenNumbers() {
     var nums = [];
     $('.dt-container .screen[data-screenindex]').each(function () {
@@ -208,7 +214,9 @@ var DashticzScreenSwitcher = (function () {
         ? screenswitcherTranslations
         : {};
     var html =
-      '<div class="dt-screen-switcher" role="group" aria-label="Screens">';
+      '<div class="dt-screen-switcher" role="group" aria-label="' +
+      (st.screens_aria || 'Screens') +
+      '">';
 
     // Standby button — show custom icon if configured, otherwise 'S'
     var standbyLabel = st.standby || 'Standby';
@@ -416,7 +424,7 @@ var DashticzScreenSwitcher = (function () {
   function addScreen() {
     if (addingScreen) return;
     if (typeof _PHP_INSTALLED !== 'undefined' && !_PHP_INSTALLED) {
-      alert('PHP not available — adding a screen is disabled.');
+      alert(_strings().php_required || 'PHP is unavailable, so a screen cannot be added.');
       return;
     }
 
@@ -448,8 +456,8 @@ var DashticzScreenSwitcher = (function () {
         var msg =
           xhr.responseJSON && xhr.responseJSON.error
             ? xhr.responseJSON.error
-            : 'Could not add screen.';
-        alert('Error: ' + msg);
+            : _strings().add_failed;
+        alert((_strings().error_prefix || 'Error:') + ' ' + msg);
       });
   }
 
@@ -463,7 +471,10 @@ var DashticzScreenSwitcher = (function () {
     ) {
       return;
     }
-    if (!window.confirm('Screen ' + screenNumber + ' verwijderen?')) return;
+    var deleteMessage =
+      (_strings().delete_confirm ||
+        'Delete screen {number}?').replace('{number}', screenNumber);
+    if (!window.confirm(deleteMessage)) return;
 
     addingScreen = true;
     $('.dt-screen-delete, .dt-screen-add').prop('disabled', true);
@@ -487,8 +498,8 @@ var DashticzScreenSwitcher = (function () {
         var msg =
           xhr.responseJSON && xhr.responseJSON.error
             ? xhr.responseJSON.error
-            : 'Could not delete screen.';
-        alert('Error: ' + msg);
+            : _strings().delete_failed;
+        alert((_strings().error_prefix || 'Error:') + ' ' + msg);
       });
   }
 

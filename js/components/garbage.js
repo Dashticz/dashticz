@@ -112,7 +112,7 @@ var DT_garbage = (function () {
       error: function (errorData) {
         var msg = errorData.responseJSON.error.message;
         infoMessage(
-          '<font color="red">Garbage Error!</font>',
+          '<font color="red">' + garbageText('load_error', 'Error loading garbage data') + '</font>',
           'Google Calendar ' + msg,
           10000
         );

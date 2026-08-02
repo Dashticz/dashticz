@@ -1,3 +1,4 @@
+/* global language settings */
 // eslint-disable-next-line no-unused-vars
 function getFullScreenIcon() {
   var usePng =
@@ -8,7 +9,11 @@ function getFullScreenIcon() {
     : '<em class="fas fa-expand" id="fullScreenToggleIcon" />';
   var content =
     '<span data-id="fullscreen" class="fullscreen fullscreenicon text-right" ' +
-    'role="button" aria-label="Toggle fullscreen" title="Volledig scherm">' +
+    'role="button" aria-label="' +
+    language.settings.widgeteditor.toggle_fullscreen +
+    '" title="' +
+    language.settings.widgeteditor.fullscreen +
+    '">' +
     iconInner +
     '</span>';
 

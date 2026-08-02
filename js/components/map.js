@@ -11,8 +11,9 @@ window.GoogleMapsCallback = function () {
 
 function gm_authFailure() {
   console.log('Google Maps Authentication problem')
-  $('.map .dt_state').html('Invalid Google Maps API key.<br>' +
-    'See <a href="https://dashticz.readthedocs.io/en/master/blocks/specials/googlemaps.html#getting-a-google-maps-api-key">Dashticz Google Maps documentation</a>')
+  $('.map .dt_state').html(language.misc.map_api_invalid + '<br>' +
+    language.misc.see_documentation_prefix + ' <a href="https://dashticz.readthedocs.io/en/master/blocks/specials/googlemaps.html#getting-a-google-maps-api-key">' +
+    language.misc.map_documentation + '</a>')
 };
 
 (function (Dashticz) {

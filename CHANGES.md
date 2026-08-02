@@ -2,6 +2,13 @@
 
 ## 3.23.7 — Editor add regression
 
+- **Consistent settings and widget localization**: Settings, Device Editor,
+  Widget Editor, Layout Editor, screen controls and widget status/error text
+  now read their user-facing labels from the JSON files in `lang/`. Dashticz
+  first loads `lang/en_US.json` and merges the selected locale over it, so a
+  missing translation is shown in English instead of a hard-coded Dutch,
+  French or mixed-language string.
+
 - **Responsive iframe defaults and row limits**: new iframe widgets use
   `scaletofit: 300` and `aspectratio: 0.9` without forcing a fixed `height`.
   Existing height-only iframe blocks remain supported. Calendar now exposes a

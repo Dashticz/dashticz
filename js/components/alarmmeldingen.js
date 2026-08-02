@@ -31,7 +31,7 @@ var DT_alarmmeldingen = {
       },
       error: function (data) {
         infoMessage(
-          '<font color="red">Alarmeringen.nl feed Error!</font>',
+          '<font color="red">' + language.misc.alert_feed_error + '</font>',
           'RSS feed ' + data.statusText + '. Check rss url.',
           10000
         );

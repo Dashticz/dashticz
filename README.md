@@ -164,6 +164,12 @@ enlarging the tile makes the additional rows visible again.
 Widget-specific settings are kept together with the other `config[...]`
 settings at the top of `custom/CONFIG.js`.
 
+All Settings and editor labels, widget status messages and validation errors
+are read from the JSON files in `lang/`. `en_US.json` is loaded as the complete
+base language before the selected locale is merged over it. A missing locale
+entry therefore remains readable in English and cannot introduce a different
+hard-coded language into the interface.
+
 New iframe widgets use responsive sizing by default: `scaletofit: 300` and
 `aspectratio: 0.9`, without a fixed `height`. The ratio is height divided by
 width. Existing iframe blocks with an explicit `height` remain supported; leave

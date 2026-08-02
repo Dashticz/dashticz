@@ -362,7 +362,7 @@ function showInfo(pop) {
       name: $(pop).data('name'),
       caltext:
         calurl.length > 0
-          ? 'Launch full calendar'
+          ? language.misc.launch_full_calendar
           : 'Add your "[calendarurl]" in config.js',
       calurl:
         calurl.length > 0

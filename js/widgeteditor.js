@@ -1219,7 +1219,9 @@ var DashticzWidgetEditor = (function () {
       '<input type="text" class="form-control form-control-sm we-camera-title" maxlength="100" value="' +
       _esc(camera.title || _t('camera', 'Camera') + ' ' + (index + 1)) +
       '"></div>' +
-      '<div class="mb-2"><label class="form-label we-field-label">Image URL</label>' +
+      '<div class="mb-2"><label class="form-label we-field-label">' +
+      _t('image_url', 'Image URL') +
+      '</label>' +
       '<input type="url" class="form-control form-control-sm we-camera-image" value="' +
       _esc(camera.imageUrl || '') +
       '"></div>' +
@@ -1251,16 +1253,18 @@ var DashticzWidgetEditor = (function () {
       };
       fields +=
         '<div class="mb-3">' +
-        '<label class="form-label we-field-label" for="we-cfg-weather-provider">Provider</label>' +
+        '<label class="form-label we-field-label" for="we-cfg-weather-provider">' +
+        _t('provider', 'Provider') +
+        '</label>' +
         '<select class="form-select form-select-sm we-widget-field" id="we-cfg-weather-provider">' +
-        '<option value="openweather"' + (cfg.provider === 'openweather' ? ' selected' : '') + '>OpenWeather</option>' +
-        '<option value="wunderground"' + (cfg.provider === 'wunderground' ? ' selected' : '') + '>Weather Underground</option>' +
+        '<option value="openweather"' + (cfg.provider === 'openweather' ? ' selected' : '') + '>' + _t('openweather', 'OpenWeather') + '</option>' +
+        '<option value="wunderground"' + (cfg.provider === 'wunderground' ? ' selected' : '') + '>' + _t('weather_underground', 'Weather Underground') + '</option>' +
         '</select></div>';
       fields +=
         '<div class="we-weather-group" data-weather-provider="openweather"' +
         (cfg.provider === 'openweather' ? '' : ' style="display:none"') +
         '>';
-      fields += _cfgHeading('OpenWeather');
+      fields += _cfgHeading(_t('openweather', 'OpenWeather'));
       fields += _cfgField('owm_api', lw.owm_api || 'OpenWeather API key', 'text', cfg.owm_api);
       fields += _cfgField('owm_city', lw.owm_city || 'City', 'text', cfg.owm_city);
       fields += _cfgField('owm_name', lw.owm_name || 'Display name', 'text', cfg.owm_name);
@@ -1280,7 +1284,7 @@ var DashticzWidgetEditor = (function () {
         '<div class="we-weather-group" data-weather-provider="wunderground"' +
         (cfg.provider === 'wunderground' ? '' : ' style="display:none"') +
         '>';
-      fields += _cfgHeading('Weather Underground');
+      fields += _cfgHeading(_t('weather_underground', 'Weather Underground'));
       fields += _cfgField('wu_api', lw.wu_api || 'Weather Underground API key', 'text', cfg.wu_api);
       fields += _cfgField('wu_city', lw.wu_city || 'City (WU)', 'text', cfg.wu_city);
       fields += _cfgField('wu_name', lw.wu_name || 'Display name (WU)', 'text', cfg.wu_name);
@@ -1295,7 +1299,9 @@ var DashticzWidgetEditor = (function () {
       var ccal = widgetConfigs.calendar || {};
       fields =
         '<div class="mb-3">' +
-        '<label class="form-label we-field-label" for="we-cfg-calendar-url">ICS-URL</label>' +
+        '<label class="form-label we-field-label" for="we-cfg-calendar-url">' +
+        _t('ics_url', 'ICS URL') +
+        '</label>' +
         '<input type="url" class="form-control form-control-sm we-widget-field" id="we-cfg-calendar-url" ' +
         'placeholder="https://…/calendar.ics" value="' + _esc(ccal.icalurl || '') + '"></div>';
       fields += _cfgField('calendarformat', ll.calendarformat || 'Calendar format', 'text', ccal.calendarformat);
@@ -1381,11 +1387,11 @@ var DashticzWidgetEditor = (function () {
         _t('clock_type', 'Clock type') +
         '</label>' +
         '<select class="form-select form-select-sm we-widget-field" id="we-cfg-clock-type">' +
-        _clockOption('basicclock', 'Basic clock', currentClockType) +
+        _clockOption('basicclock', _t('basic_clock', 'Basic clock'), currentClockType) +
         _clockOption('stationclock', _t('station_clock', 'Station clock'), currentClockType) +
-        _clockOption('flipclock', 'Flipclock', currentClockType) +
-        _clockOption('haymanclock', 'Hayman clock', currentClockType) +
-        _clockOption('miniclock', 'Miniclock', currentClockType) +
+        _clockOption('flipclock', _t('flipclock', 'Flipclock'), currentClockType) +
+        _clockOption('haymanclock', _t('hayman_clock', 'Hayman clock'), currentClockType) +
+        _clockOption('miniclock', _t('miniclock', 'Miniclock'), currentClockType) +
         '</select></div>';
 
       fields +=
@@ -1414,7 +1420,7 @@ var DashticzWidgetEditor = (function () {
         '<div class="we-clock-group" data-clock-type="flipclock"' +
         (currentClockType === 'flipclock' ? '' : ' style="display:none"') +
         '>';
-      fields += _cfgHeading('Flipclock');
+      fields += _cfgHeading(_t('flipclock', 'Flipclock'));
       fields += _cfgField(
         'showSeconds',
         _t('show_seconds', 'Show seconds'),
@@ -1472,7 +1478,7 @@ var DashticzWidgetEditor = (function () {
       fields += _cfgField('garbage_maxdays', lg.garbage_maxdays || 'Maximum days', 'text', gcfg.garbage_maxdays,
         null, lg.garbage_maxdays_help || 'Maximum number of days ahead to search. Default: 32.');
       fields += _cfgField('garbage_width', lg.garbage_width || 'Width', 'text', gcfg.garbage_width);
-      fields += _cfgHeading('iCal / Google');
+      fields += _cfgHeading(_t('ical_google', 'iCal / Google'));
       fields += _cfgField('garbage_icalurl', lg.garbage_icalurl || 'iCal URL', 'text', gcfg.garbage_icalurl);
       fields += _cfgField('google_api_key', lg.google_api_key || 'Google API key', 'text', gcfg.google_api_key);
       fields += _cfgField('garbage_calendar_id', lg.garbage_calendar_id || 'Google Calendar ID', 'text', gcfg.garbage_calendar_id, null, lg.garbage_calendar_id_help || '');
@@ -1503,7 +1509,9 @@ var DashticzWidgetEditor = (function () {
       var ptcfg = widgetConfigs.publictransport || {};
       fields +=
         '<div class="mb-3">' +
-        '<label class="form-label we-field-label" for="we-cfg-pt-provider">Provider</label>' +
+        '<label class="form-label we-field-label" for="we-cfg-pt-provider">' +
+        _t('provider', 'Provider') +
+        '</label>' +
         '<select class="form-select form-select-sm we-widget-field" id="we-cfg-pt-provider">' +
         _ptOption('treinen', _t('trains_nl', 'Trains (NL)'), ptcfg.provider || 'treinen') +
         _ptOption('ovapi', 'OV API (NL)', ptcfg.provider || 'treinen') +
@@ -1532,7 +1540,9 @@ var DashticzWidgetEditor = (function () {
       var acfg = widgetConfigs.alarmmeldingen || {};
       fields +=
         '<div class="mb-3">' +
-        '<label class="form-label we-field-label" for="we-cfg-alarm-rss">RSS-feed</label>' +
+        '<label class="form-label we-field-label" for="we-cfg-alarm-rss">' +
+        _t('rss_feed', 'RSS feed') +
+        '</label>' +
         '<input type="url" class="form-control form-control-sm we-widget-field" id="we-cfg-alarm-rss" value="' +
         _esc(acfg.rss || '') +
         '"></div>';
@@ -1682,7 +1692,9 @@ var DashticzWidgetEditor = (function () {
       '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
       _t('cancel', 'Cancel') +
       '</button>' +
-      '<button type="button" class="btn btn-primary" id="we-cfg-ok-btn">OK</button>' +
+      '<button type="button" class="btn btn-primary" id="we-cfg-ok-btn">' +
+      _t('ok', 'OK') +
+      '</button>' +
       '</div></div></div></div>'
     );
   }
