@@ -10,7 +10,7 @@ var DashticzWidgetEditor = (function () {
       title: 'Weather',
       description: 'Weather forecast via OpenWeather or Weather Underground.',
       icon: 'fas fa-cloud-sun',
-      width: 4,
+      width: 3,
       height: 120,
     },
     {
@@ -19,8 +19,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Garbage',
       description: 'Upcoming waste collections.',
       icon: 'fas fa-trash-alt',
-      width: 5,
-      height: 160,
+      width: 3,
+      height: 120,
     },
     {
       id: 'spotify',
@@ -28,7 +28,7 @@ var DashticzWidgetEditor = (function () {
       title: 'Spotify',
       description: 'Spotify Connect remote control.',
       icon: 'fab fa-spotify',
-      width: 4,
+      width: 3,
       height: 120,
     },
     {
@@ -37,7 +37,7 @@ var DashticzWidgetEditor = (function () {
       title: 'Sonarr',
       description: 'Upcoming episodes from Sonarr.',
       icon: 'fas fa-tv',
-      width: 4,
+      width: 3,
       height: 120,
     },
     {
@@ -46,7 +46,7 @@ var DashticzWidgetEditor = (function () {
       title: 'Clock',
       description: 'Large clock with date and weekday.',
       icon: 'far fa-clock',
-      width: 4,
+      width: 3,
     },
     {
       id: 'calendar',
@@ -54,7 +54,7 @@ var DashticzWidgetEditor = (function () {
       title: 'Calendar (ICS)',
       description: 'Events from an online ICS calendar.',
       icon: 'fas fa-calendar-alt',
-      width: 4,
+      width: 3,
       height: 120,
     },
     {
@@ -63,7 +63,7 @@ var DashticzWidgetEditor = (function () {
       title: 'Security panel',
       description: 'Domoticz security panel with PIN code.',
       icon: 'fas fa-shield-alt',
-      width: 12,
+      width: 6,
     },
     {
       id: 'publictransport',
@@ -71,8 +71,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Public transport',
       description: 'Departure times for trains, buses or trams.',
       icon: 'fas fa-train',
-      width: 4,
-      height: 260,
+      width: 3,
+      height: 160,
     },
     {
       id: 'trafficinfo',
@@ -80,8 +80,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Traffic information',
       description: 'ANWB traffic jams, roadworks and speed cameras.',
       icon: 'fas fa-car',
-      width: 4,
-      height: 260,
+      width: 3,
+      height: 160,
     },
     {
       id: 'alarmmeldingen',
@@ -89,7 +89,7 @@ var DashticzWidgetEditor = (function () {
       title: '112',
       description: 'Dutch emergency alerts from alarmeringen.nl.',
       icon: 'fas fa-bullhorn',
-      width: 4,
+      width: 3,
       height: 160,
     },
     {
@@ -98,8 +98,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Cameras',
       description: 'Camera image or MJPEG stream.',
       icon: 'fas fa-video',
-      width: 4,
-      height: 320,
+      width: 3,
+      height: 200,
     },
     {
       id: 'map',
@@ -107,8 +107,8 @@ var DashticzWidgetEditor = (function () {
       title: 'Google Maps',
       description: 'Map with optional traffic and directions.',
       icon: 'fas fa-map-marked-alt',
-      width: 4,
-      height: 500,
+      width: 3,
+      height: 400,
     },
     {
       id: 'longfonds',
@@ -116,7 +116,7 @@ var DashticzWidgetEditor = (function () {
       title: 'Air quality',
       description: 'Longfonds / RIVM air quality by postcode.',
       icon: 'fas fa-wind',
-      width: 4,
+      width: 3,
       height: 120,
     },
     {
@@ -133,8 +133,8 @@ var DashticzWidgetEditor = (function () {
       title: 'News',
       description: 'RSS news feed with automatic scrolling.',
       icon: 'fas fa-newspaper',
-      width: 4,
-      height: 240,
+      width: 3,
+      height: 200,
     },
     // iframe widget: embeds any external URL in an inline frame
     {
@@ -152,7 +152,7 @@ var DashticzWidgetEditor = (function () {
       title: 'XMLTV TV Guide',
       description: 'TV programme guide from an XMLTV-format URL.',
       icon: 'fas fa-tv',
-      width: 6,
+      width: 3,
       height: 300,
     },
   ];
