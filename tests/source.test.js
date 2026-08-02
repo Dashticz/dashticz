@@ -64,6 +64,17 @@ test('all application JavaScript files pass a syntax check', () => {
   }
 });
 
+test('screen switcher subscribes to Swiper events using Swiper event names', () => {
+  const source = fs.readFileSync(
+    path.join(root, 'js/screenswitcher.js'),
+    'utf8'
+  );
+
+  assert.match(source, /myswiper\.on\('slideChange', onSwiperChange\)/);
+  assert.match(source, /myswiper\.on\('transitionEnd', onSwiperChange\)/);
+  assert.doesNotMatch(source, /myswiper\.on\('(?:slideChange|transitionEnd)\.screenswitcher'/);
+});
+
 test('first-run setup uses its own wizard and removes the legacy browser fallback', () => {
   const source = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
   const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
@@ -78,7 +89,11 @@ test('first-run setup uses its own wizard and removes the legacy browser fallbac
   assert.match(source, /Check again/);
   assert.match(source, /showSetupWizard\(\)/);
   assert.match(source, /id="dt-setup-wizard"/);
-  assert.match(source, /url: 'js\/savesettings\.php'/);
+  assert.match(source, /url: configEditorUrl\('js\/savesettings\.php'\)/);
+  assert.match(
+    source,
+    /id: 'topbar_timeout',[\s\S]*?def: '5'/
+  );
   assert.doesNotMatch(source, /section: 'Scherm &amp; Navigatie'/);
   assert.doesNotMatch(source, /section: 'Weergave &amp; Overig'/);
   assert.doesNotMatch(settings, /firstRunSetupRequired/);
@@ -90,6 +105,31 @@ test('first-run setup uses its own wizard and removes the legacy browser fallbac
   assert.doesNotMatch(settings, /localStorage\.setItem\('dashticz_'/);
   assert.doesNotMatch(source, /localStorage\.setItem\('dashticz_setup_config'/);
   assert.doesNotMatch(source, /storeSetupConfig/);
+});
+
+test('installer accepts an optional target directory', () => {
+  const installer = fs.readFileSync(path.join(root, 'install.sh'), 'utf8');
+  const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+  const installDocs = fs.readFileSync(
+    path.join(root, 'docs/gettingstarted/automaticinstall.rst'),
+    'utf8'
+  );
+
+  assert.match(installer, /INSTALL_DIR="\$\{DASHTICZ_INSTALL_DIR:-dashticz\}"/);
+  assert.match(installer, /-d\|--directory/);
+  assert.match(installer, /--directory=\*/);
+  assert.match(installer, /Only one installation directory can be specified/);
+  assert.match(installer, /git clone[\s\S]*"\$INSTALL_DIR"/);
+  assert.match(readme, /-- --directory \/var\/www\/html\/my-dashboard/);
+  assert.match(installDocs, /-- --directory \/var\/www\/html\/my-dashboard/);
+  assert.match(readme, /-- -d \/var\/www\/html\/my-dashboard/);
+  assert.match(readme, /-- --directory=\/var\/www\/html\/my-dashboard/);
+  assert.match(readme, /DASHTICZ_INSTALL_DIR=\/var\/www\/html\/my-dashboard/);
+  assert.match(readme, /-- --help/);
+  assert.match(installDocs, /-- -d \/var\/www\/html\/my-dashboard/);
+  assert.match(installDocs, /DASHTICZ_INSTALL_DIR=\/var\/www\/html\/my-dashboard/);
+  assert.match(readme, /file mode `0644`/);
+  assert.match(installDocs, /file mode ``0644``/);
 });
 
 test('all project JSON files parse', () => {
@@ -109,6 +149,82 @@ test('all project JSON files parse', () => {
     const source = fs.readFileSync(file, 'utf8').replace(/^\uFEFF/, '');
     assert.doesNotThrow(() => JSON.parse(source), file);
   }
+});
+
+test('the saved Settings language overrides a stale browser language', () => {
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const configLanguage = main.indexOf('setLang = config.language');
+  const browserLanguage = main.indexOf(
+    'setLang = localStorage.dashticz_language'
+  );
+
+  assert.notEqual(configLanguage, -1);
+  assert.notEqual(browserLanguage, -1);
+  assert.ok(configLanguage < browserLanguage);
+  assert.match(
+    settings,
+    /localStorage\.dashticz_language = JSON\.parse\(selectedLanguage\)/
+  );
+});
+
+test('settings and widget UI use JSON translations with an English base', () => {
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const settingsSource = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const widgetEditor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const layoutEditor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const simpleBlock = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const english = JSON.parse(
+    fs.readFileSync(path.join(root, 'lang/en_US.json'), 'utf8')
+  );
+  const french = JSON.parse(
+    fs.readFileSync(path.join(root, 'lang/fr_FR.json'), 'utf8')
+  );
+
+  assert.match(main, /url: 'lang\/en_US\.json/);
+  assert.match(main, /\$\.extend\(true, \{\}, english, selected\)/);
+  assert.match(main, /language = english/);
+  assert.ok(english.settings.layouteditor);
+  assert.ok(english.settings.output);
+  assert.ok(english.settings.widgeteditor.xmltvguide_title);
+  assert.ok(english.settings.screen.topbar_use_png_icons_help);
+  assert.ok(french.settings.layouteditor.conversion_confirm);
+  assert.ok(french.settings.screen.topbar_use_png_icons_help);
+
+  const widgetKeys = Array.from(
+    widgetEditor.matchAll(/_t\(\s*['"]([^'"]+)['"]/g),
+    (match) => match[1]
+  );
+  for (const key of new Set(widgetKeys)) {
+    assert.ok(
+      english.settings.widgeteditor[key],
+      `missing English widget-editor translation: ${key}`
+    );
+  }
+
+  for (const source of [settingsSource, widgetEditor, deviceEditor, layoutEditor, simpleBlock]) {
+    assert.doesNotMatch(
+      source,
+      /Wizard gebruikt|Tegel verwijderd|Geen tegels|Devices toevoegen|Widgets toevoegen|Tegels verplaatsen|Custom iconen topbalk|Aan: Custom iconen/
+    );
+  }
+  assert.match(layoutEditor, /language\.settings\.layouteditor/);
+  assert.match(deviceEditor, /language\.settings\.deviceeditor/);
+  assert.match(simpleBlock, /language\.settings\.config_mode\.confirm_wizard/);
+});
+
+test('built-in widget titles use the active language', () => {
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+
+  assert.match(dashticz, /function getWidgetTitle\(block, special\)/);
+  assert.match(dashticz, /garbage: 'garbage_title'/);
+  assert.match(dashticz, /weather: 'weather_title'/);
+  assert.match(dashticz, /cfg\.title = widgetTitle/);
+  assert.doesNotMatch(dashticz, /block\.title === 'Afval'/);
 });
 
 test('favicon assets stay minimal and all references resolve', () => {
@@ -150,6 +266,35 @@ test('update check only treats a newer remote version as an update', () => {
   assert.equal(compareVersions('3.20', '3.20.0'), 0);
   assert.equal(compareVersions('3.20.0', '3.19.2.0'), 1);
   assert.equal(compareVersions('3.20.1', '3.20.0'), 1);
+});
+
+test('info panel retains versions and follows the checkout remote', () => {
+  const domoticz = fs.readFileSync(
+    path.join(root, 'js/domoticz-api.js'),
+    'utf8'
+  );
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const version = fs.readFileSync(path.join(root, 'js/version.js'), 'utf8');
+  const info = fs.readFileSync(
+    path.join(root, 'vendor/dashticz/info.php'),
+    'utf8'
+  );
+
+  assert.match(domoticz, /versionText: ''/);
+  assert.match(domoticz, /dzVentsVersion: ''/);
+  assert.match(domoticz, /pythonVersion: ''/);
+  assert.match(settings, /info\.php\?get=systeminfo/);
+  assert.match(settings, /formatSystemInfo/);
+  assert.match(settings, /domoticzInfo\.versionText/);
+  assert.match(settings, /about\.os_version/);
+  assert.match(version, /info\.php\?get=gitinfo/);
+  assert.match(version, /source\.owner/);
+  assert.match(version, /source\.repository/);
+  assert.match(info, /case 'systeminfo'/);
+  assert.match(info, /case 'gitinfo'/);
+  assert.match(info, /PHP_OS_FAMILY/);
+  assert.match(info, /\/etc\/os-release/);
+  assert.doesNotMatch(info, /shell_exec|exec\(|passthru|system\(/);
 });
 
 test('package and runtime versions remain synchronized', () => {
@@ -197,6 +342,7 @@ test('configured topbar timeout loads and initializes the auto-hide behavior', (
   const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
   const topbar = fs.readFileSync(path.join(root, 'js/topbar.js'), 'utf8');
   const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
 
   assert.match(
     main,
@@ -209,11 +355,432 @@ test('configured topbar timeout loads and initializes the auto-hide behavior', (
   );
   assert.match(topbar, /settings\['topbar_timeout'\]/);
   assert.match(topbar, /getBars\(\)\.slideUp\(400\)/);
-  assert.match(topbar, /getBars\(\)\.slideDown\(400\)/);
+  assert.match(topbar, /getBars\(\)\.slideDown\(400,/);
+  assert.match(topbar, /\.css\('display', 'flex'\)/);
+  assert.doesNotMatch(
+    styles,
+    /\.colbar\s*\{[^}]*display:\s*flex !important;/s
+  );
   assert.doesNotMatch(main, /id: 'editmode'/);
   assert.equal(fs.existsSync(path.join(root, 'js/editmode.js')), false);
   assert.match(settings, /settingList\['screen'\]\['topbar_timeout'\]/);
-  assert.match(settings, /topbar_timeout: 0/);
+  assert.match(settings, /topbar_timeout:/);
+});
+
+test('visual layout editor handles generated devices and widgets on a 10px height grid', () => {
+  const simpleBlock = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const editor = fs.readFileSync(
+    path.join(root, 'js/layouteditor.js'),
+    'utf8'
+  );
+  const domoticzBlock = fs.readFileSync(
+    path.join(root, 'js/components/domoticzblock.js'),
+    'utf8'
+  );
+  const stylesheet = fs.readFileSync(
+    path.join(root, 'css/creative.css'),
+    'utf8'
+  );
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const modernDark = fs.readFileSync(
+    path.join(root, 'themes/modern-dark/modern-dark.css'),
+    'utf8'
+  );
+
+  assert.match(simpleBlock, /layouteditoricon/);
+  assert.match(simpleBlock, /fas fa-plus/);
+  assert.match(simpleBlock, /js\/layouteditor\.js/);
+  assert.match(editor, /var HEIGHT_STEP = 10/);
+  assert.match(editor, /\(de\|we\|le\)_s\\d\+_col/);
+  assert.match(editor, /\(de\|we\|le\)_col/);
+  assert.match(editor, /col_\\d\+/);
+  assert.match(editor, /screen: screenNumber/);
+  assert.match(editor, /function _activeScreenPayload/);
+  assert.match(editor, /col-xs-/);
+  assert.match(editor, /(?:widgetEntry|deviceEntry)\.height = item\.height/);
+  assert.match(editor, /dle-cancel/);
+  assert.match(editor, /function _moveDraggedItem/);
+  assert.match(editor, /function _removeItem/);
+  assert.match(editor, /dle-remove-button/);
+  assert.match(
+    domoticzBlock,
+    /document\.body\.classList\.contains\('dle-active'\)\) return;/
+  );
+  assert.match(stylesheet, /> \.dle-block \{[\s\S]*height: 100% !important;/);
+  const blocksSource = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+  assert.match(blocksSource, /children\('\.dle-overlay'\)\.detach\(\)/);
+  assert.match(blocksSource, /\$div\.append\(\$layoutEditorOverlay\)/);
+  assert.match(editor, /js\/savewidgets\.php/);
+  assert.match(editor, /js\/savelayout\.php/);
+  assert.match(editor, /js\/savegridlayout\.php/);
+  assert.match(editor, /function _collectGridItems/);
+  assert.match(editor, /function convertCurrentScreenToGrid/);
+  assert.match(editor, /function _buildColumnGridConversion/);
+  assert.match(editor, /function _emptyGridConversion/);
+  assert.match(editor, /var allowEmpty = targetMode === 'wizard'/);
+  assert.match(editor, /if \(allowEmpty\) return _emptyGridConversion\(screenNumber\)/);
+  assert.match(editor, /function _firstFreeGridPosition/);
+  assert.match(editor, /function _moveGridItem/);
+  assert.match(editor, /function _resizeGridItem/);
+  assert.match(editor, /function _saveGrid/);
+  assert.match(editor, /--dt-grid-x/);
+  assert.match(editor, /--dt-grid-h/);
+  assert.match(simpleBlock, /language\.settings\.config_mode\.confirm_wizard/);
+  assert.match(
+    simpleBlock,
+    /convertCurrentScreenToGrid\(\s*true,\s*'wizard'/
+  );
+  assert.match(editor, /widgetResult\.blockKeys/);
+  assert.match(editor, /widget_alarmmeldingen: 'alarmmeldingen'/);
+  assert.match(editor, /widgets\.push\(_widgetPayload\(item\)\)/);
+  assert.match(editor, /definition\.rss \|\| 'https:\/\/www\.alarmeringen\.nl\/feeds\/all\.rss'/);
+  assert.match(editor, /if \(definition\.filter\) entry\.filter = definition\.filter/);
+  assert.match(editor, /_startDrag\(event, item, \$canvas\[0\]\)/);
+  assert.match(editor, /\$\(item\.visibleBlocks\)[\s\S]*children\('\.dle-overlay'\)/);
+  assert.match(editor, /appendChild\(item\.wrapper\)/);
+  assert.match(editor, /--dle-column-span/);
+  assert.match(editor, /X-Dashticz-CSRF/);
+  assert.match(stylesheet, /grid-template-columns: repeat\(12/);
+  assert.match(stylesheet, /\.dle-item-wrapper \{\s*display: contents/);
+  assert.match(stylesheet, /\.dle-item-wrapper > \.dle-block/);
+  assert.match(stylesheet, /\.dle-remove-button/);
+  assert.match(stylesheet, /background: #dc3545/);
+  assert.match(stylesheet, /\.dle-size-label \{[\s\S]*bottom: 4px/);
+  assert.match(
+    deviceEditor,
+    /var ck\s+= String\(\$\(this\)\.attr\('data-ck'\)\)/
+  );
+  assert.match(deviceEditor, /function _activeScreenPayload/);
+  assert.match(deviceEditor, /function _activeScreenDom/);
+  assert.match(deviceEditor, /function _stableDeviceReference/);
+  assert.match(deviceEditor, /key:\s+_stableDeviceReference\(ck\)/);
+  assert.doesNotMatch(deviceEditor, /entry\.key = gridRefs\[_deviceOrderKey\(ck\)\]/);
+  assert.match(deviceEditor, /\$activeScreen\.find\('\[data-colindex\]'\)/);
+  assert.match(deviceEditor, /screen: _activeScreenPayload\(\)/);
+  assert.match(deviceEditor, /function _widgetFromReference/);
+  assert.match(deviceEditor, /widget_alarmmeldingen:\s+\{ id: 'alarmmeldingen',\s+title: translatedTitles\.alarmmeldingen \}/);
+  assert.match(deviceEditor, /_widgetPayload\(orderKey\)/);
+  assert.match(deviceEditor, /widget_prefix/);
+  assert.match(deviceEditor, /var managedOrder/);
+  assert.match(deviceEditor, /js\/savewidgets\.php/);
+  assert.match(deviceEditor, /js\/savelayout\.php/);
+  assert.match(deviceEditor, /js\/savegridlayout\.php/);
+  assert.match(deviceEditor, /blocksOnly: gridMode/);
+  assert.match(deviceEditor, /function _getAllManagedGridItems/);
+  assert.match(deviceEditor, /data-order-key/);
+  assert.match(deviceEditor, /de-width-input[\s\S]*value="3"/);
+  assert.match(deviceEditor, /if \(!width\) width = 3/);
+  assert.match(modernDark, /--height-block-default: 120px/);
+  assert.match(
+    modernDark,
+    /\.mh \{[\s\S]*height: var\(--height-block-default\) !important/
+  );
+  assert.match(domoticzBlock, /applyConfiguredHeight/);
+  assert.match(domoticzBlock, /setProperty\('height'.*'important'\)/s);
+  assert.match(blocksSource, /Object\.defineProperty\(block, '_dashticzAutoTitle'/);
+  assert.match(blocksSource, /value: typeof block\.title === 'undefined'/);
+  assert.match(blocksSource, /Object\.defineProperty\(block, 'title',[\s\S]*value: device\.Name[\s\S]*enumerable: false/);
+});
+
+test('device editor supports translated dummy and title blocks', () => {
+  const editor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const writer = fs.readFileSync(
+    path.join(root, 'js/configwriter.php'),
+    'utf8'
+  );
+
+  assert.match(editor, /value="__dummy__"/);
+  assert.match(editor, /value="__title__"/);
+  assert.match(editor, />------<\/option>/);
+  assert.match(editor, /placeholder: t\.enter_idx/);
+  assert.match(editor, /placeholder: t\.enter_title/);
+  assert.match(editor, /'dummyblock_'/);
+  assert.match(editor, /'Title_'/);
+  assert.match(editor, /kind: special\.specialType/);
+  assert.match(editor, /language\.settings\.deviceeditor/);
+  assert.match(writer, /function configwriter_special_block_props/);
+  assert.match(writer, /'type' => 'blocktitle'/);
+  assert.match(writer, /'hide_data' => true/);
+  assert.match(editor, /height: specialType === 'title' \? 120 : null/);
+  assert.match(editor, /var TITLE_GRID_HEIGHT = 3/);
+  assert.match(editor, /isTitleBlock[\s\S]*\? TITLE_GRID_HEIGHT/);
+  assert.match(writer, /'height' =>[\s\S]*: 120/);
+  assert.match(
+    writer,
+    /'idx' => \(int\)\$block\['idx'\][\s\S]*'width' => \$width[\s\S]*'hide_data' => true[\s\S]*'title' => \$title/
+  );
+
+  for (const locale of ['en_US', 'nl_NL', 'fr_FR']) {
+    const translations = JSON.parse(
+      fs.readFileSync(path.join(root, 'lang', `${locale}.json`), 'utf8')
+    ).settings.deviceeditor;
+    assert.ok(translations.dummy_device, `${locale} dummy translation`);
+    assert.ok(translations.title_block, `${locale} title translation`);
+    assert.ok(translations.enter_idx, `${locale} IDX translation`);
+    assert.ok(translations.enter_title, `${locale} title-field translation`);
+  }
+});
+
+test('widget editor exposes the supported catalog and keeps legacy options out of settings UI', () => {
+  const simpleBlock = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const widgetEditor = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const layouteditor = fs.readFileSync(
+    path.join(root, 'js/layouteditor.js'),
+    'utf8'
+  );
+  const savewidgets = fs.readFileSync(
+    path.join(root, 'js/savewidgets.php'),
+    'utf8'
+  );
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const weather = fs.readFileSync(
+    path.join(root, 'js/components/weather.js'),
+    'utf8'
+  );
+  const garbage = fs.readFileSync(
+    path.join(root, 'js/components/garbage.js'),
+    'utf8'
+  );
+  const calendar = fs.readFileSync(
+    path.join(root, 'js/components/calendar.js'),
+    'utf8'
+  );
+  const sonarr = fs.readFileSync(path.join(root, 'js/sonarr.js'), 'utf8');
+  const fullscreen = fs.readFileSync(
+    path.join(root, 'js/fullscreen.js'),
+    'utf8'
+  );
+  const english = JSON.parse(
+    fs.readFileSync(path.join(root, 'lang/en_US.json'), 'utf8')
+  );
+  const dutch = JSON.parse(
+    fs.readFileSync(path.join(root, 'lang/nl_NL.json'), 'utf8')
+  );
+
+  assert.match(simpleBlock, /widgeteditoricon/);
+  assert.match(simpleBlock, /fas fa-puzzle-piece/);
+  assert.match(simpleBlock, /js\/widgeteditor\.js/);
+  assert.match(simpleBlock, /config-mode-btn/);
+  assert.match(simpleBlock, /data-mode="custom"/);
+  assert.match(simpleBlock, /data-mode="wizard"/);
+  assert.match(settings, /widgetSettingTiles/);
+  assert.match(settings, /isCustomConfigMode/);
+  assert.match(settings, /setConfigMode/);
+  assert.match(settings, /config_mode: 'wizard'/);
+  for (const id of [
+    'weather',
+    'garbage',
+    'spotify',
+    'sonarr',
+    'clock',
+    'calendar',
+    'secpanel',
+    'publictransport',
+    'trafficinfo',
+    'alarmmeldingen',
+    'camera',
+    'map',
+    'longfonds',
+    'moon',
+    'news',
+  ]) {
+    assert.match(widgetEditor, new RegExp(`id: '${id}'`));
+    assert.match(settings, new RegExp(`id: '${id}'`));
+  }
+  assert.doesNotMatch(settings, /settingList\['screen'\]\['security_button_icons'\]/);
+  assert.doesNotMatch(settings, /settingList\['localize'\]\['gm_api'\]/);
+  assert.doesNotMatch(settings, /settingList\['other'\]\['longfonds_zipcode'\]/);
+  assert.doesNotMatch(settings, /settingList\.general = \{[^}]*default_news_url:/);
+  assert.match(settings, /anwb_apikey:/);
+  assert.match(settings, /id: 'news'[\s\S]*default_news_url:/);
+  assert.match(widgetEditor, /OpenWeather/);
+  assert.match(widgetEditor, /Weather Underground/);
+  assert.match(widgetEditor, /_widgetEditorLanguage/);
+  assert.match(widgetEditor, /_t\('station_clock', 'Station clock'\)/);
+  assert.match(widgetEditor, /Flipclock/);
+  assert.match(widgetEditor, /Hayman clock/);
+  assert.match(widgetEditor, /Miniclock/);
+  assert.match(widgetEditor, /we-cfg-calendar-url/);
+  assert.match(widgetEditor, /we-cfg-clock-type/);
+  assert.match(widgetEditor, /id="we-camera-add"/);
+  assert.match(widgetEditor, /class="we-camera-row/);
+  assert.match(widgetEditor, /weather:\s*\{[\s\S]*provider:/);
+  assert.match(widgetEditor, /clock:\s*\{[\s\S]*clockType:\s*'basicclock'/);
+  assert.match(widgetEditor, /calendar:\s*\{[\s\S]*icalurl:\s*''/);
+  assert.match(widgetEditor, /publictransport:\s*\{[\s\S]*provider:\s*'treinen'[\s\S]*station:\s*'UT'/);
+  assert.match(widgetEditor, /alarmmeldingen:\s*\{[\s\S]*rss:\s*'https:\/\/www\.alarmeringen\.nl\/feeds\/all\.rss'[\s\S]*filter:\s*''/);
+  assert.match(widgetEditor, /camera:\s*\{[\s\S]*cameras:\s*_defaultCameraConfigs\(\)/);
+  assert.match(widgetEditor, /entry\.cameras = cameras/);
+  assert.doesNotMatch(widgetEditor, /var weatherProvider =/);
+  assert.doesNotMatch(widgetEditor, /var calendarUrl =/);
+  assert.doesNotMatch(widgetEditor, /var publicTransportStation =/);
+  assert.doesNotMatch(widgetEditor, /var alarmRss =/);
+  assert.equal(english.settings.widgeteditor.weather_title, 'Weather');
+  assert.equal(english.settings.widgeteditor.camera_title, 'Cameras');
+  assert.equal(dutch.settings.widgeteditor.weather_title, 'Weer');
+  assert.equal(dutch.settings.widgeteditor.camera_title, "Camera's");
+  for (const [id, width, height] of [
+    ['weather', 3, 120],
+    ['garbage', 3, 120],
+    ['spotify', 3, 120],
+    ['sonarr', 3, 120],
+    ['calendar', 3, 120],
+    ['publictransport', 3, 160],
+    ['trafficinfo', 3, 160],
+    ['alarmmeldingen', 3, 160],
+    ['camera', 3, 200],
+    ['map', 3, 400],
+    ['longfonds', 3, 120],
+    ['news', 3, 200],
+  ]) {
+    assert.match(
+      widgetEditor,
+      new RegExp(`id: '${id}'[\\s\\S]*?width: ${width},[\\s\\S]*?height: ${height},`)
+    );
+  }
+  assert.match(widgetEditor, /if \(item\.id === 'garbage'\) \{[\s\S]*entry\.displayTitle = _widgetTitle\(item\);/);
+  assert.match(deviceEditor, /if \(widget\.id === 'garbage'\) \{[\s\S]*entry\.displayTitle = widget\.title;/);
+  assert.match(layouteditor, /if \(item\.widgetId === 'garbage'\) \{[\s\S]*?entry\.displayTitle[\s\S]*?garbage_title/s);
+  assert.match(savewidgets, /'garbage' => \['key' => 'widget_garbage', 'width' => 5, 'height' => 160\],/);
+  assert.match(savewidgets, /\$id === 'garbage' && isset\(\$entry\['displayTitle'\]\)/);
+  assert.match(savewidgets, /\$props\['title'\] = isset\(\$widget\['displayTitle'\]\) \? \$widget\['displayTitle'\] : 'Afval';/);
+  assert.match(widgetEditor, /garbage_maxitems: _s\('garbage_maxitems', '4'\)/);
+  assert.match(widgetEditor, /garbage_maxdays: _s\('garbage_maxdays', '32'\)/);
+  assert.match(widgetEditor, /calendar_maxitems: _s\('calendar_maxitems', '15'\)/);
+  assert.match(widgetEditor, /scaletofit: '300'/);
+  assert.match(widgetEditor, /aspectratio: '0\.9'/);
+  assert.match(widgetEditor, /delete entry\.iframeHeight/);
+  assert.match(savewidgets, /unset\(\$props\['height'\]\)/);
+  assert.equal(english.settings.garbage.garbage_maxdays, 'Maximum days ahead');
+  assert.equal(dutch.settings.localize.calendar_maxitems, 'Zichtbare kalenderregels');
+  assert.match(garbage, /maxitems: settings\['garbage_maxitems'\] \|\| 4/);
+  assert.match(garbage, /maxdays: settings\['garbage_maxdays'\] \|\| 32/);
+  assert.match(calendar, /isDefined\(settings\['calendar_maxitems'\]\)/);
+  assert.match(dashticz, /function getWidgetTitle\(block, special\)/);
+  assert.match(dashticz, /garbage: 'garbage_title'/);
+  assert.match(dashticz, /cfg\.title = widgetTitle/);
+  assert.match(widgetEditor, /js\/savewidgets\.php/);
+  assert.match(widgetEditor, /js\/savelayout\.php/);
+  assert.match(widgetEditor, /js\/savegridlayout\.php/);
+  assert.match(widgetEditor, /blocksOnly: gridMode/);
+  assert.match(
+    widgetEditor,
+    /key:\s*widgetBlockRefs\[item\.id\]\s*\|\|\s*item\.blockKey/
+  );
+  assert.match(widgetEditor, /function _readGridConfiguredWidgets/);
+  assert.match(widgetEditor, /var layoutOrder = \[\]/);
+  assert.match(widgetEditor, /if \(!selectedWidgets\[item\.widgetId\]\) return/);
+  assert.match(widgetEditor, /layoutItems\.push\(widgetEntry\)/);
+  assert.match(widgetEditor, /layoutItems\.push\(deviceEntry\)/);
+  assert.match(widgetEditor, /X-Dashticz-CSRF/);
+  assert.match(styles, /\.we-widget-grid/);
+  assert.match(styles, /\.we-widget-card\.we-selected/);
+  assert.match(weather, /block\.widget_provider === 'openweather'/);
+  assert.match(simpleBlock, /wunderground/);
+  assert.match(simpleBlock, /editorLabels\.add_widgets/);
+  assert.match(fullscreen, /language\.settings\.widgeteditor\.fullscreen/);
+  assert.match(garbage, /block\.type === 'garbage'/);
+  assert.match(sonarr, /function loadSonarr\(me\)/);
+
+  for (const key of [
+    'auto_positioning',
+    'use_favorites',
+    'use_hidden',
+    'room_plan',
+    'colorpicker',
+    'colorpickerscale',
+  ]) {
+    assert.match(settings, new RegExp(`${key}:`));
+  }
+  assert.doesNotMatch(main, /id: 'use_favorites'/);
+});
+
+test('xmltv widget uses its own proxy and preserves optional block settings', () => {
+  const xmltv = fs.readFileSync(
+    path.join(root, 'js/components/xmltvguide.js'),
+    'utf8'
+  );
+  const tvguide = fs.readFileSync(
+    path.join(root, 'js/components/tvguide.js'),
+    'utf8'
+  );
+  const widgetEditor = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+  const layouteditor = fs.readFileSync(
+    path.join(root, 'js/layouteditor.js'),
+    'utf8'
+  );
+  const savewidgets = fs.readFileSync(
+    path.join(root, 'js/savewidgets.php'),
+    'utf8'
+  );
+  const savegridlayout = fs.readFileSync(
+    path.join(root, 'js/savegridlayout.php'),
+    'utf8'
+  );
+
+  assert.match(tvguide, /typeof block\.xmltvurl === 'undefined'/);
+  assert.match(xmltv, /xmltv\.php\?url=/);
+  assert.match(xmltv, /function _fetchXmltvText/);
+  assert.match(widgetEditor, /xmltvguide:\s*\{[\s\S]*xmltvurl:\s*_s\('xmltv_url'\)[\s\S]*layout:\s*_s\('xmltv_layout', '0'\)[\s\S]*separator:\s*_s\('xmltv_separator', '-'\)[\s\S]*refresh:\s*_s\('xmltv_refresh', '3600'\)/);
+  assert.match(widgetEditor, /data-cfg-key="xmltv_layout"/);
+  assert.match(widgetEditor, /data-cfg-key="xmltv_separator"/);
+  assert.match(widgetEditor, /data-cfg-key="xmltv_refresh"/);
+  assert.match(widgetEditor, /configSettings\.xmltv_url = widgetConfigs\.xmltvguide\.xmltvurl \|\| '';/);
+  assert.match(widgetEditor, /configSettings\.xmltv_layout = widgetConfigs\.xmltvguide\.layout \|\| '0';/);
+  assert.match(widgetEditor, /configSettings\.xmltv_refresh = widgetConfigs\.xmltvguide\.refresh \|\| '3600';/);
+  assert.match(widgetEditor, /entry\.layout = parseInt\(xcfg\.layout, 10\) === 1 \? 1 : 0;/);
+  assert.match(widgetEditor, /entry\.separator = xcfg\.separator \|\| '-';/);
+  assert.match(widgetEditor, /entry\.refresh = parseInt\(xcfg\.refresh, 10\) \|\| 3600;/);
+  // _hydrateGridWidget must read back layout, separator and refresh so reopening
+  // the settings popup shows the previously saved values in grid mode.
+  assert.match(widgetEditor, /item\.id === 'xmltvguide'[\s\S]*widgetConfigs\.xmltvguide\.layout[\s\S]*widgetConfigs\.xmltvguide\.separator[\s\S]*widgetConfigs\.xmltvguide\.refresh/s);
+  assert.match(layouteditor, /item\.widgetId === 'xmltvguide'[\s\S]*settings\['xmltv_url'\][\s\S]*settings\['xmltv_layout'\][\s\S]*settings\['xmltv_refresh'\]/s);
+  assert.match(savewidgets, /'xmltv_url'\s*=>\s*'string'/);
+  assert.match(savewidgets, /\$id === 'xmltvguide'[\s\S]*\$widget\['layout'\][\s\S]*\$widget\['separator'\][\s\S]*\$widget\['refresh'\]/s);
+  assert.match(savewidgets, /case 'xmltvguide':[\s\S]*\$props\['type'\] = 'xmltvguide';[\s\S]*\$props\['title'\] = 'TV Guide';/s);
+  // savegridlayout must prefer $allBlockLines over $existingGridBlocks so that a
+  // URL change saved by savewidgets.php (blocksOnly) is not silently discarded
+  // when savegridlayout.php runs immediately afterwards.
+  assert.match(savegridlayout, /isset\(\$allBlockLines\[[\s\S]*?\$propsLiteral = \$allBlockLines\[[\s\S]*?isset\(\$existingGridBlocks\[/s);
+});
+
+test('XMLTV grid tiles fit complete rows without an internal scrollbar', () => {
+  const component = fs.readFileSync(
+    path.join(root, 'js/components/xmltvguide.js'),
+    'utf8'
+  );
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  assert.match(component, /new ResizeObserver\(function \(\) \{[\s\S]*_fitXmltvRows\(me\)/);
+  assert.match(component, /function _fitXmltvRows\(me\)/);
+  assert.match(component, /getBoundingClientRect\(\)\.bottom > availableBottom/);
+  assert.match(css, /> \.xmltvguide \{[\s\S]*height: 100% !important;[\s\S]*overflow: hidden !important;/);
+  assert.match(css, /\.xmltvguide \.dt_state \{[\s\S]*overflow: hidden !important;/);
 });
 
 test('Hayman clock does not depend on Moment locale internals for rendering', () => {
@@ -232,13 +799,87 @@ test('Hayman clock does not depend on Moment locale internals for rendering', ()
 
 test('clock components use public date APIs and a valid seconds setting', () => {
   const dateTime = fs.readFileSync(path.join(root, 'src/date-time.js'), 'utf8');
+  const basicClock = fs.readFileSync(
+    path.join(root, 'js/components/basicclock.js'),
+    'utf8'
+  );
+  const stationClock = fs.readFileSync(
+    path.join(root, 'js/components/stationclock.js'),
+    'utf8'
+  );
   const flipClock = fs.readFileSync(
     path.join(root, 'js/components/flipclock.js'),
     'utf8'
   );
   assert.doesNotMatch(dateTime, /dayjs\.Ls/);
+  assert.match(basicClock, /maxFontSize: 42/);
+  assert.match(basicClock, /Math\.min\(fontSize, me\.block\.maxFontSize\)/);
+  assert.match(stationClock, /function clockFitSize/);
+  assert.match(stationClock, /if \(me\.block\.maxSize\)/);
+  assert.match(stationClock, /var width = clockFitSize\(me, 120\)/);
+  assert.match(flipClock, /minEmSize: 3\.5/);
+  assert.match(flipClock, /maxEmSize: 7/);
+  assert.match(flipClock, /FlipClock\(\$content, 0,/);
   assert.match(flipClock, /showSeconds: !settings\['hide_seconds'\]/);
   assert.doesNotMatch(flipClock, /showSecoonds/);
+});
+
+test('legacy expert settings stay configurable but are hidden from the settings menu', () => {
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  assert.match(settings, /boss_stationclock:/);
+  assert.match(settings, /blink_color: '255, 255, 255, 1'/);
+  assert.match(settings, /edit_mode: 0/);
+  assert.match(settings, /speak_lang: 'en_US'/);
+  assert.match(settings, /widgetSettingTiles/);
+  assert.match(settings, /config_mode: 'wizard'/);
+});
+
+test('config_mode auto-detects as custom when absent from CONFIG.js', () => {
+  const settingsSource = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+
+  // Verify the auto-detect logic is present in the source.
+  assert.match(settingsSource, /_configModeAutoDetected/);
+  assert.match(settingsSource, /typeof config\['config_mode'\] === 'undefined'/);
+  assert.match(settingsSource, /_persistAutoDetectedConfigMode/);
+
+  // Extract and evaluate just the settings-merge block in isolation.
+  // We need: defaultSettings definition, $.extend, and the auto-detect code.
+  const startDefault = settingsSource.indexOf('var defaultSettings = {');
+  const endExtend = settingsSource.indexOf(
+    'if (_configModeAutoDetected) {',
+    settingsSource.indexOf('$.extend(settings, defaultSettings, config)')
+  );
+  const endBlock = settingsSource.indexOf('\n}', endExtend) + 2;
+  assert.notEqual(startDefault, -1, 'defaultSettings block not found');
+  assert.notEqual(endExtend, -1, 'auto-detect block not found');
+
+  const snippet = settingsSource.substring(startDefault, endBlock);
+
+  function runWithConfig(configObj) {
+    const ctx = {
+      $: { extend: Object.assign },
+      config: configObj,
+      settings: {},
+      _configModeAutoDetected: undefined,
+    };
+    vm.runInNewContext(snippet, ctx);
+    return { settings: ctx.settings, autoDetected: ctx._configModeAutoDetected };
+  }
+
+  // No config_mode in CONFIG.js → auto-detect custom.
+  const noMode = runWithConfig({});
+  assert.equal(noMode.settings['config_mode'], 'custom');
+  assert.equal(noMode.autoDetected, true);
+
+  // config_mode explicitly set to wizard → keep wizard.
+  const wizardMode = runWithConfig({ config_mode: 'wizard' });
+  assert.equal(wizardMode.settings['config_mode'], 'wizard');
+  assert.equal(wizardMode.autoDetected, false);
+
+  // config_mode explicitly set to custom → keep custom.
+  const customMode = runWithConfig({ config_mode: 'custom' });
+  assert.equal(customMode.settings['config_mode'], 'custom');
+  assert.equal(customMode.autoDetected, false);
 });
 
 test('UI dependencies use the maintained compatibility versions', () => {
@@ -299,13 +940,14 @@ test('modern dark theme is portable and documented', () => {
     'utf8'
   );
   const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+  const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
 
   assert.match(theme, /--main-bg/);
   assert.match(theme, /--main-border-width: 1px/);
   assert.match(theme, /--block-gap: 3px/);
-  assert.match(theme, /--border-color-inactive: rgb\(42, 94, 151\)/);
-  assert.match(theme, /--border-color-active: rgb\(112, 160, 218\)/);
-  assert.match(theme, /--border-color-block: var\(--border-color-active\)/);
+  assert.match(theme, /--border-color-inactive: rgba\(42, 94, 151, \.5\)/);
+  assert.match(theme, /--border-color-active: rgba\(112, 160, 218, \.5\)/);
+  assert.match(theme, /--border-color-block: rgba\(112, 160, 218, \.2\)/);
   assert.match(theme, /--border-color-selector: var\(--border-color-inactive\)/);
   assert.match(theme, /border: var\(--block-gap\) solid transparent !important/);
   assert.match(theme, /inset 0 0 0 var\(--main-border-width\) var\(--border-color-block\)/);
@@ -319,18 +961,36 @@ test('modern dark theme is portable and documented', () => {
   assert.match(theme, /border-color: var\(--border-color-active\) !important/);
   assert.match(theme, /\.transbg select/);
   assert.match(theme, /\.transbg select[\s\S]*border: 1px solid var\(--border-color-selector\) !important/);
+  assert.match(theme, /\.transbg \.col-data > select/);
+  assert.match(theme, /\.transbg \.col-data > select[\s\S]*min-height: 44px/);
   assert.match(theme, /\.transbg select:focus,[\s\S]*border-color: var\(--border-color-selector\) !important/);
   assert.doesNotMatch(theme, /linear-gradient/);
   assert.match(theme, /\.mh \.btn\.active/);
+  assert.match(
+    theme,
+    /\.transbg\.titlegroups,[\s\S]*height: var\(--height-block-default\) !important[\s\S]*min-height: var\(--height-block-default\) !important/
+  );
+  assert.match(theme, /\.titlegroups \.dt_content,[\s\S]*justify-content: flex-start !important/);
+  assert.match(theme, /\.titlegroups \.dt_title,[\s\S]*text-align: left !important/);
+  assert.match(theme, /\.trash \.state \{[\s\S]*text-align: right !important/);
+  assert.match(theme, /\.trash \.state table \{[\s\S]*margin-left: auto !important/);
+  assert.match(theme, /\.trash \.trashtype,[\s\S]*\.trash \.trashdate \{[\s\S]*text-align: right !important/);
+  assert.match(theme, /\.titlegroups \.dt_state,[\s\S]*display: none !important/);
   assert.match(theme, /\.transbg\.titlegroups/);
-  assert.match(theme, /\.titlegroups[\s\S]*background: var\(--blocktitle\) !important/);
+  assert.match(theme, /\.titlegroups[\s\S]*background: var\(--main-bg\) !important/);
+  assert.match(theme, /\.titlegroups[\s\S]*border: var\(--block-gap\) solid transparent !important/);
+  assert.match(theme, /\.titlegroups[\s\S]*border-radius: var\(--radius-border\) !important/);
   assert.match(theme, /\.colbar \.miniclock[\s\S]*background: transparent !important/);
-  assert.match(theme, /\.titlegroups[\s\S]*box-shadow: none !important/);
+  assert.match(theme, /\.titlegroups[\s\S]*var\(--panel-shadow\) !important/);
   assert.match(theme, /\.titlegroups \.col-icon img\.icon/);
   assert.match(theme, /@media \(max-width: 767\.98px\)/);
   assert.match(theme, /\.standby \.transbg[\s\S]*background: #000 !important/);
   assert.match(theme, /\.standby \.transbg[\s\S]*border: 0 !important/);
   assert.match(theme, /\.standby \.transbg[\s\S]*backdrop-filter: none !important/);
+  assert.match(
+    blocks,
+    /!block\['hide_data'\] \|\| settings\['theme'\] === 'modern-dark'/
+  );
   assert.doesNotMatch(theme, /https?:\/\//i);
   assert.doesNotMatch(theme, /url\s*\(/i);
   assert.match(readme, /config\['theme'\] = 'modern-dark'/);
@@ -346,19 +1006,27 @@ test('settings modal uses compact Bootstrap 5 controls and aligned help icons', 
 
   assert.match(settings, /class="settings-row"/);
   assert.match(settings, /form-check form-switch settings-switch/);
-  assert.match(settings, /data-bs-toggle="pill"/);
+  assert.match(settings, /class="settings-tile"/);
+  assert.match(settings, /settings-category-tiles/);
+  assert.match(settings, /settingList\['standby'\]/);
+  assert.match(settings, /settings-update-run/);
+  assert.match(settings, /js\/update\.php/);
+  assert.match(settings, /standby_background/);
+  assert.doesNotMatch(settings, /standby_blocks/);
   assert.match(settings, /class="settings-brand"/);
   assert.match(settings, /img\/favicon\/app-icon-192x192\.png/);
   assert.match(settings, /window\.bootstrap\.Tooltip/);
   assert.match(settings, /data-bs-trigger="click"/);
   assert.match(settings, /data-bs-custom-class="settings-tooltip"/);
   assert.doesNotMatch(settings, /material-switch/);
+  assert.doesNotMatch(settings, /data-bs-toggle="pill"/);
 
   assert.match(simpleblock, /data-bs-target="#settingspopup"/);
   assert.doesNotMatch(simpleblock, /\sdata-target="#settingspopup"/);
 
   assert.match(styles, /\.settings-row\s*\{/);
   assert.match(styles, /grid-template-columns:/);
+  assert.match(styles, /\.settings-tile(?:,\s*\.settings-widget-tile)?\s*\{/);
   assert.match(styles, /\.settings-switch \.form-check-input/);
   assert.match(styles, /width: 38px;/);
   assert.match(styles, /height: 20px;/);
@@ -369,6 +1037,184 @@ test('settings modal uses compact Bootstrap 5 controls and aligned help icons', 
   assert.match(styles, /\.settings-tooltip[\s\S]*z-index: 10050;/);
   assert.match(styles, /\.settings-help \.fas/);
   assert.doesNotMatch(styles, /\.material-switch/);
+});
+
+test('settings theme selector loads valid installed themes', () => {
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+
+  assert.match(
+    settings,
+    /settingList\['screen'\]\['theme'\]\['type'\] = 'select'/
+  );
+  assert.match(settings, /bindThemePicker\(\)/);
+  assert.match(settings, /js\/listthemes\.php/);
+  assert.match(settings, /settings\['theme'\] \|\| 'default'/);
+  assert.match(settings, /\$select\.val\(currentTheme\)/);
+});
+
+test('standby background image is not overwritten by standby CSS', () => {
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const customBackgroundIgnore = fs.readFileSync(
+    path.join(root, 'img/custom/.gitignore'),
+    'utf8'
+  );
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const modernDark = fs.readFileSync(
+    path.join(root, 'themes/modern-dark/modern-dark.css'),
+    'utf8'
+  );
+
+  assert.match(
+    main,
+    /settings\['standby_background'\]\s*\|\|\s*settings\['background_image'\]/
+  );
+  assert.match(
+    main,
+    /screenstandby[\s\S]*resolveBackgroundImagePath\(standbyBackground\)/
+  );
+  assert.match(styles, /\.standby \.swiper-slide:not\(\.screenstandby\)/);
+  assert.match(
+    styles,
+    /\.standby \.screenstandby\s*\{[^}]*background-size: cover;[^}]*\}/
+  );
+  assert.match(
+    styles,
+    /\.standby \.screenstandby\s*\{[^}]*position: fixed;[^}]*inset: 0;[^}]*max-width: 100vw;[^}]*max-height: 100dvh;[^}]*overflow: hidden;[^}]*background-size: cover;[^}]*\}/
+  );
+  assert.doesNotMatch(main, /screenstandby[^]*style="height:/);
+  assert.doesNotMatch(
+    styles,
+    /\.standby \.swiper-slide\s*\{[\s\S]*?background-image: none !important;/
+  );
+  assert.match(
+    modernDark,
+    /\.standby \.screenstandby\s*\{[^}]*background-color: #000 !important;[^}]*\}/
+  );
+  assert.doesNotMatch(
+    modernDark,
+    /\.standby \.screenstandby\s*\{[^}]*background: #000 !important;/
+  );
+  assert.match(settings, /return 'CUSTOM_' \+ name\.replace\(\/\^custom\\\//);
+  assert.match(customBackgroundIgnore, /^\*$/m);
+  assert.match(customBackgroundIgnore, /^!\.gitignore$/m);
+});
+
+test('standby icon colors stay scoped to the standby screen', () => {
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  assert.match(styles, /\.standby \.screenstandby \.fas[\s\S]*color: #fff !important;/);
+  assert.doesNotMatch(styles, /\.standby \.fas(?:,|\s*\{)/);
+  assert.match(styles, /\.we-widget-icon\s*\{[^}]*color: #0d6efd;/);
+  assert.match(styles, /\.we-config-btn\s*\{[^}]*color: #6c757d;/);
+});
+
+test('topbar screen switcher supports standby and extra screens', () => {
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const switcher = fs.readFileSync(
+    path.join(root, 'js/screenswitcher.js'),
+    'utf8'
+  );
+  const simpleBlock = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const savescreens = fs.readFileSync(
+    path.join(root, 'js/savescreens.php'),
+    'utf8'
+  );
+  const writer = fs.readFileSync(path.join(root, 'js/configwriter.php'), 'utf8');
+
+  assert.match(main, /js\/screenswitcher\.js/);
+  assert.match(main, /DashticzScreenSwitcher\.init\(\)/);
+  assert.match(main, /DashticzScreenSwitcher\.mountIntoStandby\(\)/);
+  assert.match(main, /var standby_screen = \{\}/);
+  assert.match(main, /function hasStandbyContent/);
+  assert.match(main, /DashticzGridLayout\.renderGridScreen\(\s*standby_screen/);
+  assert.match(main, /screenswitcher/);
+  assert.match(main, /isStandbyEditMode/);
+  assert.match(simpleBlock, /dt-screen-switcher-host/);
+  assert.match(simpleBlock, /screenswitcher/);
+  assert.match(switcher, /data-screen="standby"/);
+  assert.match(switcher, /function getDefaultScreenIconPath/);
+  assert.match(switcher, /topbar_use_png_icons/);
+  assert.match(switcher, /standby: 'Standby'/);
+  assert.match(switcher, /1: 'One'/);
+  assert.match(switcher, /2: 'Two'/);
+  assert.match(switcher, /3: 'Three'/);
+  assert.match(switcher, /4: 'Four'/);
+  // Standby button falls back to 'S' when no custom or built-in PNG icon is configured
+  assert.match(switcher, /getScreenIconHtml\('standby'\) \|\| 'S'/);
+  assert.match(switcher, /dt-screen-add/);
+  assert.match(switcher, /dt-screen-delete/);
+  assert.match(switcher, /screenNums\.length > 1/);
+  assert.match(switcher, /disabled aria-disabled="true"/);
+  assert.match(switcher, /\.dt-screen-delete'[\s\S]*\.prop\('disabled', !canDelete\)/);
+  assert.ok(
+    switcher.indexOf('dt-screen-add') < switcher.indexOf('dt-screen-delete'),
+    'the minus button must render directly after the plus button'
+  );
+  assert.match(switcher, /js\/savescreens\.php/);
+  assert.match(switcher, /enterStandbyManual/);
+  assert.match(switcher, /standbyEditMode/);
+  assert.match(styles, /\.dt-screen-btn\s*\{/);
+  assert.match(styles, /width: 30px/);
+  assert.match(styles, /\.dt-screen-btn \.dt-screen-main-icon-img/);
+  assert.match(styles, /border-radius: 4px/);
+  assert.match(styles, /\.dt-screen-btn\.active/);
+  assert.match(styles, /dt-screen-switcher-host/);
+  assert.match(savescreens, /dashticz_require_csrf\(\)/);
+  assert.match(savescreens, /action.*add/);
+  assert.match(writer, /function configwriter_replace_screens_section/);
+  assert.match(writer, /function configwriter_emit_new_screen/);
+  assert.match(writer, /function configwriter_editor_markers/);
+  assert.match(writer, /function configwriter_column_prefix/);
+  assert.match(writer, /function configwriter_build_standby_layout_section/);
+  assert.match(writer, /do not coerce to 1/);
+  assert.match(styles, /body\.standby-edit \.dt-screen-switcher-bar\.is-visible/);
+  assert.match(switcher, /mountEditorIcons\(\$bar\)/);
+  assert.match(switcher, /setStandbyBarVisible/);
+  assert.match(switcher, /bindStandbyBarHover/);
+  assert.match(switcher, /clientY\s*<\s*56/);
+});
+
+test('topbar and layout editor keep controls usable', () => {
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const editor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+
+  assert.match(styles, /\.colbar\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*nowrap;/s);
+  assert.match(styles, /\.colbar \.logo\s*\{[^}]*flex:\s*0 1 auto;/s);
+  assert.match(styles, /\.colbar\.transbg\s*\{[^}]*padding-top:\s*8px;[^}]*padding-bottom:\s*6px;[^}]*border:\s*3px solid transparent;/s);
+  assert.match(styles, /\.colbar \.miniclock\s*\{[^}]*flex:\s*1 1 auto;[^}]*height:\s*40px !important;/s);
+  assert.match(styles, /\.colbar \.miniclock\s*\{[^}]*background:\s*transparent !important;[^}]*box-shadow:\s*none !important;/s);
+  assert.match(styles, /\.colbar \.dt-screen-switcher-host\s*\{[^}]*order:\s*99;[^}]*margin-left:\s*auto;/s);
+  assert.match(styles, /\.colbar \.topbar-settings-wrap\s*\{[^}]*order:\s*100;[^}]*flex:\s*0 0 auto;/s);
+  assert.match(blocks, /dt-topbar-item dt-topbar-/);
+  assert.match(main, /\['logo', 'miniclock', 'screenswitcher', 'settings'\]/);
+  assert.match(editor, /var MIN_GRID_WIDTH = 2;/);
+  assert.match(editor, /var MIN_GRID_HEIGHT = 4;/);
+  assert.match(editor, /var MIN_TITLE_GRID_HEIGHT = 3;/);
+  assert.match(editor, /function _minimumGridHeight/);
+  assert.match(editor, /item\.grid\.w < MIN_GRID_WIDTH \|\| item\.grid\.h < minimumHeight/);
+  assert.match(editor, /width = Math\.max\(\s*MIN_GRID_WIDTH,/s);
+  assert.match(editor, /height = Math\.max\(_minimumGridHeight\(item\),/);
+  assert.match(
+    styles,
+    /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.titlegroups,[\s\S]*height: 100% !important;[\s\S]*min-height: 0 !important;[\s\S]*overflow: hidden !important;/
+  );
+});
+
+test('garbage dates use the selected interface language', () => {
+  const garbage = fs.readFileSync(
+    path.join(root, 'js/components/garbage.js'),
+    'utf8'
+  );
+
+  assert.match(garbage, /garbage\.date\.locale\(settings\['language'\]\)/);
+  assert.match(garbage, /localizedDate\.format\('dddd'\)/);
 });
 
 test('migration sources use LF line endings', () => {
