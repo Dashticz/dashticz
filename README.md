@@ -162,6 +162,8 @@ screen 1. Blocks created by the Device Editor receive a blue edit overlay:
 - width snaps to the 12-column dashboard grid;
 - height snaps to steps of 10 pixels;
 - free-grid blocks cannot be resized below 2x4 grid cells;
+- live Domoticz updates keep the edit overlay and current temporary dimensions,
+  so refreshed device blocks remain draggable and resizable;
 - select **Save** to update `custom/CONFIG.js`, or **Cancel**/Escape to restore
   the original layout.
 

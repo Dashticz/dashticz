@@ -338,6 +338,14 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(editor, /function _moveDraggedItem/);
   assert.match(editor, /function _removeItem/);
   assert.match(editor, /dle-remove-button/);
+  assert.match(
+    domoticzBlock,
+    /document\.body\.classList\.contains\('dle-active'\)\) return;/
+  );
+  assert.match(stylesheet, /> \.dle-block \{[\s\S]*height: 100% !important;/);
+  const blocksSource = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+  assert.match(blocksSource, /children\('\.dle-overlay'\)\.detach\(\)/);
+  assert.match(blocksSource, /\$div\.append\(\$layoutEditorOverlay\)/);
   assert.match(editor, /js\/savewidgets\.php/);
   assert.match(editor, /js\/savelayout\.php/);
   assert.match(editor, /js\/savegridlayout\.php/);

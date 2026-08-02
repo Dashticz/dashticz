@@ -182,6 +182,9 @@ function deviceUpdateHandler(block) {
 
   //var $div=$selector.find('.block_'+fullidx); //doesn't work for blocks['myblock'] kind of definitions
   var $div = $selector.find('.mh');
+  // Domoticz refreshes replace the block contents. Detach the Layout Editor
+  // overlay first so jQuery keeps its pointer handlers and controls alive.
+  var $layoutEditorOverlay = $div.children('.dle-overlay').detach();
 
   var width = 4;
   switch (device['SwitchType']) {
@@ -226,8 +229,14 @@ function deviceUpdateHandler(block) {
 
   if (html && typeof html === 'string') {
     $div.html(html);
+    if ($layoutEditorOverlay.length) $div.append($layoutEditorOverlay);
     getBlockClick(block);
-  } else $div = $selector.find('.mh'); //$div may not exist anymore. Find the new one.
+  } else {
+    $div = $selector.find('.mh'); //$div may not exist anymore. Find the new one.
+    if ($layoutEditorOverlay.length) {
+      $div.addClass('dle-block').append($layoutEditorOverlay);
+    }
+  }
 
   if (typeof $div.attr('onclick') !== 'undefined') {
     $div.addClass('hover');

@@ -1229,6 +1229,13 @@ body.dle-active {
   overflow: visible;
 }
 
+/* The grid row span is authoritative while editing. This also overrides a
+   legacy CONFIG.js pixel height that a live Domoticz refresh may carry. */
+.dt-grid-layout.dle-grid-canvas > .dt-grid-item > .dle-block {
+  height: 100% !important;
+  min-height: 0 !important;
+}
+
 @media (max-width: 767.98px) {
   .dt-grid-screen
     > .dt-grid-layout.dt-grid-mobile-stack.dle-grid-canvas {

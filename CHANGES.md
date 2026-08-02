@@ -2,6 +2,10 @@
 
 ## 3.23.6 — Device Editor helper blocks
 
+- **Live Domoticz updates in movement mode**: device refreshes now preserve
+  the Layout Editor overlay and its drag/resize controls. They no longer
+  reapply the saved fixed pixel height while an edit is in progress.
+
 - **XMLTV grid sizing**: the rendered TV Guide tile now matches its saved row
   span in movement mode and on the dashboard. Partially clipped programme rows
   are hidden, return automatically when enlarged, and no internal scrollbar is
