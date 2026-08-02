@@ -642,18 +642,18 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.equal(dutch.settings.widgeteditor.weather_title, 'Weer');
   assert.equal(dutch.settings.widgeteditor.camera_title, "Camera's");
   for (const [id, width, height] of [
-    ['weather', 4, 120],
-    ['garbage', 5, 160],
-    ['spotify', 4, 120],
-    ['sonarr', 4, 120],
-    ['calendar', 4, 120],
-    ['publictransport', 4, 260],
-    ['trafficinfo', 4, 260],
-    ['alarmmeldingen', 4, 160],
-    ['camera', 4, 320],
-    ['map', 4, 500],
-    ['longfonds', 4, 120],
-    ['news', 4, 240],
+    ['weather', 3, 120],
+    ['garbage', 3, 120],
+    ['spotify', 3, 120],
+    ['sonarr', 3, 120],
+    ['calendar', 3, 120],
+    ['publictransport', 3, 160],
+    ['trafficinfo', 3, 160],
+    ['alarmmeldingen', 3, 160],
+    ['camera', 3, 200],
+    ['map', 3, 400],
+    ['longfonds', 3, 120],
+    ['news', 3, 200],
   ]) {
     assert.match(
       widgetEditor,
