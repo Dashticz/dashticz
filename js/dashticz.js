@@ -292,6 +292,45 @@ var Dashticz = (function () {
     return fn;
   }
 
+  function getWidgetTitle(block, special) {
+    if (
+      !special ||
+      (block && typeof block.key === 'string' && !/^widget_/.test(block.key))
+    ) {
+      return null;
+    }
+
+    var titleKeys = {
+      alarmmeldingen: 'alarmmeldingen_title',
+      basicclock: 'clock_title',
+      calendar: 'calendar_title',
+      camera: 'camera_title',
+      flipclock: 'clock_title',
+      garbage: 'garbage_title',
+      haymanclock: 'clock_title',
+      longfonds: 'longfonds_title',
+      map: 'map_title',
+      moon: 'moon_title',
+      news: 'news_title',
+      owmwidget: 'weather_title',
+      publictransport: 'publictransport_title',
+      secpanel: 'secpanel_title',
+      sonarr: 'sonarr_title',
+      spotify: 'spotify_title',
+      stationclock: 'clock_title',
+      trafficinfo: 'trafficinfo_title',
+      weather: 'weather_title',
+      xmltvguide: 'xmltvguide_title',
+    };
+    var translations =
+      typeof language !== 'undefined' &&
+      language &&
+      language.settings &&
+      language.settings.widgeteditor;
+    var titleKey = titleKeys[special.name];
+    return (translations && titleKey && translations[titleKey]) || null;
+  }
+
   function getBlockConfig(block, special, key) {
     var cfg = {
       width: 12,
@@ -309,30 +348,20 @@ var Dashticz = (function () {
     if (typeof key !== 'undefined' && key !== '') {
       cfg.key = key;
     }
-    if (
+    var widgetTitle = getWidgetTitle(block, special);
+    if (widgetTitle) {
+      cfg.title = widgetTitle;
+    } else if (
       special &&
       special.name === 'garbage' &&
-      (
-        typeof block === 'undefined' ||
-        typeof block.title === 'undefined' ||
-        block.title === 'Afval'
-      )
+      (typeof block === 'undefined' || typeof block.title === 'undefined')
     ) {
       cfg.title =
-        (
-          typeof language !== 'undefined' &&
-          language &&
-          language.settings &&
-          language.settings.widgeteditor &&
-          language.settings.widgeteditor.garbage_title
-        ) ||
-        (
-          typeof language !== 'undefined' &&
+        (typeof language !== 'undefined' &&
           language &&
           language.settings &&
           language.settings.garbage &&
-          language.settings.garbage.title
-        ) ||
+          language.settings.garbage.title) ||
         'Garbage';
     }
     return cfg;
