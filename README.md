@@ -284,8 +284,10 @@ The **Dashticz-Theme** field under Settings > Display is a dropdown populated
 from valid subdirectories in `themes/`. A directory is listed when it contains
 `themes/<name>/<name>.css`; `Default` remains available for the built-in style.
 
-The `modern-dark` theme provides a reusable dark dashboard style with clear
-active button states, compact rounded blocks, subtle dark borders and spacing
+The `modern-dark` theme provides a reusable dark dashboard style with
+right-aligned collection text in the Garbage widget while keeping its icon on
+the left. It also includes active button states, compact rounded blocks, subtle
+dark borders and spacing
 between blocks, larger selector buttons and pull-down controls, switch status
 text, styled titles, sliders, battery states, 120-pixel default device blocks
 and a black standby background. Enable it in `custom/CONFIG.js`:

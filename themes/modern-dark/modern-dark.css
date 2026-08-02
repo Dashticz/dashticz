@@ -254,6 +254,21 @@
   color: var(--text-status) !important;
 }
 
+/* Keep the garbage icon on the left while aligning its collection text at
+   the right edge of the data column for every supported garbage layout. */
+.trash .state {
+  text-align: right !important;
+}
+
+.trash .state table {
+  margin-left: auto !important;
+}
+
+.trash .trashtype,
+.trash .trashdate {
+  text-align: right !important;
+}
+
 .icon {
   font-size: 40px !important;
 }
