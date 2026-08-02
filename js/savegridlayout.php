@@ -193,7 +193,10 @@ foreach ($data['items'] as $index => $entry) {
     }
 }
 
-if ($screenNumber > 0 && empty($items)) {
+/* An empty Wizard conversion bootstraps a clean CONFIG.js (or an empty
+ * existing screen). Only the explicit screen-delete flow may interpret an
+ * empty item list as a request to remove and compact a numbered screen. */
+if ($screenNumber > 0 && empty($items) && !isset($data['configMode'])) {
     $numberedScreens = configwriter_extract_numbered_screens($config);
     if (count($numberedScreens) > 1
         && in_array($screenNumber, $numberedScreens, true)

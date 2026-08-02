@@ -165,26 +165,39 @@ var DashticzLayoutEditor = (function () {
     var deferred = $.Deferred();
     var $screen = _activeScreenDom();
     var screenNumber = _activeScreenPayload();
+    var allowEmpty = targetMode === 'wizard' && screenNumber !== 'standby';
+    var conversion;
     if (!$screen.length) {
-      alert('Er is geen normaal scherm gevonden om naar grid om te zetten.');
-      deferred.reject();
-      return deferred.promise();
+      if (!allowEmpty) {
+        alert('Er is geen normaal scherm gevonden om naar grid om te zetten.');
+        deferred.reject();
+        return deferred.promise();
+      }
+      /* A clean CONFIG.js has no rendered content to convert yet. Still create
+         screen 1 as an empty grid so its Device and Widget editors can be used. */
+      screenNumber = 1;
+      conversion = _emptyGridConversion(screenNumber);
     }
-    if ($screen.hasClass('dt-grid-screen')) {
+    if ($screen.length && $screen.hasClass('dt-grid-screen')) {
       deferred.resolve({ alreadyGrid: true });
       return deferred.promise();
     }
-    if (window.innerWidth < 768) {
-      alert(
-        'Zet het scherm minimaal 768 pixels breed voordat je een columns-layout naar grid omzet.'
+    if (!conversion) {
+      conversion = _buildColumnGridConversion(
+        $screen,
+        screenNumber,
+        allowEmpty
       );
+    }
+    if (conversion.error) {
+      alert(conversion.error);
       deferred.reject();
       return deferred.promise();
     }
-
-    var conversion = _buildColumnGridConversion($screen, screenNumber);
-    if (conversion.error) {
-      alert(conversion.error);
+    if (!conversion.empty && window.innerWidth < 768) {
+      alert(
+        'Zet het scherm minimaal 768 pixels breed voordat je een columns-layout naar grid omzet.'
+      );
       deferred.reject();
       return deferred.promise();
     }
@@ -224,7 +237,21 @@ var DashticzLayoutEditor = (function () {
     return deferred.promise();
   }
 
-  function _buildColumnGridConversion($screen, screenNumber) {
+  function _emptyGridConversion(screenNumber) {
+    return {
+      empty: true,
+      payload: {
+        screen: screenNumber,
+        gridColumns: 24,
+        rowHeight: 20,
+        gap: 5,
+        mobileLayout: 'stack',
+        items: [],
+      },
+    };
+  }
+
+  function _buildColumnGridConversion($screen, screenNumber, allowEmpty) {
     var gridColumns = 24;
     var rowHeight = 20;
     var gap = 5;
@@ -357,6 +384,7 @@ var DashticzLayoutEditor = (function () {
 
     if (error) return { error: error };
     if (!converted.length) {
+      if (allowEmpty) return _emptyGridConversion(screenNumber);
       return { error: 'Er zijn geen blocks gevonden om naar grid om te zetten.' };
     }
     return {

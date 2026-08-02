@@ -178,6 +178,15 @@ var DashticzDeviceEditor = (function () {
     return 'special:' + reference;
   }
 
+  /* Build the same immutable reference that saveblocks.php uses. Supplying the
+     reference in the initial request keeps a newly added device addressable
+     throughout the complete blocks -> layout save chain. */
+  function _stableDeviceReference(ck) {
+    if (_isGroupCk(ck)) return String(ck);
+    var parsed = _parseCk(ck);
+    return 'device_' + parsed.idx + (parsed.subidx ? '_' + parsed.subidx : '');
+  }
+
   /* Recognise editor-created dummy and title blocks without treating every
      hand-written block with hide_data as a dummy device. */
   function _specialFromReference(reference) {
@@ -1202,11 +1211,11 @@ var DashticzDeviceEditor = (function () {
         idx:   p.idx,
         name:  deviceNames[ck] || ('Device ' + p.idx),
         width: _parseWidth(deviceWidths[ck]),
+        key:   _stableDeviceReference(ck),
       };
       if (p.subidx) entry.subidx = p.subidx;
       if (deviceHeights[ck]) entry.height = deviceHeights[ck];
-      // Device keys are generated from IDX by saveblocks.php. Do not retain a
-      // legacy name-based grid reference, because Domoticz names may change.
+      // Never retain a legacy name-based reference: Domoticz names may change.
       return entry;
     });
 
