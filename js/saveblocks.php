@@ -115,6 +115,10 @@ foreach ($data['devices'] as $entry) {
                 $height = 2000;
             }
         }
+        $title = isset($entry['title']) && is_string($entry['title'])
+            ? substr(trim($entry['title']), 0, 100) : '';
+        $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
+            ? substr($entry['icon'], 0, 100) : null;
         $devices[] = [
             'idx' => $entry['idx'],
             'isGroup' => false,
@@ -122,6 +126,11 @@ foreach ($data['devices'] as $entry) {
             'name' => $name,
             'width' => $width,
             'height' => $height,
+            'title' => $title,
+            'icon' => $icon,
+            'hide_data' => !empty($entry['hide_data']),
+            'last_update' => !empty($entry['last_update']),
+            'switch' => !empty($entry['switch']),
             'key' => isset($entry['key'])
                 && is_string($entry['key'])
                 && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $entry['key'])
@@ -160,6 +169,10 @@ foreach ($data['devices'] as $entry) {
                 $height = 2000;
             }
         }
+        $title = isset($entry['title']) && is_string($entry['title'])
+            ? substr(trim($entry['title']), 0, 100) : '';
+        $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
+            ? substr($entry['icon'], 0, 100) : null;
         $devices[] = [
             'idx' => $groupKey,
             'isGroup' => true,
@@ -167,6 +180,11 @@ foreach ($data['devices'] as $entry) {
             'name' => $name,
             'width' => $width,
             'height' => $height,
+            'title' => $title,
+            'icon' => $icon,
+            'hide_data' => !empty($entry['hide_data']),
+            'last_update' => !empty($entry['last_update']),
+            'switch' => !empty($entry['switch']),
             'key' => $groupKey,  /* block key IS the group reference */
         ];
     } else {

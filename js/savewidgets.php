@@ -792,6 +792,13 @@ function _widgetBlockProps($widget)
             break;
     }
 
+    if (isset($widget['title']) && is_string($widget['title'])) {
+        $title = trim($widget['title']);
+        if ($title !== '' && strlen($title) <= 100) {
+            $props['title'] = $title;
+        }
+    }
+
     return $props;
 }
 
