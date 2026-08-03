@@ -745,17 +745,61 @@ function prepareStart() {
 }
 
 function loadCustomCss() {
-  var customcss = _PARAMS['css'] || 'custom.css';
-  var filename = _CFG.customfolder + '/' + customcss;
-  $.ajax({
-    url: filename + '?v=' + cache,
-    success: function (data) {
-      $('<style></style>').appendTo('head').html(data);
-    },
-    error: function () {
-      console.log('No valid custom css file: ' + filename + '. Skipping.');
-    },
-  });
+  // Helper: inject a CSS file as an inline <style> block.
+  // If the file is not found and a fallbackFilename is provided, that file is tried instead.
+  function injectCss(filename, fallbackFilename) {
+    $.ajax({
+      url: filename + '?v=' + cache,
+      success: function (data) {
+        $('<style></style>').appendTo('head').html(data);
+      },
+      error: function () {
+        if (fallbackFilename) {
+          console.log(
+            'No custom css found: ' +
+              filename +
+              '. Falling back to: ' +
+              fallbackFilename
+          );
+          // Try the default fallback file (custom.css)
+          $.ajax({
+            url: fallbackFilename + '?v=' + cache,
+            success: function (data) {
+              $('<style></style>').appendTo('head').html(data);
+            },
+            error: function () {
+              console.log(
+                'No valid custom css file: ' + fallbackFilename + '. Skipping.'
+              );
+            },
+          });
+        } else {
+          console.log('No valid custom css file: ' + filename + '. Skipping.');
+        }
+      },
+    });
+  }
+
+  var folder = _CFG.customfolder;
+
+  if (_PARAMS['css']) {
+    // Explicit ?css= parameter always takes precedence over everything.
+    injectCss(folder + '/' + _PARAMS['css']);
+  } else if (_PARAMS['cfg']) {
+    // When ?cfg=CONFIGx.js is used, automatically try to load customx.css.
+    // If customx.css does not exist, fall back to custom.css.
+    // Example: ?cfg=CONFIG2.js -> tries custom2.css first, then custom.css.
+    // custom.css / customx.css always overrides the active theme.
+    var suffix = _PARAMS['cfg']
+      .replace(/^CONFIG/i, '')
+      .replace(/\.js$/i, '');
+    var derivedCss = folder + '/custom' + suffix + '.css';
+    var fallbackCss = folder + '/custom.css';
+    injectCss(derivedCss, fallbackCss);
+  } else {
+    // Default: load custom.css. If it does not exist, the active theme remains in effect.
+    injectCss(folder + '/custom.css');
+  }
 }
 
 function enableLogRocket(enable_logrocket) {
