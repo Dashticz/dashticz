@@ -2378,6 +2378,11 @@ select option {
   font-size: 12px;
 }
 
+.state,
+.value {
+  color: #ffffff !important;
+}
+
 .wi {
   font-size: 30px;
 }
