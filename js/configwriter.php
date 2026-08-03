@@ -1338,7 +1338,23 @@ function configwriter_device_block_props($device, $defaultWidth = 3)
         'width' => $width,
         'hide_data' => true,
         'last_update' => false,
+        'switch' => false,
     ];
+    if (array_key_exists('hide_data', $device)) {
+        $props['hide_data'] = !empty($device['hide_data']);
+    }
+    if (array_key_exists('last_update', $device)) {
+        $props['last_update'] = !empty($device['last_update']);
+    }
+    if (array_key_exists('switch', $device)) {
+        $props['switch'] = !empty($device['switch']);
+    }
+    if (array_key_exists('icon', $device) && $device['icon'] !== null) {
+        $props['icon'] = (string)$device['icon'];
+    }
+    if (isset($device['title']) && trim((string)$device['title']) !== '') {
+        $props['title'] = substr(trim((string)$device['title']), 0, 100);
+    }
 
     if (!$isGroup) {
         $idx = (int)$rawIdx;

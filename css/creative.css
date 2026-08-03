@@ -1250,6 +1250,7 @@ body.dle-active {
 
 .dle-block {
   position: relative;
+  overflow: visible !important;
   outline: 2px dashed rgba(13, 110, 253, 0.9);
   outline-offset: -2px;
 }
@@ -1322,6 +1323,8 @@ body.dle-active {
 }
 
 .dle-remove-button .fas {
+  display: inline-block;
+  width: 1em;
   margin: 0 !important;
   font-size: 16px !important;
 }
@@ -1422,7 +1425,7 @@ body.dle-active {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  max-height: 240px;
+  max-height: 288px;
   overflow-y: auto;
   padding-right: 4px;
 }
@@ -1436,6 +1439,15 @@ body.dle-active {
   background: #f8f9fa;
   border: 1px solid #e9ecef;
   font-size: 13px;
+}
+
+.de-device-identity {
+  display: flex;
+  flex: 1 1 auto;
+  min-width: 120px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
 }
 
 .de-device-item-new {
@@ -1452,8 +1464,40 @@ body.dle-active {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 31px;
+  flex: 0 0 25px;
+  width: 25px;
+  height: 25px;
   color: #6c757d;
+}
+
+.de-remove-btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  flex: 0 0 20px;
+  align-items: center;
+  justify-content: center;
+  margin-right: 2px !important;
+  margin-left: 5px !important;
+
+  width: 20px;
+  min-width: 20px;
+  height: 20px;
+
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  line-height: 1;
+}
+
+.de-widget-managed i,
+.de-remove-btn i {
+  display: block;
+  width: auto;
+  height: auto;
+  margin: 0 !important;
+  font-size: 18px;
+  line-height: 1;
+  transform: none;
 }
 
 .de-device-idx {
@@ -1465,7 +1509,6 @@ body.dle-active {
 }
 
 .de-device-name {
-  flex: 1 1 auto;
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1473,7 +1516,7 @@ body.dle-active {
 }
 
 .de-device-type {
-  flex: 0 0 auto;
+  align-self: flex-start;
   font-size: 11px;
   color: #6c757d;
   background: #e9ecef;
@@ -1482,20 +1525,94 @@ body.dle-active {
   white-space: nowrap;
 }
 
-.de-device-width-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.de-device-field {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
 }
 
-.de-device-width-label {
+.de-width-wrap {
+  width: 48px;
+}
+
+.de-device-field label {
   margin: 0;
   font-size: 11px;
   color: #6c757d;
 }
 
 .de-device-width {
-  width: 66px;
+  width: 48px;
+  padding-right: 4px;
+  padding-left: 4px;
+  text-align: center;
+}
+
+.de-title-field {
+  flex: 0 1 180px;
+  width: 180px;
+}
+
+.de-device-title {
+  width: 100%;
+  min-width: 0;
+}
+
+.de-device-options {
+  display: flex;
+  flex: 0 0 260px;
+  align-items: center;
+  gap: 8px;
+}
+
+.de-widget-options {
+  visibility: hidden;
+}
+
+@media (max-width: 1100px) {
+  .de-device-item {
+    flex-wrap: wrap;
+  }
+
+  .de-device-identity {
+    min-width: 180px;
+  }
+
+  .de-device-options {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .de-device-item {
+    align-items: flex-start;
+  }
+
+  .de-device-identity {
+    flex: 1 1 calc(100% - 40px);
+  }
+
+  .de-device-options {
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    margin-left: 0;
+  }
+}
+
+.de-option-field {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin: 0;
+  font-size: 11px;
+  color: #6c757d;
+  white-space: nowrap;
+}
+
+.de-option-field input {
+  margin: 0;
 }
 
 .de-add-row {
