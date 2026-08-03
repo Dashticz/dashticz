@@ -383,7 +383,7 @@ var DT_simpleblock = (function () {
         ? ' style="height:' + fixedHeight + 'px !important"'
         : '';
     return (
-      '<div data-id="miniclock" class="miniclock mh dt_block col-xs-' +
+      '<div data-id="miniclock" class="miniclock mh dt_block transbg col-xs-' +
       me.block.width +
       ' text-center' +
       heightClass +

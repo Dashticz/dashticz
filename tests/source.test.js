@@ -981,6 +981,7 @@ test('modern dark theme is portable and documented', () => {
   assert.match(theme, /\.titlegroups[\s\S]*border: var\(--block-gap\) solid transparent !important/);
   assert.match(theme, /\.titlegroups[\s\S]*border-radius: var\(--radius-border\) !important/);
   assert.match(theme, /\.colbar \.miniclock[\s\S]*background: transparent !important/);
+  assert.doesNotMatch(theme, /^\.miniclock\s*\{[^}]*background:/m);
   assert.match(theme, /\.titlegroups[\s\S]*var\(--panel-shadow\) !important/);
   assert.match(theme, /\.titlegroups \.col-icon img\.icon/);
   assert.match(theme, /@media \(max-width: 767\.98px\)/);
@@ -1184,12 +1185,17 @@ test('topbar and layout editor keep controls usable', () => {
   const editor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
   const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
   const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+  const simpleblock = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
 
   assert.match(styles, /\.colbar\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*nowrap;/s);
   assert.match(styles, /\.colbar \.logo\s*\{[^}]*flex:\s*0 1 auto;/s);
   assert.match(styles, /\.colbar\.transbg\s*\{[^}]*padding-top:\s*8px;[^}]*padding-bottom:\s*6px;[^}]*border:\s*3px solid transparent;/s);
   assert.match(styles, /\.colbar \.miniclock\s*\{[^}]*flex:\s*1 1 auto;[^}]*height:\s*40px !important;/s);
   assert.match(styles, /\.colbar \.miniclock\s*\{[^}]*background:\s*transparent !important;[^}]*box-shadow:\s*none !important;/s);
+  assert.match(simpleblock, /data-id="miniclock" class="miniclock mh dt_block transbg col-xs-/);
   assert.match(styles, /\.colbar \.dt-screen-switcher-host\s*\{[^}]*order:\s*99;[^}]*margin-left:\s*auto;/s);
   assert.match(styles, /\.colbar \.topbar-settings-wrap\s*\{[^}]*order:\s*100;[^}]*flex:\s*0 0 auto;/s);
   assert.match(blocks, /dt-topbar-item dt-topbar-/);
