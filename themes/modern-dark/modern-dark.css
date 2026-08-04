@@ -12,7 +12,7 @@
   --box-border: 1px solid rgb(181, 181, 181);
   --home-bg: rgba(28, 31, 42, .74);
   --border-color-inactive: rgb(42, 94, 151);
-  --border-color-active: rgb(112, 160, 218);
+  --border-color-active: rgb(112, 160, 218,.4);
   --border-color-block: var(--border-color-active);
   --border-color-selector: var(--border-color-inactive);
   --button-bg: rgb(29, 43, 63);
