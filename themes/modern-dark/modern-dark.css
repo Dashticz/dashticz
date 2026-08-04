@@ -8,12 +8,12 @@
 :root {
   --main-bg: rgba(32, 33, 42, .88);
   --main-border-width: 1px;
-  --block-gap: 3px;
+  --block-gap: 1px;
   --box-border: 1px solid rgb(181, 181, 181);
   --home-bg: rgba(28, 31, 42, .74);
-  --border-color-inactive: rgba(42, 94, 151, .5);
-  --border-color-active: rgba(112, 160, 218, .5);
-  --border-color-block: rgba(112, 160, 218, .2);
+  --border-color-inactive: rgb(42, 94, 151);
+  --border-color-active: rgb(112, 160, 218);
+  --border-color-block: var(--border-color-active);
   --border-color-selector: var(--border-color-inactive);
   --button-bg: rgb(29, 43, 63);
   --button-hover: rgb(35, 53, 78);
@@ -22,7 +22,7 @@
   --text-normal: rgb(255, 255, 255);
   --text-inactive: rgba(188, 188, 188, .5);
   --warning-red: rgb(255, 0, 0);
-  --selector-bg: rgb(21, 31, 46);
+  --selector-bg: rgb(29, 43, 63);
   --blocktitle: rgba(130, 130, 130, .2);
   --panel-shadow: 0 8px 24px rgba(0, 0, 0, .28);
   --radius-border: 16px;
@@ -52,10 +52,24 @@
     var(--panel-shadow) !important;
 }
 
+.transbg.titlegroups,
+.titlegroups,
+.transbg.blocktitle,
+.blocktitle,
+.miniclock {
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: var(--blocktitle) !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
 .mh {
   --col1width: 60px;
   --col2width: 60px;
-  height: var(--height-block-default) !important;
+  height: 115px !important;
   text-align: right !important;
 }
 
@@ -119,14 +133,6 @@
   background-color: var(--selector-bg) !important;
 }
 
-.transbg .col-data > select {
-  min-width: 120px;
-  min-height: 44px;
-  padding: 8px 38px 8px 12px !important;
-  font-size: 18px !important;
-  line-height: 1.2;
-}
-
 .transbg select:focus,
 .transbg select:active {
   border-color: var(--border-color-selector) !important;
@@ -155,58 +161,18 @@
   font-size: 28px !important;
 }
 
-.transbg.titlegroups,
-.titlegroups,
-.transbg.blocktitle,
 .blocktitle {
-  box-sizing: border-box !important;
   display: flex !important;
-  align-items: flex-start !important;
-  justify-content: flex-start !important;
-  height: var(--height-block-default) !important;
-  min-height: var(--height-block-default) !important;
-  margin: 0 !important;
-  padding: 8px 10px 6px !important;
-  border: var(--block-gap) solid transparent !important;
-  border-radius: var(--radius-border) !important;
-  background: var(--main-bg) !important;
-  background-clip: padding-box !important;
-  box-shadow:
-    inset 0 0 0 var(--main-border-width) var(--border-color-block),
-    var(--panel-shadow) !important;
-  text-align: left !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 40px !important;
 }
 
-.titlegroups .dt_content,
-.blocktitle .dt_content {
-  display: flex !important;
-  flex: 1 1 auto !important;
-  flex-direction: column !important;
-  align-items: flex-start !important;
-  justify-content: flex-start !important;
-  width: 100% !important;
-  height: 100% !important;
-}
-
-.titlegroups .dt_title,
 .blocktitle .dt_title {
-  display: flex !important;
-  align-items: flex-start !important;
-  justify-content: flex-start !important;
-  width: 100% !important;
-  height: auto !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  color: var(--text-light) !important;
-  font-size: var(--font-large) !important;
-  line-height: 1.2 !important;
-  text-align: left !important;
-  text-shadow: 4px 4px 4px #000 !important;
-}
-
-.titlegroups .dt_state,
-.blocktitle .dt_state {
-  display: none !important;
+  padding-top: 4px !important;
+  color: var(--text-light);
+  font-size: var(--font-large);
+  text-shadow: 4px 4px 4px #000;
 }
 
 .blocktitle img {
@@ -242,21 +208,6 @@
 .state,
 .value {
   color: var(--text-status) !important;
-}
-
-/* Keep the garbage icon on the left while aligning its collection text at
-   the right edge of the data column for every supported garbage layout. */
-.trash .state {
-  text-align: right !important;
-}
-
-.trash .state table {
-  margin-left: auto !important;
-}
-
-.trash .trashtype,
-.trash .trashdate {
-  text-align: right !important;
 }
 
 .icon {
@@ -338,20 +289,11 @@
 .standby .transbg {
   color: var(--text-light) !important;
   border: 0 !important;
+  background: #000 !important;
   background-clip: border-box !important;
   box-shadow: none !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
-}
-
-.standby .screenstandby {
-  background-color: #000 !important;
-}
-
-.standby .block,
-.standby [data-id],
-.standby .transbg {
-  background: #000 !important;
 }
 
 .message_block {
@@ -369,12 +311,4 @@
   border-radius: 15px !important;
   background: var(--warning-red) !important;
   background-clip: border-box;
-}
-
-.weatherday {
-	border-radius: 16px !important;
-}
-
-.frame iframe {	 /* All iframe */		
-	border-radius: 16px !important;
 }
