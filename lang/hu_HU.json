@@ -189,7 +189,6 @@
             "background_image_help": "Set path to background image eg. img/bg2.jpg or http://yourimage.com/image.jpg",
             "dashticz_themes": "Dashticz Theme",
             "dashticz_themes_help": "Set the name of the theme (eg. white) the theme will be overide by custom.css",
-            "edit_mode": "Ugrás a szerkesztési módba",
             "hide_topbar": "A felső sáv elrejtése",
             "slide_effect": "Dia hatás",
             "standard_graph": "Standard grafikon",

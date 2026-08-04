@@ -189,7 +189,6 @@
             "background_image_help": "Indstil sti til baggrundsbillede f.eks. img / bg2.jpg eller http://yourimage.com/image.jpg",
             "dashticz_themes": "Dashticz tema",
             "dashticz_themes_help": "Indstil temaets navn (f.eks. Hvid) temaet vil være overskrevet af custom.css",
-            "edit_mode": "Gå til redigeringstilstand",
             "hide_topbar": "Skjul topbar",
             "slide_effect": "Slide effekt",
             "standard_graph": "Standarddiagram",

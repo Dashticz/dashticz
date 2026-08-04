@@ -189,7 +189,6 @@
             "background_image_help": "Ustaw ścieżkę do pliku tapety, np. img/bg2.jpg lub http://twojobraz.com/image.jpg",
             "dashticz_themes": "Motyw Dashticz",
             "dashticz_themes_help": "Określ nazwę motywu (np. Biały), motyw zostanie zastąpiony przez custom.css",
-            "edit_mode": "Przejść w tryb edycji",
             "hide_topbar": "Ukryj pasek górny",
             "slide_effect": "Efekt przewijania",
             "standard_graph": "Wykres standardowy",

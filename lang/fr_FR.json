@@ -547,7 +547,6 @@
             "background_image_help": "Chemin vers l’image de fond, ex : img/bg2.jpg ou http://votreimage.com/image.jpg",
             "dashticz_themes": "Thème Dashticz",
             "dashticz_themes_help": "Nom du thème (ex : white). Le thème sera surchargé par custom.css",
-            "edit_mode": "Passer en mode édition",
             "hide_topbar": "Masquer la barre supérieure",
             "show_topbar_clock": "Afficher l’horloge dans la barre supérieure",
             "show_topbar_clock_help": "Afficher la date et l’heure dans la barre supérieure. Désactivé par défaut.",

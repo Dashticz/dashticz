@@ -189,7 +189,6 @@
             "background_image_help": "Nustatyti kelią fono paveikslėliui, pvz. img/bg2.jpg arba http://yourimage.com/image.jpg",
             "dashticz_themes": "Dashticz tema",
             "dashticz_themes_help": "Nustatykite temos pavadinimą (pvz., baltas), tema bus perrašyta custom.css",
-            "edit_mode": "Eiti į redagavimo režimą",
             "hide_topbar": "Slėpti viršutinę juostą",
             "slide_effect": "Skaidrių efektas",
             "standard_graph": "Standartinis grafikas",
