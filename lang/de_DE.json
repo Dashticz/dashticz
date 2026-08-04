@@ -189,7 +189,6 @@
             "background_image_help": "Pfad für Hintergrundbild festlegen, z.B. img/bg2.jpg oder http://xyz.de/image.jpg",
             "dashticz_themes": "Dashticz Design",
             "dashticz_themes_help": "Das genutzte Design festlegen (z.B. white). Das Design wird von der custom.css überschrieben.",
-            "edit_mode": "Zum Bearbeitungsmodus gehen",
             "hide_topbar": "Topbar ausblenden",
             "slide_effect": "Slide-Effekt",
             "standard_graph": "Standardgraph",

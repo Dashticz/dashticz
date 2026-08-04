@@ -552,7 +552,6 @@
             "background_image_help": "Set path to background image e.g. img/bg2.jpg or http://yourimage.com/image.jpg",
             "dashticz_themes": "Dashticz Theme",
             "dashticz_themes_help": "Set the name of the theme (e.g. white) the theme will be overridden by custom.css",
-            "edit_mode": "Go to edit mode",
             "hide_topbar": "Hide top bar",
             "show_topbar_clock": "Show clock in top bar",
             "show_topbar_clock_help": "Show date and time in the top bar. Off by default.",

@@ -189,7 +189,6 @@
             "background_image_help": "Nastavte cestu k obrázku na pozadí, např. img/bg2.jpg or http://yourimage.com/image.jpg",
             "dashticz_themes": "Dashticz motiv",
             "dashticz_themes_help": "Nastavit název motivu (např. Bílý), motiv bude přepsán pomocí custom.css",
-            "edit_mode": "Přejít do režimu úprav",
             "hide_topbar": "Skrýt nadpis",
             "slide_effect": "Slide efekt",
             "standard_graph": "Standardní graf",

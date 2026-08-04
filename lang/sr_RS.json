@@ -189,7 +189,6 @@
             "background_image_help": "Postavite putanju do pozadinske slike, npr. img/bg2.jpg ili  http://vašaslika.com/slika.jpg",
             "dashticz_themes": "Dashticz teme",
             "dashticz_themes_help": "Postavite ime teme (npr. belo), tema će biti nadlvadana od custom.css-a",
-            "edit_mode": "Idi u režim za uređivanje",
             "hide_topbar": "Sakrij topbar",
             "slide_effect": "Efekat slajda",
             "standard_graph": "Standardni grafikon",

@@ -189,7 +189,6 @@
             "background_image_help": "Ange sökvägen till bakgrundsbild t.ex. img/bg2.jpg eller http://yourimage.com/image.jpg",
             "dashticz_themes": "Dashticz Tema",
             "dashticz_themes_help": "Ange namnet på temat (t.ex. vit). Temat ersätts av custom.css om den används ",
-            "edit_mode": "Gå till redigeringsläget",
             "hide_topbar": "Dölj topbar",
             "slide_effect": "Slideffekt",
             "standard_graph": "Standard graf",

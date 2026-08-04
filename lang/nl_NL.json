@@ -547,7 +547,6 @@
             "background_image_help": "Stel het pad naar de achtergrondafbeelding in, bijvoorbeeld. img/bg2.jpg of http://yourimage.com/image.jpg",
             "dashticz_themes": "Dashticz thema",
             "dashticz_themes_help": "Stel de naam van het thema in (bijvoorbeeld wit) het thema zal overschreven worden door custom.css",
-            "edit_mode": "Ga naar de bewerkingsmodus",
             "hide_topbar": "Verberg titelbalk",
             "show_topbar_clock": "Toon klok in titelbalk",
             "show_topbar_clock_help": "Toon datum en tijd in de titelbalk. Standaard uit.",

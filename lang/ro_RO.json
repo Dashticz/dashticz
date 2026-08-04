@@ -189,7 +189,6 @@
             "background_image_help": "Setați calea spre imaginea de fundal, de ex. img / bg2.jpg sau http://yourimage.com/image.jpg",
             "dashticz_themes": "Tema Dashticz",
             "dashticz_themes_help": "Setați numele temei (de ex.white) tema va fi suprascrisă de custom.css",
-            "edit_mode": "Du-te la modul de editare",
             "hide_topbar": "Ascunde bara de sus",
             "slide_effect": "Efectul de glisare",
             "standard_graph": "Grafic standard",

@@ -189,7 +189,6 @@
             "background_image_help": "Set path to background image e.g. img/bg2.jpg or http://yourimage.com/image.jpg",
             "dashticz_themes": "Dashticzテーマ",
             "dashticz_themes_help": "Set the name of the theme (e.g. white) the theme will be overridden by custom.css",
-            "edit_mode": "編集モードに移動",
             "hide_topbar": "Hide top bar",
             "slide_effect": "Slide effect",
             "standard_graph": "Standard graph",

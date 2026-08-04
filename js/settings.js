@@ -227,11 +227,6 @@ settingList['screen']['blink_color']['type'] = 'text';
 settingList['screen']['blink_color']['help'] =
   language.settings.screen.blink_color_help;
 
-settingList['screen']['edit_mode'] = {};
-settingList['screen']['edit_mode']['title'] =
-  language.settings.screen.edit_mode;
-settingList['screen']['edit_mode']['type'] = 'checkbox';
-
 settingList['localize'] = {};
 settingList['localize']['title'] = language.settings.localize.title;
 
@@ -952,7 +947,6 @@ var defaultSettings = {
   news_scroll_after: 7,
   standard_graph: 'hours',
   blink_color: '255, 255, 255, 1',
-  edit_mode: 0,
   colorpicker: 2,
   colorpickerscale: 1,
   units: {

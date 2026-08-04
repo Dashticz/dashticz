@@ -189,7 +189,6 @@
             "background_image_help": "Angi sti til bakgrunnsbilde f.eks. img / bg2.jpg eller http://yourimage.com/image.jpg",
             "dashticz_themes": "Dashticz tema",
             "dashticz_themes_help": "Angi navnet på temaet (f.eks. White) temaet vil være skrevet over av custom.css",
-            "edit_mode": "Aktiver redigeringsmodus",
             "hide_topbar": "Skjul toppbar",
             "slide_effect": "Overgangseffekter mellom sider",
             "standard_graph": "Standard graf",

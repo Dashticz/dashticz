@@ -730,7 +730,7 @@ var DashticzDeviceEditor = (function () {
         : (typeof configured.title === 'string' ? configured.title : '');
       deviceOptions[ck] = {
         icon: typeof configured.icon === 'undefined',
-        hide_data: configured.hide_data !== false,
+        hide_data: configured.hide_data === true,
         last_update: configured.last_update === true,
         switch: configured.switch === true,
       };
@@ -906,7 +906,10 @@ var DashticzDeviceEditor = (function () {
     html += '<span class="de-device-idx"><i class="fas ' +
       (isTitle ? 'fa-heading' : 'fa-cube') + ' me-1" aria-hidden="true"></i>' +
       _esc(label) + '</span>';
-    html += '<span class="de-device-name">' + _esc(detail) + '</span>';
+    html += '<span class="de-device-identity de-special-identity">';
+    html += '<span class="de-device-name">' + _esc(detail) + '</span></span>';
+    /* Keep special rows aligned with the option column used by normal devices. */
+    html += '<span class="de-device-options de-special-options" aria-hidden="true"></span>';
     html += '<span class="de-device-field de-width-wrap">';
     html += '<label class="de-device-width-label" for="de-width-' +
       _esc(special.reference) + '">' + _esc(t.width) + '</label>';
@@ -914,6 +917,8 @@ var DashticzDeviceEditor = (function () {
       '" class="form-control form-control-sm de-device-width" data-order-key="' +
       _esc(orderKey) + '" min="1" max="12" size="2" value="' + special.width + '">';
     html += '</span>';
+    /* Reserve the title column so Width and Remove line up with normal rows. */
+    html += '<span class="de-device-field de-title-field de-special-title-spacer" aria-hidden="true"></span>';
     html += '<button type="button" class="btn btn-danger btn-sm de-remove-btn ms-auto" data-special-key="' +
       _esc(special.reference) + '" title="' + _esc(t.remove) + '">';
     html += '<i class="fas fa-minus" aria-hidden="true"></i></button></div>';
@@ -1301,7 +1306,7 @@ var DashticzDeviceEditor = (function () {
       var options = deviceOptions[ck] || {};
       if (title) entry.title = title;
       if (options.icon === false) entry.icon = '';
-      entry.hide_data = options.hide_data !== false;
+      entry.hide_data = options.hide_data === true;
       entry.last_update = options.last_update === true;
       entry.switch = options.switch === true;
       if (p.subidx) entry.subidx = p.subidx;

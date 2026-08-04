@@ -189,7 +189,6 @@
             "background_image_help": "Укажите путь к фоновому изображению, например img/bg2.jpg или http://yourimage.com/image.jpg",
             "dashticz_themes": "Тема Dashticz",
             "dashticz_themes_help": "Укажите название темы (например, белый), тема будет переопределена в custom.css",
-            "edit_mode": "Перейти в режим редактирования",
             "hide_topbar": "Скрыть верхнюю панель",
             "slide_effect": "Эффект прокрутки",
             "standard_graph": "Стандартный график",

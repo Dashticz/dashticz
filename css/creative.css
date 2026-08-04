@@ -1641,6 +1641,27 @@ body.dle-active {
   border-color: #ffe082;
 }
 
+/*
+ * Dummy devices and title blocks do not have option/title controls, but their
+ * Width and Remove controls should use the same columns as normal devices.
+ */
+.de-special-options,
+.de-special-title-spacer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (max-width: 767.98px) {
+  .de-special-options,
+  .de-special-title-spacer {
+    display: none;
+  }
+
+  .de-special-item .de-width-wrap {
+    margin-left: auto;
+  }
+}
+
 .de-empty {
   font-size: 13px;
   color: #6c757d;

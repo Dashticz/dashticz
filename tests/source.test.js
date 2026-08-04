@@ -497,6 +497,10 @@ test('device editor supports translated dummy and title blocks', () => {
     path.join(root, 'js/configwriter.php'),
     'utf8'
   );
+  const styles = fs.readFileSync(
+    path.join(root, 'css/creative.css'),
+    'utf8'
+  );
 
   assert.match(editor, /value="__dummy__"/);
   assert.match(editor, /value="__title__"/);
@@ -511,6 +515,10 @@ test('device editor supports translated dummy and title blocks', () => {
   assert.match(writer, /'type' => 'blocktitle'/);
   assert.match(writer, /'hide_data' => true/);
   assert.match(editor, /height: specialType === 'title' \? 120 : null/);
+  assert.match(editor, /de-device-identity de-special-identity/);
+  assert.match(editor, /de-device-options de-special-options/);
+  assert.match(editor, /de-title-field de-special-title-spacer/);
+  assert.match(styles, /\.de-special-options,[\s\S]*visibility: hidden/);
   assert.match(editor, /var TITLE_GRID_HEIGHT = 3/);
   assert.match(editor, /isTitleBlock[\s\S]*\? TITLE_GRID_HEIGHT/);
   assert.match(writer, /'height' =>[\s\S]*: 120/);
@@ -824,11 +832,11 @@ test('clock components use public date APIs and a valid seconds setting', () => 
   assert.doesNotMatch(flipClock, /showSecoonds/);
 });
 
-test('legacy expert settings stay configurable but are hidden from the settings menu', () => {
+test('remaining expert settings stay configurable while obsolete edit mode is removed', () => {
   const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
   assert.match(settings, /boss_stationclock:/);
   assert.match(settings, /blink_color: '255, 255, 255, 1'/);
-  assert.match(settings, /edit_mode: 0/);
+  assert.doesNotMatch(settings, /\bedit_mode\b/);
   assert.match(settings, /speak_lang: 'en_US'/);
   assert.match(settings, /widgetSettingTiles/);
   assert.match(settings, /config_mode: 'wizard'/);
@@ -934,6 +942,18 @@ test('selector buttons isolate radio groups and dispatch their own value', () =>
   assert.doesNotMatch(source, /\$\(ev\.target\)\.children\('input'\)\.val\(\)/);
 });
 
+test('hide_data is respected consistently by themes, switches and the device editor', () => {
+  const blockSource = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+  const switchSource = fs.readFileSync(path.join(root, 'js/switches.js'), 'utf8');
+  const editorSource = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+
+  assert.match(blockSource, /if \(!block\['hide_data'\]\) \{/);
+  assert.doesNotMatch(blockSource, /settings\['theme'\] === 'modern-dark'/);
+  assert.doesNotMatch(switchSource, /blocks\['hide_data'\]/);
+  assert.match(editorSource, /hide_data: configured\.hide_data === true/);
+  assert.match(editorSource, /entry\.hide_data = options\.hide_data === true/);
+});
+
 test('modern dark theme is portable and documented', () => {
   const theme = fs.readFileSync(
     path.join(root, 'themes/modern-dark/modern-dark.css'),
@@ -988,10 +1008,6 @@ test('modern dark theme is portable and documented', () => {
   assert.match(theme, /\.standby \.transbg[\s\S]*background: #000 !important/);
   assert.match(theme, /\.standby \.transbg[\s\S]*border: 0 !important/);
   assert.match(theme, /\.standby \.transbg[\s\S]*backdrop-filter: none !important/);
-  assert.match(
-    blocks,
-    /!block\['hide_data'\] \|\| settings\['theme'\] === 'modern-dark'/
-  );
   assert.doesNotMatch(theme, /https?:\/\//i);
   assert.doesNotMatch(theme, /url\s*\(/i);
   assert.match(readme, /config\['theme'\] = 'modern-dark'/);
