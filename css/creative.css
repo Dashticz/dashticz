@@ -490,9 +490,17 @@ next css sets the default height of the frame popup
   text-align: center;
 }
 
+.settings-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0 0 10px;
+}
+
 .settings-panel-title,
 .settings-widget-panel-title {
-  margin: 0 0 14px;
+  margin: 0;
   font-size: 18px;
 }
 
@@ -501,6 +509,15 @@ next css sets the default height of the frame popup
   margin: 0 0 14px;
   color: #495057;
   font-size: 14px;
+}
+
+.settings-category-back,
+.settings-widget-back {
+  background: #d9f2d9;
+  border-color: #b7dfb7;
+  color: #2f5f2f;
+  margin-left: auto;
+  flex-shrink: 0;
 }
 
 .config-mode-switch {
