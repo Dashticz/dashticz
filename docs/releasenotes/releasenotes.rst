@@ -5,6 +5,57 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
+v3.30.0 beta (4-8-2026)
+
+* **Changes
+
+* **Device Editor
+
+- Added the missing `Title` field to dummy devices and title blocks.
+- Added the following options to dummy devices:
+  - Icon
+  - Hide data
+  - Last update
+  - Switch
+- Ensured these values are correctly loaded from and saved to `CONFIG.js`.
+- Fixed the alignment of dummy devices and title blocks so their controls match normal device rows.
+- Fixed an issue where `Hide data` was incorrectly shown as enabled for existing blocks without an explicit `hide_data` setting.
+- Only writes `hide_data: true` when the option is actually enabled.
+
+* **Hide data
+
+- Fixed `hide_data: true` being ignored when the Modern Dark theme was active.
+- Fixed two incorrect references to the global `blocks` object instead of the current `block`.
+- `hide_data` now behaves consistently across all themes.
+
+* **Layout Editor / Move mode
+
+- Fixed widgets remaining in move mode after being updated by Domoticz.
+- When a Domoticz refresh replaces a widget DOM element, the Layout Editor now updates its internal element reference.
+- Editor overlays and temporary move-mode classes are now removed correctly when move mode is closed.
+- Added cleanup safeguards for overlays and drag/drop classes.
+- Preserved block dimensions and editor controls when a widget is refreshed during editing.
+
+* **Modern Dark theme
+
+- Restored the default block height to 120 px so it aligns with the 10 px layout grid.
+- Fixed standby background images being overwritten by the theme.
+- Kept the top-bar clock transparent without its own background, border or shadow.
+- Restored the intended title-group panel styling.
+- Added a minimum height for dropdown controls.
+- Corrected garbage-widget alignment.
+- Restored the intended block spacing and border transparency values.
+
+* **Settings cleanup
+
+- Removed the obsolete and unused `edit_mode` setting.
+- Removed its default value and translations.
+- Updated the related tests.
+
+* **PHP compatibility
+
+- Replaced deprecated PHP string-offset syntax in the legacy iCalendar parser.
+- The parser is now compatible with PHP 8.
 
 v3.23.7 beta (2-8-2026)
 --------------------------

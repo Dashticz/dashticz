@@ -1717,6 +1717,21 @@ var DashticzLayoutEditor = (function () {
       });
     });
 
+    // A Domoticz refresh can replace a tile while the editor is active. The
+    // reference transfer above handles the normal path; this screen-level
+    // cleanup is a final safeguard against controls left on a refreshed tile.
+    if ($editingScreen && $editingScreen.length) {
+      $editingScreen
+        .find('.dle-overlay')
+        .off('.layouteditor')
+        .remove();
+      $editingScreen
+        .find('.dle-block, .dle-dragging, .dle-drop-before, .dle-drop-after')
+        .removeClass(
+          'dle-block dle-dragging dle-drop-before dle-drop-after'
+        );
+    }
+
     originalColumns.forEach(function (column) {
       column.wrappers.forEach(function (wrapper) {
         column.element.appendChild(wrapper);
@@ -1760,6 +1775,33 @@ var DashticzLayoutEditor = (function () {
     _stopEdgeScroll();
   }
 
+  function replaceBlockReference(oldBlock, newBlock) {
+    if (!active || !oldBlock || !newBlock || oldBlock === newBlock) return;
+
+    items.forEach(function (item) {
+      var replaced = false;
+
+      item.visibleBlocks = item.visibleBlocks.map(function (block) {
+        if (block !== oldBlock) return block;
+        replaced = true;
+        return newBlock;
+      });
+
+      item.originalBlocks.forEach(function (original) {
+        if (original.block === oldBlock) original.block = newBlock;
+      });
+
+      if (!replaced) return;
+
+      newBlock.classList.add('dle-block');
+      if (!gridMode) {
+        _applyWidth(item, item.width);
+        if (item.height !== null) _applyHeight(item, item.height);
+      }
+      _updateSizeLabel(item);
+    });
+  }
+
   function _escapeHtml(value) {
     return String(value)
       .replace(/&/g, '&amp;')
@@ -1771,6 +1813,7 @@ var DashticzLayoutEditor = (function () {
   return {
     open: open,
     convertCurrentScreenToGrid: convertCurrentScreenToGrid,
+    replaceBlockReference: replaceBlockReference,
   };
 })();
 

@@ -1,6 +1,6 @@
 /* eslint-disable no-debugger */
 /*global getBlockTypesBlock, language, settings*/
-/*global Dashticz, DT_function, Domoticz, Debug */
+/*global Dashticz, DashticzLayoutEditor, DT_function, Domoticz, Debug */
 /*global moment, number_format */
 /*from bundle.js*/
 /*global ion isDefined*/
@@ -198,9 +198,13 @@ function deviceUpdateHandler(block) {
 
   //var $div=$selector.find('.block_'+fullidx); //doesn't work for blocks['myblock'] kind of definitions
   var $div = $selector.find('.mh');
-  // Domoticz refreshes replace the block contents. Detach the Layout Editor
-  // overlay first so jQuery keeps its pointer handlers and controls alive.
-  var $layoutEditorOverlay = $div.children('.dle-overlay').detach();
+  var oldLayoutEditorBlocks = $div.toArray();
+  // Domoticz refreshes may replace the complete .mh element. Keep every
+  // Layout Editor overlay paired with the block it belongs to, so the editor
+  // can transfer both the controls and its internal DOM reference.
+  var layoutEditorOverlays = oldLayoutEditorBlocks.map(function (element) {
+    return $(element).children('.dle-overlay').detach();
+  });
 
   var width = 4;
   switch (device['SwitchType']) {
@@ -245,13 +249,39 @@ function deviceUpdateHandler(block) {
 
   if (html && typeof html === 'string') {
     $div.html(html);
-    if ($layoutEditorOverlay.length) $div.append($layoutEditorOverlay);
+    layoutEditorOverlays.forEach(function ($overlay, index) {
+      if ($overlay.length && $div[index]) $($div[index]).append($overlay);
+    });
     getBlockClick(block);
   } else {
     $div = $selector.find('.mh'); //$div may not exist anymore. Find the new one.
-    if ($layoutEditorOverlay.length) {
-      $div.addClass('dle-block').append($layoutEditorOverlay);
-    }
+    var newLayoutEditorBlocks = $div.toArray();
+
+    oldLayoutEditorBlocks.forEach(function (oldBlock, index) {
+      var dataId = oldBlock.getAttribute('data-id');
+      var newBlock = null;
+
+      if (dataId !== null) {
+        newBlock = newLayoutEditorBlocks.find(function (candidate) {
+          return candidate.getAttribute('data-id') === dataId;
+        });
+      }
+      if (!newBlock) newBlock = newLayoutEditorBlocks[index];
+      if (!newBlock) return;
+
+      var $overlay = layoutEditorOverlays[index];
+      if ($overlay && $overlay.length) {
+        $(newBlock).addClass('dle-block').append($overlay);
+      }
+
+      if (
+        oldBlock !== newBlock &&
+        typeof DashticzLayoutEditor !== 'undefined' &&
+        DashticzLayoutEditor.replaceBlockReference
+      ) {
+        DashticzLayoutEditor.replaceBlockReference(oldBlock, newBlock);
+      }
+    });
   }
 
   if (typeof $div.attr('onclick') !== 'undefined') {

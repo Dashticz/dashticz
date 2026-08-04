@@ -1641,19 +1641,15 @@ body.dle-active {
   border-color: #ffe082;
 }
 
-/*
- * Dummy devices and title blocks do not have option/title controls, but their
- * Width and Remove controls should use the same columns as normal devices.
- */
-.de-special-options,
-.de-special-title-spacer {
+/* Title blocks have no display options, so keep an invisible option column
+ * to align Width, Title and Remove with the other Device Editor rows. */
+.de-special-options-spacer {
   visibility: hidden;
   pointer-events: none;
 }
 
 @media (max-width: 767.98px) {
-  .de-special-options,
-  .de-special-title-spacer {
+  .de-special-options-spacer {
     display: none;
   }
 

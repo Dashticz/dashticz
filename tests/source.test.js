@@ -415,7 +415,12 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(stylesheet, /> \.dle-block \{[\s\S]*height: 100% !important;/);
   const blocksSource = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
   assert.match(blocksSource, /children\('\.dle-overlay'\)\.detach\(\)/);
-  assert.match(blocksSource, /\$div\.append\(\$layoutEditorOverlay\)/);
+  assert.match(blocksSource, /var oldLayoutEditorBlocks = \$div\.toArray\(\)/);
+  assert.match(blocksSource, /DashticzLayoutEditor\.replaceBlockReference\(oldBlock, newBlock\)/);
+  assert.match(editor, /function replaceBlockReference\(oldBlock, newBlock\)/);
+  assert.match(editor, /original\.block = newBlock/);
+  assert.match(editor, /replaceBlockReference: replaceBlockReference/);
+  assert.match(editor, /\$editingScreen[\s\S]*find\('\.dle-overlay'\)[\s\S]*remove\(\)/);
   assert.match(editor, /js\/savewidgets\.php/);
   assert.match(editor, /js\/savelayout\.php/);
   assert.match(editor, /js\/savegridlayout\.php/);
@@ -513,18 +518,26 @@ test('device editor supports translated dummy and title blocks', () => {
   assert.match(editor, /language\.settings\.deviceeditor/);
   assert.match(writer, /function configwriter_special_block_props/);
   assert.match(writer, /'type' => 'blocktitle'/);
-  assert.match(writer, /'hide_data' => true/);
+  assert.match(writer, /\$props\['hide_data'\] = !empty\(\$block\['hide_data'\]\)/);
+  assert.match(writer, /\$props\['last_update'\] = !empty\(\$block\['last_update'\]\)/);
+  assert.match(writer, /\$props\['switch'\] = !empty\(\$block\['switch'\]\)/);
   assert.match(editor, /height: specialType === 'title' \? 120 : null/);
   assert.match(editor, /de-device-identity de-special-identity/);
-  assert.match(editor, /de-device-options de-special-options/);
-  assert.match(editor, /de-title-field de-special-title-spacer/);
-  assert.match(styles, /\.de-special-options,[\s\S]*visibility: hidden/);
+  assert.match(editor, /de-device-options de-special-options-spacer/);
+  assert.match(styles, /\.de-special-options-spacer[\s\S]*visibility: hidden/);
+  assert.match(editor, /class=\"form-control form-control-sm de-device-title\" maxlength=\"100\" data-order-key/);
+  assert.match(editor, /managedSpecials\[orderKey\]\.title = value/);
+  assert.match(editor, /special\.options \|\|[\s\S]*icon: true, hide_data: true, last_update: false, switch: false/);
+  assert.match(editor, /managedSpecials\[orderKey\]\.options\[option\]/);
+  assert.match(editor, /specialEntry\.hide_data = specialOptions\.hide_data === true/);
+  assert.match(editor, /specialEntry\.last_update = specialOptions\.last_update === true/);
+  assert.match(editor, /specialEntry\.switch = specialOptions\.switch === true/);
   assert.match(editor, /var TITLE_GRID_HEIGHT = 3/);
   assert.match(editor, /isTitleBlock[\s\S]*\? TITLE_GRID_HEIGHT/);
   assert.match(writer, /'height' =>[\s\S]*: 120/);
   assert.match(
     writer,
-    /'idx' => \(int\)\$block\['idx'\][\s\S]*'width' => \$width[\s\S]*'hide_data' => true[\s\S]*'title' => \$title/
+    /'idx' => \(int\)\$block\['idx'\][\s\S]*'width' => \$width[\s\S]*'title' => \$title[\s\S]*\$props\['hide_data'\]/
   );
 
   for (const locale of ['en_US', 'nl_NL', 'fr_FR']) {
