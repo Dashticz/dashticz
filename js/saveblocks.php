@@ -54,11 +54,21 @@ foreach ($data['devices'] as $entry) {
             $height = max(50, min(2000, (int)(round((int)$entry['height'] / 10) * 10)));
         }
         $idx = null;
+        $icon = null;
+        $hideData = false;
+        $lastUpdate = false;
+        $switch = false;
         if ($kind === 'dummy') {
             if (!isset($entry['idx']) || !is_int($entry['idx']) || $entry['idx'] < 1) {
                 dashticz_json_error(400, 'A dummy block requires a positive integer idx.');
             }
             $idx = $entry['idx'];
+            $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
+                ? substr($entry['icon'], 0, 100)
+                : null;
+            $hideData = !empty($entry['hide_data']);
+            $lastUpdate = !empty($entry['last_update']);
+            $switch = !empty($entry['switch']);
         }
         $devices[] = [
             'kind' => $kind,
@@ -68,6 +78,10 @@ foreach ($data['devices'] as $entry) {
             'name' => $title,
             'width' => $width,
             'height' => $height,
+            'icon' => $icon,
+            'hide_data' => $hideData,
+            'last_update' => $lastUpdate,
+            'switch' => $switch,
             'key' => $entry['key'],
         ];
     } elseif (is_int($entry) && $entry > 0) {

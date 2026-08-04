@@ -240,6 +240,14 @@ var DashticzDeviceEditor = (function () {
       title: String(definition.title || (kind === 'title' ? 'Title' : reference)),
       width: _parseWidth(definition.width || (kind === 'title' ? 12 : 3)),
       height: _parseHeight(definition.height),
+      options: kind === 'dummy'
+        ? {
+            icon: typeof definition.icon === 'undefined',
+            hide_data: definition.hide_data === true,
+            last_update: definition.last_update === true,
+            switch: definition.switch === true,
+          }
+        : null,
     };
   }
 
@@ -908,8 +916,22 @@ var DashticzDeviceEditor = (function () {
       _esc(label) + '</span>';
     html += '<span class="de-device-identity de-special-identity">';
     html += '<span class="de-device-name">' + _esc(detail) + '</span></span>';
-    /* Keep special rows aligned with the option column used by normal devices. */
-    html += '<span class="de-device-options de-special-options" aria-hidden="true"></span>';
+    if (isTitle) {
+      /* Title blocks have no display options; reserve the normal option column. */
+      html += '<span class="de-device-options de-special-options-spacer" aria-hidden="true"></span>';
+    } else {
+      var options = special.options || {
+        icon: true, hide_data: true, last_update: false, switch: false,
+      };
+      html += '<span class="de-device-options">';
+      ['icon', 'hide_data', 'last_update', 'switch'].forEach(function (option) {
+        html += '<label class="de-option-field"><input type="checkbox" class="de-device-option" ';
+        html += 'data-order-key="' + _esc(orderKey) + '" data-option="' + option + '"';
+        if (options[option]) html += ' checked';
+        html += '> <span>' + _esc(t[option]) + '</span></label>';
+      });
+      html += '</span>';
+    }
     html += '<span class="de-device-field de-width-wrap">';
     html += '<label class="de-device-width-label" for="de-width-' +
       _esc(special.reference) + '">' + _esc(t.width) + '</label>';
@@ -917,8 +939,12 @@ var DashticzDeviceEditor = (function () {
       '" class="form-control form-control-sm de-device-width" data-order-key="' +
       _esc(orderKey) + '" min="1" max="12" size="2" value="' + special.width + '">';
     html += '</span>';
-    /* Reserve the title column so Width and Remove line up with normal rows. */
-    html += '<span class="de-device-field de-title-field de-special-title-spacer" aria-hidden="true"></span>';
+    html += '<span class="de-device-field de-title-field">';
+    html += '<label for="de-title-' + _esc(special.reference) + '">' + _esc(t.title) + '</label>';
+    html += '<input type="text" id="de-title-' + _esc(special.reference) +
+      '" class="form-control form-control-sm de-device-title" maxlength="100" data-order-key="' +
+      _esc(orderKey) + '" value="' + _esc(special.title || '') + '">';
+    html += '</span>';
     html += '<button type="button" class="btn btn-danger btn-sm de-remove-btn ms-auto" data-special-key="' +
       _esc(special.reference) + '" title="' + _esc(t.remove) + '">';
     html += '<i class="fas fa-minus" aria-hidden="true"></i></button></div>';
@@ -1069,15 +1095,25 @@ var DashticzDeviceEditor = (function () {
     /* Keep the editable title and display options in state for saving. */
     $('#de-device-list').on('input change', '.de-device-title', function () {
       var orderKey = String($(this).attr('data-order-key') || '');
+      var value = String($(this).val() || '').trim();
       if (orderKey.indexOf('widget:') === 0) {
-        widgetTitles[orderKey] = String($(this).val() || '').trim();
+        widgetTitles[orderKey] = value;
+      } else if (orderKey.indexOf('special:') === 0) {
+        if (managedSpecials[orderKey]) managedSpecials[orderKey].title = value;
       } else {
-        deviceTitles[String($(this).attr('data-ck') || '')] = String($(this).val() || '').trim();
+        deviceTitles[String($(this).attr('data-ck') || '')] = value;
       }
     });
     $('#de-device-list').on('change', '.de-device-option', function () {
-      var ck = String($(this).attr('data-ck') || '');
+      var orderKey = String($(this).attr('data-order-key') || '');
       var option = String($(this).attr('data-option') || '');
+      if (orderKey.indexOf('special:') === 0) {
+        if (!managedSpecials[orderKey]) return;
+        if (!managedSpecials[orderKey].options) managedSpecials[orderKey].options = {};
+        managedSpecials[orderKey].options[option] = $(this).prop('checked');
+        return;
+      }
+      var ck = String($(this).attr('data-ck') || '');
       if (!deviceOptions[ck]) deviceOptions[ck] = {};
       deviceOptions[ck][option] = $(this).prop('checked');
     });
@@ -1136,6 +1172,9 @@ var DashticzDeviceEditor = (function () {
             : 'Dummy_' + (numberMatch ? numberMatch[1] : '1'),
           width: _parseWidth($row.find('.de-width-input').val()),
           height: specialType === 'title' ? 120 : null,
+          options: specialType === 'dummy'
+            ? { icon: true, hide_data: true, last_update: false, switch: false }
+            : null,
         };
         managedSpecials[specialOrderKey] = special;
         managedOrder.push(specialOrderKey);
@@ -1290,7 +1329,14 @@ var DashticzDeviceEditor = (function () {
           title: special.title,
           width: _parseWidth(special.width),
         };
-        if (special.specialType === 'dummy') specialEntry.idx = special.idx;
+        if (special.specialType === 'dummy') {
+          specialEntry.idx = special.idx;
+          var specialOptions = special.options || {};
+          if (specialOptions.icon === false) specialEntry.icon = '';
+          specialEntry.hide_data = specialOptions.hide_data === true;
+          specialEntry.last_update = specialOptions.last_update === true;
+          specialEntry.switch = specialOptions.switch === true;
+        }
         if (special.height) specialEntry.height = special.height;
         return specialEntry;
       }

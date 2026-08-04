@@ -217,16 +217,12 @@
   max-width: 100% !important;
   height: 40px !important;
   padding-top: 2px !important;
-  border: 1px solid var(--border-color-block) !important;
-  border-radius: var(--radius-selector) !important;
-  background: var(--main-bg) !important;
   color: var(--text-light) !important;
   font-size: var(--font-large) !important;
   font-weight: 700 !important;
   text-align: right !important;
   text-shadow: 4px 4px 4px #000 !important;
 }
-
 
 .colbar .miniclock {
   margin: 0 !important;
@@ -314,8 +310,6 @@
   color: white;
 }
 
-/* SLIDER CONFIGURATION */
-
 .fas.fa-chevron-up,
 .fas.fa-chevron-down {
   color: var(--text-status) !important;
@@ -339,28 +333,6 @@
   border: var(--box-border) !important;
   border-radius: 14px !important;
   background-color: #00aaff !important;
-}
-
-/* 1. Geef de titel van de slider weer de ruimte die hij nodig heeft */
-.slider .coltitle,
-.slider .title {
-  display: block !important;
-  flex: 1 1 auto !important; /* Dwingt de titel af om beschikbare ruimte te pakken */
-  overflow: visible !important;
-  white-space: nowrap !important;
-}
-
-/* 2. Zorg dat het grote icoon de titel niet wegdrukt */
-.slider .colicon {
-  flex: 0 0 auto !important; /* Icoon pakt alleen wat nodig is, de rest gaat naar de titel */
-  max-width: 70px !important; /* Ruimte afstemmen op je 65px afbeelding */
-  margin-right: 10px !important; /* Netje afstand tussen icoon en titel */
-}
-
-/* 3. Eventueel de slider-balk zelf goed schalen */
-.slider .slider-container,
-.slider .ui-slider {
-  flex: 1 1 100% !important;
 }
 
 .standby .screenstandby {

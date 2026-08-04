@@ -1,8 +1,9 @@
 {
-    "version": "3.23.7",
+    "version": "3.30.0",
     "branch": "beta",
     "last_changes": "Fix topbar block order so custom bars render blocks in config order",
     "changelog": {
+        "3.30.0": "Dashticz cumulative cleanup and fixes",
         "3.23.7": "Fix topbar block order so custom bars render blocks in config order",
         "3.23.6": "Store XMLTV widget editor settings in global config entries for consistency with other widgets",
         "3.23.5": "Fix XMLTV widget URL not saved or read back when changed in grid-mode widget editor settings",

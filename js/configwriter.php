@@ -1398,9 +1398,14 @@ function configwriter_special_block_props($block)
         $props = [
             'idx' => (int)$block['idx'],
             'width' => $width,
-            'hide_data' => true,
             'title' => $title,
         ];
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        $props['hide_data'] = !empty($block['hide_data']);
+        $props['last_update'] = !empty($block['last_update']);
+        $props['switch'] = !empty($block['switch']);
     }
 
     if ($kind !== 'title' && isset($block['height']) && is_int($block['height'])) {
