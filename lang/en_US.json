@@ -622,6 +622,30 @@
             "evohome_status_help": "Auto, Economy, Away, Custom, Day Off, Off",
             "evohome_boost_zone": "EvoHome zone boost time in minutes",
             "evohome_boost_hw": "EvoHome hot water boost time in minutes"
+        },
+        "theme": {
+            "title": "Theme",
+            "colors": "Colors",
+            "fonts": "Font size",
+            "vars": {
+                "--main-bg": "Page background (--main-bg)",
+                "--home-bg": "Home background (--home-bg)",
+                "--border-color-inactive": "Border inactive (--border-color-inactive)",
+                "--border-color-active": "Border active (--border-color-active)",
+                "--border-color-block": "Border block (--border-color-block)",
+                "--button-bg": "Button background (--button-bg)",
+                "--button-hover": "Button hover (--button-hover)",
+                "--button-active": "Button active (--button-active)",
+                "--text-light": "Text light (--text-light)",
+                "--text-normal": "Text normal (--text-normal)",
+                "--text-inactive": "Text inactive (--text-inactive)",
+                "--selector-bg": "Selector background (--selector-bg)",
+                "--blocktitle": "Block title (--blocktitle)",
+                "--text-title": "Text title (--text-title)",
+                "--text-status": "Text status (--text-status)",
+                "--font-small": "Font small (--font-small)",
+                "--font-large": "Font large (--font-large)"
+            }
         }
     },
     "switches": {

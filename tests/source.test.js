@@ -1083,7 +1083,7 @@ test('settings theme selector loads valid installed themes', () => {
 
   assert.match(
     settings,
-    /settingList\['screen'\]\['theme'\]\['type'\] = 'select'/
+    /settingList\['theme'\].*theme.*type.*'select'/s
   );
   assert.match(settings, /bindThemePicker\(\)/);
   assert.match(settings, /js\/listthemes\.php/);

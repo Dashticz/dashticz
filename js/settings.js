@@ -124,24 +124,6 @@ settingList['screen']['topbar_use_png_icons'] = {
     'On: use custom icons from img/icons. Off: use Font Awesome icons.',
 };
 
-settingList['screen']['theme'] = {};
-settingList['screen']['theme']['title'] =
-  language.settings.screen.dashticz_themes;
-settingList['screen']['theme']['type'] = 'select';
-settingList['screen']['theme']['options'] = {
-  default: language.settings.screen.default_theme,
-};
-settingList['screen']['theme']['help'] =
-  language.settings.screen.dashticz_themes_help;
-
-settingList['screen']['background_image'] = {};
-settingList['screen']['background_image']['title'] =
-  language.settings.screen.background_image;
-settingList['screen']['background_image']['type'] = 'text';
-settingList['screen']['background_image']['help'] =
-  language.settings.screen.background_image_help;
-settingList['screen']['background_image']['picker'] = true;
-
 settingList['screen']['start_page'] = {};
 settingList['screen']['start_page']['title'] =
   language.settings.screen.start_page;
@@ -771,12 +753,32 @@ function isCustomConfigMode() {
 var settingsCategoryIcons = {
   general: 'fas fa-sliders-h',
   screen: 'fas fa-desktop',
+  theme: 'fas fa-paint-brush',
   standby: 'fas fa-moon',
   localize: 'fas fa-globe',
   media: 'fas fa-film',
   widgets: 'fas fa-puzzle-piece',
   other: 'fas fa-ellipsis-h',
   about: 'fas fa-info-circle',
+};
+
+settingList['theme'] = {
+  title: (language.settings.theme && language.settings.theme.title) || 'Theme',
+  theme: {
+    title: language.settings.screen.dashticz_themes,
+    type: 'select',
+    noEmptyOption: true,
+    options: {
+      default: language.settings.screen.default_theme,
+    },
+    help: language.settings.screen.dashticz_themes_help,
+  },
+  background_image: {
+    title: language.settings.screen.background_image,
+    type: 'text',
+    help: language.settings.screen.background_image_help,
+    picker: true,
+  },
 };
 
 settingList['standby'] = {
@@ -1182,7 +1184,9 @@ function renderSettingsRow(settingName, definition) {
       '" name="' +
       escapeSettingsHtml(settingName) +
       '" class="form-select">';
-    html += '<option value=""></option>';
+    if (!definition.noEmptyOption) {
+      html += '<option value=""></option>';
+    }
     for (var optionValue in definition.options) {
       html +=
         '<option value="' +
@@ -1299,6 +1303,7 @@ function loadSettings() {
         bindSettingsUpdateControls();
         bindWeatherProviderToggle();
         bindClockTypeToggle();
+        bindThemeCssVarControls();
 
         $('#php_version').html(phpversion);
 
@@ -1315,6 +1320,7 @@ function getSettingsCategories() {
   var preferred = [
     'general',
     'screen',
+    'theme',
     'standby',
     'localize',
     'media',
@@ -1407,6 +1413,8 @@ function renderSettingsCategoryHome() {
     html += '</div>';
     if (id === 'widgets') {
       html += renderWidgetSettingsTab();
+    } else if (id === 'theme') {
+      html += renderThemeSettingsPanel();
     } else {
       for (var s in settingList[id]) {
         if (s !== 'title') {
@@ -1847,6 +1855,303 @@ function themeOptionLabel(themeName) {
     .join(' ');
 }
 
+// List of CSS variables editable in the Theme panel.
+var _THEME_COLOR_VARS = [
+  '--main-bg',
+  '--home-bg',
+  '--border-color-inactive',
+  '--border-color-active',
+  '--border-color-block',
+  '--button-bg',
+  '--button-hover',
+  '--button-active',
+  '--text-light',
+  '--text-normal',
+  '--text-inactive',
+  '--selector-bg',
+  '--blocktitle',
+  '--text-title',
+  '--text-status',
+];
+
+var _THEME_FONT_VARS = [
+  '--font-small',
+  '--font-large',
+];
+
+// Labels for CSS variables (fall back to the var name itself).
+function _themeCssVarLabel(varName) {
+  var themeLabels = (language.settings.theme && language.settings.theme.vars) || {};
+  return String(themeLabels[varName] || varName).replace(/\s*\(--[^)]*\)\s*$/, '');
+}
+
+// Read the current value of a CSS custom property from the document root.
+function _getComputedCssVar(varName) {
+  return String(
+    getComputedStyle(document.documentElement).getPropertyValue(varName) || ''
+  ).trim();
+}
+
+// Parse the dashticz-theme-vars block written by savecustomcss.php to get
+// any already-saved overrides so the panel shows the stored values.
+function _getStoredCssVarOverrides() {
+  var overrides = {};
+  var styleSheets = document.styleSheets;
+  for (var si = 0; si < styleSheets.length; si++) {
+    var sheet = styleSheets[si];
+    var rules;
+    try { rules = sheet.cssRules || sheet.rules; } catch (e) { continue; }
+    if (!rules) continue;
+    for (var ri = 0; ri < rules.length; ri++) {
+      var rule = rules[ri];
+      if (rule.type === 1 && rule.selectorText === ':root') {
+        var cssText = rule.cssText;
+        var vars = _THEME_COLOR_VARS.concat(_THEME_FONT_VARS);
+        for (var vi = 0; vi < vars.length; vi++) {
+          var v = vars[vi];
+          // Use a literal indexOf search to find the var declaration, avoiding
+          // dynamic RegExp construction with variable input.
+          var declPrefix = v + ':';
+          var declPos = cssText.indexOf(declPrefix);
+          if (declPos !== -1) {
+            var valueStart = declPos + declPrefix.length;
+            var semicolonPos = cssText.indexOf(';', valueStart);
+            var rawValue = semicolonPos !== -1
+              ? cssText.substring(valueStart, semicolonPos)
+              : cssText.substring(valueStart);
+            overrides[v] = rawValue.trim();
+          }
+        }
+      }
+    }
+  }
+  return overrides;
+}
+
+function renderThemeSettingsPanel() {
+  var themeL = (language.settings.theme) || {};
+  var colorSectionLabel = themeL.colors || 'Kleuren';
+  var fontSectionLabel  = themeL.fonts  || 'Lettergrootte';
+  var html = '';
+
+  // Theme selector and background image picker come from settingList['theme'].
+  var themeList = settingList['theme'];
+  for (var s in themeList) {
+    if (s === 'title') continue;
+    if (themeList[s] && themeList[s].picker) {
+      html += renderBackgroundPicker(s, themeList[s]);
+      continue;
+    }
+    html += renderSettingsRow(s, themeList[s]);
+  }
+
+  // Color variable section heading.
+  html += '<div class="settings-section-heading">' +
+    escapeSettingsHtml(colorSectionLabel) + '</div>';
+
+  // Color variable rows.
+  html += '<div class="settings-theme-color-grid">';
+  _THEME_COLOR_VARS.forEach(function (varName) {
+    var inputId = 'setting-cssvar-' + varName.replace(/^--/, '').replace(/-/g, '_');
+    html += '<div class="settings-row settings-cssvar-row">';
+    html += '<label class="settings-label" for="' + escapeSettingsHtml(inputId) + '">' +
+      escapeSettingsHtml(_themeCssVarLabel(varName)) + '</label>';
+    html += '<div class="settings-control settings-cssvar-control">';
+    html += '<input type="color" class="settings-cssvar-swatch" id="' +
+      escapeSettingsHtml(inputId) + '-swatch" aria-hidden="true" tabindex="-1">';
+    html += '<input type="range" class="settings-cssvar-alpha" id="' +
+      escapeSettingsHtml(inputId) + '-alpha" min="0" max="100" step="1" ' +
+      'aria-label="' + escapeSettingsHtml('Transparency for ' + _themeCssVarLabel(varName)) +
+      '" title="' + escapeSettingsHtml('Transparency for ' + _themeCssVarLabel(varName)) + '">';
+    html += '<input type="text" class="form-control settings-cssvar-input" ' +
+      'id="' + escapeSettingsHtml(inputId) + '" ' +
+      'data-cssvar="' + escapeSettingsHtml(varName) + '" ' +
+      'placeholder="' + escapeSettingsHtml(varName) + '" ' +
+      'autocomplete="off">';
+    html += '</div>';
+    html += '<div class="settings-help-slot"></div></div>';
+  });
+  html += '</div>';
+
+  // Font size section heading.
+  html += '<div class="settings-section-heading">' +
+    escapeSettingsHtml(fontSectionLabel) + '</div>';
+
+  // Font size variable rows.
+  _THEME_FONT_VARS.forEach(function (varName) {
+    var inputId = 'setting-cssvar-' + varName.replace(/^--/, '').replace(/-/g, '_');
+    html += '<div class="settings-row">';
+    html += '<label class="settings-label" for="' + escapeSettingsHtml(inputId) + '">' +
+      escapeSettingsHtml(_themeCssVarLabel(varName)) + '</label>';
+    html += '<div class="settings-control">';
+    html += '<input type="text" class="form-control settings-cssvar-input" ' +
+      'id="' + escapeSettingsHtml(inputId) + '" ' +
+      'data-cssvar="' + escapeSettingsHtml(varName) + '" ' +
+      'placeholder="' + escapeSettingsHtml(varName) + '" ' +
+      'autocomplete="off">';
+    html += '</div>';
+    html += '<div class="settings-help-slot"></div></div>';
+  });
+
+  return html;
+}
+
+function bindThemeCssVarControls() {
+  var $popup = $('#settingspopup');
+  if (!$popup.length) return;
+
+  var storedOverrides = _getStoredCssVarOverrides();
+
+  // Populate each text input with stored override or computed theme value.
+  $popup.find('.settings-cssvar-input').each(function () {
+    var $input = $(this);
+    var varName = String($input.data('cssvar') || '');
+    if (!varName) return;
+    var value = storedOverrides[varName] || _getComputedCssVar(varName);
+    $input.val(value);
+    // Sync swatch if color input is present.
+    var $swatch = $popup.find('#' + $.escapeSelector($input.attr('id') + '-swatch'));
+    if ($swatch.length) {
+      _syncSwatchFromText($swatch, value);
+    }
+    var $alpha = $popup.find('#' + $.escapeSelector($input.attr('id') + '-alpha'));
+    if ($alpha.length) {
+      $alpha.val(Math.round(_extractCssAlpha(value) * 100));
+    }
+  });
+
+  // Swatch → text input sync.
+  $popup.off('input.cssvar-swatch').on('input.cssvar-swatch', '.settings-cssvar-swatch', function () {
+    var $swatch = $(this);
+    var textId  = $swatch.attr('id').replace(/-swatch$/, '');
+    var $text   = $popup.find('#' + $.escapeSelector(textId));
+    if ($text.length) {
+      var alpha = _getCssVarAlpha($popup, textId);
+      $text.val(alpha < 1 ? _hexToRgba($swatch.val(), alpha) : $swatch.val());
+    }
+  });
+
+  // Transparency slider → text input sync.
+  $popup.off('input.cssvar-alpha').on('input.cssvar-alpha', '.settings-cssvar-alpha', function () {
+    var $alpha = $(this);
+    var textId = $alpha.attr('id').replace(/-alpha$/, '');
+    var $text = $popup.find('#' + $.escapeSelector(textId));
+    var $swatch = $popup.find('#' + $.escapeSelector(textId + '-swatch'));
+    if ($text.length && $swatch.length) {
+      var alpha = parseInt($alpha.val(), 10) / 100;
+      $text.val(alpha < 1 ? _hexToRgba($swatch.val(), alpha) : $swatch.val());
+    }
+  });
+
+  // Text input → swatch sync.
+  $popup.off('input.cssvar-text').on('input.cssvar-text', '.settings-cssvar-input', function () {
+    var $input = $(this);
+    var $swatch = $popup.find('#' + $.escapeSelector($input.attr('id') + '-swatch'));
+    if ($swatch.length) {
+      _syncSwatchFromText($swatch, $input.val());
+    }
+    var $alpha = $popup.find('#' + $.escapeSelector($input.attr('id') + '-alpha'));
+    if ($alpha.length) {
+      $alpha.val(Math.round(_extractCssAlpha($input.val()) * 100));
+    }
+  });
+
+  // Reflect "(custom)" state in the theme dropdown when panel first opens.
+  _updateThemeCustomLabel();
+}
+
+function _syncSwatchFromText($swatch, value) {
+  var normalized = String(value || '').trim();
+  // Try to convert to a 6-digit hex so the color input accepts it.
+  var hex = _cssValueToHex(normalized);
+  if (hex) {
+    $swatch.val(hex);
+  }
+}
+
+function _extractCssAlpha(value) {
+  var normalized = String(value || '').trim();
+  if (!normalized) return 1;
+  var el;
+  try {
+    el = document.createElement('div');
+    el.style.color = normalized;
+    if (!el.style.color) return 1;
+    document.body.appendChild(el);
+    var computed = getComputedStyle(el).color;
+    var match = computed.match(
+      /^rgba?\([^,]+,\s*[^,]+,\s*[^,]+(?:,\s*([0-9.]+)|\s*\/\s*([0-9.]+))?\)$/
+    );
+    var alpha = match && (match[1] || match[2]);
+    return alpha ? Math.max(0, Math.min(1, parseFloat(alpha))) : 1;
+  } catch (e) {
+    return 1;
+  } finally {
+    if (el && el.parentNode) el.parentNode.removeChild(el);
+  }
+}
+
+function _getCssVarAlpha($popup, textId) {
+  var $alpha = $popup.find('#' + $.escapeSelector(textId + '-alpha'));
+  return $alpha.length ? parseInt($alpha.val(), 10) / 100 : 1;
+}
+
+function _hexToRgba(hex, alpha) {
+  var normalized = String(hex || '').replace('#', '');
+  if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return String(hex || '');
+  return 'rgba(' +
+    parseInt(normalized.substring(0, 2), 16) + ', ' +
+    parseInt(normalized.substring(2, 4), 16) + ', ' +
+    parseInt(normalized.substring(4, 6), 16) + ', ' +
+    alpha.toFixed(2) + ')';
+}
+
+function _cssValueToHex(value) {
+  if (!value) return '';
+  var s = value.trim();
+  // Already #rrggbb.
+  if (/^#[0-9a-fA-F]{6}$/.test(s)) return s.toLowerCase();
+  // #rgb shorthand.
+  if (/^#[0-9a-fA-F]{3}$/.test(s)) {
+    return '#' + s[1]+s[1] + s[2]+s[2] + s[3]+s[3];
+  }
+  // rgb(r, g, b) or rgba(r, g, b, a) — use a temporary element.
+  if (/^rgba?\s*\(/.test(s)) {
+    try {
+      var el = document.createElement('div');
+      el.style.color = s;
+      document.body.appendChild(el);
+      var computed = getComputedStyle(el).color;
+      document.body.removeChild(el);
+      var m = computed.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[0-9.]+)?\)$/);
+      if (m) {
+        return '#' +
+          ('0' + parseInt(m[1], 10).toString(16)).slice(-2) +
+          ('0' + parseInt(m[2], 10).toString(16)).slice(-2) +
+          ('0' + parseInt(m[3], 10).toString(16)).slice(-2);
+      }
+    } catch (e) { /* ignore */ }
+  }
+  // Named colour.
+  if (/^[a-zA-Z]+$/.test(s)) {
+    try {
+      var el2 = document.createElement('div');
+      el2.style.color = s;
+      document.body.appendChild(el2);
+      var computed2 = getComputedStyle(el2).color;
+      document.body.removeChild(el2);
+      var m2 = computed2.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[0-9.]+)?\)$/);
+      if (m2) {
+        return '#' +
+          ('0' + parseInt(m2[1], 10).toString(16)).slice(-2) +
+          ('0' + parseInt(m2[2], 10).toString(16)).slice(-2) +
+          ('0' + parseInt(m2[3], 10).toString(16)).slice(-2);
+      }
+    } catch (e) { /* ignore */ }
+  }
+  return '';
+}
+
 function bindThemePicker() {
   var $select = $('#settingspopup #setting-theme');
   if (!$select.length) return;
@@ -1885,7 +2190,79 @@ function bindThemePicker() {
       addThemeOption(themeName, '');
     });
     $select.val(currentTheme);
+    _updateThemeCustomLabel();
   });
+
+  // When the user selects a different theme or the reset-to-original sentinel,
+  // clear all CSS variable overrides so colors reset to the chosen theme's defaults.
+  $select.off('change.themepicker').on('change.themepicker', function () {
+    var chosen = String($select.val() || '');
+    var isReset = chosen.slice(-9) === '__reset__';
+    var chosenTheme = isReset ? chosen.slice(0, -9) : chosen;
+
+    if (isReset || chosenTheme !== currentTheme) {
+      // Clear all override inputs.
+      $('#settingspopup .settings-cssvar-input').each(function () {
+        var varName = String($(this).data('cssvar') || '');
+        if (!varName) return;
+        $(this).val('');
+        var $swatch = $('#settingspopup #' + $.escapeSelector($(this).attr('id') + '-swatch'));
+        if ($swatch.length) _syncSwatchFromText($swatch, '');
+      });
+
+      if (isReset) {
+        // Stay on the same theme — set the select back to the plain theme value.
+        $select.val(chosenTheme);
+        // Pass forceNoCustom=true so the reset option is not re-added before the
+        // overrides have been saved; the inputs were just cleared above.
+        _updateThemeCustomLabel(true);
+      } else {
+        _updateThemeCustomLabel();
+      }
+    }
+  });
+}
+
+// Returns true when custom.css currently contains any dashticz-theme-vars overrides.
+function _hasThemeCssVarCustomizations() {
+  var overrides = _getStoredCssVarOverrides();
+  return Object.keys(overrides).length > 0;
+}
+
+// Add or remove the "(custom)" marker on the currently-selected theme option,
+// and insert/remove a "… (original)" sibling option that lets the user revert.
+// Pass forceNoCustom=true to treat the state as having no customisations (e.g.
+// immediately after the user picked the reset option, before saving).
+function _updateThemeCustomLabel(forceNoCustom) {
+  var $select = $('#settingspopup #setting-theme');
+  if (!$select.length) return;
+  var currentTheme = String(settings['theme'] || 'default');
+  var isCustom = forceNoCustom ? false : _hasThemeCssVarCustomizations();
+  var resetVal = currentTheme + '__reset__';
+
+  var $currentOpt = $select.find('option[value="' + currentTheme + '"]');
+  if ($currentOpt.length) {
+    $currentOpt.text(
+      themeOptionLabel(currentTheme) + (isCustom ? ' (custom)' : '')
+    );
+  }
+
+  // Remove any stale reset option (e.g. after the user already reverted).
+  $select.find('option[value="' + resetVal + '"]').remove();
+
+  // When there are customisations, insert a plain-label sibling right after
+  // the "(custom)" option so the user can pick it to revert to the original.
+  if (isCustom && $currentOpt.length) {
+    $('<option></option>')
+      .attr('value', resetVal)
+      .text(themeOptionLabel(currentTheme))
+      .insertAfter($currentOpt);
+  }
+
+  // Ensure the select shows the right entry.
+  if ($select.val() === currentTheme || $select.val() === resetVal || !$select.val()) {
+    $select.val(currentTheme);
+  }
 }
 
 function bindBackgroundPickers() {
@@ -2271,11 +2648,16 @@ function saveSettings() {
           !$(this).attr('name') ||
           $(this).is(
             '#settings-update-branch, #setting-standby_background_pick, #setting-background_image_pick, #setting-weather_provider_ui, #setting-clock_type_ui'
-          )
+          ) ||
+          $(this).hasClass('settings-cssvar-input')
         ) {
           return;
         }
       var val = $(this).val();
+      // Strip the __reset__ sentinel in case it is somehow still selected at save time.
+      if (typeof val === 'string' && val.slice(-9) === '__reset__') {
+        val = val.slice(0, -9);
+      }
       if (isNumeric(val))
         val = parseFloat(val);
       var settingName = $(this).attr('name');
@@ -2351,17 +2733,34 @@ function saveSettings() {
     alertSettings += 'config["config_mode"] = ' + _modeValue + ';\n';
   }
 
+  // Collect CSS variable overrides from the theme panel.
+  var cssVars = {};
+  $('div#settingspopup .settings-cssvar-input').each(function () {
+    var varName = $(this).data('cssvar');
+    if (varName) {
+      cssVars[varName] = String($(this).val() || '').trim();
+    }
+  });
+
   $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
     .then(function (data) {
-      return $.ajax({
+      var token = data && data.token ? data.token : '';
+      var saveCssPromise = $.ajax({
+        url: configEditorUrl('js/savecustomcss.php'),
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ vars: cssVars }),
+        dataType: 'json',
+        headers: { 'X-Dashticz-CSRF': token },
+      });
+      var saveConfigPromise = $.ajax({
         url: configEditorUrl('js/savesettings.php'),
         method: 'POST',
         data: saveSettings,
         dataType: 'json',
-        headers: {
-          'X-Dashticz-CSRF': data.token,
-        },
+        headers: { 'X-Dashticz-CSRF': token },
       });
+      return $.when(saveCssPromise, saveConfigPromise);
     })
     .done(function () {
       var selectedLanguage = saveSettings.language;

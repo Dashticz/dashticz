@@ -1,9 +1,10 @@
 {
-    "version": "3.30.1",
+    "version": "3.30.2",
     "branch": "beta",
-    "last_changes": "Warn that switching to Wizard clears dashboard layout and preserve only config settings",
+    "last_changes": "Fix theme reset option staying in dropdown after selecting original theme",
     "changelog": {
-        "3.30.1": "Warn that switching to Wizard clears dashboard layout and preserve only config settings",
+        "3.30.2": "Fix theme reset option staying in dropdown after selecting original theme",
+        "3.30.1": "Add Theme settings panel with CSS variable overrides; warn before switching to Wizard mode",
         "3.30.0": "Dashticz cumulative cleanup and fixes",
         "3.23.7": "Fix topbar block order so custom bars render blocks in config order",
         "3.23.6": "Store XMLTV widget editor settings in global config entries for consistency with other widgets",

@@ -617,6 +617,30 @@
             "evohome_status_help": "Auto, Econony, Away, Custom, Day Off, Off",
             "evohome_boost_zone": "EvoHome zone boost time in minutes",
             "evohome_boost_hw": "EvoHome hot water boost time in minuten"
+        },
+        "theme": {
+            "title": "Thema",
+            "colors": "Kleuren",
+            "fonts": "Lettergrootte",
+            "vars": {
+                "--main-bg": "Pagina achtergrond (--main-bg)",
+                "--home-bg": "Home achtergrond (--home-bg)",
+                "--border-color-inactive": "Rand inactief (--border-color-inactive)",
+                "--border-color-active": "Rand actief (--border-color-active)",
+                "--border-color-block": "Rand blok (--border-color-block)",
+                "--button-bg": "Knop achtergrond (--button-bg)",
+                "--button-hover": "Knop hover (--button-hover)",
+                "--button-active": "Knop actief (--button-active)",
+                "--text-light": "Tekst licht (--text-light)",
+                "--text-normal": "Tekst normaal (--text-normal)",
+                "--text-inactive": "Tekst inactief (--text-inactive)",
+                "--selector-bg": "Selector achtergrond (--selector-bg)",
+                "--blocktitle": "Blok titel (--blocktitle)",
+                "--text-title": "Tekst titel (--text-title)",
+                "--text-status": "Tekst status (--text-status)",
+                "--font-small": "Klein lettertype (--font-small)",
+                "--font-large": "Groot lettertype (--font-large)"
+            }
         }
     },
     "switches": {
