@@ -903,6 +903,15 @@ test('config_mode auto-detects as custom when absent from CONFIG.js', () => {
   assert.equal(customMode.autoDetected, false);
 });
 
+test('wizard cleanup also removes standby screen definitions from CONFIG.js', () => {
+  const source = fs.readFileSync(path.join(root, 'js/configwriter.php'), 'utf8');
+
+  assert.match(source, /\/\/ \[standby-editor-start\]/);
+  assert.match(source, /\/\/ \[standby-editor-end\]/);
+  assert.match(source, /configwriter_strip_legacy_columns_standby\(\\?\$config\)/);
+  assert.match(source, /(?:blocks\|columns\|screens\|columns_standby)/);
+});
+
 test('UI dependencies use the maintained compatibility versions', () => {
   const packageJson = JSON.parse(
     fs.readFileSync(path.join(root, 'package.json'), 'utf8')

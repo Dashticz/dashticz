@@ -5,6 +5,25 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
+v3.30.1 beta (5-8-2026)
+--------------------------
+
+* **Enhancements
+
+- Switching from Custom mode to Wizard mode now shows a clear warning that the
+  current dashboard configuration will be removed and a clean page will be
+  created.
+
+* **Fixes
+
+- When switching from Custom mode to Wizard mode, `CONFIG.js` now removes all
+  Blocks, Columns and Screens while keeping the existing config settings.
+
+* **Code
+
+- Limited the mode-switch change to the Wizard confirmation text and the
+  configuration cleanup written by `saveconfigmode.php`.
+
 v3.30.0 beta (4-8-2026)
 
 * **Changes

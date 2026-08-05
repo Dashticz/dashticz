@@ -133,6 +133,50 @@ function configwriter_set_config_mode($config, $mode)
         . substr($config, $insertAt);
 }
 
+function configwriter_clear_dashboard_layout($config)
+{
+    $patterns = [
+        '/^[ \t]*var\s+blocks\s*=\s*\{\s*\}\s*;?[ \t]*(?:\r?\n|$)/m',
+        '/^[ \t]*var\s+columns\s*=\s*\{\s*\}\s*;?[ \t]*(?:\r?\n|$)/m',
+        '/^[ \t]*var\s+screens\s*=\s*\{\s*\}\s*;?[ \t]*(?:\r?\n|$)/m',
+        '/^[ \t]*var\s+blocks\s*=\s*\{\s*\}\s*;?[ \t]*(?:\/\/[^\r\n]*)?(?:\r?\n|$)/m',
+        '/^[ \t]*var\s+columns\s*=\s*\{\s*\}\s*;?[ \t]*(?:\/\/[^\r\n]*)?(?:\r?\n|$)/m',
+        '/^[ \t]*var\s+screens\s*=\s*\{\s*\}\s*;?[ \t]*(?:\/\/[^\r\n]*)?(?:\r?\n|$)/m',
+        '/^[ \t]*if\s*\(\s*typeof\s+blocks\s*===\s*[\'"]undefined[\'"]\s*\)\s*var\s+blocks\s*=\s*\{\s*\}\s*;?[ \t]*(?:\/\/[^\r\n]*)?(?:\r?\n|$)/m',
+        '/^[ \t]*if\s*\(\s*typeof\s+columns\s*===\s*[\'"]undefined[\'"]\s*\)\s*var\s+columns\s*=\s*\{\s*\}\s*;?[ \t]*(?:\/\/[^\r\n]*)?(?:\r?\n|$)/m',
+        '/^[ \t]*if\s*\(\s*typeof\s+screens\s*===\s*[\'"]undefined[\'"]\s*\)\s*var\s+screens\s*=\s*\{\s*\}\s*;?[ \t]*(?:\/\/[^\r\n]*)?(?:\r?\n|$)/m',
+        '/^[ \t]*var\s+columns_standby\s*=\s*\{\s*\}\s*;?[ \t]*(?:\/\/[^\r\n]*)?(?:\r?\n|$)/m',
+        '/^[ \t]*if\s*\(\s*typeof\s+columns_standby\s*===\s*[\'"]undefined[\'"]\s*\)\s*var\s+columns_standby\s*=\s*\{\s*\}\s*;?[ \t]*(?:\/\/[^\r\n]*)?(?:\r?\n|$)/m',
+        '/^[ \t]*var\s+defaultcolumns\s*=\s*[^;]+;[ \t]*(?:\/\/[^\r\n]*)?(?:\r?\n|$)/m',
+    ];
+
+    foreach ($patterns as $pattern) {
+        $config = preg_replace($pattern, '', $config);
+    }
+
+    $config = configwriter_remove_assignment_statements(
+        $config,
+        '/^[ \t]*(?:blocks|columns|screens|columns_standby)\s*\[\s*[^\]]+\s*\](?:\s*\[\s*([\'"])[^\'"]+\1\s*\])?\s*=/m',
+        true
+    );
+
+    $config = preg_replace(
+        '/^[ \t]*if\s*\([^\r\n]*\b(?:blocks|columns|screens|columns_standby)\s*\[\s*[^\]]+\s*\][^\r\n]*(?:\r?\n|$)/m',
+        '',
+        $config
+    );
+
+    $config = configwriter_remove_section(
+        $config,
+        '// [standby-editor-start]',
+        '// [standby-editor-end]'
+    );
+
+    $config = configwriter_strip_legacy_columns_standby($config);
+
+    return rtrim($config);
+}
+
 /**
  * Move editor-owned config values into the main config block.
  *

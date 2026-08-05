@@ -36,6 +36,10 @@ if ($config === null) {
     dashticz_json_error(409, 'CONFIG.js does not contain the expected config marker.');
 }
 
+if ($mode === 'wizard') {
+    $config = configwriter_clear_dashboard_layout($config);
+}
+
 $writeError = configwriter_write_config($configPath, $customDir, $config);
 if ($writeError !== null) {
     dashticz_json_error(500, $writeError);
