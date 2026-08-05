@@ -159,7 +159,7 @@
             "wizard": "Wizard",
             "aria_label": "Configuration mode",
             "save_failed": "Could not save configuration mode.",
-            "confirm_wizard": "Wizard always uses a free grid layout. The current columns screen will be converted before Wizard is enabled. Continue?"
+            "confirm_wizard": "Switching to Wizard removes the current dashboard configuration, clears all Blocks, Columns and Screens from CONFIG.js, and creates a clean page. Your config settings are kept. Continue?"
         },
         "output": {
             "title": "Settings output",

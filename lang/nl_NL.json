@@ -159,7 +159,7 @@
             "wizard": "Wizard",
             "aria_label": "Configuratiemodus",
             "save_failed": "De configuratiemodus kon niet worden opgeslagen.",
-            "confirm_wizard": "Wizard gebruikt altijd een vrije grid-layout. Het huidige columns-scherm wordt geconverteerd voordat Wizard wordt ingeschakeld. Doorgaan?"
+            "confirm_wizard": "Overschakelen naar Wizard verwijdert de huidige dashboardconfiguratie, maakt alle Blocks, Columns en Screens leeg in CONFIG.js en maakt een schone pagina. Je config-instellingen blijven bewaard. Doorgaan?"
         },
         "output": {
             "title": "Uitvoer van instellingen",
