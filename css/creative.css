@@ -651,6 +651,61 @@ next css sets the default height of the frame popup
   color: #495057;
 }
 
+.settings-section-heading {
+  margin: 18px 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgba(0, 0, 0, .1);
+  font-size: 13px;
+  font-weight: 700;
+  color: #495057;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+
+.settings-cssvar-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-theme-color-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+}
+
+.settings-theme-color-grid .settings-row {
+  grid-template-columns: minmax(130px, 1fr) minmax(0, 1.5fr) 0;
+}
+
+.settings-cssvar-swatch {
+  flex-shrink: 0;
+  width: 36px;
+  height: 34px;
+  padding: 2px;
+  border: 1px solid #ced4da;
+  border-radius: 6px;
+  background: none;
+  cursor: pointer;
+}
+
+.settings-cssvar-control .settings-cssvar-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-cssvar-alpha {
+  flex: 0 0 72px;
+  width: 72px;
+  accent-color: #0b6fc2;
+}
+
+@media (max-width: 767.98px) {
+  .settings-theme-color-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .topbar-settings-wrap .settings {
   vertical-align: middle;
 }
