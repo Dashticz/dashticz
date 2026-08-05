@@ -1254,6 +1254,23 @@ test('garbage dates use the selected interface language', () => {
   assert.match(garbage, /localizedDate\.format\('dddd'\)/);
 });
 
+
+test('timegraph uses Chart.js 4 x/y time points', () => {
+  const source = fs.readFileSync(
+    path.join(root, 'js/components/timegraph.js'),
+    'utf8'
+  );
+
+  assert.match(source, /\.data\[length - 1\]\.x = timestamp\.valueOf\(\)/);
+  assert.match(source, /x: timestamp\.valueOf\(\)/);
+  assert.match(source, /data\.x = timestamp\.valueOf\(\) \+ 10000/);
+  assert.match(source, /var d = \{ y: data\.y, x: timestamp\.valueOf\(\) \+ 10000 \}/);
+  assert.match(source, /dataset\.data\[1\]\.x < minTime/);
+  assert.doesNotMatch(source, /\.data\[length - 1\]\.t\s*=/);
+  assert.doesNotMatch(source, /\bt:\s*timestamp/);
+  assert.doesNotMatch(source, /dataset\.data\[1\]\.t/);
+});
+
 test('migration sources use LF line endings', () => {
   for (const file of [
     '.gitattributes',
