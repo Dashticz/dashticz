@@ -216,7 +216,7 @@
 .miniclock {
   max-width: 100% !important;
   height: 40px !important;
-  padding-top: 2px !important;
+  justify-content: center;
   color: var(--text-light) !important;
   font-size: var(--font-large) !important;
   font-weight: 700 !important;
@@ -335,6 +335,13 @@
   background-color: #00aaff !important;
 }
 
+/* Verklein ALLEEN de afbeeldingen binnen dimmer-/blinds-blokken */
+.mh:has(.slider) .col-icon img,
+.mh:has(.blinds) .col-icon img {
+    max-width: 30px !important;
+    width: 30px !important;
+    height: auto !important;
+}
 .standby .screenstandby {
   color: var(--text-light) !important;
   border: 0 !important;

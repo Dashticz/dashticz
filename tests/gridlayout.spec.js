@@ -297,6 +297,7 @@ var standby_screen = {
     page,
   }) => {
     let gridRequest = null;
+    let blocksRequest = null;
     let columnSaves = 0;
     await page.route('**/tests/CONFIG.pw.js*', async (route) => {
       const response = await route.fetch();
@@ -309,6 +310,7 @@ blocks['tc1'].grid = {x: 2, y: 2, w: 6, h: 3};
 blocks['grid_text'] = {
   type: 'blocktitle',
   title: 'Keep me',
+  text_alignment: 'center',
   grid: {x: 10, y: 5, w: 8, h: 2}
 };
 screens[1] = {
@@ -330,11 +332,12 @@ screens[1] = {
       })
     );
     await page.route('**/js/saveblocks.php', async (route) => {
+      blocksRequest = route.request().postDataJSON();
       expect(route.request().postDataJSON().blocksOnly).toBe(true);
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ success: true, blockKeys: ['tc1'] }),
+        body: JSON.stringify({ success: true, blockKeys: ['s5', 'grid_text'] }),
       });
     });
     await page.route('**/js/savelayout.php', async (route) => {
@@ -354,15 +357,40 @@ screens[1] = {
     await waitForDashboard(page);
     await page.locator('.screen1 .deviceeditoricon').click();
     await expect(page.locator('#deviceeditorpopup')).toBeVisible();
+    await page
+      .locator('[data-order-key="special:grid_text"] .de-title-toggle')
+      .uncheck();
+    await page
+      .locator('[data-order-key="special:grid_text"] .de-text-alignment')
+      .selectOption('right');
     await page.locator('#de-save-btn').evaluate((button) => {
       button.disabled = false;
     });
     await page.locator('#de-save-btn').click();
 
     await expect.poll(() => gridRequest).not.toBeNull();
+    expect(blocksRequest.devices).toEqual([
+      {
+        idx: 's5',
+        name: 'Tuin',
+        width: 2,
+        key: 's5',
+        hide_data: true,
+        last_update: false,
+        switch: false,
+      },
+      {
+        kind: 'title',
+        key: 'grid_text',
+        title: 'Keep me',
+        width: 12,
+        hide_title: true,
+        text_alignment: 'right',
+      },
+    ]);
     expect(columnSaves).toBe(0);
     expect(gridRequest.items).toEqual([
-      { ref: 'tc1', grid: { x: 2, y: 2, w: 6, h: 3 } },
+      { ref: 's5', grid: { x: 2, y: 2, w: 6, h: 3 } },
       { ref: 'grid_text', grid: { x: 10, y: 5, w: 8, h: 2 } },
     ]);
   });

@@ -212,6 +212,10 @@ foreach ($data['widgets'] as $entry) {
         'height' => isset($catalog[$id]['height'])
             ? $catalog[$id]['height']
             : null,
+        'hide_title' => !empty($entry['hide_title']),
+        'text_alignment' => configwriter_normalise_text_alignment(
+            isset($entry['text_alignment']) ? $entry['text_alignment'] : null
+        ),
     ];
     if ($id === 'garbage' && isset($entry['displayTitle']) && is_string($entry['displayTitle'])) {
         $displayTitle = trim($entry['displayTitle']);
@@ -797,6 +801,12 @@ function _widgetBlockProps($widget)
         if ($title !== '' && strlen($title) <= 100) {
             $props['title'] = $title;
         }
+    }
+    if (!empty($widget['hide_title'])) {
+        $props['hide_title'] = true;
+    }
+    if (!empty($widget['text_alignment']) && $widget['text_alignment'] !== 'left') {
+        $props['text_alignment'] = $widget['text_alignment'];
     }
 
     return $props;
