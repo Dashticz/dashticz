@@ -5,6 +5,21 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
+v3.30.3 beta (5-8-2026)
+
+* **Enhancements**
+
+- Device Editor rows for devices, widgets and helper blocks now include a title
+  on/off checkbox and a left/center/right text-alignment selector.
+- The generated ``blocks[...]`` definitions now save and reload those settings
+  through the existing Device Editor flow, including helper title blocks.
+
+* **Code**
+
+- Updated English, Dutch and French Device Editor translations, refreshed the
+  related source/playwright tests, and applied the shared title/alignment
+  classes used when blocks render.
+
 v3.30.2 beta (4-8-2026)
 
 * **Fixes**

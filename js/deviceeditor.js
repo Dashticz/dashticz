@@ -14,9 +14,13 @@ var DashticzDeviceEditor = (function () {
   var deviceHeights  = {};   // composite key -> optional block height
   var deviceTitles   = {};   // composite key -> optional title override
   var deviceOptions  = {};   // composite key -> icon/hide_data/last_update/switch
+  var deviceTitleVisible = {}; // composite key -> title shown/hidden
+  var deviceTextAlignment = {}; // composite key -> left/center/right
   var widgetWidths   = {};   // widget order key -> block width (1..12)
   var widgetHeights  = {};   // widget order key -> optional block height
   var widgetTitles   = {};   // widget order key -> optional title override
+  var widgetTitleVisible = {}; // widget order key -> title shown/hidden
+  var widgetTextAlignment = {}; // widget order key -> left/center/right
   var gridMode       = false;
   var gridConfig     = null;
   var gridPositions  = {};   // order key -> {x,y,w,h}
@@ -49,6 +53,11 @@ var DashticzDeviceEditor = (function () {
         hide_data: 'Hide data',
         last_update: 'Last update',
         switch: 'Switch',
+        show_title: 'Title',
+        text_alignment: 'Align',
+        align_left: 'Left',
+        align_center: 'Center',
+        align_right: 'Right',
         remove: 'Remove block',
         close: 'Close',
         save: 'Save',
@@ -86,9 +95,13 @@ var DashticzDeviceEditor = (function () {
     deviceHeights  = {};
     deviceTitles   = {};
     deviceOptions  = {};
+    deviceTitleVisible = {};
+    deviceTextAlignment = {};
     widgetWidths   = {};
     widgetHeights  = {};
     widgetTitles   = {};
+    widgetTitleVisible = {};
+    widgetTextAlignment = {};
     gridPositions  = {};
     gridRefs       = {};
     gridExtras     = [];
@@ -105,6 +118,10 @@ var DashticzDeviceEditor = (function () {
         widgetWidths[item.orderKey] = _parseWidth(item.definition.width);
         widgetHeights[item.orderKey] = _parseHeight(item.definition.height);
         widgetTitles[item.orderKey] = String(item.definition.title || item.title || '');
+        widgetTitleVisible[item.orderKey] = item.definition.hide_title !== true;
+        widgetTextAlignment[item.orderKey] = _normaliseTextAlignment(
+          item.definition.text_alignment || item.definition.text_align
+        );
       } else if (item.kind === 'special') {
         managedSpecials[item.orderKey] = item;
       } else {
@@ -248,6 +265,10 @@ var DashticzDeviceEditor = (function () {
             switch: definition.switch === true,
           }
         : null,
+      showTitle: definition.hide_title !== true,
+      textAlignment: _normaliseTextAlignment(
+        definition.text_alignment || definition.text_align
+      ),
     };
   }
 
@@ -363,6 +384,9 @@ var DashticzDeviceEditor = (function () {
     var title = String(widgetTitles[orderKey] || '').trim();
     if (title) entry.title = title;
     if (widgetHeights[orderKey]) entry.height = widgetHeights[orderKey];
+    if (widgetTitleVisible[orderKey] === false) entry.hide_title = true;
+    var textAlignment = _normaliseTextAlignment(widgetTextAlignment[orderKey]);
+    if (textAlignment !== 'left') entry.text_alignment = textAlignment;
     if (widget.id === 'garbage') {
       entry.displayTitle = widget.title;
       _copyDefinedWidgetProperties(entry, definition, ['maxitems', 'maxdays']);
@@ -742,6 +766,10 @@ var DashticzDeviceEditor = (function () {
         last_update: configured.last_update === true,
         switch: configured.switch === true,
       };
+      deviceTitleVisible[ck] = configured.hide_title !== true;
+      deviceTextAlignment[ck] = _normaliseTextAlignment(
+        configured.text_alignment || configured.text_align
+      );
     });
 
     $('body').append(_buildModalHtml(available, allDomoticz));
@@ -847,19 +875,33 @@ var DashticzDeviceEditor = (function () {
       html += '<label class="de-option-field"><input type="checkbox" class="de-device-option" ';
       html += 'data-ck="' + _esc(ck) + '" data-option="' + option + '"';
       if (options[option]) html += ' checked';
-      html += '> <span>' + _esc(t[option]) + '</span></label>';
+      html += '><span>' + _esc(t[option]) + '</span></label>';
     });
+    html += '<label class="de-option-field"><input type="checkbox" class="de-title-toggle" data-ck="' +
+      _esc(ck) + '"';
+    if (deviceTitleVisible[ck] !== false) html += ' checked';
+    html += '><span>' + _esc(t.show_title) + '</span></label>';
     html += '</span>';
     html += '<span class="de-device-field de-width-wrap">';
-    html += '<label for="de-width-' + _esc(ck) + '">' + _esc(t.width) + '</label>';
     html += '<input type="number" id="de-width-' + _esc(ck) + '" class="form-control form-control-sm de-device-width" ';
     html += 'data-ck="' + _esc(ck) + '" data-order-key="' + _esc(orderKey) +
       '" min="1" max="12" size="2" value="' + _parseWidth(deviceWidths[ck]) + '">';
+    html += '<label for="de-width-' + _esc(ck) + '">' + _esc(t.width) + '</label>';
     html += '</span>';
     html += '<span class="de-device-field de-title-field">';
-    html += '<label for="de-title-' + _esc(ck) + '">' + _esc(t.title) + '</label>';
     html += '<input type="text" id="de-title-' + _esc(ck) + '" class="form-control form-control-sm de-device-title" ';
     html += 'data-ck="' + _esc(ck) + '" value="' + _esc(deviceTitles[ck] || '') + '">';
+    html += '<label for="de-title-' + _esc(ck) + '">' + _esc(t.title) + '</label>';
+    html += '</span>';
+    html += '<span class="de-device-field de-align-field">';
+    html += '<select id="de-align-' + _esc(ck) + '" class="form-select form-select-sm de-text-alignment" data-order-key="' + _esc(orderKey) + '">';
+    ['left', 'center', 'right'].forEach(function (alignment) {
+      html += '<option value="' + alignment + '"';
+      if (_normaliseTextAlignment(deviceTextAlignment[ck]) === alignment) html += ' selected';
+      html += '>' + _esc(t['align_' + alignment]) + '</option>';
+    });
+    html += '</select>';
+    html += '<label for="de-align-' + _esc(ck) + '">' + _esc(t.text_alignment) + '</label>';
     html += '</span>';
     html += '<button type="button" class="btn btn-danger btn-sm de-remove-btn ms-auto" data-ck="' + _esc(ck) + '" title="' + _esc(t.remove) + '">';
     html += '<i class="fas fa-minus" aria-hidden="true"></i>';
@@ -880,20 +922,34 @@ var DashticzDeviceEditor = (function () {
     html += '<span class="de-device-type">' +
       _esc(widget.definition.type || widget.id) + '</span>';
     html += '</span>';
-    html += '<span class="de-device-options de-widget-options" aria-hidden="true"></span>';
+    html += '<span class="de-device-options de-widget-options">';
+    html += '<label class="de-option-field"><input type="checkbox" class="de-title-toggle" data-order-key="' +
+      _esc(orderKey) + '"';
+    if (widgetTitleVisible[orderKey] !== false) html += ' checked';
+    html += '><span>' + _esc(t.show_title) + '</span></label></span>';
     html += '<span class="de-device-field de-width-wrap">';
-    html += '<label for="de-width-' +
-      _esc(widget.id) + '">' + _esc(t.width) + '</label>';
     html += '<input type="number" id="de-width-' + _esc(widget.id) +
       '" class="form-control form-control-sm de-device-width" data-order-key="' +
       _esc(orderKey) + '" min="1" max="12" size="2" value="' +
       _parseWidth(widgetWidths[orderKey]) + '">';
+    html += '<label for="de-width-' +
+      _esc(widget.id) + '">' + _esc(t.width) + '</label>';
     html += '</span>';
     html += '<span class="de-device-field de-title-field">';
-    html += '<label for="de-title-' + _esc(widget.id) + '">' + _esc(t.title) + '</label>';
     html += '<input type="text" id="de-title-' + _esc(widget.id) +
       '" class="form-control form-control-sm de-device-title" maxlength="100" data-order-key="' +
       _esc(orderKey) + '" value="' + _esc(widgetTitles[orderKey] || '') + '">';
+    html += '<label for="de-title-' + _esc(widget.id) + '">' + _esc(t.title) + '</label>';
+    html += '</span>';
+    html += '<span class="de-device-field de-align-field">';
+    html += '<select id="de-align-' + _esc(widget.id) + '" class="form-select form-select-sm de-text-alignment" data-order-key="' + _esc(orderKey) + '">';
+    ['left', 'center', 'right'].forEach(function (alignment) {
+      html += '<option value="' + alignment + '"';
+      if (_normaliseTextAlignment(widgetTextAlignment[orderKey]) === alignment) html += ' selected';
+      html += '>' + _esc(t['align_' + alignment]) + '</option>';
+    });
+    html += '</select>';
+    html += '<label for="de-align-' + _esc(widget.id) + '">' + _esc(t.text_alignment) + '</label>';
     html += '</span>';
     html += '<span class="de-widget-managed" title="' + _esc(t.managed_widget) + '"><i class="fas fa-lock" aria-hidden="true"></i></span>';
     html += '</div>';
@@ -916,10 +972,7 @@ var DashticzDeviceEditor = (function () {
       _esc(label) + '</span>';
     html += '<span class="de-device-identity de-special-identity">';
     html += '<span class="de-device-name">' + _esc(detail) + '</span></span>';
-    if (isTitle) {
-      /* Title blocks have no display options; reserve the normal option column. */
-      html += '<span class="de-device-options de-special-options-spacer" aria-hidden="true"></span>';
-    } else {
+    if (!isTitle) {
       var options = special.options || {
         icon: true, hide_data: true, last_update: false, switch: false,
       };
@@ -928,22 +981,37 @@ var DashticzDeviceEditor = (function () {
         html += '<label class="de-option-field"><input type="checkbox" class="de-device-option" ';
         html += 'data-order-key="' + _esc(orderKey) + '" data-option="' + option + '"';
         if (options[option]) html += ' checked';
-        html += '> <span>' + _esc(t[option]) + '</span></label>';
+        html += '><span>' + _esc(t[option]) + '</span></label>';
       });
-      html += '</span>';
+    } else {
+      html += '<span class="de-device-options de-widget-options">';
     }
+    html += '<label class="de-option-field"><input type="checkbox" class="de-title-toggle" data-order-key="' +
+      _esc(orderKey) + '"';
+    if (special.showTitle !== false) html += ' checked';
+    html += '><span>' + _esc(t.show_title) + '</span></label></span>';
     html += '<span class="de-device-field de-width-wrap">';
-    html += '<label class="de-device-width-label" for="de-width-' +
-      _esc(special.reference) + '">' + _esc(t.width) + '</label>';
     html += '<input type="number" id="de-width-' + _esc(special.reference) +
       '" class="form-control form-control-sm de-device-width" data-order-key="' +
       _esc(orderKey) + '" min="1" max="12" size="2" value="' + special.width + '">';
+    html += '<label class="de-device-width-label" for="de-width-' +
+      _esc(special.reference) + '">' + _esc(t.width) + '</label>';
     html += '</span>';
     html += '<span class="de-device-field de-title-field">';
-    html += '<label for="de-title-' + _esc(special.reference) + '">' + _esc(t.title) + '</label>';
     html += '<input type="text" id="de-title-' + _esc(special.reference) +
       '" class="form-control form-control-sm de-device-title" maxlength="100" data-order-key="' +
       _esc(orderKey) + '" value="' + _esc(special.title || '') + '">';
+    html += '<label for="de-title-' + _esc(special.reference) + '">' + _esc(t.title) + '</label>';
+    html += '</span>';
+    html += '<span class="de-device-field de-align-field">';
+    html += '<select id="de-align-' + _esc(special.reference) + '" class="form-select form-select-sm de-text-alignment" data-order-key="' + _esc(orderKey) + '">';
+    ['left', 'center', 'right'].forEach(function (alignment) {
+      html += '<option value="' + alignment + '"';
+      if (_normaliseTextAlignment(special.textAlignment) === alignment) html += ' selected';
+      html += '>' + _esc(t['align_' + alignment]) + '</option>';
+    });
+    html += '</select>';
+    html += '<label for="de-align-' + _esc(special.reference) + '">' + _esc(t.text_alignment) + '</label>';
     html += '</span>';
     html += '<button type="button" class="btn btn-danger btn-sm de-remove-btn ms-auto" data-special-key="' +
       _esc(special.reference) + '" title="' + _esc(t.remove) + '">';
@@ -1021,6 +1089,8 @@ var DashticzDeviceEditor = (function () {
       delete deviceHeights[ck];
       delete deviceTitles[ck];
       delete deviceOptions[ck];
+      delete deviceTitleVisible[ck];
+      delete deviceTextAlignment[ck];
       delete gridPositions[_deviceOrderKey(ck)];
       delete gridRefs[_deviceOrderKey(ck)];
 
@@ -1104,6 +1174,29 @@ var DashticzDeviceEditor = (function () {
         deviceTitles[String($(this).attr('data-ck') || '')] = value;
       }
     });
+    $('#de-device-list').on('change', '.de-title-toggle', function () {
+      var orderKey = String($(this).attr('data-order-key') || '');
+      var visible = $(this).prop('checked');
+      if (orderKey.indexOf('widget:') === 0) {
+        widgetTitleVisible[orderKey] = visible;
+      } else if (orderKey.indexOf('special:') === 0) {
+        if (managedSpecials[orderKey]) managedSpecials[orderKey].showTitle = visible;
+      } else {
+        deviceTitleVisible[String($(this).attr('data-ck') || '')] = visible;
+      }
+    });
+    $('#de-device-list').on('change', '.de-text-alignment', function () {
+      var orderKey = String($(this).attr('data-order-key') || '');
+      var value = _normaliseTextAlignment($(this).val());
+      if (orderKey.indexOf('widget:') === 0) {
+        widgetTextAlignment[orderKey] = value;
+      } else if (orderKey.indexOf('special:') === 0) {
+        if (managedSpecials[orderKey]) managedSpecials[orderKey].textAlignment = value;
+      } else {
+        deviceTextAlignment[orderKey.slice(7)] = value;
+      }
+      $(this).val(value);
+    });
     $('#de-device-list').on('change', '.de-device-option', function () {
       var orderKey = String($(this).attr('data-order-key') || '');
       var option = String($(this).attr('data-option') || '');
@@ -1172,6 +1265,8 @@ var DashticzDeviceEditor = (function () {
             : 'Dummy_' + (numberMatch ? numberMatch[1] : '1'),
           width: _parseWidth($row.find('.de-width-input').val()),
           height: specialType === 'title' ? 120 : null,
+          showTitle: true,
+          textAlignment: 'left',
           options: specialType === 'dummy'
             ? { icon: true, hide_data: true, last_update: false, switch: false }
             : null,
@@ -1193,6 +1288,8 @@ var DashticzDeviceEditor = (function () {
       deviceOptions[ck] = {
         icon: true, hide_data: true, last_update: false, switch: false,
       };
+      deviceTitleVisible[ck] = true;
+      deviceTextAlignment[ck] = 'left';
 
       /* record the device name for this composite key */
       /* for groups, use plainName (without Group_/Scene_ prefix) so the block title is clean */
@@ -1329,6 +1426,13 @@ var DashticzDeviceEditor = (function () {
           title: special.title,
           width: _parseWidth(special.width),
         };
+        if (special.showTitle === false) specialEntry.hide_title = true;
+        var specialTextAlignment = _normaliseTextAlignment(
+          special.textAlignment
+        );
+        if (specialTextAlignment !== 'left') {
+          specialEntry.text_alignment = specialTextAlignment;
+        }
         if (special.specialType === 'dummy') {
           specialEntry.idx = special.idx;
           var specialOptions = special.options || {};
@@ -1355,6 +1459,9 @@ var DashticzDeviceEditor = (function () {
       entry.hide_data = options.hide_data === true;
       entry.last_update = options.last_update === true;
       entry.switch = options.switch === true;
+      if (deviceTitleVisible[ck] === false) entry.hide_title = true;
+      var deviceAlignment = _normaliseTextAlignment(deviceTextAlignment[ck]);
+      if (deviceAlignment !== 'left') entry.text_alignment = deviceAlignment;
       if (p.subidx) entry.subidx = p.subidx;
       if (deviceHeights[ck]) entry.height = deviceHeights[ck];
       // Never retain a legacy name-based reference: Domoticz names may change.
@@ -1635,6 +1742,13 @@ var DashticzDeviceEditor = (function () {
     var height = parseInt(value, 10);
     if (!(height > 0)) return null;
     return Math.max(50, Math.min(2000, Math.round(height / 10) * 10));
+  }
+
+  function _normaliseTextAlignment(value) {
+    value = String(value || '').toLowerCase();
+    return ['left', 'center', 'right'].indexOf(value) > -1
+      ? value
+      : 'left';
   }
 
   return { open: open };

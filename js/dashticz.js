@@ -106,6 +106,7 @@ var Dashticz = (function () {
 
   function renderBlock(me) {
     var $div = me.$mountPoint.find('.dt_block');
+    _applyTextOptions(me);
     var block = $(getSpecialBlock(me));
     if (me.block.containerClass)
       $div.addClass(getProperty(me.block.containerClass, me));
@@ -276,10 +277,32 @@ var Dashticz = (function () {
   }
 
   function renderTitle(me) {
+    if (me.block.hide_title) return '';
     if (me.block.title) {
       var res = '<div class="dt_title">' + me.block.title + '</div>';
       return res;
     } else return '';
+  }
+
+  function _applyTextOptions(me) {
+    if (!me || !me.$mountPoint) return;
+    var textAlignment = 'left';
+    var configuredTextAlignment =
+      me.block &&
+      typeof me.block.text_alignment === 'string'
+        ? me.block.text_alignment
+        : me.block && typeof me.block.text_align === 'string'
+          ? me.block.text_align
+          : '';
+    if (
+      /^(left|center|right)$/i.test(configuredTextAlignment)
+    ) {
+      textAlignment = configuredTextAlignment.toLowerCase();
+    }
+    me.$mountPoint
+      .removeClass('dt-text-align-left dt-text-align-center dt-text-align-right')
+      .addClass('dt-text-align-' + textAlignment)
+      .toggleClass('dt-hide-title', !!(me.block && me.block.hide_title));
   }
 
   function renderStateDiv() {

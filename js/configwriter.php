@@ -475,6 +475,18 @@ function configwriter_js_string_escape($value)
     );
 }
 
+function configwriter_normalise_text_alignment($value, $default = 'left')
+{
+    if (!is_string($value)) {
+        return $default;
+    }
+
+    $value = strtolower(trim($value));
+    return in_array($value, ['left', 'center', 'right'], true)
+        ? $value
+        : $default;
+}
+
 function configwriter_managed_column_pattern()
 {
     // Include legacy de_col1 and multi-screen de_s2_col1 style keys.
@@ -1399,6 +1411,15 @@ function configwriter_device_block_props($device, $defaultWidth = 3)
     if (isset($device['title']) && trim((string)$device['title']) !== '') {
         $props['title'] = substr(trim((string)$device['title']), 0, 100);
     }
+    if (!empty($device['hide_title'])) {
+        $props['hide_title'] = true;
+    }
+    $textAlignment = configwriter_normalise_text_alignment(
+        isset($device['text_alignment']) ? $device['text_alignment'] : null
+    );
+    if ($textAlignment !== 'left') {
+        $props['text_alignment'] = $textAlignment;
+    }
 
     if (!$isGroup) {
         $idx = (int)$rawIdx;
@@ -1450,6 +1471,15 @@ function configwriter_special_block_props($block)
         $props['hide_data'] = !empty($block['hide_data']);
         $props['last_update'] = !empty($block['last_update']);
         $props['switch'] = !empty($block['switch']);
+    }
+    if (!empty($block['hide_title'])) {
+        $props['hide_title'] = true;
+    }
+    $textAlignment = configwriter_normalise_text_alignment(
+        isset($block['text_alignment']) ? $block['text_alignment'] : null
+    );
+    if ($textAlignment !== 'left') {
+        $props['text_alignment'] = $textAlignment;
     }
 
     if ($kind !== 'title' && isset($block['height']) && is_int($block['height'])) {

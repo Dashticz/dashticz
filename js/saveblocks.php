@@ -82,6 +82,10 @@ foreach ($data['devices'] as $entry) {
             'hide_data' => $hideData,
             'last_update' => $lastUpdate,
             'switch' => $switch,
+            'hide_title' => !empty($entry['hide_title']),
+            'text_alignment' => configwriter_normalise_text_alignment(
+                isset($entry['text_alignment']) ? $entry['text_alignment'] : null
+            ),
             'key' => $entry['key'],
         ];
     } elseif (is_int($entry) && $entry > 0) {
@@ -145,6 +149,10 @@ foreach ($data['devices'] as $entry) {
             'hide_data' => !empty($entry['hide_data']),
             'last_update' => !empty($entry['last_update']),
             'switch' => !empty($entry['switch']),
+            'hide_title' => !empty($entry['hide_title']),
+            'text_alignment' => configwriter_normalise_text_alignment(
+                isset($entry['text_alignment']) ? $entry['text_alignment'] : null
+            ),
             'key' => isset($entry['key'])
                 && is_string($entry['key'])
                 && preg_match('/^[A-Za-z_][A-Za-z0-9_]*$/', $entry['key'])
@@ -199,6 +207,10 @@ foreach ($data['devices'] as $entry) {
             'hide_data' => !empty($entry['hide_data']),
             'last_update' => !empty($entry['last_update']),
             'switch' => !empty($entry['switch']),
+            'hide_title' => !empty($entry['hide_title']),
+            'text_alignment' => configwriter_normalise_text_alignment(
+                isset($entry['text_alignment']) ? $entry['text_alignment'] : null
+            ),
             'key' => $groupKey,  /* block key IS the group reference */
         ];
     } else {

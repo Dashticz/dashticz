@@ -523,21 +523,43 @@ test('device editor supports translated dummy and title blocks', () => {
   assert.match(writer, /\$props\['switch'\] = !empty\(\$block\['switch'\]\)/);
   assert.match(editor, /height: specialType === 'title' \? 120 : null/);
   assert.match(editor, /de-device-identity de-special-identity/);
-  assert.match(editor, /de-device-options de-special-options-spacer/);
-  assert.match(styles, /\.de-special-options-spacer[\s\S]*visibility: hidden/);
+  assert.match(styles, /\.de-option-field[\s\S]*flex-direction: column/);
+  assert.match(styles, /\.dt-hide-title \.dt_title/);
   assert.match(editor, /class=\"form-control form-control-sm de-device-title\" maxlength=\"100\" data-order-key/);
   assert.match(editor, /managedSpecials\[orderKey\]\.title = value/);
+  assert.match(editor, /show_title/);
+  assert.match(editor, /text_alignment/);
+  assert.match(editor, /de-title-toggle/);
+  assert.match(editor, /de-text-alignment/);
+  assert.match(editor, /align_left/);
+  assert.match(editor, /widgetTitleVisible\[orderKey\]/);
+  assert.match(editor, /deviceTitleVisible\[ck\]/);
+  assert.match(editor, /textAlignment: 'left'/);
   assert.match(editor, /special\.options \|\|[\s\S]*icon: true, hide_data: true, last_update: false, switch: false/);
   assert.match(editor, /managedSpecials\[orderKey\]\.options\[option\]/);
   assert.match(editor, /specialEntry\.hide_data = specialOptions\.hide_data === true/);
   assert.match(editor, /specialEntry\.last_update = specialOptions\.last_update === true/);
   assert.match(editor, /specialEntry\.switch = specialOptions\.switch === true/);
+  assert.match(editor, /specialEntry\.hide_title = true/);
+  assert.match(editor, /entry\.hide_title = true/);
+  assert.match(editor, /entry\.text_alignment = textAlignment/);
   assert.match(editor, /var TITLE_GRID_HEIGHT = 3/);
   assert.match(editor, /isTitleBlock[\s\S]*\? TITLE_GRID_HEIGHT/);
   assert.match(writer, /'height' =>[\s\S]*: 120/);
   assert.match(
     writer,
     /'idx' => \(int\)\$block\['idx'\][\s\S]*'width' => \$width[\s\S]*'title' => \$title[\s\S]*\$props\['hide_data'\]/
+  );
+  assert.match(writer, /function configwriter_normalise_text_alignment/);
+  assert.match(writer, /\$props\['hide_title'\] = true/);
+  assert.match(writer, /\$props\['text_alignment'\] = \$textAlignment/);
+  assert.match(
+    fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8'),
+    /'hide_title' => !empty\(\$entry\['hide_title'\]\)/
+  );
+  assert.match(
+    fs.readFileSync(path.join(root, 'js/saveblocks.php'), 'utf8'),
+    /'text_alignment' => configwriter_normalise_text_alignment/
   );
 
   for (const locale of ['en_US', 'nl_NL', 'fr_FR']) {
@@ -548,6 +570,8 @@ test('device editor supports translated dummy and title blocks', () => {
     assert.ok(translations.title_block, `${locale} title translation`);
     assert.ok(translations.enter_idx, `${locale} IDX translation`);
     assert.ok(translations.enter_title, `${locale} title-field translation`);
+    assert.ok(translations.show_title, `${locale} title toggle translation`);
+    assert.ok(translations.text_alignment, `${locale} alignment translation`);
   }
 });
 

@@ -1,6 +1,46 @@
 @import url('./plugins.css');
 @import url('./helpers.css');
 
+:root {
+  --main-bg: rgba(0, 0, 0, 0.2);
+  --main-bg-dark: rgba(0, 0, 0, 0.5);
+  --main-bg-strong: rgba(0, 0, 0, 0.8);
+  --main-border-width: 1px;
+  --block-gap: 7px;
+  --box-border: 1px solid #ccc;
+  --home-bg: #313131;
+  --border-color-inactive: #ccc;
+  --border-color-active: #fff;
+  --border-color-block: rgba(255, 255, 255, 0);
+  --border-color-selector: var(--border-color-inactive);
+  --button-bg: #222222;
+  --button-hover: #f2f2f2;
+  --button-active: #f05f40;
+  --text-light: #fff;
+  --text-normal: #fff;
+  --text-dark: #222222;
+  --text-muted: #6c757d;
+  --text-inactive: rgba(255, 255, 255, 0.5);
+  --warning-red: red;
+  --success-green: green;
+  --selector-bg: #292b2c;
+  --blocktitle: rgba(0, 0, 0, 0.5);
+  --panel-shadow: 0 6px 18px rgba(0, 0, 0, 0.38);
+  --radius-border: 0px;
+  --radius-selector: 4px;
+  --font-small: 12px;
+  --font-large: 24px;
+  --border-radius: 6px;
+  --text-title: #fff;
+  --text-status: #fff;
+  --standby-font: 22px;
+  --height-block-small: 75px;
+  --height-block-default: 85px;
+  --height-block-medium: 100px;
+  --height-block-large: 200px;
+  --height-block-standby-clock: 200px;
+}
+
 .dt-container {
   width: 100%;
 }
@@ -23,7 +63,7 @@
 }
 
 .swiper-pagination-bullet-active {
-  background-color: #fff !important;
+  background-color: var(--text-light) !important;
 }
 
 .vertical-scroll {
@@ -121,21 +161,21 @@
 .currencydown {
   background: rgba(132, 22, 12, 0.7) !important;
   background-clip: padding-box;
-  border: 7px solid rgba(255, 255, 255, 0);
+  border: var(--block-gap) solid var(--border-color-block);
 }
 
 .currencyup {
   background: rgba(0, 128, 0, 0.7) !important;
   background-clip: padding-box;
-  border: 7px solid rgba(255, 255, 255, 0);
+  border: var(--block-gap) solid var(--border-color-block);
 }
 
 .dt_block {
   display: flex;
   align-items: flex-start;
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--main-bg);
   background-clip: padding-box;
-  border: 7px solid rgba(255, 255, 255, 0);
+  border: var(--block-gap) solid var(--border-color-block);
   padding: 5px !important;
 }
 
@@ -174,6 +214,49 @@
   font-weight: bold;
   font-size: 150%;
   margin: 5px 5px;
+}
+
+.dt-text-align-left .dt_block,
+.dt-text-align-left .dt_title,
+.dt-text-align-left .title,
+.dt-text-align-left .dt_state,
+.dt-text-align-left .state,
+.dt-text-align-left .value,
+.dt-text-align-left .lastupdate,
+.dt-text-align-left .titlegroups h3,
+.dt-text-align-left .SonarrBigTitle {
+  text-align: left;
+}
+
+.dt-text-align-center .dt_block,
+.dt-text-align-center .dt_title,
+.dt-text-align-center .title,
+.dt-text-align-center .dt_state,
+.dt-text-align-center .state,
+.dt-text-align-center .value,
+.dt-text-align-center .lastupdate,
+.dt-text-align-center .titlegroups h3,
+.dt-text-align-center .SonarrBigTitle {
+  text-align: center;
+}
+
+.dt-text-align-right .dt_block,
+.dt-text-align-right .dt_title,
+.dt-text-align-right .title,
+.dt-text-align-right .dt_state,
+.dt-text-align-right .state,
+.dt-text-align-right .value,
+.dt-text-align-right .lastupdate,
+.dt-text-align-right .titlegroups h3,
+.dt-text-align-right .SonarrBigTitle {
+  text-align: right;
+}
+
+.dt-hide-title .dt_title,
+.dt-hide-title .title,
+.dt-hide-title .titlegroups h3,
+.dt-hide-title .SonarrBigTitle {
+  display: none !important;
 }
 
 .dt_state {
@@ -310,7 +393,7 @@
 }
 
 .newblocksHolder div.title {
-  color: #fff;
+  color: var(--text-light);
   padding: 5px;
   margin: 5px;
   font-size: 17px;
@@ -335,7 +418,7 @@
   background: rgba(255, 255, 255, 0.2);
   margin: 5px;
   padding: 5px;
-  color: #fff;
+  color: var(--text-light);
   box-sizing: border-box;
 }
 
@@ -369,12 +452,12 @@
 }
 
 .modal-dialog-custom .modal-content:not(.modal-url) .close {
-  color: white;
+  color: var(--text-light);
   opacity: 0.7;
 }
 
 .modal-dialog-custom .modal-content:not(.modal-url) .close:focus, .modal-dialog-custom .modal-content:not(.modal-url) .close:hover {
-  color: white;
+  color: var(--text-light);
   opacity: 1;
 }
 
@@ -471,7 +554,7 @@ next css sets the default height of the frame popup
 .settings-tile:focus-visible,
 .settings-widget-tile:hover,
 .settings-widget-tile:focus-visible {
-  background: #fff;
+  background: var(--text-light);
   border-color: #495057;
   outline: none;
   transform: translateY(-1px);
@@ -861,15 +944,15 @@ next css sets the default height of the frame popup
 }
 
 .btn-secondary {
-  color: #292b2c !important;
+  color: var(--selector-bg) !important;
   border: 1px solid #ccc !important;
-  background-color: #fff !important;
+  background-color: var(--text-light) !important;
   padding: 0.5rem 1rem !important;
   border-color: #ccc !important;
 }
 
 .btn-primary {
-  color: #fff;
+  color: var(--text-light);
   background-color: #5cb85c !important;
   padding: 0.5rem 1rem !important;
   border-color: #5cb85c !important;
@@ -906,7 +989,7 @@ next css sets the default height of the frame popup
 
 .modal-dialog-custom .modal-content:not(.modal-url) {
   background-color: #222;
-  color: white;
+  color: var(--text-light);
 }
 
 .modal-header {
@@ -914,8 +997,8 @@ next css sets the default height of the frame popup
 }
 
 .modal-content.url {
-  background-color: white;
-  color: black;
+  background-color: var(--text-light);
+  color: var(--text-dark);
 }
 
 
@@ -1154,7 +1237,7 @@ next css sets the default height of the frame popup
   border: 2px solid rgba(255, 255, 255, 0.85);
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.35);
-  color: #fff;
+  color: var(--text-light);
   font-size: 13px;
   font-weight: 700;
   line-height: 1;
@@ -1169,7 +1252,7 @@ next css sets the default height of the frame popup
 .dt-screen-btn.active {
   background: rgba(255, 255, 255, 0.92);
   color: #212529;
-  border-color: #fff;
+  border-color: var(--text-light);
 }
 
 .dt-screen-btn.dt-screen-add {
@@ -1239,7 +1322,7 @@ body.standby-edit .dt-screen-switcher-bar.is-visible {
 
 .dt-standby-editor-icons .settings {
   cursor: pointer;
-  color: #fff;
+  color: var(--text-light);
   font-size: 18px;
 }
 
@@ -1347,7 +1430,7 @@ body.dle-active {
   z-index: 2;
   padding: 2px 6px;
   border-radius: 4px;
-  color: #fff;
+  color: var(--text-light);
   background: rgba(13, 24, 40, 0.88);
   line-height: 18px;
 }
@@ -1380,7 +1463,7 @@ body.dle-active {
   width: 32px;
   height: 32px;
   padding: 0;
-  color: #fff;
+  color: var(--text-light);
   background: #dc3545;
   border: 1px solid #ff8b96;
   border-radius: 50%;
@@ -1437,7 +1520,7 @@ body.dle-active {
   gap: 10px;
   max-width: calc(100vw - 24px);
   padding: 8px 10px;
-  color: #fff;
+  color: var(--text-light);
   background: rgba(13, 24, 40, 0.96);
   border: 1px solid #5aa2ff;
   border-radius: 8px;
@@ -1463,7 +1546,7 @@ body.dle-active {
   z-index: 21000;
   max-width: 260px;
   padding: 6px 10px;
-  color: #fff;
+  color: var(--text-light);
   background: rgba(13, 110, 253, 0.92);
   border-radius: 5px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
@@ -1539,7 +1622,7 @@ body.dle-active {
   flex: 0 0 25px;
   width: 25px;
   height: 25px;
-  color: #6c757d;
+  color: var(--text-muted);
 }
 
 .de-remove-btn {
@@ -1577,7 +1660,7 @@ body.dle-active {
   min-width: 70px;
   font-family: monospace;
   font-size: 12px;
-  color: #6c757d;
+  color: var(--text-muted);
 }
 
 .de-device-name {
@@ -1590,7 +1673,7 @@ body.dle-active {
 .de-device-type {
   align-self: flex-start;
   font-size: 11px;
-  color: #6c757d;
+  color: var(--text-muted);
   background: #e9ecef;
   padding: 1px 6px;
   border-radius: 3px;
@@ -1612,7 +1695,8 @@ body.dle-active {
 .de-device-field label {
   margin: 0;
   font-size: 11px;
-  color: #6c757d;
+  color: var(--text-muted);
+  text-align: center;
 }
 
 .de-device-width {
@@ -1627,6 +1711,10 @@ body.dle-active {
   width: 180px;
 }
 
+.de-align-field {
+  width: 92px;
+}
+
 .de-device-title {
   width: 100%;
   min-width: 0;
@@ -1634,13 +1722,9 @@ body.dle-active {
 
 .de-device-options {
   display: flex;
-  flex: 0 0 260px;
-  align-items: center;
+  flex: 0 0 310px;
+  align-items: flex-start;
   gap: 8px;
-}
-
-.de-widget-options {
-  visibility: hidden;
 }
 
 @media (max-width: 1100px) {
@@ -1675,12 +1759,15 @@ body.dle-active {
 
 .de-option-field {
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  gap: 3px;
+  justify-content: flex-start;
+  gap: 2px;
   margin: 0;
   font-size: 11px;
-  color: #6c757d;
+  color: var(--text-muted);
   white-space: nowrap;
+  text-align: center;
 }
 
 .de-option-field input {
@@ -1715,16 +1802,7 @@ body.dle-active {
 
 /* Title blocks have no display options, so keep an invisible option column
  * to align Width, Title and Remove with the other Device Editor rows. */
-.de-special-options-spacer {
-  visibility: hidden;
-  pointer-events: none;
-}
-
 @media (max-width: 767.98px) {
-  .de-special-options-spacer {
-    display: none;
-  }
-
   .de-special-item .de-width-wrap {
     margin-left: auto;
   }
@@ -1732,7 +1810,7 @@ body.dle-active {
 
 .de-empty {
   font-size: 13px;
-  color: #6c757d;
+  color: var(--text-muted);
   font-style: italic;
   padding: 4px 0;
 }
@@ -1828,7 +1906,7 @@ body.dle-active {
 
 .we-widget-description {
   min-height: 42px;
-  color: #6c757d;
+  color: var(--text-muted);
   font-size: 13px;
   line-height: 1.35;
 }
@@ -1837,7 +1915,7 @@ body.dle-active {
   position: absolute;
   right: 14px;
   bottom: 10px;
-  color: #6c757d;
+  color: var(--text-muted);
   font-size: 12px;
   font-weight: 600;
 }
@@ -1856,7 +1934,7 @@ body.dle-active {
   width: 28px;
   height: 28px;
   padding: 0;
-  color: #6c757d;
+  color: var(--text-muted);
   background: transparent;
   border: 1px solid transparent;
   border-radius: 6px;
@@ -1964,7 +2042,7 @@ a.playlist {
   margin-top: -4px;
   padding: 3px;
   padding-left: 4px;
-  color: #fff;
+  color: var(--text-light);
 }
 
 .containsspotify .fas {
@@ -1978,15 +2056,15 @@ a.playlist {
 .containsspotify select.devices {
   width: 100%;
   max-width: 100%;
-  color: #fff !important;
+  color: var(--text-light) !important;
   background-color: transparent;
   border: 0px;
   padding-left: 0px;
 }
 
 .containsspotify select.devices option {
-  color: #fff !important;
-  background-color: #292b2c;
+  color: var(--text-light) !important;
+  background-color: var(--selector-bg);
 }
 
 .spotback {
@@ -1994,7 +2072,7 @@ a.playlist {
 }
 
 .spottrack {
-  background-color: #fff;
+  background-color: var(--text-light);
   width: 93%;
   border: 1px solid #ccc;
   height: 60px;
@@ -2002,7 +2080,7 @@ a.playlist {
 }
 
 .spotlist {
-  background-color: #fff;
+  background-color: var(--text-light);
   width: 93%;
   border: 1px solid #ccc;
   margin: 5px;
@@ -2030,7 +2108,7 @@ a.playlist {
 .update {
   background: rgba(0, 0, 0, 0.6);
   border-radius: 0px;
-  color: #fff;
+  color: var(--text-light);
   bottom: 0;
   font-weight: bold;
   right: 0;
@@ -2040,8 +2118,8 @@ a.playlist {
 }
 
 .editmode {
-  color: white;
-  background-color: red;
+  color: var(--text-light);
+  background-color: var(--warning-red);
   bottom: 0;
   font-weight: bold;
   right: 0;
@@ -2052,7 +2130,7 @@ a.playlist {
 
 .mh .btn-number {
   opacity: 0.5;
-  color: white;
+  color: var(--text-light);
   background-color: rgb(34, 34, 34);
   border-radius: 0px;
   padding: 5px 5px 5px 5px;
@@ -2152,7 +2230,7 @@ a.playlist {
 }
 
 .btn-number:hover {
-  color: black;
+  color: var(--text-dark);
   background: rgba(255, 255, 255, 0.3) none repeat scroll 0 0 padding-box;
 }
 
@@ -2250,8 +2328,8 @@ a.playlist {
 
 /*
 .modal.openpopup .frameclose {
-  background-color: #fff;
-  color: black;
+  background-color: var(--text-light);
+  color: var(--text-dark);
   margin: 5px;
 }
 */
@@ -2330,7 +2408,7 @@ body {
 }
 
 hr {
-  border-color: #fff;
+  border-color: var(--text-light);
   border-width: 2px;
   max-width: 100%;
   opacity: 0.5;
@@ -2340,7 +2418,7 @@ hr {
 
 .standby .swiper-slide:not(.screenstandby) {
   background-image: none !important;
-  background-color: #313131;
+  background-color: var(--home-bg);
 }
 
 .standby .screenstandby {
@@ -2355,7 +2433,7 @@ hr {
   max-height: 100vh;
   max-height: 100dvh;
   overflow: hidden;
-  background-color: #313131;
+  background-color: var(--home-bg);
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
@@ -2372,7 +2450,7 @@ body.standby-edit .screenstandby.dle-grid-screen-editing {
 .standby .screenstandby .fas.fa-small,
 .standby .screenstandby .fab,
 .standby .screenstandby .fab.fa-small {
-  color: #fff !important;
+  color: var(--text-light) !important;
 }
 
 .standby .row {
@@ -2387,7 +2465,7 @@ a {
   -webkit-transition: all 0.35s;
   -moz-transition: all 0.35s;
   transition: all 0.35s;
-  color: #f05f40;
+  color: var(--button-active);
 }
 
 div.morris-hover-point {
@@ -2601,7 +2679,7 @@ p {
  * Block mount wrappers (#block_N) are only organizational for Dashticz's
  * mount/unsubscribe bookkeeping. As normal block boxes they each span the
  * full column width, so a tall floated tile (e.g. APC UPS) pushes the next
- * wrapper down and leaves a gap under the shorter neighbour (e.g. Afval → BMW).
+ * wrapper down and leaves a gap under the shorter neighbour (e.g. Afval ? BMW).
  *
  * display: contents makes the floated .mh.col-xs-* tiles participate in the
  * column's own float context, so the next short tile can rise beside the tall
@@ -2625,13 +2703,13 @@ p {
 .transbg {
   padding-top: 15px;
   padding-bottom: 15px;
-  border: 7px solid rgba(255, 255, 255, 0);
-  background: rgba(0, 0, 0, 0.2);
+  border: var(--block-gap) solid var(--border-color-block);
+  background: var(--main-bg);
   background-clip: padding-box;
 }
 
 .transbg.dark {
-  background: rgba(0, 0, 0, 0.5);
+  background: var(--main-bg-dark);
 }
 
 .dt_block.popup {
@@ -2662,7 +2740,7 @@ Only add this hover on NON touch devices
   html.non-touch .hover:hover{
     background: rgba(255, 255, 255, 0.1);
     background-clip: padding-box;
-    border: 7px solid rgba(255, 255, 255, 0);
+    border: var(--block-gap) solid var(--border-color-block);
   }
 
   html.non-touch .dial.hover:hover {
@@ -2679,7 +2757,7 @@ Only add this hover on NON touch devices
 .transbg.hover.hovered {
   background: rgba(255, 255, 255, 0.1);
   background-clip: padding-box;
-  border: 7px solid rgba(255, 255, 255, 0);
+  border: var(--block-gap) solid var(--border-color-block);
   cursor: pointer;
 }
 
@@ -2823,7 +2901,7 @@ html .ui-button.ui-state-disabled:active {
 }
 
 .navbar-default {
-  background-color: white;
+  background-color: var(--text-light);
   border-color: rgba(34, 34, 34, 0.05);
   font-family: 'Open Sans', 'Helvetica Neue', Arial, sans-serif;
   -webkit-transition: all 0.35s;
@@ -2832,7 +2910,7 @@ html .ui-button.ui-state-disabled:active {
 }
 
 .navbar-default .navbar-header .navbar-brand {
-  color: #f05f40;
+  color: var(--button-active);
   font-family: 'Open Sans', 'Helvetica Neue', Arial, sans-serif;
   font-weight: 700;
   text-transform: uppercase;
@@ -2846,7 +2924,7 @@ html .ui-button.ui-state-disabled:active {
 .navbar-default .navbar-header .navbar-toggle {
   font-weight: 700;
   font-size: 12px;
-  color: #222222;
+  color: var(--text-dark);
   text-transform: uppercase;
 }
 
@@ -2855,17 +2933,17 @@ html .ui-button.ui-state-disabled:active {
   text-transform: uppercase;
   font-weight: 700;
   font-size: 13px;
-  color: #222222;
+  color: var(--text-dark);
 }
 
 .navbar-default .nav>li>a:hover,
 .navbar-default .nav>li>a:focus:hover {
-  color: #f05f40;
+  color: var(--button-active);
 }
 
 .navbar-default .nav>li.active>a,
 .navbar-default .nav>li.active>a:focus {
-  color: #f05f40 !important;
+  color: var(--button-active) !important;
   background-color: transparent;
 }
 
@@ -2884,7 +2962,7 @@ html .ui-button.ui-state-disabled:active {
   }
   .navbar-default .navbar-header .navbar-brand:hover,
   .navbar-default .navbar-header .navbar-brand:focus {
-    color: white;
+    color: var(--text-light);
   }
   .navbar-default .nav>li>a,
   .navbar-default .nav>li>a:focus {
@@ -2892,14 +2970,14 @@ html .ui-button.ui-state-disabled:active {
   }
   .navbar-default .nav>li>a:hover,
   .navbar-default .nav>li>a:focus:hover {
-    color: white;
+    color: var(--text-light);
   }
   .navbar-default.affix {
-    background-color: white;
+    background-color: var(--text-light);
     border-color: rgba(34, 34, 34, 0.05);
   }
   .navbar-default.affix .navbar-header .navbar-brand {
-    color: #f05f40;
+    color: var(--button-active);
     font-size: 14px;
   }
   .navbar-default.affix .navbar-header .navbar-brand:hover,
@@ -2908,11 +2986,11 @@ html .ui-button.ui-state-disabled:active {
   }
   .navbar-default.affix .nav>li>a,
   .navbar-default.affix .nav>li>a:focus {
-    color: #222222;
+    color: var(--text-dark);
   }
   .navbar-default.affix .nav>li>a:hover,
   .navbar-default.affix .nav>li>a:focus:hover {
-    color: #f05f40;
+    color: var(--button-active);
   }
 }
 
@@ -3032,7 +3110,7 @@ div.screen {
   background-size: cover;
   -o-background-size: cover;
   background-position: center;
-  color: white;
+  color: var(--text-light);
 }
 
 
@@ -3041,7 +3119,7 @@ div.screen {
 }
 
 .text-primary {
-  color: #f05f40;
+  color: var(--button-active);
 }
 
 .no-gutter>[class*='col-'] {
@@ -3050,9 +3128,9 @@ div.screen {
 }
 
 .btn-default {
-  color: #222222;
-  background-color: white;
-  border-color: white;
+  color: var(--text-dark);
+  background-color: var(--text-light);
+  border-color: var(--text-light);
   -webkit-transition: all 0.35s;
   -moz-transition: all 0.35s;
   transition: all 0.35s;
@@ -3064,7 +3142,7 @@ div.screen {
 .btn-default:active,
 .btn-default.active,
 .open>.dropdown-toggle.btn-default {
-  color: #222222;
+  color: var(--text-dark);
   background-color: #f2f2f2;
   border-color: #ededed;
 }
@@ -3093,19 +3171,19 @@ fieldset[disabled] .btn-default:active,
 .btn-default.disabled.active,
 .btn-default[disabled].active,
 fieldset[disabled] .btn-default.active {
-  background-color: white;
-  border-color: white;
+  background-color: var(--text-light);
+  border-color: var(--text-light);
 }
 
 .btn-default .badge {
-  color: white;
-  background-color: #222222;
+  color: var(--text-light);
+  background-color: var(--text-dark);
 }
 
 .btn-primary {
-  color: white;
-  background-color: #f05f40;
-  border-color: #f05f40;
+  color: var(--text-light);
+  background-color: var(--button-active);
+  border-color: var(--button-active);
   -webkit-transition: all 0.35s;
   -moz-transition: all 0.35s;
   transition: all 0.35s;
@@ -3117,7 +3195,7 @@ fieldset[disabled] .btn-default.active {
 .btn-primary:active,
 .btn-primary.active,
 .open>.dropdown-toggle.btn-primary {
-  color: white;
+  color: var(--text-light);
   background-color: #ee4b28;
   border-color: #ed431f;
 }
@@ -3146,13 +3224,13 @@ fieldset[disabled] .btn-primary:active,
 .btn-primary.disabled.active,
 .btn-primary[disabled].active,
 fieldset[disabled] .btn-primary.active {
-  background-color: #f05f40;
-  border-color: #f05f40;
+  background-color: var(--button-active);
+  border-color: var(--button-active);
 }
 
 .btn-primary .badge {
-  color: #f05f40;
-  background-color: white;
+  color: var(--button-active);
+  background-color: var(--text-light);
 }
 
 .btn {
@@ -3260,37 +3338,37 @@ fieldset[disabled] .btn-primary.active {
 }
 
 ::-moz-selection {
-  color: white;
+  color: var(--text-light);
   text-shadow: none;
-  background: #222222;
+  background: var(--text-dark);
 }
 
 ::selection {
-  color: white;
+  color: var(--text-light);
   text-shadow: none;
-  background: #222222;
+  background: var(--text-dark);
 }
 
 img::selection {
-  color: white;
+  color: var(--text-light);
   background: transparent;
 }
 
 img::-moz-selection {
-  color: white;
+  color: var(--text-light);
   background: transparent;
 }
 
 body {
-  webkit-tap-highlight-color: #222222;
+  webkit-tap-highlight-color: var(--text-dark);
 }
 
 #latetrain {
-  color: red;
+  color: var(--warning-red);
 }
 
 #notlatetrain {
-  color: green;
+  color: var(--success-green);
 }
 
 #departureScheduled {
@@ -3316,13 +3394,13 @@ a:not([href]) {
 .select {
   background: transparent;
   border: 0;
-  color: white !important;
+  color: var(--text-light) !important;
 }
 
 .select option {
   border: 0;
-  color: white !important;
-  background-color: #222222;
+  color: var(--text-light) !important;
+  background-color: var(--text-dark);
 }
 
 .hide {
@@ -3335,7 +3413,7 @@ a:not([href]) {
 .hr_thin {
   height: 0.8px;
   border: none;
-  background-color: #fff;
+  background-color: var(--text-light);
   opacity: 0.2;
   margin-bottom: 0.5rem !important;
   margin-top: 0.5rem !important;
@@ -3382,7 +3460,7 @@ a:not([href]) {
   text-overflow: ellipsis;
   text-align: left;
   font-size: 14px;
-  color: #fff;
+  color: var(--text-light);
   padding-left: 0px;
   display: inline-flex;
   justify-content: center;
@@ -3442,8 +3520,8 @@ canvas {
 .chartjs-tooltip {
   opacity: 1;
   position: absolute;
-  background: rgba(0, 0, 0, 0.8);
-  color: white;
+  background: var(--main-bg-strong);
+  color: var(--text-light);
   border-radius: 10px;
   -webkit-transition: all 0.1s ease;
   transition: all 0.1s ease;
@@ -3471,7 +3549,7 @@ canvas {
 .chartjs-tooltip.bottom:before {
   border: solid;
   border-color: #111 transparent;
-  border-color: rgba(0, 0, 0, 0.8) transparent;
+  border-color: var(--main-bg-strong) transparent;
   border-width: 16px 8px 0 8px;
   content: '';
   display: block;
@@ -3586,7 +3664,7 @@ canvas {
 }
 
 .graph-menu {
-  color: white;
+  color: var(--text-light);
 }
 
 .graphbuttons .dropdown-menu {
@@ -3688,7 +3766,7 @@ canvas {
 
 .graph-menu .btn.debug {
   color: #222;
-  background-color: white;
+  background-color: var(--text-light);
 }
 
 
@@ -3727,7 +3805,7 @@ canvas {
   position: fixed;
   left: 0;
   bottom: 0;
-  color: white;
+  color: var(--text-light);
   text-align: center;
   z-index: 31;
 }
@@ -3783,7 +3861,7 @@ canvas {
 
 .cam-container .handle:hover i {
   font-size: 2.5vh;
-  color: white;
+  color: var(--text-light);
 }
 
 @-webkit-keyframes pulse {
@@ -3842,7 +3920,7 @@ canvas {
 
 .cam-container .cam-caption {
   position: absolute;
-  color: #fff;
+  color: var(--text-light);
   text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
   z-index: 30;
   right: 3%;
@@ -3960,9 +4038,9 @@ canvas {
   border-width: 1px;
   overflow: hidden;
   word-break: normal;
-  border-color: white;
-  color: white;
-  background-color: #292b2c;
+  border-color: var(--text-light);
+  color: var(--text-light);
+  background-color: var(--selector-bg);
   display: inline-table;
 }
 
@@ -3999,7 +4077,7 @@ canvas {
 .cal_table td>div.event:hover,
 .cal_table td>div.event.historic:hover>div {
   background-color: #f0ad4e;
-  color: #292b2c;
+  color: var(--selector-bg);
 }
 
 .cal_table td>div.allday {
@@ -4026,7 +4104,7 @@ canvas {
   position: absolute;
   width: 30%;
   height: 30%;
-  background-color: #292b2c;
+  background-color: var(--selector-bg);
   z-index: 100;
   top: 0;
   top: 50%;
@@ -4034,9 +4112,9 @@ canvas {
   margin-top: -10%;
   margin-left: -15%;
   padding: 1%;
-  box-shadow: 0px 20px 20px 20px rgba(0, 0, 0, 0.5);
-  color: white;
-  border: solid 2px #292b2c;
+  box-shadow: 0px 20px 20px 20px var(--main-bg-dark);
+  color: var(--text-light);
+  border: solid 2px var(--selector-bg);
   border-radius: 5px;
 }
 
@@ -4135,7 +4213,7 @@ canvas {
   justify-content: center;
   height: inherit;
   color: #bebebe;
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: var(--main-bg);
 }
 
 .sec-modal .sec-frame {
@@ -4239,7 +4317,7 @@ canvas {
 }
 
 .sec-frame.decorated .keypad-input .input-container {
-  box-shadow: 0px 2px 9px 1px rgba(0, 0, 0, 0.8);
+  box-shadow: 0px 2px 9px 1px var(--main-bg-strong);
 }
 
 .sec-frame .keypad-input .key-input {
@@ -4248,7 +4326,7 @@ canvas {
   border-radius: 3px;
   background-color: #161616;
   border: 0;
-  box-shadow: inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5), inset 0px 0px 15px 5px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5), inset 0px 0px 15px 5px var(--main-bg-strong);
   color: #8fffd0;
   font-family: monospace;
   text-align: center;
@@ -4346,7 +4424,7 @@ canvas {
   font-weight: 900;
   font-size: 100%;
   color: rgba(130, 130, 130, 0.8);
-  text-shadow: -1px -1px 1px rgba(0, 0, 0, 0.8), 0 0 0 #000, 1px 1px 3px rgba(255, 255, 255, 0.7);
+  text-shadow: -1px -1px 1px var(--main-bg-strong), 0 0 0 #000, 1px 1px 3px rgba(255, 255, 255, 0.7);
 }
 
 .sec-frame .keypad-input .status[data-id='disarm']:before {
@@ -4395,7 +4473,7 @@ canvas {
   filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#adadad', endColorstr='#f6f6f6', GradientType=1);
   -moz-box-shadow: 0px 2px 4px #000;
   -webkit-box-shadow: 0px 2px 4px #000;
-  box-shadow: 0px 2px 4px #000, -1px 3px 10px 7px rgba(0, 0, 0, 0.5);
+  box-shadow: 0px 2px 4px #000, -1px 3px 10px 7px var(--main-bg-dark);
   border: 1px solid rgba(255, 255, 255, 0.1);
   background-image: -webkit-radial-gradient( 50% 0%, 8% 50%, hsla(0, 0%, 100%, 0.5) 0%, hsla(0, 0%, 100%, 0) 100%), -webkit-radial-gradient(50% 100%, 12% 50%, hsla(0, 0%, 100%, 0.6) 0%, hsla( 0, 0%, 100%, 0) 100%), -webkit-radial-gradient(0% 50%, 50% 7%, hsla(0, 0%, 100%, 0.5) 0%, hsla( 0, 0%, 100%, 0) 100%), -webkit-radial-gradient(100% 50%, 50% 5%, hsla(0, 0%, 100%, 0.5) 0%, hsla( 0, 0%, 100%, 0) 100%), -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 0%, 0) 0%, hsla( 0, 0%, 0%, 0) 3%, hsla(0, 0%, 0%, 0.1) 3.5%), -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 100%, 0) 0%, hsla(0, 0%, 100%, 0) 6%, hsla(0, 0%, 100%, 0.1) 7.5%), -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 100%, 0) 0%, hsla(0, 0%, 100%, 0) 1.2%, hsla(0, 0%, 100%, 0.2) 2.2%), -webkit-radial-gradient(50% 50%, 200% 50%, hsla(0, 0%, 90%, 1) 5%, hsla( 0, 0%, 85%, 1) 30%, hsla(0, 0%, 60%, 1) 100%);
   opacity: 0.5;
@@ -4435,7 +4513,7 @@ canvas {
 }
 
 .sec-frame td .status.key.disabled {
-  background-color: #313131 !important;
+  background-color: var(--home-bg) !important;
   cursor: not-allowed;
 }
 
@@ -4715,7 +4793,7 @@ canvas {
   justify-content: center;
   border-radius: 50%;
   background: radial-gradient(circle, #333, #444);
-  box-shadow: inset 0 0 3px 0px rgba(0, 0, 0, 0.5), 0 0 11px 0px rgba(0, 0, 0, 0.8);
+  box-shadow: inset 0 0 3px 0px var(--main-bg-dark), 0 0 11px 0px var(--main-bg-strong);
   -webkit-transition: all 0.2s ease-in;
   -moz-transition: all 0.2s ease-in;
   -o-transition: all 0.2s ease-in;
@@ -4773,7 +4851,7 @@ canvas {
     top: 5%;
     left:5%;
     border-radius: 50%;
-    box-shadow: inset 0px 0.5px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 2px rgba(255, 255, 255, 0.5), inset 0px 5px 8px 5px rgba(0, 0, 0, 0.8);
+    box-shadow: inset 0px 0.5px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 2px rgba(255, 255, 255, 0.5), inset 0px 5px 8px 5px var(--main-bg-strong);
     background-color: #2a2a2a;  
     overflow:hidden;
 }
@@ -4797,9 +4875,9 @@ canvas {
 .dial-menu .status li.selected {
   background: linear-gradient( to right, black 0%, #29261f 8%, var(--dial-color) 50%, #29261f 92%, black 100%);
   color: #393939;
-  -moz-box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.5);
-  -webkit-box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.5);
-  box-shadow: 5px 0px 15px rgba(0, 0, 0, 0.5);
+  -moz-box-shadow: 5px 0px 15px var(--main-bg-dark);
+  -webkit-box-shadow: 5px 0px 15px var(--main-bg-dark);
+  box-shadow: 5px 0px 15px var(--main-bg-dark);
 }
 
 .dial-menu-title {
@@ -4857,9 +4935,9 @@ canvas {
   height: 100%;
   border-radius: 50%;
   background: linear-gradient(0deg, #181818, #444, #4b4b4b);
-  -webkit-box-shadow: inset 0px 0px 20px 5px rgba(0, 0, 0, 0.5);
-  -moz-box-shadow: inset 0px 0px 20px 5px rgba(0, 0, 0, 0.5);
-  box-shadow: inset 0px 0px 20px 5px rgba(0, 0, 0, 0.5);
+  -webkit-box-shadow: inset 0px 0px 20px 5px var(--main-bg-dark);
+  -moz-box-shadow: inset 0px 0px 20px 5px var(--main-bg-dark);
+  box-shadow: inset 0px 0px 20px 5px var(--main-bg-dark);
 }
 
 .dial .dial-needle {
@@ -5539,13 +5617,13 @@ canvas {
   height: calc(100% - 0.4rem);
   border-radius: 50%;
   border: 0.2rem;
-  border-color: black;
+  border-color: var(--text-dark);
   border-style: outset;
   width: calc(100% - 0.4rem);
 
   font-size: 100%;
-  background-color: green;
-  color: white;
+  background-color: var(--success-green);
+  color: var(--text-light);
   cursor: pointer;
   outline: none;
   transition: 0.2s all;
@@ -5609,7 +5687,7 @@ canvas {
 }
 
 .dialbtn.middle {
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: var(--main-bg);
   align-items: center;
   clip: rect(2.8em, 10em, 5.7em, 0px);
   display: flex;
@@ -5659,7 +5737,7 @@ canvas {
 
 .colorpicker {
   /*
-  color: black;
+  color: var(--text-dark);
   max-width: 90%;
   min-width: unset;
   width: 100%;*/
@@ -5681,7 +5759,7 @@ canvas {
 
 .colorpicker .modal-content {
   position: relative;
-  background-color: white;
+  background-color: var(--text-light);
 }
 
 .colorpicker .cp-iro {
@@ -5702,7 +5780,7 @@ canvas {
 }
 
 .colorpicker .cp-buttonsOnOff {
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: var(--main-bg);
 }
 
 .colorpicker .cp-buttonsOnOff .btn {
@@ -5718,10 +5796,10 @@ canvas {
 .colorpicker .cp-buttonsOnOff .btn.active {
   /*  background-color: rgba(0,0,0,0.4)*/
   border-style: solid;
-  border-color: black;
+  border-color: var(--text-dark);
   border-width: medium;
   background-color: gray;
-  color: white;
+  color: var(--text-light);
   /*width: 48px;*/
 }
 
@@ -5760,7 +5838,7 @@ canvas {
 }
 
 .battery-level.fa-battery-empty {
-  color:red;
+  color:var(--warning-red);
   z-index: 15;
 }
 
@@ -5854,7 +5932,7 @@ canvas {
 
 /*debug*/
 .debug ::selection {
-  color:white;
+  color:var(--text-light);
   text-shadow: none;
   background: blue;
 }
@@ -5903,7 +5981,7 @@ canvas {
 .debug #debug-save {
   right: 4em;
   position: absolute;
-  background: green;
+  background: var(--success-green);
 }
 
 .modal-dialog-custom .tab-content {
@@ -5946,8 +6024,8 @@ canvas {
 }
 
 .publictransport .delay {
-  background-color: red;
-  color: white;
+  background-color: var(--warning-red);
+  color: var(--text-light);
 }
 
 .waqi {
@@ -5982,4 +6060,88 @@ canvas {
 .publictransport .remarks
 {
   font-style: italic;
+}
+
+/* ==========================================================================\n   Theme settings compatibility\n   Connects the settings-panel variables to Creative's existing selectors.\n   Default values in :root preserve the original Creative appearance.\n   ========================================================================== */
+
+/* Page / panel backgrounds */
+.transbg,
+.dt_block {
+  background-color: var(--main-bg);
+}
+
+.standby .swiper-slide:not(.screenstandby),
+.standby .screenstandby {
+  background-color: var(--home-bg);
+}
+
+/* Block borders and titles */
+.transbg {
+  border-color: var(--border-color-block);
+}
+
+.blocktitle,
+.transbg.blocktitle {
+  background-color: var(--blocktitle);
+}
+
+/* Interactive controls */
+.transbg .btn,
+.mh .btn-number {
+  color: var(--text-inactive);
+  border-color: var(--border-color-inactive) !important;
+  background-color: var(--button-bg) !important;
+}
+
+.transbg .btn:hover,
+.transbg .btn:focus,
+.mh .btn-number:hover,
+.mh .btn-number:focus {
+  color: var(--text-normal) !important;
+  background-color: var(--button-hover) !important;
+}
+
+.transbg .btn.active,
+.transbg .btn:active,
+.transbg .btn[aria-pressed='true'],
+.mh .btn-number.active,
+.mh .btn-number:active {
+  color: var(--text-normal) !important;
+  border-color: var(--border-color-active) !important;
+  background-color: var(--button-active) !important;
+}
+
+/* Select controls */
+.transbg select,
+.transbg select option {
+  color: var(--text-normal) !important;
+  border-color: var(--border-color-inactive) !important;
+  background-color: var(--selector-bg) !important;
+}
+
+.transbg select:focus,
+.transbg select:active {
+  border-color: var(--border-color-active) !important;
+}
+
+/* Text and font-size settings */
+.blocktitle .dt_title,
+.miniclock {
+  color: var(--text-light) !important;
+  font-size: var(--font-large) !important;
+}
+
+.title {
+  color: var(--text-title) !important;
+}
+
+.state,
+.value {
+  color: var(--text-status) !important;
+}
+
+.title,
+.state,
+.value {
+  font-size: var(--font-small) !important;
 }
