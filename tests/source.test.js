@@ -214,7 +214,9 @@ test('settings and widget UI use JSON translations with an English base', () => 
   }
   assert.match(layoutEditor, /language\.settings\.layouteditor/);
   assert.match(deviceEditor, /language\.settings\.deviceeditor/);
-  assert.match(simpleBlock, /language\.settings\.config_mode\.confirm_wizard/);
+  assert.match(simpleBlock, /function _showConfigModeWarning\(mode, onContinue\)/);
+  assert.match(simpleBlock, /labels\.confirm_wizard/);
+  assert.match(simpleBlock, /labels\.confirm_custom/);
 });
 
 test('built-in widget titles use the active language', () => {
@@ -408,6 +410,11 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(editor, /function _moveDraggedItem/);
   assert.match(editor, /function _removeItem/);
   assert.match(editor, /dle-remove-button/);
+  assert.match(editor, /dle-config-button/);
+  assert.match(editor, /function _openItemConfig/);
+  assert.match(editor, /DashticzDeviceEditor\.openConfig\(item\.reference\)/);
+  assert.match(editor, /DashticzWidgetEditor\.openLayoutConfig\(item\.widgetId\)/);
+  assert.match(deviceEditor, /function openConfig\(reference\)/);
   assert.match(
     domoticzBlock,
     /document\.body\.classList\.contains\('dle-active'\)\) return;/
@@ -430,13 +437,16 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(editor, /function _emptyGridConversion/);
   assert.match(editor, /var allowEmpty = targetMode === 'wizard'/);
   assert.match(editor, /if \(allowEmpty\) return _emptyGridConversion\(screenNumber\)/);
+  assert.match(editor, /convertCurrentScreenToGrid\(false, 'wizard'\)/);
+  assert.match(editor, /if \(gridCollectionError\) \{/);
+  assert.doesNotMatch(editor, /gridCollectionError \|\| !items\.length/);
   assert.match(editor, /function _firstFreeGridPosition/);
   assert.match(editor, /function _moveGridItem/);
   assert.match(editor, /function _resizeGridItem/);
   assert.match(editor, /function _saveGrid/);
   assert.match(editor, /--dt-grid-x/);
   assert.match(editor, /--dt-grid-h/);
-  assert.match(simpleBlock, /language\.settings\.config_mode\.confirm_wizard/);
+  assert.match(simpleBlock, /_showConfigModeWarning\(mode, function \(\)/);
   assert.match(
     simpleBlock,
     /convertCurrentScreenToGrid\(\s*true,\s*'wizard'/
@@ -455,6 +465,7 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(stylesheet, /\.dle-item-wrapper \{\s*display: contents/);
   assert.match(stylesheet, /\.dle-item-wrapper > \.dle-block/);
   assert.match(stylesheet, /\.dle-remove-button/);
+  assert.match(stylesheet, /\.dle-config-button/);
   assert.match(stylesheet, /background: #dc3545/);
   assert.match(stylesheet, /\.dle-size-label \{[\s\S]*bottom: 4px/);
   assert.match(
@@ -493,86 +504,195 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(blocksSource, /Object\.defineProperty\(block, 'title',[\s\S]*value: device\.Name[\s\S]*enumerable: false/);
 });
 
-test('device editor supports translated dummy and title blocks', () => {
-  const editor = fs.readFileSync(
-    path.join(root, 'js/deviceeditor.js'),
-    'utf8'
-  );
-  const writer = fs.readFileSync(
-    path.join(root, 'js/configwriter.php'),
-    'utf8'
-  );
-  const styles = fs.readFileSync(
-    path.join(root, 'css/creative.css'),
-    'utf8'
-  );
+test('screen editor add menu exposes device, widget, custom-device and separator workflows', () => {
+  const simpleBlock = fs.readFileSync(path.join(root, 'js/components/simpleblock.js'), 'utf8');
+  const screenSwitcher = fs.readFileSync(path.join(root, 'js/screenswitcher.js'), 'utf8');
+  const editor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const writer = fs.readFileSync(path.join(root, 'js/configwriter.php'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
 
-  assert.match(editor, /value="__dummy__"/);
-  assert.match(editor, /value="__title__"/);
-  assert.match(editor, />------<\/option>/);
-  assert.match(editor, /placeholder: t\.enter_idx/);
-  assert.match(editor, /placeholder: t\.enter_title/);
-  assert.match(editor, /'dummyblock_'/);
-  assert.match(editor, /'Title_'/);
+  assert.match(simpleBlock, /screeneditoraddicon d-none/);
+  assert.match(simpleBlock, /fas fa-wand-magic-sparkles/);
+  assert.match(simpleBlock, /action: 'device'/);
+  assert.match(simpleBlock, /label: t\.add_device/);
+  assert.doesNotMatch(simpleBlock, /fas fa-magic/);
+  assert.match(simpleBlock, /action: 'widgets'/);
+  assert.match(simpleBlock, /action: 'custom'/);
+  assert.match(simpleBlock, /action: 'separator'/);
+  assert.match(simpleBlock, /DashticzWidgetEditor\.open\(\)/);
+  assert.match(simpleBlock, /DashticzDeviceEditor\.openCustom\(\)/);
+  assert.match(simpleBlock, /DashticzDeviceEditor\.addSeparator\(\)/);
+  assert.match(simpleBlock, /var selectedAction = ''/);
+  assert.match(simpleBlock, /\$popup\.find\('\.dt-screeneditor-add-tile'\)\.prop\('disabled', true\)/);
+  assert.match(simpleBlock, /hasClass\('dle-active'\)/);
+  assert.match(screenSwitcher, /screeneditoraddicon d-none/);
+  assert.match(screenSwitcher, /fas fa-wand-magic-sparkles/);
+  assert.match(styles, /\.dt-screeneditor-add-grid/);
+  assert.match(styles, /min-width: 100px/);
+  assert.match(styles, /min-height: 100px/);
+  // Layout controls must stay below Bootstrap modals so they cannot cover or
+  // intercept clicks on Widget Editor buttons such as Save.
+  assert.match(styles, /\.dle-toolbar\s*\{[\s\S]*z-index:\s*1040;/);
+  assert.match(styles, /\.dle-drag-ghost\s*\{[\s\S]*z-index:\s*1045;/);
+  assert.doesNotMatch(styles, /\.dle-toolbar\s*\{[\s\S]*z-index:\s*20000;/);
+
+  assert.match(editor, /function openCustom\(\)/);
+  assert.match(editor, /function addSeparator\(\)/);
+  assert.match(editor, /specialType: 'title'[\s\S]*width: 12/);
+  assert.match(editor, /function _showCustomDevicePopup\(\)/);
+  assert.match(editor, /id=\"cd-device-name\"/);
+  assert.match(editor, /id=\"cd-device-idx\"/);
+  assert.match(editor, /field: 'title'/);
+  assert.match(editor, /field: 'icon'/);
+  assert.match(editor, /field: 'values'/);
+  assert.match(editor, /cd-custom-field-add/);
+  assert.match(editor, /\$rows\.last\(\)\.find\('\.cd-custom-field-add'\)\.removeClass\('d-none'\)/);
+  assert.match(editor, /specialType: 'custom'/);
   assert.match(editor, /kind: special\.specialType/);
-  assert.match(editor, /language\.settings\.deviceeditor/);
+  const normalAddStart = editor.indexOf('function _addRowHtml(deviceList)');
+  const specialAddStart = editor.indexOf('function _specialAddRowHtml(kind)');
+  const normalAddSource = editor.slice(normalAddStart, specialAddStart);
+  assert.doesNotMatch(normalAddSource, /__dummy__/);
+  assert.doesNotMatch(normalAddSource, /__title__/);
   assert.match(writer, /function configwriter_special_block_props/);
   assert.match(writer, /'type' => 'blocktitle'/);
-  assert.match(writer, /\$props\['hide_data'\] = !empty\(\$block\['hide_data'\]\)/);
-  assert.match(writer, /\$props\['last_update'\] = !empty\(\$block\['last_update'\]\)/);
-  assert.match(writer, /\$props\['switch'\] = !empty\(\$block\['switch'\]\)/);
-  assert.match(editor, /height: specialType === 'title' \? 120 : null/);
-  assert.match(editor, /de-device-identity de-special-identity/);
-  assert.match(styles, /\.de-option-field[\s\S]*flex-direction: column/);
-  assert.match(styles, /\.dt-hide-title \.dt_title/);
-  assert.match(editor, /class=\"form-control form-control-sm de-device-title\" maxlength=\"100\" data-order-key/);
-  assert.match(editor, /managedSpecials\[orderKey\]\.title = value/);
-  assert.match(editor, /show_title/);
-  assert.match(editor, /text_alignment/);
-  assert.match(editor, /de-title-toggle/);
-  assert.match(editor, /de-text-alignment/);
-  assert.match(editor, /align_left/);
-  assert.match(editor, /widgetTitleVisible\[orderKey\]/);
-  assert.match(editor, /deviceTitleVisible\[ck\]/);
-  assert.match(editor, /textAlignment: 'left'/);
-  assert.match(editor, /special\.options \|\|[\s\S]*icon: true, hide_data: true, last_update: false, switch: false/);
-  assert.match(editor, /managedSpecials\[orderKey\]\.options\[option\]/);
-  assert.match(editor, /specialEntry\.hide_data = specialOptions\.hide_data === true/);
-  assert.match(editor, /specialEntry\.last_update = specialOptions\.last_update === true/);
-  assert.match(editor, /specialEntry\.switch = specialOptions\.switch === true/);
-  assert.match(editor, /specialEntry\.hide_title = true/);
-  assert.match(editor, /entry\.hide_title = true/);
-  assert.match(editor, /entry\.text_alignment = textAlignment/);
-  assert.match(editor, /var TITLE_GRID_HEIGHT = 3/);
-  assert.match(editor, /isTitleBlock[\s\S]*\? TITLE_GRID_HEIGHT/);
-  assert.match(writer, /'height' =>[\s\S]*: 120/);
-  assert.match(
-    writer,
-    /'idx' => \(int\)\$block\['idx'\][\s\S]*'width' => \$width[\s\S]*'title' => \$title[\s\S]*\$props\['hide_data'\]/
-  );
-  assert.match(writer, /function configwriter_normalise_text_alignment/);
-  assert.match(writer, /\$props\['hide_title'\] = true/);
-  assert.match(writer, /\$props\['text_alignment'\] = \$textAlignment/);
-  assert.match(
-    fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8'),
-    /'hide_title' => !empty\(\$entry\['hide_title'\]\)/
-  );
-  assert.match(
-    fs.readFileSync(path.join(root, 'js/saveblocks.php'), 'utf8'),
-    /'text_alignment' => configwriter_normalise_text_alignment/
-  );
 
   for (const locale of ['en_US', 'nl_NL', 'fr_FR']) {
     const translations = JSON.parse(
       fs.readFileSync(path.join(root, 'lang', `${locale}.json`), 'utf8')
-    ).settings.deviceeditor;
-    assert.ok(translations.dummy_device, `${locale} dummy translation`);
-    assert.ok(translations.title_block, `${locale} title translation`);
-    assert.ok(translations.enter_idx, `${locale} IDX translation`);
-    assert.ok(translations.enter_title, `${locale} title-field translation`);
-    assert.ok(translations.show_title, `${locale} title toggle translation`);
-    assert.ok(translations.text_alignment, `${locale} alignment translation`);
+    );
+    assert.ok(translations.settings.deviceeditor.custom_devices, `${locale} custom devices translation`);
+    assert.ok(translations.settings.deviceeditor.custom_device_name, `${locale} custom device name translation`);
+    assert.ok(translations.settings.deviceeditor.custom_device_options, `${locale} custom device options translation`);
+    assert.ok(translations.settings.deviceeditor.separator, `${locale} separator translation`);
+    assert.ok(translations.settings.widgeteditor.add_menu_title, `${locale} add-menu translation`);
+    assert.ok(translations.settings.widgeteditor.add_device, `${locale} add-device translation`);
+    assert.ok(translations.settings.widgeteditor.devices, `${locale} devices tile translation`);
+    assert.ok(translations.settings.config_mode.warning_title, `${locale} mode-warning title translation`);
+    assert.ok(translations.settings.config_mode.confirm_wizard, `${locale} Wizard warning translation`);
+    assert.ok(translations.settings.config_mode.confirm_custom, `${locale} Custom warning translation`);
+    assert.ok(translations.settings.config_mode.cancel, `${locale} warning cancel translation`);
+    assert.ok(translations.settings.config_mode.continue, `${locale} warning continue translation`);
+    assert.ok(translations.settings.theme.custom_css_active, `${locale} custom-css status translation`);
+    assert.ok(translations.settings.layouteditor.configure_device, `${locale} configure-device translation`);
+    assert.ok(translations.settings.layouteditor.configure_widget, `${locale} configure-widget translation`);
+    assert.ok(translations.settings.widgeteditor.custom_devices, `${locale} custom-device tile translation`);
+    assert.ok(translations.settings.widgeteditor.separator, `${locale} separator tile translation`);
+    for (const key of [
+      'calendar_source', 'calendar_default_name', 'calendar_name',
+      'calendar_color', 'calendar_add', 'calendar_remove',
+      'calendar_name_required', 'calendar_duplicate_name',
+      'calendar_needs_source', 'invalid_calendar_url',
+    ]) {
+      assert.ok(translations.settings.widgeteditor[key], `${locale} ${key} translation`);
+    }
   }
+});
+
+test('device and widget config editors share full widget config and preserve hidden device fields', () => {
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const widgetEditor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+  const saveBlocks = fs.readFileSync(path.join(root, 'js/saveblocks.php'), 'utf8');
+  const configWriter = fs.readFileSync(path.join(root, 'js/configwriter.php'), 'utf8');
+  const layoutEditor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const blocksSource = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+  const simpleBlock = fs.readFileSync(path.join(root, 'js/components/simpleblock.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  // Alignment editor support is removed completely. Legacy property names remain
+  // reserved only so they cannot be reintroduced through custom fields.
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  assert.doesNotMatch(deviceEditor, /name="de-config-alignment"/);
+  assert.doesNotMatch(deviceEditor, /de-alignment-label/);
+  assert.doesNotMatch(deviceEditor, /js\/savecustomcss\.php/);
+  assert.doesNotMatch(styles, /dt-text-align-/);
+  assert.doesNotMatch(dashticz, /dt-text-align-/);
+  assert.doesNotMatch(configWriter, /configwriter_normalise_text_alignment/);
+  assert.doesNotMatch(configWriter, /\$props\['text_alignment'\]/);
+
+  // Device Config is exactly Icon/Data/Update, centered on one row.
+  assert.match(deviceEditor, /\['icon', 'hide_data', 'last_update'\]\.forEach/);
+  assert.match(deviceEditor, /option === 'hide_data' \? options\.hide_data !== true/);
+  assert.match(deviceEditor, /updated\[option\] = option === 'hide_data' \? !checked : checked/);
+  assert.match(widgetEditor, /options\.hide_data !== true/);
+  assert.match(widgetEditor, /hide_data: !\$cfgModal\.find\('\[data-block-option="hide_data"\]'\)\.is\(':checked'\)/);
+  assert.match(deviceEditor, /de-config-options-three/);
+  assert.match(styles, /\.de-config-options-three[\s\S]*grid-template-columns: repeat\(3/);
+  assert.match(styles, /\.de-config-options \.form-check-input[\s\S]*width: 32px;[\s\S]*height: 32px;/);
+  assert.match(deviceEditor, /icon: true, iconValue: null, hide_data: false, last_update: false/);
+  assert.match(styles, /\.we-block-option\.form-check-input[\s\S]*width: 32px;[\s\S]*height: 32px;/);
+
+  // Title is a system Field/Setting row and c is hidden while being preserved in the payload.
+  assert.match(deviceEditor, /field: 'title'[\s\S]*system: true/);
+  assert.match(deviceEditor, /Object\.prototype\.hasOwnProperty\.call\(definition, 'c'\)/);
+  assert.doesNotMatch(blocksSource, /block\.c = c/);
+  assert.match(blocksSource, /block\._dashticzColumn = c/);
+  assert.match(simpleBlock, /me\.block\._dashticzColumn === 'bar'/);
+  assert.match(deviceEditor, /preserved\.c = definition\.c/);
+  assert.match(deviceEditor, /field === 'title' \|\| field === 'icon' \|\| field === 'c'/);
+  assert.match(deviceEditor, /custom_fields = customFields/);
+  assert.match(widgetEditor, /preservedFields\.c = definition\.c/);
+  assert.match(widgetEditor, /entry\.custom_fields\[field\] = _encodeCustomSettingValue/);
+  assert.match(widgetEditor, /field: 'title'[\s\S]*system: true/);
+
+  // A custom icon is only applied through the top-level icon property while Icon is enabled.
+  assert.match(deviceEditor, /updated\.icon !== true/);
+  assert.match(deviceEditor, /t\.icon_requires_checkbox/);
+  assert.match(deviceEditor, /options\.iconValue/);
+  assert.match(deviceEditor, /entry\.icon = options\.iconValue/);
+  assert.match(deviceEditor, /specialEntry\.icon = specialOptions\.iconValue/);
+
+  // Widget gears opened from Device Editor use the complete Widget Editor modal/save model.
+  assert.match(deviceEditor, /DashticzWidgetEditor\.openConfig\(widget\.id/);
+  assert.match(widgetEditor, /function openConfig\(widgetId, options\)/);
+  assert.match(widgetEditor, /function _buildWidgetPayloadEntry\(item\)/);
+  assert.match(widgetEditor, /function _collectConfigSettings\(\)/);
+  assert.match(widgetEditor, /onApply/);
+  assert.match(widgetEditor, /openConfig: openConfig/);
+  assert.match(widgetEditor, /openLayoutConfig: openLayoutConfig/);
+  assert.match(widgetEditor, /_t\('widget_config', 'Widget Config'\)/);
+  assert.match(widgetEditor, /_widgetConfigDisplayName\(item\)/);
+  assert.match(deviceEditor, /_esc\(t\.device_config\) \+ ' — ' \+ _esc\(displayName\)/);
+
+  // Existing typed Field/Setting support remains in both editors and server validation stays active.
+  assert.match(widgetEditor, /we-custom-field-name/);
+  assert.match(widgetEditor, /we-custom-field-setting/);
+  assert.match(widgetEditor, /function _parseCustomSetting/);
+  assert.match(widgetEditor, /entry\.custom_fields/);
+  // Stale editor-managed properties must never be posted as custom widget fields.
+  assert.match(widgetEditor, /_isProtectedCustomWidgetProperty\(property\)/);
+  assert.match(widgetEditor, /!rawSetting \|\| _isProtectedCustomWidgetProperty\(lowerField\)/);
+  assert.match(deviceEditor, /de-custom-field-name/);
+  assert.match(deviceEditor, /de-custom-field-setting/);
+  assert.match(deviceEditor, /function _parseCustomSetting/);
+  assert.match(saveBlocks, /Invalid or reserved custom device field/);
+  assert.match(saveBlocks, /_validate_custom_device_value/);
+  assert.match(configWriter, /\$device\['custom_fields'\]/);
+
+  // Empty objects and arrays remain distinct across the JSON/PHP save boundary.
+  assert.match(deviceEditor, /__dashticz_empty_object__/);
+  assert.match(widgetEditor, /__dashticz_empty_object__/);
+  assert.match(configWriter, /function configwriter_restore_editor_value/);
+  assert.match(configWriter, /return new stdClass\(\)/);
+  assert.match(configWriter, /is_array\(\$value\) \|\| is_object\(\$value\)/);
+
+  // Existing and newly added separators use the same configuration control.
+  assert.match(layoutEditor, /kind: 'separator'/);
+  assert.match(layoutEditor, /item\.kind === 'separator'/);
+  assert.match(layoutEditor, /DashticzDeviceEditor\.openConfig\(item\.reference\)/);
+
+  // Any successfully loaded custom stylesheet is identified in the Theme panel.
+  assert.match(main, /data-dashticz-custom-css/);
+  assert.match(settings, /function bindThemeCustomCssNotice\(\)/);
+  assert.match(settings, /themeLabels\.custom_css_active/);
+  assert.match(styles, /\.settings-custom-css-notice[\s\S]*border: 2px solid #198754/);
+
+  // Screen Editor controls share one explicit button and icon size.
+  assert.match(styles, /\.dle-drag-icon,[\s\S]*\.dle-config-button[\s\S]*width: 32px;[\s\S]*height: 32px;/);
+  assert.match(styles, /\.dle-remove-button[\s\S]*width: 32px;[\s\S]*height: 32px;/);
+  assert.match(styles, /\.dle-remove-button \.fas[\s\S]*font-size: 16px !important/);
 });
 
 test('widget editor exposes the supported catalog and keeps legacy options out of settings UI', () => {
@@ -624,9 +744,10 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
     fs.readFileSync(path.join(root, 'lang/nl_NL.json'), 'utf8')
   );
 
-  assert.match(simpleBlock, /widgeteditoricon/);
-  assert.match(simpleBlock, /fas fa-puzzle-piece/);
-  assert.match(simpleBlock, /js\/widgeteditor\.js/);
+  assert.match(simpleBlock, /screeneditoraddicon/);
+  assert.match(simpleBlock, /fas fa-wand-magic-sparkles/);
+  assert.match(simpleBlock, /action: 'widgets'/);
+  assert.match(simpleBlock, /DT_function\.loadDTScript\('js\/widgeteditor\.js'\)/);
   assert.match(simpleBlock, /config-mode-btn/);
   assert.match(simpleBlock, /data-mode="custom"/);
   assert.match(simpleBlock, /data-mode="wizard"/);
@@ -634,6 +755,7 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(settings, /isCustomConfigMode/);
   assert.match(settings, /setConfigMode/);
   assert.match(settings, /config_mode: 'wizard'/);
+  assert.match(settings, /background_image: '\/img\/custom\/BG_Dashticz_bw\.png'/);
   for (const id of [
     'weather',
     'garbage',
@@ -667,13 +789,17 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(widgetEditor, /Flipclock/);
   assert.match(widgetEditor, /Hayman clock/);
   assert.match(widgetEditor, /Miniclock/);
-  assert.match(widgetEditor, /we-cfg-calendar-url/);
+  assert.match(widgetEditor, /id="we-cfg-calendar-list"/);
+  assert.match(widgetEditor, /id="we-calendar-add"/);
+  assert.match(widgetEditor, /class="we-calendar-row/);
   assert.match(widgetEditor, /we-cfg-clock-type/);
   assert.match(widgetEditor, /id="we-camera-add"/);
   assert.match(widgetEditor, /class="we-camera-row/);
   assert.match(widgetEditor, /weather:\s*\{[\s\S]*provider:/);
   assert.match(widgetEditor, /clock:\s*\{[\s\S]*clockType:\s*'basicclock'/);
-  assert.match(widgetEditor, /calendar:\s*\{[\s\S]*icalurl:\s*''/);
+  assert.match(widgetEditor, /calendar:\s*\{[\s\S]*sources:\s*\[_defaultCalendarSource\(0\)\]/);
+  assert.match(widgetEditor, /function _normaliseCalendarSources/);
+  assert.match(widgetEditor, /function _calendarSourcesObject/);
   assert.match(widgetEditor, /publictransport:\s*\{[\s\S]*provider:\s*'treinen'[\s\S]*station:\s*'UT'/);
   assert.match(widgetEditor, /alarmmeldingen:\s*\{[\s\S]*rss:\s*'https:\/\/www\.alarmeringen\.nl\/feeds\/all\.rss'[\s\S]*filter:\s*''/);
   assert.match(widgetEditor, /camera:\s*\{[\s\S]*cameras:\s*_defaultCameraConfigs\(\)/);
@@ -684,8 +810,10 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.doesNotMatch(widgetEditor, /var alarmRss =/);
   assert.equal(english.settings.widgeteditor.weather_title, 'Weather');
   assert.equal(english.settings.widgeteditor.camera_title, 'Cameras');
+  assert.equal(english.settings.widgeteditor.calendar_add, 'Add calendar');
   assert.equal(dutch.settings.widgeteditor.weather_title, 'Weer');
   assert.equal(dutch.settings.widgeteditor.camera_title, "Camera's");
+  assert.equal(dutch.settings.widgeteditor.calendar_add, 'Kalender toevoegen');
   for (const [id, width, height] of [
     ['weather', 3, 120],
     ['garbage', 3, 120],
@@ -723,6 +851,8 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(garbage, /maxitems: settings\['garbage_maxitems'\] \|\| 4/);
   assert.match(garbage, /maxdays: settings\['garbage_maxdays'\] \|\| 32/);
   assert.match(calendar, /isDefined\(settings\['calendar_maxitems'\]\)/);
+  assert.match(calendar, /if \(isObject\(cal\[key\]\.icalurl\)\)/);
+  assert.doesNotMatch(calendar, /if \(cal\[key\]\.icalurls > 1\)/);
   assert.match(dashticz, /function getWidgetTitle\(block, special\)/);
   assert.match(dashticz, /garbage: 'garbage_title'/);
   assert.match(dashticz, /cfg\.title = widgetTitle/);
@@ -744,7 +874,7 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(styles, /\.we-widget-card\.we-selected/);
   assert.match(weather, /block\.widget_provider === 'openweather'/);
   assert.match(simpleBlock, /wunderground/);
-  assert.match(simpleBlock, /editorLabels\.add_widgets/);
+  assert.match(simpleBlock, /t\.title \|\| 'Widgets'/);
   assert.match(fullscreen, /language\.settings\.widgeteditor\.fullscreen/);
   assert.match(garbage, /block\.type === 'garbage'/);
   assert.match(sonarr, /function loadSonarr\(me\)/);
@@ -1000,6 +1130,20 @@ test('hide_data is respected consistently by themes, switches and the device edi
   assert.match(editorSource, /entry\.hide_data = options\.hide_data === true/);
 });
 
+test('calendar editor behavior is documented without a version bump', () => {
+  const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
+  const changes = fs.readFileSync(path.join(root, 'CHANGES.md'), 'utf8');
+
+  assert.match(readme, /Calendar Widget Config shows every source/);
+  assert.match(readme, /Personal: \{ ics:/);
+  assert.match(readme, /holidayurl/);
+  assert.match(readme, /property `c`/);
+  assert.match(readme, /framed active-stylesheet notice/);
+  assert.match(changes, /repeatable named calendar sources/);
+  assert.match(changes, /single-string and legacy `calendars` formats remain readable/);
+  assert.match(changes, /Hidden compatibility property `c`/);
+});
+
 test('modern dark theme is portable and documented', () => {
   const theme = fs.readFileSync(
     path.join(root, 'themes/modern-dark/modern-dark.css'),
@@ -1166,10 +1310,10 @@ test('standby background image is not overwritten by standby CSS', () => {
 test('standby icon colors stay scoped to the standby screen', () => {
   const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
 
-  assert.match(styles, /\.standby \.screenstandby \.fas[\s\S]*color: #fff !important;/);
+  assert.match(styles, /\.standby \.screenstandby \.fas[\s\S]*color: var\(--text-light\) !important;/);
   assert.doesNotMatch(styles, /\.standby \.fas(?:,|\s*\{)/);
   assert.match(styles, /\.we-widget-icon\s*\{[^}]*color: #0d6efd;/);
-  assert.match(styles, /\.we-config-btn\s*\{[^}]*color: #6c757d;/);
+  assert.match(styles, /\.we-config-btn\s*\{[^}]*color: var\(--text-muted\);/);
 });
 
 test('topbar screen switcher supports standby and extra screens', () => {

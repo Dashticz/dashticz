@@ -320,15 +320,12 @@ var DashticzScreenSwitcher = (function () {
     }
     var html =
       '<span class="dt-standby-editor-icons">' +
-      '<span class="settings deviceeditoricon" role="button" title="' +
-        (t.add_devices || 'Add devices') + '">' +
+      '<span class="settings screeneditoraddicon d-none" role="button" title="' +
+        (t.open_add_menu || t.add_devices || 'Add items') + '">' +
       _icon('fas fa-plus', 'img/icons/Plus.png') + '</span>' +
-      '<span class="settings widgeteditoricon" role="button" title="' +
-        (t.add_widgets || 'Add widgets') + '">' +
-      _icon('fas fa-puzzle-piece', 'img/icons/Puzzle.png') + '</span>' +
       '<span class="settings layouteditoricon" role="button" title="' +
-        (t.move_tiles || 'Move and scale tiles') + '">' +
-      _icon('fas fa-arrows-alt', 'img/icons/Arrows.png') + '</span>' +
+        (t.screen_editor || t.move_tiles || 'Screen Editor') + '">' +
+      '<i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i></span>' +
       '</span>';
     $bar.append(html);
   }

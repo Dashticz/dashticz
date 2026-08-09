@@ -1,5 +1,84 @@
 # Dashticz — Change log for recent update work
 
+## 3.40.0 — Wizard editor polish
+
+- Extended Calendar Widget Config with repeatable named calendar sources. Each
+  source has its own HTTP(S) ICS URL and colour and can be added, edited or
+  removed independently. Editor saves use the supported `icalurl` object while
+  the existing single-string and legacy `calendars` formats remain readable.
+  Unrelated calendar options such as `holidayurl`, `layout`, `weeks`,
+  `lastweek`, `isoweek`, `maxitems` and `width` are preserved.
+- Added a localized framed Theme notice when `/custom/custom.css` is actively
+  loaded. The editor never rewrites the existing custom stylesheet.
+- Standardized Device, Widget, block and Separator editor controls and restored
+  the Separator configuration cog for existing and newly added separators.
+  Hidden compatibility property `c`, unknown typed fields and existing custom
+  icons remain preserved across editor saves.
+
+- Fixed the empty-screen Wizard bootstrap: an empty grid is now a valid Screen
+  Editor state, so switching from Custom to Wizard no longer blocks the magic
+  wand/add menu when there are no existing blocks. Wizard mode can initialise
+  an empty grid and devices, widgets, custom devices or separators can then be
+  added normally.
+- Removed the obsolete text-alignment editor pipeline. Dashticz no longer
+  applies `dt-text-align-*` classes and the Device/Widget writers no longer emit
+  `text_alignment`; the old keys are only treated as reserved legacy input so
+  they cannot be reintroduced through custom fields.
+- Changed the default normal-screen background to
+  `/img/custom/BG_Dashticz_bw.png`.
+- Added the same top-left configuration cog to widget tiles in Layout Editor.
+  It opens that widget's full Widget Config and saves widget blocks/settings
+  without touching the pending layout.
+- Device Config and Widget Config headers now include the current device or
+  widget name.
+- Changed the Data checkbox in Device Config and Widget Config to positive
+  semantics: checked means the data text is visible; unchecked stores
+  `hide_data: true`. Existing CONFIG.js behaviour remains backwards compatible.
+- Renamed the Screen Editor add-menu tile from **Add device** to **Devices**.
+- Added a device configuration cog to the top-left of device tiles while Layout
+  Editor is active. It opens the same Device Config flow used by Device Editor.
+- Replaced the Wizard `fa-magic` icon with `fa-wand-magic-sparkles` in the normal
+  topbar and standby editor controls.
+- Bumped the beta version to **3.40.0**.
+
+- Fixed Widget Editor saves being rejected with `Invalid or reserved custom
+  widget field.` when stale editor-managed properties were duplicated in
+  `custom_fields`. Icon/Data/Update/Title-related core properties are now
+  filtered from custom fields on the client and safely ignored by the server,
+  while dangerous prototype keys remain rejected. This restores saving
+  configured widgets such as Weather, Clock and Spotify.
+- Fixed the Layout Editor toolbar stacking above the Widget Editor. The toolbar
+  now stays above editable dashboard tiles but below Bootstrap modals, so it no
+  longer covers or intercepts the Widget Editor Save button. Representative
+  Weather, Clock and Spotify payloads were also verified through the existing
+  widget writer to ensure their save path remains compatible.
+- Simplified the Wizard topbar so the normal editor controls are the Screen
+  Editor magic wand, Settings and Fullscreen; the former always-visible Device
+  and Widget buttons are now reached through the Screen Editor workflow.
+- Added a Screen Editor-only plus button that opens a localized four-tile menu
+  for **Add devices**, **Widgets**, **Custom devices** and **Separator**. The
+  tiles reuse the existing editors and block writers instead of adding a second
+  configuration system.
+- Replaced the old Dummy/custom-device route with a dedicated **Custom devices**
+  popup. It accepts a unique block name, primary IDX and repeatable typed
+  Field/Setting options (including JSON `values` arrays) while preserving the
+  chosen custom block key on later saves.
+- Changed **Separator** so it immediately inserts a full-width (12-column)
+  Title/block-title on the active screen without opening a second popup.
+- Device Editor widget cogs now open the same complete Widget Config popup as
+  the Widget Editor and reuse the same widget payload/config-setting logic.
+- Reduced Device Config to the three centered Icon, Data and Updated checkboxes.
+  Alignment controls and generated alignment CSS were removed; the obsolete
+  alignment properties are now dropped when editor-managed blocks are saved.
+- Device Config now always exposes `title` as a non-removable Field/Setting row,
+  preserves the hidden `c` property across saves, and applies an explicit
+  `icon` Field only while the Icon checkbox is enabled. A supplied custom icon
+  is then the leading icon value.
+- Retained repeatable typed Field/Setting rows and server-side validation for
+  custom device and widget block properties.
+- Added/updated English, Dutch and French labels for the Screen Editor add menu
+  and its Custom devices/Separator routes. These changes are included in version 3.40.0.
+
 ## 3.23.7 — Editor add regression
 
 - **Consistent settings and widget localization**: Settings, Device Editor,

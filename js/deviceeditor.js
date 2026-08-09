@@ -15,12 +15,15 @@ var DashticzDeviceEditor = (function () {
   var deviceTitles   = {};   // composite key -> optional title override
   var deviceOptions  = {};   // composite key -> icon/hide_data/last_update/switch
   var deviceTitleVisible = {}; // composite key -> title shown/hidden
-  var deviceTextAlignment = {}; // composite key -> left/center/right
+  var deviceCustomFields = {}; // composite key -> editable extra CONFIG.js fields
+  var devicePreservedFields = {}; // hidden CONFIG.js fields (for example c) that must survive saves
   var widgetWidths   = {};   // widget order key -> block width (1..12)
   var widgetHeights  = {};   // widget order key -> optional block height
   var widgetTitles   = {};   // widget order key -> optional title override
+  var widgetOptions  = {};   // widget order key -> icon/hide_data/last_update
   var widgetTitleVisible = {}; // widget order key -> title shown/hidden
-  var widgetTextAlignment = {}; // widget order key -> left/center/right
+  var pendingWidgetSettings = {}; // full Widget Config settings edited from Device Editor
+  var editorMode     = 'devices'; // devices, dummy or title
   var gridMode       = false;
   var gridConfig     = null;
   var gridPositions  = {};   // order key -> {x,y,w,h}
@@ -54,10 +57,28 @@ var DashticzDeviceEditor = (function () {
         last_update: 'Last update',
         switch: 'Switch',
         show_title: 'Title',
-        text_alignment: 'Align',
-        align_left: 'Left',
-        align_center: 'Center',
-        align_right: 'Right',
+        device_config: 'Device Config',
+        widget_config: 'Widget Config',
+        configure: 'Configure',
+        custom_fields: 'Custom fields',
+        custom_fields_help: 'Field and Setting are written as typed block parameters in CONFIG.js.',
+        custom_devices: 'Custom devices',
+        custom_device_name: 'Device name',
+        custom_device_name_help: 'Used as the blocks[...] key in CONFIG.js.',
+        custom_device_options: 'Device options',
+        custom_device_values_help: 'For arrays or objects, enter valid JSON.',
+        invalid_custom_device_name: 'Enter a valid unique device name.',
+        separator: 'Separator',
+        icon_requires_checkbox: 'Enable Icon before using the icon field.',
+        field: 'Field',
+        setting: 'Setting',
+        add_field: 'Add field',
+        remove_field: 'Remove field',
+        invalid_field: 'Enter a valid Field and Setting.',
+        duplicate_field: 'This field is duplicated or reserved.',
+        invalid_setting: 'Setting contains invalid JSON.',
+        cancel: 'Cancel',
+        ok: 'OK',
         remove: 'Remove block',
         close: 'Close',
         save: 'Save',
@@ -79,9 +100,88 @@ var DashticzDeviceEditor = (function () {
 
   /* ── public API ─────────────────────────────────────────────── */
   function open() {
+    editorMode = 'devices';
     gridMode = _activeScreenDom().hasClass('dt-grid-screen');
     _init();
     _buildAndShowModal();
+  }
+
+  function openSpecial(kind) {
+    editorMode = kind === 'title' ? 'title' : 'dummy';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _buildAndShowModal();
+  }
+
+  /** Open Device Config directly for a rendered block while retaining the
+   * normal Device Editor as the save parent shown after the config popup closes. */
+  function openConfig(reference) {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+
+    var prepared = _prepareManagedDeviceState();
+    var orderKey = '';
+    var special = _specialFromReference(reference);
+    if (special && managedSpecials[special.orderKey]) {
+      orderKey = special.orderKey;
+    } else {
+      var definition =
+        typeof reference === 'string' &&
+        typeof blocks !== 'undefined' &&
+        blocks[reference]
+          ? blocks[reference]
+          : reference;
+      var ck = _toCompositeKey(definition);
+      if (ck && managedOrder.indexOf(_deviceOrderKey(ck)) > -1) {
+        orderKey = _deviceOrderKey(ck);
+      }
+    }
+    if (!orderKey) return false;
+
+    $('#deviceeditorpopup').remove();
+    $('body').append(_buildModalHtml(prepared.available, prepared.allDomoticz));
+    _attachHandlers(prepared.available, prepared.allDomoticz);
+    _showConfigPopup(orderKey, document.getElementById('deviceeditorpopup'));
+    return true;
+  }
+
+  /** Open the dedicated Custom devices popup used by the Screen Editor add menu. */
+  function openCustom() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showCustomDevicePopup();
+  }
+
+  /** Add a full-width separator immediately, without opening the Device Editor. */
+  function addSeparator() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+
+    var t = _translations();
+    var reference = _nextSpecialReference('title');
+    var orderKey = _specialOrderKey(reference);
+    managedSpecials[orderKey] = {
+      kind: 'special',
+      specialType: 'title',
+      orderKey: orderKey,
+      reference: reference,
+      definition: {},
+      idx: null,
+      title: t.separator,
+      width: 12,
+      height: 120,
+      showTitle: true,
+      options: null,
+      customFields: [{ field: 'title', setting: t.separator, value: t.separator, system: true }],
+      preservedFields: {},
+    };
+    managedOrder.push(orderKey);
+    _save();
   }
 
   /* ── initialise managed-device list from ALL current Dashticz devices ── */
@@ -96,12 +196,14 @@ var DashticzDeviceEditor = (function () {
     deviceTitles   = {};
     deviceOptions  = {};
     deviceTitleVisible = {};
-    deviceTextAlignment = {};
+    deviceCustomFields = {};
+    devicePreservedFields = {};
     widgetWidths   = {};
     widgetHeights  = {};
     widgetTitles   = {};
+    widgetOptions  = {};
     widgetTitleVisible = {};
-    widgetTextAlignment = {};
+    pendingWidgetSettings = {};
     gridPositions  = {};
     gridRefs       = {};
     gridExtras     = [];
@@ -118,10 +220,15 @@ var DashticzDeviceEditor = (function () {
         widgetWidths[item.orderKey] = _parseWidth(item.definition.width);
         widgetHeights[item.orderKey] = _parseHeight(item.definition.height);
         widgetTitles[item.orderKey] = String(item.definition.title || item.title || '');
+        widgetOptions[item.orderKey] = {
+          icon: typeof item.definition.icon === 'undefined' || item.definition.icon !== '',
+          iconValue: typeof item.definition.icon === 'string' && item.definition.icon !== ''
+            ? item.definition.icon
+            : null,
+          hide_data: item.definition.hide_data === true,
+          last_update: item.definition.last_update === true,
+        };
         widgetTitleVisible[item.orderKey] = item.definition.hide_title !== true;
-        widgetTextAlignment[item.orderKey] = _normaliseTextAlignment(
-          item.definition.text_alignment || item.definition.text_align
-        );
       } else if (item.kind === 'special') {
         managedSpecials[item.orderKey] = item;
       } else {
@@ -238,12 +345,21 @@ var DashticzDeviceEditor = (function () {
     var definition = blocks[reference];
     var kind = null;
     if (
-      /^Title_\d+$/.test(reference) &&
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       String(definition.type || '').toLowerCase() === 'blocktitle'
     ) {
       kind = 'title';
     } else if (/^dummyblock_\d+$/.test(reference)) {
       kind = 'dummy';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      !/^device_\d+(?:_\d+)?$/.test(reference) &&
+      !definition.type &&
+      parseInt(definition.idx, 10) > 0
+    ) {
+      // A device with a hand-picked block key is a Custom device. Recognising
+      // it before the normal IDX path preserves that key on later editor saves.
+      kind = 'custom';
     }
     if (!kind) return null;
 
@@ -253,22 +369,26 @@ var DashticzDeviceEditor = (function () {
       orderKey: _specialOrderKey(reference),
       reference: reference,
       definition: definition,
-      idx: kind === 'dummy' ? parseInt(definition.idx, 10) : null,
-      title: String(definition.title || (kind === 'title' ? 'Title' : reference)),
+      idx: kind === 'title' ? null : parseInt(definition.idx, 10),
+      title: kind === 'custom'
+        ? String(definition.title || '')
+        : String(definition.title || (kind === 'title' ? 'Title' : reference)),
       width: _parseWidth(definition.width || (kind === 'title' ? 12 : 3)),
       height: _parseHeight(definition.height),
-      options: kind === 'dummy'
-        ? {
-            icon: typeof definition.icon === 'undefined',
+      options: kind === 'title'
+        ? null
+        : {
+            icon: typeof definition.icon === 'undefined' || definition.icon !== '',
+            iconValue: typeof definition.icon === 'string' && definition.icon !== ''
+              ? definition.icon
+              : null,
             hide_data: definition.hide_data === true,
             last_update: definition.last_update === true,
             switch: definition.switch === true,
-          }
-        : null,
+          },
       showTitle: definition.hide_title !== true,
-      textAlignment: _normaliseTextAlignment(
-        definition.text_alignment || definition.text_align
-      ),
+      customFields: _deviceCustomFieldRows(definition, definition.title),
+      preservedFields: _devicePreservedFieldValues(definition),
     };
   }
 
@@ -374,9 +494,152 @@ var DashticzDeviceEditor = (function () {
     });
   }
 
+  function _widgetCustomFields(definition) {
+    var protectedFields = {
+      type: true, id: true, key: true, width: true, height: true, grid: true,
+      idx: true, subidx: true, icon: true, hide_data: true, last_update: true,
+      hide_title: true, text_alignment: true, text_align: true, title: true,
+    };
+    var custom = {};
+    Object.keys(definition || {}).forEach(function (property) {
+      var value = definition[property];
+      if (protectedFields[property] || /^_dashticz/.test(property)) return;
+      if (typeof value === 'undefined' || typeof value === 'function') return;
+      custom[property] = value;
+    });
+    return custom;
+  }
+
+  var protectedCustomDeviceProperties = {
+    type: true, id: true, key: true, kind: true, width: true, height: true,
+    grid: true, idx: true, subidx: true, title: true, icon: true,
+    hide_data: true, last_update: true, switch: true, hide_title: true,
+    text_alignment: true, text_align: true, custom_fields: true, c: true,
+    __proto__: true, prototype: true, constructor: true,
+  };
+
+  function _settingToText(value) {
+    if (value !== null && typeof value === 'object') {
+      try { return JSON.stringify(value); } catch (ignore) { return ''; }
+    }
+    return String(value);
+  }
+
+  function _normaliseCustomFieldName(value) {
+    value = $.trim(String(value || '')).replace(/[\s-]+/g, '_');
+    if (value) value = value.charAt(0).toLowerCase() + value.slice(1);
+    return value;
+  }
+
+  function _parseCustomSetting(value) {
+    var text = $.trim(String(value || ''));
+    if (text === 'true') return { valid: true, value: true };
+    if (text === 'false') return { valid: true, value: false };
+    if (/^-?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(text)) {
+      return { valid: true, value: Number(text) };
+    }
+    if (/^[\[{]/.test(text)) {
+      try {
+        var parsed = JSON.parse(text);
+        if (parsed && typeof parsed === 'object') {
+          return { valid: true, value: parsed };
+        }
+      } catch (ignore) { /* a translated validation message is shown by the popup */ }
+      return { valid: false };
+    }
+    return { valid: true, value: text };
+  }
+
+  function _encodeCustomSettingValue(value) {
+    if (Array.isArray(value)) {
+      return value.map(_encodeCustomSettingValue);
+    }
+    if (value && Object.prototype.toString.call(value) === '[object Object]') {
+      var keys = Object.keys(value);
+      if (!keys.length) return { __dashticz_empty_object__: true };
+      var encoded = {};
+      keys.forEach(function (key) {
+        encoded[key] = _encodeCustomSettingValue(value[key]);
+      });
+      return encoded;
+    }
+    return value;
+  }
+
+  function _deviceCustomFieldRows(definition, titleValue) {
+    var rows = [{
+      field: 'title',
+      setting: typeof titleValue === 'undefined' ? String((definition || {}).title || '') : String(titleValue || ''),
+      value: typeof titleValue === 'undefined' ? String((definition || {}).title || '') : String(titleValue || ''),
+      system: true,
+    }];
+    if (definition && typeof definition.icon === 'string' && definition.icon !== '') {
+      rows.push({ field: 'icon', setting: definition.icon, value: definition.icon });
+    }
+    Object.keys(definition || {}).forEach(function (property) {
+      var lowerProperty = property.toLowerCase();
+      if (protectedCustomDeviceProperties[lowerProperty] || /^_dashticz/i.test(property)) return;
+      var value = definition[property];
+      if (typeof value === 'undefined' || typeof value === 'function') return;
+      rows.push({
+        field: property,
+        setting: _settingToText(value),
+        value: value,
+      });
+    });
+    return rows;
+  }
+
+  function _devicePreservedFieldValues(definition) {
+    var preserved = {};
+    if (definition && Object.prototype.hasOwnProperty.call(definition, 'c')) {
+      preserved.c = definition.c;
+    }
+    return preserved;
+  }
+
+  function _customFieldsObject(rows) {
+    var customFields = {};
+    (rows || []).forEach(function (row) {
+      if (row && row.field) customFields[row.field] = row.value;
+    });
+    return customFields;
+  }
+
+  function _deviceCustomFieldsObject(rows, preserved) {
+    var customFields = $.extend({}, preserved || {});
+    (rows || []).forEach(function (row) {
+      if (!row || !row.field) return;
+      var field = _normaliseCustomFieldName(row.field);
+      if (!field || field === 'title' || field === 'icon' || field === 'c') return;
+      customFields[field] = _encodeCustomSettingValue(row.value);
+    });
+    Object.keys(customFields).forEach(function (field) {
+      customFields[field] = _encodeCustomSettingValue(customFields[field]);
+    });
+    return customFields;
+  }
+
   function _widgetPayload(orderKey) {
     var widget = managedWidgets[orderKey];
     var definition = widget.definition || {};
+    if (widget.pendingPayload) {
+      var pendingEntry = $.extend(true, {}, widget.pendingPayload);
+      pendingEntry.id = widget.id;
+      pendingEntry.width = _parseWidth(widgetWidths[orderKey]);
+      if (widgetHeights[orderKey]) pendingEntry.height = widgetHeights[orderKey];
+      if (widget.pendingTitleEdited) {
+        var pendingTitle = String(widgetTitles[orderKey] || '').trim();
+        if (pendingTitle) pendingEntry.title = pendingTitle;
+        else delete pendingEntry.title;
+      } else if (widget.id !== 'camera') {
+        // Opening full Widget Config from Device Editor must not drop the title
+        // that Device Editor already preserved for regular widget blocks.
+        var preservedTitle = String(widgetTitles[orderKey] || '').trim();
+        if (preservedTitle) pendingEntry.title = preservedTitle;
+      }
+      return pendingEntry;
+    }
     var entry = {
       id: widget.id,
       width: _parseWidth(widgetWidths[orderKey]),
@@ -384,9 +647,16 @@ var DashticzDeviceEditor = (function () {
     var title = String(widgetTitles[orderKey] || '').trim();
     if (title) entry.title = title;
     if (widgetHeights[orderKey]) entry.height = widgetHeights[orderKey];
+    var displayOptions = widgetOptions[orderKey] || {};
+    if (displayOptions.icon === false) {
+      entry.icon = '';
+    } else if (displayOptions.iconValue) {
+      // Preserve a hand-written custom icon while the visible Icon option stays on.
+      entry.icon = displayOptions.iconValue;
+    }
+    entry.hide_data = displayOptions.hide_data === true;
+    entry.last_update = displayOptions.last_update === true;
     if (widgetTitleVisible[orderKey] === false) entry.hide_title = true;
-    var textAlignment = _normaliseTextAlignment(widgetTextAlignment[orderKey]);
-    if (textAlignment !== 'left') entry.text_alignment = textAlignment;
     if (widget.id === 'garbage') {
       entry.displayTitle = widget.title;
       _copyDefinedWidgetProperties(entry, definition, ['maxitems', 'maxdays']);
@@ -428,13 +698,24 @@ var DashticzDeviceEditor = (function () {
       entry.station = definition.station || 'UT';
       entry.provider = definition.provider || 'treinen';
     } else if (widget.id === 'camera') {
-      entry.imageUrl = definition.imageUrl || '';
-      if (definition.videoUrl) entry.videoUrl = definition.videoUrl;
+      // Multi-camera blocks use a cameras array instead of the legacy URL fields.
+      // Preserve that shape so opening Device Config cannot invalidate the block.
+      if (Array.isArray(definition.cameras)) {
+        entry.cameras = definition.cameras;
+      } else {
+        entry.imageUrl = definition.imageUrl || '';
+        if (definition.videoUrl) entry.videoUrl = definition.videoUrl;
+      }
     } else if (widget.id === 'alarmmeldingen') {
       entry.rss =
         definition.rss || 'https://www.alarmeringen.nl/feeds/all.rss';
       if (definition.filter) entry.filter = definition.filter;
     }
+
+    // savewidgets.php rebuilds the managed block section. Re-submit every safe
+    // existing property so a Device Editor save cannot erase custom widget
+    // parameters created in Widget Config or added by hand.
+    entry.custom_fields = _widgetCustomFields(definition);
 
     return entry;
   }
@@ -647,6 +928,9 @@ var DashticzDeviceEditor = (function () {
                 kind: 'device',
                 ck: ck,
                 orderKey: deviceKey,
+                reference: typeof b === 'string'
+                  ? b
+                  : _stableDeviceReference(ck),
               });
             }
             return;
@@ -742,18 +1026,17 @@ var DashticzDeviceEditor = (function () {
   }
 
   /* ── build and display the modal ───────────────────────────── */
-  function _buildAndShowModal() {
-    $('#deviceeditorpopup').remove();
-
+  function _prepareManagedDeviceState() {
     var managedKeys = managedDevices.slice();
     var allDomoticz = Domoticz.getAllDevices();
-    var available   = _getAvailableDevices(managedKeys);
+    var available = _getAvailableDevices(managedKeys);
 
-    /* populate deviceNames / deviceWidths for all managed devices */
+    /* Populate the regular-device state even when a direct Screen Editor action
+       saves without opening the full Device Editor modal. */
     managedKeys.forEach(function (ck) {
       var p = _parseCk(ck);
       var d = allDomoticz[String(p.idx)] || allDomoticz[p.idx];
-      deviceNames[ck]  = d ? (d.Name || ('Device ' + p.idx)) : ('Device ' + p.idx);
+      deviceNames[ck] = d ? (d.Name || ('Device ' + p.idx)) : ('Device ' + p.idx);
       deviceWidths[ck] = _getConfiguredWidthForCk(ck);
       deviceHeights[ck] = _getConfiguredHeightForCk(ck);
       var configured = _getConfiguredBlockForCk(ck) || {};
@@ -761,16 +1044,28 @@ var DashticzDeviceEditor = (function () {
         ? ''
         : (typeof configured.title === 'string' ? configured.title : '');
       deviceOptions[ck] = {
-        icon: typeof configured.icon === 'undefined',
+        icon: typeof configured.icon === 'undefined' || configured.icon !== '',
+        iconValue: typeof configured.icon === 'string' && configured.icon !== ''
+          ? configured.icon
+          : null,
         hide_data: configured.hide_data === true,
         last_update: configured.last_update === true,
         switch: configured.switch === true,
       };
       deviceTitleVisible[ck] = configured.hide_title !== true;
-      deviceTextAlignment[ck] = _normaliseTextAlignment(
-        configured.text_alignment || configured.text_align
-      );
+      deviceCustomFields[ck] = _deviceCustomFieldRows(configured, deviceTitles[ck]);
+      devicePreservedFields[ck] = _devicePreservedFieldValues(configured);
     });
+
+    return { available: available, allDomoticz: allDomoticz };
+  }
+
+  function _buildAndShowModal() {
+    $('#deviceeditorpopup').remove();
+
+    var prepared = _prepareManagedDeviceState();
+    var available = prepared.available;
+    var allDomoticz = prepared.allDomoticz;
 
     $('body').append(_buildModalHtml(available, allDomoticz));
     _attachHandlers(available, allDomoticz);
@@ -793,7 +1088,12 @@ var DashticzDeviceEditor = (function () {
     /* header */
     html += '<div class="modal-header">';
     html += '<h5 class="modal-title" id="de-title">';
-    html += '<i class="fas fa-pencil-alt me-2" aria-hidden="true"></i>' + _esc(t.editor_title);
+    var modalTitle = editorMode === 'dummy'
+      ? t.custom_devices
+      : editorMode === 'title'
+        ? t.separator
+        : t.editor_title;
+    html += '<i class="fas fa-pencil-alt me-2" aria-hidden="true"></i>' + _esc(modalTitle);
     html += '</h5>';
     html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button>';
     html += '</div>';
@@ -819,10 +1119,18 @@ var DashticzDeviceEditor = (function () {
     }
     html += '</div>';
 
-    /* section 2 – add devices */
-    html += '<h6 class="de-section-title mt-3">' + _esc(t.add_item) + '</h6>';
+    /* section 2 – the selected add workflow. Dummy/title helper blocks were
+       removed from the normal device dropdown and now have their own entry point. */
+    var addHeading = editorMode === 'dummy'
+      ? t.custom_devices
+      : editorMode === 'title'
+        ? t.separator
+        : t.add_device;
+    html += '<h6 class="de-section-title mt-3">' + _esc(addHeading) + '</h6>';
     html += '<div id="de-add-rows">';
-    html += _addRowHtml(available);
+    html += editorMode === 'devices'
+      ? _addRowHtml(available)
+      : _specialAddRowHtml(editorMode);
     html += '</div>';
 
     html += '</div>'; /* modal-body */
@@ -847,6 +1155,504 @@ var DashticzDeviceEditor = (function () {
     return html;
   }
 
+  function _configButtonHtml(orderKey, label) {
+    var t = _translations();
+    return '<button type="button" class="btn btn-outline-secondary btn-sm de-config-btn" ' +
+      'data-order-key="' + _esc(orderKey) + '" title="' + _esc(label || t.configure) +
+      '" aria-label="' + _esc(label || t.configure) + '">' +
+      '<i class="fas fa-cog" aria-hidden="true"></i></button>';
+  }
+
+  function _customFieldRowHtml(row) {
+    var t = _translations();
+    row = row || { field: '', setting: '' };
+    var isSystem = row.system === true;
+    var field = String(row.field || '');
+    var rowClass = 'de-custom-field-row input-group input-group-sm mb-2';
+    if (field.toLowerCase() === 'icon') rowClass += ' de-icon-field-row';
+    if (isSystem) rowClass += ' de-system-field-row';
+    return '<div class="' + rowClass + '">' +
+      '<input type="text" class="form-control de-custom-field-name" placeholder="' +
+      _esc(t.field) + '" value="' + _esc(field) + '"' +
+      (isSystem ? ' readonly aria-readonly="true"' : '') + '>' +
+      '<input type="text" class="form-control de-custom-field-setting" placeholder="' +
+      _esc(t.setting) + '" value="' + _esc(row.setting || '') + '">' +
+      '<button type="button" class="btn btn-outline-success de-custom-field-add" title="' +
+      _esc(t.add_field) + '"><i class="fas fa-plus" aria-hidden="true"></i></button>' +
+      '<button type="button" class="btn btn-outline-danger de-custom-field-remove" title="' +
+      _esc(t.remove_field) + '"' + (isSystem ? ' disabled' : '') +
+      '><i class="fas fa-minus" aria-hidden="true"></i></button>' +
+      '</div>';
+  }
+
+  function _customDeviceFieldRowHtml(row) {
+    var t = _translations();
+    row = row || { field: '', setting: '' };
+    return '<div class="cd-custom-field-row input-group input-group-sm mb-2">' +
+      '<input type="text" class="form-control cd-custom-field-name" placeholder="' +
+      _esc(t.field) + '" value="' + _esc(row.field || '') + '">' +
+      '<input type="text" class="form-control cd-custom-field-setting" placeholder="' +
+      _esc(t.setting) + '" value="' + _esc(row.setting || '') + '">' +
+      '<button type="button" class="btn btn-outline-success cd-custom-field-add" title="' +
+      _esc(t.add_field) + '"><i class="fas fa-plus" aria-hidden="true"></i></button>' +
+      '<button type="button" class="btn btn-outline-danger cd-custom-field-remove" title="' +
+      _esc(t.remove_field) + '"><i class="fas fa-minus" aria-hidden="true"></i></button>' +
+      '</div>';
+  }
+
+  function _showCustomDevicePopup() {
+    var t = _translations();
+    $('#customdevicepopup').remove();
+
+    var html = '<div class="modal fade" id="customdevicepopup" tabindex="-1" aria-hidden="true">';
+    html += '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html += '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-cube me-2" aria-hidden="true"></i>' +
+      _esc(t.custom_devices) + '</h5>';
+    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
+    html += '<div class="modal-body">';
+    html += '<div class="mb-3"><label class="form-label" for="cd-device-name">' + _esc(t.custom_device_name) + '</label>';
+    html += '<input type="text" class="form-control" id="cd-device-name" placeholder="BTC_Price" autocomplete="off">';
+    html += '<div class="form-text">' + _esc(t.custom_device_name_help) + '</div></div>';
+    html += '<div class="mb-3"><label class="form-label" for="cd-device-idx">IDX</label>';
+    html += '<input type="number" min="1" step="1" class="form-control" id="cd-device-idx" placeholder="1380"></div>';
+    html += '<div class="cd-custom-fields-section"><h6>' + _esc(t.custom_device_options) + '</h6>';
+    html += '<div class="form-text mb-2">' + _esc(t.custom_device_values_help) + '</div>';
+    html += '<div class="cd-custom-fields">';
+    html += _customDeviceFieldRowHtml({ field: 'title', setting: '' });
+    html += _customDeviceFieldRowHtml({ field: 'icon', setting: '' });
+    html += _customDeviceFieldRowHtml({ field: 'values', setting: '' });
+    html += '</div></div>';
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html += '<div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      _esc(t.cancel) + '</button>';
+    html += '<button type="button" class="btn btn-primary" id="cd-save-btn">' + _esc(t.save) + '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+
+    var $popup = $('#customdevicepopup');
+    function refreshButtons() {
+      var $rows = $popup.find('.cd-custom-field-row');
+      $rows.find('.cd-custom-field-add').addClass('d-none');
+      $rows.last().find('.cd-custom-field-add').removeClass('d-none');
+      $rows.find('.cd-custom-field-remove').prop('disabled', $rows.length <= 1);
+    }
+    $popup.on('click', '.cd-custom-field-add', function () {
+      $popup.find('.cd-custom-fields').append(_customDeviceFieldRowHtml());
+      refreshButtons();
+      $popup.find('.cd-custom-field-row').last().find('.cd-custom-field-name').trigger('focus');
+    });
+    $popup.on('click', '.cd-custom-field-remove', function () {
+      if ($(this).prop('disabled')) return;
+      $(this).closest('.cd-custom-field-row').remove();
+      refreshButtons();
+    });
+    refreshButtons();
+
+    $('#cd-save-btn').on('click', function () {
+      var $message = $popup.find('.cd-custom-message').removeClass('text-danger').text('');
+      var reference = $.trim(String($('#cd-device-name').val() || ''));
+      var rawIdx = $.trim(String($('#cd-device-idx').val() || ''));
+      var idx = parseInt(rawIdx, 10);
+      if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
+        $message.addClass('text-danger').text(t.invalid_custom_device_name);
+        $('#cd-device-name').trigger('focus');
+        return;
+      }
+      if ((typeof blocks !== 'undefined' && blocks[reference]) || managedSpecials[_specialOrderKey(reference)]) {
+        $message.addClass('text-danger').text(t.invalid_custom_device_name);
+        $('#cd-device-name').trigger('focus');
+        return;
+      }
+      if (!(idx > 0 && String(idx) === rawIdx)) {
+        $message.addClass('text-danger').text(t.invalid_idx);
+        $('#cd-device-idx').trigger('focus');
+        return;
+      }
+
+      var title = '';
+      var iconValue = null;
+      var customRows = [];
+      var seen = {};
+      var valid = true;
+      $popup.find('.cd-custom-field-row').each(function () {
+        if (!valid) return;
+        var rawField = $.trim(String($(this).find('.cd-custom-field-name').val() || ''));
+        var rawSetting = $.trim(String($(this).find('.cd-custom-field-setting').val() || ''));
+        if (!rawField && !rawSetting) return;
+        // Empty predefined option rows are ignored until the user gives them a value.
+        if (rawField && !rawSetting && ['title', 'icon', 'values'].indexOf(rawField.toLowerCase()) > -1) return;
+        var field = _normaliseCustomFieldName(rawField);
+        var lowerField = field.toLowerCase();
+        if (!field || !/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(field) || !rawSetting) {
+          valid = false;
+          $message.addClass('text-danger').text(t.invalid_field);
+          $(this).find(!field ? '.cd-custom-field-name' : '.cd-custom-field-setting').trigger('focus');
+          return;
+        }
+        if (seen[lowerField]) {
+          valid = false;
+          $message.addClass('text-danger').text(t.duplicate_field);
+          $(this).find('.cd-custom-field-name').trigger('focus');
+          return;
+        }
+        seen[lowerField] = true;
+        if (lowerField === 'title') {
+          title = rawSetting.slice(0, 100);
+          customRows.push({ field: 'title', setting: title, value: title, system: true });
+          return;
+        }
+        if (lowerField === 'icon') {
+          iconValue = rawSetting.slice(0, 100);
+          customRows.push({ field: 'icon', setting: iconValue, value: iconValue });
+          return;
+        }
+        if (protectedCustomDeviceProperties[lowerField]) {
+          valid = false;
+          $message.addClass('text-danger').text(t.duplicate_field);
+          $(this).find('.cd-custom-field-name').trigger('focus');
+          return;
+        }
+        var parsed = _parseCustomSetting(rawSetting);
+        if (!parsed.valid) {
+          valid = false;
+          $message.addClass('text-danger').text(t.invalid_setting);
+          $(this).find('.cd-custom-field-setting').trigger('focus');
+          return;
+        }
+        customRows.push({ field: field, setting: rawSetting, value: parsed.value });
+      });
+      if (!valid) return;
+
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'custom',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: idx,
+        title: title,
+        width: 3,
+        height: null,
+        showTitle: true,
+          options: {
+          icon: true,
+          iconValue: iconValue,
+          hide_data: false,
+          last_update: false,
+          switch: false,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(document.getElementById('customdevicepopup')).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () { $(this).remove(); });
+    window.bootstrap.Modal.getOrCreateInstance(document.getElementById('customdevicepopup')).show();
+  }
+
+  function _showParentEditor(editor) {
+    if (editor && document.body.contains(editor)) {
+      $(editor).removeData('de-config-transition');
+      window.bootstrap.Modal.getOrCreateInstance(editor).show();
+    }
+  }
+
+  /* Hide the Device Editor before opening a child configuration modal. Bootstrap
+     otherwise keeps the child behind the editor's modal/backdrop stacking context. */
+  function _openConfigPopup(orderKey) {
+    if (orderKey.indexOf('widget:') === 0) {
+      _openWidgetConfigPopup(orderKey);
+      return;
+    }
+    var editor = document.getElementById('deviceeditorpopup');
+    var editorModal = editor && window.bootstrap && window.bootstrap.Modal
+      ? window.bootstrap.Modal.getInstance(editor)
+      : null;
+
+    function showChild() {
+      _showConfigPopup(orderKey, editor);
+    }
+    if (editor && editorModal && $(editor).hasClass('show')) {
+      $(editor).data('de-config-transition', true);
+      $(editor).one('hidden.bs.modal', showChild);
+      editorModal.hide();
+      return;
+    }
+    showChild();
+  }
+
+  function _openWidgetConfigPopup(orderKey) {
+    var editor = document.getElementById('deviceeditorpopup');
+    var editorModal = editor && window.bootstrap && window.bootstrap.Modal
+      ? window.bootstrap.Modal.getInstance(editor)
+      : null;
+    var widget = managedWidgets[orderKey];
+    if (!widget) return;
+
+    function openFullWidgetConfig() {
+      DT_function.loadDTScript('js/widgeteditor.js').then(function () {
+        if (!DashticzWidgetEditor || typeof DashticzWidgetEditor.openConfig !== 'function') {
+          _showParentEditor(editor);
+          return;
+        }
+        DashticzWidgetEditor.openConfig(widget.id, {
+          draft: widget.editorDraft || null,
+          onApply: function (result) {
+            if (!result || !result.entry) return;
+            widget.pendingPayload = result.entry;
+            widget.editorDraft = result.draft || null;
+            var draftRows =
+              widget.editorDraft &&
+              widget.editorDraft.blockOptions &&
+              widget.editorDraft.blockOptions.customFields
+                ? widget.editorDraft.blockOptions.customFields
+                : [];
+            draftRows.some(function (row) {
+              if (_normaliseCustomFieldName(row && row.field) !== 'title') return false;
+              widgetTitles[orderKey] = String(row.setting || '');
+              widget.pendingTitleEdited = true;
+              return true;
+            });
+            pendingWidgetSettings = $.extend(
+              {}, pendingWidgetSettings, result.configSettings || {}
+            );
+            var entry = result.entry;
+            widgetOptions[orderKey] = $.extend({}, widgetOptions[orderKey], {
+              icon: typeof entry.icon === 'undefined' || entry.icon !== '',
+              iconValue: typeof entry.icon === 'string' && entry.icon !== ''
+                ? entry.icon
+                : null,
+              hide_data: entry.hide_data === true,
+              last_update: entry.last_update === true,
+            });
+            widgetTitleVisible[orderKey] = entry.hide_title !== true;
+          },
+          onClose: function () {
+            _showParentEditor(editor);
+          },
+        });
+      });
+    }
+
+    if (editor && editorModal && $(editor).hasClass('show')) {
+      $(editor).data('de-config-transition', true);
+      $(editor).one('hidden.bs.modal', openFullWidgetConfig);
+      editorModal.hide();
+      return;
+    }
+    openFullWidgetConfig();
+  }
+
+  /* Build the Device Config popup. Switch and Title visibility are not
+     exposed as checkboxes here; title remains available as a typed field. */
+  function _showConfigPopup(orderKey, editor) {
+    var t = _translations();
+    var isSpecial = orderKey.indexOf('special:') === 0;
+    var ck = orderKey.indexOf('device:') === 0 ? orderKey.slice(7) : '';
+    var special = isSpecial ? managedSpecials[orderKey] : null;
+    var isTitle = special && special.specialType === 'title';
+    var options = isSpecial ? (special.options || {}) : (deviceOptions[ck] || {});
+    var customRows = isSpecial ? special.customFields : deviceCustomFields[ck];
+    if (!customRows || !customRows.length) {
+      customRows = [{ field: 'title', setting: '', value: '', system: true }];
+    }
+    customRows = customRows.map(function (row) { return $.extend({}, row); });
+    var currentTitle = isSpecial ? String(special.title || '') : String(deviceTitles[ck] || '');
+    var displayName = currentTitle || (isSpecial
+      ? String((special && (special.title || special.reference)) || orderKey)
+      : String(deviceNames[ck] || ck));
+    var titleRow = customRows.find(function (row) {
+      return String(row.field || '').toLowerCase() === 'title';
+    });
+    if (titleRow) {
+      titleRow.setting = currentTitle;
+      titleRow.value = currentTitle;
+      titleRow.system = true;
+    } else {
+      customRows.unshift({ field: 'title', setting: currentTitle, value: currentTitle, system: true });
+    }
+
+    $('#de-config-popup').remove();
+    var html = '<div class="modal fade de-config-popup" id="de-config-popup" tabindex="-1" aria-hidden="true">';
+    html += '<div class="modal-dialog modal-dialog-centered de-config-dialog"><div class="modal-content">';
+    html += '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-cog me-2" aria-hidden="true"></i>' +
+      _esc(t.device_config) + ' — ' + _esc(displayName) + '</h5>';
+    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
+    html += '<div class="modal-body">';
+    if (!isTitle) {
+      html += '<div class="de-config-options de-config-options-three">';
+      ['icon', 'hide_data', 'last_update'].forEach(function (option) {
+        html += '<label class="form-check"><input class="form-check-input de-config-option" type="checkbox" data-option="' + option + '"';
+        // The Data checkbox is user-facing: checked means data is visible.
+        // CONFIG.js keeps the backwards-compatible inverse hide_data property.
+        var checked = option === 'hide_data' ? options.hide_data !== true : options[option] === true;
+        if (checked) html += ' checked';
+        html += '><span class="form-check-label">' + _esc(t[option]) + '</span></label>';
+      });
+      html += '</div>';
+    }
+    html += '<div class="de-custom-fields-section"><h6>' + _esc(t.custom_fields) + '</h6>';
+    html += '<p class="form-text">' + _esc(t.custom_fields_help) + '</p>';
+    html += '<div class="de-custom-fields">';
+    customRows.forEach(function (row) { html += _customFieldRowHtml(row); });
+    html += '</div></div>';
+    html += '<div class="de-config-message" role="status"></div></div><div class="modal-footer">';
+    html += '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' + _esc(t.cancel) + '</button>';
+    html += '<button type="button" class="btn btn-primary" id="de-config-ok">' + _esc(t.ok) + '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+
+    var $popup = $('#de-config-popup');
+    function refreshCustomFieldButtons() {
+      var removable = $popup.find('.de-custom-field-row:not(.de-system-field-row)').length;
+      $popup.find('.de-custom-field-remove').each(function () {
+        var isSystem = $(this).closest('.de-custom-field-row').hasClass('de-system-field-row');
+        $(this).prop('disabled', isSystem || removable <= 0);
+      });
+    }
+    function refreshIconFieldVisibility() {
+      if (isTitle) return;
+      var enabled = $popup.find('[data-option="icon"]').is(':checked');
+      $popup.find('.de-icon-field-row').toggle(enabled);
+    }
+    $popup.on('click', '.de-custom-field-add', function () {
+      $(this).closest('.de-custom-field-row').after(_customFieldRowHtml());
+      refreshCustomFieldButtons();
+      refreshIconFieldVisibility();
+    });
+    $popup.on('click', '.de-custom-field-remove', function () {
+      if ($(this).prop('disabled')) return;
+      $(this).closest('.de-custom-field-row').remove();
+      refreshCustomFieldButtons();
+    });
+    $popup.on('change', '[data-option="icon"]', refreshIconFieldVisibility);
+    refreshCustomFieldButtons();
+    refreshIconFieldVisibility();
+
+    $('#de-config-ok').on('click', function () {
+      var updated = {};
+      var pendingCustomFields = [];
+      var customKeys = {};
+      var pendingTitle = isSpecial ? String(special.title || '') : String(deviceTitles[ck] || '');
+      var pendingIconValue = null;
+      var hasIconField = false;
+      var valid = true;
+      $('#de-config-popup .de-config-option').each(function () {
+        var option = String($(this).attr('data-option'));
+        var checked = $(this).prop('checked');
+        updated[option] = option === 'hide_data' ? !checked : checked;
+      });
+
+      $popup.find('.de-custom-field-row').each(function () {
+        if (!valid) return;
+        var rawField = $.trim($(this).find('.de-custom-field-name').val() || '');
+        var rawSetting = $.trim($(this).find('.de-custom-field-setting').val() || '');
+        if (!rawField && !rawSetting) return;
+        var field = _normaliseCustomFieldName(rawField);
+        var lowerField = field.toLowerCase();
+        if (!field || !/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(field)) {
+          valid = false;
+          $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_field);
+          $(this).find('.de-custom-field-name').trigger('focus');
+          return;
+        }
+        if (customKeys[lowerField]) {
+          valid = false;
+          $popup.find('.de-config-message').addClass('text-danger').text(t.duplicate_field);
+          $(this).find('.de-custom-field-name').trigger('focus');
+          return;
+        }
+        customKeys[lowerField] = true;
+
+        if (lowerField === 'title') {
+          pendingTitle = rawSetting;
+          return;
+        }
+        if (lowerField === 'icon') {
+          if (isTitle) {
+            valid = false;
+            $popup.find('.de-config-message').addClass('text-danger').text(t.duplicate_field);
+            $(this).find('.de-custom-field-name').trigger('focus');
+            return;
+          }
+          // An existing icon row is hidden/inactive while Icon is off. A newly
+          // entered visible icon row gets an explicit validation message instead.
+          if (updated.icon !== true) {
+            if ($(this).hasClass('de-icon-field-row')) return;
+            valid = false;
+            $popup.find('.de-config-message').addClass('text-danger').text(t.icon_requires_checkbox);
+            $(this).find('.de-custom-field-name').trigger('focus');
+            return;
+          }
+          if (!rawSetting) {
+            valid = false;
+            $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_field);
+            $(this).find('.de-custom-field-setting').trigger('focus');
+            return;
+          }
+          hasIconField = true;
+          pendingIconValue = rawSetting;
+          return;
+        }
+        if (!rawSetting || protectedCustomDeviceProperties[lowerField]) {
+          valid = false;
+          $popup.find('.de-config-message').addClass('text-danger').text(
+            protectedCustomDeviceProperties[lowerField] ? t.duplicate_field : t.invalid_field
+          );
+          $(this).find('.de-custom-field-name').trigger('focus');
+          return;
+        }
+        var parsedSetting = _parseCustomSetting(rawSetting);
+        if (!parsedSetting.valid) {
+          valid = false;
+          $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_setting);
+          $(this).find('.de-custom-field-setting').trigger('focus');
+          return;
+        }
+        pendingCustomFields.push({
+          field: field,
+          setting: rawSetting,
+          value: parsedSetting.value,
+        });
+      });
+      if (!valid) return;
+
+      var storedRows = [{ field: 'title', setting: pendingTitle, value: pendingTitle, system: true }];
+      if (hasIconField) {
+        storedRows.push({ field: 'icon', setting: pendingIconValue, value: pendingIconValue });
+      }
+      storedRows = storedRows.concat(pendingCustomFields);
+
+      if (isSpecial) {
+        special.title = pendingTitle;
+        special.customFields = storedRows;
+        if (!isTitle) {
+          special.options = $.extend({}, special.options, updated);
+          special.options.iconValue = hasIconField ? pendingIconValue : null;
+        }
+      } else {
+        deviceTitles[ck] = pendingTitle;
+        deviceCustomFields[ck] = storedRows;
+        deviceOptions[ck] = $.extend({}, deviceOptions[ck], updated);
+        deviceOptions[ck].iconValue = hasIconField ? pendingIconValue : null;
+      }
+      $('#de-device-list .de-device-title[data-order-key="' + orderKey + '"]').val(pendingTitle);
+      $('#de-device-list .de-device-title[data-ck="' + ck + '"]').val(pendingTitle);
+      window.bootstrap.Modal.getInstance(document.getElementById('de-config-popup')).hide();
+    });
+
+    var popup = document.getElementById('de-config-popup');
+    popup.addEventListener('hidden.bs.modal', function () {
+      $(popup).remove();
+      _showParentEditor(editor);
+    });
+    window.bootstrap.Modal.getOrCreateInstance(popup).show();
+  }
+
   /* ── HTML for a single device-list row ─────────────────────── */
   function _deviceItemHtml(ck, allDomoticz, isNew) {
     var t = _translations();
@@ -860,9 +1666,6 @@ var DashticzDeviceEditor = (function () {
     var dispIdx = isGroup ? ck : (p.subidx ? (p.idx + '_' + p.subidx) : String(p.idx));
     var cls    = 'de-device-item' + (isNew ? ' de-device-item-new' : '');
     var orderKey = _deviceOrderKey(ck);
-    var options = deviceOptions[ck] || {
-      icon: true, hide_data: true, last_update: false, switch: false,
-    };
     var html   = '<div class="' + cls + '" data-ck="' + _esc(ck) +
       '" data-order-key="' + _esc(orderKey) + '" draggable="true">';
     html += '<span class="de-drag-handle" title="' + _esc(t.drag_to_reorder) + '"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
@@ -870,18 +1673,7 @@ var DashticzDeviceEditor = (function () {
     html += '<span class="de-device-identity"><span class="de-device-name">' + name + (!isGroup && p.subidx ? '\u00a0(' + p.subidx + ')' : '') + '</span>';
     if (type) html += '<span class="de-device-type">' + type + '</span>';
     html += '</span>';
-    html += '<span class="de-device-options">';
-    ['icon', 'hide_data', 'last_update', 'switch'].forEach(function (option) {
-      html += '<label class="de-option-field"><input type="checkbox" class="de-device-option" ';
-      html += 'data-ck="' + _esc(ck) + '" data-option="' + option + '"';
-      if (options[option]) html += ' checked';
-      html += '><span>' + _esc(t[option]) + '</span></label>';
-    });
-    html += '<label class="de-option-field"><input type="checkbox" class="de-title-toggle" data-ck="' +
-      _esc(ck) + '"';
-    if (deviceTitleVisible[ck] !== false) html += ' checked';
-    html += '><span>' + _esc(t.show_title) + '</span></label>';
-    html += '</span>';
+    html += _configButtonHtml(orderKey, t.device_config);
     html += '<span class="de-device-field de-width-wrap">';
     html += '<input type="number" id="de-width-' + _esc(ck) + '" class="form-control form-control-sm de-device-width" ';
     html += 'data-ck="' + _esc(ck) + '" data-order-key="' + _esc(orderKey) +
@@ -892,16 +1684,6 @@ var DashticzDeviceEditor = (function () {
     html += '<input type="text" id="de-title-' + _esc(ck) + '" class="form-control form-control-sm de-device-title" ';
     html += 'data-ck="' + _esc(ck) + '" value="' + _esc(deviceTitles[ck] || '') + '">';
     html += '<label for="de-title-' + _esc(ck) + '">' + _esc(t.title) + '</label>';
-    html += '</span>';
-    html += '<span class="de-device-field de-align-field">';
-    html += '<select id="de-align-' + _esc(ck) + '" class="form-select form-select-sm de-text-alignment" data-order-key="' + _esc(orderKey) + '">';
-    ['left', 'center', 'right'].forEach(function (alignment) {
-      html += '<option value="' + alignment + '"';
-      if (_normaliseTextAlignment(deviceTextAlignment[ck]) === alignment) html += ' selected';
-      html += '>' + _esc(t['align_' + alignment]) + '</option>';
-    });
-    html += '</select>';
-    html += '<label for="de-align-' + _esc(ck) + '">' + _esc(t.text_alignment) + '</label>';
     html += '</span>';
     html += '<button type="button" class="btn btn-danger btn-sm de-remove-btn ms-auto" data-ck="' + _esc(ck) + '" title="' + _esc(t.remove) + '">';
     html += '<i class="fas fa-minus" aria-hidden="true"></i>';
@@ -922,11 +1704,7 @@ var DashticzDeviceEditor = (function () {
     html += '<span class="de-device-type">' +
       _esc(widget.definition.type || widget.id) + '</span>';
     html += '</span>';
-    html += '<span class="de-device-options de-widget-options">';
-    html += '<label class="de-option-field"><input type="checkbox" class="de-title-toggle" data-order-key="' +
-      _esc(orderKey) + '"';
-    if (widgetTitleVisible[orderKey] !== false) html += ' checked';
-    html += '><span>' + _esc(t.show_title) + '</span></label></span>';
+    html += _configButtonHtml(orderKey, t.widget_config);
     html += '<span class="de-device-field de-width-wrap">';
     html += '<input type="number" id="de-width-' + _esc(widget.id) +
       '" class="form-control form-control-sm de-device-width" data-order-key="' +
@@ -941,16 +1719,6 @@ var DashticzDeviceEditor = (function () {
       _esc(orderKey) + '" value="' + _esc(widgetTitles[orderKey] || '') + '">';
     html += '<label for="de-title-' + _esc(widget.id) + '">' + _esc(t.title) + '</label>';
     html += '</span>';
-    html += '<span class="de-device-field de-align-field">';
-    html += '<select id="de-align-' + _esc(widget.id) + '" class="form-select form-select-sm de-text-alignment" data-order-key="' + _esc(orderKey) + '">';
-    ['left', 'center', 'right'].forEach(function (alignment) {
-      html += '<option value="' + alignment + '"';
-      if (_normaliseTextAlignment(widgetTextAlignment[orderKey]) === alignment) html += ' selected';
-      html += '>' + _esc(t['align_' + alignment]) + '</option>';
-    });
-    html += '</select>';
-    html += '<label for="de-align-' + _esc(widget.id) + '">' + _esc(t.text_alignment) + '</label>';
-    html += '</span>';
     html += '<span class="de-widget-managed" title="' + _esc(t.managed_widget) + '"><i class="fas fa-lock" aria-hidden="true"></i></span>';
     html += '</div>';
     return html;
@@ -961,8 +1729,11 @@ var DashticzDeviceEditor = (function () {
     if (!special) return '';
     var t = _translations();
     var isTitle = special.specialType === 'title';
-    var label = isTitle ? t.title_block : t.dummy_device;
-    var detail = isTitle ? special.title : 'IDX\u00a0' + special.idx;
+    var isCustom = special.specialType === 'custom';
+    var label = isTitle ? t.title_block : (isCustom ? t.custom_devices : t.dummy_device);
+    var detail = isTitle
+      ? special.title
+      : (isCustom ? special.reference + ' · IDX\u00a0' + special.idx : 'IDX\u00a0' + special.idx);
     var html = '<div class="de-device-item de-special-item" data-special-key="' +
       _esc(special.reference) + '" data-order-key="' + _esc(orderKey) +
       '" draggable="true">';
@@ -972,24 +1743,7 @@ var DashticzDeviceEditor = (function () {
       _esc(label) + '</span>';
     html += '<span class="de-device-identity de-special-identity">';
     html += '<span class="de-device-name">' + _esc(detail) + '</span></span>';
-    if (!isTitle) {
-      var options = special.options || {
-        icon: true, hide_data: true, last_update: false, switch: false,
-      };
-      html += '<span class="de-device-options">';
-      ['icon', 'hide_data', 'last_update', 'switch'].forEach(function (option) {
-        html += '<label class="de-option-field"><input type="checkbox" class="de-device-option" ';
-        html += 'data-order-key="' + _esc(orderKey) + '" data-option="' + option + '"';
-        if (options[option]) html += ' checked';
-        html += '><span>' + _esc(t[option]) + '</span></label>';
-      });
-    } else {
-      html += '<span class="de-device-options de-widget-options">';
-    }
-    html += '<label class="de-option-field"><input type="checkbox" class="de-title-toggle" data-order-key="' +
-      _esc(orderKey) + '"';
-    if (special.showTitle !== false) html += ' checked';
-    html += '><span>' + _esc(t.show_title) + '</span></label></span>';
+    html += _configButtonHtml(orderKey, t.device_config);
     html += '<span class="de-device-field de-width-wrap">';
     html += '<input type="number" id="de-width-' + _esc(special.reference) +
       '" class="form-control form-control-sm de-device-width" data-order-key="' +
@@ -1003,16 +1757,6 @@ var DashticzDeviceEditor = (function () {
       _esc(orderKey) + '" value="' + _esc(special.title || '') + '">';
     html += '<label for="de-title-' + _esc(special.reference) + '">' + _esc(t.title) + '</label>';
     html += '</span>';
-    html += '<span class="de-device-field de-align-field">';
-    html += '<select id="de-align-' + _esc(special.reference) + '" class="form-select form-select-sm de-text-alignment" data-order-key="' + _esc(orderKey) + '">';
-    ['left', 'center', 'right'].forEach(function (alignment) {
-      html += '<option value="' + alignment + '"';
-      if (_normaliseTextAlignment(special.textAlignment) === alignment) html += ' selected';
-      html += '>' + _esc(t['align_' + alignment]) + '</option>';
-    });
-    html += '</select>';
-    html += '<label for="de-align-' + _esc(special.reference) + '">' + _esc(t.text_alignment) + '</label>';
-    html += '</span>';
     html += '<button type="button" class="btn btn-danger btn-sm de-remove-btn ms-auto" data-special-key="' +
       _esc(special.reference) + '" title="' + _esc(t.remove) + '">';
     html += '<i class="fas fa-minus" aria-hidden="true"></i></button></div>';
@@ -1025,10 +1769,6 @@ var DashticzDeviceEditor = (function () {
     var html = '<div class="de-add-row">';
     html += '<select class="form-select de-device-select" aria-label="' + _esc(t.select_aria) + '">';
     html += '<option value="">— ' + _esc(t.select_item) + ' —</option>';
-    html += '<option value="__dummy__">' + _esc(t.dummy_device) + '</option>';
-    html += '<option value="" disabled>------</option>';
-    html += '<option value="__title__">' + _esc(t.title_block) + '</option>';
-    html += '<option value="" disabled>------</option>';
     deviceList.forEach(function (d) {
       var dispIdx = d.subidx ? (d.idx + '_' + d.subidx) : String(d.idx);
       html += '<option value="' + _esc(d.key) + '" data-type-order="' + _typeOrder(d.type) + '">' + _esc(d.name) + ' (IDX\u00a0' + dispIdx + ')</option>';
@@ -1039,6 +1779,24 @@ var DashticzDeviceEditor = (function () {
     html += '<button type="button" class="btn btn-success btn-sm de-add-btn ms-2" title="' + _esc(t.add_device) + '">';
     html += '<i class="fas fa-plus" aria-hidden="true"></i>';
     html += '</button>';
+    html += '</div>';
+    return html;
+  }
+
+  function _specialAddRowHtml(kind) {
+    var t = _translations();
+    var isTitle = kind === 'title';
+    var html = '<div class="de-add-row de-special-add-row">';
+    html += '<select class="de-device-select d-none" aria-hidden="true" tabindex="-1">';
+    html += '<option value="' + (isTitle ? '__title__' : '__dummy__') + '" selected></option></select>';
+    html += '<input ' + (isTitle ? 'type="text"' : 'type="number" min="1"') +
+      ' class="form-control form-control-sm de-special-value" placeholder="' +
+      _esc(isTitle ? t.enter_title : t.enter_idx) + '" aria-label="' +
+      _esc(isTitle ? t.enter_title : t.enter_idx) + '">';
+    html += '<input type="number" class="form-control form-control-sm de-width-input" min="1" max="12" size="2" value="' +
+      (isTitle ? '12' : '3') + '" title="' + _esc(t.column_width) + '" aria-label="' + _esc(t.width) + '">';
+    html += '<button type="button" class="btn btn-success btn-sm de-add-btn ms-2" title="' +
+      _esc(isTitle ? t.separator : t.custom_devices) + '"><i class="fas fa-plus" aria-hidden="true"></i></button>';
     html += '</div>';
     return html;
   }
@@ -1061,6 +1819,10 @@ var DashticzDeviceEditor = (function () {
 
   /* ── wire up event handlers ─────────────────────────────────── */
   function _attachHandlers(available, allDomoticz) {
+    $('#de-device-list').on('click', '.de-config-btn', function () {
+      _openConfigPopup(String($(this).attr('data-order-key') || ''));
+    });
+
     /* - (remove) button */
     $('#de-device-list').on('click', '.de-remove-btn', function () {
       var specialKey = String($(this).attr('data-special-key') || '');
@@ -1090,7 +1852,8 @@ var DashticzDeviceEditor = (function () {
       delete deviceTitles[ck];
       delete deviceOptions[ck];
       delete deviceTitleVisible[ck];
-      delete deviceTextAlignment[ck];
+      delete deviceCustomFields[ck];
+      delete devicePreservedFields[ck];
       delete gridPositions[_deviceOrderKey(ck)];
       delete gridRefs[_deviceOrderKey(ck)];
 
@@ -1116,6 +1879,7 @@ var DashticzDeviceEditor = (function () {
                          name: displayName, plainName: isGroup ? rawName : null, type: type });
         _sortAvailable(available);
       }
+      if (editorMode !== 'devices') return;
 
       var newTypeOrder = _typeOrder(type);
       var newText = displayName + ' (IDX\u00a0' + dispIdx + ')';
@@ -1168,49 +1932,13 @@ var DashticzDeviceEditor = (function () {
       var value = String($(this).val() || '').trim();
       if (orderKey.indexOf('widget:') === 0) {
         widgetTitles[orderKey] = value;
+        if (managedWidgets[orderKey]) managedWidgets[orderKey].pendingTitleEdited = true;
       } else if (orderKey.indexOf('special:') === 0) {
         if (managedSpecials[orderKey]) managedSpecials[orderKey].title = value;
       } else {
         deviceTitles[String($(this).attr('data-ck') || '')] = value;
       }
     });
-    $('#de-device-list').on('change', '.de-title-toggle', function () {
-      var orderKey = String($(this).attr('data-order-key') || '');
-      var visible = $(this).prop('checked');
-      if (orderKey.indexOf('widget:') === 0) {
-        widgetTitleVisible[orderKey] = visible;
-      } else if (orderKey.indexOf('special:') === 0) {
-        if (managedSpecials[orderKey]) managedSpecials[orderKey].showTitle = visible;
-      } else {
-        deviceTitleVisible[String($(this).attr('data-ck') || '')] = visible;
-      }
-    });
-    $('#de-device-list').on('change', '.de-text-alignment', function () {
-      var orderKey = String($(this).attr('data-order-key') || '');
-      var value = _normaliseTextAlignment($(this).val());
-      if (orderKey.indexOf('widget:') === 0) {
-        widgetTextAlignment[orderKey] = value;
-      } else if (orderKey.indexOf('special:') === 0) {
-        if (managedSpecials[orderKey]) managedSpecials[orderKey].textAlignment = value;
-      } else {
-        deviceTextAlignment[orderKey.slice(7)] = value;
-      }
-      $(this).val(value);
-    });
-    $('#de-device-list').on('change', '.de-device-option', function () {
-      var orderKey = String($(this).attr('data-order-key') || '');
-      var option = String($(this).attr('data-option') || '');
-      if (orderKey.indexOf('special:') === 0) {
-        if (!managedSpecials[orderKey]) return;
-        if (!managedSpecials[orderKey].options) managedSpecials[orderKey].options = {};
-        managedSpecials[orderKey].options[option] = $(this).prop('checked');
-        return;
-      }
-      var ck = String($(this).attr('data-ck') || '');
-      if (!deviceOptions[ck]) deviceOptions[ck] = {};
-      deviceOptions[ck][option] = $(this).prop('checked');
-    });
-
     $('#de-add-rows').on('change', '.de-device-select', function () {
       var $row = $(this).closest('.de-add-row');
       var $value = $row.find('.de-special-value');
@@ -1266,16 +1994,30 @@ var DashticzDeviceEditor = (function () {
           width: _parseWidth($row.find('.de-width-input').val()),
           height: specialType === 'title' ? 120 : null,
           showTitle: true,
-          textAlignment: 'left',
           options: specialType === 'dummy'
-            ? { icon: true, hide_data: true, last_update: false, switch: false }
+            ? { icon: true, iconValue: null, hide_data: true, last_update: false, switch: false }
             : null,
+          customFields: [{
+            field: 'title',
+            setting: specialType === 'title'
+              ? rawValue.slice(0, 100)
+              : 'Dummy_' + (numberMatch ? numberMatch[1] : '1'),
+            value: specialType === 'title'
+              ? rawValue.slice(0, 100)
+              : 'Dummy_' + (numberMatch ? numberMatch[1] : '1'),
+            system: true,
+          }],
+          preservedFields: {},
         };
         managedSpecials[specialOrderKey] = special;
         managedOrder.push(specialOrderKey);
         $('#de-device-list .de-empty').remove();
         $('#de-device-list').append(_specialItemHtml(specialOrderKey));
-        $select.val('').trigger('change');
+        if (editorMode === 'devices') {
+          $select.val('').trigger('change');
+        } else {
+          $row.find('.de-special-value').val('');
+        }
         return;
       }
 
@@ -1286,10 +2028,13 @@ var DashticzDeviceEditor = (function () {
       deviceWidths[ck] = _parseWidth($row.find('.de-width-input').val());
       deviceTitles[ck] = '';
       deviceOptions[ck] = {
-        icon: true, hide_data: true, last_update: false, switch: false,
+        icon: true, iconValue: null, hide_data: false, last_update: false, switch: false,
       };
       deviceTitleVisible[ck] = true;
-      deviceTextAlignment[ck] = 'left';
+      deviceCustomFields[ck] = [
+        { field: 'title', setting: '', value: '', system: true },
+      ];
+      devicePreservedFields[ck] = {};
 
       /* record the device name for this composite key */
       /* for groups, use plainName (without Group_/Scene_ prefix) so the block title is clean */
@@ -1312,8 +2057,7 @@ var DashticzDeviceEditor = (function () {
       /* remove added device from every remaining select */
       $('#de-add-rows .de-device-select option[value="' + ck + '"]').remove();
 
-      /* Always add a fresh row: Dummy and Title remain available even when
-         every Domoticz device has already been added. */
+      /* Always add a fresh normal-device row for the next selection. */
       var remaining = available.filter(function (d) {
         return managedDevices.indexOf(d.key) < 0;
       });
@@ -1385,8 +2129,9 @@ var DashticzDeviceEditor = (function () {
     $('#deviceeditorpopup').on('click', '#de-save-btn', _save);
 
     /* cleanup on hide */
-    $('#deviceeditorpopup').one('hidden.bs.modal', function () {
-      $('#deviceeditorpopup').remove();
+    $('#deviceeditorpopup').on('hidden.bs.modal', function () {
+      if ($(this).data('de-config-transition')) return;
+      $(this).remove();
     });
   }
 
@@ -1423,20 +2168,27 @@ var DashticzDeviceEditor = (function () {
         var specialEntry = {
           kind: special.specialType,
           key: special.reference,
-          title: special.title,
           width: _parseWidth(special.width),
         };
-        if (special.showTitle === false) specialEntry.hide_title = true;
-        var specialTextAlignment = _normaliseTextAlignment(
-          special.textAlignment
-        );
-        if (specialTextAlignment !== 'left') {
-          specialEntry.text_alignment = specialTextAlignment;
+        if (special.specialType !== 'custom' || String(special.title || '').trim()) {
+          specialEntry.title = special.title;
         }
-        if (special.specialType === 'dummy') {
+        if (special.showTitle === false) specialEntry.hide_title = true;
+        var specialCustomFields = _deviceCustomFieldsObject(
+          special.customFields,
+          special.preservedFields
+        );
+        if (Object.keys(specialCustomFields).length) {
+          specialEntry.custom_fields = specialCustomFields;
+        }
+        if (special.specialType === 'dummy' || special.specialType === 'custom') {
           specialEntry.idx = special.idx;
           var specialOptions = special.options || {};
-          if (specialOptions.icon === false) specialEntry.icon = '';
+          if (specialOptions.icon === false) {
+            specialEntry.icon = '';
+          } else if (specialOptions.iconValue) {
+            specialEntry.icon = specialOptions.iconValue;
+          }
           specialEntry.hide_data = specialOptions.hide_data === true;
           specialEntry.last_update = specialOptions.last_update === true;
           specialEntry.switch = specialOptions.switch === true;
@@ -1455,13 +2207,21 @@ var DashticzDeviceEditor = (function () {
       var title = String(deviceTitles[ck] || '').trim();
       var options = deviceOptions[ck] || {};
       if (title) entry.title = title;
-      if (options.icon === false) entry.icon = '';
+      if (options.icon === false) {
+        entry.icon = '';
+      } else if (options.iconValue) {
+        // A custom icon entered in Device Config takes precedence while Icon is enabled.
+        entry.icon = options.iconValue;
+      }
       entry.hide_data = options.hide_data === true;
       entry.last_update = options.last_update === true;
       entry.switch = options.switch === true;
       if (deviceTitleVisible[ck] === false) entry.hide_title = true;
-      var deviceAlignment = _normaliseTextAlignment(deviceTextAlignment[ck]);
-      if (deviceAlignment !== 'left') entry.text_alignment = deviceAlignment;
+      var customFields = _deviceCustomFieldsObject(
+        deviceCustomFields[ck],
+        devicePreservedFields[ck]
+      );
+      if (Object.keys(customFields).length) entry.custom_fields = customFields;
       if (p.subidx) entry.subidx = p.subidx;
       if (deviceHeights[ck]) entry.height = deviceHeights[ck];
       // Never retain a legacy name-based reference: Domoticz names may change.
@@ -1489,23 +2249,19 @@ var DashticzDeviceEditor = (function () {
           },
           token
         ).then(function (deviceResult) {
-          var widgetSave = gridMode
-            ? $.Deferred()
-                .resolve({
-                  blockKeys: orderedWidgetKeys.map(function (orderKey) {
-                    return gridRefs[orderKey];
-                  }),
-                })
-                .promise()
-            : _postEditorData(
-                'js/savewidgets.php',
-                {
-                  widgets: widgetPayload,
-                  screen: _activeScreenPayload(),
-                  blocksOnly: false,
-                },
-                token
-              );
+          // Widget display options must also be persisted on grid screens.
+          // Passing the stable grid key lets savewidgets.php rebuild only the
+          // editor-owned widget blocks before savegridlayout.php rewrites order.
+          var widgetSave = _postEditorData(
+            'js/savewidgets.php',
+            {
+              widgets: widgetPayload,
+              settings: pendingWidgetSettings,
+              screen: _activeScreenPayload(),
+              blocksOnly: gridMode,
+            },
+            token
+          );
           return widgetSave.then(function (widgetResult) {
             var blockRefs = {};
             var widgetRefs = {};
@@ -1515,6 +2271,8 @@ var DashticzDeviceEditor = (function () {
             orderedWidgetKeys.forEach(function (orderKey, index) {
               widgetRefs[orderKey] = widgetResult.blockKeys[index];
             });
+            // Device Editor does not modify custom.css; theme and hand-written
+            // CSS remain outside this save flow.
             if (gridMode) {
               var occupied = gridExtras
                 .map(function (item) {
@@ -1744,14 +2502,13 @@ var DashticzDeviceEditor = (function () {
     return Math.max(50, Math.min(2000, Math.round(height / 10) * 10));
   }
 
-  function _normaliseTextAlignment(value) {
-    value = String(value || '').toLowerCase();
-    return ['left', 'center', 'right'].indexOf(value) > -1
-      ? value
-      : 'left';
-  }
-
-  return { open: open };
+  return {
+    open: open,
+    openConfig: openConfig,
+    openSpecial: openSpecial,
+    openCustom: openCustom,
+    addSeparator: addSeparator,
+  };
 }());
 
 //# sourceURL=js/deviceeditor.js

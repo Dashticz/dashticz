@@ -5,20 +5,83 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
+
+v3.40.2 beta (7-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Grid screens: placing the same device or widget on both a normal screen and the
+  standby screen now keeps independent positions for each screen.  Previously the
+  grid position was stored in the shared ``blocks['ref']['grid']`` global, so the
+  second screen's save silently overwrote the first screen's position and both
+  screens rendered at the same location.  The config writer now stores each block's
+  grid position as a per-screen ``{key, grid}`` inline descriptor inside
+  ``screens[N]['blocks']`` / ``standby_screen['blocks']``, and ``renderGridScreen``
+  reads the per-screen grid from that descriptor instead of from the shared
+  ``blocks`` object.  Old-format configs (string refs with ``blocks[ref].grid``)
+  remain fully backward-compatible.
+
+v3.40.1 beta (7-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Theme settings panel: ``_getStoredCssVarOverrides`` now only reads CSS variable
+  overrides from the ``dashticz-theme-vars`` block written by ``savecustomcss.php``
+  (an inline ``<style>`` element), not from theme stylesheet ``<link>`` rules.
+  Previously the function scanned all ``<link>`` stylesheets including
+  ``creative.css``, which caused ``_hasThemeCssVarCustomizations`` to always
+  return ``true`` even when no user overrides were saved.  The ``(custom)`` marker
+  in the theme dropdown therefore never cleared after a reset, making saved changes
+  appear not to take effect.
+
+v3.40.0 beta (7-8-2026)
+--------------------------
+
+* **Enhancements**
+
+- Data checkboxes in Device Config and Widget Config now use positive semantics:
+  checked shows the data text, while unchecked writes ``hide_data: true``.
+- The Screen Editor add tile is now labeled **Devices**.
+- Device tiles in Layout Editor show a top-left configuration cog that opens the
+  existing Device Config flow.
+- The Wizard icon now uses ``fa-wand-magic-sparkles`` in all editor topbars.
+- Layout Editor widget tiles now use the same top-left configuration cog as
+  devices and open the matching full Widget Config. Device/Widget config headers
+  include the name of the tile being edited.
+- Removed the obsolete editor text-alignment classes/writer support and changed
+  the default normal-screen background to ``/img/custom/BG_Dashticz_bw.png``.
+
+* **Code**
+
+- Bumped the beta package and runtime version to 3.40.0 and updated regression
+  coverage for the editor controls.
+
 v3.30.3 beta (5-8-2026)
 
 * **Enhancements**
 
-- Device Editor rows for devices, widgets and helper blocks now include a title
-  on/off checkbox and a left/center/right text-alignment selector.
+- Device Editor rows now use a cog button that opens **Device Config**. The
+  existing Icon, Data, Updated, Switch and Title controls and visual
+  left/center/right alignment buttons are grouped in that popup. The Device
+  Editor is hidden while the popup is open so the configuration always remains
+  in front; it returns after OK or Cancel.
+- Device Config now also contains repeatable Field/Setting rows for typed custom
+  device parameters. Checkboxes are larger and the smaller alignment controls
+  have a visible localized label loaded from ``lang/*.json``.
+- Widget Config now includes Icon, Data, Updated and Title options plus
+  repeatable Field/Setting rows for typed custom block parameters.
 - The generated ``blocks[...]`` definitions now save and reload those settings
   through the existing Device Editor flow, including helper title blocks.
+- Per-device alignment is also maintained in an isolated generated section of
+  ``custom/custom.css`` without replacing hand-written CSS.
 
 * **Code**
 
-- Updated English, Dutch and French Device Editor translations, refreshed the
-  related source/playwright tests, and applied the shared title/alignment
-  classes used when blocks render.
+- Updated English, Dutch and French editor translations, validation and
+  source/playwright tests. Existing ``CONFIG.js`` variables and alignment
+  options remain supported and the version number is unchanged.
 
 v3.30.2 beta (4-8-2026)
 
