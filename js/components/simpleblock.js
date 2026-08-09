@@ -376,6 +376,7 @@ var DT_simpleblock = (function () {
       { action: 'device', icon: 'fa-plus', label: t.add_device },
       { action: 'widgets', icon: 'fa-puzzle-piece', label: t.title || 'Widgets' },
       { action: 'custom', icon: 'fa-cube', label: t.custom_devices || 'Custom devices' },
+      { action: 'slidebutton', icon: 'fa-sliders-h', label: t.slide_button || 'Slide button' },
       { action: 'separator', icon: 'fa-heading', label: t.separator || 'Separator' },
     ];
     var html =
@@ -420,6 +421,8 @@ var DT_simpleblock = (function () {
         DT_function.loadDTScript('js/deviceeditor.js').then(function () {
           if (selectedAction === 'custom') {
             DashticzDeviceEditor.openCustom();
+          } else if (selectedAction === 'slidebutton') {
+            DashticzDeviceEditor.openSlideButton();
           } else if (selectedAction === 'separator') {
             DashticzDeviceEditor.addSeparator();
           } else {

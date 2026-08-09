@@ -41,8 +41,9 @@ create the configuration and open the dashboard.
 The mode switch in the topbar selects how the dashboard is managed:
 
 - **Wizard** shows the Screen Editor magic wand. While the Screen Editor is
-  active its plus button opens the Device, Widget, Custom-device and Separator
-  workflows. These editors write only their managed sections in `custom/CONFIG.js`.
+  active its plus button opens the Device, Widget, Custom-device, Slide button
+  and Separator workflows. These editors write only their managed sections in
+  `custom/CONFIG.js`.
 - **Custom** hides the Screen Editor workflow and exposes the complete settings
   catalog, including the widget settings. Use this mode for a hand-written
   configuration.
@@ -70,7 +71,7 @@ shown in the normal topbar. While the **Screen Editor** is active, a plus button
 appears immediately to the left of the magic wand. Closing the Screen Editor
 hides that plus button again.
 
-Select the Screen Editor plus button to open one central add menu with four
+Select the Screen Editor plus button to open one central add menu with five
 equal tiles:
 
 - **Add devices** opens the existing Domoticz Device Editor and keeps its
@@ -78,6 +79,8 @@ equal tiles:
 - **Widgets** opens the existing Widget Editor;
 - **Custom devices** opens a dedicated popup for creating a named custom
   block with a primary IDX and repeatable Field/Setting options;
+- **Slide button** opens a dedicated popup for creating a slide-navigation
+  button block (for example `blocks.slidehome = {key:'Home', title:'Home Screen', slide:1, icon:'fas fa-home'}`);
 - **Separator** immediately adds a full-width (12-column) Title/block-title
   separator to the active screen without opening another popup.
 
@@ -113,6 +116,8 @@ The Device Editor continues to use the existing Domoticz device list and can:
 - show existing widgets as `Widget - name` rows. Selecting a widget cog here
   now opens the same complete Widget Config popup used by the Widget Editor,
   including all widget-specific settings and the same save model.
+- keep widget overview labels language-based; a custom widget title only changes
+  the rendered tile title on the screen.
 
 The old Dummy/custom-device and Title/separator entries are no longer in the
 normal Domoticz device dropdown. Use **Custom devices** and **Separator** from

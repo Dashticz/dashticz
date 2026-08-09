@@ -78,6 +78,14 @@
   custom device and widget block properties.
 - Added/updated English, Dutch and French labels for the Screen Editor add menu
   and its Custom devices/Separator routes. These changes are included in version 3.40.0.
+- Layout Editor now treats Domoticz groups/scenes (`s<idx>`) as configurable
+  devices, so their top-left control is the same config cog and opens the same
+  Device Config flow as regular devices.
+- Widget overview/catalog labels now stay language-based, while custom widget
+  titles remain screen-only overrides.
+- Added a new **Slide button** tile to the Screen Editor add menu. It opens a
+  dedicated popup and saves a named slide-navigation block with configurable key,
+  title, screen target and icon.
 
 ## 3.23.7 — Editor add regression
 

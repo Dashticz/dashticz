@@ -99,7 +99,10 @@ foreach ($data['devices'] as $entry) {
     $customFields = _normalise_custom_device_fields($entry);
     if (is_array($entry)
         && isset($entry['kind'])
-        && in_array($entry['kind'], ['dummy', 'title', 'custom'], true)
+        && (
+            in_array($entry['kind'], ['dummy', 'title', 'custom'], true)
+            || $entry['kind'] === 'slidebutton'
+        )
     ) {
         /* Helper/custom entries are managed by the Device Editor but are not
          selected from the normal Domoticz device list. Keep their explicit key. */
@@ -122,10 +125,14 @@ foreach ($data['devices'] as $entry) {
         $title = isset($entry['title']) && is_string($entry['title'])
             ? substr(trim($entry['title']), 0, 100)
             : '';
-        if ($title === '' && $kind !== 'custom') {
+        if ($title === '' && $kind !== 'custom' && $kind !== 'slidebutton') {
             dashticz_json_error(400, 'A special block title is required.');
         }
-        $width = isset($entry['width']) ? (int)$entry['width'] : ($kind === 'title' ? 12 : 3);
+        $defaultWidth = 3;
+        if ($kind === 'title' || $kind === 'slidebutton') {
+            $defaultWidth = 12;
+        }
+        $width = isset($entry['width']) ? (int)$entry['width'] : $defaultWidth;
         $width = max(1, min(12, $width));
         $height = $kind === 'title' ? 120 : null;
         if (array_key_exists('height', $entry) && $entry['height'] !== null && $entry['height'] !== '') {
@@ -153,6 +160,23 @@ foreach ($data['devices'] as $entry) {
             $lastUpdate = !empty($entry['last_update']);
             $switch = !empty($entry['switch']);
         }
+        $slide = null;
+        $buttonKey = null;
+        if ($kind === 'slidebutton') {
+            $slide = isset($entry['slide']) ? (int)$entry['slide'] : 0;
+            if ($slide < 1) {
+                dashticz_json_error(400, 'A slide button requires a positive target screen number.');
+            }
+            $buttonKey = isset($entry['button_key']) && is_string($entry['button_key'])
+                ? substr(trim($entry['button_key']), 0, 100)
+                : '';
+            if ($buttonKey === '') {
+                $buttonKey = $title !== '' ? $title : $entry['key'];
+            }
+            $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
+                ? substr(trim($entry['icon']), 0, 100)
+                : null;
+        }
         $devices[] = [
             'kind' => $kind,
             'idx' => $idx,
@@ -162,6 +186,8 @@ foreach ($data['devices'] as $entry) {
             'width' => $width,
             'height' => $height,
             'icon' => $icon,
+            'slide' => $slide,
+            'button_key' => $buttonKey,
             'hide_data' => $hideData,
             'last_update' => $lastUpdate,
             'switch' => $switch,
@@ -343,7 +369,7 @@ if (!empty($devices)) {
     );
     $requestKeys = [];
     foreach ($devices as &$device) {
-        if (isset($device['kind']) && in_array($device['kind'], ['dummy', 'title', 'custom'], true)) {
+        if (isset($device['kind']) && (in_array($device['kind'], ['dummy', 'title', 'custom'], true) || $device['kind'] === 'slidebutton')) {
             /* The browser generates stable numbered keys for special blocks. */
             if (isset($requestKeys[$device['key']])) {
                 dashticz_json_error(409, 'Special block key already exists.');
