@@ -1481,6 +1481,20 @@ function configwriter_special_block_props($block)
                 ? $block['height']
                 : 120,
         ];
+    } elseif ($kind === 'slidebutton') {
+        $props = [
+            'width' => $width,
+            'slide' => isset($block['slide']) ? max(1, (int)$block['slide']) : 1,
+            'key' => isset($block['button_key']) && trim((string)$block['button_key']) !== ''
+                ? substr(trim((string)$block['button_key']), 0, 100)
+                : (trim($title) !== '' ? substr(trim($title), 0, 100) : 'Slide'),
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null && $block['icon'] !== '') {
+            $props['icon'] = (string)$block['icon'];
+        }
     } elseif ($kind === 'custom') {
         $props = [
             'idx' => (int)$block['idx'],

@@ -21,6 +21,17 @@ v3.40.2 beta (7-8-2026)
   reads the per-screen grid from that descriptor instead of from the shared
   ``blocks`` object.  Old-format configs (string refs with ``blocks[ref].grid``)
   remain fully backward-compatible.
+- Layout Editor now recognises Domoticz group/scene block references (for
+  example ``s1``) as normal configurable devices. Their top-left edit-mode control
+  is now the same configuration cog used by other devices, and it opens the
+  existing Device Config popup instead of showing only the move icon.
+- Widget custom titles edited from Device/Widget Config now stay screen-local:
+  the rendered widget block title changes on-screen, while widget catalog/menu
+  labels remain language-driven and no longer inherit a saved block title.
+- The Screen Editor add menu now includes a dedicated **Slide button** tile.
+  It opens a small popup (similar to Custom devices) that saves a named block
+  with ``slide``, ``key``, ``title`` and optional ``icon`` properties for quick
+  page navigation buttons.
 
 v3.40.1 beta (7-8-2026)
 --------------------------

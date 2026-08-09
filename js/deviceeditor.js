@@ -63,6 +63,15 @@ var DashticzDeviceEditor = (function () {
         custom_fields: 'Custom fields',
         custom_fields_help: 'Field and Setting are written as typed block parameters in CONFIG.js.',
         custom_devices: 'Custom devices',
+        slide_button: 'Slide button',
+        slide_button_name: 'Button name',
+        slide_button_name_help: 'Used as the blocks[...] key in CONFIG.js.',
+        slide_button_key: 'Key',
+        slide_button_title: 'Title',
+        slide_button_screen: 'Screen',
+        slide_button_icon: 'Icon',
+        invalid_slide_button_name: 'Enter a valid unique button name.',
+        invalid_slide_target: 'Enter a valid positive screen number.',
         custom_device_name: 'Device name',
         custom_device_name_help: 'Used as the blocks[...] key in CONFIG.js.',
         custom_device_options: 'Device options',
@@ -153,6 +162,15 @@ var DashticzDeviceEditor = (function () {
     _init();
     _prepareManagedDeviceState();
     _showCustomDevicePopup();
+  }
+
+  /** Open the dedicated Slide button popup used by the Screen Editor add menu. */
+  function openSlideButton() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showSlideButtonPopup();
   }
 
   /** Add a full-width separator immediately, without opening the Device Editor. */
@@ -353,6 +371,13 @@ var DashticzDeviceEditor = (function () {
       kind = 'dummy';
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      typeof definition.idx === 'undefined' &&
+      parseInt(definition.slide, 10) > 0
+    ) {
+      // Keep slide-only helper buttons editable in Device/Layout Editor.
+      kind = 'slidebutton';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       !/^device_\d+(?:_\d+)?$/.test(reference) &&
       !definition.type &&
       parseInt(definition.idx, 10) > 0
@@ -369,7 +394,10 @@ var DashticzDeviceEditor = (function () {
       orderKey: _specialOrderKey(reference),
       reference: reference,
       definition: definition,
-      idx: kind === 'title' ? null : parseInt(definition.idx, 10),
+      idx:
+        kind === 'title' || kind === 'slidebutton'
+          ? null
+          : parseInt(definition.idx, 10),
       title: kind === 'custom'
         ? String(definition.title || '')
         : String(definition.title || (kind === 'title' ? 'Title' : reference)),
@@ -386,6 +414,8 @@ var DashticzDeviceEditor = (function () {
             last_update: definition.last_update === true,
             switch: definition.switch === true,
           },
+      buttonKey: String(definition.key || ''),
+      slideTarget: parseInt(definition.slide, 10) > 0 ? parseInt(definition.slide, 10) : 1,
       showTitle: definition.hide_title !== true,
       customFields: _deviceCustomFieldRows(definition, definition.title),
       preservedFields: _devicePreservedFieldValues(definition),
@@ -419,6 +449,8 @@ var DashticzDeviceEditor = (function () {
       longfonds:      t.longfonds_title      || 'Air quality',
       moon:           t.moon_title           || 'Moon',
       news:           t.news_title           || 'News',
+      iframe:         t.iframe_title         || 'iFrame',
+      xmltvguide:     t.xmltvguide_title     || 'TV Guide',
     };
 
     var catalog = {
@@ -437,6 +469,8 @@ var DashticzDeviceEditor = (function () {
       widget_longfonds:       { id: 'longfonds',       title: translatedTitles.longfonds },
       widget_moon:            { id: 'moon',            title: translatedTitles.moon },
       widget_news:            { id: 'news',            title: translatedTitles.news },
+      widget_iframe:         { id: 'iframe',         title: translatedTitles.iframe },
+      widget_xmltvguide:     { id: 'xmltvguide',     title: translatedTitles.xmltvguide },
     };
     if (typeof blocks === 'undefined' || !blocks[reference]) {
       return null;
@@ -461,6 +495,9 @@ var DashticzDeviceEditor = (function () {
         longfonds: 'longfonds',
         moon: 'moon',
         news: 'news',
+        frame: 'iframe',
+        iframe: 'iframe',
+        xmltvguide: 'xmltvguide',
         basicclock: 'clock',
         stationclock: 'clock',
         flipclock: 'clock',
@@ -469,9 +506,9 @@ var DashticzDeviceEditor = (function () {
       };
       var id = typeMap[type];
       if (!id) return null;
-      // Use the translated title for the widget type; fall back to the CONFIG.js
-      // title only if the type is not in the translations map.
-      catalogItem = { id: id, title: translatedTitles[id] || definition.title || id };
+      // Keep widget list labels language-based. User-defined block titles remain
+      // editable separately and are applied only on the rendered screen block.
+      catalogItem = { id: id, title: translatedTitles[id] || id };
     }
     return {
       kind: 'widget',
@@ -1354,6 +1391,97 @@ var DashticzDeviceEditor = (function () {
     window.bootstrap.Modal.getOrCreateInstance(document.getElementById('customdevicepopup')).show();
   }
 
+  function _showSlideButtonPopup() {
+    var t = _translations();
+    $('#slidebuttonpopup').remove();
+
+    var html = '<div class="modal fade" id="slidebuttonpopup" tabindex="-1" aria-hidden="true">';
+    html += '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html += '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-sliders-h me-2" aria-hidden="true"></i>' +
+      _esc(t.slide_button) + '</h5>';
+    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
+    html += '<div class="modal-body">';
+    html += '<div class="mb-3"><label class="form-label" for="sb-button-name">' + _esc(t.slide_button_name) + '</label>';
+    html += '<input type="text" class="form-control" id="sb-button-name" value="slidehome" autocomplete="off">';
+    html += '<div class="form-text">' + _esc(t.slide_button_name_help) + '</div></div>';
+    html += '<div class="mb-3"><label class="form-label" for="sb-button-key">' + _esc(t.slide_button_key) + '</label>';
+    html += '<input type="text" class="form-control" id="sb-button-key" value="Home" autocomplete="off"></div>';
+    html += '<div class="mb-3"><label class="form-label" for="sb-button-title">' + _esc(t.slide_button_title) + '</label>';
+    html += '<input type="text" class="form-control" id="sb-button-title" value="Home Screen" autocomplete="off"></div>';
+    html += '<div class="mb-3"><label class="form-label" for="sb-button-screen">' + _esc(t.slide_button_screen) + '</label>';
+    html += '<input type="number" min="1" step="1" class="form-control" id="sb-button-screen" value="1"></div>';
+    html += '<div class="mb-3"><label class="form-label" for="sb-button-icon">' + _esc(t.slide_button_icon) + '</label>';
+    html += '<input type="text" class="form-control" id="sb-button-icon" value="fas fa-home" autocomplete="off"></div>';
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html += '<div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      _esc(t.cancel) + '</button>';
+    html += '<button type="button" class="btn btn-primary" id="sb-save-btn">' + _esc(t.save) + '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+
+    $('#sb-save-btn').on('click', function () {
+      var $popup = $('#slidebuttonpopup');
+      var $message = $popup.find('.cd-custom-message').removeClass('text-danger').text('');
+      var reference = $.trim(String($('#sb-button-name').val() || ''));
+      var buttonKey = $.trim(String($('#sb-button-key').val() || ''));
+      var buttonTitle = $.trim(String($('#sb-button-title').val() || ''));
+      var rawSlide = $.trim(String($('#sb-button-screen').val() || ''));
+      var slideTarget = parseInt(rawSlide, 10);
+      var iconValue = $.trim(String($('#sb-button-icon').val() || ''));
+      if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
+        $message.addClass('text-danger').text(t.invalid_slide_button_name);
+        $('#sb-button-name').trigger('focus');
+        return;
+      }
+      if ((typeof blocks !== 'undefined' && blocks[reference]) || managedSpecials[_specialOrderKey(reference)]) {
+        $message.addClass('text-danger').text(t.invalid_slide_button_name);
+        $('#sb-button-name').trigger('focus');
+        return;
+      }
+      if (!(slideTarget > 0 && String(slideTarget) === rawSlide)) {
+        $message.addClass('text-danger').text(t.invalid_slide_target);
+        $('#sb-button-screen').trigger('focus');
+        return;
+      }
+      if (!buttonKey) buttonKey = reference;
+      if (!buttonTitle) buttonTitle = buttonKey;
+
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'slidebutton',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: buttonTitle.slice(0, 100),
+        width: 12,
+        height: null,
+        showTitle: true,
+        options: {
+          icon: iconValue !== '',
+          iconValue: iconValue.slice(0, 100),
+          hide_data: false,
+          last_update: false,
+          switch: false,
+        },
+        buttonKey: buttonKey.slice(0, 100),
+        slideTarget: slideTarget,
+        customFields: _deviceCustomFieldRows(
+          { title: buttonTitle.slice(0, 100), slide: slideTarget },
+          buttonTitle.slice(0, 100)
+        ),
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(document.getElementById('slidebuttonpopup')).hide();
+      _save();
+    });
+
+    $('#slidebuttonpopup').one('hidden.bs.modal', function () { $(this).remove(); });
+    window.bootstrap.Modal.getOrCreateInstance(document.getElementById('slidebuttonpopup')).show();
+  }
+
   function _showParentEditor(editor) {
     if (editor && document.body.contains(editor)) {
       $(editor).removeData('de-config-transition');
@@ -1630,6 +1758,14 @@ var DashticzDeviceEditor = (function () {
       if (isSpecial) {
         special.title = pendingTitle;
         special.customFields = storedRows;
+        if (special.specialType === 'slidebutton') {
+          storedRows.forEach(function (row) {
+            if (_normaliseCustomFieldName(row.field) === 'slide') {
+              var parsedSlide = parseInt(row.value, 10);
+              if (parsedSlide > 0) special.slideTarget = parsedSlide;
+            }
+          });
+        }
         if (!isTitle) {
           special.options = $.extend({}, special.options, updated);
           special.options.iconValue = hasIconField ? pendingIconValue : null;
@@ -1730,16 +1866,21 @@ var DashticzDeviceEditor = (function () {
     var t = _translations();
     var isTitle = special.specialType === 'title';
     var isCustom = special.specialType === 'custom';
-    var label = isTitle ? t.title_block : (isCustom ? t.custom_devices : t.dummy_device);
+    var isSlideButton = special.specialType === 'slidebutton';
+    var label = isTitle
+      ? t.title_block
+      : (isCustom ? t.custom_devices : (isSlideButton ? t.slide_button : t.dummy_device));
     var detail = isTitle
       ? special.title
-      : (isCustom ? special.reference + ' · IDX\u00a0' + special.idx : 'IDX\u00a0' + special.idx);
+      : isSlideButton
+        ? special.reference + ' · ' + t.slide_button_screen + '\u00a0' + String(special.slideTarget || 1)
+        : (isCustom ? special.reference + ' · IDX\u00a0' + special.idx : 'IDX\u00a0' + special.idx);
     var html = '<div class="de-device-item de-special-item" data-special-key="' +
       _esc(special.reference) + '" data-order-key="' + _esc(orderKey) +
       '" draggable="true">';
     html += '<span class="de-drag-handle" title="' + _esc(t.drag_to_reorder) + '"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
     html += '<span class="de-device-idx"><i class="fas ' +
-      (isTitle ? 'fa-heading' : 'fa-cube') + ' me-1" aria-hidden="true"></i>' +
+      (isTitle ? 'fa-heading' : (isSlideButton ? 'fa-sliders-h' : 'fa-cube')) + ' me-1" aria-hidden="true"></i>' +
       _esc(label) + '</span>';
     html += '<span class="de-device-identity de-special-identity">';
     html += '<span class="de-device-name">' + _esc(detail) + '</span></span>';
@@ -2192,6 +2333,16 @@ var DashticzDeviceEditor = (function () {
           specialEntry.hide_data = specialOptions.hide_data === true;
           specialEntry.last_update = specialOptions.last_update === true;
           specialEntry.switch = specialOptions.switch === true;
+        } else if (special.specialType === 'slidebutton') {
+          var slideOptions = special.options || {};
+          specialEntry.slide = parseInt(special.slideTarget, 10) || 1;
+          specialEntry.button_key = String(
+            special.buttonKey ||
+              (special.definition && special.definition.key) ||
+              special.title ||
+              special.reference
+          ).slice(0, 100);
+          specialEntry.icon = slideOptions.iconValue || '';
         }
         if (special.height) specialEntry.height = special.height;
         return specialEntry;
@@ -2507,6 +2658,7 @@ var DashticzDeviceEditor = (function () {
     openConfig: openConfig,
     openSpecial: openSpecial,
     openCustom: openCustom,
+    openSlideButton: openSlideButton,
     addSeparator: addSeparator,
   };
 }());

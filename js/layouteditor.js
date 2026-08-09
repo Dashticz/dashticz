@@ -715,7 +715,36 @@ var DashticzLayoutEditor = (function () {
       };
     }
 
+    if (
+      key &&
+      typeof definition.idx === 'undefined' &&
+      parseInt(definition.slide, 10) > 0
+    ) {
+      return {
+        definition: definition,
+        kind: 'device',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
     var rawIdx = typeof definition.idx !== 'undefined' ? definition.idx : ref;
+    var groupMatch = String(rawIdx).match(/^s\d+$/);
+    if (groupMatch) {
+      var groupName = definition.title || key || String(rawIdx);
+      return {
+        definition: definition,
+        kind: 'device',
+        reference: key || String(rawIdx),
+        widgetId: null,
+        idx: String(rawIdx),
+        subidx: 0,
+        name: groupName,
+      };
+    }
     var match = String(rawIdx).match(/^(\d+)(?:_(\d+))?$/);
     if (!match || parseInt(match[1], 10) < 1) {
       var widgetId = _widgetIdFromReference(ref);
