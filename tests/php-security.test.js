@@ -147,7 +147,8 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(source, /extract_declared_block_refs\(\$keyCollisionConfig\)/);
   assert.match(writer, /function configwriter_make_device_block_key/);
   assert.match(writer, /'device_'\s*\.\s*\(int\)\$idx/);
-  assert.match(writer, /if \(\$isGroup\) \{\s*\$props\['title'\] = \$title;/);
+  assert.match(writer, /isset\(\$device\['title'\]\)[\s\S]*\$props\['title'\]/);
+  assert.match(writer, /\$isGroup && \(!isset\(\$device\['title'\]\)/);
   assert.match(source, /\$blocksOnly/);
   /* accepts both legacy bare integers and {idx,name} objects */
   assert.match(source, /is_int\(\$entry\)/);
@@ -157,11 +158,16 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(source, /round\(\$height \/ 10\) \* 10/);
   assert.match(writer, /height/);
   /* Device Editor helper blocks are explicitly validated and whitelisted. */
-  assert.match(source, /in_array\(\$entry\['kind'\], \['dummy', 'title'\], true\)/);
+  assert.match(source, /in_array\(\$entry\['kind'\], \['dummy', 'title', 'custom'\], true\)/);
   assert.match(source, /\^dummyblock_/);
-  assert.match(source, /\^Title_/);
+  assert.match(source, /Existing hand-written blocktitle keys remain editable/);
+  assert.match(source, /\^\[A-Za-z_\$\]/);
   assert.match(source, /positive integer idx/);
   assert.match(source, /configwriter_special_block_props/);
+  assert.match(source, /custom_fields/);
+  assert.match(source, /Invalid or reserved custom device field/);
+  assert.match(source, /_validate_custom_device_value/);
+  assert.match(writer, /\$device\['custom_fields'\]/);
   assert.match(source, /\$height = \$kind === 'title' \? 120 : null/);
   assert.match(source, /Special block key already exists/);
   assert.match(source, /\$device\['preserveExisting'\] = in_array/);
@@ -178,6 +184,15 @@ test('widget writer whitelists widgets and protects CONFIG.js writes', () => {
   assert.match(source, /dashticz_require_csrf\(\)/);
   assert.match(source, /REQUEST_METHOD.*POST/);
   assert.match(source, /\$catalog = \[/);
+  assert.match(source, /custom_fields/);
+  assert.match(source, /Invalid or reserved custom widget field/);
+  // Checkbox/core widget properties duplicated in custom_fields are ignored;
+  // truly dangerous prototype keys remain rejected.
+  assert.match(source, /\$managedCustomFields = \[/);
+  assert.match(source, /in_array\(\$fieldKey, \$managedCustomFields, true\)/);
+  assert.match(source, /\$dangerousCustomFields = \['__proto__', 'prototype', 'constructor'\]/);
+  assert.match(source, /legacy custom icons/);
+  assert.match(source, /_validate_custom_widget_value/);
   for (const id of [
     'weather',
     'garbage',
@@ -210,6 +225,8 @@ test('widget writer whitelists widgets and protects CONFIG.js writes', () => {
   assert.match(source, /Unknown weather provider/);
   assert.match(source, /Unknown clock type/);
   assert.match(source, /Calendar requires a valid http\(s\) ICS URL/);
+  assert.match(source, /Calendar requires one to twenty calendar sources/);
+  assert.match(source, /foreach \(\$icalurl as \$name => \$source\)/);
   assert.match(source, /Camera requires a valid http\(s\) image URL/);
   assert.match(source, /A camera widget supports up to 12 cameras/);
   assert.match(source, /\$props\['cameras'\] = \$widget\['cameras'\]/);
@@ -218,6 +235,19 @@ test('widget writer whitelists widgets and protects CONFIG.js writes', () => {
   assert.match(source, /blockKeys/);
   assert.match(source, /\$blocksOnly/);
   assert.match(source, /configwriter_write_config/);
+});
+
+test('custom CSS writer only manages theme variables', () => {
+  const source = read('js/savecustomcss.php');
+  assert.match(source, /dashticz_require_same_origin\(\)/);
+  assert.match(source, /dashticz_require_csrf\(\)/);
+  assert.match(source, /array_key_exists\('vars', \$data\)/);
+  assert.match(source, /if \(\$updateVars\)/);
+  assert.match(source, /dashticz-theme-vars/);
+  assert.doesNotMatch(source, /deviceAlignments/);
+  assert.doesNotMatch(source, /dashticz-device-align/);
+  assert.doesNotMatch(source, /text-align/);
+  assert.match(source, /LOCK_EX/);
 });
 
 test('layout writer stores safe references in one grouped dashboard section', () => {

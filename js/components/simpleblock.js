@@ -202,30 +202,25 @@ var DT_simpleblock = (function () {
       switch (icons[i]) {
         case 'settings':
           if (!customMode) {
+            // The Screen Editor owns add-device/widget actions while it is active.
+            // Keep the add button mounted so the body-class observer can reveal it
+            // immediately when layout editing starts, without rebuilding the topbar.
             content +=
-              '<span class="settings deviceeditoricon" data-id="deviceeditor" ' +
+              '<span class="settings screeneditoraddicon d-none" data-id="screeneditoradd" ' +
               'role="button" aria-label="' +
-              (editorLabels.open_device_editor || 'Open Device Editor') +
+              (editorLabels.open_add_menu || editorLabels.add_devices || 'Add items') +
               '" title="' +
-              (editorLabels.add_devices || 'Add devices') +
+              (editorLabels.open_add_menu || editorLabels.add_devices || 'Add items') +
               '">' +
               _topbarIconHtml('fas fa-plus', 'img/icons/Plus.png') + '</span>';
             content +=
-              '<span class="settings widgeteditoricon" data-id="widgeteditor" ' +
-              'role="button" aria-label="' +
-              (editorLabels.open_widget_editor || 'Open Widget Editor') +
-              '" title="' +
-              (editorLabels.add_widgets || 'Add widgets') +
-              '">' +
-              _topbarIconHtml('fas fa-puzzle-piece', 'img/icons/Puzzle.png') + '</span>';
-            content +=
               '<span class="settings layouteditoricon" data-id="layouteditor" ' +
               'role="button" aria-label="' +
-              (editorLabels.open_layout_editor || 'Open Layout Editor') +
+              (editorLabels.open_layout_editor || 'Open Screen Editor') +
               '" title="' +
-              (editorLabels.move_tiles || 'Move and scale tiles') +
+              (editorLabels.screen_editor || editorLabels.move_tiles || 'Screen Editor') +
               '">' +
-              _topbarIconHtml('fas fa-arrows-alt', 'img/icons/Arrows.png') + '</span>';
+              _topbarIconHtml('fas fa-wand-magic-sparkles', null) + '</span>';
           }
           content +=
             '<span class="settings settingsicon" data-id="settings" ' +
@@ -237,9 +232,9 @@ var DT_simpleblock = (function () {
             '">' +
             _topbarIconHtml('fas fa-cog', 'img/icons/Cog.png') + '</span>';
           if (!customMode) {
-            _registerDeviceEditorClick();
-            _registerWidgetEditorClick();
             _registerLayoutEditorClick();
+            _registerScreenEditorAddClick();
+            _registerScreenEditorStateObserver();
             _openPendingGridEditor();
           }
           _registerConfigModeClick();
@@ -263,7 +258,7 @@ var DT_simpleblock = (function () {
    * @returns {string}
    */
   function _topbarIconHtml(faClass, imgSrc) {
-    if (Number(settings['topbar_use_png_icons']) === 1) {
+    if (Number(settings['topbar_use_png_icons']) === 1 && imgSrc) {
       return '<img src="' + imgSrc + '" class="dt-topbar-icon-img" aria-hidden="true" alt="">';
     }
     return '<i class="' + faClass + '" aria-hidden="true"></i>';
@@ -279,10 +274,11 @@ var DT_simpleblock = (function () {
             ? 'custom'
             : 'wizard';
         if (mode === currentMode) return;
-        if (mode === 'wizard') {
-          if (
-            !window.confirm(language.settings.config_mode.confirm_wizard)
-          ) {
+        _showConfigModeWarning(mode, function () {
+          if (mode !== 'wizard') {
+            if (typeof setConfigMode === 'function') {
+              setConfigMode(mode);
+            }
             return;
           }
           DT_function.loadDTScript('js/layouteditor.js').then(function () {
@@ -309,20 +305,139 @@ var DT_simpleblock = (function () {
               }
             });
           });
-          return;
-        }
-        if (typeof setConfigMode === 'function') {
-          setConfigMode(mode);
-        }
+        });
       });
   }
 
-  function _registerDeviceEditorClick() {
-    $(document).off('click.deviceeditor').on('click.deviceeditor', '.deviceeditoricon', function () {
-      DT_function.loadDTScript('js/deviceeditor.js').then(function () {
-        DashticzDeviceEditor.open();
-      });
+  function _showConfigModeWarning(mode, onContinue) {
+    var labels = language.settings.config_mode;
+    var message = mode === 'wizard'
+      ? labels.confirm_wizard
+      : labels.confirm_custom;
+
+    $('#configmodewarningpopup').remove();
+    var html =
+      '<div class="modal fade" id="configmodewarningpopup" tabindex="-1" ' +
+      'aria-labelledby="config-mode-warning-title" aria-describedby="config-mode-warning-message" aria-hidden="true">' +
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">' +
+      '<div class="modal-header"><h5 class="modal-title" id="config-mode-warning-title">' +
+      '<i class="fas fa-triangle-exclamation text-warning me-2" aria-hidden="true"></i>' +
+      $('<div>').text(labels.warning_title).html() +
+      '</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      $('<div>').text(labels.cancel).html() + '"></button></div>' +
+      '<div class="modal-body"><p id="config-mode-warning-message" class="mb-0">' +
+      $('<div>').text(message).html() + '</p></div>' +
+      '<div class="modal-footer">' +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      $('<div>').text(labels.cancel).html() + '</button>' +
+      '<button type="button" class="btn btn-warning" id="config-mode-warning-continue">' +
+      $('<div>').text(labels.continue).html() + '</button>' +
+      '</div></div></div></div>';
+    $('body').append(html);
+
+    var popup = document.getElementById('configmodewarningpopup');
+    var confirmed = false;
+    $('#config-mode-warning-continue').one('click', function () {
+      confirmed = true;
+      window.bootstrap.Modal.getInstance(popup).hide();
     });
+    $(popup).one('hidden.bs.modal', function () {
+      $(popup).remove();
+      if (confirmed && typeof onContinue === 'function') {
+        onContinue();
+      }
+    });
+    window.bootstrap.Modal.getOrCreateInstance(popup).show();
+  }
+
+  function _screenEditorLabels() {
+    return (language.settings && language.settings.widgeteditor) || {};
+  }
+
+  function _syncScreenEditorAddButton() {
+    $('.screeneditoraddicon').toggleClass('d-none', !$('body').hasClass('dle-active'));
+  }
+
+  function _registerScreenEditorStateObserver() {
+    _syncScreenEditorAddButton();
+    if (window.__dtScreenEditorAddObserver) return;
+    window.__dtScreenEditorAddObserver = new MutationObserver(function () {
+      _syncScreenEditorAddButton();
+    });
+    window.__dtScreenEditorAddObserver.observe(document.body, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+  }
+
+  function _screenEditorAddMenuHtml() {
+    var t = _screenEditorLabels();
+    var tiles = [
+      { action: 'device', icon: 'fa-plus', label: t.add_device },
+      { action: 'widgets', icon: 'fa-puzzle-piece', label: t.title || 'Widgets' },
+      { action: 'custom', icon: 'fa-cube', label: t.custom_devices || 'Custom devices' },
+      { action: 'separator', icon: 'fa-heading', label: t.separator || 'Separator' },
+    ];
+    var html =
+      '<div class="modal fade" id="screeneditoraddpopup" tabindex="-1" aria-hidden="true">' +
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">' +
+      '<div class="modal-header"><h5 class="modal-title">' +
+      $('<div>').text(t.add_menu_title || t.add_devices || 'Add items').html() +
+      '</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      $('<div>').text(t.close || 'Close').html() + '"></button></div>' +
+      '<div class="modal-body"><div class="dt-screeneditor-add-grid">';
+    tiles.forEach(function (tile) {
+      html +=
+        '<button type="button" class="dt-screeneditor-add-tile" data-add-action="' +
+        tile.action + '"><i class="fas ' + tile.icon + '" aria-hidden="true"></i>' +
+        '<span>' + $('<div>').text(tile.label).html() + '</span></button>';
+    });
+    html += '</div></div></div></div></div>';
+    return html;
+  }
+
+  function _openScreenEditorAddMenu() {
+    $('#screeneditoraddpopup').remove();
+    $('body').append(_screenEditorAddMenuHtml());
+    var popup = document.getElementById('screeneditoraddpopup');
+    var $popup = $(popup);
+    var selectedAction = '';
+    $popup.on('click', '.dt-screeneditor-add-tile', function () {
+      if (selectedAction) return;
+      selectedAction = String($(this).attr('data-add-action') || '');
+      $popup.find('.dt-screeneditor-add-tile').prop('disabled', true);
+      window.bootstrap.Modal.getInstance(popup).hide();
+    });
+    $popup.one('hidden.bs.modal', function () {
+      $popup.remove();
+      if (selectedAction) {
+        if (selectedAction === 'widgets') {
+          DT_function.loadDTScript('js/widgeteditor.js').then(function () {
+            DashticzWidgetEditor.open();
+          });
+          return;
+        }
+        DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+          if (selectedAction === 'custom') {
+            DashticzDeviceEditor.openCustom();
+          } else if (selectedAction === 'separator') {
+            DashticzDeviceEditor.addSeparator();
+          } else {
+            DashticzDeviceEditor.open();
+          }
+        });
+      }
+    });
+    window.bootstrap.Modal.getOrCreateInstance(popup).show();
+  }
+
+  function _registerScreenEditorAddClick() {
+    $(document)
+      .off('click.screeneditoradd')
+      .on('click.screeneditoradd', '.screeneditoraddicon', function () {
+        if (!$('body').hasClass('dle-active')) return;
+        _openScreenEditorAddMenu();
+      });
   }
 
   function _openPendingGridEditor() {
@@ -365,15 +480,6 @@ var DT_simpleblock = (function () {
       });
   }
 
-  function _registerWidgetEditorClick() {
-    $(document)
-      .off('click.widgeteditor')
-      .on('click.widgeteditor', '.widgeteditoricon', function () {
-        DT_function.loadDTScript('js/widgeteditor.js').then(function () {
-          DashticzWidgetEditor.open();
-        });
-      });
-  }
 
   function renderMiniclock(me) {
     var fixedHeight = parseInt(me.block.height, 10);
@@ -526,7 +632,7 @@ var DT_simpleblock = (function () {
   }
 
   function renderSunrise(me) {
-    var isBar = me.block.c === 'bar';
+    var isBar = me.block._dashticzColumn === 'bar';
     var classes = 'block_' + me.block.type;
     var width = isBar ? 2 : me.block.width;
     classes += ' col-xs-' + width;

@@ -248,12 +248,38 @@ var DashticzGridLayout = (function () {
       function (blockRef, index) {
         var name = getBlockName(blockRef, index);
         var definition = getBlockDefinition(blockRef);
-        var grid = validateGridPosition(name, definition.grid, config, index);
+        /* Per-screen grid: when blockRef is a thin {key, grid} wrapper emitted
+         * by the config writer, prefer its own grid over the shared blocks[ref].grid
+         * so that the same block can appear at different positions on different screens. */
+        var screenGrid =
+          blockRef &&
+          typeof blockRef === 'object' &&
+          blockRef.key != null &&
+          blockRef.grid
+            ? blockRef.grid
+            : null;
+        var grid = validateGridPosition(
+          name,
+          screenGrid || definition.grid,
+          config,
+          index
+        );
         grid = migrateLegacyGridPosition(grid, screen);
+        /* Unwrap thin {key, grid} wrappers: pass the key string for rendering so
+         * that addBlock2Column resolves the full block definition from blocks[key]. */
+        var renderRef =
+          blockRef &&
+          typeof blockRef === 'object' &&
+          blockRef.key != null &&
+          !blockRef.type &&
+          !blockRef.idx &&
+          !blockRef.blocks
+            ? String(blockRef.key)
+            : blockRef;
         var mountPoint = addBlock2Column(
           screenSelector + ' > .dt-grid-layout',
           'grid',
-          blockRef,
+          renderRef,
           function (selector) {
             var element = document.querySelector(selector);
             if (!element) return;
@@ -275,6 +301,8 @@ var DashticzGridLayout = (function () {
   return {
     defaults: defaults,
     getGridScreenConfig: getGridScreenConfig,
+    getBlockName: getBlockName,
+    getBlockDefinition: getBlockDefinition,
     migrateLegacyGridPosition: migrateLegacyGridPosition,
     validateGridPosition: validateGridPosition,
     applyGridPosition: applyGridPosition,

@@ -183,6 +183,35 @@ $catalog = [
     'xmltvguide' => ['key' => 'widget_xmltvguide', 'width' => 6, 'height' => 300],
 ];
 
+function _validate_custom_widget_value($value, $depth = 0)
+{
+    if ($depth > 4) {
+        return false;
+    }
+    if (is_string($value)) {
+        return strlen($value) <= 4096;
+    }
+    if (is_int($value) || is_float($value) || is_bool($value) || $value === null) {
+        return true;
+    }
+    if (is_object($value)) {
+        $value = get_object_vars($value);
+    }
+    if (!is_array($value) || count($value) > 100) {
+        return false;
+    }
+    foreach ($value as $nestedKey => $nestedValue) {
+        if (is_string($nestedKey) &&
+            (strlen($nestedKey) > 100 || preg_match('/[\x00-\x1F]/', $nestedKey))) {
+            return false;
+        }
+        if (!_validate_custom_widget_value($nestedValue, $depth + 1)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 $widgets = [];
 $seen = [];
 foreach ($data['widgets'] as $entry) {
@@ -213,10 +242,65 @@ foreach ($data['widgets'] as $entry) {
             ? $catalog[$id]['height']
             : null,
         'hide_title' => !empty($entry['hide_title']),
-        'text_alignment' => configwriter_normalise_text_alignment(
-            isset($entry['text_alignment']) ? $entry['text_alignment'] : null
-        ),
+        'icon' => null,
+        'hide_data' => !empty($entry['hide_data']),
+        'last_update' => !empty($entry['last_update']),
     ];
+    if (isset($entry['icon']) && is_string($entry['icon'])) {
+        $icon = trim($entry['icon']);
+        if (strlen($icon) <= 100) {
+            // Empty hides the icon; non-empty values preserve legacy custom icons.
+            $widget['icon'] = $icon;
+        }
+    }
+    if (isset($entry['title']) && is_string($entry['title'])) {
+        $title = trim($entry['title']);
+        if ($title !== '' && strlen($title) <= 100) {
+            $widget['title'] = $title;
+        }
+    }
+    if (isset($entry['custom_fields'])) {
+        if (!is_array($entry['custom_fields']) || count($entry['custom_fields']) > 50) {
+            dashticz_json_error(400, 'custom_fields must contain at most 50 fields.');
+        }
+        // These properties are controlled by the normal widget payload. Older
+        // editor state can still contain duplicate copies in custom_fields
+        // (especially the Icon/Data/Update/Title checkbox properties). Ignore
+        // those stale copies instead of rejecting the complete widget save.
+        $managedCustomFields = [
+            'type', 'id', 'key', 'width', 'height', 'grid', 'idx', 'subidx',
+            'icon', 'hide_data', 'last_update', 'hide_title',
+            'text_alignment', 'text_align', 'custom_fields',
+        ];
+        $dangerousCustomFields = ['__proto__', 'prototype', 'constructor'];
+        $widget['custom_fields'] = [];
+        $seenCustomFields = [];
+        foreach ($entry['custom_fields'] as $field => $value) {
+            if (!is_string($field) ||
+                !preg_match('/^[A-Za-z_$][A-Za-z0-9_$]*$/', $field)) {
+                dashticz_json_error(400, 'Invalid custom widget field.');
+            }
+            $fieldKey = strtolower($field);
+            if (in_array($fieldKey, $dangerousCustomFields, true)) {
+                dashticz_json_error(400, 'Invalid or reserved custom widget field.');
+            }
+            if (in_array($fieldKey, $managedCustomFields, true)) {
+                continue;
+            }
+            if (isset($seenCustomFields[$fieldKey])) {
+                dashticz_json_error(400, 'Duplicate custom widget field.');
+            }
+            $value = configwriter_restore_editor_value($value);
+            if (!_validate_custom_widget_value($value)) {
+                dashticz_json_error(400, 'Invalid custom widget field value.');
+            }
+            $seenCustomFields[$fieldKey] = true;
+            $widget['custom_fields'][$field] = $value;
+        }
+        if (strlen(json_encode($widget['custom_fields'])) > 32768) {
+            dashticz_json_error(400, 'Custom widget fields are too large.');
+        }
+    }
     if ($id === 'garbage' && isset($entry['displayTitle']) && is_string($entry['displayTitle'])) {
         $displayTitle = trim($entry['displayTitle']);
         if ($displayTitle !== '' && strlen($displayTitle) <= 100) {
@@ -269,13 +353,45 @@ foreach ($data['widgets'] as $entry) {
     }
 
     if ($id === 'calendar') {
-        $icalurl = isset($entry['icalurl']) && is_string($entry['icalurl'])
-            ? trim($entry['icalurl'])
-            : '';
-        if (strlen($icalurl) > 2048 || !preg_match('#^https?://[^\s]+$#i', $icalurl)) {
-            dashticz_json_error(400, 'Calendar requires a valid http(s) ICS URL.');
+        $icalurl = isset($entry['icalurl']) ? $entry['icalurl'] : null;
+        if (is_string($icalurl)) {
+            $icalurl = trim($icalurl);
+            if (strlen($icalurl) > 2048 || !preg_match('#^https?://[^\s]+$#i', $icalurl)) {
+                dashticz_json_error(400, 'Calendar requires a valid http(s) ICS URL.');
+            }
+            $widget['icalurl'] = $icalurl;
+        } elseif (is_array($icalurl) && count($icalurl) > 0 && count($icalurl) <= 20) {
+            $widget['icalurl'] = [];
+            foreach ($icalurl as $name => $source) {
+                if (!is_string($name) || $name === '' || strlen($name) > 100 ||
+                    preg_match('/[\x00-\x1F]/', $name) ||
+                    in_array(strtolower($name), ['__proto__', 'prototype', 'constructor'], true)) {
+                    dashticz_json_error(400, 'Each calendar requires a valid unique name.');
+                }
+                if (!is_array($source)) {
+                    dashticz_json_error(400, 'Each calendar requires valid settings.');
+                }
+                $ics = isset($source['ics']) && is_string($source['ics'])
+                    ? trim($source['ics'])
+                    : '';
+                if ($ics === '' || strlen($ics) > 2048 || !preg_match('#^https?://[^\s]+$#i', $ics)) {
+                    dashticz_json_error(400, 'Calendar ' . $name . ' requires a valid http(s) ICS URL.');
+                }
+                $color = isset($source['color']) && is_string($source['color'])
+                    ? trim($source['color'])
+                    : 'white';
+                if ($color === '' || strlen($color) > 64 ||
+                    !preg_match('/^(?:#[0-9A-Fa-f]{3,8}|[A-Za-z][A-Za-z0-9-]{0,31}|rgba?\([0-9.,%\s]+\)|hsla?\([0-9.,%\s]+\))$/', $color)) {
+                    dashticz_json_error(400, 'Calendar ' . $name . ' requires a valid color.');
+                }
+                $widget['icalurl'][$name] = [
+                    'ics' => $ics,
+                    'color' => $color,
+                ];
+            }
+        } else {
+            dashticz_json_error(400, 'Calendar requires one to twenty calendar sources.');
         }
-        $widget['icalurl'] = $icalurl;
         $maxitems = isset($entry['maxitems']) && is_numeric($entry['maxitems'])
             ? (int)$entry['maxitems']
             : 15;
@@ -805,8 +921,22 @@ function _widgetBlockProps($widget)
     if (!empty($widget['hide_title'])) {
         $props['hide_title'] = true;
     }
-    if (!empty($widget['text_alignment']) && $widget['text_alignment'] !== 'left') {
-        $props['text_alignment'] = $widget['text_alignment'];
+    if ($widget['icon'] !== null) {
+        $props['icon'] = $widget['icon'];
+    }
+    if (!empty($widget['hide_data'])) {
+        $props['hide_data'] = true;
+    }
+    if (!empty($widget['last_update'])) {
+        $props['last_update'] = true;
+    }
+    if (!empty($widget['custom_fields'])) {
+        // Custom fields are merged last so users can intentionally override a
+        // normal widget option such as layout, maxitems or title. Core identity
+        // and editor-management properties are rejected during validation.
+        foreach ($widget['custom_fields'] as $field => $value) {
+            $props[$field] = $value;
+        }
     }
 
     return $props;

@@ -1,4 +1,4 @@
-/* global Domoticz settings columns columns_standby blocks myswiper DashticzGridLayout DashticzScreenSwitcher isCustomConfigMode standbyActive language */
+/* global Domoticz settings columns columns_standby blocks myswiper DashticzGridLayout DashticzScreenSwitcher DashticzDeviceEditor DashticzWidgetEditor DT_function isCustomConfigMode standbyActive language */
 // eslint-disable-next-line no-unused-vars
 var DashticzLayoutEditor = (function () {
   'use strict';
@@ -66,7 +66,9 @@ var DashticzLayoutEditor = (function () {
     if (gridMode) {
       var $grid = $screen.children('.dt-grid-layout').first();
       _collectGridItems($grid);
-      if (gridCollectionError || !items.length) {
+      /* An empty grid is a valid Wizard starting point. Only fail when a
+         rendered grid item cannot be mapped back to a safe block definition. */
+      if (gridCollectionError) {
         alert(
           _t('invalid_grid_blocks')
         );
@@ -87,7 +89,8 @@ var DashticzLayoutEditor = (function () {
       typeof isCustomConfigMode === 'function' &&
       !isCustomConfigMode()
     ) {
-      convertCurrentScreenToGrid(false).done(function () {
+      /* Wizard mode must also be able to bootstrap a completely empty screen. */
+      convertCurrentScreenToGrid(false, 'wizard').done(function () {
         try {
           sessionStorage.setItem(
             'dashticz_open_grid_editor',
@@ -697,6 +700,21 @@ var DashticzLayoutEditor = (function () {
       definition = { idx: ref };
     }
 
+    if (
+      key &&
+      String(definition.type || '').toLowerCase() === 'blocktitle'
+    ) {
+      return {
+        definition: definition,
+        kind: 'separator',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
     var rawIdx = typeof definition.idx !== 'undefined' ? definition.idx : ref;
     var match = String(rawIdx).match(/^(\d+)(?:_(\d+))?$/);
     if (!match || parseInt(match[1], 10) < 1) {
@@ -993,11 +1011,24 @@ var DashticzLayoutEditor = (function () {
               _escapeHtml(_t('resize_title')) +
               '" aria-hidden="true"></span>'
             : '';
+        var isConfigurable =
+          item.kind === 'device' ||
+          item.kind === 'widget' ||
+          item.kind === 'separator';
+        var configureLabel = item.kind === 'widget'
+          ? _t('configure_widget')
+          : _t('configure_device');
+        var topLeftControl = isConfigurable
+          ? '<button type="button" class="dle-config-button" title="' +
+            _escapeHtml(configureLabel) +
+            '" aria-label="' + _escapeHtml(configureLabel) + ' ' +
+            _escapeHtml(item.name) + '"><i class="fas fa-cog" aria-hidden="true"></i></button>'
+          : '<span class="dle-drag-icon" aria-hidden="true"><i class="fas fa-arrows-alt"></i></span>';
         var overlay =
           '<div class="dle-overlay" data-dle-id="' +
           item.id +
           '">' +
-          '<span class="dle-drag-icon" aria-hidden="true"><i class="fas fa-arrows-alt"></i></span>' +
+          topLeftControl +
           '<span class="dle-size-label"></span>' +
           removeButton +
           resizeHandle +
@@ -1038,12 +1069,21 @@ var DashticzLayoutEditor = (function () {
       .on('click.layouteditor', function (event) {
         event.preventDefault();
         event.stopPropagation();
+        var item = itemById[String($(this).data('dle-id'))];
+        if ($(event.target).closest('.dle-config-button').length) {
+          if (item) _openItemConfig(item);
+          return;
+        }
         if ($(event.target).closest('.dle-remove-button').length) {
-          var item = itemById[String($(this).data('dle-id'))];
           if (item) _removeItem(item);
         }
       })
       .on('pointerdown.layouteditor', function (event) {
+        if ($(event.target).closest('.dle-config-button').length) {
+          // Do not cancel pointerdown on the button; allow its click event to fire.
+          event.stopPropagation();
+          return;
+        }
         event.preventDefault();
         event.stopPropagation();
         var item = itemById[String($(this).data('dle-id'))];
@@ -1067,6 +1107,34 @@ var DashticzLayoutEditor = (function () {
     $toolbar
       .on('click.layouteditor', '.dle-cancel', _cancel)
       .on('click.layouteditor', '.dle-save', _save);
+  }
+
+  function _openItemConfig(item) {
+    if (!item) return;
+    if (
+      (item.kind === 'device' || item.kind === 'separator') &&
+      item.reference
+    ) {
+      DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+        if (
+          typeof DashticzDeviceEditor !== 'undefined' &&
+          typeof DashticzDeviceEditor.openConfig === 'function'
+        ) {
+          DashticzDeviceEditor.openConfig(item.reference);
+        }
+      });
+      return;
+    }
+    if (item.kind === 'widget' && item.widgetId) {
+      DT_function.loadDTScript('js/widgeteditor.js').then(function () {
+        if (
+          typeof DashticzWidgetEditor !== 'undefined' &&
+          typeof DashticzWidgetEditor.openLayoutConfig === 'function'
+        ) {
+          DashticzWidgetEditor.openLayoutConfig(item.widgetId);
+        }
+      });
+    }
   }
 
   function _removeItem(item) {

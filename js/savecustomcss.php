@@ -1,6 +1,8 @@
 <?php
 require_once(__DIR__ . '/../vendor/dashticz/security.php');
 
+// This endpoint manages isolated editor-owned sections in custom.css. Any CSS
+// outside these markers remains untouched, including hand-written rules.
 dashticz_require_same_origin();
 dashticz_require_csrf();
 
@@ -14,12 +16,11 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($data)) {
     dashticz_json_error(400, 'Invalid JSON body.');
 }
 
-$vars = isset($data['vars']) ? $data['vars'] : [];
-if (!is_array($vars)) {
+$updateVars = array_key_exists('vars', $data);
+$vars = $updateVars ? $data['vars'] : [];
+if ($updateVars && !is_array($vars)) {
     dashticz_json_error(400, 'vars must be an object.');
 }
-
-// Validate CSS variable names and values.
 $allowed = [
     '--main-bg', '--home-bg',
     '--border-color-inactive', '--border-color-active', '--border-color-block',
@@ -35,7 +36,6 @@ foreach ($vars as $name => $value) {
     if (!in_array($name, $allowed, true)) {
         dashticz_json_error(400, 'Unknown CSS variable: ' . $name);
     }
-    // Accept empty string (meaning "remove override"), or a safe CSS value.
     $value = trim((string)$value);
     if ($value !== '' && !preg_match('/^[a-zA-Z0-9#(). ,%\/_\-]+$/', $value)) {
         dashticz_json_error(400, 'Invalid CSS value for ' . $name);
@@ -46,9 +46,7 @@ foreach ($vars as $name => $value) {
 }
 
 $customDir = __DIR__ . '/../custom';
-$cssPath   = $customDir . '/custom.css';
-
-// Read existing custom.css (create empty if absent).
+$cssPath = $customDir . '/custom.css';
 $existing = '';
 if (file_exists($cssPath)) {
     $existing = file_get_contents($cssPath);
@@ -57,30 +55,29 @@ if (file_exists($cssPath)) {
     }
 }
 
-// Remove any previously injected :root{} block written by this tool.
+// Replace only the editor-owned theme-variable section when `vars` is posted.
+// All hand-written custom.css content remains untouched.
 $marker = '/* dashticz-theme-vars */';
 $markerEnd = '/* /dashticz-theme-vars */';
-$startPos = strpos($existing, $marker);
-$endPos   = strpos($existing, $markerEnd);
-if ($startPos !== false && $endPos !== false && $endPos > $startPos) {
-    $existing = substr($existing, 0, $startPos)
-               . substr($existing, $endPos + strlen($markerEnd));
-    $existing = ltrim($existing, "\n");
+$themePattern = '/' . preg_quote($marker, '/') . '.*?' . preg_quote($markerEnd, '/') . '\s*/s';
+$themeBlock = '';
+if ($updateVars) {
+    $existing = preg_replace($themePattern, '', $existing);
 }
 
-// Build new :root block if there are overrides.
-$newBlock = '';
-if (!empty($sanitized)) {
+if ($updateVars && !empty($sanitized)) {
     $lines = [];
     foreach ($sanitized as $name => $value) {
         $lines[] = '  ' . $name . ': ' . $value . ';';
     }
-    $newBlock = $marker . "\n:root {\n" . implode("\n", $lines) . "\n}\n" . $markerEnd . "\n";
+    $themeBlock = $marker . "\n:root {\n" . implode("\n", $lines) . "\n}\n" . $markerEnd . "\n\n";
 }
 
-$output = $newBlock . $existing;
-
-if (file_put_contents($cssPath, $output) === false) {
+$output = $themeBlock . ltrim($existing, "\r\n");
+if (!is_dir($customDir) && !mkdir($customDir, 0775, true)) {
+    dashticz_json_error(500, 'Could not create custom directory.');
+}
+if (file_put_contents($cssPath, $output, LOCK_EX) === false) {
     dashticz_json_error(500, 'Could not write custom.css.');
 }
 

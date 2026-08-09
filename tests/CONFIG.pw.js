@@ -1,4 +1,5 @@
 var config = {}
+config['config_mode'] = 'wizard';
 config['domoticz_ip'] = 'http://d:8080';
 //config['user_name'] = 'admin';
 //config['pass_word'] = 'domoticz';
@@ -20412,4 +20413,3 @@ var stubDevices =
 	"status" : "OK",
 	"title" : "Devices"
 }
-

@@ -748,10 +748,19 @@ function loadCustomCss() {
   // Helper: inject a CSS file as an inline <style> block.
   // If the file is not found and a fallbackFilename is provided, that file is tried instead.
   function injectCss(filename, fallbackFilename) {
+    function applyCss(data, activeFilename) {
+      $('<style></style>')
+        .attr('data-dashticz-custom-css', activeFilename)
+        .appendTo('head')
+        .html(data);
+      window.DashticzCustomCssPath = activeFilename;
+      $(document).trigger('dashticz:customcssloaded', [activeFilename]);
+    }
+
     $.ajax({
       url: filename + '?v=' + cache,
       success: function (data) {
-        $('<style></style>').appendTo('head').html(data);
+        applyCss(data, filename);
       },
       error: function () {
         if (fallbackFilename) {
@@ -765,7 +774,7 @@ function loadCustomCss() {
           $.ajax({
             url: fallbackFilename + '?v=' + cache,
             success: function (data) {
-              $('<style></style>').appendTo('head').html(data);
+              applyCss(data, fallbackFilename);
             },
             error: function () {
               console.log(

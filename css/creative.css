@@ -216,42 +216,6 @@
   margin: 5px 5px;
 }
 
-.dt-text-align-left .dt_block,
-.dt-text-align-left .dt_title,
-.dt-text-align-left .title,
-.dt-text-align-left .dt_state,
-.dt-text-align-left .state,
-.dt-text-align-left .value,
-.dt-text-align-left .lastupdate,
-.dt-text-align-left .titlegroups h3,
-.dt-text-align-left .SonarrBigTitle {
-  text-align: left;
-}
-
-.dt-text-align-center .dt_block,
-.dt-text-align-center .dt_title,
-.dt-text-align-center .title,
-.dt-text-align-center .dt_state,
-.dt-text-align-center .state,
-.dt-text-align-center .value,
-.dt-text-align-center .lastupdate,
-.dt-text-align-center .titlegroups h3,
-.dt-text-align-center .SonarrBigTitle {
-  text-align: center;
-}
-
-.dt-text-align-right .dt_block,
-.dt-text-align-right .dt_title,
-.dt-text-align-right .title,
-.dt-text-align-right .dt_state,
-.dt-text-align-right .state,
-.dt-text-align-right .value,
-.dt-text-align-right .lastupdate,
-.dt-text-align-right .titlegroups h3,
-.dt-text-align-right .SonarrBigTitle {
-  text-align: right;
-}
-
 .dt-hide-title .dt_title,
 .dt-hide-title .title,
 .dt-hide-title .titlegroups h3,
@@ -725,6 +689,18 @@ next css sets the default height of the frame popup
 .settings-bg-path-row.is-custom .settings-bg-path {
   border-color: #0d6efd;
   box-shadow: 0 0 0 0.15rem rgba(13, 110, 253, 0.15);
+}
+
+.settings-custom-css-notice {
+  margin-top: 8px;
+  padding: 8px 10px;
+  color: #0f5132;
+  background: #d1e7dd;
+  border: 2px solid #198754;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .settings-weather-heading {
@@ -1204,8 +1180,64 @@ next css sets the default height of the frame popup
   cursor: pointer;
 }
 
+/* Screen Editor add menu */
+.dt-screeneditor-add-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+.dt-screeneditor-add-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-width: 100px;
+  min-height: 100px;
+  aspect-ratio: 1 / 1;
+  padding: 12px 8px;
+  border: 1px solid #ced4da;
+  border-radius: 10px;
+  background: #f8f9fa;
+  color: #212529;
+  text-align: center;
+  cursor: pointer;
+}
+
+.dt-screeneditor-add-tile:hover,
+.dt-screeneditor-add-tile:focus {
+  border-color: #6ea8fe;
+  background: #eef5ff;
+  outline: none;
+}
+
+.dt-screeneditor-add-tile i {
+  margin: 0 0 8px !important;
+  font-size: 28px !important;
+}
+
+.dt-screeneditor-add-tile span {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* Custom device popup */
+.cd-custom-field-row .form-control {
+  min-width: 0;
+}
+
+.cd-custom-field-row .cd-custom-field-name {
+  flex: 0 0 38%;
+}
+
+.cd-custom-field-row .cd-custom-field-setting {
+  flex: 1 1 auto;
+}
+
 /* -- Device Editor icon ---------------------------------------- */
 .colbar span.deviceeditoricon,
+.colbar span.screeneditoraddicon,
 .colbar span.layouteditoricon {
   cursor: pointer;
   margin-right: 4px;
@@ -1424,6 +1456,7 @@ body.dle-active {
 }
 
 .dle-drag-icon,
+.dle-config-button,
 .dle-size-label {
   position: absolute;
   top: 4px;
@@ -1435,13 +1468,39 @@ body.dle-active {
   line-height: 18px;
 }
 
-.dle-drag-icon {
+.dle-drag-icon,
+.dle-config-button {
   left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  line-height: 1;
 }
 
-.dle-drag-icon .fas {
+.dle-config-button {
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+}
+
+.dle-config-button:hover,
+.dle-config-button:focus {
+  background: rgba(13, 110, 253, 0.95);
+  outline: 2px solid #fff;
+  outline-offset: 1px;
+}
+
+.dle-drag-icon .fas,
+.dle-config-button .fas,
+.dle-remove-button .fas {
+  display: inline-block;
+  width: 1em;
   margin: 0 !important;
   font-size: 16px !important;
+  line-height: 1 !important;
+  text-align: center;
 }
 
 .dle-size-label {
@@ -1454,8 +1513,8 @@ body.dle-active {
 
 .dle-remove-button {
   position: absolute;
-  bottom: 4px;
-  left: 4px;
+  top: 4px;
+  right: 4px;
   z-index: 4;
   display: inline-flex;
   align-items: center;
@@ -1475,13 +1534,6 @@ body.dle-active {
   background: #b02a37;
   outline: 2px solid #fff;
   outline-offset: 1px;
-}
-
-.dle-remove-button .fas {
-  display: inline-block;
-  width: 1em;
-  margin: 0 !important;
-  font-size: 16px !important;
 }
 
 .dle-resize-handle {
@@ -1514,7 +1566,10 @@ body.dle-active {
   position: fixed;
   bottom: 18px;
   left: 50%;
-  z-index: 20000;
+  /* Keep the editor controls above editable dashboard blocks (z-index 1000),
+     but below Bootstrap modal backdrops (1050) and modals (1055). This
+     prevents the toolbar from covering Widget/Device editor actions. */
+  z-index: 1040;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -1543,7 +1598,8 @@ body.dle-active {
 
 .dle-drag-ghost {
   position: fixed;
-  z-index: 21000;
+  /* Drag feedback stays above the toolbar while remaining below modals. */
+  z-index: 1045;
   max-width: 260px;
   padding: 6px 10px;
   color: var(--text-light);
@@ -1711,9 +1767,6 @@ body.dle-active {
   width: 180px;
 }
 
-.de-align-field {
-  width: 92px;
-}
 
 .de-device-title {
   width: 100%;
@@ -1725,6 +1778,102 @@ body.dle-active {
   flex: 0 0 310px;
   align-items: flex-start;
   gap: 8px;
+}
+
+.de-config-btn {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+}
+
+.de-config-popup {
+  z-index: 1070;
+}
+
+.de-config-popup + .modal-backdrop {
+  z-index: 1065;
+}
+
+.de-config-dialog {
+  max-width: 560px;
+}
+
+.de-config-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px 18px;
+}
+
+.de-config-options .form-check {
+  display: flex;
+  align-items: center;
+  min-height: 2.25rem;
+  gap: 0.75rem;
+  padding-left: 0;
+}
+
+.de-config-options .form-check-input {
+  flex: 0 0 auto;
+  float: none;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+}
+
+.de-config-options-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  justify-items: center;
+}
+
+.de-config-options-three .form-check {
+  justify-content: center;
+  width: 100%;
+}
+
+.de-system-field-row .de-custom-field-name,
+.we-system-field-row .we-custom-field-name {
+  background: var(--bs-secondary-bg, #e9ecef);
+  font-weight: 600;
+}
+
+.de-custom-fields-section {
+  margin-top: 20px;
+}
+
+.de-custom-field-row .form-control,
+.we-custom-field-row .form-control {
+  min-width: 0;
+}
+
+.de-config-message {
+  min-height: 1.5rem;
+  margin-top: 8px;
+}
+
+@media (max-width: 575.98px) {
+  .dt-screeneditor-add-grid {
+    grid-template-columns: repeat(2, minmax(100px, 1fr));
+  }
+
+  .de-config-options:not(.de-config-options-three) {
+    grid-template-columns: 1fr;
+  }
+
+  .de-config-options-three {
+    gap: 8px;
+  }
+
+  .de-custom-field-row,
+  .we-custom-field-row {
+    flex-wrap: wrap;
+  }
+
+  .de-custom-field-row .de-custom-field-name,
+  .de-custom-field-row .de-custom-field-setting,
+  .we-custom-field-row .we-custom-field-name,
+  .we-custom-field-row .we-custom-field-setting {
+    flex: 1 1 calc(50% - 4px);
+  }
 }
 
 @media (max-width: 1100px) {
@@ -1987,6 +2136,22 @@ body.dle-active {
   margin: 0;
   border-color: #adb5bd;
   cursor: pointer;
+}
+
+.we-block-option.form-check-input {
+  flex: 0 0 auto;
+  float: none;
+  width: 32px;
+  height: 32px;
+  margin: 0;
+  cursor: pointer;
+}
+
+#we-config-popup .form-check-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  min-height: 2.25rem;
 }
 
 .we-message {

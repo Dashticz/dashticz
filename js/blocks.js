@@ -139,7 +139,9 @@ function convertBlock(blocktype, c) {
   var block = {};
   block.type = blocktype;
   $.extend(block, blocks[blocktype]);
-  block.c = c; //c can be 'bar'. Used for sunriseholder
+  // Keep the render column separate from the user-configurable property c.
+  // The latter may be hand-written and must survive editor round-trips exactly.
+  block._dashticzColumn = c;
   block.key = block.key || blocktype;
 
   //Check for Domoticz device block

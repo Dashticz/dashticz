@@ -1055,7 +1055,7 @@ var defaultSettings = {
   pointSize: 3,
   room_plan: 0,
   theme: 'default',
-  background_image: 'img/bg11.jpg',
+  background_image: '/img/custom/BG_Dashticz_bw.png',
   loginEnabled: 0,
   security_button_icons: 0,
   security_panel_lock: 0,
@@ -1304,6 +1304,7 @@ function loadSettings() {
         bindWeatherProviderToggle();
         bindClockTypeToggle();
         bindThemeCssVarControls();
+        bindThemeCustomCssNotice();
 
         $('#php_version').html(phpversion);
 
@@ -1527,6 +1528,10 @@ function renderBackgroundPicker(settingName, definition) {
     '" value="' +
     escapeSettingsHtml(current) +
     '" placeholder="img/bg11.jpg or https://…">';
+  if (settingName === 'background_image') {
+    html += '<div class="settings-custom-css-notice d-none" role="status" ' +
+      'data-custom-css-notice></div>';
+  }
   html += '</div><div class="settings-help-slot">';
   if (help) {
     html +=
@@ -1894,11 +1899,21 @@ function _getComputedCssVar(varName) {
 
 // Parse the dashticz-theme-vars block written by savecustomcss.php to get
 // any already-saved overrides so the panel shows the stored values.
+// Only reads from inline <style> elements that contain the dashticz-theme-vars
+// marker, so that theme stylesheet defaults are never mistaken for user overrides.
 function _getStoredCssVarOverrides() {
   var overrides = {};
   var styleSheets = document.styleSheets;
   for (var si = 0; si < styleSheets.length; si++) {
     var sheet = styleSheets[si];
+    // Skip <link> stylesheets and any <style> element that does not contain the
+    // dashticz-theme-vars marker written by savecustomcss.php.
+    var ownerNode = sheet.ownerNode;
+    if (!ownerNode ||
+        String(ownerNode.tagName || '').toUpperCase() !== 'STYLE' ||
+        String(ownerNode.textContent || '').indexOf('dashticz-theme-vars') === -1) {
+      continue;
+    }
     var rules;
     try { rules = sheet.cssRules || sheet.rules; } catch (e) { continue; }
     if (!rules) continue;
@@ -2058,6 +2073,38 @@ function bindThemeCssVarControls() {
 
   // Reflect "(custom)" state in the theme dropdown when panel first opens.
   _updateThemeCustomLabel();
+}
+
+function _activeCustomCssPath() {
+  if (window.DashticzCustomCssPath) {
+    return String(window.DashticzCustomCssPath);
+  }
+  var node = document.querySelector('style[data-dashticz-custom-css]');
+  return node ? String(node.getAttribute('data-dashticz-custom-css') || '') : '';
+}
+
+function bindThemeCustomCssNotice() {
+  function refresh(path) {
+    var activePath = String(path || _activeCustomCssPath()).trim();
+    var $notice = $('#settingspopup [data-custom-css-notice]');
+    if (!$notice.length) return;
+    if (!activePath) {
+      $notice.addClass('d-none').text('');
+      return;
+    }
+    var themeLabels = (language.settings && language.settings.theme) || {};
+    var message = themeLabels.custom_css_active || 'Active custom stylesheet: {path}';
+    $notice
+      .removeClass('d-none')
+      .text(String(message).replace('{path}', activePath));
+  }
+
+  $(document)
+    .off('dashticz:customcssloaded.themenotice')
+    .on('dashticz:customcssloaded.themenotice', function (event, path) {
+      refresh(path);
+    });
+  refresh();
 }
 
 function _syncSwatchFromText($swatch, value) {

@@ -161,3 +161,37 @@ test('overlapping grid blocks remain rendered and are marked', () => {
   assert.equal(third.classes.has('dt-grid-overlap'), false);
   assert.match(warnings[0], /blocks "A" and "B" overlap/);
 });
+
+test('thin {key, grid} wrapper uses per-screen grid and its key as name', () => {
+  const { layout } = loadGridLayout();
+
+  // Thin wrapper: only key + grid, no type/idx/blocks
+  const wrapper = { key: 'dev_42', grid: { x: 3, y: 5, w: 6, h: 2 } };
+  const screenConfig = layout.getGridScreenConfig({ gridColumns: 24 });
+
+  assert.equal(layout.getBlockName(wrapper, 0), 'dev_42');
+
+  // getBlockDefinition returns the wrapper object itself so definition.grid is the per-screen grid
+  const def = layout.getBlockDefinition(wrapper);
+  assert.deepEqual(plain(def.grid), { x: 3, y: 5, w: 6, h: 2 });
+
+  // validateGridPosition reads from the per-screen grid correctly
+  const pos = layout.validateGridPosition('dev_42', def.grid, screenConfig, 0);
+  assert.deepEqual(plain(pos), { x: 3, y: 5, w: 6, h: 2 });
+});
+
+test('thin wrapper grid takes precedence over shared blocks[ref].grid', () => {
+  const { layout } = loadGridLayout();
+
+  // Simulate the collision: blocks['dev_42'] has a stale grid from another screen
+  const blocksGlobal = { dev_42: { idx: 42, width: 6, grid: { x: 1, y: 1, w: 24, h: 1 } } };
+
+  const screenConfig = layout.getGridScreenConfig({ gridColumns: 24 });
+
+  // Thin wrapper with per-screen position that differs from blocks[ref].grid
+  const wrapper = { key: 'dev_42', grid: { x: 3, y: 5, w: 6, h: 2 } };
+  const def = layout.getBlockDefinition(wrapper);
+  // def is the wrapper itself, NOT blocks['dev_42'] — so its grid is not overwritten
+  assert.deepEqual(plain(def.grid), { x: 3, y: 5, w: 6, h: 2 });
+  assert.deepEqual(plain(blocksGlobal.dev_42.grid), { x: 1, y: 1, w: 24, h: 1 });
+});

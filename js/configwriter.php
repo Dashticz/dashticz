@@ -515,7 +515,7 @@ function configwriter_format_props($props)
             $parts[] = $key . ':' . $value;
             continue;
         }
-        if (is_array($value)) {
+        if (is_array($value) || is_object($value)) {
             $parts[] = $key . ':' . json_encode(
                 $value,
                 JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
@@ -526,6 +526,25 @@ function configwriter_format_props($props)
     }
 
     return '{' . implode(', ', $parts) . '}';
+}
+
+/** Restore empty JavaScript objects protected during JSON transport.
+ * json_decode(..., true) otherwise turns both {} and [] into the same PHP []. */
+function configwriter_restore_editor_value($value, $depth = 0)
+{
+    if ($depth > 8 || !is_array($value)) {
+        return $value;
+    }
+    if (count($value) === 1
+        && isset($value['__dashticz_empty_object__'])
+        && $value['__dashticz_empty_object__'] === true
+    ) {
+        return new stdClass();
+    }
+    foreach ($value as $key => $nestedValue) {
+        $value[$key] = configwriter_restore_editor_value($nestedValue, $depth + 1);
+    }
+    return $value;
 }
 
 function configwriter_emit_block_line($key, $props)
@@ -1227,7 +1246,7 @@ function configwriter_build_grid_layout_section(
     $row = max(1, min(2000, (int)$rowHeight));
     $gridGap = max(0, min(200, (float)$gap));
     $mobile = $mobileLayout === 'stack' ? 'stack' : 'stack';
-    $refs = [];
+    $blockEntries = [];
 
     $section = configwriter_section_header('GRID LAYOUT') . "\n";
     $section .= "if (typeof blocks === 'undefined') var blocks = {}\n";
@@ -1238,25 +1257,25 @@ function configwriter_build_grid_layout_section(
             $columns,
             $index + 1
         );
-        $refs[] = $ref;
+        $inlineGrid = configwriter_format_props($position);
         if (isset($item['propsLiteral']) && is_string($item['propsLiteral'])) {
             $section .= "blocks['" . $ref . "'] = "
                 . $item['propsLiteral'] . ";\n";
             $section .= "blocks['" . $ref . "']['grid'] = "
-                . configwriter_format_props($position) . ";\n";
+                . $inlineGrid . ";\n";
         } elseif (isset($item['props']) && is_array($item['props'])) {
             $props = $item['props'];
             $props['grid'] = $position;
             $section .= configwriter_emit_block_line($ref, $props);
-        } else {
-            $section .= "blocks['" . $ref . "']['grid'] = "
-                . configwriter_format_props($position) . ";\n";
         }
+        /* Every item stores its per-screen grid position as an inline
+         * {key, grid} descriptor so that the same block key can appear
+         * on multiple screens each with its own independent position.
+         * renderGridScreen prefers this inline grid over blocks['ref']['grid']. */
+        $blockEntries[] = "{key:'" . configwriter_js_string_escape($ref)
+            . "', grid:" . $inlineGrid . "}";
     }
 
-    $quotedRefs = array_map(function ($ref) {
-        return "'" . configwriter_js_string_escape($ref) . "'";
-    }, $refs);
     if ($n === 0) {
         $section .= "\nif (typeof standby_screen === 'undefined') var standby_screen = {}\n";
         $target = 'standby_screen';
@@ -1271,7 +1290,7 @@ function configwriter_build_grid_layout_section(
     $section .= $target . "['gap'] = " . $gridGap . ";\n";
     $section .= $target . "['mobileLayout'] = '" . $mobile . "';\n";
     $section .= $target . "['blocks'] = ["
-        . implode(', ', $quotedRefs) . "];\n";
+        . implode(', ', $blockEntries) . "];\n";
 
     return $section;
 }
@@ -1414,13 +1433,6 @@ function configwriter_device_block_props($device, $defaultWidth = 3)
     if (!empty($device['hide_title'])) {
         $props['hide_title'] = true;
     }
-    $textAlignment = configwriter_normalise_text_alignment(
-        isset($device['text_alignment']) ? $device['text_alignment'] : null
-    );
-    if ($textAlignment !== 'left') {
-        $props['text_alignment'] = $textAlignment;
-    }
-
     if (!$isGroup) {
         $idx = (int)$rawIdx;
         if (!empty($device['subidx']) && (int)$device['subidx'] > 0) {
@@ -1430,13 +1442,23 @@ function configwriter_device_block_props($device, $defaultWidth = 3)
         }
     }
     /* For groups/scenes the block key is the scene reference (e.g. 's1'),
-     * so no idx property is needed in the block definition itself. */
-    if ($isGroup) {
+     * so no idx property is needed in the block definition itself. Keep an
+     * explicit editor title when one was supplied; otherwise use the Domoticz
+     * group/scene name as before. */
+    if ($isGroup && (!isset($device['title']) || trim((string)$device['title']) === '')) {
         $props['title'] = $title;
     }
 
     if (isset($device['height']) && is_int($device['height'])) {
         $props['height'] = $device['height'];
+    }
+
+    if (!empty($device['custom_fields']) && is_array($device['custom_fields'])) {
+        // Custom fields are validated by saveblocks.php and merged last so they
+        // remain typed CONFIG.js properties without replacing editor-owned keys.
+        foreach ($device['custom_fields'] as $field => $value) {
+            $props[$field] = $value;
+        }
     }
 
     return $props;
@@ -1459,6 +1481,26 @@ function configwriter_special_block_props($block)
                 ? $block['height']
                 : 120,
         ];
+    } elseif ($kind === 'custom') {
+        $props = [
+            'idx' => (int)$block['idx'],
+            'width' => $width,
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null && $block['icon'] !== '') {
+            $props['icon'] = (string)$block['icon'];
+        }
+        if (!empty($block['hide_data'])) {
+            $props['hide_data'] = true;
+        }
+        if (!empty($block['last_update'])) {
+            $props['last_update'] = true;
+        }
+        if (!empty($block['switch'])) {
+            $props['switch'] = true;
+        }
     } else {
         $props = [
             'idx' => (int)$block['idx'],
@@ -1475,15 +1517,13 @@ function configwriter_special_block_props($block)
     if (!empty($block['hide_title'])) {
         $props['hide_title'] = true;
     }
-    $textAlignment = configwriter_normalise_text_alignment(
-        isset($block['text_alignment']) ? $block['text_alignment'] : null
-    );
-    if ($textAlignment !== 'left') {
-        $props['text_alignment'] = $textAlignment;
-    }
-
     if ($kind !== 'title' && isset($block['height']) && is_int($block['height'])) {
         $props['height'] = $block['height'];
+    }
+    if (!empty($block['custom_fields']) && is_array($block['custom_fields'])) {
+        foreach ($block['custom_fields'] as $field => $value) {
+            $props[$field] = $value;
+        }
     }
     return $props;
 }

@@ -1,4 +1,4 @@
-/* global Dashticz moment settings  language  objectlength ksort infoMessage isDefined setHeight TemplateEngine */
+/* global Dashticz moment settings  language  objectlength ksort infoMessage isDefined isObject setHeight TemplateEngine */
 var cal = [];
 var templateEngine = TemplateEngine();
 
@@ -126,7 +126,7 @@ function prepareCalendar(me, key) {
     .subtract(me.history, 'days');
   cal[key] = me;
 
-  if (cal[key].icalurls > 1) {
+  if (isObject(cal[key].icalurl)) {
     getCalendarData(key, cal[key].icalurl, true, false);
   } else {
     var y = createCalObject('calendar', cal[key].icalurl, 'white');
