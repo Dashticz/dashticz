@@ -23,6 +23,11 @@ if (json_last_error() !== JSON_ERROR_NONE
     dashticz_json_error(400, 'Invalid widgets list.');
 }
 
+// Grid-mode screens size widgets via their grid cell (x/y/w/h); a block-level
+// pixel height only makes sense as a legacy fallback for column layouts,
+// which need a height estimate to pack columns.
+$gridMode = !empty($data['gridMode']);
+
 // Allowed widget config settings and their types
 $allowedSettings = [
     // weather
@@ -238,7 +243,7 @@ foreach ($data['widgets'] as $entry) {
         'width' => isset($entry['width'])
             ? max(1, min(12, (int)$entry['width']))
             : $catalog[$id]['width'],
-        'height' => isset($catalog[$id]['height'])
+        'height' => (!$gridMode && isset($catalog[$id]['height']))
             ? $catalog[$id]['height']
             : null,
         'hide_title' => !empty($entry['hide_title']),

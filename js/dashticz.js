@@ -121,12 +121,17 @@ var Dashticz = (function () {
       .append(getProperty(components[me.name].defaultContent, me));
     $div.html(block);
     var fixedHeight = false;
+    // A grid item's height is already fixed by its grid-row span (--dt-grid-h);
+    // forcing the block's own pixel height on top of that fights the grid and
+    // breaks content that needs to size itself (iframes, camera images,
+    // mobile stacking). Skip it there and let the grid cell govern height.
+    var inGrid = me.$mountPoint.hasClass('dt-grid-item');
     if (me.block.aspectratio) {
       var blockWidth = parseInt($div.outerWidth());
       $div.css({height:blockWidth * me.block.aspectratio});
       fixedHeight = true;
     }
-    else if (me.block.height) {
+    else if (me.block.height && !inGrid) {
       $div.css({height: me.block.height})
       fixedHeight = true;
     }

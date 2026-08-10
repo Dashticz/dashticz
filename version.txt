@@ -1,8 +1,9 @@
 {
-    "version": "3.40.2",
+    "version": "3.40.3",
     "branch": "beta",
-    "last_changes": "Fix grid screen: same block on multiple screens now keeps independent per-screen positions",
+    "last_changes": "Fix grid screens: widgets no longer get a default fixed pixel height that fights the grid row sizing",
     "changelog": {
+        "3.40.3": "Fix grid screens: widgets no longer get a default fixed pixel height that fights the grid row sizing",
         "3.40.2": "Fix grid screen: same block on multiple screens now keeps independent per-screen positions",
         "3.40.1": "Fix theme panel: only read CSS overrides from saved custom.css block, not from theme stylesheets",
         "3.40.0": "Wizard editor: device/widget config cogs, named config headers, new default background and alignment cleanup",

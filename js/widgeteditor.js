@@ -1162,7 +1162,7 @@ var DashticzWidgetEditor = (function () {
         widgetBlockRefs[item.id] = reference;
         widgetDimensions[item.id] = {
           width: parseInt(definition.width, 10) || item.width,
-          height: parseInt(definition.height, 10) || item.height || null,
+          height: parseInt(definition.height, 10) || null,
         };
         _hydrateGridWidget(item, definition);
         _hydrateWidgetBlockOptions(item, definition);
@@ -2690,7 +2690,16 @@ var DashticzWidgetEditor = (function () {
     };
     var dimensions = widgetDimensions[item.id] || {};
     entry.width = dimensions.width || item.width;
-    if (dimensions.height || item.height) entry.height = dimensions.height || item.height;
+    // Grid mode sizes a widget via its grid cell (x/y/w/h); writing a pixel
+    // height into the block config fights that and breaks content that needs
+    // to size itself (iframes, camera images, mobile stacking). Only keep a
+    // height that was already explicitly set. Column mode still needs the
+    // catalog default to pack columns.
+    if (gridMode) {
+      if (dimensions.height) entry.height = dimensions.height;
+    } else if (dimensions.height || item.height) {
+      entry.height = dimensions.height || item.height;
+    }
 
     var blockOptions = widgetBlockOptions[item.id] || _defaultWidgetBlockOptions();
     if (blockOptions.icon === false) {
@@ -2833,6 +2842,7 @@ var DashticzWidgetEditor = (function () {
             settings: _collectConfigSettings(),
             screen: _activeScreenPayload(),
             blocksOnly: true,
+            gridMode: gridMode,
           },
           data.token
         );
@@ -2917,6 +2927,7 @@ var DashticzWidgetEditor = (function () {
             settings: configSettings,
             screen: screenNumber,
             blocksOnly: gridMode,
+            gridMode: gridMode,
           },
           token
         ).then(function (widgetResult) {
@@ -2950,6 +2961,9 @@ var DashticzWidgetEditor = (function () {
             });
             payload.forEach(function (entry) {
               if (includedWidgets[entry.id]) return;
+              var catalogItem = catalog.filter(function (c) {
+                return c.id === entry.id;
+              })[0] || {};
               var width = Math.max(
                 1,
                 Math.min(
@@ -2959,10 +2973,14 @@ var DashticzWidgetEditor = (function () {
                   )
                 )
               );
+              // entry.height is only present for a widget with an explicit
+              // custom height; fall back to the catalog default just to size
+              // the initial grid cell, without writing it into the block.
               var height = Math.max(
                 1,
                 Math.ceil(
-                  ((entry.height || 120) + gridConfig.gap) /
+                  ((entry.height || catalogItem.height || 120) +
+                    gridConfig.gap) /
                     (gridConfig.rowHeight + gridConfig.gap)
                 )
               );
