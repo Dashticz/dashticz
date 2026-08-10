@@ -6,6 +6,20 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.40.7 beta (10-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Device Editor: saving a device still failed with "requires a non-empty XMLTV
+  URL" when an XMLTV TV Guide widget configured the normal way (its URL set as
+  the global ``xmltv_url`` setting, via Widget Editor) was on the same screen.
+  The earlier fix for this (issue #98) only checked the block's own
+  ``xmltvurl`` property, but that property is empty for a widget using the
+  global setting — so the resubmitted payload still carried an empty URL and
+  ``savewidgets.php`` still rejected the save. It now falls back to
+  ``settings.xmltv_url`` when the block has no URL of its own.
+
 v3.40.6 beta (10-8-2026)
 --------------------------
 
