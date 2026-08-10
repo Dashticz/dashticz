@@ -313,6 +313,14 @@ var weatherIconOptions = {
   meteo: language.settings.weather.icons_meteo,
 };
 
+var waqiLayoutOptions = {
+  xsmall: 'Extra small',
+  small: 'Small',
+  large: 'Large',
+  xlarge: 'Extra large',
+  xxl: 'XXL',
+};
+
 var widgetEditorTranslations =
   (language.settings && language.settings.widgeteditor) || {};
 
@@ -707,13 +715,15 @@ var widgetSettingTiles = [
     title: widgetEditorTranslations.longfonds_title || 'Air quality',
     icon: 'fas fa-wind',
     settings: {
-      longfonds_zipcode: {
-        title: language.settings.weather.longfonds_zipcode,
+      waqi_city: {
+        title: language.settings.weather.waqi_city,
+        help: language.settings.weather.waqi_city_help,
         type: 'text',
       },
-      longfonds_housenumber: {
-        title: language.settings.weather.longfonds_housenumber,
-        type: 'text',
+      waqi_layout: {
+        title: language.settings.weather.waqi_layout,
+        type: 'select',
+        options: waqiLayoutOptions,
       },
     },
   },

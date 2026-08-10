@@ -262,12 +262,12 @@ Config parameters
   * - speak_lang
     - | Text to speech language
       | ``'<LANGUAGE>'`` Language options: de-DE, en-US, es-ES, fr-FR, it-IT, nl-NL, pl-PL, ru-RU
-  * - longfonds_zipcode
-    - | Longfonds (Dutch air quality check) zipcode.
-      | ``'1234AZ'`` Language options
-  * - longfonds_housenumber
-    - | Longfonds (Dutch air quality check) housenumber
-      | ``'123'`` Language options
+  * - waqi_city
+    - | World Air Quality Index (WAQI) city code, see :ref:`waqi`.
+      | ``5771`` (example: Amsterdam)
+  * - waqi_layout
+    - | World Air Quality Index (WAQI) widget layout, see :ref:`waqi`.
+      | ``'xsmall'``, ``'small'``, ``'large'``, ``'xlarge'`` or ``'xxl'``
 
 
 .. _urlparameters:

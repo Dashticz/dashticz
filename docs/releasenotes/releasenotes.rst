@@ -6,10 +6,28 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
-v3.40.7 beta (10-8-2026)
+v3.41.0 beta (10-8-2026)
 --------------------------
 
+* **Enhancements**
+
+- The Air Quality widget (``longfonds`` in CONFIG.js, id/key kept for backward
+  compatibility) now renders through the World Air Quality Index (WAQI)
+  component instead of the Longfonds/RIVM postcode lookup, which is why it was
+  no longer working. Configure it with a WAQI city code (found on
+  https://aqicn.org/) and a layout, both in Widget Editor or Settings ->
+  Widgets -> Air Quality. The ``longfonds_zipcode``/``longfonds_housenumber``
+  settings and ``js/components/longfonds.js`` are removed; the (previously
+  unused, disabled) ``js/components/waqi.js`` component is now enabled and
+  reads the ``waqi_city``/``waqi_layout`` global settings.
+
 * **Fixes**
+
+- Public transport widget: added the missing default icon
+  (``fas fa-train``) to ``js/components/publictransport.js``. The widget
+  catalog already showed a train icon when picking the widget, but the
+  component itself never wrote one into ``defaultCfg``, so a newly created
+  widget had no icon at all unless one was set by hand.
 
 - Device Editor: saving a device still failed with "requires a non-empty XMLTV
   URL" when an XMLTV TV Guide widget configured the normal way (its URL set as

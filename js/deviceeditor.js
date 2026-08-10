@@ -493,6 +493,7 @@ var DashticzDeviceEditor = (function () {
         camera: 'camera',
         map: 'map',
         longfonds: 'longfonds',
+        waqi: 'longfonds',
         moon: 'moon',
         news: 'news',
         frame: 'iframe',

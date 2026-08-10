@@ -95,9 +95,9 @@ $allowedSettings = [
     'gm_zoomlevel'           => 'number',
     'gm_latitude'            => 'string',
     'gm_longitude'           => 'string',
-    // air quality (longfonds)
-    'longfonds_zipcode'      => 'string',
-    'longfonds_housenumber'  => 'string',
+    // air quality (WAQI)
+    'waqi_city'              => 'string',
+    'waqi_layout'            => 'waqi_layout',
     // moon
     'idx_moonpicture'        => 'string',
     // news
@@ -129,6 +129,8 @@ $allowedCalendarLanguages = [
 
 $allowedWeatherIcons = ['line', 'linestatic', 'fill', 'static', 'meteo'];
 
+$allowedWaqiLayouts = ['xsmall', 'small', 'large', 'xlarge', 'xxl'];
+
 // Process optional config settings
 $configSettings = [];
 if (isset($data['settings']) && is_array($data['settings'])) {
@@ -154,6 +156,10 @@ if (isset($data['settings']) && is_array($data['settings'])) {
             }
         } elseif ($type === 'weather_icons') {
             if (in_array((string)$value, $allowedWeatherIcons, true)) {
+                $configSettings[$key] = (string)$value;
+            }
+        } elseif ($type === 'waqi_layout') {
+            if (in_array((string)$value, $allowedWaqiLayouts, true)) {
                 $configSettings[$key] = (string)$value;
             }
         } else {
@@ -889,8 +895,12 @@ function _widgetBlockProps($widget)
             $props['showtraffic'] = true;
             break;
         case 'longfonds':
-            $props['type'] = 'longfonds';
-            $props['title'] = 'Luchtkwaliteit';
+            // Widget id/key stay 'longfonds' for backward compatibility; the
+            // block itself now renders through the WAQI (World Air Quality
+            // Index) component, configured via the global waqi_city/
+            // waqi_layout settings.
+            $props['type'] = 'waqi';
+            $props['title'] = 'Air Quality';
             break;
         case 'moon':
             $props['type'] = 'moon';
