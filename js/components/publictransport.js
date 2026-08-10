@@ -22,7 +22,8 @@
         show_via: true,
         show_direction: false,
         width: 4,
-        height: 260
+        height: 260,
+        icon: 'fas fa-train',
       };
       if (!block || !block.station) {
         result.url =

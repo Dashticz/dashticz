@@ -255,7 +255,7 @@ icon strings remain intact until the Icon checkbox is explicitly switched off.
 | 112 | RSS feed and optional comma-separated location/text filter |
 | Cameras | Image URL and optional MJPEG video URL |
 | Google Maps | API key, zoom level, latitude and longitude |
-| Air quality | Longfonds postcode and house number |
+| Air quality | WAQI city code and layout |
 | Moon | Domoticz IDX for the moon image |
 | News | RSS URL and automatic-scroll interval |
 | iFrame | URL, scrollbars, scale-to-fit width, aspect ratio, optional legacy fixed height and refresh interval |

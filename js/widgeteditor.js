@@ -114,7 +114,7 @@ var DashticzWidgetEditor = (function () {
       id: 'longfonds',
       blockKey: 'widget_longfonds',
       title: 'Air quality',
-      description: 'Longfonds / RIVM air quality by postcode.',
+      description: 'World Air Quality Index (WAQI) for a city.',
       icon: 'fas fa-wind',
       width: 3,
       height: 120,
@@ -720,8 +720,8 @@ var DashticzWidgetEditor = (function () {
         gm_longitude: _s('gm_longitude'),
       },
       longfonds: {
-        longfonds_zipcode: _s('longfonds_zipcode'),
-        longfonds_housenumber: _s('longfonds_housenumber'),
+        waqi_city: _s('waqi_city'),
+        waqi_layout: _s('waqi_layout', 'large'),
       },
       moon: {
         idx_moonpicture: _s('idx_moonpicture'),
@@ -1098,6 +1098,7 @@ var DashticzWidgetEditor = (function () {
       camera: 'camera',
       map: 'map',
       longfonds: 'longfonds',
+      waqi: 'longfonds',
       moon: 'moon',
       news: 'news',
       basicclock: 'clock',
@@ -1989,8 +1990,15 @@ var DashticzWidgetEditor = (function () {
 
     } else if (item.id === 'longfonds') {
       var lcfg = widgetConfigs.longfonds || {};
-      fields += _cfgField('longfonds_zipcode', lw.longfonds_zipcode || 'Postcode', 'text', lcfg.longfonds_zipcode);
-      fields += _cfgField('longfonds_housenumber', lw.longfonds_housenumber || 'House number', 'text', lcfg.longfonds_housenumber);
+      fields += _cfgField('waqi_city', lw.waqi_city || 'WAQI city code', 'text', lcfg.waqi_city,
+        null, lw.waqi_city_help || 'Find your city code on aqicn.org.');
+      fields += _cfgField('waqi_layout', lw.waqi_layout || 'Layout', 'select', lcfg.waqi_layout || 'large', {
+        xsmall: 'Extra small',
+        small: 'Small',
+        large: 'Large',
+        xlarge: 'Extra large',
+        xxl: 'XXL',
+      });
 
     } else if (item.id === 'moon') {
       var mooncfg = widgetConfigs.moon || {};
@@ -2661,7 +2669,7 @@ var DashticzWidgetEditor = (function () {
       secpanel: ['security_button_icons', 'security_panel_lock'],
       trafficinfo: ['anwb_apikey'],
       map: ['gm_api', 'gm_zoomlevel', 'gm_latitude', 'gm_longitude'],
-      longfonds: ['longfonds_zipcode', 'longfonds_housenumber'],
+      longfonds: ['waqi_city', 'waqi_layout'],
       moon: ['idx_moonpicture'],
       news: ['default_news_url', 'news_scroll_after'],
     };

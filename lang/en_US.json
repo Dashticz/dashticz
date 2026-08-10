@@ -424,8 +424,8 @@
             "camera_description": "Camera image or MJPEG stream.",
             "map_title": "Google Maps",
             "map_description": "Map with optional traffic and directions.",
-            "longfonds_title": "Air quality",
-            "longfonds_description": "Longfonds / RIVM air quality by postcode.",
+            "longfonds_title": "Air Quality",
+            "longfonds_description": "World Air Quality Index (WAQI) for a city.",
             "moon_title": "Moon",
             "moon_description": "Current moon phase.",
             "news_title": "News",
@@ -671,8 +671,9 @@
             "owm_lang_help": "For available languages, see https://openweathermap.org/forecast5/#multi",
             "owm_country": "Open Weather Map Country",
             "owm_name": "Display Name Open Weather Map",
-            "longfonds_zipcode": "Longfonds zipcode",
-            "longfonds_housenumber": "Longfonds house number",
+            "waqi_city": "WAQI city code",
+            "waqi_city_help": "Find your city code on aqicn.org.",
+            "waqi_layout": "Layout",
             "dewpoint": "dewpoint"
         },
         "other": {

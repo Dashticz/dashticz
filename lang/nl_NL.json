@@ -425,7 +425,7 @@
             "map_title": "Google Maps",
             "map_description": "Kaart met optioneel verkeer en route.",
             "longfonds_title": "Luchtkwaliteit",
-            "longfonds_description": "Longfonds / RIVM-luchtkwaliteit op postcode.",
+            "longfonds_description": "World Air Quality Index (WAQI) voor een stad.",
             "moon_title": "Maan",
             "moon_description": "Huidige maanstand.",
             "news_title": "Nieuws",
@@ -671,8 +671,9 @@
             "owm_lang_help": "Zie voor beschikbare talen https://openweathermap.org/forecast5/#multi",
             "owm_country": "Open Weather Map Land",
             "owm_name": "Weergavenaam Open Weather Map",
-            "longfonds_zipcode": "Longfonds postcode",
-            "longfonds_housenumber": "Longfonds huisnummer",
+            "waqi_city": "WAQI stadscode",
+            "waqi_city_help": "Vind je stadscode op aqicn.org.",
+            "waqi_layout": "Layout",
             "dewpoint": "dauwpunt"
         },
         "other": {

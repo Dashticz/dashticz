@@ -10,7 +10,6 @@ var Dashticz = (function () {
     'button',
     'frame',
     'news',
-    'longfonds',
     'traffic',
     'train',
     'publictransport',
@@ -323,7 +322,9 @@ var Dashticz = (function () {
       flipclock: 'clock_title',
       garbage: 'garbage_title',
       haymanclock: 'clock_title',
-      longfonds: 'longfonds_title',
+      // WAQI reuses the longfonds_title translation key: the widget it
+      // replaced already carried the correct "Air Quality" wording.
+      waqi: 'longfonds_title',
       map: 'map_title',
       moon: 'moon_title',
       news: 'news_title',
