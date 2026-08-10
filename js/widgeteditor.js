@@ -117,7 +117,10 @@ var DashticzWidgetEditor = (function () {
       description: 'World Air Quality Index (WAQI) for a city.',
       icon: 'fas fa-wind',
       width: 3,
-      height: 120,
+      // The WAQI embed scales to the block's actual rendered width, then sets
+      // its own height to width * aspectratio (default layout 'large': 1.3),
+      // so a short default clips it. Size for that instead of a fixed badge.
+      height: 400,
     },
     {
       id: 'moon',

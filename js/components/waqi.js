@@ -2,79 +2,84 @@
 //# sourceURL=js/components/waqi.js
 (function (Dashticz) {
   "use strict";
+  var MAX_MEASURE_ATTEMPTS = 20;
+  var MEASURE_RETRY_MS = 150;
+
   var DT_waqi = {
     name: 'waqi',
     canHandle: function (block) {
       return block && block.type === 'waqi';
     },
     defaultCfg: function (block) {
-      var layout = choose(block.layout, settings['waqi_layout'], 'large');
-      var zoomfactors = {
-        xsmall: [120, 1.2],
-        small: [170, 0.9],
-        large: [170, 1.3],
-        xlarge: [180, 1.66],
-        xxl: [480, 1],
-      }
       return {
         icon: 'fas fa-wind',
         title: 'Air Quality',
         width: 12,
-        layout: layout, //xsmall, small, large, xlarge, xxl
+        layout: choose(block.layout, settings['waqi_layout'], 'large'), //xsmall, small, large, xlarge, xxl
         city: choose(block.city, settings['waqi_city'], 5771), //Amsterdam
-        refresh: 15*60,
-        scaletofit: zoomfactors[layout][0] || 1,
-        aspectratio: zoomfactors[layout][1] || 0.5,
+        refresh: 15 * 60,
       };
     },
     run: function (me) {
-        var hasIcon = me.$mountPoint.find('.col-icon').length;
-        var html = '';
-        var height = me.block.height ? ';height:' + me.block.height + 'px' : '';
-        var isXXL = me.block.layout==='xxl';
-        me.iframeid = me.mountPoint+'_iframe';
-        html +=
-          '<iframe style="border:0px' + height + ';" id="' + me.iframeid + '"></iframe>';
-        me.$mountPoint.find('.dt_state').html(html);
-
-        var $iframe = me.$mountPoint.find('iframe');
-        var $dtstate = me.$mountPoint.find('.dt_state');
-        var width = parseInt(me.$mountPoint.find('div').innerWidth())  - (isXXL ? 20:0);
-        var scaling = me.block.scaletofit ? width/me.block.scaletofit : 1;
-        var iframeWidth = width/scaling;
-        var dtstatecss={};
-        var iframecss={}
-        var scalingStr = 'scale(' + scaling + ')';
-        iframecss={'-webkit-transform': scalingStr, transform: scalingStr, width: iframeWidth, maxWidth: iframeWidth, 'transform-origin': 'top left'};
-        if(hasIcon) {
-          dtstatecss.marginRight='0px';
-          dtstatecss.marginLeft='5px';
-        }
-        if(me.block.aspectratio) {
-          dtstatecss.height=iframeWidth * me.block.aspectratio * scaling;
-          iframecss.height=iframeWidth * me.block.aspectratio  - (isXXL?40:0);
-        }
-
-        if(me.block.layout==='xxl') {
-            me.$mountPoint.find('.dt_block').addClass('xxl');
-            $dtstate.css(dtstatecss);
-            $iframe.css(iframecss);
-        }
-        else {
-          $dtstate.css(dtstatecss);
-          $iframe.css(iframecss);
-        }
+      me.iframeid = me.mountPoint + '_iframe';
+      me.$mountPoint.find('.dt_state').html(
+        '<iframe scrolling="no" style="border:0px;" id="' + me.iframeid + '"></iframe>'
+      );
     },
-    refresh: function(me) {
-        var iframe = '<script type="text/javascript" src="https://widgets.waqi.info/jswgt/?size=' +
+    onResize: function (me) {
+      _scaleToFit(me, 0);
+    },
+    refresh: function (me) {
+      var iframeEl = document.getElementById(me.iframeid);
+      if (!iframeEl) return;
+      var html =
+        '<script type="text/javascript" src="https://widgets.waqi.info/jswgt/?size=' +
         me.block.layout + '&city=@' + me.block.city +
         '"></script><noscript>' + language.misc.widget_not_visible + ' (<a href="https://aqicn.org/">' +
         language.misc.more_info + '</a>)</noscript>';
-        var doc = document.getElementById(me.iframeid).contentWindow.document;
-        doc.open();
-        doc.write(iframe);
-        doc.close();
+      var doc = iframeEl.contentWindow.document;
+      doc.open();
+      doc.write(html);
+      doc.close();
+      _scaleToFit(me, 0);
+    },
+  };
+
+  // The WAQI badge is injected asynchronously by an externally-loaded
+  // <script>, so its real size is only known once that script has run.
+  // Measure the iframe's own (same-origin) document instead of guessing a
+  // fixed pixel size per layout, then scale the whole badge down (or up) to
+  // fit the block's actual rendered width.
+  function _scaleToFit(me, attempt) {
+    var iframeEl = document.getElementById(me.iframeid);
+    if (!iframeEl || !iframeEl.contentDocument) return;
+    var body = iframeEl.contentDocument.body;
+    var contentWidth = body && body.scrollWidth;
+    var contentHeight = body && body.scrollHeight;
+    if (!contentWidth || !contentHeight) {
+      if (attempt < MAX_MEASURE_ATTEMPTS) {
+        setTimeout(function () {
+          _scaleToFit(me, attempt + 1);
+        }, MEASURE_RETRY_MS);
+      }
+      return;
     }
+    var hasIcon = me.$mountPoint.find('.col-icon').length;
+    var containerWidth = parseInt(
+      hasIcon
+        ? me.$mountPoint.find('.dt_content').outerWidth()
+        : me.$mountPoint.find('div').innerWidth()
+    );
+    var scaling = containerWidth ? containerWidth / contentWidth : 1;
+    $(iframeEl).css({
+      width: contentWidth,
+      height: contentHeight,
+      transform: 'scale(' + scaling + ')',
+      '-webkit-transform': 'scale(' + scaling + ')',
+      'transform-origin': 'top left',
+    });
+    me.$mountPoint.find('.dt_state').css({ height: contentHeight * scaling });
   }
+
   Dashticz.register(DT_waqi);
 })(Dashticz);
