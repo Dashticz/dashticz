@@ -185,7 +185,7 @@ $catalog = [
     'alarmmeldingen' => ['key' => 'widget_alarmmeldingen', 'width' => 4, 'height' => 160],
     'camera' => ['key' => 'widget_cameras', 'width' => 4, 'height' => 320],
     'map' => ['key' => 'widget_map', 'width' => 4, 'height' => 500],
-    'longfonds' => ['key' => 'widget_longfonds', 'width' => 4, 'height' => 120],
+    'longfonds' => ['key' => 'widget_longfonds', 'width' => 4, 'height' => 400],
     'moon' => ['key' => 'widget_moon', 'width' => 3],
     'news' => ['key' => 'widget_news', 'width' => 4, 'height' => 240],
     // iframe widget: embeds any URL in an inline frame

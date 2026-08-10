@@ -827,7 +827,7 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
     ['alarmmeldingen', 3, 160],
     ['camera', 3, 200],
     ['map', 3, 400],
-    ['longfonds', 3, 120],
+    ['longfonds', 3, 400],
     ['news', 3, 200],
   ]) {
     assert.match(
