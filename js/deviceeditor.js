@@ -747,6 +747,28 @@ var DashticzDeviceEditor = (function () {
       entry.rss =
         definition.rss || 'https://www.alarmeringen.nl/feeds/all.rss';
       if (definition.filter) entry.filter = definition.filter;
+    } else if (widget.id === 'xmltvguide') {
+      // savewidgets.php rejects the whole save when a resubmitted xmltvguide
+      // block has no xmltvurl, so it must be carried over explicitly here.
+      entry.xmltvurl = definition.xmltvurl || '';
+      _copyDefinedWidgetProperties(entry, definition, [
+        'channels',
+        'maxitems',
+        'layout',
+        'separator',
+        'refresh',
+      ]);
+    } else if (widget.id === 'iframe') {
+      // Same requirement as xmltvguide above: frameurl is mandatory server-side.
+      entry.frameurl = definition.frameurl || '';
+      _copyDefinedWidgetProperties(entry, definition, [
+        'scrollbars',
+        'iframeHeight',
+        'scaletofit',
+        'aspectratio',
+        'forcerefresh',
+        'refresh',
+      ]);
     }
 
     // savewidgets.php rebuilds the managed block section. Re-submit every safe

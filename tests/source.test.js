@@ -1474,3 +1474,52 @@ test('migration sources use LF line endings', () => {
     assert.doesNotMatch(fs.readFileSync(path.join(root, file), 'utf8'), /\r\n/, file);
   }
 });
+
+test('device editor resubmits xmltvguide and iframe URLs so an unrelated device save cannot 400', () => {
+  const deviceEditorSource = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+
+  const helperStart = deviceEditorSource.indexOf('function _copyDefinedWidgetProperties');
+  const helperEnd = deviceEditorSource.indexOf('\n  }\n', helperStart) + '\n  }\n'.length;
+  assert.notEqual(helperStart, -1, '_copyDefinedWidgetProperties not found');
+  const helperSnippet = deviceEditorSource.substring(helperStart, helperEnd);
+
+  const branchStart = deviceEditorSource.indexOf("if (widget.id === 'garbage') {");
+  const branchEnd = deviceEditorSource.indexOf(
+    'entry.custom_fields = _widgetCustomFields(definition);',
+    branchStart
+  );
+  assert.notEqual(branchStart, -1, 'widget-type branch chain not found');
+  assert.notEqual(branchEnd, -1, 'end of widget-type branch chain not found');
+  const branchSnippet = deviceEditorSource.substring(branchStart, branchEnd);
+
+  // Both widget types must be resubmitted with their required URL field, or
+  // savewidgets.php rejects the entire Device Editor save with a 400 error
+  // (see issue #98: adding a device fails whenever an xmltvguide/iframe
+  // block already exists, because that block's URL silently dropped out of
+  // the resubmitted payload).
+  function runBranch(widgetId, definition) {
+    const ctx = {
+      widget: { id: widgetId },
+      definition: definition,
+      entry: {},
+    };
+    vm.runInNewContext(helperSnippet + '\n' + branchSnippet, ctx);
+    return ctx.entry;
+  }
+
+  const xmltvEntry = runBranch('xmltvguide', {
+    xmltvurl: 'http://my-epg-server/guide.xml',
+    channels: ['BBC1'],
+    maxitems: 20,
+  });
+  assert.equal(xmltvEntry.xmltvurl, 'http://my-epg-server/guide.xml');
+  assert.deepEqual(xmltvEntry.channels, ['BBC1']);
+  assert.equal(xmltvEntry.maxitems, 20);
+
+  const iframeEntry = runBranch('iframe', {
+    frameurl: 'https://example.com/dashboard',
+    scrollbars: false,
+  });
+  assert.equal(iframeEntry.frameurl, 'https://example.com/dashboard');
+  assert.equal(iframeEntry.scrollbars, false);
+});
