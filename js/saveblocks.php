@@ -159,6 +159,12 @@ foreach ($data['devices'] as $entry) {
             $hideData = !empty($entry['hide_data']);
             $lastUpdate = !empty($entry['last_update']);
             $switch = !empty($entry['switch']);
+        } elseif ($kind === 'title') {
+            // A separator/title bar has no data value or idx, but it can still
+            // show a leading icon like any other block.
+            $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
+                ? substr($entry['icon'], 0, 100)
+                : null;
         }
         $slide = null;
         $buttonKey = null;

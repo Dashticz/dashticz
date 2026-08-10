@@ -403,17 +403,17 @@ var DashticzDeviceEditor = (function () {
         : String(definition.title || (kind === 'title' ? 'Title' : reference)),
       width: _parseWidth(definition.width || (kind === 'title' ? 12 : 3)),
       height: _parseHeight(definition.height),
-      options: kind === 'title'
-        ? null
-        : {
-            icon: typeof definition.icon === 'undefined' || definition.icon !== '',
-            iconValue: typeof definition.icon === 'string' && definition.icon !== ''
-              ? definition.icon
-              : null,
-            hide_data: definition.hide_data === true,
-            last_update: definition.last_update === true,
-            switch: definition.switch === true,
-          },
+      // hide_data/last_update/switch are unused for a title/separator block,
+      // but icon applies to every special kind.
+      options: {
+        icon: typeof definition.icon === 'undefined' || definition.icon !== '',
+        iconValue: typeof definition.icon === 'string' && definition.icon !== ''
+          ? definition.icon
+          : null,
+        hide_data: definition.hide_data === true,
+        last_update: definition.last_update === true,
+        switch: definition.switch === true,
+      },
       buttonKey: String(definition.key || ''),
       slideTarget: parseInt(definition.slide, 10) > 0 ? parseInt(definition.slide, 10) : 1,
       showTitle: definition.hide_title !== true,
@@ -1633,18 +1633,19 @@ var DashticzDeviceEditor = (function () {
       _esc(t.device_config) + ' — ' + _esc(displayName) + '</h5>';
     html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
     html += '<div class="modal-body">';
-    if (!isTitle) {
-      html += '<div class="de-config-options de-config-options-three">';
-      ['icon', 'hide_data', 'last_update'].forEach(function (option) {
-        html += '<label class="form-check"><input class="form-check-input de-config-option" type="checkbox" data-option="' + option + '"';
-        // The Data checkbox is user-facing: checked means data is visible.
-        // CONFIG.js keeps the backwards-compatible inverse hide_data property.
-        var checked = option === 'hide_data' ? options.hide_data !== true : options[option] === true;
-        if (checked) html += ' checked';
-        html += '><span class="form-check-label">' + _esc(t[option]) + '</span></label>';
-      });
-      html += '</div>';
-    }
+    // A separator/title bar has no data value or last-update timestamp of its
+    // own, but it can still show a leading icon like any other block.
+    var configOptions = isTitle ? ['icon'] : ['icon', 'hide_data', 'last_update'];
+    html += '<div class="de-config-options' + (isTitle ? '' : ' de-config-options-three') + '">';
+    configOptions.forEach(function (option) {
+      html += '<label class="form-check"><input class="form-check-input de-config-option" type="checkbox" data-option="' + option + '"';
+      // The Data checkbox is user-facing: checked means data is visible.
+      // CONFIG.js keeps the backwards-compatible inverse hide_data property.
+      var checked = option === 'hide_data' ? options.hide_data !== true : options[option] === true;
+      if (checked) html += ' checked';
+      html += '><span class="form-check-label">' + _esc(t[option]) + '</span></label>';
+    });
+    html += '</div>';
     html += '<div class="de-custom-fields-section"><h6>' + _esc(t.custom_fields) + '</h6>';
     html += '<p class="form-text">' + _esc(t.custom_fields_help) + '</p>';
     html += '<div class="de-custom-fields">';
@@ -1665,7 +1666,6 @@ var DashticzDeviceEditor = (function () {
       });
     }
     function refreshIconFieldVisibility() {
-      if (isTitle) return;
       var enabled = $popup.find('[data-option="icon"]').is(':checked');
       $popup.find('.de-icon-field-row').toggle(enabled);
     }
@@ -1723,12 +1723,6 @@ var DashticzDeviceEditor = (function () {
           return;
         }
         if (lowerField === 'icon') {
-          if (isTitle) {
-            valid = false;
-            $popup.find('.de-config-message').addClass('text-danger').text(t.duplicate_field);
-            $(this).find('.de-custom-field-name').trigger('focus');
-            return;
-          }
           // An existing icon row is hidden/inactive while Icon is off. A newly
           // entered visible icon row gets an explicit validation message instead.
           if (updated.icon !== true) {
@@ -1788,10 +1782,8 @@ var DashticzDeviceEditor = (function () {
             }
           });
         }
-        if (!isTitle) {
-          special.options = $.extend({}, special.options, updated);
-          special.options.iconValue = hasIconField ? pendingIconValue : null;
-        }
+        special.options = $.extend({}, special.options, updated);
+        special.options.iconValue = hasIconField ? pendingIconValue : null;
       } else {
         deviceTitles[ck] = pendingTitle;
         deviceCustomFields[ck] = storedRows;
@@ -2365,6 +2357,13 @@ var DashticzDeviceEditor = (function () {
               special.reference
           ).slice(0, 100);
           specialEntry.icon = slideOptions.iconValue || '';
+        } else if (special.specialType === 'title') {
+          var titleOptions = special.options || {};
+          if (titleOptions.icon === false) {
+            specialEntry.icon = '';
+          } else if (titleOptions.iconValue) {
+            specialEntry.icon = titleOptions.iconValue;
+          }
         }
         if (special.height) specialEntry.height = special.height;
         return specialEntry;
