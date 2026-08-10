@@ -6,6 +6,36 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.40.5 beta (10-8-2026)
+--------------------------
+
+* **Code**
+
+- Removed ``configwriter_normalise_text_alignment()`` from ``js/configwriter.php``,
+  a leftover helper from the removed alignment editor that was no longer called
+  anywhere.
+- Updated a stale ``tests/php-security.test.js`` assertion for the grid layout
+  writer's ``$forceClone`` check, which still expected its previous form and
+  never matched the current cross-screen ownership logic (commit a88f728).
+
+v3.40.4 beta (10-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Device Editor: saving from Device Editor now fails with a 400 error
+  ("XMLTV TV Guide requires a non-empty XMLTV URL" / "iFrame requires a
+  non-empty URL") when adding or editing *any* device, as long as an
+  ``xmltvguide`` or ``iframe`` widget block already exists on the dashboard.
+  Device Editor resubmits every existing widget block to ``savewidgets.php``
+  on each save, but it never copied the block's ``xmltvurl``/``frameurl``
+  (or the widget's other saved options) into that resubmission, so the
+  server-side validation added for those two widgets always saw an empty
+  URL and rejected the whole save. Device Editor now carries those fields
+  over like it already does for the calendar widget's ``icalurl``, so
+  adding a device no longer breaks dashboards that also use the XMLTV TV
+  Guide or an iFrame widget. (#98)
+
 v3.40.3 beta (10-8-2026)
 --------------------------
 

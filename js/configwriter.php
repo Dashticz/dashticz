@@ -475,18 +475,6 @@ function configwriter_js_string_escape($value)
     );
 }
 
-function configwriter_normalise_text_alignment($value, $default = 'left')
-{
-    if (!is_string($value)) {
-        return $default;
-    }
-
-    $value = strtolower(trim($value));
-    return in_array($value, ['left', 'center', 'right'], true)
-        ? $value
-        : $default;
-}
-
 function configwriter_managed_column_pattern()
 {
     // Include legacy de_col1 and multi-screen de_s2_col1 style keys.

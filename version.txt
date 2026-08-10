@@ -1,8 +1,10 @@
 {
-    "version": "3.40.3",
+    "version": "3.40.5",
     "branch": "beta",
-    "last_changes": "Fix grid screens: widgets no longer get a default fixed pixel height that fights the grid row sizing",
+    "last_changes": "Remove leftover dead alignment-editor helper and fix a stale grid-layout test assertion",
     "changelog": {
+        "3.40.5": "Remove leftover dead alignment-editor helper and fix a stale grid-layout test assertion",
+        "3.40.4": "Fix Device Editor save failing with an XMLTV/iFrame URL error whenever an unrelated device was added",
         "3.40.3": "Fix grid screens: widgets no longer get a default fixed pixel height that fights the grid row sizing",
         "3.40.2": "Fix grid screen: same block on multiple screens now keeps independent per-screen positions",
         "3.40.1": "Fix theme panel: only read CSS overrides from saved custom.css block, not from theme stylesheets",
