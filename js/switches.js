@@ -93,7 +93,9 @@ function getDefaultSwitchBlock( block ) {
 }
 
 function isProtected(block) {
-  return block.protected || (block.device && block.device.Protected);
+  return block.protected ||
+    block.protoBlock?.protected ||
+    block.device?.Protected;
 }
 
 function getIconStatusClass(deviceStatus) {
