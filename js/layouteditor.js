@@ -185,7 +185,7 @@ var DashticzLayoutEditor = (function () {
     var deferred = $.Deferred();
     var $screen = _activeScreenDom();
     var screenNumber = _activeScreenPayload();
-    var allowEmpty = targetMode === 'wizard' && screenNumber !== 'standby';
+    var allowEmpty = targetMode === 'wizard';
     var conversion;
     if (!$screen.length) {
       if (!allowEmpty) {

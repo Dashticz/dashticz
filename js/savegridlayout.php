@@ -83,6 +83,10 @@ $widgetSettings = configwriter_extract_section_config_settings(
     $widgetEndMarker
 );
 $declaredRefs = configwriter_extract_declared_block_refs($config);
+// TAAK1: know which screen currently owns each block key, so simply
+// repositioning a widget/device within this screen's grid can't silently
+// take over (and later be edited to affect) a block owned by another screen.
+$screenOwners = configwriter_extract_screen_block_owners($config, $screenNumber);
 $items = [];
 $usedRefs = [];
 $usedBlockKeys = array_keys($declaredRefs);
@@ -102,8 +106,35 @@ foreach ($data['items'] as $index => $entry) {
     $ref = $requestedRef;
     $props = null;
     $propsLiteral = null;
-    $forceClone = $screenNumber === 0 && !empty($entry['clone']);
-    if ($forceClone || $ref === '' || !isset($declaredRefs[$ref])) {
+    $ownedByOtherScreen = $ref !== ''
+        && isset($declaredRefs[$ref])
+        && isset($screenOwners[$ref])
+        && (int)$screenOwners[$ref] !== (int)$screenNumber;
+    $forceClone = ($screenNumber === 0 && !empty($entry['clone'])) || $ownedByOtherScreen;
+
+    if ($forceClone
+        && $ref !== ''
+        && (!isset($entry['create']) || !is_array($entry['create']))
+    ) {
+        /* Plain repositioning within this screen's grid (drag-and-drop save)
+         * never sends a 'create' payload. Clone using the block's own
+         * already-known properties instead of failing, so the two screens
+         * stop sharing one definition. */
+        $cloneSource = isset($allBlockLines[$ref])
+            ? $allBlockLines[$ref]
+            : (isset($existingGridBlocks[$ref]) ? $existingGridBlocks[$ref] : null);
+        if ($cloneSource !== null) {
+            $propsLiteral = $cloneSource;
+            $ref = configwriter_make_block_key(
+                configwriter_screen_key_prefix($screenNumber) . $requestedRef,
+                $usedBlockKeys
+            );
+        }
+    }
+
+    if ($propsLiteral === null
+        && ($forceClone || $ref === '' || !isset($declaredRefs[$ref]))
+    ) {
         if (!isset($entry['create']) || !is_array($entry['create'])) {
             dashticz_json_error(400, 'Grid block is not declared and cannot be created.');
         }
@@ -155,12 +186,12 @@ foreach ($data['items'] as $index => $entry) {
             $requestedRef !== '' ? $requestedRef : $name,
             $usedBlockKeys
         );
-    } elseif (isset($allBlockLines[$ref])) {
+    } elseif ($propsLiteral === null && isset($allBlockLines[$ref])) {
         // Prefer the full-config block line (picks up any block written by
         // savewidgets.php in the same request chain) over the stale props
         // extracted from the previous grid-layout section alone.
         $propsLiteral = $allBlockLines[$ref];
-    } elseif (isset($existingGridBlocks[$ref])) {
+    } elseif ($propsLiteral === null && isset($existingGridBlocks[$ref])) {
         $propsLiteral = $existingGridBlocks[$ref];
     }
     if (isset($usedRefs[$ref])) {

@@ -686,6 +686,20 @@ $config = rtrim($config);
 $blocksOnly = !empty($data['blocksOnly']);
 
 if (!empty($widgets)) {
+    // TAAK1: never let a widget silently take over a block key that a
+    // different screen already owns; clone it (screen-prefixed) instead.
+    $owners = configwriter_extract_screen_block_owners($config, $screenNumber);
+    $usedKeys = array_keys(configwriter_extract_declared_block_refs($config));
+    foreach ($widgets as &$widget) {
+        $widget['key'] = configwriter_ensure_screen_owned_key(
+            $widget['key'],
+            $screenNumber,
+            $owners,
+            $usedKeys
+        );
+    }
+    unset($widget);
+
     $section = configwriter_section_header('BLOCKS') . "\n";
     $section .= "if (typeof blocks === 'undefined') var blocks = {}\n";
 

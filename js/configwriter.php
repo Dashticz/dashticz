@@ -1541,3 +1541,78 @@ function configwriter_special_block_props($block)
     }
     return $props;
 }
+
+/**
+ * TAAK1: keep widgets/devices/custom devices/separators ('tussenbalk') and
+ * slide buttons unique per screen.
+ *
+ * Map every block ref declared inside a screen's own editor-managed
+ * sections (device/widget/grid-layout) to the screen number that "owns" it
+ * (0 = standby, 1..99 = numbered screens). A ref not found in any of these
+ * sections (e.g. a hand-written CONFIG.js block) is left unmapped, since
+ * hand-written blocks are already shared on purpose.
+ *
+ * Only sections belonging to $excludeScreenNumber are skipped, since the
+ * calling save-endpoint has typically already stripped and is about to
+ * rewrite its own section for that screen.
+ */
+function configwriter_extract_screen_block_owners($config, $excludeScreenNumber = null)
+{
+    $owners = [];
+    $kinds = ['device', 'widget', 'grid-layout'];
+    $screenNumbers = array_merge([0], configwriter_extract_numbered_screens($config));
+
+    foreach ($screenNumbers as $screenNumber) {
+        if ($excludeScreenNumber !== null
+            && (int)$screenNumber === (int)$excludeScreenNumber
+        ) {
+            continue;
+        }
+        foreach ($kinds as $kind) {
+            list($startMarker, $endMarker) = configwriter_editor_markers(
+                $kind,
+                $screenNumber
+            );
+            $section = configwriter_extract_wrapped_section(
+                $config,
+                $startMarker,
+                $endMarker
+            );
+            if ($section === '') {
+                continue;
+            }
+            foreach (configwriter_extract_declared_block_refs($section) as $ref => $true) {
+                if (!isset($owners[$ref])) {
+                    $owners[$ref] = $screenNumber;
+                }
+            }
+        }
+    }
+
+    return $owners;
+}
+
+/** Stable, readable prefix used when a key must be cloned for a screen. */
+function configwriter_screen_key_prefix($screenNumber)
+{
+    $n = (int)$screenNumber;
+    return $n === 0 ? 'screen_standby_' : 'screen' . $n . '_';
+}
+
+/**
+ * If $key already belongs to a *different* screen than $screenNumber
+ * (per $owners, from configwriter_extract_screen_block_owners), return a
+ * new, screen-prefixed, still-unique key instead so the two screens stop
+ * sharing one block definition. Otherwise $key is returned unchanged.
+ */
+function configwriter_ensure_screen_owned_key($key, $screenNumber, $owners, &$usedKeys)
+{
+    if ($key === null || $key === '') {
+        return $key;
+    }
+    if (!isset($owners[$key]) || (int)$owners[$key] === (int)$screenNumber) {
+        return $key;
+    }
+    $prefixed = configwriter_screen_key_prefix($screenNumber) . $key;
+    return configwriter_make_block_key($prefixed, $usedKeys);
+}
