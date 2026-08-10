@@ -750,7 +750,13 @@ var DashticzDeviceEditor = (function () {
     } else if (widget.id === 'xmltvguide') {
       // savewidgets.php rejects the whole save when a resubmitted xmltvguide
       // block has no xmltvurl, so it must be carried over explicitly here.
-      entry.xmltvurl = definition.xmltvurl || '';
+      // The URL normally lives in the global xmltv_url setting rather than on
+      // the block itself; only a hand-added block-level override takes
+      // precedence over that.
+      entry.xmltvurl =
+        definition.xmltvurl ||
+        (typeof settings !== 'undefined' && settings.xmltv_url) ||
+        '';
       _copyDefinedWidgetProperties(entry, definition, [
         'channels',
         'maxitems',

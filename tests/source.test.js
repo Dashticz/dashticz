@@ -1499,11 +1499,12 @@ test('device editor resubmits xmltvguide and iframe URLs so an unrelated device 
   // (see issue #98: adding a device fails whenever an xmltvguide/iframe
   // block already exists, because that block's URL silently dropped out of
   // the resubmitted payload).
-  function runBranch(widgetId, definition) {
+  function runBranch(widgetId, definition, settingsObj) {
     const ctx = {
       widget: { id: widgetId },
       definition: definition,
       entry: {},
+      settings: settingsObj || {},
     };
     vm.runInNewContext(helperSnippet + '\n' + branchSnippet, ctx);
     return ctx.entry;
@@ -1517,6 +1518,16 @@ test('device editor resubmits xmltvguide and iframe URLs so an unrelated device 
   assert.equal(xmltvEntry.xmltvurl, 'http://my-epg-server/guide.xml');
   assert.deepEqual(xmltvEntry.channels, ['BBC1']);
   assert.equal(xmltvEntry.maxitems, 20);
+
+  // The XMLTV URL normally lives in the global xmltv_url setting rather than
+  // on the block itself (that's how the Widget Editor stores it), so the
+  // fallback to settings.xmltv_url must work when definition.xmltvurl is unset.
+  const xmltvGlobalEntry = runBranch(
+    'xmltvguide',
+    { channels: ['BBC1'] },
+    { xmltv_url: 'http://global-epg-server/guide.xml' }
+  );
+  assert.equal(xmltvGlobalEntry.xmltvurl, 'http://global-epg-server/guide.xml');
 
   const iframeEntry = runBranch('iframe', {
     frameurl: 'https://example.com/dashboard',
