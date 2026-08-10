@@ -6,6 +6,23 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.40.3 beta (10-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Grid screens: widgets created (or resaved) from the Widget Editor no longer get a
+  default fixed pixel ``height`` written into their block config. A grid item's
+  height is already determined by its grid-row span; the leftover column-layout
+  default fought that sizing and caused iframes, camera/image widgets and other
+  dynamically-sized content to be clipped or leave empty space, especially on
+  mobile stacking. ``renderBlock`` now also skips forcing a block's configured
+  ``height`` as inline CSS when it renders inside a grid item, so dashboards with
+  an already-saved default height are fixed immediately without editing
+  ``CONFIG.js``. Column-mode layouts are unaffected: they still get the catalog
+  default height needed to pack columns, and any explicitly-set height keeps
+  working in both modes.
+
 v3.40.2 beta (7-8-2026)
 --------------------------
 
