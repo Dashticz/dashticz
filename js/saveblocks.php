@@ -367,6 +367,13 @@ if (!empty($devices)) {
     $usedKeys = array_keys(
         configwriter_extract_declared_block_refs($keyCollisionConfig)
     );
+    // TAAK1: never let a device/custom device/separator ('tussenbalk') or
+    // slide button silently take over a block key that a different screen
+    // already owns; clone it (screen-prefixed) instead.
+    $owners = configwriter_extract_screen_block_owners(
+        $keyCollisionConfig,
+        $screenNumber
+    );
     $requestKeys = [];
     foreach ($devices as &$device) {
         if (isset($device['kind']) && (in_array($device['kind'], ['dummy', 'title', 'custom'], true) || $device['kind'] === 'slidebutton')) {
@@ -374,14 +381,32 @@ if (!empty($devices)) {
             if (isset($requestKeys[$device['key']])) {
                 dashticz_json_error(409, 'Special block key already exists.');
             }
-            /* Reuse an equivalent hand-written CONFIG.js block without
-             * overwriting or duplicating its additional custom properties. */
-            $device['preserveExisting'] = in_array($device['key'], $usedKeys, true);
+            $ownedByOtherScreen = isset($owners[$device['key']])
+                && (int)$owners[$device['key']] !== (int)$screenNumber;
+            if ($ownedByOtherScreen) {
+                $device['key'] = configwriter_ensure_screen_owned_key(
+                    $device['key'],
+                    $screenNumber,
+                    $owners,
+                    $usedKeys
+                );
+                $device['preserveExisting'] = false;
+            } else {
+                /* Reuse an equivalent hand-written CONFIG.js block without
+                 * overwriting or duplicating its additional custom properties. */
+                $device['preserveExisting'] = in_array($device['key'], $usedKeys, true);
+            }
             $requestKeys[$device['key']] = true;
         } elseif (!empty($device['isGroup'])) {
             /* group/scene: the key is fixed to the group reference (e.g. 's1') */
             $requestKeys[$device['key']] = true;
         } elseif ($device['key'] !== null && !isset($requestKeys[$device['key']])) {
+            $device['key'] = configwriter_ensure_screen_owned_key(
+                $device['key'],
+                $screenNumber,
+                $owners,
+                $usedKeys
+            );
             $requestKeys[$device['key']] = true;
         } else {
             /* Domoticz names are mutable (for example event devices). Use the
