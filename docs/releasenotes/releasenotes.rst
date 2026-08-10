@@ -6,6 +6,20 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.40.6 beta (10-8-2026)
+--------------------------
+
+* **Enhancements**
+
+- Device Editor: the Separator/title bar block now has an **Icon** checkbox and
+  value, same as other special blocks. Previously it had no dedicated icon
+  option, and typing ``icon`` into its Custom Fields section was rejected with
+  "This field is duplicated or reserved" because ``icon`` is a managed property
+  everywhere else — there was simply no supported way to add one. The block's
+  rendering already draws a leading icon for any block type, so this only
+  needed the missing Device Editor UI and ``saveblocks.php``/``configwriter.php``
+  wiring to carry the icon through to ``CONFIG.js``.
+
 v3.40.5 beta (10-8-2026)
 --------------------------
 

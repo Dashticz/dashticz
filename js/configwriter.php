@@ -1469,6 +1469,9 @@ function configwriter_special_block_props($block)
                 ? $block['height']
                 : 120,
         ];
+        if (array_key_exists('icon', $block) && $block['icon'] !== null && $block['icon'] !== '') {
+            $props['icon'] = (string)$block['icon'];
+        }
     } elseif ($kind === 'slidebutton') {
         $props = [
             'width' => $width,

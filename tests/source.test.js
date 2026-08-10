@@ -612,8 +612,10 @@ test('device and widget config editors share full widget config and preserve hid
   assert.doesNotMatch(configWriter, /configwriter_normalise_text_alignment/);
   assert.doesNotMatch(configWriter, /\$props\['text_alignment'\]/);
 
-  // Device Config is exactly Icon/Data/Update, centered on one row.
-  assert.match(deviceEditor, /\['icon', 'hide_data', 'last_update'\]\.forEach/);
+  // Device Config is exactly Icon/Data/Update, centered on one row (Icon only
+  // for a separator/title bar, which has no data value or last-update of its own).
+  assert.match(deviceEditor, /isTitle \? \['icon'\] : \['icon', 'hide_data', 'last_update'\]/);
+  assert.match(deviceEditor, /configOptions\.forEach/);
   assert.match(deviceEditor, /option === 'hide_data' \? options\.hide_data !== true/);
   assert.match(deviceEditor, /updated\[option\] = option === 'hide_data' \? !checked : checked/);
   assert.match(widgetEditor, /options\.hide_data !== true/);

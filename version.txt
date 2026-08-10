@@ -1,8 +1,9 @@
 {
-    "version": "3.40.5",
+    "version": "3.40.6",
     "branch": "beta",
-    "last_changes": "Remove leftover dead alignment-editor helper and fix a stale grid-layout test assertion",
+    "last_changes": "Add an Icon option to the Separator/title bar block, instead of rejecting 'icon' as a reserved custom field",
     "changelog": {
+        "3.40.6": "Add an Icon option to the Separator/title bar block, instead of rejecting 'icon' as a reserved custom field",
         "3.40.5": "Remove leftover dead alignment-editor helper and fix a stale grid-layout test assertion",
         "3.40.4": "Fix Device Editor save failing with an XMLTV/iFrame URL error whenever an unrelated device was added",
         "3.40.3": "Fix grid screens: widgets no longer get a default fixed pixel height that fights the grid row sizing",
