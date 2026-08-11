@@ -1,8 +1,9 @@
 {
-    "version": "3.41.5",
+    "version": "3.41.6",
     "branch": "beta",
-    "last_changes": "Device Editor: add a Title checkbox to Device Config, covering plain devices, the separator/title bar (Tussenbalk), Slide button, Multi Device and Custom device",
+    "last_changes": "Domoticz log widget now defaults to an 8x8 grid cell instead of a full-width strip",
     "changelog": {
+        "3.41.6": "Domoticz log widget now defaults to an 8x8 grid cell instead of a full-width strip",
         "3.41.5": "Device Editor: add a Title checkbox to Device Config, covering plain devices, the separator/title bar (Tussenbalk), Slide button, Multi Device and Custom device",
         "3.41.4": "Fix clock widgets (Basic, Flip, Station, Hayman) ignoring the Title checkbox/hide_title setting",
         "3.41.3": "Fix stale $forceClone test assertion and remove the duplicate tests/phpsecurity.test.js file",

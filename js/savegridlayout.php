@@ -110,7 +110,13 @@ foreach ($data['items'] as $index => $entry) {
         && isset($declaredRefs[$ref])
         && isset($screenOwners[$ref])
         && (int)$screenOwners[$ref] !== (int)$screenNumber;
-    $forceClone = ($screenNumber === 0 && !empty($entry['clone'])) || $ownedByOtherScreen;
+    // log/streamplayer/sunrise are dispatched by their literal block key
+    // matching a registered component name (see
+    // configwriter_is_component_dispatched_key()); cloning them under a
+    // renamed key makes the clone invisible to every component's dispatch
+    // check; keep them shared read-only and only ever reposition them.
+    $forceClone = !configwriter_is_component_dispatched_key($ref)
+        && (($screenNumber === 0 && !empty($entry['clone'])) || $ownedByOtherScreen);
 
     if ($forceClone
         && $ref !== ''

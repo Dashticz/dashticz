@@ -881,6 +881,9 @@ $blocksOnly = !empty($data['blocksOnly']);
 if (!empty($widgets)) {
     // TAAK1: never let a widget silently take over a block key that a
     // different screen already owns; clone it (screen-prefixed) instead.
+    // configwriter_ensure_screen_owned_key() exempts radio/log/sunrise from
+    // this, since those are dispatched by their literal block key matching a
+    // registered component name, not by a 'type' property or catalog id.
     $owners = configwriter_extract_screen_block_owners($config, $screenNumber);
     $usedKeys = array_keys(configwriter_extract_declared_block_refs($config));
     foreach ($widgets as &$widget) {

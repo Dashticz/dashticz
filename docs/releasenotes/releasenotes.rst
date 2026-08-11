@@ -6,6 +6,17 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.41.6 beta (11-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Domoticz log widget: the Widget Config editor's grid-mode default size
+  used to scale proportionally from the widget's column-mode width (12,
+  i.e. full width), producing a short full-width strip. It now defaults to
+  an 8x8 grid cell (in grid columns/rows) instead, independent of the
+  column-mode default the widget still uses outside grid screens.
+
 v3.41.5 beta (11-8-2026)
 --------------------------
 

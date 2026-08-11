@@ -1591,6 +1591,23 @@ function configwriter_screen_key_prefix($screenNumber)
 }
 
 /**
+ * Block keys that dashticz.js's Dashticz._mount matches directly against a
+ * registered component name (components['log'], components['streamplayer'])
+ * rather than via a component's canHandle()/'type' property - see
+ * js/dashticz.js and the 'radio'/'log'/'sunrise' catalog comments in
+ * js/widgeteditor.js and js/savewidgets.php's $catalog. Renaming one of
+ * these (e.g. to 'screen2_log' so a second screen stops sharing the block)
+ * makes it invisible to every component's dispatch check, so the block
+ * silently stops rendering at all - it must keep its literal key and be
+ * shared read-only across screens instead, with only its grid/column
+ * position cloned per screen.
+ */
+function configwriter_is_component_dispatched_key($key)
+{
+    return in_array($key, ['log', 'streamplayer', 'sunrise'], true);
+}
+
+/**
  * If $key already belongs to a *different* screen than $screenNumber
  * (per $owners, from configwriter_extract_screen_block_owners), return a
  * new, screen-prefixed, still-unique key instead so the two screens stop
@@ -1599,6 +1616,9 @@ function configwriter_screen_key_prefix($screenNumber)
 function configwriter_ensure_screen_owned_key($key, $screenNumber, $owners, &$usedKeys)
 {
     if ($key === null || $key === '') {
+        return $key;
+    }
+    if (configwriter_is_component_dispatched_key($key)) {
         return $key;
     }
     if (!isset($owners[$key]) || (int)$owners[$key] === (int)$screenNumber) {
