@@ -1841,8 +1841,9 @@ var DashticzDeviceEditor = (function () {
     openFullWidgetConfig();
   }
 
-  /* Build the Device Config popup. Switch and Title visibility are not
-     exposed as checkboxes here; title remains available as a typed field. */
+  /* Build the Device Config popup. Switch visibility is not exposed as a
+     checkbox here; title text remains available as a typed field, and its
+     visibility is exposed via the Title checkbox below. */
   function _showConfigPopup(orderKey, editor) {
     var t = _translations();
     var isSpecial = orderKey.indexOf('special:') === 0;
@@ -1879,13 +1880,25 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="modal-body">';
     // A separator/title bar has no data value or last-update timestamp of its
     // own, but it can still show a leading icon like any other block.
-    var configOptions = isTitle ? ['icon'] : ['icon', 'hide_data', 'last_update'];
-    html += '<div class="de-config-options' + (isTitle ? '' : ' de-config-options-three') + '">';
+    var configOptions = isTitle
+      ? ['icon', 'show_title']
+      : ['icon', 'hide_data', 'last_update', 'show_title'];
+    html += '<div class="de-config-options' + (isTitle ? '' : ' de-config-options-four') + '">';
     configOptions.forEach(function (option) {
       html += '<label class="form-check"><input class="form-check-input de-config-option" type="checkbox" data-option="' + option + '"';
       // The Data checkbox is user-facing: checked means data is visible.
       // CONFIG.js keeps the backwards-compatible inverse hide_data property.
-      var checked = option === 'hide_data' ? options.hide_data !== true : options[option] === true;
+      // Title visibility isn't tracked in `options` like the others: it's
+      // stored separately (deviceTitleVisible/special.showTitle) since it
+      // predates this popup and is also read by the device-list row itself.
+      var checked;
+      if (option === 'hide_data') {
+        checked = options.hide_data !== true;
+      } else if (option === 'show_title') {
+        checked = isSpecial ? special.showTitle !== false : deviceTitleVisible[ck] !== false;
+      } else {
+        checked = options[option] === true;
+      }
       if (checked) html += ' checked';
       html += '><span class="form-check-label">' + _esc(t[option]) + '</span></label>';
     });
@@ -2009,6 +2022,11 @@ var DashticzDeviceEditor = (function () {
       });
       if (!valid) return;
 
+      // Title visibility isn't part of `options` (see the checkbox render
+      // above), so pull it out before the rest of `updated` gets merged in.
+      var pendingShowTitle = updated.show_title !== false;
+      delete updated.show_title;
+
       var storedRows = [{ field: 'title', setting: pendingTitle, value: pendingTitle, system: true }];
       if (hasIconField) {
         storedRows.push({ field: 'icon', setting: pendingIconValue, value: pendingIconValue });
@@ -2018,6 +2036,7 @@ var DashticzDeviceEditor = (function () {
       if (isSpecial) {
         special.title = pendingTitle;
         special.customFields = storedRows;
+        special.showTitle = pendingShowTitle;
         if (special.specialType === 'slidebutton') {
           storedRows.forEach(function (row) {
             if (_normaliseCustomFieldName(row.field) === 'slide') {
@@ -2031,6 +2050,7 @@ var DashticzDeviceEditor = (function () {
       } else {
         deviceTitles[ck] = pendingTitle;
         deviceCustomFields[ck] = storedRows;
+        deviceTitleVisible[ck] = pendingShowTitle;
         deviceOptions[ck] = $.extend({}, deviceOptions[ck], updated);
         deviceOptions[ck].iconValue = hasIconField ? pendingIconValue : null;
       }
