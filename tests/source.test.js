@@ -1638,3 +1638,116 @@ test('iFrame without scaletofit/aspectratio fills its grid cell height instead o
   assert.match(runBody, /dtstatecss\.height = gridHeight/);
   assert.match(runBody, /iframecss\.height = gridHeight/);
 });
+
+test('Domoticz log, OWM, Sunrise/Sunset and Timegraph are added to the Widget Config editor', () => {
+  const widgetEditor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+  const layoutEditor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const savewidgets = fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8');
+  const logSource = fs.readFileSync(path.join(root, 'js/components/log.js'), 'utf8');
+  const simpleBlockSource = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const timegraphSource = fs.readFileSync(
+    path.join(root, 'js/components/timegraph.js'),
+    'utf8'
+  );
+
+  // DT_log is matched by its registered component name (Dashticz._mount in
+  // dashticz.js only checks components[selector] for a string block
+  // reference), so every layer must keep using the literal 'log' key rather
+  // than a 'widget_log' key, exactly like Radio's 'streamplayer' key, to stay
+  // compatible with the documented columns[n] = {blocks: ['log']} shorthand.
+  assert.match(logSource, /name: 'log'/);
+  assert.match(widgetEditor, /id: 'log',\s*\n\s*blockKey: 'log'/);
+  assert.match(layoutEditor, /\blog: 'log'/);
+  assert.match(deviceEditor, /log:\s*\{\s*id: 'log'/);
+  assert.match(savewidgets, /'log' => \['key' => 'log'/);
+
+  // Sunrise (DT_simpleblock) is dispatched by block type, which blocks.js's
+  // convertBlock() derives from the bare 'sunrise' key automatically, so it
+  // is also keyed by its plain name rather than a 'widget_' prefix.
+  assert.match(simpleBlockSource, /sunrise: \{\s*\n\s*render: renderSunrise/);
+  assert.match(widgetEditor, /id: 'sunrise',\s*\n\s*blockKey: 'sunrise'/);
+  assert.match(layoutEditor, /\bsunrise: 'sunrise'/);
+  assert.match(deviceEditor, /sunrise:\s*\{\s*id: 'sunrise'/);
+  assert.match(savewidgets, /'sunrise' => \['key' => 'sunrise'/);
+
+  // renderSunrise builds its own markup and never calls the generic
+  // renderTitle()/getColIcon() helpers, so Sunrise must not get fictional
+  // Title/Height fields it cannot actually use — only the common
+  // Title/Width/Custom fields options every catalog widget already has.
+  assert.doesNotMatch(simpleBlockSource, /function renderSunrise[\s\S]*?renderTitle/);
+
+  // OWM and Timegraph use the standard 'widget_' catalog key convention with
+  // an explicit type, like weather/iframe/xmltvguide.
+  assert.match(widgetEditor, /id: 'owm',\s*\n\s*blockKey: 'widget_owmwidget'/);
+  assert.match(widgetEditor, /id: 'timegraph',\s*\n\s*blockKey: 'widget_timegraph'/);
+  assert.match(savewidgets, /'owm' => \['key' => 'widget_owmwidget'/);
+  assert.match(savewidgets, /'timegraph' => \['key' => 'widget_timegraph'/);
+  assert.match(savewidgets, /case 'owm':[\s\S]*?\$props\['type'\] = 'owmwidget';/);
+  assert.match(savewidgets, /case 'timegraph':[\s\S]*?\$props\['type'\] = 'timegraph';/);
+
+  // OWM apikey/city/country must stay optional: an empty block-level value
+  // must never be written, so DT_owmwidget's own defaultCfg
+  // (js/components/owmwidget.js) keeps falling back to the global
+  // config['owm_api']/owm_city/owm_country settings.
+  assert.match(
+    widgetEditor,
+    /if \(owcfg\.apikey && owcfg\.apikey !== ''\) entry\.apikey = owcfg\.apikey;/
+  );
+  assert.match(
+    savewidgets,
+    /if \(\$apikey !== '' && strlen\(\$apikey\) <= 100\) \{\s*\n\s*\$widget\['apikey'\] = \$apikey;/
+  );
+
+  // Timegraph's Y-axis label-count property is 'yTicks', not a second
+  // 'xTicks' (the shipped documentation duplicates 'xTicks' for both axes;
+  // the actual component distinguishes them).
+  assert.match(timegraphSource, /xTicks: 10,/);
+  assert.match(timegraphSource, /yTicks: 5,/);
+  assert.doesNotMatch(
+    fs.readFileSync(path.join(root, 'docs/blocks/specials/timegraph.rst'), 'utf8'),
+    /xTicks\s*\n\s*- \| Number of labels on the x-axis[\s\S]*?xTicks\s*\n\s*- \| Number of labels on the y-axis/
+  );
+
+  // A Timegraph value row without its own idx falls back to the block's main
+  // idx (see DT_timegraph.run: newValue = {idx: me.idx, ...}; $.extend(newValue, value)
+  // only overwrites idx when the row itself set one).
+  assert.match(timegraphSource, /me\.idx = isDefined\(me\.block\.idx\) \? me\.block\.idx : me\.key/);
+  assert.match(widgetEditor, /if \(row\.idx\) valueEntry\.idx = parseInt\(row\.idx, 10\);/);
+
+  // Multiple values, each optionally from its own device, must remain
+  // supported (not just a single 'values: [\"Temp\"]' array) — the dynamic
+  // value-row repeater with no artificial row limit.
+  assert.match(widgetEditor, /we-timegraph-value-add/);
+  assert.match(widgetEditor, /we-timegraph-value-remove/);
+  assert.match(widgetEditor, /_timegraphValueRowHtml/);
+
+  // Timegraph's own 'values' array is edited through the dedicated repeater,
+  // so it must be a managed property (not also shown as raw JSON in Custom fields).
+  assert.match(widgetEditor, /timegraph: \{\s*\n\s*duration: true, xTicks: true, yTicks: true, xLabels: true,/);
+
+  // savewidgets.php accepts both the simple string form (values: ['NettUsage'])
+  // and the {idx, value, label} object form for combining several devices.
+  assert.match(savewidgets, /if \(is_string\(\$tgValue\)\) \{/);
+  assert.match(savewidgets, /\} elseif \(is_array\(\$tgValue\)\) \{/);
+  assert.match(savewidgets, /if \(isset\(\$tgValue\['idx'\]\) && is_numeric\(\$tgValue\['idx'\]\)\)/);
+
+  // NettUsage must keep working exactly as today: no new calculation logic,
+  // just the existing getValue() special case.
+  assert.match(timegraphSource, /case 'NettUsage':/);
+
+  for (const locale of ['en_US', 'nl_NL']) {
+    const translations = JSON.parse(
+      fs.readFileSync(path.join(root, 'lang', `${locale}.json`), 'utf8')
+    );
+    const we = translations.settings.widgeteditor;
+    assert.ok(we.log_title, `${locale} log title translation`);
+    assert.ok(we.sunrise_title, `${locale} sunrise title translation`);
+    assert.ok(we.owm_title, `${locale} owm title translation`);
+    assert.ok(we.timegraph_title, `${locale} timegraph title translation`);
+    assert.ok(we.timegraph_value_idx, `${locale} timegraph value idx translation`);
+  }
+});

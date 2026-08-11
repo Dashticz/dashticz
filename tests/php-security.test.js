@@ -210,6 +210,11 @@ test('widget writer whitelists widgets and protects CONFIG.js writes', () => {
     'moon',
     'news',
     'xmltvguide',
+    'radio',
+    'log',
+    'sunrise',
+    'owm',
+    'timegraph',
   ]) {
     assert.match(source, new RegExp(`'${id}'\\s*=>`));
   }

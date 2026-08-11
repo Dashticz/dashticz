@@ -6,10 +6,35 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
-Unreleased (11-8-2026)
+v3.41.1 beta (11-8-2026)
 --------------------------
 
 * **Enhancements**
+
+- Added four existing Dashticz Special Widgets to the graphical Widget
+  Config editor as a configuration/management layer on top of their
+  existing implementations — none of them were rewritten:
+
+  - **Domoticz log** (:ref:`customlog`): Title, Width, optional Height,
+    optional Aspect ratio, Scroll timeout, and a checkbox for ``ascending``
+    ("newest log lines at the bottom"). Written to ``blocks['log']``, so
+    ``columns[4] = {blocks: ['log']}`` keeps working unchanged.
+  - **OWM widget** (:ref:`owmwidgets`): API key, Layout (1-24), City and
+    Country, each optional. An empty API key/City/Country is never written
+    to the block, so ``config['owm_api']``/``owm_city``/``owm_country``
+    keep working as the fallback.
+  - **Sunrise / Sunset** (:ref:`sunrise`): added with only the generic
+    title/width/custom-fields options, matching how little the existing
+    ``sunrise`` block actually uses. Written under the bare ``sunrise``
+    key, so ``columns[1]['blocks'] = ['sunrise']`` keeps working.
+  - **Timegraph** (:ref:`timegraph`): Main IDX, Duration, Height, X/Y-axis
+    label counts, X-axis labels toggle, Animation, Line tension, Point
+    radius, and a dynamic, unlimited list of values. Each value row has its
+    own optional IDX, a Value (e.g. ``Temp``, ``Usage``, or the special
+    ``NettUsage``) and an optional Label — a value row without its own IDX
+    falls back to the block's main IDX, matching ``DT_timegraph``'s
+    existing fallback logic, so both single-device and multi-device
+    Timegraphs can be built from the GUI.
 
 - Added a **Radio** widget to Widget Editor, built on the existing
   Streamplayer block. Add and remove radio stations (name + stream URL) from

@@ -173,6 +173,52 @@ var DashticzWidgetEditor = (function () {
       width: 3,
       height: 120,
     },
+    // Domoticz log widget: DT_log (js/components/log.js) is matched directly by
+    // its registered component name ('log'), exactly like Streamplayer/Radio
+    // above, so the block MUST be keyed 'log' to stay compatible with the
+    // documented columns[n] = {blocks: ['log']} shorthand (blocks.js's
+    // convertBlock() merges blocks['log'] into that bare string reference).
+    {
+      id: 'log',
+      blockKey: 'log',
+      title: 'Domoticz log',
+      description: 'Scrolling view of the Domoticz event log.',
+      icon: 'fas fa-align-left',
+      width: 12,
+    },
+    // Sunrise/sunset widget: DT_simpleblock dispatches 'sunrise' by block type,
+    // and blocks.js's convertBlock() derives that type from the bare 'sunrise'
+    // key automatically (see docs: columns[1]['blocks'] = ['sunrise']), so this
+    // block is also keyed by its plain name rather than a 'widget_' prefix.
+    {
+      id: 'sunrise',
+      blockKey: 'sunrise',
+      title: 'Sunrise / Sunset',
+      description: "Today's sunrise and sunset time.",
+      icon: 'fas fa-sun',
+      width: 2,
+    },
+    // OWM widget: one of 24 OpenWeatherMap layouts (DT_owmwidget, js/components/owmwidget.js).
+    {
+      id: 'owm',
+      blockKey: 'widget_owmwidget',
+      title: 'OpenWeatherMap',
+      description: 'OpenWeatherMap widget with 24 selectable layouts.',
+      icon: 'fas fa-cloud-sun-rain',
+      width: 6,
+      height: 240,
+    },
+    // Timegraph widget: moving time chart of one or more Domoticz device values
+    // (DT_timegraph, js/components/timegraph.js).
+    {
+      id: 'timegraph',
+      blockKey: 'widget_timegraph',
+      title: 'Timegraph',
+      description: 'Moving time chart of one or more Domoticz device values.',
+      icon: 'fas fa-chart-line',
+      width: 6,
+      height: 300,
+    },
   ];
 
   function _widgetEditorLanguage() {
@@ -326,6 +372,14 @@ var DashticzWidgetEditor = (function () {
     // tracks is edited through the dedicated station-list UI; without this it
     // would also show up as a raw JSON row in the generic Custom fields list.
     radio: { tracks: true },
+    log: { scrolltimeout: true, ascending: true, aspectratio: true },
+    owm: { apikey: true, layout: true, city: true, country: true },
+    // idx is already a common managed property (main Domoticz device); values
+    // is edited through the dedicated repeater UI below.
+    timegraph: {
+      duration: true, xTicks: true, yTicks: true, xLabels: true,
+      animation: true, lineTension: true, pointRadius: true, values: true,
+    },
   };
 
   function _isManagedWidgetProperty(item, property) {
@@ -492,6 +546,10 @@ var DashticzWidgetEditor = (function () {
       return encoded;
     }
     return value;
+  }
+
+  function _defaultTimegraphValueRow() {
+    return { idx: '', value: '', label: '' };
   }
 
   function _defaultCameraConfig(index) {
@@ -814,6 +872,37 @@ var DashticzWidgetEditor = (function () {
       radio: {
         tracks: _defaultRadioTracks(),
       },
+      // Domoticz log widget block properties. height/aspectratio stay empty by
+      // default so Dashticz keeps its own automatic sizing (see dashticz.js
+      // renderBlock: aspectratio wins over a fixed height when both are set).
+      log: {
+        height: '',
+        aspectratio: '',
+        scrolltimeout: '60',
+        ascending: 1,
+      },
+      // OWM widget block properties. apikey/city/country stay empty by default
+      // so DT_owmwidget falls back to the global config['owm_api']/owm_city/
+      // owm_country settings instead of a block-level override.
+      owm: {
+        apikey: '',
+        layout: '11',
+        city: '',
+        country: '',
+      },
+      // Timegraph widget block properties.
+      timegraph: {
+        idx: '',
+        height: '',
+        duration: '300',
+        xTicks: '10',
+        yTicks: '5',
+        xLabels: 1,
+        animation: '0',
+        lineTension: '0.1',
+        pointRadius: '1',
+        values: [_defaultTimegraphValueRow()],
+      },
     };
 
     if (gridMode) {
@@ -1046,6 +1135,18 @@ var DashticzWidgetEditor = (function () {
             };
           });
         }
+        // Hydrate Domoticz log settings from an existing block definition
+        if (item.id === 'log') {
+          _hydrateLogWidgetConfig(definition);
+        }
+        // Hydrate OWM widget settings from an existing block definition
+        if (item.id === 'owm') {
+          _hydrateOwmWidgetConfig(definition);
+        }
+        // Hydrate Timegraph widget settings from an existing block definition
+        if (item.id === 'timegraph') {
+          _hydrateTimegraphWidgetConfig(definition);
+        }
       });
     });
 
@@ -1187,6 +1288,10 @@ var DashticzWidgetEditor = (function () {
       // blocks with frameurl are treated as iframe widgets
       frame: 'iframe',
       xmltvguide: 'xmltvguide',
+      log: 'log',
+      sunrise: 'sunrise',
+      owmwidget: 'owm',
+      timegraph: 'timegraph',
     };
     var id = typeMap[type];
     if (!id) return null;
@@ -1382,6 +1487,68 @@ var DashticzWidgetEditor = (function () {
           file: (track && track.file) || '',
         };
       });
+    } else if (item.id === 'log') {
+      _hydrateLogWidgetConfig(definition);
+    } else if (item.id === 'owm') {
+      _hydrateOwmWidgetConfig(definition);
+    } else if (item.id === 'timegraph') {
+      _hydrateTimegraphWidgetConfig(definition);
+    }
+  }
+
+  // Hydrate Domoticz log settings (blocks['log']) from an existing block definition.
+  function _hydrateLogWidgetConfig(definition) {
+    widgetConfigs.log.height =
+      typeof definition.height !== 'undefined' ? String(definition.height) : '';
+    widgetConfigs.log.aspectratio =
+      typeof definition.aspectratio !== 'undefined' ? String(definition.aspectratio) : '';
+    widgetConfigs.log.scrolltimeout =
+      typeof definition.scrolltimeout !== 'undefined' ? String(definition.scrolltimeout) : '60';
+    widgetConfigs.log.ascending = definition.ascending === false ? 0 : 1;
+  }
+
+  // Hydrate OWM widget settings (blocks['widget_owmwidget']) from an existing block definition.
+  // apikey/city/country stay empty unless the block explicitly overrides the
+  // global config['owm_api']/owm_city/owm_country settings.
+  function _hydrateOwmWidgetConfig(definition) {
+    widgetConfigs.owm.apikey =
+      typeof definition.apikey === 'string' ? definition.apikey : '';
+    widgetConfigs.owm.layout =
+      typeof definition.layout !== 'undefined' ? String(definition.layout) : '11';
+    widgetConfigs.owm.city =
+      typeof definition.city === 'string' ? definition.city : '';
+    widgetConfigs.owm.country =
+      typeof definition.country === 'string' ? definition.country : '';
+  }
+
+  // Hydrate Timegraph widget settings (blocks['widget_timegraph']) from an existing block definition.
+  function _hydrateTimegraphWidgetConfig(definition) {
+    widgetConfigs.timegraph.idx =
+      typeof definition.idx !== 'undefined' ? String(definition.idx) : '';
+    widgetConfigs.timegraph.height =
+      typeof definition.height !== 'undefined' ? String(definition.height) : '';
+    ['duration', 'xTicks', 'yTicks', 'animation', 'lineTension', 'pointRadius'].forEach(
+      function (property) {
+        if (typeof definition[property] !== 'undefined') {
+          widgetConfigs.timegraph[property] = String(definition[property]);
+        }
+      }
+    );
+    widgetConfigs.timegraph.xLabels = definition.xLabels === false ? 0 : 1;
+    if (Array.isArray(definition.values) && definition.values.length) {
+      widgetConfigs.timegraph.values = definition.values.map(function (value) {
+        if (typeof value === 'string') {
+          return { idx: '', value: value, label: '' };
+        }
+        value = value || {};
+        return {
+          idx: typeof value.idx !== 'undefined' ? String(value.idx) : '',
+          value: typeof value.value === 'string' ? value.value : '',
+          label: typeof value.label === 'string' ? value.label : '',
+        };
+      });
+    } else {
+      widgetConfigs.timegraph.values = [_defaultTimegraphValueRow()];
     }
   }
 
@@ -1520,7 +1687,11 @@ var DashticzWidgetEditor = (function () {
       id === 'news' ||
       id === 'iframe' ||
       id === 'xmltvguide' ||
-      id === 'radio'
+      id === 'radio' ||
+      id === 'log' ||
+      id === 'sunrise' ||
+      id === 'owm' ||
+      id === 'timegraph'
     );
   }
 
@@ -1584,6 +1755,16 @@ var DashticzWidgetEditor = (function () {
           _esc(opts[optVal]) + '</option>';
       }
       html += '</select>';
+    } else if (type === 'number') {
+      // number inputs use opts for min/max/step, so the GUI cannot produce
+      // out-of-range values for fields like duration, ticks or lineTension.
+      opts = opts || {};
+      html += '<input type="number" class="form-control form-control-sm we-widget-field" id="' +
+        _esc(id) + '" data-cfg-key="' + _esc(key) + '"' +
+        (typeof opts.min !== 'undefined' ? ' min="' + _esc(opts.min) + '"' : '') +
+        (typeof opts.max !== 'undefined' ? ' max="' + _esc(opts.max) + '"' : '') +
+        (typeof opts.step !== 'undefined' ? ' step="' + _esc(opts.step) + '"' : '') +
+        ' value="' + _esc(String(value !== null && value !== undefined ? value : '')) + '">';
     }
     if (help) {
       html += '<div class="form-text" style="font-size:11px;color:#6c757d">' + _esc(help) + '</div>';
@@ -1707,6 +1888,50 @@ var DashticzWidgetEditor = (function () {
       _t('calendar_color', 'Color') + '</label>' +
       '<input type="color" class="form-control form-control-color we-calendar-color" value="' +
       _calendarPickerColor(color) + '" data-calendar-color-value="' + _esc(color) + '"></div></div>'
+    );
+  }
+
+  // Timegraph value row: combines idx/value/label into a single block, either
+  // from the main device (idx left empty, falls back to the block's own idx)
+  // or from another device entirely (its own idx set). No artificial row
+  // limit, mirroring the Multi Device/Radio repeater pattern.
+  function _timegraphValueRowHtml(row, index) {
+    row = row || {};
+    return (
+      '<div class="we-timegraph-value-row border rounded p-2 mb-2" data-timegraph-index="' +
+      index +
+      '">' +
+      '<div class="d-flex align-items-center justify-content-between mb-2">' +
+      '<strong>' +
+      _t('timegraph_value', 'Value') +
+      ' ' +
+      (index + 1) +
+      '</strong><span>' +
+      '<button type="button" class="btn btn-sm btn-outline-success we-timegraph-value-add" title="' +
+      _t('timegraph_add_value', 'Add value') +
+      '"><i class="fas fa-plus" aria-hidden="true"></i></button> ' +
+      '<button type="button" class="btn btn-sm btn-outline-danger we-timegraph-value-remove" title="' +
+      _t('timegraph_remove_value', 'Remove value') +
+      '"><i class="fas fa-minus" aria-hidden="true"></i></button>' +
+      '</span></div>' +
+      '<div class="mb-2"><label class="form-label we-field-label">' +
+      _t('timegraph_value_value', 'Value, e.g. Usage or NettUsage') +
+      '</label>' +
+      '<input type="text" class="form-control form-control-sm we-timegraph-value-value" value="' +
+      _esc(row.value || '') +
+      '"></div>' +
+      '<div class="mb-2"><label class="form-label we-field-label">' +
+      _t('timegraph_value_idx', 'IDX (optional, main device by default)') +
+      '</label>' +
+      '<input type="number" min="1" step="1" class="form-control form-control-sm we-timegraph-value-idx" value="' +
+      _esc(row.idx || '') +
+      '"></div>' +
+      '<div><label class="form-label we-field-label">' +
+      _t('timegraph_value_label', 'Label (optional)') +
+      '</label>' +
+      '<input type="text" class="form-control form-control-sm we-timegraph-value-label" value="' +
+      _esc(row.label || '') +
+      '"></div></div>'
     );
   }
 
@@ -2215,6 +2440,87 @@ var DashticzWidgetEditor = (function () {
         fields += _radioStationRowHtml(station, index);
       });
       fields += '</div>';
+    } else if (item.id === 'log') {
+      // Config fields for the Domoticz log widget. Field keys match
+      // widgetConfigs.log's own property names 1:1, so the OK handler can
+      // collect them generically the same way the simpler widgets do.
+      var logcfg = widgetConfigs.log || {};
+      var llog = lng.widgeteditor || {};
+      fields += _cfgField('scrolltimeout', llog.log_scrolltimeout || 'Auto-scroll resumes after (seconds)',
+        'number', logcfg.scrolltimeout, { min: 0, max: 3600, step: 1 },
+        llog.log_scrolltimeout_help || 'Delay after manual scrolling until auto-scroll is activated again. Default: 60.');
+      fields += _cfgField('ascending', llog.log_ascending || 'Newest log lines at the bottom',
+        'checkbox', logcfg.ascending);
+      fields += _cfgField('height', llog.log_height || 'Height (px)', 'text', logcfg.height,
+        null, llog.log_height_help || 'Optional fixed height. Leave empty to use the automatic height.');
+      fields += _cfgField('aspectratio', llog.log_aspectratio || 'Aspect ratio', 'text', logcfg.aspectratio,
+        null, llog.log_aspectratio_help || 'Height divided by width. Only used when Height above is left empty.');
+    } else if (item.id === 'owm') {
+      // Config fields for the OWM (OpenWeatherMap) widget: apikey/city/country
+      // stay optional so an empty field keeps using the global config['owm_*']
+      // fallback that DT_owmwidget's own defaultCfg already provides.
+      var owmcfg = widgetConfigs.owm || {};
+      var lowm = lng.widgeteditor || {};
+      var owmLayoutOpts = {};
+      for (var layoutNr = 1; layoutNr <= 24; layoutNr++) {
+        owmLayoutOpts[layoutNr] = (lowm.owm_layout_option || 'Layout') + ' ' + layoutNr;
+      }
+      fields += _cfgField('apikey', lowm.owm_apikey || 'API key', 'text', owmcfg.apikey,
+        null, lowm.owm_apikey_help || "Leave empty to use the global config['owm_api'] setting (configured on the Weather widget).");
+      fields += _cfgField('layout', lowm.owm_layout || 'Layout', 'select', owmcfg.layout || '11', owmLayoutOpts);
+      fields += _cfgField('city', lowm.owm_city_field || 'City', 'text', owmcfg.city,
+        null, lowm.owm_city_field_help || "City name or OpenWeatherMap city id. Leave empty to use the global config['owm_city'] setting.");
+      fields += _cfgField('country', lowm.owm_country_field || 'Country', 'text', owmcfg.country,
+        null, lowm.owm_country_field_help || "Country code, e.g. 'nl'. Leave empty to use the global config['owm_country'] setting.");
+    } else if (item.id === 'timegraph') {
+      // Config fields for the Timegraph widget: chart window/axis settings plus
+      // a dynamic list of values, each optionally from its own device.
+      var tgcfg = widgetConfigs.timegraph || {};
+      var ltg = lng.widgeteditor || {};
+      fields +=
+        '<div class="mb-3">' +
+        '<label class="form-label we-field-label" for="we-cfg-idx">' +
+        (ltg.timegraph_idx || 'Main IDX') +
+        '</label>' +
+        '<input type="number" min="1" step="1" class="form-control form-control-sm we-widget-field" id="we-cfg-idx" ' +
+        'data-cfg-key="idx" value="' + _esc(String(tgcfg.idx || '')) + '">' +
+        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
+        (ltg.timegraph_idx_help || 'Used by every value below that does not set its own IDX.') +
+        '</div></div>';
+      fields += _cfgField('duration', ltg.timegraph_duration || 'Duration (seconds)',
+        'number', tgcfg.duration, { min: 1, max: 86400, step: 1 },
+        ltg.timegraph_duration_help || 'Duration of the moving chart window in seconds. Default: 300.');
+      fields += _cfgField('height', ltg.timegraph_height || 'Height (px)', 'text', tgcfg.height,
+        null, ltg.timegraph_height_help || 'Optional fixed height, e.g. 300px. Leave empty to use the automatic height.');
+      fields += _cfgHeading(ltg.timegraph_axes || 'Axes');
+      fields += _cfgField('xTicks', ltg.timegraph_xticks || 'X-axis labels (count)',
+        'number', tgcfg.xTicks, { min: 1, max: 100, step: 1 },
+        ltg.timegraph_xticks_help || 'Number of labels on the time axis. Default: 10.');
+      fields += _cfgField('yTicks', ltg.timegraph_yticks || 'Y-axis labels (count)',
+        'number', tgcfg.yTicks, { min: 1, max: 100, step: 1 },
+        ltg.timegraph_yticks_help || 'Number of labels on the vertical axis. Default: 5.');
+      fields += _cfgField('xLabels', ltg.timegraph_xlabels || 'Show time-axis labels',
+        'checkbox', tgcfg.xLabels);
+      fields += _cfgHeading(ltg.timegraph_appearance || 'Appearance');
+      fields += _cfgField('animation', ltg.timegraph_animation || 'Animation (ms)',
+        'number', tgcfg.animation, { min: 0, max: 10000, step: 1 },
+        ltg.timegraph_animation_help || 'Duration of the animation effect in milliseconds. Default: 0.');
+      fields += _cfgField('lineTension', ltg.timegraph_linetension || 'Line tension',
+        'number', tgcfg.lineTension, { min: 0, max: 1, step: 0.1 },
+        ltg.timegraph_linetension_help || 'Smooths the graph line. 0 = no smoothing, default 0.1.');
+      fields += _cfgField('pointRadius', ltg.timegraph_pointradius || 'Point radius',
+        'number', tgcfg.pointRadius, { min: 0, max: 20, step: 1 },
+        ltg.timegraph_pointradius_help || 'Size of the dot for each data sample. Default: 1.');
+      fields += _cfgHeading(ltg.timegraph_values || 'Values');
+      fields += '<p class="form-text">' + _esc(ltg.timegraph_values_help ||
+        'Add one value per device field to show. Set IDX per value to combine data from several devices in one graph.') + '</p>';
+      fields += '<div id="we-cfg-timegraph-list">';
+      (tgcfg.values && tgcfg.values.length ? tgcfg.values : [_defaultTimegraphValueRow()]).forEach(
+        function (row, index) {
+          fields += _timegraphValueRowHtml(row, index);
+        }
+      );
+      fields += '</div>';
     }
 
     fields = _widgetBlockOptionsHtml(item) + fields;
@@ -2403,6 +2709,34 @@ var DashticzWidgetEditor = (function () {
     });
 
     _renumberRadioRows();
+
+    function _renumberTimegraphValueRows() {
+      $cfgModal.find('.we-timegraph-value-row').each(function (index) {
+        $(this).attr('data-timegraph-index', index);
+        $(this)
+          .find('strong')
+          .text(_t('timegraph_value', 'Value') + ' ' + (index + 1));
+      });
+      $cfgModal.find('.we-timegraph-value-remove').prop(
+        'disabled',
+        $cfgModal.find('.we-timegraph-value-row').length <= 1
+      );
+    }
+
+    $cfgModal.on('click', '.we-timegraph-value-add', function () {
+      var index = $cfgModal.find('.we-timegraph-value-row').length;
+      $(this).closest('.we-timegraph-value-row').after(_timegraphValueRowHtml({}, index));
+      _renumberTimegraphValueRows();
+      $cfgModal.find('.we-timegraph-value-row').eq(index).find('.we-timegraph-value-value').trigger('focus');
+    });
+
+    $cfgModal.on('click', '.we-timegraph-value-remove', function () {
+      if ($cfgModal.find('.we-timegraph-value-row').length <= 1) return;
+      $(this).closest('.we-timegraph-value-row').remove();
+      _renumberTimegraphValueRows();
+    });
+
+    _renumberTimegraphValueRows();
 
     $cfgModal.on('click', '#we-cfg-ok-btn', function () {
       var valid = true;
@@ -2716,6 +3050,37 @@ var DashticzWidgetEditor = (function () {
           valid = false;
         }
         if (valid) widgetConfigs.radio = { tracks: tracks };
+      } else if (widgetId === 'log') {
+        widgetConfigs.log = collected;
+      } else if (widgetId === 'owm') {
+        collected.layout = collected.layout || '11';
+        widgetConfigs.owm = collected;
+      } else if (widgetId === 'timegraph') {
+        var timegraphValues = [];
+        $cfgModal.find('.we-timegraph-value-row').each(function (index) {
+          if (!valid) return;
+          var rowValue = $.trim($(this).find('.we-timegraph-value-value').val() || '');
+          var rowIdx = $.trim($(this).find('.we-timegraph-value-idx').val() || '');
+          var rowLabel = $.trim($(this).find('.we-timegraph-value-label').val() || '');
+          if (!rowValue && !rowIdx && !rowLabel) return; // skip a fully empty row
+          if (!rowValue) {
+            $('.we-cfg-message')
+              .addClass('text-danger')
+              .text(
+                _t('timegraph_value_required', 'Enter a value (e.g. Temp or NettUsage) for value') +
+                  ' ' +
+                  (index + 1) +
+                  '.'
+              );
+            valid = false;
+            return;
+          }
+          timegraphValues.push({ idx: rowIdx, value: rowValue, label: rowLabel });
+        });
+        if (valid) {
+          collected.values = timegraphValues;
+          widgetConfigs.timegraph = collected;
+        }
       }
 
       if (valid) {
@@ -3022,6 +3387,64 @@ var DashticzWidgetEditor = (function () {
       // (dashticz.js) merges the block over DT_streamplayer's defaultCfg, so
       // this take precedence over any legacy _STREAMPLAYER_TRACKS global.
       entry.tracks = (widgetConfigs.radio || {}).tracks || [];
+    }
+    if (item.id === 'log') {
+      var lgcfg = widgetConfigs.log || {};
+      if (typeof lgcfg.scrolltimeout !== 'undefined' && lgcfg.scrolltimeout !== '') {
+        entry.scrolltimeout = parseInt(lgcfg.scrolltimeout, 10);
+      }
+      entry.ascending = Number(lgcfg.ascending) !== 0;
+      // logHeight/aspectratio stay unset unless explicitly configured, so an
+      // untouched Domoticz log widget keeps Dashticz's automatic sizing.
+      if (lgcfg.height && lgcfg.height !== '') entry.logHeight = parseInt(lgcfg.height, 10) || 0;
+      if (lgcfg.aspectratio && lgcfg.aspectratio !== '') {
+        entry.aspectratio = parseFloat(lgcfg.aspectratio) || 0;
+        delete entry.logHeight;
+      }
+    }
+    if (item.id === 'owm') {
+      var owcfg = widgetConfigs.owm || {};
+      // apikey/city/country are only added to the block when the user filled
+      // them in, so an untouched widget keeps using DT_owmwidget's own
+      // config['owm_api']/owm_city/owm_country fallback (js/components/owmwidget.js).
+      if (owcfg.apikey && owcfg.apikey !== '') entry.apikey = owcfg.apikey;
+      entry.layout = parseInt(owcfg.layout, 10) || 11;
+      if (owcfg.city && owcfg.city !== '') entry.city = owcfg.city;
+      if (owcfg.country && owcfg.country !== '') entry.country = owcfg.country;
+    }
+    if (item.id === 'timegraph') {
+      var tgcfg2 = widgetConfigs.timegraph || {};
+      if (tgcfg2.idx && tgcfg2.idx !== '') entry.idx = parseInt(tgcfg2.idx, 10);
+      if (tgcfg2.duration && tgcfg2.duration !== '') entry.duration = parseInt(tgcfg2.duration, 10);
+      if (tgcfg2.height && tgcfg2.height !== '') entry.timegraphHeight = String(tgcfg2.height);
+      if (tgcfg2.xTicks && tgcfg2.xTicks !== '') entry.xTicks = parseInt(tgcfg2.xTicks, 10);
+      if (tgcfg2.yTicks && tgcfg2.yTicks !== '') entry.yTicks = parseInt(tgcfg2.yTicks, 10);
+      entry.xLabels = Number(tgcfg2.xLabels) !== 0;
+      if (tgcfg2.animation && tgcfg2.animation !== '') entry.animation = parseInt(tgcfg2.animation, 10);
+      if (tgcfg2.lineTension !== '' && typeof tgcfg2.lineTension !== 'undefined') {
+        entry.lineTension = parseFloat(tgcfg2.lineTension);
+      }
+      if (tgcfg2.pointRadius !== '' && typeof tgcfg2.pointRadius !== 'undefined') {
+        entry.pointRadius = parseInt(tgcfg2.pointRadius, 10);
+      }
+      // A values row without its own idx uses the block's main idx (see
+      // DT_timegraph.run in js/components/timegraph.js). Rows are written as
+      // plain strings when none of them use a custom idx/label, matching the
+      // simplest documented syntax (values: ['NettUsage']); otherwise the
+      // full {idx, value, label} object form is used so per-value overrides work.
+      var tgValues = (tgcfg2.values || []).filter(function (row) {
+        return row && row.value;
+      });
+      var needsObjectForm = tgValues.some(function (row) {
+        return row.idx || row.label;
+      });
+      entry.values = tgValues.map(function (row) {
+        if (!needsObjectForm) return row.value;
+        var valueEntry = { value: row.value };
+        if (row.idx) valueEntry.idx = parseInt(row.idx, 10);
+        if (row.label) valueEntry.label = row.label;
+        return valueEntry;
+      });
     }
     if ($.trim(blockTitle)) entry.title = $.trim(blockTitle);
     return entry;

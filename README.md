@@ -293,6 +293,10 @@ icon strings remain intact until the Icon checkbox is explicitly switched off.
 | iFrame | URL, scrollbars, scale-to-fit width, aspect ratio, optional legacy fixed height and refresh interval |
 | XMLTV TV Guide | XMLTV source URL; channel filter (id or display-name); maximum items, layout and refresh interval |
 | Radio | Stations (name + stream URL); add/remove stations with a plus/minus button on each row |
+| Domoticz log | Optional height and aspect ratio, scroll timeout, and a checkbox for whether the newest log line is shown at the bottom |
+| OpenWeatherMap | Optional API key, city and country (fall back to the global settings when left empty); layout 1-24 |
+| Sunrise / Sunset | Only the common Title/Width/Custom fields options |
+| Timegraph | Main IDX, duration, height, x/y-axis label counts, x-axis labels, animation, line tension, point radius, and a dynamic list of values (each with an optional own IDX and label) |
 
 In grid layouts, the XMLTV TV Guide follows its assigned row height. It shows
 only complete programme rows that fit and never adds an internal scrollbar;
@@ -343,6 +347,80 @@ blocks['streamplayer'] = {
   tracks: [
     { track: 1, name: 'Q-music', file: 'http://icecast-qmusic.cdp.triple-it.nl/Qmusic_nl_live_96.mp3' },
     { track: 2, name: '538 Hitzone', file: 'http://vip-icecast.538.lw.triple-it.nl/WEB11_MP3' }
+  ]
+};
+```
+
+**Domoticz log** Widget Config edits the existing [Domoticz log
+block](https://dashticz.readthedocs.io/en/beta/blocks/specials/domoticzlog.html)
+(`js/components/log.js`). Height and Aspect ratio are optional — leave both
+empty to keep Dashticz's automatic sizing, and note that aspect ratio only
+applies when height is left empty. Saving writes:
+
+```javascript
+blocks['log'] = {
+  title: 'Domoticz log',
+  scrolltimeout: 60,
+  ascending: true
+};
+```
+
+which keeps working with the documented `columns[4] = {blocks: ['log']}`
+shorthand, since both refer to the same `blocks['log']` definition.
+
+**OpenWeatherMap** Widget Config edits the existing [OWM
+widget](https://dashticz.readthedocs.io/en/beta/blocks/specials/owmwidget.html)
+(`js/components/owmwidget.js`), with a Layout selector for all 24 layouts.
+API key, City and Country stay empty by default; an empty value is never
+written to the block, so the widget keeps falling back to
+`config['owm_api']`, `config['owm_city']` and `config['owm_country']` (the
+same global settings the Weather widget's OpenWeather provider uses). Saving
+writes only the fields that were actually filled in:
+
+```javascript
+blocks['widget_owmwidget'] = {
+  type: 'owmwidget',
+  layout: 11
+};
+```
+
+**Sunrise / Sunset** Widget Config adds the existing [Sunrise
+block](https://dashticz.readthedocs.io/en/beta/blocks/specials/sunrise.html)
+with only the common Title/Width/Custom fields options, since `renderSunrise`
+(`js/components/simpleblock.js`) does not use a title, icon or configurable
+height. It is written under the bare `sunrise` key, so the documented
+`columns[1]['blocks'] = ['sunrise']` shorthand keeps working unchanged.
+
+**Timegraph** Widget Config edits the existing [Timegraph
+block](https://dashticz.readthedocs.io/en/beta/blocks/specials/timegraph.html)
+(`js/components/timegraph.js`). Values are a repeatable list — each row has
+an optional **IDX**, a **Value** (for example `Temp`, `Usage`, or the
+special `NettUsage` field Dashticz computes from a P1 meter's `Usage` and
+`UsageDeliv`) and an optional **Label** — with a plus button on every row to
+add another value and a minus button to remove one; there is no fixed limit
+on the number of rows. A value row without its own IDX falls back to the
+block's Main IDX. A single-device graph is written using the simple string
+form:
+
+```javascript
+blocks['widget_timegraph'] = {
+  type: 'timegraph',
+  idx: 43,
+  values: ['NettUsage'],
+  duration: 60
+};
+```
+
+and combining several devices in one graph automatically switches to the
+object form, matching the syntax `DT_timegraph` already supports:
+
+```javascript
+blocks['widget_timegraph'] = {
+  type: 'timegraph',
+  duration: 600,
+  values: [
+    { idx: 28, value: 'Temp', label: 'Boiler' },
+    { idx: 31, value: 'Temp', label: 'Return' }
   ]
 };
 ```
