@@ -6,6 +6,59 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+Unreleased (11-8-2026)
+--------------------------
+
+* **Enhancements**
+
+- Added a **Radio** widget to Widget Editor, built on the existing
+  Streamplayer block. Add and remove radio stations (name + stream URL) from
+  a repeatable list; saved stations are written as
+  ``blocks['streamplayer'].tracks``, the same shape a hand-written
+  ``_STREAMPLAYER_TRACKS`` global uses, so existing Streamplayer
+  configurations keep working unchanged. ``tracks`` is a managed property,
+  so it does not also appear as a raw JSON row in the generic Custom fields
+  section. See :ref:`customstreamplayer`.
+
+- Added a **Multi Device** type to the Screen Editor's add menu, to combine
+  several IDX/value pairs — optionally from different Domoticz devices —
+  into one block, for example ``blocks['combine'] = {idx: 43, values:
+  [{value: '<NettUsage>'}, {idx: 1247, value: '<Temp>'}]}``. It is built on
+  the existing Custom Device engine: a ``values`` row without its own
+  ``idx`` falls back to the block's own ``idx``. See :ref:`dom_blockparameters`.
+
+* **Fixes**
+
+- Screen Editor: the config cog was missing for devices/widgets added by
+  hand in CONFIG.js using the documented syntax (for example
+  ``blocks['weather'] = {type: 'weather'}``), rather than the Widget
+  Editor's own ``widget_xxx`` block keys. The Screen Editor now also
+  resolves a widget from its block's ``type``/shape, matching how Widget
+  Editor itself already identifies existing blocks.
+
+- Widget titles set via the config menu were not visible on the dashboard
+  and reverted after every reload. ``getBlockConfig`` in ``js/dashticz.js``
+  applied a translated default title to any Widget-Editor block
+  unconditionally, even when the block already defined its own ``title``,
+  so a saved custom title was immediately overwritten again on render. It
+  now only falls back to the translated default when the block does not
+  define its own title.
+
+- iFrame widget: new blocks now default ``scaletofit``/``aspectratio`` to
+  empty instead of ``300``/``0.9``, so a newly added iFrame simply fills the
+  tile's own width/height instead of assuming a fixed-width embedded page.
+  Existing blocks that already set these values are unaffected. In a grid
+  layout, an iFrame with neither set now measures and fills its grid cell's
+  own height instead of collapsing to the browser's small default iframe
+  height. See :ref:`Frames`.
+
+* **Code**
+
+- Custom Device and the new Multi Device popup now start with an empty IDX
+  and device name instead of showing example values (``1380`` /
+  ``BTC_Price``) that could be mistaken for defaults. Existing Custom
+  Devices are unaffected.
+
 v3.41.0 beta (10-8-2026)
 --------------------------
 

@@ -116,7 +116,14 @@ For instance, the buienradar widget has a frame width of 256 pixels, and an aspe
 In the example above the 'buien' block has been added to columns of width 1,2 and 4 respectively.
 
 The Widget Editor uses responsive iframe sizing by default and therefore does
-not write a fixed ``height``. For example::
+not write a fixed ``height``. When you leave ``scaletofit`` and
+``aspectratio`` empty, no ``scaletofit``/``aspectratio`` properties are
+written at all and the iframe simply takes the tile's own rendered width and
+height (from the block/column width and, if set, ``height``) — no JS
+scaling is applied. This is the default for newly added iframe widgets. Set
+``scaletofit`` when the embedded page has a fixed design width that needs to
+be scaled down/up to the tile, and set ``aspectratio`` (height divided by
+width) when the tile's height should follow its width, for example::
 
   blocks['buien'] = {
     frameurl: 'https://api.buienradar.nl/image/1.0/radarmapbe?width=300',
@@ -126,9 +133,9 @@ not write a fixed ``height``. For example::
     refresh: 600,
   }
 
-Here ``aspectratio`` is height divided by width. Existing blocks with an
-explicit ``height`` remain supported; leave ``aspectratio`` empty in the
-Widget Editor when the fixed-height behavior is preferred.
+Existing blocks with an explicit ``height`` remain supported; leave
+``aspectratio`` empty in the Widget Editor when the fixed-height behavior is
+preferred.
 
 For other buienradar widgets check the following url:
 https://www.buienradar.nl/overbuienradar/gratis-weerdata

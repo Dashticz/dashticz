@@ -747,7 +747,7 @@ var DashticzLayoutEditor = (function () {
     }
     var match = String(rawIdx).match(/^(\d+)(?:_(\d+))?$/);
     if (!match || parseInt(match[1], 10) < 1) {
-      var widgetId = _widgetIdFromReference(ref);
+      var widgetId = _widgetIdFromReference(ref, definition);
       if (!widgetId || !definition) return null;
       return {
         definition: definition,
@@ -784,7 +784,7 @@ var DashticzLayoutEditor = (function () {
     };
   }
 
-  function _widgetIdFromReference(reference) {
+  function _widgetIdFromReference(reference, definition) {
     var widgetReferences = {
       widget_weather: 'weather',
       widget_garbage: 'garbage',
@@ -802,8 +802,68 @@ var DashticzLayoutEditor = (function () {
       widget_moon: 'moon',
       widget_news: 'news',
       widget_xmltvguide: 'xmltvguide',
+      // Streamplayer/Radio is dispatched by its component name directly (see
+      // Dashticz._mount in dashticz.js), so its block is always keyed
+      // 'streamplayer', never a 'widget_'-prefixed key like the others.
+      streamplayer: 'radio',
     };
-    return widgetReferences[String(reference)] || null;
+    var byKey = widgetReferences[String(reference)];
+    if (byKey) return byKey;
+    // Widgets added by hand in CONFIG.js (per the documented syntax, e.g.
+    // blocks['weather'] = {type: 'weather'}) are not keyed with the
+    // wizard's 'widget_' prefix, so also resolve by the block's own type/
+    // shape. Mirrors DashticzWidgetEditor's own definition matching so the
+    // Screen Editor's config button appears for those blocks too.
+    return _widgetIdFromDefinition(definition);
+  }
+
+  function _widgetIdFromDefinition(definition) {
+    if (!definition) return null;
+    if (typeof definition.frameurl === 'string') return 'iframe';
+    if (typeof definition.xmltvurl === 'string') return 'xmltvguide';
+    if (
+      typeof definition.station === 'string' ||
+      typeof definition.tpc === 'string'
+    ) {
+      return 'publictransport';
+    }
+    if (typeof definition.rss === 'string') return 'alarmmeldingen';
+    if (
+      Array.isArray(definition.cameras) ||
+      typeof definition.imageUrl === 'string'
+    ) {
+      return 'camera';
+    }
+    if (Array.isArray(definition.tracks) || definition.type === 'streamplayer') {
+      return 'radio';
+    }
+    var typeMap = {
+      weather: 'weather',
+      wunderground: 'weather',
+      garbage: 'garbage',
+      spotify: 'spotify',
+      sonarr: 'sonarr',
+      calendar: 'calendar',
+      secpanel: 'secpanel',
+      publictransport: 'publictransport',
+      trafficinfo: 'trafficinfo',
+      alarmmeldingen: 'alarmmeldingen',
+      camera: 'camera',
+      map: 'map',
+      longfonds: 'longfonds',
+      waqi: 'longfonds',
+      moon: 'moon',
+      news: 'news',
+      basicclock: 'clock',
+      stationclock: 'clock',
+      flipclock: 'clock',
+      haymanclock: 'clock',
+      miniclock: 'clock',
+      frame: 'iframe',
+      xmltvguide: 'xmltvguide',
+      streamplayer: 'radio',
+    };
+    return typeMap[String(definition.type || '').toLowerCase()] || null;
   }
 
   function _copyDefinedWidgetProperties(entry, definition, properties) {

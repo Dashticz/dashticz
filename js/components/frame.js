@@ -31,8 +31,17 @@ var DT_frame = {
 
     return html;
   },
+  // scaletofit is the embedded page's own design width in px; the iframe is
+  // CSS-scaled (transform: scale) so that width maps onto the tile's actual
+  // rendered width. aspectratio (height/width) then derives the height from
+  // the scaled width. .dt_state only gets a real (non-content-driven) height
+  // through the .fixedheight class, which dashticz.js only adds when
+  // aspectratio or a fixed `height` is set — so without either, the iframe
+  // has no height at all and collapses to the browser's own ~150px default.
+  // In a grid layout the tile itself IS already sized (via --dt-grid-h), so
+  // fall back to that measured height instead of leaving the iframe tiny.
   run: function(me) {
-    
+
     var hasIcon = me.$mountPoint.find('.col-icon').length;
     var $iframe = me.$mountPoint.find('iframe');
     var $dtstate = me.$mountPoint.find('.dt_state');
@@ -58,6 +67,13 @@ var DT_frame = {
     if(me.block.aspectratio) {
       dtstatecss.height=iframeWidth * me.block.aspectratio * scaling;
       iframecss.height=iframeWidth * me.block.aspectratio;
+    } else if (!me.block.height) {
+      var $gridItem = me.$mountPoint.closest('.dt-grid-item');
+      var gridHeight = $gridItem.length ? $gridItem.innerHeight() : 0;
+      if (gridHeight > 0) {
+        dtstatecss.height = gridHeight;
+        iframecss.height = gridHeight;
+      }
     }
     $dtstate.css(dtstatecss);
     $iframe.css(iframecss);

@@ -364,7 +364,14 @@ var Dashticz = (function () {
     if (typeof key !== 'undefined' && key !== '') {
       cfg.key = key;
     }
-    var widgetTitle = getWidgetTitle(block, special);
+    // Only fall back to the translated default widget title when the block
+    // itself does not define one. Previously this ran unconditionally, so a
+    // custom title saved via the config menu was immediately overwritten by
+    // the generic default on every render (and after every reload).
+    var widgetTitle =
+      block && typeof block.title !== 'undefined'
+        ? null
+        : getWidgetTitle(block, special);
     if (widgetTitle) {
       cfg.title = widgetTitle;
     } else if (
