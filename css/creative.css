@@ -107,6 +107,20 @@
   min-height: 100%;
 }
 
+/* renderSunrise() (js/components/simpleblock.js) replaces the mountpoint with
+   its own markup, which carries neither .dt_block nor .mh, so it never
+   received the min-height rule above: the grid cell itself resized correctly,
+   but the visible content stayed pinned at its small natural size, making a
+   resize look like it "didn't stick". Fill and center it like the other
+   grid-aware blocks instead. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .sunriseholder {
+  box-sizing: border-box;
+  min-height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Grid title bars follow their assigned row height instead of forcing their
    CONFIG.js pixel height and creating a scrollbar in a shorter grid cell. */
 .dt-grid-screen > .dt-grid-layout > .dt-grid-item > .titlegroups,

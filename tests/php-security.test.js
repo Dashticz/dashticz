@@ -306,7 +306,13 @@ test('grid layout writer validates and stores positions without column packing',
   assert.match(source, /is_object\(\$decodedProps\)/);
   assert.match(source, /configwriter_make_block_key/);
   assert.match(source, /configwriter_set_config_mode/);
-  assert.match(source, /\$forceClone = \$screenNumber === 0/);
+  // TAAK1 (issue #98 follow-up): a plain repositioning within this screen's
+  // grid must also clone when the ref is owned by another screen, not just
+  // on a Wizard-conversion clone request.
+  assert.match(
+    source,
+    /\$forceClone = \(\$screenNumber === 0 && !empty\(\$entry\['clone'\]\)\) \|\| \$ownedByOtherScreen;/
+  );
   assert.match(source, /configwriter_normalise_grid_position/);
   assert.match(source, /configwriter_build_grid_layout_section/);
   assert.match(source, /configwriter_editor_markers\(\s*'grid-layout'/);

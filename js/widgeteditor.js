@@ -1827,14 +1827,11 @@ var DashticzWidgetEditor = (function () {
       _t('radio_station', 'Station') +
       ' ' +
       (index + 1) +
-      '</strong><span>' +
-      '<button type="button" class="btn btn-sm btn-outline-success we-radio-add" title="' +
-      _t('radio_add', 'Add station') +
-      '"><i class="fas fa-plus" aria-hidden="true"></i></button> ' +
+      '</strong>' +
       '<button type="button" class="btn btn-sm btn-outline-danger we-radio-remove" title="' +
       _t('radio_remove', 'Remove station') +
       '"><i class="fas fa-minus" aria-hidden="true"></i></button>' +
-      '</span></div>' +
+      '</div>' +
       '<div class="mb-2"><label class="form-label we-field-label">' +
       _t('name', 'Name') +
       '</label>' +
@@ -1958,7 +1955,11 @@ var DashticzWidgetEditor = (function () {
     );
   }
 
-  function _widgetBlockOptionsHtml(item) {
+  // extraButtonHtml: optional control (e.g. Radio's Add station button) shown
+  // to the right of the Display options checkboxes.
+  // insertHtml: optional block (e.g. Radio's station list) shown above the
+  // Custom fields section, below the checkboxes.
+  function _widgetBlockOptionsHtml(item, extraButtonHtml, insertHtml) {
     var options = widgetBlockOptions[item.id] || _defaultWidgetBlockOptions();
     _ensureWidgetSystemFields(item, options);
     widgetBlockOptions[item.id] = options;
@@ -1966,6 +1967,8 @@ var DashticzWidgetEditor = (function () {
       ? options.customFields
       : [{ field: '', setting: '' }];
     var html = _cfgHeading(_t('display_options', 'Display options'));
+    html += '<div class="d-flex align-items-center justify-content-between flex-wrap mb-2">';
+    html += '<div class="d-flex flex-wrap">';
     [
       ['icon', _t('icon', 'Icon'), options.icon],
       // Data is a positive user-facing option: checked means visible.
@@ -1978,6 +1981,10 @@ var DashticzWidgetEditor = (function () {
         option[0] + '"' + (option[2] ? ' checked' : '') + '>' +
         '<span class="form-check-label">' + _esc(option[1]) + '</span></label>';
     });
+    html += '</div>';
+    if (extraButtonHtml) html += extraButtonHtml;
+    html += '</div>';
+    if (insertHtml) html += insertHtml;
     html += _cfgHeading(_t('custom_fields', 'Custom fields'));
     html += '<p class="form-text">' + _esc(_t(
       'custom_fields_help',
@@ -1995,6 +2002,10 @@ var DashticzWidgetEditor = (function () {
     var ll = lng.localize || {};
     var lg = lng.garbage || {};
     var lm = lng.media || {};
+    // Radio's Add station control docks next to the Display options
+    // checkboxes rather than living on every station row.
+    var blockOptionsExtraButton = '';
+    var blockOptionsInsertHtml = '';
 
     if (item.id === 'weather') {
       var cfg = widgetConfigs.weather || {};
@@ -2434,12 +2445,20 @@ var DashticzWidgetEditor = (function () {
     } else if (item.id === 'radio') {
       // Config fields for the Radio (Streamplayer) widget: a graphical builder
       // for the same tracks:[{name,file}] array _STREAMPLAYER_TRACKS already uses.
+      // The Add station control is shown once, next to the Display options
+      // checkboxes (see _widgetBlockOptionsHtml), and every row only keeps
+      // its own Remove button.
       var rcfg = _radioWidgetConfig();
-      fields += '<div id="we-cfg-radio-list">';
+      var radioListHtml = '<div id="we-cfg-radio-list">';
       rcfg.tracks.forEach(function (station, index) {
-        fields += _radioStationRowHtml(station, index);
+        radioListHtml += _radioStationRowHtml(station, index);
       });
-      fields += '</div>';
+      radioListHtml += '</div>';
+      blockOptionsInsertHtml = radioListHtml;
+      blockOptionsExtraButton =
+        '<button type="button" class="btn btn-sm btn-outline-success" id="we-radio-add-btn" title="' +
+        _t('radio_add', 'Add station') +
+        '"><i class="fas fa-plus" aria-hidden="true"></i></button>';
     } else if (item.id === 'log') {
       // Config fields for the Domoticz log widget. Field keys match
       // widgetConfigs.log's own property names 1:1, so the OK handler can
@@ -2523,7 +2542,7 @@ var DashticzWidgetEditor = (function () {
       fields += '</div>';
     }
 
-    fields = _widgetBlockOptionsHtml(item) + fields;
+    fields = _widgetBlockOptionsHtml(item, blockOptionsExtraButton, blockOptionsInsertHtml) + fields;
 
     return (
       '<div class="modal fade" id="we-config-popup" tabindex="-1" aria-labelledby="we-cfg-title" aria-hidden="true" data-bs-backdrop="static">' +
@@ -2695,11 +2714,11 @@ var DashticzWidgetEditor = (function () {
       );
     }
 
-    $cfgModal.on('click', '.we-radio-add', function () {
+    $cfgModal.on('click', '#we-radio-add-btn', function () {
       var index = $cfgModal.find('.we-radio-row').length;
-      $(this).closest('.we-radio-row').after(_radioStationRowHtml({}, index));
+      $('#we-cfg-radio-list').append(_radioStationRowHtml({}, index));
       _renumberRadioRows();
-      $cfgModal.find('.we-radio-row').eq(index).find('.we-radio-name').trigger('focus');
+      $cfgModal.find('.we-radio-row').last().find('.we-radio-name').trigger('focus');
     });
 
     $cfgModal.on('click', '.we-radio-remove', function () {
