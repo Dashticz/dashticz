@@ -7,9 +7,15 @@ var DashticzLayoutEditor = (function () {
   var MIN_HEIGHT = 50;
   var MAX_HEIGHT = 2000;
   var MIN_GRID_WIDTH = 2;
-  var MIN_GRID_HEIGHT = 4;
+  // Lowered from 4 to 2 rows: the editor overlay's controls (drag/config/
+  // remove/resize handles) already rely on `overflow: visible` to stay
+  // clickable on a very small item (see .dt-grid-layout.dle-grid-canvas >
+  // .dt-grid-item in creative.css), and 2 rows was already proven safe for
+  // miniclock. A block whose actual content needs more room than 2 rows
+  // simply gets its existing internal scrollbar (.dt-grid-item's own
+  // `overflow: auto`), the same as picking any other too-small height.
+  var MIN_GRID_HEIGHT = 2;
   var MIN_TITLE_GRID_HEIGHT = 3;
-  var MIN_MINICLOCK_GRID_HEIGHT = 2;
   var active = false;
   var items = [];
   var itemById = {};
@@ -47,8 +53,10 @@ var DashticzLayoutEditor = (function () {
       item && item.definition
         ? String(item.definition.type || '').toLowerCase()
         : '';
+    // blocktitle needs a bit more room than the general floor to keep its
+    // own title text readable; every other block (miniclock included) uses
+    // the general MIN_GRID_HEIGHT floor.
     if (type === 'blocktitle') return MIN_TITLE_GRID_HEIGHT;
-    if (type === 'miniclock') return MIN_MINICLOCK_GRID_HEIGHT;
     return MIN_GRID_HEIGHT;
   }
 

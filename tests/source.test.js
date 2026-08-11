@@ -1412,17 +1412,31 @@ test('topbar and layout editor keep controls usable', () => {
   assert.match(blocks, /dt-topbar-item dt-topbar-/);
   assert.match(main, /\['logo', 'miniclock', 'screenswitcher', 'settings'\]/);
   assert.match(editor, /var MIN_GRID_WIDTH = 2;/);
-  assert.match(editor, /var MIN_GRID_HEIGHT = 4;/);
+  // Lowered from 4 to 2 rows: the editor overlay's controls already rely on
+  // `overflow: visible` to stay clickable on a very small item, and 2 rows
+  // was already proven safe for miniclock, which no longer needs its own
+  // separate (now-redundant) minimum.
+  assert.match(editor, /var MIN_GRID_HEIGHT = 2;/);
   assert.match(editor, /var MIN_TITLE_GRID_HEIGHT = 3;/);
-  assert.match(editor, /var MIN_MINICLOCK_GRID_HEIGHT = 2;/);
+  assert.doesNotMatch(editor, /MIN_MINICLOCK_GRID_HEIGHT/);
   assert.match(editor, /function _minimumGridHeight/);
-  assert.match(editor, /type === 'miniclock'\) return MIN_MINICLOCK_GRID_HEIGHT;/);
+  assert.match(editor, /type === 'blocktitle'\) return MIN_TITLE_GRID_HEIGHT;/);
   assert.match(editor, /item\.grid\.w < MIN_GRID_WIDTH \|\| item\.grid\.h < minimumHeight/);
   assert.match(editor, /width = Math\.max\(\s*MIN_GRID_WIDTH,/s);
   assert.match(editor, /height = Math\.max\(_minimumGridHeight\(item\),/);
   assert.match(
     styles,
     /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.titlegroups,[\s\S]*height: 100% !important;[\s\S]*min-height: 0 !important;[\s\S]*overflow: hidden !important;/
+  );
+
+  // renderSunrise's markup carries neither .dt_block nor .mh, so without a
+  // dedicated rule a resized Sunrise grid cell kept its reserved size while
+  // the visible content stayed pinned at its small natural size (looking
+  // like the resize "didn't stick"). It must fill and center like the other
+  // grid-aware blocks.
+  assert.match(
+    styles,
+    /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.sunriseholder\s*\{[^}]*min-height:\s*100%;[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;/s
   );
 });
 
