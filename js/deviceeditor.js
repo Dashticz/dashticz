@@ -475,6 +475,10 @@ var DashticzDeviceEditor = (function () {
       iframe:         t.iframe_title         || 'iFrame',
       xmltvguide:     t.xmltvguide_title     || 'TV Guide',
       radio:          t.radio_title          || 'Radio',
+      log:            t.log_title            || 'Domoticz log',
+      sunrise:        t.sunrise_title        || 'Sunrise / Sunset',
+      owm:            t.owm_title            || 'OpenWeatherMap',
+      timegraph:      t.timegraph_title      || 'Timegraph',
     };
 
     var catalog = {
@@ -498,6 +502,12 @@ var DashticzDeviceEditor = (function () {
       // Streamplayer/Radio is dispatched by its component name directly, so
       // it is always keyed 'streamplayer' rather than a 'widget_' prefix.
       streamplayer:          { id: 'radio',          title: translatedTitles.radio },
+      widget_owmwidget:      { id: 'owm',            title: translatedTitles.owm },
+      widget_timegraph:      { id: 'timegraph',      title: translatedTitles.timegraph },
+      // DT_log and 'sunrise' (via DT_simpleblock) are also dispatched by their
+      // plain block key, exactly like streamplayer above.
+      log:                   { id: 'log',            title: translatedTitles.log },
+      sunrise:               { id: 'sunrise',        title: translatedTitles.sunrise },
     };
     if (typeof blocks === 'undefined' || !blocks[reference]) {
       return null;
@@ -534,6 +544,10 @@ var DashticzDeviceEditor = (function () {
         flipclock: 'clock',
         haymanclock: 'clock',
         miniclock: 'clock',
+        log: 'log',
+        sunrise: 'sunrise',
+        owmwidget: 'owm',
+        timegraph: 'timegraph',
       };
       var id = typeMap[type];
       if (!id) return null;
@@ -819,6 +833,23 @@ var DashticzDeviceEditor = (function () {
         : (typeof window !== 'undefined' && Array.isArray(window._STREAMPLAYER_TRACKS)
           ? window._STREAMPLAYER_TRACKS
           : []);
+    } else if (widget.id === 'log') {
+      if (typeof definition.scrolltimeout !== 'undefined') entry.scrolltimeout = definition.scrolltimeout;
+      entry.ascending = definition.ascending !== false;
+      _copyDefinedWidgetProperties(entry, definition, ['aspectratio']);
+      if (typeof definition.height !== 'undefined') entry.logHeight = definition.height;
+    } else if (widget.id === 'owm') {
+      _copyDefinedWidgetProperties(entry, definition, ['apikey', 'layout', 'city', 'country']);
+    } else if (widget.id === 'timegraph') {
+      // idx is a protected/common property (see protectedCustomDeviceProperties
+      // below), so it never survives the generic custom_fields fallback and
+      // must be copied explicitly or a resize-only Device Editor save would
+      // silently drop the block's main Domoticz device.
+      _copyDefinedWidgetProperties(entry, definition, [
+        'idx', 'duration', 'xTicks', 'yTicks', 'xLabels',
+        'animation', 'lineTension', 'pointRadius', 'values',
+      ]);
+      if (typeof definition.height !== 'undefined') entry.timegraphHeight = definition.height;
     }
 
     // savewidgets.php rebuilds the managed block section. Re-submit every safe

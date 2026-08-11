@@ -1,7 +1,35 @@
 # Dashticz — Change log for recent update work
 
-## Unreleased — Beta extensions and bugfixes
+## 3.41.1 — Special widgets in Widget Config
 
+- Added four existing Dashticz Special Widgets to the graphical Widget Config
+  editor: **Domoticz log**, **OpenWeatherMap** (`owmwidget`), **Sunrise /
+  Sunset**, and **Timegraph**. This is a configuration/management layer on
+  top of the existing widget implementations (`js/components/log.js`,
+  `js/components/owmwidget.js`, `js/components/simpleblock.js`'s `sunrise`
+  entry, `js/components/timegraph.js`) — none of them were rewritten.
+  - **Domoticz log**: Title, Width, optional Height, optional Aspect ratio,
+    Scroll timeout, and a "Newest log lines at the bottom" checkbox for
+    `ascending`. Written to `blocks['log']`, so the documented
+    `columns[4] = {blocks: ['log']}` shorthand keeps working unchanged.
+  - **OWM widget**: API key, Layout (1–24), City and Country, each optional.
+    An empty API key/City/Country is never written to the block, so
+    `config['owm_api']`/`owm_city`/`owm_country` keep working as the
+    fallback exactly like `js/components/owmwidget.js`'s own `defaultCfg`
+    already does.
+  - **Sunrise / Sunset**: added as a minimal widget (only the generic
+    title/width/custom-fields options), matching how little `renderSunrise`
+    (`js/components/simpleblock.js`) itself actually uses. Written under the
+    bare `sunrise` key, so `columns[1]['blocks'] = ['sunrise']` keeps working.
+  - **Timegraph**: Main IDX, Duration, Height, X/Y axis label counts, X-axis
+    labels toggle, Animation, Line tension, Point radius, and a dynamic list
+    of values. Each value row has its own optional IDX, a Value field (e.g.
+    `Temp`, `Usage`, or the special `NettUsage`) and an optional Label, with
+    add/remove buttons per row and no artificial row limit — this is what
+    lets a single Timegraph combine several Domoticz devices, exactly like
+    the documented `values: [{idx, value, label}, ...]` syntax. A value row
+    without its own IDX falls back to the block's main IDX, matching
+    `DT_timegraph.run`'s existing fallback logic.
 - Fixed the Screen Editor config cog being missing for devices/widgets added
   by hand in CONFIG.js (for example `blocks['weather'] = {type: 'weather'}`
   on Screen 2). The Screen Editor only recognised widgets keyed with the

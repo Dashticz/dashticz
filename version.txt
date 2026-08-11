@@ -1,8 +1,9 @@
 {
-    "version": "3.41.0",
+    "version": "3.41.1",
     "branch": "beta",
-    "last_changes": "Replace the Air Quality widget's Longfonds/RIVM provider with WAQI; fix the missing icon on the Public transport widget",
+    "last_changes": "Add Domoticz log, OWM, Sunrise/Sunset and Timegraph special widgets to the Widget Config editor",
     "changelog": {
+        "3.41.1": "Add Domoticz log, OWM, Sunrise/Sunset and Timegraph special widgets to the Widget Config editor",
         "3.41.0": "Replace the Air Quality widget's Longfonds/RIVM provider with WAQI; fix the missing icon on the Public transport widget",
         "3.40.7": "Fix Device Editor still 400-ing on a globally-configured XMLTV widget: the resubmitted URL only checked the block, not the xmltv_url setting",
         "3.40.6": "Add an Icon option to the Separator/title bar block, instead of rejecting 'icon' as a reserved custom field",

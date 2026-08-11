@@ -806,6 +806,12 @@ var DashticzLayoutEditor = (function () {
       // Dashticz._mount in dashticz.js), so its block is always keyed
       // 'streamplayer', never a 'widget_'-prefixed key like the others.
       streamplayer: 'radio',
+      widget_owmwidget: 'owm',
+      widget_timegraph: 'timegraph',
+      // DT_log and 'sunrise' (via DT_simpleblock) are also dispatched by their
+      // plain block key, exactly like streamplayer above.
+      log: 'log',
+      sunrise: 'sunrise',
     };
     var byKey = widgetReferences[String(reference)];
     if (byKey) return byKey;
@@ -862,6 +868,10 @@ var DashticzLayoutEditor = (function () {
       frame: 'iframe',
       xmltvguide: 'xmltvguide',
       streamplayer: 'radio',
+      log: 'log',
+      sunrise: 'sunrise',
+      owmwidget: 'owm',
+      timegraph: 'timegraph',
     };
     return typeMap[String(definition.type || '').toLowerCase()] || null;
   }

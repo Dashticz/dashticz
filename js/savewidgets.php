@@ -111,6 +111,10 @@ $allowedSettings = [
     'xmltv_separator'        => 'string',
     'xmltv_refresh'          => 'number',
 ];
+// Note: the OWM widget's apikey/layout/city/country are block-specific (see
+// $catalog and _widgetBlockProps() below), not global settings. It falls
+// back to the existing owm_api/owm_city/owm_country settings above (shared
+// with the Weather widget) when a block leaves them unset.
 
 $allowedGarbageCompanies = [
     'afvalinfo','afvalalert','afvalstoffendienst','almere','alphenaandenrijn','area',
@@ -196,6 +200,18 @@ $catalog = [
     // name (see Dashticz._mount in dashticz.js), so its key must stay
     // 'streamplayer' to remain compatible with hand-written CONFIG.js.
     'radio' => ['key' => 'streamplayer', 'width' => 3, 'height' => 120],
+    // Domoticz log: DT_log is matched by its registered component name too
+    // (see js/components/log.js), so its key stays the bare 'log', matching
+    // the documented columns[n] = {blocks: ['log']} shorthand.
+    'log' => ['key' => 'log', 'width' => 12],
+    // Sunrise/sunset: DT_simpleblock dispatches 'sunrise' by block type, which
+    // blocks.js's convertBlock() derives from the bare 'sunrise' key
+    // automatically (see docs: columns[1]['blocks'] = ['sunrise']).
+    'sunrise' => ['key' => 'sunrise', 'width' => 2],
+    // OWM (OpenWeatherMap) widget with 24 selectable layouts.
+    'owm' => ['key' => 'widget_owmwidget', 'width' => 6, 'height' => 240],
+    // Timegraph: moving time chart of one or more Domoticz device values.
+    'timegraph' => ['key' => 'widget_timegraph', 'width' => 6, 'height' => 300],
 ];
 
 function _validate_custom_widget_value($value, $depth = 0)
@@ -699,6 +715,133 @@ foreach ($data['widgets'] as $entry) {
         }
     }
 
+    // Validate and store Domoticz log block properties. Every field is
+    // optional: an untouched log widget keeps Dashticz's own defaults
+    // (js/components/log.js: scrolltimeout 60, ascending true, auto height).
+    if ($id === 'log') {
+        if (isset($entry['scrolltimeout']) && is_numeric($entry['scrolltimeout'])) {
+            $scrolltimeout = (int)$entry['scrolltimeout'];
+            if ($scrolltimeout >= 0 && $scrolltimeout <= 3600) {
+                $widget['scrolltimeout'] = $scrolltimeout;
+            }
+        }
+        $widget['ascending'] = !isset($entry['ascending']) || (bool)$entry['ascending'];
+        if (isset($entry['logHeight']) && is_numeric($entry['logHeight'])) {
+            $logHeight = (int)$entry['logHeight'];
+            if ($logHeight > 0 && $logHeight <= 5000) {
+                $widget['logHeight'] = $logHeight;
+            }
+        }
+        if (isset($entry['aspectratio']) && is_numeric($entry['aspectratio'])) {
+            $ratio = (float)$entry['aspectratio'];
+            if ($ratio > 0 && $ratio <= 10) {
+                $widget['aspectratio'] = $ratio;
+                unset($widget['logHeight']);
+            }
+        }
+    }
+
+    // Validate and store OWM widget block properties. apikey/city/country stay
+    // unset unless the user filled them in, so DT_owmwidget's own defaultCfg
+    // (js/components/owmwidget.js) keeps falling back to the global
+    // config['owm_api']/owm_city/owm_country settings.
+    if ($id === 'owm') {
+        if (isset($entry['apikey']) && is_string($entry['apikey'])) {
+            $apikey = trim($entry['apikey']);
+            if ($apikey !== '' && strlen($apikey) <= 100) {
+                $widget['apikey'] = $apikey;
+            }
+        }
+        $layout = isset($entry['layout']) && is_numeric($entry['layout']) ? (int)$entry['layout'] : 11;
+        $widget['layout'] = ($layout >= 1 && $layout <= 24) ? $layout : 11;
+        if (isset($entry['city']) && is_string($entry['city'])) {
+            $city = trim($entry['city']);
+            if ($city !== '' && strlen($city) <= 100) {
+                $widget['city'] = $city;
+            }
+        }
+        if (isset($entry['country']) && is_string($entry['country'])) {
+            $country = trim($entry['country']);
+            if ($country !== '' && strlen($country) <= 10) {
+                $widget['country'] = $country;
+            }
+        }
+    }
+
+    // Validate and store Timegraph block properties.
+    if ($id === 'timegraph') {
+        if (isset($entry['idx']) && is_numeric($entry['idx'])) {
+            $tgIdx = (int)$entry['idx'];
+            if ($tgIdx > 0) {
+                $widget['idx'] = $tgIdx;
+            }
+        }
+        $numericRanges = [
+            'duration' => [1, 86400],
+            'xTicks' => [1, 100],
+            'yTicks' => [1, 100],
+            'animation' => [0, 10000],
+            'pointRadius' => [0, 50],
+        ];
+        foreach ($numericRanges as $prop => $range) {
+            if (isset($entry[$prop]) && is_numeric($entry[$prop])) {
+                $val = (int)$entry[$prop];
+                if ($val >= $range[0] && $val <= $range[1]) {
+                    $widget[$prop] = $val;
+                }
+            }
+        }
+        if (isset($entry['lineTension']) && is_numeric($entry['lineTension'])) {
+            $lineTension = (float)$entry['lineTension'];
+            if ($lineTension >= 0 && $lineTension <= 1) {
+                $widget['lineTension'] = $lineTension;
+            }
+        }
+        if (array_key_exists('xLabels', $entry)) {
+            $widget['xLabels'] = (bool)$entry['xLabels'];
+        }
+        if (isset($entry['timegraphHeight']) && is_string($entry['timegraphHeight'])) {
+            $tgHeight = trim($entry['timegraphHeight']);
+            if ($tgHeight !== '' && preg_match('/^\d{1,5}(px|%)?$/', $tgHeight)) {
+                $widget['timegraphHeight'] = $tgHeight;
+            }
+        }
+        $tgValues = isset($entry['values']) && is_array($entry['values']) ? $entry['values'] : [];
+        if (count($tgValues) > 50) {
+            dashticz_json_error(400, 'Timegraph supports up to 50 values.');
+        }
+        $widget['values'] = [];
+        foreach ($tgValues as $tgValue) {
+            if (is_string($tgValue)) {
+                if ($tgValue === '' || strlen($tgValue) > 100) {
+                    continue;
+                }
+                $widget['values'][] = $tgValue;
+            } elseif (is_array($tgValue)) {
+                $rowValue = isset($tgValue['value']) && is_string($tgValue['value'])
+                    ? trim($tgValue['value'])
+                    : '';
+                if ($rowValue === '' || strlen($rowValue) > 100) {
+                    continue;
+                }
+                $row = ['value' => $rowValue];
+                if (isset($tgValue['idx']) && is_numeric($tgValue['idx'])) {
+                    $rowIdx = (int)$tgValue['idx'];
+                    if ($rowIdx > 0) {
+                        $row['idx'] = $rowIdx;
+                    }
+                }
+                if (isset($tgValue['label']) && is_string($tgValue['label'])) {
+                    $rowLabel = trim($tgValue['label']);
+                    if ($rowLabel !== '' && strlen($rowLabel) <= 100) {
+                        $row['label'] = $rowLabel;
+                    }
+                }
+                $widget['values'][] = $row;
+            }
+        }
+    }
+
     $widgets[] = $widget;
 }
 
@@ -984,6 +1127,68 @@ function _widgetBlockProps($widget)
             // like a hand-written blocks['streamplayer'] = {tracks: [...]}.
             $props['title'] = 'Radio';
             $props['tracks'] = $widget['tracks'];
+            break;
+        case 'log':
+            // No 'type' here either: DT_log is dispatched by its block key
+            // ('log') matching the component name directly, like radio above.
+            $props['title'] = 'Domoticz log';
+            if (isset($widget['scrolltimeout'])) {
+                $props['scrolltimeout'] = $widget['scrolltimeout'];
+            }
+            $props['ascending'] = !empty($widget['ascending']);
+            if (isset($widget['logHeight'])) {
+                // Override the generic column-packing height with the
+                // block's own literal pixel height (same pattern as iframe).
+                $props['height'] = $widget['logHeight'];
+            }
+            if (isset($widget['aspectratio'])) {
+                // Responsive sizing takes precedence over a fixed height.
+                unset($props['height']);
+                $props['aspectratio'] = $widget['aspectratio'];
+            }
+            break;
+        case 'sunrise':
+            // No 'type' here: blocks.js's convertBlock() derives block.type
+            // from the bare 'sunrise' key automatically when it's used
+            // directly in a columns[]/screens[] blocks array.
+            $props['title'] = 'Sunrise';
+            break;
+        case 'owm':
+            $props['type'] = 'owmwidget';
+            $props['title'] = 'Weather';
+            $props['layout'] = $widget['layout'];
+            if (isset($widget['apikey'])) {
+                $props['apikey'] = $widget['apikey'];
+            }
+            if (isset($widget['city'])) {
+                $props['city'] = $widget['city'];
+            }
+            if (isset($widget['country'])) {
+                $props['country'] = $widget['country'];
+            }
+            break;
+        case 'timegraph':
+            $props['type'] = 'timegraph';
+            $props['title'] = 'Timegraph';
+            if (isset($widget['idx'])) {
+                $props['idx'] = $widget['idx'];
+            }
+            foreach (['duration', 'xTicks', 'yTicks', 'animation', 'lineTension', 'pointRadius'] as $tgProp) {
+                if (isset($widget[$tgProp])) {
+                    $props[$tgProp] = $widget[$tgProp];
+                }
+            }
+            if (array_key_exists('xLabels', $widget)) {
+                $props['xLabels'] = $widget['xLabels'];
+            }
+            if (!empty($widget['values'])) {
+                $props['values'] = $widget['values'];
+            }
+            if (isset($widget['timegraphHeight'])) {
+                // Override the generic column-packing height with the
+                // block's own literal CSS height (same pattern as iframe/log).
+                $props['height'] = $widget['timegraphHeight'];
+            }
             break;
     }
 
