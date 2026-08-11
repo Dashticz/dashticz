@@ -1,8 +1,10 @@
 {
-    "version": "3.41.3",
+    "version": "3.41.5",
     "branch": "beta",
-    "last_changes": "Fix stale $forceClone test assertion and remove the duplicate tests/phpsecurity.test.js file",
+    "last_changes": "Device Editor: add a Title checkbox to Device Config, covering plain devices, the separator/title bar (Tussenbalk), Slide button, Multi Device and Custom device",
     "changelog": {
+        "3.41.5": "Device Editor: add a Title checkbox to Device Config, covering plain devices, the separator/title bar (Tussenbalk), Slide button, Multi Device and Custom device",
+        "3.41.4": "Fix clock widgets (Basic, Flip, Station, Hayman) ignoring the Title checkbox/hide_title setting",
         "3.41.3": "Fix stale $forceClone test assertion and remove the duplicate tests/phpsecurity.test.js file",
         "3.41.2": "Radio widget: single Add-station control; grid layout: lower the minimum block height to 2 rows and fix Sunrise/Sunset not keeping a resized grid height",
         "3.41.1": "Add Domoticz log, OWM, Sunrise/Sunset and Timegraph special widgets to the Widget Config editor",

@@ -60,7 +60,10 @@ var DT_haymanclock = {
       if (availH > 0) width = Math.min(width, availH);
       me.block.clockwidth = Math.min(100, scale * 100) + '%';
       me.block.fontsize = Math.max(8, (width / 40));
-      $(me.mountPoint + ' .dt_block').html(template(me.block));
+      // Render into .dt_state, not .dt_block: .dt_block also holds .dt_title
+      // (built by dashticz.js's renderTitle() from block.title/hide_title),
+      // and overwriting .dt_block wipes that title back out right after it's set.
+      $(me.mountPoint + ' .dt_state').html(template(me.block));
       function updateTime() {
         var now = new Date();
         var hours = now.getHours() || 24;

@@ -37,7 +37,10 @@ var DT_basicclock = {
     if (availH > 0) width = Math.min(width, availH);
     var fontSize = (width / 6);
     $block.css('font-size', Math.min(fontSize, me.block.maxFontSize));
-    $(me.mountPoint + ' .dt_content').html(
+    // Render into .dt_state, not .dt_content: .dt_content also holds .dt_title
+    // (built by dashticz.js's renderTitle() from block.title/hide_title), and
+    // overwriting .dt_content wipes that title back out right after it's set.
+    $(me.mountPoint + ' .dt_state').html(
       '<div class="clock"></div><div class="weekday"></div><div class="date"></div>'
     );
   },

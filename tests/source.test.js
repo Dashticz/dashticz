@@ -612,16 +612,25 @@ test('device and widget config editors share full widget config and preserve hid
   assert.doesNotMatch(configWriter, /configwriter_normalise_text_alignment/);
   assert.doesNotMatch(configWriter, /\$props\['text_alignment'\]/);
 
-  // Device Config is exactly Icon/Data/Update, centered on one row (Icon only
-  // for a separator/title bar, which has no data value or last-update of its own).
-  assert.match(deviceEditor, /isTitle \? \['icon'\] : \['icon', 'hide_data', 'last_update'\]/);
+  // Device Config is Icon/Data/Update/Title, centered on one row (Icon and
+  // Title only for a separator/title bar, which has no data value or
+  // last-update of its own). Title visibility is a checkbox here too, not
+  // just a typed Field/Setting row: it toggles hide_title exactly like the
+  // Widget Config editor's Title checkbox does.
+  assert.match(deviceEditor, /\? \['icon', 'show_title'\]/);
+  assert.match(deviceEditor, /: \['icon', 'hide_data', 'last_update', 'show_title'\]/);
   assert.match(deviceEditor, /configOptions\.forEach/);
-  assert.match(deviceEditor, /option === 'hide_data' \? options\.hide_data !== true/);
+  assert.match(deviceEditor, /if \(option === 'hide_data'\) \{\s*\n\s*checked = options\.hide_data !== true/);
+  assert.match(deviceEditor, /isSpecial \? special\.showTitle !== false : deviceTitleVisible\[ck\] !== false/);
   assert.match(deviceEditor, /updated\[option\] = option === 'hide_data' \? !checked : checked/);
+  assert.match(deviceEditor, /var pendingShowTitle = updated\.show_title !== false/);
+  assert.match(deviceEditor, /special\.showTitle = pendingShowTitle/);
+  assert.match(deviceEditor, /deviceTitleVisible\[ck\] = pendingShowTitle/);
   assert.match(widgetEditor, /options\.hide_data !== true/);
   assert.match(widgetEditor, /hide_data: !\$cfgModal\.find\('\[data-block-option="hide_data"\]'\)\.is\(':checked'\)/);
-  assert.match(deviceEditor, /de-config-options-three/);
+  assert.match(deviceEditor, /de-config-options-four/);
   assert.match(styles, /\.de-config-options-three[\s\S]*grid-template-columns: repeat\(3/);
+  assert.match(styles, /\.de-config-options-four[\s\S]*grid-template-columns: repeat\(4/);
   assert.match(styles, /\.de-config-options \.form-check-input[\s\S]*width: 32px;[\s\S]*height: 32px;/);
   assert.match(deviceEditor, /icon: true, iconValue: null, hide_data: false, last_update: false/);
   assert.match(styles, /\.we-block-option\.form-check-input[\s\S]*width: 32px;[\s\S]*height: 32px;/);
@@ -999,9 +1008,39 @@ test('clock components use public date APIs and a valid seconds setting', () => 
   assert.match(stationClock, /var width = clockFitSize\(me, 120\)/);
   assert.match(flipClock, /minEmSize: 3\.5/);
   assert.match(flipClock, /maxEmSize: 7/);
-  assert.match(flipClock, /FlipClock\(\$content, 0,/);
+  assert.match(flipClock, /FlipClock\(\$state, 0,/);
   assert.match(flipClock, /showSeconds: !settings\['hide_seconds'\]/);
   assert.doesNotMatch(flipClock, /showSecoonds/);
+});
+
+test('clock components render into .dt_state so block.title/hide_title survive', () => {
+  // .dt_content (built by dashticz.js's renderTitle()) holds both .dt_title
+  // and .dt_state. A clock component that overwrites .dt_content or the
+  // outer .dt_block wipes .dt_title out again right after it was rendered,
+  // silently breaking the Widget Config editor's Title checkbox for clocks.
+  const basicClock = fs.readFileSync(
+    path.join(root, 'js/components/basicclock.js'),
+    'utf8'
+  );
+  const stationClock = fs.readFileSync(
+    path.join(root, 'js/components/stationclock.js'),
+    'utf8'
+  );
+  const flipClock = fs.readFileSync(
+    path.join(root, 'js/components/flipclock.js'),
+    'utf8'
+  );
+  const haymanClock = fs.readFileSync(
+    path.join(root, 'js/components/haymanclock.js'),
+    'utf8'
+  );
+  assert.match(basicClock, /\$\(me\.mountPoint \+ ' \.dt_state'\)\.html\(/);
+  assert.doesNotMatch(basicClock, /\$\(me\.mountPoint \+ ' \.dt_content'\)\.html\(/);
+  assert.match(stationClock, /\$\(me\.mountPoint \+ ' \.dt_state'\)\.html\(/);
+  assert.doesNotMatch(stationClock, /\$\(me\.mountPoint \+ ' \.dt_content'\)\.html\(/);
+  assert.match(flipClock, /FlipClock\(\$state, 0,/);
+  assert.match(haymanClock, /\$\(me\.mountPoint \+ ' \.dt_state'\)\.html\(template\(me\.block\)\)/);
+  assert.doesNotMatch(haymanClock, /\$\(me\.mountPoint \+ ' \.dt_block'\)\.html\(template/);
 });
 
 test('remaining expert settings stay configurable while obsolete edit mode is removed', () => {

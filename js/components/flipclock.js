@@ -45,7 +45,12 @@ var DT_flipclock = {
     );
     $content.css('--flipclock-em', emSize + 'px');
 
-    FlipClock($content, 0, {
+    // FlipClock() replaces the target element's content wholesale, so it must
+    // target .dt_state rather than .dt_content: .dt_content also holds
+    // .dt_title (built by dashticz.js's renderTitle() from block.title/
+    // hide_title), which would otherwise get wiped out right after it's set.
+    var $state = $(me.mountPoint + ' .dt_state');
+    FlipClock($state, 0, {
       clockFace:
         me.block.clockFace == 12 ? 'TwelveHourClock' : 'TwentyFourHourClock',
       showSeconds: me.block.showSeconds,

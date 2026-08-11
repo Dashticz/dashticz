@@ -6,6 +6,32 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.41.5 beta (11-8-2026)
+--------------------------
+
+* **Enhancements**
+
+- Device Editor: the Device Config popup now has a **Title** checkbox next
+  to Icon/Data/Updated, toggling ``hide_title`` the same way the Widget
+  Config editor's Title checkbox already does. Title text remains a typed
+  Field/Setting; this only controls whether it's shown. Applies to plain
+  devices, the separator/title bar block (**Tussenbalk**), Slide button,
+  Multi Device, and Custom device — all of which share this same popup.
+
+v3.41.4 beta (11-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Clock widgets (Basic clock, Flip clock, Station clock, Hayman clock)
+  ignored the Widget Config editor's Title checkbox (and a hand-written
+  ``hide_title``/``title`` in ``CONFIG.js``): each clock's own render
+  overwrote ``.dt_content``/``.dt_block``, which also holds the
+  ``.dt_title`` element that ``dashticz.js`` builds from
+  ``block.title``/``block.hide_title``, wiping it out again right after
+  it was set. The clocks now render into ``.dt_state`` instead, leaving
+  the title alone.
+
 v3.41.3 beta (11-8-2026)
 --------------------------
 
