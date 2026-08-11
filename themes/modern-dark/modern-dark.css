@@ -40,6 +40,59 @@
   --height-block-standby-clock: 200px;
 }
 
+/* ==========================================================================
+   HAYMAN CLOCK
+   ========================================================================== */
+
+.standby .clock-container:before {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 30px !important;
+  font-size: 80px !important;
+  overflow: hidden !important;
+}
+
+.standby .clock-container .clock-col:before  {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+}
+
+.standby .clock-container .clock-timer:before  {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 80px !important;
+  line-height: 1 !important;
+  font-family: Arial, sans-serif !important;
+  font-weight: bold !important;
+}
+
+.standby .clock-container .clock-day:before  {
+  color: rgba(90, 90, 90, 1) !important;
+  text-shadow: 4px 3px 3px #8c8c64 !important;
+}
+
+.standby .clock-container .clock-hours:before ,
+.standby .clock-container .clock-minutes:before  {
+  color: rgba(242, 242, 242, 1) !important;
+  text-shadow: 2px 2px 2px #b1b3a1 !important;
+}
+
+.standby .clock-container .clock-seconds:before  {
+  color: rgba(90, 90, 90, 1) !important;
+  text-shadow: 2px 2px 2px #8c8c64 !important;
+}
+
+.standby .clock-container .clock-label {
+  display: none !important;
+}
+
+
 .transbg {
   padding-top: 8px !important;
   padding-bottom: 6px !important;
