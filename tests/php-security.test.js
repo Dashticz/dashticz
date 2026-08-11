@@ -308,10 +308,18 @@ test('grid layout writer validates and stores positions without column packing',
   assert.match(source, /configwriter_set_config_mode/);
   // TAAK1 (issue #98 follow-up): a plain repositioning within this screen's
   // grid must also clone when the ref is owned by another screen, not just
-  // on a Wizard-conversion clone request.
+  // on a Wizard-conversion clone request - except for log/streamplayer/
+  // sunrise, which are dispatched by their literal block key matching a
+  // registered component name, so cloning them under a renamed key would
+  // make the clone invisible to every component's dispatch check.
   assert.match(
     source,
-    /\$forceClone = \(\$screenNumber === 0 && !empty\(\$entry\['clone'\]\)\) \|\| \$ownedByOtherScreen;/
+    /\$forceClone = !configwriter_is_component_dispatched_key\(\$ref\)\s*\n\s*&& \(\(\$screenNumber === 0 && !empty\(\$entry\['clone'\]\)\) \|\| \$ownedByOtherScreen\);/
+  );
+  assert.match(writer, /function configwriter_is_component_dispatched_key\(\$key\)/);
+  assert.match(
+    writer,
+    /return in_array\(\$key, \['log', 'streamplayer', 'sunrise'\], true\);/
   );
   assert.match(source, /configwriter_normalise_grid_position/);
   assert.match(source, /configwriter_build_grid_layout_section/);

@@ -1688,8 +1688,25 @@ test('iFrame without scaletofit/aspectratio fills its grid cell height instead o
 
   assert.match(runBody, /else if \(!me\.block\.height\)/);
   assert.match(runBody, /closest\('\.dt-grid-item'\)/);
-  assert.match(runBody, /dtstatecss\.height = gridHeight/);
-  assert.match(runBody, /iframecss\.height = gridHeight/);
+  // .dt_block's content-box height (not the grid item's own outer height:
+  // .dt_block has its own padding the grid item doesn't) minus .dt_title's
+  // own height (the block's title bar, which sits above .dt_state inside
+  // that content box). Sizing .dt_state to more than that pushes it past
+  // .dt_block's own bottom edge, showing as a stray scrollbar/cropped
+  // content - and .dt_block itself is CSS-pinned to the grid item's full
+  // height (see the .dt-grid-item > .frame rule in creative.css) so nothing
+  // upstream can silently grow past the row either.
+  assert.match(runBody, /find\('\.dt_block'\)\.first\(\)/);
+  assert.match(runBody, /find\('\.dt_title'\)/);
+  assert.match(runBody, /var availableHeight = blockHeight - titleHeight;/);
+  assert.match(runBody, /dtstatecss\.height = availableHeight/);
+  assert.match(runBody, /iframecss\.height = availableHeight/);
+
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  assert.match(
+    styles,
+    /\.dt-grid-item > \.frame,\s*\n\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.waqi \{\s*\n\s*height: 100% !important;/
+  );
 });
 
 test('Domoticz log, OWM, Sunrise/Sunset and Timegraph are added to the Widget Config editor', () => {
@@ -1803,4 +1820,166 @@ test('Domoticz log, OWM, Sunrise/Sunset and Timegraph are added to the Widget Co
     assert.ok(we.timegraph_title, `${locale} timegraph title translation`);
     assert.ok(we.timegraph_value_idx, `${locale} timegraph value idx translation`);
   }
+});
+
+test('Radio widget gets a default icon like other widgets (log, WAQI)', () => {
+  const streamplayer = fs.readFileSync(
+    path.join(root, 'js/components/streamplayer.js'),
+    'utf8'
+  );
+  const logSource = fs.readFileSync(path.join(root, 'js/components/log.js'), 'utf8');
+  const waqiSource = fs.readFileSync(path.join(root, 'js/components/waqi.js'), 'utf8');
+
+  // A freshly added Radio widget had no icon at all until the user typed one
+  // into the Widget Config editor's Icon custom field by hand - every other
+  // widget with an Icon checkbox (log, WAQI) instead bakes a sensible default
+  // into its own defaultCfg, which getBlockConfig only overrides once the
+  // block itself sets an explicit icon (including icon:'' when the Icon
+  // checkbox is unchecked). Match that existing pattern for streamplayer too.
+  assert.match(logSource, /icon: 'fas fa-microchip'/);
+  assert.match(waqiSource, /icon: 'fas fa-wind'/);
+  assert.match(streamplayer, /icon: 'fas fa-broadcast-tower'/);
+});
+
+test('Domoticz log widget defaults to an 8x8 grid cell instead of a full-width strip', () => {
+  const widgetEditor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+
+  // The generic grid-default formula scales column width (1-12) proportionally
+  // to gridColumns, so log's width:12 (full width, needed for column-mode
+  // layouts) used to also make its *grid* default a full-width strip. log's
+  // catalog entry now opts into an explicit grid-only override; the width:12
+  // column-mode default is untouched.
+  assert.match(widgetEditor, /gridDefaultSize: \{ width: 8, height: 8 \}/);
+  assert.match(widgetEditor, /var gridDefault = catalogItem\.gridDefaultSize;/);
+  assert.match(
+    widgetEditor,
+    /var width = gridDefault\s*\n\s*\? Math\.max\(1, Math\.min\(gridConfig\.gridColumns, gridDefault\.width\)\)/
+  );
+  assert.match(
+    widgetEditor,
+    /var height = gridDefault\s*\n\s*\? Math\.max\(1, gridDefault\.height\)/
+  );
+  // log's own catalog width (used for column-mode layouts) must stay 12.
+  const logEntryStart = widgetEditor.indexOf("id: 'log',");
+  const logEntryEnd = widgetEditor.indexOf('},', logEntryStart);
+  const logEntry = widgetEditor.substring(logEntryStart, logEntryEnd);
+  assert.match(logEntry, /width: 12,/);
+});
+
+test('frame and WAQI blocks clip their CSS-scaled iframe instead of leaking a scrollbar', () => {
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  // frame.js and waqi.js both shrink an iframe to fit the tile with
+  // transform: scale(), which only changes how it's painted - the iframe's
+  // pre-scale (often much wider/taller) box is still what ancestors use to
+  // decide whether they need a scrollbar. Without overflow: hidden on the
+  // immediate .dt_state container, that oversized box pokes out and shows a
+  // stray scrollbar (frame) or crops the badge's edge (WAQI), independent of
+  // and not fixed by the frame widget's own "Show scrollbars" option (that
+  // only sets the iframe's own internal scrolling attribute).
+  assert.match(styles, /\.frame \.dt_state \{\s*\n\s*overflow: hidden;/);
+  assert.match(styles, /\.waqi \.dt_state \{[\s\S]*?overflow: hidden;/);
+});
+
+test('iFrame widget gets a default icon like other widgets', () => {
+  const frameSource = fs.readFileSync(
+    path.join(root, 'js/components/frame.js'),
+    'utf8'
+  );
+  assert.match(frameSource, /icon: 'fas fa-window-maximize'/);
+});
+
+test('iFrame widget keeps a symmetric right margin once it has an icon', () => {
+  const frameSource = fs.readFileSync(
+    path.join(root, 'js/components/frame.js'),
+    'utf8'
+  );
+  // Adding a default icon (previous test) made hasIcon paths - previously
+  // only reachable with a hand-set custom icon - the default for every
+  // iframe widget, surfacing three margin bugs in turn:
+  // 1. marginRight was set to 0 while marginLeft stayed 5px.
+  // 2. Shrinking .dt_state's own box width wasn't enough on its own: the
+  //    iframe's *scaled visual* width is (width/scaling)*scaling === the
+  //    original width regardless, so it still overflowed the narrower box.
+  //    width itself must shrink before scaling is computed from it.
+  // 3. The whole fix lived inside `if (scaling !== 1)`, i.e. only when
+  //    scaletofit is configured. Without scaletofit (scaling stays 1),
+  //    dtstatecss stayed {marginRight: '', marginLeft: ''} - no inline
+  //    override - so .frame .dt_state's blanket `margin: -5px` in CSS (there
+  //    to cover .dt_block's own padding when there's *no* icon) pulled
+  //    .dt_state past the block's right edge instead, same missing-gap
+  //    symptom with no scaling involved at all. The margin fix must apply
+  //    whenever there's an icon, independent of whether scaling is active.
+  assert.doesNotMatch(frameSource, /marginRight\s*=\s*'0px'/);
+  assert.match(frameSource, /if \(hasIcon\) width -= 10;/);
+  const scalingIndex = frameSource.indexOf('var scaling = me.block.scaletofit');
+  assert.ok(
+    frameSource.indexOf('if (hasIcon) width -= 10;') < scalingIndex,
+    'width must shrink before scaling is computed from it'
+  );
+
+  const scalingBlockStart = frameSource.indexOf('if(scaling!==1) {');
+  const scalingBlockEnd = frameSource.indexOf('\n    }', scalingBlockStart);
+  const scalingBlockBody = frameSource.substring(scalingBlockStart, scalingBlockEnd);
+  const hasIconStart = frameSource.indexOf('if (hasIcon) {', scalingBlockEnd);
+  assert.notEqual(hasIconStart, -1, 'hasIcon margin fix not found');
+  assert.ok(
+    hasIconStart > scalingBlockEnd,
+    'the hasIcon margin fix must sit outside (after) the scaling!==1 block, so it still applies when scaletofit is not configured'
+  );
+  assert.doesNotMatch(scalingBlockBody, /marginRight|marginLeft/);
+  const hasIconEnd = frameSource.indexOf('\n    }', hasIconStart);
+  const hasIconBody = frameSource.substring(hasIconStart, hasIconEnd);
+  assert.match(hasIconBody, /marginRight\s*=\s*'5px'/);
+  assert.match(hasIconBody, /marginLeft\s*=\s*'5px'/);
+  assert.match(hasIconBody, /if \(scaling !== 1\) dtstatecss\.width = width;/);
+});
+
+test('log/streamplayer/sunrise stay a single shared block across screens instead of being cloned', () => {
+  // These three are dispatched by their literal block key matching a
+  // registered component name (Dashticz._mount in dashticz.js) rather than
+  // by a 'type' property or catalog id (see js/components/log.js and
+  // streamplayer.js, which have no canHandle at all). The "clone this block
+  // for a screen that doesn't already own it" logic (TAAK1, issue #98
+  // follow-up) used to rename them too - e.g. 'log' -> 'screen2_log' - which
+  // made the clone invisible to every component's dispatch check: the
+  // widget silently stopped rendering (no icon, no content) on the second
+  // screen, and the Screen Editor's per-tile overlay fell back to showing
+  // the plain drag icon instead of the config cog, since it couldn't
+  // resolve the renamed reference back to a widget/device kind either.
+  const configWriter = fs.readFileSync(path.join(root, 'js/configwriter.php'), 'utf8');
+  const saveWidgets = fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8');
+  const saveGridLayout = fs.readFileSync(path.join(root, 'js/savegridlayout.php'), 'utf8');
+  const layoutEditor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const logSource = fs.readFileSync(path.join(root, 'js/components/log.js'), 'utf8');
+  const streamplayerSource = fs.readFileSync(
+    path.join(root, 'js/components/streamplayer.js'),
+    'utf8'
+  );
+
+  assert.doesNotMatch(logSource, /canHandle/);
+  assert.doesNotMatch(streamplayerSource, /canHandle/);
+
+  assert.match(configWriter, /function configwriter_is_component_dispatched_key\(\$key\)/);
+  assert.match(
+    configWriter,
+    /return in_array\(\$key, \['log', 'streamplayer', 'sunrise'\], true\);/
+  );
+  assert.match(
+    configWriter,
+    /if \(configwriter_is_component_dispatched_key\(\$key\)\) \{\s*\n\s*return \$key;/
+  );
+  assert.match(
+    saveGridLayout,
+    /\$forceClone = !configwriter_is_component_dispatched_key\(\$ref\)/
+  );
+
+  // layouteditor.js's own widget-kind resolution (used to decide whether the
+  // Screen Editor overlay shows a config cog or falls back to the generic
+  // drag icon) recognises these three only by their literal key - so if
+  // savewidgets.php/savegridlayout.php ever renamed one again, it would
+  // still misclassify the clone as a plain, non-configurable grid item.
+  assert.match(layoutEditor, /log: 'log',/);
+  assert.match(layoutEditor, /sunrise: 'sunrise',/);
+  assert.match(layoutEditor, /streamplayer: 'radio',/);
 });

@@ -185,6 +185,11 @@ var DashticzWidgetEditor = (function () {
       description: 'Scrolling view of the Domoticz event log.',
       icon: 'fas fa-align-left',
       width: 12,
+      // Grid mode only: an 8x8 grid cell (in grid columns/rows, not px) reads
+      // better than the full-width default this widget's column-mode width
+      // (12) would otherwise scale to. Column-mode width stays 12 (full
+      // width), matching every other widget's column-mode default.
+      gridDefaultSize: { width: 8, height: 8 },
     },
     // Sunrise/sunset widget: DT_simpleblock dispatches 'sunrise' by block type,
     // and blocks.js's convertBlock() derives that type from the bare 'sunrise'
@@ -3613,26 +3618,34 @@ var DashticzWidgetEditor = (function () {
               var catalogItem = catalog.filter(function (c) {
                 return c.id === entry.id;
               })[0] || {};
-              var width = Math.max(
-                1,
-                Math.min(
-                  gridConfig.gridColumns,
-                  Math.round(
-                    ((entry.width || 3) * gridConfig.gridColumns) / 12
-                  )
-                )
-              );
+              // A few widgets look wrong at the generic proportional/px-based
+              // grid default (e.g. Domoticz log at a full-width, short strip)
+              // and specify their own grid cell size directly, in grid units.
+              var gridDefault = catalogItem.gridDefaultSize;
+              var width = gridDefault
+                ? Math.max(1, Math.min(gridConfig.gridColumns, gridDefault.width))
+                : Math.max(
+                    1,
+                    Math.min(
+                      gridConfig.gridColumns,
+                      Math.round(
+                        ((entry.width || 3) * gridConfig.gridColumns) / 12
+                      )
+                    )
+                  );
               // entry.height is only present for a widget with an explicit
               // custom height; fall back to the catalog default just to size
               // the initial grid cell, without writing it into the block.
-              var height = Math.max(
-                1,
-                Math.ceil(
-                  ((entry.height || catalogItem.height || 120) +
-                    gridConfig.gap) /
-                    (gridConfig.rowHeight + gridConfig.gap)
-                )
-              );
+              var height = gridDefault
+                ? Math.max(1, gridDefault.height)
+                : Math.max(
+                    1,
+                    Math.ceil(
+                      ((entry.height || catalogItem.height || 120) +
+                        gridConfig.gap) /
+                        (gridConfig.rowHeight + gridConfig.gap)
+                    )
+                  );
               var position = _firstFreeGridPosition(
                 occupied,
                 width,

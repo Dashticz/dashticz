@@ -130,6 +130,20 @@
   overflow: hidden !important;
 }
 
+/* frame.js/waqi.js size their own iframe to fit (see frame.js's run() and
+   .frame/.waqi .dt_state overflow:hidden below), but the generic min-height:
+   100% two rules up only sets a floor - if the icon/title/iframe combined
+   are even a fraction taller than the grid row (subpixel rounding, a long
+   title that wraps, etc.) the block grows past its row instead of clipping,
+   and .dt-grid-item's own overflow:auto then shows a scrollbar for that. Cap
+   these two at their row's exact height so there's nothing left to overflow. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .frame,
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .waqi {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
 .dt-grid-screen > .dt-grid-layout > .dt-grid-overlap {
   outline: 1px dashed rgba(255, 165, 0, 0.8);
   outline-offset: -1px;
@@ -250,6 +264,17 @@
 .button .dt_state,
 .frame .dt_state {
   margin: -5px;
+}
+
+/* frame.js CSS-scales the iframe with transform: scale() for scaletofit,
+   which visually shrinks it but leaves its pre-scale layout box (often much
+   wider/taller than the tile) intact for overflow purposes. Without this,
+   that untransformed box pokes out of .dt_state and shows as a stray
+   scrollbar on the block's edge, independent of the widget's own "Show
+   scrollbars" setting (which only controls the iframe's *internal*
+   scrollbar, not this container overflow). */
+.frame .dt_state {
+  overflow: hidden;
 }
 
 .dt_block.dt_button .col-icon,
@@ -6226,6 +6251,12 @@ canvas {
 
 .waqi .dt_state {
   margin: 0px;
+  /* waqi.js CSS-scales its iframe with transform: scale() to fit the tile,
+     which visually shrinks it but leaves its pre-scale (often wider) layout
+     box intact for overflow purposes - without this, that box can clip
+     against a different ancestor's boundary and crop the badge's right edge
+     instead of fitting cleanly inside this block. Same fix as .frame .dt_state. */
+  overflow: hidden;
 }
 
 .waqi.xxl {
