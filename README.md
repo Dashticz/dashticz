@@ -117,7 +117,9 @@ The Device Editor continues to use the existing Domoticz device list and can:
   now opens the same complete Widget Config popup used by the Widget Editor,
   including all widget-specific settings and the same save model.
 - keep widget overview labels language-based; a custom widget title only changes
-  the rendered tile title on the screen.
+  the rendered tile title on the screen, immediately and after a reload — a
+  saved custom title is no longer overwritten by the widget's translated
+  default title on render.
 
 The old Dummy/custom-device and Title/separator entries are no longer in the
 normal Domoticz device dropdown. Use **Custom devices** and **Separator** from
@@ -135,6 +137,9 @@ The **Custom devices** tile opens a dedicated popup with:
 - repeatable **Field / Setting** rows. `title`, `icon` and `values` are shown as
   common starting rows; unused rows may be left empty. The plus button is shown
   on the last row and adds another option.
+
+Both **Device name** and **IDX** start empty in a new Custom devices popup;
+existing Custom Devices are unaffected.
 
 Field/Setting values use the same typed conversion as Device Config: numbers
 become numbers, `true`/`false` become booleans, valid JSON arrays or objects stay
@@ -164,6 +169,30 @@ The layout writer still controls where the block appears on the active screen.
 Existing custom blocks with a hand-picked key are recognized as Custom devices
 so later Device Editor saves preserve that key.
 
+#### Multi Device
+
+The **Multi Device** tile (next to **Custom devices** in the Screen Editor
+add menu) is a graphical builder for combining values from several Domoticz
+devices into one block, built on that same Custom Device engine. It has a
+**Device name**, a **Main IDX**, an optional **Title**, and a repeatable list
+of value rows — each with an optional **IDX** and a **Value** placeholder
+(for example `<Usage>`) — with a plus button on every row to add another
+value and a minus button to remove one. A row without its own IDX falls back
+to the Main IDX. Saving writes:
+
+```javascript
+blocks['combine'] = {
+  idx: 43,
+  values: [
+    { value: '<NettUsage>' },
+    { idx: 1247, value: '<Temp>' }
+  ]
+};
+```
+
+which is edited afterwards through the same Device Config popup as any other
+Custom Device.
+
 Device Config contains exactly three centered display checkboxes on one row:
 **Icon**, **Data** and **Updated**. The old text-alignment editor support has
 been removed completely: rendered blocks no longer receive editor alignment
@@ -174,7 +203,10 @@ While Layout Editor is active, both device and widget tiles show a configuration
 cog in the top-left corner. Device cogs open Device Config and widget cogs open
 the matching full Widget Config without changing the pending layout. Config
 popup titles include the current device/widget name so the edited tile remains
-clear.
+clear. The cog is shown for widgets regardless of how they were added to
+`CONFIG.js` — both Widget Editor's own `widget_xxx` block keys and blocks
+added by hand using the documented syntax (for example `blocks['weather'] =
+{type: 'weather'}`) are recognized, on every screen and the standby screen.
 
 The **Custom fields** section contains repeatable **Field** and **Setting**
 rows. The plus button adds another row and the minus button removes an editable
@@ -260,6 +292,7 @@ icon strings remain intact until the Icon checkbox is explicitly switched off.
 | News | RSS URL and automatic-scroll interval |
 | iFrame | URL, scrollbars, scale-to-fit width, aspect ratio, optional legacy fixed height and refresh interval |
 | XMLTV TV Guide | XMLTV source URL; channel filter (id or display-name); maximum items, layout and refresh interval |
+| Radio | Stations (name + stream URL); add/remove stations with a plus/minus button on each row |
 
 In grid layouts, the XMLTV TV Guide follows its assigned row height. It shows
 only complete programme rows that fit and never adds an internal scrollbar;
@@ -296,16 +329,40 @@ Calendar properties outside the source list, including `holidayurl`, `layout`,
 Widget Config is saved. Calendar names must be unique and every source must
 contain a valid HTTP(S) ICS URL.
 
+Radio Widget Config is a graphical front end for the existing [Streamplayer
+block](https://dashticz.readthedocs.io/en/beta/blocks/specials/streamplayer.html).
+Each station row has a **Name** and **Stream URL**, with a plus button on
+every row to add another station and a minus button to remove one. Saving
+writes the stations as `blocks['streamplayer'].tracks` — the same shape a
+hand-written `_STREAMPLAYER_TRACKS` global uses — so existing Streamplayer
+configurations, and blocks that only set other properties (like `icon` or
+`image`) while relying on `_STREAMPLAYER_TRACKS`, keep working unchanged:
+
+```javascript
+blocks['streamplayer'] = {
+  tracks: [
+    { track: 1, name: 'Q-music', file: 'http://icecast-qmusic.cdp.triple-it.nl/Qmusic_nl_live_96.mp3' },
+    { track: 2, name: '538 Hitzone', file: 'http://vip-icecast.538.lw.triple-it.nl/WEB11_MP3' }
+  ]
+};
+```
+
 All Settings and editor labels, widget status messages and validation errors
 are read from the JSON files in `lang/`. `en_US.json` is loaded as the complete
 base language before the selected locale is merged over it. A missing locale
 entry therefore remains readable in English and cannot introduce a different
 hard-coded language into the interface.
 
-New iframe widgets use responsive sizing by default: `scaletofit: 300` and
-`aspectratio: 0.9`, without a fixed `height`. The ratio is height divided by
-width. Existing iframe blocks with an explicit `height` remain supported; leave
-the aspect-ratio field empty to keep that legacy sizing method.
+New iframe widgets default `scaletofit` and `aspectratio` to empty, without a
+fixed `height`. With both empty the iframe simply fills the tile's own width
+and height: no JS scaling is applied and no height is forced. Set
+`scaletofit` to the embedded page's own design width in pixels when it needs
+to be scaled to the tile, and set `aspectratio` (height divided by width)
+when the tile's height should follow its width — for example
+`scaletofit: 300, aspectratio: 0.9` for a page designed at 300px wide.
+Existing iframe blocks that already set these values keep working
+unchanged; leave the aspect-ratio field empty to keep the legacy
+fixed-`height` sizing method.
 
 For OpenWeather, `showDescription` and `showRain` default to **Yes**, while
 `showWind` and `showGust` default to **No**. The icon selector provides

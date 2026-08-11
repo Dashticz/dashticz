@@ -158,6 +158,21 @@ var DashticzWidgetEditor = (function () {
       width: 3,
       height: 300,
     },
+    // Radio widget: a graphical front end for the existing Streamplayer
+    // component (js/components/streamplayer.js). That component is matched
+    // directly by its registered name (see Dashticz._mount in dashticz.js),
+    // so the block MUST be keyed 'streamplayer' — not a 'widget_' key like
+    // the other catalog entries — to stay compatible with hand-written
+    // _STREAMPLAYER_TRACKS-based configs that already use that key.
+    {
+      id: 'radio',
+      blockKey: 'streamplayer',
+      title: 'Radio',
+      description: 'Internet radio stream player (Streamplayer).',
+      icon: 'fas fa-broadcast-tower',
+      width: 3,
+      height: 120,
+    },
   ];
 
   function _widgetEditorLanguage() {
@@ -308,6 +323,9 @@ var DashticzWidgetEditor = (function () {
       xmltvurl: true, channels: true, maxitems: true, layout: true,
       separator: true, refresh: true,
     },
+    // tracks is edited through the dedicated station-list UI; without this it
+    // would also show up as a raw JSON row in the generic Custom fields list.
+    radio: { tracks: true },
   };
 
   function _isManagedWidgetProperty(item, property) {
@@ -498,6 +516,39 @@ var DashticzWidgetEditor = (function () {
       widgetConfigs.camera.cameras = _defaultCameraConfigs();
     }
     return widgetConfigs.camera;
+  }
+
+  function _defaultRadioTracks() {
+    // Mirrors DT_streamplayer's own built-in default (js/components/streamplayer.js),
+    // so a brand new Radio widget previews the same stations it will actually play
+    // when no _STREAMPLAYER_TRACKS global is defined.
+    if (
+      typeof window !== 'undefined' &&
+      Array.isArray(window._STREAMPLAYER_TRACKS) &&
+      window._STREAMPLAYER_TRACKS.length
+    ) {
+      return window._STREAMPLAYER_TRACKS.map(function (track) {
+        return { name: track.name || '', file: track.file || '' };
+      });
+    }
+    return [
+      { name: 'Q-music', file: 'http://icecast-qmusic.cdp.triple-it.nl/Qmusic_nl_live_96.mp3' },
+      { name: 'Slam! NonStop', file: 'http://stream.radiocorp.nl/web10_mp3' },
+      { name: '100%NL', file: 'http://stream.100p.nl/100pctnl.mp3' },
+      { name: 'NPO Radio 1', file: 'http://icecast.omroep.nl/radio1-bb-mp3' },
+    ];
+  }
+
+  function _radioWidgetConfig() {
+    if (!widgetConfigs.radio) {
+      widgetConfigs.radio = { tracks: _defaultRadioTracks() };
+    } else if (
+      !Array.isArray(widgetConfigs.radio.tracks) ||
+      !widgetConfigs.radio.tracks.length
+    ) {
+      widgetConfigs.radio.tracks = _defaultRadioTracks();
+    }
+    return widgetConfigs.radio;
   }
 
   function _defaultCalendarSource(index) {
@@ -734,12 +785,17 @@ var DashticzWidgetEditor = (function () {
         news_scroll_after: _s('news_scroll_after', '7'),
       },
       // iframe widget block properties (block-specific, not global config settings)
+      // scaletofit/aspectratio default to empty: an iframe with neither set simply
+      // fills the tile's actual width/height (see DT_frame.run in frame.js), so a
+      // newly added iframe widget "just works" without users needing to guess the
+      // embedded page's design width. Existing saved blocks that already have
+      // these properties keep their explicit values (see the hydration below).
       iframe: {
         frameurl: '',
         height: '',
         scrollbars: 1,
-        scaletofit: '300',
-        aspectratio: '0.9',
+        scaletofit: '',
+        aspectratio: '',
         forcerefresh: 0,
         refresh: '300',
       },
@@ -752,11 +808,18 @@ var DashticzWidgetEditor = (function () {
         separator: _s('xmltv_separator', '-'),
         refresh: _s('xmltv_refresh', '3600'),
       },
+      // radio widget: stations are block-specific (blocks['streamplayer'].tracks),
+      // not global settings; a legacy _STREAMPLAYER_TRACKS global is only used
+      // as the initial preview when no block-level tracks exist yet.
+      radio: {
+        tracks: _defaultRadioTracks(),
+      },
     };
 
     if (gridMode) {
       _readGridConfiguredWidgets();
       _cameraWidgetConfig();
+      _radioWidgetConfig();
       return;
     }
     if (typeof columns === 'undefined') return;
@@ -972,10 +1035,22 @@ var DashticzWidgetEditor = (function () {
             widgetConfigs.xmltvguide.refresh = String(definition.refresh);
           }
         }
+        // Hydrate radio (Streamplayer) stations from an existing block definition.
+        // Backward compatible: a block without its own `tracks` (relying on the
+        // legacy _STREAMPLAYER_TRACKS global) still shows that global as a preview.
+        if (item.id === 'radio' && Array.isArray(definition.tracks)) {
+          widgetConfigs.radio.tracks = definition.tracks.map(function (track) {
+            return {
+              name: (track && track.name) || '',
+              file: (track && track.file) || '',
+            };
+          });
+        }
       });
     });
 
     _cameraWidgetConfig();
+    _radioWidgetConfig();
   }
 
   function _activeScreenTarget() {
@@ -1298,6 +1373,15 @@ var DashticzWidgetEditor = (function () {
       if (typeof definition.refresh !== 'undefined') {
         widgetConfigs.xmltvguide.refresh = String(definition.refresh);
       }
+    } else if (item.id === 'radio' && Array.isArray(definition.tracks)) {
+      // Backward compatible: a block without its own `tracks` (relying on the
+      // legacy _STREAMPLAYER_TRACKS global) keeps showing that global as a preview.
+      widgetConfigs.radio.tracks = definition.tracks.map(function (track) {
+        return {
+          name: (track && track.name) || '',
+          file: (track && track.file) || '',
+        };
+      });
     }
   }
 
@@ -1435,7 +1519,8 @@ var DashticzWidgetEditor = (function () {
       id === 'moon' ||
       id === 'news' ||
       id === 'iframe' ||
-      id === 'xmltvguide'
+      id === 'xmltvguide' ||
+      id === 'radio'
     );
   }
 
@@ -1544,6 +1629,42 @@ var DashticzWidgetEditor = (function () {
       '</label>' +
       '<input type="url" class="form-control form-control-sm we-camera-video" value="' +
       _esc(camera.videoUrl || '') +
+      '"></div></div>'
+    );
+  }
+
+  // Radio station row: a + button on every row (per spec) adds another row,
+  // mirroring the Custom Device field-row pattern used elsewhere in the editor.
+  function _radioStationRowHtml(station, index) {
+    station = station || {};
+    return (
+      '<div class="we-radio-row border rounded p-2 mb-2" data-radio-index="' +
+      index +
+      '">' +
+      '<div class="d-flex align-items-center justify-content-between mb-2">' +
+      '<strong>' +
+      _t('radio_station', 'Station') +
+      ' ' +
+      (index + 1) +
+      '</strong><span>' +
+      '<button type="button" class="btn btn-sm btn-outline-success we-radio-add" title="' +
+      _t('radio_add', 'Add station') +
+      '"><i class="fas fa-plus" aria-hidden="true"></i></button> ' +
+      '<button type="button" class="btn btn-sm btn-outline-danger we-radio-remove" title="' +
+      _t('radio_remove', 'Remove station') +
+      '"><i class="fas fa-minus" aria-hidden="true"></i></button>' +
+      '</span></div>' +
+      '<div class="mb-2"><label class="form-label we-field-label">' +
+      _t('name', 'Name') +
+      '</label>' +
+      '<input type="text" class="form-control form-control-sm we-radio-name" maxlength="100" value="' +
+      _esc(station.name || '') +
+      '"></div>' +
+      '<div><label class="form-label we-field-label">' +
+      _t('radio_url', 'Stream URL') +
+      '</label>' +
+      '<input type="url" class="form-control form-control-sm we-radio-url" value="' +
+      _esc(station.file || '') +
       '"></div></div>'
     );
   }
@@ -2085,6 +2206,15 @@ var DashticzWidgetEditor = (function () {
         null,
         lx.xmltv_refresh_help || 'How often to refresh the widget from the cached XMLTV data.'
       );
+    } else if (item.id === 'radio') {
+      // Config fields for the Radio (Streamplayer) widget: a graphical builder
+      // for the same tracks:[{name,file}] array _STREAMPLAYER_TRACKS already uses.
+      var rcfg = _radioWidgetConfig();
+      fields += '<div id="we-cfg-radio-list">';
+      rcfg.tracks.forEach(function (station, index) {
+        fields += _radioStationRowHtml(station, index);
+      });
+      fields += '</div>';
     }
 
     fields = _widgetBlockOptionsHtml(item) + fields;
@@ -2245,6 +2375,34 @@ var DashticzWidgetEditor = (function () {
       'disabled',
       $cfgModal.find('.we-camera-row').length <= 1
     );
+
+    function _renumberRadioRows() {
+      $cfgModal.find('.we-radio-row').each(function (index) {
+        $(this).attr('data-radio-index', index);
+        $(this)
+          .find('strong')
+          .text(_t('radio_station', 'Station') + ' ' + (index + 1));
+      });
+      $cfgModal.find('.we-radio-remove').prop(
+        'disabled',
+        $cfgModal.find('.we-radio-row').length <= 1
+      );
+    }
+
+    $cfgModal.on('click', '.we-radio-add', function () {
+      var index = $cfgModal.find('.we-radio-row').length;
+      $(this).closest('.we-radio-row').after(_radioStationRowHtml({}, index));
+      _renumberRadioRows();
+      $cfgModal.find('.we-radio-row').eq(index).find('.we-radio-name').trigger('focus');
+    });
+
+    $cfgModal.on('click', '.we-radio-remove', function () {
+      if ($cfgModal.find('.we-radio-row').length <= 1) return;
+      $(this).closest('.we-radio-row').remove();
+      _renumberRadioRows();
+    });
+
+    _renumberRadioRows();
 
     $cfgModal.on('click', '#we-cfg-ok-btn', function () {
       var valid = true;
@@ -2527,6 +2685,37 @@ var DashticzWidgetEditor = (function () {
             refresh: $.trim($cfgModal.find('[data-cfg-key="xmltv_refresh"]').val() || '') || '3600',
           };
         }
+      } else if (widgetId === 'radio') {
+        var tracks = [];
+        $cfgModal.find('.we-radio-row').each(function (index) {
+          var stationName = $.trim($(this).find('.we-radio-name').val() || '');
+          var stationFile = $.trim($(this).find('.we-radio-url').val() || '');
+          if (!stationName && !stationFile) return; // skip a fully empty row
+          if (!stationFile || !/^https?:\/\/\S+$/i.test(stationFile)) {
+            $('.we-cfg-message')
+              .addClass('text-danger')
+              .text(
+                _t('invalid_radio_url_prefix', 'Enter a valid HTTP(S) stream URL for station') +
+                  ' ' +
+                  (index + 1) +
+                  '.'
+              );
+            valid = false;
+            return false;
+          }
+          tracks.push({
+            track: tracks.length + 1,
+            name: stationName || _t('radio_station', 'Station') + ' ' + (index + 1),
+            file: stationFile,
+          });
+        });
+        if (valid && !tracks.length) {
+          $('.we-cfg-message')
+            .addClass('text-danger')
+            .text(_t('invalid_radio_no_stations', 'Add at least one radio station.'));
+          valid = false;
+        }
+        if (valid) widgetConfigs.radio = { tracks: tracks };
       }
 
       if (valid) {
@@ -2826,6 +3015,13 @@ var DashticzWidgetEditor = (function () {
       entry.layout = parseInt(xcfg.layout, 10) === 1 ? 1 : 0;
       entry.separator = xcfg.separator || '-';
       entry.refresh = parseInt(xcfg.refresh, 10) || 3600;
+    }
+    if (item.id === 'radio') {
+      // Same shape as a hand-written _STREAMPLAYER_TRACKS entry, written onto
+      // the block itself as blocks['streamplayer'].tracks. getBlockConfig
+      // (dashticz.js) merges the block over DT_streamplayer's defaultCfg, so
+      // this take precedence over any legacy _STREAMPLAYER_TRACKS global.
+      entry.tracks = (widgetConfigs.radio || {}).tracks || [];
     }
     if ($.trim(blockTitle)) entry.title = $.trim(blockTitle);
     return entry;

@@ -35,6 +35,34 @@ You can also use custom names for the block identfier. In that case you have to 
    }
 
 
+.. _multi_device:
+
+Multi Device (combining values from several devices)
+------------------------------------------------------
+A single block can combine values from several Domoticz devices — for
+example an energy meter's usage together with a separate temperature
+sensor — using the ``values`` array::
+
+   blocks['combine'] = {
+      idx: 43,
+      values: [
+         { value: '<NettUsage>' },
+         { idx: 1247, value: '<Temp>' }
+      ]
+   }
+
+The top-level ``idx`` (``43`` above) is the block's main device. Each entry
+in ``values`` can set its own ``idx`` to pull from a different device; when
+an entry has no ``idx`` of its own, it falls back to the block's main
+``idx``. ``value`` uses the same ``<Placeholder>`` syntax as ``title``/
+``value`` on a regular device block (see :ref:`dom_blockparameters`), and is
+substituted from the resolved device's own Domoticz properties.
+
+This can also be configured graphically: the Screen Editor's add menu has a
+**Multi Device** option that builds the same ``idx``/``values`` shape from a
+repeatable list of IDX + value rows, saved and edited exactly like any other
+Custom Device.
+
 .. _grouped_devices:
 
 Grouped devices

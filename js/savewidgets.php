@@ -192,6 +192,10 @@ $catalog = [
     'iframe' => ['key' => 'widget_iframe', 'width' => 6, 'height' => 400],
     // xmltvguide widget: TV programme guide from an XMLTV-format URL
     'xmltvguide' => ['key' => 'widget_xmltvguide', 'width' => 6, 'height' => 300],
+    // radio widget: DT_streamplayer is matched by its registered component
+    // name (see Dashticz._mount in dashticz.js), so its key must stay
+    // 'streamplayer' to remain compatible with hand-written CONFIG.js.
+    'radio' => ['key' => 'streamplayer', 'width' => 3, 'height' => 120],
 ];
 
 function _validate_custom_widget_value($value, $depth = 0)
@@ -660,6 +664,41 @@ foreach ($data['widgets'] as $entry) {
         }
     }
 
+    // Validate and store Radio (Streamplayer) stations. Written as
+    // blocks['streamplayer'].tracks, the same shape a hand-written
+    // _STREAMPLAYER_TRACKS entry uses, so DT_streamplayer needs no changes.
+    if ($id === 'radio') {
+        $trackList = isset($entry['tracks']) && is_array($entry['tracks'])
+            ? $entry['tracks']
+            : [];
+        if (count($trackList) < 1 || count($trackList) > 50) {
+            dashticz_json_error(400, 'Radio requires one to fifty stations.');
+        }
+        $widget['tracks'] = [];
+        foreach ($trackList as $index => $track) {
+            if (!is_array($track)) {
+                dashticz_json_error(400, 'Each radio station requires valid settings.');
+            }
+            $file = isset($track['file']) && is_string($track['file'])
+                ? trim($track['file'])
+                : '';
+            if ($file === '' || strlen($file) > 2048 || !preg_match('#^https?://[^\s]+$#i', $file)) {
+                dashticz_json_error(400, 'Radio station ' . ($index + 1) . ' requires a valid http(s) stream URL.');
+            }
+            $name = isset($track['name']) && is_string($track['name'])
+                ? trim($track['name'])
+                : '';
+            if ($name === '' || strlen($name) > 100) {
+                $name = 'Station ' . ($index + 1);
+            }
+            $widget['tracks'][] = [
+                'track' => $index + 1,
+                'name' => $name,
+                'file' => $file,
+            ];
+        }
+    }
+
     $widgets[] = $widget;
 }
 
@@ -938,6 +977,13 @@ function _widgetBlockProps($widget)
             $props['type'] = 'xmltvguide';
             // xmltvguide widget: TV programme guide from an XMLTV-format URL
             $props['title'] = 'TV Guide';
+            break;
+        case 'radio':
+            // No 'type' here: DT_streamplayer is dispatched by its block key
+            // ('streamplayer') matching the component name directly, exactly
+            // like a hand-written blocks['streamplayer'] = {tracks: [...]}.
+            $props['title'] = 'Radio';
+            $props['tracks'] = $widget['tracks'];
             break;
     }
 
