@@ -8,7 +8,7 @@
 :root {
   --main-bg: rgba(32, 33, 42, .88);
   --main-border-width: 1px;
-  --block-gap: 3px;
+  --block-gap: 0px;
   --box-border: 1px solid rgb(181, 181, 181);
   --home-bg: rgba(28, 31, 42, .74);
   --border-color-inactive: rgba(42, 94, 151, .5);
