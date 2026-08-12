@@ -1412,6 +1412,9 @@ function configwriter_device_block_props($device, $defaultWidth = 3)
     if (array_key_exists('switch', $device)) {
         $props['switch'] = !empty($device['switch']);
     }
+    if (!empty($device['type'])) {
+        $props['type'] = (string)$device['type'];
+    }
     if (array_key_exists('icon', $device) && $device['icon'] !== null) {
         $props['icon'] = (string)$device['icon'];
     }
@@ -1506,6 +1509,9 @@ function configwriter_special_block_props($block)
         if (!empty($block['switch'])) {
             $props['switch'] = true;
         }
+        if (!empty($block['type'])) {
+            $props['type'] = (string)$block['type'];
+        }
     } else {
         $props = [
             'idx' => (int)$block['idx'],
@@ -1518,6 +1524,9 @@ function configwriter_special_block_props($block)
         $props['hide_data'] = !empty($block['hide_data']);
         $props['last_update'] = !empty($block['last_update']);
         $props['switch'] = !empty($block['switch']);
+        if (!empty($block['type'])) {
+            $props['type'] = (string)$block['type'];
+        }
     }
     if (!empty($block['hide_title'])) {
         $props['hide_title'] = true;

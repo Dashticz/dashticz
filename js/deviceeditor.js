@@ -56,6 +56,9 @@ var DashticzDeviceEditor = (function () {
         hide_data: 'Hide data',
         last_update: 'Last update',
         switch: 'Switch',
+        dial: 'Dial',
+        dial_hint: 'Dial type selected. Set the remaining dial options (color, min/max, subtype, values, etc.) manually via Custom fields below.',
+        dial_hint_link: 'Dial documentation',
         show_title: 'Title',
         device_config: 'Device Config',
         widget_config: 'Widget Config',
@@ -402,11 +405,13 @@ var DashticzDeviceEditor = (function () {
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       !/^device_\d+(?:_\d+)?$/.test(reference) &&
-      !definition.type &&
+      (!definition.type || definition.type === 'dial') &&
       parseInt(definition.idx, 10) > 0
     ) {
       // A device with a hand-picked block key is a Custom device. Recognising
       // it before the normal IDX path preserves that key on later editor saves.
+      // A Custom device rendered with the Dial checkbox still carries
+      // type: 'dial', so it must not be excluded like other typed (widget) blocks.
       kind = 'custom';
     }
     if (!kind) return null;
@@ -436,6 +441,7 @@ var DashticzDeviceEditor = (function () {
         hide_data: definition.hide_data === true,
         last_update: definition.last_update === true,
         switch: definition.switch === true,
+        dial: definition.type === 'dial',
       },
       buttonKey: String(definition.key || ''),
       slideTarget: parseInt(definition.slide, 10) > 0 ? parseInt(definition.slide, 10) : 1,
@@ -1191,6 +1197,7 @@ var DashticzDeviceEditor = (function () {
         hide_data: configured.hide_data === true,
         last_update: configured.last_update === true,
         switch: configured.switch === true,
+        dial: configured.type === 'dial',
       };
       deviceTitleVisible[ck] = configured.hide_title !== true;
       deviceCustomFields[ck] = _deviceCustomFieldRows(configured, deviceTitles[ck]);
@@ -1889,8 +1896,8 @@ var DashticzDeviceEditor = (function () {
     // own, but it can still show a leading icon like any other block.
     var configOptions = isTitle
       ? ['icon', 'show_title']
-      : ['icon', 'hide_data', 'last_update', 'show_title'];
-    html += '<div class="de-config-options' + (isTitle ? '' : ' de-config-options-four') + '">';
+      : ['icon', 'hide_data', 'last_update', 'dial', 'show_title'];
+    html += '<div class="de-config-options' + (isTitle ? '' : ' de-config-options-five') + '">';
     configOptions.forEach(function (option) {
       html += '<label class="form-check"><input class="form-check-input de-config-option" type="checkbox" data-option="' + option + '"';
       // The Data checkbox is user-facing: checked means data is visible.
@@ -1910,6 +1917,13 @@ var DashticzDeviceEditor = (function () {
       html += '><span class="form-check-label">' + _esc(t[option]) + '</span></label>';
     });
     html += '</div>';
+    if (!isTitle) {
+      html += '<div class="alert alert-info de-dial-hint d-none" role="note">';
+      html += _esc(t.dial_hint) + ' ';
+      html += '<a href="https://dashticz.readthedocs.io/en/beta/blocks/specials/dial.html" target="_blank" rel="noopener">' +
+        _esc(t.dial_hint_link) + '</a>';
+      html += '</div>';
+    }
     html += '<div class="de-custom-fields-section"><h6>' + _esc(t.custom_fields) + '</h6>';
     html += '<p class="form-text">' + _esc(t.custom_fields_help) + '</p>';
     html += '<div class="de-custom-fields">';
@@ -1933,6 +1947,10 @@ var DashticzDeviceEditor = (function () {
       var enabled = $popup.find('[data-option="icon"]').is(':checked');
       $popup.find('.de-icon-field-row').toggle(enabled);
     }
+    function refreshDialHint() {
+      var enabled = $popup.find('[data-option="dial"]').is(':checked');
+      $popup.find('.de-dial-hint').toggleClass('d-none', !enabled);
+    }
     $popup.on('click', '.de-custom-field-add', function () {
       $(this).closest('.de-custom-field-row').after(_customFieldRowHtml());
       refreshCustomFieldButtons();
@@ -1944,8 +1962,10 @@ var DashticzDeviceEditor = (function () {
       refreshCustomFieldButtons();
     });
     $popup.on('change', '[data-option="icon"]', refreshIconFieldVisibility);
+    $popup.on('change', '[data-option="dial"]', refreshDialHint);
     refreshCustomFieldButtons();
     refreshIconFieldVisibility();
+    refreshDialHint();
 
     $('#de-config-ok').on('click', function () {
       var updated = {};
@@ -2618,6 +2638,7 @@ var DashticzDeviceEditor = (function () {
           specialEntry.hide_data = specialOptions.hide_data === true;
           specialEntry.last_update = specialOptions.last_update === true;
           specialEntry.switch = specialOptions.switch === true;
+          if (specialOptions.dial === true) specialEntry.type = 'dial';
         } else if (special.specialType === 'slidebutton') {
           var slideOptions = special.options || {};
           specialEntry.slide = parseInt(special.slideTarget, 10) || 1;
@@ -2659,6 +2680,7 @@ var DashticzDeviceEditor = (function () {
       entry.hide_data = options.hide_data === true;
       entry.last_update = options.last_update === true;
       entry.switch = options.switch === true;
+      if (options.dial === true) entry.type = 'dial';
       if (deviceTitleVisible[ck] === false) entry.hide_title = true;
       var customFields = _deviceCustomFieldsObject(
         deviceCustomFields[ck],

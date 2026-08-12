@@ -1869,8 +1869,14 @@ body.dle-active {
   justify-items: center;
 }
 
+.de-config-options-five {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  justify-items: center;
+}
+
 .de-config-options-three .form-check,
-.de-config-options-four .form-check {
+.de-config-options-four .form-check,
+.de-config-options-five .form-check {
   justify-content: center;
   width: 100%;
 }
@@ -1900,7 +1906,7 @@ body.dle-active {
     grid-template-columns: repeat(2, minmax(100px, 1fr));
   }
 
-  .de-config-options:not(.de-config-options-three):not(.de-config-options-four) {
+  .de-config-options:not(.de-config-options-three):not(.de-config-options-four):not(.de-config-options-five) {
     grid-template-columns: 1fr;
   }
 
@@ -1908,7 +1914,8 @@ body.dle-active {
     gap: 8px;
   }
 
-  .de-config-options-four {
+  .de-config-options-four,
+  .de-config-options-five {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
@@ -4769,7 +4776,9 @@ canvas {
   left: 50%;
   transform: translate(-50%, -50%);
   
-  font-size: 240px;
+  /* Backstop only: js/components/dial.js sets an inline font-size that
+     matches the block's actual measured/configured size on every mount. */
+  font-size: 100px;
   width: 1em;
   height: 1em;
   -webkit-border-radius: 50%;
@@ -4906,6 +4915,22 @@ canvas {
   background-color: transparent;
 }
 
+/* .slice is rotated, so its axis-aligned bounding box is wider/taller than
+   its own 1em x 1em size - left unclipped, that inflated box contributes to
+   the scrollable overflow of any ancestor, which showed up as scrollbars on
+   grid screens (.dt-grid-item has overflow: auto). This wrapper - not .dial
+   itself - contains just that, so .dial-center's own glow/flash effects
+   (which intentionally extend past .dial's own edge) are left untouched. */
+.dial-ring-clip {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1em;
+  height: 1em;
+  overflow: hidden;
+  border-radius: 50%;
+}
+
 .dial .slice {
   position: absolute;
   width: 1em;
@@ -4935,8 +4960,8 @@ canvas {
 
 .dial .dial-container {
   position: absolute;
-  width: 90%;
-  height: 90%;
+  width: 93%;
+  height: 93%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
@@ -4976,6 +5001,25 @@ canvas {
   transition-timing-function: ease-in;
 }
 
+/* .dial-needle::before/::after draw the needle via the CSS border-triangle
+   trick, deliberately a little longer than .dial's own radius so the tip
+   reaches the ring - but the border-triangle's own box (further offset by
+   its `top: -53%`) is unclipped, so it always contributed a small amount to
+   the scrollable overflow of any ancestor, regardless of needle rotation.
+   Matches .dial-ring-clip's approach; centered via percentage (rather than
+   .dial-ring-clip's top/left: 0) because this wrapper's parent is
+   .dial-container - a smaller, inset box - not .dial itself. */
+.dial-needle-clip {
+  position: absolute;
+  width: 1em;
+  height: 1em;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  overflow: hidden;
+  border-radius: 50%;
+}
+
 .dial .draggable {
   width: 1em;
   height: 1em;
@@ -4986,8 +5030,8 @@ canvas {
 }
 
 .dial .dial-center {
-  width: 85%;
-  height: 85%;
+  width: 88%;
+  height: 88%;
   font-size: 10%;
   /*
   top: 0;

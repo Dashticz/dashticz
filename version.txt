@@ -1,8 +1,9 @@
 {
-    "version": "3.41.7",
+    "version": "3.42.0",
     "branch": "beta",
-    "last_changes": "Fix TimeGraph config icon opening the wrong device settings; add default icons for Multi Device and Custom Device",
+    "last_changes": "Device Editor: add a Dial checkbox to Device Config; fix dial blocks rendering oversized by default and showing scrollbars on grid screens; live-sync dial sizing with editor resize; tighten roomy default dial margins; document the dial scale parameter",
     "changelog": {
+        "3.42.0": "Device Editor: add a Dial checkbox to Device Config; fix dial blocks rendering oversized by default and showing scrollbars on grid screens; live-sync dial sizing with editor resize; tighten roomy default dial margins; document the dial scale parameter",
         "3.41.7": "Fix TimeGraph config icon opening the wrong device settings; add default icons for Multi Device and Custom Device",
         "3.41.6": "Domoticz log widget now defaults to an 8x8 grid cell instead of a full-width strip",
         "3.41.5": "Device Editor: add a Title checkbox to Device Config, covering plain devices, the separator/title bar (Tussenbalk), Slide button, Multi Device and Custom device",

@@ -32,6 +32,15 @@ function _validate_custom_device_value($value, $depth = 0)
     return true;
 }
 
+/** The Device Editor's Dial checkbox is the only supported way to set a
+ * block's type; 'type' itself stays a reserved/rejected custom field. */
+function _dashticz_editor_block_type($entry)
+{
+    return (is_array($entry) && isset($entry['type']) && $entry['type'] === 'dial')
+        ? 'dial'
+        : null;
+}
+
 function _normalise_custom_device_fields($entry)
 {
     if (!is_array($entry) || !isset($entry['custom_fields'])) {
@@ -143,6 +152,7 @@ foreach ($data['devices'] as $entry) {
         $hideData = false;
         $lastUpdate = false;
         $switch = false;
+        $type = null;
         if ($kind === 'dummy' || $kind === 'custom') {
             if (!isset($entry['idx']) || !is_int($entry['idx']) || $entry['idx'] < 1) {
                 dashticz_json_error(
@@ -159,6 +169,7 @@ foreach ($data['devices'] as $entry) {
             $hideData = !empty($entry['hide_data']);
             $lastUpdate = !empty($entry['last_update']);
             $switch = !empty($entry['switch']);
+            $type = _dashticz_editor_block_type($entry);
         } elseif ($kind === 'title') {
             // A separator/title bar has no data value or idx, but it can still
             // show a leading icon like any other block.
@@ -197,6 +208,7 @@ foreach ($data['devices'] as $entry) {
             'hide_data' => $hideData,
             'last_update' => $lastUpdate,
             'switch' => $switch,
+            'type' => $type,
             'hide_title' => !empty($entry['hide_title']),
             'custom_fields' => $customFields,
             'key' => $entry['key'],
@@ -263,6 +275,7 @@ foreach ($data['devices'] as $entry) {
             'hide_data' => !empty($entry['hide_data']),
             'last_update' => !empty($entry['last_update']),
             'switch' => !empty($entry['switch']),
+            'type' => _dashticz_editor_block_type($entry),
             'hide_title' => !empty($entry['hide_title']),
             'custom_fields' => $customFields,
             'key' => isset($entry['key'])
@@ -319,6 +332,7 @@ foreach ($data['devices'] as $entry) {
             'hide_data' => !empty($entry['hide_data']),
             'last_update' => !empty($entry['last_update']),
             'switch' => !empty($entry['switch']),
+            'type' => _dashticz_editor_block_type($entry),
             'hide_title' => !empty($entry['hide_title']),
             'custom_fields' => $customFields,
             'key' => $groupKey,  /* block key IS the group reference */
