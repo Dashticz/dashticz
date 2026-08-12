@@ -2195,6 +2195,13 @@ body.dle-active {
   cursor: pointer;
 }
 
+/* Domoticz log widget: the ascending/descending switch, made 1.5x the
+   default .we-widget-field size for clarity. */
+#we-cfg-ascending.form-check-input {
+  width: 57px;
+  height: 30px;
+}
+
 .we-block-option.form-check-input {
   flex: 0 0 auto;
   float: none;

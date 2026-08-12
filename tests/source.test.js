@@ -2230,3 +2230,46 @@ test('Dial needle is clipped to the dial instead of leaking a small overflow at 
     /\.dial-needle-clip \{[\s\S]*?width: 1em;[\s\S]*?height: 1em;[\s\S]*?top: 50%;[\s\S]*?left: 50%;[\s\S]*?transform: translate\(-50%, -50%\);[\s\S]*?overflow: hidden;[\s\S]*?border-radius: 50%;/
   );
 });
+
+test('Domoticz log widget actually sorts, and respects the ascending option', () => {
+  // The sort comparator's function body never had a `return` statement, so
+  // Array.prototype.sort() received `undefined` from every comparison (=
+  // "equal") and never reordered anything - a no-op sort. That also
+  // explains why the ascending/descending option did nothing: `ascending`
+  // (declared in defaultCfg, and correctly wired up by the Widget Config
+  // editor's switch and by Device Editor - see js/widgeteditor.js and
+  // js/savewidgets.php) was never even read inside refresh().
+  const logSource = fs.readFileSync(path.join(root, 'js/components/log.js'), 'utf8');
+  assert.doesNotMatch(
+    logSource,
+    /a\.message < b\.message \? 1 : a\.message > b\.message \? -1 : 0;\s*\n\s*\}\)/
+  );
+  assert.match(logSource, /var ascending = me\.block\.ascending !== false;/);
+
+  const start = logSource.indexOf('function (a, b) {\n          if (a.message');
+  const end = logSource.indexOf('return 0;\n        }', start) + 'return 0;\n        }'.length;
+  assert.notEqual(start, -1);
+  const comparatorSource = logSource.substring(start, end);
+
+  function sortMessages(ascending, messages) {
+    const context = { ascending, result: null };
+    vm.runInNewContext(
+      'var messages = ' + JSON.stringify(messages.map((m) => ({ message: m }))) +
+        ';\nresult = messages.sort(' + comparatorSource + ').map(function (m) { return m.message; });',
+      context
+    );
+    return Array.from(context.result);
+  }
+
+  const unordered = ['12:00 c', '09:00 a', '10:00 b'];
+  assert.deepEqual(sortMessages(true, unordered), ['09:00 a', '10:00 b', '12:00 c']);
+  assert.deepEqual(sortMessages(false, unordered), ['12:00 c', '10:00 b', '09:00 a']);
+
+  // Widget Config editor's switch for this option, made 1.5x its default
+  // .we-widget-field size for clarity, per user request.
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  assert.match(
+    styles,
+    /#we-cfg-ascending\.form-check-input \{[\s\S]*?width: 57px;[\s\S]*?height: 30px;/
+  );
+});
