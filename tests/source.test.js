@@ -1214,7 +1214,7 @@ test('modern dark theme is portable and documented', () => {
 
   assert.match(theme, /--main-bg/);
   assert.match(theme, /--main-border-width: 1px/);
-  assert.match(theme, /--block-gap: 3px/);
+  assert.match(theme, /--block-gap: 0px/);
   assert.match(theme, /--border-color-inactive: rgba\(42, 94, 151, \.5\)/);
   assert.match(theme, /--border-color-active: rgba\(112, 160, 218, \.5\)/);
   assert.match(theme, /--border-color-block: rgba\(112, 160, 218, \.2\)/);
@@ -2399,4 +2399,63 @@ test('Domoticz log widget can limit the number of displayed lines (#105)', () =>
   // explicitly set (so an untouched log widget's saved block stays unchanged).
   assert.match(savewidgets, /if \(isset\(\$entry\['maxitems'\]\) && is_numeric\(\$entry\['maxitems'\]\)\) \{\s*\n\s*\$maxitems = \(int\)\$entry\['maxitems'\];\s*\n\s*if \(\$maxitems > 0 && \$maxitems <= 500\)/);
   assert.match(savewidgets, /if \(isset\(\$widget\['maxitems'\]\)\) \{\s*\n\s*\$props\['maxitems'\] = \$widget\['maxitems'\];/);
+});
+
+test('Device Editor list labels a Multi Device distinctly from a plain Custom device', () => {
+  // Both are specialType 'custom' internally (a Multi Device is just a
+  // Custom device whose 'values' custom field was filled in via the
+  // dedicated Multi Device popup), so the list previously labeled every one
+  // of them "Custom devices" - including actual Multi Devices, which was
+  // confusing since they have their own distinct add-menu entry and icon.
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+
+  assert.match(
+    deviceEditor,
+    /var isMultiDevice = isCustom &&\s*\n\s*special\.definition &&\s*\n\s*Array\.isArray\(special\.definition\.values\) &&\s*\n\s*special\.definition\.values\.length > 0;/
+  );
+  assert.match(
+    deviceEditor,
+    /var label = isTitle\s*\n\s*\? t\.title_block\s*\n\s*: \(isMultiDevice \? t\.multi_device : \(isCustom \? t\.custom_devices : \(isSlideButton \? t\.slide_button : t\.dummy_device\)\)\);/
+  );
+  assert.match(
+    deviceEditor,
+    /isSlideButton \? 'fa-sliders-h' : \(isMultiDevice \? 'fa-layer-group' : 'fa-cube'\)/
+  );
+});
+
+test('Device Config popup edits a Multi Device\'s values as friendly rows instead of raw JSON', () => {
+  // The generic Device Config popup (opened from Move mode's Settings button
+  // or the Device Editor list) showed an existing Multi Device's 'values'
+  // custom field as a single raw JSON text input, indistinguishable from a
+  // plain Custom device - unlike the dedicated Multi Device popup used at
+  // creation time, which offers a friendly idx/value row builder. Editing an
+  // existing Multi Device now gets that same row builder back.
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+
+  // The 'values' row is pulled out of the generic custom-fields list before
+  // rendering, so it never appears as a raw JSON text field.
+  assert.match(
+    deviceEditor,
+    /var multiDeviceValues = \(isCustom && valuesRowIndex > -1 &&\s*\n\s*Array\.isArray\(customRows\[valuesRowIndex\]\.value\) &&\s*\n\s*customRows\[valuesRowIndex\]\.value\.length\)\s*\n\s*\? customRows\[valuesRowIndex\]\.value\s*\n\s*: null;/
+  );
+  assert.match(deviceEditor, /if \(multiDeviceValues\) customRows\.splice\(valuesRowIndex, 1\);/);
+  assert.match(deviceEditor, /multiDeviceValues\.forEach\(function \(row\) \{ html \+= _multiDeviceRowHtml\(row\); \}\);/);
+
+  // Row add/remove reuses the same .md-value-row markup and idx/value
+  // validation as the creation popup, scoped to this popup's own instance.
+  assert.match(deviceEditor, /\$popup\.on\('click', '\.md-value-add', function \(\) \{/);
+  assert.match(deviceEditor, /\$popup\.on\('click', '\.md-value-remove', function \(\) \{/);
+
+  // OK collects the friendly rows back into a single 'values' custom field
+  // instead of reading a raw text input for it.
+  assert.match(
+    deviceEditor,
+    /storedRows\.push\(\{ field: 'values', setting: JSON\.stringify\(pendingValues\), value: pendingValues \}\);/
+  );
+  // A hand-typed 'values' field in the generic list is still rejected as a
+  // duplicate, since the dedicated row builder already owns that field.
+  assert.match(
+    deviceEditor,
+    /var customKeys = multiDeviceValues \? \{ values: true \} : \{\};/
+  );
 });

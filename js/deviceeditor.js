@@ -1871,6 +1871,7 @@ var DashticzDeviceEditor = (function () {
     var ck = orderKey.indexOf('device:') === 0 ? orderKey.slice(7) : '';
     var special = isSpecial ? managedSpecials[orderKey] : null;
     var isTitle = special && special.specialType === 'title';
+    var isCustom = special && special.specialType === 'custom';
     var options = isSpecial ? (special.options || {}) : (deviceOptions[ck] || {});
     var customRows = isSpecial ? special.customFields : deviceCustomFields[ck];
     if (!customRows || !customRows.length) {
@@ -1891,6 +1892,22 @@ var DashticzDeviceEditor = (function () {
     } else {
       customRows.unshift({ field: 'title', setting: currentTitle, value: currentTitle, system: true });
     }
+
+    // A Multi Device's 'values' custom field is JSON produced by the Multi
+    // Device popup (or hand-written in the same shape). Editing that as raw
+    // JSON text made this popup look like a plain device editor instead of
+    // the Multi Device it actually is, so give it back the same friendly
+    // idx/value row builder the create popup uses, instead of listing it
+    // among the generic custom fields.
+    var valuesRowIndex = customRows.findIndex(function (row) {
+      return String(row.field || '').toLowerCase() === 'values';
+    });
+    var multiDeviceValues = (isCustom && valuesRowIndex > -1 &&
+      Array.isArray(customRows[valuesRowIndex].value) &&
+      customRows[valuesRowIndex].value.length)
+      ? customRows[valuesRowIndex].value
+      : null;
+    if (multiDeviceValues) customRows.splice(valuesRowIndex, 1);
 
     $('#de-config-popup').remove();
     var html = '<div class="modal fade de-config-popup" id="de-config-popup" tabindex="-1" aria-hidden="true">';
@@ -1935,7 +1952,15 @@ var DashticzDeviceEditor = (function () {
     html += '<p class="form-text">' + _esc(t.custom_fields_help) + '</p>';
     html += '<div class="de-custom-fields">';
     customRows.forEach(function (row) { html += _customFieldRowHtml(row); });
-    html += '</div></div>';
+    html += '</div>';
+    if (multiDeviceValues) {
+      html += '<div class="de-multidevice-values mt-3"><label class="form-label">' + _esc(t.multi_device_values) + '</label>';
+      html += '<div class="form-text mb-2">' + _esc(t.multi_device_values_help) + '</div>';
+      html += '<div class="md-value-rows">';
+      multiDeviceValues.forEach(function (row) { html += _multiDeviceRowHtml(row); });
+      html += '</div></div>';
+    }
+    html += '</div>';
     html += '<div class="de-config-message" role="status"></div></div><div class="modal-footer">';
     html += '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' + _esc(t.cancel) + '</button>';
     html += '<button type="button" class="btn btn-primary" id="de-config-ok">' + _esc(t.ok) + '</button>';
@@ -1970,14 +1995,34 @@ var DashticzDeviceEditor = (function () {
     });
     $popup.on('change', '[data-option="icon"]', refreshIconFieldVisibility);
     $popup.on('change', '[data-option="dial"]', refreshDialHint);
+    function refreshMdValueButtons() {
+      var $rows = $popup.find('.md-value-row');
+      $rows.find('.md-value-add').addClass('d-none');
+      $rows.last().find('.md-value-add').removeClass('d-none');
+      $rows.find('.md-value-remove').prop('disabled', $rows.length <= 1);
+    }
+    $popup.on('click', '.md-value-add', function () {
+      $(this).closest('.md-value-row').after(_multiDeviceRowHtml());
+      refreshMdValueButtons();
+      $popup.find('.md-value-row').last().find('.md-value-value').trigger('focus');
+    });
+    $popup.on('click', '.md-value-remove', function () {
+      if ($(this).prop('disabled')) return;
+      $(this).closest('.md-value-row').remove();
+      refreshMdValueButtons();
+    });
     refreshCustomFieldButtons();
     refreshIconFieldVisibility();
     refreshDialHint();
+    if (multiDeviceValues) refreshMdValueButtons();
 
     $('#de-config-ok').on('click', function () {
       var updated = {};
       var pendingCustomFields = [];
-      var customKeys = {};
+      // 'values' is rendered as the dedicated row builder below, not as a
+      // generic custom field, so a hand-typed 'values' field name in the
+      // generic list must still be rejected as a duplicate.
+      var customKeys = multiDeviceValues ? { values: true } : {};
       var pendingTitle = isSpecial ? String(special.title || '') : String(deviceTitles[ck] || '');
       var pendingIconValue = null;
       var hasIconField = false;
@@ -2056,6 +2101,40 @@ var DashticzDeviceEditor = (function () {
       });
       if (!valid) return;
 
+      var pendingValues = null;
+      if (multiDeviceValues) {
+        pendingValues = [];
+        $popup.find('.md-value-row').each(function () {
+          if (!valid) return;
+          var rawRowIdx = $.trim(String($(this).find('.md-value-idx').val() || ''));
+          var rawValue = $.trim(String($(this).find('.md-value-value').val() || ''));
+          if (!rawRowIdx && !rawValue) return; // silently skip a fully empty row
+          if (!rawValue) {
+            valid = false;
+            $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_value_row);
+            $(this).find('.md-value-value').trigger('focus');
+            return;
+          }
+          var rowEntry = { value: rawValue };
+          if (rawRowIdx) {
+            var rowIdx = parseInt(rawRowIdx, 10);
+            if (!(rowIdx > 0 && String(rowIdx) === rawRowIdx)) {
+              valid = false;
+              $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_idx);
+              $(this).find('.md-value-idx').trigger('focus');
+              return;
+            }
+            rowEntry.idx = rowIdx;
+          }
+          pendingValues.push(rowEntry);
+        });
+        if (!valid) return;
+        if (!pendingValues.length) {
+          $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_value_row);
+          return;
+        }
+      }
+
       // Title visibility isn't part of `options` (see the checkbox render
       // above), so pull it out before the rest of `updated` gets merged in.
       var pendingShowTitle = updated.show_title !== false;
@@ -2066,6 +2145,9 @@ var DashticzDeviceEditor = (function () {
         storedRows.push({ field: 'icon', setting: pendingIconValue, value: pendingIconValue });
       }
       storedRows = storedRows.concat(pendingCustomFields);
+      if (pendingValues) {
+        storedRows.push({ field: 'values', setting: JSON.stringify(pendingValues), value: pendingValues });
+      }
 
       if (isSpecial) {
         special.title = pendingTitle;
@@ -2179,9 +2261,17 @@ var DashticzDeviceEditor = (function () {
     var isTitle = special.specialType === 'title';
     var isCustom = special.specialType === 'custom';
     var isSlideButton = special.specialType === 'slidebutton';
+    // A Multi Device is a Custom device whose 'values' custom field was filled
+    // in via the dedicated Multi Device popup (see openMultiDevice() above);
+    // label it accordingly instead of the generic "Custom devices" so it's not
+    // confused with a plain single-value Custom device in this list.
+    var isMultiDevice = isCustom &&
+      special.definition &&
+      Array.isArray(special.definition.values) &&
+      special.definition.values.length > 0;
     var label = isTitle
       ? t.title_block
-      : (isCustom ? t.custom_devices : (isSlideButton ? t.slide_button : t.dummy_device));
+      : (isMultiDevice ? t.multi_device : (isCustom ? t.custom_devices : (isSlideButton ? t.slide_button : t.dummy_device)));
     var detail = isTitle
       ? special.title
       : isSlideButton
@@ -2192,7 +2282,7 @@ var DashticzDeviceEditor = (function () {
       '" draggable="true">';
     html += '<span class="de-drag-handle" title="' + _esc(t.drag_to_reorder) + '"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
     html += '<span class="de-device-idx"><i class="fas ' +
-      (isTitle ? 'fa-heading' : (isSlideButton ? 'fa-sliders-h' : 'fa-cube')) + ' me-1" aria-hidden="true"></i>' +
+      (isTitle ? 'fa-heading' : (isSlideButton ? 'fa-sliders-h' : (isMultiDevice ? 'fa-layer-group' : 'fa-cube'))) + ' me-1" aria-hidden="true"></i>' +
       _esc(label) + '</span>';
     html += '<span class="de-device-identity de-special-identity">';
     html += '<span class="de-device-name">' + _esc(detail) + '</span></span>';
