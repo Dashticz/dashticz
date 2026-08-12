@@ -1601,19 +1601,24 @@ function configwriter_screen_key_prefix($screenNumber)
 
 /**
  * Block keys that dashticz.js's Dashticz._mount matches directly against a
- * registered component name (components['log'], components['streamplayer'])
- * rather than via a component's canHandle()/'type' property - see
- * js/dashticz.js and the 'radio'/'log'/'sunrise' catalog comments in
- * js/widgeteditor.js and js/savewidgets.php's $catalog. Renaming one of
- * these (e.g. to 'screen2_log' so a second screen stops sharing the block)
- * makes it invisible to every component's dispatch check, so the block
- * silently stops rendering at all - it must keep its literal key and be
- * shared read-only across screens instead, with only its grid/column
- * position cloned per screen.
+ * registered component name (components['streamplayer']) rather than via a
+ * component's canHandle()/'type' property - see js/dashticz.js and the
+ * 'radio'/'sunrise' catalog comments in js/widgeteditor.js and
+ * js/savewidgets.php's $catalog. Renaming one of these (e.g. to
+ * 'screen2_streamplayer' so a second screen stops sharing the block) makes
+ * it invisible to every component's dispatch check, so the block silently
+ * stops rendering at all - it must keep its literal key and be shared
+ * read-only across screens instead, with only its grid/column position
+ * cloned per screen.
+ *
+ * 'log' used to be exempted the same way, but _widgetBlockProps() (see
+ * savewidgets.php) now stamps an explicit type:'log' onto every log widget
+ * block, so a screen-prefixed key still dispatches correctly and a second
+ * screen's Domoticz log can get its own independent config.
  */
 function configwriter_is_component_dispatched_key($key)
 {
-    return in_array($key, ['log', 'streamplayer', 'sunrise'], true);
+    return in_array($key, ['streamplayer', 'sunrise'], true);
 }
 
 /**

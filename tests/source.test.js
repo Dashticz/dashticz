@@ -1970,35 +1970,35 @@ test('iFrame widget keeps a symmetric right margin once it has an icon', () => {
   assert.match(hasIconBody, /if \(scaling !== 1\) dtstatecss\.width = width;/);
 });
 
-test('log/streamplayer/sunrise stay a single shared block across screens instead of being cloned', () => {
-  // These three are dispatched by their literal block key matching a
+test('streamplayer/sunrise stay a single shared block across screens instead of being cloned', () => {
+  // These two are dispatched by their literal block key matching a
   // registered component name (Dashticz._mount in dashticz.js) rather than
-  // by a 'type' property or catalog id (see js/components/log.js and
-  // streamplayer.js, which have no canHandle at all). The "clone this block
-  // for a screen that doesn't already own it" logic (TAAK1, issue #98
-  // follow-up) used to rename them too - e.g. 'log' -> 'screen2_log' - which
-  // made the clone invisible to every component's dispatch check: the
-  // widget silently stopped rendering (no icon, no content) on the second
-  // screen, and the Screen Editor's per-tile overlay fell back to showing
-  // the plain drag icon instead of the config cog, since it couldn't
-  // resolve the renamed reference back to a widget/device kind either.
+  // by a 'type' property or catalog id (see js/components/streamplayer.js,
+  // which has no canHandle at all - sunrise is dispatched by DT_simpleblock
+  // via blocks.js's convertBlock() key-as-type derivation instead). The
+  // "clone this block for a screen that doesn't already own it" logic
+  // (TAAK1, issue #98 follow-up) used to rename them too - e.g.
+  // 'streamplayer' -> 'screen2_streamplayer' - which made the clone
+  // invisible to every component's dispatch check: the widget silently
+  // stopped rendering (no icon, no content) on the second screen, and the
+  // Screen Editor's per-tile overlay fell back to showing the plain drag
+  // icon instead of the config cog, since it couldn't resolve the renamed
+  // reference back to a widget/device kind either. 'log' used to be
+  // exempted the same way but no longer is - see the dedicated test below.
   const configWriter = fs.readFileSync(path.join(root, 'js/configwriter.php'), 'utf8');
-  const saveWidgets = fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8');
   const saveGridLayout = fs.readFileSync(path.join(root, 'js/savegridlayout.php'), 'utf8');
   const layoutEditor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
-  const logSource = fs.readFileSync(path.join(root, 'js/components/log.js'), 'utf8');
   const streamplayerSource = fs.readFileSync(
     path.join(root, 'js/components/streamplayer.js'),
     'utf8'
   );
 
-  assert.doesNotMatch(logSource, /canHandle/);
   assert.doesNotMatch(streamplayerSource, /canHandle/);
 
   assert.match(configWriter, /function configwriter_is_component_dispatched_key\(\$key\)/);
   assert.match(
     configWriter,
-    /return in_array\(\$key, \['log', 'streamplayer', 'sunrise'\], true\);/
+    /return in_array\(\$key, \['streamplayer', 'sunrise'\], true\);/
   );
   assert.match(
     configWriter,
@@ -2011,12 +2011,36 @@ test('log/streamplayer/sunrise stay a single shared block across screens instead
 
   // layouteditor.js's own widget-kind resolution (used to decide whether the
   // Screen Editor overlay shows a config cog or falls back to the generic
-  // drag icon) recognises these three only by their literal key - so if
+  // drag icon) recognises these by their literal key - so if
   // savewidgets.php/savegridlayout.php ever renamed one again, it would
   // still misclassify the clone as a plain, non-configurable grid item.
   assert.match(layoutEditor, /log: 'log',/);
   assert.match(layoutEditor, /sunrise: 'sunrise',/);
   assert.match(layoutEditor, /streamplayer: 'radio',/);
+});
+
+test('Domoticz log gets an independent config per screen instead of sharing one block (#log-per-screen)', () => {
+  // Placing the Domoticz log widget on two screens used to always share the
+  // single literal 'log' block key/definition, so editing it on one screen
+  // (e.g. Max lines) silently changed it on every other screen too. 'log' is
+  // no longer exempted from the screen-owned-key cloning logic that every
+  // other 'widget_'-prefixed widget already gets (TAAK1) - a second screen's
+  // log widget now gets a screen-prefixed key (e.g. 'screen2_log'). Dashticz
+  // dispatch only matches components['log'] by exact key though, so the
+  // cloned block must carry an explicit type:'log' (same convention as a
+  // hand-written blocks['weather'] = {type: 'weather'}) for _mount()'s
+  // object-based dispatch to still find DT_log.
+  const configWriter = fs.readFileSync(path.join(root, 'js/configwriter.php'), 'utf8');
+  const saveWidgets = fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8');
+
+  assert.doesNotMatch(
+    configWriter,
+    /return in_array\(\$key, \['log', 'streamplayer', 'sunrise'\], true\);/
+  );
+  assert.match(
+    saveWidgets,
+    /case 'log':\s*\n[\s\S]{0,600}?\$props\['type'\] = 'log';/
+  );
 });
 
 test('screen editor config icon resolves widget-typed blocks before their own idx looks like a device', () => {
