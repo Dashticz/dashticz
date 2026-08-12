@@ -1948,6 +1948,20 @@ var DashticzDeviceEditor = (function () {
         _esc(t.dial_hint_link) + '</a>';
       html += '</div>';
     }
+    if (isCustom) {
+      // A Custom/Multi device's main idx was previously only settable at
+      // creation time (idx is a protected/reserved custom field name, see
+      // protectedCustomDeviceProperties), leaving no way to correct it
+      // afterwards - e.g. after the underlying Domoticz device was recreated
+      // with a new idx. The tile then keeps showing the "Getting device N"
+      // placeholder forever, since the device data subscription for the old
+      // idx never resolves, which also means the icon/title never render
+      // (both are only painted once real device data arrives).
+      html += '<div class="mb-3"><label class="form-label" for="de-config-idx">' + _esc(t.multi_device_idx) + '</label>';
+      html += '<input type="number" min="1" step="1" class="form-control" id="de-config-idx" value="' +
+        _esc(special.idx || '') + '">';
+      html += '<div class="form-text">' + _esc(t.multi_device_idx_help) + '</div></div>';
+    }
     html += '<div class="de-custom-fields-section"><h6>' + _esc(t.custom_fields) + '</h6>';
     html += '<p class="form-text">' + _esc(t.custom_fields_help) + '</p>';
     html += '<div class="de-custom-fields">';
@@ -2027,6 +2041,18 @@ var DashticzDeviceEditor = (function () {
       var pendingIconValue = null;
       var hasIconField = false;
       var valid = true;
+      var pendingIdx = isCustom ? special.idx : null;
+      if (isCustom) {
+        var rawIdx = $.trim(String($('#de-config-idx').val() || ''));
+        var parsedIdx = parseInt(rawIdx, 10);
+        if (!(parsedIdx > 0 && String(parsedIdx) === rawIdx)) {
+          valid = false;
+          $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_idx);
+          $('#de-config-idx').trigger('focus');
+        } else {
+          pendingIdx = parsedIdx;
+        }
+      }
       $('#de-config-popup .de-config-option').each(function () {
         var option = String($(this).attr('data-option'));
         var checked = $(this).prop('checked');
@@ -2153,6 +2179,7 @@ var DashticzDeviceEditor = (function () {
         special.title = pendingTitle;
         special.customFields = storedRows;
         special.showTitle = pendingShowTitle;
+        if (isCustom) special.idx = pendingIdx;
         if (special.specialType === 'slidebutton') {
           storedRows.forEach(function (row) {
             if (_normaliseCustomFieldName(row.field) === 'slide') {
