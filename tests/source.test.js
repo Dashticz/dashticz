@@ -2273,3 +2273,59 @@ test('Domoticz log widget actually sorts, and respects the ascending option', ()
     /#we-cfg-ascending\.form-check-input \{[\s\S]*?width: 57px;[\s\S]*?height: 30px;/
   );
 });
+
+test('Camera widget no longer forces a fixed default height in grid mode (#100)', () => {
+  // defaultCfg.height (320) always merges into me.block.height (see
+  // getBlockConfig in js/dashticz.js), so a camera block with no explicit
+  // `height` in CONFIG.js was indistinguishable from one that set height:320
+  // by the time run() read me.block.height - the reported symptom (a tiny,
+  // wrongly-proportioned image, unrelated to whatever CONFIG.js actually
+  // contains). Checks the raw CONFIG.js block (global `blocks`) instead.
+  // Classic/column mode keeps the old fixed-height fallback unchanged;
+  // an explicit height (grid or classic) is always respected as before.
+  const cameraComponent = fs.readFileSync(path.join(root, 'js/components/camera.js'), 'utf8');
+  assert.match(
+    cameraComponent,
+    /var isGridItem = me\.\$mountPoint\.hasClass\('dt-grid-item'\);/
+  );
+  assert.match(
+    cameraComponent,
+    /var explicitHeight =\s*\n\s*typeof blocks !== 'undefined' &&\s*\n\s*blocks\[me\.key\] &&\s*\n\s*typeof blocks\[me\.key\]\.height !== 'undefined';/
+  );
+  assert.match(
+    cameraComponent,
+    /height:\s*\n\s*isGridItem && !explicitHeight\s*\n\s*\? false\s*\n\s*: cam\.block && cam\.block\.height \? cam\.block\.height : 300,/
+  );
+
+  // Empirically verified (headless browser, real grid screen): height:100%
+  // alone did not resolve against the flex/grid ancestor chain (.dt_block
+  // uses min-height, not height, and is a flex container) and silently
+  // collapsed to the image's intrinsic aspect ratio instead. position:
+  // absolute + inset, anchored to .dt_block (already position:relative),
+  // reliably filled the cell instead.
+  const cameraTpl = fs.readFileSync(path.join(root, 'tpl/camera_image.tpl'), 'utf8');
+  assert.match(
+    cameraTpl,
+    /\{\{#if height\}\}height:\{\{height\}\}px;\{\{else\}\}position:absolute;top:0;left:0;right:0;bottom:0;height:100%;\{\{\/if\}\}/
+  );
+});
+
+test('Swipe/slide-button navigation no longer permanently misses the active-screen update (#49)', () => {
+  // startSwiper() (js/main.js) creates `myswiper` asynchronously via a
+  // setTimeout(...,0) plus a dynamically loaded Swiper script, with
+  // unbounded timing. A single one-shot setTimeout(...,500) retry in
+  // screenswitcher.js's init() missed it whenever loading took longer (slow
+  // or uncached first load) and never checked again, so onSwiperChange was
+  // never attached for the rest of the session - both touch-swiping and
+  // slide-button clicks (goToScreen() -> myswiper.slideTo()) fire swiper's
+  // own events into the void, and the active-screen DOM state never
+  // updates. Poll instead (bounded, so a single-screen dashboard that never
+  // creates myswiper doesn't retry forever).
+  const screenswitcher = fs.readFileSync(path.join(root, 'js/screenswitcher.js'), 'utf8');
+  assert.doesNotMatch(screenswitcher, /setTimeout\(function \(\) \{\s*\n\s*if \(typeof myswiper/);
+  assert.match(screenswitcher, /function _attachSwiperListeners\(\)/);
+  assert.match(screenswitcher, /var waitForSwiper = setInterval\(function \(\) \{/);
+  assert.match(screenswitcher, /attempts >= maxAttempts/);
+  assert.match(screenswitcher, /clearInterval\(waitForSwiper\);/);
+  assert.match(screenswitcher, /_attachSwiperListeners\(\);\s*\n\s*\n\s*updateActive\(\);/);
+});
