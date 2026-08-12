@@ -19,9 +19,12 @@ var DT_log = {
     Domoticz.request(LOG_QUERY).then(function (logdata) {
       var $items = $(me.mountPoint + ' .items');
       if (me.popup) $(me.mountPoint + ' .log').addClass('popup'); //temporary. Move to generic handler
+      var ascending = me.block.ascending !== false;
       var res = logdata.result
         .sort(function (a, b) {
-          a.message < b.message ? 1 : a.message > b.message ? -1 : 0;
+          if (a.message < b.message) return ascending ? -1 : 1;
+          if (a.message > b.message) return ascending ? 1 : -1;
+          return 0;
         })
         .reduce(function (acc, el) {
           var dotPos = el.message.indexOf('.');
