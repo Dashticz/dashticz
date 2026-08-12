@@ -1,8 +1,9 @@
 {
-    "version": "3.41.6",
+    "version": "3.41.7",
     "branch": "beta",
-    "last_changes": "Domoticz log widget now defaults to an 8x8 grid cell instead of a full-width strip",
+    "last_changes": "Fix TimeGraph config icon opening the wrong device settings; add default icons for Multi Device and Custom Device",
     "changelog": {
+        "3.41.7": "Fix TimeGraph config icon opening the wrong device settings; add default icons for Multi Device and Custom Device",
         "3.41.6": "Domoticz log widget now defaults to an 8x8 grid cell instead of a full-width strip",
         "3.41.5": "Device Editor: add a Title checkbox to Device Config, covering plain devices, the separator/title bar (Tussenbalk), Slide button, Multi Device and Custom device",
         "3.41.4": "Fix clock widgets (Basic, Flip, Station, Hayman) ignoring the Title checkbox/hide_title setting",
