@@ -405,13 +405,20 @@ var DashticzDeviceEditor = (function () {
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       !/^device_\d+(?:_\d+)?$/.test(reference) &&
-      (!definition.type || definition.type === 'dial') &&
+      (!definition.type || definition.type === 'dial' || definition.type === reference) &&
       parseInt(definition.idx, 10) > 0
     ) {
       // A device with a hand-picked block key is a Custom device. Recognising
       // it before the normal IDX path preserves that key on later editor saves.
       // A Custom device rendered with the Dial checkbox still carries
       // type: 'dial', so it must not be excluded like other typed (widget) blocks.
+      // Once rendered, blocks.js's convertBlock() stamps block.type with the
+      // block's own storage key as a dispatch hint (see e.g. the 'sunrise'/'log'
+      // key-as-type convention), and dashticz.js writes that back into blocks[key].
+      // For a Custom/Multi Device that hint is never a real widget type, so
+      // definition.type === reference must not be treated as one either -
+      // otherwise the Settings button opens the wrong (shared-idx) device once
+      // the tile has rendered at least once (#115).
       kind = 'custom';
     }
     if (!kind) return null;
@@ -842,7 +849,7 @@ var DashticzDeviceEditor = (function () {
     } else if (widget.id === 'log') {
       if (typeof definition.scrolltimeout !== 'undefined') entry.scrolltimeout = definition.scrolltimeout;
       entry.ascending = definition.ascending !== false;
-      _copyDefinedWidgetProperties(entry, definition, ['aspectratio']);
+      _copyDefinedWidgetProperties(entry, definition, ['aspectratio', 'maxitems']);
       if (typeof definition.height !== 'undefined') entry.logHeight = definition.height;
     } else if (widget.id === 'owm') {
       _copyDefinedWidgetProperties(entry, definition, ['apikey', 'layout', 'city', 'country']);

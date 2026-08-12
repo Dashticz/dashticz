@@ -645,7 +645,7 @@ test('device and widget config editors share full widget config and preserve hid
   assert.match(deviceEditor, /if \(options\.dial === true\) entry\.type = 'dial'/);
   assert.match(
     deviceEditor,
-    /\(!definition\.type \|\| definition\.type === 'dial'\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
+    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === reference\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
   );
   assert.match(saveBlocks, /function _dashticz_editor_block_type\(\$entry\)/);
   assert.match(saveBlocks, /'type' => _dashticz_editor_block_type\(\$entry\)/);
@@ -2328,4 +2328,75 @@ test('Swipe/slide-button navigation no longer permanently misses the active-scre
   assert.match(screenswitcher, /attempts >= maxAttempts/);
   assert.match(screenswitcher, /clearInterval\(waitForSwiper\);/);
   assert.match(screenswitcher, /_attachSwiperListeners\(\);\s*\n\s*\n\s*updateActive\(\);/);
+});
+
+test('Move mode Settings button opens the Multi/Custom Device\'s own config, not the shared-idx device (#115)', () => {
+  // blocks.js's convertBlock() stamps block.type with the block's own storage
+  // key as a dispatch hint for widgets conventionally keyed by their type
+  // name (e.g. blocks['log'], blocks['sunrise'] - see the key-as-type tests
+  // above). dashticz.js's _mountSpecialBlock() then writes that converted
+  // block back into blocks[key] (`blocks[me.key] = blockdef`) once the tile
+  // has rendered. For a Custom/Multi Device - which has no real widget type,
+  // just a hand-picked key and an idx - that leaves blocks[key].type equal
+  // to the key itself after the first render, which used to make
+  // _specialFromReference's "no widget type" check fail. openConfig() then
+  // fell through to matching by idx alone, opening whichever OTHER managed
+  // device happens to share that idx instead of the Multi/Custom Device's
+  // own editor (reported as "the Settings button points to the wrong
+  // target" for Multi Devices and Custom Devices specifically).
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const dashticzSource = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  const blocksSource = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+
+  // The artifact this test guards against still exists upstream (by design,
+  // for the key-as-type widget dispatch convention) - convertBlock() still
+  // stamps block.type with the key, and _mountSpecialBlock() still writes it
+  // back into blocks[key].
+  assert.match(blocksSource, /block\.type = blocktype;/);
+  assert.match(dashticzSource, /blocks\[me\.key\] = blockdef;/);
+
+  // _specialFromReference must treat a type that merely echoes the block's
+  // own reference key as "no real widget type", same as it already treats
+  // the Dial checkbox's type:'dial'.
+  assert.match(
+    deviceEditor,
+    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === reference\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
+  );
+});
+
+test('Domoticz log widget can limit the number of displayed lines (#105)', () => {
+  const logSource = fs.readFileSync(path.join(root, 'js/components/log.js'), 'utf8');
+  const widgetEditor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const savewidgets = fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8');
+
+  // Untouched widgets must keep showing every line (maxitems 0 = unlimited),
+  // so this is purely additive and never changes existing dashboards.
+  assert.match(logSource, /maxitems: 0/);
+  assert.match(
+    logSource,
+    /if \(maxitems > 0\) \{\s*\n\s*sorted = ascending \? sorted\.slice\(-maxitems\) : sorted\.slice\(0, maxitems\);/
+  );
+
+  // Widget Config editor: dedicated field (not a raw custom_fields row), fed
+  // from and read back into widgetConfigs.log, matching the pattern already
+  // used for scrolltimeout/ascending.
+  assert.match(widgetEditor, /log: \{ scrolltimeout: true, ascending: true, aspectratio: true, maxitems: true \}/);
+  assert.match(widgetEditor, /_cfgField\('maxitems', llog\.log_maxitems \|\| 'Maximum lines'/);
+  assert.match(
+    widgetEditor,
+    /widgetConfigs\.log\.maxitems =\s*\n\s*typeof definition\.maxitems !== 'undefined' \? String\(definition\.maxitems\) : '';/
+  );
+  assert.match(widgetEditor, /entry\.maxitems = parseInt\(lgcfg\.maxitems, 10\) \|\| 0;/);
+
+  // Classic Device Editor's widget save-entry builder must carry it too.
+  assert.match(
+    deviceEditor,
+    /_copyDefinedWidgetProperties\(entry, definition, \['aspectratio', 'maxitems'\]\);/
+  );
+
+  // savewidgets.php: validated, bounded, and only written to CONFIG.js when
+  // explicitly set (so an untouched log widget's saved block stays unchanged).
+  assert.match(savewidgets, /if \(isset\(\$entry\['maxitems'\]\) && is_numeric\(\$entry\['maxitems'\]\)\) \{\s*\n\s*\$maxitems = \(int\)\$entry\['maxitems'\];\s*\n\s*if \(\$maxitems > 0 && \$maxitems <= 500\)/);
+  assert.match(savewidgets, /if \(isset\(\$widget\['maxitems'\]\)\) \{\s*\n\s*\$props\['maxitems'\] = \$widget\['maxitems'\];/);
 });
