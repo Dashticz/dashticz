@@ -10,7 +10,8 @@ var DT_log = {
     containerClass: 'containslog',
     level: 268435455,
     ascending: true,
-    scrolltimeout: 60
+    scrolltimeout: 60,
+    maxitems: 0
   },
   defaultContent: '<div class="items"></div>',
   refresh: function (me) {
@@ -20,12 +21,19 @@ var DT_log = {
       var $items = $(me.mountPoint + ' .items');
       if (me.popup) $(me.mountPoint + ' .log').addClass('popup'); //temporary. Move to generic handler
       var ascending = me.block.ascending !== false;
-      var res = logdata.result
+      var sorted = logdata.result
         .sort(function (a, b) {
           if (a.message < b.message) return ascending ? -1 : 1;
           if (a.message > b.message) return ascending ? 1 : -1;
           return 0;
-        })
+        });
+      var maxitems = parseInt(me.block.maxitems, 10);
+      // Keep the most recent `maxitems` lines regardless of sort direction:
+      // ascending puts the newest line last, descending puts it first.
+      if (maxitems > 0) {
+        sorted = ascending ? sorted.slice(-maxitems) : sorted.slice(0, maxitems);
+      }
+      var res = sorted
         .reduce(function (acc, el) {
           var dotPos = el.message.indexOf('.');
           var timeStamp = el.message.substring(0, dotPos + 4);

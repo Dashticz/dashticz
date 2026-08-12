@@ -377,7 +377,7 @@ var DashticzWidgetEditor = (function () {
     // tracks is edited through the dedicated station-list UI; without this it
     // would also show up as a raw JSON row in the generic Custom fields list.
     radio: { tracks: true },
-    log: { scrolltimeout: true, ascending: true, aspectratio: true },
+    log: { scrolltimeout: true, ascending: true, aspectratio: true, maxitems: true },
     owm: { apikey: true, layout: true, city: true, country: true },
     // idx is already a common managed property (main Domoticz device); values
     // is edited through the dedicated repeater UI below.
@@ -885,6 +885,7 @@ var DashticzWidgetEditor = (function () {
         aspectratio: '',
         scrolltimeout: '60',
         ascending: 1,
+        maxitems: '',
       },
       // OWM widget block properties. apikey/city/country stay empty by default
       // so DT_owmwidget falls back to the global config['owm_api']/owm_city/
@@ -1510,6 +1511,8 @@ var DashticzWidgetEditor = (function () {
     widgetConfigs.log.scrolltimeout =
       typeof definition.scrolltimeout !== 'undefined' ? String(definition.scrolltimeout) : '60';
     widgetConfigs.log.ascending = definition.ascending === false ? 0 : 1;
+    widgetConfigs.log.maxitems =
+      typeof definition.maxitems !== 'undefined' ? String(definition.maxitems) : '';
   }
 
   // Hydrate OWM widget settings (blocks['widget_owmwidget']) from an existing block definition.
@@ -2475,6 +2478,8 @@ var DashticzWidgetEditor = (function () {
         llog.log_scrolltimeout_help || 'Delay after manual scrolling until auto-scroll is activated again. Default: 60.');
       fields += _cfgField('ascending', llog.log_ascending || 'Newest log lines at the bottom',
         'checkbox', logcfg.ascending);
+      fields += _cfgField('maxitems', llog.log_maxitems || 'Maximum lines', 'text', logcfg.maxitems,
+        null, llog.log_maxitems_help || 'Limit the number of log lines shown, so no scrollbar is needed. Leave empty for no limit.');
       fields += _cfgField('height', llog.log_height || 'Height (px)', 'text', logcfg.height,
         null, llog.log_height_help || 'Optional fixed height. Leave empty to use the automatic height.');
       fields += _cfgField('aspectratio', llog.log_aspectratio || 'Aspect ratio', 'text', logcfg.aspectratio,
@@ -3418,6 +3423,11 @@ var DashticzWidgetEditor = (function () {
         entry.scrolltimeout = parseInt(lgcfg.scrolltimeout, 10);
       }
       entry.ascending = Number(lgcfg.ascending) !== 0;
+      // maxitems stays unset unless explicitly configured, so an untouched
+      // Domoticz log widget keeps showing every line (and its scrollbar).
+      if (lgcfg.maxitems && lgcfg.maxitems !== '') {
+        entry.maxitems = parseInt(lgcfg.maxitems, 10) || 0;
+      }
       // logHeight/aspectratio stay unset unless explicitly configured, so an
       // untouched Domoticz log widget keeps Dashticz's automatic sizing.
       if (lgcfg.height && lgcfg.height !== '') entry.logHeight = parseInt(lgcfg.height, 10) || 0;

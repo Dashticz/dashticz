@@ -726,6 +726,12 @@ foreach ($data['widgets'] as $entry) {
             }
         }
         $widget['ascending'] = !isset($entry['ascending']) || (bool)$entry['ascending'];
+        if (isset($entry['maxitems']) && is_numeric($entry['maxitems'])) {
+            $maxitems = (int)$entry['maxitems'];
+            if ($maxitems > 0 && $maxitems <= 500) {
+                $widget['maxitems'] = $maxitems;
+            }
+        }
         if (isset($entry['logHeight']) && is_numeric($entry['logHeight'])) {
             $logHeight = (int)$entry['logHeight'];
             if ($logHeight > 0 && $logHeight <= 5000) {
@@ -1139,6 +1145,9 @@ function _widgetBlockProps($widget)
                 $props['scrolltimeout'] = $widget['scrolltimeout'];
             }
             $props['ascending'] = !empty($widget['ascending']);
+            if (isset($widget['maxitems'])) {
+                $props['maxitems'] = $widget['maxitems'];
+            }
             if (isset($widget['logHeight'])) {
                 // Override the generic column-packing height with the
                 // block's own literal pixel height (same pattern as iframe).
