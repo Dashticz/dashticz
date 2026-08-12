@@ -1138,8 +1138,15 @@ function _widgetBlockProps($widget)
             $props['tracks'] = $widget['tracks'];
             break;
         case 'log':
-            // No 'type' here either: DT_log is dispatched by its block key
-            // ('log') matching the component name directly, like radio above.
+            // Unlike radio/streamplayer, a log widget's block key is no
+            // longer always the literal 'log' (see
+            // configwriter_is_component_dispatched_key()): a second screen's
+            // log widget gets a screen-prefixed key so screens stop sharing
+            // one config. Dashticz._mount only matches components['log'] by
+            // exact key, so an explicit type:'log' is required for the
+            // cloned key to still dispatch to DT_log (same convention as a
+            // hand-written blocks['weather'] = {type: 'weather'}).
+            $props['type'] = 'log';
             $props['title'] = 'Domoticz log';
             if (isset($widget['scrolltimeout'])) {
                 $props['scrolltimeout'] = $widget['scrolltimeout'];
