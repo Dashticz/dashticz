@@ -726,6 +726,12 @@ foreach ($data['widgets'] as $entry) {
             }
         }
         $widget['ascending'] = !isset($entry['ascending']) || (bool)$entry['ascending'];
+        if (isset($entry['maxitems']) && is_numeric($entry['maxitems'])) {
+            $maxitems = (int)$entry['maxitems'];
+            if ($maxitems > 0 && $maxitems <= 500) {
+                $widget['maxitems'] = $maxitems;
+            }
+        }
         if (isset($entry['logHeight']) && is_numeric($entry['logHeight'])) {
             $logHeight = (int)$entry['logHeight'];
             if ($logHeight > 0 && $logHeight <= 5000) {
@@ -1132,13 +1138,23 @@ function _widgetBlockProps($widget)
             $props['tracks'] = $widget['tracks'];
             break;
         case 'log':
-            // No 'type' here either: DT_log is dispatched by its block key
-            // ('log') matching the component name directly, like radio above.
+            // Unlike radio/streamplayer, a log widget's block key is no
+            // longer always the literal 'log' (see
+            // configwriter_is_component_dispatched_key()): a second screen's
+            // log widget gets a screen-prefixed key so screens stop sharing
+            // one config. Dashticz._mount only matches components['log'] by
+            // exact key, so an explicit type:'log' is required for the
+            // cloned key to still dispatch to DT_log (same convention as a
+            // hand-written blocks['weather'] = {type: 'weather'}).
+            $props['type'] = 'log';
             $props['title'] = 'Domoticz log';
             if (isset($widget['scrolltimeout'])) {
                 $props['scrolltimeout'] = $widget['scrolltimeout'];
             }
             $props['ascending'] = !empty($widget['ascending']);
+            if (isset($widget['maxitems'])) {
+                $props['maxitems'] = $widget['maxitems'];
+            }
             if (isset($widget['logHeight'])) {
                 // Override the generic column-packing height with the
                 // block's own literal pixel height (same pattern as iframe).

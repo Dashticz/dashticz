@@ -645,7 +645,7 @@ test('device and widget config editors share full widget config and preserve hid
   assert.match(deviceEditor, /if \(options\.dial === true\) entry\.type = 'dial'/);
   assert.match(
     deviceEditor,
-    /\(!definition\.type \|\| definition\.type === 'dial'\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
+    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === reference\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
   );
   assert.match(saveBlocks, /function _dashticz_editor_block_type\(\$entry\)/);
   assert.match(saveBlocks, /'type' => _dashticz_editor_block_type\(\$entry\)/);
@@ -1214,7 +1214,7 @@ test('modern dark theme is portable and documented', () => {
 
   assert.match(theme, /--main-bg/);
   assert.match(theme, /--main-border-width: 1px/);
-  assert.match(theme, /--block-gap: 3px/);
+  assert.match(theme, /--block-gap: 0px/);
   assert.match(theme, /--border-color-inactive: rgba\(42, 94, 151, \.5\)/);
   assert.match(theme, /--border-color-active: rgba\(112, 160, 218, \.5\)/);
   assert.match(theme, /--border-color-block: rgba\(112, 160, 218, \.2\)/);
@@ -1970,35 +1970,35 @@ test('iFrame widget keeps a symmetric right margin once it has an icon', () => {
   assert.match(hasIconBody, /if \(scaling !== 1\) dtstatecss\.width = width;/);
 });
 
-test('log/streamplayer/sunrise stay a single shared block across screens instead of being cloned', () => {
-  // These three are dispatched by their literal block key matching a
+test('streamplayer/sunrise stay a single shared block across screens instead of being cloned', () => {
+  // These two are dispatched by their literal block key matching a
   // registered component name (Dashticz._mount in dashticz.js) rather than
-  // by a 'type' property or catalog id (see js/components/log.js and
-  // streamplayer.js, which have no canHandle at all). The "clone this block
-  // for a screen that doesn't already own it" logic (TAAK1, issue #98
-  // follow-up) used to rename them too - e.g. 'log' -> 'screen2_log' - which
-  // made the clone invisible to every component's dispatch check: the
-  // widget silently stopped rendering (no icon, no content) on the second
-  // screen, and the Screen Editor's per-tile overlay fell back to showing
-  // the plain drag icon instead of the config cog, since it couldn't
-  // resolve the renamed reference back to a widget/device kind either.
+  // by a 'type' property or catalog id (see js/components/streamplayer.js,
+  // which has no canHandle at all - sunrise is dispatched by DT_simpleblock
+  // via blocks.js's convertBlock() key-as-type derivation instead). The
+  // "clone this block for a screen that doesn't already own it" logic
+  // (TAAK1, issue #98 follow-up) used to rename them too - e.g.
+  // 'streamplayer' -> 'screen2_streamplayer' - which made the clone
+  // invisible to every component's dispatch check: the widget silently
+  // stopped rendering (no icon, no content) on the second screen, and the
+  // Screen Editor's per-tile overlay fell back to showing the plain drag
+  // icon instead of the config cog, since it couldn't resolve the renamed
+  // reference back to a widget/device kind either. 'log' used to be
+  // exempted the same way but no longer is - see the dedicated test below.
   const configWriter = fs.readFileSync(path.join(root, 'js/configwriter.php'), 'utf8');
-  const saveWidgets = fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8');
   const saveGridLayout = fs.readFileSync(path.join(root, 'js/savegridlayout.php'), 'utf8');
   const layoutEditor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
-  const logSource = fs.readFileSync(path.join(root, 'js/components/log.js'), 'utf8');
   const streamplayerSource = fs.readFileSync(
     path.join(root, 'js/components/streamplayer.js'),
     'utf8'
   );
 
-  assert.doesNotMatch(logSource, /canHandle/);
   assert.doesNotMatch(streamplayerSource, /canHandle/);
 
   assert.match(configWriter, /function configwriter_is_component_dispatched_key\(\$key\)/);
   assert.match(
     configWriter,
-    /return in_array\(\$key, \['log', 'streamplayer', 'sunrise'\], true\);/
+    /return in_array\(\$key, \['streamplayer', 'sunrise'\], true\);/
   );
   assert.match(
     configWriter,
@@ -2011,12 +2011,36 @@ test('log/streamplayer/sunrise stay a single shared block across screens instead
 
   // layouteditor.js's own widget-kind resolution (used to decide whether the
   // Screen Editor overlay shows a config cog or falls back to the generic
-  // drag icon) recognises these three only by their literal key - so if
+  // drag icon) recognises these by their literal key - so if
   // savewidgets.php/savegridlayout.php ever renamed one again, it would
   // still misclassify the clone as a plain, non-configurable grid item.
   assert.match(layoutEditor, /log: 'log',/);
   assert.match(layoutEditor, /sunrise: 'sunrise',/);
   assert.match(layoutEditor, /streamplayer: 'radio',/);
+});
+
+test('Domoticz log gets an independent config per screen instead of sharing one block (#log-per-screen)', () => {
+  // Placing the Domoticz log widget on two screens used to always share the
+  // single literal 'log' block key/definition, so editing it on one screen
+  // (e.g. Max lines) silently changed it on every other screen too. 'log' is
+  // no longer exempted from the screen-owned-key cloning logic that every
+  // other 'widget_'-prefixed widget already gets (TAAK1) - a second screen's
+  // log widget now gets a screen-prefixed key (e.g. 'screen2_log'). Dashticz
+  // dispatch only matches components['log'] by exact key though, so the
+  // cloned block must carry an explicit type:'log' (same convention as a
+  // hand-written blocks['weather'] = {type: 'weather'}) for _mount()'s
+  // object-based dispatch to still find DT_log.
+  const configWriter = fs.readFileSync(path.join(root, 'js/configwriter.php'), 'utf8');
+  const saveWidgets = fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8');
+
+  assert.doesNotMatch(
+    configWriter,
+    /return in_array\(\$key, \['log', 'streamplayer', 'sunrise'\], true\);/
+  );
+  assert.match(
+    saveWidgets,
+    /case 'log':\s*\n[\s\S]{0,600}?\$props\['type'\] = 'log';/
+  );
 });
 
 test('screen editor config icon resolves widget-typed blocks before their own idx looks like a device', () => {
@@ -2272,4 +2296,212 @@ test('Domoticz log widget actually sorts, and respects the ascending option', ()
     styles,
     /#we-cfg-ascending\.form-check-input \{[\s\S]*?width: 57px;[\s\S]*?height: 30px;/
   );
+});
+
+test('Camera widget no longer forces a fixed default height in grid mode (#100)', () => {
+  // defaultCfg.height (320) always merges into me.block.height (see
+  // getBlockConfig in js/dashticz.js), so a camera block with no explicit
+  // `height` in CONFIG.js was indistinguishable from one that set height:320
+  // by the time run() read me.block.height - the reported symptom (a tiny,
+  // wrongly-proportioned image, unrelated to whatever CONFIG.js actually
+  // contains). Checks the raw CONFIG.js block (global `blocks`) instead.
+  // Classic/column mode keeps the old fixed-height fallback unchanged;
+  // an explicit height (grid or classic) is always respected as before.
+  const cameraComponent = fs.readFileSync(path.join(root, 'js/components/camera.js'), 'utf8');
+  assert.match(
+    cameraComponent,
+    /var isGridItem = me\.\$mountPoint\.hasClass\('dt-grid-item'\);/
+  );
+  assert.match(
+    cameraComponent,
+    /var explicitHeight =\s*\n\s*typeof blocks !== 'undefined' &&\s*\n\s*blocks\[me\.key\] &&\s*\n\s*typeof blocks\[me\.key\]\.height !== 'undefined';/
+  );
+  assert.match(
+    cameraComponent,
+    /height:\s*\n\s*isGridItem && !explicitHeight\s*\n\s*\? false\s*\n\s*: cam\.block && cam\.block\.height \? cam\.block\.height : 300,/
+  );
+
+  // Empirically verified (headless browser, real grid screen): height:100%
+  // alone did not resolve against the flex/grid ancestor chain (.dt_block
+  // uses min-height, not height, and is a flex container) and silently
+  // collapsed to the image's intrinsic aspect ratio instead. position:
+  // absolute + inset, anchored to .dt_block (already position:relative),
+  // reliably filled the cell instead.
+  const cameraTpl = fs.readFileSync(path.join(root, 'tpl/camera_image.tpl'), 'utf8');
+  assert.match(
+    cameraTpl,
+    /\{\{#if height\}\}height:\{\{height\}\}px;\{\{else\}\}position:absolute;top:0;left:0;right:0;bottom:0;height:100%;\{\{\/if\}\}/
+  );
+});
+
+test('Swipe/slide-button navigation no longer permanently misses the active-screen update (#49)', () => {
+  // startSwiper() (js/main.js) creates `myswiper` asynchronously via a
+  // setTimeout(...,0) plus a dynamically loaded Swiper script, with
+  // unbounded timing. A single one-shot setTimeout(...,500) retry in
+  // screenswitcher.js's init() missed it whenever loading took longer (slow
+  // or uncached first load) and never checked again, so onSwiperChange was
+  // never attached for the rest of the session - both touch-swiping and
+  // slide-button clicks (goToScreen() -> myswiper.slideTo()) fire swiper's
+  // own events into the void, and the active-screen DOM state never
+  // updates. Poll instead (bounded, so a single-screen dashboard that never
+  // creates myswiper doesn't retry forever).
+  const screenswitcher = fs.readFileSync(path.join(root, 'js/screenswitcher.js'), 'utf8');
+  assert.doesNotMatch(screenswitcher, /setTimeout\(function \(\) \{\s*\n\s*if \(typeof myswiper/);
+  assert.match(screenswitcher, /function _attachSwiperListeners\(\)/);
+  assert.match(screenswitcher, /var waitForSwiper = setInterval\(function \(\) \{/);
+  assert.match(screenswitcher, /attempts >= maxAttempts/);
+  assert.match(screenswitcher, /clearInterval\(waitForSwiper\);/);
+  assert.match(screenswitcher, /_attachSwiperListeners\(\);\s*\n\s*\n\s*updateActive\(\);/);
+});
+
+test('Move mode Settings button opens the Multi/Custom Device\'s own config, not the shared-idx device (#115)', () => {
+  // blocks.js's convertBlock() stamps block.type with the block's own storage
+  // key as a dispatch hint for widgets conventionally keyed by their type
+  // name (e.g. blocks['log'], blocks['sunrise'] - see the key-as-type tests
+  // above). dashticz.js's _mountSpecialBlock() then writes that converted
+  // block back into blocks[key] (`blocks[me.key] = blockdef`) once the tile
+  // has rendered. For a Custom/Multi Device - which has no real widget type,
+  // just a hand-picked key and an idx - that leaves blocks[key].type equal
+  // to the key itself after the first render, which used to make
+  // _specialFromReference's "no widget type" check fail. openConfig() then
+  // fell through to matching by idx alone, opening whichever OTHER managed
+  // device happens to share that idx instead of the Multi/Custom Device's
+  // own editor (reported as "the Settings button points to the wrong
+  // target" for Multi Devices and Custom Devices specifically).
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const dashticzSource = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  const blocksSource = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+
+  // The artifact this test guards against still exists upstream (by design,
+  // for the key-as-type widget dispatch convention) - convertBlock() still
+  // stamps block.type with the key, and _mountSpecialBlock() still writes it
+  // back into blocks[key].
+  assert.match(blocksSource, /block\.type = blocktype;/);
+  assert.match(dashticzSource, /blocks\[me\.key\] = blockdef;/);
+
+  // _specialFromReference must treat a type that merely echoes the block's
+  // own reference key as "no real widget type", same as it already treats
+  // the Dial checkbox's type:'dial'.
+  assert.match(
+    deviceEditor,
+    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === reference\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
+  );
+});
+
+test('Domoticz log widget can limit the number of displayed lines (#105)', () => {
+  const logSource = fs.readFileSync(path.join(root, 'js/components/log.js'), 'utf8');
+  const widgetEditor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const savewidgets = fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8');
+
+  // Untouched widgets must keep showing every line (maxitems 0 = unlimited),
+  // so this is purely additive and never changes existing dashboards.
+  assert.match(logSource, /maxitems: 0/);
+  assert.match(
+    logSource,
+    /if \(maxitems > 0\) \{\s*\n\s*sorted = ascending \? sorted\.slice\(-maxitems\) : sorted\.slice\(0, maxitems\);/
+  );
+
+  // Widget Config editor: dedicated field (not a raw custom_fields row), fed
+  // from and read back into widgetConfigs.log, matching the pattern already
+  // used for scrolltimeout/ascending.
+  assert.match(widgetEditor, /log: \{ scrolltimeout: true, ascending: true, aspectratio: true, maxitems: true \}/);
+  assert.match(widgetEditor, /_cfgField\('maxitems', llog\.log_maxitems \|\| 'Maximum lines'/);
+  assert.match(
+    widgetEditor,
+    /widgetConfigs\.log\.maxitems =\s*\n\s*typeof definition\.maxitems !== 'undefined' \? String\(definition\.maxitems\) : '';/
+  );
+  assert.match(widgetEditor, /entry\.maxitems = parseInt\(lgcfg\.maxitems, 10\) \|\| 0;/);
+
+  // Classic Device Editor's widget save-entry builder must carry it too.
+  assert.match(
+    deviceEditor,
+    /_copyDefinedWidgetProperties\(entry, definition, \['aspectratio', 'maxitems'\]\);/
+  );
+
+  // savewidgets.php: validated, bounded, and only written to CONFIG.js when
+  // explicitly set (so an untouched log widget's saved block stays unchanged).
+  assert.match(savewidgets, /if \(isset\(\$entry\['maxitems'\]\) && is_numeric\(\$entry\['maxitems'\]\)\) \{\s*\n\s*\$maxitems = \(int\)\$entry\['maxitems'\];\s*\n\s*if \(\$maxitems > 0 && \$maxitems <= 500\)/);
+  assert.match(savewidgets, /if \(isset\(\$widget\['maxitems'\]\)\) \{\s*\n\s*\$props\['maxitems'\] = \$widget\['maxitems'\];/);
+});
+
+test('Device Editor list labels a Multi Device distinctly from a plain Custom device', () => {
+  // Both are specialType 'custom' internally (a Multi Device is just a
+  // Custom device whose 'values' custom field was filled in via the
+  // dedicated Multi Device popup), so the list previously labeled every one
+  // of them "Custom devices" - including actual Multi Devices, which was
+  // confusing since they have their own distinct add-menu entry and icon.
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+
+  assert.match(
+    deviceEditor,
+    /var isMultiDevice = isCustom &&\s*\n\s*special\.definition &&\s*\n\s*Array\.isArray\(special\.definition\.values\) &&\s*\n\s*special\.definition\.values\.length > 0;/
+  );
+  assert.match(
+    deviceEditor,
+    /var label = isTitle\s*\n\s*\? t\.title_block\s*\n\s*: \(isMultiDevice \? t\.multi_device : \(isCustom \? t\.custom_devices : \(isSlideButton \? t\.slide_button : t\.dummy_device\)\)\);/
+  );
+  assert.match(
+    deviceEditor,
+    /isSlideButton \? 'fa-sliders-h' : \(isMultiDevice \? 'fa-layer-group' : 'fa-cube'\)/
+  );
+});
+
+test('Device Config popup edits a Multi Device\'s values as friendly rows instead of raw JSON', () => {
+  // The generic Device Config popup (opened from Move mode's Settings button
+  // or the Device Editor list) showed an existing Multi Device's 'values'
+  // custom field as a single raw JSON text input, indistinguishable from a
+  // plain Custom device - unlike the dedicated Multi Device popup used at
+  // creation time, which offers a friendly idx/value row builder. Editing an
+  // existing Multi Device now gets that same row builder back.
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+
+  // The 'values' row is pulled out of the generic custom-fields list before
+  // rendering, so it never appears as a raw JSON text field.
+  assert.match(
+    deviceEditor,
+    /var multiDeviceValues = \(isCustom && valuesRowIndex > -1 &&\s*\n\s*Array\.isArray\(customRows\[valuesRowIndex\]\.value\) &&\s*\n\s*customRows\[valuesRowIndex\]\.value\.length\)\s*\n\s*\? customRows\[valuesRowIndex\]\.value\s*\n\s*: null;/
+  );
+  assert.match(deviceEditor, /if \(multiDeviceValues\) customRows\.splice\(valuesRowIndex, 1\);/);
+  assert.match(deviceEditor, /multiDeviceValues\.forEach\(function \(row\) \{ html \+= _multiDeviceRowHtml\(row\); \}\);/);
+
+  // Row add/remove reuses the same .md-value-row markup and idx/value
+  // validation as the creation popup, scoped to this popup's own instance.
+  assert.match(deviceEditor, /\$popup\.on\('click', '\.md-value-add', function \(\) \{/);
+  assert.match(deviceEditor, /\$popup\.on\('click', '\.md-value-remove', function \(\) \{/);
+
+  // OK collects the friendly rows back into a single 'values' custom field
+  // instead of reading a raw text input for it.
+  assert.match(
+    deviceEditor,
+    /storedRows\.push\(\{ field: 'values', setting: JSON\.stringify\(pendingValues\), value: pendingValues \}\);/
+  );
+  // A hand-typed 'values' field in the generic list is still rejected as a
+  // duplicate, since the dedicated row builder already owns that field.
+  assert.match(
+    deviceEditor,
+    /var customKeys = multiDeviceValues \? \{ values: true \} : \{\};/
+  );
+});
+
+test('Device Config popup lets a Custom/Multi device\'s main idx be corrected after creation', () => {
+  // idx is a protected/reserved custom field name (see
+  // protectedCustomDeviceProperties), so a Custom or Multi device's main idx
+  // was only ever settable at creation time. If the underlying Domoticz
+  // device was later recreated with a different idx, there was no way to
+  // fix it: the tile stayed stuck on the "Getting device N" placeholder
+  // forever, since the device subscription for the stale idx never resolves
+  // - which also means the icon/title never render, since deviceUpdateHandler
+  // never runs far enough to paint them.
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+
+  assert.match(
+    deviceEditor,
+    /if \(isCustom\) \{[\s\S]{0,1200}?id="de-config-idx"/
+  );
+  assert.match(
+    deviceEditor,
+    /var pendingIdx = isCustom \? special\.idx : null;\s*\n\s*if \(isCustom\) \{\s*\n\s*var rawIdx = \$\.trim\(String\(\$\('#de-config-idx'\)\.val\(\) \|\| ''\)\);\s*\n\s*var parsedIdx = parseInt\(rawIdx, 10\);\s*\n\s*if \(!\(parsedIdx > 0 && String\(parsedIdx\) === rawIdx\)\) \{\s*\n\s*valid = false;/
+  );
+  assert.match(deviceEditor, /if \(isCustom\) special\.idx = pendingIdx;/);
 });
