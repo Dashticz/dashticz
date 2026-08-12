@@ -2459,3 +2459,25 @@ test('Device Config popup edits a Multi Device\'s values as friendly rows instea
     /var customKeys = multiDeviceValues \? \{ values: true \} : \{\};/
   );
 });
+
+test('Device Config popup lets a Custom/Multi device\'s main idx be corrected after creation', () => {
+  // idx is a protected/reserved custom field name (see
+  // protectedCustomDeviceProperties), so a Custom or Multi device's main idx
+  // was only ever settable at creation time. If the underlying Domoticz
+  // device was later recreated with a different idx, there was no way to
+  // fix it: the tile stayed stuck on the "Getting device N" placeholder
+  // forever, since the device subscription for the stale idx never resolves
+  // - which also means the icon/title never render, since deviceUpdateHandler
+  // never runs far enough to paint them.
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+
+  assert.match(
+    deviceEditor,
+    /if \(isCustom\) \{[\s\S]{0,1200}?id="de-config-idx"/
+  );
+  assert.match(
+    deviceEditor,
+    /var pendingIdx = isCustom \? special\.idx : null;\s*\n\s*if \(isCustom\) \{\s*\n\s*var rawIdx = \$\.trim\(String\(\$\('#de-config-idx'\)\.val\(\) \|\| ''\)\);\s*\n\s*var parsedIdx = parseInt\(rawIdx, 10\);\s*\n\s*if \(!\(parsedIdx > 0 && String\(parsedIdx\) === rawIdx\)\) \{\s*\n\s*valid = false;/
+  );
+  assert.match(deviceEditor, /if \(isCustom\) special\.idx = pendingIdx;/);
+});
