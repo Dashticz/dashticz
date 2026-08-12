@@ -6,6 +6,23 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.41.7 beta (12-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Screen Editor: the config-cog for a widget that also carries its own
+  ``idx`` (TimeGraph, whose catalog entry uses ``idx`` as the fallback
+  device for value rows without one) opened that idx's plain Device
+  Config popup instead of the widget's own Widget Config. ``_resolveBlock``
+  now checks whether a block is a recognised widget before falling
+  through to its idx-based device-detection fallback.
+- Multi Device and Custom Device now get a sensible default icon
+  (matching their own popup's header icon) when the user doesn't type one
+  in — previously the saved block carried no ``icon`` field at all, and
+  since these devices aren't a real, recognised Domoticz device type there
+  was nothing else to derive an icon from, so the tile rendered with none.
+
 v3.41.6 beta (11-8-2026)
 --------------------------
 

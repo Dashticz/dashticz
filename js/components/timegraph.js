@@ -29,6 +29,7 @@ var DT_timegraph = (function () {
     },
 
     defaultCfg: {
+      icon: 'fas fa-chart-line',
       duration: 5 * 60,
       xTicks: 10,
       xLabels: true,

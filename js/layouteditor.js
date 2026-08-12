@@ -739,6 +739,26 @@ var DashticzLayoutEditor = (function () {
       };
     }
 
+    // Check widget-ness before falling through to idx-based device
+    // detection below: widgets like TimeGraph legitimately carry their own
+    // idx property (the fallback IDX for value rows that don't set their
+    // own), which otherwise looks exactly like a plain device reference and
+    // routes the Screen Editor's config icon to that IDX's device settings
+    // instead of the widget's own (see savewidgets.php's $catalog for which
+    // widgets set 'type' - that's what _widgetIdFromDefinition matches on).
+    var earlyWidgetId = _widgetIdFromReference(ref, definition);
+    if (earlyWidgetId) {
+      return {
+        definition: definition,
+        kind: 'widget',
+        reference: String(ref),
+        widgetId: earlyWidgetId,
+        idx: null,
+        subidx: 0,
+        name: definition.title || String(ref),
+      };
+    }
+
     var rawIdx = typeof definition.idx !== 'undefined' ? definition.idx : ref;
     var groupMatch = String(rawIdx).match(/^s\d+$/);
     if (groupMatch) {
@@ -755,17 +775,7 @@ var DashticzLayoutEditor = (function () {
     }
     var match = String(rawIdx).match(/^(\d+)(?:_(\d+))?$/);
     if (!match || parseInt(match[1], 10) < 1) {
-      var widgetId = _widgetIdFromReference(ref, definition);
-      if (!widgetId || !definition) return null;
-      return {
-        definition: definition,
-        kind: 'widget',
-        reference: String(ref),
-        widgetId: widgetId,
-        idx: null,
-        subidx: 0,
-        name: definition.title || String(ref),
-      };
+      return null;
     }
 
     var idx = parseInt(match[1], 10);

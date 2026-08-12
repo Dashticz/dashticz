@@ -1477,7 +1477,11 @@ var DashticzDeviceEditor = (function () {
         showTitle: true,
           options: {
           icon: true,
-          iconValue: iconValue,
+          // Falls back to this popup's own modal-header icon when the user
+          // didn't type an explicit `icon` custom field above - otherwise a
+          // Custom Device (not a real recognised Domoticz device type) has
+          // no icon at all to derive from and renders with none.
+          iconValue: iconValue || 'fas fa-cube',
           hide_data: false,
           last_update: false,
           switch: false,
@@ -1640,7 +1644,10 @@ var DashticzDeviceEditor = (function () {
         showTitle: true,
         options: {
           icon: true,
-          iconValue: '',
+          // Multi Device has no icon input of its own; default to this
+          // popup's own modal-header icon so the block isn't left with no
+          // icon at all (it isn't a recognised Domoticz device type).
+          iconValue: 'fas fa-layer-group',
           hide_data: false,
           last_update: false,
           switch: false,
