@@ -612,13 +612,13 @@ test('device and widget config editors share full widget config and preserve hid
   assert.doesNotMatch(configWriter, /configwriter_normalise_text_alignment/);
   assert.doesNotMatch(configWriter, /\$props\['text_alignment'\]/);
 
-  // Device Config is Icon/Data/Update/Title, centered on one row (Icon and
+  // Device Config is Icon/Data/Update/Dial/Title, centered on one row (Icon and
   // Title only for a separator/title bar, which has no data value or
   // last-update of its own). Title visibility is a checkbox here too, not
   // just a typed Field/Setting row: it toggles hide_title exactly like the
   // Widget Config editor's Title checkbox does.
   assert.match(deviceEditor, /\? \['icon', 'show_title'\]/);
-  assert.match(deviceEditor, /: \['icon', 'hide_data', 'last_update', 'show_title'\]/);
+  assert.match(deviceEditor, /: \['icon', 'hide_data', 'last_update', 'dial', 'show_title'\]/);
   assert.match(deviceEditor, /configOptions\.forEach/);
   assert.match(deviceEditor, /if \(option === 'hide_data'\) \{\s*\n\s*checked = options\.hide_data !== true/);
   assert.match(deviceEditor, /isSpecial \? special\.showTitle !== false : deviceTitleVisible\[ck\] !== false/);
@@ -628,12 +628,28 @@ test('device and widget config editors share full widget config and preserve hid
   assert.match(deviceEditor, /deviceTitleVisible\[ck\] = pendingShowTitle/);
   assert.match(widgetEditor, /options\.hide_data !== true/);
   assert.match(widgetEditor, /hide_data: !\$cfgModal\.find\('\[data-block-option="hide_data"\]'\)\.is\(':checked'\)/);
-  assert.match(deviceEditor, /de-config-options-four/);
+  assert.match(deviceEditor, /de-config-options-five/);
   assert.match(styles, /\.de-config-options-three[\s\S]*grid-template-columns: repeat\(3/);
   assert.match(styles, /\.de-config-options-four[\s\S]*grid-template-columns: repeat\(4/);
+  assert.match(styles, /\.de-config-options-five[\s\S]*grid-template-columns: repeat\(5/);
   assert.match(styles, /\.de-config-options \.form-check-input[\s\S]*width: 32px;[\s\S]*height: 32px;/);
   assert.match(deviceEditor, /icon: true, iconValue: null, hide_data: false, last_update: false/);
   assert.match(styles, /\.we-block-option\.form-check-input[\s\S]*width: 32px;[\s\S]*height: 32px;/);
+
+  // Dial checkbox: writes type:'dial' into CONFIG.js (the only way to render a
+  // device as a dial block; a hand-typed 'type' custom field stays rejected as
+  // reserved), and round-trips back into the checkbox when re-opening Device Config.
+  assert.match(deviceEditor, /dial: definition\.type === 'dial'/);
+  assert.match(deviceEditor, /dial: configured\.type === 'dial'/);
+  assert.match(deviceEditor, /if \(specialOptions\.dial === true\) specialEntry\.type = 'dial'/);
+  assert.match(deviceEditor, /if \(options\.dial === true\) entry\.type = 'dial'/);
+  assert.match(
+    deviceEditor,
+    /\(!definition\.type \|\| definition\.type === 'dial'\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
+  );
+  assert.match(saveBlocks, /function _dashticz_editor_block_type\(\$entry\)/);
+  assert.match(saveBlocks, /'type' => _dashticz_editor_block_type\(\$entry\)/);
+  assert.match(configWriter, /if \(!empty\(\$device\['type'\]\)\) \{\s*\n\s*\$props\['type'\] = \(string\)\$device\['type'\];/);
 
   // Title is a system Field/Setting row and c is hidden while being preserved in the payload.
   assert.match(deviceEditor, /field: 'title'[\s\S]*system: true/);
@@ -2048,4 +2064,169 @@ test('Multi Device and Custom Device get a sensible default icon when none is co
   );
   assert.match(multiDevicePopup, /iconValue: 'fas fa-layer-group',/);
   assert.match(customDevicePopup, /iconValue: iconValue \|\| 'fas fa-cube',/);
+});
+
+test('Dial sizing falls back sanely instead of silently rendering oversized', () => {
+  // js/components/dial.js measures the block's real container width via
+  // outerWidth() when no explicit `height` is configured. On a block that
+  // isn't laid out yet (or sits on an inactive screen tab, display:none),
+  // that measurement is 0/undefined, so parseInt() yields NaN or 0 - never
+  // a negative number. The old `height < 0` guard could therefore never
+  // trigger the intended fallback, fontsize became NaN, the invalid inline
+  // style was dropped by the browser, and the component's own oversized
+  // CSS default (was 240px) won by default - "dial too large for the block".
+  const dialComponent = fs.readFileSync(path.join(root, 'js/components/dial.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  assert.doesNotMatch(dialComponent, /if \(height < 0\)/);
+  assert.match(dialComponent, /if \(!height \|\| isNaN\(height\)\)/);
+  assert.match(dialComponent, /me\.height = \(me\.height \|\| 100\) \* \(me\.block\.scale \|\| 1\);/);
+  assert.match(styles, /\.dt_content \.dial \{[\s\S]*?font-size: 100px;/);
+  assert.doesNotMatch(styles, /font-size: 240px;/);
+
+  // The already-existing (but previously undocumented) block-level `scale`
+  // multiplier is now documented as the supported way to fine-tune a dial's
+  // size manually; it isn't a reserved custom-field name so it already
+  // round-trips through the Device Editor's Custom fields with no code change.
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const dialDocs = fs.readFileSync(path.join(root, 'docs/blocks/specials/dial.rst'), 'utf8');
+  assert.match(dialDocs, /\* - scale/);
+  assert.doesNotMatch(deviceEditor, /protectedCustomDeviceProperties = \{[^}]*\bscale: true\b/s);
+});
+
+test('Dial checkbox shows an inline hint pointing to the dial docs and Custom fields', () => {
+  // Checking Dial only sets type:'dial'; every other dial parameter (color,
+  // min/max, subtype, values, ...) still has to be added by hand via Custom
+  // fields, so the popup surfaces a dismissable, non-blocking hint (an
+  // inline alert rather than a stacked modal, so toggling the checkbox a
+  // few times while experimenting doesn't spam the user with popups) that
+  // only appears while Dial is checked and links to the dial docs.
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  assert.match(deviceEditor, /class="alert alert-info de-dial-hint d-none"/);
+  assert.match(deviceEditor, /href="https:\/\/dashticz\.readthedocs\.io\/en\/beta\/blocks\/specials\/dial\.html"/);
+  assert.match(deviceEditor, /function refreshDialHint\(\) \{/);
+  assert.match(deviceEditor, /\$popup\.find\('\.de-dial-hint'\)\.toggleClass\('d-none', !enabled\)/);
+  assert.match(deviceEditor, /\$popup\.on\('change', '\[data-option="dial"\]', refreshDialHint\)/);
+  assert.match(deviceEditor, /dial_hint: '/);
+  assert.match(deviceEditor, /dial_hint_link: '/);
+});
+
+test('Dial face/content area fills more of the dial instead of leaving roomy margins', () => {
+  // .dial-container/.dial-center were 90%/85%, leaving a very visible gap
+  // before the ring. `.dial.fixed .dial-center` already ships at 95% with no
+  // clipping against the ring/needle (sized independently in fixed em
+  // fractions of .dial itself), so 93%/88% is a safe, still-conservative
+  // tightening of the default (non-fixed, non-hover) dial content area.
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  assert.match(styles, /\.dial \.dial-container \{[\s\S]*?width: 93%;[\s\S]*?height: 93%;/);
+  assert.match(styles, /\.dial \.dial-center \{[\s\S]*?width: 88%;[\s\S]*?height: 88%;/);
+});
+
+test('Dial keeps its rendered size in sync with live editor resize (grid or column)', () => {
+  // A previous attempt fixed "grid resize doesn't affect the dial" by having
+  // configwriter_build_grid_layout_section (js/configwriter.php) compute and
+  // persist a pixel `height` from the dragged row span for dial-typed grid
+  // blocks. That caused a regression: the persisted height made dial.js pick
+  // its circle diameter from HEIGHT alone (ignoring width), and any drift
+  // between that PHP-computed pixel value and the browser's own CSS Grid
+  // rendering showed up as scrollbars on `.dt-grid-item` (which has
+  // `overflow: auto`). Reverted; configwriter_build_grid_layout_section must
+  // no longer special-case dial blocks at all.
+  const configWriter = fs.readFileSync(path.join(root, 'js/configwriter.php'), 'utf8');
+  const gridSectionFn = configWriter.slice(
+    configWriter.indexOf('function configwriter_build_grid_layout_section('),
+    configWriter.indexOf('function configwriter_extract_block_lines(')
+  );
+  assert.doesNotMatch(gridSectionFn, /isDial/);
+  assert.doesNotMatch(gridSectionFn, /\['height'\]/);
+
+  // Instead, js/components/dial.js measures its own actual rendered box
+  // (both width AND height, not just width) and uses the SMALLER of the
+  // two - the dial is always a perfect circle (.dial is width:1em ==
+  // height:1em), so it can never be made to overflow either dimension of a
+  // non-square block. A ResizeObserver on that same container keeps this
+  // in sync live (grid drag, column-width drag, window resize, ...)
+  // instead of only updating after a save+reload, without re-running the
+  // full mount/device-subscribe pipeline (see the historically-disabled
+  // `resize()` function's own comment about not wanting to recreate and
+  // resubscribe on every resize).
+  const dialComponent = fs.readFileSync(path.join(root, 'js/components/dial.js'), 'utf8');
+  assert.match(dialComponent, /function _dialFitSize\(me\)/);
+  assert.match(dialComponent, /var measuredWidth = parseInt\(\$container\.outerWidth\(\)\);/);
+  assert.match(dialComponent, /var measuredHeight = parseInt\(\$container\.outerHeight\(\)\);/);
+  assert.match(dialComponent, /Math\.min\.apply\(Math, candidates\)/);
+  assert.match(dialComponent, /typeof ResizeObserver !== 'undefined'/);
+  assert.match(dialComponent, /me\.dialResizeObserver = new ResizeObserver/);
+  assert.match(dialComponent, /me\.dialResizeObserver\.observe\(/);
+  assert.match(dialComponent, /me\.dialResizeObserver\.disconnect\(\);/);
+  assert.match(dialComponent, /me\.dialResizeObserver = null;/);
+});
+
+test('Dial live-resize does not inflate the outer block wrapper font-size', () => {
+  // getContainer() (js/dashticz.js) gives the OUTER .dt_block wrapper the
+  // component name as a class too - for this component that is literally
+  // "dial" (DT_dial.name === 'dial'), so a bare '.dial' selector matches
+  // that outer wrapper as well as the template's own inner circle. Patching
+  // font-size via such a selector inflated the wrapper's (and everything
+  // em-sized inside it) font-size, overflowing the block sideways.
+  // '.dt_content .dial' mirrors the scoping the dial's own CSS already uses
+  // (see the base `.dt_content .dial { ... }` rule) and only reaches the
+  // inner circle.
+  const dialComponent = fs.readFileSync(path.join(root, 'js/components/dial.js'), 'utf8');
+  assert.match(dialComponent, /name: 'dial',/);
+  assert.match(
+    dialComponent,
+    /\$\(me\.mountPoint \+ ' \.dt_content \.dial'\)\.css\('font-size', me\.fontsize \+ 'px'\)/
+  );
+  assert.match(dialComponent, /\$\(me\.mountPoint \+ ' \.dt_content \.dial-needle'\)\.css\(\{/);
+  assert.doesNotMatch(dialComponent, /\$\(me\.mountPoint \+ ' \.dial'\)\.css\('font-size'/);
+
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  assert.match(dashticz, /me\.name \+\s*\n?\s*'\s*dt_block/);
+});
+
+test('Dial ring/slice indicator is clipped to the dial instead of inflating ancestor scrollWidth', () => {
+  // .slice is rotated (transform: rotate(-140deg)), so its axis-aligned
+  // bounding box is wider/taller than its own 1em x 1em size. The old
+  // deprecated `clip: rect()` used to shape it into a pie-slice only clips
+  // painting, not layout - the full rotated box still counted toward the
+  // scrollable overflow of every ancestor, which surfaced as visible
+  // scrollbars on grid screens (.dt-grid-item has overflow: auto). A
+  // dedicated .dial-ring-clip wrapper (not .dial itself, which would also
+  // clip .dial-center's intentional glow/flash box-shadow that extends past
+  // .dial's own edge) contains just the slice.
+  const dialTpl = fs.readFileSync(path.join(root, 'tpl/dial.tpl'), 'utf8');
+  assert.match(
+    dialTpl,
+    /<div class="dial-ring-clip">\s*\n\s*<div class="slice /
+  );
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  assert.match(
+    styles,
+    /\.dial-ring-clip \{[\s\S]*?width: 1em;[\s\S]*?height: 1em;[\s\S]*?overflow: hidden;[\s\S]*?border-radius: 50%;/
+  );
+});
+
+test('Dial needle is clipped to the dial instead of leaking a small overflow at every angle', () => {
+  // .dial-needle::before/::after draw the needle via the CSS border-triangle
+  // trick (deliberately a bit longer than .dial's own radius so the tip
+  // reaches the ring), further offset by `top: -53%`. That box was never
+  // clipped by any ancestor (.draggable/.dial/.dt_content are all
+  // overflow:visible), so it contributed a small but constant amount
+  // (confirmed empirically: ~6px on a ~200px dial) to the scrollable
+  // overflow of .dt-grid-item regardless of the needle's rotation angle -
+  // unlike .slice's rotation-dependent overflow, this reproduced at every
+  // device value, not just specific angles. Wrapped in .dial-needle-clip,
+  // sized/centered like .dial-ring-clip but centered via percentage since
+  // this wrapper's parent is .dial-container (a smaller, inset box), not
+  // .dial itself.
+  const dialTpl = fs.readFileSync(path.join(root, 'tpl/dial.tpl'), 'utf8');
+  assert.match(
+    dialTpl,
+    /<div class="dial-needle-clip">\s*\n\s*<div class="draggable">/
+  );
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  assert.match(
+    styles,
+    /\.dial-needle-clip \{[\s\S]*?width: 1em;[\s\S]*?height: 1em;[\s\S]*?top: 50%;[\s\S]*?left: 50%;[\s\S]*?transform: translate\(-50%, -50%\);[\s\S]*?overflow: hidden;[\s\S]*?border-radius: 50%;/
+  );
 });

@@ -6,6 +6,73 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.42.0 beta (12-8-2026)
+--------------------------
+
+* **Enhancements**
+
+- Device Editor: the Device Config popup now has a **Dial** checkbox next to
+  Icon/Data/Updated, writing ``type: 'dial'`` to CONFIG.js so the block
+  renders using the :ref:`dial <dial>` block instead of the default one.
+  Applies to plain devices, Domoticz groups/scenes, dummy blocks and Custom
+  devices — all of which share this same popup. ``type`` itself stays a
+  rejected/reserved name in the Custom fields section; the checkbox is the
+  only way to set it. Dial-specific parameters (``color``, ``min``, ``max``,
+  ``subtype``, ``values``, etc.) remain configurable via Custom fields.
+- Checking the **Dial** checkbox now shows an inline hint explaining that
+  the remaining dial options are set manually via Custom fields, with a
+  link to the dial documentation.
+- Documented the dial block's previously-undocumented ``scale`` parameter
+  (a multiplier on the dial's automatically measured/configured size) as
+  the supported way to manually fine-tune a dial that still renders too
+  large/small for its block. It isn't a reserved Custom field name, so it
+  already works via the Device Editor's Custom fields with no code change.
+
+* **Fixes**
+
+- Dial blocks could render far larger than their block (up to a hardcoded
+  240px font-size) whenever the automatic size measurement failed — for
+  example on a block sitting on a screen that isn't the active tab at mount
+  time, where the container is ``display:none`` and has zero measured
+  width. The dead ``height < 0`` guard in ``js/components/dial.js`` never
+  actually caught this (a failed measurement yields ``NaN``/``0``, never a
+  negative number), so ``fontsize`` became ``NaN``, the resulting inline
+  style was invalid and got dropped, and the oversized CSS default won.
+  The guard now correctly detects a failed measurement and falls back to a
+  sane default (also lowered the CSS backstop default from 240px to 100px).
+- The dial's default face/content area (``.dial-container``/``.dial-center``)
+  left a visibly roomy margin before the outer ring. Tightened from 90%/85%
+  to 93%/88% — still comfortably inside the 95% already used for ``fixed``
+  dials, so the ring, needle and numbers keep their existing clearance.
+- Dial sizing now measures its actual rendered block (both width **and**
+  height, using the smaller of the two — the dial is always a perfect
+  circle) via a live ``ResizeObserver``, instead of only re-measuring width
+  at mount time. Resizing a dial's block in the editor (grid row/column span
+  or classic column width) now updates the dial live, matching what you see
+  right after saving instead of only after a reload.
+- Fixed two further sources of scrollbars around a dial block on grid
+  screens (``.dt-grid-item`` scrolls on overflow):
+
+  - ``getContainer()`` gives a block's *outer* wrapper the component name as
+    a CSS class too, which for the dial component is literally ``dial`` — so
+    the live-resize code's ``.dial`` selector also matched that outer
+    wrapper (not just the template's own inner circle) and inflated its
+    (and everything em-sized inside it) font-size, overflowing the block
+    sideways. Scoped to ``.dt_content .dial``, matching the dial's own CSS.
+  - The colored ring/slice indicator is rotated (``transform:
+    rotate(-140deg)``), so its axis-aligned bounding box is wider/taller
+    than its own size; the old ``clip: rect()`` used to shape it into a
+    pie-slice only clips *painting*, not layout, so the full rotated box
+    still counted toward the scrollable area of every ancestor. Wrapped in
+    a new ``.dial-ring-clip`` container (not ``.dial`` itself, which would
+    also clip the dial's own intentional glow/flash effect).
+  - The needle (drawn via a CSS border-triangle, deliberately a little
+    longer than ``.dial``'s own radius so its tip reaches the ring) was
+    never clipped by anything either, contributing a small but constant
+    overflow regardless of the needle's rotation angle/device value —
+    confirmed with a dimmer dial swept across its full 0–100% range.
+    Wrapped in a new ``.dial-needle-clip`` container.
+
 v3.41.7 beta (12-8-2026)
 --------------------------
 
