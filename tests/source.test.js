@@ -2265,11 +2265,11 @@ test('Domoticz log widget actually sorts, and respects the ascending option', ()
   assert.deepEqual(sortMessages(true, unordered), ['09:00 a', '10:00 b', '12:00 c']);
   assert.deepEqual(sortMessages(false, unordered), ['12:00 c', '10:00 b', '09:00 a']);
 
-  // Widget Config editor's switch for this option, made 2x its default
+  // Widget Config editor's switch for this option, made 1.5x its default
   // .we-widget-field size for clarity, per user request.
   const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
   assert.match(
     styles,
-    /#we-cfg-ascending\.form-check-input \{[\s\S]*?width: 76px;[\s\S]*?height: 40px;/
+    /#we-cfg-ascending\.form-check-input \{[\s\S]*?width: 57px;[\s\S]*?height: 30px;/
   );
 });
