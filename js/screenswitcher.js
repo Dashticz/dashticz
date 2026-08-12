@@ -533,23 +533,43 @@ var DashticzScreenSwitcher = (function () {
       renderInto($(this));
     });
 
+    _attachSwiperListeners();
+
+    updateActive();
+  }
+
+  /* startSwiper() (js/main.js) creates `myswiper` asynchronously - it waits
+   * on a setTimeout(...,0) plus a dynamically loaded Swiper script, so its
+   * timing is not bounded. A single delayed retry (previously a one-shot
+   * setTimeout(...,500)) missed it whenever that took longer - e.g. on a
+   * slow/uncached first load - and, since it never checked again, swipe and
+   * slide-button navigation would silently stop updating the active screen
+   * for the rest of the session (both call into myswiper, whose events
+   * onSwiperChange was never attached to listen for). Poll instead, bounded
+   * so a single-screen dashboard (myswiper never created) doesn't retry
+   * forever. */
+  function _attachSwiperListeners() {
     if (typeof myswiper !== 'undefined' && myswiper) {
       myswiper.off('slideChange', onSwiperChange);
       myswiper.off('transitionEnd', onSwiperChange);
       myswiper.on('slideChange', onSwiperChange);
       myswiper.on('transitionEnd', onSwiperChange);
-    } else {
-      setTimeout(function () {
-        if (typeof myswiper !== 'undefined' && myswiper) {
-          myswiper.off('slideChange', onSwiperChange);
-          myswiper.off('transitionEnd', onSwiperChange);
-          myswiper.on('slideChange', onSwiperChange);
-          myswiper.on('transitionEnd', onSwiperChange);
-        }
-      }, 500);
+      return;
     }
-
-    updateActive();
+    var attempts = 0;
+    var maxAttempts = 100; /* ~10s at 100ms intervals */
+    var waitForSwiper = setInterval(function () {
+      attempts++;
+      if (typeof myswiper !== 'undefined' && myswiper) {
+        clearInterval(waitForSwiper);
+        myswiper.off('slideChange', onSwiperChange);
+        myswiper.off('transitionEnd', onSwiperChange);
+        myswiper.on('slideChange', onSwiperChange);
+        myswiper.on('transitionEnd', onSwiperChange);
+      } else if (attempts >= maxAttempts) {
+        clearInterval(waitForSwiper);
+      }
+    }, 100);
   }
 
   return {
