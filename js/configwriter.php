@@ -42,7 +42,7 @@ function configwriter_write_config($configPath, $customDir, $config)
     if (!file_exists($configPath) && !is_writable($customDir)) {
         return 'The directory "custom/" is not writable by the web server'
             . dashticz_owner_info($customDir)
-            . '. From the Dashticz directory, run: sh tools/install-dashticz-write-access';
+            . '. From the Dashticz directory, run: sh tools/install-dashticz-write-access.sh';
     }
 
     if (file_exists($configPath) && !is_writable($configPath)) {
@@ -50,7 +50,7 @@ function configwriter_write_config($configPath, $customDir, $config)
         if (!is_writable($configPath)) {
             return 'CONFIG.js is not writable'
                 . dashticz_owner_info($configPath)
-                . '. From the Dashticz directory, run: sh tools/install-dashticz-write-access';
+                . '. From the Dashticz directory, run: sh tools/install-dashticz-write-access.sh';
         }
     }
 

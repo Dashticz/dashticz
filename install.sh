@@ -116,7 +116,7 @@ chmod 0644 "$INSTALL_DIR/custom/CONFIG.js"
 
 echo
 echo "Configuring write access for the web-server user..."
-WRITE_ACCESS="$INSTALL_DIR/tools/install-dashticz-write-access"
+WRITE_ACCESS="$INSTALL_DIR/tools/install-dashticz-write-access.sh"
 if [ -f "$WRITE_ACCESS" ]; then
     # Grants custom/ + .git write access so Settings → Update works.
     # Soft-fail: web server may not be installed yet on a fresh host.
