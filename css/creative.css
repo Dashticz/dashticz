@@ -633,26 +633,44 @@ next css sets the default height of the frame popup
   background: rgba(0, 0, 0, 0.25);
 }
 
-.config-mode-btn {
+.config-mode-icon-btn {
   border: 0;
   margin: 0;
   padding: 4px 10px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.75);
-  font-size: 12px;
-  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
   line-height: 1.2;
   cursor: pointer;
 }
 
-.config-mode-btn.active {
-  background: rgba(255, 255, 255, 0.92);
-  color: #212529;
-}
-
-.config-mode-btn:focus-visible {
+.config-mode-icon-btn:focus-visible {
   outline: 2px solid #fff;
   outline-offset: -2px;
+}
+
+.config-mode-tiles {
+  grid-template-columns: repeat(2, minmax(140px, 1fr));
+}
+
+.config-mode-tile small {
+  font-size: 12px;
+  font-weight: 400;
+  color: #495057;
+  text-align: center;
+}
+
+.config-mode-tile.active {
+  background: #d9f2d9;
+  border-color: #b7dfb7;
+  color: #2f5f2f;
+}
+
+.config-mode-tile.active i {
+  color: #2f5f2f;
+}
+
+.config-mode-tile.active small {
+  color: #2f5f2f;
 }
 
 .settings-footer {

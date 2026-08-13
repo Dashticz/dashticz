@@ -113,15 +113,15 @@ test.describe('optional screen grid layout', () => {
 
     await page.goto(dashboardUrl);
     await waitForDashboard(page);
+    await page.locator('.screen1 .configmodeicon').first().click();
+    await expect(page.locator('#configmodepopup')).toBeVisible();
     await expect(
-      page
-        .locator('.screen1 .config-mode-btn[data-mode="custom"]')
-        .first()
+      page.locator('#configmodepopup .config-mode-btn[data-mode="custom"]')
     ).toHaveClass(/active/);
     await page
-      .locator('.screen1 .config-mode-btn[data-mode="wizard"]')
-      .first()
+      .locator('#configmodepopup .config-mode-btn[data-mode="wizard"]')
       .click();
+    await expect(page.locator('#configmodepopup')).toHaveCount(0);
     await expect(page.locator('#configmodewarningpopup')).toBeVisible();
     await expect(page.locator('#config-mode-warning-message')).toContainText(
       'Wizard'
@@ -153,11 +153,13 @@ test.describe('optional screen grid layout', () => {
 
     await page.goto(dashboardUrl);
     await waitForDashboard(page);
-    const customButton = page
-      .locator('.screen1 .config-mode-btn[data-mode="custom"]')
-      .first();
+    const modeIcon = page.locator('.screen1 .configmodeicon').first();
+    const customTile = page.locator(
+      '#configmodepopup .config-mode-btn[data-mode="custom"]'
+    );
 
-    await customButton.click();
+    await modeIcon.click();
+    await customTile.click();
     await expect(page.locator('#configmodewarningpopup')).toBeVisible();
     await expect(page.locator('#config-mode-warning-message')).toContainText(
       'Custom'
@@ -168,7 +170,8 @@ test.describe('optional screen grid layout', () => {
     await expect(page.locator('#configmodewarningpopup')).toHaveCount(0);
     expect(modeRequest).toBeNull();
 
-    await customButton.click();
+    await modeIcon.click();
+    await customTile.click();
     await expect(page.locator('#configmodewarningpopup')).toBeVisible();
     await page.locator('#config-mode-warning-continue').click();
     await expect.poll(() => modeRequest).toEqual({ config_mode: 'custom' });
@@ -211,9 +214,9 @@ config['auto_positioning'] = 0;
 
     await page.goto(dashboardUrl);
     await waitForDashboard(page);
+    await page.locator('.screen1 .configmodeicon').first().click();
     await page
-      .locator('.screen1 .config-mode-btn[data-mode="wizard"]')
-      .first()
+      .locator('#configmodepopup .config-mode-btn[data-mode="wizard"]')
       .click();
     await expect(page.locator('#configmodewarningpopup')).toBeVisible();
     await page.locator('#config-mode-warning-continue').click();

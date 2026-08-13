@@ -573,6 +573,11 @@ test('screen editor add menu exposes device, widget, custom-device and separator
     assert.ok(translations.settings.config_mode.confirm_custom, `${locale} Custom warning translation`);
     assert.ok(translations.settings.config_mode.cancel, `${locale} warning cancel translation`);
     assert.ok(translations.settings.config_mode.continue, `${locale} warning continue translation`);
+    assert.ok(translations.settings.config_mode.picker_title, `${locale} mode-picker title translation`);
+    assert.ok(translations.settings.config_mode.custom_mode, `${locale} Custom mode tile title translation`);
+    assert.ok(translations.settings.config_mode.wizard_mode, `${locale} Wizard mode tile title translation`);
+    assert.ok(translations.settings.config_mode.custom_mode_desc, `${locale} Custom mode tile description translation`);
+    assert.ok(translations.settings.config_mode.wizard_mode_desc, `${locale} Wizard mode tile description translation`);
     assert.ok(translations.settings.theme.custom_css_active, `${locale} custom-css status translation`);
     assert.ok(translations.settings.layouteditor.configure_device, `${locale} configure-device translation`);
     assert.ok(translations.settings.layouteditor.configure_widget, `${locale} configure-widget translation`);
@@ -775,9 +780,12 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(simpleBlock, /fas fa-wand-magic-sparkles/);
   assert.match(simpleBlock, /action: 'widgets'/);
   assert.match(simpleBlock, /DT_function\.loadDTScript\('js\/widgeteditor\.js'\)/);
+  assert.match(simpleBlock, /configmodeicon/);
   assert.match(simpleBlock, /config-mode-btn/);
-  assert.match(simpleBlock, /data-mode="custom"/);
-  assert.match(simpleBlock, /data-mode="wizard"/);
+  assert.match(simpleBlock, /config-mode-tile/);
+  assert.match(simpleBlock, /mode: 'custom'/);
+  assert.match(simpleBlock, /mode: 'wizard'/);
+  assert.match(simpleBlock, /data-mode="' \+ tile\.mode \+ '"/);
   assert.match(settings, /widgetSettingTiles/);
   assert.match(settings, /isCustomConfigMode/);
   assert.match(settings, /setConfigMode/);

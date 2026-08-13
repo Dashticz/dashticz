@@ -176,27 +176,18 @@ var DT_simpleblock = (function () {
       'Configuration mode';
     var editorLabels =
       (language.settings && language.settings.widgeteditor) || {};
+    var currentModeLabel = customMode ? modeLabelCustom : modeLabelWizard;
+    var currentModeIcon = customMode ? 'fa-sliders-h' : 'fa-hat-wizard';
     var content =
       '<div class="col-xs-' +
       me.block.width +
       ' text-right topbar-settings-wrap">';
     content +=
-      '<span class="settings config-mode-switch" role="group" aria-label="' +
-      modeAria +
-      '">' +
-      '<button type="button" class="config-mode-btn' +
-      (customMode ? ' active' : '') +
-      '" data-mode="custom" title="' +
-      modeLabelCustom +
-      '">' +
-      modeLabelCustom +
-      '</button>' +
-      '<button type="button" class="config-mode-btn' +
-      (!customMode ? ' active' : '') +
-      '" data-mode="wizard" title="' +
-      modeLabelWizard +
-      '">' +
-      modeLabelWizard +
+      '<span class="config-mode-switch">' +
+      '<button type="button" class="config-mode-icon-btn configmodeicon" ' +
+      'data-id="configmode" title="' + modeAria + ': ' + currentModeLabel + '" ' +
+      'aria-label="' + modeAria + ': ' + currentModeLabel + '">' +
+      '<i class="fas ' + currentModeIcon + '" aria-hidden="true"></i>' +
       '</button></span>';
     for (var i = 0; i < icons.length; i++) {
       switch (icons[i]) {
@@ -266,6 +257,11 @@ var DT_simpleblock = (function () {
 
   function _registerConfigModeClick() {
     $(document)
+      .off('click.configmodeicon')
+      .on('click.configmodeicon', '.configmodeicon', function () {
+        _openConfigModePicker();
+      });
+    $(document)
       .off('click.configmode')
       .on('click.configmode', '.config-mode-btn', function () {
         var mode = String($(this).data('mode') || 'wizard');
@@ -274,39 +270,110 @@ var DT_simpleblock = (function () {
             ? 'custom'
             : 'wizard';
         if (mode === currentMode) return;
-        _showConfigModeWarning(mode, function () {
-          if (mode !== 'wizard') {
-            if (typeof setConfigMode === 'function') {
-              setConfigMode(mode);
+        _closeConfigModePicker(function () {
+          _showConfigModeWarning(mode, function () {
+            if (mode !== 'wizard') {
+              if (typeof setConfigMode === 'function') {
+                setConfigMode(mode);
+              }
+              return;
             }
-            return;
-          }
-          DT_function.loadDTScript('js/layouteditor.js').then(function () {
-            DashticzLayoutEditor.convertCurrentScreenToGrid(
-              true,
-              'wizard'
-            ).done(function (result) {
-              try {
-                sessionStorage.setItem(
-                  'dashticz_open_grid_editor',
-                  String((result && result.gridScreen) || '1')
-                );
-              } catch (error) {
-                // Session storage is optional.
-              }
-              if (
-                result &&
-                result.alreadyGrid &&
-                typeof setConfigMode === 'function'
-              ) {
-                setConfigMode('wizard');
-              } else {
-                window.location.reload();
-              }
+            DT_function.loadDTScript('js/layouteditor.js').then(function () {
+              DashticzLayoutEditor.convertCurrentScreenToGrid(
+                true,
+                'wizard'
+              ).done(function (result) {
+                try {
+                  sessionStorage.setItem(
+                    'dashticz_open_grid_editor',
+                    String((result && result.gridScreen) || '1')
+                  );
+                } catch (error) {
+                  // Session storage is optional.
+                }
+                if (
+                  result &&
+                  result.alreadyGrid &&
+                  typeof setConfigMode === 'function'
+                ) {
+                  setConfigMode('wizard');
+                } else {
+                  window.location.reload();
+                }
+              });
             });
           });
         });
       });
+  }
+
+  /**
+   * Popup with a Custom mode / Wizard mode tile, opened from the topbar
+   * config-mode icon. The currently active mode is highlighted; picking the
+   * other tile hides this popup and hands off to the existing
+   * _showConfigModeWarning() confirmation (unchanged behavior/actions).
+   */
+  function _configModePickerHtml() {
+    var labels = language.settings.config_mode;
+    var customMode = typeof isCustomConfigMode === 'function' && isCustomConfigMode();
+    var tiles = [
+      {
+        mode: 'custom',
+        icon: 'fa-sliders-h',
+        label: labels.custom_mode || labels.custom,
+        text: labels.custom_mode_desc || labels.confirm_custom,
+      },
+      {
+        mode: 'wizard',
+        icon: 'fa-hat-wizard',
+        label: labels.wizard_mode || labels.wizard,
+        text: labels.wizard_mode_desc || labels.confirm_wizard,
+      },
+    ];
+    var html =
+      '<div class="modal fade" id="configmodepopup" tabindex="-1" ' +
+      'aria-labelledby="config-mode-picker-title" aria-hidden="true">' +
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">' +
+      '<div class="modal-header"><h5 class="modal-title" id="config-mode-picker-title">' +
+      $('<div>').text(labels.picker_title || labels.aria_label).html() +
+      '</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      $('<div>').text(labels.cancel).html() + '"></button></div>' +
+      '<div class="modal-body"><div class="settings-tiles config-mode-tiles">';
+    tiles.forEach(function (tile) {
+      var isActive = (tile.mode === 'custom') === customMode;
+      html +=
+        '<button type="button" class="settings-tile config-mode-tile config-mode-btn' +
+        (isActive ? ' active' : '') + '" data-mode="' + tile.mode + '">' +
+        '<i class="fas ' + tile.icon + '" aria-hidden="true"></i>' +
+        '<span>' + $('<div>').text(tile.label).html() + '</span>' +
+        '<small>' + $('<div>').text(tile.text).html() + '</small>' +
+        '</button>';
+    });
+    html += '</div></div></div></div></div>';
+    return html;
+  }
+
+  function _openConfigModePicker() {
+    $('#configmodepopup').remove();
+    $('body').append(_configModePickerHtml());
+    var popup = document.getElementById('configmodepopup');
+    $(popup).one('hidden.bs.modal', function () {
+      $(popup).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(popup).show();
+  }
+
+  function _closeConfigModePicker(callback) {
+    var popup = document.getElementById('configmodepopup');
+    var instance = popup && window.bootstrap.Modal.getInstance(popup);
+    if (!instance) {
+      if (typeof callback === 'function') callback();
+      return;
+    }
+    $(popup).one('hidden.bs.modal', function () {
+      if (typeof callback === 'function') callback();
+    });
+    instance.hide();
   }
 
   function _showConfigModeWarning(mode, onContinue) {
