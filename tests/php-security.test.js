@@ -107,7 +107,7 @@ test('first-run access check verifies CONFIG.js as the web server user', () => {
 });
 
 test('Apache write-access installer derives the path and verifies a real write', () => {
-  const installer = read('tools/install-dashticz-write-access');
+  const installer = read('tools/install-dashticz-write-access.sh');
 
   assert.match(installer, /INSTALL_DIR=.*SCRIPT_DIR\/\.\./);
   assert.match(installer, /js\/savesettings\.php/);

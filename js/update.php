@@ -180,7 +180,7 @@ function dashticz_git_permission_hint($repoRoot, $combinedOutput)
 
     $user = dashticz_web_user_name();
     $path = str_replace('\\', '/', $repoRoot);
-    $tool = $path . '/tools/install-dashticz-write-access';
+    $tool = $path . '/tools/install-dashticz-write-access.sh';
 
     return
         'The web-server user (' . $user . ') needs write access to the Dashticz checkout.' . "\n" .
