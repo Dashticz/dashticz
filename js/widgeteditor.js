@@ -1352,7 +1352,16 @@ var DashticzWidgetEditor = (function () {
         widgetBlockRefs[item.id] = reference;
         widgetDimensions[item.id] = {
           width: parseInt(definition.width, 10) || item.width,
-          height: parseInt(definition.height, 10) || null,
+          // Never read a saved height back in here: _buildWidgetPayloadEntry
+          // resends this on every save (including a save that only touches a
+          // different widget's config), so a height read back from a widget
+          // with no way to edit it here (e.g. camera) - or read once and then
+          // left stale after the user clears its own height field (iframe/
+          // log/timegraph, see their entry.*Height handling further down) -
+          // got silently reinstated forever with no way to remove it (#100
+          // follow-up). Grid mode only keeps a height a widget's own field
+          // explicitly (re)sets on this save.
+          height: null,
         };
         _hydrateGridWidget(item, definition);
         _hydrateWidgetBlockOptions(item, definition);

@@ -2414,6 +2414,41 @@ test('Device Editor save does not reintroduce a default widget height on a grid 
   );
 });
 
+test('Widget Editor lets a grid-mode height (iframe, camera, ...) be removed again once set (#100 follow-up)', () => {
+  // The #100 fixes above stopped a *new* grid widget from getting a forced
+  // default height, but a widget that already had an explicit height (from
+  // before those fixes, from switching a dashboard from column to grid mode,
+  // or from typing one into iframe's own "Height (px)" field and later
+  // clearing it again) stayed stuck forever: _readGridConfiguredWidgets read
+  // the block's current CONFIG.js height into widgetDimensions[item.id] once,
+  // when the Widget Editor/config-cog popup opened, and every subsequent
+  // save (_buildWidgetPayloadEntry) unconditionally resent that same cached
+  // value as entry.height - regardless of the user clearing iframe's own
+  // height field (which only ever wrote entry.iframeHeight, a different
+  // property), and regardless of there being no such field at all for widgets
+  // like camera. savewidgets.php then wrote it straight back into
+  // CONFIG.js's height, so the value could never actually be removed.
+  const widgetEditor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+
+  assert.match(
+    widgetEditor,
+    /widgetDimensions\[item\.id\] = \{\s*\n\s*width: parseInt\(definition\.width, 10\) \|\| item\.width,\s*\n(?:\s*\/\/[^\n]*\n)+\s*height: null,\s*\n\s*\};/
+  );
+
+  // dimensions.height (fed by widgetDimensions[item.id] above) is the only
+  // thing that can make _buildWidgetPayloadEntry set a generic entry.height
+  // in grid mode; with it always null now, a grid save never resends a
+  // stale height for any widget, so entry.iframeHeight/logHeight/
+  // timegraphHeight (each already correctly tracking their own, clearable,
+  // config field - see their own "if (icfg.height ...)" checks) are left as
+  // the sole source of truth for those widgets, and camera (with no field of
+  // its own at all) never gets a height reintroduced behind the user's back.
+  assert.match(
+    widgetEditor,
+    /if \(gridMode\) \{\s*\n\s*if \(dimensions\.height\) entry\.height = dimensions\.height;\s*\n\s*\}/
+  );
+});
+
 test('Swipe/slide-button navigation no longer permanently misses the active-screen update (#49)', () => {
   // startSwiper() (js/main.js) creates `myswiper` asynchronously via a
   // setTimeout(...,0) plus a dynamically loaded Swiper script, with
