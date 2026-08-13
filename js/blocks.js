@@ -1425,7 +1425,7 @@ function getSecurityBlock(block) {
     html += '</div>';
     html += '</div>';
   }
-  return [html, true];
+  return html;
 }
 
 function getProtectedSecurityBlock(block) {
@@ -1449,7 +1449,12 @@ function getProtectedSecurityBlock(block) {
   };
   secBlock.value = block.device.Status;
   $.extend(secBlock, block);
-  return [getStatusBlock(secBlock), true];
+  // deviceUpdateHandler's auto-derived title (device.Name) is defined
+  // non-enumerable so it never gets serialized into CONFIG.js - but that
+  // also means $.extend()/for...in above silently drop it, leaving the
+  // title blank whenever the device has no explicit title of its own.
+  secBlock.title = getBlockTitle(block);
+  return getStatusBlock(secBlock);
 }
 
 function getBlockTitle(block) {

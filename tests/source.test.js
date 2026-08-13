@@ -2334,6 +2334,29 @@ test('Camera widget no longer forces a fixed default height in grid mode (#100)'
   );
 });
 
+test('Device Editor save does not reintroduce a default widget height on a grid screen (#100)', () => {
+  // savewidgets.php only omits a widget's classic-mode catalog height
+  // (iframe 400px, camera 320px, etc.) when $data['gridMode'] is truthy.
+  // deviceeditor.js's own _save() - which re-submits every currently placed
+  // widget whenever ANY device is edited, not just widgets - posted
+  // blocksOnly:gridMode but never gridMode itself, so the server always saw
+  // $gridMode as false and silently wrote a fixed height into every widget
+  // that never had one, on every save, even on a grid screen (reported as a
+  // height value "randomly" reappearing in CONFIG.js after editing an
+  // unrelated Domoticz device).
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const saveWidgets = fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8');
+
+  assert.match(
+    saveWidgets,
+    /'height' => \(!\$gridMode && isset\(\$catalog\[\$id\]\['height'\]\)\)\s*\n\s*\? \$catalog\[\$id\]\['height'\]\s*\n\s*: null,/
+  );
+  assert.match(
+    deviceEditor,
+    /widgets: widgetPayload,\s*\n\s*settings: pendingWidgetSettings,\s*\n\s*screen: _activeScreenPayload\(\),\s*\n\s*blocksOnly: gridMode,\s*\n[\s\S]{0,700}?gridMode: gridMode,/
+  );
+});
+
 test('Swipe/slide-button navigation no longer permanently misses the active-screen update (#49)', () => {
   // startSwiper() (js/main.js) creates `myswiper` asynchronously via a
   // setTimeout(...,0) plus a dynamically loaded Swiper script, with
@@ -2504,4 +2527,50 @@ test('Device Config popup lets a Custom/Multi device\'s main idx be corrected af
     /var pendingIdx = isCustom \? special\.idx : null;\s*\n\s*if \(isCustom\) \{\s*\n\s*var rawIdx = \$\.trim\(String\(\$\('#de-config-idx'\)\.val\(\) \|\| ''\)\);\s*\n\s*var parsedIdx = parseInt\(rawIdx, 10\);\s*\n\s*if \(!\(parsedIdx > 0 && String\(parsedIdx\) === rawIdx\)\) \{\s*\n\s*valid = false;/
   );
   assert.match(deviceEditor, /if \(isCustom\) special\.idx = pendingIdx;/);
+});
+
+test('Domoticz Security Panel device renders instead of showing an empty tile (#120)', () => {
+  // Domoticz's internal Security Panel device reports Type: 'Security' but
+  // no SwitchType, so getBlockTypesBlock's priority chain (HardwareType ->
+  // SwitchType -> Type) never matched the only existing registration,
+  // blocktypes.SwitchType.Security, and fell through to the generic default
+  // renderer (value: '<Data>'), which the panel doesn't populate - an empty
+  // tile. getSecurityBlock (its intended handler, dead code until now -
+  // nothing referenced it) also returned a [html, boolean] tuple instead of
+  // a plain string, which deviceUpdateHandler's `typeof html === 'string'`
+  // check requires to actually paint anything - a handler that returns a
+  // non-string must have already written to the DOM itself (like the
+  // dimmer/blinds handlers do), which getSecurityBlock never did either.
+  const blocktypes = fs.readFileSync(path.join(root, 'js/blocktypes.js'), 'utf8');
+  const blocksSource = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+
+  assert.match(
+    blocktypes,
+    /blocktypes\.Security = \{\s*\n\s*handler: getSecurityBlock\s*\n\}/
+  );
+  // The SwitchType registration stays, in case some hardware variant does
+  // report it.
+  assert.match(blocktypes, /SwitchType\.Security = \{\s*\n\s*handler: getSecurityBlock,\s*\n\}/);
+
+  const securityBlockBody = blocksSource.slice(
+    blocksSource.indexOf('function getSecurityBlock('),
+    blocksSource.indexOf('function getProtectedSecurityBlock(')
+  );
+  assert.doesNotMatch(securityBlockBody, /return \[html, true\];/);
+  assert.match(securityBlockBody, /return html;\s*\n\}/);
+
+  const protectedBlockBody = blocksSource.slice(
+    blocksSource.indexOf('function getProtectedSecurityBlock('),
+    blocksSource.indexOf('function getBlockTitle(')
+  );
+  assert.doesNotMatch(protectedBlockBody, /return \[getStatusBlock\(secBlock\), true\];/);
+  assert.match(protectedBlockBody, /return getStatusBlock\(secBlock\);/);
+  // getStatusBlock's `title = choose(block.title, '')` never sees the
+  // auto-derived device-name title deviceUpdateHandler sets, since that
+  // property is defined non-enumerable (so it survives CONFIG.js saves
+  // correctly) and $.extend()/for...in silently skip non-enumerable
+  // properties - so a Protected security device (password required to
+  // arm/disarm, a common real-world setup) rendered with a blank title
+  // unless the user had set one explicitly.
+  assert.match(protectedBlockBody, /secBlock\.title = getBlockTitle\(block\);/);
 });
