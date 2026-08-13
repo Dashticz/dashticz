@@ -2449,6 +2449,28 @@ test('Widget Editor lets a grid-mode height (iframe, camera, ...) be removed aga
   );
 });
 
+test("Device Editor's own hydration lets a grid-mode widget height be removed again once set (#100 follow-up)", () => {
+  // Same bug class as the Widget Editor fix above, but in a parallel spot
+  // that fix didn't touch: deviceeditor.js's own _init() hydrates
+  // widgetHeights[orderKey] straight from the widget's current CONFIG.js
+  // height, unconditionally (regardless of grid mode). _widgetPayload then
+  // unconditionally resends that as entry.height on every Device Editor
+  // save - including a save that only touches a different device, and
+  // regardless of the user having since cleared iframe's own "Height (px)"
+  // field via Widget Config. savewidgets.php only overrides that top-level
+  // height for iframe/log/timegraph when their own *Height property is
+  // explicitly sent (which Device Editor's resubmission never does), so the
+  // stale cached height silently won on every subsequent Device Editor
+  // save, and a once-set height could never actually be removed (reported
+  // against #100 after the earlier fixes there).
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+
+  assert.match(
+    deviceEditor,
+    /widgetHeights\[item\.orderKey\] = gridMode \? null : _parseHeight\(item\.definition\.height\);/
+  );
+});
+
 test('Swipe/slide-button navigation no longer permanently misses the active-screen update (#49)', () => {
   // startSwiper() (js/main.js) creates `myswiper` asynchronously via a
   // setTimeout(...,0) plus a dynamically loaded Swiper script, with

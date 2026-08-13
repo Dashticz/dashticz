@@ -1,5 +1,22 @@
 # Dashticz — Change log for recent update work
 
+## 3.42.3 — Device Editor widget height fix (#100 follow-up)
+
+- Fixed a once-set iframe (or camera/log/timegraph) height on a grid screen
+  being impossible to remove again via Device Editor. An earlier #100 fix
+  (3.42.1) stopped Widget Editor from resending a stale cached height, but
+  `deviceeditor.js` had its own separate copy of the same caching bug:
+  `_init()` hydrated `widgetHeights[orderKey]` straight from the widget's
+  current CONFIG.js height, unconditionally, and `_widgetPayload()`
+  unconditionally resent that as `entry.height` on every Device Editor
+  save — including a save that only touched a completely different device.
+  `savewidgets.php` only overrides that top-level height for iframe/log/
+  timegraph when their own `*Height` property is explicitly sent, which
+  Device Editor's resubmission never does, so the stale value silently won
+  every time. Grid mode now leaves `widgetHeights[orderKey]` unset unless a
+  widget's own field explicitly (re)sets it on that save; column mode is
+  unaffected.
+
 ## 3.42.2 — Domoticz log widget scrollbar fix
 
 - Fixed the Domoticz log widget triggering a spurious outer scrollbar on
