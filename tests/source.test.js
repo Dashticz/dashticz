@@ -2574,3 +2574,70 @@ test('Domoticz Security Panel device renders instead of showing an empty tile (#
   // unless the user had set one explicitly.
   assert.match(protectedBlockBody, /secBlock\.title = getBlockTitle\(block\);/);
 });
+
+test('Clock widgets (Basic/Station/Flip/Hayman) get a default icon and correctly sized faces', () => {
+  // None of the four clock components set a defaultCfg.icon (unlike e.g.
+  // weather's icon: 'fas fa-sun'), so a clock tile never showed an icon
+  // unless the user manually typed one into the generic Widget Config
+  // "Icon" custom field - inconsistent with every other widget. Reuse the
+  // same icon already used for the widget catalog's add-menu entry.
+  const basicclock = fs.readFileSync(path.join(root, 'js/components/basicclock.js'), 'utf8');
+  const stationclock = fs.readFileSync(path.join(root, 'js/components/stationclock.js'), 'utf8');
+  const flipclock = fs.readFileSync(path.join(root, 'js/components/flipclock.js'), 'utf8');
+  const haymanclock = fs.readFileSync(path.join(root, 'js/components/haymanclock.js'), 'utf8');
+  const widgetEditor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+
+  assert.match(widgetEditor, /icon: 'far fa-clock'/);
+  [basicclock, stationclock, flipclock, haymanclock].forEach(function (source) {
+    assert.match(source, /icon: 'far fa-clock'/);
+  });
+
+  // All four size their canvas/face from .dt_block's *content-box* height
+  // (.height(), not .innerHeight() - the latter also counts .dt_block's own
+  // 15px top/bottom padding) minus .dt_title's own height and .dt_state's
+  // own 5px/5px vertical margin (creative.css) - the space actually
+  // available for the clock face. Sizing to more than that (the previous
+  // behavior: full block height, no subtraction) pushed the face past
+  // .dt_block's own bottom edge, showing a scrollbar unless the block was
+  // made oversized to compensate. Same fix as js/components/frame.js.
+  [
+    ['basicclock', basicclock],
+    ['flipclock', flipclock],
+    ['haymanclock', haymanclock],
+  ].forEach(function (pair) {
+    var name = pair[0];
+    var source = pair[1];
+    assert.match(source, /var \$title = \$\(me\.mountPoint \+ ' \.dt_title'\);/, name);
+    assert.match(source, /var \$state = \$\(me\.mountPoint \+ ' \.dt_state'\);/, name);
+    assert.match(
+      source,
+      /var titleHeight = \$title\.length && \$title\.is\(':visible'\) \? \$title\.outerHeight\(true\) : 0;/,
+      name
+    );
+    assert.match(
+      source,
+      /var stateMarginV = \$state\.length\s*\n\s*\? \(parseFloat\(\$state\.css\('margin-top'\)\) \|\| 0\) \+ \(parseFloat\(\$state\.css\('margin-bottom'\)\) \|\| 0\)\s*\n\s*: 0;/,
+      name
+    );
+    assert.match(source, /- titleHeight - stateMarginV;/, name);
+  });
+
+  assert.match(stationclock, /var \$title = \$mount\.find\('\.dt_title'\)\.first\(\);/);
+  assert.match(stationclock, /var \$state = \$mount\.find\('\.dt_state'\)\.first\(\);/);
+  assert.match(stationclock, /var availH = \(\$block\.length \? \$block\.height\(\) : 0\) - titleHeight - stateMarginV;/);
+
+  // The JS-side subtraction above still isn't a hard guarantee: .dt_block's
+  // own min-height: 100% (creative.css, shared by every grid block) is only
+  // a floor, not a cap, and .dt_block's flex/box-sizing behaves slightly
+  // differently once the icon+title are both turned off (empirically
+  // verified: headless browser, real grid screen). If the JS measurement is
+  // even a fraction short, the block grows past its grid row instead of
+  // clipping, and the grid item's own overflow:auto then shows a scrollbar
+  // around an unchanged-size clock face with wasted space on the sides.
+  // Same belt-and-suspenders CSS cap already used for .frame/.waqi.
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  assert.match(
+    styles,
+    /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.basicclock,\s*\n\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.stationclock,\s*\n\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.flipclock,\s*\n\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.haymanclock \{\s*\n\s*height: 100% !important;\s*\n\s*min-height: 0 !important;\s*\n\s*overflow: hidden !important;/
+  );
+});

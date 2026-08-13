@@ -16,6 +16,7 @@ var DT_flipclock = {
       maxEmSize: 7,
       showSeconds: !settings['hide_seconds'],
       clockFace: settings['shorttime'].match(/A/i) ? 12 : 24,
+      icon: 'far fa-clock',
     };
     if (settings['clock_scale'] !== '' && settings['clock_scale'] != null) {
       var scale = Number(settings['clock_scale']);
@@ -30,9 +31,20 @@ var DT_flipclock = {
   run: function (me) {
     var $content = $(me.mountPoint + ' .dt_content');
     var $block = $(me.mountPoint + ' .dt_block');
+    var $title = $(me.mountPoint + ' .dt_title');
+    var $state = $(me.mountPoint + ' .dt_state');
+    // .dt_block's height includes the title bar (built by dashticz.js's
+    // renderTitle()) and .dt_state's own 5px/5px vertical margin (see
+    // creative.css), so sizing the clock to the full block height pushed it
+    // past the block's own bottom edge and needed an oversized block just to
+    // avoid a scrollbar. Same fix as js/components/frame.js.
+    var titleHeight = $title.length && $title.is(':visible') ? $title.outerHeight(true) : 0;
+    var stateMarginV = $state.length
+      ? (parseFloat($state.css('margin-top')) || 0) + (parseFloat($state.css('margin-bottom')) || 0)
+      : 0;
     var availW =
       $block.width() || $content.width() || $(me.mountPoint).width() || 320;
-    var availH = $block.height() || $(me.mountPoint).height() || 0;
+    var availH = ($block.height() || $(me.mountPoint).height() || 0) - titleHeight - stateMarginV;
     var scale = Number(me.block.scale);
     if (!isFinite(scale) || scale <= 0) scale = 1;
     var base = me.block.size || (availH > 0 ? Math.min(availW, availH) : availW);

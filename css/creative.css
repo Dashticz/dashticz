@@ -144,6 +144,22 @@
   overflow: hidden !important;
 }
 
+/* Same class of bug as .frame/.waqi above: the clock components size their
+   own canvas/face to fit (see each component's run()), but when their JS
+   measurement is off by even a fraction (e.g. icon/title both turned off,
+   which .dt_block's own flex/box-sizing handles slightly differently), the
+   min-height: 100% two rules up lets the block grow past its row instead of
+   clipping, showing a scrollbar with wasted space around an unchanged-size
+   clock face. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .basicclock,
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .stationclock,
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .flipclock,
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .haymanclock {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
 .dt-grid-screen > .dt-grid-layout > .dt-grid-overlap {
   outline: 1px dashed rgba(255, 165, 0, 0.8);
   outline-offset: -1px;
