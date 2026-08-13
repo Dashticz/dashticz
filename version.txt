@@ -1,8 +1,9 @@
 {
-    "version": "3.42.1",
+    "version": "3.42.2",
     "branch": "beta",
-    "last_changes": "Fix Device Editor saves reintroducing a default widget height on grid screens (iframe/camera); fix Domoticz Security Panel device rendering as an empty tile",
+    "last_changes": "Fix Domoticz log widget triggering a spurious outer scrollbar on grid screens (#105)",
     "changelog": {
+        "3.42.2": "Fix Domoticz log widget triggering a spurious outer scrollbar on grid screens (#105)",
         "3.42.1": "Fix Device Editor saves reintroducing a default widget height on grid screens (iframe/camera); fix Domoticz Security Panel device rendering as an empty tile",
         "3.42.0": "Device Editor: add a Dial checkbox to Device Config; fix dial blocks rendering oversized by default and showing scrollbars on grid screens; live-sync dial sizing with editor resize; tighten roomy default dial margins; document the dial scale parameter",
         "3.41.7": "Fix TimeGraph config icon opening the wrong device settings; add default icons for Multi Device and Custom Device",

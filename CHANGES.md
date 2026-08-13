@@ -1,5 +1,18 @@
 # Dashticz — Change log for recent update work
 
+## 3.42.2 — Domoticz log widget scrollbar fix
+
+- Fixed the Domoticz log widget triggering a spurious outer scrollbar on
+  grid screens, even when the tile visually had enough room (#105). `.log
+  .items` already scrolls internally on purpose once there are more log
+  lines than fit, but the *outer* `.dt_block` was only floored by the
+  generic grid `min-height: 100%` rule, not capped — so a fraction of extra
+  height from title/content rounding let it grow past its own grid row, and
+  the grid item's own `overflow: auto` then added a second, unwanted
+  scrollbar around the whole tile. Capped `.log`'s block to its row height
+  in `css/creative.css`, matching the same fix already applied to
+  `.frame`/`.waqi`/the clock widgets.
+
 ## 3.41.3 — Test suite cleanup
 
 - Fixed a stale `$forceClone` regex assertion in

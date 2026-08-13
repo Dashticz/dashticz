@@ -6,6 +6,22 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.42.2 beta (13-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Fixed the Domoticz log widget triggering a spurious outer scrollbar on
+  grid screens, even when the tile visually had enough room (`#105
+  <https://github.com/MadPatrick/dashticz/issues/105>`_). ``.log .items``
+  already scrolls internally on purpose once there are more log lines than
+  fit, but the outer ``.dt_block`` was only floored by the generic grid
+  ``min-height: 100%`` rule, not capped — so a fraction of extra height from
+  title/content rounding let it grow past its own grid row, and the grid
+  item's own ``overflow: auto`` then added a second, unwanted scrollbar
+  around the whole tile. Capped the log widget's block to its row height,
+  matching the same fix already applied to the iFrame/WAQI/clock widgets.
+
 v3.42.0 beta (12-8-2026)
 --------------------------
 

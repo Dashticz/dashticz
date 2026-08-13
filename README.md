@@ -316,7 +316,7 @@ icon strings remain intact until the Icon checkbox is explicitly switched off.
 | News | RSS URL and automatic-scroll interval |
 | iFrame | URL, scrollbars, scale-to-fit width, aspect ratio, optional legacy fixed height and refresh interval |
 | XMLTV TV Guide | XMLTV source URL; channel filter (id or display-name); maximum items, layout and refresh interval |
-| Radio | Stations (name + stream URL); add/remove stations with a plus/minus button on each row |
+| Radio | Stations (name + stream URL); a single Add-station button, each row with its own Remove button |
 | Domoticz log | Optional height and aspect ratio, scroll timeout, and a checkbox for whether the newest log line is shown at the bottom |
 | OpenWeatherMap | Optional API key, city and country (fall back to the global settings when left empty); layout 1-24 |
 | Sunrise / Sunset | Only the common Title/Width/Custom fields options |
@@ -359,9 +359,10 @@ contain a valid HTTP(S) ICS URL.
 
 Radio Widget Config is a graphical front end for the existing [Streamplayer
 block](https://dashticz.readthedocs.io/en/beta/blocks/specials/streamplayer.html).
-Each station row has a **Name** and **Stream URL**, with a plus button on
-every row to add another station and a minus button to remove one. Saving
-writes the stations as `blocks['streamplayer'].tracks` — the same shape a
+Each station row has a **Name** and **Stream URL** with its own minus button
+to remove that station, and a single **Add station** plus button below the
+list adds another row. Saving writes the stations as
+`blocks['streamplayer'].tracks` — the same shape a
 hand-written `_STREAMPLAYER_TRACKS` global uses — so existing Streamplayer
 configurations, and blocks that only set other properties (like `icon` or
 `image`) while relying on `_STREAMPLAYER_TRACKS`, keep working unchanged:
