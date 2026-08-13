@@ -6,6 +6,23 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.42.3 beta (13-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Fixed a once-set iframe (or camera/log/timegraph) height on a grid screen
+  being impossible to remove again via Device Editor (`#100
+  <https://github.com/MadPatrick/dashticz/issues/100>`_ follow-up). An
+  earlier fix in 3.42.1 stopped Widget Editor from resending a stale cached
+  height, but Device Editor had its own separate copy of the same caching
+  bug: it hydrated a widget's stored height from CONFIG.js unconditionally
+  and resent it on every Device Editor save — including a save that only
+  touched a completely different device — silently reinstating a height the
+  user had already cleared via the widget's own field. Grid mode now only
+  keeps a height a widget's own field explicitly (re)sets on that save;
+  column mode is unaffected.
+
 v3.42.2 beta (13-8-2026)
 --------------------------
 

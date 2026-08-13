@@ -262,7 +262,17 @@ var DashticzDeviceEditor = (function () {
       if (item.kind === 'widget') {
         managedWidgets[item.orderKey] = item;
         widgetWidths[item.orderKey] = _parseWidth(item.definition.width);
-        widgetHeights[item.orderKey] = _parseHeight(item.definition.height);
+        // Never read a saved height back in here on a grid screen: _widgetPayload
+        // resends this on every Device Editor save (including a save that only
+        // touches a different device), so a height read back from a widget with
+        // no way to edit it here (e.g. camera) - or read once and then left
+        // stale after the user clears it via its own Widget Config field
+        // (iframe/log/timegraph) - got silently reinstated forever with no way
+        // to remove it (#100 follow-up, this time in Device Editor's own
+        // resubmission rather than Widget Editor's). Grid mode only keeps a
+        // height a widget's own field explicitly (re)sets on this save; column
+        // mode still needs the existing height to keep packing columns.
+        widgetHeights[item.orderKey] = gridMode ? null : _parseHeight(item.definition.height);
         widgetTitles[item.orderKey] = String(item.definition.title || item.title || '');
         widgetOptions[item.orderKey] = {
           icon: typeof item.definition.icon === 'undefined' || item.definition.icon !== '',
