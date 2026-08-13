@@ -229,6 +229,7 @@ var DT_simpleblock = (function () {
             _openPendingGridEditor();
           }
           _registerConfigModeClick();
+          _openPendingConfigModePicker();
           break;
 
         case 'fullscreen':
@@ -269,7 +270,10 @@ var DT_simpleblock = (function () {
           typeof isCustomConfigMode === 'function' && isCustomConfigMode()
             ? 'custom'
             : 'wizard';
-        if (mode === currentMode) return;
+        if (mode === currentMode) {
+          _closeConfigModePicker();
+          return;
+        }
         _closeConfigModePicker(function () {
           _showConfigModeWarning(mode, function () {
             if (mode !== 'wizard') {
@@ -541,6 +545,26 @@ var DT_simpleblock = (function () {
         DashticzLayoutEditor.open();
       });
     }, 300);
+  }
+
+  /**
+   * Opens the Custom/Wizard mode picker once, right after the first-run
+   * setup wizard (js/main.js) saves the basic settings and reloads.
+   */
+  function _openPendingConfigModePicker() {
+    var pending = '';
+    try {
+      pending = sessionStorage.getItem('dashticz_show_mode_picker') || '';
+      if (pending) {
+        sessionStorage.removeItem('dashticz_show_mode_picker');
+      }
+    } catch (error) {
+      return;
+    }
+    if (!pending) return;
+    setTimeout(function () {
+      _openConfigModePicker();
+    }, 0);
   }
 
   function _registerLayoutEditorClick() {

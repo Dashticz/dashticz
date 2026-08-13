@@ -567,6 +567,13 @@ function showSetupWizard() {
         });
       })
       .done(function () {
+        try {
+          // Picked up once by simpleblock.js after the reload, to open the
+          // Custom/Wizard mode picker right after first-run setup.
+          sessionStorage.setItem('dashticz_show_mode_picker', '1');
+        } catch (error) {
+          // Session storage is optional.
+        }
         window.location.reload();
       })
       .fail(function (xhr) {

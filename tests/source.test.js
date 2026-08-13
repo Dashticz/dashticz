@@ -107,6 +107,55 @@ test('first-run setup uses its own wizard and removes the legacy browser fallbac
   assert.doesNotMatch(source, /storeSetupConfig/);
 });
 
+test('first-run setup hands off to the Custom/Wizard mode picker after reload', () => {
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  const simpleBlock = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+
+  const saveHandler = main.slice(main.indexOf("$('#dt-setup-save').on('click'"));
+  assert.match(
+    saveHandler,
+    /sessionStorage\.setItem\('dashticz_show_mode_picker', '1'\)/
+  );
+  const doneIndex = saveHandler.indexOf('.done(function ()');
+  const reloadIndex = saveHandler.indexOf('window.location.reload();');
+  const setItemIndex = saveHandler.indexOf(
+    "sessionStorage.setItem('dashticz_show_mode_picker', '1')"
+  );
+  assert.ok(doneIndex < setItemIndex && setItemIndex < reloadIndex);
+
+  assert.match(simpleBlock, /function _openPendingConfigModePicker\(\)/);
+  assert.match(
+    simpleBlock,
+    /sessionStorage\.getItem\('dashticz_show_mode_picker'\)/
+  );
+  assert.match(simpleBlock, /_openPendingConfigModePicker\(\);\s*\n\s*break;/);
+  assert.match(simpleBlock, /if \(mode === currentMode\) \{\s*\n\s*_closeConfigModePicker\(\);/);
+});
+
+test('update scripts create a valid empty CONFIG.js instead of an unparsable stub', () => {
+  for (const file of ['update.sh', 'updatebeta.sh']) {
+    const script = fs.readFileSync(path.join(root, file), 'utf8');
+
+    // Only one config-check block; the old copy-pasted duplicate is gone.
+    assert.equal(
+      (script.match(/# --- Configuration check and update ---/g) || []).length,
+      1,
+      `${file} has a single config-check block`
+    );
+    assert.match(script, /printf '%s\\n' '#EMPTY#' > "\$CONFIG_FILE"/);
+    assert.doesNotMatch(script, /touch "\$CONFIG_FILE"/);
+    // The default-lines injection must stay scoped to the "file already
+    // exists" branch, never applied to a freshly created file.
+    assert.match(
+      script,
+      /printf '%s\\n' '#EMPTY#' > "\$CONFIG_FILE"[\s\S]*?else\s*\n\s*CONFIG_LINE_1='config\["topbar_timeout"\] = 5;'/
+    );
+  }
+});
+
 test('installer accepts an optional target directory', () => {
   const installer = fs.readFileSync(path.join(root, 'install.sh'), 'utf8');
   const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
