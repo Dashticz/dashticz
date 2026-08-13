@@ -2848,6 +2848,13 @@ var DashticzDeviceEditor = (function () {
               settings: pendingWidgetSettings,
               screen: _activeScreenPayload(),
               blocksOnly: gridMode,
+              // Without this, savewidgets.php's $gridMode reads false and
+              // falls back to each widget's classic-mode catalog height
+              // (e.g. iframe 400px, camera 320px) even on a grid screen,
+              // silently reintroducing a fixed height on every widget that
+              // never had one - on every Device Editor save, since editing
+              // any device re-submits every currently placed widget too (#100).
+              gridMode: gridMode,
             },
             token
           );

@@ -419,6 +419,16 @@ blocktypes.Group = {
 
 blocktypes.Scene = blocktypes.Group;
 
+// Domoticz's internal Security Panel device (created via Setup > More
+// Options > Security Panel) reports Type: 'Security' but no SwitchType, so
+// it never matched blocktypes.SwitchType.Security below and fell through to
+// the generic default renderer (value: '<Data>'), which the panel doesn't
+// populate - the tile rendered empty (#120). Keep the SwitchType entry too,
+// in case some hardware variant does report it.
+blocktypes.Security = {
+  handler: getSecurityBlock
+}
+
 /*Switches*/
 
 var SwitchType = {}
