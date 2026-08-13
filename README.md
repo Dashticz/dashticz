@@ -38,7 +38,12 @@ create the configuration and open the dashboard.
 
 ### Wizard and Custom configuration modes
 
-The mode switch in the topbar selects how the dashboard is managed:
+The mode icon in the topbar selects how the dashboard is managed. It shows a
+sliders icon in Custom mode or a wizard-hat icon in Wizard mode; selecting it
+opens a **Configuration mode** popup with a Custom-mode and a Wizard-mode
+tile, each with a short explanation, and the tile matching the current mode
+highlighted. This replaced the previous two always-visible Custom/Wizard text
+buttons with a single icon plus popup.
 
 - **Wizard** shows the Screen Editor magic wand. While the Screen Editor is
   active its plus button opens the Device, Widget, Custom-device, Slide button
@@ -52,8 +57,11 @@ A valid but otherwise empty `CONFIG.js` can also be switched from Custom to
 Wizard. Dashticz creates an empty grid for screen 1, after which devices and
 widgets can be added from the Screen Editor plus menu.
 
-Changing mode is saved in `custom/CONFIG.js` and reloads the dashboard. The
-regular settings menu remains available in both modes.
+Picking a tile hands off to the existing confirmation warning before the mode
+actually switches. Changing mode is saved in `custom/CONFIG.js` and reloads
+the dashboard. The regular settings menu remains available in both modes.
+After the first-run setup wizard saves its basic settings and reloads, this
+picker popup opens once automatically so the mode choice is immediate.
 
 ### Topbar controls
 
@@ -61,7 +69,7 @@ In **Wizard** mode the normal topbar keeps the editor controls compact:
 
 | Control | Function |
 | --- | --- |
-| **Custom / Wizard** | Switch configuration mode |
+| Mode icon (sliders / wizard hat) | Open the Configuration mode popup to switch between Custom and Wizard |
 | Magic wand | Start or stop the Screen Editor |
 | Cog | Open Settings |
 | Fullscreen | Enter or leave fullscreen mode |
@@ -193,11 +201,27 @@ blocks['combine'] = {
 which is edited afterwards through the same Device Config popup as any other
 Custom Device.
 
-Device Config contains exactly three centered display checkboxes on one row:
-**Icon**, **Data** and **Updated**. The old text-alignment editor support has
-been removed completely: rendered blocks no longer receive editor alignment
-classes and the block writers no longer emit alignment properties. Existing
-hand-written CSS remains untouched.
+A Multi Device is listed in the Device Editor with a distinct **Multi Device**
+label and layer-group icon, instead of the generic "Custom devices" label
+plain Custom devices get, so the two are easy to tell apart at a glance.
+Opening Device Config on an existing Multi Device edits its `values` with the
+same friendly IDX/Value row builder the creation popup uses, instead of a
+single raw JSON text field.
+
+Device Config also shows an editable **Main IDX** field for Custom and Multi
+devices, so the underlying Domoticz idx can be corrected after creation — for
+example after the Domoticz device was recreated with a new idx, which
+previously left the tile stuck on its "Getting device N" placeholder forever.
+
+Device Config's display checkboxes are **Icon**, **Data**, **Updated**,
+**Dial** and **Title**, shown centered on one row (a separator/title bar only
+shows **Icon** and **Title**, since it has no data value or update timestamp
+of its own). Checking **Dial** renders the block via the dial widget instead
+of the default one; dial-specific parameters (color, min/max, subtype, scale,
+values, etc.) remain configurable via Custom fields. The old text-alignment
+editor support has been removed completely: rendered blocks no longer receive
+editor alignment classes and the block writers no longer emit alignment
+properties. Existing hand-written CSS remains untouched.
 
 While Layout Editor is active, both device and widget tiles show a configuration
 cog in the top-left corner. Device cogs open Device Config and widget cogs open
@@ -279,7 +303,7 @@ icon strings remain intact until the Icon checkbox is explicitly switched off.
 | Garbage | Waste company; address; maximum visible items (default 4), maximum days ahead (default 32) and width; iCal or Google Calendar details; icon, colour, name and CORS-prefix display options |
 | Spotify | Spotify client ID |
 | Sonarr | Server URL, API key and maximum items |
-| Clock | Basic, Station, Flip, Hayman or Mini clock; size and scale; 12/24-hour flipclock with optional seconds; station body, dial, hands, boss and hand behaviour |
+| Clock | Basic, Station, Flip, Hayman or Mini clock (each with a default clock icon); size and scale; 12/24-hour flipclock with optional seconds; station body, dial, hands, boss and hand behaviour |
 | Calendar (ICS) | One or more named HTTP(S) ICS sources, a colour per source, date format, calendar language and maximum visible rows (default 15) |
 | Security panel | Button icons and fullscreen lock |
 | Public transport | Train, OV API, DRGL, iRail or De Lijn provider and station/stop |
@@ -366,7 +390,10 @@ blocks['log'] = {
 ```
 
 which keeps working with the documented `columns[4] = {blocks: ['log']}`
-shorthand, since both refer to the same `blocks['log']` definition.
+shorthand, since both refer to the same `blocks['log']` definition. Placing
+the log widget on a second screen now gives that screen its own independent
+config (for example a different Max lines) instead of both screens sharing
+one definition.
 
 **OpenWeatherMap** Widget Config edits the existing [OWM
 widget](https://dashticz.readthedocs.io/en/beta/blocks/specials/owmwidget.html)
