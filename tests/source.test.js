@@ -1778,7 +1778,7 @@ test('iFrame without scaletofit/aspectratio fills its grid cell height instead o
   const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
   assert.match(
     styles,
-    /\.dt-grid-item > \.frame,\s*\n\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.waqi \{\s*\n\s*height: 100% !important;/
+    /\.dt-grid-item > \.frame,\s*\n\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.waqi,\s*\n\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.log \{\s*\n\s*height: 100% !important;/
   );
 });
 
@@ -2731,5 +2731,22 @@ test('Clock widgets (Basic/Station/Flip/Hayman) get a default icon and correctly
   assert.match(
     styles,
     /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.basicclock,\s*\n\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.stationclock,\s*\n\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.flipclock,\s*\n\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.haymanclock \{\s*\n\s*height: 100% !important;\s*\n\s*min-height: 0 !important;\s*\n\s*overflow: hidden !important;/
+  );
+});
+
+test('Domoticz log widget block is capped to its grid row so it cannot trigger a second, outer scrollbar (#105)', () => {
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  // .log .items already scrolls internally on purpose (there are more log
+  // lines than fit) via its own overflow: auto. But the *outer* .dt_block
+  // was only floored by the generic min-height: 100% grid rule, so a fraction
+  // of extra height from the title/content-height rounding let it grow past
+  // its grid row - the grid item's own overflow: auto then added a second,
+  // unwanted scrollbar around it, which looked like there wasn't enough room
+  // even though the row was sized correctly. Same cap already used for
+  // .frame/.waqi/the clock widgets.
+  assert.match(
+    styles,
+    /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.frame,\s*\n\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.waqi,\s*\n\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.log \{\s*\n\s*height: 100% !important;\s*\n\s*min-height: 0 !important;\s*\n\s*overflow: hidden !important;/
   );
 });

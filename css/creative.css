@@ -136,9 +136,16 @@
    are even a fraction taller than the grid row (subpixel rounding, a long
    title that wraps, etc.) the block grows past its row instead of clipping,
    and .dt-grid-item's own overflow:auto then shows a scrollbar for that. Cap
-   these two at their row's exact height so there's nothing left to overflow. */
+   these two at their row's exact height so there's nothing left to overflow.
+   .log needs the same cap: DT_log's own .items already scrolls internally
+   (its intended, content-driven scrollbar - see .log .items below), but
+   without this the *outer* .dt_block was still only floored by min-height,
+   so the same title/content-height rounding let it grow past its grid row
+   and triggered a second, unwanted scrollbar on the grid item itself, which
+   looked like "not enough room" even though the row was sized correctly. */
 .dt-grid-screen > .dt-grid-layout > .dt-grid-item > .frame,
-.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .waqi {
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .waqi,
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .log {
   height: 100% !important;
   min-height: 0 !important;
   overflow: hidden !important;
