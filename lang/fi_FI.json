@@ -8,6 +8,12 @@
         "news": "News",
         "sunrise": "Sunrise"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Näyttö",
+        "add_screen": "Lisää näyttö",
+        "delete_screen": "Poista näyttö"
+    },
     "energy": {
         "energy_delivered": "Total delivered",
         "energy_deliveredtoday": "Delivered today",
@@ -52,7 +58,7 @@
         "garbage": {
             "garbage_calendar_id": "Google Calender ID",
             "garbage_calendar_id_help": "Your calendar id is found in calendar settings",
-            "garbage_company": "Yritys \/ Palvelu",
+            "garbage_company": "Yritys / Palvelu",
             "garbage_hideicon": "Piilota kuvake lohkossa",
             "garbage_housenumber": "Talonnumero",
             "garbage_housenumberaddition": "Housenumber addition",
@@ -79,10 +85,10 @@
             "disable_googleanalytics": "Disable Google Analytics",
             "disable_googleanalytics_help": "Only used for developer to track the amount of users and wich device you are using for finetuning Dashticz.",
             "domoticz_ip": "Domoticz:n osoite",
-            "domoticz_ip_help": "Enter Domoticz url, for example: http:\/\/192.168.1.1:8080. You can also enter users and password, for example: http:\/\/user:password@192.168.1.1:8080",
+            "domoticz_ip_help": "Enter Domoticz url, for example: http://192.168.1.1:8080. You can also enter users and password, for example: http://user:password@192.168.1.1:8080",
             "domoticz_refresh": "Päivitä Domoticz (sekuntia)",
             "hide_off_button": "Hide off button at Selector Switches",
-            "last_update": "Näytä viimeinen päivitys aika\/päivämäärä",
+            "last_update": "Näytä viimeinen päivitys aika/päivämäärä",
             "login": "Log in",
             "login_to_dashticz": "Dashticz Login",
             "loginEnabled": "Dashticz Login enabled",
@@ -164,12 +170,12 @@
         "media": {
             "hide_mediaplayer": "Piilota mediasoitin, kun se on pois päältä",
             "host_nzbget": "NZBget-polku",
-            "host_nzbget_help": "Jos käytät NZBget, anna IP-osoite ja portti (esimerkiksi: http:\/\/192.168.1.32:8080)",
+            "host_nzbget_help": "Jos käytät NZBget, anna IP-osoite ja portti (esimerkiksi: http://192.168.1.32:8080)",
             "sonarr_apikey": "Sonarr ApiKey",
             "sonarr_maxitems": "Sonarr max items in list",
             "sonarr_url": "Sonarr URL",
             "spot_clientid": "Spotify asiakastunnus",
-            "switch_horizon": "Ziggo \/ UPC Mediabox-polku",
+            "switch_horizon": "Ziggo / UPC Mediabox-polku",
             "switch_horizon_help": "Jos sinulla on ZIGGO- tai UPC (Horizon) -medialaite, kopioi switch_horizon.php tiedosto verkossasi olevalle nettipalvelimelle ja muuta IP-osoitetta (Horizonin) tämän tiedoston sisällä.",
             "title": "Media"
         },
@@ -180,10 +186,9 @@
             "auto_swipe_back_to": "Automaattinen siirtyminen takaisin näytölle #",
             "auto_swipe_back_to_help": "Kun ei toimintaa, siirry takaisin päänäyttöön x sekunnin kuluttua",
             "background_image": "Background Image",
-            "background_image_help": "Set path to background image eg. img\/bg2.jpg or http:\/\/yourimage.com\/image.jpg",
+            "background_image_help": "Set path to background image eg. img/bg2.jpg or http://yourimage.com/image.jpg",
             "dashticz_themes": "Dashticz Theme",
             "dashticz_themes_help": "Set the name of the theme (eg. white) the theme will be overide by custom.css",
-            "edit_mode": "Go to edit mode",
             "hide_topbar": "Piilota yläpalkki",
             "slide_effect": "Slide-vaikutus",
             "standard_graph": "Standardi kuvaaja",
@@ -209,7 +214,7 @@
             "title": "Sää",
             "translate_windspeed": "Käännä tuulen nopeus",
             "translate_windspeed_help": "'Pohjois-luoteeseen \"eikä \" PLU'",
-            "use_beaufort": "Käytä Bft m\/s sijasta",
+            "use_beaufort": "Käytä Bft m/s sijasta",
             "use_fahrenheit": "Käytä fahrenheitia celsiuksen sijasta",
             "wu_api": "Wunderground API-Avain",
             "wu_city": "Wunderground asema (kaupunki tai koodi)",
@@ -224,7 +229,7 @@
             "owm_min": "Minimum temperature on 2nd row",
             "owm_min_help": "Only shown when forecast in days",
             "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
-            "owm_lang_help": "For available languages, see https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_lang_help": "For available languages, see https://openweathermap.org/forecast5/#multi",
             "owm_country": "Open Weather Map Maa",
             "owm_name": "Näyttönimi Open Weather Map",
             "longfonds_zipcode": "Longfonds zipcode",
@@ -316,5 +321,10 @@
         "direction_W": "W",
         "direction_WNW": "W-NW",
         "direction_WSW": "W-SW"
+    },
+    "xmltvguide": {
+        "error": "Virhe TV-oppaan latauksessa.",
+        "no_programs": "Tulevia ohjelmia ei löydy.",
+        "loading": "Ladataan TV-opas..."
     }
 }

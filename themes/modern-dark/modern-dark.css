@@ -8,12 +8,12 @@
 :root {
   --main-bg: rgba(32, 33, 42, .88);
   --main-border-width: 1px;
-  --block-gap: 3px;
+  --block-gap: 0px;
   --box-border: 1px solid rgb(181, 181, 181);
   --home-bg: rgba(28, 31, 42, .74);
-  --border-color-inactive: rgb(42, 94, 151,.5);
-  --border-color-active: rgb(112, 160, 218,.5);
-  --border-color-block: rgb(112, 160, 218,.2);
+  --border-color-inactive: rgba(42, 94, 151, .5);
+  --border-color-active: rgba(112, 160, 218, .5);
+  --border-color-block: rgba(112, 160, 218, .2);
   --border-color-selector: var(--border-color-inactive);
   --button-bg: rgb(29, 43, 63);
   --button-hover: rgb(35, 53, 78);
@@ -22,7 +22,7 @@
   --text-normal: rgb(255, 255, 255);
   --text-inactive: rgba(188, 188, 188, .5);
   --warning-red: rgb(255, 0, 0);
-  --selector-bg: rgb(21, 31, 46);
+  --selector-bg: rgb(29, 43, 63);
   --blocktitle: rgba(130, 130, 130, .2);
   --panel-shadow: 0 8px 24px rgba(0, 0, 0, .28);
   --radius-border: 16px;
@@ -40,6 +40,59 @@
   --height-block-standby-clock: 200px;
 }
 
+/* ==========================================================================
+   HAYMAN CLOCK
+   ========================================================================== */
+
+.standby .clock-container:before {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 30px !important;
+  font-size: 80px !important;
+  overflow: hidden !important;
+}
+
+.standby .clock-container .clock-col:before  {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+}
+
+.standby .clock-container .clock-timer:before  {
+  margin: 0 !important;
+  padding: 0 !important;
+  font-size: 80px !important;
+  line-height: 1 !important;
+  font-family: Arial, sans-serif !important;
+  font-weight: bold !important;
+}
+
+.standby .clock-container .clock-day:before  {
+  color: rgba(90, 90, 90, 1) !important;
+  text-shadow: 4px 3px 3px #8c8c64 !important;
+}
+
+.standby .clock-container .clock-hours:before ,
+.standby .clock-container .clock-minutes:before  {
+  color: rgba(242, 242, 242, 1) !important;
+  text-shadow: 2px 2px 2px #b1b3a1 !important;
+}
+
+.standby .clock-container .clock-seconds:before  {
+  color: rgba(90, 90, 90, 1) !important;
+  text-shadow: 2px 2px 2px #8c8c64 !important;
+}
+
+.standby .clock-container .clock-label {
+  display: none !important;
+}
+
+
 .transbg {
   padding-top: 8px !important;
   padding-bottom: 6px !important;
@@ -52,11 +105,8 @@
     var(--panel-shadow) !important;
 }
 
-.transbg.titlegroups,
-.titlegroups,
 .transbg.blocktitle,
-.blocktitle,
-.miniclock {
+.blocktitle {
   margin: 0 !important;
   border: 0 !important;
   border-radius: 0 !important;
@@ -64,6 +114,38 @@
   box-shadow: none !important;
   -webkit-backdrop-filter: none !important;
   backdrop-filter: none !important;
+}
+
+.transbg.titlegroups,
+.titlegroups {
+  height: var(--height-block-default) !important;
+  min-height: var(--height-block-default) !important;
+  border: var(--block-gap) solid transparent !important;
+  border-radius: var(--radius-border) !important;
+  background: var(--main-bg) !important;
+  background-clip: padding-box !important;
+  box-shadow:
+    inset 0 0 0 var(--main-border-width) var(--border-color-block),
+    var(--panel-shadow) !important;
+}
+
+.transbg.titlegroups .dt_content,
+.titlegroups .dt_content {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  height: 100% !important;
+}
+
+.transbg.titlegroups .dt_title,
+.titlegroups .dt_title {
+  width: 100%;
+  text-align: left !important;
+}
+
+.transbg.titlegroups .dt_state,
+.titlegroups .dt_state {
+  display: none !important;
 }
 
 .mh {
@@ -101,6 +183,17 @@
   transition: color .2s ease, background-color .2s ease;
 }
 
+.transbg .selector-buttons .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 56px;
+  min-height: 44px;
+  padding: 10px 14px !important;
+  font-size: 18px !important;
+  line-height: 1.2;
+}
+
 .transbg .btn:hover,
 .transbg .btn:focus {
   color: var(--text-normal) !important;
@@ -123,11 +216,7 @@
 }
 
 .transbg .col-data > select {
-  min-width: 120px;
   min-height: 44px;
-  padding: 8px 38px 8px 12px !important;
-  font-size: 18px !important;
-  line-height: 1.2;
 }
 
 .transbg select:focus,
@@ -180,7 +269,7 @@
 .miniclock {
   max-width: 100% !important;
   height: 40px !important;
-  padding-top: 2px !important;
+  justify-content: center;
   color: var(--text-light) !important;
   font-size: var(--font-large) !important;
   font-weight: 700 !important;
@@ -189,7 +278,13 @@
 }
 
 .colbar .miniclock {
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
   background: transparent !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
 }
 
 .title,
@@ -219,6 +314,19 @@
 .titlegroups .col-icon img.icon {
   max-width: 34px !important;
   height: auto !important;
+}
+
+.trash .state {
+  text-align: right !important;
+}
+
+.trash .state table {
+  margin-left: auto !important;
+}
+
+.trash .trashtype,
+.trash .trashdate {
+  text-align: right !important;
 }
 
 @media (max-width: 767.98px) {
@@ -280,7 +388,23 @@
   background-color: #00aaff !important;
 }
 
-.standby .screenstandby,
+/* Verklein ALLEEN de afbeeldingen binnen dimmer-/blinds-blokken */
+.mh:has(.slider) .col-icon img,
+.mh:has(.blinds) .col-icon img {
+    max-width: 30px !important;
+    width: 30px !important;
+    height: auto !important;
+}
+.standby .screenstandby {
+  color: var(--text-light) !important;
+  border: 0 !important;
+  background-color: #000 !important;
+  background-clip: border-box !important;
+  box-shadow: none !important;
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
 .standby .block,
 .standby [data-id],
 .standby .transbg {

@@ -10,13 +10,13 @@ var Dashticz = (function () {
     'button',
     'frame',
     'news',
-    'longfonds',
     'traffic',
     'train',
     'publictransport',
     'stationclock',
     'blocktitle',
     'tvguide',
+    'xmltvguide',
     'trafficinfo',
     'alarmmeldingen',
     'secpanel',
@@ -105,6 +105,7 @@ var Dashticz = (function () {
 
   function renderBlock(me) {
     var $div = me.$mountPoint.find('.dt_block');
+    _applyTextOptions(me);
     var block = $(getSpecialBlock(me));
     if (me.block.containerClass)
       $div.addClass(getProperty(me.block.containerClass, me));
@@ -119,12 +120,17 @@ var Dashticz = (function () {
       .append(getProperty(components[me.name].defaultContent, me));
     $div.html(block);
     var fixedHeight = false;
+    // A grid item's height is already fixed by its grid-row span (--dt-grid-h);
+    // forcing the block's own pixel height on top of that fights the grid and
+    // breaks content that needs to size itself (iframes, camera images,
+    // mobile stacking). Skip it there and let the grid cell govern height.
+    var inGrid = me.$mountPoint.hasClass('dt-grid-item');
     if (me.block.aspectratio) {
       var blockWidth = parseInt($div.outerWidth());
       $div.css({height:blockWidth * me.block.aspectratio});
       fixedHeight = true;
     }
-    else if (me.block.height) {
+    else if (me.block.height && !inGrid) {
       $div.css({height: me.block.height})
       fixedHeight = true;
     }
@@ -275,10 +281,19 @@ var Dashticz = (function () {
   }
 
   function renderTitle(me) {
+    if (me.block.hide_title) return '';
     if (me.block.title) {
       var res = '<div class="dt_title">' + me.block.title + '</div>';
       return res;
     } else return '';
+  }
+
+  function _applyTextOptions(me) {
+    if (!me || !me.$mountPoint) return;
+    me.$mountPoint.toggleClass(
+      'dt-hide-title',
+      !!(me.block && me.block.hide_title)
+    );
   }
 
   function renderStateDiv() {
@@ -289,6 +304,47 @@ var Dashticz = (function () {
     //getter functionaly
     if (typeof fn === 'function') return fn(me);
     return fn;
+  }
+
+  function getWidgetTitle(block, special) {
+    if (
+      !special ||
+      (block && typeof block.key === 'string' && !/^widget_/.test(block.key))
+    ) {
+      return null;
+    }
+
+    var titleKeys = {
+      alarmmeldingen: 'alarmmeldingen_title',
+      basicclock: 'clock_title',
+      calendar: 'calendar_title',
+      camera: 'camera_title',
+      flipclock: 'clock_title',
+      garbage: 'garbage_title',
+      haymanclock: 'clock_title',
+      // WAQI reuses the longfonds_title translation key: the widget it
+      // replaced already carried the correct "Air Quality" wording.
+      waqi: 'longfonds_title',
+      map: 'map_title',
+      moon: 'moon_title',
+      news: 'news_title',
+      owmwidget: 'weather_title',
+      publictransport: 'publictransport_title',
+      secpanel: 'secpanel_title',
+      sonarr: 'sonarr_title',
+      spotify: 'spotify_title',
+      stationclock: 'clock_title',
+      trafficinfo: 'trafficinfo_title',
+      weather: 'weather_title',
+      xmltvguide: 'xmltvguide_title',
+    };
+    var translations =
+      typeof language !== 'undefined' &&
+      language &&
+      language.settings &&
+      language.settings.widgeteditor;
+    var titleKey = titleKeys[special.name];
+    return (translations && titleKey && translations[titleKey]) || null;
   }
 
   function getBlockConfig(block, special, key) {
@@ -307,6 +363,29 @@ var Dashticz = (function () {
     }
     if (typeof key !== 'undefined' && key !== '') {
       cfg.key = key;
+    }
+    // Only fall back to the translated default widget title when the block
+    // itself does not define one. Previously this ran unconditionally, so a
+    // custom title saved via the config menu was immediately overwritten by
+    // the generic default on every render (and after every reload).
+    var widgetTitle =
+      block && typeof block.title !== 'undefined'
+        ? null
+        : getWidgetTitle(block, special);
+    if (widgetTitle) {
+      cfg.title = widgetTitle;
+    } else if (
+      special &&
+      special.name === 'garbage' &&
+      (typeof block === 'undefined' || typeof block.title === 'undefined')
+    ) {
+      cfg.title =
+        (typeof language !== 'undefined' &&
+          language &&
+          language.settings &&
+          language.settings.garbage &&
+          language.settings.garbage.title) ||
+        'Garbage';
     }
     return cfg;
   }

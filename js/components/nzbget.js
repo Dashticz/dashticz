@@ -1,4 +1,4 @@
-/* global Dashticz _CORS_PATH settings*/
+/* global Dashticz _CORS_PATH settings language*/
 
 var DT_nzbget = {
   name: 'nzbget',
@@ -12,7 +12,9 @@ var DT_nzbget = {
   },
   refresh: function (me) {
     if (!settings['host_nzbget'] || settings['host_nzbget'] === '') {
-      $(me.mountPoint + ' .dt_state').html('host_nzbget not defined.');
+      $(me.mountPoint + ' .dt_state').text(
+        language.misc.nzbget_host_missing || 'NZBGet host is not configured.'
+      );
       return;
     }
     //        $(me.mountPoint +' .dt_state').addClass('containsnzbget')
@@ -28,7 +30,7 @@ Dashticz.register(DT_nzbget);
 function returnNZBGET(data) {
   if (data.length === 0) {
     var dummy = {
-      NZBName: 'No active downloads, or no connection',
+      NZBName: language.misc.no_downloads || 'No active downloads, or no connection',
       DownloadedSizeMB: 0,
       FileSizeMB: 0,
       FirstID: 123,

@@ -20,7 +20,10 @@
         clickHandler: true,
         results: 10,
         show_via: true,
-        show_direction: false
+        show_direction: false,
+        width: 4,
+        height: 260,
+        icon: 'fas fa-train',
       };
       if (!block || !block.station) {
         result.url =
@@ -153,7 +156,7 @@
       departures: []
     };
     if (data.result !== 'OK')
-      return ({ res: { res: '<div>Ongeldig resultaat</div>' } })
+      return ({ res: { res: '<div>' + language.misc.invalid_result + '</div>' } })
     data.departures.forEach(function (dep) {
       var departure = {
         date: dep.serviceDate,

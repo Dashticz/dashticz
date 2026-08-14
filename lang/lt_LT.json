@@ -8,6 +8,12 @@
         "news": "Naujienos",
         "sunrise": "Saulėtekis"
     },
+    "screenswitcher": {
+        "standby": "Budėjimas",
+        "screen": "Ekranas",
+        "add_screen": "Pridėti ekraną",
+        "delete_screen": "Ištrinti ekraną"
+    },
     "energy": {
         "energy_delivered": "Iš viso pagaminta",
         "energy_deliveredtoday": "Pagaminta elektros šiandien",
@@ -52,7 +58,7 @@
         "garbage": {
             "garbage_calendar_id": "\"Google\" kalendoriaus ID",
             "garbage_calendar_id_help": "Kalendoriaus ID surastas kalendoriaus nustatymuose",
-            "garbage_company": "Įmonė \/ paslauga",
+            "garbage_company": "Įmonė / paslauga",
             "garbage_hideicon": "Slėpti piktogramą bloke",
             "garbage_housenumber": "Namo numeris",
             "garbage_housenumberaddition": "Namo numeris, papildomas",
@@ -77,12 +83,12 @@
             "dashticz_refresh": "Atnaujinti Dashticz (minutėmis)",
             "default_news_url": "Numatytoji naujienų URL",
             "disable_googleanalytics": "Išjungti Google Analytics",
-            "disable_googleanalytics_help": "Naudojama tik kūrėjų, kad būtų galima stebėti naudotojų\/įrenginių skaičių Dashticz tobulinimui.",
+            "disable_googleanalytics_help": "Naudojama tik kūrėjų, kad būtų galima stebėti naudotojų/įrenginių skaičių Dashticz tobulinimui.",
             "domoticz_ip": "Domoticz URL",
-            "domoticz_ip_help": "Įveskite domoticz URL, pvz .: http:\/\/192.168.1.1:8080. Taip pat galite įvesti vartotoją ir slaptažodį, pavyzdžiui: http:\/\/user:password@192.168.1.1:8080",
+            "domoticz_ip_help": "Įveskite domoticz URL, pvz .: http://192.168.1.1:8080. Taip pat galite įvesti vartotoją ir slaptažodį, pavyzdžiui: http://user:password@192.168.1.1:8080",
             "domoticz_refresh": "Atnaujinti „Domoticz“ (sekundes)",
             "hide_off_button": "Slėpti išjungimo mygtuką pasirinkimo jungikliuose",
-            "last_update": "Rodyti paskutinio atnaujinimo laiką\/datą",
+            "last_update": "Rodyti paskutinio atnaujinimo laiką/datą",
             "login": "Prisijungti",
             "login_to_dashticz": "Dashticz Prisijungti",
             "loginEnabled": "Dashticz prisijungimo funkcija įjungta",
@@ -105,7 +111,7 @@
             "standby_call_url_on_end": "URL, kuris bus iškviestas budėjimo režimo pabaigoje",
             "login_timeout": "Laikykite Dašicą prisijungę (minutes)",
             "enable_websocket": "„WebSocket“",
-            "enable_websocket_help": "Įjungti \/ išjungti „WebSocket“ ryšį",
+            "enable_websocket_help": "Įjungti / išjungti „WebSocket“ ryšį",
             "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
             "colorpicker_none": "No RGB colorpicker",
             "colorpicker_old": "Old style RGB colorpicker",
@@ -164,12 +170,12 @@
         "media": {
             "hide_mediaplayer": "Slėpti grotuvą, kai jis išjungtas",
             "host_nzbget": "NZBget Kelias",
-            "host_nzbget_help": "Jei naudojate NZBget, įveskite IP adresą ir prievadą, pvz .: http:\/\/192.168.1.32:8080",
+            "host_nzbget_help": "Jei naudojate NZBget, įveskite IP adresą ir prievadą, pvz .: http://192.168.1.32:8080",
             "sonarr_apikey": "Sonarr API ranktas",
             "sonarr_maxitems": "Sonarr maks. elementai sąraše",
             "sonarr_url": "Sonarr URL",
             "spot_clientid": "Spotify Kliento ID",
-            "switch_horizon": "Ziggo\/UPC lauką kelias",
+            "switch_horizon": "Ziggo/UPC lauką kelias",
             "switch_horizon_help": "Jei turite grotuvą iš ZIGGO arba UPC (Horizon), nukopijuokite switch_horizon.php bylą savo serveryje ir pakeiskite IP.",
             "title": "Grotuvas"
         },
@@ -180,10 +186,9 @@
             "auto_swipe_back_to": "Automatinis grįžimas į ekraną #",
             "auto_swipe_back_to_help": "Kai jokia veikla nevyksta, grįžti į pagrindinį ekraną po x sekundžių",
             "background_image": "Fono paveikslėlis",
-            "background_image_help": "Nustatyti kelią fono paveikslėliui, pvz. img\/bg2.jpg arba http:\/\/yourimage.com\/image.jpg",
+            "background_image_help": "Nustatyti kelią fono paveikslėliui, pvz. img/bg2.jpg arba http://yourimage.com/image.jpg",
             "dashticz_themes": "Dashticz tema",
             "dashticz_themes_help": "Nustatykite temos pavadinimą (pvz., baltas), tema bus perrašyta custom.css",
-            "edit_mode": "Eiti į redagavimo režimą",
             "hide_topbar": "Slėpti viršutinę juostą",
             "slide_effect": "Skaidrių efektas",
             "standard_graph": "Standartinis grafikas",
@@ -209,7 +214,7 @@
             "title": "Orai",
             "translate_windspeed": "Versti vėjo greitį",
             "translate_windspeed_help": "„Šiaurės šiaurės-vakarai“ vietoj „NNW“",
-            "use_beaufort": "Naudoti Bft vietoj m\/s",
+            "use_beaufort": "Naudoti Bft vietoj m/s",
             "use_fahrenheit": "Rodyti temperatūrą Farenheitais",
             "wu_api": "Wunderground API Raktas",
             "wu_city": "Wunderground Stotis (Miesto arba Kodas)",
@@ -224,7 +229,7 @@
             "owm_min": "Minimali temperatūra 2-oje eilutėje",
             "owm_min_help": "Rodoma tik tada, kai prognozuojama kelioms dienoms",
             "owm_lang": "Nustatyti kalbą, skirtą prognozei (lietus, debesuota ir kt.)",
-            "owm_lang_help": "Galimos kalbos, ieškokite https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_lang_help": "Galimos kalbos, ieškokite https://openweathermap.org/forecast5/#multi",
             "owm_country": "Open Weather Map Šalis",
             "owm_name": "Open Wehater Map rodomas pavadinimas ",
             "longfonds_zipcode": "Longfonds pašto kodas",
@@ -316,5 +321,10 @@
         "direction_W": "W",
         "direction_WNW": "W-NW",
         "direction_WSW": "W-SW"
+    },
+    "xmltvguide": {
+        "error": "Klaida įkeliant TV gidą.",
+        "no_programs": "Artėjančių programų nerasta.",
+        "loading": "Kraunamas TV gidas..."
     }
 }
