@@ -4,7 +4,7 @@
 var DT_news = {
   name: 'news',
   canHandle: function (block) {
-    return block && block.feed;
+    return block && (block.type === 'news' || block.feed);
   },
   init: function () {
     return DT_function.loadScript('vendor/jquery.newsTicker.min.js');
@@ -13,6 +13,14 @@ var DT_news = {
     containerClass: 'hover',
     feed: settings['default_news_url'],
     refresh: 300,
+    width: 4,
+    height: 240,
+    // Widget Editor's Icon checkbox is checked by default but has nothing to
+    // fall back to unless the user also types a custom icon value (see
+    // js/widgeteditor.js _buildWidgetPayloadEntry): with no explicit
+    // block.icon, getColIcon() (js/dashticz.js) renders nothing. Other
+    // widgets like weather already ship a default icon for the same reason.
+    icon: 'fas fa-newspaper',
   },
   run: function (me) {
     me.height =
@@ -148,7 +156,7 @@ var DT_news = {
       },
       error: function (data) {
         infoMessage(
-          '<font color="red">News Error!</font>',
+          '<font color="red">' + language.misc.news_error + '</font>',
           'RSS feed ' + data.statusText + '. Check rss url.',
           10000
         );

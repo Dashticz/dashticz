@@ -11,8 +11,9 @@ window.GoogleMapsCallback = function () {
 
 function gm_authFailure() {
   console.log('Google Maps Authentication problem')
-  $('.map .dt_state').html('Invalid Google Maps API key.<br>' +
-    'See <a href="https://dashticz.readthedocs.io/en/master/blocks/specials/googlemaps.html#getting-a-google-maps-api-key">Dashticz Google Maps documentation</a>')
+  $('.map .dt_state').html(language.misc.map_api_invalid + '<br>' +
+    language.misc.see_documentation_prefix + ' <a href="https://dashticz.readthedocs.io/en/master/blocks/specials/googlemaps.html#getting-a-google-maps-api-key">' +
+    language.misc.map_documentation + '</a>')
 };
 
 (function (Dashticz) {
@@ -20,7 +21,7 @@ function gm_authFailure() {
   var DT_googlemaps = {
     name: 'map',
     canHandle: function (block) {
-      return block && (block.latitude && block.longitude);
+      return block && (block.type === 'map' || (block.latitude && block.longitude));
     },
     init: function (block) {
       if (!Dashticz.googleMapsPromise) {
@@ -39,8 +40,8 @@ function gm_authFailure() {
         refresh: 600,
         clickHandler: false,
         api: settings['gm_api'],
-        width: 6,
-        //            height: '400px',
+        width: 4,
+        height: 500,
         //            aspectratio:0.5,
         containerClass: 'swiper-no-swiping',
         longitude: parseFloat(Domoticz.getAllDevices()['_settings'].Location.Longitude),
@@ -58,8 +59,13 @@ function gm_authFailure() {
 
       };
       if(choose(block.showmap, true)) {
-        result.width=12;
-        if (!block.height) result.aspectratio = 0.6;
+        result.width=4;
+        // Same icon the widget catalog already uses to represent Google
+        // Maps (js/widgeteditor.js). Without a default here, checking the
+        // Icon option with no custom value (the same pattern News/Weather
+        // rely on) rendered nothing, since getColIcon() only draws an icon
+        // when block.icon is actually set.
+        result.icon='fas fa-map-marked-alt'
       }
       else {
         result.icon='fas fa-solid fa-route'
@@ -335,4 +341,3 @@ function setRefreshTime(me) {
 
 Dashticz.register(DT_googlemaps);
 }(Dashticz));
-

@@ -1,12 +1,33 @@
 #!/bin/sh
-# Prepare custom/ for a native Apache/PHP installation.
-# The Dashticz directory is derived from this script's own location, so the
-# repository can be cloned anywhere.
+# Prepare Dashticz so the web-server user can write CONFIG.js and (optionally)
+# run Git updates from the Settings UI.
+# The Dashticz directory is derived from this script's own location.
 
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 INSTALL_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd -P)
+GIT_UPDATE=0
+
+for arg in "$@"; do
+    case "$arg" in
+        --git-update)
+            GIT_UPDATE=1
+            ;;
+        -h|--help)
+            echo "Usage: $0 [--git-update]"
+            echo "  Default: make custom/ writable for the web-server user."
+            echo "  --git-update: also give that user ownership of the checkout"
+            echo "                so Settings → Update can run git fetch/pull."
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $arg" >&2
+            echo "Usage: $0 [--git-update]" >&2
+            exit 64
+            ;;
+    esac
+done
 
 if [ ! -f "$INSTALL_DIR/index.html" ] || \
    [ ! -f "$INSTALL_DIR/js/savesettings.php" ]; then
@@ -63,6 +84,16 @@ if [ -e "$CONFIG_FILE" ]; then
     chmod 0664 "$CONFIG_FILE"
 fi
 
+if [ "$GIT_UPDATE" -eq 1 ]; then
+    if [ ! -d "$INSTALL_DIR/.git" ]; then
+        echo "No .git directory found; cannot enable Git updates" >&2
+        exit 66
+    fi
+    # Dedicated installs: let the web-server user own the tree so fetch/pull work.
+    chown -R "$WEB_USER:$WEB_GROUP" "$INSTALL_DIR"
+    echo "Git update access enabled for $WEB_USER:$WEB_GROUP on $INSTALL_DIR"
+fi
+
 if command -v runuser >/dev/null 2>&1; then
     TEST_FILE="$CUSTOM_DIR/.dashticz-write-test.$$"
     if ! runuser -u "$WEB_USER" -- touch "$TEST_FILE"; then
@@ -70,9 +101,21 @@ if command -v runuser >/dev/null 2>&1; then
         exit 73
     fi
     rm -f "$TEST_FILE"
+
+    if [ "$GIT_UPDATE" -eq 1 ]; then
+        GIT_TEST="$INSTALL_DIR/.git/.dashticz-write-test.$$"
+        if ! runuser -u "$WEB_USER" -- touch "$GIT_TEST"; then
+            echo "The .git directory is still not writable by $WEB_USER" >&2
+            exit 73
+        fi
+        rm -f "$GIT_TEST"
+    fi
 else
     echo "Warning: runuser not found; could not verify access as $WEB_USER" >&2
 fi
 
 echo "Dashticz custom directory prepared for $WEB_USER:$WEB_GROUP"
 echo "The setup wizard can now create $CONFIG_FILE"
+if [ "$GIT_UPDATE" -eq 0 ]; then
+    echo "Tip: run with --git-update to allow Settings → Update (git fetch/pull)."
+fi

@@ -29,6 +29,7 @@ var DT_timegraph = (function () {
     },
 
     defaultCfg: {
+      icon: 'fas fa-chart-line',
       duration: 5 * 60,
       xTicks: 10,
       xLabels: true,
@@ -290,12 +291,12 @@ var DT_timegraph = (function () {
     var val = getValueInfo(device, dataset);
     var length = me.chart.data.datasets[setIdx].data.length;
     if (me.datasets[setIdx].tick && length) {
-      me.chart.data.datasets[setIdx].data[length - 1].t = timestamp;
+      me.chart.data.datasets[setIdx].data[length - 1].x = timestamp.valueOf();
       me.chart.data.datasets[setIdx].data[length - 1].y = val.data;
     } else {
       me.chart.data.datasets[setIdx].data.push({
         y: val.data,
-        t: timestamp,
+        x: timestamp.valueOf(),
       });
     }
     me.datasets[setIdx].tick = false;
@@ -323,15 +324,15 @@ var DT_timegraph = (function () {
       if (!length) return; //During initialization there might be no data yet
       var data = dataset.data[length - 1];
       if (me.datasets[setIdx].tick) {
-        data.t = timestamp + 10000;
+        data.x = timestamp.valueOf() + 10000;
         //      me.chart.data.labels[me.chart.data.labels.length-1]=timestamp;
       } else {
-        var d = { y: data.y, t: timestamp + 10000 };
+        var d = { y: data.y, x: timestamp.valueOf() + 10000 };
         dataset.data.push(d);
         //      me.chart.data.labels.push(timestamp);
       }
       me.datasets[setIdx].tick = true;
-      while (dataset.data.length > 2 && dataset.data[1].t < minTime) {
+      while (dataset.data.length > 2 && dataset.data[1].x < minTime) {
         dataset.data.shift();
         //      console.log('shifting');
       }

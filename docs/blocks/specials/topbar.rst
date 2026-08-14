@@ -24,7 +24,9 @@ You can customize the Topbar with the following settings in ``CONFIG.js``::
   * - miniclock
     - Clock in Topbar
   * - settings
-    - Settings & Fullscreen button in Topbar
+    - Device Editor, Visual Layout Editor, Settings & Fullscreen buttons in Topbar
+  * - (screen switcher)
+    - Built into the settings area: square Standby / screen buttons to switch screens; ``+`` adds a screen in Wizard mode.  When ``topbar_use_png_icons`` is enabled they automatically use the bundled ``Standby.png``, ``One.png``, ``Two.png``, ``Three.png``, and ``Four.png`` images unless you configured a custom icon in ``CONFIG.js``.
 
 Applicable config-parameters from ``CONFIG.js``:
 

@@ -1382,7 +1382,7 @@ function createButtons(graph, ranges, customRange) {
     var newLi =
       '<li><a href="#" ><i class="fas fa-code" style="font-size:14px;color:' +
       btn.icon +
-      '">&nbsp;</i>&nbsp;Show Data</a></li>';
+      '">&nbsp;</i>&nbsp;' + language.graph.show_data + '</a></li>';
     var $newLi = $(newLi).click(function () {
       showData(graph);
       return false;
@@ -1526,21 +1526,21 @@ function showData(graph) {
     html += '       <hr/>';
     html += '       <div class="flex-row">';
     html +=
-      '         <div class="devices"><i class="fas fa-bolt text-yellow"></i><span class="label">Devices:</span>' +
+      '         <div class="devices"><i class="fas fa-bolt text-yellow"></i><span class="label">' + language.graph.devices + ':</span>' +
       graph.block.devices.join(', ') +
       '</div>';
 
     if (!graph.block.groupByDevice) {
       html +=
-        '         <div class="input-keys"><i class="fas fa-key text-red"></i><span class="label">Input Keys:</span>' +
+        '         <div class="input-keys"><i class="fas fa-key text-red"></i><span class="label">' + language.graph.input_keys + ':</span>' +
         graph.keys.join(', ') +
         '</div>';
       html +=
-        '         <div class="output-keys"><i class="fas fa-key text-green"></i><span class="label">Output Keys:</span>' +
+        '         <div class="output-keys"><i class="fas fa-key text-green"></i><span class="label">' + language.graph.output_keys + ':</span>' +
         graph.ykeys.join(', ') +
         '</div>';
       html +=
-        '         <div class="ylabels"><i class="fas fa-balance-scale-right text-blue"></i></i><span class="label">Y Labels:</span>' +
+        '         <div class="ylabels"><i class="fas fa-balance-scale-right text-blue"></i></i><span class="label">' + language.graph.y_labels + ':</span>' +
         graph.ylabels.join(', ') +
         '</div>';
     }
@@ -1581,27 +1581,27 @@ function showData(graph) {
         d += '<div class="device">';
         d += '  <div class="col-md-10">';
         d +=
-          '    <div class="name"><span class="label">Name:</span>' +
+          '    <div class="name"><span class="label">' + language.graph.name + ':</span>' +
           device.Name +
           '</div>';
         d +=
-          '    <div class="type"><span class="label">Type:</span>' +
+          '    <div class="type"><span class="label">' + language.graph.type + ':</span>' +
           device.Type +
           '</div>';
         d +=
-          '    <div class="subtype"><span class="label">SubType:</span>' +
+          '    <div class="subtype"><span class="label">' + language.graph.subtype + ':</span>' +
           device.SubType +
           '</div>';
         d +=
-          '    <div class="hardwareName"><span class="label">Hardware Name:</span>' +
+          '    <div class="hardwareName"><span class="label">' + language.graph.hardware_name + ':</span>' +
           device.HardwareName +
           '</div>';
         d +=
-          '    <div class="data"><span class="label">Data:</span>' +
+          '    <div class="data"><span class="label">' + language.graph.data + ':</span>' +
           device.Data +
           '</div>';
         d +=
-          '    <div class="lastUpdate"><span class="label">Last Update:</span>' +
+          '    <div class="lastUpdate"><span class="label">' + language.graph.last_update + ':</span>' +
           device.LastUpdate +
           '</div>';
         d += '  </div>';
@@ -1618,7 +1618,7 @@ function showData(graph) {
             config['domoticz_ip'] +
             '/json.htm?' +
             graph.params[i] +
-            '" target="_blank"><i class="fas fa-database">&nbsp;</i>Data</a>';
+            '" target="_blank"><i class="fas fa-database">&nbsp;</i>' + language.graph.data + '</a>';
         }
         d += '  </div>';
         d += '</div>';
@@ -2008,7 +2008,7 @@ function groupByDevice(me) {
   obj.backgroundColor = me.hasSetPoint
     ? datasetColors
     : graph.block.datasetColors;
-  obj.label = me.hasSetPoint ? 'Temperature' : graph.txtUnit;
+  obj.label = me.hasSetPoint ? language.graph.temperature : graph.txtUnit;
   obj.order = 1;
   graphProperties.data.datasets.push(obj);
 

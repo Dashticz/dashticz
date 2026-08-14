@@ -26,6 +26,7 @@ var DT_streamplayer = {
       },
     ];
     return {
+      icon: 'fas fa-broadcast-tower',
       tracks:
         typeof _STREAMPLAYER_TRACKS !== 'undefined'
           ? _STREAMPLAYER_TRACKS

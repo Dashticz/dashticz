@@ -11,7 +11,8 @@ var DT_alarmmeldingen = {
     rss: 'https://www.alarmeringen.nl/feeds/all.rss',
     filter: '',
     show_lastupdate: true,
-    width: 12,
+    width: 4,
+    height: 160,
     refresh: 180,
     results: 5,
     timeformat: 'ddd D MMM HH:mm',
@@ -30,7 +31,7 @@ var DT_alarmmeldingen = {
       },
       error: function (data) {
         infoMessage(
-          '<font color="red">Alarmeringen.nl feed Error!</font>',
+          '<font color="red">' + language.misc.alert_feed_error + '</font>',
           'RSS feed ' + data.statusText + '. Check rss url.',
           10000
         );
@@ -79,7 +80,7 @@ var DT_alarmmeldingen = {
       if (isEmpty) {
         html +=
           '<li <strong>' +
-          'Geen Actuele Meldingen.....' +
+          (language.misc.no_alerts || 'No current alerts.') +
           '</strong><br />' +
           '</li>';
       }
