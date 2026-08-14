@@ -31,7 +31,7 @@ file:
 | Section | Options |
 | --- | --- |
 | Connection | Domoticz URL, login required, OAuth client ID and OAuth client secret |
-| General | Dashboard name, language (`nl_NL`, `en_US`, `de_DE` or `fr_FR`), theme (`modern-dark`, `default` or `white`) and topbar auto-hide time |
+| General | Dashboard name, language (`nl_NL`, `en_US`, `de_DE` or `fr_FR`), theme (`modern-dark`, `liquid-glass-grey`, `liquid-glass-blue`, `default` or `white`) and topbar auto-hide time |
 
 The topbar auto-hide time defaults to 5 seconds. Select **Save & Start** to
 create the configuration and open the dashboard.
@@ -622,6 +622,19 @@ and a black standby background. Enable it in `custom/CONFIG.js`:
 
 ```javascript
 config['theme'] = 'modern-dark';
+```
+
+The `liquid-glass-grey` and `liquid-glass-blue` themes are based on
+`modern-dark` — they keep the same block rounding, spacing and block
+heights — but restyle the blocks as frosted, translucent "liquid glass"
+panels (blurred backgrounds with a soft top sheen), in a neutral
+graphite/silver palette and a deep navy/blue palette respectively. Enable
+either with:
+
+```javascript
+config['theme'] = 'liquid-glass-grey';
+// or
+config['theme'] = 'liquid-glass-blue';
 ```
 
 Theme files contain general-purpose styling only. Dashticz loads
