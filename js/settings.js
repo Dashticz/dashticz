@@ -2694,7 +2694,7 @@ function saveSettings() {
   function addChangedSetting(settingName, value) {
     if (JSON.stringify(settings[settingName]) === JSON.stringify(value)) return;
     var serializedValue = JSON.stringify(value);
-    saveSettings[settingName] = serializedValue;
+    savePayload[settingName] = serializedValue;
     alertSettings +=
       'config[' + JSON.stringify(settingName) + '] = ' + serializedValue + ';\n';
   }
@@ -2784,9 +2784,9 @@ function saveSettings() {
 
   // When config_mode was not in CONFIG.js, force-persist it now so the file
   // reflects the auto-detected value even if nothing else changed.
-  if (_configModeAutoDetected && typeof saveSettings['config_mode'] === 'undefined') {
+  if (_configModeAutoDetected && typeof savePayload['config_mode'] === 'undefined') {
     var _modeValue = JSON.stringify(settings['config_mode']);
-    saveSettings['config_mode'] = _modeValue;
+    savePayload['config_mode'] = _modeValue;
     alertSettings += 'config["config_mode"] = ' + _modeValue + ';\n';
   }
 
@@ -2820,7 +2820,7 @@ function saveSettings() {
       return $.when(saveCssPromise, saveConfigPromise);
     })
     .done(function () {
-      var selectedLanguage = saveSettings.language;
+      var selectedLanguage = savePayload.language;
       if (selectedLanguage) {
         localStorage.dashticz_language = JSON.parse(selectedLanguage);
       }
