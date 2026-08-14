@@ -31,6 +31,7 @@ var DT_weather = (function () {
     canHandle: function (block) {
       var key = block.key;
       if (
+        block.widget_provider === 'openweather' ||
         key === 'weather_owm' ||
         key === 'currentweather_owm' ||
         key === 'currentweather_big_owm'
@@ -63,14 +64,20 @@ var DT_weather = (function () {
         interval: 1,
         refresh: 3600, //update once per hour
         icon: 'fas fa-sun',
+        width: 4,
+        height: 120,
         scale: 1,
         containerClass: 'weather_' + layout,
         decimals: 1,
-        showRain: true,
-        showDescription: true,
+        showRain: choose(block.showRain, settings['weather_show_rain'], 1),
+        showDescription: choose(
+          block.showDescription,
+          settings['weather_show_description'],
+          1
+        ),
         showMin: choose(settings['owm_min'], true),
-        showWind: true,
-        showGust: true,
+        showWind: choose(block.showWind, settings['weather_show_wind'], 0),
+        showGust: choose(block.showGust, settings['weather_show_gust'], 0),
         monochrome: false,
         showDetails: true,
         showDaily: true,
@@ -79,7 +86,10 @@ var DT_weather = (function () {
         showForecast: true, //only for KNMI
         useBeaufort: settings.use_beaufort || false,
         skipFirst: false,
-        icons: settings.static_weathericons ? 'static' : 'line',
+        icons:
+          block.icons ||
+          settings['weather_icons'] ||
+          (settings.static_weathericons ? 'static' : 'line'),
         iconExt: 'svg',
         //        provider: 'owm'
         rows: 1
@@ -88,6 +98,16 @@ var DT_weather = (function () {
     run: function (me) {
       if (me.block.refresh < 900) me.block.refresh = 900;
       me.$block = me.$mountPoint.find('.dt_block');
+      me.$mountPoint
+        .find('.dt_state')
+        .text(language.misc.weather_loading || 'Loading weather...');
+      if (!me.block.apikey) {
+        me.$mountPoint
+          .find('.dt_state')
+          .text(language.misc.weather_api_missing || 'No valid weather API key.');
+        me.runPromise = $.Deferred().resolve();
+        return;
+      }
       me.runPromise = findProviders(me).then(function () {
         if (me.provider === 'owm3') {
           return getLatLon(me)
@@ -109,7 +129,10 @@ var DT_weather = (function () {
               );
               return;
             }*/
-      var w = parseInt(me.$mountPoint.width() * me.block.width / 12 * me.block.scale);
+      var widthFactor = me.$mountPoint.hasClass('dt-grid-item')
+        ? 1
+        : me.block.width / 12;
+      var w = parseInt(me.$mountPoint.width() * widthFactor * me.block.scale);
       if (me.block.scale !== 1) me.$block.css('width', w);
       var fontSize = w / 10;
       if (me.block.layout === 0 || me.block.layout === 1) {
@@ -185,7 +208,13 @@ var DT_weather = (function () {
         if (res) me.provider = res
         else {
           console.error('No valid weather provider found');
-          me.$mountPoint.find('.dt_state').html('<div style="font-size:50%">' + 'No valid weather API key.' + '</div>');
+          me.$mountPoint
+            .find('.dt_state')
+            .html(
+              '<div style="font-size:50%">' +
+                (language.misc.weather_api_missing || 'No valid weather API key.') +
+                '</div>'
+            );
         }
       }
     )

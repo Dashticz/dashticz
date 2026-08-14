@@ -9,21 +9,60 @@ var DT_flipclock = {
     return block && block.type && block.type === 'flipclock';
   },
   defaultCfg: function () {
-    return {
+    var cfg = {
       width: 12,
       scale: 1,
+      minEmSize: 3.5,
+      maxEmSize: 7,
       showSeconds: !settings['hide_seconds'],
       clockFace: settings['shorttime'].match(/A/i) ? 12 : 24,
+      icon: 'far fa-clock',
     };
+    if (settings['clock_scale'] !== '' && settings['clock_scale'] != null) {
+      var scale = Number(settings['clock_scale']);
+      if (isFinite(scale) && scale > 0) cfg.scale = scale;
+    }
+    if (settings['clock_size'] !== '' && settings['clock_size'] != null) {
+      var size = Number(settings['clock_size']);
+      if (isFinite(size) && size > 0) cfg.size = size;
+    }
+    return cfg;
   },
   run: function (me) {
-    var width = me.block.size || $(me.mountPoint + ' .dt_content').width();
-    document.documentElement.style.setProperty(
-      '--flipclock-em',
-      (width / 82) * me.block.scale + 'px'
+    var $content = $(me.mountPoint + ' .dt_content');
+    var $block = $(me.mountPoint + ' .dt_block');
+    var $title = $(me.mountPoint + ' .dt_title');
+    var $state = $(me.mountPoint + ' .dt_state');
+    // .dt_block's height includes the title bar (built by dashticz.js's
+    // renderTitle()) and .dt_state's own 5px/5px vertical margin (see
+    // creative.css), so sizing the clock to the full block height pushed it
+    // past the block's own bottom edge and needed an oversized block just to
+    // avoid a scrollbar. Same fix as js/components/frame.js.
+    var titleHeight = $title.length && $title.is(':visible') ? $title.outerHeight(true) : 0;
+    var stateMarginV = $state.length
+      ? (parseFloat($state.css('margin-top')) || 0) + (parseFloat($state.css('margin-bottom')) || 0)
+      : 0;
+    var availW =
+      $block.width() || $content.width() || $(me.mountPoint).width() || 320;
+    var availH = ($block.height() || $(me.mountPoint).height() || 0) - titleHeight - stateMarginV;
+    var scale = Number(me.block.scale);
+    if (!isFinite(scale) || scale <= 0) scale = 1;
+    var base = me.block.size || (availH > 0 ? Math.min(availW, availH) : availW);
+    var width = base * scale;
+    if (availW > 0) width = Math.min(width, availW);
+    if (availH > 0) width = Math.min(width, availH);
+    var emSize = Math.max(
+      me.block.minEmSize,
+      Math.min(me.block.maxEmSize, width / 82)
     );
+    $content.css('--flipclock-em', emSize + 'px');
 
-    FlipClock($(me.mountPoint + ' .dt_content'), {
+    // FlipClock() replaces the target element's content wholesale, so it must
+    // target .dt_state rather than .dt_content: .dt_content also holds
+    // .dt_title (built by dashticz.js's renderTitle() from block.title/
+    // hide_title), which would otherwise get wiped out right after it's set.
+    var $state = $(me.mountPoint + ' .dt_state');
+    FlipClock($state, 0, {
       clockFace:
         me.block.clockFace == 12 ? 'TwelveHourClock' : 'TwentyFourHourClock',
       showSeconds: me.block.showSeconds,

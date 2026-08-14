@@ -6,6 +6,19 @@ Streamplayer
 
 For those who like to listen to the radio on Dashticz, there is a Plugin available.
 
+Graphical configuration
+========================
+
+The Streamplayer can also be added and configured from the Widget Editor as
+**Radio**: add and remove stations (name + stream URL) from a repeatable
+list. Saved stations are written as ``blocks['streamplayer'].tracks`` — the
+same shape used by the hand-written ``_STREAMPLAYER_TRACKS`` global below —
+so both configuration styles are interchangeable and a manually written
+``_STREAMPLAYER_TRACKS`` array keeps working unchanged.
+
+Manual configuration
+======================
+
 Add the following to your CONFIG.js::
 
     var _STREAMPLAYER_TRACKS     = [

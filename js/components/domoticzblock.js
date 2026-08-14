@@ -25,6 +25,7 @@ var DT_domoticzblock = (function () {
         block.key + longpress + ' col-xs-'+me.block.width +
         '">Getting device ' + me.block.idx + '</div>'
       );
+      applyConfiguredHeight(me);
       me.deviceIdx = block.idx;
       if (typeof block.idx === 'string') {
         var idxSplit = block.idx.split('_');
@@ -82,6 +83,7 @@ var DT_domoticzblock = (function () {
     refresh: function (me) {
       fixBlock(me);
       deviceUpdateHandler(me.block);
+      applyConfiguredHeight(me);
     },
   };
 
@@ -123,6 +125,7 @@ var DT_domoticzblock = (function () {
     Dashticz.subscribeDevice(me, me.deviceIdx, true, function (device) {
       me.block.device = device;
       deviceUpdateHandler(me.block);
+      applyConfiguredHeight(me);
       setBackgroundImage(me, me.backgroundImage);
     });
     if(me.block.values) {
@@ -136,6 +139,19 @@ var DT_domoticzblock = (function () {
         }
       })
     }
+  }
+
+  function applyConfiguredHeight(me) {
+    // While the Layout Editor is active it owns the temporary block size.
+    // Reapplying CONFIG.js here would make a tile jump back on every update.
+    if (document.body.classList.contains('dle-active')) return;
+    var height = parseInt(me.block.height, 10);
+    if (!(height > 0)) return;
+    height = Math.max(50, Math.min(2000, Math.round(height / 10) * 10));
+    me.$mountPoint.children('.mh').each(function () {
+      this.classList.add('fixedheight');
+      this.style.setProperty('height', height + 'px', 'important');
+    });
   }
 })();
 

@@ -165,7 +165,7 @@ CSS class definition for special blocks
 The CSS class approach for special blocks are slightly different as the Domoticz blocks. Also not all special blocks have been transformed to this template yet.
 It's applicable to the following blocks:
 
-* alarmmeldingen, blocktitle, button, calendar, camera, coronavirus, dial, frame, graph, longfonds, news, nzbget, publictransport, secpanel, stationclock, streamplayer, traffic, trafficinfo
+* alarmmeldingen, blocktitle, button, calendar, camera, coronavirus, dial, frame, graph, news, nzbget, publictransport, secpanel, stationclock, streamplayer, traffic, trafficinfo, waqi
 
 Currently it's not applicable to:
 

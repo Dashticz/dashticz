@@ -9,8 +9,14 @@ var SpotifyModule = (function () {
   var columndiv;
   var spotVolume;
 
-  function _getSpotify(columndiv) {
+  function _getSpotify(columndiv, block) {
     var random = getRandomInt(1, 100000);
+    block = block || {};
+    var fixedHeight = parseInt(block.height, 10) || 120;
+    var heightClass = fixedHeight > 0 ? ' fixedheight' : '';
+    var heightStyle =
+      fixedHeight > 0 ? 'height:' + fixedHeight + 'px !important;' : '';
+    var width = Math.max(1, Math.min(12, parseInt(block.width, 10) || 4));
     if (
       typeof Cookies.get('spotifyToken') !== 'undefined' ||
       typeof CUR_URI[1] !== 'undefined'
@@ -24,9 +30,14 @@ var SpotifyModule = (function () {
       spotifyApi.setAccessToken(accessToken);
 
       var html =
-        '<div data-id="spotify" class="col-xs-12 transbg containsspotify containsspotify' +
+        '<div data-id="spotify" class="mh dt_block col-xs-' +
+        width +
+        ' transbg containsspotify containsspotify' +
         random +
-        '" style="padding:0px !important;">';
+        heightClass +
+        '" style="' +
+        heightStyle +
+        'padding:0px !important;">';
       html += '<div id="current"></div>';
 
       html +=
@@ -46,6 +57,15 @@ var SpotifyModule = (function () {
       }, 2000);
     } else if (!settings['spot_clientid']) {
       console.log('Enter your Spotify ClientID in CONFIG.JS');
+      $(columndiv).append(
+        '<div data-id="spotify" class="mh dt_block col-xs-' +
+          width +
+          ' transbg containsspotify' +
+          heightClass +
+          '" style="' +
+          heightStyle +
+          '"><div class="dt_state">Spotify ClientID ontbreekt.</div></div>'
+      );
       infoMessage(
         'Spotify:',
         'Enter your Spotify ClientID in settings or delete spotify block in your CONFIG.js',
@@ -436,6 +456,6 @@ var SpotifyModule = (function () {
 
 //Wrapper function to stay compatible with current module system
 // eslint-disable-next-line no-unused-vars
-function getSpotify(columndiv) {
-  return SpotifyModule.getSpotify(columndiv);
+function getSpotify(columndiv, block) {
+  return SpotifyModule.getSpotify(columndiv, block);
 }

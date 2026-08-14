@@ -1,6 +1,6 @@
 /* eslint-disable no-debugger */
 /*global getBlockTypesBlock, language, settings*/
-/*global Dashticz, DT_function, Domoticz, Debug */
+/*global Dashticz, DashticzLayoutEditor, DT_function, Domoticz, Debug */
 /*global moment, number_format */
 /*from bundle.js*/
 /*global ion isDefined*/
@@ -39,23 +39,20 @@ function getBlock(cols, c, screendiv, standby) {
     var colclass = '';
     if (c === 'bar') colclass = 'transbg dark';
     var colwidth = 'col-sm-' + (cols.width ? cols.width + ' ' : '12 ');
-    if (standby) {
-      $(screendiv + ' .row').append(
-        '<div class="' + colwidth + ' col-xs-12 col' + c + '"></div>'
-      );
-    } else {
-      $(screendiv + ' .row').append(
-        '<div data-colindex="' +
+    // data-colindex is required for layout/device/widget editors (incl. standby).
+    $(screendiv + ' .row').append(
+      '<div data-colindex="' +
         c +
         '" class="' +
         colwidth +
-        ' col-xs-12 sortable col' +
+        ' col-xs-12 ' +
+        (standby ? '' : 'sortable ') +
+        'col' +
         c +
         ' ' +
         colclass +
         '"></div>'
-      );
-    }
+    );
     cols.blocks && cols['blocks'].forEach(function (b, i) {
       if (b)
         addBlock2Column(columndiv, c, b);
@@ -69,34 +66,48 @@ function getBlock(cols, c, screendiv, standby) {
  * @param {string} columndiv - div to add block to
  * @param {string} c - Column id
  * @param {object | string | number} b - string, as key for block object, object or number
+ * @param {function} prepareContainer - optional hook before the component mounts
  *
  * If b is a number then it represents a device id.
  */
 var previousblock = 0;
 
-function addBlock2Column(columndiv, c, b) {
+function addBlock2Column(columndiv, c, b, prepareContainer) {
   if (typeof b === 'undefined') {
     console.log('Block undefined after block ', previousblock);
-    return;
+    return null;
   }
   previousblock = b;
   var myblockselector = Dashticz.mountNewContainer(columndiv);
+  if (prepareContainer) prepareContainer(myblockselector);
   var newBlock = b;
   try {
     if (typeof b !== 'object') newBlock = convertBlock(b, c);
     if (c === 'popup') newBlock.isPopup = true;
+    if (
+      c === 'bar' &&
+      newBlock &&
+      typeof newBlock.type === 'string' &&
+      /^[a-z0-9_-]+$/i.test(newBlock.type)
+    ) {
+      // Stable wrapper classes keep topbar layout independent of :has()
+      // support and nested Bootstrap percentage widths.
+      $(myblockselector).addClass(
+        'dt-topbar-item dt-topbar-' + newBlock.type.toLowerCase()
+      );
+    }
     if (newBlock.blocks) {
       newBlock.blocks.forEach(function (aBlock) {
         addBlock2Column(myblockselector, '', aBlock);
       });
       $(myblockselector).attr('data-id', newBlock.key);
-      return;
+      return myblockselector;
     }
     if (Array.isArray(newBlock)) {
       newBlock.forEach(function (aBlock) {
         addBlock2Column(myblockselector, '', aBlock);
       });
-      return;
+      return myblockselector;
     }
 
     if (!Dashticz.mount(myblockselector, newBlock))
@@ -104,6 +115,7 @@ function addBlock2Column(columndiv, c, b) {
   } catch (error) {
     renderUnavailableBlock(myblockselector, newBlock, b, error);
   }
+  return myblockselector;
 }
 
 function renderUnavailableBlock(mountPoint, block, key, error) {
@@ -127,7 +139,9 @@ function convertBlock(blocktype, c) {
   var block = {};
   block.type = blocktype;
   $.extend(block, blocks[blocktype]);
-  block.c = c; //c can be 'bar'. Used for sunriseholder
+  // Keep the render column separate from the user-configurable property c.
+  // The latter may be hand-written and must survive editor round-trips exactly.
+  block._dashticzColumn = c;
   block.key = block.key || blocktype;
 
   //Check for Domoticz device block
@@ -166,10 +180,33 @@ function deviceUpdateHandler(block) {
 
   getCustomFunction('getStatus', block, false);
   var $selector = $(selector);
-  if (typeof block.title === 'undefined') block.title = device.Name;
+  if (!Object.prototype.hasOwnProperty.call(block, '_dashticzAutoTitle')) {
+    // Remember whether CONFIG.js supplied an explicit title. The marker is
+    // non-enumerable so editor serialization never writes this runtime state.
+    Object.defineProperty(block, '_dashticzAutoTitle', {
+      value: typeof block.title === 'undefined',
+      enumerable: false,
+    });
+  }
+  if (block._dashticzAutoTitle) {
+    // Keep the live Domoticz title out of serialized block definitions.
+    Object.defineProperty(block, 'title', {
+      value: device.Name,
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
+  }
 
   //var $div=$selector.find('.block_'+fullidx); //doesn't work for blocks['myblock'] kind of definitions
   var $div = $selector.find('.mh');
+  var oldLayoutEditorBlocks = $div.toArray();
+  // Domoticz refreshes may replace the complete .mh element. Keep every
+  // Layout Editor overlay paired with the block it belongs to, so the editor
+  // can transfer both the controls and its internal DOM reference.
+  var layoutEditorOverlays = oldLayoutEditorBlocks.map(function (element) {
+    return $(element).children('.dle-overlay').detach();
+  });
 
   var width = 4;
   switch (device['SwitchType']) {
@@ -214,8 +251,40 @@ function deviceUpdateHandler(block) {
 
   if (html && typeof html === 'string') {
     $div.html(html);
+    layoutEditorOverlays.forEach(function ($overlay, index) {
+      if ($overlay.length && $div[index]) $($div[index]).append($overlay);
+    });
     getBlockClick(block);
-  } else $div = $selector.find('.mh'); //$div may not exist anymore. Find the new one.
+  } else {
+    $div = $selector.find('.mh'); //$div may not exist anymore. Find the new one.
+    var newLayoutEditorBlocks = $div.toArray();
+
+    oldLayoutEditorBlocks.forEach(function (oldBlock, index) {
+      var dataId = oldBlock.getAttribute('data-id');
+      var newBlock = null;
+
+      if (dataId !== null) {
+        newBlock = newLayoutEditorBlocks.find(function (candidate) {
+          return candidate.getAttribute('data-id') === dataId;
+        });
+      }
+      if (!newBlock) newBlock = newLayoutEditorBlocks[index];
+      if (!newBlock) return;
+
+      var $overlay = layoutEditorOverlays[index];
+      if ($overlay && $overlay.length) {
+        $(newBlock).addClass('dle-block').append($overlay);
+      }
+
+      if (
+        oldBlock !== newBlock &&
+        typeof DashticzLayoutEditor !== 'undefined' &&
+        DashticzLayoutEditor.replaceBlockReference
+      ) {
+        DashticzLayoutEditor.replaceBlockReference(oldBlock, newBlock);
+      }
+    });
+  }
 
   if (typeof $div.attr('onclick') !== 'undefined') {
     $div.addClass('hover');
@@ -1356,7 +1425,7 @@ function getSecurityBlock(block) {
     html += '</div>';
     html += '</div>';
   }
-  return [html, true];
+  return html;
 }
 
 function getProtectedSecurityBlock(block) {
@@ -1380,7 +1449,12 @@ function getProtectedSecurityBlock(block) {
   };
   secBlock.value = block.device.Status;
   $.extend(secBlock, block);
-  return [getStatusBlock(secBlock), true];
+  // deviceUpdateHandler's auto-derived title (device.Name) is defined
+  // non-enumerable so it never gets serialized into CONFIG.js - but that
+  // also means $.extend()/for...in above silently drop it, leaving the
+  // title blank whenever the device has no explicit title of its own.
+  secBlock.title = getBlockTitle(block);
+  return getStatusBlock(secBlock);
 }
 
 function getBlockTitle(block) {

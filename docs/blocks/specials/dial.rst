@@ -55,6 +55,11 @@ Block parameters
     - ``1..12``: Dial width (optional, default 3)
   * - height
     - ``<number>``: Dial height (optional, default based on width)
+  * - scale
+    - | ``<number>``: Multiplier applied to the dial's automatically measured/configured
+      | size (optional, default 1). Use this to fine-tune the dial when it renders
+      | too large or too small for its block, without having to set an explicit ``height``.
+      | ``0.7``: Shrink the dial to 70% of its default size
   * - backgroundimage
     - url or Domoticz text device id containing the url of the background image. See :ref:`dialbackground`
   * - backgroundsize

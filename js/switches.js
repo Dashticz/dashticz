@@ -93,7 +93,11 @@ function getDefaultSwitchBlock( block ) {
 }
 
 function isProtected(block) {
-  return block.protected || (block.device && block.device.Protected);
+  return (
+    block.protected ||
+    (block.protoBlock && block.protoBlock.protected) ||
+    (block.device && block.device.Protected)
+  );
 }
 
 function getIconStatusClass(deviceStatus) {
@@ -352,7 +356,7 @@ function getDimmerBlock(block, buttonimg) {
   html += '<strong class="title">' + title;
   if (
     typeof block['hide_data'] == 'undefined' ||
-    blocks['hide_data'] == false
+    block['hide_data'] == false
   ) {
     html += ' ' + device['Level'] + '%';
   }
@@ -590,7 +594,7 @@ function getBlindsBlock(parentBlock, withPercentageParam) {
   if (!withPercentage) {
     if (
       typeof block['hide_data'] == 'undefined' ||
-      blocks['hide_data'] == false
+      block['hide_data'] == false
     ) {
       if (device['Status'] === 'Closed')
         value =
