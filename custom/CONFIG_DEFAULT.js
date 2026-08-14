@@ -1,9 +1,9 @@
 
 var config = {}
-config['domoticz_ip'] = 'http://192.168.1.3:8084';
-config['app_title'] = 'Dashticz V3';
-config['domoticz_refresh'] = '5';
-config['dashticz_refresh'] = '60';
+config["hide_seconds"] = 0;
+config["shorttime"] = "HH:mm";
+
+
 
 /*  REMOVE THIS LINE, INCLUDING THIS TEXT IF YOU WANT TO USE THE CODE BELOW, ALS REMOVE THE LAST LINE OF THIS FILE ( the asterisk * with the slash)
 
@@ -35,7 +35,7 @@ blocks['blocktitle_1']['title'] = 'Example';
 
 var columns = {}
 columns['bar'] = {}
-columns['bar']['blocks'] = ['logo','miniclock','settings']
+columns['bar']['blocks'] = ['logo','settings']
 					
 columns[1] = {}
 columns[1]['blocks'] = ['currentweather_big','weather']

@@ -31,6 +31,9 @@ var Domoticz = (function () {
   var info = {
     build: 0,
     version: 0,
+    versionText: '',
+    dzVentsVersion: '',
+    pythonVersion: '',
     levelNamesEncoded: false,
     newBlindsBehavior: false
   }
@@ -846,7 +849,10 @@ var Domoticz = (function () {
   }
 
   function handleVersion(data) {
+    info.versionText = data.version || '';
     info.version = parseFloat(data.version);
+    info.dzVentsVersion = data.dzvents_version || '';
+    info.pythonVersion = data.python_version || '';
     $('#domoticz_version').html(info.version);
 
     try {
@@ -855,8 +861,8 @@ var Domoticz = (function () {
     catch (e) {
       console.log('Not able to parse Domoticz build number: ', data.version);
     }
-    $('#dzvents_version').html(data.dzvents_version);
-    $('#python_version').html(data.python_version);
+    $('#dzvents_version').html(info.dzVentsVersion);
+    $('#python_version').html(info.pythonVersion);
     setDomoBehavior();
   }
 

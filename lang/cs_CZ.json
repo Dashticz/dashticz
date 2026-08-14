@@ -8,6 +8,12 @@
         "news": "Novinky",
         "sunrise": "Východ slunce"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Obrazovka",
+        "add_screen": "Přidat obrazovku",
+        "delete_screen": "Smazat obrazovku"
+    },
     "energy": {
         "energy_delivered": "Celkem dodáno",
         "energy_deliveredtoday": "Dodáno dnes",
@@ -52,7 +58,7 @@
         "garbage": {
             "garbage_calendar_id": "Google Calender ID",
             "garbage_calendar_id_help": "Vaše ID kalendáře je k nalezení v nastavení kalendáře",
-            "garbage_company": "Společnost \/ Služba",
+            "garbage_company": "Společnost / Služba",
             "garbage_hideicon": "Skrýt ikonu v bloku",
             "garbage_housenumber": "Číslo popisné",
             "garbage_housenumberaddition": "Číslo evidenční",
@@ -79,7 +85,7 @@
             "disable_googleanalytics": "Vypnout Google Analytics",
             "disable_googleanalytics_help": "Používá se pouze pro vývojáře ke sledování počtu uživatelů a zařízení, které používáte pro jemné doladění Dashticze.",
             "domoticz_ip": "Domoticz URL",
-            "domoticz_ip_help": "Zadejte adresu URL serveru Domoticz, například: http:\/\/192.168.1.1:8080. Můžete také zadat uživatele a heslo, například: http:\/\/user:password@192.168.1.1:8080",
+            "domoticz_ip_help": "Zadejte adresu URL serveru Domoticz, například: http://192.168.1.1:8080. Můžete také zadat uživatele a heslo, například: http://user:password@192.168.1.1:8080",
             "domoticz_refresh": "Obnovovat Domoticz (v sekundách)",
             "hide_off_button": "Skrát tlačítko vypnutí u spínačů typu výběr",
             "last_update": "Zobrazovat poslední čas aktualizace",
@@ -105,7 +111,7 @@
             "standby_call_url_on_end": "URL volaná na konci pohotovostního režimu",
             "login_timeout": "Ponechat přihlášeno do Dashticz (minut)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Povolit \/ zakázat připojení WebSocket",
+            "enable_websocket_help": "Povolit / zakázat připojení WebSocket",
             "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
             "colorpicker_none": "No RGB colorpicker",
             "colorpicker_old": "Old style RGB colorpicker",
@@ -164,12 +170,12 @@
         "media": {
             "hide_mediaplayer": "Skrýt multimediální přehrávač pokud je vypnutý",
             "host_nzbget": "NZBget Path",
-            "host_nzbget_help": "Pokud používáte NZBget, zadejte IP adresu a port, např..: http:\/\/192.168.1.32:8080",
+            "host_nzbget_help": "Pokud používáte NZBget, zadejte IP adresu a port, např..: http://192.168.1.32:8080",
             "sonarr_apikey": "Sonarr ApiKey",
             "sonarr_maxitems": "Sonarr max. položek v seznamu",
             "sonarr_url": "Sonarr URL",
             "spot_clientid": "Spotify ClientID",
-            "switch_horizon": "Ziggo\/UPC Mediabox Path",
+            "switch_horizon": "Ziggo/UPC Mediabox Path",
             "switch_horizon_help": "Pokud používáte přehrávač ZIGGO nebo UPC (Horizon), zkopírujte switch_horizon.php na webserveru do vnitřní sítě a změňte IP adresu uvnitř tohoto souboru.",
             "title": "Media"
         },
@@ -180,10 +186,9 @@
             "auto_swipe_back_to": "Automaticky přepnout obrazovku zpět #",
             "auto_swipe_back_to_help": "Při neaktivitě přepnout zpět na hlavní obrazovku po X sekundách",
             "background_image": "Obrázek pozadí",
-            "background_image_help": "Nastavte cestu k obrázku na pozadí, např. img\/bg2.jpg or http:\/\/yourimage.com\/image.jpg",
+            "background_image_help": "Nastavte cestu k obrázku na pozadí, např. img/bg2.jpg or http://yourimage.com/image.jpg",
             "dashticz_themes": "Dashticz motiv",
             "dashticz_themes_help": "Nastavit název motivu (např. Bílý), motiv bude přepsán pomocí custom.css",
-            "edit_mode": "Přejít do režimu úprav",
             "hide_topbar": "Skrýt nadpis",
             "slide_effect": "Slide efekt",
             "standard_graph": "Standardní graf",
@@ -209,7 +214,7 @@
             "title": "Počasí",
             "translate_windspeed": "Přeložit rychlost větru",
             "translate_windspeed_help": "'Severo severozápadní' namísto 'NNW'",
-            "use_beaufort": "Používat Bft namísto m\/s",
+            "use_beaufort": "Používat Bft namísto m/s",
             "use_fahrenheit": "Používat Fahrenheit namísto stupňů Celcius",
             "wu_api": "Wunderground API Key",
             "wu_city": "Wunderground stanice (město nebo kód)",
@@ -224,7 +229,7 @@
             "owm_min": "Minimální teplota na druhém řádku",
             "owm_min_help": "Zobrazí se pouze při předpovědi na dny",
             "owm_lang": "Nastavit jazyk pro popis předpovědi (déšť, zataženo atd.)",
-            "owm_lang_help": "Pro možné jazyky se podívejte na https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_lang_help": "Pro možné jazyky se podívejte na https://openweathermap.org/forecast5/#multi",
             "owm_country": "Open Weather Map země",
             "owm_name": "Zobrazované jméno Open Weather Map",
             "longfonds_zipcode": "Longfonds PSČ",
@@ -316,5 +321,10 @@
         "direction_W": "W",
         "direction_WNW": "W-NW",
         "direction_WSW": "W-SW"
+    },
+    "xmltvguide": {
+        "error": "Chyba při načítání TV průvodce.",
+        "no_programs": "Nebyly nalezeny žádné nadcházející programy.",
+        "loading": "Načítám TV průvodce..."
     }
 }

@@ -8,6 +8,12 @@
         "news": "Nachrichten",
         "sunrise": "Sonnenaufgang"
     },
+    "screenswitcher": {
+        "standby": "Standby",
+        "screen": "Bildschirm",
+        "add_screen": "Bildschirm hinzufügen",
+        "delete_screen": "Bildschirm löschen"
+    },
     "energy": {
         "energy_delivered": "Insgesamt verbraucht",
         "energy_deliveredtoday": "Verbrauch heute",
@@ -52,7 +58,7 @@
         "garbage": {
             "garbage_calendar_id": "Google Kalender ID",
             "garbage_calendar_id_help": "Deine Kalender ID kann in den Kalender Einstellungen gefunden werden",
-            "garbage_company": "Unternehmen \/ Anbieter",
+            "garbage_company": "Unternehmen / Anbieter",
             "garbage_hideicon": "Symbol im Block ausblenden",
             "garbage_housenumber": "Hausnummer",
             "garbage_housenumberaddition": "Hausnummernzusatz",
@@ -79,7 +85,7 @@
             "disable_googleanalytics": "Google Analytics deaktivieren",
             "disable_googleanalytics_help": "Wird dazu genutzt um Daten über das Gerät und die User zu sammeln um Dashticz weiter zu verbessern.",
             "domoticz_ip": "Domoticz URL",
-            "domoticz_ip_help": "Enter Domoticz url, for example: http:\/\/192.168.1.1:8080. You can also enter users and password, for example: http:\/\/user:password@192.168.1.1:8080",
+            "domoticz_ip_help": "Enter Domoticz url, for example: http://192.168.1.1:8080. You can also enter users and password, for example: http://user:password@192.168.1.1:8080",
             "domoticz_refresh": "Domoticzdaten auffrischen (Sekunden)",
             "hide_off_button": "Schaltfläche ausschalten bei Wahlschalter",
             "last_update": "Zeitpunkt der letzten Aktualisierung anzeigen",
@@ -105,7 +111,7 @@
             "standby_call_url_on_end": "URL to be called at end of standby",
             "login_timeout": "Halten Sie Dashticz eingeloggt (Minuten)",
             "enable_websocket": "WebSocket",
-            "enable_websocket_help": "Aktivieren \/ Deaktivieren der WebSocket-Verbindung",
+            "enable_websocket_help": "Aktivieren / Deaktivieren der WebSocket-Verbindung",
             "colorpicker": "Choose the default RGB colorpicker for RGB devices.",
             "colorpicker_none": "No RGB colorpicker",
             "colorpicker_old": "Old style RGB colorpicker",
@@ -164,12 +170,12 @@
         "media": {
             "hide_mediaplayer": "Mediaplayer ausblenden wenn ausgeschaltet",
             "host_nzbget": "NZBget Pfad",
-            "host_nzbget_help": "Wenn Du NZBget benutzt, gib hier die IP-Adresse und den Port, bspw. http:\/\/192.168.1.32:8080, ein.",
+            "host_nzbget_help": "Wenn Du NZBget benutzt, gib hier die IP-Adresse und den Port, bspw. http://192.168.1.32:8080, ein.",
             "sonarr_apikey": "Sonarr API-Schlüssel",
             "sonarr_maxitems": "Sonarr max. Listeneinträge",
             "sonarr_url": "Sonarr URL",
             "spot_clientid": "Spotify ClientID",
-            "switch_horizon": "Ziggo\/UPC Mediabox Pfad",
+            "switch_horizon": "Ziggo/UPC Mediabox Pfad",
             "switch_horizon_help": "Wenn Du eine Mediabox von ZIGGO oder UPC (Horizon) hast, kopiere switch_horizon.php auf einen Webserver in deinem Netzwerk und ändere die IP (von Horizon) in der Datei.",
             "title": "Medien"
         },
@@ -180,10 +186,9 @@
             "auto_swipe_back_to": "Automatisch zurück auf Bildschirm #",
             "auto_swipe_back_to_help": "Wenn keine Aktivität, zurück auf Startbildschirm nach x Sekunden",
             "background_image": "Hintergrundbild",
-            "background_image_help": "Pfad für Hintergrundbild festlegen, z.B. img\/bg2.jpg oder http:\/\/xyz.de\/image.jpg",
+            "background_image_help": "Pfad für Hintergrundbild festlegen, z.B. img/bg2.jpg oder http://xyz.de/image.jpg",
             "dashticz_themes": "Dashticz Design",
             "dashticz_themes_help": "Das genutzte Design festlegen (z.B. white). Das Design wird von der custom.css überschrieben.",
-            "edit_mode": "Zum Bearbeitungsmodus gehen",
             "hide_topbar": "Topbar ausblenden",
             "slide_effect": "Slide-Effekt",
             "standard_graph": "Standardgraph",
@@ -209,7 +214,7 @@
             "title": "Wetter",
             "translate_windspeed": "Windgeschwindigkeit übersetzen",
             "translate_windspeed_help": "'Nord-Nordwest' anstelle von 'NNW'",
-            "use_beaufort": "Bft anstelle von m\/s verwenden",
+            "use_beaufort": "Bft anstelle von m/s verwenden",
             "use_fahrenheit": "Fahrenheit anstelle von Celsius verwenden",
             "wu_api": "Wunderground API-Schlüssel",
             "wu_city": "Wunderground Messstation (Stadt oder Code)",
@@ -224,7 +229,7 @@
             "owm_min": "Minimum temperature on 2nd row",
             "owm_min_help": "Only shown when forecast in days",
             "owm_lang": "Set language for de description of the forecast (rain, cloudy, etc.)",
-            "owm_lang_help": "For available languages, see https:\/\/openweathermap.org\/forecast5\/#multi",
+            "owm_lang_help": "For available languages, see https://openweathermap.org/forecast5/#multi",
             "owm_country": "Open Weather Map Land",
             "owm_name": "Anzeigename Open Weather Map",
             "longfonds_zipcode": "Longfonds zipcode",
@@ -316,5 +321,10 @@
         "direction_W": "W",
         "direction_WNW": "W-NW",
         "direction_WSW": "W-SW"
+    },
+    "xmltvguide": {
+        "error": "Fehler beim Laden des TV-Programms.",
+        "no_programs": "Keine bevorstehenden Sendungen gefunden.",
+        "loading": "TV-Programm wird geladen..."
     }
 }

@@ -29,21 +29,53 @@ var DT_haymanclock = {
         return fallbackValue;
       }
     }
-    return {
+    var cfg = {
       containerClass: 'text-center',
       day: getRelativeLabel(1, 'day', fallback.day),
       hours: getRelativeLabel(2, 'hours', fallback.hours),
       minutes: getRelativeLabel(2, 'minutes', fallback.minutes),
       seconds: getRelativeLabel(2, 'seconds', fallback.seconds),
       scale: 1,
+      icon: 'far fa-clock',
     };
+    if (settings['clock_scale'] !== '' && settings['clock_scale'] != null) {
+      var scale = Number(settings['clock_scale']);
+      if (isFinite(scale) && scale > 0) cfg.scale = scale;
+    }
+    if (settings['clock_size'] !== '' && settings['clock_size'] != null) {
+      var size = Number(settings['clock_size']);
+      if (isFinite(size) && size > 0) cfg.size = size;
+    }
+    return cfg;
   },
   run: function (me) {
     templateEngine.load('clock_hayman').then(function (template) {
-      var width = me.block.size || $(me.mountPoint + ' .dt_block').width();
-      me.block.clockwidth = me.block.scale * 100 + '%';
-      me.block.fontsize = (width / 40) * me.block.scale;
-      $(me.mountPoint + ' .dt_block').html(template(me.block));
+      var $block = $(me.mountPoint + ' .dt_block');
+      var $title = $(me.mountPoint + ' .dt_title');
+      var $state = $(me.mountPoint + ' .dt_state');
+      // .dt_block's height includes the title bar (built by dashticz.js's
+      // renderTitle()) and .dt_state's own 5px/5px vertical margin (see
+      // creative.css), so sizing the clock to the full block height pushed
+      // it past the block's own bottom edge and needed an oversized block
+      // just to avoid a scrollbar. Same fix as js/components/frame.js.
+      var titleHeight = $title.length && $title.is(':visible') ? $title.outerHeight(true) : 0;
+      var stateMarginV = $state.length
+        ? (parseFloat($state.css('margin-top')) || 0) + (parseFloat($state.css('margin-bottom')) || 0)
+        : 0;
+      var availW = $block.width() || $(me.mountPoint).width() || 120;
+      var availH = ($block.height() || $(me.mountPoint).height() || 0) - titleHeight - stateMarginV;
+      var scale = Number(me.block.scale);
+      if (!isFinite(scale) || scale <= 0) scale = 1;
+      var base = me.block.size || (availH > 0 ? Math.min(availW, availH) : availW);
+      var width = base * scale;
+      if (availW > 0) width = Math.min(width, availW);
+      if (availH > 0) width = Math.min(width, availH);
+      me.block.clockwidth = Math.min(100, scale * 100) + '%';
+      me.block.fontsize = Math.max(8, (width / 40));
+      // Render into .dt_state, not .dt_block: .dt_block also holds .dt_title
+      // (built by dashticz.js's renderTitle() from block.title/hide_title),
+      // and overwriting .dt_block wipes that title back out right after it's set.
+      $(me.mountPoint + ' .dt_state').html(template(me.block));
       function updateTime() {
         var now = new Date();
         var hours = now.getHours() || 24;

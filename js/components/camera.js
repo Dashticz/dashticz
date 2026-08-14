@@ -1,4 +1,4 @@
-/* global Dashticz DT_function isDefined templateEngine*/
+/* global Dashticz DT_function isDefined templateEngine blocks*/
 // eslint-disable-next-line no-unused-vars
 var DT_camera = {
   name: 'camera',
@@ -30,7 +30,8 @@ var DT_camera = {
     refresh: 1,
     slidedelay: 3,
     cameras: [],
-    width: 6,
+    width: 4,
+    height: 320,
   },
 
   /**
@@ -39,13 +40,39 @@ var DT_camera = {
    */
   run: function (me) {
     var newDevices = [];
+    var isGridItem = me.$mountPoint.hasClass('dt-grid-item');
+    // defaultCfg.height (320) always merges into me.block.height (see
+    // getBlockConfig in js/dashticz.js), so it's indistinguishable from a
+    // user-set height by the time it reaches here - check the raw CONFIG.js
+    // definition instead. In grid mode, a camera without an explicit height
+    // should fill its grid cell instead of being forced to that 320px
+    // default (see camera_image.tpl); classic/column mode is unaffected.
+    var explicitHeight =
+      typeof blocks !== 'undefined' &&
+      blocks[me.key] &&
+      typeof blocks[me.key].height !== 'undefined';
     /* The camera block contains multiple cameras */
     if (me.block.cameras.length > 0) {
       /* Create new mountpoints for each of the cameras */
-      var s = me.$mountPoint.closest('.screen').data('screenindex');
-      var c = me.$mountPoint.closest('.col-xs-12').data('colindex');
-      var columndiv = 'div.screen' + s + ' .row .col' + c;
-      me.$mountPoint.remove();
+      var columndiv;
+      if (isGridItem) {
+        /* Keep all camera thumbnails inside their positioned grid item. */
+        me.$mountPoint.empty();
+        // Marks the grid item so creative.css can reach through the extra
+        // per-camera #block_N wrapper mountNewContainer() creates below -
+        // the grid CSS's normal min-height/width rules only match a direct
+        // .dt_block/[class*='col-'] child of .dt-grid-item, one level
+        // shallower than where each camera's own .dt_block ends up here.
+        // Without it every thumb collapses to 0 height (its img is
+        // position:absolute, contributing nothing) and never renders (#132).
+        me.$mountPoint.addClass('dt-camera-multi');
+        columndiv = me.mountPoint;
+      } else {
+        var s = me.$mountPoint.closest('.screen').data('screenindex');
+        var c = me.$mountPoint.closest('.col-xs-12').data('colindex');
+        columndiv = 'div.screen' + s + ' .row .col' + c;
+        me.$mountPoint.remove();
+      }
 
       $.each(me.block.cameras, function (i) {
         var mountpoint = Dashticz.mountNewContainer(columndiv);
@@ -95,7 +122,13 @@ var DT_camera = {
             cam.imageUrl,
             cam.block.forcerefresh
           ),
-          height: cam.block && cam.block.height ? cam.block.height : 300,
+          // Grid mode without an explicit height: let the image fill its
+          // grid cell (camera_image.tpl falls back to height:100%) instead
+          // of being forced to the defaultCfg/legacy fallback pixel height.
+          height:
+            isGridItem && !explicitHeight
+              ? false
+              : cam.block && cam.block.height ? cam.block.height : 300,
           mjpeg: cam.mjpeg,
           id: cam.key,
         };

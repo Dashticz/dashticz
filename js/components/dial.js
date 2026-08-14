@@ -74,15 +74,7 @@ var DT_dial = (function () {
       me.idx = choose(me.block.idx, me.key);
       me.id = 'dial_' + me.idx;
       me.layout = parseInt(0+me.block.layout);
-      var height = isDefined(me.block.height)
-        ? parseInt(me.block.height)
-        : parseInt($(me.mountPoint + ' div').outerWidth());
-      if (height < 0) {
-        console.log('dial width unknown.');
-        me.height = me.height * me.block.scale || 100;
-      } else me.height = height * me.block.scale || me.height;
-      me.fontsize = 0.95 * me.height;
-      $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
+      _dialFitSize(me);
       me.dialRange = 280;
       me.active = true;
 //      color(me);
@@ -135,6 +127,21 @@ var DT_dial = (function () {
       }
       me.delayedFunction = createDelayedFunction(choose(me.block.delay,0)*1000);
 
+      // Keep the dial's size in sync with live editor drag-resizing (grid
+      // row/column span, classic column width) and not just after a
+      // save+reload: ResizeObserver reacts to the outer mount point's own
+      // rendered box, whatever the cause. Observing the *outer* wrapper
+      // (rather than the inner .dt_block that _dialFitSize resizes) avoids
+      // the observer reacting to its own writes. Only the sizing itself
+      // (font-size/height/needle) is recomputed here - never the full
+      // run()/subscribe pipeline - so devices are never re-subscribed.
+      if (typeof ResizeObserver !== 'undefined' && me.$mountPoint && me.$mountPoint.length) {
+        me.dialResizeObserver = new ResizeObserver(function () {
+          _dialFitSize(me);
+        });
+        me.dialResizeObserver.observe(me.$mountPoint[0]);
+      }
+
       make(me)
         .then(me.tap);
     },
@@ -144,8 +151,62 @@ var DT_dial = (function () {
         me.hammer.destroy();
         me.hammer = 0;
       }
+      if (me.dialResizeObserver) {
+        me.dialResizeObserver.disconnect();
+        me.dialResizeObserver = null;
+      }
     },
   };
+
+  /**
+   * Measures the dial's actual rendered container box and applies the
+   * resulting font-size/height/needle dimensions. The dial is always a
+   * perfect circle (.dial is width:1em == height:1em), so its diameter must
+   * never exceed the smaller of the available width/height, or it overflows
+   * past its block - visible as scrollbars on a grid item, which has
+   * `overflow: auto`.
+   * @param {object} me  Core component object.
+   */
+  function _dialFitSize(me) {
+    var $container = $(me.mountPoint + ' div').first();
+    var measuredWidth = parseInt($container.outerWidth());
+    var measuredHeight = parseInt($container.outerHeight());
+    var configuredHeight = isDefined(me.block.height)
+      ? parseInt(me.block.height)
+      : NaN;
+    var candidates = [measuredWidth, measuredHeight, configuredHeight].filter(
+      function (value) {
+        return !isNaN(value) && value > 0;
+      }
+    );
+    var height = candidates.length ? Math.min.apply(Math, candidates) : NaN;
+    if (!height || isNaN(height)) {
+      // Container not laid out yet, or hidden (e.g. an inactive screen tab)
+      // at mount time: outerWidth()/outerHeight() then return 0/undefined.
+      // Fall back to a sane default instead of letting fontsize become NaN,
+      // which silently falls through to the much larger CSS default.
+      console.log('dial width unknown.');
+      me.height = (me.height || 100) * (me.block.scale || 1);
+    } else me.height = height * me.block.scale || me.height;
+    me.fontsize = 0.95 * me.height;
+    $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
+    // The template bakes font-size/needle dimensions into inline styles at
+    // render time; on a live resize (no re-render) they need patching
+    // directly. getContainer() (js/dashticz.js) gives the OUTER .dt_block
+    // wrapper the component name as a class too, which for this component
+    // is literally "dial" - so a bare '.dial' selector matches that outer
+    // wrapper as well as the template's own inner circle, inflating the
+    // wrapper's (and everything em-sized inside it, e.g. the icon/title)
+    // font-size and overflowing the block sideways. '.dt_content .dial'
+    // mirrors the scoping the dial's own CSS already uses and only reaches
+    // the inner circle. Both selectors are simply empty before the first
+    // render - a no-op jQuery .css() call, not an error.
+    $(me.mountPoint + ' .dt_content .dial').css('font-size', me.fontsize + 'px');
+    $(me.mountPoint + ' .dt_content .dial-needle').css({
+      '--needle-length': me.height / 2 + 'px',
+      '--needle-width': me.height / 17 + 'px',
+    });
+  }
 
   /**
    * Creates or updates the dial and applies current values.
@@ -822,19 +883,15 @@ var DT_dial = (function () {
   }
 
   /**
-   * Ensure all dials are responsive based on column width on screen resize.
+   * Ensure the dial stays sized to its block on every (re)render, e.g. after
+   * a device update - not just at initial mount. Live resizing while dragging
+   * in the editor is handled separately by the ResizeObserver set up in
+   * run(); this only needs to recompute the sizing, never re-run the full
+   * mount/subscribe pipeline (see run()'s ResizeObserver comment).
    * @param {object} me  Core component object.
    */
   function resize(me) {
-    /* todo: temporarily disabled.
-     * to prevent recreating and resubscribing to domoticz devices
-    window.addEventListener(
-      'resize',
-      function() {
-        run(me);
-      },
-      true
-    );*/
+    _dialFitSize(me);
   }
 
   /**

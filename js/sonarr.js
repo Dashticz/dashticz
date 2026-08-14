@@ -3,12 +3,12 @@
 function loadSonarr(me) {
   // Default value for user settings
   var html = '';
-  var width = 12;
+  var width = 4;
   var sonarrColSize = 12;
   var sonarrTitlePosition = 'left';
   var sonarrTitleObject = 'Upcoming&nbsp;shows';
   var block = me && me.block ? me.block : {};
-  var fixedHeight = parseInt(block.height, 10);
+  var fixedHeight = parseInt(block.height, 10) || 120;
   var heightClass = fixedHeight > 0 ? ' fixedheight' : '';
   var heightStyle =
     fixedHeight > 0

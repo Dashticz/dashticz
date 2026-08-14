@@ -142,6 +142,9 @@ var DT_domoticzblock = (function () {
   }
 
   function applyConfiguredHeight(me) {
+    // While the Layout Editor is active it owns the temporary block size.
+    // Reapplying CONFIG.js here would make a tile jump back on every update.
+    if (document.body.classList.contains('dle-active')) return;
     var height = parseInt(me.block.height, 10);
     if (!(height > 0)) return;
     height = Math.max(50, Math.min(2000, Math.round(height / 10) * 10));
