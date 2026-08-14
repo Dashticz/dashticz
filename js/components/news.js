@@ -15,6 +15,12 @@ var DT_news = {
     refresh: 300,
     width: 4,
     height: 240,
+    // Widget Editor's Icon checkbox is checked by default but has nothing to
+    // fall back to unless the user also types a custom icon value (see
+    // js/widgeteditor.js _buildWidgetPayloadEntry): with no explicit
+    // block.icon, getColIcon() (js/dashticz.js) renders nothing. Other
+    // widgets like weather already ship a default icon for the same reason.
+    icon: 'fas fa-newspaper',
   },
   run: function (me) {
     me.height =

@@ -1545,7 +1545,10 @@ test('topbar and layout editor keep controls usable', () => {
   // dedicated rule a resized Sunrise grid cell kept its reserved size while
   // the visible content stayed pinned at its small natural size (looking
   // like the resize "didn't stick"). It must fill and center like the other
-  // grid-aware blocks.
+  // grid-aware blocks. With no icon/title header the sunrise/sunset line is
+  // the block's only content and stays vertically centered (justify-content:
+  // center) - a separate .sunrise-has-header rule overrides this to
+  // flex-start only when a header is actually rendered (see below).
   assert.match(
     styles,
     /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.sunriseholder\s*\{[^}]*min-height:\s*100%;[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;/s
@@ -1796,6 +1799,7 @@ test('Domoticz log, OWM, Sunrise/Sunset and Timegraph are added to the Widget Co
     path.join(root, 'js/components/timegraph.js'),
     'utf8'
   );
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
 
   // DT_log is matched by its registered component name (Dashticz._mount in
   // dashticz.js only checks components[selector] for a string block
@@ -1817,11 +1821,59 @@ test('Domoticz log, OWM, Sunrise/Sunset and Timegraph are added to the Widget Co
   assert.match(deviceEditor, /sunrise:\s*\{\s*id: 'sunrise'/);
   assert.match(savewidgets, /'sunrise' => \['key' => 'sunrise'/);
 
-  // renderSunrise builds its own markup and never calls the generic
-  // renderTitle()/getColIcon() helpers, so Sunrise must not get fictional
-  // Title/Height fields it cannot actually use — only the common
-  // Title/Width/Custom fields options every catalog widget already has.
-  assert.doesNotMatch(simpleBlockSource, /function renderSunrise[\s\S]*?renderTitle/);
+  // renderSunrise builds its own markup instead of going through
+  // getContainer()/getColIcon()/renderTitle() (js/dashticz.js) like every
+  // other block, so the Widget Editor's Icon/Title checkboxes correctly save
+  // block.icon/block.title/block.hide_title, but nothing ever painted them -
+  // no icon and no title ever appeared on a Sunrise/Sunset block (#follow-up).
+  // renderSunrise now reads them directly. Icon and title are combined into
+  // one small .sunrise-header row (not the floated .col-icon or the 150%
+  // .dt_title, both sized for a full .dt_block flex layout this small,
+  // centered, single-line tile deliberately doesn't use) above the
+  // sunrise/sunset line.
+  const renderSunriseBody = simpleBlockSource.slice(
+    simpleBlockSource.indexOf('function renderSunrise'),
+    simpleBlockSource.indexOf('function renderHorizon')
+  );
+  assert.match(renderSunriseBody, /var icon = me\.block\.icon;/);
+  assert.match(renderSunriseBody, /var showTitle = !me\.block\.hide_title && me\.block\.title;/);
+  assert.match(renderSunriseBody, /class="sunrise-header"/);
+  assert.match(renderSunriseBody, /class="title">'\s*\+\s*me\.block\.title/);
+  // Sunrise ships its own default icon (like news.js/weather.js) so the
+  // Icon checkbox isn't a no-op when checked with no custom icon typed.
+  assert.match(simpleBlockSource, /if \(block && block\.type === 'sunrise'\) cfg\.icon = 'fas fa-sun';/);
+  // The sunrise/sunset line is its own .sunrise-data row, separate from
+  // .sunrise-header, so grid mode's flex-direction: column (creative.css)
+  // stacks exactly those two rows instead of flexing every individual
+  // icon/span inside both onto one line (a live screenshot showed icon,
+  // title and the sunrise/sunset line all crammed side by side).
+  assert.match(renderSunriseBody, /class="sunrise-data"/);
+  assert.match(
+    styles,
+    /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.sunriseholder \{[\s\S]*?flex-direction: column;/
+  );
+  // .sunriseholder is text-center (the sunrise/sunset line stays centered,
+  // as before), but a live screenshot showed the icon+title header
+  // centered along with it instead of left-aligned at the top like every
+  // other device/widget's icon+title (e.g. a slide button). Override just
+  // that row back to flush top-left: text-align for column/classic mode,
+  // align-self for the grid rule's flex column (align-items: center there
+  // would otherwise still center the header's own shrink-to-fit box, not
+  // just the text inside it).
+  assert.match(
+    styles,
+    /\.sunriseholder \.sunrise-header \{[\s\S]*?text-align: left;[\s\S]*?align-self: flex-start;/
+  );
+  // Pinning content to the top must only kick in when a header is actually
+  // rendered - unconditionally forcing flex-start regressed the header-less
+  // case (just the sunrise/sunset line) from vertically centered to stuck
+  // at the top of a tall grid cell. renderSunrise only adds this class when
+  // it renders a .sunrise-header.
+  assert.match(renderSunriseBody, /if \(hasHeader\) classes \+= ' sunrise-has-header';/);
+  assert.match(
+    styles,
+    /\.sunriseholder\.sunrise-has-header \{\s*\n\s*justify-content: flex-start;/
+  );
 
   // OWM and Timegraph use the standard 'widget_' catalog key convention with
   // an explicit type, like weather/iframe/xmltvguide.

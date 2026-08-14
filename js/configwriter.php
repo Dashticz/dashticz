@@ -1497,7 +1497,18 @@ function configwriter_special_block_props($block)
         if (trim($title) !== '') {
             $props['title'] = $title;
         }
-        if (array_key_exists('icon', $block) && $block['icon'] !== null && $block['icon'] !== '') {
+        // Must write an explicit icon: '' the same way the regular-device and
+        // 'else' branches below do. Skipping it here when the user disables
+        // the Icon checkbox (client sends '') meant the property was simply
+        // absent from the freshly written blocks[key] literal (this function
+        // always emits a full replacement, never merges onto the existing
+        // file) - so on reload $.extend(block, protoBlock, origBlock)
+        // (js/blocks.js) fell through to the device type's own default icon,
+        // silently reinstating one, and the Device Config popup's hydration
+        // (js/deviceeditor.js, "typeof definition.icon === 'undefined' ...")
+        // treated the absent property as "still enabled", flipping the
+        // checkbox back on too.
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
             $props['icon'] = (string)$block['icon'];
         }
         if (!empty($block['hide_data'])) {

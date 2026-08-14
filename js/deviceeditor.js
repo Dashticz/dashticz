@@ -1379,6 +1379,12 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="form-text">' + _esc(t.custom_device_name_help) + '</div></div>';
     html += '<div class="mb-3"><label class="form-label" for="cd-device-idx">IDX</label>';
     html += '<input type="number" min="1" step="1" class="form-control" id="cd-device-idx"></div>';
+    // Checked by default: without this the created device silently saved
+    // last_update: false with no checkbox anywhere to change it until the
+    // user separately discovered the gear-icon Device Config popup - it
+    // looked like the Custom Device block simply had no last-update support.
+    html += '<div class="mb-3 form-check"><input class="form-check-input" type="checkbox" id="cd-device-last-update" checked>';
+    html += '<label class="form-check-label" for="cd-device-last-update">' + _esc(t.last_update) + '</label></div>';
     html += '<div class="cd-custom-fields-section"><h6>' + _esc(t.custom_device_options) + '</h6>';
     html += '<div class="form-text mb-2">' + _esc(t.custom_device_values_help) + '</div>';
     html += '<div class="cd-custom-fields">';
@@ -1507,7 +1513,7 @@ var DashticzDeviceEditor = (function () {
           // no icon at all to derive from and renders with none.
           iconValue: iconValue || 'fas fa-cube',
           hide_data: false,
-          last_update: false,
+          last_update: $('#cd-device-last-update').is(':checked'),
           switch: false,
         },
         customFields: customRows,
@@ -1563,6 +1569,11 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="form-text">' + _esc(t.multi_device_idx_help) + '</div></div>';
     html += '<div class="mb-3"><label class="form-label" for="md-device-title">' + _esc(t.multi_device_title) + '</label>';
     html += '<input type="text" class="form-control" id="md-device-title" autocomplete="off"></div>';
+    // Checked by default - see the matching checkbox in _showCustomDevicePopup
+    // above; Multi Device saves through the same specialType 'custom' engine
+    // and had the same silently-false-with-no-checkbox last_update default.
+    html += '<div class="mb-3 form-check"><input class="form-check-input" type="checkbox" id="md-device-last-update" checked>';
+    html += '<label class="form-check-label" for="md-device-last-update">' + _esc(t.last_update) + '</label></div>';
     html += '<div class="md-values-section"><h6>' + _esc(t.multi_device_values) + '</h6>';
     html += '<div class="form-text mb-2">' + _esc(t.multi_device_values_help) + '</div>';
     html += '<div class="md-value-rows">';
@@ -1673,7 +1684,7 @@ var DashticzDeviceEditor = (function () {
           // icon at all (it isn't a recognised Domoticz device type).
           iconValue: 'fas fa-layer-group',
           hide_data: false,
-          last_update: false,
+          last_update: $('#md-device-last-update').is(':checked'),
           switch: false,
         },
         customFields: customRows,

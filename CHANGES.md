@@ -1,5 +1,78 @@
 # Dashticz — Change log for recent update work
 
+## 3.42.5 — News icon, Sunrise/Sunset icon+title, Custom/Multi Device Updated checkbox and Icon-off persistence
+
+- Fixed the News widget never showing an icon despite the Widget Editor's
+  Icon checkbox being on. `js/widgeteditor.js`'s `_buildWidgetPayloadEntry`
+  only writes `entry.icon` when the checkbox is off (`''`) or a custom value
+  was typed (`blockOptions.iconValue`); with the checkbox on and no typed
+  value, `block.icon` is simply left unset in CONFIG.js, same as every other
+  widget - the difference is `js/components/weather.js`'s `defaultCfg` ships
+  `icon: 'fas fa-sun'` as a fallback and `js/components/news.js` had none.
+  Added `icon: 'fas fa-newspaper'` to News' `defaultCfg`.
+- Fixed the Sunrise/Sunset widget never showing an icon or title at all.
+  `renderSunrise()` (`js/components/simpleblock.js`) builds its own flat
+  markup instead of going through `getContainer()`/`getColIcon()`/
+  `renderTitle()` (`js/dashticz.js`) like every other block - `me.block.icon`
+  and `me.block.title`/`hide_title` were saved correctly by the Widget
+  Editor but nothing ever read or painted them. Several follow-up rounds
+  against live screenshots got this to its final shape:
+  - `renderSunrise()` now reads and renders `block.icon`/`block.title`/
+    `block.hide_title` itself, combined into one small `.sunrise-header`
+    row (not the floated `.col-icon` or the 150%-font `.dt_title`, both
+    sized for a full `.dt_block` flex layout this small, centered,
+    single-line tile doesn't use) above a `.sunrise-data` row wrapping the
+    sunrise/sunset line.
+  - Sunrise/Sunset ships its own default icon (`fas fa-sun`, in
+    `DT_simpleblock.defaultCfg`), matching how `news.js`/`weather.js`
+    already do - otherwise the Icon checkbox was a no-op with no custom
+    icon typed.
+  - `.dt-grid-item > .sunriseholder` (`css/creative.css`) is `display: flex`
+    with no `flex-direction`, defaulting to `row`; every individual element
+    - the header div AND each icon/time `<em>`/`<span>` in the sunrise/
+    sunset line - became its own flex item side by side on one cramped
+    row. Wrapping the sunrise/sunset line in its own `.sunrise-data` div
+    plus `flex-direction: column` on that rule stacks exactly two rows
+    (header, then data) on a grid screen too, matching column/classic mode.
+  - The header still rendered centered (inherited from `.sunriseholder`'s
+    `text-center`, kept for the sunrise/sunset line below it) instead of
+    flush at the top-left like every other device/widget's icon+title
+    (e.g. a slide button). Added `text-align: left` (column/classic mode)
+    and `align-self: flex-start` (the grid rule's flex column, where
+    `align-items: center` would otherwise still center the header's own
+    shrink-to-fit box).
+  - Forcing the grid rule's `justify-content` straight to `flex-start`
+    fixed the header case but regressed the header-less one: with Icon and
+    Title both off, the sunrise/sunset line - the block's only content -
+    also got pinned to the top of a tall grid cell instead of staying
+    vertically centered like before. `renderSunrise()` now only adds a
+    `sunrise-has-header` class when it actually renders a header, and a
+    `.sunriseholder.sunrise-has-header` rule is the only thing that
+    overrides `justify-content` to `flex-start`; the base rule stays
+    `center` for the data-only case.
+- Fixed Multi Device and Custom Device creation always saving
+  `last_update: false` with no checkbox in either creation popup
+  (`_showCustomDevicePopup`/`_showMultiDevicePopup`, `js/deviceeditor.js`)
+  to change it — the option only became reachable by creating the device
+  first and separately reopening its Device Config popup afterward, which
+  looked like the option didn't exist. Both popups now show an "Updated"
+  checkbox (checked by default) that feeds directly into
+  `options.last_update`, same as the existing Device Config popup.
+- Fixed Custom Device and Multi Device's Icon checkbox not actually turning
+  the icon off: unchecking it and saving left the icon showing (falling
+  back to the underlying Domoticz device type's own default icon via
+  `$.extend(block, protoBlock, origBlock)` in `js/blocks.js`) and reopening
+  Device Config showed the checkbox checked again. `configwriter_special_
+  block_props()`'s `'custom'` branch (`js/configwriter.php`) only wrote
+  `props['icon']` when non-null AND non-empty, unlike every other code path
+  (regular devices, and this same function's other branches, which only
+  require non-null) - since the Device Editor always writes a full
+  replacement `blocks[key] = {...}` literal, never a merge onto the
+  existing file, skipping the property when the checkbox sends `icon: ''`
+  left it simply absent instead of explicitly cleared, which read back as
+  "never configured" (icon on) rather than "off". Now writes `icon: ''`
+  explicitly whenever the value is non-null, matching every other path.
+
 ## 3.42.4 — Multi-camera grid visibility fix (#132); Dial checkbox on multi-value devices (#118 follow-up)
 
 - Fixed multi-camera blocks rendering invisible (0-height) thumbnails on
