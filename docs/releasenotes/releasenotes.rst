@@ -6,6 +6,22 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.42.8 beta (14-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Fixed the **Settings** popup's Save button silently sending an empty
+  payload to the server, so changing the theme (or any other setting) had
+  no effect and the dashboard reverted to whatever was previously saved
+  after the reload. A merge conflict resolution between two versions of
+  ``saveSettings()`` left the code collecting changed values into a
+  ``savePayload`` object, but still writing them onto the unrelated
+  ``saveSettings`` function object instead — so the actual AJAX request
+  body stayed ``{}``. All collected values (theme, CSS variable overrides,
+  language, ``config_mode``, and every other setting) are now written to
+  and read from the same object that is actually submitted.
+
 v3.42.7 beta (14-8-2026)
 --------------------------
 
