@@ -6,6 +6,50 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.42.9 beta (14-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Fixed **Dial** blocks losing their icon and title in classic
+  (non-grid, column-based) layouts — most visibly on devices converted via
+  the Device Editor's **Dial** checkbox, which previously rendered as a
+  normal device tile with a clearly visible icon and title. ``_dialFitSize()``
+  (``js/components/dial.js``) measures the block's actual rendered container
+  to size the dial's circle, but ran *before* the dial's own content was
+  rendered — outside a grid item, ``.dt_block`` has no deliberate height at
+  that point, just plain CSS auto-height from whatever little content
+  existed so far (e.g. just the icon). Trusting that transient, near-empty
+  height collapsed the entire tile to a sliver a few dozen pixels tall,
+  shrinking the icon and title down with it to the point of being
+  unreadable. Outside a grid item, the dial now sizes from its column width
+  and any explicitly configured height only; a grid item's own height stays
+  in play, since it is a deliberate constraint (row span, ``overflow: auto``)
+  and not measuring it there could reintroduce the scrollbars this sizing
+  logic was originally built to prevent (#133).
+- Fixed **Dial** blocks (including on grid screens) never showing an icon
+  unless a custom icon value was typed in. ``getColIcon()``
+  (``js/dashticz.js``) paints a block's icon purely from ``block.icon``, but
+  the Device Editor's Icon checkbox only writes ``block.icon`` when a custom
+  value was also typed (``js/deviceeditor.js`` ``_save()``) — every other
+  widget falls back to its own default icon in that case (see the
+  News/Sunrise fix in 3.42.5), but ``js/components/dial.js`` had none, so a
+  device that showed its normal type-based icon (``js/blocktypes.js``'s
+  ``getBlockTypesBlock()``, the same lookup a plain device tile's
+  ``handleDevice()`` uses) lost it entirely the moment the Device Editor's
+  **Dial** checkbox was checked. ``dial.js``'s ``defaultCfg`` now reuses
+  that same device-type lookup so a Dial-converted device keeps the icon it
+  had before conversion; explicitly unchecking Icon (``block.icon === ''``)
+  is left untouched.
+- **Device Config**'s Icon checkbox now writes the resolved default icon
+  into CONFIG.js when checked with no custom value typed, instead of saving
+  nothing at all for icon — unlike Data/Updated/Dial, which were already
+  always written explicitly. Deliberately only ever resolves a *static*
+  default icon, never a state-dependent on/off pair (e.g. a light bulb that
+  toggles filled/outline with the device's status): freezing a snapshot into
+  CONFIG.js would break that live toggling, so those devices keep resolving
+  their icon at render time exactly as before, same as prior to this change.
+
 v3.42.8 beta (14-8-2026)
 --------------------------
 

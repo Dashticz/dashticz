@@ -1,6 +1,6 @@
 {
   "name": "dashticz",
-  "version": "3.42.8",
+  "version": "3.42.9",
   "description": "Alternative dashboard for Domoticz",
   "main": "index.js",
   "directories": {
