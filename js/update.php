@@ -174,6 +174,8 @@ function dashticz_git_permission_hint($repoRoot, $combinedOutput)
         strpos($text, 'permission denied') === false
         && strpos($text, 'dubious ownership') === false
         && strpos($text, 'cannot open') === false
+        && strpos($text, 'insufficient permission') === false
+        && strpos($text, 'failed to write object') === false
     ) {
         return null;
     }
