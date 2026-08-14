@@ -6,6 +6,48 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.42.5 beta (14-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Fixed the **News** widget never showing an icon even with the Widget
+  Editor's Icon checkbox on. Checking Icon without typing a custom value
+  relies on the widget's own default icon (the same pattern Weather already
+  uses), but News had none to fall back to. Added a default news icon.
+- Fixed the **Sunrise/Sunset** widget never showing an icon or a title.
+  Unlike every other block, this widget builds its own markup instead of
+  going through the shared container/icon/title rendering, so the Icon and
+  Title options in its Widget Config popup were saved correctly but never
+  actually painted onto the block. It now reads and renders them, using its
+  own default icon (it had none to fall back to, unlike News/Weather) and a
+  small, compact icon+title header row sitting above the sunrise/sunset
+  line - like every other device/widget - instead of the oversized,
+  full-width title style a large widget header uses. On grid screens that
+  header and the sunrise/sunset line previously also got flexed onto a
+  single, cramped row instead of stacking properly; both rows now stack
+  vertically there too, matching column/classic mode. The header also sits
+  flush at the top-left of the block now, matching every other device and
+  widget, instead of being centered with empty space above it - but only
+  when a header actually renders: with Icon and Title both off, the
+  sunrise/sunset line is the block's only content again and correctly stays
+  vertically centered on a grid screen, instead of also being pinned to the
+  top.
+- Fixed **Multi Device** and **Custom Device** creation silently defaulting
+  the "Updated" (last update timestamp) option off, with no checkbox in
+  either creation popup to turn it on — the only way to enable it was to
+  create the device first, then separately reopen its Device Config popup.
+  Both creation popups now show an Updated checkbox, checked by default.
+- Fixed Custom Device and Multi Device's Icon checkbox not actually turning
+  the icon off: unchecking it and saving left the icon showing (falling
+  back to the underlying Domoticz device type's own default icon) and
+  reopening Device Config showed the checkbox checked again. The Device
+  Editor always writes a full replacement of the block, and the checkbox
+  being off correctly sent an empty icon value, but the config writer
+  skipped writing it whenever it was empty specifically for this block kind
+  - so the property ended up simply absent instead of explicitly cleared,
+  which read back as "never configured" rather than "off".
+
 v3.42.4 beta (14-8-2026)
 --------------------------
 

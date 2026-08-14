@@ -1,8 +1,9 @@
 {
-    "version": "3.42.4",
+    "version": "3.42.5",
     "branch": "beta",
-    "last_changes": "Fix invisible multi-camera thumbnails on grid screens (#132); Dial checkbox on a multi-value device (e.g. Temp+Humidity) now saves the base idx instead of a sub-value idx (#118)",
+    "last_changes": "Fix missing News widget icon; fix Sunrise/Sunset icon/title (default icon, compact header row, correct stacking on grid screens); Custom/Multi Device creation offers an Updated checkbox instead of silently defaulting it off, and the Icon checkbox now actually persists when turned off",
     "changelog": {
+        "3.42.5": "Fix missing News widget icon; fix Sunrise/Sunset icon/title (default icon, compact header row, correct stacking on grid screens); Custom/Multi Device creation offers an Updated checkbox instead of silently defaulting it off, and the Icon checkbox now actually persists when turned off",
         "3.42.4": "Fix invisible multi-camera thumbnails on grid screens (#132); Dial checkbox on a multi-value device (e.g. Temp+Humidity) now saves the base idx instead of a sub-value idx (#118)",
         "3.42.3": "Fix Device Editor reintroducing a cleared iframe/widget height on a grid screen (#100 follow-up)",
         "3.42.2": "Fix Domoticz log widget triggering a spurious outer scrollbar on grid screens (#105)",

@@ -146,8 +146,31 @@
   box-sizing: border-box;
   min-height: 100%;
   display: flex;
+  /* Without this, flex's row default put every direct child - the
+     .sunrise-header row AND each individual icon/time span making up the
+     sunrise/sunset line - side by side as its own flex item, cramming
+     everything onto a single line instead of the header sitting above the
+     data (js/components/simpleblock.js wraps the sunrise/sunset line in
+     its own .sunrise-data div precisely so column stacking keeps that line
+     intact instead of also blowing it apart into individual flex items). */
+  flex-direction: column;
   align-items: center;
+  /* Centered by default: with no icon/title header, the sunrise/sunset
+     line is the block's only content and should stay vertically centered
+     in a tall grid cell, same as before the header existed. */
   justify-content: center;
+}
+
+/* A header (icon and/or title - js/components/simpleblock.js only adds this
+   class when it renders one) pins the block's content flush to the top,
+   like every other device/widget's icon+title (getContainer()'s .dt_block
+   is align-items: flex-start, not centered) - center would otherwise leave
+   a gap above the header instead of sitting flush at the top. */
+.dt-grid-screen
+  > .dt-grid-layout
+  > .dt-grid-item
+  > .sunriseholder.sunrise-has-header {
+  justify-content: flex-start;
 }
 
 /* Grid title bars follow their assigned row height instead of forcing their
@@ -2822,6 +2845,20 @@ div.big {
 .sunriseholder,
 .sunriseholder .wi {
   font-size: 14px !important;
+}
+
+.sunriseholder .sunrise-header {
+  margin-bottom: 5px;
+  /* sunriseholder is text-center (for the sunrise/sunset line below, kept
+     centered as before), but every other device/widget's icon+title sits
+     left-aligned at the top of the block, not centered - override just
+     this row back to that convention. align-self only matters on the grid
+     rule above (flex column): without it the header's own box, though
+     text-align: left inside it, would still be centered as a whole because
+     align-items: center there centers the shrink-to-fit box itself, not
+     just the text inside it. */
+  text-align: left;
+  align-self: flex-start;
 }
 
 .sunriseholder .wi-sunset {
