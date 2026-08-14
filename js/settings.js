@@ -2686,7 +2686,7 @@ function refreshAboutDomoticzVersions() {
 }
 // eslint-disable-next-line no-unused-vars
 function saveSettings() {
-  var saveSettings = {};
+  var savePayload = {};
   var alertSettings = 'var config = {}\n';
 
   // Submit only controls that differ from the values rendered in the modal.
@@ -2813,7 +2813,7 @@ function saveSettings() {
       var saveConfigPromise = $.ajax({
         url: configEditorUrl('js/savesettings.php'),
         method: 'POST',
-        data: saveSettings,
+        data: savePayload,
         dataType: 'json',
         headers: { 'X-Dashticz-CSRF': token },
       });
