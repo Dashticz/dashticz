@@ -1,5 +1,36 @@
 # Dashticz — Change log for recent update work
 
+## 3.42.4 — Multi-camera grid visibility fix (#132); Dial checkbox on multi-value devices (#118 follow-up)
+
+- Fixed multi-camera blocks rendering invisible (0-height) thumbnails on
+  grid screens (#132). `js/components/camera.js`'s `run()` mounts each
+  camera in the `cameras` array into its own `Dashticz.mountNewContainer()`
+  wrapper, a sibling of the other cameras inside the grid item — one level
+  deeper than `.dt-grid-item > .dt_block`/`[class*='col-']` in
+  `css/creative.css` reach, which only match a block's direct wrapper.
+  Since each camera's thumbnail `<img>` is `position: absolute` (see the
+  #100 fix), it contributes no height to its own wrapper, so every
+  multi-camera wrapper collapsed to 0px and the thumbnails never rendered.
+  Added a `dt-camera-multi` class (set in `camera.js` when mounting
+  multiple cameras into a grid item) with matching CSS that lays the
+  per-camera wrappers out in a row and fills each one to the grid item's
+  full height, reaching through the extra wrapper level the same way the
+  existing rules do for a direct child. Verified with a headless-browser
+  reproduction: baseline collapsed each thumbnail to a 10px sliver, fixed
+  renders both cameras side by side filling the block.
+- Fixed the Device Editor's Dial checkbox producing a plain on/off switch
+  instead of a gauge when checked on one value-row of a multi-value
+  Domoticz device, e.g. a combined Temp + Humidity sensor (#118 follow-up).
+  Add Device expands such a device into one row per value — idx `12_1`,
+  `12_2`, ... (`_getAvailableDevices`/`_getSubValueCount`) — for classic
+  gauge/switch blocks that bind to a single value each, but
+  `js/components/dial.js`'s `make()` reads the whole Domoticz device to
+  detect its combined type (`d.Type === 'Temp + Humidity'`, etc.), and
+  `DT_function.getDomoticzIdx` can't resolve a composite `"12_1"` idx to
+  any device — it silently fell back to `onoff()`. Checking Dial on such a
+  row now drops the subidx and saves the plain base idx instead, so the
+  dial resolves the full device and renders the correct gauge.
+
 ## 3.42.3 — Device Editor widget height fix (#100 follow-up)
 
 - Fixed a once-set iframe (or camera/log/timegraph) height on a grid screen

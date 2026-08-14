@@ -2814,14 +2814,24 @@ var DashticzDeviceEditor = (function () {
       entry.hide_data = options.hide_data === true;
       entry.last_update = options.last_update === true;
       entry.switch = options.switch === true;
-      if (options.dial === true) entry.type = 'dial';
+      if (options.dial === true) {
+        // The Dial widget reads the whole Domoticz device to detect its type
+        // (e.g. a combined Temp + Humidity sensor renders as one gauge, see
+        // js/components/dial.js make()). A sub-value idx like "12_1" - the
+        // idx Add Device offers for each value of a multi-value device -
+        // doesn't resolve to any device (DT_function.getDomoticzIdx), so the
+        // dial silently fell back to a plain on/off switch (#118). Save the
+        // base idx instead so it resolves to the full device.
+        entry.type = 'dial';
+      } else if (p.subidx) {
+        entry.subidx = p.subidx;
+      }
       if (deviceTitleVisible[ck] === false) entry.hide_title = true;
       var customFields = _deviceCustomFieldsObject(
         deviceCustomFields[ck],
         devicePreservedFields[ck]
       );
       if (Object.keys(customFields).length) entry.custom_fields = customFields;
-      if (p.subidx) entry.subidx = p.subidx;
       if (deviceHeights[ck]) entry.height = deviceHeights[ck];
       // Never retain a legacy name-based reference: Domoticz names may change.
       return entry;
