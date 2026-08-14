@@ -219,6 +219,32 @@
   overflow: hidden !important;
 }
 
+/* map.js's Google Maps canvas (.state_map, see below) is "height: 100%" of
+   its .dt_state parent, which itself only gets a real height from the
+   .fixedheight class - added in dashticz.js's renderBlock() only when a
+   fixed pixel height is applied via inline CSS, which the inGrid guard
+   there intentionally skips for grid items (the grid row governs height
+   instead). So on a grid screen .map never receives .fixedheight, .dt_state
+   keeps its unsized default (min-height: 1px), and the map canvas Google
+   Maps creates collapses to that same near-zero height - rendering
+   invisible/mispositioned even though the API loaded and initialized fine
+   (#135). Reproduce .fixedheight's two effects (see "fixedheight
+   .dt_content" / ".fixedheight .dt_state" above) directly for grid map
+   blocks instead. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .map {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .map .dt_content {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .map .dt_state {
+  height: 100%;
+}
+
 .dt-grid-screen > .dt-grid-layout > .dt-grid-overlap {
   outline: 1px dashed rgba(255, 165, 0, 0.8);
   outline-offset: -1px;
