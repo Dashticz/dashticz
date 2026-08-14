@@ -60,6 +60,12 @@ function gm_authFailure() {
       };
       if(choose(block.showmap, true)) {
         result.width=4;
+        // Same icon the widget catalog already uses to represent Google
+        // Maps (js/widgeteditor.js). Without a default here, checking the
+        // Icon option with no custom value (the same pattern News/Weather
+        // rely on) rendered nothing, since getColIcon() only draws an icon
+        // when block.icon is actually set.
+        result.icon='fas fa-map-marked-alt'
       }
       else {
         result.icon='fas fa-solid fa-route'
