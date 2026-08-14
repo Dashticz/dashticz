@@ -1,5 +1,5 @@
 /* global Domoticz settings columns columns_standby blocks blocktypes screens standby_screen DashticzScreenSwitcher standbyActive language */
-/* global DT_function getBlockTypesBlock */
+/* global DT_function getBlockTypesIcon */
 // eslint-disable-next-line no-unused-vars
 var DashticzDeviceEditor = (function () {
   'use strict';
@@ -2817,24 +2817,20 @@ var DashticzDeviceEditor = (function () {
       var title = String(deviceTitles[ck] || '').trim();
       var options = deviceOptions[ck] || {};
       if (title) entry.title = title;
+      else if (deviceTitleVisible[ck] !== false && deviceNames[ck]) {
+        // A checked Title option must be explicit for special renderers such
+        // as Dial, which do not pass through deviceUpdateHandler's automatic
+        // Domoticz-name title path.
+        entry.title = deviceNames[ck];
+      }
       if (options.icon === false) {
         entry.icon = '';
       } else if (options.iconValue) {
         // A custom icon entered in Device Config takes precedence while Icon is enabled.
         entry.icon = options.iconValue;
       } else {
-        // Icon is on with no custom value: write the static default actually
-        // in effect (same lookup every device type already gets at render
-        // time - js/blocktypes.js), so CONFIG.js shows it instead of leaving
-        // it silently implicit. Only set entry.icon when a default was
-        // actually found - _resolveDefaultIcon() deliberately skips
-        // state-dependent (iconOn/iconOff) icons, e.g. a light bulb that
-        // toggles filled/outline with the device's on/off state, so leaving
-        // entry.icon unset here is what lets that live toggling keep
-        // working (a plain device tile re-resolves it fresh on every
-        // render; a Dial-typed device resolves a same-session snapshot via
-        // js/components/dial.js's defaultCfg). Writing '' here instead would
-        // freeze that snapshot in AND look identical to Icon being off.
+        // Icon is on with no custom value: write the stable device-type icon
+        // used by special renderers such as Dial into CONFIG.js.
         var defaultIcon = _resolveDefaultIcon(p.idx);
         if (defaultIcon) entry.icon = defaultIcon;
       }
@@ -3069,33 +3065,15 @@ var DashticzDeviceEditor = (function () {
     return Math.max(1, Math.min(12, width));
   }
 
-  /* Resolve the icon a device would get with no icon configured at all -
-     the same device-type lookup js/blocks.js's handleDevice() (via
-     getBlockTypesBlock(), js/blocktypes.js) uses for a plain device tile.
-     Checking Icon with no custom value previously saved nothing at all for
-     icon - unlike hide_data/last_update/switch, which are always written as
-     an explicit true/false - so a saved CONFIG.js never showed what icon
-     was actually in effect.
-
-     Only protoBlock.icon (a single, state-independent icon) is used, never
-     iconOn/iconOff: a plain device tile picks between those live on every
-     render (js/blocks.js createBlocks(): $.extend(block, protoBlock,
-     origBlock) only lets origBlock.icon win when it's actually set), so a
-     device whose icon toggles with its on/off state (e.g. a light bulb)
-     keeps doing so as long as block.icon stays unset. Freezing a
-     was-on/was-off snapshot into CONFIG.js here would permanently pin that
-     device to whatever icon it happened to have at save time instead.
-
-     Returns '' if no static default can be resolved (idx doesn't resolve to
-     a device, the device's type has no default icon, or only a state-
-     dependent iconOn/iconOff pair exists).
-   */
+  /* Resolve the stable icon used when Icon is checked without a custom
+     value. getBlockTypesIcon() also covers defaults supplied by a normal
+     device handler (notably getDimmerBlock's lightbulb), because Dial and
+     other special components bypass that handler. */
   function _resolveDefaultIcon(idx) {
     var resolvedIdx = typeof DT_function !== 'undefined' ? DT_function.getDomoticzIdx(idx) : idx;
     var device = resolvedIdx && Domoticz.getAllDevices(resolvedIdx);
-    if (!device || typeof getBlockTypesBlock !== 'function') return '';
-    var protoBlock = getBlockTypesBlock({ idx: resolvedIdx, device: device });
-    return protoBlock.icon || '';
+    if (!device || typeof getBlockTypesIcon !== 'function') return '';
+    return getBlockTypesIcon({ idx: resolvedIdx, device: device });
   }
 
   /* Find the CONFIG.js block definition associated with a composite IDX. */

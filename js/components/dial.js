@@ -4,7 +4,7 @@
 /* from blocks.js */
 /* global TranslateDirection */
 /* from blocktypes.js */
-/* global getBlockTypesBlock*/
+/* global getBlockTypesIcon*/
 /* from switches.js */
 /* global switchEvoHotWater changeEvohomeControllerStatus reqSlideDevice reqSlideDeviceAsync switchEvoZone switchThermostat switchDevice getIconStatusClass*/
 var DT_dial = (function () {
@@ -64,27 +64,21 @@ var DT_dial = (function () {
         scale: 1,
         colorpickerscale: parseFloat(settings.colorpickerscale) || 1,
       };
-      // getColIcon()/renderTitle() (js/dashticz.js) paint the block's icon
-      // from block.icon alone, same as every other block type - but the
-      // Device Editor's Icon checkbox only ever writes block.icon when the
-      // user also typed a custom value (js/deviceeditor.js _save()); left
-      // unset, every OTHER widget falls back to its own defaultCfg.icon
-      // (see news.js/simpleblock.js's sunrise fix). A device converted to
-      // type:'dial' has no such fallback, so checking Dial on an existing
-      // device (which until then showed its normal type-based icon via
-      // js/blocktypes.js's getBlockTypesBlock(), the same lookup a plain
-      // device tile's handleDevice() uses) silently lost its icon. Reuse
-      // that same lookup here so a Dial-converted device keeps the icon it
-      // had before conversion. block.icon === '' is left alone - that is
-      // the user explicitly unchecking Icon, not "unset".
-      if (block && typeof block.icon === 'undefined' && block.idx) {
+      // A dial bypasses the normal device handler, so supply the same title
+      // and icon defaults here for existing CONFIG.js blocks which predate
+      // the editor writing those properties explicitly. Explicit empty
+      // values remain untouched and therefore still mean hidden/disabled.
+      if (block && block.idx) {
         var idx = DT_function.getDomoticzIdx(block.idx);
         var device = idx && Domoticz.getAllDevices(idx);
         if (device) {
-          var protoBlock = getBlockTypesBlock({ idx: idx, device: device });
-          var isOn = device.Status && getIconStatusClass(device.Status) === 'on';
-          var defaultIcon = protoBlock.icon || (isOn ? protoBlock.iconOn : protoBlock.iconOff);
-          if (defaultIcon) cfg.icon = defaultIcon;
+          if (typeof block.title === 'undefined' && device.Name) {
+            cfg.title = device.Name;
+          }
+          if (typeof block.icon === 'undefined') {
+            var defaultIcon = getBlockTypesIcon({ idx: idx, device: device });
+            if (defaultIcon) cfg.icon = defaultIcon;
+          }
         }
       }
       return cfg;
@@ -196,11 +190,27 @@ var DT_dial = (function () {
    * @param {object} me  Core component object.
    */
   function _dialFitSize(me) {
-    var $container = $(me.mountPoint + ' div').first();
-    var measuredWidth = parseInt($container.outerWidth());
-    var measuredHeight = parseInt($container.outerHeight());
+    var $container = me.$mountPoint.find('.dt_block').first();
+    var inGrid = me.$mountPoint && me.$mountPoint.hasClass('dt-grid-item');
+    var hasTitle = !!(me.block.title && !me.block.hide_title);
+    $container.toggleClass('dial-has-title', hasTitle);
+    // A grid row owns the complete outer height. Keep the block pinned to it
+    // before measuring the flexed state area; a pixel height derived from the
+    // dial itself lets the title/content grow the grid item and causes the
+    // scrollbar that this sizing routine is meant to prevent.
+    if (inGrid) $container.css('height', '100%');
+    var titleHeight = hasTitle
+      ? Math.ceil($container.find('.dt_title').outerHeight(true) || 0)
+      : 0;
+    var $state = $container.find('.dt_state').first();
+    var measuredWidth = hasTitle && $state.length
+      ? parseInt($state.innerWidth())
+      : parseInt($container.outerWidth());
+    var measuredHeight = hasTitle && $state.length
+      ? parseInt($state.innerHeight())
+      : parseInt($container.outerHeight()) - titleHeight;
     var configuredHeight = isDefined(me.block.height)
-      ? parseInt(me.block.height)
+      ? parseInt(me.block.height) - titleHeight
       : NaN;
     // Outside a grid item, .dt_block has no real height constraint of its
     // own - it's plain CSS auto-height, driven only by its (at this point
@@ -213,7 +223,6 @@ var DT_dial = (function () {
     // min-height:100%, overflow:auto - the scrollbar this Math.min guards
     // against), so it stays in play there; a classic column just grows to
     // fit the dial, nothing to overflow against.
-    var inGrid = me.$mountPoint && me.$mountPoint.hasClass('dt-grid-item');
     var candidates = (
       inGrid
         ? [measuredWidth, measuredHeight, configuredHeight]
@@ -230,8 +239,14 @@ var DT_dial = (function () {
       console.log('dial width unknown.');
       me.height = (me.height || 100) * (me.block.scale || 1);
     } else me.height = height * me.block.scale || me.height;
-    me.fontsize = 0.95 * me.height;
-    $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
+    // Leave a little extra breathing room below a dedicated title bar. The
+    // generic dial uses absolute centering and its ring/shadow extends to the
+    // edge of its em box, so the normal 5% inset is too tight in that row.
+    me.fontsize = (hasTitle ? 0.9 : 0.95) * me.height;
+    // In a classic column the title bar adds real height above the circular
+    // dial. In a fixed grid cell the same total stays within the assigned row
+    // span and the circle sizes from the remaining height.
+    if (!inGrid) $container.css('height', me.height + titleHeight + 'px');
     // The template bakes font-size/needle dimensions into inline styles at
     // render time; on a live resize (no re-render) they need patching
     // directly. getContainer() (js/dashticz.js) gives the OUTER .dt_block
@@ -394,7 +409,9 @@ var DT_dial = (function () {
       };
 
       /* Mount dial */
-      var $mount = $(me.mountPoint + ' .dt_content');
+      // Keep getSpecialBlock()'s .dt_title intact. Replacing .dt_content
+      // removed the title immediately after the generic renderer created it.
+      var $mount = $(me.mountPoint + ' .dt_state');
       $mount.html(template(dataObject));
       $mount.addClass('swiper-no-swiping');
 
