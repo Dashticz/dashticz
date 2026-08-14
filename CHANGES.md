@@ -1,6 +1,27 @@
 # Dashticz — Change log for recent update work
 
-## 3.42.9 — Fix Dial checkbox devices losing their icon/title
+## 3.42.9 — Complete Dial title/icon persistence
+
+- Device Config now writes the Domoticz device name to `title` whenever the
+  Title checkbox is enabled and no custom title was entered. Dial blocks do
+  not use the normal device title handler, so an implicit title could not
+  make that checked option visible or survive in generated `CONFIG.js`.
+- Added a shared stable-icon resolver for special renderers. Besides normal
+  `icon`, `iconOn`, and `iconOff` definitions, it covers the lightbulb that
+  `getDimmerBlock()` supplies directly from its handler. This fixes dimmer
+  devices such as `blocks['device_154']` still saving no `icon` despite the
+  Icon checkbox being enabled.
+- Dial now mounts its template into `.dt_state` instead of replacing the
+  complete `.dt_content`. The previous mount removed `.dt_title` immediately
+  after the shared block renderer created it.
+- When a Dial title is enabled, it now gets a dedicated title bar above the
+  meter and the circle is fitted into the remaining height. Disabling the
+  title also removes the bar and its reserved space.
+- Existing dial blocks without explicit `title` or `icon` remain compatible:
+  they resolve the current Domoticz name and stable device-type icon at
+  runtime. Explicit empty values continue to hide the corresponding element.
+- Added a browser regression covering the reported `device_154` 5×9 grid
+  configuration, including visible title/icon and the subsequent save payload.
 
 - Device Config's Icon checkbox now writes the resolved static default icon
   into CONFIG.js when checked with no custom value typed, instead of saving

@@ -14,6 +14,167 @@ test.describe('optional screen grid layout', () => {
     await expect(page.locator('.screen1 .dt-grid-layout')).toHaveCount(0);
   });
 
+  test('renders the device title and icon for a Dial block saved without explicit defaults', async ({
+    page,
+  }) => {
+    let blocksRequest = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+stubDevices.result.push(Object.assign(
+  {},
+  stubDevices.result.find(function (device) { return device.idx === '1989'; }),
+  {idx: '154', Name: 'Hal - Lamp'}
+));
+stubDevices.result.push(Object.assign(
+  {},
+  stubDevices.result.find(function (device) { return device.idx === '1989'; }),
+  {idx: '155', Name: 'Hidden title'}
+));
+blocks['device_154'] = {
+  width: 3,
+  hide_data: false,
+  last_update: false,
+  switch: false,
+  type: 'dial',
+  idx: 154,
+  grid: {x: 1, y: 1, w: 5, h: 9}
+};
+blocks['device_155'] = {
+  width: 3,
+  hide_data: false,
+  hide_title: true,
+  last_update: false,
+  switch: false,
+  type: 'dial',
+  idx: 155,
+  grid: {x: 7, y: 1, w: 5, h: 9}
+};
+screens[1] = {
+  layout: 'grid',
+  gridColumns: 24,
+  rowHeight: 20,
+  gap: 5,
+  mobileLayout: 'stack',
+  blocks: ['device_154', 'device_155']
+};
+`,
+      });
+    });
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'dial-defaults-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: ['device_154'] }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savegridlayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+    await page.route('**/js/savecustomcss.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    // At desktop width this exact 5-column block is wider than it is tall;
+    // the dial must therefore size from the remaining vertical space below
+    // the title rather than create an internal grid-item scrollbar.
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+
+    const dial = page.locator(
+      '.screen1 [data-grid-block="device_154"]'
+    );
+    await expect(dial.locator('.dt_title')).toHaveText('Hal - Lamp');
+    await expect(dial.locator('.dt_title')).toHaveCSS(
+      'background-color',
+      'rgba(0, 0, 0, 0)'
+    );
+    await expect(dial.locator('.col-icon em')).toHaveClass(/fa-lightbulb/);
+    await expect(dial.locator('.col-icon')).toBeVisible();
+    await expect(dial.locator('.dt_block')).toHaveClass(/dial-has-title/);
+    const titleBox = await dial.locator('.dt_title').boundingBox();
+    const circleBox = await dial.locator('.dt_state > .dial').boundingBox();
+    const dialBox = await dial.boundingBox();
+    expect(titleBox).not.toBeNull();
+    expect(circleBox).not.toBeNull();
+    expect(dialBox).not.toBeNull();
+    expect(titleBox.y + titleBox.height).toBeLessThanOrEqual(circleBox.y);
+    expect(circleBox.y + circleBox.height).toBeLessThanOrEqual(
+      dialBox.y + dialBox.height
+    );
+    expect(
+      await dial.evaluate(
+        (element) =>
+          element.scrollHeight <= element.clientHeight &&
+          element.scrollWidth <= element.clientWidth
+      )
+    ).toBe(true);
+
+    const hiddenTitleDial = page.locator(
+      '.screen1 [data-grid-block="device_155"]'
+    );
+    await expect(hiddenTitleDial.locator('.dt_title')).toHaveCount(0);
+    await expect(hiddenTitleDial.locator('.dt_block')).not.toHaveClass(
+      /dial-has-title/
+    );
+
+    // Opening and saving Device Config without custom values must make both
+    // checked options explicit in the generated CONFIG.js payload.
+    await page.locator('.screen1 .layouteditoricon').click();
+    await dial.locator('.dle-config-button').click();
+    await expect(page.locator('#de-config-popup')).toBeVisible();
+    await expect(
+      page.locator('#de-config-popup [data-option="icon"]')
+    ).toBeChecked();
+    await expect(
+      page.locator('#de-config-popup [data-option="show_title"]')
+    ).toBeChecked();
+    await page.locator('#de-config-ok').click();
+    await expect(page.locator('#deviceeditorpopup')).toBeVisible();
+    await page.locator('#de-save-btn').evaluate((button) => {
+      button.disabled = false;
+    });
+    await page.locator('#de-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const savedDial = blocksRequest.devices.find(
+      (entry) => String(entry.idx) === '154' && entry.type === 'dial'
+    );
+    expect(savedDial).toMatchObject({
+      type: 'dial',
+      title: 'Hal - Lamp',
+      icon: 'fas fa-lightbulb',
+    });
+  });
+
   test('converts a Wizard column screen to a compact grid after confirmation', async ({
     page,
   }) => {

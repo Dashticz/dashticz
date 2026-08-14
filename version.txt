@@ -1,9 +1,9 @@
 {
     "version": "3.42.9",
     "branch": "beta",
-    "last_changes": "Fix Dial-typed devices losing their icon/title in classic layouts and restore the normal device icon when no custom icon is configured",
+    "last_changes": "Fix Dial title/icon persistence and show enabled titles in a dedicated title bar above the dial",
     "changelog": {
-        "3.42.9": "Fix Dial-typed devices losing their icon/title in classic (non-grid) layouts (auto-fit sizing collapsed the whole tile before render) and restore the normal device icon when no custom icon value is configured",
+        "3.42.9": "Fix Dial title/icon persistence, restore stable device icons, preserve the rendered title, and show enabled titles in a dedicated title bar above the dial",
         "3.42.8": "Fix Settings save sending an empty payload (theme and other settings silently reverted after save) caused by a merge conflict resolution splitting the collected values into an unused local object",
         "3.42.7": "Recognize 'insufficient permission'/'failed to write object' Git errors in the web Update button so a concrete chown/permission-fix hint is shown instead of a raw Git error",
         "3.42.6": "Add Liquid Glass Grey and Liquid Glass Blue themes, based on Modern Dark with the same block rounding/spacing, restyled as frosted translucent glass panels",
