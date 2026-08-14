@@ -58,6 +58,14 @@ var DT_camera = {
       if (isGridItem) {
         /* Keep all camera thumbnails inside their positioned grid item. */
         me.$mountPoint.empty();
+        // Marks the grid item so creative.css can reach through the extra
+        // per-camera #block_N wrapper mountNewContainer() creates below -
+        // the grid CSS's normal min-height/width rules only match a direct
+        // .dt_block/[class*='col-'] child of .dt-grid-item, one level
+        // shallower than where each camera's own .dt_block ends up here.
+        // Without it every thumb collapses to 0 height (its img is
+        // position:absolute, contributing nothing) and never renders (#132).
+        me.$mountPoint.addClass('dt-camera-multi');
         columndiv = me.mountPoint;
       } else {
         var s = me.$mountPoint.closest('.screen').data('screenindex');

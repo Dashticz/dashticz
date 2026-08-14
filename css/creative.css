@@ -107,6 +107,35 @@
   min-height: 100%;
 }
 
+/* Multi-camera grid blocks (js/components/camera.js run()) mount one
+   #block_N wrapper per camera as siblings inside the grid item, instead of
+   the single direct .dt_block/[class*='col-'] child every other component
+   gets. The two rules above never reach that extra level, so each camera's
+   .dt_block had no height (its thumb img is position:absolute, so
+   contributes nothing on its own) and no forced full width - the thumbnails
+   rendered with zero size, i.e. not visible at all (#132). Lay the
+   per-camera wrappers out in a row and reach through to their nested
+   elements the same way. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item.dt-camera-multi {
+  display: flex;
+}
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item.dt-camera-multi > [id^='block_'] {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+}
+.dt-grid-screen
+  > .dt-grid-layout
+  > .dt-grid-item.dt-camera-multi
+  > [id^='block_']
+  > [class*='col-'] {
+  float: none !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100%;
+  box-sizing: border-box;
+}
+
 /* renderSunrise() (js/components/simpleblock.js) replaces the mountpoint with
    its own markup, which carries neither .dt_block nor .mh, so it never
    received the min-height rule above: the grid cell itself resized correctly,

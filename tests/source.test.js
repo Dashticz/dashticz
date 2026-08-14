@@ -696,7 +696,7 @@ test('device and widget config editors share full widget config and preserve hid
   assert.match(deviceEditor, /dial: definition\.type === 'dial'/);
   assert.match(deviceEditor, /dial: configured\.type === 'dial'/);
   assert.match(deviceEditor, /if \(specialOptions\.dial === true\) specialEntry\.type = 'dial'/);
-  assert.match(deviceEditor, /if \(options\.dial === true\) entry\.type = 'dial'/);
+  assert.match(deviceEditor, /if \(options\.dial === true\) \{\s*\n[\s\S]*?entry\.type = 'dial';\s*\n\s*\} else if \(p\.subidx\) \{\s*\n\s*entry\.subidx = p\.subidx;\s*\n\s*\}/);
   assert.match(
     deviceEditor,
     /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === reference\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
@@ -2189,6 +2189,23 @@ test('Dial checkbox shows an inline hint pointing to the dial docs and Custom fi
   assert.match(deviceEditor, /\$popup\.on\('change', '\[data-option="dial"\]', refreshDialHint\)/);
   assert.match(deviceEditor, /dial_hint: '/);
   assert.match(deviceEditor, /dial_hint_link: '/);
+});
+
+test('Dial checkbox on a multi-value sub-device (e.g. Temp+Humidity) saves the base idx, not the sub-value idx (#118)', () => {
+  // Add Device expands a multi-value Domoticz device (subCount > 1, e.g. a
+  // combined Temp + Humidity sensor) into one row per value - idx "12_1",
+  // "12_2" - so classic gauge/switch blocks can each bind to a single value
+  // (_getAvailableDevices/_getSubValueCount). The Dial widget instead reads
+  // the whole device to detect its type (js/components/dial.js make() reads
+  // d.Type === 'Temp + Humidity' etc.), and DT_function.getDomoticzIdx can't
+  // resolve a composite "12_1" idx to any device - it silently fell back to
+  // a plain on/off switch instead of a gauge. Checking Dial on such a row
+  // must therefore drop the subidx and save the plain base idx.
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  assert.match(
+    deviceEditor,
+    /if \(options\.dial === true\) \{[\s\S]*?entry\.type = 'dial';\s*\n\s*\} else if \(p\.subidx\) \{\s*\n\s*entry\.subidx = p\.subidx;\s*\n\s*\}/
+  );
 });
 
 test('Dial face/content area fills more of the dial instead of leaving roomy margins', () => {

@@ -6,6 +6,31 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.42.4 beta (14-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Fixed multi-camera blocks rendering invisible (0-height) thumbnails on
+  grid screens (`#132 <https://github.com/MadPatrick/dashticz/issues/132>`_).
+  Each camera in the ``cameras`` array is mounted in its own wrapper element
+  alongside its siblings, one level deeper than the grid CSS's normal
+  ``min-height``/width rules reach (those only match a block's direct
+  wrapper). Since each camera's own thumbnail image is absolutely
+  positioned, its wrapper collapsed to zero height and the images never
+  rendered. The per-camera wrappers on a grid screen now lay out side by
+  side and fill the block's full height again, matching column/classic mode.
+- Fixed the Device Editor's **Dial** checkbox producing a plain on/off
+  switch instead of a gauge when applied to one value of a multi-value
+  Domoticz device, e.g. a combined Temp + Humidity sensor (`#118
+  <https://github.com/MadPatrick/dashticz/issues/118>`_ follow-up). Add
+  Device offers such sensors as separate per-value rows (idx ``12_1``,
+  ``12_2``, ...) so classic gauge/switch blocks can bind to a single value,
+  but the Dial widget reads the whole Domoticz device to detect its type and
+  couldn't resolve a sub-value idx to any device. Checking Dial on one of
+  these rows now saves the device's base idx instead, so the dial correctly
+  detects the combined sensor type and renders a gauge.
+
 v3.42.3 beta (13-8-2026)
 --------------------------
 
