@@ -1,6 +1,6 @@
 {
     "version": "3.42.7",
-    "branch": "beta",
+    "branch": "master",
     "last_changes": "Recognize 'insufficient permission'/'failed to write object' Git errors in the web Update button so a concrete chown/permission-fix hint is shown instead of a raw Git error",
     "changelog": {
         "3.42.7": "Recognize 'insufficient permission'/'failed to write object' Git errors in the web Update button so a concrete chown/permission-fix hint is shown instead of a raw Git error",
