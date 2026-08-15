@@ -7,29 +7,9 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 
 
 v3.42.9 beta (14-8-2026)
----------------------------
+--------------------------
 
 * **Fixes**
-
-- Completed the **Dial** title/icon fix for devices whose defaults are not
-  stored in ``protoBlock.icon``, notably dimmers whose lightbulb is supplied
-  directly by ``getDimmerBlock()``. Device Config now writes a stable default
-  ``icon`` and the Domoticz device name as ``title`` when their checkboxes are
-  enabled without custom values, so both properties are explicit in generated
-  ``CONFIG.js``.
-- Existing hand-written and previously generated Dial blocks without those
-  properties now resolve the same title and icon at runtime. Explicit empty
-  values remain respected as disabled options.
-- Dial templates now mount inside ``.dt_state`` instead of replacing the
-  complete ``.dt_content`` container, which previously deleted ``.dt_title``
-  immediately after it was rendered.
-- Enabled Dial titles now have a dedicated title bar above the meter. The
-  circle fits into the remaining space; disabling the title removes both the
-  bar and its reserved height.
-- Added a browser regression using the reported ``blocks['device_154']``
-  5×9 grid layout. It verifies both visible output and the subsequent Device
-  Config save payload (``title: 'Hal - Lamp'`` and
-  ``icon: 'fas fa-lightbulb'``).
 
 - Fixed **Dial** blocks losing their icon and title in classic
   (non-grid, column-based) layouts — most visibly on devices converted via

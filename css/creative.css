@@ -4893,53 +4893,6 @@ canvas {
   background-color: rgba(0,0,0,0);
 }
 
-/* A Dial title occupies its own header row instead of floating over the
-   circular control. The class is toggled by dial.js only while a visible
-   title exists, so disabling Title restores the original full-height dial. */
-.dt_block.dial.dial-has-title .dt_content {
-  display: flex;
-  flex: 1 1 auto;
-  flex-direction: column;
-  align-self: stretch;
-  min-width: 0;
-  min-height: 0;
-  height: auto;
-}
-
-.dt_block.dial.dial-has-title .dt_title {
-  box-sizing: border-box;
-  flex: 0 0 auto;
-  width: 100%;
-  margin: 0 0 5px;
-  padding: 5px 8px;
-  overflow: hidden;
-  border-radius: 4px;
-  background-color: transparent;
-  line-height: 1.2;
-  text-align: center;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.dt_block.dial.dial-has-title .dt_state {
-  position: relative;
-  flex: 1 1 auto;
-  width: 100%;
-  min-height: 0;
-  margin: 0;
-  overflow: hidden;
-}
-
-/* On a grid screen the row span, not the dial's content, is the hard height
-   limit. Capping the outer block prevents a title from increasing the grid
-   item's scrollHeight; the flexed .dt_state above supplies the exact space
-   left for the circular control. */
-.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .dt_block.dial {
-  height: 100% !important;
-  min-height: 0 !important;
-  overflow: hidden !important;
-}
-
 .block-center {
   display: flex;
   -ms-flex-wrap: wrap;

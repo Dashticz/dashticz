@@ -776,37 +776,37 @@ test('device and widget config editors share full widget config and preserve hid
   assert.match(styles, /\.dle-remove-button \.fas[\s\S]*font-size: 16px !important/);
 });
 
-test('Device Config writes explicit title and icon defaults for Dial-compatible CONFIG.js blocks', () => {
+test('Device Config Icon checkbox writes the resolved static default icon into CONFIG.js, never a frozen state-dependent snapshot', () => {
+  // Icon checked with no custom value previously saved nothing at all for
+  // icon - unlike hide_data/last_update/switch below it, which are always
+  // written as an explicit true/false - so opening a saved CONFIG.js never
+  // showed what icon was actually in effect for that device, even though
+  // one was already rendering (js/blocktypes.js's getBlockTypesBlock(), the
+  // same device-type lookup a plain device tile's handleDevice() uses).
   const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
-  const blockTypes = fs.readFileSync(path.join(root, 'js/blocktypes.js'), 'utf8');
-
-  // A checked Title option with an empty custom title must save the Domoticz
-  // device name. Dial bypasses deviceUpdateHandler's automatic title path,
-  // so leaving title implicit made the checked option ineffective.
-  assert.match(
-    deviceEditor,
-    /else if \(deviceTitleVisible\[ck\] !== false && deviceNames\[ck\]\) \{[\s\S]*?entry\.title = deviceNames\[ck\];/
-  );
-
-  // A checked Icon option must also save a stable default. The shared helper
-  // includes the iconOn/iconOff definitions and getDimmerBlock's hard-coded
-  // bulb, which are not present in protoBlock.icon.
-  assert.match(blockTypes, /function getBlockTypesIcon\(block\) \{/);
-  assert.match(blockTypes, /if \(protoBlock\.iconOn\) return protoBlock\.iconOn;/);
-  assert.match(blockTypes, /if \(protoBlock\.iconOff\) return protoBlock\.iconOff;/);
-  assert.match(
-    blockTypes,
-    /if \(protoBlock\.handler === getDimmerBlock\) return 'fas fa-lightbulb';/
-  );
   assert.match(deviceEditor, /function _resolveDefaultIcon\(idx\) \{/);
-  assert.match(
-    deviceEditor,
-    /return getBlockTypesIcon\(\{ idx: resolvedIdx, device: device \}\);/
-  );
+  assert.match(deviceEditor, /var protoBlock = getBlockTypesBlock\(\{ idx: resolvedIdx, device: device \}\);/);
+  assert.match(deviceEditor, /return protoBlock\.icon \|\| '';/);
   assert.match(
     deviceEditor,
     /var defaultIcon = _resolveDefaultIcon\(p\.idx\);\s*\n\s*if \(defaultIcon\) entry\.icon = defaultIcon;/
   );
+
+  // _resolveDefaultIcon() must read ONLY protoBlock.icon, never
+  // protoBlock.iconOn/iconOff: a plain device tile picks between those live
+  // on every render ($.extend(block, protoBlock, origBlock) in js/blocks.js
+  // createBlocks() only lets origBlock.icon win when it's actually set), so
+  // a device whose icon toggles with its on/off state (e.g. a light bulb -
+  // blocktypes.js's SwitchType['On/Off'] only defines iconOn/iconOff, no
+  // static icon) must keep doing that. Writing a was-on/was-off snapshot
+  // into CONFIG.js would freeze it, and writing '' would look identical to
+  // Icon being off (js/configwriter.php writes `icon` whenever the key
+  // exists and isn't null, even when it's an empty string).
+  const resolveDefaultIconFn = deviceEditor.slice(
+    deviceEditor.indexOf('function _resolveDefaultIcon(idx) {'),
+    deviceEditor.indexOf('\n  }\n', deviceEditor.indexOf('function _resolveDefaultIcon(idx) {'))
+  );
+  assert.doesNotMatch(resolveDefaultIconFn, /protoBlock\.iconOn|protoBlock\.iconOff/);
 });
 
 test('widget editor exposes the supported catalog and keeps legacy options out of settings UI', () => {
@@ -2342,29 +2342,15 @@ test('Dial keeps its rendered size in sync with live editor resize (grid or colu
   // `resize()` function's own comment about not wanting to recreate and
   // resubscribe on every resize).
   const dialComponent = fs.readFileSync(path.join(root, 'js/components/dial.js'), 'utf8');
-  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
   assert.match(dialComponent, /function _dialFitSize\(me\)/);
-  assert.match(dialComponent, /if \(inGrid\) \$container\.css\('height', '100%'\);/);
-  assert.match(dialComponent, /\$container\.toggleClass\('dial-has-title', hasTitle\);/);
-  assert.match(dialComponent, /\$container\.find\('\.dt_title'\)\.outerHeight\(true\)/);
-  assert.match(dialComponent, /parseInt\(\$state\.innerWidth\(\)\)/);
-  assert.match(
-    dialComponent,
-    /var measuredHeight = hasTitle && \$state\.length[\s\S]*?parseInt\(\$state\.innerHeight\(\)\)[\s\S]*?: parseInt\(\$container\.outerHeight\(\)\) - titleHeight;/
-  );
-  assert.match(dialComponent, /parseInt\(me\.block\.height\) - titleHeight/);
-  assert.match(dialComponent, /me\.fontsize = \(hasTitle \? 0\.9 : 0\.95\) \* me\.height;/);
-  assert.match(dialComponent, /if \(!inGrid\) \$container\.css\('height', me\.height \+ titleHeight \+ 'px'\);/);
+  assert.match(dialComponent, /var measuredWidth = parseInt\(\$container\.outerWidth\(\)\);/);
+  assert.match(dialComponent, /var measuredHeight = parseInt\(\$container\.outerHeight\(\)\);/);
   assert.match(dialComponent, /Math\.min\.apply\(Math, candidates\)/);
   assert.match(dialComponent, /typeof ResizeObserver !== 'undefined'/);
   assert.match(dialComponent, /me\.dialResizeObserver = new ResizeObserver/);
   assert.match(dialComponent, /me\.dialResizeObserver\.observe\(/);
   assert.match(dialComponent, /me\.dialResizeObserver\.disconnect\(\);/);
   assert.match(dialComponent, /me\.dialResizeObserver = null;/);
-  assert.match(styles, /\.dt_block\.dial\.dial-has-title \.dt_title \{/);
-  assert.match(styles, /\.dt_block\.dial\.dial-has-title \.dt_title \{[\s\S]*?background-color: transparent;/);
-  assert.match(styles, /\.dt_block\.dial\.dial-has-title \.dt_state \{[\s\S]*?position: relative;[\s\S]*?overflow: hidden;/);
-  assert.match(styles, /> \.dt_block\.dial \{[\s\S]*?height: 100% !important;[\s\S]*?overflow: hidden !important;/);
 });
 
 test('Dial in classic (non-grid) layout sizes from width, not its own transient auto-height', () => {
@@ -2388,30 +2374,29 @@ test('Dial in classic (non-grid) layout sizes from width, not its own transient 
 });
 
 test('Dial converted via the Device Editor Dial checkbox keeps its device-type default icon', () => {
-  // Existing hand-written or previously saved dial blocks can lack both
-  // properties. The runtime fallback must resolve the Domoticz name and the
-  // same stable icon as the editor, including Dimmer's handler-supplied bulb.
+  // getColIcon()/renderTitle() (js/dashticz.js) paint a block's icon purely
+  // from block.icon - but js/deviceeditor.js _save() only writes block.icon
+  // when a custom value was typed (options.iconValue); leaving the Icon
+  // checkbox checked with no typed value leaves block.icon unset, same as
+  // every other widget. Every OTHER widget falls back to its own
+  // defaultCfg.icon in that case (see the news.js/simpleblock.js sunrise
+  // fix), but dial.js had none - so a device that showed its normal
+  // type-based icon (js/blocktypes.js's getBlockTypesBlock(), the same
+  // lookup js/blocks.js handleDevice() uses for a plain device tile) lost
+  // it entirely the moment Dial was checked. dial.js's defaultCfg is now a
+  // function that reuses that same lookup so a Dial-converted device keeps
+  // the icon it had before conversion, while an explicit block.icon === ''
+  // (Icon checkbox unchecked) is left alone.
   const dialComponent = fs.readFileSync(path.join(root, 'js/components/dial.js'), 'utf8');
   assert.match(dialComponent, /defaultCfg: function \(block\) \{/);
-  assert.match(dialComponent, /if \(block && block\.idx\) \{/);
+  assert.match(dialComponent, /if \(block && typeof block\.icon === 'undefined' && block\.idx\) \{/);
   assert.match(dialComponent, /var idx = DT_function\.getDomoticzIdx\(block\.idx\);/);
+  assert.match(dialComponent, /var protoBlock = getBlockTypesBlock\(\{ idx: idx, device: device \}\);/);
   assert.match(
     dialComponent,
-    /if \(typeof block\.title === 'undefined' && device\.Name\) \{\s*\n\s*cfg\.title = device\.Name;/
-  );
-  assert.match(
-    dialComponent,
-    /var defaultIcon = getBlockTypesIcon\(\{ idx: idx, device: device \}\);/
+    /var defaultIcon = protoBlock\.icon \|\| \(isOn \? protoBlock\.iconOn : protoBlock\.iconOff\);/
   );
   assert.match(dialComponent, /if \(defaultIcon\) cfg\.icon = defaultIcon;/);
-  assert.match(
-    dialComponent,
-    /var \$mount = \$\(me\.mountPoint \+ ' \.dt_state'\);\s*\n\s*\$mount\.html\(template\(dataObject\)\);/
-  );
-  assert.doesNotMatch(
-    dialComponent,
-    /var \$mount = \$\(me\.mountPoint \+ ' \.dt_content'\);/
-  );
 });
 
 test('Dial live-resize does not inflate the outer block wrapper font-size', () => {
