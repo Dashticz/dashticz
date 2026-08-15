@@ -1835,9 +1835,14 @@ test('Domoticz log, OWM, Sunrise/Sunset and Timegraph are added to the Widget Co
   assert.match(renderSunriseBody, /var showTitle = !me\.block\.hide_title && me\.block\.title;/);
   assert.match(renderSunriseBody, /class="sunrise-header"/);
   assert.match(renderSunriseBody, /class="title">'\s*\+\s*me\.block\.title/);
-  // Sunrise ships its own default icon (like news.js/weather.js) so the
-  // Icon checkbox isn't a no-op when checked with no custom icon typed.
-  assert.match(simpleBlockSource, /if \(block && block\.type === 'sunrise'\) cfg\.icon = 'fas fa-sun';/);
+  // A hand-written/legacy Sunrise block without `icon` must retain its old
+  // iconless appearance. Newly added Editor widgets still get the catalog
+  // icon, but it is persisted explicitly instead of becoming a runtime
+  // default for every existing CONFIG.js.
+  assert.doesNotMatch(simpleBlockSource, /cfg\.icon = 'fas fa-sun'/);
+  assert.match(widgetEditor, /item\.id === 'iframe' \|\| item\.id === 'sunrise'/);
+  assert.match(widgetEditor, /iconValue: explicitDefaultIcon/);
+  assert.match(widgetEditor, /var legacyImplicitIcon =/);
   // The sunrise/sunset line is its own .sunrise-data row, separate from
   // .sunrise-header, so grid mode's flex-direction: column (creative.css)
   // stacks exactly those two rows instead of flexing every individual
@@ -2034,12 +2039,18 @@ test('frame and WAQI blocks clip their CSS-scaled iframe instead of leaking a sc
   assert.match(styles, /\.waqi \.dt_state \{[\s\S]*?overflow: hidden;/);
 });
 
-test('iFrame widget gets a default icon like other widgets', () => {
+test('legacy iFrame stays iconless while the Editor persists an icon for new widgets', () => {
   const frameSource = fs.readFileSync(
     path.join(root, 'js/components/frame.js'),
     'utf8'
   );
-  assert.match(frameSource, /icon: 'fas fa-window-maximize'/);
+  const widgetEditor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+  assert.doesNotMatch(frameSource, /icon: 'fas fa-window-maximize'/);
+  assert.match(
+    widgetEditor,
+    /id: 'iframe',[\s\S]*?icon: 'fas fa-window-maximize'/
+  );
+  assert.match(widgetEditor, /_usesExplicitEditorDefaultIcon\(item\)/);
 });
 
 test('iFrame widget keeps a symmetric right margin once it has an icon', () => {
@@ -2047,9 +2058,8 @@ test('iFrame widget keeps a symmetric right margin once it has an icon', () => {
     path.join(root, 'js/components/frame.js'),
     'utf8'
   );
-  // Adding a default icon (previous test) made hasIcon paths - previously
-  // only reachable with a hand-set custom icon - the default for every
-  // iframe widget, surfacing three margin bugs in turn:
+  // An explicitly configured icon uses the hasIcon path. It previously
+  // surfaced three margin bugs in turn:
   // 1. marginRight was set to 0 while marginLeft stayed 5px.
   // 2. Shrinking .dt_state's own box width wasn't enough on its own: the
   //    iframe's *scaled visual* width is (width/scaling)*scaling === the
@@ -2310,8 +2320,17 @@ test('Dial keeps its rendered size in sync with live editor resize (grid or colu
   // resubscribe on every resize).
   const dialComponent = fs.readFileSync(path.join(root, 'js/components/dial.js'), 'utf8');
   assert.match(dialComponent, /function _dialFitSize\(me\)/);
+  assert.match(
+    dialComponent,
+    /var \$container = inGrid\s*\n\s*\? me\.\$mountPoint\s*\n\s*: \$\(me\.mountPoint \+ ' div'\)\.first\(\);/
+  );
   assert.match(dialComponent, /var measuredWidth = parseInt\(\$container\.outerWidth\(\)\);/);
   assert.match(dialComponent, /var measuredHeight = parseInt\(\$container\.outerHeight\(\)\);/);
+  assert.match(dialComponent, /var inGrid = me\.\$mountPoint && me\.\$mountPoint\.hasClass\('dt-grid-item'\);/);
+  assert.match(
+    dialComponent,
+    /inGrid\s*\? \[measuredWidth, measuredHeight, configuredHeight\]\s*: \[measuredWidth, configuredHeight\]/
+  );
   assert.match(dialComponent, /Math\.min\.apply\(Math, candidates\)/);
   assert.match(dialComponent, /typeof ResizeObserver !== 'undefined'/);
   assert.match(dialComponent, /me\.dialResizeObserver = new ResizeObserver/);

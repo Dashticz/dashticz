@@ -95,14 +95,9 @@ var DT_simpleblock = (function () {
     },
     defaultCfg: function (block) {
       var thisBlock = getBlock(block);
-      var cfg = {
+      return {
         width: (thisBlock && thisBlock.defaultWidth) || 12,
       };
-      // Same reasoning as news.js/weather.js: the Widget Editor's Icon
-      // checkbox is checked by default but has nothing to fall back to
-      // unless the user also types a custom icon value.
-      if (block && block.type === 'sunrise') cfg.icon = 'fas fa-sun';
-      return cfg;
     },
     run: function (me) {
       var thisBlock = getBlock(me.block);

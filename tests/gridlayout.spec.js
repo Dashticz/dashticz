@@ -14,6 +14,234 @@ test.describe('optional screen grid layout', () => {
     await expect(page.locator('.screen1 .dt-grid-layout')).toHaveCount(0);
   });
 
+  test('keeps legacy widgets iconless and lets a classic dial fill its column', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['legacy_dial'] = {idx: 1247, type: 'dial', width: 3};
+blocks['legacy_frame'] = {frameurl: 'about:blank', width: 3, height: 180};
+blocks['sunrise'] = {width: 3};
+columns = {1: {blocks: ['legacy_dial', 'legacy_frame', 'sunrise'], width: 12}};
+screens[1] = {background: 'bg2.jpg', columns: [1]};
+`,
+      });
+    });
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+
+    const dialBlock = page.locator(
+      '.screen1 .dt_block.dial[data-id="legacy_dial"]'
+    );
+    await expect(dialBlock).toBeVisible();
+    const dialSizes = await dialBlock.evaluate((block) => {
+      const dial = block.querySelector('.dt_content .dial');
+      return {
+        blockWidth: block.getBoundingClientRect().width,
+        dialWidth: dial ? dial.getBoundingClientRect().width : 0,
+      };
+    });
+    expect(dialSizes.dialWidth).toBeGreaterThan(dialSizes.blockWidth * 0.8);
+    expect(dialSizes.dialWidth).toBeLessThanOrEqual(dialSizes.blockWidth + 1);
+
+    const frame = page.locator(
+      '.screen1 .dt_block.frame[data-id="legacy_frame"]'
+    );
+    await expect(frame.locator('iframe')).toBeAttached();
+    await expect(frame.locator('.col-icon')).toHaveCount(0);
+    await expect(
+      page.locator('.screen1 .sunriseholder[data-id="sunrise"] .sunrise-header')
+    ).toHaveCount(0);
+  });
+
+  test('keeps grid dials constrained and renders explicitly configured icons', async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width: 1280, height: 900 });
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['grid_dial'] = {
+  idx: 1247,
+  type: 'dial',
+  grid: {x: 1, y: 1, w: 8, h: 8}
+};
+blocks['grid_frame_icon'] = {
+  frameurl: 'about:blank',
+  icon: 'fas fa-window-maximize',
+  grid: {x: 10, y: 1, w: 7, h: 8}
+};
+blocks['sunrise'] = {
+  icon: 'fas fa-sun',
+  grid: {x: 18, y: 1, w: 7, h: 8}
+};
+screens[1] = {
+  layout: 'grid',
+  gridColumns: 24,
+  rowHeight: 20,
+  gap: 5,
+  blocks: ['grid_dial', 'grid_frame_icon', 'sunrise']
+};
+`,
+      });
+    });
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+
+    const dialItem = page.locator(
+      '.screen1 [data-grid-block="grid_dial"]'
+    );
+    await expect(dialItem.locator('.dt_block.dial')).toBeVisible();
+    const dialSizes = await dialItem.evaluate((item) => {
+      const dial = item.querySelector('.dt_content .dial');
+      const itemRect = item.getBoundingClientRect();
+      const dialRect = dial ? dial.getBoundingClientRect() : null;
+      return {
+        itemWidth: itemRect.width,
+        itemHeight: itemRect.height,
+        dialWidth: dialRect ? dialRect.width : 0,
+        dialHeight: dialRect ? dialRect.height : 0,
+      };
+    });
+    expect(dialSizes.dialWidth).toBeGreaterThan(100);
+    expect(dialSizes.dialWidth).toBeLessThanOrEqual(dialSizes.itemWidth + 1);
+    expect(dialSizes.dialHeight).toBeLessThanOrEqual(dialSizes.itemHeight + 1);
+
+    // Wizard/Layout Editor resizing updates the outer grid item. Growing used
+    // to work because min-height stretched the inner block, but shrinking then
+    // measured the stale inline height that dial.js had written on the previous
+    // pass. Exercise both directions so the Dial must follow the actual cell.
+    await dialItem.evaluate((item) => {
+      DashticzGridLayout.applyGridPosition(item, {
+        x: 1,
+        y: 1,
+        w: 8,
+        h: 12,
+      });
+    });
+    await expect
+      .poll(() =>
+        dialItem.evaluate((item) => {
+          const dial = item.querySelector('.dt_content .dial');
+          return dial ? dial.getBoundingClientRect().height : 0;
+        })
+      )
+      .toBeGreaterThan(dialSizes.dialHeight + 20);
+    const grownDialHeight = await dialItem
+      .locator('.dt_content .dial')
+      .evaluate((dial) => dial.getBoundingClientRect().height);
+
+    await dialItem.evaluate((item) => {
+      DashticzGridLayout.applyGridPosition(item, {
+        x: 1,
+        y: 1,
+        w: 8,
+        h: 5,
+      });
+    });
+    await expect
+      .poll(() =>
+        dialItem.evaluate((item) => {
+          const block = item.querySelector('.dt_block');
+          const dial = item.querySelector('.dt_content .dial');
+          const itemHeight = item.getBoundingClientRect().height;
+          return Boolean(
+            block &&
+              dial &&
+              block.getBoundingClientRect().height <= itemHeight + 1 &&
+              dial.getBoundingClientRect().height <= itemHeight + 1
+          );
+        })
+      )
+      .toBe(true);
+    const shrunkDialHeight = await dialItem
+      .locator('.dt_content .dial')
+      .evaluate((dial) => dial.getBoundingClientRect().height);
+    expect(shrunkDialHeight).toBeLessThan(grownDialHeight);
+
+    await expect(
+      page.locator(
+        '.screen1 [data-grid-block="grid_frame_icon"] .col-icon'
+      )
+    ).toBeVisible();
+    await expect(
+      page.locator(
+        '.screen1 [data-grid-block="sunrise"] .sunrise-header .fa-sun'
+      )
+    ).toBeVisible();
+  });
+
+  test('persists default icons only for newly added iframe and Sunrise widgets', async ({
+    page,
+  }) => {
+    let widgetRequest = null;
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'legacy-icon-token' }),
+      })
+    );
+    await page.route('**/js/savewidgets.php*', async (route) => {
+      widgetRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          blockKeys: widgetRequest.widgets.map((entry) => entry.key),
+        }),
+      });
+    });
+    await page.route('**/js/savelayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    // The production UI lazy-loads this module from the Screen Editor. Load
+    // the same script directly so this regression can focus on its payload
+    // semantics without first converting the legacy column screen to a grid.
+    await page.addScriptTag({
+      url: new URL('/js/widgeteditor.js', dashboardUrl).href,
+    });
+    await page.evaluate('DashticzWidgetEditor.open()');
+    await expect(page.locator('#widgeteditorpopup')).toBeVisible();
+
+    await page.locator('.we-config-btn[data-widget-id="iframe"]').click();
+    await expect(page.locator('#we-config-popup')).toBeVisible();
+    await page.locator('#we-cfg-iframe-url').fill('about:blank');
+    await page.locator('#we-cfg-ok-btn').click();
+    await expect(page.locator('#we-config-popup')).toHaveCount(0);
+
+    await page.locator('.we-widget-card[data-widget-id="sunrise"]').click();
+    await page.locator('#we-save-btn').click();
+    await expect.poll(() => widgetRequest).not.toBeNull();
+
+    const iframe = widgetRequest.widgets.find((entry) => entry.id === 'iframe');
+    const sunrise = widgetRequest.widgets.find(
+      (entry) => entry.id === 'sunrise'
+    );
+    expect(iframe.icon).toBe('fas fa-window-maximize');
+    expect(sunrise.icon).toBe('fas fa-sun');
+  });
+
   test('converts a Wizard column screen to a compact grid after confirmation', async ({
     page,
   }) => {

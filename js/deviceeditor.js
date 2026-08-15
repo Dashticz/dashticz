@@ -274,8 +274,11 @@ var DashticzDeviceEditor = (function () {
         // mode still needs the existing height to keep packing columns.
         widgetHeights[item.orderKey] = gridMode ? null : _parseHeight(item.definition.height);
         widgetTitles[item.orderKey] = String(item.definition.title || item.title || '');
+        var legacyImplicitIcon =
+          (item.id === 'iframe' || item.id === 'sunrise') &&
+          typeof item.definition.icon === 'undefined';
         widgetOptions[item.orderKey] = {
-          icon: typeof item.definition.icon === 'undefined' || item.definition.icon !== '',
+          icon: !legacyImplicitIcon && item.definition.icon !== '',
           iconValue: typeof item.definition.icon === 'string' && item.definition.icon !== ''
             ? item.definition.icon
             : null,

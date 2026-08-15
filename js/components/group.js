@@ -122,7 +122,7 @@ var DT_group = (function () {
                 newState='Off';
                 break;
             case 'toggleoff':
-                me.groupState==='off' ? 'On': 'Off';
+                newState = me.groupState === 'off' ? 'On' : 'Off';
                 break;
             default: newState =  me.groupState === 'on' ? 'Off' : 'On'
         }
