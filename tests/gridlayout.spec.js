@@ -183,6 +183,71 @@ screens[1] = {
     ).toBeVisible();
   });
 
+  test('hides Icon and Title controls only while Device Config is a Dial', async ({
+    page,
+  }) => {
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['wizard_dial_options'] = {
+  idx: 1247,
+  type: 'dial',
+  icon: 'fas fa-star',
+  hide_title: true,
+  grid: {x: 1, y: 1, w: 8, h: 8}
+};
+screens[1] = {
+  layout: 'grid',
+  gridColumns: 24,
+  rowHeight: 20,
+  gap: 5,
+  blocks: ['wizard_dial_options']
+};
+`,
+      });
+    });
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.locator('.screen1 .layouteditoricon').click();
+    await expect(page.locator('body')).toHaveClass(/dle-active/);
+    await page
+      .locator('[data-grid-block="wizard_dial_options"] .dle-config-button')
+      .click();
+
+    const popup = page.locator('#de-config-popup');
+    await expect(popup).toBeVisible();
+    const iconControl = popup.locator(
+      'label:has([data-option="icon"])'
+    );
+    const titleControl = popup.locator(
+      'label:has([data-option="show_title"])'
+    );
+    const dialControl = popup.locator('[data-option="dial"]');
+
+    await expect(iconControl).toBeHidden();
+    await expect(titleControl).toBeHidden();
+    await expect(popup.locator('.de-icon-field-row')).toBeHidden();
+    await expect(popup.locator('[data-option="hide_data"]')).toBeVisible();
+    await expect(popup.locator('[data-option="last_update"]')).toBeVisible();
+    await expect(dialControl).toBeChecked();
+
+    await dialControl.uncheck();
+    await expect(iconControl).toBeVisible();
+    await expect(titleControl).toBeVisible();
+    await expect(popup.locator('[data-option="icon"]')).toBeChecked();
+    await expect(popup.locator('[data-option="show_title"]')).not.toBeChecked();
+    await expect(popup.locator('.de-icon-field-row')).toBeVisible();
+
+    await dialControl.check();
+    await expect(iconControl).toBeHidden();
+    await expect(titleControl).toBeHidden();
+  });
+
   test('persists default icons only for newly added iframe and Sunrise widgets', async ({
     page,
   }) => {

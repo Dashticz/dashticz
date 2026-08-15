@@ -1947,7 +1947,11 @@ var DashticzDeviceEditor = (function () {
       : ['icon', 'hide_data', 'last_update', 'dial', 'show_title'];
     html += '<div class="de-config-options' + (isTitle ? '' : ' de-config-options-five') + '">';
     configOptions.forEach(function (option) {
-      html += '<label class="form-check"><input class="form-check-input de-config-option" type="checkbox" data-option="' + option + '"';
+      var hiddenForDial =
+        !isTitle && (option === 'icon' || option === 'show_title');
+      html += '<label class="form-check' +
+        (hiddenForDial ? ' de-hide-for-dial' : '') +
+        '"><input class="form-check-input de-config-option" type="checkbox" data-option="' + option + '"';
       // The Data checkbox is user-facing: checked means data is visible.
       // CONFIG.js keeps the backwards-compatible inverse hide_data property.
       // Title visibility isn't tracked in `options` like the others: it's
@@ -2014,12 +2018,24 @@ var DashticzDeviceEditor = (function () {
       });
     }
     function refreshIconFieldVisibility() {
-      var enabled = $popup.find('[data-option="icon"]').is(':checked');
+      var enabled =
+        !$popup.find('[data-option="dial"]').is(':checked') &&
+        $popup.find('[data-option="icon"]').is(':checked');
       $popup.find('.de-icon-field-row').toggle(enabled);
     }
     function refreshDialHint() {
       var enabled = $popup.find('[data-option="dial"]').is(':checked');
       $popup.find('.de-dial-hint').toggleClass('d-none', !enabled);
+    }
+    function refreshDialOptions() {
+      var enabled = $popup.find('[data-option="dial"]').is(':checked');
+      $popup.find('.de-hide-for-dial').toggleClass('d-none', enabled);
+      $popup
+        .find('.de-config-options')
+        .toggleClass('de-config-options-three', enabled)
+        .toggleClass('de-config-options-five', !enabled && !isTitle);
+      refreshIconFieldVisibility();
+      refreshDialHint();
     }
     $popup.on('click', '.de-custom-field-add', function () {
       $(this).closest('.de-custom-field-row').after(_customFieldRowHtml());
@@ -2032,7 +2048,7 @@ var DashticzDeviceEditor = (function () {
       refreshCustomFieldButtons();
     });
     $popup.on('change', '[data-option="icon"]', refreshIconFieldVisibility);
-    $popup.on('change', '[data-option="dial"]', refreshDialHint);
+    $popup.on('change', '[data-option="dial"]', refreshDialOptions);
     function refreshMdValueButtons() {
       var $rows = $popup.find('.md-value-row');
       $rows.find('.md-value-add').addClass('d-none');
@@ -2050,8 +2066,7 @@ var DashticzDeviceEditor = (function () {
       refreshMdValueButtons();
     });
     refreshCustomFieldButtons();
-    refreshIconFieldVisibility();
-    refreshDialHint();
+    refreshDialOptions();
     if (multiDeviceValues) refreshMdValueButtons();
 
     $('#de-config-ok').on('click', function () {

@@ -6,6 +6,8 @@
   configured height) instead of their short, content-driven pre-render height.
   Grid cells continue to constrain the Dial by both width and height, including
   when a Wizard/Layout Editor resize makes the cell smaller again.
+- Device Config now hides the ineffective Icon and Title checkboxes for Dials;
+  their existing values remain preserved if Dial is later switched off.
 - Removed runtime default icons from iframe and Sunrise/Sunset blocks so old
   configurations which omit ``icon`` remain visually unchanged. The Widget
   Editor explicitly persists the catalog icon for newly added instances,
