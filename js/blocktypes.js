@@ -619,20 +619,6 @@ function getBlockTypesBlock(block) {
   return protoBlock;
 }
 
-/* Resolve a stable icon for editors and special components which cannot use
-   the normal device handler's iconORimage() render path. Prefer the device
-   type's explicit icon, then its on/off pair. Dimmer icons are supplied
-   directly by getDimmerBlock() rather than blocktypes, so mirror that
-   existing default here. */
-function getBlockTypesIcon(block) {
-  var protoBlock = getBlockTypesBlock(block);
-  if (protoBlock.icon) return protoBlock.icon;
-  if (protoBlock.iconOn) return protoBlock.iconOn;
-  if (protoBlock.iconOff) return protoBlock.iconOff;
-  if (protoBlock.handler === getDimmerBlock) return 'fas fa-lightbulb';
-  return '';
-}
-
 
 
 function getSubBlock(parent) {
