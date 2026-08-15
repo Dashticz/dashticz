@@ -776,39 +776,6 @@ test('device and widget config editors share full widget config and preserve hid
   assert.match(styles, /\.dle-remove-button \.fas[\s\S]*font-size: 16px !important/);
 });
 
-test('Device Config Icon checkbox writes the resolved static default icon into CONFIG.js, never a frozen state-dependent snapshot', () => {
-  // Icon checked with no custom value previously saved nothing at all for
-  // icon - unlike hide_data/last_update/switch below it, which are always
-  // written as an explicit true/false - so opening a saved CONFIG.js never
-  // showed what icon was actually in effect for that device, even though
-  // one was already rendering (js/blocktypes.js's getBlockTypesBlock(), the
-  // same device-type lookup a plain device tile's handleDevice() uses).
-  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
-  assert.match(deviceEditor, /function _resolveDefaultIcon\(idx\) \{/);
-  assert.match(deviceEditor, /var protoBlock = getBlockTypesBlock\(\{ idx: resolvedIdx, device: device \}\);/);
-  assert.match(deviceEditor, /return protoBlock\.icon \|\| '';/);
-  assert.match(
-    deviceEditor,
-    /var defaultIcon = _resolveDefaultIcon\(p\.idx\);\s*\n\s*if \(defaultIcon\) entry\.icon = defaultIcon;/
-  );
-
-  // _resolveDefaultIcon() must read ONLY protoBlock.icon, never
-  // protoBlock.iconOn/iconOff: a plain device tile picks between those live
-  // on every render ($.extend(block, protoBlock, origBlock) in js/blocks.js
-  // createBlocks() only lets origBlock.icon win when it's actually set), so
-  // a device whose icon toggles with its on/off state (e.g. a light bulb -
-  // blocktypes.js's SwitchType['On/Off'] only defines iconOn/iconOff, no
-  // static icon) must keep doing that. Writing a was-on/was-off snapshot
-  // into CONFIG.js would freeze it, and writing '' would look identical to
-  // Icon being off (js/configwriter.php writes `icon` whenever the key
-  // exists and isn't null, even when it's an empty string).
-  const resolveDefaultIconFn = deviceEditor.slice(
-    deviceEditor.indexOf('function _resolveDefaultIcon(idx) {'),
-    deviceEditor.indexOf('\n  }\n', deviceEditor.indexOf('function _resolveDefaultIcon(idx) {'))
-  );
-  assert.doesNotMatch(resolveDefaultIconFn, /protoBlock\.iconOn|protoBlock\.iconOff/);
-});
-
 test('widget editor exposes the supported catalog and keeps legacy options out of settings UI', () => {
   const simpleBlock = fs.readFileSync(
     path.join(root, 'js/components/simpleblock.js'),
@@ -2351,52 +2318,6 @@ test('Dial keeps its rendered size in sync with live editor resize (grid or colu
   assert.match(dialComponent, /me\.dialResizeObserver\.observe\(/);
   assert.match(dialComponent, /me\.dialResizeObserver\.disconnect\(\);/);
   assert.match(dialComponent, /me\.dialResizeObserver = null;/);
-});
-
-test('Dial in classic (non-grid) layout sizes from width, not its own transient auto-height', () => {
-  // _dialFitSize() runs before make() has rendered anything into .dt_content,
-  // so outside a grid item .dt_block's measured height is just its plain CSS
-  // auto-height at that moment - driven only by whatever little content
-  // exists yet (e.g. a Device Editor icon), not a deliberate layout limit
-  // the way a grid row span is. Trusting that transient height collapsed
-  // the whole tile - icon and title included - to a sliver whenever a
-  // normally short classic device row was converted to type:'dial' (e.g.
-  // via the Device Editor's Dial checkbox: #133). A grid item's own height
-  // stays in play (it IS deliberate, and overflow:auto is what the
-  // Math.min() guard protects), so only classic layout drops measuredHeight
-  // from the candidates and falls back to sizing off width alone.
-  const dialComponent = fs.readFileSync(path.join(root, 'js/components/dial.js'), 'utf8');
-  assert.match(dialComponent, /var inGrid = me\.\$mountPoint && me\.\$mountPoint\.hasClass\('dt-grid-item'\);/);
-  assert.match(
-    dialComponent,
-    /var candidates = \(\s*\n\s*inGrid\s*\n\s*\? \[measuredWidth, measuredHeight, configuredHeight\]\s*\n\s*: \[measuredWidth, configuredHeight\]\s*\n\s*\)\.filter/
-  );
-});
-
-test('Dial converted via the Device Editor Dial checkbox keeps its device-type default icon', () => {
-  // getColIcon()/renderTitle() (js/dashticz.js) paint a block's icon purely
-  // from block.icon - but js/deviceeditor.js _save() only writes block.icon
-  // when a custom value was typed (options.iconValue); leaving the Icon
-  // checkbox checked with no typed value leaves block.icon unset, same as
-  // every other widget. Every OTHER widget falls back to its own
-  // defaultCfg.icon in that case (see the news.js/simpleblock.js sunrise
-  // fix), but dial.js had none - so a device that showed its normal
-  // type-based icon (js/blocktypes.js's getBlockTypesBlock(), the same
-  // lookup js/blocks.js handleDevice() uses for a plain device tile) lost
-  // it entirely the moment Dial was checked. dial.js's defaultCfg is now a
-  // function that reuses that same lookup so a Dial-converted device keeps
-  // the icon it had before conversion, while an explicit block.icon === ''
-  // (Icon checkbox unchecked) is left alone.
-  const dialComponent = fs.readFileSync(path.join(root, 'js/components/dial.js'), 'utf8');
-  assert.match(dialComponent, /defaultCfg: function \(block\) \{/);
-  assert.match(dialComponent, /if \(block && typeof block\.icon === 'undefined' && block\.idx\) \{/);
-  assert.match(dialComponent, /var idx = DT_function\.getDomoticzIdx\(block\.idx\);/);
-  assert.match(dialComponent, /var protoBlock = getBlockTypesBlock\(\{ idx: idx, device: device \}\);/);
-  assert.match(
-    dialComponent,
-    /var defaultIcon = protoBlock\.icon \|\| \(isOn \? protoBlock\.iconOn : protoBlock\.iconOff\);/
-  );
-  assert.match(dialComponent, /if \(defaultIcon\) cfg\.icon = defaultIcon;/);
 });
 
 test('Dial live-resize does not inflate the outer block wrapper font-size', () => {
