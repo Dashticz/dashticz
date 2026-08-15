@@ -666,14 +666,19 @@ test('device and widget config editors share full widget config and preserve hid
   assert.doesNotMatch(configWriter, /configwriter_normalise_text_alignment/);
   assert.doesNotMatch(configWriter, /\$props\['text_alignment'\]/);
 
-  // Device Config is Icon/Data/Update/Dial/Title, centered on one row (Icon and
-  // Title only for a separator/title bar, which has no data value or
-  // last-update of its own). Title visibility is a checkbox here too, not
-  // just a typed Field/Setting row: it toggles hide_title exactly like the
-  // Widget Config editor's Title checkbox does.
+  // Device Config is Icon/Data/Update/Dial/Title, centered on one row. Dials
+  // hide the ineffective Icon and Title controls while keeping their values in
+  // the DOM, so switching Dial off restores both without losing configuration.
+  // A separator/title bar still has only Icon and Title because it has no data
+  // value or last-update timestamp of its own.
   assert.match(deviceEditor, /\? \['icon', 'show_title'\]/);
   assert.match(deviceEditor, /: \['icon', 'hide_data', 'last_update', 'dial', 'show_title'\]/);
   assert.match(deviceEditor, /configOptions\.forEach/);
+  assert.match(deviceEditor, /option === 'icon' \|\| option === 'show_title'/);
+  assert.match(deviceEditor, /de-hide-for-dial/);
+  assert.match(deviceEditor, /function refreshDialOptions\(\)/);
+  assert.match(deviceEditor, /\.toggleClass\('de-config-options-three', enabled\)/);
+  assert.match(deviceEditor, /\$popup\.on\('change', '\[data-option="dial"\]', refreshDialOptions\)/);
   assert.match(deviceEditor, /if \(option === 'hide_data'\) \{\s*\n\s*checked = options\.hide_data !== true/);
   assert.match(deviceEditor, /isSpecial \? special\.showTitle !== false : deviceTitleVisible\[ck\] !== false/);
   assert.match(deviceEditor, /updated\[option\] = option === 'hide_data' \? !checked : checked/);
@@ -2257,7 +2262,7 @@ test('Dial checkbox shows an inline hint pointing to the dial docs and Custom fi
   assert.match(deviceEditor, /href="https:\/\/dashticz\.readthedocs\.io\/en\/beta\/blocks\/specials\/dial\.html"/);
   assert.match(deviceEditor, /function refreshDialHint\(\) \{/);
   assert.match(deviceEditor, /\$popup\.find\('\.de-dial-hint'\)\.toggleClass\('d-none', !enabled\)/);
-  assert.match(deviceEditor, /\$popup\.on\('change', '\[data-option="dial"\]', refreshDialHint\)/);
+  assert.match(deviceEditor, /\$popup\.on\('change', '\[data-option="dial"\]', refreshDialOptions\)/);
   assert.match(deviceEditor, /dial_hint: '/);
   assert.match(deviceEditor, /dial_hint_link: '/);
 });

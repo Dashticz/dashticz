@@ -15,6 +15,8 @@ v3.42.10 beta (15-8-2026)
   content-driven, pre-render height is no longer treated as a fixed size;
   grid Dials still respect both dimensions of their assigned cell and now
   follow live Wizard/Layout Editor resizing in both directions.
+- Device Config no longer shows the ineffective Icon and Title checkboxes for
+  Dials. Existing values remain preserved when changing the device type.
 - Existing iframe and Sunrise/Sunset blocks without an ``icon`` property keep
   their historic iconless appearance. Newly added Editor widgets retain the
   newer default icons by saving those icons explicitly in ``CONFIG.js``.
