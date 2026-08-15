@@ -12,7 +12,6 @@ var DT_frame = {
     var ios = navigator.userAgent.match(/(iPod|iPhone|iPad)/) ? ' ios' : '';
 
     var cfg = {
-      icon: 'fas fa-window-maximize',
       containerClass: 'swiper-no-swiping imgblock' + ios,
       refresh: 300,
     };

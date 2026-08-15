@@ -36,23 +36,27 @@ var DT_log = {
       var res = sorted
         .reduce(function (acc, el) {
           var dotPos = el.message.indexOf('.');
-          var timeStamp = el.message.substring(0, dotPos + 4);
-          var logMessage = el.message.substring(dotPos + 4);
+          var timeStamp = escapeLogHtml(el.message.substring(0, dotPos + 4));
+          var logMessage = escapeLogHtml(el.message.substring(dotPos + 4));
+          var level = parseInt(el.level, 10);
+          if (isNaN(level)) level = 0;
 
           return acc+'<tr class="level' +
-            el.level +'"><td class="timestamp">' +
+            level +'"><td class="timestamp">' +
             timeStamp +
             '</td><td class="sep"></td><td class="message">' +
             logMessage +
             '</td></tr>'
         }, '<table>');
       $items.html(res + '</table>');
-      $items.on('scroll', function() {
-        me.scrolling=true;
-      });
-      $items.on('scrollend', function() {
-                me.scrollend = Date.now();
-              });
+      $items
+        .off('.dashticzLog')
+        .on('scroll.dashticzLog', function() {
+          me.scrolling=true;
+        })
+        .on('scrollend.dashticzLog', function() {
+          me.scrollend = Date.now();
+        });
       if (me.scrollend && ((Date.now() - me.scrollend) > (me.block.scrolltimeout * 1000))) {
         me.scrollend = 0;
         me.scrolling = false;
@@ -62,5 +66,14 @@ var DT_log = {
     });
   },
 };
+
+function escapeLogHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
 
 Dashticz.register(DT_log);
