@@ -410,10 +410,20 @@ var DashticzWidgetEditor = (function () {
     );
   }
 
-  function _defaultWidgetBlockOptions() {
+  function _usesExplicitEditorDefaultIcon(item) {
+    return item && (item.id === 'iframe' || item.id === 'sunrise');
+  }
+
+  function _defaultWidgetBlockOptions(item) {
+    var explicitDefaultIcon = _usesExplicitEditorDefaultIcon(item)
+      ? item.icon
+      : null;
     return {
       icon: true,
-      iconValue: null,
+      // iframe and Sunrise historically rendered without an icon when an old
+      // CONFIG.js omitted `icon`. New Editor-created widgets keep their newer
+      // appearance by persisting the catalog icon explicitly instead.
+      iconValue: explicitDefaultIcon,
       hide_data: false,
       last_update: false,
       show_title: true,
@@ -431,7 +441,10 @@ var DashticzWidgetEditor = (function () {
 
   function _hydrateWidgetBlockOptions(item, definition) {
     var options = _defaultWidgetBlockOptions();
-    options.icon = typeof definition.icon === 'undefined' || definition.icon !== '';
+    var legacyImplicitIcon =
+      _usesExplicitEditorDefaultIcon(item) &&
+      typeof definition.icon === 'undefined';
+    options.icon = !legacyImplicitIcon && definition.icon !== '';
     options.iconValue = typeof definition.icon === 'string' && definition.icon !== ''
       ? definition.icon
       : null;
@@ -1977,7 +1990,7 @@ var DashticzWidgetEditor = (function () {
   // insertHtml: optional block (e.g. Radio's station list) shown above the
   // Custom fields section, below the checkboxes.
   function _widgetBlockOptionsHtml(item, extraButtonHtml, insertHtml) {
-    var options = widgetBlockOptions[item.id] || _defaultWidgetBlockOptions();
+    var options = widgetBlockOptions[item.id] || _defaultWidgetBlockOptions(item);
     _ensureWidgetSystemFields(item, options);
     widgetBlockOptions[item.id] = options;
     var rows = options.customFields && options.customFields.length
@@ -2778,7 +2791,7 @@ var DashticzWidgetEditor = (function () {
 
     $cfgModal.on('click', '#we-cfg-ok-btn', function () {
       var valid = true;
-      var existingBlockOptions = widgetBlockOptions[widgetId] || _defaultWidgetBlockOptions();
+      var existingBlockOptions = widgetBlockOptions[widgetId] || _defaultWidgetBlockOptions(item);
       var pendingTitle = '';
       var pendingIconValue = null;
       var hasIconField = false;
@@ -3304,7 +3317,7 @@ var DashticzWidgetEditor = (function () {
       entry.height = dimensions.height || item.height;
     }
 
-    var blockOptions = widgetBlockOptions[item.id] || _defaultWidgetBlockOptions();
+    var blockOptions = widgetBlockOptions[item.id] || _defaultWidgetBlockOptions(item);
     if (blockOptions.icon === false) {
       entry.icon = '';
     } else if (blockOptions.iconValue) {

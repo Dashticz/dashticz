@@ -6,6 +6,68 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.42.10 beta (15-8-2026)
+---------------------------
+
+* **Fixes**
+
+- Restored full-size Dials in classic Bootstrap column layouts. Their
+  content-driven, pre-render height is no longer treated as a fixed size;
+  grid Dials still respect both dimensions of their assigned cell and now
+  follow live Wizard/Layout Editor resizing in both directions.
+- Device Config no longer shows the ineffective Icon and Title checkboxes for
+  Dials. Existing values remain preserved when changing the device type.
+- Existing iframe and Sunrise/Sunset blocks without an ``icon`` property keep
+  their historic iconless appearance. Newly added Editor widgets retain the
+  newer default icons by saving those icons explicitly in ``CONFIG.js``.
+- Explicit custom/default icons remain supported for both widgets.
+
+* **Code**
+
+- Added Chromium regressions covering legacy column sizing/icon behavior and
+  fixed grid-cell sizing with explicit icons.
+
+v3.42.9 beta (15-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Domoticz log messages are now escaped before they are rendered, preventing
+  device, plugin or script log text from being interpreted as dashboard HTML.
+- The Domoticz log widget now keeps one namespaced set of scroll listeners
+  instead of adding another pair on every refresh.
+- Fixed Group blocks using ``switchMode: 'toggleoff'`` sending an undefined
+  command instead of an explicit ``On`` or ``Off`` command.
+
+* **Code**
+
+- Updated the Playwright, Prettier and Webpack patch/minor versions and patched
+  the indirect ``fast-uri``, ``nanoid`` and ``postcss`` build
+  dependencies. The npm security audit now reports no vulnerabilities.
+- Removed unused ``@babel/node`` and ``style-loader`` build dependencies, and
+  moved the optional jQuery migration diagnostics package to development-only
+  dependencies.
+- Webpack now removes stale generated chunks from ``dist`` before producing a
+  new build, while retaining legacy font formats for custom CSS compatibility.
+  Removed the obsolete unreferenced ``dist/475.js`` chunk and duplicate legacy
+  ``packagelock.json`` file.
+
+v3.42.8 beta (14-8-2026)
+--------------------------
+
+* **Fixes**
+
+- Fixed the **Settings** popup's Save button silently sending an empty
+  payload to the server, so changing the theme (or any other setting) had
+  no effect and the dashboard reverted to whatever was previously saved
+  after the reload. A merge conflict resolution between two versions of
+  ``saveSettings()`` left the code collecting changed values into a
+  ``savePayload`` object, but still writing them onto the unrelated
+  ``saveSettings`` function object instead — so the actual AJAX request
+  body stayed ``{}``. All collected values (theme, CSS variable overrides,
+  language, ``config_mode``, and every other setting) are now written to
+  and read from the same object that is actually submitted.
+
 v3.42.7 beta (14-8-2026)
 --------------------------
 

@@ -168,17 +168,31 @@ var DT_dial = (function () {
    * @param {object} me  Core component object.
    */
   function _dialFitSize(me) {
-    var $container = $(me.mountPoint + ' div').first();
+    var inGrid = me.$mountPoint && me.$mountPoint.hasClass('dt-grid-item');
+    // In a grid, the outer mount point owns the live row/column dimensions.
+    // Measuring the inner .dt_block here would read the inline height written
+    // below during the previous pass, so a cell that shrinks could never make
+    // its Dial shrink with it. Classic wrappers use display: contents and do
+    // not have a measurable box, so they must keep using their first child.
+    var $container = inGrid
+      ? me.$mountPoint
+      : $(me.mountPoint + ' div').first();
     var measuredWidth = parseInt($container.outerWidth());
     var measuredHeight = parseInt($container.outerHeight());
     var configuredHeight = isDefined(me.block.height)
       ? parseInt(me.block.height)
       : NaN;
-    var candidates = [measuredWidth, measuredHeight, configuredHeight].filter(
-      function (value) {
-        return !isNaN(value) && value > 0;
-      }
-    );
+    // A grid cell has a deliberate row height, so both dimensions constrain
+    // its circular dial. A classic Bootstrap column is content-height driven:
+    // before the dial is rendered its transient height is only a short device
+    // row and must not shrink the circle. The column can grow to fit it.
+    var candidates = (
+      inGrid
+        ? [measuredWidth, measuredHeight, configuredHeight]
+        : [measuredWidth, configuredHeight]
+    ).filter(function (value) {
+      return !isNaN(value) && value > 0;
+    });
     var height = candidates.length ? Math.min.apply(Math, candidates) : NaN;
     if (!height || isNaN(height)) {
       // Container not laid out yet, or hidden (e.g. an inactive screen tab)

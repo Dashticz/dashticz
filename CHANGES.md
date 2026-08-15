@@ -1,5 +1,39 @@
 # Dashticz — Change log for recent update work
 
+## 3.42.10 — Legacy layout compatibility for Dials, iframe and Sunrise/Sunset
+
+- Classic Bootstrap columns now size a Dial from their width (or an explicit
+  configured height) instead of their short, content-driven pre-render height.
+  Grid cells continue to constrain the Dial by both width and height, including
+  when a Wizard/Layout Editor resize makes the cell smaller again.
+- Device Config now hides the ineffective Icon and Title checkboxes for Dials;
+  their existing values remain preserved if Dial is later switched off.
+- Removed runtime default icons from iframe and Sunrise/Sunset blocks so old
+  configurations which omit ``icon`` remain visually unchanged. The Widget
+  Editor explicitly persists the catalog icon for newly added instances,
+  preserving the current new-widget experience and all custom icons.
+- Added browser regressions for the affected legacy and grid layouts.
+
+## 3.42.9 — Secure log rendering, stable log listeners, Group fix and build maintenance
+
+- Escaped Domoticz log timestamps and messages before inserting them into the
+  log table, and normalized the CSS log level to a number. This prevents log
+  content supplied by a device, plugin or script from becoming dashboard HTML.
+- Replaced the log widget's per-refresh scroll listener additions with one
+  namespaced listener set, preventing handlers from accumulating every five
+  seconds on long-running dashboards.
+- Fixed the Group component's ``toggleoff`` path calculating an On/Off command
+  without assigning it, which caused ``undefined`` to be sent to Domoticz.
+- Updated safe patch/minor build dependencies and the three vulnerable indirect
+  build packages. Sass stays pinned to the already-tested compiler version so
+  generated Bootstrap CSS and its inline SVG icons remain semantically unchanged.
+  Removed unused build dependencies while retaining ``jquery-migrate`` as a
+  development-only diagnostic package.
+- Enabled Webpack output cleanup for stale generated chunks while preserving
+  legacy font formats that custom CSS may still reference; removed the obsolete
+  ``dist/475.js`` chunk and the duplicate stale ``packagelock.json`` lockfile.
+- Added behavior tests for the Group command and safe/stable log rendering.
+
 ## 3.42.5 — News icon, Sunrise/Sunset icon+title, Custom/Multi Device Updated checkbox and Icon-off persistence
 
 - Fixed the News widget never showing an icon despite the Widget Editor's

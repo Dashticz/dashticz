@@ -12,6 +12,10 @@ module.exports = {
     filename: '[name].js',
     chunkFilename: '[name].[contenthash:8].js',
     path: path.resolve(rootDir, 'dist'),
+    clean: {
+      // Keep legacy font formats that may still be referenced by custom CSS.
+      keep: /^assets\/fonts\//,
+    },
   },
   module: {
     rules: [
