@@ -3,10 +3,8 @@
 /* global addStyleAttribute capitalizeFirstLetter createDelayedFunction*/
 /* from blocks.js */
 /* global TranslateDirection */
-/* from blocktypes.js */
-/* global getBlockTypesBlock*/
 /* from switches.js */
-/* global switchEvoHotWater changeEvohomeControllerStatus reqSlideDevice reqSlideDeviceAsync switchEvoZone switchThermostat switchDevice getIconStatusClass*/
+/* global switchEvoHotWater changeEvohomeControllerStatus reqSlideDevice reqSlideDeviceAsync switchEvoZone switchThermostat switchDevice*/
 var DT_dial = (function () {
   return {
     name: 'dial',
@@ -43,51 +41,25 @@ var DT_dial = (function () {
       DT_dial.settings = Domoticz.getAllDevices('_settings');
 
     },
-    defaultCfg: function (block) {
-      var cfg = {
+    defaultCfg: {
 //      title: false,
-        width: 3,
-        last_update: true,
-        dialimage: false,
-        flash: 0,
-        showring: false,
+      width: 3,
+      last_update: true,
+      dialimage: false,
+      flash: 0,
+      showring: false,
 //      shownumbers: false,
-        offset: 0,
-        group: false,
-        animation: false,
-        iconSwitch: 'fas fa-power-off',
-        showvalue: true,
-        value: 'Data',
-        layout: '',
-        textOpen: 'Open',
-        textClose: 'Close',
-        scale: 1,
-        colorpickerscale: parseFloat(settings.colorpickerscale) || 1,
-      };
-      // getColIcon()/renderTitle() (js/dashticz.js) paint the block's icon
-      // from block.icon alone, same as every other block type - but the
-      // Device Editor's Icon checkbox only ever writes block.icon when the
-      // user also typed a custom value (js/deviceeditor.js _save()); left
-      // unset, every OTHER widget falls back to its own defaultCfg.icon
-      // (see news.js/simpleblock.js's sunrise fix). A device converted to
-      // type:'dial' has no such fallback, so checking Dial on an existing
-      // device (which until then showed its normal type-based icon via
-      // js/blocktypes.js's getBlockTypesBlock(), the same lookup a plain
-      // device tile's handleDevice() uses) silently lost its icon. Reuse
-      // that same lookup here so a Dial-converted device keeps the icon it
-      // had before conversion. block.icon === '' is left alone - that is
-      // the user explicitly unchecking Icon, not "unset".
-      if (block && typeof block.icon === 'undefined' && block.idx) {
-        var idx = DT_function.getDomoticzIdx(block.idx);
-        var device = idx && Domoticz.getAllDevices(idx);
-        if (device) {
-          var protoBlock = getBlockTypesBlock({ idx: idx, device: device });
-          var isOn = device.Status && getIconStatusClass(device.Status) === 'on';
-          var defaultIcon = protoBlock.icon || (isOn ? protoBlock.iconOn : protoBlock.iconOff);
-          if (defaultIcon) cfg.icon = defaultIcon;
-        }
-      }
-      return cfg;
+      offset: 0,
+      group: false,
+      animation: false,
+      iconSwitch: 'fas fa-power-off',
+      showvalue: true,
+      value: 'Data',
+      layout: '',
+      textOpen: 'Open',
+      textClose: 'Close',
+      scale: 1,
+      colorpickerscale: parseFloat(settings.colorpickerscale) || 1,
     },
 
     /**
@@ -202,25 +174,11 @@ var DT_dial = (function () {
     var configuredHeight = isDefined(me.block.height)
       ? parseInt(me.block.height)
       : NaN;
-    // Outside a grid item, .dt_block has no real height constraint of its
-    // own - it's plain CSS auto-height, driven only by its (at this point
-    // still near-empty, pre-render) content, not a deliberate layout limit
-    // the way a grid row span is. Trusting that transient auto-height here
-    // shrank the dial - and everything inside it, icon and title included -
-    // down to a sliver whenever a normally short classic device row/column
-    // was switched to type:'dial' (e.g. via the Device Editor's Dial
-    // checkbox). A grid item's own height IS deliberate (row span,
-    // min-height:100%, overflow:auto - the scrollbar this Math.min guards
-    // against), so it stays in play there; a classic column just grows to
-    // fit the dial, nothing to overflow against.
-    var inGrid = me.$mountPoint && me.$mountPoint.hasClass('dt-grid-item');
-    var candidates = (
-      inGrid
-        ? [measuredWidth, measuredHeight, configuredHeight]
-        : [measuredWidth, configuredHeight]
-    ).filter(function (value) {
-      return !isNaN(value) && value > 0;
-    });
+    var candidates = [measuredWidth, measuredHeight, configuredHeight].filter(
+      function (value) {
+        return !isNaN(value) && value > 0;
+      }
+    );
     var height = candidates.length ? Math.min.apply(Math, candidates) : NaN;
     if (!height || isNaN(height)) {
       // Container not laid out yet, or hidden (e.g. an inactive screen tab)
