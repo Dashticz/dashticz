@@ -2901,6 +2901,7 @@ select option {
   color: #000 !important;
   width: auto;
   max-width: 90%;
+  font-size: 16px !important;
 }
 
 .title {

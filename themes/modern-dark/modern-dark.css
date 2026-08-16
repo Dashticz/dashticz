@@ -217,6 +217,9 @@
 
 .transbg .col-data > select {
   min-height: 44px;
+  padding: 10px 14px !important;
+  font-size: 18px !important;
+  line-height: 1.2;
 }
 
 .transbg select:focus,
@@ -229,6 +232,7 @@
 .transbg select option {
   color: var(--text-normal) !important;
   background-color: var(--selector-bg) !important;
+  font-size: 18px !important;
 }
 
 .mh .btn.stop {
