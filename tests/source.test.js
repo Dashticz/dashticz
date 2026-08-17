@@ -3055,6 +3055,26 @@ test('Device Editor save does not reintroduce a default widget height on a grid 
   );
 });
 
+test('Device Editor keeps ordered block keys in scope through the full save chain', () => {
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const saveStart = deviceEditor.indexOf('function _save()');
+  const saveEnd = deviceEditor.indexOf('\n  function _preserveStandbyExtraBlocks', saveStart);
+  assert.notEqual(saveStart, -1, '_save not found');
+  assert.notEqual(saveEnd, -1, 'end of _save not found');
+  const saveSnippet = deviceEditor.substring(saveStart, saveEnd);
+
+  // _buildDevicePayload() has its own orderedBlockKeys local, but _save()
+  // also needs the list after saveblocks/savewidgets resolve so it can map
+  // each returned key back to managedOrder. Without this declaration the
+  // requests can succeed and then a ReferenceError still shows the generic
+  // "Devices could not be saved automatically" alert.
+  assert.match(
+    saveSnippet,
+    /var orderedBlockKeys = managedOrder\.filter\(function \(orderKey\) \{\s*\n\s*return orderKey\.indexOf\('widget:'\) !== 0;/
+  );
+  assert.match(saveSnippet, /orderedBlockKeys\.forEach\(function \(orderKey, index\)/);
+});
+
 test('Widget Editor lets a grid-mode height (iframe, camera, ...) be removed again once set (#100 follow-up)', () => {
   // The #100 fixes above stopped a *new* grid widget from getting a forced
   // default height, but a widget that already had an explicit height (from

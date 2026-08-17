@@ -3790,6 +3790,15 @@ var DashticzDeviceEditor = (function () {
     var t = _translations();
     var $btn = $('#de-save-btn').prop('disabled', true).text(t.saving);
 
+    // Keep this list in _save() as well as _buildDevicePayload(): after the
+    // device/widget requests complete it is needed to map the returned block
+    // keys back onto managedOrder.  When payload construction was extracted
+    // into _buildDevicePayload(), orderedBlockKeys accidentally became local
+    // to that helper; the later mapping then threw a ReferenceError and the
+    // otherwise successful save surfaced as the generic save-failed alert.
+    var orderedBlockKeys = managedOrder.filter(function (orderKey) {
+      return orderKey.indexOf('widget:') !== 0;
+    });
     var devicePayload = _buildDevicePayload();
 
     var orderedWidgetKeys = managedOrder.filter(function (orderKey) {
