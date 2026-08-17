@@ -415,16 +415,6 @@ var widgetSettingTiles = [
     title: widgetEditorTranslations.clock_title || 'Clock',
     icon: 'fas fa-clock',
     settings: {
-      clock_size: {
-        title:
-          (language.settings.widgets && language.settings.widgets.clock_size) ||
-          'Size (px)',
-        type: 'text',
-        help:
-          (language.settings.widgets &&
-            language.settings.widgets.clock_size_help) ||
-          'Empty = fit to tile width. Example: 120',
-      },
       clock_scale: {
         title:
           (language.settings.widgets && language.settings.widgets.clock_scale) ||
@@ -545,8 +535,13 @@ var widgetSettingTiles = [
         type: 'text',
       },
       calendarurl: {
-        title: language.settings.localize.calendarurl || 'Calendar URL',
+        title:
+          language.settings.localize.calendarurl_link ||
+          'Full calendar link',
         type: 'text',
+        help:
+          language.settings.localize.calendarurl_link_help ||
+          'Link opened from calendar events. Calendar data is configured separately with an ICS source.',
       },
       calendar_maxitems: {
         title:
@@ -640,23 +635,24 @@ var widgetSettingTiles = [
     title: widgetEditorTranslations.secpanel_title || 'Security panel',
     icon: 'fas fa-shield-alt',
     settings: {
-      security_button_icons: {
-        title: language.settings.screen.security_button_icons,
-        type: 'checkbox',
-      },
       security_panel_lock: {
         title: language.settings.screen.security_panel_lock,
-        type: 'checkbox',
+        type: 'select',
+        noEmptyOption: true,
+        options: {
+          0:
+            language.settings.screen.security_panel_lock_disabled ||
+            'Disabled',
+          1:
+            language.settings.screen.security_panel_lock_away ||
+            'Armed Away',
+          2:
+            language.settings.screen.security_panel_lock_home_away ||
+            'Armed Home and Armed Away',
+        },
         help: language.settings.screen.security_panel_lock_help,
       },
     },
-  },
-  {
-    id: 'publictransport',
-    title:
-      widgetEditorTranslations.publictransport_title || 'Public transport',
-    icon: 'fas fa-train',
-    settings: {},
   },
   {
     id: 'trafficinfo',
@@ -674,18 +670,6 @@ var widgetSettingTiles = [
           'API key for ANWB traffic info (trafficinfo widget).',
       },
     },
-  },
-  {
-    id: 'alarmmeldingen',
-    title: widgetEditorTranslations.alarmmeldingen_title || '112',
-    icon: 'fas fa-bullhorn',
-    settings: {},
-  },
-  {
-    id: 'camera',
-    title: widgetEditorTranslations.camera_title || 'Cameras',
-    icon: 'fas fa-video',
-    settings: {},
   },
   {
     id: 'map',
@@ -724,18 +708,6 @@ var widgetSettingTiles = [
         title: language.settings.weather.waqi_layout,
         type: 'select',
         options: waqiLayoutOptions,
-      },
-    },
-  },
-  {
-    id: 'moon',
-    title: widgetEditorTranslations.moon_title || 'Moon',
-    icon: 'fas fa-moon',
-    settings: {
-      idx_moonpicture: {
-        title: language.settings.weather.idx_moonpicture,
-        type: 'text',
-        help: language.settings.weather.idx_moonpicture_help,
       },
     },
   },
@@ -913,7 +885,6 @@ var defaultSettings = {
   weather_show_gust: 0,
   weather_icons: 'line',
   boss_stationclock: 'RedBoss',
-  clock_size: '',
   clock_scale: 1,
   use_fahrenheit: 0,
   use_beaufort: 0,
@@ -1288,6 +1259,11 @@ function loadSettings() {
       html += '</div><div class="modal-footer settings-footer">';
       html += '<div class="settings-footer-actions">';
       html +=
+        '<button type="button" class="btn btn-secondary settings-back d-none">' +
+        '<i class="fas fa-arrow-left me-1" aria-hidden="true"></i>' +
+        escapeSettingsHtml(language.settings.back || 'Back') +
+        '</button> ';
+      html +=
         '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
         language.settings.close +
         '</button> ';
@@ -1371,7 +1347,6 @@ function getSettingsCategoryTitle(id) {
 }
 
 function renderSettingsCategoryHome() {
-  var backLabel = language.settings.back || 'Back';
   var chooseLabel =
     language.settings.choose || 'Choose a category to configure.';
   var tabs = getSettingsCategories();
@@ -1416,11 +1391,6 @@ function renderSettingsCategoryHome() {
       ' me-2" aria-hidden="true"></i>' +
       escapeSettingsHtml(title) +
       '</h5>';
-    html +=
-      '<button type="button" class="btn btn-sm btn-outline-secondary settings-category-back">' +
-      '<i class="fas fa-arrow-left me-1" aria-hidden="true"></i>' +
-      escapeSettingsHtml(backLabel) +
-      '</button>';
     html += '</div>';
     if (id === 'widgets') {
       html += renderWidgetSettingsTab();
@@ -1559,10 +1529,6 @@ function renderBackgroundPicker(settingName, definition) {
 }
 
 function renderWidgetSettingsTab() {
-  var backLabel =
-    (language.settings.widgets && language.settings.widgets.back) ||
-    language.settings.back ||
-    'Back';
   var chooseLabel =
     (language.settings.widgets && language.settings.widgets.choose) ||
     'Choose a widget to configure its settings.';
@@ -1600,11 +1566,6 @@ function renderWidgetSettingsTab() {
       ' me-2" aria-hidden="true"></i>' +
       escapeSettingsHtml(tile.title) +
       '</h5>';
-    html +=
-      '<button type="button" class="btn btn-sm btn-outline-secondary settings-widget-back">' +
-      '<i class="fas fa-arrow-left me-1" aria-hidden="true"></i>' +
-      escapeSettingsHtml(backLabel) +
-      '</button>';
     html += '</div>';
     if (tile.id === 'weather') {
       html += renderWeatherWidgetSettings(tile);
@@ -1662,9 +1623,6 @@ function renderClockWidgetSettings(tile) {
       language.settings.widgeteditor.display) ||
       'Display') +
     '</h6>';
-  if (tile.settings.clock_size) {
-    html += renderSettingsRow('clock_size', tile.settings.clock_size);
-  }
   if (tile.settings.clock_scale) {
     html += renderSettingsRow('clock_scale', tile.settings.clock_scale);
   }
@@ -1811,6 +1769,7 @@ function showSettingsHome() {
   $popup
     .find('#settings-widget-tiles, .settings-widgets-intro')
     .removeClass('d-none');
+  $popup.find('.settings-back').addClass('d-none');
 }
 
 function showSettingsCategory(id) {
@@ -1822,8 +1781,9 @@ function showSettingsCategory(id) {
     .find('#settings-widget-tiles, .settings-widgets-intro')
     .removeClass('d-none');
   $popup
-    .find('#settings-category-widgets > .settings-category-back, #settings-category-widgets > .settings-panel-title')
+    .find('#settings-category-widgets > .settings-panel-title')
     .removeClass('d-none');
+  $popup.find('.settings-back').removeClass('d-none');
 }
 
 function bindSettingsCategoryTiles() {
@@ -1834,30 +1794,29 @@ function bindSettingsCategoryTiles() {
   $popup.on('click.settingsnav', '.settings-tile[data-settings-category]', function () {
     showSettingsCategory(String($(this).data('settings-category')));
   });
-  $popup.on('click.settingsnav', '.settings-category-back', function () {
-    showSettingsHome();
-  });
   $popup.on('click.settingsnav', '.settings-widget-tile', function () {
     var id = String($(this).data('widget-id'));
     $popup.find('#settings-widget-tiles, .settings-widgets-intro').addClass('d-none');
     $popup
       .find(
-        '#settings-category-widgets > .settings-category-back, #settings-category-widgets > .settings-panel-title'
+        '#settings-category-widgets > .settings-panel-title'
       )
       .addClass('d-none');
     $popup.find('.settings-widget-panel').addClass('d-none');
     $popup.find('#settings-widget-panel-' + id).removeClass('d-none');
   });
-  $popup.on('click.settingsnav', '.settings-widget-back', function () {
-    $popup.find('.settings-widget-panel').addClass('d-none');
-    $popup
-      .find('#settings-widget-tiles, .settings-widgets-intro')
-      .removeClass('d-none');
-    $popup
-      .find(
-        '#settings-category-widgets > .settings-category-back, #settings-category-widgets > .settings-panel-title'
-      )
-      .removeClass('d-none');
+  $popup.on('click.settingsnav', '.settings-back', function () {
+    if ($popup.find('.settings-widget-panel:not(.d-none)').length) {
+      $popup.find('.settings-widget-panel').addClass('d-none');
+      $popup
+        .find('#settings-widget-tiles, .settings-widgets-intro')
+        .removeClass('d-none');
+      $popup
+        .find('#settings-category-widgets > .settings-panel-title')
+        .removeClass('d-none');
+      return;
+    }
+    showSettingsHome();
   });
 }
 

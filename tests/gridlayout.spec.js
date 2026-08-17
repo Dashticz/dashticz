@@ -248,6 +248,96 @@ screens[1] = {
     await expect(titleControl).toBeHidden();
   });
 
+  test('does not restore Dial from another block with the same IDX when saving another device', async ({
+    page,
+  }) => {
+    let blocksRequest = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+Object.keys(blocks).forEach(function (key) {
+  if (blocks[key] && parseInt(blocks[key].idx, 10) === 1247) delete blocks[key];
+});
+blocks['offscreen_dial'] = {idx: 1247, type: 'dial', width: 3};
+blocks['device_1247'] = {idx: 1247, width: 3};
+blocks['device_43'] = {idx: 43, width: 3, icon: 'fas fa-bolt'};
+screens[1] = {
+  layout: 'grid', gridColumns: 24, rowHeight: 20, gap: 5,
+  blocks: [
+    {key: 'device_1247', grid: {x: 1, y: 1, w: 8, h: 5}},
+    {key: 'device_43', grid: {x: 10, y: 1, w: 8, h: 5}}
+  ]
+};
+screens[2] = {
+  layout: 'grid', gridColumns: 24, rowHeight: 20, gap: 5,
+  blocks: [{key: 'offscreen_dial', grid: {x: 1, y: 1, w: 8, h: 5}}]
+};
+`,
+      });
+    });
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'dial-reference-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          blockKeys: ['device_1247', 'device_43'],
+        }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savegridlayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await openDeviceEditorFromScreenEditor(page);
+
+    await page.locator('[data-order-key="device:43"] .de-config-btn').click();
+    await expect(page.locator('#de-config-popup')).toBeVisible();
+    await page.locator('[data-option="icon"]').uncheck();
+    await page.locator('#de-config-ok').click();
+    await expect(page.locator('#deviceeditorpopup')).toBeVisible();
+    await page.locator('#de-save-btn').evaluate((button) => {
+      button.disabled = false;
+    });
+    await page.locator('#de-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const normalDevice = blocksRequest.devices.find(
+      (device) => device.key === 'device_1247'
+    );
+    const editedDevice = blocksRequest.devices.find(
+      (device) => device.key === 'device_43'
+    );
+    expect(normalDevice).toBeDefined();
+    expect(normalDevice).not.toHaveProperty('type');
+    expect(editedDevice.icon).toBe('');
+  });
+
   test('persists default icons only for newly added iframe and Sunrise widgets', async ({
     page,
   }) => {
@@ -305,6 +395,59 @@ screens[1] = {
     );
     expect(iframe.icon).toBe('fas fa-window-maximize');
     expect(sunrise.icon).toBe('fas fa-sun');
+  });
+
+  test('Widget Config hides legacy globals and keeps current widget controls', async ({
+    page,
+  }) => {
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.addScriptTag({
+      url: new URL('/js/widgeteditor.js', dashboardUrl).href,
+    });
+    await page.evaluate('DashticzWidgetEditor.open()');
+    await expect(page.locator('#widgeteditorpopup')).toBeVisible();
+
+    const cases = [
+      {
+        id: 'weather',
+        hidden: ['owm-days', 'translate-windspeed'],
+        visible: ['owm-api'],
+      },
+      { id: 'garbage', hidden: ['garbage-width'], visible: ['garbage-company'] },
+      {
+        id: 'secpanel',
+        hidden: ['security-button-icons', 'security-panel-lock'],
+        visible: [],
+      },
+      {
+        id: 'map',
+        hidden: ['gm-zoomlevel', 'gm-latitude', 'gm-longitude'],
+        visible: ['gm-api'],
+      },
+      { id: 'moon', hidden: ['idx-moonpicture'], visible: [] },
+    ];
+
+    for (const item of cases) {
+      await page.locator(`.we-config-btn[data-widget-id="${item.id}"]`).click();
+      await expect(page.locator('#we-config-popup')).toBeVisible();
+      for (const field of item.hidden) {
+        await expect(page.locator(`#we-cfg-${field}`)).toHaveCount(0);
+      }
+      for (const field of item.visible) {
+        await expect(page.locator(`#we-cfg-${field}`)).toBeVisible();
+      }
+      await page.locator('#we-config-popup .btn-secondary').click();
+      await expect(page.locator('#we-config-popup')).toHaveCount(0);
+    }
+
+    await page.locator('.we-config-btn[data-widget-id="clock"]').click();
+    await expect(page.locator('#we-config-popup')).toBeVisible();
+    await page.locator('#we-cfg-clock-type').selectOption('flipclock');
+    await expect(page.locator('#we-cfg-showSeconds')).toBeVisible();
+    await page.locator('#we-cfg-clock-type').selectOption('stationclock');
+    await expect(page.locator('#we-cfg-boss')).toBeVisible();
+    await expect(page.locator('#we-cfg-secondhand')).toBeVisible();
   });
 
   test('converts a Wizard column screen to a compact grid after confirmation', async ({
@@ -720,6 +863,9 @@ screens[1] = {
 
     await page.goto(dashboardUrl);
     await waitForDashboard(page);
+    await expect(
+      page.locator('[data-grid-block="grid_text"] .col-icon .fa-divide')
+    ).toBeVisible();
     await page.locator('.screen1 .layouteditoricon').click();
     await expect(page.locator('body')).toHaveClass(/dle-active/);
     const separatorOverlay = page.locator('[data-grid-block="grid_text"] .dle-overlay');
@@ -732,7 +878,28 @@ screens[1] = {
     await separatorOverlay.locator('.dle-config-button').click();
     await expect(page.locator('#de-config-popup')).toBeVisible();
     await expect(page.locator('#deviceeditorpopup')).toBeHidden();
-    await expect(page.locator('.de-config-option')).toHaveCount(0);
+    await expect(page.locator('.de-config-option')).toHaveCount(2);
+    await expect(page.locator('[data-option="icon"]')).toBeChecked();
+    await expect(page.locator('[data-option="show_title"]')).toBeChecked();
+    const separatorIconRow = page.locator('.de-icon-field-row');
+    await expect(separatorIconRow).toBeVisible();
+    await expect(separatorIconRow.locator('.de-custom-field-name')).toHaveValue('icon');
+    await expect(separatorIconRow.locator('.de-custom-field-setting')).toHaveValue('fas fa-divide');
+    await separatorIconRow.locator('.de-icon-source').selectOption('image');
+    await expect(separatorIconRow.locator('.de-custom-field-setting')).toHaveValue('');
+    await expect(separatorIconRow.locator('.de-custom-field-setting')).toHaveAttribute(
+      'placeholder',
+      'custom/icon.png'
+    );
+    await separatorIconRow.locator('.de-icon-source').selectOption('icon');
+    await expect(separatorIconRow.locator('.de-custom-field-setting')).toHaveValue('fas fa-divide');
+    await separatorIconRow.locator('.de-custom-field-remove').click();
+    await expect(separatorIconRow).toHaveCount(0);
+    await expect(page.locator('[data-option="icon"]')).not.toBeChecked();
+    await page.locator('[data-option="icon"]').check();
+    await expect(separatorIconRow).toBeVisible();
+    await page.locator('[data-option="icon"]').uncheck();
+    await expect(separatorIconRow).toBeHidden();
     await expect(page.locator('.de-custom-field-name').first()).toHaveValue('title');
     await expect(page.locator('.de-custom-field-setting').first()).toHaveValue('Keep me');
     await expect(page.locator('.de-custom-field-name')).toHaveCount(4);
@@ -781,6 +948,7 @@ screens[1] = {
         key: 'grid_text',
         title: 'Keep me',
         width: 12,
+        icon: '',
         custom_fields: {
           c: { legacy: true },
           layout: 1,
@@ -795,7 +963,7 @@ screens[1] = {
     expect(customCssWrites).toBe(0);
     expect(gridRequest.items).toEqual([
       { ref: 's5', grid: { x: 2, y: 2, w: 6, h: 4 } },
-      { ref: 'grid_text', grid: { x: 10, y: 5, w: 8, h: 3 } },
+      { ref: 'grid_text', grid: { x: 10, y: 5, w: 8, h: 2 } },
     ]);
   });
 
@@ -812,9 +980,19 @@ screens[1] = {
           `
 blocks['grid_weather'] = {
   type: 'weather', widget_provider: 'openweather', title: 'Forecast',
-  icon: 'fas fa-cloud', c: 'legacy-grid', emptyObject: {}, emptyArray: [],
+  icon: 'fas fa-cloud', hide_data: true, last_update: true,
+  c: 'legacy-grid', emptyObject: {}, emptyArray: [],
   futureOption: {enabled: true}, grid: {x: 2, y: 2, w: 8, h: 4}
 };
+config['owm_days'] = 1;
+config['translate_windspeed'] = 0;
+config['garbage_width'] = 9;
+config['security_button_icons'] = 1;
+config['security_panel_lock'] = 2;
+config['gm_zoomlevel'] = 11;
+config['gm_latitude'] = '52.1';
+config['gm_longitude'] = '5.1';
+config['idx_moonpicture'] = '817';
 screens[1] = {
   layout: 'grid', gridColumns: 24, rowHeight: 20, gap: 5,
   mobileLayout: 'stack', blocks: ['grid_weather']
@@ -827,6 +1005,24 @@ screens[1] = {
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ token: 'widget-from-device-token' }),
+      })
+    );
+    await page.route('**/js/listcustomicons.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          images: [
+            'custom/door.png',
+            'custom/garage.png',
+            'custom/light.png',
+            'custom/motion.png',
+            'custom/weather.png',
+            'custom/window.png',
+            'custom/z-wave.png',
+          ],
+        }),
       })
     );
     await page.route('**/js/saveblocks.php*', (route) =>
@@ -860,14 +1056,47 @@ screens[1] = {
     await expect(page.locator('#we-config-popup')).toBeVisible();
     await expect(page.locator('#we-cfg-weather-provider')).toBeVisible();
 
-    for (const option of ['icon', 'hide_data', 'show_title']) {
+    for (const option of ['icon', 'show_title']) {
       await expect(page.locator(`[data-block-option="${option}"]`)).toBeChecked();
     }
-    await expect(page.locator('[data-block-option="last_update"]')).not.toBeChecked();
+    await expect(page.locator('[data-block-option="hide_data"]')).toHaveCount(0);
+    await expect(page.locator('[data-block-option="last_update"]')).toHaveCount(0);
+    await expect(page.getByText('Custom fields', { exact: true })).toBeVisible();
     await expect(page.locator('[data-block-option="icon"]')).toHaveCSS('width', '32px');
     await expect(page.locator('[data-block-option="icon"]')).toHaveCSS('height', '32px');
     await expect(page.locator('.we-custom-field-name').first()).toHaveValue('title');
     await expect(page.locator('.we-custom-field-setting').first()).toHaveValue('Forecast');
+    const widgetIconRow = page.locator('.we-icon-field-row');
+    await expect(widgetIconRow).toBeVisible();
+    await expect(widgetIconRow.locator('.we-custom-field-name')).toHaveValue('icon');
+    await expect(widgetIconRow.locator('.we-custom-field-setting')).toHaveValue('fas fa-cloud');
+    await widgetIconRow.locator('.we-custom-field-remove').click();
+    await expect(widgetIconRow).toHaveCount(0);
+    await expect(page.locator('[data-block-option="icon"]')).not.toBeChecked();
+    await page.locator('[data-block-option="icon"]').check();
+    await expect(widgetIconRow).toBeVisible();
+    await widgetIconRow.locator('.we-icon-source').selectOption('image');
+    await expect(widgetIconRow.locator('.we-custom-field-setting')).toHaveValue('');
+    await expect(widgetIconRow.locator('.we-custom-field-setting')).toHaveAttribute(
+      'placeholder',
+      'custom/icon.png'
+    );
+    await widgetIconRow.locator('.we-custom-field-setting').click();
+    const customImageGrid = widgetIconRow.locator('.dt-custom-image-grid');
+    await expect(widgetIconRow.locator('.dt-custom-image-picker')).toBeVisible();
+    await expect(customImageGrid.locator('.dt-custom-image-option')).toHaveCount(7);
+    expect(
+      await customImageGrid.evaluate((grid) =>
+        getComputedStyle(grid).gridTemplateColumns.split(' ').length
+      )
+    ).toBe(6);
+    await customImageGrid
+      .locator('.dt-custom-image-option[data-image-path="custom/weather.png"]')
+      .click();
+    await expect(widgetIconRow.locator('.we-custom-field-setting')).toHaveValue(
+      'custom/weather.png'
+    );
+    await expect(widgetIconRow.locator('.dt-custom-image-picker')).toBeHidden();
     expect(
       await page.locator('.we-custom-field-name').evaluateAll((inputs) =>
         inputs.map((input) => input.value)
@@ -884,13 +1113,26 @@ screens[1] = {
     await expect.poll(() => widgetRequest).not.toBeNull();
     const savedWidget = widgetRequest.widgets[0];
     expect(savedWidget.title).toBe('Forecast changed');
-    expect(savedWidget.icon).toBe('fas fa-cloud');
+    expect(savedWidget).not.toHaveProperty('icon');
+    expect(savedWidget.hide_data).toBe(true);
+    expect(savedWidget.last_update).toBe(true);
     expect(savedWidget.custom_fields.c).toBe('legacy-grid');
     expect(savedWidget.custom_fields.emptyObject).toEqual({
       __dashticz_empty_object__: true,
     });
     expect(savedWidget.custom_fields.emptyArray).toEqual([]);
     expect(savedWidget.custom_fields.futureOption).toEqual({ enabled: true });
+    expect(savedWidget.custom_fields.image).toBe('custom/weather.png');
+    expect(widgetRequest.settings.owm_days).toBe(1);
+    expect(widgetRequest.settings.translate_windspeed).toBe(0);
+    expect(widgetRequest.settings.garbage_width).toBe('9');
+    expect(widgetRequest.settings.security_button_icons).toBe(1);
+    expect(widgetRequest.settings).not.toHaveProperty('security_panel_lock');
+    expect(await page.evaluate(() => settings.security_panel_lock)).toBe(2);
+    expect(widgetRequest.settings.gm_zoomlevel).toBe('11');
+    expect(widgetRequest.settings.gm_latitude).toBe('52.1');
+    expect(widgetRequest.settings.gm_longitude).toBe('5.1');
+    expect(widgetRequest.settings.idx_moonpicture).toBe('817');
   });
 
   test('Calendar Widget Config manages named sources without dropping calendar options', async ({
@@ -1176,6 +1418,90 @@ screens[1] = {
     await expect(notice).toHaveCSS('border-top-width', '2px');
   });
 
+  test('Widget settings only show tiles with supported global settings', async ({
+    page,
+  }) => {
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `\nconfig['config_mode'] = 'custom';\nconfig['security_panel_lock'] = 2;\n`,
+      });
+    });
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.mouse.move(10, 10);
+    await page.getByRole('button', { name: 'Open settings' }).first().click();
+    await expect(page.locator('#settingspopup')).toBeVisible();
+    await expect(page.locator('.settings-back')).toBeHidden();
+    await page.locator('[data-settings-category="widgets"]').click();
+    const settingsBack = page.locator('.settings-back');
+    const settingsClose = page.locator('.settings-footer-actions [data-bs-dismiss="modal"]').first();
+    await expect(settingsBack).toBeVisible();
+    await expect(settingsBack).toHaveClass(/btn-secondary/);
+    await expect(settingsClose).toHaveClass(/btn-secondary/);
+    const [backBox, closeBox] = await Promise.all([
+      settingsBack.boundingBox(),
+      settingsClose.boundingBox(),
+    ]);
+    expect(backBox.right).toBeLessThanOrEqual(closeBox.left);
+
+    for (const widgetId of ['publictransport', 'alarmmeldingen', 'camera', 'moon']) {
+      await expect(
+        page.locator(`.settings-widget-tile[data-widget-id="${widgetId}"]`)
+      ).toHaveCount(0);
+    }
+    await expect(
+      page.locator('.settings-widget-tile[data-widget-id="secpanel"]')
+    ).toBeVisible();
+    await page.locator('.settings-widget-tile[data-widget-id="secpanel"]').click();
+    await expect(page.locator('#setting-security_panel_lock')).toBeVisible();
+    await expect(page.locator('#setting-security_panel_lock')).toHaveValue('2');
+    await expect(page.locator('#setting-security_panel_lock option')).toHaveCount(3);
+    await expect(page.locator('#setting-security_panel_lock option').nth(0)).toHaveValue('0');
+    await expect(page.locator('#setting-security_panel_lock option').nth(1)).toHaveValue('1');
+    await expect(page.locator('#setting-security_panel_lock option').nth(2)).toHaveValue('2');
+    await expect(page.locator('#setting-security_button_icons')).toHaveCount(0);
+    await settingsBack.click();
+    await expect(
+      page.locator('.settings-widget-tile[data-widget-id="map"]')
+    ).toBeVisible();
+    await page.locator('.settings-widget-tile[data-widget-id="map"]').click();
+    for (const setting of ['gm_api', 'gm_zoomlevel', 'gm_latitude', 'gm_longitude']) {
+      await expect(page.locator(`#setting-${setting}`)).toBeVisible();
+    }
+    await settingsBack.click();
+    await expect(
+      page.locator('.settings-widget-tile[data-widget-id="clock"]')
+    ).toBeVisible();
+    await page.locator('.settings-widget-tile[data-widget-id="clock"]').click();
+    for (const setting of [
+      'boss_stationclock',
+      'hide_seconds',
+      'hide_seconds_stationclock',
+    ]) {
+      await expect(page.locator(`#setting-${setting}`)).toHaveCount(1);
+    }
+    await settingsBack.click();
+    await page.locator('.settings-widget-tile[data-widget-id="calendar"]').click();
+    await expect(page.locator('label[for="setting-calendarurl"]')).toHaveText(
+      'Full calendar link'
+    );
+    await expect(
+      page.locator('#setting-calendarurl').locator('xpath=ancestor::div[contains(@class,"settings-row")]')
+    ).toContainText('Calendar data is configured separately with an ICS source.');
+    await settingsBack.click();
+    await expect(
+      page.locator('.settings-widget-tile[data-widget-id="calendar"]')
+    ).toBeVisible();
+    await settingsBack.click();
+    await expect(page.locator('#settings-home')).toBeVisible();
+    await expect(settingsBack).toBeHidden();
+  });
+
   test('Custom devices accept empty objects and arrays as typed settings', async ({
     page,
   }) => {
@@ -1333,7 +1659,7 @@ screens[1] = {
     expect(columnSaves).toBe(0);
     expect(gridRequest.items).toEqual([
       { ref: 'grid_weather', grid: { x: 3, y: 2, w: 8, h: 4 } },
-      { ref: 'grid_text', grid: { x: 12, y: 8, w: 6, h: 3 } },
+      { ref: 'grid_text', grid: { x: 12, y: 8, w: 6, h: 2 } },
     ]);
   });
 

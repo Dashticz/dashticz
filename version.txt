@@ -1,8 +1,14 @@
 {
-    "version": "3.42.10",
+    "version": "3.43.2",
     "branch": "beta",
-    "last_changes": "Restore classic-column Dial sizing and preserve iconless legacy iframe and Sunrise/Sunset configurations",
+    "last_changes": "Clock widgets always scale to fill their block; remove the Size (px) field (Scale-only) and add a preview image to the Clock type picker",
     "changelog": {
+        "3.43.5": "Fix Hayman clock rendering oversized and its separator dots sitting too high above the digits",
+        "3.43.4": "Fix Flip clock leaving empty space below the digits, Hayman clock's separator dots being misaligned/not scaling, and Miniclock's text not resizing with its block",
+        "3.43.3": "Fix Basic clock's oversized margins and make all four clock types live-resize with the grid editor, without runaway growth or Flip/Hayman rendering glitches",
+        "3.43.2": "Clock widgets always scale to fill their block; remove the Size (px) field (Scale-only) and add a preview image to the Clock type picker",
+        "3.43.1": "Change the Separator/title block's default icon and its Screen Editor add-menu tile icon to fa-divide",
+        "3.43.0": "Refine Widget and Device configuration, fix Dial state and sizing, and improve compact grid blocks",
         "3.42.10": "Restore classic-column Dial sizing and preserve iconless legacy iframe and Sunrise/Sunset configurations",
         "3.42.9": "Secure Domoticz log rendering, prevent repeated log listeners, fix Group toggleoff commands, update build dependencies, and clean stale build output",
         "3.42.8": "Fix Settings save sending an empty payload (theme and other settings silently reverted after save) caused by a merge conflict resolution splitting the collected values into an unused local object",

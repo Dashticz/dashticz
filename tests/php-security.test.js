@@ -164,6 +164,7 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(source, /\^\[A-Za-z_\$\]/);
   assert.match(source, /positive integer idx/);
   assert.match(source, /configwriter_special_block_props/);
+  assert.match(writer, /array_key_exists\('icon', \$block\) && \$block\['icon'\] !== null/);
   assert.match(source, /custom_fields/);
   assert.match(source, /Invalid or reserved custom device field/);
   assert.match(source, /_validate_custom_device_value/);
@@ -440,6 +441,19 @@ test('background list endpoint safely exposes bundled and custom images', () => 
   assert.match(source, /preg_match\(\'\/\^\(bg_\[a-z0-9\]/);
   assert.match(source, /\$images\[\] = 'img\/custom\/' \. \$entry/);
   assert.match(source, /is_link\(\$full\)/);
+  assert.doesNotMatch(source, /\$_GET\[/);
+  assert.doesNotMatch(source, /\$_POST\[/);
+});
+
+test('custom icon list endpoint safely exposes non-background images', () => {
+  const source = read('js/listcustomicons.php');
+  assert.match(source, /dashticz_require_same_origin\(\)/);
+  assert.match(source, /REQUEST_METHOD.*GET/);
+  assert.match(source, /realpath\(__DIR__ \. '\/\.\.\/img\/custom'\)/);
+  assert.match(source, /preg_match\('\/\^bg_\/i', \$entry\)/);
+  assert.match(source, /\(\?:jpe\?g\|png\|webp\|gif\)/);
+  assert.match(source, /is_link\(\$full\)/);
+  assert.match(source, /\$images\[\] = 'custom\/' \. \$entry/);
   assert.doesNotMatch(source, /\$_GET\[/);
   assert.doesNotMatch(source, /\$_POST\[/);
 });

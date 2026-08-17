@@ -1472,7 +1472,10 @@ function configwriter_special_block_props($block)
                 ? $block['height']
                 : 120,
         ];
-        if (array_key_exists('icon', $block) && $block['icon'] !== null && $block['icon'] !== '') {
+        // Keep an explicit empty icon. For blocktitle this distinguishes an
+        // unchecked Icon option from a legacy definition without an icon,
+        // which intentionally receives the component's default icon.
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
             $props['icon'] = (string)$block['icon'];
         }
     } elseif ($kind === 'slidebutton') {

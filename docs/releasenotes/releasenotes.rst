@@ -6,6 +6,117 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.43.5 beta (16-8-2026)
+-------------------------
+
+* **Fixes**
+
+- Fixed the Hayman clock rendering disproportionately large compared to the
+  other three clock types: its face is mostly whitespace around a thin
+  digit/label glyph, so fitting it to the full available block space the
+  same way looked oversized. Its computed size is now halved on top of the
+  usual fit-to-block/Scale calculation.
+- Fixed the ``:`` separator dots sitting too high above the digits: they
+  were vertically centered on the whole column (digit + label underneath),
+  which pulls the center down away from the digit itself. Repositioned
+  lower to align with the digit.
+
+v3.43.4 beta (16-8-2026)
+-------------------------
+
+* **Fixes**
+
+- Fixed the Flip clock leaving a lot of empty space below the digits: it
+  was sized to fit inside a square (``min(availW, availH)``), badly
+  under-using the available width for a clock face that is much wider than
+  it is tall. Its size is now computed analytically from flipclock.css's
+  own fixed per-``em`` multipliers, filling the block correctly.
+- Fixed the Flip clock overflowing past its block's right edge: the block's
+  own width also included the fixed-width icon column next to the clock,
+  which is now excluded from the available-width calculation.
+- Fixed the Hayman clock's ``:`` separator dots being inconsistently
+  positioned between columns (most noticeable next to the wider day-label
+  column): they were positioned as a percentage of each column's own
+  (variable) width, and are now positioned in ``em`` instead, consistent
+  regardless of a column's width.
+- Fixed the Miniclock's text (weekday/date/time) never getting bigger or
+  smaller when its block is resized - it now fits and live-resizes the
+  same way the four dedicated clock widgets do, including overriding the
+  theme's ``!important`` font-size/height rules. The fixed-height topbar
+  Miniclock is unaffected.
+
+v3.43.3 beta (16-8-2026)
+-------------------------
+
+* **Fixes**
+
+- Fixed the Basic clock leaving large unused margins on a wide/short block:
+  it was sized to fit inside a square (``min(availW, availH)``), instead of
+  actually measuring the rendered text and filling both the width and
+  height of the block.
+- All four clock types (Basic, Station, Flip, Hayman) now keep resizing
+  live while dragging a block in the Grid Layout Editor, instead of only
+  picking up the new size after a save/reload - the same
+  ``ResizeObserver``-based approach already used by the Dial widget.
+- Fixed a runaway grow-remeasure-grow loop specific to grid screens: the
+  clock components measured ``.dt_block``'s own box, which a grid item's
+  automatic minimum size can inflate past its actual grid row (its
+  ``height: 100%`` only *looks* fixed); each resize picked up that inflated
+  height and grew it further. They now measure the outer, CSS-Grid-fixed
+  mount point instead, same as Dial's ``_dialFitSize()``.
+- Fixed the Flip clock not resizing at all when its block changed size.
+- Fixed the Hayman clock rendering with an oversized, overlapping face
+  (digits touching, the ':' separators hidden behind them) instead of
+  scaling with the block.
+
+v3.43.2 beta (16-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- The Clock widget's Size (px) field has been removed; **Scale** is now the
+  only sizing control. All four clock types (Basic, Station, Flip, Hayman)
+  always fit their block automatically, and Scale is a relative factor on
+  top of that (still capped to the available block space).
+- Basic clock's 42px font-size cap, Flip clock's 3.5-7em size range, and
+  Hayman clock's ``scale``-only (max 100%) container width are removed, so
+  all four clock types now scale proportionally with their block instead of
+  plateauing well before the block is filled.
+- The Widget Config **Clock type** dropdown now shows a small preview image
+  of the selected clock style.
+
+* **Fixes**
+
+- Hayman clock's visible width now follows the same computed size as its
+  font, instead of only reacting to Scale (and never past 100%) while Size
+  had no effect on the visible clock at all.
+
+v3.43.1 beta (16-8-2026)
+-------------------------
+
+* **Fixes**
+
+- Changed the Separator/title block's default icon (``blocktitle``'s
+  ``defaultCfg.icon``, the Device Editor's ``SEPARATOR_DEFAULT_ICON``, and
+  its editor-list icon) and the Screen Editor add-menu's **Separator** tile
+  icon from ``fa-heading`` to ``fa-divide``.
+
+v3.43.0 beta (16-8-2026)
+-------------------------
+
+* **Improvements**
+
+- Cleaned up Widget Config and Global Settings by removing duplicate, unused
+  and misleading controls while keeping legacy configuration keys compatible.
+- Improved compact grid layouts with two-row Separators, consistently sized
+  configuration controls and a Garbage widget without an unnecessary scrollbar.
+
+* **Fixes**
+
+- Fixed Dial configuration state and resizing behavior.
+- Separator icons now have a visible default and remain hidden after the Icon
+  option is unchecked and saved.
+
 v3.42.10 beta (15-8-2026)
 ---------------------------
 

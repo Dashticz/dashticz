@@ -1,4 +1,4 @@
-/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor DashticzWidgetEditor DashticzLayoutEditor isCustomConfigMode setConfigMode language DashticzScreenSwitcher */
+/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor DashticzWidgetEditor DashticzLayoutEditor isCustomConfigMode setConfigMode language DashticzScreenSwitcher moment */
 //# sourceURL=js/components/simpleblock.js
 var DT_simpleblock = (function () {
   var simpleBlocks = {
@@ -111,6 +111,16 @@ var DT_simpleblock = (function () {
           console.log('Error loading script '+script);
         });
       else renderBlock(me, render);
+
+      if (thisBlock === simpleBlocks.miniclock) {
+        _initMiniclockFitSize(me);
+      }
+    },
+    destroy: function (me) {
+      if (me.miniclockResizeObserver) {
+        me.miniclockResizeObserver.disconnect();
+        me.miniclockResizeObserver = null;
+      }
     },
   };
 
@@ -449,7 +459,7 @@ var DT_simpleblock = (function () {
       { action: 'custom', icon: 'fa-cube', label: t.custom_devices || 'Custom devices' },
       { action: 'multidevice', icon: 'fa-layer-group', label: t.multi_device || 'Multi Device' },
       { action: 'slidebutton', icon: 'fa-sliders-h', label: t.slide_button || 'Slide button' },
-      { action: 'separator', icon: 'fa-heading', label: t.separator || 'Separator' },
+      { action: 'separator', icon: 'fa-divide', label: t.separator || 'Separator' },
     ];
     var html =
       '<div class="modal fade" id="screeneditoraddpopup" tabindex="-1" aria-hidden="true">' +
@@ -596,6 +606,117 @@ var DT_simpleblock = (function () {
       '<span class="weekday"></span> <span class="date"></span> <span>&nbsp;&nbsp;&nbsp;&nbsp;</span> <span class="clock"></span>' +
       '</div>'
     );
+  }
+
+  // Miniclock has no Size/Scale controls (it's meant to be sized purely via
+  // its block's own width/height, e.g. the compact topbar strip), but its
+  // .weekday/.date/.clock spans still render at a single fixed CSS
+  // font-size regardless of that block size - resizing the block (in a
+  // grid, or the classic column width) never made the text itself bigger
+  // or smaller. Fit it the same way the four dedicated clock widgets do.
+  function _fitMiniclockSize(me) {
+    var $mount = me.$mountPoint;
+    var $block = $mount.find('.dt_block').first();
+    if (!$block.length) return;
+    // In a grid, the outer mount point owns the live row/column dimensions
+    // (a hard, CSS-Grid-track-sized box); .dt_block only *looks* fixed
+    // (min-height: 100%, not a cap) but a grid item's automatic minimum
+    // size still grows to fit its content unless the item itself clips
+    // overflow, which .dt-grid-item doesn't. Measuring .dt_block here would
+    // read that already-inflated size back, feeding a runaway
+    // grow-remeasure-grow loop with every ResizeObserver tick. Same fix as
+    // js/components/dial.js's _dialFitSize() and the four clock widgets.
+    var inGrid = $mount.hasClass('dt-grid-item');
+    var $sizeBox = inGrid ? $mount : $block;
+    var availW = $sizeBox.outerWidth() || 0;
+    var availH = $sizeBox.outerHeight() || 0;
+    if (availW <= 0 || availH <= 0) return;
+
+    // The weekday/date/clock <span>s are inline, so their own box already
+    // reports their true rendered size - but only once they hold real text
+    // (_initMiniclockFitSize() below fills them before the first call here).
+    // Measure a nowrap clone at a reference font-size (appended inside
+    // .dt_block itself, not document.body - an absolutely positioned probe
+    // appended to body can still enlarge the document's scrollable area,
+    // which is exactly the kind of stray resize that fed the clock
+    // widgets' own runaway-growth bug).
+    var REF = 100;
+    // Snapshot the real content *before* the probe is appended - .contents()
+    // below is a live DOM query, so run after appending it would also pick
+    // up the (still-empty) probe itself as content to clone into itself.
+    var $original = $block.contents();
+    var $probe = $('<span></span>')
+      .css({
+        position: 'absolute',
+        visibility: 'hidden',
+        left: 0,
+        top: 0,
+        whiteSpace: 'nowrap',
+        fontSize: REF + 'px',
+      })
+      .appendTo($block);
+    $original.clone().appendTo($probe);
+    var measuredW = $probe.outerWidth() || 0;
+    var measuredH = $probe.outerHeight() || 0;
+    $probe.remove();
+    if (measuredW <= 0 || measuredH <= 0) return;
+
+    var fitScale = Math.min(availW / measuredW, availH / measuredH);
+    // Every theme sets .miniclock's font-size (and height) with !important
+    // (see e.g. themes/modern-dark/modern-dark.css), which jQuery's .css()
+    // cannot override - it silently no-ops, leaving the block stuck at the
+    // theme's fixed font-size no matter how the block is resized. Native
+    // setProperty() with 'important' priority is the only way to win that.
+    $block[0].style.setProperty('font-size', (REF * fitScale) + 'px', 'important');
+    $block[0].style.setProperty('height', 'auto', 'important');
+  }
+
+  function _initMiniclockFitSize(me) {
+    var $mount = me.$mountPoint;
+    // The topbar's miniclock (".dt-topbar-item") isn't a resizable grid/column
+    // block - it's a fixed strip in the fixed-height ".colbar", themed with a
+    // hard-coded "height:40px!important" that the whole bar's layout depends
+    // on. It also isn't wrapped by ".dt-grid-item", so the grid/non-grid
+    // branch below would fall back to measuring ".dt_block" itself - an
+    // elastic flex item whose size *is* the font-size we're about to set,
+    // which re-triggers the ResizeObserver into a runaway growth loop (grows
+    // past the bar on every tick, unlike the grid case, which has a hard
+    // track size to measure instead). Leave the topbar clock exactly as it
+    // was before this fit-to-block behavior existed.
+    if ($mount.hasClass('dt-topbar-item')) return;
+    var $block = $mount.find('.dt_block').first();
+    if (!$block.length) return;
+    // The spans start empty - main.js's setClockDateWeekday() ticks them
+    // every second, but not filling them here means the very first
+    // _fitMiniclockSize() call above would measure zero-width text. Fill
+    // them with the real values immediately, matching setClockDateWeekday()'s
+    // own format, the same fix js/components/basicclock.js uses.
+    $block.find('.clock').text(
+      moment()
+        .locale(settings['language'])
+        .format(settings['hide_seconds'] ? settings['shorttime'] : settings['longtime'])
+    );
+    $block.find('.date').text(
+      moment().locale(settings['language']).format(settings['longdate'])
+    );
+    $block.find('.weekday').text(
+      moment().locale(settings['language']).format(settings['weekday'])
+    );
+
+    _fitMiniclockSize(me);
+
+    // Keep the text size in sync with live editor drag-resizing (grid
+    // row/column span, classic column width) and not just after a
+    // save+reload - same ResizeObserver pattern as js/components/dial.js.
+    // Observing the *outer* mount point (rather than the inner .dt_block
+    // that _fitMiniclockSize() resizes) avoids the observer reacting to
+    // its own writes.
+    if (typeof ResizeObserver !== 'undefined' && $mount && $mount.length) {
+      me.miniclockResizeObserver = new ResizeObserver(function () {
+        _fitMiniclockSize(me);
+      });
+      me.miniclockResizeObserver.observe($mount[0]);
+    }
   }
 
   function renderClock(me) {

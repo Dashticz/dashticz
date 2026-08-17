@@ -1,5 +1,18 @@
 # Dashticz — Change log for recent update work
 
+## 3.43.0 — Widget configuration and grid editor refinements
+
+- Cleaned up Widget Config and Global Settings by removing duplicate, unused
+  and misleading controls while preserving legacy configuration keys and
+  runtime compatibility.
+- Fixed Dial configuration state, resizing and compact grid rendering without
+  changing existing device functionality.
+- Improved compact grid blocks: Separators can be two rows high, configuration
+  controls use consistent sizing, and the Garbage widget no longer shows an
+  unnecessary scrollbar.
+- Added a functional Separator icon option with a visible default icon and
+  persistent off state when the option is unchecked.
+
 ## 3.42.10 — Legacy layout compatibility for Dials, iframe and Sunrise/Sunset
 
 - Classic Bootstrap columns now size a Dial from their width (or an explicit

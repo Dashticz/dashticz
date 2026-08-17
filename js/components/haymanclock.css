@@ -25,6 +25,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
+}
+
+/* .dt_block (shared by every widget type, see creative.css) is a flex row
+   of the icon followed by .dt_content, so centering that row centers
+   icon+content as one group - shifting the clock face right of the
+   block's true horizontal center by about half the icon's width. Taking
+   the icon out of the flex flow lets .dt_content (and .clock-container
+   centered inside it below) span and center on the block's full width
+   instead of only the space left over after the icon. Pinned to the top
+   corner, not vertically centered like it was in the flex row, so it
+   doesn't sit behind the now-centered clock face. */
+.haymanclock .col-icon {
+  position: absolute;
+  left: 8px;
+  top: 8px;
+  margin-top: 0;
 }
 
 .haymanclock .clock-container {
@@ -32,28 +49,67 @@
   display: -webkit-box;
   display: flex;
   justify-content: space-evenly;
+  /* naturalW*GAP_FACTOR*fitScale (see haymanclock.js) is a width-bound
+     fit, not necessarily an exact match for .dt_content's own width - the
+     margin keeps the face centered on any leftover slack instead of
+     sitting flush left, which is a block-level element's default. */
+  margin-left: auto;
+  margin-right: auto;
 }
 .haymanclock .clock-col {
   text-align: center;
   position: relative;
   flex: 1;
 }
+/* Used only while js/components/haymanclock.js's fitSize() measures the
+   natural (unstretched) size of the day/hours/minutes/seconds row - shrinks
+   the container and its columns to their real content width instead of the
+   flex:1/space-evenly stretch used for the actual rendered clock. */
+.haymanclock .clock-container.hc-measuring {
+  display: inline-flex;
+  width: auto;
+}
+.haymanclock .clock-container.hc-measuring .clock-col {
+  flex: 0 0 auto;
+}
 .haymanclock .clock-col:not(:last-child):before,
 .haymanclock .clock-col:not(:last-child):after {
   content: '';
   background-color: rgba(255, 255, 255, 0.3);
-  height: 4%;
-  width: 4%;
+  /* em-based, not a % of the column's own width: flex:1's *automatic*
+     minimum width still lets a wider label (the 3-letter day column) claim
+     more than an even quarter of the row - by design, so its text doesn't
+     overflow - which made a %-based dot offset land at a different pixel
+     position next to that column than next to a 2-digit hour/minute/second
+     column. em (the shared .clock-container font-size) is the one thing
+     consistent across every column regardless of its own width. Sized at
+     0.3em (up from 0.15em) so the separator reads at a size proportionate
+     to the (much larger, fit-to-block) digits next to it instead of
+     looking tiny in comparison.
+     --hc-dot-right is set per column by haymanclock.js's centerDots(),
+     which measures each column's *actual* rendered glyph (not just its
+     box) - the 3-4 letter day label fills far more of its column than a
+     2-digit hour/minute/second value fills of its own equally-sized
+     column, so a plain boundary-centered dot (the -0.15em fallback, exactly
+     half this element's own width) sits closer to the day text than the
+     hour text. The other separators, between equally-wide 2-digit values,
+     land back on that same boundary-centered fallback anyway. */
+  height: 0.3em;
+  width: 0.3em;
   border-radius: 50%;
   display: block;
   position: absolute;
-  right: -3%;
+  right: var(--hc-dot-right, -0.15em);
 }
+/* .clock-col's height also includes .clock-label below the digit, so the
+   column's own vertical center (50%) sits lower than the digit's - dots
+   centered on the column looked high relative to the actual digits. Shifted
+   down to line up with the digit itself instead of the whole column. */
 .haymanclock .clock-col:not(:last-child):before {
-  top: 37%;
+  top: 46%;
 }
 .haymanclock .clock-col:not(:last-child):after {
-  top: 52%;
+  top: 61%;
 }
 .haymanclock .clock-timer:before {
   color: #fff;

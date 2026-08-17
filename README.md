@@ -278,10 +278,11 @@ it. A selected tile with configurable options has a cog button. The same full
 Widget Config popup is also opened when that widget's cog is selected from the
 Device Editor.
 
-Every widget settings popup also contains common Icon, Data, Updated and Title
-checkboxes. The **Custom fields** section accepts repeatable `Field` and
-`Setting` pairs. Use the plus button to add a row and the minus button to
-remove one. Field names are trimmed, spaces and hyphens become underscores,
+Every widget settings popup also contains common Icon and Title checkboxes.
+Existing `hide_data` and `last_update` block properties remain supported and
+are preserved when a widget is edited. The **Custom fields** section accepts
+repeatable `Field` and `Setting` pairs. Use the plus button to add a row and the
+minus button to remove one. Field names are trimmed, spaces and hyphens become underscores,
 and the first character is normalised to lowercase (`Layout` becomes
 `layout`). Names must be valid JavaScript property names, may not duplicate
 another row, and may not replace editor-managed identity properties such as

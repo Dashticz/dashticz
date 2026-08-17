@@ -56,7 +56,6 @@ $allowedSettings = [
     'boss_stationclock'      => 'string',
     'hide_seconds'           => 'bool',
     'hide_seconds_stationclock' => 'bool',
-    'clock_size'             => 'number',
     'clock_scale'            => 'number',
     // garbage
     'garbage_company'        => 'garbage_company',
@@ -87,7 +86,7 @@ $allowedSettings = [
     'calendar_maxitems'      => 'number',
     // security panel
     'security_button_icons'  => 'bool',
-    'security_panel_lock'    => 'bool',
+    'security_panel_lock'    => 'security_panel_lock',
     // traffic info
     'anwb_apikey'            => 'string',
     // google maps
@@ -165,6 +164,10 @@ if (isset($data['settings']) && is_array($data['settings'])) {
         } elseif ($type === 'waqi_layout') {
             if (in_array((string)$value, $allowedWaqiLayouts, true)) {
                 $configSettings[$key] = (string)$value;
+            }
+        } elseif ($type === 'security_panel_lock') {
+            if (in_array($value, [0, 1, 2, '0', '1', '2'], true)) {
+                $configSettings[$key] = (int)$value;
             }
         } else {
             // string: sanitize
@@ -440,12 +443,6 @@ foreach ($data['widgets'] as $entry) {
         $widget['clockType'] = $clockType;
 
         if ($clockType !== 'miniclock') {
-            if (isset($entry['size']) && $entry['size'] !== '' && is_numeric($entry['size'])) {
-                $size = (int)$entry['size'];
-                if ($size > 0 && $size <= 2000) {
-                    $widget['size'] = $size;
-                }
-            }
             if (isset($entry['scale']) && $entry['scale'] !== '' && is_numeric($entry['scale'])) {
                 $scale = (float)$entry['scale'];
                 if ($scale > 0 && $scale <= 5) {
@@ -1004,9 +1001,6 @@ function _widgetBlockProps($widget)
         case 'clock':
             $props['type'] = $widget['clockType'];
             $props['title'] = 'Klok';
-            if (isset($widget['size'])) {
-                $props['size'] = $widget['size'];
-            }
             if (isset($widget['scale'])) {
                 $props['scale'] = $widget['scale'];
             }
