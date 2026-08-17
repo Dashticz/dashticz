@@ -1526,6 +1526,44 @@ function configwriter_special_block_props($block)
         if (!empty($block['type'])) {
             $props['type'] = (string)$block['type'];
         }
+    } elseif ($kind === 'group') {
+        // js/components/group.js dispatches purely on type: 'group' - unlike
+        // the Dial checkbox's type: 'dial', this is not user-optional, so it
+        // is always written (see saveblocks.php's 'group' branch for the
+        // idx-or-devices requirement; devices/longpress/mixed - if set - are
+        // carried through custom_fields below like any other extra field).
+        $props = [
+            'width' => $width,
+            'type' => 'group',
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        if (!empty($block['last_update'])) {
+            $props['last_update'] = true;
+        }
+        if (isset($block['idx']) && $block['idx'] !== null && $block['idx'] !== '') {
+            $props['idx'] = (int)$block['idx'];
+        }
+    } elseif ($kind === 'html') {
+        // js/components/html.js dispatches on a truthy htmlfile alone - no
+        // `type` of its own. htmlfile itself is carried through custom_fields
+        // below (saveblocks.php requires and validates it for this kind).
+        $props = [
+            'width' => $width,
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        if (!empty($block['last_update'])) {
+            $props['last_update'] = true;
+        }
     } else {
         $props = [
             'idx' => (int)$block['idx'],

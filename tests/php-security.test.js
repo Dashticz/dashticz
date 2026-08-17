@@ -158,7 +158,7 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(source, /round\(\$height \/ 10\) \* 10/);
   assert.match(writer, /height/);
   /* Device Editor helper blocks are explicitly validated and whitelisted. */
-  assert.match(source, /in_array\(\$entry\['kind'\], \['dummy', 'title', 'custom'\], true\)/);
+  assert.match(source, /in_array\(\$entry\['kind'\], \['dummy', 'title', 'custom', 'group', 'html'\], true\)/);
   assert.match(source, /\^dummyblock_/);
   assert.match(source, /Existing hand-written blocktitle keys remain editable/);
   assert.match(source, /\^\[A-Za-z_\$\]/);

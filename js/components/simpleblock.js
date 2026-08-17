@@ -90,6 +90,9 @@ var DT_simpleblock = (function () {
   }
   return {
     name: 'simpleblock',
+    // Exposed so a quick-add popup's own Back button (js/deviceeditor.js)
+    // can reopen this same tile menu instead of just closing outright.
+    openAddMenu: _openScreenEditorAddMenu,
     canHandle: function (block) {
       return block && (!!simpleBlocks[block.type] || findKey(block));
     },
@@ -436,7 +439,13 @@ var DT_simpleblock = (function () {
   }
 
   function _syncScreenEditorAddButton() {
-    $('.screeneditoraddicon').toggleClass('d-none', !$('body').hasClass('dle-active'));
+    // The wand icon has no function once the Screen Editor is already
+    // active (clicking it again is a no-op) - hide it in favor of the +
+    // icon in that same topbar slot while editing, and swap back once
+    // editing closes.
+    var active = $('body').hasClass('dle-active');
+    $('.screeneditoraddicon').toggleClass('d-none', !active);
+    $('.layouteditoricon').toggleClass('d-none', active);
   }
 
   function _registerScreenEditorStateObserver() {
@@ -458,6 +467,8 @@ var DT_simpleblock = (function () {
       { action: 'widgets', icon: 'fa-puzzle-piece', label: t.title || 'Widgets' },
       { action: 'custom', icon: 'fa-cube', label: t.custom_devices || 'Custom devices' },
       { action: 'multidevice', icon: 'fa-layer-group', label: t.multi_device || 'Multi Device' },
+      { action: 'group', icon: 'fa-object-group', label: t.group_block || 'Group' },
+      { action: 'htmlblock', icon: 'fa-code', label: t.html_block || 'HTML Block' },
       { action: 'slidebutton', icon: 'fa-sliders-h', label: t.slide_button || 'Slide button' },
       { action: 'separator', icon: 'fa-divide', label: t.separator || 'Separator' },
     ];
@@ -505,6 +516,10 @@ var DT_simpleblock = (function () {
             DashticzDeviceEditor.openCustom();
           } else if (selectedAction === 'multidevice') {
             DashticzDeviceEditor.openMultiDevice();
+          } else if (selectedAction === 'group') {
+            DashticzDeviceEditor.openGroup();
+          } else if (selectedAction === 'htmlblock') {
+            DashticzDeviceEditor.openHtmlBlock();
           } else if (selectedAction === 'slidebutton') {
             DashticzDeviceEditor.openSlideButton();
           } else if (selectedAction === 'separator') {

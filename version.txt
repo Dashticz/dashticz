@@ -1,8 +1,10 @@
 {
-    "version": "3.43.2",
+    "version": "3.43.4",
     "branch": "beta",
-    "last_changes": "Clock widgets always scale to fill their block; remove the Size (px) field (Scale-only) and add a preview image to the Clock type picker",
+    "last_changes": "Fix Flip clock leaving empty space below the digits, Hayman clock's separator dots being misaligned/not scaling, and Miniclock's text not resizing with its block",
     "changelog": {
+        "3.44.1": "Move the Icon/Update/Title checkboxes to the top of every Screen Editor quick-add popup (Custom device, Multi Device, Group, HTML Block); add a matching-height Back button to every popup reachable from the add-item tile menu (the 5 quick-add popups plus Add device and Widgets); and hide the now-nonfunctional wand/Screen Editor topbar icon in favor of the + icon while editing, restoring it when editing closes",
+        "3.44.0": "Add Group and HTML Block to the Screen Editor's add-item menu, and give Multi Device's own popup the Icon/Update/Title options every other quick-add popup now shares",
         "3.43.5": "Fix Hayman clock rendering oversized and its separator dots sitting too high above the digits",
         "3.43.4": "Fix Flip clock leaving empty space below the digits, Hayman clock's separator dots being misaligned/not scaling, and Miniclock's text not resizing with its block",
         "3.43.3": "Fix Basic clock's oversized margins and make all four clock types live-resize with the grid editor, without runaway growth or Flip/Hayman rendering glitches",

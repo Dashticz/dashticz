@@ -6,6 +6,50 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.44.1 beta (17-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- The Icon/Update/Title checkbox row on every Screen Editor quick-add popup
+  (Custom device, Multi Device, Group, HTML Block) now sits at the top,
+  right below the header, matching where the equivalent Icon/Data/Update/
+  Dial/Title row already sits on the Device Config popup for an
+  already-placed block. Custom device's popup also gained this row for the
+  first time - Icon and Title were previously only settable as generic,
+  easy-to-miss Field/Setting rows, and there was no way to hide the title
+  at creation time at all.
+- Every popup reachable from the Screen Editor's add-item tile menu (Custom
+  device, Multi Device, Group, HTML Block, Slide button, Add device, and
+  Widgets) now has a **Back** button to the left of Cancel/Close, matching
+  the height of the buttons next to it, that returns to the tile menu
+  instead of just closing.
+- The wand/Screen Editor topbar icon has no function once the Screen Editor
+  is already active (clicking it again does nothing); it's now hidden in
+  favor of the **+** add-item icon in that same topbar slot while editing,
+  and swaps back once editing closes.
+
+v3.44.0 beta (17-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- Added **Group** and **HTML Block** to the Screen Editor's add-item menu,
+  built the same way as **Multi Device**: a dedicated popup for creating one,
+  and afterwards a regular, fully configurable entry in the Device Editor
+  list (draggable, resizable, removable, with its own Device Config gear
+  icon). Group wraps ``js/components/group.js`` (a client-side group/scene
+  aggregate with instant status updates and a longpress popup - not the
+  plain Domoticz Group/Scene device already offered by Add device); HTML
+  Block wraps ``js/components/html.js`` (a static ``custom/*.html`` snippet).
+  Neither offers a Dial option, since it doesn't apply to either block type.
+- Multi Device's own popup, and the new Group/HTML Block popups, now expose
+  Icon, Update and Title checkboxes directly in their own top section -
+  matching the Icon/Data/Update/Dial/Title options every already-placed
+  block gets from Device Config - instead of Multi Device silently hard
+  coding a fixed icon and title visibility with no way to change either
+  before saving.
+
 v3.43.5 beta (16-8-2026)
 -------------------------
 

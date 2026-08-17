@@ -1966,6 +1966,16 @@ body.dle-active {
   line-height: 1;
 }
 
+/* Without this, the global .fas { font-size: 30px } rule below inflates
+   the Back button's own line box (icon line-height 30px vs. the button's
+   own ~20px text line-height), making it taller than the Cancel/Save
+   buttons next to it. */
+.de-back-btn .fas,
+.we-back-btn .fas {
+  font-size: 1em !important;
+  line-height: 1;
+}
+
 .de-config-popup {
   z-index: 1070;
 }
