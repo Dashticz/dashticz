@@ -193,8 +193,6 @@
             "news": "Actualités",
             "anwb_apikey": "Clé API ANWB",
             "anwb_apikey_help": "Clé API pour les infos trafic ANWB (widget trafficinfo).",
-            "clock_size": "Taille (px)",
-            "clock_size_help": "Vide = ajusté à la tuile. Exemple : 120",
             "clock_scale": "Échelle",
             "clock_scale_help": "Facteur d’échelle relatif, ex : 0.75 (défaut 1)",
             "miniclock_note": "Miniclock n’a pas d’options d’affichage supplémentaires."
@@ -386,8 +384,6 @@
             "filter_help": "Termes séparés par des virgules, ex : Amsterdam, Utrecht.",
             "clock_type": "Type d’horloge",
             "station_clock": "Horloge de gare",
-            "size_px": "Taille (px)",
-            "size_help": "Vide = largeur de colonne",
             "scale": "Échelle",
             "scale_help": "Exemple : 0.75 (défaut 1)",
             "show_seconds": "Afficher les secondes",

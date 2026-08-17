@@ -715,9 +715,9 @@ function prepareStart() {
       })
       .then(function () {
         return $.ajax({
-          url: 'js/settings.js',
+          url: 'js/settings.js?v=' + _DASHTICZ_VERSION,
           dataType: 'script',
-          cache: false,
+          cache: true,
         });
       })
       .then(function () {

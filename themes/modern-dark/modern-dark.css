@@ -51,7 +51,6 @@
   align-items: center !important;
   justify-content: center !important;
   gap: 30px !important;
-  font-size: 80px !important;
   overflow: hidden !important;
 }
 
@@ -63,10 +62,14 @@
   flex: 0 0 auto !important;
 }
 
+/* No fixed font-size here: haymanclock.js's fitSize() sets it on
+   .clock-container to fill the block/resize live, and .clock-timer:before
+   inherits it. A fixed !important size here (as this used to have) can't
+   be overridden by that JS at all - it left the digits stuck at one size
+   regardless of how the block was resized. */
 .standby .clock-container .clock-timer:before  {
   margin: 0 !important;
   padding: 0 !important;
-  font-size: 80px !important;
   line-height: 1 !important;
   font-family: Arial, sans-serif !important;
   font-weight: bold !important;

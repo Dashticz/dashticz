@@ -643,15 +643,33 @@ test('screen editor add menu exposes device, widget, custom-device and separator
   }
 });
 
+test('Device Editor configuration cog stays centered inside its button', () => {
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  assert.match(deviceEditor, /class="btn btn-outline-secondary btn-sm de-config-btn"/);
+  assert.match(deviceEditor, /<i class="fas fa-cog" aria-hidden="true"><\/i><\/button>/);
+  assert.match(
+    styles,
+    /\.de-config-btn \{[\s\S]*?display: inline-flex;[\s\S]*?align-items: center;[\s\S]*?justify-content: center;[\s\S]*?width: 34px;[\s\S]*?height: 34px;[\s\S]*?padding: 0;/
+  );
+  assert.match(
+    styles,
+    /\.de-config-btn \.fas \{[\s\S]*?margin: 0 !important;[\s\S]*?font-size: 18px !important;[\s\S]*?line-height: 1;/
+  );
+});
+
 test('device and widget config editors share full widget config and preserve hidden device fields', () => {
   const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
   const widgetEditor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+  const saveWidgets = fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8');
   const saveBlocks = fs.readFileSync(path.join(root, 'js/saveblocks.php'), 'utf8');
   const configWriter = fs.readFileSync(path.join(root, 'js/configwriter.php'), 'utf8');
   const layoutEditor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
   const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
   const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
   const blocksSource = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+  const blockTitle = fs.readFileSync(path.join(root, 'js/components/blocktitle.js'), 'utf8');
   const simpleBlock = fs.readFileSync(path.join(root, 'js/components/simpleblock.js'), 'utf8');
   const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
 
@@ -685,8 +703,25 @@ test('device and widget config editors share full widget config and preserve hid
   assert.match(deviceEditor, /var pendingShowTitle = updated\.show_title !== false/);
   assert.match(deviceEditor, /special\.showTitle = pendingShowTitle/);
   assert.match(deviceEditor, /deviceTitleVisible\[ck\] = pendingShowTitle/);
-  assert.match(widgetEditor, /options\.hide_data !== true/);
-  assert.match(widgetEditor, /hide_data: !\$cfgModal\.find\('\[data-block-option="hide_data"\]'\)\.is\(':checked'\)/);
+  // Catalog Widget Config only exposes Icon and Title. Existing hide_data and
+  // last_update values remain hydrated, preserved and accepted by the writer;
+  // Device Config retains its separate Data/Updated controls above.
+  const widgetOptionsStart = widgetEditor.indexOf('function _widgetBlockOptionsHtml');
+  const widgetOptionsEnd = widgetEditor.indexOf('function _buildConfigModalHtml', widgetOptionsStart);
+  const widgetOptionsBody = widgetEditor.substring(widgetOptionsStart, widgetOptionsEnd);
+  assert.match(widgetOptionsBody, /\['icon', _t\('icon', 'Icon'\), options\.icon\]/);
+  assert.match(widgetOptionsBody, /\['show_title', _t\('show_title', 'Title'\), options\.show_title\]/);
+  assert.doesNotMatch(widgetOptionsBody, /data-block-option="hide_data"/);
+  assert.doesNotMatch(widgetOptionsBody, /data-block-option="last_update"/);
+  assert.match(widgetEditor, /hide_data: existingBlockOptions\.hide_data === true/);
+  assert.match(widgetEditor, /last_update: existingBlockOptions\.last_update === true/);
+  assert.match(widgetEditor, /options\.hide_data = definition\.hide_data === true/);
+  assert.match(widgetEditor, /options\.last_update = definition\.last_update === true/);
+  assert.match(widgetEditor, /entry\.hide_data = blockOptions\.hide_data === true/);
+  assert.match(widgetEditor, /entry\.last_update = blockOptions\.last_update === true/);
+  assert.match(saveWidgets, /'icon', 'hide_data', 'last_update', 'hide_title'/);
+  assert.match(saveWidgets, /if \(!empty\(\$widget\['hide_data'\]\)\)/);
+  assert.match(saveWidgets, /if \(!empty\(\$widget\['last_update'\]\)\)/);
   assert.match(deviceEditor, /de-config-options-five/);
   assert.match(styles, /\.de-config-options-three[\s\S]*grid-template-columns: repeat\(3/);
   assert.match(styles, /\.de-config-options-four[\s\S]*grid-template-columns: repeat\(4/);
@@ -729,6 +764,43 @@ test('device and widget config editors share full widget config and preserve hid
   assert.match(deviceEditor, /options\.iconValue/);
   assert.match(deviceEditor, /entry\.icon = options\.iconValue/);
   assert.match(deviceEditor, /specialEntry\.icon = specialOptions\.iconValue/);
+  // Every icon-capable Device/Widget Config gets one editable icon row. When
+  // the icon is a runtime default, merely opening/saving the popup must not
+  // freeze a state-dependent icon (such as a switch's on/off lightbulb) into
+  // CONFIG.js; it becomes explicit only after the user changes the value.
+  assert.match(deviceEditor, /function _effectiveDeviceConfigIcon\(/);
+  assert.match(deviceEditor, /field: 'icon',[\s\S]*generated: true/);
+  assert.match(deviceEditor, /data-generated-icon="true" data-initial-setting=/);
+  assert.match(deviceEditor, /generatedIcon && rawSetting === initialIcon && !options\.iconValue/);
+  assert.match(widgetEditor, /function _effectiveWidgetConfigIcon\(/);
+  assert.match(widgetEditor, /if \(!iconRow\) \{[\s\S]*generated: !options\.iconValue/);
+  assert.match(widgetEditor, /generatedIcon &&[\s\S]*!existingBlockOptions\.iconValue/);
+  assert.match(widgetEditor, /\$cfgModal\.find\('\.we-icon-field-row'\)\.toggle\(enabled\)/);
+  assert.match(deviceEditor, /removesIcon[\s\S]*\[data-option="icon"\][\s\S]*\.prop\('checked', false\)/);
+  assert.match(widgetEditor, /removesIcon[\s\S]*\[data-block-option="icon"\][\s\S]*\.prop\('checked', false\)/);
+  assert.match(deviceEditor, /class="form-select de-custom-field-name de-icon-source"/);
+  assert.match(widgetEditor, /class="form-select we-custom-field-name we-icon-source"/);
+  assert.match(deviceEditor, /lowerField === 'icon' \|\| lowerField === 'image'/);
+  assert.match(widgetEditor, /lowerField === 'icon' \|\| lowerField === 'image'/);
+  assert.match(deviceEditor, /useImage \? 'custom\/icon\.png' : t\.setting/);
+  assert.match(widgetEditor, /useImage \? 'custom\/icon\.png' : _t\('setting', 'Setting'\)/);
+  assert.match(deviceEditor, /field: 'image',[\s\S]*value: rawSetting/);
+  assert.match(widgetEditor, /field: 'image',[\s\S]*value: rawSetting/);
+  assert.match(deviceEditor, /js\/listcustomicons\.php/);
+  assert.match(widgetEditor, /js\/listcustomicons\.php/);
+  assert.match(deviceEditor, /\$\.getJSON\('js\/listcustomicons\.php'\)/);
+  assert.match(widgetEditor, /\$\.getJSON\('js\/listcustomicons\.php'\)/);
+  assert.doesNotMatch(deviceEditor, /dashticz_php_path[^\n]*listcustomicons/);
+  assert.doesNotMatch(widgetEditor, /dashticz_php_path[^\n]*listcustomicons/);
+  assert.match(deviceEditor, /class="dt-custom-image-grid"/);
+  assert.match(widgetEditor, /class="dt-custom-image-grid"/);
+  assert.match(styles, /\.dt-custom-image-grid \{[\s\S]*grid-template-columns: repeat\(6/);
+  assert.match(styles, /\.dt-custom-image-thumb \{[\s\S]*object-fit: contain/);
+  assert.match(deviceEditor, /var SEPARATOR_DEFAULT_ICON = 'fas fa-divide';/);
+  assert.match(deviceEditor, /specialEntry\.icon = titleOptions\.iconValue \|\| SEPARATOR_DEFAULT_ICON;/);
+  assert.match(deviceEditor, /kind === 'title' && typeof definition\.icon === 'undefined'[\s\S]*\? SEPARATOR_DEFAULT_ICON/);
+  assert.match(blockTitle, /defaultCfg:\s*\{[\s\S]*icon: 'fas fa-divide'/);
+  assert.match(configWriter, /if \(array_key_exists\('icon', \$block\) && \$block\['icon'\] !== null\) \{\s*\n\s*\$props\['icon'\] = \(string\)\$block\['icon'\];/);
 
   // Widget gears opened from Device Editor use the complete Widget Editor modal/save model.
   assert.match(deviceEditor, /DashticzWidgetEditor\.openConfig\(widget\.id/);
@@ -775,10 +847,65 @@ test('device and widget config editors share full widget config and preserve hid
   assert.match(settings, /themeLabels\.custom_css_active/);
   assert.match(styles, /\.settings-custom-css-notice[\s\S]*border: 2px solid #198754/);
 
-  // Screen Editor controls share one explicit button and icon size.
+  // Screen Editor controls share one explicit button size. The configuration
+  // gear is deliberately larger than the drag/remove symbols and its opaque
+  // button background prevents a block's own icon from showing through.
   assert.match(styles, /\.dle-drag-icon,[\s\S]*\.dle-config-button[\s\S]*width: 32px;[\s\S]*height: 32px;/);
   assert.match(styles, /\.dle-remove-button[\s\S]*width: 32px;[\s\S]*height: 32px;/);
+  assert.match(styles, /\.dle-config-button \{[\s\S]*color: #fff;[\s\S]*background: rgb\(13, 24, 40\);/);
+  assert.match(styles, /\.dle-config-button \.fas \{[\s\S]*font-size: 26px !important;/);
   assert.match(styles, /\.dle-remove-button \.fas[\s\S]*font-size: 16px !important/);
+});
+
+test('savewidgets accepts only exact security panel lock modes', () => {
+  const source = fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8');
+  const branchStart = source.indexOf("} elseif ($type === 'security_panel_lock') {");
+  const branchEnd = source.indexOf('} else {', branchStart);
+
+  assert.notEqual(branchStart, -1, 'security_panel_lock branch not found');
+  assert.notEqual(branchEnd, -1, 'security_panel_lock branch end not found');
+
+  const branch = source.slice(branchStart, branchEnd);
+  const whitelist = branch.match(
+    /in_array\(\$value, \[([^\]]+)\], true\)/
+  );
+  assert.ok(whitelist, 'security_panel_lock must validate the original value strictly');
+  assert.doesNotMatch(branch, /is_numeric|\(int\)\$value[\s\S]*in_array/);
+  assert.match(
+    branch,
+    /if \(in_array\(\$value, \[[^\]]+\], true\)\) \{\s*\$configSettings\[\$key\] = \(int\)\$value;/
+  );
+
+  const allowedValues = whitelist[1].split(',').map((literal) => {
+    const value = literal.trim();
+    return /^'.*'$/.test(value) ? value.slice(1, -1) : Number(value);
+  });
+  const accepts = (value) =>
+    allowedValues.some(
+      (allowed) => typeof allowed === typeof value && allowed === value
+    );
+
+  for (const value of [0, 1, 2, '0', '1', '2']) {
+    assert.equal(accepts(value), true, `expected ${String(value)} to be accepted`);
+  }
+  for (const value of [
+    -1,
+    3,
+    1.5,
+    2.9,
+    -0.5,
+    '1.5',
+    '2.9',
+    '-0.5',
+    '3',
+    'foo',
+    '',
+    null,
+    true,
+    false,
+  ]) {
+    assert.equal(accepts(value), false, `expected ${String(value)} to be rejected`);
+  }
 });
 
 test('widget editor exposes the supported catalog and keeps legacy options out of settings UI', () => {
@@ -802,12 +929,29 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
     path.join(root, 'js/savewidgets.php'),
     'utf8'
   );
+  const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+  const stationClock = fs.readFileSync(
+    path.join(root, 'js/components/stationclock.js'),
+    'utf8'
+  );
+  const flipClock = fs.readFileSync(
+    path.join(root, 'js/components/flipclock.js'),
+    'utf8'
+  );
+  const securityPanel = fs.readFileSync(
+    path.join(root, 'js/components/secpanel.js'),
+    'utf8'
+  );
   const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
   const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
   const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
   const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
   const weather = fs.readFileSync(
     path.join(root, 'js/components/weather.js'),
+    'utf8'
+  );
+  const legacyOwmWeather = fs.readFileSync(
+    path.join(root, 'js/weather_owm.js'),
     'utf8'
   );
   const garbage = fs.readFileSync(
@@ -863,8 +1007,95 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
     'news',
   ]) {
     assert.match(widgetEditor, new RegExp(`id: '${id}'`));
+  }
+  for (const id of [
+    'weather',
+    'garbage',
+    'spotify',
+    'sonarr',
+    'clock',
+    'calendar',
+    'secpanel',
+    'trafficinfo',
+    'map',
+    'longfonds',
+    'news',
+  ]) {
     assert.match(settings, new RegExp(`id: '${id}'`));
   }
+  for (const id of ['publictransport', 'alarmmeldingen', 'camera', 'moon']) {
+    assert.doesNotMatch(settings, new RegExp(`id: '${id}'`));
+  }
+  const securitySettings = settings.slice(
+    settings.indexOf("id: 'secpanel'"),
+    settings.indexOf("id: 'trafficinfo'")
+  );
+  assert.match(securitySettings, /security_panel_lock:/);
+  assert.match(securitySettings, /type: 'select'/);
+  assert.match(securitySettings, /noEmptyOption: true/);
+  assert.match(securitySettings, /security_panel_lock_disabled/);
+  assert.match(securitySettings, /security_panel_lock_away/);
+  assert.match(securitySettings, /security_panel_lock_home_away/);
+  assert.doesNotMatch(securitySettings, /security_button_icons:/);
+  const clockSettings = settings.slice(
+    settings.indexOf("id: 'clock'"),
+    settings.indexOf("id: 'calendar'")
+  );
+  assert.match(clockSettings, /boss_stationclock:/);
+  assert.match(clockSettings, /hide_seconds:/);
+  assert.match(clockSettings, /hide_seconds_stationclock:/);
+  const mapSettings = settings.slice(
+    settings.indexOf("id: 'map'"),
+    settings.indexOf("id: 'longfonds'")
+  );
+  assert.match(mapSettings, /gm_api:/);
+  assert.match(mapSettings, /gm_zoomlevel:/);
+  assert.match(mapSettings, /gm_latitude:/);
+  assert.match(mapSettings, /gm_longitude:/);
+  assert.match(blocks, /settings\['security_button_icons'\]/);
+  assert.match(blocks, /settings\['gm_zoomlevel'\]/);
+  assert.match(blocks, /settings\['gm_latitude'\]/);
+  assert.match(blocks, /settings\['gm_longitude'\]/);
+  assert.match(main, /if \(settings\['security_panel_lock'\]\)/);
+  assert.match(
+    securityPanel,
+    /secstatus == 1 && settings\['security_panel_lock'\] == 2/
+  );
+  assert.match(stationClock, /settings\['boss_stationclock'\]/);
+  assert.match(stationClock, /settings\['hide_seconds_stationclock'\]/);
+  assert.match(flipClock, /settings\['hide_seconds'\]/);
+  assert.match(savewidgets, /'security_button_icons'\s*=>\s*'bool'/);
+  assert.match(
+    savewidgets,
+    /'security_panel_lock'\s*=>\s*'security_panel_lock'/
+  );
+  assert.match(
+    savewidgets,
+    /in_array\(\$value, \[0, 1, 2, '0', '1', '2'\], true\)/
+  );
+  assert.match(savewidgets, /'idx_moonpicture'\s*=>\s*'string'/);
+  assert.match(savewidgets, /'gm_zoomlevel'\s*=>\s*'number'/);
+  assert.match(savewidgets, /'boss_stationclock'\s*=>\s*'string'/);
+  assert.match(savewidgets, /'owm_days'\s*=>\s*'bool'/);
+  assert.match(savewidgets, /'translate_windspeed'\s*=>\s*'bool'/);
+  assert.match(savewidgets, /'garbage_width'\s*=>\s*'number'/);
+  assert.match(legacyOwmWeather, /settings\['owm_days'\]/);
+  assert.match(weather, /\/\/\s*days: choose\(settings\['owm_days'\], true\)/);
+  assert.match(garbage, /width: settings\['garbage_width'\] \|\| 12/);
+  const calendarSettings = settings.slice(
+    settings.indexOf("id: 'calendar'"),
+    settings.indexOf("id: 'sonarr'")
+  );
+  assert.match(calendarSettings, /calendarurl_link/);
+  assert.match(calendarSettings, /calendarurl_link_help/);
+  assert.match(calendar, /settings\['calendarurl'\]/);
+  assert.match(calendar, /calurl\.length > 0/);
+  assert.equal(english.settings.localize.calendarurl_link, 'Full calendar link');
+  assert.match(english.settings.localize.calendarurl_link_help, /ICS source/);
+  assert.equal(
+    dutch.settings.localize.calendarurl_link,
+    'Link naar volledige kalender'
+  );
   assert.doesNotMatch(settings, /settingList\['screen'\]\['security_button_icons'\]/);
   assert.doesNotMatch(settings, /settingList\['localize'\]\['gm_api'\]/);
   assert.doesNotMatch(settings, /settingList\['other'\]\['longfonds_zipcode'\]/);
@@ -882,6 +1113,50 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(widgetEditor, /id="we-calendar-add"/);
   assert.match(widgetEditor, /class="we-calendar-row/);
   assert.match(widgetEditor, /we-cfg-clock-type/);
+  assert.doesNotMatch(widgetEditor, /_cfgField\('hide_seconds',/);
+  assert.doesNotMatch(widgetEditor, /_cfgField\('boss_stationclock',/);
+  assert.doesNotMatch(widgetEditor, /_cfgField\('hide_seconds_stationclock',/);
+  assert.doesNotMatch(
+    widgetEditor,
+    /clock:\s*\['boss_stationclock', 'hide_seconds', 'hide_seconds_stationclock'\]/
+  );
+  for (const field of [
+    'owm_days',
+    'translate_windspeed',
+    'garbage_width',
+    'security_button_icons',
+    'security_panel_lock',
+    'gm_zoomlevel',
+    'gm_latitude',
+    'gm_longitude',
+    'idx_moonpicture',
+  ]) {
+    assert.doesNotMatch(
+      widgetEditor,
+      new RegExp(`_cfgField\\('${field}',`)
+    );
+  }
+  assert.match(widgetEditor, /_cfgField\('gm_api',/);
+  assert.match(widgetEditor, /_cfgField\(\s*'showSeconds',/);
+  assert.match(widgetEditor, /_cfgField\('boss',/);
+  assert.match(widgetEditor, /_cfgField\('secondhand',/);
+  assert.doesNotMatch(widgetEditor, /boss_stationclock: _s\(/);
+  assert.doesNotMatch(widgetEditor, /hide_seconds: _n\(/);
+  assert.doesNotMatch(widgetEditor, /hide_seconds_stationclock: _n\(/);
+  // Hidden legacy/global values remain hydrated and re-submitted unchanged so
+  // editing another option cannot erase a hand-written CONFIG.js value.
+  assert.match(widgetEditor, /owm_days: _n\('owm_days'\)/);
+  assert.match(widgetEditor, /translate_windspeed: _n\('translate_windspeed', 1\)/);
+  assert.match(widgetEditor, /garbage_width: _s\('garbage_width'\)/);
+  assert.match(widgetEditor, /security_button_icons: _n\('security_button_icons'\)/);
+  assert.doesNotMatch(widgetEditor, /security_panel_lock: _n\(/);
+  assert.match(widgetEditor, /gm_zoomlevel: _s\('gm_zoomlevel'\)/);
+  assert.match(widgetEditor, /idx_moonpicture: _s\('idx_moonpicture'\)/);
+  assert.match(widgetEditor, /weather:\s*\[[\s\S]*?'owm_days'[\s\S]*?'translate_windspeed'/);
+  assert.match(widgetEditor, /garbage:\s*\[[\s\S]*?'garbage_width'/);
+  assert.match(widgetEditor, /secpanel: \['security_button_icons'\]/);
+  assert.match(widgetEditor, /map: \['gm_api', 'gm_zoomlevel', 'gm_latitude', 'gm_longitude'\]/);
+  assert.match(widgetEditor, /moon: \['idx_moonpicture'\]/);
   assert.match(widgetEditor, /id="we-camera-add"/);
   assert.match(widgetEditor, /class="we-camera-row/);
   assert.match(widgetEditor, /weather:\s*\{[\s\S]*provider:/);
@@ -1059,7 +1334,12 @@ test('Hayman clock does not depend on Moment locale internals for rendering', ()
   assert.match(source, /var now = new Date\(\)/);
   assert.match(source, /new Intl\.DateTimeFormat/);
   assert.match(source, /\.fromNow\(true\)/);
-  assert.match(source, /updateTime\(\);\s*Dashticz\.setInterval/);
+  // updateTime() is now also called once, early, before the template
+  // renders - so fitSize()'s measurement sees real day/hours/minutes/
+  // seconds digits instead of empty ones - in addition to the interval
+  // that keeps it ticking every second.
+  assert.match(source, /updateTime\(\);\s*\n\s*\n\s*\/\/ Render into \.dt_state/);
+  assert.match(source, /Dashticz\.setInterval\(me, function \(\) \{\s*\n\s*updateTime\(\);/);
   assert.doesNotMatch(source, /moment\(\)\.format\(/);
   assert.doesNotMatch(source, /_relativeTime/);
 });
@@ -1079,16 +1359,218 @@ test('clock components use public date APIs and a valid seconds setting', () => 
     'utf8'
   );
   assert.doesNotMatch(dateTime, /dayjs\.Ls/);
-  assert.match(basicClock, /maxFontSize: 42/);
-  assert.match(basicClock, /Math\.min\(fontSize, me\.block\.maxFontSize\)/);
+  // The clock face always fills the available block space; only the Scale
+  // setting adjusts it further, so no component keeps an independent
+  // px "Size" field or a hard cap unrelated to the block's own size.
+  assert.doesNotMatch(basicClock, /me\.block\.size/);
+  assert.doesNotMatch(basicClock, /maxFontSize/);
+  assert.match(basicClock, /\$block\.css\('font-size', REF \* fitScale \* scale\)/);
   assert.match(stationClock, /function clockFitSize/);
-  assert.match(stationClock, /if \(me\.block\.maxSize\)/);
+  assert.doesNotMatch(stationClock, /me\.block\.size/);
+  assert.doesNotMatch(stationClock, /me\.block\.maxSize/);
   assert.match(stationClock, /var width = clockFitSize\(me, 120\)/);
-  assert.match(flipClock, /minEmSize: 3\.5/);
-  assert.match(flipClock, /maxEmSize: 7/);
+  assert.doesNotMatch(flipClock, /me\.block\.size/);
+  assert.doesNotMatch(flipClock, /minEmSize/);
+  assert.doesNotMatch(flipClock, /maxEmSize/);
+  // The digit row is far wider than tall, so a naive min(availW, availH) -
+  // appropriate for the roughly square station/dial faces - badly
+  // under-fills availW. The natural size per --flipclock-em is computed
+  // analytically from flipclock.css's own fixed multipliers instead.
+  assert.match(flipClock, /naturalWidthPerEm/);
+  assert.match(flipClock, /naturalHeightPerEm/);
+  assert.match(
+    flipClock,
+    /Math\.min\(availW \/ naturalWidthPerEm, availH \/ naturalHeightPerEm\)/
+  );
   assert.match(flipClock, /FlipClock\(\$state, 0,/);
   assert.match(flipClock, /showSeconds: !settings\['hide_seconds'\]/);
   assert.doesNotMatch(flipClock, /showSecoonds/);
+});
+
+test('FlipClock width fix, Hayman dot alignment and Miniclock live-resize scaling', () => {
+  const flipClock = fs.readFileSync(
+    path.join(root, 'js/components/flipclock.js'),
+    'utf8'
+  );
+  const haymanCss = fs.readFileSync(
+    path.join(root, 'js/components/haymanclock.css'),
+    'utf8'
+  );
+  const simpleblock = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const haymanClock = fs.readFileSync(
+    path.join(root, 'js/components/haymanclock.js'),
+    'utf8'
+  );
+
+  // .dt_block is display:flex (fixed-width icon column + .dt_content), so
+  // the outer box's own width also counts the icon and .dt_block's own
+  // padding/border. .dt_content's width already excludes all of that and
+  // must be preferred, or the flip cards overflow past the block's edge.
+  assert.match(flipClock, /var availW =\s*\n?\s*\$content\.width\(\) \|\|/);
+  assert.doesNotMatch(flipClock, /console\.log\('FLIP_ANALYTIC'/);
+
+  // .clock-col{flex:1} has no min-width:0, so the 3-letter day-label column
+  // intentionally claims more than an even quarter of the row (its
+  // automatic minimum size) so its text doesn't overflow - a %-based dot
+  // offset therefore landed at a different pixel position next to that
+  // column than next to a 2-digit column. Dots are sized/positioned in em
+  // (the shared .clock-container font-size), consistent regardless of each
+  // column's own width.
+  assert.match(haymanCss, /\.clock-col:not\(:last-child\):before,/);
+  // Doubled from 0.15em so the separator reads at a size proportionate to
+  // the fit-to-block digits next to it, instead of looking tiny compared
+  // to them.
+  assert.match(haymanCss, /width: 0\.3em;/);
+  assert.match(haymanCss, /height: 0\.3em;/);
+  assert.match(haymanCss, /right: var\(--hc-dot-right, -0\.15em\);/);
+  assert.doesNotMatch(haymanCss, /right:\s*-3%/);
+
+  // The dots must sit lower than the column's own vertical center, since
+  // .clock-label below the digit pulls that center down away from the
+  // digit itself.
+  assert.match(haymanCss, /top: 46%;/);
+  assert.match(haymanCss, /top: 61%;/);
+  assert.doesNotMatch(haymanCss, /top:\s*37%/);
+  assert.doesNotMatch(haymanCss, /top:\s*52%/);
+
+  // The 3-4 letter day label ("Sun".."Wed") usually fills far more of its
+  // (equal-width, see GAP_FACTOR) column than a 2-digit hour/minute/second
+  // value fills of its own, so centering every dot on its plain column
+  // boundary (the CSS fallback above) left the day/hour separator sitting
+  // closer to the day text than the hour text. haymanclock.js measures
+  // each column's actual rendered glyph (cloned into a real, temporary
+  // element, since ::before pseudo-elements have no DOM node of their own
+  // to measure) and sets --hc-dot-right per column so every separator -
+  // not just day/hour - centers on the real glyph-to-glyph gap, in
+  // whatever font/locale is actually rendering it.
+  assert.match(haymanClock, /function measureGlyphWidth\(text, refStyle\)/);
+  assert.match(haymanClock, /function centerDots\(\$container, fontSizePx\)/);
+  assert.match(
+    haymanClock,
+    /cols\[i\]\.style\.setProperty\('--hc-dot-right', -0\.15 - offsetEm \+ 'em'\);/
+  );
+  assert.match(haymanClock, /centerDots\(\$container, fontSize\);/);
+
+  // Hayman's natural face is wide and short, so it's almost always
+  // width-bound; a too-small GAP_FACTOR let the digits fill that width
+  // edge-to-edge, reading as oversized with barely any room for the ':'
+  // separators. A bigger GAP_FACTOR reserves more of that same
+  // fit-to-width budget as real, visible gaps between columns instead of
+  // shrinking (and thus wasting) the whole result post-fit.
+  assert.match(haymanClock, /var GAP_FACTOR = 1\.6;/);
+  assert.doesNotMatch(haymanClock, /HAYMAN_SIZE_FACTOR/);
+
+  // .dt_block is display:flex (icon column + .dt_content side by side);
+  // .dt_content's measured width already excludes the icon column, unlike
+  // $sizeBox's (grid item/.dt_block), which still includes it.
+  assert.match(
+    haymanClock,
+    /var availW = \$content\.width\(\) \|\| \$sizeBox\.outerWidth\(\)/
+  );
+
+  // .dt_block's flex row centers icon+.dt_content as one group, shifting
+  // the clock face right of the block's true center by about half the
+  // icon's width; .clock-container also wasn't centered within
+  // .dt_content at all (a block-level child left-aligned by default). The
+  // icon is taken out of the flex flow (so .dt_content spans the block's
+  // full width) and .clock-container is explicitly centered within it, so
+  // the face is centered on the block regardless of either.
+  assert.match(haymanCss, /\.haymanclock \{[\s\S]*?position: relative;[\s\S]*?\}/);
+  assert.match(
+    haymanCss,
+    /\.haymanclock \.col-icon \{\s*\n\s*position: absolute;/
+  );
+  assert.match(
+    haymanCss,
+    /\.haymanclock \.clock-container \{[\s\S]*?margin-left: auto;\s*\n\s*margin-right: auto;/
+  );
+
+  // The custom themes' standby-only Hayman styling pinned the digits'
+  // rendered size with `font-size: 80px !important`, which cannot be
+  // overridden by haymanclock.js's fitSize() (jQuery .css() never beats an
+  // !important rule) - the standby clock stayed one fixed size no matter
+  // how its grid block was resized. Removing the fixed size lets
+  // .clock-timer:before inherit .clock-container's JS-driven font-size
+  // (via the base haymanclock.css's `font-size: 420%`) instead.
+  ['modern-dark', 'liquid-glass-blue', 'liquid-glass-grey'].forEach(function (
+    themeName
+  ) {
+    var themeCss = fs.readFileSync(
+      path.join(root, 'themes/' + themeName + '/' + themeName + '.css'),
+      'utf8'
+    );
+    assert.match(
+      themeCss,
+      /\.standby \.clock-container \.clock-timer:before\s*\{[^}]*margin: 0 !important;/
+    );
+    assert.doesNotMatch(
+      themeCss,
+      /\.standby \.clock-container[\s\S]*?font-size: 80px !important/
+    );
+  });
+
+  // Miniclock has no Size/Scale controls; its .weekday/.date/.clock spans
+  // must still scale with the block's own resize, the same way the four
+  // dedicated clock widgets do.
+  assert.match(simpleblock, /function _fitMiniclockSize\(me\)/);
+  assert.match(simpleblock, /function _initMiniclockFitSize\(me\)/);
+  assert.match(
+    simpleblock,
+    /style\.setProperty\('font-size', \(REF \* fitScale\) \+ 'px', 'important'\)/
+  );
+  assert.match(simpleblock, /me\.miniclockResizeObserver = new ResizeObserver/);
+  assert.match(
+    simpleblock,
+    /if \(me\.miniclockResizeObserver\) \{\s*\n\s*me\.miniclockResizeObserver\.disconnect\(\);/
+  );
+
+  // The topbar's miniclock (".dt-topbar-item") is a fixed 40px strip in the
+  // fixed-height .colbar, not a resizable grid/column block, and isn't
+  // wrapped by .dt-grid-item - so the live fit-to-block sizing above must
+  // not touch it, or its own elastic flex box feeds a runaway
+  // grow-remeasure-grow font-size loop that breaks the whole topbar.
+  assert.match(
+    simpleblock,
+    /function _initMiniclockFitSize\(me\) \{\s*\n\s*var \$mount = me\.\$mountPoint;\s*\n[\s\S]*?if \(\$mount\.hasClass\('dt-topbar-item'\)\) return;/
+  );
+});
+
+test('clock widgets no longer expose a px Size field, only Scale', () => {
+  const widgetEditor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const settingsSource = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const savewidgets = fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8');
+  const haymanClock = fs.readFileSync(
+    path.join(root, 'js/components/haymanclock.js'),
+    'utf8'
+  );
+  const english = JSON.parse(fs.readFileSync(path.join(root, 'lang/en_US.json'), 'utf8'));
+
+  assert.doesNotMatch(widgetEditor, /'size_px'/);
+  assert.doesNotMatch(widgetEditor, /ccfg\.size/);
+  assert.doesNotMatch(widgetEditor, /entry\.size = /);
+  assert.doesNotMatch(deviceEditor, /'size'/);
+  assert.match(deviceEditor, /_copyDefinedWidgetProperties\(entry, definition, \[\s*\n\s*'scale',/);
+  assert.doesNotMatch(settingsSource, /clock_size/);
+  assert.doesNotMatch(savewidgets, /'clock_size'/);
+  assert.doesNotMatch(savewidgets, /\$widget\['size'\]/);
+  assert.doesNotMatch(savewidgets, /\$props\['size'\]/);
+  assert.equal(typeof english.settings.widgets.clock_size, 'undefined');
+  assert.equal(typeof english.settings.widgeteditor.size_px, 'undefined');
+
+  // Hayman's container width now derives from the same fit-to-block `width`
+  // used for its font size, instead of being capped at `scale * 100%` (which
+  // made Scale > 1 a no-op and Size have no effect on the visible width).
+  assert.match(haymanClock, /me\.block\.clockwidth = Math\.floor\(width\) \+ 'px';/);
+  assert.doesNotMatch(haymanClock, /scale \* 100/);
+
+  // The Clock type dropdown shows a preview image of the selected type.
+  assert.match(widgetEditor, /id="we-cfg-clock-preview"/);
+  assert.match(widgetEditor, /function _clockPreviewSrc/);
+  assert.match(widgetEditor, /'img\/clock-' \+ type/);
 });
 
 test('clock components render into .dt_state so block.title/hide_title survive', () => {
@@ -1323,6 +1805,7 @@ test('modern dark theme is portable and documented', () => {
 
 test('settings modal uses compact Bootstrap 5 controls and aligned help icons', () => {
   const settings = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
   const simpleblock = fs.readFileSync(
     path.join(root, 'js/components/simpleblock.js'),
     'utf8'
@@ -1339,6 +1822,12 @@ test('settings modal uses compact Bootstrap 5 controls and aligned help icons', 
   assert.match(settings, /standby_background/);
   assert.doesNotMatch(settings, /standby_blocks/);
   assert.match(settings, /class="settings-brand"/);
+  assert.match(settings, /class="btn btn-secondary settings-back d-none"/);
+  assert.match(settings, /\.settings-widget-panel:not\(\.d-none\)/);
+  assert.match(settings, /showSettingsHome\(\)/);
+  assert.doesNotMatch(settings, /settings-category-back/);
+  assert.doesNotMatch(settings, /settings-widget-back/);
+  assert.match(main, /url: 'js\/settings\.js\?v=' \+ _DASHTICZ_VERSION/);
   assert.match(settings, /img\/favicon\/app-icon-192x192\.png/);
   assert.match(settings, /window\.bootstrap\.Tooltip/);
   assert.match(settings, /data-bs-trigger="click"/);
@@ -1361,6 +1850,8 @@ test('settings modal uses compact Bootstrap 5 controls and aligned help icons', 
   assert.match(styles, /color: #0b6fc2;/);
   assert.match(styles, /\.settings-tooltip[\s\S]*z-index: 10050;/);
   assert.match(styles, /\.settings-help \.fas/);
+  assert.doesNotMatch(styles, /\.settings-category-back/);
+  assert.doesNotMatch(styles, /\.settings-widget-back/);
   assert.doesNotMatch(styles, /\.material-switch/);
 });
 
@@ -1507,6 +1998,10 @@ test('topbar screen switcher supports standby and extra screens', () => {
 test('topbar and layout editor keep controls usable', () => {
   const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
   const editor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
   const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
   const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
   const simpleblock = fs.readFileSync(
@@ -1530,7 +2025,8 @@ test('topbar and layout editor keep controls usable', () => {
   // was already proven safe for miniclock, which no longer needs its own
   // separate (now-redundant) minimum.
   assert.match(editor, /var MIN_GRID_HEIGHT = 2;/);
-  assert.match(editor, /var MIN_TITLE_GRID_HEIGHT = 3;/);
+  assert.match(editor, /var MIN_TITLE_GRID_HEIGHT = 2;/);
+  assert.match(deviceEditor, /var TITLE_GRID_HEIGHT = 2;/);
   assert.doesNotMatch(editor, /MIN_MINICLOCK_GRID_HEIGHT/);
   assert.match(editor, /function _minimumGridHeight/);
   assert.match(editor, /type === 'blocktitle'\) return MIN_TITLE_GRID_HEIGHT;/);
@@ -1561,9 +2057,18 @@ test('garbage dates use the selected interface language', () => {
     path.join(root, 'js/components/garbage.js'),
     'utf8'
   );
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
 
   assert.match(garbage, /garbage\.date\.locale\(settings\['language'\]\)/);
   assert.match(garbage, /localizedDate\.format\('dddd'\)/);
+  assert.match(
+    styles,
+    /\.trash \.state\s*\{[^}]*font-size:\s*calc\(var\(--font-small\) - 2px\) !important;[^}]*margin-top:\s*-10px;/s
+  );
+  assert.match(
+    styles,
+    /> \.dt-grid-item > \.trash\s*\{[^}]*height:\s*100% !important;[^}]*min-height:\s*0 !important;[^}]*overflow:\s*hidden !important;/s
+  );
 });
 
 
@@ -2284,6 +2789,29 @@ test('Dial checkbox on a multi-value sub-device (e.g. Temp+Humidity) saves the b
   );
 });
 
+test('Device Editor keeps Dial state scoped to the active block reference', () => {
+  // A Domoticz IDX can appear more than once, including on another screen.
+  // Hydrating by the first blocks[...] entry with that IDX lets an old Dial
+  // definition contaminate a normal copy when any later device is saved.
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const lookup = deviceEditor.slice(
+    deviceEditor.indexOf('function _getConfiguredBlockForCk(ck)'),
+    deviceEditor.indexOf('function _getConfiguredWidthForCk(ck)')
+  );
+
+  assert.match(deviceEditor, /var deviceRefs\s*= \{\}/);
+  assert.match(deviceEditor, /deviceRefs\[item\.ck\] = item\.reference/);
+  assert.match(lookup, /var reference = deviceRefs\[ck\]/);
+  assert.match(
+    lookup,
+    /reference &&[\s\S]*?blocks\[reference\] &&[\s\S]*?_toCompositeKey\(blocks\[reference\]\) === ck[\s\S]*?return blocks\[reference\]/
+  );
+  assert.ok(
+    lookup.indexOf('return blocks[reference]') < lookup.indexOf('var keys = Object.keys(blocks)'),
+    'the exact active-screen block must be preferred before the IDX fallback'
+  );
+});
+
 test('Dial face/content area fills more of the dial instead of leaving roomy margins', () => {
   // .dial-container/.dial-center were 90%/85%, leaving a very visible gap
   // before the ring. `.dial.fixed .dial-center` already ships at 95% with no
@@ -2840,7 +3368,23 @@ test('Clock widgets (Basic/Station/Flip/Hayman) get a default icon and correctly
 
   assert.match(stationclock, /var \$title = \$mount\.find\('\.dt_title'\)\.first\(\);/);
   assert.match(stationclock, /var \$state = \$mount\.find\('\.dt_state'\)\.first\(\);/);
-  assert.match(stationclock, /var availH = \(\$block\.length \? \$block\.height\(\) : 0\) - titleHeight - stateMarginV;/);
+  // A grid item's own box is a hard, CSS-Grid-track-sized box; .dt_block
+  // only *looks* fixed (height: 100% !important) but a grid item's
+  // automatic minimum size still grows to fit its content unless the item
+  // itself clips overflow, which .dt-grid-item doesn't. Measuring .dt_block
+  // there would read that already-inflated height back, feeding a runaway
+  // grow-remeasure-grow loop with every ResizeObserver tick - so all four
+  // clock components measure the outer mount point instead, in grid mode
+  // (same fix as js/components/dial.js's _dialFitSize()).
+  [basicclock, flipclock, haymanclock].forEach(function (source, i) {
+    var name = ['basicclock', 'flipclock', 'haymanclock'][i];
+    assert.match(source, /me\.\$mountPoint && me\.\$mountPoint\.hasClass\('dt-grid-item'\)/, name);
+  });
+  assert.match(stationclock, /var inGrid = \$mount\.hasClass\('dt-grid-item'\);/);
+  assert.match(
+    stationclock,
+    /var availH =\s*\n\s*\(inGrid \? \$mount\.outerHeight\(\) : \$block\.length \? \$block\.height\(\) : 0\) -/
+  );
 
   // The JS-side subtraction above still isn't a hard guarantee: .dt_block's
   // own min-height: 100% (creative.css, shared by every grid block) is only

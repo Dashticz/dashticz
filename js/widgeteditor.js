@@ -3,6 +3,8 @@
 var DashticzWidgetEditor = (function () {
   'use strict';
 
+  var customImageListPromise = null;
+
   var catalog = [
     {
       id: 'weather',
@@ -359,7 +361,7 @@ var DashticzWidgetEditor = (function () {
     calendar: { icalurl: true, calendars: true, maxitems: true },
     garbage: { maxitems: true, maxdays: true },
     clock: {
-      size: true, scale: true, showSeconds: true, clockFace: true, body: true,
+      scale: true, showSeconds: true, clockFace: true, body: true,
       dial: true, hourhand: true, minutehand: true, secondhand: true, boss: true,
       minutehandbehavior: true, secondhandbehavior: true,
     },
@@ -432,6 +434,62 @@ var DashticzWidgetEditor = (function () {
     };
   }
 
+  function _fontIconClass($icon) {
+    if (!$icon || !$icon.length) return '';
+    return String($icon.attr('class') || '')
+      .split(/\s+/)
+      .filter(function (className) {
+        return /^(?:fa[brsld]?|fa-|wi(?:-|$))/.test(className);
+      })
+      .join(' ');
+  }
+
+  function _effectiveWidgetConfigIcon(item, options) {
+    if (options.iconValue) return options.iconValue;
+    var reference = widgetBlockRefs[item.id] || item.blockKey;
+    var referenceText = String(reference || '');
+    var $mount = $('[data-grid-block]').filter(function () {
+      return String($(this).attr('data-grid-block')) === referenceText;
+    }).first();
+    if (!$mount.length) {
+      $mount = $('[data-id]').filter(function () {
+        return String($(this).attr('data-id')) === referenceText;
+      }).first();
+    }
+    return _fontIconClass($mount.find('.col-icon em, .sunrise-header em').first()) ||
+      item.icon || 'fas fa-question';
+  }
+
+  function _loadCustomImages() {
+    if (customImageListPromise) return customImageListPromise;
+    customImageListPromise = $.getJSON('js/listcustomicons.php').then(function (data) {
+      return data && Array.isArray(data.images) ? data.images : [];
+    });
+    customImageListPromise.fail(function () {
+      customImageListPromise = null;
+    });
+    return customImageListPromise;
+  }
+
+  function _renderCustomImageGrid($picker, images, selectedPath) {
+    var $grid = $picker.find('.dt-custom-image-grid').empty();
+    $picker.find('.dt-custom-image-status').toggle(!images.length).text(
+      images.length ? '' : _t('no_custom_images', 'No custom images found.')
+    );
+    images.forEach(function (imagePath) {
+      var filename = String(imagePath).replace(/^custom\//, '');
+      var $button = $('<button type="button" class="dt-custom-image-option"></button>')
+        .attr('data-image-path', imagePath)
+        .attr('title', filename)
+        .toggleClass('is-selected', String(selectedPath || '') === imagePath);
+      $('<img class="dt-custom-image-thumb" loading="lazy" alt="">')
+        .attr('src', 'img/' + imagePath)
+        .appendTo($button);
+      $('<span class="dt-custom-image-name"></span>').text(filename).appendTo($button);
+      $grid.append($button);
+    });
+  }
+
   function _settingToText(value) {
     if (value !== null && typeof value === 'object') {
       try { return JSON.stringify(value); } catch (ignore) { return ''; }
@@ -444,7 +502,8 @@ var DashticzWidgetEditor = (function () {
     var legacyImplicitIcon =
       _usesExplicitEditorDefaultIcon(item) &&
       typeof definition.icon === 'undefined';
-    options.icon = !legacyImplicitIcon && definition.icon !== '';
+    options.icon = (typeof definition.image === 'string' && definition.image !== '') ||
+      (!legacyImplicitIcon && definition.icon !== '');
     options.iconValue = typeof definition.icon === 'string' && definition.icon !== ''
       ? definition.icon
       : null;
@@ -456,7 +515,9 @@ var DashticzWidgetEditor = (function () {
       setting: typeof definition.title === 'string' ? definition.title : _widgetTitle(item),
       system: true,
     }];
-    if (options.iconValue) {
+    if (typeof definition.image === 'string' && definition.image !== '') {
+      options.customFields.push({ field: 'image', setting: definition.image });
+    } else if (options.iconValue) {
       options.customFields.push({ field: 'icon', setting: options.iconValue });
     }
     if (Object.prototype.hasOwnProperty.call(definition, 'c')) {
@@ -490,6 +551,7 @@ var DashticzWidgetEditor = (function () {
       if (
         _isManagedWidgetProperty(item, property) ||
         property === 'title' ||
+        property === 'image' ||
         _isProtectedCustomWidgetProperty(property) ||
         /^_dashticz/.test(property)
       ) return;
@@ -510,17 +572,19 @@ var DashticzWidgetEditor = (function () {
     options.customFields.forEach(function (row) {
       var field = _normaliseCustomFieldName(row.field);
       if (field === 'title') titleRow = row;
-      if (field === 'icon') iconRow = row;
+      if (field === 'icon' || field === 'image') iconRow = row;
     });
     if (!titleRow) {
       titleRow = { field: 'title', setting: _widgetTitle(item), system: true };
       options.customFields.unshift(titleRow);
     }
     titleRow.system = true;
-    if (options.iconValue && !iconRow) {
+    if (!iconRow) {
+      var effectiveIcon = _effectiveWidgetConfigIcon(item, options);
       options.customFields.splice(1, 0, {
         field: 'icon',
-        setting: options.iconValue,
+        setting: effectiveIcon,
+        generated: !options.iconValue,
       });
     }
   }
@@ -777,9 +841,6 @@ var DashticzWidgetEditor = (function () {
       },
       clock: {
         clockType: 'basicclock',
-        boss_stationclock: _s('boss_stationclock', 'RedBoss'),
-        hide_seconds: _n('hide_seconds'),
-        hide_seconds_stationclock: _n('hide_seconds_stationclock'),
         size: '',
         scale: '',
         showSeconds: 1,
@@ -831,7 +892,6 @@ var DashticzWidgetEditor = (function () {
       },
       secpanel: {
         security_button_icons: _n('security_button_icons'),
-        security_panel_lock: _n('security_panel_lock'),
       },
       alarmmeldingen: {
         rss: 'https://www.alarmeringen.nl/feeds/all.rss',
@@ -1003,9 +1063,6 @@ var DashticzWidgetEditor = (function () {
           )
         ) {
           widgetConfigs.clock.clockType = definition.type;
-          if (typeof definition.size !== 'undefined' && definition.size !== null && definition.size !== '') {
-            widgetConfigs.clock.size = definition.size;
-          }
           if (typeof definition.scale !== 'undefined' && definition.scale !== null && definition.scale !== '') {
             widgetConfigs.clock.scale = definition.scale;
           }
@@ -1424,7 +1481,6 @@ var DashticzWidgetEditor = (function () {
     } else if (item.id === 'clock') {
       widgetConfigs.clock.clockType = definition.type || 'basicclock';
       [
-        'size',
         'scale',
         'showSeconds',
         'clockFace',
@@ -1966,16 +2022,33 @@ var DashticzWidgetEditor = (function () {
     row = row || { field: '', setting: '' };
     var isSystem = row.system === true;
     var field = String(row.field || '');
+    var lowerField = field.toLowerCase();
+    var isIconSource = lowerField === 'icon' || lowerField === 'image';
     var rowClass = 'we-custom-field-row input-group input-group-sm mb-2';
-    if (field.toLowerCase() === 'icon') rowClass += ' we-icon-field-row';
+    if (isIconSource) rowClass += ' we-icon-field-row';
     if (isSystem) rowClass += ' we-system-field-row';
     return (
-      '<div class="' + rowClass + '">' +
-      '<input type="text" class="form-control we-custom-field-name" placeholder="' +
-      _esc(_t('field', 'Field')) + '" value="' + _esc(field) + '"' +
-      (isSystem ? ' readonly aria-readonly="true"' : '') + '>' +
+      '<div class="' + rowClass + '"' +
+      (row.generated === true
+        ? ' data-generated-icon="true" data-initial-setting="' + _esc(row.setting || '') + '"'
+        : '') + '>' +
+      (isIconSource
+        ? '<select class="form-select we-custom-field-name we-icon-source" aria-label="' +
+          _esc(_t('field', 'Field')) + '"><option value="icon"' +
+          (lowerField === 'icon' ? ' selected' : '') + '>Icon</option><option value="image"' +
+          (lowerField === 'image' ? ' selected' : '') + '>Image</option></select>'
+        : '<input type="text" class="form-control we-custom-field-name" placeholder="' +
+          _esc(_t('field', 'Field')) + '" value="' + _esc(field) + '"' +
+          (isSystem ? ' readonly aria-readonly="true"' : '') + '>') +
       '<input type="text" class="form-control we-custom-field-setting" placeholder="' +
-      _esc(_t('setting', 'Setting')) + '" value="' + _esc(row.setting || '') + '">' +
+      _esc(lowerField === 'image' ? 'custom/icon.png' : _t('setting', 'Setting')) +
+      '" value="' + _esc(row.setting || '') + '">' +
+      (isIconSource
+        ? '<div class="dropdown-menu dt-custom-image-picker" role="dialog" aria-label="' +
+          _esc(_t('custom_images', 'Custom images')) +
+          '"><div class="dt-custom-image-status"></div>' +
+          '<div class="dt-custom-image-grid"></div></div>'
+        : '') +
       '<button type="button" class="btn btn-outline-success we-custom-field-add" title="' +
       _esc(_t('add_field', 'Add field')) + '"><i class="fas fa-plus" aria-hidden="true"></i></button>' +
       '<button type="button" class="btn btn-outline-danger we-custom-field-remove" title="' +
@@ -2001,9 +2074,6 @@ var DashticzWidgetEditor = (function () {
     html += '<div class="d-flex flex-wrap">';
     [
       ['icon', _t('icon', 'Icon'), options.icon],
-      // Data is a positive user-facing option: checked means visible.
-      ['hide_data', _t('data', 'Data'), options.hide_data !== true],
-      ['last_update', _t('updated', 'Updated'), options.last_update],
       ['show_title', _t('show_title', 'Title'), options.show_title],
     ].forEach(function (option) {
       html += '<label class="form-check form-check-inline mb-2">' +
@@ -2066,7 +2136,6 @@ var DashticzWidgetEditor = (function () {
       fields += _cfgField('owm_country', lw.owm_country || 'Country code', 'text', cfg.owm_country);
       fields += _cfgField('owm_lang', lw.owm_lang || 'Language code', 'text', cfg.owm_lang, null, lw.owm_lang_help || '');
       fields += _cfgField('owm_cnt', lw.owm_cnt || 'Number of periods', 'text', cfg.owm_cnt, null, lw.owm_cnt_help || '');
-      fields += _cfgField('owm_days', lw.owm_days || 'Daily forecast', 'checkbox', cfg.owm_days, null, lw.owm_days_help || '');
       fields += _cfgField('owm_min', lw.owm_min || 'Show minimum temperature', 'checkbox', cfg.owm_min, null, lw.owm_min_help || '');
       fields += _cfgHeading(lw.display || _t('display', 'Display'));
       fields += _cfgField('weather_show_rain', lw.show_rain || 'Show rain', 'checkbox', cfg.weather_show_rain);
@@ -2088,7 +2157,6 @@ var DashticzWidgetEditor = (function () {
       fields += _cfgHeading(lw.shared_display || _t('general_display', 'General display'));
       fields += _cfgField('use_fahrenheit', lw.use_fahrenheit || 'Use Fahrenheit', 'checkbox', cfg.use_fahrenheit);
       fields += _cfgField('use_beaufort', lw.use_beaufort || 'Use Beaufort', 'checkbox', cfg.use_beaufort);
-      fields += _cfgField('translate_windspeed', lw.translate_windspeed || 'Translate wind speed', 'checkbox', cfg.translate_windspeed, null, lw.translate_windspeed_help || '');
 
     } else if (item.id === 'calendar') {
       var ccal = _calendarWidgetConfig();
@@ -2189,20 +2257,15 @@ var DashticzWidgetEditor = (function () {
         _clockOption('flipclock', _t('flipclock', 'Flipclock'), currentClockType) +
         _clockOption('haymanclock', _t('hayman_clock', 'Hayman clock'), currentClockType) +
         _clockOption('miniclock', _t('miniclock', 'Miniclock'), currentClockType) +
-        '</select></div>';
+        '</select>' +
+        '<img class="we-clock-preview" id="we-cfg-clock-preview" src="' +
+        _clockPreviewSrc(currentClockType) + '" alt="">' +
+        '</div>';
 
       fields +=
         '<div class="we-clock-size-group"' +
         (showSizeScale ? '' : ' style="display:none"') +
         '>';
-      fields += _cfgField(
-        'size',
-        _t('size_px', 'Size (px)'),
-        'text',
-        ccfg.size,
-        null,
-        _t('size_help', 'Empty = column width')
-      );
       fields += _cfgField(
         'scale',
         _t('scale', 'Scale'),
@@ -2231,7 +2294,6 @@ var DashticzWidgetEditor = (function () {
         ccfg.clockFace || '24',
         clockFaceOpts
       );
-      fields += _cfgField('hide_seconds', ll.hide_seconds || 'Default: seconden verbergen', 'checkbox', ccfg.hide_seconds);
       fields += '</div>';
 
       fields +=
@@ -2247,8 +2309,6 @@ var DashticzWidgetEditor = (function () {
       fields += _cfgField('boss', _t('clock_boss', 'Boss'), 'select', ccfg.boss || 'RedBoss', bossOpts);
       fields += _cfgField('minutehandbehavior', _t('clock_minute_behavior', 'Minute-hand behavior'), 'select', ccfg.minutehandbehavior || 'BouncingMinuteHand', minuteBehOpts);
       fields += _cfgField('secondhandbehavior', _t('clock_second_behavior', 'Second-hand behavior'), 'select', ccfg.secondhandbehavior || 'OverhastySecondHand', secondBehOpts);
-      fields += _cfgField('boss_stationclock', ll.boss_stationclock || 'Default as-kap (config)', 'select', ccfg.boss_stationclock || 'RedBoss', bossOpts);
-      fields += _cfgField('hide_seconds_stationclock', ll.hide_seconds_stationclock || 'Default: seconden verbergen', 'checkbox', ccfg.hide_seconds_stationclock);
       fields += '</div>';
 
       fields +=
@@ -2274,7 +2334,6 @@ var DashticzWidgetEditor = (function () {
       fields += _cfgField('garbage_maxitems', lg.garbage_maxitems || 'Maximum items', 'text', gcfg.garbage_maxitems);
       fields += _cfgField('garbage_maxdays', lg.garbage_maxdays || 'Maximum days', 'text', gcfg.garbage_maxdays,
         null, lg.garbage_maxdays_help || 'Maximum number of days ahead to search. Default: 32.');
-      fields += _cfgField('garbage_width', lg.garbage_width || 'Width', 'text', gcfg.garbage_width);
       fields += _cfgHeading(_t('ical_google', 'iCal / Google'));
       fields += _cfgField('garbage_icalurl', lg.garbage_icalurl || 'iCal URL', 'text', gcfg.garbage_icalurl);
       fields += _cfgField('google_api_key', lg.google_api_key || 'Google API key', 'text', gcfg.google_api_key);
@@ -2295,12 +2354,6 @@ var DashticzWidgetEditor = (function () {
     } else if (item.id === 'spotify') {
       var spcfg = widgetConfigs.spotify || {};
       fields += _cfgField('spot_clientid', lm.spot_clientid || 'Spotify Client ID', 'text', spcfg.spot_clientid);
-
-    } else if (item.id === 'secpanel') {
-      var sec = widgetConfigs.secpanel || {};
-      var ls = lng.screen || {};
-      fields += _cfgField('security_button_icons', ls.security_button_icons || 'Iconen i.p.v. tekst', 'checkbox', sec.security_button_icons);
-      fields += _cfgField('security_panel_lock', ls.security_panel_lock || 'Security panel fullscreen', 'checkbox', sec.security_panel_lock, null, ls.security_panel_lock_help || '');
 
     } else if (item.id === 'publictransport') {
       var ptcfg = widgetConfigs.publictransport || {};
@@ -2374,9 +2427,6 @@ var DashticzWidgetEditor = (function () {
     } else if (item.id === 'map') {
       var mcfg = widgetConfigs.map || {};
       fields += _cfgField('gm_api', ll.gm_api || 'Google Maps API key', 'text', mcfg.gm_api);
-      fields += _cfgField('gm_zoomlevel', ll.gm_zoomlevel || 'Zoomniveau', 'text', mcfg.gm_zoomlevel);
-      fields += _cfgField('gm_latitude', ll.gm_latitude || 'Latitude', 'text', mcfg.gm_latitude);
-      fields += _cfgField('gm_longitude', ll.gm_longitude || 'Longitude', 'text', mcfg.gm_longitude);
 
     } else if (item.id === 'longfonds') {
       var lcfg = widgetConfigs.longfonds || {};
@@ -2389,10 +2439,6 @@ var DashticzWidgetEditor = (function () {
         xlarge: 'Extra large',
         xxl: 'XXL',
       });
-
-    } else if (item.id === 'moon') {
-      var mooncfg = widgetConfigs.moon || {};
-      fields += _cfgField('idx_moonpicture', lw.idx_moonpicture || 'IDX moonpicture', 'text', mooncfg.idx_moonpicture, null, lw.idx_moonpicture_help || '');
 
     } else if (item.id === 'news') {
       var ncfg = widgetConfigs.news || {};
@@ -2634,6 +2680,50 @@ var DashticzWidgetEditor = (function () {
       $cfgModal.find('.we-icon-field-row').toggle(enabled);
     }
 
+    function ensureIconFieldRow() {
+      if ($cfgModal.find('.we-icon-field-row').length) return;
+      var effectiveIcon = _effectiveWidgetConfigIcon(item, { iconValue: null });
+      var rowHtml = _customFieldRowHtml({
+        field: 'icon',
+        setting: effectiveIcon,
+        generated: true,
+      });
+      var $titleRow = $cfgModal.find('.we-custom-field-row').first();
+      if ($titleRow.length) $titleRow.after(rowHtml);
+      else $cfgModal.find('.we-custom-fields').prepend(rowHtml);
+    }
+
+    function closeCustomImagePickers() {
+      $cfgModal.find('.dt-custom-image-picker').removeClass('show');
+      $cfgModal.find('.we-icon-field-row').removeClass('dt-custom-image-picker-open');
+    }
+
+    function openCustomImagePicker($row) {
+      if ($row.find('.we-icon-source').val() !== 'image') {
+        closeCustomImagePickers();
+        return;
+      }
+      var $picker = $row.find('.dt-custom-image-picker');
+      var selectedPath = String($row.find('.we-custom-field-setting').val() || '');
+      closeCustomImagePickers();
+      $row.addClass('dt-custom-image-picker-open');
+      $picker.addClass('show');
+      $picker.find('.dt-custom-image-status').show().text(
+        _t('loading_images', 'Loading images…')
+      );
+      $picker.find('.dt-custom-image-grid').empty();
+      _loadCustomImages()
+        .done(function (images) {
+          _renderCustomImageGrid($picker, images, selectedPath);
+        })
+        .fail(function () {
+          $picker.find('.dt-custom-image-grid').empty();
+          $picker.find('.dt-custom-image-status').show().text(
+            _t('custom_images_error', 'Unable to load custom images.')
+          );
+        });
+    }
+
     $cfgModal.on('click', '.we-custom-field-add', function () {
       $(this).closest('.we-custom-field-row').after(_customFieldRowHtml());
       refreshCustomFieldButtons();
@@ -2642,10 +2732,45 @@ var DashticzWidgetEditor = (function () {
 
     $cfgModal.on('click', '.we-custom-field-remove', function () {
       if ($(this).prop('disabled')) return;
-      $(this).closest('.we-custom-field-row').remove();
+      var $row = $(this).closest('.we-custom-field-row');
+      var removesIcon = $row.hasClass('we-icon-field-row');
+      $row.remove();
+      if (removesIcon) {
+        $cfgModal.find('[data-block-option="icon"]').prop('checked', false);
+      }
       refreshCustomFieldButtons();
+      refreshIconFieldVisibility();
     });
-    $cfgModal.on('change', '[data-block-option="icon"]', refreshIconFieldVisibility);
+    $cfgModal.on('change', '[data-block-option="icon"]', function () {
+      if ($(this).is(':checked')) ensureIconFieldRow();
+      refreshCustomFieldButtons();
+      refreshIconFieldVisibility();
+    });
+    $cfgModal.on('change', '.we-icon-source', function () {
+      var $row = $(this).closest('.we-icon-field-row');
+      var useImage = $(this).val() === 'image';
+      var effectiveIcon = _effectiveWidgetConfigIcon(item, { iconValue: null });
+      var $setting = $row.find('.we-custom-field-setting');
+      $setting
+        .val(useImage ? '' : effectiveIcon)
+        .attr('placeholder', useImage ? 'custom/icon.png' : _t('setting', 'Setting'));
+      $row
+        .attr('data-generated-icon', useImage ? 'false' : 'true')
+        .attr('data-initial-setting', useImage ? '' : effectiveIcon);
+      closeCustomImagePickers();
+    });
+    $cfgModal.on('click focus', '.we-icon-field-row .we-custom-field-setting', function () {
+      openCustomImagePicker($(this).closest('.we-icon-field-row'));
+    });
+    $cfgModal.on('click', '.dt-custom-image-option', function () {
+      var $row = $(this).closest('.we-icon-field-row');
+      $row.find('.we-custom-field-setting').val(String($(this).attr('data-image-path') || ''));
+      closeCustomImagePickers();
+    });
+    $cfgModal.on('click', function (event) {
+      if ($(event.target).closest('.dt-custom-image-picker, .we-custom-field-setting').length) return;
+      closeCustomImagePickers();
+    });
     refreshCustomFieldButtons();
     refreshIconFieldVisibility();
 
@@ -2662,6 +2787,7 @@ var DashticzWidgetEditor = (function () {
         $(this).toggle(String($(this).data('clock-type')) === type);
       });
       $cfgModal.find('.we-clock-size-group').toggle(type !== 'miniclock');
+      $cfgModal.find('#we-cfg-clock-preview').attr('src', _clockPreviewSrc(type));
     });
 
     $cfgModal.on('click', '#we-calendar-add', function () {
@@ -2798,8 +2924,11 @@ var DashticzWidgetEditor = (function () {
       var pendingBlockOptions = {
         icon: $cfgModal.find('[data-block-option="icon"]').is(':checked'),
         iconValue: null,
-        hide_data: !$cfgModal.find('[data-block-option="hide_data"]').is(':checked'),
-        last_update: $cfgModal.find('[data-block-option="last_update"]').is(':checked'),
+        // Catalog widgets do not expose Data/Updated controls. Preserve values
+        // loaded from an existing CONFIG.js so a different widget edit cannot
+        // silently remove settings still supported elsewhere in Dashticz.
+        hide_data: existingBlockOptions.hide_data === true,
+        last_update: existingBlockOptions.last_update === true,
         show_title: $cfgModal.find('[data-block-option="show_title"]').is(':checked'),
         customFields: [],
         preservedFields: $.extend({}, existingBlockOptions.preservedFields || {}),
@@ -2833,7 +2962,7 @@ var DashticzWidgetEditor = (function () {
           pendingTitle = rawSetting;
           return;
         }
-        if (lowerField === 'icon') {
+        if (lowerField === 'icon' || lowerField === 'image') {
           if (!pendingBlockOptions.icon) {
             if ($(this).hasClass('we-icon-field-row')) return;
             valid = false;
@@ -2851,6 +2980,22 @@ var DashticzWidgetEditor = (function () {
             $(this).find('.we-custom-field-setting').trigger('focus');
             return;
           }
+          if (lowerField === 'image') {
+            pendingBlockOptions.customFields.push({
+              field: 'image',
+              setting: rawSetting,
+              value: rawSetting,
+            });
+            return;
+          }
+          var generatedIcon = $(this).attr('data-generated-icon') === 'true';
+          var initialIcon = String($(this).attr('data-initial-setting') || '');
+          if (
+            generatedIcon &&
+            rawSetting === initialIcon &&
+            !existingBlockOptions.iconValue &&
+            !_usesExplicitEditorDefaultIcon(item)
+          ) return;
           hasIconField = true;
           pendingIconValue = rawSetting;
           return;
@@ -3189,6 +3334,12 @@ var DashticzWidgetEditor = (function () {
     );
   }
 
+  function _clockPreviewSrc(clockType) {
+    var known = ['basicclock', 'stationclock', 'flipclock', 'haymanclock', 'miniclock'];
+    var type = known.indexOf(clockType) > -1 ? clockType : 'basicclock';
+    return 'img/clock-' + type + '.jpg';
+  }
+
   function _ptOption(value, label, currentProvider) {
     return (
       '<option value="' +
@@ -3263,7 +3414,6 @@ var DashticzWidgetEditor = (function () {
         'wu_city', 'wu_name', 'wu_country', 'use_fahrenheit', 'use_beaufort',
         'translate_windspeed',
       ],
-      clock: ['boss_stationclock', 'hide_seconds', 'hide_seconds_stationclock'],
       garbage: [
         'garbage_company', 'garbage_icalurl', 'google_api_key', 'garbage_calendar_id',
         'garbage_zipcode', 'garbage_street', 'garbage_housenumber',
@@ -3274,7 +3424,7 @@ var DashticzWidgetEditor = (function () {
       sonarr: ['sonarr_url', 'sonarr_apikey', 'sonarr_maxitems'],
       spotify: ['spot_clientid'],
       calendar: ['calendarformat', 'calendarlanguage', 'calendar_maxitems'],
-      secpanel: ['security_button_icons', 'security_panel_lock'],
+      secpanel: ['security_button_icons'],
       trafficinfo: ['anwb_apikey'],
       map: ['gm_api', 'gm_zoomlevel', 'gm_latitude', 'gm_longitude'],
       longfonds: ['waqi_city', 'waqi_layout'],
@@ -3372,7 +3522,6 @@ var DashticzWidgetEditor = (function () {
       entry.clockType = clockType;
       var ccfg = widgetConfigs.clock || {};
       if (clockType !== 'miniclock') {
-        if (ccfg.size !== '' && ccfg.size !== null && typeof ccfg.size !== 'undefined') entry.size = ccfg.size;
         if (ccfg.scale !== '' && ccfg.scale !== null && typeof ccfg.scale !== 'undefined') entry.scale = ccfg.scale;
       }
       if (clockType === 'flipclock') {

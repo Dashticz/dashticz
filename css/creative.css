@@ -245,6 +245,15 @@
   height: 100%;
 }
 
+/* Garbage rows must stay inside their assigned grid cell. The number of rows
+   is configurable, so a deliberately small tile clips surplus rows instead
+   of creating an outer grid-item scrollbar. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .trash {
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
 .dt-grid-screen > .dt-grid-layout > .dt-grid-overlap {
   outline: 1px dashed rgba(255, 165, 0, 0.8);
   outline-offset: -1px;
@@ -696,15 +705,6 @@ next css sets the default height of the frame popup
   margin: 0 0 14px;
   color: #495057;
   font-size: 14px;
-}
-
-.settings-category-back,
-.settings-widget-back {
-  background: #d9f2d9;
-  border-color: #b7dfb7;
-  color: #2f5f2f;
-  margin-left: auto;
-  flex-shrink: 0;
 }
 
 .config-mode-switch {
@@ -1640,6 +1640,8 @@ body.dle-active {
 
 .dle-config-button {
   border: 1px solid rgba(255, 255, 255, 0.45);
+  color: #fff;
+  background: rgb(13, 24, 40);
   cursor: pointer;
 }
 
@@ -1651,12 +1653,20 @@ body.dle-active {
 }
 
 .dle-drag-icon .fas,
-.dle-config-button .fas,
 .dle-remove-button .fas {
   display: inline-block;
   width: 1em;
   margin: 0 !important;
   font-size: 16px !important;
+  line-height: 1 !important;
+  text-align: center;
+}
+
+.dle-config-button .fas {
+  display: inline-block;
+  width: 1em;
+  margin: 0 !important;
+  font-size: 26px !important;
   line-height: 1 !important;
   text-align: center;
 }
@@ -1939,9 +1949,21 @@ body.dle-active {
 }
 
 .de-config-btn {
+  box-sizing: border-box;
+  display: inline-flex;
   flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
   width: 34px;
   height: 34px;
+  padding: 0;
+  line-height: 1;
+}
+
+.de-config-btn .fas {
+  margin: 0 !important;
+  font-size: 18px !important;
+  line-height: 1;
 }
 
 .de-config-popup {
@@ -2015,6 +2037,78 @@ body.dle-active {
   min-width: 0;
 }
 
+.de-icon-field-row,
+.we-icon-field-row {
+  position: relative;
+}
+
+.de-icon-field-row.dt-custom-image-picker-open,
+.we-icon-field-row.dt-custom-image-picker-open {
+  z-index: 4;
+}
+
+.dt-custom-image-picker {
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  z-index: 1080;
+  max-height: min(360px, 50vh);
+  padding: 10px;
+  overflow-y: auto;
+  color: var(--bs-body-color, #212529);
+  background: var(--bs-body-bg, #fff);
+}
+
+.dt-custom-image-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.dt-custom-image-status {
+  padding: 12px;
+  text-align: center;
+}
+
+.dt-custom-image-option {
+  display: flex;
+  min-width: 0;
+  padding: 6px;
+  overflow: hidden;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 4px;
+  color: inherit;
+  background: var(--bs-tertiary-bg, #f8f9fa);
+  cursor: pointer;
+}
+
+.dt-custom-image-option:hover,
+.dt-custom-image-option:focus,
+.dt-custom-image-option.is-selected {
+  border-color: var(--bs-primary, #0d6efd);
+  box-shadow: 0 0 0 2px rgb(13 110 253 / 20%);
+  outline: 0;
+}
+
+.dt-custom-image-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.dt-custom-image-name {
+  width: 100%;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .de-config-message {
   min-height: 1.5rem;
   margin-top: 8px;
@@ -2049,6 +2143,16 @@ body.dle-active {
   .we-custom-field-row .we-custom-field-name,
   .we-custom-field-row .we-custom-field-setting {
     flex: 1 1 calc(50% - 4px);
+  }
+
+  .dt-custom-image-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 576px) and (max-width: 767.98px) {
+  .dt-custom-image-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
@@ -2303,6 +2407,18 @@ body.dle-active {
 .we-widget-field {
   position: relative;
   z-index: 2;
+}
+
+.we-clock-preview {
+  display: block;
+  width: 100%;
+  max-width: 240px;
+  height: 90px;
+  margin-top: 8px;
+  object-fit: contain;
+  background: var(--bs-tertiary-bg, #f8f9fa);
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: 4px;
 }
 
 .we-widget-field.form-check-input {
@@ -6216,6 +6332,11 @@ canvas {
 /*end colorpicker*/
 
 /*garbage*/
+.trash .state {
+    font-size: calc(var(--font-small) - 2px) !important;
+    margin-top: -10px;
+}
+
 .trashsep {
     width: 10px;
     text-align: center;

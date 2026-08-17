@@ -7,6 +7,7 @@ var DT_blocktitle = {
   },
   defaultCfg: {
     containerClass: 'titlegroups',
+    icon: 'fas fa-divide',
   },
 };
 

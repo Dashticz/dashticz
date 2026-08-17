@@ -15,7 +15,7 @@ var DashticzLayoutEditor = (function () {
   // simply gets its existing internal scrollbar (.dt-grid-item's own
   // `overflow: auto`), the same as picking any other too-small height.
   var MIN_GRID_HEIGHT = 2;
-  var MIN_TITLE_GRID_HEIGHT = 3;
+  var MIN_TITLE_GRID_HEIGHT = 2;
   var active = false;
   var items = [];
   var itemById = {};
@@ -53,9 +53,8 @@ var DashticzLayoutEditor = (function () {
       item && item.definition
         ? String(item.definition.type || '').toLowerCase()
         : '';
-    // blocktitle needs a bit more room than the general floor to keep its
-    // own title text readable; every other block (miniclock included) uses
-    // the general MIN_GRID_HEIGHT floor.
+    // Keep the title-specific constant so its limit remains explicit, even
+    // though separators now use the same two-row floor as other blocks.
     if (type === 'blocktitle') return MIN_TITLE_GRID_HEIGHT;
     return MIN_GRID_HEIGHT;
   }
