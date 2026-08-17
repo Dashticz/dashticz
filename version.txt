@@ -1,8 +1,10 @@
 {
-    "version": "3.43.4",
+    "version": "3.44.2",
     "branch": "beta",
-    "last_changes": "Fix Flip clock leaving empty space below the digits, Hayman clock's separator dots being misaligned/not scaling, and Miniclock's text not resizing with its block",
+    "last_changes": "Fix the Layout Editor's per-tile gear icon surfacing the full Device Editor instead of returning to the grid; its Device Config popup now saves the block directly (blocksOnly) and leaves layout/grid position data untouched",
     "changelog": {
+        "3.45.0": "Give every Screen Editor quick-add popup (Custom device, Multi Device, Group, HTML Block, Slide button) the same Icon/Image row as Device and Widget Config, with a Display options heading to match; a picked custom image now saves as a proper image custom field instead of being forced through the icon slot; fix a Separator with a custom image also rendering its old default icon next to it; fix a Slide button's custom image overflowing its icon column and overlapping the title in the Modern Dark/Liquid Glass themes, and right-align Slide button titles; the Device Config popup title now shows the device's IDX in brackets for unambiguous identification",
+        "3.44.2": "Fix the Layout Editor's per-tile gear icon surfacing the full Device Editor instead of returning to the grid; its Device Config popup now saves the block directly (blocksOnly) and leaves layout/grid position data untouched",
         "3.44.1": "Move the Icon/Update/Title checkboxes to the top of every Screen Editor quick-add popup (Custom device, Multi Device, Group, HTML Block); add a matching-height Back button to every popup reachable from the add-item tile menu (the 5 quick-add popups plus Add device and Widgets); and hide the now-nonfunctional wand/Screen Editor topbar icon in favor of the + icon while editing, restoring it when editing closes",
         "3.44.0": "Add Group and HTML Block to the Screen Editor's add-item menu, and give Multi Device's own popup the Icon/Update/Title options every other quick-add popup now shares",
         "3.43.5": "Fix Hayman clock rendering oversized and its separator dots sitting too high above the digits",

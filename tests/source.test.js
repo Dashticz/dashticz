@@ -461,9 +461,10 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(editor, /dle-remove-button/);
   assert.match(editor, /dle-config-button/);
   assert.match(editor, /function _openItemConfig/);
-  assert.match(editor, /DashticzDeviceEditor\.openConfig\(item\.reference\)/);
+  assert.match(editor, /DashticzDeviceEditor\.openLayoutConfig\(item\.reference\)/);
   assert.match(editor, /DashticzWidgetEditor\.openLayoutConfig\(item\.widgetId\)/);
   assert.match(deviceEditor, /function openConfig\(reference\)/);
+  assert.match(deviceEditor, /function openLayoutConfig\(reference\)/);
   assert.match(
     domoticzBlock,
     /document\.body\.classList\.contains\('dle-active'\)\) return;/
@@ -797,7 +798,12 @@ test('device and widget config editors share full widget config and preserve hid
   assert.match(styles, /\.dt-custom-image-grid \{[\s\S]*grid-template-columns: repeat\(6/);
   assert.match(styles, /\.dt-custom-image-thumb \{[\s\S]*object-fit: contain/);
   assert.match(deviceEditor, /var SEPARATOR_DEFAULT_ICON = 'fas fa-divide';/);
-  assert.match(deviceEditor, /specialEntry\.icon = titleOptions\.iconValue \|\| SEPARATOR_DEFAULT_ICON;/);
+  // A separator's default icon only fills in when neither an explicit icon
+  // nor a custom image is configured - getColIcon() (js/dashticz.js) draws
+  // an icon and an image side by side rather than one replacing the other,
+  // so falling back to the default icon while an image is set would show both.
+  assert.match(deviceEditor, /else if \(titleOptions\.iconValue\) \{\s*\n\s*specialEntry\.icon = titleOptions\.iconValue;\s*\n\s*\} else if \(!specialCustomFields\.image\) \{/);
+  assert.match(deviceEditor, /specialEntry\.icon = SEPARATOR_DEFAULT_ICON;/);
   assert.match(deviceEditor, /kind === 'title' && typeof definition\.icon === 'undefined'[\s\S]*\? SEPARATOR_DEFAULT_ICON/);
   assert.match(blockTitle, /defaultCfg:\s*\{[\s\S]*icon: 'fas fa-divide'/);
   assert.match(configWriter, /if \(array_key_exists\('icon', \$block\) && \$block\['icon'\] !== null\) \{\s*\n\s*\$props\['icon'\] = \(string\)\$block\['icon'\];/);
@@ -813,6 +819,11 @@ test('device and widget config editors share full widget config and preserve hid
   assert.match(widgetEditor, /_t\('widget_config', 'Widget Config'\)/);
   assert.match(widgetEditor, /_widgetConfigDisplayName\(item\)/);
   assert.match(deviceEditor, /_esc\(t\.device_config\) \+ ' — ' \+ _esc\(displayName\)/);
+  // Device Config popup title shows the device's IDX in brackets for identification.
+  assert.match(deviceEditor, /var idxLabel = '';\s*\n\s*if \(!isSpecial && ck\) \{/);
+  assert.match(deviceEditor, /\} else if \(isSpecial && \(isCustom \|\| isGroupBlock\) && special\.idx\) \{\s*\n\s*idxLabel = String\(special\.idx\);/);
+  assert.match(deviceEditor, /\(idxLabel \? ' <span class="de-config-idx-label">\[' \+ _esc\(idxLabel\) \+ '\]<\/span>' : ''\)/);
+  assert.match(styles, /\.de-config-idx-label \{/);
 
   // Existing typed Field/Setting support remains in both editors and server validation stays active.
   assert.match(widgetEditor, /we-custom-field-name/);
@@ -839,7 +850,7 @@ test('device and widget config editors share full widget config and preserve hid
   // Existing and newly added separators use the same configuration control.
   assert.match(layoutEditor, /kind: 'separator'/);
   assert.match(layoutEditor, /item\.kind === 'separator'/);
-  assert.match(layoutEditor, /DashticzDeviceEditor\.openConfig\(item\.reference\)/);
+  assert.match(layoutEditor, /DashticzDeviceEditor\.openLayoutConfig\(item\.reference\)/);
 
   // Any successfully loaded custom stylesheet is identified in the Theme panel.
   assert.match(main, /data-dashticz-custom-css/);
