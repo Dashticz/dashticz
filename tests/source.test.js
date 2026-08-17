@@ -804,6 +804,15 @@ test('device and widget config editors share full widget config and preserve hid
   // so falling back to the default icon while an image is set would show both.
   assert.match(deviceEditor, /else if \(titleOptions\.iconValue\) \{\s*\n\s*specialEntry\.icon = titleOptions\.iconValue;\s*\n\s*\} else if \(!specialCustomFields\.image\) \{/);
   assert.match(deviceEditor, /specialEntry\.icon = SEPARATOR_DEFAULT_ICON;/);
+  assert.match(deviceEditor, /var hasConfiguredImage =[\s\S]*typeof definition\.image === 'string'/);
+  assert.match(deviceEditor, /iconValue: hasConfiguredImage\s*\n\s*\? null/);
+  // Legacy separators may already have both an explicit icon and image. The
+  // runtime must make Image authoritative immediately, without waiting for a
+  // round-trip through Device Config to clean CONFIG.js.
+  assert.match(
+    dashticz,
+    /special\.name === 'blocktitle' && cfg\.image[\s\S]*cfg\.icon = '';/
+  );
   assert.match(deviceEditor, /kind === 'title' && typeof definition\.icon === 'undefined'[\s\S]*\? SEPARATOR_DEFAULT_ICON/);
   assert.match(blockTitle, /defaultCfg:\s*\{[\s\S]*icon: 'fas fa-divide'/);
   assert.match(configWriter, /if \(array_key_exists\('icon', \$block\) && \$block\['icon'\] !== null\) \{\s*\n\s*\$props\['icon'\] = \(string\)\$block\['icon'\];/);
