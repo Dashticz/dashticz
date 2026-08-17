@@ -1234,9 +1234,9 @@ var DashticzLayoutEditor = (function () {
       DT_function.loadDTScript('js/deviceeditor.js').then(function () {
         if (
           typeof DashticzDeviceEditor !== 'undefined' &&
-          typeof DashticzDeviceEditor.openConfig === 'function'
+          typeof DashticzDeviceEditor.openLayoutConfig === 'function'
         ) {
-          DashticzDeviceEditor.openConfig(item.reference);
+          DashticzDeviceEditor.openLayoutConfig(item.reference);
         }
       });
       return;
