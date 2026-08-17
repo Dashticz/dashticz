@@ -2823,6 +2823,30 @@ test('Device Editor keeps Dial state scoped to the active block reference', () =
   );
 });
 
+test('ordinary device tiles follow their saved grid row height without an outer scrollbar', () => {
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const modernDark = fs.readFileSync(
+    path.join(root, 'themes/modern-dark/modern-dark.css'),
+    'utf8'
+  );
+
+  // modern-dark deliberately gives regular Domoticz (.mh) blocks a 120px
+  // default outside the grid. A 4-row grid tile is only 80px at the default
+  // row height, so the grid-specific rule must override that fixed height.
+  assert.match(
+    modernDark,
+    /\.mh \{[^}]*height: var\(--height-block-default\) !important;/s
+  );
+  assert.match(
+    styles,
+    /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.dt_block,\s*\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.mh \{[^}]*height: 100% !important;[^}]*min-height: 0 !important;/s
+  );
+  assert.match(
+    styles,
+    /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item \{[^}]*overflow: auto;/s
+  );
+});
+
 test('Dial face/content area fills more of the dial instead of leaving roomy margins', () => {
   // .dial-container/.dial-center were 90%/85%, leaving a very visible gap
   // before the ring. `.dial.fixed .dial-center` already ships at 95% with no

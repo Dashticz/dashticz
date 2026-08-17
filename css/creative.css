@@ -104,7 +104,12 @@
 .dt-grid-screen > .dt-grid-layout > .dt-grid-item > .dt_block,
 .dt-grid-screen > .dt-grid-layout > .dt-grid-item > .mh {
   box-sizing: border-box;
-  min-height: 100%;
+  /* The saved grid row span owns the tile height. Themes such as modern-dark
+     give ordinary .mh device blocks a fixed 120px height; leaving that active
+     inside a shorter grid cell makes the grid item show an outer scrollbar,
+     even when the device content itself easily fits. */
+  height: 100% !important;
+  min-height: 0 !important;
 }
 
 /* Multi-camera grid blocks (js/components/camera.js run()) mount one
