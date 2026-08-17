@@ -323,6 +323,21 @@
   height: auto !important;
 }
 
+/* A Slide button's custom image icon otherwise inherits the generic 65px
+   .col-icon img size above, which overflows the fixed-width .col-icon
+   column and overlaps the title text next to it - the same oversizing
+   .titlegroups (Separator) is already scoped down for above. Right-align
+   the title too, so it reads away from the icon instead of butting up
+   against it. */
+.slide .col-icon img.icon {
+  max-width: 34px !important;
+  height: auto !important;
+}
+
+.slide .dt_title {
+  text-align: right !important;
+}
+
 .trash .state {
   text-align: right !important;
 }
@@ -337,7 +352,8 @@
 }
 
 @media (max-width: 767.98px) {
-  .titlegroups .col-icon img.icon {
+  .titlegroups .col-icon img.icon,
+  .slide .col-icon img.icon {
     max-width: 15px !important;
   }
 }

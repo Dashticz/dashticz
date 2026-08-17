@@ -6,6 +6,62 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.45.0 beta (17-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- Every Screen Editor quick-add popup (Custom device, Multi Device, Group,
+  HTML Block, Slide button) now renders its Icon field with the same
+  Icon/Image row Device Config and Widget Config already use, instead of a
+  plain text input: a source dropdown to switch between a Font Awesome
+  class and a custom image, and - once Image is selected - the same
+  picker grid of files from ``img/custom/``. Multi Device and Slide button
+  previously had no way to point at a custom image at all; picking one
+  through Custom device, Group or HTML Block's old plain icon field would
+  have silently saved the path as an ``icon`` value instead of an
+  ``image`` one.
+- Added the same **Display options** heading above the Icon/Update/Title
+  checkboxes that Widget Config already has, on both every quick-add popup
+  and Device Config, so the three popup families read as one consistent
+  design instead of two of them being unlabelled.
+- The Device Config popup title now shows the device's IDX in brackets
+  after its name (e.g. ``Device Config — Power [43]``), covering plain
+  devices, sub-devices, Domoticz groups/scenes and Custom/Multi/Group
+  specials, so a device stays identifiable even when several rows share
+  the same (possibly hand-edited) title. Specials with no IDX of their own
+  (Separator, HTML Block, Slide button) omit the bracket.
+
+* **Fixes**
+
+- Fixed a Separator/title block configured with a custom image also
+  rendering its old default divide icon next to it - the block-saving code
+  fell back to a default icon whenever the Icon option was on, even when
+  the user had switched to Image and had no icon value to fall back from.
+  The renderer draws an icon and an image side by side rather than one
+  replacing the other, so both showed up together.
+- Fixed a Slide button's custom image overflowing its fixed-width icon
+  column and overlapping the title text next to it, in the Modern Dark and
+  both Liquid Glass themes: their generic 65px image size (meant for
+  regular device tiles) had no Slide-button-specific exception the way the
+  Separator block already had one. Also right-aligned Slide button titles
+  so they read away from the icon.
+
+v3.44.2 beta (17-8-2026)
+-------------------------
+
+* **Fixes**
+
+- Fixed the Layout Editor's per-tile gear icon: configuring a device or
+  separator directly from the grid (not via the add-item tile menu) built
+  and silently surfaced the full Device Editor once its Device Config popup
+  closed, instead of returning to the grid the user was actually editing -
+  closing that unexpected Device Editor then exited the whole editing
+  session. The gear icon's popup now saves the confirmed change by itself
+  (``saveblocks.php`` with ``blocksOnly``) and simply closes, leaving the
+  Layout Editor open and untouched underneath the whole time, the same way
+  a widget tile's gear icon already worked.
+
 v3.44.1 beta (17-8-2026)
 -------------------------
 

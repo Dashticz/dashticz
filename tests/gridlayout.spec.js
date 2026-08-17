@@ -776,7 +776,7 @@ var standby_screen = {
     );
   });
 
-  test('Device Editor preserves grid positions and custom blocks', async ({
+  test('Layout Editor device config popup preserves grid positions and custom blocks', async ({
     page,
   }) => {
     let gridRequest = null;
@@ -916,21 +916,17 @@ screens[1] = {
     await page.locator('.de-custom-field-name').nth(2).fill('Classes');
     await page.locator('.de-custom-field-setting').nth(2).fill('["wide"]');
     await page.locator('#de-config-ok').click();
-    await expect(page.locator('#deviceeditorpopup')).toBeVisible();
-    await page
-      .locator('[data-order-key="special:grid_text"] .de-title-toggle')
-      .uncheck();
-    await page
-      .locator('[data-order-key="special:grid_text"] .de-text-alignment')
-      .selectOption('right');
-    await page.locator('#de-save-btn').evaluate((button) => {
-      button.disabled = false;
-    });
-    await page.locator('#de-save-btn').click();
+
+    // openLayoutConfig() persists this one popup's confirmed change by itself
+    // (blocksOnly) and never builds the full Device Editor as a detour - the
+    // Layout Editor this popup was opened from stays open, untouched,
+    // underneath it the whole time.
+    await expect(page.locator('#de-config-popup')).toBeHidden();
+    await expect(page.locator('#deviceeditorpopup')).toHaveCount(0);
+    await expect(page.locator('body')).toHaveClass(/dle-active/);
+    await expect(separatorOverlay.locator('.dle-config-button')).toHaveCount(1);
 
     await expect.poll(() => blocksRequest).not.toBeNull();
-    await expect.poll(() => widgetsRequest).not.toBeNull();
-    await expect.poll(() => gridRequest).not.toBeNull();
     expect(blocksRequest.devices).toEqual([
       {
         idx: 's5',
@@ -959,12 +955,15 @@ screens[1] = {
         },
       },
     ]);
+    // Confirming a single device's config from the Layout Editor must never
+    // touch anything layout-related: no widgets save, no grid/column layout
+    // save, no custom.css rewrite. Grid positions for both blocks - including
+    // the untouched 's5' device - are left exactly as the Layout Editor still
+    // holds them, not re-derived from a stale pre-edit snapshot.
+    expect(widgetsRequest).toBeNull();
+    expect(gridRequest).toBeNull();
     expect(columnSaves).toBe(0);
     expect(customCssWrites).toBe(0);
-    expect(gridRequest.items).toEqual([
-      { ref: 's5', grid: { x: 2, y: 2, w: 6, h: 4 } },
-      { ref: 'grid_text', grid: { x: 10, y: 5, w: 8, h: 2 } },
-    ]);
   });
 
   test('Device Editor opens full Widget Config and preserves typed widget fields', async ({
