@@ -1988,6 +1988,12 @@ body.dle-active {
   max-width: 560px;
 }
 
+.de-config-idx-label {
+  font-weight: 400;
+  font-size: 0.85em;
+  color: #adb5bd;
+}
+
 .de-config-options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
