@@ -241,6 +241,38 @@ var DashticzWidgetEditor = (function () {
     return _widgetEditorLanguage()[key] || fallback;
   }
 
+  /* Back button for the widget picker modal, left of Close/Save - reopens
+     the Screen Editor's Add items tile menu instead of just closing.
+     Matches js/deviceeditor.js's own _backButtonHtml()/_wireBackButton(). */
+  function _backButtonHtml() {
+    var backLabel = (typeof language !== 'undefined' && language.settings && language.settings.back) || 'Back';
+    return '<button type="button" class="btn btn-secondary we-back-btn">' +
+      '<i class="fas fa-arrow-left me-1" aria-hidden="true"></i>' + backLabel + '</button>';
+  }
+
+  /* Tracks the click in a closure variable rather than $popup.data(), since
+     a $(this).remove() cleanup handler racing ahead of this one would clear
+     data stored on the element (jQuery's documented behavior for .remove())
+     depending on handler registration order. */
+  function _wireBackButton(popupId) {
+    var popup = document.getElementById(popupId);
+    var $popup = $(popup);
+    var backRequested = false;
+    $popup.on('click', '.we-back-btn', function () {
+      backRequested = true;
+      window.bootstrap.Modal.getInstance(popup).hide();
+    });
+    $popup.one('hidden.bs.modal', function () {
+      if (
+        backRequested &&
+        typeof DT_simpleblock !== 'undefined' &&
+        typeof DT_simpleblock.openAddMenu === 'function'
+      ) {
+        DT_simpleblock.openAddMenu();
+      }
+    });
+  }
+
   function _widgetTitle(item) {
     return _t(item.id + '_title', item.title);
   }
@@ -1739,6 +1771,7 @@ var DashticzWidgetEditor = (function () {
     html +=
       '</div><div class="we-message" role="status"></div></div>' +
       '<div class="modal-footer">' +
+      _backButtonHtml() +
       '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
       _t('close', 'Close') +
       '</button>' +
@@ -1749,6 +1782,7 @@ var DashticzWidgetEditor = (function () {
 
     $('body').append(html);
     _attachHandlers();
+    _wireBackButton('widgeteditorpopup');
     window.bootstrap.Modal.getOrCreateInstance(
       document.getElementById('widgeteditorpopup')
     ).show();

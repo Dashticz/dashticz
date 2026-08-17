@@ -25,6 +25,11 @@ var DashticzDeviceEditor = (function () {
   var widgetTitleVisible = {}; // widget order key -> title shown/hidden
   var pendingWidgetSettings = {}; // full Widget Config settings edited from Device Editor
   var editorMode     = 'devices'; // devices, dummy or title
+  // Only true when open() (the Add items tile menu's "Add device" tile) is
+  // the current opener - openConfig()/openSpecial() build the same modal
+  // from a different entry point (a tile's own gear icon, no tile menu to
+  // return to), so their Back button must stay off.
+  var openedFromAddMenu = false;
   var gridMode       = false;
   var gridConfig     = null;
   var gridPositions  = {};   // order key -> {x,y,w,h}
@@ -84,6 +89,7 @@ var DashticzDeviceEditor = (function () {
         invalid_slide_target: 'Enter a valid positive screen number.',
         custom_device_name: 'Device name',
         custom_device_name_help: 'Used as the blocks[...] key in CONFIG.js.',
+        custom_device_title: 'Title',
         custom_device_options: 'Device options',
         custom_device_values_help: 'For arrays or objects, enter valid JSON.',
         invalid_custom_device_name: 'Enter a valid unique device name.',
@@ -101,6 +107,25 @@ var DashticzDeviceEditor = (function () {
         remove_value_row: 'Remove value',
         invalid_multi_device_name: 'Enter a valid unique device name.',
         invalid_value_row: 'Enter a value placeholder (e.g. <Usage>) for every row.',
+        group_block: 'Group',
+        group_name: 'Group name',
+        group_name_help: 'Used as the blocks[...] key in CONFIG.js.',
+        group_idx: 'Group/Scene IDX',
+        group_idx_help: 'Optional. Domoticz group or scene ID whose devices are grouped.',
+        group_devices: 'Devices',
+        group_devices_help: 'Comma-separated Domoticz device IDs to group (used when IDX is empty).',
+        group_title: 'Title',
+        invalid_group_name: 'Enter a valid unique group name.',
+        invalid_group_devices: 'Enter a Group/Scene IDX or at least one valid device ID.',
+        html_block: 'HTML Block',
+        html_block_name: 'Block name',
+        html_block_name_help: 'Used as the blocks[...] key in CONFIG.js.',
+        html_block_file: 'HTML file',
+        html_block_file_help: 'Filename in the custom/ folder, e.g. widget.html.',
+        html_block_title: 'Title',
+        html_block_border: 'Margin',
+        invalid_html_block_name: 'Enter a valid unique block name.',
+        invalid_html_block_file: 'Enter a valid html filename (relative to custom/).',
         separator: 'Separator',
         icon_requires_checkbox: 'Enable Icon before using the icon field.',
         field: 'Field',
@@ -134,6 +159,7 @@ var DashticzDeviceEditor = (function () {
   /* ── public API ─────────────────────────────────────────────── */
   function open() {
     editorMode = 'devices';
+    openedFromAddMenu = true;
     gridMode = _activeScreenDom().hasClass('dt-grid-screen');
     _init();
     _buildAndShowModal();
@@ -141,6 +167,7 @@ var DashticzDeviceEditor = (function () {
 
   function openSpecial(kind) {
     editorMode = kind === 'title' ? 'title' : 'dummy';
+    openedFromAddMenu = false;
     gridMode = _activeScreenDom().hasClass('dt-grid-screen');
     _init();
     _buildAndShowModal();
@@ -150,6 +177,7 @@ var DashticzDeviceEditor = (function () {
    * normal Device Editor as the save parent shown after the config popup closes. */
   function openConfig(reference) {
     editorMode = 'devices';
+    openedFromAddMenu = false;
     gridMode = _activeScreenDom().hasClass('dt-grid-screen');
     _init();
 
@@ -195,6 +223,24 @@ var DashticzDeviceEditor = (function () {
     _init();
     _prepareManagedDeviceState();
     _showMultiDevicePopup();
+  }
+
+  /** Open the dedicated Group block popup used by the Screen Editor add menu. */
+  function openGroup() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showGroupPopup();
+  }
+
+  /** Open the dedicated HTML Block popup used by the Screen Editor add menu. */
+  function openHtmlBlock() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showHtmlBlockPopup();
   }
 
   /** Open the dedicated Slide button popup used by the Screen Editor add menu. */
@@ -449,6 +495,23 @@ var DashticzDeviceEditor = (function () {
       // otherwise the Settings button opens the wrong (shared-idx) device once
       // the tile has rendered at least once (#115).
       kind = 'custom';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      String(definition.type || '').toLowerCase() === 'group'
+    ) {
+      // Dashticz's own client-side group/scene aggregate block (js/components/group.js),
+      // not the plain Domoticz Group/Scene device the normal Add device dropdown
+      // already offers.
+      kind = 'group';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      !definition.type &&
+      typeof definition.htmlfile === 'string' &&
+      definition.htmlfile !== ''
+    ) {
+      // Matches js/components/html.js's own canHandle(): dispatched purely on a
+      // truthy htmlfile, with no `type` of its own.
+      kind = 'html';
     }
     if (!kind) return null;
 
@@ -459,10 +522,12 @@ var DashticzDeviceEditor = (function () {
       reference: reference,
       definition: definition,
       idx:
-        kind === 'title' || kind === 'slidebutton'
+        kind === 'title' || kind === 'slidebutton' || kind === 'html'
           ? null
-          : parseInt(definition.idx, 10),
-      title: kind === 'custom'
+          : kind === 'group'
+            ? (parseInt(definition.idx, 10) > 0 ? parseInt(definition.idx, 10) : null)
+            : parseInt(definition.idx, 10),
+      title: kind === 'custom' || kind === 'group' || kind === 'html'
         ? String(definition.title || '')
         : String(definition.title || (kind === 'title' ? 'Title' : reference)),
       width: _parseWidth(definition.width || (kind === 'title' ? 12 : 3)),
@@ -781,6 +846,8 @@ var DashticzDeviceEditor = (function () {
       if (special.specialType === 'title') return SEPARATOR_DEFAULT_ICON;
       if (special.specialType === 'slidebutton') return 'fas fa-home';
       if (special.specialType === 'custom') return 'fas fa-cube';
+      if (special.specialType === 'group') return 'fas fa-object-group';
+      if (special.specialType === 'html') return 'fas fa-code';
     }
     return 'fas fa-question';
   }
@@ -1353,6 +1420,7 @@ var DashticzDeviceEditor = (function () {
 
     $('body').append(_buildModalHtml(available, allDomoticz));
     _attachHandlers(available, allDomoticz);
+    _wireBackButton('deviceeditorpopup');
 
     var el = document.getElementById('deviceeditorpopup');
     if (window.bootstrap && window.bootstrap.Modal) {
@@ -1427,6 +1495,7 @@ var DashticzDeviceEditor = (function () {
       html += 'PHP not available — saving is disabled.';
       html += '</span>';
     }
+    if (openedFromAddMenu) html += _backButtonHtml();
     html += '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' + _esc(t.close) + '</button>';
     html += '<button type="button" class="btn btn-primary" id="de-save-btn"';
     if (typeof _PHP_INSTALLED !== 'undefined' && !_PHP_INSTALLED) {
@@ -1510,30 +1579,39 @@ var DashticzDeviceEditor = (function () {
       _esc(t.custom_devices) + '</h5>';
     html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
     html += '<div class="modal-body">';
+    // Icon/Update/Title come first, matching the Device Config popup's own
+    // top section (see _quickOptionsHtml()). Last update checked by default:
+    // without this the created device silently saved last_update: false with
+    // no checkbox anywhere to change it until the user separately discovered
+    // the gear-icon Device Config popup - it looked like the Custom Device
+    // block simply had no last-update support.
+    html += _quickOptionsHtml('cd', {
+      icon: false,
+      iconValue: 'fas fa-cube',
+      lastUpdate: true,
+      showTitle: true,
+    });
     html += '<div class="mb-3"><label class="form-label" for="cd-device-name">' + _esc(t.custom_device_name) + '</label>';
     html += '<input type="text" class="form-control" id="cd-device-name" autocomplete="off">';
     html += '<div class="form-text">' + _esc(t.custom_device_name_help) + '</div></div>';
     html += '<div class="mb-3"><label class="form-label" for="cd-device-idx">IDX</label>';
     html += '<input type="number" min="1" step="1" class="form-control" id="cd-device-idx"></div>';
-    // Checked by default: without this the created device silently saved
-    // last_update: false with no checkbox anywhere to change it until the
-    // user separately discovered the gear-icon Device Config popup - it
-    // looked like the Custom Device block simply had no last-update support.
-    html += '<div class="mb-3 form-check"><input class="form-check-input" type="checkbox" id="cd-device-last-update" checked>';
-    html += '<label class="form-check-label" for="cd-device-last-update">' + _esc(t.last_update) + '</label></div>';
+    html += '<div class="mb-3"><label class="form-label" for="cd-device-title">' + _esc(t.custom_device_title) + '</label>';
+    html += '<input type="text" class="form-control" id="cd-device-title" autocomplete="off"></div>';
     html += '<div class="cd-custom-fields-section"><h6>' + _esc(t.custom_device_options) + '</h6>';
     html += '<div class="form-text mb-2">' + _esc(t.custom_device_values_help) + '</div>';
     html += '<div class="cd-custom-fields">';
-    html += _customDeviceFieldRowHtml({ field: 'title', setting: '' });
-    html += _customDeviceFieldRowHtml({ field: 'icon', setting: '' });
     html += _customDeviceFieldRowHtml({ field: 'values', setting: '' });
     html += '</div></div>';
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
-    html += '<div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+    html += '<div class="modal-footer">' + _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
       _esc(t.cancel) + '</button>';
     html += '<button type="button" class="btn btn-primary" id="cd-save-btn">' + _esc(t.save) + '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
+    _wireQuickOptions('cd');
+    _wireBackButton('customdevicepopup');
 
     var $popup = $('#customdevicepopup');
     function refreshButtons() {
@@ -1575,8 +1653,7 @@ var DashticzDeviceEditor = (function () {
         return;
       }
 
-      var title = '';
-      var iconValue = null;
+      var title = $.trim(String($('#cd-device-title').val() || '')).slice(0, 100);
       var customRows = [];
       var seen = {};
       var valid = true;
@@ -1585,8 +1662,8 @@ var DashticzDeviceEditor = (function () {
         var rawField = $.trim(String($(this).find('.cd-custom-field-name').val() || ''));
         var rawSetting = $.trim(String($(this).find('.cd-custom-field-setting').val() || ''));
         if (!rawField && !rawSetting) return;
-        // Empty predefined option rows are ignored until the user gives them a value.
-        if (rawField && !rawSetting && ['title', 'icon', 'values'].indexOf(rawField.toLowerCase()) > -1) return;
+        // An empty predefined 'values' row is ignored until given a value.
+        if (rawField && !rawSetting && rawField.toLowerCase() === 'values') return;
         var field = _normaliseCustomFieldName(rawField);
         var lowerField = field.toLowerCase();
         if (!field || !/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(field) || !rawSetting) {
@@ -1602,16 +1679,9 @@ var DashticzDeviceEditor = (function () {
           return;
         }
         seen[lowerField] = true;
-        if (lowerField === 'title') {
-          title = rawSetting.slice(0, 100);
-          customRows.push({ field: 'title', setting: title, value: title, system: true });
-          return;
-        }
-        if (lowerField === 'icon') {
-          iconValue = rawSetting.slice(0, 100);
-          customRows.push({ field: 'icon', setting: iconValue, value: iconValue });
-          return;
-        }
+        // title/icon are now the dedicated fields above, so a hand-typed
+        // 'title' or 'icon' row here is rejected as reserved, same as every
+        // other protected field name.
         if (protectedCustomDeviceProperties[lowerField]) {
           valid = false;
           $message.addClass('text-danger').text(t.duplicate_field);
@@ -1629,6 +1699,9 @@ var DashticzDeviceEditor = (function () {
       });
       if (!valid) return;
 
+      var quickOptions = _readQuickOptions('cd');
+      if (title) customRows.unshift({ field: 'title', setting: title, value: title, system: true });
+
       var orderKey = _specialOrderKey(reference);
       managedSpecials[orderKey] = {
         kind: 'special',
@@ -1640,16 +1713,12 @@ var DashticzDeviceEditor = (function () {
         title: title,
         width: 3,
         height: null,
-        showTitle: true,
-          options: {
-          icon: true,
-          // Falls back to this popup's own modal-header icon when the user
-          // didn't type an explicit `icon` custom field above - otherwise a
-          // Custom Device (not a real recognised Domoticz device type) has
-          // no icon at all to derive from and renders with none.
-          iconValue: iconValue || 'fas fa-cube',
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: quickOptions.iconValue,
           hide_data: false,
-          last_update: $('#cd-device-last-update').is(':checked'),
+          last_update: quickOptions.lastUpdate,
           switch: false,
         },
         customFields: customRows,
@@ -1687,6 +1756,87 @@ var DashticzDeviceEditor = (function () {
       '</div>';
   }
 
+  /* Shared Icon/Last update/Title checkbox row used by the Multi Device,
+     Group and HTML Block quick-add popups below. It mirrors the same three
+     options (minus Data/Dial, which don't apply to a quick-add block) the
+     full Device Config popup already exposes for an already-placed block,
+     so a block created here is just as configurable from the start. */
+  function _quickOptionsHtml(prefix, defaults) {
+    var t = _translations();
+    var html = '<div class="mb-3 de-config-options de-config-options-three">';
+    html += '<label class="form-check"><input class="form-check-input" type="checkbox" id="' +
+      prefix + '-opt-icon"' + (defaults.icon ? ' checked' : '') + '>' +
+      '<span class="form-check-label">' + _esc(t.icon) + '</span></label>';
+    html += '<label class="form-check"><input class="form-check-input" type="checkbox" id="' +
+      prefix + '-opt-update"' + (defaults.lastUpdate ? ' checked' : '') + '>' +
+      '<span class="form-check-label">' + _esc(t.last_update) + '</span></label>';
+    html += '<label class="form-check"><input class="form-check-input" type="checkbox" id="' +
+      prefix + '-opt-title"' + (defaults.showTitle ? ' checked' : '') + '>' +
+      '<span class="form-check-label">' + _esc(t.show_title) + '</span></label>';
+    html += '</div>';
+    html += '<div class="mb-3 ' + prefix + '-opt-icon-field' + (defaults.icon ? '' : ' d-none') + '">';
+    html += '<label class="form-label" for="' + prefix + '-opt-icon-value">' + _esc(t.icon) + '</label>';
+    html += '<input type="text" class="form-control" id="' + prefix + '-opt-icon-value" value="' +
+      _esc(defaults.iconValue || '') + '">';
+    html += '</div>';
+    return html;
+  }
+
+  /* Call once after appending markup built with _quickOptionsHtml() above. */
+  function _wireQuickOptions(prefix) {
+    $('#' + prefix + '-opt-icon').on('change', function () {
+      $('.' + prefix + '-opt-icon-field').toggleClass('d-none', !$(this).is(':checked'));
+    });
+  }
+
+  function _readQuickOptions(prefix) {
+    var iconChecked = $('#' + prefix + '-opt-icon').is(':checked');
+    return {
+      icon: iconChecked,
+      iconValue: iconChecked
+        ? ($.trim(String($('#' + prefix + '-opt-icon-value').val() || '')) || null)
+        : null,
+      lastUpdate: $('#' + prefix + '-opt-update').is(':checked'),
+      showTitle: $('#' + prefix + '-opt-title').is(':checked'),
+    };
+  }
+
+  /* Shared "Back" button for every popup reachable from the Screen Editor's
+     Add items tile menu (js/components/simpleblock.js). Placed left of
+     Cancel/Close in the footer, matching the Settings popup's own back
+     button (js/settings.js). Reuses the existing settings.back translation
+     instead of duplicating it under deviceeditor. */
+  function _backButtonHtml() {
+    var backLabel = (typeof language !== 'undefined' && language.settings && language.settings.back) || 'Back';
+    return '<button type="button" class="btn btn-secondary de-back-btn">' +
+      '<i class="fas fa-arrow-left me-1" aria-hidden="true"></i>' + _esc(backLabel) + '</button>';
+  }
+
+  /* Call once after appending markup built with _backButtonHtml() above.
+     Tracks the click in a closure variable rather than $popup.data(), since
+     deviceeditorpopup's own cleanup handler (_attachHandlers() below) calls
+     $(this).remove() on hide - which jQuery documents as also clearing any
+     data stored on the element - and can run before this handler depending
+     on registration order. */
+  function _wireBackButton(popupId) {
+    var popup = document.getElementById(popupId);
+    var $popup = $(popup);
+    var backRequested = false;
+    $popup.on('click', '.de-back-btn', function () {
+      backRequested = true;
+      window.bootstrap.Modal.getInstance(popup).hide();
+    });
+    $popup.one('hidden.bs.modal', function () {
+      if (
+        backRequested &&
+        typeof DT_simpleblock !== 'undefined' &&
+        typeof DT_simpleblock.openAddMenu === 'function'
+      ) {
+        DT_simpleblock.openAddMenu();
+      }
+    });
+  }
+
   function _showMultiDevicePopup() {
     var t = _translations();
     $('#multidevicepopup').remove();
@@ -1697,6 +1847,17 @@ var DashticzDeviceEditor = (function () {
       _esc(t.multi_device) + '</h5>';
     html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
     html += '<div class="modal-body">';
+    // Icon and Last update default on (Last update was previously a lone
+    // always-checked checkbox with no way to turn it off; Icon had no
+    // checkbox at all and always saved the fixed 'fas fa-layer-group' value
+    // below) so an unedited save keeps behaving exactly as before. Placed
+    // first, matching the Device Config popup's own top section.
+    html += _quickOptionsHtml('md', {
+      icon: true,
+      iconValue: 'fas fa-layer-group',
+      lastUpdate: true,
+      showTitle: true,
+    });
     html += '<div class="mb-3"><label class="form-label" for="md-device-name">' + _esc(t.multi_device_name) + '</label>';
     html += '<input type="text" class="form-control" id="md-device-name" autocomplete="off">';
     html += '<div class="form-text">' + _esc(t.multi_device_name_help) + '</div></div>';
@@ -1705,22 +1866,20 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="form-text">' + _esc(t.multi_device_idx_help) + '</div></div>';
     html += '<div class="mb-3"><label class="form-label" for="md-device-title">' + _esc(t.multi_device_title) + '</label>';
     html += '<input type="text" class="form-control" id="md-device-title" autocomplete="off"></div>';
-    // Checked by default - see the matching checkbox in _showCustomDevicePopup
-    // above; Multi Device saves through the same specialType 'custom' engine
-    // and had the same silently-false-with-no-checkbox last_update default.
-    html += '<div class="mb-3 form-check"><input class="form-check-input" type="checkbox" id="md-device-last-update" checked>';
-    html += '<label class="form-check-label" for="md-device-last-update">' + _esc(t.last_update) + '</label></div>';
     html += '<div class="md-values-section"><h6>' + _esc(t.multi_device_values) + '</h6>';
     html += '<div class="form-text mb-2">' + _esc(t.multi_device_values_help) + '</div>';
     html += '<div class="md-value-rows">';
     html += _multiDeviceRowHtml({ idx: '', value: '' });
     html += '</div></div>';
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
-    html += '<div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+    html += '<div class="modal-footer">' + _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
       _esc(t.cancel) + '</button>';
     html += '<button type="button" class="btn btn-primary" id="md-save-btn">' + _esc(t.save) + '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
+    _wireQuickOptions('md');
+    _wireBackButton('multidevicepopup');
 
     var $popup = $('#multidevicepopup');
     function refreshButtons() {
@@ -1801,6 +1960,7 @@ var DashticzDeviceEditor = (function () {
       // one 'values' custom field whose value is the array itself.
       customRows.push({ field: 'values', setting: JSON.stringify(values), value: values });
 
+      var quickOptions = _readQuickOptions('md');
       var orderKey = _specialOrderKey(reference);
       managedSpecials[orderKey] = {
         kind: 'special',
@@ -1812,15 +1972,12 @@ var DashticzDeviceEditor = (function () {
         title: title,
         width: 3,
         height: null,
-        showTitle: true,
+        showTitle: quickOptions.showTitle,
         options: {
-          icon: true,
-          // Multi Device has no icon input of its own; default to this
-          // popup's own modal-header icon so the block isn't left with no
-          // icon at all (it isn't a recognised Domoticz device type).
-          iconValue: 'fas fa-layer-group',
+          icon: quickOptions.icon,
+          iconValue: quickOptions.iconValue,
           hide_data: false,
-          last_update: $('#md-device-last-update').is(':checked'),
+          last_update: quickOptions.lastUpdate,
           switch: false,
         },
         customFields: customRows,
@@ -1833,6 +1990,241 @@ var DashticzDeviceEditor = (function () {
 
     $popup.one('hidden.bs.modal', function () { $(this).remove(); });
     window.bootstrap.Modal.getOrCreateInstance(document.getElementById('multidevicepopup')).show();
+  }
+
+  /* Group: Dashticz's own client-side group/scene aggregate block (not to be
+   * confused with a plain Domoticz Group/Scene device already offered by the
+   * normal Add device dropdown). See docs/blocks/specials/group.rst. Saved
+   * as its own specialType 'group' - idx (optional) and devices/longpress/
+   * mixed (optional, editable afterwards as custom fields like any Custom
+   * device) are the only parameters unique to it; width/title/icon/last
+   * update/title-visibility all reuse the same shared options every other
+   * quick-add popup on this screen uses. */
+  function _showGroupPopup() {
+    var t = _translations();
+    $('#groupblockpopup').remove();
+
+    var html = '<div class="modal fade" id="groupblockpopup" tabindex="-1" aria-hidden="true">';
+    html += '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html += '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-object-group me-2" aria-hidden="true"></i>' +
+      _esc(t.group_block) + '</h5>';
+    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
+    html += '<div class="modal-body">';
+    html += _quickOptionsHtml('gb', {
+      icon: true,
+      iconValue: 'fas fa-object-group',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html += '<div class="mb-3"><label class="form-label" for="gb-device-name">' + _esc(t.group_name) + '</label>';
+    html += '<input type="text" class="form-control" id="gb-device-name" autocomplete="off">';
+    html += '<div class="form-text">' + _esc(t.group_name_help) + '</div></div>';
+    html += '<div class="mb-3"><label class="form-label" for="gb-device-idx">' + _esc(t.group_idx) + '</label>';
+    html += '<input type="number" min="1" step="1" class="form-control" id="gb-device-idx">';
+    html += '<div class="form-text">' + _esc(t.group_idx_help) + '</div></div>';
+    html += '<div class="mb-3"><label class="form-label" for="gb-device-devices">' + _esc(t.group_devices) + '</label>';
+    html += '<input type="text" class="form-control" id="gb-device-devices" placeholder="1, 3, 5">';
+    html += '<div class="form-text">' + _esc(t.group_devices_help) + '</div></div>';
+    html += '<div class="mb-3"><label class="form-label" for="gb-device-title">' + _esc(t.group_title) + '</label>';
+    html += '<input type="text" class="form-control" id="gb-device-title" autocomplete="off"></div>';
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html += '<div class="modal-footer">' + _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      _esc(t.cancel) + '</button>';
+    html += '<button type="button" class="btn btn-primary" id="gb-save-btn">' + _esc(t.save) + '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    _wireQuickOptions('gb');
+    _wireBackButton('groupblockpopup');
+
+    var $popup = $('#groupblockpopup');
+
+    $('#gb-save-btn').on('click', function () {
+      var $message = $popup.find('.cd-custom-message').removeClass('text-danger').text('');
+      var reference = $.trim(String($('#gb-device-name').val() || ''));
+      var title = $.trim(String($('#gb-device-title').val() || ''));
+      if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
+        $message.addClass('text-danger').text(t.invalid_group_name);
+        $('#gb-device-name').trigger('focus');
+        return;
+      }
+      if ((typeof blocks !== 'undefined' && blocks[reference]) || managedSpecials[_specialOrderKey(reference)]) {
+        $message.addClass('text-danger').text(t.invalid_group_name);
+        $('#gb-device-name').trigger('focus');
+        return;
+      }
+
+      var rawIdx = $.trim(String($('#gb-device-idx').val() || ''));
+      var idx = null;
+      if (rawIdx) {
+        var parsedIdx = parseInt(rawIdx, 10);
+        if (!(parsedIdx > 0 && String(parsedIdx) === rawIdx)) {
+          $message.addClass('text-danger').text(t.invalid_idx);
+          $('#gb-device-idx').trigger('focus');
+          return;
+        }
+        idx = parsedIdx;
+      }
+
+      var rawDevices = $.trim(String($('#gb-device-devices').val() || ''));
+      var devices = [];
+      if (rawDevices) {
+        var invalidDevices = false;
+        devices = rawDevices.split(/[\s,]+/).filter(function (part) {
+          return part !== '';
+        }).map(function (part) {
+          var n = parseInt(part, 10);
+          if (!(n > 0 && String(n) === part)) invalidDevices = true;
+          return n;
+        });
+        if (invalidDevices) {
+          $message.addClass('text-danger').text(t.invalid_group_devices);
+          $('#gb-device-devices').trigger('focus');
+          return;
+        }
+      }
+      if (!idx && !devices.length) {
+        $message.addClass('text-danger').text(t.invalid_group_devices);
+        $('#gb-device-devices').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('gb');
+      var customRows = [];
+      if (title) customRows.push({ field: 'title', setting: title, value: title, system: true });
+      if (devices.length) {
+        customRows.push({ field: 'devices', setting: JSON.stringify(devices), value: devices });
+      }
+
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'group',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: idx,
+        title: title,
+        width: 3,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(document.getElementById('groupblockpopup')).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () { $(this).remove(); });
+    window.bootstrap.Modal.getOrCreateInstance(document.getElementById('groupblockpopup')).show();
+  }
+
+  /* HTML Block: renders a static custom/<file>.html snippet (e.g. an
+   * embedded third-party widget) via DT_html (js/components/html.js), which
+   * dispatches purely on the presence of a truthy `htmlfile` property - no
+   * `type` is written for this block. See docs/blocks/specials/html.rst. */
+  function _showHtmlBlockPopup() {
+    var t = _translations();
+    $('#htmlblockpopup').remove();
+
+    var html = '<div class="modal fade" id="htmlblockpopup" tabindex="-1" aria-hidden="true">';
+    html += '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html += '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-code me-2" aria-hidden="true"></i>' +
+      _esc(t.html_block) + '</h5>';
+    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
+    html += '<div class="modal-body">';
+    // Icon defaults off ("Default no icon" per docs/blocks/specials/html.rst);
+    // an arbitrary HTML snippet has no Domoticz device to derive one from.
+    html += _quickOptionsHtml('hb', {
+      icon: false,
+      iconValue: 'fas fa-code',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html += '<div class="mb-3"><label class="form-label" for="hb-device-name">' + _esc(t.html_block_name) + '</label>';
+    html += '<input type="text" class="form-control" id="hb-device-name" autocomplete="off">';
+    html += '<div class="form-text">' + _esc(t.html_block_name_help) + '</div></div>';
+    html += '<div class="mb-3"><label class="form-label" for="hb-device-file">' + _esc(t.html_block_file) + '</label>';
+    html += '<input type="text" class="form-control" id="hb-device-file" placeholder="widget.html" autocomplete="off">';
+    html += '<div class="form-text">' + _esc(t.html_block_file_help) + '</div></div>';
+    html += '<div class="mb-3"><label class="form-label" for="hb-device-title">' + _esc(t.html_block_title) + '</label>';
+    html += '<input type="text" class="form-control" id="hb-device-title" autocomplete="off"></div>';
+    html += '<div class="mb-3 form-check"><input class="form-check-input" type="checkbox" id="hb-device-border">';
+    html += '<label class="form-check-label" for="hb-device-border">' + _esc(t.html_block_border) + '</label></div>';
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html += '<div class="modal-footer">' + _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      _esc(t.cancel) + '</button>';
+    html += '<button type="button" class="btn btn-primary" id="hb-save-btn">' + _esc(t.save) + '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    _wireQuickOptions('hb');
+    _wireBackButton('htmlblockpopup');
+
+    var $popup = $('#htmlblockpopup');
+
+    $('#hb-save-btn').on('click', function () {
+      var $message = $popup.find('.cd-custom-message').removeClass('text-danger').text('');
+      var reference = $.trim(String($('#hb-device-name').val() || ''));
+      var title = $.trim(String($('#hb-device-title').val() || ''));
+      if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
+        $message.addClass('text-danger').text(t.invalid_html_block_name);
+        $('#hb-device-name').trigger('focus');
+        return;
+      }
+      if ((typeof blocks !== 'undefined' && blocks[reference]) || managedSpecials[_specialOrderKey(reference)]) {
+        $message.addClass('text-danger').text(t.invalid_html_block_name);
+        $('#hb-device-name').trigger('focus');
+        return;
+      }
+
+      var htmlfile = $.trim(String($('#hb-device-file').val() || ''));
+      if (!/^[A-Za-z0-9_\-./ ]+\.html?$/i.test(htmlfile) || htmlfile.indexOf('..') > -1) {
+        $message.addClass('text-danger').text(t.invalid_html_block_file);
+        $('#hb-device-file').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('hb');
+      var border = $('#hb-device-border').is(':checked');
+      var customRows = [];
+      if (title) customRows.push({ field: 'title', setting: title, value: title, system: true });
+      customRows.push({ field: 'htmlfile', setting: htmlfile, value: htmlfile });
+      if (border) customRows.push({ field: 'border', setting: 'true', value: true });
+
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'html',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 3,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(document.getElementById('htmlblockpopup')).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () { $(this).remove(); });
+    window.bootstrap.Modal.getOrCreateInstance(document.getElementById('htmlblockpopup')).show();
   }
 
   function _showSlideButtonPopup() {
@@ -1857,11 +2249,13 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="mb-3"><label class="form-label" for="sb-button-icon">' + _esc(t.slide_button_icon) + '</label>';
     html += '<input type="text" class="form-control" id="sb-button-icon" value="fas fa-home" autocomplete="off"></div>';
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
-    html += '<div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+    html += '<div class="modal-footer">' + _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
       _esc(t.cancel) + '</button>';
     html += '<button type="button" class="btn btn-primary" id="sb-save-btn">' + _esc(t.save) + '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
+    _wireBackButton('slidebuttonpopup');
 
     $('#sb-save-btn').on('click', function () {
       var $popup = $('#slidebuttonpopup');
@@ -2029,6 +2423,8 @@ var DashticzDeviceEditor = (function () {
     var special = isSpecial ? managedSpecials[orderKey] : null;
     var isTitle = special && special.specialType === 'title';
     var isCustom = special && special.specialType === 'custom';
+    var isGroupBlock = special && special.specialType === 'group';
+    var isHtmlBlock = special && special.specialType === 'html';
     var options = isSpecial ? (special.options || {}) : (deviceOptions[ck] || {});
     var customRows = isSpecial ? special.customFields : deviceCustomFields[ck];
     if (!customRows || !customRows.length) {
@@ -2088,13 +2484,23 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="modal-body">';
     // A separator/title bar has no data value or last-update timestamp of its
     // own, but it can still show a leading icon like any other block.
+    // A Group or HTML Block has no data value/dial of its own either - just
+    // Icon, Update and Title, like every quick-add popup's own top section
+    // (see _quickOptionsHtml()).
+    var hasDial = !isTitle && !isGroupBlock && !isHtmlBlock;
     var configOptions = isTitle
       ? ['icon', 'show_title']
-      : ['icon', 'hide_data', 'last_update', 'dial', 'show_title'];
-    html += '<div class="de-config-options' + (isTitle ? '' : ' de-config-options-five') + '">';
+      : (isGroupBlock || isHtmlBlock)
+        ? ['icon', 'last_update', 'show_title']
+        : ['icon', 'hide_data', 'last_update', 'dial', 'show_title'];
+    html += '<div class="de-config-options' +
+      (isTitle
+        ? ''
+        : ((isGroupBlock || isHtmlBlock) ? ' de-config-options-three' : ' de-config-options-five')) +
+      '">';
     configOptions.forEach(function (option) {
       var hiddenForDial =
-        !isTitle && (option === 'icon' || option === 'show_title');
+        hasDial && (option === 'icon' || option === 'show_title');
       html += '<label class="form-check' +
         (hiddenForDial ? ' de-hide-for-dial' : '') +
         '"><input class="form-check-input de-config-option" type="checkbox" data-option="' + option + '"';
@@ -2135,6 +2541,11 @@ var DashticzDeviceEditor = (function () {
       html += '<input type="number" min="1" step="1" class="form-control" id="de-config-idx" value="' +
         _esc(special.idx || '') + '">';
       html += '<div class="form-text">' + _esc(t.multi_device_idx_help) + '</div></div>';
+    } else if (isGroupBlock) {
+      html += '<div class="mb-3"><label class="form-label" for="de-config-idx">' + _esc(t.group_idx) + '</label>';
+      html += '<input type="number" min="1" step="1" class="form-control" id="de-config-idx" value="' +
+        _esc(special.idx || '') + '">';
+      html += '<div class="form-text">' + _esc(t.group_idx_help) + '</div></div>';
     }
     html += '<div class="de-custom-fields-section"><h6>' + _esc(t.custom_fields) + '</h6>';
     html += '<p class="form-text">' + _esc(t.custom_fields_help) + '</p>';
@@ -2211,12 +2622,17 @@ var DashticzDeviceEditor = (function () {
       $popup.find('.de-dial-hint').toggleClass('d-none', !enabled);
     }
     function refreshDialOptions() {
-      var enabled = $popup.find('[data-option="dial"]').is(':checked');
+      var enabled = hasDial && $popup.find('[data-option="dial"]').is(':checked');
       $popup.find('.de-hide-for-dial').toggleClass('d-none', enabled);
-      $popup
-        .find('.de-config-options')
-        .toggleClass('de-config-options-three', enabled)
-        .toggleClass('de-config-options-five', !enabled && !isTitle);
+      // A Group/HTML Block has no Dial checkbox to react to at all - leave
+      // its static de-config-options-three layout (set above) alone instead
+      // of forcing the five-column layout meant for the regular case.
+      if (hasDial) {
+        $popup
+          .find('.de-config-options')
+          .toggleClass('de-config-options-three', enabled)
+          .toggleClass('de-config-options-five', !enabled && !isTitle);
+      }
       refreshIconFieldVisibility();
       refreshDialHint();
     }
@@ -2297,7 +2713,7 @@ var DashticzDeviceEditor = (function () {
       var pendingIconValue = null;
       var hasIconField = false;
       var valid = true;
-      var pendingIdx = isCustom ? special.idx : null;
+      var pendingIdx = (isCustom || isGroupBlock) ? special.idx : null;
       if (isCustom) {
         var rawIdx = $.trim(String($('#de-config-idx').val() || ''));
         var parsedIdx = parseInt(rawIdx, 10);
@@ -2307,6 +2723,22 @@ var DashticzDeviceEditor = (function () {
           $('#de-config-idx').trigger('focus');
         } else {
           pendingIdx = parsedIdx;
+        }
+      } else if (isGroupBlock) {
+        // Unlike Custom/Multi Device, a Group's idx is optional - it can
+        // group plain device ids via its 'devices' custom field instead.
+        var rawGroupIdx = $.trim(String($('#de-config-idx').val() || ''));
+        if (!rawGroupIdx) {
+          pendingIdx = null;
+        } else {
+          var parsedGroupIdx = parseInt(rawGroupIdx, 10);
+          if (!(parsedGroupIdx > 0 && String(parsedGroupIdx) === rawGroupIdx)) {
+            valid = false;
+            $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_idx);
+            $('#de-config-idx').trigger('focus');
+          } else {
+            pendingIdx = parsedGroupIdx;
+          }
         }
       }
       $('#de-config-popup .de-config-option').each(function () {
@@ -2446,7 +2878,7 @@ var DashticzDeviceEditor = (function () {
         special.title = pendingTitle;
         special.customFields = storedRows;
         special.showTitle = pendingShowTitle;
-        if (isCustom) special.idx = pendingIdx;
+        if (isCustom || isGroupBlock) special.idx = pendingIdx;
         if (special.specialType === 'slidebutton') {
           storedRows.forEach(function (row) {
             if (_normaliseCustomFieldName(row.field) === 'slide') {
@@ -2555,6 +2987,8 @@ var DashticzDeviceEditor = (function () {
     var isTitle = special.specialType === 'title';
     var isCustom = special.specialType === 'custom';
     var isSlideButton = special.specialType === 'slidebutton';
+    var isGroupBlock = special.specialType === 'group';
+    var isHtmlBlock = special.specialType === 'html';
     // A Multi Device is a Custom device whose 'values' custom field was filled
     // in via the dedicated Multi Device popup (see openMultiDevice() above);
     // label it accordingly instead of the generic "Custom devices" so it's not
@@ -2566,17 +3000,31 @@ var DashticzDeviceEditor = (function () {
     var label = isTitle
       ? t.title_block
       : (isMultiDevice ? t.multi_device : (isCustom ? t.custom_devices : (isSlideButton ? t.slide_button : t.dummy_device)));
+    if (isGroupBlock) label = t.group_block;
+    else if (isHtmlBlock) label = t.html_block;
+    var htmlFileRow = isHtmlBlock && special.customFields
+      ? special.customFields.find(function (row) {
+        return String((row && row.field) || '').toLowerCase() === 'htmlfile';
+      })
+      : null;
     var detail = isTitle
       ? special.title
       : isSlideButton
         ? special.reference + ' · ' + t.slide_button_screen + '\u00a0' + String(special.slideTarget || 1)
-        : (isCustom ? special.reference + ' · IDX\u00a0' + special.idx : 'IDX\u00a0' + special.idx);
+        : isGroupBlock
+          ? (special.idx ? 'IDX\u00a0' + special.idx : special.reference)
+          : isHtmlBlock
+            ? ((htmlFileRow && htmlFileRow.setting) || special.reference)
+            : (isCustom ? special.reference + ' · IDX\u00a0' + special.idx : 'IDX\u00a0' + special.idx);
+    var specialIconClass = isTitle ? 'fa-divide' : (isSlideButton ? 'fa-sliders-h' : (isMultiDevice ? 'fa-layer-group' : 'fa-cube'));
+    if (isGroupBlock) specialIconClass = 'fa-object-group';
+    else if (isHtmlBlock) specialIconClass = 'fa-code';
     var html = '<div class="de-device-item de-special-item" data-special-key="' +
       _esc(special.reference) + '" data-order-key="' + _esc(orderKey) +
       '" draggable="true">';
     html += '<span class="de-drag-handle" title="' + _esc(t.drag_to_reorder) + '"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
     html += '<span class="de-device-idx"><i class="fas ' +
-      (isTitle ? 'fa-divide' : (isSlideButton ? 'fa-sliders-h' : (isMultiDevice ? 'fa-layer-group' : 'fa-cube'))) + ' me-1" aria-hidden="true"></i>' +
+      specialIconClass + ' me-1" aria-hidden="true"></i>' +
       _esc(label) + '</span>';
     html += '<span class="de-device-identity de-special-identity">';
     html += '<span class="de-device-name">' + _esc(detail) + '</span></span>';
@@ -3015,7 +3463,9 @@ var DashticzDeviceEditor = (function () {
           key: special.reference,
           width: _parseWidth(special.width),
         };
-        if (special.specialType !== 'custom' || String(special.title || '').trim()) {
+        var titleOptionalKind = special.specialType === 'custom' ||
+          special.specialType === 'group' || special.specialType === 'html';
+        if (!titleOptionalKind || String(special.title || '').trim()) {
           specialEntry.title = special.title;
         }
         if (special.showTitle === false) specialEntry.hide_title = true;
@@ -3038,6 +3488,23 @@ var DashticzDeviceEditor = (function () {
           specialEntry.last_update = specialOptions.last_update === true;
           specialEntry.switch = specialOptions.switch === true;
           if (specialOptions.dial === true) specialEntry.type = 'dial';
+        } else if (special.specialType === 'group' || special.specialType === 'html') {
+          // Only Icon and Last update apply here (no Data/Switch/Dial - see
+          // _quickOptionsHtml()); idx is optional and only meaningful for a
+          // Group block (js/components/group.js can use 'devices' instead,
+          // carried through specialCustomFields above like any other extra
+          // field). configwriter.php writes type: 'group' unconditionally
+          // for this kind, so it is not set here.
+          var quickSaveOptions = special.options || {};
+          if (quickSaveOptions.icon === false) {
+            specialEntry.icon = '';
+          } else if (quickSaveOptions.iconValue) {
+            specialEntry.icon = quickSaveOptions.iconValue;
+          }
+          specialEntry.last_update = quickSaveOptions.last_update === true;
+          if (special.specialType === 'group' && special.idx) {
+            specialEntry.idx = special.idx;
+          }
         } else if (special.specialType === 'slidebutton') {
           var slideOptions = special.options || {};
           specialEntry.slide = parseInt(special.slideTarget, 10) || 1;
@@ -3405,6 +3872,8 @@ var DashticzDeviceEditor = (function () {
     openSpecial: openSpecial,
     openCustom: openCustom,
     openMultiDevice: openMultiDevice,
+    openGroup: openGroup,
+    openHtmlBlock: openHtmlBlock,
     openSlideButton: openSlideButton,
     addSeparator: addSeparator,
   };

@@ -109,7 +109,7 @@ foreach ($data['devices'] as $entry) {
     if (is_array($entry)
         && isset($entry['kind'])
         && (
-            in_array($entry['kind'], ['dummy', 'title', 'custom'], true)
+            in_array($entry['kind'], ['dummy', 'title', 'custom', 'group', 'html'], true)
             || $entry['kind'] === 'slidebutton'
         )
     ) {
@@ -134,7 +134,7 @@ foreach ($data['devices'] as $entry) {
         $title = isset($entry['title']) && is_string($entry['title'])
             ? substr(trim($entry['title']), 0, 100)
             : '';
-        if ($title === '' && $kind !== 'custom' && $kind !== 'slidebutton') {
+        if ($title === '' && !in_array($kind, ['custom', 'slidebutton', 'group', 'html'], true)) {
             dashticz_json_error(400, 'A special block title is required.');
         }
         $defaultWidth = 3;
@@ -176,6 +176,43 @@ foreach ($data['devices'] as $entry) {
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
                 : null;
+        } elseif ($kind === 'group' || $kind === 'html') {
+            // Only Icon and Last update apply to these two (no Data/Switch/
+            // Dial - see js/deviceeditor.js's _quickOptionsHtml()).
+            $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
+                ? substr($entry['icon'], 0, 100)
+                : null;
+            $lastUpdate = !empty($entry['last_update']);
+            if ($kind === 'group') {
+                // A Group's idx (the Domoticz group/scene whose devices are
+                // grouped) is optional - custom_fields.devices below can list
+                // plain device ids instead. When given it must still be a
+                // positive integer, same as every other idx in this file.
+                if (isset($entry['idx']) && $entry['idx'] !== null && $entry['idx'] !== '') {
+                    if (!is_int($entry['idx']) || $entry['idx'] < 1) {
+                        dashticz_json_error(400, 'A group idx must be a positive integer.');
+                    }
+                    $idx = $entry['idx'];
+                }
+                $hasDevices = isset($customFields['devices'])
+                    && is_array($customFields['devices'])
+                    && count($customFields['devices']) > 0;
+                if ($idx === null && !$hasDevices) {
+                    dashticz_json_error(400, 'A group block requires an idx or at least one device.');
+                }
+            } else {
+                // htmlfile is otherwise just another custom field (see
+                // _normalise_custom_device_fields() above), but this block
+                // renders nothing at all without one, so it is required here.
+                if (
+                    !isset($customFields['htmlfile'])
+                    || !is_string($customFields['htmlfile'])
+                    || strpos($customFields['htmlfile'], '..') !== false
+                    || !preg_match('/^[A-Za-z0-9_\-.\/ ]+\.html?$/i', $customFields['htmlfile'])
+                ) {
+                    dashticz_json_error(400, 'Enter a valid html filename (relative to custom/).');
+                }
+            }
         }
         $slide = null;
         $buttonKey = null;

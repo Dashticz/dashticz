@@ -2725,7 +2725,7 @@ test('Multi Device and Custom Device get a sensible default icon when none is co
     deviceEditor.indexOf('function _showMultiDevicePopup(')
   );
   assert.match(multiDevicePopup, /iconValue: 'fas fa-layer-group',/);
-  assert.match(customDevicePopup, /iconValue: iconValue \|\| 'fas fa-cube',/);
+  assert.match(customDevicePopup, /iconValue: 'fas fa-cube',/);
 });
 
 test('Dial sizing falls back sanely instead of silently rendering oversized', () => {
@@ -3268,9 +3268,16 @@ test('Device Config popup lets a Custom/Multi device\'s main idx be corrected af
   );
   assert.match(
     deviceEditor,
-    /var pendingIdx = isCustom \? special\.idx : null;\s*\n\s*if \(isCustom\) \{\s*\n\s*var rawIdx = \$\.trim\(String\(\$\('#de-config-idx'\)\.val\(\) \|\| ''\)\);\s*\n\s*var parsedIdx = parseInt\(rawIdx, 10\);\s*\n\s*if \(!\(parsedIdx > 0 && String\(parsedIdx\) === rawIdx\)\) \{\s*\n\s*valid = false;/
+    /var pendingIdx = \(isCustom \|\| isGroupBlock\) \? special\.idx : null;\s*\n\s*if \(isCustom\) \{\s*\n\s*var rawIdx = \$\.trim\(String\(\$\('#de-config-idx'\)\.val\(\) \|\| ''\)\);\s*\n\s*var parsedIdx = parseInt\(rawIdx, 10\);\s*\n\s*if \(!\(parsedIdx > 0 && String\(parsedIdx\) === rawIdx\)\) \{\s*\n\s*valid = false;/
   );
-  assert.match(deviceEditor, /if \(isCustom\) special\.idx = pendingIdx;/);
+  assert.match(deviceEditor, /if \(isCustom \|\| isGroupBlock\) special\.idx = pendingIdx;/);
+  // A Group's idx is optional (unlike Custom/Multi Device's required one) -
+  // it shares the same #de-config-idx correction field and write-back, just
+  // without the required-positive-int validation branch above.
+  assert.match(
+    deviceEditor,
+    /\} else if \(isGroupBlock\) \{\s*\n\s*\/\/ Unlike Custom\/Multi Device, a Group's idx is optional/
+  );
 });
 
 test('Domoticz Security Panel device renders instead of showing an empty tile (#120)', () => {
