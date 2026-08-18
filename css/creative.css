@@ -616,6 +616,7 @@ next css sets the default height of the frame popup
 .settings-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   padding: 10px 12px;
   border-bottom: 1px solid #dee2e6;
@@ -638,6 +639,19 @@ next css sets the default height of the frame popup
   width: 38px;
   height: 38px;
   border-radius: 50%;
+}
+
+.settings-header-current {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: #d9f2d9;
+  border: 1px solid #b7dfb7;
+  color: #2f5f2f;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .settings-tab-content {
@@ -981,8 +995,40 @@ next css sets the default height of the frame popup
   width: 38px;
   height: 20px;
   margin: 0;
-  border-color: #adb5bd;
+}
+
+/* Shared look for every on/off switch across the settings screen and the
+   Device/Widget editors: light-blue track with a solid blue knob (instead
+   of Bootstrap's default white knob), wherever it appears. */
+#settingspopup .settings-switch .form-check-input,
+.de-config-options .form-check-input,
+#hb-device-border.form-check-input,
+.we-widget-field.form-check-input,
+#we-cfg-ascending.form-check-input,
+.we-block-option.form-check-input {
+  border-color: #adb5bd !important;
   cursor: pointer;
+}
+
+#settingspopup .settings-switch .form-check-input:checked,
+.de-config-options .form-check-input:checked,
+#hb-device-border.form-check-input:checked,
+.we-widget-field.form-check-input:checked,
+#we-cfg-ascending.form-check-input:checked,
+.we-block-option.form-check-input:checked {
+  background-color: #bfdbfe !important;
+  border-color: #93c5fd !important;
+  background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%27-4 -4 8 8%27%3e%3ccircle r=%273%27 fill=%27%232563eb%27/%3e%3c/svg%3e") !important;
+}
+
+#settingspopup .settings-switch .form-check-input:focus,
+.de-config-options .form-check-input:focus,
+#hb-device-border.form-check-input:focus,
+.we-widget-field.form-check-input:focus,
+#we-cfg-ascending.form-check-input:focus,
+.we-block-option.form-check-input:focus {
+  border-color: #93c5fd !important;
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
 }
 
 .settings-help-slot {
@@ -1041,6 +1087,10 @@ next css sets the default height of the frame popup
     gap: 10px;
   }
 
+  .settings-header-current span {
+    display: none;
+  }
+
   .settings-brand span {
     display: none;
   }
@@ -1095,6 +1145,24 @@ next css sets the default height of the frame popup
   background-color: #5cb85c !important;
   padding: 0.5rem 1rem !important;
   border-color: #5cb85c !important;
+}
+
+.btn-save {
+  background-color: #d9f2d9 !important;
+  border-color: #b7dfb7 !important;
+  color: #2f5f2f !important;
+}
+
+/* .btn-save marks the confirm/save action in the settings modal and every
+   Device/Widget editor popup, so this hover applies wherever it appears. */
+.btn-save:hover {
+  background-color: #c8ecc8 !important;
+  border-color: #9ecf9e !important;
+}
+
+.modal-footer .btn-secondary:hover {
+  background-color: #f1f3f5 !important;
+  border-color: #adb5bd !important;
 }
 
 .row {
@@ -1769,6 +1837,45 @@ body.dle-active {
   font-size: 12px;
 }
 
+/* A brand-new device/widget/separator added via the topbar's "Add items"
+   menu while the Layout Editor stays open (see addPendingItems in
+   js/layouteditor.js). It has no persisted config yet, so it renders as a
+   plain placeholder - positionable/removable like any other tile, but not
+   its own real content - until the Layout Editor's own Save persists it. */
+.dle-pending-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  min-height: 60px;
+  padding: 10px;
+  text-align: center;
+  color: var(--text-light);
+  border: 2px dashed rgba(90, 162, 255, 0.6);
+  border-radius: 6px;
+}
+
+.dle-pending-icon {
+  font-size: 20px;
+  opacity: 0.85;
+}
+
+.dle-pending-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dle-pending-badge {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
 .dle-drag-ghost {
   position: fixed;
   /* Drag feedback stays above the toolbar while remaining below modals. */
@@ -1972,11 +2079,14 @@ body.dle-active {
 }
 
 /* Without this, the global .fas { font-size: 30px } rule below inflates
-   the Back button's own line box (icon line-height 30px vs. the button's
-   own ~20px text line-height), making it taller than the Cancel/Save
-   buttons next to it. */
-.de-back-btn .fas,
-.we-back-btn .fas {
+   a button's own line box (icon line-height 30px vs. the button's own
+   ~20px text line-height), making it taller/wider than its neighbours.
+   Covers every footer button icon (Back, Close, Save, OK, Cancel) in the
+   settings modal and every Device/Widget editor popup, so they all stay
+   the same size regardless of which one has an icon. */
+.modal-footer .btn .fas,
+.modal-footer .btn .far,
+.modal-footer .btn .fab {
   font-size: 1em !important;
   line-height: 1;
 }
@@ -2016,14 +2126,20 @@ body.dle-active {
 .de-config-options .form-check-input {
   flex: 0 0 auto;
   float: none;
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 20px;
   margin: 0;
 }
 
 .de-config-options-three {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   justify-items: center;
+}
+
+#hb-device-border.form-check-input {
+  width: 38px;
+  height: 20px;
+  margin-top: 0;
 }
 
 .de-config-options-four {
@@ -2447,8 +2563,6 @@ body.dle-active {
   width: 38px;
   height: 20px;
   margin: 0;
-  border-color: #adb5bd;
-  cursor: pointer;
 }
 
 /* Domoticz log widget: the ascending/descending switch, made 1.5x the
@@ -2461,10 +2575,9 @@ body.dle-active {
 .we-block-option.form-check-input {
   flex: 0 0 auto;
   float: none;
-  width: 32px;
-  height: 32px;
+  width: 38px;
+  height: 20px;
   margin: 0;
-  cursor: pointer;
 }
 
 #we-config-popup .form-check-inline {
