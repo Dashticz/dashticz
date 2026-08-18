@@ -40,12 +40,14 @@ v3.45.0 beta (17-8-2026)
   the user had switched to Image and had no icon value to fall back from.
   The renderer draws an icon and an image side by side rather than one
   replacing the other, so both showed up together.
-- Fixed a Slide button's custom image overflowing its fixed-width icon
-  column and overlapping the title text next to it, in the Modern Dark and
-  both Liquid Glass themes: their generic 65px image size (meant for
-  regular device tiles) had no Slide-button-specific exception the way the
-  Separator block already had one. Also right-aligned Slide button titles
-  so they read away from the icon.
+- Right-aligned Slide button titles, in the Modern Dark and both Liquid
+  Glass themes, so they read away from the button's icon/image instead of
+  butting up against it. Also fixed a Slide button's custom image
+  rendering smaller than every other device's image in these themes: an
+  earlier size exception, meant to stop it overlapping the title, capped
+  it well below the generic size regular device tiles use - now it
+  matches other devices' image size, same as before that exception was
+  added.
 
 v3.44.2 beta (17-8-2026)
 -------------------------
