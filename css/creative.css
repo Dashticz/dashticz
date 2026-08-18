@@ -1769,6 +1769,45 @@ body.dle-active {
   font-size: 12px;
 }
 
+/* A brand-new device/widget/separator added via the topbar's "Add items"
+   menu while the Layout Editor stays open (see addPendingItems in
+   js/layouteditor.js). It has no persisted config yet, so it renders as a
+   plain placeholder - positionable/removable like any other tile, but not
+   its own real content - until the Layout Editor's own Save persists it. */
+.dle-pending-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 100%;
+  min-height: 60px;
+  padding: 10px;
+  text-align: center;
+  color: var(--text-light);
+  border: 2px dashed rgba(90, 162, 255, 0.6);
+  border-radius: 6px;
+}
+
+.dle-pending-icon {
+  font-size: 20px;
+  opacity: 0.85;
+}
+
+.dle-pending-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.dle-pending-badge {
+  font-size: 11px;
+  opacity: 0.75;
+}
+
 .dle-drag-ghost {
   position: fixed;
   /* Drag feedback stays above the toolbar while remaining below modals. */
