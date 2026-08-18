@@ -327,7 +327,8 @@
             "removed_all": "No tiles remain. Select Save to remove everything, or Cancel to restore it.",
             "auto_height": "auto",
             "configure_device": "Configure device",
-            "configure_widget": "Configure widget"
+            "configure_widget": "Configure widget",
+            "pending_new": "New – not saved yet"
         },
         "widgeteditor": {
             "title": "Widgets",

@@ -49,6 +49,39 @@ v3.45.0 beta (17-8-2026)
   matches other devices' image size, same as before that exception was
   added.
 
+v3.44.3 beta (18-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- The Layout Editor now stays open when switching between screens (the
+  topbar's S/1/2/... buttons keep working while it is open). Previously
+  the editor stayed bound to whichever screen was active when it was
+  opened, so switching screens left the newly visible screen without any
+  editing overlay underneath the still-open toolbar. Each screen now gets
+  its own in-memory editing session, collected the first time it is
+  visited; switching back to an already-visited screen restores its
+  session so edits made on one screen never bleed into another, and Save
+  persists every screen actually edited in that round - not just the one
+  on display when Save was pressed.
+- Adding a device, widget or separator from the topbar's "Add items" menu
+  while the Layout Editor is open no longer closes the editor and reloads
+  immediately, silently dropping whatever was still pending there (a
+  removed tile, a resize, a move). The new tile is added as a pending,
+  not-yet-saved placeholder - still fully draggable/resizable/removable -
+  and only the Layout Editor's own Save button persists it, together with
+  everything else pending; Cancel discards it. Custom device, Multi
+  Device, Group, HTML Block and Slide button - kinds the Layout Editor
+  can't yet represent as an editable tile - keep the previous
+  save-and-reload behavior.
+
+* **Fixes**
+
+- Fixed a "Grid block is not declared and cannot be created" error when
+  saving a newly added device, widget or separator on a grid screen: its
+  save now declares the new block in the same request instead of only
+  sending a grid position for something the config didn't know yet.
+
 v3.44.2 beta (17-8-2026)
 -------------------------
 

@@ -493,7 +493,7 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(editor, /function _firstFreeGridPosition/);
   assert.match(editor, /function _moveGridItem/);
   assert.match(editor, /function _resizeGridItem/);
-  assert.match(editor, /function _saveGrid/);
+  assert.match(editor, /function _saveScreenPayload/);
   assert.match(editor, /--dt-grid-x/);
   assert.match(editor, /--dt-grid-h/);
   assert.match(simpleBlock, /_showConfigModeWarning\(mode, function \(\)/);
@@ -552,6 +552,166 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(blocksSource, /Object\.defineProperty\(block, '_dashticzAutoTitle'/);
   assert.match(blocksSource, /value: typeof block\.title === 'undefined'/);
   assert.match(blocksSource, /Object\.defineProperty\(block, 'title',[\s\S]*value: device\.Name[\s\S]*enumerable: false/);
+});
+
+test('Layout Editor stays active across screen switches, editing each screen independently', () => {
+  const editor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+
+  // Switching screens while the editor is open must not leave the editor
+  // bound only to the screen it was opened on: a session is captured per
+  // screen and swapped back in when that screen is revisited.
+  assert.match(editor, /function _captureSession/);
+  assert.match(editor, /function _restoreSession/);
+  assert.match(editor, /function _switchActiveScreen/);
+  assert.match(editor, /function _initializeScreenSession/);
+  assert.match(editor, /var sessions = \{\}/);
+  assert.match(editor, /var currentSessionKey = null/);
+
+  // Screen navigation must be observed both through Swiper (slideChange /
+  // transitionEnd, used by numbered screens) and through the topbar's S/1/
+  // 2/... buttons directly (used to enter/leave standby, which never fires
+  // a Swiper event).
+  assert.match(editor, /function _bindScreenNavigation/);
+  assert.match(editor, /function _onScreenNavigated/);
+  assert.match(editor, /myswiper\.on\('slideChange', _onScreenNavigated\)/);
+  assert.match(editor, /myswiper\.on\('transitionEnd', _onScreenNavigated\)/);
+  assert.match(
+    editor,
+    /\.on\('click\.layouteditorscreen', '\.dt-screen-btn'/
+  );
+
+  // A screen that would need a full Wizard grid-conversion round trip must
+  // never be pulled into an already-open multi-screen edit: that round
+  // trip reloads the page, which would silently discard any edits already
+  // pending on other screens in the same editing round.
+  assert.match(
+    editor,
+    /_initializeScreenSession[\s\S]*never falls back to the Wizard grid-conversion flow/
+  );
+
+  // Save and Cancel must both walk every session that was actually
+  // prepared during this editing round, not just the one currently on
+  // screen.
+  assert.match(editor, /function _buildSavePayloads/);
+  assert.match(
+    editor,
+    /_buildSavePayloads[\s\S]*Object\.keys\(sessions\)\.map/
+  );
+  assert.match(editor, /function _revertScreenDom/);
+  assert.match(
+    editor,
+    /_cancel[\s\S]*Object\.keys\(sessions\)\.forEach\(function \(key\) \{\s*_restoreSession\(sessions\[key\]\);\s*_revertScreenDom\(\);/
+  );
+
+  // A live Domoticz refresh can replace a device's DOM element on any
+  // screen, not just the one currently active in the editor; the stored
+  // item reference must be updated wherever it lives.
+  assert.match(
+    editor,
+    /replaceBlockReference[\s\S]*Object\.keys\(sessions\)\.forEach/
+  );
+
+  // Re-running the overlay/toolbar bindings must stay idempotent: a new
+  // screen session calls _attachHandlers() again, and without unbinding
+  // the toolbar's previous handlers first, Save/Cancel would fire once per
+  // screen visited instead of once per click.
+  assert.match(
+    editor,
+    /\$toolbar\s*\.off\('\.layouteditor'\)\s*\.on\('click\.layouteditor', '\.dle-cancel'/
+  );
+});
+
+test('Add items menu grafts new devices/widgets/separators into an open Layout Editor instead of closing it', () => {
+  const editor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const widgetEditor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+
+  // The Layout Editor exposes a way to check whether it is open and to add
+  // brand-new tiles into its current session without a server round trip.
+  assert.match(editor, /isActive: function \(\) \{\s*return active;\s*\}/);
+  assert.match(editor, /addPendingItems: addPendingItems/);
+  assert.match(editor, /function addPendingItems\(entries\)/);
+  assert.match(editor, /function _addPendingItem\(entry\)/);
+  assert.match(editor, /Dashticz\.mountNewContainer\(\$canvas\[0\]\)/);
+  assert.match(editor, /isPending: true/);
+
+  // A pending item has no persisted config yet, so its gear-icon config
+  // button must not be offered - only after the Layout Editor's own Save
+  // has actually persisted it.
+  assert.match(editor, /var isConfigurable =\s*!item\.isPending/);
+
+  // Cancel must remove a never-saved pending item outright rather than try
+  // to revert it to a prior state it never had.
+  assert.match(
+    editor,
+    /if \(item\.isPending\) \{[\s\S]*removeChild\(item\.wrapper\)/
+  );
+
+  // Both editors capture a baseline of what was already on the screen when
+  // their popup opened, and only graft when the Layout Editor is active -
+  // otherwise their normal persist-and-reload Save is untouched.
+  [deviceEditor, widgetEditor].forEach((source) => {
+    assert.match(source, /var layoutEditorBaseline = null/);
+    assert.match(source, /function _graftIntoLayoutEditor\(\)/);
+    assert.match(source, /DashticzLayoutEditor\.isActive\(\)/);
+    assert.match(source, /DashticzLayoutEditor\.addPendingItems\(entries\)/);
+    assert.match(source, /if \(layoutEditorBaseline && _graftIntoLayoutEditor\(\)\) return;/);
+  });
+
+  // Grafting is scoped to what the Layout Editor's item model can actually
+  // represent and re-save later (device/widget/separator); anything else
+  // (custom/multi-device/group/HTML block/slide button), or a Save that
+  // also touched pre-existing entries, must fall back to the normal save.
+  assert.match(deviceEditor, /managedSpecials\[orderKey\]\.specialType === 'title'/);
+  assert.match(deviceEditor, /if \(!existingUntouched\) return false;/);
+});
+
+test('a pending item grafted into a grid screen declares its block instead of failing "not declared" (#161)', () => {
+  const editor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const saveGridLayout = fs.readFileSync(
+    path.join(root, 'js/savegridlayout.php'),
+    'utf8'
+  );
+
+  // savegridlayout.php only accepts a ref that is either already declared,
+  // or accompanied by a `create` descriptor - ref alone (what a plain
+  // reposition/resize save always sent, before pending items existed) is
+  // rejected for anything undeclared.
+  assert.match(
+    saveGridLayout,
+    /Grid block is not declared and cannot be created\./
+  );
+  assert.match(saveGridLayout, /isset\(\$entry\['create'\]\)/);
+
+  // A pending grid item's save must carry a `create` descriptor built from
+  // the item itself, not just {ref, grid} - matching what the Wizard's own
+  // grid conversion already sends via _gridCreateDefinition.
+  assert.match(editor, /function _gridCreateForPendingItem\(item\)/);
+  assert.match(
+    editor,
+    /items: _orderedItems\(\)\.map\(function \(item\) \{\s*var entry = \{ ref: item\.reference, grid: \$\.extend\(\{\}, item\.grid\) \};\s*if \(item\.isPending\) \{\s*var create = _gridCreateForPendingItem\(item\);\s*if \(create\) entry\.create = create;/
+  );
+
+  // `kind: 'inline'` is used uniformly (not the narrower `kind: 'device'`,
+  // which PHP-casts idx with (int) and would zero out a Domoticz
+  // group/scene idx like "s1") for every pending kind the Layout Editor
+  // can graft.
+  assert.match(
+    editor,
+    /_gridCreateForPendingItem[\s\S]*kind: 'inline',\s*name: item\.name \|\| item\.kind,\s*propsJson: JSON\.stringify\(props\)/
+  );
+
+  // A widget dispatched by its literal block key (log/sunrise/streamplayer
+  // - see Dashticz.mount in js/dashticz.js) must be declared under exactly
+  // that key, not a synthesized 'widget_<id>' one, or it silently fails to
+  // render after the reload following Save.
+  assert.match(editor, /log: \{ key: 'log', type: 'log' \}/);
+  assert.match(editor, /sunrise: \{ key: 'sunrise', type: 'sunrise' \}/);
+  assert.match(editor, /radio: \{ key: 'streamplayer', type: 'streamplayer' \}/);
+  assert.match(
+    editor,
+    /_widgetKeyAndType\(entry\.widgetId\)\.key/
+  );
 });
 
 test('screen editor add menu exposes device, widget, custom-device and separator workflows', () => {

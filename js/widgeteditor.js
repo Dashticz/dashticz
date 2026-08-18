@@ -1,9 +1,15 @@
-/* global settings columns columns_standby blocks screens standby_screen language DashticzScreenSwitcher standbyActive */
+/* global settings columns columns_standby blocks screens standby_screen language DashticzScreenSwitcher standbyActive DashticzLayoutEditor */
 // eslint-disable-next-line no-unused-vars
 var DashticzWidgetEditor = (function () {
   'use strict';
 
   var customImageListPromise = null;
+  // Snapshot of selectedWidgets (which widget ids are on-screen) taken when
+  // this popup opened, only while the Layout Editor was already open
+  // underneath it. Used by _save() to graft newly checked widgets into
+  // that still-open editor instead of persisting immediately (see
+  // _graftIntoLayoutEditor). Null whenever the Layout Editor isn't active.
+  var layoutEditorBaseline = null;
 
   var catalog = [
     {
@@ -1020,6 +1026,7 @@ var DashticzWidgetEditor = (function () {
       _readGridConfiguredWidgets();
       _cameraWidgetConfig();
       _radioWidgetConfig();
+      _captureLayoutEditorBaseline();
       return;
     }
     if (typeof columns === 'undefined') return;
@@ -1260,6 +1267,22 @@ var DashticzWidgetEditor = (function () {
 
     _cameraWidgetConfig();
     _radioWidgetConfig();
+    _captureLayoutEditorBaseline();
+  }
+
+  /* Snapshot of which widget ids are already on-screen, taken only while
+     the Layout Editor was already open underneath this popup. Used by
+     _save() to graft newly checked widgets into that still-open editor
+     instead of persisting immediately (see _graftIntoLayoutEditor). */
+  function _captureLayoutEditorBaseline() {
+    layoutEditorBaseline =
+      typeof DashticzLayoutEditor !== 'undefined' &&
+      DashticzLayoutEditor.isActive &&
+      DashticzLayoutEditor.isActive()
+        ? Object.keys(selectedWidgets).filter(function (id) {
+            return selectedWidgets[id];
+          })
+        : null;
   }
 
   function _activeScreenTarget() {
@@ -3718,7 +3741,64 @@ var DashticzWidgetEditor = (function () {
       });
   }
 
+  /* When this popup opened while the Layout Editor was already active, a
+     Save that only checks NEW widgets (nothing existing deselected) is
+     handed off to that editor's own in-memory session instead of
+     persisting immediately - see DashticzLayoutEditor.addPendingItems().
+     Returns true when handled: the popup is closed and the caller's
+     normal save must not also run. Each newly added widget starts with
+     catalog defaults rather than whatever was just typed into its config
+     form here; the Layout Editor's own Save persists those defaults, and
+     the widget's own gear-icon config (already working without closing
+     the editor) is how its settings get filled in afterwards. */
+  function _graftIntoLayoutEditor() {
+    if (
+      typeof DashticzLayoutEditor === 'undefined' ||
+      !DashticzLayoutEditor.isActive ||
+      !DashticzLayoutEditor.isActive() ||
+      !DashticzLayoutEditor.addPendingItems
+    ) {
+      return false;
+    }
+
+    var stillSelected = layoutEditorBaseline.every(function (id) {
+      return selectedWidgets[id];
+    });
+    if (!stillSelected) return false;
+
+    var newWidgetIds = Object.keys(selectedWidgets).filter(function (id) {
+      return selectedWidgets[id] && layoutEditorBaseline.indexOf(id) === -1;
+    });
+    if (!newWidgetIds.length) return false;
+
+    var entries = newWidgetIds.map(function (id) {
+      var catalogItem =
+        catalog.filter(function (item) {
+          return item.id === id;
+        })[0] || {};
+      return {
+        kind: 'widget',
+        widgetId: id,
+        name: catalogItem.title || id,
+        width: catalogItem.width || 3,
+        icon: catalogItem.icon,
+      };
+    });
+
+    DashticzLayoutEditor.addPendingItems(entries);
+    _closeModalWithoutSaving();
+    return true;
+  }
+
+  function _closeModalWithoutSaving() {
+    var el = document.getElementById('widgeteditorpopup');
+    var instance =
+      el && window.bootstrap && window.bootstrap.Modal.getInstance(el);
+    if (instance) instance.hide();
+  }
+
   function _save() {
+    if (layoutEditorBaseline && _graftIntoLayoutEditor()) return;
     if (
       selectedWidgets.calendar &&
       widgetConfigs.calendar &&

@@ -1,4 +1,4 @@
-/* global Domoticz settings columns columns_standby blocks blocktypes screens standby_screen DashticzScreenSwitcher standbyActive language getBlockTypesBlock */
+/* global Domoticz settings columns columns_standby blocks blocktypes screens standby_screen DashticzScreenSwitcher standbyActive language getBlockTypesBlock DashticzLayoutEditor */
 // eslint-disable-next-line no-unused-vars
 var DashticzDeviceEditor = (function () {
   'use strict';
@@ -38,6 +38,12 @@ var DashticzDeviceEditor = (function () {
   var TITLE_GRID_HEIGHT = 2;
   var SEPARATOR_DEFAULT_ICON = 'fas fa-divide';
   var customImageListPromise = null;
+  // Snapshot of managedOrder taken when this popup opened, only while the
+  // Layout Editor was already open underneath it. Used by _save() to graft
+  // newly added devices/widgets/separators into that still-open editor
+  // instead of persisting immediately and reloading (see
+  // _graftIntoLayoutEditor). Null whenever the Layout Editor isn't active.
+  var layoutEditorBaseline = null;
 
   function _translations() {
     var configured =
@@ -392,6 +398,13 @@ var DashticzDeviceEditor = (function () {
         deviceRefs[item.ck] = item.reference;
       }
     });
+
+    layoutEditorBaseline =
+      typeof DashticzLayoutEditor !== 'undefined' &&
+      DashticzLayoutEditor.isActive &&
+      DashticzLayoutEditor.isActive()
+        ? managedOrder.slice()
+        : null;
   }
 
   /* ── composite key helpers ──────────────────────────────────── */
@@ -3793,7 +3806,99 @@ var DashticzDeviceEditor = (function () {
       });
   }
 
+  /* When this popup opened while the Layout Editor was already active, a
+     Save that only ADDS devices/widgets/separators (nothing reordered,
+     removed, or edited on existing entries) is handed off to that
+     editor's own in-memory session instead of persisting immediately -
+     see DashticzLayoutEditor.addPendingItems(). Returns true when
+     handled: the popup is closed and the caller's normal save must not
+     also run. Anything else (an existing entry touched, or a kind the
+     Layout Editor's item model can't represent yet - custom/multi-
+     device/group/HTML block/slide button) falls through to the normal
+     persist-and-reload save, unchanged. */
+  function _graftIntoLayoutEditor() {
+    if (
+      typeof DashticzLayoutEditor === 'undefined' ||
+      !DashticzLayoutEditor.isActive ||
+      !DashticzLayoutEditor.isActive() ||
+      !DashticzLayoutEditor.addPendingItems
+    ) {
+      return false;
+    }
+
+    var unchangedExisting = managedOrder.filter(function (orderKey) {
+      return layoutEditorBaseline.indexOf(orderKey) !== -1;
+    });
+    var existingUntouched =
+      unchangedExisting.length === layoutEditorBaseline.length &&
+      unchangedExisting.every(function (orderKey, index) {
+        return orderKey === layoutEditorBaseline[index];
+      });
+    if (!existingUntouched) return false;
+
+    var newOrderKeys = managedOrder.filter(function (orderKey) {
+      return layoutEditorBaseline.indexOf(orderKey) === -1;
+    });
+    if (!newOrderKeys.length) return false;
+
+    var entries = [];
+    var allGraftable = newOrderKeys.every(function (orderKey) {
+      if (orderKey.indexOf('device:') === 0) {
+        var ck = orderKey.slice(7);
+        var p = _parseCk(ck);
+        entries.push({
+          kind: 'device',
+          idx: p.idx,
+          subidx: p.subidx,
+          name: deviceNames[ck] || ('Device ' + p.idx),
+          width: _parseWidth(deviceWidths[ck]),
+        });
+        return true;
+      }
+      if (orderKey.indexOf('widget:') === 0) {
+        var widget = managedWidgets[orderKey];
+        if (!widget) return false;
+        entries.push({
+          kind: 'widget',
+          widgetId: widget.id,
+          name: widgetTitles[orderKey] || widget.title || widget.id,
+          width: _parseWidth(widgetWidths[orderKey]),
+        });
+        return true;
+      }
+      if (
+        orderKey.indexOf('special:') === 0 &&
+        managedSpecials[orderKey] &&
+        managedSpecials[orderKey].specialType === 'title'
+      ) {
+        var special = managedSpecials[orderKey];
+        entries.push({
+          kind: 'separator',
+          name: special.title || _translations().separator,
+          width: _parseWidth(special.width),
+        });
+        return true;
+      }
+      return false;
+    });
+
+    if (!allGraftable) return false;
+
+    DashticzLayoutEditor.addPendingItems(entries);
+    _closeModalWithoutSaving();
+    return true;
+  }
+
+  function _closeModalWithoutSaving() {
+    var el = document.getElementById('deviceeditorpopup');
+    var instance =
+      el && window.bootstrap && window.bootstrap.Modal.getInstance(el);
+    if (instance) instance.hide();
+  }
+
   function _save() {
+    if (layoutEditorBaseline && _graftIntoLayoutEditor()) return;
+
     var t = _translations();
     var $btn = $('#de-save-btn').prop('disabled', true).text(t.saving);
 
