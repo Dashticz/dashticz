@@ -360,6 +360,14 @@ var Dashticz = (function () {
         cfg.icon = ''; //reset default icon in case image is set
       }
       $.extend(cfg, block);
+      // A separator exposes Icon/Image as one mutually exclusive visual in
+      // Device Config. Older CONFIG.js versions can nevertheless contain
+      // both properties; $.extend() above would restore the explicit icon
+      // after the default-reset and getColIcon() would render both side by
+      // side. For block titles, an image always replaces the icon.
+      if (special && special.name === 'blocktitle' && cfg.image) {
+        cfg.icon = '';
+      }
     }
     if (typeof key !== 'undefined' && key !== '') {
       cfg.key = key;
