@@ -1247,6 +1247,10 @@ function loadSettings() {
       html +=
         '<div class="settings-brand"><img src="img/favicon/app-icon-192x192.png" ' +
         'width="38" height="38" alt=""><span>Dashticz</span></div>';
+      html +=
+        '<div class="settings-header-current d-none" id="settings-current-category">' +
+        '<i class="fas fa-cog" aria-hidden="true"></i>' +
+        '<span id="settings-current-category-label"></span></div>';
       html += '</div>';
 
       html += '<div class="settings-tab-content">';
@@ -1265,6 +1269,7 @@ function loadSettings() {
         '</button> ';
       html +=
         '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+        '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
         language.settings.close +
         '</button> ';
       if (settings['loginEnabled'] == true)
@@ -1273,7 +1278,8 @@ function loadSettings() {
           language.settings.general.logout +
           '</button> ';
       html +=
-        '<button onClick="saveSettings();" type="button" class="btn btn-primary" data-bs-dismiss="modal">' +
+        '<button onClick="saveSettings();" type="button" class="btn btn-primary btn-save" data-bs-dismiss="modal">' +
+        '<i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
         language.settings.save +
         '</button></div></div>';
       html += '</div>';
@@ -1376,22 +1382,12 @@ function renderSettingsCategoryHome() {
 
   for (ti = 0; ti < tabs.length; ti++) {
     id = tabs[ti];
-    title = getSettingsCategoryTitle(id);
-    icon = settingsCategoryIcons[id] || 'fas fa-cog';
     html +=
       '<div class="settings-category-panel d-none" id="settings-category-' +
       escapeSettingsHtml(id) +
       '" data-settings-panel="' +
       escapeSettingsHtml(id) +
       '">';
-    html += '<div class="settings-panel-header">';
-    html +=
-      '<h5 class="settings-panel-title"><i class="' +
-      escapeSettingsHtml(icon) +
-      ' me-2" aria-hidden="true"></i>' +
-      escapeSettingsHtml(title) +
-      '</h5>';
-    html += '</div>';
     if (id === 'widgets') {
       html += renderWidgetSettingsTab();
     } else if (id === 'theme') {
@@ -1770,6 +1766,7 @@ function showSettingsHome() {
     .find('#settings-widget-tiles, .settings-widgets-intro')
     .removeClass('d-none');
   $popup.find('.settings-back').addClass('d-none');
+  $popup.find('#settings-current-category').addClass('d-none');
 }
 
 function showSettingsCategory(id) {
@@ -1784,6 +1781,15 @@ function showSettingsCategory(id) {
     .find('#settings-category-widgets > .settings-panel-title')
     .removeClass('d-none');
   $popup.find('.settings-back').removeClass('d-none');
+  $popup
+    .find('#settings-current-category')
+    .removeClass('d-none')
+    .find('i')
+    .attr('class', (settingsCategoryIcons[id] || 'fas fa-cog') + '')
+    .attr('aria-hidden', 'true');
+  $popup
+    .find('#settings-current-category-label')
+    .text(getSettingsCategoryTitle(id));
 }
 
 function bindSettingsCategoryTiles() {

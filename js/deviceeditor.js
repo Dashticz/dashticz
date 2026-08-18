@@ -1554,12 +1554,13 @@ var DashticzDeviceEditor = (function () {
       html += '</span>';
     }
     if (openedFromAddMenu) html += _backButtonHtml();
-    html += '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' + _esc(t.close) + '</button>';
-    html += '<button type="button" class="btn btn-primary" id="de-save-btn"';
+    html += '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.close) + '</button>';
+    html += '<button type="button" class="btn btn-primary btn-save" id="de-save-btn"';
     if (typeof _PHP_INSTALLED !== 'undefined' && !_PHP_INSTALLED) {
       html += ' disabled';
     }
-    html += '>' + _esc(t.save) + '</button>';
+    html += '><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' + _esc(t.save) + '</button>';
     html += '</div>';
 
     html += '</div></div></div>'; /* content, dialog, modal */
@@ -1675,8 +1676,8 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
     html += '<div class="modal-footer">' + _backButtonHtml() +
       '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
-      _esc(t.cancel) + '</button>';
-    html += '<button type="button" class="btn btn-primary" id="cd-save-btn">' + _esc(t.save) + '</button>';
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.cancel) + '</button>';
+    html += '<button type="button" class="btn btn-primary btn-save" id="cd-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' + _esc(t.save) + '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
     var $popup = $('#customdevicepopup');
@@ -1845,13 +1846,13 @@ var DashticzDeviceEditor = (function () {
     var t = _translations();
     var html = '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
     html += '<div class="mb-3 de-config-options de-config-options-three">';
-    html += '<label class="form-check"><input class="form-check-input" type="checkbox" id="' +
+    html += '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
       prefix + '-opt-icon"' + (defaults.icon ? ' checked' : '') + '>' +
       '<span class="form-check-label">' + _esc(t.icon) + '</span></label>';
-    html += '<label class="form-check"><input class="form-check-input" type="checkbox" id="' +
+    html += '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
       prefix + '-opt-update"' + (defaults.lastUpdate ? ' checked' : '') + '>' +
       '<span class="form-check-label">' + _esc(t.last_update) + '</span></label>';
-    html += '<label class="form-check"><input class="form-check-input" type="checkbox" id="' +
+    html += '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
       prefix + '-opt-title"' + (defaults.showTitle ? ' checked' : '') + '>' +
       '<span class="form-check-label">' + _esc(t.show_title) + '</span></label>';
     html += '</div>';
@@ -2018,8 +2019,8 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
     html += '<div class="modal-footer">' + _backButtonHtml() +
       '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
-      _esc(t.cancel) + '</button>';
-    html += '<button type="button" class="btn btn-primary" id="md-save-btn">' + _esc(t.save) + '</button>';
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.cancel) + '</button>';
+    html += '<button type="button" class="btn btn-primary btn-save" id="md-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' + _esc(t.save) + '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
     var $popup = $('#multidevicepopup');
@@ -2178,8 +2179,8 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
     html += '<div class="modal-footer">' + _backButtonHtml() +
       '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
-      _esc(t.cancel) + '</button>';
-    html += '<button type="button" class="btn btn-primary" id="gb-save-btn">' + _esc(t.save) + '</button>';
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.cancel) + '</button>';
+    html += '<button type="button" class="btn btn-primary btn-save" id="gb-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' + _esc(t.save) + '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
     var $popup = $('#groupblockpopup');
@@ -2306,13 +2307,13 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="form-text">' + _esc(t.html_block_file_help) + '</div></div>';
     html += '<div class="mb-3"><label class="form-label" for="hb-device-title">' + _esc(t.html_block_title) + '</label>';
     html += '<input type="text" class="form-control" id="hb-device-title" autocomplete="off"></div>';
-    html += '<div class="mb-3 form-check"><input class="form-check-input" type="checkbox" id="hb-device-border">';
+    html += '<div class="mb-3 form-check form-switch"><input class="form-check-input" type="checkbox" id="hb-device-border">';
     html += '<label class="form-check-label" for="hb-device-border">' + _esc(t.html_block_border) + '</label></div>';
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
     html += '<div class="modal-footer">' + _backButtonHtml() +
       '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
-      _esc(t.cancel) + '</button>';
-    html += '<button type="button" class="btn btn-primary" id="hb-save-btn">' + _esc(t.save) + '</button>';
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.cancel) + '</button>';
+    html += '<button type="button" class="btn btn-primary btn-save" id="hb-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' + _esc(t.save) + '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
     var $popup = $('#htmlblockpopup');
@@ -2406,8 +2407,8 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
     html += '<div class="modal-footer">' + _backButtonHtml() +
       '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
-      _esc(t.cancel) + '</button>';
-    html += '<button type="button" class="btn btn-primary" id="sb-save-btn">' + _esc(t.save) + '</button>';
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.cancel) + '</button>';
+    html += '<button type="button" class="btn btn-primary btn-save" id="sb-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' + _esc(t.save) + '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
     var $popup = $('#slidebuttonpopup');
@@ -2685,7 +2686,7 @@ var DashticzDeviceEditor = (function () {
     configOptions.forEach(function (option) {
       var hiddenForDial =
         hasDial && (option === 'icon' || option === 'show_title');
-      html += '<label class="form-check' +
+      html += '<label class="form-check form-switch' +
         (hiddenForDial ? ' de-hide-for-dial' : '') +
         '"><input class="form-check-input de-config-option" type="checkbox" data-option="' + option + '"';
       // The Data checkbox is user-facing: checked means data is visible.
@@ -2745,8 +2746,10 @@ var DashticzDeviceEditor = (function () {
     }
     html += '</div>';
     html += '<div class="de-config-message" role="status"></div></div><div class="modal-footer">';
-    html += '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' + _esc(t.cancel) + '</button>';
-    html += '<button type="button" class="btn btn-primary" id="de-config-ok">' + _esc(t.ok) + '</button>';
+    html += '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.cancel) + '</button>';
+    html += '<button type="button" class="btn btn-primary btn-save" id="de-config-ok">' +
+      '<i class="fas fa-check me-1" aria-hidden="true"></i>' + _esc(t.ok) + '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
 
