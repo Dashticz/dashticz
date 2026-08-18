@@ -327,7 +327,8 @@
             "removed_all": "Er zijn geen tegels meer. Kies Opslaan om alles te verwijderen, of Annuleren om te herstellen.",
             "auto_height": "automatisch",
             "configure_device": "Device configureren",
-            "configure_widget": "Widget configureren"
+            "configure_widget": "Widget configureren",
+            "pending_new": "Nieuw – nog niet opgeslagen"
         },
         "widgeteditor": {
             "title": "Widgets",
