@@ -552,6 +552,8 @@ var DashticzDeviceEditor = (function () {
       kind = 'html';
     }
     if (!kind) return null;
+    var hasConfiguredImage =
+      typeof definition.image === 'string' && definition.image !== '';
 
     return {
       kind: 'special',
@@ -573,13 +575,18 @@ var DashticzDeviceEditor = (function () {
       // hide_data/last_update/switch are unused for a title/separator block,
       // but icon applies to every special kind.
       options: {
-        icon: (typeof definition.image === 'string' && definition.image !== '') ||
+        icon: hasConfiguredImage ||
           typeof definition.icon === 'undefined' || definition.icon !== '',
-        iconValue: typeof definition.icon === 'string' && definition.icon !== ''
-          ? definition.icon
-          : (kind === 'title' && typeof definition.icon === 'undefined'
-            ? SEPARATOR_DEFAULT_ICON
-            : null),
+        // Icon and Image are one source selector in the editor. Prefer the
+        // configured image when an older block still contains both so an
+        // unrelated Device Editor save also cleans up the stale icon.
+        iconValue: hasConfiguredImage
+          ? null
+          : (typeof definition.icon === 'string' && definition.icon !== ''
+            ? definition.icon
+            : (kind === 'title' && typeof definition.icon === 'undefined'
+              ? SEPARATOR_DEFAULT_ICON
+              : null)),
         hide_data: definition.hide_data === true,
         last_update: definition.last_update === true,
         switch: definition.switch === true,
@@ -3790,6 +3797,15 @@ var DashticzDeviceEditor = (function () {
     var t = _translations();
     var $btn = $('#de-save-btn').prop('disabled', true).text(t.saving);
 
+    // Keep this list in _save() as well as _buildDevicePayload(): after the
+    // device/widget requests complete it is needed to map the returned block
+    // keys back onto managedOrder.  When payload construction was extracted
+    // into _buildDevicePayload(), orderedBlockKeys accidentally became local
+    // to that helper; the later mapping then threw a ReferenceError and the
+    // otherwise successful save surfaced as the generic save-failed alert.
+    var orderedBlockKeys = managedOrder.filter(function (orderKey) {
+      return orderKey.indexOf('widget:') !== 0;
+    });
     var devicePayload = _buildDevicePayload();
 
     var orderedWidgetKeys = managedOrder.filter(function (orderKey) {

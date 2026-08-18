@@ -966,6 +966,41 @@ screens[1] = {
     expect(customCssWrites).toBe(0);
   });
 
+  test('separator image replaces a stale explicit icon', async ({ page }) => {
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['grid_image_separator'] = {
+  type: 'blocktitle',
+  title: 'Lightschakelaars',
+  icon: 'fas fa-divide',
+  image: 'custom/power.png',
+  grid: {x: 1, y: 1, w: 10, h: 3}
+};
+screens[1] = {
+  layout: 'grid', gridColumns: 24, rowHeight: 20, gap: 5,
+  mobileLayout: 'stack', blocks: ['grid_image_separator']
+};
+`,
+      });
+    });
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+
+    const separator = page.locator('[data-grid-block="grid_image_separator"]');
+    await expect(separator.locator('.col-icon em')).toHaveCount(0);
+    await expect(separator.locator('.col-icon img')).toHaveCount(1);
+    await expect(separator.locator('.col-icon img')).toHaveAttribute(
+      'src',
+      'img/custom/power.png'
+    );
+  });
+
   test('Device Editor opens full Widget Config and preserves typed widget fields', async ({
     page,
   }) => {

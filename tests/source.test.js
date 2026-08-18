@@ -804,6 +804,15 @@ test('device and widget config editors share full widget config and preserve hid
   // so falling back to the default icon while an image is set would show both.
   assert.match(deviceEditor, /else if \(titleOptions\.iconValue\) \{\s*\n\s*specialEntry\.icon = titleOptions\.iconValue;\s*\n\s*\} else if \(!specialCustomFields\.image\) \{/);
   assert.match(deviceEditor, /specialEntry\.icon = SEPARATOR_DEFAULT_ICON;/);
+  assert.match(deviceEditor, /var hasConfiguredImage =[\s\S]*typeof definition\.image === 'string'/);
+  assert.match(deviceEditor, /iconValue: hasConfiguredImage\s*\n\s*\? null/);
+  // Legacy separators may already have both an explicit icon and image. The
+  // runtime must make Image authoritative immediately, without waiting for a
+  // round-trip through Device Config to clean CONFIG.js.
+  assert.match(
+    dashticz,
+    /special\.name === 'blocktitle' && cfg\.image[\s\S]*cfg\.icon = '';/
+  );
   assert.match(deviceEditor, /kind === 'title' && typeof definition\.icon === 'undefined'[\s\S]*\? SEPARATOR_DEFAULT_ICON/);
   assert.match(blockTitle, /defaultCfg:\s*\{[\s\S]*icon: 'fas fa-divide'/);
   assert.match(configWriter, /if \(array_key_exists\('icon', \$block\) && \$block\['icon'\] !== null\) \{\s*\n\s*\$props\['icon'\] = \(string\)\$block\['icon'\];/);
@@ -2823,6 +2832,30 @@ test('Device Editor keeps Dial state scoped to the active block reference', () =
   );
 });
 
+test('ordinary device tiles follow their saved grid row height without an outer scrollbar', () => {
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const modernDark = fs.readFileSync(
+    path.join(root, 'themes/modern-dark/modern-dark.css'),
+    'utf8'
+  );
+
+  // modern-dark deliberately gives regular Domoticz (.mh) blocks a 120px
+  // default outside the grid. A 4-row grid tile is only 80px at the default
+  // row height, so the grid-specific rule must override that fixed height.
+  assert.match(
+    modernDark,
+    /\.mh \{[^}]*height: var\(--height-block-default\) !important;/s
+  );
+  assert.match(
+    styles,
+    /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.dt_block,\s*\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.mh \{[^}]*height: 100% !important;[^}]*min-height: 0 !important;/s
+  );
+  assert.match(
+    styles,
+    /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item \{[^}]*overflow: auto;/s
+  );
+});
+
 test('Dial face/content area fills more of the dial instead of leaving roomy margins', () => {
   // .dial-container/.dial-center were 90%/85%, leaving a very visible gap
   // before the ring. `.dial.fixed .dial-center` already ships at 95% with no
@@ -3053,6 +3086,26 @@ test('Device Editor save does not reintroduce a default widget height on a grid 
     deviceEditor,
     /widgets: widgetPayload,\s*\n\s*settings: pendingWidgetSettings,\s*\n\s*screen: _activeScreenPayload\(\),\s*\n\s*blocksOnly: gridMode,\s*\n[\s\S]{0,700}?gridMode: gridMode,/
   );
+});
+
+test('Device Editor keeps ordered block keys in scope through the full save chain', () => {
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const saveStart = deviceEditor.indexOf('function _save()');
+  const saveEnd = deviceEditor.indexOf('\n  function _preserveStandbyExtraBlocks', saveStart);
+  assert.notEqual(saveStart, -1, '_save not found');
+  assert.notEqual(saveEnd, -1, 'end of _save not found');
+  const saveSnippet = deviceEditor.substring(saveStart, saveEnd);
+
+  // _buildDevicePayload() has its own orderedBlockKeys local, but _save()
+  // also needs the list after saveblocks/savewidgets resolve so it can map
+  // each returned key back to managedOrder. Without this declaration the
+  // requests can succeed and then a ReferenceError still shows the generic
+  // "Devices could not be saved automatically" alert.
+  assert.match(
+    saveSnippet,
+    /var orderedBlockKeys = managedOrder\.filter\(function \(orderKey\) \{\s*\n\s*return orderKey\.indexOf\('widget:'\) !== 0;/
+  );
+  assert.match(saveSnippet, /orderedBlockKeys\.forEach\(function \(orderKey, index\)/);
 });
 
 test('Widget Editor lets a grid-mode height (iframe, camera, ...) be removed again once set (#100 follow-up)', () => {
