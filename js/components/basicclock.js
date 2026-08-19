@@ -73,9 +73,6 @@ var DT_basicclock = {
       // past the block's own bottom edge and needed an oversized block just
       // to avoid a scrollbar. Same fix as js/components/frame.js.
       var titleHeight = $title.length && $title.is(':visible') ? $title.outerHeight(true) : 0;
-      var stateMarginV = $state.length
-        ? (parseFloat($state.css('margin-top')) || 0) + (parseFloat($state.css('margin-bottom')) || 0)
-        : 0;
       // In a grid, the outer mount point owns the live row/column dimensions
       // (a hard, CSS-Grid-track-sized box); .dt_block only *looks* fixed
       // (height: 100% !important) but a grid item's automatic minimum size
@@ -86,8 +83,29 @@ var DT_basicclock = {
       // js/components/dial.js's _dialFitSize().
       var inGrid = me.$mountPoint && me.$mountPoint.hasClass('dt-grid-item');
       var $sizeBox = inGrid ? me.$mountPoint : $block;
-      var availW = $sizeBox.outerWidth() || $(me.mountPoint).width() || 120;
-      var availH = ($sizeBox.outerHeight() || $(me.mountPoint).height() || 0) - titleHeight - stateMarginV;
+
+      // Measure from the state element's *actual rendered position* to the
+      // bottom/right edge of the owning box. Subtracting an assumed title
+      // height and margins is not reliable across themes: title line-height,
+      // padding and block spacing differ, and after Save those values can
+      // settle one layout pass later than the component's first run().
+      // Using real DOM rectangles makes the available area match what the
+      // browser is actually painting.
+      var sizeEl = $sizeBox && $sizeBox[0];
+      var stateEl = $state && $state[0];
+      var sizeRect = sizeEl && sizeEl.getBoundingClientRect ? sizeEl.getBoundingClientRect() : null;
+      var stateRect = stateEl && stateEl.getBoundingClientRect ? stateEl.getBoundingClientRect() : null;
+      var availW = stateRect && stateRect.width > 0
+        ? stateRect.width
+        : ($sizeBox.outerWidth() || $(me.mountPoint).width() || 120);
+      var availH = sizeRect && stateRect
+        ? sizeRect.bottom - stateRect.top
+        : (($sizeBox.outerHeight() || $(me.mountPoint).height() || 0) - titleHeight);
+
+      // Keep a few physical pixels free at the bottom as well as a small
+      // proportional margin. This protects against sub-pixel rounding and
+      // font descenders without noticeably shrinking larger clocks.
+      availH = Math.max(0, availH - 3);
       if (availW <= 0 || availH <= 0 || !$state.children().length) return;
       var scale = Number(me.block.scale);
       if (!isFinite(scale) || scale <= 0) scale = 1;
@@ -100,8 +118,27 @@ var DT_basicclock = {
       var REF = 100;
       var measured = measureLines($state, REF);
       if (measured.width <= 0 || measured.height <= 0) return;
-      var fitScale = Math.min(availW / measured.width, availH / measured.height);
-      $block.css('font-size', REF * fitScale * scale);
+      // Leave a small vertical safety margin. Some themes/font stacks
+      // round line boxes differently at the final pixel size; fitting to an
+      // exact 100% of the measured height can therefore clip the descenders
+      // or the bottom of the date by one or two pixels after Save. Keep the
+      // width calculation exact, but reserve 5% vertically so the result is
+      // stable across themes and browser rounding.
+      var verticalFit = (availH * 0.96) / measured.height;
+      var horizontalFit = (availW * 0.98) / measured.width;
+      var fitScale = Math.min(horizontalFit, verticalFit);
+
+      // Important: only scale the clock state. Scaling .dt_block also scales
+      // .dt_title because the title inherits font-size from the block. The
+      // available height above was calculated after subtracting the title's
+      // current height, so making the title grow afterwards invalidates that
+      // calculation. In editor mode another grid resize event masks this by
+      // running fitSize() again; after Save the outer grid item no longer
+      // changes size, so ResizeObserver has nothing to report and the clock
+      // remains too large. Keeping the title independent makes editor and
+      // normal render use the exact same stable geometry.
+      $block.css('font-size', '');
+      $state.css('font-size', REF * fitScale * scale + 'px');
     }
 
     // Render into .dt_state, not .dt_content: .dt_content also holds .dt_title
@@ -124,6 +161,18 @@ var DT_basicclock = {
         '</div>'
     );
     fitSize();
+
+    // Run once more after layout has fully settled. In normal dashboard mode
+    // the title/theme geometry may be finalized after run(); editor dragging
+    // naturally causes another ResizeObserver event, which is why the editor
+    // looked correct while the saved dashboard did not. Two animation frames
+    // guarantee a post-layout fit without requiring the outer grid item to
+    // change size.
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(function () {
+        requestAnimationFrame(fitSize);
+      });
+    }
 
     // Keep the clock's size in sync with live editor drag-resizing (grid
     // row/column span, classic column width) and not just after a

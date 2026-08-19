@@ -537,12 +537,17 @@ if (!empty($devices)) {
         if (!empty($device['preserveExisting'])) {
             continue;
         }
-        $section .= configwriter_emit_block_line(
-            $device['key'],
-            isset($device['kind'])
-                ? configwriter_special_block_props($device)
-                : configwriter_device_block_props($device)
-        );
+        $props = isset($device['kind'])
+            ? configwriter_special_block_props($device)
+            : configwriter_device_block_props($device);
+        // Custom and multi-device entries are emitted as complete replacement
+        // block definitions. Preserve an explicitly unchecked Last update
+        // option as last_update:false instead of omitting the property and
+        // falling back to the global config['last_update'] after reload (#172).
+        if (isset($device['kind']) && $device['kind'] === 'custom') {
+            $props['last_update'] = !empty($device['last_update']);
+        }
+        $section .= configwriter_emit_block_line($device['key'], $props);
     }
 
     if (!$blocksOnly) {
