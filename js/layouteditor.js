@@ -1119,6 +1119,28 @@ var DashticzLayoutEditor = (function () {
 
     if (
       key &&
+      !definition.type &&
+      typeof definition.htmlfile === 'string' &&
+      definition.htmlfile !== ''
+    ) {
+      // Matches js/components/html.js's own canHandle() and js/deviceeditor.js's
+      // _specialFromReference(): dispatched purely on a truthy htmlfile, with
+      // no `type` of its own. Without this, an HTML block falls through to
+      // the numeric-idx match below (which its non-numeric key never
+      // satisfies), so it never got the config (cog) control here - see #168.
+      return {
+        definition: definition,
+        kind: 'html',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (
+      key &&
       typeof definition.idx === 'undefined' &&
       parseInt(definition.slide, 10) > 0
     ) {
@@ -1533,7 +1555,8 @@ var DashticzLayoutEditor = (function () {
         !item.isPending &&
         (item.kind === 'device' ||
           item.kind === 'widget' ||
-          item.kind === 'separator');
+          item.kind === 'separator' ||
+          item.kind === 'html');
       var configureLabel = item.kind === 'widget'
         ? _t('configure_widget')
         : _t('configure_device');
@@ -1631,7 +1654,9 @@ var DashticzLayoutEditor = (function () {
   function _openItemConfig(item) {
     if (!item) return;
     if (
-      (item.kind === 'device' || item.kind === 'separator') &&
+      (item.kind === 'device' ||
+        item.kind === 'separator' ||
+        item.kind === 'html') &&
       item.reference
     ) {
       DT_function.loadDTScript('js/deviceeditor.js').then(function () {

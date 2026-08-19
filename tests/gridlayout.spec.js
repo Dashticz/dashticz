@@ -183,6 +183,63 @@ screens[1] = {
     ).toBeVisible();
   });
 
+  test('separator/blocktitle icon absence renders no icon, same as Wizard\'s explicit "off" (#169)', async ({
+    page,
+  }) => {
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['sep_missing_icon'] = {
+  type: 'blocktitle',
+  title: 'Missing icon',
+  grid: {x: 1, y: 1, w: 8, h: 2}
+};
+blocks['sep_icon_off'] = {
+  type: 'blocktitle',
+  title: 'Icon off',
+  icon: '',
+  grid: {x: 1, y: 4, w: 8, h: 2}
+};
+blocks['sep_icon_set'] = {
+  type: 'blocktitle',
+  title: 'Icon set',
+  icon: 'fas fa-star',
+  grid: {x: 1, y: 7, w: 8, h: 2}
+};
+screens[1] = {
+  layout: 'grid',
+  gridColumns: 24,
+  rowHeight: 20,
+  gap: 5,
+  mobileLayout: 'stack',
+  blocks: ['sep_missing_icon', 'sep_icon_off', 'sep_icon_set']
+};
+`,
+      });
+    });
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+
+    // A legacy/custom-mode separator with no `icon` property at all must
+    // render with no icon - exactly like Wizard's explicit icon: '' (off)
+    // state - rather than falling back to a runtime default icon.
+    await expect(
+      page.locator('[data-grid-block="sep_missing_icon"] .col-icon')
+    ).toHaveCount(0);
+    await expect(
+      page.locator('[data-grid-block="sep_icon_off"] .col-icon')
+    ).toHaveCount(0);
+    // An explicitly configured icon must still render normally.
+    await expect(
+      page.locator('[data-grid-block="sep_icon_set"] .col-icon .fa-star')
+    ).toBeVisible();
+  });
+
   test('hides Icon and Title controls only while Device Config is a Dial', async ({
     page,
   }) => {
@@ -863,9 +920,12 @@ screens[1] = {
 
     await page.goto(dashboardUrl);
     await waitForDashboard(page);
+    // grid_text defines no `icon` property at all (legacy/custom-mode style) -
+    // absence of the property must render as a clean separator with no icon,
+    // not the runtime default fa-divide (#169).
     await expect(
       page.locator('[data-grid-block="grid_text"] .col-icon .fa-divide')
-    ).toBeVisible();
+    ).toHaveCount(0);
     await page.locator('.screen1 .layouteditoricon').click();
     await expect(page.locator('body')).toHaveClass(/dle-active/);
     const separatorOverlay = page.locator('[data-grid-block="grid_text"] .dle-overlay');
@@ -964,6 +1024,93 @@ screens[1] = {
     expect(gridRequest).toBeNull();
     expect(columnSaves).toBe(0);
     expect(customCssWrites).toBe(0);
+  });
+
+  test('HTML blocks show the config cog (not a remove-only control) and each opens its own config (#168)', async ({
+    page,
+  }) => {
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['html_a'] = {
+  htmlfile: 'a.html',
+  title: 'HTML A',
+  grid: {x: 1, y: 1, w: 6, h: 4}
+};
+blocks['html_b'] = {
+  htmlfile: 'b.html',
+  title: 'HTML B',
+  grid: {x: 8, y: 1, w: 6, h: 4}
+};
+screens[1] = {
+  layout: 'grid',
+  gridColumns: 24,
+  rowHeight: 20,
+  gap: 5,
+  mobileLayout: 'stack',
+  blocks: ['html_a', 'html_b']
+};
+`,
+      });
+    });
+    await page.route('**/custom/a.html', (route) =>
+      route.fulfill({ status: 200, contentType: 'text/html', body: 'A content' })
+    );
+    await page.route('**/custom/b.html', (route) =>
+      route.fulfill({ status: 200, contentType: 'text/html', body: 'B content' })
+    );
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'html-grid-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: ['html_a', 'html_b'] }),
+      });
+    });
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.locator('.screen1 .layouteditoricon').click();
+    await expect(page.locator('body')).toHaveClass(/dle-active/);
+
+    const htmlAOverlay = page.locator('[data-grid-block="html_a"] .dle-overlay');
+    const htmlBOverlay = page.locator('[data-grid-block="html_b"] .dle-overlay');
+
+    // Both HTML blocks must show the normal configuration cog - not the
+    // generic drag control an unconfigurable block gets - so the settings
+    // control is never mistaken for a remove/close action (#168).
+    for (const overlay of [htmlAOverlay, htmlBOverlay]) {
+      await expect(overlay.locator('.dle-drag-icon')).toHaveCount(0);
+      await expect(overlay.locator('.dle-config-button')).toHaveCount(1);
+      await expect(overlay.locator('.dle-config-button .fa-cog')).toHaveCount(1);
+      // The remove control stays available and separate from the cog.
+      await expect(overlay.locator('.dle-remove-button')).toHaveCount(1);
+    }
+
+    // Clicking the cog on html_a must open that exact block's configuration.
+    await htmlAOverlay.locator('.dle-config-button').click();
+    await expect(page.locator('#de-config-popup')).toBeVisible();
+    await expect(page.locator('#de-config-popup .modal-title')).toContainText('HTML A');
+    await page.locator('#de-config-popup .modal-footer .btn-secondary').click();
+    await expect(page.locator('#de-config-popup')).toBeHidden();
+
+    // Clicking the cog on html_b (a second HTML block on the same dashboard)
+    // must open its own configuration, not html_a's.
+    await htmlBOverlay.locator('.dle-config-button').click();
+    await expect(page.locator('#de-config-popup')).toBeVisible();
+    await expect(page.locator('#de-config-popup .modal-title')).toContainText('HTML B');
+    await page.locator('#de-config-popup .modal-footer .btn-secondary').click();
+    await expect(page.locator('#de-config-popup')).toBeHidden();
   });
 
   test('separator image replaces a stale explicit icon', async ({ page }) => {

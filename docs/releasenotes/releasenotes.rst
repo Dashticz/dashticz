@@ -6,7 +6,7 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
-v3.45.0 beta (17-8-2026)
+v3.45.0 beta (19-8-2026)
 -------------------------
 
 * **Enhancements**
@@ -48,6 +48,21 @@ v3.45.0 beta (17-8-2026)
   it well below the generic size regular device tiles use - now it
   matches other devices' image size, same as before that exception was
   added.
+- Fixed the Layout Editor showing an HTML block's settings control as a
+  generic drag icon instead of the normal configuration cog, so it could
+  not be told apart from a plain move handle and never opened that
+  block's own configuration - the Layout Editor never recognised HTML
+  blocks as a configurable kind in the first place. Clicking the cog now
+  opens that exact block's Device Config, same as any other special
+  block, and works the same whether the block came from the Wizard or a
+  hand-written CONFIG.js (#168).
+- Fixed a Separator/title block with no ``icon`` property at all - as in a
+  hand-written or pre-Wizard CONFIG.js - rendering the runtime's default
+  divide icon instead of no icon. Wizard already writes an explicit empty
+  ``icon: ''`` when its Icon option is turned off, and that already
+  rendered correctly; the missing-property case now behaves the same way
+  instead of silently falling back to a default. An explicitly configured
+  icon is unaffected and keeps rendering as before (#169).
 
 v3.44.3 beta (18-8-2026)
 -------------------------
