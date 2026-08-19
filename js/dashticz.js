@@ -39,6 +39,7 @@ var Dashticz = (function () {
     'map',
     'group',
     'waqi',
+    'lms',
   ];
   var components = [];
   var mountedBlocks = {};

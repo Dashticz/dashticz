@@ -2156,6 +2156,222 @@ screens[1] = {
     expect(savedFirst.grid.h).toBe(6);
     expect(savedGridRequest.payload.gridColumns).toBe(24);
   });
+
+  test('Lyrion Music Server block renders local/radio metadata and cover art independently per block (#22)', async ({
+    page,
+  }) => {
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['lms_living'] = {
+  type: 'lms',
+  server: '192.168.1.6',
+  port: 9000,
+  username: '',
+  password: '',
+  player: 'aa:bb:cc:dd:ee:ff',
+  refresh: 5,
+  title: 'Living Room',
+  grid: {x: 1, y: 1, w: 8, h: 6}
+};
+blocks['lms_kitchen'] = {
+  type: 'lms',
+  server: '192.168.1.6',
+  port: 9000,
+  player: '11:22:33:44:55:66',
+  refresh: 5,
+  title: 'Kitchen',
+  grid: {x: 10, y: 1, w: 8, h: 6}
+};
+screens[1] = {
+  layout: 'grid',
+  gridColumns: 24,
+  rowHeight: 20,
+  gap: 5,
+  mobileLayout: 'stack',
+  blocks: ['lms_living', 'lms_kitchen']
+};
+`,
+      });
+    });
+
+    const TINY_PNG =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+
+    await page.route('**/vendor/dashticz/lms/index.php', async (route) => {
+      const payload = route.request().postDataJSON();
+      if (payload.action === 'cover') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ dataUrl: TINY_PNG }),
+        });
+        return;
+      }
+      // action: 'rpc' - the per-block "status" poll. Player-specific result
+      // so the two blocks below can be asserted never to swap metadata.
+      const player = payload.player;
+      let result;
+      if (player === 'aa:bb:cc:dd:ee:ff') {
+        // Local track.
+        result = {
+          power: 1,
+          mode: 'play',
+          remote: 0,
+          playlist_loop: [
+            { title: 'Brothers in Arms', artist: 'Dire Straits', album: 'Brothers in Arms', coverid: 'cover-living' },
+          ],
+        };
+      } else if (player === '11:22:33:44:55:66') {
+        // Internet radio.
+        result = {
+          power: 1,
+          mode: 'play',
+          remote: 1,
+          current_title: 'Radio 538',
+          remoteMeta: { artist: 'Some DJ', title: 'Live Set' },
+          playlist_loop: [{ artwork_url: 'http://icecast.example/logo.png' }],
+        };
+      } else {
+        result = {};
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ result }),
+      });
+    });
+
+    await page.goto(dashboardUrl);
+    // Two independently-polling LMS blocks add real request volume on top of
+    // the usual startup load, which can run past waitForDashboard()'s normal
+    // 15s allowance on a slower runner - give this specific test more room
+    // rather than loosening that shared helper for every other test.
+    await page.locator('#loaderHolder').waitFor({ state: 'hidden', timeout: 30000 });
+
+    const living = page.locator('[data-grid-block="lms_living"]');
+    const kitchen = page.locator('[data-grid-block="lms_kitchen"]');
+
+    // Local track: artist/title/album, cover art loaded, no station line.
+    await expect(living.locator('.lms-artist')).toHaveText('Dire Straits');
+    await expect(living.locator('.lms-title')).toHaveText('Brothers in Arms');
+    await expect(living.locator('.lms-album')).toHaveText('Brothers in Arms');
+    await expect(living.locator('.lms-station')).toHaveCount(0);
+    await expect(living.locator('.lms-cover-img')).toHaveAttribute('src', TINY_PNG);
+    await expect(living.locator('.lms-cover-placeholder')).toHaveCount(0);
+
+    // Internet radio: station/artist/title, no album line (LMS supplied none),
+    // and never any of the Living Room block's own metadata (#22).
+    await expect(kitchen.locator('.lms-station')).toHaveText('Radio 538');
+    await expect(kitchen.locator('.lms-artist')).toHaveText('Some DJ');
+    await expect(kitchen.locator('.lms-title')).toHaveText('Live Set');
+    await expect(kitchen.locator('.lms-album')).toHaveCount(0);
+    await expect(kitchen.locator('.lms-artist')).not.toHaveText('Dire Straits');
+    await expect(kitchen.locator('.lms-title')).not.toHaveText('Brothers in Arms');
+
+    // No raw "undefined"/"null" ever rendered (#7 in the task).
+    const livingText = await living.innerText();
+    const kitchenText = await kitchen.innerText();
+    expect(livingText).not.toMatch(/undefined|null/);
+    expect(kitchenText).not.toMatch(/undefined|null/);
+  });
+
+  test('Lyrion Music Server Widgets-catalog entry discovers players and saves the selected one', async ({
+    page,
+  }) => {
+    let blocksRequest = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+screens[1] = {
+  layout: 'grid', gridColumns: 24, rowHeight: 20, gap: 5,
+  mobileLayout: 'stack', blocks: []
+};
+`,
+      });
+    });
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'lms-wizard-token' }),
+      })
+    );
+    await page.route('**/vendor/dashticz/lms/index.php', async (route) => {
+      const payload = route.request().postDataJSON();
+      if (payload.action === 'rpc' && payload.params[0] === 'serverstatus') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            result: {
+              players_loop: [
+                { playerid: 'aa:bb:cc:dd:ee:ff', name: 'Living Room', connected: 1 },
+                { playerid: '11:22:33:44:55:66', name: 'Kitchen', connected: 1 },
+              ],
+            },
+          }),
+        });
+        return;
+      }
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ result: {} }) });
+    });
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: ['lms_1'] }),
+      });
+    });
+    await page.route('**/js/savegridlayout.php*', (route) =>
+      route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true }) })
+    );
+
+    await page.goto(dashboardUrl);
+    // See the rendering test above: give this test's cold start more room
+    // than waitForDashboard()'s normal 15s on a slower runner.
+    await page.locator('#loaderHolder').waitFor({ state: 'hidden', timeout: 30000 });
+    // The entry point lives in the "Widgets" catalog popup (next to Spotify/
+    // Sonarr), not as its own tile in the Screen Editor's "Add items" grid.
+    await openWidgetEditorFromScreenEditor(page);
+    await page.locator('.we-widget-card[data-special-widget="lms"]').click();
+    await expect(page.locator('#lmsblockpopup')).toBeVisible();
+
+    await page.locator('#lm-lms-server').fill('192.168.1.6');
+    await page.locator('#lm-lms-port').fill('9000');
+    // Save must be rejected before a player has been discovered/selected.
+    await page.locator('#lm-save-btn').click();
+    await expect(page.locator('#lmsblockpopup .cd-custom-message')).toHaveText(
+      /Test the connection and select a player/
+    );
+
+    await page.locator('#lm-lms-test').click();
+    await expect(page.locator('#lmsblockpopup .de-lms-test-status')).toContainText('2');
+    await expect(page.locator('#lm-lms-player option')).toHaveCount(2);
+    await page.locator('#lm-lms-player').selectOption('11:22:33:44:55:66');
+    await page.locator('#lm-device-title').fill('Kitchen Speaker');
+
+    await page.locator('#lm-save-btn').click();
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const saved = blocksRequest.devices.find((d) => d.kind === 'lms');
+    expect(saved).toBeTruthy();
+    expect(saved.server).toBe('192.168.1.6');
+    expect(saved.port).toBe(9000);
+    expect(saved.player).toBe('11:22:33:44:55:66');
+    expect(saved.refresh).toBe(5);
+    expect(saved.title).toBe('Kitchen Speaker');
+    expect(saved.width).toBe(6);
+    expect(saved.height).toBe(8);
+  });
 });
 
 async function openScreenEditorAddMenu(page) {

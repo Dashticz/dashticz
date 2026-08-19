@@ -148,6 +148,27 @@ test('Blocktitle separator does not acquire a runtime default icon', () => {
   );
 });
 
+test('Lyrion Music Server block dispatches on type: lms and has no default icon', () => {
+  const lms = loadComponent('js/components/lms.js', {
+    settings: { dashticz_php_path: 'js/' },
+    language: { misc: {} },
+    $: Object.assign(() => ({ text: () => ({ html: () => '' }) }), { ajax: () => ({ then: () => ({ catch: () => {} }) }) }),
+  });
+  assert.equal(lms.name, 'lms');
+  assert.equal(lms.canHandle({ type: 'lms' }), true);
+  assert.equal(lms.canHandle({ type: 'blocktitle' }), false);
+  assert.equal(!!lms.canHandle(null), false);
+  // #169 precedent: a component's own defaultCfg must not inject a runtime
+  // default icon - getBlockConfig() (js/dashticz.js) only applies block.icon
+  // when the block's own CONFIG.js entry defines it. The cover artwork is
+  // this block's own visual, so no icon is shown unless explicitly configured.
+  assert.equal(Object.prototype.hasOwnProperty.call(lms.defaultCfg, 'icon'), false);
+  assert.equal(lms.defaultCfg.refresh, 5);
+  assert.equal(lms.defaultCfg.width, 6);
+  assert.equal(lms.defaultCfg.port, 9000);
+  assert.equal(typeof lms.refresh, 'function');
+});
+
 test('Webpack cleans stale output while preserving legacy font assets', () => {
   const config = require(path.join(root, 'build/webpack.config.js'));
   assert.equal(config.output.clean.keep.test('assets/fonts/legacy.woff'), true);

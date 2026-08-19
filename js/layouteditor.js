@@ -1141,6 +1141,23 @@ var DashticzLayoutEditor = (function () {
 
     if (
       key &&
+      String(definition.type || '').toLowerCase() === 'lms'
+    ) {
+      // Lyrion Music Server "Now Playing" block (js/components/lms.js),
+      // dispatched on type: 'lms' like the separator/blocktitle check above.
+      return {
+        definition: definition,
+        kind: 'lms',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (
+      key &&
       typeof definition.idx === 'undefined' &&
       parseInt(definition.slide, 10) > 0
     ) {
@@ -1556,7 +1573,8 @@ var DashticzLayoutEditor = (function () {
         (item.kind === 'device' ||
           item.kind === 'widget' ||
           item.kind === 'separator' ||
-          item.kind === 'html');
+          item.kind === 'html' ||
+          item.kind === 'lms');
       var configureLabel = item.kind === 'widget'
         ? _t('configure_widget')
         : _t('configure_device');
@@ -1656,7 +1674,8 @@ var DashticzLayoutEditor = (function () {
     if (
       (item.kind === 'device' ||
         item.kind === 'separator' ||
-        item.kind === 'html') &&
+        item.kind === 'html' ||
+        item.kind === 'lms') &&
       item.reference
     ) {
       DT_function.loadDTScript('js/deviceeditor.js').then(function () {

@@ -3683,3 +3683,169 @@ test('Google Maps widget is visible on grid screens instead of collapsing to zer
     /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.map \.dt_state \{\s*\n\s*height: 100%;/
   );
 });
+
+test('Lyrion Music Server (LMS) block is registered, dispatched and wired through the Wizard', () => {
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  const lms = fs.readFileSync(path.join(root, 'js/components/lms.js'), 'utf8');
+  const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
+  const layoutEditor = fs.readFileSync(path.join(root, 'js/layouteditor.js'), 'utf8');
+  const simpleBlock = fs.readFileSync(path.join(root, 'js/components/simpleblock.js'), 'utf8');
+  const widgetEditor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+  const lmsBackend = fs.readFileSync(path.join(root, 'vendor/dashticz/lms/index.php'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const enLang = JSON.parse(fs.readFileSync(path.join(root, 'lang/en_US.json'), 'utf8'));
+
+  // js/dashticz.js only ever loads (and therefore only ever registers) a
+  // component script named in its own `specials` list at startup - a new
+  // component left out of that list is dead code: Dashticz.register() for
+  // it never runs, so components['lms'] never exists and every LMS block
+  // silently falls through to the default/button dispatch instead.
+  assert.match(dashticz, /'group',\s*\n\s*'waqi',\s*\n\s*'lms',\s*\n\s*\];/);
+
+  // The component itself: dispatches on type: 'lms' (like js/components/group.js
+  // dispatches on type: 'group'), never sends an LMS control command, and
+  // shares one fetch/error implementation (DT_lms_api) with the Wizard popup
+  // below rather than duplicating it.
+  assert.match(lms, /canHandle: function \(block\) \{\s*\n\s*return block && block\.type === 'lms';/);
+  assert.match(lms, /var DT_lms_api = \{/);
+  assert.match(lms, /request: function \(block, params, player\)/);
+  assert.match(lms, /cover: function \(block, coverid, artworkUrl\)/);
+  assert.match(lms, /function normalizeStatus\(/);
+  assert.match(lms, /Number\(status\.remote\) === 1/);
+  assert.match(lms, /remoteMeta/);
+  assert.match(lms, /playlist_loop/);
+  // Stopped/off must not keep showing the previous track (see #18 in the task).
+  assert.match(lms, /A stopped\/off player must not keep showing the last track/);
+  // Track-change-only artwork refetch: never re-fetch while the same track
+  // (coverid/artwork_url) is still playing.
+  assert.match(lms, /if \(artworkKey === me\.lmsArtworkKey\) return;/);
+  // artwork_url wins over coverid when LMS provides one - a radio track's
+  // synthetic negative coverid has no real library artwork (confirmed live:
+  // its cover lookup just returns a generic placeholder icon).
+  assert.match(
+    lms,
+    /meta\.artworkUrl \? 'u:' \+ meta\.artworkUrl : \(meta\.coverid \? 'c:' \+ meta\.coverid : ''\)/
+  );
+  // Read-only: the runtime block only ever issues the "status" poll (never a
+  // play/pause/power/volume control command) - DT_lms_api.request() itself
+  // is reused by the Wizard's own "serverstatus" discovery call, but that
+  // lives in js/deviceeditor.js, not here.
+  assert.equal((lms.match(/DT_lms_api\.request\(me\.block/g) || []).length, 1);
+  assert.match(lms, /\['status', '-', 1, STATUS_TAGS\]/);
+  assert.match(lms, /STATUS_TAGS = 'tags:aclK'/);
+  // Automatic refresh reuses Dashticz's own per-block polling (me.block.refresh
+  // + special.refresh, wired centrally in js/dashticz.js's _mountSpecialBlock,
+  // including cleanup via removeBlock's clearInterval) instead of a bespoke
+  // setInterval that would need its own teardown.
+  assert.doesNotMatch(lms, /setInterval\(/);
+  assert.match(lms, /refresh: function \(me\) \{/);
+  assert.match(lms, /defaultCfg: \{[\s\S]*refresh: 5,/);
+  assert.doesNotMatch(lms, /defaultCfg: \{[\s\S]*icon:/);
+  // A missing PHP curl extension never resolves itself on the next poll
+  // (unlike a transient network blip), so the block shows that specific,
+  // fixed backend message verbatim instead of the generic "LMS unavailable"
+  // text - the constant here must match vendor/dashticz/lms/index.php's
+  // own fixed string exactly.
+  assert.match(
+    lms,
+    /LMS_CURL_REQUIRED_ERROR = 'The PHP curl extension is required for the Lyrion Music Server block\.'/
+  );
+  assert.match(lms, /serverError === LMS_CURL_REQUIRED_ERROR/);
+
+  // Wizard integration (js/deviceeditor.js): a dedicated quick-add/edit
+  // popup, following the same multi-instance "special block" pattern as
+  // Group/HTML Block (js/deviceeditor.js's managedSpecials), not the
+  // Widget Editor's singleton catalog (js/widgeteditor.js) - required so
+  // multiple independent LMS blocks (#22 in the task) can each carry their
+  // own server/player.
+  assert.match(deviceEditor, /function openLms\(\)/);
+  assert.match(deviceEditor, /function _showLmsPopup\(\)/);
+  assert.match(deviceEditor, /function _lmsFieldsHtml\(prefix, values\)/);
+  assert.match(deviceEditor, /function _wireLmsFields\(prefix, \$popup\)/);
+  assert.match(deviceEditor, /function _readLmsFields\(prefix, \$popup\)/);
+  assert.match(deviceEditor, /openLms: openLms,/);
+  assert.match(deviceEditor, /specialType: 'lms'/);
+  assert.match(deviceEditor, /String\(definition\.type \|\| ''\)\.toLowerCase\(\) === 'lms'/);
+  // Server/port/username/password/player/refresh are dedicated fields (like
+  // idx for Custom/Group), never generic custom_fields rows.
+  assert.match(deviceEditor, /server: true, port: true, username: true, password: true, player: true,\s*\n\s*refresh: true,/);
+  // Player discovery/"Test connection" posts a plain 'serverstatus' request
+  // and reads players_loop, exactly as documented for the LMS JSON-RPC API.
+  assert.match(deviceEditor, /DT_lms_api\.request\(block, \['serverstatus', 0, 999\], ''\)/);
+  assert.match(deviceEditor, /players_loop/);
+  // The saved payload writes server/port/username/password/player/refresh as
+  // top-level block properties (matching js/saveblocks.php's 'lms' branch
+  // below), not inside custom_fields.
+  assert.match(deviceEditor, /specialEntry\.server = special\.lmsServer;/);
+  assert.match(deviceEditor, /specialEntry\.player = special\.lmsPlayer;/);
+  // Icon defaults off - the cover artwork is this block's own visual.
+  assert.match(deviceEditor, /_quickOptionsHtml\('lm', \{\s*\n\s*icon: false,\s*\n\s*iconValue: 'fas fa-music',/);
+  assert.match(deviceEditor, /if \(special\.specialType === 'lms'\) return 'fas fa-music';/);
+  // Default size for a newly added block: 6 columns wide, and (grid mode
+  // only - this popup is only reachable from the grid-only Widgets catalog)
+  // 8 rows tall, comfortably fitting the 100px cover plus its info lines.
+  // `height` means a grid-row count in grid mode but a literal CSS pixel
+  // height outside it (js/dashticz.js's renderBlock()), so a fixed default
+  // is only ever written for grid mode.
+  assert.match(deviceEditor, /width: 6,\s*\n(?:\s*\/\/[^\n]*\n)*\s*height: gridMode \? 8 : null,/);
+
+  // Entry point lives in the Widgets ("wizard") catalog popup (js/widgeteditor.js),
+  // next to Spotify/Sonarr, not in the Screen Editor's "Add items" tile grid
+  // (js/components/simpleblock.js) - the user asked for it to be discoverable
+  // there instead. It is not a plain catalog entry: every catalog widget is a
+  // singleton (one selectedWidgets[id] flag, one fixed blockKey), which is
+  // incompatible with LMS's multi-instance "special block" design, so its card
+  // is marked data-special-widget and always opens the existing multi-instance
+  // quick-add popup (DashticzDeviceEditor.openLms()) instead of toggling a flag.
+  assert.doesNotMatch(simpleBlock, /action: 'lms'/);
+  assert.doesNotMatch(simpleBlock, /DashticzDeviceEditor\.openLms\(\)/);
+  assert.match(widgetEditor, /function _lmsWidgetCardHtml\(\)/);
+  assert.match(widgetEditor, /data-special-widget="lms"/);
+  assert.match(widgetEditor, /function _openLmsFromWidgets\(\)/);
+  assert.match(widgetEditor, /DashticzDeviceEditor\.openLms\(\);/);
+  assert.match(widgetEditor, /if \(\$\(this\)\.data\('special-widget'\) === 'lms'\)/);
+
+  // Layout Editor (js/layouteditor.js): same cog-not-drag-icon fix as HTML
+  // blocks got for #168, so an LMS tile's settings control is never mistaken
+  // for a plain drag handle and always opens that exact block's own config.
+  assert.match(layoutEditor, /String\(definition\.type \|\| ''\)\.toLowerCase\(\) === 'lms'/);
+  assert.match(layoutEditor, /kind: 'lms',/);
+  assert.match(
+    layoutEditor,
+    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms'\);/
+  );
+  assert.match(
+    layoutEditor,
+    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms'\) &&\s*\n\s*item\.reference/
+  );
+
+  // Backend bridge (vendor/dashticz/lms/index.php): same-origin gated, LAN
+  // (private-IP) access explicitly allowed like vendor/dashticz/xmltv.php,
+  // POST-only credentials (never in a URL), and every failure message is a
+  // fixed generic string - never the raw curl error/response that might
+  // otherwise echo a password back.
+  assert.match(lmsBackend, /dashticz_require_same_origin\(\)/);
+  assert.match(lmsBackend, /dashticz_validate_remote_url\(\s*\n?\s*'http:\/\/' \. \$request\['server'\] \. ':' \. \$request\['port'\] \. '\/jsonrpc\.js',\s*\n\s*true/);
+  assert.match(lmsBackend, /CURLOPT_USERPWD/);
+  assert.match(lmsBackend, /CURLAUTH_BASIC/);
+  assert.match(lmsBackend, /'Unable to connect to Lyrion Music Server' \. \$reason \. '\.'/);
+  assert.match(lmsBackend, /Authentication failed\./);
+  assert.doesNotMatch(lmsBackend, /CURLOPT_SSL_VERIFYPEER/);
+  assert.doesNotMatch(lmsBackend, /echo curl_error/);
+
+  // CSS: fixed 100x100 cover with object-fit: cover (never distorts, never a
+  // browser broken-image icon - see js/components/lms.js's placeholder div),
+  // text truncates with ellipsis instead of overflowing (#20).
+  assert.match(styles, /\.lms-cover \{[\s\S]*width: 100px;[\s\S]*height: 100px;/);
+  assert.match(styles, /\.lms-cover-img \{[\s\S]*object-fit: cover;/);
+  assert.match(styles, /\.lms-info > div \{[\s\S]*text-overflow: ellipsis;[\s\S]*white-space: nowrap;/);
+
+  // Translations exist for both places the block's name/labels are read from
+  // (js/deviceeditor.js's own quick-add/edit popup vs. its card in the
+  // Widgets catalog, js/widgeteditor.js, which reads language.settings.widgeteditor).
+  assert.equal(enLang.settings.deviceeditor.lms_block, 'Lyrion Music Server');
+  assert.equal(enLang.settings.widgeteditor.lms_block, 'Lyrion Music Server');
+  assert.ok(enLang.settings.widgeteditor.lms_description);
+  assert.ok(enLang.misc.lms_player_off);
+  assert.ok(enLang.misc.lms_server_unavailable);
+});
