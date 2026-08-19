@@ -96,11 +96,18 @@ Dashticz.register(DT_button);
     var style = document.createElement('style');
     style.id = styleId;
     style.textContent =
+      /* The Liquid Glass themes' .transbg (every block carries it) applies a
+       * backdrop-filter blur+saturate on top of its background - clearing
+       * just the background still leaves that filter sampling/intensifying
+       * whatever sits behind the block, showing as a soft glow instead of
+       * true transparency, so it needs resetting here too. */
       '.dt-no-background, .dt_block.dt-no-background, .mh.dt-no-background {' +
       'background: transparent !important;' +
       'background-color: transparent !important;' +
       'background-image: none !important;' +
       'box-shadow: none !important;' +
+      '-webkit-backdrop-filter: none !important;' +
+      'backdrop-filter: none !important;' +
       '}' +
       '.dt-button-action-fields.d-none{display:none!important;}';
     document.head.appendChild(style);
@@ -151,14 +158,28 @@ Dashticz.register(DT_button);
       $existing.addClass('d-none dt-no-background-field');
     }
 
+    /* Placed as an extra item inside the same options row that already
+     * holds Icon/Data/Title (.de-config-options for devices,
+     * .we-block-options-row for widgets) so it automatically inherits
+     * their exact switch size, colors and spacing instead of rendering as
+     * a smaller, separately positioned control (#170 follow-up). */
+    var isWidget = $fields.hasClass('we-custom-fields');
+    var $optionsRow = $popup.find(isWidget ? '.we-block-options-row' : '.de-config-options').first();
     var html =
-      '<label class="form-check form-switch mt-2 mb-2 dt-no-background-option">' +
-      '<input class="form-check-input" type="checkbox" data-dt-no-background' +
+      '<label class="form-check form-switch' +
+      (isWidget ? ' form-check-inline mb-2' : '') +
+      ' dt-no-background-option">' +
+      '<input class="form-check-input' + (isWidget ? ' we-block-option' : '') +
+      '" type="checkbox" data-dt-no-background' +
       (initial ? ' checked' : '') + '>' +
       '<span class="form-check-label">No background</span></label>';
-    var $sectionTitle = $popup.find('.de-section-title, .we-section-title').first();
-    if ($sectionTitle.length) $sectionTitle.after(html);
-    else $popup.find('.modal-body').prepend(html);
+    if ($optionsRow.length) {
+      $optionsRow.append(html);
+    } else {
+      var $sectionTitle = $popup.find('.de-section-title, .we-section-title').first();
+      if ($sectionTitle.length) $sectionTitle.after(html);
+      else $popup.find('.modal-body').prepend(html);
+    }
 
     popup.addEventListener('click', function (event) {
       var saveButton = event.target.closest && event.target.closest('#de-config-ok, #we-config-ok, .btn-save');
@@ -167,7 +188,6 @@ Dashticz.register(DT_button);
       var $row = findCustomFieldRow($popup, 'no_background');
       if (enabled) {
         if (!$row.length) {
-          var isWidget = $fields.hasClass('we-custom-fields');
           var rowClass = isWidget ? 'we-custom-field-row' : 'de-custom-field-row';
           var nameClass = isWidget ? 'we-custom-field-name' : 'de-custom-field-name';
           var settingClass = isWidget ? 'we-custom-field-setting' : 'de-custom-field-setting';

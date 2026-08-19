@@ -2161,7 +2161,7 @@ var DashticzWidgetEditor = (function () {
       : [{ field: '', setting: '' }];
     var html = _cfgHeading(_t('display_options', 'Display options'));
     html += '<div class="d-flex align-items-center justify-content-between flex-wrap mb-2">';
-    html += '<div class="d-flex flex-wrap">';
+    html += '<div class="d-flex flex-wrap we-block-options-row">';
     [
       ['icon', _t('icon', 'Icon'), options.icon],
       ['show_title', _t('show_title', 'Title'), options.show_title],

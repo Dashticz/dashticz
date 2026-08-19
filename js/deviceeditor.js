@@ -150,6 +150,7 @@ var DashticzDeviceEditor = (function () {
         lms_player: 'Player',
         lms_player_placeholder: 'Test the connection to list players',
         lms_refresh_interval: 'Refresh interval',
+        lms_hide_when_off: 'Hide block when player is off',
         invalid_lms_server: 'Enter the Lyrion Music Server address.',
         invalid_lms_port: 'Enter a valid port (1-65535).',
         invalid_lms_player: 'Test the connection and select a player.',
@@ -635,6 +636,7 @@ var DashticzDeviceEditor = (function () {
       lmsPlayer: kind === 'lms' ? String(definition.player || '') : '',
       lmsPlayerLabel: '',
       lmsRefresh: kind === 'lms' ? (parseInt(definition.refresh, 10) || 5) : 5,
+      lmsHideWhenOff: kind === 'lms' ? definition.hide_when_off === true : false,
       // hide_data/last_update/switch are unused for a title/separator block,
       // but icon applies to every special kind.
       options: {
@@ -816,10 +818,10 @@ var DashticzDeviceEditor = (function () {
     hide_data: true, last_update: true, switch: true, hide_title: true,
     text_alignment: true, text_align: true, custom_fields: true, c: true,
     // Lyrion Music Server (LMS) block fields - managed by the dedicated
-    // Server/Port/Username/Password/Player/Refresh section of the Lyrion
-    // Music Server popup below, not the generic custom-fields grid.
+    // Server/Port/Username/Password/Player/Refresh/Hide-when-off section of
+    // the Lyrion Music Server popup below, not the generic custom-fields grid.
     server: true, port: true, username: true, password: true, player: true,
-    refresh: true,
+    refresh: true, hide_when_off: true,
     __proto__: true, prototype: true, constructor: true,
   };
 
@@ -2404,6 +2406,9 @@ var DashticzDeviceEditor = (function () {
         seconds + ' ' + _esc(t.seconds || 'seconds') + '</option>';
     });
     html += '</select></div>';
+    html += '<label class="form-check form-switch mb-3"><input class="form-check-input de-lms-switch" type="checkbox" id="' +
+      prefix + '-lms-hide-when-off"' + (values.hideWhenOff ? ' checked' : '') + '>' +
+      '<span class="form-check-label">' + _esc(t.lms_hide_when_off) + '</span></label>';
     return html;
   }
 
@@ -2474,6 +2479,7 @@ var DashticzDeviceEditor = (function () {
       player: String($popup.find('#' + prefix + '-lms-player').val() || ''),
       playerLabel: String($popup.find('#' + prefix + '-lms-player option:selected').text() || ''),
       refresh: parseInt($popup.find('#' + prefix + '-lms-refresh').val(), 10) || 5,
+      hideWhenOff: $popup.find('#' + prefix + '-lms-hide-when-off').is(':checked'),
     };
   }
 
@@ -2571,6 +2577,7 @@ var DashticzDeviceEditor = (function () {
         lmsPlayer: lms.player,
         lmsPlayerLabel: lms.playerLabel,
         lmsRefresh: lms.refresh,
+        lmsHideWhenOff: lms.hideWhenOff,
       };
       managedOrder.push(orderKey);
       window.bootstrap.Modal.getInstance(document.getElementById('lmsblockpopup')).hide();
@@ -3049,6 +3056,7 @@ var DashticzDeviceEditor = (function () {
         player: special.lmsPlayer,
         playerLabel: special.lmsPlayerLabel,
         refresh: special.lmsRefresh,
+        hideWhenOff: special.lmsHideWhenOff,
       });
     }
     html += '<div class="de-custom-fields-section"><h6 class="de-section-title mt-3">' + _esc(t.custom_fields) + '</h6>';
@@ -3411,6 +3419,7 @@ var DashticzDeviceEditor = (function () {
           special.lmsPlayer = pendingLms.player;
           special.lmsPlayerLabel = pendingLms.playerLabel;
           special.lmsRefresh = pendingLms.refresh;
+          special.lmsHideWhenOff = pendingLms.hideWhenOff;
         }
         if (special.specialType === 'slidebutton') {
           storedRows.forEach(function (row) {
@@ -4110,6 +4119,7 @@ var DashticzDeviceEditor = (function () {
           specialEntry.password = special.lmsPassword;
           specialEntry.player = special.lmsPlayer;
           specialEntry.refresh = special.lmsRefresh;
+          specialEntry.hide_when_off = special.lmsHideWhenOff === true;
         }
         if (special.height) specialEntry.height = special.height;
         return specialEntry;

@@ -1583,6 +1583,9 @@ function configwriter_special_block_props($block)
             'player' => isset($block['lms_player']) ? (string)$block['lms_player'] : '',
             'refresh' => isset($block['lms_refresh']) ? (int)$block['lms_refresh'] : 5,
         ];
+        if (!empty($block['lms_hide_when_off'])) {
+            $props['hide_when_off'] = true;
+        }
         if (trim($title) !== '') {
             $props['title'] = $title;
         }

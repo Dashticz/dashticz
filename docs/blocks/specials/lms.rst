@@ -23,9 +23,13 @@ Enter the server address and port (and username/password only if LMS
 authentication is enabled), click **Test connection** to discover the
 players on that server, and pick one from the **Player** dropdown. The
 block's own configuration cog reopens the same popup later to change the
-server, player or refresh interval. Unlike the other tiles in the Widgets
-catalog, this one can be added more than once, so each LMS player on the
-network can get its own block.
+server, player or refresh interval. The **Hide block when player is off**
+switch replaces the "Player off" message with nothing at all (no icon, no
+text) whenever the player is powered down - useful together with a
+device/widget's own **No background** option to make the whole block
+disappear until the player is turned back on. Unlike the other tiles in the
+Widgets catalog, this one can be added more than once, so each LMS player on
+the network can get its own block.
 
 Manual configuration
 ---------------------
@@ -40,6 +44,7 @@ A block can also be hand-written directly in ``custom/CONFIG.js``::
         password: '',
         player: 'aa:bb:cc:dd:ee:ff',
         refresh: 5,
+        hide_when_off: false,
         width: 6
     };
 
@@ -61,6 +66,7 @@ username                  Only needed when LMS authentication is enabled
 password                  Only needed when LMS authentication is enabled
 player                    LMS player id (MAC-style, not the display name)
 refresh                   Poll interval in seconds (2-3600, default: ``5``)
+hide_when_off             ``true``: show nothing (no icon, no "Player off" text) while the player is off, instead of the usual "Player off" message. Default ``false``
 title                     ``'<string>'``: Custom title for the block
 width                     The block width
 icon                      Optional icon to show in the block. Default no icon (the cover artwork is this block's own visual)

@@ -231,6 +231,7 @@ foreach ($data['devices'] as $entry) {
         $lmsPassword = null;
         $lmsPlayer = null;
         $lmsRefresh = null;
+        $lmsHideWhenOff = false;
         if ($kind === 'lms') {
             $lmsServer = isset($entry['server']) && is_string($entry['server'])
                 ? dashticz_normalize_host_input($entry['server'])
@@ -258,6 +259,7 @@ foreach ($data['devices'] as $entry) {
             if ($lmsRefresh < 2 || $lmsRefresh > 3600) {
                 dashticz_json_error(400, 'Enter a valid refresh interval.');
             }
+            $lmsHideWhenOff = !empty($entry['hide_when_off']);
         }
         $slide = null;
         $buttonKey = null;
@@ -300,6 +302,7 @@ foreach ($data['devices'] as $entry) {
             'lms_password' => $lmsPassword,
             'lms_player' => $lmsPlayer,
             'lms_refresh' => $lmsRefresh,
+            'lms_hide_when_off' => $lmsHideWhenOff,
         ];
     } elseif (is_int($entry) && $entry > 0) {
         $devices[] = [
