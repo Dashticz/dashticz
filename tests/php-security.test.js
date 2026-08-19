@@ -1,12 +1,124 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const test = require('node:test');
+const { spawn, spawnSync } = require('node:child_process');
 
 const root = path.resolve(__dirname, '..');
 
 function read(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), 'utf8');
+}
+
+/* Runs dashticz_normalize_host_input() through the real PHP interpreter
+   (not a regex on the source) so the fix for the exact reported bug -
+   "http://192.168.1.6/" (pasted scheme + trailing slash) producing
+   "Remote host could not be resolved." because it got concatenated into
+   "http://http://192.168.1.6/:9000/jsonrpc.js" - is verified against
+   actual PHP semantics, not just a pattern match. */
+function normalizeHostInput(value) {
+  const securityPhp = path.join(root, 'vendor/dashticz/security.php');
+  const script =
+    `require '${securityPhp}'; echo json_encode(dashticz_normalize_host_input(${JSON.stringify(value)}));`;
+  const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  return JSON.parse(result.stdout);
+}
+
+/* Runs vendor/dashticz/lms/index.php's header setup + shutdown-handler
+   registration (everything before its own try/catch) followed by a
+   deliberate, uncatchable fatal error, to prove the shutdown handler turns
+   that into the fixed JSON error message instead of the empty/broken
+   response a bare PHP fatal error would otherwise produce (see the
+   "Content-Length: 0" HTTP 500 reported for a live, genuinely unreachable
+   LMS server - a fatal error the try/catch's `catch (RuntimeException)`
+   can't see at all). */
+function lmsShutdownFatalOutput() {
+  const source = read('vendor/dashticz/lms/index.php');
+  const marker = '/* Single backend bridge';
+  const cut = source.indexOf(marker);
+  assert.ok(cut !== -1, 'try/catch marker not found in lms/index.php');
+  const prefix = source.slice(0, cut) + "\ndashticz_lms_test_only_undefined_function_call();\n";
+  // __DIR__ resolves against the process cwd under `php -r`, and the file's
+  // own require_once(__DIR__ . '/../security.php') expects to sit in
+  // vendor/dashticz/lms/, so cwd is pointed there to match.
+  const result = spawnSync('php', ['-r', prefix.replace(/^<\?php\n?/, '')], {
+    encoding: 'utf8',
+    cwd: path.join(root, 'vendor/dashticz/lms'),
+  });
+  return result.stdout;
+}
+
+/* Runs the real vendor/dashticz/lms/index.php end to end, over a real HTTP
+   request, with the curl extension disabled (`php -n`, confirmed by the
+   test below to actually remove ext-curl in this environment) - exactly
+   like the live PHP-FPM/Apache request that produced "Uncaught Error:
+   Undefined constant \"CURLOPT_POST\"" (an ext-curl-less server built a
+   CURLOPT_* array as part of *calling* dashticz_lms_curl(), before that
+   function's own function_exists('curl_init') guard was ever reached).
+   php://input only ever carries a request body under a web SAPI (Apache/
+   FPM/the CLI dev server) - a direct `php -r`/`php file.php` invocation
+   always sees it as empty, so a real `php -S` server is required here
+   rather than piping into a CLI invocation. Confirms the guard moved into
+   the try block actually prevents the crash, not just that the source
+   contains the check. */
+function lmsRequestWithoutCurl(payload) {
+  const port = 20000 + (process.pid % 10000);
+  const proc = spawn('php', ['-n', '-d', 'display_errors=0', '-S', `127.0.0.1:${port}`], { cwd: root });
+  try {
+    const deadline = Date.now() + 3000;
+    let ready = false;
+    while (Date.now() < deadline && !ready) {
+      const probe = spawnSync('curl', ['-s', '-o', '/dev/null', '-w', '%{http_code}', `http://127.0.0.1:${port}/`]);
+      if (probe.stdout && probe.stdout.toString().trim() !== '000') ready = true;
+    }
+    const result = spawnSync(
+      'curl',
+      [
+        '-s',
+        '-X',
+        'POST',
+        '-H',
+        'Content-Type: application/json',
+        '-H',
+        `Origin: http://127.0.0.1:${port}`,
+        '-H',
+        `Host: 127.0.0.1:${port}`,
+        '--data',
+        JSON.stringify(payload),
+        `http://127.0.0.1:${port}/vendor/dashticz/lms/index.php`,
+      ],
+      { encoding: 'utf8' }
+    );
+    return { stdout: result.stdout, stderr: result.stderr };
+  } finally {
+    proc.kill();
+  }
+}
+
+/* vendor/dashticz/lms/index.php's own top level reads php://input and can
+   die() (dashticz_require_same_origin/dashticz_json_error), so it can't be
+   require()'d directly from a CLI one-liner - only the function definitions
+   (everything from dashticz_lms_read_input() onward) are pulled out and
+   required, to call dashticz_lms_connect_error_reason() in isolation. */
+function lmsConnectErrorReason(errno) {
+  const source = read('vendor/dashticz/lms/index.php');
+  const marker = 'function dashticz_lms_read_input';
+  const cut = source.indexOf(marker);
+  assert.ok(cut !== -1, 'dashticz_lms_read_input() not found in lms/index.php');
+  const securityPhp = path.join(root, 'vendor/dashticz/security.php');
+  const funcsFile = path.join(os.tmpdir(), `dashticz-lms-funcs-${process.pid}.php`);
+  fs.writeFileSync(funcsFile, '<?php\n' + source.slice(cut));
+  try {
+    const script =
+      `require '${securityPhp}'; require '${funcsFile}'; echo dashticz_lms_connect_error_reason(${Number(errno)});`;
+    const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    return result.stdout;
+  } finally {
+    fs.unlinkSync(funcsFile);
+  }
 }
 
 test('remote proxy endpoints use the validated fetch helper', () => {
@@ -33,6 +145,259 @@ test('xmltv proxy validates remote URLs and keeps cache handling local', () => {
   assert.match(source, /ZipArchive/);
   assert.match(source, /file_put_contents\(\$tmpFile,\s*\$xml,\s*LOCK_EX\)/);
   assert.doesNotMatch(source, /shell_exec|exec\(|passthru|system\(/);
+});
+
+test('LMS backend bridge is same-origin gated, allows LAN access, and never leaks credentials', () => {
+  const source = read('vendor/dashticz/lms/index.php');
+  assert.match(source, /dashticz_require_same_origin\(\)/);
+  // A pasted "http://192.168.1.6/" (scheme + trailing slash) must be
+  // normalized before being concatenated into 'http://' . $server . ':' .
+  // $port . '/jsonrpc.js' below, or it produces a malformed double-scheme
+  // URL whose host resolves to the literal string "http" and fails with
+  // "Remote host could not be resolved."
+  assert.match(source, /\$server = isset\(\$input\['server'\]\) \? dashticz_normalize_host_input\(\$input\['server'\]\) : '';/);
+  // dashticz_lms_curl()'s own function_exists('curl_init') guard runs too
+  // late without ext-curl: dashticz_lms_request() builds a CURLOPT_POST/...
+  // array as part of *calling* that function, so PHP resolves those
+  // undefined constants (a PHP 8+ fatal Error) before the guard is ever
+  // reached. The same check must also run in the try block, before either
+  // branch, so it is hit first.
+  assert.match(
+    source,
+    /\$input = dashticz_lms_read_input\(\);\s*\n(?:\s*\/\/[^\n]*\n)*\s*if \(!function_exists\('curl_init'\)\) \{\s*\n\s*throw new RuntimeException\('The PHP curl extension is required for the Lyrion Music Server block\.'\);\s*\n\s*\}\s*\n\s*if \(\$input\['action'\] === 'cover'\)/
+  );
+  // LMS is virtually always a LAN-only server, like Domoticz itself, so the
+  // private/reserved-IP block dashticz_validate_remote_url() applies by
+  // default must be explicitly lifted here (mirrors xmltv.php above).
+  assert.match(source, /dashticz_validate_remote_url\(\s*\n?\s*'http:\/\/' \. \$request\['server'\] \. ':' \. \$request\['port'\] \. '\/jsonrpc\.js',\s*\n\s*true/);
+  // artwork_url is LMS-server-relative (its own image proxy/cache, e.g.
+  // "/imageproxy/https%3A%2F%2Flastfm.../image.jpg" for an internet radio
+  // track - confirmed live) whenever it starts with "/", so THAT gets the
+  // same private-IP allowance as LMS's own endpoints; only a genuinely
+  // absolute external artwork_url must NOT get it (SSRF hygiene).
+  assert.match(source, /if \(\$artworkUrl\[0\] === '\/'\) \{/);
+  assert.match(
+    source,
+    /dashticz_validate_remote_url\(\s*\n\s*'http:\/\/' \. \$request\['server'\] \. ':' \. \$request\['port'\] \. \$artworkUrl,\s*\n\s*true/
+  );
+  assert.match(source, /dashticz_validate_remote_url\(\$artworkUrl, false\)/);
+  // artwork_url is preferred over coverid whenever LMS provides one - a
+  // radio track's synthetic negative coverid has no real library artwork.
+  assert.match(source, /if \(\$artworkUrl !== ''\) \{/);
+  // POST-only credentials: a username/password never appears in a URL
+  // (query string, <img src>) where it could end up in logs/browser history.
+  assert.doesNotMatch(source, /\$_GET\[.username.\]|\$_GET\[.password.\]/);
+  assert.match(source, /CURLOPT_USERPWD/);
+  assert.match(source, /CURLAUTH_BASIC/);
+  // Every failure path is a fixed, generic message - never the raw curl
+  // error or response body, which might otherwise echo a password back. The
+  // connect-failure reason is narrowed by curl_errno() alone (a fixed,
+  // enumerated string), never curl_error()'s free-text message.
+  assert.doesNotMatch(source, /curl_error\(/);
+  assert.doesNotMatch(source, /\$response\b.*(?:\.|,)\s*getMessage|var_dump|print_r/);
+  assert.match(source, /'Unable to connect to Lyrion Music Server' \. \$reason \. '\.'/);
+  assert.match(source, /function dashticz_lms_connect_error_reason\(\$errno\)/);
+  assert.match(source, /CURLE_COULDNT_RESOLVE_HOST/);
+  assert.match(source, /CURLE_COULDNT_CONNECT/);
+  assert.match(source, /CURLE_OPERATION_TIMEDOUT/);
+  assert.match(source, /Authentication failed\./);
+  // No SSL-verification opt-out (unlike the known legacy garbage/index.php
+  // ignoressl option flagged in AGENTS.md - LMS has no such precedent to follow).
+  assert.doesNotMatch(source, /CURLOPT_SSL_VERIFYPEER/);
+  // Cover artwork is returned as a data: URI (base64), never a URL the
+  // browser would fetch directly - so LMS/radio credentials and any LAN-only
+  // hostname never reach the browser's own network requests.
+  assert.match(source, /base64_encode\(\$response\['body'\]\)/);
+  // A genuinely unreachable server can block in curl_exec() long enough for
+  // the host's own max_execution_time to kill the script first - before this
+  // file's own try/catch gets a chance to send a clean JSON error - leaving
+  // the client with an empty HTTP 500 its dataType: 'json' AJAX call can't
+  // parse (reported live as Content-Length: 0). A time budget above curl's
+  // own worst case, plus a shutdown handler as a last-resort net for any
+  // other fatal error, guarantee a parseable JSON body either way.
+  // Comfortably above the image-proxy cover fetch's own worst case
+  // (CONNECTTIMEOUT 4 + the 20s CURLOPT_TIMEOUT override below).
+  assert.match(source, /set_time_limit\(30\)/);
+  assert.match(source, /CURLOPT_TIMEOUT => 20/);
+  assert.match(source, /register_shutdown_function\(function \(\) \{/);
+  assert.match(source, /error_get_last\(\)/);
+  assert.match(source, /E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR/);
+  // A PHP engine fatal here only ever describes this file's own code (never
+  // LMS response data or request credentials), so its message/line/basename
+  // are safe to always surface for diagnosis - unlike a curl transport
+  // error, which is still never exposed raw (checked above).
+  assert.match(source, /'message' => \$error\['message'\]/);
+  assert.match(source, /'file' => basename\(\$error\['file'\]\)/);
+});
+
+test('dashticz_normalize_host_input() cleans a pasted scheme/path/port from a server field', () => {
+  // The exact value the user pasted into the "Server / IP" field that
+  // triggered "Remote host could not be resolved.".
+  assert.equal(normalizeHostInput('http://192.168.1.6/'), '192.168.1.6');
+  assert.equal(normalizeHostInput('https://192.168.1.6'), '192.168.1.6');
+  assert.equal(normalizeHostInput('http://lms.local/'), 'lms.local');
+  assert.equal(normalizeHostInput('  192.168.1.6  '), '192.168.1.6');
+  assert.equal(normalizeHostInput('192.168.1.6/'), '192.168.1.6');
+  // A trailing path beyond a bare slash is stripped the same way.
+  assert.equal(normalizeHostInput('http://192.168.1.6/jsonrpc.js'), '192.168.1.6');
+  // An accidentally-included port (the field's own job) is dropped too.
+  assert.equal(normalizeHostInput('192.168.1.6:9000'), '192.168.1.6');
+  // A plain host/IP with nothing to strip is returned unchanged.
+  assert.equal(normalizeHostInput('192.168.1.6'), '192.168.1.6');
+  assert.equal(normalizeHostInput('lms.local'), 'lms.local');
+  // Multi-colon / bracketed values are left alone rather than mis-parsed as
+  // "host:port" - not a realistic LMS address, but must not corrupt input.
+  assert.equal(normalizeHostInput('[::1]:9000'), '[::1]:9000');
+  assert.equal(normalizeHostInput(''), '');
+});
+
+test('dashticz_lms_connect_error_reason() narrows a curl connect failure to a fixed, safe reason', () => {
+  // 7 = CURLE_COULDNT_CONNECT - what a genuinely unreachable/closed
+  // server/port (the follow-up "Unable to connect to Lyrion Music Server"
+  // report, after the address-parsing bug above was fixed) produces.
+  assert.equal(
+    lmsConnectErrorReason(7),
+    ': check the address/port and that the server is reachable on your network'
+  );
+  assert.equal(lmsConnectErrorReason(6), ': the server address could not be resolved');
+  assert.equal(lmsConnectErrorReason(28), ': the connection timed out');
+  // Any other curl errno falls back to no extra detail rather than guessing.
+  assert.equal(lmsConnectErrorReason(99999), '');
+});
+
+/* Runs a real POST to the real vendor/dashticz/lms/index.php's 'cover'
+   action against a mock "LMS" server distinguishing its two artwork
+   endpoints (a 1x1 red PNG under /imageproxy/, a 1x1 blue PNG under
+   /music/), using the exact payload shape a live radio track report sent:
+   both a synthetic negative coverid AND an LMS-relative artwork_url
+   ("/imageproxy/<url-encoded external URL>/image.jpg"). Confirms which one
+   actually got fetched by decoding the returned data: URI and comparing it
+   byte-for-byte against the two known images, rather than just asserting
+   the source contains the right branch. */
+function lmsFetchCover(payload) {
+  const mockDir = fs.mkdtempSync(path.join(os.tmpdir(), 'dashticz-lms-mock-'));
+  const redPng = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+    'base64'
+  );
+  const bluePng = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    'base64'
+  );
+  fs.writeFileSync(
+    path.join(mockDir, 'router.php'),
+    [
+      '<?php',
+      "header('Content-Type: image/png');",
+      "if (strpos($_SERVER['REQUEST_URI'], '/imageproxy/') === 0) {",
+      `  echo base64_decode('${redPng.toString('base64')}');`,
+      '  exit;',
+      '}',
+      "if (strpos($_SERVER['REQUEST_URI'], '/music/') === 0) {",
+      `  echo base64_decode('${bluePng.toString('base64')}');`,
+      '  exit;',
+      '}',
+      'http_response_code(404);',
+    ].join('\n')
+  );
+
+  const mockPort = 21000 + (process.pid % 1000);
+  const dashticzPort = 22000 + (process.pid % 1000);
+  const mockServer = spawn('php', ['-S', `127.0.0.1:${mockPort}`, path.join(mockDir, 'router.php')]);
+  const dashticzServer = spawn('php', ['-S', `127.0.0.1:${dashticzPort}`], { cwd: root });
+  try {
+    const deadline = Date.now() + 3000;
+    while (
+      Date.now() < deadline &&
+      (spawnSync('curl', ['-s', '-o', '/dev/null', '-w', '%{http_code}', `http://127.0.0.1:${dashticzPort}/`]).stdout.toString().trim() === '000' ||
+        spawnSync('curl', ['-s', '-o', '/dev/null', '-w', '%{http_code}', `http://127.0.0.1:${mockPort}/`]).stdout.toString().trim() === '000')
+    ) {
+      /* poll until both servers accept connections */
+    }
+    const result = spawnSync(
+      'curl',
+      [
+        '-s',
+        '-X', 'POST',
+        '-H', 'Content-Type: application/json',
+        '-H', `Origin: http://127.0.0.1:${dashticzPort}`,
+        '-H', `Host: 127.0.0.1:${dashticzPort}`,
+        '--data', JSON.stringify(Object.assign({ action: 'cover', server: '127.0.0.1', port: mockPort }, payload)),
+        `http://127.0.0.1:${dashticzPort}/vendor/dashticz/lms/index.php`,
+      ],
+      { encoding: 'utf8' }
+    );
+    const parsed = JSON.parse(result.stdout);
+    const gotBytes = Buffer.from(parsed.dataUrl.split(',')[1], 'base64');
+    return { matchesRed: gotBytes.equals(redPng), matchesBlue: gotBytes.equals(bluePng) };
+  } finally {
+    mockServer.kill();
+    dashticzServer.kill();
+    fs.rmSync(mockDir, { recursive: true, force: true });
+  }
+}
+
+test('LMS cover fetch prefers artwork_url over a synthetic radio coverid', () => {
+  // The exact payload shape reported live for "Radio Veronica" / "Bryan
+  // Adams": a synthetic negative coverid (no real library artwork - LMS's
+  // own /music/<id>/cover_*.jpg lookup just returns a generic placeholder)
+  // alongside an LMS-relative artwork_url (its own image proxy/cache for
+  // the actual, externally-hosted track artwork).
+  const result = lmsFetchCover({
+    coverid: '-94832537157032',
+    artworkUrl: '/imageproxy/https%3A%2F%2Flastfm.example%2Fimage.jpg/image.jpg',
+  });
+  assert.equal(result.matchesRed, true, 'expected the imageproxy (artwork_url) image');
+  assert.equal(result.matchesBlue, false, 'must not fall back to the generic coverid placeholder');
+});
+
+test('LMS backend fails gracefully without the curl extension instead of crashing', () => {
+  // Sanity check that `php -n` (no php.ini) genuinely removes ext-curl in
+  // this environment, so a pass below actually exercises the no-curl path
+  // rather than passing vacuously because curl was loaded anyway.
+  const curlCheck = spawnSync('php', ['-n', '-r', "var_dump(function_exists('curl_init'));"], {
+    encoding: 'utf8',
+  });
+  assert.equal(curlCheck.stdout.trim(), 'bool(false)', 'php -n did not disable ext-curl here');
+
+  const payload = {
+    action: 'rpc',
+    server: '192.168.1.6',
+    port: 9000,
+    username: '',
+    password: '',
+    player: '',
+    params: ['serverstatus', 0, 999],
+  };
+  const result = lmsRequestWithoutCurl(payload);
+  let parsed;
+  assert.doesNotThrow(() => {
+    parsed = JSON.parse(result.stdout);
+  }, `expected valid JSON, got stdout: ${result.stdout}\nstderr: ${result.stderr}`);
+  assert.equal(parsed.error, 'The PHP curl extension is required for the Lyrion Music Server block.');
+  // Not the shutdown handler's fallback - the guard must catch this before
+  // any CURLOPT_*/CURLE_* constant is ever referenced, so no fatal happens
+  // at all (compare the "unexpectedly" test below, which does hit a fatal).
+  assert.equal(parsed.debug, undefined);
+});
+
+test('LMS backend shutdown handler turns an uncaught fatal error into valid JSON', () => {
+  const output = lmsShutdownFatalOutput();
+  let parsed;
+  assert.doesNotThrow(() => {
+    parsed = JSON.parse(output);
+  }, `expected valid JSON, got: ${output}`);
+  assert.equal(parsed.error, 'Lyrion Music Server request failed unexpectedly.');
+  // The debug block only ever describes this file's own code (an engine
+  // fatal, never LMS/request data), and the file name is a basename only -
+  // no server path - so it is safe to always include for diagnosis.
+  assert.match(parsed.debug.message, /dashticz_lms_test_only_undefined_function_call/);
+  // Run via `php -r` (no real source file), so PHP reports its own
+  // "Command line code" placeholder here rather than index.php's basename -
+  // this only confirms basename() is applied (no directory separator), the
+  // real basename is exercised in production.
+  assert.doesNotMatch(parsed.debug.file, /[/\\]/);
+  assert.equal(typeof parsed.debug.line, 'number');
 });
 
 test('calendar fetching is URL validated and does not expose stack traces', () => {
@@ -158,7 +523,15 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(source, /round\(\$height \/ 10\) \* 10/);
   assert.match(writer, /height/);
   /* Device Editor helper blocks are explicitly validated and whitelisted. */
-  assert.match(source, /in_array\(\$entry\['kind'\], \['dummy', 'title', 'custom', 'group', 'html'\], true\)/);
+  assert.match(source, /in_array\(\$entry\['kind'\], \['dummy', 'title', 'custom', 'group', 'html', 'lms'\], true\)/);
+  /* Lyrion Music Server block: server/port/player validated, credentials
+     never echoed back in an error message. */
+  assert.match(source, /kind === 'lms'/);
+  assert.match(source, /Enter the Lyrion Music Server address\./);
+  assert.match(source, /Enter a valid Lyrion Music Server port\./);
+  assert.match(source, /Select a Lyrion Music Server player\./);
+  assert.match(writer, /\$kind === 'lms'/);
+  assert.match(writer, /'type' => 'lms'/);
   assert.match(source, /\^dummyblock_/);
   assert.match(source, /Existing hand-written blocktitle keys remain editable/);
   assert.match(source, /\^\[A-Za-z_\$\]/);

@@ -1564,6 +1564,31 @@ function configwriter_special_block_props($block)
         if (!empty($block['last_update'])) {
             $props['last_update'] = true;
         }
+    } elseif ($kind === 'lms') {
+        // js/components/lms.js dispatches on type: 'lms' - unlike html/group
+        // above, always written, the same as group's own type: 'group'
+        // (see saveblocks.php's 'lms' branch for the field validation).
+        // Every field is written explicitly and unconditionally (including
+        // an empty username/password) since this function always emits a
+        // full blocks[key] replacement rather than merging onto the
+        // existing file - an omitted field here would simply disappear on
+        // the next save, same reasoning as the 'custom' branch's icon: ''.
+        $props = [
+            'width' => $width,
+            'type' => 'lms',
+            'server' => isset($block['lms_server']) ? (string)$block['lms_server'] : '',
+            'port' => isset($block['lms_port']) ? (int)$block['lms_port'] : 9000,
+            'username' => isset($block['lms_username']) ? (string)$block['lms_username'] : '',
+            'password' => isset($block['lms_password']) ? (string)$block['lms_password'] : '',
+            'player' => isset($block['lms_player']) ? (string)$block['lms_player'] : '',
+            'refresh' => isset($block['lms_refresh']) ? (int)$block['lms_refresh'] : 5,
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
     } else {
         $props = [
             'idx' => (int)$block['idx'],

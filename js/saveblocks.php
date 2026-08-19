@@ -109,7 +109,7 @@ foreach ($data['devices'] as $entry) {
     if (is_array($entry)
         && isset($entry['kind'])
         && (
-            in_array($entry['kind'], ['dummy', 'title', 'custom', 'group', 'html'], true)
+            in_array($entry['kind'], ['dummy', 'title', 'custom', 'group', 'html', 'lms'], true)
             || $entry['kind'] === 'slidebutton'
         )
     ) {
@@ -134,12 +134,16 @@ foreach ($data['devices'] as $entry) {
         $title = isset($entry['title']) && is_string($entry['title'])
             ? substr(trim($entry['title']), 0, 100)
             : '';
-        if ($title === '' && !in_array($kind, ['custom', 'slidebutton', 'group', 'html'], true)) {
+        if ($title === '' && !in_array($kind, ['custom', 'slidebutton', 'group', 'html', 'lms'], true)) {
             dashticz_json_error(400, 'A special block title is required.');
         }
         $defaultWidth = 3;
         if ($kind === 'title' || $kind === 'slidebutton') {
             $defaultWidth = 12;
+        } elseif ($kind === 'lms') {
+            // Cover (100x100) + artist/title/album needs more room than the
+            // generic 3-column default other special blocks start at.
+            $defaultWidth = 6;
         }
         $width = isset($entry['width']) ? (int)$entry['width'] : $defaultWidth;
         $width = max(1, min(12, $width));
@@ -213,6 +217,47 @@ foreach ($data['devices'] as $entry) {
                     dashticz_json_error(400, 'Enter a valid html filename (relative to custom/).');
                 }
             }
+        } elseif ($kind === 'lms') {
+            // Icon defaults off (js/deviceeditor.js's Lyrion Music Server popup
+            // uses the cover artwork as its visual, like an HTML Block), but is
+            // still available like every other special block.
+            $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
+                ? substr($entry['icon'], 0, 100)
+                : null;
+        }
+        $lmsServer = null;
+        $lmsPort = null;
+        $lmsUsername = null;
+        $lmsPassword = null;
+        $lmsPlayer = null;
+        $lmsRefresh = null;
+        if ($kind === 'lms') {
+            $lmsServer = isset($entry['server']) && is_string($entry['server'])
+                ? dashticz_normalize_host_input($entry['server'])
+                : '';
+            if ($lmsServer === '' || strlen($lmsServer) > 255) {
+                dashticz_json_error(400, 'Enter the Lyrion Music Server address.');
+            }
+            $lmsPort = isset($entry['port']) ? (int)$entry['port'] : 9000;
+            if ($lmsPort < 1 || $lmsPort > 65535) {
+                dashticz_json_error(400, 'Enter a valid Lyrion Music Server port.');
+            }
+            $lmsUsername = isset($entry['username']) && is_string($entry['username'])
+                ? substr($entry['username'], 0, 100)
+                : '';
+            $lmsPassword = isset($entry['password']) && is_string($entry['password'])
+                ? substr($entry['password'], 0, 200)
+                : '';
+            $lmsPlayer = isset($entry['player']) && is_string($entry['player'])
+                ? trim($entry['player'])
+                : '';
+            if ($lmsPlayer === '' || strlen($lmsPlayer) > 100) {
+                dashticz_json_error(400, 'Select a Lyrion Music Server player.');
+            }
+            $lmsRefresh = isset($entry['refresh']) ? (int)$entry['refresh'] : 5;
+            if ($lmsRefresh < 2 || $lmsRefresh > 3600) {
+                dashticz_json_error(400, 'Enter a valid refresh interval.');
+            }
         }
         $slide = null;
         $buttonKey = null;
@@ -249,6 +294,12 @@ foreach ($data['devices'] as $entry) {
             'hide_title' => !empty($entry['hide_title']),
             'custom_fields' => $customFields,
             'key' => $entry['key'],
+            'lms_server' => $lmsServer,
+            'lms_port' => $lmsPort,
+            'lms_username' => $lmsUsername,
+            'lms_password' => $lmsPassword,
+            'lms_player' => $lmsPlayer,
+            'lms_refresh' => $lmsRefresh,
         ];
     } elseif (is_int($entry) && $entry > 0) {
         $devices[] = [

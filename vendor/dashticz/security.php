@@ -173,6 +173,29 @@ function dashticz_validate_remote_url($url, $allowPrivate = false)
     return $url;
 }
 
+/* Strips a pasted scheme ("http://"/"https://"), any trailing path/query/
+   fragment, and an accidentally-included ":port" from a plain server/host
+   field, so a value like "http://192.168.1.6/" (scheme + trailing slash,
+   as typed into the Lyrion Music Server "Server / IP" field) still resolves
+   instead of being concatenated into a malformed "http://http://..." URL
+   downstream. Used by both js/saveblocks.php (persisting the block) and
+   vendor/dashticz/lms/index.php (the live JSON-RPC bridge), so the same
+   value is accepted - and normalized identically - in both places. */
+function dashticz_normalize_host_input($value)
+{
+    $host = trim((string) $value);
+    $host = preg_replace('#^[a-z][a-z0-9+.-]*://#i', '', $host);
+    $host = preg_replace('~[/?#].*$~', '', $host);
+    $host = trim($host);
+    // Only strip a trailing ":port" for a plain "host:port" typo - skip
+    // bracketed/bare IPv6 literals (more than one colon, or a "[") where a
+    // colon is part of the address itself, not a port separator.
+    if (substr_count($host, ':') === 1 && strpos($host, '[') === false) {
+        $host = substr($host, 0, strpos($host, ':'));
+    }
+    return trim($host, '.');
+}
+
 function dashticz_header_value($headers, $name)
 {
     foreach ($headers as $header) {

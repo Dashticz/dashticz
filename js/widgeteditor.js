@@ -1,4 +1,4 @@
-/* global settings columns columns_standby blocks screens standby_screen language DashticzScreenSwitcher standbyActive DashticzLayoutEditor */
+/* global settings columns columns_standby blocks screens standby_screen language DashticzScreenSwitcher standbyActive DashticzLayoutEditor DT_function DashticzDeviceEditor */
 // eslint-disable-next-line no-unused-vars
 var DashticzWidgetEditor = (function () {
   'use strict';
@@ -1790,6 +1790,7 @@ var DashticzWidgetEditor = (function () {
     catalog.forEach(function (item) {
       html += _widgetCardHtml(item);
     });
+    html += _lmsWidgetCardHtml();
 
     html +=
       '</div><div class="we-message" role="status"></div></div>' +
@@ -1876,6 +1877,36 @@ var DashticzWidgetEditor = (function () {
       (selected ? _t('added', 'Added') : _t('click_to_add', 'Click to add')) +
       '</div></div>'
     );
+  }
+
+  /* Lyrion Music Server lives in this catalog grid (next to Spotify/Sonarr,
+     the closest existing "now playing" widgets) rather than in `catalog`
+     itself: every catalog entry is a singleton (selectedWidgets[id] is a
+     single on/off flag, one fixed blockKey), but LMS supports multiple
+     independent blocks (js/deviceeditor.js's managedSpecials, same as
+     Group/HTML Block). So this card is not selectable/toggleable - clicking
+     it always opens the existing multi-instance "Lyrion Music Server"
+     quick-add popup (DashticzDeviceEditor.openLms()) instead of flipping a
+     selectedWidgets flag, and it never shows an "Added" state. */
+  function _lmsWidgetCardHtml() {
+    return (
+      '<div class="we-widget-card we-widget-card-lms" data-special-widget="lms" ' +
+      'role="button" tabindex="0" aria-label="' + _t('lms_block', 'Lyrion Music Server') + '">' +
+      '<div class="we-widget-icon"><i class="fas fa-music" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      _t('lms_block', 'Lyrion Music Server') +
+      '</div><div class="we-widget-description">' +
+      _t('lms_description', 'Now playing info for a Lyrion Music Server (Logitech Media Server) player.') +
+      '</div></div>' +
+      '<div class="we-widget-status">' + _t('click_to_add', 'Click to add') + '</div></div>'
+    );
+  }
+
+  function _openLmsFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openLms();
+    });
   }
 
   function _cfgField(key, label, type, value, opts, help) {
@@ -3431,15 +3462,22 @@ var DashticzWidgetEditor = (function () {
 
     $modal.on('click', '.we-widget-card', function (event) {
       if ($(event.target).closest('.we-config-btn').length) return;
+      if ($(this).data('special-widget') === 'lms') {
+        _openLmsFromWidgets();
+        return;
+      }
       _toggleWidget(String($(this).data('widget-id')));
     });
 
     $modal.on('keydown', '.we-widget-card', function (event) {
       if ($(event.target).closest('.we-config-btn').length) return;
-      if (event.key === 'Enter' || event.key === ' ') {
-        event.preventDefault();
-        _toggleWidget(String($(this).data('widget-id')));
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+      event.preventDefault();
+      if ($(this).data('special-widget') === 'lms') {
+        _openLmsFromWidgets();
+        return;
       }
+      _toggleWidget(String($(this).data('widget-id')));
     });
 
     $modal.on('click', '#we-save-btn', _save);

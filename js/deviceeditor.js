@@ -133,6 +133,27 @@ var DashticzDeviceEditor = (function () {
         html_block_border: 'Margin',
         invalid_html_block_name: 'Enter a valid unique block name.',
         invalid_html_block_file: 'Enter a valid html filename (relative to custom/).',
+        lms_block: 'Lyrion Music Server',
+        lms_title: 'Title',
+        lms_server: 'Server / IP',
+        lms_port: 'Port',
+        lms_username: 'Username',
+        lms_password: 'Password',
+        lms_credentials_help: 'Only needed when Lyrion Music Server authentication is enabled.',
+        lms_test_connection: 'Test connection',
+        lms_testing_connection: 'Connecting…',
+        lms_connection_ok: 'Connected to Lyrion Music Server',
+        lms_players_found: 'player(s) found',
+        lms_connection_failed: 'Unable to connect to Lyrion Music Server',
+        lms_auth_failed: 'Authentication failed',
+        lms_no_players: 'No LMS players found',
+        lms_player: 'Player',
+        lms_player_placeholder: 'Test the connection to list players',
+        lms_refresh_interval: 'Refresh interval',
+        invalid_lms_server: 'Enter the Lyrion Music Server address.',
+        invalid_lms_port: 'Enter a valid port (1-65535).',
+        invalid_lms_player: 'Test the connection and select a player.',
+        seconds: 'seconds',
         separator: 'Separator',
         icon_requires_checkbox: 'Enable Icon before using the icon field.',
         field: 'Field',
@@ -285,6 +306,16 @@ var DashticzDeviceEditor = (function () {
     _init();
     _prepareManagedDeviceState();
     _showHtmlBlockPopup();
+  }
+
+  /** Open the dedicated Lyrion Music Server popup used by the Screen Editor
+   * add menu. */
+  function openLms() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showLmsPopup();
   }
 
   /** Open the dedicated Slide button popup used by the Screen Editor add menu. */
@@ -563,6 +594,13 @@ var DashticzDeviceEditor = (function () {
       // Matches js/components/html.js's own canHandle(): dispatched purely on a
       // truthy htmlfile, with no `type` of its own.
       kind = 'html';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      String(definition.type || '').toLowerCase() === 'lms'
+    ) {
+      // Lyrion Music Server "Now Playing" block (js/components/lms.js),
+      // dispatched on type: 'lms' like Group's type: 'group' above.
+      kind = 'lms';
     }
     if (!kind) return null;
     var hasConfiguredImage =
@@ -575,16 +613,28 @@ var DashticzDeviceEditor = (function () {
       reference: reference,
       definition: definition,
       idx:
-        kind === 'title' || kind === 'slidebutton' || kind === 'html'
+        kind === 'title' || kind === 'slidebutton' || kind === 'html' || kind === 'lms'
           ? null
           : kind === 'group'
             ? (parseInt(definition.idx, 10) > 0 ? parseInt(definition.idx, 10) : null)
             : parseInt(definition.idx, 10),
-      title: kind === 'custom' || kind === 'group' || kind === 'html'
+      title: kind === 'custom' || kind === 'group' || kind === 'html' || kind === 'lms'
         ? String(definition.title || '')
         : String(definition.title || (kind === 'title' ? 'Title' : reference)),
-      width: _parseWidth(definition.width || (kind === 'title' ? 12 : 3)),
+      width: _parseWidth(definition.width || (kind === 'title' ? 12 : kind === 'lms' ? 6 : 3)),
       height: _parseHeight(definition.height),
+      // Lyrion Music Server connection/player fields - kept as their own
+      // properties (like slideTarget/buttonKey below) rather than routed
+      // through custom_fields/options, since they need their own dedicated
+      // Server/Port/.../Player UI in _showConfigPopup, not the generic
+      // custom-fields grid (see protectedCustomDeviceProperties).
+      lmsServer: kind === 'lms' ? String(definition.server || '') : '',
+      lmsPort: kind === 'lms' ? (parseInt(definition.port, 10) || 9000) : 9000,
+      lmsUsername: kind === 'lms' ? String(definition.username || '') : '',
+      lmsPassword: kind === 'lms' ? String(definition.password || '') : '',
+      lmsPlayer: kind === 'lms' ? String(definition.player || '') : '',
+      lmsPlayerLabel: '',
+      lmsRefresh: kind === 'lms' ? (parseInt(definition.refresh, 10) || 5) : 5,
       // hide_data/last_update/switch are unused for a title/separator block,
       // but icon applies to every special kind.
       options: {
@@ -765,6 +815,11 @@ var DashticzDeviceEditor = (function () {
     grid: true, idx: true, subidx: true, title: true, icon: true, image: true,
     hide_data: true, last_update: true, switch: true, hide_title: true,
     text_alignment: true, text_align: true, custom_fields: true, c: true,
+    // Lyrion Music Server (LMS) block fields - managed by the dedicated
+    // Server/Port/Username/Password/Player/Refresh section of the Lyrion
+    // Music Server popup below, not the generic custom-fields grid.
+    server: true, port: true, username: true, password: true, player: true,
+    refresh: true,
     __proto__: true, prototype: true, constructor: true,
   };
 
@@ -906,6 +961,7 @@ var DashticzDeviceEditor = (function () {
       if (special.specialType === 'custom') return 'fas fa-cube';
       if (special.specialType === 'group') return 'fas fa-object-group';
       if (special.specialType === 'html') return 'fas fa-code';
+      if (special.specialType === 'lms') return 'fas fa-music';
     }
     return 'fas fa-question';
   }
@@ -2277,6 +2333,254 @@ var DashticzDeviceEditor = (function () {
     window.bootstrap.Modal.getOrCreateInstance(document.getElementById('groupblockpopup')).show();
   }
 
+  var LMS_REFRESH_OPTIONS = [2, 5, 10, 20, 30, 60];
+
+  /* Server/Port/Username/Password/Test connection/Player/Refresh interval -
+   * shared between the Lyrion Music Server quick-add popup (_showLmsPopup)
+   * and the normal Device Config popup's own edit view for an already-saved
+   * LMS block (_showConfigPopup), so player discovery ("Test connection")
+   * only has one implementation. currentPlayer/currentPlayerLabel let the
+   * edit view show the configured player's last-known friendly name before
+   * the user re-tests the connection (see docs/blocks/specials/lms.rst). */
+  /* Mirrors vendor/dashticz/security.php's dashticz_normalize_host_input():
+   * strips a pasted scheme ("http://"/"https://"), any trailing path/query/
+   * fragment, and an accidentally-included ":port" from the "Server / IP"
+   * field, so e.g. "http://192.168.1.6/" resolves instead of producing a
+   * malformed double-scheme URL server-side. Applied both before "Test
+   * connection" and before save, so the field always reflects what gets
+   * persisted. */
+  function _normalizeLmsServer(value) {
+    var host = $.trim(String(value || ''));
+    host = host.replace(/^[a-z][a-z0-9+.-]*:\/\//i, '');
+    host = host.replace(/[/?#].*$/, '');
+    host = $.trim(host);
+    if (host.indexOf('[') === -1 && (host.match(/:/g) || []).length === 1) {
+      host = host.slice(0, host.indexOf(':'));
+    }
+    return host.replace(/\.+$/, '');
+  }
+
+  function _lmsFieldsHtml(prefix, values) {
+    var t = _translations();
+    values = values || {};
+    var html = '<div class="mb-3"><label class="form-label" for="' + prefix + '-lms-server">' +
+      _esc(t.lms_server) + '</label>';
+    html += '<input type="text" class="form-control" id="' + prefix + '-lms-server" autocomplete="off" value="' +
+      _esc(values.server || '') + '"></div>';
+    html += '<div class="mb-3"><label class="form-label" for="' + prefix + '-lms-port">' +
+      _esc(t.lms_port) + '</label>';
+    html += '<input type="number" min="1" max="65535" class="form-control" id="' + prefix +
+      '-lms-port" value="' + _esc(values.port || 9000) + '"></div>';
+    html += '<div class="mb-3"><label class="form-label" for="' + prefix + '-lms-username">' +
+      _esc(t.lms_username) + '</label>';
+    html += '<input type="text" class="form-control" id="' + prefix + '-lms-username" autocomplete="off" value="' +
+      _esc(values.username || '') + '"></div>';
+    html += '<div class="mb-3"><label class="form-label" for="' + prefix + '-lms-password">' +
+      _esc(t.lms_password) + '</label>';
+    html += '<input type="password" class="form-control" id="' + prefix + '-lms-password" autocomplete="off" value="' +
+      _esc(values.password || '') + '">';
+    html += '<div class="form-text">' + _esc(t.lms_credentials_help) + '</div></div>';
+    html += '<div class="mb-3">';
+    html += '<button type="button" class="btn btn-outline-secondary btn-sm de-lms-test" id="' + prefix +
+      '-lms-test"><i class="fas fa-plug me-1" aria-hidden="true"></i>' + _esc(t.lms_test_connection) + '</button>';
+    html += '<span class="de-lms-test-status ms-2"></span></div>';
+    html += '<div class="mb-3"><label class="form-label" for="' + prefix + '-lms-player">' +
+      _esc(t.lms_player) + '</label>';
+    html += '<select class="form-select de-lms-player" id="' + prefix + '-lms-player"' +
+      (values.player ? '' : ' disabled') + '>';
+    if (values.player) {
+      html += '<option value="' + _esc(values.player) + '" selected>' +
+        _esc(values.playerLabel || values.player) + '</option>';
+    } else {
+      html += '<option value="">' + _esc(t.lms_player_placeholder) + '</option>';
+    }
+    html += '</select></div>';
+    html += '<div class="mb-3"><label class="form-label" for="' + prefix + '-lms-refresh">' +
+      _esc(t.lms_refresh_interval) + '</label>';
+    html += '<select class="form-select" id="' + prefix + '-lms-refresh">';
+    LMS_REFRESH_OPTIONS.forEach(function (seconds) {
+      html += '<option value="' + seconds + '"' +
+        (Number(values.refresh || 5) === seconds ? ' selected' : '') + '>' +
+        seconds + ' ' + _esc(t.seconds || 'seconds') + '</option>';
+    });
+    html += '</select></div>';
+    return html;
+  }
+
+  /* Call once after appending markup built with _lmsFieldsHtml() above. */
+  function _wireLmsFields(prefix, $popup) {
+    var t = _translations();
+    $popup.on('click', '#' + prefix + '-lms-test', function () {
+      var $btn = $(this);
+      var $status = $popup.find('.de-lms-test-status');
+      var $player = $popup.find('#' + prefix + '-lms-player');
+      var $serverInput = $popup.find('#' + prefix + '-lms-server');
+      var server = _normalizeLmsServer($serverInput.val());
+      $serverInput.val(server);
+      var port = parseInt($popup.find('#' + prefix + '-lms-port').val(), 10) || 9000;
+      if (!server) {
+        $status.removeClass('text-success').addClass('text-danger').text(t.invalid_lms_server);
+        $serverInput.trigger('focus');
+        return;
+      }
+      var previousPlayer = $player.val();
+      var block = {
+        server: server,
+        port: port,
+        username: $.trim(String($popup.find('#' + prefix + '-lms-username').val() || '')),
+        password: String($popup.find('#' + prefix + '-lms-password').val() || ''),
+      };
+      $btn.prop('disabled', true);
+      $status.removeClass('text-success text-danger').text(t.lms_testing_connection);
+      DT_lms_api.request(block, ['serverstatus', 0, 999], '')
+        .then(function (result) {
+          var players = (result && result.players_loop) || [];
+          $player.empty();
+          if (!players.length) {
+            $player.append('<option value="">' + _esc(t.lms_no_players) + '</option>').prop('disabled', true);
+            $status.removeClass('text-success').addClass('text-danger').text(t.lms_no_players);
+            return;
+          }
+          players.forEach(function (p) {
+            var id = String((p && p.playerid) || '');
+            if (!id) return;
+            var name = String((p && p.name) || id);
+            $player.append('<option value="' + _esc(id) + '">' + _esc(name) + '</option>');
+          });
+          $player.prop('disabled', false);
+          if (previousPlayer && $player.find('option[value="' + previousPlayer.replace(/"/g, '\\"') + '"]').length) {
+            $player.val(previousPlayer);
+          }
+          $status.removeClass('text-danger').addClass('text-success').text(
+            t.lms_connection_ok + ' — ' + players.length + ' ' + t.lms_players_found
+          );
+        })
+        .catch(function (xhr) {
+          var message = (xhr && xhr.responseJSON && xhr.responseJSON.error) || t.lms_connection_failed;
+          $status.removeClass('text-success').addClass('text-danger').text(message);
+        })
+        .always(function () {
+          $btn.prop('disabled', false);
+        });
+    });
+  }
+
+  function _readLmsFields(prefix, $popup) {
+    return {
+      server: _normalizeLmsServer($popup.find('#' + prefix + '-lms-server').val()),
+      port: parseInt($popup.find('#' + prefix + '-lms-port').val(), 10) || 9000,
+      username: $.trim(String($popup.find('#' + prefix + '-lms-username').val() || '')),
+      password: String($popup.find('#' + prefix + '-lms-password').val() || ''),
+      player: String($popup.find('#' + prefix + '-lms-player').val() || ''),
+      playerLabel: String($popup.find('#' + prefix + '-lms-player option:selected').text() || ''),
+      refresh: parseInt($popup.find('#' + prefix + '-lms-refresh').val(), 10) || 5,
+    };
+  }
+
+  /* Lyrion Music Server: a read-only "Now Playing" block for one LMS player
+   * (js/components/lms.js), configured via player discovery instead of a
+   * hand-typed MAC address - see docs/blocks/specials/lms.rst. Like Group/
+   * HTML Block, it has no Domoticz idx of its own. */
+  function _showLmsPopup() {
+    var t = _translations();
+    $('#lmsblockpopup').remove();
+
+    var html = '<div class="modal fade" id="lmsblockpopup" tabindex="-1" aria-hidden="true">';
+    html += '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html += '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-music me-2" aria-hidden="true"></i>' +
+      _esc(t.lms_block) + '</h5>';
+    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
+    html += '<div class="modal-body">';
+    // Icon defaults off, like HTML Block: the cover artwork is this block's
+    // own visual, so a leading icon would be redundant unless the user wants one.
+    html += _quickOptionsHtml('lm', {
+      icon: false,
+      iconValue: 'fas fa-music',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html += '<div class="mb-3"><label class="form-label" for="lm-device-title">' + _esc(t.lms_title) + '</label>';
+    html += '<input type="text" class="form-control" id="lm-device-title" autocomplete="off"></div>';
+    html += _lmsFieldsHtml('lm', { port: 9000, refresh: 5 });
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html += '<div class="modal-footer">' + _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.cancel) + '</button>';
+    html += '<button type="button" class="btn btn-primary btn-save" id="lm-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' + _esc(t.save) + '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#lmsblockpopup');
+    _wireQuickOptions('lm', $popup);
+    _wireLmsFields('lm', $popup);
+    _wireBackButton('lmsblockpopup');
+
+    $('#lm-save-btn').on('click', function () {
+      var $message = $popup.find('.cd-custom-message').removeClass('text-danger').text('');
+      var title = $.trim(String($('#lm-device-title').val() || ''));
+      var lms = _readLmsFields('lm', $popup);
+      if (!lms.server) {
+        $message.addClass('text-danger').text(t.invalid_lms_server);
+        $('#lm-lms-server').trigger('focus');
+        return;
+      }
+      if (!(lms.port > 0 && lms.port <= 65535)) {
+        $message.addClass('text-danger').text(t.invalid_lms_port);
+        $('#lm-lms-port').trigger('focus');
+        return;
+      }
+      if (!lms.player) {
+        $message.addClass('text-danger').text(t.invalid_lms_player);
+        $('#lm-lms-player').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('lm');
+      var iconIsImage = quickOptions.icon && quickOptions.iconSource === 'image';
+      var reference = _nextSpecialReference('lms');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'lms',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title || lms.playerLabel || '',
+        width: 6,
+        // A block's `height` means two different things depending on mode
+        // (js/dashticz.js's renderBlock(): grid-row count in grid mode vs.
+        // a literal CSS pixel height outside it), so a fixed default is
+        // only meaningful in grid mode - the only mode this popup is
+        // actually reachable from (the Widgets catalog is grid-only).
+        // 8 rows comfortably fits the 100px cover plus its info lines.
+        height: gridMode ? 8 : null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: false,
+        },
+        customFields: title || lms.playerLabel
+          ? [{ field: 'title', setting: title || lms.playerLabel, value: title || lms.playerLabel, system: true }]
+          : [],
+        preservedFields: {},
+        lmsServer: lms.server,
+        lmsPort: lms.port,
+        lmsUsername: lms.username,
+        lmsPassword: lms.password,
+        lmsPlayer: lms.player,
+        lmsPlayerLabel: lms.playerLabel,
+        lmsRefresh: lms.refresh,
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(document.getElementById('lmsblockpopup')).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () { $(this).remove(); });
+    window.bootstrap.Modal.getOrCreateInstance(document.getElementById('lmsblockpopup')).show();
+  }
+
   /* HTML Block: renders a static custom/<file>.html snippet (e.g. an
    * embedded third-party widget) via DT_html (js/components/html.js), which
    * dispatches purely on the presence of a truthy `htmlfile` property - no
@@ -2591,6 +2895,7 @@ var DashticzDeviceEditor = (function () {
     var isCustom = special && special.specialType === 'custom';
     var isGroupBlock = special && special.specialType === 'group';
     var isHtmlBlock = special && special.specialType === 'html';
+    var isLmsBlock = special && special.specialType === 'lms';
     var options = isSpecial ? (special.options || {}) : (deviceOptions[ck] || {});
     var customRows = isSpecial ? special.customFields : deviceCustomFields[ck];
     if (!customRows || !customRows.length) {
@@ -2671,17 +2976,17 @@ var DashticzDeviceEditor = (function () {
     // A Group or HTML Block has no data value/dial of its own either - just
     // Icon, Update and Title, like every quick-add popup's own top section
     // (see _quickOptionsHtml()).
-    var hasDial = !isTitle && !isGroupBlock && !isHtmlBlock;
+    var hasDial = !isTitle && !isGroupBlock && !isHtmlBlock && !isLmsBlock;
     var configOptions = isTitle
       ? ['icon', 'show_title']
-      : (isGroupBlock || isHtmlBlock)
+      : (isGroupBlock || isHtmlBlock || isLmsBlock)
         ? ['icon', 'last_update', 'show_title']
         : ['icon', 'hide_data', 'last_update', 'dial', 'show_title'];
     html += '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
     html += '<div class="de-config-options' +
       (isTitle
         ? ''
-        : ((isGroupBlock || isHtmlBlock) ? ' de-config-options-three' : ' de-config-options-five')) +
+        : ((isGroupBlock || isHtmlBlock || isLmsBlock) ? ' de-config-options-three' : ' de-config-options-five')) +
       '">';
     configOptions.forEach(function (option) {
       var hiddenForDial =
@@ -2731,6 +3036,20 @@ var DashticzDeviceEditor = (function () {
       html += '<input type="number" min="1" step="1" class="form-control" id="de-config-idx" value="' +
         _esc(special.idx || '') + '">';
       html += '<div class="form-text">' + _esc(t.group_idx_help) + '</div></div>';
+    } else if (isLmsBlock) {
+      // Same Server/Port/.../Player/Refresh section as the quick-add popup
+      // (_showLmsPopup), so editing an already-saved LMS block re-tests the
+      // connection and re-populates the Player dropdown the same way -
+      // rather than exposing the raw player id as a generic custom field.
+      html += _lmsFieldsHtml('de-config', {
+        server: special.lmsServer,
+        port: special.lmsPort,
+        username: special.lmsUsername,
+        password: special.lmsPassword,
+        player: special.lmsPlayer,
+        playerLabel: special.lmsPlayerLabel,
+        refresh: special.lmsRefresh,
+      });
     }
     html += '<div class="de-custom-fields-section"><h6 class="de-section-title mt-3">' + _esc(t.custom_fields) + '</h6>';
     html += '<p class="form-text">' + _esc(t.custom_fields_help) + '</p>';
@@ -2754,6 +3073,7 @@ var DashticzDeviceEditor = (function () {
     $('body').append(html);
 
     var $popup = $('#de-config-popup');
+    if (isLmsBlock) _wireLmsFields('de-config', $popup);
     function refreshCustomFieldButtons() {
       var removable = $popup.find('.de-custom-field-row:not(.de-system-field-row)').length;
       $popup.find('.de-custom-field-remove').each(function () {
@@ -2928,6 +3248,23 @@ var DashticzDeviceEditor = (function () {
           }
         }
       }
+      var pendingLms = null;
+      if (isLmsBlock) {
+        pendingLms = _readLmsFields('de-config', $popup);
+        if (!pendingLms.server) {
+          valid = false;
+          $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_lms_server);
+          $('#de-config-lms-server').trigger('focus');
+        } else if (!(pendingLms.port > 0 && pendingLms.port <= 65535)) {
+          valid = false;
+          $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_lms_port);
+          $('#de-config-lms-port').trigger('focus');
+        } else if (!pendingLms.player) {
+          valid = false;
+          $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_lms_player);
+          $('#de-config-lms-player').trigger('focus');
+        }
+      }
       $('#de-config-popup .de-config-option').each(function () {
         var option = String($(this).attr('data-option'));
         var checked = $(this).prop('checked');
@@ -3066,6 +3403,15 @@ var DashticzDeviceEditor = (function () {
         special.customFields = storedRows;
         special.showTitle = pendingShowTitle;
         if (isCustom || isGroupBlock) special.idx = pendingIdx;
+        if (isLmsBlock && pendingLms) {
+          special.lmsServer = pendingLms.server;
+          special.lmsPort = pendingLms.port;
+          special.lmsUsername = pendingLms.username;
+          special.lmsPassword = pendingLms.password;
+          special.lmsPlayer = pendingLms.player;
+          special.lmsPlayerLabel = pendingLms.playerLabel;
+          special.lmsRefresh = pendingLms.refresh;
+        }
         if (special.specialType === 'slidebutton') {
           storedRows.forEach(function (row) {
             if (_normaliseCustomFieldName(row.field) === 'slide') {
@@ -3196,6 +3542,7 @@ var DashticzDeviceEditor = (function () {
     var isSlideButton = special.specialType === 'slidebutton';
     var isGroupBlock = special.specialType === 'group';
     var isHtmlBlock = special.specialType === 'html';
+    var isLmsBlock = special.specialType === 'lms';
     // A Multi Device is a Custom device whose 'values' custom field was filled
     // in via the dedicated Multi Device popup (see openMultiDevice() above);
     // label it accordingly instead of the generic "Custom devices" so it's not
@@ -3209,6 +3556,7 @@ var DashticzDeviceEditor = (function () {
       : (isMultiDevice ? t.multi_device : (isCustom ? t.custom_devices : (isSlideButton ? t.slide_button : t.dummy_device)));
     if (isGroupBlock) label = t.group_block;
     else if (isHtmlBlock) label = t.html_block;
+    else if (isLmsBlock) label = t.lms_block;
     var htmlFileRow = isHtmlBlock && special.customFields
       ? special.customFields.find(function (row) {
         return String((row && row.field) || '').toLowerCase() === 'htmlfile';
@@ -3222,10 +3570,13 @@ var DashticzDeviceEditor = (function () {
           ? (special.idx ? 'IDX\u00a0' + special.idx : special.reference)
           : isHtmlBlock
             ? ((htmlFileRow && htmlFileRow.setting) || special.reference)
-            : (isCustom ? special.reference + ' · IDX\u00a0' + special.idx : 'IDX\u00a0' + special.idx);
+            : isLmsBlock
+              ? (special.lmsPlayerLabel || special.lmsPlayer || special.reference)
+              : (isCustom ? special.reference + ' · IDX\u00a0' + special.idx : 'IDX\u00a0' + special.idx);
     var specialIconClass = isTitle ? 'fa-divide' : (isSlideButton ? 'fa-sliders-h' : (isMultiDevice ? 'fa-layer-group' : 'fa-cube'));
     if (isGroupBlock) specialIconClass = 'fa-object-group';
     else if (isHtmlBlock) specialIconClass = 'fa-code';
+    else if (isLmsBlock) specialIconClass = 'fa-music';
     var html = '<div class="de-device-item de-special-item" data-special-key="' +
       _esc(special.reference) + '" data-order-key="' + _esc(orderKey) +
       '" draggable="true">';
@@ -3294,7 +3645,7 @@ var DashticzDeviceEditor = (function () {
   }
 
   function _nextSpecialReference(type) {
-    var prefix = type === 'title' ? 'Title_' : 'dummyblock_';
+    var prefix = type === 'title' ? 'Title_' : type === 'lms' ? 'lms_' : 'dummyblock_';
     var used = {};
     if (typeof blocks !== 'undefined') {
       Object.keys(blocks).forEach(function (key) {
@@ -3674,7 +4025,8 @@ var DashticzDeviceEditor = (function () {
           width: _parseWidth(special.width),
         };
         var titleOptionalKind = special.specialType === 'custom' ||
-          special.specialType === 'group' || special.specialType === 'html';
+          special.specialType === 'group' || special.specialType === 'html' ||
+          special.specialType === 'lms';
         if (!titleOptionalKind || String(special.title || '').trim()) {
           specialEntry.title = special.title;
         }
@@ -3740,6 +4092,24 @@ var DashticzDeviceEditor = (function () {
             // an image independently rather than one replacing the other).
             specialEntry.icon = SEPARATOR_DEFAULT_ICON;
           }
+        } else if (special.specialType === 'lms') {
+          // js/components/lms.js dispatches on type: 'lms' - configwriter.php
+          // writes it unconditionally for this kind, like Group's own
+          // type: 'group', so it is not set here either. Icon defaults off
+          // (the cover artwork is this block's own visual), unlike Group/
+          // HTML's icon defaulting from a Domoticz device/none respectively.
+          var lmsOptions = special.options || {};
+          if (lmsOptions.icon === false) {
+            specialEntry.icon = '';
+          } else if (lmsOptions.iconValue) {
+            specialEntry.icon = lmsOptions.iconValue;
+          }
+          specialEntry.server = special.lmsServer;
+          specialEntry.port = special.lmsPort;
+          specialEntry.username = special.lmsUsername;
+          specialEntry.password = special.lmsPassword;
+          specialEntry.player = special.lmsPlayer;
+          specialEntry.refresh = special.lmsRefresh;
         }
         if (special.height) specialEntry.height = special.height;
         return specialEntry;
@@ -4219,6 +4589,7 @@ var DashticzDeviceEditor = (function () {
     openMultiDevice: openMultiDevice,
     openGroup: openGroup,
     openHtmlBlock: openHtmlBlock,
+    openLms: openLms,
     openSlideButton: openSlideButton,
     addSeparator: addSeparator,
   };
