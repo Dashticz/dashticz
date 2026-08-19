@@ -18,16 +18,21 @@ Contributors' forks get evaluated via a throwaway integration branch before touc
 5. After merging, sanity-check with `npm install`, `npm run build`, and `npm test`.
 6. Once approved, merge the integration branch into `beta` and do the release bookkeeping below as part of that same change.
 
-## Release bookkeeping — required before every push to `beta`
+## Release bookkeeping — at most once a day, not per commit
 
-Every commit destined for `beta` must include:
+Don't bump the version for every commit/push. Only do the bookkeeping below when either:
+
+- the user explicitly asks for a version bump/release, or
+- you're about to push and no bump has been done yet today (i.e. `version.txt`'s current `changelog` entry is from an earlier date) — then fold *all* of today's accumulated changes into a single bump, rather than one per commit.
+
+If a bump already exists for today, just amend that same version's `changelog`/`last_changes`/release-notes entry with the new change instead of creating another version bump.
+
+When a bump does apply, it must include:
 
 - Bump `version.txt`'s `version` field and add a matching `changelog` entry.
 - Mirror the same version in `package.json`'s `version` field (a test enforces these stay in sync).
 - Regenerate `package-lock.json` if `package.json` changed (`npm install --package-lock-only`).
 - Add a corresponding dated entry under "Recent changes" in `docs/releasenotes/releasenotes.rst`, following the existing per-version header + `Enhancements`/`Fixes`/`Code` section style.
-
-Do this as a standing step of any push-bound change — don't wait to be asked.
 
 ## Pushing
 

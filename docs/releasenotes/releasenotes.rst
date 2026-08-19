@@ -6,6 +6,55 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.45.1 beta (19-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- Added a **Hide block when player is off** switch to the Lyrion Music
+  Server Wizard popup (both the quick-add and edit popups). Enabled, the
+  block shows nothing at all - no icon, no cover art placeholder, no text -
+  instead of the usual "Player off" message while the player is powered
+  down, so it can be combined with a block's own **No background** option
+  to make it disappear entirely until the player turns back on. Only
+  suppresses that specific "off" state; "Player unavailable" and "Nothing
+  is playing" still show their own message as before. Sized and styled
+  (via a new ``.de-lms-switch`` class) to match the other Wizard switches
+  rather than falling back to a smaller, unstyled default.
+
+* **Fixes**
+
+- Fixed the **No background** checkbox in Device Config and Widget Config
+  rendering smaller than, and separately positioned above, the other
+  Display options switches (Icon/Data/Title) - it was injected as its own
+  row outside the switch group and so fell back to Bootstrap's default
+  switch styling instead of the project's larger, blue-styled switches.
+  It now sits inside the same switch row as Icon/Data/Title and matches
+  their size, color and spacing exactly.
+- Fixed that same switch then landing alone on its own row below the others
+  (Icon/Data/Updated/Dial/Title, or Icon/Updated/Title) once it matched
+  their size - the row used a fixed 3/5-column grid sized for the original
+  switches only, so the extra one always overflowed onto a row by itself.
+  The row now always auto-fits exactly as many equal columns as there are
+  visible switches on a single row, including when the Dial checkbox
+  hides/shows Icon and Title.
+- Fixed enabling **No background** leaving a soft colored glow behind the
+  block on the Liquid Glass Blue/Grey themes instead of true transparency -
+  those themes' backdrop-filter blur/saturate effect on every block was
+  left untouched, so it kept sampling and intensifying whatever sits
+  behind the now-transparent block. The backdrop-filter is now cleared
+  along with the background (#170).
+
+* **Code**
+
+- Updated two ``tests/source.test.js`` assertions that had gone stale after
+  an earlier, unrelated basicclock.js v4 sizing fix (#175): they still
+  pinned its previous ``$block``-scaling/``titleHeight``+``stateMarginV``
+  approach, which that fix had already replaced with scaling ``$state``
+  only and a ``getBoundingClientRect()``-based measurement. No production
+  code changed - the tests now assert basicclock.js's actual current
+  behavior instead of its old one.
+
 v3.45.0 beta (19-8-2026)
 -------------------------
 

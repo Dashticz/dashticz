@@ -1005,7 +1005,8 @@ next css sets the default height of the frame popup
 #hb-device-border.form-check-input,
 .we-widget-field.form-check-input,
 #we-cfg-ascending.form-check-input,
-.we-block-option.form-check-input {
+.we-block-option.form-check-input,
+.de-lms-switch.form-check-input {
   border-color: #adb5bd !important;
   cursor: pointer;
 }
@@ -1015,7 +1016,8 @@ next css sets the default height of the frame popup
 #hb-device-border.form-check-input:checked,
 .we-widget-field.form-check-input:checked,
 #we-cfg-ascending.form-check-input:checked,
-.we-block-option.form-check-input:checked {
+.we-block-option.form-check-input:checked,
+.de-lms-switch.form-check-input:checked {
   background-color: #bfdbfe !important;
   border-color: #93c5fd !important;
   background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%27-4 -4 8 8%27%3e%3ccircle r=%273%27 fill=%27%232563eb%27/%3e%3c/svg%3e") !important;
@@ -1026,7 +1028,8 @@ next css sets the default height of the frame popup
 #hb-device-border.form-check-input:focus,
 .we-widget-field.form-check-input:focus,
 #we-cfg-ascending.form-check-input:focus,
-.we-block-option.form-check-input:focus {
+.we-block-option.form-check-input:focus,
+.de-lms-switch.form-check-input:focus {
   border-color: #93c5fd !important;
   box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
 }
@@ -2111,16 +2114,27 @@ body.dle-active {
 
 .de-config-options {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* auto-fit always lays out exactly as many equal-width columns as there
+     are visible switches, all on a single row - so an item toggling
+     visibility (e.g. the Dial checkbox hiding Icon/Title) or an extra one
+     being appended (the No background switch, injected by button.js) is
+     never left stranded alone on its own row. */
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   gap: 10px 18px;
 }
 
 .de-config-options .form-check {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   min-height: 2.25rem;
   gap: 0.75rem;
   padding-left: 0;
+  /* Lets the switch+label pair shrink below its natural width (grid/flex
+     items default to a content-based minimum) and, in a packed row (five
+     or six columns), wrap the label under its switch instead of the text
+     spilling into the next column. */
+  min-width: 0;
 }
 
 .de-config-options .form-check-input {
@@ -2131,25 +2145,21 @@ body.dle-active {
   margin: 0;
 }
 
-.de-config-options-three {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.de-config-options .form-check-label {
+  min-width: 0;
+}
+
+.de-config-options-three,
+.de-config-options-four,
+.de-config-options-five {
   justify-items: center;
 }
 
-#hb-device-border.form-check-input {
+#hb-device-border.form-check-input,
+.de-lms-switch.form-check-input {
   width: 38px;
   height: 20px;
   margin-top: 0;
-}
-
-.de-config-options-four {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  justify-items: center;
-}
-
-.de-config-options-five {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  justify-items: center;
 }
 
 .de-config-options-three .form-check,

@@ -314,6 +314,7 @@
             "lms_player": "Player",
             "lms_player_placeholder": "Test the connection to list players",
             "lms_refresh_interval": "Refresh interval",
+            "lms_hide_when_off": "Hide block when player is off",
             "invalid_lms_server": "Enter the Lyrion Music Server address.",
             "invalid_lms_port": "Enter a valid port (1-65535).",
             "invalid_lms_player": "Test the connection and select a player.",

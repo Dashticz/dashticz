@@ -157,24 +157,42 @@ var DT_lms_api = {
     }
     $existing.attr('data-lms-state', meta.state).toggleClass('lms-remote', !!meta.remote);
 
+    // hide_when_off (Wizard's "Hide block when player is off" switch): the
+    // player being off is a normal, common state - not an error - so unlike
+    // the "unavailable"/"unreachable" messages below, a user can choose to
+    // show nothing at all (no icon, no text) rather than "Player off" every
+    // time it's powered down.
+    var hideWhenOff = me.block.hide_when_off === true && meta.known && !meta.power;
+    $existing.toggleClass('lms-hidden-off', hideWhenOff);
+
     var $info = $existing.find('.lms-info');
-    var lines = '';
-    if (!meta.known) {
-      lines = _line('lms-state-label', _lmsText('lms_player_unavailable', 'Player unavailable'));
-    } else if (!meta.power) {
-      lines = _line('lms-state-label', _lmsText('lms_player_off', 'Player off'));
-    } else if (meta.state === 'stop') {
-      lines = _line('lms-state-label', _lmsText('mediaplayer_nothing_playing', 'Nothing is playing right now'));
+    if (hideWhenOff) {
+      $info.empty();
     } else {
-      lines += _line('lms-station', meta.station);
-      lines += _line('lms-artist', meta.artist);
-      lines += _line('lms-title', meta.title);
-      lines += _line('lms-album', meta.album);
-      if (meta.state === 'pause') {
-        lines += _line('lms-state-label lms-paused', _lmsText('lms_paused', 'Paused'));
+      var lines = '';
+      if (!meta.known) {
+        lines = _line('lms-state-label', _lmsText('lms_player_unavailable', 'Player unavailable'));
+      } else if (!meta.power) {
+        lines = _line('lms-state-label', _lmsText('lms_player_off', 'Player off'));
+      } else if (meta.state === 'stop') {
+        lines = _line('lms-state-label', _lmsText('mediaplayer_nothing_playing', 'Nothing is playing right now'));
+      } else {
+        lines += _line('lms-station', meta.station);
+        lines += _line('lms-artist', meta.artist);
+        lines += _line('lms-title', meta.title);
+        lines += _line('lms-album', meta.album);
+        if (meta.state === 'pause') {
+          lines += _line('lms-state-label lms-paused', _lmsText('lms_paused', 'Paused'));
+        }
       }
+      $info.html(lines || _line('lms-state-label', _lmsText('lms_player_unavailable', 'Player unavailable')));
     }
-    $info.html(lines || _line('lms-state-label', _lmsText('lms_player_unavailable', 'Player unavailable')));
+
+    var $cover = $existing.find('.lms-cover');
+    if (hideWhenOff) {
+      $cover.empty();
+      return;
+    }
 
     // artwork_url wins when LMS provides one - a radio track's synthetic,
     // negative coverid has no real library artwork (its own cover lookup
@@ -187,7 +205,6 @@ var DT_lms_api = {
     if (artworkKey === me.lmsArtworkKey) return; // unchanged track: never re-fetch (#9)
     me.lmsArtworkKey = artworkKey;
 
-    var $cover = $existing.find('.lms-cover');
     if (!artworkKey) {
       _renderCover($cover, null);
       return;
