@@ -103,7 +103,11 @@ function prepareCalendar(me, key) {
     : isDefined(settings['calendar_maxitems'])
     ? settings['calendar_maxitems']
     : 15;
-  me.lastweek = isDefined(me.block.lastweek) ? me.block.lastweek : true;
+  // Documentation defines lastweek=false as the default. Keeping true here
+  // made stale appointments from the previous week appear even when a block
+  // never opted into history (#174). Explicit lastweek:true still behaves as
+  // before and intentionally includes the previous week.
+  me.lastweek = isDefined(me.block.lastweek) ? me.block.lastweek : false;
   me.weeks = isDefined(me.block.weeks) ? me.block.weeks : 5;
   me.isoweek = isDefined(me.block.isoweek) ? me.block.isoweek : false;
   me.width = $(me.mountPoint + ' > div').width();

@@ -108,6 +108,15 @@
     var(--panel-shadow) !important;
 }
 
+/* Dial components calculate a square face from the block's available box.
+   The generic Modern Dark vertical padding changes that box after the
+   calculation and shifts thermostat dials off-centre. The outer component
+   carries both .transbg and .dial; the actual circular face is only .dial,
+   so this removes theme padding from the wrapper without touching the face. */
+.transbg.dial {
+  padding: 0 !important;
+}
+
 .transbg.blocktitle,
 .blocktitle {
   margin: 0 !important;

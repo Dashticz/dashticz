@@ -120,6 +120,13 @@
     var(--panel-shadow) !important;
 }
 
+/* Dials calculate a square face from the block box. Remove the generic
+   theme padding only from the outer dial wrapper so thermostat dials stay
+   centred; the inner circular .dial face remains untouched (#177). */
+.transbg.dial {
+  padding: 0 !important;
+}
+
 .transbg.blocktitle,
 .blocktitle {
   margin: 0 !important;

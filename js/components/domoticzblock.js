@@ -135,6 +135,11 @@ var DT_domoticzblock = (function () {
           deviceList.push(value.idx);
           Dashticz.subscribeDevice(me, value.idx, false, function(device) {
             deviceUpdateHandler(me.block);
+            // Secondary values in a multi-device block use the same full
+            // deviceUpdateHandler render as the main device. Restore static
+            // presentation immediately after that render as well (#176).
+            applyConfiguredHeight(me);
+            setBackgroundImage(me, me.backgroundImage);
           })
         }
       })
