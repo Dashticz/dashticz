@@ -136,6 +136,18 @@ test('Legacy iframe and Sunrise blocks do not acquire a new default icon', () =>
   );
 });
 
+test('Blocktitle separator does not acquire a runtime default icon', () => {
+  // #169: a legacy/custom-mode blocktitle entry with no `icon` property must
+  // render as a clean separator with no icon. getBlockConfig() (js/dashticz.js)
+  // only merges block.icon onto the runtime cfg when CONFIG.js actually
+  // defines it, so blocktitle.js's own defaultCfg must not inject one.
+  const blocktitle = loadComponent('js/components/blocktitle.js', {});
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(blocktitle.defaultCfg, 'icon'),
+    false
+  );
+});
+
 test('Webpack cleans stale output while preserving legacy font assets', () => {
   const config = require(path.join(root, 'build/webpack.config.js'));
   assert.equal(config.output.clean.keep.test('assets/fonts/legacy.woff'), true);

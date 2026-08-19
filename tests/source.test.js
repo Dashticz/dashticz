@@ -974,7 +974,14 @@ test('device and widget config editors share full widget config and preserve hid
     /special\.name === 'blocktitle' && cfg\.image[\s\S]*cfg\.icon = '';/
   );
   assert.match(deviceEditor, /kind === 'title' && typeof definition\.icon === 'undefined'[\s\S]*\? SEPARATOR_DEFAULT_ICON/);
-  assert.match(blockTitle, /defaultCfg:\s*\{[\s\S]*icon: 'fas fa-divide'/);
+  // #169: a hand-written/legacy blocktitle entry with no `icon` property at
+  // all must render with no icon, exactly like Wizard's explicit icon: ''
+  // (disabled) state - only an explicit non-empty icon value renders one.
+  // blocktitle.js's defaultCfg must not inject its own runtime default icon;
+  // getBlockConfig() (js/dashticz.js) only copies block.icon onto cfg when
+  // the CONFIG.js entry actually defines the property.
+  assert.doesNotMatch(blockTitle, /icon:\s*'fas fa-divide'/);
+  assert.match(blockTitle, /defaultCfg:\s*\{\s*\n\s*containerClass: 'titlegroups',/);
   assert.match(configWriter, /if \(array_key_exists\('icon', \$block\) && \$block\['icon'\] !== null\) \{\s*\n\s*\$props\['icon'\] = \(string\)\$block\['icon'\];/);
 
   // Widget gears opened from Device Editor use the complete Widget Editor modal/save model.
