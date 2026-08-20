@@ -21,6 +21,26 @@ v3.45.2 beta (20-8-2026)
   dedicated full-block-width image field, instead of leaving users with an
   oversized icon floating in an otherwise-empty block (#171).
 
+- The Bar display mode's number of segments is now configurable via a new
+  ``barsteps`` block parameter (default 10, e.g. ``barsteps: 5`` gives 5
+  segments of 20% each plus the 0% segment) instead of always being fixed.
+  Choosing **Bar** in the Device Config popup's Icon/Dial/Bar selector now
+  reveals a **Steps** number field to set it directly, instead of having
+  to add ``barsteps`` by hand via Custom fields. See :ref:`dialbar`.
+
+- The selected option in the Device Config popup's Icon/Dial/Bar selector
+  now uses the same light-green "added" look as a selected widget card in
+  the Add items gallery, instead of a plain grey/orange outline - with a
+  blue icon rather than one matching the border color, so the icon stays
+  the one visual cue that changes per mode at a glance.
+
+- Device, Multi Device and Custom device icons are now the same 45px width
+  as every other block type placed on screen (Widget, Separator, Slide
+  button, Group), instead of rendering 5px narrower at 40px. Widget,
+  Separator, Slide button and Group already built their wrapper with the
+  ``dt_block`` class that the wider ``.dt_block .col-icon`` rule targets;
+  plain devices and Multi/Custom device value rows now get that class too.
+
 * **Fixes**
 
 - Fixed thermostat (and other) dial widgets still rendering off-centre on
@@ -59,6 +79,20 @@ v3.45.2 beta (20-8-2026)
   already adds to its parent element to tell it apart from the circular
   dial (#182).
 
+- Fixed custom image icons (and inline icons like a thermostat dial's
+  value-row icon) rendering far too large on the Modern Dark, Liquid Glass
+  Blue and Liquid Glass Grey themes. Those themes' blanket
+  ``.icon { font-size: 40px !important; }`` rule matched *any* element
+  carrying the generic ``icon`` class, not just the intended main
+  device/widget icon column, so unrelated inline icons elsewhere in the
+  UI were blown up too. Their ``.col-icon img, .icon img`` rule also
+  capped custom image icons at 65px - more than double the 30px every
+  other theme and block type uses - so a device's image icon rendered
+  visibly larger than a Separator's or Widget's icon using that same
+  file. The font-size rule is now scoped to ``.col-icon .icon`` and the
+  image cap is now 30px, matching the default theme and the themes' own
+  existing dimmer/blinds-slider carve-out.
+
 * **Code**
 
 - Updated 4 ``tests/source.test.js`` assertions left stale by the Bar
@@ -67,6 +101,15 @@ v3.45.2 beta (20-8-2026)
   its previous single-checkbox shape. No production code changed - the
   tests now assert ``deviceeditor.js``'s actual current implementation
   instead of its old one.
+
+- Updated 3 more ``tests/source.test.js`` assertions and 3
+  ``tests/php-security.test.js`` assertions left stale by earlier work on
+  the LMS "Now Playing" block's cover-artwork handling: a player-based
+  artwork lookup and change-detection/retry state machine
+  (``js/components/lms.js``), and a broader relative-artwork-path
+  normalization on the backend (``vendor/dashticz/lms/index.php``). No
+  production code changed - the tests now assert the actual current
+  implementation instead of an earlier, simpler shape.
 
 v3.45.1 beta (19-8-2026)
 -------------------------

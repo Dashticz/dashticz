@@ -3757,7 +3757,7 @@ test('Lyrion Music Server (LMS) block is registered, dispatched and wired throug
   assert.match(lms, /canHandle: function \(block\) \{\s*\n\s*return block && block\.type === 'lms';/);
   assert.match(lms, /var DT_lms_api = \{/);
   assert.match(lms, /request: function \(block, params, player\)/);
-  assert.match(lms, /cover: function \(block, coverid, artworkUrl\)/);
+  assert.match(lms, /cover: function \(block, player, coverid, artworkUrl\)/);
   assert.match(lms, /function normalizeStatus\(/);
   assert.match(lms, /Number\(status\.remote\) === 1/);
   assert.match(lms, /remoteMeta/);
@@ -3765,14 +3765,21 @@ test('Lyrion Music Server (LMS) block is registered, dispatched and wired throug
   // Stopped/off must not keep showing the previous track (see #18 in the task).
   assert.match(lms, /A stopped\/off player must not keep showing the last track/);
   // Track-change-only artwork refetch: never re-fetch while the same track
-  // (coverid/artwork_url) is still playing.
-  assert.match(lms, /if \(artworkKey === me\.lmsArtworkKey\) return;/);
-  // artwork_url wins over coverid when LMS provides one - a radio track's
-  // synthetic negative coverid has no real library artwork (confirmed live:
-  // its cover lookup just returns a generic placeholder icon).
+  // (coverid/artwork_url) is still playing and already successfully loaded;
+  // a failed fetch is deliberately not cached this way so it gets retried
+  // (see the retry-throttle key/timestamp pair right below).
+  assert.match(lms, /if \(me\.lmsArtworkLoadedKey === artworkKey\) return;/);
+  assert.match(lms, /if \(me\.lmsArtworkRequestKey === artworkKey\) return;/);
+  // The artwork change-detection key includes the visible metadata as well
+  // as coverid/artworkUrl - a radio station often keeps the same
+  // coverid/artwork_url while the programme or song changes, so the key
+  // must change too or a genuinely new track's artwork would never refetch.
+  // Fetch priority (player lookup first, then artworkUrl, then coverid - a
+  // radio track's synthetic negative coverid has no real library artwork)
+  // is handled server-side, in dashticz_lms_fetch_cover() (vendor/dashticz/lms/index.php).
   assert.match(
     lms,
-    /meta\.artworkUrl \? 'u:' \+ meta\.artworkUrl : \(meta\.coverid \? 'c:' \+ meta\.coverid : ''\)/
+    /return \[\s*\n\s*meta\.remote \? 'remote' : 'local',\s*\n\s*meta\.station,\s*\n\s*meta\.artist,\s*\n\s*meta\.title,\s*\n\s*meta\.album,\s*\n\s*meta\.coverid,\s*\n\s*meta\.artworkUrl,\s*\n\s*\]\.join\('\|'\);/
   );
   // Read-only: the runtime block only ever issues the "status" poll (never a
   // play/pause/power/volume control command) - DT_lms_api.request() itself
@@ -3916,7 +3923,13 @@ test('Lyrion Music Server "Hide block when player is off" switch clears both tex
     /var hideWhenOff = me\.block\.hide_when_off === true && meta\.known && !meta\.power;/
   );
   assert.match(lms, /if \(hideWhenOff\) \{\s*\n\s*\$info\.empty\(\);/);
-  assert.match(lms, /var \$cover = \$existing\.find\('\.lms-cover'\);\s*\n\s*if \(hideWhenOff\) \{\s*\n\s*\$cover\.empty\(\);\s*\n\s*return;/);
+  // Also resets the artwork change-detection/retry state (not just clearing
+  // the DOM), so the player coming back on is treated as a fresh track
+  // instead of skipping a refetch because the last-loaded key still matches.
+  assert.match(
+    lms,
+    /var \$cover = \$existing\.find\('\.lms-cover'\);\s*\n\s*if \(hideWhenOff\) \{\s*\n\s*\$cover\.empty\(\);\s*\n\s*_resetArtworkState\(me\);\s*\n\s*return;/
+  );
 
   // Wizard integration (js/deviceeditor.js): a dedicated field alongside
   // server/port/.../refresh - not a generic custom field (kept out of the

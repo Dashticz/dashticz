@@ -335,13 +335,13 @@
   color: var(--text-status) !important;
 }
 
-.icon {
+.col-icon .icon {
   font-size: 40px !important;
 }
 
 .col-icon img,
 .icon img {
-  max-width: 65px !important;
+  max-width: 30px !important;
 }
 
 .titlegroups .col-icon img.icon {

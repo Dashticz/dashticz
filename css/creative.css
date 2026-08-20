@@ -2112,6 +2112,19 @@ body.dle-active {
   color: #adb5bd;
 }
 
+/* Selected Icon/Dial/Bar mode: same light-green "added" look as a selected
+   widget card (.we-widget-card.we-selected), but with a blue icon instead
+   of green - the icon is the only thing distinguishing Icon/Dial/Bar at a
+   glance, so it gets its own accent color rather than matching the border. */
+.de-visual-mode-button.active {
+  background-color: #e8f5ee !important;
+  border-color: #198754 !important;
+}
+
+.de-visual-mode-button.active i {
+  color: #0d6efd;
+}
+
 .de-config-options {
   display: grid;
   /* auto-fit always lays out exactly as many equal-width columns as there

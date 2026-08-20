@@ -75,6 +75,9 @@ var DashticzDeviceEditor = (function () {
         dial_hint: 'Dial type selected. Set the remaining dial options (color, min/max, subtype, values, etc.) manually via Custom fields below.',
         dial_hint_link: 'Dial documentation',
         dial_bar: 'Bar',
+        dial_barsteps: 'Steps',
+        dial_barsteps_help: 'Number of segments the Bar is divided into (default 10).',
+        invalid_barsteps: 'Enter a positive number of steps.',
         show_title: 'Title',
         device_config: 'Device Config',
         widget_config: 'Widget Config',
@@ -670,6 +673,7 @@ var DashticzDeviceEditor = (function () {
         switch: definition.switch === true,
         dial: definition.type === 'dial' && !barMode,
         bar: barMode,
+        barsteps: parseInt(definition.barsteps, 10) > 0 ? parseInt(definition.barsteps, 10) : 10,
       },
       buttonKey: String(definition.key || ''),
       slideTarget: parseInt(definition.slide, 10) > 0 ? parseInt(definition.slide, 10) : 1,
@@ -831,6 +835,10 @@ var DashticzDeviceEditor = (function () {
     grid: true, idx: true, subidx: true, title: true, icon: true, image: true,
     hide_data: true, last_update: true, switch: true, hide_title: true,
     text_alignment: true, text_align: true, custom_fields: true, c: true,
+    // Bar's number-of-segments field - managed by the dedicated Steps input
+    // in the visual mode selector below (see _showConfigPopup), not the
+    // generic custom-fields grid. Has no meaning outside subtype: 'bar'.
+    barsteps: true,
     // Lyrion Music Server (LMS) block fields - managed by the dedicated
     // Server/Port/Username/Password/Player/Refresh/Hide-when-off section of
     // the Lyrion Music Server popup below, not the generic custom-fields grid.
@@ -1534,6 +1542,7 @@ var DashticzDeviceEditor = (function () {
         switch: configured.switch === true,
         dial: configured.type === 'dial' && !barMode,
         bar: barMode,
+        barsteps: parseInt(configured.barsteps, 10) > 0 ? parseInt(configured.barsteps, 10) : 10,
       };
       deviceTitleVisible[ck] = configured.hide_title !== true;
       deviceCustomFields[ck] = _deviceCustomFieldRows(configured, deviceTitles[ck]);
@@ -3071,12 +3080,17 @@ var DashticzDeviceEditor = (function () {
         html += '<button type="button" class="btn btn-outline-secondary de-visual-mode-button' +
           (active ? ' active' : '') + '" data-visual-mode="' + item.mode + '"' +
           (item.enabled ? '' : ' disabled') + ' aria-pressed="' + (active ? 'true' : 'false') + '"' +
-          ' title="' + _esc(item.label) + '" style="min-width:72px;' +
-          (active ? 'color:var(--button-active);border-color:var(--button-active);' : '') + '">' +
+          ' title="' + _esc(item.label) + '" style="min-width:72px;">' +
           '<i class="' + item.icon + '" aria-hidden="true"></i>' +
           '<span class="d-block small">' + _esc(item.label) + '</span></button>';
       });
       html += '</div></div>';
+      var currentBarSteps = parseInt(options.barsteps, 10) > 0 ? parseInt(options.barsteps, 10) : 10;
+      html += '<div class="mb-3 de-bar-steps-row' + (visualMode === 'bar' ? '' : ' d-none') + '">';
+      html += '<label class="form-label" for="de-config-barsteps">' + _esc(t.dial_barsteps) + '</label>';
+      html += '<input type="number" min="1" step="1" class="form-control" id="de-config-barsteps" value="' +
+        _esc(currentBarSteps) + '">';
+      html += '<div class="form-text">' + _esc(t.dial_barsteps_help) + '</div></div>';
     }
 
     html += '<div class="de-config-options' +
@@ -3183,11 +3197,7 @@ var DashticzDeviceEditor = (function () {
         var active = String($(this).attr('data-visual-mode')) === mode;
         $(this)
           .toggleClass('active', active)
-          .attr('aria-pressed', active ? 'true' : 'false')
-          .css({
-            color: active ? 'var(--button-active)' : '',
-            'border-color': active ? 'var(--button-active)' : '',
-          });
+          .attr('aria-pressed', active ? 'true' : 'false');
       });
     }
     function refreshIconFieldVisibility() {
@@ -3237,12 +3247,16 @@ var DashticzDeviceEditor = (function () {
       var enabled = hasDial && selectedVisualMode() === 'dial';
       $popup.find('.de-dial-hint').toggleClass('d-none', !enabled);
     }
+    function refreshBarStepsField() {
+      $popup.find('.de-bar-steps-row').toggleClass('d-none', selectedVisualMode() !== 'bar');
+    }
     function refreshDialOptions() {
       var mode = hasDial ? selectedVisualMode() : '';
       var dialLike = mode === 'dial' || mode === 'bar';
       $popup.find('.de-hide-for-dial').toggleClass('d-none', dialLike);
       refreshIconFieldVisibility();
       refreshDialHint();
+      refreshBarStepsField();
     }
     $popup.on('click', '.de-custom-field-add', function () {
       $(this).closest('.de-custom-field-row').after(_customFieldRowHtml());
@@ -3385,6 +3399,23 @@ var DashticzDeviceEditor = (function () {
         updated.icon = pendingVisualMode === 'icon';
         updated.dial = pendingVisualMode === 'dial';
         updated.bar = pendingVisualMode === 'bar';
+        var rawBarSteps = $.trim(String($('#de-config-barsteps').val() || ''));
+        var parsedBarSteps = parseInt(rawBarSteps, 10);
+        if (pendingVisualMode === 'bar') {
+          if (!(parsedBarSteps > 0 && String(parsedBarSteps) === rawBarSteps)) {
+            valid = false;
+            $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_barsteps);
+            $('#de-config-barsteps').trigger('focus');
+          } else {
+            updated.barsteps = parsedBarSteps;
+          }
+        } else {
+          // Not in Bar mode: the field is hidden, so don't block saving on
+          // it - keep whatever value was already stored (falling back to
+          // the input's own value, then the default) for if the user
+          // switches back to Bar later without reopening this popup.
+          updated.barsteps = parsedBarSteps > 0 ? parsedBarSteps : (options.barsteps || 10);
+        }
       }
 
       $popup.find('.de-custom-field-row').each(function () {
@@ -4178,6 +4209,11 @@ var DashticzDeviceEditor = (function () {
             // canonical form while the runtime also accepts type:'bar'.
             specialEntry.type = 'dial';
             specialCustomFields.subtype = 'bar';
+            // Only written when it differs from js/components/dial.js's own
+            // default (10), keeping CONFIG.js lean for the common case.
+            if (specialOptions.barsteps && specialOptions.barsteps !== 10) {
+              specialCustomFields.barsteps = specialOptions.barsteps;
+            }
             specialEntry.custom_fields = specialCustomFields;
           } else if (specialOptions.dial === true) {
             specialEntry.type = 'dial';
@@ -4280,7 +4316,14 @@ var DashticzDeviceEditor = (function () {
         deviceCustomFields[ck],
         devicePreservedFields[ck]
       );
-      if (options.bar === true) customFields.subtype = 'bar';
+      if (options.bar === true) {
+        customFields.subtype = 'bar';
+        // Only written when it differs from js/components/dial.js's own
+        // default (10), keeping CONFIG.js lean for the common case.
+        if (options.barsteps && options.barsteps !== 10) {
+          customFields.barsteps = options.barsteps;
+        }
+      }
       if (Object.keys(customFields).length) entry.custom_fields = customFields;
       if (deviceHeights[ck]) entry.height = deviceHeights[ck];
       // Never retain a legacy name-based reference: Domoticz names may change.

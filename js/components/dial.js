@@ -1549,9 +1549,10 @@ var DT_dial = (function () {
 
   /**
    * Configures a Dimmer or Blinds Percentage device to render as a vertical
-   * 11-segment bar instead of the draggable dial. The segments represent
-   * 0%, 10%, 20%, ... 100%; clicking a segment sets the device directly to
-   * that segment's level.
+   * bar instead of the draggable dial. The segments represent 0%, then
+   * evenly spaced steps up to 100% (11 segments of 10% each by default, set
+   * via the block's barsteps parameter); clicking a segment sets the device
+   * directly to that segment's level.
    * @param {object} me  Core component object.
    */
   function makeBarDim(me) {
@@ -1565,9 +1566,13 @@ var DT_dial = (function () {
     me.decimals = choose(me.block.decimals, 0);
     me.backgroundselector = '.dial-bar-container';
     // Reverse scale: include an explicit 0% segment at the top, then increase
-    // in 10% steps down to 100%. This keeps zero selectable and visible as
+    // in even steps down to 100%. This keeps zero selectable and visible as
     // the lightest Text Status segment while preserving the existing steps.
-    me.barSegments = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+    var barSteps = Math.max(1, parseInt(choose(me.block.barsteps, 10), 10) || 10);
+    me.barSegments = [];
+    for (var i = 0; i <= barSteps; i++) {
+      me.barSegments.push(Math.round((i / barSteps) * 100));
+    }
     me.$mountPoint.addClass('dialbar');
     return;
   }
