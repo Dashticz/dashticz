@@ -121,10 +121,14 @@ function dashticz_lms_read_input()
     );
 
     if ($action === 'cover') {
+        // The player id enables LMS's canonical /music/current/cover route,
+        // which lets LMS itself resolve local-library, plugin and radio art.
+        // coverid/artworkUrl remain accepted as backward-compatible fallbacks.
+        $result['player'] = isset($input['player']) ? trim((string) $input['player']) : '';
         $result['coverid'] = isset($input['coverid']) ? trim((string) $input['coverid']) : '';
         $result['artworkUrl'] = isset($input['artworkUrl']) ? trim((string) $input['artworkUrl']) : '';
-        if ($result['coverid'] === '' && $result['artworkUrl'] === '') {
-            throw new RuntimeException('Nothing to fetch: no coverid or artwork URL given.');
+        if ($result['player'] === '' && $result['coverid'] === '' && $result['artworkUrl'] === '') {
+            throw new RuntimeException('Nothing to fetch: no player, coverid or artwork URL given.');
         }
     } else {
         // Player id is "" for a server-wide query (serverstatus) and the
@@ -174,55 +178,12 @@ function dashticz_lms_request($request)
     return $decoded['result'];
 }
 
-/* Resolves the currently playing item's artwork and returns it as a data:
-   URI, so the browser never needs a direct (and possibly LAN-only/mixed-
-   content-blocked) URL to either LMS or wherever an internet radio station's
-   own artwork happens to be hosted.
-   artwork_url (the 'K' status tag) is preferred whenever LMS provides one:
-   for an internet radio track, LMS assigns a synthetic negative coverid
-   with no real library artwork (its own /music/<id>/cover_*.jpg lookup
-   just returns a generic placeholder), while artwork_url is the actual
-   artwork LMS resolved for the currently playing item - confirmed live via
-   a real radio station: e.g. "/imageproxy/https%3A%2F%2Flastfm.freetls...
-   /image.jpg". That value is LMS-server-relative (LMS's own proxy/cache
-   for externally-hosted art, not a bare external URL as originally assumed)
-   whenever it starts with "/", so it gets the same trust level as coverid
-   below (LMS's own endpoint: allowPrivate, LMS credentials); only a
-   genuinely absolute http(s) artwork_url is fetched as a true external
-   host, like any other externally-hosted image Dashticz embeds (see
-   js/components/garbage.js, js/sonarr.js), without private-IP access or
-   LMS credentials. coverid is the fallback only when LMS gave no
-   artwork_url at all - the normal case for local library tracks. */
-function dashticz_lms_fetch_cover($request)
+/* Convert a successful image response to the data URI consumed by lms.js.
+   Keeping this check in one helper means every artwork fallback rejects HTML,
+   JSON and other non-image responses in exactly the same way. */
+function dashticz_lms_cover_data_uri($response)
 {
-    $artworkUrl = $request['artworkUrl'];
-    if ($artworkUrl !== '') {
-        if ($artworkUrl[0] === '/') {
-            $url = dashticz_validate_remote_url(
-                'http://' . $request['server'] . ':' . $request['port'] . $artworkUrl,
-                true
-            );
-            // LMS's own image proxy/cache still has to fetch the externally-
-            // hosted artwork itself (over the internet, from LMS's side)
-            // before it can respond, which can comfortably exceed every
-            // other request here's normal LAN-only timeout budget - give it
-            // more room rather than surfacing a spurious timeout error for
-            // what is otherwise a perfectly reachable LMS server.
-            $response = dashticz_lms_curl($url, $request, array(CURLOPT_TIMEOUT => 20));
-        } else {
-            $url = dashticz_validate_remote_url($artworkUrl, false);
-            $response = dashticz_lms_curl($url, array('username' => '', 'password' => ''), array());
-        }
-    } else {
-        $url = dashticz_validate_remote_url(
-            'http://' . $request['server'] . ':' . $request['port'] .
-                '/music/' . rawurlencode($request['coverid']) . '/cover_200x200_o.jpg',
-            true
-        );
-        $response = dashticz_lms_curl($url, $request, array());
-    }
-
-    if ($response['body'] === '') {
+    if (!is_array($response) || $response['body'] === '') {
         return null;
     }
 
@@ -232,6 +193,71 @@ function dashticz_lms_fetch_cover($request)
     }
 
     return 'data:' . $contentType . ';base64,' . base64_encode($response['body']);
+}
+
+/* Resolve the current player's artwork through LMS first. LMS documents
+   /music/current/cover.jpg?player=<playerid> specifically for this purpose
+   and its Graphics layer already knows how to resolve local files, remote
+   streams, radio protocol handlers and plugin artwork. Requesting a resized
+   cover keeps the response on LMS's image path instead of depending on a
+   browser following a remote redirect.
+
+   The existing artwork_url/coverid resolution remains as a fallback for
+   older or unusual LMS/plugin combinations. Relative artwork URLs are always
+   treated as LMS-local paths, with or without a leading slash: some plugins
+   return "imageproxy/..." while others return "/imageproxy/...". Absolute
+   http(s) artwork URLs retain the existing external-host validation and are
+   fetched without LMS credentials. */
+function dashticz_lms_fetch_cover($request)
+{
+    if ($request['player'] !== '') {
+        $url = dashticz_validate_remote_url(
+            'http://' . $request['server'] . ':' . $request['port'] .
+                '/music/current/cover_200x200_o.jpg?player=' . rawurlencode($request['player']),
+            true
+        );
+        try {
+            $current = dashticz_lms_curl($url, $request, array(CURLOPT_TIMEOUT => 20));
+            $dataUri = dashticz_lms_cover_data_uri($current);
+            if ($dataUri !== null) {
+                return $dataUri;
+            }
+        } catch (RuntimeException $error) {
+            // Artwork is non-critical. Continue with the metadata fallback;
+            // the normal status poll remains responsible for server errors.
+        }
+    }
+
+    $artworkUrl = $request['artworkUrl'];
+    if ($artworkUrl !== '') {
+        if (!preg_match('#^https?://#i', $artworkUrl)) {
+            $lmsPath = '/' . ltrim($artworkUrl, '/');
+            $url = dashticz_validate_remote_url(
+                'http://' . $request['server'] . ':' . $request['port'] . $lmsPath,
+                true
+            );
+            $response = dashticz_lms_curl($url, $request, array(CURLOPT_TIMEOUT => 20));
+        } else {
+            $url = dashticz_validate_remote_url($artworkUrl, false);
+            $response = dashticz_lms_curl($url, array('username' => '', 'password' => ''), array());
+        }
+        $dataUri = dashticz_lms_cover_data_uri($response);
+        if ($dataUri !== null) {
+            return $dataUri;
+        }
+    }
+
+    if ($request['coverid'] !== '') {
+        $url = dashticz_validate_remote_url(
+            'http://' . $request['server'] . ':' . $request['port'] .
+                '/music/' . rawurlencode($request['coverid']) . '/cover_200x200_o.jpg',
+            true
+        );
+        $response = dashticz_lms_curl($url, $request, array());
+        return dashticz_lms_cover_data_uri($response);
+    }
+
+    return null;
 }
 
 /* Shared curl GET/POST helper. Every failure path throws a fixed, generic

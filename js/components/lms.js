@@ -38,7 +38,7 @@ var DT_lms_api = {
       return res && res.result;
     });
   },
-  cover: function (block, coverid, artworkUrl) {
+  cover: function (block, player, coverid, artworkUrl) {
     return $.ajax({
       url: settings['dashticz_php_path'] + 'lms/index.php',
       method: 'POST',
@@ -50,6 +50,7 @@ var DT_lms_api = {
         port: block.port,
         username: block.username || '',
         password: block.password || '',
+        player: player || '',
         coverid: coverid || '',
         artworkUrl: artworkUrl || '',
       }),
@@ -63,6 +64,7 @@ var DT_lms_api = {
   'use strict';
 
   var STATUS_TAGS = 'tags:aclK'; // artist, album, coverid, artwork_url - see docs/blocks/specials/lms.rst
+  var ARTWORK_RETRY_MS = 30000;
   // Must match vendor/dashticz/lms/index.php's fixed message exactly - see
   // the try block's function_exists('curl_init') check there.
   var LMS_CURL_REQUIRED_ERROR = 'The PHP curl extension is required for the Lyrion Music Server block.';
@@ -148,6 +150,77 @@ var DT_lms_api = {
     $cover.html($img);
   }
 
+  /* Write an inline style with !important when hiding the whole block.
+     Several optional Dashticz themes intentionally use !important for their
+     glass/panel background, border and shadow, so a normal jQuery .css()
+     assignment would not reliably make hide_when_off fully transparent. */
+  function _setImportantStyle($nodes, property, value) {
+    $nodes.each(function () {
+      if (!this || !this.style) return;
+      if (value === null) this.style.removeProperty(property);
+      else this.style.setProperty(property, value, 'important');
+    });
+  }
+
+  /* Keep an off player in the layout but make the complete tile visually
+     disappear. This includes generic title/icon content and every panel
+     effect. Removing these inline overrides when the player returns hands
+     styling back to the active theme without changing the saved config. */
+  function _setHiddenOff(me, hidden) {
+    var $block = me.$mountPoint.find('.lms-block').addBack('.lms-block').first();
+    if (!$block.length) $block = me.$mountPoint;
+    var $content = $block.find('.col-icon, .dt_content');
+
+    if (hidden) {
+      _setImportantStyle($block, 'background', 'transparent');
+      _setImportantStyle($block, 'border-color', 'transparent');
+      _setImportantStyle($block, 'box-shadow', 'none');
+      _setImportantStyle($block, 'backdrop-filter', 'none');
+      _setImportantStyle($block, '-webkit-backdrop-filter', 'none');
+      _setImportantStyle($content, 'visibility', 'hidden');
+      _setImportantStyle($content, 'pointer-events', 'none');
+      return;
+    }
+
+    [
+      'background',
+      'border-color',
+      'box-shadow',
+      'backdrop-filter',
+      '-webkit-backdrop-filter',
+    ].forEach(function (property) {
+      _setImportantStyle($block, property, null);
+    });
+    ['visibility', 'pointer-events'].forEach(function (property) {
+      _setImportantStyle($content, property, null);
+    });
+  }
+
+  /* Build a key from visible metadata as well as LMS's artwork fields. Radio
+     stations often keep the same coverid/artwork_url while the programme or
+     song changes; including the textual metadata ensures current-cover is
+     refreshed when the actual now-playing item changes. */
+  function _artworkKey(meta) {
+    if (meta.state !== 'play' && meta.state !== 'pause') return '';
+    return [
+      meta.remote ? 'remote' : 'local',
+      meta.station,
+      meta.artist,
+      meta.title,
+      meta.album,
+      meta.coverid,
+      meta.artworkUrl,
+    ].join('|');
+  }
+
+  function _resetArtworkState(me) {
+    me.lmsArtworkCurrentKey = '';
+    me.lmsArtworkLoadedKey = '';
+    me.lmsArtworkRequestKey = '';
+    me.lmsArtworkRetryKey = '';
+    me.lmsArtworkRetryAt = 0;
+  }
+
   function render(me, meta) {
     var $state = me.$mountPoint.find('.dt_state');
     var $existing = $state.find('.lms-block-inner');
@@ -157,13 +230,10 @@ var DT_lms_api = {
     }
     $existing.attr('data-lms-state', meta.state).toggleClass('lms-remote', !!meta.remote);
 
-    // hide_when_off (Wizard's "Hide block when player is off" switch): the
-    // player being off is a normal, common state - not an error - so unlike
-    // the "unavailable"/"unreachable" messages below, a user can choose to
-    // show nothing at all (no icon, no text) rather than "Player off" every
-    // time it's powered down.
+    // hide_when_off means the complete LMS tile is visually absent while
+    // preserving its grid/column footprint, so surrounding layout never jumps.
     var hideWhenOff = me.block.hide_when_off === true && meta.known && !meta.power;
-    $existing.toggleClass('lms-hidden-off', hideWhenOff);
+    _setHiddenOff(me, hideWhenOff);
 
     var $info = $existing.find('.lms-info');
     if (hideWhenOff) {
@@ -191,33 +261,64 @@ var DT_lms_api = {
     var $cover = $existing.find('.lms-cover');
     if (hideWhenOff) {
       $cover.empty();
+      _resetArtworkState(me);
       return;
     }
 
-    // artwork_url wins when LMS provides one - a radio track's synthetic,
-    // negative coverid has no real library artwork (its own cover lookup
-    // just returns a generic placeholder icon), while artwork_url is what
-    // LMS actually resolved for the currently playing item. See
-    // vendor/dashticz/lms/index.php's dashticz_lms_fetch_cover().
-    var artworkKey = meta.state === 'play' || meta.state === 'pause'
-      ? (meta.artworkUrl ? 'u:' + meta.artworkUrl : (meta.coverid ? 'c:' + meta.coverid : ''))
-      : '';
-    if (artworkKey === me.lmsArtworkKey) return; // unchanged track: never re-fetch (#9)
-    me.lmsArtworkKey = artworkKey;
+    var artworkKey = _artworkKey(meta);
+    me.lmsArtworkCurrentKey = artworkKey;
 
     if (!artworkKey) {
+      _resetArtworkState(me);
       _renderCover($cover, null);
       return;
     }
-    DT_lms_api.cover(me.block, meta.coverid, meta.artworkUrl)
+
+    // A successfully loaded cover is cached until the now-playing metadata
+    // changes. Failed artwork is deliberately not marked as loaded: it gets
+    // one retry after a quiet period so a temporary LMS image-proxy/network
+    // failure can recover without issuing a cover request every refresh tick.
+    if (me.lmsArtworkLoadedKey === artworkKey) return;
+    if (me.lmsArtworkRequestKey === artworkKey) return;
+    if (
+      me.lmsArtworkRetryKey === artworkKey &&
+      me.lmsArtworkRetryAt &&
+      Date.now() < me.lmsArtworkRetryAt
+    ) return;
+
+    // A failure for the previous station/track must never postpone artwork
+    // for a newly selected item. Retry throttling therefore belongs to the
+    // artwork key, not to the LMS block globally.
+    if (me.lmsArtworkRetryKey !== artworkKey) {
+      me.lmsArtworkRetryKey = '';
+      me.lmsArtworkRetryAt = 0;
+    }
+
+    me.lmsArtworkRequestKey = artworkKey;
+    DT_lms_api.cover(me.block, me.block.player, meta.coverid, meta.artworkUrl)
       .then(function (dataUrl) {
-        // The user may have moved on to a newer track while this request was
-        // in flight - never let a slow, stale artwork fetch overwrite it.
-        if (me.lmsArtworkKey !== artworkKey) return;
-        _renderCover($cover, dataUrl);
+        // Always release this request key, even when a slow result became
+        // stale because the player already moved to another track.
+        if (me.lmsArtworkRequestKey === artworkKey) me.lmsArtworkRequestKey = '';
+        if (me.lmsArtworkCurrentKey !== artworkKey) return;
+        if (dataUrl) {
+          me.lmsArtworkLoadedKey = artworkKey;
+          me.lmsArtworkRetryKey = '';
+          me.lmsArtworkRetryAt = 0;
+          _renderCover($cover, dataUrl);
+        } else {
+          me.lmsArtworkLoadedKey = '';
+          me.lmsArtworkRetryKey = artworkKey;
+          me.lmsArtworkRetryAt = Date.now() + ARTWORK_RETRY_MS;
+          _renderCover($cover, null);
+        }
       })
       .catch(function () {
-        if (me.lmsArtworkKey !== artworkKey) return;
+        if (me.lmsArtworkRequestKey === artworkKey) me.lmsArtworkRequestKey = '';
+        if (me.lmsArtworkCurrentKey !== artworkKey) return;
+        me.lmsArtworkLoadedKey = '';
+        me.lmsArtworkRetryKey = artworkKey;
+        me.lmsArtworkRetryAt = Date.now() + ARTWORK_RETRY_MS;
         _renderCover($cover, null);
       });
   }
@@ -236,6 +337,7 @@ var DT_lms_api = {
     defaultContent: _skeletonHtml,
     refresh: function (me) {
       if (!me.block.server || !me.block.player) {
+        _setHiddenOff(me, false);
         me.$mountPoint.find('.dt_state').html(
           _line('lms-state-label', _lmsText('lms_server_unavailable', 'LMS unavailable'))
         );
@@ -246,15 +348,10 @@ var DT_lms_api = {
           render(me, normalizeStatus(status, me.block.title));
         })
         .catch(function (xhr) {
-          // Connection/HTTP failure (server unreachable, auth failed, ...):
-          // a distinct message from "player unavailable" above, and never
-          // logged to the console on every poll (#18's "do not flood").
-          // The one exception is a missing PHP curl extension: unlike a
-          // network blip, that never resolves itself on the next poll, so
-          // it is shown verbatim (the backend's own fixed, safe message -
-          // see vendor/dashticz/lms/index.php) instead of the generic text,
-          // so the block itself explains what to fix without needing the
-          // Wizard's "Test connection" to be reopened.
+          // A connection error is not a confirmed powered-off state. Always
+          // reveal a previously hidden tile so the LMS-unavailable message is
+          // visible instead of leaving a stale transparent block indefinitely.
+          _setHiddenOff(me, false);
           var serverError = xhr && xhr.responseJSON && xhr.responseJSON.error;
           var text = serverError === LMS_CURL_REQUIRED_ERROR
             ? serverError
