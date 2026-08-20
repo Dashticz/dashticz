@@ -20,8 +20,8 @@ var DT_domoticzblock = (function () {
       var longpressdata = me.block.longpress? ' data-long-press-delay="1000" ':'';
       me.$mountPoint.html(
         '<div data-id="' +
-        block.key + '"' + longpressdata + 
-        ' class="mh transbg block_' +
+        block.key + '"' + longpressdata +
+        ' class="mh transbg dt_block block_' +
         block.key + longpress + ' col-xs-'+me.block.width +
         '">Getting device ' + me.block.idx + '</div>'
       );

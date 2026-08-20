@@ -1169,7 +1169,7 @@ function createSingleBlock(block, asMultiLine, hasSubidx) {
   }
   var multiline = asMultiLine ? ' multiline' : '';
   var html =
-    '<div data-id="' + key + '" class="mh transbg block_' +
+    '<div data-id="' + key + '" class="mh transbg dt_block block_' +
     key + multiline +
     ' col-xs-' +
     (block.width || 4) +

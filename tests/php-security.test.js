@@ -172,13 +172,16 @@ test('LMS backend bridge is same-origin gated, allows LAN access, and never leak
   assert.match(source, /dashticz_validate_remote_url\(\s*\n?\s*'http:\/\/' \. \$request\['server'\] \. ':' \. \$request\['port'\] \. '\/jsonrpc\.js',\s*\n\s*true/);
   // artwork_url is LMS-server-relative (its own image proxy/cache, e.g.
   // "/imageproxy/https%3A%2F%2Flastfm.../image.jpg" for an internet radio
-  // track - confirmed live) whenever it starts with "/", so THAT gets the
-  // same private-IP allowance as LMS's own endpoints; only a genuinely
-  // absolute external artwork_url must NOT get it (SSRF hygiene).
-  assert.match(source, /if \(\$artworkUrl\[0\] === '\/'\) \{/);
+  // track, or "imageproxy/..." without the leading slash from some plugins
+  // - confirmed live) whenever it isn't itself an absolute http(s) URL, so
+  // THAT gets the same private-IP allowance as LMS's own endpoints, after
+  // normalizing a missing leading slash; only a genuinely absolute external
+  // artwork_url must NOT get it (SSRF hygiene).
+  assert.match(source, /if \(!preg_match\('#\^https\?:\/\/#i', \$artworkUrl\)\) \{/);
+  assert.match(source, /\$lmsPath = '\/' \. ltrim\(\$artworkUrl, '\/'\);/);
   assert.match(
     source,
-    /dashticz_validate_remote_url\(\s*\n\s*'http:\/\/' \. \$request\['server'\] \. ':' \. \$request\['port'\] \. \$artworkUrl,\s*\n\s*true/
+    /dashticz_validate_remote_url\(\s*\n\s*'http:\/\/' \. \$request\['server'\] \. ':' \. \$request\['port'\] \. \$lmsPath,\s*\n\s*true/
   );
   assert.match(source, /dashticz_validate_remote_url\(\$artworkUrl, false\)/);
   // artwork_url is preferred over coverid whenever LMS provides one - a
