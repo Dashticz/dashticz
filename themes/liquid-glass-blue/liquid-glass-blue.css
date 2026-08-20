@@ -103,7 +103,12 @@
 }
 
 
-.transbg {
+/* Dial components (.transbg.dial) calculate a square face from the
+   block's own box, so this generic panel styling deliberately excludes
+   them - any padding/border/background applied here shifts that
+   calculation and throws the dial off-centre (#177). Dials keep using
+   the plain, unthemed .transbg layout from css/creative.css instead. */
+.transbg:not(.dial) {
   padding-top: 8px !important;
   padding-bottom: 6px !important;
   border: var(--block-gap) solid transparent !important;
@@ -118,13 +123,6 @@
     inset 0 1px 0 var(--glass-highlight),
     inset 0 0 0 var(--main-border-width) var(--border-color-block),
     var(--panel-shadow) !important;
-}
-
-/* Dials calculate a square face from the block box. Remove the generic
-   theme padding only from the outer dial wrapper so thermostat dials stay
-   centred; the inner circular .dial face remains untouched (#177). */
-.transbg.dial {
-  padding: 0 !important;
 }
 
 .transbg.blocktitle,

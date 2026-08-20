@@ -6,6 +6,22 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.45.2 beta (20-8-2026)
+-------------------------
+
+* **Fixes**
+
+- Fixed thermostat (and other) dial widgets still rendering off-centre on
+  the Modern Dark, Liquid Glass Blue and Liquid Glass Grey themes. The
+  earlier #177 fix only zeroed the padding on the dial's wrapper
+  (``.transbg.dial``), but the themes' generic panel styling - padding,
+  border, background and box-shadow, applied via a broad ``.transbg``
+  selector - still applied to it, and could still shift the dial's
+  square-face calculation off-centre. Dial components are now fully
+  excluded from that themed panel styling (``.transbg:not(.dial)``), so
+  they use the same plain, unthemed layout as the default theme, where the
+  dial was already correctly centred (#177).
+
 v3.45.1 beta (19-8-2026)
 -------------------------
 
