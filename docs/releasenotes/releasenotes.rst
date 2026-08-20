@@ -46,6 +46,19 @@ v3.45.2 beta (20-8-2026)
   set) no longer get those classes, since they never actually navigate via
   slide; genuine slide/menu buttons keep highlighting correctly (#171).
 
+- Fixed the Bar subtype (#182) losing its themed panel background, border
+  and shadow on Modern Dark, Liquid Glass Blue and Liquid Glass Grey,
+  instead of matching every other block like it should. The #177 fix
+  above excluded every ``.dial`` element from that panel styling to fix
+  the circular dial's centering, but Bar is a vertical rectangle that
+  never shared that centering problem - ``js/components/dial.js``'s
+  ``_dialFitSize()`` already measures Bar's content box directly rather
+  than the padding-sensitive ``outerWidth``/``outerHeight`` measurement
+  the circular dial relies on. Bar now gets the same themed panel every
+  other block has, targeted via the ``.dialbar`` class ``dial.js``
+  already adds to its parent element to tell it apart from the circular
+  dial (#182).
+
 * **Code**
 
 - Updated 4 ``tests/source.test.js`` assertions left stale by the Bar

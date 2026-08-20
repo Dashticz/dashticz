@@ -125,6 +125,32 @@
     var(--panel-shadow) !important;
 }
 
+/* The Bar subtype (#182) is a vertical rectangle, not a face that must
+   stay a perfect square/circle - it doesn't share the centering problem
+   above (js/components/dial.js's _dialFitSize() measures its content box
+   height directly, unlike the padding-sensitive outerWidth/outerHeight
+   measurement the circular dial relies on), so it keeps the normal
+   themed glass panel every other block gets. The outer .transbg.dial
+   element carries no subtype-specific class of its own - .dialbar only
+   lands on its immediate parent (me.$mountPoint.addClass('dialbar')) -
+   so that's what this targets. */
+.dialbar > .transbg.dial {
+  padding-top: 8px !important;
+  padding-bottom: 6px !important;
+  border: var(--block-gap) solid transparent !important;
+  border-radius: var(--radius-border) !important;
+  background:
+    linear-gradient(165deg, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, 0) 55%),
+    var(--main-bg) !important;
+  background-clip: padding-box !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 0 0 var(--main-border-width) var(--border-color-block),
+    var(--panel-shadow) !important;
+}
+
 .transbg.blocktitle,
 .blocktitle {
   margin: 0 !important;
