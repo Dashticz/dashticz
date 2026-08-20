@@ -9,6 +9,18 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 v3.45.2 beta (20-8-2026)
 -------------------------
 
+* **Enhancements**
+
+- Added a **Full-width image** toggle to the Add Button Wizard popup's
+  Icon/Image picker (shown once a custom image is picked). Previously the
+  picker only ever saved a chosen image into the small, fixed-size icon
+  field (``.col-icon``), with no way to reproduce a webcam/radar-style
+  button that fills and scales with the block - reported as a missing
+  ``btnimage`` parameter, distinct from ``image``. Checking the toggle
+  saves the same picked image as ``btnimage`` instead, Dashticz's existing
+  dedicated full-block-width image field, instead of leaving users with an
+  oversized icon floating in an otherwise-empty block (#171).
+
 * **Fixes**
 
 - Fixed thermostat (and other) dial widgets still rendering off-centre on
@@ -21,6 +33,15 @@ v3.45.2 beta (20-8-2026)
   excluded from that themed panel styling (``.transbg:not(.dial)``), so
   they use the same plain, unthemed layout as the default theme, where the
   dial was already correctly centred (#177).
+
+* **Code**
+
+- Updated 4 ``tests/source.test.js`` assertions left stale by the Bar
+  subtype work (#182), which moved the Dial checkbox into a shared
+  Icon/Dial/Bar visual-mode selector without updating the tests pinning
+  its previous single-checkbox shape. No production code changed - the
+  tests now assert ``deviceeditor.js``'s actual current implementation
+  instead of its old one.
 
 v3.45.1 beta (19-8-2026)
 -------------------------

@@ -845,19 +845,21 @@ test('device and widget config editors share full widget config and preserve hid
   assert.doesNotMatch(configWriter, /configwriter_normalise_text_alignment/);
   assert.doesNotMatch(configWriter, /\$props\['text_alignment'\]/);
 
-  // Device Config is Icon/Data/Update/Dial/Title, centered on one row. Dials
-  // hide the ineffective Icon and Title controls while keeping their values in
-  // the DOM, so switching Dial off restores both without losing configuration.
-  // A separator/title bar still has only Icon and Title because it has no data
-  // value or last-update timestamp of its own.
+  // Device Config is Data/Update/Title, centered on one row. Icon/Dial/Bar
+  // moved out into their own mutually-exclusive visual-mode button group
+  // (#182) - selecting Dial or Bar there hides the now-ineffective Title
+  // control while keeping its value in the DOM, so switching back to Icon
+  // restores it without losing configuration. A separator/title bar still
+  // has only Icon and Title because it has no data value or last-update
+  // timestamp of its own, and no Dial/Bar mode at all.
   assert.match(deviceEditor, /\? \['icon', 'show_title'\]/);
-  assert.match(deviceEditor, /: \['icon', 'hide_data', 'last_update', 'dial', 'show_title'\]/);
+  assert.match(deviceEditor, /: \['hide_data', 'last_update', 'show_title'\]/);
   assert.match(deviceEditor, /configOptions\.forEach/);
-  assert.match(deviceEditor, /option === 'icon' \|\| option === 'show_title'/);
+  assert.match(deviceEditor, /hasDial && option === 'show_title'/);
   assert.match(deviceEditor, /de-hide-for-dial/);
   assert.match(deviceEditor, /function refreshDialOptions\(\)/);
-  assert.match(deviceEditor, /\.toggleClass\('de-config-options-three', enabled\)/);
-  assert.match(deviceEditor, /\$popup\.on\('change', '\[data-option="dial"\]', refreshDialOptions\)/);
+  assert.match(deviceEditor, /de-visual-mode-button/);
+  assert.match(deviceEditor, /\$popup\.on\('click', '\.de-visual-mode-button', function \(\) \{/);
   assert.match(deviceEditor, /if \(option === 'hide_data'\) \{\s*\n\s*checked = options\.hide_data !== true/);
   assert.match(deviceEditor, /isSpecial \? special\.showTitle !== false : deviceTitleVisible\[ck\] !== false/);
   assert.match(deviceEditor, /updated\[option\] = option === 'hide_data' \? !checked : checked/);
@@ -883,28 +885,35 @@ test('device and widget config editors share full widget config and preserve hid
   assert.match(saveWidgets, /'icon', 'hide_data', 'last_update', 'hide_title'/);
   assert.match(saveWidgets, /if \(!empty\(\$widget\['hide_data'\]\)\)/);
   assert.match(saveWidgets, /if \(!empty\(\$widget\['last_update'\]\)\)/);
-  assert.match(deviceEditor, /de-config-options-five/);
+  assert.match(deviceEditor, /de-config-options-three/);
   // Columns are auto-fit rather than a fixed repeat(N,...) so that a switch
-  // toggling visibility (Dial hiding Icon/Title) or an extra one being
-  // appended (button.js's injected No background switch, #170) always ends
-  // up sharing the same single row instead of one being stranded alone on
-  // a row of its own; -three/-four/-five now only add centering.
+  // toggling visibility or an extra one being appended (button.js's injected
+  // No background switch, #170) always ends up sharing the same single row
+  // instead of one being stranded alone on a row of its own; -three/-four/
+  // -five only add centering. Only -three is still reachable from JS - Icon/
+  // Dial/Bar moved into their own visual-mode button group (#182), leaving
+  // at most 3 items (hide_data/last_update/show_title, or icon/last_update/
+  // show_title for Group/HTML/LMS) in this row - -four/-five stay defined
+  // in the stylesheet even though nothing currently emits them.
   assert.match(styles, /\.de-config-options \{[\s\S]*grid-template-columns: repeat\(auto-fit, minmax\(0, 1fr\)\)/);
   assert.match(styles, /\.de-config-options-three,\s*\n\s*\.de-config-options-four,\s*\n\s*\.de-config-options-five \{\s*\n\s*justify-items: center;/);
   assert.match(styles, /\.de-config-options \.form-check-input[\s\S]*width: 32px;[\s\S]*height: 32px;/);
   assert.match(deviceEditor, /icon: true, iconValue: null, hide_data: false, last_update: false/);
   assert.match(styles, /\.we-block-option\.form-check-input[\s\S]*width: 32px;[\s\S]*height: 32px;/);
 
-  // Dial checkbox: writes type:'dial' into CONFIG.js (the only way to render a
-  // device as a dial block; a hand-typed 'type' custom field stays rejected as
-  // reserved), and round-trips back into the checkbox when re-opening Device Config.
-  assert.match(deviceEditor, /dial: definition\.type === 'dial'/);
-  assert.match(deviceEditor, /dial: configured\.type === 'dial'/);
-  assert.match(deviceEditor, /if \(specialOptions\.dial === true\) specialEntry\.type = 'dial'/);
-  assert.match(deviceEditor, /if \(options\.dial === true\) \{\s*\n[\s\S]*?entry\.type = 'dial';\s*\n\s*\} else if \(p\.subidx\) \{\s*\n\s*entry\.subidx = p\.subidx;\s*\n\s*\}/);
+  // Dial/Bar visual mode: writes type:'dial' into CONFIG.js (the only way to
+  // render a device as a dial block; a hand-typed 'type' custom field stays
+  // rejected as reserved) - Bar reuses the same type:'dial' plus
+  // subtype:'bar' custom field, since saveblocks.php only accepts type:'dial'
+  // (#182) - and both round-trip back into the visual-mode selector when
+  // re-opening Device Config.
+  assert.match(deviceEditor, /dial: definition\.type === 'dial' && !barMode/);
+  assert.match(deviceEditor, /dial: configured\.type === 'dial' && !barMode/);
+  assert.match(deviceEditor, /\} else if \(specialOptions\.dial === true\) \{\s*\n\s*specialEntry\.type = 'dial';\s*\n\s*\}/);
+  assert.match(deviceEditor, /if \(options\.bar === true \|\| options\.dial === true\) \{\s*\n[\s\S]*?entry\.type = 'dial';\s*\n\s*\} else if \(p\.subidx\) \{\s*\n\s*entry\.subidx = p\.subidx;\s*\n\s*\}/);
   assert.match(
     deviceEditor,
-    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === reference\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
+    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === 'bar' \|\|\s*\n\s*definition\.type === reference\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
   );
   assert.match(saveBlocks, /function _dashticz_editor_block_type\(\$entry\)/);
   assert.match(saveBlocks, /'type' => _dashticz_editor_block_type\(\$entry\)/);
@@ -2952,24 +2961,24 @@ test('Dial sizing falls back sanely instead of silently rendering oversized', ()
   assert.doesNotMatch(deviceEditor, /protectedCustomDeviceProperties = \{[^}]*\bscale: true\b/s);
 });
 
-test('Dial checkbox shows an inline hint pointing to the dial docs and Custom fields', () => {
-  // Checking Dial only sets type:'dial'; every other dial parameter (color,
+test('Dial visual mode shows an inline hint pointing to the dial docs and Custom fields', () => {
+  // Selecting Dial only sets type:'dial'; every other dial parameter (color,
   // min/max, subtype, values, ...) still has to be added by hand via Custom
   // fields, so the popup surfaces a dismissable, non-blocking hint (an
-  // inline alert rather than a stacked modal, so toggling the checkbox a
+  // inline alert rather than a stacked modal, so switching visual mode a
   // few times while experimenting doesn't spam the user with popups) that
-  // only appears while Dial is checked and links to the dial docs.
+  // only appears while Dial is selected and links to the dial docs.
   const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
   assert.match(deviceEditor, /class="alert alert-info de-dial-hint d-none"/);
   assert.match(deviceEditor, /href="https:\/\/dashticz\.readthedocs\.io\/en\/beta\/blocks\/specials\/dial\.html"/);
   assert.match(deviceEditor, /function refreshDialHint\(\) \{/);
   assert.match(deviceEditor, /\$popup\.find\('\.de-dial-hint'\)\.toggleClass\('d-none', !enabled\)/);
-  assert.match(deviceEditor, /\$popup\.on\('change', '\[data-option="dial"\]', refreshDialOptions\)/);
+  assert.match(deviceEditor, /\$popup\.on\('click', '\.de-visual-mode-button', function \(\) \{/);
   assert.match(deviceEditor, /dial_hint: '/);
   assert.match(deviceEditor, /dial_hint_link: '/);
 });
 
-test('Dial checkbox on a multi-value sub-device (e.g. Temp+Humidity) saves the base idx, not the sub-value idx (#118)', () => {
+test('Dial visual mode on a multi-value sub-device (e.g. Temp+Humidity) saves the base idx, not the sub-value idx (#118)', () => {
   // Add Device expands a multi-value Domoticz device (subCount > 1, e.g. a
   // combined Temp + Humidity sensor) into one row per value - idx "12_1",
   // "12_2" - so classic gauge/switch blocks can each bind to a single value
@@ -2977,12 +2986,13 @@ test('Dial checkbox on a multi-value sub-device (e.g. Temp+Humidity) saves the b
   // the whole device to detect its type (js/components/dial.js make() reads
   // d.Type === 'Temp + Humidity' etc.), and DT_function.getDomoticzIdx can't
   // resolve a composite "12_1" idx to any device - it silently fell back to
-  // a plain on/off switch instead of a gauge. Checking Dial on such a row
-  // must therefore drop the subidx and save the plain base idx.
+  // a plain on/off switch instead of a gauge. Selecting Dial (or Bar, which
+  // needs the same full device - #182) on such a row must therefore drop
+  // the subidx and save the plain base idx.
   const deviceEditor = fs.readFileSync(path.join(root, 'js/deviceeditor.js'), 'utf8');
   assert.match(
     deviceEditor,
-    /if \(options\.dial === true\) \{[\s\S]*?entry\.type = 'dial';\s*\n\s*\} else if \(p\.subidx\) \{\s*\n\s*entry\.subidx = p\.subidx;\s*\n\s*\}/
+    /if \(options\.bar === true \|\| options\.dial === true\) \{[\s\S]*?entry\.type = 'dial';\s*\n\s*\} else if \(p\.subidx\) \{\s*\n\s*entry\.subidx = p\.subidx;\s*\n\s*\}/
   );
 });
 
@@ -3389,10 +3399,10 @@ test('Move mode Settings button opens the Multi/Custom Device\'s own config, not
 
   // _specialFromReference must treat a type that merely echoes the block's
   // own reference key as "no real widget type", same as it already treats
-  // the Dial checkbox's type:'dial'.
+  // the Dial/Bar visual mode's type:'dial' (#182).
   assert.match(
     deviceEditor,
-    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === reference\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
+    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === 'bar' \|\|\s*\n\s*definition\.type === reference\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
   );
 });
 
