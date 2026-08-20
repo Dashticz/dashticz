@@ -93,6 +93,7 @@ var DashticzDeviceEditor = (function () {
         slide_button_title: 'Title',
         slide_button_screen: 'Screen',
         slide_button_icon: 'Icon',
+        slide_button_full_image: 'Full-width image (fills the block, e.g. a webcam or radar image)',
         invalid_slide_button_name: 'Enter a valid unique button name.',
         invalid_slide_target: 'Enter a valid positive screen number.',
         custom_device_name: 'Device name',
@@ -2729,6 +2730,12 @@ var DashticzDeviceEditor = (function () {
     html += '<input type="number" min="1" step="1" class="form-control" id="sb-button-screen" value="1"></div>';
     html += '<div class="mb-3"><label class="form-label">' + _esc(t.slide_button_icon) + '</label>';
     html += _customFieldRowHtml({ field: 'icon', setting: 'fas fa-home' }, { hideButtons: true });
+    // Only meaningful once a custom image is picked (not a font icon) -
+    // toggled by refreshFullImageOption() below, mirroring how the image
+    // picker itself only opens for the 'image' source (#171).
+    html += '<label class="form-check form-switch mt-2 sb-full-image-option d-none">' +
+      '<input class="form-check-input" type="checkbox" id="sb-button-full-image">' +
+      '<span class="form-check-label">' + _esc(t.slide_button_full_image) + '</span></label>';
     html += '</div>';
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
     html += '<div class="modal-footer">' + _backButtonHtml() +
@@ -2740,6 +2747,14 @@ var DashticzDeviceEditor = (function () {
     var $popup = $('#slidebuttonpopup');
     _wireIconImagePicker($popup);
     _wireBackButton('slidebuttonpopup');
+
+    function refreshFullImageOption() {
+      var isImage = $popup.find('.de-icon-source').val() === 'image';
+      $popup.find('.sb-full-image-option').toggleClass('d-none', !isImage);
+      if (!isImage) $('#sb-button-full-image').prop('checked', false);
+    }
+    $popup.on('change', '.de-icon-source', refreshFullImageOption);
+    refreshFullImageOption();
 
     $('#sb-save-btn').on('click', function () {
       var $message = $popup.find('.cd-custom-message').removeClass('text-danger').text('');
@@ -2770,10 +2785,17 @@ var DashticzDeviceEditor = (function () {
 
       // A custom image path is a regular custom field ('image'), not the
       // dedicated icon slot - matches how every other quick-add popup and
-      // Device/Widget Config itself save the two differently.
-      var iconIsImage = iconSource === 'image' && iconValue !== '';
+      // Device/Widget Config itself save the two differently. "Full-width
+      // image" instead saves the same picked image as `btnimage`, the
+      // dedicated field js/components/button.js renders at the block's
+      // full width/scales with it (e.g. a webcam or radar image), rather
+      // than the fixed-size .col-icon `image` slot (#171).
+      var fullImage = iconSource === 'image' && iconValue !== '' &&
+        $('#sb-button-full-image').is(':checked');
+      var iconIsImage = iconSource === 'image' && iconValue !== '' && !fullImage;
       var slideButtonDefinition = { title: buttonTitle.slice(0, 100), slide: slideTarget };
       if (iconIsImage) slideButtonDefinition.image = iconValue.slice(0, 100);
+      if (fullImage) slideButtonDefinition.btnimage = iconValue.slice(0, 100);
 
       var orderKey = _specialOrderKey(reference);
       managedSpecials[orderKey] = {
@@ -2788,8 +2810,8 @@ var DashticzDeviceEditor = (function () {
         height: null,
         showTitle: true,
         options: {
-          icon: iconValue !== '',
-          iconValue: iconIsImage ? '' : iconValue.slice(0, 100),
+          icon: !fullImage && iconValue !== '',
+          iconValue: (fullImage || iconIsImage) ? '' : iconValue.slice(0, 100),
           hide_data: false,
           last_update: false,
           switch: false,
