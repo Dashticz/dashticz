@@ -218,6 +218,7 @@
             "dial": "Dial",
             "dial_hint": "Type Dial sélectionné. Configurez les autres options du dial (couleur, min/max, sous-type, values, etc.) manuellement via les Champs supplémentaires ci-dessous.",
             "dial_hint_link": "Documentation Dial",
+            "dial_bar": "Barre",
             "show_title": "Titre",
             "device_config": "Configuration de l’appareil",
             "widget_config": "Configuration du widget",

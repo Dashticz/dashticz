@@ -21,6 +21,19 @@ v3.45.1 beta (19-8-2026)
   is playing" still show their own message as before. Sized and styled
   (via a new ``.de-lms-switch`` class) to match the other Wizard switches
   rather than falling back to a smaller, unstyled default.
+- Added a new Dial ``subtype: 'bar'`` for Blinds Percentage / Blinds
+  Inverted Percentage devices: renders them as a vertical 10-segment bar
+  (0% at the bottom, 100% at the top) instead of the draggable dial.
+  Tapping a segment sets the device directly to that segment's 10% level;
+  segments up to the current level are shown in green, the rest in grey.
+  The bar scales with its block's size, both height and width, and its
+  title uses the same styling as every other device/widget title instead
+  of a bar-specific size and color. A **Bar** switch in the Device Config
+  popup (shown once **Dial** is enabled on a qualifying device) turns it
+  on/off directly, instead of having to set ``subtype`` by hand via
+  Custom fields. Ignored for any other dial-rendered device (Dimmers,
+  plain Blinds without a percentage, Thermostats, ...). See
+  :ref:`dialbar`.
 
 * **Fixes**
 
