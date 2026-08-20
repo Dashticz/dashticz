@@ -74,6 +74,7 @@ var DashticzDeviceEditor = (function () {
         dial: 'Dial',
         dial_hint: 'Dial type selected. Set the remaining dial options (color, min/max, subtype, values, etc.) manually via Custom fields below.',
         dial_hint_link: 'Dial documentation',
+        dial_bar: 'Bar',
         show_title: 'Title',
         device_config: 'Device Config',
         widget_config: 'Widget Config',
@@ -513,6 +514,15 @@ var DashticzDeviceEditor = (function () {
   }
 
   /* ── collect every managed device from all columns ─────────── */
+  // Recognise both the historic Dial+subtype syntax and the shorthand
+  // type:'bar'. The editor saves the historic form for server compatibility.
+  function _isBarDefinition(definition) {
+    if (!definition) return false;
+    var type = String(definition.type || '').toLowerCase();
+    var subtype = String(definition.subtype || '').toLowerCase();
+    return type === 'bar' || (type === 'dial' && subtype === 'bar');
+  }
+
   function _deviceOrderKey(ck) {
     return 'device:' + ck;
   }
@@ -563,13 +573,14 @@ var DashticzDeviceEditor = (function () {
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       !/^device_\d+(?:_\d+)?$/.test(reference) &&
-      (!definition.type || definition.type === 'dial' || definition.type === reference) &&
+      (!definition.type || definition.type === 'dial' || definition.type === 'bar' ||
+        definition.type === reference) &&
       parseInt(definition.idx, 10) > 0
     ) {
       // A device with a hand-picked block key is a Custom device. Recognising
       // it before the normal IDX path preserves that key on later editor saves.
-      // A Custom device rendered with the Dial checkbox still carries
-      // type: 'dial', so it must not be excluded like other typed (widget) blocks.
+      // A Custom device rendered with Dial or Bar still carries an explicit
+      // type, so those display types must not be excluded like widget types.
       // Once rendered, blocks.js's convertBlock() stamps block.type with the
       // block's own storage key as a dispatch hint (see e.g. the 'sunrise'/'log'
       // key-as-type convention), and dashticz.js writes that back into blocks[key].
@@ -606,6 +617,7 @@ var DashticzDeviceEditor = (function () {
     if (!kind) return null;
     var hasConfiguredImage =
       typeof definition.image === 'string' && definition.image !== '';
+    var barMode = _isBarDefinition(definition);
 
     return {
       kind: 'special',
@@ -655,7 +667,8 @@ var DashticzDeviceEditor = (function () {
         hide_data: definition.hide_data === true,
         last_update: definition.last_update === true,
         switch: definition.switch === true,
-        dial: definition.type === 'dial',
+        dial: definition.type === 'dial' && !barMode,
+        bar: barMode,
       },
       buttonKey: String(definition.key || ''),
       slideTarget: parseInt(definition.slide, 10) > 0 ? parseInt(definition.slide, 10) : 1,
@@ -1505,6 +1518,7 @@ var DashticzDeviceEditor = (function () {
       deviceWidths[ck] = _getConfiguredWidthForCk(ck);
       deviceHeights[ck] = _getConfiguredHeightForCk(ck);
       var configured = _getConfiguredBlockForCk(ck) || {};
+      var barMode = _isBarDefinition(configured);
       deviceTitles[ck] = configured._dashticzAutoTitle
         ? ''
         : (typeof configured.title === 'string' ? configured.title : '');
@@ -1517,7 +1531,8 @@ var DashticzDeviceEditor = (function () {
         hide_data: configured.hide_data === true,
         last_update: configured.last_update === true,
         switch: configured.switch === true,
-        dial: configured.type === 'dial',
+        dial: configured.type === 'dial' && !barMode,
+        bar: barMode,
       };
       deviceTitleVisible[ck] = configured.hide_title !== true;
       deviceCustomFields[ck] = _deviceCustomFieldRows(configured, deviceTitles[ck]);
@@ -2980,32 +2995,81 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="modal-body">';
     // A separator/title bar has no data value or last-update timestamp of its
     // own, but it can still show a leading icon like any other block.
-    // A Group or HTML Block has no data value/dial of its own either - just
-    // Icon, Update and Title, like every quick-add popup's own top section
-    // (see _quickOptionsHtml()).
+    // A Group/HTML/LMS block has no Dial/Bar display mode of its own.
     var hasDial = !isTitle && !isGroupBlock && !isHtmlBlock && !isLmsBlock;
+    var barDeviceIdx = null;
+    if (hasDial) {
+      if (!isSpecial && ck) {
+        barDeviceIdx = _parseCk(ck).idx;
+      } else if (isSpecial && isCustom && special.idx) {
+        barDeviceIdx = special.idx;
+      }
+    }
+    var barLiveDevice = barDeviceIdx ? Domoticz.getAllDevices(barDeviceIdx) : null;
+    var isBlindsPercentage = !!(
+      barLiveDevice &&
+      typeof barLiveDevice.SwitchType === 'string' &&
+      barLiveDevice.SwitchType.indexOf('Blinds') === 0 &&
+      barLiveDevice.SwitchType.indexOf('Percentage') !== -1
+    );
+    var isDimmer = !!(barLiveDevice && barLiveDevice.SwitchType === 'Dimmer');
+    // Keep an existing Bar selectable even if the live device is temporarily
+    // unavailable. For new choices Bar is limited to Dimmer and percentage blinds.
+    var supportsBar = hasDial && (isDimmer || isBlindsPercentage || options.bar === true);
+
+    // subtype:'bar' belongs to the visual mode selector, not Custom fields.
+    // Other subtype values (for example 'updown') remain ordinary custom fields.
+    var subtypeRowIndex = customRows.findIndex(function (row) {
+      return String(row.field || '').toLowerCase() === 'subtype' &&
+        String(row.value || '').toLowerCase() === 'bar';
+    });
+    if (subtypeRowIndex > -1) customRows.splice(subtypeRowIndex, 1);
+
+    var visualMode = options.bar === true
+      ? 'bar'
+      : (options.dial === true ? 'dial' : (options.icon === true ? 'icon' : ''));
     var configOptions = isTitle
       ? ['icon', 'show_title']
       : (isGroupBlock || isHtmlBlock || isLmsBlock)
         ? ['icon', 'last_update', 'show_title']
-        : ['icon', 'hide_data', 'last_update', 'dial', 'show_title'];
+        : ['hide_data', 'last_update', 'show_title'];
     html += '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
+
+    if (hasDial) {
+      // Icon, Dial and Bar are one mutually-exclusive visual mode. Bootstrap's
+      // btn-group provides the shared rounded border without extra theme CSS.
+      html += '<div class="d-flex justify-content-center mb-3">';
+      html += '<div class="btn-group" role="group" aria-label="' + _esc(t.display_options) + '">';
+      [
+        { mode: 'icon', label: t.icon, icon: 'fas fa-image', enabled: true },
+        { mode: 'dial', label: t.dial, icon: 'fas fa-tachometer-alt', enabled: true },
+        { mode: 'bar', label: t.dial_bar, icon: 'fas fa-bars', enabled: supportsBar },
+      ].forEach(function (item) {
+        var active = visualMode === item.mode;
+        html += '<button type="button" class="btn btn-outline-secondary de-visual-mode-button' +
+          (active ? ' active' : '') + '" data-visual-mode="' + item.mode + '"' +
+          (item.enabled ? '' : ' disabled') + ' aria-pressed="' + (active ? 'true' : 'false') + '"' +
+          ' title="' + _esc(item.label) + '" style="min-width:72px;' +
+          (active ? 'color:var(--button-active);border-color:var(--button-active);' : '') + '">' +
+          '<i class="' + item.icon + '" aria-hidden="true"></i>' +
+          '<span class="d-block small">' + _esc(item.label) + '</span></button>';
+      });
+      html += '</div></div>';
+    }
+
     html += '<div class="de-config-options' +
       (isTitle
         ? ''
-        : ((isGroupBlock || isHtmlBlock || isLmsBlock) ? ' de-config-options-three' : ' de-config-options-five')) +
+        : ((isGroupBlock || isHtmlBlock || isLmsBlock || hasDial) ? ' de-config-options-three' : '')) +
       '">';
     configOptions.forEach(function (option) {
-      var hiddenForDial =
-        hasDial && (option === 'icon' || option === 'show_title');
+      var hiddenForDial = hasDial && option === 'show_title';
       html += '<label class="form-check form-switch' +
         (hiddenForDial ? ' de-hide-for-dial' : '') +
         '"><input class="form-check-input de-config-option" type="checkbox" data-option="' + option + '"';
       // The Data checkbox is user-facing: checked means data is visible.
       // CONFIG.js keeps the backwards-compatible inverse hide_data property.
-      // Title visibility isn't tracked in `options` like the others: it's
-      // stored separately (deviceTitleVisible/special.showTitle) since it
-      // predates this popup and is also read by the device-list row itself.
+      // Title visibility is stored separately from the other display options.
       var checked;
       if (option === 'hide_data') {
         checked = options.hide_data !== true;
@@ -3089,10 +3153,25 @@ var DashticzDeviceEditor = (function () {
         $(this).prop('disabled', isSystem || removable <= 0);
       });
     }
+    function selectedVisualMode() {
+      return String($popup.find('.de-visual-mode-button.active').first().attr('data-visual-mode') || '');
+    }
+    function setVisualMode(mode) {
+      $popup.find('.de-visual-mode-button').each(function () {
+        var active = String($(this).attr('data-visual-mode')) === mode;
+        $(this)
+          .toggleClass('active', active)
+          .attr('aria-pressed', active ? 'true' : 'false')
+          .css({
+            color: active ? 'var(--button-active)' : '',
+            'border-color': active ? 'var(--button-active)' : '',
+          });
+      });
+    }
     function refreshIconFieldVisibility() {
-      var enabled =
-        !$popup.find('[data-option="dial"]').is(':checked') &&
-        $popup.find('[data-option="icon"]').is(':checked');
+      var enabled = hasDial
+        ? selectedVisualMode() === 'icon'
+        : $popup.find('[data-option="icon"]').is(':checked');
       $popup.find('.de-icon-field-row').toggle(enabled);
     }
     function ensureIconFieldRow() {
@@ -3133,21 +3212,13 @@ var DashticzDeviceEditor = (function () {
         });
     }
     function refreshDialHint() {
-      var enabled = $popup.find('[data-option="dial"]').is(':checked');
+      var enabled = hasDial && selectedVisualMode() === 'dial';
       $popup.find('.de-dial-hint').toggleClass('d-none', !enabled);
     }
     function refreshDialOptions() {
-      var enabled = hasDial && $popup.find('[data-option="dial"]').is(':checked');
-      $popup.find('.de-hide-for-dial').toggleClass('d-none', enabled);
-      // A Group/HTML Block has no Dial checkbox to react to at all - leave
-      // its static de-config-options-three layout (set above) alone instead
-      // of forcing the five-column layout meant for the regular case.
-      if (hasDial) {
-        $popup
-          .find('.de-config-options')
-          .toggleClass('de-config-options-three', enabled)
-          .toggleClass('de-config-options-five', !enabled && !isTitle);
-      }
+      var mode = hasDial ? selectedVisualMode() : '';
+      var dialLike = mode === 'dial' || mode === 'bar';
+      $popup.find('.de-hide-for-dial').toggleClass('d-none', dialLike);
       refreshIconFieldVisibility();
       refreshDialHint();
     }
@@ -3162,7 +3233,8 @@ var DashticzDeviceEditor = (function () {
       var removesIcon = $row.hasClass('de-icon-field-row');
       $row.remove();
       if (removesIcon) {
-        $popup.find('[data-option="icon"]').prop('checked', false);
+        if (hasDial) setVisualMode('');
+        else $popup.find('[data-option="icon"]').prop('checked', false);
       }
       refreshCustomFieldButtons();
       refreshIconFieldVisibility();
@@ -3196,7 +3268,15 @@ var DashticzDeviceEditor = (function () {
       if ($(event.target).closest('.dt-custom-image-picker, .de-custom-field-setting').length) return;
       closeCustomImagePickers();
     });
-    $popup.on('change', '[data-option="dial"]', refreshDialOptions);
+    $popup.on('click', '.de-visual-mode-button', function () {
+      if ($(this).prop('disabled')) return;
+      var mode = String($(this).attr('data-visual-mode') || '');
+      // Clicking the selected mode again restores the historic all-off state.
+      setVisualMode(selectedVisualMode() === mode ? '' : mode);
+      if (selectedVisualMode() === 'icon') ensureIconFieldRow();
+      refreshCustomFieldButtons();
+      refreshDialOptions();
+    });
     function refreshMdValueButtons() {
       var $rows = $popup.find('.md-value-row');
       $rows.find('.md-value-add').addClass('d-none');
@@ -3220,6 +3300,7 @@ var DashticzDeviceEditor = (function () {
     $('#de-config-ok').on('click', function () {
       var updated = {};
       var pendingCustomFields = [];
+      var pendingVisualMode = hasDial ? selectedVisualMode() : '';
       // 'values' is rendered as the dedicated row builder below, not as a
       // generic custom field, so a hand-typed 'values' field name in the
       // generic list must still be rejected as a duplicate.
@@ -3278,6 +3359,11 @@ var DashticzDeviceEditor = (function () {
         var checked = $(this).prop('checked');
         updated[option] = option === 'hide_data' ? !checked : checked;
       });
+      if (hasDial) {
+        updated.icon = pendingVisualMode === 'icon';
+        updated.dial = pendingVisualMode === 'dial';
+        updated.bar = pendingVisualMode === 'bar';
+      }
 
       $popup.find('.de-custom-field-row').each(function () {
         if (!valid) return;
@@ -3300,6 +3386,12 @@ var DashticzDeviceEditor = (function () {
         }
         customKeys[lowerField] = true;
 
+        if (lowerField === 'subtype' && pendingVisualMode === 'bar' &&
+            String(rawSetting).toLowerCase() === 'bar') {
+          // Bar owns its legacy subtype marker; do not duplicate it as a
+          // user-editable custom row. The save payload adds it canonically.
+          return;
+        }
         if (lowerField === 'title') {
           pendingTitle = rawSetting;
           return;
@@ -3889,6 +3981,7 @@ var DashticzDeviceEditor = (function () {
       deviceRefs[ck] = _stableDeviceReference(ck);
       deviceOptions[ck] = {
         icon: true, iconValue: null, hide_data: false, last_update: false, switch: false,
+        dial: false, bar: false,
       };
       deviceTitleVisible[ck] = true;
       deviceCustomFields[ck] = [
@@ -4058,7 +4151,15 @@ var DashticzDeviceEditor = (function () {
           specialEntry.hide_data = specialOptions.hide_data === true;
           specialEntry.last_update = specialOptions.last_update === true;
           specialEntry.switch = specialOptions.switch === true;
-          if (specialOptions.dial === true) specialEntry.type = 'dial';
+          if (specialOptions.bar === true) {
+            // saveblocks.php intentionally accepts only type:'dial'; keep its
+            // canonical form while the runtime also accepts type:'bar'.
+            specialEntry.type = 'dial';
+            specialCustomFields.subtype = 'bar';
+            specialEntry.custom_fields = specialCustomFields;
+          } else if (specialOptions.dial === true) {
+            specialEntry.type = 'dial';
+          }
         } else if (special.specialType === 'group' || special.specialType === 'html') {
           // Only Icon and Last update apply here (no Data/Switch/Dial - see
           // _quickOptionsHtml()); idx is optional and only meaningful for a
@@ -4144,14 +4245,10 @@ var DashticzDeviceEditor = (function () {
       entry.hide_data = options.hide_data === true;
       entry.last_update = options.last_update === true;
       entry.switch = options.switch === true;
-      if (options.dial === true) {
-        // The Dial widget reads the whole Domoticz device to detect its type
-        // (e.g. a combined Temp + Humidity sensor renders as one gauge, see
-        // js/components/dial.js make()). A sub-value idx like "12_1" - the
-        // idx Add Device offers for each value of a multi-value device -
-        // doesn't resolve to any device (DT_function.getDomoticzIdx), so the
-        // dial silently fell back to a plain on/off switch (#118). Save the
-        // base idx instead so it resolves to the full device.
+      if (options.bar === true || options.dial === true) {
+        // Dial and Bar both need the full Domoticz device. A sub-value idx
+        // such as "12_1" cannot resolve that device, so save the base idx.
+        // Bar uses the existing server-compatible Dial+subtype representation.
         entry.type = 'dial';
       } else if (p.subidx) {
         entry.subidx = p.subidx;
@@ -4161,6 +4258,7 @@ var DashticzDeviceEditor = (function () {
         deviceCustomFields[ck],
         devicePreservedFields[ck]
       );
+      if (options.bar === true) customFields.subtype = 'bar';
       if (Object.keys(customFields).length) entry.custom_fields = customFields;
       if (deviceHeights[ck]) entry.height = deviceHeights[ck];
       // Never retain a legacy name-based reference: Domoticz names may change.

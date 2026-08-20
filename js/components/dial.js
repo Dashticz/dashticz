@@ -15,7 +15,9 @@ var DT_dial = (function () {
      * @param {string} key    identifier used for block selection.
      */
     canHandle: function (block) {
-      return block && block.type === 'dial';
+      // Keep the existing Dial type and accept Bar as a display-only alias.
+      // Both variants continue to use the same device and update logic.
+      return block && (block.type === 'dial' || block.type === 'bar');
     },
 
     /**
@@ -204,6 +206,56 @@ var DT_dial = (function () {
     } else me.height = height * me.block.scale || me.height;
     me.fontsize = 0.95 * me.height;
     $(me.mountPoint + ' .dt_block').css('height', me.height + 'px');
+    // .dt_content only gets height:100% via the .fixedheight class (see
+    // css/creative.css), which js/dashticz.js's renderBlock() deliberately
+    // skips on a grid screen (the grid row governs height there instead of
+    // a forced pixel height). The classic circular dial never needed
+    // .dt_content's own box - it's absolutely positioned and sized purely
+    // via the font-size set below - but subtypes that lay out in normal
+    // flow (e.g. the bar dial, dial.js makeBarDim()) need a real height to
+    // fill via height:100%, or their flex chain collapses to nothing and
+    // renders invisible.
+    // me.height is deliberately squared to the smaller of width/height so
+    // the circular dial never overflows - reusing it here would leave
+    // .dt_content far shorter than the actual (typically narrow-and-tall)
+    // bar block, stranding a large empty gap below it. Grid items know
+    // their real height regardless (measuredHeight, the grid row's own
+    // span) - use that directly instead. Classic layout is left alone: its
+    // .dt_content sizes to content already (see the comment on `candidates`
+    // above for why measuredHeight isn't trustworthy there).
+    // Below the mobile-stack breakpoint (.dt-grid-mobile-stack, see
+    // css/creative.css) a grid item's own height switches to content-driven
+    // (flex: 0 0 auto, no fixed row span) instead of the grid's fixed
+    // grid-auto-rows track - unlike a real grid row, it's not bounded
+    // independently of its own content. Forcing .dt_content's height to the
+    // measured value there feeds straight back into that same measurement
+    // (ResizeObserver -> _dialFitSize -> taller .dt_content -> taller grid
+    // item -> ResizeObserver...), an unbounded growth loop the squared
+    // me.height above never hits only because it's capped by width too.
+    // Leave .dt_content's height unset there instead - like every other
+    // dial subtype, it doesn't actually depend on it (the bar's own
+    // min-height in CSS keeps it visible).
+    var $grid = inGrid ? me.$mountPoint.closest('.dt-grid-layout') : null;
+    var isStackedGrid = !!(
+      $grid &&
+      $grid.hasClass('dt-grid-mobile-stack') &&
+      window.matchMedia &&
+      window.matchMedia('(max-width: 767.98px)').matches
+    );
+    // .dt_block's own height comes from CSS (height:100% !important on a
+    // grid screen, see the .dt-grid-item > .dt_block rule - the inline
+    // height set just above is only read on classic layout, where that
+    // !important rule doesn't apply). Measuring .dt_block's *content* height
+    // directly via jQuery's height() (which excludes its own padding/border,
+    // unlike the grid item's outerHeight() used for measuredHeight above)
+    // gives .dt_content exactly the space actually available inside it -
+    // using measuredHeight instead overflowed .dt_block by its padding+
+    // border on both edges (a themed block can carry a visible border).
+    var blockInnerHeight = inGrid
+      ? parseInt($(me.mountPoint + ' .dt_block').height())
+      : NaN;
+    var contentHeight = inGrid && !isStackedGrid && blockInnerHeight > 0 ? blockInnerHeight : 0;
+    $(me.mountPoint + ' .dt_content').css('height', contentHeight ? contentHeight + 'px' : '');
     // The template bakes font-size/needle dimensions into inline styles at
     // render time; on a live resize (no re-render) they need patching
     // directly. getContainer() (js/dashticz.js) gives the OUTER .dt_block
@@ -216,6 +268,14 @@ var DT_dial = (function () {
     // the inner circle. Both selectors are simply empty before the first
     // render - a no-op jQuery .css() call, not an error.
     $(me.mountPoint + ' .dt_content .dial').css('font-size', me.fontsize + 'px');
+    // The bar dial (css/creative.css's .dial-bar) is sized by height via the
+    // .dt_content height set above, but its width needs its own scale: it's
+    // not circular like the classic dial (font-size = diameter would make it
+    // far too wide), so it gets its own fraction of me.height as a CSS
+    // variable instead, clamped to the measured container width.
+    var barHeightBasis = contentHeight || me.height;
+    var barWidth = Math.max(30, Math.min(barHeightBasis * 0.3, measuredWidth || barHeightBasis));
+    $(me.mountPoint + ' .dt_content .dial-bar-widget').css('--dial-bar-width', barWidth + 'px');
     $(me.mountPoint + ' .dt_content .dial-needle').css({
       '--needle-length': me.height / 2 + 'px',
       '--needle-width': me.height / 17 + 'px',
@@ -338,6 +398,7 @@ var DT_dial = (function () {
         fixed: me.fixed,
         onoff: me.onoff,
         options: me.options,
+        barSegments: me.barSegments,
         unitvalue: me.unitvalue,
         info: me.info,
         lastupdate: me.lastupdate,
@@ -1358,6 +1419,13 @@ var DT_dial = (function () {
     return;
   }
 
+  /** Return true for both supported Bar configuration syntaxes. */
+  function isBarBlock(block) {
+    if (!block) return false;
+    return String(block.type || '').toLowerCase() === 'bar' ||
+      String(block.subtype || '').toLowerCase() === 'bar';
+  }
+
   /**
    * Configures the data for devices of dimmer switchtype.
    * @param {object} me  Core component object.
@@ -1380,7 +1448,9 @@ var DT_dial = (function () {
     me.unitvalue = choose(me.block.unit, '%');
     me.switchMode = capitalizeFirstLetter(me.block.switchMode);
     me.rgbContainer = '.dial-display';
-    if(me.block.subtype==='updown') makeUpDownDim(me);
+    // Bar reuses the Dimmer value/update path; no separate device logic is needed.
+    if (isBarBlock(me.block)) makeBarDim(me);
+    else if(me.block.subtype==='updown') makeUpDownDim(me);
     return;
   }
 
@@ -1437,7 +1507,11 @@ var DT_dial = (function () {
     me.styleStatus = me.block.styleStatus;
     me.backgroundselector='.blinds';
     
-    if(me.block.subtype==="updown") {
+    // Percentage blinds keep their existing Bar behavior, while type:'bar'
+    // is accepted as an equivalent shorthand for type:'dial', subtype:'bar'.
+    if (isBarBlock(me.block) && me.percentage) {
+      makeBarDim(me);
+    } else if(me.block.subtype==="updown") {
       makeUpDownDim(me);
       me.middleToggle = false;
     }
@@ -1471,6 +1545,111 @@ var DT_dial = (function () {
     me.getCurrentValue = getCurrentValueDim;
     me.middleToggle = choose(me.block.middletoggle,true);
     me.rgbContainer = '.middle';
+  }
+
+  /**
+   * Configures a Dimmer or Blinds Percentage device to render as a vertical
+   * 11-segment bar instead of the draggable dial. The segments represent
+   * 0%, 10%, 20%, ... 100%; clicking a segment sets the device directly to
+   * that segment's level.
+   * @param {object} me  Core component object.
+   */
+  function makeBarDim(me) {
+    me.tpl = 'dialbar';
+    me.fixed = true;
+    me.active = false;
+    me.checkNeedlePos = false;
+    me.tap = tapBar;
+    me.update = updateBar;
+    me.getCurrentValue = getCurrentValueDim;
+    me.decimals = choose(me.block.decimals, 0);
+    me.backgroundselector = '.dial-bar-container';
+    // Reverse scale: include an explicit 0% segment at the top, then increase
+    // in 10% steps down to 100%. This keeps zero selectable and visible as
+    // the lightest Text Status segment while preserving the existing steps.
+    me.barSegments = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+    me.$mountPoint.addClass('dialbar');
+    return;
+  }
+
+  function tapBar(me) {
+    me.$segments = me.$mountPoint.find('.dial-bar-segment');
+    me.$segments.on('click', function () {
+      me.value = parseInt($(this).data('level'), 10);
+      update(me);
+    });
+  }
+
+  function updateBar(me) {
+    if (!me.$segments || !me.$segments.length) {
+      me.$segments = me.$mountPoint.find('.dial-bar-segment');
+    }
+    me.value = me.getCurrentValue(me);
+
+    // The Bar works in 10% steps. If Domoticz reports an intermediate value,
+    // use the last filled step as the selected segment so the value label
+    // always remains inside the visually active part of the Bar.
+    var selectedLevel = Math.max(0, Math.min(100, Math.floor(me.value / 10) * 10));
+    var barValueText = number_format(me.value, me.decimals) + me.unitvalue;
+    var openText = language.switches && language.switches.state_open
+      ? language.switches.state_open
+      : 'OPEN';
+    var closedText = language.switches && language.switches.state_closed
+      ? language.switches.state_closed
+      : 'CLOSED';
+
+    me.$segments.each(function (index) {
+      var level = parseInt($(this).data('level'), 10);
+      var filled = me.value >= level;
+      var $segment = $(this);
+      var label = '';
+      $segment.toggleClass('filled', filled);
+
+      // Open/Closed come from the configured Dashticz language JSON. For all
+      // intermediate positions, show the current percentage only in the
+      // selected segment instead of below the complete Bar.
+      if (level === 0) {
+        label = openText;
+      } else if (level === 100) {
+        label = closedText;
+      } else if (level === selectedLevel) {
+        label = barValueText;
+      }
+
+      $segment
+        .text(label)
+        .css({
+          display: 'flex',
+          'align-items': 'center',
+          'justify-content': 'center',
+          'font-weight': label ? '600' : '',
+          'line-height': label ? '1' : '',
+          // Keep Bar labels consistent with the normal block title color.
+          color: label ? 'var(--text-title)' : '',
+        });
+
+      // Use the theme's Text Status color for the active bar. Only the
+      // background is blended with transparency, so the labels keep their
+      // own full-strength title color. The 0% segment starts at 40% and the
+      // 100% segment uses the complete Text Status color.
+      if (filled) {
+        var colorStrength = Math.round(40 + (index / (me.barSegments.length - 1)) * 60);
+        var backgroundColor = colorStrength === 100
+          ? 'var(--text-status)'
+          : 'color-mix(in srgb, var(--text-status) ' + colorStrength + '%, transparent)';
+        $segment.css({
+          'background-color': backgroundColor,
+          opacity: '',
+          filter: '',
+        });
+      } else {
+        $segment.css({ 'background-color': '', opacity: '', filter: '' });
+      }
+    });
+
+    // The current value is rendered inside the selected Bar segment now, so
+    // the old value below the Bar must no longer consume visual space.
+    me.$mountPoint.find('.dial-bar-value').text('').hide();
   }
 
   function tapUpDown(me) {
