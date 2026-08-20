@@ -7,9 +7,21 @@ var DT_button = {
     return block && (block.btnimage || block.slide || block.log);
   },
   defaultCfg: function (button) {
+    // The .slide/.slideN classes only exist so js/main.js's Swiper
+    // transitionEnd handler can paint .selectedbutton on whichever button
+    // targets the currently active screen (a menu/navigation button) -
+    // canHandle() and clickHandler (js/dt_function.js) both read the
+    // `slide` property directly, never these classes. A URL/popup button
+    // (#171) also carries `slide` (routed through, unused, only so
+    // canHandle() still recognises it without an image), which previously
+    // still picked up these classes and so always rendered as if it were
+    // the active menu button - a permanent, wrongly-tinted background
+    // instead of matching every other block's default background.
     var cfg = {
       containerClass:
-        (button && button.slide ? 'slide slide' + button.slide : ''),
+        (button && button.slide && typeof button.newwindow === 'undefined'
+          ? 'slide slide' + button.slide
+          : ''),
       forcerefreshiframe: 0,
     };
     if (button.btnimage) {

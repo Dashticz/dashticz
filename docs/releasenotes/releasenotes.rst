@@ -34,6 +34,18 @@ v3.45.2 beta (20-8-2026)
   they use the same plain, unthemed layout as the default theme, where the
   dial was already correctly centred (#177).
 
+- Fixed a Full-width image (or any plain URL/popup) button always
+  rendering with a permanent, bluish-tinted "active menu button"
+  background, instead of matching every other block's default background,
+  even on the default theme. Every button created via the Add Button
+  Wizard carries a ``slide`` property (so it's still recognised as a
+  button even without an image), which also always tagged it with the
+  ``.slide``/``.slideN`` CSS classes ``js/main.js`` uses to highlight
+  whichever button targets the currently active screen - so it permanently
+  looked "selected". Buttons whose real action is a URL/popup (``newwindow``
+  set) no longer get those classes, since they never actually navigate via
+  slide; genuine slide/menu buttons keep highlighting correctly (#171).
+
 * **Code**
 
 - Updated 4 ``tests/source.test.js`` assertions left stale by the Bar
