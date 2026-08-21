@@ -71,11 +71,27 @@ function configwriter_remove_section($config, $startMarker, $endMarker)
 
     $endPos = strpos($config, $endMarker, $startPos);
     if ($endPos === false) {
-        return substr($config, 0, $startPos);
+        return rtrim(substr($config, 0, $startPos), " \t\r\n") . "\n";
     }
 
-    return substr($config, 0, $startPos)
-        . substr($config, $endPos + strlen($endMarker));
+    // configwriter_wrap_section() pads each section with its own leading
+    // blank line, on both the section being removed and (already written
+    // into the file) the sections before/after it. Splicing the raw
+    // surrounding text back together - as this used to do - stacks those
+    // paddings into a growing run of blank lines every time a section is
+    // removed and re-appended, which happens on every save. Strip the
+    // whitespace on both sides of the cut and rejoin with a single blank
+    // line, so repeated saves stay at one blank line instead of compounding.
+    $before = rtrim(substr($config, 0, $startPos), " \t\r\n");
+    $after = ltrim(substr($config, $endPos + strlen($endMarker)), " \t\r\n");
+
+    if ($before === '') {
+        return $after;
+    }
+    if ($after === '') {
+        return $before . "\n";
+    }
+    return $before . "\n\n" . $after;
 }
 
 function configwriter_extract_wrapped_section($config, $startMarker, $endMarker)
@@ -339,6 +355,33 @@ function configwriter_remove_config_key($config, $key)
     return configwriter_remove_assignment_statements($config, $pattern);
 }
 
+/**
+ * Replace an existing single-line config["key"] = value; assignment in
+ * place, keeping its current position in the file. Only handles the common
+ * case where the whole assignment sits on one line (true for every scalar
+ * settings value the Settings UI ever writes); returns null for anything
+ * more complex (a multi-line value, or the key not being present yet) so
+ * the caller can fall back to remove-and-append.
+ */
+function configwriter_replace_simple_config_key_in_place($config, $key, $newLine)
+{
+    $pattern = '/^[ \t]*config\[\s*([\'"])'
+        . preg_quote((string)$key, '/')
+        . '\1\s*\]\s*=\s*[^;\r\n]*;[ \t]*$/m';
+    $count = preg_match_all($pattern, $config, $matches, PREG_OFFSET_CAPTURE);
+    if ($count !== 1) {
+        // Zero matches (key not present yet, or its value isn't a simple
+        // single-line assignment) or more than one (a malformed duplicate) -
+        // either way, let the caller fall back to the robust remove-all
+        // path rather than risk touching only one of several occurrences.
+        return null;
+    }
+    $match = $matches[0][0];
+    $start = $match[1];
+    $end = $start + strlen($match[0]);
+    return substr($config, 0, $start) . $newLine . substr($config, $end);
+}
+
 function configwriter_upsert_root_config_settings($config, $settings, $raw = false)
 {
     if (empty($settings)) {
@@ -351,16 +394,27 @@ function configwriter_upsert_root_config_settings($config, $settings, $raw = fal
             continue;
         }
 
-        $config = configwriter_remove_config_key($config, $key);
-
         $expression = $raw
             ? trim((string)$value)
             : json_encode(
                 $value,
                 JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
             );
-        $lines[] = 'config[' . json_encode((string)$key) . '] = '
+        $newLine = 'config[' . json_encode((string)$key) . '] = '
             . $expression . ';';
+
+        // An existing simple setting keeps its place in the file instead of
+        // jumping to the end of the config block - editing one setting via
+        // the Settings UI shouldn't scatter it away from the related
+        // settings it was originally grouped with.
+        $inPlace = configwriter_replace_simple_config_key_in_place($config, $key, $newLine);
+        if ($inPlace !== null) {
+            $config = $inPlace;
+            continue;
+        }
+
+        $config = configwriter_remove_config_key($config, $key);
+        $lines[] = $newLine;
     }
 
     if (empty($lines)) {

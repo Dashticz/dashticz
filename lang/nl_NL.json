@@ -807,6 +807,7 @@
             "title": "Thema",
             "colors": "Kleuren",
             "fonts": "Lettergrootte",
+            "icons": "Icoongrootte",
             "custom_css_active": "Actieve aangepaste stylesheet: {path}",
             "vars": {
                 "--main-bg": "Pagina achtergrond (--main-bg)",
@@ -825,7 +826,9 @@
                 "--text-title": "Tekst titel (--text-title)",
                 "--text-status": "Tekst status (--text-status)",
                 "--font-small": "Klein lettertype (--font-small)",
-                "--font-large": "Groot lettertype (--font-large)"
+                "--font-large": "Groot lettertype (--font-large)",
+                "--icon-font-size": "Icoon (--icon-font-size)",
+                "--icon-image-size": "Afbeelding (--icon-image-size)"
             }
         }
     },

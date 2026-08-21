@@ -253,7 +253,7 @@ var DashticzDeviceEditor = (function () {
     editorMode = 'devices';
     openedFromAddMenu = false;
     gridMode = _activeScreenDom().hasClass('dt-grid-screen');
-    _init();
+    _init(true);
     _prepareManagedDeviceState();
 
     var orderKey = '';
@@ -369,20 +369,33 @@ var DashticzDeviceEditor = (function () {
   }
 
   /* ── initialise managed-device list from ALL current Dashticz devices ── */
-  function _init() {
+  /* preserveDeviceState (only passed by openLayoutConfig()) keeps
+   * deviceTitles/deviceOptions/deviceTitleVisible/deviceCustomFields/
+   * devicePreservedFields and any already-known managedSpecials entry
+   * instead of wiping them. openLayoutConfig() reopens this popup once per
+   * edited device without a page reload in between (an in-progress
+   * drag/resize in the Layout Editor must survive it), so blocks[]/
+   * columns[] on the client still reflect the *pre-edit* state of any
+   * device/special already confirmed and persisted via
+   * _saveDeviceConfigOnly() earlier in the same session. Re-deriving from
+   * them here would silently revert that earlier edit the next time this
+   * device/special's own entry gets resent as part of a later save (#?). */
+  function _init(preserveDeviceState) {
     managedDevices = [];
     managedOrder   = [];
     managedWidgets = {};
-    managedSpecials = {};
+    if (!preserveDeviceState) managedSpecials = {};
     deviceNames    = {};
     deviceWidths   = {};
     deviceHeights  = {};
-    deviceTitles   = {};
-    deviceOptions  = {};
+    if (!preserveDeviceState) {
+      deviceTitles   = {};
+      deviceOptions  = {};
+      deviceTitleVisible = {};
+      deviceCustomFields = {};
+      devicePreservedFields = {};
+    }
     deviceRefs     = {};
-    deviceTitleVisible = {};
-    deviceCustomFields = {};
-    devicePreservedFields = {};
     widgetWidths   = {};
     widgetHeights  = {};
     widgetTitles   = {};
@@ -429,7 +442,9 @@ var DashticzDeviceEditor = (function () {
         };
         widgetTitleVisible[item.orderKey] = item.definition.hide_title !== true;
       } else if (item.kind === 'special') {
-        managedSpecials[item.orderKey] = item;
+        if (!preserveDeviceState || !managedSpecials[item.orderKey]) {
+          managedSpecials[item.orderKey] = item;
+        }
       } else {
         managedDevices.push(item.ck);
         deviceRefs[item.ck] = item.reference;
@@ -1526,6 +1541,13 @@ var DashticzDeviceEditor = (function () {
       deviceNames[ck] = d ? (d.Name || ('Device ' + p.idx)) : ('Device ' + p.idx);
       deviceWidths[ck] = _getConfiguredWidthForCk(ck);
       deviceHeights[ck] = _getConfiguredHeightForCk(ck);
+      if (typeof deviceOptions[ck] !== 'undefined') {
+        // Already known from a prior openLayoutConfig() round in this same
+        // session (_init()'s preserveDeviceState left it in place) - keep
+        // it instead of re-deriving from blocks[], which an earlier
+        // _saveDeviceConfigOnly() call already made stale for this device.
+        return;
+      }
       var configured = _getConfiguredBlockForCk(ck) || {};
       var barMode = _isBarDefinition(configured);
       deviceTitles[ck] = configured._dashticzAutoTitle

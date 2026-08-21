@@ -835,6 +835,7 @@
             "title": "Theme",
             "colors": "Colors",
             "fonts": "Font size",
+            "icons": "Icon size",
             "custom_css_active": "Active custom stylesheet: {path}",
             "vars": {
                 "--main-bg": "Page background (--main-bg)",
@@ -853,7 +854,9 @@
                 "--text-title": "Text title (--text-title)",
                 "--text-status": "Text status (--text-status)",
                 "--font-small": "Font small (--font-small)",
-                "--font-large": "Font large (--font-large)"
+                "--font-large": "Font large (--font-large)",
+                "--icon-font-size": "Icon (--icon-font-size)",
+                "--icon-image-size": "Image (--icon-image-size)"
             }
         }
     },
