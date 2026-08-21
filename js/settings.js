@@ -147,6 +147,18 @@ settingList['screen']['vertical_scroll'] = {
   help: language.settings.screen.vertical_scroll_help,
 };
 
+settingList['screen']['gridColumns'] = {
+  title: language.settings.screen.gridColumns,
+  type: 'text',
+  help: language.settings.screen.gridColumns_help,
+};
+
+settingList['screen']['rowHeight'] = {
+  title: language.settings.screen.rowHeight,
+  type: 'text',
+  help: language.settings.screen.rowHeight_help,
+};
+
 settingList['screen']['auto_swipe_back_to'] = {};
 settingList['screen']['auto_swipe_back_to']['title'] =
   language.settings.screen.auto_swipe_back_to;
@@ -882,6 +894,8 @@ var defaultSettings = {
   vertical_scroll: 2,
   enable_swiper: 2,
   swiper_touch_move: 1,
+  gridColumns: 24,
+  rowHeight: 20,
   auto_swipe_back_after: 0,
   standby_after: 0,
   standby_background: '',

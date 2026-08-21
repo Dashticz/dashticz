@@ -82,7 +82,7 @@ The grid screen parameters are:
     - ``24``
     - Number of equal-width columns.
   * - ``rowHeight``
-    - ``40``
+    - ``20``
     - Fixed height of one row in pixels.
   * - ``gap``
     - ``0``
@@ -90,6 +90,14 @@ The grid screen parameters are:
   * - ``mobileLayout``
     - ``'stack'``
     - Below 768 pixels, show blocks full-width in ``screens[x].blocks`` order.
+
+The ``gridColumns``/``rowHeight`` defaults above can also be changed dashboard-wide
+from Settings > Weergave (screen), for every grid screen that doesn't set its own
+``gridColumns``/``rowHeight``. This doesn't affect the classic column layout, and
+leaving both settings untouched keeps existing installs exactly as they were.
+Changing either after blocks were already placed on a grid screen will typically
+require repositioning them, since the row/column size they were placed against
+has changed.
 
 Each referenced block needs a ``grid`` object with positive integer ``x``, ``y``,
 ``w`` and ``h`` values. Invalid positions are corrected to safe values and
@@ -136,7 +144,7 @@ The following complete example deliberately leaves cells empty between blocks::
     screens[1] = {
         layout: 'grid',
         gridColumns: 24,
-        rowHeight: 40,
+        rowHeight: 20,
         gap: 5,
         mobileLayout: 'stack',
         blocks: [
@@ -218,7 +226,7 @@ configuration is stored separately in ``standby_screen``::
     var standby_screen = {
         layout: 'grid',
         gridColumns: 24,
-        rowHeight: 40,
+        rowHeight: 20,
         gap: 5,
         mobileLayout: 'stack',
         blocks: ['standby_clock', 'standby_weather']

@@ -659,13 +659,32 @@ var DashticzLayoutEditor = (function () {
     return deferred.promise();
   }
 
+  // A freshly converted screen has no grid config of its own yet, so it
+  // should start out following the dashboard-wide Settings > Weergave
+  // default (like any other new grid screen) rather than pinning today's
+  // value - hence building against that default here, and always sending
+  // pinGridColumns/pinRowHeight: false below.
+  function _defaultGridColumns() {
+    return typeof settings !== 'undefined' && settings.gridColumns > 0
+      ? Number(settings.gridColumns)
+      : 24;
+  }
+
+  function _defaultRowHeight() {
+    return typeof settings !== 'undefined' && settings.rowHeight > 0
+      ? Number(settings.rowHeight)
+      : 20;
+  }
+
   function _emptyGridConversion(screenNumber) {
     return {
       empty: true,
       payload: {
         screen: screenNumber,
-        gridColumns: 24,
-        rowHeight: 20,
+        gridColumns: _defaultGridColumns(),
+        rowHeight: _defaultRowHeight(),
+        pinGridColumns: false,
+        pinRowHeight: false,
         gap: 5,
         mobileLayout: 'stack',
         items: [],
@@ -674,8 +693,8 @@ var DashticzLayoutEditor = (function () {
   }
 
   function _buildColumnGridConversion($screen, screenNumber, allowEmpty) {
-    var gridColumns = 24;
-    var rowHeight = 20;
+    var gridColumns = _defaultGridColumns();
+    var rowHeight = _defaultRowHeight();
     var gap = 5;
     var screenRect = $screen[0].getBoundingClientRect();
     var converted = [];
@@ -813,6 +832,8 @@ var DashticzLayoutEditor = (function () {
         screen: screenNumber,
         gridColumns: gridColumns,
         rowHeight: rowHeight,
+        pinGridColumns: false,
+        pinRowHeight: false,
         gap: gap,
         mobileLayout: 'stack',
         items: converted,
@@ -2213,6 +2234,14 @@ var DashticzLayoutEditor = (function () {
       _restoreSession(session);
 
       if (session.gridMode) {
+        // Only pin gridColumns/rowHeight explicitly on this screen when the
+        // session's current value actually diverges from the dashboard-wide
+        // default - a plain save that never touched either just keeps
+        // following Settings > Weergave instead of freezing today's value.
+        var pinGridColumns =
+          session.gridConfig.gridColumns !== _defaultGridColumns();
+        var pinRowHeight =
+          session.gridConfig.rowHeight !== _defaultRowHeight();
         return {
           gridMode: true,
           screenNumber: session.screenNumber,
@@ -2220,6 +2249,8 @@ var DashticzLayoutEditor = (function () {
             screen: session.screenNumber,
             gridColumns: session.gridConfig.gridColumns,
             rowHeight: session.gridConfig.rowHeight,
+            pinGridColumns: pinGridColumns,
+            pinRowHeight: pinRowHeight,
             gap: session.gridConfig.gap,
             mobileLayout: session.gridConfig.mobileLayout,
             items: _orderedItems().map(function (item) {
