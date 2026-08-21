@@ -33,33 +33,13 @@ window.Popper = require('@popperjs/core');
 window.iro = require('@jaames/iro').default;
 window.ICAL = require('ical.js');
 
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/effect-fade';
-import 'swiper/css/effect-cube';
-import 'swiper/css/effect-coverflow';
-import 'swiper/css/effect-flip';
-
-var swiperLoader;
-window.loadSwiper = function () {
-  if (window.Swiper) return Promise.resolve(window.Swiper);
-  if (swiperLoader) return swiperLoader;
-  swiperLoader = Promise.all([import('swiper'), import('swiper/modules')]).then(
-    function (modules) {
-      var Swiper = modules[0].default;
-      var swiperModules = modules[1];
-      Swiper.use([
-        swiperModules.Pagination,
-        swiperModules.Keyboard,
-        swiperModules.EffectFade,
-        swiperModules.EffectCube,
-        swiperModules.EffectCoverflow,
-        swiperModules.EffectFlip,
-      ]);
-      window.Swiper = Swiper;
-      return Swiper;
-    }
-  );
-  return swiperLoader;
-};
+// Loaded statically (not via a lazy import() chunk) - on at least one real
+// Android tablet, fetching the separate Swiper chunk at runtime silently
+// failed (screen-switcher buttons and mouse drag on desktop still worked,
+// since those don't depend on it, but touch swiping - which only Swiper
+// provides - did nothing). Bundling it up front avoids that extra runtime
+// fetch entirely.
+import Swiper from 'swiper/bundle';
+window.Swiper = Swiper;
+import 'swiper/css/bundle';
 require('long-press-event');

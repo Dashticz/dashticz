@@ -845,12 +845,38 @@ next css sets the default height of the frame popup
   white-space: pre-wrap;
 }
 
+/* Background picker / Path row: the preview swatch and the "active custom
+   stylesheet" notice sit beside their select/input on the same row instead
+   of stacking underneath it, so the row's control column needs more room
+   than the standard 40ch a plain field gets. */
+.settings-bg-picker-row,
+.settings-bg-path-row {
+  grid-template-columns: minmax(230px, 320px) minmax(0, 1fr) 26px;
+}
+
+.settings-bg-picker-row .settings-control,
+.settings-bg-path-row .settings-control {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.settings-bg-picker-row .settings-bg-pick {
+  flex: 0 0 auto;
+  width: 260px;
+}
+
+.settings-bg-path-row .settings-bg-path {
+  flex: 0 0 auto;
+}
+
 .settings-standby-bg-preview {
   display: none;
-  width: 100%;
+  flex: 0 0 auto;
+  width: 160px;
   max-width: 40ch;
   height: 72px;
-  margin-top: 8px;
+  margin-top: 0;
   border: 1px solid #ced4da;
   border-radius: 8px;
   background-position: center;
@@ -869,7 +895,9 @@ next css sets the default height of the frame popup
 }
 
 .settings-custom-css-notice {
-  margin-top: 8px;
+  flex: 1 1 auto;
+  min-width: 260px;
+  margin-top: 0;
   padding: 8px 10px;
   color: #0f5132;
   background: #d1e7dd;
@@ -938,6 +966,52 @@ next css sets the default height of the frame popup
 
 @media (max-width: 767.98px) {
   .settings-theme-color-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Compact 2-column layout for the Font size / Icon size sections - reuses
+   the color grid's row proportions instead of the full-width single-column
+   .settings-row, which left a plain pixel-value input almost 40 characters
+   wide for something like "18px". */
+.settings-theme-compact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+}
+
+.settings-theme-compact-grid .settings-row {
+  grid-template-columns: minmax(130px, 1fr) minmax(0, 130px) 0;
+}
+
+/* The blanket #settingspopup .settings-control .form-control rule fixes
+   inputs at 40ch - far wider than a plain number needs, and wider than
+   this row's own input column. Outrank it (an ID beats a plain class
+   selector) so the field actually shrinks to fit here. */
+#settingspopup .settings-theme-compact-grid .settings-control .form-control {
+  width: 100%;
+  max-width: 130px;
+}
+
+/* Number + "px" suffix pair used by the Font size / Icon size rows - the
+   unit is fixed and shown next to the field instead of being typed. */
+.settings-cssvar-px-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#settingspopup .settings-cssvar-px-control .form-control {
+  max-width: 80px;
+}
+
+.settings-cssvar-px-suffix {
+  color: #6c757d;
+  font-size: 13px;
+}
+
+@media (max-width: 767.98px) {
+  .settings-theme-compact-grid {
     grid-template-columns: 1fr;
   }
 }

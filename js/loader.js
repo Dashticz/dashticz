@@ -1,6 +1,6 @@
 /*global loadFiles */
 
-var _DASHTICZ_VERSION = 181;
+var _DASHTICZ_VERSION = 182;
 var head = document.getElementsByTagName('head')[0],
     script = document.createElement('script');
 
@@ -20,9 +20,18 @@ function showLoaderError(message) {
     if (hide) hide.style.display = 'block';
 }
 
+// Plain source files (js/main.js, js/functions.js, js/polyfills.js) change far
+// more often than dist/bundle.js, which is only rebuilt (and _DASHTICZ_VERSION
+// bumped) on a real release - busting on that same static number left a
+// tablet that had already loaded the dashboard today stuck on a stale cached
+// copy of these files after any same-day fix, with no visible sign anything
+// was wrong. Bust on a per-page-load timestamp instead, same as the theme
+// CSS already does.
+var _LOADER_CACHE_BUST = new Date().getTime();
+
 function loadScript(script) {
     return $.ajax({
-        url: script + "?v=" + _DASHTICZ_VERSION,
+        url: script + "?v=" + _LOADER_CACHE_BUST,
         dataType: 'script',
         cache: true
     })

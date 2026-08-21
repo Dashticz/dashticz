@@ -36,6 +36,8 @@
   --radius-selector: 10px;
   --font-small: 18px;
   --font-large: 24px;
+  --icon-font-size: 40px;
+  --icon-image-size: 35px;
   --border-radius: 10px;
   --text-title: rgb(225, 235, 255);
   --text-status: rgb(120, 200, 255);
@@ -234,6 +236,30 @@
   transition: color .2s ease, background-color .2s ease;
 }
 
+/* .selector-buttons and the plain <select> a Selector Switch renders
+   instead (device['SelectorStyle'] === 1) sit below a title line, so
+   the surrounding .col-data needs to be a flex column - scoped with
+   :has() to only devices that actually render one of these, so every
+   other block's plain title/value/lastupdate stacking is untouched. */
+.transbg .col-data:has(.selector-buttons),
+.transbg .col-data:has(> select) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.transbg .col-data .selector-buttons,
+.transbg .col-data > select {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.transbg .selector-buttons {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
 .transbg .selector-buttons .btn {
   display: inline-flex;
   align-items: center;
@@ -267,6 +293,7 @@
 }
 
 .transbg .col-data > select {
+  width: 100%;
   min-height: 44px;
 }
 
@@ -313,7 +340,7 @@
 }
 
 .blocktitle img {
-  max-width: 34px !important;
+  max-width: var(--icon-image-size, 35px) !important;
   padding-bottom: 10px !important;
 }
 
@@ -354,16 +381,16 @@
 }
 
 .col-icon .icon {
-  font-size: 40px !important;
+  font-size: var(--icon-font-size, 40px) !important;
 }
 
 .col-icon img,
 .icon img {
-  max-width: 30px !important;
+  max-width: var(--icon-image-size, 35px) !important;
 }
 
 .titlegroups .col-icon img.icon {
-  max-width: 34px !important;
+  max-width: var(--icon-image-size, 35px) !important;
   height: auto !important;
 }
 
@@ -446,8 +473,8 @@
 /* Verklein ALLEEN de afbeeldingen binnen dimmer-/blinds-blokken */
 .mh:has(.slider) .col-icon img,
 .mh:has(.blinds) .col-icon img {
-    max-width: 30px !important;
-    width: 30px !important;
+    max-width: var(--icon-image-size, 35px) !important;
+    width: var(--icon-image-size, 35px) !important;
     height: auto !important;
 }
 .standby .screenstandby {

@@ -1426,9 +1426,19 @@ function buildSwipingScrolling() {
   var enable_swiper = Number(settings['enable_swiper']);
   var vertical_screen = window.innerWidth < 768;
   var multi_screen = $('.dt-container .screen').length > 1;
+  // enable_swiper===1 means "Enable on narrow screens" (see the Screen
+  // settings' help text, lang/*.json's enable_swiper_help) - swiping is
+  // most useful on a narrow phone, where there's no room to show multiple
+  // screens' worth of columns side by side. This used to test
+  // !vertical_screen (i.e. only start Swiper on WIDE screens), the
+  // opposite of what's documented and what the setting name promises -
+  // so anyone who set it to 1 specifically for their phone/narrow tablet
+  // got no swiper at all, and no fallback touch handling either
+  // (screenswitcher.js's non-swiper goToScreen() branch only show()/hide()s
+  // - it has no gesture support, so this made finger-swipe do nothing).
   var start_swiper =
     multi_screen &&
-    (enable_swiper === 2 || (enable_swiper === 1 && !vertical_screen));
+    (enable_swiper === 2 || (enable_swiper === 1 && vertical_screen));
   if (start_swiper) startSwiper();
   var vertical_scroll = Number(settings['vertical_scroll']);
   if (vertical_scroll === 2 || (vertical_scroll === 1 && !start_swiper)) {
@@ -1440,34 +1450,38 @@ function startSwiper() {
   $('.dt-container').addClass('swiper');
   $('.contents').addClass('swiper-wrapper');
   setTimeout(function () {
-    window.loadSwiper().then(function (Swiper) {
-      myswiper = new Swiper('.swiper', {
-        pagination: {
-          el: '.swiper-pagination',
-          clickable: true,
-        },
-        autoHeight: false,
-        //      speed: 0,
-        loop: false,
-        initialSlide: settings['start_page'] - 1,
-        effect: settings['slide_effect'],
-        keyboard: {
-          enabled: true,
-          onlyInViewport: false,
-        },
-        direction: 'horizontal',
-        allowTouchMove: settings.swiper_touch_move,
-      });
-      myswiper.on('transitionStart', function () {
-        $('.slide').removeClass('selectedbutton');
-      });
-      myswiper.on('transitionEnd', function () {
-        $('.slide' + (1 + this.activeIndex)).addClass('selectedbutton');
-      });
-      $('.slide' + settings['start_page']).addClass('selectedbutton');
-    }).catch(function (err) {
-      console.error('Unable to load Swiper', err);
+    myswiper = new Swiper('.swiper', {
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+      },
+      autoHeight: false,
+      //      speed: 0,
+      loop: false,
+      initialSlide: settings['start_page'] - 1,
+      effect: settings['slide_effect'],
+      keyboard: {
+        enabled: true,
+        onlyInViewport: false,
+      },
+      direction: 'horizontal',
+      allowTouchMove: settings.swiper_touch_move,
+      // A touchscreen tap almost always drifts a few px, unlike a mouse
+      // click; Swiper's default threshold (5) misreads that drift as a
+      // swipe attempt and, while animating, its default
+      // preventClicksPropagation stops the tap from ever reaching the
+      // block's click handler - invisible on desktop, where a mouse click
+      // rarely moves at all.
+      threshold: 10,
+      preventClicksPropagation: false,
     });
+    myswiper.on('transitionStart', function () {
+      $('.slide').removeClass('selectedbutton');
+    });
+    myswiper.on('transitionEnd', function () {
+      $('.slide' + (1 + this.activeIndex)).addClass('selectedbutton');
+    });
+    $('.slide' + settings['start_page']).addClass('selectedbutton');
   }, 100);
 }
 

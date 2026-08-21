@@ -282,28 +282,6 @@ settingList['localize']['speak_lang']['options']['pl-PL'] =
 settingList['localize']['speak_lang']['options']['ru-RU'] =
   language.settings.localize.ru;
 
-settingList['media'] = {};
-settingList['media']['title'] = language.settings.media.title;
-
-settingList['media']['switch_horizon'] = {};
-settingList['media']['switch_horizon']['title'] =
-  language.settings.media.switch_horizon;
-settingList['media']['switch_horizon']['type'] = 'text';
-settingList['media']['switch_horizon']['help'] =
-  language.settings.media.switch_horizon_help;
-
-settingList['media']['host_nzbget'] = {};
-settingList['media']['host_nzbget']['title'] =
-  language.settings.media.host_nzbget;
-settingList['media']['host_nzbget']['type'] = 'text';
-settingList['media']['host_nzbget']['help'] =
-  language.settings.media.host_nzbget_help;
-
-settingList['media']['hide_mediaplayer'] = {};
-settingList['media']['hide_mediaplayer']['title'] =
-  language.settings.media.hide_mediaplayer;
-settingList['media']['hide_mediaplayer']['type'] = 'checkbox';
-
 /* Widget settings shown as tiles in Custom mode (not Wizard). */
 var weatherIconOptions = {
   line: language.settings.weather.icons_line,
@@ -738,7 +716,6 @@ var settingsCategoryIcons = {
   theme: 'fas fa-paint-brush',
   standby: 'fas fa-moon',
   localize: 'fas fa-globe',
-  media: 'fas fa-film',
   widgets: 'fas fa-puzzle-piece',
   other: 'fas fa-ellipsis-h',
   about: 'fas fa-info-circle',
@@ -1316,7 +1293,6 @@ function getSettingsCategories() {
     'theme',
     'standby',
     'localize',
-    'media',
     'widgets',
     'other',
     'about',
@@ -1859,6 +1835,15 @@ var _THEME_FONT_VARS = [
   '--font-large',
 ];
 
+var _THEME_ICON_VARS = [
+  '--icon-font-size',
+  '--icon-image-size',
+];
+
+// All theme vars whose value is always a bare pixel number - the settings
+// panel shows/accepts just the number and adds "px" itself.
+var _THEME_PX_VARS = _THEME_FONT_VARS.concat(_THEME_ICON_VARS);
+
 // Labels for CSS variables (fall back to the var name itself).
 function _themeCssVarLabel(varName) {
   var themeLabels = (language.settings.theme && language.settings.theme.vars) || {};
@@ -1896,7 +1881,7 @@ function _getStoredCssVarOverrides() {
       var rule = rules[ri];
       if (rule.type === 1 && rule.selectorText === ':root') {
         var cssText = rule.cssText;
-        var vars = _THEME_COLOR_VARS.concat(_THEME_FONT_VARS);
+        var vars = _THEME_COLOR_VARS.concat(_THEME_FONT_VARS).concat(_THEME_ICON_VARS);
         for (var vi = 0; vi < vars.length; vi++) {
           var v = vars[vi];
           // Use a literal indexOf search to find the var declaration, avoiding
@@ -1963,25 +1948,56 @@ function renderThemeSettingsPanel() {
   });
   html += '</div>';
 
+  // Shared row markup for a plain text cssvar input (font size, icon size, ...).
+  // Px vars (_THEME_PX_VARS) render as a bare number with a fixed "px" suffix
+  // instead of a free-text field, since their value is always a pixel size.
+  function renderCssVarTextRow(varName) {
+    var inputId = 'setting-cssvar-' + varName.replace(/^--/, '').replace(/-/g, '_');
+    var isPx = _THEME_PX_VARS.indexOf(varName) !== -1;
+    var rowHtml = '<div class="settings-row">';
+    rowHtml += '<label class="settings-label" for="' + escapeSettingsHtml(inputId) + '">' +
+      escapeSettingsHtml(_themeCssVarLabel(varName)) + '</label>';
+    rowHtml += '<div class="settings-control' + (isPx ? ' settings-cssvar-px-control' : '') + '">';
+    if (isPx) {
+      rowHtml += '<input type="number" class="form-control settings-cssvar-input" ' +
+        'id="' + escapeSettingsHtml(inputId) + '" ' +
+        'data-cssvar="' + escapeSettingsHtml(varName) + '" ' +
+        'min="1" step="1" inputmode="numeric" autocomplete="off">';
+      rowHtml += '<span class="settings-cssvar-px-suffix">px</span>';
+    } else {
+      rowHtml += '<input type="text" class="form-control settings-cssvar-input" ' +
+        'id="' + escapeSettingsHtml(inputId) + '" ' +
+        'data-cssvar="' + escapeSettingsHtml(varName) + '" ' +
+        'placeholder="' + escapeSettingsHtml(varName) + '" ' +
+        'autocomplete="off">';
+    }
+    rowHtml += '</div>';
+    rowHtml += '<div class="settings-help-slot"></div></div>';
+    return rowHtml;
+  }
+
   // Font size section heading.
   html += '<div class="settings-section-heading">' +
     escapeSettingsHtml(fontSectionLabel) + '</div>';
 
   // Font size variable rows.
+  html += '<div class="settings-theme-compact-grid">';
   _THEME_FONT_VARS.forEach(function (varName) {
-    var inputId = 'setting-cssvar-' + varName.replace(/^--/, '').replace(/-/g, '_');
-    html += '<div class="settings-row">';
-    html += '<label class="settings-label" for="' + escapeSettingsHtml(inputId) + '">' +
-      escapeSettingsHtml(_themeCssVarLabel(varName)) + '</label>';
-    html += '<div class="settings-control">';
-    html += '<input type="text" class="form-control settings-cssvar-input" ' +
-      'id="' + escapeSettingsHtml(inputId) + '" ' +
-      'data-cssvar="' + escapeSettingsHtml(varName) + '" ' +
-      'placeholder="' + escapeSettingsHtml(varName) + '" ' +
-      'autocomplete="off">';
-    html += '</div>';
-    html += '<div class="settings-help-slot"></div></div>';
+    html += renderCssVarTextRow(varName);
   });
+  html += '</div>';
+
+  // Icon/image size section heading.
+  var iconSectionLabel = themeL.icons || 'Icon size';
+  html += '<div class="settings-section-heading">' +
+    escapeSettingsHtml(iconSectionLabel) + '</div>';
+
+  // Icon/image size variable rows.
+  html += '<div class="settings-theme-compact-grid">';
+  _THEME_ICON_VARS.forEach(function (varName) {
+    html += renderCssVarTextRow(varName);
+  });
+  html += '</div>';
 
   return html;
 }
@@ -1998,6 +2014,9 @@ function bindThemeCssVarControls() {
     var varName = String($input.data('cssvar') || '');
     if (!varName) return;
     var value = storedOverrides[varName] || _getComputedCssVar(varName);
+    if (_THEME_PX_VARS.indexOf(varName) !== -1) {
+      value = value.replace(/px\s*$/i, '').trim();
+    }
     $input.val(value);
     // Sync swatch if color input is present.
     var $swatch = $popup.find('#' + $.escapeSelector($input.attr('id') + '-swatch'));
@@ -2755,12 +2774,17 @@ function saveSettings() {
     alertSettings += 'config["config_mode"] = ' + _modeValue + ';\n';
   }
 
-  // Collect CSS variable overrides from the theme panel.
+  // Collect CSS variable overrides from the theme panel. Px vars are entered
+  // as a bare number - add the "px" back on here before saving.
   var cssVars = {};
   $('div#settingspopup .settings-cssvar-input').each(function () {
     var varName = $(this).data('cssvar');
     if (varName) {
-      cssVars[varName] = String($(this).val() || '').trim();
+      var varValue = String($(this).val() || '').trim();
+      if (varValue !== '' && _THEME_PX_VARS.indexOf(varName) !== -1 && !/px\s*$/i.test(varValue)) {
+        varValue += 'px';
+      }
+      cssVars[varName] = varValue;
     }
   });
 

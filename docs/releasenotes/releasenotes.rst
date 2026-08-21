@@ -6,6 +6,111 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.45.3 beta (21-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- The Modern Dark, Liquid Glass Blue and Liquid Glass Grey themes' icon
+  and image size (previously a hardcoded 35px) is now configurable from
+  the settings menu, in a new **Icon size** section next to the existing
+  **Font size** fields on the Theme tab, with separate **Icon** and
+  **Image** fields. It's backed by two new CSS variables - ``--icon-font-size``
+  (the FontAwesome icon column, ``.col-icon .icon``) and
+  ``--icon-image-size`` (actual ``<img>`` icons) - since a device's custom
+  image and a widget's FontAwesome icon are unrelated and were previously
+  forced to the same size. Both are wired into the same CSS-variable
+  settings panel, save endpoint and ``custom.css`` override mechanism the
+  Colors and Font size sections already use.
+
+- The Font size and new Icon size fields now use a compact 2-column
+  layout, matching the Colors section, instead of a full-width
+  single-column row with the same 40-character-wide input as every other
+  setting - far more than a short pixel value like ``18`` needs.
+
+- The Font size and Icon size fields now take a bare number with a fixed
+  "px" shown next to the field, instead of free text requiring e.g.
+  ``18px`` to be typed - these variables are always a pixel size, so
+  there was never a reason to type or accept a unit.
+
+- The Theme tab's background-image preview swatch and the active custom
+  stylesheet notice now sit beside their **Choose background image** /
+  **Path/URL** fields instead of stacking underneath them. The notice was
+  also sizing to its own content by default, wrapping its text across 4
+  short lines - it now has a 260px minimum width and grows to fill the
+  row, wrapping across 2 lines instead.
+
+* **Fixes**
+
+- Fixed ``CONFIG.js`` accumulating a growing run of blank lines between
+  editor-managed sections (screens, grid layouts, widgets) every time one
+  was resaved. ``configwriter_remove_section()`` spliced the raw text
+  before the removed section straight onto the raw text after it, but
+  both sides already carried their own leading blank line from
+  ``configwriter_wrap_section()`` - since a section is always removed and
+  re-appended on every save, each save stacked another blank line onto
+  the same spot, compounding without bound. It now trims the whitespace
+  on both sides of the cut and rejoins with exactly one blank line.
+
+- Fixed settings saved from the Settings UI always jumping to the end of
+  the ``config["key"] = value;`` block, scattering an edited setting away
+  from the related settings it was originally grouped near.
+  ``configwriter_upsert_root_config_settings()`` now updates an existing
+  single-line setting in place; only genuinely new keys get appended.
+
+- Centered a Selector Switch device's option buttons
+  (``.btn-group.selector-buttons``, e.g. Open/Half/Dicht) horizontally
+  within its block on the Modern Dark, Liquid Glass Blue and Liquid Glass
+  Grey themes, instead of hugging the right edge - Bootstrap's
+  ``.btn-group`` is an inline-flex element, so it inherited its position
+  from ``.mh``'s ``text-align: right``.
+
+- Vertically centered a Selector Switch's option buttons/dropdown below
+  the title, and gave the ``SelectorStyle`` ``1`` dropdown (e.g.
+  Husqvarna, Lyrion) the same full-width treatment the buttons already
+  got - previously the plain ``<select>`` was sized to its own content
+  and left, right-aligned like the buttons used to be.
+
+- Fixed editing a device's config from inside the Layout Editor, clicking
+  OK, then editing a *different* device and clicking OK, silently
+  reverting the first device's change - only the most-recently-edited
+  device's edit actually persisted. Each confirmed change there is saved
+  immediately, resending every currently-placed device's definition, but
+  the in-memory device state was always rebuilt from ``blocks``/
+  ``columns`` on every popup open - and those client-side globals are
+  never patched after a save, only the server's ``CONFIG.js`` is - so the
+  second edit's save resent the first device using its stale pre-edit
+  data, reverting it server-side. Opening a device's config from the
+  Layout Editor now keeps already-known device/special state across
+  repeated edits in the same session instead of re-deriving it from those
+  stale globals.
+
+- Fixed finger-swipe screen navigation silently doing nothing on narrow
+  (phone-width) touch devices when **Enable Swiper** was set to ``1``.
+  Per its own settings help text, ``1`` means "Enable on narrow screens",
+  but ``buildSwipingScrolling()`` tested the opposite condition and only
+  ever started Swiper on wide screens - with Swiper never created, the
+  non-swiper screen-switching fallback has no touch/gesture handling at
+  all, so a swipe had nothing listening for it.
+
+- Fixed touch-swipe screen navigation not working at all on at least one
+  real Android tablet, even with **Enable Swiper** left on its default
+  value. Swiper was loaded via a separate lazily-fetched chunk
+  (``window.loadSwiper()``); on that tablet, fetching the chunk at
+  runtime silently failed, so Swiper never initialized and no touch
+  handler was ever listening for a swipe, while the screen-switcher
+  buttons and mouse drag - which don't depend on it - kept working.
+  Swiper is now bundled directly into ``dist/bundle.js`` instead, with no
+  separate runtime fetch to fail.
+
+* **Removed**
+
+- The **Media** tile in the settings menu (**switch_horizon**,
+  **host_nzbget** and **hide_mediaplayer**) - it saw little use as a
+  dedicated settings category. The config keys it edited are still fully
+  functional for anyone who sets them directly in ``CONFIG.js``; only the
+  settings-UI entry point was removed.
+
 v3.45.2 beta (20-8-2026)
 -------------------------
 
@@ -92,6 +197,37 @@ v3.45.2 beta (20-8-2026)
   file. The font-size rule is now scoped to ``.col-icon .icon`` and the
   image cap is now 30px, matching the default theme and the themes' own
   existing dimmer/blinds-slider carve-out.
+
+- Unified image-icon sizing on the Modern Dark, Liquid Glass Blue and
+  Liquid Glass Grey themes to 35px everywhere. The fix above still left
+  two slightly different sizes in place - 30px for the general
+  ``.col-icon``/``.icon`` image cap and the dimmer/blinds-slider
+  carve-out, 34px for the Separator's dedicated
+  ``.titlegroups .col-icon img.icon`` and ``.blocktitle img`` rules - so
+  a device's image icon and a Separator's image icon using the same file
+  still rendered at two different sizes. All four rules now use 35px.
+
+- Fixed screen navigation - both swiping and tapping a slide button -
+  being unreliable on tablets while working fine on a PC. A touchscreen
+  tap almost always drifts a few pixels, unlike a precise mouse click,
+  and Swiper's default ``threshold`` (5px) misreads that drift as an
+  aborted swipe attempt; while a transition is still animating, Swiper's
+  default ``preventClicksPropagation`` then stops that tap from ever
+  reaching the block's click handler - invisible on desktop, where a
+  mouse click rarely moves at all. ``js/main.js``'s ``startSwiper()`` now
+  raises ``threshold`` to 10 and sets ``preventClicksPropagation: false``.
+
+- Fixed ``js/loader.js``'s ``loadScript()`` (used for ``js/main.js``,
+  ``js/functions.js`` and ``js/polyfills.js``) serving a stale cached copy
+  of those files after any same-day edit, with no visible sign anything
+  was wrong. It busted the cache on the static ``_DASHTICZ_VERSION`` build
+  number, which is only bumped on a real ``dist/bundle.js`` rebuild, so a
+  device that had already loaded the dashboard earlier that day (e.g. a
+  tablet left on) kept serving its old cached ``js/main.js`` indefinitely -
+  silently missing fixes such as the Swiper tuning above. It now busts on
+  a per-page-load timestamp instead, matching how the theme CSS already
+  cache-busts; ``dist/bundle.js`` itself is intentionally left on
+  ``_DASHTICZ_VERSION``, since it's only rebuilt on a real release.
 
 * **Code**
 
