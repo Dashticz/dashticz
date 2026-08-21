@@ -1,3 +1,0 @@
-# Keep this directory in Git, but never include personal background images.
-*
-!.gitignore
