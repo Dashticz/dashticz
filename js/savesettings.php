@@ -32,6 +32,19 @@ if ($readError !== null) {
 if (strpos($config, 'var config = {}') === false) {
     dashticz_json_error(409, $cfgFile . ' does not contain the expected config marker.');
 }
+// Changing the dashboard-wide gridColumns/rowHeight default is a deliberate
+// signal that every grid screen should follow it - clear any per-screen
+// override for that same property so the new default actually reaches
+// screens that already had their own value pinned (see
+// configwriter_remove_grid_default_overrides()).
+foreach (['gridColumns', 'rowHeight'] as $gridDefaultProperty) {
+    if (array_key_exists($gridDefaultProperty, $submittedSettings)) {
+        $config = configwriter_remove_grid_default_overrides(
+            $config,
+            $gridDefaultProperty
+        );
+    }
+}
 $config = configwriter_upsert_root_config_settings(
     $config,
     $submittedSettings,

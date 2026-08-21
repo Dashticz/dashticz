@@ -1447,6 +1447,18 @@ var DashticzWidgetEditor = (function () {
     };
   }
 
+  function _defaultGridColumns() {
+    return typeof settings !== 'undefined' && settings.gridColumns > 0
+      ? Number(settings.gridColumns)
+      : 24;
+  }
+
+  function _defaultRowHeight() {
+    return typeof settings !== 'undefined' && settings.rowHeight > 0
+      ? Number(settings.rowHeight)
+      : 20;
+  }
+
   function _readGridConfiguredWidgets() {
     _activeScreenDom()
       .children('.dt-grid-layout')
@@ -4001,6 +4013,11 @@ var DashticzWidgetEditor = (function () {
                 screen: screenNumber,
                 gridColumns: gridConfig.gridColumns,
                 rowHeight: gridConfig.rowHeight,
+                // Only pin these explicitly on the screen when they diverge
+                // from the dashboard-wide default (see the matching comment
+                // in layouteditor.js's _buildSavePayloads).
+                pinGridColumns: gridConfig.gridColumns !== _defaultGridColumns(),
+                pinRowHeight: gridConfig.rowHeight !== _defaultRowHeight(),
                 gap: gridConfig.gap,
                 mobileLayout: gridConfig.mobileLayout,
               },

@@ -1,4 +1,4 @@
-/* global $ Dashticz addBlock2Column blocks */
+/* global $ Dashticz addBlock2Column blocks settings */
 //# sourceURL=js/gridlayout.js
 
 /**
@@ -24,19 +24,38 @@ var DashticzGridLayout = (function () {
     return Number.isInteger(Number(value)) && Number(value) > 0;
   }
 
+  // Settings > Weergave (screen) can set gridColumns/rowHeight globally, for
+  // every grid screen that doesn't specify its own - falling back to the
+  // 24/20 constants below when unset, so an install that never touches
+  // those settings keeps its current layout exactly as-is.
+  function globalDefaults() {
+    var globalGridColumns =
+      typeof settings !== 'undefined' && isPositiveInteger(settings.gridColumns)
+        ? Number(settings.gridColumns)
+        : defaults.gridColumns;
+    var globalRowHeight =
+      typeof settings !== 'undefined' && isPositiveInteger(settings.rowHeight)
+        ? Number(settings.rowHeight)
+        : defaults.rowHeight;
+    return { gridColumns: globalGridColumns, rowHeight: globalRowHeight };
+  }
+
   function getGridScreenConfig(screen) {
     var source = screen || {};
+    var effectiveDefaults = globalDefaults();
     var gridColumns = isPositiveInteger(source.gridColumns)
       ? Number(source.gridColumns)
-      : defaults.gridColumns;
+      : effectiveDefaults.gridColumns;
     var configuredRowHeight = isPositiveInteger(source.rowHeight)
       ? Number(source.rowHeight)
-      : defaults.rowHeight;
+      : effectiveDefaults.rowHeight;
     // Grid screens created before the 20px default stored the old 40px
     // default explicitly. Treat that value as the legacy format so existing
     // dashboards receive the finer grid without shrinking their blocks.
     var rowHeight =
-      configuredRowHeight === 40 ? defaults.rowHeight : configuredRowHeight;
+      configuredRowHeight === 40
+        ? effectiveDefaults.rowHeight
+        : configuredRowHeight;
     var gap =
       Number.isFinite(Number(source.gap)) && Number(source.gap) >= 0
         ? Number(source.gap)
@@ -50,7 +69,7 @@ var DashticzGridLayout = (function () {
         'screen has invalid gridColumns "' +
           source.gridColumns +
           '"; using ' +
-          defaults.gridColumns +
+          effectiveDefaults.gridColumns +
           '.'
       );
     }
@@ -62,7 +81,7 @@ var DashticzGridLayout = (function () {
         'screen has invalid rowHeight "' +
           source.rowHeight +
           '"; using ' +
-          defaults.rowHeight +
+          effectiveDefaults.rowHeight +
           '.'
       );
     }

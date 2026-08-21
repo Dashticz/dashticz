@@ -40,6 +40,24 @@ v3.45.3 beta (21-8-2026)
   short lines - it now has a 260px minimum width and grows to fill the
   row, wrapping across 2 lines instead.
 
+- The free-positioned grid layout's ``gridColumns`` (default ``24``) and
+  ``rowHeight`` (default ``20`` px) can now be set dashboard-wide from
+  Settings > **Weergave** (screen), instead of only per-screen in
+  ``CONFIG.js``. Any ``layout: 'grid'`` screen that doesn't set its own
+  ``gridColumns``/``rowHeight`` falls back to these settings before the
+  hardcoded default, so leaving both untouched keeps every existing
+  install's grid screens exactly as they were. The Layout/Device/Widget
+  editors' save flows only pin an explicit ``gridColumns``/``rowHeight``
+  onto a screen when it actually diverges from this dashboard-wide
+  default (a genuine per-screen customization) - a plain save otherwise
+  keeps that screen following the setting, and it no longer gets frozen
+  to whatever was in effect the first time the screen was ever saved.
+  Changing the setting itself also clears any existing per-screen
+  override for that same property on every screen at once, so an
+  install with grid screens saved before this existed - which all had
+  an explicit value pinned - isn't stuck manually editing ``CONFIG.js``
+  to let the dashboard-wide setting reach them.
+
 * **Fixes**
 
 - Fixed ``CONFIG.js`` accumulating a growing run of blank lines between
@@ -102,6 +120,14 @@ v3.45.3 beta (21-8-2026)
   buttons and mouse drag - which don't depend on it - kept working.
   Swiper is now bundled directly into ``dist/bundle.js`` instead, with no
   separate runtime fetch to fail.
+
+- Corrected the grid layout documentation (``docs/screens.rst``), which
+  still listed ``rowHeight``'s default as the old value of ``40`` and used
+  it in both example snippets. The code's actual default has been ``20``
+  for a while, with an existing migration shim that treats an explicit
+  ``rowHeight: 40`` on a screen as that legacy value and normalizes it to
+  today's real default - so the example was liable to silently produce
+  blocks half the intended height if copied as-is.
 
 * **Removed**
 
