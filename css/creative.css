@@ -1073,13 +1073,19 @@ next css sets the default height of the frame popup
 
 /* Shared look for every on/off switch across the settings screen and the
    Device/Widget editors: light-blue track with a solid blue knob (instead
-   of Bootstrap's default white knob), wherever it appears. */
+   of Bootstrap's default white knob), wherever it appears. .de-switch: the
+   standard class for any new standalone switch added to the Device Config
+   popup outside of .de-config-options's own grid (e.g. Inverse) - add it
+   to the <input> instead of registering yet another one-off selector here,
+   so it automatically gets this same color and size (below) without
+   needing a CSS change of its own. */
 #settingspopup .settings-switch .form-check-input,
 .de-config-options .form-check-input,
 #hb-device-border.form-check-input,
 .we-widget-field.form-check-input,
 #we-cfg-ascending.form-check-input,
 .we-block-option.form-check-input,
+.de-switch,
 .de-lms-switch.form-check-input {
   border-color: #adb5bd !important;
   cursor: pointer;
@@ -1091,6 +1097,7 @@ next css sets the default height of the frame popup
 .we-widget-field.form-check-input:checked,
 #we-cfg-ascending.form-check-input:checked,
 .we-block-option.form-check-input:checked,
+.de-switch:checked,
 .de-lms-switch.form-check-input:checked {
   background-color: #bfdbfe !important;
   border-color: #93c5fd !important;
@@ -1103,9 +1110,26 @@ next css sets the default height of the frame popup
 .we-widget-field.form-check-input:focus,
 #we-cfg-ascending.form-check-input:focus,
 .we-block-option.form-check-input:focus,
+.de-switch:focus,
 .de-lms-switch.form-check-input:focus {
   border-color: #93c5fd !important;
   box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
+}
+
+/* Same width/height every other Device Config switch (.de-config-options
+   .form-check-input below) already uses - kept as its own rule (rather
+   than folded into the color one above) since a future switch that wants
+   this same size but a different color still only needs this class.
+   !important: Bootstrap's own .form-switch .form-check-input rule (2
+   classes) outranks a single .de-switch class on specificity alone, so
+   without it Bootstrap's own (smaller, em-based) width/height would win
+   regardless of source order. */
+.de-switch {
+  flex: 0 0 auto !important;
+  float: none !important;
+  width: 38px !important;
+  height: 20px !important;
+  margin: 0 !important;
 }
 
 .settings-help-slot {
@@ -3729,6 +3753,363 @@ img.icon {
 .blinds .fas.fa-stop-circle {
   font-size: 20px !important;
   margin-right: 3px !important;
+}
+
+/* "Needle" mode (block.needle === true) for Blinds Percentage/Blinds
+   Inverted Percentage devices: one continuous vertical slider, framed like
+   a small remote - a title header (no icon), then the slider beside a
+   column of icon-only OPEN/STOP/DICHT buttons. This is an alternative to,
+   not a replacement for, Icon mode's own classic thin percentage bar
+   (getBlindsBlock()'s withPercentage branch, unchanged) and the separate
+   Dial widget's Dial/Bar modes (js/components/dial.js, also unchanged).
+   Rendered entirely by renderBlindsSliderBlock()/addSlider() in
+   js/switches.js as a single .blinds-slider-block. Other percentage
+   sliders (e.g. dimmers, and Icon mode's own classic bar) reuse the same
+   addSlider() but never get a .blinds-slider-wrap ancestor, so none of
+   this applies to them. The underlying jQuery UI slider and all existing
+   Domoticz commands remain unchanged. */
+.blinds-slider-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  /* Needed for its own flex-grow .blinds-slider-wrap child to actually get
+     any height in the classic (non-grid) case below: height:100% here is
+     against an indefinite .mh (height:auto), so per spec it resolves as
+     auto too, and an auto-sized column flex container with no min-height
+     of its own gives a flex-grow child nothing to grow into (it sizes to
+     exactly its non-growing children's content, i.e. the wrap collapses to
+     0). This min-height gives the column a real, non-circular basis to
+     distribute from. Overridden to 0 on grid screens further down, where
+     .mh already gets a real, definite height from the grid row instead. */
+  min-height: 360px;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 8px 10px 10px;
+  background: rgba(12, 16, 24, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  box-shadow: var(--panel-shadow);
+}
+
+/* On a grid screen, .dt-grid-screen > .dt-grid-layout > .dt-grid-item > .mh
+   further up this file already forces .mh to a real, definite height
+   (height:100% !important of the grid row) - so .blinds-slider-block's own
+   height:100% resolves normally there (no circularity), and this block's
+   min-height above must get out of the way so the block can shrink to fit
+   a small row instead of overflowing it, same as .log/.map/the clock
+   widgets already do for their own min-heights. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .mh > .blinds-slider-block {
+  min-height: 0;
+}
+
+/* Every .mh is pinned to the classic 85px block height by default
+   (div.mh:not(.multiline) further up this file - the same escape hatch
+   block types like graphs/dials use via their own multi_line config flag).
+   This block needs real vertical room for its slider, so let it grow like a
+   multiline block, and stretch it (a .dt_block is align-items: flex-start
+   by default) instead of shrink-wrapping to content height. The grid rule
+   above still wins there on specificity, so a grid screen's own row height
+   applies instead of this fallback. */
+.mh:has(.blinds-slider-block) {
+  height: auto !important;
+  min-height: 360px;
+  align-items: stretch;
+}
+
+.blinds-slider-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.blinds-slider-header .title {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* The slider and its OPEN/STOP/DICHT buttons sit side by side - the wrap
+   (js/switches.js's renderBlindsSliderBlock()) takes the remaining width,
+   the button column stays a fixed, content-sized width next to it. */
+.blinds-slider-body {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  flex: 1 1 auto;
+  /* Without this, a flex item's default min-height: auto keeps it from
+     ever shrinking below its content's own size - harmless for the fixed-
+     size button column, but it would stop .blinds-slider-wrap below from
+     actually shrinking on a short grid row instead of overflowing it. */
+  min-height: 0;
+}
+
+/* OPEN top, STOP middle, DICHT bottom (or just OPEN/DICHT top/bottom with
+   hide_stop) - justify-content: space-between spreads them across the
+   column's own height, which stretches to match the slider via
+   .blinds-slider-body's align-items: stretch above, keeping every button
+   within the slider's own height as asked. */
+.blinds-slider-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.blinds-slider-action {
+  flex: 0 0 auto;
+}
+
+.blinds-slider-action a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 12px;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+/* The blanket .fas/.far/.fab { font-size: 30px } rule further up this file
+   (the codebase's own .fa-small already opts down to 20px, still too big
+   here) would otherwise inflate the icon way past this button's own
+   12px. inherit keeps the icon tied to that size without duplicating the
+   number here. !important: the Modern Dark/Liquid Glass Blue/Liquid Glass
+   Grey themes each carry their own `.fas.fa-chevron-up,
+   .fas.fa-chevron-down { font-size: 40px !important; }` (written for the
+   dimmer's up/down buttons); without !important here too, that theme rule
+   wins outright regardless of this selector's higher specificity - !important
+   always beats a plain declaration, no matter how specific. */
+.blinds-slider-action a .fas {
+  font-size: inherit !important;
+}
+
+.blinds-slider-action-up a,
+.blinds-slider-action-down a {
+  color: #eafff0;
+  background: linear-gradient(180deg, rgba(94, 176, 92, 0.55), rgba(58, 122, 58, 0.55));
+  border: 1px solid rgba(139, 212, 130, 0.6);
+}
+
+.blinds-slider-action-up a:hover,
+.blinds-slider-action-down a:hover {
+  background: linear-gradient(180deg, rgba(110, 196, 108, 0.65), rgba(66, 138, 66, 0.65));
+}
+
+.blinds-slider-action-stop a {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(220, 53, 69, 0.22);
+  border: 1px solid rgba(220, 53, 69, 0.5);
+}
+
+.blinds-slider-action-stop a:hover {
+  color: var(--text-light);
+  background: rgba(220, 53, 69, 0.32);
+  border-color: rgba(220, 53, 69, 0.65);
+}
+
+/* .slider-scale and .slider used to be centered independently within this
+   wrap via position: absolute + a fixed negative margin-left each - fine
+   while the wrap was always the same width, but the fixed margins didn't
+   know about a narrower block, an increased track width (see .slider
+   below), or the button column now sitting right up against it: the scale
+   (and its percentage labels) could end up positioned partly outside the
+   block, and the empty leftover space in a wide wrap read as a big gap to
+   the buttons even though .blinds-slider-body's own gap is tiny. Both are
+   now plain flex children instead, always staying inside this row -
+   justify-content: flex-end keeps them (and so the visible track) hugging
+   the button column with no leftover space in between, at any width. */
+.blinds-slider-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-end;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 2px 0;
+  gap: 6px;
+}
+
+/* !important throughout this rule and the two below it: jQuery UI's own
+   bundled theme CSS (src/index.js's require('jquery-ui-dist/jquery-ui.min.css'))
+   styles .ui-slider/.ui-widget-content/.ui-widget-header (the classes the
+   widget puts on the track and range by default) with its own theme colors
+   (including blue) - these three selectors already outrank those on
+   specificity, but !important removes any doubt a theme's own CSS could
+   still win by loading later. This element's own box (top/bottom: 6px) is
+   left alone since it's what jQuery UI (and this file's own JS) measures
+   0%-100% against for the handle/ticks - its visible background is drawn
+   by ::before below instead, sized 8px (half the handle's own 16px) taller
+   at each end, so the round handle - which can visually overhang up to
+   half its own height past this box's edge at the 0%/100% extremes - stays
+   fully inside the visible track instead of poking out above/below it.
+   width: a flexible range (not a fixed px) instead, so the track scales
+   with the block's own width in both directions - narrower shrinks it
+   down (to a 30px floor, so it never disappears), wider grows it beyond
+   its old fixed 60px too, since .slider-scale above never grows (flex:
+   0 1 90px) and is the only other flex item sharing this row - all of the
+   wrap's own growth goes into the track. */
+.blinds-slider-wrap .slider {
+  position: relative;
+  flex: 1 1 60px;
+  min-width: 30px;
+  margin: 6px 0;
+  height: auto !important;
+  border: none !important;
+  background: transparent !important;
+  cursor: pointer;
+}
+
+.blinds-slider-wrap .slider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -8px;
+  bottom: -8px;
+  z-index: 0;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.14));
+  pointer-events: none;
+}
+
+/* top: jQuery UI's own theme CSS anchors .ui-slider-range-max at the
+   track's own top (range: 'max' - see js/switches.js's addSlider()) - this
+   pulls that anchor up 8px to match ::before's own extended top above, so
+   the fill can reach all the way into that overhang zone instead of
+   leaving it looking empty there at every value. height is left alone here
+   (jQuery UI sets it inline, as a value-driven %) - js/switches.js's
+   extendRangeFill() tops it up by that same 8px on every value change, so
+   the fill's *bottom* edge (which already correctly tracks the handle)
+   isn't dragged upward by this same shift. */
+.blinds-slider-wrap .slider .ui-slider-range {
+  top: -8px !important;
+  border-radius: 9px;
+  background: linear-gradient(to top, rgba(75, 160, 75, 0.55), rgba(125, 220, 110, 0.95)) !important;
+}
+
+/* A small, plain button - not an oversized draggable circle. Width/height
+   !important: jQuery UI's own bundled default theme sizes the handle via
+   its own em-based rule (.ui-slider .ui-slider-handle), which these two
+   already outrank on specificity, but pin them anyway so the handle can
+   never end up non-square. jQuery UI positions the handle with "bottom:
+   value%", which places the handle's *bottom edge* (not its center) at
+   that percentage of the track - so without correction the round handle
+   visually sits half its own height too high compared to the tick marks,
+   which center on their percentage via transform: translateY(-50%) (see
+   .slider-tick span below). margin-bottom: -8px (half the 16px handle
+   height) shifts the handle back down so its *center* lands on the
+   value's percentage, matching the ticks. The theme's own default
+   (margin-bottom: -.6em) does the same thing for its own default handle
+   size - this isn't overriding a quirk, it's the same compensation
+   re-sized for our handle.
+*/
+/* top/margin-top !important: the Modern Dark/Liquid Glass Blue/Liquid Glass
+   Grey themes each carry their own `.ui-slider-handle { top: 50% !important;
+   margin-top: -20px !important; ... }`, written to vertically-center the
+   dimmer's horizontal-slider handle within its track. That selector has no
+   idea this handle is inside a *vertical* slider - with nothing here to
+   contest top/margin-top, it applied uncontested, pinning the handle to the
+   track's vertical center via top+height (which, once both top and bottom
+   are specified with an explicit height, wins over jQuery UI's own dynamic
+   "bottom: value%" - the box is over-constrained and bottom is dropped) -
+   so the handle visually never moved off dead-center, regardless of the
+   slider's actual value. Resetting top/margin-top back to auto/0 hands
+   vertical positioning back to jQuery UI's own "bottom" entirely. */
+.blinds-slider-wrap .slider .ui-slider-handle {
+  left: 50%;
+  top: auto !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin-left: -8px;
+  margin-top: 0 !important;
+  margin-bottom: -8px !important;
+  border: 2px solid rgba(255, 255, 255, 0.85) !important;
+  border-radius: 50% !important;
+  background: #d9dde2 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  cursor: grab;
+}
+
+.blinds-slider-wrap .slider .ui-slider-handle:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.65);
+  outline-offset: 2px;
+}
+
+/* flex-shrink: 1 (not 0) - its own ticks are position: absolute, so this
+   still needs an explicit width for them to measure their right/width
+   percentages against (an absolutely-positioned child can't contribute to
+   its own parent's intrinsic sizing), but letting it shrink below that on
+   a narrow block keeps it inside the block instead of pushing .slider (or
+   the block itself) wider than available. */
+.slider-scale {
+  position: relative;
+  flex: 0 1 90px;
+  min-width: 0;
+  margin: 6px 0;
+  pointer-events: none;
+}
+
+.slider-tick {
+  position: absolute;
+  right: 0;
+  width: 100%;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.slider-tick::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 10px;
+  border-top: 2px solid rgba(255, 255, 255, 0.55);
+}
+
+.slider-tick span {
+  position: absolute;
+  right: 16px;
+  top: 0;
+  transform: translateY(-50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+}
+
+.slider-tick:hover span,
+.slider-tick:focus span {
+  color: var(--text-light);
+}
+
+/* Marks the tick closest to the slider's current value - the only
+   on-slider indicator of the current reading. Bold in addition to the
+   color change so it still stands out on its own. */
+.slider-tick-active::after {
+  border-top-color: #9ae58b;
+}
+
+.slider-tick-active span {
+  color: #9ae58b;
+  font-weight: 800;
 }
 
 @media (max-width: 975px) {

@@ -688,6 +688,12 @@ var DashticzDeviceEditor = (function () {
         switch: definition.switch === true,
         dial: definition.type === 'dial' && !barMode,
         bar: barMode,
+        needle: definition.needle === true,
+        // Preserved as a real tri-state (true/false/undefined), not coerced
+        // to a boolean: undefined means "not explicitly set yet", so the
+        // popup can fall back to auto-detecting from the live device's
+        // SwitchType instead of defaulting to false.
+        inverse: definition.inverse,
         barsteps: parseInt(definition.barsteps, 10) > 0 ? parseInt(definition.barsteps, 10) : 10,
       },
       buttonKey: String(definition.key || ''),
@@ -1576,6 +1582,10 @@ var DashticzDeviceEditor = (function () {
         switch: configured.switch === true,
         dial: configured.type === 'dial' && !barMode,
         bar: barMode,
+        needle: configured.needle === true,
+        // See the analogous comment in _specialFromReference() - kept as a
+        // tri-state, not coerced to a boolean.
+        inverse: configured.inverse,
         barsteps: parseInt(configured.barsteps, 10) > 0 ? parseInt(configured.barsteps, 10) : 10,
       };
       deviceTitleVisible[ck] = configured.hide_title !== true;
@@ -3081,18 +3091,46 @@ var DashticzDeviceEditor = (function () {
     // Keep an existing Bar selectable even if the live device is temporarily
     // unavailable. For new choices Bar is limited to Dimmer and percentage blinds.
     var supportsBar = hasDial && (isDimmer || isBlindsPercentage || options.bar === true);
+    // Needle (js/switches.js renderBlindsSliderBlock(), block.needle) is a
+    // continuous vertical slider - it only makes sense for percentage
+    // blinds, not the generic Dimmer/other devices Bar also supports.
+    var supportsNeedle = hasDial && (isBlindsPercentage || options.needle === true);
+    // The Steps field also governs Needle mode's scale (js/switches.js
+    // addSlider()), which reads the same block.barsteps as the Bar subtype.
+    function barStepsApplies(mode) {
+      return mode === 'bar' || mode === 'needle';
+    }
+    // Unlike Steps, Inverse is Needle-only - the separate Dial widget's own
+    // Bar subtype (js/components/dial.js) handles inversion on its own and
+    // is not affected by this switch.
+    function inverseApplies(mode) {
+      return mode === 'needle';
+    }
 
-    // subtype:'bar' belongs to the visual mode selector, not Custom fields.
-    // Other subtype values (for example 'updown') remain ordinary custom fields.
+    // subtype:'bar' and needle:true both belong to the visual mode selector,
+    // not Custom fields (barsteps, also read by both modes, is left visible
+    // there - unlike subtype/needle it has a value a user may actually want
+    // to see/edit directly). Other subtype values (for example 'updown')
+    // remain ordinary custom fields.
     var subtypeRowIndex = customRows.findIndex(function (row) {
       return String(row.field || '').toLowerCase() === 'subtype' &&
         String(row.value || '').toLowerCase() === 'bar';
     });
     if (subtypeRowIndex > -1) customRows.splice(subtypeRowIndex, 1);
+    var needleRowIndex = customRows.findIndex(function (row) {
+      return String(row.field || '').toLowerCase() === 'needle';
+    });
+    if (needleRowIndex > -1) customRows.splice(needleRowIndex, 1);
+    var inverseRowIndex = customRows.findIndex(function (row) {
+      return String(row.field || '').toLowerCase() === 'inverse';
+    });
+    if (inverseRowIndex > -1) customRows.splice(inverseRowIndex, 1);
 
-    var visualMode = options.bar === true
-      ? 'bar'
-      : (options.dial === true ? 'dial' : (options.icon === true ? 'icon' : ''));
+    var visualMode = options.needle === true
+      ? 'needle'
+      : (options.bar === true
+        ? 'bar'
+        : (options.dial === true ? 'dial' : (options.icon === true ? 'icon' : '')));
     var configOptions = isTitle
       ? ['icon', 'show_title']
       : (isGroupBlock || isHtmlBlock || isLmsBlock)
@@ -3109,6 +3147,7 @@ var DashticzDeviceEditor = (function () {
         { mode: 'icon', label: t.icon, icon: 'fas fa-image', enabled: true },
         { mode: 'dial', label: t.dial, icon: 'fas fa-tachometer-alt', enabled: true },
         { mode: 'bar', label: t.dial_bar, icon: 'fas fa-bars', enabled: supportsBar },
+        { mode: 'needle', label: t.dial_needle, icon: 'fas fa-sliders', enabled: supportsNeedle },
       ].forEach(function (item) {
         var active = visualMode === item.mode;
         html += '<button type="button" class="btn btn-outline-secondary de-visual-mode-button' +
@@ -3120,11 +3159,35 @@ var DashticzDeviceEditor = (function () {
       });
       html += '</div></div>';
       var currentBarSteps = parseInt(options.barsteps, 10) > 0 ? parseInt(options.barsteps, 10) : 10;
-      html += '<div class="mb-3 de-bar-steps-row' + (visualMode === 'bar' ? '' : ' d-none') + '">';
+      // The Bar dial subtype's segment count and the Icon-mode Blinds
+      // Percentage slider's scale tick count are the same barsteps config
+      // field, shown for either visual mode on a percentage blinds device.
+      html += '<div class="mb-3 de-bar-steps-row' + (barStepsApplies(visualMode) ? '' : ' d-none') + '">';
       html += '<label class="form-label" for="de-config-barsteps">' + _esc(t.dial_barsteps) + '</label>';
       html += '<input type="number" min="1" step="1" class="form-control" id="de-config-barsteps" value="' +
         _esc(currentBarSteps) + '">';
       html += '<div class="form-text">' + _esc(t.dial_barsteps_help) + '</div></div>';
+      // Domoticz already reports when a blind's percentage scale runs the
+      // other way round (0% is fully open instead of 100%) via SwitchType
+      // containing "Inverted" - the same check js/switches.js's
+      // getBlindsBlock() uses. Default the switch to that; an explicitly
+      // saved options.inverse (tri-state, see _specialFromReference()
+      // above) overrides it once the user has touched this switch, for the
+      // rare device that doesn't expose this correctly.
+      var autoInverted = !!(
+        barLiveDevice &&
+        typeof barLiveDevice.SwitchType === 'string' &&
+        barLiveDevice.SwitchType.toLowerCase().indexOf('inverted') >= 0
+      );
+      var inverseChecked = typeof options.inverse === 'boolean' ? options.inverse : autoInverted;
+      html += '<div class="mb-3 de-inverse-row' + (inverseApplies(visualMode) ? '' : ' d-none') + '">';
+      // de-switch: standard size/color for a standalone Device Config
+      // switch (css/creative.css) - any future one-off switch here should
+      // use it too, instead of a new per-switch CSS rule.
+      html += '<label class="form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="de-config-inverse"' +
+        (inverseChecked ? ' checked' : '') + '>' +
+        '<span class="form-check-label">' + _esc(t.dial_inverse) + '</span></label>';
+      html += '<div class="form-text">' + _esc(t.dial_inverse_help) + '</div></div>';
     }
 
     html += '<div class="de-config-options' +
@@ -3282,7 +3345,10 @@ var DashticzDeviceEditor = (function () {
       $popup.find('.de-dial-hint').toggleClass('d-none', !enabled);
     }
     function refreshBarStepsField() {
-      $popup.find('.de-bar-steps-row').toggleClass('d-none', selectedVisualMode() !== 'bar');
+      $popup.find('.de-bar-steps-row').toggleClass('d-none', !barStepsApplies(selectedVisualMode()));
+    }
+    function refreshInverseField() {
+      $popup.find('.de-inverse-row').toggleClass('d-none', !inverseApplies(selectedVisualMode()));
     }
     function refreshDialOptions() {
       var mode = hasDial ? selectedVisualMode() : '';
@@ -3291,6 +3357,7 @@ var DashticzDeviceEditor = (function () {
       refreshIconFieldVisibility();
       refreshDialHint();
       refreshBarStepsField();
+      refreshInverseField();
     }
     $popup.on('click', '.de-custom-field-add', function () {
       $(this).closest('.de-custom-field-row').after(_customFieldRowHtml());
@@ -3433,9 +3500,10 @@ var DashticzDeviceEditor = (function () {
         updated.icon = pendingVisualMode === 'icon';
         updated.dial = pendingVisualMode === 'dial';
         updated.bar = pendingVisualMode === 'bar';
+        updated.needle = pendingVisualMode === 'needle';
         var rawBarSteps = $.trim(String($('#de-config-barsteps').val() || ''));
         var parsedBarSteps = parseInt(rawBarSteps, 10);
-        if (pendingVisualMode === 'bar') {
+        if (barStepsApplies(pendingVisualMode)) {
           if (!(parsedBarSteps > 0 && String(parsedBarSteps) === rawBarSteps)) {
             valid = false;
             $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_barsteps);
@@ -3444,12 +3512,19 @@ var DashticzDeviceEditor = (function () {
             updated.barsteps = parsedBarSteps;
           }
         } else {
-          // Not in Bar mode: the field is hidden, so don't block saving on
-          // it - keep whatever value was already stored (falling back to
-          // the input's own value, then the default) for if the user
-          // switches back to Bar later without reopening this popup.
+          // Field hidden in this mode: don't block saving on it - keep
+          // whatever value was already stored (falling back to the input's
+          // own value, then the default) for if the user switches back to a
+          // mode where it applies later without reopening this popup.
           updated.barsteps = parsedBarSteps > 0 ? parsedBarSteps : (options.barsteps || 10);
         }
+        // Same preserve-when-hidden reasoning as barsteps above; unlike
+        // barsteps this is a plain tri-state (see _specialFromReference()),
+        // so "hidden" simply keeps whatever was already stored, including
+        // still-undefined (auto-detect from the device's own SwitchType).
+        updated.inverse = inverseApplies(pendingVisualMode)
+          ? $('#de-config-inverse').prop('checked')
+          : options.inverse;
       }
 
       $popup.find('.de-custom-field-row').each(function () {
@@ -4068,7 +4143,7 @@ var DashticzDeviceEditor = (function () {
       deviceRefs[ck] = _stableDeviceReference(ck);
       deviceOptions[ck] = {
         icon: true, iconValue: null, hide_data: false, last_update: false, switch: false,
-        dial: false, bar: false,
+        dial: false, bar: false, needle: false,
       };
       deviceTitleVisible[ck] = true;
       deviceCustomFields[ck] = [
@@ -4251,6 +4326,22 @@ var DashticzDeviceEditor = (function () {
             specialEntry.custom_fields = specialCustomFields;
           } else if (specialOptions.dial === true) {
             specialEntry.type = 'dial';
+          } else if (specialOptions.needle === true) {
+            // Needle stays on the classic (non-dial) rendering path -
+            // js/switches.js getBlindsBlock() reads block.needle directly,
+            // not block.type - saveblocks.php only recognizes a fixed set
+            // of top-level props (unlike Dial/Bar's existing type:'dial'),
+            // so this rides through custom_fields like barsteps already
+            // does, rather than as a top-level entry property that would
+            // be silently dropped on save.
+            specialCustomFields.needle = true;
+            if (specialOptions.barsteps && specialOptions.barsteps !== 10) {
+              specialCustomFields.barsteps = specialOptions.barsteps;
+            }
+            if (typeof specialOptions.inverse === 'boolean') {
+              specialCustomFields.inverse = specialOptions.inverse;
+            }
+            specialEntry.custom_fields = specialCustomFields;
           }
         } else if (special.specialType === 'group' || special.specialType === 'html') {
           // Only Icon and Last update apply here (no Data/Switch/Dial - see
@@ -4356,6 +4447,25 @@ var DashticzDeviceEditor = (function () {
         // default (10), keeping CONFIG.js lean for the common case.
         if (options.barsteps && options.barsteps !== 10) {
           customFields.barsteps = options.barsteps;
+        }
+      } else if (options.needle === true) {
+        // Needle stays on the classic (non-dial) rendering path -
+        // js/switches.js getBlindsBlock() reads block.needle directly, not
+        // block.type - saveblocks.php/configwriter.php only recognize a
+        // fixed set of top-level device props (unlike Dial/Bar's existing
+        // type:'dial'), so this rides through custom_fields like barsteps
+        // already does, rather than as a top-level entry property that
+        // would be silently dropped on save.
+        customFields.needle = true;
+        // Only written when it differs from addSlider()'s own default (10).
+        if (options.barsteps && options.barsteps !== 10) {
+          customFields.barsteps = options.barsteps;
+        }
+        // Only written once explicitly set (true or false) - leaving it out
+        // keeps getBlindsBlock() auto-detecting from the device's own
+        // SwitchType, same reasoning as the tri-state hydration above.
+        if (typeof options.inverse === 'boolean') {
+          customFields.inverse = options.inverse;
         }
       }
       if (Object.keys(customFields).length) entry.custom_fields = customFields;
