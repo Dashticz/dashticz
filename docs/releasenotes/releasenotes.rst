@@ -6,6 +6,299 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.45.4 beta (22-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- Added a new **Needle** visual mode for Blinds Percentage/Blinds
+  Inverted Percentage devices, selectable in the Device Config popup's
+  visual-mode selector alongside the existing Icon/Dial/Bar options
+  (now Icon/Dial/Bar/Needle, ``block.needle`` in CONFIG.js). It renders
+  as a continuous vertical slider - a title, a compact OPEN button
+  above the slider, the slider itself (a wide track with a green
+  gradient fill up to a small round handle, a clickable/typeable
+  percentage readout beside it, and a clickable tick scale down its
+  left edge), then DICHT (and STOP, unless ``hide_stop`` is set) below
+  it - implemented as a new ``renderBlindsSliderBlock()`` in
+  ``js/switches.js``.
+
+- This is purely additive: Icon mode's own classic thin percentage bar
+  (``getBlindsBlock()``'s ``withPercentage`` branch) is completely
+  unchanged from its original implementation, and the separate Dial
+  widget's existing Dial/Bar modes (``js/components/dial.js``) are
+  untouched.
+
+- Needle's scale tick count reads the same ``barsteps`` config field
+  (default 10) the Bar dial subtype already exposes as its **Steps**
+  field in the Device Config popup - that field is now shown for
+  either mode. Clicking a tick, or the live percentage readout itself,
+  jumps straight to that value (typing an exact number is also
+  supported); dragging the handle works as expected.
+
+- The block escapes the classic 85px default block height (the same
+  way ``multi_line`` blocks like graphs already do) while still
+  properly shrinking/growing with a grid screen's own row-driven
+  height, so resizing the tile in the Layout Editor works as expected.
+
+- Handled Domoticz's inverted blinds percentage scale (0% fully open
+  instead of 100%) for Needle mode: auto-detected from the device's
+  SwitchType (the same "Inverted" check already used for the
+  OPEN/DICHT command direction), so the green fill and the OPEN/DICHT
+  command direction both flip together for those devices with no
+  configuration needed. A new **Inverse** switch in the Device Config
+  popup (shown only in Needle mode, pre-checked to match the
+  auto-detected value) can override it for the rare device that
+  doesn't expose this correctly through Domoticz.
+
+* **Fixes**
+
+- OPEN/DICHT were unexpectedly taller than STOP because their chevron
+  icon inherited the theme's blanket ``.fas { font-size: 30px }`` rule
+  (the codebase's own ``.fa-small`` opt-out still resolves to 20px,
+  itself too big here), overriding the button's own 8px text size and
+  dragging its height back up regardless of padding; fixed, and
+  OPEN/DICHT now have an explicit height that's exactly twice STOP's,
+  ``!important`` so the ratio holds regardless of any other rule's
+  specificity. STOP also gets a light red background/border to set it
+  apart from OPEN/DICHT.
+
+- Shrunk the slider handle further (20px to 16px) and made its
+  width/height ``!important`` so it can never end up non-square. jQuery
+  UI positions the handle by its *bottom edge*, not its center, while
+  the tick labels and value bubble both center on their percentage via
+  ``translateY(-50%)`` - so without correction the handle visually sat
+  about half its own height too high, not matching the tick/bubble it
+  was next to. Restored a negative ``margin-bottom`` sized to half the
+  handle's height so its center lands on the same percentage the
+  ticks/bubble do (an earlier pass in this same release had zeroed this
+  out, mistaking jQuery UI's own equivalent default compensation -
+  ``.ui-slider-vertical .ui-slider-handle``'s ``margin-bottom: -.6em`` -
+  for an unwanted quirk rather than the same fix, sized for the
+  theme's own default handle).
+
+- Selecting Needle and saving didn't actually switch to it: the classic
+  bar kept showing instead, and the Needle button lost its highlighted
+  state on reopening the Device Config popup.
+  ``saveblocks.php``/``configwriter.php`` only recognize a fixed set of
+  top-level device properties (unlike Dial/Bar's existing
+  ``type: 'dial'``), so a plain ``needle: true`` on the saved entry was
+  silently dropped - the same way Bar's own ``subtype: 'bar'`` and
+  ``barsteps`` already have to ride through ``custom_fields`` instead.
+  ``needle`` now does the same, and the popup also hydrates
+  ``options.needle`` from the live config when reopening.
+
+- The slider is now correctly given jQuery UI's ``orientation:
+  'vertical'`` and ``range: 'min'`` options, so the handle position,
+  drag direction and gradient fill are all actually value-driven,
+  rather than only looking that way via CSS - without ``orientation``,
+  the handle stayed visually static and dragging mapped vertical mouse
+  movement almost randomly to a value; without ``range``, jQuery UI
+  never even created the ``.ui-slider-range`` element the gradient
+  fill CSS targets.
+
+- Clicking a scale tick or typing an exact value each used to send
+  every command twice, or (when typing) re-open the edit input instead
+  of committing cleanly - both were re-entrancy bugs where
+  programmatically setting the slider's value, or removing a focused
+  input from the DOM, re-triggered the same handler a second time
+  while the first call was still on the stack.
+
+- The track, range and handle colors are now ``!important``, so
+  jQuery UI's own bundled default theme CSS (which styles the same
+  generic ``.ui-slider``/``.ui-widget-header`` classes, e.g. with
+  blue) can no longer visually override them.
+
+- Fixed the scale reading -1% for a fully-closed normal device and
+  101% for a fully-open inverted one. The slider's ``min`` was
+  hardcoded to 1 instead of 0, so the percent-space math behind the
+  tick labels, the value bubble and the click-to-type input landed
+  just past 0%/100% for a raw Level of 0. ``min`` is now 0, the
+  device's real Level range - the same range the Bar dial subtype
+  (``js/components/dial.js``) already uses.
+
+- Reverted an earlier misstep from this same release: the tick
+  labels/bubble/typed value had briefly been made to flip their
+  printed number for an inverted device (0% at the top, 100% at the
+  bottom). The Bar dial subtype never does this - it always shows the
+  device's raw, unconverted Level regardless of an inverted
+  SwitchType - and that plain behavior is what's wanted here too. An
+  inverted SwitchType now only changes which direction the OPEN/DICHT
+  buttons move the blind, exactly as the classic bar has always
+  treated it.
+
+- Checking the Bar dial subtype's actual template
+  (``tpl/dialbar.tpl``) and CSS showed its segments are always laid
+  out top-to-bottom as 0%, then increasing to 100% - a plain flex
+  column with no reversal - for every device, not only inverted ones.
+  Needle's scale now matches that same fixed layout (0% at the top,
+  100% at the bottom), the opposite of a plain vertical slider's own
+  min-at-bottom/max-at-top convention. jQuery UI has no built-in option
+  to flip a vertical slider, so every value handed to or read from the
+  widget is now mirrored around the midpoint of its 0-100 range before
+  reaching it and un-mirrored on the way back out, while every
+  displayed number (tick labels, the value bubble, the click-to-type
+  input) stays in plain raw-value space throughout - a tick's printed
+  label always matches the raw value it jumps to when clicked. The
+  gradient fill direction (``range: 'max'`` instead of ``'min'``) was
+  adjusted to match, keeping transparent-at-0%/filled-at-100%
+  consistent with the new physical layout.
+
+- Shrunk OPEN/DICHT's chevron icon to half its previous size (9px to
+  4.5px).
+
+- Found the actual cause behind two bugs that kept reappearing:
+  the handle looking stuck near the middle of the track no matter the
+  device's value, and the chevron staying oversized despite the fix
+  above. The Modern Dark, Liquid Glass Blue and Liquid Glass Grey
+  themes each carry their own theme-wide ``.fas.fa-chevron-up,
+  .fas.fa-chevron-down { font-size: 40px !important; }`` and
+  ``.ui-slider-handle { top: 50% !important; margin-top: -20px
+  !important; width: 20px !important; height: 40px !important;
+  border-radius: 14px !important; ... }``, written for the horizontal
+  dimmer slider's own up/down buttons and handle. Needle's chevron
+  rule had no ``!important``, so the theme's won outright regardless
+  of its higher selector specificity; Needle's handle rule never
+  touched ``top``/``margin-top`` at all, so the theme's ``top: 50%``
+  applied uncontested - and once ``top``, ``height`` and jQuery UI's
+  own dynamic ``bottom: value%`` are all specified on the same
+  absolutely-positioned element, the box is over-constrained and
+  ``bottom`` is dropped entirely in favor of ``top``, pinning the
+  handle to the track's vertical center regardless of the actual
+  value. Needle's chevron rule now carries ``!important`` (its higher
+  specificity then correctly wins the tie); its handle rule now resets
+  ``top``/``margin-top`` to ``auto``/``0`` with ``!important``, handing
+  vertical positioning back to jQuery UI's own ``bottom`` entirely, and
+  ``border-radius`` also gained ``!important`` so the theme can no
+  longer square off the handle's shape. Reproduced by loading a theme
+  stylesheet alongside creative.css in a test render - something
+  earlier verification in this release had not done - and confirmed
+  fixed for all three themes.
+
+- OPEN/DICHT's chevron is now exactly as tall as its own surrounding
+  text (``font-size: inherit``, instead of a hardcoded pixel value).
+
+- Fixed the round slider handle visually poking out above/below the
+  slider track's own background at the 0%/100% extremes. The handle
+  can overhang up to half its own height past the track's logical
+  0%/100% edge - needed so its center still lands exactly on the
+  value's position, matching the ticks/bubble - but the track's own
+  visible background previously stopped exactly at that edge, cutting
+  the handle off there. The track element's own box (what jQuery UI
+  and this file's own tick/bubble math measure 0%-100% against) is now
+  left completely alone and made transparent/borderless, with its
+  actual visible background moved onto a ``::before`` pseudo-element
+  sized 8px (half the handle's 16px) taller at both ends, so the
+  handle now always renders fully inside the visible track.
+
+- Adjusted OPEN/DICHT/STOP's heights: STOP is 5px taller (20px to
+  25px) and OPEN/DICHT are 5px shorter (40px to 35px).
+
+- The tick in the 0%-100% scale closest to the slider's current value
+  is now highlighted (the same green the value bubble used to use), so
+  the current position stays visible in the list of percentages.
+
+- Removed the value bubble entirely (and, with it, the click-to-type-
+  an-exact-value input it offered), leaving the highlighted tick as
+  the slider's only on-track indicator of the current reading - also
+  made that tick's label bold, not just colored, so it still stands
+  out on its own now that it's the sole indicator.
+
+- Doubled the slider track's width (30px to 60px).
+
+- Fixed the gradient fill leaving a visibly empty sliver at the top of
+  the track's background, and, symmetrically, the bottom, instead of
+  reaching all the way to its edges. The track's visible background is
+  drawn 8px taller at each end than the coordinate box jQuery UI
+  positions everything against, reserving room for the round handle's
+  own overhang there - but the gradient fill (``.ui-slider-range``) is
+  a jQuery UI-managed element sized purely as a percentage of that
+  *unextended* box, so it always stopped 8px short of the
+  background's actual top, and, for the same reason, never reached
+  down to the handle's own bottom edge at high values either. The
+  fill's anchored top edge is now shifted up 8px to match; its height
+  is topped up by 16px on every value change so its bottom edge always
+  reaches exactly to the handle's own visible bottom edge, at every
+  value - not only the 0%/100% extremes.
+
+- Moved OPEN/STOP/DICHT off their own row above/below the slider and
+  onto a column beside it instead - OPEN top, STOP middle, DICHT
+  bottom, all within the slider's own height (a plain flex column
+  with ``justify-content: space-between``, stretched to match the
+  slider via the new row container's ``align-items: stretch``) -
+  freeing up the vertical room they used to take for the slider and
+  its percentage scale instead. The buttons are now small round
+  icon-only buttons (OPEN/DICHT's existing chevrons, plus a new
+  ``fa-stop-circle`` icon for STOP, the same icon already used for a
+  media player's own Stop button elsewhere in this codebase) - their
+  OPEN/DICHT/STOP text is gone from the visible button entirely, kept
+  only as an ``aria-label`` for screen readers.
+
+- Moved the button column closer to the slider (10px gap to 5px) and
+  made the buttons themselves 2px bigger (30px to 32px).
+
+- Shrunk each tick's dash line by half (20px to 10px) and moved its
+  percentage label in to match, keeping the same small gap between
+  them instead of leaving a floating space where the dash used to
+  reach.
+
+- Moved the button column right up against the slider (5px gap to
+  1px).
+
+- Gave DICHT the same green colors as OPEN, instead of its own plain
+  grey.
+
+- Fixed the percentage scale's ticks (and the track itself) being
+  able to render partly outside a narrower block, and the gap to the
+  button column still looking large even at 1px. Both
+  ``.slider-scale`` (the ticks) and ``.slider`` (the track) used to
+  center themselves independently within ``.blinds-slider-wrap`` via
+  ``position: absolute`` plus a fixed negative ``margin-left`` each -
+  correct only for the exact wrap width those margins were tuned
+  against, so a narrower block (or the track's own width changing, see
+  below) could push the ticks partly outside the visible block, and a
+  wide wrap left a lot of empty, un-styled space between the visible
+  track and the button column that the wrap's own tiny gap never
+  accounted for. Both are now plain flex children of
+  ``.blinds-slider-wrap`` (now itself a flex row) instead, always
+  staying inside it; ``justify-content: flex-end`` keeps the
+  scale+track group hugging the button column with no leftover space
+  in between, at any width. The track's own width is no longer a
+  fixed 60px either - it now flexes with how much room the block
+  actually has, so a narrow block shrinks it instead of overflowing or
+  clipping.
+
+- Removed the track width's own upper cap (previously 60px) - it had
+  only ever shrunk along with a narrower block, not grown along with
+  a wider one, since ``.slider-scale`` (the only other item sharing
+  the row) never grows, so all of the wrap's own extra width was
+  going unused instead of into the track. A 30px floor is kept so it
+  never disappears on a very narrow block.
+
+- Nudged the button column's gap to the slider from 1px to 3px.
+
+- Made the percentage scale's tick labels 2 sizes bigger, converting
+  ``font-size`` from a relative ``0.85em`` (9.35px computed, against
+  an 11px inherited base) to a flat 11px.
+
+- Renamed the Needle visual-mode button in the Device Config popup to
+  Slider (``lang/*.json``'s ``dial_needle``, and its mention in
+  ``dial_barsteps_help``) - the internal mode/property name
+  (``block.needle``) is unchanged, only the label shown to the user.
+
+- Fixed the Inverse switch (Device Config popup, Slider mode)
+  rendering noticeably smaller than the Data/Update switches next to
+  it - it fell outside ``.de-config-options``, the container the
+  Data/Update switches' own bigger size (38x20px instead of
+  Bootstrap's default) is scoped to. Rather than adding yet another
+  one-off selector to that already-long list (``css/creative.css``
+  already lists five: ``.de-config-options``, ``#hb-device-border``,
+  ``.we-widget-field``, ``#we-cfg-ascending``, ``.we-block-option``,
+  ``.de-lms-switch``), added a new shared ``.de-switch`` class
+  carrying the same size/color and applied it to the Inverse checkbox
+  - any future standalone Device Config switch can just add this
+  class instead of needing its own new CSS rule.
+
 v3.45.3 beta (21-8-2026)
 -------------------------
 

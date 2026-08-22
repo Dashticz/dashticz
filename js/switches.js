@@ -550,6 +550,35 @@ function getBlindsBlock(parentBlock, withPercentageParam) {
   var $mountPoint = block.$mountPoint.find('.mh');
   var html = '';
 
+  // "Needle" is a separate visual mode (next to Icon/Dial/Bar in the Device
+  // Config popup), opted into via block.needle - it does not change what
+  // Icon mode's own withPercentage renders below, which is the original
+  // classic thin percentage bar.
+  if (block.needle === true) {
+    // Domoticz already tells us when a blind's percentage scale runs the
+    // other way round: SwitchType contains "Inverted" for those devices
+    // (the same check the classic bar below also uses for asOn). Prefer
+    // that; a block.inverse config field (Inverse switch in the Device
+    // Config popup) overrides it for the rare device that doesn't expose
+    // this correctly - once set, it takes over both the OPEN/DICHT command
+    // direction and the scale/fill direction together, since a manual
+    // override exists specifically because Domoticz's own answer was wrong
+    // for this device.
+    var autoInverted = device['SwitchType'].toLowerCase().indexOf('inverted') >= 0;
+    var inverted = choose(block.inverse, autoInverted);
+    var asOn = Domoticz.info.newBlindsBehavior;
+    if (inverted) {
+      asOn = !asOn;
+    }
+    // Keep the classic bar's fixed one-percent step by default. A block
+    // that already supplies a slider_step/sliderstep value can use that
+    // value instead.
+    var sliderStep = parseFloat(block.slider_step || block.sliderstep || 1);
+    if (!isFinite(sliderStep) || sliderStep <= 0) sliderStep = 1;
+    renderBlindsSliderBlock(block, device, idx, $mountPoint, asOn, inverted, sliderStep);
+    return true;
+  }
+
   var hidestop = false;
   var data_class = 'col-data blinds';
   var button_class;
@@ -659,30 +688,240 @@ function getBlindsBlock(parentBlock, withPercentageParam) {
   return true;
 }
 
+/** Renders a Blinds Percentage/Blinds Inverted Percentage device as one
+ * continuous vertical slider: a title header, then the slider beside a
+ * column of icon-only OPEN/STOP/DICHT buttons (OPEN top, STOP middle, DICHT
+ * bottom - all within the slider's own height, via justify-content:
+ * space-between). No icon, unlike the classic icon | data | buttons layout
+ * below - this control speaks for itself.
+ *
+ * @param {object} block - The Dashticz block definition
+ * @param {object} device - block.device
+ * @param {string} idx - block.idx
+ * @param {jQuery} $mountPoint - the block's .mh mount point
+ * @param {boolean} asOn - whether the "up" action maps to Domoticz On (SwitchType-dependent)
+ * @param {boolean} inverted - whether 0% (not 100%) is the device's fully-open end
+ * @param {number} sliderStep - the slider's drag/command step size
+ */
+function renderBlindsSliderBlock(block, device, idx, $mountPoint, asOn, inverted, sliderStep) {
+  var title = getBlockTitle(block);
+  var hidestop =
+    typeof block['hide_stop'] != 'undefined' && block['hide_stop'] !== false;
+  var openLabel = block.textOn || language.switches.state_open;
+  var closeLabel = block.textOff || language.switches.state_closed;
+
+  var html = '<div class="blinds-slider-block">';
+  html += '<div class="blinds-slider-header">';
+  html += '<strong class="title">' + title + '</strong>';
+  html += '</div>';
+
+  html += '<div class="blinds-slider-body">';
+
+  html +=
+    '<div class="blinds-slider-wrap swiper-no-swiping" data-light="' +
+    idx +
+    '">' +
+    '<div class="slider-scale" aria-hidden="true"></div>' +
+    '<div class="slider slider' +
+    idx +
+    '" data-light="' +
+    idx +
+    '"></div>';
+  html += '</div>';
+
+  html += '<div class="blinds-slider-actions">';
+
+  html +=
+    '<div class="blinds-slider-action blinds-slider-action-up"><a href="javascript:void(0)" class="btn-blinds btn-blinds-up" aria-label="' +
+    openLabel +
+    '"><em class="fas fa-chevron-up"></em></a></div>';
+
+  if (!hidestop) {
+    html +=
+      '<div class="blinds-slider-action blinds-slider-action-stop"><a href="javascript:void(0)" class="btn-blinds btn-blinds-stop" aria-label="Stop"><em class="fas fa-stop-circle"></em></a></div>';
+  }
+
+  html +=
+    '<div class="blinds-slider-action blinds-slider-action-down"><a href="javascript:void(0)" class="btn-blinds btn-blinds-down" aria-label="' +
+    closeLabel +
+    '"><em class="fas fa-chevron-down"></em></a></div>';
+
+  html += '</div>'; // .blinds-slider-actions
+  html += '</div>'; // .blinds-slider-body
+  html += '</div>'; // .blinds-slider-block
+
+  $mountPoint.html(html);
+  $mountPoint.find('.btn-blinds-up').click(function () {
+    switchBlinds(block, asOn ? 'On' : 'Off');
+  });
+  $mountPoint.find('.btn-blinds-down').click(function () {
+    switchBlinds(block, asOn ? 'Off' : 'On');
+  });
+  $mountPoint.find('.btn-blinds-stop').click(function () {
+    switchBlinds(block, 'Stop');
+  });
+
+  // 0/100, matching Domoticz's real Level range and the Bar dial subtype's
+  // own segments (js/components/dial.js's makeBarDim()/getCurrentValueDim())
+  // - min: 1 previously made a fully-closed/open device (raw Level 0 or 100)
+  // read as -1%/101% instead of 0%/100%.
+  addSlider(block, {
+    value: device['Level'],
+    step: sliderStep,
+    min: 0,
+    max: 100,
+    disabled: isProtected(block),
+  });
+}
+
 function addSlider(block, sliderValues) {
   var idx = block.idx;
   var $divslider = block.$mountPoint.find('.slider');
+  var $wrap = $divslider.closest('.blinds-slider-wrap');
+  var min = Number(sliderValues.min);
+  var max = Number(sliderValues.max);
+
+  // Needle's scale reads top-to-bottom as 0%-100% - the opposite of a plain
+  // vertical slider's own min-at-bottom/max-at-top convention, but the same
+  // fixed layout the Bar dial subtype always uses (js/components/dial.js's
+  // dialbar.tpl lists its 0%, then increasing, segments top-to-bottom in
+  // plain DOM/flex order), regardless of an inverted SwitchType. jQuery UI
+  // itself has no such "flip" option, so every value handed to or read from
+  // the widget is mirrored around the midpoint of [min, max] instead -
+  // that's self-inverse, so the same function converts both directions. A
+  // no-op (identity) for the plain (non-Needle) dimmer slider below, which
+  // keeps its normal min-at-bottom layout.
+  function mirror(value) {
+    return $wrap.length ? min + max - value : value;
+  }
+
+  function percentFromBottom(value) {
+    var percent = ((value - min) / (max - min)) * 100;
+    return $wrap.length ? 100 - percent : percent;
+  }
+
+  // Marks the scale tick closest to the slider's current value with the
+  // .slider-tick-active class (highlighted in css/creative.css) - the only
+  // on-slider indicator of the current reading. $scale/barSteps are
+  // assigned further down, once - both var declarations, so already in
+  // scope here - but this is only ever called after that assignment has
+  // run.
+  function highlightActiveTick(value) {
+    if (!$scale) return;
+    var nearestM = Math.round(((value - min) / (max - min)) * barSteps);
+    $scale.find('.slider-tick').each(function (i) {
+      $(this).toggleClass('slider-tick-active', i === nearestM);
+    });
+  }
+
+  // .ui-slider-range (the gradient fill) is anchored 8px above the track's
+  // own top by the CSS above (matching .slider::before's own extended top,
+  // so the fill can reach into the zone reserved for the handle's overhang
+  // at the 0% extreme - see that CSS for the full picture) - jQuery UI
+  // itself only ever sets this element's height (inline, as a % of the
+  // *unextended* track), so without this the fill's top would stay pinned
+  // 8px below where it now visually starts, leaving a gap there at every
+  // value. +16 (not +8) here: +8 keeps the fill's bottom edge where it
+  // would otherwise land relative to the shifted top, and a further +8
+  // grows it past that point down to the handle's own *bottom* edge (the
+  // handle's center - which is what jQuery UI's own math tracks - sits 8px
+  // above its bottom edge, see the handle's own margin-bottom: -8px
+  // above), so the fill always reaches all the way to the visible edge of
+  // the handle instead of stopping at its middle - including the 100%
+  // extreme, where that's the same 8px overhang zone .slider::before
+  // reserves at the bottom.
+  function extendRangeFill(value) {
+    if (!$wrap.length) return;
+    var $range = $divslider.find('.ui-slider-range');
+    if (!$range.length) return;
+    var fillFraction = (value - min) / (max - min);
+    $range.css('height', fillFraction * $divslider.height() + 16 + 'px');
+  }
+
+  // Build a 0-100%-of-range scale, divided into block.barsteps segments -
+  // the same Steps config field (default 10) the Bar dial subtype already
+  // exposes (js/components/dial.js), so both share one config-menu setting.
+  // Independent of the slider's own command step - each tick jumps straight
+  // to its real underlying value. The slider itself remains draggable
+  // everywhere; jQuery UI performs the snapping to sliderValues.step.
+  if ($wrap.length) {
+    var $scale = $wrap.find('.slider-scale').empty();
+    var barSteps = Math.max(1, parseInt(choose(block.barsteps, 10), 10) || 10);
+
+    function addTick(value, label) {
+      var target = Math.round(value);
+      var $tick = $('<button type="button" class="slider-tick"></button>')
+        .css('bottom', percentFromBottom(value) + '%')
+        .append('<span>' + label + '%</span>')
+        .attr('aria-label', label + '%');
+      if (!sliderValues.disabled) {
+        // Setting the jQuery UI value option itself triggers the slider's
+        // own "change" callback below (with a null event) - that already
+        // re-highlights the active tick and calls slideDevice(), so don't
+        // repeat that here or the command would be sent twice.
+        $tick.on('click', function (event) {
+          event.preventDefault();
+          event.stopPropagation();
+          $divslider.slider('value', mirror(target));
+        });
+      }
+      $tick.appendTo($scale);
+    }
+
+    for (var m = 0; m <= barSteps; m++) {
+      var stepValue = min + ((max - min) * m) / barSteps;
+      addTick(stepValue, Math.round((m / barSteps) * 100));
+    }
+
+    highlightActiveTick(sliderValues.value);
+  }
 
   $divslider.slider({
-    value: sliderValues.value,
+    value: mirror(sliderValues.value),
     step: sliderValues.step,
     min: sliderValues.min,
     max: sliderValues.max,
     disabled: sliderValues.disabled,
+    // jQuery UI defaults to a horizontal slider (handle position and drag
+    // math both driven by the mouse's X-axis) - without this, the blinds
+    // slider only *looks* vertical via CSS while the handle stays visually
+    // static and dragging maps Y-axis movement almost randomly to a value.
+    orientation: $wrap.length ? 'vertical' : 'horizontal',
+    // jQuery UI only creates the .ui-slider-range element (the gradient
+    // fill below the handle, styled in css/creative.css) when this is set.
+    // Combined with the mirrored value above, 'max' (fill from the handle up
+    // to jQuery UI's own internal maximum) is what ends up transparent at
+    // 0% and completely filled at 100% here - matching the number shown in
+    // the ticks, which is always the device's raw Level, 0-100 (the Bar
+    // dial subtype, js/components/dial.js, shows that same raw, unconverted
+    // value regardless of an inverted SwitchType - "inverted" only changes
+    // which direction OPEN/DICHT move the blind, see asOn above). Left off
+    // for the dimmer slider, which never had a range fill before and keeps
+    // jQuery UI's own unmirrored min-at-bottom layout.
+    range: $wrap.length ? 'max' : false,
     start: function () {
       Domoticz.hold(idx); //hold message queue
+    },
+    slide: function (event, ui) {
+      var value = mirror(ui.value);
+      highlightActiveTick(value);
+      extendRangeFill(value);
     },
     change: function (event, ui) {
       var hasPassword = block.password;
       if (!DT_function.promptPassword(hasPassword)) return;
 
-      slideDevice(block, ui.value);
+      var value = mirror(ui.value);
+      highlightActiveTick(value);
+      extendRangeFill(value);
+      slideDevice(block, value);
     },
     stop: function () {
       //stop is called before change
       Domoticz.release(idx); //release message queue
     },
   });
+  extendRangeFill(sliderValues.value); //the initial change/slide above never fires for this first render
   $divslider.on('click', function (ev) {
     ev.stopPropagation();
   });
