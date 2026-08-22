@@ -2193,6 +2193,10 @@ body.dle-active {
 .de-visual-mode-button.active {
   background-color: #e8f5ee !important;
   border-color: #198754 !important;
+  /* Bootstrap's .btn-outline-secondary.active sets white text, assuming
+     the usual solid dark active background - unreadable against the
+     light background above, so match the icon's accent color instead. */
+  color: #0d6efd !important;
 }
 
 .de-visual-mode-button.active i {

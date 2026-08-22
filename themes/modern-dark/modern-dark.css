@@ -230,6 +230,10 @@
 .transbg .col-data > select {
   margin-top: auto;
   margin-bottom: auto;
+  /* Shift 5px above dead-center, closer to the title above - transform
+     is a paint-time offset on top of the margin:auto centering, so it
+     stays a flat 5px regardless of the block's height. */
+  transform: translateY(-5px);
 }
 
 .transbg .selector-buttons {
@@ -319,6 +323,7 @@
   color: var(--text-light);
   font-size: var(--font-large);
   text-shadow: 4px 4px 4px #000;
+  transform: translateX(10px);
 }
 
 .blocktitle img {
