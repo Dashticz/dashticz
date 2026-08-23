@@ -6,6 +6,9 @@ const dashboardUrl =
   '/?cfg=CONFIG.pw.js&folder=tests';
 
 test.describe('optional screen grid layout', () => {
+  test.afterEach(async ({ page }) => {
+    await page.unrouteAll({ behavior: 'ignoreErrors' });
+  });
   test('keeps legacy column screens on the Bootstrap path', async ({
     page,
   }) => {
