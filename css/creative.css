@@ -2213,11 +2213,14 @@ body.dle-active {
   color: #adb5bd;
 }
 
-/* Selected Icon/Dial/Bar mode: same light-green "added" look as a selected
-   widget card (.we-widget-card.we-selected), but with a blue icon instead
-   of green - the icon is the only thing distinguishing Icon/Dial/Bar at a
-   glance, so it gets its own accent color rather than matching the border. */
-.de-visual-mode-button.active {
+/* Selected Dial/Bar/Slider mode, and an enabled Icon/Data/Updated/Title/
+   Background toggle (.de-config-option, #195) - same light-green "added"
+   look as a selected widget card (.we-widget-card.we-selected), but with a
+   blue icon instead of green - the icon is the only thing distinguishing
+   these buttons at a glance, so it gets its own accent color rather than
+   matching the border. */
+.de-visual-mode-button.active,
+.de-config-option.active {
   background-color: #e8f5ee !important;
   border-color: #198754 !important;
   /* Bootstrap's .btn-outline-secondary.active sets white text, assuming
@@ -2226,8 +2229,20 @@ body.dle-active {
   color: #0d6efd !important;
 }
 
-.de-visual-mode-button.active i {
+.de-visual-mode-button.active i,
+.de-config-option.active i {
   color: #0d6efd;
+}
+
+/* Not wrapped in a .btn-group (needs to wrap onto multiple rows on narrow
+   screens, which Bootstrap's .btn-group doesn't do), so it misses out on
+   the compact sizing every sibling .btn-group .btn gets further down this
+   file - matched here explicitly instead, keeping Icon/Data/Updated/Title/
+   Background the same size as Dial/Bar/Slider right next to them. */
+.de-config-options-icons .btn {
+  font-size: 12px;
+  font-weight: 400;
+  padding: 2px 6px;
 }
 
 .de-config-options {

@@ -17,6 +17,19 @@ v3.45.5 beta (23-8-2026)
   Uses the same ``window.confirm()`` pattern already used for screen
   deletion and Wizard grid conversion.
 
+- Device Config's Data/Updated/Title/No background switches are now
+  icon buttons, matching the look of the existing Icon/Dial/Bar/Slider
+  visual-mode picker (#195). Icon moved out of that mutually-exclusive
+  Dial/Bar/Slider group into its own independent toggle: Icon, Data,
+  Updated, Title and Background now sit together as one row of
+  bordered icon buttons, beside the still mutually-exclusive Dial/Bar/
+  Slider group, both under the same *Display options* heading. Every
+  device now gets an Icon toggle (previously only Group/HTML/LMS/
+  Separator blocks did, and dial-capable devices only got it as one of
+  the exclusive modes), and toggling it no longer depends on which
+  Dial/Bar/Slider mode, if any, is selected. Widget Config keeps its
+  original switch-based layout, unchanged.
+
 * **Fixes**
 
 - Fixed the Sunrise/Sunset widget showing a real, clickable scrollbar
