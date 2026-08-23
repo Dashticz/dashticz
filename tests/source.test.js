@@ -1160,15 +1160,20 @@ test('device and widget config editors share full widget config and preserve hid
   assert.doesNotMatch(configWriter, /configwriter_normalise_text_alignment/);
   assert.doesNotMatch(configWriter, /\$props\['text_alignment'\]/);
 
-  // Device Config is Data/Update/Title, centered on one row. Icon/Dial/Bar
-  // moved out into their own mutually-exclusive visual-mode button group
-  // (#182) - selecting Dial or Bar there hides the now-ineffective Title
-  // control while keeping its value in the DOM, so switching back to Icon
-  // restores it without losing configuration. A separator/title bar still
-  // has only Icon and Title because it has no data value or last-update
-  // timestamp of its own, and no Dial/Bar mode at all.
+  // Device Config's Icon/Data/Updated/Title/Background are independent
+  // toggle buttons (#195) - Dial/Bar/Slider (previously Icon/Dial/Bar/Slider,
+  // #182) is its own separate mutually-exclusive visual-mode button group,
+  // no longer including Icon. Selecting Dial or Bar there hides the
+  // now-ineffective Title control while keeping its value in the DOM, so
+  // switching back to Icon restores it without losing configuration. A
+  // separator/title bar still has only Icon and Title because it has no
+  // data value or last-update timestamp of its own, and no Dial/Bar mode
+  // at all.
   assert.match(deviceEditor, /\? \['icon', 'show_title'\]/);
-  assert.match(deviceEditor, /: \['hide_data', 'last_update', 'show_title'\]/);
+  assert.match(
+    deviceEditor,
+    /: \['icon', 'hide_data', 'last_update', 'show_title'\]/
+  );
   assert.match(deviceEditor, /configOptions\.forEach/);
   assert.match(deviceEditor, /hasDial && option === 'show_title'/);
   assert.match(deviceEditor, /de-hide-for-dial/);
@@ -1362,7 +1367,7 @@ test('device and widget config editors share full widget config and preserve hid
   );
   assert.match(
     deviceEditor,
-    /removesIcon[\s\S]*\[data-option="icon"\][\s\S]*\.prop\('checked', false\)/
+    /removesIcon[\s\S]*\.de-config-option\[data-option="icon"\][\s\S]*\.removeClass\('active'\)/
   );
   assert.match(
     widgetEditor,

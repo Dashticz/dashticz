@@ -189,24 +189,39 @@ Dashticz.register(DT_button);
     }
 
     /* Placed as an extra item inside the same options row that already
-     * holds Icon/Data/Title (.de-config-options for devices,
+     * holds Icon/Data/Title (.de-config-options-icons for devices,
      * .we-block-options-row for widgets) so it automatically inherits
-     * their exact switch size, colors and spacing instead of rendering as
-     * a smaller, separately positioned control (#170 follow-up). */
+     * their exact size, colors and spacing instead of rendering as a
+     * smaller, separately positioned control (#170 follow-up). Devices got
+     * their row restyled from switches to icon buttons (#195, see
+     * js/deviceeditor.js and .de-config-option/.de-visual-mode-button.active
+     * in css/creative.css) - this button reuses that same .de-config-option
+     * class purely for its shared click-to-toggle .active look/behavior
+     * (js/deviceeditor.js's generic '.de-config-option' click handler), but
+     * deliberately carries no data-option so it's excluded from that
+     * popup's own [data-option] bookkeeping loop and keeps saving itself
+     * independently below. Widget Config keeps the original switch style,
+     * untouched. */
     var isWidget = $fields.hasClass('we-custom-fields');
     var $optionsRow = $popup
-      .find(isWidget ? '.we-block-options-row' : '.de-config-options')
+      .find(isWidget ? '.we-block-options-row' : '.de-config-options-icons')
       .first();
-    var html =
-      '<label class="form-check form-switch' +
-      (isWidget ? ' form-check-inline mb-2' : '') +
-      ' dt-no-background-option">' +
-      '<input class="form-check-input' +
-      (isWidget ? ' we-block-option' : '') +
-      '" type="checkbox" data-dt-no-background' +
-      (initial ? ' checked' : '') +
-      '>' +
-      '<span class="form-check-label">No background</span></label>';
+    // The button reads as "has a background" (checked/active by default),
+    // the inverse of the stored no_background flag it's hiding.
+    var hasBackground = !initial;
+    var html = isWidget
+      ? '<label class="form-check form-switch form-check-inline mb-2 dt-no-background-option">' +
+        '<input class="form-check-input we-block-option" type="checkbox" data-dt-no-background' +
+        (initial ? ' checked' : '') +
+        '>' +
+        '<span class="form-check-label">No background</span></label>'
+      : '<button type="button" class="btn btn-outline-secondary de-config-option dt-no-background-option' +
+        (hasBackground ? ' active' : '') +
+        '" data-dt-no-background aria-pressed="' +
+        (hasBackground ? 'true' : 'false') +
+        '" title="Background" style="min-width:72px;">' +
+        '<i class="fas fa-fill-drip" aria-hidden="true"></i>' +
+        '<span class="d-block small">Background</span></button>';
     if ($optionsRow.length) {
       $optionsRow.append(html);
     } else {
@@ -224,7 +239,10 @@ Dashticz.register(DT_button);
           event.target.closest &&
           event.target.closest('#de-config-ok, #we-config-ok, .btn-save');
         if (!saveButton) return;
-        var enabled = $popup.find('[data-dt-no-background]').is(':checked');
+        var $toggle = $popup.find('[data-dt-no-background]');
+        var enabled = isWidget
+          ? $toggle.is(':checked')
+          : !$toggle.hasClass('active');
         var $row = findCustomFieldRow($popup, 'no_background');
         if (enabled) {
           if (!$row.length) {

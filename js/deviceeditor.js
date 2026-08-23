@@ -3988,26 +3988,81 @@ var DashticzDeviceEditor = (function () {
           ? 'bar'
           : options.dial === true
             ? 'dial'
-            : options.icon === true
-              ? 'icon'
-              : '';
+            : '';
+    // Icon is no longer part of the Dial/Bar/Slider mutually-exclusive mode -
+    // it's now an independent toggle living in .de-config-options-icons
+    // below (#195), same as Data/Updated/Title/Background, so every device
+    // gets it (previously only Group/HTML/LMS/Separator specials did).
     var configOptions = isTitle
       ? ['icon', 'show_title']
       : isGroupBlock || isHtmlBlock || isLmsBlock
         ? ['icon', 'last_update', 'show_title']
-        : ['hide_data', 'last_update', 'show_title'];
+        : ['icon', 'hide_data', 'last_update', 'show_title'];
     html += '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
 
+    // Icon/Data/Updated/Title/Background: independent toggle buttons, never
+    // mutually exclusive with each other or with Dial/Bar/Slider below -
+    // .de-config-option shares the same selected look
+    // (.de-visual-mode-button.active, css/creative.css) without sharing its
+    // exclusive-select click handler.
+    var OPTION_ICONS = {
+      icon: 'fas fa-image',
+      hide_data: 'fas fa-align-left',
+      last_update: 'fas fa-clock',
+      show_title: 'fas fa-heading',
+    };
+    var optionsHtml = '';
+    configOptions.forEach(function (option) {
+      var hiddenForDial = hasDial && option === 'show_title';
+      // The Data button is user-facing: active means data is visible.
+      // CONFIG.js keeps the backwards-compatible inverse hide_data property.
+      // Title visibility is stored separately from the other display options.
+      var checked;
+      if (option === 'hide_data') {
+        checked = options.hide_data !== true;
+      } else if (option === 'show_title') {
+        checked = isSpecial
+          ? special.showTitle !== false
+          : deviceTitleVisible[ck] !== false;
+      } else {
+        checked = options[option] === true;
+      }
+      optionsHtml +=
+        '<button type="button" class="btn btn-outline-secondary de-config-option' +
+        (checked ? ' active' : '') +
+        (hiddenForDial ? ' de-hide-for-dial' : '') +
+        '" data-option="' +
+        option +
+        '" aria-pressed="' +
+        (checked ? 'true' : 'false') +
+        '" title="' +
+        _esc(t[option]) +
+        '" style="min-width:72px;">' +
+        '<i class="' +
+        OPTION_ICONS[option] +
+        '" aria-hidden="true"></i>' +
+        '<span class="d-block small">' +
+        _esc(t[option]) +
+        '</span></button>';
+    });
+    html +=
+      '<div class="d-flex flex-wrap justify-content-center gap-4 mb-3 de-config-options-row">';
+    html +=
+      '<div class="d-flex flex-wrap justify-content-center gap-2 de-config-options-icons" role="group" aria-label="' +
+      _esc(t.display_options) +
+      '">' +
+      optionsHtml +
+      '</div>';
+
     if (hasDial) {
-      // Icon, Dial and Bar are one mutually-exclusive visual mode. Bootstrap's
-      // btn-group provides the shared rounded border without extra theme CSS.
-      html += '<div class="d-flex justify-content-center mb-3">';
+      // Dial, Bar and Slider are one mutually-exclusive visual mode.
+      // Bootstrap's btn-group provides the shared rounded border without
+      // extra theme CSS.
       html +=
         '<div class="btn-group" role="group" aria-label="' +
         _esc(t.display_options) +
         '">';
       [
-        { mode: 'icon', label: t.icon, icon: 'fas fa-image', enabled: true },
         {
           mode: 'dial',
           label: t.dial,
@@ -4048,7 +4103,11 @@ var DashticzDeviceEditor = (function () {
           _esc(item.label) +
           '</span></button>';
       });
-      html += '</div></div>';
+      html += '</div>';
+    }
+    html += '</div>';
+
+    if (hasDial) {
       var currentBarSteps =
         parseInt(options.barsteps, 10) > 0
           ? parseInt(options.barsteps, 10)
@@ -4102,42 +4161,6 @@ var DashticzDeviceEditor = (function () {
         '<div class="form-text">' + _esc(t.dial_inverse_help) + '</div></div>';
     }
 
-    html +=
-      '<div class="de-config-options' +
-      (isTitle
-        ? ''
-        : isGroupBlock || isHtmlBlock || isLmsBlock || hasDial
-          ? ' de-config-options-three'
-          : '') +
-      '">';
-    configOptions.forEach(function (option) {
-      var hiddenForDial = hasDial && option === 'show_title';
-      html +=
-        '<label class="form-check form-switch' +
-        (hiddenForDial ? ' de-hide-for-dial' : '') +
-        '"><input class="form-check-input de-config-option" type="checkbox" data-option="' +
-        option +
-        '"';
-      // The Data checkbox is user-facing: checked means data is visible.
-      // CONFIG.js keeps the backwards-compatible inverse hide_data property.
-      // Title visibility is stored separately from the other display options.
-      var checked;
-      if (option === 'hide_data') {
-        checked = options.hide_data !== true;
-      } else if (option === 'show_title') {
-        checked = isSpecial
-          ? special.showTitle !== false
-          : deviceTitleVisible[ck] !== false;
-      } else {
-        checked = options[option] === true;
-      }
-      if (checked) html += ' checked';
-      html +=
-        '><span class="form-check-label">' +
-        _esc(t[option]) +
-        '</span></label>';
-    });
-    html += '</div>';
     if (!isTitle) {
       html += '<div class="alert alert-info de-dial-hint d-none" role="note">';
       html += _esc(t.dial_hint) + ' ';
@@ -4266,9 +4289,9 @@ var DashticzDeviceEditor = (function () {
       });
     }
     function refreshIconFieldVisibility() {
-      var enabled = hasDial
-        ? selectedVisualMode() === 'icon'
-        : $popup.find('[data-option="icon"]').is(':checked');
+      var enabled = $popup
+        .find('.de-config-option[data-option="icon"]')
+        .hasClass('active');
       $popup.find('.de-icon-field-row').toggle(enabled);
     }
     function ensureIconFieldRow() {
@@ -4354,16 +4377,25 @@ var DashticzDeviceEditor = (function () {
       var removesIcon = $row.hasClass('de-icon-field-row');
       $row.remove();
       if (removesIcon) {
-        if (hasDial) setVisualMode('');
-        else $popup.find('[data-option="icon"]').prop('checked', false);
+        $popup
+          .find('.de-config-option[data-option="icon"]')
+          .removeClass('active')
+          .attr('aria-pressed', 'false');
       }
       refreshCustomFieldButtons();
       refreshIconFieldVisibility();
     });
-    $popup.on('change', '[data-option="icon"]', function () {
-      if ($(this).is(':checked')) ensureIconFieldRow();
-      refreshCustomFieldButtons();
-      refreshIconFieldVisibility();
+    $popup.on('click', '.de-config-option', function () {
+      if ($(this).prop('disabled')) return;
+      var active = !$(this).hasClass('active');
+      $(this)
+        .toggleClass('active', active)
+        .attr('aria-pressed', active ? 'true' : 'false');
+      if (String($(this).attr('data-option')) === 'icon') {
+        if (active) ensureIconFieldRow();
+        refreshCustomFieldButtons();
+        refreshIconFieldVisibility();
+      }
     });
     $popup.on('change', '.de-icon-source', function () {
       var $row = $(this).closest('.de-icon-field-row');
@@ -4405,7 +4437,6 @@ var DashticzDeviceEditor = (function () {
       var mode = String($(this).attr('data-visual-mode') || '');
       // Clicking the selected mode again restores the historic all-off state.
       setVisualMode(selectedVisualMode() === mode ? '' : mode);
-      if (selectedVisualMode() === 'icon') ensureIconFieldRow();
       refreshCustomFieldButtons();
       refreshDialOptions();
     });
@@ -4507,13 +4538,16 @@ var DashticzDeviceEditor = (function () {
           $('#de-config-lms-player').trigger('focus');
         }
       }
-      $('#de-config-popup .de-config-option').each(function () {
+      // [data-option]: excludes button.js's injected Background toggle,
+      // which reuses .de-config-option purely for its click-to-toggle
+      // .active styling/behavior and reads its own state independently via
+      // its own custom-fields (no_background) save handler.
+      $('#de-config-popup .de-config-option[data-option]').each(function () {
         var option = String($(this).attr('data-option'));
-        var checked = $(this).prop('checked');
+        var checked = $(this).hasClass('active');
         updated[option] = option === 'hide_data' ? !checked : checked;
       });
       if (hasDial) {
-        updated.icon = pendingVisualMode === 'icon';
         updated.dial = pendingVisualMode === 'dial';
         updated.bar = pendingVisualMode === 'bar';
         updated.needle = pendingVisualMode === 'needle';
