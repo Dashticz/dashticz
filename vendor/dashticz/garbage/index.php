@@ -15,7 +15,7 @@ if ($debug==0) error_reporting(E_ERROR | E_PARSE);
 */
 
 $errors=array();
-set_error_handler(function($errno, $errstr, $errfile = 0, $errline = 0, $errcontext = 0) use (&$errors) {
+set_error_handler(function($errno, $errstr, $errfile = 0, $errline = 0, $errcontext = 0) {
 	// error was suppressed with the @-operator
 //		if (0 === error_reporting()) {
 //			return false;
@@ -129,7 +129,7 @@ function curlWeb($url, $options=0) {
 
 }
 
-function curlWebJson($url, $headers=[]) {
+function curlWebJson($url, $headers=0) {
 	return json_decode(curlWeb($url, array( CURLOPT_HTTPHEADER=>$headers)));
 }
 
@@ -296,7 +296,7 @@ function getCalendar() {
 					case 'sudwestfryslan'; $baseUrl = 'http://afvalkalender.sudwestfryslan.nl'; break;
 					case 'alphenaandenrijn'; $baseUrl = 'http://afvalkalender.alphenaandenrijn.nl'; break;
 					case 'cure'; $baseUrl = 'https://afvalkalender.cure-afvalbeheer.nl'; break;
-					case 'cyclusnv'; $baseUrl = 'https://cyclusnv.nl'; break;
+					case 'cyclusnv'; $baseUrl = 'https://afvalkalender.cyclusnv.nl'; break;
 					case 'gemeenteberkelland'; $baseUrl = 'https://afvalkalender.gemeenteberkelland.nl'; break;
 					case 'meerlanden'; $baseUrl = 'https://afvalkalender.meerlanden.nl'; break;
 					case 'venray'; $baseUrl = 'https://afvalkalender.venray.nl'; break;
@@ -336,7 +336,7 @@ function getCalendar() {
 			$options = array(
 				CURLOPT_COOKIE => $cookie,
 				CURLOPT_FOLLOWLOCATION => 1,
-				CURLINFO_HEADER_OUT => true
+				CURLINFO_HEADER_OUT, true
 			);
 
 			$output = curlWeb($url, $options);
@@ -444,9 +444,8 @@ function getCalendar() {
 			$cookie = addCookie($cookie, $cookies, 'residence');
 			$cookie = addCookie($cookie, $cookies, 'selectedHouseType');
 			$options = array(
-				CURLOPT_HTTPHEADER => [
+				CURLOPT_HTTPHEADER =>
 					'Cookie: '.$cookie
-				]
 			);
 
 //			var_dump($url);
