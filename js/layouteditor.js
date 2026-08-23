@@ -1636,7 +1636,7 @@ var DashticzLayoutEditor = (function () {
           return;
         }
         if ($(event.target).closest('.dle-remove-button').length) {
-          if (item) _removeItem(item);
+          if (item && window.confirm(_t('remove_confirm'))) _removeItem(item);
         }
       })
       .on('pointerdown.layouteditor', function (event) {

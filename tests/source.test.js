@@ -601,6 +601,14 @@ test('visual layout editor handles generated devices and widgets on a 10px heigh
   assert.match(editor, /function _moveDraggedItem/);
   assert.match(editor, /function _removeItem/);
   assert.match(editor, /dle-remove-button/);
+  // Removing a tile is destructive enough (and the "-" button small enough
+  // to mis-click) to ask for confirmation first, matching the existing
+  // window.confirm() pattern used for screen deletion (screenswitcher.js)
+  // and the Wizard grid conversion (convertCurrentScreenToGrid() above).
+  assert.match(
+    editor,
+    /window\.confirm\(_t\('remove_confirm'\)\)\)\s*_removeItem\(item\)/
+  );
   assert.match(editor, /dle-config-button/);
   assert.match(editor, /function _openItemConfig/);
   assert.match(
@@ -3049,7 +3057,7 @@ test('topbar and layout editor keep controls usable', () => {
   // flex-start only when a header is actually rendered (see below).
   assert.match(
     styles,
-    /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.sunriseholder\s*\{[^}]*min-height:\s*100%;[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;/s
+    /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.sunriseholder\s*\{[^}]*height:\s*100% !important;[^}]*min-height:\s*0 !important;[^}]*overflow:\s*hidden !important;[^}]*display:\s*flex;[^}]*align-items:\s*center;[^}]*justify-content:\s*center;/s
   );
 });
 
