@@ -16,15 +16,18 @@ var DT_haymanclock = {
       return parts[parts.length - 1] || fallback;
     }
     var locale = String(settings.language || 'en').toLowerCase();
-    var fallback = locale.indexOf('nl') === 0
-      ? { day: 'dag', hours: 'uur', minutes: 'minuten', seconds: 'seconden' }
-      : { day: 'day', hours: 'hours', minutes: 'minutes', seconds: 'seconds' };
+    var fallback =
+      locale.indexOf('nl') === 0
+        ? { day: 'dag', hours: 'uur', minutes: 'minuten', seconds: 'seconden' }
+        : {
+            day: 'day',
+            hours: 'hours',
+            minutes: 'minutes',
+            seconds: 'seconds',
+          };
     function getRelativeLabel(amount, unit, fallbackValue) {
       try {
-        return getPart(
-          moment().add(amount, unit).fromNow(true),
-          fallbackValue
-        );
+        return getPart(moment().add(amount, unit).fromNow(true), fallbackValue);
       } catch (error) {
         return fallbackValue;
       }
@@ -61,14 +64,8 @@ var DT_haymanclock = {
         } catch (error) {
           console.warn('Unable to format Hayman clock locale ' + locale, error);
         }
-        clockElement.style.setProperty(
-          '--timer-day',
-          "'" + day + "'"
-        );
-        clockElement.style.setProperty(
-          '--timer-hours',
-          "'" + hours + "'"
-        );
+        clockElement.style.setProperty('--timer-day', "'" + day + "'");
+        clockElement.style.setProperty('--timer-hours', "'" + hours + "'");
         clockElement.style.setProperty(
           '--timer-minutes',
           "'" + ('0' + now.getMinutes()).slice(-2) + "'"
@@ -104,9 +101,11 @@ var DT_haymanclock = {
         // creative.css), so sizing the clock to the full block height pushed
         // it past the block's own bottom edge and needed an oversized block
         // just to avoid a scrollbar. Same fix as js/components/frame.js.
-        var titleHeight = $title.length && $title.is(':visible') ? $title.outerHeight(true) : 0;
+        var titleHeight =
+          $title.length && $title.is(':visible') ? $title.outerHeight(true) : 0;
         var stateMarginV = $state.length
-          ? (parseFloat($state.css('margin-top')) || 0) + (parseFloat($state.css('margin-bottom')) || 0)
+          ? (parseFloat($state.css('margin-top')) || 0) +
+            (parseFloat($state.css('margin-bottom')) || 0)
           : 0;
         // In a grid, the outer mount point owns the live row/column
         // dimensions (a hard, CSS-Grid-track-sized box); .dt_block only
@@ -127,8 +126,15 @@ var DT_haymanclock = {
         // really available, so its measured width (unlike $sizeBox's, which
         // still includes the icon) already excludes the icon column. Same
         // fix as js/components/flipclock.js's availW.
-        var availW = $content.width() || $sizeBox.outerWidth() || $(me.mountPoint).width() || 120;
-        var availH = ($sizeBox.outerHeight() || $(me.mountPoint).height() || 0) - titleHeight - stateMarginV;
+        var availW =
+          $content.width() ||
+          $sizeBox.outerWidth() ||
+          $(me.mountPoint).width() ||
+          120;
+        var availH =
+          ($sizeBox.outerHeight() || $(me.mountPoint).height() || 0) -
+          titleHeight -
+          stateMarginV;
         if (availW <= 0 || availH <= 0) return;
         var scale = Number(me.block.scale);
         if (!isFinite(scale) || scale <= 0) scale = 1;
@@ -171,10 +177,8 @@ var DT_haymanclock = {
         $container.removeClass('hc-measuring');
         if (naturalW <= 0 || naturalH <= 0) return;
 
-        var fitScale = Math.min(
-          availW / (naturalW * GAP_FACTOR),
-          availH / naturalH
-        ) * scale;
+        var fitScale =
+          Math.min(availW / (naturalW * GAP_FACTOR), availH / naturalH) * scale;
         var fontSize = Math.max(8, REF * fitScale);
         var width = Math.max(1, naturalW * GAP_FACTOR * fitScale);
 
@@ -252,14 +256,22 @@ var DT_haymanclock = {
       // Observing the *outer* mount point (rather than .clock-container,
       // which fitSize() resizes) avoids the observer reacting to its own
       // writes.
-      if (typeof ResizeObserver !== 'undefined' && me.$mountPoint && me.$mountPoint.length) {
+      if (
+        typeof ResizeObserver !== 'undefined' &&
+        me.$mountPoint &&
+        me.$mountPoint.length
+      ) {
         me.haymanClockResizeObserver = new ResizeObserver(fitSize);
         me.haymanClockResizeObserver.observe(me.$mountPoint[0]);
       }
 
-      Dashticz.setInterval(me, function () {
-        updateTime();
-      }, 1000);
+      Dashticz.setInterval(
+        me,
+        function () {
+          updateTime();
+        },
+        1000
+      );
     });
   },
   destroy: function (me) {

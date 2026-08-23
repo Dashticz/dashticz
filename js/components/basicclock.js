@@ -72,7 +72,8 @@ var DT_basicclock = {
       // creative.css), so sizing the clock to the full block height pushed it
       // past the block's own bottom edge and needed an oversized block just
       // to avoid a scrollbar. Same fix as js/components/frame.js.
-      var titleHeight = $title.length && $title.is(':visible') ? $title.outerHeight(true) : 0;
+      var titleHeight =
+        $title.length && $title.is(':visible') ? $title.outerHeight(true) : 0;
       // In a grid, the outer mount point owns the live row/column dimensions
       // (a hard, CSS-Grid-track-sized box); .dt_block only *looks* fixed
       // (height: 100% !important) but a grid item's automatic minimum size
@@ -93,14 +94,23 @@ var DT_basicclock = {
       // browser is actually painting.
       var sizeEl = $sizeBox && $sizeBox[0];
       var stateEl = $state && $state[0];
-      var sizeRect = sizeEl && sizeEl.getBoundingClientRect ? sizeEl.getBoundingClientRect() : null;
-      var stateRect = stateEl && stateEl.getBoundingClientRect ? stateEl.getBoundingClientRect() : null;
-      var availW = stateRect && stateRect.width > 0
-        ? stateRect.width
-        : ($sizeBox.outerWidth() || $(me.mountPoint).width() || 120);
-      var availH = sizeRect && stateRect
-        ? sizeRect.bottom - stateRect.top
-        : (($sizeBox.outerHeight() || $(me.mountPoint).height() || 0) - titleHeight);
+      var sizeRect =
+        sizeEl && sizeEl.getBoundingClientRect
+          ? sizeEl.getBoundingClientRect()
+          : null;
+      var stateRect =
+        stateEl && stateEl.getBoundingClientRect
+          ? stateEl.getBoundingClientRect()
+          : null;
+      var availW =
+        stateRect && stateRect.width > 0
+          ? stateRect.width
+          : $sizeBox.outerWidth() || $(me.mountPoint).width() || 120;
+      var availH =
+        sizeRect && stateRect
+          ? sizeRect.bottom - stateRect.top
+          : ($sizeBox.outerHeight() || $(me.mountPoint).height() || 0) -
+            titleHeight;
 
       // Keep a few physical pixels free at the bottom as well as a small
       // proportional margin. This protects against sub-pixel rounding and
@@ -151,7 +161,11 @@ var DT_basicclock = {
       '<div class="clock">' +
         moment()
           .locale(settings['language'])
-          .format(settings['hide_seconds'] ? settings['shorttime'] : settings['longtime']) +
+          .format(
+            settings['hide_seconds']
+              ? settings['shorttime']
+              : settings['longtime']
+          ) +
         '</div>' +
         '<div class="weekday">' +
         moment().locale(settings['language']).format(settings['weekday']) +
@@ -180,7 +194,11 @@ var DT_basicclock = {
     // Observing the *outer* mount point (rather than the inner .dt_block
     // that fitSize() resizes) avoids the observer reacting to its own
     // writes.
-    if (typeof ResizeObserver !== 'undefined' && me.$mountPoint && me.$mountPoint.length) {
+    if (
+      typeof ResizeObserver !== 'undefined' &&
+      me.$mountPoint &&
+      me.$mountPoint.length
+    ) {
       me.basicClockResizeObserver = new ResizeObserver(fitSize);
       me.basicClockResizeObserver.observe(me.$mountPoint[0]);
     }

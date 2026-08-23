@@ -1,28 +1,28 @@
 // Retain the Bootstrap 3 breakpoints used by existing Dashticz dashboards
 // while compiling the maintained Bootstrap 5 components.
-$grid-breakpoints: (
-  xs: 0,
-  sm: 768px,
-  md: 992px,
-  lg: 1200px,
-  xl: 1400px,
-  xxl: 1600px
+@use 'bootstrap/scss/bootstrap' with (
+  $grid-breakpoints: (
+    xs: 0,
+    sm: 768px,
+    md: 992px,
+    lg: 1200px,
+    xl: 1400px,
+    xxl: 1600px,
+  ),
+  $container-max-widths: (
+    sm: 750px,
+    md: 970px,
+    lg: 1170px,
+    xl: 1320px,
+    xxl: 1520px,
+  ),
+  $grid-gutter-width: 30px
 );
-$container-max-widths: (
-  sm: 750px,
-  md: 970px,
-  lg: 1170px,
-  xl: 1320px,
-  xxl: 1520px
-);
-$grid-gutter-width: 30px;
-
-@import "~bootstrap/scss/bootstrap";
-@import "bootstrap3-compat";
+@use 'bootstrap3-compat';
 
 #loaderHolder {
   --loader-red: #ff1f35;
-  --loader-red-soft: rgba(255, 31, 53, .38);
+  --loader-red-soft: rgba(255, 31, 53, 0.38);
   position: fixed;
   inset: 0;
   display: grid;
@@ -32,7 +32,7 @@ $grid-gutter-width: 30px;
   overflow: hidden;
   color: #fff;
   background:
-    radial-gradient(circle at 50% 38%, rgba(71, 24, 38, .32), transparent 34%),
+    radial-gradient(circle at 50% 38%, rgba(71, 24, 38, 0.32), transparent 34%),
     linear-gradient(145deg, #111520 0%, #090b12 48%, #050608 100%);
   z-index: 99999;
   text-align: center;
@@ -49,23 +49,23 @@ $grid-gutter-width: 30px;
 
 .loaderBackdrop {
   z-index: -1;
-  opacity: .7;
+  opacity: 0.7;
   background-image:
-    linear-gradient(rgba(255, 255, 255, .018) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, .018) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
   background-size: 42px 42px;
   -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 67%);
   mask-image: radial-gradient(circle, #000 0%, transparent 67%);
 }
 
 .loaderBackdrop::before {
-  content: "";
+  content: '';
   background: conic-gradient(
     from 90deg,
     transparent 0deg,
-    rgba(255, 31, 53, .08) 70deg,
+    rgba(255, 31, 53, 0.08) 70deg,
     transparent 145deg,
-    rgba(105, 130, 255, .06) 250deg,
+    rgba(105, 130, 255, 0.06) 250deg,
     transparent 360deg
   );
   animation: loaderBackdropSpin 18s linear infinite;
@@ -73,11 +73,11 @@ $grid-gutter-width: 30px;
 
 .loaderBackdrop::after {
   inset: 35%;
-  content: "";
+  content: '';
   border-radius: 50%;
   background: var(--loader-red-soft);
   filter: blur(100px);
-  opacity: .28;
+  opacity: 0.28;
   animation: loaderAmbientGlow 3.6s ease-in-out infinite;
 }
 
@@ -102,19 +102,19 @@ $grid-gutter-width: 30px;
 .loaderLogoShell::after {
   position: absolute;
   border-radius: 50%;
-  content: "";
+  content: '';
 }
 
 .loaderLogoShell::before {
   inset: 15px;
-  background: rgba(255, 31, 53, .22);
+  background: rgba(255, 31, 53, 0.22);
   filter: blur(28px);
   animation: loaderLogoGlow 2.4s ease-in-out infinite;
 }
 
 .loaderLogoShell::after {
   inset: 28px;
-  box-shadow: 0 0 55px 18px rgba(255, 31, 53, .3);
+  box-shadow: 0 0 55px 18px rgba(255, 31, 53, 0.3);
 }
 
 .loaderLogo {
@@ -123,9 +123,8 @@ $grid-gutter-width: 30px;
   width: 126px;
   height: 126px;
   border-radius: 50%;
-  filter:
-    drop-shadow(0 0 10px rgba(255, 76, 94, .95))
-    drop-shadow(0 0 28px rgba(255, 31, 53, .7));
+  filter: drop-shadow(0 0 10px rgba(255, 76, 94, 0.95))
+    drop-shadow(0 0 28px rgba(255, 31, 53, 0.7));
   animation: loaderLogoFloat 3s ease-in-out infinite;
 }
 
@@ -133,11 +132,11 @@ $grid-gutter-width: 30px;
   position: absolute;
   inset: 2px;
   z-index: 1;
-  border: 1px solid rgba(255, 255, 255, .1);
-  border-top-color: rgba(255, 94, 110, .95);
-  border-right-color: rgba(255, 31, 53, .35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top-color: rgba(255, 94, 110, 0.95);
+  border-right-color: rgba(255, 31, 53, 0.35);
   border-radius: 50%;
-  box-shadow: 0 0 18px rgba(255, 31, 53, .2);
+  box-shadow: 0 0 18px rgba(255, 31, 53, 0.2);
   animation: loaderOrbitSpin 3.4s linear infinite;
 }
 
@@ -152,7 +151,7 @@ $grid-gutter-width: 30px;
   box-shadow:
     0 0 8px #fff,
     0 0 16px var(--loader-red);
-  content: "";
+  content: '';
 }
 
 .loaderBrand {
@@ -160,18 +159,18 @@ $grid-gutter-width: 30px;
   font-size: clamp(30px, 8vw, 42px);
   font-weight: 300;
   line-height: 1;
-  letter-spacing: .18em;
-  text-indent: .18em;
+  letter-spacing: 0.18em;
+  text-indent: 0.18em;
   text-transform: uppercase;
-  text-shadow: 0 0 24px rgba(255, 255, 255, .16);
+  text-shadow: 0 0 24px rgba(255, 255, 255, 0.16);
 }
 
 .loaderHeader {
   margin-top: 13px;
-  color: rgba(255, 255, 255, .62);
+  color: rgba(255, 255, 255, 0.62);
   font-size: 12px;
   font-weight: 500;
-  letter-spacing: .2em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
 }
 
@@ -182,7 +181,7 @@ $grid-gutter-width: 30px;
   margin-top: 28px;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(255, 255, 255, .09);
+  background: rgba(255, 255, 255, 0.09);
 }
 
 .loaderProgress span {
@@ -200,9 +199,9 @@ $grid-gutter-width: 30px;
   align-items: center;
   min-height: 18px;
   margin-top: 13px;
-  color: rgba(255, 255, 255, .72);
+  color: rgba(255, 255, 255, 0.72);
   font-size: 12px;
-  letter-spacing: .08em;
+  letter-spacing: 0.08em;
 }
 
 .loaderDots {
@@ -220,62 +219,117 @@ $grid-gutter-width: 30px;
   animation: loaderDot 1.2s ease-in-out infinite;
 }
 
-.loaderDots i:nth-child(2) { animation-delay: .16s; }
-.loaderDots i:nth-child(3) { animation-delay: .32s; }
+.loaderDots i:nth-child(2) {
+  animation-delay: 0.16s;
+}
+.loaderDots i:nth-child(3) {
+  animation-delay: 0.32s;
+}
 
 .loaderVersion {
   margin-top: 22px;
-  color: rgba(255, 255, 255, .3);
+  color: rgba(255, 255, 255, 0.3);
   font-size: 10px;
-  letter-spacing: .16em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
 }
 
 @keyframes loaderOrbitSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes loaderBackdropSpin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes loaderAmbientGlow {
-  0%, 100% { opacity: .2; transform: scale(.84); }
-  50% { opacity: .42; transform: scale(1.12); }
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.84);
+  }
+  50% {
+    opacity: 0.42;
+    transform: scale(1.12);
+  }
 }
 
 @keyframes loaderLogoGlow {
-  0%, 100% { opacity: .55; transform: scale(.9); }
-  50% { opacity: 1; transform: scale(1.12); }
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
 }
 
 @keyframes loaderLogoFloat {
-  0%, 100% { transform: translateY(2px) scale(.98); }
-  50% { transform: translateY(-4px) scale(1.02); }
+  0%,
+  100% {
+    transform: translateY(2px) scale(0.98);
+  }
+  50% {
+    transform: translateY(-4px) scale(1.02);
+  }
 }
 
 @keyframes loaderProgressSweep {
-  0% { left: -45%; opacity: 0; }
-  25%, 75% { opacity: 1; }
-  100% { left: 105%; opacity: 0; }
+  0% {
+    left: -45%;
+    opacity: 0;
+  }
+  25%,
+  75% {
+    opacity: 1;
+  }
+  100% {
+    left: 105%;
+    opacity: 0;
+  }
 }
 
 @keyframes loaderDot {
-  0%, 70%, 100% { opacity: .28; transform: translateY(0); }
-  35% { opacity: 1; transform: translateY(-3px); }
+  0%,
+  70%,
+  100% {
+    opacity: 0.28;
+    transform: translateY(0);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
 }
 
 @media (max-height: 520px) {
-  .loaderPanel { padding: 20px; }
+  .loaderPanel {
+    padding: 20px;
+  }
   .loaderLogoShell {
     width: 118px;
     height: 118px;
     margin-bottom: 14px;
   }
-  .loaderLogo { width: 84px; height: 84px; }
-  .loaderHeader { margin-top: 8px; }
-  .loaderProgress { margin-top: 18px; }
-  .loaderVersion { margin-top: 12px; }
+  .loaderLogo {
+    width: 84px;
+    height: 84px;
+  }
+  .loaderHeader {
+    margin-top: 8px;
+  }
+  .loaderProgress {
+    margin-top: 18px;
+  }
+  .loaderVersion {
+    margin-top: 12px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

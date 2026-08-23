@@ -124,7 +124,10 @@
 .dt-grid-screen > .dt-grid-layout > .dt-grid-item.dt-camera-multi {
   display: flex;
 }
-.dt-grid-screen > .dt-grid-layout > .dt-grid-item.dt-camera-multi > [id^='block_'] {
+.dt-grid-screen
+  > .dt-grid-layout
+  > .dt-grid-item.dt-camera-multi
+  > [id^='block_'] {
   flex: 1 1 0;
   min-width: 0;
   height: 100%;
@@ -345,7 +348,7 @@
 .fixedheight:not(.dt_column) .dt_content {
   display: flex;
   flex-direction: column;
-  height: 100%
+  height: 100%;
 }
 
 .dt_block .col-icon {
@@ -371,9 +374,8 @@
   min-height: 1px;
 }
 
-
 .fixedheight .dt_state {
-  height: 100%
+  height: 100%;
 }
 
 .button .dt_state,
@@ -408,7 +410,7 @@
 }
 
 .no-margin .dt_state {
-  margin: -5px
+  margin: -5px;
 }
 
 .ios .dt_state {
@@ -495,7 +497,7 @@
 }
 
 .smoke .on.icon {
-  border: 5px solid #F05F40;
+  border: 5px solid #f05f40;
 }
 
 .modal {
@@ -531,7 +533,7 @@
   overflow-x: hidden;
 }
 
-.newblocksHolder .newblocks>div {
+.newblocksHolder .newblocks > div {
   border: 1px solid #aaa;
   background: rgba(255, 255, 255, 0.2);
   margin: 5px;
@@ -544,7 +546,7 @@
   margin: 10px auto 10px auto;
   display: block;
   width: 100%;
-/*  max-width: 125px;*/
+  /*  max-width: 125px;*/
 }
 
 .skyconsmall {
@@ -553,19 +555,18 @@
   max-width: 125px;
 }
 
-
 /* BEGIN || Settings modal */
 
-.nav-pills>li>a {
+.nav-pills > li > a {
   border-radius: 6px 6px 0px 0px;
   color: #000;
   font-size: 16px;
   background-color: #f6f6f6;
 }
 
-.nav-pills>li.active>a,
-.nav-pills>li.active>a:focus,
-.nav-pills>li.active>a:hover {
+.nav-pills > li.active > a,
+.nav-pills > li.active > a:focus,
+.nav-pills > li.active > a:hover {
   background-color: #555;
 }
 
@@ -574,19 +575,17 @@
   opacity: 0.7;
 }
 
-.modal-dialog-custom .modal-content:not(.modal-url) .close:focus, .modal-dialog-custom .modal-content:not(.modal-url) .close:hover {
+.modal-dialog-custom .modal-content:not(.modal-url) .close:focus,
+.modal-dialog-custom .modal-content:not(.modal-url) .close:hover {
   color: var(--text-light);
   opacity: 1;
 }
 
-.modal-popup > [id^="block"] {
+.modal-popup > [id^='block'] {
   height: 100%;
   min-height: 1px;
-  overflow:auto;
+  overflow: auto;
 }
-
-
-
 
 /*
 next css sets the default height of the frame popup
@@ -632,7 +631,7 @@ next css sets the default height of the frame popup
   color: #343a40;
   font-size: 17px;
   font-weight: 600;
-  letter-spacing: .02em;
+  letter-spacing: 0.02em;
 }
 
 .settings-brand img {
@@ -679,7 +678,10 @@ next css sets the default height of the frame popup
   background: #f8f9fa;
   color: #212529;
   cursor: pointer;
-  transition: background .15s ease, border-color .15s ease, transform .15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .settings-tile:hover,
@@ -918,11 +920,11 @@ next css sets the default height of the frame popup
 .settings-section-heading {
   margin: 18px 0 8px;
   padding-bottom: 4px;
-  border-bottom: 1px solid rgba(0, 0, 0, .1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   font-size: 13px;
   font-weight: 700;
   color: #495057;
-  letter-spacing: .03em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
@@ -1027,7 +1029,7 @@ next css sets the default height of the frame popup
   gap: 10px;
   min-height: 42px;
   padding: 3px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, .055);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.055);
 }
 
 .settings-label {
@@ -1101,7 +1103,7 @@ next css sets the default height of the frame popup
 .de-lms-switch.form-check-input:checked {
   background-color: #bfdbfe !important;
   border-color: #93c5fd !important;
-  background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%27-4 -4 8 8%27%3e%3ccircle r=%273%27 fill=%27%232563eb%27/%3e%3c/svg%3e") !important;
+  background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%27-4 -4 8 8%27%3e%3ccircle r=%273%27 fill=%27%232563eb%27/%3e%3c/svg%3e') !important;
 }
 
 #settingspopup .settings-switch .form-check-input:focus,
@@ -1155,7 +1157,7 @@ next css sets the default height of the frame popup
 .settings-help:hover,
 .settings-help:focus-visible {
   color: #084f8a;
-  background: rgba(11, 111, 194, .11);
+  background: rgba(11, 111, 194, 0.11);
   outline: none;
 }
 
@@ -1220,7 +1222,6 @@ next css sets the default height of the frame popup
   }
 }
 
-
 .nav {
   border-bottom: 1px solid #e5e5e5;
   padding-left: 10px;
@@ -1228,7 +1229,7 @@ next css sets the default height of the frame popup
 }
 
 .btn {
-/*  text-transform: none !important;*/
+  /*  text-transform: none !important;*/
   font-size: 16px;
   font-weight: 400;
 }
@@ -1309,35 +1310,32 @@ next css sets the default height of the frame popup
   color: var(--text-dark);
 }
 
-
-
 /* END || Settings modal */
 
 /* .log */
 
 .log {
-  height: 200px
+  height: 200px;
 }
 
 /*on IOS display:flex and height have to bubble down*/
 .log .dt_content {
-  height:100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.log .dt_state{
-  display:flex;
-  flex-direction:column;
+.log .dt_state {
+  display: flex;
+  flex-direction: column;
   height: 100%;
 }
 
-
 .log .items {
-  height: 100%; 
+  height: 100%;
   overflow: auto;
   width: 100%;
-  overflow-wrap: anywhere
+  overflow-wrap: anywhere;
 }
 
 .log table {
@@ -1346,15 +1344,15 @@ next css sets the default height of the frame popup
 }
 
 .log tbody {
-  width: 100%
+  width: 100%;
 }
 
 .log tr {
-  width: 100%
+  width: 100%;
 }
 
 .modal-popup > div > .log {
-  height: 100%
+  height: 100%;
 }
 
 .log .items .level0 {
@@ -1375,7 +1373,7 @@ next css sets the default height of the frame popup
 }
 
 .log .items .sep {
-  width: 5px
+  width: 5px;
 }
 
 /* end log */
@@ -1737,9 +1735,8 @@ body.dle-active {
   background-image:
     linear-gradient(rgba(90, 162, 255, 0.2) 1px, transparent 1px),
     linear-gradient(90deg, rgba(90, 162, 255, 0.2) 1px, transparent 1px);
-  background-size:
-    var(--dle-grid-column-stride, 40px)
-      calc(var(--dt-grid-row-height, 20px) + var(--dt-grid-gap, 0px));
+  background-size: var(--dle-grid-column-stride, 40px)
+    calc(var(--dt-grid-row-height, 20px) + var(--dt-grid-gap, 0px));
 }
 
 .dt-grid-screen.dle-grid-screen-editing {
@@ -1761,8 +1758,7 @@ body.dle-active {
 }
 
 @media (max-width: 767.98px) {
-  .dt-grid-screen
-    > .dt-grid-layout.dt-grid-mobile-stack.dle-grid-canvas {
+  .dt-grid-screen > .dt-grid-layout.dt-grid-mobile-stack.dle-grid-canvas {
     display: grid;
   }
 }
@@ -1886,15 +1882,14 @@ body.dle-active {
   width: 28px;
   height: 28px;
   cursor: nwse-resize;
-  background:
-    linear-gradient(
-      135deg,
-      transparent 0 45%,
-      rgba(255, 255, 255, 0.95) 46% 54%,
-      transparent 55% 64%,
-      rgba(255, 255, 255, 0.95) 65% 73%,
-      rgba(13, 110, 253, 0.9) 74%
-    );
+  background: linear-gradient(
+    135deg,
+    transparent 0 45%,
+    rgba(255, 255, 255, 0.95) 46% 54%,
+    transparent 55% 64%,
+    rgba(255, 255, 255, 0.95) 65% 73%,
+    rgba(13, 110, 253, 0.9) 74%
+  );
   border-radius: 0 0 5px 0;
 }
 
@@ -2148,7 +2143,6 @@ body.dle-active {
   width: 180px;
 }
 
-
 .de-device-title {
   width: 100%;
   min-width: 0;
@@ -2381,7 +2375,9 @@ body.dle-active {
     grid-template-columns: repeat(2, minmax(100px, 1fr));
   }
 
-  .de-config-options:not(.de-config-options-three):not(.de-config-options-four):not(.de-config-options-five) {
+  .de-config-options:not(.de-config-options-three):not(
+      .de-config-options-four
+    ):not(.de-config-options-five) {
     grid-template-columns: 1fr;
   }
 
@@ -2708,7 +2704,7 @@ body.dle-active {
 #we-config-popup .form-check-inline {
   display: inline-flex;
   align-items: center;
-  gap: .5rem;
+  gap: 0.5rem;
   min-height: 2.25rem;
 }
 
@@ -2821,9 +2817,9 @@ a.playlist {
 }
 
 .spotlist .spotify-info {
-  padding-left:10px;
-  padding-top:5px;
-  padding-right:10px;
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-right: 10px;
 }
 
 /* Thermostat CSS: */
@@ -2888,19 +2884,20 @@ a.playlist {
 }
 
 .transbg.longpress::after {
-  content:"";
+  content: '';
   float: left;
-  bottom:0;
-  left:0;
-  top:0;
-  width:100%;
-  height:100%;
-  border-right: solid rgba(255,255,255,0.5) 5px;
+  bottom: 0;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border-right: solid rgba(255, 255, 255, 0.5) 5px;
   position: absolute;
 }
 
-.btn.plus, .btn.min {
-  width: 100%
+.btn.plus,
+.btn.min {
+  width: 100%;
 }
 
 .btn.stop {
@@ -2914,7 +2911,7 @@ a.playlist {
   text-orientation: sideways-right;
   writing-mode: vertical-rl;
   width: var(--col2width);
-  font-size:20px;
+  font-size: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -2964,7 +2961,7 @@ a.playlist {
 }
 
 .map .dt_state {
-  position: relative
+  position: relative;
 }
 
 .map .time {
@@ -2980,7 +2977,7 @@ a.playlist {
 }
 
 .map .state_map {
-  height: 100%
+  height: 100%;
 }
 
 .map .state_info {
@@ -2991,15 +2988,14 @@ a.playlist {
   cursor: pointer;
 }
 
-.map .state_info *{
-  color: rgb(80,80,80);
-  background: rgba(255,255,255,0.9);
+.map .state_info * {
+  color: rgb(80, 80, 80);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .map .state_refresh_time {
   margin-left: 10px;
 }
-
 
 .trafficmap {
   height: 100%;
@@ -3015,8 +3011,8 @@ a.playlist {
   margin-top: 2px;
 }
 
-@media only screen and (max-width: 1000px) {}
-
+@media only screen and (max-width: 1000px) {
+}
 
 /************************/
 
@@ -3031,7 +3027,6 @@ a.playlist {
   color: #bbb;
   white-space: nowrap;
 }
-
 
 /*To change the default height of the graph popup adapt the height value in custom.css
   Example:
@@ -3066,7 +3061,6 @@ a.playlist {
   height: calc(100vh - 250px);
 }
 
-
 /* graphwidth for small screens.*/
 
 .graphwidth {
@@ -3075,11 +3069,11 @@ a.playlist {
 }
 
 @media (max-width: 768px) {
-/*  .graphwidth {
+  /*  .graphwidth {
     width: 100vw;
   }*/
   .modal-dialog {
-    width: 100%
+    width: 100%;
   }
 }
 
@@ -3408,7 +3402,7 @@ p {
   margin-bottom: 20px;
 }
 
-.row>div {
+.row > div {
   padding-right: 0px !important;
   padding-left: 0px !important;
 }
@@ -3423,7 +3417,7 @@ p {
  * column's own float context, so the next short tile can rise beside the tall
  * one. The layout editor overrides this while .dle-item-wrapper is active.
  */
-.screen .row > [data-colindex] > [id^="block_"]:not(.dle-item-wrapper) {
+.screen .row > [data-colindex] > [id^='block_']:not(.dle-item-wrapper) {
   display: contents;
 }
 
@@ -3451,7 +3445,7 @@ p {
 }
 
 .dt_block.popup {
-  background:unset;
+  background: unset;
 }
 
 .block_clock h1,
@@ -3468,14 +3462,12 @@ p {
   padding-top: 6px !important;
 }
 
-
 /*
 Only add this hover on NON touch devices
 */
 
 @media (hover: hover) {
-  
-  html.non-touch .hover:hover{
+  html.non-touch .hover:hover {
     background: rgba(255, 255, 255, 0.1);
     background-clip: padding-box;
     border: var(--block-gap) solid var(--border-color-block);
@@ -3484,9 +3476,7 @@ Only add this hover on NON touch devices
   html.non-touch .dial.hover:hover {
     background: inherit;
   }
-  
 }
-
 
 .transbg.hover {
   cursor: pointer;
@@ -3516,7 +3506,6 @@ Only add this hover on NON touch devices
   --disconnected-color: red;
   --connected-color: green;
 }
-
 
 .col-xs-1,
 .col-xs-2,
@@ -3570,7 +3559,7 @@ Only add this hover on NON touch devices
 
 .col-data {
   width: calc(100% - 45px);
-  float: left; 
+  float: left;
 }
 
 .hasbackground .col-data {
@@ -3578,7 +3567,7 @@ Only add this hover on NON touch devices
 }
 
 .right2col {
-  padding-right: calc(var(--col1width) + var(--col2width) + 8px);  
+  padding-right: calc(var(--col1width) + var(--col2width) + 8px);
 }
 
 .right1col {
@@ -3595,15 +3584,15 @@ Only add this hover on NON touch devices
 }
 
 .rgbcontainer {
-  display: flex
+  display: flex;
 }
 
 .rgbcontainer .slider {
-  width: 100%
+  width: 100%;
 }
 
 .rgbcontainer .rgbholder {
-  flex: 0 0 50px
+  flex: 0 0 50px;
 }
 
 .weekday {
@@ -3666,27 +3655,27 @@ html .ui-button.ui-state-disabled:active {
   text-transform: uppercase;
 }
 
-.navbar-default .nav>li>a,
-.navbar-default .nav>li>a:focus {
+.navbar-default .nav > li > a,
+.navbar-default .nav > li > a:focus {
   text-transform: uppercase;
   font-weight: 700;
   font-size: 13px;
   color: var(--text-dark);
 }
 
-.navbar-default .nav>li>a:hover,
-.navbar-default .nav>li>a:focus:hover {
+.navbar-default .nav > li > a:hover,
+.navbar-default .nav > li > a:focus:hover {
   color: var(--button-active);
 }
 
-.navbar-default .nav>li.active>a,
-.navbar-default .nav>li.active>a:focus {
+.navbar-default .nav > li.active > a,
+.navbar-default .nav > li.active > a:focus {
   color: var(--button-active) !important;
   background-color: transparent;
 }
 
-.navbar-default .nav>li.active>a:hover,
-.navbar-default .nav>li.active>a:focus:hover {
+.navbar-default .nav > li.active > a:hover,
+.navbar-default .nav > li.active > a:focus:hover {
   background-color: transparent;
 }
 
@@ -3702,12 +3691,12 @@ html .ui-button.ui-state-disabled:active {
   .navbar-default .navbar-header .navbar-brand:focus {
     color: var(--text-light);
   }
-  .navbar-default .nav>li>a,
-  .navbar-default .nav>li>a:focus {
+  .navbar-default .nav > li > a,
+  .navbar-default .nav > li > a:focus {
     color: rgba(255, 255, 255, 0.7);
   }
-  .navbar-default .nav>li>a:hover,
-  .navbar-default .nav>li>a:focus:hover {
+  .navbar-default .nav > li > a:hover,
+  .navbar-default .nav > li > a:focus:hover {
     color: var(--text-light);
   }
   .navbar-default.affix {
@@ -3722,12 +3711,12 @@ html .ui-button.ui-state-disabled:active {
   .navbar-default.affix .navbar-header .navbar-brand:focus {
     color: #eb3812;
   }
-  .navbar-default.affix .nav>li>a,
-  .navbar-default.affix .nav>li>a:focus {
+  .navbar-default.affix .nav > li > a,
+  .navbar-default.affix .nav > li > a:focus {
     color: var(--text-dark);
   }
-  .navbar-default.affix .nav>li>a:hover,
-  .navbar-default.affix .nav>li>a:focus:hover {
+  .navbar-default.affix .nav > li > a:hover,
+  .navbar-default.affix .nav > li > a:focus:hover {
     color: var(--button-active);
   }
 }
@@ -3897,13 +3886,21 @@ img.icon {
 .blinds-slider-action-up a,
 .blinds-slider-action-down a {
   color: #eafff0;
-  background: linear-gradient(180deg, rgba(94, 176, 92, 0.55), rgba(58, 122, 58, 0.55));
+  background: linear-gradient(
+    180deg,
+    rgba(94, 176, 92, 0.55),
+    rgba(58, 122, 58, 0.55)
+  );
   border: 1px solid rgba(139, 212, 130, 0.6);
 }
 
 .blinds-slider-action-up a:hover,
 .blinds-slider-action-down a:hover {
-  background: linear-gradient(180deg, rgba(110, 196, 108, 0.65), rgba(66, 138, 66, 0.65));
+  background: linear-gradient(
+    180deg,
+    rgba(110, 196, 108, 0.65),
+    rgba(66, 138, 66, 0.65)
+  );
 }
 
 .blinds-slider-action-stop a {
@@ -3981,7 +3978,11 @@ img.icon {
   z-index: 0;
   border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 10px;
-  background: linear-gradient(to top, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.14));
+  background: linear-gradient(
+    to top,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.14)
+  );
   pointer-events: none;
 }
 
@@ -3997,7 +3998,11 @@ img.icon {
 .blinds-slider-wrap .slider .ui-slider-range {
   top: -8px !important;
   border-radius: 9px;
-  background: linear-gradient(to top, rgba(75, 160, 75, 0.55), rgba(125, 220, 110, 0.95)) !important;
+  background: linear-gradient(
+    to top,
+    rgba(75, 160, 75, 0.55),
+    rgba(125, 220, 110, 0.95)
+  ) !important;
 }
 
 /* A small, plain button - not an oversized draggable circle. Width/height
@@ -4089,7 +4094,7 @@ img.icon {
   right: 16px;
   top: 0;
   transform: translateY(-50%);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.72);
   white-space: nowrap;
@@ -4173,7 +4178,7 @@ img.icon {
   .col-icon .wi {
     font-size: 15px !important;
   }
-  
+
   .fa-tv:before {
     font-size: 12px;
   }
@@ -4208,7 +4213,6 @@ div.screen {
   color: var(--text-light);
 }
 
-
 .section-heading {
   margin-top: 0;
 }
@@ -4217,7 +4221,7 @@ div.screen {
   color: var(--button-active);
 }
 
-.no-gutter>[class*='col-'] {
+.no-gutter > [class*='col-'] {
   padding-right: 0;
   padding-left: 0;
 }
@@ -4236,7 +4240,7 @@ div.screen {
 .btn-default.focus,
 .btn-default:active,
 .btn-default.active,
-.open>.dropdown-toggle.btn-default {
+.open > .dropdown-toggle.btn-default {
   color: var(--text-dark);
   background-color: #f2f2f2;
   border-color: #ededed;
@@ -4244,7 +4248,7 @@ div.screen {
 
 .btn-default:active,
 .btn-default.active,
-.open>.dropdown-toggle.btn-default {
+.open > .dropdown-toggle.btn-default {
   background-image: none;
 }
 
@@ -4289,7 +4293,7 @@ fieldset[disabled] .btn-default.active {
 .btn-primary.focus,
 .btn-primary:active,
 .btn-primary.active,
-.open>.dropdown-toggle.btn-primary {
+.open > .dropdown-toggle.btn-primary {
   color: var(--text-light);
   background-color: #ee4b28;
   border-color: #ed431f;
@@ -4297,7 +4301,7 @@ fieldset[disabled] .btn-default.active {
 
 .btn-primary:active,
 .btn-primary.active,
-.open>.dropdown-toggle.btn-primary {
+.open > .dropdown-toggle.btn-primary {
   background-image: none;
 }
 
@@ -4474,7 +4478,6 @@ a:not([href]) {
   cursor: pointer;
 }
 
-
 /* EVOHOME START */
 
 .text-grey {
@@ -4502,7 +4505,6 @@ a:not([href]) {
   display: none !important;
 }
 
-
 /* EVOHOME END */
 
 .hr_thin {
@@ -4523,7 +4525,7 @@ a:not([href]) {
   text-align: left;
   vertical-align: middle;
   min-width: 50%;
-  margin-left:auto;
+  margin-left: auto;
   margin-right: auto;
 }
 
@@ -4600,9 +4602,7 @@ a:not([href]) {
   overflow: hidden;
 }
 
-
 /* END: NEWS BLOCK */
-
 
 /* START: TOOLTIPSTYLE */
 
@@ -4721,9 +4721,7 @@ canvas {
   margin-right: 5px;
 }
 
-
 /* END: TOOLTIPSTYLE */
-
 
 /* START: GRAPH-MENU DEBUG */
 
@@ -4786,7 +4784,7 @@ canvas {
   padding-right: 5px;
 }
 
-.graph-menu div:not(.debug)>.fas {
+.graph-menu div:not(.debug) > .fas {
   padding-right: 5px;
 }
 
@@ -4864,9 +4862,7 @@ canvas {
   background-color: var(--text-light);
 }
 
-
 /* END: GRAPH-MENU DEBUG */
-
 
 /* START: CAMERA COMPONENT */
 
@@ -4883,7 +4879,7 @@ canvas {
 .cam-container .carousel-inner {
   position: relative;
   width: 100%;
-  overflow: visible!important;
+  overflow: visible !important;
 }
 
 .cam-container .stream {
@@ -5016,30 +5012,42 @@ canvas {
 .cam-container .cam-caption {
   position: absolute;
   color: var(--text-light);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
   z-index: 30;
   right: 3%;
   margin-top: 1%;
 }
 
 .cam-container .carousel-inner .item img {
-  height: 100vh!important;
+  height: 100vh !important;
 }
 
 .cam-container .carousel-indicators {
-  bottom: 5%!important;
+  bottom: 5% !important;
 }
 
 .carbon {
-  background: linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px, linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px, linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px, linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px, linear-gradient(90deg, #1b1b1b 10px, transparent 10px), linear-gradient( #1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
+  background:
+    linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
+    linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px,
+    linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px,
+    linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px,
+    linear-gradient(90deg, #1b1b1b 10px, transparent 10px),
+    linear-gradient(
+      #1d1d1d 25%,
+      #1a1a1a 25%,
+      #1a1a1a 50%,
+      transparent 50%,
+      transparent 75%,
+      #242424 75%,
+      #242424
+    );
   background-color: #131313;
   background-size: 20px 20px;
   background-clip: content-box;
 }
 
-
 /* END: CAMERA COMPONENT */
-
 
 /* START: CORONAVIRUS */
 
@@ -5091,9 +5099,7 @@ canvas {
   vertical-align: middle;
 }
 
-
 /* END: CORONAVIRUS */
-
 
 /* START: AGENDA */
 
@@ -5113,7 +5119,6 @@ canvas {
 }
 
 /* END: AGENDA */
-
 
 /* START: NEW CALENDAR */
 
@@ -5148,7 +5153,7 @@ canvas {
   text-align: left;
 }
 
-.cal_table td>div {
+.cal_table td > div {
   text-align: center;
 }
 
@@ -5156,36 +5161,36 @@ canvas {
   white-space: wrap !important;
 }
 
-.cal_table td>div.historic>div {
+.cal_table td > div.historic > div {
   color: rgba(255, 255, 255, 0.3);
 }
 
-.cal_table td>div.header {
+.cal_table td > div.header {
   background-color: #484848;
   max-width: inherit;
 }
 
-.cal_table td>div.today {
+.cal_table td > div.today {
   background-color: #0275d8;
 }
 
-.cal_table td>div.event:hover,
-.cal_table td>div.event.historic:hover>div {
+.cal_table td > div.event:hover,
+.cal_table td > div.event.historic:hover > div {
   background-color: #f0ad4e;
   color: var(--selector-bg);
 }
 
-.cal_table td>div.allday {
+.cal_table td > div.allday {
   background-color: #d9534f;
   border-radius: 2px;
 }
 
-.cal_table td>div.allday.hol {
+.cal_table td > div.allday.hol {
   background-color: #428442;
   border-radius: 2px;
 }
 
-.cal_table td>div:not(:first-child) {
+.cal_table td > div:not(:first-child) {
   display: inline-flex;
   margin: 3px 5px;
   display: flex;
@@ -5213,18 +5218,18 @@ canvas {
   border-radius: 5px;
 }
 
-.cal-modal>.cal-title {
+.cal-modal > .cal-title {
   font-size: 1.8em;
   font-weight: 900;
   margin-bottom: 10px;
   padding-bottom: 5px;
 }
 
-.cal-modal>.cal-title>.far {
+.cal-modal > .cal-title > .far {
   float: right !important;
 }
 
-.cal-modal>.cal-info {
+.cal-modal > .cal-info {
   overflow-y: auto;
   height: calc(100% - 55px);
   border-bottom: solid 1px #bebebe;
@@ -5232,7 +5237,7 @@ canvas {
   padding-top: 10px;
 }
 
-.cal-modal>.cal-footer {
+.cal-modal > .cal-footer {
   bottom: 0px !important;
   position: absolute;
   width: 93%;
@@ -5246,24 +5251,24 @@ canvas {
   position: absolute;
 }
 
-.cal-modal>.cal-footer a {
+.cal-modal > .cal-footer a {
   color: grey;
 }
 
-.cal-modal>.cal-footer a:hover {
+.cal-modal > .cal-footer a:hover {
   color: dodgerblue;
 }
 
-.cal-modal>.cal-footer a:nth-child(1) {
+.cal-modal > .cal-footer a:nth-child(1) {
   float: left;
 }
 
-.cal-modal>.cal-footer a:nth-child(2) {
+.cal-modal > .cal-footer a:nth-child(2) {
   float: right;
 }
 
 @media screen and (max-width: 1400px) and (max-height: 800px) {
-  .cal_table td>div:first-child {
+  .cal_table td > div:first-child {
     text-align: center;
   }
   .cal_table td div {
@@ -5272,16 +5277,18 @@ canvas {
   }
 }
 
-
 /* END: CALENDAR */
-
 
 /* START: SECURITY PANEL */
 
 @font-face {
   font-family: 'Audiowide';
   src: url('../font/Audiowide.eot');
-  src: url('../font/Audiowide.eot?#iefix') format('embedded-opentype'), url('../font/Audiowide.woff') format('woff'), url('../font/Audiowide.ttf') format('truetype'), url('../font/Audiowide.svg#../font/Audiowide-7Italic') format('svg');
+  src:
+    url('../font/Audiowide.eot?#iefix') format('embedded-opentype'),
+    url('../font/Audiowide.woff') format('woff'),
+    url('../font/Audiowide.ttf') format('truetype'),
+    url('../font/Audiowide.svg#../font/Audiowide-7Italic') format('svg');
 }
 
 .sec-modal {
@@ -5312,26 +5319,29 @@ canvas {
 }
 
 .sec-modal .sec-frame {
-  position: relative
+  position: relative;
 }
 
 .sec-frame {
   border-radius: 5px;
   position: relative;
   width: 12em;
-  margin: 0 auto
+  margin: 0 auto;
 }
 
 .sec-frame.decorated {
   background-image: url(../img/bg14.jpg);
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
-  box-shadow: 0px 6px 20px 5px rgba(0, 0, 0, 0.75), inset 0px 5px 7px -2px rgba(252, 252, 252, 0.2), inset 0 -14px 8px 2px rgba(0, 0, 0, 0.7);
+  box-shadow:
+    0px 6px 20px 5px rgba(0, 0, 0, 0.75),
+    inset 0px 5px 7px -2px rgba(252, 252, 252, 0.2),
+    inset 0 -14px 8px 2px rgba(0, 0, 0, 0.7);
   padding: 1em;
 }
 
 .sec-frame:not(.decorated) {
-  background-color: rgba(0,0,0,0.2);
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .sec-frame .keypad-header {
@@ -5421,7 +5431,10 @@ canvas {
   border-radius: 3px;
   background-color: #161616;
   border: 0;
-  box-shadow: inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5), inset 0px 0px 15px 5px var(--main-bg-strong);
+  box-shadow:
+    inset 0px 1px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5),
+    inset 0px 0px 15px 5px var(--main-bg-strong);
   color: #8fffd0;
   font-family: monospace;
   text-align: center;
@@ -5467,9 +5480,21 @@ canvas {
 }
 
 .sec-frame.decorated .keypad-input .key {
-  -webkit-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  -moz-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -webkit-box-shadow:
+    0px 11px 22px #000000,
+    0px 3px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -moz-box-shadow:
+    0px 11px 22px #000000,
+    0px 3px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0px 11px 22px #000000,
+    0px 3px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
 }
 
 .sec-frame .keypad-input .key:not(.disabled):hover {
@@ -5478,9 +5503,21 @@ canvas {
 
 .sec-frame .keypad-input .key:not(.disabled):active {
   transform: scale(0.9);
-  -webkit-box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  -moz-box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -webkit-box-shadow:
+    0px 2px 6px #000000,
+    0px 15px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 1),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -moz-box-shadow:
+    0px 2px 6px #000000,
+    0px 15px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 1),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0px 2px 6px #000000,
+    0px 15px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 1),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
 }
 
 .sec-frame .keypad-input .key.h {
@@ -5519,7 +5556,10 @@ canvas {
   font-weight: 900;
   font-size: 100%;
   color: rgba(130, 130, 130, 0.8);
-  text-shadow: -1px -1px 1px var(--main-bg-strong), 0 0 0 #000, 1px 1px 3px rgba(255, 255, 255, 0.7);
+  text-shadow:
+    -1px -1px 1px var(--main-bg-strong),
+    0 0 0 #000,
+    1px 1px 3px rgba(255, 255, 255, 0.7);
 }
 
 .sec-frame .keypad-input .status[data-id='disarm']:before {
@@ -5559,18 +5599,110 @@ canvas {
   width: 0.5em;
   height: 0.5em;
   border-radius: 100%;
-  background: -moz-linear-gradient( -45deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
-  background: -webkit-gradient( linear, left top, right bottom, color-stop(0%, #adadad), color-stop(51%, #e1e1e1), color-stop(68%, #dddddd), color-stop(100%, #f6f6f6));
-  background: -webkit-linear-gradient( -45deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
-  background: -o-linear-gradient( -45deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
-  background: -ms-linear-gradient( -45deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
-  background: linear-gradient( 135deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
+  background: -moz-linear-gradient(
+    -45deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
+  background: -webkit-gradient(
+    linear,
+    left top,
+    right bottom,
+    color-stop(0%, #adadad),
+    color-stop(51%, #e1e1e1),
+    color-stop(68%, #dddddd),
+    color-stop(100%, #f6f6f6)
+  );
+  background: -webkit-linear-gradient(
+    -45deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
+  background: -o-linear-gradient(
+    -45deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
+  background: -ms-linear-gradient(
+    -45deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
+  background: linear-gradient(
+    135deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
   filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#adadad', endColorstr='#f6f6f6', GradientType=1);
   -moz-box-shadow: 0px 2px 4px #000;
   -webkit-box-shadow: 0px 2px 4px #000;
-  box-shadow: 0px 2px 4px #000, -1px 3px 10px 7px var(--main-bg-dark);
+  box-shadow:
+    0px 2px 4px #000,
+    -1px 3px 10px 7px var(--main-bg-dark);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background-image: -webkit-radial-gradient( 50% 0%, 8% 50%, hsla(0, 0%, 100%, 0.5) 0%, hsla(0, 0%, 100%, 0) 100%), -webkit-radial-gradient(50% 100%, 12% 50%, hsla(0, 0%, 100%, 0.6) 0%, hsla( 0, 0%, 100%, 0) 100%), -webkit-radial-gradient(0% 50%, 50% 7%, hsla(0, 0%, 100%, 0.5) 0%, hsla( 0, 0%, 100%, 0) 100%), -webkit-radial-gradient(100% 50%, 50% 5%, hsla(0, 0%, 100%, 0.5) 0%, hsla( 0, 0%, 100%, 0) 100%), -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 0%, 0) 0%, hsla( 0, 0%, 0%, 0) 3%, hsla(0, 0%, 0%, 0.1) 3.5%), -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 100%, 0) 0%, hsla(0, 0%, 100%, 0) 6%, hsla(0, 0%, 100%, 0.1) 7.5%), -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 100%, 0) 0%, hsla(0, 0%, 100%, 0) 1.2%, hsla(0, 0%, 100%, 0.2) 2.2%), -webkit-radial-gradient(50% 50%, 200% 50%, hsla(0, 0%, 90%, 1) 5%, hsla( 0, 0%, 85%, 1) 30%, hsla(0, 0%, 60%, 1) 100%);
+  background-image:
+    -webkit-radial-gradient(
+      50% 0%,
+      8% 50%,
+      hsla(0, 0%, 100%, 0.5) 0%,
+      hsla(0, 0%, 100%, 0) 100%
+    ),
+    -webkit-radial-gradient(
+        50% 100%,
+        12% 50%,
+        hsla(0, 0%, 100%, 0.6) 0%,
+        hsla(0, 0%, 100%, 0) 100%
+      ),
+    -webkit-radial-gradient(
+        0% 50%,
+        50% 7%,
+        hsla(0, 0%, 100%, 0.5) 0%,
+        hsla(0, 0%, 100%, 0) 100%
+      ),
+    -webkit-radial-gradient(
+        100% 50%,
+        50% 5%,
+        hsla(0, 0%, 100%, 0.5) 0%,
+        hsla(0, 0%, 100%, 0) 100%
+      ),
+    -webkit-repeating-radial-gradient(
+        50% 50%,
+        100% 100%,
+        hsla(0, 0%, 0%, 0) 0%,
+        hsla(0, 0%, 0%, 0) 3%,
+        hsla(0, 0%, 0%, 0.1) 3.5%
+      ),
+    -webkit-repeating-radial-gradient(
+        50% 50%,
+        100% 100%,
+        hsla(0, 0%, 100%, 0) 0%,
+        hsla(0, 0%, 100%, 0) 6%,
+        hsla(0, 0%, 100%, 0.1) 7.5%
+      ),
+    -webkit-repeating-radial-gradient(
+        50% 50%,
+        100% 100%,
+        hsla(0, 0%, 100%, 0) 0%,
+        hsla(0, 0%, 100%, 0) 1.2%,
+        hsla(0, 0%, 100%, 0.2) 2.2%
+      ),
+    -webkit-radial-gradient(
+        50% 50%,
+        200% 50%,
+        hsla(0, 0%, 90%, 1) 5%,
+        hsla(0, 0%, 85%, 1) 30%,
+        hsla(0, 0%, 60%, 1) 100%
+      );
   opacity: 0.5;
 }
 
@@ -5616,14 +5748,12 @@ canvas {
   display: none;
 }
 
-
 /* END: SECURITY PANEL */
-
 
 /* START: DIAL */
 
 .transbg.dial {
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0, 0, 0, 0);
 }
 
 .block-center {
@@ -5643,12 +5773,11 @@ canvas {
 }
 
 .dt_content .dial {
-  
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  
+
   /* Backstop only: js/components/dial.js sets an inline font-size that
      matches the block's actual measured/configured size on every mount. */
   font-size: 100px;
@@ -5664,7 +5793,9 @@ canvas {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 5px 10px 2px rgba(0, 0, 0, 0.3), inset 0px 0px 6px 0px rgba(0, 0, 0, 1);
+  box-shadow:
+    0 5px 10px 2px rgba(0, 0, 0, 0.3),
+    inset 0px 0px 6px 0px rgba(0, 0, 0, 1);
 }
 
 .dial:hover {
@@ -5726,7 +5857,7 @@ canvas {
   clip: auto;
 }
 
-.slice.primary{
+.slice.primary {
   color: #ffa500;
   color: var(--dial-color);
 }
@@ -5739,7 +5870,7 @@ canvas {
   color: #28a745;
 }
 
-.slice.negative{
+.slice.negative {
   color: #dc3545;
 }
 
@@ -5814,11 +5945,11 @@ canvas {
 }
 
 .dial .slice.splitdial-plus {
-  transform: translate(-50%,-50%) rotateY(0deg) rotateX(0deg)!important;
+  transform: translate(-50%, -50%) rotateY(0deg) rotateX(0deg) !important;
 }
 
 .dial .slice.splitdial-minus {
-  transform: translate(-50%,-50%) rotate(180deg)!important;
+  transform: translate(-50%, -50%) rotate(180deg) !important;
 }
 
 .dial:not(.p180):not(.p360) .slice,
@@ -5828,7 +5959,7 @@ canvas {
 
 .dial.p180 .slice,
 .dial.p360 .slice {
-  clip: rect(0em, 1em, 1em, 0em)!important;
+  clip: rect(0em, 1em, 1em, 0em) !important;
 }
 
 .dial .dial-container {
@@ -5855,7 +5986,7 @@ canvas {
 .dt_content .dial.active:not(.fixed):hover .dial-container {
   width: 80%;
   height: 80%;
-/*  top: 6%;
+  /*  top: 6%;
   left: 6%;*/
   top: 50%;
   left: 50%;
@@ -5925,7 +6056,9 @@ canvas {
   justify-content: center;
   border-radius: 50%;
   background: radial-gradient(circle, #333, #444);
-  box-shadow: inset 0 0 3px 0px var(--main-bg-dark), 0 0 11px 0px var(--main-bg-strong);
+  box-shadow:
+    inset 0 0 3px 0px var(--main-bg-dark),
+    0 0 11px 0px var(--main-bg-strong);
   -webkit-transition: all 0.2s ease-in;
   -moz-transition: all 0.2s ease-in;
   -o-transition: all 0.2s ease-in;
@@ -5955,7 +6088,7 @@ canvas {
   padding-left: 0;
   width: 130%;
   height: 100%;
-/*  font-size: 9%;*/
+  /*  font-size: 9%;*/
   position: absolute;
   top: 50%;
   left: 50%;
@@ -5976,16 +6109,19 @@ canvas {
   flex-direction: column;
 }
 
-.dial-menu  {
-    height: 90%;
-    width: 90%;
-    position: absolute;
-    top: 5%;
-    left:5%;
-    border-radius: 50%;
-    box-shadow: inset 0px 0.5px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 2px rgba(255, 255, 255, 0.5), inset 0px 5px 8px 5px var(--main-bg-strong);
-    background-color: #2a2a2a;  
-    overflow:hidden;
+.dial-menu {
+  height: 90%;
+  width: 90%;
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  border-radius: 50%;
+  box-shadow:
+    inset 0px 0.5px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 2px rgba(255, 255, 255, 0.5),
+    inset 0px 5px 8px 5px var(--main-bg-strong);
+  background-color: #2a2a2a;
+  overflow: hidden;
 }
 
 .dial-menu .status li {
@@ -6005,7 +6141,14 @@ canvas {
 }
 
 .dial-menu .status li.selected {
-  background: linear-gradient( to right, black 0%, #29261f 8%, var(--dial-color) 50%, #29261f 92%, black 100%);
+  background: linear-gradient(
+    to right,
+    black 0%,
+    #29261f 8%,
+    var(--dial-color) 50%,
+    #29261f 92%,
+    black 100%
+  );
   color: #393939;
   -moz-box-shadow: 5px 0px 15px var(--main-bg-dark);
   -webkit-box-shadow: 5px 0px 15px var(--main-bg-dark);
@@ -6013,11 +6156,10 @@ canvas {
 }
 
 .dial-menu-title {
- 
 }
 
 .dial-menu-title-text {
-/*
+  /*
   position: absolute;
   text-align: center;
   bottom:0;
@@ -6030,37 +6172,37 @@ canvas {
 }
 
 .dial-menu-title-background {
-  content:'';
+  content: '';
   position: absolute;
-  line-height:400%;
-  bottom:0;
-  left:0;
+  line-height: 400%;
+  bottom: 0;
+  left: 0;
   text-align: center;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-    background: radial-gradient(circle, #333, #444);
-  clip: rect( 6em, 12em, 12em, 0);
+  background: radial-gradient(circle, #333, #444);
+  clip: rect(6em, 12em, 12em, 0);
 }
 
 .dial-menu-title {
-  position:absolute;
+  position: absolute;
   width: 100%;
   height: 27%;
   bottom: 5%;
   left: 0;
-  
-/*  background: rgba(0,255,0,0.5);*/
+
+  /*  background: rgba(0,255,0,0.5);*/
   display: flex;
   justify-content: center;
   align-items: center;
   color: orange;
-  color: var(--dial-color);  
+  color: var(--dial-color);
 }
 
 .dial-menu.hastitle .status {
-  height:85%;
-  top:35%;
+  height: 85%;
+  top: 35%;
 }
 .dial .dial-face {
   width: 100%;
@@ -6114,8 +6256,6 @@ canvas {
   text-align: center;
   white-space: nowrap;
 }
-
-
 
 .dial .dial-display {
   display: -webkit-box;
@@ -6173,13 +6313,11 @@ canvas {
   text-align: center;
   left: 50%;
   transform: translate(-50%);
-
-  
 }
 
 .dial.text .value-unit {
   width: 95%;
-/*  font-size: 10%;*/
+  /*  font-size: 10%;*/
 }
 
 .dial.text .value {
@@ -6197,7 +6335,6 @@ canvas {
 .dial .info.nosetpoint {
   margin-bottom: 7px;
 }
-
 
 .dial .extra {
   position: absolute;
@@ -6223,7 +6360,7 @@ canvas {
 }
 
 .dial .itemlabel {
-  margin-right: 0.3em
+  margin-right: 0.3em;
 }
 
 .dial .info {
@@ -6232,7 +6369,7 @@ canvas {
 }
 
 .dial:hover .info {
-  display:block
+  display: block;
 }
 
 .dial .extra i {
@@ -6244,18 +6381,17 @@ canvas {
   margin-right: 0.25em;
 }
 
-.dial .item.primary{
+.dial .item.primary {
   font-size: 150%;
-  width:100%
+  width: 100%;
 }
-
 
 .dataunit {
   display: flex;
   align-items: center;
 }
 
-.primary .data{
+.primary .data {
   font-size: 1.5em;
   line-height: 1.5em;
   color: #cccccc;
@@ -6271,7 +6407,7 @@ canvas {
 }
 
 .dial-switch .extra {
-  margin-top: 4%
+  margin-top: 4%;
 }
 
 .dial-switch .info {
@@ -6281,7 +6417,7 @@ canvas {
 /*Some dial utility classes*/
 
 .dial .w100 {
-  width: 100%
+  width: 100%;
 }
 
 .dial.active:not(.fixed):hover .value-unit .unit {
@@ -6334,7 +6470,6 @@ canvas {
   text-align: center;
   position: absolute;
 }
-
 
 /* Dial face 360 degrees with 10 numbers */
 
@@ -6397,7 +6532,6 @@ canvas {
   left: 42%;
   top: 90%;
 }
-
 
 /* Dial face 360 degrees with 12 numbers */
 
@@ -6472,7 +6606,6 @@ canvas {
   left: 42%;
   top: 90%;
 }
-
 
 /* Dial face 280 degrees with 10 numbers */
 
@@ -6555,7 +6688,7 @@ canvas {
   right: 0;
   bottom: 0;
   left: 0;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=0)';
   filter: alpha(opacity=0);
   -moz-opacity: 0;
   opacity: 0;
@@ -6591,7 +6724,10 @@ canvas {
   -o-transition: all 0.2s ease-out;
   transition: all 0.2s ease-out;
   text-shadow: 0 2px 1px rgba(0, 0, 0, 0.25);
-  box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.13), 0 5px 8px rgba(0, 0, 0, 0.3), 0 10px 10px 4px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.13),
+    0 5px 8px rgba(0, 0, 0, 0.3),
+    0 10px 10px 4px rgba(0, 0, 0, 0.3);
   z-index: -1;
   margin: 0;
 }
@@ -6608,7 +6744,7 @@ canvas {
 }
 
 .dial .background {
-  border-radius: 50%
+  border-radius: 50%;
 }
 /*needed? Remove for now ...
 .dial-switch .switch-face:after {
@@ -6625,7 +6761,7 @@ canvas {
 */
 
 .dial-switch .switch-face:before {
-  content: "";
+  content: '';
   position: absolute;
   left: -10px;
   right: -10px;
@@ -6646,7 +6782,7 @@ canvas {
   height: 99%;
 }
 
-.dial-switch input:checked~.switch-face {
+.dial-switch input:checked ~ .switch-face {
   box-shadow: 0 0 25px 1px var(--dial-rgba);
   color: orange;
   color: var(--dial-color);
@@ -6656,7 +6792,7 @@ canvas {
 
 .dial-switch .icon-off {
   font-size: 150%;
-  color: rgba(128,128,128,0.5);
+  color: rgba(128, 128, 128, 0.5);
   -webkit-transition: all 0.1s ease;
   -moz-transition: all 0.1s ease;
   -ms-transition: all 0.1s ease;
@@ -6668,7 +6804,7 @@ canvas {
   transform: translate(-50%, -50%);
 }
 
-.dial-switch input:checked~.switch-face .device {
+.dial-switch input:checked ~ .switch-face .device {
   -webkit-transition: all 0.1s ease;
   -moz-transition: all 0.1s ease;
   -ms-transition: all 0.1s ease;
@@ -6676,7 +6812,7 @@ canvas {
   transition: all 0.1s ease;
 }
 
-.dial-switch input:checked~.switch-face .fas {
+.dial-switch input:checked ~ .switch-face .fas {
   color: orange;
   color: var(--dial-color);
   -webkit-transition: all 0.1s ease;
@@ -6686,7 +6822,7 @@ canvas {
   transition: all 0.1s ease;
 }
 
-.dial-switch input:checked~.switch-face .info {
+.dial-switch input:checked ~ .switch-face .info {
   -webkit-transition: all 0.1s ease;
   -moz-transition: all 0.1s ease;
   -ms-transition: all 0.1s ease;
@@ -6695,7 +6831,7 @@ canvas {
 }
 
 .dial-switch .icon-off:after {
-  content: "";
+  content: '';
   display: block;
   position: absolute;
   width: 90%;
@@ -6712,7 +6848,9 @@ canvas {
   background: -webkit-gradient(linear, 0 0, 0 100%, from(#161616), to(#6c6c6c));
   background: -webkit-linear-gradient(#161616, #6c6c6c);
   background: linear-gradient(#161616, #6c6c6c);
-  box-shadow: 0 -2px 5px rgba(255, 255, 255, 0.05), 0 2px 5px rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 -2px 5px rgba(255, 255, 255, 0.05),
+    0 2px 5px rgba(255, 255, 255, 0.1);
   -webkit-transition: all 0.1s ease;
   -moz-transition: all 0.1s ease;
   -ms-transition: all 0.1s ease;
@@ -6721,7 +6859,7 @@ canvas {
 }
 
 .dial .blinds {
-/*  font-size: 72%;*/
+  /*  font-size: 72%;*/
 }
 
 .dialbtn.up {
@@ -6735,11 +6873,11 @@ canvas {
   position: absolute;
   line-height: 3em;
   transform-origin: top;
-  content: "";
+  content: '';
   width: calc(100% - 0.7em);
   height: calc(100% - 0.4em);
   height: 2.8em;
-  border-bottom: 0.2em solid rgba(0,0,0,0.6);
+  border-bottom: 0.2em solid rgba(0, 0, 0, 0.6);
 }
 
 .dialbtn {
@@ -6759,7 +6897,7 @@ canvas {
   cursor: pointer;
   outline: none;
   transition: 0.2s all;
-  transition-timing-function: cubic-bezier(.91,.8,.54,1.39);
+  transition-timing-function: cubic-bezier(0.91, 0.8, 0.54, 1.39);
   display: flex;
   justify-content: center;
   z-index: 10;
@@ -6781,21 +6919,20 @@ canvas {
   transform-origin: top;
 }
 .dialbtn.selected {
-  background-image: radial-gradient(rgba(255,255,255,0.5), rgba(0,0,0,0));
+  background-image: radial-gradient(rgba(255, 255, 255, 0.5), rgba(0, 0, 0, 0));
 }
 
 .dialbtn.up::after {
   position: absolute;
   line-height: 3em;
   transform-origin: top;
-  content: "";
+  content: '';
   width: calc(100% - 0.5em);
   height: 2.7em;
-  border-bottom: 0.2em solid rgba(0,0,0,0.6);
+  border-bottom: 0.2em solid rgba(0, 0, 0, 0.6);
   left: 0.25em;
   top: 0;
 }
-
 
 .dialbtn.down {
   background-color: rgba(64, 64, 64, 0.2);
@@ -6809,13 +6946,13 @@ canvas {
   position: absolute;
   line-height: 3em;
   transform-origin: top;
-  content: "";
+  content: '';
   width: calc(100% - 0.5em);
   height: calc(100% - 0.4em);
   height: 2.7em;
-  border-top: 0.2em solid rgba(0,0,0,0.6);;
+  border-top: 0.2em solid rgba(0, 0, 0, 0.6);
   top: 0em;
-  left: 0em
+  left: 0em;
 }
 
 .dialbtn.middle {
@@ -6829,11 +6966,11 @@ canvas {
 .dialbtn.middle::after {
   position: absolute;
   line-height: 1em;
-  content: "";
+  content: '';
   width: calc(100% - 0.4em);
   height: 2.7em;
-  border-top: 0.2em solid rgba(0,0,0,0.6);
-  border-bottom: 0.2em solid rgba(0,0,0,0.6);
+  border-top: 0.2em solid rgba(0, 0, 0, 0.6);
+  border-bottom: 0.2em solid rgba(0, 0, 0, 0.6);
   left: 0;
 }
 
@@ -6842,11 +6979,11 @@ canvas {
 }
 
 .middle .icon {
-   font-size: unset
+  font-size: unset;
 }
 
 .middle .text {
-  font-size: 90%
+  font-size: 90%;
 }
 
 /* Vertical 10-segment Blinds Percentage bar (dial subtype: 'bar'). 0% at
@@ -6907,7 +7044,11 @@ canvas {
   flex: 1 1 0;
   min-height: 6px;
   background-color: #7a7a7a;
-  background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0) 40%);
+  background-image: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.25),
+    rgba(255, 255, 255, 0) 40%
+  );
   border: 1px solid rgba(0, 0, 0, 0.35);
   border-radius: 3px;
   cursor: pointer;
@@ -6916,7 +7057,11 @@ canvas {
 
 .dial-bar-segment.filled {
   background-color: var(--success-green);
-  background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0) 40%);
+  background-image: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.35),
+    rgba(255, 255, 255, 0) 40%
+  );
 }
 
 .dial-bar-value {
@@ -6925,21 +7070,19 @@ canvas {
   text-align: center;
 }
 
-.dialupdown .up .text, .dialupdown .down .text  {
-  font-size:250%
+.dialupdown .up .text,
+.dialupdown .down .text {
+  font-size: 250%;
 }
 
-
 /* END: DIAL */
-
 
 /* Traffic */
 
 #trafficweb iframe {
   width: 100%;
-  height: 575px
+  height: 575px;
 }
-
 
 /* start colorPicker */
 
@@ -6952,17 +7095,17 @@ canvas {
 }
 
 .colorpicker .modal-header {
-  display: flex
+  display: flex;
 }
 
 .colorpicker .modal-title {
-  width: 100%
+  width: 100%;
 }
 
 .colorpicker .modal-dialog {
   max-width: 90%;
   min-width: unset;
-  width: 90%;  
+  width: 90%;
 }
 
 .colorpicker .modal-content {
@@ -6972,7 +7115,7 @@ canvas {
 
 .colorpicker .cp-iro {
   overflow-x: auto;
-  flex-wrap: wrap
+  flex-wrap: wrap;
 }
 
 .colorpicker .cp-buttons {
@@ -6980,11 +7123,11 @@ canvas {
 }
 
 .cp-buttons .btn {
-  width: 4em
+  width: 4em;
 }
 
 .colorpicker img {
-  width: 100%
+  width: 100%;
 }
 
 .colorpicker .cp-buttonsOnOff {
@@ -6995,7 +7138,7 @@ canvas {
   padding-top: 10px;
   padding-bottom: 10px;
   color: darkgrey;
-  background-color: lightgray
+  background-color: lightgray;
   /*  margin-top: 10px;
   margin-bottom: 10px;*/
   /*width: 48px;*/
@@ -7016,26 +7159,25 @@ canvas {
   align-items: center;
 }
 
-.cp-iro>div {
-  margin: 0 10px
+.cp-iro > div {
+  margin: 0 10px;
 }
-
 
 /*end colorpicker*/
 
 /*garbage*/
 .trash .state {
-    font-size: calc(var(--font-small) - 2px) !important;
-    margin-top: -10px;
+  font-size: calc(var(--font-small) - 2px) !important;
+  margin-top: -10px;
 }
 
 .trashsep {
-    width: 10px;
-    text-align: center;
+  width: 10px;
+  text-align: center;
 }
 
 .trashdate {
-    text-align: right;
+  text-align: right;
 }
 /*end garbage*/
 
@@ -7043,20 +7185,20 @@ canvas {
 
 .battery-level {
   position: absolute;
-  right:0;
-  top:0;
+  right: 0;
+  top: 0;
   color: rgba(255, 255, 255, 0.5);
   margin-right: 3px;
-  font-size: 15px
+  font-size: 15px;
 }
 
 .battery-level.fa-battery-empty {
-  color:var(--warning-red);
+  color: var(--warning-red);
   z-index: 15;
 }
 
 .battery-percentage {
-/*  position: absolute;
+  /*  position: absolute;
   top: 5px;
   left: 2px;*/
   width: 100%;
@@ -7069,14 +7211,14 @@ canvas {
 /*tvguide*/
 
 .tvguide tr {
-  vertical-align: top
+  vertical-align: top;
 }
 .tvtime {
-  white-space: nowrap
+  white-space: nowrap;
 }
 .tvchannel {
   font-style: italic;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .tvtitle {
@@ -7093,14 +7235,14 @@ canvas {
 /*xmltvguide*/
 
 .xmltvguide tr {
-  vertical-align: top
+  vertical-align: top;
 }
 .xmltv-time {
-  white-space: nowrap
+  white-space: nowrap;
 }
 .xmltv-channel {
   font-style: italic;
-  white-space: nowrap
+  white-space: nowrap;
 }
 .xmltv-title {
   font-weight: bold;
@@ -7145,7 +7287,7 @@ canvas {
 
 /*debug*/
 .debug ::selection {
-  color:var(--text-light);
+  color: var(--text-light);
   text-shadow: none;
   background: blue;
 }
@@ -7153,25 +7295,26 @@ canvas {
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow-y:auto;
+  overflow-y: auto;
 }
 
 .debug .tab-content {
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow-y:auto;
+  overflow-y: auto;
 }
 
 .debug #debug-log {
   height: calc(100% - 2em);
 }
 
-.selectable, .selectable > * {
+.selectable,
+.selectable > * {
   -moz-user-select: text;
   -webkit-user-select: text;
   -ms-user-select: text;
-  user-select: text
+  user-select: text;
 }
 
 .debug #debug-items {
@@ -7180,15 +7323,15 @@ canvas {
 }
 
 .debug .debug-status {
-  height: 2em
+  height: 2em;
 }
 
 .debug #debug-status {
-  height: calc(100% - 2em)
+  height: calc(100% - 2em);
 }
 
 .debug .debug-memory-container {
-  height: calc(100% - 8em)
+  height: calc(100% - 8em);
 }
 
 .debug #debug-save {
@@ -7198,7 +7341,6 @@ canvas {
 }
 
 .modal-dialog-custom .tab-content {
-
 }
 
 .modal-dialog-custom .debugitems {
@@ -7207,7 +7349,7 @@ canvas {
 
 /*owm widget*/
 .dt_block.owmwidget {
-  background-color: unset 
+  background-color: unset;
 }
 
 /*public transport*/
@@ -7216,7 +7358,9 @@ canvas {
   border-collapse: separate;
 }
 
-.publictransport td {vertical-align: top;}
+.publictransport td {
+  vertical-align: top;
+}
 
 .publictransport .destination {
   font-style: bold;
@@ -7224,7 +7368,7 @@ canvas {
 
 .publictransport .via {
   font-style: italic;
-  color:lightgray;
+  color: lightgray;
 }
 
 .publictransport .platform {
@@ -7233,7 +7377,7 @@ canvas {
 
 .publictransport .transporttype {
   font-style: italic;
-  color:lightgray;
+  color: lightgray;
 }
 
 .publictransport .delay {
@@ -7258,8 +7402,8 @@ canvas {
 }
 
 .waqi.xxl {
-  padding-top: 5px!important;
-  padding-left: 10px!important;
+  padding-top: 5px !important;
+  padding-left: 10px !important;
 }
 .waqi.xxl iframe {
   background-color: #f6f9f7;
@@ -7268,16 +7412,15 @@ canvas {
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   border-radius: 5px;
-  -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.6);
-  -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.6);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
   margin-top: 10px;
   margin-bottom: 10px;
   margin-right: 10px;
 }
 
-.publictransport .remarks
-{
+.publictransport .remarks {
   font-style: italic;
 }
 
@@ -7443,14 +7586,13 @@ canvas {
 }
 
 .lms-title {
-  /* The most prominent line, per spec's Artist/Title/Album hierarchy. */
-  font-size: 1.15em;
-  font-weight: 700;
+  /* Match the artist typography while retaining the distinct title color. */
+  font-size: var(--font-small);
   color: var(--text-title);
 }
 
 .lms-album {
-  font-size: var(--font-small);
+  font-size: calc(var(--font-small) - 2px);
   color: var(--text-muted);
 }
 

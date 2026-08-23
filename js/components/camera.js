@@ -128,7 +128,9 @@ var DT_camera = {
           height:
             isGridItem && !explicitHeight
               ? false
-              : cam.block && cam.block.height ? cam.block.height : 300,
+              : cam.block && cam.block.height
+                ? cam.block.height
+                : 300,
           mjpeg: cam.mjpeg,
           id: cam.key,
         };
@@ -317,46 +319,42 @@ var DT_camera = {
     if (DT_camera.listenersBound) return;
     DT_camera.listenersBound = true;
     /* Listens when thumbs are clicked on Dashticz screen */
-    $('body').on(
-      'click',
-      '.dt-camera-thumb',
-      function () {
-        DT_camera.carousel = true;
-        var key = $(this).data('id');
-        var index = DT_camera.devices.findIndex(function (object) {
-          return object.key === key;
+    $('body').on('click', '.dt-camera-thumb', function () {
+      DT_camera.carousel = true;
+      var key = $(this).data('id');
+      var index = DT_camera.devices.findIndex(function (object) {
+        return object.key === key;
+      });
+      var camera = DT_camera.devices[index];
+      if (!camera) return;
+
+      /* Camera carousel opened for the first time */
+      if ($('#camCarousel').length === 0) {
+        templateEngine.load('camera_video').then(function (template) {
+          if ($('body #camCarousel').length === 0) {
+            $('body').append(
+              template({
+                urls: DT_camera.devices,
+                slide: camera.block.slidedelay * 1000,
+              })
+            );
+            var $cam = $('body').find('#cam' + index);
+            var $ind = $('body').find('#ind' + index);
+            $('#camCarousel').carousel();
+            $cam.parent().addClass('active');
+            $ind.addClass('active');
+            DT_camera.setStream(index);
+          }
         });
-        var camera = DT_camera.devices[index];
-        if (!camera) return;
 
-        /* Camera carousel opened for the first time */
-        if ($('#camCarousel').length === 0) {
-          templateEngine.load('camera_video').then(function (template) {
-            if ($('body #camCarousel').length === 0) {
-              $('body').append(
-                template({
-                  urls: DT_camera.devices,
-                  slide: camera.block.slidedelay * 1000,
-                })
-              );
-              var $cam = $('body').find('#cam' + index);
-              var $ind = $('body').find('#ind' + index);
-              $('#camCarousel').carousel();
-              $cam.parent().addClass('active');
-              $ind.addClass('active');
-              DT_camera.setStream(index);
-            }
-          });
-
-          /* Show existing Camera carousel */
-        } else {
-          $('#camCarousel').show();
-          $('#camCarousel').carousel('cycle');
-          $('#camCarousel').carousel(index);
-          DT_camera.setStream(index);
-        }
+        /* Show existing Camera carousel */
+      } else {
+        $('#camCarousel').show();
+        $('#camCarousel').carousel('cycle');
+        $('#camCarousel').carousel(index);
+        DT_camera.setStream(index);
       }
-    );
+    });
 
     /* Listens when an image is selected in the tray */
     $('body').on('click', '.cam-container .cam-tray-img', function () {

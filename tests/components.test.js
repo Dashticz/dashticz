@@ -152,7 +152,9 @@ test('Lyrion Music Server block dispatches on type: lms and has no default icon'
   const lms = loadComponent('js/components/lms.js', {
     settings: { dashticz_php_path: 'js/' },
     language: { misc: {} },
-    $: Object.assign(() => ({ text: () => ({ html: () => '' }) }), { ajax: () => ({ then: () => ({ catch: () => {} }) }) }),
+    $: Object.assign(() => ({ text: () => ({ html: () => '' }) }), {
+      ajax: () => ({ then: () => ({ catch: () => {} }) }),
+    }),
   });
   assert.equal(lms.name, 'lms');
   assert.equal(lms.canHandle({ type: 'lms' }), true);
@@ -162,7 +164,10 @@ test('Lyrion Music Server block dispatches on type: lms and has no default icon'
   // default icon - getBlockConfig() (js/dashticz.js) only applies block.icon
   // when the block's own CONFIG.js entry defines it. The cover artwork is
   // this block's own visual, so no icon is shown unless explicitly configured.
-  assert.equal(Object.prototype.hasOwnProperty.call(lms.defaultCfg, 'icon'), false);
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(lms.defaultCfg, 'icon'),
+    false
+  );
   assert.equal(lms.defaultCfg.refresh, 5);
   assert.equal(lms.defaultCfg.width, 6);
   assert.equal(lms.defaultCfg.port, 9000);

@@ -85,9 +85,7 @@ var DT_news = {
             var newsItem = {
               show: me.showImage,
               image: safeExternalUrl(
-                $(this)
-                  .find('media\\:content, content, enclosure')
-                  .attr('url')
+                $(this).find('media\\:content, content, enclosure').attr('url')
               ),
               title: $(this).find('title').text(),
               link: safeExternalUrl($(this).find('link').text()),
@@ -116,10 +114,10 @@ var DT_news = {
               $(document.body).append(template);
             });
           }
-          $(me.mountPoint + ' .headline').on("click", function() {
+          $(me.mountPoint + ' .headline').on('click', function () {
             var url = $(this).data('link');
-            DT_function.clickHandler(me, {url: url})
-          })
+            DT_function.clickHandler(me, { url: url });
+          });
 
           if (me.height) {
             /*set to fixed height*/

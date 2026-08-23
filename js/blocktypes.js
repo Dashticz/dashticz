@@ -1,4 +1,3 @@
-
 /* global getExtendedBlockTypes _TEMP_SYMBOL language settings isDomoticzDevice*/
 /* Thermostat helpers are loaded from tempcontrol.js. */
 /* global getEvohomeZoneBlock, getEvohomeHotWaterBlock getEvohomeControllerBlock getThermostatBlock*/
@@ -10,7 +9,7 @@
 /* global getSecurityBlock postHookLogitechMediaServer*/
 // Type/SubType/SwitchType
 var blocktypes = {};
-var SubType = {}
+var SubType = {};
 SubType.Visibility = {
   icon: 'fas fa-eye',
 };
@@ -63,13 +62,13 @@ SubType['Thermostat Mode'] = {
 
 SubType['Soil Moisture'] = {
   icon: 'fas fa-seedling',
-  values: [{
-  },
-  {
-    value: '<Desc>',
-  }
-  ]
-}
+  values: [
+    {},
+    {
+      value: '<Desc>',
+    },
+  ],
+};
 
 SubType.Current = {
   icon: 'fas fa-plug',
@@ -108,16 +107,15 @@ SubType.kWh = {
       subtitle: language.energy.energy_total,
       decimals: settings['units'].decimals.kwh,
       unit: settings['units'].names.kwh,
-    }
-  ]
-
-}
+    },
+  ],
+};
 
 blocktypes.General = {
-  SubType: SubType
-}
+  SubType: SubType,
+};
 
-SubType = {}
+SubType = {};
 //
 SubType['Energy'] = {
   icon: 'fas fa-plug',
@@ -182,9 +180,9 @@ SubType['Energy'] = {
       format: true,
       unit: settings['units'].names.kwh,
       hideEmpty: 'Data1',
-    }
-  ]
-}
+    },
+  ],
+};
 
 SubType['Gas'] = {
   icon: 'fas fa-fire',
@@ -196,49 +194,55 @@ SubType['Gas'] = {
     {
       subtitle: language.energy.energy_totals,
       value: '<Counter>',
-      unit: ' m3'
+      unit: ' m3',
     },
-  ]
-}
+  ],
+};
 
 blocktypes['P1 Smart Meter'] = {
-  SubType: SubType
-}
+  SubType: SubType,
+};
 
 //Type RFXMeter
-SubType = {}
+SubType = {};
 
 SubType['RFXMeter counter'] = {
   icon: 'fas fa-fire',
   format: true,
   decimals: 2,
   SwitchType: {
-    0: { //Energy
+    0: {
+      //Energy
       icon: 'fas fa-bolt',
       unit: settings['units'].names.kwh,
       decimals: settings['units'].decimals.kwh,
     },
-    1: { //Gas
+    1: {
+      //Gas
       icon: 'fas fa-fire',
       unit: settings['units'].names.gas,
       decimals: settings['units'].decimals.gas,
     },
-    2: { //Water
+    2: {
+      //Water
       icon: 'fas fa-tint',
       unit: settings['units'].names.water,
       decimals: settings['units'].decimals.water,
     },
-    3: { //Counter
+    3: {
+      //Counter
       unit: function (device) {
         return device.ValueUnits;
       },
     },
-    4: { //Energy Generated
+    4: {
+      //Energy Generated
       icon: 'fas fa-sun',
       unit: settings['units'].names.kwh,
       decimals: settings['units'].decimals.kwh,
     },
-    5: { //Time
+    5: {
+      //Time
       icon: 'far fa-clock',
       unit: settings['units'].names.time,
       decimals: settings['units'].decimals.time,
@@ -251,18 +255,18 @@ SubType['RFXMeter counter'] = {
     },
     {
       subtitle: language.energy.energy_totals,
-      value: '<Counter>'
+      value: '<Counter>',
     },
     {
       value: '<Usage>',
-      hideEmpty: 'Usage'
+      hideEmpty: 'Usage',
     },
-  ]
-}
+  ],
+};
 
 blocktypes.RFXMeter = {
-  SubType: SubType
-}
+  SubType: SubType,
+};
 
 blocktypes['YouLess Meter'] = {
   icon: 'fas fa-fire',
@@ -283,10 +287,10 @@ blocktypes['YouLess Meter'] = {
       value: '<Usage>',
       decimals: settings['units'].decimals.watt,
       unit: settings['units'].names.watt,
-      hideEmpty: 'Usage'
-    }
-  ]
-}
+      hideEmpty: 'Usage',
+    },
+  ],
+};
 
 blocktypes.Rain = {
   icon: 'fas fa-tint',
@@ -311,7 +315,7 @@ blocktypes.Usage = blocktypes.General.SubType.Electric;
 
 blocktypes.Scale = {
   icon: 'fas fa-weight',
-}
+};
 
 blocktypes['Air Quality'] = {
   image: 'air.png',
@@ -328,50 +332,51 @@ blocktypes['Temp + Humidity + Baro'] = {
   icon: 'fas fa-thermometer-half',
   SubType: {
     Zone: {
-      handler: getEvohomeZoneBlock
+      handler: getEvohomeZoneBlock,
     },
     Evohome: {
-      handler: getEvohomeControllerBlock
+      handler: getEvohomeControllerBlock,
     },
     'Hot Water': {
-      handler: getEvohomeHotWaterBlock
-    }
-  },
-  values: [{
-    value: function (device) {
-      return choose(device.Temp && '<Temp>', '<Data>')
+      handler: getEvohomeHotWaterBlock,
     },
-    format: true,
-    decimals: 1,
-    unit: _TEMP_SYMBOL
   },
-  {
-    icon: 'wi wi-humidity',
-    value: '<Humidity>',
-    unit: '%',
-    format: true,
-    decimals: 0,
-    hideEmpty: 'Humidity',
-  },
-  {
-    icon: 'wi wi-barometer',
-    value: '<Barometer>',
-    format: true,
-    decimals: 0,
-    unit: 'hPa',
-    hideEmpty: 'Barometer'
-  },
-  {
-    icon: 'wi wi-fog',
-    value: '<DewPoint>',
-    subtitle: language.settings.weather.dewpoint,
-    format: true,
-    decimals: 1,
-    unit: _TEMP_SYMBOL,
-    hideEmpty: 'DewPoint'
-  }
-  ]
-}
+  values: [
+    {
+      value: function (device) {
+        return choose(device.Temp && '<Temp>', '<Data>');
+      },
+      format: true,
+      decimals: 1,
+      unit: _TEMP_SYMBOL,
+    },
+    {
+      icon: 'wi wi-humidity',
+      value: '<Humidity>',
+      unit: '%',
+      format: true,
+      decimals: 0,
+      hideEmpty: 'Humidity',
+    },
+    {
+      icon: 'wi wi-barometer',
+      value: '<Barometer>',
+      format: true,
+      decimals: 0,
+      unit: 'hPa',
+      hideEmpty: 'Barometer',
+    },
+    {
+      icon: 'wi wi-fog',
+      value: '<DewPoint>',
+      subtitle: language.settings.weather.dewpoint,
+      format: true,
+      decimals: 1,
+      unit: _TEMP_SYMBOL,
+      hideEmpty: 'DewPoint',
+    },
+  ],
+};
 
 blocktypes['Temp + Humidity'] = blocktypes['Temp + Humidity + Baro'];
 blocktypes['Temp + Baro'] = blocktypes['Temp + Humidity + Baro'];
@@ -403,19 +408,19 @@ blocktypes.Humidity = {
   decimals: 0,
   value: '<Humidity>',
   unit: '%',
-}
+};
 
 blocktypes.Thermostat = {
-  handler: getThermostatBlock
-}
+  handler: getThermostatBlock,
+};
 
 blocktypes.Setpoint = blocktypes.Thermostat;
 
 blocktypes.Group = {
   iconOn: 'fas fa-lightbulb',
   iconOff: 'far fa-lightbulb',
-  handler: getDefaultSwitchBlock
-}
+  handler: getDefaultSwitchBlock,
+};
 
 blocktypes.Scene = blocktypes.Group;
 
@@ -426,16 +431,16 @@ blocktypes.Scene = blocktypes.Group;
 // populate - the tile rendered empty (#120). Keep the SwitchType entry too,
 // in case some hardware variant does report it.
 blocktypes.Security = {
-  handler: getSecurityBlock
-}
+  handler: getSecurityBlock,
+};
 
 /*Switches*/
 
-var SwitchType = {}
+var SwitchType = {};
 
 SwitchType['Dimmer'] = {
-  handler: getDimmerBlock
-}
+  handler: getDimmerBlock,
+};
 
 SwitchType['Door Contact'] = {
   iconOn: 'fas fa-door-open',
@@ -444,7 +449,7 @@ SwitchType['Door Contact'] = {
   textOff: language.switches.state_closed,
   handler: getDefaultSwitchBlock,
   protected: true,
-}
+};
 SwitchType.Contact = SwitchType['Door Contact'];
 
 SwitchType['Door Lock'] = {
@@ -453,22 +458,24 @@ SwitchType['Door Lock'] = {
   textOn: language.switches.state_unlocked,
   textOff: language.switches.state_locked,
   handler: getDefaultSwitchBlock,
-}
+};
 SwitchType['Door Lock Inverted'] = SwitchType['Door Lock'];
 
 SwitchType.Blinds = {
-  handler: getBlindsBlock
-}
+  handler: getBlindsBlock,
+};
 
-var allblinds = ['Venetian Blinds EU',
+var allblinds = [
+  'Venetian Blinds EU',
   'Venetian Blinds US',
   'Venetian Blinds EU Inverted',
   'Venetian Blinds US Inverted',
   'Blinds',
-  'Blinds Inverted'];
+  'Blinds Inverted',
+];
 
 allblinds.forEach(function (id) {
-  SwitchType[id] = SwitchType.Blinds
+  SwitchType[id] = SwitchType.Blinds;
 });
 
 allblinds = [
@@ -478,17 +485,17 @@ allblinds = [
   'Venetian Blinds EU Percentage',
   'Venetian Blinds EU Inverted Percentage',
   'Venetian Blinds EU Percentage Inverted',
-]
+];
 allblinds.forEach(function (id) {
   SwitchType[id] = {
     withPercentage: true,
-    handler: getBlindsBlock
-  }
+    handler: getBlindsBlock,
+  };
 });
 
 SwitchType.Security = {
   handler: getSecurityBlock,
-}
+};
 
 SwitchType['Motion Sensor'] = {
   imageOn: 'motion_on.png',
@@ -497,7 +504,7 @@ SwitchType['Motion Sensor'] = {
   textOff: language.switches.state_nomovement,
   handler: getDefaultSwitchBlock,
   protected: true,
-}
+};
 
 SwitchType['Smoke Detector'] = {
   image: 'heating.png',
@@ -506,7 +513,7 @@ SwitchType['Smoke Detector'] = {
   handler: getDefaultSwitchBlock,
   protected: true,
   defaultAddClass: 'smoke',
-}
+};
 
 SwitchType['Doorbell'] = {
   icon: 'fas fa-bell',
@@ -514,32 +521,34 @@ SwitchType['Doorbell'] = {
   textOn: '',
   textOff: '',
   protected: true,
-}
+};
 
 SwitchType['Media Player'] = {
   width: 12,
   graph: false,
   icon: 'fas fa-film',
   last_update: false,
-  value: function(device) {
-    return device.Data? device.Data: language.misc.mediaplayer_nothing_playing 
+  value: function (device) {
+    return device.Data
+      ? device.Data
+      : language.misc.mediaplayer_nothing_playing;
   },
-  hidden: function(device) {
-    return settings['hide_mediaplayer'] && !device.Data
-  }
+  hidden: function (device) {
+    return settings['hide_mediaplayer'] && !device.Data;
+  },
 
-//  handler: getMediaPlayer
-}
+  //  handler: getMediaPlayer
+};
 
 SwitchType['Selector'] = {
-  handler: getSelectorSwitch
-}
+  handler: getSelectorSwitch,
+};
 
 blocktypes.SwitchType = SwitchType;
 
 var HardwareType = {
   /* probably no specifc Toon handler is needed anymore*/
-/*  "Toon Thermostaat" : {
+  /*  "Toon Thermostaat" : {
     handler: getToonThermostat
   },*/
   'Logitech Media Server': {
@@ -547,9 +556,9 @@ var HardwareType = {
     graph: false,
     icon: 'fas fa-music',
     last_update: false,
-    postHook: postHookLogitechMediaServer
-  }
-}
+    postHook: postHookLogitechMediaServer,
+  },
+};
 
 blocktypes.HardwareType = HardwareType;
 
@@ -564,13 +573,29 @@ function getBlockTypesBlock(block) {
     block.idx = isDomoticzDevice(block.idx);
   }
 
-  var newblock = { graph: true, title: '<Name>', value: '<Data>', idx: block.idx, showsubtitles: true };
-  var protoBlock = {graph: true, title: '<Name>', value: '<Data>', idx: block.idx, showsubtitles: true };
+  var newblock = {
+    graph: true,
+    title: '<Name>',
+    value: '<Data>',
+    idx: block.idx,
+    showsubtitles: true,
+  };
+  var protoBlock = {
+    graph: true,
+    title: '<Name>',
+    value: '<Data>',
+    idx: block.idx,
+    showsubtitles: true,
+  };
   var found = false;
-  if (!found && device.HardwareType && blocktypes.HardwareType[device.HardwareType]) {
-//    protoBlock= blocktypes.HardwareType[device.HardwareType];
+  if (
+    !found &&
+    device.HardwareType &&
+    blocktypes.HardwareType[device.HardwareType]
+  ) {
+    //    protoBlock= blocktypes.HardwareType[device.HardwareType];
     $.extend(protoBlock, blocktypes.HardwareType[device.HardwareType]);
-    found=true;
+    found = true;
   }
   if (!found && device.SwitchType && blocktypes.SwitchType[device.SwitchType]) {
     $.extend(protoBlock, blocktypes.SwitchType[device.SwitchType]);
@@ -590,14 +615,13 @@ function getBlockTypesBlock(block) {
       }
     }
   }
-  if (!found && device.SwitchType) 
-  {
+  if (!found && device.SwitchType) {
     protoBlock = {
       iconOn: 'fas fa-lightbulb',
       iconOff: 'far fa-lightbulb',
       handler: getDefaultSwitchBlock,
-    }
-    found=true;
+    };
+    found = true;
   }
 
   if (!found) {
@@ -609,7 +633,12 @@ function getBlockTypesBlock(block) {
     var c = 1;
     for (var de in protoBlock.values) {
       var subblock = {};
-      $.extend(subblock, newblock, getSubBlock(protoBlock), getSubBlock(protoBlock.values[de]));
+      $.extend(
+        subblock,
+        newblock,
+        getSubBlock(protoBlock),
+        getSubBlock(protoBlock.values[de])
+      );
       subblock.subidx = c;
       blockValues.push(subblock);
       c++;
@@ -619,20 +648,20 @@ function getBlockTypesBlock(block) {
   return protoBlock;
 }
 
-
-
 function getSubBlock(parent) {
   /*
 This function creates a new object (`acc`) that is a copy of the `parent` object, but without the `values` property. It does this by iterating over the keys of the `parent` object, excluding the `values` key, and adding the corresponding values to the new object.
 */
-  var exclude = ['values', 'Type', 'SubType', 'SwitchType']
+  var exclude = ['values', 'Type', 'SubType', 'SwitchType'];
 
-  return Object.keys(parent).filter(function (key) {
-    return !exclude.includes(key)
-  }).reduce(function (subblock, key) {
-    subblock[key] = parent[key];
-    return subblock;
-  }, {})
+  return Object.keys(parent)
+    .filter(function (key) {
+      return !exclude.includes(key);
+    })
+    .reduce(function (subblock, key) {
+      subblock[key] = parent[key];
+      return subblock;
+    }, {});
 }
 
 function iconFromDevice(device) {

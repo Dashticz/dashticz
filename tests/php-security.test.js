@@ -19,8 +19,7 @@ function read(relativePath) {
    actual PHP semantics, not just a pattern match. */
 function normalizeHostInput(value) {
   const securityPhp = path.join(root, 'vendor/dashticz/security.php');
-  const script =
-    `require '${securityPhp}'; echo json_encode(dashticz_normalize_host_input(${JSON.stringify(value)}));`;
+  const script = `require '${securityPhp}'; echo json_encode(dashticz_normalize_host_input(${JSON.stringify(value)}));`;
   const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
   return JSON.parse(result.stdout);
@@ -39,7 +38,9 @@ function lmsShutdownFatalOutput() {
   const marker = '/* Single backend bridge';
   const cut = source.indexOf(marker);
   assert.ok(cut !== -1, 'try/catch marker not found in lms/index.php');
-  const prefix = source.slice(0, cut) + "\ndashticz_lms_test_only_undefined_function_call();\n";
+  const prefix =
+    source.slice(0, cut) +
+    '\ndashticz_lms_test_only_undefined_function_call();\n';
   // __DIR__ resolves against the process cwd under `php -r`, and the file's
   // own require_once(__DIR__ . '/../security.php') expects to sit in
   // vendor/dashticz/lms/, so cwd is pointed there to match.
@@ -62,21 +63,52 @@ function lmsShutdownFatalOutput() {
    always sees it as empty, so a real `php -S` server is required here
    rather than piping into a CLI invocation. Confirms the guard moved into
    the try block actually prevents the crash, not just that the source
-   contains the check. */
-function lmsRequestWithoutCurl(payload) {
+   contains the check.
+   `-n` also drops ext-json on PHP < 8 (where it's a loadable module,
+   unlike 8.0+ where it's a permanent core extension) - explicitly
+   reloading it keeps json_decode()/json_encode() (used by both the
+   request parser and the shutdown handler's own fallback) working while
+   curl stays disabled, so this only ever exercises the curl guard. */
+async function lmsRequestWithoutCurl(payload) {
   const port = 20000 + (process.pid % 10000);
-  const proc = spawn('php', ['-n', '-d', 'display_errors=0', '-S', `127.0.0.1:${port}`], { cwd: root });
+  const proc = spawn(
+    'php',
+    [
+      '-n',
+      '-d',
+      'extension=json',
+      '-d',
+      'display_errors=0',
+      '-S',
+      `127.0.0.1:${port}`,
+    ],
+    { cwd: root }
+  );
+  let serverStderr = '';
+  proc.stderr.on('data', (chunk) => {
+    serverStderr += chunk;
+  });
   try {
     const deadline = Date.now() + 3000;
     let ready = false;
     while (Date.now() < deadline && !ready) {
-      const probe = spawnSync('curl', ['-s', '-o', '/dev/null', '-w', '%{http_code}', `http://127.0.0.1:${port}/`]);
-      if (probe.stdout && probe.stdout.toString().trim() !== '000') ready = true;
+      const probe = spawnSync('curl', [
+        '-s',
+        '-S',
+        '-o',
+        '/dev/null',
+        '-w',
+        '%{http_code}',
+        `http://127.0.0.1:${port}/`,
+      ]);
+      if (probe.stdout && probe.stdout.toString().trim() !== '000')
+        ready = true;
     }
     const result = spawnSync(
       'curl',
       [
         '-s',
+        '-S',
         '-X',
         'POST',
         '-H',
@@ -91,7 +123,17 @@ function lmsRequestWithoutCurl(payload) {
       ],
       { encoding: 'utf8' }
     );
-    return { stdout: result.stdout, stderr: result.stderr };
+    // A brief settle so the server's own stderr (its per-request access log
+    // line, or a fatal error) has actually been flushed and read before it
+    // gets attached to the diagnostics below.
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    return {
+      stdout: result.stdout,
+      stderr: result.stderr,
+      curlStatus: result.status,
+      curlError: result.error ? result.error.message : null,
+      serverStderr,
+    };
   } finally {
     proc.kill();
   }
@@ -108,11 +150,13 @@ function lmsConnectErrorReason(errno) {
   const cut = source.indexOf(marker);
   assert.ok(cut !== -1, 'dashticz_lms_read_input() not found in lms/index.php');
   const securityPhp = path.join(root, 'vendor/dashticz/security.php');
-  const funcsFile = path.join(os.tmpdir(), `dashticz-lms-funcs-${process.pid}.php`);
+  const funcsFile = path.join(
+    os.tmpdir(),
+    `dashticz-lms-funcs-${process.pid}.php`
+  );
   fs.writeFileSync(funcsFile, '<?php\n' + source.slice(cut));
   try {
-    const script =
-      `require '${securityPhp}'; require '${funcsFile}'; echo dashticz_lms_connect_error_reason(${Number(errno)});`;
+    const script = `require '${securityPhp}'; require '${funcsFile}'; echo dashticz_lms_connect_error_reason(${Number(errno)});`;
     const result = spawnSync('php', ['-r', script], { encoding: 'utf8' });
     assert.equal(result.status, 0, result.stderr);
     return result.stdout;
@@ -130,7 +174,10 @@ test('remote proxy endpoints use the validated fetch helper', () => {
     assert.match(source, /dashticz_require_same_origin\(\)/);
     assert.match(source, /dashticz_fetch_remote\(/);
     assert.doesNotMatch(source, /Access-Control-Allow-Origin:\s*\*/);
-    assert.doesNotMatch(source, /file_get_contents\(\$_SERVER\["QUERY_STRING"\]\)/);
+    assert.doesNotMatch(
+      source,
+      /file_get_contents\(\$_SERVER\["QUERY_STRING"\]\)/
+    );
   }
 });
 
@@ -138,7 +185,10 @@ test('xmltv proxy validates remote URLs and keeps cache handling local', () => {
   const source = read('vendor/dashticz/xmltv.php');
   assert.match(source, /dashticz_require_same_origin\(\)/);
   assert.match(source, /dashticz_validate_remote_url\(\$url,\s*true\)/);
-  assert.match(source, /dashticz_fetch_remote\(\$url,\s*52428800,\s*3,\s*true\)/);
+  assert.match(
+    source,
+    /dashticz_fetch_remote\(\$url,\s*52428800,\s*3,\s*true\)/
+  );
   assert.match(source, /sha1\(\$url\)/);
   assert.match(source, /86400/);
   assert.match(source, /gzdecode/);
@@ -155,7 +205,10 @@ test('LMS backend bridge is same-origin gated, allows LAN access, and never leak
   // $port . '/jsonrpc.js' below, or it produces a malformed double-scheme
   // URL whose host resolves to the literal string "http" and fails with
   // "Remote host could not be resolved."
-  assert.match(source, /\$server = isset\(\$input\['server'\]\) \? dashticz_normalize_host_input\(\$input\['server'\]\) : '';/);
+  assert.match(
+    source,
+    /\$server = isset\(\$input\['server'\]\) \? dashticz_normalize_host_input\(\$input\['server'\]\) : '';/
+  );
   // dashticz_lms_curl()'s own function_exists('curl_init') guard runs too
   // late without ext-curl: dashticz_lms_request() builds a CURLOPT_POST/...
   // array as part of *calling* that function, so PHP resolves those
@@ -169,7 +222,10 @@ test('LMS backend bridge is same-origin gated, allows LAN access, and never leak
   // LMS is virtually always a LAN-only server, like Domoticz itself, so the
   // private/reserved-IP block dashticz_validate_remote_url() applies by
   // default must be explicitly lifted here (mirrors xmltv.php above).
-  assert.match(source, /dashticz_validate_remote_url\(\s*\n?\s*'http:\/\/' \. \$request\['server'\] \. ':' \. \$request\['port'\] \. '\/jsonrpc\.js',\s*\n\s*true/);
+  assert.match(
+    source,
+    /dashticz_validate_remote_url\(\s*\n?\s*'http:\/\/' \. \$request\['server'\] \. ':' \. \$request\['port'\] \. '\/jsonrpc\.js',\s*\n\s*true/
+  );
   // artwork_url is LMS-server-relative (its own image proxy/cache, e.g.
   // "/imageproxy/https%3A%2F%2Flastfm.../image.jpg" for an internet radio
   // track, or "imageproxy/..." without the leading slash from some plugins
@@ -177,7 +233,10 @@ test('LMS backend bridge is same-origin gated, allows LAN access, and never leak
   // THAT gets the same private-IP allowance as LMS's own endpoints, after
   // normalizing a missing leading slash; only a genuinely absolute external
   // artwork_url must NOT get it (SSRF hygiene).
-  assert.match(source, /if \(!preg_match\('#\^https\?:\/\/#i', \$artworkUrl\)\) \{/);
+  assert.match(
+    source,
+    /if \(!preg_match\('#\^https\?:\/\/#i', \$artworkUrl\)\) \{/
+  );
   assert.match(source, /\$lmsPath = '\/' \. ltrim\(\$artworkUrl, '\/'\);/);
   assert.match(
     source,
@@ -197,8 +256,14 @@ test('LMS backend bridge is same-origin gated, allows LAN access, and never leak
   // connect-failure reason is narrowed by curl_errno() alone (a fixed,
   // enumerated string), never curl_error()'s free-text message.
   assert.doesNotMatch(source, /curl_error\(/);
-  assert.doesNotMatch(source, /\$response\b.*(?:\.|,)\s*getMessage|var_dump|print_r/);
-  assert.match(source, /'Unable to connect to Lyrion Music Server' \. \$reason \. '\.'/);
+  assert.doesNotMatch(
+    source,
+    /\$response\b.*(?:\.|,)\s*getMessage|var_dump|print_r/
+  );
+  assert.match(
+    source,
+    /'Unable to connect to Lyrion Music Server' \. \$reason \. '\.'/
+  );
   assert.match(source, /function dashticz_lms_connect_error_reason\(\$errno\)/);
   assert.match(source, /CURLE_COULDNT_RESOLVE_HOST/);
   assert.match(source, /CURLE_COULDNT_CONNECT/);
@@ -242,7 +307,10 @@ test('dashticz_normalize_host_input() cleans a pasted scheme/path/port from a se
   assert.equal(normalizeHostInput('  192.168.1.6  '), '192.168.1.6');
   assert.equal(normalizeHostInput('192.168.1.6/'), '192.168.1.6');
   // A trailing path beyond a bare slash is stripped the same way.
-  assert.equal(normalizeHostInput('http://192.168.1.6/jsonrpc.js'), '192.168.1.6');
+  assert.equal(
+    normalizeHostInput('http://192.168.1.6/jsonrpc.js'),
+    '192.168.1.6'
+  );
   // An accidentally-included port (the field's own job) is dropped too.
   assert.equal(normalizeHostInput('192.168.1.6:9000'), '192.168.1.6');
   // A plain host/IP with nothing to strip is returned unchanged.
@@ -262,7 +330,10 @@ test('dashticz_lms_connect_error_reason() narrows a curl connect failure to a fi
     lmsConnectErrorReason(7),
     ': check the address/port and that the server is reachable on your network'
   );
-  assert.equal(lmsConnectErrorReason(6), ': the server address could not be resolved');
+  assert.equal(
+    lmsConnectErrorReason(6),
+    ': the server address could not be resolved'
+  );
   assert.equal(lmsConnectErrorReason(28), ': the connection timed out');
   // Any other curl errno falls back to no extra detail rather than guessing.
   assert.equal(lmsConnectErrorReason(99999), '');
@@ -306,14 +377,38 @@ function lmsFetchCover(payload) {
 
   const mockPort = 21000 + (process.pid % 1000);
   const dashticzPort = 22000 + (process.pid % 1000);
-  const mockServer = spawn('php', ['-S', `127.0.0.1:${mockPort}`, path.join(mockDir, 'router.php')]);
-  const dashticzServer = spawn('php', ['-S', `127.0.0.1:${dashticzPort}`], { cwd: root });
+  const mockServer = spawn('php', [
+    '-S',
+    `127.0.0.1:${mockPort}`,
+    path.join(mockDir, 'router.php'),
+  ]);
+  const dashticzServer = spawn('php', ['-S', `127.0.0.1:${dashticzPort}`], {
+    cwd: root,
+  });
   try {
     const deadline = Date.now() + 3000;
     while (
       Date.now() < deadline &&
-      (spawnSync('curl', ['-s', '-o', '/dev/null', '-w', '%{http_code}', `http://127.0.0.1:${dashticzPort}/`]).stdout.toString().trim() === '000' ||
-        spawnSync('curl', ['-s', '-o', '/dev/null', '-w', '%{http_code}', `http://127.0.0.1:${mockPort}/`]).stdout.toString().trim() === '000')
+      (spawnSync('curl', [
+        '-s',
+        '-o',
+        '/dev/null',
+        '-w',
+        '%{http_code}',
+        `http://127.0.0.1:${dashticzPort}/`,
+      ])
+        .stdout.toString()
+        .trim() === '000' ||
+        spawnSync('curl', [
+          '-s',
+          '-o',
+          '/dev/null',
+          '-w',
+          '%{http_code}',
+          `http://127.0.0.1:${mockPort}/`,
+        ])
+          .stdout.toString()
+          .trim() === '000')
     ) {
       /* poll until both servers accept connections */
     }
@@ -321,18 +416,31 @@ function lmsFetchCover(payload) {
       'curl',
       [
         '-s',
-        '-X', 'POST',
-        '-H', 'Content-Type: application/json',
-        '-H', `Origin: http://127.0.0.1:${dashticzPort}`,
-        '-H', `Host: 127.0.0.1:${dashticzPort}`,
-        '--data', JSON.stringify(Object.assign({ action: 'cover', server: '127.0.0.1', port: mockPort }, payload)),
+        '-X',
+        'POST',
+        '-H',
+        'Content-Type: application/json',
+        '-H',
+        `Origin: http://127.0.0.1:${dashticzPort}`,
+        '-H',
+        `Host: 127.0.0.1:${dashticzPort}`,
+        '--data',
+        JSON.stringify(
+          Object.assign(
+            { action: 'cover', server: '127.0.0.1', port: mockPort },
+            payload
+          )
+        ),
         `http://127.0.0.1:${dashticzPort}/vendor/dashticz/lms/index.php`,
       ],
       { encoding: 'utf8' }
     );
     const parsed = JSON.parse(result.stdout);
     const gotBytes = Buffer.from(parsed.dataUrl.split(',')[1], 'base64');
-    return { matchesRed: gotBytes.equals(redPng), matchesBlue: gotBytes.equals(bluePng) };
+    return {
+      matchesRed: gotBytes.equals(redPng),
+      matchesBlue: gotBytes.equals(bluePng),
+    };
   } finally {
     mockServer.kill();
     dashticzServer.kill();
@@ -348,20 +456,37 @@ test('LMS cover fetch prefers artwork_url over a synthetic radio coverid', () =>
   // the actual, externally-hosted track artwork).
   const result = lmsFetchCover({
     coverid: '-94832537157032',
-    artworkUrl: '/imageproxy/https%3A%2F%2Flastfm.example%2Fimage.jpg/image.jpg',
+    artworkUrl:
+      '/imageproxy/https%3A%2F%2Flastfm.example%2Fimage.jpg/image.jpg',
   });
-  assert.equal(result.matchesRed, true, 'expected the imageproxy (artwork_url) image');
-  assert.equal(result.matchesBlue, false, 'must not fall back to the generic coverid placeholder');
+  assert.equal(
+    result.matchesRed,
+    true,
+    'expected the imageproxy (artwork_url) image'
+  );
+  assert.equal(
+    result.matchesBlue,
+    false,
+    'must not fall back to the generic coverid placeholder'
+  );
 });
 
-test('LMS backend fails gracefully without the curl extension instead of crashing', () => {
+test('LMS backend fails gracefully without the curl extension instead of crashing', async () => {
   // Sanity check that `php -n` (no php.ini) genuinely removes ext-curl in
   // this environment, so a pass below actually exercises the no-curl path
   // rather than passing vacuously because curl was loaded anyway.
-  const curlCheck = spawnSync('php', ['-n', '-r', "var_dump(function_exists('curl_init'));"], {
-    encoding: 'utf8',
-  });
-  assert.equal(curlCheck.stdout.trim(), 'bool(false)', 'php -n did not disable ext-curl here');
+  const curlCheck = spawnSync(
+    'php',
+    ['-n', '-r', "var_dump(function_exists('curl_init'));"],
+    {
+      encoding: 'utf8',
+    }
+  );
+  assert.equal(
+    curlCheck.stdout.trim(),
+    'bool(false)',
+    'php -n did not disable ext-curl here'
+  );
 
   const payload = {
     action: 'rpc',
@@ -372,12 +497,15 @@ test('LMS backend fails gracefully without the curl extension instead of crashin
     player: '',
     params: ['serverstatus', 0, 999],
   };
-  const result = lmsRequestWithoutCurl(payload);
+  const result = await lmsRequestWithoutCurl(payload);
   let parsed;
   assert.doesNotThrow(() => {
     parsed = JSON.parse(result.stdout);
-  }, `expected valid JSON, got stdout: ${result.stdout}\nstderr: ${result.stderr}`);
-  assert.equal(parsed.error, 'The PHP curl extension is required for the Lyrion Music Server block.');
+  }, `expected valid JSON, got stdout: ${result.stdout}\nstderr: ${result.stderr}\ncurl exit status: ${result.curlStatus}\ncurl spawn error: ${result.curlError}\nphp -S server stderr: ${result.serverStderr}`);
+  assert.equal(
+    parsed.error,
+    'The PHP curl extension is required for the Lyrion Music Server block.'
+  );
   // Not the shutdown handler's fallback - the guard must catch this before
   // any CURLOPT_*/CURLE_* constant is ever referenced, so no fatal happens
   // at all (compare the "unexpectedly" test below, which does hit a fatal).
@@ -390,11 +518,17 @@ test('LMS backend shutdown handler turns an uncaught fatal error into valid JSON
   assert.doesNotThrow(() => {
     parsed = JSON.parse(output);
   }, `expected valid JSON, got: ${output}`);
-  assert.equal(parsed.error, 'Lyrion Music Server request failed unexpectedly.');
+  assert.equal(
+    parsed.error,
+    'Lyrion Music Server request failed unexpectedly.'
+  );
   // The debug block only ever describes this file's own code (an engine
   // fatal, never LMS/request data), and the file name is a basename only -
   // no server path - so it is safe to always include for diagnosis.
-  assert.match(parsed.debug.message, /dashticz_lms_test_only_undefined_function_call/);
+  assert.match(
+    parsed.debug.message,
+    /dashticz_lms_test_only_undefined_function_call/
+  );
   // Run via `php -r` (no real source file), so PHP reports its own
   // "Command line code" placeholder here rather than index.php's basename -
   // this only confirms basename() is applied (no directory separator), the
@@ -405,10 +539,33 @@ test('LMS backend shutdown handler turns an uncaught fatal error into valid JSON
 
 test('calendar fetching is URL validated and does not expose stack traces', () => {
   const source = read('vendor/dashticz/ical/index.php');
+  const legacy = read('vendor/dashticz/ical/ical5/index.php');
+  const security = read('vendor/dashticz/security.php');
   assert.match(source, /dashticz_fetch_remote\(/);
   assert.doesNotMatch(source, /debug_backtrace/);
   assert.doesNotMatch(source, /initUrl\(\$ICS/);
   assert.doesNotMatch(source, /die\(\$e\)/);
+  assert.match(legacy, /dashticz_require_same_origin\(\)/);
+  assert.match(legacy, /dashticz_fetch_remote\(/);
+  assert.doesNotMatch(legacy, /Access-Control-Allow-Origin:\s*\*/);
+  assert.match(security, /function dashticz_resolve_redirect_url/);
+  assert.match(security, /if \(\$location\[0\] === '\?'\)/);
+});
+
+test('editor writes lock the read-modify-write cycle and replace atomically', () => {
+  const security = read('vendor/dashticz/security.php');
+  const writer = read('js/configwriter.php');
+  assert.match(security, /function dashticz_acquire_file_update_lock/);
+  assert.match(security, /flock\(\$lock, LOCK_EX\)/);
+  assert.match(security, /function dashticz_atomic_write_file/);
+  assert.match(security, /tempnam\(/);
+  assert.match(security, /rename\(\$temporary, \$path\)/);
+  assert.match(
+    writer,
+    /configwriter_read_config[\s\S]*dashticz_acquire_file_update_lock/
+  );
+  assert.match(writer, /dashticz_atomic_write_file\(\$configPath/);
+  assert.match(writer, /configwriter_release_config_lock/);
 });
 
 test('settings writes require CSRF and serialize values as JSON', () => {
@@ -510,7 +667,10 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(writer, /function configwriter_editor_markers/);
   assert.match(source, /blockKeys/);
   assert.match(source, /configwriter_make_device_block_key/);
-  assert.match(source, /\$keyCollisionConfig = configwriter_remove_editor_sections/);
+  assert.match(
+    source,
+    /\$keyCollisionConfig = configwriter_remove_editor_sections/
+  );
   assert.match(source, /configwriter_editor_markers\(\s*'grid-layout'/);
   assert.match(source, /extract_declared_block_refs\(\$keyCollisionConfig\)/);
   assert.match(writer, /function configwriter_make_device_block_key/);
@@ -526,7 +686,10 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(source, /round\(\$height \/ 10\) \* 10/);
   assert.match(writer, /height/);
   /* Device Editor helper blocks are explicitly validated and whitelisted. */
-  assert.match(source, /in_array\(\$entry\['kind'\], \['dummy', 'title', 'custom', 'group', 'html', 'lms'\], true\)/);
+  assert.match(
+    source,
+    /in_array\(\$entry\['kind'\], \['dummy', 'title', 'custom', 'group', 'html', 'lms'\], true\)/
+  );
   /* Lyrion Music Server block: server/port/player validated, credentials
      never echoed back in an error message. */
   assert.match(source, /kind === 'lms'/);
@@ -540,7 +703,10 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(source, /\^\[A-Za-z_\$\]/);
   assert.match(source, /positive integer idx/);
   assert.match(source, /configwriter_special_block_props/);
-  assert.match(writer, /array_key_exists\('icon', \$block\) && \$block\['icon'\] !== null/);
+  assert.match(
+    writer,
+    /array_key_exists\('icon', \$block\) && \$block\['icon'\] !== null/
+  );
   assert.match(source, /custom_fields/);
   assert.match(source, /Invalid or reserved custom device field/);
   assert.match(source, /_validate_custom_device_value/);
@@ -567,7 +733,10 @@ test('widget writer whitelists widgets and protects CONFIG.js writes', () => {
   // truly dangerous prototype keys remain rejected.
   assert.match(source, /\$managedCustomFields = \[/);
   assert.match(source, /in_array\(\$fieldKey, \$managedCustomFields, true\)/);
-  assert.match(source, /\$dangerousCustomFields = \['__proto__', 'prototype', 'constructor'\]/);
+  assert.match(
+    source,
+    /\$dangerousCustomFields = \['__proto__', 'prototype', 'constructor'\]/
+  );
   assert.match(source, /legacy custom icons/);
   assert.match(source, /_validate_custom_widget_value/);
   for (const id of [
@@ -629,7 +798,9 @@ test('custom CSS writer only manages theme variables', () => {
   assert.doesNotMatch(source, /deviceAlignments/);
   assert.doesNotMatch(source, /dashticz-device-align/);
   assert.doesNotMatch(source, /text-align/);
-  assert.match(source, /LOCK_EX/);
+  assert.match(source, /dashticz_acquire_file_update_lock\(\$cssPath\)/);
+  assert.match(source, /dashticz_atomic_write_file\(\$cssPath/);
+  assert.match(source, /dashticz_release_file_update_lock\(\$cssLock\)/);
 });
 
 test('layout writer stores safe references in one grouped dashboard section', () => {
@@ -677,7 +848,10 @@ test('grid layout writer validates and stores positions without column packing',
   assert.match(source, /\^\[A-Za-z_\]\[A-Za-z0-9_\]\*\$/);
   assert.match(source, /FILTER_VALIDATE_INT/);
   assert.match(source, /configwriter_extract_declared_block_refs/);
-  assert.match(source, /configwriter_remove_editor_sections\(\$config, \$screenNumber\)/);
+  assert.match(
+    source,
+    /configwriter_remove_editor_sections\(\$config, \$screenNumber\)/
+  );
   assert.match(source, /\/\/ \[standby-editor-start\]/);
   assert.match(source, /propsJson/);
   assert.match(source, /is_object\(\$decodedProps\)/);
@@ -695,7 +869,10 @@ test('grid layout writer validates and stores positions without column packing',
     source,
     /\$forceClone = !configwriter_is_component_dispatched_key\(\$ref\)\s*\n\s*&& \(\(\$screenNumber === 0 && !empty\(\$entry\['clone'\]\)\) \|\| \$ownedByOtherScreen\);/
   );
-  assert.match(writer, /function configwriter_is_component_dispatched_key\(\$key\)/);
+  assert.match(
+    writer,
+    /function configwriter_is_component_dispatched_key\(\$key\)/
+  );
   assert.match(
     writer,
     /return in_array\(\$key, \['streamplayer', 'sunrise'\], true\);/
@@ -703,10 +880,7 @@ test('grid layout writer validates and stores positions without column packing',
   assert.match(source, /configwriter_normalise_grid_position/);
   assert.match(source, /configwriter_build_grid_layout_section/);
   assert.match(source, /configwriter_editor_markers\(\s*'grid-layout'/);
-  assert.match(
-    source,
-    /empty\(\$items\) && !isset\(\$data\['configMode'\]\)/
-  );
+  assert.match(source, /empty\(\$items\) && !isset\(\$data\['configMode'\]\)/);
   assert.match(source, /configwriter_extract_numbered_screens/);
   assert.match(source, /configwriter_remove_numbered_screen_and_compact/);
   assert.match(source, /'removedScreen'\s*=>\s*\$screenNumber/);
@@ -721,8 +895,14 @@ test('grid layout writer validates and stores positions without column packing',
   assert.match(writer, /function configwriter_normalise_grid_position/);
   assert.match(writer, /function configwriter_build_grid_layout_section/);
   assert.match(writer, /function configwriter_extract_numbered_screens/);
-  assert.match(writer, /function configwriter_remove_numbered_screen_and_compact/);
-  assert.match(writer, /\['device', 'widget', 'layout', 'dashboard', 'grid-layout'\]/);
+  assert.match(
+    writer,
+    /function configwriter_remove_numbered_screen_and_compact/
+  );
+  assert.match(
+    writer,
+    /\['device', 'widget', 'layout', 'dashboard', 'grid-layout'\]/
+  );
   assert.match(writer, /\(de\|we\|le\)_s/);
   assert.match(writer, /isset\(\$item\['props'\]\)/);
   assert.match(writer, /isset\(\$item\['propsLiteral'\]\)/);
@@ -757,7 +937,7 @@ test('layout writer keeps tall blocks on the same full-width grid', () => {
   assert.match(layout, /configwriter_build_layout_section/);
   assert.match(layout, /height/);
   assert.match(styles, /display: contents/);
-  assert.match(styles, /id\^=\"block_\"/);
+  assert.match(styles, /id\^='block_'/);
 });
 
 test('widget writer preserves existing settings when none are posted', () => {
@@ -813,7 +993,10 @@ test('background list endpoint safely exposes bundled and custom images', () => 
   assert.match(source, /dashticz_require_same_origin\(\)/);
   assert.match(source, /REQUEST_METHOD.*GET/);
   assert.match(source, /preg_match\(\'\/\^\(bg/);
-  assert.match(source, /\$customDir = \$imgDir \. DIRECTORY_SEPARATOR \. 'custom'/);
+  assert.match(
+    source,
+    /\$customDir = \$imgDir \. DIRECTORY_SEPARATOR \. 'custom'/
+  );
   assert.match(source, /preg_match\(\'\/\^\(bg_\[a-z0-9\]/);
   assert.match(source, /\$images\[\] = 'img\/custom\/' \. \$entry/);
   assert.match(source, /is_link\(\$full\)/);

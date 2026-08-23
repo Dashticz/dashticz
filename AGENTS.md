@@ -30,7 +30,9 @@ If a bump already exists for today, just amend that same version's `changelog`/`
 When a bump does apply, it must include:
 
 - Bump `version.txt`'s `version` field and add a matching `changelog` entry.
-- Mirror the same version in `package.json`'s `version` field (a test enforces these stay in sync).
+- Mirror the same version in `package.json`'s `version` field and in
+  `index.html`'s `<meta name="description">` content (a test enforces that
+  all three versions stay in sync).
 - Regenerate `package-lock.json` if `package.json` changed (`npm install --package-lock-only`).
 - Add a corresponding dated entry under "Recent changes" in `docs/releasenotes/releasenotes.rst`, following the existing per-version header + `Enhancements`/`Fixes`/`Code` section style.
 

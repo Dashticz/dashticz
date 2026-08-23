@@ -221,6 +221,127 @@ function dashticz_owner_info($path)
     return ' (eigenaar: ' . $ownerName . ', PHP-gebruiker: ' . $phpName . ')';
 }
 
+function dashticz_acquire_file_update_lock($path)
+{
+    $lock = @fopen($path . '.lock', 'c');
+    if ($lock === false || !@flock($lock, LOCK_EX)) {
+        if (is_resource($lock)) {
+            @fclose($lock);
+        }
+        return false;
+    }
+    return $lock;
+}
+
+function dashticz_release_file_update_lock($lock)
+{
+    if (!is_resource($lock)) {
+        return;
+    }
+    @flock($lock, LOCK_UN);
+    @fclose($lock);
+}
+
+function dashticz_atomic_write_file($path, $contents, $mode = 0664)
+{
+    $directory = dirname($path);
+    $temporary = @tempnam($directory, '.dashticz-write-');
+    if ($temporary === false) {
+        return false;
+    }
+
+    $written = @file_put_contents($temporary, $contents, LOCK_EX);
+    if ($written === false) {
+        @unlink($temporary);
+        return false;
+    }
+    @chmod($temporary, $mode);
+
+    // rename() replaces atomically on the Unix hosts used by the official
+    // images. Some Windows PHP builds refuse to replace an existing target;
+    // keep the old locked write as a compatibility fallback there.
+    if (!@rename($temporary, $path)) {
+        $written = @file_put_contents($path, $contents, LOCK_EX);
+        @unlink($temporary);
+        if ($written === false) {
+            return false;
+        }
+    }
+
+    @chmod($path, $mode);
+    return true;
+}
+
+function dashticz_resolve_redirect_url($baseUrl, $location)
+{
+    $location = trim((string) $location);
+    if ($location === '') {
+        throw new RuntimeException('Remote redirect was rejected.');
+    }
+
+    if (parse_url($location, PHP_URL_SCHEME)) {
+        return $location;
+    }
+
+    $base = parse_url($baseUrl);
+    if (!$base || empty($base['scheme']) || empty($base['host'])) {
+        throw new RuntimeException('Remote redirect was rejected.');
+    }
+
+    if (substr($location, 0, 2) === '//') {
+        return $base['scheme'] . ':' . $location;
+    }
+
+    $origin = $base['scheme'] . '://' . $base['host'];
+    if (isset($base['port'])) {
+        $origin .= ':' . $base['port'];
+    }
+
+    if ($location[0] === '?') {
+        return $origin . (isset($base['path']) ? $base['path'] : '/') . $location;
+    }
+    if ($location[0] === '#') {
+        $query = isset($base['query']) ? '?' . $base['query'] : '';
+        return $origin . (isset($base['path']) ? $base['path'] : '/') . $query . $location;
+    }
+
+    $relative = parse_url($location);
+    if ($relative === false) {
+        throw new RuntimeException('Remote redirect was rejected.');
+    }
+    $relativePath = isset($relative['path']) ? $relative['path'] : '';
+    if (substr($relativePath, 0, 1) === '/') {
+        $path = $relativePath;
+    } else {
+        $basePath = isset($base['path']) ? $base['path'] : '/';
+        $path = rtrim(str_replace('\\', '/', dirname($basePath)), '/') . '/' . $relativePath;
+    }
+
+    $segments = array();
+    foreach (explode('/', $path) as $segment) {
+        if ($segment === '' || $segment === '.') {
+            continue;
+        }
+        if ($segment === '..') {
+            array_pop($segments);
+            continue;
+        }
+        $segments[] = $segment;
+    }
+    $path = '/' . implode('/', $segments);
+    if ($relativePath !== '' && substr($relativePath, -1) === '/') {
+        $path .= '/';
+    }
+    if (isset($relative['query'])) {
+        $path .= '?' . $relative['query'];
+    }
+    if (isset($relative['fragment'])) {
+        $path .= '#' . $relative['fragment'];
+    }
+
+    return $origin . $path;
+}
+
 function dashticz_fetch_remote($url, $maxBytes = 5242880, $maxRedirects = 3, $allowPrivate = false)
 {
     for ($redirects = 0; $redirects <= $maxRedirects; $redirects++) {
@@ -267,19 +388,7 @@ function dashticz_fetch_remote($url, $maxBytes = 5242880, $maxRedirects = 3, $al
             if (!$location || $redirects === $maxRedirects) {
                 throw new RuntimeException('Remote redirect was rejected.');
             }
-            if (!parse_url($location, PHP_URL_SCHEME)) {
-                $base = parse_url($url);
-                $port = isset($base['port']) ? ':' . $base['port'] : '';
-                if (substr($location, 0, 2) === '//') {
-                    $location = $base['scheme'] . ':' . $location;
-                } else {
-                    $path = substr($location, 0, 1) === '/'
-                        ? $location
-                        : rtrim(dirname(isset($base['path']) ? $base['path'] : '/'), '/') . '/' . $location;
-                    $location = $base['scheme'] . '://' . $base['host'] . $port . $path;
-                }
-            }
-            $url = $location;
+            $url = dashticz_resolve_redirect_url($url, $location);
             continue;
         }
 

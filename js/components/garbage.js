@@ -1,4 +1,4 @@
-/* global Dashticz _CORS_PATH settings infoMessage moment ICAL _PHP_INSTALLED language templateEngine*/
+/* global Dashticz _CORS_PATH settings infoMessage moment loadIcal _PHP_INSTALLED language templateEngine*/
 
 var DT_garbage = (function () {
   function garbageText(key, fallback) {
@@ -18,10 +18,12 @@ var DT_garbage = (function () {
   return {
     name: 'garbage',
     canHandle: function (block) {
-      return block && (
-        block.type === 'garbage' ||
-        block.company ||
-        (block.city && ((block.zipcode && block.housenumber) || block.district))
+      return (
+        block &&
+        (block.type === 'garbage' ||
+          block.company ||
+          (block.city &&
+            ((block.zipcode && block.housenumber) || block.district)))
       );
     },
     defaultCfg: {
@@ -51,7 +53,7 @@ var DT_garbage = (function () {
       layout: 1,
       maxdays: settings['garbage_maxdays'] || 32,
       ignoressl: false,
-      defaultGarbage: 'kerstboom'
+      defaultGarbage: 'kerstboom',
     },
     run: function (me) {
       me.order = Object.keys(me.block.garbage);
@@ -93,7 +95,6 @@ var DT_garbage = (function () {
     return '';
   }
 
-  // eslint-disable-next-line no-unused-vars
   function getGoogleCalendarData(me, calendarId) {
     this.url =
       'https://www.googleapis.com/calendar/v3/calendars/' +
@@ -112,7 +113,9 @@ var DT_garbage = (function () {
       error: function (errorData) {
         var msg = errorData.responseJSON.error.message;
         infoMessage(
-          '<font color="red">' + garbageText('load_error', 'Error loading garbage data') + '</font>',
+          '<font color="red">' +
+            garbageText('load_error', 'Error loading garbage data') +
+            '</font>',
           'Google Calendar ' + msg,
           10000
         );
@@ -137,32 +140,33 @@ var DT_garbage = (function () {
   function getIcalData(me, url) {
     //todo: add recurrence handling
     // https://github.com/mifi/ical-expander
-    return $.get(getPrefixUrl(me) + url).then(function (data) {
-      var jcalData = ICAL.parse(data);
-      var vcalendar = new ICAL.Component(jcalData);
-      var vevents = vcalendar.getAllSubcomponents('vevent');
-      var returnData = vevents
-        .filter(function (vevent) {
-          return moment(
-            vevent.getFirstPropertyValue('dtstart').toString(),
-            'YYYY-MM-DD'
-          ).isBetween(me.date.start, me.date.end, null, '[]');
-        })
-        .map(function (vevent) {
-          return {
-            date: moment(
+    return loadIcal().then(function (ICAL) {
+      return $.get(getPrefixUrl(me) + url).then(function (data) {
+        var jcalData = ICAL.parse(data);
+        var vcalendar = new ICAL.Component(jcalData);
+        var vevents = vcalendar.getAllSubcomponents('vevent');
+        var returnData = vevents
+          .filter(function (vevent) {
+            return moment(
               vevent.getFirstPropertyValue('dtstart').toString(),
               'YYYY-MM-DD'
-            ),
-            summary: vevent.getFirstPropertyValue('summary'),
-          };
-        });
+            ).isBetween(me.date.start, me.date.end, null, '[]');
+          })
+          .map(function (vevent) {
+            return {
+              date: moment(
+                vevent.getFirstPropertyValue('dtstart').toString(),
+                'YYYY-MM-DD'
+              ),
+              summary: vevent.getFirstPropertyValue('summary'),
+            };
+          });
 
-      return returnData;
+        return returnData;
+      });
     });
   }
 
-  // eslint-disable-next-line no-unused-vars
   function getWasteApiData(me, companyCode) {
     return $.post('https://wasteapi.2go-mobile.com/api/FetchAdress', {
       companyCode: companyCode,
@@ -177,7 +181,7 @@ var DT_garbage = (function () {
           uniqueAddressID: data['dataList'][0]['UniqueId'],
           startDate: me.date.start.format('YYYY-MM-DD'),
           endDate: me.date.end.format('YYYY-MM-DD'),
-          community: data['dataList'][0]['Community']
+          community: data['dataList'][0]['Community'],
         });
       })
       .then(function (data) {
@@ -206,7 +210,6 @@ var DT_garbage = (function () {
       });
   }
 
-  // eslint-disable-next-line no-unused-vars
   function getWasteApi2Data(me, companyCode) {
     return $.post('http://wasteapi2.2go-mobile.com/api/FetchAdress', {
       companyCode: companyCode,
@@ -239,7 +242,6 @@ var DT_garbage = (function () {
       });
   }
 
-  // eslint-disable-next-line no-unused-vars
   //todo: Not working anymore ...
   function getAfvalAlertData(me) {
     var baseURL = 'https://www.afvalalert.nl/kalender';
@@ -287,23 +289,23 @@ SENSOR_LOCATIONS_TO_URL = {
       HouseNumber: me.block.housenumber,
       houseLetter: '',
       HouseNumberSuffix: me.block.housenumberSuffix,
-      ShowWholeYear: true
-    }
-    if(me.block.district) config.District = me.block.district;
-    return $.get('https://trashapi.azurewebsites.net/trash', config)
-      .then(function (data) {
+      ShowWholeYear: true,
+    };
+    if (me.block.district) config.District = me.block.district;
+    return $.get('https://trashapi.azurewebsites.net/trash', config).then(
+      function (data) {
         var dataFiltered = [];
         data.forEach(function (element) {
-            dataFiltered.push({
-              date: moment(element.date),
-              summary: element.name,
-            });
+          dataFiltered.push({
+            date: moment(element.date),
+            summary: element.name,
+          });
         });
         return dataFiltered;
-      });
+      }
+    );
   }
 
-  // eslint-disable-next-line no-unused-vars
   function getAfvalwijzerArnhemData(me) {
     var baseURL = 'http://www.afvalwijzer-arnhem.nl';
     return $.get(
@@ -330,7 +332,6 @@ SENSOR_LOCATIONS_TO_URL = {
     });
   }
 
-
   // https://afvalkalender.purmerend.nl/adressen/1441JH:2
   //response: [{"bagid":"0439200000018093","postcode":"1441JH","huisnummer":2,"huisletter":"","toevoeging":"","description":"Kilstraat 2, 1441JH Purmerend","straat":"Kilstraat","woonplaats":"Purmerend","woonplaatsId":3103,"gemeenteId":439,"latitude":52.50251,"longitude":4.95551}]
   //then: webcal://afvalkalender.purmerend.nl/ical/0439200000018093
@@ -346,7 +347,7 @@ SENSOR_LOCATIONS_TO_URL = {
       ':' +
       me.block.housenumberSuffix;
     return $.get(url).then(function (result) {
-      var bagid=result[0].bagid;
+      var bagid = result[0].bagid;
       var ical = params + '/ical/' + bagid;
       return getIcalData(me, ical);
     });
@@ -391,7 +392,7 @@ SENSOR_LOCATIONS_TO_URL = {
       me.block.housenumber +
       '&t=' +
       (me.block.housenumberSuffix || '') +
-      (me.block.ignoressl ? '&ignoressl=true':'');
+      (me.block.ignoressl ? '&ignoressl=true' : '');
     return $.getJSON(cURI).then(function (data) {
       data = data
         .filter(function (element) {
@@ -427,7 +428,7 @@ SENSOR_LOCATIONS_TO_URL = {
       'tx_windwastecalendar_pi1[zipcode]': me.block.zipcode,
       'tx_windwastecalendar_pi1[housenumber]': me.block.housenumber,
 */
-//https://www.katwijk.nl/wonen-en-verbouwen/afval-inzamelen/afval-kalender?tx_opengemeentenwastemanagement%5Bhousenumber%5D=25&tx_opengemeentenwastemanagement%5Bpostalcode%5D=2225ZJ&type=1650453874&cHash=f486b5188550e7c9c11e7fecd3f1de59
+    //https://www.katwijk.nl/wonen-en-verbouwen/afval-inzamelen/afval-kalender?tx_opengemeentenwastemanagement%5Bhousenumber%5D=25&tx_opengemeentenwastemanagement%5Bpostalcode%5D=2225ZJ&type=1650453874&cHash=f486b5188550e7c9c11e7fecd3f1de59
     var postfix =
       'tx_windwastecalendar_pi1[action]=search&tx_windwastecalendar_pi1[controller]=Zipcode&tx_windwastecalendar_pi1[Hash]=6e6e80066d09747e8df35d5ff2d1e27b' +
       '&tx_windwastecalendar_pi1[zipcode]=' +
@@ -442,50 +443,6 @@ SENSOR_LOCATIONS_TO_URL = {
     });
   }
 
-  /* werkt niet meer ...
-  function getZuidhornData(me, fetchType) {
-    var prefix = 'https://afvalkalender.zuidhorn.nl/';
-
-    return $.post(
-      getPrefixUrl() +
-        prefix +
-        'afvalkalender-zoeken/zoek-postcode/Zipcode/search.html',
-      {
-        'tx_windwastecalendar_pi1[zipcode]': me.block.zipcode,
-        'tx_windwastecalendar_pi1[housenumber]': me.block.housenumber,
-      }
-    ).then(function (data) {
-      switch (fetchType) {
-        case 'scrape':
-          var dataFiltered = [];
-          $(data)
-            .find('.waste-calendar')
-            .each(function (index, element) {
-              var summary = $(element).find('.type a')[0].innerText;
-              $(element)
-                .find('.dates .date')
-                .each(function (dateIndex, dateElement) {
-                  dataFiltered.push({
-                    date: moment(
-                      dateElement.innerText.trim(),
-                      'dddd DD MMMM',
-                      'nl'
-                    ),
-                    summary: summary,
-                    garbageType: mapGarbageType(summary),
-                  });
-                });
-            });
-          return dataFiltered;
-        case 'ical':
-          var elementHref = $(data).find('.ical .link a').attr('href');
-          return getIcalData(me, prefix + elementHref);
-      }
-    });
-  }
-  */
-
-  // eslint-disable-next-line no-unused-vars
   function getRd4Data(me) {
     return $.get(
       getPrefixUrl(me) +
@@ -531,7 +488,6 @@ SENSOR_LOCATIONS_TO_URL = {
   //http://dashticz.nl/afval/?service=deafvalapp&zipcode=5692VG&nr=33&t=
 
   //http://dashticz.nl/afval/?service=mijnafvalwijzer&zipcode=3825AL&nr=41&t=
-  // eslint-disable-next-line no-unused-vars
   function getMijnAfvalwijzerData(me, param) {
     //  getGeneralData('mijnafvalwijzer', address, date, random);
     function getDate(data, startidx) {
@@ -553,9 +509,8 @@ SENSOR_LOCATIONS_TO_URL = {
       '/';
     return $.get(url).then(function (result) {
       var returnDates = [];
-      var newHTMLDocument = document.implementation.createHTMLDocument(
-        'scrape'
-      );
+      var newHTMLDocument =
+        document.implementation.createHTMLDocument('scrape');
       newHTMLDocument.documentElement.innerHTML = result;
       var first_elt = newHTMLDocument.firstElementChild;
       var res = first_elt.getElementsByClassName('wasteInfoIcon');
@@ -589,24 +544,24 @@ SENSOR_LOCATIONS_TO_URL = {
     //https://www.rova.nl/api/waste-calendar/upcoming?postalcode=3829BL&houseNumber=17&addition=&take=20
     //index.php still contains the previous version of Rova
     var url =
-    getPrefixUrl(me) +
-    'https://www.rova.nl/api/waste-calendar/upcoming?postalcode=' +
-    me.block.zipcode +
-    '&houseNumber=' +
-    me.block.housenumber +
-    '&addition=' +
-    me.block.housenumberSuffix +
-    '&take=' +
-    me.block.maxitems
+      getPrefixUrl(me) +
+      'https://www.rova.nl/api/waste-calendar/upcoming?postalcode=' +
+      me.block.zipcode +
+      '&houseNumber=' +
+      me.block.housenumber +
+      '&addition=' +
+      me.block.housenumberSuffix +
+      '&take=' +
+      me.block.maxitems;
 
     return $.getJSON(url).then(function (data) {
-      return data.map(function(el) {
+      return data.map(function (el) {
         return {
           date: moment(el.date),
-          summary: el.garbageType
-        }
-      })
-    })
+          summary: el.garbageType,
+        };
+      });
+    });
   }
 
   function filterReturnDates(me, returnDates) {
@@ -621,15 +576,14 @@ SENSOR_LOCATIONS_TO_URL = {
       })
       .sort(function (a, b) {
         var res = a.date > b.date ? 1 : b.date > a.date ? -1 : 0;
-        if(res) return res;
-        if(!me.order) return 0;
+        if (res) return res;
+        if (!me.order) return 0;
         var sort_a = me.order.indexOf(a.garbageType);
         var sort_b = me.order.indexOf(b.garbageType);
-        if (sort_a===sort_b) return 0;
-        if (sort_a=== -1) return 1;
-        if (sort_b=== -1) return -1;
-        return sort_a>sort_b ? 1: -1;
-
+        if (sort_a === sort_b) return 0;
+        if (sort_a === -1) return 1;
+        if (sort_b === -1) return -1;
+        return sort_a > sort_b ? 1 : -1;
       })
       .filter(function (element) {
         return (
@@ -648,13 +602,12 @@ SENSOR_LOCATIONS_TO_URL = {
     var result = {
       rowClass: 'trashrow',
       trashDate: localizedDate.format('l'),
-      trashType:
-        me.block.use_names
-          ? name
-          : localizedName ||
-            (garbage.summary
-              ? garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)
-              : name),
+      trashType: me.block.use_names
+        ? name
+        : localizedName ||
+          (garbage.summary
+            ? garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)
+            : name),
       color: me.block.use_colors
         ? ' style="color:' + me.block.garbage[garbage.garbageType].code + '"'
         : '',
@@ -799,7 +752,7 @@ SENSOR_LOCATIONS_TO_URL = {
         handler: getGeneralData,
         param: {
           service: 'circulusberkel',
-//          subservice: 'circulusberkel',
+          //          subservice: 'circulusberkel',
         },
       },
       cure: {
@@ -921,7 +874,8 @@ SENSOR_LOCATIONS_TO_URL = {
         handler: getGeneralData,
         param: 'rova',
       },
-      rova2: { //new(?) API. However, ssl issues with expired certificates on Synology
+      rova2: {
+        //new(?) API. However, ssl issues with expired certificates on Synology
         handler: getRovaData,
       },
       sudwestfryslan: {

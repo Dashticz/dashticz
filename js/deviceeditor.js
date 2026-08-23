@@ -5,36 +5,36 @@ var DashticzDeviceEditor = (function () {
 
   /* ── state ──────────────────────────────────────────────────── */
   /* Composite keys: '493' for plain devices, '1298_1' for sub-devices */
-  var managedDevices = [];   // composite keys managed by the device editor
-  var managedOrder   = [];   // device:<ck> and widget:<id> in screen order
-  var managedWidgets = {};   // order key -> widget metadata
-  var managedSpecials = {};  // order key -> dummy/title block metadata
-  var deviceNames    = {};   // composite key -> device name
-  var deviceWidths   = {};   // composite key -> block width (1..12)
-  var deviceHeights  = {};   // composite key -> optional block height
-  var deviceTitles   = {};   // composite key -> optional title override
-  var deviceOptions  = {};   // composite key -> icon/hide_data/last_update/switch
-  var deviceRefs     = {};   // composite key -> exact block reference on the active screen
+  var managedDevices = []; // composite keys managed by the device editor
+  var managedOrder = []; // device:<ck> and widget:<id> in screen order
+  var managedWidgets = {}; // order key -> widget metadata
+  var managedSpecials = {}; // order key -> dummy/title block metadata
+  var deviceNames = {}; // composite key -> device name
+  var deviceWidths = {}; // composite key -> block width (1..12)
+  var deviceHeights = {}; // composite key -> optional block height
+  var deviceTitles = {}; // composite key -> optional title override
+  var deviceOptions = {}; // composite key -> icon/hide_data/last_update/switch
+  var deviceRefs = {}; // composite key -> exact block reference on the active screen
   var deviceTitleVisible = {}; // composite key -> title shown/hidden
   var deviceCustomFields = {}; // composite key -> editable extra CONFIG.js fields
   var devicePreservedFields = {}; // hidden CONFIG.js fields (for example c) that must survive saves
-  var widgetWidths   = {};   // widget order key -> block width (1..12)
-  var widgetHeights  = {};   // widget order key -> optional block height
-  var widgetTitles   = {};   // widget order key -> optional title override
-  var widgetOptions  = {};   // widget order key -> icon/hide_data/last_update
+  var widgetWidths = {}; // widget order key -> block width (1..12)
+  var widgetHeights = {}; // widget order key -> optional block height
+  var widgetTitles = {}; // widget order key -> optional title override
+  var widgetOptions = {}; // widget order key -> icon/hide_data/last_update
   var widgetTitleVisible = {}; // widget order key -> title shown/hidden
   var pendingWidgetSettings = {}; // full Widget Config settings edited from Device Editor
-  var editorMode     = 'devices'; // devices, dummy or title
+  var editorMode = 'devices'; // devices, dummy or title
   // Only true when open() (the Add items tile menu's "Add device" tile) is
   // the current opener - openConfig()/openSpecial() build the same modal
   // from a different entry point (a tile's own gear icon, no tile menu to
   // return to), so their Back button must stay off.
   var openedFromAddMenu = false;
-  var gridMode       = false;
-  var gridConfig     = null;
-  var gridPositions  = {};   // order key -> {x,y,w,h}
-  var gridRefs       = {};   // order key -> block reference
-  var gridExtras     = [];   // non-device/widget blocks
+  var gridMode = false;
+  var gridConfig = null;
+  var gridPositions = {}; // order key -> {x,y,w,h}
+  var gridRefs = {}; // order key -> block reference
+  var gridExtras = []; // non-device/widget blocks
   var TITLE_GRID_HEIGHT = 2;
   var SEPARATOR_DEFAULT_ICON = 'fas fa-divide';
   var customImageListPromise = null;
@@ -48,7 +48,8 @@ var DashticzDeviceEditor = (function () {
   function _translations() {
     var configured =
       typeof language !== 'undefined' &&
-      language.settings && language.settings.deviceeditor
+      language.settings &&
+      language.settings.deviceeditor
         ? language.settings.deviceeditor
         : {};
     return $.extend(
@@ -72,18 +73,21 @@ var DashticzDeviceEditor = (function () {
         last_update: 'Last update',
         switch: 'Switch',
         dial: 'Dial',
-        dial_hint: 'Dial type selected. Set the remaining dial options (color, min/max, subtype, values, etc.) manually via Custom fields below.',
+        dial_hint:
+          'Dial type selected. Set the remaining dial options (color, min/max, subtype, values, etc.) manually via Custom fields below.',
         dial_hint_link: 'Dial documentation',
         dial_bar: 'Bar',
         dial_barsteps: 'Steps',
-        dial_barsteps_help: 'Number of segments the Bar is divided into (default 10).',
+        dial_barsteps_help:
+          'Number of segments the Bar is divided into (default 10).',
         invalid_barsteps: 'Enter a positive number of steps.',
         show_title: 'Title',
         device_config: 'Device Config',
         widget_config: 'Widget Config',
         configure: 'Configure',
         custom_fields: 'Custom fields',
-        custom_fields_help: 'Field and Setting are written as typed block parameters in CONFIG.js.',
+        custom_fields_help:
+          'Field and Setting are written as typed block parameters in CONFIG.js.',
         custom_images: 'Custom images',
         loading_images: 'Loading images…',
         no_custom_images: 'No custom images found.',
@@ -96,7 +100,8 @@ var DashticzDeviceEditor = (function () {
         slide_button_title: 'Title',
         slide_button_screen: 'Screen',
         slide_button_icon: 'Icon',
-        slide_button_full_image: 'Full-width image (fills the block, e.g. a webcam or radar image)',
+        slide_button_full_image:
+          'Full-width image (fills the block, e.g. a webcam or radar image)',
         invalid_slide_button_name: 'Enter a valid unique button name.',
         invalid_slide_target: 'Enter a valid positive screen number.',
         custom_device_name: 'Device name',
@@ -109,42 +114,51 @@ var DashticzDeviceEditor = (function () {
         multi_device_name: 'Device name',
         multi_device_name_help: 'Used as the blocks[...] key in CONFIG.js.',
         multi_device_idx: 'Main IDX',
-        multi_device_idx_help: 'Used by every value row below that does not set its own IDX.',
+        multi_device_idx_help:
+          'Used by every value row below that does not set its own IDX.',
         multi_device_title: 'Title',
         multi_device_values: 'Values',
-        multi_device_values_help: 'Combine values from the main device and/or other devices in one block.',
+        multi_device_values_help:
+          'Combine values from the main device and/or other devices in one block.',
         multi_device_row_idx: 'IDX (optional)',
         multi_device_row_value: 'Value, e.g. <Usage>',
         add_value_row: 'Add value',
         remove_value_row: 'Remove value',
         invalid_multi_device_name: 'Enter a valid unique device name.',
-        invalid_value_row: 'Enter a value placeholder (e.g. <Usage>) for every row.',
+        invalid_value_row:
+          'Enter a value placeholder (e.g. <Usage>) for every row.',
         group_block: 'Group',
         group_name: 'Group name',
         group_name_help: 'Used as the blocks[...] key in CONFIG.js.',
         group_idx: 'Group/Scene IDX',
-        group_idx_help: 'Optional. Domoticz group or scene ID whose devices are grouped.',
+        group_idx_help:
+          'Optional. Domoticz group or scene ID whose devices are grouped.',
         group_devices: 'Devices',
-        group_devices_help: 'Comma-separated Domoticz device IDs to group (used when IDX is empty).',
+        group_devices_help:
+          'Comma-separated Domoticz device IDs to group (used when IDX is empty).',
         group_title: 'Title',
         invalid_group_name: 'Enter a valid unique group name.',
-        invalid_group_devices: 'Enter a Group/Scene IDX or at least one valid device ID.',
+        invalid_group_devices:
+          'Enter a Group/Scene IDX or at least one valid device ID.',
         html_block: 'HTML Block',
         html_block_name: 'Block name',
         html_block_name_help: 'Used as the blocks[...] key in CONFIG.js.',
         html_block_file: 'HTML file',
-        html_block_file_help: 'Filename in the custom/ folder, e.g. widget.html.',
+        html_block_file_help:
+          'Filename in the custom/ folder, e.g. widget.html.',
         html_block_title: 'Title',
         html_block_border: 'Margin',
         invalid_html_block_name: 'Enter a valid unique block name.',
-        invalid_html_block_file: 'Enter a valid html filename (relative to custom/).',
+        invalid_html_block_file:
+          'Enter a valid html filename (relative to custom/).',
         lms_block: 'Lyrion Music Server',
         lms_title: 'Title',
         lms_server: 'Server / IP',
         lms_port: 'Port',
         lms_username: 'Username',
         lms_password: 'Password',
-        lms_credentials_help: 'Only needed when Lyrion Music Server authentication is enabled.',
+        lms_credentials_help:
+          'Only needed when Lyrion Music Server authentication is enabled.',
         lms_test_connection: 'Test connection',
         lms_testing_connection: 'Connecting…',
         lms_connection_ok: 'Connected to Lyrion Music Server',
@@ -361,7 +375,14 @@ var DashticzDeviceEditor = (function () {
         last_update: false,
         switch: false,
       },
-      customFields: [{ field: 'title', setting: t.separator, value: t.separator, system: true }],
+      customFields: [
+        {
+          field: 'title',
+          setting: t.separator,
+          value: t.separator,
+          system: true,
+        },
+      ],
       preservedFields: {},
     };
     managedOrder.push(orderKey);
@@ -382,74 +403,85 @@ var DashticzDeviceEditor = (function () {
    * device/special's own entry gets resent as part of a later save (#?). */
   function _init(preserveDeviceState) {
     managedDevices = [];
-    managedOrder   = [];
+    managedOrder = [];
     managedWidgets = {};
     if (!preserveDeviceState) managedSpecials = {};
-    deviceNames    = {};
-    deviceWidths   = {};
-    deviceHeights  = {};
+    deviceNames = {};
+    deviceWidths = {};
+    deviceHeights = {};
     if (!preserveDeviceState) {
-      deviceTitles   = {};
-      deviceOptions  = {};
+      deviceTitles = {};
+      deviceOptions = {};
       deviceTitleVisible = {};
       deviceCustomFields = {};
       devicePreservedFields = {};
     }
-    deviceRefs     = {};
-    widgetWidths   = {};
-    widgetHeights  = {};
-    widgetTitles   = {};
-    widgetOptions  = {};
+    deviceRefs = {};
+    widgetWidths = {};
+    widgetHeights = {};
+    widgetTitles = {};
+    widgetOptions = {};
     widgetTitleVisible = {};
     pendingWidgetSettings = {};
-    gridPositions  = {};
-    gridRefs       = {};
-    gridExtras     = [];
-    gridConfig     = gridMode ? _readGridConfig() : null;
+    gridPositions = {};
+    gridRefs = {};
+    gridExtras = [];
+    gridConfig = gridMode ? _readGridConfig() : null;
 
-    (gridMode ? _getAllManagedGridItems() : _getAllManagedItems()).forEach(function (item) {
-      managedOrder.push(item.orderKey);
-      if (gridMode) {
-        gridPositions[item.orderKey] = item.grid;
-        gridRefs[item.orderKey] = item.reference;
-      }
-      if (item.kind === 'widget') {
-        managedWidgets[item.orderKey] = item;
-        widgetWidths[item.orderKey] = _parseWidth(item.definition.width);
-        // Never read a saved height back in here on a grid screen: _widgetPayload
-        // resends this on every Device Editor save (including a save that only
-        // touches a different device), so a height read back from a widget with
-        // no way to edit it here (e.g. camera) - or read once and then left
-        // stale after the user clears it via its own Widget Config field
-        // (iframe/log/timegraph) - got silently reinstated forever with no way
-        // to remove it (#100 follow-up, this time in Device Editor's own
-        // resubmission rather than Widget Editor's). Grid mode only keeps a
-        // height a widget's own field explicitly (re)sets on this save; column
-        // mode still needs the existing height to keep packing columns.
-        widgetHeights[item.orderKey] = gridMode ? null : _parseHeight(item.definition.height);
-        widgetTitles[item.orderKey] = String(item.definition.title || item.title || '');
-        var legacyImplicitIcon =
-          (item.id === 'iframe' || item.id === 'sunrise') &&
-          typeof item.definition.icon === 'undefined';
-        widgetOptions[item.orderKey] = {
-          icon: (typeof item.definition.image === 'string' && item.definition.image !== '') ||
-            (!legacyImplicitIcon && item.definition.icon !== ''),
-          iconValue: typeof item.definition.icon === 'string' && item.definition.icon !== ''
-            ? item.definition.icon
-            : null,
-          hide_data: item.definition.hide_data === true,
-          last_update: item.definition.last_update === true,
-        };
-        widgetTitleVisible[item.orderKey] = item.definition.hide_title !== true;
-      } else if (item.kind === 'special') {
-        if (!preserveDeviceState || !managedSpecials[item.orderKey]) {
-          managedSpecials[item.orderKey] = item;
+    (gridMode ? _getAllManagedGridItems() : _getAllManagedItems()).forEach(
+      function (item) {
+        managedOrder.push(item.orderKey);
+        if (gridMode) {
+          gridPositions[item.orderKey] = item.grid;
+          gridRefs[item.orderKey] = item.reference;
         }
-      } else {
-        managedDevices.push(item.ck);
-        deviceRefs[item.ck] = item.reference;
+        if (item.kind === 'widget') {
+          managedWidgets[item.orderKey] = item;
+          widgetWidths[item.orderKey] = _parseWidth(item.definition.width);
+          // Never read a saved height back in here on a grid screen: _widgetPayload
+          // resends this on every Device Editor save (including a save that only
+          // touches a different device), so a height read back from a widget with
+          // no way to edit it here (e.g. camera) - or read once and then left
+          // stale after the user clears it via its own Widget Config field
+          // (iframe/log/timegraph) - got silently reinstated forever with no way
+          // to remove it (#100 follow-up, this time in Device Editor's own
+          // resubmission rather than Widget Editor's). Grid mode only keeps a
+          // height a widget's own field explicitly (re)sets on this save; column
+          // mode still needs the existing height to keep packing columns.
+          widgetHeights[item.orderKey] = gridMode
+            ? null
+            : _parseHeight(item.definition.height);
+          widgetTitles[item.orderKey] = String(
+            item.definition.title || item.title || ''
+          );
+          var legacyImplicitIcon =
+            (item.id === 'iframe' || item.id === 'sunrise') &&
+            typeof item.definition.icon === 'undefined';
+          widgetOptions[item.orderKey] = {
+            icon:
+              (typeof item.definition.image === 'string' &&
+                item.definition.image !== '') ||
+              (!legacyImplicitIcon && item.definition.icon !== ''),
+            iconValue:
+              typeof item.definition.icon === 'string' &&
+              item.definition.icon !== ''
+                ? item.definition.icon
+                : null,
+            hide_data: item.definition.hide_data === true,
+            last_update: item.definition.last_update === true,
+          };
+          widgetTitleVisible[item.orderKey] =
+            item.definition.hide_title !== true;
+        } else if (item.kind === 'special') {
+          if (!preserveDeviceState || !managedSpecials[item.orderKey]) {
+            managedSpecials[item.orderKey] = item;
+          }
+        } else {
+          managedDevices.push(item.ck);
+          deviceRefs[item.ck] = item.reference;
+        }
       }
-    });
+    );
 
     layoutEditorBaseline =
       typeof DashticzLayoutEditor !== 'undefined' &&
@@ -462,7 +494,7 @@ var DashticzDeviceEditor = (function () {
   /* ── composite key helpers ──────────────────────────────────── */
   /* Build a composite key from a base idx and optional sub-index  */
   function _ck(idx, subidx) {
-    return subidx ? (idx + '_' + subidx) : String(idx);
+    return subidx ? idx + '_' + subidx : String(idx);
   }
 
   /* Parse a composite key back into {idx, subidx} */
@@ -473,7 +505,7 @@ var DashticzDeviceEditor = (function () {
     }
     var parts = String(ck).split('_');
     return {
-      idx:    parseInt(parts[0], 10),
+      idx: parseInt(parts[0], 10),
       subidx: parts.length === 2 ? parseInt(parts[1], 10) : 0,
     };
   }
@@ -512,7 +544,7 @@ var DashticzDeviceEditor = (function () {
       var parts = b.split('_');
       if (parts.length === 2) {
         var base = parseInt(parts[0], 10);
-        var sub  = parseInt(parts[1], 10);
+        var sub = parseInt(parts[1], 10);
         if (base > 0 && sub > 0) return b;
       }
       return null;
@@ -525,7 +557,8 @@ var DashticzDeviceEditor = (function () {
       }
       var idx = parseInt(b.idx, 10);
       if (idx > 0) {
-        var subidx = (typeof b.subidx === 'number' && b.subidx > 0) ? b.subidx : 0;
+        var subidx =
+          typeof b.subidx === 'number' && b.subidx > 0 ? b.subidx : 0;
         return _ck(idx, subidx);
       }
     }
@@ -592,7 +625,9 @@ var DashticzDeviceEditor = (function () {
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       !/^device_\d+(?:_\d+)?$/.test(reference) &&
-      (!definition.type || definition.type === 'dial' || definition.type === 'bar' ||
+      (!definition.type ||
+        definition.type === 'dial' ||
+        definition.type === 'bar' ||
         definition.type === reference) &&
       parseInt(definition.idx, 10) > 0
     ) {
@@ -645,15 +680,28 @@ var DashticzDeviceEditor = (function () {
       reference: reference,
       definition: definition,
       idx:
-        kind === 'title' || kind === 'slidebutton' || kind === 'html' || kind === 'lms'
+        kind === 'title' ||
+        kind === 'slidebutton' ||
+        kind === 'html' ||
+        kind === 'lms'
           ? null
           : kind === 'group'
-            ? (parseInt(definition.idx, 10) > 0 ? parseInt(definition.idx, 10) : null)
+            ? parseInt(definition.idx, 10) > 0
+              ? parseInt(definition.idx, 10)
+              : null
             : parseInt(definition.idx, 10),
-      title: kind === 'custom' || kind === 'group' || kind === 'html' || kind === 'lms'
-        ? String(definition.title || '')
-        : String(definition.title || (kind === 'title' ? 'Title' : reference)),
-      width: _parseWidth(definition.width || (kind === 'title' ? 12 : kind === 'lms' ? 6 : 3)),
+      title:
+        kind === 'custom' ||
+        kind === 'group' ||
+        kind === 'html' ||
+        kind === 'lms'
+          ? String(definition.title || '')
+          : String(
+              definition.title || (kind === 'title' ? 'Title' : reference)
+            ),
+      width: _parseWidth(
+        definition.width || (kind === 'title' ? 12 : kind === 'lms' ? 6 : 3)
+      ),
       height: _parseHeight(definition.height),
       // Lyrion Music Server connection/player fields - kept as their own
       // properties (like slideTarget/buttonKey below) rather than routed
@@ -661,28 +709,31 @@ var DashticzDeviceEditor = (function () {
       // Server/Port/.../Player UI in _showConfigPopup, not the generic
       // custom-fields grid (see protectedCustomDeviceProperties).
       lmsServer: kind === 'lms' ? String(definition.server || '') : '',
-      lmsPort: kind === 'lms' ? (parseInt(definition.port, 10) || 9000) : 9000,
+      lmsPort: kind === 'lms' ? parseInt(definition.port, 10) || 9000 : 9000,
       lmsUsername: kind === 'lms' ? String(definition.username || '') : '',
       lmsPassword: kind === 'lms' ? String(definition.password || '') : '',
       lmsPlayer: kind === 'lms' ? String(definition.player || '') : '',
       lmsPlayerLabel: '',
-      lmsRefresh: kind === 'lms' ? (parseInt(definition.refresh, 10) || 5) : 5,
-      lmsHideWhenOff: kind === 'lms' ? definition.hide_when_off === true : false,
+      lmsRefresh: kind === 'lms' ? parseInt(definition.refresh, 10) || 5 : 5,
+      lmsHideWhenOff:
+        kind === 'lms' ? definition.hide_when_off === true : false,
       // hide_data/last_update/switch are unused for a title/separator block,
       // but icon applies to every special kind.
       options: {
-        icon: hasConfiguredImage ||
-          typeof definition.icon === 'undefined' || definition.icon !== '',
+        icon:
+          hasConfiguredImage ||
+          typeof definition.icon === 'undefined' ||
+          definition.icon !== '',
         // Icon and Image are one source selector in the editor. Prefer the
         // configured image when an older block still contains both so an
         // unrelated Device Editor save also cleans up the stale icon.
         iconValue: hasConfiguredImage
           ? null
-          : (typeof definition.icon === 'string' && definition.icon !== ''
+          : typeof definition.icon === 'string' && definition.icon !== ''
             ? definition.icon
-            : (kind === 'title' && typeof definition.icon === 'undefined'
+            : kind === 'title' && typeof definition.icon === 'undefined'
               ? SEPARATOR_DEFAULT_ICON
-              : null)),
+              : null,
         hide_data: definition.hide_data === true,
         last_update: definition.last_update === true,
         switch: definition.switch === true,
@@ -694,10 +745,14 @@ var DashticzDeviceEditor = (function () {
         // popup can fall back to auto-detecting from the live device's
         // SwitchType instead of defaulting to false.
         inverse: definition.inverse,
-        barsteps: parseInt(definition.barsteps, 10) > 0 ? parseInt(definition.barsteps, 10) : 10,
+        barsteps:
+          parseInt(definition.barsteps, 10) > 0
+            ? parseInt(definition.barsteps, 10)
+            : 10,
       },
       buttonKey: String(definition.key || ''),
-      slideTarget: parseInt(definition.slide, 10) > 0 ? parseInt(definition.slide, 10) : 1,
+      slideTarget:
+        parseInt(definition.slide, 10) > 0 ? parseInt(definition.slide, 10) : 1,
       showTitle: definition.hide_title !== true,
       customFields: _deviceCustomFieldRows(definition, definition.title),
       preservedFields: _devicePreservedFieldValues(definition),
@@ -709,64 +764,78 @@ var DashticzDeviceEditor = (function () {
     // in settings.js and populated from /lang/<locale>.json settings.widgeteditor section).
     // Fall back to English when the key is missing or the variable is not yet available.
     var t =
-      typeof widgetEditorTranslations !== 'undefined' ? widgetEditorTranslations : {};
+      typeof widgetEditorTranslations !== 'undefined'
+        ? widgetEditorTranslations
+        : {};
 
     // Translated display titles keyed by widget type id.
     // This map is used both for named catalog entries (widget_xxx) and for
     // type-mapped blocks so that language changes always take effect immediately,
     // regardless of any hardcoded title stored in CONFIG.js.
     var translatedTitles = {
-      weather:        t.weather_title        || 'Weather',
-      garbage:        t.garbage_title        || 'Garbage',
-      spotify:        t.spotify_title        || 'Spotify',
-      sonarr:         t.sonarr_title         || 'Sonarr',
-      clock:          t.clock_title          || 'Clock',
-      calendar:       t.calendar_title       || 'Calendar (ICS)',
-      secpanel:       t.secpanel_title       || 'Security panel',
+      weather: t.weather_title || 'Weather',
+      garbage: t.garbage_title || 'Garbage',
+      spotify: t.spotify_title || 'Spotify',
+      sonarr: t.sonarr_title || 'Sonarr',
+      clock: t.clock_title || 'Clock',
+      calendar: t.calendar_title || 'Calendar (ICS)',
+      secpanel: t.secpanel_title || 'Security panel',
       publictransport: t.publictransport_title || 'Public transport',
-      trafficinfo:    t.trafficinfo_title    || 'Traffic information',
+      trafficinfo: t.trafficinfo_title || 'Traffic information',
       alarmmeldingen: t.alarmmeldingen_title || '112',
-      camera:         t.camera_title         || 'Cameras',
-      map:            t.map_title            || 'Google Maps',
-      longfonds:      t.longfonds_title      || 'Air quality',
-      moon:           t.moon_title           || 'Moon',
-      news:           t.news_title           || 'News',
-      iframe:         t.iframe_title         || 'iFrame',
-      xmltvguide:     t.xmltvguide_title     || 'TV Guide',
-      radio:          t.radio_title          || 'Radio',
-      log:            t.log_title            || 'Domoticz log',
-      sunrise:        t.sunrise_title        || 'Sunrise / Sunset',
-      owm:            t.owm_title            || 'OpenWeatherMap',
-      timegraph:      t.timegraph_title      || 'Timegraph',
+      camera: t.camera_title || 'Cameras',
+      map: t.map_title || 'Google Maps',
+      longfonds: t.longfonds_title || 'Air quality',
+      moon: t.moon_title || 'Moon',
+      news: t.news_title || 'News',
+      iframe: t.iframe_title || 'iFrame',
+      xmltvguide: t.xmltvguide_title || 'TV Guide',
+      radio: t.radio_title || 'Radio',
+      log: t.log_title || 'Domoticz log',
+      sunrise: t.sunrise_title || 'Sunrise / Sunset',
+      owm: t.owm_title || 'OpenWeatherMap',
+      timegraph: t.timegraph_title || 'Timegraph',
     };
 
     var catalog = {
-      widget_weather:         { id: 'weather',         title: translatedTitles.weather },
-      widget_garbage:         { id: 'garbage',         title: translatedTitles.garbage },
-      widget_spotify:         { id: 'spotify',         title: translatedTitles.spotify },
-      widget_sonarr:          { id: 'sonarr',          title: translatedTitles.sonarr },
-      widget_clock:           { id: 'clock',           title: translatedTitles.clock },
-      widget_calendar:        { id: 'calendar',        title: translatedTitles.calendar },
-      widget_secpanel:        { id: 'secpanel',        title: translatedTitles.secpanel },
-      widget_publictransport: { id: 'publictransport', title: translatedTitles.publictransport },
-      widget_trafficinfo:     { id: 'trafficinfo',     title: translatedTitles.trafficinfo },
-      widget_alarmmeldingen:  { id: 'alarmmeldingen',  title: translatedTitles.alarmmeldingen },
-      widget_cameras:         { id: 'camera',          title: translatedTitles.camera },
-      widget_map:             { id: 'map',             title: translatedTitles.map },
-      widget_longfonds:       { id: 'longfonds',       title: translatedTitles.longfonds },
-      widget_moon:            { id: 'moon',            title: translatedTitles.moon },
-      widget_news:            { id: 'news',            title: translatedTitles.news },
-      widget_iframe:         { id: 'iframe',         title: translatedTitles.iframe },
-      widget_xmltvguide:     { id: 'xmltvguide',     title: translatedTitles.xmltvguide },
+      widget_weather: { id: 'weather', title: translatedTitles.weather },
+      widget_garbage: { id: 'garbage', title: translatedTitles.garbage },
+      widget_spotify: { id: 'spotify', title: translatedTitles.spotify },
+      widget_sonarr: { id: 'sonarr', title: translatedTitles.sonarr },
+      widget_clock: { id: 'clock', title: translatedTitles.clock },
+      widget_calendar: { id: 'calendar', title: translatedTitles.calendar },
+      widget_secpanel: { id: 'secpanel', title: translatedTitles.secpanel },
+      widget_publictransport: {
+        id: 'publictransport',
+        title: translatedTitles.publictransport,
+      },
+      widget_trafficinfo: {
+        id: 'trafficinfo',
+        title: translatedTitles.trafficinfo,
+      },
+      widget_alarmmeldingen: {
+        id: 'alarmmeldingen',
+        title: translatedTitles.alarmmeldingen,
+      },
+      widget_cameras: { id: 'camera', title: translatedTitles.camera },
+      widget_map: { id: 'map', title: translatedTitles.map },
+      widget_longfonds: { id: 'longfonds', title: translatedTitles.longfonds },
+      widget_moon: { id: 'moon', title: translatedTitles.moon },
+      widget_news: { id: 'news', title: translatedTitles.news },
+      widget_iframe: { id: 'iframe', title: translatedTitles.iframe },
+      widget_xmltvguide: {
+        id: 'xmltvguide',
+        title: translatedTitles.xmltvguide,
+      },
       // Streamplayer/Radio is dispatched by its component name directly, so
       // it is always keyed 'streamplayer' rather than a 'widget_' prefix.
-      streamplayer:          { id: 'radio',          title: translatedTitles.radio },
-      widget_owmwidget:      { id: 'owm',            title: translatedTitles.owm },
-      widget_timegraph:      { id: 'timegraph',      title: translatedTitles.timegraph },
+      streamplayer: { id: 'radio', title: translatedTitles.radio },
+      widget_owmwidget: { id: 'owm', title: translatedTitles.owm },
+      widget_timegraph: { id: 'timegraph', title: translatedTitles.timegraph },
       // DT_log and 'sunrise' (via DT_simpleblock) are also dispatched by their
       // plain block key, exactly like streamplayer above.
-      log:                   { id: 'log',            title: translatedTitles.log },
-      sunrise:               { id: 'sunrise',        title: translatedTitles.sunrise },
+      log: { id: 'log', title: translatedTitles.log },
+      sunrise: { id: 'sunrise', title: translatedTitles.sunrise },
     };
     if (typeof blocks === 'undefined' || !blocks[reference]) {
       return null;
@@ -837,9 +906,21 @@ var DashticzDeviceEditor = (function () {
 
   function _widgetCustomFields(definition) {
     var protectedFields = {
-      type: true, id: true, key: true, width: true, height: true, grid: true,
-      idx: true, subidx: true, icon: true, hide_data: true, last_update: true,
-      hide_title: true, text_alignment: true, text_align: true, title: true,
+      type: true,
+      id: true,
+      key: true,
+      width: true,
+      height: true,
+      grid: true,
+      idx: true,
+      subidx: true,
+      icon: true,
+      hide_data: true,
+      last_update: true,
+      hide_title: true,
+      text_alignment: true,
+      text_align: true,
+      title: true,
     };
     var custom = {};
     Object.keys(definition || {}).forEach(function (property) {
@@ -852,10 +933,26 @@ var DashticzDeviceEditor = (function () {
   }
 
   var protectedCustomDeviceProperties = {
-    type: true, id: true, key: true, kind: true, width: true, height: true,
-    grid: true, idx: true, subidx: true, title: true, icon: true, image: true,
-    hide_data: true, last_update: true, switch: true, hide_title: true,
-    text_alignment: true, text_align: true, custom_fields: true, c: true,
+    type: true,
+    id: true,
+    key: true,
+    kind: true,
+    width: true,
+    height: true,
+    grid: true,
+    idx: true,
+    subidx: true,
+    title: true,
+    icon: true,
+    image: true,
+    hide_data: true,
+    last_update: true,
+    switch: true,
+    hide_title: true,
+    text_alignment: true,
+    text_align: true,
+    custom_fields: true,
+    c: true,
     // Bar's number-of-segments field - managed by the dedicated Steps input
     // in the visual mode selector below (see _showConfigPopup), not the
     // generic custom-fields grid. Has no meaning outside subtype: 'bar'.
@@ -863,14 +960,25 @@ var DashticzDeviceEditor = (function () {
     // Lyrion Music Server (LMS) block fields - managed by the dedicated
     // Server/Port/Username/Password/Player/Refresh/Hide-when-off section of
     // the Lyrion Music Server popup below, not the generic custom-fields grid.
-    server: true, port: true, username: true, password: true, player: true,
-    refresh: true, hide_when_off: true,
-    __proto__: true, prototype: true, constructor: true,
+    server: true,
+    port: true,
+    username: true,
+    password: true,
+    player: true,
+    refresh: true,
+    hide_when_off: true,
+    __proto__: true,
+    prototype: true,
+    constructor: true,
   };
 
   function _settingToText(value) {
     if (value !== null && typeof value === 'object') {
-      try { return JSON.stringify(value); } catch (ignore) { return ''; }
+      try {
+        return JSON.stringify(value);
+      } catch (ignore) {
+        return '';
+      }
     }
     return String(value);
   }
@@ -894,7 +1002,9 @@ var DashticzDeviceEditor = (function () {
         if (parsed && typeof parsed === 'object') {
           return { valid: true, value: parsed };
         }
-      } catch (ignore) { /* a translated validation message is shown by the popup */ }
+      } catch (ignore) {
+        /* a translated validation message is shown by the popup */
+      }
       return { valid: false };
     }
     return { valid: true, value: text };
@@ -917,16 +1027,40 @@ var DashticzDeviceEditor = (function () {
   }
 
   function _deviceCustomFieldRows(definition, titleValue) {
-    var rows = [{
-      field: 'title',
-      setting: typeof titleValue === 'undefined' ? String((definition || {}).title || '') : String(titleValue || ''),
-      value: typeof titleValue === 'undefined' ? String((definition || {}).title || '') : String(titleValue || ''),
-      system: true,
-    }];
-    if (definition && typeof definition.image === 'string' && definition.image !== '') {
-      rows.push({ field: 'image', setting: definition.image, value: definition.image });
-    } else if (definition && typeof definition.icon === 'string' && definition.icon !== '') {
-      rows.push({ field: 'icon', setting: definition.icon, value: definition.icon });
+    var rows = [
+      {
+        field: 'title',
+        setting:
+          typeof titleValue === 'undefined'
+            ? String((definition || {}).title || '')
+            : String(titleValue || ''),
+        value:
+          typeof titleValue === 'undefined'
+            ? String((definition || {}).title || '')
+            : String(titleValue || ''),
+        system: true,
+      },
+    ];
+    if (
+      definition &&
+      typeof definition.image === 'string' &&
+      definition.image !== ''
+    ) {
+      rows.push({
+        field: 'image',
+        setting: definition.image,
+        value: definition.image,
+      });
+    } else if (
+      definition &&
+      typeof definition.icon === 'string' &&
+      definition.icon !== ''
+    ) {
+      rows.push({
+        field: 'icon',
+        setting: definition.icon,
+        value: definition.icon,
+      });
     }
     Object.keys(definition || {}).forEach(function (property) {
       var lowerProperty = property.toLowerCase();
@@ -934,7 +1068,8 @@ var DashticzDeviceEditor = (function () {
         lowerProperty === 'image' ||
         protectedCustomDeviceProperties[lowerProperty] ||
         /^_dashticz/i.test(property)
-      ) return;
+      )
+        return;
       var value = definition[property];
       if (typeof value === 'undefined' || typeof value === 'function') return;
       rows.push({
@@ -959,32 +1094,42 @@ var DashticzDeviceEditor = (function () {
   function _renderedIconForReference(reference) {
     if (!reference) return '';
     var referenceText = String(reference);
-    var $mount = $('[data-grid-block]').filter(function () {
-      return String($(this).attr('data-grid-block')) === referenceText;
-    }).first();
+    var $mount = $('[data-grid-block]')
+      .filter(function () {
+        return String($(this).attr('data-grid-block')) === referenceText;
+      })
+      .first();
     if (!$mount.length) {
-      $mount = $('[data-id]').filter(function () {
-        return String($(this).attr('data-id')) === referenceText;
-      }).first();
+      $mount = $('[data-id]')
+        .filter(function () {
+          return String($(this).attr('data-id')) === referenceText;
+        })
+        .first();
     }
-    return _fontIconClass($mount.find('.col-icon em, .sunrise-header em').first());
+    return _fontIconClass(
+      $mount.find('.col-icon em, .sunrise-header em').first()
+    );
   }
 
   function _defaultDomoticzIcon(device, subidx, idx) {
-    if (!device || typeof getBlockTypesBlock !== 'function') return 'fas fa-question';
+    if (!device || typeof getBlockTypesBlock !== 'function')
+      return 'fas fa-question';
     try {
-      var proto = getBlockTypesBlock({
-        idx: device.idx || device.ID || device.Idx || idx,
-        subidx: subidx || 0,
-        device: device,
-      }) || {};
+      var proto =
+        getBlockTypesBlock({
+          idx: device.idx || device.ID || device.Idx || idx,
+          subidx: subidx || 0,
+          device: device,
+        }) || {};
       if (subidx && Array.isArray(proto.values) && proto.values[subidx - 1]) {
         proto = proto.values[subidx - 1];
       }
       var icon = proto.icon || proto.iconOn || proto.iconOff;
       if (typeof icon === 'function') icon = icon(device);
       if (typeof icon === 'string' && icon) return icon;
-    } catch (ignore) { /* fall through to the neutral editable fallback */ }
+    } catch (ignore) {
+      /* fall through to the neutral editable fallback */
+    }
     return 'fas fa-question';
   }
 
@@ -1013,9 +1158,11 @@ var DashticzDeviceEditor = (function () {
 
   function _loadCustomImages() {
     if (customImageListPromise) return customImageListPromise;
-    customImageListPromise = $.getJSON('js/listcustomicons.php').then(function (data) {
-      return data && Array.isArray(data.images) ? data.images : [];
-    });
+    customImageListPromise = $.getJSON('js/listcustomicons.php').then(
+      function (data) {
+        return data && Array.isArray(data.images) ? data.images : [];
+      }
+    );
     customImageListPromise.fail(function () {
       customImageListPromise = null;
     });
@@ -1024,19 +1171,24 @@ var DashticzDeviceEditor = (function () {
 
   function _renderCustomImageGrid($picker, images, selectedPath, emptyText) {
     var $grid = $picker.find('.dt-custom-image-grid').empty();
-    $picker.find('.dt-custom-image-status').toggle(!images.length).text(
-      images.length ? '' : emptyText
-    );
+    $picker
+      .find('.dt-custom-image-status')
+      .toggle(!images.length)
+      .text(images.length ? '' : emptyText);
     images.forEach(function (imagePath) {
       var filename = String(imagePath).replace(/^custom\//, '');
-      var $button = $('<button type="button" class="dt-custom-image-option"></button>')
+      var $button = $(
+        '<button type="button" class="dt-custom-image-option"></button>'
+      )
         .attr('data-image-path', imagePath)
         .attr('title', filename)
         .toggleClass('is-selected', String(selectedPath || '') === imagePath);
       $('<img class="dt-custom-image-thumb" loading="lazy" alt="">')
         .attr('src', 'img/' + imagePath)
         .appendTo($button);
-      $('<span class="dt-custom-image-name"></span>').text(filename).appendTo($button);
+      $('<span class="dt-custom-image-name"></span>')
+        .text(filename)
+        .appendTo($button);
       $grid.append($button);
     });
   }
@@ -1062,7 +1214,8 @@ var DashticzDeviceEditor = (function () {
     (rows || []).forEach(function (row) {
       if (!row || !row.field) return;
       var field = _normaliseCustomFieldName(row.field);
-      if (!field || field === 'title' || field === 'icon' || field === 'c') return;
+      if (!field || field === 'title' || field === 'icon' || field === 'c')
+        return;
       customFields[field] = _encodeCustomSettingValue(row.value);
     });
     Object.keys(customFields).forEach(function (field) {
@@ -1078,7 +1231,8 @@ var DashticzDeviceEditor = (function () {
       var pendingEntry = $.extend(true, {}, widget.pendingPayload);
       pendingEntry.id = widget.id;
       pendingEntry.width = _parseWidth(widgetWidths[orderKey]);
-      if (widgetHeights[orderKey]) pendingEntry.height = widgetHeights[orderKey];
+      if (widgetHeights[orderKey])
+        pendingEntry.height = widgetHeights[orderKey];
       if (widget.pendingTitleEdited) {
         var pendingTitle = String(widgetTitles[orderKey] || '').trim();
         if (pendingTitle) pendingEntry.title = pendingTitle;
@@ -1116,9 +1270,7 @@ var DashticzDeviceEditor = (function () {
     if (widget.id === 'weather') {
       entry.provider =
         definition.widget_provider ||
-        (definition.type === 'wunderground'
-          ? 'wunderground'
-          : 'openweather');
+        (definition.type === 'wunderground' ? 'wunderground' : 'openweather');
       _copyDefinedWidgetProperties(entry, definition, [
         'showRain',
         'showDescription',
@@ -1157,8 +1309,7 @@ var DashticzDeviceEditor = (function () {
         if (definition.videoUrl) entry.videoUrl = definition.videoUrl;
       }
     } else if (widget.id === 'alarmmeldingen') {
-      entry.rss =
-        definition.rss || 'https://www.alarmeringen.nl/feeds/all.rss';
+      entry.rss = definition.rss || 'https://www.alarmeringen.nl/feeds/all.rss';
       if (definition.filter) entry.filter = definition.filter;
     } else if (widget.id === 'xmltvguide') {
       // savewidgets.php rejects the whole save when a resubmitted xmltvguide
@@ -1198,26 +1349,45 @@ var DashticzDeviceEditor = (function () {
       // legacy _STREAMPLAYER_TRACKS global instead, so fall back to that.
       entry.tracks = Array.isArray(definition.tracks)
         ? definition.tracks
-        : (typeof window !== 'undefined' && Array.isArray(window._STREAMPLAYER_TRACKS)
+        : typeof window !== 'undefined' &&
+            Array.isArray(window._STREAMPLAYER_TRACKS)
           ? window._STREAMPLAYER_TRACKS
-          : []);
+          : [];
     } else if (widget.id === 'log') {
-      if (typeof definition.scrolltimeout !== 'undefined') entry.scrolltimeout = definition.scrolltimeout;
+      if (typeof definition.scrolltimeout !== 'undefined')
+        entry.scrolltimeout = definition.scrolltimeout;
       entry.ascending = definition.ascending !== false;
-      _copyDefinedWidgetProperties(entry, definition, ['aspectratio', 'maxitems']);
-      if (typeof definition.height !== 'undefined') entry.logHeight = definition.height;
+      _copyDefinedWidgetProperties(entry, definition, [
+        'aspectratio',
+        'maxitems',
+      ]);
+      if (typeof definition.height !== 'undefined')
+        entry.logHeight = definition.height;
     } else if (widget.id === 'owm') {
-      _copyDefinedWidgetProperties(entry, definition, ['apikey', 'layout', 'city', 'country']);
+      _copyDefinedWidgetProperties(entry, definition, [
+        'apikey',
+        'layout',
+        'city',
+        'country',
+      ]);
     } else if (widget.id === 'timegraph') {
       // idx is a protected/common property (see protectedCustomDeviceProperties
       // below), so it never survives the generic custom_fields fallback and
       // must be copied explicitly or a resize-only Device Editor save would
       // silently drop the block's main Domoticz device.
       _copyDefinedWidgetProperties(entry, definition, [
-        'idx', 'duration', 'xTicks', 'yTicks', 'xLabels',
-        'animation', 'lineTension', 'pointRadius', 'values',
+        'idx',
+        'duration',
+        'xTicks',
+        'yTicks',
+        'xLabels',
+        'animation',
+        'lineTension',
+        'pointRadius',
+        'values',
       ]);
-      if (typeof definition.height !== 'undefined') entry.timegraphHeight = definition.height;
+      if (typeof definition.height !== 'undefined')
+        entry.timegraphHeight = definition.height;
     }
 
     // savewidgets.php rebuilds the managed block section. Re-submit every safe
@@ -1238,7 +1408,9 @@ var DashticzDeviceEditor = (function () {
     if (typeof standbyActive !== 'undefined' && standbyActive) {
       return 'standby';
     }
-    var $active = $('.dt-container .screen.swiper-slide-active[data-screenindex]');
+    var $active = $(
+      '.dt-container .screen.swiper-slide-active[data-screenindex]'
+    );
     if (!$active.length) {
       $active = $('.dt-container .screen[data-screenindex]:visible').first();
     }
@@ -1260,9 +1432,7 @@ var DashticzDeviceEditor = (function () {
       return $('.screenstandby').first();
     }
     var num = _activeScreenPayload();
-    var $byIndex = $(
-      '.dt-container .screen[data-screenindex="' + num + '"]'
-    );
+    var $byIndex = $('.dt-container .screen[data-screenindex="' + num + '"]');
     if ($byIndex.length) return $byIndex.first();
     var $active = $('.dt-container .screen.swiper-slide-active');
     if ($active.length) return $active;
@@ -1408,10 +1578,7 @@ var DashticzDeviceEditor = (function () {
 
     columnKeys.forEach(function (colKey) {
       var lookupKey = String(colKey);
-      if (
-        _activeScreenTarget() === 'standby' &&
-        /^standby/.test(lookupKey)
-      ) {
+      if (_activeScreenTarget() === 'standby' && /^standby/.test(lookupKey)) {
         lookupKey = lookupKey.replace(/^standby/, '');
       }
       var col =
@@ -1448,9 +1615,8 @@ var DashticzDeviceEditor = (function () {
                 kind: 'device',
                 ck: ck,
                 orderKey: deviceKey,
-                reference: typeof b === 'string'
-                  ? b
-                  : _stableDeviceReference(ck),
+                reference:
+                  typeof b === 'string' ? b : _stableDeviceReference(ck),
               });
             }
             return;
@@ -1478,7 +1644,7 @@ var DashticzDeviceEditor = (function () {
       proto = bt.SubType[device.SubType];
     }
     if (Array.isArray(proto.values)) return proto.values.length;
-    if (Array.isArray(bt.values))    return bt.values.length;
+    if (Array.isArray(bt.values)) return bt.values.length;
     return 0;
   }
 
@@ -1487,8 +1653,8 @@ var DashticzDeviceEditor = (function () {
     var all = Domoticz.getAllDevices();
 
     /* build fast lookup sets */
-    var managedSet       = {};   /* all composite keys currently managed */
-    var managedFullIdx   = {};   /* base idx that is managed WITHOUT a sub-index */
+    var managedSet = {}; /* all composite keys currently managed */
+    var managedFullIdx = {}; /* base idx that is managed WITHOUT a sub-index */
     managedKeys.forEach(function (ck) {
       managedSet[ck] = true;
       var p = _parseCk(ck);
@@ -1497,17 +1663,19 @@ var DashticzDeviceEditor = (function () {
 
     var available = [];
     Object.keys(all).forEach(function (key) {
-      if (!key || key[0] === '_') return;   /* internal entries */
+      if (!key || key[0] === '_') return; /* internal entries */
 
       /* group/scene key e.g. 's1' */
       if (_isGroupCk(key)) {
         if (managedSet[key]) return;
-        var d    = all[key];
+        var d = all[key];
         var type = d.Type || 'Group';
         var prefix = type === 'Scene' ? 'Scene_' : 'Group_';
         var plainName = d.Name || key;
         available.push({
-          key: key, idx: key, subidx: 0,
+          key: key,
+          idx: key,
+          subidx: 0,
           name: prefix + plainName,
           plainName: plainName,
           type: type,
@@ -1517,11 +1685,12 @@ var DashticzDeviceEditor = (function () {
 
       var idx = parseInt(key, 10);
       if (!(idx > 0 && String(idx) === String(key))) return;
-      if (managedFullIdx[idx]) return;      /* whole base device is already managed */
+      if (managedFullIdx[idx])
+        return; /* whole base device is already managed */
 
-      var d        = all[key];
-      var name     = d.Name || ('Device ' + key);
-      var type     = d.Type  || '';
+      var d = all[key];
+      var name = d.Name || 'Device ' + key;
+      var type = d.Type || '';
       var subCount = _getSubValueCount(d);
 
       if (subCount > 1) {
@@ -1529,14 +1698,27 @@ var DashticzDeviceEditor = (function () {
         for (var s = 1; s <= subCount; s++) {
           var ck = _ck(idx, s);
           if (!managedSet[ck]) {
-            available.push({ key: ck, idx: idx, subidx: s,
-                             name: name + '\u00a0(' + s + ')', plainName: null, type: type });
+            available.push({
+              key: ck,
+              idx: idx,
+              subidx: s,
+              name: name + '\u00a0(' + s + ')',
+              plainName: null,
+              type: type,
+            });
           }
         }
       } else {
         var ck = _ck(idx, 0);
         if (!managedSet[ck]) {
-          available.push({ key: ck, idx: idx, subidx: 0, name: name, plainName: null, type: type });
+          available.push({
+            key: ck,
+            idx: idx,
+            subidx: 0,
+            name: name,
+            plainName: null,
+            type: type,
+          });
         }
       }
     });
@@ -1556,7 +1738,7 @@ var DashticzDeviceEditor = (function () {
     managedKeys.forEach(function (ck) {
       var p = _parseCk(ck);
       var d = allDomoticz[String(p.idx)] || allDomoticz[p.idx];
-      deviceNames[ck] = d ? (d.Name || ('Device ' + p.idx)) : ('Device ' + p.idx);
+      deviceNames[ck] = d ? d.Name || 'Device ' + p.idx : 'Device ' + p.idx;
       deviceWidths[ck] = _getConfiguredWidthForCk(ck);
       deviceHeights[ck] = _getConfiguredHeightForCk(ck);
       if (typeof deviceOptions[ck] !== 'undefined') {
@@ -1570,13 +1752,18 @@ var DashticzDeviceEditor = (function () {
       var barMode = _isBarDefinition(configured);
       deviceTitles[ck] = configured._dashticzAutoTitle
         ? ''
-        : (typeof configured.title === 'string' ? configured.title : '');
+        : typeof configured.title === 'string'
+          ? configured.title
+          : '';
       deviceOptions[ck] = {
-        icon: (typeof configured.image === 'string' && configured.image !== '') ||
-          typeof configured.icon === 'undefined' || configured.icon !== '',
-        iconValue: typeof configured.icon === 'string' && configured.icon !== ''
-          ? configured.icon
-          : null,
+        icon:
+          (typeof configured.image === 'string' && configured.image !== '') ||
+          typeof configured.icon === 'undefined' ||
+          configured.icon !== '',
+        iconValue:
+          typeof configured.icon === 'string' && configured.icon !== ''
+            ? configured.icon
+            : null,
         hide_data: configured.hide_data === true,
         last_update: configured.last_update === true,
         switch: configured.switch === true,
@@ -1586,10 +1773,16 @@ var DashticzDeviceEditor = (function () {
         // See the analogous comment in _specialFromReference() - kept as a
         // tri-state, not coerced to a boolean.
         inverse: configured.inverse,
-        barsteps: parseInt(configured.barsteps, 10) > 0 ? parseInt(configured.barsteps, 10) : 10,
+        barsteps:
+          parseInt(configured.barsteps, 10) > 0
+            ? parseInt(configured.barsteps, 10)
+            : 10,
       };
       deviceTitleVisible[ck] = configured.hide_title !== true;
-      deviceCustomFields[ck] = _deviceCustomFieldRows(configured, deviceTitles[ck]);
+      deviceCustomFields[ck] = _deviceCustomFieldRows(
+        configured,
+        deviceTitles[ck]
+      );
       devicePreservedFields[ck] = _devicePreservedFieldValues(configured);
     });
 
@@ -1625,21 +1818,28 @@ var DashticzDeviceEditor = (function () {
     /* header */
     html += '<div class="modal-header">';
     html += '<h5 class="modal-title" id="de-title">';
-    var modalTitle = editorMode === 'dummy'
-      ? t.custom_devices
-      : editorMode === 'title'
-        ? t.separator
-        : t.editor_title;
-    html += '<i class="fas fa-pencil-alt me-2" aria-hidden="true"></i>' + _esc(modalTitle);
+    var modalTitle =
+      editorMode === 'dummy'
+        ? t.custom_devices
+        : editorMode === 'title'
+          ? t.separator
+          : t.editor_title;
+    html +=
+      '<i class="fas fa-pencil-alt me-2" aria-hidden="true"></i>' +
+      _esc(modalTitle);
     html += '</h5>';
-    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button>';
     html += '</div>';
 
     /* body */
     html += '<div class="modal-body">';
 
     /* section 1 – current devices */
-    html += '<h6 class="de-section-title">' + _esc(t.configured_items) + '</h6>';
+    html +=
+      '<h6 class="de-section-title">' + _esc(t.configured_items) + '</h6>';
     html += '<div id="de-device-list" class="de-device-list">';
     if (managedOrder.length === 0) {
       html += '<div class="de-empty">' + _esc(t.empty_items) + '</div>';
@@ -1658,16 +1858,18 @@ var DashticzDeviceEditor = (function () {
 
     /* section 2 – the selected add workflow. Dummy/title helper blocks were
        removed from the normal device dropdown and now have their own entry point. */
-    var addHeading = editorMode === 'dummy'
-      ? t.custom_devices
-      : editorMode === 'title'
-        ? t.separator
-        : t.add_device;
+    var addHeading =
+      editorMode === 'dummy'
+        ? t.custom_devices
+        : editorMode === 'title'
+          ? t.separator
+          : t.add_device;
     html += '<h6 class="de-section-title mt-3">' + _esc(addHeading) + '</h6>';
     html += '<div id="de-add-rows">';
-    html += editorMode === 'devices'
-      ? _addRowHtml(available)
-      : _specialAddRowHtml(editorMode);
+    html +=
+      editorMode === 'devices'
+        ? _addRowHtml(available)
+        : _specialAddRowHtml(editorMode);
     html += '</div>';
 
     html += '</div>'; /* modal-body */
@@ -1676,18 +1878,26 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="modal-footer">';
     if (typeof _PHP_INSTALLED !== 'undefined' && !_PHP_INSTALLED) {
       html += '<span class="text-danger me-auto de-nophp">';
-      html += '<i class="fas fa-exclamation-triangle me-1" aria-hidden="true"></i>';
+      html +=
+        '<i class="fas fa-exclamation-triangle me-1" aria-hidden="true"></i>';
       html += 'PHP not available — saving is disabled.';
       html += '</span>';
     }
     if (openedFromAddMenu) html += _backButtonHtml();
-    html += '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
-      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.close) + '</button>';
-    html += '<button type="button" class="btn btn-primary btn-save" id="de-save-btn"';
+    html +=
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.close) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="de-save-btn"';
     if (typeof _PHP_INSTALLED !== 'undefined' && !_PHP_INSTALLED) {
       html += ' disabled';
     }
-    html += '><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' + _esc(t.save) + '</button>';
+    html +=
+      '><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
     html += '</div>';
 
     html += '</div></div></div>'; /* content, dialog, modal */
@@ -1696,10 +1906,17 @@ var DashticzDeviceEditor = (function () {
 
   function _configButtonHtml(orderKey, label) {
     var t = _translations();
-    return '<button type="button" class="btn btn-outline-secondary btn-sm de-config-btn" ' +
-      'data-order-key="' + _esc(orderKey) + '" title="' + _esc(label || t.configure) +
-      '" aria-label="' + _esc(label || t.configure) + '">' +
-      '<i class="fas fa-cog" aria-hidden="true"></i></button>';
+    return (
+      '<button type="button" class="btn btn-outline-secondary btn-sm de-config-btn" ' +
+      'data-order-key="' +
+      _esc(orderKey) +
+      '" title="' +
+      _esc(label || t.configure) +
+      '" aria-label="' +
+      _esc(label || t.configure) +
+      '">' +
+      '<i class="fas fa-cog" aria-hidden="true"></i></button>'
+    );
   }
 
   /* opts.hideButtons: renders the icon/image row without the add/remove
@@ -1720,61 +1937,102 @@ var DashticzDeviceEditor = (function () {
     var rowClass = 'de-custom-field-row input-group input-group-sm mb-2';
     if (isIconSource) rowClass += ' de-icon-field-row';
     if (isSystem) rowClass += ' de-system-field-row';
-    return '<div class="' + rowClass + '"' +
+    return (
+      '<div class="' +
+      rowClass +
+      '"' +
       (row.generated === true
-        ? ' data-generated-icon="true" data-initial-setting="' + _esc(row.setting || '') + '"'
+        ? ' data-generated-icon="true" data-initial-setting="' +
+          _esc(row.setting || '') +
+          '"'
         : '') +
-      (isIconSource ? ' data-icon-default="' + _esc(lowerField === 'icon' ? (row.setting || '') : '') + '"' : '') +
+      (isIconSource
+        ? ' data-icon-default="' +
+          _esc(lowerField === 'icon' ? row.setting || '' : '') +
+          '"'
+        : '') +
       '>' +
       (isIconSource
         ? '<select class="form-select de-custom-field-name de-icon-source" aria-label="' +
-          _esc(t.field) + '"><option value="icon"' + (lowerField === 'icon' ? ' selected' : '') +
-          '>Icon</option><option value="image"' + (lowerField === 'image' ? ' selected' : '') +
+          _esc(t.field) +
+          '"><option value="icon"' +
+          (lowerField === 'icon' ? ' selected' : '') +
+          '>Icon</option><option value="image"' +
+          (lowerField === 'image' ? ' selected' : '') +
           '>Image</option></select>'
         : '<input type="text" class="form-control de-custom-field-name" placeholder="' +
-          _esc(t.field) + '" value="' + _esc(field) + '"' +
-          (isSystem ? ' readonly aria-readonly="true"' : '') + '>') +
+          _esc(t.field) +
+          '" value="' +
+          _esc(field) +
+          '"' +
+          (isSystem ? ' readonly aria-readonly="true"' : '') +
+          '>') +
       '<input type="text" class="form-control de-custom-field-setting" placeholder="' +
-      _esc(lowerField === 'image' ? 'custom/icon.png' : t.setting) + '" value="' +
-      _esc(row.setting || '') + '">' +
+      _esc(lowerField === 'image' ? 'custom/icon.png' : t.setting) +
+      '" value="' +
+      _esc(row.setting || '') +
+      '">' +
       (isIconSource
         ? '<div class="dropdown-menu dt-custom-image-picker" role="dialog" aria-label="' +
-          _esc(t.custom_images) + '"><div class="dt-custom-image-status"></div>' +
+          _esc(t.custom_images) +
+          '"><div class="dt-custom-image-status"></div>' +
           '<div class="dt-custom-image-grid"></div></div>'
         : '') +
-      (hideButtons ? '' :
-        '<button type="button" class="btn btn-outline-success de-custom-field-add" title="' +
-        _esc(t.add_field) + '"><i class="fas fa-plus" aria-hidden="true"></i></button>' +
-        '<button type="button" class="btn btn-outline-danger de-custom-field-remove" title="' +
-        _esc(t.remove_field) + '"' + (isSystem ? ' disabled' : '') +
-        '><i class="fas fa-minus" aria-hidden="true"></i></button>') +
-      '</div>';
+      (hideButtons
+        ? ''
+        : '<button type="button" class="btn btn-outline-success de-custom-field-add" title="' +
+          _esc(t.add_field) +
+          '"><i class="fas fa-plus" aria-hidden="true"></i></button>' +
+          '<button type="button" class="btn btn-outline-danger de-custom-field-remove" title="' +
+          _esc(t.remove_field) +
+          '"' +
+          (isSystem ? ' disabled' : '') +
+          '><i class="fas fa-minus" aria-hidden="true"></i></button>') +
+      '</div>'
+    );
   }
 
   function _customDeviceFieldRowHtml(row) {
     var t = _translations();
     row = row || { field: '', setting: '' };
-    return '<div class="cd-custom-field-row input-group input-group-sm mb-2">' +
+    return (
+      '<div class="cd-custom-field-row input-group input-group-sm mb-2">' +
       '<input type="text" class="form-control cd-custom-field-name" placeholder="' +
-      _esc(t.field) + '" value="' + _esc(row.field || '') + '">' +
+      _esc(t.field) +
+      '" value="' +
+      _esc(row.field || '') +
+      '">' +
       '<input type="text" class="form-control cd-custom-field-setting" placeholder="' +
-      _esc(t.setting) + '" value="' + _esc(row.setting || '') + '">' +
+      _esc(t.setting) +
+      '" value="' +
+      _esc(row.setting || '') +
+      '">' +
       '<button type="button" class="btn btn-outline-success cd-custom-field-add" title="' +
-      _esc(t.add_field) + '"><i class="fas fa-plus" aria-hidden="true"></i></button>' +
+      _esc(t.add_field) +
+      '"><i class="fas fa-plus" aria-hidden="true"></i></button>' +
       '<button type="button" class="btn btn-outline-danger cd-custom-field-remove" title="' +
-      _esc(t.remove_field) + '"><i class="fas fa-minus" aria-hidden="true"></i></button>' +
-      '</div>';
+      _esc(t.remove_field) +
+      '"><i class="fas fa-minus" aria-hidden="true"></i></button>' +
+      '</div>'
+    );
   }
 
   function _showCustomDevicePopup() {
     var t = _translations();
     $('#customdevicepopup').remove();
 
-    var html = '<div class="modal fade" id="customdevicepopup" tabindex="-1" aria-hidden="true">';
-    html += '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
-    html += '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-cube me-2" aria-hidden="true"></i>' +
-      _esc(t.custom_devices) + '</h5>';
-    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
+    var html =
+      '<div class="modal fade" id="customdevicepopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-cube me-2" aria-hidden="true"></i>' +
+      _esc(t.custom_devices) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
     html += '<div class="modal-body">';
     // Icon/Update/Title come first, matching the Device Config popup's own
     // top section (see _quickOptionsHtml()). Last update checked by default:
@@ -1788,23 +2046,49 @@ var DashticzDeviceEditor = (function () {
       lastUpdate: true,
       showTitle: true,
     });
-    html += '<div class="mb-3"><label class="form-label" for="cd-device-name">' + _esc(t.custom_device_name) + '</label>';
-    html += '<input type="text" class="form-control" id="cd-device-name" autocomplete="off">';
-    html += '<div class="form-text">' + _esc(t.custom_device_name_help) + '</div></div>';
-    html += '<div class="mb-3"><label class="form-label" for="cd-device-idx">IDX</label>';
-    html += '<input type="number" min="1" step="1" class="form-control" id="cd-device-idx"></div>';
-    html += '<div class="mb-3"><label class="form-label" for="cd-device-title">' + _esc(t.custom_device_title) + '</label>';
-    html += '<input type="text" class="form-control" id="cd-device-title" autocomplete="off"></div>';
-    html += '<div class="cd-custom-fields-section"><h6>' + _esc(t.custom_device_options) + '</h6>';
-    html += '<div class="form-text mb-2">' + _esc(t.custom_device_values_help) + '</div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="cd-device-name">' +
+      _esc(t.custom_device_name) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="cd-device-name" autocomplete="off">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.custom_device_name_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="cd-device-idx">IDX</label>';
+    html +=
+      '<input type="number" min="1" step="1" class="form-control" id="cd-device-idx"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="cd-device-title">' +
+      _esc(t.custom_device_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="cd-device-title" autocomplete="off"></div>';
+    html +=
+      '<div class="cd-custom-fields-section"><h6>' +
+      _esc(t.custom_device_options) +
+      '</h6>';
+    html +=
+      '<div class="form-text mb-2">' +
+      _esc(t.custom_device_values_help) +
+      '</div>';
     html += '<div class="cd-custom-fields">';
     html += _customDeviceFieldRowHtml({ field: 'values', setting: '' });
     html += '</div></div>';
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
-    html += '<div class="modal-footer">' + _backButtonHtml() +
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
       '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
-      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.cancel) + '</button>';
-    html += '<button type="button" class="btn btn-primary btn-save" id="cd-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' + _esc(t.save) + '</button>';
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="cd-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
     var $popup = $('#customdevicepopup');
@@ -1820,7 +2104,11 @@ var DashticzDeviceEditor = (function () {
     $popup.on('click', '.cd-custom-field-add', function () {
       $popup.find('.cd-custom-fields').append(_customDeviceFieldRowHtml());
       refreshButtons();
-      $popup.find('.cd-custom-field-row').last().find('.cd-custom-field-name').trigger('focus');
+      $popup
+        .find('.cd-custom-field-row')
+        .last()
+        .find('.cd-custom-field-name')
+        .trigger('focus');
     });
     $popup.on('click', '.cd-custom-field-remove', function () {
       if ($(this).prop('disabled')) return;
@@ -1830,7 +2118,10 @@ var DashticzDeviceEditor = (function () {
     refreshButtons();
 
     $('#cd-save-btn').on('click', function () {
-      var $message = $popup.find('.cd-custom-message').removeClass('text-danger').text('');
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
       var reference = $.trim(String($('#cd-device-name').val() || ''));
       var rawIdx = $.trim(String($('#cd-device-idx').val() || ''));
       var idx = parseInt(rawIdx, 10);
@@ -1839,7 +2130,10 @@ var DashticzDeviceEditor = (function () {
         $('#cd-device-name').trigger('focus');
         return;
       }
-      if ((typeof blocks !== 'undefined' && blocks[reference]) || managedSpecials[_specialOrderKey(reference)]) {
+      if (
+        (typeof blocks !== 'undefined' && blocks[reference]) ||
+        managedSpecials[_specialOrderKey(reference)]
+      ) {
         $message.addClass('text-danger').text(t.invalid_custom_device_name);
         $('#cd-device-name').trigger('focus');
         return;
@@ -1850,23 +2144,37 @@ var DashticzDeviceEditor = (function () {
         return;
       }
 
-      var title = $.trim(String($('#cd-device-title').val() || '')).slice(0, 100);
+      var title = $.trim(String($('#cd-device-title').val() || '')).slice(
+        0,
+        100
+      );
       var customRows = [];
       var seen = {};
       var valid = true;
       $popup.find('.cd-custom-field-row').each(function () {
         if (!valid) return;
-        var rawField = $.trim(String($(this).find('.cd-custom-field-name').val() || ''));
-        var rawSetting = $.trim(String($(this).find('.cd-custom-field-setting').val() || ''));
+        var rawField = $.trim(
+          String($(this).find('.cd-custom-field-name').val() || '')
+        );
+        var rawSetting = $.trim(
+          String($(this).find('.cd-custom-field-setting').val() || '')
+        );
         if (!rawField && !rawSetting) return;
         // An empty predefined 'values' row is ignored until given a value.
-        if (rawField && !rawSetting && rawField.toLowerCase() === 'values') return;
+        if (rawField && !rawSetting && rawField.toLowerCase() === 'values')
+          return;
         var field = _normaliseCustomFieldName(rawField);
         var lowerField = field.toLowerCase();
-        if (!field || !/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(field) || !rawSetting) {
+        if (
+          !field ||
+          !/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(field) ||
+          !rawSetting
+        ) {
           valid = false;
           $message.addClass('text-danger').text(t.invalid_field);
-          $(this).find(!field ? '.cd-custom-field-name' : '.cd-custom-field-setting').trigger('focus');
+          $(this)
+            .find(!field ? '.cd-custom-field-name' : '.cd-custom-field-setting')
+            .trigger('focus');
           return;
         }
         if (seen[lowerField]) {
@@ -1892,7 +2200,11 @@ var DashticzDeviceEditor = (function () {
           $(this).find('.cd-custom-field-setting').trigger('focus');
           return;
         }
-        customRows.push({ field: field, setting: rawSetting, value: parsed.value });
+        customRows.push({
+          field: field,
+          setting: rawSetting,
+          value: parsed.value,
+        });
       });
       if (!valid) return;
 
@@ -1900,11 +2212,22 @@ var DashticzDeviceEditor = (function () {
       // A custom image path is a regular custom field ('image'), not the
       // dedicated icon slot - matches how Device/Widget Config's own
       // icon/image row saves the two differently (see _showConfigPopup).
-      var iconIsImage = quickOptions.icon && quickOptions.iconSource === 'image';
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
       if (iconIsImage && quickOptions.iconValue) {
-        customRows.unshift({ field: 'image', setting: quickOptions.iconValue, value: quickOptions.iconValue });
+        customRows.unshift({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
       }
-      if (title) customRows.unshift({ field: 'title', setting: title, value: title, system: true });
+      if (title)
+        customRows.unshift({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
 
       var orderKey = _specialOrderKey(reference);
       managedSpecials[orderKey] = {
@@ -1929,12 +2252,18 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(document.getElementById('customdevicepopup')).hide();
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('customdevicepopup')
+      ).hide();
       _save();
     });
 
-    $popup.one('hidden.bs.modal', function () { $(this).remove(); });
-    window.bootstrap.Modal.getOrCreateInstance(document.getElementById('customdevicepopup')).show();
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('customdevicepopup')
+    ).show();
   }
 
   /* Multi Device: a graphical builder for the Custom Device engine's existing
@@ -1947,17 +2276,27 @@ var DashticzDeviceEditor = (function () {
   function _multiDeviceRowHtml(row) {
     var t = _translations();
     row = row || { idx: '', value: '' };
-    return '<div class="md-value-row input-group input-group-sm mb-2">' +
+    return (
+      '<div class="md-value-row input-group input-group-sm mb-2">' +
       '<input type="number" min="1" step="1" class="form-control md-value-idx" ' +
-      'style="max-width:110px" placeholder="' + _esc(t.multi_device_row_idx) + '" value="' +
-      _esc(row.idx || '') + '">' +
+      'style="max-width:110px" placeholder="' +
+      _esc(t.multi_device_row_idx) +
+      '" value="' +
+      _esc(row.idx || '') +
+      '">' +
       '<input type="text" class="form-control md-value-value" placeholder="' +
-      _esc(t.multi_device_row_value) + '" value="' + _esc(row.value || '') + '">' +
+      _esc(t.multi_device_row_value) +
+      '" value="' +
+      _esc(row.value || '') +
+      '">' +
       '<button type="button" class="btn btn-outline-success md-value-add" title="' +
-      _esc(t.add_value_row) + '"><i class="fas fa-plus" aria-hidden="true"></i></button>' +
+      _esc(t.add_value_row) +
+      '"><i class="fas fa-plus" aria-hidden="true"></i></button>' +
       '<button type="button" class="btn btn-outline-danger md-value-remove" title="' +
-      _esc(t.remove_value_row) + '"><i class="fas fa-minus" aria-hidden="true"></i></button>' +
-      '</div>';
+      _esc(t.remove_value_row) +
+      '"><i class="fas fa-minus" aria-hidden="true"></i></button>' +
+      '</div>'
+    );
   }
 
   /* Shared Icon/Last update/Title checkbox row used by the Multi Device,
@@ -1971,21 +2310,48 @@ var DashticzDeviceEditor = (function () {
      the same way an already-placed block can. */
   function _quickOptionsHtml(prefix, defaults) {
     var t = _translations();
-    var html = '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
+    var html =
+      '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
     html += '<div class="mb-3 de-config-options de-config-options-three">';
-    html += '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
-      prefix + '-opt-icon"' + (defaults.icon ? ' checked' : '') + '>' +
-      '<span class="form-check-label">' + _esc(t.icon) + '</span></label>';
-    html += '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
-      prefix + '-opt-update"' + (defaults.lastUpdate ? ' checked' : '') + '>' +
-      '<span class="form-check-label">' + _esc(t.last_update) + '</span></label>';
-    html += '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
-      prefix + '-opt-title"' + (defaults.showTitle ? ' checked' : '') + '>' +
-      '<span class="form-check-label">' + _esc(t.show_title) + '</span></label>';
+    html +=
+      '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
+      prefix +
+      '-opt-icon"' +
+      (defaults.icon ? ' checked' : '') +
+      '>' +
+      '<span class="form-check-label">' +
+      _esc(t.icon) +
+      '</span></label>';
+    html +=
+      '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
+      prefix +
+      '-opt-update"' +
+      (defaults.lastUpdate ? ' checked' : '') +
+      '>' +
+      '<span class="form-check-label">' +
+      _esc(t.last_update) +
+      '</span></label>';
+    html +=
+      '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
+      prefix +
+      '-opt-title"' +
+      (defaults.showTitle ? ' checked' : '') +
+      '>' +
+      '<span class="form-check-label">' +
+      _esc(t.show_title) +
+      '</span></label>';
     html += '</div>';
-    html += '<div class="mb-3 ' + prefix + '-opt-icon-field' + (defaults.icon ? '' : ' d-none') + '">';
+    html +=
+      '<div class="mb-3 ' +
+      prefix +
+      '-opt-icon-field' +
+      (defaults.icon ? '' : ' d-none') +
+      '">';
     html += '<label class="form-label">' + _esc(t.icon) + '</label>';
-    html += _customFieldRowHtml({ field: 'icon', setting: defaults.iconValue || '' }, { hideButtons: true });
+    html += _customFieldRowHtml(
+      { field: 'icon', setting: defaults.iconValue || '' },
+      { hideButtons: true }
+    );
     html += '</div>';
     return html;
   }
@@ -1995,7 +2361,10 @@ var DashticzDeviceEditor = (function () {
      event delegation - see _wireIconImagePicker()). */
   function _wireQuickOptions(prefix, $popup) {
     $('#' + prefix + '-opt-icon').on('change', function () {
-      $('.' + prefix + '-opt-icon-field').toggleClass('d-none', !$(this).is(':checked'));
+      $('.' + prefix + '-opt-icon-field').toggleClass(
+        'd-none',
+        !$(this).is(':checked')
+      );
     });
     _wireIconImagePicker($popup);
   }
@@ -2003,12 +2372,15 @@ var DashticzDeviceEditor = (function () {
   function _readQuickOptions(prefix) {
     var iconChecked = $('#' + prefix + '-opt-icon').is(':checked');
     var $iconRow = $('.' + prefix + '-opt-icon-field .de-icon-field-row');
-    var iconSource = $iconRow.find('.de-icon-source').val() === 'image' ? 'image' : 'icon';
-    var rawValue = $.trim(String($iconRow.find('.de-custom-field-setting').val() || ''));
+    var iconSource =
+      $iconRow.find('.de-icon-source').val() === 'image' ? 'image' : 'icon';
+    var rawValue = $.trim(
+      String($iconRow.find('.de-custom-field-setting').val() || '')
+    );
     return {
       icon: iconChecked,
       iconSource: iconSource,
-      iconValue: iconChecked ? (rawValue || null) : null,
+      iconValue: iconChecked ? rawValue || null : null,
       lastUpdate: $('#' + prefix + '-opt-update').is(':checked'),
       showTitle: $('#' + prefix + '-opt-title').is(':checked'),
     };
@@ -2028,7 +2400,9 @@ var DashticzDeviceEditor = (function () {
     var t = _translations();
     function closeCustomImagePickers() {
       $popup.find('.dt-custom-image-picker').removeClass('show');
-      $popup.find('.de-icon-field-row').removeClass('dt-custom-image-picker-open');
+      $popup
+        .find('.de-icon-field-row')
+        .removeClass('dt-custom-image-picker-open');
     }
     function openCustomImagePicker($row) {
       if ($row.find('.de-icon-source').val() !== 'image') {
@@ -2036,7 +2410,9 @@ var DashticzDeviceEditor = (function () {
         return;
       }
       var $picker = $row.find('.dt-custom-image-picker');
-      var selectedPath = String($row.find('.de-custom-field-setting').val() || '');
+      var selectedPath = String(
+        $row.find('.de-custom-field-setting').val() || ''
+      );
       closeCustomImagePickers();
       $row.addClass('dt-custom-image-picker-open');
       $picker.addClass('show');
@@ -2044,31 +2420,51 @@ var DashticzDeviceEditor = (function () {
       $picker.find('.dt-custom-image-grid').empty();
       _loadCustomImages()
         .done(function (images) {
-          _renderCustomImageGrid($picker, images, selectedPath, t.no_custom_images);
+          _renderCustomImageGrid(
+            $picker,
+            images,
+            selectedPath,
+            t.no_custom_images
+          );
         })
         .fail(function () {
           $picker.find('.dt-custom-image-grid').empty();
-          $picker.find('.dt-custom-image-status').show().text(t.custom_images_error);
+          $picker
+            .find('.dt-custom-image-status')
+            .show()
+            .text(t.custom_images_error);
         });
     }
     $popup.on('change', '.de-icon-source', function () {
       var $row = $(this).closest('.de-icon-field-row');
       var useImage = $(this).val() === 'image';
-      $row.find('.de-custom-field-setting')
+      $row
+        .find('.de-custom-field-setting')
         .val(useImage ? '' : String($row.attr('data-icon-default') || ''))
         .attr('placeholder', useImage ? 'custom/icon.png' : t.setting);
       closeCustomImagePickers();
     });
-    $popup.on('click focus', '.de-icon-field-row .de-custom-field-setting', function () {
-      openCustomImagePicker($(this).closest('.de-icon-field-row'));
-    });
+    $popup.on(
+      'click focus',
+      '.de-icon-field-row .de-custom-field-setting',
+      function () {
+        openCustomImagePicker($(this).closest('.de-icon-field-row'));
+      }
+    );
     $popup.on('click', '.dt-custom-image-option', function () {
       var $row = $(this).closest('.de-icon-field-row');
-      $row.find('.de-custom-field-setting').val(String($(this).attr('data-image-path') || ''));
+      $row
+        .find('.de-custom-field-setting')
+        .val(String($(this).attr('data-image-path') || ''));
       closeCustomImagePickers();
     });
     $popup.on('click', function (event) {
-      if ($(event.target).closest('.dt-custom-image-picker, .de-custom-field-setting').length) return;
+      if (
+        $(event.target).closest(
+          '.dt-custom-image-picker, .de-custom-field-setting'
+        ).length
+      )
+        return;
       closeCustomImagePickers();
     });
   }
@@ -2079,9 +2475,17 @@ var DashticzDeviceEditor = (function () {
      button (js/settings.js). Reuses the existing settings.back translation
      instead of duplicating it under deviceeditor. */
   function _backButtonHtml() {
-    var backLabel = (typeof language !== 'undefined' && language.settings && language.settings.back) || 'Back';
-    return '<button type="button" class="btn btn-secondary de-back-btn">' +
-      '<i class="fas fa-arrow-left me-1" aria-hidden="true"></i>' + _esc(backLabel) + '</button>';
+    var backLabel =
+      (typeof language !== 'undefined' &&
+        language.settings &&
+        language.settings.back) ||
+      'Back';
+    return (
+      '<button type="button" class="btn btn-secondary de-back-btn">' +
+      '<i class="fas fa-arrow-left me-1" aria-hidden="true"></i>' +
+      _esc(backLabel) +
+      '</button>'
+    );
   }
 
   /* Call once after appending markup built with _backButtonHtml() above.
@@ -2113,11 +2517,18 @@ var DashticzDeviceEditor = (function () {
     var t = _translations();
     $('#multidevicepopup').remove();
 
-    var html = '<div class="modal fade" id="multidevicepopup" tabindex="-1" aria-hidden="true">';
-    html += '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
-    html += '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-layer-group me-2" aria-hidden="true"></i>' +
-      _esc(t.multi_device) + '</h5>';
-    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
+    var html =
+      '<div class="modal fade" id="multidevicepopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-layer-group me-2" aria-hidden="true"></i>' +
+      _esc(t.multi_device) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
     html += '<div class="modal-body">';
     // Icon and Last update default on (Last update was previously a lone
     // always-checked checkbox with no way to turn it off; Icon had no
@@ -2130,24 +2541,55 @@ var DashticzDeviceEditor = (function () {
       lastUpdate: true,
       showTitle: true,
     });
-    html += '<div class="mb-3"><label class="form-label" for="md-device-name">' + _esc(t.multi_device_name) + '</label>';
-    html += '<input type="text" class="form-control" id="md-device-name" autocomplete="off">';
-    html += '<div class="form-text">' + _esc(t.multi_device_name_help) + '</div></div>';
-    html += '<div class="mb-3"><label class="form-label" for="md-device-idx">' + _esc(t.multi_device_idx) + '</label>';
-    html += '<input type="number" min="1" step="1" class="form-control" id="md-device-idx">';
-    html += '<div class="form-text">' + _esc(t.multi_device_idx_help) + '</div></div>';
-    html += '<div class="mb-3"><label class="form-label" for="md-device-title">' + _esc(t.multi_device_title) + '</label>';
-    html += '<input type="text" class="form-control" id="md-device-title" autocomplete="off"></div>';
-    html += '<div class="md-values-section"><h6>' + _esc(t.multi_device_values) + '</h6>';
-    html += '<div class="form-text mb-2">' + _esc(t.multi_device_values_help) + '</div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="md-device-name">' +
+      _esc(t.multi_device_name) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="md-device-name" autocomplete="off">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.multi_device_name_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="md-device-idx">' +
+      _esc(t.multi_device_idx) +
+      '</label>';
+    html +=
+      '<input type="number" min="1" step="1" class="form-control" id="md-device-idx">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.multi_device_idx_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="md-device-title">' +
+      _esc(t.multi_device_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="md-device-title" autocomplete="off"></div>';
+    html +=
+      '<div class="md-values-section"><h6>' +
+      _esc(t.multi_device_values) +
+      '</h6>';
+    html +=
+      '<div class="form-text mb-2">' +
+      _esc(t.multi_device_values_help) +
+      '</div>';
     html += '<div class="md-value-rows">';
     html += _multiDeviceRowHtml({ idx: '', value: '' });
     html += '</div></div>';
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
-    html += '<div class="modal-footer">' + _backButtonHtml() +
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
       '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
-      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.cancel) + '</button>';
-    html += '<button type="button" class="btn btn-primary btn-save" id="md-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' + _esc(t.save) + '</button>';
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="md-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
     var $popup = $('#multidevicepopup');
@@ -2163,7 +2605,11 @@ var DashticzDeviceEditor = (function () {
     $popup.on('click', '.md-value-add', function () {
       $popup.find('.md-value-rows').append(_multiDeviceRowHtml());
       refreshButtons();
-      $popup.find('.md-value-row').last().find('.md-value-value').trigger('focus');
+      $popup
+        .find('.md-value-row')
+        .last()
+        .find('.md-value-value')
+        .trigger('focus');
     });
     $popup.on('click', '.md-value-remove', function () {
       if ($(this).prop('disabled')) return;
@@ -2173,7 +2619,10 @@ var DashticzDeviceEditor = (function () {
     refreshButtons();
 
     $('#md-save-btn').on('click', function () {
-      var $message = $popup.find('.cd-custom-message').removeClass('text-danger').text('');
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
       var reference = $.trim(String($('#md-device-name').val() || ''));
       var rawIdx = $.trim(String($('#md-device-idx').val() || ''));
       var idx = parseInt(rawIdx, 10);
@@ -2183,7 +2632,10 @@ var DashticzDeviceEditor = (function () {
         $('#md-device-name').trigger('focus');
         return;
       }
-      if ((typeof blocks !== 'undefined' && blocks[reference]) || managedSpecials[_specialOrderKey(reference)]) {
+      if (
+        (typeof blocks !== 'undefined' && blocks[reference]) ||
+        managedSpecials[_specialOrderKey(reference)]
+      ) {
         $message.addClass('text-danger').text(t.invalid_multi_device_name);
         $('#md-device-name').trigger('focus');
         return;
@@ -2198,8 +2650,12 @@ var DashticzDeviceEditor = (function () {
       var valid = true;
       $popup.find('.md-value-row').each(function () {
         if (!valid) return;
-        var rawRowIdx = $.trim(String($(this).find('.md-value-idx').val() || ''));
-        var rawValue = $.trim(String($(this).find('.md-value-value').val() || ''));
+        var rawRowIdx = $.trim(
+          String($(this).find('.md-value-idx').val() || '')
+        );
+        var rawValue = $.trim(
+          String($(this).find('.md-value-value').val() || '')
+        );
         if (!rawRowIdx && !rawValue) return; // silently skip a fully empty row
         if (!rawValue) {
           valid = false;
@@ -2227,15 +2683,30 @@ var DashticzDeviceEditor = (function () {
       }
 
       var customRows = [];
-      if (title) customRows.push({ field: 'title', setting: title, value: title, system: true });
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
       // Stored the same way a hand-written blocks[key].values JSON field would be:
       // one 'values' custom field whose value is the array itself.
-      customRows.push({ field: 'values', setting: JSON.stringify(values), value: values });
+      customRows.push({
+        field: 'values',
+        setting: JSON.stringify(values),
+        value: values,
+      });
 
       var quickOptions = _readQuickOptions('md');
-      var iconIsImage = quickOptions.icon && quickOptions.iconSource === 'image';
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
       if (iconIsImage && quickOptions.iconValue) {
-        customRows.unshift({ field: 'image', setting: quickOptions.iconValue, value: quickOptions.iconValue });
+        customRows.unshift({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
       }
       var orderKey = _specialOrderKey(reference);
       managedSpecials[orderKey] = {
@@ -2260,12 +2731,18 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(document.getElementById('multidevicepopup')).hide();
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('multidevicepopup')
+      ).hide();
       _save();
     });
 
-    $popup.one('hidden.bs.modal', function () { $(this).remove(); });
-    window.bootstrap.Modal.getOrCreateInstance(document.getElementById('multidevicepopup')).show();
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('multidevicepopup')
+    ).show();
   }
 
   /* Group: Dashticz's own client-side group/scene aggregate block (not to be
@@ -2280,11 +2757,18 @@ var DashticzDeviceEditor = (function () {
     var t = _translations();
     $('#groupblockpopup').remove();
 
-    var html = '<div class="modal fade" id="groupblockpopup" tabindex="-1" aria-hidden="true">';
-    html += '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
-    html += '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-object-group me-2" aria-hidden="true"></i>' +
-      _esc(t.group_block) + '</h5>';
-    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
+    var html =
+      '<div class="modal fade" id="groupblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-object-group me-2" aria-hidden="true"></i>' +
+      _esc(t.group_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
     html += '<div class="modal-body">';
     html += _quickOptionsHtml('gb', {
       icon: true,
@@ -2292,22 +2776,47 @@ var DashticzDeviceEditor = (function () {
       lastUpdate: false,
       showTitle: true,
     });
-    html += '<div class="mb-3"><label class="form-label" for="gb-device-name">' + _esc(t.group_name) + '</label>';
-    html += '<input type="text" class="form-control" id="gb-device-name" autocomplete="off">';
-    html += '<div class="form-text">' + _esc(t.group_name_help) + '</div></div>';
-    html += '<div class="mb-3"><label class="form-label" for="gb-device-idx">' + _esc(t.group_idx) + '</label>';
-    html += '<input type="number" min="1" step="1" class="form-control" id="gb-device-idx">';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="gb-device-name">' +
+      _esc(t.group_name) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="gb-device-name" autocomplete="off">';
+    html +=
+      '<div class="form-text">' + _esc(t.group_name_help) + '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="gb-device-idx">' +
+      _esc(t.group_idx) +
+      '</label>';
+    html +=
+      '<input type="number" min="1" step="1" class="form-control" id="gb-device-idx">';
     html += '<div class="form-text">' + _esc(t.group_idx_help) + '</div></div>';
-    html += '<div class="mb-3"><label class="form-label" for="gb-device-devices">' + _esc(t.group_devices) + '</label>';
-    html += '<input type="text" class="form-control" id="gb-device-devices" placeholder="1, 3, 5">';
-    html += '<div class="form-text">' + _esc(t.group_devices_help) + '</div></div>';
-    html += '<div class="mb-3"><label class="form-label" for="gb-device-title">' + _esc(t.group_title) + '</label>';
-    html += '<input type="text" class="form-control" id="gb-device-title" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="gb-device-devices">' +
+      _esc(t.group_devices) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="gb-device-devices" placeholder="1, 3, 5">';
+    html +=
+      '<div class="form-text">' + _esc(t.group_devices_help) + '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="gb-device-title">' +
+      _esc(t.group_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="gb-device-title" autocomplete="off"></div>';
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
-    html += '<div class="modal-footer">' + _backButtonHtml() +
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
       '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
-      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.cancel) + '</button>';
-    html += '<button type="button" class="btn btn-primary btn-save" id="gb-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' + _esc(t.save) + '</button>';
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="gb-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
     var $popup = $('#groupblockpopup');
@@ -2315,7 +2824,10 @@ var DashticzDeviceEditor = (function () {
     _wireBackButton('groupblockpopup');
 
     $('#gb-save-btn').on('click', function () {
-      var $message = $popup.find('.cd-custom-message').removeClass('text-danger').text('');
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
       var reference = $.trim(String($('#gb-device-name').val() || ''));
       var title = $.trim(String($('#gb-device-title').val() || ''));
       if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
@@ -2323,7 +2835,10 @@ var DashticzDeviceEditor = (function () {
         $('#gb-device-name').trigger('focus');
         return;
       }
-      if ((typeof blocks !== 'undefined' && blocks[reference]) || managedSpecials[_specialOrderKey(reference)]) {
+      if (
+        (typeof blocks !== 'undefined' && blocks[reference]) ||
+        managedSpecials[_specialOrderKey(reference)]
+      ) {
         $message.addClass('text-danger').text(t.invalid_group_name);
         $('#gb-device-name').trigger('focus');
         return;
@@ -2345,13 +2860,16 @@ var DashticzDeviceEditor = (function () {
       var devices = [];
       if (rawDevices) {
         var invalidDevices = false;
-        devices = rawDevices.split(/[\s,]+/).filter(function (part) {
-          return part !== '';
-        }).map(function (part) {
-          var n = parseInt(part, 10);
-          if (!(n > 0 && String(n) === part)) invalidDevices = true;
-          return n;
-        });
+        devices = rawDevices
+          .split(/[\s,]+/)
+          .filter(function (part) {
+            return part !== '';
+          })
+          .map(function (part) {
+            var n = parseInt(part, 10);
+            if (!(n > 0 && String(n) === part)) invalidDevices = true;
+            return n;
+          });
         if (invalidDevices) {
           $message.addClass('text-danger').text(t.invalid_group_devices);
           $('#gb-device-devices').trigger('focus');
@@ -2365,14 +2883,29 @@ var DashticzDeviceEditor = (function () {
       }
 
       var quickOptions = _readQuickOptions('gb');
-      var iconIsImage = quickOptions.icon && quickOptions.iconSource === 'image';
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
       var customRows = [];
-      if (title) customRows.push({ field: 'title', setting: title, value: title, system: true });
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
       if (iconIsImage && quickOptions.iconValue) {
-        customRows.push({ field: 'image', setting: quickOptions.iconValue, value: quickOptions.iconValue });
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
       }
       if (devices.length) {
-        customRows.push({ field: 'devices', setting: JSON.stringify(devices), value: devices });
+        customRows.push({
+          field: 'devices',
+          setting: JSON.stringify(devices),
+          value: devices,
+        });
       }
 
       var orderKey = _specialOrderKey(reference);
@@ -2396,12 +2929,18 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(document.getElementById('groupblockpopup')).hide();
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('groupblockpopup')
+      ).hide();
       _save();
     });
 
-    $popup.one('hidden.bs.modal', function () { $(this).remove(); });
-    window.bootstrap.Modal.getOrCreateInstance(document.getElementById('groupblockpopup')).show();
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('groupblockpopup')
+    ).show();
   }
 
   var LMS_REFRESH_OPTIONS = [2, 5, 10, 20, 30, 60];
@@ -2434,50 +2973,117 @@ var DashticzDeviceEditor = (function () {
   function _lmsFieldsHtml(prefix, values) {
     var t = _translations();
     values = values || {};
-    var html = '<div class="mb-3"><label class="form-label" for="' + prefix + '-lms-server">' +
-      _esc(t.lms_server) + '</label>';
-    html += '<input type="text" class="form-control" id="' + prefix + '-lms-server" autocomplete="off" value="' +
-      _esc(values.server || '') + '"></div>';
-    html += '<div class="mb-3"><label class="form-label" for="' + prefix + '-lms-port">' +
-      _esc(t.lms_port) + '</label>';
-    html += '<input type="number" min="1" max="65535" class="form-control" id="' + prefix +
-      '-lms-port" value="' + _esc(values.port || 9000) + '"></div>';
-    html += '<div class="mb-3"><label class="form-label" for="' + prefix + '-lms-username">' +
-      _esc(t.lms_username) + '</label>';
-    html += '<input type="text" class="form-control" id="' + prefix + '-lms-username" autocomplete="off" value="' +
-      _esc(values.username || '') + '"></div>';
-    html += '<div class="mb-3"><label class="form-label" for="' + prefix + '-lms-password">' +
-      _esc(t.lms_password) + '</label>';
-    html += '<input type="password" class="form-control" id="' + prefix + '-lms-password" autocomplete="off" value="' +
-      _esc(values.password || '') + '">';
-    html += '<div class="form-text">' + _esc(t.lms_credentials_help) + '</div></div>';
+    var html =
+      '<div class="mb-3"><label class="form-label" for="' +
+      prefix +
+      '-lms-server">' +
+      _esc(t.lms_server) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="' +
+      prefix +
+      '-lms-server" autocomplete="off" value="' +
+      _esc(values.server || '') +
+      '"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="' +
+      prefix +
+      '-lms-port">' +
+      _esc(t.lms_port) +
+      '</label>';
+    html +=
+      '<input type="number" min="1" max="65535" class="form-control" id="' +
+      prefix +
+      '-lms-port" value="' +
+      _esc(values.port || 9000) +
+      '"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="' +
+      prefix +
+      '-lms-username">' +
+      _esc(t.lms_username) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="' +
+      prefix +
+      '-lms-username" autocomplete="off" value="' +
+      _esc(values.username || '') +
+      '"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="' +
+      prefix +
+      '-lms-password">' +
+      _esc(t.lms_password) +
+      '</label>';
+    html +=
+      '<input type="password" class="form-control" id="' +
+      prefix +
+      '-lms-password" autocomplete="off" value="' +
+      _esc(values.password || '') +
+      '">';
+    html +=
+      '<div class="form-text">' + _esc(t.lms_credentials_help) + '</div></div>';
     html += '<div class="mb-3">';
-    html += '<button type="button" class="btn btn-outline-secondary btn-sm de-lms-test" id="' + prefix +
-      '-lms-test"><i class="fas fa-plug me-1" aria-hidden="true"></i>' + _esc(t.lms_test_connection) + '</button>';
+    html +=
+      '<button type="button" class="btn btn-outline-secondary btn-sm de-lms-test" id="' +
+      prefix +
+      '-lms-test"><i class="fas fa-plug me-1" aria-hidden="true"></i>' +
+      _esc(t.lms_test_connection) +
+      '</button>';
     html += '<span class="de-lms-test-status ms-2"></span></div>';
-    html += '<div class="mb-3"><label class="form-label" for="' + prefix + '-lms-player">' +
-      _esc(t.lms_player) + '</label>';
-    html += '<select class="form-select de-lms-player" id="' + prefix + '-lms-player"' +
-      (values.player ? '' : ' disabled') + '>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="' +
+      prefix +
+      '-lms-player">' +
+      _esc(t.lms_player) +
+      '</label>';
+    html +=
+      '<select class="form-select de-lms-player" id="' +
+      prefix +
+      '-lms-player"' +
+      (values.player ? '' : ' disabled') +
+      '>';
     if (values.player) {
-      html += '<option value="' + _esc(values.player) + '" selected>' +
-        _esc(values.playerLabel || values.player) + '</option>';
+      html +=
+        '<option value="' +
+        _esc(values.player) +
+        '" selected>' +
+        _esc(values.playerLabel || values.player) +
+        '</option>';
     } else {
-      html += '<option value="">' + _esc(t.lms_player_placeholder) + '</option>';
+      html +=
+        '<option value="">' + _esc(t.lms_player_placeholder) + '</option>';
     }
     html += '</select></div>';
-    html += '<div class="mb-3"><label class="form-label" for="' + prefix + '-lms-refresh">' +
-      _esc(t.lms_refresh_interval) + '</label>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="' +
+      prefix +
+      '-lms-refresh">' +
+      _esc(t.lms_refresh_interval) +
+      '</label>';
     html += '<select class="form-select" id="' + prefix + '-lms-refresh">';
     LMS_REFRESH_OPTIONS.forEach(function (seconds) {
-      html += '<option value="' + seconds + '"' +
-        (Number(values.refresh || 5) === seconds ? ' selected' : '') + '>' +
-        seconds + ' ' + _esc(t.seconds || 'seconds') + '</option>';
+      html +=
+        '<option value="' +
+        seconds +
+        '"' +
+        (Number(values.refresh || 5) === seconds ? ' selected' : '') +
+        '>' +
+        seconds +
+        ' ' +
+        _esc(t.seconds || 'seconds') +
+        '</option>';
     });
     html += '</select></div>';
-    html += '<label class="form-check form-switch mb-3"><input class="form-check-input de-lms-switch" type="checkbox" id="' +
-      prefix + '-lms-hide-when-off"' + (values.hideWhenOff ? ' checked' : '') + '>' +
-      '<span class="form-check-label">' + _esc(t.lms_hide_when_off) + '</span></label>';
+    html +=
+      '<label class="form-check form-switch mb-3"><input class="form-check-input de-lms-switch" type="checkbox" id="' +
+      prefix +
+      '-lms-hide-when-off"' +
+      (values.hideWhenOff ? ' checked' : '') +
+      '>' +
+      '<span class="form-check-label">' +
+      _esc(t.lms_hide_when_off) +
+      '</span></label>';
     return html;
   }
 
@@ -2491,9 +3097,13 @@ var DashticzDeviceEditor = (function () {
       var $serverInput = $popup.find('#' + prefix + '-lms-server');
       var server = _normalizeLmsServer($serverInput.val());
       $serverInput.val(server);
-      var port = parseInt($popup.find('#' + prefix + '-lms-port').val(), 10) || 9000;
+      var port =
+        parseInt($popup.find('#' + prefix + '-lms-port').val(), 10) || 9000;
       if (!server) {
-        $status.removeClass('text-success').addClass('text-danger').text(t.invalid_lms_server);
+        $status
+          .removeClass('text-success')
+          .addClass('text-danger')
+          .text(t.invalid_lms_server);
         $serverInput.trigger('focus');
         return;
       }
@@ -2501,37 +3111,69 @@ var DashticzDeviceEditor = (function () {
       var block = {
         server: server,
         port: port,
-        username: $.trim(String($popup.find('#' + prefix + '-lms-username').val() || '')),
-        password: String($popup.find('#' + prefix + '-lms-password').val() || ''),
+        username: $.trim(
+          String($popup.find('#' + prefix + '-lms-username').val() || '')
+        ),
+        password: String(
+          $popup.find('#' + prefix + '-lms-password').val() || ''
+        ),
       };
       $btn.prop('disabled', true);
-      $status.removeClass('text-success text-danger').text(t.lms_testing_connection);
+      $status
+        .removeClass('text-success text-danger')
+        .text(t.lms_testing_connection);
       DT_lms_api.request(block, ['serverstatus', 0, 999], '')
         .then(function (result) {
           var players = (result && result.players_loop) || [];
           $player.empty();
           if (!players.length) {
-            $player.append('<option value="">' + _esc(t.lms_no_players) + '</option>').prop('disabled', true);
-            $status.removeClass('text-success').addClass('text-danger').text(t.lms_no_players);
+            $player
+              .append(
+                '<option value="">' + _esc(t.lms_no_players) + '</option>'
+              )
+              .prop('disabled', true);
+            $status
+              .removeClass('text-success')
+              .addClass('text-danger')
+              .text(t.lms_no_players);
             return;
           }
           players.forEach(function (p) {
             var id = String((p && p.playerid) || '');
             if (!id) return;
             var name = String((p && p.name) || id);
-            $player.append('<option value="' + _esc(id) + '">' + _esc(name) + '</option>');
+            $player.append(
+              '<option value="' + _esc(id) + '">' + _esc(name) + '</option>'
+            );
           });
           $player.prop('disabled', false);
-          if (previousPlayer && $player.find('option[value="' + previousPlayer.replace(/"/g, '\\"') + '"]').length) {
+          if (
+            previousPlayer &&
+            $player.find(
+              'option[value="' + previousPlayer.replace(/"/g, '\\"') + '"]'
+            ).length
+          ) {
             $player.val(previousPlayer);
           }
-          $status.removeClass('text-danger').addClass('text-success').text(
-            t.lms_connection_ok + ' — ' + players.length + ' ' + t.lms_players_found
-          );
+          $status
+            .removeClass('text-danger')
+            .addClass('text-success')
+            .text(
+              t.lms_connection_ok +
+                ' — ' +
+                players.length +
+                ' ' +
+                t.lms_players_found
+            );
         })
         .catch(function (xhr) {
-          var message = (xhr && xhr.responseJSON && xhr.responseJSON.error) || t.lms_connection_failed;
-          $status.removeClass('text-success').addClass('text-danger').text(message);
+          var message =
+            (xhr && xhr.responseJSON && xhr.responseJSON.error) ||
+            t.lms_connection_failed;
+          $status
+            .removeClass('text-success')
+            .addClass('text-danger')
+            .text(message);
         })
         .always(function () {
           $btn.prop('disabled', false);
@@ -2541,14 +3183,23 @@ var DashticzDeviceEditor = (function () {
 
   function _readLmsFields(prefix, $popup) {
     return {
-      server: _normalizeLmsServer($popup.find('#' + prefix + '-lms-server').val()),
+      server: _normalizeLmsServer(
+        $popup.find('#' + prefix + '-lms-server').val()
+      ),
       port: parseInt($popup.find('#' + prefix + '-lms-port').val(), 10) || 9000,
-      username: $.trim(String($popup.find('#' + prefix + '-lms-username').val() || '')),
+      username: $.trim(
+        String($popup.find('#' + prefix + '-lms-username').val() || '')
+      ),
       password: String($popup.find('#' + prefix + '-lms-password').val() || ''),
       player: String($popup.find('#' + prefix + '-lms-player').val() || ''),
-      playerLabel: String($popup.find('#' + prefix + '-lms-player option:selected').text() || ''),
-      refresh: parseInt($popup.find('#' + prefix + '-lms-refresh').val(), 10) || 5,
-      hideWhenOff: $popup.find('#' + prefix + '-lms-hide-when-off').is(':checked'),
+      playerLabel: String(
+        $popup.find('#' + prefix + '-lms-player option:selected').text() || ''
+      ),
+      refresh:
+        parseInt($popup.find('#' + prefix + '-lms-refresh').val(), 10) || 5,
+      hideWhenOff: $popup
+        .find('#' + prefix + '-lms-hide-when-off')
+        .is(':checked'),
     };
   }
 
@@ -2560,11 +3211,18 @@ var DashticzDeviceEditor = (function () {
     var t = _translations();
     $('#lmsblockpopup').remove();
 
-    var html = '<div class="modal fade" id="lmsblockpopup" tabindex="-1" aria-hidden="true">';
-    html += '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
-    html += '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-music me-2" aria-hidden="true"></i>' +
-      _esc(t.lms_block) + '</h5>';
-    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
+    var html =
+      '<div class="modal fade" id="lmsblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-music me-2" aria-hidden="true"></i>' +
+      _esc(t.lms_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
     html += '<div class="modal-body">';
     // Icon defaults off, like HTML Block: the cover artwork is this block's
     // own visual, so a leading icon would be redundant unless the user wants one.
@@ -2574,14 +3232,25 @@ var DashticzDeviceEditor = (function () {
       lastUpdate: false,
       showTitle: true,
     });
-    html += '<div class="mb-3"><label class="form-label" for="lm-device-title">' + _esc(t.lms_title) + '</label>';
-    html += '<input type="text" class="form-control" id="lm-device-title" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="lm-device-title">' +
+      _esc(t.lms_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="lm-device-title" autocomplete="off"></div>';
     html += _lmsFieldsHtml('lm', { port: 9000, refresh: 5 });
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
-    html += '<div class="modal-footer">' + _backButtonHtml() +
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
       '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
-      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.cancel) + '</button>';
-    html += '<button type="button" class="btn btn-primary btn-save" id="lm-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' + _esc(t.save) + '</button>';
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="lm-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
     var $popup = $('#lmsblockpopup');
@@ -2590,7 +3259,10 @@ var DashticzDeviceEditor = (function () {
     _wireBackButton('lmsblockpopup');
 
     $('#lm-save-btn').on('click', function () {
-      var $message = $popup.find('.cd-custom-message').removeClass('text-danger').text('');
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
       var title = $.trim(String($('#lm-device-title').val() || ''));
       var lms = _readLmsFields('lm', $popup);
       if (!lms.server) {
@@ -2610,7 +3282,8 @@ var DashticzDeviceEditor = (function () {
       }
 
       var quickOptions = _readQuickOptions('lm');
-      var iconIsImage = quickOptions.icon && quickOptions.iconSource === 'image';
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
       var reference = _nextSpecialReference('lms');
       var orderKey = _specialOrderKey(reference);
       managedSpecials[orderKey] = {
@@ -2635,9 +3308,17 @@ var DashticzDeviceEditor = (function () {
           iconValue: iconIsImage ? null : quickOptions.iconValue,
           last_update: false,
         },
-        customFields: title || lms.playerLabel
-          ? [{ field: 'title', setting: title || lms.playerLabel, value: title || lms.playerLabel, system: true }]
-          : [],
+        customFields:
+          title || lms.playerLabel
+            ? [
+                {
+                  field: 'title',
+                  setting: title || lms.playerLabel,
+                  value: title || lms.playerLabel,
+                  system: true,
+                },
+              ]
+            : [],
         preservedFields: {},
         lmsServer: lms.server,
         lmsPort: lms.port,
@@ -2649,12 +3330,18 @@ var DashticzDeviceEditor = (function () {
         lmsHideWhenOff: lms.hideWhenOff,
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(document.getElementById('lmsblockpopup')).hide();
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('lmsblockpopup')
+      ).hide();
       _save();
     });
 
-    $popup.one('hidden.bs.modal', function () { $(this).remove(); });
-    window.bootstrap.Modal.getOrCreateInstance(document.getElementById('lmsblockpopup')).show();
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('lmsblockpopup')
+    ).show();
   }
 
   /* HTML Block: renders a static custom/<file>.html snippet (e.g. an
@@ -2665,11 +3352,18 @@ var DashticzDeviceEditor = (function () {
     var t = _translations();
     $('#htmlblockpopup').remove();
 
-    var html = '<div class="modal fade" id="htmlblockpopup" tabindex="-1" aria-hidden="true">';
-    html += '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
-    html += '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-code me-2" aria-hidden="true"></i>' +
-      _esc(t.html_block) + '</h5>';
-    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
+    var html =
+      '<div class="modal fade" id="htmlblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-code me-2" aria-hidden="true"></i>' +
+      _esc(t.html_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
     html += '<div class="modal-body">';
     // Icon defaults off ("Default no icon" per docs/blocks/specials/html.rst);
     // an arbitrary HTML snippet has no Domoticz device to derive one from.
@@ -2679,21 +3373,46 @@ var DashticzDeviceEditor = (function () {
       lastUpdate: false,
       showTitle: true,
     });
-    html += '<div class="mb-3"><label class="form-label" for="hb-device-name">' + _esc(t.html_block_name) + '</label>';
-    html += '<input type="text" class="form-control" id="hb-device-name" autocomplete="off">';
-    html += '<div class="form-text">' + _esc(t.html_block_name_help) + '</div></div>';
-    html += '<div class="mb-3"><label class="form-label" for="hb-device-file">' + _esc(t.html_block_file) + '</label>';
-    html += '<input type="text" class="form-control" id="hb-device-file" placeholder="widget.html" autocomplete="off">';
-    html += '<div class="form-text">' + _esc(t.html_block_file_help) + '</div></div>';
-    html += '<div class="mb-3"><label class="form-label" for="hb-device-title">' + _esc(t.html_block_title) + '</label>';
-    html += '<input type="text" class="form-control" id="hb-device-title" autocomplete="off"></div>';
-    html += '<div class="mb-3 form-check form-switch"><input class="form-check-input" type="checkbox" id="hb-device-border">';
-    html += '<label class="form-check-label" for="hb-device-border">' + _esc(t.html_block_border) + '</label></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="hb-device-name">' +
+      _esc(t.html_block_name) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="hb-device-name" autocomplete="off">';
+    html +=
+      '<div class="form-text">' + _esc(t.html_block_name_help) + '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="hb-device-file">' +
+      _esc(t.html_block_file) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="hb-device-file" placeholder="widget.html" autocomplete="off">';
+    html +=
+      '<div class="form-text">' + _esc(t.html_block_file_help) + '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="hb-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="hb-device-title" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3 form-check form-switch"><input class="form-check-input" type="checkbox" id="hb-device-border">';
+    html +=
+      '<label class="form-check-label" for="hb-device-border">' +
+      _esc(t.html_block_border) +
+      '</label></div>';
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
-    html += '<div class="modal-footer">' + _backButtonHtml() +
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
       '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
-      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.cancel) + '</button>';
-    html += '<button type="button" class="btn btn-primary btn-save" id="hb-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' + _esc(t.save) + '</button>';
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="hb-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
     var $popup = $('#htmlblockpopup');
@@ -2701,7 +3420,10 @@ var DashticzDeviceEditor = (function () {
     _wireBackButton('htmlblockpopup');
 
     $('#hb-save-btn').on('click', function () {
-      var $message = $popup.find('.cd-custom-message').removeClass('text-danger').text('');
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
       var reference = $.trim(String($('#hb-device-name').val() || ''));
       var title = $.trim(String($('#hb-device-title').val() || ''));
       if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
@@ -2709,29 +3431,51 @@ var DashticzDeviceEditor = (function () {
         $('#hb-device-name').trigger('focus');
         return;
       }
-      if ((typeof blocks !== 'undefined' && blocks[reference]) || managedSpecials[_specialOrderKey(reference)]) {
+      if (
+        (typeof blocks !== 'undefined' && blocks[reference]) ||
+        managedSpecials[_specialOrderKey(reference)]
+      ) {
         $message.addClass('text-danger').text(t.invalid_html_block_name);
         $('#hb-device-name').trigger('focus');
         return;
       }
 
       var htmlfile = $.trim(String($('#hb-device-file').val() || ''));
-      if (!/^[A-Za-z0-9_\-./ ]+\.html?$/i.test(htmlfile) || htmlfile.indexOf('..') > -1) {
+      if (
+        !/^[A-Za-z0-9_\-./ ]+\.html?$/i.test(htmlfile) ||
+        htmlfile.indexOf('..') > -1
+      ) {
         $message.addClass('text-danger').text(t.invalid_html_block_file);
         $('#hb-device-file').trigger('focus');
         return;
       }
 
       var quickOptions = _readQuickOptions('hb');
-      var iconIsImage = quickOptions.icon && quickOptions.iconSource === 'image';
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
       var border = $('#hb-device-border').is(':checked');
       var customRows = [];
-      if (title) customRows.push({ field: 'title', setting: title, value: title, system: true });
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
       if (iconIsImage && quickOptions.iconValue) {
-        customRows.push({ field: 'image', setting: quickOptions.iconValue, value: quickOptions.iconValue });
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
       }
-      customRows.push({ field: 'htmlfile', setting: htmlfile, value: htmlfile });
-      if (border) customRows.push({ field: 'border', setting: 'true', value: true });
+      customRows.push({
+        field: 'htmlfile',
+        setting: htmlfile,
+        value: htmlfile,
+      });
+      if (border)
+        customRows.push({ field: 'border', setting: 'true', value: true });
 
       var orderKey = _specialOrderKey(reference);
       managedSpecials[orderKey] = {
@@ -2754,47 +3498,95 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(document.getElementById('htmlblockpopup')).hide();
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('htmlblockpopup')
+      ).hide();
       _save();
     });
 
-    $popup.one('hidden.bs.modal', function () { $(this).remove(); });
-    window.bootstrap.Modal.getOrCreateInstance(document.getElementById('htmlblockpopup')).show();
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('htmlblockpopup')
+    ).show();
   }
 
   function _showSlideButtonPopup() {
     var t = _translations();
     $('#slidebuttonpopup').remove();
 
-    var html = '<div class="modal fade" id="slidebuttonpopup" tabindex="-1" aria-hidden="true">';
-    html += '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
-    html += '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-sliders-h me-2" aria-hidden="true"></i>' +
-      _esc(t.slide_button) + '</h5>';
-    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
+    var html =
+      '<div class="modal fade" id="slidebuttonpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-sliders-h me-2" aria-hidden="true"></i>' +
+      _esc(t.slide_button) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
     html += '<div class="modal-body">';
-    html += '<div class="mb-3"><label class="form-label" for="sb-button-name">' + _esc(t.slide_button_name) + '</label>';
-    html += '<input type="text" class="form-control" id="sb-button-name" value="slidehome" autocomplete="off">';
-    html += '<div class="form-text">' + _esc(t.slide_button_name_help) + '</div></div>';
-    html += '<div class="mb-3"><label class="form-label" for="sb-button-key">' + _esc(t.slide_button_key) + '</label>';
-    html += '<input type="text" class="form-control" id="sb-button-key" value="Home" autocomplete="off"></div>';
-    html += '<div class="mb-3"><label class="form-label" for="sb-button-title">' + _esc(t.slide_button_title) + '</label>';
-    html += '<input type="text" class="form-control" id="sb-button-title" value="Home Screen" autocomplete="off"></div>';
-    html += '<div class="mb-3"><label class="form-label" for="sb-button-screen">' + _esc(t.slide_button_screen) + '</label>';
-    html += '<input type="number" min="1" step="1" class="form-control" id="sb-button-screen" value="1"></div>';
-    html += '<div class="mb-3"><label class="form-label">' + _esc(t.slide_button_icon) + '</label>';
-    html += _customFieldRowHtml({ field: 'icon', setting: 'fas fa-home' }, { hideButtons: true });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="sb-button-name">' +
+      _esc(t.slide_button_name) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="sb-button-name" value="slidehome" autocomplete="off">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.slide_button_name_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="sb-button-key">' +
+      _esc(t.slide_button_key) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="sb-button-key" value="Home" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="sb-button-title">' +
+      _esc(t.slide_button_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="sb-button-title" value="Home Screen" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="sb-button-screen">' +
+      _esc(t.slide_button_screen) +
+      '</label>';
+    html +=
+      '<input type="number" min="1" step="1" class="form-control" id="sb-button-screen" value="1"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label">' +
+      _esc(t.slide_button_icon) +
+      '</label>';
+    html += _customFieldRowHtml(
+      { field: 'icon', setting: 'fas fa-home' },
+      { hideButtons: true }
+    );
     // Only meaningful once a custom image is picked (not a font icon) -
     // toggled by refreshFullImageOption() below, mirroring how the image
     // picker itself only opens for the 'image' source (#171).
-    html += '<label class="form-check form-switch mt-2 sb-full-image-option d-none">' +
+    html +=
+      '<label class="form-check form-switch mt-2 sb-full-image-option d-none">' +
       '<input class="form-check-input" type="checkbox" id="sb-button-full-image">' +
-      '<span class="form-check-label">' + _esc(t.slide_button_full_image) + '</span></label>';
+      '<span class="form-check-label">' +
+      _esc(t.slide_button_full_image) +
+      '</span></label>';
     html += '</div>';
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
-    html += '<div class="modal-footer">' + _backButtonHtml() +
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
       '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
-      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.cancel) + '</button>';
-    html += '<button type="button" class="btn btn-primary btn-save" id="sb-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' + _esc(t.save) + '</button>';
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="sb-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
     var $popup = $('#slidebuttonpopup');
@@ -2810,20 +3602,31 @@ var DashticzDeviceEditor = (function () {
     refreshFullImageOption();
 
     $('#sb-save-btn').on('click', function () {
-      var $message = $popup.find('.cd-custom-message').removeClass('text-danger').text('');
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
       var reference = $.trim(String($('#sb-button-name').val() || ''));
       var buttonKey = $.trim(String($('#sb-button-key').val() || ''));
       var buttonTitle = $.trim(String($('#sb-button-title').val() || ''));
       var rawSlide = $.trim(String($('#sb-button-screen').val() || ''));
       var slideTarget = parseInt(rawSlide, 10);
-      var iconSource = $popup.find('.de-icon-source').val() === 'image' ? 'image' : 'icon';
-      var iconValue = $.trim(String($popup.find('.de-icon-field-row .de-custom-field-setting').val() || ''));
+      var iconSource =
+        $popup.find('.de-icon-source').val() === 'image' ? 'image' : 'icon';
+      var iconValue = $.trim(
+        String(
+          $popup.find('.de-icon-field-row .de-custom-field-setting').val() || ''
+        )
+      );
       if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
         $message.addClass('text-danger').text(t.invalid_slide_button_name);
         $('#sb-button-name').trigger('focus');
         return;
       }
-      if ((typeof blocks !== 'undefined' && blocks[reference]) || managedSpecials[_specialOrderKey(reference)]) {
+      if (
+        (typeof blocks !== 'undefined' && blocks[reference]) ||
+        managedSpecials[_specialOrderKey(reference)]
+      ) {
         $message.addClass('text-danger').text(t.invalid_slide_button_name);
         $('#sb-button-name').trigger('focus');
         return;
@@ -2843,10 +3646,16 @@ var DashticzDeviceEditor = (function () {
       // dedicated field js/components/button.js renders at the block's
       // full width/scales with it (e.g. a webcam or radar image), rather
       // than the fixed-size .col-icon `image` slot (#171).
-      var fullImage = iconSource === 'image' && iconValue !== '' &&
+      var fullImage =
+        iconSource === 'image' &&
+        iconValue !== '' &&
         $('#sb-button-full-image').is(':checked');
-      var iconIsImage = iconSource === 'image' && iconValue !== '' && !fullImage;
-      var slideButtonDefinition = { title: buttonTitle.slice(0, 100), slide: slideTarget };
+      var iconIsImage =
+        iconSource === 'image' && iconValue !== '' && !fullImage;
+      var slideButtonDefinition = {
+        title: buttonTitle.slice(0, 100),
+        slide: slideTarget,
+      };
       if (iconIsImage) slideButtonDefinition.image = iconValue.slice(0, 100);
       if (fullImage) slideButtonDefinition.btnimage = iconValue.slice(0, 100);
 
@@ -2864,7 +3673,7 @@ var DashticzDeviceEditor = (function () {
         showTitle: true,
         options: {
           icon: !fullImage && iconValue !== '',
-          iconValue: (fullImage || iconIsImage) ? '' : iconValue.slice(0, 100),
+          iconValue: fullImage || iconIsImage ? '' : iconValue.slice(0, 100),
           hide_data: false,
           last_update: false,
           switch: false,
@@ -2878,12 +3687,18 @@ var DashticzDeviceEditor = (function () {
         preservedFields: {},
       };
       managedOrder.push(orderKey);
-      window.bootstrap.Modal.getInstance(document.getElementById('slidebuttonpopup')).hide();
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('slidebuttonpopup')
+      ).hide();
       _save();
     });
 
-    $('#slidebuttonpopup').one('hidden.bs.modal', function () { $(this).remove(); });
-    window.bootstrap.Modal.getOrCreateInstance(document.getElementById('slidebuttonpopup')).show();
+    $('#slidebuttonpopup').one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('slidebuttonpopup')
+    ).show();
   }
 
   function _showParentEditor(editor) {
@@ -2901,9 +3716,10 @@ var DashticzDeviceEditor = (function () {
       return;
     }
     var editor = document.getElementById('deviceeditorpopup');
-    var editorModal = editor && window.bootstrap && window.bootstrap.Modal
-      ? window.bootstrap.Modal.getInstance(editor)
-      : null;
+    var editorModal =
+      editor && window.bootstrap && window.bootstrap.Modal
+        ? window.bootstrap.Modal.getInstance(editor)
+        : null;
 
     function showChild() {
       _showConfigPopup(orderKey, editor);
@@ -2919,15 +3735,19 @@ var DashticzDeviceEditor = (function () {
 
   function _openWidgetConfigPopup(orderKey) {
     var editor = document.getElementById('deviceeditorpopup');
-    var editorModal = editor && window.bootstrap && window.bootstrap.Modal
-      ? window.bootstrap.Modal.getInstance(editor)
-      : null;
+    var editorModal =
+      editor && window.bootstrap && window.bootstrap.Modal
+        ? window.bootstrap.Modal.getInstance(editor)
+        : null;
     var widget = managedWidgets[orderKey];
     if (!widget) return;
 
     function openFullWidgetConfig() {
       DT_function.loadDTScript('js/widgeteditor.js').then(function () {
-        if (!DashticzWidgetEditor || typeof DashticzWidgetEditor.openConfig !== 'function') {
+        if (
+          !DashticzWidgetEditor ||
+          typeof DashticzWidgetEditor.openConfig !== 'function'
+        ) {
           _showParentEditor(editor);
           return;
         }
@@ -2944,20 +3764,24 @@ var DashticzDeviceEditor = (function () {
                 ? widget.editorDraft.blockOptions.customFields
                 : [];
             draftRows.some(function (row) {
-              if (_normaliseCustomFieldName(row && row.field) !== 'title') return false;
+              if (_normaliseCustomFieldName(row && row.field) !== 'title')
+                return false;
               widgetTitles[orderKey] = String(row.setting || '');
               widget.pendingTitleEdited = true;
               return true;
             });
             pendingWidgetSettings = $.extend(
-              {}, pendingWidgetSettings, result.configSettings || {}
+              {},
+              pendingWidgetSettings,
+              result.configSettings || {}
             );
             var entry = result.entry;
             widgetOptions[orderKey] = $.extend({}, widgetOptions[orderKey], {
               icon: typeof entry.icon === 'undefined' || entry.icon !== '',
-              iconValue: typeof entry.icon === 'string' && entry.icon !== ''
-                ? entry.icon
-                : null,
+              iconValue:
+                typeof entry.icon === 'string' && entry.icon !== ''
+                  ? entry.icon
+                  : null,
               hide_data: entry.hide_data === true,
               last_update: entry.last_update === true,
             });
@@ -2993,16 +3817,22 @@ var DashticzDeviceEditor = (function () {
     var isGroupBlock = special && special.specialType === 'group';
     var isHtmlBlock = special && special.specialType === 'html';
     var isLmsBlock = special && special.specialType === 'lms';
-    var options = isSpecial ? (special.options || {}) : (deviceOptions[ck] || {});
+    var options = isSpecial ? special.options || {} : deviceOptions[ck] || {};
     var customRows = isSpecial ? special.customFields : deviceCustomFields[ck];
     if (!customRows || !customRows.length) {
       customRows = [{ field: 'title', setting: '', value: '', system: true }];
     }
-    customRows = customRows.map(function (row) { return $.extend({}, row); });
-    var currentTitle = isSpecial ? String(special.title || '') : String(deviceTitles[ck] || '');
-    var displayName = currentTitle || (isSpecial
-      ? String((special && (special.title || special.reference)) || orderKey)
-      : String(deviceNames[ck] || ck));
+    customRows = customRows.map(function (row) {
+      return $.extend({}, row);
+    });
+    var currentTitle = isSpecial
+      ? String(special.title || '')
+      : String(deviceTitles[ck] || '');
+    var displayName =
+      currentTitle ||
+      (isSpecial
+        ? String((special && (special.title || special.reference)) || orderKey)
+        : String(deviceNames[ck] || ck));
     var titleRow = customRows.find(function (row) {
       return String(row.field || '').toLowerCase() === 'title';
     });
@@ -3011,7 +3841,12 @@ var DashticzDeviceEditor = (function () {
       titleRow.value = currentTitle;
       titleRow.system = true;
     } else {
-      customRows.unshift({ field: 'title', setting: currentTitle, value: currentTitle, system: true });
+      customRows.unshift({
+        field: 'title',
+        setting: currentTitle,
+        value: currentTitle,
+        system: true,
+      });
     }
     var iconRow = customRows.find(function (row) {
       var field = String(row.field || '').toLowerCase();
@@ -3036,11 +3871,13 @@ var DashticzDeviceEditor = (function () {
     var valuesRowIndex = customRows.findIndex(function (row) {
       return String(row.field || '').toLowerCase() === 'values';
     });
-    var multiDeviceValues = (isCustom && valuesRowIndex > -1 &&
+    var multiDeviceValues =
+      isCustom &&
+      valuesRowIndex > -1 &&
       Array.isArray(customRows[valuesRowIndex].value) &&
-      customRows[valuesRowIndex].value.length)
-      ? customRows[valuesRowIndex].value
-      : null;
+      customRows[valuesRowIndex].value.length
+        ? customRows[valuesRowIndex].value
+        : null;
     if (multiDeviceValues) customRows.splice(valuesRowIndex, 1);
 
     // Shown after the title so a device can be identified unambiguously
@@ -3053,20 +3890,32 @@ var DashticzDeviceEditor = (function () {
         idxLabel = ck;
       } else {
         var ckParts = _parseCk(ck);
-        idxLabel = ckParts.subidx ? (ckParts.idx + '_' + ckParts.subidx) : String(ckParts.idx);
+        idxLabel = ckParts.subidx
+          ? ckParts.idx + '_' + ckParts.subidx
+          : String(ckParts.idx);
       }
     } else if (isSpecial && (isCustom || isGroupBlock) && special.idx) {
       idxLabel = String(special.idx);
     }
 
     $('#de-config-popup').remove();
-    var html = '<div class="modal fade de-config-popup" id="de-config-popup" tabindex="-1" aria-hidden="true">';
-    html += '<div class="modal-dialog modal-dialog-centered de-config-dialog"><div class="modal-content">';
-    html += '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-cog me-2" aria-hidden="true"></i>' +
-      _esc(t.device_config) + ' — ' + _esc(displayName) +
-      (idxLabel ? ' <span class="de-config-idx-label">[' + _esc(idxLabel) + ']</span>' : '') +
+    var html =
+      '<div class="modal fade de-config-popup" id="de-config-popup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered de-config-dialog"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-cog me-2" aria-hidden="true"></i>' +
+      _esc(t.device_config) +
+      ' — ' +
+      _esc(displayName) +
+      (idxLabel
+        ? ' <span class="de-config-idx-label">[' + _esc(idxLabel) + ']</span>'
+        : '') +
       '</h5>';
-    html += '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' + _esc(t.close) + '"></button></div>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
     html += '<div class="modal-body">';
     // A separator/title bar has no data value or last-update timestamp of its
     // own, but it can still show a leading icon like any other block.
@@ -3080,7 +3929,9 @@ var DashticzDeviceEditor = (function () {
         barDeviceIdx = special.idx;
       }
     }
-    var barLiveDevice = barDeviceIdx ? Domoticz.getAllDevices(barDeviceIdx) : null;
+    var barLiveDevice = barDeviceIdx
+      ? Domoticz.getAllDevices(barDeviceIdx)
+      : null;
     var isBlindsPercentage = !!(
       barLiveDevice &&
       typeof barLiveDevice.SwitchType === 'string' &&
@@ -3090,11 +3941,13 @@ var DashticzDeviceEditor = (function () {
     var isDimmer = !!(barLiveDevice && barLiveDevice.SwitchType === 'Dimmer');
     // Keep an existing Bar selectable even if the live device is temporarily
     // unavailable. For new choices Bar is limited to Dimmer and percentage blinds.
-    var supportsBar = hasDial && (isDimmer || isBlindsPercentage || options.bar === true);
+    var supportsBar =
+      hasDial && (isDimmer || isBlindsPercentage || options.bar === true);
     // Needle (js/switches.js renderBlindsSliderBlock(), block.needle) is a
     // continuous vertical slider - it only makes sense for percentage
     // blinds, not the generic Dimmer/other devices Bar also supports.
-    var supportsNeedle = hasDial && (isBlindsPercentage || options.needle === true);
+    var supportsNeedle =
+      hasDial && (isBlindsPercentage || options.needle === true);
     // The Steps field also governs Needle mode's scale (js/switches.js
     // addSlider()), which reads the same block.barsteps as the Bar subtype.
     function barStepsApplies(mode) {
@@ -3113,8 +3966,10 @@ var DashticzDeviceEditor = (function () {
     // to see/edit directly). Other subtype values (for example 'updown')
     // remain ordinary custom fields.
     var subtypeRowIndex = customRows.findIndex(function (row) {
-      return String(row.field || '').toLowerCase() === 'subtype' &&
-        String(row.value || '').toLowerCase() === 'bar';
+      return (
+        String(row.field || '').toLowerCase() === 'subtype' &&
+        String(row.value || '').toLowerCase() === 'bar'
+      );
     });
     if (subtypeRowIndex > -1) customRows.splice(subtypeRowIndex, 1);
     var needleRowIndex = customRows.findIndex(function (row) {
@@ -3126,14 +3981,19 @@ var DashticzDeviceEditor = (function () {
     });
     if (inverseRowIndex > -1) customRows.splice(inverseRowIndex, 1);
 
-    var visualMode = options.needle === true
-      ? 'needle'
-      : (options.bar === true
-        ? 'bar'
-        : (options.dial === true ? 'dial' : (options.icon === true ? 'icon' : '')));
+    var visualMode =
+      options.needle === true
+        ? 'needle'
+        : options.bar === true
+          ? 'bar'
+          : options.dial === true
+            ? 'dial'
+            : options.icon === true
+              ? 'icon'
+              : '';
     var configOptions = isTitle
       ? ['icon', 'show_title']
-      : (isGroupBlock || isHtmlBlock || isLmsBlock)
+      : isGroupBlock || isHtmlBlock || isLmsBlock
         ? ['icon', 'last_update', 'show_title']
         : ['hide_data', 'last_update', 'show_title'];
     html += '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
@@ -3142,31 +4002,74 @@ var DashticzDeviceEditor = (function () {
       // Icon, Dial and Bar are one mutually-exclusive visual mode. Bootstrap's
       // btn-group provides the shared rounded border without extra theme CSS.
       html += '<div class="d-flex justify-content-center mb-3">';
-      html += '<div class="btn-group" role="group" aria-label="' + _esc(t.display_options) + '">';
+      html +=
+        '<div class="btn-group" role="group" aria-label="' +
+        _esc(t.display_options) +
+        '">';
       [
         { mode: 'icon', label: t.icon, icon: 'fas fa-image', enabled: true },
-        { mode: 'dial', label: t.dial, icon: 'fas fa-tachometer-alt', enabled: true },
-        { mode: 'bar', label: t.dial_bar, icon: 'fas fa-bars', enabled: supportsBar },
-        { mode: 'needle', label: t.dial_needle, icon: 'fas fa-sliders', enabled: supportsNeedle },
+        {
+          mode: 'dial',
+          label: t.dial,
+          icon: 'fas fa-tachometer-alt',
+          enabled: true,
+        },
+        {
+          mode: 'bar',
+          label: t.dial_bar,
+          icon: 'fas fa-bars',
+          enabled: supportsBar,
+        },
+        {
+          mode: 'needle',
+          label: t.dial_needle,
+          icon: 'fas fa-sliders',
+          enabled: supportsNeedle,
+        },
       ].forEach(function (item) {
         var active = visualMode === item.mode;
-        html += '<button type="button" class="btn btn-outline-secondary de-visual-mode-button' +
-          (active ? ' active' : '') + '" data-visual-mode="' + item.mode + '"' +
-          (item.enabled ? '' : ' disabled') + ' aria-pressed="' + (active ? 'true' : 'false') + '"' +
-          ' title="' + _esc(item.label) + '" style="min-width:72px;">' +
-          '<i class="' + item.icon + '" aria-hidden="true"></i>' +
-          '<span class="d-block small">' + _esc(item.label) + '</span></button>';
+        html +=
+          '<button type="button" class="btn btn-outline-secondary de-visual-mode-button' +
+          (active ? ' active' : '') +
+          '" data-visual-mode="' +
+          item.mode +
+          '"' +
+          (item.enabled ? '' : ' disabled') +
+          ' aria-pressed="' +
+          (active ? 'true' : 'false') +
+          '"' +
+          ' title="' +
+          _esc(item.label) +
+          '" style="min-width:72px;">' +
+          '<i class="' +
+          item.icon +
+          '" aria-hidden="true"></i>' +
+          '<span class="d-block small">' +
+          _esc(item.label) +
+          '</span></button>';
       });
       html += '</div></div>';
-      var currentBarSteps = parseInt(options.barsteps, 10) > 0 ? parseInt(options.barsteps, 10) : 10;
+      var currentBarSteps =
+        parseInt(options.barsteps, 10) > 0
+          ? parseInt(options.barsteps, 10)
+          : 10;
       // The Bar dial subtype's segment count and the Icon-mode Blinds
       // Percentage slider's scale tick count are the same barsteps config
       // field, shown for either visual mode on a percentage blinds device.
-      html += '<div class="mb-3 de-bar-steps-row' + (barStepsApplies(visualMode) ? '' : ' d-none') + '">';
-      html += '<label class="form-label" for="de-config-barsteps">' + _esc(t.dial_barsteps) + '</label>';
-      html += '<input type="number" min="1" step="1" class="form-control" id="de-config-barsteps" value="' +
-        _esc(currentBarSteps) + '">';
-      html += '<div class="form-text">' + _esc(t.dial_barsteps_help) + '</div></div>';
+      html +=
+        '<div class="mb-3 de-bar-steps-row' +
+        (barStepsApplies(visualMode) ? '' : ' d-none') +
+        '">';
+      html +=
+        '<label class="form-label" for="de-config-barsteps">' +
+        _esc(t.dial_barsteps) +
+        '</label>';
+      html +=
+        '<input type="number" min="1" step="1" class="form-control" id="de-config-barsteps" value="' +
+        _esc(currentBarSteps) +
+        '">';
+      html +=
+        '<div class="form-text">' + _esc(t.dial_barsteps_help) + '</div></div>';
       // Domoticz already reports when a blind's percentage scale runs the
       // other way round (0% is fully open instead of 100%) via SwitchType
       // containing "Inverted" - the same check js/switches.js's
@@ -3179,27 +4082,42 @@ var DashticzDeviceEditor = (function () {
         typeof barLiveDevice.SwitchType === 'string' &&
         barLiveDevice.SwitchType.toLowerCase().indexOf('inverted') >= 0
       );
-      var inverseChecked = typeof options.inverse === 'boolean' ? options.inverse : autoInverted;
-      html += '<div class="mb-3 de-inverse-row' + (inverseApplies(visualMode) ? '' : ' d-none') + '">';
+      var inverseChecked =
+        typeof options.inverse === 'boolean' ? options.inverse : autoInverted;
+      html +=
+        '<div class="mb-3 de-inverse-row' +
+        (inverseApplies(visualMode) ? '' : ' d-none') +
+        '">';
       // de-switch: standard size/color for a standalone Device Config
       // switch (css/creative.css) - any future one-off switch here should
       // use it too, instead of a new per-switch CSS rule.
-      html += '<label class="form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="de-config-inverse"' +
-        (inverseChecked ? ' checked' : '') + '>' +
-        '<span class="form-check-label">' + _esc(t.dial_inverse) + '</span></label>';
-      html += '<div class="form-text">' + _esc(t.dial_inverse_help) + '</div></div>';
+      html +=
+        '<label class="form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="de-config-inverse"' +
+        (inverseChecked ? ' checked' : '') +
+        '>' +
+        '<span class="form-check-label">' +
+        _esc(t.dial_inverse) +
+        '</span></label>';
+      html +=
+        '<div class="form-text">' + _esc(t.dial_inverse_help) + '</div></div>';
     }
 
-    html += '<div class="de-config-options' +
+    html +=
+      '<div class="de-config-options' +
       (isTitle
         ? ''
-        : ((isGroupBlock || isHtmlBlock || isLmsBlock || hasDial) ? ' de-config-options-three' : '')) +
+        : isGroupBlock || isHtmlBlock || isLmsBlock || hasDial
+          ? ' de-config-options-three'
+          : '') +
       '">';
     configOptions.forEach(function (option) {
       var hiddenForDial = hasDial && option === 'show_title';
-      html += '<label class="form-check form-switch' +
+      html +=
+        '<label class="form-check form-switch' +
         (hiddenForDial ? ' de-hide-for-dial' : '') +
-        '"><input class="form-check-input de-config-option" type="checkbox" data-option="' + option + '"';
+        '"><input class="form-check-input de-config-option" type="checkbox" data-option="' +
+        option +
+        '"';
       // The Data checkbox is user-facing: checked means data is visible.
       // CONFIG.js keeps the backwards-compatible inverse hide_data property.
       // Title visibility is stored separately from the other display options.
@@ -3207,19 +4125,26 @@ var DashticzDeviceEditor = (function () {
       if (option === 'hide_data') {
         checked = options.hide_data !== true;
       } else if (option === 'show_title') {
-        checked = isSpecial ? special.showTitle !== false : deviceTitleVisible[ck] !== false;
+        checked = isSpecial
+          ? special.showTitle !== false
+          : deviceTitleVisible[ck] !== false;
       } else {
         checked = options[option] === true;
       }
       if (checked) html += ' checked';
-      html += '><span class="form-check-label">' + _esc(t[option]) + '</span></label>';
+      html +=
+        '><span class="form-check-label">' +
+        _esc(t[option]) +
+        '</span></label>';
     });
     html += '</div>';
     if (!isTitle) {
       html += '<div class="alert alert-info de-dial-hint d-none" role="note">';
       html += _esc(t.dial_hint) + ' ';
-      html += '<a href="https://dashticz.readthedocs.io/en/beta/blocks/specials/dial.html" target="_blank" rel="noopener">' +
-        _esc(t.dial_hint_link) + '</a>';
+      html +=
+        '<a href="https://dashticz.readthedocs.io/en/beta/blocks/specials/dial.html" target="_blank" rel="noopener">' +
+        _esc(t.dial_hint_link) +
+        '</a>';
       html += '</div>';
     }
     if (isCustom) {
@@ -3231,15 +4156,29 @@ var DashticzDeviceEditor = (function () {
       // placeholder forever, since the device data subscription for the old
       // idx never resolves, which also means the icon/title never render
       // (both are only painted once real device data arrives).
-      html += '<div class="mb-3"><label class="form-label" for="de-config-idx">' + _esc(t.multi_device_idx) + '</label>';
-      html += '<input type="number" min="1" step="1" class="form-control" id="de-config-idx" value="' +
-        _esc(special.idx || '') + '">';
-      html += '<div class="form-text">' + _esc(t.multi_device_idx_help) + '</div></div>';
+      html +=
+        '<div class="mb-3"><label class="form-label" for="de-config-idx">' +
+        _esc(t.multi_device_idx) +
+        '</label>';
+      html +=
+        '<input type="number" min="1" step="1" class="form-control" id="de-config-idx" value="' +
+        _esc(special.idx || '') +
+        '">';
+      html +=
+        '<div class="form-text">' +
+        _esc(t.multi_device_idx_help) +
+        '</div></div>';
     } else if (isGroupBlock) {
-      html += '<div class="mb-3"><label class="form-label" for="de-config-idx">' + _esc(t.group_idx) + '</label>';
-      html += '<input type="number" min="1" step="1" class="form-control" id="de-config-idx" value="' +
-        _esc(special.idx || '') + '">';
-      html += '<div class="form-text">' + _esc(t.group_idx_help) + '</div></div>';
+      html +=
+        '<div class="mb-3"><label class="form-label" for="de-config-idx">' +
+        _esc(t.group_idx) +
+        '</label>';
+      html +=
+        '<input type="number" min="1" step="1" class="form-control" id="de-config-idx" value="' +
+        _esc(special.idx || '') +
+        '">';
+      html +=
+        '<div class="form-text">' + _esc(t.group_idx_help) + '</div></div>';
     } else if (isLmsBlock) {
       // Same Server/Port/.../Player/Refresh section as the quick-add popup
       // (_showLmsPopup), so editing an already-saved LMS block re-tests the
@@ -3256,38 +4195,67 @@ var DashticzDeviceEditor = (function () {
         hideWhenOff: special.lmsHideWhenOff,
       });
     }
-    html += '<div class="de-custom-fields-section"><h6 class="de-section-title mt-3">' + _esc(t.custom_fields) + '</h6>';
+    html +=
+      '<div class="de-custom-fields-section"><h6 class="de-section-title mt-3">' +
+      _esc(t.custom_fields) +
+      '</h6>';
     html += '<p class="form-text">' + _esc(t.custom_fields_help) + '</p>';
     html += '<div class="de-custom-fields">';
-    customRows.forEach(function (row) { html += _customFieldRowHtml(row); });
+    customRows.forEach(function (row) {
+      html += _customFieldRowHtml(row);
+    });
     html += '</div>';
     if (multiDeviceValues) {
-      html += '<div class="de-multidevice-values mt-3"><label class="form-label">' + _esc(t.multi_device_values) + '</label>';
-      html += '<div class="form-text mb-2">' + _esc(t.multi_device_values_help) + '</div>';
+      html +=
+        '<div class="de-multidevice-values mt-3"><label class="form-label">' +
+        _esc(t.multi_device_values) +
+        '</label>';
+      html +=
+        '<div class="form-text mb-2">' +
+        _esc(t.multi_device_values_help) +
+        '</div>';
       html += '<div class="md-value-rows">';
-      multiDeviceValues.forEach(function (row) { html += _multiDeviceRowHtml(row); });
+      multiDeviceValues.forEach(function (row) {
+        html += _multiDeviceRowHtml(row);
+      });
       html += '</div></div>';
     }
     html += '</div>';
-    html += '<div class="de-config-message" role="status"></div></div><div class="modal-footer">';
-    html += '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
-      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' + _esc(t.cancel) + '</button>';
-    html += '<button type="button" class="btn btn-primary btn-save" id="de-config-ok">' +
-      '<i class="fas fa-check me-1" aria-hidden="true"></i>' + _esc(t.ok) + '</button>';
+    html +=
+      '<div class="de-config-message" role="status"></div></div><div class="modal-footer">';
+    html +=
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="de-config-ok">' +
+      '<i class="fas fa-check me-1" aria-hidden="true"></i>' +
+      _esc(t.ok) +
+      '</button>';
     html += '</div></div></div></div>';
     $('body').append(html);
 
     var $popup = $('#de-config-popup');
     if (isLmsBlock) _wireLmsFields('de-config', $popup);
     function refreshCustomFieldButtons() {
-      var removable = $popup.find('.de-custom-field-row:not(.de-system-field-row)').length;
+      var removable = $popup.find(
+        '.de-custom-field-row:not(.de-system-field-row)'
+      ).length;
       $popup.find('.de-custom-field-remove').each(function () {
-        var isSystem = $(this).closest('.de-custom-field-row').hasClass('de-system-field-row');
+        var isSystem = $(this)
+          .closest('.de-custom-field-row')
+          .hasClass('de-system-field-row');
         $(this).prop('disabled', isSystem || removable <= 0);
       });
     }
     function selectedVisualMode() {
-      return String($popup.find('.de-visual-mode-button.active').first().attr('data-visual-mode') || '');
+      return String(
+        $popup
+          .find('.de-visual-mode-button.active')
+          .first()
+          .attr('data-visual-mode') || ''
+      );
     }
     function setVisualMode(mode) {
       $popup.find('.de-visual-mode-button').each(function () {
@@ -3317,7 +4285,9 @@ var DashticzDeviceEditor = (function () {
     }
     function closeCustomImagePickers() {
       $popup.find('.dt-custom-image-picker').removeClass('show');
-      $popup.find('.de-icon-field-row').removeClass('dt-custom-image-picker-open');
+      $popup
+        .find('.de-icon-field-row')
+        .removeClass('dt-custom-image-picker-open');
     }
     function openCustomImagePicker($row) {
       if ($row.find('.de-icon-source').val() !== 'image') {
@@ -3325,7 +4295,9 @@ var DashticzDeviceEditor = (function () {
         return;
       }
       var $picker = $row.find('.dt-custom-image-picker');
-      var selectedPath = String($row.find('.de-custom-field-setting').val() || '');
+      var selectedPath = String(
+        $row.find('.de-custom-field-setting').val() || ''
+      );
       closeCustomImagePickers();
       $row.addClass('dt-custom-image-picker-open');
       $picker.addClass('show');
@@ -3333,11 +4305,19 @@ var DashticzDeviceEditor = (function () {
       $picker.find('.dt-custom-image-grid').empty();
       _loadCustomImages()
         .done(function (images) {
-          _renderCustomImageGrid($picker, images, selectedPath, t.no_custom_images);
+          _renderCustomImageGrid(
+            $picker,
+            images,
+            selectedPath,
+            t.no_custom_images
+          );
         })
         .fail(function () {
           $picker.find('.dt-custom-image-grid').empty();
-          $picker.find('.dt-custom-image-status').show().text(t.custom_images_error);
+          $picker
+            .find('.dt-custom-image-status')
+            .show()
+            .text(t.custom_images_error);
         });
     }
     function refreshDialHint() {
@@ -3345,10 +4325,14 @@ var DashticzDeviceEditor = (function () {
       $popup.find('.de-dial-hint').toggleClass('d-none', !enabled);
     }
     function refreshBarStepsField() {
-      $popup.find('.de-bar-steps-row').toggleClass('d-none', !barStepsApplies(selectedVisualMode()));
+      $popup
+        .find('.de-bar-steps-row')
+        .toggleClass('d-none', !barStepsApplies(selectedVisualMode()));
     }
     function refreshInverseField() {
-      $popup.find('.de-inverse-row').toggleClass('d-none', !inverseApplies(selectedVisualMode()));
+      $popup
+        .find('.de-inverse-row')
+        .toggleClass('d-none', !inverseApplies(selectedVisualMode()));
     }
     function refreshDialOptions() {
       var mode = hasDial ? selectedVisualMode() : '';
@@ -3393,16 +4377,27 @@ var DashticzDeviceEditor = (function () {
         .attr('data-initial-setting', useImage ? '' : effectiveIcon);
       closeCustomImagePickers();
     });
-    $popup.on('click focus', '.de-icon-field-row .de-custom-field-setting', function () {
-      openCustomImagePicker($(this).closest('.de-icon-field-row'));
-    });
+    $popup.on(
+      'click focus',
+      '.de-icon-field-row .de-custom-field-setting',
+      function () {
+        openCustomImagePicker($(this).closest('.de-icon-field-row'));
+      }
+    );
     $popup.on('click', '.dt-custom-image-option', function () {
       var $row = $(this).closest('.de-icon-field-row');
-      $row.find('.de-custom-field-setting').val(String($(this).attr('data-image-path') || ''));
+      $row
+        .find('.de-custom-field-setting')
+        .val(String($(this).attr('data-image-path') || ''));
       closeCustomImagePickers();
     });
     $popup.on('click', function (event) {
-      if ($(event.target).closest('.dt-custom-image-picker, .de-custom-field-setting').length) return;
+      if (
+        $(event.target).closest(
+          '.dt-custom-image-picker, .de-custom-field-setting'
+        ).length
+      )
+        return;
       closeCustomImagePickers();
     });
     $popup.on('click', '.de-visual-mode-button', function () {
@@ -3423,7 +4418,11 @@ var DashticzDeviceEditor = (function () {
     $popup.on('click', '.md-value-add', function () {
       $(this).closest('.md-value-row').after(_multiDeviceRowHtml());
       refreshMdValueButtons();
-      $popup.find('.md-value-row').last().find('.md-value-value').trigger('focus');
+      $popup
+        .find('.md-value-row')
+        .last()
+        .find('.md-value-value')
+        .trigger('focus');
     });
     $popup.on('click', '.md-value-remove', function () {
       if ($(this).prop('disabled')) return;
@@ -3442,17 +4441,22 @@ var DashticzDeviceEditor = (function () {
       // generic custom field, so a hand-typed 'values' field name in the
       // generic list must still be rejected as a duplicate.
       var customKeys = multiDeviceValues ? { values: true } : {};
-      var pendingTitle = isSpecial ? String(special.title || '') : String(deviceTitles[ck] || '');
+      var pendingTitle = isSpecial
+        ? String(special.title || '')
+        : String(deviceTitles[ck] || '');
       var pendingIconValue = null;
       var hasIconField = false;
       var valid = true;
-      var pendingIdx = (isCustom || isGroupBlock) ? special.idx : null;
+      var pendingIdx = isCustom || isGroupBlock ? special.idx : null;
       if (isCustom) {
         var rawIdx = $.trim(String($('#de-config-idx').val() || ''));
         var parsedIdx = parseInt(rawIdx, 10);
         if (!(parsedIdx > 0 && String(parsedIdx) === rawIdx)) {
           valid = false;
-          $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_idx);
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.invalid_idx);
           $('#de-config-idx').trigger('focus');
         } else {
           pendingIdx = parsedIdx;
@@ -3467,7 +4471,10 @@ var DashticzDeviceEditor = (function () {
           var parsedGroupIdx = parseInt(rawGroupIdx, 10);
           if (!(parsedGroupIdx > 0 && String(parsedGroupIdx) === rawGroupIdx)) {
             valid = false;
-            $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_idx);
+            $popup
+              .find('.de-config-message')
+              .addClass('text-danger')
+              .text(t.invalid_idx);
             $('#de-config-idx').trigger('focus');
           } else {
             pendingIdx = parsedGroupIdx;
@@ -3479,15 +4486,24 @@ var DashticzDeviceEditor = (function () {
         pendingLms = _readLmsFields('de-config', $popup);
         if (!pendingLms.server) {
           valid = false;
-          $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_lms_server);
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.invalid_lms_server);
           $('#de-config-lms-server').trigger('focus');
         } else if (!(pendingLms.port > 0 && pendingLms.port <= 65535)) {
           valid = false;
-          $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_lms_port);
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.invalid_lms_port);
           $('#de-config-lms-port').trigger('focus');
         } else if (!pendingLms.player) {
           valid = false;
-          $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_lms_player);
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.invalid_lms_player);
           $('#de-config-lms-player').trigger('focus');
         }
       }
@@ -3506,7 +4522,10 @@ var DashticzDeviceEditor = (function () {
         if (barStepsApplies(pendingVisualMode)) {
           if (!(parsedBarSteps > 0 && String(parsedBarSteps) === rawBarSteps)) {
             valid = false;
-            $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_barsteps);
+            $popup
+              .find('.de-config-message')
+              .addClass('text-danger')
+              .text(t.invalid_barsteps);
             $('#de-config-barsteps').trigger('focus');
           } else {
             updated.barsteps = parsedBarSteps;
@@ -3516,7 +4535,8 @@ var DashticzDeviceEditor = (function () {
           // whatever value was already stored (falling back to the input's
           // own value, then the default) for if the user switches back to a
           // mode where it applies later without reopening this popup.
-          updated.barsteps = parsedBarSteps > 0 ? parsedBarSteps : (options.barsteps || 10);
+          updated.barsteps =
+            parsedBarSteps > 0 ? parsedBarSteps : options.barsteps || 10;
         }
         // Same preserve-when-hidden reasoning as barsteps above; unlike
         // barsteps this is a plain tri-state (see _specialFromReference()),
@@ -3529,27 +4549,40 @@ var DashticzDeviceEditor = (function () {
 
       $popup.find('.de-custom-field-row').each(function () {
         if (!valid) return;
-        var rawField = $.trim($(this).find('.de-custom-field-name').val() || '');
-        var rawSetting = $.trim($(this).find('.de-custom-field-setting').val() || '');
+        var rawField = $.trim(
+          $(this).find('.de-custom-field-name').val() || ''
+        );
+        var rawSetting = $.trim(
+          $(this).find('.de-custom-field-setting').val() || ''
+        );
         if (!rawField && !rawSetting) return;
         var field = _normaliseCustomFieldName(rawField);
         var lowerField = field.toLowerCase();
         if (!field || !/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(field)) {
           valid = false;
-          $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_field);
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.invalid_field);
           $(this).find('.de-custom-field-name').trigger('focus');
           return;
         }
         if (customKeys[lowerField]) {
           valid = false;
-          $popup.find('.de-config-message').addClass('text-danger').text(t.duplicate_field);
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.duplicate_field);
           $(this).find('.de-custom-field-name').trigger('focus');
           return;
         }
         customKeys[lowerField] = true;
 
-        if (lowerField === 'subtype' && pendingVisualMode === 'bar' &&
-            String(rawSetting).toLowerCase() === 'bar') {
+        if (
+          lowerField === 'subtype' &&
+          pendingVisualMode === 'bar' &&
+          String(rawSetting).toLowerCase() === 'bar'
+        ) {
           // Bar owns its legacy subtype marker; do not duplicate it as a
           // user-editable custom row. The save payload adds it canonically.
           return;
@@ -3564,13 +4597,19 @@ var DashticzDeviceEditor = (function () {
           if (updated.icon !== true) {
             if ($(this).hasClass('de-icon-field-row')) return;
             valid = false;
-            $popup.find('.de-config-message').addClass('text-danger').text(t.icon_requires_checkbox);
+            $popup
+              .find('.de-config-message')
+              .addClass('text-danger')
+              .text(t.icon_requires_checkbox);
             $(this).find('.de-custom-field-name').trigger('focus');
             return;
           }
           if (!rawSetting) {
             valid = false;
-            $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_field);
+            $popup
+              .find('.de-config-message')
+              .addClass('text-danger')
+              .text(t.invalid_field);
             $(this).find('.de-custom-field-setting').trigger('focus');
             return;
           }
@@ -3584,23 +4623,32 @@ var DashticzDeviceEditor = (function () {
           }
           var generatedIcon = $(this).attr('data-generated-icon') === 'true';
           var initialIcon = String($(this).attr('data-initial-setting') || '');
-          if (generatedIcon && rawSetting === initialIcon && !options.iconValue) return;
+          if (generatedIcon && rawSetting === initialIcon && !options.iconValue)
+            return;
           hasIconField = true;
           pendingIconValue = rawSetting;
           return;
         }
         if (!rawSetting || protectedCustomDeviceProperties[lowerField]) {
           valid = false;
-          $popup.find('.de-config-message').addClass('text-danger').text(
-            protectedCustomDeviceProperties[lowerField] ? t.duplicate_field : t.invalid_field
-          );
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(
+              protectedCustomDeviceProperties[lowerField]
+                ? t.duplicate_field
+                : t.invalid_field
+            );
           $(this).find('.de-custom-field-name').trigger('focus');
           return;
         }
         var parsedSetting = _parseCustomSetting(rawSetting);
         if (!parsedSetting.valid) {
           valid = false;
-          $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_setting);
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.invalid_setting);
           $(this).find('.de-custom-field-setting').trigger('focus');
           return;
         }
@@ -3617,12 +4665,19 @@ var DashticzDeviceEditor = (function () {
         pendingValues = [];
         $popup.find('.md-value-row').each(function () {
           if (!valid) return;
-          var rawRowIdx = $.trim(String($(this).find('.md-value-idx').val() || ''));
-          var rawValue = $.trim(String($(this).find('.md-value-value').val() || ''));
+          var rawRowIdx = $.trim(
+            String($(this).find('.md-value-idx').val() || '')
+          );
+          var rawValue = $.trim(
+            String($(this).find('.md-value-value').val() || '')
+          );
           if (!rawRowIdx && !rawValue) return; // silently skip a fully empty row
           if (!rawValue) {
             valid = false;
-            $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_value_row);
+            $popup
+              .find('.de-config-message')
+              .addClass('text-danger')
+              .text(t.invalid_value_row);
             $(this).find('.md-value-value').trigger('focus');
             return;
           }
@@ -3631,7 +4686,10 @@ var DashticzDeviceEditor = (function () {
             var rowIdx = parseInt(rawRowIdx, 10);
             if (!(rowIdx > 0 && String(rowIdx) === rawRowIdx)) {
               valid = false;
-              $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_idx);
+              $popup
+                .find('.de-config-message')
+                .addClass('text-danger')
+                .text(t.invalid_idx);
               $(this).find('.md-value-idx').trigger('focus');
               return;
             }
@@ -3641,7 +4699,10 @@ var DashticzDeviceEditor = (function () {
         });
         if (!valid) return;
         if (!pendingValues.length) {
-          $popup.find('.de-config-message').addClass('text-danger').text(t.invalid_value_row);
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.invalid_value_row);
           return;
         }
       }
@@ -3651,13 +4712,28 @@ var DashticzDeviceEditor = (function () {
       var pendingShowTitle = updated.show_title !== false;
       delete updated.show_title;
 
-      var storedRows = [{ field: 'title', setting: pendingTitle, value: pendingTitle, system: true }];
+      var storedRows = [
+        {
+          field: 'title',
+          setting: pendingTitle,
+          value: pendingTitle,
+          system: true,
+        },
+      ];
       if (hasIconField) {
-        storedRows.push({ field: 'icon', setting: pendingIconValue, value: pendingIconValue });
+        storedRows.push({
+          field: 'icon',
+          setting: pendingIconValue,
+          value: pendingIconValue,
+        });
       }
       storedRows = storedRows.concat(pendingCustomFields);
       if (pendingValues) {
-        storedRows.push({ field: 'values', setting: JSON.stringify(pendingValues), value: pendingValues });
+        storedRows.push({
+          field: 'values',
+          setting: JSON.stringify(pendingValues),
+          value: pendingValues,
+        });
       }
 
       if (isSpecial) {
@@ -3692,29 +4768,44 @@ var DashticzDeviceEditor = (function () {
         deviceOptions[ck] = $.extend({}, deviceOptions[ck], updated);
         deviceOptions[ck].iconValue = hasIconField ? pendingIconValue : null;
       }
-      $('#de-device-list .de-device-title[data-order-key="' + orderKey + '"]').val(pendingTitle);
-      $('#de-device-list .de-device-title[data-ck="' + ck + '"]').val(pendingTitle);
+      $(
+        '#de-device-list .de-device-title[data-order-key="' + orderKey + '"]'
+      ).val(pendingTitle);
+      $('#de-device-list .de-device-title[data-ck="' + ck + '"]').val(
+        pendingTitle
+      );
 
       if (persistOnly) {
         // Reached via openLayoutConfig(): there is no Device Editor Save
         // button anywhere in this flow, so persist this confirmed change
         // immediately instead of leaving it stranded in memory.
         var $ok = $popup.find('#de-config-ok').prop('disabled', true);
-        $popup.find('.de-config-message').removeClass('text-danger').text(t.saving);
+        $popup
+          .find('.de-config-message')
+          .removeClass('text-danger')
+          .text(t.saving);
         _saveDeviceConfigOnly()
           .done(function () {
-            window.bootstrap.Modal.getInstance(document.getElementById('de-config-popup')).hide();
+            window.bootstrap.Modal.getInstance(
+              document.getElementById('de-config-popup')
+            ).hide();
           })
           .fail(function (xhr) {
-            var msg = xhr.responseJSON && xhr.responseJSON.error
-              ? xhr.responseJSON.error
-              : t.save_failed;
-            $popup.find('.de-config-message').addClass('text-danger').text(t.error_prefix + ' ' + msg);
+            var msg =
+              xhr.responseJSON && xhr.responseJSON.error
+                ? xhr.responseJSON.error
+                : t.save_failed;
+            $popup
+              .find('.de-config-message')
+              .addClass('text-danger')
+              .text(t.error_prefix + ' ' + msg);
             $ok.prop('disabled', false);
           });
         return;
       }
-      window.bootstrap.Modal.getInstance(document.getElementById('de-config-popup')).hide();
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('de-config-popup')
+      ).hide();
     });
 
     var popup = document.getElementById('de-config-popup');
@@ -3728,36 +4819,79 @@ var DashticzDeviceEditor = (function () {
   /* ── HTML for a single device-list row ─────────────────────── */
   function _deviceItemHtml(ck, allDomoticz, isNew) {
     var t = _translations();
-    var p      = _parseCk(ck);
+    var p = _parseCk(ck);
     var isGroup = _isGroupCk(ck);
-    var device = isGroup ? allDomoticz[ck] : (allDomoticz[String(p.idx)] || allDomoticz[p.idx]);
-    var rawName = device ? device.Name : (isGroup ? ck : ('Device ' + p.idx));
-    var type   = device ? _esc(device.Type)  : (isGroup ? 'Group' : '');
+    var device = isGroup
+      ? allDomoticz[ck]
+      : allDomoticz[String(p.idx)] || allDomoticz[p.idx];
+    var rawName = device ? device.Name : isGroup ? ck : 'Device ' + p.idx;
+    var type = device ? _esc(device.Type) : isGroup ? 'Group' : '';
     var prefix = isGroup ? (type === 'Scene' ? 'Scene_' : 'Group_') : '';
-    var name   = _esc(prefix + rawName);
-    var dispIdx = isGroup ? ck : (p.subidx ? (p.idx + '_' + p.subidx) : String(p.idx));
-    var cls    = 'de-device-item' + (isNew ? ' de-device-item-new' : '');
+    var name = _esc(prefix + rawName);
+    var dispIdx = isGroup
+      ? ck
+      : p.subidx
+        ? p.idx + '_' + p.subidx
+        : String(p.idx);
+    var cls = 'de-device-item' + (isNew ? ' de-device-item-new' : '');
     var orderKey = _deviceOrderKey(ck);
-    var html   = '<div class="' + cls + '" data-ck="' + _esc(ck) +
-      '" data-order-key="' + _esc(orderKey) + '" draggable="true">';
-    html += '<span class="de-drag-handle" title="' + _esc(t.drag_to_reorder) + '"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
+    var html =
+      '<div class="' +
+      cls +
+      '" data-ck="' +
+      _esc(ck) +
+      '" data-order-key="' +
+      _esc(orderKey) +
+      '" draggable="true">';
+    html +=
+      '<span class="de-drag-handle" title="' +
+      _esc(t.drag_to_reorder) +
+      '"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
     html += '<span class="de-device-idx">IDX\u00a0' + _esc(dispIdx) + '</span>';
-    html += '<span class="de-device-identity"><span class="de-device-name">' + name + (!isGroup && p.subidx ? '\u00a0(' + p.subidx + ')' : '') + '</span>';
+    html +=
+      '<span class="de-device-identity"><span class="de-device-name">' +
+      name +
+      (!isGroup && p.subidx ? '\u00a0(' + p.subidx + ')' : '') +
+      '</span>';
     if (type) html += '<span class="de-device-type">' + type + '</span>';
     html += '</span>';
     html += _configButtonHtml(orderKey, t.device_config);
     html += '<span class="de-device-field de-width-wrap">';
-    html += '<input type="number" id="de-width-' + _esc(ck) + '" class="form-control form-control-sm de-device-width" ';
-    html += 'data-ck="' + _esc(ck) + '" data-order-key="' + _esc(orderKey) +
-      '" min="1" max="12" size="2" value="' + _parseWidth(deviceWidths[ck]) + '">';
-    html += '<label for="de-width-' + _esc(ck) + '">' + _esc(t.width) + '</label>';
+    html +=
+      '<input type="number" id="de-width-' +
+      _esc(ck) +
+      '" class="form-control form-control-sm de-device-width" ';
+    html +=
+      'data-ck="' +
+      _esc(ck) +
+      '" data-order-key="' +
+      _esc(orderKey) +
+      '" min="1" max="12" size="2" value="' +
+      _parseWidth(deviceWidths[ck]) +
+      '">';
+    html +=
+      '<label for="de-width-' + _esc(ck) + '">' + _esc(t.width) + '</label>';
     html += '</span>';
     html += '<span class="de-device-field de-title-field">';
-    html += '<input type="text" id="de-title-' + _esc(ck) + '" class="form-control form-control-sm de-device-title" ';
-    html += 'data-ck="' + _esc(ck) + '" value="' + _esc(deviceTitles[ck] || '') + '">';
-    html += '<label for="de-title-' + _esc(ck) + '">' + _esc(t.title) + '</label>';
+    html +=
+      '<input type="text" id="de-title-' +
+      _esc(ck) +
+      '" class="form-control form-control-sm de-device-title" ';
+    html +=
+      'data-ck="' +
+      _esc(ck) +
+      '" value="' +
+      _esc(deviceTitles[ck] || '') +
+      '">';
+    html +=
+      '<label for="de-title-' + _esc(ck) + '">' + _esc(t.title) + '</label>';
     html += '</span>';
-    html += '<button type="button" class="btn btn-danger btn-sm de-remove-btn ms-auto" data-ck="' + _esc(ck) + '" title="' + _esc(t.remove) + '">';
+    html +=
+      '<button type="button" class="btn btn-danger btn-sm de-remove-btn ms-auto" data-ck="' +
+      _esc(ck) +
+      '" title="' +
+      _esc(t.remove) +
+      '">';
     html += '<i class="fas fa-minus" aria-hidden="true"></i>';
     html += '</button>';
     html += '</div>';
@@ -3768,30 +4902,66 @@ var DashticzDeviceEditor = (function () {
     var widget = managedWidgets[orderKey];
     if (!widget) return '';
     var t = _translations();
-    var html = '<div class="de-device-item de-widget-item" data-order-key="' +
-      _esc(orderKey) + '" draggable="true">';
-    html += '<span class="de-drag-handle" title="' + _esc(t.drag_to_reorder) + '"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
-    html += '<span class="de-device-idx"><i class="fas fa-puzzle-piece me-1" aria-hidden="true"></i>' + _esc(t.widget) + '</span>';
-    html += '<span class="de-device-identity"><span class="de-device-name">' + _esc(t.widget_prefix) + ' ' + _esc(widget.title) + '</span>';
-    html += '<span class="de-device-type">' +
-      _esc(widget.definition.type || widget.id) + '</span>';
+    var html =
+      '<div class="de-device-item de-widget-item" data-order-key="' +
+      _esc(orderKey) +
+      '" draggable="true">';
+    html +=
+      '<span class="de-drag-handle" title="' +
+      _esc(t.drag_to_reorder) +
+      '"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
+    html +=
+      '<span class="de-device-idx"><i class="fas fa-puzzle-piece me-1" aria-hidden="true"></i>' +
+      _esc(t.widget) +
+      '</span>';
+    html +=
+      '<span class="de-device-identity"><span class="de-device-name">' +
+      _esc(t.widget_prefix) +
+      ' ' +
+      _esc(widget.title) +
+      '</span>';
+    html +=
+      '<span class="de-device-type">' +
+      _esc(widget.definition.type || widget.id) +
+      '</span>';
     html += '</span>';
     html += _configButtonHtml(orderKey, t.widget_config);
     html += '<span class="de-device-field de-width-wrap">';
-    html += '<input type="number" id="de-width-' + _esc(widget.id) +
+    html +=
+      '<input type="number" id="de-width-' +
+      _esc(widget.id) +
       '" class="form-control form-control-sm de-device-width" data-order-key="' +
-      _esc(orderKey) + '" min="1" max="12" size="2" value="' +
-      _parseWidth(widgetWidths[orderKey]) + '">';
-    html += '<label for="de-width-' +
-      _esc(widget.id) + '">' + _esc(t.width) + '</label>';
+      _esc(orderKey) +
+      '" min="1" max="12" size="2" value="' +
+      _parseWidth(widgetWidths[orderKey]) +
+      '">';
+    html +=
+      '<label for="de-width-' +
+      _esc(widget.id) +
+      '">' +
+      _esc(t.width) +
+      '</label>';
     html += '</span>';
     html += '<span class="de-device-field de-title-field">';
-    html += '<input type="text" id="de-title-' + _esc(widget.id) +
+    html +=
+      '<input type="text" id="de-title-' +
+      _esc(widget.id) +
       '" class="form-control form-control-sm de-device-title" maxlength="100" data-order-key="' +
-      _esc(orderKey) + '" value="' + _esc(widgetTitles[orderKey] || '') + '">';
-    html += '<label for="de-title-' + _esc(widget.id) + '">' + _esc(t.title) + '</label>';
+      _esc(orderKey) +
+      '" value="' +
+      _esc(widgetTitles[orderKey] || '') +
+      '">';
+    html +=
+      '<label for="de-title-' +
+      _esc(widget.id) +
+      '">' +
+      _esc(t.title) +
+      '</label>';
     html += '</span>';
-    html += '<span class="de-widget-managed" title="' + _esc(t.managed_widget) + '"><i class="fas fa-lock" aria-hidden="true"></i></span>';
+    html +=
+      '<span class="de-widget-managed" title="' +
+      _esc(t.managed_widget) +
+      '"><i class="fas fa-lock" aria-hidden="true"></i></span>';
     html += '</div>';
     return html;
   }
@@ -3810,61 +4980,117 @@ var DashticzDeviceEditor = (function () {
     // in via the dedicated Multi Device popup (see openMultiDevice() above);
     // label it accordingly instead of the generic "Custom devices" so it's not
     // confused with a plain single-value Custom device in this list.
-    var isMultiDevice = isCustom &&
+    var isMultiDevice =
+      isCustom &&
       special.definition &&
       Array.isArray(special.definition.values) &&
       special.definition.values.length > 0;
     var label = isTitle
       ? t.title_block
-      : (isMultiDevice ? t.multi_device : (isCustom ? t.custom_devices : (isSlideButton ? t.slide_button : t.dummy_device)));
+      : isMultiDevice
+        ? t.multi_device
+        : isCustom
+          ? t.custom_devices
+          : isSlideButton
+            ? t.slide_button
+            : t.dummy_device;
     if (isGroupBlock) label = t.group_block;
     else if (isHtmlBlock) label = t.html_block;
     else if (isLmsBlock) label = t.lms_block;
-    var htmlFileRow = isHtmlBlock && special.customFields
-      ? special.customFields.find(function (row) {
-        return String((row && row.field) || '').toLowerCase() === 'htmlfile';
-      })
-      : null;
+    var htmlFileRow =
+      isHtmlBlock && special.customFields
+        ? special.customFields.find(function (row) {
+            return (
+              String((row && row.field) || '').toLowerCase() === 'htmlfile'
+            );
+          })
+        : null;
     var detail = isTitle
       ? special.title
       : isSlideButton
-        ? special.reference + ' · ' + t.slide_button_screen + '\u00a0' + String(special.slideTarget || 1)
+        ? special.reference +
+          ' · ' +
+          t.slide_button_screen +
+          '\u00a0' +
+          String(special.slideTarget || 1)
         : isGroupBlock
-          ? (special.idx ? 'IDX\u00a0' + special.idx : special.reference)
+          ? special.idx
+            ? 'IDX\u00a0' + special.idx
+            : special.reference
           : isHtmlBlock
-            ? ((htmlFileRow && htmlFileRow.setting) || special.reference)
+            ? (htmlFileRow && htmlFileRow.setting) || special.reference
             : isLmsBlock
-              ? (special.lmsPlayerLabel || special.lmsPlayer || special.reference)
-              : (isCustom ? special.reference + ' · IDX\u00a0' + special.idx : 'IDX\u00a0' + special.idx);
-    var specialIconClass = isTitle ? 'fa-divide' : (isSlideButton ? 'fa-sliders-h' : (isMultiDevice ? 'fa-layer-group' : 'fa-cube'));
+              ? special.lmsPlayerLabel || special.lmsPlayer || special.reference
+              : isCustom
+                ? special.reference + ' · IDX\u00a0' + special.idx
+                : 'IDX\u00a0' + special.idx;
+    var specialIconClass = isTitle
+      ? 'fa-divide'
+      : isSlideButton
+        ? 'fa-sliders-h'
+        : isMultiDevice
+          ? 'fa-layer-group'
+          : 'fa-cube';
     if (isGroupBlock) specialIconClass = 'fa-object-group';
     else if (isHtmlBlock) specialIconClass = 'fa-code';
     else if (isLmsBlock) specialIconClass = 'fa-music';
-    var html = '<div class="de-device-item de-special-item" data-special-key="' +
-      _esc(special.reference) + '" data-order-key="' + _esc(orderKey) +
+    var html =
+      '<div class="de-device-item de-special-item" data-special-key="' +
+      _esc(special.reference) +
+      '" data-order-key="' +
+      _esc(orderKey) +
       '" draggable="true">';
-    html += '<span class="de-drag-handle" title="' + _esc(t.drag_to_reorder) + '"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
-    html += '<span class="de-device-idx"><i class="fas ' +
-      specialIconClass + ' me-1" aria-hidden="true"></i>' +
-      _esc(label) + '</span>';
+    html +=
+      '<span class="de-drag-handle" title="' +
+      _esc(t.drag_to_reorder) +
+      '"><i class="fas fa-grip-vertical" aria-hidden="true"></i></span>';
+    html +=
+      '<span class="de-device-idx"><i class="fas ' +
+      specialIconClass +
+      ' me-1" aria-hidden="true"></i>' +
+      _esc(label) +
+      '</span>';
     html += '<span class="de-device-identity de-special-identity">';
     html += '<span class="de-device-name">' + _esc(detail) + '</span></span>';
     html += _configButtonHtml(orderKey, t.device_config);
     html += '<span class="de-device-field de-width-wrap">';
-    html += '<input type="number" id="de-width-' + _esc(special.reference) +
+    html +=
+      '<input type="number" id="de-width-' +
+      _esc(special.reference) +
       '" class="form-control form-control-sm de-device-width" data-order-key="' +
-      _esc(orderKey) + '" min="1" max="12" size="2" value="' + special.width + '">';
-    html += '<label class="de-device-width-label" for="de-width-' +
-      _esc(special.reference) + '">' + _esc(t.width) + '</label>';
+      _esc(orderKey) +
+      '" min="1" max="12" size="2" value="' +
+      special.width +
+      '">';
+    html +=
+      '<label class="de-device-width-label" for="de-width-' +
+      _esc(special.reference) +
+      '">' +
+      _esc(t.width) +
+      '</label>';
     html += '</span>';
     html += '<span class="de-device-field de-title-field">';
-    html += '<input type="text" id="de-title-' + _esc(special.reference) +
+    html +=
+      '<input type="text" id="de-title-' +
+      _esc(special.reference) +
       '" class="form-control form-control-sm de-device-title" maxlength="100" data-order-key="' +
-      _esc(orderKey) + '" value="' + _esc(special.title || '') + '">';
-    html += '<label for="de-title-' + _esc(special.reference) + '">' + _esc(t.title) + '</label>';
+      _esc(orderKey) +
+      '" value="' +
+      _esc(special.title || '') +
+      '">';
+    html +=
+      '<label for="de-title-' +
+      _esc(special.reference) +
+      '">' +
+      _esc(t.title) +
+      '</label>';
     html += '</span>';
-    html += '<button type="button" class="btn btn-danger btn-sm de-remove-btn ms-auto" data-special-key="' +
-      _esc(special.reference) + '" title="' + _esc(t.remove) + '">';
+    html +=
+      '<button type="button" class="btn btn-danger btn-sm de-remove-btn ms-auto" data-special-key="' +
+      _esc(special.reference) +
+      '" title="' +
+      _esc(t.remove) +
+      '">';
     html += '<i class="fas fa-minus" aria-hidden="true"></i></button></div>';
     return html;
   }
@@ -3873,16 +5099,37 @@ var DashticzDeviceEditor = (function () {
   function _addRowHtml(deviceList) {
     var t = _translations();
     var html = '<div class="de-add-row">';
-    html += '<select class="form-select de-device-select" aria-label="' + _esc(t.select_aria) + '">';
+    html +=
+      '<select class="form-select de-device-select" aria-label="' +
+      _esc(t.select_aria) +
+      '">';
     html += '<option value="">— ' + _esc(t.select_item) + ' —</option>';
     deviceList.forEach(function (d) {
-      var dispIdx = d.subidx ? (d.idx + '_' + d.subidx) : String(d.idx);
-      html += '<option value="' + _esc(d.key) + '" data-type-order="' + _typeOrder(d.type) + '">' + _esc(d.name) + ' (IDX\u00a0' + dispIdx + ')</option>';
+      var dispIdx = d.subidx ? d.idx + '_' + d.subidx : String(d.idx);
+      html +=
+        '<option value="' +
+        _esc(d.key) +
+        '" data-type-order="' +
+        _typeOrder(d.type) +
+        '">' +
+        _esc(d.name) +
+        ' (IDX\u00a0' +
+        dispIdx +
+        ')</option>';
     });
     html += '</select>';
-    html += '<input type="number" class="form-control form-control-sm de-width-input" min="1" max="12" size="2" value="3" title="' + _esc(t.column_width) + '" aria-label="' + _esc(t.width) + '">';
-    html += '<input type="text" class="form-control form-control-sm de-special-value d-none" aria-label="">';
-    html += '<button type="button" class="btn btn-success btn-sm de-add-btn ms-2" title="' + _esc(t.add_device) + '">';
+    html +=
+      '<input type="number" class="form-control form-control-sm de-width-input" min="1" max="12" size="2" value="3" title="' +
+      _esc(t.column_width) +
+      '" aria-label="' +
+      _esc(t.width) +
+      '">';
+    html +=
+      '<input type="text" class="form-control form-control-sm de-special-value d-none" aria-label="">';
+    html +=
+      '<button type="button" class="btn btn-success btn-sm de-add-btn ms-2" title="' +
+      _esc(t.add_device) +
+      '">';
     html += '<i class="fas fa-plus" aria-hidden="true"></i>';
     html += '</button>';
     html += '</div>';
@@ -3893,22 +5140,39 @@ var DashticzDeviceEditor = (function () {
     var t = _translations();
     var isTitle = kind === 'title';
     var html = '<div class="de-add-row de-special-add-row">';
-    html += '<select class="de-device-select d-none" aria-hidden="true" tabindex="-1">';
-    html += '<option value="' + (isTitle ? '__title__' : '__dummy__') + '" selected></option></select>';
-    html += '<input ' + (isTitle ? 'type="text"' : 'type="number" min="1"') +
+    html +=
+      '<select class="de-device-select d-none" aria-hidden="true" tabindex="-1">';
+    html +=
+      '<option value="' +
+      (isTitle ? '__title__' : '__dummy__') +
+      '" selected></option></select>';
+    html +=
+      '<input ' +
+      (isTitle ? 'type="text"' : 'type="number" min="1"') +
       ' class="form-control form-control-sm de-special-value" placeholder="' +
-      _esc(isTitle ? t.enter_title : t.enter_idx) + '" aria-label="' +
-      _esc(isTitle ? t.enter_title : t.enter_idx) + '">';
-    html += '<input type="number" class="form-control form-control-sm de-width-input" min="1" max="12" size="2" value="' +
-      (isTitle ? '12' : '3') + '" title="' + _esc(t.column_width) + '" aria-label="' + _esc(t.width) + '">';
-    html += '<button type="button" class="btn btn-success btn-sm de-add-btn ms-2" title="' +
-      _esc(isTitle ? t.separator : t.custom_devices) + '"><i class="fas fa-plus" aria-hidden="true"></i></button>';
+      _esc(isTitle ? t.enter_title : t.enter_idx) +
+      '" aria-label="' +
+      _esc(isTitle ? t.enter_title : t.enter_idx) +
+      '">';
+    html +=
+      '<input type="number" class="form-control form-control-sm de-width-input" min="1" max="12" size="2" value="' +
+      (isTitle ? '12' : '3') +
+      '" title="' +
+      _esc(t.column_width) +
+      '" aria-label="' +
+      _esc(t.width) +
+      '">';
+    html +=
+      '<button type="button" class="btn btn-success btn-sm de-add-btn ms-2" title="' +
+      _esc(isTitle ? t.separator : t.custom_devices) +
+      '"><i class="fas fa-plus" aria-hidden="true"></i></button>';
     html += '</div>';
     return html;
   }
 
   function _nextSpecialReference(type) {
-    var prefix = type === 'title' ? 'Title_' : type === 'lms' ? 'lms_' : 'dummyblock_';
+    var prefix =
+      type === 'title' ? 'Title_' : type === 'lms' ? 'lms_' : 'dummyblock_';
     var used = {};
     if (typeof blocks !== 'undefined') {
       Object.keys(blocks).forEach(function (key) {
@@ -3942,12 +5206,14 @@ var DashticzDeviceEditor = (function () {
         $(this).closest('.de-device-item').remove();
         if ($('#de-device-list .de-device-item').length === 0) {
           $('#de-device-list').html(
-            '<div class="de-empty">' + _esc(_translations().empty_items) + '</div>'
+            '<div class="de-empty">' +
+              _esc(_translations().empty_items) +
+              '</div>'
           );
         }
         return;
       }
-      var ck  = String($(this).attr('data-ck'));
+      var ck = String($(this).attr('data-ck'));
       var pos = managedDevices.indexOf(ck);
       if (pos > -1) managedDevices.splice(pos, 1);
       var orderPos = managedOrder.indexOf(_deviceOrderKey(ck));
@@ -3967,31 +5233,62 @@ var DashticzDeviceEditor = (function () {
       /* remove item from device-list */
       $(this).closest('.de-device-item').remove();
       if ($('#de-device-list .de-device-item').length === 0) {
-        $('#de-device-list').html('<div class="de-empty">' + _esc(_translations().empty_items) + '</div>');
+        $('#de-device-list').html(
+          '<div class="de-empty">' +
+            _esc(_translations().empty_items) +
+            '</div>'
+        );
       }
 
       /* restore device in add-row dropdown and in available[] */
-      var p      = _parseCk(ck);
+      var p = _parseCk(ck);
       var isGroup = _isGroupCk(ck);
-      var device = isGroup ? allDomoticz[ck] : (allDomoticz[String(p.idx)] || allDomoticz[p.idx]);
-      var rawName = device ? device.Name : (isGroup ? ck : ('Device ' + p.idx));
-      var type   = device ? (device.Type || '') : (isGroup ? 'Group' : '');
+      var device = isGroup
+        ? allDomoticz[ck]
+        : allDomoticz[String(p.idx)] || allDomoticz[p.idx];
+      var rawName = device ? device.Name : isGroup ? ck : 'Device ' + p.idx;
+      var type = device ? device.Type || '' : isGroup ? 'Group' : '';
       var groupPrefix = isGroup ? (type === 'Scene' ? 'Scene_' : 'Group_') : '';
-      var displayName = groupPrefix + rawName + (!isGroup && p.subidx ? '\u00a0(' + p.subidx + ')' : '');
-      var dispIdx     = isGroup ? ck : (p.subidx ? (p.idx + '_' + p.subidx) : String(p.idx));
+      var displayName =
+        groupPrefix +
+        rawName +
+        (!isGroup && p.subidx ? '\u00a0(' + p.subidx + ')' : '');
+      var dispIdx = isGroup
+        ? ck
+        : p.subidx
+          ? p.idx + '_' + p.subidx
+          : String(p.idx);
 
       /* keep available[] in sync so subsequent + rows include this device */
-      if (!available.some(function (d) { return d.key === ck; })) {
-        available.push({ key: ck, idx: p.idx, subidx: p.subidx,
-                         name: displayName, plainName: isGroup ? rawName : null, type: type });
+      if (
+        !available.some(function (d) {
+          return d.key === ck;
+        })
+      ) {
+        available.push({
+          key: ck,
+          idx: p.idx,
+          subidx: p.subidx,
+          name: displayName,
+          plainName: isGroup ? rawName : null,
+          type: type,
+        });
         _sortAvailable(available);
       }
       if (editorMode !== 'devices') return;
 
       var newTypeOrder = _typeOrder(type);
       var newText = displayName + ' (IDX\u00a0' + dispIdx + ')';
-      var optHtml = '<option value="' + _esc(ck) + '" data-type-order="' + newTypeOrder + '">' +
-                    _esc(displayName) + ' (IDX\u00a0' + dispIdx + ')</option>';
+      var optHtml =
+        '<option value="' +
+        _esc(ck) +
+        '" data-type-order="' +
+        newTypeOrder +
+        '">' +
+        _esc(displayName) +
+        ' (IDX\u00a0' +
+        dispIdx +
+        ')</option>';
 
       var $select = $('#de-add-rows .de-device-select');
       if ($select.length) {
@@ -3999,10 +5296,14 @@ var DashticzDeviceEditor = (function () {
         var inserted = false;
         $select.find('option').each(function () {
           if (!$(this).val() || /^__/.test(String($(this).val()))) return;
-          var optTypeOrder = parseInt($(this).attr('data-type-order') || '2', 10);
-          var cmp = newTypeOrder !== optTypeOrder
-            ? newTypeOrder - optTypeOrder
-            : newText.localeCompare($(this).text());
+          var optTypeOrder = parseInt(
+            $(this).attr('data-type-order') || '2',
+            10
+          );
+          var cmp =
+            newTypeOrder !== optTypeOrder
+              ? newTypeOrder - optTypeOrder
+              : newText.localeCompare($(this).text());
           if (cmp < 0) {
             $(this).before(optHtml);
             inserted = true;
@@ -4014,8 +5315,18 @@ var DashticzDeviceEditor = (function () {
         $('#de-add-rows .de-empty').remove();
       } else {
         /* no add-row exists yet — create one with this single device */
-        $('#de-add-rows').html(_addRowHtml([{ key: ck, idx: p.idx, subidx: p.subidx,
-                                              name: displayName, plainName: isGroup ? rawName : null, type: type }]));
+        $('#de-add-rows').html(
+          _addRowHtml([
+            {
+              key: ck,
+              idx: p.idx,
+              subidx: p.subidx,
+              name: displayName,
+              plainName: isGroup ? rawName : null,
+              type: type,
+            },
+          ])
+        );
       }
     });
 
@@ -4039,7 +5350,8 @@ var DashticzDeviceEditor = (function () {
       var value = String($(this).val() || '').trim();
       if (orderKey.indexOf('widget:') === 0) {
         widgetTitles[orderKey] = value;
-        if (managedWidgets[orderKey]) managedWidgets[orderKey].pendingTitleEdited = true;
+        if (managedWidgets[orderKey])
+          managedWidgets[orderKey].pendingTitleEdited = true;
       } else if (orderKey.indexOf('special:') === 0) {
         if (managedSpecials[orderKey]) managedSpecials[orderKey].title = value;
       } else {
@@ -4052,12 +5364,26 @@ var DashticzDeviceEditor = (function () {
       var selected = String($(this).val() || '');
       var t = _translations();
       if (selected === '__dummy__') {
-        $value.attr({ type: 'number', min: '1', placeholder: t.enter_idx,
-          'aria-label': t.enter_idx }).val('').removeClass('d-none');
+        $value
+          .attr({
+            type: 'number',
+            min: '1',
+            placeholder: t.enter_idx,
+            'aria-label': t.enter_idx,
+          })
+          .val('')
+          .removeClass('d-none');
         $row.find('.de-width-input').val(3);
       } else if (selected === '__title__') {
-        $value.removeAttr('min').attr({ type: 'text', placeholder: t.enter_title,
-          'aria-label': t.enter_title }).val('').removeClass('d-none');
+        $value
+          .removeAttr('min')
+          .attr({
+            type: 'text',
+            placeholder: t.enter_title,
+            'aria-label': t.enter_title,
+          })
+          .val('')
+          .removeClass('d-none');
         $row.find('.de-width-input').val(12);
       } else {
         $value.val('').addClass('d-none');
@@ -4067,14 +5393,16 @@ var DashticzDeviceEditor = (function () {
 
     /* + button */
     $('#de-add-rows').on('click', '.de-add-btn', function () {
-      var $row    = $(this).closest('.de-add-row');
+      var $row = $(this).closest('.de-add-row');
       var $select = $row.find('.de-device-select');
-      var ck      = $select.val();
+      var ck = $select.val();
       if (!ck) return;
 
       if (ck === '__dummy__' || ck === '__title__') {
         var specialType = ck === '__title__' ? 'title' : 'dummy';
-        var rawValue = String($row.find('.de-special-value').val() || '').trim();
+        var rawValue = String(
+          $row.find('.de-special-value').val() || ''
+        ).trim();
         var t = _translations();
         var idx = specialType === 'dummy' ? parseInt(rawValue, 10) : null;
         if (specialType === 'dummy' && !(idx > 0 && String(idx) === rawValue)) {
@@ -4095,31 +5423,43 @@ var DashticzDeviceEditor = (function () {
           reference: reference,
           definition: {},
           idx: idx,
-          title: specialType === 'title'
-            ? rawValue.slice(0, 100)
-            : 'Dummy_' + (numberMatch ? numberMatch[1] : '1'),
+          title:
+            specialType === 'title'
+              ? rawValue.slice(0, 100)
+              : 'Dummy_' + (numberMatch ? numberMatch[1] : '1'),
           width: _parseWidth($row.find('.de-width-input').val()),
           height: specialType === 'title' ? 120 : null,
           showTitle: true,
-          options: specialType === 'dummy'
-            ? { icon: true, iconValue: null, hide_data: true, last_update: false, switch: false }
-            : {
-                icon: true,
-                iconValue: SEPARATOR_DEFAULT_ICON,
-                hide_data: false,
-                last_update: false,
-                switch: false,
-              },
-          customFields: [{
-            field: 'title',
-            setting: specialType === 'title'
-              ? rawValue.slice(0, 100)
-              : 'Dummy_' + (numberMatch ? numberMatch[1] : '1'),
-            value: specialType === 'title'
-              ? rawValue.slice(0, 100)
-              : 'Dummy_' + (numberMatch ? numberMatch[1] : '1'),
-            system: true,
-          }],
+          options:
+            specialType === 'dummy'
+              ? {
+                  icon: true,
+                  iconValue: null,
+                  hide_data: true,
+                  last_update: false,
+                  switch: false,
+                }
+              : {
+                  icon: true,
+                  iconValue: SEPARATOR_DEFAULT_ICON,
+                  hide_data: false,
+                  last_update: false,
+                  switch: false,
+                },
+          customFields: [
+            {
+              field: 'title',
+              setting:
+                specialType === 'title'
+                  ? rawValue.slice(0, 100)
+                  : 'Dummy_' + (numberMatch ? numberMatch[1] : '1'),
+              value:
+                specialType === 'title'
+                  ? rawValue.slice(0, 100)
+                  : 'Dummy_' + (numberMatch ? numberMatch[1] : '1'),
+              system: true,
+            },
+          ],
           preservedFields: {},
         };
         managedSpecials[specialOrderKey] = special;
@@ -4142,8 +5482,14 @@ var DashticzDeviceEditor = (function () {
       deviceTitles[ck] = '';
       deviceRefs[ck] = _stableDeviceReference(ck);
       deviceOptions[ck] = {
-        icon: true, iconValue: null, hide_data: false, last_update: false, switch: false,
-        dial: false, bar: false, needle: false,
+        icon: true,
+        iconValue: null,
+        hide_data: false,
+        last_update: false,
+        switch: false,
+        dial: false,
+        bar: false,
+        needle: false,
       };
       deviceTitleVisible[ck] = true;
       deviceCustomFields[ck] = [
@@ -4153,7 +5499,7 @@ var DashticzDeviceEditor = (function () {
 
       /* record the device name for this composite key */
       /* for groups, use plainName (without Group_/Scene_ prefix) so the block title is clean */
-      var addedName = _isGroupCk(ck) ? ck : ('Device ' + _parseCk(ck).idx);
+      var addedName = _isGroupCk(ck) ? ck : 'Device ' + _parseCk(ck).idx;
       for (var di = 0; di < available.length; di++) {
         if (available[di].key === ck) {
           addedName = available[di].plainName || available[di].name;
@@ -4201,7 +5547,8 @@ var DashticzDeviceEditor = (function () {
 
     $list.on('dragend', '.de-device-item', function () {
       $(this).removeClass('de-drag-dragging');
-      $list.find('.de-drag-over-top, .de-drag-over-bottom')
+      $list
+        .find('.de-drag-over-top, .de-drag-over-bottom')
         .removeClass('de-drag-over-top de-drag-over-bottom');
     });
 
@@ -4209,10 +5556,11 @@ var DashticzDeviceEditor = (function () {
       e.preventDefault();
       e.originalEvent.dataTransfer.dropEffect = 'move';
       if (this === dragSrcEl) return;
-      var rect  = this.getBoundingClientRect();
+      var rect = this.getBoundingClientRect();
       var above = e.originalEvent.clientY < rect.top + rect.height / 2;
-      $(this).toggleClass('de-drag-over-top', above)
-             .toggleClass('de-drag-over-bottom', !above);
+      $(this)
+        .toggleClass('de-drag-over-top', above)
+        .toggleClass('de-drag-over-bottom', !above);
     });
 
     $list.on('dragleave', '.de-device-item', function (e) {
@@ -4225,7 +5573,7 @@ var DashticzDeviceEditor = (function () {
     $list.on('drop', '.de-device-item', function (e) {
       e.preventDefault();
       if (!dragSrcEl || this === dragSrcEl) return;
-      var rect  = this.getBoundingClientRect();
+      var rect = this.getBoundingClientRect();
       var above = e.originalEvent.clientY < rect.top + rect.height / 2;
       if (above) {
         $(this).before(dragSrcEl);
@@ -4276,10 +5624,9 @@ var DashticzDeviceEditor = (function () {
      both callers must submit every currently managed device, not just the
      one that changed. */
   function _buildDevicePayload() {
-    var orderedBlockKeys = managedOrder
-      .filter(function (orderKey) {
-        return orderKey.indexOf('widget:') !== 0;
-      });
+    var orderedBlockKeys = managedOrder.filter(function (orderKey) {
+      return orderKey.indexOf('widget:') !== 0;
+    });
     return orderedBlockKeys.map(function (orderKey) {
       if (orderKey.indexOf('special:') === 0) {
         var special = managedSpecials[orderKey];
@@ -4288,8 +5635,10 @@ var DashticzDeviceEditor = (function () {
           key: special.reference,
           width: _parseWidth(special.width),
         };
-        var titleOptionalKind = special.specialType === 'custom' ||
-          special.specialType === 'group' || special.specialType === 'html' ||
+        var titleOptionalKind =
+          special.specialType === 'custom' ||
+          special.specialType === 'group' ||
+          special.specialType === 'html' ||
           special.specialType === 'lms';
         if (!titleOptionalKind || String(special.title || '').trim()) {
           specialEntry.title = special.title;
@@ -4302,7 +5651,10 @@ var DashticzDeviceEditor = (function () {
         if (Object.keys(specialCustomFields).length) {
           specialEntry.custom_fields = specialCustomFields;
         }
-        if (special.specialType === 'dummy' || special.specialType === 'custom') {
+        if (
+          special.specialType === 'dummy' ||
+          special.specialType === 'custom'
+        ) {
           specialEntry.idx = special.idx;
           var specialOptions = special.options || {};
           if (specialOptions.icon === false) {
@@ -4343,7 +5695,10 @@ var DashticzDeviceEditor = (function () {
             }
             specialEntry.custom_fields = specialCustomFields;
           }
-        } else if (special.specialType === 'group' || special.specialType === 'html') {
+        } else if (
+          special.specialType === 'group' ||
+          special.specialType === 'html'
+        ) {
           // Only Icon and Last update apply here (no Data/Switch/Dial - see
           // _quickOptionsHtml()); idx is optional and only meaningful for a
           // Group block (js/components/group.js can use 'devices' instead,
@@ -4409,12 +5764,12 @@ var DashticzDeviceEditor = (function () {
         return specialEntry;
       }
       var ck = orderKey.slice(7);
-      var p   = _parseCk(ck);
+      var p = _parseCk(ck);
       var entry = {
-        idx:   p.idx,
-        name:  deviceNames[ck] || ('Device ' + p.idx),
+        idx: p.idx,
+        name: deviceNames[ck] || 'Device ' + p.idx,
         width: _parseWidth(deviceWidths[ck]),
-        key:   _stableDeviceReference(ck),
+        key: _stableDeviceReference(ck),
       };
       var title = String(deviceTitles[ck] || '').trim();
       var options = deviceOptions[ck] || {};
@@ -4482,8 +5837,8 @@ var DashticzDeviceEditor = (function () {
      in-progress drag/resize there is never overwritten by a stale layout
      snapshot - mirrors DashticzWidgetEditor's _saveConfigOnly(). */
   function _saveDeviceConfigOnly() {
-    return $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
-      .then(function (data) {
+    return $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf').then(
+      function (data) {
         return _postEditorData(
           'js/saveblocks.php',
           {
@@ -4493,7 +5848,8 @@ var DashticzDeviceEditor = (function () {
           },
           data.token
         );
-      });
+      }
+    );
   }
 
   /* When this popup opened while the Layout Editor was already active, a
@@ -4540,7 +5896,7 @@ var DashticzDeviceEditor = (function () {
           kind: 'device',
           idx: p.idx,
           subidx: p.subidx,
-          name: deviceNames[ck] || ('Device ' + p.idx),
+          name: deviceNames[ck] || 'Device ' + p.idx,
           width: _parseWidth(deviceWidths[ck]),
         });
         return true;
@@ -4667,9 +6023,7 @@ var DashticzDeviceEditor = (function () {
                 );
               var gridItems = managedOrder.map(function (orderKey) {
                 var isWidget = orderKey.indexOf('widget:') === 0;
-                var ref = isWidget
-                  ? widgetRefs[orderKey]
-                  : blockRefs[orderKey];
+                var ref = isWidget ? widgetRefs[orderKey] : blockRefs[orderKey];
                 var position = gridPositions[orderKey];
                 if (!position) {
                   var width12 = _widthForOrderKey(orderKey);
@@ -4678,9 +6032,7 @@ var DashticzDeviceEditor = (function () {
                     1,
                     Math.min(
                       gridConfig.gridColumns,
-                      Math.round(
-                        (width12 * gridConfig.gridColumns) / 12
-                      )
+                      Math.round((width12 * gridConfig.gridColumns) / 12)
                     )
                   );
                   var isTitleBlock =
@@ -4695,11 +6047,7 @@ var DashticzDeviceEditor = (function () {
                             (gridConfig.rowHeight + gridConfig.gap)
                         )
                       );
-                  position = _firstFreeGridPosition(
-                    occupied,
-                    width,
-                    height
-                  );
+                  position = _firstFreeGridPosition(occupied, width, height);
                   occupied.push(position);
                 }
                 return { ref: ref, grid: $.extend({}, position) };
@@ -4715,7 +6063,8 @@ var DashticzDeviceEditor = (function () {
                   // Only pin these explicitly on the screen when they
                   // diverge from the dashboard-wide default (see the
                   // matching comment in layouteditor.js's _buildSavePayloads).
-                  pinGridColumns: gridConfig.gridColumns !== _defaultGridColumns(),
+                  pinGridColumns:
+                    gridConfig.gridColumns !== _defaultGridColumns(),
                   pinRowHeight: gridConfig.rowHeight !== _defaultRowHeight(),
                   gap: gridConfig.gap,
                   mobileLayout: gridConfig.mobileLayout,
@@ -4756,9 +6105,10 @@ var DashticzDeviceEditor = (function () {
         }, 900);
       })
       .fail(function (xhr) {
-        var msg = xhr.responseJSON && xhr.responseJSON.error
-          ? xhr.responseJSON.error
-          : t.save_failed;
+        var msg =
+          xhr.responseJSON && xhr.responseJSON.error
+            ? xhr.responseJSON.error
+            : t.save_failed;
         $btn.prop('disabled', false).text(t.save);
         alert(t.error_prefix + ' ' + msg);
       });
@@ -4843,10 +6193,14 @@ var DashticzDeviceEditor = (function () {
         var col = columns[colKeys[i]];
         if (!col || !Array.isArray(col.blocks)) continue;
         for (var j = 0; j < col.blocks.length; j++) {
-          var ref   = col.blocks[j];
+          var ref = col.blocks[j];
           var block = null;
           var refCk = _toCompositeKey(ref);
-          if (typeof ref === 'string' && typeof blocks !== 'undefined' && blocks[ref]) {
+          if (
+            typeof ref === 'string' &&
+            typeof blocks !== 'undefined' &&
+            blocks[ref]
+          ) {
             block = blocks[ref];
             if (!refCk) refCk = _toCompositeKey(block);
           } else if (typeof ref === 'object' && ref !== null) {
@@ -4881,7 +6235,11 @@ var DashticzDeviceEditor = (function () {
           var ref = col.blocks[j];
           var block = null;
           var refCk = _toCompositeKey(ref);
-          if (typeof ref === 'string' && typeof blocks !== 'undefined' && blocks[ref]) {
+          if (
+            typeof ref === 'string' &&
+            typeof blocks !== 'undefined' &&
+            blocks[ref]
+          ) {
             block = blocks[ref];
             if (!refCk) refCk = _toCompositeKey(block);
           } else if (typeof ref === 'object' && ref !== null) {
@@ -4915,6 +6273,6 @@ var DashticzDeviceEditor = (function () {
     openSlideButton: openSlideButton,
     addSeparator: addSeparator,
   };
-}());
+})();
 
 //# sourceURL=js/deviceeditor.js

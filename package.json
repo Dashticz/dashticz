@@ -58,9 +58,12 @@
   ],
   "scripts": {
     "build": "webpack --config build/webpack.config.js --mode production",
-    "format": "prettier --config build/prettier.json --ignore-path build/prettierignore \"{js,src}/**/*.{ts,css,less,js}\" \"*.html\" \"tools/*.html\" --write",
-    "test": "node --test \"tests/*.test.js\"",
+    "format": "prettier --config build/prettier.json --ignore-path build/prettierignore \"{build,css,custom,js,lang,src,tests,themes}/**/*.{ts,css,less,scss,js,json}\" \".github/**/*.{yml,yaml}\" \"docs/_static/**/*.{css,js}\" \"*.{html,js,json,yaml}\" \"tools/*.html\" --write",
+    "format:check": "prettier --config build/prettier.json --ignore-path build/prettierignore \"{build,css,custom,js,lang,src,tests,themes}/**/*.{ts,css,less,scss,js,json}\" \".github/**/*.{yml,yaml}\" \"docs/_static/**/*.{css,js}\" \"*.{html,js,json,yaml}\" \"tools/*.html\" --check",
+    "test": "node --test",
     "test:playwright": "playwright test --project=chromium",
+    "test:playwright:all": "playwright test",
+    "test:live": "playwright test tests/live-integrations.spec.js --project=chromium",
     "test:playwright:update": "playwright test --project=chromium --update-snapshots",
     "test:playwright:report": "playwright show-report"
   },
