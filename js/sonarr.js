@@ -11,9 +11,7 @@ function loadSonarr(me) {
   var fixedHeight = parseInt(block.height, 10) || 120;
   var heightClass = fixedHeight > 0 ? ' fixedheight' : '';
   var heightStyle =
-    fixedHeight > 0
-      ? ' style="height:' + fixedHeight + 'px !important"'
-      : '';
+    fixedHeight > 0 ? ' style="height:' + fixedHeight + 'px !important"' : '';
 
   // lets get all the user settings if they exist
   if (typeof block.width !== 'undefined') {

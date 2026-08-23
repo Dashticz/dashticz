@@ -178,9 +178,13 @@ var DT_timegraph = (function () {
         };
       });
 
-      Dashticz.setInterval(me, function () {
-        addTick(me);
-      }, 1000);
+      Dashticz.setInterval(
+        me,
+        function () {
+          addTick(me);
+        },
+        1000
+      );
 
       if (me.block.height) {
         me.graphProperties.options.maintainAspectRatio = false;
@@ -209,8 +213,8 @@ var DT_timegraph = (function () {
         typeof data.unit !== 'undefined'
           ? data.unit
           : res.length > 1
-          ? res[1]
-          : '';
+            ? res[1]
+            : '';
       return {
         value: value,
         unit: unit,

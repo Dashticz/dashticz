@@ -1,7 +1,6 @@
 /* global language, Dashticz, settings*/
 //# sourceURL=js/components/map.js
 
-
 // The Google Maps script needs a callback function after loading the Google maps script
 // I don't know a cleaner way ...
 window.GoogleMapsCallback = function () {
@@ -10,28 +9,36 @@ window.GoogleMapsCallback = function () {
 };
 
 function gm_authFailure() {
-  console.log('Google Maps Authentication problem')
-  $('.map .dt_state').html(language.misc.map_api_invalid + '<br>' +
-    language.misc.see_documentation_prefix + ' <a href="https://dashticz.readthedocs.io/en/master/blocks/specials/googlemaps.html#getting-a-google-maps-api-key">' +
-    language.misc.map_documentation + '</a>')
-};
+  console.log('Google Maps Authentication problem');
+  $('.map .dt_state').html(
+    language.misc.map_api_invalid +
+      '<br>' +
+      language.misc.see_documentation_prefix +
+      ' <a href="https://dashticz.readthedocs.io/en/master/blocks/specials/googlemaps.html#getting-a-google-maps-api-key">' +
+      language.misc.map_documentation +
+      '</a>'
+  );
+}
 
 (function (Dashticz) {
-  "use strict";
+  'use strict';
   var DT_googlemaps = {
     name: 'map',
     canHandle: function (block) {
-      return block && (block.type === 'map' || (block.latitude && block.longitude));
+      return (
+        block && (block.type === 'map' || (block.latitude && block.longitude))
+      );
     },
     init: function (block) {
       if (!Dashticz.googleMapsPromise) {
         Dashticz.googleMapsPromise = $.Deferred();
         $.ajax({
           url:
-            'https://maps.googleapis.com/maps/api/js?callback=GoogleMapsCallback&key=' + (block.api || settings['gm_api']),
+            'https://maps.googleapis.com/maps/api/js?callback=GoogleMapsCallback&key=' +
+            (block.api || settings['gm_api']),
           dataType: 'script',
           cache: true,
-        })
+        });
       }
       return Dashticz.googleMapsPromise;
     },
@@ -44,8 +51,12 @@ function gm_authFailure() {
         height: 500,
         //            aspectratio:0.5,
         containerClass: 'swiper-no-swiping',
-        longitude: parseFloat(Domoticz.getAllDevices()['_settings'].Location.Longitude),
-        latitude: parseFloat(Domoticz.getAllDevices()['_settings'].Location.Latitude),
+        longitude: parseFloat(
+          Domoticz.getAllDevices()['_settings'].Location.Longitude
+        ),
+        latitude: parseFloat(
+          Domoticz.getAllDevices()['_settings'].Location.Latitude
+        ),
         zoom: 15,
         markerSize: 15,
         showtraffic: true,
@@ -55,23 +66,21 @@ function gm_authFailure() {
         showmap: true,
         showmarker: true,
         travelmode: 'driving',
-        instructions: false
-
+        instructions: false,
       };
-      if(choose(block.showmap, true)) {
-        result.width=4;
+      if (choose(block.showmap, true)) {
+        result.width = 4;
         // Same icon the widget catalog already uses to represent Google
         // Maps (js/widgeteditor.js). Without a default here, checking the
         // Icon option with no custom value (the same pattern News/Weather
         // rely on) rendered nothing, since getColIcon() only draws an icon
         // when block.icon is actually set.
-        result.icon='fas fa-map-marked-alt'
+        result.icon = 'fas fa-map-marked-alt';
+      } else {
+        result.icon = 'fas fa-solid fa-route';
       }
-      else {
-        result.icon='fas fa-solid fa-route'
-      }
-      if((block.travelmode && block.travelmode.toLowerCase()) ==='transit') {
-        result.instructions = true
+      if ((block.travelmode && block.travelmode.toLowerCase()) === 'transit') {
+        result.instructions = true;
       }
 
       return result;
@@ -81,50 +90,58 @@ function gm_authFailure() {
       if (me.block.refresh < 60) me.block.refresh = 60;
       me.$dt_state = me.$mountPoint.find('.dt_state');
       me.block.travelmode = me.block.travelmode.toLowerCase();
-      var travelmodes = ['driving','bicycling','transit','walking'];
+      var travelmodes = ['driving', 'bicycling', 'transit', 'walking'];
       if (!travelmodes.includes(me.block.travelmode)) {
-        me.$dt_state.html("Wrong travelmode. Valid options:<br>" + travelmodes.join(', '));
-        return
+        me.$dt_state.html(
+          'Wrong travelmode. Valid options:<br>' + travelmodes.join(', ')
+        );
+        return;
       }
       me.pointA = new google.maps.LatLng(me.block.latitude, me.block.longitude);
 
       if (me.block.positionidx) {
-        Dashticz.subscribeDevice(me, me.block.positionidx, true, function(pos) {
-          handlePosDevice(me, pos)
-        });
+        Dashticz.subscribeDevice(
+          me,
+          me.block.positionidx,
+          true,
+          function (pos) {
+            handlePosDevice(me, pos);
+          }
+        );
       }
-      
+
       if (me.block.destlongitude && me.block.destlatitude) {
-        me.showRoute=true;
-        me.pointB = new google.maps.LatLng(me.block.destlatitude || 50.8429, me.block.destlongitude || -0.1313);
-        me.directionsService = new google.maps.DirectionsService;
+        me.showRoute = true;
+        me.pointB = new google.maps.LatLng(
+          me.block.destlatitude || 50.8429,
+          me.block.destlongitude || -0.1313
+        );
+        me.directionsService = new google.maps.DirectionsService();
       }
 
       if (me.block.destidx) {
-        Dashticz.subscribeDevice(me, me.block.destidx, true, function(dest) {
-          handleDestDevice(me, dest)
+        Dashticz.subscribeDevice(me, me.block.destidx, true, function (dest) {
+          handleDestDevice(me, dest);
         });
       }
 
-      if(me.block.refreshwindow) {
+      if (me.block.refreshwindow) {
         var refreshwindows = me.block.refreshwindow.split(';');
-        me.refreshWindows = refreshwindows.map( function(el) {
+        me.refreshWindows = refreshwindows.map(function (el) {
           var startStopMoment = el.split('-');
           var startHourMinute = startStopMoment[0].split(':');
           var stopHourMinute = startStopMoment[1].split(':');
           return {
             startHour: parseInt(startHourMinute[0]),
             startMinute: parseInt(startHourMinute[1]),
-            stopHour:  parseInt(stopHourMinute[0]),
-            stopMinute:  parseInt(stopHourMinute[1]),
-          }
-        })
+            stopHour: parseInt(stopHourMinute[0]),
+            stopMinute: parseInt(stopHourMinute[1]),
+          };
+        });
       }
-    
-      if (me.block.showmap)
-        runMap(me)
-      else
-        runNoMap(me)
+
+      if (me.block.showmap) runMap(me);
+      else runNoMap(me);
 
       me.initialRefresh = true;
     },
@@ -132,212 +149,244 @@ function gm_authFailure() {
   };
 
   function runMap(me) {
-    var html = '<div class="state_map"></div>' +
+    var html =
+      '<div class="state_map"></div>' +
       '<div class="state_info">' +
-      '<div class="state_route"></div>'
-    if (me.block.showrefresh) (
+      '<div class="state_route"></div>';
+    if (me.block.showrefresh)
       html +=
-      '<div class="state_refresh">' +
-      '<i class="state_refresh_icon fa-solid fa-arrows-rotate"></i>' +
-      '<span class="state_refresh_time"></span>' +
-      '</div>'
-    )
+        '<div class="state_refresh">' +
+        '<i class="state_refresh_icon fa-solid fa-arrows-rotate"></i>' +
+        '<span class="state_refresh_time"></span>' +
+        '</div>';
     html += '</div>';
 
     me.$dt_state.html(html);
 
     me.$dt_state.find('.state_info').on('click', function () {
-      me.initialRefresh=true;
+      me.initialRefresh = true;
       refresh(me);
-    })
+    });
     var mapdiv = me.$dt_state.find('.state_map')[0];
     me.map = new google.maps.Map(mapdiv, {
       zoom: me.block.zoom,
       center: me.pointA,
-      disableDefaultUI: !me.block.showUI
-    })
+      disableDefaultUI: !me.block.showUI,
+    });
     var markerOptions = {
       position: me.pointA,
       map: me.map,
       //            title: 'My Location',
-    }
+    };
     if (me.block.markerIconUrl)
       markerOptions.icon = {
         url: me.block.markerIconUrl,
-        scaledSize: new google.maps.Size(me.block.markerSize, me.block.markerSize)
+        scaledSize: new google.maps.Size(
+          me.block.markerSize,
+          me.block.markerSize
+        ),
       };
-    if(me.block.showmarker) me.marker = new google.maps.Marker(markerOptions);
-    if (me.showRoute) me.directionsDisplay = new google.maps.DirectionsRenderer({
-      map: me.map
+    if (me.block.showmarker) me.marker = new google.maps.Marker(markerOptions);
+    if (me.showRoute)
+      me.directionsDisplay = new google.maps.DirectionsRenderer({
+        map: me.map,
+      });
+  }
+
+  function runNoMap(me) {
+    var html = '<div class="state_route"></div>';
+    if (me.block.showrefresh)
+      html +=
+        '<div class="state_refresh lastupdate">' +
+        'Last update:' +
+        '<span class="state_refresh_time"></span>' +
+        '</div>';
+    html += '</div>';
+
+    me.$dt_state.html(html);
+
+    me.$dt_state.on('click', function () {
+      me.initialRefresh = true;
+      refresh(me);
     });
   }
 
+  function refresh(me) {
+    if (!me.initialRefresh && !nowInWindow(me)) return;
+    me.initialRefresh = false;
 
-  function runNoMap(me) {
-  var html = '<div class="state_route"></div>'
-  if (me.block.showrefresh) (
-    html +=
-    '<div class="state_refresh lastupdate">' +
-    'Last update:' +
-    '<span class="state_refresh_time"></span>' +
-    '</div>'
-  )
-  html += '</div>';
-
-  me.$dt_state.html(html);
-
-  me.$dt_state.on('click', function () {
-    me.initialRefresh=true;
-    refresh(me);
-  })
-}
-
-function refresh(me) {  
-  if (!me.initialRefresh && !nowInWindow(me)) return;
-  me.initialRefresh=false;
-
-  if (me.block.showmap && me.block.showtraffic) {
-    me.trafficLayer = new google.maps.TrafficLayer();
-    me.trafficLayer.setMap(me.map);
-    setRefreshTime(me)
-  }
-  if (me.showRoute) {
-    // get route from A to B
-    var travelMode = me.block.travelmode.toUpperCase();
-    var asTransit = travelMode==='TRANSIT';
-    me.directionsService.route({
-      origin: me.pointA,
-      destination: me.pointB,
-      travelMode: travelMode,
-      drivingOptions: {
-        departureTime: new Date(),
-        //          trafficModel: 'pessimistic'
-      },
-      avoidTolls: false,
-      avoidHighways: false,
-      provideRouteAlternatives: true
-    }, function (response, status) {
-      if (status == google.maps.DirectionsStatus.OK) {
-        if (me.block.showmap) me.directionsDisplay.setDirections(response);
-        //Additional info:
-        //response.routes[0].legs[0]
-        /*
+    if (me.block.showmap && me.block.showtraffic) {
+      me.trafficLayer = new google.maps.TrafficLayer();
+      me.trafficLayer.setMap(me.map);
+      setRefreshTime(me);
+    }
+    if (me.showRoute) {
+      // get route from A to B
+      var travelMode = me.block.travelmode.toUpperCase();
+      var asTransit = travelMode === 'TRANSIT';
+      me.directionsService.route(
+        {
+          origin: me.pointA,
+          destination: me.pointB,
+          travelMode: travelMode,
+          drivingOptions: {
+            departureTime: new Date(),
+            //          trafficModel: 'pessimistic'
+          },
+          avoidTolls: false,
+          avoidHighways: false,
+          provideRouteAlternatives: true,
+        },
+        function (response, status) {
+          if (status == google.maps.DirectionsStatus.OK) {
+            if (me.block.showmap) me.directionsDisplay.setDirections(response);
+            //Additional info:
+            //response.routes[0].legs[0]
+            /*
         distance : {text: '132 km', value: 131533}
         duration: {text: '1 uur 33 min.', value: 5576}
         */
-        var routeInfo = response.routes[0].legs[0];
-        if (me.block.showrouteinfo) {
-          me.$mountPoint.find('.state_route').html(routeInfo.distance.text + ', ' +
-            ((routeInfo.duration_in_traffic && routeInfo.duration_in_traffic.text) || routeInfo.duration.text)
-          );
-          if(me.block.instructions) {
-            var items = $('<table class="items"></div>');
-            var startText = routeInfo.departure_time.text;
-            var currentDate = routeInfo.departure_time.value;
-            var endDate = currentDate;
+            var routeInfo = response.routes[0].legs[0];
+            if (me.block.showrouteinfo) {
+              me.$mountPoint
+                .find('.state_route')
+                .html(
+                  routeInfo.distance.text +
+                    ', ' +
+                    ((routeInfo.duration_in_traffic &&
+                      routeInfo.duration_in_traffic.text) ||
+                      routeInfo.duration.text)
+                );
+              if (me.block.instructions) {
+                var items = $('<table class="items"></div>');
+                var startText = routeInfo.departure_time.text;
+                var currentDate = routeInfo.departure_time.value;
+                var endDate = currentDate;
 
-            routeInfo.steps.forEach(function(step) {
-              try {
-                var instruction = step.instructions;
-                if(step.travel_mode === 'TRANSIT') {
-                  currentDate = step.transit.departure_time.value;
-                  endDate = step.transit.arrival_time.value;
-                  instruction += '<br>Exit: ' + step.transit.arrival_stop.name
-                }
-                else {
-                  endDate = new Date(currentDate.getTime() + step.duration.value*1000);
-                }
-                items.append('<tr class="item"><td class="time">'+ dateToTimeStr(currentDate)+'-'+dateToTimeStr(endDate)+'</td><td>'+instruction+ '</td></tr>');
-                currentDate = endDate;
+                routeInfo.steps.forEach(function (step) {
+                  try {
+                    var instruction = step.instructions;
+                    if (step.travel_mode === 'TRANSIT') {
+                      currentDate = step.transit.departure_time.value;
+                      endDate = step.transit.arrival_time.value;
+                      instruction +=
+                        '<br>Exit: ' + step.transit.arrival_stop.name;
+                    } else {
+                      endDate = new Date(
+                        currentDate.getTime() + step.duration.value * 1000
+                      );
+                    }
+                    items.append(
+                      '<tr class="item"><td class="time">' +
+                        dateToTimeStr(currentDate) +
+                        '-' +
+                        dateToTimeStr(endDate) +
+                        '</td><td>' +
+                        instruction +
+                        '</td></tr>'
+                    );
+                    currentDate = endDate;
+                  } catch (ev) {
+                    console.log('Error while generating instruction', step);
+                  }
+                });
+                me.$mountPoint.find('.state_route').append(items);
               }
-              catch (ev) {
-                console.log('Error while generating instruction', step );
-              }
-            })
-            me.$mountPoint.find('.state_route').append(items);
+
+              setRefreshTime(me);
+            }
+          } else {
+            var msg = 'Directions request failed due to ' + status;
+            me.$mountPoint.find('.state_route').html(msg);
+            console.log(msg);
           }
-
-          setRefreshTime(me)
         }
-      } else {
-        var msg = 'Directions request failed due to ' + status;
-        me.$mountPoint.find('.state_route').html(msg);
-        console.log(msg);
-      }
+      );
+    }
+  }
+
+  function dateToTimeStr(val) {
+    return moment(val).format('HH:mm');
+  }
+  function nowInWindow(me) {
+    if (!me.refreshWindows) return true;
+    var now = moment();
+    var year = now.year();
+    var month = now.month();
+    var day = now.date();
+    var hours = now.hours();
+    var minutes = now.minutes();
+    var found = me.refreshWindows.find(function (refreshWindow) {
+      var startMoment = moment([
+        year,
+        month,
+        day,
+        refreshWindow.startHour,
+        refreshWindow.startMinute,
+      ]);
+      var stopMoment = moment([
+        year,
+        month,
+        day,
+        refreshWindow.stopHour,
+        refreshWindow.stopMinute,
+      ]);
+      return now.isBetween(startMoment, stopMoment, 'minute', '[]');
     });
+    console.log('in window: ', found);
+    return found;
   }
-}
 
-function dateToTimeStr(val) {
-  return moment(val).format('HH:mm');
-}
-function nowInWindow(me) {
-  if (!me.refreshWindows) return true;
-  var now=moment();
-  var year=now.year();
-  var month=now.month();
-  var day=now.date();
-  var hours = now.hours();
-  var minutes = now.minutes();
-  var found = me.refreshWindows.find(function(refreshWindow) {
-    var startMoment=moment([year, month, day, refreshWindow.startHour, refreshWindow.startMinute]);
-    var stopMoment=moment([year, month, day, refreshWindow.stopHour, refreshWindow.stopMinute]);
-    return now.isBetween(startMoment, stopMoment,'minute','[]')
-  })
-  console.log('in window: ', found);
-  return found
-}
-
-function handlePosDevice(me, pos) {
-//  console.log(pos); 
-  var coordinates=getCoordinates(pos.Data);
-  if(coordinates) {
-    me.pointA = coordinates;
-    if(me.map) {//if we have a map, update it
-      me.map.setCenter(me.pointA);
-      if(me.marker) me.marker.setPosition(me.pointA);
-      setRefreshTime(me);
-    }
-  }
-}
-
-function handleDestDevice(me, pos) {
-  var coordinates=getCoordinates(pos.Data);
-  if(coordinates) {
-    me.pointB = coordinates;
-    me.showRoute=true;
-    me.directionsService = new google.maps.DirectionsService;
-
-    if(me.map) {//if we have a map, update it
-      refresh(me);
+  function handlePosDevice(me, pos) {
+    //  console.log(pos);
+    var coordinates = getCoordinates(pos.Data);
+    if (coordinates) {
+      me.pointA = coordinates;
+      if (me.map) {
+        //if we have a map, update it
+        me.map.setCenter(me.pointA);
+        if (me.marker) me.marker.setPosition(me.pointA);
+        setRefreshTime(me);
+      }
     }
   }
 
-}
+  function handleDestDevice(me, pos) {
+    var coordinates = getCoordinates(pos.Data);
+    if (coordinates) {
+      me.pointB = coordinates;
+      me.showRoute = true;
+      me.directionsService = new google.maps.DirectionsService();
 
-
-function getCoordinates(data) {
-  if (typeof data!=='string') {
-    console.error('Coordinates device is not a text device');
-    return false;
+      if (me.map) {
+        //if we have a map, update it
+        refresh(me);
+      }
+    }
   }
 
-  var coordinates = data.split(';');
-  if (coordinates.length!==2)
-    coordinates = data.split(',');
-  if (coordinates.length!==2)
-    coordinates = data.split(' ');
-  if (coordinates.length!==2) {
-    console.error("Coordinates device doesn't contain coordinate info");
-    return false;
+  function getCoordinates(data) {
+    if (typeof data !== 'string') {
+      console.error('Coordinates device is not a text device');
+      return false;
+    }
+
+    var coordinates = data.split(';');
+    if (coordinates.length !== 2) coordinates = data.split(',');
+    if (coordinates.length !== 2) coordinates = data.split(' ');
+    if (coordinates.length !== 2) {
+      console.error("Coordinates device doesn't contain coordinate info");
+      return false;
+    }
+    return new google.maps.LatLng(
+      parseFloat(coordinates[0]),
+      parseFloat(coordinates[1])
+    );
   }
-   return new google.maps.LatLng(parseFloat(coordinates[0]), parseFloat(coordinates[1]));
 
-}
+  function setRefreshTime(me) {
+    me.$mountPoint.find('.state_refresh_time').html(moment().format('LT'));
+  }
 
-function setRefreshTime(me) {
-  me.$mountPoint.find('.state_refresh_time').html(moment().format('LT'));
-}
-
-Dashticz.register(DT_googlemaps);
-}(Dashticz));
+  Dashticz.register(DT_googlemaps);
+})(Dashticz);

@@ -84,9 +84,7 @@ var DashticzLayoutEditor = (function () {
       /* An empty grid is a valid Wizard starting point. Only fail when a
          rendered grid item cannot be mapped back to a safe block definition. */
       if (gridCollectionError) {
-        alert(
-          _t('invalid_grid_blocks')
-        );
+        alert(_t('invalid_grid_blocks'));
         gridMode = false;
         editingScreen = null;
         return;
@@ -100,10 +98,7 @@ var DashticzLayoutEditor = (function () {
       _finishActivation();
       return;
     }
-    if (
-      typeof isCustomConfigMode === 'function' &&
-      !isCustomConfigMode()
-    ) {
+    if (typeof isCustomConfigMode === 'function' && !isCustomConfigMode()) {
       /* Wizard mode must also be able to bootstrap a completely empty screen. */
       convertCurrentScreenToGrid(false, 'wizard').done(function () {
         try {
@@ -119,7 +114,8 @@ var DashticzLayoutEditor = (function () {
       return;
     }
 
-    var managedColumnRe = /^(de|we|le)_s\d+_col\d+$|^(de|we|le)_col\d+$|^col_\d+$/;
+    var managedColumnRe =
+      /^(de|we|le)_s\d+_col\d+$|^(de|we|le)_col\d+$|^col_\d+$/;
     var isStandby = _activeScreenTarget() === 'standby';
     var $managedColumns = $screen.find('[data-colindex]').filter(function () {
       var key = String($(this).attr('data-colindex'));
@@ -128,9 +124,7 @@ var DashticzLayoutEditor = (function () {
     });
 
     if (!$managedColumns.length) {
-      alert(
-        _t('no_editable_screen')
-      );
+      alert(_t('no_editable_screen'));
       return;
     }
 
@@ -302,7 +296,8 @@ var DashticzLayoutEditor = (function () {
       return false;
     }
 
-    var managedColumnRe = /^(de|we|le)_s\d+_col\d+$|^(de|we|le)_col\d+$|^col_\d+$/;
+    var managedColumnRe =
+      /^(de|we|le)_s\d+_col\d+$|^(de|we|le)_col\d+$|^col_\d+$/;
     var isStandby = targetKey === 'standby';
     var $managedColumns = $screen.find('[data-colindex]').filter(function () {
       var key = String($(this).attr('data-colindex'));
@@ -370,7 +365,9 @@ var DashticzLayoutEditor = (function () {
       reference: reference,
       widgetId: entry.kind === 'widget' ? entry.widgetId : null,
       definition:
-        entry.kind === 'separator' ? { type: 'blocktitle', title: entry.name } : {},
+        entry.kind === 'separator'
+          ? { type: 'blocktitle', title: entry.name }
+          : {},
       name: entry.name || '',
       height: null,
       // Cancel removes a pending item outright instead of reverting its
@@ -401,10 +398,17 @@ var DashticzLayoutEditor = (function () {
       var gridHeight = Math.max(
         minimumHeight,
         Math.ceil(
-          (pixelHeight + gridConfig.gap) / (gridConfig.rowHeight + gridConfig.gap)
+          (pixelHeight + gridConfig.gap) /
+            (gridConfig.rowHeight + gridConfig.gap)
         )
       );
-      var grid = _firstFreeGridPosition(items, 1, gridWidth, gridHeight, gridColumns);
+      var grid = _firstFreeGridPosition(
+        items,
+        1,
+        gridWidth,
+        gridHeight,
+        gridColumns
+      );
       item.grid = grid;
       item.originalGrid = $.extend({}, grid);
       item.width = grid.w;
@@ -449,7 +453,8 @@ var DashticzLayoutEditor = (function () {
           ? 'fas fa-divide'
           : 'fas fa-microchip';
     var classes =
-      'mh dt_block transbg dle-pending-block' + (widthClass ? ' ' + widthClass : '');
+      'mh dt_block transbg dle-pending-block' +
+      (widthClass ? ' ' + widthClass : '');
     return (
       '<div class="' +
       classes +
@@ -554,7 +559,9 @@ var DashticzLayoutEditor = (function () {
       return 'standby';
     }
     if ($('.screenstandby:visible').length) return 'standby';
-    var $active = $('.dt-container .screen.swiper-slide-active[data-screenindex]');
+    var $active = $(
+      '.dt-container .screen.swiper-slide-active[data-screenindex]'
+    );
     if (!$active.length) {
       $active = $('.dt-container .screen[data-screenindex]:visible').first();
     }
@@ -574,9 +581,7 @@ var DashticzLayoutEditor = (function () {
       return $('.screenstandby').first();
     }
     var num = _activeScreenPayload();
-    var $byIndex = $(
-      '.dt-container .screen[data-screenindex="' + num + '"]'
-    );
+    var $byIndex = $('.dt-container .screen[data-screenindex="' + num + '"]');
     if ($byIndex.length) return $byIndex.first();
     var $active = $('.dt-container .screen.swiper-slide-active');
     if ($active.length) return $active;
@@ -617,18 +622,11 @@ var DashticzLayoutEditor = (function () {
       return deferred.promise();
     }
     if (!conversion.empty && window.innerWidth < 768) {
-      alert(
-        _t('conversion_width')
-      );
+      alert(_t('conversion_width'));
       deferred.reject();
       return deferred.promise();
     }
-    if (
-      !skipConfirmation &&
-      !window.confirm(
-        _t('conversion_confirm')
-      )
-    ) {
+    if (!skipConfirmation && !window.confirm(_t('conversion_confirm'))) {
       deferred.reject();
       return deferred.promise();
     }
@@ -659,13 +657,32 @@ var DashticzLayoutEditor = (function () {
     return deferred.promise();
   }
 
+  // A freshly converted screen has no grid config of its own yet, so it
+  // should start out following the dashboard-wide Settings > Weergave
+  // default (like any other new grid screen) rather than pinning today's
+  // value - hence building against that default here, and always sending
+  // pinGridColumns/pinRowHeight: false below.
+  function _defaultGridColumns() {
+    return typeof settings !== 'undefined' && settings.gridColumns > 0
+      ? Number(settings.gridColumns)
+      : 24;
+  }
+
+  function _defaultRowHeight() {
+    return typeof settings !== 'undefined' && settings.rowHeight > 0
+      ? Number(settings.rowHeight)
+      : 20;
+  }
+
   function _emptyGridConversion(screenNumber) {
     return {
       empty: true,
       payload: {
         screen: screenNumber,
-        gridColumns: 24,
-        rowHeight: 20,
+        gridColumns: _defaultGridColumns(),
+        rowHeight: _defaultRowHeight(),
+        pinGridColumns: false,
+        pinRowHeight: false,
         gap: 5,
         mobileLayout: 'stack',
         items: [],
@@ -674,8 +691,8 @@ var DashticzLayoutEditor = (function () {
   }
 
   function _buildColumnGridConversion($screen, screenNumber, allowEmpty) {
-    var gridColumns = 24;
-    var rowHeight = 20;
+    var gridColumns = _defaultGridColumns();
+    var rowHeight = _defaultRowHeight();
     var gap = 5;
     var screenRect = $screen[0].getBoundingClientRect();
     var converted = [];
@@ -783,10 +800,7 @@ var DashticzLayoutEditor = (function () {
             width12,
             rect.height
           );
-          if (
-            !create &&
-            (!safeReference || screenNumber === 'standby')
-          ) {
+          if (!create && (!safeReference || screenNumber === 'standby')) {
             error = _t('conversion_unsafe').replace(
               '{block}',
               safeReference || index + 1
@@ -813,6 +827,8 @@ var DashticzLayoutEditor = (function () {
         screen: screenNumber,
         gridColumns: gridColumns,
         rowHeight: rowHeight,
+        pinGridColumns: false,
+        pinRowHeight: false,
         gap: gap,
         mobileLayout: 'stack',
         items: converted,
@@ -870,8 +886,7 @@ var DashticzLayoutEditor = (function () {
   ) {
     var rawDeviceReference =
       typeof reference === 'number' ||
-      (typeof reference === 'string' &&
-        /^\d+(?:_\d+)?$/.test(reference));
+      (typeof reference === 'string' && /^\d+(?:_\d+)?$/.test(reference));
     if (resolved && resolved.kind === 'device' && rawDeviceReference) {
       return {
         kind: 'device',
@@ -887,19 +902,13 @@ var DashticzLayoutEditor = (function () {
     return {
       kind: 'inline',
       name:
-        definition.title ||
-        safeReference ||
-        definition.type ||
-        'Grid block',
+        definition.title || safeReference || definition.type || 'Grid block',
       propsJson: JSON.stringify(props),
     };
   }
 
   function _isGridSerializable(value) {
-    if (
-      typeof value === 'string' ||
-      typeof value === 'boolean'
-    ) {
+    if (typeof value === 'string' || typeof value === 'boolean') {
       return true;
     }
     if (typeof value === 'number') return isFinite(value);
@@ -1102,13 +1111,46 @@ var DashticzLayoutEditor = (function () {
       definition = { idx: ref };
     }
 
-    if (
-      key &&
-      String(definition.type || '').toLowerCase() === 'blocktitle'
-    ) {
+    if (key && String(definition.type || '').toLowerCase() === 'blocktitle') {
       return {
         definition: definition,
         kind: 'separator',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (
+      key &&
+      !definition.type &&
+      typeof definition.htmlfile === 'string' &&
+      definition.htmlfile !== ''
+    ) {
+      // Matches js/components/html.js's own canHandle() and js/deviceeditor.js's
+      // _specialFromReference(): dispatched purely on a truthy htmlfile, with
+      // no `type` of its own. Without this, an HTML block falls through to
+      // the numeric-idx match below (which its non-numeric key never
+      // satisfies), so it never got the config (cog) control here - see #168.
+      return {
+        definition: definition,
+        kind: 'html',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (key && String(definition.type || '').toLowerCase() === 'lms') {
+      // Lyrion Music Server "Now Playing" block (js/components/lms.js),
+      // dispatched on type: 'lms' like the separator/blocktitle check above.
+      return {
+        definition: definition,
+        kind: 'lms',
         reference: key,
         widgetId: null,
         idx: null,
@@ -1252,7 +1294,10 @@ var DashticzLayoutEditor = (function () {
     ) {
       return 'camera';
     }
-    if (Array.isArray(definition.tracks) || definition.type === 'streamplayer') {
+    if (
+      Array.isArray(definition.tracks) ||
+      definition.type === 'streamplayer'
+    ) {
       return 'radio';
     }
     var typeMap = {
@@ -1305,13 +1350,11 @@ var DashticzLayoutEditor = (function () {
     if (item.height !== null) entry.height = item.height;
     if (item.widgetId === 'garbage') {
       entry.displayTitle =
-        (
-          typeof language !== 'undefined' &&
+        (typeof language !== 'undefined' &&
           language &&
           language.settings &&
           language.settings.widgeteditor &&
-          language.settings.widgeteditor.garbage_title
-        ) ||
+          language.settings.widgeteditor.garbage_title) ||
         'Garbage';
       _copyDefinedWidgetProperties(entry, definition, ['maxitems', 'maxdays']);
     }
@@ -1319,9 +1362,7 @@ var DashticzLayoutEditor = (function () {
     if (item.widgetId === 'weather') {
       entry.provider =
         definition.widget_provider ||
-        (definition.type === 'wunderground'
-          ? 'wunderground'
-          : 'openweather');
+        (definition.type === 'wunderground' ? 'wunderground' : 'openweather');
       _copyDefinedWidgetProperties(entry, definition, [
         'showRain',
         'showDescription',
@@ -1355,8 +1396,7 @@ var DashticzLayoutEditor = (function () {
       entry.imageUrl = definition.imageUrl || '';
       if (definition.videoUrl) entry.videoUrl = definition.videoUrl;
     } else if (item.widgetId === 'alarmmeldingen') {
-      entry.rss =
-        definition.rss || 'https://www.alarmeringen.nl/feeds/all.rss';
+      entry.rss = definition.rss || 'https://www.alarmeringen.nl/feeds/all.rss';
       if (definition.filter) entry.filter = definition.filter;
     } else if (item.widgetId === 'xmltvguide') {
       entry.xmltvurl = definition.xmltvurl || settings['xmltv_url'] || '';
@@ -1494,10 +1534,7 @@ var DashticzLayoutEditor = (function () {
     var height =
       gridEditorRows * gridConfig.rowHeight +
       Math.max(0, gridEditorRows - 1) * gridConfig.gap;
-    $canvas[0].style.setProperty(
-      '--dle-grid-editor-min-height',
-      height + 'px'
-    );
+    $canvas[0].style.setProperty('--dle-grid-editor-min-height', height + 'px');
   }
 
   function _decorateItems() {
@@ -1533,15 +1570,21 @@ var DashticzLayoutEditor = (function () {
         !item.isPending &&
         (item.kind === 'device' ||
           item.kind === 'widget' ||
-          item.kind === 'separator');
-      var configureLabel = item.kind === 'widget'
-        ? _t('configure_widget')
-        : _t('configure_device');
+          item.kind === 'separator' ||
+          item.kind === 'html' ||
+          item.kind === 'lms');
+      var configureLabel =
+        item.kind === 'widget'
+          ? _t('configure_widget')
+          : _t('configure_device');
       var topLeftControl = isConfigurable
         ? '<button type="button" class="dle-config-button" title="' +
           _escapeHtml(configureLabel) +
-          '" aria-label="' + _escapeHtml(configureLabel) + ' ' +
-          _escapeHtml(item.name) + '"><i class="fas fa-cog" aria-hidden="true"></i></button>'
+          '" aria-label="' +
+          _escapeHtml(configureLabel) +
+          ' ' +
+          _escapeHtml(item.name) +
+          '"><i class="fas fa-cog" aria-hidden="true"></i></button>'
         : '<span class="dle-drag-icon" aria-hidden="true"><i class="fas fa-arrows-alt"></i></span>';
       var overlay =
         '<div class="dle-overlay" data-dle-id="' +
@@ -1631,7 +1674,10 @@ var DashticzLayoutEditor = (function () {
   function _openItemConfig(item) {
     if (!item) return;
     if (
-      (item.kind === 'device' || item.kind === 'separator') &&
+      (item.kind === 'device' ||
+        item.kind === 'separator' ||
+        item.kind === 'html' ||
+        item.kind === 'lms') &&
       item.reference
     ) {
       DT_function.loadDTScript('js/deviceeditor.js').then(function () {
@@ -1668,11 +1714,7 @@ var DashticzLayoutEditor = (function () {
     var remaining = _orderedItems().length;
     $toolbar
       .find('.dle-toolbar-help')
-      .text(
-        remaining
-          ? _t('removed_one')
-          : _t('removed_all')
-      );
+      .text(remaining ? _t('removed_one') : _t('removed_all'));
   }
 
   function _startDrag(event, item, captureElement) {
@@ -1853,10 +1895,7 @@ var DashticzLayoutEditor = (function () {
     var rect = $canvas[0].getBoundingClientRect();
     var columns = Math.max(1, parseInt(gridConfig.gridColumns, 10) || 24);
     var gap = Math.max(0, parseFloat(gridConfig.gap) || 0);
-    var cellWidth = Math.max(
-      1,
-      (rect.width - gap * (columns - 1)) / columns
-    );
+    var cellWidth = Math.max(1, (rect.width - gap * (columns - 1)) / columns);
     var rowHeight = Math.max(1, parseFloat(gridConfig.rowHeight) || 20);
     return {
       rect: rect,
@@ -1875,8 +1914,7 @@ var DashticzLayoutEditor = (function () {
       ) + 1;
     var y =
       Math.round(
-        (clientY - metrics.rect.top - pointerState.offsetY) /
-          metrics.rowStride
+        (clientY - metrics.rect.top - pointerState.offsetY) / metrics.rowStride
       ) + 1;
     x = Math.max(1, Math.min(metrics.columns - item.grid.w + 1, x));
     y = Math.max(1, y);
@@ -1901,13 +1939,9 @@ var DashticzLayoutEditor = (function () {
       start.w +
       Math.round((clientX - pointerState.startX) / metrics.columnStride);
     var height =
-      start.h +
-      Math.round((clientY - pointerState.startY) / metrics.rowStride);
+      start.h + Math.round((clientY - pointerState.startY) / metrics.rowStride);
     // Grid blocks must remain large enough to expose their editor controls.
-    width = Math.max(
-      MIN_GRID_WIDTH,
-      Math.min(metrics.columns - x + 1, width)
-    );
+    width = Math.max(MIN_GRID_WIDTH, Math.min(metrics.columns - x + 1, width));
     height = Math.max(_minimumGridHeight(item), Math.min(1000, height));
     _ensureGridCanvasRows(start.y + height + 8);
     _applyGridPosition(item, {
@@ -2138,7 +2172,10 @@ var DashticzLayoutEditor = (function () {
       })
       .done(function () {
         $toolbar.find('.dle-toolbar-help').text(_t('saved_reloading'));
-        $save.removeClass('btn-primary').addClass('btn-success').text(_t('saved'));
+        $save
+          .removeClass('btn-primary')
+          .addClass('btn-success')
+          .text(_t('saved'));
         setTimeout(function () {
           window.location.reload();
         }, 700);
@@ -2169,6 +2206,13 @@ var DashticzLayoutEditor = (function () {
       _restoreSession(session);
 
       if (session.gridMode) {
+        // Only pin gridColumns/rowHeight explicitly on this screen when the
+        // session's current value actually diverges from the dashboard-wide
+        // default - a plain save that never touched either just keeps
+        // following Settings > Weergave instead of freezing today's value.
+        var pinGridColumns =
+          session.gridConfig.gridColumns !== _defaultGridColumns();
+        var pinRowHeight = session.gridConfig.rowHeight !== _defaultRowHeight();
         return {
           gridMode: true,
           screenNumber: session.screenNumber,
@@ -2176,10 +2220,15 @@ var DashticzLayoutEditor = (function () {
             screen: session.screenNumber,
             gridColumns: session.gridConfig.gridColumns,
             rowHeight: session.gridConfig.rowHeight,
+            pinGridColumns: pinGridColumns,
+            pinRowHeight: pinRowHeight,
             gap: session.gridConfig.gap,
             mobileLayout: session.gridConfig.mobileLayout,
             items: _orderedItems().map(function (item) {
-              var entry = { ref: item.reference, grid: $.extend({}, item.grid) };
+              var entry = {
+                ref: item.reference,
+                grid: $.extend({}, item.grid),
+              };
               if (item.isPending) {
                 var create = _gridCreateForPendingItem(item);
                 if (create) entry.create = create;
@@ -2348,10 +2397,7 @@ var DashticzLayoutEditor = (function () {
       item.wrapper.style.removeProperty('--dle-column-span');
       if (gridMode) {
         item.grid = $.extend({}, item.originalGrid);
-        DashticzGridLayout.applyGridPosition(
-          item.wrapper,
-          item.grid
-        );
+        DashticzGridLayout.applyGridPosition(item.wrapper, item.grid);
       }
       item.originalBlocks.forEach(function (original) {
         var block = original.block;
@@ -2386,15 +2432,10 @@ var DashticzLayoutEditor = (function () {
     // reference transfer above handles the normal path; this screen-level
     // cleanup is a final safeguard against controls left on a refreshed tile.
     if ($editingScreen && $editingScreen.length) {
-      $editingScreen
-        .find('.dle-overlay')
-        .off('.layouteditor')
-        .remove();
+      $editingScreen.find('.dle-overlay').off('.layouteditor').remove();
       $editingScreen
         .find('.dle-block, .dle-dragging, .dle-drop-before, .dle-drop-after')
-        .removeClass(
-          'dle-block dle-dragging dle-drop-before dle-drop-after'
-        );
+        .removeClass('dle-block dle-dragging dle-drop-before dle-drop-after');
     }
 
     originalColumns.forEach(function (column) {
@@ -2408,7 +2449,8 @@ var DashticzLayoutEditor = (function () {
     if ($canvas) $canvas.removeClass('dle-canvas');
     if ($canvas) $canvas.removeClass('dle-grid-canvas');
     if ($canvas) $canvas[0].style.removeProperty('--dle-grid-column-stride');
-    if ($canvas) $canvas[0].style.removeProperty('--dle-grid-editor-min-height');
+    if ($canvas)
+      $canvas[0].style.removeProperty('--dle-grid-editor-min-height');
     if ($editingScreen) $editingScreen.removeClass('dle-grid-screen-editing');
   }
 

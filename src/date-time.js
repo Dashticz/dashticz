@@ -117,9 +117,10 @@ function momentCompat(input, format, locale, strict) {
     strict = locale;
     locale = undefined;
   }
-  var result = format && format !== 'X'
-    ? dayjs(input, format, resolveLocale(locale), strict)
-    : dayjs(input);
+  var result =
+    format && format !== 'X'
+      ? dayjs(input, format, resolveLocale(locale), strict)
+      : dayjs(input);
   return locale ? result.locale(resolveLocale(locale)) : result;
 }
 

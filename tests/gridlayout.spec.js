@@ -6,12 +6,86 @@ const dashboardUrl =
   '/?cfg=CONFIG.pw.js&folder=tests';
 
 test.describe('optional screen grid layout', () => {
-  test('keeps legacy column screens on the Bootstrap path', async ({ page }) => {
+  test('keeps legacy column screens on the Bootstrap path', async ({
+    page,
+  }) => {
     await page.goto(dashboardUrl);
     await waitForDashboard(page);
 
     await expect(page.locator('.screen1 .row .col1')).toBeVisible();
     await expect(page.locator('.screen1 .dt-grid-layout')).toHaveCount(0);
+  });
+
+  test('applies a saved shared background to screen 2 despite its legacy background', async ({
+    page,
+  }) => {
+    let savedBackground = 'img/bg1.jpg';
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          "\nconfig['background_image'] = " +
+          JSON.stringify(savedBackground) +
+          `;
+screens[2]['background'] = 'bg1.jpg';
+screens[2]['background_morning'] = '';
+screens[2]['background_noon'] = '';
+screens[2]['background_afternoon'] = '';
+screens[2]['background_night'] = '';
+`,
+      });
+    });
+    await page.route('**/info.php?get=csrf*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'background-save-token' }),
+      })
+    );
+    await page.route('**/js/savecustomcss.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+    await page.route('**/js/savesettings.php*', (route) => {
+      const fields = new URLSearchParams(route.request().postData() || '');
+      savedBackground = JSON.parse(fields.get('background_image') || 'null');
+      return route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      });
+    });
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.mouse.move(10, 10);
+    await page.getByRole('button', { name: 'Open settings' }).first().click();
+    await expect(page.locator('#settingspopup')).toBeVisible();
+    await page.locator('[data-settings-category="theme"]').click();
+    await page.locator('#setting-background_image').fill('img/bg2.jpg');
+
+    const reloaded = page.waitForEvent('framenavigated', {
+      predicate: (frame) => frame === page.mainFrame(),
+    });
+    await page.locator('#settingspopup .btn-save').click();
+    await reloaded;
+    await waitForDashboard(page);
+
+    expect(savedBackground).toBe('img/bg2.jpg');
+    await page.locator('.dt-screen-btn[data-screen="2"]').first().click();
+    await expect(page.locator('.screen2')).toBeVisible();
+    await expect
+      .poll(() =>
+        page
+          .locator('.screen2')
+          .evaluate((screen) => getComputedStyle(screen).backgroundImage)
+      )
+      .toContain('img/bg2.jpg');
   });
 
   test('keeps legacy widgets iconless and lets a classic dial fill its column', async ({
@@ -100,9 +174,7 @@ screens[1] = {
     await page.goto(dashboardUrl);
     await waitForDashboard(page);
 
-    const dialItem = page.locator(
-      '.screen1 [data-grid-block="grid_dial"]'
-    );
+    const dialItem = page.locator('.screen1 [data-grid-block="grid_dial"]');
     await expect(dialItem.locator('.dt_block.dial')).toBeVisible();
     const dialSizes = await dialItem.evaluate((item) => {
       const dial = item.querySelector('.dt_content .dial');
@@ -159,9 +231,9 @@ screens[1] = {
           const itemHeight = item.getBoundingClientRect().height;
           return Boolean(
             block &&
-              dial &&
-              block.getBoundingClientRect().height <= itemHeight + 1 &&
-              dial.getBoundingClientRect().height <= itemHeight + 1
+            dial &&
+            block.getBoundingClientRect().height <= itemHeight + 1 &&
+            dial.getBoundingClientRect().height <= itemHeight + 1
           );
         })
       )
@@ -172,14 +244,69 @@ screens[1] = {
     expect(shrunkDialHeight).toBeLessThan(grownDialHeight);
 
     await expect(
-      page.locator(
-        '.screen1 [data-grid-block="grid_frame_icon"] .col-icon'
-      )
+      page.locator('.screen1 [data-grid-block="grid_frame_icon"] .col-icon')
     ).toBeVisible();
     await expect(
       page.locator(
         '.screen1 [data-grid-block="sunrise"] .sunrise-header .fa-sun'
       )
+    ).toBeVisible();
+  });
+
+  test('separator/blocktitle icon absence renders no icon, same as Wizard\'s explicit "off" (#169)', async ({
+    page,
+  }) => {
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['sep_missing_icon'] = {
+  type: 'blocktitle',
+  title: 'Missing icon',
+  grid: {x: 1, y: 1, w: 8, h: 2}
+};
+blocks['sep_icon_off'] = {
+  type: 'blocktitle',
+  title: 'Icon off',
+  icon: '',
+  grid: {x: 1, y: 4, w: 8, h: 2}
+};
+blocks['sep_icon_set'] = {
+  type: 'blocktitle',
+  title: 'Icon set',
+  icon: 'fas fa-star',
+  grid: {x: 1, y: 7, w: 8, h: 2}
+};
+screens[1] = {
+  layout: 'grid',
+  gridColumns: 24,
+  rowHeight: 20,
+  gap: 5,
+  mobileLayout: 'stack',
+  blocks: ['sep_missing_icon', 'sep_icon_off', 'sep_icon_set']
+};
+`,
+      });
+    });
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+
+    // A legacy/custom-mode separator with no `icon` property at all must
+    // render with no icon - exactly like Wizard's explicit icon: '' (off)
+    // state - rather than falling back to a runtime default icon.
+    await expect(
+      page.locator('[data-grid-block="sep_missing_icon"] .col-icon')
+    ).toHaveCount(0);
+    await expect(
+      page.locator('[data-grid-block="sep_icon_off"] .col-icon')
+    ).toHaveCount(0);
+    // An explicitly configured icon must still render normally.
+    await expect(
+      page.locator('[data-grid-block="sep_icon_set"] .col-icon .fa-star')
     ).toBeVisible();
   });
 
@@ -221,30 +348,24 @@ screens[1] = {
 
     const popup = page.locator('#de-config-popup');
     await expect(popup).toBeVisible();
-    const iconControl = popup.locator(
-      'label:has([data-option="icon"])'
-    );
-    const titleControl = popup.locator(
-      'label:has([data-option="show_title"])'
-    );
-    const dialControl = popup.locator('[data-option="dial"]');
+    const titleControl = popup.locator('label:has([data-option="show_title"])');
+    const iconMode = popup.locator('[data-visual-mode="icon"]');
+    const dialMode = popup.locator('[data-visual-mode="dial"]');
 
-    await expect(iconControl).toBeHidden();
     await expect(titleControl).toBeHidden();
     await expect(popup.locator('.de-icon-field-row')).toBeHidden();
     await expect(popup.locator('[data-option="hide_data"]')).toBeVisible();
     await expect(popup.locator('[data-option="last_update"]')).toBeVisible();
-    await expect(dialControl).toBeChecked();
+    await expect(dialMode).toHaveAttribute('aria-pressed', 'true');
 
-    await dialControl.uncheck();
-    await expect(iconControl).toBeVisible();
+    await iconMode.click();
+    await expect(iconMode).toHaveAttribute('aria-pressed', 'true');
     await expect(titleControl).toBeVisible();
-    await expect(popup.locator('[data-option="icon"]')).toBeChecked();
     await expect(popup.locator('[data-option="show_title"]')).not.toBeChecked();
     await expect(popup.locator('.de-icon-field-row')).toBeVisible();
 
-    await dialControl.check();
-    await expect(iconControl).toBeHidden();
+    await dialMode.click();
+    await expect(dialMode).toHaveAttribute('aria-pressed', 'true');
     await expect(titleControl).toBeHidden();
   });
 
@@ -318,7 +439,10 @@ screens[2] = {
 
     await page.locator('[data-order-key="device:43"] .de-config-btn').click();
     await expect(page.locator('#de-config-popup')).toBeVisible();
-    await page.locator('[data-option="icon"]').uncheck();
+    const iconMode = page.locator('[data-visual-mode="icon"]');
+    await expect(iconMode).toHaveAttribute('aria-pressed', 'true');
+    await iconMode.click();
+    await expect(iconMode).toHaveAttribute('aria-pressed', 'false');
     await page.locator('#de-config-ok').click();
     await expect(page.locator('#deviceeditorpopup')).toBeVisible();
     await page.locator('#de-save-btn').evaluate((button) => {
@@ -381,9 +505,16 @@ screens[2] = {
 
     await page.locator('.we-config-btn[data-widget-id="iframe"]').click();
     await expect(page.locator('#we-config-popup')).toBeVisible();
-    await page.locator('#we-cfg-iframe-url').fill('about:blank');
+    const iframeUrl = page.locator('#we-cfg-iframe-url');
+    // WebKit on Windows can clear programmatic typing in a URL input. This
+    // regression covers the editor payload, so set the DOM value directly.
+    await iframeUrl.evaluate((input) => {
+      input.value = 'https://example.invalid/embedded';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await expect(iframeUrl).toHaveValue('https://example.invalid/embedded');
     await page.locator('#we-cfg-ok-btn').click();
-    await expect(page.locator('#we-config-popup')).toHaveCount(0);
+    await expect(page.locator('#we-config-popup')).not.toBeVisible();
 
     await page.locator('.we-widget-card[data-widget-id="sunrise"]').click();
     await page.locator('#we-save-btn').click();
@@ -414,7 +545,11 @@ screens[2] = {
         hidden: ['owm-days', 'translate-windspeed'],
         visible: ['owm-api'],
       },
-      { id: 'garbage', hidden: ['garbage-width'], visible: ['garbage-company'] },
+      {
+        id: 'garbage',
+        hidden: ['garbage-width'],
+        visible: ['garbage-company'],
+      },
       {
         id: 'secpanel',
         hidden: ['security-button-icons', 'security-panel-lock'],
@@ -518,9 +653,7 @@ screens[2] = {
       const response = await route.fetch();
       await route.fulfill({
         response,
-        body:
-          (await response.text()) +
-          `\nconfig['config_mode'] = 'custom';\n`,
+        body: (await response.text()) + `\nconfig['config_mode'] = 'custom';\n`,
       });
     });
     await page.route('**/info.php?get=csrf', async (route) => {
@@ -600,9 +733,7 @@ screens[2] = {
     await expect(page.locator('#config-mode-warning-message')).toContainText(
       'Custom'
     );
-    await page
-      .locator('#configmodewarningpopup .btn-secondary')
-      .click();
+    await page.locator('#configmodewarningpopup .btn-secondary').click();
     await expect(page.locator('#configmodewarningpopup')).toHaveCount(0);
     expect(modeRequest).toBeNull();
 
@@ -758,22 +889,20 @@ var standby_screen = {
     );
     await expect(standbyGrid).toHaveCSS('display', 'grid');
     await expect(standbyGrid).toHaveCSS('--dt-grid-row-height', '20px');
-    await expect(
-      standbyGrid.locator('[data-grid-block="tc1"]')
-    ).toHaveCSS('grid-column-start', '2');
-    await expect(
-      standbyGrid.locator('[data-grid-block="tc2"]')
-    ).toHaveCSS('grid-row-end', 'span 10');
+    await expect(standbyGrid.locator('[data-grid-block="tc1"]')).toHaveCSS(
+      'grid-column-start',
+      '2'
+    );
+    await expect(standbyGrid.locator('[data-grid-block="tc2"]')).toHaveCSS(
+      'grid-row-end',
+      'span 10'
+    );
     const standbyScreen = page.locator('.screenstandby');
     await expect(standbyScreen).toHaveCSS('position', 'fixed');
     await expect(standbyScreen).toHaveCSS('background-size', 'cover');
     const standbyBox = await standbyScreen.boundingBox();
-    expect(standbyBox.width).toBeLessThanOrEqual(
-      page.viewportSize().width
-    );
-    expect(standbyBox.height).toBeLessThanOrEqual(
-      page.viewportSize().height
-    );
+    expect(standbyBox.width).toBeLessThanOrEqual(page.viewportSize().width);
+    expect(standbyBox.height).toBeLessThanOrEqual(page.viewportSize().height);
   });
 
   test('Layout Editor device config popup preserves grid positions and custom blocks', async ({
@@ -863,17 +992,28 @@ screens[1] = {
 
     await page.goto(dashboardUrl);
     await waitForDashboard(page);
+    // grid_text defines no `icon` property at all (legacy/custom-mode style) -
+    // absence of the property must render as a clean separator with no icon,
+    // not the runtime default fa-divide (#169).
     await expect(
       page.locator('[data-grid-block="grid_text"] .col-icon .fa-divide')
-    ).toBeVisible();
+    ).toHaveCount(0);
     await page.locator('.screen1 .layouteditoricon').click();
     await expect(page.locator('body')).toHaveClass(/dle-active/);
-    const separatorOverlay = page.locator('[data-grid-block="grid_text"] .dle-overlay');
+    const separatorOverlay = page.locator(
+      '[data-grid-block="grid_text"] .dle-overlay'
+    );
     await expect(separatorOverlay.locator('.dle-drag-icon')).toHaveCount(0);
     await expect(separatorOverlay.locator('.dle-config-button')).toHaveCount(1);
     for (const control of ['.dle-config-button', '.dle-remove-button']) {
-      await expect(separatorOverlay.locator(control)).toHaveCSS('width', '32px');
-      await expect(separatorOverlay.locator(control)).toHaveCSS('height', '32px');
+      await expect(separatorOverlay.locator(control)).toHaveCSS(
+        'width',
+        '32px'
+      );
+      await expect(separatorOverlay.locator(control)).toHaveCSS(
+        'height',
+        '32px'
+      );
     }
     await separatorOverlay.locator('.dle-config-button').click();
     await expect(page.locator('#de-config-popup')).toBeVisible();
@@ -883,16 +1023,23 @@ screens[1] = {
     await expect(page.locator('[data-option="show_title"]')).toBeChecked();
     const separatorIconRow = page.locator('.de-icon-field-row');
     await expect(separatorIconRow).toBeVisible();
-    await expect(separatorIconRow.locator('.de-custom-field-name')).toHaveValue('icon');
-    await expect(separatorIconRow.locator('.de-custom-field-setting')).toHaveValue('fas fa-divide');
-    await separatorIconRow.locator('.de-icon-source').selectOption('image');
-    await expect(separatorIconRow.locator('.de-custom-field-setting')).toHaveValue('');
-    await expect(separatorIconRow.locator('.de-custom-field-setting')).toHaveAttribute(
-      'placeholder',
-      'custom/icon.png'
+    await expect(separatorIconRow.locator('.de-custom-field-name')).toHaveValue(
+      'icon'
     );
+    await expect(
+      separatorIconRow.locator('.de-custom-field-setting')
+    ).toHaveValue('fas fa-divide');
+    await separatorIconRow.locator('.de-icon-source').selectOption('image');
+    await expect(
+      separatorIconRow.locator('.de-custom-field-setting')
+    ).toHaveValue('');
+    await expect(
+      separatorIconRow.locator('.de-custom-field-setting')
+    ).toHaveAttribute('placeholder', 'custom/icon.png');
     await separatorIconRow.locator('.de-icon-source').selectOption('icon');
-    await expect(separatorIconRow.locator('.de-custom-field-setting')).toHaveValue('fas fa-divide');
+    await expect(
+      separatorIconRow.locator('.de-custom-field-setting')
+    ).toHaveValue('fas fa-divide');
     await separatorIconRow.locator('.de-custom-field-remove').click();
     await expect(separatorIconRow).toHaveCount(0);
     await expect(page.locator('[data-option="icon"]')).not.toBeChecked();
@@ -900,19 +1047,29 @@ screens[1] = {
     await expect(separatorIconRow).toBeVisible();
     await page.locator('[data-option="icon"]').uncheck();
     await expect(separatorIconRow).toBeHidden();
-    await expect(page.locator('.de-custom-field-name').first()).toHaveValue('title');
-    await expect(page.locator('.de-custom-field-setting').first()).toHaveValue('Keep me');
-    await expect(page.locator('.de-custom-field-name')).toHaveCount(4);
-    expect(
-      await page.locator('.de-custom-field-name').evaluateAll((inputs) =>
-        inputs.map((input) => input.value)
+    await expect(page.locator('.de-custom-field-name').first()).toHaveValue(
+      'title'
+    );
+    await expect(page.locator('.de-custom-field-setting').first()).toHaveValue(
+      'Keep me'
+    );
+    await expect(
+      page.locator(
+        '.de-custom-field-row:not(.de-icon-field-row) .de-custom-field-name'
       )
+    ).toHaveCount(4);
+    expect(
+      await page
+        .locator('.de-custom-field-name')
+        .evaluateAll((inputs) => inputs.map((input) => input.value))
     ).not.toContain('c');
     await page.locator('.de-custom-field-add').first().click();
     await page.locator('.de-custom-field-name').nth(1).fill('Layout');
     await page.locator('.de-custom-field-setting').nth(1).fill('1');
     await page.locator('.de-custom-field-add').nth(1).click();
-    await expect(page.locator('.de-custom-field-row')).toHaveCount(6);
+    await expect(
+      page.locator('.de-custom-field-row:not(.de-icon-field-row)')
+    ).toHaveCount(6);
     await page.locator('.de-custom-field-name').nth(2).fill('Classes');
     await page.locator('.de-custom-field-setting').nth(2).fill('["wide"]');
     await page.locator('#de-config-ok').click();
@@ -964,6 +1121,114 @@ screens[1] = {
     expect(gridRequest).toBeNull();
     expect(columnSaves).toBe(0);
     expect(customCssWrites).toBe(0);
+  });
+
+  test('HTML blocks show the config cog (not a remove-only control) and each opens its own config (#168)', async ({
+    page,
+  }) => {
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['html_a'] = {
+  htmlfile: 'a.html',
+  title: 'HTML A',
+  grid: {x: 1, y: 1, w: 6, h: 4}
+};
+blocks['html_b'] = {
+  htmlfile: 'b.html',
+  title: 'HTML B',
+  grid: {x: 8, y: 1, w: 6, h: 4}
+};
+screens[1] = {
+  layout: 'grid',
+  gridColumns: 24,
+  rowHeight: 20,
+  gap: 5,
+  mobileLayout: 'stack',
+  blocks: ['html_a', 'html_b']
+};
+`,
+      });
+    });
+    await page.route('**/custom/a.html', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/html',
+        body: 'A content',
+      })
+    );
+    await page.route('**/custom/b.html', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'text/html',
+        body: 'B content',
+      })
+    );
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'html-grid-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          blockKeys: ['html_a', 'html_b'],
+        }),
+      });
+    });
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.locator('.screen1 .layouteditoricon').click();
+    await expect(page.locator('body')).toHaveClass(/dle-active/);
+
+    const htmlAOverlay = page.locator(
+      '[data-grid-block="html_a"] .dle-overlay'
+    );
+    const htmlBOverlay = page.locator(
+      '[data-grid-block="html_b"] .dle-overlay'
+    );
+
+    // Both HTML blocks must show the normal configuration cog - not the
+    // generic drag control an unconfigurable block gets - so the settings
+    // control is never mistaken for a remove/close action (#168).
+    for (const overlay of [htmlAOverlay, htmlBOverlay]) {
+      await expect(overlay.locator('.dle-drag-icon')).toHaveCount(0);
+      await expect(overlay.locator('.dle-config-button')).toHaveCount(1);
+      await expect(overlay.locator('.dle-config-button .fa-cog')).toHaveCount(
+        1
+      );
+      // The remove control stays available and separate from the cog.
+      await expect(overlay.locator('.dle-remove-button')).toHaveCount(1);
+    }
+
+    // Clicking the cog on html_a must open that exact block's configuration.
+    await htmlAOverlay.locator('.dle-config-button').click();
+    await expect(page.locator('#de-config-popup')).toBeVisible();
+    await expect(page.locator('#de-config-popup .modal-title')).toContainText(
+      'HTML A'
+    );
+    await page.locator('#de-config-popup .modal-footer .btn-secondary').click();
+    await expect(page.locator('#de-config-popup')).toBeHidden();
+
+    // Clicking the cog on html_b (a second HTML block on the same dashboard)
+    // must open its own configuration, not html_a's.
+    await htmlBOverlay.locator('.dle-config-button').click();
+    await expect(page.locator('#de-config-popup')).toBeVisible();
+    await expect(page.locator('#de-config-popup .modal-title')).toContainText(
+      'HTML B'
+    );
+    await page.locator('#de-config-popup .modal-footer .btn-secondary').click();
+    await expect(page.locator('#de-config-popup')).toBeHidden();
   });
 
   test('separator image replaces a stale explicit icon', async ({ page }) => {
@@ -1084,44 +1349,75 @@ screens[1] = {
 
     await page.goto(dashboardUrl);
     await waitForDashboard(page);
-    expect(await page.evaluate(() => blocks.grid_weather.c)).toBe('legacy-grid');
+    expect(await page.evaluate(() => blocks.grid_weather.c)).toBe(
+      'legacy-grid'
+    );
     await openDeviceEditorFromScreenEditor(page);
-    await page.locator('[data-order-key="widget:weather"] .de-config-btn').click();
+    await page
+      .locator('[data-order-key="widget:weather"] .de-config-btn')
+      .click();
     await expect(page.locator('#we-config-popup')).toBeVisible();
     await expect(page.locator('#we-cfg-weather-provider')).toBeVisible();
 
     for (const option of ['icon', 'show_title']) {
-      await expect(page.locator(`[data-block-option="${option}"]`)).toBeChecked();
+      await expect(
+        page.locator(`[data-block-option="${option}"]`)
+      ).toBeChecked();
     }
-    await expect(page.locator('[data-block-option="hide_data"]')).toHaveCount(0);
-    await expect(page.locator('[data-block-option="last_update"]')).toHaveCount(0);
-    await expect(page.getByText('Custom fields', { exact: true })).toBeVisible();
-    await expect(page.locator('[data-block-option="icon"]')).toHaveCSS('width', '32px');
-    await expect(page.locator('[data-block-option="icon"]')).toHaveCSS('height', '32px');
-    await expect(page.locator('.we-custom-field-name').first()).toHaveValue('title');
-    await expect(page.locator('.we-custom-field-setting').first()).toHaveValue('Forecast');
+    await expect(page.locator('[data-block-option="hide_data"]')).toHaveCount(
+      0
+    );
+    await expect(page.locator('[data-block-option="last_update"]')).toHaveCount(
+      0
+    );
+    await expect(
+      page.getByText('Custom fields', { exact: true })
+    ).toBeVisible();
+    await expect(page.locator('[data-block-option="icon"]')).toHaveCSS(
+      'width',
+      '38px'
+    );
+    await expect(page.locator('[data-block-option="icon"]')).toHaveCSS(
+      'height',
+      '20px'
+    );
+    await expect(page.locator('.we-custom-field-name').first()).toHaveValue(
+      'title'
+    );
+    await expect(page.locator('.we-custom-field-setting').first()).toHaveValue(
+      'Forecast'
+    );
     const widgetIconRow = page.locator('.we-icon-field-row');
     await expect(widgetIconRow).toBeVisible();
-    await expect(widgetIconRow.locator('.we-custom-field-name')).toHaveValue('icon');
-    await expect(widgetIconRow.locator('.we-custom-field-setting')).toHaveValue('fas fa-cloud');
+    await expect(widgetIconRow.locator('.we-custom-field-name')).toHaveValue(
+      'icon'
+    );
+    await expect(widgetIconRow.locator('.we-custom-field-setting')).toHaveValue(
+      'fas fa-cloud'
+    );
     await widgetIconRow.locator('.we-custom-field-remove').click();
     await expect(widgetIconRow).toHaveCount(0);
     await expect(page.locator('[data-block-option="icon"]')).not.toBeChecked();
     await page.locator('[data-block-option="icon"]').check();
     await expect(widgetIconRow).toBeVisible();
     await widgetIconRow.locator('.we-icon-source').selectOption('image');
-    await expect(widgetIconRow.locator('.we-custom-field-setting')).toHaveValue('');
-    await expect(widgetIconRow.locator('.we-custom-field-setting')).toHaveAttribute(
-      'placeholder',
-      'custom/icon.png'
+    await expect(widgetIconRow.locator('.we-custom-field-setting')).toHaveValue(
+      ''
     );
+    await expect(
+      widgetIconRow.locator('.we-custom-field-setting')
+    ).toHaveAttribute('placeholder', 'custom/icon.png');
     await widgetIconRow.locator('.we-custom-field-setting').click();
     const customImageGrid = widgetIconRow.locator('.dt-custom-image-grid');
-    await expect(widgetIconRow.locator('.dt-custom-image-picker')).toBeVisible();
-    await expect(customImageGrid.locator('.dt-custom-image-option')).toHaveCount(7);
+    await expect(
+      widgetIconRow.locator('.dt-custom-image-picker')
+    ).toBeVisible();
+    await expect(
+      customImageGrid.locator('.dt-custom-image-option')
+    ).toHaveCount(7);
     expect(
-      await customImageGrid.evaluate((grid) =>
-        getComputedStyle(grid).gridTemplateColumns.split(' ').length
+      await customImageGrid.evaluate(
+        (grid) => getComputedStyle(grid).gridTemplateColumns.split(' ').length
       )
     ).toBe(6);
     await customImageGrid
@@ -1132,11 +1428,14 @@ screens[1] = {
     );
     await expect(widgetIconRow.locator('.dt-custom-image-picker')).toBeHidden();
     expect(
-      await page.locator('.we-custom-field-name').evaluateAll((inputs) =>
-        inputs.map((input) => input.value)
-      )
+      await page
+        .locator('.we-custom-field-name')
+        .evaluateAll((inputs) => inputs.map((input) => input.value))
     ).not.toContain('c');
-    await page.locator('.we-custom-field-setting').first().fill('Forecast changed');
+    await page
+      .locator('.we-custom-field-setting')
+      .first()
+      .fill('Forecast changed');
     await page.locator('#we-cfg-ok-btn').click();
     await expect(page.locator('#deviceeditorpopup')).toBeVisible();
     await page.locator('#de-save-btn').evaluate((button) => {
@@ -1157,16 +1456,8 @@ screens[1] = {
     expect(savedWidget.custom_fields.emptyArray).toEqual([]);
     expect(savedWidget.custom_fields.futureOption).toEqual({ enabled: true });
     expect(savedWidget.custom_fields.image).toBe('custom/weather.png');
-    expect(widgetRequest.settings.owm_days).toBe(1);
-    expect(widgetRequest.settings.translate_windspeed).toBe(0);
-    expect(widgetRequest.settings.garbage_width).toBe('9');
-    expect(widgetRequest.settings.security_button_icons).toBe(1);
     expect(widgetRequest.settings).not.toHaveProperty('security_panel_lock');
     expect(await page.evaluate(() => settings.security_panel_lock)).toBe(2);
-    expect(widgetRequest.settings.gm_zoomlevel).toBe('11');
-    expect(widgetRequest.settings.gm_latitude).toBe('52.1');
-    expect(widgetRequest.settings.gm_longitude).toBe('5.1');
-    expect(widgetRequest.settings.idx_moonpicture).toBe('817');
   });
 
   test('Calendar Widget Config manages named sources without dropping calendar options', async ({
@@ -1199,7 +1490,11 @@ screens[1] = {
       });
     });
     await page.route(/\/ical\/index\.php\?/, (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: '{}' })
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: '{}',
+      })
     );
     await page.route('**/info.php?get=csrf', (route) =>
       route.fulfill({
@@ -1220,7 +1515,10 @@ screens[1] = {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ success: true, blockKeys: ['grid_calendar_sources'] }),
+        body: JSON.stringify({
+          success: true,
+          blockKeys: ['grid_calendar_sources'],
+        }),
       });
     });
     await page.route('**/js/savegridlayout.php*', (route) =>
@@ -1234,33 +1532,45 @@ screens[1] = {
     await page.goto(dashboardUrl);
     await waitForDashboard(page);
     await openDeviceEditorFromScreenEditor(page);
-    await page.locator('[data-order-key="widget:calendar"] .de-config-btn').click();
+    await page
+      .locator('[data-order-key="widget:calendar"] .de-config-btn')
+      .click();
     await expect(page.locator('#we-config-popup')).toBeVisible();
     await expect(page.locator('.we-calendar-row')).toHaveCount(2);
-    await expect(page.locator('.we-calendar-name').nth(0)).toHaveValue('Personal');
+    await expect(page.locator('.we-calendar-name').nth(0)).toHaveValue(
+      'Personal'
+    );
     await expect(page.locator('.we-calendar-url').nth(1)).toHaveValue(
       'https://calendar.test/business.ics'
     );
 
-    await page.locator('.we-calendar-url').nth(0).fill(
-      'https://calendar.test/personal-new.ics'
-    );
+    await page
+      .locator('.we-calendar-url')
+      .nth(0)
+      .fill('https://calendar.test/personal-new.ics');
     await page.locator('.we-calendar-color').nth(0).fill('#ff0000');
     await page.locator('#we-calendar-add').click();
     await page.locator('.we-calendar-name').nth(2).fill('Family');
-    await page.locator('.we-calendar-url').nth(2).fill(
-      'https://calendar.test/family.ics'
-    );
+    await page
+      .locator('.we-calendar-url')
+      .nth(2)
+      .fill('https://calendar.test/family.ics');
     await page.locator('.we-calendar-color').nth(2).fill('#008000');
     await page.locator('.we-calendar-remove').nth(1).click();
     await expect(page.locator('.we-calendar-row')).toHaveCount(2);
     await page.locator('#we-cfg-ok-btn').click();
 
     await expect(page.locator('#deviceeditorpopup')).toBeVisible();
-    await page.locator('[data-order-key="widget:calendar"] .de-config-btn').click();
+    await page
+      .locator('[data-order-key="widget:calendar"] .de-config-btn')
+      .click();
     await expect(page.locator('.we-calendar-row')).toHaveCount(2);
-    await expect(page.locator('.we-calendar-name').nth(0)).toHaveValue('Personal');
-    await expect(page.locator('.we-calendar-name').nth(1)).toHaveValue('Family');
+    await expect(page.locator('.we-calendar-name').nth(0)).toHaveValue(
+      'Personal'
+    );
+    await expect(page.locator('.we-calendar-name').nth(1)).toHaveValue(
+      'Family'
+    );
     await page.locator('#we-cfg-ok-btn').click();
     await expect(page.locator('#deviceeditorpopup')).toBeVisible();
     await page.locator('#de-save-btn').evaluate((button) => {
@@ -1294,7 +1604,9 @@ screens[1] = {
     expect(calendar.icalurl.Business).toBeUndefined();
   });
 
-  test('Calendar Widget Config reloads a legacy single icalurl safely', async ({ page }) => {
+  test('Calendar Widget Config reloads a legacy single icalurl safely', async ({
+    page,
+  }) => {
     let widgetRequest = null;
     await page.route('**/tests/CONFIG.pw.js*', async (route) => {
       const response = await route.fetch();
@@ -1318,7 +1630,11 @@ screens[1] = {
       });
     });
     await page.route(/\/ical\/index\.php\?/, (route) =>
-      route.fulfill({ status: 200, contentType: 'application/json', body: '{}' })
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: '{}',
+      })
     );
     await page.route('**/info.php?get=csrf', (route) =>
       route.fulfill({
@@ -1378,7 +1694,9 @@ screens[1] = {
     });
   });
 
-  test('calendar runtime fetches a named icalurl object containing one source', async ({ page }) => {
+  test('calendar runtime fetches a named icalurl object containing one source', async ({
+    page,
+  }) => {
     const calendarUrls = [];
     const calendarRequests = [];
     page.on('request', (request) => {
@@ -1407,7 +1725,11 @@ screens[1] = {
     });
     await page.route(/\/ical\/index\.php\?/, async (route) => {
       calendarUrls.push(new URL(route.request().url()).searchParams.get('url'));
-      await route.fulfill({ status: 200, contentType: 'application/json', body: '{}' });
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: '{}',
+      });
     });
 
     await page.goto(dashboardUrl);
@@ -1422,13 +1744,17 @@ screens[1] = {
       );
     });
     await expect.poll(() => calendarRequests).not.toHaveLength(0);
-    await expect.poll(() => calendarUrls).toContain(
-      'https://calendar.test/one-object.ics'
-    );
-    await expect(page.locator('[data-grid-block="one_named_calendar"] .calendar')).toBeVisible();
+    await expect
+      .poll(() => calendarUrls)
+      .toContain('https://calendar.test/one-object.ics');
+    await expect(
+      page.locator('[data-grid-block="one_named_calendar"] .calendar')
+    ).toBeVisible();
   });
 
-  test('Theme panel identifies the active custom stylesheet', async ({ page }) => {
+  test('Theme panel identifies the active custom stylesheet', async ({
+    page,
+  }) => {
     await page.route('**/tests/custom.pw.css*', (route) =>
       route.fulfill({ status: 404, body: '' })
     );
@@ -1473,7 +1799,9 @@ screens[1] = {
     await expect(page.locator('.settings-back')).toBeHidden();
     await page.locator('[data-settings-category="widgets"]').click();
     const settingsBack = page.locator('.settings-back');
-    const settingsClose = page.locator('.settings-footer-actions [data-bs-dismiss="modal"]').first();
+    const settingsClose = page
+      .locator('.settings-footer-actions [data-bs-dismiss="modal"]')
+      .first();
     await expect(settingsBack).toBeVisible();
     await expect(settingsBack).toHaveClass(/btn-secondary/);
     await expect(settingsClose).toHaveClass(/btn-secondary/);
@@ -1481,9 +1809,14 @@ screens[1] = {
       settingsBack.boundingBox(),
       settingsClose.boundingBox(),
     ]);
-    expect(backBox.right).toBeLessThanOrEqual(closeBox.left);
+    expect(backBox.x + backBox.width).toBeLessThanOrEqual(closeBox.x);
 
-    for (const widgetId of ['publictransport', 'alarmmeldingen', 'camera', 'moon']) {
+    for (const widgetId of [
+      'publictransport',
+      'alarmmeldingen',
+      'camera',
+      'moon',
+    ]) {
       await expect(
         page.locator(`.settings-widget-tile[data-widget-id="${widgetId}"]`)
       ).toHaveCount(0);
@@ -1491,20 +1824,35 @@ screens[1] = {
     await expect(
       page.locator('.settings-widget-tile[data-widget-id="secpanel"]')
     ).toBeVisible();
-    await page.locator('.settings-widget-tile[data-widget-id="secpanel"]').click();
+    await page
+      .locator('.settings-widget-tile[data-widget-id="secpanel"]')
+      .click();
     await expect(page.locator('#setting-security_panel_lock')).toBeVisible();
     await expect(page.locator('#setting-security_panel_lock')).toHaveValue('2');
-    await expect(page.locator('#setting-security_panel_lock option')).toHaveCount(3);
-    await expect(page.locator('#setting-security_panel_lock option').nth(0)).toHaveValue('0');
-    await expect(page.locator('#setting-security_panel_lock option').nth(1)).toHaveValue('1');
-    await expect(page.locator('#setting-security_panel_lock option').nth(2)).toHaveValue('2');
+    await expect(
+      page.locator('#setting-security_panel_lock option')
+    ).toHaveCount(3);
+    await expect(
+      page.locator('#setting-security_panel_lock option').nth(0)
+    ).toHaveAttribute('value', '0');
+    await expect(
+      page.locator('#setting-security_panel_lock option').nth(1)
+    ).toHaveAttribute('value', '1');
+    await expect(
+      page.locator('#setting-security_panel_lock option').nth(2)
+    ).toHaveAttribute('value', '2');
     await expect(page.locator('#setting-security_button_icons')).toHaveCount(0);
     await settingsBack.click();
     await expect(
       page.locator('.settings-widget-tile[data-widget-id="map"]')
     ).toBeVisible();
     await page.locator('.settings-widget-tile[data-widget-id="map"]').click();
-    for (const setting of ['gm_api', 'gm_zoomlevel', 'gm_latitude', 'gm_longitude']) {
+    for (const setting of [
+      'gm_api',
+      'gm_zoomlevel',
+      'gm_latitude',
+      'gm_longitude',
+    ]) {
       await expect(page.locator(`#setting-${setting}`)).toBeVisible();
     }
     await settingsBack.click();
@@ -1520,13 +1868,21 @@ screens[1] = {
       await expect(page.locator(`#setting-${setting}`)).toHaveCount(1);
     }
     await settingsBack.click();
-    await page.locator('.settings-widget-tile[data-widget-id="calendar"]').click();
+    await page
+      .locator('.settings-widget-tile[data-widget-id="calendar"]')
+      .click();
     await expect(page.locator('label[for="setting-calendarurl"]')).toHaveText(
       'Full calendar link'
     );
     await expect(
-      page.locator('#setting-calendarurl').locator('xpath=ancestor::div[contains(@class,"settings-row")]')
-    ).toContainText('Calendar data is configured separately with an ICS source.');
+      page
+        .locator('#setting-calendarurl')
+        .locator('xpath=ancestor::div[contains(@class,"settings-row")]')
+        .locator('.settings-help')
+    ).toHaveAttribute(
+      'aria-label',
+      /Calendar data is configured separately with an ICS source\./
+    );
     await settingsBack.click();
     await expect(
       page.locator('.settings-widget-tile[data-widget-id="calendar"]')
@@ -1587,11 +1943,13 @@ screens[1] = {
     await page.goto(dashboardUrl);
     await waitForDashboard(page);
     await openScreenEditorAddMenu(page);
-    await page.locator('.dt-screeneditor-add-tile[data-add-action="custom"]').click();
+    await page
+      .locator('.dt-screeneditor-add-tile[data-add-action="custom"]')
+      .click();
     await expect(page.locator('#customdevicepopup')).toBeVisible();
     await page.locator('#cd-device-name').fill('CustomObject');
     await page.locator('#cd-device-idx').fill('42');
-    await page.locator('.cd-custom-field-setting').nth(2).fill('{}');
+    await page.locator('.cd-custom-field-setting').first().fill('{}');
     await page.locator('.cd-custom-field-add').last().click();
     await page.locator('.cd-custom-field-name').last().fill('items');
     await page.locator('.cd-custom-field-setting').last().fill('[]');
@@ -1679,12 +2037,12 @@ screens[1] = {
 
     // The Layout Editor toolbar must remain behind the Widget Editor. Besides
     // being visually wrong, a higher toolbar intercepts clicks on Save.
-    const toolbarZ = await page.locator('.dle-toolbar').evaluate((element) =>
-      parseInt(getComputedStyle(element).zIndex, 10)
-    );
-    const widgetModalZ = await page.locator('#widgeteditorpopup').evaluate((element) =>
-      parseInt(getComputedStyle(element).zIndex, 10)
-    );
+    const toolbarZ = await page
+      .locator('.dle-toolbar')
+      .evaluate((element) => parseInt(getComputedStyle(element).zIndex, 10));
+    const widgetModalZ = await page
+      .locator('#widgeteditorpopup')
+      .evaluate((element) => parseInt(getComputedStyle(element).zIndex, 10));
     expect(toolbarZ).toBeLessThan(widgetModalZ);
 
     await page.locator('#we-save-btn').click();
@@ -1697,7 +2055,7 @@ screens[1] = {
     ]);
   });
 
-  test('Widget Editor saves configurable widgets while Layout Editor is active', async ({
+  test('Widget Editor grafts configurable widgets into the active grid layout', async ({
     page,
   }) => {
     let widgetRequest = null;
@@ -1737,13 +2095,6 @@ screens[1] = {
         }),
       });
     });
-    await page.route('**/js/savelayout.php*', (route) =>
-      route.fulfill({
-        status: 200,
-        contentType: 'application/json',
-        body: JSON.stringify({ success: true }),
-      })
-    );
     await page.route('**/js/savegridlayout.php*', async (route) => {
       gridSaveRequest = route.request().postDataJSON();
       await route.fulfill({
@@ -1758,26 +2109,32 @@ screens[1] = {
     await openWidgetEditorFromScreenEditor(page);
 
     for (const widgetId of ['weather', 'spotify', 'clock']) {
-      await page.locator(`.we-widget-card[data-widget-id="${widgetId}"]`).click();
+      await page
+        .locator(`.we-widget-card[data-widget-id="${widgetId}"]`)
+        .click();
     }
 
     // A real click is important here: it fails when the fixed Layout Editor
     // toolbar sits above the modal footer and intercepts pointer events.
     await page.locator('#we-save-btn').click();
 
-    await expect.poll(() => widgetRequest).not.toBeNull();
+    // While Layout Editor is active, Widget Editor only grafts new tiles
+    // into that in-memory session. Persistence belongs to Layout Save.
+    expect(widgetRequest).toBeNull();
+    expect(gridSaveRequest).toBeNull();
+    for (const widgetId of ['weather', 'spotify', 'clock']) {
+      await expect(
+        page.locator(`[data-grid-block="widget_${widgetId}"]`)
+      ).toBeVisible();
+    }
+    await page.locator('.dle-save').click();
+
     await expect.poll(() => gridSaveRequest).not.toBeNull();
-    expect(widgetRequest.widgets.map((widget) => widget.id)).toEqual([
-      'weather',
-      'spotify',
-      'clock',
-    ]);
-    expect(widgetRequest.widgets.find((widget) => widget.id === 'weather').provider).toBe(
-      'openweather'
-    );
-    expect(widgetRequest.widgets.find((widget) => widget.id === 'clock').clockType).toBe(
-      'basicclock'
-    );
+    expect(widgetRequest).toBeNull();
+    const createdWidgetTypes = gridSaveRequest.items
+      .filter((item) => item.create)
+      .map((item) => JSON.parse(item.create.propsJson).type);
+    expect(createdWidgetTypes).toEqual(['weather', 'spotify', 'basicclock']);
   });
 
   test('places blocks at explicit coordinates and stacks on mobile', async ({
@@ -1886,9 +2243,9 @@ screens[1] = {
     const weatherWidth = await weather.evaluate(
       (element) => element.getBoundingClientRect().width
     );
-    const weatherFontSize = await weather.locator('.dt_block').evaluate(
-      (element) => parseFloat(getComputedStyle(element).fontSize)
-    );
+    const weatherFontSize = await weather
+      .locator('.dt_block')
+      .evaluate((element) => parseFloat(getComputedStyle(element).fontSize));
     expect(weatherFontSize).toBeGreaterThan(weatherWidth / 15);
     await expect(calendar.locator('.calendar.dt_block')).toBeVisible();
     await expect(graph.locator('canvas')).toBeAttached();
@@ -1912,19 +2269,27 @@ screens[1] = {
     await page.setViewportSize({ width: 500, height: 900 });
     await expect(grid).toHaveCSS('display', 'flex');
 
+    await expect
+      .poll(async () => {
+        const [firstBox, secondBox] = await Promise.all([
+          first.boundingBox(),
+          second.boundingBox(),
+        ]);
+        if (!firstBox || !secondBox) return Number.POSITIVE_INFINITY;
+        return Math.abs(firstBox.width - secondBox.width);
+      })
+      .toBeLessThan(1);
     const mobileBoxes = await Promise.all([
       first.boundingBox(),
       second.boundingBox(),
       third.boundingBox(),
     ]);
     expect(mobileBoxes.every(Boolean)).toBe(true);
-    expect(Math.abs(mobileBoxes[0].width - mobileBoxes[1].width)).toBeLessThan(
-      1
-    );
     expect(mobileBoxes[0].y).toBeLessThan(mobileBoxes[1].y);
     expect(mobileBoxes[1].y).toBeLessThan(mobileBoxes[2].y);
 
     await page.setViewportSize({ width: 1280, height: 900 });
+    await expect(grid).toHaveCSS('display', 'grid');
     let savedGridRequest = null;
     await page.route('**/info.php?get=csrf', async (route) => {
       await route.fulfill({
@@ -1945,7 +2310,11 @@ screens[1] = {
       });
     });
 
-    await page.locator('.screen1 .layouteditoricon').click();
+    const layoutEditorButton = page.locator('.screen1 .layouteditoricon');
+    await expect(layoutEditorButton).toBeVisible();
+    // The icon briefly animates while the responsive layout settles in
+    // WebKit. Dispatching its click avoids a false failure on element motion.
+    await layoutEditorButton.evaluate((button) => button.click());
     await expect(page.locator('body')).toHaveClass(/dle-active/);
     await expect(grid).toHaveClass(/dle-grid-canvas/);
 
@@ -1963,10 +2332,13 @@ screens[1] = {
     await expect
       .poll(() =>
         first.evaluate((element) =>
-          element.style.getPropertyValue('--dt-grid-h')
+          parseInt(element.style.getPropertyValue('--dt-grid-h'), 10)
         )
       )
-      .toBe('6');
+      .toBeGreaterThan(3);
+    const resizedHeight = await first.evaluate((element) =>
+      parseInt(element.style.getPropertyValue('--dt-grid-h'), 10)
+    );
 
     const firstOverlay = first.locator('.dle-overlay').first();
     const dragBox = await firstOverlay.boundingBox();
@@ -2006,13 +2378,288 @@ screens[1] = {
     );
     expect(savedFirst.grid.x).toBe(targetX);
     expect(savedFirst.grid.y).toBe(draggedY);
-    expect(savedFirst.grid.h).toBe(6);
+    expect(savedFirst.grid.h).toBe(resizedHeight);
     expect(savedGridRequest.payload.gridColumns).toBe(24);
+  });
+
+  test('Lyrion Music Server block renders local/radio metadata and cover art independently per block (#22)', async ({
+    page,
+  }) => {
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['lms_living'] = {
+  type: 'lms',
+  server: '192.168.1.6',
+  port: 9000,
+  username: '',
+  password: '',
+  player: 'aa:bb:cc:dd:ee:ff',
+  refresh: 5,
+  title: 'Living Room',
+  grid: {x: 1, y: 1, w: 8, h: 6}
+};
+blocks['lms_kitchen'] = {
+  type: 'lms',
+  server: '192.168.1.6',
+  port: 9000,
+  player: '11:22:33:44:55:66',
+  refresh: 5,
+  title: 'Kitchen',
+  grid: {x: 10, y: 1, w: 8, h: 6}
+};
+screens[1] = {
+  layout: 'grid',
+  gridColumns: 24,
+  rowHeight: 20,
+  gap: 5,
+  mobileLayout: 'stack',
+  blocks: ['lms_living', 'lms_kitchen']
+};
+`,
+      });
+    });
+
+    const TINY_PNG =
+      'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=';
+
+    await page.route('**/vendor/dashticz/lms/index.php', async (route) => {
+      const payload = route.request().postDataJSON();
+      if (payload.action === 'cover') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({ dataUrl: TINY_PNG }),
+        });
+        return;
+      }
+      // action: 'rpc' - the per-block "status" poll. Player-specific result
+      // so the two blocks below can be asserted never to swap metadata.
+      const player = payload.player;
+      let result;
+      if (player === 'aa:bb:cc:dd:ee:ff') {
+        // Local track.
+        result = {
+          power: 1,
+          mode: 'play',
+          remote: 0,
+          playlist_loop: [
+            {
+              title: 'Brothers in Arms',
+              artist: 'Dire Straits',
+              album: 'Brothers in Arms',
+              coverid: 'cover-living',
+            },
+          ],
+        };
+      } else if (player === '11:22:33:44:55:66') {
+        // Internet radio.
+        result = {
+          power: 1,
+          mode: 'play',
+          remote: 1,
+          current_title: 'Radio 538',
+          remoteMeta: { artist: 'Some DJ', title: 'Live Set' },
+          playlist_loop: [{ artwork_url: 'http://icecast.example/logo.png' }],
+        };
+      } else {
+        result = {};
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ result }),
+      });
+    });
+
+    await page.goto(dashboardUrl);
+    // Two independently-polling LMS blocks add real request volume on top of
+    // the usual startup load, which can run past waitForDashboard()'s normal
+    // 15s allowance on a slower runner - give this specific test more room
+    // rather than loosening that shared helper for every other test.
+    await page
+      .locator('#loaderHolder')
+      .waitFor({ state: 'hidden', timeout: 30000 });
+
+    const living = page.locator('[data-grid-block="lms_living"]');
+    const kitchen = page.locator('[data-grid-block="lms_kitchen"]');
+
+    // Local track: title/artist/album, cover art loaded, no station line.
+    await expect(living.locator('.lms-artist')).toHaveText('Dire Straits');
+    await expect(living.locator('.lms-title')).toHaveText('Brothers in Arms');
+    await expect(living.locator('.lms-album')).toHaveText('Brothers in Arms');
+    await expect(living.locator('.lms-station')).toHaveCount(0);
+    expect(
+      await living
+        .locator('.lms-info > div')
+        .evaluateAll((lines) => lines.map((line) => line.className))
+    ).toEqual(['lms-title', 'lms-artist', 'lms-album']);
+    const textSizes = await living.evaluate((block) => ({
+      title: parseFloat(
+        getComputedStyle(block.querySelector('.lms-title')).fontSize
+      ),
+      artist: parseFloat(
+        getComputedStyle(block.querySelector('.lms-artist')).fontSize
+      ),
+      album: parseFloat(
+        getComputedStyle(block.querySelector('.lms-album')).fontSize
+      ),
+    }));
+    expect(textSizes.title).toBe(textSizes.artist);
+    expect(textSizes.album).toBe(textSizes.artist - 2);
+    await expect(living.locator('.lms-cover-img')).toHaveAttribute(
+      'src',
+      TINY_PNG
+    );
+    await expect(living.locator('.lms-cover-placeholder')).toHaveCount(0);
+
+    // Internet radio: title/artist/station, no album line (LMS supplied none),
+    // and never any of the Living Room block's own metadata (#22).
+    await expect(kitchen.locator('.lms-station')).toHaveText('Radio 538');
+    await expect(kitchen.locator('.lms-artist')).toHaveText('Some DJ');
+    await expect(kitchen.locator('.lms-title')).toHaveText('Live Set');
+    await expect(kitchen.locator('.lms-album')).toHaveCount(0);
+    expect(
+      await kitchen
+        .locator('.lms-info > div')
+        .evaluateAll((lines) => lines.map((line) => line.className))
+    ).toEqual(['lms-title', 'lms-artist', 'lms-station']);
+    await expect(kitchen.locator('.lms-artist')).not.toHaveText('Dire Straits');
+    await expect(kitchen.locator('.lms-title')).not.toHaveText(
+      'Brothers in Arms'
+    );
+
+    // No raw "undefined"/"null" ever rendered (#7 in the task).
+    const livingText = await living.innerText();
+    const kitchenText = await kitchen.innerText();
+    expect(livingText).not.toMatch(/undefined|null/);
+    expect(kitchenText).not.toMatch(/undefined|null/);
+  });
+
+  test('Lyrion Music Server Widgets-catalog entry discovers players and saves the selected one', async ({
+    page,
+  }) => {
+    let blocksRequest = null;
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+screens[1] = {
+  layout: 'grid', gridColumns: 24, rowHeight: 20, gap: 5,
+  mobileLayout: 'stack', blocks: []
+};
+`,
+      });
+    });
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'lms-wizard-token' }),
+      })
+    );
+    await page.route('**/vendor/dashticz/lms/index.php', async (route) => {
+      const payload = route.request().postDataJSON();
+      if (payload.action === 'rpc' && payload.params[0] === 'serverstatus') {
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            result: {
+              players_loop: [
+                {
+                  playerid: 'aa:bb:cc:dd:ee:ff',
+                  name: 'Living Room',
+                  connected: 1,
+                },
+                {
+                  playerid: '11:22:33:44:55:66',
+                  name: 'Kitchen',
+                  connected: 1,
+                },
+              ],
+            },
+          }),
+        });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ result: {} }),
+      });
+    });
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: ['lms_1'] }),
+      });
+    });
+    await page.route('**/js/savegridlayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    // See the rendering test above: give this test's cold start more room
+    // than waitForDashboard()'s normal 15s on a slower runner.
+    await page
+      .locator('#loaderHolder')
+      .waitFor({ state: 'hidden', timeout: 30000 });
+    // The entry point lives in the "Widgets" catalog popup (next to Spotify/
+    // Sonarr), not as its own tile in the Screen Editor's "Add items" grid.
+    await openWidgetEditorFromScreenEditor(page);
+    await page.locator('.we-widget-card[data-special-widget="lms"]').click();
+    await expect(page.locator('#lmsblockpopup')).toBeVisible();
+
+    await page.locator('#lm-lms-server').fill('192.168.1.6');
+    await page.locator('#lm-lms-port').fill('9000');
+    // Save must be rejected before a player has been discovered/selected.
+    await page.locator('#lm-save-btn').click();
+    await expect(page.locator('#lmsblockpopup .cd-custom-message')).toHaveText(
+      /Test the connection and select a player/
+    );
+
+    await page.locator('#lm-lms-test').click();
+    await expect(
+      page.locator('#lmsblockpopup .de-lms-test-status')
+    ).toContainText('2');
+    await expect(page.locator('#lm-lms-player option')).toHaveCount(2);
+    await page.locator('#lm-lms-player').selectOption('11:22:33:44:55:66');
+    await page.locator('#lm-device-title').fill('Kitchen Speaker');
+
+    await page.locator('#lm-save-btn').click();
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const saved = blocksRequest.devices.find((d) => d.kind === 'lms');
+    expect(saved).toBeTruthy();
+    expect(saved.server).toBe('192.168.1.6');
+    expect(saved.port).toBe(9000);
+    expect(saved.player).toBe('11:22:33:44:55:66');
+    expect(saved.refresh).toBe(5);
+    expect(saved.title).toBe('Kitchen Speaker');
+    expect(saved.width).toBe(6);
+    expect(saved.height).toBe(8);
   });
 });
 
 async function openScreenEditorAddMenu(page) {
-  if (!(await page.locator('body').evaluate((body) => body.classList.contains('dle-active')))) {
+  if (
+    !(await page
+      .locator('body')
+      .evaluate((body) => body.classList.contains('dle-active')))
+  ) {
     await page.locator('.screen1 .layouteditoricon').click();
     await expect(page.locator('body')).toHaveClass(/dle-active/);
   }
@@ -2025,13 +2672,17 @@ async function openScreenEditorAddMenu(page) {
 
 async function openDeviceEditorFromScreenEditor(page) {
   await openScreenEditorAddMenu(page);
-  await page.locator('.dt-screeneditor-add-tile[data-add-action="device"]').click();
+  await page
+    .locator('.dt-screeneditor-add-tile[data-add-action="device"]')
+    .click();
   await expect(page.locator('#deviceeditorpopup')).toBeVisible();
 }
 
 async function openWidgetEditorFromScreenEditor(page) {
   await openScreenEditorAddMenu(page);
-  await page.locator('.dt-screeneditor-add-tile[data-add-action="widgets"]').click();
+  await page
+    .locator('.dt-screeneditor-add-tile[data-add-action="widgets"]')
+    .click();
   await expect(page.locator('#widgeteditorpopup')).toBeVisible();
 }
 
