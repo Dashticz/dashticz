@@ -1,9 +1,6 @@
-
-var config = {}
-config["hide_seconds"] = 0;
-config["shorttime"] = "HH:mm";
-
-
+var config = {};
+config['hide_seconds'] = 0;
+config['shorttime'] = 'HH:mm';
 
 /*  REMOVE THIS LINE, INCLUDING THIS TEXT IF YOU WANT TO USE THE CODE BELOW, ALS REMOVE THE LAST LINE OF THIS FILE ( the asterisk * with the slash)
 

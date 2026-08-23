@@ -33,7 +33,9 @@ function prepareButtonGroup(group) {
 
   var labels = Array.from(group.querySelectorAll('label.btn'));
   var inputs = labels
-    .map(function (label) { return label.querySelector('input'); })
+    .map(function (label) {
+      return label.querySelector('input');
+    })
     .filter(Boolean);
   var activeLabels = labels.filter(function (label) {
     return label.classList.contains('active');
@@ -66,7 +68,10 @@ function translateElement(element) {
 
   Object.keys(attributeAliases).forEach(function (legacyName) {
     var bootstrapName = attributeAliases[legacyName];
-    if (element.hasAttribute(legacyName) && !element.hasAttribute(bootstrapName)) {
+    if (
+      element.hasAttribute(legacyName) &&
+      !element.hasAttribute(bootstrapName)
+    ) {
       element.setAttribute(bootstrapName, element.getAttribute(legacyName));
     }
   });
@@ -84,14 +89,20 @@ function translateElement(element) {
 
   if (toggle === 'buttons') prepareButtonGroup(element);
 
-  if (element.classList.contains('item') && element.closest('.carousel-inner')) {
+  if (
+    element.classList.contains('item') &&
+    element.closest('.carousel-inner')
+  ) {
     element.classList.add('carousel-item');
   }
 }
 
-var legacySelector = Object.keys(attributeAliases)
-  .map(function (name) { return '[' + name + ']'; })
-  .join(',') + ', .carousel-inner > .item';
+var legacySelector =
+  Object.keys(attributeAliases)
+    .map(function (name) {
+      return '[' + name + ']';
+    })
+    .join(',') + ', .carousel-inner > .item';
 
 function translateTree(root) {
   if (!root || root.nodeType !== 1) return;
@@ -106,10 +117,10 @@ function installJQueryPlugin(name, Plugin) {
     var args = Array.prototype.slice.call(arguments, 1);
 
     this.each(function () {
-      var instanceConfig = config && typeof config === 'object'
-        ? Object.assign({}, config)
-        : {};
-      var modalShow = name === 'modal' &&
+      var instanceConfig =
+        config && typeof config === 'object' ? Object.assign({}, config) : {};
+      var modalShow =
+        name === 'modal' &&
         (config === undefined || instanceConfig.show === true);
 
       delete instanceConfig.show;
@@ -182,36 +193,51 @@ new MutationObserver(function (mutations) {
   subtree: true,
 });
 
-document.addEventListener('click', function (event) {
-  var trigger = event.target.closest(
-    '[data-toggle], [data-target], [data-dismiss], [data-slide], [data-slide-to]'
-  );
-  if (trigger) translateElement(trigger);
-}, true);
+document.addEventListener(
+  'click',
+  function (event) {
+    var trigger = event.target.closest(
+      '[data-toggle], [data-target], [data-dismiss], [data-slide], [data-slide-to]'
+    );
+    if (trigger) translateElement(trigger);
+  },
+  true
+);
 
 document.addEventListener('change', function (event) {
   var group = event.target.closest(
     '.btn-group[data-toggle="buttons"], .btn-group[data-bs-toggle="buttons"], ' +
-    '.btn-group-vertical[data-toggle="buttons"], ' +
-    '.btn-group-vertical[data-bs-toggle="buttons"]'
+      '.btn-group-vertical[data-toggle="buttons"], ' +
+      '.btn-group-vertical[data-bs-toggle="buttons"]'
   );
-  if (group) setTimeout(function () { syncButtonGroup(group); });
+  if (group)
+    setTimeout(function () {
+      syncButtonGroup(group);
+    });
 });
 
 document.addEventListener('shown.bs.tab', function (event) {
-  document.querySelectorAll('.nav-tabs > li.active, .nav-pills > li.active')
-    .forEach(function (item) { item.classList.remove('active'); });
-  if (event.target.parentElement && event.target.parentElement.tagName === 'LI') {
+  document
+    .querySelectorAll('.nav-tabs > li.active, .nav-pills > li.active')
+    .forEach(function (item) {
+      item.classList.remove('active');
+    });
+  if (
+    event.target.parentElement &&
+    event.target.parentElement.tagName === 'LI'
+  ) {
     event.target.parentElement.classList.add('active');
   }
 });
 
 document.addEventListener('show.bs.dropdown', function (event) {
-  if (event.target.parentElement) event.target.parentElement.classList.add('open');
+  if (event.target.parentElement)
+    event.target.parentElement.classList.add('open');
 });
 
 document.addEventListener('hidden.bs.dropdown', function (event) {
-  if (event.target.parentElement) event.target.parentElement.classList.remove('open');
+  if (event.target.parentElement)
+    event.target.parentElement.classList.remove('open');
 });
 
 export default bootstrap;

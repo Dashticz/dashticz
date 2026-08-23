@@ -51,12 +51,7 @@ function getUpdateSource() {
     cache: false,
   }).then(
     function (gitInfo) {
-      if (
-        gitInfo &&
-        gitInfo.available &&
-        gitInfo.owner &&
-        gitInfo.repository
-      ) {
+      if (gitInfo && gitInfo.available && gitInfo.owner && gitInfo.repository) {
         return {
           owner: gitInfo.owner,
           repository: gitInfo.repository,
@@ -103,12 +98,7 @@ function initVersion() {
       ) {
         return getUpdateSource().then(function (source) {
           var sourceLabel =
-            source.owner +
-            '/' +
-            source.repository +
-            ' (' +
-            source.branch +
-            ')';
+            source.owner + '/' + source.repository + ' (' + source.branch + ')';
           return $.ajax({
             url:
               'https://raw.githubusercontent.com/' +
@@ -197,6 +187,5 @@ function initVersion() {
 }
 
 //          'Error while requesting Domoticz version. Possible causes:<br> Domoticz offline<br>Domoticz IP incorrect in CONFIG.js<br>User credentials incorrect in CONFIG.js<br>Browser IP not whitelisted in Domoticz.';
-
 
 //# sourceURL=js/version.js

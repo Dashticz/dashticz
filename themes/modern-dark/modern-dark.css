@@ -6,29 +6,31 @@
  */
 
 :root {
-  --main-bg: rgba(32, 33, 42, .88);
+  --main-bg: rgba(32, 33, 42, 0.88);
   --main-border-width: 1px;
   --block-gap: 0px;
   --box-border: 1px solid rgb(181, 181, 181);
-  --home-bg: rgba(28, 31, 42, .74);
-  --border-color-inactive: rgba(42, 94, 151, .5);
-  --border-color-active: rgba(112, 160, 218, .5);
-  --border-color-block: rgba(112, 160, 218, .2);
+  --home-bg: rgba(28, 31, 42, 0.74);
+  --border-color-inactive: rgba(42, 94, 151, 0.5);
+  --border-color-active: rgba(112, 160, 218, 0.5);
+  --border-color-block: rgba(112, 160, 218, 0.2);
   --border-color-selector: var(--border-color-inactive);
   --button-bg: rgb(29, 43, 63);
   --button-hover: rgb(35, 53, 78);
   --button-active: rgb(49, 76, 108);
   --text-light: rgb(255, 255, 255);
   --text-normal: rgb(255, 255, 255);
-  --text-inactive: rgba(188, 188, 188, .5);
+  --text-inactive: rgba(188, 188, 188, 0.5);
   --warning-red: rgb(255, 0, 0);
   --selector-bg: rgb(29, 43, 63);
-  --blocktitle: rgba(130, 130, 130, .2);
-  --panel-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+  --blocktitle: rgba(130, 130, 130, 0.2);
+  --panel-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
   --radius-border: 16px;
   --radius-selector: 10px;
   --font-small: 18px;
   --font-large: 24px;
+  --icon-font-size: 40px;
+  --icon-image-size: 35px;
   --border-radius: 10px;
   --text-title: lightyellow;
   --text-status: lightgreen;
@@ -54,7 +56,7 @@
   overflow: hidden !important;
 }
 
-.standby .clock-container .clock-col:before  {
+.standby .clock-container .clock-col:before {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -67,7 +69,7 @@
    inherits it. A fixed !important size here (as this used to have) can't
    be overridden by that JS at all - it left the digits stuck at one size
    regardless of how the block was resized. */
-.standby .clock-container .clock-timer:before  {
+.standby .clock-container .clock-timer:before {
   margin: 0 !important;
   padding: 0 !important;
   line-height: 1 !important;
@@ -75,18 +77,18 @@
   font-weight: bold !important;
 }
 
-.standby .clock-container .clock-day:before  {
+.standby .clock-container .clock-day:before {
   color: rgba(90, 90, 90, 1) !important;
   text-shadow: 4px 3px 3px #8c8c64 !important;
 }
 
-.standby .clock-container .clock-hours:before ,
-.standby .clock-container .clock-minutes:before  {
+.standby .clock-container .clock-hours:before,
+.standby .clock-container .clock-minutes:before {
   color: rgba(242, 242, 242, 1) !important;
   text-shadow: 2px 2px 2px #b1b3a1 !important;
 }
 
-.standby .clock-container .clock-seconds:before  {
+.standby .clock-container .clock-seconds:before {
   color: rgba(90, 90, 90, 1) !important;
   text-shadow: 2px 2px 2px #8c8c64 !important;
 }
@@ -95,8 +97,33 @@
   display: none !important;
 }
 
+/* Dial components (.transbg.dial) calculate a square face from the
+   block's own box, so this generic panel styling deliberately excludes
+   them - any padding/border/background applied here shifts that
+   calculation and throws the dial off-centre (#177). Dials keep using
+   the plain, unthemed .transbg layout from css/creative.css instead. */
+.transbg:not(.dial) {
+  padding-top: 8px !important;
+  padding-bottom: 6px !important;
+  border: var(--block-gap) solid transparent !important;
+  border-radius: var(--radius-border) !important;
+  background: var(--main-bg) !important;
+  background-clip: padding-box !important;
+  box-shadow:
+    inset 0 0 0 var(--main-border-width) var(--border-color-block),
+    var(--panel-shadow) !important;
+}
 
-.transbg {
+/* The Bar subtype (#182) is a vertical rectangle, not a face that must
+   stay a perfect square/circle - it doesn't share the centering problem
+   above (js/components/dial.js's _dialFitSize() measures its content box
+   height directly, unlike the padding-sensitive outerWidth/outerHeight
+   measurement the circular dial relies on), so it keeps the normal
+   themed panel background/border/shadow every other block gets. The
+   outer .transbg.dial element carries no subtype-specific class of its
+   own - .dialbar only lands on its immediate parent
+   (me.$mountPoint.addClass('dialbar')) - so that's what this targets. */
+.dialbar > .transbg.dial {
   padding-top: 8px !important;
   padding-bottom: 6px !important;
   border: var(--block-gap) solid transparent !important;
@@ -183,7 +210,37 @@
   border: 1px solid var(--border-color-inactive) !important;
   border-radius: var(--radius-selector) !important;
   background-color: var(--button-bg) !important;
-  transition: color .2s ease, background-color .2s ease;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+/* .selector-buttons and the plain <select> a Selector Switch renders
+   instead (device['SelectorStyle'] === 1) sit below a title line, so
+   the surrounding .col-data needs to be a flex column - scoped with
+   :has() to only devices that actually render one of these, so every
+   other block's plain title/value/lastupdate stacking is untouched. */
+.transbg .col-data:has(.selector-buttons),
+.transbg .col-data:has(> select) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.transbg .col-data .selector-buttons,
+.transbg .col-data > select {
+  margin-top: auto;
+  margin-bottom: auto;
+  /* Shift 5px above dead-center, closer to the title above - transform
+     is a paint-time offset on top of the margin:auto centering, so it
+     stays a flat 5px regardless of the block's height. */
+  transform: translateY(-5px);
+}
+
+.transbg .selector-buttons {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .transbg .selector-buttons .btn {
@@ -219,6 +276,7 @@
 }
 
 .transbg .col-data > select {
+  width: 100%;
   min-height: 44px;
   padding: 10px 14px !important;
   font-size: 18px !important;
@@ -266,10 +324,11 @@
   color: var(--text-light);
   font-size: var(--font-large);
   text-shadow: 4px 4px 4px #000;
+  transform: translateX(10px);
 }
 
 .blocktitle img {
-  max-width: 34px !important;
+  max-width: var(--icon-image-size, 35px) !important;
   padding-bottom: 10px !important;
 }
 
@@ -309,17 +368,17 @@
   color: var(--text-status) !important;
 }
 
-.icon {
-  font-size: 40px !important;
+.col-icon .icon {
+  font-size: var(--icon-font-size, 40px) !important;
 }
 
 .col-icon img,
 .icon img {
-  max-width: 65px !important;
+  max-width: var(--icon-image-size, 35px) !important;
 }
 
 .titlegroups .col-icon img.icon {
-  max-width: 34px !important;
+  max-width: var(--icon-image-size, 35px) !important;
   height: auto !important;
 }
 
@@ -402,9 +461,9 @@
 /* Verklein ALLEEN de afbeeldingen binnen dimmer-/blinds-blokken */
 .mh:has(.slider) .col-icon img,
 .mh:has(.blinds) .col-icon img {
-    max-width: 30px !important;
-    width: 30px !important;
-    height: auto !important;
+  max-width: var(--icon-image-size, 35px) !important;
+  width: var(--icon-image-size, 35px) !important;
+  height: auto !important;
 }
 .standby .screenstandby {
   color: var(--text-light) !important;
@@ -430,9 +489,9 @@
 
 .message_block {
   visibility: visible;
-  border: 3px solid rgba(0, 0, 0, .7) !important;
+  border: 3px solid rgba(0, 0, 0, 0.7) !important;
   border-radius: 1px !important;
-  background: rgba(0, 255, 0, .2) !important;
+  background: rgba(0, 255, 0, 0.2) !important;
   background-clip: border-box;
 }
 

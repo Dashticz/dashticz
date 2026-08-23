@@ -11,7 +11,8 @@ Handlebars.registerHelper('moment', function (value, options) {
   options = options || {};
   var inputFormat = options.hash && options.hash.input;
   var outputFormat = options.hash && options.hash.format;
-  if (options.hash && options.hash.date !== undefined) value = options.hash.date;
+  if (options.hash && options.hash.date !== undefined)
+    value = options.hash.date;
   return moment(value, inputFormat).format(outputFormat || undefined);
 });
 

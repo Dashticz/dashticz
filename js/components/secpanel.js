@@ -15,7 +15,7 @@ var DT_secpanel = {
     decorate: 1,
     headerText: 'Dashticz',
     footerText: 'Dashticz Security Panel, ' + new Date().getFullYear(),
-    width: 12
+    width: 12,
   },
 
   locked: false,

@@ -5,9 +5,21 @@
 
 function configwriter_read_config($configPath)
 {
+    if (!isset($GLOBALS['dashticz_configwriter_locks'])) {
+        $GLOBALS['dashticz_configwriter_locks'] = [];
+    }
+    if (!isset($GLOBALS['dashticz_configwriter_locks'][$configPath])) {
+        $lock = dashticz_acquire_file_update_lock($configPath);
+        if ($lock === false) {
+            return [null, 'Unable to lock CONFIG.js for an editor update.'];
+        }
+        $GLOBALS['dashticz_configwriter_locks'][$configPath] = $lock;
+    }
+
     if (file_exists($configPath)) {
         $config = @file_get_contents($configPath);
         if ($config === false) {
+            configwriter_release_config_lock($configPath);
             return [null, 'Unable to read CONFIG.js.'];
         }
         if (trim($config) === '#EMPTY#') {
@@ -17,6 +29,23 @@ function configwriter_read_config($configPath)
     }
 
     return ["var config = {}\n", null];
+}
+
+function configwriter_release_config_lock($configPath)
+{
+    if (!isset($GLOBALS['dashticz_configwriter_locks'][$configPath])) {
+        return;
+    }
+    dashticz_release_file_update_lock(
+        $GLOBALS['dashticz_configwriter_locks'][$configPath]
+    );
+    unset($GLOBALS['dashticz_configwriter_locks'][$configPath]);
+}
+
+function configwriter_write_result($configPath, $error)
+{
+    configwriter_release_config_lock($configPath);
+    return $error;
 }
 
 /**
@@ -39,27 +68,43 @@ function configwriter_resolve_config_path($customDir)
 
 function configwriter_write_config($configPath, $customDir, $config)
 {
+    if (!isset($GLOBALS['dashticz_configwriter_locks'][$configPath])) {
+        $lock = dashticz_acquire_file_update_lock($configPath);
+        if ($lock === false) {
+            return 'Unable to lock CONFIG.js for an editor update.';
+        }
+        $GLOBALS['dashticz_configwriter_locks'][$configPath] = $lock;
+    }
+
     if (!file_exists($configPath) && !is_writable($customDir)) {
-        return 'The directory "custom/" is not writable by the web server'
+        return configwriter_write_result(
+            $configPath,
+            'The directory "custom/" is not writable by the web server'
             . dashticz_owner_info($customDir)
-            . '. From the Dashticz directory, run: sh tools/install-dashticz-write-access.sh';
+            . '. From the Dashticz directory, run: sh tools/install-dashticz-write-access.sh'
+        );
     }
 
     if (file_exists($configPath) && !is_writable($configPath)) {
         @chmod($configPath, 0664);
         if (!is_writable($configPath)) {
-            return 'CONFIG.js is not writable'
+            return configwriter_write_result(
+                $configPath,
+                'CONFIG.js is not writable'
                 . dashticz_owner_info($configPath)
-                . '. From the Dashticz directory, run: sh tools/install-dashticz-write-access.sh';
+                . '. From the Dashticz directory, run: sh tools/install-dashticz-write-access.sh'
+            );
         }
     }
 
-    if (file_put_contents($configPath, rtrim($config) . "\n", LOCK_EX) === false) {
-        return 'Unable to write CONFIG.js.';
+    if (!dashticz_atomic_write_file($configPath, rtrim($config) . "\n")) {
+        return configwriter_write_result(
+            $configPath,
+            'Unable to write CONFIG.js.'
+        );
     }
 
-    @chmod($configPath, 0664);
-    return null;
+    return configwriter_write_result($configPath, null);
 }
 
 function configwriter_remove_section($config, $startMarker, $endMarker)
@@ -71,11 +116,27 @@ function configwriter_remove_section($config, $startMarker, $endMarker)
 
     $endPos = strpos($config, $endMarker, $startPos);
     if ($endPos === false) {
-        return substr($config, 0, $startPos);
+        return rtrim(substr($config, 0, $startPos), " \t\r\n") . "\n";
     }
 
-    return substr($config, 0, $startPos)
-        . substr($config, $endPos + strlen($endMarker));
+    // configwriter_wrap_section() pads each section with its own leading
+    // blank line, on both the section being removed and (already written
+    // into the file) the sections before/after it. Splicing the raw
+    // surrounding text back together - as this used to do - stacks those
+    // paddings into a growing run of blank lines every time a section is
+    // removed and re-appended, which happens on every save. Strip the
+    // whitespace on both sides of the cut and rejoin with a single blank
+    // line, so repeated saves stay at one blank line instead of compounding.
+    $before = rtrim(substr($config, 0, $startPos), " \t\r\n");
+    $after = ltrim(substr($config, $endPos + strlen($endMarker)), " \t\r\n");
+
+    if ($before === '') {
+        return $after;
+    }
+    if ($after === '') {
+        return $before . "\n";
+    }
+    return $before . "\n\n" . $after;
 }
 
 function configwriter_extract_wrapped_section($config, $startMarker, $endMarker)
@@ -339,6 +400,52 @@ function configwriter_remove_config_key($config, $key)
     return configwriter_remove_assignment_statements($config, $pattern);
 }
 
+/**
+ * Remove every screens[N][$property] / standby_screen[$property] override
+ * across the whole config. Used when the dashboard-wide default for that
+ * same property (config[$property], e.g. gridColumns/rowHeight) is being
+ * changed from the Settings UI: without this, a screen that already had
+ * its own explicit value - which every grid screen save wrote until the
+ * pinGridColumns/pinRowHeight fix - would keep shadowing the new default
+ * forever, since a per-screen value always takes priority. Changing the
+ * setting is a deliberate, dashboard-wide action, so it's the one moment
+ * a screen's existing value should also be cleared rather than preserved.
+ */
+function configwriter_remove_grid_default_overrides($config, $property)
+{
+    $pattern = '/^[ \t]*(?:screens\[\s*\d+\s*\]|standby_screen)\[\s*([\'"])'
+        . preg_quote((string)$property, '/')
+        . '\1\s*\]\s*=/m';
+    return configwriter_remove_assignment_statements($config, $pattern);
+}
+
+/**
+ * Replace an existing single-line config["key"] = value; assignment in
+ * place, keeping its current position in the file. Only handles the common
+ * case where the whole assignment sits on one line (true for every scalar
+ * settings value the Settings UI ever writes); returns null for anything
+ * more complex (a multi-line value, or the key not being present yet) so
+ * the caller can fall back to remove-and-append.
+ */
+function configwriter_replace_simple_config_key_in_place($config, $key, $newLine)
+{
+    $pattern = '/^[ \t]*config\[\s*([\'"])'
+        . preg_quote((string)$key, '/')
+        . '\1\s*\]\s*=\s*[^;\r\n]*;[ \t]*$/m';
+    $count = preg_match_all($pattern, $config, $matches, PREG_OFFSET_CAPTURE);
+    if ($count !== 1) {
+        // Zero matches (key not present yet, or its value isn't a simple
+        // single-line assignment) or more than one (a malformed duplicate) -
+        // either way, let the caller fall back to the robust remove-all
+        // path rather than risk touching only one of several occurrences.
+        return null;
+    }
+    $match = $matches[0][0];
+    $start = $match[1];
+    $end = $start + strlen($match[0]);
+    return substr($config, 0, $start) . $newLine . substr($config, $end);
+}
+
 function configwriter_upsert_root_config_settings($config, $settings, $raw = false)
 {
     if (empty($settings)) {
@@ -351,16 +458,27 @@ function configwriter_upsert_root_config_settings($config, $settings, $raw = fal
             continue;
         }
 
-        $config = configwriter_remove_config_key($config, $key);
-
         $expression = $raw
             ? trim((string)$value)
             : json_encode(
                 $value,
                 JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE
             );
-        $lines[] = 'config[' . json_encode((string)$key) . '] = '
+        $newLine = 'config[' . json_encode((string)$key) . '] = '
             . $expression . ';';
+
+        // An existing simple setting keeps its place in the file instead of
+        // jumping to the end of the config block - editing one setting via
+        // the Settings UI shouldn't scatter it away from the related
+        // settings it was originally grouped with.
+        $inPlace = configwriter_replace_simple_config_key_in_place($config, $key, $newLine);
+        if ($inPlace !== null) {
+            $config = $inPlace;
+            continue;
+        }
+
+        $config = configwriter_remove_config_key($config, $key);
+        $lines[] = $newLine;
     }
 
     if (empty($lines)) {
@@ -1227,7 +1345,9 @@ function configwriter_build_grid_layout_section(
     $gridColumns,
     $rowHeight,
     $gap,
-    $mobileLayout = 'stack'
+    $mobileLayout = 'stack',
+    $pinGridColumns = true,
+    $pinRowHeight = true
 ) {
     $n = max(0, min(99, (int)$screenNumber));
     $columns = max(1, min(100, (int)$gridColumns));
@@ -1273,8 +1393,19 @@ function configwriter_build_grid_layout_section(
         $target = 'screens[' . $n . ']';
     }
     $section .= $target . "['layout'] = 'grid';\n";
-    $section .= $target . "['gridColumns'] = " . $columns . ";\n";
-    $section .= $target . "['rowHeight'] = " . $row . ";\n";
+    // Only pin an explicit gridColumns/rowHeight onto this screen when the
+    // caller says it actually diverges from the dashboard-wide Settings >
+    // Weergave default (DashticzGridLayout.getGridScreenConfig() falls back
+    // to that setting for any screen without its own value). Every normal
+    // editor save otherwise matches the current default, so omitting these
+    // keeps the screen following it instead of freezing today's value in
+    // place the next time someone changes the setting.
+    if ($pinGridColumns) {
+        $section .= $target . "['gridColumns'] = " . $columns . ";\n";
+    }
+    if ($pinRowHeight) {
+        $section .= $target . "['rowHeight'] = " . $row . ";\n";
+    }
     $section .= $target . "['gap'] = " . $gridGap . ";\n";
     $section .= $target . "['mobileLayout'] = '" . $mobile . "';\n";
     $section .= $target . "['blocks'] = ["
@@ -1563,6 +1694,34 @@ function configwriter_special_block_props($block)
         }
         if (!empty($block['last_update'])) {
             $props['last_update'] = true;
+        }
+    } elseif ($kind === 'lms') {
+        // js/components/lms.js dispatches on type: 'lms' - unlike html/group
+        // above, always written, the same as group's own type: 'group'
+        // (see saveblocks.php's 'lms' branch for the field validation).
+        // Every field is written explicitly and unconditionally (including
+        // an empty username/password) since this function always emits a
+        // full blocks[key] replacement rather than merging onto the
+        // existing file - an omitted field here would simply disappear on
+        // the next save, same reasoning as the 'custom' branch's icon: ''.
+        $props = [
+            'width' => $width,
+            'type' => 'lms',
+            'server' => isset($block['lms_server']) ? (string)$block['lms_server'] : '',
+            'port' => isset($block['lms_port']) ? (int)$block['lms_port'] : 9000,
+            'username' => isset($block['lms_username']) ? (string)$block['lms_username'] : '',
+            'password' => isset($block['lms_password']) ? (string)$block['lms_password'] : '',
+            'player' => isset($block['lms_player']) ? (string)$block['lms_player'] : '',
+            'refresh' => isset($block['lms_refresh']) ? (int)$block['lms_refresh'] : 5,
+        ];
+        if (!empty($block['lms_hide_when_off'])) {
+            $props['hide_when_off'] = true;
+        }
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
         }
     } else {
         $props = [

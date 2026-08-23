@@ -119,28 +119,32 @@ function loadConfig() {
       }
       return source;
     },
-  })
-    .then(
-      function () {
-        var tmp = loadingFilename;
-        loadingFilename = null;
-        if (throwError) return $.Deferred().reject(new Error(throwError));
+  }).then(
+    function () {
+      var tmp = loadingFilename;
+      loadingFilename = null;
+      if (throwError) return $.Deferred().reject(new Error(throwError));
 
-        if (typeof config == 'undefined') {
-          return $.Deferred().reject(new Error('Error in ' + tmp));
-        }
-      },
-      function (xhr) {
-        loadingFilename = null;
-        if (xhr.status === 404 && !_PARAMS['cfg'] && _CFG.customfolder === 'custom') {
-          // CONFIG.js not found in the default folder.
-          window.config = {};
-          firstRunSetupRequired = true;
-          return;
-        }
-        return $.Deferred().reject(new Error('Load error in ' + loadingFilename));
+      if (typeof config == 'undefined') {
+        return $.Deferred().reject(new Error('Error in ' + tmp));
       }
-    );
+    },
+    function (xhr) {
+      var failedFilename = loadingFilename;
+      loadingFilename = null;
+      if (
+        xhr.status === 404 &&
+        !_PARAMS['cfg'] &&
+        _CFG.customfolder === 'custom'
+      ) {
+        // CONFIG.js not found in the default folder.
+        window.config = {};
+        firstRunSetupRequired = true;
+        return;
+      }
+      return $.Deferred().reject(new Error('Load error in ' + failedFilename));
+    }
+  );
 }
 
 /**
@@ -150,8 +154,12 @@ function loadConfig() {
  */
 function configEditorUrl(url) {
   var cfgFile = _PARAMS['cfg'] || 'CONFIG.js';
-  return url + (url.indexOf('?') === -1 ? '?' : '&') +
-    'cfg=' + encodeURIComponent(cfgFile);
+  return (
+    url +
+    (url.indexOf('?') === -1 ? '?' : '&') +
+    'cfg=' +
+    encodeURIComponent(cfgFile)
+  );
 }
 
 function clearLegacyStoredSetupConfig() {
@@ -183,10 +191,7 @@ function loadLanguage() {
   // Always load English first. The selected locale overrides it recursively,
   // so every missing translation has one consistent JSON-backed fallback.
   var setLang = 'en_US';
-  if (
-    typeof config !== 'undefined' &&
-    typeof config.language !== 'undefined'
-  ) {
+  if (typeof config !== 'undefined' && typeof config.language !== 'undefined') {
     setLang = config.language;
   } else if (typeof localStorage.dashticz_language !== 'undefined') {
     setLang = localStorage.dashticz_language;
@@ -435,7 +440,10 @@ function showSetupWizard() {
       html +=
         '<div class="form-check form-switch mt-1">' +
         '<input class="form-check-input" type="checkbox" role="switch" id="' +
-        id + '"' + (field.def === '1' ? ' checked' : '') + ' style="width:4em;height:2em;">' +
+        id +
+        '"' +
+        (field.def === '1' ? ' checked' : '') +
+        ' style="width:4em;height:2em;">' +
         '</div>';
     } else if (field.type === 'select01') {
       html += '<select class="form-select form-select-sm" id="' + id + '">';
@@ -524,7 +532,9 @@ function showSetupWizard() {
     var $error = $('#dt-setup-error');
     $error.addClass('d-none').text('');
 
-    var ip = $('#' + fieldId('domoticz_ip')).val().trim();
+    var ip = $('#' + fieldId('domoticz_ip'))
+      .val()
+      .trim();
     if (!ip) {
       $error.removeClass('d-none').text('Enter the Domoticz URL.');
       return;
@@ -540,9 +550,7 @@ function showSetupWizard() {
         field.type === 'select' ||
         field.type === 'selectstr'
       ) {
-        postData[field.id] = JSON.stringify(
-          value.trim ? value.trim() : value
-        );
+        postData[field.id] = JSON.stringify(value.trim ? value.trim() : value);
       } else if (field.type === 'select01') {
         postData[field.id] = JSON.stringify(parseInt(value, 10));
       } else if (field.type === 'selectbool') {
@@ -806,9 +814,7 @@ function loadCustomCss() {
     // If customx.css does not exist, fall back to custom.css.
     // Example: ?cfg=CONFIG2.js -> tries custom2.css first, then custom.css.
     // custom.css / customx.css always overrides the active theme.
-    var suffix = _PARAMS['cfg']
-      .replace(/^CONFIG/i, '')
-      .replace(/\.js$/i, '');
+    var suffix = _PARAMS['cfg'].replace(/^CONFIG/i, '').replace(/\.js$/i, '');
     var derivedCss = folder + '/custom' + suffix + '.css';
     var fallbackCss = folder + '/custom.css';
     injectCss(derivedCss, fallbackCss);
@@ -1178,7 +1184,9 @@ function buildTopbarBlocks(existingBlocks) {
       for (var j = 0; j < blocks.length; j++) {
         if (
           blocks[j] === 'logo' ||
-          (blocks[j] && typeof blocks[j] === 'object' && blocks[j].type === 'logo')
+          (blocks[j] &&
+            typeof blocks[j] === 'object' &&
+            blocks[j].type === 'logo')
         ) {
           logoIdx = j;
           break;
@@ -1191,7 +1199,12 @@ function buildTopbarBlocks(existingBlocks) {
         if (ref === 'logo') {
           return { type: 'logo', width: 8 };
         }
-        if (ref && typeof ref === 'object' && ref.type === 'logo' && !ref.width) {
+        if (
+          ref &&
+          typeof ref === 'object' &&
+          ref.type === 'logo' &&
+          !ref.width
+        ) {
           return $.extend({}, ref, { width: 8 });
         }
         return ref;
@@ -1229,9 +1242,9 @@ function buildStandby() {
     var backgroundStyle = '';
     if (standbyBackground) {
       backgroundStyle =
-        'background-image:url(\'' +
+        "background-image:url('" +
         resolveBackgroundImagePath(standbyBackground) +
-        '\');';
+        "');";
     }
     var screenhtml =
       '<div class="screen screenstandby swiper-slide slidestandby" style="' +
@@ -1246,10 +1259,7 @@ function buildStandby() {
       standby_screen.layout === 'grid' &&
       Array.isArray(standby_screen.blocks)
     ) {
-      DashticzGridLayout.renderGridScreen(
-        standby_screen,
-        'div.screenstandby'
-      );
+      DashticzGridLayout.renderGridScreen(standby_screen, 'div.screenstandby');
     } else {
       for (var c in columns_standby) {
         getBlock(columns_standby[c], 'standby' + c, 'div.screenstandby', true);
@@ -1395,7 +1405,9 @@ function buildScreens() {
             if (typeof columns['bar'] == 'undefined') {
               columns['bar'] = {};
             }
-            columns['bar']['blocks'] = buildTopbarBlocks(columns['bar']['blocks']);
+            columns['bar']['blocks'] = buildTopbarBlocks(
+              columns['bar']['blocks']
+            );
             getBlock(columns['bar'], 'bar', 'div.screen' + s, false);
           }
 
@@ -1426,9 +1438,19 @@ function buildSwipingScrolling() {
   var enable_swiper = Number(settings['enable_swiper']);
   var vertical_screen = window.innerWidth < 768;
   var multi_screen = $('.dt-container .screen').length > 1;
+  // enable_swiper===1 means "Enable on narrow screens" (see the Screen
+  // settings' help text, lang/*.json's enable_swiper_help) - swiping is
+  // most useful on a narrow phone, where there's no room to show multiple
+  // screens' worth of columns side by side. This used to test
+  // !vertical_screen (i.e. only start Swiper on WIDE screens), the
+  // opposite of what's documented and what the setting name promises -
+  // so anyone who set it to 1 specifically for their phone/narrow tablet
+  // got no swiper at all, and no fallback touch handling either
+  // (screenswitcher.js's non-swiper goToScreen() branch only show()/hide()s
+  // - it has no gesture support, so this made finger-swipe do nothing).
   var start_swiper =
     multi_screen &&
-    (enable_swiper === 2 || (enable_swiper === 1 && !vertical_screen));
+    (enable_swiper === 2 || (enable_swiper === 1 && vertical_screen));
   if (start_swiper) startSwiper();
   var vertical_scroll = Number(settings['vertical_scroll']);
   if (vertical_scroll === 2 || (vertical_scroll === 1 && !start_swiper)) {
@@ -1440,34 +1462,38 @@ function startSwiper() {
   $('.dt-container').addClass('swiper');
   $('.contents').addClass('swiper-wrapper');
   setTimeout(function () {
-    window.loadSwiper().then(function (Swiper) {
-      myswiper = new Swiper('.swiper', {
-        pagination: {
-          el: '.swiper-pagination',
-          clickable: true,
-        },
-        autoHeight: false,
-        //      speed: 0,
-        loop: false,
-        initialSlide: settings['start_page'] - 1,
-        effect: settings['slide_effect'],
-        keyboard: {
-          enabled: true,
-          onlyInViewport: false,
-        },
-        direction: 'horizontal',
-        allowTouchMove: settings.swiper_touch_move,
-      });
-      myswiper.on('transitionStart', function () {
-        $('.slide').removeClass('selectedbutton');
-      });
-      myswiper.on('transitionEnd', function () {
-        $('.slide' + (1 + this.activeIndex)).addClass('selectedbutton');
-      });
-      $('.slide' + settings['start_page']).addClass('selectedbutton');
-    }).catch(function (err) {
-      console.error('Unable to load Swiper', err);
+    myswiper = new Swiper('.swiper', {
+      pagination: {
+        el: '.swiper-pagination',
+        clickable: true,
+      },
+      autoHeight: false,
+      //      speed: 0,
+      loop: false,
+      initialSlide: settings['start_page'] - 1,
+      effect: settings['slide_effect'],
+      keyboard: {
+        enabled: true,
+        onlyInViewport: false,
+      },
+      direction: 'horizontal',
+      allowTouchMove: settings.swiper_touch_move,
+      // A touchscreen tap almost always drifts a few px, unlike a mouse
+      // click; Swiper's default threshold (5) misreads that drift as a
+      // swipe attempt and, while animating, its default
+      // preventClicksPropagation stops the tap from ever reaching the
+      // block's click handler - invisible on desktop, where a mouse click
+      // rarely moves at all.
+      threshold: 10,
+      preventClicksPropagation: false,
     });
+    myswiper.on('transitionStart', function () {
+      $('.slide').removeClass('selectedbutton');
+    });
+    myswiper.on('transitionEnd', function () {
+      $('.slide' + (1 + this.activeIndex)).addClass('selectedbutton');
+    });
+    $('.slide' + settings['start_page']).addClass('selectedbutton');
   }, 100);
 }
 
@@ -1488,13 +1514,21 @@ function setClassByTime() {
 
   for (var t in screens) {
     for (var s in screens[t]) {
-      if (typeof screens[t][s]['background_' + newClass] !== 'undefined') {
+      var screen = screens[t][s];
+      if (!screen || typeof screen !== 'object') continue;
+      // Regular screens share the setting-level background. Keep supporting
+      // an explicitly configured time-of-day override, but do not let a
+      // legacy screens[n].background value pin later screens to an old image
+      // after the shared background is changed in Settings.
+      var background =
+        screen['background_' + newClass] || settings['background_image'];
+      if (background) {
         $('.screen.screen' + s).css(
           'background-image',
-          "url('" +
-            resolveBackgroundImagePath(screens[t][s]['background_' + newClass]) +
-            "')"
+          "url('" + resolveBackgroundImagePath(background) + "')"
         );
+      } else {
+        $('.screen.screen' + s).css('background-image', 'none');
       }
     }
   }

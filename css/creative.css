@@ -124,7 +124,10 @@
 .dt-grid-screen > .dt-grid-layout > .dt-grid-item.dt-camera-multi {
   display: flex;
 }
-.dt-grid-screen > .dt-grid-layout > .dt-grid-item.dt-camera-multi > [id^='block_'] {
+.dt-grid-screen
+  > .dt-grid-layout
+  > .dt-grid-item.dt-camera-multi
+  > [id^='block_'] {
   flex: 1 1 0;
   min-width: 0;
   height: 100%;
@@ -345,7 +348,7 @@
 .fixedheight:not(.dt_column) .dt_content {
   display: flex;
   flex-direction: column;
-  height: 100%
+  height: 100%;
 }
 
 .dt_block .col-icon {
@@ -371,9 +374,8 @@
   min-height: 1px;
 }
 
-
 .fixedheight .dt_state {
-  height: 100%
+  height: 100%;
 }
 
 .button .dt_state,
@@ -408,7 +410,7 @@
 }
 
 .no-margin .dt_state {
-  margin: -5px
+  margin: -5px;
 }
 
 .ios .dt_state {
@@ -495,7 +497,7 @@
 }
 
 .smoke .on.icon {
-  border: 5px solid #F05F40;
+  border: 5px solid #f05f40;
 }
 
 .modal {
@@ -531,7 +533,7 @@
   overflow-x: hidden;
 }
 
-.newblocksHolder .newblocks>div {
+.newblocksHolder .newblocks > div {
   border: 1px solid #aaa;
   background: rgba(255, 255, 255, 0.2);
   margin: 5px;
@@ -544,7 +546,7 @@
   margin: 10px auto 10px auto;
   display: block;
   width: 100%;
-/*  max-width: 125px;*/
+  /*  max-width: 125px;*/
 }
 
 .skyconsmall {
@@ -553,19 +555,18 @@
   max-width: 125px;
 }
 
-
 /* BEGIN || Settings modal */
 
-.nav-pills>li>a {
+.nav-pills > li > a {
   border-radius: 6px 6px 0px 0px;
   color: #000;
   font-size: 16px;
   background-color: #f6f6f6;
 }
 
-.nav-pills>li.active>a,
-.nav-pills>li.active>a:focus,
-.nav-pills>li.active>a:hover {
+.nav-pills > li.active > a,
+.nav-pills > li.active > a:focus,
+.nav-pills > li.active > a:hover {
   background-color: #555;
 }
 
@@ -574,19 +575,17 @@
   opacity: 0.7;
 }
 
-.modal-dialog-custom .modal-content:not(.modal-url) .close:focus, .modal-dialog-custom .modal-content:not(.modal-url) .close:hover {
+.modal-dialog-custom .modal-content:not(.modal-url) .close:focus,
+.modal-dialog-custom .modal-content:not(.modal-url) .close:hover {
   color: var(--text-light);
   opacity: 1;
 }
 
-.modal-popup > [id^="block"] {
+.modal-popup > [id^='block'] {
   height: 100%;
   min-height: 1px;
-  overflow:auto;
+  overflow: auto;
 }
-
-
-
 
 /*
 next css sets the default height of the frame popup
@@ -632,7 +631,7 @@ next css sets the default height of the frame popup
   color: #343a40;
   font-size: 17px;
   font-weight: 600;
-  letter-spacing: .02em;
+  letter-spacing: 0.02em;
 }
 
 .settings-brand img {
@@ -679,7 +678,10 @@ next css sets the default height of the frame popup
   background: #f8f9fa;
   color: #212529;
   cursor: pointer;
-  transition: background .15s ease, border-color .15s ease, transform .15s ease;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .settings-tile:hover,
@@ -845,12 +847,38 @@ next css sets the default height of the frame popup
   white-space: pre-wrap;
 }
 
+/* Background picker / Path row: the preview swatch and the "active custom
+   stylesheet" notice sit beside their select/input on the same row instead
+   of stacking underneath it, so the row's control column needs more room
+   than the standard 40ch a plain field gets. */
+.settings-bg-picker-row,
+.settings-bg-path-row {
+  grid-template-columns: minmax(230px, 320px) minmax(0, 1fr) 26px;
+}
+
+.settings-bg-picker-row .settings-control,
+.settings-bg-path-row .settings-control {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.settings-bg-picker-row .settings-bg-pick {
+  flex: 0 0 auto;
+  width: 260px;
+}
+
+.settings-bg-path-row .settings-bg-path {
+  flex: 0 0 auto;
+}
+
 .settings-standby-bg-preview {
   display: none;
-  width: 100%;
+  flex: 0 0 auto;
+  width: 160px;
   max-width: 40ch;
   height: 72px;
-  margin-top: 8px;
+  margin-top: 0;
   border: 1px solid #ced4da;
   border-radius: 8px;
   background-position: center;
@@ -869,7 +897,9 @@ next css sets the default height of the frame popup
 }
 
 .settings-custom-css-notice {
-  margin-top: 8px;
+  flex: 1 1 auto;
+  min-width: 260px;
+  margin-top: 0;
   padding: 8px 10px;
   color: #0f5132;
   background: #d1e7dd;
@@ -890,11 +920,11 @@ next css sets the default height of the frame popup
 .settings-section-heading {
   margin: 18px 0 8px;
   padding-bottom: 4px;
-  border-bottom: 1px solid rgba(0, 0, 0, .1);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
   font-size: 13px;
   font-weight: 700;
   color: #495057;
-  letter-spacing: .03em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
 }
 
@@ -942,6 +972,52 @@ next css sets the default height of the frame popup
   }
 }
 
+/* Compact 2-column layout for the Font size / Icon size sections - reuses
+   the color grid's row proportions instead of the full-width single-column
+   .settings-row, which left a plain pixel-value input almost 40 characters
+   wide for something like "18px". */
+.settings-theme-compact-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+}
+
+.settings-theme-compact-grid .settings-row {
+  grid-template-columns: minmax(130px, 1fr) minmax(0, 130px) 0;
+}
+
+/* The blanket #settingspopup .settings-control .form-control rule fixes
+   inputs at 40ch - far wider than a plain number needs, and wider than
+   this row's own input column. Outrank it (an ID beats a plain class
+   selector) so the field actually shrinks to fit here. */
+#settingspopup .settings-theme-compact-grid .settings-control .form-control {
+  width: 100%;
+  max-width: 130px;
+}
+
+/* Number + "px" suffix pair used by the Font size / Icon size rows - the
+   unit is fixed and shown next to the field instead of being typed. */
+.settings-cssvar-px-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+#settingspopup .settings-cssvar-px-control .form-control {
+  max-width: 80px;
+}
+
+.settings-cssvar-px-suffix {
+  color: #6c757d;
+  font-size: 13px;
+}
+
+@media (max-width: 767.98px) {
+  .settings-theme-compact-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .topbar-settings-wrap .settings {
   vertical-align: middle;
 }
@@ -953,7 +1029,7 @@ next css sets the default height of the frame popup
   gap: 10px;
   min-height: 42px;
   padding: 3px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, .055);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.055);
 }
 
 .settings-label {
@@ -999,13 +1075,20 @@ next css sets the default height of the frame popup
 
 /* Shared look for every on/off switch across the settings screen and the
    Device/Widget editors: light-blue track with a solid blue knob (instead
-   of Bootstrap's default white knob), wherever it appears. */
+   of Bootstrap's default white knob), wherever it appears. .de-switch: the
+   standard class for any new standalone switch added to the Device Config
+   popup outside of .de-config-options's own grid (e.g. Inverse) - add it
+   to the <input> instead of registering yet another one-off selector here,
+   so it automatically gets this same color and size (below) without
+   needing a CSS change of its own. */
 #settingspopup .settings-switch .form-check-input,
 .de-config-options .form-check-input,
 #hb-device-border.form-check-input,
 .we-widget-field.form-check-input,
 #we-cfg-ascending.form-check-input,
-.we-block-option.form-check-input {
+.we-block-option.form-check-input,
+.de-switch,
+.de-lms-switch.form-check-input {
   border-color: #adb5bd !important;
   cursor: pointer;
 }
@@ -1015,10 +1098,12 @@ next css sets the default height of the frame popup
 #hb-device-border.form-check-input:checked,
 .we-widget-field.form-check-input:checked,
 #we-cfg-ascending.form-check-input:checked,
-.we-block-option.form-check-input:checked {
+.we-block-option.form-check-input:checked,
+.de-switch:checked,
+.de-lms-switch.form-check-input:checked {
   background-color: #bfdbfe !important;
   border-color: #93c5fd !important;
-  background-image: url("data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%27-4 -4 8 8%27%3e%3ccircle r=%273%27 fill=%27%232563eb%27/%3e%3c/svg%3e") !important;
+  background-image: url('data:image/svg+xml,%3csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%27-4 -4 8 8%27%3e%3ccircle r=%273%27 fill=%27%232563eb%27/%3e%3c/svg%3e') !important;
 }
 
 #settingspopup .settings-switch .form-check-input:focus,
@@ -1026,9 +1111,27 @@ next css sets the default height of the frame popup
 #hb-device-border.form-check-input:focus,
 .we-widget-field.form-check-input:focus,
 #we-cfg-ascending.form-check-input:focus,
-.we-block-option.form-check-input:focus {
+.we-block-option.form-check-input:focus,
+.de-switch:focus,
+.de-lms-switch.form-check-input:focus {
   border-color: #93c5fd !important;
   box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
+}
+
+/* Same width/height every other Device Config switch (.de-config-options
+   .form-check-input below) already uses - kept as its own rule (rather
+   than folded into the color one above) since a future switch that wants
+   this same size but a different color still only needs this class.
+   !important: Bootstrap's own .form-switch .form-check-input rule (2
+   classes) outranks a single .de-switch class on specificity alone, so
+   without it Bootstrap's own (smaller, em-based) width/height would win
+   regardless of source order. */
+.de-switch {
+  flex: 0 0 auto !important;
+  float: none !important;
+  width: 38px !important;
+  height: 20px !important;
+  margin: 0 !important;
 }
 
 .settings-help-slot {
@@ -1054,7 +1157,7 @@ next css sets the default height of the frame popup
 .settings-help:hover,
 .settings-help:focus-visible {
   color: #084f8a;
-  background: rgba(11, 111, 194, .11);
+  background: rgba(11, 111, 194, 0.11);
   outline: none;
 }
 
@@ -1119,7 +1222,6 @@ next css sets the default height of the frame popup
   }
 }
 
-
 .nav {
   border-bottom: 1px solid #e5e5e5;
   padding-left: 10px;
@@ -1127,7 +1229,7 @@ next css sets the default height of the frame popup
 }
 
 .btn {
-/*  text-transform: none !important;*/
+  /*  text-transform: none !important;*/
   font-size: 16px;
   font-weight: 400;
 }
@@ -1208,35 +1310,32 @@ next css sets the default height of the frame popup
   color: var(--text-dark);
 }
 
-
-
 /* END || Settings modal */
 
 /* .log */
 
 .log {
-  height: 200px
+  height: 200px;
 }
 
 /*on IOS display:flex and height have to bubble down*/
 .log .dt_content {
-  height:100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.log .dt_state{
-  display:flex;
-  flex-direction:column;
+.log .dt_state {
+  display: flex;
+  flex-direction: column;
   height: 100%;
 }
 
-
 .log .items {
-  height: 100%; 
+  height: 100%;
   overflow: auto;
   width: 100%;
-  overflow-wrap: anywhere
+  overflow-wrap: anywhere;
 }
 
 .log table {
@@ -1245,15 +1344,15 @@ next css sets the default height of the frame popup
 }
 
 .log tbody {
-  width: 100%
+  width: 100%;
 }
 
 .log tr {
-  width: 100%
+  width: 100%;
 }
 
 .modal-popup > div > .log {
-  height: 100%
+  height: 100%;
 }
 
 .log .items .level0 {
@@ -1274,7 +1373,7 @@ next css sets the default height of the frame popup
 }
 
 .log .items .sep {
-  width: 5px
+  width: 5px;
 }
 
 /* end log */
@@ -1636,9 +1735,8 @@ body.dle-active {
   background-image:
     linear-gradient(rgba(90, 162, 255, 0.2) 1px, transparent 1px),
     linear-gradient(90deg, rgba(90, 162, 255, 0.2) 1px, transparent 1px);
-  background-size:
-    var(--dle-grid-column-stride, 40px)
-      calc(var(--dt-grid-row-height, 20px) + var(--dt-grid-gap, 0px));
+  background-size: var(--dle-grid-column-stride, 40px)
+    calc(var(--dt-grid-row-height, 20px) + var(--dt-grid-gap, 0px));
 }
 
 .dt-grid-screen.dle-grid-screen-editing {
@@ -1660,8 +1758,7 @@ body.dle-active {
 }
 
 @media (max-width: 767.98px) {
-  .dt-grid-screen
-    > .dt-grid-layout.dt-grid-mobile-stack.dle-grid-canvas {
+  .dt-grid-screen > .dt-grid-layout.dt-grid-mobile-stack.dle-grid-canvas {
     display: grid;
   }
 }
@@ -1785,15 +1882,14 @@ body.dle-active {
   width: 28px;
   height: 28px;
   cursor: nwse-resize;
-  background:
-    linear-gradient(
-      135deg,
-      transparent 0 45%,
-      rgba(255, 255, 255, 0.95) 46% 54%,
-      transparent 55% 64%,
-      rgba(255, 255, 255, 0.95) 65% 73%,
-      rgba(13, 110, 253, 0.9) 74%
-    );
+  background: linear-gradient(
+    135deg,
+    transparent 0 45%,
+    rgba(255, 255, 255, 0.95) 46% 54%,
+    transparent 55% 64%,
+    rgba(255, 255, 255, 0.95) 65% 73%,
+    rgba(13, 110, 253, 0.9) 74%
+  );
   border-radius: 0 0 5px 0;
 }
 
@@ -2047,7 +2143,6 @@ body.dle-active {
   width: 180px;
 }
 
-
 .de-device-title {
   width: 100%;
   min-width: 0;
@@ -2109,18 +2204,46 @@ body.dle-active {
   color: #adb5bd;
 }
 
+/* Selected Icon/Dial/Bar mode: same light-green "added" look as a selected
+   widget card (.we-widget-card.we-selected), but with a blue icon instead
+   of green - the icon is the only thing distinguishing Icon/Dial/Bar at a
+   glance, so it gets its own accent color rather than matching the border. */
+.de-visual-mode-button.active {
+  background-color: #e8f5ee !important;
+  border-color: #198754 !important;
+  /* Bootstrap's .btn-outline-secondary.active sets white text, assuming
+     the usual solid dark active background - unreadable against the
+     light background above, so match the icon's accent color instead. */
+  color: #0d6efd !important;
+}
+
+.de-visual-mode-button.active i {
+  color: #0d6efd;
+}
+
 .de-config-options {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  /* auto-fit always lays out exactly as many equal-width columns as there
+     are visible switches, all on a single row - so an item toggling
+     visibility (e.g. the Dial checkbox hiding Icon/Title) or an extra one
+     being appended (the No background switch, injected by button.js) is
+     never left stranded alone on its own row. */
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
   gap: 10px 18px;
 }
 
 .de-config-options .form-check {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   min-height: 2.25rem;
   gap: 0.75rem;
   padding-left: 0;
+  /* Lets the switch+label pair shrink below its natural width (grid/flex
+     items default to a content-based minimum) and, in a packed row (five
+     or six columns), wrap the label under its switch instead of the text
+     spilling into the next column. */
+  min-width: 0;
 }
 
 .de-config-options .form-check-input {
@@ -2131,25 +2254,21 @@ body.dle-active {
   margin: 0;
 }
 
-.de-config-options-three {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+.de-config-options .form-check-label {
+  min-width: 0;
+}
+
+.de-config-options-three,
+.de-config-options-four,
+.de-config-options-five {
   justify-items: center;
 }
 
-#hb-device-border.form-check-input {
+#hb-device-border.form-check-input,
+.de-lms-switch.form-check-input {
   width: 38px;
   height: 20px;
   margin-top: 0;
-}
-
-.de-config-options-four {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  justify-items: center;
-}
-
-.de-config-options-five {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
-  justify-items: center;
 }
 
 .de-config-options-three .form-check,
@@ -2256,7 +2375,9 @@ body.dle-active {
     grid-template-columns: repeat(2, minmax(100px, 1fr));
   }
 
-  .de-config-options:not(.de-config-options-three):not(.de-config-options-four):not(.de-config-options-five) {
+  .de-config-options:not(.de-config-options-three):not(
+      .de-config-options-four
+    ):not(.de-config-options-five) {
     grid-template-columns: 1fr;
   }
 
@@ -2583,7 +2704,7 @@ body.dle-active {
 #we-config-popup .form-check-inline {
   display: inline-flex;
   align-items: center;
-  gap: .5rem;
+  gap: 0.5rem;
   min-height: 2.25rem;
 }
 
@@ -2696,9 +2817,9 @@ a.playlist {
 }
 
 .spotlist .spotify-info {
-  padding-left:10px;
-  padding-top:5px;
-  padding-right:10px;
+  padding-left: 10px;
+  padding-top: 5px;
+  padding-right: 10px;
 }
 
 /* Thermostat CSS: */
@@ -2763,19 +2884,20 @@ a.playlist {
 }
 
 .transbg.longpress::after {
-  content:"";
+  content: '';
   float: left;
-  bottom:0;
-  left:0;
-  top:0;
-  width:100%;
-  height:100%;
-  border-right: solid rgba(255,255,255,0.5) 5px;
+  bottom: 0;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  border-right: solid rgba(255, 255, 255, 0.5) 5px;
   position: absolute;
 }
 
-.btn.plus, .btn.min {
-  width: 100%
+.btn.plus,
+.btn.min {
+  width: 100%;
 }
 
 .btn.stop {
@@ -2789,7 +2911,7 @@ a.playlist {
   text-orientation: sideways-right;
   writing-mode: vertical-rl;
   width: var(--col2width);
-  font-size:20px;
+  font-size: 20px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -2839,7 +2961,7 @@ a.playlist {
 }
 
 .map .dt_state {
-  position: relative
+  position: relative;
 }
 
 .map .time {
@@ -2855,7 +2977,7 @@ a.playlist {
 }
 
 .map .state_map {
-  height: 100%
+  height: 100%;
 }
 
 .map .state_info {
@@ -2866,15 +2988,14 @@ a.playlist {
   cursor: pointer;
 }
 
-.map .state_info *{
-  color: rgb(80,80,80);
-  background: rgba(255,255,255,0.9);
+.map .state_info * {
+  color: rgb(80, 80, 80);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .map .state_refresh_time {
   margin-left: 10px;
 }
-
 
 .trafficmap {
   height: 100%;
@@ -2890,8 +3011,8 @@ a.playlist {
   margin-top: 2px;
 }
 
-@media only screen and (max-width: 1000px) {}
-
+@media only screen and (max-width: 1000px) {
+}
 
 /************************/
 
@@ -2906,7 +3027,6 @@ a.playlist {
   color: #bbb;
   white-space: nowrap;
 }
-
 
 /*To change the default height of the graph popup adapt the height value in custom.css
   Example:
@@ -2941,7 +3061,6 @@ a.playlist {
   height: calc(100vh - 250px);
 }
 
-
 /* graphwidth for small screens.*/
 
 .graphwidth {
@@ -2950,11 +3069,11 @@ a.playlist {
 }
 
 @media (max-width: 768px) {
-/*  .graphwidth {
+  /*  .graphwidth {
     width: 100vw;
   }*/
   .modal-dialog {
-    width: 100%
+    width: 100%;
   }
 }
 
@@ -3283,7 +3402,7 @@ p {
   margin-bottom: 20px;
 }
 
-.row>div {
+.row > div {
   padding-right: 0px !important;
   padding-left: 0px !important;
 }
@@ -3298,7 +3417,7 @@ p {
  * column's own float context, so the next short tile can rise beside the tall
  * one. The layout editor overrides this while .dle-item-wrapper is active.
  */
-.screen .row > [data-colindex] > [id^="block_"]:not(.dle-item-wrapper) {
+.screen .row > [data-colindex] > [id^='block_']:not(.dle-item-wrapper) {
   display: contents;
 }
 
@@ -3326,7 +3445,7 @@ p {
 }
 
 .dt_block.popup {
-  background:unset;
+  background: unset;
 }
 
 .block_clock h1,
@@ -3343,14 +3462,12 @@ p {
   padding-top: 6px !important;
 }
 
-
 /*
 Only add this hover on NON touch devices
 */
 
 @media (hover: hover) {
-  
-  html.non-touch .hover:hover{
+  html.non-touch .hover:hover {
     background: rgba(255, 255, 255, 0.1);
     background-clip: padding-box;
     border: var(--block-gap) solid var(--border-color-block);
@@ -3359,9 +3476,7 @@ Only add this hover on NON touch devices
   html.non-touch .dial.hover:hover {
     background: inherit;
   }
-  
 }
-
 
 .transbg.hover {
   cursor: pointer;
@@ -3391,7 +3506,6 @@ Only add this hover on NON touch devices
   --disconnected-color: red;
   --connected-color: green;
 }
-
 
 .col-xs-1,
 .col-xs-2,
@@ -3445,7 +3559,7 @@ Only add this hover on NON touch devices
 
 .col-data {
   width: calc(100% - 45px);
-  float: left; 
+  float: left;
 }
 
 .hasbackground .col-data {
@@ -3453,7 +3567,7 @@ Only add this hover on NON touch devices
 }
 
 .right2col {
-  padding-right: calc(var(--col1width) + var(--col2width) + 8px);  
+  padding-right: calc(var(--col1width) + var(--col2width) + 8px);
 }
 
 .right1col {
@@ -3470,15 +3584,15 @@ Only add this hover on NON touch devices
 }
 
 .rgbcontainer {
-  display: flex
+  display: flex;
 }
 
 .rgbcontainer .slider {
-  width: 100%
+  width: 100%;
 }
 
 .rgbcontainer .rgbholder {
-  flex: 0 0 50px
+  flex: 0 0 50px;
 }
 
 .weekday {
@@ -3541,27 +3655,27 @@ html .ui-button.ui-state-disabled:active {
   text-transform: uppercase;
 }
 
-.navbar-default .nav>li>a,
-.navbar-default .nav>li>a:focus {
+.navbar-default .nav > li > a,
+.navbar-default .nav > li > a:focus {
   text-transform: uppercase;
   font-weight: 700;
   font-size: 13px;
   color: var(--text-dark);
 }
 
-.navbar-default .nav>li>a:hover,
-.navbar-default .nav>li>a:focus:hover {
+.navbar-default .nav > li > a:hover,
+.navbar-default .nav > li > a:focus:hover {
   color: var(--button-active);
 }
 
-.navbar-default .nav>li.active>a,
-.navbar-default .nav>li.active>a:focus {
+.navbar-default .nav > li.active > a,
+.navbar-default .nav > li.active > a:focus {
   color: var(--button-active) !important;
   background-color: transparent;
 }
 
-.navbar-default .nav>li.active>a:hover,
-.navbar-default .nav>li.active>a:focus:hover {
+.navbar-default .nav > li.active > a:hover,
+.navbar-default .nav > li.active > a:focus:hover {
   background-color: transparent;
 }
 
@@ -3577,12 +3691,12 @@ html .ui-button.ui-state-disabled:active {
   .navbar-default .navbar-header .navbar-brand:focus {
     color: var(--text-light);
   }
-  .navbar-default .nav>li>a,
-  .navbar-default .nav>li>a:focus {
+  .navbar-default .nav > li > a,
+  .navbar-default .nav > li > a:focus {
     color: rgba(255, 255, 255, 0.7);
   }
-  .navbar-default .nav>li>a:hover,
-  .navbar-default .nav>li>a:focus:hover {
+  .navbar-default .nav > li > a:hover,
+  .navbar-default .nav > li > a:focus:hover {
     color: var(--text-light);
   }
   .navbar-default.affix {
@@ -3597,12 +3711,12 @@ html .ui-button.ui-state-disabled:active {
   .navbar-default.affix .navbar-header .navbar-brand:focus {
     color: #eb3812;
   }
-  .navbar-default.affix .nav>li>a,
-  .navbar-default.affix .nav>li>a:focus {
+  .navbar-default.affix .nav > li > a,
+  .navbar-default.affix .nav > li > a:focus {
     color: var(--text-dark);
   }
-  .navbar-default.affix .nav>li>a:hover,
-  .navbar-default.affix .nav>li>a:focus:hover {
+  .navbar-default.affix .nav > li > a:hover,
+  .navbar-default.affix .nav > li > a:focus:hover {
     color: var(--button-active);
   }
 }
@@ -3628,6 +3742,379 @@ img.icon {
 .blinds .fas.fa-stop-circle {
   font-size: 20px !important;
   margin-right: 3px !important;
+}
+
+/* "Needle" mode (block.needle === true) for Blinds Percentage/Blinds
+   Inverted Percentage devices: one continuous vertical slider, framed like
+   a small remote - a title header (no icon), then the slider beside a
+   column of icon-only OPEN/STOP/DICHT buttons. This is an alternative to,
+   not a replacement for, Icon mode's own classic thin percentage bar
+   (getBlindsBlock()'s withPercentage branch, unchanged) and the separate
+   Dial widget's Dial/Bar modes (js/components/dial.js, also unchanged).
+   Rendered entirely by renderBlindsSliderBlock()/addSlider() in
+   js/switches.js as a single .blinds-slider-block. Other percentage
+   sliders (e.g. dimmers, and Icon mode's own classic bar) reuse the same
+   addSlider() but never get a .blinds-slider-wrap ancestor, so none of
+   this applies to them. The underlying jQuery UI slider and all existing
+   Domoticz commands remain unchanged. */
+.blinds-slider-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  /* Needed for its own flex-grow .blinds-slider-wrap child to actually get
+     any height in the classic (non-grid) case below: height:100% here is
+     against an indefinite .mh (height:auto), so per spec it resolves as
+     auto too, and an auto-sized column flex container with no min-height
+     of its own gives a flex-grow child nothing to grow into (it sizes to
+     exactly its non-growing children's content, i.e. the wrap collapses to
+     0). This min-height gives the column a real, non-circular basis to
+     distribute from. Overridden to 0 on grid screens further down, where
+     .mh already gets a real, definite height from the grid row instead. */
+  min-height: 360px;
+  gap: 8px;
+  box-sizing: border-box;
+  padding: 8px 10px 10px;
+  background: rgba(12, 16, 24, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  box-shadow: var(--panel-shadow);
+}
+
+/* On a grid screen, .dt-grid-screen > .dt-grid-layout > .dt-grid-item > .mh
+   further up this file already forces .mh to a real, definite height
+   (height:100% !important of the grid row) - so .blinds-slider-block's own
+   height:100% resolves normally there (no circularity), and this block's
+   min-height above must get out of the way so the block can shrink to fit
+   a small row instead of overflowing it, same as .log/.map/the clock
+   widgets already do for their own min-heights. */
+.dt-grid-screen > .dt-grid-layout > .dt-grid-item > .mh > .blinds-slider-block {
+  min-height: 0;
+}
+
+/* Every .mh is pinned to the classic 85px block height by default
+   (div.mh:not(.multiline) further up this file - the same escape hatch
+   block types like graphs/dials use via their own multi_line config flag).
+   This block needs real vertical room for its slider, so let it grow like a
+   multiline block, and stretch it (a .dt_block is align-items: flex-start
+   by default) instead of shrink-wrapping to content height. The grid rule
+   above still wins there on specificity, so a grid screen's own row height
+   applies instead of this fallback. */
+.mh:has(.blinds-slider-block) {
+  height: auto !important;
+  min-height: 360px;
+  align-items: stretch;
+}
+
+.blinds-slider-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.blinds-slider-header .title {
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* The slider and its OPEN/STOP/DICHT buttons sit side by side - the wrap
+   (js/switches.js's renderBlindsSliderBlock()) takes the remaining width,
+   the button column stays a fixed, content-sized width next to it. */
+.blinds-slider-body {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: center;
+  gap: 3px;
+  width: 100%;
+  flex: 1 1 auto;
+  /* Without this, a flex item's default min-height: auto keeps it from
+     ever shrinking below its content's own size - harmless for the fixed-
+     size button column, but it would stop .blinds-slider-wrap below from
+     actually shrinking on a short grid row instead of overflowing it. */
+  min-height: 0;
+}
+
+/* OPEN top, STOP middle, DICHT bottom (or just OPEN/DICHT top/bottom with
+   hide_stop) - justify-content: space-between spreads them across the
+   column's own height, which stretches to match the slider via
+   .blinds-slider-body's align-items: stretch above, keeping every button
+   within the slider's own height as asked. */
+.blinds-slider-actions {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  flex: 0 0 auto;
+}
+
+.blinds-slider-action {
+  flex: 0 0 auto;
+}
+
+.blinds-slider-action a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 12px;
+  text-decoration: none;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+/* The blanket .fas/.far/.fab { font-size: 30px } rule further up this file
+   (the codebase's own .fa-small already opts down to 20px, still too big
+   here) would otherwise inflate the icon way past this button's own
+   12px. inherit keeps the icon tied to that size without duplicating the
+   number here. !important: the Modern Dark/Liquid Glass Blue/Liquid Glass
+   Grey themes each carry their own `.fas.fa-chevron-up,
+   .fas.fa-chevron-down { font-size: 40px !important; }` (written for the
+   dimmer's up/down buttons); without !important here too, that theme rule
+   wins outright regardless of this selector's higher specificity - !important
+   always beats a plain declaration, no matter how specific. */
+.blinds-slider-action a .fas {
+  font-size: inherit !important;
+}
+
+.blinds-slider-action-up a,
+.blinds-slider-action-down a {
+  color: #eafff0;
+  background: linear-gradient(
+    180deg,
+    rgba(94, 176, 92, 0.55),
+    rgba(58, 122, 58, 0.55)
+  );
+  border: 1px solid rgba(139, 212, 130, 0.6);
+}
+
+.blinds-slider-action-up a:hover,
+.blinds-slider-action-down a:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(110, 196, 108, 0.65),
+    rgba(66, 138, 66, 0.65)
+  );
+}
+
+.blinds-slider-action-stop a {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(220, 53, 69, 0.22);
+  border: 1px solid rgba(220, 53, 69, 0.5);
+}
+
+.blinds-slider-action-stop a:hover {
+  color: var(--text-light);
+  background: rgba(220, 53, 69, 0.32);
+  border-color: rgba(220, 53, 69, 0.65);
+}
+
+/* .slider-scale and .slider used to be centered independently within this
+   wrap via position: absolute + a fixed negative margin-left each - fine
+   while the wrap was always the same width, but the fixed margins didn't
+   know about a narrower block, an increased track width (see .slider
+   below), or the button column now sitting right up against it: the scale
+   (and its percentage labels) could end up positioned partly outside the
+   block, and the empty leftover space in a wide wrap read as a big gap to
+   the buttons even though .blinds-slider-body's own gap is tiny. Both are
+   now plain flex children instead, always staying inside this row -
+   justify-content: flex-end keeps them (and so the visible track) hugging
+   the button column with no leftover space in between, at any width. */
+.blinds-slider-wrap {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: flex-end;
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 2px 0;
+  gap: 6px;
+}
+
+/* !important throughout this rule and the two below it: jQuery UI's own
+   bundled theme CSS (src/index.js's require('jquery-ui-dist/jquery-ui.min.css'))
+   styles .ui-slider/.ui-widget-content/.ui-widget-header (the classes the
+   widget puts on the track and range by default) with its own theme colors
+   (including blue) - these three selectors already outrank those on
+   specificity, but !important removes any doubt a theme's own CSS could
+   still win by loading later. This element's own box (top/bottom: 6px) is
+   left alone since it's what jQuery UI (and this file's own JS) measures
+   0%-100% against for the handle/ticks - its visible background is drawn
+   by ::before below instead, sized 8px (half the handle's own 16px) taller
+   at each end, so the round handle - which can visually overhang up to
+   half its own height past this box's edge at the 0%/100% extremes - stays
+   fully inside the visible track instead of poking out above/below it.
+   width: a flexible range (not a fixed px) instead, so the track scales
+   with the block's own width in both directions - narrower shrinks it
+   down (to a 30px floor, so it never disappears), wider grows it beyond
+   its old fixed 60px too, since .slider-scale above never grows (flex:
+   0 1 90px) and is the only other flex item sharing this row - all of the
+   wrap's own growth goes into the track. */
+.blinds-slider-wrap .slider {
+  position: relative;
+  flex: 1 1 60px;
+  min-width: 30px;
+  margin: 6px 0;
+  height: auto !important;
+  border: none !important;
+  background: transparent !important;
+  cursor: pointer;
+}
+
+.blinds-slider-wrap .slider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -8px;
+  bottom: -8px;
+  z-index: 0;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 10px;
+  background: linear-gradient(
+    to top,
+    rgba(255, 255, 255, 0.03),
+    rgba(255, 255, 255, 0.14)
+  );
+  pointer-events: none;
+}
+
+/* top: jQuery UI's own theme CSS anchors .ui-slider-range-max at the
+   track's own top (range: 'max' - see js/switches.js's addSlider()) - this
+   pulls that anchor up 8px to match ::before's own extended top above, so
+   the fill can reach all the way into that overhang zone instead of
+   leaving it looking empty there at every value. height is left alone here
+   (jQuery UI sets it inline, as a value-driven %) - js/switches.js's
+   extendRangeFill() tops it up by that same 8px on every value change, so
+   the fill's *bottom* edge (which already correctly tracks the handle)
+   isn't dragged upward by this same shift. */
+.blinds-slider-wrap .slider .ui-slider-range {
+  top: -8px !important;
+  border-radius: 9px;
+  background: linear-gradient(
+    to top,
+    rgba(75, 160, 75, 0.55),
+    rgba(125, 220, 110, 0.95)
+  ) !important;
+}
+
+/* A small, plain button - not an oversized draggable circle. Width/height
+   !important: jQuery UI's own bundled default theme sizes the handle via
+   its own em-based rule (.ui-slider .ui-slider-handle), which these two
+   already outrank on specificity, but pin them anyway so the handle can
+   never end up non-square. jQuery UI positions the handle with "bottom:
+   value%", which places the handle's *bottom edge* (not its center) at
+   that percentage of the track - so without correction the round handle
+   visually sits half its own height too high compared to the tick marks,
+   which center on their percentage via transform: translateY(-50%) (see
+   .slider-tick span below). margin-bottom: -8px (half the 16px handle
+   height) shifts the handle back down so its *center* lands on the
+   value's percentage, matching the ticks. The theme's own default
+   (margin-bottom: -.6em) does the same thing for its own default handle
+   size - this isn't overriding a quirk, it's the same compensation
+   re-sized for our handle.
+*/
+/* top/margin-top !important: the Modern Dark/Liquid Glass Blue/Liquid Glass
+   Grey themes each carry their own `.ui-slider-handle { top: 50% !important;
+   margin-top: -20px !important; ... }`, written to vertically-center the
+   dimmer's horizontal-slider handle within its track. That selector has no
+   idea this handle is inside a *vertical* slider - with nothing here to
+   contest top/margin-top, it applied uncontested, pinning the handle to the
+   track's vertical center via top+height (which, once both top and bottom
+   are specified with an explicit height, wins over jQuery UI's own dynamic
+   "bottom: value%" - the box is over-constrained and bottom is dropped) -
+   so the handle visually never moved off dead-center, regardless of the
+   slider's actual value. Resetting top/margin-top back to auto/0 hands
+   vertical positioning back to jQuery UI's own "bottom" entirely. */
+.blinds-slider-wrap .slider .ui-slider-handle {
+  left: 50%;
+  top: auto !important;
+  width: 16px !important;
+  height: 16px !important;
+  margin-left: -8px;
+  margin-top: 0 !important;
+  margin-bottom: -8px !important;
+  border: 2px solid rgba(255, 255, 255, 0.85) !important;
+  border-radius: 50% !important;
+  background: #d9dde2 !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  cursor: grab;
+}
+
+.blinds-slider-wrap .slider .ui-slider-handle:focus {
+  outline: 2px solid rgba(255, 255, 255, 0.65);
+  outline-offset: 2px;
+}
+
+/* flex-shrink: 1 (not 0) - its own ticks are position: absolute, so this
+   still needs an explicit width for them to measure their right/width
+   percentages against (an absolutely-positioned child can't contribute to
+   its own parent's intrinsic sizing), but letting it shrink below that on
+   a narrow block keeps it inside the block instead of pushing .slider (or
+   the block itself) wider than available. */
+.slider-scale {
+  position: relative;
+  flex: 0 1 90px;
+  min-width: 0;
+  margin: 6px 0;
+  pointer-events: none;
+}
+
+.slider-tick {
+  position: absolute;
+  right: 0;
+  width: 100%;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.slider-tick::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 10px;
+  border-top: 2px solid rgba(255, 255, 255, 0.55);
+}
+
+.slider-tick span {
+  position: absolute;
+  right: 16px;
+  top: 0;
+  transform: translateY(-50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.72);
+  white-space: nowrap;
+}
+
+.slider-tick:hover span,
+.slider-tick:focus span {
+  color: var(--text-light);
+}
+
+/* Marks the tick closest to the slider's current value - the only
+   on-slider indicator of the current reading. Bold in addition to the
+   color change so it still stands out on its own. */
+.slider-tick-active::after {
+  border-top-color: #9ae58b;
+}
+
+.slider-tick-active span {
+  color: #9ae58b;
+  font-weight: 800;
 }
 
 @media (max-width: 975px) {
@@ -3691,7 +4178,7 @@ img.icon {
   .col-icon .wi {
     font-size: 15px !important;
   }
-  
+
   .fa-tv:before {
     font-size: 12px;
   }
@@ -3726,7 +4213,6 @@ div.screen {
   color: var(--text-light);
 }
 
-
 .section-heading {
   margin-top: 0;
 }
@@ -3735,7 +4221,7 @@ div.screen {
   color: var(--button-active);
 }
 
-.no-gutter>[class*='col-'] {
+.no-gutter > [class*='col-'] {
   padding-right: 0;
   padding-left: 0;
 }
@@ -3754,7 +4240,7 @@ div.screen {
 .btn-default.focus,
 .btn-default:active,
 .btn-default.active,
-.open>.dropdown-toggle.btn-default {
+.open > .dropdown-toggle.btn-default {
   color: var(--text-dark);
   background-color: #f2f2f2;
   border-color: #ededed;
@@ -3762,7 +4248,7 @@ div.screen {
 
 .btn-default:active,
 .btn-default.active,
-.open>.dropdown-toggle.btn-default {
+.open > .dropdown-toggle.btn-default {
   background-image: none;
 }
 
@@ -3807,7 +4293,7 @@ fieldset[disabled] .btn-default.active {
 .btn-primary.focus,
 .btn-primary:active,
 .btn-primary.active,
-.open>.dropdown-toggle.btn-primary {
+.open > .dropdown-toggle.btn-primary {
   color: var(--text-light);
   background-color: #ee4b28;
   border-color: #ed431f;
@@ -3815,7 +4301,7 @@ fieldset[disabled] .btn-default.active {
 
 .btn-primary:active,
 .btn-primary.active,
-.open>.dropdown-toggle.btn-primary {
+.open > .dropdown-toggle.btn-primary {
   background-image: none;
 }
 
@@ -3992,7 +4478,6 @@ a:not([href]) {
   cursor: pointer;
 }
 
-
 /* EVOHOME START */
 
 .text-grey {
@@ -4020,7 +4505,6 @@ a:not([href]) {
   display: none !important;
 }
 
-
 /* EVOHOME END */
 
 .hr_thin {
@@ -4041,7 +4525,7 @@ a:not([href]) {
   text-align: left;
   vertical-align: middle;
   min-width: 50%;
-  margin-left:auto;
+  margin-left: auto;
   margin-right: auto;
 }
 
@@ -4118,9 +4602,7 @@ a:not([href]) {
   overflow: hidden;
 }
 
-
 /* END: NEWS BLOCK */
-
 
 /* START: TOOLTIPSTYLE */
 
@@ -4239,9 +4721,7 @@ canvas {
   margin-right: 5px;
 }
 
-
 /* END: TOOLTIPSTYLE */
-
 
 /* START: GRAPH-MENU DEBUG */
 
@@ -4304,7 +4784,7 @@ canvas {
   padding-right: 5px;
 }
 
-.graph-menu div:not(.debug)>.fas {
+.graph-menu div:not(.debug) > .fas {
   padding-right: 5px;
 }
 
@@ -4382,9 +4862,7 @@ canvas {
   background-color: var(--text-light);
 }
 
-
 /* END: GRAPH-MENU DEBUG */
-
 
 /* START: CAMERA COMPONENT */
 
@@ -4401,7 +4879,7 @@ canvas {
 .cam-container .carousel-inner {
   position: relative;
   width: 100%;
-  overflow: visible!important;
+  overflow: visible !important;
 }
 
 .cam-container .stream {
@@ -4534,30 +5012,42 @@ canvas {
 .cam-container .cam-caption {
   position: absolute;
   color: var(--text-light);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, .6);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
   z-index: 30;
   right: 3%;
   margin-top: 1%;
 }
 
 .cam-container .carousel-inner .item img {
-  height: 100vh!important;
+  height: 100vh !important;
 }
 
 .cam-container .carousel-indicators {
-  bottom: 5%!important;
+  bottom: 5% !important;
 }
 
 .carbon {
-  background: linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px, linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px, linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px, linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px, linear-gradient(90deg, #1b1b1b 10px, transparent 10px), linear-gradient( #1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
+  background:
+    linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
+    linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px,
+    linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px,
+    linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px,
+    linear-gradient(90deg, #1b1b1b 10px, transparent 10px),
+    linear-gradient(
+      #1d1d1d 25%,
+      #1a1a1a 25%,
+      #1a1a1a 50%,
+      transparent 50%,
+      transparent 75%,
+      #242424 75%,
+      #242424
+    );
   background-color: #131313;
   background-size: 20px 20px;
   background-clip: content-box;
 }
 
-
 /* END: CAMERA COMPONENT */
-
 
 /* START: CORONAVIRUS */
 
@@ -4609,9 +5099,7 @@ canvas {
   vertical-align: middle;
 }
 
-
 /* END: CORONAVIRUS */
-
 
 /* START: AGENDA */
 
@@ -4631,7 +5119,6 @@ canvas {
 }
 
 /* END: AGENDA */
-
 
 /* START: NEW CALENDAR */
 
@@ -4666,7 +5153,7 @@ canvas {
   text-align: left;
 }
 
-.cal_table td>div {
+.cal_table td > div {
   text-align: center;
 }
 
@@ -4674,36 +5161,36 @@ canvas {
   white-space: wrap !important;
 }
 
-.cal_table td>div.historic>div {
+.cal_table td > div.historic > div {
   color: rgba(255, 255, 255, 0.3);
 }
 
-.cal_table td>div.header {
+.cal_table td > div.header {
   background-color: #484848;
   max-width: inherit;
 }
 
-.cal_table td>div.today {
+.cal_table td > div.today {
   background-color: #0275d8;
 }
 
-.cal_table td>div.event:hover,
-.cal_table td>div.event.historic:hover>div {
+.cal_table td > div.event:hover,
+.cal_table td > div.event.historic:hover > div {
   background-color: #f0ad4e;
   color: var(--selector-bg);
 }
 
-.cal_table td>div.allday {
+.cal_table td > div.allday {
   background-color: #d9534f;
   border-radius: 2px;
 }
 
-.cal_table td>div.allday.hol {
+.cal_table td > div.allday.hol {
   background-color: #428442;
   border-radius: 2px;
 }
 
-.cal_table td>div:not(:first-child) {
+.cal_table td > div:not(:first-child) {
   display: inline-flex;
   margin: 3px 5px;
   display: flex;
@@ -4731,18 +5218,18 @@ canvas {
   border-radius: 5px;
 }
 
-.cal-modal>.cal-title {
+.cal-modal > .cal-title {
   font-size: 1.8em;
   font-weight: 900;
   margin-bottom: 10px;
   padding-bottom: 5px;
 }
 
-.cal-modal>.cal-title>.far {
+.cal-modal > .cal-title > .far {
   float: right !important;
 }
 
-.cal-modal>.cal-info {
+.cal-modal > .cal-info {
   overflow-y: auto;
   height: calc(100% - 55px);
   border-bottom: solid 1px #bebebe;
@@ -4750,7 +5237,7 @@ canvas {
   padding-top: 10px;
 }
 
-.cal-modal>.cal-footer {
+.cal-modal > .cal-footer {
   bottom: 0px !important;
   position: absolute;
   width: 93%;
@@ -4764,24 +5251,24 @@ canvas {
   position: absolute;
 }
 
-.cal-modal>.cal-footer a {
+.cal-modal > .cal-footer a {
   color: grey;
 }
 
-.cal-modal>.cal-footer a:hover {
+.cal-modal > .cal-footer a:hover {
   color: dodgerblue;
 }
 
-.cal-modal>.cal-footer a:nth-child(1) {
+.cal-modal > .cal-footer a:nth-child(1) {
   float: left;
 }
 
-.cal-modal>.cal-footer a:nth-child(2) {
+.cal-modal > .cal-footer a:nth-child(2) {
   float: right;
 }
 
 @media screen and (max-width: 1400px) and (max-height: 800px) {
-  .cal_table td>div:first-child {
+  .cal_table td > div:first-child {
     text-align: center;
   }
   .cal_table td div {
@@ -4790,16 +5277,18 @@ canvas {
   }
 }
 
-
 /* END: CALENDAR */
-
 
 /* START: SECURITY PANEL */
 
 @font-face {
   font-family: 'Audiowide';
   src: url('../font/Audiowide.eot');
-  src: url('../font/Audiowide.eot?#iefix') format('embedded-opentype'), url('../font/Audiowide.woff') format('woff'), url('../font/Audiowide.ttf') format('truetype'), url('../font/Audiowide.svg#../font/Audiowide-7Italic') format('svg');
+  src:
+    url('../font/Audiowide.eot?#iefix') format('embedded-opentype'),
+    url('../font/Audiowide.woff') format('woff'),
+    url('../font/Audiowide.ttf') format('truetype'),
+    url('../font/Audiowide.svg#../font/Audiowide-7Italic') format('svg');
 }
 
 .sec-modal {
@@ -4830,26 +5319,29 @@ canvas {
 }
 
 .sec-modal .sec-frame {
-  position: relative
+  position: relative;
 }
 
 .sec-frame {
   border-radius: 5px;
   position: relative;
   width: 12em;
-  margin: 0 auto
+  margin: 0 auto;
 }
 
 .sec-frame.decorated {
   background-image: url(../img/bg14.jpg);
   -webkit-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
   -moz-box-shadow: 10px 10px 5px 0px rgba(0, 0, 0, 0.75);
-  box-shadow: 0px 6px 20px 5px rgba(0, 0, 0, 0.75), inset 0px 5px 7px -2px rgba(252, 252, 252, 0.2), inset 0 -14px 8px 2px rgba(0, 0, 0, 0.7);
+  box-shadow:
+    0px 6px 20px 5px rgba(0, 0, 0, 0.75),
+    inset 0px 5px 7px -2px rgba(252, 252, 252, 0.2),
+    inset 0 -14px 8px 2px rgba(0, 0, 0, 0.7);
   padding: 1em;
 }
 
 .sec-frame:not(.decorated) {
-  background-color: rgba(0,0,0,0.2);
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .sec-frame .keypad-header {
@@ -4939,7 +5431,10 @@ canvas {
   border-radius: 3px;
   background-color: #161616;
   border: 0;
-  box-shadow: inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5), inset 0px 0px 15px 5px var(--main-bg-strong);
+  box-shadow:
+    inset 0px 1px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5),
+    inset 0px 0px 15px 5px var(--main-bg-strong);
   color: #8fffd0;
   font-family: monospace;
   text-align: center;
@@ -4985,9 +5480,21 @@ canvas {
 }
 
 .sec-frame.decorated .keypad-input .key {
-  -webkit-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  -moz-box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 0px 11px 22px #000000, 0px 3px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -webkit-box-shadow:
+    0px 11px 22px #000000,
+    0px 3px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -moz-box-shadow:
+    0px 11px 22px #000000,
+    0px 3px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0px 11px 22px #000000,
+    0px 3px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
 }
 
 .sec-frame .keypad-input .key:not(.disabled):hover {
@@ -4996,9 +5503,21 @@ canvas {
 
 .sec-frame .keypad-input .key:not(.disabled):active {
   transform: scale(0.9);
-  -webkit-box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  -moz-box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
-  box-shadow: 0px 2px 6px #000000, 0px 15px 15px rgba(0, 0, 0, 0.4), inset 0px 1px 0px rgba(255, 255, 255, 1), inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -webkit-box-shadow:
+    0px 2px 6px #000000,
+    0px 15px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 1),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  -moz-box-shadow:
+    0px 2px 6px #000000,
+    0px 15px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 1),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0px 2px 6px #000000,
+    0px 15px 15px rgba(0, 0, 0, 0.4),
+    inset 0px 1px 0px rgba(255, 255, 255, 1),
+    inset 0px 0px 3px rgba(255, 255, 255, 0.5);
 }
 
 .sec-frame .keypad-input .key.h {
@@ -5037,7 +5556,10 @@ canvas {
   font-weight: 900;
   font-size: 100%;
   color: rgba(130, 130, 130, 0.8);
-  text-shadow: -1px -1px 1px var(--main-bg-strong), 0 0 0 #000, 1px 1px 3px rgba(255, 255, 255, 0.7);
+  text-shadow:
+    -1px -1px 1px var(--main-bg-strong),
+    0 0 0 #000,
+    1px 1px 3px rgba(255, 255, 255, 0.7);
 }
 
 .sec-frame .keypad-input .status[data-id='disarm']:before {
@@ -5077,18 +5599,110 @@ canvas {
   width: 0.5em;
   height: 0.5em;
   border-radius: 100%;
-  background: -moz-linear-gradient( -45deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
-  background: -webkit-gradient( linear, left top, right bottom, color-stop(0%, #adadad), color-stop(51%, #e1e1e1), color-stop(68%, #dddddd), color-stop(100%, #f6f6f6));
-  background: -webkit-linear-gradient( -45deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
-  background: -o-linear-gradient( -45deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
-  background: -ms-linear-gradient( -45deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
-  background: linear-gradient( 135deg, #adadad 0%, #e1e1e1 51%, #dddddd 68%, #f6f6f6 100%);
+  background: -moz-linear-gradient(
+    -45deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
+  background: -webkit-gradient(
+    linear,
+    left top,
+    right bottom,
+    color-stop(0%, #adadad),
+    color-stop(51%, #e1e1e1),
+    color-stop(68%, #dddddd),
+    color-stop(100%, #f6f6f6)
+  );
+  background: -webkit-linear-gradient(
+    -45deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
+  background: -o-linear-gradient(
+    -45deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
+  background: -ms-linear-gradient(
+    -45deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
+  background: linear-gradient(
+    135deg,
+    #adadad 0%,
+    #e1e1e1 51%,
+    #dddddd 68%,
+    #f6f6f6 100%
+  );
   filter: progid: DXImageTransform.Microsoft.gradient(startColorstr='#adadad', endColorstr='#f6f6f6', GradientType=1);
   -moz-box-shadow: 0px 2px 4px #000;
   -webkit-box-shadow: 0px 2px 4px #000;
-  box-shadow: 0px 2px 4px #000, -1px 3px 10px 7px var(--main-bg-dark);
+  box-shadow:
+    0px 2px 4px #000,
+    -1px 3px 10px 7px var(--main-bg-dark);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  background-image: -webkit-radial-gradient( 50% 0%, 8% 50%, hsla(0, 0%, 100%, 0.5) 0%, hsla(0, 0%, 100%, 0) 100%), -webkit-radial-gradient(50% 100%, 12% 50%, hsla(0, 0%, 100%, 0.6) 0%, hsla( 0, 0%, 100%, 0) 100%), -webkit-radial-gradient(0% 50%, 50% 7%, hsla(0, 0%, 100%, 0.5) 0%, hsla( 0, 0%, 100%, 0) 100%), -webkit-radial-gradient(100% 50%, 50% 5%, hsla(0, 0%, 100%, 0.5) 0%, hsla( 0, 0%, 100%, 0) 100%), -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 0%, 0) 0%, hsla( 0, 0%, 0%, 0) 3%, hsla(0, 0%, 0%, 0.1) 3.5%), -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 100%, 0) 0%, hsla(0, 0%, 100%, 0) 6%, hsla(0, 0%, 100%, 0.1) 7.5%), -webkit-repeating-radial-gradient(50% 50%, 100% 100%, hsla(0, 0%, 100%, 0) 0%, hsla(0, 0%, 100%, 0) 1.2%, hsla(0, 0%, 100%, 0.2) 2.2%), -webkit-radial-gradient(50% 50%, 200% 50%, hsla(0, 0%, 90%, 1) 5%, hsla( 0, 0%, 85%, 1) 30%, hsla(0, 0%, 60%, 1) 100%);
+  background-image:
+    -webkit-radial-gradient(
+      50% 0%,
+      8% 50%,
+      hsla(0, 0%, 100%, 0.5) 0%,
+      hsla(0, 0%, 100%, 0) 100%
+    ),
+    -webkit-radial-gradient(
+        50% 100%,
+        12% 50%,
+        hsla(0, 0%, 100%, 0.6) 0%,
+        hsla(0, 0%, 100%, 0) 100%
+      ),
+    -webkit-radial-gradient(
+        0% 50%,
+        50% 7%,
+        hsla(0, 0%, 100%, 0.5) 0%,
+        hsla(0, 0%, 100%, 0) 100%
+      ),
+    -webkit-radial-gradient(
+        100% 50%,
+        50% 5%,
+        hsla(0, 0%, 100%, 0.5) 0%,
+        hsla(0, 0%, 100%, 0) 100%
+      ),
+    -webkit-repeating-radial-gradient(
+        50% 50%,
+        100% 100%,
+        hsla(0, 0%, 0%, 0) 0%,
+        hsla(0, 0%, 0%, 0) 3%,
+        hsla(0, 0%, 0%, 0.1) 3.5%
+      ),
+    -webkit-repeating-radial-gradient(
+        50% 50%,
+        100% 100%,
+        hsla(0, 0%, 100%, 0) 0%,
+        hsla(0, 0%, 100%, 0) 6%,
+        hsla(0, 0%, 100%, 0.1) 7.5%
+      ),
+    -webkit-repeating-radial-gradient(
+        50% 50%,
+        100% 100%,
+        hsla(0, 0%, 100%, 0) 0%,
+        hsla(0, 0%, 100%, 0) 1.2%,
+        hsla(0, 0%, 100%, 0.2) 2.2%
+      ),
+    -webkit-radial-gradient(
+        50% 50%,
+        200% 50%,
+        hsla(0, 0%, 90%, 1) 5%,
+        hsla(0, 0%, 85%, 1) 30%,
+        hsla(0, 0%, 60%, 1) 100%
+      );
   opacity: 0.5;
 }
 
@@ -5134,14 +5748,12 @@ canvas {
   display: none;
 }
 
-
 /* END: SECURITY PANEL */
-
 
 /* START: DIAL */
 
 .transbg.dial {
-  background-color: rgba(0,0,0,0);
+  background-color: rgba(0, 0, 0, 0);
 }
 
 .block-center {
@@ -5161,12 +5773,11 @@ canvas {
 }
 
 .dt_content .dial {
-  
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  
+
   /* Backstop only: js/components/dial.js sets an inline font-size that
      matches the block's actual measured/configured size on every mount. */
   font-size: 100px;
@@ -5182,7 +5793,9 @@ canvas {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 5px 10px 2px rgba(0, 0, 0, 0.3), inset 0px 0px 6px 0px rgba(0, 0, 0, 1);
+  box-shadow:
+    0 5px 10px 2px rgba(0, 0, 0, 0.3),
+    inset 0px 0px 6px 0px rgba(0, 0, 0, 1);
 }
 
 .dial:hover {
@@ -5244,7 +5857,7 @@ canvas {
   clip: auto;
 }
 
-.slice.primary{
+.slice.primary {
   color: #ffa500;
   color: var(--dial-color);
 }
@@ -5257,7 +5870,7 @@ canvas {
   color: #28a745;
 }
 
-.slice.negative{
+.slice.negative {
   color: #dc3545;
 }
 
@@ -5332,11 +5945,11 @@ canvas {
 }
 
 .dial .slice.splitdial-plus {
-  transform: translate(-50%,-50%) rotateY(0deg) rotateX(0deg)!important;
+  transform: translate(-50%, -50%) rotateY(0deg) rotateX(0deg) !important;
 }
 
 .dial .slice.splitdial-minus {
-  transform: translate(-50%,-50%) rotate(180deg)!important;
+  transform: translate(-50%, -50%) rotate(180deg) !important;
 }
 
 .dial:not(.p180):not(.p360) .slice,
@@ -5346,7 +5959,7 @@ canvas {
 
 .dial.p180 .slice,
 .dial.p360 .slice {
-  clip: rect(0em, 1em, 1em, 0em)!important;
+  clip: rect(0em, 1em, 1em, 0em) !important;
 }
 
 .dial .dial-container {
@@ -5373,7 +5986,7 @@ canvas {
 .dt_content .dial.active:not(.fixed):hover .dial-container {
   width: 80%;
   height: 80%;
-/*  top: 6%;
+  /*  top: 6%;
   left: 6%;*/
   top: 50%;
   left: 50%;
@@ -5443,7 +6056,9 @@ canvas {
   justify-content: center;
   border-radius: 50%;
   background: radial-gradient(circle, #333, #444);
-  box-shadow: inset 0 0 3px 0px var(--main-bg-dark), 0 0 11px 0px var(--main-bg-strong);
+  box-shadow:
+    inset 0 0 3px 0px var(--main-bg-dark),
+    0 0 11px 0px var(--main-bg-strong);
   -webkit-transition: all 0.2s ease-in;
   -moz-transition: all 0.2s ease-in;
   -o-transition: all 0.2s ease-in;
@@ -5473,7 +6088,7 @@ canvas {
   padding-left: 0;
   width: 130%;
   height: 100%;
-/*  font-size: 9%;*/
+  /*  font-size: 9%;*/
   position: absolute;
   top: 50%;
   left: 50%;
@@ -5494,16 +6109,19 @@ canvas {
   flex-direction: column;
 }
 
-.dial-menu  {
-    height: 90%;
-    width: 90%;
-    position: absolute;
-    top: 5%;
-    left:5%;
-    border-radius: 50%;
-    box-shadow: inset 0px 0.5px 0px rgba(255, 255, 255, 0.3), inset 0px 0px 2px rgba(255, 255, 255, 0.5), inset 0px 5px 8px 5px var(--main-bg-strong);
-    background-color: #2a2a2a;  
-    overflow:hidden;
+.dial-menu {
+  height: 90%;
+  width: 90%;
+  position: absolute;
+  top: 5%;
+  left: 5%;
+  border-radius: 50%;
+  box-shadow:
+    inset 0px 0.5px 0px rgba(255, 255, 255, 0.3),
+    inset 0px 0px 2px rgba(255, 255, 255, 0.5),
+    inset 0px 5px 8px 5px var(--main-bg-strong);
+  background-color: #2a2a2a;
+  overflow: hidden;
 }
 
 .dial-menu .status li {
@@ -5523,7 +6141,14 @@ canvas {
 }
 
 .dial-menu .status li.selected {
-  background: linear-gradient( to right, black 0%, #29261f 8%, var(--dial-color) 50%, #29261f 92%, black 100%);
+  background: linear-gradient(
+    to right,
+    black 0%,
+    #29261f 8%,
+    var(--dial-color) 50%,
+    #29261f 92%,
+    black 100%
+  );
   color: #393939;
   -moz-box-shadow: 5px 0px 15px var(--main-bg-dark);
   -webkit-box-shadow: 5px 0px 15px var(--main-bg-dark);
@@ -5531,11 +6156,10 @@ canvas {
 }
 
 .dial-menu-title {
- 
 }
 
 .dial-menu-title-text {
-/*
+  /*
   position: absolute;
   text-align: center;
   bottom:0;
@@ -5548,37 +6172,37 @@ canvas {
 }
 
 .dial-menu-title-background {
-  content:'';
+  content: '';
   position: absolute;
-  line-height:400%;
-  bottom:0;
-  left:0;
+  line-height: 400%;
+  bottom: 0;
+  left: 0;
   text-align: center;
   width: 100%;
   height: 100%;
   border-radius: 50%;
-    background: radial-gradient(circle, #333, #444);
-  clip: rect( 6em, 12em, 12em, 0);
+  background: radial-gradient(circle, #333, #444);
+  clip: rect(6em, 12em, 12em, 0);
 }
 
 .dial-menu-title {
-  position:absolute;
+  position: absolute;
   width: 100%;
   height: 27%;
   bottom: 5%;
   left: 0;
-  
-/*  background: rgba(0,255,0,0.5);*/
+
+  /*  background: rgba(0,255,0,0.5);*/
   display: flex;
   justify-content: center;
   align-items: center;
   color: orange;
-  color: var(--dial-color);  
+  color: var(--dial-color);
 }
 
 .dial-menu.hastitle .status {
-  height:85%;
-  top:35%;
+  height: 85%;
+  top: 35%;
 }
 .dial .dial-face {
   width: 100%;
@@ -5632,8 +6256,6 @@ canvas {
   text-align: center;
   white-space: nowrap;
 }
-
-
 
 .dial .dial-display {
   display: -webkit-box;
@@ -5691,13 +6313,11 @@ canvas {
   text-align: center;
   left: 50%;
   transform: translate(-50%);
-
-  
 }
 
 .dial.text .value-unit {
   width: 95%;
-/*  font-size: 10%;*/
+  /*  font-size: 10%;*/
 }
 
 .dial.text .value {
@@ -5715,7 +6335,6 @@ canvas {
 .dial .info.nosetpoint {
   margin-bottom: 7px;
 }
-
 
 .dial .extra {
   position: absolute;
@@ -5741,7 +6360,7 @@ canvas {
 }
 
 .dial .itemlabel {
-  margin-right: 0.3em
+  margin-right: 0.3em;
 }
 
 .dial .info {
@@ -5750,7 +6369,7 @@ canvas {
 }
 
 .dial:hover .info {
-  display:block
+  display: block;
 }
 
 .dial .extra i {
@@ -5762,18 +6381,17 @@ canvas {
   margin-right: 0.25em;
 }
 
-.dial .item.primary{
+.dial .item.primary {
   font-size: 150%;
-  width:100%
+  width: 100%;
 }
-
 
 .dataunit {
   display: flex;
   align-items: center;
 }
 
-.primary .data{
+.primary .data {
   font-size: 1.5em;
   line-height: 1.5em;
   color: #cccccc;
@@ -5789,7 +6407,7 @@ canvas {
 }
 
 .dial-switch .extra {
-  margin-top: 4%
+  margin-top: 4%;
 }
 
 .dial-switch .info {
@@ -5799,7 +6417,7 @@ canvas {
 /*Some dial utility classes*/
 
 .dial .w100 {
-  width: 100%
+  width: 100%;
 }
 
 .dial.active:not(.fixed):hover .value-unit .unit {
@@ -5852,7 +6470,6 @@ canvas {
   text-align: center;
   position: absolute;
 }
-
 
 /* Dial face 360 degrees with 10 numbers */
 
@@ -5915,7 +6532,6 @@ canvas {
   left: 42%;
   top: 90%;
 }
-
 
 /* Dial face 360 degrees with 12 numbers */
 
@@ -5990,7 +6606,6 @@ canvas {
   left: 42%;
   top: 90%;
 }
-
 
 /* Dial face 280 degrees with 10 numbers */
 
@@ -6073,7 +6688,7 @@ canvas {
   right: 0;
   bottom: 0;
   left: 0;
-  -ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity=0)";
+  -ms-filter: 'progid:DXImageTransform.Microsoft.Alpha(Opacity=0)';
   filter: alpha(opacity=0);
   -moz-opacity: 0;
   opacity: 0;
@@ -6109,7 +6724,10 @@ canvas {
   -o-transition: all 0.2s ease-out;
   transition: all 0.2s ease-out;
   text-shadow: 0 2px 1px rgba(0, 0, 0, 0.25);
-  box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.13), 0 5px 8px rgba(0, 0, 0, 0.3), 0 10px 10px 4px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    inset 0 2px 3px rgba(255, 255, 255, 0.13),
+    0 5px 8px rgba(0, 0, 0, 0.3),
+    0 10px 10px 4px rgba(0, 0, 0, 0.3);
   z-index: -1;
   margin: 0;
 }
@@ -6126,7 +6744,7 @@ canvas {
 }
 
 .dial .background {
-  border-radius: 50%
+  border-radius: 50%;
 }
 /*needed? Remove for now ...
 .dial-switch .switch-face:after {
@@ -6143,7 +6761,7 @@ canvas {
 */
 
 .dial-switch .switch-face:before {
-  content: "";
+  content: '';
   position: absolute;
   left: -10px;
   right: -10px;
@@ -6164,7 +6782,7 @@ canvas {
   height: 99%;
 }
 
-.dial-switch input:checked~.switch-face {
+.dial-switch input:checked ~ .switch-face {
   box-shadow: 0 0 25px 1px var(--dial-rgba);
   color: orange;
   color: var(--dial-color);
@@ -6174,7 +6792,7 @@ canvas {
 
 .dial-switch .icon-off {
   font-size: 150%;
-  color: rgba(128,128,128,0.5);
+  color: rgba(128, 128, 128, 0.5);
   -webkit-transition: all 0.1s ease;
   -moz-transition: all 0.1s ease;
   -ms-transition: all 0.1s ease;
@@ -6186,7 +6804,7 @@ canvas {
   transform: translate(-50%, -50%);
 }
 
-.dial-switch input:checked~.switch-face .device {
+.dial-switch input:checked ~ .switch-face .device {
   -webkit-transition: all 0.1s ease;
   -moz-transition: all 0.1s ease;
   -ms-transition: all 0.1s ease;
@@ -6194,7 +6812,7 @@ canvas {
   transition: all 0.1s ease;
 }
 
-.dial-switch input:checked~.switch-face .fas {
+.dial-switch input:checked ~ .switch-face .fas {
   color: orange;
   color: var(--dial-color);
   -webkit-transition: all 0.1s ease;
@@ -6204,7 +6822,7 @@ canvas {
   transition: all 0.1s ease;
 }
 
-.dial-switch input:checked~.switch-face .info {
+.dial-switch input:checked ~ .switch-face .info {
   -webkit-transition: all 0.1s ease;
   -moz-transition: all 0.1s ease;
   -ms-transition: all 0.1s ease;
@@ -6213,7 +6831,7 @@ canvas {
 }
 
 .dial-switch .icon-off:after {
-  content: "";
+  content: '';
   display: block;
   position: absolute;
   width: 90%;
@@ -6230,7 +6848,9 @@ canvas {
   background: -webkit-gradient(linear, 0 0, 0 100%, from(#161616), to(#6c6c6c));
   background: -webkit-linear-gradient(#161616, #6c6c6c);
   background: linear-gradient(#161616, #6c6c6c);
-  box-shadow: 0 -2px 5px rgba(255, 255, 255, 0.05), 0 2px 5px rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 -2px 5px rgba(255, 255, 255, 0.05),
+    0 2px 5px rgba(255, 255, 255, 0.1);
   -webkit-transition: all 0.1s ease;
   -moz-transition: all 0.1s ease;
   -ms-transition: all 0.1s ease;
@@ -6239,7 +6859,7 @@ canvas {
 }
 
 .dial .blinds {
-/*  font-size: 72%;*/
+  /*  font-size: 72%;*/
 }
 
 .dialbtn.up {
@@ -6253,11 +6873,11 @@ canvas {
   position: absolute;
   line-height: 3em;
   transform-origin: top;
-  content: "";
+  content: '';
   width: calc(100% - 0.7em);
   height: calc(100% - 0.4em);
   height: 2.8em;
-  border-bottom: 0.2em solid rgba(0,0,0,0.6);
+  border-bottom: 0.2em solid rgba(0, 0, 0, 0.6);
 }
 
 .dialbtn {
@@ -6277,7 +6897,7 @@ canvas {
   cursor: pointer;
   outline: none;
   transition: 0.2s all;
-  transition-timing-function: cubic-bezier(.91,.8,.54,1.39);
+  transition-timing-function: cubic-bezier(0.91, 0.8, 0.54, 1.39);
   display: flex;
   justify-content: center;
   z-index: 10;
@@ -6299,21 +6919,20 @@ canvas {
   transform-origin: top;
 }
 .dialbtn.selected {
-  background-image: radial-gradient(rgba(255,255,255,0.5), rgba(0,0,0,0));
+  background-image: radial-gradient(rgba(255, 255, 255, 0.5), rgba(0, 0, 0, 0));
 }
 
 .dialbtn.up::after {
   position: absolute;
   line-height: 3em;
   transform-origin: top;
-  content: "";
+  content: '';
   width: calc(100% - 0.5em);
   height: 2.7em;
-  border-bottom: 0.2em solid rgba(0,0,0,0.6);
+  border-bottom: 0.2em solid rgba(0, 0, 0, 0.6);
   left: 0.25em;
   top: 0;
 }
-
 
 .dialbtn.down {
   background-color: rgba(64, 64, 64, 0.2);
@@ -6327,13 +6946,13 @@ canvas {
   position: absolute;
   line-height: 3em;
   transform-origin: top;
-  content: "";
+  content: '';
   width: calc(100% - 0.5em);
   height: calc(100% - 0.4em);
   height: 2.7em;
-  border-top: 0.2em solid rgba(0,0,0,0.6);;
+  border-top: 0.2em solid rgba(0, 0, 0, 0.6);
   top: 0em;
-  left: 0em
+  left: 0em;
 }
 
 .dialbtn.middle {
@@ -6347,11 +6966,11 @@ canvas {
 .dialbtn.middle::after {
   position: absolute;
   line-height: 1em;
-  content: "";
+  content: '';
   width: calc(100% - 0.4em);
   height: 2.7em;
-  border-top: 0.2em solid rgba(0,0,0,0.6);
-  border-bottom: 0.2em solid rgba(0,0,0,0.6);
+  border-top: 0.2em solid rgba(0, 0, 0, 0.6);
+  border-bottom: 0.2em solid rgba(0, 0, 0, 0.6);
   left: 0;
 }
 
@@ -6360,28 +6979,110 @@ canvas {
 }
 
 .middle .icon {
-   font-size: unset
+  font-size: unset;
 }
 
 .middle .text {
-  font-size: 90%
+  font-size: 90%;
 }
 
-.dialupdown .up .text, .dialupdown .down .text  {
-  font-size:250%
+/* Vertical 10-segment Blinds Percentage bar (dial subtype: 'bar'). 0% at
+   the bottom, 100% at the top; each segment sets the device to its own 10%
+   level. js/components/dial.js's _dialFitSize() now sets .dt_content's own
+   height explicitly (the grid row's actual measured height, not the
+   circular dial's width-constrained me.height) for every dial subtype, so
+   this bar truly scales with the block instead of only the circular dial
+   being reliably sized - .dt_content otherwise only gets height:100% via
+   the .fixedheight class, which grid items never get. The min-height
+   values below are just a defensive floor for the rare case _dialFitSize
+   can't measure a size at all (falls back to me.height=100). */
+.dial-bar-widget {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
 }
 
+.dial-bar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding-bottom: 10px;
+  box-sizing: border-box;
+}
+
+/* Font-size/color/margin come from .dt_title (the same class every other
+   device/widget uses for its title, js/dashticz.js's renderTitle()) so the
+   bar's title matches the theme instead of a bar-specific size/color. */
+.dial-bar-title {
+  flex: 0 0 auto;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.dial-bar {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: var(--dial-bar-width, 45%);
+  min-width: 30px;
+  max-width: 100%;
+  min-height: 80px;
+  padding: 4px;
+  border-radius: 6px;
+  background-color: rgba(0, 0, 0, 0.15);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.dial-bar-segment {
+  flex: 1 1 0;
+  min-height: 6px;
+  background-color: #7a7a7a;
+  background-image: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.25),
+    rgba(255, 255, 255, 0) 40%
+  );
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.dial-bar-segment.filled {
+  background-color: var(--success-green);
+  background-image: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.35),
+    rgba(255, 255, 255, 0) 40%
+  );
+}
+
+.dial-bar-value {
+  flex: 0 0 auto;
+  font-size: 90%;
+  text-align: center;
+}
+
+.dialupdown .up .text,
+.dialupdown .down .text {
+  font-size: 250%;
+}
 
 /* END: DIAL */
-
 
 /* Traffic */
 
 #trafficweb iframe {
   width: 100%;
-  height: 575px
+  height: 575px;
 }
-
 
 /* start colorPicker */
 
@@ -6394,17 +7095,17 @@ canvas {
 }
 
 .colorpicker .modal-header {
-  display: flex
+  display: flex;
 }
 
 .colorpicker .modal-title {
-  width: 100%
+  width: 100%;
 }
 
 .colorpicker .modal-dialog {
   max-width: 90%;
   min-width: unset;
-  width: 90%;  
+  width: 90%;
 }
 
 .colorpicker .modal-content {
@@ -6414,7 +7115,7 @@ canvas {
 
 .colorpicker .cp-iro {
   overflow-x: auto;
-  flex-wrap: wrap
+  flex-wrap: wrap;
 }
 
 .colorpicker .cp-buttons {
@@ -6422,11 +7123,11 @@ canvas {
 }
 
 .cp-buttons .btn {
-  width: 4em
+  width: 4em;
 }
 
 .colorpicker img {
-  width: 100%
+  width: 100%;
 }
 
 .colorpicker .cp-buttonsOnOff {
@@ -6437,7 +7138,7 @@ canvas {
   padding-top: 10px;
   padding-bottom: 10px;
   color: darkgrey;
-  background-color: lightgray
+  background-color: lightgray;
   /*  margin-top: 10px;
   margin-bottom: 10px;*/
   /*width: 48px;*/
@@ -6458,26 +7159,25 @@ canvas {
   align-items: center;
 }
 
-.cp-iro>div {
-  margin: 0 10px
+.cp-iro > div {
+  margin: 0 10px;
 }
-
 
 /*end colorpicker*/
 
 /*garbage*/
 .trash .state {
-    font-size: calc(var(--font-small) - 2px) !important;
-    margin-top: -10px;
+  font-size: calc(var(--font-small) - 2px) !important;
+  margin-top: -10px;
 }
 
 .trashsep {
-    width: 10px;
-    text-align: center;
+  width: 10px;
+  text-align: center;
 }
 
 .trashdate {
-    text-align: right;
+  text-align: right;
 }
 /*end garbage*/
 
@@ -6485,20 +7185,20 @@ canvas {
 
 .battery-level {
   position: absolute;
-  right:0;
-  top:0;
+  right: 0;
+  top: 0;
   color: rgba(255, 255, 255, 0.5);
   margin-right: 3px;
-  font-size: 15px
+  font-size: 15px;
 }
 
 .battery-level.fa-battery-empty {
-  color:var(--warning-red);
+  color: var(--warning-red);
   z-index: 15;
 }
 
 .battery-percentage {
-/*  position: absolute;
+  /*  position: absolute;
   top: 5px;
   left: 2px;*/
   width: 100%;
@@ -6511,14 +7211,14 @@ canvas {
 /*tvguide*/
 
 .tvguide tr {
-  vertical-align: top
+  vertical-align: top;
 }
 .tvtime {
-  white-space: nowrap
+  white-space: nowrap;
 }
 .tvchannel {
   font-style: italic;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .tvtitle {
@@ -6535,14 +7235,14 @@ canvas {
 /*xmltvguide*/
 
 .xmltvguide tr {
-  vertical-align: top
+  vertical-align: top;
 }
 .xmltv-time {
-  white-space: nowrap
+  white-space: nowrap;
 }
 .xmltv-channel {
   font-style: italic;
-  white-space: nowrap
+  white-space: nowrap;
 }
 .xmltv-title {
   font-weight: bold;
@@ -6587,7 +7287,7 @@ canvas {
 
 /*debug*/
 .debug ::selection {
-  color:var(--text-light);
+  color: var(--text-light);
   text-shadow: none;
   background: blue;
 }
@@ -6595,25 +7295,26 @@ canvas {
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow-y:auto;
+  overflow-y: auto;
 }
 
 .debug .tab-content {
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow-y:auto;
+  overflow-y: auto;
 }
 
 .debug #debug-log {
   height: calc(100% - 2em);
 }
 
-.selectable, .selectable > * {
+.selectable,
+.selectable > * {
   -moz-user-select: text;
   -webkit-user-select: text;
   -ms-user-select: text;
-  user-select: text
+  user-select: text;
 }
 
 .debug #debug-items {
@@ -6622,15 +7323,15 @@ canvas {
 }
 
 .debug .debug-status {
-  height: 2em
+  height: 2em;
 }
 
 .debug #debug-status {
-  height: calc(100% - 2em)
+  height: calc(100% - 2em);
 }
 
 .debug .debug-memory-container {
-  height: calc(100% - 8em)
+  height: calc(100% - 8em);
 }
 
 .debug #debug-save {
@@ -6640,7 +7341,6 @@ canvas {
 }
 
 .modal-dialog-custom .tab-content {
-
 }
 
 .modal-dialog-custom .debugitems {
@@ -6649,7 +7349,7 @@ canvas {
 
 /*owm widget*/
 .dt_block.owmwidget {
-  background-color: unset 
+  background-color: unset;
 }
 
 /*public transport*/
@@ -6658,7 +7358,9 @@ canvas {
   border-collapse: separate;
 }
 
-.publictransport td {vertical-align: top;}
+.publictransport td {
+  vertical-align: top;
+}
 
 .publictransport .destination {
   font-style: bold;
@@ -6666,7 +7368,7 @@ canvas {
 
 .publictransport .via {
   font-style: italic;
-  color:lightgray;
+  color: lightgray;
 }
 
 .publictransport .platform {
@@ -6675,7 +7377,7 @@ canvas {
 
 .publictransport .transporttype {
   font-style: italic;
-  color:lightgray;
+  color: lightgray;
 }
 
 .publictransport .delay {
@@ -6700,8 +7402,8 @@ canvas {
 }
 
 .waqi.xxl {
-  padding-top: 5px!important;
-  padding-left: 10px!important;
+  padding-top: 5px !important;
+  padding-left: 10px !important;
 }
 .waqi.xxl iframe {
   background-color: #f6f9f7;
@@ -6710,16 +7412,15 @@ canvas {
   -moz-border-radius: 5px;
   -webkit-border-radius: 5px;
   border-radius: 5px;
-  -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.6);
-  -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.6);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  -moz-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
   margin-top: 10px;
   margin-bottom: 10px;
   margin-right: 10px;
 }
 
-.publictransport .remarks
-{
+.publictransport .remarks {
   font-style: italic;
 }
 
@@ -6805,4 +7506,113 @@ canvas {
 .state,
 .value {
   font-size: var(--font-small) !important;
+}
+
+/* Lyrion Music Server (LMS) "Now Playing" block: fixed-size cover on the
+   left, metadata on the right - see js/components/lms.js and
+   docs/blocks/specials/lms.rst. Only the cover has a fixed pixel size (100
+   x 100, per spec); everything else uses the block's own width so the
+   block stays usable at any configured width, in both column and grid mode. */
+.lms-block .dt_state {
+  margin: 0;
+  min-height: 100px;
+}
+
+.lms-block-inner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px;
+  min-width: 0;
+  height: 100%;
+}
+
+.lms-cover {
+  flex: 0 0 100px;
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-selector, 4px);
+  overflow: hidden;
+  background: var(--main-bg-dark);
+}
+
+.lms-cover-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  /* Keeps LMS/album artwork proportions intact - crops rather than
+     stretching or letterboxing, so it never distorts. */
+  object-fit: cover;
+}
+
+.lms-cover-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--text-inactive);
+  font-size: 32px;
+}
+
+.lms-info {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1px;
+}
+
+.lms-info > div {
+  /* Long artist/title/album/station values truncate instead of wrapping or
+     forcing a horizontal scrollbar (#20). */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lms-player-name {
+  font-size: var(--font-small);
+  color: var(--text-inactive);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.lms-station,
+.lms-artist {
+  font-size: var(--font-small);
+  color: var(--text-normal);
+}
+
+.lms-title {
+  /* Match the artist typography while retaining the distinct title color. */
+  font-size: var(--font-small);
+  color: var(--text-title);
+}
+
+.lms-album {
+  font-size: calc(var(--font-small) - 2px);
+  color: var(--text-muted);
+}
+
+.lms-state-label {
+  font-size: var(--font-small);
+  color: var(--text-inactive);
+  font-style: italic;
+}
+
+.lms-paused {
+  color: var(--button-active);
+}
+
+@media (max-width: 400px) {
+  .lms-cover {
+    flex-basis: 72px;
+    width: 72px;
+    height: 72px;
+  }
+  .lms-block .dt_state {
+    min-height: 72px;
+  }
 }
