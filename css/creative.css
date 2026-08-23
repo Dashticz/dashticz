@@ -149,10 +149,19 @@
    received the min-height rule above: the grid cell itself resized correctly,
    but the visible content stayed pinned at its small natural size, making a
    resize look like it "didn't stick". Fill and center it like the other
-   grid-aware blocks instead. */
+   grid-aware blocks instead.
+
+   Same class of bug as .frame/.waqi/.basicclock etc. above: on a grid row
+   short enough that the icon+title header plus the sunrise/sunset line don't
+   both fit, min-height alone only floors the block - it can still grow past
+   its row, and .dt-grid-item's own overflow: auto then shows a scrollbar
+   with clickable up/down arrows instead of just clipping the excess like
+   every other grid-aware block already does. */
 .dt-grid-screen > .dt-grid-layout > .dt-grid-item > .sunriseholder {
   box-sizing: border-box;
-  min-height: 100%;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
   display: flex;
   /* Without this, flex's row default put every direct child - the
      .sunrise-header row AND each individual icon/time span making up the

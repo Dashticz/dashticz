@@ -355,6 +355,7 @@
       "conversion_unsafe": "Conversion stopped because block \"{block}\" contains functions or other settings that cannot be converted safely.",
       "remove_title": "Remove tile",
       "remove_aria": "Remove",
+      "remove_confirm": "Remove this tile from the layout?",
       "resize_title": "Resize width and height",
       "removed_one": "Tile removed. Select Save to keep this change, or Cancel to restore it.",
       "removed_all": "No tiles remain. Select Save to remove everything, or Cancel to restore it.",

@@ -302,6 +302,7 @@
       "conversion_unsafe": "Conversion interrompue car le bloc \"{block}\" contient des fonctions ou paramètres qui ne peuvent pas être convertis en toute sécurité.",
       "remove_title": "Supprimer la tuile",
       "remove_aria": "Supprimer",
+      "remove_confirm": "Supprimer cette tuile de la mise en page ?",
       "resize_title": "Redimensionner la largeur et la hauteur",
       "removed_one": "Tuile supprimée. Choisissez Enregistrer pour conserver ce changement, ou Annuler pour la restaurer.",
       "removed_all": "Il ne reste aucune tuile. Choisissez Enregistrer pour tout supprimer, ou Annuler pour restaurer.",

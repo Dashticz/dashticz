@@ -329,6 +329,7 @@
       "conversion_unsafe": "Conversie gestopt omdat block \"{block}\" functies of andere instellingen bevat die niet veilig kunnen worden omgezet.",
       "remove_title": "Tegel verwijderen",
       "remove_aria": "Verwijder",
+      "remove_confirm": "Deze tegel uit de layout verwijderen?",
       "resize_title": "Breedte en hoogte wijzigen",
       "removed_one": "Tegel verwijderd. Kies Opslaan om dit te bewaren, of Annuleren om te herstellen.",
       "removed_all": "Er zijn geen tegels meer. Kies Opslaan om alles te verwijderen, of Annuleren om te herstellen.",

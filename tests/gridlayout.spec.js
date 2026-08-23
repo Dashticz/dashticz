@@ -1231,6 +1231,58 @@ screens[1] = {
     await expect(page.locator('#de-config-popup')).toBeHidden();
   });
 
+  test('the remove button asks for confirmation before deleting a tile', async ({
+    page,
+  }) => {
+    await page.route('**/tests/CONFIG.pw.js*', async (route) => {
+      const response = await route.fetch();
+      await route.fulfill({
+        response,
+        body:
+          (await response.text()) +
+          `
+blocks['grid_dial'] = {
+  idx: 1247,
+  type: 'dial',
+  grid: {x: 1, y: 1, w: 8, h: 8}
+};
+screens[1] = {
+  layout: 'grid',
+  gridColumns: 24,
+  rowHeight: 20,
+  gap: 5,
+  blocks: ['grid_dial']
+};
+`,
+      });
+    });
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.locator('.screen1 .layouteditoricon').click();
+    await expect(page.locator('body')).toHaveClass(/dle-active/);
+
+    const gridItem = page.locator('[data-grid-block="grid_dial"]');
+    const removeButton = gridItem.locator('.dle-overlay .dle-remove-button');
+
+    // Dismissing the confirmation must leave the tile exactly in place.
+    let dialogMessage = null;
+    page.once('dialog', (dialog) => {
+      dialogMessage = dialog.message();
+      dialog.dismiss();
+    });
+    await removeButton.click();
+    await expect.poll(() => dialogMessage).not.toBeNull();
+    expect(dialogMessage).toMatch(/remove this tile/i);
+    await expect(gridItem).toHaveCount(1);
+
+    // Accepting the confirmation removes the tile, same as before this
+    // confirmation step existed.
+    page.once('dialog', (dialog) => dialog.accept());
+    await removeButton.click();
+    await expect(gridItem).toHaveCount(0);
+  });
+
   test('separator image replaces a stale explicit icon', async ({ page }) => {
     await page.route('**/tests/CONFIG.pw.js*', async (route) => {
       const response = await route.fetch();
