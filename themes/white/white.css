@@ -12,15 +12,15 @@
 .transbg.col-xs-10,
 .transbg.col-xs-11,
 .transbg.col-xs-12 {
-	padding-top:15px;
-	padding-bottom:15px;
-	border: 7px solid rgba(24,24,24,0) !important;
-    background: rgba(255,255,255,0.2);
-    background-clip: padding-box;
+  padding-top: 15px;
+  padding-bottom: 15px;
+  border: 7px solid rgba(24, 24, 24, 0) !important;
+  background: rgba(255, 255, 255, 0.2);
+  background-clip: padding-box;
 }
 
 /*Quick hack to modify background of weather block as well*/
 
 .weather .weatherday {
-    background: rgba(255,255,255,0.2);
+  background: rgba(255, 255, 255, 0.2);
 }

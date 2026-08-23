@@ -6,25 +6,25 @@
  */
 
 :root {
-  --main-bg: rgba(32, 33, 42, .88);
+  --main-bg: rgba(32, 33, 42, 0.88);
   --main-border-width: 1px;
   --block-gap: 0px;
   --box-border: 1px solid rgb(181, 181, 181);
-  --home-bg: rgba(28, 31, 42, .74);
-  --border-color-inactive: rgba(42, 94, 151, .5);
-  --border-color-active: rgba(112, 160, 218, .5);
-  --border-color-block: rgba(112, 160, 218, .2);
+  --home-bg: rgba(28, 31, 42, 0.74);
+  --border-color-inactive: rgba(42, 94, 151, 0.5);
+  --border-color-active: rgba(112, 160, 218, 0.5);
+  --border-color-block: rgba(112, 160, 218, 0.2);
   --border-color-selector: var(--border-color-inactive);
   --button-bg: rgb(29, 43, 63);
   --button-hover: rgb(35, 53, 78);
   --button-active: rgb(49, 76, 108);
   --text-light: rgb(255, 255, 255);
   --text-normal: rgb(255, 255, 255);
-  --text-inactive: rgba(188, 188, 188, .5);
+  --text-inactive: rgba(188, 188, 188, 0.5);
   --warning-red: rgb(255, 0, 0);
   --selector-bg: rgb(29, 43, 63);
-  --blocktitle: rgba(130, 130, 130, .2);
-  --panel-shadow: 0 8px 24px rgba(0, 0, 0, .28);
+  --blocktitle: rgba(130, 130, 130, 0.2);
+  --panel-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
   --radius-border: 16px;
   --radius-selector: 10px;
   --font-small: 18px;
@@ -56,7 +56,7 @@
   overflow: hidden !important;
 }
 
-.standby .clock-container .clock-col:before  {
+.standby .clock-container .clock-col:before {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -69,7 +69,7 @@
    inherits it. A fixed !important size here (as this used to have) can't
    be overridden by that JS at all - it left the digits stuck at one size
    regardless of how the block was resized. */
-.standby .clock-container .clock-timer:before  {
+.standby .clock-container .clock-timer:before {
   margin: 0 !important;
   padding: 0 !important;
   line-height: 1 !important;
@@ -77,18 +77,18 @@
   font-weight: bold !important;
 }
 
-.standby .clock-container .clock-day:before  {
+.standby .clock-container .clock-day:before {
   color: rgba(90, 90, 90, 1) !important;
   text-shadow: 4px 3px 3px #8c8c64 !important;
 }
 
-.standby .clock-container .clock-hours:before ,
-.standby .clock-container .clock-minutes:before  {
+.standby .clock-container .clock-hours:before,
+.standby .clock-container .clock-minutes:before {
   color: rgba(242, 242, 242, 1) !important;
   text-shadow: 2px 2px 2px #b1b3a1 !important;
 }
 
-.standby .clock-container .clock-seconds:before  {
+.standby .clock-container .clock-seconds:before {
   color: rgba(90, 90, 90, 1) !important;
   text-shadow: 2px 2px 2px #8c8c64 !important;
 }
@@ -96,7 +96,6 @@
 .standby .clock-container .clock-label {
   display: none !important;
 }
-
 
 /* Dial components (.transbg.dial) calculate a square face from the
    block's own box, so this generic panel styling deliberately excludes
@@ -211,7 +210,9 @@
   border: 1px solid var(--border-color-inactive) !important;
   border-radius: var(--radius-selector) !important;
   background-color: var(--button-bg) !important;
-  transition: color .2s ease, background-color .2s ease;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
 }
 
 /* .selector-buttons and the plain <select> a Selector Switch renders
@@ -460,9 +461,9 @@
 /* Verklein ALLEEN de afbeeldingen binnen dimmer-/blinds-blokken */
 .mh:has(.slider) .col-icon img,
 .mh:has(.blinds) .col-icon img {
-    max-width: var(--icon-image-size, 35px) !important;
-    width: var(--icon-image-size, 35px) !important;
-    height: auto !important;
+  max-width: var(--icon-image-size, 35px) !important;
+  width: var(--icon-image-size, 35px) !important;
+  height: auto !important;
 }
 .standby .screenstandby {
   color: var(--text-light) !important;
@@ -488,9 +489,9 @@
 
 .message_block {
   visibility: visible;
-  border: 3px solid rgba(0, 0, 0, .7) !important;
+  border: 3px solid rgba(0, 0, 0, 0.7) !important;
   border-radius: 1px !important;
-  background: rgba(0, 255, 0, .2) !important;
+  background: rgba(0, 255, 0, 0.2) !important;
   background-clip: border-box;
 }
 

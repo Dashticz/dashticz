@@ -60,14 +60,18 @@ function toggleFullScreen(element) {
     if (usePng) {
       $('#fullScreenToggleIcon').attr('src', 'img/icons/Expand.png');
     } else {
-      $('#fullScreenToggleIcon').addClass('fa-expand').removeClass('fa-compress');
+      $('#fullScreenToggleIcon')
+        .addClass('fa-expand')
+        .removeClass('fa-compress');
     }
   } else {
     requestFullScreen(element || document.documentElement);
     if (usePng) {
       $('#fullScreenToggleIcon').attr('src', 'img/icons/Minus.png');
     } else {
-      $('#fullScreenToggleIcon').removeClass('fa-expand').addClass('fa-compress');
+      $('#fullScreenToggleIcon')
+        .removeClass('fa-expand')
+        .addClass('fa-compress');
     }
   }
 }

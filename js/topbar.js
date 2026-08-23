@@ -53,6 +53,6 @@ var DashticzTopbar = (function () {
   }
 
   return { init: init };
-}());
+})();
 
 //# sourceURL=js/topbar.js

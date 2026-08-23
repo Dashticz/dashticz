@@ -30,9 +30,11 @@ function clockFitSize(me, fallback) {
   // past .dt_block's own bottom edge and needed an oversized block just to
   // avoid a scrollbar. Same fix as js/components/frame.js (which targets
   // .frame .dt_state { margin: -5px } instead, cancelling the margin out).
-  var titleHeight = $title.length && $title.is(':visible') ? $title.outerHeight(true) : 0;
+  var titleHeight =
+    $title.length && $title.is(':visible') ? $title.outerHeight(true) : 0;
   var stateMarginV = $state.length
-    ? (parseFloat($state.css('margin-top')) || 0) + (parseFloat($state.css('margin-bottom')) || 0)
+    ? (parseFloat($state.css('margin-top')) || 0) +
+      (parseFloat($state.css('margin-bottom')) || 0)
     : 0;
   var availW = Math.max(
     $content.innerWidth() || 0,
@@ -125,9 +127,13 @@ var DT_stationclock = {
     clock.minuteHandBehavoir = clockSetting(me.block.minutehandbehavior);
     clock.secondHandBehavoir = clockSetting(me.block.secondhandbehavior);
 
-    Dashticz.setInterval(me, function () {
-      clock.draw();
-    }, 50);
+    Dashticz.setInterval(
+      me,
+      function () {
+        clock.draw();
+      },
+      50
+    );
 
     // Keep the clock's size in sync with live editor drag-resizing (grid
     // row/column span, classic column width) and not just after a
@@ -137,7 +143,11 @@ var DT_stationclock = {
     // is enough - no need to recreate the StationClock instance. Observing
     // the *outer* mount point (rather than the inner canvas being resized)
     // avoids the observer reacting to its own writes.
-    if (typeof ResizeObserver !== 'undefined' && me.$mountPoint && me.$mountPoint.length) {
+    if (
+      typeof ResizeObserver !== 'undefined' &&
+      me.$mountPoint &&
+      me.$mountPoint.length
+    ) {
       me.stationClockResizeObserver = new ResizeObserver(function () {
         var canvas = document.getElementById('clock' + me.mountPoint);
         if (!canvas) return;

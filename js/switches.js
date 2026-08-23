@@ -24,16 +24,16 @@ var spectrumColors = {};
  * @param {object} block - The Dashticz block definition
  */
 // eslint-disable-next-line no-unused-vars
-function getDefaultSwitchBlock( block ) {
+function getDefaultSwitchBlock(block) {
   var device = block.device;
-  var defaultIconOn=block.protoBlock.iconOn;
-  var defaultIconOff=block.protoBlock.iconOff;
-  var defaultIcon=block.protoBlock.icon;
-  var defaultImageOn=block.protoBlock.imageOn;
-  var defaultImageOff=block.protoBlock.imageOff;
-  var defaultImage=block.protoBlock.image;
-  var defaultTextOn=block.protoBlock.textOn;
-  var defaultTextOff=block.protoBlock.textOff;
+  var defaultIconOn = block.protoBlock.iconOn;
+  var defaultIconOff = block.protoBlock.iconOff;
+  var defaultIcon = block.protoBlock.icon;
+  var defaultImageOn = block.protoBlock.imageOn;
+  var defaultImageOff = block.protoBlock.imageOff;
+  var defaultImage = block.protoBlock.image;
+  var defaultTextOn = block.protoBlock.textOn;
+  var defaultTextOff = block.protoBlock.textOff;
   var html = '';
   if (!isProtected(block)) {
     var confirmswitch = 0;
@@ -45,16 +45,17 @@ function getDefaultSwitchBlock( block ) {
     if (device['SwitchType'] == 'Push On Button') mMode = 'on';
     else if (device['SwitchType'] == 'Push Off Button') mMode = 'off';
     if (device.Type === 'Scene') mMode = 'on';
-    if(!block.clickHandler)
-    block.$mountPoint
-      .find('.mh')
-      .addClass('hover')
-      .off('click')
-      .click(function () {
-        switchDevice(block, mMode, !!confirmswitch);
-      });
+    if (!block.clickHandler)
+      block.$mountPoint
+        .find('.mh')
+        .addClass('hover')
+        .off('click')
+        .click(function () {
+          switchDevice(block, mMode, !!confirmswitch);
+        });
   }
-  block.defaultAddClass && block.$mountPoint.find('.mh').addClass(block.defaultAddClass);
+  block.defaultAddClass &&
+    block.$mountPoint.find('.mh').addClass(block.defaultAddClass);
 
   var textOn = defaultTextOn || language.switches.state_on;
   var textOff = defaultTextOff || language.switches.state_off;
@@ -67,27 +68,21 @@ function getDefaultSwitchBlock( block ) {
   }
 
   var iconLookup = {
-    'on': defaultIconOn,
-    'off': defaultIconOff,
-    'mixed': defaultIconOff,
-    'default': defaultIconOn || defaultIcon
-  }
+    on: defaultIconOn,
+    off: defaultIconOff,
+    mixed: defaultIconOff,
+    default: defaultIconOn || defaultIcon,
+  };
   var imageLookup = {
-    'on': defaultImageOn,
-    'off': defaultImageOff,
-    'mixed': defaultImageOff,
-    'default': defaultImageOn || defaultImage
-  }
+    on: defaultImageOn,
+    off: defaultImageOff,
+    mixed: defaultImageOff,
+    default: defaultImageOn || defaultImage,
+  };
   var statusClass = getIconStatusClass(device['Status']);
   var mIcon = iconLookup[statusClass] || iconLookup.default || defaultIcon;
   var mImage = imageLookup[statusClass] || imageLookup.default || defaultImage;
-  html += iconORimage(
-    block,
-    mIcon,
-    mImage,
-    statusClass + ' icon',
-    attr
-  );
+  html += iconORimage(block, mIcon, mImage, statusClass + ' icon', attr);
   html += getBlockData(block, textOn, textOff);
   return html;
 }
@@ -132,7 +127,7 @@ function switchDevice(block, pMode, pAskConfirm) {
   var idx = block.idx;
   var $div = block.$mountPoint;
   var dial = block.type === 'onoff';
-  var group = block.type ==='group';
+  var group = block.type === 'group';
   if (isProtected(block)) return;
 
   var hasPassword = block.password;
@@ -172,12 +167,12 @@ function switchDevice(block, pMode, pAskConfirm) {
 
   Domoticz.request(
     'type=command&param=' +
-    param +
-    '&idx=' +
-    idx +
-    '&switchcmd=' +
-    doStatus +
-    '&level=0'
+      param +
+      '&idx=' +
+      idx +
+      '&switchcmd=' +
+      doStatus +
+      '&level=0'
   ).then(function () {
     block.device.Status = doStatus;
     dial ? DT_dial.make(block) : getDevices(true);
@@ -229,26 +224,26 @@ function switchBlinds(block, action) {
 
   Domoticz.request(
     'type=command&param=switchlight&idx=' +
-    idx +
-    '&switchcmd=' +
-    action +
-    '&level=0'
+      idx +
+      '&switchcmd=' +
+      action +
+      '&level=0'
   ).then(function () {
     getDevices(true);
   });
 }
 
 function cmdSlideDevice(idx, level) {
-  return 'type=command&param=switchlight&idx=' +
+  return (
+    'type=command&param=switchlight&idx=' +
     idx +
     '&switchcmd=Set%20Level&level=' +
     level
+  );
 }
 
 function reqSlideDevice(idx, level) {
-  return Domoticz.syncRequest(
-    idx, cmdSlideDevice(idx, level)
-  );
+  return Domoticz.syncRequest(idx, cmdSlideDevice(idx, level));
 }
 
 function reqSlideDeviceAsync(idx, level) {
@@ -354,10 +349,7 @@ function getDimmerBlock(block, buttonimg) {
     );
   html += '<div class="col-xs-10 swiper-no-swiping col-data">';
   html += '<strong class="title">' + title;
-  if (
-    typeof block['hide_data'] == 'undefined' ||
-    block['hide_data'] == false
-  ) {
+  if (typeof block['hide_data'] == 'undefined' || block['hide_data'] == false) {
     html += ' ' + device['Level'] + '%';
   }
   html += '</strong>';
@@ -396,25 +388,28 @@ function getDimmerBlock(block, buttonimg) {
   $div.off('click');
 
   if (!isProtected(block)) {
-    if(typeof block.switchMode==='string' && block.switchMode.toLowerCase()==='color') {
+    if (
+      typeof block.switchMode === 'string' &&
+      block.switchMode.toLowerCase() === 'color'
+    ) {
       //        me.$mountPoint.find('.extra').append('<div class="rgbholder"></div>');
       //        addColorpicker(me);
-              var popupblock = {
-                device: block.device,
-                idx: block.idx,
-                title: choose(block.title, block.key),
-                colorpickerscale: block.colorpickerscale,
-              }
-              new Colorpicker({
-                container: block.mountPoint + ' .mh',
-                block: popupblock,
-              });
-            }
-    else $div
-      .on('click', function () {
-        dimmerClickHandler(block);
-      })
-      .addClass('hover');
+      var popupblock = {
+        device: block.device,
+        idx: block.idx,
+        title: choose(block.title, block.key),
+        colorpickerscale: block.colorpickerscale,
+      };
+      new Colorpicker({
+        container: block.mountPoint + ' .mh',
+        block: popupblock,
+      });
+    } else
+      $div
+        .on('click', function () {
+          dimmerClickHandler(block);
+        })
+        .addClass('hover');
   }
 
   switch (isRGBDeviceAndEnabled(block)) {
@@ -476,13 +471,13 @@ function addColorpicker(block) {
 function addSpectrum(block) {
   function componentToHex(c) {
     var hex = c.toString(16);
-    return hex.length == 1 ? "0" + hex : hex;
+    return hex.length == 1 ? '0' + hex : hex;
   }
-  
+
   function rgbToHex(r, g, b) {
-    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+    return '#' + componentToHex(r) + componentToHex(g) + componentToHex(b);
   }
-  
+
   var idx = block.idx;
   var $rgbcontainer = block.$mountPoint.find('.rgbholder');
   var html = '';
@@ -491,16 +486,16 @@ function addSpectrum(block) {
   $rgbcontainer.html(html).addClass('spectrum');
   var $rgbdiv = block.$mountPoint.find('.rgbw');
   var color = '#FFFFFF';
-  if(block.device.Color ) {
+  if (block.device.Color) {
     var deviceColor = JSON.parse(block.device.Color);
-    if (deviceColor.r && (deviceColor.m==3 || deviceColor.m==4)) {
+    if (deviceColor.r && (deviceColor.m == 3 || deviceColor.m == 4)) {
       color = rgbToHex(deviceColor.r, deviceColor.g, deviceColor.b);
     }
   }
 
   $rgbdiv.spectrum({
     color: color,
-    appendTo: $rgbcontainer
+    appendTo: $rgbcontainer,
   });
 
   $rgbdiv.on('dragstop.spectrum', function (e, color) {
@@ -508,23 +503,23 @@ function addSpectrum(block) {
     if (!DT_function.promptPassword(hasPassword)) return;
 
     color = color.toHexString();
-    spectrumColors[idx]=color;
+    spectrumColors[idx] = color;
     var hue = hexToHsb(color);
     var bIsWhite = hue.s < 20;
 
     //sliding = idx;
     Domoticz.hold(idx); //hold message queue
 
-    var cmd = 'type=command&param=setcolbrightnessvalue&idx=' +
-    idx +
-    '&hue=' +
-    hue.h +
-    '&brightness=' +
-    hue.b +
-    '&iswhite=' +
-    bIsWhite;
+    var cmd =
+      'type=command&param=setcolbrightnessvalue&idx=' +
+      idx +
+      '&hue=' +
+      hue.h +
+      '&brightness=' +
+      hue.b +
+      '&iswhite=' +
+      bIsWhite;
     Domoticz.request(cmd);
-
   });
 
   $rgbdiv.on('hide.spectrum', function () {
@@ -542,7 +537,7 @@ function addSpectrum(block) {
 
 // eslint-disable-next-line no-unused-vars
 function getBlindsBlock(parentBlock, withPercentageParam) {
-  var block={};
+  var block = {};
   $.extend(block, parentBlock.protoBlock, parentBlock);
   var device = block.device;
   var withPercentage = choose(block.withPercentage, withPercentageParam, false);
@@ -564,7 +559,8 @@ function getBlindsBlock(parentBlock, withPercentageParam) {
     // direction and the scale/fill direction together, since a manual
     // override exists specifically because Domoticz's own answer was wrong
     // for this device.
-    var autoInverted = device['SwitchType'].toLowerCase().indexOf('inverted') >= 0;
+    var autoInverted =
+      device['SwitchType'].toLowerCase().indexOf('inverted') >= 0;
     var inverted = choose(block.inverse, autoInverted);
     var asOn = Domoticz.info.newBlindsBehavior;
     if (inverted) {
@@ -575,7 +571,15 @@ function getBlindsBlock(parentBlock, withPercentageParam) {
     // value instead.
     var sliderStep = parseFloat(block.slider_step || block.sliderstep || 1);
     if (!isFinite(sliderStep) || sliderStep <= 0) sliderStep = 1;
-    renderBlindsSliderBlock(block, device, idx, $mountPoint, asOn, inverted, sliderStep);
+    renderBlindsSliderBlock(
+      block,
+      device,
+      idx,
+      $mountPoint,
+      asOn,
+      inverted,
+      sliderStep
+    );
     return true;
   }
 
@@ -616,9 +620,14 @@ function getBlindsBlock(parentBlock, withPercentageParam) {
   } else {
     if (device['Status'] === 'Closed')
       value =
-        '<span class="state">' + (block.textOff || language.switches.state_closed) + '</span>';
+        '<span class="state">' +
+        (block.textOff || language.switches.state_closed) +
+        '</span>';
     else
-      value = '<span class="state">' + (block.textOn || language.switches.state_open) + '</span>';
+      value =
+        '<span class="state">' +
+        (block.textOn || language.switches.state_open) +
+        '</span>';
   }
   if (!withPercentage) {
     if (
@@ -627,10 +636,14 @@ function getBlindsBlock(parentBlock, withPercentageParam) {
     ) {
       if (device['Status'] === 'Closed')
         value =
-          '<span class="state">' + (block.textOff || language.switches.state_closed) + '</span>';
+          '<span class="state">' +
+          (block.textOff || language.switches.state_closed) +
+          '</span>';
       else
         value =
-          '<span class="state">' + (block.textOn || language.switches.state_open) + '</span>';
+          '<span class="state">' +
+          (block.textOn || language.switches.state_open) +
+          '</span>';
     } else {
       value = '<span class="state"></span>';
     }
@@ -703,7 +716,15 @@ function getBlindsBlock(parentBlock, withPercentageParam) {
  * @param {boolean} inverted - whether 0% (not 100%) is the device's fully-open end
  * @param {number} sliderStep - the slider's drag/command step size
  */
-function renderBlindsSliderBlock(block, device, idx, $mountPoint, asOn, inverted, sliderStep) {
+function renderBlindsSliderBlock(
+  block,
+  device,
+  idx,
+  $mountPoint,
+  asOn,
+  inverted,
+  sliderStep
+) {
   var title = getBlockTitle(block);
   var hidestop =
     typeof block['hide_stop'] != 'undefined' && block['hide_stop'] !== false;
@@ -721,7 +742,9 @@ function renderBlindsSliderBlock(block, device, idx, $mountPoint, asOn, inverted
     '<div class="blinds-slider-wrap swiper-no-swiping" data-light="' +
     idx +
     '">' +
-    '<div class="slider-scale" aria-hidden="true"></div>' +
+    (block.hide_data === true
+      ? ''
+      : '<div class="slider-scale" aria-hidden="true"></div>') +
     '<div class="slider slider' +
     idx +
     '" data-light="' +
@@ -868,12 +891,14 @@ function addSlider(block, sliderValues) {
       $tick.appendTo($scale);
     }
 
-    for (var m = 0; m <= barSteps; m++) {
-      var stepValue = min + ((max - min) * m) / barSteps;
-      addTick(stepValue, Math.round((m / barSteps) * 100));
-    }
+    if ($scale.length) {
+      for (var m = 0; m <= barSteps; m++) {
+        var stepValue = min + ((max - min) * m) / barSteps;
+        addTick(stepValue, Math.round((m / barSteps) * 100));
+      }
 
-    highlightActiveTick(sliderValues.value);
+      highlightActiveTick(sliderValues.value);
+    }
   }
 
   $divslider.slider({

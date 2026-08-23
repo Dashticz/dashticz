@@ -10,27 +10,27 @@
  */
 
 :root {
-  --main-bg: rgba(120, 120, 128, .28);
+  --main-bg: rgba(120, 120, 128, 0.28);
   --main-border-width: 1px;
   --block-gap: 0px;
   --box-border: 1px solid rgb(181, 181, 181);
-  --home-bg: rgba(70, 70, 78, .55);
-  --border-color-inactive: rgba(210, 210, 216, .35);
-  --border-color-active: rgba(255, 255, 255, .55);
-  --border-color-block: rgba(255, 255, 255, .22);
+  --home-bg: rgba(70, 70, 78, 0.55);
+  --border-color-inactive: rgba(210, 210, 216, 0.35);
+  --border-color-active: rgba(255, 255, 255, 0.55);
+  --border-color-block: rgba(255, 255, 255, 0.22);
   --border-color-selector: var(--border-color-inactive);
-  --button-bg: rgba(92, 92, 100, .45);
-  --button-hover: rgba(112, 112, 122, .55);
-  --button-active: rgba(142, 142, 152, .65);
+  --button-bg: rgba(92, 92, 100, 0.45);
+  --button-hover: rgba(112, 112, 122, 0.55);
+  --button-active: rgba(142, 142, 152, 0.65);
   --text-light: rgb(255, 255, 255);
   --text-normal: rgb(255, 255, 255);
-  --text-inactive: rgba(230, 230, 236, .55);
+  --text-inactive: rgba(230, 230, 236, 0.55);
   --warning-red: rgb(255, 69, 58);
-  --selector-bg: rgba(92, 92, 100, .45);
-  --blocktitle: rgba(255, 255, 255, .08);
-  --panel-shadow: 0 8px 32px rgba(0, 0, 0, .35);
+  --selector-bg: rgba(92, 92, 100, 0.45);
+  --blocktitle: rgba(255, 255, 255, 0.08);
+  --panel-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   --glass-blur: 22px;
-  --glass-highlight: rgba(255, 255, 255, .38);
+  --glass-highlight: rgba(255, 255, 255, 0.38);
   --glass-accent: rgb(222, 222, 228);
   --radius-border: 16px;
   --radius-selector: 10px;
@@ -63,7 +63,7 @@
   overflow: hidden !important;
 }
 
-.standby .clock-container .clock-col:before  {
+.standby .clock-container .clock-col:before {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -76,7 +76,7 @@
    inherits it. A fixed !important size here (as this used to have) can't
    be overridden by that JS at all - it left the digits stuck at one size
    regardless of how the block was resized. */
-.standby .clock-container .clock-timer:before  {
+.standby .clock-container .clock-timer:before {
   margin: 0 !important;
   padding: 0 !important;
   line-height: 1 !important;
@@ -84,26 +84,25 @@
   font-weight: bold !important;
 }
 
-.standby .clock-container .clock-day:before  {
+.standby .clock-container .clock-day:before {
   color: rgba(170, 170, 176, 1) !important;
-  text-shadow: 4px 3px 3px rgba(0, 0, 0, .6) !important;
+  text-shadow: 4px 3px 3px rgba(0, 0, 0, 0.6) !important;
 }
 
-.standby .clock-container .clock-hours:before ,
-.standby .clock-container .clock-minutes:before  {
+.standby .clock-container .clock-hours:before,
+.standby .clock-container .clock-minutes:before {
   color: rgba(245, 245, 248, 1) !important;
-  text-shadow: 2px 2px 2px rgba(0, 0, 0, .6) !important;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6) !important;
 }
 
-.standby .clock-container .clock-seconds:before  {
+.standby .clock-container .clock-seconds:before {
   color: rgba(170, 170, 176, 1) !important;
-  text-shadow: 2px 2px 2px rgba(0, 0, 0, .6) !important;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6) !important;
 }
 
 .standby .clock-container .clock-label {
   display: none !important;
 }
-
 
 /* Dial components (.transbg.dial) calculate a square face from the
    block's own box, so this generic panel styling deliberately excludes
@@ -116,7 +115,11 @@
   border: var(--block-gap) solid transparent !important;
   border-radius: var(--radius-border) !important;
   background:
-    linear-gradient(165deg, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, 0) 55%),
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0) 55%
+    ),
     var(--main-bg) !important;
   background-clip: padding-box !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
@@ -142,7 +145,11 @@
   border: var(--block-gap) solid transparent !important;
   border-radius: var(--radius-border) !important;
   background:
-    linear-gradient(165deg, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, 0) 55%),
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0) 55%
+    ),
     var(--main-bg) !important;
   background-clip: padding-box !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
@@ -171,7 +178,11 @@
   border: var(--block-gap) solid transparent !important;
   border-radius: var(--radius-border) !important;
   background:
-    linear-gradient(165deg, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, 0) 55%),
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0) 55%
+    ),
     var(--main-bg) !important;
   background-clip: padding-box !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
@@ -233,7 +244,9 @@
   border: 1px solid var(--border-color-inactive) !important;
   border-radius: var(--radius-selector) !important;
   background-color: var(--button-bg) !important;
-  transition: color .2s ease, background-color .2s ease;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
 }
 
 /* .selector-buttons and the plain <select> a Selector Switch renders
@@ -340,7 +353,7 @@
   padding-top: 4px !important;
   color: var(--text-light);
   font-size: var(--font-large);
-  text-shadow: 4px 4px 4px rgba(0, 0, 0, .5);
+  text-shadow: 4px 4px 4px rgba(0, 0, 0, 0.5);
   transform: translateX(10px);
 }
 
@@ -357,7 +370,7 @@
   font-size: var(--font-large) !important;
   font-weight: 700 !important;
   text-align: right !important;
-  text-shadow: 4px 4px 4px rgba(0, 0, 0, .5) !important;
+  text-shadow: 4px 4px 4px rgba(0, 0, 0, 0.5) !important;
 }
 
 .colbar .miniclock {
@@ -478,9 +491,9 @@
 /* Verklein ALLEEN de afbeeldingen binnen dimmer-/blinds-blokken */
 .mh:has(.slider) .col-icon img,
 .mh:has(.blinds) .col-icon img {
-    max-width: var(--icon-image-size, 35px) !important;
-    width: var(--icon-image-size, 35px) !important;
-    height: auto !important;
+  max-width: var(--icon-image-size, 35px) !important;
+  width: var(--icon-image-size, 35px) !important;
+  height: auto !important;
 }
 .standby .screenstandby {
   color: var(--text-light) !important;
@@ -506,9 +519,9 @@
 
 .message_block {
   visibility: visible;
-  border: 3px solid rgba(0, 0, 0, .7) !important;
+  border: 3px solid rgba(0, 0, 0, 0.7) !important;
   border-radius: 1px !important;
-  background: rgba(0, 255, 0, .2) !important;
+  background: rgba(0, 255, 0, 0.2) !important;
   background-clip: border-box;
 }
 

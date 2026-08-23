@@ -48,6 +48,13 @@ foreach ($vars as $name => $value) {
 
 $customDir = __DIR__ . '/../custom';
 $cssPath = $customDir . '/custom.css';
+if (!is_dir($customDir) && !mkdir($customDir, 0775, true)) {
+    dashticz_json_error(500, 'Could not create custom directory.');
+}
+$cssLock = dashticz_acquire_file_update_lock($cssPath);
+if ($cssLock === false) {
+    dashticz_json_error(500, 'Could not lock custom.css for an editor update.');
+}
 $existing = '';
 if (file_exists($cssPath)) {
     $existing = file_get_contents($cssPath);
@@ -75,12 +82,11 @@ if ($updateVars && !empty($sanitized)) {
 }
 
 $output = $themeBlock . ltrim($existing, "\r\n");
-if (!is_dir($customDir) && !mkdir($customDir, 0775, true)) {
-    dashticz_json_error(500, 'Could not create custom directory.');
-}
-if (file_put_contents($cssPath, $output, LOCK_EX) === false) {
+if (!dashticz_atomic_write_file($cssPath, $output)) {
+    dashticz_release_file_update_lock($cssLock);
     dashticz_json_error(500, 'Could not write custom.css.');
 }
+dashticz_release_file_update_lock($cssLock);
 
 header('Content-Type: application/json');
 echo json_encode(['success' => true]);

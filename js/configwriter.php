@@ -5,9 +5,21 @@
 
 function configwriter_read_config($configPath)
 {
+    if (!isset($GLOBALS['dashticz_configwriter_locks'])) {
+        $GLOBALS['dashticz_configwriter_locks'] = [];
+    }
+    if (!isset($GLOBALS['dashticz_configwriter_locks'][$configPath])) {
+        $lock = dashticz_acquire_file_update_lock($configPath);
+        if ($lock === false) {
+            return [null, 'Unable to lock CONFIG.js for an editor update.'];
+        }
+        $GLOBALS['dashticz_configwriter_locks'][$configPath] = $lock;
+    }
+
     if (file_exists($configPath)) {
         $config = @file_get_contents($configPath);
         if ($config === false) {
+            configwriter_release_config_lock($configPath);
             return [null, 'Unable to read CONFIG.js.'];
         }
         if (trim($config) === '#EMPTY#') {
@@ -17,6 +29,23 @@ function configwriter_read_config($configPath)
     }
 
     return ["var config = {}\n", null];
+}
+
+function configwriter_release_config_lock($configPath)
+{
+    if (!isset($GLOBALS['dashticz_configwriter_locks'][$configPath])) {
+        return;
+    }
+    dashticz_release_file_update_lock(
+        $GLOBALS['dashticz_configwriter_locks'][$configPath]
+    );
+    unset($GLOBALS['dashticz_configwriter_locks'][$configPath]);
+}
+
+function configwriter_write_result($configPath, $error)
+{
+    configwriter_release_config_lock($configPath);
+    return $error;
 }
 
 /**
@@ -39,27 +68,43 @@ function configwriter_resolve_config_path($customDir)
 
 function configwriter_write_config($configPath, $customDir, $config)
 {
+    if (!isset($GLOBALS['dashticz_configwriter_locks'][$configPath])) {
+        $lock = dashticz_acquire_file_update_lock($configPath);
+        if ($lock === false) {
+            return 'Unable to lock CONFIG.js for an editor update.';
+        }
+        $GLOBALS['dashticz_configwriter_locks'][$configPath] = $lock;
+    }
+
     if (!file_exists($configPath) && !is_writable($customDir)) {
-        return 'The directory "custom/" is not writable by the web server'
+        return configwriter_write_result(
+            $configPath,
+            'The directory "custom/" is not writable by the web server'
             . dashticz_owner_info($customDir)
-            . '. From the Dashticz directory, run: sh tools/install-dashticz-write-access.sh';
+            . '. From the Dashticz directory, run: sh tools/install-dashticz-write-access.sh'
+        );
     }
 
     if (file_exists($configPath) && !is_writable($configPath)) {
         @chmod($configPath, 0664);
         if (!is_writable($configPath)) {
-            return 'CONFIG.js is not writable'
+            return configwriter_write_result(
+                $configPath,
+                'CONFIG.js is not writable'
                 . dashticz_owner_info($configPath)
-                . '. From the Dashticz directory, run: sh tools/install-dashticz-write-access.sh';
+                . '. From the Dashticz directory, run: sh tools/install-dashticz-write-access.sh'
+            );
         }
     }
 
-    if (file_put_contents($configPath, rtrim($config) . "\n", LOCK_EX) === false) {
-        return 'Unable to write CONFIG.js.';
+    if (!dashticz_atomic_write_file($configPath, rtrim($config) . "\n")) {
+        return configwriter_write_result(
+            $configPath,
+            'Unable to write CONFIG.js.'
+        );
     }
 
-    @chmod($configPath, 0664);
-    return null;
+    return configwriter_write_result($configPath, null);
 }
 
 function configwriter_remove_section($config, $startMarker, $endMarker)

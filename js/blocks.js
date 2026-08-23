@@ -53,13 +53,16 @@ function getBlock(cols, c, screendiv, standby) {
         colclass +
         '"></div>'
     );
-    cols.blocks && cols['blocks'].forEach(function (b, i) {
-      if (b)
-        addBlock2Column(columndiv, c, b);
-      else {
-        Debug.log(Debug.ERROR, 'Block number ' + i + ' in column ' + c + ' is undefined.');
-      }
-    });
+    cols.blocks &&
+      cols['blocks'].forEach(function (b, i) {
+        if (b) addBlock2Column(columndiv, c, b);
+        else {
+          Debug.log(
+            Debug.ERROR,
+            'Block number ' + i + ' in column ' + c + ' is undefined.'
+          );
+        }
+      });
   }
 }
 /**Adds a block to a column
@@ -430,7 +433,12 @@ function formatTemplateString(block, device, valueParam, isTitle) {
     var cnt = 0;
     for (var d in elements) {
       var deviceValue = device[elements[d]];
-      if (!isTitle && (format || typeof decimals !== 'undefined' || Dashticz.getProperty(unit, device))) {
+      if (
+        !isTitle &&
+        (format ||
+          typeof decimals !== 'undefined' ||
+          Dashticz.getProperty(unit, device))
+      ) {
         var blockunit = blockunits[cnt] || blockunits[0];
         var current_unit = '';
         if (isNaN(deviceValue)) {
@@ -465,29 +473,34 @@ function formatTemplateString(block, device, valueParam, isTitle) {
 }
 function formatBlockValues(parentBlock) {
   var blockValues = parentBlock.values;
-//  var subidx=1;
-  if(!blockValues) return;
+  //  var subidx=1;
+  if (!blockValues) return;
   var newBlockValues = [];
   blockValues.forEach(function (block) {
-//    $.extend(block, parentBlock);
+    //    $.extend(block, parentBlock);
     var newBlock = {};
-    $.extend(newBlock, block);//, parentBlock); don't use parentBlock: it may contain icon from protoBlock
+    $.extend(newBlock, block); //, parentBlock); don't use parentBlock: it may contain icon from protoBlock
     //parentBlock may contain a custom icon
     //however, we should use value of block
-    if(block.value) newBlock.value = block.value;
-    if(block.subidx) newBlock.subidx = block.subidx;
-    if(block.idx) newBlock.idx = block.idx;  //parentBlock has values with specific idx
-//    if(!newBlock.subidx) newBlock.subidx=subidx;
-//    subidx+=1;
-//    idx = block.idx || parentBlock.idx;
+    if (block.value) newBlock.value = block.value;
+    if (block.subidx) newBlock.subidx = block.subidx;
+    if (block.idx) newBlock.idx = block.idx; //parentBlock has values with specific idx
+    //    if(!newBlock.subidx) newBlock.subidx=subidx;
+    //    subidx+=1;
+    //    idx = block.idx || parentBlock.idx;
     var device = Domoticz.getAllDevices(newBlock.idx);
     if (newBlock.hideEmpty && !device[newBlock.hideEmpty]) return;
     var value = Dashticz.getProperty(newBlock.value, device);
-//    var title = block.title ? block.title : '';
-    newBlock.value = formatTemplateString(block, device, ''+value);
-    newBlock.title = formatTemplateString(block, device, newBlock.title || '', true);
+    //    var title = block.title ? block.title : '';
+    newBlock.value = formatTemplateString(block, device, '' + value);
+    newBlock.title = formatTemplateString(
+      block,
+      device,
+      newBlock.title || '',
+      true
+    );
     newBlockValues.push(newBlock);
-  })
+  });
   return newBlockValues;
 }
 
@@ -498,20 +511,20 @@ function getStatusBlock(block) {
   var image = block.image;
   var icon = block.icon;
 
-  if (block.subtitle) switch (block.showsubtitles) {
-    case '2':
-    case 2:
-      value = value + ' (' + block.subtitle + ')'
-      break;
-    case 1:
-    case '1':
-    case true:
-      title = title + ': ' + block.subtitle;
-      break;
-    case false:
-    case 0:
-
-  }
+  if (block.subtitle)
+    switch (block.showsubtitles) {
+      case '2':
+      case 2:
+        value = value + ' (' + block.subtitle + ')';
+        break;
+      case 1:
+      case '1':
+      case true:
+        title = title + ': ' + block.subtitle;
+        break;
+      case false:
+      case 0:
+    }
 
   if (!value && !title) {
     console.log('No title and no value for block');
@@ -651,9 +664,12 @@ function getBlockClick(block, selector) {
       device['SubType'] === 'Soil Moisture' ||
       graph
     ) {
-      $div.addClass('hover').off('click').click(function () {
-        DT_function.clickHandler({ block: block });
-      });
+      $div
+        .addClass('hover')
+        .off('click')
+        .click(function () {
+          DT_function.clickHandler({ block: block });
+        });
     }
   }
 }
@@ -827,7 +843,7 @@ function titleAndValueSwitch(block) {
 function hideTitle(block) {
   if (block.hide_title) return true;
   var title = getBlockTitle(block);
-  return (title === 0 || title === '');
+  return title === 0 || title === '';
 }
 
 function showUpdateInformation(block) {
@@ -899,7 +915,6 @@ function toBeaufort(windSpeed) {
  */
 function Beaufort(windSpeed) {
   return toBeaufort(windSpeed) + ' Bft';
-
 }
 
 function triggerStatus(block) {
@@ -968,20 +983,19 @@ function triggerChange(block) {
 
 function setDefaultImage(block) {
   var deviceImages = {
-    'Fan': 'fan.png',
-    'Heating': 'heating.png',
-  }
+    Fan: 'fan.png',
+    Heating: 'heating.png',
+  };
   var defaultImage;
-  if(block && block.device && block.device.Image)
+  if (block && block.device && block.device.Image)
     defaultImage = deviceImages[block.device.Image];
-  if(defaultImage && !block.image)
-    block.image = defaultImage;
+  if (defaultImage && !block.image) block.image = defaultImage;
 }
 
 function handleDevice(block) {
   setDefaultImage(block);
   block.protoBlock = getBlockTypesBlock(block);
-  if(block.values && !block.single_line && !block.joinsubblocks) {
+  if (block.values && !block.single_line && !block.joinsubblocks) {
     block.multi_line = choose(block.multi_line, true);
   }
   var handler = choose(block.handler, block.protoBlock.handler);
@@ -1043,33 +1057,40 @@ function getJoinValuesSeperator(block) {
 
 function selectBlockValues(parentBlock) {
   var blockValues = parentBlock.values;
-  if(!blockValues) return;
-  if (parentBlock.showvalues) { //showvalues contains a list of subidx devices to show
+  if (!blockValues) return;
+  if (parentBlock.showvalues) {
+    //showvalues contains a list of subidx devices to show
     var selectedBlockValues = [];
     parentBlock.showvalues.forEach(function (value) {
       var obj = blockValues[value - 1];
-      if (typeof obj === 'object') selectedBlockValues.push(obj)
+      if (typeof obj === 'object') selectedBlockValues.push(obj);
     });
     blockValues = selectedBlockValues;
   }
   var filteredBlockValues = blockValues.filter(function (blockValue) {
-    return !(blockValue.hideEmpty && !isDefined(parentBlock.device[blockValue.hideEmpty]))
+    return !(
+      blockValue.hideEmpty &&
+      !isDefined(parentBlock.device[blockValue.hideEmpty])
+    );
   });
 
   var seperator = getJoinValuesSeperator(parentBlock);
   if (seperator) {
-    var value = filteredBlockValues.map(function (blockValue) {
-      var localValue = blockValue.value;
-      var showsubtitles = choose(parentBlock.showsubtitles, blockValue.showsubtitles);
-      if (blockValue.subtitle) {
-        if(showsubtitles===2)
-          return localValue + ' (' + blockValue.subtitle+')';
-        if(showsubtitles)
-          return blockValue.subtitle + ': ' + localValue;
-        return localValue;
-      }
-      else return localValue;
-    }).join(seperator);
+    var value = filteredBlockValues
+      .map(function (blockValue) {
+        var localValue = blockValue.value;
+        var showsubtitles = choose(
+          parentBlock.showsubtitles,
+          blockValue.showsubtitles
+        );
+        if (blockValue.subtitle) {
+          if (showsubtitles === 2)
+            return localValue + ' (' + blockValue.subtitle + ')';
+          if (showsubtitles) return blockValue.subtitle + ': ' + localValue;
+          return localValue;
+        } else return localValue;
+      })
+      .join(seperator);
     parentBlock.value = value;
     return; //values must become undefined
   }
@@ -1089,12 +1110,11 @@ function createBlocks(origBlock) {
   // 3. protoBlock.values
   // 4. protoBlock.value
 
-
   var protoBlock = origBlock.protoBlock;
   var block = {};
 
   //default should be like this:
-  $.extend(block, protoBlock, origBlock); 
+  $.extend(block, protoBlock, origBlock);
   //Note: protoBlock may contain an icon, while protoBlock.values also contain icons.
   //Protoblock.values.icons have priority
   //while origBlock.icon has priority above protoblock.values.icons
@@ -1109,7 +1129,6 @@ function createBlocks(origBlock) {
       return newValue;
     });
   }
-
 
   //if protoBlock has values, then these values already have been extended with protoblock in blocktypes.js
   //however, this is not the case for values of origBlock:
@@ -1126,23 +1145,25 @@ function createBlocks(origBlock) {
 
   //the idea is that at this moment block.values is always correct, and has been expanded.
   if (origBlock.subidx && block.values) {
-    var newBlock={};
-    $.extend(newBlock, origBlock, block.values[origBlock.subidx-1]); //added origBlock, to keep $mountPoint
+    var newBlock = {};
+    $.extend(newBlock, origBlock, block.values[origBlock.subidx - 1]); //added origBlock, to keep $mountPoint
     newBlock.values = undefined;
     //if block.subidx exists then don't look at block.values anymore!
-    block=newBlock;
+    block = newBlock;
   }
 
   //Now handle all cases when value has been defined.
   //protoBlock, inluding value, already has been extended into protoBlock.values, so that should be ok.
   //In case origBlock contains value, and origBlock doesn't contain values, then remove values
   //because protoBlock may contain values which shall be overruled by origBlock.value
-  if(origBlock.value && !origBlock.values) block.values = undefined;
+  if (origBlock.value && !origBlock.values) block.values = undefined;
 
   var device = Domoticz.getAllDevices(block.idx);
-  block.device=device;
-  if (block.value) block.value = formatTemplateString(block, device, block.value); //there should always be a block.value
-  if (block.title) block.title = formatTemplateString(block, device, block.title, true);
+  block.device = device;
+  if (block.value)
+    block.value = formatTemplateString(block, device, block.value); //there should always be a block.value
+  if (block.title)
+    block.title = formatTemplateString(block, device, block.title, true);
   block.values = formatBlockValues(block);
   block.values = selectBlockValues(block);
   block.$mountPoint.html(''); //it would be better for performance to add all changes at once.
@@ -1152,25 +1173,26 @@ function createBlocks(origBlock) {
     blockValues.forEach(function (blockValue) {
       createSingleBlock(blockValue, false, true);
     });
-  else
-    createSingleBlock(block, block.multi_line || block.single_line, false);
+  else createSingleBlock(block, block.multi_line || block.single_line, false);
   var postHook = protoBlock.postHook;
-  if (postHook)
-    postHook(block);
+  if (postHook) postHook(block);
 }
 
 function createSingleBlock(block, asMultiLine, hasSubidx) {
-  if(Dashticz.getProperty(block.hidden, block.device)) return;
+  if (Dashticz.getProperty(block.hidden, block.device)) return;
   var key = block.key;
   if (hasSubidx) {
     key += '_' + block.subidx;
-    block.key=key;
+    block.key = key;
     $.extend(block, blocks[key]);
   }
   var multiline = asMultiLine ? ' multiline' : '';
   var html =
-    '<div data-id="' + key + '" class="mh transbg dt_block block_' +
-    key + multiline +
+    '<div data-id="' +
+    key +
+    '" class="mh transbg dt_block block_' +
+    key +
+    multiline +
     ' col-xs-' +
     (block.width || 4) +
     '"/>';
@@ -1351,8 +1373,8 @@ function getSecurityBlock(block) {
 
   var secPanelicons =
     settings['security_button_icons'] === true ||
-      settings['security_button_icons'] === 1 ||
-      settings['security_button_icons'] === '1'
+    settings['security_button_icons'] === 1 ||
+    settings['security_button_icons'] === '1'
       ? true
       : false;
   var da = 'default';
@@ -1458,7 +1480,11 @@ function getProtectedSecurityBlock(block) {
 }
 
 function getBlockTitle(block) {
-  return choose(block.title, block.protoBlock && block.protoBlock.title, block.device && block.device.Name);
+  return choose(
+    block.title,
+    block.protoBlock && block.protoBlock.title,
+    block.device && block.device.Name
+  );
 }
 
 function getMediaPlayer(block) {
@@ -1471,8 +1497,7 @@ function getMediaPlayer(block) {
   html += '<strong class="title">' + block.title + '</strong><br />';
   if (device['Data'] === '') {
     device['Data'] = language.misc.mediaplayer_nothing_playing;
-    if (settings['hide_mediaplayer'] == 1)
-      $('div.block_' + block.key).hide();
+    if (settings['hide_mediaplayer'] == 1) $('div.block_' + block.key).hide();
   } else {
     $('div.block_' + block.key).show();
   }
@@ -1488,19 +1513,21 @@ function getSelectorSwitch(block) {
     typeof device['LevelActions'] !== 'undefined' &&
     device['LevelNames'] !== ''
   ) {
-    var names = Domoticz.info.levelNamesEncoded ? b64_to_utf8(device['LevelNames']) : device['LevelNames'];
+    var names = Domoticz.info.levelNamesEncoded
+      ? b64_to_utf8(device['LevelNames'])
+      : device['LevelNames'];
 
     nameValues = names.split('|').map(function (name, idx) {
       return {
         name: name,
-        value: idx
-      }
-    })
+        value: idx,
+      };
+    });
 
     if (block.sortOrder) {
       nameValues.sort(function (a, b) {
         return a.name.localeCompare(b.name) * block.sortOrder;
-      })
+      });
     }
 
     if (device['Status'] === 'Off')
@@ -1523,7 +1550,8 @@ function getSelectorSwitch(block) {
       device['SelectorStyle'] == 1
     ) {
       html += '<div class="col-xs-8 col-data">';
-      if (!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
+      if (!hideTitle(block))
+        html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<select>';
       html += '<option value="">' + language.misc.select + '</option>';
       for (var idx in nameValues) {
@@ -1556,7 +1584,8 @@ function getSelectorSwitch(block) {
         });
     } else {
       html += '<div class="col-xs-8 col-data">';
-      if (!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
+      if (!hideTitle(block))
+        html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<div class="btn-group selector-buttons" data-toggle="buttons">';
       for (idx in nameValues) {
         nv = nameValues[idx];
@@ -1573,7 +1602,9 @@ function getSelectorSwitch(block) {
           html +=
             '<input type="radio" name="options" autocomplete="off" value="' +
             nv.value * 10 +
-            '"' + checked + '>' +
+            '"' +
+            checked +
+            '>' +
             nv.name;
           html += '</label>';
         }
@@ -1584,10 +1615,14 @@ function getSelectorSwitch(block) {
         .find('.mh')
         .off('click', '.btn-group')
         .off('change.selectorButtons', '.btn-group input[type="radio"]')
-        .on('change.selectorButtons', '.btn-group input[type="radio"]', function () {
-          var value = $(this).val();
-          slideDevice(block, value);
-        });
+        .on(
+          'change.selectorButtons',
+          '.btn-group input[type="radio"]',
+          function () {
+            var value = $(this).val();
+            slideDevice(block, value);
+          }
+        );
     }
   }
   return html;

@@ -704,6 +704,6 @@ function getLocationParameters() {
 }
 
 function toLower(str) {
-  if (typeof str==='string') return str.toLowerCase();
+  if (typeof str === 'string') return str.toLowerCase();
   return str;
 }

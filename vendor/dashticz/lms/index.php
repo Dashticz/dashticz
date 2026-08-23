@@ -1,6 +1,11 @@
 <?php
 require_once(__DIR__ . '/../security.php');
 
+// This endpoint promises JSON even when PHP itself raises a fatal error.
+// Prevent display_errors from prefixing the shutdown handler's JSON with
+// an HTML/plain-text fatal message on development-oriented PHP installs.
+@ini_set('display_errors', '0');
+
 dashticz_require_same_origin();
 header('Content-Type: application/json');
 header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');

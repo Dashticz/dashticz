@@ -1,36 +1,36 @@
 /* global Dashticz DT_function  settings Debug  _CORS_PATH*/
 //# sourceURL=js/components/owmwidget.js
 var DT_owmwidget = (function () {
-
-    var dimensions = {
-        1: {x: 690, y:234},
-        2: {x: 234, y:234},
-        3: {x: 180, y:75},
-        4: {x: 210, y:75},
-        5: {x: 300, y:228},
-        6: {x: 120, y:171},
-        7: {x: 120, y:207},
-        8: {x: 300, y:60},
-        9: {x: 300, y:60},
-        11: {x: 690, y:234},
-        12: {x: 235, y:240},
-        13: {x: 180, y:75},
-        14: {x: 210, y:75},
-        15: {x: 300, y:228},
-        16: {x: 120, y:171},
-        17: {x: 120, y:207},
-        18: {x: 300, y:60},
-        19: {x: 300, y:60},
-        21: {x: 690, y:234},
-        22: {x: 235, y:240},
-        23: {x: 180, y:75},
-        24: {x: 210, y:75},
-
-    }
+  var dimensions = {
+    1: { x: 690, y: 234 },
+    2: { x: 234, y: 234 },
+    3: { x: 180, y: 75 },
+    4: { x: 210, y: 75 },
+    5: { x: 300, y: 228 },
+    6: { x: 120, y: 171 },
+    7: { x: 120, y: 207 },
+    8: { x: 300, y: 60 },
+    9: { x: 300, y: 60 },
+    11: { x: 690, y: 234 },
+    12: { x: 235, y: 240 },
+    13: { x: 180, y: 75 },
+    14: { x: 210, y: 75 },
+    15: { x: 300, y: 228 },
+    16: { x: 120, y: 171 },
+    17: { x: 120, y: 207 },
+    18: { x: 300, y: 60 },
+    19: { x: 300, y: 60 },
+    21: { x: 690, y: 234 },
+    22: { x: 235, y: 240 },
+    23: { x: 180, y: 75 },
+    24: { x: 210, y: 75 },
+  };
   return {
     name: 'owmwidget',
     init: function () {
-            return DT_function.loadScript('//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/d3.min.js');
+      return DT_function.loadScript(
+        '//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/d3.min.js'
+      );
     },
     defaultCfg: function (block) {
       var layout = block.layout || 11;
@@ -61,8 +61,8 @@ var DT_owmwidget = (function () {
         return;
       }
       me.cityIdPromise = getCityId(me);
-      me.containerid = me.mountPoint.slice(1)+'_owmwidget';
-      me.$block.html('<div id="'+me.containerid+'"></div>');
+      me.containerid = me.mountPoint.slice(1) + '_owmwidget';
+      me.$block.html('<div id="' + me.containerid + '"></div>');
     },
     refresh: function (me) {
       var w = parseInt(me.$mountPoint.width() * me.block.scale);
@@ -71,11 +71,13 @@ var DT_owmwidget = (function () {
 
       me.$block.css('font-size', fontSize + 'px');
       var dimension = dimensions[me.block.layout];
-      if(dimension) {
-        var bw=me.$block.width();
-        var scale = 1.0*me.$block.width()/dimension.x;
-        $('#'+me.containerid).css('transform','scale('+scale+')').css('transform-origin','top left');
-        me.$block.css('height', dimension.y * scale+30);
+      if (dimension) {
+        var bw = me.$block.width();
+        var scale = (1.0 * me.$block.width()) / dimension.x;
+        $('#' + me.containerid)
+          .css('transform', 'scale(' + scale + ')')
+          .css('transform-origin', 'top left');
+        me.$block.css('height', dimension.y * scale + 30);
       }
       refreshOWM(me);
     },
@@ -105,9 +107,11 @@ var DT_owmwidget = (function () {
       appid: me.block.apikey,
       units: 'metric',
       containerid: me.containerid,
-      lang: me.block.lang
+      lang: me.block.lang,
     });
-    DT_function.loadScript('//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/weather-widget-generator.js');
+    DT_function.loadScript(
+      '//openweathermap.org/themes/openweathermap/assets/vendor/owm/js/weather-widget-generator.js'
+    );
   }
 
   function getOWMurl(me, makeForecast) {
