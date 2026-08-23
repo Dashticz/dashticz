@@ -5093,11 +5093,11 @@ test('Lyrion Music Server (LMS) block is registered, dispatched and wired throug
   assert.match(layoutEditor, /kind: 'lms',/);
   assert.match(
     layoutEditor,
-    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms'\);/
+    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms' \|\|\s*\n\s*item\.kind === 'group'\);/
   );
   assert.match(
     layoutEditor,
-    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms'\) &&\s*\n\s*item\.reference/
+    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms' \|\|\s*\n\s*item\.kind === 'group'\) &&\s*\n\s*item\.reference/
   );
 
   // Backend bridge (vendor/dashticz/lms/index.php): same-origin gated, LAN
@@ -5254,4 +5254,63 @@ test('Lyrion Music Server "Hide block when player is off" switch clears both tex
     'Hide block when player is off'
   );
   assert.match(lmsDocs, /hide_when_off\s+``true``/);
+});
+
+test('Group block gets the Layout Editor config (cog) control, like HTML/LMS blocks, instead of only a drag handle', () => {
+  const layoutEditor = fs.readFileSync(
+    path.join(root, 'js/layouteditor.js'),
+    'utf8'
+  );
+
+  // _resolveBlock() dispatches Dashticz's own client-side group/scene
+  // aggregate block (js/components/group.js) on type: 'group', same as the
+  // html/lms checks right above it. Without this, a group block (which uses
+  // a 'devices' array rather than a numeric idx) matched none of the
+  // idx-based checks further down, so _resolveBlock() returned null and the
+  // block fell through to _collectGridItems()'s untyped 'grid' fallback -
+  // which _decorateItem() renders with only a drag icon, never the cog.
+  assert.match(
+    layoutEditor,
+    /String\(definition\.type \|\| ''\)\.toLowerCase\(\) === 'group'/
+  );
+  assert.match(layoutEditor, /kind: 'group',/);
+
+  // Both isConfigurable (decides whether the tile gets the cog vs. the drag
+  // icon) and _openItemConfig (routes a cog click to DashticzDeviceEditor,
+  // which already understands specialType 'group' - see
+  // _specialFromReference() in js/deviceeditor.js) must recognise the new
+  // 'group' kind alongside 'html'/'lms'.
+  assert.match(
+    layoutEditor,
+    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms' \|\|\s*\n\s*item\.kind === 'group'\);/
+  );
+  assert.match(
+    layoutEditor,
+    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms' \|\|\s*\n\s*item\.kind === 'group'\) &&\s*\n\s*item\.reference/
+  );
+});
+
+test('iconORimage() does not let a reset-to-empty image blank out a configured icon', () => {
+  const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+
+  // getBlockConfig() (js/dashticz.js) resets the *other* of icon/image to ''
+  // (still `typeof !== 'undefined'`) whenever one of them is set, so a block
+  // with a configured icon and no image ends up with both `icon: '...'` and
+  // `image: ''` defined. iconORimage() must treat that '' as "not set" -
+  // otherwise the image check (which used to run unconditionally whenever
+  // block.image was merely defined) always won because it runs after the
+  // icon check, forcing a blank <img src="img/"> in place of the icon. This
+  // is what a Group block's default icon (fas fa-object-group,
+  // js/deviceeditor.js's _showGroupPopup) ran into: visible in the saved
+  // config, never rendered on the tile.
+  assert.match(
+    blocks,
+    /if \(block\['icon'\]\) \{\s*\n\s*mIcon = Dashticz\.getProperty\(block\['icon'\], device\);\s*\n\s*useImage = false;/
+  );
+  assert.match(
+    blocks,
+    /if \(block\['image'\]\) \{\s*\n\s*mImage = Dashticz\.getProperty\(block\['image'\], device\);\s*\n\s*useImage = true;/
+  );
+  assert.doesNotMatch(blocks, /typeof block\['icon'\] !== 'undefined'/);
+  assert.doesNotMatch(blocks, /typeof block\['image'\] !== 'undefined'/);
 });

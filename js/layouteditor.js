@@ -1159,6 +1159,28 @@ var DashticzLayoutEditor = (function () {
       };
     }
 
+    if (key && String(definition.type || '').toLowerCase() === 'group') {
+      // Dashticz's own client-side group/scene aggregate block
+      // (js/components/group.js), dispatched on type: 'group' like html/lms
+      // above and mirroring deviceeditor.js's _specialFromReference(). Without
+      // this it fell through to the idx-based checks below (none of which
+      // match a devices-array group with no numeric idx), landing on
+      // _collectGridItems()'s untyped 'grid' fallback kind - which has no
+      // config (cog) control, only drag/resize.
+      return {
+        definition: definition,
+        kind: 'group',
+        reference: key,
+        widgetId: null,
+        idx:
+          parseInt(definition.idx, 10) > 0
+            ? parseInt(definition.idx, 10)
+            : null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
     if (
       key &&
       typeof definition.idx === 'undefined' &&
@@ -1572,7 +1594,8 @@ var DashticzLayoutEditor = (function () {
           item.kind === 'widget' ||
           item.kind === 'separator' ||
           item.kind === 'html' ||
-          item.kind === 'lms');
+          item.kind === 'lms' ||
+          item.kind === 'group');
       var configureLabel =
         item.kind === 'widget'
           ? _t('configure_widget')
@@ -1677,7 +1700,8 @@ var DashticzLayoutEditor = (function () {
       (item.kind === 'device' ||
         item.kind === 'separator' ||
         item.kind === 'html' ||
-        item.kind === 'lms') &&
+        item.kind === 'lms' ||
+        item.kind === 'group') &&
       item.reference
     ) {
       DT_function.loadDTScript('js/deviceeditor.js').then(function () {

@@ -734,11 +734,17 @@ function iconORimage(
   if (device && device.Status)
     isOn = getIconStatusClass(device.Status) === 'on';
   if (typeof block !== 'undefined') {
-    if (typeof block['icon'] !== 'undefined') {
+    // Truthy checks, not typeof: getBlockConfig() (js/dashticz.js) resets the
+    // *other* of icon/image to '' (still "defined") whenever one is set, so
+    // an empty string here means "not set", not "use an empty image". A
+    // typeof check would let a defined-but-empty image win over a real icon
+    // and render a broken <img> instead of the icon (e.g. group blocks with
+    // a custom icon and no image - see js/components/group.js).
+    if (block['icon']) {
       mIcon = Dashticz.getProperty(block['icon'], device);
       useImage = false;
     }
-    if (typeof block['image'] !== 'undefined') {
+    if (block['image']) {
       mImage = Dashticz.getProperty(block['image'], device);
       useImage = true;
     }

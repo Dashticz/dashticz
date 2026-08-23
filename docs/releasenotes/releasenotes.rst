@@ -28,6 +28,24 @@ v3.45.5 beta (23-8-2026)
   ``.map``, ``.trash``), which already clamp to ``height: 100%`` plus
   ``overflow: hidden``. It now gets the same treatment.
 
+- Fixed the Layout Editor showing a Group block's
+  (``js/components/group.js``, ``type: 'group'``) settings control as
+  a plain drag icon instead of the normal configuration cog, so its
+  config popup never opened. ``_resolveBlock()`` only recognized
+  separator/HTML/LMS/widget/idx-based-device blocks, so a group block
+  (which has no numeric ``idx``) fell through to the untyped ``grid``
+  fallback kind with no config affordance - the same fix shape as
+  #168's HTML block cog icon.
+
+- Fixed a block's configured custom icon (for example a Group block's
+  default ``fas fa-object-group``) silently rendering as a blank or
+  broken image instead of the icon, whenever the block's ``image``
+  had also been reset to ``''`` by ``getBlockConfig()``.
+  ``iconORimage()`` (``js/blocks.js``) checked
+  ``typeof block['image'] !== 'undefined'`` rather than its
+  truthiness, so the defined-but-empty ``''`` image always won over a
+  real configured icon, since it is checked after the icon check.
+
 * **Code**
 
 - Updated ``dayjs`` (1.11.21 to 1.11.23) and ``sass`` (1.101.0 to
