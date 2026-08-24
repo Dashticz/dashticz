@@ -33,6 +33,21 @@ v3.45.6 beta (24-8-2026)
   permanently rendered at each theme's unscoped default size instead
   of matching its ``.col-icon .icon`` size variable.
 
+- Fixed the Screen Editor quick-add popups' (Custom device, Multi
+  Device, Group, HTML Block, LMS) Icon/Updated/Title row rendering
+  centered instead of left-aligned like Device Config's own row.
+  Also left-aligned Device Config's own Icon/Data/Updated/Title/
+  Background group specifically, so it now sits at the left edge with
+  Dial/Bar/Slider pinned to the right, matching #195's original
+  mockup.
+
+- Fixed "Display options" showing in English regardless of the active
+  language, in Device Config and every quick-add popup - the
+  translation key only ever existed for Widget Config's own copy of
+  this heading, never for Device Config's. Added it to the three
+  language files that already translate Widget Config's copy (English,
+  French, Dutch).
+
 * **Code**
 
 - Removed the now fully unused ``.de-config-options`` switch-grid CSS
