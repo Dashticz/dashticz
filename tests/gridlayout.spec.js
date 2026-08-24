@@ -313,7 +313,7 @@ screens[1] = {
     ).toBeVisible();
   });
 
-  test('hides Icon and Title controls only while Device Config is a Dial', async ({
+  test('hides the Title control only while Device Config is a Dial, independently of the Icon toggle', async ({
     page,
   }) => {
     await page.route('**/tests/CONFIG.pw.js*', async (route) => {
@@ -351,25 +351,35 @@ screens[1] = {
 
     const popup = page.locator('#de-config-popup');
     await expect(popup).toBeVisible();
-    const titleControl = popup.locator('label:has([data-option="show_title"])');
-    const iconMode = popup.locator('[data-visual-mode="icon"]');
+    const titleControl = popup.locator('[data-option="show_title"]');
+    // Icon is its own independent toggle now (#195), no longer part of the
+    // Dial/Bar/Slider mutually-exclusive mode group.
+    const iconToggle = popup.locator('[data-option="icon"]');
     const dialMode = popup.locator('[data-visual-mode="dial"]');
 
     await expect(titleControl).toBeHidden();
-    await expect(popup.locator('.de-icon-field-row')).toBeHidden();
+    // The fixture's non-empty `icon` string leaves the Icon toggle on by
+    // default, and its field row visible, independently of Dial being
+    // active too.
+    await expect(iconToggle).toHaveAttribute('aria-pressed', 'true');
+    await expect(popup.locator('.de-icon-field-row')).toBeVisible();
     await expect(popup.locator('[data-option="hide_data"]')).toBeVisible();
     await expect(popup.locator('[data-option="last_update"]')).toBeVisible();
     await expect(dialMode).toHaveAttribute('aria-pressed', 'true');
 
-    await iconMode.click();
-    await expect(iconMode).toHaveAttribute('aria-pressed', 'true');
-    await expect(titleControl).toBeVisible();
-    await expect(popup.locator('[data-option="show_title"]')).not.toBeChecked();
-    await expect(popup.locator('.de-icon-field-row')).toBeVisible();
-
-    await dialMode.click();
+    await iconToggle.click();
+    await expect(iconToggle).toHaveAttribute('aria-pressed', 'false');
+    await expect(popup.locator('.de-icon-field-row')).toBeHidden();
+    // Toggling Icon never touches Dial or Title's own visibility.
     await expect(dialMode).toHaveAttribute('aria-pressed', 'true');
     await expect(titleControl).toBeHidden();
+
+    // Clicking the active Dial mode again restores the historic all-off
+    // state, which un-hides Title.
+    await dialMode.click();
+    await expect(dialMode).toHaveAttribute('aria-pressed', 'false');
+    await expect(titleControl).toBeVisible();
+    await expect(titleControl).not.toHaveClass(/active/);
   });
 
   test('does not restore Dial from another block with the same IDX when saving another device', async ({
@@ -442,10 +452,12 @@ screens[2] = {
 
     await page.locator('[data-order-key="device:43"] .de-config-btn').click();
     await expect(page.locator('#de-config-popup')).toBeVisible();
-    const iconMode = page.locator('[data-visual-mode="icon"]');
-    await expect(iconMode).toHaveAttribute('aria-pressed', 'true');
-    await iconMode.click();
-    await expect(iconMode).toHaveAttribute('aria-pressed', 'false');
+    // Icon is its own independent toggle now (#195), not a Dial/Bar/Slider
+    // visual mode.
+    const iconToggle = page.locator('[data-option="icon"]');
+    await expect(iconToggle).toHaveAttribute('aria-pressed', 'true');
+    await iconToggle.click();
+    await expect(iconToggle).toHaveAttribute('aria-pressed', 'false');
     await page.locator('#de-config-ok').click();
     await expect(page.locator('#deviceeditorpopup')).toBeVisible();
     await page.locator('#de-save-btn').evaluate((button) => {
@@ -1021,9 +1033,15 @@ screens[1] = {
     await separatorOverlay.locator('.dle-config-button').click();
     await expect(page.locator('#de-config-popup')).toBeVisible();
     await expect(page.locator('#deviceeditorpopup')).toBeHidden();
-    await expect(page.locator('.de-config-option')).toHaveCount(2);
-    await expect(page.locator('[data-option="icon"]')).toBeChecked();
-    await expect(page.locator('[data-option="show_title"]')).toBeChecked();
+    // Icon + Title (configOptions for a separator/title block) plus
+    // button.js's injected Background toggle (#170), which reuses
+    // .de-config-option for its shared active-state look (#195).
+    await expect(page.locator('.de-config-option')).toHaveCount(3);
+    await expect(page.locator('[data-option="icon"]')).toHaveClass(/active/);
+    await expect(page.locator('[data-option="show_title"]')).toHaveClass(
+      /active/
+    );
+    await expect(page.locator('[data-dt-no-background]')).toHaveClass(/active/);
     const separatorIconRow = page.locator('.de-icon-field-row');
     await expect(separatorIconRow).toBeVisible();
     await expect(separatorIconRow.locator('.de-custom-field-name')).toHaveValue(
@@ -1045,10 +1063,17 @@ screens[1] = {
     ).toHaveValue('fas fa-divide');
     await separatorIconRow.locator('.de-custom-field-remove').click();
     await expect(separatorIconRow).toHaveCount(0);
-    await expect(page.locator('[data-option="icon"]')).not.toBeChecked();
-    await page.locator('[data-option="icon"]').check();
+    await expect(page.locator('[data-option="icon"]')).not.toHaveClass(
+      /active/
+    );
+    // Icon is now a plain toggle button (#195), not a checkbox.
+    await page.locator('[data-option="icon"]').click();
+    await expect(page.locator('[data-option="icon"]')).toHaveClass(/active/);
     await expect(separatorIconRow).toBeVisible();
-    await page.locator('[data-option="icon"]').uncheck();
+    await page.locator('[data-option="icon"]').click();
+    await expect(page.locator('[data-option="icon"]')).not.toHaveClass(
+      /active/
+    );
     await expect(separatorIconRow).toBeHidden();
     await expect(page.locator('.de-custom-field-name').first()).toHaveValue(
       'title'
@@ -1417,7 +1442,7 @@ screens[1] = {
     for (const option of ['icon', 'show_title']) {
       await expect(
         page.locator(`[data-block-option="${option}"]`)
-      ).toBeChecked();
+      ).toHaveAttribute('aria-pressed', 'true');
     }
     await expect(page.locator('[data-block-option="hide_data"]')).toHaveCount(
       0
@@ -1429,12 +1454,8 @@ screens[1] = {
       page.getByText('Custom fields', { exact: true })
     ).toBeVisible();
     await expect(page.locator('[data-block-option="icon"]')).toHaveCSS(
-      'width',
-      '38px'
-    );
-    await expect(page.locator('[data-block-option="icon"]')).toHaveCSS(
-      'height',
-      '20px'
+      'min-width',
+      '72px'
     );
     await expect(page.locator('.we-custom-field-name').first()).toHaveValue(
       'title'
@@ -1452,8 +1473,11 @@ screens[1] = {
     );
     await widgetIconRow.locator('.we-custom-field-remove').click();
     await expect(widgetIconRow).toHaveCount(0);
-    await expect(page.locator('[data-block-option="icon"]')).not.toBeChecked();
-    await page.locator('[data-block-option="icon"]').check();
+    await expect(page.locator('[data-block-option="icon"]')).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    );
+    await page.locator('[data-block-option="icon"]').click();
     await expect(widgetIconRow).toBeVisible();
     await widgetIconRow.locator('.we-icon-source').selectOption('image');
     await expect(widgetIconRow.locator('.we-custom-field-setting')).toHaveValue(

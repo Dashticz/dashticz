@@ -6,6 +6,92 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.45.6 beta (24-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- Extended #195's icon-button conversion (previously Device Config
+  only) to every other place Icon/Updated/Title/Data switches
+  appeared: the Screen Editor's five quick-add popups (Custom device,
+  Multi Device, Group, HTML Block, LMS) and Widget Config's own
+  Icon/Title row. Both now use the same click-to-toggle icon-button
+  look and behavior as Device Config's row, instead of native
+  checkboxes. button.js's injected Background toggle matches whichever
+  row it lands in.
+
+- Extended #195 to the Slide button quick-add popup too - the one
+  place it was still missing entirely. Icon was previously shown
+  unconditionally with no toggle at all, and its "No background"
+  checkbox was a lone switch with no Display options row around it.
+  Both are now icon buttons in a proper Display options row, matching
+  every other popup, positioned at the top of the popup body like
+  every other popup's row too (it had briefly landed after the
+  Name/Key/Title/Screen fields instead).
+
+- The Slider visual mode (next to Icon/Dial/Bar in Device Config) is
+  now available for Dimmer devices too, not just Blinds Percentage -
+  previously the button stayed disabled for a Dimmer and had no
+  working renderer behind it even if forced (#197). It shows On/Off
+  labels and no Stop button (a dimmer has no motor to stop), and its
+  vertical slider runs bottom-to-top - 0% Off at the bottom, 100% On
+  at the top - matching a physical dimmer/volume slider, unlike
+  Blinds' top-to-bottom Open/Closed convention.
+
+* **Fixes**
+
+- Fixed a block's icon rendering visibly larger than every other
+  block's icon under the Modern Dark/Liquid Glass themes when the
+  block has no ``refresh()`` of its own to later repaint it through
+  ``iconORimage()`` (which always adds the ``icon`` class).
+  ``getColIcon()`` (``js/dashticz.js``), the one-time initial-render
+  path every block goes through, was missing that class - its own
+  image branch right below it already had it - so a block that never
+  gets repainted (for example an HTML block with a custom icon)
+  permanently rendered at each theme's unscoped default size instead
+  of matching its ``.col-icon .icon`` size variable.
+
+- Fixed the Screen Editor quick-add popups' (Custom device, Multi
+  Device, Group, HTML Block, LMS) Icon/Updated/Title row rendering
+  centered instead of left-aligned like Device Config's own row.
+  Also left-aligned Device Config's own Icon/Data/Updated/Title/
+  Background group specifically, so it now sits at the left edge with
+  Dial/Bar/Slider pinned to the right, matching #195's original
+  mockup.
+
+- Fixed "Display options" showing in English regardless of the active
+  language, in Device Config and every quick-add popup - the
+  translation key only ever existed for Widget Config's own copy of
+  this heading, never for Device Config's. Added it to the three
+  language files that already translate Widget Config's copy (English,
+  French, Dutch).
+
+- Fixed the Bar visual mode showing "OPEN"/"DICHT" (Open/Closed)
+  segment labels for Dimmer devices instead of On/Off - it worked
+  correctly for sunscreens/blinds, but a Dimmer's own SwitchType was
+  never checked (#197).
+
+- Fixed a Dimmer's Slider up/down buttons still looking like Blinds'
+  matched pair of green move-actions, which doesn't read as an On/Off
+  toggle for a lamp. The down (Off) button is now colored red to
+  contrast with the up (On) button's green, like a switch's own
+  on/off colors (#197). Blinds' own up/down buttons are unchanged.
+
+- Fixed those same buttons still using chevron-up/chevron-down icons,
+  which read as a physical move action rather than On/Off. A Dimmer's
+  Slider buttons now use toggle-on/toggle-off icons instead (#197);
+  Blinds keep their chevrons unchanged.
+
+* **Code**
+
+- Removed the now fully unused ``.de-config-options`` switch-grid CSS
+  (and its ``-three``/``-four``/``-five`` column-count modifiers) and
+  the ``.we-block-option.form-check-input`` switch-sizing rule, since
+  nothing renders that markup anymore; folded the surviving switches
+  (``#hb-device-border``, ``.we-widget-field``, ``#we-cfg-ascending``,
+  ``.de-switch``, ``.de-lms-switch``) into the shared blue-switch color
+  rule on their own.
+
 v3.45.5 beta (23-8-2026)
 -------------------------
 
@@ -17,6 +103,19 @@ v3.45.5 beta (23-8-2026)
   Uses the same ``window.confirm()`` pattern already used for screen
   deletion and Wizard grid conversion.
 
+- Device Config's Data/Updated/Title/No background switches are now
+  icon buttons, matching the look of the existing Icon/Dial/Bar/Slider
+  visual-mode picker (#195). Icon moved out of that mutually-exclusive
+  Dial/Bar/Slider group into its own independent toggle: Icon, Data,
+  Updated, Title and Background now sit together as one row of
+  bordered icon buttons, beside the still mutually-exclusive Dial/Bar/
+  Slider group, both under the same *Display options* heading. Every
+  device now gets an Icon toggle (previously only Group/HTML/LMS/
+  Separator blocks did, and dial-capable devices only got it as one of
+  the exclusive modes), and toggling it no longer depends on which
+  Dial/Bar/Slider mode, if any, is selected. Widget Config keeps its
+  original switch-based layout, unchanged.
+
 * **Fixes**
 
 - Fixed the Sunrise/Sunset widget showing a real, clickable scrollbar
@@ -27,6 +126,24 @@ v3.45.5 beta (23-8-2026)
   ``.basicclock``, ``.stationclock``, ``.flipclock``, ``.haymanclock``,
   ``.map``, ``.trash``), which already clamp to ``height: 100%`` plus
   ``overflow: hidden``. It now gets the same treatment.
+
+- Fixed the Layout Editor showing a Group block's
+  (``js/components/group.js``, ``type: 'group'``) settings control as
+  a plain drag icon instead of the normal configuration cog, so its
+  config popup never opened. ``_resolveBlock()`` only recognized
+  separator/HTML/LMS/widget/idx-based-device blocks, so a group block
+  (which has no numeric ``idx``) fell through to the untyped ``grid``
+  fallback kind with no config affordance - the same fix shape as
+  #168's HTML block cog icon.
+
+- Fixed a block's configured custom icon (for example a Group block's
+  default ``fas fa-object-group``) silently rendering as a blank or
+  broken image instead of the icon, whenever the block's ``image``
+  had also been reset to ``''`` by ``getBlockConfig()``.
+  ``iconORimage()`` (``js/blocks.js``) checked
+  ``typeof block['image'] !== 'undefined'`` rather than its
+  truthiness, so the defined-but-empty ``''`` image always won over a
+  real configured icon, since it is checked after the icon check.
 
 * **Code**
 

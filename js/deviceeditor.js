@@ -2312,34 +2312,53 @@ var DashticzDeviceEditor = (function () {
     var t = _translations();
     var html =
       '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
-    html += '<div class="mb-3 de-config-options de-config-options-three">';
+    // Icon/Updated/Title as icon buttons, same look as Device Config's own
+    // .de-config-option row (#195) - kept on unique per-popup ids (not
+    // data-option) since several of these quick-add popups can coexist and
+    // _readQuickOptions() below already looked them up that way.
     html +=
-      '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
-      prefix +
-      '-opt-icon"' +
-      (defaults.icon ? ' checked' : '') +
-      '>' +
-      '<span class="form-check-label">' +
-      _esc(t.icon) +
-      '</span></label>';
-    html +=
-      '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
-      prefix +
-      '-opt-update"' +
-      (defaults.lastUpdate ? ' checked' : '') +
-      '>' +
-      '<span class="form-check-label">' +
-      _esc(t.last_update) +
-      '</span></label>';
-    html +=
-      '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
-      prefix +
-      '-opt-title"' +
-      (defaults.showTitle ? ' checked' : '') +
-      '>' +
-      '<span class="form-check-label">' +
-      _esc(t.show_title) +
-      '</span></label>';
+      '<div class="d-flex flex-wrap gap-2 mb-3 de-config-options-icons" role="group" aria-label="' +
+      _esc(t.display_options) +
+      '">';
+    [
+      {
+        id: 'opt-icon',
+        icon: 'fas fa-image',
+        label: t.icon,
+        active: defaults.icon,
+      },
+      {
+        id: 'opt-update',
+        icon: 'fas fa-clock',
+        label: t.last_update,
+        active: defaults.lastUpdate,
+      },
+      {
+        id: 'opt-title',
+        icon: 'fas fa-heading',
+        label: t.show_title,
+        active: defaults.showTitle,
+      },
+    ].forEach(function (item) {
+      html +=
+        '<button type="button" class="btn btn-outline-secondary de-config-option' +
+        (item.active ? ' active' : '') +
+        '" id="' +
+        prefix +
+        '-' +
+        item.id +
+        '" aria-pressed="' +
+        (item.active ? 'true' : 'false') +
+        '" title="' +
+        _esc(item.label) +
+        '" style="min-width:72px;">' +
+        '<i class="' +
+        item.icon +
+        '" aria-hidden="true"></i>' +
+        '<span class="d-block small">' +
+        _esc(item.label) +
+        '</span></button>';
+    });
     html += '</div>';
     html +=
       '<div class="mb-3 ' +
@@ -2360,17 +2379,21 @@ var DashticzDeviceEditor = (function () {
      with the popup's own jQuery element (for correctly-scoped, leak-free
      event delegation - see _wireIconImagePicker()). */
   function _wireQuickOptions(prefix, $popup) {
-    $('#' + prefix + '-opt-icon').on('change', function () {
-      $('.' + prefix + '-opt-icon-field').toggleClass(
-        'd-none',
-        !$(this).is(':checked')
-      );
+    $popup.on('click', '.de-config-option', function () {
+      if ($(this).prop('disabled')) return;
+      var active = !$(this).hasClass('active');
+      $(this)
+        .toggleClass('active', active)
+        .attr('aria-pressed', active ? 'true' : 'false');
+      if ($(this).attr('id') === prefix + '-opt-icon') {
+        $('.' + prefix + '-opt-icon-field').toggleClass('d-none', !active);
+      }
     });
     _wireIconImagePicker($popup);
   }
 
   function _readQuickOptions(prefix) {
-    var iconChecked = $('#' + prefix + '-opt-icon').is(':checked');
+    var iconChecked = $('#' + prefix + '-opt-icon').hasClass('active');
     var $iconRow = $('.' + prefix + '-opt-icon-field .de-icon-field-row');
     var iconSource =
       $iconRow.find('.de-icon-source').val() === 'image' ? 'image' : 'icon';
@@ -2381,8 +2404,8 @@ var DashticzDeviceEditor = (function () {
       icon: iconChecked,
       iconSource: iconSource,
       iconValue: iconChecked ? rawValue || null : null,
-      lastUpdate: $('#' + prefix + '-opt-update').is(':checked'),
-      showTitle: $('#' + prefix + '-opt-title').is(':checked'),
+      lastUpdate: $('#' + prefix + '-opt-update').hasClass('active'),
+      showTitle: $('#' + prefix + '-opt-title').hasClass('active'),
     };
   }
 
@@ -3529,6 +3552,42 @@ var DashticzDeviceEditor = (function () {
       _esc(t.close) +
       '"></button></div>';
     html += '<div class="modal-body">';
+    // Display options: an Icon toggle button (#195, same look/behavior as
+    // every other quick-add popup's _quickOptionsHtml() row, and in the
+    // same top-of-body position - id="sb-opt-icon" and class
+    // "sb-opt-icon-field" match that shared function's own naming so
+    // _wireQuickOptions('sb', $popup) below can wire it unchanged).
+    // button.js's injectButtonEditor() appends a matching Background button
+    // into this same row.
+    html += '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
+    html +=
+      '<div class="d-flex flex-wrap gap-2 mb-3 de-config-options-icons" role="group" aria-label="' +
+      _esc(t.display_options) +
+      '">';
+    html +=
+      '<button type="button" class="btn btn-outline-secondary de-config-option active" id="sb-opt-icon" aria-pressed="true" title="' +
+      _esc(t.icon) +
+      '" style="min-width:72px;">' +
+      '<i class="fas fa-image" aria-hidden="true"></i>' +
+      '<span class="d-block small">' +
+      _esc(t.icon) +
+      '</span></button>';
+    html += '</div>';
+    html += '<div class="mb-3 sb-opt-icon-field">';
+    html += _customFieldRowHtml(
+      { field: 'icon', setting: 'fas fa-home' },
+      { hideButtons: true }
+    );
+    // Only meaningful once a custom image is picked (not a font icon) -
+    // toggled by refreshFullImageOption() below, mirroring how the image
+    // picker itself only opens for the 'image' source (#171).
+    html +=
+      '<label class="form-check form-switch mt-2 sb-full-image-option d-none">' +
+      '<input class="form-check-input" type="checkbox" id="sb-button-full-image">' +
+      '<span class="form-check-label">' +
+      _esc(t.slide_button_full_image) +
+      '</span></label>';
+    html += '</div>';
     html +=
       '<div class="mb-3"><label class="form-label" for="sb-button-name">' +
       _esc(t.slide_button_name) +
@@ -3557,24 +3616,6 @@ var DashticzDeviceEditor = (function () {
       '</label>';
     html +=
       '<input type="number" min="1" step="1" class="form-control" id="sb-button-screen" value="1"></div>';
-    html +=
-      '<div class="mb-3"><label class="form-label">' +
-      _esc(t.slide_button_icon) +
-      '</label>';
-    html += _customFieldRowHtml(
-      { field: 'icon', setting: 'fas fa-home' },
-      { hideButtons: true }
-    );
-    // Only meaningful once a custom image is picked (not a font icon) -
-    // toggled by refreshFullImageOption() below, mirroring how the image
-    // picker itself only opens for the 'image' source (#171).
-    html +=
-      '<label class="form-check form-switch mt-2 sb-full-image-option d-none">' +
-      '<input class="form-check-input" type="checkbox" id="sb-button-full-image">' +
-      '<span class="form-check-label">' +
-      _esc(t.slide_button_full_image) +
-      '</span></label>';
-    html += '</div>';
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
     html +=
       '<div class="modal-footer">' +
@@ -3590,7 +3631,7 @@ var DashticzDeviceEditor = (function () {
     html += '</div></div></div></div>';
     $('body').append(html);
     var $popup = $('#slidebuttonpopup');
-    _wireIconImagePicker($popup);
+    _wireQuickOptions('sb', $popup);
     _wireBackButton('slidebuttonpopup');
 
     function refreshFullImageOption() {
@@ -3611,13 +3652,18 @@ var DashticzDeviceEditor = (function () {
       var buttonTitle = $.trim(String($('#sb-button-title').val() || ''));
       var rawSlide = $.trim(String($('#sb-button-screen').val() || ''));
       var slideTarget = parseInt(rawSlide, 10);
+      var iconChecked = $('#sb-opt-icon').hasClass('active');
       var iconSource =
         $popup.find('.de-icon-source').val() === 'image' ? 'image' : 'icon';
-      var iconValue = $.trim(
-        String(
-          $popup.find('.de-icon-field-row .de-custom-field-setting').val() || ''
-        )
-      );
+      var iconValue = iconChecked
+        ? $.trim(
+            String(
+              $popup
+                .find('.de-icon-field-row .de-custom-field-setting')
+                .val() || ''
+            )
+          )
+        : '';
       if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
         $message.addClass('text-danger').text(t.invalid_slide_button_name);
         $('#sb-button-name').trigger('focus');
@@ -3944,20 +3990,22 @@ var DashticzDeviceEditor = (function () {
     var supportsBar =
       hasDial && (isDimmer || isBlindsPercentage || options.bar === true);
     // Needle (js/switches.js renderBlindsSliderBlock(), block.needle) is a
-    // continuous vertical slider - it only makes sense for percentage
-    // blinds, not the generic Dimmer/other devices Bar also supports.
+    // continuous vertical slider - it works for percentage blinds and
+    // Dimmers, the same two device types Bar supports.
     var supportsNeedle =
-      hasDial && (isBlindsPercentage || options.needle === true);
+      hasDial && (isDimmer || isBlindsPercentage || options.needle === true);
     // The Steps field also governs Needle mode's scale (js/switches.js
     // addSlider()), which reads the same block.barsteps as the Bar subtype.
     function barStepsApplies(mode) {
       return mode === 'bar' || mode === 'needle';
     }
-    // Unlike Steps, Inverse is Needle-only - the separate Dial widget's own
-    // Bar subtype (js/components/dial.js) handles inversion on its own and
-    // is not affected by this switch.
+    // Unlike Steps, Inverse is Needle-only, and only meaningful for Blinds -
+    // a Dimmer's Slider always runs 0% Off to 100% On, so there is nothing
+    // to invert. The separate Dial widget's own Bar subtype
+    // (js/components/dial.js) handles inversion on its own and is not
+    // affected by this switch either.
     function inverseApplies(mode) {
-      return mode === 'needle';
+      return mode === 'needle' && !isDimmer;
     }
 
     // subtype:'bar' and needle:true both belong to the visual mode selector,
@@ -3988,26 +4036,81 @@ var DashticzDeviceEditor = (function () {
           ? 'bar'
           : options.dial === true
             ? 'dial'
-            : options.icon === true
-              ? 'icon'
-              : '';
+            : '';
+    // Icon is no longer part of the Dial/Bar/Slider mutually-exclusive mode -
+    // it's now an independent toggle living in .de-config-options-icons
+    // below (#195), same as Data/Updated/Title/Background, so every device
+    // gets it (previously only Group/HTML/LMS/Separator specials did).
     var configOptions = isTitle
       ? ['icon', 'show_title']
       : isGroupBlock || isHtmlBlock || isLmsBlock
         ? ['icon', 'last_update', 'show_title']
-        : ['hide_data', 'last_update', 'show_title'];
+        : ['icon', 'hide_data', 'last_update', 'show_title'];
     html += '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
 
+    // Icon/Data/Updated/Title/Background: independent toggle buttons, never
+    // mutually exclusive with each other or with Dial/Bar/Slider below -
+    // .de-config-option shares the same selected look
+    // (.de-visual-mode-button.active, css/creative.css) without sharing its
+    // exclusive-select click handler.
+    var OPTION_ICONS = {
+      icon: 'fas fa-image',
+      hide_data: 'fas fa-align-left',
+      last_update: 'fas fa-clock',
+      show_title: 'fas fa-heading',
+    };
+    var optionsHtml = '';
+    configOptions.forEach(function (option) {
+      var hiddenForDial = hasDial && option === 'show_title';
+      // The Data button is user-facing: active means data is visible.
+      // CONFIG.js keeps the backwards-compatible inverse hide_data property.
+      // Title visibility is stored separately from the other display options.
+      var checked;
+      if (option === 'hide_data') {
+        checked = options.hide_data !== true;
+      } else if (option === 'show_title') {
+        checked = isSpecial
+          ? special.showTitle !== false
+          : deviceTitleVisible[ck] !== false;
+      } else {
+        checked = options[option] === true;
+      }
+      optionsHtml +=
+        '<button type="button" class="btn btn-outline-secondary de-config-option' +
+        (checked ? ' active' : '') +
+        (hiddenForDial ? ' de-hide-for-dial' : '') +
+        '" data-option="' +
+        option +
+        '" aria-pressed="' +
+        (checked ? 'true' : 'false') +
+        '" title="' +
+        _esc(t[option]) +
+        '" style="min-width:72px;">' +
+        '<i class="' +
+        OPTION_ICONS[option] +
+        '" aria-hidden="true"></i>' +
+        '<span class="d-block small">' +
+        _esc(t[option]) +
+        '</span></button>';
+    });
+    html +=
+      '<div class="d-flex flex-wrap justify-content-between gap-4 mb-3 de-config-options-row">';
+    html +=
+      '<div class="d-flex flex-wrap gap-2 de-config-options-icons" role="group" aria-label="' +
+      _esc(t.display_options) +
+      '">' +
+      optionsHtml +
+      '</div>';
+
     if (hasDial) {
-      // Icon, Dial and Bar are one mutually-exclusive visual mode. Bootstrap's
-      // btn-group provides the shared rounded border without extra theme CSS.
-      html += '<div class="d-flex justify-content-center mb-3">';
+      // Dial, Bar and Slider are one mutually-exclusive visual mode.
+      // Bootstrap's btn-group provides the shared rounded border without
+      // extra theme CSS.
       html +=
         '<div class="btn-group" role="group" aria-label="' +
         _esc(t.display_options) +
         '">';
       [
-        { mode: 'icon', label: t.icon, icon: 'fas fa-image', enabled: true },
         {
           mode: 'dial',
           label: t.dial,
@@ -4048,7 +4151,11 @@ var DashticzDeviceEditor = (function () {
           _esc(item.label) +
           '</span></button>';
       });
-      html += '</div></div>';
+      html += '</div>';
+    }
+    html += '</div>';
+
+    if (hasDial) {
       var currentBarSteps =
         parseInt(options.barsteps, 10) > 0
           ? parseInt(options.barsteps, 10)
@@ -4102,42 +4209,6 @@ var DashticzDeviceEditor = (function () {
         '<div class="form-text">' + _esc(t.dial_inverse_help) + '</div></div>';
     }
 
-    html +=
-      '<div class="de-config-options' +
-      (isTitle
-        ? ''
-        : isGroupBlock || isHtmlBlock || isLmsBlock || hasDial
-          ? ' de-config-options-three'
-          : '') +
-      '">';
-    configOptions.forEach(function (option) {
-      var hiddenForDial = hasDial && option === 'show_title';
-      html +=
-        '<label class="form-check form-switch' +
-        (hiddenForDial ? ' de-hide-for-dial' : '') +
-        '"><input class="form-check-input de-config-option" type="checkbox" data-option="' +
-        option +
-        '"';
-      // The Data checkbox is user-facing: checked means data is visible.
-      // CONFIG.js keeps the backwards-compatible inverse hide_data property.
-      // Title visibility is stored separately from the other display options.
-      var checked;
-      if (option === 'hide_data') {
-        checked = options.hide_data !== true;
-      } else if (option === 'show_title') {
-        checked = isSpecial
-          ? special.showTitle !== false
-          : deviceTitleVisible[ck] !== false;
-      } else {
-        checked = options[option] === true;
-      }
-      if (checked) html += ' checked';
-      html +=
-        '><span class="form-check-label">' +
-        _esc(t[option]) +
-        '</span></label>';
-    });
-    html += '</div>';
     if (!isTitle) {
       html += '<div class="alert alert-info de-dial-hint d-none" role="note">';
       html += _esc(t.dial_hint) + ' ';
@@ -4266,9 +4337,9 @@ var DashticzDeviceEditor = (function () {
       });
     }
     function refreshIconFieldVisibility() {
-      var enabled = hasDial
-        ? selectedVisualMode() === 'icon'
-        : $popup.find('[data-option="icon"]').is(':checked');
+      var enabled = $popup
+        .find('.de-config-option[data-option="icon"]')
+        .hasClass('active');
       $popup.find('.de-icon-field-row').toggle(enabled);
     }
     function ensureIconFieldRow() {
@@ -4354,16 +4425,25 @@ var DashticzDeviceEditor = (function () {
       var removesIcon = $row.hasClass('de-icon-field-row');
       $row.remove();
       if (removesIcon) {
-        if (hasDial) setVisualMode('');
-        else $popup.find('[data-option="icon"]').prop('checked', false);
+        $popup
+          .find('.de-config-option[data-option="icon"]')
+          .removeClass('active')
+          .attr('aria-pressed', 'false');
       }
       refreshCustomFieldButtons();
       refreshIconFieldVisibility();
     });
-    $popup.on('change', '[data-option="icon"]', function () {
-      if ($(this).is(':checked')) ensureIconFieldRow();
-      refreshCustomFieldButtons();
-      refreshIconFieldVisibility();
+    $popup.on('click', '.de-config-option', function () {
+      if ($(this).prop('disabled')) return;
+      var active = !$(this).hasClass('active');
+      $(this)
+        .toggleClass('active', active)
+        .attr('aria-pressed', active ? 'true' : 'false');
+      if (String($(this).attr('data-option')) === 'icon') {
+        if (active) ensureIconFieldRow();
+        refreshCustomFieldButtons();
+        refreshIconFieldVisibility();
+      }
     });
     $popup.on('change', '.de-icon-source', function () {
       var $row = $(this).closest('.de-icon-field-row');
@@ -4405,7 +4485,6 @@ var DashticzDeviceEditor = (function () {
       var mode = String($(this).attr('data-visual-mode') || '');
       // Clicking the selected mode again restores the historic all-off state.
       setVisualMode(selectedVisualMode() === mode ? '' : mode);
-      if (selectedVisualMode() === 'icon') ensureIconFieldRow();
       refreshCustomFieldButtons();
       refreshDialOptions();
     });
@@ -4507,13 +4586,16 @@ var DashticzDeviceEditor = (function () {
           $('#de-config-lms-player').trigger('focus');
         }
       }
-      $('#de-config-popup .de-config-option').each(function () {
+      // [data-option]: excludes button.js's injected Background toggle,
+      // which reuses .de-config-option purely for its click-to-toggle
+      // .active styling/behavior and reads its own state independently via
+      // its own custom-fields (no_background) save handler.
+      $('#de-config-popup .de-config-option[data-option]').each(function () {
         var option = String($(this).attr('data-option'));
-        var checked = $(this).prop('checked');
+        var checked = $(this).hasClass('active');
         updated[option] = option === 'hide_data' ? !checked : checked;
       });
       if (hasDial) {
-        updated.icon = pendingVisualMode === 'icon';
         updated.dial = pendingVisualMode === 'dial';
         updated.bar = pendingVisualMode === 'bar';
         updated.needle = pendingVisualMode === 'needle';
@@ -5805,8 +5887,9 @@ var DashticzDeviceEditor = (function () {
         }
       } else if (options.needle === true) {
         // Needle stays on the classic (non-dial) rendering path -
-        // js/switches.js getBlindsBlock() reads block.needle directly, not
-        // block.type - saveblocks.php/configwriter.php only recognize a
+        // js/switches.js getBlindsBlock()/getDimmerBlock() read block.needle
+        // directly, not block.type - saveblocks.php/configwriter.php only
+        // recognize a
         // fixed set of top-level device props (unlike Dial/Bar's existing
         // type:'dial'), so this rides through custom_fields like barsteps
         // already does, rather than as a top-level entry property that
@@ -5819,6 +5902,8 @@ var DashticzDeviceEditor = (function () {
         // Only written once explicitly set (true or false) - leaving it out
         // keeps getBlindsBlock() auto-detecting from the device's own
         // SwitchType, same reasoning as the tri-state hydration above.
+        // Dimmers ignore this field entirely (getDimmerBlock() has no
+        // inverted concept), inverseApplies() above hides it from them.
         if (typeof options.inverse === 'boolean') {
           customFields.inverse = options.inverse;
         }
