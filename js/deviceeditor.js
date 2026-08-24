@@ -3552,38 +3552,11 @@ var DashticzDeviceEditor = (function () {
       _esc(t.close) +
       '"></button></div>';
     html += '<div class="modal-body">';
-    html +=
-      '<div class="mb-3"><label class="form-label" for="sb-button-name">' +
-      _esc(t.slide_button_name) +
-      '</label>';
-    html +=
-      '<input type="text" class="form-control" id="sb-button-name" value="slidehome" autocomplete="off">';
-    html +=
-      '<div class="form-text">' +
-      _esc(t.slide_button_name_help) +
-      '</div></div>';
-    html +=
-      '<div class="mb-3"><label class="form-label" for="sb-button-key">' +
-      _esc(t.slide_button_key) +
-      '</label>';
-    html +=
-      '<input type="text" class="form-control" id="sb-button-key" value="Home" autocomplete="off"></div>';
-    html +=
-      '<div class="mb-3"><label class="form-label" for="sb-button-title">' +
-      _esc(t.slide_button_title) +
-      '</label>';
-    html +=
-      '<input type="text" class="form-control" id="sb-button-title" value="Home Screen" autocomplete="off"></div>';
-    html +=
-      '<div class="mb-3"><label class="form-label" for="sb-button-screen">' +
-      _esc(t.slide_button_screen) +
-      '</label>';
-    html +=
-      '<input type="number" min="1" step="1" class="form-control" id="sb-button-screen" value="1"></div>';
     // Display options: an Icon toggle button (#195, same look/behavior as
-    // every other quick-add popup's _quickOptionsHtml() row - id="sb-opt-icon"
-    // and class "sb-opt-icon-field" match that shared function's own naming
-    // so _wireQuickOptions('sb', $popup) below can wire it unchanged).
+    // every other quick-add popup's _quickOptionsHtml() row, and in the
+    // same top-of-body position - id="sb-opt-icon" and class
+    // "sb-opt-icon-field" match that shared function's own naming so
+    // _wireQuickOptions('sb', $popup) below can wire it unchanged).
     // button.js's injectButtonEditor() appends a matching Background button
     // into this same row.
     html += '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
@@ -3615,6 +3588,34 @@ var DashticzDeviceEditor = (function () {
       _esc(t.slide_button_full_image) +
       '</span></label>';
     html += '</div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="sb-button-name">' +
+      _esc(t.slide_button_name) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="sb-button-name" value="slidehome" autocomplete="off">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.slide_button_name_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="sb-button-key">' +
+      _esc(t.slide_button_key) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="sb-button-key" value="Home" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="sb-button-title">' +
+      _esc(t.slide_button_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="sb-button-title" value="Home Screen" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="sb-button-screen">' +
+      _esc(t.slide_button_screen) +
+      '</label>';
+    html +=
+      '<input type="number" min="1" step="1" class="form-control" id="sb-button-screen" value="1"></div>';
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
     html +=
       '<div class="modal-footer">' +

@@ -25,7 +25,9 @@ v3.45.6 beta (24-8-2026)
   unconditionally with no toggle at all, and its "No background"
   checkbox was a lone switch with no Display options row around it.
   Both are now icon buttons in a proper Display options row, matching
-  every other popup.
+  every other popup, positioned at the top of the popup body like
+  every other popup's row too (it had briefly landed after the
+  Name/Key/Title/Screen fields instead).
 
 * **Fixes**
 
