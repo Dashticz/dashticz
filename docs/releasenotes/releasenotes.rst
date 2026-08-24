@@ -71,6 +71,12 @@ v3.45.6 beta (24-8-2026)
   correctly for sunscreens/blinds, but a Dimmer's own SwitchType was
   never checked (#197).
 
+- Fixed a Dimmer's Slider up/down buttons still looking like Blinds'
+  matched pair of green move-actions, which doesn't read as an On/Off
+  toggle for a lamp. The down (Off) button is now colored red to
+  contrast with the up (On) button's green, like a switch's own
+  on/off colors (#197). Blinds' own up/down buttons are unchanged.
+
 * **Code**
 
 - Removed the now fully unused ``.de-config-options`` switch-grid CSS
