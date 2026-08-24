@@ -1632,12 +1632,22 @@ var DT_dial = (function () {
       Math.min(100, Math.floor(me.value / 10) * 10)
     );
     var barValueText = number_format(me.value, me.decimals) + me.unitvalue;
-    var openText =
-      language.switches && language.switches.state_open
+    // A Dimmer's 0%/100% ends are On/Off, not Open/Closed - only Blinds
+    // (and other devices using the Bar's Open/Closed convention) get the
+    // Open/Closed labels.
+    var isDimmer = !!(me.device && me.device.SwitchType === 'Dimmer');
+    var openText = isDimmer
+      ? language.switches && language.switches.state_off
+        ? language.switches.state_off
+        : 'OFF'
+      : language.switches && language.switches.state_open
         ? language.switches.state_open
         : 'OPEN';
-    var closedText =
-      language.switches && language.switches.state_closed
+    var closedText = isDimmer
+      ? language.switches && language.switches.state_on
+        ? language.switches.state_on
+        : 'ON'
+      : language.switches && language.switches.state_closed
         ? language.switches.state_closed
         : 'CLOSED';
 

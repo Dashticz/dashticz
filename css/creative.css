@@ -149,10 +149,19 @@
    received the min-height rule above: the grid cell itself resized correctly,
    but the visible content stayed pinned at its small natural size, making a
    resize look like it "didn't stick". Fill and center it like the other
-   grid-aware blocks instead. */
+   grid-aware blocks instead.
+
+   Same class of bug as .frame/.waqi/.basicclock etc. above: on a grid row
+   short enough that the icon+title header plus the sunrise/sunset line don't
+   both fit, min-height alone only floors the block - it can still grow past
+   its row, and .dt-grid-item's own overflow: auto then shows a scrollbar
+   with clickable up/down arrows instead of just clipping the excess like
+   every other grid-aware block already does. */
 .dt-grid-screen > .dt-grid-layout > .dt-grid-item > .sunriseholder {
   box-sizing: border-box;
-  min-height: 100%;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
   display: flex;
   /* Without this, flex's row default put every direct child - the
      .sunrise-header row AND each individual icon/time span making up the
@@ -1077,16 +1086,16 @@ next css sets the default height of the frame popup
    Device/Widget editors: light-blue track with a solid blue knob (instead
    of Bootstrap's default white knob), wherever it appears. .de-switch: the
    standard class for any new standalone switch added to the Device Config
-   popup outside of .de-config-options's own grid (e.g. Inverse) - add it
-   to the <input> instead of registering yet another one-off selector here,
-   so it automatically gets this same color and size (below) without
-   needing a CSS change of its own. */
+   popup (e.g. Inverse) - add it to the <input> instead of registering yet
+   another one-off selector here, so it automatically gets this same color
+   and size (below) without needing a CSS change of its own. Icon/Data/
+   Updated/Title/Background (.de-config-options-icons) and Icon/Title
+   (.we-block-options-row) are icon buttons now, not switches (#195), so
+   they're no longer part of this list. */
 #settingspopup .settings-switch .form-check-input,
-.de-config-options .form-check-input,
 #hb-device-border.form-check-input,
 .we-widget-field.form-check-input,
 #we-cfg-ascending.form-check-input,
-.we-block-option.form-check-input,
 .de-switch,
 .de-lms-switch.form-check-input {
   border-color: #adb5bd !important;
@@ -1094,11 +1103,9 @@ next css sets the default height of the frame popup
 }
 
 #settingspopup .settings-switch .form-check-input:checked,
-.de-config-options .form-check-input:checked,
 #hb-device-border.form-check-input:checked,
 .we-widget-field.form-check-input:checked,
 #we-cfg-ascending.form-check-input:checked,
-.we-block-option.form-check-input:checked,
 .de-switch:checked,
 .de-lms-switch.form-check-input:checked {
   background-color: #bfdbfe !important;
@@ -1107,21 +1114,19 @@ next css sets the default height of the frame popup
 }
 
 #settingspopup .settings-switch .form-check-input:focus,
-.de-config-options .form-check-input:focus,
 #hb-device-border.form-check-input:focus,
 .we-widget-field.form-check-input:focus,
 #we-cfg-ascending.form-check-input:focus,
-.we-block-option.form-check-input:focus,
 .de-switch:focus,
 .de-lms-switch.form-check-input:focus {
   border-color: #93c5fd !important;
   box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25) !important;
 }
 
-/* Same width/height every other Device Config switch (.de-config-options
-   .form-check-input below) already uses - kept as its own rule (rather
-   than folded into the color one above) since a future switch that wants
-   this same size but a different color still only needs this class.
+/* Same width/height every other Device Config switch already uses - kept
+   as its own rule (rather than folded into the color one above) since a
+   future switch that wants this same size but a different color still
+   only needs this class.
    !important: Bootstrap's own .form-switch .form-check-input rule (2
    classes) outranks a single .de-switch class on specificity alone, so
    without it Bootstrap's own (smaller, em-based) width/height would win
@@ -2204,11 +2209,16 @@ body.dle-active {
   color: #adb5bd;
 }
 
-/* Selected Icon/Dial/Bar mode: same light-green "added" look as a selected
-   widget card (.we-widget-card.we-selected), but with a blue icon instead
-   of green - the icon is the only thing distinguishing Icon/Dial/Bar at a
-   glance, so it gets its own accent color rather than matching the border. */
-.de-visual-mode-button.active {
+/* Selected Dial/Bar/Slider mode, and an enabled Icon/Data/Updated/Title/
+   Background toggle (.de-config-option for Device Config's own row and the
+   Screen Editor's quick-add popups, .we-block-option for Widget Config,
+   #195) - same light-green "added" look as a selected widget card
+   (.we-widget-card.we-selected), but with a blue icon instead of green -
+   the icon is the only thing distinguishing these buttons at a glance, so
+   it gets its own accent color rather than matching the border. */
+.de-visual-mode-button.active,
+.de-config-option.active,
+.we-block-option.active {
   background-color: #e8f5ee !important;
   border-color: #198754 !important;
   /* Bootstrap's .btn-outline-secondary.active sets white text, assuming
@@ -2217,51 +2227,22 @@ body.dle-active {
   color: #0d6efd !important;
 }
 
-.de-visual-mode-button.active i {
+.de-visual-mode-button.active i,
+.de-config-option.active i,
+.we-block-option.active i {
   color: #0d6efd;
 }
 
-.de-config-options {
-  display: grid;
-  /* auto-fit always lays out exactly as many equal-width columns as there
-     are visible switches, all on a single row - so an item toggling
-     visibility (e.g. the Dial checkbox hiding Icon/Title) or an extra one
-     being appended (the No background switch, injected by button.js) is
-     never left stranded alone on its own row. */
-  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-  gap: 10px 18px;
-}
-
-.de-config-options .form-check {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  min-height: 2.25rem;
-  gap: 0.75rem;
-  padding-left: 0;
-  /* Lets the switch+label pair shrink below its natural width (grid/flex
-     items default to a content-based minimum) and, in a packed row (five
-     or six columns), wrap the label under its switch instead of the text
-     spilling into the next column. */
-  min-width: 0;
-}
-
-.de-config-options .form-check-input {
-  flex: 0 0 auto;
-  float: none;
-  width: 38px;
-  height: 20px;
-  margin: 0;
-}
-
-.de-config-options .form-check-label {
-  min-width: 0;
-}
-
-.de-config-options-three,
-.de-config-options-four,
-.de-config-options-five {
-  justify-items: center;
+/* Not wrapped in a .btn-group (needs to wrap onto multiple rows on narrow
+   screens, which Bootstrap's .btn-group doesn't do), so it misses out on
+   the compact sizing every sibling .btn-group .btn gets further down this
+   file - matched here explicitly instead, keeping Icon/Data/Updated/Title/
+   Background the same size as Dial/Bar/Slider right next to them. */
+.de-config-options-icons .btn,
+.we-block-options-row .btn {
+  font-size: 12px;
+  font-weight: 400;
+  padding: 2px 6px;
 }
 
 #hb-device-border.form-check-input,
@@ -2269,13 +2250,6 @@ body.dle-active {
   width: 38px;
   height: 20px;
   margin-top: 0;
-}
-
-.de-config-options-three .form-check,
-.de-config-options-four .form-check,
-.de-config-options-five .form-check {
-  justify-content: center;
-  width: 100%;
 }
 
 .de-system-field-row .de-custom-field-name,
@@ -2373,22 +2347,6 @@ body.dle-active {
 @media (max-width: 575.98px) {
   .dt-screeneditor-add-grid {
     grid-template-columns: repeat(2, minmax(100px, 1fr));
-  }
-
-  .de-config-options:not(.de-config-options-three):not(
-      .de-config-options-four
-    ):not(.de-config-options-five) {
-    grid-template-columns: 1fr;
-  }
-
-  .de-config-options-three {
-    gap: 8px;
-  }
-
-  .de-config-options-four,
-  .de-config-options-five {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
   }
 
   .de-custom-field-row,
@@ -2691,14 +2649,6 @@ body.dle-active {
 #we-cfg-ascending.form-check-input {
   width: 57px;
   height: 30px;
-}
-
-.we-block-option.form-check-input {
-  flex: 0 0 auto;
-  float: none;
-  width: 38px;
-  height: 20px;
-  margin: 0;
 }
 
 #we-config-popup .form-check-inline {
@@ -3745,18 +3695,23 @@ img.icon {
 }
 
 /* "Needle" mode (block.needle === true) for Blinds Percentage/Blinds
-   Inverted Percentage devices: one continuous vertical slider, framed like
-   a small remote - a title header (no icon), then the slider beside a
-   column of icon-only OPEN/STOP/DICHT buttons. This is an alternative to,
-   not a replacement for, Icon mode's own classic thin percentage bar
-   (getBlindsBlock()'s withPercentage branch, unchanged) and the separate
-   Dial widget's Dial/Bar modes (js/components/dial.js, also unchanged).
-   Rendered entirely by renderBlindsSliderBlock()/addSlider() in
-   js/switches.js as a single .blinds-slider-block. Other percentage
-   sliders (e.g. dimmers, and Icon mode's own classic bar) reuse the same
-   addSlider() but never get a .blinds-slider-wrap ancestor, so none of
-   this applies to them. The underlying jQuery UI slider and all existing
-   Domoticz commands remain unchanged. */
+   Inverted Percentage devices and Dimmers: one continuous vertical slider,
+   framed like a small remote - a title header (no icon), then the slider
+   beside a column of icon-only up/stop/down buttons (OPEN/STOP/DICHT for
+   Blinds, ON/OFF for Dimmers - Dimmers never show Stop). This is an
+   alternative to, not a replacement for, Icon mode's own classic thin
+   percentage bar/horizontal slider (getBlindsBlock()'s withPercentage
+   branch and getDimmerBlock()'s own slider, both unchanged) and the
+   separate Dial widget's Dial/Bar modes (js/components/dial.js, also
+   unchanged). Rendered entirely by renderBlindsSliderBlock()/addSlider() in
+   js/switches.js as a single .blinds-slider-block. Icon mode's own classic
+   bar reuses the same addSlider() but never gets a .blinds-slider-wrap
+   ancestor, so none of this applies to it. The underlying jQuery UI slider
+   and all existing Domoticz commands remain unchanged. Dimmers get an
+   extra .dimmer-slider modifier class on .blinds-slider-wrap (see the
+   .ui-slider-range rule below) - their scale runs the opposite way round
+   from Blinds (0% Off at the bottom, 100% On at the top, matching a
+   physical dimmer/volume slider), not top-to-bottom like Blinds'. */
 .blinds-slider-block {
   display: flex;
   flex-direction: column;
@@ -3903,6 +3858,40 @@ img.icon {
   );
 }
 
+/* Dimmer's up/down buttons (js/switches.js's renderBlindsSliderBlock()
+   isDimmer branch) are a genuine On/Off toggle, not a matched pair of
+   "move" actions like Blinds' Open/Close - they get fa-toggle-on/
+   fa-toggle-off icons instead of Blinds' fa-chevron-up/-down, and the
+   down (Off) button is color-coded red instead of sharing Blinds' single
+   green look for both, so On/Off read at a glance the same way a switch's
+   own on/off colors do. On (the up button) keeps the shared green rule
+   above unchanged. */
+.blinds-slider-action-off a {
+  color: #ffeaea;
+  background: linear-gradient(
+    180deg,
+    rgba(220, 53, 69, 0.55),
+    rgba(160, 30, 42, 0.55)
+  );
+  border: 1px solid rgba(235, 110, 120, 0.6);
+}
+
+.blinds-slider-action-off a:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(230, 70, 86, 0.65),
+    rgba(176, 40, 52, 0.65)
+  );
+}
+
+/* The global .fas.fa-toggle-off { opacity: 0.5 } rule further down this
+   file (meant for a small inline status icon) would otherwise wash out
+   this button's own icon against its red background - keep it fully
+   opaque like every other icon in this button row. */
+.blinds-slider-action-off a .fa-toggle-off {
+  opacity: 1;
+}
+
 .blinds-slider-action-stop a {
   color: rgba(255, 255, 255, 0.85);
   background: rgba(220, 53, 69, 0.22);
@@ -4003,6 +3992,19 @@ img.icon {
     rgba(75, 160, 75, 0.55),
     rgba(125, 220, 110, 0.95)
   ) !important;
+}
+
+/* Dimmer's Needle slider (.dimmer-slider, see js/switches.js's addSlider())
+   runs the opposite way round from Blinds - 0% Off at the bottom, 100% On
+   at the top - so its fill must grow the opposite direction too: anchored
+   to the *bottom* (where Off/empty is) and extending upward, instead of
+   Blinds' top anchor. extendRangeFill()'s own height math already produces
+   the right height for either anchor unmodified - only the anchor itself
+   needs to flip. Higher specificity than the base rule above (four classes
+   vs three) wins without needing !important on top here too. */
+.blinds-slider-wrap.dimmer-slider .slider .ui-slider-range {
+  top: auto !important;
+  bottom: -8px !important;
 }
 
 /* A small, plain button - not an oversized draggable circle. Width/height
