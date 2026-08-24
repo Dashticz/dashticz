@@ -10,32 +10,34 @@
  */
 
 :root {
-  --main-bg: rgba(120, 120, 128, .28);
+  --main-bg: rgba(120, 120, 128, 0.28);
   --main-border-width: 1px;
   --block-gap: 0px;
   --box-border: 1px solid rgb(181, 181, 181);
-  --home-bg: rgba(70, 70, 78, .55);
-  --border-color-inactive: rgba(210, 210, 216, .35);
-  --border-color-active: rgba(255, 255, 255, .55);
-  --border-color-block: rgba(255, 255, 255, .22);
+  --home-bg: rgba(70, 70, 78, 0.55);
+  --border-color-inactive: rgba(210, 210, 216, 0.35);
+  --border-color-active: rgba(255, 255, 255, 0.55);
+  --border-color-block: rgba(255, 255, 255, 0.22);
   --border-color-selector: var(--border-color-inactive);
-  --button-bg: rgba(92, 92, 100, .45);
-  --button-hover: rgba(112, 112, 122, .55);
-  --button-active: rgba(142, 142, 152, .65);
+  --button-bg: rgba(92, 92, 100, 0.45);
+  --button-hover: rgba(112, 112, 122, 0.55);
+  --button-active: rgba(142, 142, 152, 0.65);
   --text-light: rgb(255, 255, 255);
   --text-normal: rgb(255, 255, 255);
-  --text-inactive: rgba(230, 230, 236, .55);
+  --text-inactive: rgba(230, 230, 236, 0.55);
   --warning-red: rgb(255, 69, 58);
-  --selector-bg: rgba(92, 92, 100, .45);
-  --blocktitle: rgba(255, 255, 255, .08);
-  --panel-shadow: 0 8px 32px rgba(0, 0, 0, .35);
+  --selector-bg: rgba(92, 92, 100, 0.45);
+  --blocktitle: rgba(255, 255, 255, 0.08);
+  --panel-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
   --glass-blur: 22px;
-  --glass-highlight: rgba(255, 255, 255, .38);
+  --glass-highlight: rgba(255, 255, 255, 0.38);
   --glass-accent: rgb(222, 222, 228);
   --radius-border: 16px;
   --radius-selector: 10px;
   --font-small: 18px;
   --font-large: 24px;
+  --icon-font-size: 40px;
+  --icon-image-size: 35px;
   --border-radius: 10px;
   --text-title: rgb(235, 235, 240);
   --text-status: rgb(120, 220, 150);
@@ -58,11 +60,10 @@
   align-items: center !important;
   justify-content: center !important;
   gap: 30px !important;
-  font-size: 80px !important;
   overflow: hidden !important;
 }
 
-.standby .clock-container .clock-col:before  {
+.standby .clock-container .clock-col:before {
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
@@ -70,43 +71,85 @@
   flex: 0 0 auto !important;
 }
 
-.standby .clock-container .clock-timer:before  {
+/* No fixed font-size here: haymanclock.js's fitSize() sets it on
+   .clock-container to fill the block/resize live, and .clock-timer:before
+   inherits it. A fixed !important size here (as this used to have) can't
+   be overridden by that JS at all - it left the digits stuck at one size
+   regardless of how the block was resized. */
+.standby .clock-container .clock-timer:before {
   margin: 0 !important;
   padding: 0 !important;
-  font-size: 80px !important;
   line-height: 1 !important;
   font-family: Arial, sans-serif !important;
   font-weight: bold !important;
 }
 
-.standby .clock-container .clock-day:before  {
+.standby .clock-container .clock-day:before {
   color: rgba(170, 170, 176, 1) !important;
-  text-shadow: 4px 3px 3px rgba(0, 0, 0, .6) !important;
+  text-shadow: 4px 3px 3px rgba(0, 0, 0, 0.6) !important;
 }
 
-.standby .clock-container .clock-hours:before ,
-.standby .clock-container .clock-minutes:before  {
+.standby .clock-container .clock-hours:before,
+.standby .clock-container .clock-minutes:before {
   color: rgba(245, 245, 248, 1) !important;
-  text-shadow: 2px 2px 2px rgba(0, 0, 0, .6) !important;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6) !important;
 }
 
-.standby .clock-container .clock-seconds:before  {
+.standby .clock-container .clock-seconds:before {
   color: rgba(170, 170, 176, 1) !important;
-  text-shadow: 2px 2px 2px rgba(0, 0, 0, .6) !important;
+  text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.6) !important;
 }
 
 .standby .clock-container .clock-label {
   display: none !important;
 }
 
-
-.transbg {
+/* Dial components (.transbg.dial) calculate a square face from the
+   block's own box, so this generic panel styling deliberately excludes
+   them - any padding/border/background applied here shifts that
+   calculation and throws the dial off-centre (#177). Dials keep using
+   the plain, unthemed .transbg layout from css/creative.css instead. */
+.transbg:not(.dial) {
   padding-top: 8px !important;
   padding-bottom: 6px !important;
   border: var(--block-gap) solid transparent !important;
   border-radius: var(--radius-border) !important;
   background:
-    linear-gradient(165deg, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, 0) 55%),
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0) 55%
+    ),
+    var(--main-bg) !important;
+  background-clip: padding-box !important;
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+  backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
+  box-shadow:
+    inset 0 1px 0 var(--glass-highlight),
+    inset 0 0 0 var(--main-border-width) var(--border-color-block),
+    var(--panel-shadow) !important;
+}
+
+/* The Bar subtype (#182) is a vertical rectangle, not a face that must
+   stay a perfect square/circle - it doesn't share the centering problem
+   above (js/components/dial.js's _dialFitSize() measures its content box
+   height directly, unlike the padding-sensitive outerWidth/outerHeight
+   measurement the circular dial relies on), so it keeps the normal
+   themed glass panel every other block gets. The outer .transbg.dial
+   element carries no subtype-specific class of its own - .dialbar only
+   lands on its immediate parent (me.$mountPoint.addClass('dialbar')) -
+   so that's what this targets. */
+.dialbar > .transbg.dial {
+  padding-top: 8px !important;
+  padding-bottom: 6px !important;
+  border: var(--block-gap) solid transparent !important;
+  border-radius: var(--radius-border) !important;
+  background:
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0) 55%
+    ),
     var(--main-bg) !important;
   background-clip: padding-box !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
@@ -135,7 +178,11 @@
   border: var(--block-gap) solid transparent !important;
   border-radius: var(--radius-border) !important;
   background:
-    linear-gradient(165deg, rgba(255, 255, 255, .16) 0%, rgba(255, 255, 255, 0) 55%),
+    linear-gradient(
+      165deg,
+      rgba(255, 255, 255, 0.16) 0%,
+      rgba(255, 255, 255, 0) 55%
+    ),
     var(--main-bg) !important;
   background-clip: padding-box !important;
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%) !important;
@@ -197,7 +244,37 @@
   border: 1px solid var(--border-color-inactive) !important;
   border-radius: var(--radius-selector) !important;
   background-color: var(--button-bg) !important;
-  transition: color .2s ease, background-color .2s ease;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease;
+}
+
+/* .selector-buttons and the plain <select> a Selector Switch renders
+   instead (device['SelectorStyle'] === 1) sit below a title line, so
+   the surrounding .col-data needs to be a flex column - scoped with
+   :has() to only devices that actually render one of these, so every
+   other block's plain title/value/lastupdate stacking is untouched. */
+.transbg .col-data:has(.selector-buttons),
+.transbg .col-data:has(> select) {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.transbg .col-data .selector-buttons,
+.transbg .col-data > select {
+  margin-top: auto;
+  margin-bottom: auto;
+  /* Shift 5px above dead-center, closer to the title above - transform
+     is a paint-time offset on top of the margin:auto centering, so it
+     stays a flat 5px regardless of the block's height. */
+  transform: translateY(-5px);
+}
+
+.transbg .selector-buttons {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .transbg .selector-buttons .btn {
@@ -233,6 +310,7 @@
 }
 
 .transbg .col-data > select {
+  width: 100%;
   min-height: 44px;
 }
 
@@ -275,11 +353,12 @@
   padding-top: 4px !important;
   color: var(--text-light);
   font-size: var(--font-large);
-  text-shadow: 4px 4px 4px rgba(0, 0, 0, .5);
+  text-shadow: 4px 4px 4px rgba(0, 0, 0, 0.5);
+  transform: translateX(10px);
 }
 
 .blocktitle img {
-  max-width: 34px !important;
+  max-width: var(--icon-image-size, 35px) !important;
   padding-bottom: 10px !important;
 }
 
@@ -291,7 +370,7 @@
   font-size: var(--font-large) !important;
   font-weight: 700 !important;
   text-align: right !important;
-  text-shadow: 4px 4px 4px rgba(0, 0, 0, .5) !important;
+  text-shadow: 4px 4px 4px rgba(0, 0, 0, 0.5) !important;
 }
 
 .colbar .miniclock {
@@ -319,18 +398,22 @@
   color: var(--text-status) !important;
 }
 
-.icon {
-  font-size: 40px !important;
+.col-icon .icon {
+  font-size: var(--icon-font-size, 40px) !important;
 }
 
 .col-icon img,
 .icon img {
-  max-width: 65px !important;
+  max-width: var(--icon-image-size, 35px) !important;
 }
 
 .titlegroups .col-icon img.icon {
-  max-width: 34px !important;
+  max-width: var(--icon-image-size, 35px) !important;
   height: auto !important;
+}
+
+.slide .dt_title {
+  text-align: right !important;
 }
 
 .trash .state {
@@ -408,9 +491,9 @@
 /* Verklein ALLEEN de afbeeldingen binnen dimmer-/blinds-blokken */
 .mh:has(.slider) .col-icon img,
 .mh:has(.blinds) .col-icon img {
-    max-width: 30px !important;
-    width: 30px !important;
-    height: auto !important;
+  max-width: var(--icon-image-size, 35px) !important;
+  width: var(--icon-image-size, 35px) !important;
+  height: auto !important;
 }
 .standby .screenstandby {
   color: var(--text-light) !important;
@@ -436,9 +519,9 @@
 
 .message_block {
   visibility: visible;
-  border: 3px solid rgba(0, 0, 0, .7) !important;
+  border: 3px solid rgba(0, 0, 0, 0.7) !important;
   border-radius: 1px !important;
-  background: rgba(0, 255, 0, .2) !important;
+  background: rgba(0, 255, 0, 0.2) !important;
   background-clip: border-box;
 }
 

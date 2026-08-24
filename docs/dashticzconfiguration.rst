@@ -131,7 +131,8 @@ Config parameters
   * - security_panel_lock
     - | If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel.
       | ``0`` = Loading Security Panel full screen disabled (default)
-      | ``1`` = Loading Security Panel full screen enabled
+      | ``1`` = Load the full-screen panel when Armed Away
+      | ``2`` = Load the full-screen panel when Armed Home or Armed Away
   * - language
     - | Default language of Dashticz. See the ``lang`` folder for all supported languages.
       | ``'en_us'`` = default
@@ -353,4 +354,3 @@ To prevent switching to a websocket connection add the following setting to CONF
 In the <gif> below you see the instant updates in action. On the right you see the Domoticz dashboard. On the left Dashticz.
 
 .. image :: img/dashticz-websocket.gif
-

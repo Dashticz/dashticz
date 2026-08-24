@@ -1,7 +1,7 @@
 /* global Dashticz settings choose language */
 //# sourceURL=js/components/waqi.js
 (function (Dashticz) {
-  "use strict";
+  'use strict';
   var MAX_MEASURE_ATTEMPTS = 20;
   var MEASURE_RETRY_MS = 150;
 
@@ -22,9 +22,13 @@
     },
     run: function (me) {
       me.iframeid = me.mountPoint + '_iframe';
-      me.$mountPoint.find('.dt_state').html(
-        '<iframe scrolling="no" style="border:0px;" id="' + me.iframeid + '"></iframe>'
-      );
+      me.$mountPoint
+        .find('.dt_state')
+        .html(
+          '<iframe scrolling="no" style="border:0px;" id="' +
+            me.iframeid +
+            '"></iframe>'
+        );
     },
     onResize: function (me) {
       _scaleToFit(me, 0);
@@ -34,9 +38,14 @@
       if (!iframeEl) return;
       var html =
         '<script type="text/javascript" src="https://widgets.waqi.info/jswgt/?size=' +
-        me.block.layout + '&city=@' + me.block.city +
-        '"></script><noscript>' + language.misc.widget_not_visible + ' (<a href="https://aqicn.org/">' +
-        language.misc.more_info + '</a>)</noscript>';
+        me.block.layout +
+        '&city=@' +
+        me.block.city +
+        '"></script><noscript>' +
+        language.misc.widget_not_visible +
+        ' (<a href="https://aqicn.org/">' +
+        language.misc.more_info +
+        '</a>)</noscript>';
       var doc = iframeEl.contentWindow.document;
       doc.open();
       doc.write(html);

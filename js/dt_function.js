@@ -23,7 +23,7 @@ var DT_function = (function () {
             : me.block.forcerefresh,
       },
       cfg,
-      {isPopup: true}
+      { isPopup: true }
     );
     block.zindex = (block.zindex || 2500) + 1;
     var hasPassword = block.password;
@@ -64,55 +64,66 @@ var DT_function = (function () {
 
   function blockLoadFrame(block) {
     //Displays the frame of a block after pressing it
-    var id = 'popup_' + ((''+block.key).replace(' ','_') || getRandomInt(1, 100000));
+    var id =
+      'popup_' +
+      (('' + block.key).replace(' ', '_') || getRandomInt(1, 100000));
     $('body').append(createModalDialog('openpopup', id, block));
     $('#' + id).modal('show');
     var popupBlock = 0;
-    if(!block.url) {
+    if (!block.url) {
       if (typeof block.popup !== 'undefined') {
-        popupBlock = typeof block.popup === 'string' ? convertBlock(block.popup): block.popup;
-      }
-      else if(block.idx) {
+        popupBlock =
+          typeof block.popup === 'string'
+            ? convertBlock(block.popup)
+            : block.popup;
+      } else if (block.idx) {
         //It's a Domoticz device. We create a graph block
         popupBlock = {
           devices: [block.idx],
-          key: block.key + '_popup'
-        }
+          key: block.key + '_popup',
+        };
       }
     }
-    
-    if(popupBlock) {
-      var container = '#' + id + ' .modal-content';
-      setTimeout(function() {
-        addBlock2Column(container, 'popup', popupBlock);
-      }, 200);  //after 200ms the modal is visible and has a width.
 
+    if (popupBlock) {
+      var container = '#' + id + ' .modal-content';
+      setTimeout(function () {
+        addBlock2Column(container, 'popup', popupBlock);
+      }, 200); //after 200ms the modal is visible and has a width.
     }
     $('#' + id).on('hidden.bs.modal', function () {
       $(this).data('bs.modal', null);
-      if(container) Dashticz.removeBlock(container);
+      if (container) Dashticz.removeBlock(container);
       $(this).remove();
     });
 
     if (typeof block['auto_close'] !== 'undefined') {
-      setTimeout(function () {
-        $('.modal.openpopup,.modal-backdrop').remove();
-      }, parseFloat(block['auto_close']) * 1000);
+      setTimeout(
+        function () {
+          $('.modal.openpopup,.modal-backdrop').remove();
+        },
+        parseFloat(block['auto_close']) * 1000
+      );
     }
 
-    var $modal = $('#' +id + ' .modal-content');
+    var $modal = $('#' + id + ' .modal-content');
     if (block.url) $modal.addClass('modal-url');
     if (popupBlock) {
-      $modal.addClass( DT_graph.canHandle(popupBlock) ? 'modal-graph':'modal-popup');
+      $modal.addClass(
+        DT_graph.canHandle(popupBlock) ? 'modal-graph' : 'modal-popup'
+      );
     }
   }
 
   function blockNewWindow(block, title, params) {
     var newWindow = window.open(block.url, title, params);
     if (title !== '_self' && block.auto_close && newWindow) {
-      setTimeout(function () {
-        newWindow.close();
-      }, parseFloat(block['auto_close']) * 1000);
+      setTimeout(
+        function () {
+          newWindow.close();
+        },
+        parseFloat(block['auto_close']) * 1000
+      );
     }
   }
 
@@ -172,8 +183,7 @@ var DT_function = (function () {
 
   function loadFont(fontName, fontURL, fontFormat) {
     var id = fontName + fontFormat;
-    if (loadedResources[id])
-      return;
+    if (loadedResources[id]) return;
     loadedResources[id] = true;
     var newStyle = document.createElement('style');
     newStyle.appendChild(
@@ -198,12 +208,15 @@ var DT_function = (function () {
 
   function loadCSS(filename) {
     var id = filename;
-    if (loadedResources[id])
-      return;
+    if (loadedResources[id]) return;
     loadedResources[id] = true;
 
     $('head').append(
-      '<link rel="stylesheet" type="text/css" href="' + filename + '?v=' + _DASHTICZ_VERSION + '">'
+      '<link rel="stylesheet" type="text/css" href="' +
+        filename +
+        '?v=' +
+        _DASHTICZ_VERSION +
+        '">'
     );
   }
 
@@ -212,20 +225,19 @@ var DT_function = (function () {
       loadedResources[filename] = $.ajax({
         url: filename,
         dataType: 'script',
-        cache: settings.cached_scripts
+        cache: settings.cached_scripts,
       });
     }
     return loadedResources[filename];
   }
 
   function cached(id, callback) {
-    if(!isDefined(loadedResources[id]))
-      loadedResources[id]=callback(id);
+    if (!isDefined(loadedResources[id])) loadedResources[id] = callback(id);
     return loadedResources[id];
   }
 
   function loadDTScript(filename) {
-    return loadScript(filename + '?v='+_DASHTICZ_VERSION)
+    return loadScript(filename + '?v=' + _DASHTICZ_VERSION);
   }
 
   /** Prompt for password
@@ -263,10 +275,9 @@ var DT_function = (function () {
       setHeight = true;
       if (typeof myheight === 'number') myheight = myheight + 'px';
     }
-    var html =
-      '<div class="modal fade ' +
-      dialogClass;
-      html+= '" id="' +
+    var html = '<div class="modal fade ' + dialogClass;
+    html +=
+      '" id="' +
       dialogId +
       '" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">';
 
@@ -293,8 +304,8 @@ var DT_function = (function () {
       var htmlel = myFrame.log
         ? 'div'
         : myFrame.newwindow == 5
-        ? 'img'
-        : 'iframe';
+          ? 'img'
+          : 'iframe';
       html +=
         '<' +
         htmlel +
@@ -349,30 +360,32 @@ var DT_function = (function () {
   }
 
   function idxIsScene(idx) {
-    if(typeof idx!=='string') return false;
-    if ('s'===idx[0] && isNumeric(idx.substring(1))) return idx;
+    if (typeof idx !== 'string') return false;
+    if ('s' === idx[0] && isNumeric(idx.substring(1))) return idx;
     var realidx = getIndexFromName(idx);
-    if (realidx && 's'===realidx[0] && isNumeric(realidx.substring(1))) return realidx;
+    if (realidx && 's' === realidx[0] && isNumeric(realidx.substring(1)))
+      return realidx;
   }
 
   /* returns the id that can be used in the subscribe*/
   function getDomoticzIdx(idx) {
-    if(typeof idx==='number') return idx;
-//    if(idxIsScene(idx)) return idx;
+    if (typeof idx === 'number') return idx;
+    //    if(idxIsScene(idx)) return idx;
     return getIndexFromName(idx);
   }
 
   function getIndexFromName(idx) {
-    var devices=Domoticz.getAllDevices();
-    if(devices[idx]) return idx;
-    var id = Object.keys(devices).find(function(key) {
+    var devices = Domoticz.getAllDevices();
+    if (devices[idx]) return idx;
+    var id = Object.keys(devices).find(function (key) {
       return idx === devices[key].Name;
-   })
-   if(id) {
-    var device = devices[id]
-    if (device.Type==='Group' || device.Type==='Scene') return 's'+device.idx;
-    return device.idx;
-   }
+    });
+    if (id) {
+      var device = devices[id];
+      if (device.Type === 'Group' || device.Type === 'Scene')
+        return 's' + device.idx;
+      return device.idx;
+    }
   }
 
   return {
@@ -388,52 +401,53 @@ var DT_function = (function () {
     onRemove: onRemove,
     cached: cached,
     idxIsScene: idxIsScene,
-    getDomoticzIdx: getDomoticzIdx
+    getDomoticzIdx: getDomoticzIdx,
   };
 })();
 
 //# sourceURL=js/dt_function.js
 function capitalizeFirstLetter(string) {
-  if(!string) return '';
-  if(string.length===1) return string.toUpperCase;
+  if (!string) return '';
+  if (string.length === 1) return string.toUpperCase;
   return string.charAt(0).toUpperCase() + string.slice(1).toLowerCase();
 }
 
 function addStyleAttribute($element, styleAttribute) {
   var currentStyle = $element.attr('style');
-  $element.attr('style', currentStyle ? currentStyle + '; ' + styleAttribute : styleAttribute);
+  $element.attr(
+    'style',
+    currentStyle ? currentStyle + '; ' + styleAttribute : styleAttribute
+  );
 }
 
-
 function choose() {
-  var l=arguments.length;
+  var l = arguments.length;
   var res = undefined;
-  var i=0;
-  while(typeof res==='undefined' && i<l) {
-    res=arguments[i];
+  var i = 0;
+  while (typeof res === 'undefined' && i < l) {
+    res = arguments[i];
     i++;
   }
   return res;
 }
 
 function createDelayedFunction(timeout) {
-  var m_setTimeout=timeout;
-  var m_timeout=0;
+  var m_setTimeout = timeout;
+  var m_timeout = 0;
   var deferred = $.Deferred();
 
   if (timeout)
-  return function delayedFunction(callback) {
-    if(m_timeout) 
-      clearTimeout(m_timeout);
-    m_timeout = setTimeout(function() {
-      return deferred.resolve(callback())}, m_setTimeout);
-    return deferred;
-  }
+    return function delayedFunction(callback) {
+      if (m_timeout) clearTimeout(m_timeout);
+      m_timeout = setTimeout(function () {
+        return deferred.resolve(callback());
+      }, m_setTimeout);
+      return deferred;
+    };
   else
-  return function notDelayedFunction(callback) {
-    return deferred.resolve(callback());
-  }
-
+    return function notDelayedFunction(callback) {
+      return deferred.resolve(callback());
+    };
 }
 
 function isNumeric(n) {

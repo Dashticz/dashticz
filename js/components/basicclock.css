@@ -1,3 +1,4 @@
-.basicclock .weekday, .basicclock .date {
-    font-size: 65%
+.basicclock .weekday,
+.basicclock .date {
+  font-size: 65%;
 }

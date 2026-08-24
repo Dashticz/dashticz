@@ -56,6 +56,14 @@ module.exports = {
           },
           {
             loader: 'sass-loader', // compiles Sass to CSS
+            options: {
+              // Bootstrap still emits deprecations from its own Sass sources.
+              // Keep warnings from Dashticz sources visible while dependencies
+              // work through their upstream migration.
+              sassOptions: {
+                quietDeps: true,
+              },
+            },
           },
         ],
       },
@@ -100,6 +108,19 @@ module.exports = {
           reuseExistingChunk: true,
         },
       },
+    },
+  },
+  // Webpack's generic 244 KiB defaults are not realistic for this legacy
+  // single-page dashboard. These budgets reflect the optimized 3.45 entry
+  // point with a small growth allowance and turn a regression into a failed
+  // build. Font fallbacks are auxiliary assets and are not downloaded as
+  // part of the entry point, so the budget covers executable JS and CSS.
+  performance: {
+    hints: 'error',
+    maxAssetSize: 1225 * 1024,
+    maxEntrypointSize: 1600 * 1024,
+    assetFilter: function (assetFilename) {
+      return /\.(?:css|js)$/.test(assetFilename);
     },
   },
 };

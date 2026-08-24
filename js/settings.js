@@ -5,11 +5,11 @@ settingList.general = {
   domoticz_ip: {
     title: language.settings.general.domoticz_ip,
     type: 'text',
-    help: language.settings.general.domoticz_ip_help
+    help: language.settings.general.domoticz_ip_help,
   },
   app_title: {
-    title:language.settings.general.app_title,
-    type: 'text'
+    title: language.settings.general.app_title,
+    type: 'text',
   },
   domoticz_refresh: {
     title: language.settings.general.domoticz_refresh,
@@ -19,25 +19,25 @@ settingList.general = {
   dashticz_refresh: {
     title: language.settings.general.dashticz_refresh,
     type: 'text',
-    help: language.settings.general.dashticz_refresh_help
+    help: language.settings.general.dashticz_refresh_help,
   },
   disable_update_check: {
     title: language.settings.general.disable_update_check,
-    type: 'checkbox'
+    type: 'checkbox',
   },
   loginEnabled: {
     title: language.settings.general.loginEnabled,
     type: 'checkbox',
-    help: language.settings.general.loginEnabled_help
+    help: language.settings.general.loginEnabled_help,
   },
   login_timeout: {
     title: language.settings.general.login_timeout,
-    type: 'text'
+    type: 'text',
   },
   user_name: {
     title: language.settings.general.user_name,
     type: 'text',
-    help: language.settings.general.user_name_help
+    help: language.settings.general.user_name_help,
   },
   pass_word: {
     title: language.settings.general.pass_word,
@@ -46,17 +46,17 @@ settingList.general = {
   enable_websocket: {
     title: language.settings.general.enable_websocket,
     type: 'checkbox',
-    help: language.settings.general.enable_websocket_help
+    help: language.settings.general.enable_websocket_help,
   },
   domoticz_timeout: {
     title: language.settings.general.domoticz_timeout,
     type: 'text',
-    help: language.settings.general.domoticz_timeout_help
+    help: language.settings.general.domoticz_timeout_help,
   },
   room_plan: {
     title: language.settings.general.room_plan,
     type: 'text',
-    help: language.settings.general.room_plan_help
+    help: language.settings.general.room_plan_help,
   },
   colorpicker: {
     title: language.settings.general.colorpicker,
@@ -65,22 +65,22 @@ settingList.general = {
     options: [
       language.settings.general.colorpicker_none,
       language.settings.general.colorpicker_old,
-      language.settings.general.colorpicker_new
-    ]
+      language.settings.general.colorpicker_new,
+    ],
   },
   colorpickerscale: {
     title: language.settings.general.colorpickerscale,
     type: 'text',
-    help: language.settings.general.colorpickerscale_help
+    help: language.settings.general.colorpickerscale_help,
   },
   last_update: {
     title: language.settings.general.last_update,
-    type: 'checkbox'
+    type: 'checkbox',
   },
   disable_googleanalytics: {
     title: language.settings.general.disable_googleanalytics,
     help: language.settings.general.disable_googleanalytics_help,
-    type: 'checkbox'
+    type: 'checkbox',
   },
   default_cors_url: {
     title: language.settings.general.default_cors_url,
@@ -88,7 +88,7 @@ settingList.general = {
   },
   dashticz_php_path: {
     title: language.settings.general.dashticz_php_path,
-    type: 'text'
+    type: 'text',
   },
 };
 
@@ -105,9 +105,7 @@ settingList['screen']['topbar_timeout']['help'] =
   'Hide the topbar after this many seconds. Move the pointer to the top of the screen to show it again.';
 
 settingList['screen']['show_topbar_clock'] = {
-  title:
-    language.settings.screen.show_topbar_clock ||
-    'Show clock in topbar',
+  title: language.settings.screen.show_topbar_clock || 'Show clock in topbar',
   type: 'checkbox',
   help:
     language.settings.screen.show_topbar_clock_help ||
@@ -116,8 +114,7 @@ settingList['screen']['show_topbar_clock'] = {
 
 settingList['screen']['topbar_use_png_icons'] = {
   title:
-    language.settings.screen.topbar_use_png_icons ||
-    'Use custom topbar icons',
+    language.settings.screen.topbar_use_png_icons || 'Use custom topbar icons',
   type: 'checkbox',
   help:
     language.settings.screen.topbar_use_png_icons_help ||
@@ -145,6 +142,18 @@ settingList['screen']['vertical_scroll'] = {
   title: language.settings.screen.vertical_scroll,
   type: 'text',
   help: language.settings.screen.vertical_scroll_help,
+};
+
+settingList['screen']['gridColumns'] = {
+  title: language.settings.screen.gridColumns,
+  type: 'text',
+  help: language.settings.screen.gridColumns_help,
+};
+
+settingList['screen']['rowHeight'] = {
+  title: language.settings.screen.rowHeight,
+  type: 'text',
+  help: language.settings.screen.rowHeight_help,
 };
 
 settingList['screen']['auto_swipe_back_to'] = {};
@@ -282,28 +291,6 @@ settingList['localize']['speak_lang']['options']['pl-PL'] =
 settingList['localize']['speak_lang']['options']['ru-RU'] =
   language.settings.localize.ru;
 
-settingList['media'] = {};
-settingList['media']['title'] = language.settings.media.title;
-
-settingList['media']['switch_horizon'] = {};
-settingList['media']['switch_horizon']['title'] =
-  language.settings.media.switch_horizon;
-settingList['media']['switch_horizon']['type'] = 'text';
-settingList['media']['switch_horizon']['help'] =
-  language.settings.media.switch_horizon_help;
-
-settingList['media']['host_nzbget'] = {};
-settingList['media']['host_nzbget']['title'] =
-  language.settings.media.host_nzbget;
-settingList['media']['host_nzbget']['type'] = 'text';
-settingList['media']['host_nzbget']['help'] =
-  language.settings.media.host_nzbget_help;
-
-settingList['media']['hide_mediaplayer'] = {};
-settingList['media']['hide_mediaplayer']['title'] =
-  language.settings.media.hide_mediaplayer;
-settingList['media']['hide_mediaplayer']['type'] = 'checkbox';
-
 /* Widget settings shown as tiles in Custom mode (not Wizard). */
 var weatherIconOptions = {
   line: language.settings.weather.icons_line,
@@ -327,7 +314,7 @@ var widgetEditorTranslations =
 // Translations for screenswitcher button labels (language.screenswitcher section).
 // Falls back gracefully to English when a key is missing.
 // eslint-disable-next-line no-unused-vars
-var screenswitcherTranslations = (language.screenswitcher) || {};
+var screenswitcherTranslations = language.screenswitcher || {};
 
 var widgetSettingTiles = [
   {
@@ -338,7 +325,10 @@ var widgetSettingTiles = [
       owm_api: { title: language.settings.weather.owm_api, type: 'text' },
       owm_city: { title: language.settings.weather.owm_city, type: 'text' },
       owm_name: { title: language.settings.weather.owm_name, type: 'text' },
-      owm_country: { title: language.settings.weather.owm_country, type: 'text' },
+      owm_country: {
+        title: language.settings.weather.owm_country,
+        type: 'text',
+      },
       owm_lang: {
         title: language.settings.weather.owm_lang,
         type: 'text',
@@ -415,19 +405,10 @@ var widgetSettingTiles = [
     title: widgetEditorTranslations.clock_title || 'Clock',
     icon: 'fas fa-clock',
     settings: {
-      clock_size: {
-        title:
-          (language.settings.widgets && language.settings.widgets.clock_size) ||
-          'Size (px)',
-        type: 'text',
-        help:
-          (language.settings.widgets &&
-            language.settings.widgets.clock_size_help) ||
-          'Empty = fit to tile width. Example: 120',
-      },
       clock_scale: {
         title:
-          (language.settings.widgets && language.settings.widgets.clock_scale) ||
+          (language.settings.widgets &&
+            language.settings.widgets.clock_scale) ||
           'Scale',
         type: 'text',
         help:
@@ -545,8 +526,12 @@ var widgetSettingTiles = [
         type: 'text',
       },
       calendarurl: {
-        title: language.settings.localize.calendarurl || 'Calendar URL',
+        title:
+          language.settings.localize.calendarurl_link || 'Full calendar link',
         type: 'text',
+        help:
+          language.settings.localize.calendarurl_link_help ||
+          'Link opened from calendar events. Calendar data is configured separately with an ICS source.',
       },
       calendar_maxitems: {
         title:
@@ -599,7 +584,9 @@ var widgetSettingTiles = [
           'URL of an XMLTV-format XML file (for example from Jellyfin, Emby or WebGrab+).',
       },
       xmltv_channels: {
-        title: widgetEditorTranslations.xmltv_channels || 'Channels (comma-separated)',
+        title:
+          widgetEditorTranslations.xmltv_channels ||
+          'Channels (comma-separated)',
         type: 'text',
         help:
           widgetEditorTranslations.xmltv_channels_help ||
@@ -627,7 +614,9 @@ var widgetSettingTiles = [
           'Character shown between the columns.',
       },
       xmltv_refresh: {
-        title: widgetEditorTranslations.xmltv_refresh || 'Refresh interval (seconds)',
+        title:
+          widgetEditorTranslations.xmltv_refresh ||
+          'Refresh interval (seconds)',
         type: 'text',
         help:
           widgetEditorTranslations.xmltv_refresh_help ||
@@ -640,23 +629,21 @@ var widgetSettingTiles = [
     title: widgetEditorTranslations.secpanel_title || 'Security panel',
     icon: 'fas fa-shield-alt',
     settings: {
-      security_button_icons: {
-        title: language.settings.screen.security_button_icons,
-        type: 'checkbox',
-      },
       security_panel_lock: {
         title: language.settings.screen.security_panel_lock,
-        type: 'checkbox',
+        type: 'select',
+        noEmptyOption: true,
+        options: {
+          0:
+            language.settings.screen.security_panel_lock_disabled || 'Disabled',
+          1: language.settings.screen.security_panel_lock_away || 'Armed Away',
+          2:
+            language.settings.screen.security_panel_lock_home_away ||
+            'Armed Home and Armed Away',
+        },
         help: language.settings.screen.security_panel_lock_help,
       },
     },
-  },
-  {
-    id: 'publictransport',
-    title:
-      widgetEditorTranslations.publictransport_title || 'Public transport',
-    icon: 'fas fa-train',
-    settings: {},
   },
   {
     id: 'trafficinfo',
@@ -665,7 +652,8 @@ var widgetSettingTiles = [
     settings: {
       anwb_apikey: {
         title:
-          (language.settings.widgets && language.settings.widgets.anwb_apikey) ||
+          (language.settings.widgets &&
+            language.settings.widgets.anwb_apikey) ||
           'ANWB API key',
         type: 'text',
         help:
@@ -674,18 +662,6 @@ var widgetSettingTiles = [
           'API key for ANWB traffic info (trafficinfo widget).',
       },
     },
-  },
-  {
-    id: 'alarmmeldingen',
-    title: widgetEditorTranslations.alarmmeldingen_title || '112',
-    icon: 'fas fa-bullhorn',
-    settings: {},
-  },
-  {
-    id: 'camera',
-    title: widgetEditorTranslations.camera_title || 'Cameras',
-    icon: 'fas fa-video',
-    settings: {},
   },
   {
     id: 'map',
@@ -728,18 +704,6 @@ var widgetSettingTiles = [
     },
   },
   {
-    id: 'moon',
-    title: widgetEditorTranslations.moon_title || 'Moon',
-    icon: 'fas fa-moon',
-    settings: {
-      idx_moonpicture: {
-        title: language.settings.weather.idx_moonpicture,
-        type: 'text',
-        help: language.settings.weather.idx_moonpicture_help,
-      },
-    },
-  },
-  {
     id: 'news',
     title: widgetEditorTranslations.news_title || 'News',
     icon: 'fas fa-newspaper',
@@ -766,7 +730,6 @@ var settingsCategoryIcons = {
   theme: 'fas fa-paint-brush',
   standby: 'fas fa-moon',
   localize: 'fas fa-globe',
-  media: 'fas fa-film',
   widgets: 'fas fa-puzzle-piece',
   other: 'fas fa-ellipsis-h',
   about: 'fas fa-info-circle',
@@ -806,7 +769,8 @@ settingList['standby'] = {
   },
   standby_call_url: {
     title:
-      (language.settings.standby && language.settings.standby.standby_call_url) ||
+      (language.settings.standby &&
+        language.settings.standby.standby_call_url) ||
       language.settings.general.standby_call_url,
     type: 'text',
   },
@@ -913,7 +877,6 @@ var defaultSettings = {
   weather_show_gust: 0,
   weather_icons: 'line',
   boss_stationclock: 'RedBoss',
-  clock_size: '',
   clock_scale: 1,
   use_fahrenheit: 0,
   use_beaufort: 0,
@@ -934,6 +897,8 @@ var defaultSettings = {
   vertical_scroll: 2,
   enable_swiper: 2,
   swiper_touch_move: 1,
+  gridColumns: 24,
+  rowHeight: 20,
   auto_swipe_back_after: 0,
   standby_after: 0,
   standby_background: '',
@@ -1043,9 +1008,28 @@ var defaultSettings = {
     },
   },
   garbage_mapping: {
-    rest: ['grof', 'grey', 'rest', 'grijs', 'grijze','ménagers résiduels'],
-    gft: ['gft', 'tuin', 'refuse bin', 'green', 'groen', 'biodégradables', 'snoei', 'organiques'],
-    pmd: ['plastic', 'pmd', 'verpakking', 'kunststof', 'valorlux', 'packages','pbp','pbd','pmc'],
+    rest: ['grof', 'grey', 'rest', 'grijs', 'grijze', 'ménagers résiduels'],
+    gft: [
+      'gft',
+      'tuin',
+      'refuse bin',
+      'green',
+      'groen',
+      'biodégradables',
+      'snoei',
+      'organiques',
+    ],
+    pmd: [
+      'plastic',
+      'pmd',
+      'verpakking',
+      'kunststof',
+      'valorlux',
+      'packages',
+      'pbp',
+      'pbd',
+      'pmc',
+    ],
     papier: ['papier', 'blauw', 'blue', 'recycling bin collection', 'paper'],
     kca: ['chemisch', 'kca', 'kga'],
     brown: ['brown', 'verre'],
@@ -1099,7 +1083,8 @@ $.extend(settings, defaultSettings, config);
 
 // When config_mode is not explicitly set in CONFIG.js, default to custom
 // mode (user is editing by hand) rather than wizard.
-var _configModeAutoDetected = (typeof config === 'undefined' || typeof config['config_mode'] === 'undefined');
+var _configModeAutoDetected =
+  typeof config === 'undefined' || typeof config['config_mode'] === 'undefined';
 if (_configModeAutoDetected) {
   settings['config_mode'] = 'custom';
 }
@@ -1148,9 +1133,8 @@ function renderSettingsRow(settingName, definition) {
   }
 
   var controlId = 'setting-' + settingName;
-  var value = typeof settings[settingName] === 'undefined'
-    ? ''
-    : settings[settingName];
+  var value =
+    typeof settings[settingName] === 'undefined' ? '' : settings[settingName];
   var html = '<div class="settings-row">';
   html +=
     '<label class="settings-label" for="' +
@@ -1276,6 +1260,10 @@ function loadSettings() {
       html +=
         '<div class="settings-brand"><img src="img/favicon/app-icon-192x192.png" ' +
         'width="38" height="38" alt=""><span>Dashticz</span></div>';
+      html +=
+        '<div class="settings-header-current d-none" id="settings-current-category">' +
+        '<i class="fas fa-cog" aria-hidden="true"></i>' +
+        '<span id="settings-current-category-label"></span></div>';
       html += '</div>';
 
       html += '<div class="settings-tab-content">';
@@ -1288,7 +1276,13 @@ function loadSettings() {
       html += '</div><div class="modal-footer settings-footer">';
       html += '<div class="settings-footer-actions">';
       html +=
+        '<button type="button" class="btn btn-secondary settings-back d-none">' +
+        '<i class="fas fa-arrow-left me-1" aria-hidden="true"></i>' +
+        escapeSettingsHtml(language.settings.back || 'Back') +
+        '</button> ';
+      html +=
         '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+        '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
         language.settings.close +
         '</button> ';
       if (settings['loginEnabled'] == true)
@@ -1297,7 +1291,8 @@ function loadSettings() {
           language.settings.general.logout +
           '</button> ';
       html +=
-        '<button onClick="saveSettings();" type="button" class="btn btn-primary" data-bs-dismiss="modal">' +
+        '<button onClick="saveSettings();" type="button" class="btn btn-primary btn-save" data-bs-dismiss="modal">' +
+        '<i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
         language.settings.save +
         '</button></div></div>';
       html += '</div>';
@@ -1334,7 +1329,6 @@ function getSettingsCategories() {
     'theme',
     'standby',
     'localize',
-    'media',
     'widgets',
     'other',
     'about',
@@ -1362,16 +1356,14 @@ function getSettingsCategories() {
 function getSettingsCategoryTitle(id) {
   if (id === 'widgets') {
     return (
-      (language.settings.widgets && language.settings.widgets.title) || 'Widgets'
+      (language.settings.widgets && language.settings.widgets.title) ||
+      'Widgets'
     );
   }
-  return settingList[id] && settingList[id].title
-    ? settingList[id].title
-    : id;
+  return settingList[id] && settingList[id].title ? settingList[id].title : id;
 }
 
 function renderSettingsCategoryHome() {
-  var backLabel = language.settings.back || 'Back';
   var chooseLabel =
     language.settings.choose || 'Choose a category to configure.';
   var tabs = getSettingsCategories();
@@ -1401,27 +1393,12 @@ function renderSettingsCategoryHome() {
 
   for (ti = 0; ti < tabs.length; ti++) {
     id = tabs[ti];
-    title = getSettingsCategoryTitle(id);
-    icon = settingsCategoryIcons[id] || 'fas fa-cog';
     html +=
       '<div class="settings-category-panel d-none" id="settings-category-' +
       escapeSettingsHtml(id) +
       '" data-settings-panel="' +
       escapeSettingsHtml(id) +
       '">';
-    html += '<div class="settings-panel-header">';
-    html +=
-      '<h5 class="settings-panel-title"><i class="' +
-      escapeSettingsHtml(icon) +
-      ' me-2" aria-hidden="true"></i>' +
-      escapeSettingsHtml(title) +
-      '</h5>';
-    html +=
-      '<button type="button" class="btn btn-sm btn-outline-secondary settings-category-back">' +
-      '<i class="fas fa-arrow-left me-1" aria-hidden="true"></i>' +
-      escapeSettingsHtml(backLabel) +
-      '</button>';
-    html += '</div>';
     if (id === 'widgets') {
       html += renderWidgetSettingsTab();
     } else if (id === 'theme') {
@@ -1486,9 +1463,11 @@ function renderBackgroundPicker(settingName, definition) {
   var customLabel =
     (language.settings.standby && language.settings.standby.custom_path) ||
     'Custom path / URL';
-  var current = typeof settings[settingName] !== 'undefined' && settings[settingName] !== null
-    ? String(settings[settingName])
-    : '';
+  var current =
+    typeof settings[settingName] !== 'undefined' &&
+    settings[settingName] !== null
+      ? String(settings[settingName])
+      : '';
   var help = definition.help || '';
   var pickId = 'setting-' + settingName + '_pick';
   var pathId = 'setting-' + settingName;
@@ -1520,7 +1499,8 @@ function renderBackgroundPicker(settingName, definition) {
     '" aria-hidden="true"></div>';
   html += '</div><div class="settings-help-slot"></div></div>';
 
-  html += '<div class="settings-row settings-bg-path-row" data-bg-path-row="' +
+  html +=
+    '<div class="settings-row settings-bg-path-row" data-bg-path-row="' +
     escapeSettingsHtml(settingName) +
     '">';
   html +=
@@ -1539,7 +1519,8 @@ function renderBackgroundPicker(settingName, definition) {
     escapeSettingsHtml(current) +
     '" placeholder="img/bg11.jpg or https://…">';
   if (settingName === 'background_image') {
-    html += '<div class="settings-custom-css-notice d-none" role="status" ' +
+    html +=
+      '<div class="settings-custom-css-notice d-none" role="status" ' +
       'data-custom-css-notice></div>';
   }
   html += '</div><div class="settings-help-slot">';
@@ -1559,10 +1540,6 @@ function renderBackgroundPicker(settingName, definition) {
 }
 
 function renderWidgetSettingsTab() {
-  var backLabel =
-    (language.settings.widgets && language.settings.widgets.back) ||
-    language.settings.back ||
-    'Back';
   var chooseLabel =
     (language.settings.widgets && language.settings.widgets.choose) ||
     'Choose a widget to configure its settings.';
@@ -1600,11 +1577,6 @@ function renderWidgetSettingsTab() {
       ' me-2" aria-hidden="true"></i>' +
       escapeSettingsHtml(tile.title) +
       '</h5>';
-    html +=
-      '<button type="button" class="btn btn-sm btn-outline-secondary settings-widget-back">' +
-      '<i class="fas fa-arrow-left me-1" aria-hidden="true"></i>' +
-      escapeSettingsHtml(backLabel) +
-      '</button>';
     html += '</div>';
     if (tile.id === 'weather') {
       html += renderWeatherWidgetSettings(tile);
@@ -1647,24 +1619,30 @@ function renderClockWidgetSettings(tile) {
     '</label>' +
     '<div class="settings-control">' +
     '<select id="setting-clock_type_ui" class="form-select settings-clock-type">' +
-    '<option value="basicclock">' + escapeSettingsHtml(wt.basic_clock) + '</option>' +
-    '<option value="stationclock" selected>' + escapeSettingsHtml(wt.station_clock) + '</option>' +
-    '<option value="flipclock">' + escapeSettingsHtml(wt.flipclock) + '</option>' +
-    '<option value="haymanclock">' + escapeSettingsHtml(wt.hayman_clock) + '</option>' +
-    '<option value="miniclock">' + escapeSettingsHtml(wt.miniclock) + '</option>' +
+    '<option value="basicclock">' +
+    escapeSettingsHtml(wt.basic_clock) +
+    '</option>' +
+    '<option value="stationclock" selected>' +
+    escapeSettingsHtml(wt.station_clock) +
+    '</option>' +
+    '<option value="flipclock">' +
+    escapeSettingsHtml(wt.flipclock) +
+    '</option>' +
+    '<option value="haymanclock">' +
+    escapeSettingsHtml(wt.hayman_clock) +
+    '</option>' +
+    '<option value="miniclock">' +
+    escapeSettingsHtml(wt.miniclock) +
+    '</option>' +
     '</select></div><div class="settings-help-slot"></div></div>';
 
-  html +=
-    '<div class="settings-clock-size-group">';
+  html += '<div class="settings-clock-size-group">';
   html +=
     '<h6 class="settings-weather-heading">' +
     ((language.settings.widgeteditor &&
       language.settings.widgeteditor.display) ||
       'Display') +
     '</h6>';
-  if (tile.settings.clock_size) {
-    html += renderSettingsRow('clock_size', tile.settings.clock_size);
-  }
   if (tile.settings.clock_scale) {
     html += renderSettingsRow('clock_scale', tile.settings.clock_scale);
   }
@@ -1672,17 +1650,25 @@ function renderClockWidgetSettings(tile) {
 
   html +=
     '<div class="settings-clock-group" data-clock-type="flipclock" style="display:none">';
-  html += '<h6 class="settings-weather-heading">' + escapeSettingsHtml(wt.flipclock) + '</h6>';
+  html +=
+    '<h6 class="settings-weather-heading">' +
+    escapeSettingsHtml(wt.flipclock) +
+    '</h6>';
   if (tile.settings.hide_seconds) {
     html += renderSettingsRow('hide_seconds', tile.settings.hide_seconds);
   }
   html += '</div>';
 
+  html += '<div class="settings-clock-group" data-clock-type="stationclock">';
   html +=
-    '<div class="settings-clock-group" data-clock-type="stationclock">';
-  html += '<h6 class="settings-weather-heading">' + escapeSettingsHtml(wt.station_clock) + '</h6>';
+    '<h6 class="settings-weather-heading">' +
+    escapeSettingsHtml(wt.station_clock) +
+    '</h6>';
   if (tile.settings.boss_stationclock) {
-    html += renderSettingsRow('boss_stationclock', tile.settings.boss_stationclock);
+    html += renderSettingsRow(
+      'boss_stationclock',
+      tile.settings.boss_stationclock
+    );
   }
   if (tile.settings.hide_seconds_stationclock) {
     html += renderSettingsRow(
@@ -1731,10 +1717,14 @@ function renderWeatherWidgetSettings(tile) {
     '<select id="setting-weather_provider_ui" class="form-select settings-weather-provider">' +
     '<option value="openweather"' +
     (provider === 'openweather' ? ' selected' : '') +
-    '>' + escapeSettingsHtml(wt.openweather) + '</option>' +
+    '>' +
+    escapeSettingsHtml(wt.openweather) +
+    '</option>' +
     '<option value="wunderground"' +
     (provider === 'wunderground' ? ' selected' : '') +
-    '>' + escapeSettingsHtml(wt.weather_underground) + '</option>' +
+    '>' +
+    escapeSettingsHtml(wt.weather_underground) +
+    '</option>' +
     '</select></div><div class="settings-help-slot"></div></div>';
 
   var owmKeys = [
@@ -1759,7 +1749,10 @@ function renderWeatherWidgetSettings(tile) {
     '<div class="settings-weather-group" data-weather-provider="openweather"' +
     (provider === 'openweather' ? '' : ' style="display:none"') +
     '>';
-  html += '<h6 class="settings-weather-heading">' + escapeSettingsHtml(wt.openweather) + '</h6>';
+  html +=
+    '<h6 class="settings-weather-heading">' +
+    escapeSettingsHtml(wt.openweather) +
+    '</h6>';
   owmKeys.forEach(function (key) {
     if (tile.settings[key]) {
       html += renderSettingsRow(key, tile.settings[key]);
@@ -1771,7 +1764,10 @@ function renderWeatherWidgetSettings(tile) {
     '<div class="settings-weather-group" data-weather-provider="wunderground"' +
     (provider === 'wunderground' ? '' : ' style="display:none"') +
     '>';
-  html += '<h6 class="settings-weather-heading">' + escapeSettingsHtml(wt.weather_underground) + '</h6>';
+  html +=
+    '<h6 class="settings-weather-heading">' +
+    escapeSettingsHtml(wt.weather_underground) +
+    '</h6>';
   wuKeys.forEach(function (key) {
     if (tile.settings[key]) {
       html += renderSettingsRow(key, tile.settings[key]);
@@ -1779,7 +1775,10 @@ function renderWeatherWidgetSettings(tile) {
   });
   html += '</div>';
 
-  html += '<h6 class="settings-weather-heading">' + escapeSettingsHtml(wt.display) + '</h6>';
+  html +=
+    '<h6 class="settings-weather-heading">' +
+    escapeSettingsHtml(wt.display) +
+    '</h6>';
   sharedKeys.forEach(function (key) {
     if (tile.settings[key]) {
       html += renderSettingsRow(key, tile.settings[key]);
@@ -1796,7 +1795,8 @@ function bindWeatherProviderToggle() {
   $popup
     .off('change.weatherprovider')
     .on('change.weatherprovider', '.settings-weather-provider', function () {
-      var provider = $(this).val() === 'wunderground' ? 'wunderground' : 'openweather';
+      var provider =
+        $(this).val() === 'wunderground' ? 'wunderground' : 'openweather';
       $popup.find('.settings-weather-group').each(function () {
         var group = String($(this).data('weather-provider'));
         $(this).toggle(group === provider);
@@ -1806,24 +1806,40 @@ function bindWeatherProviderToggle() {
 
 function showSettingsHome() {
   var $popup = $('#settingspopup');
-  $popup.find('.settings-category-panel, .settings-widget-panel').addClass('d-none');
+  $popup
+    .find('.settings-category-panel, .settings-widget-panel')
+    .addClass('d-none');
   $popup.find('#settings-home').removeClass('d-none');
   $popup
     .find('#settings-widget-tiles, .settings-widgets-intro')
     .removeClass('d-none');
+  $popup.find('.settings-back').addClass('d-none');
+  $popup.find('#settings-current-category').addClass('d-none');
 }
 
 function showSettingsCategory(id) {
   var $popup = $('#settingspopup');
   $popup.find('#settings-home').addClass('d-none');
-  $popup.find('.settings-category-panel, .settings-widget-panel').addClass('d-none');
+  $popup
+    .find('.settings-category-panel, .settings-widget-panel')
+    .addClass('d-none');
   $popup.find('#settings-category-' + id).removeClass('d-none');
   $popup
     .find('#settings-widget-tiles, .settings-widgets-intro')
     .removeClass('d-none');
   $popup
-    .find('#settings-category-widgets > .settings-category-back, #settings-category-widgets > .settings-panel-title')
+    .find('#settings-category-widgets > .settings-panel-title')
     .removeClass('d-none');
+  $popup.find('.settings-back').removeClass('d-none');
+  $popup
+    .find('#settings-current-category')
+    .removeClass('d-none')
+    .find('i')
+    .attr('class', (settingsCategoryIcons[id] || 'fas fa-cog') + '')
+    .attr('aria-hidden', 'true');
+  $popup
+    .find('#settings-current-category-label')
+    .text(getSettingsCategoryTitle(id));
 }
 
 function bindSettingsCategoryTiles() {
@@ -1831,33 +1847,36 @@ function bindSettingsCategoryTiles() {
   if (!$popup.length) return;
 
   $popup.off('click.settingsnav');
-  $popup.on('click.settingsnav', '.settings-tile[data-settings-category]', function () {
-    showSettingsCategory(String($(this).data('settings-category')));
-  });
-  $popup.on('click.settingsnav', '.settings-category-back', function () {
-    showSettingsHome();
-  });
+  $popup.on(
+    'click.settingsnav',
+    '.settings-tile[data-settings-category]',
+    function () {
+      showSettingsCategory(String($(this).data('settings-category')));
+    }
+  );
   $popup.on('click.settingsnav', '.settings-widget-tile', function () {
     var id = String($(this).data('widget-id'));
-    $popup.find('#settings-widget-tiles, .settings-widgets-intro').addClass('d-none');
     $popup
-      .find(
-        '#settings-category-widgets > .settings-category-back, #settings-category-widgets > .settings-panel-title'
-      )
+      .find('#settings-widget-tiles, .settings-widgets-intro')
+      .addClass('d-none');
+    $popup
+      .find('#settings-category-widgets > .settings-panel-title')
       .addClass('d-none');
     $popup.find('.settings-widget-panel').addClass('d-none');
     $popup.find('#settings-widget-panel-' + id).removeClass('d-none');
   });
-  $popup.on('click.settingsnav', '.settings-widget-back', function () {
-    $popup.find('.settings-widget-panel').addClass('d-none');
-    $popup
-      .find('#settings-widget-tiles, .settings-widgets-intro')
-      .removeClass('d-none');
-    $popup
-      .find(
-        '#settings-category-widgets > .settings-category-back, #settings-category-widgets > .settings-panel-title'
-      )
-      .removeClass('d-none');
+  $popup.on('click.settingsnav', '.settings-back', function () {
+    if ($popup.find('.settings-widget-panel:not(.d-none)').length) {
+      $popup.find('.settings-widget-panel').addClass('d-none');
+      $popup
+        .find('#settings-widget-tiles, .settings-widgets-intro')
+        .removeClass('d-none');
+      $popup
+        .find('#settings-category-widgets > .settings-panel-title')
+        .removeClass('d-none');
+      return;
+    }
+    showSettingsHome();
   });
 }
 
@@ -1889,15 +1908,22 @@ var _THEME_COLOR_VARS = [
   '--text-status',
 ];
 
-var _THEME_FONT_VARS = [
-  '--font-small',
-  '--font-large',
-];
+var _THEME_FONT_VARS = ['--font-small', '--font-large'];
+
+var _THEME_ICON_VARS = ['--icon-font-size', '--icon-image-size'];
+
+// All theme vars whose value is always a bare pixel number - the settings
+// panel shows/accepts just the number and adds "px" itself.
+var _THEME_PX_VARS = _THEME_FONT_VARS.concat(_THEME_ICON_VARS);
 
 // Labels for CSS variables (fall back to the var name itself).
 function _themeCssVarLabel(varName) {
-  var themeLabels = (language.settings.theme && language.settings.theme.vars) || {};
-  return String(themeLabels[varName] || varName).replace(/\s*\(--[^)]*\)\s*$/, '');
+  var themeLabels =
+    (language.settings.theme && language.settings.theme.vars) || {};
+  return String(themeLabels[varName] || varName).replace(
+    /\s*\(--[^)]*\)\s*$/,
+    ''
+  );
 }
 
 // Read the current value of a CSS custom property from the document root.
@@ -1919,19 +1945,27 @@ function _getStoredCssVarOverrides() {
     // Skip <link> stylesheets and any <style> element that does not contain the
     // dashticz-theme-vars marker written by savecustomcss.php.
     var ownerNode = sheet.ownerNode;
-    if (!ownerNode ||
-        String(ownerNode.tagName || '').toUpperCase() !== 'STYLE' ||
-        String(ownerNode.textContent || '').indexOf('dashticz-theme-vars') === -1) {
+    if (
+      !ownerNode ||
+      String(ownerNode.tagName || '').toUpperCase() !== 'STYLE' ||
+      String(ownerNode.textContent || '').indexOf('dashticz-theme-vars') === -1
+    ) {
       continue;
     }
     var rules;
-    try { rules = sheet.cssRules || sheet.rules; } catch (e) { continue; }
+    try {
+      rules = sheet.cssRules || sheet.rules;
+    } catch (e) {
+      continue;
+    }
     if (!rules) continue;
     for (var ri = 0; ri < rules.length; ri++) {
       var rule = rules[ri];
       if (rule.type === 1 && rule.selectorText === ':root') {
         var cssText = rule.cssText;
-        var vars = _THEME_COLOR_VARS.concat(_THEME_FONT_VARS);
+        var vars = _THEME_COLOR_VARS
+          .concat(_THEME_FONT_VARS)
+          .concat(_THEME_ICON_VARS);
         for (var vi = 0; vi < vars.length; vi++) {
           var v = vars[vi];
           // Use a literal indexOf search to find the var declaration, avoiding
@@ -1941,9 +1975,10 @@ function _getStoredCssVarOverrides() {
           if (declPos !== -1) {
             var valueStart = declPos + declPrefix.length;
             var semicolonPos = cssText.indexOf(';', valueStart);
-            var rawValue = semicolonPos !== -1
-              ? cssText.substring(valueStart, semicolonPos)
-              : cssText.substring(valueStart);
+            var rawValue =
+              semicolonPos !== -1
+                ? cssText.substring(valueStart, semicolonPos)
+                : cssText.substring(valueStart);
             overrides[v] = rawValue.trim();
           }
         }
@@ -1954,9 +1989,9 @@ function _getStoredCssVarOverrides() {
 }
 
 function renderThemeSettingsPanel() {
-  var themeL = (language.settings.theme) || {};
+  var themeL = language.settings.theme || {};
   var colorSectionLabel = themeL.colors || 'Kleuren';
-  var fontSectionLabel  = themeL.fonts  || 'Lettergrootte';
+  var fontSectionLabel = themeL.fonts || 'Lettergrootte';
   var html = '';
 
   // Theme selector and background image picker come from settingList['theme'].
@@ -1971,52 +2006,128 @@ function renderThemeSettingsPanel() {
   }
 
   // Color variable section heading.
-  html += '<div class="settings-section-heading">' +
-    escapeSettingsHtml(colorSectionLabel) + '</div>';
+  html +=
+    '<div class="settings-section-heading">' +
+    escapeSettingsHtml(colorSectionLabel) +
+    '</div>';
 
   // Color variable rows.
   html += '<div class="settings-theme-color-grid">';
   _THEME_COLOR_VARS.forEach(function (varName) {
-    var inputId = 'setting-cssvar-' + varName.replace(/^--/, '').replace(/-/g, '_');
+    var inputId =
+      'setting-cssvar-' + varName.replace(/^--/, '').replace(/-/g, '_');
     html += '<div class="settings-row settings-cssvar-row">';
-    html += '<label class="settings-label" for="' + escapeSettingsHtml(inputId) + '">' +
-      escapeSettingsHtml(_themeCssVarLabel(varName)) + '</label>';
+    html +=
+      '<label class="settings-label" for="' +
+      escapeSettingsHtml(inputId) +
+      '">' +
+      escapeSettingsHtml(_themeCssVarLabel(varName)) +
+      '</label>';
     html += '<div class="settings-control settings-cssvar-control">';
-    html += '<input type="color" class="settings-cssvar-swatch" id="' +
-      escapeSettingsHtml(inputId) + '-swatch" aria-hidden="true" tabindex="-1">';
-    html += '<input type="range" class="settings-cssvar-alpha" id="' +
-      escapeSettingsHtml(inputId) + '-alpha" min="0" max="100" step="1" ' +
-      'aria-label="' + escapeSettingsHtml('Transparency for ' + _themeCssVarLabel(varName)) +
-      '" title="' + escapeSettingsHtml('Transparency for ' + _themeCssVarLabel(varName)) + '">';
-    html += '<input type="text" class="form-control settings-cssvar-input" ' +
-      'id="' + escapeSettingsHtml(inputId) + '" ' +
-      'data-cssvar="' + escapeSettingsHtml(varName) + '" ' +
-      'placeholder="' + escapeSettingsHtml(varName) + '" ' +
+    html +=
+      '<input type="color" class="settings-cssvar-swatch" id="' +
+      escapeSettingsHtml(inputId) +
+      '-swatch" aria-hidden="true" tabindex="-1">';
+    html +=
+      '<input type="range" class="settings-cssvar-alpha" id="' +
+      escapeSettingsHtml(inputId) +
+      '-alpha" min="0" max="100" step="1" ' +
+      'aria-label="' +
+      escapeSettingsHtml('Transparency for ' + _themeCssVarLabel(varName)) +
+      '" title="' +
+      escapeSettingsHtml('Transparency for ' + _themeCssVarLabel(varName)) +
+      '">';
+    html +=
+      '<input type="text" class="form-control settings-cssvar-input" ' +
+      'id="' +
+      escapeSettingsHtml(inputId) +
+      '" ' +
+      'data-cssvar="' +
+      escapeSettingsHtml(varName) +
+      '" ' +
+      'placeholder="' +
+      escapeSettingsHtml(varName) +
+      '" ' +
       'autocomplete="off">';
     html += '</div>';
     html += '<div class="settings-help-slot"></div></div>';
   });
   html += '</div>';
 
+  // Shared row markup for a plain text cssvar input (font size, icon size, ...).
+  // Px vars (_THEME_PX_VARS) render as a bare number with a fixed "px" suffix
+  // instead of a free-text field, since their value is always a pixel size.
+  function renderCssVarTextRow(varName) {
+    var inputId =
+      'setting-cssvar-' + varName.replace(/^--/, '').replace(/-/g, '_');
+    var isPx = _THEME_PX_VARS.indexOf(varName) !== -1;
+    var rowHtml = '<div class="settings-row">';
+    rowHtml +=
+      '<label class="settings-label" for="' +
+      escapeSettingsHtml(inputId) +
+      '">' +
+      escapeSettingsHtml(_themeCssVarLabel(varName)) +
+      '</label>';
+    rowHtml +=
+      '<div class="settings-control' +
+      (isPx ? ' settings-cssvar-px-control' : '') +
+      '">';
+    if (isPx) {
+      rowHtml +=
+        '<input type="number" class="form-control settings-cssvar-input" ' +
+        'id="' +
+        escapeSettingsHtml(inputId) +
+        '" ' +
+        'data-cssvar="' +
+        escapeSettingsHtml(varName) +
+        '" ' +
+        'min="1" step="1" inputmode="numeric" autocomplete="off">';
+      rowHtml += '<span class="settings-cssvar-px-suffix">px</span>';
+    } else {
+      rowHtml +=
+        '<input type="text" class="form-control settings-cssvar-input" ' +
+        'id="' +
+        escapeSettingsHtml(inputId) +
+        '" ' +
+        'data-cssvar="' +
+        escapeSettingsHtml(varName) +
+        '" ' +
+        'placeholder="' +
+        escapeSettingsHtml(varName) +
+        '" ' +
+        'autocomplete="off">';
+    }
+    rowHtml += '</div>';
+    rowHtml += '<div class="settings-help-slot"></div></div>';
+    return rowHtml;
+  }
+
   // Font size section heading.
-  html += '<div class="settings-section-heading">' +
-    escapeSettingsHtml(fontSectionLabel) + '</div>';
+  html +=
+    '<div class="settings-section-heading">' +
+    escapeSettingsHtml(fontSectionLabel) +
+    '</div>';
 
   // Font size variable rows.
+  html += '<div class="settings-theme-compact-grid">';
   _THEME_FONT_VARS.forEach(function (varName) {
-    var inputId = 'setting-cssvar-' + varName.replace(/^--/, '').replace(/-/g, '_');
-    html += '<div class="settings-row">';
-    html += '<label class="settings-label" for="' + escapeSettingsHtml(inputId) + '">' +
-      escapeSettingsHtml(_themeCssVarLabel(varName)) + '</label>';
-    html += '<div class="settings-control">';
-    html += '<input type="text" class="form-control settings-cssvar-input" ' +
-      'id="' + escapeSettingsHtml(inputId) + '" ' +
-      'data-cssvar="' + escapeSettingsHtml(varName) + '" ' +
-      'placeholder="' + escapeSettingsHtml(varName) + '" ' +
-      'autocomplete="off">';
-    html += '</div>';
-    html += '<div class="settings-help-slot"></div></div>';
+    html += renderCssVarTextRow(varName);
   });
+  html += '</div>';
+
+  // Icon/image size section heading.
+  var iconSectionLabel = themeL.icons || 'Icon size';
+  html +=
+    '<div class="settings-section-heading">' +
+    escapeSettingsHtml(iconSectionLabel) +
+    '</div>';
+
+  // Icon/image size variable rows.
+  html += '<div class="settings-theme-compact-grid">';
+  _THEME_ICON_VARS.forEach(function (varName) {
+    html += renderCssVarTextRow(varName);
+  });
+  html += '</div>';
 
   return html;
 }
@@ -2033,53 +2144,70 @@ function bindThemeCssVarControls() {
     var varName = String($input.data('cssvar') || '');
     if (!varName) return;
     var value = storedOverrides[varName] || _getComputedCssVar(varName);
+    if (_THEME_PX_VARS.indexOf(varName) !== -1) {
+      value = value.replace(/px\s*$/i, '').trim();
+    }
     $input.val(value);
     // Sync swatch if color input is present.
-    var $swatch = $popup.find('#' + $.escapeSelector($input.attr('id') + '-swatch'));
+    var $swatch = $popup.find(
+      '#' + $.escapeSelector($input.attr('id') + '-swatch')
+    );
     if ($swatch.length) {
       _syncSwatchFromText($swatch, value);
     }
-    var $alpha = $popup.find('#' + $.escapeSelector($input.attr('id') + '-alpha'));
+    var $alpha = $popup.find(
+      '#' + $.escapeSelector($input.attr('id') + '-alpha')
+    );
     if ($alpha.length) {
       $alpha.val(Math.round(_extractCssAlpha(value) * 100));
     }
   });
 
   // Swatch → text input sync.
-  $popup.off('input.cssvar-swatch').on('input.cssvar-swatch', '.settings-cssvar-swatch', function () {
-    var $swatch = $(this);
-    var textId  = $swatch.attr('id').replace(/-swatch$/, '');
-    var $text   = $popup.find('#' + $.escapeSelector(textId));
-    if ($text.length) {
-      var alpha = _getCssVarAlpha($popup, textId);
-      $text.val(alpha < 1 ? _hexToRgba($swatch.val(), alpha) : $swatch.val());
-    }
-  });
+  $popup
+    .off('input.cssvar-swatch')
+    .on('input.cssvar-swatch', '.settings-cssvar-swatch', function () {
+      var $swatch = $(this);
+      var textId = $swatch.attr('id').replace(/-swatch$/, '');
+      var $text = $popup.find('#' + $.escapeSelector(textId));
+      if ($text.length) {
+        var alpha = _getCssVarAlpha($popup, textId);
+        $text.val(alpha < 1 ? _hexToRgba($swatch.val(), alpha) : $swatch.val());
+      }
+    });
 
   // Transparency slider → text input sync.
-  $popup.off('input.cssvar-alpha').on('input.cssvar-alpha', '.settings-cssvar-alpha', function () {
-    var $alpha = $(this);
-    var textId = $alpha.attr('id').replace(/-alpha$/, '');
-    var $text = $popup.find('#' + $.escapeSelector(textId));
-    var $swatch = $popup.find('#' + $.escapeSelector(textId + '-swatch'));
-    if ($text.length && $swatch.length) {
-      var alpha = parseInt($alpha.val(), 10) / 100;
-      $text.val(alpha < 1 ? _hexToRgba($swatch.val(), alpha) : $swatch.val());
-    }
-  });
+  $popup
+    .off('input.cssvar-alpha')
+    .on('input.cssvar-alpha', '.settings-cssvar-alpha', function () {
+      var $alpha = $(this);
+      var textId = $alpha.attr('id').replace(/-alpha$/, '');
+      var $text = $popup.find('#' + $.escapeSelector(textId));
+      var $swatch = $popup.find('#' + $.escapeSelector(textId + '-swatch'));
+      if ($text.length && $swatch.length) {
+        var alpha = parseInt($alpha.val(), 10) / 100;
+        $text.val(alpha < 1 ? _hexToRgba($swatch.val(), alpha) : $swatch.val());
+      }
+    });
 
   // Text input → swatch sync.
-  $popup.off('input.cssvar-text').on('input.cssvar-text', '.settings-cssvar-input', function () {
-    var $input = $(this);
-    var $swatch = $popup.find('#' + $.escapeSelector($input.attr('id') + '-swatch'));
-    if ($swatch.length) {
-      _syncSwatchFromText($swatch, $input.val());
-    }
-    var $alpha = $popup.find('#' + $.escapeSelector($input.attr('id') + '-alpha'));
-    if ($alpha.length) {
-      $alpha.val(Math.round(_extractCssAlpha($input.val()) * 100));
-    }
-  });
+  $popup
+    .off('input.cssvar-text')
+    .on('input.cssvar-text', '.settings-cssvar-input', function () {
+      var $input = $(this);
+      var $swatch = $popup.find(
+        '#' + $.escapeSelector($input.attr('id') + '-swatch')
+      );
+      if ($swatch.length) {
+        _syncSwatchFromText($swatch, $input.val());
+      }
+      var $alpha = $popup.find(
+        '#' + $.escapeSelector($input.attr('id') + '-alpha')
+      );
+      if ($alpha.length) {
+        $alpha.val(Math.round(_extractCssAlpha($input.val()) * 100));
+      }
+    });
 
   // Reflect "(custom)" state in the theme dropdown when panel first opens.
   _updateThemeCustomLabel();
@@ -2090,7 +2218,9 @@ function _activeCustomCssPath() {
     return String(window.DashticzCustomCssPath);
   }
   var node = document.querySelector('style[data-dashticz-custom-css]');
-  return node ? String(node.getAttribute('data-dashticz-custom-css') || '') : '';
+  return node
+    ? String(node.getAttribute('data-dashticz-custom-css') || '')
+    : '';
 }
 
 function bindThemeCustomCssNotice() {
@@ -2103,7 +2233,8 @@ function bindThemeCustomCssNotice() {
       return;
     }
     var themeLabels = (language.settings && language.settings.theme) || {};
-    var message = themeLabels.custom_css_active || 'Active custom stylesheet: {path}';
+    var message =
+      themeLabels.custom_css_active || 'Active custom stylesheet: {path}';
     $notice
       .removeClass('d-none')
       .text(String(message).replace('{path}', activePath));
@@ -2156,11 +2287,17 @@ function _getCssVarAlpha($popup, textId) {
 function _hexToRgba(hex, alpha) {
   var normalized = String(hex || '').replace('#', '');
   if (!/^[0-9a-fA-F]{6}$/.test(normalized)) return String(hex || '');
-  return 'rgba(' +
-    parseInt(normalized.substring(0, 2), 16) + ', ' +
-    parseInt(normalized.substring(2, 4), 16) + ', ' +
-    parseInt(normalized.substring(4, 6), 16) + ', ' +
-    alpha.toFixed(2) + ')';
+  return (
+    'rgba(' +
+    parseInt(normalized.substring(0, 2), 16) +
+    ', ' +
+    parseInt(normalized.substring(2, 4), 16) +
+    ', ' +
+    parseInt(normalized.substring(4, 6), 16) +
+    ', ' +
+    alpha.toFixed(2) +
+    ')'
+  );
 }
 
 function _cssValueToHex(value) {
@@ -2170,7 +2307,7 @@ function _cssValueToHex(value) {
   if (/^#[0-9a-fA-F]{6}$/.test(s)) return s.toLowerCase();
   // #rgb shorthand.
   if (/^#[0-9a-fA-F]{3}$/.test(s)) {
-    return '#' + s[1]+s[1] + s[2]+s[2] + s[3]+s[3];
+    return '#' + s[1] + s[1] + s[2] + s[2] + s[3] + s[3];
   }
   // rgb(r, g, b) or rgba(r, g, b, a) — use a temporary element.
   if (/^rgba?\s*\(/.test(s)) {
@@ -2180,14 +2317,20 @@ function _cssValueToHex(value) {
       document.body.appendChild(el);
       var computed = getComputedStyle(el).color;
       document.body.removeChild(el);
-      var m = computed.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[0-9.]+)?\)$/);
+      var m = computed.match(
+        /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[0-9.]+)?\)$/
+      );
       if (m) {
-        return '#' +
+        return (
+          '#' +
           ('0' + parseInt(m[1], 10).toString(16)).slice(-2) +
           ('0' + parseInt(m[2], 10).toString(16)).slice(-2) +
-          ('0' + parseInt(m[3], 10).toString(16)).slice(-2);
+          ('0' + parseInt(m[3], 10).toString(16)).slice(-2)
+        );
       }
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      /* ignore */
+    }
   }
   // Named colour.
   if (/^[a-zA-Z]+$/.test(s)) {
@@ -2197,14 +2340,20 @@ function _cssValueToHex(value) {
       document.body.appendChild(el2);
       var computed2 = getComputedStyle(el2).color;
       document.body.removeChild(el2);
-      var m2 = computed2.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[0-9.]+)?\)$/);
+      var m2 = computed2.match(
+        /^rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*[0-9.]+)?\)$/
+      );
       if (m2) {
-        return '#' +
+        return (
+          '#' +
           ('0' + parseInt(m2[1], 10).toString(16)).slice(-2) +
           ('0' + parseInt(m2[2], 10).toString(16)).slice(-2) +
-          ('0' + parseInt(m2[3], 10).toString(16)).slice(-2);
+          ('0' + parseInt(m2[3], 10).toString(16)).slice(-2)
+        );
       }
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      /* ignore */
+    }
   }
   return '';
 }
@@ -2263,7 +2412,9 @@ function bindThemePicker() {
         var varName = String($(this).data('cssvar') || '');
         if (!varName) return;
         $(this).val('');
-        var $swatch = $('#settingspopup #' + $.escapeSelector($(this).attr('id') + '-swatch'));
+        var $swatch = $(
+          '#settingspopup #' + $.escapeSelector($(this).attr('id') + '-swatch')
+        );
         if ($swatch.length) _syncSwatchFromText($swatch, '');
       });
 
@@ -2317,7 +2468,11 @@ function _updateThemeCustomLabel(forceNoCustom) {
   }
 
   // Ensure the select shows the right entry.
-  if ($select.val() === currentTheme || $select.val() === resetVal || !$select.val()) {
+  if (
+    $select.val() === currentTheme ||
+    $select.val() === resetVal ||
+    !$select.val()
+  ) {
     $select.val(currentTheme);
   }
 }
@@ -2430,7 +2585,9 @@ function bindBackgroundPickers() {
     .on('input.bgpath', '.settings-bg-path', function () {
       var $path = $(this);
       var settingName = String($path.attr('name') || '');
-      var $pick = $popup.find('.settings-bg-pick[data-bg-target="' + settingName + '"]');
+      var $pick = $popup.find(
+        '.settings-bg-pick[data-bg-target="' + settingName + '"]'
+      );
       selectMatchingOption($pick, $path.val());
       syncPreview(settingName, $path.val());
       syncPathVisibility(settingName, !$pick.val());
@@ -2463,8 +2620,12 @@ function renderSettingsUpdateControls() {
     escapeSettingsHtml(update.branch || 'Branch') +
     '</label>' +
     '<select id="settings-update-branch" class="form-select">' +
-    '<option value="beta">' + escapeSettingsHtml(update.beta) + '</option>' +
-    '<option value="main">' + escapeSettingsHtml(update.main) + '</option>' +
+    '<option value="beta">' +
+    escapeSettingsHtml(update.beta) +
+    '</option>' +
+    '<option value="main">' +
+    escapeSettingsHtml(update.main) +
+    '</option>' +
     '</select>' +
     '<button type="button" class="btn btn-primary settings-update-run" id="settings-update-run">' +
     escapeSettingsHtml(update.run || 'Run update') +
@@ -2598,8 +2759,7 @@ function _persistAutoDetectedConfigMode() {
 function addSettingsAboutItems() {
   var $div = $('#settings-category-about');
   if (!$div.length) $div = $('#tabs-about');
-  var about =
-    (language.settings && language.settings.about) || {};
+  var about = (language.settings && language.settings.about) || {};
   var unknown = about.unknown || 'Unknown';
   var domoticzInfo =
     typeof Domoticz !== 'undefined' && Domoticz.info ? Domoticz.info : {};
@@ -2647,9 +2807,7 @@ function addSettingsAboutItems() {
   $div.append('</p>');
   $div.append(
     '<p>' +
-      escapeSettingsHtml(
-        about.help_intro || 'For more help visit:'
-      ) +
+      escapeSettingsHtml(about.help_intro || 'For more help visit:') +
       ' <a href="https://dashticz.readthedocs.io/" target="_blank">https://dashticz.readthedocs.io/</a><br>' +
       escapeSettingsHtml(
         about.community_intro ||
@@ -2696,31 +2854,34 @@ function saveSettings() {
     var serializedValue = JSON.stringify(value);
     savePayload[settingName] = serializedValue;
     alertSettings +=
-      'config[' + JSON.stringify(settingName) + '] = ' + serializedValue + ';\n';
+      'config[' +
+      JSON.stringify(settingName) +
+      '] = ' +
+      serializedValue +
+      ';\n';
   }
-  $('div#settingspopup input[type="text"],div#settingspopup input[type="hidden"],div#settingspopup select').each(
-    function () {
-        // Skip UI-only controls that must not become config[...] keys.
-        if (
-          !$(this).attr('name') ||
-          $(this).is(
-            '#settings-update-branch, #setting-standby_background_pick, #setting-background_image_pick, #setting-weather_provider_ui, #setting-clock_type_ui'
-          ) ||
-          $(this).hasClass('settings-cssvar-input')
-        ) {
-          return;
-        }
-      var val = $(this).val();
-      // Strip the __reset__ sentinel in case it is somehow still selected at save time.
-      if (typeof val === 'string' && val.slice(-9) === '__reset__') {
-        val = val.slice(0, -9);
-      }
-      if (isNumeric(val))
-        val = parseFloat(val);
-      var settingName = $(this).attr('name');
-      addChangedSetting(settingName, val);
+  $(
+    'div#settingspopup input[type="text"],div#settingspopup input[type="hidden"],div#settingspopup select'
+  ).each(function () {
+    // Skip UI-only controls that must not become config[...] keys.
+    if (
+      !$(this).attr('name') ||
+      $(this).is(
+        '#settings-update-branch, #setting-standby_background_pick, #setting-background_image_pick, #setting-weather_provider_ui, #setting-clock_type_ui'
+      ) ||
+      $(this).hasClass('settings-cssvar-input')
+    ) {
+      return;
     }
-  );
+    var val = $(this).val();
+    // Strip the __reset__ sentinel in case it is somehow still selected at save time.
+    if (typeof val === 'string' && val.slice(-9) === '__reset__') {
+      val = val.slice(0, -9);
+    }
+    if (isNumeric(val)) val = parseFloat(val);
+    var settingName = $(this).attr('name');
+    addChangedSetting(settingName, val);
+  });
 
   $('div#settingspopup input[type="checkbox"]').each(function () {
     var settingName = $(this).attr('name');
@@ -2729,73 +2890,90 @@ function saveSettings() {
   });
 
   function showSettingsOutput(saved, errorMessage) {
-      var html =
-        '<div class="modal fade" id="settingsoutput" tabindex="-1" aria-labelledby="settings-output-title" aria-hidden="true">';
-      html +=
-        '<div class="modal-dialog modal-dialog-scrollable modal-dialog-settings">';
-      html += '<div class="modal-content">';
-      html +=
-        '<div class="modal-body" style="padding:20px;font-size:14px;">' +
-        '<h2 class="visually-hidden" id="settings-output-title">' +
-        escapeSettingsHtml(language.settings.output.title) +
-        '</h2>';
-      html +=
-        '<strong>' +
-        (saved
-          ? language.settings.infosave
-          : language.settings.output.not_saved) +
-        '</strong><br>';
+    var html =
+      '<div class="modal fade" id="settingsoutput" tabindex="-1" aria-labelledby="settings-output-title" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-scrollable modal-dialog-settings">';
+    html += '<div class="modal-content">';
+    html +=
+      '<div class="modal-body" style="padding:20px;font-size:14px;">' +
+      '<h2 class="visually-hidden" id="settings-output-title">' +
+      escapeSettingsHtml(language.settings.output.title) +
+      '</h2>';
+    html +=
+      '<strong>' +
+      (saved
+        ? language.settings.infosave
+        : language.settings.output.not_saved) +
+      '</strong><br>';
 
-      if (!saved) {
-        html +=
-          '<span class="text-danger"></span><br>' +
-          escapeSettingsHtml(language.settings.output.copy_to).replace('{file}', 'custom/' + cfgFile) +
-          '<br><br>';
-      }
-
-      html += '<textarea style="width:100%;height:500px;" id="codeToCopy"></textarea>';
-
+    if (!saved) {
       html +=
-        '</div><div class="modal-footer"><button onClick="window.location.href=window.location.href;" type="button" class="btn btn-primary" data-bs-dismiss="modal">' +
-        language.settings.close_reload +
-        '</button></div>';
-      html += '</div>';
-      html += '</div>';
-      html +=
-        '</div><button type="button" class="settingsoutput" hidden ' +
-        'data-bs-toggle="modal" data-bs-target="#settingsoutput" ' +
-        'aria-label="' +
-        escapeSettingsHtml(language.settings.output.open_aria) +
-        '"></button>';
+        '<span class="text-danger"></span><br>' +
+        escapeSettingsHtml(language.settings.output.copy_to).replace(
+          '{file}',
+          'custom/' + cfgFile
+        ) +
+        '<br><br>';
+    }
 
-      $('body').append(html);
-      $('#codeToCopy').val(alertSettings);
-      if (!saved) {
-        $('#settingsoutput .text-danger').text(
-          errorMessage || language.settings.output.save_failed
-        );
-      }
-      setTimeout(function () {
-        $('.settingsoutput').trigger('click');
-      }, 1000);
+    html +=
+      '<textarea style="width:100%;height:500px;" id="codeToCopy"></textarea>';
+
+    html +=
+      '</div><div class="modal-footer"><button onClick="window.location.href=window.location.href;" type="button" class="btn btn-primary" data-bs-dismiss="modal">' +
+      language.settings.close_reload +
+      '</button></div>';
+    html += '</div>';
+    html += '</div>';
+    html +=
+      '</div><button type="button" class="settingsoutput" hidden ' +
+      'data-bs-toggle="modal" data-bs-target="#settingsoutput" ' +
+      'aria-label="' +
+      escapeSettingsHtml(language.settings.output.open_aria) +
+      '"></button>';
+
+    $('body').append(html);
+    $('#codeToCopy').val(alertSettings);
+    if (!saved) {
+      $('#settingsoutput .text-danger').text(
+        errorMessage || language.settings.output.save_failed
+      );
+    }
+    setTimeout(function () {
+      $('.settingsoutput').trigger('click');
+    }, 1000);
   }
 
-  var cfgFile = (typeof _PARAMS !== 'undefined' && _PARAMS['cfg']) || 'CONFIG.js';
+  var cfgFile =
+    (typeof _PARAMS !== 'undefined' && _PARAMS['cfg']) || 'CONFIG.js';
 
   // When config_mode was not in CONFIG.js, force-persist it now so the file
   // reflects the auto-detected value even if nothing else changed.
-  if (_configModeAutoDetected && typeof savePayload['config_mode'] === 'undefined') {
+  if (
+    _configModeAutoDetected &&
+    typeof savePayload['config_mode'] === 'undefined'
+  ) {
     var _modeValue = JSON.stringify(settings['config_mode']);
     savePayload['config_mode'] = _modeValue;
     alertSettings += 'config["config_mode"] = ' + _modeValue + ';\n';
   }
 
-  // Collect CSS variable overrides from the theme panel.
+  // Collect CSS variable overrides from the theme panel. Px vars are entered
+  // as a bare number - add the "px" back on here before saving.
   var cssVars = {};
   $('div#settingspopup .settings-cssvar-input').each(function () {
     var varName = $(this).data('cssvar');
     if (varName) {
-      cssVars[varName] = String($(this).val() || '').trim();
+      var varValue = String($(this).val() || '').trim();
+      if (
+        varValue !== '' &&
+        _THEME_PX_VARS.indexOf(varName) !== -1 &&
+        !/px\s*$/i.test(varValue)
+      ) {
+        varValue += 'px';
+      }
+      cssVars[varName] = varValue;
     }
   });
 

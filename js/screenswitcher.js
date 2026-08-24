@@ -174,14 +174,27 @@ var DashticzScreenSwitcher = (function () {
 
     if (screenNum === 'standby') {
       // Check standby_screen['icon'] first, then config['standby_icon']
-      if (typeof standby_screen !== 'undefined' && standby_screen && standby_screen.icon) {
+      if (
+        typeof standby_screen !== 'undefined' &&
+        standby_screen &&
+        standby_screen.icon
+      ) {
         icon = standby_screen.icon;
-      } else if (typeof config !== 'undefined' && config && config['standby_icon']) {
+      } else if (
+        typeof config !== 'undefined' &&
+        config &&
+        config['standby_icon']
+      ) {
         icon = config['standby_icon'];
       }
     } else {
       // Check screens[n]['icon'] from CONFIG.js
-      if (typeof screens !== 'undefined' && screens && screens[screenNum] && screens[screenNum]['icon']) {
+      if (
+        typeof screens !== 'undefined' &&
+        screens &&
+        screens[screenNum] &&
+        screens[screenNum]['icon']
+      ) {
         icon = screens[screenNum]['icon'];
       }
     }
@@ -198,7 +211,11 @@ var DashticzScreenSwitcher = (function () {
     }
 
     // Image path (e.g. 'img/icons/home.svg' or 'img/icons/home.png')
-    return '<img src="' + icon + '" class="dt-screen-icon-img dt-screen-main-icon-img" alt="" aria-hidden="true">';
+    return (
+      '<img src="' +
+      icon +
+      '" class="dt-screen-icon-img dt-screen-main-icon-img" alt="" aria-hidden="true">'
+    );
   }
 
   function buildButtonsHtml() {
@@ -224,7 +241,9 @@ var DashticzScreenSwitcher = (function () {
     html +=
       '<button type="button" class="dt-screen-btn' +
       (active === 'standby' ? ' active' : '') +
-      '" data-screen="standby" title="' + standbyLabel + '">' +
+      '" data-screen="standby" title="' +
+      standbyLabel +
+      '">' +
       standbyContent +
       '</button>';
 
@@ -254,7 +273,13 @@ var DashticzScreenSwitcher = (function () {
         : '+';
       html +=
         '<button type="button" class="dt-screen-btn dt-screen-add" data-screen="add" ' +
-        'title="' + addLabel + '" aria-label="' + addLabel + '">' + addContent + '</button>';
+        'title="' +
+        addLabel +
+        '" aria-label="' +
+        addLabel +
+        '">' +
+        addContent +
+        '</button>';
       var canDelete =
         screenNums.length > 1 && typeof active === 'number' && active > 1;
       var delLabel = st.delete_screen || 'Delete screen';
@@ -263,9 +288,15 @@ var DashticzScreenSwitcher = (function () {
         : '&minus;';
       html +=
         '<button type="button" class="dt-screen-btn dt-screen-delete" data-screen="delete" ' +
-        'title="' + delLabel + '" aria-label="' + delLabel + '"' +
+        'title="' +
+        delLabel +
+        '" aria-label="' +
+        delLabel +
+        '"' +
         (canDelete ? '' : ' disabled aria-disabled="true"') +
-        '>' + delContent + '</button>';
+        '>' +
+        delContent +
+        '</button>';
     }
 
     html += '</div>';
@@ -292,9 +323,7 @@ var DashticzScreenSwitcher = (function () {
     // Screen navigation does not rebuild the switcher, so keep the delete
     // button state synchronized with the newly active screen.
     var canDelete =
-      getScreenNumbers().length > 1 &&
-      typeof active === 'number' &&
-      active > 1;
+      getScreenNumbers().length > 1 && typeof active === 'number' && active > 1;
     $('.dt-screen-delete')
       .prop('disabled', !canDelete)
       .attr('aria-disabled', canDelete ? 'false' : 'true');
@@ -309,22 +338,29 @@ var DashticzScreenSwitcher = (function () {
     // Use translated tooltip labels from the active language file.
     // widgetEditorTranslations is a global set by settings.js from /lang/<locale>.json.
     var t =
-      typeof widgetEditorTranslations !== 'undefined' ? widgetEditorTranslations : {};
+      typeof widgetEditorTranslations !== 'undefined'
+        ? widgetEditorTranslations
+        : {};
     var usePng =
       typeof settings !== 'undefined' &&
       Number(settings['topbar_use_png_icons']) === 1;
     function _icon(faClass, imgSrc) {
       return usePng
-        ? '<img src="' + imgSrc + '" class="dt-topbar-icon-img" aria-hidden="true" alt="">'
+        ? '<img src="' +
+            imgSrc +
+            '" class="dt-topbar-icon-img" aria-hidden="true" alt="">'
         : '<i class="' + faClass + '" aria-hidden="true"></i>';
     }
     var html =
       '<span class="dt-standby-editor-icons">' +
       '<span class="settings screeneditoraddicon d-none" role="button" title="' +
-        (t.open_add_menu || t.add_devices || 'Add items') + '">' +
-      _icon('fas fa-plus', 'img/icons/Plus.png') + '</span>' +
+      (t.open_add_menu || t.add_devices || 'Add items') +
+      '">' +
+      _icon('fas fa-plus', 'img/icons/Plus.png') +
+      '</span>' +
       '<span class="settings layouteditoricon" role="button" title="' +
-        (t.screen_editor || t.move_tiles || 'Screen Editor') + '">' +
+      (t.screen_editor || t.move_tiles || 'Screen Editor') +
+      '">' +
       '<i class="fas fa-wand-magic-sparkles" aria-hidden="true"></i></span>' +
       '</span>';
     $bar.append(html);
@@ -332,13 +368,21 @@ var DashticzScreenSwitcher = (function () {
 
   function isEditorChromeNeeded() {
     if ($('body').hasClass('dle-active')) return true;
-    if ($('#deviceeditorpopup').length && $('#deviceeditorpopup').is(':visible')) {
+    if (
+      $('#deviceeditorpopup').length &&
+      $('#deviceeditorpopup').is(':visible')
+    ) {
       return true;
     }
-    if ($('#widgeteditorpopup').length && $('#widgeteditorpopup').is(':visible')) {
+    if (
+      $('#widgeteditorpopup').length &&
+      $('#widgeteditorpopup').is(':visible')
+    ) {
       return true;
     }
-    if ($('.modal.show').filter('#deviceeditorpopup, #widgeteditorpopup').length) {
+    if (
+      $('.modal.show').filter('#deviceeditorpopup, #widgeteditorpopup').length
+    ) {
       return true;
     }
     return false;
@@ -357,21 +401,24 @@ var DashticzScreenSwitcher = (function () {
   function bindStandbyBarHover() {
     $(document)
       .off('.standbyChrome')
-      .on('mousemove.standbyChrome pointermove.standbyChrome', function (event) {
-        if (typeof standbyActive === 'undefined' || !standbyActive) return;
-        if (!$('body').hasClass('standby-edit')) return;
-        if (!$('.screenstandby:visible').length) return;
-        if (isEditorChromeNeeded()) {
-          setStandbyBarVisible(true);
-          return;
+      .on(
+        'mousemove.standbyChrome pointermove.standbyChrome',
+        function (event) {
+          if (typeof standbyActive === 'undefined' || !standbyActive) return;
+          if (!$('body').hasClass('standby-edit')) return;
+          if (!$('.screenstandby:visible').length) return;
+          if (isEditorChromeNeeded()) {
+            setStandbyBarVisible(true);
+            return;
+          }
+          // Reveal near the top edge; hide once the pointer leaves that zone.
+          if (event.clientY < 56) {
+            setStandbyBarVisible(true);
+          } else if (event.clientY > 96) {
+            setStandbyBarVisible(false);
+          }
         }
-        // Reveal near the top edge; hide once the pointer leaves that zone.
-        if (event.clientY < 56) {
-          setStandbyBarVisible(true);
-        } else if (event.clientY > 96) {
-          setStandbyBarVisible(false);
-        }
-      })
+      )
       .on(
         'shown.bs.modal.standbyChrome hidden.bs.modal.standbyChrome',
         '#deviceeditorpopup, #widgeteditorpopup',
@@ -403,9 +450,7 @@ var DashticzScreenSwitcher = (function () {
     if (!$standby.length) return;
     // One bar: S/1/2/+ next to the editor icons.
     if (!$standby.children('.dt-screen-switcher-bar').length) {
-      $standby.prepend(
-        '<div class="dt-screen-switcher-bar col-xs-12"></div>'
-      );
+      $standby.prepend('<div class="dt-screen-switcher-bar col-xs-12"></div>');
     }
     // Drop any leftover separate icon strip from earlier builds.
     $standby.children('.dt-standby-editor-icons').remove();
@@ -421,7 +466,10 @@ var DashticzScreenSwitcher = (function () {
   function addScreen() {
     if (addingScreen) return;
     if (typeof _PHP_INSTALLED !== 'undefined' && !_PHP_INSTALLED) {
-      alert(_strings().php_required || 'PHP is unavailable, so a screen cannot be added.');
+      alert(
+        _strings().php_required ||
+          'PHP is unavailable, so a screen cannot be added.'
+      );
       return;
     }
 
@@ -468,9 +516,9 @@ var DashticzScreenSwitcher = (function () {
     ) {
       return;
     }
-    var deleteMessage =
-      (_strings().delete_confirm ||
-        'Delete screen {number}?').replace('{number}', screenNumber);
+    var deleteMessage = (
+      _strings().delete_confirm || 'Delete screen {number}?'
+    ).replace('{number}', screenNumber);
     if (!window.confirm(deleteMessage)) return;
 
     addingScreen = true;

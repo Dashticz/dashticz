@@ -34,6 +34,13 @@ $screenNumber = configwriter_parse_screen_number($data, 1);
 
 $gridColumns = isset($data['gridColumns']) ? (int)$data['gridColumns'] : 24;
 $rowHeight = isset($data['rowHeight']) ? (int)$data['rowHeight'] : 20;
+// Whether to persist gridColumns/rowHeight explicitly on this screen, or
+// leave it following the dashboard-wide Settings > Weergave default. The
+// client only sets these to true when the screen's current value actually
+// diverges from that default; default to true (preserve, same as before
+// this existed) if an older client build doesn't send them at all.
+$pinGridColumns = !isset($data['pinGridColumns']) || (bool)$data['pinGridColumns'];
+$pinRowHeight = !isset($data['pinRowHeight']) || (bool)$data['pinRowHeight'];
 if (isset($data['gap']) && !is_numeric($data['gap'])) {
     dashticz_json_error(400, 'gap must be numeric.');
 }
@@ -283,7 +290,9 @@ $section = configwriter_build_grid_layout_section(
     $gridColumns,
     $rowHeight,
     $gap,
-    $mobileLayout
+    $mobileLayout,
+    $pinGridColumns,
+    $pinRowHeight
 );
 $config = rtrim($config)
     . configwriter_wrap_section($startMarker, $endMarker, $section);

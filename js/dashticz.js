@@ -24,7 +24,7 @@ var Dashticz = (function () {
     'coronavirus',
     'camera',
     'nzbget',
-    'garbage',  //place before calendar, to detect company: ical with icalurl as garbage block
+    'garbage', //place before calendar, to detect company: ical with icalurl as garbage block
     'calendar',
     'dial',
     'html',
@@ -39,6 +39,7 @@ var Dashticz = (function () {
     'map',
     'group',
     'waqi',
+    'lms',
   ];
   var components = [];
   var mountedBlocks = {};
@@ -53,43 +54,43 @@ var Dashticz = (function () {
       return $.when.apply(
         $,
         specials.map(function (component) {
-          return DT_function.loadDTScript('js/components/' + component + '.js')
-            .fail(function (jqXHR, textStatus, errorThrown) {
-              console.error(
-                'Error loading: ./js/components/' + component + '.js'
-              );
-              console.error('Error: ', textStatus);
-              return errorThrown;
-            });
+          return DT_function.loadDTScript(
+            'js/components/' + component + '.js'
+          ).fail(function (jqXHR, textStatus, errorThrown) {
+            console.error(
+              'Error loading: ./js/components/' + component + '.js'
+            );
+            console.error('Error: ', textStatus);
+            return errorThrown;
+          });
         })
       );
     });
   }
 
   function initDomoticz() {
-    return DT_function.loadDTScript('js/domoticz-api.js')
-      .then(function () {
-        var cfg = {
-          url: settings.domoticz_ip,
-          plan: settings.room_plan,
-          username: settings.user_name,
-          password: settings.pass_word,
-          client_id: settings.client_id,
-          client_secret: settings.client_secret,
-          enable_websocket: settings['enable_websocket'],
-          domoticz_refresh: settings['domoticz_refresh'],
-          refresh_method: settings['refresh_method'],
-          domoticz_timeout: settings['domoticz_timeout'],
-          use_favorites: settings['use_favorites'],
-          use_hidden: settings['use_hidden'],
-          fake_domoticz: settings['fake_domoticz'],
-        };
-        if(settings.code) {
-          cfg.code=settings.code
-        }
-    
-        return Domoticz.init(cfg);
-      })
+    return DT_function.loadDTScript('js/domoticz-api.js').then(function () {
+      var cfg = {
+        url: settings.domoticz_ip,
+        plan: settings.room_plan,
+        username: settings.user_name,
+        password: settings.pass_word,
+        client_id: settings.client_id,
+        client_secret: settings.client_secret,
+        enable_websocket: settings['enable_websocket'],
+        domoticz_refresh: settings['domoticz_refresh'],
+        refresh_method: settings['refresh_method'],
+        domoticz_timeout: settings['domoticz_timeout'],
+        use_favorites: settings['use_favorites'],
+        use_hidden: settings['use_hidden'],
+        fake_domoticz: settings['fake_domoticz'],
+      };
+      if (settings.code) {
+        cfg.code = settings.code;
+      }
+
+      return Domoticz.init(cfg);
+    });
   }
 
   function _onResize() {
@@ -127,23 +128,19 @@ var Dashticz = (function () {
     var inGrid = me.$mountPoint.hasClass('dt-grid-item');
     if (me.block.aspectratio) {
       var blockWidth = parseInt($div.outerWidth());
-      $div.css({height:blockWidth * me.block.aspectratio});
+      $div.css({ height: blockWidth * me.block.aspectratio });
+      fixedHeight = true;
+    } else if (me.block.height && !inGrid) {
+      $div.css({ height: me.block.height });
       fixedHeight = true;
     }
-    else if (me.block.height && !inGrid) {
-      $div.css({height: me.block.height})
-      fixedHeight = true;
-    }
-    if(fixedHeight) $div.addClass('fixedheight');
-
+    if (fixedHeight) $div.addClass('fixedheight');
   }
 
   function setEmpty(me, state) {
     var $div = me.$mountPoint.find('.dt_block');
-    if (state)
-      $div.addClass('empty');
-    else
-      $div.removeClass('empty');
+    if (state) $div.addClass('empty');
+    else $div.removeClass('empty');
   }
 
   function addClickHandler(me) {
@@ -268,7 +265,13 @@ var Dashticz = (function () {
     var html = '';
     if (icon) {
       html += '<div class="col-icon">';
-      html += '<em class="' + icon + '"></em>';
+      // The 'icon' class (already added to the image branch below) is what
+      // themes' .col-icon .icon sizing rules key off - without it, a block
+      // rendered only through this path (e.g. an HTML block with no
+      // refresh() to later re-render via iconORimage(), which always adds
+      // it) falls back to each theme's unscoped default size instead of
+      // matching every other block's icon.
+      html += '<em class="' + icon + ' icon"></em>';
       html += '</div>';
     }
     var image = me.block.image;
@@ -360,6 +363,14 @@ var Dashticz = (function () {
         cfg.icon = ''; //reset default icon in case image is set
       }
       $.extend(cfg, block);
+      // A separator exposes Icon/Image as one mutually exclusive visual in
+      // Device Config. Older CONFIG.js versions can nevertheless contain
+      // both properties; $.extend() above would restore the explicit icon
+      // after the default-reset and getColIcon() would render both side by
+      // side. For block titles, an image always replaces the icon.
+      if (special && special.name === 'blocktitle' && cfg.image) {
+        cfg.icon = '';
+      }
     }
     if (typeof key !== 'undefined' && key !== '') {
       cfg.key = key;
@@ -558,29 +569,30 @@ var Dashticz = (function () {
   }
 
   function isAvailable() {
-      return $.get({
-        url: window.location.href,
-        type: 'GET',
-        async: true,
-        error: function (jqXHR, textStatus) {
-          if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
-            Debug.log('Domoticz request cancelled');
-          } else {
-            if (jqXHR.status == 401) {
-              return 'Domoticz authorizaton error';
-            }
-            var errorTxt = 'Domoticz error code: ' + jqXHR.status + ' ' + textStatus;
-            console.error( errorTxt + '!\nPlease, double check the path to Domoticz in Settings!');
-            Debug.log(
-              Debug.ERROR,
-              errorTxt
-            );
+    return $.get({
+      url: window.location.href,
+      type: 'GET',
+      async: true,
+      error: function (jqXHR, textStatus) {
+        if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
+          Debug.log('Domoticz request cancelled');
+        } else {
+          if (jqXHR.status == 401) {
+            return 'Domoticz authorizaton error';
           }
-          return textStatus;
-        },
-      }).then(function (res) {
-        return !!res;
-      });
+          var errorTxt =
+            'Domoticz error code: ' + jqXHR.status + ' ' + textStatus;
+          console.error(
+            errorTxt +
+              '!\nPlease, double check the path to Domoticz in Settings!'
+          );
+          Debug.log(Debug.ERROR, errorTxt);
+        }
+        return textStatus;
+      },
+    }).then(function (res) {
+      return !!res;
+    });
   }
 
   return {

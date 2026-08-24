@@ -182,8 +182,7 @@ var SpotifyModule = (function () {
             '\');"><img src="' +
             playlists.items[p]['images'][0]['url'] +
             '" /></a></div>';
-          html +=
-            '<div class="col-xs-8 spotify-info" >';
+          html += '<div class="col-xs-8 spotify-info" >';
           html +=
             '<a onclick="SpotifyModule.getPlayList(\'' +
             playlists.items[p]['owner']['id'] +
