@@ -6,6 +6,43 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.45.6 beta (24-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- Extended #195's icon-button conversion (previously Device Config
+  only) to every other place Icon/Updated/Title/Data switches
+  appeared: the Screen Editor's five quick-add popups (Custom device,
+  Multi Device, Group, HTML Block, LMS) and Widget Config's own
+  Icon/Title row. Both now use the same click-to-toggle icon-button
+  look and behavior as Device Config's row, instead of native
+  checkboxes. button.js's injected Background toggle matches whichever
+  row it lands in.
+
+* **Fixes**
+
+- Fixed a block's icon rendering visibly larger than every other
+  block's icon under the Modern Dark/Liquid Glass themes when the
+  block has no ``refresh()`` of its own to later repaint it through
+  ``iconORimage()`` (which always adds the ``icon`` class).
+  ``getColIcon()`` (``js/dashticz.js``), the one-time initial-render
+  path every block goes through, was missing that class - its own
+  image branch right below it already had it - so a block that never
+  gets repainted (for example an HTML block with a custom icon)
+  permanently rendered at each theme's unscoped default size instead
+  of matching its ``.col-icon .icon`` size variable.
+
+* **Code**
+
+- Removed the now fully unused ``.de-config-options`` switch-grid CSS
+  (and its ``-three``/``-four``/``-five`` column-count modifiers) and
+  the ``.we-block-option.form-check-input`` switch-sizing rule, since
+  nothing renders that markup anymore; folded the surviving switches
+  (``#hb-device-border``, ``.we-widget-field``, ``#we-cfg-ascending``,
+  ``.de-switch``, ``.de-lms-switch``) into the shared blue-switch color
+  rule on their own.
+
 v3.45.5 beta (23-8-2026)
 -------------------------
 

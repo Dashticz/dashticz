@@ -1217,11 +1217,11 @@ test('device and widget config editors share full widget config and preserve hid
   );
   assert.match(
     widgetOptionsBody,
-    /\['icon', _t\('icon', 'Icon'\), options\.icon\]/
+    /\['icon', _t\('icon', 'Icon'\), 'fas fa-image', options\.icon\]/
   );
   assert.match(
     widgetOptionsBody,
-    /\['show_title', _t\('show_title', 'Title'\), options\.show_title\]/
+    /'show_title',\s*\n\s*_t\('show_title', 'Title'\),\s*\n\s*'fas fa-heading',\s*\n\s*options\.show_title,/
   );
   assert.doesNotMatch(widgetOptionsBody, /data-block-option="hide_data"/);
   assert.doesNotMatch(widgetOptionsBody, /data-block-option="last_update"/);
@@ -1252,36 +1252,24 @@ test('device and widget config editors share full widget config and preserve hid
   assert.match(saveWidgets, /'icon', 'hide_data', 'last_update', 'hide_title'/);
   assert.match(saveWidgets, /if \(!empty\(\$widget\['hide_data'\]\)\)/);
   assert.match(saveWidgets, /if \(!empty\(\$widget\['last_update'\]\)\)/);
-  assert.match(deviceEditor, /de-config-options-three/);
-  // Columns are auto-fit rather than a fixed repeat(N,...) so that a switch
-  // toggling visibility or an extra one being appended (button.js's injected
-  // No background switch, #170) always ends up sharing the same single row
-  // instead of one being stranded alone on a row of its own; -three/-four/
-  // -five only add centering. Only -three is still reachable from JS - Icon/
-  // Dial/Bar moved into their own visual-mode button group (#182), leaving
-  // at most 3 items (hide_data/last_update/show_title, or icon/last_update/
-  // show_title for Group/HTML/LMS) in this row - -four/-five stay defined
-  // in the stylesheet even though nothing currently emits them.
+  // Icon/Data/Updated/Title/Background render as a plain flex-wrap row of
+  // icon buttons now (#195), not a switch grid - .de-config-options and its
+  // -three/-four/-five column-count modifiers are gone from both the source
+  // and the stylesheet, replaced by .de-config-options-icons (device) and
+  // .we-block-options-row (widget/quick-add), which wrap on their own via
+  // flex-wrap instead of needing a column-count-driven grid.
+  assert.doesNotMatch(deviceEditor, /de-config-options-three/);
+  assert.doesNotMatch(styles, /\.de-config-options-three/);
+  assert.doesNotMatch(styles, /\.de-config-options\s*\{/);
   assert.match(
     styles,
-    /\.de-config-options \{[\s\S]*grid-template-columns: repeat\(auto-fit, minmax\(0, 1fr\)\)/
-  );
-  assert.match(
-    styles,
-    /\.de-config-options-three,\s*\n\s*\.de-config-options-four,\s*\n\s*\.de-config-options-five \{\s*\n\s*justify-items: center;/
-  );
-  assert.match(
-    styles,
-    /\.de-config-options \.form-check-input[\s\S]*width: 32px;[\s\S]*height: 32px;/
+    /\.de-config-options-icons \.btn,\s*\n\s*\.we-block-options-row \.btn \{/
   );
   assert.match(
     deviceEditor,
     /icon: true, iconValue: null, hide_data: false, last_update: false/
   );
-  assert.match(
-    styles,
-    /\.we-block-option\.form-check-input[\s\S]*width: 32px;[\s\S]*height: 32px;/
-  );
+  assert.doesNotMatch(styles, /\.we-block-option\.form-check-input/);
 
   // Dial/Bar visual mode: writes type:'dial' into CONFIG.js (the only way to
   // render a device as a dial block; a hand-typed 'type' custom field stays
@@ -1371,7 +1359,7 @@ test('device and widget config editors share full widget config and preserve hid
   );
   assert.match(
     widgetEditor,
-    /removesIcon[\s\S]*\[data-block-option="icon"\][\s\S]*\.prop\('checked', false\)/
+    /removesIcon[\s\S]*\[data-block-option="icon"\][\s\S]*\.removeClass\('active'\)/
   );
   assert.match(
     deviceEditor,
@@ -5318,4 +5306,87 @@ test('iconORimage() does not let a reset-to-empty image blank out a configured i
   );
   assert.doesNotMatch(blocks, /typeof block\['icon'\] !== 'undefined'/);
   assert.doesNotMatch(blocks, /typeof block\['image'\] !== 'undefined'/);
+});
+
+test('Custom device/Multi device/Group/HTML block/LMS quick-add popups and Widget Config use icon buttons for Icon/Updated/Title, not switches (#195)', () => {
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const widgetEditor = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+
+  // _quickOptionsHtml() is shared by every Screen Editor quick-add popup
+  // reachable from the "+" tile menu (Custom device 'cd', Multi Device
+  // 'md', Group 'gb', LMS 'lm', HTML Block 'hb') - one conversion here
+  // fixes all five at once. Same .de-config-option/.de-visual-mode-button
+  // look as Device Config's own row, but rendered as plain <button>s
+  // (id="<prefix>-opt-icon" etc, not data-option) since _readQuickOptions()
+  // looks each one up individually per popup instance.
+  assert.match(
+    deviceEditor,
+    /function _quickOptionsHtml\(prefix, defaults\) \{/
+  );
+  assert.match(
+    deviceEditor,
+    /\{ id: 'opt-icon', icon: 'fas fa-image', label: t\.icon, active: defaults\.icon \}/
+  );
+  assert.match(
+    deviceEditor,
+    /icon: 'fas fa-clock',\s*\n\s*label: t\.last_update,\s*\n\s*active: defaults\.lastUpdate,/
+  );
+  assert.match(
+    deviceEditor,
+    /icon: 'fas fa-heading',\s*\n\s*label: t\.show_title,\s*\n\s*active: defaults\.showTitle,/
+  );
+  assert.match(
+    deviceEditor,
+    /'<button type="button" class="btn btn-outline-secondary de-config-option'/
+  );
+  assert.doesNotMatch(
+    deviceEditor,
+    /type="checkbox" id="' \+\s*\n\s*prefix \+\s*\n?\s*'-opt-icon"/
+  );
+
+  // _wireQuickOptions(): a click handler toggling .active (no native
+  // checkbox/change event any more), still special-casing the Icon button
+  // to show/hide the icon custom-field row.
+  assert.match(
+    deviceEditor,
+    /function _wireQuickOptions\(prefix, \$popup\) \{\s*\n\s*\$popup\.on\('click', '\.de-config-option', function \(\) \{/
+  );
+  assert.match(
+    deviceEditor,
+    /if \(\$\(this\)\.attr\('id'\) === prefix \+ '-opt-icon'\) \{\s*\n\s*\$\('\.' \+ prefix \+ '-opt-icon-field'\)\.toggleClass\('d-none', !active\);/
+  );
+  assert.match(
+    deviceEditor,
+    /function _readQuickOptions\(prefix\) \{\s*\n\s*var iconChecked = \$\('#' \+ prefix \+ '-opt-icon'\)\.hasClass\('active'\);/
+  );
+  assert.match(
+    deviceEditor,
+    /lastUpdate: \$\('#' \+ prefix \+ '-opt-update'\)\.hasClass\('active'\),\s*\n\s*showTitle: \$\('#' \+ prefix \+ '-opt-title'\)\.hasClass\('active'\),/
+  );
+
+  // Widget Config's own Icon/Title row (_widgetBlockOptionsHtml,
+  // .we-block-options-row/.we-block-option) gets the same treatment,
+  // independently of the device-side .de-config-option wiring above.
+  assert.match(
+    widgetEditor,
+    /'<button type="button" class="btn btn-outline-secondary we-block-option'/
+  );
+  assert.doesNotMatch(
+    widgetEditor,
+    /'<input class="form-check-input we-block-option" type="checkbox" data-block-option="'/
+  );
+  assert.match(
+    widgetEditor,
+    /\$cfgModal\.on\('click', '\.we-block-option', function \(\) \{/
+  );
+  assert.match(
+    widgetEditor,
+    /refreshIconFieldVisibility\(\) \{\s*\n\s*var enabled = \$cfgModal\s*\n\s*\.find\('\[data-block-option="icon"\]'\)\s*\n\s*\.hasClass\('active'\);/
+  );
 });
