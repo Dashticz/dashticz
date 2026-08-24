@@ -64,6 +64,20 @@ function loadScripts(scripts, sequentially) {
 function loader() {
   loadScript('js/main.js')
     .then(function () {
+      // Device Rules is kept as a separate, small module. Loading it before
+      // prepareStart() lets it observe Device Config as soon as the editor is
+      // used, while its runtime hook waits until blocks.js becomes available.
+      // Keep this extension non-fatal: if the extra file is accidentally
+      // missing, the normal Dashticz dashboard must still be able to start.
+      return loadScript('js/devicerules.js').fail(function (err) {
+        console.warn(
+          'Unable to load js/devicerules.js. Device Rules disabled.',
+          err
+        );
+        return $.Deferred().resolve();
+      });
+    })
+    .then(function () {
       loadFiles();
     })
     .fail(function () {
