@@ -3695,18 +3695,23 @@ img.icon {
 }
 
 /* "Needle" mode (block.needle === true) for Blinds Percentage/Blinds
-   Inverted Percentage devices: one continuous vertical slider, framed like
-   a small remote - a title header (no icon), then the slider beside a
-   column of icon-only OPEN/STOP/DICHT buttons. This is an alternative to,
-   not a replacement for, Icon mode's own classic thin percentage bar
-   (getBlindsBlock()'s withPercentage branch, unchanged) and the separate
-   Dial widget's Dial/Bar modes (js/components/dial.js, also unchanged).
-   Rendered entirely by renderBlindsSliderBlock()/addSlider() in
-   js/switches.js as a single .blinds-slider-block. Other percentage
-   sliders (e.g. dimmers, and Icon mode's own classic bar) reuse the same
-   addSlider() but never get a .blinds-slider-wrap ancestor, so none of
-   this applies to them. The underlying jQuery UI slider and all existing
-   Domoticz commands remain unchanged. */
+   Inverted Percentage devices and Dimmers: one continuous vertical slider,
+   framed like a small remote - a title header (no icon), then the slider
+   beside a column of icon-only up/stop/down buttons (OPEN/STOP/DICHT for
+   Blinds, ON/OFF for Dimmers - Dimmers never show Stop). This is an
+   alternative to, not a replacement for, Icon mode's own classic thin
+   percentage bar/horizontal slider (getBlindsBlock()'s withPercentage
+   branch and getDimmerBlock()'s own slider, both unchanged) and the
+   separate Dial widget's Dial/Bar modes (js/components/dial.js, also
+   unchanged). Rendered entirely by renderBlindsSliderBlock()/addSlider() in
+   js/switches.js as a single .blinds-slider-block. Icon mode's own classic
+   bar reuses the same addSlider() but never gets a .blinds-slider-wrap
+   ancestor, so none of this applies to it. The underlying jQuery UI slider
+   and all existing Domoticz commands remain unchanged. Dimmers get an
+   extra .dimmer-slider modifier class on .blinds-slider-wrap (see the
+   .ui-slider-range rule below) - their scale runs the opposite way round
+   from Blinds (0% Off at the bottom, 100% On at the top, matching a
+   physical dimmer/volume slider), not top-to-bottom like Blinds'. */
 .blinds-slider-block {
   display: flex;
   flex-direction: column;
@@ -3953,6 +3958,19 @@ img.icon {
     rgba(75, 160, 75, 0.55),
     rgba(125, 220, 110, 0.95)
   ) !important;
+}
+
+/* Dimmer's Needle slider (.dimmer-slider, see js/switches.js's addSlider())
+   runs the opposite way round from Blinds - 0% Off at the bottom, 100% On
+   at the top - so its fill must grow the opposite direction too: anchored
+   to the *bottom* (where Off/empty is) and extending upward, instead of
+   Blinds' top anchor. extendRangeFill()'s own height math already produces
+   the right height for either anchor unmodified - only the anchor itself
+   needs to flip. Higher specificity than the base rule above (four classes
+   vs three) wins without needing !important on top here too. */
+.blinds-slider-wrap.dimmer-slider .slider .ui-slider-range {
+  top: auto !important;
+  bottom: -8px !important;
 }
 
 /* A small, plain button - not an oversized draggable circle. Width/height
