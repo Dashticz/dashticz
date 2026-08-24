@@ -1439,7 +1439,7 @@ screens[1] = {
     for (const option of ['icon', 'show_title']) {
       await expect(
         page.locator(`[data-block-option="${option}"]`)
-      ).toBeChecked();
+      ).toHaveAttribute('aria-pressed', 'true');
     }
     await expect(page.locator('[data-block-option="hide_data"]')).toHaveCount(
       0
@@ -1451,12 +1451,8 @@ screens[1] = {
       page.getByText('Custom fields', { exact: true })
     ).toBeVisible();
     await expect(page.locator('[data-block-option="icon"]')).toHaveCSS(
-      'width',
-      '38px'
-    );
-    await expect(page.locator('[data-block-option="icon"]')).toHaveCSS(
-      'height',
-      '20px'
+      'min-width',
+      '72px'
     );
     await expect(page.locator('.we-custom-field-name').first()).toHaveValue(
       'title'
@@ -1474,8 +1470,11 @@ screens[1] = {
     );
     await widgetIconRow.locator('.we-custom-field-remove').click();
     await expect(widgetIconRow).toHaveCount(0);
-    await expect(page.locator('[data-block-option="icon"]')).not.toBeChecked();
-    await page.locator('[data-block-option="icon"]').check();
+    await expect(page.locator('[data-block-option="icon"]')).toHaveAttribute(
+      'aria-pressed',
+      'false'
+    );
+    await page.locator('[data-block-option="icon"]').click();
     await expect(widgetIconRow).toBeVisible();
     await widgetIconRow.locator('.we-icon-source').selectOption('image');
     await expect(widgetIconRow.locator('.we-custom-field-setting')).toHaveValue(
