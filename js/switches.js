@@ -787,7 +787,9 @@ function renderBlindsSliderBlock(
   html +=
     '<div class="blinds-slider-action blinds-slider-action-up"><a href="javascript:void(0)" class="btn-blinds btn-blinds-up" aria-label="' +
     openLabel +
-    '"><em class="fas fa-chevron-up"></em></a></div>';
+    '"><em class="fas ' +
+    (isDimmer ? 'fa-toggle-on' : 'fa-chevron-up') +
+    '"></em></a></div>';
 
   if (!hidestop) {
     html +=
@@ -799,7 +801,9 @@ function renderBlindsSliderBlock(
     (isDimmer ? ' blinds-slider-action-off' : '') +
     '"><a href="javascript:void(0)" class="btn-blinds btn-blinds-down" aria-label="' +
     closeLabel +
-    '"><em class="fas fa-chevron-down"></em></a></div>';
+    '"><em class="fas ' +
+    (isDimmer ? 'fa-toggle-off' : 'fa-chevron-down') +
+    '"></em></a></div>';
 
   html += '</div>'; // .blinds-slider-actions
   html += '</div>'; // .blinds-slider-body
