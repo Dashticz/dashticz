@@ -324,6 +324,26 @@ function switchSecurity(level, pincode) {
 function getDimmerBlock(block, buttonimg) {
   var device = block.device;
   var $div = block.$mountPoint.find('.mh');
+
+  // "Needle" is the same Slider visual mode Blinds Percentage devices use
+  // (opted into via block.needle, next to Icon/Dial/Bar in the Device
+  // Config popup) - reuse renderBlindsSliderBlock, which shows ON/OFF
+  // labels and no Stop button for Dimmers (see its isDimmer branch).
+  if (block.needle === true) {
+    var sliderStep = parseFloat(block.slider_step || block.sliderstep || 1);
+    if (!isFinite(sliderStep) || sliderStep <= 0) sliderStep = 1;
+    renderBlindsSliderBlock(
+      block,
+      device,
+      device['idx'],
+      $div,
+      true,
+      false,
+      sliderStep
+    );
+    return true;
+  }
+
   var html = '';
   var title = getBlockTitle(block);
   var classExtension = isProtected(block) ? ' icon' : ' icon iconslider'; //no pointer in case of protected device
@@ -701,19 +721,21 @@ function getBlindsBlock(parentBlock, withPercentageParam) {
   return true;
 }
 
-/** Renders a Blinds Percentage/Blinds Inverted Percentage device as one
- * continuous vertical slider: a title header, then the slider beside a
- * column of icon-only OPEN/STOP/DICHT buttons (OPEN top, STOP middle, DICHT
+/** Renders a Blinds Percentage/Blinds Inverted Percentage or Dimmer device as
+ * one continuous vertical slider: a title header, then the slider beside a
+ * column of icon-only up/stop/down buttons (up top, stop middle, down
  * bottom - all within the slider's own height, via justify-content:
  * space-between). No icon, unlike the classic icon | data | buttons layout
- * below - this control speaks for itself.
+ * below - this control speaks for itself. Blinds show OPEN/DICHT labels and
+ * use switchBlinds(); Dimmers show ON/OFF labels, use switchDevice(), and
+ * never show the Stop button (dimmers have no motor to stop).
  *
  * @param {object} block - The Dashticz block definition
  * @param {object} device - block.device
  * @param {string} idx - block.idx
  * @param {jQuery} $mountPoint - the block's .mh mount point
- * @param {boolean} asOn - whether the "up" action maps to Domoticz On (SwitchType-dependent)
- * @param {boolean} inverted - whether 0% (not 100%) is the device's fully-open end
+ * @param {boolean} asOn - whether the "up" action maps to Domoticz On (SwitchType-dependent; ignored for Dimmers)
+ * @param {boolean} inverted - whether 0% (not 100%) is the device's fully-open end (ignored for Dimmers)
  * @param {number} sliderStep - the slider's drag/command step size
  */
 function renderBlindsSliderBlock(
@@ -725,11 +747,17 @@ function renderBlindsSliderBlock(
   inverted,
   sliderStep
 ) {
+  var isDimmer = device['SwitchType'] === 'Dimmer';
   var title = getBlockTitle(block);
   var hidestop =
-    typeof block['hide_stop'] != 'undefined' && block['hide_stop'] !== false;
-  var openLabel = block.textOn || language.switches.state_open;
-  var closeLabel = block.textOff || language.switches.state_closed;
+    isDimmer ||
+    (typeof block['hide_stop'] != 'undefined' && block['hide_stop'] !== false);
+  var openLabel =
+    block.textOn ||
+    (isDimmer ? language.switches.state_on : language.switches.state_open);
+  var closeLabel =
+    block.textOff ||
+    (isDimmer ? language.switches.state_off : language.switches.state_closed);
 
   var html = '<div class="blinds-slider-block">';
   html += '<div class="blinds-slider-header">';
@@ -739,7 +767,9 @@ function renderBlindsSliderBlock(
   html += '<div class="blinds-slider-body">';
 
   html +=
-    '<div class="blinds-slider-wrap swiper-no-swiping" data-light="' +
+    '<div class="blinds-slider-wrap' +
+    (isDimmer ? ' dimmer-slider' : '') +
+    ' swiper-no-swiping" data-light="' +
     idx +
     '">' +
     (block.hide_data === true
@@ -757,7 +787,9 @@ function renderBlindsSliderBlock(
   html +=
     '<div class="blinds-slider-action blinds-slider-action-up"><a href="javascript:void(0)" class="btn-blinds btn-blinds-up" aria-label="' +
     openLabel +
-    '"><em class="fas fa-chevron-up"></em></a></div>';
+    '"><em class="fas ' +
+    (isDimmer ? 'fa-toggle-on' : 'fa-chevron-up') +
+    '"></em></a></div>';
 
   if (!hidestop) {
     html +=
@@ -765,9 +797,13 @@ function renderBlindsSliderBlock(
   }
 
   html +=
-    '<div class="blinds-slider-action blinds-slider-action-down"><a href="javascript:void(0)" class="btn-blinds btn-blinds-down" aria-label="' +
+    '<div class="blinds-slider-action blinds-slider-action-down' +
+    (isDimmer ? ' blinds-slider-action-off' : '') +
+    '"><a href="javascript:void(0)" class="btn-blinds btn-blinds-down" aria-label="' +
     closeLabel +
-    '"><em class="fas fa-chevron-down"></em></a></div>';
+    '"><em class="fas ' +
+    (isDimmer ? 'fa-toggle-off' : 'fa-chevron-down') +
+    '"></em></a></div>';
 
   html += '</div>'; // .blinds-slider-actions
   html += '</div>'; // .blinds-slider-body
@@ -775,10 +811,12 @@ function renderBlindsSliderBlock(
 
   $mountPoint.html(html);
   $mountPoint.find('.btn-blinds-up').click(function () {
-    switchBlinds(block, asOn ? 'On' : 'Off');
+    if (isDimmer) switchDevice(block, 'on', false);
+    else switchBlinds(block, asOn ? 'On' : 'Off');
   });
   $mountPoint.find('.btn-blinds-down').click(function () {
-    switchBlinds(block, asOn ? 'Off' : 'On');
+    if (isDimmer) switchDevice(block, 'off', false);
+    else switchBlinds(block, asOn ? 'Off' : 'On');
   });
   $mountPoint.find('.btn-blinds-stop').click(function () {
     switchBlinds(block, 'Stop');
@@ -801,26 +839,32 @@ function addSlider(block, sliderValues) {
   var idx = block.idx;
   var $divslider = block.$mountPoint.find('.slider');
   var $wrap = $divslider.closest('.blinds-slider-wrap');
+  // Set by renderBlindsSliderBlock() only for Dimmers - see the flip
+  // comment on mirror()/percentFromBottom() below.
+  var isDimmerSlider = $wrap.hasClass('dimmer-slider');
   var min = Number(sliderValues.min);
   var max = Number(sliderValues.max);
 
-  // Needle's scale reads top-to-bottom as 0%-100% - the opposite of a plain
-  // vertical slider's own min-at-bottom/max-at-top convention, but the same
-  // fixed layout the Bar dial subtype always uses (js/components/dial.js's
-  // dialbar.tpl lists its 0%, then increasing, segments top-to-bottom in
-  // plain DOM/flex order), regardless of an inverted SwitchType. jQuery UI
-  // itself has no such "flip" option, so every value handed to or read from
-  // the widget is mirrored around the midpoint of [min, max] instead -
-  // that's self-inverse, so the same function converts both directions. A
-  // no-op (identity) for the plain (non-Needle) dimmer slider below, which
-  // keeps its normal min-at-bottom layout.
+  // Needle's scale for Blinds reads top-to-bottom as 0%-100% - the opposite
+  // of a plain vertical slider's own min-at-bottom/max-at-top convention,
+  // but the same fixed layout the Bar dial subtype always uses
+  // (js/components/dial.js's dialbar.tpl lists its 0%, then increasing,
+  // segments top-to-bottom in plain DOM/flex order), regardless of an
+  // inverted SwitchType. jQuery UI itself has no such "flip" option, so
+  // every value handed to or read from the widget is mirrored around the
+  // midpoint of [min, max] instead - that's self-inverse, so the same
+  // function converts both directions. A Dimmer's Needle slider keeps
+  // jQuery UI's own normal min-at-bottom/max-at-top layout instead (0% Off
+  // at the bottom, 100% On at the top, matching a physical dimmer/volume
+  // slider and the up/down button labels below) - a no-op (identity) here,
+  // same as the plain (non-Needle) dimmer slider elsewhere in this file.
   function mirror(value) {
-    return $wrap.length ? min + max - value : value;
+    return $wrap.length && !isDimmerSlider ? min + max - value : value;
   }
 
   function percentFromBottom(value) {
     var percent = ((value - min) / (max - min)) * 100;
-    return $wrap.length ? 100 - percent : percent;
+    return $wrap.length && !isDimmerSlider ? 100 - percent : percent;
   }
 
   // Marks the scale tick closest to the slider's current value with the
