@@ -5516,6 +5516,24 @@ test('Bar and Slider show On/Off (not Open/Closed) for Dimmers, and Slider becom
     /\$mountPoint\.find\('\.btn-blinds-down'\)\.click\(function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'off', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'Off' : 'On'\);/
   );
 
+  // A Dimmer's up/down buttons are a genuine On/Off toggle, not a matched
+  // pair of "move" actions like Blinds' Open/Close - the down (Off) button
+  // gets a distinct .blinds-slider-action-off marker class so it can be
+  // color-coded red instead of sharing Blinds' single green look for both;
+  // the up (On) button is left as-is, keeping the shared green style.
+  assert.doesNotMatch(
+    switches,
+    /blinds-slider-action-up' \+\s*\n\s*\(isDimmer/
+  );
+  assert.match(
+    switches,
+    /'<div class="blinds-slider-action blinds-slider-action-down' \+\s*\n\s*\(isDimmer \? ' blinds-slider-action-off' : ''\) \+\s*\n\s*'"><a href="javascript:void\(0\)" class="btn-blinds btn-blinds-down"/
+  );
+  assert.match(
+    styles,
+    /\.blinds-slider-action-off a \{\s*\n\s*color: #ffeaea;\s*\n\s*background: linear-gradient\(\s*\n\s*180deg,\s*\n\s*rgba\(220, 53, 69, 0\.55\),\s*\n\s*rgba\(160, 30, 42, 0\.55\)\s*\n\s*\);\s*\n\s*border: 1px solid rgba\(235, 110, 120, 0\.6\);/
+  );
+
   // addSlider(): the Blinds-only top-to-bottom scale mirroring must not
   // apply to a Dimmer's Slider, which keeps jQuery UI's own normal
   // min-at-bottom/max-at-top layout (0% Off at the bottom, 100% On at the

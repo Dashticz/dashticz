@@ -795,7 +795,9 @@ function renderBlindsSliderBlock(
   }
 
   html +=
-    '<div class="blinds-slider-action blinds-slider-action-down"><a href="javascript:void(0)" class="btn-blinds btn-blinds-down" aria-label="' +
+    '<div class="blinds-slider-action blinds-slider-action-down' +
+    (isDimmer ? ' blinds-slider-action-off' : '') +
+    '"><a href="javascript:void(0)" class="btn-blinds btn-blinds-down" aria-label="' +
     closeLabel +
     '"><em class="fas fa-chevron-down"></em></a></div>';
 

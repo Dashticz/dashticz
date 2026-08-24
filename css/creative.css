@@ -3858,6 +3858,30 @@ img.icon {
   );
 }
 
+/* Dimmer's up/down buttons (js/switches.js's renderBlindsSliderBlock()
+   isDimmer branch) are a genuine On/Off toggle, not a matched pair of
+   "move" actions like Blinds' Open/Close - color-code Off (the down
+   chevron) red instead of sharing Blinds' single green look for both, so
+   On/Off read at a glance the same way a switch's own on/off colors do.
+   On (the up chevron) keeps the shared green rule above unchanged. */
+.blinds-slider-action-off a {
+  color: #ffeaea;
+  background: linear-gradient(
+    180deg,
+    rgba(220, 53, 69, 0.55),
+    rgba(160, 30, 42, 0.55)
+  );
+  border: 1px solid rgba(235, 110, 120, 0.6);
+}
+
+.blinds-slider-action-off a:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(230, 70, 86, 0.65),
+    rgba(176, 40, 52, 0.65)
+  );
+}
+
 .blinds-slider-action-stop a {
   color: rgba(255, 255, 255, 0.85);
   background: rgba(220, 53, 69, 0.22);
