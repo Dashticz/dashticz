@@ -308,15 +308,30 @@ Dashticz.register(DT_button);
       '<div class="mb-3"><label class="form-label" for="dt-button-popup">Popup block</label>' +
       '<input type="text" class="form-control" id="dt-button-popup" placeholder="Block key"></div>' +
       '</div>' +
-      '<div class="row g-2">' +
+      '<div class="row g-2 mb-3">' +
       '<div class="col"><label class="form-label" for="dt-button-auto-close">Auto close (seconds)</label>' +
       '<input type="number" min="0" step="1" class="form-control" id="dt-button-auto-close"></div>' +
       '<div class="col"><label class="form-label" for="dt-button-password">Password</label>' +
       '<input type="text" class="form-control" id="dt-button-password" autocomplete="off"></div>' +
-      '</div>' +
-      '<label class="form-check form-switch mt-3 mb-2">' +
-      '<input class="form-check-input" type="checkbox" id="dt-button-no-background">' +
-      '<span class="form-check-label">No background</span></label>'
+      '</div>'
+    );
+  }
+
+  /* A matching Background icon button (#195, same look/behavior as the
+   * Device/Widget Config row this file's own injectNoBackgroundIntoConfig()
+   * adds to) joins the Icon toggle deviceeditor.js's _showSlideButtonPopup()
+   * already renders into .de-config-options-icons. Unlike that other
+   * function, a slide button is only ever created through this one popup
+   * (editing an existing one happens through Device Config instead), so
+   * there is no existing no_background value to hydrate - it always starts
+   * unset/"has background". */
+  function injectButtonBackgroundOption($popup) {
+    var $optionsRow = $popup.find('.de-config-options-icons').first();
+    if (!$optionsRow.length) return;
+    $optionsRow.append(
+      '<button type="button" class="btn btn-outline-secondary de-config-option active" id="dt-button-background" aria-pressed="true" title="Background" style="min-width:72px;">' +
+        '<i class="fas fa-fill-drip" aria-hidden="true"></i>' +
+        '<span class="d-block small">Background</span></button>'
     );
   }
 
@@ -331,6 +346,11 @@ Dashticz.register(DT_button);
     var $screen = $('#sb-button-screen').closest('.mb-3');
     $screen.addClass('dt-button-slide-fields');
     $screen.before(actionFieldsHtml());
+    // Reuses deviceeditor.js's own generic '.de-config-option' click handler
+    // (already delegated on $popup by _wireQuickOptions('sb', $popup) in
+    // _showSlideButtonPopup(), which runs before this) for the click-to-
+    // toggle .active behavior - no separate handler needed here.
+    injectButtonBackgroundOption($popup);
 
     function refreshAction() {
       var action = $('#dt-button-action').val() || 'slide';
@@ -406,7 +426,7 @@ Dashticz.register(DT_button);
         if (isFinite(autoClose) && autoClose > 0) custom.auto_close = autoClose;
         var password = String($('#dt-button-password').val() || '');
         if (password) custom.password = password;
-        if ($('#dt-button-no-background').is(':checked'))
+        if (!$('#dt-button-background').hasClass('active'))
           custom.no_background = true;
 
         pendingButtons[reference] = { action: action, custom: custom };

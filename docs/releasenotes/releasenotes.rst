@@ -20,6 +20,13 @@ v3.45.6 beta (24-8-2026)
   checkboxes. button.js's injected Background toggle matches whichever
   row it lands in.
 
+- Extended #195 to the Slide button quick-add popup too - the one
+  place it was still missing entirely. Icon was previously shown
+  unconditionally with no toggle at all, and its "No background"
+  checkbox was a lone switch with no Display options row around it.
+  Both are now icon buttons in a proper Display options row, matching
+  every other popup.
+
 * **Fixes**
 
 - Fixed a block's icon rendering visibly larger than every other

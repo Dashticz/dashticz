@@ -3580,10 +3580,27 @@ var DashticzDeviceEditor = (function () {
       '</label>';
     html +=
       '<input type="number" min="1" step="1" class="form-control" id="sb-button-screen" value="1"></div>';
+    // Display options: an Icon toggle button (#195, same look/behavior as
+    // every other quick-add popup's _quickOptionsHtml() row - id="sb-opt-icon"
+    // and class "sb-opt-icon-field" match that shared function's own naming
+    // so _wireQuickOptions('sb', $popup) below can wire it unchanged).
+    // button.js's injectButtonEditor() appends a matching Background button
+    // into this same row.
+    html += '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
     html +=
-      '<div class="mb-3"><label class="form-label">' +
-      _esc(t.slide_button_icon) +
-      '</label>';
+      '<div class="d-flex flex-wrap gap-2 mb-3 de-config-options-icons" role="group" aria-label="' +
+      _esc(t.display_options) +
+      '">';
+    html +=
+      '<button type="button" class="btn btn-outline-secondary de-config-option active" id="sb-opt-icon" aria-pressed="true" title="' +
+      _esc(t.icon) +
+      '" style="min-width:72px;">' +
+      '<i class="fas fa-image" aria-hidden="true"></i>' +
+      '<span class="d-block small">' +
+      _esc(t.icon) +
+      '</span></button>';
+    html += '</div>';
+    html += '<div class="mb-3 sb-opt-icon-field">';
     html += _customFieldRowHtml(
       { field: 'icon', setting: 'fas fa-home' },
       { hideButtons: true }
@@ -3613,7 +3630,7 @@ var DashticzDeviceEditor = (function () {
     html += '</div></div></div></div>';
     $('body').append(html);
     var $popup = $('#slidebuttonpopup');
-    _wireIconImagePicker($popup);
+    _wireQuickOptions('sb', $popup);
     _wireBackButton('slidebuttonpopup');
 
     function refreshFullImageOption() {
@@ -3634,13 +3651,18 @@ var DashticzDeviceEditor = (function () {
       var buttonTitle = $.trim(String($('#sb-button-title').val() || ''));
       var rawSlide = $.trim(String($('#sb-button-screen').val() || ''));
       var slideTarget = parseInt(rawSlide, 10);
+      var iconChecked = $('#sb-opt-icon').hasClass('active');
       var iconSource =
         $popup.find('.de-icon-source').val() === 'image' ? 'image' : 'icon';
-      var iconValue = $.trim(
-        String(
-          $popup.find('.de-icon-field-row .de-custom-field-setting').val() || ''
-        )
-      );
+      var iconValue = iconChecked
+        ? $.trim(
+            String(
+              $popup
+                .find('.de-icon-field-row .de-custom-field-setting')
+                .val() || ''
+            )
+          )
+        : '';
       if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
         $message.addClass('text-danger').text(t.invalid_slide_button_name);
         $('#sb-button-name').trigger('focus');
