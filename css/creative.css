@@ -3860,10 +3860,12 @@ img.icon {
 
 /* Dimmer's up/down buttons (js/switches.js's renderBlindsSliderBlock()
    isDimmer branch) are a genuine On/Off toggle, not a matched pair of
-   "move" actions like Blinds' Open/Close - color-code Off (the down
-   chevron) red instead of sharing Blinds' single green look for both, so
-   On/Off read at a glance the same way a switch's own on/off colors do.
-   On (the up chevron) keeps the shared green rule above unchanged. */
+   "move" actions like Blinds' Open/Close - they get fa-toggle-on/
+   fa-toggle-off icons instead of Blinds' fa-chevron-up/-down, and the
+   down (Off) button is color-coded red instead of sharing Blinds' single
+   green look for both, so On/Off read at a glance the same way a switch's
+   own on/off colors do. On (the up button) keeps the shared green rule
+   above unchanged. */
 .blinds-slider-action-off a {
   color: #ffeaea;
   background: linear-gradient(
@@ -3880,6 +3882,14 @@ img.icon {
     rgba(230, 70, 86, 0.65),
     rgba(176, 40, 52, 0.65)
   );
+}
+
+/* The global .fas.fa-toggle-off { opacity: 0.5 } rule further down this
+   file (meant for a small inline status icon) would otherwise wash out
+   this button's own icon against its red background - keep it fully
+   opaque like every other icon in this button row. */
+.blinds-slider-action-off a .fa-toggle-off {
+  opacity: 1;
 }
 
 .blinds-slider-action-stop a {

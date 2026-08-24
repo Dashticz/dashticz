@@ -5534,6 +5534,25 @@ test('Bar and Slider show On/Off (not Open/Closed) for Dimmers, and Slider becom
     /\.blinds-slider-action-off a \{\s*\n\s*color: #ffeaea;\s*\n\s*background: linear-gradient\(\s*\n\s*180deg,\s*\n\s*rgba\(220, 53, 69, 0\.55\),\s*\n\s*rgba\(160, 30, 42, 0\.55\)\s*\n\s*\);\s*\n\s*border: 1px solid rgba\(235, 110, 120, 0\.6\);/
   );
 
+  // Chevron icons (fa-chevron-up/-down) imply a physical up/down motion,
+  // which fits Blinds but not a Dimmer's genuine On/Off toggle - a Dimmer's
+  // buttons get fa-toggle-on/fa-toggle-off instead, and the down button's
+  // icon is kept fully opaque against its red background (the global
+  // .fas.fa-toggle-off opacity rule elsewhere in this file is meant for a
+  // small inline status icon, not this button).
+  assert.match(
+    switches,
+    /'"><em class="fas ' \+\s*\n\s*\(isDimmer \? 'fa-toggle-on' : 'fa-chevron-up'\) \+\s*\n\s*'"><\/em><\/a><\/div>';/
+  );
+  assert.match(
+    switches,
+    /'"><em class="fas ' \+\s*\n\s*\(isDimmer \? 'fa-toggle-off' : 'fa-chevron-down'\) \+\s*\n\s*'"><\/em><\/a><\/div>';/
+  );
+  assert.match(
+    styles,
+    /\.blinds-slider-action-off a \.fa-toggle-off \{\s*\n\s*opacity: 1;/
+  );
+
   // addSlider(): the Blinds-only top-to-bottom scale mirroring must not
   // apply to a Dimmer's Slider, which keeps jQuery UI's own normal
   // min-at-bottom/max-at-top layout (0% Off at the bottom, 100% On at the

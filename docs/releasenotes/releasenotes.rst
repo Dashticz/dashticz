@@ -77,6 +77,11 @@ v3.45.6 beta (24-8-2026)
   contrast with the up (On) button's green, like a switch's own
   on/off colors (#197). Blinds' own up/down buttons are unchanged.
 
+- Fixed those same buttons still using chevron-up/chevron-down icons,
+  which read as a physical move action rather than On/Off. A Dimmer's
+  Slider buttons now use toggle-on/toggle-off icons instead (#197);
+  Blinds keep their chevrons unchanged.
+
 * **Code**
 
 - Removed the now fully unused ``.de-config-options`` switch-grid CSS
