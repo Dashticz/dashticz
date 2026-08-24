@@ -19,6 +19,28 @@ Developers who change files under `src/` should use `npm ci`, run `npm test`,
 and rebuild the committed production bundle with `npm run build`. The
 `node_modules/` directory must not be committed.
 
+## Automated testing
+
+Every push to `develop` or `test` and every pull request runs the following CI
+matrix:
+
+- Node.js 20, 22 and 24: formatting, unit/source tests and a production build;
+- PHP 7.4 and 8.1 through 8.5: the real PHP security and bridge tests with curl;
+- Playwright Chromium, Firefox and WebKit: the browser suite against a PHP test
+  server. Chromium also verifies the stored visual snapshots.
+
+Use `npm run format:check`, `npm test`, `npm run build` and
+`npm run test:playwright:all` for the equivalent local checks.
+
+Real Domoticz, Lyrion Music Server and iCalendar endpoints are intentionally
+not contacted on normal CI runs. Maintainers can create a protected GitHub
+environment named `live-integrations`, configure any of the
+`DASHTICZ_LIVE_DOMOTICZ_*`, `DASHTICZ_LIVE_LMS_*` and
+`DASHTICZ_LIVE_ICAL_URL` secrets listed in `.github/workflows/ci.yml`, and then
+start the **CI** workflow manually with **Run tests against configured live
+services** enabled. At least one live service must be configured or that job
+fails instead of reporting a false success.
+
 ## Browser configuration
 
 ### First-run wizard
@@ -278,10 +300,11 @@ it. A selected tile with configurable options has a cog button. The same full
 Widget Config popup is also opened when that widget's cog is selected from the
 Device Editor.
 
-Every widget settings popup also contains common Icon, Data, Updated and Title
-checkboxes. The **Custom fields** section accepts repeatable `Field` and
-`Setting` pairs. Use the plus button to add a row and the minus button to
-remove one. Field names are trimmed, spaces and hyphens become underscores,
+Every widget settings popup also contains common Icon and Title checkboxes.
+Existing `hide_data` and `last_update` block properties remain supported and
+are preserved when a widget is edited. The **Custom fields** section accepts
+repeatable `Field` and `Setting` pairs. Use the plus button to add a row and the
+minus button to remove one. Field names are trimmed, spaces and hyphens become underscores,
 and the first character is normalised to lowercase (`Layout` becomes
 `layout`). Names must be valid JavaScript property names, may not duplicate
 another row, and may not replace editor-managed identity properties such as

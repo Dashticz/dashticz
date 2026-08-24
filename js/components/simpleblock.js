@@ -1,4 +1,4 @@
-/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor DashticzWidgetEditor DashticzLayoutEditor isCustomConfigMode setConfigMode language DashticzScreenSwitcher */
+/* global Dashticz DT_function getFullScreenIcon settings loadWeather loadWeatherFull getSpotify loadSpotifyApi DT_button loadSonarr getCoin loadMaps DashticzDeviceEditor DashticzWidgetEditor DashticzLayoutEditor isCustomConfigMode setConfigMode language DashticzScreenSwitcher moment */
 //# sourceURL=js/components/simpleblock.js
 var DT_simpleblock = (function () {
   var simpleBlocks = {
@@ -42,6 +42,12 @@ var DT_simpleblock = (function () {
     },
     spotify: {
       script: 'js/spotify.js',
+      // Resolve the global only when a Spotify block is actually mounted.
+      // This also keeps component-only test harnesses and custom loaders that
+      // do not execute src/index.js from failing at module evaluation time.
+      prepare: function () {
+        return loadSpotifyApi();
+      },
       render: renderSpotify,
     },
     trafficmap: {
@@ -62,8 +68,8 @@ var DT_simpleblock = (function () {
       render: renderFullScreen,
     },
     moon: {
-      render: renderMoon
-    }
+      render: renderMoon,
+    },
   };
 
   var keyBlocks = {
@@ -90,6 +96,9 @@ var DT_simpleblock = (function () {
   }
   return {
     name: 'simpleblock',
+    // Exposed so a quick-add popup's own Back button (js/deviceeditor.js)
+    // can reopen this same tile menu instead of just closing outright.
+    openAddMenu: _openScreenEditorAddMenu,
     canHandle: function (block) {
       return block && (!!simpleBlocks[block.type] || findKey(block));
     },
@@ -103,14 +112,35 @@ var DT_simpleblock = (function () {
       var thisBlock = getBlock(me.block);
       var script = thisBlock.script;
       var render = thisBlock.render;
-      if (script)
-        DT_function.loadDTScript(script).then(function () {
-          renderBlock(me, render);
-        })
-        .catch(function() {
-          console.log('Error loading script '+script);
-        });
-      else renderBlock(me, render);
+      var loadAndRender = function () {
+        if (script)
+          DT_function.loadDTScript(script)
+            .then(function () {
+              renderBlock(me, render);
+            })
+            .catch(function () {
+              console.log('Error loading script ' + script);
+            });
+        else renderBlock(me, render);
+      };
+      if (thisBlock.prepare) {
+        thisBlock
+          .prepare()
+          .then(loadAndRender)
+          .catch(function () {
+            console.log('Error loading dependency for ' + me.block.type);
+          });
+      } else loadAndRender();
+
+      if (thisBlock === simpleBlocks.miniclock) {
+        _initMiniclockFitSize(me);
+      }
+    },
+    destroy: function (me) {
+      if (me.miniclockResizeObserver) {
+        me.miniclockResizeObserver.disconnect();
+        me.miniclockResizeObserver = null;
+      }
     },
   };
 
@@ -158,7 +188,8 @@ var DT_simpleblock = (function () {
     if (typeof settings['settings_icons'] !== 'undefined') {
       icons = settings['settings_icons'];
     }
-    var customMode = typeof isCustomConfigMode === 'function' && isCustomConfigMode();
+    var customMode =
+      typeof isCustomConfigMode === 'function' && isCustomConfigMode();
     var modeLabelCustom =
       (language.settings &&
         language.settings.config_mode &&
@@ -185,9 +216,19 @@ var DT_simpleblock = (function () {
     content +=
       '<span class="config-mode-switch">' +
       '<button type="button" class="config-mode-icon-btn configmodeicon" ' +
-      'data-id="configmode" title="' + modeAria + ': ' + currentModeLabel + '" ' +
-      'aria-label="' + modeAria + ': ' + currentModeLabel + '">' +
-      '<i class="fas ' + currentModeIcon + '" aria-hidden="true"></i>' +
+      'data-id="configmode" title="' +
+      modeAria +
+      ': ' +
+      currentModeLabel +
+      '" ' +
+      'aria-label="' +
+      modeAria +
+      ': ' +
+      currentModeLabel +
+      '">' +
+      '<i class="fas ' +
+      currentModeIcon +
+      '" aria-hidden="true"></i>' +
       '</button></span>';
     for (var i = 0; i < icons.length; i++) {
       switch (icons[i]) {
@@ -199,19 +240,27 @@ var DT_simpleblock = (function () {
             content +=
               '<span class="settings screeneditoraddicon d-none" data-id="screeneditoradd" ' +
               'role="button" aria-label="' +
-              (editorLabels.open_add_menu || editorLabels.add_devices || 'Add items') +
+              (editorLabels.open_add_menu ||
+                editorLabels.add_devices ||
+                'Add items') +
               '" title="' +
-              (editorLabels.open_add_menu || editorLabels.add_devices || 'Add items') +
+              (editorLabels.open_add_menu ||
+                editorLabels.add_devices ||
+                'Add items') +
               '">' +
-              _topbarIconHtml('fas fa-plus', 'img/icons/Plus.png') + '</span>';
+              _topbarIconHtml('fas fa-plus', 'img/icons/Plus.png') +
+              '</span>';
             content +=
               '<span class="settings layouteditoricon" data-id="layouteditor" ' +
               'role="button" aria-label="' +
               (editorLabels.open_layout_editor || 'Open Screen Editor') +
               '" title="' +
-              (editorLabels.screen_editor || editorLabels.move_tiles || 'Screen Editor') +
+              (editorLabels.screen_editor ||
+                editorLabels.move_tiles ||
+                'Screen Editor') +
               '">' +
-              _topbarIconHtml('fas fa-wand-magic-sparkles', null) + '</span>';
+              _topbarIconHtml('fas fa-wand-magic-sparkles', null) +
+              '</span>';
           }
           content +=
             '<span class="settings settingsicon" data-id="settings" ' +
@@ -221,7 +270,8 @@ var DT_simpleblock = (function () {
             '" title="' +
             (editorLabels.settings_title || 'Settings') +
             '">' +
-            _topbarIconHtml('fas fa-cog', 'img/icons/Cog.png') + '</span>';
+            _topbarIconHtml('fas fa-cog', 'img/icons/Cog.png') +
+            '</span>';
           if (!customMode) {
             _registerLayoutEditorClick();
             _registerScreenEditorAddClick();
@@ -251,7 +301,11 @@ var DT_simpleblock = (function () {
    */
   function _topbarIconHtml(faClass, imgSrc) {
     if (Number(settings['topbar_use_png_icons']) === 1 && imgSrc) {
-      return '<img src="' + imgSrc + '" class="dt-topbar-icon-img" aria-hidden="true" alt="">';
+      return (
+        '<img src="' +
+        imgSrc +
+        '" class="dt-topbar-icon-img" aria-hidden="true" alt="">'
+      );
     }
     return '<i class="' + faClass + '" aria-hidden="true"></i>';
   }
@@ -319,7 +373,8 @@ var DT_simpleblock = (function () {
    */
   function _configModePickerHtml() {
     var labels = language.settings.config_mode;
-    var customMode = typeof isCustomConfigMode === 'function' && isCustomConfigMode();
+    var customMode =
+      typeof isCustomConfigMode === 'function' && isCustomConfigMode();
     var tiles = [
       {
         mode: 'custom',
@@ -339,18 +394,30 @@ var DT_simpleblock = (function () {
       'aria-labelledby="config-mode-picker-title" aria-hidden="true">' +
       '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">' +
       '<div class="modal-header"><h5 class="modal-title" id="config-mode-picker-title">' +
-      $('<div>').text(labels.picker_title || labels.aria_label).html() +
+      $('<div>')
+        .text(labels.picker_title || labels.aria_label)
+        .html() +
       '</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
-      $('<div>').text(labels.cancel).html() + '"></button></div>' +
+      $('<div>').text(labels.cancel).html() +
+      '"></button></div>' +
       '<div class="modal-body"><div class="settings-tiles config-mode-tiles">';
     tiles.forEach(function (tile) {
       var isActive = (tile.mode === 'custom') === customMode;
       html +=
         '<button type="button" class="settings-tile config-mode-tile config-mode-btn' +
-        (isActive ? ' active' : '') + '" data-mode="' + tile.mode + '">' +
-        '<i class="fas ' + tile.icon + '" aria-hidden="true"></i>' +
-        '<span>' + $('<div>').text(tile.label).html() + '</span>' +
-        '<small>' + $('<div>').text(tile.text).html() + '</small>' +
+        (isActive ? ' active' : '') +
+        '" data-mode="' +
+        tile.mode +
+        '">' +
+        '<i class="fas ' +
+        tile.icon +
+        '" aria-hidden="true"></i>' +
+        '<span>' +
+        $('<div>').text(tile.label).html() +
+        '</span>' +
+        '<small>' +
+        $('<div>').text(tile.text).html() +
+        '</small>' +
         '</button>';
     });
     html += '</div></div></div></div></div>';
@@ -382,9 +449,8 @@ var DT_simpleblock = (function () {
 
   function _showConfigModeWarning(mode, onContinue) {
     var labels = language.settings.config_mode;
-    var message = mode === 'wizard'
-      ? labels.confirm_wizard
-      : labels.confirm_custom;
+    var message =
+      mode === 'wizard' ? labels.confirm_wizard : labels.confirm_custom;
 
     $('#configmodewarningpopup').remove();
     var html =
@@ -395,14 +461,18 @@ var DT_simpleblock = (function () {
       '<i class="fas fa-triangle-exclamation text-warning me-2" aria-hidden="true"></i>' +
       $('<div>').text(labels.warning_title).html() +
       '</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
-      $('<div>').text(labels.cancel).html() + '"></button></div>' +
+      $('<div>').text(labels.cancel).html() +
+      '"></button></div>' +
       '<div class="modal-body"><p id="config-mode-warning-message" class="mb-0">' +
-      $('<div>').text(message).html() + '</p></div>' +
+      $('<div>').text(message).html() +
+      '</p></div>' +
       '<div class="modal-footer">' +
       '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
-      $('<div>').text(labels.cancel).html() + '</button>' +
+      $('<div>').text(labels.cancel).html() +
+      '</button>' +
       '<button type="button" class="btn btn-warning" id="config-mode-warning-continue">' +
-      $('<div>').text(labels.continue).html() + '</button>' +
+      $('<div>').text(labels.continue).html() +
+      '</button>' +
       '</div></div></div></div>';
     $('body').append(html);
 
@@ -426,7 +496,13 @@ var DT_simpleblock = (function () {
   }
 
   function _syncScreenEditorAddButton() {
-    $('.screeneditoraddicon').toggleClass('d-none', !$('body').hasClass('dle-active'));
+    // The wand icon has no function once the Screen Editor is already
+    // active (clicking it again is a no-op) - hide it in favor of the +
+    // icon in that same topbar slot while editing, and swap back once
+    // editing closes.
+    var active = $('body').hasClass('dle-active');
+    $('.screeneditoraddicon').toggleClass('d-none', !active);
+    $('.layouteditoricon').toggleClass('d-none', active);
   }
 
   function _registerScreenEditorStateObserver() {
@@ -445,25 +521,65 @@ var DT_simpleblock = (function () {
     var t = _screenEditorLabels();
     var tiles = [
       { action: 'device', icon: 'fa-plus', label: t.add_device },
-      { action: 'widgets', icon: 'fa-puzzle-piece', label: t.title || 'Widgets' },
-      { action: 'custom', icon: 'fa-cube', label: t.custom_devices || 'Custom devices' },
-      { action: 'multidevice', icon: 'fa-layer-group', label: t.multi_device || 'Multi Device' },
-      { action: 'slidebutton', icon: 'fa-sliders-h', label: t.slide_button || 'Slide button' },
-      { action: 'separator', icon: 'fa-heading', label: t.separator || 'Separator' },
+      {
+        action: 'widgets',
+        icon: 'fa-puzzle-piece',
+        label: t.title || 'Widgets',
+      },
+      {
+        action: 'custom',
+        icon: 'fa-cube',
+        label: t.custom_devices || 'Custom devices',
+      },
+      {
+        action: 'multidevice',
+        icon: 'fa-layer-group',
+        label: t.multi_device || 'Multi Device',
+      },
+      {
+        action: 'group',
+        icon: 'fa-object-group',
+        label: t.group_block || 'Group',
+      },
+      {
+        action: 'htmlblock',
+        icon: 'fa-code',
+        label: t.html_block || 'HTML Block',
+      },
+      {
+        action: 'slidebutton',
+        icon: 'fa-sliders-h',
+        label: t.slide_button || 'Slide button',
+      },
+      {
+        action: 'separator',
+        icon: 'fa-divide',
+        label: t.separator || 'Separator',
+      },
     ];
     var html =
       '<div class="modal fade" id="screeneditoraddpopup" tabindex="-1" aria-hidden="true">' +
       '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">' +
       '<div class="modal-header"><h5 class="modal-title">' +
-      $('<div>').text(t.add_menu_title || t.add_devices || 'Add items').html() +
+      $('<div>')
+        .text(t.add_menu_title || t.add_devices || 'Add items')
+        .html() +
       '</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
-      $('<div>').text(t.close || 'Close').html() + '"></button></div>' +
+      $('<div>')
+        .text(t.close || 'Close')
+        .html() +
+      '"></button></div>' +
       '<div class="modal-body"><div class="dt-screeneditor-add-grid">';
     tiles.forEach(function (tile) {
       html +=
         '<button type="button" class="dt-screeneditor-add-tile" data-add-action="' +
-        tile.action + '"><i class="fas ' + tile.icon + '" aria-hidden="true"></i>' +
-        '<span>' + $('<div>').text(tile.label).html() + '</span></button>';
+        tile.action +
+        '"><i class="fas ' +
+        tile.icon +
+        '" aria-hidden="true"></i>' +
+        '<span>' +
+        $('<div>').text(tile.label).html() +
+        '</span></button>';
     });
     html += '</div></div></div></div></div>';
     return html;
@@ -495,6 +611,10 @@ var DT_simpleblock = (function () {
             DashticzDeviceEditor.openCustom();
           } else if (selectedAction === 'multidevice') {
             DashticzDeviceEditor.openMultiDevice();
+          } else if (selectedAction === 'group') {
+            DashticzDeviceEditor.openGroup();
+          } else if (selectedAction === 'htmlblock') {
+            DashticzDeviceEditor.openHtmlBlock();
           } else if (selectedAction === 'slidebutton') {
             DashticzDeviceEditor.openSlideButton();
           } else if (selectedAction === 'separator') {
@@ -520,8 +640,7 @@ var DT_simpleblock = (function () {
   function _openPendingGridEditor() {
     var pendingScreen = '';
     try {
-      pendingScreen =
-        sessionStorage.getItem('dashticz_open_grid_editor') || '';
+      pendingScreen = sessionStorage.getItem('dashticz_open_grid_editor') || '';
       if (pendingScreen) {
         sessionStorage.removeItem('dashticz_open_grid_editor');
       }
@@ -577,14 +696,11 @@ var DT_simpleblock = (function () {
       });
   }
 
-
   function renderMiniclock(me) {
     var fixedHeight = parseInt(me.block.height, 10);
     var heightClass = fixedHeight > 0 ? ' fixedheight' : '';
     var heightStyle =
-      fixedHeight > 0
-        ? ' style="height:' + fixedHeight + 'px !important"'
-        : '';
+      fixedHeight > 0 ? ' style="height:' + fixedHeight + 'px !important"' : '';
     return (
       '<div data-id="miniclock" class="miniclock mh dt_block transbg col-xs-' +
       me.block.width +
@@ -596,6 +712,125 @@ var DT_simpleblock = (function () {
       '<span class="weekday"></span> <span class="date"></span> <span>&nbsp;&nbsp;&nbsp;&nbsp;</span> <span class="clock"></span>' +
       '</div>'
     );
+  }
+
+  // Miniclock has no Size/Scale controls (it's meant to be sized purely via
+  // its block's own width/height, e.g. the compact topbar strip), but its
+  // .weekday/.date/.clock spans still render at a single fixed CSS
+  // font-size regardless of that block size - resizing the block (in a
+  // grid, or the classic column width) never made the text itself bigger
+  // or smaller. Fit it the same way the four dedicated clock widgets do.
+  function _fitMiniclockSize(me) {
+    var $mount = me.$mountPoint;
+    var $block = $mount.find('.dt_block').first();
+    if (!$block.length) return;
+    // In a grid, the outer mount point owns the live row/column dimensions
+    // (a hard, CSS-Grid-track-sized box); .dt_block only *looks* fixed
+    // (min-height: 100%, not a cap) but a grid item's automatic minimum
+    // size still grows to fit its content unless the item itself clips
+    // overflow, which .dt-grid-item doesn't. Measuring .dt_block here would
+    // read that already-inflated size back, feeding a runaway
+    // grow-remeasure-grow loop with every ResizeObserver tick. Same fix as
+    // js/components/dial.js's _dialFitSize() and the four clock widgets.
+    var inGrid = $mount.hasClass('dt-grid-item');
+    var $sizeBox = inGrid ? $mount : $block;
+    var availW = $sizeBox.outerWidth() || 0;
+    var availH = $sizeBox.outerHeight() || 0;
+    if (availW <= 0 || availH <= 0) return;
+
+    // The weekday/date/clock <span>s are inline, so their own box already
+    // reports their true rendered size - but only once they hold real text
+    // (_initMiniclockFitSize() below fills them before the first call here).
+    // Measure a nowrap clone at a reference font-size (appended inside
+    // .dt_block itself, not document.body - an absolutely positioned probe
+    // appended to body can still enlarge the document's scrollable area,
+    // which is exactly the kind of stray resize that fed the clock
+    // widgets' own runaway-growth bug).
+    var REF = 100;
+    // Snapshot the real content *before* the probe is appended - .contents()
+    // below is a live DOM query, so run after appending it would also pick
+    // up the (still-empty) probe itself as content to clone into itself.
+    var $original = $block.contents();
+    var $probe = $('<span></span>')
+      .css({
+        position: 'absolute',
+        visibility: 'hidden',
+        left: 0,
+        top: 0,
+        whiteSpace: 'nowrap',
+        fontSize: REF + 'px',
+      })
+      .appendTo($block);
+    $original.clone().appendTo($probe);
+    var measuredW = $probe.outerWidth() || 0;
+    var measuredH = $probe.outerHeight() || 0;
+    $probe.remove();
+    if (measuredW <= 0 || measuredH <= 0) return;
+
+    var fitScale = Math.min(availW / measuredW, availH / measuredH);
+    // Every theme sets .miniclock's font-size (and height) with !important
+    // (see e.g. themes/modern-dark/modern-dark.css), which jQuery's .css()
+    // cannot override - it silently no-ops, leaving the block stuck at the
+    // theme's fixed font-size no matter how the block is resized. Native
+    // setProperty() with 'important' priority is the only way to win that.
+    $block[0].style.setProperty(
+      'font-size',
+      REF * fitScale + 'px',
+      'important'
+    );
+    $block[0].style.setProperty('height', 'auto', 'important');
+  }
+
+  function _initMiniclockFitSize(me) {
+    var $mount = me.$mountPoint;
+    // The topbar's miniclock (".dt-topbar-item") isn't a resizable grid/column
+    // block - it's a fixed strip in the fixed-height ".colbar", themed with a
+    // hard-coded "height:40px!important" that the whole bar's layout depends
+    // on. It also isn't wrapped by ".dt-grid-item", so the grid/non-grid
+    // branch below would fall back to measuring ".dt_block" itself - an
+    // elastic flex item whose size *is* the font-size we're about to set,
+    // which re-triggers the ResizeObserver into a runaway growth loop (grows
+    // past the bar on every tick, unlike the grid case, which has a hard
+    // track size to measure instead). Leave the topbar clock exactly as it
+    // was before this fit-to-block behavior existed.
+    if ($mount.hasClass('dt-topbar-item')) return;
+    var $block = $mount.find('.dt_block').first();
+    if (!$block.length) return;
+    // The spans start empty - main.js's setClockDateWeekday() ticks them
+    // every second, but not filling them here means the very first
+    // _fitMiniclockSize() call above would measure zero-width text. Fill
+    // them with the real values immediately, matching setClockDateWeekday()'s
+    // own format, the same fix js/components/basicclock.js uses.
+    $block.find('.clock').text(
+      moment()
+        .locale(settings['language'])
+        .format(
+          settings['hide_seconds']
+            ? settings['shorttime']
+            : settings['longtime']
+        )
+    );
+    $block
+      .find('.date')
+      .text(moment().locale(settings['language']).format(settings['longdate']));
+    $block
+      .find('.weekday')
+      .text(moment().locale(settings['language']).format(settings['weekday']));
+
+    _fitMiniclockSize(me);
+
+    // Keep the text size in sync with live editor drag-resizing (grid
+    // row/column span, classic column width) and not just after a
+    // save+reload - same ResizeObserver pattern as js/components/dial.js.
+    // Observing the *outer* mount point (rather than the inner .dt_block
+    // that _fitMiniclockSize() resizes) avoids the observer reacting to
+    // its own writes.
+    if (typeof ResizeObserver !== 'undefined' && $mount && $mount.length) {
+      me.miniclockResizeObserver = new ResizeObserver(function () {
+        _fitMiniclockSize(me);
+      });
+      me.miniclockResizeObserver.observe($mount[0]);
+    }
   }
 
   function renderClock(me) {
@@ -657,7 +892,11 @@ var DT_simpleblock = (function () {
       } else {
         me.$mountPoint
           .find('.containsweatherfull')
-          .html('<div class="dt_state">' + language.misc.wu_settings_missing + '</div>');
+          .html(
+            '<div class="dt_state">' +
+              language.misc.wu_settings_missing +
+              '</div>'
+          );
       }
     }
     if (typeof loadWeatherFull !== 'function') {
@@ -714,7 +953,6 @@ var DT_simpleblock = (function () {
     }
   }
 
-  
   function renderSpotify(me) {
     me.$mountPoint.html('');
     getSpotify(me.mountPoint, me.block);
@@ -763,7 +1001,8 @@ var DT_simpleblock = (function () {
     if (hasHeader) {
       html += '<div class="sunrise-header">';
       if (icon) html += '<em class="' + icon + '"></em> ';
-      if (showTitle) html += '<strong class="title">' + me.block.title + '</strong>';
+      if (showTitle)
+        html += '<strong class="title">' + me.block.title + '</strong>';
       html += '</div>';
     }
     html +=
@@ -833,19 +1072,18 @@ var DT_simpleblock = (function () {
   }
 
   function renderMoon(me) {
-    
-    me.block.btnimage='moon';
-   var html =
+    me.block.btnimage = 'moon';
+    var html =
       '<div class="col-xs-' +
       me.block.width +
       ' moon' +
       '" data-id="' +
-      me.block.key + 
+      me.block.key +
       '">' +
       DT_button.defaultContent(me) +
       '</div>';
     return html;
-//    me.$mountPoint.find('.dt_state').html(DT_button.defaultContent(me));
+    //    me.$mountPoint.find('.dt_state').html(DT_button.defaultContent(me));
     //return DT_button.defaultContent(me);
   }
 })();

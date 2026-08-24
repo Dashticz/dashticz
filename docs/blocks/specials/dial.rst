@@ -137,7 +137,10 @@ Block parameters
       | ``'windspeed'``: For wind devices, to show wind speed instead of wind direction as needle position    
       | ``'windgust'``: For wind devices, to show wind gust instead of wind direction as needle position 
       | ``'updown'``: For thermostat and blind devices, to render the dial with up and down buttons. See :ref:`updowndial`
+      | ``'bar'``: For Blinds Percentage devices only, to render the dial as a vertical 10-segment bar. See :ref:`dialbar`
       | ``'usage'``: For p1smartmeter and energy devices, to show actual Usage instead of CounterToday values. See :ref:`dialenergy`
+  * - barsteps
+    - ``<number>``: Number of segments for a ``subtype: 'bar'`` dial (optional, default 10). See :ref:`dialbar`
   * - sortOrder
     - | Set sort order for selection switches
       | ``0``: No sorting (default)
@@ -479,6 +482,35 @@ This conflicts with the defaults in Domoticz where 0 is open, and 100 is closed.
 For this reason the 'inverted' block parameter by default is set to true for regular Domoticz blinds devices, and set to false for Domoticz Blinds Inverted devices.
 
 By setting the ``steps`` parameter you can adjust the step size. For Thermostats the default step value is 0.5. For Dimmers and Blinds the default step value is 10 (%).
+
+.. _dialbar :
+
+Bar (Blinds Percentage)
+------------------------
+
+For Blinds Percentage and Blinds Inverted Percentage devices only, you can render the dial as a vertical bar of 10 segments by setting ``subtype`` to ``bar``. 0% is at the bottom, 100% at the top. Each segment represents 10% of the range; tapping a segment sets the device directly to that segment's level (e.g. tapping the 6th segment from the bottom sets it to 60%). Segments already at or below the current level are shown in green, the rest in grey. The bar scales with its block's size, both in height and width.
+
+In the Device Config popup (gear icon in the Layout Editor, or the Device Editor) an **Icon / Dial / Bar** selector picks the display mode - choosing **Bar** on a qualifying device turns this on/off directly, no need to edit ``subtype`` by hand via Custom fields. Selecting **Bar** also reveals a **Steps** field to set the number of segments (see ``barsteps`` below).
+
+This subtype is ignored for any other device (plain Blinds without a percentage, Thermostats, ...)::
+
+    blocks['livingroom_blinds'] = {
+        type: 'dial',
+        subtype: 'bar',
+        idx: 15,
+        barsteps: 10,  //number of segments (optional, default 10)
+        grid: { w: 2, h: 14 },  //a narrow, tall block suits the vertical bar best (grid screens only)
+    }
+
+By default the bar has 10 segments (10% each) plus an explicit 0% segment. Use the ``barsteps`` parameter to change the number of segments - each segment then represents ``100 / barsteps`` percent, e.g. ``barsteps: 5`` gives 5 segments of 20% each (plus the 0% segment).
+
+The following CSS classes are used, and can be styled via *custom.css*:
+
+``.dial-bar-widget``: The outer widget
+``.dial-bar-title``: The title
+``.dial-bar``: The container holding the segments
+``.dial-bar-segment``: One segment. Add ``.filled`` to select only the segments that are 'on'
+``.dial-bar-value``: The percentage value shown below the bar
 
 .. _dialvalues :
 

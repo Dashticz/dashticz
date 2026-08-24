@@ -1,8 +1,45 @@
-import ChartJS from 'chart.js/auto';
+import {
+  BarController,
+  BarElement,
+  CategoryScale,
+  Chart as ChartJS,
+  Colors,
+  Decimation,
+  Filler,
+  Legend,
+  LinearScale,
+  LineController,
+  LineElement,
+  LogarithmicScale,
+  PointElement,
+  TimeScale,
+  Title,
+  Tooltip,
+} from 'chart.js';
 import 'chartjs-adapter-date-fns';
 import zoomPlugin from 'chartjs-plugin-zoom';
 
-ChartJS.register(zoomPlugin);
+// Dashticz graphs are line/bar charts with category or time x-axes and linear
+// or logarithmic y-axes. Registering only those components avoids shipping all
+// Chart.js controllers and scales while retaining every documented graph mode.
+ChartJS.register(
+  BarController,
+  BarElement,
+  CategoryScale,
+  Colors,
+  Decimation,
+  Filler,
+  Legend,
+  LinearScale,
+  LineController,
+  LineElement,
+  LogarithmicScale,
+  PointElement,
+  TimeScale,
+  Title,
+  Tooltip,
+  zoomPlugin
+);
 
 function migrateScale(scale) {
   if (!scale) return scale;
@@ -51,7 +88,8 @@ function migrateAxes(scales) {
     });
   });
   Object.keys(scales).forEach(function (key) {
-    if (key !== 'xAxes' && key !== 'yAxes') migrated[key] = migrateScale(scales[key]);
+    if (key !== 'xAxes' && key !== 'yAxes')
+      migrated[key] = migrateScale(scales[key]);
   });
   return migrated;
 }
@@ -62,7 +100,11 @@ function migrateTooltipCallbacks(callbacks) {
   Object.keys(callbacks).forEach(function (key) {
     var callback = callbacks[key];
     migrated[key] = function (context) {
-      if (key === 'title') return callback(context.map(toLegacyTooltipItem), context[0] && context[0].chart.data);
+      if (key === 'title')
+        return callback(
+          context.map(toLegacyTooltipItem),
+          context[0] && context[0].chart.data
+        );
       return callback(toLegacyTooltipItem(context), context.chart.data);
     };
   });
@@ -104,12 +146,15 @@ export function migrateChartConfig(config) {
   options.plugins = options.plugins || {};
   if (options.legend) {
     options.plugins.legend = options.legend;
-    if (options.plugins.legend.labels) migrateFontOptions(options.plugins.legend.labels);
+    if (options.plugins.legend.labels)
+      migrateFontOptions(options.plugins.legend.labels);
     delete options.legend;
   }
   if (options.tooltips) {
     options.plugins.tooltip = options.tooltips;
-    options.plugins.tooltip.callbacks = migrateTooltipCallbacks(options.plugins.tooltip.callbacks);
+    options.plugins.tooltip.callbacks = migrateTooltipCallbacks(
+      options.plugins.tooltip.callbacks
+    );
     if (options.plugins.tooltip.custom) {
       var custom = options.plugins.tooltip.custom;
       options.plugins.tooltip.external = function (context) {

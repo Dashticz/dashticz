@@ -80,7 +80,7 @@ var DT_tvguide = {
             });
             tvobject.html(newObject);
 
-            tvobject.off(); 
+            tvobject.off();
             //Install clickhandlers
             if (tvObj.url)
               tvobject.on('click', function () {
@@ -91,7 +91,7 @@ var DT_tvguide = {
                 DT_function.clickHandler(me, {
                   url: 'https://tvgids.nl/programma/' + $(this).data('id'),
                 });
-            });
+              });
           });
       });
 

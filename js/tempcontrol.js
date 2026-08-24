@@ -27,7 +27,10 @@ function addThermostatFunctions(block) {
     currentVal = parseFloat(currentVal[0].replace(',', '.'));
     var setpointStep = choose(block.device.step, 0.5);
     if (!isNaN(currentVal)) {
-      var newValue = type === 'minus' ? currentVal - setpointStep : currentVal + setpointStep;
+      var newValue =
+        type === 'minus'
+          ? currentVal - setpointStep
+          : currentVal + setpointStep;
       if (newValue >= block.min && newValue <= block.max) {
         input.text(number_format(newValue, 1) + block.unit).trigger('change');
         switchThermostat(block, newValue);
@@ -66,8 +69,12 @@ function addThermostatFunctions(block) {
 }
 
 function getThermostatBlock(block) {
-  block.min = parseFloat(choose(block.min, block.device.min, settings['setpoint_min'], 5));
-  block.max = parseFloat(choose(block.max, block.device.max, settings['setpoint_max'], 40));
+  block.min = parseFloat(
+    choose(block.min, block.device.min, settings['setpoint_min'], 5)
+  );
+  block.max = parseFloat(
+    choose(block.max, block.device.max, settings['setpoint_max'], 40)
+  );
   block.unit = choose(block.unit, block.device.vunit, _TEMP_SYMBOL);
 
   var html = '';
@@ -85,11 +92,16 @@ function getThermostatBlock(block) {
       idx: idx,
       value: value,
       title: title,
-      buttons: !choose(block.protected, (block.subidx && block.subidx === 1)),
+      buttons: !choose(block.protected, block.subidx && block.subidx === 1),
       showinfo: showUpdateInformation(block) ? true : false,
       lastupdate: moment(device.LastUpdate).format(settings['timeformat']),
-      mIcon: isDefined(block.icon) ? block.icon : '',
-      mImage: isDefined(block.image) ? block.image : 'heating.png',
+      mIcon: block.icon === '' ? '' : isDefined(block.icon) ? block.icon : '',
+      mImage:
+        block.icon === ''
+          ? ''
+          : isDefined(block.image)
+            ? block.image
+            : 'heating.png',
     };
     html = template(dataObject);
     block.$mountPoint.find('.block_' + block.key).html(html);
@@ -144,8 +156,13 @@ function getEvohomeZoneBlock(block) {
       max: settings['setpoint_max'],
       fa: faStatus,
       update: untilOrLastUpdate,
-      mIcon: isDefined(block.icon) ? block.icon : '',
-      mImage: isDefined(block.image) ? block.image : 'heating.png',
+      mIcon: block.icon === '' ? '' : isDefined(block.icon) ? block.icon : '',
+      mImage:
+        block.icon === ''
+          ? ''
+          : isDefined(block.image)
+            ? block.image
+            : 'heating.png',
     };
     html = template(dataObject);
     block.$mountPoint.find('.mh').html(html);
@@ -261,8 +278,13 @@ function getEvohomeControllerBlock(block) {
   templateEngine.load('thermostat_evo_cont').then(function (template) {
     var dataObject = {
       idx: device.idx,
-      mIcon: isDefined(block.icon) ? block.icon : '',
-      mImage: isDefined(block.image) ? block.image : 'evohome.png',
+      mIcon: block.icon === '' ? '' : isDefined(block.icon) ? block.icon : '',
+      mImage:
+        block.icon === ''
+          ? ''
+          : isDefined(block.image)
+            ? block.image
+            : 'evohome.png',
       name: title,
       status: language.evohome[device.Status],
       update: moment(device.LastUpdate).format(settings['timeformat']),
@@ -366,8 +388,13 @@ function getEvohomeHotWaterBlock(block) {
       temp: temp,
       fa: faStatus,
       update: untilOrLastUpdate,
-      mIcon: isDefined(block.icon) ? block.icon : '',
-      mImage: isDefined(block.image) ? block.image : 'hot_water_on.png',
+      mIcon: block.icon === '' ? '' : isDefined(block.icon) ? block.icon : '',
+      mImage:
+        block.icon === ''
+          ? ''
+          : isDefined(block.image)
+            ? block.image
+            : 'hot_water_on.png',
     };
     html = template(dataObject);
     $div.html(html);

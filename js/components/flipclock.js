@@ -12,8 +12,6 @@ var DT_flipclock = {
     var cfg = {
       width: 12,
       scale: 1,
-      minEmSize: 3.5,
-      maxEmSize: 7,
       showSeconds: !settings['hide_seconds'],
       clockFace: settings['shorttime'].match(/A/i) ? 12 : 24,
       icon: 'far fa-clock',
@@ -22,40 +20,10 @@ var DT_flipclock = {
       var scale = Number(settings['clock_scale']);
       if (isFinite(scale) && scale > 0) cfg.scale = scale;
     }
-    if (settings['clock_size'] !== '' && settings['clock_size'] != null) {
-      var size = Number(settings['clock_size']);
-      if (isFinite(size) && size > 0) cfg.size = size;
-    }
     return cfg;
   },
   run: function (me) {
     var $content = $(me.mountPoint + ' .dt_content');
-    var $block = $(me.mountPoint + ' .dt_block');
-    var $title = $(me.mountPoint + ' .dt_title');
-    var $state = $(me.mountPoint + ' .dt_state');
-    // .dt_block's height includes the title bar (built by dashticz.js's
-    // renderTitle()) and .dt_state's own 5px/5px vertical margin (see
-    // creative.css), so sizing the clock to the full block height pushed it
-    // past the block's own bottom edge and needed an oversized block just to
-    // avoid a scrollbar. Same fix as js/components/frame.js.
-    var titleHeight = $title.length && $title.is(':visible') ? $title.outerHeight(true) : 0;
-    var stateMarginV = $state.length
-      ? (parseFloat($state.css('margin-top')) || 0) + (parseFloat($state.css('margin-bottom')) || 0)
-      : 0;
-    var availW =
-      $block.width() || $content.width() || $(me.mountPoint).width() || 320;
-    var availH = ($block.height() || $(me.mountPoint).height() || 0) - titleHeight - stateMarginV;
-    var scale = Number(me.block.scale);
-    if (!isFinite(scale) || scale <= 0) scale = 1;
-    var base = me.block.size || (availH > 0 ? Math.min(availW, availH) : availW);
-    var width = base * scale;
-    if (availW > 0) width = Math.min(width, availW);
-    if (availH > 0) width = Math.min(width, availH);
-    var emSize = Math.max(
-      me.block.minEmSize,
-      Math.min(me.block.maxEmSize, width / 82)
-    );
-    $content.css('--flipclock-em', emSize + 'px');
 
     // FlipClock() replaces the target element's content wholesale, so it must
     // target .dt_state rather than .dt_content: .dt_content also holds
@@ -67,6 +35,106 @@ var DT_flipclock = {
         me.block.clockFace == 12 ? 'TwelveHourClock' : 'TwentyFourHourClock',
       showSeconds: me.block.showSeconds,
     });
+
+    function fitSize() {
+      var $block = $(me.mountPoint + ' .dt_block');
+      var $title = $(me.mountPoint + ' .dt_title');
+      var $state = $(me.mountPoint + ' .dt_state');
+      // .dt_block's height includes the title bar (built by dashticz.js's
+      // renderTitle()) and .dt_state's own 5px/5px vertical margin (see
+      // creative.css), so sizing the clock to the full block height pushed it
+      // past the block's own bottom edge and needed an oversized block just
+      // to avoid a scrollbar. Same fix as js/components/frame.js.
+      var titleHeight =
+        $title.length && $title.is(':visible') ? $title.outerHeight(true) : 0;
+      var stateMarginV = $state.length
+        ? (parseFloat($state.css('margin-top')) || 0) +
+          (parseFloat($state.css('margin-bottom')) || 0)
+        : 0;
+      // In a grid, the outer mount point owns the live row/column dimensions
+      // (a hard, CSS-Grid-track-sized box); .dt_block only *looks* fixed
+      // (height: 100% !important) but a grid item's automatic minimum size
+      // still grows to fit its content unless the item itself clips
+      // overflow, which .dt-grid-item doesn't. Measuring .dt_block here
+      // would read that already-inflated height back, feeding a runaway
+      // grow-remeasure-grow loop with every ResizeObserver tick. Same fix as
+      // js/components/dial.js's _dialFitSize().
+      var inGrid = me.$mountPoint && me.$mountPoint.hasClass('dt-grid-item');
+      var $sizeBox = inGrid ? me.$mountPoint : $block;
+      // .dt_block is display:flex (icon + .dt_content side by side), so the
+      // outer box's own width also counts the icon's fixed 45px column and
+      // .dt_block's own padding/border - .dt_content's width already
+      // excludes all of that. Unlike the height fix above, this doesn't
+      // risk a growth loop: .dt_content's width comes from flexing against
+      // the icon's *fixed* width within .dt_block's own *fixed* (grid- or
+      // column-bounded) width, not from the clock's own em-sized content.
+      var availW =
+        $content.width() ||
+        $sizeBox.outerWidth() ||
+        $(me.mountPoint).width() ||
+        320;
+      var availH =
+        ($sizeBox.outerHeight() || $(me.mountPoint).height() || 0) -
+        titleHeight -
+        stateMarginV;
+      if (availW <= 0 || availH <= 0) return;
+      var scale = Number(me.block.scale);
+      if (!isFinite(scale) || scale <= 0) scale = 1;
+
+      // .flip-clock-wrapper is display:flex with flex-shrink:1 digit/divider
+      // children, so a "natural size" measured via the DOM (the wrapper's
+      // own shrink-wrapped box, summed children) either compresses to fit
+      // the current block or gets clamped by an ancestor's available width -
+      // neither reliably reports the row's true, block-independent size.
+      // The digit row is also far wider than it is tall (6 digit cards in a
+      // line), so min(availW, availH) - appropriate for the roughly square
+      // faces of station/dial clocks - picks availH alone in any block
+      // that isn't extremely wide, badly under-using availW and leaving
+      // most of the block empty below a short, narrow-looking clock.
+      // flipclock.css's sizes are all fixed multiples of --flipclock-em
+      // (10em digit width, 15em digit height, 5/6em digit margin, 20/6em
+      // divider width, 1em wrapper margin), so the row's natural size per
+      // em is a deterministic constant - computing it analytically avoids
+      // the DOM-measurement flakiness entirely.
+      var digitCount = me.block.showSeconds ? 6 : 4;
+      // TwentyFourHourClockFace/TwelveHourClockFace always create exactly 2
+      // dividers regardless of digit count; without seconds the 2nd one
+      // lands before the very first digit (i.e. becomes the wrapper's
+      // first-child), where flipclock.css forces its width to 0.
+      var dividerCount = me.block.showSeconds ? 2 : 1;
+      var perDigitWidthEm = 10 + (5 / 6) * 2; // ul width + margin-left + margin-right
+      var dividerWidthEm = 20 / 6;
+      var naturalWidthPerEm =
+        digitCount * perDigitWidthEm + dividerCount * dividerWidthEm + 1 * 2; // + wrapper's own left/right margin
+      var naturalHeightPerEm = 15 + (5 / 6) * 2 + 1 * 2; // ul height + its margin + wrapper's own top/bottom margin
+
+      var emSize =
+        Math.min(availW / naturalWidthPerEm, availH / naturalHeightPerEm) *
+        scale;
+      $content.css('--flipclock-em', emSize + 'px');
+    }
+
+    fitSize();
+
+    // Keep the clock's size in sync with live editor drag-resizing (grid
+    // row/column span, classic column width) and not just after a
+    // save+reload - same ResizeObserver pattern as js/components/dial.js.
+    // Observing the *outer* mount point (rather than the inner wrapper that
+    // fitSize() resizes) avoids the observer reacting to its own writes.
+    if (
+      typeof ResizeObserver !== 'undefined' &&
+      me.$mountPoint &&
+      me.$mountPoint.length
+    ) {
+      me.flipClockResizeObserver = new ResizeObserver(fitSize);
+      me.flipClockResizeObserver.observe(me.$mountPoint[0]);
+    }
+  },
+  destroy: function (me) {
+    if (me.flipClockResizeObserver) {
+      me.flipClockResizeObserver.disconnect();
+      me.flipClockResizeObserver = null;
+    }
   },
 };
 

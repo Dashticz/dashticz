@@ -29,9 +29,10 @@ var DT_xmltvguide = {
 
   /** Activate for xmltvguide blocks or legacy blocks that carry an xmltvurl property. */
   canHandle: function (block) {
-    return block && (
-      block.type === 'xmltvguide' ||
-      (typeof block.xmltvurl === 'string' && block.xmltvurl !== '')
+    return (
+      block &&
+      (block.type === 'xmltvguide' ||
+        (typeof block.xmltvurl === 'string' && block.xmltvurl !== ''))
     );
   },
 
@@ -108,9 +109,7 @@ var DT_xmltvguide = {
       .done(function (responseText) {
         var parsed = _parseXmltvData(responseText, block, lang_no_programs);
         if (!parsed) {
-          tvobject.html(
-            '<span class="xmltv-error">' + lang_error + '</span>'
-          );
+          tvobject.html('<span class="xmltv-error">' + lang_error + '</span>');
           return;
         }
 
@@ -200,9 +199,12 @@ function _xmltvSettingChannels() {
   var channels = settings['xmltv_channels'];
   if (Array.isArray(channels)) return channels;
   if (typeof channels !== 'string' || channels.trim() === '') return [];
-  return channels.split(',').map(function (channel) {
-    return channel.trim();
-  }).filter(Boolean);
+  return channels
+    .split(',')
+    .map(function (channel) {
+      return channel.trim();
+    })
+    .filter(Boolean);
 }
 
 function _xmltvRequestUrl(xmltvurl) {
@@ -334,7 +336,7 @@ function _parseXmltvData(xmlText, block, lang_no_prg) {
       subtitle: subTitleNode ? (subTitleNode.textContent || '').trim() : '',
       description: descNode ? (descNode.textContent || '').trim() : '',
       category: categoryNode ? (categoryNode.textContent || '').trim() : '',
-      img: iconNode ? (iconNode.getAttribute('src') || '') : '',
+      img: iconNode ? iconNode.getAttribute('src') || '' : '',
     });
   }
 

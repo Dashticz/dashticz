@@ -1,13 +1,8 @@
 {
-    "compilerOptions": {
-        "module": "CommonJS",
-        "target": "ES6"
-    },
-    "exclude": [
-        "node_modules",
-        "**/node_modules/*"
-    ],
-    "include": [
-        "*.js"
-    ]
+  "compilerOptions": {
+    "module": "CommonJS",
+    "target": "ES6"
+  },
+  "exclude": ["node_modules", "**/node_modules/*"],
+  "include": ["*.js"]
 }

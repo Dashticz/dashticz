@@ -184,7 +184,9 @@ test('thin wrapper grid takes precedence over shared blocks[ref].grid', () => {
   const { layout } = loadGridLayout();
 
   // Simulate the collision: blocks['dev_42'] has a stale grid from another screen
-  const blocksGlobal = { dev_42: { idx: 42, width: 6, grid: { x: 1, y: 1, w: 24, h: 1 } } };
+  const blocksGlobal = {
+    dev_42: { idx: 42, width: 6, grid: { x: 1, y: 1, w: 24, h: 1 } },
+  };
 
   const screenConfig = layout.getGridScreenConfig({ gridColumns: 24 });
 
@@ -193,5 +195,10 @@ test('thin wrapper grid takes precedence over shared blocks[ref].grid', () => {
   const def = layout.getBlockDefinition(wrapper);
   // def is the wrapper itself, NOT blocks['dev_42'] — so its grid is not overwritten
   assert.deepEqual(plain(def.grid), { x: 3, y: 5, w: 6, h: 2 });
-  assert.deepEqual(plain(blocksGlobal.dev_42.grid), { x: 1, y: 1, w: 24, h: 1 });
+  assert.deepEqual(plain(blocksGlobal.dev_42.grid), {
+    x: 1,
+    y: 1,
+    w: 24,
+    h: 1,
+  });
 });

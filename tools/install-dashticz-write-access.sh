@@ -1,6 +1,7 @@
 #!/bin/sh
-# Prepare Dashticz so the web-server user can write CONFIG.js and (optionally)
-# run Git updates from the Settings UI.
+# Prepare Dashticz write access. CONFIG.js remains used by the normal Dashticz
+# setup/editors; Device Rules themselves are stored only in custom.js/custom.css.
+# Optionally allow Git updates from the Settings UI.
 # The Dashticz directory is derived from this script's own location.
 
 set -eu
@@ -16,9 +17,9 @@ for arg in "$@"; do
             ;;
         -h|--help)
             echo "Usage: $0 [--git-update]"
-            echo "  Default: make custom/ writable for the web-server user."
+            echo "  Default: prepare custom/ plus writable custom.js/custom.css for Device Rules."
             echo "  --git-update: also give that user ownership of the checkout"
-            echo "                so Settings → Update can run git fetch/pull."
+            echo "                so Settings -> Update can run git fetch/pull."
             exit 0
             ;;
         *)
@@ -62,6 +63,8 @@ fi
 WEB_GROUP=$(id -gn "$WEB_USER")
 CUSTOM_DIR="$INSTALL_DIR/custom"
 CONFIG_FILE="$CUSTOM_DIR/CONFIG.js"
+CUSTOM_JS_FILE="$CUSTOM_DIR/custom.js"
+CUSTOM_CSS_FILE="$CUSTOM_DIR/custom.css"
 
 if [ -L "$CUSTOM_DIR" ]; then
     echo "Refusing symlink: $CUSTOM_DIR" >&2
@@ -84,6 +87,61 @@ if [ -e "$CONFIG_FILE" ]; then
     chmod 0664 "$CONFIG_FILE"
 fi
 
+# custom.js is optional in a stock checkout. Device Rules stores its managed
+# rule definitions here, so create a deliberately empty/safe file when missing.
+# Do not copy custom.DEFAULT.js: it contains executable examples and should stay
+# an example only. Existing custom.js content is never replaced by this script.
+if [ -e "$CUSTOM_JS_FILE" ]; then
+    if [ -L "$CUSTOM_JS_FILE" ]; then
+        echo "Refusing symlink: $CUSTOM_JS_FILE" >&2
+        exit 65
+    fi
+    if [ ! -f "$CUSTOM_JS_FILE" ]; then
+        echo "$CUSTOM_JS_FILE is not a regular file" >&2
+        exit 65
+    fi
+else
+    umask 002
+    cat > "$CUSTOM_JS_FILE" <<'CUSTOMJS'
+/* ========================================================================== */
+/* CUSTOM.JS for Dashticz                                                     */
+/*                                                                            */
+/* This file is intentionally created with no active handlers.                */
+/* Add custom getStatus_<name>() functions here when needed.                  */
+/* ========================================================================== */
+CUSTOMJS
+fi
+
+chgrp "$WEB_GROUP" "$CUSTOM_JS_FILE"
+chmod 0664 "$CUSTOM_JS_FILE"
+
+# custom.css is optional in a stock checkout, but generated Device Rules styling
+# needs a writable stylesheet. Create only a neutral header when the file is
+# missing. Existing CSS is never replaced or otherwise edited by this script.
+if [ -e "$CUSTOM_CSS_FILE" ]; then
+    if [ -L "$CUSTOM_CSS_FILE" ]; then
+        echo "Refusing symlink: $CUSTOM_CSS_FILE" >&2
+        exit 65
+    fi
+    if [ ! -f "$CUSTOM_CSS_FILE" ]; then
+        echo "$CUSTOM_CSS_FILE is not a regular file" >&2
+        exit 65
+    fi
+else
+    umask 002
+    cat > "$CUSTOM_CSS_FILE" <<'CUSTOMCSS'
+/* ========================================================================== */
+/* CUSTOM.CSS for Dashticz                                                    */
+/*                                                                            */
+/* Hand-written CSS may be added anywhere in this file.                       */
+/* Device Rules only manages explicitly marked class blocks.                  */
+/* ========================================================================== */
+CUSTOMCSS
+fi
+
+chgrp "$WEB_GROUP" "$CUSTOM_CSS_FILE"
+chmod 0664 "$CUSTOM_CSS_FILE"
+
 if [ "$GIT_UPDATE" -eq 1 ]; then
     if [ ! -d "$INSTALL_DIR/.git" ]; then
         echo "No .git directory found; cannot enable Git updates" >&2
@@ -102,6 +160,16 @@ if command -v runuser >/dev/null 2>&1; then
     fi
     rm -f "$TEST_FILE"
 
+    if ! runuser -u "$WEB_USER" -- test -w "$CUSTOM_JS_FILE"; then
+        echo "$CUSTOM_JS_FILE is still not writable by $WEB_USER" >&2
+        exit 73
+    fi
+
+    if ! runuser -u "$WEB_USER" -- test -w "$CUSTOM_CSS_FILE"; then
+        echo "$CUSTOM_CSS_FILE is still not writable by $WEB_USER" >&2
+        exit 73
+    fi
+
     if [ "$GIT_UPDATE" -eq 1 ]; then
         GIT_TEST="$INSTALL_DIR/.git/.dashticz-write-test.$$"
         if ! runuser -u "$WEB_USER" -- touch "$GIT_TEST"; then
@@ -115,7 +183,10 @@ else
 fi
 
 echo "Dashticz custom directory prepared for $WEB_USER:$WEB_GROUP"
-echo "The setup wizard can now create $CONFIG_FILE"
+echo "Normal Dashticz CONFIG.js access is prepared for the setup/editor workflow"
+echo "Device Rules storage uses custom.js and custom.css only"
+echo "$CUSTOM_JS_FILE exists and is writable by the web-server user"
+echo "$CUSTOM_CSS_FILE exists and is writable by the web-server user"
 if [ "$GIT_UPDATE" -eq 0 ]; then
-    echo "Tip: run with --git-update to allow Settings → Update (git fetch/pull)."
+    echo "Tip: run with --git-update to allow Settings -> Update (git fetch/pull)."
 fi

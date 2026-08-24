@@ -30,7 +30,8 @@ Dashticz.register(DT_nzbget);
 function returnNZBGET(data) {
   if (data.length === 0) {
     var dummy = {
-      NZBName: language.misc.no_downloads || 'No active downloads, or no connection',
+      NZBName:
+        language.misc.no_downloads || 'No active downloads, or no connection',
       DownloadedSizeMB: 0,
       FileSizeMB: 0,
       FirstID: 123,
@@ -52,12 +53,8 @@ function returnNZBGET(data) {
       'MB';
     html += '</div>';
     html += '</div>';
-    if (
-      $('.containsnzbget .dt_state .nzbget' + itemId).length > 0
-    ) {
-      $('.containsnzbget .dt_state .nzbget' + itemId).replaceWith(
-        html
-      );
+    if ($('.containsnzbget .dt_state .nzbget' + itemId).length > 0) {
+      $('.containsnzbget .dt_state .nzbget' + itemId).replaceWith(html);
     } else {
       $('.containsnzbget .dt_state').append(html);
     }
