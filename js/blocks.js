@@ -722,15 +722,24 @@ function iconORimage(
   colwidth,
   attrcol
 ) {
-  if (typeof block !== 'undefined' && block['icon'] === '') {
+  if (
+    typeof block !== 'undefined' &&
+    block['icon'] === '' &&
+    !defaultimage &&
+    !block['image']
+  ) {
     // Icon explicitly turned off via the Icon toggle in Device/Widget
     // Config (block.icon === '', not merely undefined/unset - see
     // configwriter.php's "Must write an explicit icon: ''" comments).
-    // Falling through to defaulticon/defaultimage or the device type's
-    // own iconOn/iconOff/imageOn/imageOff (protoBlock, js/blocktypes.js)
-    // below would silently reinstate a default icon instead of honoring
-    // the toggle - see the $.extend(block, protoBlock, origBlock) merge
-    // in getBlock() above, which only overrides the plain `icon` key.
+    // Falling through to defaulticon or the device type's own
+    // iconOn/iconOff (protoBlock, js/blocktypes.js) below would silently
+    // reinstate a default icon instead of honoring the toggle - see the
+    // $.extend(block, protoBlock, origBlock) merge in getBlock() above,
+    // which only overrides the plain `icon` key.
+    // Only when there is no image anywhere (defaultimage param or
+    // block.image) to fall back on - a device type whose own visual *is*
+    // an image (blinds, motion sensor, kodi, ...) keeps showing it; the
+    // Icon toggle only ever governs the font-icon slot.
     return '';
   }
   var mIcon = defaulticon;
