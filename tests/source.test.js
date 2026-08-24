@@ -1160,15 +1160,20 @@ test('device and widget config editors share full widget config and preserve hid
   assert.doesNotMatch(configWriter, /configwriter_normalise_text_alignment/);
   assert.doesNotMatch(configWriter, /\$props\['text_alignment'\]/);
 
-  // Device Config is Data/Update/Title, centered on one row. Icon/Dial/Bar
-  // moved out into their own mutually-exclusive visual-mode button group
-  // (#182) - selecting Dial or Bar there hides the now-ineffective Title
-  // control while keeping its value in the DOM, so switching back to Icon
-  // restores it without losing configuration. A separator/title bar still
-  // has only Icon and Title because it has no data value or last-update
-  // timestamp of its own, and no Dial/Bar mode at all.
+  // Device Config's Icon/Data/Updated/Title/Background are independent
+  // toggle buttons (#195) - Dial/Bar/Slider (previously Icon/Dial/Bar/Slider,
+  // #182) is its own separate mutually-exclusive visual-mode button group,
+  // no longer including Icon. Selecting Dial or Bar there hides the
+  // now-ineffective Title control while keeping its value in the DOM, so
+  // switching back to Icon restores it without losing configuration. A
+  // separator/title bar still has only Icon and Title because it has no
+  // data value or last-update timestamp of its own, and no Dial/Bar mode
+  // at all.
   assert.match(deviceEditor, /\? \['icon', 'show_title'\]/);
-  assert.match(deviceEditor, /: \['hide_data', 'last_update', 'show_title'\]/);
+  assert.match(
+    deviceEditor,
+    /: \['icon', 'hide_data', 'last_update', 'show_title'\]/
+  );
   assert.match(deviceEditor, /configOptions\.forEach/);
   assert.match(deviceEditor, /hasDial && option === 'show_title'/);
   assert.match(deviceEditor, /de-hide-for-dial/);
@@ -1212,11 +1217,11 @@ test('device and widget config editors share full widget config and preserve hid
   );
   assert.match(
     widgetOptionsBody,
-    /\['icon', _t\('icon', 'Icon'\), options\.icon\]/
+    /\['icon', _t\('icon', 'Icon'\), 'fas fa-image', options\.icon\]/
   );
   assert.match(
     widgetOptionsBody,
-    /\['show_title', _t\('show_title', 'Title'\), options\.show_title\]/
+    /'show_title',\s*\n\s*_t\('show_title', 'Title'\),\s*\n\s*'fas fa-heading',\s*\n\s*options\.show_title,/
   );
   assert.doesNotMatch(widgetOptionsBody, /data-block-option="hide_data"/);
   assert.doesNotMatch(widgetOptionsBody, /data-block-option="last_update"/);
@@ -1247,36 +1252,24 @@ test('device and widget config editors share full widget config and preserve hid
   assert.match(saveWidgets, /'icon', 'hide_data', 'last_update', 'hide_title'/);
   assert.match(saveWidgets, /if \(!empty\(\$widget\['hide_data'\]\)\)/);
   assert.match(saveWidgets, /if \(!empty\(\$widget\['last_update'\]\)\)/);
-  assert.match(deviceEditor, /de-config-options-three/);
-  // Columns are auto-fit rather than a fixed repeat(N,...) so that a switch
-  // toggling visibility or an extra one being appended (button.js's injected
-  // No background switch, #170) always ends up sharing the same single row
-  // instead of one being stranded alone on a row of its own; -three/-four/
-  // -five only add centering. Only -three is still reachable from JS - Icon/
-  // Dial/Bar moved into their own visual-mode button group (#182), leaving
-  // at most 3 items (hide_data/last_update/show_title, or icon/last_update/
-  // show_title for Group/HTML/LMS) in this row - -four/-five stay defined
-  // in the stylesheet even though nothing currently emits them.
+  // Icon/Data/Updated/Title/Background render as a plain flex-wrap row of
+  // icon buttons now (#195), not a switch grid - .de-config-options and its
+  // -three/-four/-five column-count modifiers are gone from both the source
+  // and the stylesheet, replaced by .de-config-options-icons (device) and
+  // .we-block-options-row (widget/quick-add), which wrap on their own via
+  // flex-wrap instead of needing a column-count-driven grid.
+  assert.doesNotMatch(deviceEditor, /de-config-options-three/);
+  assert.doesNotMatch(styles, /\.de-config-options-three/);
+  assert.doesNotMatch(styles, /\.de-config-options\s*\{/);
   assert.match(
     styles,
-    /\.de-config-options \{[\s\S]*grid-template-columns: repeat\(auto-fit, minmax\(0, 1fr\)\)/
-  );
-  assert.match(
-    styles,
-    /\.de-config-options-three,\s*\n\s*\.de-config-options-four,\s*\n\s*\.de-config-options-five \{\s*\n\s*justify-items: center;/
-  );
-  assert.match(
-    styles,
-    /\.de-config-options \.form-check-input[\s\S]*width: 32px;[\s\S]*height: 32px;/
+    /\.de-config-options-icons \.btn,\s*\n\s*\.we-block-options-row \.btn \{/
   );
   assert.match(
     deviceEditor,
     /icon: true, iconValue: null, hide_data: false, last_update: false/
   );
-  assert.match(
-    styles,
-    /\.we-block-option\.form-check-input[\s\S]*width: 32px;[\s\S]*height: 32px;/
-  );
+  assert.doesNotMatch(styles, /\.we-block-option\.form-check-input/);
 
   // Dial/Bar visual mode: writes type:'dial' into CONFIG.js (the only way to
   // render a device as a dial block; a hand-typed 'type' custom field stays
@@ -1362,11 +1355,11 @@ test('device and widget config editors share full widget config and preserve hid
   );
   assert.match(
     deviceEditor,
-    /removesIcon[\s\S]*\[data-option="icon"\][\s\S]*\.prop\('checked', false\)/
+    /removesIcon[\s\S]*\.de-config-option\[data-option="icon"\][\s\S]*\.removeClass\('active'\)/
   );
   assert.match(
     widgetEditor,
-    /removesIcon[\s\S]*\[data-block-option="icon"\][\s\S]*\.prop\('checked', false\)/
+    /removesIcon[\s\S]*\[data-block-option="icon"\][\s\S]*\.removeClass\('active'\)/
   );
   assert.match(
     deviceEditor,
@@ -5093,11 +5086,11 @@ test('Lyrion Music Server (LMS) block is registered, dispatched and wired throug
   assert.match(layoutEditor, /kind: 'lms',/);
   assert.match(
     layoutEditor,
-    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms'\);/
+    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms' \|\|\s*\n\s*item\.kind === 'group'\);/
   );
   assert.match(
     layoutEditor,
-    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms'\) &&\s*\n\s*item\.reference/
+    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms' \|\|\s*\n\s*item\.kind === 'group'\) &&\s*\n\s*item\.reference/
   );
 
   // Backend bridge (vendor/dashticz/lms/index.php): same-origin gated, LAN
@@ -5254,4 +5247,350 @@ test('Lyrion Music Server "Hide block when player is off" switch clears both tex
     'Hide block when player is off'
   );
   assert.match(lmsDocs, /hide_when_off\s+``true``/);
+});
+
+test('Group block gets the Layout Editor config (cog) control, like HTML/LMS blocks, instead of only a drag handle', () => {
+  const layoutEditor = fs.readFileSync(
+    path.join(root, 'js/layouteditor.js'),
+    'utf8'
+  );
+
+  // _resolveBlock() dispatches Dashticz's own client-side group/scene
+  // aggregate block (js/components/group.js) on type: 'group', same as the
+  // html/lms checks right above it. Without this, a group block (which uses
+  // a 'devices' array rather than a numeric idx) matched none of the
+  // idx-based checks further down, so _resolveBlock() returned null and the
+  // block fell through to _collectGridItems()'s untyped 'grid' fallback -
+  // which _decorateItem() renders with only a drag icon, never the cog.
+  assert.match(
+    layoutEditor,
+    /String\(definition\.type \|\| ''\)\.toLowerCase\(\) === 'group'/
+  );
+  assert.match(layoutEditor, /kind: 'group',/);
+
+  // Both isConfigurable (decides whether the tile gets the cog vs. the drag
+  // icon) and _openItemConfig (routes a cog click to DashticzDeviceEditor,
+  // which already understands specialType 'group' - see
+  // _specialFromReference() in js/deviceeditor.js) must recognise the new
+  // 'group' kind alongside 'html'/'lms'.
+  assert.match(
+    layoutEditor,
+    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms' \|\|\s*\n\s*item\.kind === 'group'\);/
+  );
+  assert.match(
+    layoutEditor,
+    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms' \|\|\s*\n\s*item\.kind === 'group'\) &&\s*\n\s*item\.reference/
+  );
+});
+
+test('iconORimage() does not let a reset-to-empty image blank out a configured icon', () => {
+  const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+
+  // getBlockConfig() (js/dashticz.js) resets the *other* of icon/image to ''
+  // (still `typeof !== 'undefined'`) whenever one of them is set, so a block
+  // with a configured icon and no image ends up with both `icon: '...'` and
+  // `image: ''` defined. iconORimage() must treat that '' as "not set" -
+  // otherwise the image check (which used to run unconditionally whenever
+  // block.image was merely defined) always won because it runs after the
+  // icon check, forcing a blank <img src="img/"> in place of the icon. This
+  // is what a Group block's default icon (fas fa-object-group,
+  // js/deviceeditor.js's _showGroupPopup) ran into: visible in the saved
+  // config, never rendered on the tile.
+  assert.match(
+    blocks,
+    /if \(block\['icon'\]\) \{\s*\n\s*mIcon = Dashticz\.getProperty\(block\['icon'\], device\);\s*\n\s*useImage = false;/
+  );
+  assert.match(
+    blocks,
+    /if \(block\['image'\]\) \{\s*\n\s*mImage = Dashticz\.getProperty\(block\['image'\], device\);\s*\n\s*useImage = true;/
+  );
+  assert.doesNotMatch(blocks, /typeof block\['icon'\] !== 'undefined'/);
+  assert.doesNotMatch(blocks, /typeof block\['image'\] !== 'undefined'/);
+});
+
+test('Custom device/Multi device/Group/HTML block/LMS quick-add popups and Widget Config use icon buttons for Icon/Updated/Title, not switches (#195)', () => {
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const widgetEditor = fs.readFileSync(
+    path.join(root, 'js/widgeteditor.js'),
+    'utf8'
+  );
+
+  // _quickOptionsHtml() is shared by every Screen Editor quick-add popup
+  // reachable from the "+" tile menu (Custom device 'cd', Multi Device
+  // 'md', Group 'gb', LMS 'lm', HTML Block 'hb') - one conversion here
+  // fixes all five at once. Same .de-config-option/.de-visual-mode-button
+  // look as Device Config's own row, but rendered as plain <button>s
+  // (id="<prefix>-opt-icon" etc, not data-option) since _readQuickOptions()
+  // looks each one up individually per popup instance.
+  assert.match(
+    deviceEditor,
+    /function _quickOptionsHtml\(prefix, defaults\) \{/
+  );
+  assert.match(
+    deviceEditor,
+    /\{ id: 'opt-icon', icon: 'fas fa-image', label: t\.icon, active: defaults\.icon \}/
+  );
+  assert.match(
+    deviceEditor,
+    /icon: 'fas fa-clock',\s*\n\s*label: t\.last_update,\s*\n\s*active: defaults\.lastUpdate,/
+  );
+  assert.match(
+    deviceEditor,
+    /icon: 'fas fa-heading',\s*\n\s*label: t\.show_title,\s*\n\s*active: defaults\.showTitle,/
+  );
+  assert.match(
+    deviceEditor,
+    /'<button type="button" class="btn btn-outline-secondary de-config-option'/
+  );
+  assert.doesNotMatch(
+    deviceEditor,
+    /type="checkbox" id="' \+\s*\n\s*prefix \+\s*\n?\s*'-opt-icon"/
+  );
+
+  // _wireQuickOptions(): a click handler toggling .active (no native
+  // checkbox/change event any more), still special-casing the Icon button
+  // to show/hide the icon custom-field row.
+  assert.match(
+    deviceEditor,
+    /function _wireQuickOptions\(prefix, \$popup\) \{\s*\n\s*\$popup\.on\('click', '\.de-config-option', function \(\) \{/
+  );
+  assert.match(
+    deviceEditor,
+    /if \(\$\(this\)\.attr\('id'\) === prefix \+ '-opt-icon'\) \{\s*\n\s*\$\('\.' \+ prefix \+ '-opt-icon-field'\)\.toggleClass\('d-none', !active\);/
+  );
+  assert.match(
+    deviceEditor,
+    /function _readQuickOptions\(prefix\) \{\s*\n\s*var iconChecked = \$\('#' \+ prefix \+ '-opt-icon'\)\.hasClass\('active'\);/
+  );
+  assert.match(
+    deviceEditor,
+    /lastUpdate: \$\('#' \+ prefix \+ '-opt-update'\)\.hasClass\('active'\),\s*\n\s*showTitle: \$\('#' \+ prefix \+ '-opt-title'\)\.hasClass\('active'\),/
+  );
+
+  // Widget Config's own Icon/Title row (_widgetBlockOptionsHtml,
+  // .we-block-options-row/.we-block-option) gets the same treatment,
+  // independently of the device-side .de-config-option wiring above.
+  assert.match(
+    widgetEditor,
+    /'<button type="button" class="btn btn-outline-secondary we-block-option'/
+  );
+  assert.doesNotMatch(
+    widgetEditor,
+    /'<input class="form-check-input we-block-option" type="checkbox" data-block-option="'/
+  );
+  assert.match(
+    widgetEditor,
+    /\$cfgModal\.on\('click', '\.we-block-option', function \(\) \{/
+  );
+  assert.match(
+    widgetEditor,
+    /refreshIconFieldVisibility\(\) \{\s*\n\s*var enabled = \$cfgModal\s*\n\s*\.find\('\[data-block-option="icon"\]'\)\s*\n\s*\.hasClass\('active'\);/
+  );
+});
+
+test('Slide button quick-add popup gets an Icon toggle and a Background icon button, like every other popup (#195)', () => {
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const button = fs.readFileSync(
+    path.join(root, 'js/components/button.js'),
+    'utf8'
+  );
+
+  // _showSlideButtonPopup() (deviceeditor.js): unlike the other quick-add
+  // popups, Icon was always shown unconditionally with no toggle at all -
+  // now it's a real button, id="sb-opt-icon"/class "sb-opt-icon-field"
+  // matching _quickOptionsHtml()'s own naming so _wireQuickOptions('sb', ...)
+  // can wire it with the exact same shared code, no bespoke handler needed.
+  assert.match(
+    deviceEditor,
+    /'<button type="button" class="btn btn-outline-secondary de-config-option active" id="sb-opt-icon"/
+  );
+  assert.match(deviceEditor, /class="mb-3 sb-opt-icon-field"/);
+  assert.match(deviceEditor, /_wireQuickOptions\('sb', \$popup\);/);
+  assert.match(
+    deviceEditor,
+    /var iconChecked = \$\('#sb-opt-icon'\)\.hasClass\('active'\);/
+  );
+  assert.match(
+    deviceEditor,
+    /var iconValue = iconChecked\s*\n\s*\? \$\.trim\(/
+  );
+
+  // button.js: the old "No background" checkbox is gone from
+  // actionFieldsHtml() - injectButtonBackgroundOption() appends a matching
+  // Background icon button into deviceeditor.js's own
+  // .de-config-options-icons row instead, reusing that row's own
+  // '.de-config-option' click handler (already delegated on $popup by
+  // _wireQuickOptions above) rather than wiring its own.
+  assert.doesNotMatch(button, /id="dt-button-no-background"/);
+  assert.match(
+    button,
+    /function injectButtonBackgroundOption\(\$popup\) \{\s*\n\s*var \$optionsRow = \$popup\.find\('\.de-config-options-icons'\)\.first\(\);/
+  );
+  assert.match(
+    button,
+    /'<button type="button" class="btn btn-outline-secondary de-config-option active" id="dt-button-background"/
+  );
+  assert.match(button, /injectButtonBackgroundOption\(\$popup\);/);
+  assert.match(
+    button,
+    /if \(!\$\('#dt-button-background'\)\.hasClass\('active'\)\)\s*\n\s*custom\.no_background = true;/
+  );
+});
+
+test('Bar and Slider show On/Off (not Open/Closed) for Dimmers, and Slider becomes available for them (#197)', () => {
+  const switches = fs.readFileSync(path.join(root, 'js/switches.js'), 'utf8');
+  const dialComponent = fs.readFileSync(
+    path.join(root, 'js/components/dial.js'),
+    'utf8'
+  );
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  // dial.js's Bar subtype (used by both Dimmer and Blinds Percentage
+  // devices) hard-coded Open/Closed for its 0%/100% segment labels
+  // regardless of device type - a Dimmer showed "OPEN"/"DICHT" instead of
+  // On/Off. updateBar() now branches on the live device's own SwitchType.
+  assert.match(
+    dialComponent,
+    /var isDimmer = !!\(me\.device && me\.device\.SwitchType === 'Dimmer'\);/
+  );
+  assert.match(
+    dialComponent,
+    /var openText = isDimmer\s*\n\s*\? language\.switches && language\.switches\.state_off/
+  );
+  assert.match(
+    dialComponent,
+    /var closedText = isDimmer\s*\n\s*\? language\.switches && language\.switches\.state_on/
+  );
+
+  // getDimmerBlock() gains the same block.needle === true early-return
+  // branch getBlindsBlock() already has, reusing renderBlindsSliderBlock()
+  // for a working vertical Slider instead of leaving it Blinds-only.
+  const dimmerBlockStart = switches.indexOf('function getDimmerBlock(');
+  const dimmerBlockNeedleBranch = switches.slice(
+    dimmerBlockStart,
+    dimmerBlockStart + 800
+  );
+  assert.match(dimmerBlockNeedleBranch, /if \(block\.needle === true\) \{/);
+  assert.match(
+    dimmerBlockNeedleBranch,
+    /renderBlindsSliderBlock\(\s*\n\s*block,\s*\n\s*device,\s*\n\s*device\['idx'\],\s*\n\s*\$div,\s*\n\s*true,\s*\n\s*false,\s*\n\s*sliderStep\s*\n\s*\);/
+  );
+  assert.match(dimmerBlockNeedleBranch, /return true;/);
+
+  // renderBlindsSliderBlock() itself: On/Off labels, forced hidestop (no
+  // motor to Stop), switchDevice() instead of switchBlinds(), and a
+  // .dimmer-slider modifier class marking the wrap for addSlider() below.
+  assert.match(switches, /var isDimmer = device\['SwitchType'\] === 'Dimmer';/);
+  assert.match(
+    switches,
+    /var hidestop =\s*\n\s*isDimmer \|\|\s*\n\s*\(typeof block\['hide_stop'\]/
+  );
+  assert.match(
+    switches,
+    /var openLabel =\s*\n\s*block\.textOn \|\|\s*\n\s*\(isDimmer \? language\.switches\.state_on : language\.switches\.state_open\);/
+  );
+  assert.match(
+    switches,
+    /var closeLabel =\s*\n\s*block\.textOff \|\|\s*\n\s*\(isDimmer \? language\.switches\.state_off : language\.switches\.state_closed\);/
+  );
+  assert.match(
+    switches,
+    /'<div class="blinds-slider-wrap' \+\s*\n\s*\(isDimmer \? ' dimmer-slider' : ''\) \+\s*\n\s*' swiper-no-swiping/
+  );
+  assert.match(
+    switches,
+    /\$mountPoint\.find\('\.btn-blinds-up'\)\.click\(function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'on', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'On' : 'Off'\);/
+  );
+  assert.match(
+    switches,
+    /\$mountPoint\.find\('\.btn-blinds-down'\)\.click\(function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'off', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'Off' : 'On'\);/
+  );
+
+  // A Dimmer's up/down buttons are a genuine On/Off toggle, not a matched
+  // pair of "move" actions like Blinds' Open/Close - the down (Off) button
+  // gets a distinct .blinds-slider-action-off marker class so it can be
+  // color-coded red instead of sharing Blinds' single green look for both;
+  // the up (On) button is left as-is, keeping the shared green style.
+  assert.doesNotMatch(
+    switches,
+    /blinds-slider-action-up' \+\s*\n\s*\(isDimmer/
+  );
+  assert.match(
+    switches,
+    /'<div class="blinds-slider-action blinds-slider-action-down' \+\s*\n\s*\(isDimmer \? ' blinds-slider-action-off' : ''\) \+\s*\n\s*'"><a href="javascript:void\(0\)" class="btn-blinds btn-blinds-down"/
+  );
+  assert.match(
+    styles,
+    /\.blinds-slider-action-off a \{\s*\n\s*color: #ffeaea;\s*\n\s*background: linear-gradient\(\s*\n\s*180deg,\s*\n\s*rgba\(220, 53, 69, 0\.55\),\s*\n\s*rgba\(160, 30, 42, 0\.55\)\s*\n\s*\);\s*\n\s*border: 1px solid rgba\(235, 110, 120, 0\.6\);/
+  );
+
+  // Chevron icons (fa-chevron-up/-down) imply a physical up/down motion,
+  // which fits Blinds but not a Dimmer's genuine On/Off toggle - a Dimmer's
+  // buttons get fa-toggle-on/fa-toggle-off instead, and the down button's
+  // icon is kept fully opaque against its red background (the global
+  // .fas.fa-toggle-off opacity rule elsewhere in this file is meant for a
+  // small inline status icon, not this button).
+  assert.match(
+    switches,
+    /'"><em class="fas ' \+\s*\n\s*\(isDimmer \? 'fa-toggle-on' : 'fa-chevron-up'\) \+\s*\n\s*'"><\/em><\/a><\/div>';/
+  );
+  assert.match(
+    switches,
+    /'"><em class="fas ' \+\s*\n\s*\(isDimmer \? 'fa-toggle-off' : 'fa-chevron-down'\) \+\s*\n\s*'"><\/em><\/a><\/div>';/
+  );
+  assert.match(
+    styles,
+    /\.blinds-slider-action-off a \.fa-toggle-off \{\s*\n\s*opacity: 1;/
+  );
+
+  // addSlider(): the Blinds-only top-to-bottom scale mirroring must not
+  // apply to a Dimmer's Slider, which keeps jQuery UI's own normal
+  // min-at-bottom/max-at-top layout (0% Off at the bottom, 100% On at the
+  // top) - matching a physical dimmer/volume slider and the On/Off button
+  // positions above. Gated on the .dimmer-slider class renderBlindsSliderBlock()
+  // sets, not device type, so addSlider() itself stays device-agnostic.
+  assert.match(
+    switches,
+    /var isDimmerSlider = \$wrap\.hasClass\('dimmer-slider'\);/
+  );
+  assert.match(
+    switches,
+    /function mirror\(value\) \{\s*\n\s*return \$wrap\.length && !isDimmerSlider \? min \+ max - value : value;/
+  );
+  assert.match(
+    switches,
+    /return \$wrap\.length && !isDimmerSlider \? 100 - percent : percent;/
+  );
+
+  // The fill (.ui-slider-range) must grow from the opposite anchor for a
+  // Dimmer's flipped scale, or it would visually detach from the handle.
+  assert.match(
+    styles,
+    /\.blinds-slider-wrap\.dimmer-slider \.slider \.ui-slider-range \{\s*\n\s*top: auto !important;\s*\n\s*bottom: -8px !important;/
+  );
+
+  // Device Config: Slider was previously gated to percentage Blinds only:
+  // a fresh Dimmer had the Slider button disabled and no working renderer
+  // behind it even if forced. It now supports the same two device types
+  // Bar already does, and Inverse (meaningless for a Dimmer, which always
+  // runs 0% Off to 100% On) stays hidden for it even though Slider mode
+  // now applies.
+  assert.match(
+    deviceEditor,
+    /var supportsNeedle =\s*\n\s*hasDial && \(isDimmer \|\| isBlindsPercentage \|\| options\.needle === true\);/
+  );
+  assert.match(
+    deviceEditor,
+    /function inverseApplies\(mode\) \{\s*\n\s*return mode === 'needle' && !isDimmer;/
+  );
 });

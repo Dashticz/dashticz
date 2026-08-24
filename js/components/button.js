@@ -189,24 +189,34 @@ Dashticz.register(DT_button);
     }
 
     /* Placed as an extra item inside the same options row that already
-     * holds Icon/Data/Title (.de-config-options for devices,
+     * holds Icon/Data/Title (.de-config-options-icons for devices,
      * .we-block-options-row for widgets) so it automatically inherits
-     * their exact switch size, colors and spacing instead of rendering as
-     * a smaller, separately positioned control (#170 follow-up). */
+     * their exact size, colors and spacing instead of rendering as a
+     * smaller, separately positioned control (#170 follow-up). Both rows
+     * are icon buttons now (#195, see js/deviceeditor.js/js/widgeteditor.js
+     * and .de-config-option/.we-block-option/.de-visual-mode-button.active
+     * in css/creative.css) - this button reuses the row's own toggle class
+     * (.de-config-option for devices, .we-block-option for widgets) purely
+     * for its shared click-to-toggle .active look/behavior (that editor's
+     * generic delegated click handler), but deliberately carries no
+     * data-option/data-block-option so it's excluded from that popup's own
+     * bookkeeping loop and keeps saving itself independently below. */
     var isWidget = $fields.hasClass('we-custom-fields');
     var $optionsRow = $popup
-      .find(isWidget ? '.we-block-options-row' : '.de-config-options')
+      .find(isWidget ? '.we-block-options-row' : '.de-config-options-icons')
       .first();
+    // The button reads as "has a background" (checked/active by default),
+    // the inverse of the stored no_background flag it's hiding.
+    var hasBackground = !initial;
     var html =
-      '<label class="form-check form-switch' +
-      (isWidget ? ' form-check-inline mb-2' : '') +
-      ' dt-no-background-option">' +
-      '<input class="form-check-input' +
-      (isWidget ? ' we-block-option' : '') +
-      '" type="checkbox" data-dt-no-background' +
-      (initial ? ' checked' : '') +
-      '>' +
-      '<span class="form-check-label">No background</span></label>';
+      '<button type="button" class="btn btn-outline-secondary dt-no-background-option ' +
+      (isWidget ? 'we-block-option' : 'de-config-option') +
+      (hasBackground ? ' active' : '') +
+      '" data-dt-no-background aria-pressed="' +
+      (hasBackground ? 'true' : 'false') +
+      '" title="Background" style="min-width:72px;">' +
+      '<i class="fas fa-fill-drip" aria-hidden="true"></i>' +
+      '<span class="d-block small">Background</span></button>';
     if ($optionsRow.length) {
       $optionsRow.append(html);
     } else {
@@ -224,7 +234,9 @@ Dashticz.register(DT_button);
           event.target.closest &&
           event.target.closest('#de-config-ok, #we-config-ok, .btn-save');
         if (!saveButton) return;
-        var enabled = $popup.find('[data-dt-no-background]').is(':checked');
+        var enabled = !$popup
+          .find('[data-dt-no-background]')
+          .hasClass('active');
         var $row = findCustomFieldRow($popup, 'no_background');
         if (enabled) {
           if (!$row.length) {
@@ -296,15 +308,30 @@ Dashticz.register(DT_button);
       '<div class="mb-3"><label class="form-label" for="dt-button-popup">Popup block</label>' +
       '<input type="text" class="form-control" id="dt-button-popup" placeholder="Block key"></div>' +
       '</div>' +
-      '<div class="row g-2">' +
+      '<div class="row g-2 mb-3">' +
       '<div class="col"><label class="form-label" for="dt-button-auto-close">Auto close (seconds)</label>' +
       '<input type="number" min="0" step="1" class="form-control" id="dt-button-auto-close"></div>' +
       '<div class="col"><label class="form-label" for="dt-button-password">Password</label>' +
       '<input type="text" class="form-control" id="dt-button-password" autocomplete="off"></div>' +
-      '</div>' +
-      '<label class="form-check form-switch mt-3 mb-2">' +
-      '<input class="form-check-input" type="checkbox" id="dt-button-no-background">' +
-      '<span class="form-check-label">No background</span></label>'
+      '</div>'
+    );
+  }
+
+  /* A matching Background icon button (#195, same look/behavior as the
+   * Device/Widget Config row this file's own injectNoBackgroundIntoConfig()
+   * adds to) joins the Icon toggle deviceeditor.js's _showSlideButtonPopup()
+   * already renders into .de-config-options-icons. Unlike that other
+   * function, a slide button is only ever created through this one popup
+   * (editing an existing one happens through Device Config instead), so
+   * there is no existing no_background value to hydrate - it always starts
+   * unset/"has background". */
+  function injectButtonBackgroundOption($popup) {
+    var $optionsRow = $popup.find('.de-config-options-icons').first();
+    if (!$optionsRow.length) return;
+    $optionsRow.append(
+      '<button type="button" class="btn btn-outline-secondary de-config-option active" id="dt-button-background" aria-pressed="true" title="Background" style="min-width:72px;">' +
+        '<i class="fas fa-fill-drip" aria-hidden="true"></i>' +
+        '<span class="d-block small">Background</span></button>'
     );
   }
 
@@ -319,6 +346,11 @@ Dashticz.register(DT_button);
     var $screen = $('#sb-button-screen').closest('.mb-3');
     $screen.addClass('dt-button-slide-fields');
     $screen.before(actionFieldsHtml());
+    // Reuses deviceeditor.js's own generic '.de-config-option' click handler
+    // (already delegated on $popup by _wireQuickOptions('sb', $popup) in
+    // _showSlideButtonPopup(), which runs before this) for the click-to-
+    // toggle .active behavior - no separate handler needed here.
+    injectButtonBackgroundOption($popup);
 
     function refreshAction() {
       var action = $('#dt-button-action').val() || 'slide';
@@ -394,7 +426,7 @@ Dashticz.register(DT_button);
         if (isFinite(autoClose) && autoClose > 0) custom.auto_close = autoClose;
         var password = String($('#dt-button-password').val() || '');
         if (password) custom.password = password;
-        if ($('#dt-button-no-background').is(':checked'))
+        if (!$('#dt-button-background').hasClass('active'))
           custom.no_background = true;
 
         pendingButtons[reference] = { action: action, custom: custom };

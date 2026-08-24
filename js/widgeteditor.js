@@ -2499,21 +2499,37 @@ var DashticzWidgetEditor = (function () {
     var html = _cfgHeading(_t('display_options', 'Display options'));
     html +=
       '<div class="d-flex align-items-center justify-content-between flex-wrap mb-2">';
-    html += '<div class="d-flex flex-wrap we-block-options-row">';
+    // Icon/Title as icon buttons, same look as Device Config's own
+    // .de-config-option row (#195).
+    html +=
+      '<div class="d-flex flex-wrap gap-2 we-block-options-row" role="group" aria-label="' +
+      _esc(_t('display_options', 'Display options')) +
+      '">';
     [
-      ['icon', _t('icon', 'Icon'), options.icon],
-      ['show_title', _t('show_title', 'Title'), options.show_title],
+      ['icon', _t('icon', 'Icon'), 'fas fa-image', options.icon],
+      [
+        'show_title',
+        _t('show_title', 'Title'),
+        'fas fa-heading',
+        options.show_title,
+      ],
     ].forEach(function (option) {
       html +=
-        '<label class="form-check form-switch form-check-inline mb-2">' +
-        '<input class="form-check-input we-block-option" type="checkbox" data-block-option="' +
+        '<button type="button" class="btn btn-outline-secondary we-block-option' +
+        (option[3] ? ' active' : '') +
+        '" data-block-option="' +
         option[0] +
-        '"' +
-        (option[2] ? ' checked' : '') +
-        '>' +
-        '<span class="form-check-label">' +
+        '" aria-pressed="' +
+        (option[3] ? 'true' : 'false') +
+        '" title="' +
         _esc(option[1]) +
-        '</span></label>';
+        '" style="min-width:72px;">' +
+        '<i class="' +
+        option[2] +
+        '" aria-hidden="true"></i>' +
+        '<span class="d-block small">' +
+        _esc(option[1]) +
+        '</span></button>';
     });
     html += '</div>';
     if (extraButtonHtml) html += extraButtonHtml;
@@ -3610,7 +3626,9 @@ var DashticzWidgetEditor = (function () {
     }
 
     function refreshIconFieldVisibility() {
-      var enabled = $cfgModal.find('[data-block-option="icon"]').is(':checked');
+      var enabled = $cfgModal
+        .find('[data-block-option="icon"]')
+        .hasClass('active');
       $cfgModal.find('.we-icon-field-row').toggle(enabled);
     }
 
@@ -3676,15 +3694,25 @@ var DashticzWidgetEditor = (function () {
       var removesIcon = $row.hasClass('we-icon-field-row');
       $row.remove();
       if (removesIcon) {
-        $cfgModal.find('[data-block-option="icon"]').prop('checked', false);
+        $cfgModal
+          .find('[data-block-option="icon"]')
+          .removeClass('active')
+          .attr('aria-pressed', 'false');
       }
       refreshCustomFieldButtons();
       refreshIconFieldVisibility();
     });
-    $cfgModal.on('change', '[data-block-option="icon"]', function () {
-      if ($(this).is(':checked')) ensureIconFieldRow();
-      refreshCustomFieldButtons();
-      refreshIconFieldVisibility();
+    $cfgModal.on('click', '.we-block-option', function () {
+      if ($(this).prop('disabled')) return;
+      var active = !$(this).hasClass('active');
+      $(this)
+        .toggleClass('active', active)
+        .attr('aria-pressed', active ? 'true' : 'false');
+      if (String($(this).attr('data-block-option')) === 'icon') {
+        if (active) ensureIconFieldRow();
+        refreshCustomFieldButtons();
+        refreshIconFieldVisibility();
+      }
     });
     $cfgModal.on('change', '.we-icon-source', function () {
       var $row = $(this).closest('.we-icon-field-row');
@@ -3882,7 +3910,7 @@ var DashticzWidgetEditor = (function () {
       var pendingIconValue = null;
       var hasIconField = false;
       var pendingBlockOptions = {
-        icon: $cfgModal.find('[data-block-option="icon"]').is(':checked'),
+        icon: $cfgModal.find('[data-block-option="icon"]').hasClass('active'),
         iconValue: null,
         // Catalog widgets do not expose Data/Updated controls. Preserve values
         // loaded from an existing CONFIG.js so a different widget edit cannot
@@ -3891,7 +3919,7 @@ var DashticzWidgetEditor = (function () {
         last_update: existingBlockOptions.last_update === true,
         show_title: $cfgModal
           .find('[data-block-option="show_title"]')
-          .is(':checked'),
+          .hasClass('active'),
         customFields: [],
         preservedFields: $.extend(
           {},
