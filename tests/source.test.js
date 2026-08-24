@@ -5442,3 +5442,118 @@ test('Slide button quick-add popup gets an Icon toggle and a Background icon but
     /if \(!\$\('#dt-button-background'\)\.hasClass\('active'\)\)\s*\n\s*custom\.no_background = true;/
   );
 });
+
+test('Bar and Slider show On/Off (not Open/Closed) for Dimmers, and Slider becomes available for them (#197)', () => {
+  const switches = fs.readFileSync(path.join(root, 'js/switches.js'), 'utf8');
+  const dialComponent = fs.readFileSync(
+    path.join(root, 'js/components/dial.js'),
+    'utf8'
+  );
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  // dial.js's Bar subtype (used by both Dimmer and Blinds Percentage
+  // devices) hard-coded Open/Closed for its 0%/100% segment labels
+  // regardless of device type - a Dimmer showed "OPEN"/"DICHT" instead of
+  // On/Off. updateBar() now branches on the live device's own SwitchType.
+  assert.match(
+    dialComponent,
+    /var isDimmer = !!\(me\.device && me\.device\.SwitchType === 'Dimmer'\);/
+  );
+  assert.match(
+    dialComponent,
+    /var openText = isDimmer\s*\n\s*\? language\.switches && language\.switches\.state_off/
+  );
+  assert.match(
+    dialComponent,
+    /var closedText = isDimmer\s*\n\s*\? language\.switches && language\.switches\.state_on/
+  );
+
+  // getDimmerBlock() gains the same block.needle === true early-return
+  // branch getBlindsBlock() already has, reusing renderBlindsSliderBlock()
+  // for a working vertical Slider instead of leaving it Blinds-only.
+  const dimmerBlockStart = switches.indexOf('function getDimmerBlock(');
+  const dimmerBlockNeedleBranch = switches.slice(
+    dimmerBlockStart,
+    dimmerBlockStart + 800
+  );
+  assert.match(dimmerBlockNeedleBranch, /if \(block\.needle === true\) \{/);
+  assert.match(
+    dimmerBlockNeedleBranch,
+    /renderBlindsSliderBlock\(\s*\n\s*block,\s*\n\s*device,\s*\n\s*device\['idx'\],\s*\n\s*\$div,\s*\n\s*true,\s*\n\s*false,\s*\n\s*sliderStep\s*\n\s*\);/
+  );
+  assert.match(dimmerBlockNeedleBranch, /return true;/);
+
+  // renderBlindsSliderBlock() itself: On/Off labels, forced hidestop (no
+  // motor to Stop), switchDevice() instead of switchBlinds(), and a
+  // .dimmer-slider modifier class marking the wrap for addSlider() below.
+  assert.match(switches, /var isDimmer = device\['SwitchType'\] === 'Dimmer';/);
+  assert.match(
+    switches,
+    /var hidestop =\s*\n\s*isDimmer \|\|\s*\n\s*\(typeof block\['hide_stop'\]/
+  );
+  assert.match(
+    switches,
+    /var openLabel =\s*\n\s*block\.textOn \|\|\s*\n\s*\(isDimmer \? language\.switches\.state_on : language\.switches\.state_open\);/
+  );
+  assert.match(
+    switches,
+    /var closeLabel =\s*\n\s*block\.textOff \|\|\s*\n\s*\(isDimmer \? language\.switches\.state_off : language\.switches\.state_closed\);/
+  );
+  assert.match(
+    switches,
+    /'<div class="blinds-slider-wrap' \+\s*\n\s*\(isDimmer \? ' dimmer-slider' : ''\) \+\s*\n\s*' swiper-no-swiping/
+  );
+  assert.match(
+    switches,
+    /\$mountPoint\.find\('\.btn-blinds-up'\)\.click\(function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'on', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'On' : 'Off'\);/
+  );
+  assert.match(
+    switches,
+    /\$mountPoint\.find\('\.btn-blinds-down'\)\.click\(function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'off', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'Off' : 'On'\);/
+  );
+
+  // addSlider(): the Blinds-only top-to-bottom scale mirroring must not
+  // apply to a Dimmer's Slider, which keeps jQuery UI's own normal
+  // min-at-bottom/max-at-top layout (0% Off at the bottom, 100% On at the
+  // top) - matching a physical dimmer/volume slider and the On/Off button
+  // positions above. Gated on the .dimmer-slider class renderBlindsSliderBlock()
+  // sets, not device type, so addSlider() itself stays device-agnostic.
+  assert.match(
+    switches,
+    /var isDimmerSlider = \$wrap\.hasClass\('dimmer-slider'\);/
+  );
+  assert.match(
+    switches,
+    /function mirror\(value\) \{\s*\n\s*return \$wrap\.length && !isDimmerSlider \? min \+ max - value : value;/
+  );
+  assert.match(
+    switches,
+    /return \$wrap\.length && !isDimmerSlider \? 100 - percent : percent;/
+  );
+
+  // The fill (.ui-slider-range) must grow from the opposite anchor for a
+  // Dimmer's flipped scale, or it would visually detach from the handle.
+  assert.match(
+    styles,
+    /\.blinds-slider-wrap\.dimmer-slider \.slider \.ui-slider-range \{\s*\n\s*top: auto !important;\s*\n\s*bottom: -8px !important;/
+  );
+
+  // Device Config: Slider was previously gated to percentage Blinds only:
+  // a fresh Dimmer had the Slider button disabled and no working renderer
+  // behind it even if forced. It now supports the same two device types
+  // Bar already does, and Inverse (meaningless for a Dimmer, which always
+  // runs 0% Off to 100% On) stays hidden for it even though Slider mode
+  // now applies.
+  assert.match(
+    deviceEditor,
+    /var supportsNeedle =\s*\n\s*hasDial && \(isDimmer \|\| isBlindsPercentage \|\| options\.needle === true\);/
+  );
+  assert.match(
+    deviceEditor,
+    /function inverseApplies\(mode\) \{\s*\n\s*return mode === 'needle' && !isDimmer;/
+  );
+});

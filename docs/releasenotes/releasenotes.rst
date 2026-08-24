@@ -29,6 +29,15 @@ v3.45.6 beta (24-8-2026)
   every other popup's row too (it had briefly landed after the
   Name/Key/Title/Screen fields instead).
 
+- The Slider visual mode (next to Icon/Dial/Bar in Device Config) is
+  now available for Dimmer devices too, not just Blinds Percentage -
+  previously the button stayed disabled for a Dimmer and had no
+  working renderer behind it even if forced (#197). It shows On/Off
+  labels and no Stop button (a dimmer has no motor to stop), and its
+  vertical slider runs bottom-to-top - 0% Off at the bottom, 100% On
+  at the top - matching a physical dimmer/volume slider, unlike
+  Blinds' top-to-bottom Open/Closed convention.
+
 * **Fixes**
 
 - Fixed a block's icon rendering visibly larger than every other
@@ -56,6 +65,11 @@ v3.45.6 beta (24-8-2026)
   this heading, never for Device Config's. Added it to the three
   language files that already translate Widget Config's copy (English,
   French, Dutch).
+
+- Fixed the Bar visual mode showing "OPEN"/"DICHT" (Open/Closed)
+  segment labels for Dimmer devices instead of On/Off - it worked
+  correctly for sunscreens/blinds, but a Dimmer's own SwitchType was
+  never checked (#197).
 
 * **Code**
 

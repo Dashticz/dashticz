@@ -3990,20 +3990,22 @@ var DashticzDeviceEditor = (function () {
     var supportsBar =
       hasDial && (isDimmer || isBlindsPercentage || options.bar === true);
     // Needle (js/switches.js renderBlindsSliderBlock(), block.needle) is a
-    // continuous vertical slider - it only makes sense for percentage
-    // blinds, not the generic Dimmer/other devices Bar also supports.
+    // continuous vertical slider - it works for percentage blinds and
+    // Dimmers, the same two device types Bar supports.
     var supportsNeedle =
-      hasDial && (isBlindsPercentage || options.needle === true);
+      hasDial && (isDimmer || isBlindsPercentage || options.needle === true);
     // The Steps field also governs Needle mode's scale (js/switches.js
     // addSlider()), which reads the same block.barsteps as the Bar subtype.
     function barStepsApplies(mode) {
       return mode === 'bar' || mode === 'needle';
     }
-    // Unlike Steps, Inverse is Needle-only - the separate Dial widget's own
-    // Bar subtype (js/components/dial.js) handles inversion on its own and
-    // is not affected by this switch.
+    // Unlike Steps, Inverse is Needle-only, and only meaningful for Blinds -
+    // a Dimmer's Slider always runs 0% Off to 100% On, so there is nothing
+    // to invert. The separate Dial widget's own Bar subtype
+    // (js/components/dial.js) handles inversion on its own and is not
+    // affected by this switch either.
     function inverseApplies(mode) {
-      return mode === 'needle';
+      return mode === 'needle' && !isDimmer;
     }
 
     // subtype:'bar' and needle:true both belong to the visual mode selector,
@@ -5885,8 +5887,9 @@ var DashticzDeviceEditor = (function () {
         }
       } else if (options.needle === true) {
         // Needle stays on the classic (non-dial) rendering path -
-        // js/switches.js getBlindsBlock() reads block.needle directly, not
-        // block.type - saveblocks.php/configwriter.php only recognize a
+        // js/switches.js getBlindsBlock()/getDimmerBlock() read block.needle
+        // directly, not block.type - saveblocks.php/configwriter.php only
+        // recognize a
         // fixed set of top-level device props (unlike Dial/Bar's existing
         // type:'dial'), so this rides through custom_fields like barsteps
         // already does, rather than as a top-level entry property that
@@ -5899,6 +5902,8 @@ var DashticzDeviceEditor = (function () {
         // Only written once explicitly set (true or false) - leaving it out
         // keeps getBlindsBlock() auto-detecting from the device's own
         // SwitchType, same reasoning as the tri-state hydration above.
+        // Dimmers ignore this field entirely (getDimmerBlock() has no
+        // inverted concept), inverseApplies() above hides it from them.
         if (typeof options.inverse === 'boolean') {
           customFields.inverse = options.inverse;
         }
