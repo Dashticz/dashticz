@@ -265,7 +265,13 @@ var Dashticz = (function () {
     var html = '';
     if (icon) {
       html += '<div class="col-icon">';
-      html += '<em class="' + icon + '"></em>';
+      // The 'icon' class (already added to the image branch below) is what
+      // themes' .col-icon .icon sizing rules key off - without it, a block
+      // rendered only through this path (e.g. an HTML block with no
+      // refresh() to later re-render via iconORimage(), which always adds
+      // it) falls back to each theme's unscoped default size instead of
+      // matching every other block's icon.
+      html += '<em class="' + icon + ' icon"></em>';
       html += '</div>';
     }
     var image = me.block.image;

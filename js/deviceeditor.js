@@ -2312,34 +2312,53 @@ var DashticzDeviceEditor = (function () {
     var t = _translations();
     var html =
       '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
-    html += '<div class="mb-3 de-config-options de-config-options-three">';
+    // Icon/Updated/Title as icon buttons, same look as Device Config's own
+    // .de-config-option row (#195) - kept on unique per-popup ids (not
+    // data-option) since several of these quick-add popups can coexist and
+    // _readQuickOptions() below already looked them up that way.
     html +=
-      '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
-      prefix +
-      '-opt-icon"' +
-      (defaults.icon ? ' checked' : '') +
-      '>' +
-      '<span class="form-check-label">' +
-      _esc(t.icon) +
-      '</span></label>';
-    html +=
-      '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
-      prefix +
-      '-opt-update"' +
-      (defaults.lastUpdate ? ' checked' : '') +
-      '>' +
-      '<span class="form-check-label">' +
-      _esc(t.last_update) +
-      '</span></label>';
-    html +=
-      '<label class="form-check form-switch"><input class="form-check-input" type="checkbox" id="' +
-      prefix +
-      '-opt-title"' +
-      (defaults.showTitle ? ' checked' : '') +
-      '>' +
-      '<span class="form-check-label">' +
-      _esc(t.show_title) +
-      '</span></label>';
+      '<div class="d-flex flex-wrap justify-content-center gap-2 mb-3 de-config-options-icons" role="group" aria-label="' +
+      _esc(t.display_options) +
+      '">';
+    [
+      {
+        id: 'opt-icon',
+        icon: 'fas fa-image',
+        label: t.icon,
+        active: defaults.icon,
+      },
+      {
+        id: 'opt-update',
+        icon: 'fas fa-clock',
+        label: t.last_update,
+        active: defaults.lastUpdate,
+      },
+      {
+        id: 'opt-title',
+        icon: 'fas fa-heading',
+        label: t.show_title,
+        active: defaults.showTitle,
+      },
+    ].forEach(function (item) {
+      html +=
+        '<button type="button" class="btn btn-outline-secondary de-config-option' +
+        (item.active ? ' active' : '') +
+        '" id="' +
+        prefix +
+        '-' +
+        item.id +
+        '" aria-pressed="' +
+        (item.active ? 'true' : 'false') +
+        '" title="' +
+        _esc(item.label) +
+        '" style="min-width:72px;">' +
+        '<i class="' +
+        item.icon +
+        '" aria-hidden="true"></i>' +
+        '<span class="d-block small">' +
+        _esc(item.label) +
+        '</span></button>';
+    });
     html += '</div>';
     html +=
       '<div class="mb-3 ' +
@@ -2360,17 +2379,21 @@ var DashticzDeviceEditor = (function () {
      with the popup's own jQuery element (for correctly-scoped, leak-free
      event delegation - see _wireIconImagePicker()). */
   function _wireQuickOptions(prefix, $popup) {
-    $('#' + prefix + '-opt-icon').on('change', function () {
-      $('.' + prefix + '-opt-icon-field').toggleClass(
-        'd-none',
-        !$(this).is(':checked')
-      );
+    $popup.on('click', '.de-config-option', function () {
+      if ($(this).prop('disabled')) return;
+      var active = !$(this).hasClass('active');
+      $(this)
+        .toggleClass('active', active)
+        .attr('aria-pressed', active ? 'true' : 'false');
+      if ($(this).attr('id') === prefix + '-opt-icon') {
+        $('.' + prefix + '-opt-icon-field').toggleClass('d-none', !active);
+      }
     });
     _wireIconImagePicker($popup);
   }
 
   function _readQuickOptions(prefix) {
-    var iconChecked = $('#' + prefix + '-opt-icon').is(':checked');
+    var iconChecked = $('#' + prefix + '-opt-icon').hasClass('active');
     var $iconRow = $('.' + prefix + '-opt-icon-field .de-icon-field-row');
     var iconSource =
       $iconRow.find('.de-icon-source').val() === 'image' ? 'image' : 'icon';
@@ -2381,8 +2404,8 @@ var DashticzDeviceEditor = (function () {
       icon: iconChecked,
       iconSource: iconSource,
       iconValue: iconChecked ? rawValue || null : null,
-      lastUpdate: $('#' + prefix + '-opt-update').is(':checked'),
-      showTitle: $('#' + prefix + '-opt-title').is(':checked'),
+      lastUpdate: $('#' + prefix + '-opt-update').hasClass('active'),
+      showTitle: $('#' + prefix + '-opt-title').hasClass('active'),
     };
   }
 
