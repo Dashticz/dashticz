@@ -2317,7 +2317,7 @@ var DashticzDeviceEditor = (function () {
     // data-option) since several of these quick-add popups can coexist and
     // _readQuickOptions() below already looked them up that way.
     html +=
-      '<div class="d-flex flex-wrap justify-content-center gap-2 mb-3 de-config-options-icons" role="group" aria-label="' +
+      '<div class="d-flex flex-wrap gap-2 mb-3 de-config-options-icons" role="group" aria-label="' +
       _esc(t.display_options) +
       '">';
     [
@@ -4069,9 +4069,9 @@ var DashticzDeviceEditor = (function () {
         '</span></button>';
     });
     html +=
-      '<div class="d-flex flex-wrap justify-content-center gap-4 mb-3 de-config-options-row">';
+      '<div class="d-flex flex-wrap justify-content-between gap-4 mb-3 de-config-options-row">';
     html +=
-      '<div class="d-flex flex-wrap justify-content-center gap-2 de-config-options-icons" role="group" aria-label="' +
+      '<div class="d-flex flex-wrap gap-2 de-config-options-icons" role="group" aria-label="' +
       _esc(t.display_options) +
       '">' +
       optionsHtml +
