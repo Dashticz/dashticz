@@ -722,6 +722,17 @@ function iconORimage(
   colwidth,
   attrcol
 ) {
+  if (typeof block !== 'undefined' && block['icon'] === '') {
+    // Icon explicitly turned off via the Icon toggle in Device/Widget
+    // Config (block.icon === '', not merely undefined/unset - see
+    // configwriter.php's "Must write an explicit icon: ''" comments).
+    // Falling through to defaulticon/defaultimage or the device type's
+    // own iconOn/iconOff/imageOn/imageOff (protoBlock, js/blocktypes.js)
+    // below would silently reinstate a default icon instead of honoring
+    // the toggle - see the $.extend(block, protoBlock, origBlock) merge
+    // in getBlock() above, which only overrides the plain `icon` key.
+    return '';
+  }
   var mIcon = defaulticon;
   var mImage = defaultimage;
   var useImage = false;
