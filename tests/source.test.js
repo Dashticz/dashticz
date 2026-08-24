@@ -5390,3 +5390,55 @@ test('Custom device/Multi device/Group/HTML block/LMS quick-add popups and Widge
     /refreshIconFieldVisibility\(\) \{\s*\n\s*var enabled = \$cfgModal\s*\n\s*\.find\('\[data-block-option="icon"\]'\)\s*\n\s*\.hasClass\('active'\);/
   );
 });
+
+test('Slide button quick-add popup gets an Icon toggle and a Background icon button, like every other popup (#195)', () => {
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const button = fs.readFileSync(
+    path.join(root, 'js/components/button.js'),
+    'utf8'
+  );
+
+  // _showSlideButtonPopup() (deviceeditor.js): unlike the other quick-add
+  // popups, Icon was always shown unconditionally with no toggle at all -
+  // now it's a real button, id="sb-opt-icon"/class "sb-opt-icon-field"
+  // matching _quickOptionsHtml()'s own naming so _wireQuickOptions('sb', ...)
+  // can wire it with the exact same shared code, no bespoke handler needed.
+  assert.match(
+    deviceEditor,
+    /'<button type="button" class="btn btn-outline-secondary de-config-option active" id="sb-opt-icon"/
+  );
+  assert.match(deviceEditor, /class="mb-3 sb-opt-icon-field"/);
+  assert.match(deviceEditor, /_wireQuickOptions\('sb', \$popup\);/);
+  assert.match(
+    deviceEditor,
+    /var iconChecked = \$\('#sb-opt-icon'\)\.hasClass\('active'\);/
+  );
+  assert.match(
+    deviceEditor,
+    /var iconValue = iconChecked\s*\n\s*\? \$\.trim\(/
+  );
+
+  // button.js: the old "No background" checkbox is gone from
+  // actionFieldsHtml() - injectButtonBackgroundOption() appends a matching
+  // Background icon button into deviceeditor.js's own
+  // .de-config-options-icons row instead, reusing that row's own
+  // '.de-config-option' click handler (already delegated on $popup by
+  // _wireQuickOptions above) rather than wiring its own.
+  assert.doesNotMatch(button, /id="dt-button-no-background"/);
+  assert.match(
+    button,
+    /function injectButtonBackgroundOption\(\$popup\) \{\s*\n\s*var \$optionsRow = \$popup\.find\('\.de-config-options-icons'\)\.first\(\);/
+  );
+  assert.match(
+    button,
+    /'<button type="button" class="btn btn-outline-secondary de-config-option active" id="dt-button-background"/
+  );
+  assert.match(button, /injectButtonBackgroundOption\(\$popup\);/);
+  assert.match(
+    button,
+    /if \(!\$\('#dt-button-background'\)\.hasClass\('active'\)\)\s*\n\s*custom\.no_background = true;/
+  );
+});
