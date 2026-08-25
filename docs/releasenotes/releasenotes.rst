@@ -45,6 +45,13 @@ v3.45.7 beta (25-8-2026)
   source device state on save, instead of waiting for the next
   Domoticz update.
 
+- Changed the text action's default output mode from Replace to
+  Separate line, so multiple automation rules that target the same
+  device stack as multiple lines out of the box instead of the last
+  active rule silently overwriting the others. Replace remains
+  available per rule for the old overwrite behavior; existing saved
+  rules that already have an explicit outputMode are unaffected.
+
 * **Code**
 
 - Verified with the full node --test suite (191 tests) and Prettier's
