@@ -33,9 +33,21 @@ v3.45.7 beta (25-8-2026)
   without overlapping), and font size, with width left automatic so
   the banner fits any length of text.
 
+- Adjusted the text action to fill the target device's data/value
+  field instead of its title, and added a Text output mode (Replace
+  existing text / Add as a separate line) so several automations can
+  share one target device without overwriting each other -
+  separate-line contributions render as sorted, stacked lines with a
+  multiline-friendly white-space style. A rule's disabled master
+  switch now also suppresses its generated server-side CSS (it
+  previously only stopped client-side application), and a target's
+  live On/Off text is reconciled immediately from the last known
+  source device state on save, instead of waiting for the next
+  Domoticz update.
+
 * **Code**
 
-- Verified with the full node --test suite (173 tests) and Prettier's
+- Verified with the full node --test suite (191 tests) and Prettier's
   format check.
 
 v3.45.6 beta (24-8-2026)
