@@ -201,6 +201,18 @@ echo device_rules_css_for_rules(array($rule));
   assert.match(output, /html body \.mh\.transbg\.visual-active/);
   assert.match(output, /background: rgba\(16, 32, 48, 0\.40\) !important;/);
   assert.match(output, /border: 4px double #abcdef !important;/);
+
+  rule.enabled = false;
+  const disabledEncoded = Buffer.from(JSON.stringify(rule), 'utf8').toString(
+    'base64'
+  );
+  const disabledOutput = runPhpLibrary(`
+$input = json_decode(base64_decode('${disabledEncoded}'), true);
+list($rule, $error) = device_rules_normalize_rule($input, 0, 'source');
+if ($error !== null) { echo $error; exit(2); }
+echo device_rules_css_for_rules(array($rule));
+`);
+  assert.equal(disabledOutput, '');
 });
 
 test('endpoint keeps the existing same-origin, CSRF, managed-block and atomic-write protections', () => {

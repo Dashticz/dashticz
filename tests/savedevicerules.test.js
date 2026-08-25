@@ -182,6 +182,35 @@ test('schema v2 writes both actions and preserves hand-written custom files', ()
   }
 });
 
+test('a disabled master rule is stored without leaving generated CSS active', () => {
+  const fixture = makeFixture();
+  try {
+    const enabled = dualActionRule();
+    const first = runEndpoint(fixture, [enabled]);
+    assert.equal(first.status, 0, first.stderr || first.stdout);
+
+    const disabled = dualActionRule();
+    disabled.enabled = false;
+    const second = runEndpoint(fixture, [disabled]);
+    assert.equal(second.status, 0, second.stderr || second.stdout);
+
+    const customJs = fs.readFileSync(
+      path.join(fixture, 'custom', 'custom.js'),
+      'utf8'
+    );
+    const customCss = fs.readFileSync(
+      path.join(fixture, 'custom', 'custom.css'),
+      'utf8'
+    );
+    assert.match(customJs, /"enabled": false/);
+    assert.match(customJs, /"className": "door_warning_open"/);
+    assert.doesNotMatch(customCss, /door_warning_open/);
+    assert.match(customCss, /\.manual-class/);
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
 test('legacy flat text rules are converted without losing their behavior', () => {
   const fixture = makeFixture();
   try {
