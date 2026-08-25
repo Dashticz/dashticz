@@ -9,16 +9,11 @@ const root = path.resolve(__dirname, '..');
 const endpointSource = path.join(root, 'js', 'savedevicerules.php');
 
 function makeFixture() {
-  const fixture = fs.mkdtempSync(
-    path.join(os.tmpdir(), 'dashticz-device-rules-')
-  );
+  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'dashticz-device-rules-'));
   fs.mkdirSync(path.join(fixture, 'js'), { recursive: true });
   fs.mkdirSync(path.join(fixture, 'vendor', 'dashticz'), { recursive: true });
   fs.mkdirSync(path.join(fixture, 'custom'), { recursive: true });
-  fs.copyFileSync(
-    endpointSource,
-    path.join(fixture, 'js', 'savedevicerules.php')
-  );
+  fs.copyFileSync(endpointSource, path.join(fixture, 'js', 'savedevicerules.php'));
 
   fs.writeFileSync(
     path.join(fixture, 'vendor', 'dashticz', 'security.php'),
@@ -121,6 +116,7 @@ function dualActionRule(backgroundColor = '#ff0000') {
       text: {
         enabled: true,
         target: 'status_message',
+        outputMode: 'line',
         textOn: 'The door is open',
         textOff: 'The door is closed',
       },
@@ -152,6 +148,7 @@ test('schema v2 writes both actions and preserves hand-written custom files', ()
     assert.match(customJs, /"css": \{/);
     assert.match(customJs, /"text": \{/);
     assert.match(customJs, /"target": "status_message"/);
+    assert.match(customJs, /"outputMode": "line"/);
     assert.match(customCss, /\.manual-class/);
     assert.match(
       customCss,
@@ -182,6 +179,91 @@ test('schema v2 writes both actions and preserves hand-written custom files', ()
   }
 });
 
+
+
+test('a disabled master rule is stored but does not leave generated CSS active', () => {
+  const fixture = makeFixture();
+  try {
+    const enabled = dualActionRule();
+    const first = runEndpoint(fixture, [enabled]);
+    assert.equal(first.status, 0, first.stderr || first.stdout);
+
+    const disabled = dualActionRule();
+    disabled.enabled = false;
+    const second = runEndpoint(fixture, [disabled]);
+    assert.equal(second.status, 0, second.stderr || second.stdout);
+
+    const customJs = fs.readFileSync(
+      path.join(fixture, 'custom', 'custom.js'),
+      'utf8'
+    );
+    const customCss = fs.readFileSync(
+      path.join(fixture, 'custom', 'custom.css'),
+      'utf8'
+    );
+
+    assert.match(customJs, /"enabled": false/);
+    assert.match(customJs, /"className": "door_warning_open"/);
+    assert.match(customJs, /"textOn": "The door is open"/);
+    assert.doesNotMatch(customCss, /door_warning_open/);
+    assert.match(customCss, /\.manual-class/);
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
+test('several source devices keep separate line actions for one shared target', () => {
+  const fixture = makeFixture();
+  try {
+    function lineRule(id, text) {
+      return {
+        id,
+        enabled: true,
+        trigger: { property: 'Status', operator: 'eq', value: 'Open' },
+        actions: {
+          css: { enabled: false },
+          text: {
+            enabled: true,
+            target: 'status_message',
+            outputMode: 'line',
+            textOn: text,
+            textOff: '',
+          },
+        },
+      };
+    }
+
+    const alpha = runEndpoint(
+      fixture,
+      [lineRule('alpha_open', 'Alpha is open')],
+      'device_alpha'
+    );
+    const beta = runEndpoint(
+      fixture,
+      [lineRule('beta_open', 'Beta is open')],
+      'device_beta'
+    );
+    assert.equal(alpha.status, 0, alpha.stderr || alpha.stdout);
+    assert.equal(beta.status, 0, beta.stderr || beta.stdout);
+
+    const customJs = fs.readFileSync(
+      path.join(fixture, 'custom', 'custom.js'),
+      'utf8'
+    );
+    assert.equal(
+      (customJs.match(/dashticz-device-rules-js:/g) || []).length,
+      4,
+      'two source blocks each retain a start and end marker'
+    );
+    assert.match(customJs, /DashticzDeviceRulesConfig\["device_alpha"\]/);
+    assert.match(customJs, /DashticzDeviceRulesConfig\["device_beta"\]/);
+    assert.equal((customJs.match(/"target": "status_message"/g) || []).length, 2);
+    assert.equal((customJs.match(/"outputMode": "line"/g) || []).length, 2);
+  } finally {
+    fs.rmSync(fixture, { recursive: true, force: true });
+  }
+});
+
 test('legacy flat text rules are converted without losing their behavior', () => {
   const fixture = makeFixture();
   try {
@@ -202,11 +284,9 @@ test('legacy flat text rules are converted without losing their behavior', () =>
       'utf8'
     );
     assert.match(customJs, /"trigger": \{/);
-    assert.match(
-      customJs,
-      /"enabled": true,\s*\n\s*"target": "legacy_message"/
-    );
+    assert.match(customJs, /"enabled": true,\s*\n\s*"target": "legacy_message"/);
     assert.match(customJs, /"textOn": "Active"/);
+    assert.match(customJs, /"outputMode": "replace"/);
     assert.match(customJs, /"textOff": "Inactive"/);
   } finally {
     fs.rmSync(fixture, { recursive: true, force: true });
