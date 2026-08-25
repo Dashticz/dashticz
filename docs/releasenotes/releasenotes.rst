@@ -33,6 +33,14 @@ v3.45.7 beta (25-8-2026)
   without overlapping), and font size, with width left automatic so
   the banner fits any length of text.
 
+- Text actions now write to a target device's data/value field
+  instead of its title, matching how the block itself renders device
+  data. Disabled master rules no longer generate any CSS. When
+  several devices' text actions target the same device, each is
+  tracked by its own source key/label/rule index instead of
+  colliding, so they render as independent lines that stay correct
+  regardless of processing order.
+
 * **Code**
 
 - Verified with the full node --test suite (173 tests) and Prettier's
