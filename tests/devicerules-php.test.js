@@ -146,7 +146,6 @@ test('server rejects unsafe trigger paths and incomplete enabled text actions', 
   assert.match(missingTarget.error, /target device/);
 });
 
-
 test('server rejects unknown text output modes', () => {
   const result = normalize({
     id: 'bad_output_mode',
@@ -190,7 +189,6 @@ test('disabled CSS drafts may keep an empty banner without blocking a text actio
   assert.equal(result.rule.actions.css.style.mode, 'banner');
   assert.equal(result.rule.actions.css.style.bannerText, '');
 });
-
 
 test('server CSS generation skips a disabled master rule', () => {
   const rule = {

@@ -19,10 +19,7 @@ function normalizeRuleWithPhp(rule, sourceKey = 'source') {
   assert.notEqual(definitionsStart, -1);
   assert.notEqual(requestHandlerStart, -1);
 
-  const definitions = serverSource.slice(
-    definitionsStart,
-    requestHandlerStart
-  );
+  const definitions = serverSource.slice(definitionsStart, requestHandlerStart);
   const ruleBase64 = Buffer.from(JSON.stringify(rule)).toString('base64');
   const sourceBase64 = Buffer.from(String(sourceKey)).toString('base64');
   const script = `${definitions}
@@ -37,10 +34,7 @@ echo json_encode(array('rule' => $normalized, 'error' => $error));`;
 function phpManagedClass(sourceKey, ruleId) {
   const definitionsStart = serverSource.indexOf('$allowedOperators = array(');
   const requestHandlerStart = serverSource.indexOf('\n$rules = array();');
-  const definitions = serverSource.slice(
-    definitionsStart,
-    requestHandlerStart
-  );
+  const definitions = serverSource.slice(definitionsStart, requestHandlerStart);
   const sourceBase64 = Buffer.from(String(sourceKey)).toString('base64');
   const idBase64 = Buffer.from(String(ruleId)).toString('base64');
   const script = `${definitions}
@@ -604,7 +598,6 @@ test('one trigger applies CSS to the current device and text to another device b
   assert.equal(blocks.message.value, 'Original message');
 });
 
-
 test('separate-line text actions from multiple devices share one target', () => {
   const { api, blocks, store, runtimeStyles } = createRuntime({
     alpha: { title: 'Alpha door' },
@@ -634,8 +627,14 @@ test('separate-line text actions from multiple devices share one target', () => 
     };
   }
 
-  store.alpha = { schemaVersion: 2, rules: [textRule('alpha_open', 'Alpha is open')] };
-  store.beta = { schemaVersion: 2, rules: [textRule('beta_open', 'Beta is open')] };
+  store.alpha = {
+    schemaVersion: 2,
+    rules: [textRule('alpha_open', 'Alpha is open')],
+  };
+  store.beta = {
+    schemaVersion: 2,
+    rules: [textRule('beta_open', 'Beta is open')],
+  };
 
   const beta = { key: 'beta', device: { Status: 'Open' } };
   const alpha = { key: 'alpha', device: { Status: 'Open' } };
@@ -673,7 +672,6 @@ test('separate-line text actions from multiple devices share one target', () => 
   assert.equal(blocks.message.value, 'Original message');
   assert.equal(blocks.message.addClass, 'existing-target-class');
 });
-
 
 test('replace text remains compatible beside separate-line messages', () => {
   const { api, blocks, store } = createRuntime({
@@ -735,7 +733,6 @@ test('replace text remains compatible beside separate-line messages', () => {
   api.process(header);
   assert.equal(blocks.message.value, 'Original message');
 });
-
 
 test('switching the master automation Off removes active CSS and text immediately', () => {
   const { api, blocks, store, runtimeStyles } = createRuntime({
@@ -833,10 +830,7 @@ test('switching one shared text automation Off removes only its own line', () =>
   const garageBlock = { key: 'garage', device: { Status: 'On' } };
   api.process(frontBlock);
   api.process(garageBlock);
-  assert.equal(
-    blocks.message.value,
-    'Front door is open\nGarage door is open'
-  );
+  assert.equal(blocks.message.value, 'Front door is open\nGarage door is open');
 
   const disabledFront = JSON.parse(JSON.stringify(frontRule));
   disabledFront.enabled = false;
@@ -1043,10 +1037,7 @@ test('generated block selectors override important theme panel rules', () => {
   const { api } = createRuntime();
   const selectors = api.generatedBlockSelectors('automation-active');
 
-  assert.match(
-    selectors,
-    /html body \.dt_block\.transbg\.automation-active/
-  );
+  assert.match(selectors, /html body \.dt_block\.transbg\.automation-active/);
   assert.match(selectors, /html body \.mh\.transbg\.automation-active/);
   assert.match(selectors, /html body \.transbg\.automation-active/);
 });
@@ -1107,7 +1098,10 @@ test('text target dropdown data shows friendly names, IDX and text devices first
   assert.match(rows[0].label, /message/);
   assert.equal(rows[1].key, 'custom_note');
   assert.equal(rows.find((row) => row.key === 'lamp').textDevice, false);
-  assert.equal(rows.find((row) => row.key === 'missing_target').unavailable, true);
+  assert.equal(
+    rows.find((row) => row.key === 'missing_target').unavailable,
+    true
+  );
 });
 
 test('text target control renders a real device pulldown with the saved target selected', () => {
@@ -1133,7 +1127,6 @@ test('text target control renders a real device pulldown with the saved target s
   assert.match(html, /Living room lamp — IDX 10 — lamp/);
   assert.doesNotMatch(html, /Weather widget/);
 });
-
 
 test('text output selector offers replace and separate-line modes', () => {
   const { api } = createRuntime();
@@ -1216,4 +1209,3 @@ test('PHP writer accepts schema v2, preserves legacy rules and matches generated
   assert.equal(legacy.rule.actions.text.target, 'legacy_message');
   assert.equal(legacy.rule.actions.text.outputMode, 'replace');
 });
-

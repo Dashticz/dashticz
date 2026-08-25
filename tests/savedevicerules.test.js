@@ -9,11 +9,16 @@ const root = path.resolve(__dirname, '..');
 const endpointSource = path.join(root, 'js', 'savedevicerules.php');
 
 function makeFixture() {
-  const fixture = fs.mkdtempSync(path.join(os.tmpdir(), 'dashticz-device-rules-'));
+  const fixture = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'dashticz-device-rules-')
+  );
   fs.mkdirSync(path.join(fixture, 'js'), { recursive: true });
   fs.mkdirSync(path.join(fixture, 'vendor', 'dashticz'), { recursive: true });
   fs.mkdirSync(path.join(fixture, 'custom'), { recursive: true });
-  fs.copyFileSync(endpointSource, path.join(fixture, 'js', 'savedevicerules.php'));
+  fs.copyFileSync(
+    endpointSource,
+    path.join(fixture, 'js', 'savedevicerules.php')
+  );
 
   fs.writeFileSync(
     path.join(fixture, 'vendor', 'dashticz', 'security.php'),
@@ -179,8 +184,6 @@ test('schema v2 writes both actions and preserves hand-written custom files', ()
   }
 });
 
-
-
 test('a disabled master rule is stored but does not leave generated CSS active', () => {
   const fixture = makeFixture();
   try {
@@ -257,7 +260,10 @@ test('several source devices keep separate line actions for one shared target', 
     );
     assert.match(customJs, /DashticzDeviceRulesConfig\["device_alpha"\]/);
     assert.match(customJs, /DashticzDeviceRulesConfig\["device_beta"\]/);
-    assert.equal((customJs.match(/"target": "status_message"/g) || []).length, 2);
+    assert.equal(
+      (customJs.match(/"target": "status_message"/g) || []).length,
+      2
+    );
     assert.equal((customJs.match(/"outputMode": "line"/g) || []).length, 2);
   } finally {
     fs.rmSync(fixture, { recursive: true, force: true });
@@ -284,7 +290,10 @@ test('legacy flat text rules are converted without losing their behavior', () =>
       'utf8'
     );
     assert.match(customJs, /"trigger": \{/);
-    assert.match(customJs, /"enabled": true,\s*\n\s*"target": "legacy_message"/);
+    assert.match(
+      customJs,
+      /"enabled": true,\s*\n\s*"target": "legacy_message"/
+    );
     assert.match(customJs, /"textOn": "Active"/);
     assert.match(customJs, /"outputMode": "replace"/);
     assert.match(customJs, /"textOff": "Inactive"/);
