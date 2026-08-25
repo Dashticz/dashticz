@@ -116,7 +116,7 @@ test('server converts previous flat rules to the grouped schema', () => {
   assert.equal(textResult.rule.actions.css.enabled, false);
   assert.equal(textResult.rule.actions.text.enabled, true);
   assert.equal(textResult.rule.actions.text.target, 'legacy_text');
-  assert.equal(textResult.rule.actions.text.outputMode, 'line');
+  assert.equal(textResult.rule.actions.text.outputMode, 'replace');
 });
 
 test('server rejects unsafe trigger paths and incomplete enabled text actions', () => {
