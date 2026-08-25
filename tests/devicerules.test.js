@@ -362,6 +362,99 @@ test('one trigger applies CSS to the current device and text to another device b
   assert.equal(blocks.message.value, 'Original message');
 });
 
+test('several devices share one chosen text target on separate lines', () => {
+  const { api, blocks, store, runtimeStyles } = createRuntime({
+    alpha: { title: 'Alpha door' },
+    beta: { title: 'Beta door' },
+    message: { title: 'Status message', value: 'Original message' },
+  });
+
+  function textRule(id, value) {
+    return {
+      id,
+      enabled: true,
+      trigger: { property: 'Status', operator: 'eq', value: 'On' },
+      actions: {
+        css: { enabled: false },
+        text: {
+          enabled: true,
+          target: 'message',
+          textOn: value,
+          textOff: '',
+        },
+      },
+    };
+  }
+
+  const alphaRule = textRule('alpha_active', 'Alpha is active');
+  const betaRule = textRule('beta_active', 'Beta is active');
+  store.alpha = { schemaVersion: 2, rules: [alphaRule] };
+  store.beta = { schemaVersion: 2, rules: [betaRule] };
+
+  const alpha = { key: 'alpha', device: { Status: 'On' } };
+  const beta = { key: 'beta', device: { Status: 'On' } };
+
+  // Processing order must not affect the displayed order.
+  api.process(beta);
+  api.process(alpha);
+  assert.equal(blocks.message.value, 'Alpha is active\nBeta is active');
+  assert.equal(blocks.message.title, 'Status message');
+  const multilineStyle = runtimeStyles.find((style) =>
+    /dt-automation-multiline-value[\s\S]*white-space: pre-line/.test(
+      style.textContent
+    )
+  );
+  assert.ok(multilineStyle);
+
+  alpha.device.Status = 'Off';
+  api.process(alpha);
+  assert.equal(blocks.message.value, 'Beta is active');
+
+  const disabledBetaRule = JSON.parse(JSON.stringify(betaRule));
+  disabledBetaRule.enabled = false;
+  api.updateRuleStore('beta', [disabledBetaRule], '');
+  assert.equal(blocks.message.value, '');
+
+  store.alpha.rules = [];
+  api.process(alpha);
+  store.beta.rules = [];
+  api.process(beta);
+  assert.equal(blocks.message.value, 'Original message');
+  assert.equal(blocks.message.title, 'Status message');
+});
+
+test('false-result texts also remain independent in a shared target', () => {
+  const { api, blocks, store } = createRuntime({
+    kitchen: { title: 'Kitchen' },
+    living: { title: 'Living room' },
+    message: { title: 'Overview', value: 'Original' },
+  });
+
+  function statusRule(id, target, textOn, textOff) {
+    return {
+      id,
+      trigger: { property: 'Status', operator: 'eq', value: 'On' },
+      actions: {
+        css: { enabled: false },
+        text: { enabled: true, target, textOn, textOff },
+      },
+    };
+  }
+
+  store.kitchen = {
+    schemaVersion: 2,
+    rules: [statusRule('kitchen', 'message', 'Kitchen on', 'Kitchen off')],
+  };
+  store.living = {
+    schemaVersion: 2,
+    rules: [statusRule('living', 'message', 'Living on', 'Living off')],
+  };
+
+  api.process({ key: 'living', device: { Status: 'On' } });
+  api.process({ key: 'kitchen', device: { Status: 'Off' } });
+  assert.equal(blocks.message.value, 'Kitchen off\nLiving on');
+});
+
 test('removing a text action restores an implicit live device value', () => {
   const { api, blocks, store } = createRuntime(
     {
