@@ -295,7 +295,7 @@ test('legacy flat text rules are converted without losing their behavior', () =>
       /"enabled": true,\s*\n\s*"target": "legacy_message"/
     );
     assert.match(customJs, /"textOn": "Active"/);
-    assert.match(customJs, /"outputMode": "line"/);
+    assert.match(customJs, /"outputMode": "replace"/);
     assert.match(customJs, /"textOff": "Inactive"/);
   } finally {
     fs.rmSync(fixture, { recursive: true, force: true });

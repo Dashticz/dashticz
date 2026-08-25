@@ -117,7 +117,7 @@
     textReplace: 'Bestaande tekst vervangen',
     textLine: 'Als aparte regel toevoegen',
     textOutputHelp:
-      'Aparte regel is de standaard, zodat meerdere automations die hetzelfde doeldevice vullen elk hun eigen regel krijgen; kies Vervangen om altijd te overschrijven.',
+      'Gebruik Aparte regel wanneer meerdere automations hetzelfde doeldevice vullen.',
     textOn: 'Tekst indien waar',
     textOff: 'Tekst indien onwaar',
     cssClass: 'CSS-class',
@@ -187,7 +187,7 @@
     textReplace: 'Replace existing text',
     textLine: 'Add as a separate line',
     textOutputHelp:
-      'Separate line is the default, so several automations writing to the same target device each get their own line; choose Replace to always overwrite.',
+      'Use Separate line when several automations write to the same target device.',
     textOn: 'Text when true',
     textOff: 'Text when false',
     cssClass: 'CSS class',
@@ -314,9 +314,9 @@
   }
 
   function normaliseTextOutputMode(value) {
-    return String(value || '') === TEXT_OUTPUT_REPLACE
-      ? TEXT_OUTPUT_REPLACE
-      : TEXT_OUTPUT_LINE;
+    return String(value || '') === TEXT_OUTPUT_LINE
+      ? TEXT_OUTPUT_LINE
+      : TEXT_OUTPUT_REPLACE;
   }
 
   function defaultStyle(mode) {
@@ -404,7 +404,7 @@
         text: {
           enabled: false,
           target: '',
-          outputMode: TEXT_OUTPUT_LINE,
+          outputMode: TEXT_OUTPUT_REPLACE,
           textOn: '',
           textOff: '',
         },
