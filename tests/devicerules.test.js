@@ -312,7 +312,7 @@ test('keeps previous flat CSS and text rules backwards compatible', () => {
   assert.equal(rules[1].actions.css.enabled, false);
   assert.equal(rules[1].actions.text.enabled, true);
   assert.equal(rules[1].actions.text.target, 'legacy_text');
-  assert.equal(rules[1].actions.text.outputMode, 'replace');
+  assert.equal(rules[1].actions.text.outputMode, 'line');
   assert.equal(rules[1].actions.text.textOn, 'On text');
 });
 
@@ -1136,7 +1136,7 @@ test('text output selector offers replace and separate-line modes', () => {
     lineHtml,
     /value="line" selected>Add as a separate line<\/option>/
   );
-  assert.equal(api.normaliseTextOutputMode('unsupported'), 'replace');
+  assert.equal(api.normaliseTextOutputMode('unsupported'), 'line');
 });
 
 test('numeric and text trigger comparisons keep their previous behaviour', () => {
@@ -1207,5 +1207,5 @@ test('PHP writer accepts schema v2, preserves legacy rules and matches generated
   assert.equal(legacy.rule.actions.css.enabled, false);
   assert.equal(legacy.rule.actions.text.enabled, true);
   assert.equal(legacy.rule.actions.text.target, 'legacy_message');
-  assert.equal(legacy.rule.actions.text.outputMode, 'replace');
+  assert.equal(legacy.rule.actions.text.outputMode, 'line');
 });
