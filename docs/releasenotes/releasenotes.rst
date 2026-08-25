@@ -6,6 +6,38 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.45.7 beta (25-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- Reworked Device Rules Automation to a v2 schema that groups one
+  trigger with two independent, simultaneously-selectable actions
+  instead of a single mutually-exclusive action: CSS styling applied
+  to the current device (as before), and a new "Set text" action that
+  writes separate "text when true"/"text when false" values onto a
+  different, selected target device's title via Dashticz.setBlock.
+  The normaliser still accepts previously saved flat
+  action/target/className and action/target/textOn/textOff records,
+  so existing automation keeps working unchanged.
+
+- Added a new "Floating banner" styling option (alongside the
+  existing background/border/text combinations), matching the
+  hand-written custom.css pattern for full-screen alert banners - a
+  visibility toggle plus a :before with static content, background,
+  border, border-radius, centered fixed position and z-index.
+  Per-rule fields are banner text (baked into the CSS content: value
+  at save time, validated client- and server-side to reject
+  quote/backslash characters since it's written verbatim into a CSS
+  string), distance from top in px (so multiple banners can stack
+  without overlapping), and font size, with width left automatic so
+  the banner fits any length of text.
+
+* **Code**
+
+- Verified with the full node --test suite (173 tests) and Prettier's
+  format check.
+
 v3.45.6 beta (24-8-2026)
 -------------------------
 

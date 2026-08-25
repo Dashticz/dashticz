@@ -12,6 +12,7 @@ $customFolder = isset($_POST['custom_folder']) ? trim((string) $_POST['custom_fo
 if (!preg_match('/^[A-Za-z0-9_-]+$/', $customFolder)) {
     dashticz_json_error(400, 'Invalid custom folder.');
 }
+
 $customDir = __DIR__ . '/../' . $customFolder;
 $customJsPath = $customDir . '/custom.js';
 $source = isset($_POST['source']) ? trim((string) $_POST['source']) : '';
@@ -49,6 +50,7 @@ $allowedOperators = array(
 $allowedModes = array(
     'existing', 'background', 'border', 'text',
     'background-border', 'background-text', 'background-border-text',
+    'banner',
 );
 $allowedBorderStyles = array('solid', 'dashed', 'dotted', 'double');
 
@@ -75,9 +77,12 @@ function device_rules_safe_property($value)
     return $value;
 }
 
-function device_rules_safe_target($value)
+function device_rules_safe_target($value, $allowSelf)
 {
     $value = trim((string) $value);
+    if ($allowSelf && $value === 'self') {
+        return 'self';
+    }
     if ($value === '' || strlen($value) > 200 || preg_match('/[\x00-\x1F\x7F]/', $value)) {
         return null;
     }
@@ -102,6 +107,64 @@ function device_rules_safe_class_list($value)
     return implode(' ', $classes);
 }
 
+function device_rules_safe_text($value)
+{
+    $value = (string) $value;
+    if (strlen($value) > 500 || preg_match('/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/', $value)) {
+        return null;
+    }
+    return $value;
+}
+
+function device_rules_safe_banner_text($value)
+{
+    $value = (string) $value;
+    if (
+        $value === '' ||
+        strlen($value) > 200 ||
+        preg_match('/[\x00-\x1F\x7F]/', $value) ||
+        strpos($value, '"') !== false ||
+        strpos($value, '\\') !== false
+    ) {
+        return null;
+    }
+    return $value;
+}
+
+function device_rules_safe_rule_id($value, $index, $rule)
+{
+    $value = trim((string) $value);
+    if ($value !== '' && preg_match('/^[A-Za-z_][A-Za-z0-9_-]{0,79}$/', $value)) {
+        return $value;
+    }
+    $encoded = json_encode($rule);
+    if ($encoded === false) {
+        $encoded = (string) $index;
+    }
+    return 'legacy_' . $index . '_' . substr(hash('sha256', $encoded), 0, 12);
+}
+
+function device_rules_short_hash($value)
+{
+    // FNV-1a over an ASCII-normalised value, matching shortHash() in
+    // devicerules.js. Masking every multiplication reproduces JavaScript's
+    // unsigned 32-bit overflow without requiring a browser crypto API.
+    $value = preg_replace('/[^A-Za-z0-9_-]/', '_', (string) $value);
+    $hash = 2166136261;
+    $length = strlen($value);
+    for ($index = 0; $index < $length; $index += 1) {
+        $hash = $hash ^ ord($value[$index]);
+        $hash = ($hash * 16777619) & 0xffffffff;
+    }
+    return base_convert(sprintf('%u', $hash), 10, 36);
+}
+
+function device_rules_managed_class_name($source, $ruleId)
+{
+    return 'dt-auto-' . device_rules_short_hash($source)
+        . '-' . device_rules_short_hash($ruleId);
+}
+
 function device_rules_mode_uses($mode, $part)
 {
     return in_array($part, explode('-', $mode), true);
@@ -117,14 +180,14 @@ function device_rules_rgba($hex, $opacity)
         . number_format($opacity, 2, '.', '') . ')';
 }
 
-function device_rules_normalize_style($style)
+function device_rules_normalize_style($style, $defaultMode, $requireBannerText)
 {
     global $allowedModes, $allowedBorderStyles;
 
     if (!is_array($style)) {
         $style = array();
     }
-    $mode = isset($style['mode']) ? (string) $style['mode'] : 'existing';
+    $mode = isset($style['mode']) ? (string) $style['mode'] : $defaultMode;
     if (!in_array($mode, $allowedModes, true)) {
         return array(null, 'Invalid Device Rules style mode.');
     }
@@ -159,6 +222,27 @@ function device_rules_normalize_style($style)
         return array(null, 'Invalid Device Rules text styling.');
     }
 
+    $bannerText = '';
+    $bannerTop = isset($style['bannerTop']) ? (int) $style['bannerTop'] : 40;
+    $fontSize = isset($style['fontSize']) ? (int) $style['fontSize'] : 20;
+    if ($mode === 'banner') {
+        $rawBannerText = isset($style['bannerText']) ? (string) $style['bannerText'] : '';
+        if ($rawBannerText === '' && !$requireBannerText) {
+            $bannerText = '';
+        } else {
+            $bannerText = device_rules_safe_banner_text($rawBannerText);
+            if ($bannerText === null) {
+                return array(null, 'Invalid Device Rules banner text.');
+            }
+        }
+        if ($bannerTop < 0 || $bannerTop > 2000) {
+            return array(null, 'Invalid Device Rules banner position.');
+        }
+        if ($fontSize < 10 || $fontSize > 60) {
+            return array(null, 'Invalid Device Rules banner font size.');
+        }
+    }
+
     return array(array(
         'mode' => $mode,
         'backgroundColor' => $backgroundColor,
@@ -167,6 +251,192 @@ function device_rules_normalize_style($style)
         'borderStyle' => $borderStyle,
         'borderColor' => $borderColor,
         'textColor' => $textColor,
+        'bannerText' => $bannerText,
+        'bannerTop' => $bannerTop,
+        'fontSize' => $fontSize,
+    ), null);
+}
+
+function device_rules_normalize_rule($rule, $index, $source)
+{
+    global $allowedOperators;
+
+    if (!is_array($rule)) {
+        return array(null, 'Invalid Device Rule at index ' . $index . '.');
+    }
+
+    $nested = (
+        (isset($rule['trigger']) && is_array($rule['trigger'])) ||
+        (isset($rule['actions']) && is_array($rule['actions']))
+    );
+    $triggerRaw = $nested && isset($rule['trigger']) && is_array($rule['trigger'])
+        ? $rule['trigger']
+        : $rule;
+    $actionsRaw = $nested && isset($rule['actions']) && is_array($rule['actions'])
+        ? $rule['actions']
+        : array();
+    $cssRaw = isset($actionsRaw['css']) && is_array($actionsRaw['css'])
+        ? $actionsRaw['css']
+        : (isset($rule['css']) && is_array($rule['css']) ? $rule['css'] : array());
+    $textRaw = isset($actionsRaw['text']) && is_array($actionsRaw['text'])
+        ? $actionsRaw['text']
+        : (isset($rule['text']) && is_array($rule['text']) ? $rule['text'] : array());
+
+    $legacyAction = isset($rule['action']) && (string) $rule['action'] === 'text'
+        ? 'text'
+        : 'class';
+    $enabled = !isset($rule['enabled']) || $rule['enabled'] !== false;
+    $cssEnabled = $nested
+        ? (isset($cssRaw['enabled']) && $cssRaw['enabled'] === true)
+        : $legacyAction === 'class';
+    $textEnabled = $nested
+        ? (isset($textRaw['enabled']) && $textRaw['enabled'] === true)
+        : $legacyAction === 'text';
+
+    $id = device_rules_safe_rule_id(
+        isset($rule['id']) ? $rule['id'] : '',
+        $index,
+        $rule
+    );
+
+    $propertyRaw = isset($triggerRaw['property']) ? trim((string) $triggerRaw['property']) : '';
+    $property = $propertyRaw === '' ? '' : device_rules_safe_property($propertyRaw);
+    if ($propertyRaw !== '' && $property === null) {
+        return array(null, 'Invalid Device Rule property at index ' . $index . '.');
+    }
+
+    $operator = isset($triggerRaw['operator']) ? (string) $triggerRaw['operator'] : 'eq';
+    if (!in_array($operator, $allowedOperators, true)) {
+        return array(null, 'Invalid Device Rule operator at index ' . $index . '.');
+    }
+    $value = isset($triggerRaw['value']) ? (string) $triggerRaw['value'] : '';
+    if (strlen($value) > 500) {
+        return array(null, 'Device Rule value is too long at index ' . $index . '.');
+    }
+
+    $cssTargetRaw = isset($cssRaw['target'])
+        ? trim((string) $cssRaw['target'])
+        : (!$nested && $legacyAction === 'class'
+            ? (isset($rule['target']) ? trim((string) $rule['target']) : 'self')
+            : 'self');
+    if ($cssTargetRaw === '' || $cssTargetRaw === $source) {
+        $cssTargetRaw = 'self';
+    }
+    $cssTarget = device_rules_safe_target($cssTargetRaw, true);
+    if ($cssTarget === null) {
+        return array(null, 'Invalid Device Rule CSS target at index ' . $index . '.');
+    }
+
+    $classRaw = isset($cssRaw['className'])
+        ? trim((string) $cssRaw['className'])
+        : (isset($cssRaw['class'])
+            ? trim((string) $cssRaw['class'])
+            : (!$nested && $legacyAction === 'class'
+                ? (isset($rule['className'])
+                    ? trim((string) $rule['className'])
+                    : (isset($rule['class']) ? trim((string) $rule['class']) : ''))
+                : ''));
+    if ($cssEnabled && $classRaw === '') {
+        $classRaw = device_rules_managed_class_name($source, $id);
+    }
+    $className = $classRaw === '' ? '' : device_rules_safe_class_list($classRaw);
+    if ($classRaw !== '' && $className === null) {
+        return array(null, 'Invalid Device Rule CSS class at index ' . $index . '.');
+    }
+
+    $styleRaw = isset($cssRaw['style']) && is_array($cssRaw['style'])
+        ? $cssRaw['style']
+        : (!$nested && isset($rule['style']) && is_array($rule['style'])
+            ? $rule['style']
+            : array());
+    $defaultMode = (!$nested && !isset($rule['style'])) ? 'existing' : 'background-border';
+    list($style, $styleError) = device_rules_normalize_style(
+        $styleRaw,
+        $defaultMode,
+        $enabled && $cssEnabled
+    );
+    if ($styleError !== null) {
+        return array(null, $styleError);
+    }
+
+    $textTargetRaw = isset($textRaw['target'])
+        ? trim((string) $textRaw['target'])
+        : (!$nested && $legacyAction === 'text' && isset($rule['target'])
+            ? trim((string) $rule['target'])
+            : '');
+    $textTarget = $textTargetRaw === ''
+        ? ''
+        : device_rules_safe_target($textTargetRaw, false);
+    if ($textTargetRaw !== '' && $textTarget === null) {
+        return array(null, 'Invalid Device Rule text target at index ' . $index . '.');
+    }
+
+    $textOn = device_rules_safe_text(
+        isset($textRaw['textOn'])
+            ? $textRaw['textOn']
+            : (isset($rule['textOn']) ? $rule['textOn'] : '')
+    );
+    $textOff = device_rules_safe_text(
+        isset($textRaw['textOff'])
+            ? $textRaw['textOff']
+            : (isset($rule['textOff']) ? $rule['textOff'] : '')
+    );
+    if ($textOn === null || $textOff === null) {
+        return array(null, 'Invalid Device Rule text at index ' . $index . '.');
+    }
+
+    if ($enabled) {
+        if ($property === '') {
+            return array(null, 'Enabled Device Rules require a trigger property.');
+        }
+        if ($operator !== 'empty' && $operator !== 'notempty' && trim($value) === '') {
+            return array(null, 'Enabled Device Rules require a comparison value.');
+        }
+        if (!$cssEnabled && !$textEnabled) {
+            return array(null, 'Enabled Device Rules require at least one action.');
+        }
+        if ($cssEnabled && $className === '') {
+            return array(null, 'Enabled Device Rules require a CSS class.');
+        }
+        if ($textEnabled && $textTarget === '') {
+            return array(null, 'Enabled text actions require a target device.');
+        }
+        if ($textEnabled && $textOn === '' && $textOff === '') {
+            return array(null, 'Enabled text actions require text for true and/or false.');
+        }
+    }
+
+    if (
+        $cssEnabled &&
+        $style['mode'] !== 'existing' &&
+        $className !== '' &&
+        strpos($className, ' ') !== false
+    ) {
+        return array(null, 'Generated styling requires exactly one CSS class name.');
+    }
+
+    return array(array(
+        'id' => $id,
+        'enabled' => $enabled,
+        'trigger' => array(
+            'property' => $property,
+            'operator' => $operator,
+            'value' => $value,
+        ),
+        'actions' => array(
+            'css' => array(
+                'enabled' => $cssEnabled,
+                'target' => $cssTarget,
+                'className' => $className,
+                'style' => $style,
+            ),
+            'text' => array(
+                'enabled' => $textEnabled,
+                'target' => $textTarget,
+                'textOn' => $textOn,
+                'textOff' => $textOff,
+            ),
+        ),
     ), null);
 }
 
@@ -211,20 +481,73 @@ function device_rules_append_managed_block($contents, $block)
     return $contents . $block . "\n";
 }
 
+function device_rules_css_selectors($className, $pseudo = '')
+{
+    // Modern Dark and Liquid Glass use panel selectors such as
+    // .transbg:not(.dial) together with !important. A plain generated class
+    // selector loses that cascade. Match the rendered Dashticz block shapes
+    // explicitly so managed automation styling can override the active theme.
+    $suffix = (string) $pseudo;
+    $classSelector = '.' . $className;
+    return implode(",\n", array(
+        'html body .dt_block.transbg' . $classSelector . $suffix,
+        'html body .mh.transbg' . $classSelector . $suffix,
+        'html body .dt_block' . $classSelector . $suffix,
+        'html body .mh' . $classSelector . $suffix,
+        'html body .transbg' . $classSelector . $suffix,
+        'html body ' . $classSelector . $suffix,
+    ));
+}
+
 function device_rules_css_for_rules($rules)
 {
     $classes = array();
     foreach ($rules as $rule) {
-        $style = $rule['style'];
+        if (!isset($rule['actions']['css']) || !is_array($rule['actions']['css'])) {
+            continue;
+        }
+        $action = $rule['actions']['css'];
+        if (!$action['enabled']) {
+            continue;
+        }
+        $style = $action['style'];
         $mode = $style['mode'];
         if ($mode === 'existing') {
             continue;
         }
-        $className = $rule['className'];
+        $className = $action['className'];
         if (!preg_match('/^[A-Za-z_][A-Za-z0-9_-]*$/', $className)) {
-            // Disabled/incomplete draft rules do not get generated CSS.
             continue;
         }
+
+        if ($mode === 'banner') {
+            if ($style['bannerText'] === '') {
+                continue;
+            }
+            // The last rule using the same class within this source wins.
+            $classes[$className] = device_rules_css_selectors($className)
+                . " {\n  visibility: visible;\n}\n\n"
+                . device_rules_css_selectors($className, ':before') . " {\n"
+                . '  content: "' . $style['bannerText'] . "\";\n"
+                . '  background: ' . device_rules_rgba($style['backgroundColor'], $style['backgroundOpacity']) . " !important;\n"
+                . "  background-clip: border-box;\n"
+                . '  border: ' . $style['borderWidth'] . 'px ' . $style['borderStyle'] . ' ' . $style['borderColor'] . " !important;\n"
+                . "  border-radius: 15px !important;\n"
+                . '  font-size: ' . $style['fontSize'] . "px !important;\n"
+                . "  font-weight: bold;\n"
+                . '  color: ' . $style['textColor'] . " !important;\n"
+                . "  visibility: visible;\n"
+                . "  position: fixed;\n"
+                . '  top: ' . $style['bannerTop'] . "px;\n"
+                . "  left: 50%;\n"
+                . "  transform: translateX(-50%);\n"
+                . "  padding: 10px;\n"
+                . "  text-align: center;\n"
+                . "  z-index: 9999;\n"
+                . '}';
+            continue;
+        }
+
         $declarations = array();
         if (device_rules_mode_uses($mode, 'background')) {
             $declarations[] = '  background: '
@@ -239,8 +562,8 @@ function device_rules_css_for_rules($rules)
             $declarations[] = '  color: ' . $style['textColor'] . ' !important;';
         }
         if ($declarations) {
-            // Last rule using the same class within this source wins.
-            $classes[$className] = '.' . $className . " {\n"
+            // The last rule using the same class within this source wins.
+            $classes[$className] = device_rules_css_selectors($className) . " {\n"
                 . implode("\n", $declarations) . "\n}";
         }
     }
@@ -273,67 +596,17 @@ function device_rules_preflight_file($path, $customDir, $label)
 }
 
 $rules = array();
+$seenRuleIds = array();
 foreach ($decodedRules as $index => $rule) {
-    if (!is_array($rule)) {
-        dashticz_json_error(400, 'Invalid Device Rule at index ' . $index . '.');
+    list($normalizedRule, $ruleError) = device_rules_normalize_rule($rule, $index, $source);
+    if ($ruleError !== null) {
+        dashticz_json_error(400, $ruleError);
     }
-    $enabled = !isset($rule['enabled']) || $rule['enabled'] !== false;
-    $propertyRaw = isset($rule['property']) ? trim((string) $rule['property']) : '';
-    $property = $propertyRaw === '' ? '' : device_rules_safe_property($propertyRaw);
-    $operator = isset($rule['operator']) ? (string) $rule['operator'] : 'eq';
-    $value = isset($rule['value']) ? (string) $rule['value'] : '';
-    $targetRaw = isset($rule['target']) ? trim((string) $rule['target']) : '';
-    $target = $targetRaw === '' ? '' : device_rules_safe_target($targetRaw);
-    $classRaw = isset($rule['className'])
-        ? trim((string) $rule['className'])
-        : (isset($rule['class']) ? trim((string) $rule['class']) : '');
-    $className = $classRaw === '' ? '' : device_rules_safe_class_list($classRaw);
-
-    if ($propertyRaw !== '' && $property === null) {
-        dashticz_json_error(400, 'Invalid Device Rule property at index ' . $index . '.');
+    if (isset($seenRuleIds[$normalizedRule['id']])) {
+        dashticz_json_error(400, 'Duplicate Device Rule id at index ' . $index . '.');
     }
-    if (!in_array($operator, $allowedOperators, true)) {
-        dashticz_json_error(400, 'Invalid Device Rule operator at index ' . $index . '.');
-    }
-    if (strlen($value) > 500) {
-        dashticz_json_error(400, 'Device Rule value is too long at index ' . $index . '.');
-    }
-    if ($targetRaw !== '' && $target === null) {
-        dashticz_json_error(400, 'Invalid Device Rule target at index ' . $index . '.');
-    }
-    if ($classRaw !== '' && $className === null) {
-        dashticz_json_error(400, 'Invalid Device Rule CSS class at index ' . $index . '.');
-    }
-
-    list($style, $styleError) = device_rules_normalize_style(
-        isset($rule['style']) ? $rule['style'] : array('mode' => 'existing')
-    );
-    if ($styleError !== null) {
-        dashticz_json_error(400, $styleError);
-    }
-
-    if ($enabled) {
-        if ($property === '' || $target === '' || $className === '') {
-            dashticz_json_error(400, 'Enabled Device Rules require property, target and CSS class.');
-        }
-        if ($operator !== 'empty' && $operator !== 'notempty' && trim($value) === '') {
-            dashticz_json_error(400, 'Enabled Device Rules require a comparison value.');
-        }
-    }
-    if ($style['mode'] !== 'existing' && $className !== '' && strpos($className, ' ') !== false) {
-        dashticz_json_error(400, 'Generated styling requires exactly one CSS class name.');
-    }
-
-    $rules[] = array(
-        'enabled' => $enabled,
-        'property' => $property,
-        'operator' => $operator,
-        'value' => $value,
-        'action' => 'class',
-        'target' => $target,
-        'className' => $className,
-        'style' => $style,
-    );
+    $seenRuleIds[$normalizedRule['id']] = true;
+    $rules[] = $normalizedRule;
 }
 
 if (is_link($customDir) || !is_dir($customDir)) {
@@ -392,6 +665,7 @@ if ($cssRemoveError !== null) {
 
 if (count($rules) > 0 || $handler !== '') {
     $entry = array(
+        'schemaVersion' => 2,
         'rules' => $rules,
         'customJsHandler' => $handler,
     );
@@ -444,6 +718,7 @@ header('Content-Type: application/json');
 header('Cache-Control: no-store');
 echo json_encode(array(
     'success' => true,
+    'schema_version' => 2,
     'source' => $source,
     'custom_js' => 'custom.js',
     'css_file' => $cssFile,
