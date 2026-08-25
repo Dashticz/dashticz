@@ -34,6 +34,13 @@
   var classManagedNames = {};
   var textStates = {};
   var textBaseValues = {};
+  // The multiline CSS class state last applied to a text target. process()
+  // re-evaluates every rule on every device refresh regardless of whether
+  // anything actually changed, so without this guard recomputeTextTarget()
+  // would re-toggle the multiline class - and the CSS-state DOM scan that
+  // drives - on every single refresh, multiplied by the number of rules on
+  // the source, even when nothing about the multiline state changed.
+  var textLastMultiline = {};
   var sourceStateIds = {};
   // Keep the last live block object for each source alias. This lets a saved
   // On/Off change be reconciled immediately instead of waiting for the next
@@ -1057,6 +1064,7 @@
       });
 
     if (!states.length) {
+      delete textLastMultiline[target];
       updateMultilineTextClass(target, false);
       delete textStates[target];
       restoreTargetData(target);
@@ -1097,7 +1105,18 @@
       if (value !== '') values.push(value);
     });
 
-    updateMultilineTextClass(target, lineStates.length > 0);
+    var multiline = lineStates.length > 0;
+    // process() re-evaluates every rule on every device refresh regardless
+    // of whether its trigger result actually changed, so with several rules
+    // on one source this class toggle - and the CSS-state DOM scan it drives
+    // through recomputeClassTarget() - would otherwise redo on every single
+    // refresh even when the multiline state hasn't actually changed. The
+    // text value itself is still always re-applied below, matching the
+    // pre-existing (pre-multiline) write-every-time behavior.
+    if (textLastMultiline[target] !== multiline) {
+      textLastMultiline[target] = multiline;
+      updateMultilineTextClass(target, multiline);
+    }
     setTargetData(target, values.join('\n'));
   }
 
@@ -1178,6 +1197,13 @@
   function reconcileSavedSource(source) {
     source = String(source || '').trim();
     if (!source) return;
+
+    // Device Editor's own save may rebuild the block/popup DOM in between
+    // this call and the next one scheduleSavedSourceReconcile() makes, which
+    // can silently drop the multiline CSS class applied below. Forget the
+    // last-applied state so recomputeTextTarget() re-toggles it for real
+    // instead of skipping because its own tracked value did not change.
+    textLastMultiline = {};
 
     var block = sourceBlocks[source] || null;
     var aliases = [source];
