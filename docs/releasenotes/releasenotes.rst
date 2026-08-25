@@ -38,6 +38,10 @@ v3.45.7 beta (25-8-2026)
 - Verified with the full node --test suite (173 tests) and Prettier's
   format check.
 
+- Fixed a Prettier formatting mismatch in ``css/creative.css`` and
+  ``js/devicerules.js`` (no functional change) that was failing CI's
+  ``format:check`` job on Node 20/22/24.
+
 v3.45.6 beta (24-8-2026)
 -------------------------
 

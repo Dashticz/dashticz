@@ -948,10 +948,14 @@
   function compareTextStates(left, right) {
     var labelComparison = String(
       left.sourceLabel || left.sourceKey || ''
-    ).localeCompare(String(right.sourceLabel || right.sourceKey || ''), undefined, {
-      numeric: true,
-      sensitivity: 'base',
-    });
+    ).localeCompare(
+      String(right.sourceLabel || right.sourceKey || ''),
+      undefined,
+      {
+        numeric: true,
+        sensitivity: 'base',
+      }
+    );
     if (labelComparison) return labelComparison;
 
     var keyComparison = String(left.sourceKey || '').localeCompare(
