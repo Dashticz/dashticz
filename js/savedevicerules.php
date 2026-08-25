@@ -503,6 +503,11 @@ function device_rules_css_for_rules($rules)
 {
     $classes = array();
     foreach ($rules as $rule) {
+        // Keep the action settings for later re-enabling, but a disabled
+        // master rule must not leave generated CSS active in custom.css.
+        if (isset($rule['enabled']) && $rule['enabled'] === false) {
+            continue;
+        }
         if (!isset($rule['actions']['css']) || !is_array($rule['actions']['css'])) {
             continue;
         }

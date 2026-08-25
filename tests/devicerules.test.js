@@ -137,7 +137,8 @@ function createRuntime(initialBlocks = {}, liveDevices = {}) {
       return String(tagName).toLowerCase() === 'head' ? [head] : [];
     },
   };
-  function jQuery() {
+  function jQuery(value) {
+    if (value && value.__testCollection) return value;
     return emptyCollection();
   }
 
@@ -203,6 +204,22 @@ function createRuntime(initialBlocks = {}, liveDevices = {}) {
 function plain(value) {
   return JSON.parse(JSON.stringify(value));
 }
+
+test('text actions target the value field and leave titles untouched', () => {
+  assert.match(source, /setBlockState\(target, \{ value: value \}\)/);
+  assert.doesNotMatch(source, /setBlockState\(target, \{ title: value \}\)/);
+  assert.match(source, /function renderedDataField\(/);
+});
+
+test('generated addClass fields are cleaned before Device Editor saves', () => {
+  assert.match(source, /function syncAutomationAddClassCustomField\(/);
+  assert.match(source, /field !== 'addclass'/);
+  const syncIndex = source.indexOf(
+    'syncAutomationAddClassCustomField($popup, source, ['
+  );
+  const redispatchIndex = source.indexOf('$ok[0].click();');
+  assert.ok(syncIndex !== -1 && syncIndex < redispatchIndex);
+});
 
 test('keeps the Device Rules writer on its fixed endpoint', () => {
   assert.match(source, /var SAVE_URL = 'js\/savedevicerules\.php';/);
@@ -298,7 +315,7 @@ test('keeps previous flat CSS and text rules backwards compatible', () => {
 test('one trigger applies CSS to the current device and text to another device block', () => {
   const { api, blocks, store } = createRuntime({
     source: { addClass: 'existing-class', title: 'Source' },
-    message: { title: 'Original message' },
+    message: { title: 'Status message', value: 'Original message' },
   });
   store.source = {
     schemaVersion: 2,
@@ -331,17 +348,241 @@ test('one trigger applies CSS to the current device and text to another device b
     'automation-active',
     'existing-class',
   ]);
-  assert.equal(blocks.message.title, 'Device is on');
+  assert.equal(blocks.message.value, 'Device is on');
+  assert.equal(blocks.message.title, 'Status message');
 
   block.device.Status = 'Off';
   api.process(block);
   assert.equal(blocks.source.addClass, 'existing-class');
-  assert.equal(blocks.message.title, 'Device is off');
+  assert.equal(blocks.message.value, 'Device is off');
 
   store.source.rules = [];
   api.process(block);
   assert.equal(blocks.source.addClass, 'existing-class');
-  assert.equal(blocks.message.title, 'Original message');
+  assert.equal(blocks.message.value, 'Original message');
+});
+
+test('removing a text action restores an implicit live device value', () => {
+  const { api, blocks, store } = createRuntime(
+    {
+      source: { title: 'Source' },
+      message: { idx: 20, title: 'Status message' },
+    },
+    { 20: { Data: 'Domoticz message', Status: 'On' } }
+  );
+  store.source = {
+    schemaVersion: 2,
+    rules: [
+      {
+        id: 'temporary_text',
+        trigger: { property: 'Status', operator: 'eq', value: 'On' },
+        actions: {
+          css: { enabled: false },
+          text: {
+            enabled: true,
+            target: 'message',
+            textOn: 'Party mode is on',
+            textOff: 'Party mode is off',
+          },
+        },
+      },
+    ],
+  };
+
+  const sourceBlock = { key: 'source', device: { Status: 'On' } };
+  api.process(sourceBlock);
+  assert.equal(blocks.message.value, 'Party mode is on');
+  assert.equal(blocks.message.title, 'Status message');
+
+  store.source.rules = [];
+  api.process(sourceBlock);
+  assert.equal(
+    Object.prototype.hasOwnProperty.call(blocks.message, 'value'),
+    false
+  );
+  assert.equal(blocks.message.title, 'Status message');
+});
+
+test('switching an active automation Off removes its CSS immediately', () => {
+  const { api, blocks, store, runtimeStyles } = createRuntime({
+    source: { addClass: 'source-base', title: 'Source' },
+    message: { title: 'Status message', value: 'Original message' },
+  });
+  const activeRule = {
+    id: 'master_switch',
+    enabled: true,
+    trigger: { property: 'Status', operator: 'eq', value: 'On' },
+    actions: {
+      css: {
+        enabled: true,
+        target: 'self',
+        className: 'master-switch-active',
+        style: {
+          mode: 'background-border',
+          backgroundColor: '#112233',
+          backgroundOpacity: 0.5,
+          borderWidth: 2,
+          borderStyle: 'solid',
+          borderColor: '#445566',
+        },
+      },
+      text: {
+        enabled: true,
+        target: 'message',
+        textOn: 'Automation is active',
+        textOff: 'Automation is inactive',
+      },
+    },
+  };
+  store.source = { schemaVersion: 2, rules: [activeRule] };
+
+  const block = { key: 'source', idx: 12, device: { Status: 'On' } };
+  api.process(block);
+  assert.equal(blocks.source.addClass, 'source-base master-switch-active');
+  assert.equal(blocks.message.value, 'Automation is active');
+  assert.equal(runtimeStyles.length, 1);
+
+  const disabledRule = JSON.parse(JSON.stringify(activeRule));
+  disabledRule.enabled = false;
+  api.updateRuleStore('source', [disabledRule], '');
+
+  // Saving Off is enough; no new Domoticz update is required.
+  assert.equal(blocks.source.addClass || '', 'source-base');
+  assert.equal(blocks.message.value, 'Original message');
+  assert.equal(runtimeStyles.length, 0);
+
+  api.updateRuleStore('source', [activeRule], '');
+  assert.equal(blocks.source.addClass, 'source-base master-switch-active');
+  assert.equal(blocks.message.value, 'Automation is active');
+});
+
+test('generated automation classes cannot become a permanent addClass base', () => {
+  const { api, blocks, store } = createRuntime({
+    source: { addClass: 'manual-base' },
+  });
+  const activeRule = {
+    id: 'persisted_class',
+    enabled: true,
+    trigger: { property: 'Status', operator: 'eq', value: 'On' },
+    actions: {
+      css: {
+        enabled: true,
+        target: 'self',
+        className: 'dt-auto-persisted',
+        style: { mode: 'background-border' },
+      },
+      text: { enabled: false },
+    },
+  };
+  store.source = { schemaVersion: 2, rules: [activeRule] };
+
+  api.process({ key: 'source', device: { Status: 'On' } });
+  assert.equal(blocks.source.addClass, 'manual-base dt-auto-persisted');
+
+  const disabledRule = JSON.parse(JSON.stringify(activeRule));
+  disabledRule.enabled = false;
+  api.updateRuleStore('source', [disabledRule], '');
+  assert.equal(blocks.source.addClass || '', 'manual-base');
+  assert.equal(
+    api.stripManagedAddClassValue(
+      'manual-base dt-auto-persisted',
+      'source',
+      'source',
+      [[activeRule, disabledRule]]
+    ),
+    'manual-base'
+  );
+});
+
+test('Device Config keeps manual addClass names and removes generated-only rows', () => {
+  const { api } = createRuntime();
+  const rules = [
+    {
+      id: 'managed_class',
+      trigger: { property: 'Status', operator: 'eq', value: 'On' },
+      actions: {
+        css: {
+          enabled: true,
+          target: 'self',
+          className: 'dt-auto-generated',
+          style: { mode: 'background-border' },
+        },
+        text: { enabled: false },
+      },
+    },
+  ];
+
+  function field(value) {
+    return {
+      __testCollection: true,
+      length: 1,
+      current: value,
+      val(next) {
+        if (!arguments.length) return this.current;
+        this.current = String(next);
+        return this;
+      },
+    };
+  }
+
+  function row(settingValue) {
+    const name = field('addClass');
+    const setting = field(settingValue);
+    const removeButton = {
+      __testCollection: true,
+      length: 1,
+      removed: false,
+      prop() {
+        return false;
+      },
+      trigger(event) {
+        if (event === 'click') this.removed = true;
+        return this;
+      },
+    };
+    return {
+      __testCollection: true,
+      name,
+      setting,
+      removeButton,
+      rowRemoved: false,
+      find(selector) {
+        if (selector === '.de-custom-field-name') return name;
+        if (selector === '.de-custom-field-setting') return setting;
+        if (selector === '.de-custom-field-remove') return removeButton;
+        return emptyCollection();
+      },
+      addClass() {
+        return this;
+      },
+      remove() {
+        this.rowRemoved = true;
+        return this;
+      },
+    };
+  }
+
+  const manualRow = row('manual dt-auto-generated');
+  const generatedOnlyRow = row('dt-auto-generated');
+  const popup = {
+    find(selector) {
+      if (selector !== '.de-custom-field-row') return emptyCollection();
+      return {
+        length: 2,
+        each(callback) {
+          callback.call(manualRow);
+          callback.call(generatedOnlyRow);
+          return this;
+        },
+      };
+    },
+  };
+
+  api.syncAutomationAddClassCustomField(popup, 'source', [rules]);
+  assert.equal(manualRow.setting.current, 'manual');
+  assert.equal(manualRow.removeButton.removed, false);
+  assert.equal(generatedOnlyRow.removeButton.removed, true);
+  assert.equal(generatedOnlyRow.rowRemoved, true);
 });
 
 test('runtime CSS upgrades previously generated weak selectors without a resave', () => {
@@ -428,8 +669,8 @@ test('changing action targets removes state from the previous targets', () => {
     source: { title: 'Source' },
     old_css: { addClass: 'old-base' },
     new_css: { addClass: 'new-base' },
-    old_text: { title: 'Old original' },
-    new_text: { title: 'New original' },
+    old_text: { title: 'Old text', value: 'Old original' },
+    new_text: { title: 'New text', value: 'New original' },
   });
   const rule = {
     id: 'move_targets',
@@ -454,7 +695,7 @@ test('changing action targets removes state from the previous targets', () => {
 
   api.process(block);
   assert.equal(blocks.old_css.addClass, 'old-base moving-class');
-  assert.equal(blocks.old_text.title, 'Active');
+  assert.equal(blocks.old_text.value, 'Active');
 
   rule.actions.css.target = 'new_css';
   rule.actions.text.target = 'new_text';
@@ -462,8 +703,8 @@ test('changing action targets removes state from the previous targets', () => {
 
   assert.equal(blocks.old_css.addClass, 'old-base');
   assert.equal(blocks.new_css.addClass, 'new-base moving-class');
-  assert.equal(blocks.old_text.title, 'Old original');
-  assert.equal(blocks.new_text.title, 'Active');
+  assert.equal(blocks.old_text.value, 'Old original');
+  assert.equal(blocks.new_text.value, 'Active');
 });
 
 test('generated block selectors override important theme panel rules', () => {
@@ -508,6 +749,30 @@ test('generated CSS contains the configured background, opacity and border', () 
   assert.match(css, /html body \.mh\.transbg\.visual-rule/);
   assert.match(css, /background: rgba\(16, 32, 48, 0\.40\) !important;/);
   assert.match(css, /border: 4px double #abcdef !important;/);
+});
+
+test('disabled master rules do not generate client-side CSS', () => {
+  const { api } = createRuntime();
+  const css = api.generatedCssForRules(
+    [
+      {
+        id: 'disabled_visual',
+        enabled: false,
+        trigger: { property: 'Status', operator: 'eq', value: 'On' },
+        actions: {
+          css: {
+            enabled: true,
+            target: 'self',
+            className: 'disabled-visual',
+            style: { mode: 'background' },
+          },
+          text: { enabled: false },
+        },
+      },
+    ],
+    'source'
+  );
+  assert.equal(css, '');
 });
 
 test('text target dropdown data shows friendly names, IDX and text devices first', () => {
