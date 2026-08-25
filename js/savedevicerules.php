@@ -374,7 +374,7 @@ function device_rules_normalize_rule($rule, $index, $source)
 
     $textOutputMode = isset($textRaw['outputMode'])
         ? trim((string) $textRaw['outputMode'])
-        : (isset($rule['outputMode']) ? trim((string) $rule['outputMode']) : 'replace');
+        : (isset($rule['outputMode']) ? trim((string) $rule['outputMode']) : 'line');
     if (!in_array($textOutputMode, $allowedTextOutputModes, true)) {
         return array(null, 'Invalid Device Rule text output mode at index ' . $index . '.');
     }
