@@ -70,6 +70,7 @@ test('server normalises schema v2 with CSS and text actions', () => {
       text: {
         enabled: true,
         target: 'message',
+        outputMode: 'line',
         textOn: 'Active',
         textOff: 'Inactive',
       },
@@ -81,6 +82,7 @@ test('server normalises schema v2 with CSS and text actions', () => {
   assert.equal(result.rule.actions.css.target, 'self');
   assert.equal(result.rule.actions.css.style.backgroundOpacity, 0.45);
   assert.equal(result.rule.actions.text.target, 'message');
+  assert.equal(result.rule.actions.text.outputMode, 'line');
   assert.equal(result.rule.actions.text.textOn, 'Active');
 });
 
@@ -114,6 +116,7 @@ test('server converts previous flat rules to the grouped schema', () => {
   assert.equal(textResult.rule.actions.css.enabled, false);
   assert.equal(textResult.rule.actions.text.enabled, true);
   assert.equal(textResult.rule.actions.text.target, 'legacy_text');
+  assert.equal(textResult.rule.actions.text.outputMode, 'replace');
 });
 
 test('server rejects unsafe trigger paths and incomplete enabled text actions', () => {
@@ -143,6 +146,26 @@ test('server rejects unsafe trigger paths and incomplete enabled text actions', 
   assert.match(missingTarget.error, /target device/);
 });
 
+
+test('server rejects unknown text output modes', () => {
+  const result = normalize({
+    id: 'bad_output_mode',
+    enabled: true,
+    trigger: { property: 'Status', operator: 'eq', value: 'On' },
+    actions: {
+      css: { enabled: false },
+      text: {
+        enabled: true,
+        target: 'message',
+        outputMode: 'append-html',
+        textOn: 'On',
+        textOff: '',
+      },
+    },
+  });
+  assert.match(result.error, /text output mode/);
+});
+
 test('disabled CSS drafts may keep an empty banner without blocking a text action', () => {
   const result = normalize({
     id: 'text_only',
@@ -166,6 +189,39 @@ test('disabled CSS drafts may keep an empty banner without blocking a text actio
   assert.equal(result.error, null);
   assert.equal(result.rule.actions.css.style.mode, 'banner');
   assert.equal(result.rule.actions.css.style.bannerText, '');
+});
+
+
+test('server CSS generation skips a disabled master rule', () => {
+  const rule = {
+    id: 'disabled_visual',
+    enabled: false,
+    trigger: { property: 'Status', operator: 'eq', value: 'On' },
+    actions: {
+      css: {
+        enabled: true,
+        target: 'self',
+        className: 'disabled-visual',
+        style: {
+          mode: 'background-border',
+          backgroundColor: '#102030',
+          backgroundOpacity: 0.4,
+          borderWidth: 4,
+          borderStyle: 'double',
+          borderColor: '#abcdef',
+        },
+      },
+      text: { enabled: false },
+    },
+  };
+  const encoded = Buffer.from(JSON.stringify(rule), 'utf8').toString('base64');
+  const output = runPhpLibrary(`
+$input = json_decode(base64_decode('${encoded}'), true);
+list($rule, $error) = device_rules_normalize_rule($input, 0, 'source');
+if ($error !== null) { echo $error; exit(2); }
+echo device_rules_css_for_rules(array($rule));
+`);
+  assert.equal(output, '');
 });
 
 test('server CSS generation reads the nested CSS action', () => {
