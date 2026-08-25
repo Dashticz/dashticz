@@ -1149,8 +1149,9 @@
     updateRuntimeRuleCss(sourceKey, rules);
 
     var currentEntries = [];
+    var sourceLabel = friendlyBlockName(selfTarget);
 
-    rules.forEach(function (rule) {
+    rules.forEach(function (rule, ruleIndex) {
       if (rule.enabled === false || !rule.trigger.property) return;
       var actual = readPath(block.device, rule.trigger.property);
       var active = compare(actual, rule.trigger.operator, rule.trigger.value);
@@ -1183,7 +1184,12 @@
           textId,
           textAction.textOn,
           textAction.textOff,
-          active
+          active,
+          {
+            sourceKey: sourceKey,
+            sourceLabel: sourceLabel,
+            ruleIndex: ruleIndex,
+          }
         );
       }
     });
