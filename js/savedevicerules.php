@@ -53,7 +53,6 @@ $allowedModes = array(
     'banner',
 );
 $allowedBorderStyles = array('solid', 'dashed', 'dotted', 'double');
-$allowedTextOutputModes = array('replace', 'line');
 
 function device_rules_valid_hex_color($value)
 {
@@ -260,7 +259,7 @@ function device_rules_normalize_style($style, $defaultMode, $requireBannerText)
 
 function device_rules_normalize_rule($rule, $index, $source)
 {
-    global $allowedOperators, $allowedTextOutputModes;
+    global $allowedOperators;
 
     if (!is_array($rule)) {
         return array(null, 'Invalid Device Rule at index ' . $index . '.');
@@ -372,13 +371,6 @@ function device_rules_normalize_rule($rule, $index, $source)
         return array(null, 'Invalid Device Rule text target at index ' . $index . '.');
     }
 
-    $textOutputMode = isset($textRaw['outputMode'])
-        ? trim((string) $textRaw['outputMode'])
-        : (isset($rule['outputMode']) ? trim((string) $rule['outputMode']) : 'line');
-    if (!in_array($textOutputMode, $allowedTextOutputModes, true)) {
-        return array(null, 'Invalid Device Rule text output mode at index ' . $index . '.');
-    }
-
     $textOn = device_rules_safe_text(
         isset($textRaw['textOn'])
             ? $textRaw['textOn']
@@ -441,7 +433,6 @@ function device_rules_normalize_rule($rule, $index, $source)
             'text' => array(
                 'enabled' => $textEnabled,
                 'target' => $textTarget,
-                'outputMode' => $textOutputMode,
                 'textOn' => $textOn,
                 'textOff' => $textOff,
             ),
@@ -512,12 +503,6 @@ function device_rules_css_for_rules($rules)
 {
     $classes = array();
     foreach ($rules as $rule) {
-        // A disabled master rule must not leave generated CSS behind. The
-        // action settings are retained for later re-enabling, but they are not
-        // active while the rule-level On/Off switch is Off.
-        if (isset($rule['enabled']) && $rule['enabled'] === false) {
-            continue;
-        }
         if (!isset($rule['actions']['css']) || !is_array($rule['actions']['css'])) {
             continue;
         }

@@ -42,10 +42,7 @@
 }
 
 /* No border on Group switches on the rights side */
-.transbg.longpress::after {
-  border-right: none !important;
-  position: absolute;
-}
+.transbg.longpress::after { border-right: none !important; position: absolute; }
 
 .dt-container {
   width: 100%;
