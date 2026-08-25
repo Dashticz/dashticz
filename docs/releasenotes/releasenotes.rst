@@ -33,37 +33,9 @@ v3.45.7 beta (25-8-2026)
   without overlapping), and font size, with width left automatic so
   the banner fits any length of text.
 
-- Adjusted the text action to fill the target device's data/value
-  field instead of its title, and added a Text output mode (Replace
-  existing text / Add as a separate line) so several automations can
-  share one target device without overwriting each other -
-  separate-line contributions render as sorted, stacked lines with a
-  multiline-friendly white-space style. A rule's disabled master
-  switch now also suppresses its generated server-side CSS (it
-  previously only stopped client-side application), and a target's
-  live On/Off text is reconciled immediately from the last known
-  source device state on save, instead of waiting for the next
-  Domoticz update.
-
-- Traced a slowdown with several automation rules configured to
-  recomputeTextTarget() unconditionally re-toggling the multiline
-  CSS class on every device refresh regardless of whether the
-  trigger result changed, each time driving its own full-page DOM
-  scan on top of the text action's own scan; a Node harness
-  simulating 2 rules on one source sharing one Separate-line target
-  measured 121 scans across 20 unchanged refresh ticks before the
-  fix versus 43 after. Now tracks the last-applied multiline state
-  per target and only re-toggles the class when it actually changes
-  (reconcileSavedSource() still forces a fresh apply right after a
-  save, so the existing apply-immediately behavior is unaffected).
-  The text action's default output mode is Separate line, so
-  multiple automation rules that target the same device stack as
-  multiple lines out of the box; Replace remains available per rule
-  for the old overwrite behavior.
-
 * **Code**
 
-- Verified with the full node --test suite (191 tests) and Prettier's
+- Verified with the full node --test suite (173 tests) and Prettier's
   format check.
 
 v3.45.6 beta (24-8-2026)
