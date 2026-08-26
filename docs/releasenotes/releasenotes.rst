@@ -46,6 +46,25 @@ v3.45.8 beta (26-8-2026)
   generation token so a rerender never duplicates event handlers or
   leaves stale UI state behind.
 
+- Fixed Automation trigger comparisons (greater than/less than/etc.)
+  failing on Domoticz values that glue a unit straight onto the
+  number with no space (e.g. a pressure sensor's Data/sValue reading
+  "1,8Bar") or mix a thousands separator with a decimal comma (e.g.
+  "1.020,5 hPa"). ``numericValue()`` (js/devicerules.js) now extracts
+  the numeric run from the value first and, when both '.' and ','
+  appear, treats whichever comes last as the decimal separator,
+  instead of naively replacing only the first comma - which
+  previously truncated a value like "1.020,5" at the thousands
+  separator.
+
+- Fixed the Automation editor's "Add CSS to current device" and "Put
+  text in another device" checkboxes rendering as small native
+  checkboxes instead of matching the size of the Condition/Style
+  dropdowns and the popup's own top-level Automation switch - both
+  now use the existing ``.de-switch`` class (css/creative.css)
+  already standard for every other Device Config switch, instead of
+  a plain unstyled checkbox.
+
 * **Code**
 
 - Every one of the five is implemented by extending the same

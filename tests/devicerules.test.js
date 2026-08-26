@@ -927,6 +927,20 @@ test('numeric and text trigger comparisons keep their previous behaviour', () =>
   assert.equal(api.compare('Off', 'ne', 'On'), true);
 });
 
+test('numeric trigger comparisons parse a unit suffixed straight onto the value, comma or dot decimal', () => {
+  const { api } = createRuntime();
+  // Domoticz custom sensors (e.g. a pressure gauge configured with unit
+  // "Bar") return Data like "1,8Bar" with no separating space (#219 follow-up).
+  assert.equal(api.compare('1,8Bar', 'gt', '2'), false);
+  assert.equal(api.compare('2,3Bar', 'gt', '2'), true);
+  assert.equal(api.compare('2,3Bar', 'lt', '2'), false);
+  assert.equal(api.compare('1.8Bar', 'gt', '2'), false);
+  // European-formatted values that combine a thousands separator with a
+  // decimal comma must not be truncated at the thousands separator.
+  assert.equal(api.compare('1.020,5 hPa', 'gt', '1000'), true);
+  assert.equal(api.compare('-2,3 Bar', 'lt', '0'), true);
+});
+
 test('PHP writer accepts schema v2, preserves legacy rules and matches generated classes', () => {
   const canonical = normalizeRuleWithPhp(
     {
