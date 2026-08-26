@@ -685,10 +685,19 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(source, /array_key_exists\('height'/);
   assert.match(source, /round\(\$height \/ 10\) \* 10/);
   assert.match(writer, /height/);
-  /* Device Editor helper blocks are explicitly validated and whitelisted. */
+  /* Device Editor helper blocks are explicitly validated and whitelisted,
+     via a single $specialBlockKinds array shared by both the whitelist
+     check and the title-required check below, instead of two separately
+     hand-duplicated kind lists - adding another repeatable special (see
+     the iframe/calendar/publictransport/timegraph/xmltvguide entries for
+     the pattern) only touches this one array. */
   assert.match(
     source,
-    /in_array\(\$entry\['kind'\], \['dummy', 'title', 'custom', 'group', 'html', 'lms'\], true\)/
+    /\$specialBlockKinds = \['dummy', 'title', 'custom', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms'\];/
+  );
+  assert.match(
+    source,
+    /in_array\(\$entry\['kind'\], \$specialBlockKinds, true\)/
   );
   /* Lyrion Music Server block: server/port/player validated, credentials
      never echoed back in an error message. */

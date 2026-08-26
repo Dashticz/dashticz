@@ -1695,6 +1695,96 @@ function configwriter_special_block_props($block)
         if (!empty($block['last_update'])) {
             $props['last_update'] = true;
         }
+    } elseif ($kind === 'iframe') {
+        // js/components/frame.js dispatches on a truthy frameurl alone - no
+        // `type` of its own, same convention as html above. frameurl itself
+        // is carried through custom_fields below (saveblocks.php requires
+        // and validates it for this kind).
+        $props = [
+            'width' => $width,
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        if (!empty($block['last_update'])) {
+            $props['last_update'] = true;
+        }
+    } elseif ($kind === 'calendar') {
+        // js/components/calendar.js dispatches on a truthy icalurl string
+        // alone - no `type` of its own, same convention as html/iframe
+        // above. icalurl itself is carried through custom_fields below
+        // (saveblocks.php requires and validates it for this kind).
+        $props = [
+            'width' => $width,
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        if (!empty($block['last_update'])) {
+            $props['last_update'] = true;
+        }
+    } elseif ($kind === 'publictransport') {
+        // js/components/publictransport.js dispatches on a truthy station
+        // or tpc alone - no `type` of its own, same convention as
+        // html/iframe/calendar above. station/tpc/provider/etc. are
+        // carried through custom_fields below (saveblocks.php requires
+        // and validates station-or-tpc for this kind).
+        $props = [
+            'width' => $width,
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        if (!empty($block['last_update'])) {
+            $props['last_update'] = true;
+        }
+    } elseif ($kind === 'timegraph') {
+        // js/components/timegraph.js dispatches on an explicit
+        // type: 'timegraph' alone - unlike html/iframe/calendar/
+        // publictransport above, always written, the same as group's own
+        // type: 'group' (see saveblocks.php's 'timegraph' branch for the
+        // required-idx validation).
+        $props = [
+            'width' => $width,
+            'type' => 'timegraph',
+            'idx' => (int)$block['idx'],
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        if (!empty($block['last_update'])) {
+            $props['last_update'] = true;
+        }
+    } elseif ($kind === 'xmltvguide') {
+        // js/components/xmltvguide.js dispatches on a truthy xmltvurl
+        // alone - no `type` of its own, same convention as
+        // html/iframe/calendar/publictransport above. xmltvurl itself is
+        // carried through custom_fields below (saveblocks.php requires
+        // and validates it for this kind).
+        $props = [
+            'width' => $width,
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        if (!empty($block['last_update'])) {
+            $props['last_update'] = true;
+        }
     } elseif ($kind === 'lms') {
         // js/components/lms.js dispatches on type: 'lms' - unlike html/group
         // above, always written, the same as group's own type: 'group'
