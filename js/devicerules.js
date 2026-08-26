@@ -521,9 +521,27 @@
 
   function numericValue(value) {
     if (typeof value === 'number') return isFinite(value) ? value : NaN;
-    var parsed = parseFloat(
-      String(value == null ? '' : value).replace(',', '.')
-    );
+    var str = String(value == null ? '' : value).trim();
+    if (str === '') return NaN;
+    // Domoticz device values often carry a unit suffix (e.g. "1,8Bar",
+    // "1.020,5 hPa") glued straight onto the number, with either '.' or ','
+    // as the decimal separator depending on the sensor/locale. Pull out just
+    // the numeric run and, when both separators appear, treat the later one
+    // as the decimal point and the earlier one(s) as thousands grouping.
+    var match = str.match(/-?\d[\d.,]*/);
+    if (!match) return NaN;
+    var token = match[0];
+    var lastComma = token.lastIndexOf(',');
+    var lastDot = token.lastIndexOf('.');
+    if (lastComma !== -1 && lastDot !== -1) {
+      token =
+        lastComma > lastDot
+          ? token.replace(/\./g, '').replace(',', '.')
+          : token.replace(/,/g, '');
+    } else if (lastComma !== -1) {
+      token = token.replace(',', '.');
+    }
+    var parsed = parseFloat(token);
     return isFinite(parsed) ? parsed : NaN;
   }
 
@@ -1755,7 +1773,7 @@
       '<div class="d-flex justify-content-between align-items-center mb-2">' +
       '<label class="d-flex align-items-center gap-2 mb-0">' +
       '<span class="form-check form-switch m-0 p-0">' +
-      '<input class="form-check-input dr-enabled m-0" type="checkbox" role="switch" style="width:4em;height:2em;float:none;"' +
+      '<input class="form-check-input dr-enabled de-switch m-0" type="checkbox" role="switch"' +
       (rule.enabled !== false ? ' checked' : '') +
       '></span><span class="form-check-label fw-semibold">' +
       escapeHtml(t.automation) +
@@ -1790,9 +1808,10 @@
       '</div>' +
       '<div class="border rounded p-2 mb-2 dr-css-action-card">' +
       '<label class="d-flex align-items-center gap-2 mb-1">' +
-      '<input type="checkbox" class="form-check-input dr-css-enabled"' +
+      '<span class="form-check form-switch m-0 p-0">' +
+      '<input type="checkbox" class="form-check-input dr-css-enabled de-switch m-0"' +
       (cssAction.enabled ? ' checked' : '') +
-      '><span class="fw-semibold">' +
+      '></span><span class="fw-semibold">' +
       escapeHtml(t.cssAction) +
       '</span></label>' +
       '<div class="form-text mb-2">' +
@@ -1884,9 +1903,10 @@
       '</div></div>' +
       '<div class="border rounded p-2 dr-text-action-card">' +
       '<label class="d-flex align-items-center gap-2 mb-1">' +
-      '<input type="checkbox" class="form-check-input dr-text-enabled"' +
+      '<span class="form-check form-switch m-0 p-0">' +
+      '<input type="checkbox" class="form-check-input dr-text-enabled de-switch m-0"' +
       (textAction.enabled ? ' checked' : '') +
-      '><span class="fw-semibold">' +
+      '></span><span class="fw-semibold">' +
       escapeHtml(t.textAction) +
       '</span></label>' +
       '<div class="dr-text-body"><div class="row g-2">' +
