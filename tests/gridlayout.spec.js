@@ -477,7 +477,7 @@ screens[2] = {
     expect(editedDevice.icon).toBe('');
   });
 
-  test('persists default icons only for newly added iframe and Sunrise widgets', async ({
+  test('persists a default icon for a newly added Sunrise widget', async ({
     page,
   }) => {
     let widgetRequest = null;
@@ -518,29 +518,84 @@ screens[2] = {
     await page.evaluate('DashticzWidgetEditor.open()');
     await expect(page.locator('#widgeteditorpopup')).toBeVisible();
 
-    await page.locator('.we-config-btn[data-widget-id="iframe"]').click();
-    await expect(page.locator('#we-config-popup')).toBeVisible();
-    const iframeUrl = page.locator('#we-cfg-iframe-url');
+    await page.locator('.we-widget-card[data-widget-id="sunrise"]').click();
+    await page.locator('#we-save-btn').click();
+    await expect.poll(() => widgetRequest).not.toBeNull();
+
+    const sunrise = widgetRequest.widgets.find(
+      (entry) => entry.id === 'sunrise'
+    );
+    expect(sunrise.icon).toBe('fas fa-sun');
+  });
+
+  test('iFrame quick-add popup persists its default icon on a newly added block', async ({
+    page,
+  }) => {
+    // iframe moved from the Widgets catalog's singleton toggle+config flow
+    // (still exercised above by the Sunrise case) to its own repeatable
+    // quick-add popup (js/deviceeditor.js's _showIframePopup(), reached via
+    // its "Click to add" card in the Widgets catalog) - this is the same
+    // regression coverage as the old combined test, scoped to the new flow.
+    let blocksRequest = null;
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'iframe-quickadd-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: ['my_iframe'] }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savelayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.addScriptTag({
+      url: new URL('/js/widgeteditor.js', dashboardUrl).href,
+    });
+    await page.evaluate('DashticzWidgetEditor.open()');
+    await expect(page.locator('#widgeteditorpopup')).toBeVisible();
+
+    await page.locator('.we-widget-card[data-special-widget="iframe"]').click();
+    await expect(page.locator('#iframeblockpopup')).toBeVisible();
+    await page.locator('#if-device-name').fill('my_iframe');
+    const iframeUrl = page.locator('#if-device-url');
     // WebKit on Windows can clear programmatic typing in a URL input. This
-    // regression covers the editor payload, so set the DOM value directly.
+    // regression covers the save payload, so set the DOM value directly.
     await iframeUrl.evaluate((input) => {
       input.value = 'https://example.invalid/embedded';
       input.dispatchEvent(new Event('input', { bubbles: true }));
     });
     await expect(iframeUrl).toHaveValue('https://example.invalid/embedded');
-    await page.locator('#we-cfg-ok-btn').click();
-    await expect(page.locator('#we-config-popup')).not.toBeVisible();
+    await page.locator('#if-save-btn').click();
 
-    await page.locator('.we-widget-card[data-widget-id="sunrise"]').click();
-    await page.locator('#we-save-btn').click();
-    await expect.poll(() => widgetRequest).not.toBeNull();
-
-    const iframe = widgetRequest.widgets.find((entry) => entry.id === 'iframe');
-    const sunrise = widgetRequest.widgets.find(
-      (entry) => entry.id === 'sunrise'
-    );
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const iframe = blocksRequest.devices.find((d) => d.kind === 'iframe');
+    expect(iframe).toBeTruthy();
+    expect(iframe.key).toBe('my_iframe');
     expect(iframe.icon).toBe('fas fa-window-maximize');
-    expect(sunrise.icon).toBe('fas fa-sun');
+    expect(iframe.custom_fields.frameurl).toBe(
+      'https://example.invalid/embedded'
+    );
   });
 
   test('Widget Config hides legacy globals and keeps current widget controls', async ({

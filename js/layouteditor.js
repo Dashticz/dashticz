@@ -16,6 +16,26 @@ var DashticzLayoutEditor = (function () {
   // `overflow: auto`), the same as picking any other too-small height.
   var MIN_GRID_HEIGHT = 2;
   var MIN_TITLE_GRID_HEIGHT = 2;
+  // Every managedSpecials kind _resolveBlock() recognizes above,
+  // identified purely by their own block reference - 'device' and
+  // 'widget' (handled separately at each call site below) are not part
+  // of this set. Shared by _decorateItem()'s isConfigurable check and
+  // _openItemConfig()'s dispatch below, so adding another repeatable
+  // special (see js/deviceeditor.js's iFrame/Calendar/Public transport/
+  // Timegraph/TV Guide additions for the pattern) touches this one array
+  // instead of two separately hand-duplicated `item.kind === 'x' || ...`
+  // chains.
+  var REFERENCE_BASED_SPECIAL_KINDS = [
+    'separator',
+    'html',
+    'iframe',
+    'calendar',
+    'publictransport',
+    'timegraph',
+    'xmltvguide',
+    'lms',
+    'group',
+  ];
   var active = false;
   var items = [];
   var itemById = {};
@@ -1145,6 +1165,141 @@ var DashticzLayoutEditor = (function () {
       };
     }
 
+    if (
+      key &&
+      key !== 'widget_iframe' &&
+      !definition.type &&
+      typeof definition.frameurl === 'string' &&
+      definition.frameurl !== ''
+    ) {
+      // Repeatable iFrame block, added via the Screen Editor's "Add items" ->
+      // iFrame quick-add popup (js/deviceeditor.js's _showIframePopup()),
+      // mirroring the html check above and deviceeditor.js's own
+      // _specialFromReference(): dispatched purely on a truthy frameurl
+      // (js/components/frame.js's canHandle()), no `type` of its own. The
+      // fixed 'widget_iframe' key is excluded so the Widgets catalog's
+      // existing singleton iframe entry keeps going through the generic
+      // widget path below unchanged.
+      return {
+        definition: definition,
+        kind: 'iframe',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (
+      key &&
+      key !== 'widget_calendar' &&
+      String(definition.type || '').toLowerCase() !== 'calendar' &&
+      typeof definition.icalurl === 'string' &&
+      definition.icalurl !== ''
+    ) {
+      // Repeatable Calendar block, added via the Screen Editor's "Add
+      // items" -> Calendar quick-add popup (js/deviceeditor.js's
+      // _showCalendarPopup()), mirroring the iframe check above and
+      // deviceeditor.js's own _specialFromReference(): dispatched purely
+      // on a truthy icalurl string (js/components/calendar.js's
+      // canHandle()), no `type` of its own. The fixed 'widget_calendar'
+      // key, and any block with an explicit type: 'calendar' (the legacy
+      // multi-source `calendars` array shape the Widgets catalog's own
+      // singleton entry writes, where icalurl is an object rather than a
+      // string), are excluded so those keep going through the generic
+      // widget path below unchanged.
+      return {
+        definition: definition,
+        kind: 'calendar',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (
+      key &&
+      key !== 'widget_publictransport' &&
+      !definition.type &&
+      ((typeof definition.station === 'string' && definition.station !== '') ||
+        (typeof definition.tpc === 'string' && definition.tpc !== ''))
+    ) {
+      // Repeatable Public transport block, added via the Screen Editor's
+      // "Add items" -> Public transport quick-add popup
+      // (js/deviceeditor.js's _showPublicTransportPopup()), mirroring the
+      // calendar check above and deviceeditor.js's own
+      // _specialFromReference(): dispatched purely on a truthy station or
+      // tpc (js/components/publictransport.js's canHandle()), no `type`
+      // of its own. The fixed 'widget_publictransport' key is excluded so
+      // that singleton keeps going through the generic widget path below
+      // unchanged.
+      return {
+        definition: definition,
+        kind: 'publictransport',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (
+      key &&
+      key !== 'widget_timegraph' &&
+      String(definition.type || '').toLowerCase() === 'timegraph'
+    ) {
+      // Repeatable Timegraph block, added via the Screen Editor's "Add
+      // items" -> Timegraph quick-add popup (js/deviceeditor.js's
+      // _showTimegraphPopup()), mirroring deviceeditor.js's own
+      // _specialFromReference(): dispatched purely on an explicit
+      // type:'timegraph' (js/components/timegraph.js's canHandle()), like
+      // Group's type:'group' above rather than a field-shape check. The
+      // fixed 'widget_timegraph' key is excluded so that singleton keeps
+      // going through the generic widget path below unchanged.
+      return {
+        definition: definition,
+        kind: 'timegraph',
+        reference: key,
+        widgetId: null,
+        idx:
+          parseInt(definition.idx, 10) > 0
+            ? parseInt(definition.idx, 10)
+            : null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (
+      key &&
+      key !== 'widget_xmltvguide' &&
+      !definition.type &&
+      typeof definition.xmltvurl === 'string' &&
+      definition.xmltvurl !== ''
+    ) {
+      // Repeatable TV Guide (XMLTV) block, added via the Screen Editor's
+      // "Add items" -> TV Guide quick-add popup (js/deviceeditor.js's
+      // _showXmltvguidePopup()), mirroring the calendar check above and
+      // deviceeditor.js's own _specialFromReference(): dispatched purely
+      // on a truthy xmltvurl (js/components/xmltvguide.js's canHandle()),
+      // no `type` of its own. The fixed 'widget_xmltvguide' key is
+      // excluded so that singleton keeps going through the generic
+      // widget path below unchanged.
+      return {
+        definition: definition,
+        kind: 'xmltvguide',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
     if (key && String(definition.type || '').toLowerCase() === 'lms') {
       // Lyrion Music Server "Now Playing" block (js/components/lms.js),
       // dispatched on type: 'lms' like the separator/blocktitle check above.
@@ -1592,10 +1747,7 @@ var DashticzLayoutEditor = (function () {
         !item.isPending &&
         (item.kind === 'device' ||
           item.kind === 'widget' ||
-          item.kind === 'separator' ||
-          item.kind === 'html' ||
-          item.kind === 'lms' ||
-          item.kind === 'group');
+          REFERENCE_BASED_SPECIAL_KINDS.indexOf(item.kind) > -1);
       var configureLabel =
         item.kind === 'widget'
           ? _t('configure_widget')
@@ -1698,10 +1850,7 @@ var DashticzLayoutEditor = (function () {
     if (!item) return;
     if (
       (item.kind === 'device' ||
-        item.kind === 'separator' ||
-        item.kind === 'html' ||
-        item.kind === 'lms' ||
-        item.kind === 'group') &&
+        REFERENCE_BASED_SPECIAL_KINDS.indexOf(item.kind) > -1) &&
       item.reference
     ) {
       DT_function.loadDTScript('js/deviceeditor.js').then(function () {
