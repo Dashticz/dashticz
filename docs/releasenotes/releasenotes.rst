@@ -6,6 +6,48 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.45.8 beta (26-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- Added M3U/M3U8 playlist support to the StreamPlayer widget. A
+  playlist placed at ``custom/radio_playlist.m3u`` (``#EXTINF`` tags
+  ``tvg-name``/``tvg-logo``/``tvg-id``/``group-title``, followed by
+  the stream URL) is loaded automatically when present and valid,
+  with a station-selection popup grouped by ``group-title`` and
+  sorted; the widget falls back to the existing configured track list
+  when the file is missing, empty or invalid. When a station's
+  ``tvg-id`` matches a locally stored logo in ``img/custom/radio/``,
+  that local image is preferred over the playlist's own remote
+  ``tvg-logo`` URL.
+
+* **Fixes**
+
+- Fixed the local-logo matching being completely inert as originally
+  submitted: the widget called ``vendor/dashticz/streamplayer.php``
+  to resolve a station's ``tvg-id`` to a local filename, but that
+  endpoint didn't exist, so the lookup always 404'd and silently fell
+  back to no local logos at all. Added it, following the existing
+  ``listcustomicons.php``/``listbackgrounds.php`` pattern (same-origin
+  GET only, ``scandir()``'d against a real path, image-extension
+  allowlist, symlinks rejected).
+
+- Async playlist/logo loading is now guarded by a per-instance
+  generation token so a rerender never duplicates event handlers or
+  leaves stale UI state behind.
+
+* **Code**
+
+- Fixed Prettier formatting mismatches in
+  ``js/components/streamplayer.js`` and
+  ``js/components/streamplayer.css`` (no functional change) that were
+  failing CI's ``format:check`` job on Node 20/22/24.
+
+- Verified with the full node --test suite (184 tests, including a
+  new ``php-security.test.js`` regression test for the new endpoint)
+  and Prettier's format check.
+
 v3.45.7 beta (25-8-2026)
 -------------------------
 

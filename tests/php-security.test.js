@@ -1017,6 +1017,21 @@ test('custom icon list endpoint safely exposes non-background images', () => {
   assert.doesNotMatch(source, /\$_POST\[/);
 });
 
+test('streamplayer local logo lookup safely exposes tvg-id to filename mappings', () => {
+  const source = read('vendor/dashticz/streamplayer.php');
+  assert.match(source, /dashticz_require_same_origin\(\)/);
+  assert.match(source, /REQUEST_METHOD.*GET/);
+  assert.match(
+    source,
+    /realpath\(__DIR__ \. '\/\.\.\/\.\.\/img\/custom\/radio'\)/
+  );
+  assert.match(source, /\(\?:jpe\?g\|png\|webp\|gif\)/);
+  assert.match(source, /is_link\(\$full\)/);
+  assert.match(source, /PATHINFO_FILENAME/);
+  assert.doesNotMatch(source, /\$_GET\[/);
+  assert.doesNotMatch(source, /\$_POST\[/);
+});
+
 test('theme list endpoint exposes only valid direct theme directories', () => {
   const source = read('js/listthemes.php');
 
