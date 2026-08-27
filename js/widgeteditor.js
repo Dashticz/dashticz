@@ -2045,6 +2045,8 @@ var DashticzWidgetEditor = (function () {
       publictransport: true,
       timegraph: true,
       xmltvguide: true,
+      camera: true,
+      news: true,
     };
     catalog.forEach(function (item) {
       if (repeatableWidgetIds[item.id] && !selectedWidgets[item.id]) return;
@@ -2062,6 +2064,8 @@ var DashticzWidgetEditor = (function () {
     html += _publicTransportWidgetCardHtml();
     html += _timegraphWidgetCardHtml();
     html += _xmltvguideWidgetCardHtml();
+    html += _cameraWidgetCardHtml();
+    html += _newsWidgetCardHtml();
     html += _lmsWidgetCardHtml();
 
     html +=
@@ -2388,6 +2392,85 @@ var DashticzWidgetEditor = (function () {
     _closeModalWithoutSaving();
     DT_function.loadDTScript('js/deviceeditor.js').then(function () {
       DashticzDeviceEditor.openXmltvguide();
+    });
+  }
+
+  /* Camera is a `catalog` entry, same reasoning as iFrame/Calendar/Public
+     transport/Timegraph/TV Guide above: kept there so an existing
+     install's singleton 'widget_cameras' block (its richer multi-camera
+     tray/carousel config) keeps working unchanged - only the card shown
+     *here* is replaced with a repeatable one, opening the new Camera
+     quick-add popup (DashticzDeviceEditor.openCamera()) instead of
+     toggling selectedWidgets.camera. */
+  function _cameraWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'camera';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-camera" data-special-widget="camera" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openCameraFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openCamera();
+    });
+  }
+
+  /* News is a `catalog` entry, same reasoning as iFrame/Calendar/Public
+     transport/Timegraph/TV Guide/Camera above: kept there so an existing
+     install's singleton 'widget_news' block (its own config, which edits
+     the *global* default_news_url/news_scroll_after settings) keeps
+     working unchanged - only the card shown *here* is replaced with a
+     repeatable one, opening the new News quick-add popup
+     (DashticzDeviceEditor.openNews()) instead of toggling
+     selectedWidgets.news. */
+  function _newsWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'news';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-news" data-special-widget="news" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openNewsFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openNews();
     });
   }
 
@@ -4723,6 +4806,14 @@ var DashticzWidgetEditor = (function () {
         _openXmltvguideFromWidgets();
         return;
       }
+      if ($(this).data('special-widget') === 'camera') {
+        _openCameraFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'news') {
+        _openNewsFromWidgets();
+        return;
+      }
       _toggleWidget(String($(this).data('widget-id')));
     });
 
@@ -4752,6 +4843,14 @@ var DashticzWidgetEditor = (function () {
       }
       if ($(this).data('special-widget') === 'xmltvguide') {
         _openXmltvguideFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'camera') {
+        _openCameraFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'news') {
+        _openNewsFromWidgets();
         return;
       }
       _toggleWidget(String($(this).data('widget-id')));

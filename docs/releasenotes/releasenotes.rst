@@ -158,6 +158,44 @@ v3.45.8 beta (26-8-2026)
   disabled action always normalising to a non-empty class name both
   client- and server-side) and Prettier's format check.
 
+v3.45.9 beta (27-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- Extended the repeatable-widget mechanism (iFrame/Calendar/Public
+  transport/Timegraph/TV Guide, addressing
+  `issue #201 <https://github.com/MadPatrick/dashticz/issues/201>`_)
+  to two more widgets: Camera (a single image URL, required, plus an
+  optional MJPEG video URL per block; the existing singleton catalog
+  widget's richer multi-camera tray/carousel config stays available
+  there unchanged) and News (a single RSS feed URL per block; the
+  existing singleton catalog widget's own global
+  ``default_news_url``/``news_scroll_after`` settings stay available
+  there unchanged).
+
+- Simplified every repeatable widget's quick-add popup (iFrame/
+  Calendar/Public transport/Timegraph/TV Guide/Camera/News): the
+  reference/block name no longer needs to be typed and validated by
+  hand. It's now auto-generated (``iframe_1``, ``iframe_2``, ...) via
+  a shared ``_nextSpecialReference()`` prefix table in
+  js/deviceeditor.js, the same convention LMS's popup already used -
+  removing the manual name field, its uniqueness check, and the
+  corresponding invalid-name translations from each popup.
+
+* **Code**
+
+- Camera is dispatched via an explicit ``type: 'camera'`` (like
+  Group/LMS/Timegraph); News is dispatched via a truthy ``feed``
+  (like iFrame/Calendar/Public transport/TV Guide). Both are wired
+  through js/deviceeditor.js (openCamera/openNews and their quick-add
+  popups), js/layouteditor.js, js/widgeteditor.js,
+  js/saveblocks.php and js/configwriter.php, following the same
+  pattern as the other five repeatable widgets. Verified with the
+  full node --test suite and Prettier's format check; live browser
+  verification of the Screen Editor flow was not possible in this
+  environment (no Domoticz/Docker stack available).
+
 v3.45.7 beta (25-8-2026)
 -------------------------
 

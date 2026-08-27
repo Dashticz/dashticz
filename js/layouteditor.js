@@ -35,6 +35,8 @@ var DashticzLayoutEditor = (function () {
     'xmltvguide',
     'lms',
     'group',
+    'camera',
+    'news',
   ];
   var active = false;
   var items = [];
@@ -1292,6 +1294,58 @@ var DashticzLayoutEditor = (function () {
       return {
         definition: definition,
         kind: 'xmltvguide',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (
+      key &&
+      key !== 'widget_cameras' &&
+      String(definition.type || '').toLowerCase() === 'camera'
+    ) {
+      // Repeatable Camera block, added via the Screen Editor's "Add items"
+      // -> Camera quick-add popup (js/deviceeditor.js's
+      // _showCameraPopup()), mirroring the timegraph check above and
+      // deviceeditor.js's own _specialFromReference(): dispatched purely
+      // on an explicit type:'camera' (js/components/camera.js's
+      // canHandle()), like Timegraph's type:'timegraph' rather than a
+      // field-shape check. The fixed 'widget_cameras' key is excluded so
+      // that singleton (also type:'camera') keeps going through the
+      // generic widget path below unchanged.
+      return {
+        definition: definition,
+        kind: 'camera',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (
+      key &&
+      key !== 'widget_news' &&
+      String(definition.type || '').toLowerCase() !== 'news' &&
+      typeof definition.feed === 'string' &&
+      definition.feed !== ''
+    ) {
+      // Repeatable News block, added via the Screen Editor's "Add items"
+      // -> News quick-add popup (js/deviceeditor.js's _showNewsPopup()),
+      // mirroring the calendar check above and deviceeditor.js's own
+      // _specialFromReference(): dispatched purely on a truthy feed
+      // (js/components/news.js's canHandle()), no `type` of its own. The
+      // fixed 'widget_news' key, and any block with an explicit
+      // type: 'news' (the shape the Widgets catalog's own singleton
+      // entry writes), are excluded so those keep going through the
+      // generic widget path below unchanged.
+      return {
+        definition: definition,
+        kind: 'news',
         reference: key,
         widgetId: null,
         idx: null,
