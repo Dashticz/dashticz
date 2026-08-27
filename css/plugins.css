@@ -465,7 +465,7 @@
   height: 16px;
   line-height: 16px;
   float: left;
-  font-size: 10px;
+  font-size: 12px;
 }
 .sp-preview {
   position: relative;
@@ -539,7 +539,7 @@
     0 1px 0 0 #eee;
 }
 .sp-cancel {
-  font-size: 11px;
+  font-size: 12px;
   color: #d93f3f !important;
   margin: 0;
   padding: 2px;

@@ -2223,10 +2223,7 @@ var DashticzWidgetEditor = (function () {
         '">';
     }
     if (help) {
-      html +=
-        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
-        _esc(help) +
-        '</div>';
+      html += '<div class="form-text">' + _esc(help) + '</div>';
     }
     html += '</div>';
     return html;
@@ -2234,7 +2231,7 @@ var DashticzWidgetEditor = (function () {
 
   function _cfgHeading(text) {
     return (
-      '<h6 class="mt-3 mb-2" style="font-size:13px;font-weight:700;color:#495057">' +
+      '<h6 class="mt-3 mb-2" style="font-size:14px;font-weight:600;color:#495057">' +
       text +
       '</h6>'
     );
@@ -3118,7 +3115,7 @@ var DashticzWidgetEditor = (function () {
         '<input type="text" class="form-control form-control-sm we-widget-field" id="we-cfg-pt-station" value="' +
         _esc(ptcfg.station || 'UT') +
         '">' +
-        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
+        '<div class="form-text">' +
         _t('station_help', 'For example UT for Utrecht Centraal (trains).') +
         '</div></div>';
     } else if (item.id === 'trafficinfo') {
@@ -3150,7 +3147,7 @@ var DashticzWidgetEditor = (function () {
         '<input type="text" class="form-control form-control-sm we-widget-field" id="we-cfg-alarm-filter" value="' +
         _esc(acfg.filter || '') +
         '">' +
-        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
+        '<div class="form-text">' +
         _t(
           'filter_help',
           'Comma-separated search terms, for example Amsterdam, Utrecht.'
@@ -3227,7 +3224,7 @@ var DashticzWidgetEditor = (function () {
         'data-cfg-key="frameurl" placeholder="http://192.168.1.x:8080" value="' +
         _esc(String(icfg.frameurl || '')) +
         '">' +
-        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
+        '<div class="form-text">' +
         (li.iframe_url_help ||
           'Full URL including http(s)://. The remote server must allow embedding (no X-Frame-Options: DENY).') +
         '</div></div>';
@@ -3292,7 +3289,7 @@ var DashticzWidgetEditor = (function () {
         'data-cfg-key="xmltvurl" placeholder="http://my-epg-server/guide.xml" value="' +
         _esc(String(xcfg.xmltvurl || '')) +
         '">' +
-        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
+        '<div class="form-text">' +
         (lx.xmltv_url_help ||
           'URL of an XMLTV-format XML file (e.g. from Jellyfin, Emby, WebGrab+).') +
         '</div></div>';
@@ -3466,7 +3463,7 @@ var DashticzWidgetEditor = (function () {
         'data-cfg-key="idx" value="' +
         _esc(String(tgcfg.idx || '')) +
         '">' +
-        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
+        '<div class="form-text">' +
         (ltg.timegraph_idx_help ||
           'Used by every value below that does not set its own IDX.') +
         '</div></div>';

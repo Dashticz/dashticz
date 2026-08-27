@@ -82,6 +82,15 @@ function loadStyling() {
       _DASHTICZ_VERSION +
       '" rel="stylesheet">'
   ).appendTo('head');
+  // Loaded after creative.css so the config/editor typography rules in it
+  // win the cascade for any selector that shares the same specificity,
+  // without needing to touch creative.css itself.
+  $(
+    '<link href="' +
+      'css/config-typography.css?_=' +
+      _DASHTICZ_VERSION +
+      '" rel="stylesheet">'
+  ).appendTo('head');
 }
 
 function loadLogRocket() {
