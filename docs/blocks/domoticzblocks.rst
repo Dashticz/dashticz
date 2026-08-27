@@ -148,6 +148,9 @@ Block parameters
   * - image
     - | If you want to show an image instead of an icon, place image in ``img/`` folder
       | ``'bulb_off.png'``
+  * - hideimageonempty
+    - | ``true`` (also accepts ``1`` or the string ``'true'``) Hide the ``image`` when the device's Data (or sValue, if Data is unset) is empty - only whitespace, ``<br>``/``<br/>``/``<br />``, ``&nbsp;``/``&#160;`` or an actual non-breaking space - and show it again once Data is filled. The check is enforced with an inline ``!important`` so theme/custom CSS can't keep the image showing.
+      | ``false`` (default) Always show the image, unchanged
   * - iconOn
     - | Icon to show in case the device state is on.
       | ``'fas fa-eye'``

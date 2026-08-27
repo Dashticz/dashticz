@@ -97,6 +97,7 @@ var DT_domoticzblock = (function () {
     refresh: function (me) {
       fixBlock(me);
       deviceUpdateHandler(me.block);
+      applyConfiguredImageVisibility(me);
       applyConfiguredHeight(me);
     },
   };
@@ -145,6 +146,7 @@ var DT_domoticzblock = (function () {
     Dashticz.subscribeDevice(me, me.deviceIdx, true, function (device) {
       me.block.device = device;
       deviceUpdateHandler(me.block);
+      applyConfiguredImageVisibility(me);
       applyConfiguredHeight(me);
       setBackgroundImage(me, me.backgroundImage);
     });
@@ -158,12 +160,44 @@ var DT_domoticzblock = (function () {
             // Secondary values in a multi-device block use the same full
             // deviceUpdateHandler render as the main device. Restore static
             // presentation immediately after that render as well (#176).
+            applyConfiguredImageVisibility(me);
             applyConfiguredHeight(me);
             setBackgroundImage(me, me.backgroundImage);
           });
         }
       });
     }
+  }
+
+  function applyConfiguredImageVisibility(me) {
+    var block = me && me.block;
+    if (!block) return;
+
+    var hideOnEmpty =
+      block.hideimageonempty === true ||
+      block.hideimageonempty === 1 ||
+      String(block.hideimageonempty).toLowerCase() === 'true';
+    if (!hideOnEmpty) return;
+
+    var device = block.device || {};
+    var rawValue = device.Data;
+    if (rawValue == null && device.sValue != null) rawValue = device.sValue;
+
+    var text = rawValue == null ? '' : String(rawValue);
+    var isEmpty =
+      text
+        .replace(/<br\s*\/?>/gi, '')
+        .replace(/&nbsp;|&#160;|&#x0*a0;/gi, ' ')
+        .replace(/\u00a0/g, ' ')
+        .trim() === '';
+
+    me.$mountPoint.find('.col-icon img').each(function () {
+      if (isEmpty) {
+        this.style.setProperty('display', 'none', 'important');
+      } else {
+        this.style.removeProperty('display');
+      }
+    });
   }
 
   function applyConfiguredHeight(me) {

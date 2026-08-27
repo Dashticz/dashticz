@@ -1,6 +1,6 @@
 /*global loadFiles */
 
-var _DASHTICZ_VERSION = 183;
+var _DASHTICZ_VERSION = 186;
 var head = document.getElementsByTagName('head')[0],
   script = document.createElement('script');
 
@@ -65,13 +65,40 @@ function loader() {
   loadScript('js/main.js')
     .then(function () {
       // Device Rules is kept as a separate, small module. Loading it before
-      // prepareStart() lets it observe Device Config as soon as the editor is
-      // used, while its runtime hook waits until blocks.js becomes available.
-      // Keep this extension non-fatal: if the extra file is accidentally
-      // missing, the normal Dashticz dashboard must still be able to start.
+      // prepareStart() lets it observe Device Config as soon as the editor
+      // is used, while its runtime hook waits until blocks.js becomes
+      // available. Keep optional helper modules non-fatal as well: a missing
+      // editor enhancement must never prevent the dashboard from starting.
       return loadScript('js/devicerules.js').fail(function (err) {
         console.warn(
           'Unable to load js/devicerules.js. Device Rules disabled.',
+          err
+        );
+        return $.Deferred().resolve();
+      });
+    })
+    .then(function () {
+      return loadScript('js/customfieldpresets.js').fail(function (err) {
+        console.warn(
+          'Unable to load js/customfieldpresets.js. Custom field presets disabled.',
+          err
+        );
+        return $.Deferred().resolve();
+      });
+    })
+    .then(function () {
+      return loadScript('js/customfieldpresetbehavior.js').fail(function (err) {
+        console.warn(
+          'Unable to load js/customfieldpresetbehavior.js. Custom field preset behavior fix disabled.',
+          err
+        );
+        return $.Deferred().resolve();
+      });
+    })
+    .then(function () {
+      return loadScript('js/customfieldsetoptions.js').fail(function (err) {
+        console.warn(
+          'Unable to load js/customfieldsetoptions.js. Custom field setting suggestions disabled.',
           err
         );
         return $.Deferred().resolve();
