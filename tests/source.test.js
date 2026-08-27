@@ -5084,13 +5084,24 @@ test('Lyrion Music Server (LMS) block is registered, dispatched and wired throug
     /String\(definition\.type \|\| ''\)\.toLowerCase\(\) === 'lms'/
   );
   assert.match(layoutEditor, /kind: 'lms',/);
+  // _decorateItem() (isConfigurable) and _openItemConfig() both dispatch
+  // off one shared REFERENCE_BASED_SPECIAL_KINDS array instead of a
+  // separately hand-duplicated `item.kind === 'x' || ...` chain at each
+  // call site, so a new repeatable special (LMS included) only has to be
+  // added to that one array to get both the cog control and correct
+  // config routing - see also 'Group block gets the Layout Editor
+  // config...' below, which checks the same array for 'group'.
   assert.match(
     layoutEditor,
-    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms' \|\|\s*\n\s*item\.kind === 'group'\);/
+    /var REFERENCE_BASED_SPECIAL_KINDS = \[[\s\S]{0,400}?'lms'[\s\S]{0,400}?\];/
   );
   assert.match(
     layoutEditor,
-    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms' \|\|\s*\n\s*item\.kind === 'group'\) &&\s*\n\s*item\.reference/
+    /isConfigurable =[\s\S]{0,300}?REFERENCE_BASED_SPECIAL_KINDS\.indexOf\(item\.kind\) > -1/
+  );
+  assert.match(
+    layoutEditor,
+    /REFERENCE_BASED_SPECIAL_KINDS\.indexOf\(item\.kind\) > -1\) &&\s*\n\s*item\.reference/
   );
 
   // Backend bridge (vendor/dashticz/lms/index.php): same-origin gated, LAN
@@ -5268,18 +5279,16 @@ test('Group block gets the Layout Editor config (cog) control, like HTML/LMS blo
   );
   assert.match(layoutEditor, /kind: 'group',/);
 
-  // Both isConfigurable (decides whether the tile gets the cog vs. the drag
+  // isConfigurable (decides whether the tile gets the cog vs. the drag
   // icon) and _openItemConfig (routes a cog click to DashticzDeviceEditor,
   // which already understands specialType 'group' - see
-  // _specialFromReference() in js/deviceeditor.js) must recognise the new
-  // 'group' kind alongside 'html'/'lms'.
+  // _specialFromReference() in js/deviceeditor.js) both dispatch off the
+  // shared REFERENCE_BASED_SPECIAL_KINDS array (see the LMS test above,
+  // which checks the array declaration and both call sites) - here it
+  // only needs to be re-checked for 'group' itself.
   assert.match(
     layoutEditor,
-    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms' \|\|\s*\n\s*item\.kind === 'group'\);/
-  );
-  assert.match(
-    layoutEditor,
-    /item\.kind === 'html' \|\|\s*\n\s*item\.kind === 'lms' \|\|\s*\n\s*item\.kind === 'group'\) &&\s*\n\s*item\.reference/
+    /var REFERENCE_BASED_SPECIAL_KINDS = \[[\s\S]{0,400}?'group'[\s\S]{0,50}?\];/
   );
 });
 

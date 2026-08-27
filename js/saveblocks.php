@@ -82,6 +82,18 @@ function _normalise_custom_device_fields($entry)
     return $customFields;
 }
 
+/* Special-block kinds recognized by the Device Editor's own quick-add
+   popups (js/deviceeditor.js), centralized here instead of repeating the
+   list at every call site below - adding another repeatable special
+   (see the iframe/calendar/publictransport/timegraph/xmltvguide entries
+   for the pattern) then only touches one array per list, and js/
+   configwriter.php's matching per-kind $props branch. 'slidebutton' is
+   checked separately below (its own key pattern differs from every
+   other kind here). */
+$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news'];
+// Kinds whose title is optional (blank is fine) rather than required.
+$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news'];
+
 dashticz_require_same_origin();
 dashticz_require_csrf();
 
@@ -109,7 +121,7 @@ foreach ($data['devices'] as $entry) {
     if (is_array($entry)
         && isset($entry['kind'])
         && (
-            in_array($entry['kind'], ['dummy', 'title', 'custom', 'group', 'html', 'lms'], true)
+            in_array($entry['kind'], $specialBlockKinds, true)
             || $entry['kind'] === 'slidebutton'
         )
     ) {
@@ -134,15 +146,18 @@ foreach ($data['devices'] as $entry) {
         $title = isset($entry['title']) && is_string($entry['title'])
             ? substr(trim($entry['title']), 0, 100)
             : '';
-        if ($title === '' && !in_array($kind, ['custom', 'slidebutton', 'group', 'html', 'lms'], true)) {
+        if ($title === '' && !in_array($kind, $titleOptionalBlockKinds, true)) {
             dashticz_json_error(400, 'A special block title is required.');
         }
         $defaultWidth = 3;
         if ($kind === 'title' || $kind === 'slidebutton') {
             $defaultWidth = 12;
-        } elseif ($kind === 'lms') {
-            // Cover (100x100) + artist/title/album needs more room than the
-            // generic 3-column default other special blocks start at.
+        } elseif ($kind === 'lms' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'timegraph' || $kind === 'xmltvguide') {
+            // Cover (100x100) + artist/title/album (lms), an embedded page
+            // (iframe), an agenda/calendar table (calendar), a chart
+            // (timegraph), or a programme guide (xmltvguide), needs more
+            // room than the generic 3-column default other special blocks
+            // start at.
             $defaultWidth = 6;
         }
         $width = isset($entry['width']) ? (int)$entry['width'] : $defaultWidth;
@@ -180,8 +195,8 @@ foreach ($data['devices'] as $entry) {
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
                 : null;
-        } elseif ($kind === 'group' || $kind === 'html') {
-            // Only Icon and Last update apply to these two (no Data/Switch/
+        } elseif ($kind === 'group' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news') {
+            // Only Icon and Last update apply to these eight (no Data/Switch/
             // Dial - see js/deviceeditor.js's _quickOptionsHtml()).
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
@@ -204,7 +219,7 @@ foreach ($data['devices'] as $entry) {
                 if ($idx === null && !$hasDevices) {
                     dashticz_json_error(400, 'A group block requires an idx or at least one device.');
                 }
-            } else {
+            } elseif ($kind === 'html') {
                 // htmlfile is otherwise just another custom field (see
                 // _normalise_custom_device_fields() above), but this block
                 // renders nothing at all without one, so it is required here.
@@ -216,7 +231,103 @@ foreach ($data['devices'] as $entry) {
                 ) {
                     dashticz_json_error(400, 'Enter a valid html filename (relative to custom/).');
                 }
+            } elseif ($kind === 'iframe') {
+                // frameurl is otherwise just another custom field (see
+                // _normalise_custom_device_fields() above), but this block
+                // renders nothing at all without one, so it is required here -
+                // same reasoning as html's htmlfile requirement above.
+                if (
+                    !isset($customFields['frameurl'])
+                    || !is_string($customFields['frameurl'])
+                    || trim($customFields['frameurl']) === ''
+                    || strlen($customFields['frameurl']) > 2048
+                ) {
+                    dashticz_json_error(400, 'Enter a valid iFrame URL.');
+                }
+            } elseif ($kind === 'calendar') {
+                // icalurl is otherwise just another custom field (see
+                // _normalise_custom_device_fields() above), but this block
+                // renders nothing at all without one, so it is required here -
+                // same reasoning as html's htmlfile requirement above.
+                if (
+                    !isset($customFields['icalurl'])
+                    || !is_string($customFields['icalurl'])
+                    || trim($customFields['icalurl']) === ''
+                    || strlen($customFields['icalurl']) > 2048
+                ) {
+                    dashticz_json_error(400, 'Enter a valid calendar (ICS) URL.');
+                }
+            } elseif ($kind === 'publictransport') {
+                // station/tpc are otherwise just other custom fields (see
+                // _normalise_custom_device_fields() above), but this block
+                // renders nothing at all without at least one of them, so
+                // at least one is required here - same reasoning as html's
+                // htmlfile requirement above.
+                $hasStation = isset($customFields['station'])
+                    && is_string($customFields['station'])
+                    && trim($customFields['station']) !== '';
+                $hasTpc = isset($customFields['tpc'])
+                    && is_string($customFields['tpc'])
+                    && trim($customFields['tpc']) !== '';
+                if (!$hasStation && !$hasTpc) {
+                    dashticz_json_error(400, 'Enter a station or a tpc code.');
+                }
+            } elseif ($kind === 'xmltvguide') {
+                // xmltvurl is otherwise just another custom field (see
+                // _normalise_custom_device_fields() above), but this block
+                // renders nothing at all without one, so it is required here -
+                // same reasoning as html's htmlfile requirement above.
+                if (
+                    !isset($customFields['xmltvurl'])
+                    || !is_string($customFields['xmltvurl'])
+                    || trim($customFields['xmltvurl']) === ''
+                    || strlen($customFields['xmltvurl']) > 2048
+                ) {
+                    dashticz_json_error(400, 'Enter a valid TV Guide (XMLTV) URL.');
+                }
+            } elseif ($kind === 'camera') {
+                // imageUrl is otherwise just another custom field (see
+                // _normalise_custom_device_fields() above), but this block
+                // renders nothing at all without one, so it is required here -
+                // same reasoning as html's htmlfile requirement above.
+                // videoUrl (MJPEG) is optional, same as the Widgets catalog's
+                // own singleton camera config.
+                if (
+                    !isset($customFields['imageUrl'])
+                    || !is_string($customFields['imageUrl'])
+                    || trim($customFields['imageUrl']) === ''
+                    || strlen($customFields['imageUrl']) > 2048
+                ) {
+                    dashticz_json_error(400, 'Enter a valid camera image URL.');
+                }
+            } else {
+                // feed is otherwise just another custom field (see
+                // _normalise_custom_device_fields() above), but this block
+                // renders nothing at all without one, so it is required here -
+                // same reasoning as html's htmlfile requirement above.
+                if (
+                    !isset($customFields['feed'])
+                    || !is_string($customFields['feed'])
+                    || trim($customFields['feed']) === ''
+                    || strlen($customFields['feed']) > 2048
+                ) {
+                    dashticz_json_error(400, 'Enter a valid news feed URL.');
+                }
             }
+        } elseif ($kind === 'timegraph') {
+            // Only Icon and Last update apply (no Data/Switch/Dial - see
+            // js/deviceeditor.js's _quickOptionsHtml()), but unlike
+            // Group/HTML/iFrame/Calendar/Public transport above, the
+            // graphed device idx is required (js/components/timegraph.js
+            // has no useful default without one).
+            if (!isset($entry['idx']) || !is_int($entry['idx']) || $entry['idx'] < 1) {
+                dashticz_json_error(400, 'A timegraph block requires a positive integer idx.');
+            }
+            $idx = $entry['idx'];
+            $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
+                ? substr($entry['icon'], 0, 100)
+                : null;
+            $lastUpdate = !empty($entry['last_update']);
         } elseif ($kind === 'lms') {
             // Icon defaults off (js/deviceeditor.js's Lyrion Music Server popup
             // uses the cover artwork as its visual, like an HTML Block), but is

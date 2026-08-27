@@ -2021,11 +2021,51 @@ var DashticzWidgetEditor = (function () {
       '<p class="text-muted">' +
       _t('choose', 'Choose the functions to show as tiles on screen 1.') +
       '</p>' +
+      '<h6 class="we-widget-section-title">' +
+      _t('widgets_single_heading', 'Widgets (once per screen)') +
+      '</h6>' +
       '<div class="we-widget-grid">';
 
+    // Repeatable widgets (managedSpecials-based, same mechanism as Group/
+    // HTML Block) get their own always-clickable "click to add" card
+    // below in addition to (not instead of) the normal singleton toggle
+    // card - each remains a real `catalog` entry (kept for the existing
+    // singleton 'widget_*' block's own config path, width/height/
+    // description metadata, etc.). The normal card is only skipped when
+    // hydration found no existing instance of that legacy shape
+    // (selectedWidgets[item.id] false): a fresh install gets just the
+    // clean repeatable card, while an existing install that already has
+    // one of these placed (any key, matched by shape - see
+    // _widgetIdFromDefinition()) keeps its familiar toggle/gear-icon
+    // card so that instance stays editable/removable exactly as before,
+    // alongside the new card for adding further independent instances.
+    var repeatableWidgetIds = {
+      iframe: true,
+      calendar: true,
+      publictransport: true,
+      timegraph: true,
+      xmltvguide: true,
+      camera: true,
+      news: true,
+    };
     catalog.forEach(function (item) {
+      if (repeatableWidgetIds[item.id] && !selectedWidgets[item.id]) return;
       html += _widgetCardHtml(item);
     });
+
+    html +=
+      '</div>' +
+      '<h6 class="we-widget-section-title we-widget-section-title-multi">' +
+      _t('widgets_multi_heading', 'Widgets (multiple per screen)') +
+      '</h6>' +
+      '<div class="we-widget-grid">';
+    html += _iframeWidgetCardHtml();
+    html += _calendarWidgetCardHtml();
+    html += _publicTransportWidgetCardHtml();
+    html += _timegraphWidgetCardHtml();
+    html += _xmltvguideWidgetCardHtml();
+    html += _cameraWidgetCardHtml();
+    html += _newsWidgetCardHtml();
     html += _lmsWidgetCardHtml();
 
     html +=
@@ -2149,6 +2189,288 @@ var DashticzWidgetEditor = (function () {
     _closeModalWithoutSaving();
     DT_function.loadDTScript('js/deviceeditor.js').then(function () {
       DashticzDeviceEditor.openLms();
+    });
+  }
+
+  /* iFrame is a `catalog` entry (unlike LMS/Group/HTML Block above), kept
+     there so an existing install's singleton 'widget_iframe' block - and
+     its own config popup, reached via the Layout Editor's gear icon on
+     that specific already-placed tile (openLayoutConfig('iframe') ->
+     _openConfigModal('iframe'), which looks the item up in `catalog` by
+     id) - keeps working completely unchanged. Only the card shown *here*,
+     in the Widgets catalog grid, is replaced: instead of toggling
+     selectedWidgets.iframe (which only ever wrote the one fixed
+     'widget_iframe' key), clicking it always opens the repeatable iFrame
+     quick-add popup (DashticzDeviceEditor.openIframe(), same
+     managedSpecials mechanism as Group/HTML Block/LMS), so any number of
+     independently-configured iframes can be added. Title/description are
+     read from the existing catalog entry so they stay in sync with (and
+     translated the same as) the legacy singleton widget's own labels. */
+  function _iframeWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'iframe';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-iframe" data-special-widget="iframe" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openIframeFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openIframe();
+    });
+  }
+
+  /* Calendar is a `catalog` entry, same reasoning as iFrame above: kept
+     there so an existing install's singleton 'widget_calendar' block (its
+     richer multi-source-with-color-picker config, reached via that
+     specific placed tile's own gear icon) keeps working unchanged - only
+     the card shown *here* is replaced with a repeatable one, opening the
+     new Calendar quick-add popup (DashticzDeviceEditor.openCalendar())
+     instead of toggling selectedWidgets.calendar. */
+  function _calendarWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'calendar';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-calendar" data-special-widget="calendar" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openCalendarFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openCalendar();
+    });
+  }
+
+  /* Public transport is a `catalog` entry, same reasoning as iFrame/
+     Calendar above: kept there so an existing install's singleton
+     'widget_publictransport' block keeps working unchanged - only the
+     card shown *here* is replaced with a repeatable one, opening the new
+     Public transport quick-add popup
+     (DashticzDeviceEditor.openPublicTransport()) instead of toggling
+     selectedWidgets.publictransport. */
+  function _publicTransportWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'publictransport';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-publictransport" data-special-widget="publictransport" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openPublicTransportFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openPublicTransport();
+    });
+  }
+
+  /* Timegraph is a `catalog` entry, same reasoning as iFrame/Calendar/
+     Public transport above: kept there so an existing install's
+     singleton 'widget_timegraph' block (its richer repeatable
+     multi-value-row config) keeps working unchanged - only the card
+     shown *here* is replaced with a repeatable one, opening the new
+     Timegraph quick-add popup (DashticzDeviceEditor.openTimegraph())
+     instead of toggling selectedWidgets.timegraph. */
+  function _timegraphWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'timegraph';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-timegraph" data-special-widget="timegraph" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openTimegraphFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openTimegraph();
+    });
+  }
+
+  /* TV Guide (XMLTV) is a `catalog` entry, same reasoning as iFrame/
+     Calendar/Public transport/Timegraph above: kept there so an existing
+     install's singleton 'widget_xmltvguide' block (whose settings can
+     also fall back to global settings['xmltv_*']) keeps working
+     unchanged - only the card shown *here* is replaced with a repeatable
+     one, opening the new TV Guide quick-add popup
+     (DashticzDeviceEditor.openXmltvguide()) instead of toggling
+     selectedWidgets.xmltvguide. */
+  function _xmltvguideWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'xmltvguide';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-xmltvguide" data-special-widget="xmltvguide" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openXmltvguideFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openXmltvguide();
+    });
+  }
+
+  /* Camera is a `catalog` entry, same reasoning as iFrame/Calendar/Public
+     transport/Timegraph/TV Guide above: kept there so an existing
+     install's singleton 'widget_cameras' block (its richer multi-camera
+     tray/carousel config) keeps working unchanged - only the card shown
+     *here* is replaced with a repeatable one, opening the new Camera
+     quick-add popup (DashticzDeviceEditor.openCamera()) instead of
+     toggling selectedWidgets.camera. */
+  function _cameraWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'camera';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-camera" data-special-widget="camera" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openCameraFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openCamera();
+    });
+  }
+
+  /* News is a `catalog` entry, same reasoning as iFrame/Calendar/Public
+     transport/Timegraph/TV Guide/Camera above: kept there so an existing
+     install's singleton 'widget_news' block (its own config, which edits
+     the *global* default_news_url/news_scroll_after settings) keeps
+     working unchanged - only the card shown *here* is replaced with a
+     repeatable one, opening the new News quick-add popup
+     (DashticzDeviceEditor.openNews()) instead of toggling
+     selectedWidgets.news. */
+  function _newsWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'news';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-news" data-special-widget="news" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openNewsFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openNews();
     });
   }
 
@@ -4461,6 +4783,34 @@ var DashticzWidgetEditor = (function () {
         _openLmsFromWidgets();
         return;
       }
+      if ($(this).data('special-widget') === 'iframe') {
+        _openIframeFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'calendar') {
+        _openCalendarFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'publictransport') {
+        _openPublicTransportFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'timegraph') {
+        _openTimegraphFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'xmltvguide') {
+        _openXmltvguideFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'camera') {
+        _openCameraFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'news') {
+        _openNewsFromWidgets();
+        return;
+      }
       _toggleWidget(String($(this).data('widget-id')));
     });
 
@@ -4470,6 +4820,34 @@ var DashticzWidgetEditor = (function () {
       event.preventDefault();
       if ($(this).data('special-widget') === 'lms') {
         _openLmsFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'iframe') {
+        _openIframeFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'calendar') {
+        _openCalendarFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'publictransport') {
+        _openPublicTransportFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'timegraph') {
+        _openTimegraphFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'xmltvguide') {
+        _openXmltvguideFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'camera') {
+        _openCameraFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'news') {
+        _openNewsFromWidgets();
         return;
       }
       _toggleWidget(String($(this).data('widget-id')));

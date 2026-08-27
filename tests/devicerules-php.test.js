@@ -201,6 +201,124 @@ echo device_rules_css_for_rules(array($rule));
   assert.match(output, /html body \.mh\.transbg\.visual-active/);
   assert.match(output, /background: rgba\(16, 32, 48, 0\.40\) !important;/);
   assert.match(output, /border: 4px double #abcdef !important;/);
+
+  rule.enabled = false;
+  const disabledEncoded = Buffer.from(JSON.stringify(rule), 'utf8').toString(
+    'base64'
+  );
+  const disabledOutput = runPhpLibrary(`
+$input = json_decode(base64_decode('${disabledEncoded}'), true);
+list($rule, $error) = device_rules_normalize_rule($input, 0, 'source');
+if ($error !== null) { echo $error; exit(2); }
+echo device_rules_css_for_rules(array($rule));
+`);
+  assert.equal(disabledOutput, '');
+});
+
+test('a disabled action always normalises to a non-empty class name server-side too', () => {
+  const result = normalize({
+    id: 'legacy_rule',
+    enabled: true,
+    trigger: { property: 'Data', operator: 'gt', value: '2' },
+    actions: {
+      css: { enabled: false, target: 'self' },
+      text: { enabled: true, target: 'message', textOn: 'Alarm' },
+    },
+  });
+
+  assert.equal(result.error, null);
+  assert.ok(result.rule.actions.css.className);
+  assert.ok(result.rule.actions.text.css.className);
+  assert.notEqual(
+    result.rule.actions.css.className,
+    result.rule.actions.text.css.className
+  );
+});
+
+test('server normalises the text action’s own CSS and auto-generates a class distinct from the CSS action’s', () => {
+  const result = normalize({
+    id: 'bordered_text',
+    enabled: true,
+    trigger: { property: 'Data', operator: 'gt', value: '2' },
+    actions: {
+      css: { enabled: true, target: 'self', className: '', style: {} },
+      text: {
+        enabled: true,
+        target: 'message',
+        textOn: 'Alarm',
+        textOff: '',
+        css: { enabled: true, style: { mode: 'border' } },
+      },
+    },
+  });
+
+  assert.equal(result.error, null);
+  assert.equal(result.rule.actions.text.css.enabled, true);
+  assert.equal(result.rule.actions.text.css.style.mode, 'border');
+  assert.ok(result.rule.actions.text.css.className);
+  assert.notEqual(
+    result.rule.actions.text.css.className,
+    result.rule.actions.css.className
+  );
+});
+
+test('server CSS generation includes the text action’s own class only while the text action is enabled', () => {
+  const rule = {
+    id: 'text_border',
+    enabled: true,
+    trigger: { property: 'Data', operator: 'gt', value: '2' },
+    actions: {
+      // Kept enabled (mode 'existing', so it emits no CSS of its own) purely
+      // so the master rule still has an enabled action once text is disabled
+      // below - otherwise normalization itself would reject the rule, which
+      // is not what this test is exercising.
+      css: {
+        enabled: true,
+        target: 'self',
+        className: 'unrelated-existing',
+        style: { mode: 'existing' },
+      },
+      text: {
+        enabled: true,
+        target: 'message',
+        textOn: 'Alarm',
+        textOff: '',
+        css: {
+          enabled: true,
+          className: 'text-target-border',
+          style: {
+            mode: 'border',
+            borderWidth: 3,
+            borderStyle: 'dashed',
+            borderColor: '#ff0000',
+          },
+        },
+      },
+    },
+  };
+  const encoded = Buffer.from(JSON.stringify(rule), 'utf8').toString('base64');
+  const output = runPhpLibrary(`
+$input = json_decode(base64_decode('${encoded}'), true);
+list($rule, $error) = device_rules_normalize_rule($input, 0, 'source');
+if ($error !== null) { echo $error; exit(2); }
+echo device_rules_css_for_rules(array($rule));
+`);
+  assert.match(output, /html body \.dt_block\.transbg\.text-target-border,/);
+  assert.match(output, /border: 3px dashed #ff0000 !important;/);
+
+  // Disabling the parent text action must drop the generated border too -
+  // there must never be a border with no active text rule behind it.
+  rule.actions.text.enabled = false;
+  const disabledEncoded = Buffer.from(JSON.stringify(rule), 'utf8').toString(
+    'base64'
+  );
+  const disabledOutput = runPhpLibrary(`
+$input = json_decode(base64_decode('${disabledEncoded}'), true);
+list($rule, $error) = device_rules_normalize_rule($input, 0, 'source');
+if ($error !== null) { echo $error; exit(2); }
+echo device_rules_css_for_rules(array($rule));
+`);
+  assert.equal(disabledOutput, '');
 });
 
 test('endpoint keeps the existing same-origin, CSRF, managed-block and atomic-write protections', () => {
