@@ -42,7 +42,10 @@
 }
 
 /* No border on Group switches on the rights side */
-.transbg.longpress::after { border-right: none !important; position: absolute; }
+.transbg.longpress::after {
+  border-right: none !important;
+  position: absolute;
+}
 
 .dt-container {
   width: 100%;
@@ -2493,6 +2496,19 @@ body.dle-active {
 }
 
 /* Widget Editor modal */
+.we-widget-section-title {
+  font-weight: 600;
+  font-size: 14px;
+  color: #343a40;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #dee2e6;
+  margin-bottom: 10px;
+}
+
+.we-widget-section-title-multi {
+  margin-top: 22px;
+}
+
 .we-widget-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));

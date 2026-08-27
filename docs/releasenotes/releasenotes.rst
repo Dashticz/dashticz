@@ -6,7 +6,7 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
-v3.45.8 beta (27-8-2026)
+v3.45.10 beta (27-8-2026)
 -------------------------
 
 * **Enhancements**
@@ -58,6 +58,196 @@ v3.45.8 beta (27-8-2026)
   Editor toolbar, confirming every computed font-size/font-family
   matches the new scale with no visible config text below 12px.
 
+v3.45.8 beta (26-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- Added repeatable iFrame, Calendar, Public transport, Timegraph and
+  TV Guide (XMLTV) blocks (Screen Editor's Widgets catalog, each card
+  now behaving like LMS's own): each can now be placed any number of
+  times on a dashboard, with fully independent settings per instance -
+  previously each was a singleton in the catalog (one fixed widget_*
+  block, one shared config for every added instance), addressing
+  `issue #201 <https://github.com/MadPatrick/dashticz/issues/201>`_'s
+  request for per-instance widget settings similar to LMS.
+
+- Added M3U/M3U8 playlist support to the StreamPlayer widget. A
+  playlist placed at ``custom/radio_playlist.m3u`` (``#EXTINF`` tags
+  ``tvg-name``/``tvg-logo``/``tvg-id``/``group-title``, followed by
+  the stream URL) is loaded automatically when present and valid,
+  with a station-selection popup grouped by ``group-title`` and
+  sorted; the widget falls back to the existing configured track list
+  when the file is missing, empty or invalid. When a station's
+  ``tvg-id`` matches a locally stored logo in ``img/custom/radio/``,
+  that local image is preferred over the playlist's own remote
+  ``tvg-logo`` URL.
+
+- Added an optional CSS action to Device Rules Automation's "Put text
+  in another device" action, so a border/background/banner can be
+  applied to the text action's own target device, in sync with the
+  same trigger - previously CSS could only target the current device.
+  The new "Also apply CSS to target device" toggle
+  (``rule.actions.text.css`` in the schema) reuses the existing
+  background/border/banner style controls, and only ever applies
+  while the parent text action is itself enabled and targeted, so
+  there is never a border with no active text rule behind it. The new
+  class is generated and cleaned up through the same
+  ``setRuleClassState()``/``cleanupSourceStates()`` machinery already
+  used for the current-device CSS action, with its own managed class
+  name (suffixed ``_text``) so it can never collide with the
+  current-device action's class for the same rule.
+  ``js/savedevicerules.php`` gained matching
+  normalisation/validation and CSS generation for the nested action.
+
+* **Fixes**
+
+- Fixed the local-logo matching being completely inert as originally
+  submitted: the widget called ``vendor/dashticz/streamplayer.php``
+  to resolve a station's ``tvg-id`` to a local filename, but that
+  endpoint didn't exist, so the lookup always 404'd and silently fell
+  back to no local logos at all. Added it, following the existing
+  ``listcustomicons.php``/``listbackgrounds.php`` pattern (same-origin
+  GET only, ``scandir()``'d against a real path, image-extension
+  allowlist, symlinks rejected).
+
+- Async playlist/logo loading is now guarded by a per-instance
+  generation token so a rerender never duplicates event handlers or
+  leaves stale UI state behind.
+
+- Fixed Automation trigger comparisons (greater than/less than/etc.)
+  failing on Domoticz values that glue a unit straight onto the
+  number with no space (e.g. a pressure sensor's Data/sValue reading
+  "1,8Bar") or mix a thousands separator with a decimal comma (e.g.
+  "1.020,5 hPa"). ``numericValue()`` (js/devicerules.js) now extracts
+  the numeric run from the value first and, when both '.' and ','
+  appear, treats whichever comes last as the decimal separator,
+  instead of naively replacing only the first comma - which
+  previously truncated a value like "1.020,5" at the thousands
+  separator.
+
+- Fixed the Automation editor's "Add CSS to current device" and "Put
+  text in another device" checkboxes rendering as small native
+  checkboxes instead of matching the size of the Condition/Style
+  dropdowns and the popup's own top-level Automation switch - both
+  now use the existing ``.de-switch`` class (css/creative.css)
+  already standard for every other Device Config switch, instead of
+  a plain unstyled checkbox.
+
+- Fixed a validation bug introduced by the new text-action CSS
+  toggle above: ``normaliseRules()`` (and the matching PHP
+  normaliser) only auto-generated a fallback CSS class name for a
+  *disabled* action, so a rule saved before that action's CSS toggle
+  existed - or before it was ever turned on - rendered the "CSS
+  class" field empty. Enabling the toggle and saving then failed with
+  "Automation: gebruik een geldige CSS-class", even though saving
+  itself would have auto-filled a valid name. Both normalisers now
+  always keep a valid class name pre-filled, matching how a
+  brand-new rule already behaved.
+
+* **Code**
+
+- Every one of the five is implemented by extending the same
+  managedSpecials mechanism already used for Group/HTML Block/LMS
+  rather than the catalog's singleton selectedWidgets/blockKey
+  pattern, each with its own quick-add popup
+  (js/deviceeditor.js). iFrame/Calendar/Public transport/TV Guide are
+  recognized by their own component's existing field-shape dispatch
+  (frameurl/icalurl/station-or-tpc/xmltvurl, no explicit type,
+  mirroring HTML Block's htmlfile); Timegraph, whose component
+  requires an explicit type:'timegraph', is recognized and written the
+  same way Group/LMS already are. Every existing singleton catalog
+  widget is untouched and keeps working exactly as before - Calendar's
+  multi-source/color-picker config and TV Guide's global
+  settings['xmltv_*'] fallback remain available there. Also fixed the
+  new iFrame popup's two checkboxes rendering as plain unstyled
+  Bootstrap checkboxes instead of the app's standard 38x20px blue
+  switch (.de-switch, already the documented standard class in
+  css/creative.css for exactly this case) - every checkbox added
+  across all five new popups uses it from the start. The Widgets
+  catalog modal now visually separates the two kinds of card under
+  their own heading - "Widgets (once per screen)" for the remaining
+  singleton cards and "Widgets (multiple per screen)" for the six
+  repeatable cards (iFrame/Calendar/Public transport/Timegraph/TV
+  Guide/LMS) - instead of mixing both in one grid. Refactored the
+  special-block kind lists that had grown into a hand-duplicated
+  ``kind === 'x' || kind === 'y' || ...`` chain repeated at up to 10
+  call sites across js/deviceeditor.js, js/layouteditor.js and
+  js/saveblocks.php into a small number of named, shared arrays
+  declared once per file, each call site now doing a plain
+  ``.indexOf(kind) > -1`` membership check instead - a behavior-
+  preserving refactor (every array's contents were extracted 1:1 from
+  the chain it replaces) fixing a recurring structural pain point:
+  those duplicated chains, and the test assertions matching their
+  exact literal multi-line text, were a frequent source of merge
+  conflicts between feature branches touching nearby special-block
+  code. A future repeatable special now touches one line per array
+  instead of up to 10 separately-duplicated chains, and the
+  corresponding test assertions were rewritten to check each array's
+  declaration/membership directly. Verified with the full node --test
+  suite (183 tests, including source-shape assertions updated for each
+  new kind) and Prettier's format check; live browser verification of
+  the Screen Editor flow was not possible in this environment (no
+  Domoticz/Docker stack available).
+
+- Fixed Prettier formatting mismatches in
+  ``js/components/streamplayer.js`` and
+  ``js/components/streamplayer.css`` (no functional change) that were
+  failing CI's ``format:check`` job on Node 20/22/24.
+
+- Verified with the full node --test suite (184 tests, including a
+  new ``php-security.test.js`` regression test for the new endpoint)
+  and Prettier's format check.
+
+- The text action's own CSS class is generated and cleaned up through
+  the same ``setRuleClassState()``/``cleanupSourceStates()``
+  machinery already used for the current-device CSS action, extended
+  to also track a second, independent ``{id, target, action}`` entry
+  per rule instead of a new state system. Verified with the full node
+  --test suite (192 tests, including new coverage for the text
+  action's own CSS applying/clearing with its trigger, for the PHP
+  writer's matching normalisation and CSS generation, and for a
+  disabled action always normalising to a non-empty class name both
+  client- and server-side) and Prettier's format check.
+
+v3.45.9 beta (27-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- Extended the repeatable-widget mechanism (iFrame/Calendar/Public
+  transport/Timegraph/TV Guide, addressing
+  `issue #201 <https://github.com/MadPatrick/dashticz/issues/201>`_)
+  to two more widgets: Camera (a single image URL, required, plus an
+  optional MJPEG video URL per block; the existing singleton catalog
+  widget's richer multi-camera tray/carousel config stays available
+  there unchanged) and News (a single RSS feed URL per block; the
+  existing singleton catalog widget's own global
+  ``default_news_url``/``news_scroll_after`` settings stay available
+  there unchanged).
+
+- Simplified every repeatable widget's quick-add popup (iFrame/
+  Calendar/Public transport/Timegraph/TV Guide/Camera/News): the
+  reference/block name no longer needs to be typed and validated by
+  hand. It's now auto-generated (``iframe_1``, ``iframe_2``, ...) via
+  a shared ``_nextSpecialReference()`` prefix table in
+  js/deviceeditor.js, the same convention LMS's popup already used -
+  removing the manual name field, its uniqueness check, and the
+  corresponding invalid-name translations from each popup.
+
+* **Code**
+
+- Camera is dispatched via an explicit ``type: 'camera'`` (like
+  Group/LMS/Timegraph); News is dispatched via a truthy ``feed``
+  (like iFrame/Calendar/Public transport/TV Guide). Both are wired
+  through js/deviceeditor.js (openCamera/openNews and their quick-add
+  popups), js/layouteditor.js, js/widgeteditor.js,
+  js/saveblocks.php and js/configwriter.php, following the same
+  pattern as the other five repeatable widgets. Verified with the
+  full node --test suite and Prettier's format check; live browser
+  verification of the Screen Editor flow was not possible in this
+  environment (no Domoticz/Docker stack available).
+
 v3.45.7 beta (25-8-2026)
 -------------------------
 
@@ -85,10 +275,22 @@ v3.45.7 beta (25-8-2026)
   without overlapping), and font size, with width left automatic so
   the banner fits any length of text.
 
+- Text actions now write to a target device's data/value field
+  instead of its title, matching how the block itself renders device
+  data. Disabled master rules no longer generate any CSS. When
+  several devices' text actions target the same device, each is
+  tracked by its own source key/label/rule index instead of
+  colliding, so they render as independent lines that stay correct
+  regardless of processing order.
+
 * **Code**
 
 - Verified with the full node --test suite (173 tests) and Prettier's
   format check.
+
+- Fixed a Prettier formatting mismatch in ``css/creative.css`` and
+  ``js/devicerules.js`` (no functional change) that was failing CI's
+  ``format:check`` job on Node 20/22/24.
 
 v3.45.6 beta (24-8-2026)
 -------------------------

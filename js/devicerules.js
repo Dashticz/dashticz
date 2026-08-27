@@ -9,7 +9,7 @@
 //
 // Schema v2 groups one trigger with two independent actions:
 //   1. CSS styling for the device whose Device Config popup is open.
-//   2. Text for another configured Dashticz device block selected from a dropdown.
+//   2. Text in the data/value field of another configured Dashticz device block.
 //
 // The normaliser still accepts the previous flat action/target/className and
 // action/target/textOn/textOff records, so existing automation keeps working.
@@ -27,15 +27,21 @@
   var pendingPopupSource = '';
 
   // Runtime state is kept per target. A rule only removes the class/text that
-  // it owns; existing addClass/title values from CONFIG.js remain untouched.
+  // it owns; existing addClass/value settings from CONFIG.js remain untouched.
   var classStates = {};
   var classBaseValues = {};
   var classManagedNames = {};
   var textStates = {};
   var textBaseValues = {};
   var sourceStateIds = {};
+  // Remember the last live block for every source alias so a saved rule change
+  // can be applied immediately, without waiting for another Domoticz update.
+  var sourceBlocks = {};
   var runtimeStyleNodes = {};
   var stateOrder = 0;
+  var MULTILINE_TEXT_VALUE_CLASS = 'dt-automation-multiline-value';
+  var MULTILINE_TEXT_STYLE_ID = 'dt-device-rules-multiline-style';
+  var multilineTextStyleReady = false;
 
   var propertySuggestions = [
     'Status',
@@ -85,7 +91,7 @@
 
   var nl = {
     automation: 'Automation',
-    help: 'Beoordeel één trigger en voer daarna de ingeschakelde acties uit. CSS wordt toegepast op dit device; de tekstactie gebruikt een geselecteerd doeldevice.',
+    help: 'Beoordeel één trigger en voer daarna de ingeschakelde acties uit. CSS wordt toegepast op dit device; de tekstactie vult het data-/waardeveld van een geselecteerd doeldevice.',
     enabled: 'Aan',
     trigger: 'Trigger',
     actions: 'Acties',
@@ -99,9 +105,12 @@
     textAction: 'Tekst in ander device plaatsen',
     textTarget: 'Doeldevice voor tekstactie',
     targetHelp:
-      'De pulldown toont beschikbare geconfigureerde devices met naam, IDX en block-key. Text-devices worden bovenaan getoond.',
+      'De pulldown toont beschikbare geconfigureerde devices met naam, IDX en block-key. Teksten van meerdere automations met hetzelfde doeldevice worden automatisch onder elkaar geplaatst; Text-devices worden bovenaan getoond.',
     textOn: 'Tekst indien waar',
     textOff: 'Tekst indien onwaar',
+    textCssAction: 'Ook CSS toepassen op doeldevice',
+    textCssActionHelp:
+      'De gegenereerde class wordt toegevoegd aan en verwijderd van het doeldevice van de tekstactie, gelijk met de trigger. Alleen zichtbaar zolang de tekstactie zelf is ingeschakeld.',
     cssClass: 'CSS-class',
     styling: 'Styling',
     existingCss: 'Bestaande CSS / alleen class',
@@ -150,7 +159,7 @@
 
   var en = {
     automation: 'Automation',
-    help: 'Evaluate one trigger and then run the enabled actions. CSS targets this device; the text action uses a selected target device.',
+    help: 'Evaluate one trigger and then run the enabled actions. CSS targets this device; the text action fills the data/value field of a selected target device.',
     enabled: 'On',
     trigger: 'Trigger',
     actions: 'Actions',
@@ -164,9 +173,12 @@
     textAction: 'Put text in another device',
     textTarget: 'Text action target device',
     targetHelp:
-      'The dropdown lists available configured devices by name, IDX and block key. Text devices are listed first.',
+      'The dropdown lists available configured devices by name, IDX and block key. Text from multiple automations using the same target is automatically shown on separate lines; Text devices are listed first.',
     textOn: 'Text when true',
     textOff: 'Text when false',
+    textCssAction: 'Also apply CSS to target device',
+    textCssActionHelp:
+      "The generated class is added to and removed from the text action's target device, in sync with the trigger. Only visible while the text action itself is enabled.",
     cssClass: 'CSS class',
     styling: 'Styling',
     existingCss: 'Existing CSS / class only',
@@ -311,11 +323,11 @@
     return result.slice(0, 200);
   }
 
-  function normaliseStyle(style, legacyRule) {
+  function normaliseStyle(style, defaultMode) {
     // Old rules without a style object used hand-written custom.css. Preserve
     // those as class-only instead of generating replacement declarations.
     if (!style || typeof style !== 'object') {
-      return defaultStyle(legacyRule ? 'existing' : 'background-border');
+      return defaultStyle(defaultMode || 'background-border');
     }
     var mode = String(style.mode || 'existing');
     if (
@@ -377,6 +389,11 @@
           target: '',
           textOn: '',
           textOff: '',
+          css: {
+            enabled: false,
+            className: managedClassName(source, id + '_text'),
+            style: defaultStyle('border'),
+          },
         },
       },
     };
@@ -441,7 +458,12 @@
               ? rule.className || rule.class || ''
               : '')
         ).trim();
-        if (cssEnabled && !className) {
+        // Always keep a valid class name pre-filled, even while the action
+        // is currently off - not just when re-enabling it, so a rule saved
+        // (or loaded) before this action was ever turned on still renders a
+        // usable value in the popup the moment the user flips it on, rather
+        // than an empty field that fails validation on save.
+        if (!className) {
           className = managedClassName(source, id);
         }
 
@@ -452,6 +474,18 @@
               ? rule.target || ''
               : ''
         ).trim();
+
+        var textCssSource =
+          textSource.css && typeof textSource.css === 'object'
+            ? textSource.css
+            : {};
+        var textCssEnabled = textCssSource.enabled === true;
+        var textCssClassName = String(
+          textCssSource.className || textCssSource.class || ''
+        ).trim();
+        if (!textCssClassName) {
+          textCssClassName = managedClassName(source, id + '_text');
+        }
 
         return {
           id: id,
@@ -471,7 +505,7 @@
               className: className,
               style: normaliseStyle(
                 cssSource.style || (!nested ? rule.style : null),
-                !nested && !rule.style
+                !nested && !rule.style ? 'existing' : 'background-border'
               ),
               legacyTarget: cssTarget !== 'self',
             },
@@ -492,6 +526,11 @@
                     ? rule.textOff
                     : ''
               ),
+              css: {
+                enabled: textCssEnabled,
+                className: textCssClassName,
+                style: normaliseStyle(textCssSource.style, 'border'),
+              },
             },
           },
         };
@@ -515,9 +554,27 @@
 
   function numericValue(value) {
     if (typeof value === 'number') return isFinite(value) ? value : NaN;
-    var parsed = parseFloat(
-      String(value == null ? '' : value).replace(',', '.')
-    );
+    var str = String(value == null ? '' : value).trim();
+    if (str === '') return NaN;
+    // Domoticz device values often carry a unit suffix (e.g. "1,8Bar",
+    // "1.020,5 hPa") glued straight onto the number, with either '.' or ','
+    // as the decimal separator depending on the sensor/locale. Pull out just
+    // the numeric run and, when both separators appear, treat the later one
+    // as the decimal point and the earlier one(s) as thousands grouping.
+    var match = str.match(/-?\d[\d.,]*/);
+    if (!match) return NaN;
+    var token = match[0];
+    var lastComma = token.lastIndexOf(',');
+    var lastDot = token.lastIndexOf('.');
+    if (lastComma !== -1 && lastDot !== -1) {
+      token =
+        lastComma > lastDot
+          ? token.replace(/\./g, '').replace(',', '.')
+          : token.replace(/,/g, '');
+    } else if (lastComma !== -1) {
+      token = token.replace(',', '.');
+    }
+    var parsed = parseFloat(token);
     return isFinite(parsed) ? parsed : NaN;
   }
 
@@ -574,6 +631,119 @@
       if (!item || seen[item]) return false;
       seen[item] = true;
       return true;
+    });
+  }
+
+  function sourceSelfTarget(source) {
+    var block = sourceBlocks[String(source || '')];
+    return String((block && block.key) || source || '');
+  }
+
+  function managedClassNamesForTarget(target, source, ruleSets) {
+    var managed = {};
+    Object.keys(classManagedNames[target] || {}).forEach(function (className) {
+      managed[className] = true;
+    });
+
+    (ruleSets || []).forEach(function (ruleSet) {
+      normaliseRules(ruleSet || [], source).forEach(function (rule) {
+        var cssAction = rule.actions && rule.actions.css;
+        if (cssAction && cssAction.className) {
+          var cssTarget =
+            cssAction.target === 'self' || !cssAction.target
+              ? sourceSelfTarget(source)
+              : String(cssAction.target);
+          if (String(cssTarget) === String(target)) {
+            splitClasses(cssAction.className).forEach(function (className) {
+              managed[className] = true;
+            });
+          }
+        }
+        var textAction = rule.actions && rule.actions.text;
+        var textCssAction = textAction && textAction.enabled && textAction.css;
+        if (
+          textCssAction &&
+          textCssAction.className &&
+          textAction.target &&
+          String(textAction.target) === String(target)
+        ) {
+          splitClasses(textCssAction.className).forEach(function (className) {
+            managed[className] = true;
+          });
+        }
+      });
+    });
+    return managed;
+  }
+
+  function stripManagedAddClassValue(value, target, source, ruleSets) {
+    var managed = managedClassNamesForTarget(
+      String(target || ''),
+      String(source || ''),
+      ruleSets
+    );
+    return splitClasses(String(value || ''))
+      .filter(function (className) {
+        return !managed[className];
+      })
+      .join(' ');
+  }
+
+  // addClass is runtime output of Device Rules. Keep generated class names out
+  // of the block's editable CONFIG.js base while retaining hand-written names.
+  function cleanManagedAddClassBases(source, ruleSets) {
+    source = String(source || '');
+    var targets = {};
+    targets[sourceSelfTarget(source)] = true;
+
+    (ruleSets || []).forEach(function (ruleSet) {
+      normaliseRules(ruleSet || [], source).forEach(function (rule) {
+        var cssAction = rule.actions && rule.actions.css;
+        if (cssAction && cssAction.className) {
+          var target =
+            cssAction.target === 'self' || !cssAction.target
+              ? sourceSelfTarget(source)
+              : String(cssAction.target);
+          if (target) targets[target] = true;
+        }
+        var textAction = rule.actions && rule.actions.text;
+        if (
+          textAction &&
+          textAction.enabled &&
+          textAction.target &&
+          textAction.css &&
+          textAction.css.className
+        ) {
+          targets[String(textAction.target)] = true;
+        }
+      });
+    });
+
+    Object.keys(targets).forEach(function (target) {
+      var definition = configuredBlock(target);
+      var current =
+        definition && typeof definition.addClass === 'string'
+          ? definition.addClass
+          : '';
+      var cleaned = stripManagedAddClassValue(
+        current,
+        target,
+        source,
+        ruleSets
+      );
+
+      if (definition) {
+        if (cleaned) definition.addClass = cleaned;
+        else delete definition.addClass;
+      }
+      if (Object.prototype.hasOwnProperty.call(classBaseValues, target)) {
+        classBaseValues[target] = stripManagedAddClassValue(
+          classBaseValues[target],
+          target,
+          source,
+          ruleSets
+        );
+      }
     });
   }
 
@@ -686,57 +856,195 @@
     recomputeClassTarget(target);
   }
 
+  function targetDevice(target) {
+    if (
+      !window.Domoticz ||
+      typeof window.Domoticz.getAllDevices !== 'function'
+    ) {
+      return null;
+    }
+    var definition = configuredBlock(target);
+    var reference =
+      definition && typeof definition.idx !== 'undefined'
+        ? definition.idx
+        : target;
+    try {
+      return window.Domoticz.getAllDevices(reference) || null;
+    } catch (ignore) {
+      return null;
+    }
+  }
+
+  function liveTargetData(target) {
+    var device = targetDevice(target);
+    if (!device) return '';
+    if (typeof device.Data !== 'undefined' && device.Data !== null) {
+      return String(device.Data);
+    }
+    if (typeof device.Status !== 'undefined' && device.Status !== null) {
+      return String(device.Status);
+    }
+    return '';
+  }
+
+  function renderedDataField($block, definition) {
+    var $data = $block.find('.col-data').first();
+    if (!$data.length) return $();
+
+    // `switch: true` swaps title and value in getStatusBlock(). The logical
+    // value is therefore rendered in `.title` for that compatibility mode.
+    if (definition && definition.switch) {
+      var $swapped = $data.find('.title').first();
+      if ($swapped.length) return $swapped;
+    }
+
+    var $value = $data.find('.value').first();
+    if ($value.length) return $value;
+    // Switch blocks use `.state` for their value instead of `.value`.
+    return $data.find('.state').first();
+  }
+
+  function readRenderedTargetData(target) {
+    var $targets = collectRenderedTargets(target);
+    if (!$targets || !$targets.length) return undefined;
+    var definition = configuredBlock(target);
+    var result;
+    $targets.each(function () {
+      var $field = renderedDataField($(this), definition);
+      if (!$field.length) return;
+      result = String($field.text() || '');
+      return false;
+    });
+    return result;
+  }
+
   function captureTextBase(target) {
     if (Object.prototype.hasOwnProperty.call(textBaseValues, target)) return;
     var definition = configuredBlock(target);
     textBaseValues[target] = {
       hadOwn: !!(
-        definition && Object.prototype.hasOwnProperty.call(definition, 'title')
+        definition && Object.prototype.hasOwnProperty.call(definition, 'value')
       ),
-      value: definition ? definition.title : undefined,
+      value: definition ? definition.value : undefined,
+      renderedValue: readRenderedTargetData(target),
     };
   }
 
-  function directTitleUpdate(target, value) {
+  function ensureMultilineTextStyle() {
+    if (multilineTextStyleReady) return;
+    if (!document || typeof document.createElement !== 'function') return;
+    if (
+      typeof document.getElementById === 'function' &&
+      document.getElementById(MULTILINE_TEXT_STYLE_ID)
+    ) {
+      multilineTextStyleReady = true;
+      return;
+    }
+
+    var head =
+      document.head ||
+      (typeof document.getElementsByTagName === 'function'
+        ? document.getElementsByTagName('head')[0]
+        : null);
+    if (!head || typeof head.appendChild !== 'function') return;
+
+    var style = document.createElement('style');
+    style.id = MULTILINE_TEXT_STYLE_ID;
+    style.setAttribute('data-dashticz-device-rules', 'multiline-text');
+    style.textContent =
+      'html body .' +
+      MULTILINE_TEXT_VALUE_CLASS +
+      ' {\n' +
+      '  white-space: pre-line !important;\n' +
+      '  line-height: 1.35 !important;\n' +
+      '  overflow-wrap: break-word;\n' +
+      '  word-break: break-word;\n' +
+      '}';
+    head.appendChild(style);
+    multilineTextStyleReady = true;
+  }
+
+  function directDataUpdate(target, value, multiline) {
     var $targets = collectRenderedTargets(target);
     if (!$targets || !$targets.length) return;
+    var definition = configuredBlock(target);
     $targets.each(function () {
-      var $block = $(this);
-      var $title = $block.find('.dt_title').first();
-      if ($title.length) {
-        $title.text(value == null ? '' : String(value));
-      } else if (value !== '' && value != null) {
-        var $content = $block.find('.dt_content').first();
-        if ($content.length) {
-          $('<div class="dt_title"></div>')
-            .text(String(value))
-            .prependTo($content);
-        }
-      }
+      var $field = renderedDataField($(this), definition);
+      if (!$field.length) return;
+      $field.removeClass(MULTILINE_TEXT_VALUE_CLASS);
+      if (multiline) $field.addClass(MULTILINE_TEXT_VALUE_CLASS);
+      $field.text(value == null ? '' : String(value));
     });
   }
 
-  function setTargetTitle(target, value) {
-    setBlockState(target, { title: value });
-    directTitleUpdate(target, value);
+  function setTargetData(target, value, multiline) {
+    // `value` is the normal getStatusBlock() data field. This only changes the
+    // display inside Dashticz and does not write to the Domoticz text device.
+    if (multiline) ensureMultilineTextStyle();
+    setBlockState(target, { value: value });
+    directDataUpdate(target, value, multiline);
   }
 
-  function restoreTargetTitle(target) {
+  function resolveBaseDisplayValue(target, base) {
+    if (typeof base.renderedValue !== 'undefined') return base.renderedValue;
+    if (!base.hadOwn) return liveTargetData(target);
+    if (base.value == null) return '';
+
+    var value = String(base.value);
+    var device = targetDevice(target);
+    if (!device) return value;
+    return value.replace(
+      /<([A-Za-z_$][A-Za-z0-9_$]*)>/g,
+      function (match, property) {
+        return typeof device[property] === 'undefined'
+          ? match
+          : String(device[property]);
+      }
+    );
+  }
+
+  function restoreTargetData(target) {
     var base = textBaseValues[target];
     var definition = configuredBlock(target);
     if (!base) return;
 
     if (base.hadOwn) {
-      setTargetTitle(target, base.value);
+      setBlockState(target, { value: base.value });
     } else {
-      if (definition) delete definition.title;
+      if (definition) delete definition.value;
       if (window.Dashticz && typeof window.Dashticz.setBlock === 'function') {
         window.Dashticz.setBlock(target);
       }
-      var fallback = friendlyBlockName(target);
-      directTitleUpdate(target, fallback === target ? '' : fallback);
     }
+
+    directDataUpdate(target, resolveBaseDisplayValue(target, base), false);
     delete textBaseValues[target];
+  }
+
+  function compareTextStates(left, right) {
+    var labelComparison = String(
+      left.sourceLabel || left.sourceKey || ''
+    ).localeCompare(
+      String(right.sourceLabel || right.sourceKey || ''),
+      undefined,
+      {
+        numeric: true,
+        sensitivity: 'base',
+      }
+    );
+    if (labelComparison) return labelComparison;
+
+    var keyComparison = String(left.sourceKey || '').localeCompare(
+      String(right.sourceKey || ''),
+      undefined,
+      { numeric: true, sensitivity: 'base' }
+    );
+    if (keyComparison) return keyComparison;
+
+    var leftIndex = Number(left.ruleIndex || 0);
+    var rightIndex = Number(right.ruleIndex || 0);
+    if (leftIndex !== rightIndex) return leftIndex - rightIndex;
+    return left.order - right.order;
   }
 
   function recomputeTextTarget(target) {
@@ -746,36 +1054,27 @@
       .map(function (id) {
         return targetStates[id];
       })
-      .sort(function (left, right) {
-        return left.order - right.order;
-      });
+      .sort(compareTextStates);
 
     if (!states.length) {
       delete textStates[target];
-      restoreTargetTitle(target);
+      restoreTargetData(target);
       return;
     }
 
-    var selected = null;
-    states.forEach(function (state) {
-      if (state.active) selected = state;
-    });
-    if (!selected) {
-      states.forEach(function (state) {
-        if (state.textOff !== '') selected = state;
+    var values = states
+      .map(function (state) {
+        return state.active ? state.textOn : state.textOff;
+      })
+      .filter(function (value) {
+        return value !== '';
       });
-    }
-
-    var value = selected
-      ? selected.active
-        ? selected.textOn
-        : selected.textOff
-      : '';
-    setTargetTitle(target, value);
+    setTargetData(target, values.join('\n'), values.length > 1);
   }
 
-  function setRuleTextState(target, id, textOn, textOff, active) {
+  function setRuleTextState(target, id, textOn, textOff, active, metadata) {
     if (!target || !id) return;
+    metadata = metadata || {};
     captureTextBase(target);
     if (!textStates[target]) textStates[target] = {};
     var previous = textStates[target][id];
@@ -783,6 +1082,9 @@
       textOn: String(textOn == null ? '' : textOn),
       textOff: String(textOff == null ? '' : textOff),
       active: !!active,
+      sourceKey: String(metadata.sourceKey || ''),
+      sourceLabel: String(metadata.sourceLabel || metadata.sourceKey || ''),
+      ruleIndex: Number(metadata.ruleIndex || 0),
       order: previous ? previous.order : ++stateOrder,
     };
     recomputeTextTarget(target);
@@ -850,6 +1152,48 @@
     return candidates;
   }
 
+  function rememberSourceBlock(sourceKey, block) {
+    if (!block || !block.device) return;
+    sourceKey = String(sourceKey || '').trim();
+    if (sourceKey) sourceBlocks[sourceKey] = block;
+    sourceCandidatesForBlock(block).forEach(function (candidate) {
+      sourceBlocks[candidate] = block;
+    });
+  }
+
+  // Re-evaluate a source immediately after Device Config saves. Clear all old
+  // aliases for the rendered block first so disabled/deleted actions cannot
+  // retain a stale class or text value until the next Domoticz update.
+  function reconcileSavedSource(source) {
+    source = String(source || '').trim();
+    if (!source) return;
+
+    var block = sourceBlocks[source] || null;
+    var aliases = [source];
+    if (block) {
+      Object.keys(sourceBlocks).forEach(function (candidate) {
+        if (
+          sourceBlocks[candidate] === block &&
+          aliases.indexOf(candidate) === -1
+        ) {
+          aliases.push(candidate);
+        }
+      });
+    }
+
+    aliases.forEach(function (candidate) {
+      cleanupSourceStates(candidate, []);
+      if (candidate !== source) updateRuntimeRuleCss(candidate, []);
+    });
+
+    if (block && block.device) {
+      process(block, {
+        source: source,
+        entry: ruleStore()[source] || null,
+      });
+    }
+  }
+
   function entryForBlock(block) {
     var store = ruleStore();
     var candidates = sourceCandidatesForBlock(block);
@@ -872,6 +1216,7 @@
     // a named key. CSS target `self` must always refer to the actual rendered
     // block, not necessarily the key used to look up the stored automation.
     var selfTarget = String(block.key || sourceKey || block.idx || 'device');
+    rememberSourceBlock(sourceKey, block);
     var rules = normaliseRules(
       resolved.entry && resolved.entry.rules,
       sourceKey
@@ -884,8 +1229,9 @@
     updateRuntimeRuleCss(sourceKey, rules);
 
     var currentEntries = [];
+    var sourceLabel = friendlyBlockName(selfTarget);
 
-    rules.forEach(function (rule) {
+    rules.forEach(function (rule, ruleIndex) {
       if (rule.enabled === false || !rule.trigger.property) return;
       var actual = readPath(block.device, rule.trigger.property);
       var active = compare(actual, rule.trigger.operator, rule.trigger.value);
@@ -918,8 +1264,29 @@
           textId,
           textAction.textOn,
           textAction.textOff,
-          active
+          active,
+          {
+            sourceKey: sourceKey,
+            sourceLabel: sourceLabel,
+            ruleIndex: ruleIndex,
+          }
         );
+
+        var textCssAction = textAction.css;
+        if (textCssAction && textCssAction.enabled && textCssAction.className) {
+          var textCssId = sourceKey + '|' + rule.id + '|text-css';
+          currentEntries.push({
+            id: textCssId,
+            target: textAction.target,
+            action: 'class',
+          });
+          setRuleClassState(
+            textAction.target,
+            textCssId,
+            textCssAction.className,
+            active
+          );
+        }
       }
     });
 
@@ -1468,6 +1835,7 @@
     rule = rule || defaultRule(source);
     var cssAction = rule.actions.css;
     var textAction = rule.actions.text;
+    var textCssAction = textAction.css;
     var noValue =
       rule.trigger.operator === 'empty' || rule.trigger.operator === 'notempty';
     var sourceLabel = friendlyBlockName(source);
@@ -1480,7 +1848,7 @@
       '<div class="d-flex justify-content-between align-items-center mb-2">' +
       '<label class="d-flex align-items-center gap-2 mb-0">' +
       '<span class="form-check form-switch m-0 p-0">' +
-      '<input class="form-check-input dr-enabled m-0" type="checkbox" role="switch" style="width:4em;height:2em;float:none;"' +
+      '<input class="form-check-input dr-enabled de-switch m-0" type="checkbox" role="switch"' +
       (rule.enabled !== false ? ' checked' : '') +
       '></span><span class="form-check-label fw-semibold">' +
       escapeHtml(t.automation) +
@@ -1515,9 +1883,10 @@
       '</div>' +
       '<div class="border rounded p-2 mb-2 dr-css-action-card">' +
       '<label class="d-flex align-items-center gap-2 mb-1">' +
-      '<input type="checkbox" class="form-check-input dr-css-enabled"' +
+      '<span class="form-check form-switch m-0 p-0">' +
+      '<input type="checkbox" class="form-check-input dr-css-enabled de-switch m-0"' +
       (cssAction.enabled ? ' checked' : '') +
-      '><span class="fw-semibold">' +
+      '></span><span class="fw-semibold">' +
       escapeHtml(t.cssAction) +
       '</span></label>' +
       '<div class="form-text mb-2">' +
@@ -1609,9 +1978,10 @@
       '</div></div>' +
       '<div class="border rounded p-2 dr-text-action-card">' +
       '<label class="d-flex align-items-center gap-2 mb-1">' +
-      '<input type="checkbox" class="form-check-input dr-text-enabled"' +
+      '<span class="form-check form-switch m-0 p-0">' +
+      '<input type="checkbox" class="form-check-input dr-text-enabled de-switch m-0"' +
       (textAction.enabled ? ' checked' : '') +
-      '><span class="fw-semibold">' +
+      '></span><span class="fw-semibold">' +
       escapeHtml(t.textAction) +
       '</span></label>' +
       '<div class="dr-text-body"><div class="row g-2">' +
@@ -1631,7 +2001,96 @@
       escapeHtml(t.textOff) +
       '</label><input type="text" class="form-control form-control-sm dr-text-off" value="' +
       escapeHtml(textAction.textOff) +
-      '"></div></div></div></div>' +
+      '"></div></div>' +
+      '<div class="mt-2 border rounded p-2 dr-text-css-card">' +
+      '<label class="d-flex align-items-center gap-2 mb-1">' +
+      '<span class="form-check form-switch m-0 p-0">' +
+      '<input type="checkbox" class="form-check-input dr-text-css-enabled de-switch m-0"' +
+      (textCssAction.enabled ? ' checked' : '') +
+      '></span><span class="fw-semibold">' +
+      escapeHtml(t.textCssAction) +
+      '</span></label>' +
+      '<div class="form-text mb-2">' +
+      escapeHtml(t.textCssActionHelp) +
+      '</div>' +
+      '<div class="dr-text-css-body">' +
+      '<div class="dr-text-css-generated-style-controls">' +
+      '<div class="row g-2">' +
+      '<div class="col-12 col-lg-4 dr-text-css-background-controls">' +
+      '<div class="small fw-semibold mb-1">' +
+      escapeHtml(t.background) +
+      '</div><div class="d-flex gap-2 align-items-end">' +
+      '<div><label class="form-label small mb-1">' +
+      escapeHtml(t.backgroundColor) +
+      '</label><input type="color" class="form-control form-control-color dr-text-css-background-color" value="' +
+      escapeHtml(textCssAction.style.backgroundColor) +
+      '" title="' +
+      escapeHtml(t.backgroundColor) +
+      '"></div>' +
+      '<div class="flex-grow-1"><label class="form-label small mb-1">' +
+      escapeHtml(t.opacity) +
+      '</label><select class="form-select form-select-sm dr-text-css-background-opacity">' +
+      opacityOptions(textCssAction.style.backgroundOpacity) +
+      '</select></div></div></div>' +
+      '<div class="col-12 col-lg-8 dr-text-css-border-controls">' +
+      '<div class="small fw-semibold mb-1">' +
+      escapeHtml(t.border) +
+      '</div><div class="d-flex flex-wrap gap-2 align-items-end">' +
+      '<div><label class="form-label small mb-1">' +
+      escapeHtml(t.borderColor) +
+      '</label><input type="color" class="form-control form-control-color dr-text-css-border-color" value="' +
+      escapeHtml(textCssAction.style.borderColor) +
+      '" title="' +
+      escapeHtml(t.borderColor) +
+      '"></div>' +
+      '<div><label class="form-label small mb-1">' +
+      escapeHtml(t.borderWidth) +
+      '</label><select class="form-select form-select-sm dr-text-css-border-width">' +
+      borderWidthOptions(textCssAction.style.borderWidth) +
+      '</select></div>' +
+      '<div class="flex-grow-1"><label class="form-label small mb-1">' +
+      escapeHtml(t.borderStyle) +
+      '</label><select class="form-select form-select-sm dr-text-css-border-style">' +
+      borderStyleOptions(textCssAction.style.borderStyle) +
+      '</select></div></div></div>' +
+      '</div></div>' +
+      '<details class="mt-2 dr-text-css-advanced"><summary class="small">' +
+      escapeHtml(t.advancedCss) +
+      '</summary><div class="row g-2 mt-1">' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.styling) +
+      '</label><select class="form-select form-select-sm dr-text-css-mode">' +
+      styleModeOptions(textCssAction.style.mode) +
+      '</select></div>' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.cssClass) +
+      '</label><input type="text" class="form-control form-control-sm dr-text-css-class" value="' +
+      escapeHtml(textCssAction.className) +
+      '"></div>' +
+      '<div class="col-12 col-md-4 dr-text-css-text-controls"><label class="form-label small mb-1">' +
+      escapeHtml(t.textColor) +
+      '</label><input type="color" class="form-control form-control-color dr-text-css-text-color" value="' +
+      escapeHtml(textCssAction.style.textColor) +
+      '"></div>' +
+      '<div class="col-12 dr-text-css-banner-controls"><div class="row g-2">' +
+      '<div class="col-12"><label class="form-label small mb-1">' +
+      escapeHtml(t.bannerText) +
+      '</label><input type="text" class="form-control form-control-sm dr-text-css-banner-text" value="' +
+      escapeHtml(textCssAction.style.bannerText) +
+      '"></div>' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.bannerTop) +
+      '</label><input type="number" min="0" max="2000" class="form-control form-control-sm dr-text-css-banner-top" value="' +
+      escapeHtml(textCssAction.style.bannerTop) +
+      '"></div>' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.fontSize) +
+      '</label><input type="number" min="10" max="60" class="form-control form-control-sm dr-text-css-banner-fontsize" value="' +
+      escapeHtml(textCssAction.style.fontSize) +
+      '"></div></div></div>' +
+      '</div></details>' +
+      '</div></div>' +
+      '</div></div>' +
       '</div>'
     );
   }
@@ -1654,7 +2113,35 @@
         bannerTop: Number($row.find('.dr-banner-top').val() || 40),
         fontSize: Number($row.find('.dr-banner-fontsize').val() || 20),
       },
-      false
+      'background-border'
+    );
+  }
+
+  function readTextStyleRow($row) {
+    return normaliseStyle(
+      {
+        mode: String($row.find('.dr-text-css-mode').val() || 'border'),
+        backgroundColor: String(
+          $row.find('.dr-text-css-background-color').val() || '#ff0000'
+        ),
+        backgroundOpacity: Number(
+          $row.find('.dr-text-css-background-opacity').val() || 0.35
+        ),
+        borderWidth: Number($row.find('.dr-text-css-border-width').val() || 2),
+        borderStyle: String(
+          $row.find('.dr-text-css-border-style').val() || 'solid'
+        ),
+        borderColor: String(
+          $row.find('.dr-text-css-border-color').val() || '#ff4040'
+        ),
+        textColor: String(
+          $row.find('.dr-text-css-text-color').val() || '#ffffff'
+        ),
+        bannerText: String($row.find('.dr-text-css-banner-text').val() || ''),
+        bannerTop: Number($row.find('.dr-text-css-banner-top').val() || 40),
+        fontSize: Number($row.find('.dr-text-css-banner-fontsize').val() || 20),
+      },
+      'border'
     );
   }
 
@@ -1665,6 +2152,12 @@
       var id = normaliseRuleId($row.attr('data-rule-id'), rules.length, {});
       var className = String($row.find('.dr-class').val() || '').trim();
       if (!className) className = managedClassName(source, id);
+      var textCssClassName = String(
+        $row.find('.dr-text-css-class').val() || ''
+      ).trim();
+      if (!textCssClassName) {
+        textCssClassName = managedClassName(source, id + '_text');
+      }
       rules.push({
         id: id,
         enabled: $row.find('.dr-enabled').prop('checked') !== false,
@@ -1685,6 +2178,12 @@
             target: String($row.find('.dr-text-target').val() || '').trim(),
             textOn: String($row.find('.dr-text-on').val() || ''),
             textOff: String($row.find('.dr-text-off').val() || ''),
+            css: {
+              enabled:
+                $row.find('.dr-text-css-enabled').prop('checked') === true,
+              className: textCssClassName,
+              style: readTextStyleRow($row),
+            },
           },
         },
       });
@@ -1729,11 +2228,33 @@
     $row.find('.dr-banner-controls').toggleClass('d-none', !isBanner);
   }
 
+  function updateTextStyleState($row) {
+    var mode = String($row.find('.dr-text-css-mode').val() || 'border');
+    var generated = mode !== 'existing';
+    var isBanner = mode === 'banner';
+    $row
+      .find('.dr-text-css-generated-style-controls')
+      .toggleClass('d-none', !generated);
+    $row
+      .find('.dr-text-css-background-controls')
+      .toggleClass('d-none', !(isBanner || modeUses(mode, 'background')));
+    $row
+      .find('.dr-text-css-border-controls')
+      .toggleClass('d-none', !(isBanner || modeUses(mode, 'border')));
+    $row
+      .find('.dr-text-css-text-controls')
+      .toggleClass('d-none', !(isBanner || modeUses(mode, 'text')));
+    $row.find('.dr-text-css-banner-controls').toggleClass('d-none', !isBanner);
+  }
+
   function updateActionState($row) {
     var cssEnabled = $row.find('.dr-css-enabled').prop('checked') === true;
     var textEnabled = $row.find('.dr-text-enabled').prop('checked') === true;
+    var textCssEnabled =
+      $row.find('.dr-text-css-enabled').prop('checked') === true;
     $row.find('.dr-css-body').toggleClass('d-none', !cssEnabled);
     $row.find('.dr-text-body').toggleClass('d-none', !textEnabled);
+    $row.find('.dr-text-css-body').toggleClass('d-none', !textCssEnabled);
   }
 
   function showValidationError($popup, message) {
@@ -1809,6 +2330,41 @@
         if (!textOn && !textOff) {
           valid = false;
           message = t.invalidTextValue;
+          return;
+        }
+
+        var textCssEnabled =
+          $row.find('.dr-text-css-enabled').prop('checked') === true;
+        if (textCssEnabled) {
+          var textCssClassName = String(
+            $row.find('.dr-text-css-class').val() || ''
+          ).trim();
+          var textCssStyleMode = String(
+            $row.find('.dr-text-css-mode').val() || 'existing'
+          );
+          var textCssClassPattern =
+            textCssStyleMode === 'existing'
+              ? /^(?:[A-Za-z_][A-Za-z0-9_-]*)(?:\s+[A-Za-z_][A-Za-z0-9_-]*)*$/
+              : /^[A-Za-z_][A-Za-z0-9_-]*$/;
+          if (!textCssClassPattern.test(textCssClassName)) {
+            valid = false;
+            message = t.invalidClass;
+            return;
+          }
+          if (textCssStyleMode === 'banner') {
+            var textCssBannerText = String(
+              $row.find('.dr-text-css-banner-text').val() || ''
+            );
+            if (
+              !textCssBannerText ||
+              textCssBannerText.indexOf('"') !== -1 ||
+              textCssBannerText.indexOf('\\') !== -1
+            ) {
+              valid = false;
+              message = t.invalidBannerText;
+              return;
+            }
+          }
         }
       }
     });
@@ -1928,25 +2484,44 @@
     return declarations;
   }
 
+  function generatedCssForAction(className, style) {
+    if (style.mode === 'existing') return '';
+    if (!/^[A-Za-z_][A-Za-z0-9_-]*$/.test(className)) return '';
+    if (style.mode === 'banner') {
+      return generatedBannerCss(className, style);
+    }
+    var declarations = generatedDeclarations(style);
+    if (!declarations.length) return '';
+    return (
+      generatedBlockSelectors(className) +
+      ' {\n  ' +
+      declarations.join('\n  ') +
+      '\n}'
+    );
+  }
+
   function generatedCssForRules(rules, source) {
     var seen = {};
     var css = [];
     normaliseRules(rules, source).forEach(function (rule) {
-      var action = rule.actions.css;
-      if (!action.enabled || action.style.mode === 'existing') return;
-      if (!/^[A-Za-z_][A-Za-z0-9_-]*$/.test(action.className)) return;
-      if (action.style.mode === 'banner') {
-        var bannerCss = generatedBannerCss(action.className, action.style);
-        if (bannerCss) seen[action.className] = bannerCss;
-        return;
+      if (rule.enabled === false) return;
+      var cssAction = rule.actions.css;
+      if (cssAction.enabled) {
+        var cssOut = generatedCssForAction(
+          cssAction.className,
+          cssAction.style
+        );
+        if (cssOut) seen[cssAction.className] = cssOut;
       }
-      var declarations = generatedDeclarations(action.style);
-      if (!declarations.length) return;
-      seen[action.className] =
-        generatedBlockSelectors(action.className) +
-        ' {\n  ' +
-        declarations.join('\n  ') +
-        '\n}';
+      var textAction = rule.actions.text;
+      var textCssAction = textAction.enabled ? textAction.css : null;
+      if (textCssAction && textCssAction.enabled) {
+        var textCssOut = generatedCssForAction(
+          textCssAction.className,
+          textCssAction.style
+        );
+        if (textCssOut) seen[textCssAction.className] = textCssOut;
+      }
     });
     Object.keys(seen).forEach(function (className) {
       css.push(seen[className]);
@@ -2007,6 +2582,13 @@
   }
 
   function updateRuleStore(source, rules, handler) {
+    var existingEntry = ruleStore()[source];
+    var previousRules = normaliseRules(
+      existingEntry && existingEntry.rules,
+      source
+    );
+    cleanManagedAddClassBases(source, [previousRules, rules]);
+
     if (
       !window[RULE_STORE_NAME] ||
       typeof window[RULE_STORE_NAME] !== 'object'
@@ -2016,6 +2598,7 @@
     if (!rules.length && !handler) {
       delete window[RULE_STORE_NAME][source];
       updateRuntimeRuleCss(source, []);
+      reconcileSavedSource(source);
       return;
     }
     window[RULE_STORE_NAME][source] = {
@@ -2024,6 +2607,7 @@
       customJsHandler: handler,
     };
     updateRuntimeRuleCss(source, rules);
+    reconcileSavedSource(source);
   }
 
   function activeCustomFolder() {
@@ -2094,6 +2678,52 @@
     return html;
   }
 
+  // Device Editor snapshots Custom fields before Device Rules saves. Remove a
+  // runtime-generated addClass from that snapshot so it cannot be persisted as
+  // a permanently active CONFIG.js class; hand-written base classes remain.
+  function syncAutomationAddClassCustomField($popup, source, ruleSets) {
+    if (!$popup || typeof $popup.find !== 'function') return;
+    var target = sourceSelfTarget(source);
+    $popup.find('.de-custom-field-row').each(function () {
+      var $row = $(this);
+      var field = String($row.find('.de-custom-field-name').val() || '')
+        .trim()
+        .replace(/[\s-]+/g, '_')
+        .toLowerCase();
+      if (field !== 'addclass') return;
+
+      var $setting = $row.find('.de-custom-field-setting');
+      var cleaned = stripManagedAddClassValue(
+        $setting.val(),
+        target,
+        source,
+        ruleSets
+      );
+      if (cleaned) {
+        $setting.val(cleaned);
+        return;
+      }
+
+      var $remove = $row.find('.de-custom-field-remove');
+      if ($remove.length && $remove.prop('disabled') !== true) {
+        $remove.trigger('click');
+        $row.remove();
+      } else {
+        $row.find('.de-custom-field-name,.de-custom-field-setting').val('');
+        $row.addClass('d-none');
+      }
+    });
+  }
+
+  function scheduleSavedSourceReconcile(source) {
+    if (typeof window.setTimeout !== 'function') return;
+    [0, 150, 500].forEach(function (delay) {
+      window.setTimeout(function () {
+        reconcileSavedSource(source);
+      }, delay);
+    });
+  }
+
   function enhancePopup(popup) {
     if (!popup || popup._dashticzDeviceRulesEnhanced) return;
     var $popup = $(popup);
@@ -2137,6 +2767,7 @@
       '</div></div></details></div>';
 
     $customSection.before(html);
+    syncAutomationAddClassCustomField($popup, source, [rules]);
     var $rules = $popup.find('.dr-rules');
     rules.forEach(function (rule) {
       $rules.append(ruleRowHtml(rule, source));
@@ -2145,6 +2776,7 @@
     $popup.find('.dt-device-rule').each(function () {
       updateValueState($(this));
       updateStyleState($(this));
+      updateTextStyleState($(this));
       updateActionState($(this));
     });
     updateEmptyMessage($popup);
@@ -2154,6 +2786,7 @@
       var $newRule = $rules.find('.dt-device-rule').last();
       updateValueState($newRule);
       updateStyleState($newRule);
+      updateTextStyleState($newRule);
       updateActionState($newRule);
       updateEmptyMessage($popup);
       $newRule.find('.dr-property').trigger('focus');
@@ -2166,15 +2799,17 @@
 
     $popup.on(
       'change.deviceRules input.deviceRules',
-      '.dr-enabled,.dr-property,.dr-operator,.dr-value,.dr-css-enabled,.dr-css-target,.dr-class,.dr-style-mode,.dr-background-color,.dr-background-opacity,.dr-border-width,.dr-border-style,.dr-border-color,.dr-text-color,.dr-banner-text,.dr-banner-top,.dr-banner-fontsize,.dr-text-enabled,.dr-text-target,.dr-text-on,.dr-text-off,.dr-handler',
+      '.dr-enabled,.dr-property,.dr-operator,.dr-value,.dr-css-enabled,.dr-css-target,.dr-class,.dr-style-mode,.dr-background-color,.dr-background-opacity,.dr-border-width,.dr-border-style,.dr-border-color,.dr-text-color,.dr-banner-text,.dr-banner-top,.dr-banner-fontsize,.dr-text-enabled,.dr-text-target,.dr-text-on,.dr-text-off,.dr-text-css-enabled,.dr-text-css-mode,.dr-text-css-class,.dr-text-css-background-color,.dr-text-css-background-opacity,.dr-text-css-border-color,.dr-text-css-border-width,.dr-text-css-border-style,.dr-text-css-text-color,.dr-text-css-banner-text,.dr-text-css-banner-top,.dr-text-css-banner-fontsize,.dr-handler',
       function () {
         var $field = $(this);
         var $rule = $field.closest('.dt-device-rule');
         if ($field.hasClass('dr-operator')) updateValueState($rule);
         if ($field.hasClass('dr-style-mode')) updateStyleState($rule);
+        if ($field.hasClass('dr-text-css-mode')) updateTextStyleState($rule);
         if (
           $field.hasClass('dr-css-enabled') ||
-          $field.hasClass('dr-text-enabled')
+          $field.hasClass('dr-text-enabled') ||
+          $field.hasClass('dr-text-css-enabled')
         ) {
           updateActionState($rule);
         }
@@ -2203,6 +2838,7 @@
         var handlerToSave = String(
           $popup.find('.dr-handler').val() || ''
         ).trim();
+        syncAutomationAddClassCustomField($popup, source, [rules, rulesToSave]);
         if (
           !rulesToSave.length &&
           !handlerToSave &&
@@ -2231,10 +2867,15 @@
             var cssFile =
               result && result.css_file ? result.css_file : activeCssFilename();
             refreshActiveCustomCss(cssFile).always(function () {
+              syncAutomationAddClassCustomField($popup, source, [
+                rules,
+                rulesToSave,
+              ]);
               popup._dashticzDeviceRulesSaveBypass = true;
               $ok.prop('disabled', false);
               $popup.find('.de-config-message').text('');
               $ok[0].click();
+              scheduleSavedSourceReconcile(source);
             });
           })
           .fail(function (xhr) {
@@ -2314,6 +2955,9 @@
     normaliseRules: normaliseRules,
     defaultRule: defaultRule,
     managedClassName: managedClassName,
+    stripManagedAddClassValue: stripManagedAddClassValue,
+    cleanManagedAddClassBases: cleanManagedAddClassBases,
+    syncAutomationAddClassCustomField: syncAutomationAddClassCustomField,
     process: process,
     enhancePopup: enhancePopup,
     tryWrap: tryWrapGetCustomFunction,
@@ -2322,6 +2966,8 @@
     generatedBannerCss: generatedBannerCss,
     generatedCssForRules: generatedCssForRules,
     updateRuntimeRuleCss: updateRuntimeRuleCss,
+    updateRuleStore: updateRuleStore,
+    reconcileSavedSource: reconcileSavedSource,
     sourceFromOrderKey: sourceFromOrderKey,
     configForSource: configForSource,
     inferPopupSource: inferPopupSource,

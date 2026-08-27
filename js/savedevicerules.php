@@ -336,7 +336,10 @@ function device_rules_normalize_rule($rule, $index, $source)
                     ? trim((string) $rule['className'])
                     : (isset($rule['class']) ? trim((string) $rule['class']) : ''))
                 : ''));
-    if ($cssEnabled && $classRaw === '') {
+    // Always keep a valid class name pre-filled, even while the action is
+    // currently off, matching the client normaliser - so a rule saved before
+    // this action was ever turned on still has a usable class name.
+    if ($classRaw === '') {
         $classRaw = device_rules_managed_class_name($source, $id);
     }
     $className = $classRaw === '' ? '' : device_rules_safe_class_list($classRaw);
@@ -385,6 +388,34 @@ function device_rules_normalize_rule($rule, $index, $source)
         return array(null, 'Invalid Device Rule text at index ' . $index . '.');
     }
 
+    $textCssRaw = isset($textRaw['css']) && is_array($textRaw['css'])
+        ? $textRaw['css']
+        : array();
+    $textCssEnabled = isset($textCssRaw['enabled']) && $textCssRaw['enabled'] === true;
+
+    $textCssClassRaw = isset($textCssRaw['className'])
+        ? trim((string) $textCssRaw['className'])
+        : (isset($textCssRaw['class']) ? trim((string) $textCssRaw['class']) : '');
+    if ($textCssClassRaw === '') {
+        $textCssClassRaw = device_rules_managed_class_name($source, $id . '_text');
+    }
+    $textCssClassName = $textCssClassRaw === '' ? '' : device_rules_safe_class_list($textCssClassRaw);
+    if ($textCssClassRaw !== '' && $textCssClassName === null) {
+        return array(null, 'Invalid Device Rule text CSS class at index ' . $index . '.');
+    }
+
+    $textCssStyleRaw = isset($textCssRaw['style']) && is_array($textCssRaw['style'])
+        ? $textCssRaw['style']
+        : array();
+    list($textCssStyle, $textCssStyleError) = device_rules_normalize_style(
+        $textCssStyleRaw,
+        'border',
+        $enabled && $textEnabled && $textCssEnabled
+    );
+    if ($textCssStyleError !== null) {
+        return array(null, $textCssStyleError);
+    }
+
     if ($enabled) {
         if ($property === '') {
             return array(null, 'Enabled Device Rules require a trigger property.');
@@ -404,6 +435,9 @@ function device_rules_normalize_rule($rule, $index, $source)
         if ($textEnabled && $textOn === '' && $textOff === '') {
             return array(null, 'Enabled text actions require text for true and/or false.');
         }
+        if ($textEnabled && $textCssEnabled && $textCssClassName === '') {
+            return array(null, 'Enabled text CSS actions require a CSS class.');
+        }
     }
 
     if (
@@ -411,6 +445,14 @@ function device_rules_normalize_rule($rule, $index, $source)
         $style['mode'] !== 'existing' &&
         $className !== '' &&
         strpos($className, ' ') !== false
+    ) {
+        return array(null, 'Generated styling requires exactly one CSS class name.');
+    }
+    if (
+        $textEnabled && $textCssEnabled &&
+        $textCssStyle['mode'] !== 'existing' &&
+        $textCssClassName !== '' &&
+        strpos($textCssClassName, ' ') !== false
     ) {
         return array(null, 'Generated styling requires exactly one CSS class name.');
     }
@@ -435,6 +477,11 @@ function device_rules_normalize_rule($rule, $index, $source)
                 'target' => $textTarget,
                 'textOn' => $textOn,
                 'textOff' => $textOff,
+                'css' => array(
+                    'enabled' => $textCssEnabled,
+                    'className' => $textCssClassName,
+                    'style' => $textCssStyle,
+                ),
             ),
         ),
     ), null);
@@ -499,72 +546,94 @@ function device_rules_css_selectors($className, $pseudo = '')
     ));
 }
 
+function device_rules_css_for_action($className, $style)
+{
+    $mode = $style['mode'];
+    if ($mode === 'existing') {
+        return '';
+    }
+    if (!preg_match('/^[A-Za-z_][A-Za-z0-9_-]*$/', $className)) {
+        return '';
+    }
+
+    if ($mode === 'banner') {
+        if ($style['bannerText'] === '') {
+            return '';
+        }
+        return device_rules_css_selectors($className)
+            . " {\n  visibility: visible;\n}\n\n"
+            . device_rules_css_selectors($className, ':before') . " {\n"
+            . '  content: "' . $style['bannerText'] . "\";\n"
+            . '  background: ' . device_rules_rgba($style['backgroundColor'], $style['backgroundOpacity']) . " !important;\n"
+            . "  background-clip: border-box;\n"
+            . '  border: ' . $style['borderWidth'] . 'px ' . $style['borderStyle'] . ' ' . $style['borderColor'] . " !important;\n"
+            . "  border-radius: 15px !important;\n"
+            . '  font-size: ' . $style['fontSize'] . "px !important;\n"
+            . "  font-weight: bold;\n"
+            . '  color: ' . $style['textColor'] . " !important;\n"
+            . "  visibility: visible;\n"
+            . "  position: fixed;\n"
+            . '  top: ' . $style['bannerTop'] . "px;\n"
+            . "  left: 50%;\n"
+            . "  transform: translateX(-50%);\n"
+            . "  padding: 10px;\n"
+            . "  text-align: center;\n"
+            . "  z-index: 9999;\n"
+            . '}';
+    }
+
+    $declarations = array();
+    if (device_rules_mode_uses($mode, 'background')) {
+        $declarations[] = '  background: '
+            . device_rules_rgba($style['backgroundColor'], $style['backgroundOpacity'])
+            . ' !important;';
+    }
+    if (device_rules_mode_uses($mode, 'border')) {
+        $declarations[] = '  border: ' . $style['borderWidth'] . 'px '
+            . $style['borderStyle'] . ' ' . $style['borderColor'] . ' !important;';
+    }
+    if (device_rules_mode_uses($mode, 'text')) {
+        $declarations[] = '  color: ' . $style['textColor'] . ' !important;';
+    }
+    if (!$declarations) {
+        return '';
+    }
+    return device_rules_css_selectors($className) . " {\n"
+        . implode("\n", $declarations) . "\n}";
+}
+
 function device_rules_css_for_rules($rules)
 {
     $classes = array();
     foreach ($rules as $rule) {
-        if (!isset($rule['actions']['css']) || !is_array($rule['actions']['css'])) {
+        // Keep the action settings for later re-enabling, but a disabled
+        // master rule must not leave generated CSS active in custom.css.
+        if (isset($rule['enabled']) && $rule['enabled'] === false) {
             continue;
         }
-        $action = $rule['actions']['css'];
-        if (!$action['enabled']) {
-            continue;
-        }
-        $style = $action['style'];
-        $mode = $style['mode'];
-        if ($mode === 'existing') {
-            continue;
-        }
-        $className = $action['className'];
-        if (!preg_match('/^[A-Za-z_][A-Za-z0-9_-]*$/', $className)) {
-            continue;
-        }
-
-        if ($mode === 'banner') {
-            if ($style['bannerText'] === '') {
-                continue;
+        if (isset($rule['actions']['css']) && is_array($rule['actions']['css'])) {
+            $action = $rule['actions']['css'];
+            if ($action['enabled']) {
+                $out = device_rules_css_for_action($action['className'], $action['style']);
+                if ($out !== '') {
+                    // The last rule using the same class within this source wins.
+                    $classes[$action['className']] = $out;
+                }
             }
-            // The last rule using the same class within this source wins.
-            $classes[$className] = device_rules_css_selectors($className)
-                . " {\n  visibility: visible;\n}\n\n"
-                . device_rules_css_selectors($className, ':before') . " {\n"
-                . '  content: "' . $style['bannerText'] . "\";\n"
-                . '  background: ' . device_rules_rgba($style['backgroundColor'], $style['backgroundOpacity']) . " !important;\n"
-                . "  background-clip: border-box;\n"
-                . '  border: ' . $style['borderWidth'] . 'px ' . $style['borderStyle'] . ' ' . $style['borderColor'] . " !important;\n"
-                . "  border-radius: 15px !important;\n"
-                . '  font-size: ' . $style['fontSize'] . "px !important;\n"
-                . "  font-weight: bold;\n"
-                . '  color: ' . $style['textColor'] . " !important;\n"
-                . "  visibility: visible;\n"
-                . "  position: fixed;\n"
-                . '  top: ' . $style['bannerTop'] . "px;\n"
-                . "  left: 50%;\n"
-                . "  transform: translateX(-50%);\n"
-                . "  padding: 10px;\n"
-                . "  text-align: center;\n"
-                . "  z-index: 9999;\n"
-                . '}';
-            continue;
         }
-
-        $declarations = array();
-        if (device_rules_mode_uses($mode, 'background')) {
-            $declarations[] = '  background: '
-                . device_rules_rgba($style['backgroundColor'], $style['backgroundOpacity'])
-                . ' !important;';
-        }
-        if (device_rules_mode_uses($mode, 'border')) {
-            $declarations[] = '  border: ' . $style['borderWidth'] . 'px '
-                . $style['borderStyle'] . ' ' . $style['borderColor'] . ' !important;';
-        }
-        if (device_rules_mode_uses($mode, 'text')) {
-            $declarations[] = '  color: ' . $style['textColor'] . ' !important;';
-        }
-        if ($declarations) {
-            // The last rule using the same class within this source wins.
-            $classes[$className] = device_rules_css_selectors($className) . " {\n"
-                . implode("\n", $declarations) . "\n}";
+        if (isset($rule['actions']['text']) && is_array($rule['actions']['text'])) {
+            $textAction = $rule['actions']['text'];
+            if (
+                !empty($textAction['enabled']) &&
+                isset($textAction['css']) && is_array($textAction['css']) &&
+                !empty($textAction['css']['enabled'])
+            ) {
+                $textCssAction = $textAction['css'];
+                $out = device_rules_css_for_action($textCssAction['className'], $textCssAction['style']);
+                if ($out !== '') {
+                    $classes[$textCssAction['className']] = $out;
+                }
+            }
         }
     }
     return implode("\n\n", array_values($classes));
