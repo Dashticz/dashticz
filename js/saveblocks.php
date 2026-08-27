@@ -90,9 +90,9 @@ function _normalise_custom_device_fields($entry)
    configwriter.php's matching per-kind $props branch. 'slidebutton' is
    checked separately below (its own key pattern differs from every
    other kind here). */
-$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms'];
+$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news'];
 // Kinds whose title is optional (blank is fine) rather than required.
-$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms'];
+$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news'];
 
 dashticz_require_same_origin();
 dashticz_require_csrf();
@@ -195,8 +195,8 @@ foreach ($data['devices'] as $entry) {
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
                 : null;
-        } elseif ($kind === 'group' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide') {
-            // Only Icon and Last update apply to these six (no Data/Switch/
+        } elseif ($kind === 'group' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news') {
+            // Only Icon and Last update apply to these eight (no Data/Switch/
             // Dial - see js/deviceeditor.js's _quickOptionsHtml()).
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
@@ -272,7 +272,7 @@ foreach ($data['devices'] as $entry) {
                 if (!$hasStation && !$hasTpc) {
                     dashticz_json_error(400, 'Enter a station or a tpc code.');
                 }
-            } else {
+            } elseif ($kind === 'xmltvguide') {
                 // xmltvurl is otherwise just another custom field (see
                 // _normalise_custom_device_fields() above), but this block
                 // renders nothing at all without one, so it is required here -
@@ -284,6 +284,34 @@ foreach ($data['devices'] as $entry) {
                     || strlen($customFields['xmltvurl']) > 2048
                 ) {
                     dashticz_json_error(400, 'Enter a valid TV Guide (XMLTV) URL.');
+                }
+            } elseif ($kind === 'camera') {
+                // imageUrl is otherwise just another custom field (see
+                // _normalise_custom_device_fields() above), but this block
+                // renders nothing at all without one, so it is required here -
+                // same reasoning as html's htmlfile requirement above.
+                // videoUrl (MJPEG) is optional, same as the Widgets catalog's
+                // own singleton camera config.
+                if (
+                    !isset($customFields['imageUrl'])
+                    || !is_string($customFields['imageUrl'])
+                    || trim($customFields['imageUrl']) === ''
+                    || strlen($customFields['imageUrl']) > 2048
+                ) {
+                    dashticz_json_error(400, 'Enter a valid camera image URL.');
+                }
+            } else {
+                // feed is otherwise just another custom field (see
+                // _normalise_custom_device_fields() above), but this block
+                // renders nothing at all without one, so it is required here -
+                // same reasoning as html's htmlfile requirement above.
+                if (
+                    !isset($customFields['feed'])
+                    || !is_string($customFields['feed'])
+                    || trim($customFields['feed']) === ''
+                    || strlen($customFields['feed']) > 2048
+                ) {
+                    dashticz_json_error(400, 'Enter a valid news feed URL.');
                 }
             }
         } elseif ($kind === 'timegraph') {

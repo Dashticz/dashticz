@@ -693,7 +693,7 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
      the pattern) only touches this one array. */
   assert.match(
     source,
-    /\$specialBlockKinds = \['dummy', 'title', 'custom', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms'\];/
+    /\$specialBlockKinds = \['dummy', 'title', 'custom', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news'\];/
   );
   assert.match(
     source,

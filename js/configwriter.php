@@ -1785,6 +1785,44 @@ function configwriter_special_block_props($block)
         if (!empty($block['last_update'])) {
             $props['last_update'] = true;
         }
+    } elseif ($kind === 'camera') {
+        // js/components/camera.js dispatches on an explicit type: 'camera'
+        // alone - unlike html/iframe/calendar/publictransport/xmltvguide
+        // above, always written, the same as group's own type: 'group'
+        // (see saveblocks.php's 'camera' branch for the image-URL
+        // requirement). imageUrl/videoUrl are carried through
+        // custom_fields below.
+        $props = [
+            'width' => $width,
+            'type' => 'camera',
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        if (!empty($block['last_update'])) {
+            $props['last_update'] = true;
+        }
+    } elseif ($kind === 'news') {
+        // js/components/news.js dispatches on a truthy feed alone - no
+        // `type` of its own, same convention as html/iframe/calendar/
+        // publictransport/xmltvguide above. feed itself is carried through
+        // custom_fields below (saveblocks.php requires and validates it
+        // for this kind).
+        $props = [
+            'width' => $width,
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        if (!empty($block['last_update'])) {
+            $props['last_update'] = true;
+        }
     } elseif ($kind === 'lms') {
         // js/components/lms.js dispatches on type: 'lms' - unlike html/group
         // above, always written, the same as group's own type: 'group'
