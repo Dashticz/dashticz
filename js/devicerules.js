@@ -108,6 +108,9 @@
       'De pulldown toont beschikbare geconfigureerde devices met naam, IDX en block-key. Teksten van meerdere automations met hetzelfde doeldevice worden automatisch onder elkaar geplaatst; Text-devices worden bovenaan getoond.',
     textOn: 'Tekst indien waar',
     textOff: 'Tekst indien onwaar',
+    textCssAction: 'Ook CSS toepassen op doeldevice',
+    textCssActionHelp:
+      'De gegenereerde class wordt toegevoegd aan en verwijderd van het doeldevice van de tekstactie, gelijk met de trigger. Alleen zichtbaar zolang de tekstactie zelf is ingeschakeld.',
     cssClass: 'CSS-class',
     styling: 'Styling',
     existingCss: 'Bestaande CSS / alleen class',
@@ -173,6 +176,9 @@
       'The dropdown lists available configured devices by name, IDX and block key. Text from multiple automations using the same target is automatically shown on separate lines; Text devices are listed first.',
     textOn: 'Text when true',
     textOff: 'Text when false',
+    textCssAction: 'Also apply CSS to target device',
+    textCssActionHelp:
+      "The generated class is added to and removed from the text action's target device, in sync with the trigger. Only visible while the text action itself is enabled.",
     cssClass: 'CSS class',
     styling: 'Styling',
     existingCss: 'Existing CSS / class only',
@@ -317,11 +323,11 @@
     return result.slice(0, 200);
   }
 
-  function normaliseStyle(style, legacyRule) {
+  function normaliseStyle(style, defaultMode) {
     // Old rules without a style object used hand-written custom.css. Preserve
     // those as class-only instead of generating replacement declarations.
     if (!style || typeof style !== 'object') {
-      return defaultStyle(legacyRule ? 'existing' : 'background-border');
+      return defaultStyle(defaultMode || 'background-border');
     }
     var mode = String(style.mode || 'existing');
     if (
@@ -383,6 +389,11 @@
           target: '',
           textOn: '',
           textOff: '',
+          css: {
+            enabled: false,
+            className: managedClassName(source, id + '_text'),
+            style: defaultStyle('border'),
+          },
         },
       },
     };
@@ -447,7 +458,12 @@
               ? rule.className || rule.class || ''
               : '')
         ).trim();
-        if (cssEnabled && !className) {
+        // Always keep a valid class name pre-filled, even while the action
+        // is currently off - not just when re-enabling it, so a rule saved
+        // (or loaded) before this action was ever turned on still renders a
+        // usable value in the popup the moment the user flips it on, rather
+        // than an empty field that fails validation on save.
+        if (!className) {
           className = managedClassName(source, id);
         }
 
@@ -458,6 +474,18 @@
               ? rule.target || ''
               : ''
         ).trim();
+
+        var textCssSource =
+          textSource.css && typeof textSource.css === 'object'
+            ? textSource.css
+            : {};
+        var textCssEnabled = textCssSource.enabled === true;
+        var textCssClassName = String(
+          textCssSource.className || textCssSource.class || ''
+        ).trim();
+        if (!textCssClassName) {
+          textCssClassName = managedClassName(source, id + '_text');
+        }
 
         return {
           id: id,
@@ -477,7 +505,7 @@
               className: className,
               style: normaliseStyle(
                 cssSource.style || (!nested ? rule.style : null),
-                !nested && !rule.style
+                !nested && !rule.style ? 'existing' : 'background-border'
               ),
               legacyTarget: cssTarget !== 'self',
             },
@@ -498,6 +526,11 @@
                     ? rule.textOff
                     : ''
               ),
+              css: {
+                enabled: textCssEnabled,
+                className: textCssClassName,
+                style: normaliseStyle(textCssSource.style, 'border'),
+              },
             },
           },
         };
@@ -615,15 +648,29 @@
     (ruleSets || []).forEach(function (ruleSet) {
       normaliseRules(ruleSet || [], source).forEach(function (rule) {
         var cssAction = rule.actions && rule.actions.css;
-        if (!cssAction || !cssAction.className) return;
-        var cssTarget =
-          cssAction.target === 'self' || !cssAction.target
-            ? sourceSelfTarget(source)
-            : String(cssAction.target);
-        if (String(cssTarget) !== String(target)) return;
-        splitClasses(cssAction.className).forEach(function (className) {
-          managed[className] = true;
-        });
+        if (cssAction && cssAction.className) {
+          var cssTarget =
+            cssAction.target === 'self' || !cssAction.target
+              ? sourceSelfTarget(source)
+              : String(cssAction.target);
+          if (String(cssTarget) === String(target)) {
+            splitClasses(cssAction.className).forEach(function (className) {
+              managed[className] = true;
+            });
+          }
+        }
+        var textAction = rule.actions && rule.actions.text;
+        var textCssAction = textAction && textAction.enabled && textAction.css;
+        if (
+          textCssAction &&
+          textCssAction.className &&
+          textAction.target &&
+          String(textAction.target) === String(target)
+        ) {
+          splitClasses(textCssAction.className).forEach(function (className) {
+            managed[className] = true;
+          });
+        }
       });
     });
     return managed;
@@ -652,12 +699,23 @@
     (ruleSets || []).forEach(function (ruleSet) {
       normaliseRules(ruleSet || [], source).forEach(function (rule) {
         var cssAction = rule.actions && rule.actions.css;
-        if (!cssAction || !cssAction.className) return;
-        var target =
-          cssAction.target === 'self' || !cssAction.target
-            ? sourceSelfTarget(source)
-            : String(cssAction.target);
-        if (target) targets[target] = true;
+        if (cssAction && cssAction.className) {
+          var target =
+            cssAction.target === 'self' || !cssAction.target
+              ? sourceSelfTarget(source)
+              : String(cssAction.target);
+          if (target) targets[target] = true;
+        }
+        var textAction = rule.actions && rule.actions.text;
+        if (
+          textAction &&
+          textAction.enabled &&
+          textAction.target &&
+          textAction.css &&
+          textAction.css.className
+        ) {
+          targets[String(textAction.target)] = true;
+        }
       });
     });
 
@@ -1213,6 +1271,22 @@
             ruleIndex: ruleIndex,
           }
         );
+
+        var textCssAction = textAction.css;
+        if (textCssAction && textCssAction.enabled && textCssAction.className) {
+          var textCssId = sourceKey + '|' + rule.id + '|text-css';
+          currentEntries.push({
+            id: textCssId,
+            target: textAction.target,
+            action: 'class',
+          });
+          setRuleClassState(
+            textAction.target,
+            textCssId,
+            textCssAction.className,
+            active
+          );
+        }
       }
     });
 
@@ -1761,6 +1835,7 @@
     rule = rule || defaultRule(source);
     var cssAction = rule.actions.css;
     var textAction = rule.actions.text;
+    var textCssAction = textAction.css;
     var noValue =
       rule.trigger.operator === 'empty' || rule.trigger.operator === 'notempty';
     var sourceLabel = friendlyBlockName(source);
@@ -1926,7 +2001,96 @@
       escapeHtml(t.textOff) +
       '</label><input type="text" class="form-control form-control-sm dr-text-off" value="' +
       escapeHtml(textAction.textOff) +
-      '"></div></div></div></div>' +
+      '"></div></div>' +
+      '<div class="mt-2 border rounded p-2 dr-text-css-card">' +
+      '<label class="d-flex align-items-center gap-2 mb-1">' +
+      '<span class="form-check form-switch m-0 p-0">' +
+      '<input type="checkbox" class="form-check-input dr-text-css-enabled de-switch m-0"' +
+      (textCssAction.enabled ? ' checked' : '') +
+      '></span><span class="fw-semibold">' +
+      escapeHtml(t.textCssAction) +
+      '</span></label>' +
+      '<div class="form-text mb-2">' +
+      escapeHtml(t.textCssActionHelp) +
+      '</div>' +
+      '<div class="dr-text-css-body">' +
+      '<div class="dr-text-css-generated-style-controls">' +
+      '<div class="row g-2">' +
+      '<div class="col-12 col-lg-4 dr-text-css-background-controls">' +
+      '<div class="small fw-semibold mb-1">' +
+      escapeHtml(t.background) +
+      '</div><div class="d-flex gap-2 align-items-end">' +
+      '<div><label class="form-label small mb-1">' +
+      escapeHtml(t.backgroundColor) +
+      '</label><input type="color" class="form-control form-control-color dr-text-css-background-color" value="' +
+      escapeHtml(textCssAction.style.backgroundColor) +
+      '" title="' +
+      escapeHtml(t.backgroundColor) +
+      '"></div>' +
+      '<div class="flex-grow-1"><label class="form-label small mb-1">' +
+      escapeHtml(t.opacity) +
+      '</label><select class="form-select form-select-sm dr-text-css-background-opacity">' +
+      opacityOptions(textCssAction.style.backgroundOpacity) +
+      '</select></div></div></div>' +
+      '<div class="col-12 col-lg-8 dr-text-css-border-controls">' +
+      '<div class="small fw-semibold mb-1">' +
+      escapeHtml(t.border) +
+      '</div><div class="d-flex flex-wrap gap-2 align-items-end">' +
+      '<div><label class="form-label small mb-1">' +
+      escapeHtml(t.borderColor) +
+      '</label><input type="color" class="form-control form-control-color dr-text-css-border-color" value="' +
+      escapeHtml(textCssAction.style.borderColor) +
+      '" title="' +
+      escapeHtml(t.borderColor) +
+      '"></div>' +
+      '<div><label class="form-label small mb-1">' +
+      escapeHtml(t.borderWidth) +
+      '</label><select class="form-select form-select-sm dr-text-css-border-width">' +
+      borderWidthOptions(textCssAction.style.borderWidth) +
+      '</select></div>' +
+      '<div class="flex-grow-1"><label class="form-label small mb-1">' +
+      escapeHtml(t.borderStyle) +
+      '</label><select class="form-select form-select-sm dr-text-css-border-style">' +
+      borderStyleOptions(textCssAction.style.borderStyle) +
+      '</select></div></div></div>' +
+      '</div></div>' +
+      '<details class="mt-2 dr-text-css-advanced"><summary class="small">' +
+      escapeHtml(t.advancedCss) +
+      '</summary><div class="row g-2 mt-1">' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.styling) +
+      '</label><select class="form-select form-select-sm dr-text-css-mode">' +
+      styleModeOptions(textCssAction.style.mode) +
+      '</select></div>' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.cssClass) +
+      '</label><input type="text" class="form-control form-control-sm dr-text-css-class" value="' +
+      escapeHtml(textCssAction.className) +
+      '"></div>' +
+      '<div class="col-12 col-md-4 dr-text-css-text-controls"><label class="form-label small mb-1">' +
+      escapeHtml(t.textColor) +
+      '</label><input type="color" class="form-control form-control-color dr-text-css-text-color" value="' +
+      escapeHtml(textCssAction.style.textColor) +
+      '"></div>' +
+      '<div class="col-12 dr-text-css-banner-controls"><div class="row g-2">' +
+      '<div class="col-12"><label class="form-label small mb-1">' +
+      escapeHtml(t.bannerText) +
+      '</label><input type="text" class="form-control form-control-sm dr-text-css-banner-text" value="' +
+      escapeHtml(textCssAction.style.bannerText) +
+      '"></div>' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.bannerTop) +
+      '</label><input type="number" min="0" max="2000" class="form-control form-control-sm dr-text-css-banner-top" value="' +
+      escapeHtml(textCssAction.style.bannerTop) +
+      '"></div>' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.fontSize) +
+      '</label><input type="number" min="10" max="60" class="form-control form-control-sm dr-text-css-banner-fontsize" value="' +
+      escapeHtml(textCssAction.style.fontSize) +
+      '"></div></div></div>' +
+      '</div></details>' +
+      '</div></div>' +
+      '</div></div>' +
       '</div>'
     );
   }
@@ -1949,7 +2113,35 @@
         bannerTop: Number($row.find('.dr-banner-top').val() || 40),
         fontSize: Number($row.find('.dr-banner-fontsize').val() || 20),
       },
-      false
+      'background-border'
+    );
+  }
+
+  function readTextStyleRow($row) {
+    return normaliseStyle(
+      {
+        mode: String($row.find('.dr-text-css-mode').val() || 'border'),
+        backgroundColor: String(
+          $row.find('.dr-text-css-background-color').val() || '#ff0000'
+        ),
+        backgroundOpacity: Number(
+          $row.find('.dr-text-css-background-opacity').val() || 0.35
+        ),
+        borderWidth: Number($row.find('.dr-text-css-border-width').val() || 2),
+        borderStyle: String(
+          $row.find('.dr-text-css-border-style').val() || 'solid'
+        ),
+        borderColor: String(
+          $row.find('.dr-text-css-border-color').val() || '#ff4040'
+        ),
+        textColor: String(
+          $row.find('.dr-text-css-text-color').val() || '#ffffff'
+        ),
+        bannerText: String($row.find('.dr-text-css-banner-text').val() || ''),
+        bannerTop: Number($row.find('.dr-text-css-banner-top').val() || 40),
+        fontSize: Number($row.find('.dr-text-css-banner-fontsize').val() || 20),
+      },
+      'border'
     );
   }
 
@@ -1960,6 +2152,12 @@
       var id = normaliseRuleId($row.attr('data-rule-id'), rules.length, {});
       var className = String($row.find('.dr-class').val() || '').trim();
       if (!className) className = managedClassName(source, id);
+      var textCssClassName = String(
+        $row.find('.dr-text-css-class').val() || ''
+      ).trim();
+      if (!textCssClassName) {
+        textCssClassName = managedClassName(source, id + '_text');
+      }
       rules.push({
         id: id,
         enabled: $row.find('.dr-enabled').prop('checked') !== false,
@@ -1980,6 +2178,12 @@
             target: String($row.find('.dr-text-target').val() || '').trim(),
             textOn: String($row.find('.dr-text-on').val() || ''),
             textOff: String($row.find('.dr-text-off').val() || ''),
+            css: {
+              enabled:
+                $row.find('.dr-text-css-enabled').prop('checked') === true,
+              className: textCssClassName,
+              style: readTextStyleRow($row),
+            },
           },
         },
       });
@@ -2024,11 +2228,33 @@
     $row.find('.dr-banner-controls').toggleClass('d-none', !isBanner);
   }
 
+  function updateTextStyleState($row) {
+    var mode = String($row.find('.dr-text-css-mode').val() || 'border');
+    var generated = mode !== 'existing';
+    var isBanner = mode === 'banner';
+    $row
+      .find('.dr-text-css-generated-style-controls')
+      .toggleClass('d-none', !generated);
+    $row
+      .find('.dr-text-css-background-controls')
+      .toggleClass('d-none', !(isBanner || modeUses(mode, 'background')));
+    $row
+      .find('.dr-text-css-border-controls')
+      .toggleClass('d-none', !(isBanner || modeUses(mode, 'border')));
+    $row
+      .find('.dr-text-css-text-controls')
+      .toggleClass('d-none', !(isBanner || modeUses(mode, 'text')));
+    $row.find('.dr-text-css-banner-controls').toggleClass('d-none', !isBanner);
+  }
+
   function updateActionState($row) {
     var cssEnabled = $row.find('.dr-css-enabled').prop('checked') === true;
     var textEnabled = $row.find('.dr-text-enabled').prop('checked') === true;
+    var textCssEnabled =
+      $row.find('.dr-text-css-enabled').prop('checked') === true;
     $row.find('.dr-css-body').toggleClass('d-none', !cssEnabled);
     $row.find('.dr-text-body').toggleClass('d-none', !textEnabled);
+    $row.find('.dr-text-css-body').toggleClass('d-none', !textCssEnabled);
   }
 
   function showValidationError($popup, message) {
@@ -2104,6 +2330,41 @@
         if (!textOn && !textOff) {
           valid = false;
           message = t.invalidTextValue;
+          return;
+        }
+
+        var textCssEnabled =
+          $row.find('.dr-text-css-enabled').prop('checked') === true;
+        if (textCssEnabled) {
+          var textCssClassName = String(
+            $row.find('.dr-text-css-class').val() || ''
+          ).trim();
+          var textCssStyleMode = String(
+            $row.find('.dr-text-css-mode').val() || 'existing'
+          );
+          var textCssClassPattern =
+            textCssStyleMode === 'existing'
+              ? /^(?:[A-Za-z_][A-Za-z0-9_-]*)(?:\s+[A-Za-z_][A-Za-z0-9_-]*)*$/
+              : /^[A-Za-z_][A-Za-z0-9_-]*$/;
+          if (!textCssClassPattern.test(textCssClassName)) {
+            valid = false;
+            message = t.invalidClass;
+            return;
+          }
+          if (textCssStyleMode === 'banner') {
+            var textCssBannerText = String(
+              $row.find('.dr-text-css-banner-text').val() || ''
+            );
+            if (
+              !textCssBannerText ||
+              textCssBannerText.indexOf('"') !== -1 ||
+              textCssBannerText.indexOf('\\') !== -1
+            ) {
+              valid = false;
+              message = t.invalidBannerText;
+              return;
+            }
+          }
         }
       }
     });
@@ -2223,26 +2484,44 @@
     return declarations;
   }
 
+  function generatedCssForAction(className, style) {
+    if (style.mode === 'existing') return '';
+    if (!/^[A-Za-z_][A-Za-z0-9_-]*$/.test(className)) return '';
+    if (style.mode === 'banner') {
+      return generatedBannerCss(className, style);
+    }
+    var declarations = generatedDeclarations(style);
+    if (!declarations.length) return '';
+    return (
+      generatedBlockSelectors(className) +
+      ' {\n  ' +
+      declarations.join('\n  ') +
+      '\n}'
+    );
+  }
+
   function generatedCssForRules(rules, source) {
     var seen = {};
     var css = [];
     normaliseRules(rules, source).forEach(function (rule) {
       if (rule.enabled === false) return;
-      var action = rule.actions.css;
-      if (!action.enabled || action.style.mode === 'existing') return;
-      if (!/^[A-Za-z_][A-Za-z0-9_-]*$/.test(action.className)) return;
-      if (action.style.mode === 'banner') {
-        var bannerCss = generatedBannerCss(action.className, action.style);
-        if (bannerCss) seen[action.className] = bannerCss;
-        return;
+      var cssAction = rule.actions.css;
+      if (cssAction.enabled) {
+        var cssOut = generatedCssForAction(
+          cssAction.className,
+          cssAction.style
+        );
+        if (cssOut) seen[cssAction.className] = cssOut;
       }
-      var declarations = generatedDeclarations(action.style);
-      if (!declarations.length) return;
-      seen[action.className] =
-        generatedBlockSelectors(action.className) +
-        ' {\n  ' +
-        declarations.join('\n  ') +
-        '\n}';
+      var textAction = rule.actions.text;
+      var textCssAction = textAction.enabled ? textAction.css : null;
+      if (textCssAction && textCssAction.enabled) {
+        var textCssOut = generatedCssForAction(
+          textCssAction.className,
+          textCssAction.style
+        );
+        if (textCssOut) seen[textCssAction.className] = textCssOut;
+      }
     });
     Object.keys(seen).forEach(function (className) {
       css.push(seen[className]);
@@ -2497,6 +2776,7 @@
     $popup.find('.dt-device-rule').each(function () {
       updateValueState($(this));
       updateStyleState($(this));
+      updateTextStyleState($(this));
       updateActionState($(this));
     });
     updateEmptyMessage($popup);
@@ -2506,6 +2786,7 @@
       var $newRule = $rules.find('.dt-device-rule').last();
       updateValueState($newRule);
       updateStyleState($newRule);
+      updateTextStyleState($newRule);
       updateActionState($newRule);
       updateEmptyMessage($popup);
       $newRule.find('.dr-property').trigger('focus');
@@ -2518,15 +2799,17 @@
 
     $popup.on(
       'change.deviceRules input.deviceRules',
-      '.dr-enabled,.dr-property,.dr-operator,.dr-value,.dr-css-enabled,.dr-css-target,.dr-class,.dr-style-mode,.dr-background-color,.dr-background-opacity,.dr-border-width,.dr-border-style,.dr-border-color,.dr-text-color,.dr-banner-text,.dr-banner-top,.dr-banner-fontsize,.dr-text-enabled,.dr-text-target,.dr-text-on,.dr-text-off,.dr-handler',
+      '.dr-enabled,.dr-property,.dr-operator,.dr-value,.dr-css-enabled,.dr-css-target,.dr-class,.dr-style-mode,.dr-background-color,.dr-background-opacity,.dr-border-width,.dr-border-style,.dr-border-color,.dr-text-color,.dr-banner-text,.dr-banner-top,.dr-banner-fontsize,.dr-text-enabled,.dr-text-target,.dr-text-on,.dr-text-off,.dr-text-css-enabled,.dr-text-css-mode,.dr-text-css-class,.dr-text-css-background-color,.dr-text-css-background-opacity,.dr-text-css-border-color,.dr-text-css-border-width,.dr-text-css-border-style,.dr-text-css-text-color,.dr-text-css-banner-text,.dr-text-css-banner-top,.dr-text-css-banner-fontsize,.dr-handler',
       function () {
         var $field = $(this);
         var $rule = $field.closest('.dt-device-rule');
         if ($field.hasClass('dr-operator')) updateValueState($rule);
         if ($field.hasClass('dr-style-mode')) updateStyleState($rule);
+        if ($field.hasClass('dr-text-css-mode')) updateTextStyleState($rule);
         if (
           $field.hasClass('dr-css-enabled') ||
-          $field.hasClass('dr-text-enabled')
+          $field.hasClass('dr-text-enabled') ||
+          $field.hasClass('dr-text-css-enabled')
         ) {
           updateActionState($rule);
         }
