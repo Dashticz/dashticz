@@ -6,6 +6,58 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.45.8 beta (27-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- Standardized typography across every configuration/editor dialog
+  (Settings, Device Config, Widget Config, Screen Editor popups, the
+  Layout Editor's floating toolbar, and every Add
+  Device/Widget/Group/HTML/iFrame/Custom/Multi-device dialog), without
+  touching css/creative.css or normal dashboard typography. Added
+  css/config-typography.css - loaded by js/main.js immediately after
+  creative.css so it wins the cascade on shared specificity - defining
+  one font-family (system-ui, -apple-system, "Segoe UI", Roboto,
+  "Helvetica Neue", Arial, sans-serif) and four explicit sizes via
+  --dt-config-font-* CSS variables: 18px modal/panel titles, 14px
+  section headings/body text/inputs/selects, 13px field
+  labels/buttons, 12px help/metadata text - technical identifiers
+  like IDX badges keep/gain a monospace face.
+
+* **Fixes**
+
+- Fixed several real sub-12px or inconsistent config-menu sizes:
+  Bootstrap's un-sized .form-control/.form-select (16px) and
+  .form-text/.small (as low as 9-11px, inherited from the dashboard's
+  small global body font-size) are normalized within scope; creative.css
+  config classes stuck at 11px (.de-device-type, .de-device-field
+  label, .we-field-label, .dle-size-label, .dle-pending-badge) and the
+  Settings modal's 17px brand title, 13px section headings, 1.15rem
+  (~18.4px) Update button and 12px field labels are corrected via
+  narrowly-scoped overrides (creative.css itself is unedited); each
+  widget-gallery card's 18px/700 title (previously matching the
+  popup's own modal-title size) becomes 14px/600. A global
+  ``select, select option { font-size: 16px !important; }`` dashboard
+  rule and creative.css's relative ``.btn { font-size: 120% }`` (which
+  would otherwise inflate from ~13.2px to ~16.8px, along with every
+  button's 1em-sized footer icon, once these dialogs got their own
+  explicit baseline) are overridden with matching
+  !important/explicit rules scoped to config dialogs only. Six
+  hardcoded 11px inline .form-text styles and one 13px/700 inline
+  section heading in js/widgeteditor.js are corrected directly. Two
+  vendored Spectrum colorpicker sizes (.sp-cancel 11px, .sp-dd 10px)
+  in css/plugins.css are bumped to 12px.
+
+* **Code**
+
+- Verified with the full node --test suite (173 tests), Prettier's
+  format check, and live Playwright rendering (desktop and 390px-wide
+  mobile viewports) of the Settings modal, Device Editor, Add Custom
+  Device, Widget gallery, a Widget Config section, and the Layout
+  Editor toolbar, confirming every computed font-size/font-family
+  matches the new scale with no visible config text below 12px.
+
 v3.45.7 beta (25-8-2026)
 -------------------------
 
