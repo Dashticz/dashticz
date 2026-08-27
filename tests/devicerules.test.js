@@ -273,6 +273,34 @@ test('normalises schema v2 with one trigger and two independent actions', () => 
   assert.equal(rules[0].actions.text.target, 'message');
 });
 
+test('a disabled action always normalises to a non-empty class name so re-enabling it in the popup does not fail validation on an empty field', () => {
+  const { api } = createRuntime();
+  // Simulates a rule saved before the text action's own CSS toggle existed:
+  // actions.text has no css sub-object at all, and the top CSS action was
+  // never enabled either, so neither ever got a class name persisted.
+  const rules = api.normaliseRules(
+    [
+      {
+        id: 'legacy_rule',
+        enabled: true,
+        trigger: { property: 'Data', operator: 'gt', value: '2' },
+        actions: {
+          css: { enabled: false, target: 'self' },
+          text: { enabled: true, target: 'message', textOn: 'Alarm' },
+        },
+      },
+    ],
+    'source'
+  );
+
+  assert.ok(rules[0].actions.css.className);
+  assert.ok(rules[0].actions.text.css.className);
+  assert.notEqual(
+    rules[0].actions.css.className,
+    rules[0].actions.text.css.className
+  );
+});
+
 test('keeps previous flat CSS and text rules backwards compatible', () => {
   const { api } = createRuntime();
   const rules = api.normaliseRules(
@@ -360,6 +388,91 @@ test('one trigger applies CSS to the current device and text to another device b
   api.process(block);
   assert.equal(blocks.source.addClass, 'existing-class');
   assert.equal(blocks.message.value, 'Original message');
+});
+
+test("the text action's own CSS borders its target only while the trigger and text action are both active", () => {
+  const { api, blocks, store } = createRuntime({
+    source: { title: 'Source' },
+    message: { addClass: 'existing-class', title: 'Status message' },
+  });
+  store.source = {
+    schemaVersion: 2,
+    rules: [
+      {
+        id: 'bordered',
+        enabled: true,
+        trigger: { property: 'Data', operator: 'gt', value: '2' },
+        actions: {
+          css: { enabled: false },
+          text: {
+            enabled: true,
+            target: 'message',
+            textOn: 'Alarm',
+            textOff: '',
+            css: {
+              enabled: true,
+              className: 'text-target-border',
+              style: { mode: 'border' },
+            },
+          },
+        },
+      },
+    ],
+  };
+
+  const block = { key: 'source', idx: 1, device: { Data: '1,8Bar' } };
+  api.process(block);
+  // Trigger is false (1.8 is not > 2): text and border both stay off.
+  assert.equal(blocks.message.value, '');
+  assert.equal(blocks.message.addClass, 'existing-class');
+
+  block.device.Data = '2,3Bar';
+  api.process(block);
+  assert.equal(blocks.message.value, 'Alarm');
+  assert.deepEqual(blocks.message.addClass.split(/\s+/).sort(), [
+    'existing-class',
+    'text-target-border',
+  ]);
+
+  block.device.Data = '1,8Bar';
+  api.process(block);
+  assert.equal(blocks.message.value, '');
+  assert.equal(blocks.message.addClass, 'existing-class');
+});
+
+test('the text action’s own CSS never applies while the text action itself is disabled, even if its style is enabled', () => {
+  const { api, blocks, store } = createRuntime({
+    source: { title: 'Source' },
+    message: { title: 'Status message' },
+  });
+  store.source = {
+    schemaVersion: 2,
+    rules: [
+      {
+        id: 'no_text_no_border',
+        enabled: true,
+        trigger: { property: 'Status', operator: 'eq', value: 'On' },
+        actions: {
+          css: { enabled: false },
+          text: {
+            enabled: false,
+            target: 'message',
+            textOn: 'Alarm',
+            textOff: '',
+            css: {
+              enabled: true,
+              className: 'should-never-appear',
+              style: { mode: 'border' },
+            },
+          },
+        },
+      },
+    ],
+  };
+
+  const block = { key: 'source', idx: 1, device: { Status: 'On' } };
+  api.process(block);
+  assert.equal(blocks.message.addClass || '', '');
 });
 
 test('several devices share one chosen text target on separate lines', () => {
@@ -866,6 +979,47 @@ test('disabled master rules do not generate client-side CSS', () => {
     'source'
   );
   assert.equal(css, '');
+});
+
+test("generated CSS includes the text action's own class, distinct from the CSS action's", () => {
+  const { api } = createRuntime();
+  const css = api.generatedCssForRules(
+    [
+      {
+        id: 'dual_style',
+        enabled: true,
+        trigger: { property: 'Status', operator: 'eq', value: 'On' },
+        actions: {
+          css: {
+            enabled: true,
+            target: 'self',
+            className: 'self-visual',
+            style: { mode: 'background' },
+          },
+          text: {
+            enabled: true,
+            target: 'message',
+            textOn: 'Alarm',
+            textOff: '',
+            css: {
+              enabled: true,
+              className: 'target-border',
+              style: {
+                mode: 'border',
+                borderWidth: 3,
+                borderStyle: 'dashed',
+                borderColor: '#ff0000',
+              },
+            },
+          },
+        },
+      },
+    ],
+    'source'
+  );
+  assert.match(css, /html body \.dt_block\.transbg\.self-visual,/);
+  assert.match(css, /html body \.dt_block\.transbg\.target-border,/);
+  assert.match(css, /border: 3px dashed #ff0000 !important;/);
 });
 
 test('text target dropdown data shows friendly names, IDX and text devices first', () => {
