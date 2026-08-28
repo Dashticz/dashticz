@@ -27,7 +27,7 @@
   --panel-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
   --radius-border: 16px;
   --radius-selector: 10px;
-  --font-small: 16px;
+  --font-small: 18px;
   --font-large: 18px;
   --font-update: 12px;
   --icon-font-size: 40px;
@@ -354,18 +354,14 @@
   backdrop-filter: none !important;
 }
 
-.title,
-.state,
-.value {
-  font-size: var(--font-small) !important;
-}
-
 .title {
+  font-size: var(--font-large) !important;
   color: var(--text-title) !important;
 }
 
 .state,
 .value {
+  font-size: var(--font-small) !important;
   color: var(--text-status) !important;
 }
 

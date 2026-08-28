@@ -7538,16 +7538,12 @@ canvas {
 
 .title {
   color: var(--text-title) !important;
+  font-size: var(--font-large) !important;
 }
 
 .state,
 .value {
   color: var(--text-status) !important;
-}
-
-.title,
-.state,
-.value {
   font-size: var(--font-small) !important;
 }
 

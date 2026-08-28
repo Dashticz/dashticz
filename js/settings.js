@@ -1908,7 +1908,7 @@ var _THEME_COLOR_VARS = [
   '--text-status',
 ];
 
-var _THEME_FONT_VARS = ['--font-small', '--font-large', '--font-update'];
+var _THEME_FONT_VARS = ['--font-large', '--font-small', '--font-update'];
 
 var _THEME_ICON_VARS = ['--icon-font-size', '--icon-image-size'];
 

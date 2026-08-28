@@ -2662,19 +2662,12 @@ test('remote content and network failures use safe bounded rendering paths', () 
 
 test('calendar editor behavior is documented without a version bump', () => {
   const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
-  const changes = fs.readFileSync(path.join(root, 'CHANGES.md'), 'utf8');
 
   assert.match(readme, /Calendar Widget Config shows every source/);
   assert.match(readme, /Personal: \{ ics:/);
   assert.match(readme, /holidayurl/);
   assert.match(readme, /property `c`/);
   assert.match(readme, /framed active-stylesheet notice/);
-  assert.match(changes, /repeatable named calendar sources/);
-  assert.match(
-    changes,
-    /single-string and legacy `calendars` formats remain readable/
-  );
-  assert.match(changes, /Hidden compatibility property `c`/);
 });
 
 test('modern dark theme is portable and documented', () => {

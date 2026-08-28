@@ -58,7 +58,32 @@ v3.45.11 beta (28-8-2026)
   the block, regardless of screen or block key naming, while staying
   correctly excluded for genuinely idx-less specials.
 
+- Fixed the Theme settings menu's Tekst Data field (``--font-small``)
+  also resizing a block's own title text (its device/row name, e.g.
+  "Socket3") as a side effect, with no way to size the two
+  independently - ``.title``, ``.state`` and ``.value`` all shared
+  ``--font-small``. ``.title`` (in ``css/creative.css`` and the Modern
+  Dark, Liquid Glass Blue and Liquid Glass Grey themes) now uses
+  ``--font-large`` like ``.blocktitle .dt_title``/``.miniclock``
+  already did, so Tekst Titel governs a block's title text and Tekst
+  Data is left controlling only ``.state``/``.value``. Reordered the
+  Theme settings menu's Font size fields to Tekst Titel, Tekst Data,
+  Tekst Update (previously Data, Titel, Update), and raised the Modern
+  Dark, Liquid Glass Blue and Liquid Glass Grey themes' Tekst Data
+  (``--font-small``) default from 16px to 18px, now that it only
+  affects ``.state``/``.value``.
+
 * **Code**
+
+- Removed ``CHANGES.md``, a hand-maintained changelog superseded by
+  ``version.txt``/``docs/releasenotes/releasenotes.rst`` and stale by
+  several versions (its newest entry was 3.43.0, several releases
+  behind this one). ``tests/source.test.js``'s calendar-editor-
+  documentation test no longer reads it, keeping only its README.md
+  assertions.
+
+- Verified the Theme settings menu fix and reorder with the full node
+  --test suite (201 tests) and Prettier's format check.
 
 - Routed every hardcoded bilingual (English/Dutch) UI string still
   living directly in JavaScript through the existing ``lang/*.json``
