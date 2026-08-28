@@ -9,6 +9,37 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 v3.45.11 beta (28-8-2026)
 -------------------------
 
+* **Enhancements**
+
+- Added a third configurable font-size variable, ``--font-update``, to
+  the Theme settings menu's Font size section, and relabeled the
+  existing ``--font-small``/``--font-large`` fields to match their
+  actual on-screen roles: Tekst Data (``--font-small``, a block's
+  title/state/value text), Tekst Titel (``--font-large``, a block's
+  own titlebar text via ``.blocktitle .dt_title``/``.miniclock``), and
+  the new Tekst Update (``--font-update``, a block's last-update
+  timestamp - ``css/creative.css``'s ``.lastupdate`` rule, previously
+  a hardcoded, unthemed 10px regardless of theme). ``--font-update``
+  is wired through the same generic CSS-variable settings panel, save
+  endpoint (``js/savecustomcss.php``) and custom.css override
+  mechanism the other Font size/Icon size fields already use - just
+  added to the existing ``_THEME_FONT_VARS`` array and server-side
+  allowlist, no new plumbing needed. Set new defaults on the Modern
+  Dark, Liquid Glass Blue and Liquid Glass Grey themes: Tekst Data
+  16px, Tekst Titel 18px, Tekst Update 12px (previously font-small/
+  font-large were 18px/24px, and last-update was fixed at 10px on
+  every theme); the base/default theme is unchanged (font-small 12px,
+  font-large 24px, and a new font-update default of 10px matching its
+  previous ``.lastupdate`` size). Relaid the Theme settings panel's
+  Font size and Icon size sections as two side-by-side columns - fonts
+  on the left, icons on the right - each stacked vertically in its own
+  single-column grid, replacing the previous layout where each
+  section's fields were paired side by side in a 2-column grid (which
+  stopped working cleanly once Font size grew to three fields). Also
+  changed the Modern Dark theme's ``--border-color-block`` from
+  ``rgba(112, 160, 218, 0.2)`` to ``rgba(112, 160, 218, 0.3)`` for a
+  more visible block border.
+
 * **Fixes**
 
 - Fixed the Device Config popup's Automation (Device Rules) section
@@ -66,6 +97,9 @@ v3.45.11 beta (28-8-2026)
   updated Automation-on-custom-key source assertion and a jQuery
   ``$.extend`` mock addition to the existing ``devicerules.js`` vm
   test harness), Prettier's format check, and a production build.
+
+- Verified the Theme settings menu changes with the full node --test
+  suite (201 tests), Prettier's format check, and a production build.
 
 v3.45.10 beta (27-8-2026)
 -------------------------

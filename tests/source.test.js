@@ -2690,7 +2690,7 @@ test('modern dark theme is portable and documented', () => {
   assert.match(theme, /--block-gap: 0px/);
   assert.match(theme, /--border-color-inactive: rgba\(42, 94, 151, 0\.5\)/);
   assert.match(theme, /--border-color-active: rgba\(112, 160, 218, 0\.5\)/);
-  assert.match(theme, /--border-color-block: rgba\(112, 160, 218, 0\.2\)/);
+  assert.match(theme, /--border-color-block: rgba\(112, 160, 218, 0\.3\)/);
   assert.match(
     theme,
     /--border-color-selector: var\(--border-color-inactive\)/

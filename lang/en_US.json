@@ -958,8 +958,9 @@
         "--blocktitle": "Block title (--blocktitle)",
         "--text-title": "Text title (--text-title)",
         "--text-status": "Text status (--text-status)",
-        "--font-small": "Font small (--font-small)",
-        "--font-large": "Font large (--font-large)",
+        "--font-small": "Text data (--font-small)",
+        "--font-large": "Text title (--font-large)",
+        "--font-update": "Text update (--font-update)",
         "--icon-font-size": "Icon (--icon-font-size)",
         "--icon-image-size": "Image (--icon-image-size)"
       }

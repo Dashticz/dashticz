@@ -851,8 +851,9 @@
         "--blocktitle": "Blok titel (--blocktitle)",
         "--text-title": "Tekst titel (--text-title)",
         "--text-status": "Tekst status (--text-status)",
-        "--font-small": "Klein lettertype (--font-small)",
-        "--font-large": "Groot lettertype (--font-large)",
+        "--font-small": "Tekst Data (--font-small)",
+        "--font-large": "Tekst Titel (--font-large)",
+        "--font-update": "Tekst Update (--font-update)",
         "--icon-font-size": "Icoon (--icon-font-size)",
         "--icon-image-size": "Afbeelding (--icon-image-size)"
       }

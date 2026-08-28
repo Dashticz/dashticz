@@ -30,6 +30,7 @@
   --radius-selector: 4px;
   --font-small: 12px;
   --font-large: 24px;
+  --font-update: 10px;
   --border-radius: 6px;
   --text-title: #fff;
   --text-status: #fff;
@@ -987,14 +988,19 @@ next css sets the default height of the frame popup
   }
 }
 
-/* Compact 2-column layout for the Font size / Icon size sections - reuses
-   the color grid's row proportions instead of the full-width single-column
-   .settings-row, which left a plain pixel-value input almost 40 characters
-   wide for something like "18px". */
-.settings-theme-compact-grid {
+/* Font size section (left) and Icon size section (right) sit side by side,
+   each stacked in a single column - reuses the color grid's row proportions
+   instead of the full-width single-column .settings-row, which left a plain
+   pixel-value input almost 40 characters wide for something like "18px". */
+.settings-theme-fonts-icons-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: 28px;
+}
+
+.settings-theme-compact-grid {
+  display: grid;
+  grid-template-columns: 1fr;
 }
 
 .settings-theme-compact-grid .settings-row {
@@ -1028,7 +1034,7 @@ next css sets the default height of the frame popup
 }
 
 @media (max-width: 767.98px) {
-  .settings-theme-compact-grid {
+  .settings-theme-fonts-icons-grid {
     grid-template-columns: 1fr;
   }
 }
@@ -2992,7 +2998,7 @@ a.playlist {
 }
 
 .lastupdate {
-  font-size: 10px;
+  font-size: var(--font-update, 10px);
   color: #bbb;
   white-space: nowrap;
 }

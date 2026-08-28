@@ -1908,7 +1908,7 @@ var _THEME_COLOR_VARS = [
   '--text-status',
 ];
 
-var _THEME_FONT_VARS = ['--font-small', '--font-large'];
+var _THEME_FONT_VARS = ['--font-small', '--font-large', '--font-update'];
 
 var _THEME_ICON_VARS = ['--icon-font-size', '--icon-image-size'];
 
@@ -2102,31 +2102,35 @@ function renderThemeSettingsPanel() {
     return rowHtml;
   }
 
-  // Font size section heading.
+  // Font size (left column) and icon size (right column), each stacked
+  // vertically within its own column.
+  var iconSectionLabel = themeL.icons || 'Icon size';
+  html += '<div class="settings-theme-fonts-icons-grid">';
+
+  html += '<div class="settings-theme-fonts-col">';
   html +=
     '<div class="settings-section-heading">' +
     escapeSettingsHtml(fontSectionLabel) +
     '</div>';
-
-  // Font size variable rows.
   html += '<div class="settings-theme-compact-grid">';
   _THEME_FONT_VARS.forEach(function (varName) {
     html += renderCssVarTextRow(varName);
   });
   html += '</div>';
+  html += '</div>';
 
-  // Icon/image size section heading.
-  var iconSectionLabel = themeL.icons || 'Icon size';
+  html += '<div class="settings-theme-icons-col">';
   html +=
     '<div class="settings-section-heading">' +
     escapeSettingsHtml(iconSectionLabel) +
     '</div>';
-
-  // Icon/image size variable rows.
   html += '<div class="settings-theme-compact-grid">';
   _THEME_ICON_VARS.forEach(function (varName) {
     html += renderCssVarTextRow(varName);
   });
+  html += '</div>';
+  html += '</div>';
+
   html += '</div>';
 
   return html;

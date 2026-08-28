@@ -28,7 +28,7 @@ $allowed = [
     '--text-light', '--text-normal', '--text-inactive',
     '--selector-bg', '--blocktitle',
     '--text-title', '--text-status',
-    '--font-small', '--font-large',
+    '--font-small', '--font-large', '--font-update',
     '--icon-font-size', '--icon-image-size',
 ];
 
