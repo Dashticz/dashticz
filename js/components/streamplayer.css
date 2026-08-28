@@ -13,6 +13,7 @@
   align-items: center;
   column-gap: 6px;
   width: 100%;
+  margin-bottom: 5px;
 }
 
 .streamplayer-cover-wrap {
@@ -30,15 +31,16 @@
   max-width: 100%;
   object-fit: contain;
   display: none;
+  border-radius: 5px;
 }
 
 .streamplayer-station-name {
-  margin: 0;
-  font-size: large;
+  margin: 3px;
+  /*font-size: large;*/
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
-  white-space: nowrap;
+  /*white-space: nowrap;*/
   line-height: 1.2;
 }
 
