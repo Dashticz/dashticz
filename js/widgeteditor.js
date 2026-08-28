@@ -2078,6 +2078,7 @@ var DashticzWidgetEditor = (function () {
     html += _cameraWidgetCardHtml();
     html += _newsWidgetCardHtml();
     html += _lmsWidgetCardHtml();
+    html += _graphWidgetCardHtml();
 
     html +=
       '</div><div class="we-message" role="status"></div></div>' +
@@ -2482,6 +2483,43 @@ var DashticzWidgetEditor = (function () {
     _closeModalWithoutSaving();
     DT_function.loadDTScript('js/deviceeditor.js').then(function () {
       DashticzDeviceEditor.openNews();
+    });
+  }
+
+  /* Graph (docs/blocks/graphs.rst, js/components/graph.js) has no
+     pre-existing singleton widget shape to preserve - unlike iFrame/
+     Calendar/Public transport/Timegraph/TV Guide/Camera/News above, it
+     was never a `catalog` entry, so there is no legacy toggle card to
+     keep working. It only ever exists as this repeatable card, opening
+     the Graph quick-add popup (DashticzDeviceEditor.openGraph()) so any
+     number of independently-configured graphs can be placed on one
+     screen. */
+  function _graphWidgetCardHtml() {
+    var itemTitle = _t('graph_title', 'Graph');
+    return (
+      '<div class="we-widget-card we-widget-card-graph" data-special-widget="graph" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="fas fa-chart-area" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _t(
+        'graph_description',
+        'Historical chart of one or more Domoticz device values, with Now/Today/Month buttons.'
+      ) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openGraphFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openGraph();
     });
   }
 
@@ -4832,6 +4870,10 @@ var DashticzWidgetEditor = (function () {
         _openNewsFromWidgets();
         return;
       }
+      if ($(this).data('special-widget') === 'graph') {
+        _openGraphFromWidgets();
+        return;
+      }
       _toggleWidget(String($(this).data('widget-id')));
     });
 
@@ -4869,6 +4911,10 @@ var DashticzWidgetEditor = (function () {
       }
       if ($(this).data('special-widget') === 'news') {
         _openNewsFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'graph') {
+        _openGraphFromWidgets();
         return;
       }
       _toggleWidget(String($(this).data('widget-id')));

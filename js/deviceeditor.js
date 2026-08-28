@@ -36,6 +36,7 @@ var DashticzDeviceEditor = (function () {
     'lms',
     'camera',
     'news',
+    'graph',
   ];
 
   // Title is optional (blank is fine) rather than required.
@@ -51,6 +52,7 @@ var DashticzDeviceEditor = (function () {
     'lms',
     'camera',
     'news',
+    'graph',
   ];
 
   // Defaults to a 6-column width instead of the generic 3-column
@@ -61,6 +63,7 @@ var DashticzDeviceEditor = (function () {
     'calendar',
     'timegraph',
     'xmltvguide',
+    'graph',
   ];
 
   // No Dial/Bar/Slider visual mode of their own, and only Icon/Last
@@ -77,6 +80,7 @@ var DashticzDeviceEditor = (function () {
     'lms',
     'camera',
     'news',
+    'graph',
   ];
 
   // _buildDevicePayload()'s shared "just Icon + Last update (+ Group's
@@ -84,7 +88,9 @@ var DashticzDeviceEditor = (function () {
   // excluding Timegraph/LMS, which need their own dedicated payload
   // branches (a required idx + explicit type for Timegraph, several
   // dedicated connection fields for LMS) despite sharing the same popup
-  // option set.
+  // option set. Graph fits here too - like html/iframe/calendar its
+  // required data (the devices array, plus graph/legend/groupBy) rides
+  // through custom_fields instead of a dedicated top-level property.
   var SIMPLE_ICON_PAYLOAD_KINDS = [
     'group',
     'html',
@@ -94,6 +100,7 @@ var DashticzDeviceEditor = (function () {
     'xmltvguide',
     'camera',
     'news',
+    'graph',
   ];
   var deviceNames = {}; // composite key -> device name
   var deviceWidths = {}; // composite key -> block width (1..12)
@@ -467,6 +474,15 @@ var DashticzDeviceEditor = (function () {
     _init();
     _prepareManagedDeviceState();
     _showCameraPopup();
+  }
+
+  /** Open the dedicated Graph popup used by the Screen Editor add menu. */
+  function openGraph() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showGraphPopup();
   }
 
   /** Open the dedicated News popup used by the Screen Editor add menu. */
@@ -929,6 +945,24 @@ var DashticzDeviceEditor = (function () {
       // excluded so those keep going through DashticzWidgetEditor's own
       // (unrelated) config path unchanged.
       kind = 'news';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      !definition.type &&
+      Array.isArray(definition.devices) &&
+      definition.devices.length > 0
+    ) {
+      // Repeatable Graph block, added via the Screen Editor's own "Add
+      // items" -> Widgets -> Graph quick-add popup (_showGraphPopup()
+      // above). Matches js/components/graph.js's own canHandle():
+      // dispatched on a truthy devices array (this popup never writes an
+      // explicit type, same convention as html/iframe/calendar/
+      // publictransport/xmltvguide/news above). devices/graph/legend/
+      // groupBy/... all ride through custom_fields (see
+      // _deviceCustomFieldRows() below), same as every other field-shape
+      // special. Excludes type:'group' blocks, which can also carry a
+      // devices array (js/components/group.js) but always write an
+      // explicit type of their own.
+      kind = 'graph';
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       String(definition.type || '').toLowerCase() === 'lms'
@@ -5357,6 +5391,214 @@ var DashticzDeviceEditor = (function () {
     ).show();
   }
 
+  /* Repeatable Graph block - same managedSpecials mechanism as Timegraph/
+     Public transport/Calendar/iFrame/News above (kind:'special',
+     specialType:'graph'), so any number of independently-configured
+     historical graphs (see docs/blocks/graphs.rst) can be placed on one
+     screen, unlike a hand-written single blocks['my_graph'] = {...}.
+     js/components/graph.js dispatches on a truthy devices array alone, no
+     type of its own (see _specialFromReference()'s matching 'graph'
+     branch above), so devices/graph/legend/groupBy all ride through
+     custom_fields exactly like html/iframe/calendar/publictransport/
+     xmltvguide/news do for their own required field. Advanced graph
+     parameters not covered by this quick popup (custom formulas, zoom,
+     per-button styling, ...) remain reachable via the Custom fields
+     section of the Device Editor's own config popup for this instance. */
+  function _showGraphPopup() {
+    var t = _translations();
+    $('#graphblockpopup').remove();
+
+    var html =
+      '<div class="modal fade" id="graphblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-chart-area me-2" aria-hidden="true"></i>' +
+      _esc(t.graph_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    html += _quickOptionsHtml('gr', {
+      icon: true,
+      iconValue: 'fas fa-chart-area',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="gr-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="gr-device-title" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="gr-device-devices">' +
+      _esc(t.graph_block_devices) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="gr-device-devices" placeholder="691, 692">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.graph_block_devices_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="gr-device-type">' +
+      _esc(t.graph_block_type) +
+      '</label>';
+    html += '<select class="form-select" id="gr-device-type">';
+    html +=
+      '<option value="line">' + _esc(t.graph_block_type_line) + '</option>';
+    html += '<option value="bar">' + _esc(t.graph_block_type_bar) + '</option>';
+    html += '</select></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="gr-device-groupby">' +
+      _esc(t.graph_block_groupby) +
+      '</label>';
+    html += '<select class="form-select" id="gr-device-groupby">';
+    html +=
+      '<option value="">' + _esc(t.graph_block_groupby_none) + '</option>';
+    html +=
+      '<option value="hour">' + _esc(t.graph_block_groupby_hour) + '</option>';
+    html +=
+      '<option value="day">' + _esc(t.graph_block_groupby_day) + '</option>';
+    html +=
+      '<option value="week">' + _esc(t.graph_block_groupby_week) + '</option>';
+    html +=
+      '<option value="month">' +
+      _esc(t.graph_block_groupby_month) +
+      '</option>';
+    html += '</select></div>';
+    html +=
+      '<div class="mb-3 form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="gr-device-legend">';
+    html +=
+      '<label class="form-check-label" for="gr-device-legend">' +
+      _esc(t.graph_block_legend) +
+      '</label></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="gr-device-height">' +
+      _esc(t.graph_block_height) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="gr-device-height" min="0" autocomplete="off"></div>';
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="gr-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#graphblockpopup');
+    _wireQuickOptions('gr', $popup);
+    _wireBackButton('graphblockpopup');
+
+    $('#gr-save-btn').on('click', function () {
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
+      var title = $.trim(String($('#gr-device-title').val() || ''));
+
+      var rawDevices = $.trim(String($('#gr-device-devices').val() || ''));
+      var invalidDevices = false;
+      var devices = rawDevices
+        .split(/[\s,]+/)
+        .filter(function (part) {
+          return part !== '';
+        })
+        .map(function (part) {
+          var n = parseInt(part, 10);
+          if (!(n > 0 && String(n) === part)) invalidDevices = true;
+          return n;
+        });
+      if (!devices.length || invalidDevices) {
+        $message.addClass('text-danger').text(t.invalid_graph_devices);
+        $('#gr-device-devices').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('gr');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+      var graphType = String($('#gr-device-type').val() || 'line');
+      var groupBy = String($('#gr-device-groupby').val() || '');
+      var legend = $('#gr-device-legend').is(':checked');
+      var height = $.trim(String($('#gr-device-height').val() || ''));
+
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      customRows.push({
+        field: 'devices',
+        setting: JSON.stringify(devices),
+        value: devices,
+      });
+      if (graphType === 'bar') {
+        customRows.push({ field: 'graph', setting: 'bar', value: 'bar' });
+      }
+      if (legend) {
+        customRows.push({ field: 'legend', setting: 'true', value: true });
+      }
+      if (groupBy) {
+        customRows.push({ field: 'groupBy', setting: groupBy, value: groupBy });
+      }
+
+      var reference = _nextSpecialReference('graph');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'graph',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 6,
+        height: height ? parseInt(height, 10) || null : null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('graphblockpopup')
+      ).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('graphblockpopup')
+    ).show();
+  }
+
   function _showSlideButtonPopup() {
     var t = _translations();
     $('#slidebuttonpopup').remove();
@@ -7162,6 +7404,11 @@ var DashticzDeviceEditor = (function () {
     xmltvguide: 'xmltvguide_',
     camera: 'camera_',
     news: 'news_',
+    // Matches the legacy hand-written 'graph_<idx>' convention (see
+    // docs/blocks/graphs.rst and js/components/graph.js's own canHandle()
+    // key-prefix check), so a repeatable instance's auto-generated key
+    // reads the same as one a user would have typed by hand.
+    graph: 'graph_',
   };
 
   function _nextSpecialReference(type) {
@@ -8285,6 +8532,7 @@ var DashticzDeviceEditor = (function () {
     openXmltvguide: openXmltvguide,
     openCamera: openCamera,
     openNews: openNews,
+    openGraph: openGraph,
     openLms: openLms,
     openSlideButton: openSlideButton,
     addSeparator: addSeparator,
