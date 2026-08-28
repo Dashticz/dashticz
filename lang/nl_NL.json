@@ -836,7 +836,7 @@
       "icons": "Icoongrootte",
       "custom_css_active": "Actieve aangepaste stylesheet: {path}",
       "vars": {
-        "--main-bg": "Pagina achtergrond (--main-bg)",
+        "--main-bg": "Blok achtergrond (--main-bg)",
         "--home-bg": "Home achtergrond (--home-bg)",
         "--border-color-inactive": "Rand inactief (--border-color-inactive)",
         "--border-color-active": "Rand actief (--border-color-active)",
