@@ -13,7 +13,7 @@
   --home-bg: rgba(28, 31, 42, 0.74);
   --border-color-inactive: rgba(42, 94, 151, 0.5);
   --border-color-active: rgba(112, 160, 218, 0.5);
-  --border-color-block: rgba(112, 160, 218, 0.2);
+  --border-color-block: rgba(112, 160, 218, 0.3);
   --border-color-selector: var(--border-color-inactive);
   --button-bg: rgb(29, 43, 63);
   --button-hover: rgb(35, 53, 78);
@@ -27,8 +27,9 @@
   --panel-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
   --radius-border: 16px;
   --radius-selector: 10px;
-  --font-small: 18px;
-  --font-large: 24px;
+  --font-small: 16px;
+  --font-large: 18px;
+  --font-update: 12px;
   --icon-font-size: 40px;
   --icon-image-size: 35px;
   --border-radius: 10px;
