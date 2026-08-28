@@ -90,9 +90,9 @@ function _normalise_custom_device_fields($entry)
    configwriter.php's matching per-kind $props branch. 'slidebutton' is
    checked separately below (its own key pattern differs from every
    other kind here). */
-$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news'];
+$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'];
 // Kinds whose title is optional (blank is fine) rather than required.
-$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news'];
+$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'];
 
 dashticz_require_same_origin();
 dashticz_require_csrf();
@@ -152,12 +152,12 @@ foreach ($data['devices'] as $entry) {
         $defaultWidth = 3;
         if ($kind === 'title' || $kind === 'slidebutton') {
             $defaultWidth = 12;
-        } elseif ($kind === 'lms' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'timegraph' || $kind === 'xmltvguide') {
+        } elseif ($kind === 'lms' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'timegraph' || $kind === 'xmltvguide' || $kind === 'graph') {
             // Cover (100x100) + artist/title/album (lms), an embedded page
             // (iframe), an agenda/calendar table (calendar), a chart
-            // (timegraph), or a programme guide (xmltvguide), needs more
-            // room than the generic 3-column default other special blocks
-            // start at.
+            // (timegraph, graph), or a programme guide (xmltvguide), needs
+            // more room than the generic 3-column default other special
+            // blocks start at.
             $defaultWidth = 6;
         }
         $width = isset($entry['width']) ? (int)$entry['width'] : $defaultWidth;
@@ -195,8 +195,8 @@ foreach ($data['devices'] as $entry) {
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
                 : null;
-        } elseif ($kind === 'group' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news') {
-            // Only Icon and Last update apply to these eight (no Data/Switch/
+        } elseif ($kind === 'group' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news' || $kind === 'graph') {
+            // Only Icon and Last update apply to these nine (no Data/Switch/
             // Dial - see js/deviceeditor.js's _quickOptionsHtml()).
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
@@ -300,7 +300,7 @@ foreach ($data['devices'] as $entry) {
                 ) {
                     dashticz_json_error(400, 'Enter a valid camera image URL.');
                 }
-            } else {
+            } elseif ($kind === 'news') {
                 // feed is otherwise just another custom field (see
                 // _normalise_custom_device_fields() above), but this block
                 // renders nothing at all without one, so it is required here -
@@ -312,6 +312,22 @@ foreach ($data['devices'] as $entry) {
                     || strlen($customFields['feed']) > 2048
                 ) {
                     dashticz_json_error(400, 'Enter a valid news feed URL.');
+                }
+            } elseif ($kind === 'graph') {
+                // devices is otherwise just another custom field (see
+                // _normalise_custom_device_fields() above), but this block
+                // (js/components/graph.js) renders nothing at all without a
+                // non-empty devices array - same reasoning as html's
+                // htmlfile requirement above. Every entry must be a
+                // positive integer Domoticz device idx.
+                $graphDevices = isset($customFields['devices']) ? $customFields['devices'] : null;
+                if (!is_array($graphDevices) || count($graphDevices) === 0) {
+                    dashticz_json_error(400, 'A graph block requires at least one device.');
+                }
+                foreach ($graphDevices as $graphDeviceIdx) {
+                    if (!is_int($graphDeviceIdx) || $graphDeviceIdx < 1) {
+                        dashticz_json_error(400, 'A graph block requires positive integer device idx values.');
+                    }
                 }
             }
         } elseif ($kind === 'timegraph') {
