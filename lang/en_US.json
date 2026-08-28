@@ -642,6 +642,7 @@
       "radio_description": "Internet radio stream player (Streamplayer).",
       "radio_station": "Station",
       "radio_url": "Stream URL",
+      "radio_logo": "Station Logo",
       "radio_add": "Add station",
       "radio_remove": "Remove station",
       "invalid_radio_url_prefix": "Enter a valid HTTP(S) stream URL for station",

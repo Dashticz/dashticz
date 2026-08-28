@@ -805,18 +805,27 @@ var DashticzWidgetEditor = (function () {
       window._STREAMPLAYER_TRACKS.length
     ) {
       return window._STREAMPLAYER_TRACKS.map(function (track) {
-        return { name: track.name || '', file: track.file || '' };
+        return {
+          name: track.name || '',
+          file: track.file || '',
+          logo: track.logo || '',
+        };
       });
     }
-    return [
-      {
-        name: 'Q-music',
-        file: 'http://icecast-qmusic.cdp.triple-it.nl/Qmusic_nl_live_96.mp3',
-      },
-      { name: 'Slam! NonStop', file: 'http://stream.radiocorp.nl/web10_mp3' },
-      { name: '100%NL', file: 'http://stream.100p.nl/100pctnl.mp3' },
-      { name: 'NPO Radio 1', file: 'http://icecast.omroep.nl/radio1-bb-mp3' },
-    ];
+
+    if (
+      typeof DT_streamplayer !== 'undefined' &&
+      Array.isArray(DT_streamplayer.defaultTracks)
+    ) {
+      return DT_streamplayer.defaultTracks.map(function (track) {
+        return {
+          name: track.name || '',
+          file: track.file || '',
+          logo: track.logo || '',
+        };
+      });
+    }
+    return [];
   }
 
   function _radioWidgetConfig() {
@@ -1448,6 +1457,7 @@ var DashticzWidgetEditor = (function () {
             return {
               name: (track && track.name) || '',
               file: (track && track.file) || '',
+              logo: (track && track.logo) || '',
             };
           });
         }
@@ -1850,6 +1860,7 @@ var DashticzWidgetEditor = (function () {
         return {
           name: (track && track.name) || '',
           file: (track && track.file) || '',
+          logo: (track && track.logo) || '',
         };
       });
     } else if (item.id === 'log') {
@@ -2620,12 +2631,20 @@ var DashticzWidgetEditor = (function () {
       '<input type="text" class="form-control form-control-sm we-radio-name" maxlength="100" value="' +
       _esc(station.name || '') +
       '"></div>' +
-      '<div><label class="form-label we-field-label">' +
+      '<div class="mb-2"><label class="form-label we-field-label">' +
       _t('radio_url', 'Stream URL') +
       '</label>' +
       '<input type="url" class="form-control form-control-sm we-radio-url" value="' +
       _esc(station.file || '') +
-      '"></div></div>'
+      '"></div>' +
+      '<div><label class="form-label we-field-label">' +
+      _t('radio_logo', 'Logo (URL or filename in img/custom/radio/)') +
+      '</label>' +
+      '<input type="text" class="form-control form-control-sm we-radio-logo" ' +
+      'placeholder="https://... or logo.png" value="' +
+      _esc(station.logo || '') +
+      '"></div>' +
+      '</div>'
     );
   }
 
@@ -4598,7 +4617,8 @@ var DashticzWidgetEditor = (function () {
         $cfgModal.find('.we-radio-row').each(function (index) {
           var stationName = $.trim($(this).find('.we-radio-name').val() || '');
           var stationFile = $.trim($(this).find('.we-radio-url').val() || '');
-          if (!stationName && !stationFile) return; // skip a fully empty row
+          var stationLogo = $.trim($(this).find('.we-radio-logo').val() || '');
+          if (!stationName && !stationFile && !stationLogo) return; // skip a fully empty row
           if (!stationFile || !/^https?:\/\/\S+$/i.test(stationFile)) {
             $('.we-cfg-message')
               .addClass('text-danger')
@@ -4619,6 +4639,7 @@ var DashticzWidgetEditor = (function () {
             name:
               stationName || _t('radio_station', 'Station') + ' ' + (index + 1),
             file: stationFile,
+            logo: stationLogo,
           });
         });
         if (valid && !tracks.length) {

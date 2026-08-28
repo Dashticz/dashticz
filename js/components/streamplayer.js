@@ -12,40 +12,42 @@ var DT_streamplayer = {
   // PHP script that scans the folder once and returns the mapping
   // tvg-id -> real filename (see vendor/dashticz/streamplayer.php)
   localLogoLookup: 'vendor/dashticz/streamplayer.php',
+  defaultTracks: [
+    {
+      track: 1,
+      name: 'Q-music',
+      file: 'https://icecast-qmusicbe-cdp.triple-it.nl/qmusic.mp3',
+      logo: 'qmusic.png',
+    },
+    {
+      track: 2,
+      name: 'Slam! NonStop',
+      file: 'http://stream.radiocorp.nl/web10_mp3',
+      logo: 'slam!.png',
+    },
+    {
+      track: 3,
+      name: '100%NL',
+      file: 'http://stream.100p.nl/100pctnl.mp3',
+      logo: '100nl.png',
+    },
+    {
+      track: 4,
+      name: 'NPO Radio 1',
+      file: 'http://icecast.omroep.nl/radio1-bb-mp3',
+      logo: 'nporadio1.webp',
+    },
+  ],
+
   defaultCfg: function () {
-    var defaultTracks = [
-      {
-        track: 1,
-        name: 'Q-music',
-        file: 'http://icecast-qmusic.cdp.triple-it.nl/Qmusic_nl_live_96.mp3',
-        // station logo/cover (optional)
-        logo: '',
-      },
-      {
-        track: 2,
-        name: 'Slam! NonStop',
-        file: 'http://stream.radiocorp.nl/web10_mp3',
-        logo: '',
-      },
-      {
-        track: 3,
-        name: '100%NL',
-        file: 'http://stream.100p.nl/100pctnl.mp3',
-        logo: '',
-      },
-      {
-        track: 4,
-        name: 'NPO Radio 1',
-        file: 'http://icecast.omroep.nl/radio1-bb-mp3',
-        logo: '',
-      },
-    ];
     return {
       icon: 'fas fa-broadcast-tower',
       tracks:
-        typeof _STREAMPLAYER_TRACKS !== 'undefined'
+        typeof _STREAMPLAYER_TRACKS !== 'undefined' &&
+        Array.isArray(_STREAMPLAYER_TRACKS) &&
+        _STREAMPLAYER_TRACKS.length
           ? _STREAMPLAYER_TRACKS
-          : defaultTracks,
+          : this.defaultTracks,
     };
   },
 
@@ -137,6 +139,18 @@ var DT_streamplayer = {
         console.log('StreamPlayer: unable to load the local logo list');
         callback({});
       });
+  },
+
+  // Resolves a stored logo value to something usable as an <img src>:
+  // - an absolute http(s) URL is used as-is
+  // - a bare filename (no scheme, no slash) is assumed to live in
+  //   localLogoDir, matching the m3u local-logo convention
+  // - anything else (an already-qualified path) is used as-is
+  resolveLogo: function (logo) {
+    logo = String(logo || '');
+    if (!logo) return '';
+    if (/^https?:\/\//i.test(logo) || logo.indexOf('/') > -1) return logo;
+    return this.localLogoDir + logo;
   },
 
   run: function (me) {
@@ -281,7 +295,7 @@ var DT_streamplayer = {
           audio.src = tracks[id].file;
           // Local logo (already resolved via loadLocalLogos) takes priority,
           // otherwise fall back to the remote logo from the m3u / config.
-          setCover(tracks[id].localLogo || tracks[id].logo);
+          setCover(tracks[id].localLogo || self.resolveLogo(tracks[id].logo));
           stationList
             .find('li')
             .removeClass('selected')
@@ -324,7 +338,7 @@ var DT_streamplayer = {
         return $('<div>').text(str).html();
       };
       var renderStationItem = function (t, i) {
-        var logo = t.localLogo || t.logo;
+        var logo = t.localLogo || self.resolveLogo(t.logo);
         var logoHtml = logo
           ? '<img class="streamplayer-list-logo" src="' + logo + '" alt="">'
           : '';
