@@ -1,4 +1,4 @@
-/* global Dashticz moment templateEngine DT_function settings*/
+/* global Dashticz moment templateEngine DT_function settings language*/
 
 var DT_haymanclock = {
   name: 'haymanclock',
@@ -15,16 +15,18 @@ var DT_haymanclock = {
       var parts = value.trim().split(/\s+/);
       return parts[parts.length - 1] || fallback;
     }
-    var locale = String(settings.language || 'en').toLowerCase();
-    var fallback =
-      locale.indexOf('nl') === 0
-        ? { day: 'dag', hours: 'uur', minutes: 'minuten', seconds: 'seconden' }
-        : {
-            day: 'day',
-            hours: 'hours',
-            minutes: 'minutes',
-            seconds: 'seconds',
-          };
+    var configured =
+      typeof language !== 'undefined' &&
+      language.settings &&
+      language.settings.haymanclock
+        ? language.settings.haymanclock
+        : {};
+    var fallback = {
+      day: configured.day || 'day',
+      hours: configured.hours || 'hours',
+      minutes: configured.minutes || 'minutes',
+      seconds: configured.seconds || 'seconds',
+    };
     function getRelativeLabel(amount, unit, fallbackValue) {
       try {
         return getPart(moment().add(amount, unit).fromNow(true), fallbackValue);

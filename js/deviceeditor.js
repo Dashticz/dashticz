@@ -5770,9 +5770,18 @@ var DashticzDeviceEditor = (function () {
       idxLabel = String(special.idx);
     }
 
+    // A Custom/Multi Device or Group special still wraps a real, live
+    // Domoticz idx (see idxLabel above) and can trigger an Automation rule
+    // just like a plain device - only the genuinely idx-less specials
+    // (Title, Separator, HTML Block, iFrame, ...) cannot.
+    var hasLiveDevice =
+      !isSpecial || ((isCustom || isGroupBlock) && special.idx);
+
     $('#de-config-popup').remove();
     var html =
-      '<div class="modal fade de-config-popup" id="de-config-popup" tabindex="-1" aria-hidden="true">';
+      '<div class="modal fade de-config-popup" id="de-config-popup" data-block-kind="' +
+      (hasLiveDevice ? 'device' : 'special') +
+      '" tabindex="-1" aria-hidden="true">';
     html +=
       '<div class="modal-dialog modal-dialog-centered de-config-dialog"><div class="modal-content">';
     html +=

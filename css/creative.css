@@ -7227,6 +7227,22 @@ canvas {
   font-size: 10px;
 }
 
+/*automation indicator*/
+
+.automation-indicator {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 8px;
+  height: 8px;
+  margin: 4px;
+  border-radius: 50%;
+  background-color: var(--warning-red);
+  z-index: 15;
+}
+
+/*end automation indicator*/
+
 /*end battery level
 
 /*tvguide*/

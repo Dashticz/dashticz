@@ -6,6 +6,67 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.45.11 beta (28-8-2026)
+-------------------------
+
+* **Fixes**
+
+- Fixed the Device Config popup's Automation (Device Rules) section
+  being missing entirely for devices placed on grid layout screens
+  whose CONFIG.js block key isn't the Dashticz-auto-generated
+  ``device_<idx>`` pattern - any block given a friendly/custom key,
+  common on screens 2 and 3, is classified as ``specialType:'custom'``
+  purely by naming convention (``_specialFromReference()``), and the
+  ``data-block-kind="special"`` tagging added to keep Automation off
+  truly idx-less specials (Title, Separator, ...) was keyed off that
+  same blunt ``isSpecial`` flag, stripping Automation from these
+  still-live devices too. ``js/deviceeditor.js``'s popup root now
+  computes ``hasLiveDevice`` the same way the existing ``idxLabel``
+  logic already does (``(isCustom || isGroupBlock) && special.idx``),
+  so Automation now attaches wherever a real Domoticz device is behind
+  the block, regardless of screen or block key naming, while staying
+  correctly excluded for genuinely idx-less specials.
+
+* **Code**
+
+- Routed every hardcoded bilingual (English/Dutch) UI string still
+  living directly in JavaScript through the existing ``lang/*.json``
+  translation system instead, matching the established
+  ``_translations()`` pattern (JSON is the source of truth per active
+  locale, JS keeps only an English fallback-of-last-resort) already
+  used elsewhere in the codebase. Fixed across every file found still
+  bypassing it: ``js/devicerules.js``'s Automation editor (55
+  label/help/validation strings, previously selected via a
+  ``/^nl/i.test(window.config.language)`` check against two
+  hand-written ``nl``/``en`` objects), ``js/customfieldpresets.js``'s
+  suggestion-menu labels/categories and all 46 presets'
+  descriptions/examples (previously an ad-hoc ``currentLanguage()``
+  heuristic plus inline ``preset.en``/``preset.nl``/``preset.nlExample``
+  fields), ``js/customfieldsetoptions.js``'s menu labels and all 76
+  per-field suggested-value descriptions across 23 fields (previously
+  inline ``entry[1]``/``entry[2]`` English/Dutch pairs and one
+  un-namespaced ternary), and ``js/components/haymanclock.js``'s
+  day/hours/minutes/seconds fallback labels (previously a
+  ``settings.language.indexOf('nl')`` check; the moment.js-locale
+  primary source is unchanged). New ``settings.devicerules``,
+  ``settings.customfieldpresets``, ``settings.customfieldsetoptions``
+  and ``settings.haymanclock`` namespaces were added to
+  ``lang/en_US.json`` and ``lang/nl_NL.json`` - every other locale
+  already picks up the English text automatically via
+  ``loadLanguage()``'s deep-merge-onto-English fallback.
+  ``js/customfieldpresetbehavior.js``'s search-matching, previously
+  coupled to the old ``preset.en``/``preset.nl`` fields, now reads
+  through two newly exported
+  ``DashticzCustomFieldPresets.description()``/``example()`` helpers
+  instead. ``css/creative.css`` and ``js/blocks.js`` were specifically
+  audited and confirmed to already be free of hardcoded bilingual
+  text.
+
+- Verified with the full node --test suite (201 tests, including an
+  updated Automation-on-custom-key source assertion and a jQuery
+  ``$.extend`` mock addition to the existing ``devicerules.js`` vm
+  test harness), Prettier's format check, and a production build.
+
 v3.45.10 beta (27-8-2026)
 -------------------------
 
@@ -25,7 +86,37 @@ v3.45.10 beta (27-8-2026)
   labels/buttons, 12px help/metadata text - technical identifiers
   like IDX badges keep/gain a monospace face.
 
+* **Enhancements**
+
+- Added a small dot indicator in a device block's bottom-left corner,
+  shown whenever the block has at least one enabled Automation
+  (Device Rules) rule configured for it. Opt out per block via
+  ``automation_indicator: false``; the indicator updates live on the
+  next device update, no page reload needed.
+
+- Extended the Device Config popup's custom-field suggestion systems
+  (field-name presets and value suggestions) to also cover the Widget
+  Editor's own custom fields, filtered to a block-type-agnostic
+  preset subset (``addClass``, ``popup``, ``url``, ``newwindow``,
+  ``backgroundimage``, ``backgroundsize``, ``backgroundopacity``)
+  instead of every device-oriented preset (``textOn``, ``iconOn``,
+  ``batteryThreshold``, ...) that would never apply to a widget.
+
 * **Fixes**
+
+- Fixed the Automation (Device Rules) section attaching to the
+  Device Config popup even when editing a special block (Title,
+  Separator, Group, HTML Block, LMS, Custom Device, Multi Device,
+  iFrame, Calendar, Public Transport, Timegraph, XMLTV Guide) - that
+  popup is reused for both real Domoticz devices and re-editing
+  already-placed specials, but Device Rules only recognized it by DOM
+  shape, not block type, so a special whose only real control is an
+  icon/image pulldown still got an unrelated Automation section, even
+  though it has no live Status/nValue to trigger from.
+
+- Fixed the icon/image pulldown (a ``<select>``, not a free-text
+  field) itself triggering a field-name suggestion menu, in both the
+  Device Config and Widget Editor popups.
 
 - Fixed several real sub-12px or inconsistent config-menu sizes:
   Bootstrap's un-sized .form-control/.form-select (16px) and
@@ -51,12 +142,14 @@ v3.45.10 beta (27-8-2026)
 
 * **Code**
 
-- Verified with the full node --test suite (173 tests), Prettier's
-  format check, and live Playwright rendering (desktop and 390px-wide
-  mobile viewports) of the Settings modal, Device Editor, Add Custom
-  Device, Widget gallery, a Widget Config section, and the Layout
-  Editor toolbar, confirming every computed font-size/font-family
-  matches the new scale with no visible config text below 12px.
+- Verified with the full node --test suite (201 tests), Prettier's
+  format check, a production build, and live Playwright rendering
+  (desktop and 390px-wide mobile viewports) of the Settings modal,
+  Device Editor, Add Custom Device, Widget gallery, a Widget Config
+  section, the Layout Editor toolbar, and the automation indicator's
+  present/absent/opted-out/live add-remove behavior, confirming every
+  computed font-size/font-family matches the new scale with no
+  visible config text below 12px.
 
 v3.45.8 beta (26-8-2026)
 -------------------------

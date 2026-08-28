@@ -1,4 +1,4 @@
-/* global $, blocks, Dashticz, settings, _PARAMS, Domoticz */
+/* global $, blocks, Dashticz, settings, _PARAMS, Domoticz, language */
 
 // Device Rules / Automation for Dashticz.
 //
@@ -89,151 +89,89 @@
 
   var borderStyles = ['solid', 'dashed', 'dotted', 'double'];
 
-  var nl = {
-    automation: 'Automation',
-    help: 'Beoordeel één trigger en voer daarna de ingeschakelde acties uit. CSS wordt toegepast op dit device; de tekstactie vult het data-/waardeveld van een geselecteerd doeldevice.',
-    enabled: 'Aan',
-    trigger: 'Trigger',
-    actions: 'Acties',
-    property: 'Status / eigenschap',
-    condition: 'Voorwaarde',
-    value: 'Waarde',
-    cssAction: 'Add CSS aan huidig device',
-    cssActionHelp:
-      'De gegenereerde class wordt automatisch toegevoegd aan en verwijderd van het device waarvan dit configuratiemenu geopend is.',
-    currentDevice: 'Huidig device',
-    textAction: 'Tekst in ander device plaatsen',
-    textTarget: 'Doeldevice voor tekstactie',
-    targetHelp:
-      'De pulldown toont beschikbare geconfigureerde devices met naam, IDX en block-key. Teksten van meerdere automations met hetzelfde doeldevice worden automatisch onder elkaar geplaatst; Text-devices worden bovenaan getoond.',
-    textOn: 'Tekst indien waar',
-    textOff: 'Tekst indien onwaar',
-    textCssAction: 'Ook CSS toepassen op doeldevice',
-    textCssActionHelp:
-      'De gegenereerde class wordt toegevoegd aan en verwijderd van het doeldevice van de tekstactie, gelijk met de trigger. Alleen zichtbaar zolang de tekstactie zelf is ingeschakeld.',
-    cssClass: 'CSS-class',
-    styling: 'Styling',
-    existingCss: 'Bestaande CSS / alleen class',
-    background: 'Achtergrond',
-    border: 'Rand',
-    textColor: 'Tekstkleur',
-    backgroundColor: 'Achtergrondkleur',
-    opacity: 'Dekking',
-    borderWidth: 'Randdikte',
-    borderStyle: 'Randstijl',
-    borderColor: 'Randkleur',
-    bannerText: 'Bannertekst',
-    bannerTop: 'Afstand vanaf boven (px)',
-    fontSize: 'Lettergrootte (px)',
-    legacyTarget: 'Bestaand CSS-doel (compatibiliteit)',
-    legacyTargetHelp:
-      'Deze oudere regel wijst naar een ander block. Laat dit ongewijzigd om het bestaande gedrag te behouden, of kies Dit device.',
-    selfTarget: 'Dit device',
-    advancedCss: 'Geavanceerde CSS-opties',
-    remove: 'Verwijderen',
-    addRule: 'Automation toevoegen',
-    noRules: 'Nog geen automations ingesteld.',
-    advanced: 'Geavanceerd',
-    handler: 'Custom JS handler',
-    handlerHelp:
-      'Optioneel: koppel dit device aan getStatus_<naam>(block, afterupdate) in custom.js.',
-    invalidTrigger:
-      'Automation: vul Status/eigenschap, Voorwaarde en Waarde van de trigger in.',
-    invalidActions: 'Automation: schakel minimaal één actie in.',
-    invalidTextRule: 'Automation: selecteer een doeldevice voor de tekstactie.',
-    invalidTextValue: 'Automation: vul tekst in voor waar en/of onwaar.',
-    invalidBannerText:
-      'Automation: vul een bannertekst in en gebruik geen aanhalingstekens of backslashes.',
-    invalidClass:
-      'Automation: gebruik een geldige CSS-class (letters, cijfers, _ en -).',
-    invalidHandler:
-      'Automation: Custom JS handler mag alleen letters, cijfers, _ en $ bevatten en mag niet met een cijfer beginnen.',
-    cssSaving: 'Automation opslaan in custom.js / custom.css...',
-    cssSaveFailed:
-      'Automation: custom.js / custom.css kon niet worden bijgewerkt.',
-    source: 'Bronblock',
-    textDevices: 'Text-devices',
-    otherBlocks: 'Overige beschikbare devices',
-    unavailableTarget: 'Niet meer beschikbaar',
-  };
-
-  var en = {
-    automation: 'Automation',
-    help: 'Evaluate one trigger and then run the enabled actions. CSS targets this device; the text action fills the data/value field of a selected target device.',
-    enabled: 'On',
-    trigger: 'Trigger',
-    actions: 'Actions',
-    property: 'Status / property',
-    condition: 'Condition',
-    value: 'Value',
-    cssAction: 'Add CSS to current device',
-    cssActionHelp:
-      'The generated class is automatically added to and removed from the device whose configuration popup is open.',
-    currentDevice: 'Current device',
-    textAction: 'Put text in another device',
-    textTarget: 'Text action target device',
-    targetHelp:
-      'The dropdown lists available configured devices by name, IDX and block key. Text from multiple automations using the same target is automatically shown on separate lines; Text devices are listed first.',
-    textOn: 'Text when true',
-    textOff: 'Text when false',
-    textCssAction: 'Also apply CSS to target device',
-    textCssActionHelp:
-      "The generated class is added to and removed from the text action's target device, in sync with the trigger. Only visible while the text action itself is enabled.",
-    cssClass: 'CSS class',
-    styling: 'Styling',
-    existingCss: 'Existing CSS / class only',
-    background: 'Background',
-    border: 'Border',
-    textColor: 'Text color',
-    backgroundColor: 'Background color',
-    opacity: 'Opacity',
-    borderWidth: 'Border width',
-    borderStyle: 'Border style',
-    borderColor: 'Border color',
-    bannerText: 'Banner text',
-    bannerTop: 'Distance from top (px)',
-    fontSize: 'Font size (px)',
-    legacyTarget: 'Existing CSS target (compatibility)',
-    legacyTargetHelp:
-      'This older rule points to another block. Keep it unchanged to preserve the old behavior, or select This device.',
-    selfTarget: 'This device',
-    advancedCss: 'Advanced CSS options',
-    remove: 'Remove',
-    addRule: 'Add automation',
-    noRules: 'No automations configured yet.',
-    advanced: 'Advanced',
-    handler: 'Custom JS handler',
-    handlerHelp:
-      'Optional: link this device to getStatus_<name>(block, afterupdate) in custom.js.',
-    invalidTrigger:
-      'Automation: fill Status/property, Condition and Value for the trigger.',
-    invalidActions: 'Automation: enable at least one action.',
-    invalidTextRule: 'Automation: select a target device for the text action.',
-    invalidTextValue:
-      'Automation: enter text for the true and/or false result.',
-    invalidBannerText:
-      'Automation: enter banner text without quote or backslash characters.',
-    invalidClass:
-      'Automation: use a valid CSS class (letters, numbers, _ and -).',
-    invalidHandler:
-      'Automation: Custom JS handler may contain letters, numbers, _ and $ and may not start with a number.',
-    cssSaving: 'Saving automation to custom.js / custom.css...',
-    cssSaveFailed: 'Automation: custom.js / custom.css could not be updated.',
-    source: 'Source block',
-    textDevices: 'Text devices',
-    otherBlocks: 'Other available devices',
-    unavailableTarget: 'No longer available',
-  };
+  function _translations() {
+    var configured =
+      typeof language !== 'undefined' &&
+      language.settings &&
+      language.settings.devicerules
+        ? language.settings.devicerules
+        : {};
+    return $.extend(
+      {
+        automation: 'Automation',
+        help: 'Evaluate one trigger and then run the enabled actions. CSS targets this device; the text action fills the data/value field of a selected target device.',
+        enabled: 'On',
+        trigger: 'Trigger',
+        actions: 'Actions',
+        property: 'Status / property',
+        condition: 'Condition',
+        value: 'Value',
+        cssAction: 'Add CSS to current device',
+        cssActionHelp:
+          'The generated class is automatically added to and removed from the device whose configuration popup is open.',
+        currentDevice: 'Current device',
+        textAction: 'Put text in another device',
+        textTarget: 'Text action target device',
+        targetHelp:
+          'The dropdown lists available configured devices by name, IDX and block key. Text from multiple automations using the same target is automatically shown on separate lines; Text devices are listed first.',
+        textOn: 'Text when true',
+        textOff: 'Text when false',
+        textCssAction: 'Also apply CSS to target device',
+        textCssActionHelp:
+          "The generated class is added to and removed from the text action's target device, in sync with the trigger. Only visible while the text action itself is enabled.",
+        cssClass: 'CSS class',
+        styling: 'Styling',
+        existingCss: 'Existing CSS / class only',
+        background: 'Background',
+        border: 'Border',
+        textColor: 'Text color',
+        backgroundColor: 'Background color',
+        opacity: 'Opacity',
+        borderWidth: 'Border width',
+        borderStyle: 'Border style',
+        borderColor: 'Border color',
+        bannerText: 'Banner text',
+        bannerTop: 'Distance from top (px)',
+        fontSize: 'Font size (px)',
+        legacyTarget: 'Existing CSS target (compatibility)',
+        legacyTargetHelp:
+          'This older rule points to another block. Keep it unchanged to preserve the old behavior, or select This device.',
+        selfTarget: 'This device',
+        advancedCss: 'Advanced CSS options',
+        remove: 'Remove',
+        addRule: 'Add automation',
+        noRules: 'No automations configured yet.',
+        advanced: 'Advanced',
+        handler: 'Custom JS handler',
+        handlerHelp:
+          'Optional: link this device to getStatus_<name>(block, afterupdate) in custom.js.',
+        invalidTrigger:
+          'Automation: fill Status/property, Condition and Value for the trigger.',
+        invalidActions: 'Automation: enable at least one action.',
+        invalidTextRule:
+          'Automation: select a target device for the text action.',
+        invalidTextValue:
+          'Automation: enter text for the true and/or false result.',
+        invalidBannerText:
+          'Automation: enter banner text without quote or backslash characters.',
+        invalidClass:
+          'Automation: use a valid CSS class (letters, numbers, _ and -).',
+        invalidHandler:
+          'Automation: Custom JS handler may contain letters, numbers, _ and $ and may not start with a number.',
+        cssSaving: 'Saving automation to custom.js / custom.css...',
+        cssSaveFailed:
+          'Automation: custom.js / custom.css could not be updated.',
+        source: 'Source block',
+        textDevices: 'Text devices',
+        otherBlocks: 'Other available devices',
+        unavailableTarget: 'No longer available',
+      },
+      configured
+    );
+  }
 
   function text() {
-    var lang = '';
-    try {
-      if (window.config && window.config.language)
-        lang = window.config.language;
-    } catch (ignore) {
-      lang = '';
-    }
-    return /^nl/i.test(String(lang || '')) ? nl : en;
+    return _translations();
   }
 
   function escapeHtml(value) {
@@ -1203,6 +1141,19 @@
       }
     }
     return { source: candidates[0] || 'device', entry: null };
+  }
+
+  // Cheap "is there an enabled Automation rule for this block" check for the
+  // live dashboard's automation-active indicator - does not evaluate
+  // whether any rule's trigger currently matches, only whether one exists.
+  function hasEnabledRules(block) {
+    if (!block) return false;
+    var resolved = entryForBlock(block);
+    if (!resolved.entry) return false;
+    var rules = normaliseRules(resolved.entry.rules, resolved.source);
+    return rules.some(function (rule) {
+      return rule.enabled !== false;
+    });
   }
 
   function process(block, resolved) {
@@ -2729,6 +2680,14 @@
     var $popup = $(popup);
     var $customSection = $popup.find('.de-custom-fields-section');
     if (!$customSection.length || !$popup.find('#de-config-ok').length) return;
+    // Idx-less specials (Title, Separator, HTML Block, LMS, iFrame, ...)
+    // reuse this same popup template - e.g. a Title's only real control is
+    // its icon/image pulldown - but have no live Domoticz Status/nValue to
+    // trigger an Automation rule from, so the section makes no sense there.
+    // A Custom/Multi Device or Group special still wraps a real idx (data-
+    // block-kind reflects that, not just isSpecial - see _showConfigPopup)
+    // and keeps the section, same as a plain device.
+    if ($popup.attr('data-block-kind') === 'special') return;
 
     var source = popupSource(popup);
     if (!source) return;
@@ -2960,6 +2919,7 @@
     syncAutomationAddClassCustomField: syncAutomationAddClassCustomField,
     process: process,
     enhancePopup: enhancePopup,
+    hasEnabledRules: hasEnabledRules,
     tryWrap: tryWrapGetCustomFunction,
     generatedDeclarations: generatedDeclarations,
     generatedBlockSelectors: generatedBlockSelectors,

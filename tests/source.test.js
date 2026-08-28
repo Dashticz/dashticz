@@ -495,9 +495,17 @@ test('package and runtime versions remain synchronized', () => {
   const descriptionVersion = index.match(
     /content="Dashticz ([^"]+) - a customizable dashboard for Domoticz"/
   );
+  // The loading screen's version line is a static placeholder shown before
+  // js/version.js's initVersion() fetches version.txt and overwrites it -
+  // it must start in sync so a stale number never flashes on first paint.
+  const loaderVersion = index.match(
+    /<div class="loaderVersion">Version ([^<]+)<\/div>/
+  );
   assert.equal(runtimeVersion, packageVersion);
   assert.ok(descriptionVersion);
   assert.equal(descriptionVersion[1], packageVersion);
+  assert.ok(loaderVersion);
+  assert.equal(loaderVersion[1], packageVersion);
 });
 
 test('JavaScript and stylesheet bundles use the same cache version', () => {
@@ -5601,5 +5609,120 @@ test('Bar and Slider show On/Off (not Open/Closed) for Dimmers, and Slider becom
   assert.match(
     deviceEditor,
     /function inverseApplies\(mode\) \{\s*\n\s*return mode === 'needle' && !isDimmer;/
+  );
+});
+
+test('Device Config popup tags itself device/special so Automation only attaches where there is a live device', () => {
+  // Automation (Device Rules) reused this popup's DOM shape alone to decide
+  // whether to attach - so an idx-less special (Title, Separator, HTML
+  // Block, ...) being re-edited (whose only real control can be an
+  // icon/image pulldown) got an unrelated Automation section glued onto it
+  // too, since those have no live Domoticz Status/nValue to trigger from.
+  // A Custom/Multi Device or Group special, unlike those, still wraps a
+  // real idx (same one idxLabel/Bar/Dial already resolve from special.idx)
+  // and must keep the section, same as a plain device - a first cut of this
+  // fix that only checked isSpecial wrongly stripped Automation from every
+  // device the user gave a hand-picked block key instead of leaving it at
+  // the auto-generated device_<idx> default.
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const devicerules = fs.readFileSync(
+    path.join(root, 'js/devicerules.js'),
+    'utf8'
+  );
+
+  assert.match(
+    deviceEditor,
+    /var hasLiveDevice =\s*!isSpecial \|\| \(\(isCustom \|\| isGroupBlock\) && special\.idx\);/
+  );
+  assert.match(
+    deviceEditor,
+    /var html =\s*\n\s*'<div class="modal fade de-config-popup" id="de-config-popup" data-block-kind="' \+\s*\n\s*\(hasLiveDevice \? 'device' : 'special'\) \+\s*\n\s*'" tabindex="-1" aria-hidden="true">';/
+  );
+  assert.match(
+    devicerules,
+    /if \(!\$customSection\.length \|\| !\$popup\.find\('#de-config-ok'\)\.length\) return;\s*\n\s*\/\/[\s\S]{0,600}?if \(\$popup\.attr\('data-block-kind'\) === 'special'\) return;/
+  );
+});
+
+test('icon/image pulldown never gets a field-name suggestion menu, in either the Device or Widget editor', () => {
+  // The icon/image row is a <select> ("Icon"/"Image"), not a free-text
+  // field - a suggestion menu for it makes no sense and, per the earlier
+  // pointer-events overlap bug, could visually sit over unrelated controls.
+  const presets = fs.readFileSync(
+    path.join(root, 'js/customfieldpresets.js'),
+    'utf8'
+  );
+
+  assert.match(
+    presets,
+    /if \(\$input\.hasClass\('de-icon-source'\) \|\| \$input\.hasClass\('we-icon-source'\)\)\s*\n\s*return false;/
+  );
+});
+
+test('custom field suggestion systems also cover the Widget Editor, with widget-scoped presets', () => {
+  // Widget Editor's custom fields (we-custom-field-name/-setting/-row) used
+  // a separate class family from the Device Config popup's (de-/cd-), so
+  // the suggestion menus simply never attached there - not a deliberate
+  // exclusion, just an omission fixed by widening the same selectors.
+  const presets = fs.readFileSync(
+    path.join(root, 'js/customfieldpresets.js'),
+    'utf8'
+  );
+  const setOptions = fs.readFileSync(
+    path.join(root, 'js/customfieldsetoptions.js'),
+    'utf8'
+  );
+  const behavior = fs.readFileSync(
+    path.join(root, 'js/customfieldpresetbehavior.js'),
+    'utf8'
+  );
+
+  [
+    'we-custom-field-row',
+    'we-custom-field-name',
+    'we-custom-field-setting',
+  ].forEach((className) => {
+    assert.ok(
+      presets.includes(className),
+      'customfieldpresets.js must recognise .' + className
+    );
+  });
+  assert.ok(setOptions.includes('we-custom-field-row'));
+  assert.ok(setOptions.includes('we-custom-field-setting'));
+  assert.ok(behavior.includes('we-custom-field-row'));
+  assert.ok(behavior.includes('we-custom-field-name'));
+  assert.ok(behavior.includes('we-custom-field-setting'));
+
+  // Many device presets (textOn, batteryThreshold, iconOn, ...) only make
+  // sense for a live Domoticz device, so the Widget Editor's menu must be
+  // filtered to the block-agnostic subset, not just widened to reuse it.
+  assert.match(
+    presets,
+    /function presetsForContext\(context\) \{\s*\n\s*if \(context !== 'widget'\) return PRESETS;\s*\n\s*return PRESETS\.filter\(function \(preset\) \{\s*\n\s*return preset\.widget === true;/
+  );
+});
+
+test('addAutomationIndicator marks a block with an enabled Device Rule, opt-out per block', () => {
+  const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  assert.match(
+    blocks,
+    /addBatteryLevel\(\$div, block\);\s*\n\s*addAutomationIndicator\(\$div, block\);/
+  );
+  assert.match(
+    blocks,
+    /function addAutomationIndicator\(\$div, block\) \{\s*\n\s*\$div\.find\('\.automation-indicator'\)\.remove\(\);\s*\n\s*if \(block\.automation_indicator === false\) return;/
+  );
+  assert.match(
+    blocks,
+    /DashticzDeviceRules\.hasEnabledRules\(block\);\s*\n\s*if \(active\) \$div\.append\('<i class="automation-indicator"><\/i>'\);/
+  );
+  assert.match(
+    css,
+    /\.automation-indicator \{\s*\n\s*position: absolute;\s*\n\s*left: 0;\s*\n\s*bottom: 0;/
   );
 });

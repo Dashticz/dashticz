@@ -183,6 +183,9 @@ Block parameters
   * - hide_stop
     - | ``true`` Hide stop button for applicable devices, like blinds
       | ``false`` (Default) Show stop button
+  * - automation_indicator
+    - | ``false`` Never show the small dot in the bottom-left corner that marks a block with an enabled Automation (Device Rules) rule
+      | (Default) Show the dot automatically whenever the block has at least one enabled rule configured
   * - playsound
     - | Play a sound when a device changes
       | ``'sounds/ping.mp3'``

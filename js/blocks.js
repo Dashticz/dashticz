@@ -324,7 +324,21 @@ function deviceUpdateHandler(block) {
   else $div.removeClass('timeout');
 
   addBatteryLevel($div, block);
+  addAutomationIndicator($div, block);
   triggerStatus(block); //moved the second call to the end to assure that the block has been created in the DOM completely
+}
+
+/* Small dot marking a block that has an enabled Automation (Device Rules)
+   rule configured for it. Opt out per block via automation_indicator: false. */
+function addAutomationIndicator($div, block) {
+  $div.find('.automation-indicator').remove();
+  if (block.automation_indicator === false) return;
+  var active =
+    typeof DashticzDeviceRules !== 'undefined' &&
+    DashticzDeviceRules &&
+    typeof DashticzDeviceRules.hasEnabledRules === 'function' &&
+    DashticzDeviceRules.hasEnabledRules(block);
+  if (active) $div.append('<i class="automation-indicator"></i>');
 }
 
 /*add the battery level indicator*/
