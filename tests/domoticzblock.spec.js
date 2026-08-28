@@ -188,6 +188,45 @@ test.describe('Basic testing', () => {
     // 10. Falls back to sValue when Data is unset.
     await expect(imageOf(page, 'hi_svalue_fallback')).toBeVisible();
   });
+
+  test('automation indicator block option', async ({ page }) => {
+    await page.waitForTimeout(1000);
+
+    // 1. A block with an enabled Automation rule (see tests/custom.js) shows
+    // the indicator dot.
+    await expect(
+      automationIndicatorOf(page, 'automation_with_rule')
+    ).toBeVisible();
+
+    // 2. A block with no configured Automation rule shows nothing.
+    await expect(
+      automationIndicatorOf(page, 'automation_without_rule')
+    ).toHaveCount(0);
+
+    // 3. automation_indicator: false opts a block out even though a rule
+    // exists for it.
+    await expect(
+      automationIndicatorOf(page, 'automation_opted_out')
+    ).toHaveCount(0);
+
+    // 4. Live: a rule added after page load shows up on the next device
+    // update, no reload needed - and disappears again once removed.
+    await setDeviceRules(page, 'automation_without_rule', {
+      schemaVersion: 2,
+      rules: [{ id: 'r1', enabled: true, trigger: {}, actions: {} }],
+      customJsHandler: '',
+    });
+    await setDeviceData(page, '9112', 'Automation test 2');
+    await expect(
+      automationIndicatorOf(page, 'automation_without_rule')
+    ).toBeVisible();
+
+    await setDeviceRules(page, 'automation_without_rule', null);
+    await setDeviceData(page, '9112', 'Automation test 3');
+    await expect(
+      automationIndicatorOf(page, 'automation_without_rule')
+    ).toHaveCount(0);
+  });
 });
 
 async function checkBlock(page, key, icon, image, title, value) {
@@ -210,6 +249,24 @@ async function checkBlock(page, key, icon, image, title, value) {
 
 function imageOf(page, key) {
   return page.locator('[data-id="' + key + '"] .col-icon img');
+}
+
+function automationIndicatorOf(page, key) {
+  return page.locator('[data-id="' + key + '"] .automation-indicator');
+}
+
+// Adds/replaces (or, with entry=null, removes) a Device Rules entry the same
+// way custom.js does, without touching the file - so a test can exercise a
+// live rule change without a page reload.
+async function setDeviceRules(page, source, entry) {
+  await page.evaluate(
+    ({ source, entry }) => {
+      window.DashticzDeviceRulesConfig = window.DashticzDeviceRulesConfig || {};
+      if (entry === null) delete window.DashticzDeviceRulesConfig[source];
+      else window.DashticzDeviceRulesConfig[source] = entry;
+    },
+    { source, entry }
+  );
 }
 
 // Pushes a live Domoticz device update through the fake_domoticz test hook,

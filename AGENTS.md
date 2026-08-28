@@ -31,8 +31,10 @@ When a bump does apply, it must include:
 
 - Bump `version.txt`'s `version` field and add a matching `changelog` entry.
 - Mirror the same version in `package.json`'s `version` field and in
-  `index.html`'s `<meta name="description">` content (a test enforces that
-  all three versions stay in sync).
+  `index.html`'s `<meta name="description">` content and `.loaderVersion`
+  placeholder (the loading screen's static text before
+  `js/version.js`'s `initVersion()` overwrites it from `version.txt`) - a
+  test enforces that all four stay in sync.
 - Regenerate `package-lock.json` if `package.json` changed (`npm install --package-lock-only`).
 - Add a corresponding dated entry under "Recent changes" in `docs/releasenotes/releasenotes.rst`, following the existing per-version header + `Enhancements`/`Fixes`/`Code` section style.
 

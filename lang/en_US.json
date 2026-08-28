@@ -946,6 +946,586 @@
         "--icon-font-size": "Icon (--icon-font-size)",
         "--icon-image-size": "Image (--icon-image-size)"
       }
+    },
+    "customfieldpresets": {
+      "title": "Available extra fields",
+      "hint": "Type to filter. You can still enter a custom field manually.",
+      "noResults": "No matching preset. The typed field can still be used manually.",
+      "alreadyUsed": "Already added",
+      "type": "Type",
+      "defaultValue": "Default",
+      "example": "Example",
+      "categories": {
+        "visual": "Image / icon",
+        "data": "Data / display",
+        "behaviour": "Behaviour",
+        "actions": "Actions on change",
+        "navigation": "Popup / navigation",
+        "background": "Background",
+        "advanced": "Advanced"
+      },
+      "presets": {
+        "hideimageonempty": {
+          "description": "Hide the configured image when the device Data/sValue is empty."
+        },
+        "iconOn": {
+          "description": "Font Awesome icon to use when the device is On."
+        },
+        "iconOff": {
+          "description": "Font Awesome icon to use when the device is Off."
+        },
+        "imageOn": {
+          "description": "Image from the img/ folder to use when the device is On."
+        },
+        "imageOff": {
+          "description": "Image from the img/ folder to use when the device is Off."
+        },
+        "addClass": {
+          "description": "Add a custom CSS class to the block."
+        },
+        "textOn": {
+          "description": "Text shown when the device is On."
+        },
+        "textOff": {
+          "description": "Text shown when the device is Off."
+        },
+        "unit": {
+          "description": "Text placed behind the displayed device value."
+        },
+        "decimals": {
+          "description": "Number of decimals used for the displayed value."
+        },
+        "scale": {
+          "description": "Multiplier applied to the device value before display."
+        },
+        "values": {
+          "description": "Define which device/subdevice values are shown. Enter valid JSON."
+        },
+        "multi_line": {
+          "description": "Show multiple subvalues on separate lines."
+        },
+        "single_line": {
+          "description": "Show multiple subvalues on one line."
+        },
+        "showsubtitles": {
+          "description": "Show subvalue subtitles. Supported variants are 1 and 2."
+        },
+        "showvalues": {
+          "description": "Array of subvalue numbers to display. Enter valid JSON."
+        },
+        "sortOrder": {
+          "description": "Selector sorting: 0 none, 1 ascending, -1 descending."
+        },
+        "batteryThreshold": {
+          "description": "Show the battery warning below this percentage."
+        },
+        "flash": {
+          "description": "Flash the block after a value change for this many milliseconds."
+        },
+        "hide_stop": {
+          "description": "Hide the Stop button for supported devices such as blinds."
+        },
+        "protected": {
+          "description": "Prevent manual switching from Dashticz."
+        },
+        "confirmation": {
+          "description": "Ask for confirmation before changing a switch device."
+        },
+        "password": {
+          "description": "Password-protect supported switch actions."
+        },
+        "playsound": {
+          "description": "Play a sound when the device changes."
+        },
+        "playsoundOn": {
+          "description": "Play a sound when the device changes to On."
+        },
+        "playsoundOff": {
+          "description": "Play a sound when the device changes to Off."
+        },
+        "speak": {
+          "description": "Speak text when the device changes."
+        },
+        "speakOn": {
+          "description": "Speak text when the device changes to On."
+        },
+        "speakOff": {
+          "description": "Speak text when the device changes to Off."
+        },
+        "gotoslide": {
+          "description": "Go to this screen when the device changes."
+        },
+        "gotoslideOn": {
+          "description": "Go to this screen when the device changes to On."
+        },
+        "gotoslideOff": {
+          "description": "Go to this screen when the device changes to Off."
+        },
+        "openpopup": {
+          "description": "Open a configured popup when the device changes."
+        },
+        "openpopupOn": {
+          "description": "Open a configured popup when the device changes to On."
+        },
+        "openpopupOff": {
+          "description": "Open a configured popup when the device changes to Off."
+        },
+        "popup": {
+          "description": "Use a configured popup definition for this block."
+        },
+        "graph": {
+          "description": "Enable or disable the click graph for supported devices."
+        },
+        "url": {
+          "description": "URL opened when a supported block is clicked."
+        },
+        "newwindow": {
+          "description": "URL click mode: 0 same window, 1 tab, 2 frame, 3 GET, 4 POST, 5 window."
+        },
+        "backgroundimage": {
+          "description": "Background image URL or Domoticz text-device idx containing the URL."
+        },
+        "backgroundsize": {
+          "description": "Background sizing, for example cover, contain or 80%."
+        },
+        "backgroundopacity": {
+          "description": "Opacity of the configured background image."
+        },
+        "colorpicker": {
+          "description": "RGB colorpicker mode: 0 disabled, 1 old style, 2 new style."
+        },
+        "colorpickerscale": {
+          "description": "Relative scale of colorpicker mode 2."
+        },
+        "mode": {
+          "description": "Device-specific mode; only use when the relevant block documentation requires it."
+        },
+        "switchMode": {
+          "description": "For supported RGB devices, open the colorpicker instead of toggling On/Off."
+        }
+      }
+    },
+    "customfieldsetoptions": {
+      "title": "Possible values",
+      "strictHint": "Choose one of these supported values.",
+      "freeHint": "Suggested values. You may also type another valid value.",
+      "current": "Current",
+      "exampleValue": "Example value",
+      "options": {
+        "hideimageonempty": [
+          {
+            "value": "true",
+            "description": "Hide image when Data is empty"
+          },
+          {
+            "value": "false",
+            "description": "Always show image"
+          }
+        ],
+        "multi_line": [
+          {
+            "value": "true",
+            "description": "Show values on separate lines"
+          },
+          {
+            "value": "false",
+            "description": "Do not force multiple lines"
+          }
+        ],
+        "single_line": [
+          {
+            "value": "true",
+            "description": "Show values on one line"
+          },
+          {
+            "value": "false",
+            "description": "Do not force a single line"
+          }
+        ],
+        "hide_stop": [
+          {
+            "value": "true",
+            "description": "Hide Stop button"
+          },
+          {
+            "value": "false",
+            "description": "Show Stop button"
+          }
+        ],
+        "protected": [
+          {
+            "value": "true",
+            "description": "Prevent manual switching"
+          },
+          {
+            "value": "false",
+            "description": "Allow manual switching"
+          }
+        ],
+        "graph": [
+          {
+            "value": "true",
+            "description": "Enable graph"
+          },
+          {
+            "value": "false",
+            "description": "Disable graph"
+          }
+        ],
+        "confirmation": [
+          {
+            "value": "0",
+            "description": "No confirmation"
+          },
+          {
+            "value": "1",
+            "description": "Ask before switching"
+          }
+        ],
+        "sortorder": [
+          {
+            "value": "-1",
+            "description": "Descending"
+          },
+          {
+            "value": "0",
+            "description": "No sorting"
+          },
+          {
+            "value": "1",
+            "description": "Ascending"
+          }
+        ],
+        "showsubtitles": [
+          {
+            "value": "0",
+            "description": "Hide subtitles"
+          },
+          {
+            "value": "1",
+            "description": "Show subtitle with title"
+          },
+          {
+            "value": "2",
+            "description": "Show subtitle with value"
+          }
+        ],
+        "newwindow": [
+          {
+            "value": "0",
+            "description": "Open in current window"
+          },
+          {
+            "value": "1",
+            "description": "Open in new browser tab"
+          },
+          {
+            "value": "2",
+            "description": "Open in popup/frame"
+          },
+          {
+            "value": "3",
+            "description": "HTTP GET without window"
+          },
+          {
+            "value": "4",
+            "description": "HTTP POST without window"
+          },
+          {
+            "value": "5",
+            "description": "Open in separate browser window"
+          }
+        ],
+        "colorpicker": [
+          {
+            "value": "0",
+            "description": "Disabled"
+          },
+          {
+            "value": "1",
+            "description": "Old colorpicker"
+          },
+          {
+            "value": "2",
+            "description": "New colorpicker"
+          }
+        ],
+        "switchmode": [
+          {
+            "value": "color",
+            "description": "Open colorpicker instead of On/Off"
+          }
+        ],
+        "backgroundsize": [
+          {
+            "value": "cover",
+            "description": "Fill the complete block"
+          },
+          {
+            "value": "contain",
+            "description": "Fit complete image inside block"
+          },
+          {
+            "value": "80%",
+            "description": "Custom percentage example"
+          },
+          {
+            "value": "100%",
+            "description": "Original/full percentage example"
+          }
+        ],
+        "backgroundopacity": [
+          {
+            "value": "1",
+            "description": "100% visible"
+          },
+          {
+            "value": "0.75",
+            "description": "75% visible"
+          },
+          {
+            "value": "0.5",
+            "description": "50% visible"
+          },
+          {
+            "value": "0.25",
+            "description": "25% visible"
+          },
+          {
+            "value": "0",
+            "description": "Transparent"
+          }
+        ],
+        "colorpickerscale": [
+          {
+            "value": "1",
+            "description": "100%"
+          },
+          {
+            "value": "1.25",
+            "description": "125%"
+          },
+          {
+            "value": "1.5",
+            "description": "150%"
+          },
+          {
+            "value": "2",
+            "description": "200%"
+          }
+        ],
+        "decimals": [
+          {
+            "value": "0",
+            "description": "No decimals"
+          },
+          {
+            "value": "1",
+            "description": "One decimal"
+          },
+          {
+            "value": "2",
+            "description": "Two decimals"
+          },
+          {
+            "value": "3",
+            "description": "Three decimals"
+          }
+        ],
+        "batterythreshold": [
+          {
+            "value": "10",
+            "description": "Warn below 10%"
+          },
+          {
+            "value": "15",
+            "description": "Warn below 15%"
+          },
+          {
+            "value": "20",
+            "description": "Warn below 20%"
+          },
+          {
+            "value": "30",
+            "description": "Common/default threshold"
+          }
+        ],
+        "flash": [
+          {
+            "value": "0",
+            "description": "No flash"
+          },
+          {
+            "value": "250",
+            "description": "250 ms"
+          },
+          {
+            "value": "500",
+            "description": "500 ms"
+          },
+          {
+            "value": "1000",
+            "description": "1000 ms"
+          }
+        ],
+        "scale": [
+          {
+            "value": "0.001",
+            "description": "Divide by 1000"
+          },
+          {
+            "value": "0.01",
+            "description": "Divide by 100"
+          },
+          {
+            "value": "0.1",
+            "description": "Divide by 10"
+          },
+          {
+            "value": "1",
+            "description": "No scaling"
+          },
+          {
+            "value": "10",
+            "description": "Multiply by 10"
+          },
+          {
+            "value": "100",
+            "description": "Multiply by 100"
+          },
+          {
+            "value": "1000",
+            "description": "Multiply by 1000"
+          }
+        ],
+        "mode": [
+          {
+            "value": "1",
+            "description": "Example: device-specific mode 1"
+          }
+        ],
+        "texton": [
+          {
+            "value": "On",
+            "description": "Example On text"
+          },
+          {
+            "value": "Aan",
+            "description": "Dutch example"
+          },
+          {
+            "value": "Open",
+            "description": "Example state text"
+          }
+        ],
+        "textoff": [
+          {
+            "value": "Off",
+            "description": "Example Off text"
+          },
+          {
+            "value": "Uit",
+            "description": "Dutch example"
+          },
+          {
+            "value": "Closed",
+            "description": "Example state text"
+          },
+          {
+            "value": "Dicht",
+            "description": "Dutch state example"
+          }
+        ],
+        "unit": [
+          {
+            "value": "°C",
+            "description": "Temperature"
+          },
+          {
+            "value": "%",
+            "description": "Percentage"
+          },
+          {
+            "value": "W",
+            "description": "Watt"
+          },
+          {
+            "value": "kW",
+            "description": "Kilowatt"
+          },
+          {
+            "value": "V",
+            "description": "Volt"
+          },
+          {
+            "value": "A",
+            "description": "Ampere"
+          }
+        ]
+      }
+    },
+    "devicerules": {
+      "automation": "Automation",
+      "help": "Evaluate one trigger and then run the enabled actions. CSS targets this device; the text action fills the data/value field of a selected target device.",
+      "enabled": "On",
+      "trigger": "Trigger",
+      "actions": "Actions",
+      "property": "Status / property",
+      "condition": "Condition",
+      "value": "Value",
+      "cssAction": "Add CSS to current device",
+      "cssActionHelp": "The generated class is automatically added to and removed from the device whose configuration popup is open.",
+      "currentDevice": "Current device",
+      "textAction": "Put text in another device",
+      "textTarget": "Text action target device",
+      "targetHelp": "The dropdown lists available configured devices by name, IDX and block key. Text from multiple automations using the same target is automatically shown on separate lines; Text devices are listed first.",
+      "textOn": "Text when true",
+      "textOff": "Text when false",
+      "textCssAction": "Also apply CSS to target device",
+      "textCssActionHelp": "The generated class is added to and removed from the text action's target device, in sync with the trigger. Only visible while the text action itself is enabled.",
+      "cssClass": "CSS class",
+      "styling": "Styling",
+      "existingCss": "Existing CSS / class only",
+      "background": "Background",
+      "border": "Border",
+      "textColor": "Text color",
+      "backgroundColor": "Background color",
+      "opacity": "Opacity",
+      "borderWidth": "Border width",
+      "borderStyle": "Border style",
+      "borderColor": "Border color",
+      "bannerText": "Banner text",
+      "bannerTop": "Distance from top (px)",
+      "fontSize": "Font size (px)",
+      "legacyTarget": "Existing CSS target (compatibility)",
+      "legacyTargetHelp": "This older rule points to another block. Keep it unchanged to preserve the old behavior, or select This device.",
+      "selfTarget": "This device",
+      "advancedCss": "Advanced CSS options",
+      "remove": "Remove",
+      "addRule": "Add automation",
+      "noRules": "No automations configured yet.",
+      "advanced": "Advanced",
+      "handler": "Custom JS handler",
+      "handlerHelp": "Optional: link this device to getStatus_<name>(block, afterupdate) in custom.js.",
+      "invalidTrigger": "Automation: fill Status/property, Condition and Value for the trigger.",
+      "invalidActions": "Automation: enable at least one action.",
+      "invalidTextRule": "Automation: select a target device for the text action.",
+      "invalidTextValue": "Automation: enter text for the true and/or false result.",
+      "invalidBannerText": "Automation: enter banner text without quote or backslash characters.",
+      "invalidClass": "Automation: use a valid CSS class (letters, numbers, _ and -).",
+      "invalidHandler": "Automation: Custom JS handler may contain letters, numbers, _ and $ and may not start with a number.",
+      "cssSaving": "Saving automation to custom.js / custom.css...",
+      "cssSaveFailed": "Automation: custom.js / custom.css could not be updated.",
+      "source": "Source block",
+      "textDevices": "Text devices",
+      "otherBlocks": "Other available devices",
+      "unavailableTarget": "No longer available"
+    },
+    "haymanclock": {
+      "day": "day",
+      "hours": "hours",
+      "minutes": "minutes",
+      "seconds": "seconds"
     }
   },
   "switches": {

@@ -141,6 +141,12 @@ function createRuntime(initialBlocks = {}, liveDevices = {}) {
     if (value && value.__testCollection) return value;
     return emptyCollection();
   }
+  jQuery.extend = function extend() {
+    const args = Array.prototype.slice.call(arguments);
+    const target = args.shift() || {};
+    args.forEach((source) => Object.assign(target, source));
+    return target;
+  };
 
   const window = {
     blocks,
@@ -1153,4 +1159,115 @@ test('PHP writer accepts schema v2, preserves legacy rules and matches generated
   assert.equal(legacy.rule.actions.css.enabled, false);
   assert.equal(legacy.rule.actions.text.enabled, true);
   assert.equal(legacy.rule.actions.text.target, 'legacy_message');
+});
+
+test('hasEnabledRules reports whether a block has at least one enabled Automation rule', () => {
+  const { api, store } = createRuntime({ living: { key: 'living' } });
+
+  assert.equal(api.hasEnabledRules({ key: 'living' }), false);
+
+  api.updateRuleStore(
+    'living',
+    [
+      {
+        id: 'rule1',
+        trigger: { property: 'Status', operator: 'eq', value: 'On' },
+        actions: {
+          css: { enabled: true, target: 'self' },
+          text: { enabled: false },
+        },
+      },
+    ],
+    ''
+  );
+  assert.equal(api.hasEnabledRules({ key: 'living' }), true);
+
+  store.living.rules[0].enabled = false;
+  assert.equal(api.hasEnabledRules({ key: 'living' }), false);
+
+  assert.equal(api.hasEnabledRules(null), false);
+});
+
+function permissiveCollection() {
+  // Chainable no-op stand-in for any jQuery collection this test doesn't
+  // care about (.dr-rules, .dt-device-rule, .de-custom-field-row, ...):
+  // any method call returns the proxy itself and .each() never fires.
+  const target = { __testCollection: true, length: 0 };
+  const proxy = new Proxy(target, {
+    get(obj, prop) {
+      if (prop in obj) return obj[prop];
+      return function () {
+        return proxy;
+      };
+    },
+  });
+  return proxy;
+}
+
+test('enhancePopup skips the Automation section for special blocks (Title, Separator, ...) but keeps it for real devices', () => {
+  const { api } = createRuntime();
+
+  function makePopup(blockKind) {
+    const beforeCalls = [];
+    const customSection = {
+      __testCollection: true,
+      length: 1,
+      before(html) {
+        beforeCalls.push(html);
+        return this;
+      },
+    };
+    const okButton = { __testCollection: true, length: 1 };
+    var target = {
+      __testCollection: true,
+      length: 1,
+      _dashticzDeviceRulesSource: 'living',
+      _dashticzDeviceRulesEnhanced: false,
+      attr(name) {
+        return name === 'data-block-kind' ? blockKind : undefined;
+      },
+      find(selector) {
+        if (selector === '.de-custom-fields-section') return customSection;
+        if (selector === '#de-config-ok') return okButton;
+        return permissiveCollection();
+      },
+    };
+    // The popup root itself also needs the same permissive fallback (e.g.
+    // for the .on(...) event wiring enhancePopup does once it proceeds).
+    var popup = new Proxy(target, {
+      get(obj, prop) {
+        if (prop in obj) return obj[prop];
+        return function () {
+          return popup;
+        };
+      },
+      set(obj, prop, value) {
+        obj[prop] = value;
+        return true;
+      },
+    });
+    return { popup, beforeCalls };
+  }
+
+  const special = makePopup('special');
+  api.enhancePopup(special.popup);
+  assert.equal(
+    special.beforeCalls.length,
+    0,
+    'a special (e.g. Title/Separator) popup must not get an Automation section'
+  );
+  assert.notEqual(
+    special.popup._dashticzDeviceRulesEnhanced,
+    true,
+    'bailing out for a special must not mark the popup as enhanced'
+  );
+
+  const device = makePopup('device');
+  api.enhancePopup(device.popup);
+  assert.equal(
+    device.beforeCalls.length,
+    1,
+    'a real device popup must still get its Automation section'
+  );
+  assert.equal(device.popup._dashticzDeviceRulesEnhanced, true);
 });

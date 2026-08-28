@@ -1,4 +1,4 @@
-/* global $, config, language, DashticzCustomFieldPresets */
+/* global $, language, DashticzCustomFieldPresets */
 //# sourceURL=js/customfieldsetoptions.js
 (function () {
   'use strict';
@@ -9,250 +9,223 @@
     hideimageonempty: {
       strict: true,
       values: [
-        [
-          'true',
-          'Hide image when Data is empty',
-          'Afbeelding verbergen als Data leeg is',
-        ],
-        ['false', 'Always show image', 'Afbeelding altijd tonen'],
+        ['true', 'Hide image when Data is empty'],
+        ['false', 'Always show image'],
       ],
     },
     multi_line: {
       strict: true,
       values: [
-        [
-          'true',
-          'Show values on separate lines',
-          'Waarden op aparte regels tonen',
-        ],
-        [
-          'false',
-          'Do not force multiple lines',
-          'Geen meerdere regels afdwingen',
-        ],
+        ['true', 'Show values on separate lines'],
+        ['false', 'Do not force multiple lines'],
       ],
     },
     single_line: {
       strict: true,
       values: [
-        ['true', 'Show values on one line', 'Waarden op één regel tonen'],
-        ['false', 'Do not force a single line', 'Geen enkele regel afdwingen'],
+        ['true', 'Show values on one line'],
+        ['false', 'Do not force a single line'],
       ],
     },
     hide_stop: {
       strict: true,
       values: [
-        ['true', 'Hide Stop button', 'Stop-knop verbergen'],
-        ['false', 'Show Stop button', 'Stop-knop tonen'],
+        ['true', 'Hide Stop button'],
+        ['false', 'Show Stop button'],
       ],
     },
     protected: {
       strict: true,
       values: [
-        ['true', 'Prevent manual switching', 'Handmatig schakelen blokkeren'],
-        ['false', 'Allow manual switching', 'Handmatig schakelen toestaan'],
+        ['true', 'Prevent manual switching'],
+        ['false', 'Allow manual switching'],
       ],
     },
     graph: {
       strict: true,
       values: [
-        ['true', 'Enable graph', 'Grafiek inschakelen'],
-        ['false', 'Disable graph', 'Grafiek uitschakelen'],
+        ['true', 'Enable graph'],
+        ['false', 'Disable graph'],
       ],
     },
     confirmation: {
       strict: true,
       values: [
-        ['0', 'No confirmation', 'Geen bevestiging'],
-        ['1', 'Ask before switching', 'Bevestiging vragen voor schakelen'],
+        ['0', 'No confirmation'],
+        ['1', 'Ask before switching'],
       ],
     },
     sortorder: {
       strict: true,
       values: [
-        ['-1', 'Descending', 'Aflopend'],
-        ['0', 'No sorting', 'Niet sorteren'],
-        ['1', 'Ascending', 'Oplopend'],
+        ['-1', 'Descending'],
+        ['0', 'No sorting'],
+        ['1', 'Ascending'],
       ],
     },
     showsubtitles: {
       strict: true,
       values: [
-        ['0', 'Hide subtitles', 'Subtitels verbergen'],
-        ['1', 'Show subtitle with title', 'Subtitel bij titel tonen'],
-        ['2', 'Show subtitle with value', 'Subtitel bij waarde tonen'],
+        ['0', 'Hide subtitles'],
+        ['1', 'Show subtitle with title'],
+        ['2', 'Show subtitle with value'],
       ],
     },
     newwindow: {
       strict: true,
       values: [
-        ['0', 'Open in current window', 'Openen in huidig venster'],
-        ['1', 'Open in new browser tab', 'Openen in nieuwe browsertab'],
-        ['2', 'Open in popup/frame', 'Openen in popup/frame'],
-        ['3', 'HTTP GET without window', 'HTTP GET zonder venster'],
-        ['4', 'HTTP POST without window', 'HTTP POST zonder venster'],
-        [
-          '5',
-          'Open in separate browser window',
-          'Openen in apart browservenster',
-        ],
+        ['0', 'Open in current window'],
+        ['1', 'Open in new browser tab'],
+        ['2', 'Open in popup/frame'],
+        ['3', 'HTTP GET without window'],
+        ['4', 'HTTP POST without window'],
+        ['5', 'Open in separate browser window'],
       ],
     },
     colorpicker: {
       strict: true,
       values: [
-        ['0', 'Disabled', 'Uitgeschakeld'],
-        ['1', 'Old colorpicker', 'Oude kleurkiezer'],
-        ['2', 'New colorpicker', 'Nieuwe kleurkiezer'],
+        ['0', 'Disabled'],
+        ['1', 'Old colorpicker'],
+        ['2', 'New colorpicker'],
       ],
     },
     switchmode: {
       strict: false,
-      values: [
-        [
-          'color',
-          'Open colorpicker instead of On/Off',
-          'Kleurkiezer openen in plaats van Aan/Uit',
-        ],
-      ],
+      values: [['color', 'Open colorpicker instead of On/Off']],
     },
     backgroundsize: {
       strict: false,
       values: [
-        ['cover', 'Fill the complete block', 'Volledige block vullen'],
-        [
-          'contain',
-          'Fit complete image inside block',
-          'Volledige afbeelding in block passen',
-        ],
-        ['80%', 'Custom percentage example', 'Voorbeeld aangepast percentage'],
-        ['100%', 'Original/full percentage example', 'Voorbeeld 100%'],
+        ['cover', 'Fill the complete block'],
+        ['contain', 'Fit complete image inside block'],
+        ['80%', 'Custom percentage example'],
+        ['100%', 'Original/full percentage example'],
       ],
     },
     backgroundopacity: {
       strict: false,
       values: [
-        ['1', '100% visible', '100% zichtbaar'],
-        ['0.75', '75% visible', '75% zichtbaar'],
-        ['0.5', '50% visible', '50% zichtbaar'],
-        ['0.25', '25% visible', '25% zichtbaar'],
-        ['0', 'Transparent', 'Transparant'],
+        ['1', '100% visible'],
+        ['0.75', '75% visible'],
+        ['0.5', '50% visible'],
+        ['0.25', '25% visible'],
+        ['0', 'Transparent'],
       ],
     },
     colorpickerscale: {
       strict: false,
       values: [
-        ['1', '100%', '100%'],
-        ['1.25', '125%', '125%'],
-        ['1.5', '150%', '150%'],
-        ['2', '200%', '200%'],
+        ['1', '100%'],
+        ['1.25', '125%'],
+        ['1.5', '150%'],
+        ['2', '200%'],
       ],
     },
     decimals: {
       strict: false,
       values: [
-        ['0', 'No decimals', 'Geen decimalen'],
-        ['1', 'One decimal', 'Eén decimaal'],
-        ['2', 'Two decimals', 'Twee decimalen'],
-        ['3', 'Three decimals', 'Drie decimalen'],
+        ['0', 'No decimals'],
+        ['1', 'One decimal'],
+        ['2', 'Two decimals'],
+        ['3', 'Three decimals'],
       ],
     },
     batterythreshold: {
       strict: false,
       values: [
-        ['10', 'Warn below 10%', 'Waarschuwen onder 10%'],
-        ['15', 'Warn below 15%', 'Waarschuwen onder 15%'],
-        ['20', 'Warn below 20%', 'Waarschuwen onder 20%'],
-        ['30', 'Common/default threshold', 'Veelgebruikte/standaard grens'],
+        ['10', 'Warn below 10%'],
+        ['15', 'Warn below 15%'],
+        ['20', 'Warn below 20%'],
+        ['30', 'Common/default threshold'],
       ],
     },
     flash: {
       strict: false,
       values: [
-        ['0', 'No flash', 'Niet knipperen'],
-        ['250', '250 ms', '250 ms'],
-        ['500', '500 ms', '500 ms'],
-        ['1000', '1000 ms', '1000 ms'],
+        ['0', 'No flash'],
+        ['250', '250 ms'],
+        ['500', '500 ms'],
+        ['1000', '1000 ms'],
       ],
     },
     scale: {
       strict: false,
       values: [
-        ['0.001', 'Divide by 1000', 'Delen door 1000'],
-        ['0.01', 'Divide by 100', 'Delen door 100'],
-        ['0.1', 'Divide by 10', 'Delen door 10'],
-        ['1', 'No scaling', 'Geen schaling'],
-        ['10', 'Multiply by 10', 'Vermenigvuldigen met 10'],
-        ['100', 'Multiply by 100', 'Vermenigvuldigen met 100'],
-        ['1000', 'Multiply by 1000', 'Vermenigvuldigen met 1000'],
+        ['0.001', 'Divide by 1000'],
+        ['0.01', 'Divide by 100'],
+        ['0.1', 'Divide by 10'],
+        ['1', 'No scaling'],
+        ['10', 'Multiply by 10'],
+        ['100', 'Multiply by 100'],
+        ['1000', 'Multiply by 1000'],
       ],
     },
     mode: {
       strict: false,
-      values: [
-        [
-          '1',
-          'Example: device-specific mode 1',
-          'Voorbeeld: device-specifieke modus 1',
-        ],
-      ],
+      values: [['1', 'Example: device-specific mode 1']],
     },
     texton: {
       strict: false,
       values: [
-        ['On', 'Example On text', 'Voorbeeldtekst Aan'],
-        ['Aan', 'Dutch example', 'Nederlands voorbeeld'],
-        ['Open', 'Example state text', 'Voorbeeld statustekst'],
+        ['On', 'Example On text'],
+        ['Aan', 'Dutch example'],
+        ['Open', 'Example state text'],
       ],
     },
     textoff: {
       strict: false,
       values: [
-        ['Off', 'Example Off text', 'Voorbeeldtekst Uit'],
-        ['Uit', 'Dutch example', 'Nederlands voorbeeld'],
-        ['Closed', 'Example state text', 'Voorbeeld statustekst'],
-        ['Dicht', 'Dutch state example', 'Nederlands statusvoorbeeld'],
+        ['Off', 'Example Off text'],
+        ['Uit', 'Dutch example'],
+        ['Closed', 'Example state text'],
+        ['Dicht', 'Dutch state example'],
       ],
     },
     unit: {
       strict: false,
       values: [
-        ['°C', 'Temperature', 'Temperatuur'],
-        ['%', 'Percentage', 'Percentage'],
-        ['W', 'Watt', 'Watt'],
-        ['kW', 'Kilowatt', 'Kilowatt'],
-        ['V', 'Volt', 'Volt'],
-        ['A', 'Ampere', 'Ampère'],
+        ['°C', 'Temperature'],
+        ['%', 'Percentage'],
+        ['W', 'Watt'],
+        ['kW', 'Kilowatt'],
+        ['V', 'Volt'],
+        ['A', 'Ampere'],
       ],
     },
   };
 
-  var TEXT = {
-    en: {
-      title: 'Possible values',
-      strictHint: 'Choose one of these supported values.',
-      freeHint: 'Suggested values. You may also type another valid value.',
-      current: 'Current',
-    },
-    nl: {
-      title: 'Mogelijke waarden',
-      strictHint: 'Kies één van deze ondersteunde waarden.',
-      freeHint:
-        'Voorgestelde waarden. Je kunt ook zelf een andere geldige waarde typen.',
-      current: 'Huidig',
-    },
-  };
-
-  function currentLanguage() {
+  function _translations() {
     var configured =
-      typeof config !== 'undefined' && config && config.language
-        ? String(config.language)
-        : '';
-    return /^nl(?:_|-|$)/i.test(configured) ? 'nl' : 'en';
+      typeof language !== 'undefined' &&
+      language.settings &&
+      language.settings.customfieldsetoptions
+        ? language.settings.customfieldsetoptions
+        : {};
+    return $.extend(
+      {
+        title: 'Possible values',
+        strictHint: 'Choose one of these supported values.',
+        freeHint: 'Suggested values. You may also type another valid value.',
+        current: 'Current',
+        exampleValue: 'Example value',
+        options: {},
+      },
+      configured
+    );
   }
 
-  function labels() {
-    return TEXT[currentLanguage()] || TEXT.en;
+  function optionDescription(field, value) {
+    var entries = (_translations().options || {})[field] || [];
+    var found = null;
+    entries.some(function (entry) {
+      if (entry.value === value) {
+        found = entry.description;
+        return true;
+      }
+      return false;
+    });
+    return found;
   }
 
   function normalise(value) {
@@ -269,13 +242,17 @@
   }
 
   function rowForSetting($setting) {
-    return $setting.closest('.de-custom-field-row, .cd-custom-field-row');
+    return $setting.closest(
+      '.de-custom-field-row, .cd-custom-field-row, .we-custom-field-row'
+    );
   }
 
   function fieldForSetting($setting) {
     return String(
       rowForSetting($setting)
-        .find('.de-custom-field-name, .cd-custom-field-name')
+        .find(
+          '.de-custom-field-name, .cd-custom-field-name, .we-custom-field-name'
+        )
         .first()
         .val() || ''
     );
@@ -307,11 +284,22 @@
     });
   }
 
+  function presetExample(preset) {
+    if (
+      typeof DashticzCustomFieldPresets !== 'undefined' &&
+      DashticzCustomFieldPresets &&
+      typeof DashticzCustomFieldPresets.example === 'function'
+    ) {
+      return DashticzCustomFieldPresets.example(preset);
+    }
+    return preset.example;
+  }
+
   function buildMenu($setting) {
     var field = fieldForSetting($setting);
     var optionSet = optionsForField(field);
     var preset = presetForField(field);
-    var t = labels();
+    var t = _translations();
     var current = String($setting.val() || '');
     var html =
       '<div class="dt-custom-setting-options-menu" role="listbox">' +
@@ -325,7 +313,7 @@
       optionSet.values.forEach(function (entry) {
         var value = entry[0];
         var description =
-          currentLanguage() === 'nl' ? entry[2] || entry[1] : entry[1];
+          optionDescription(normalise(field), value) || entry[1];
         var selected = String(value) === current;
         html +=
           '<button type="button" class="dt-custom-setting-option' +
@@ -348,10 +336,7 @@
           '</button>';
       });
     } else if (preset) {
-      var example =
-        currentLanguage() === 'nl' && preset.nlExample
-          ? preset.nlExample
-          : preset.example;
+      var example = presetExample(preset);
       if (example !== undefined && example !== null && String(example) !== '') {
         html +=
           '<button type="button" class="dt-custom-setting-option" data-value="' +
@@ -359,9 +344,7 @@
           '"><span class="dt-custom-setting-option-main"><code>' +
           escapeHtml(example) +
           '</code></span><span class="dt-custom-setting-option-description">' +
-          escapeHtml(
-            currentLanguage() === 'nl' ? 'Voorbeeldwaarde' : 'Example value'
-          ) +
+          escapeHtml(t.exampleValue) +
           '</span></button>';
       }
     }
@@ -399,9 +382,13 @@
   }
 
   function selectValue($button) {
-    var $row = $button.closest('.de-custom-field-row, .cd-custom-field-row');
+    var $row = $button.closest(
+      '.de-custom-field-row, .cd-custom-field-row, .we-custom-field-row'
+    );
     var $setting = $row
-      .find('.de-custom-field-setting, .cd-custom-field-setting')
+      .find(
+        '.de-custom-field-setting, .cd-custom-field-setting, .we-custom-field-setting'
+      )
       .first();
     if (!$setting.length) return;
 
@@ -436,7 +423,7 @@
 
   $(document).on(
     'focus.dtCustomSettingOptions click.dtCustomSettingOptions',
-    '.de-custom-field-setting, .cd-custom-field-setting',
+    '.de-custom-field-setting, .cd-custom-field-setting, .we-custom-field-setting',
     function () {
       openMenu($(this));
     }
@@ -455,7 +442,7 @@
   $(document).on('mousedown.dtCustomSettingOptions', function (event) {
     if (
       $(event.target).closest(
-        '.dt-custom-setting-options-menu, .de-custom-field-setting, .cd-custom-field-setting'
+        '.dt-custom-setting-options-menu, .de-custom-field-setting, .cd-custom-field-setting, .we-custom-field-setting'
       ).length
     )
       return;
