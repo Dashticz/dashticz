@@ -369,7 +369,7 @@
 
 .dt_block .col-icon {
   margin-top: 5px;
-  width: 45px !important;
+  width: var(--icon-column-width, 45px) !important;
 }
 
 .dt_title {
@@ -3525,7 +3525,7 @@ Only add this hover on NON touch devices
 }
 
 .col-icon {
-  width: 40px !important;
+  width: var(--icon-column-width, 40px) !important;
   float: left;
   z-index: 10;
   padding-left: 5px;
@@ -3533,7 +3533,7 @@ Only add this hover on NON touch devices
 }
 
 .col-data {
-  width: calc(100% - 45px);
+  width: calc(100% - var(--icon-column-width, 45px));
   float: left;
 }
 
@@ -4179,7 +4179,7 @@ img.icon {
     margin: 2px 2px;
   }
   .dt_block .col-icon {
-    width: 36px !important;
+    width: var(--icon-column-width, 36px) !important;
     margin: 2px;
   }
   .button .dt_state,
@@ -4213,10 +4213,10 @@ img.icon {
     font-size: 30px !important;
   }
   .col-icon {
-    max-width: 26px !important;
+    max-width: var(--icon-column-width, 26px) !important;
   }
   .col-data {
-    width: calc(100% - 30px);
+    width: calc(100% - var(--icon-column-width, 26px) - 4px);
   }
 
   .trashcan {
@@ -7557,6 +7557,14 @@ canvas {
   min-height: 100px;
 }
 
+/* getColIcon()'s (js/dashticz.js) generic .col-icon column floats over the
+   same top-left corner .lms-cover's own artwork occupies (#217) - LMS
+   renders its configured icon/image itself, as .lms-cover-icon below,
+   directly over the artwork instead. */
+.lms-block > .col-icon {
+  display: none;
+}
+
 .lms-block-inner {
   display: flex;
   align-items: center;
@@ -7567,12 +7575,36 @@ canvas {
 }
 
 .lms-cover {
+  position: relative;
   flex: 0 0 100px;
   width: 100px;
   height: 100px;
   border-radius: var(--radius-selector, 4px);
   overflow: hidden;
   background: var(--main-bg-dark);
+}
+
+/* Small badge for the block's own configured icon/image (js/components/
+   lms.js's _coverIconHtml()) - pinned to the artwork's top-left corner,
+   above it, never part of the flex layout so it can't push or resize the
+   cover/info columns. */
+.lms-cover-icon {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  z-index: 1;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text-light, #fff);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.85);
+  pointer-events: none;
+}
+
+.lms-cover-icon-img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.85));
 }
 
 .lms-cover-img {
@@ -7618,16 +7650,26 @@ canvas {
   letter-spacing: 0.03em;
 }
 
-.lms-station,
+/* Per-block overrides (Device Config's Title/Artist/Station text style
+   fields, js/deviceeditor.js's _lmsFieldsHtml()) land as inline
+   --lms-*-font-size/--lms-*-color custom properties on .lms-block-inner
+   (js/components/lms.js) - each falls back to today's shared --font-small/
+   theme color when the block never set an override. */
+.lms-station {
+  font-size: var(--lms-station-font-size, var(--font-small));
+  color: var(--lms-station-color, var(--text-normal));
+}
+
 .lms-artist {
-  font-size: var(--font-small);
-  color: var(--text-normal);
+  font-size: var(--lms-artist-font-size, var(--font-small));
+  color: var(--lms-artist-color, var(--text-normal));
 }
 
 .lms-title {
-  /* Match the artist typography while retaining the distinct title color. */
-  font-size: var(--font-small);
-  color: var(--text-title);
+  font-size: var(--lms-title-font-size, var(--font-small));
+  color: var(--lms-title-color, var(--text-title));
+  /* Bold by default so the current track stands out from artist/station. */
+  font-weight: bold;
 }
 
 .lms-album {

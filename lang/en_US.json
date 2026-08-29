@@ -414,6 +414,12 @@
       "lms_player_placeholder": "Test the connection to list players",
       "lms_refresh_interval": "Refresh interval",
       "lms_hide_when_off": "Hide block when player is off",
+      "lms_text_style": "Text style",
+      "lms_title_line": "Title",
+      "lms_artist_line": "Artist",
+      "lms_station_line": "Station",
+      "lms_font_size": "Size (px)",
+      "lms_font_color": "Color",
       "invalid_lms_server": "Enter the Lyrion Music Server address.",
       "invalid_lms_port": "Enter a valid port (1-65535).",
       "invalid_lms_player": "Test the connection and select a player.",
@@ -962,7 +968,8 @@
         "--font-large": "Text title (--font-large)",
         "--font-update": "Text update (--font-update)",
         "--icon-font-size": "Icon (--icon-font-size)",
-        "--icon-image-size": "Image (--icon-image-size)"
+        "--icon-image-size": "Image (--icon-image-size)",
+        "--icon-column-width": "Icon column width (--icon-column-width)"
       }
     },
     "customfieldpresets": {

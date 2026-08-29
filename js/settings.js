@@ -1910,7 +1910,11 @@ var _THEME_COLOR_VARS = [
 
 var _THEME_FONT_VARS = ['--font-large', '--font-small', '--font-update'];
 
-var _THEME_ICON_VARS = ['--icon-font-size', '--icon-image-size'];
+var _THEME_ICON_VARS = [
+  '--icon-font-size',
+  '--icon-image-size',
+  '--icon-column-width',
+];
 
 // All theme vars whose value is always a bare pixel number - the settings
 // panel shows/accepts just the number and adds "px" itself.

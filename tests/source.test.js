@@ -5137,11 +5137,23 @@ test('Lyrion Music Server (LMS) block is registered, dispatched and wired throug
     styles,
     /\.lms-info > div \{[\s\S]*text-overflow: ellipsis;[\s\S]*white-space: nowrap;/
   );
+  // Title/Artist/Station each carry their own --lms-*-font-size/--lms-*-color
+  // override (js/components/lms.js sets them inline per block from Device
+  // Config's Text style fields), falling back to the shared --font-small/
+  // theme color when a block never set one. Title is bold by default,
+  // unconditionally, to stand out from artist/station (#217 follow-up).
   assert.match(
     styles,
-    /\.lms-title \{[\s\S]*font-size: var\(--font-small\);[\s\S]*color: var\(--text-title\);/
+    /\.lms-title \{[\s\S]*font-size: var\(--lms-title-font-size, var\(--font-small\)\);[\s\S]*color: var\(--lms-title-color, var\(--text-title\)\);[\s\S]*font-weight: bold;/
   );
-  assert.doesNotMatch(styles, /\.lms-title \{[\s\S]{0,150}font-weight:/);
+  assert.match(
+    styles,
+    /\.lms-artist \{[\s\S]*font-size: var\(--lms-artist-font-size, var\(--font-small\)\);[\s\S]*color: var\(--lms-artist-color, var\(--text-normal\)\);/
+  );
+  assert.match(
+    styles,
+    /\.lms-station \{[\s\S]*font-size: var\(--lms-station-font-size, var\(--font-small\)\);[\s\S]*color: var\(--lms-station-color, var\(--text-normal\)\);/
+  );
   assert.match(
     styles,
     /\.lms-album \{[\s\S]*font-size: calc\(var\(--font-small\) - 2px\);[\s\S]*color: var\(--text-muted\);/
@@ -5259,6 +5271,266 @@ test('Lyrion Music Server "Hide block when player is off" switch clears both tex
     'Hide block when player is off'
   );
   assert.match(lmsDocs, /hide_when_off\s+``true``/);
+});
+
+test("Lyrion Music Server's configured icon renders as a badge on the cover art, not the generic icon column (#217)", () => {
+  const lms = fs.readFileSync(path.join(root, 'js/components/lms.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const lmsDocs = fs.readFileSync(
+    path.join(root, 'docs/blocks/specials/lms.rst'),
+    'utf8'
+  );
+
+  // getColIcon()'s (js/dashticz.js) generic .col-icon column floats over the
+  // same top-left corner .lms-cover's own artwork occupies, so turning the
+  // Icon toggle on for an LMS block made it collide with the cover instead
+  // of rendering as a clean addition - hidden here so lms.js renders the
+  // icon itself, directly on the artwork, instead.
+  assert.match(styles, /\.lms-block > \.col-icon \{\s*\n\s*display: none;/);
+
+  // .lms-cover is the positioning context for the badge, which is pinned to
+  // its top-left corner, above it (positive z-index) and excluded from
+  // pointer events so it never steals a click meant for the block/cover.
+  assert.match(styles, /\.lms-cover \{[\s\S]*?position: relative;/);
+  assert.match(
+    styles,
+    /\.lms-cover-icon \{[\s\S]*?position: absolute;[\s\S]*?top: 4px;[\s\S]*?left: 4px;[\s\S]*?z-index: 1;[\s\S]*?pointer-events: none;/
+  );
+
+  // js/components/lms.js builds the badge itself from the block's own icon/
+  // image config, mirroring getColIcon()'s icon-vs-image handling, and
+  // injects it into every .lms-cover render path (initial skeleton, no
+  // artwork available, freshly loaded artwork, and the broken-image
+  // fallback) so it never depends on which of those happens to run first.
+  assert.match(
+    lms,
+    /function _coverIconHtml\(me\) \{\s*\n\s*var icon = me\.block\.icon;\s*\n\s*if \(icon\) return '<em class="' \+ icon \+ ' lms-cover-icon"><\/em>';\s*\n\s*var image = me\.block\.image;/
+  );
+  assert.match(
+    lms,
+    /function _skeletonHtml\(me\) \{[\s\S]*?_coverIconHtml\(me\)/
+  );
+  assert.match(
+    lms,
+    /function _renderCover\(me, \$cover, dataUrl\) \{\s*\n\s*var iconHtml = _coverIconHtml\(me\);/
+  );
+  // Every $cover.html(...) call in _renderCover (no-artwork, error-fallback)
+  // includes iconHtml so the badge survives a re-render triggered by a
+  // track/station change or a failed artwork fetch, not just the first paint.
+  assert.equal(
+    (lms.match(/\$cover\.html\(\s*\n\s*iconHtml \+/g) || []).length,
+    2
+  );
+
+  assert.match(
+    lmsDocs,
+    /shown as a small badge in the top-left corner of the cover artwork/
+  );
+});
+
+test('Lyrion Music Server Title/Artist/Station text style (size/color) is configurable in Device Config', () => {
+  const lms = fs.readFileSync(path.join(root, 'js/components/lms.js'), 'utf8');
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const saveBlocks = fs.readFileSync(
+    path.join(root, 'js/saveblocks.php'),
+    'utf8'
+  );
+  const configWriter = fs.readFileSync(
+    path.join(root, 'js/configwriter.php'),
+    'utf8'
+  );
+  const enLang = JSON.parse(
+    fs.readFileSync(path.join(root, 'lang/en_US.json'), 'utf8')
+  );
+
+  // Wizard (js/deviceeditor.js): _lmsFieldsHtml() renders a Size/Color pair
+  // per line, shared between the quick-add popup and the normal Device
+  // Config edit view for an already-saved LMS block, same as the existing
+  // Server/Port/.../Player fields above it.
+  assert.match(
+    deviceEditor,
+    /id="' \+\s*\n?\s*prefix \+ '-lms-' \+ line\.key \+ '-size"/
+  );
+  assert.match(
+    deviceEditor,
+    /id="' \+\s*\n?\s*prefix \+ '-lms-' \+ line\.key \+ '-color"/
+  );
+  assert.match(
+    deviceEditor,
+    /titleSize:[\s\S]{0,20}parseInt\(\$popup\.find\('#' \+ prefix \+ '-lms-title-size'\)\.val\(\), 10\)[\s\S]{0,10}\|\|[\s\S]{0,10}16,/
+  );
+  assert.match(
+    deviceEditor,
+    /titleColor: String\([\s\S]{0,80}\$popup\.find\('#' \+ prefix \+ '-lms-title-color'\)\.val\(\) \|\| '#ffffff'[\s\S]{0,10}\),/
+  );
+  // Both save paths (the quick-add popup's managedSpecials[orderKey] entry,
+  // and the edit popup's special.lmsXxx = pendingLms.xxx assignment) carry
+  // the 6 new fields through to the specialEntry the rest of _save() posts.
+  assert.match(deviceEditor, /lmsTitleSize: lms\.titleSize,/);
+  assert.match(deviceEditor, /special\.lmsTitleSize = pendingLms\.titleSize;/);
+  assert.match(
+    deviceEditor,
+    /specialEntry\.title_size = special\.lmsTitleSize;/
+  );
+  assert.match(
+    deviceEditor,
+    /specialEntry\.title_color = special\.lmsTitleColor;/
+  );
+
+  // Backend (js/saveblocks.php): a size outside 8-60 or a non hex-color
+  // value is dropped rather than rejecting the whole save.
+  assert.match(saveBlocks, /\$size >= 8 && \$size <= 60\) \? \$size : null;/);
+  assert.match(
+    saveBlocks,
+    /preg_match\('\/\^#\[0-9a-fA-F\]\{6\}\$\/', \$value\)/
+  );
+  assert.match(saveBlocks, /'lms_title_size' => \$lmsTitleSize,/);
+
+  // configwriter.php: omitted entirely (not even an empty string) when never
+  // set, so an untouched block's CONFIG.js entry is unchanged and
+  // css/creative.css's theme defaults keep applying.
+  assert.match(
+    configWriter,
+    /'lms_title_size' => 'title_size',[\s\S]{0,300}'lms_station_color' => 'station_color',/
+  );
+  assert.match(
+    configWriter,
+    /if \(isset\(\$block\[\$blockKey\]\) && \$block\[\$blockKey\] !== null && \$block\[\$blockKey\] !== ''\) \{\s*\n\s*\$props\[\$propKey\] = \$block\[\$blockKey\];/
+  );
+
+  // Runtime (js/components/lms.js): applied as inline CSS custom properties
+  // on .lms-block-inner, matching the property names configwriter.php just
+  // wrote (title_size/title_color/... - no lms_ prefix at this point).
+  assert.match(
+    lms,
+    /var LMS_TEXT_STYLE_VARS = \{\s*\n\s*title_size: '--lms-title-font-size',\s*\n\s*title_color: '--lms-title-color',/
+  );
+  assert.match(lms, /_applyTextStyleVars\(me, \$existing\);/);
+
+  assert.equal(enLang.settings.deviceeditor.lms_text_style, 'Text style');
+  assert.equal(enLang.settings.deviceeditor.lms_title_line, 'Title');
+});
+
+test('LMS text style fields are protected from the generic Custom fields grid, so a saved edit is not reverted by a stale duplicate', () => {
+  // Regression: title_size/title_color/artist_size/artist_color/
+  // station_size/station_color are real CONFIG.js properties on an LMS
+  // block, so _deviceCustomFieldRows() (js/deviceeditor.js) picked them up
+  // a second time as generic "leftover" custom-field rows unless excluded
+  // via protectedCustomDeviceProperties - exactly like server/port/.../
+  // hide_when_off already are just above them. Those stale rows are never
+  // touched by the user (they edit the dedicated Text style inputs
+  // instead), so on save they still carry whatever value was on screen
+  // when the popup first opened. configwriter_special_block_props()
+  // (js/configwriter.php) applies a block's custom_fields entries last and
+  // unconditionally (`$props[$field] = $value;`), so that stale duplicate
+  // silently overwrote the correctly-updated title_size/etc. on every
+  // single save - the fields never actually updated on a second edit.
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  assert.match(
+    deviceEditor,
+    /hide_when_off: true,[\s\S]{0,700}title_size: true,[\s\S]{0,20}title_color: true,[\s\S]{0,20}artist_size: true,[\s\S]{0,20}artist_color: true,[\s\S]{0,20}station_size: true,[\s\S]{0,20}station_color: true,/
+  );
+});
+
+test('openConfig() preserves already-edited special-block state across repeated opens, like openLayoutConfig()', () => {
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+
+  // _init(preserveDeviceState) wipes managedSpecials entirely (and, for
+  // each special, re-derives it from the stale client-side blocks[]
+  // snapshot from page load) unless preserveDeviceState is true. openConfig()
+  // - "Open Device Config directly for a rendered block", i.e. an existing
+  // one, same use case as openLayoutConfig() right below it - previously
+  // called plain _init(), so reopening the same special a second time in one
+  // session (e.g. to adjust an LMS block's Text style fields again) silently
+  // reverted every special field to whatever was saved before this session,
+  // discarding the first edit. The quick-add popups further below (openCustom,
+  // openMultiDevice, openGroup, ...) correctly keep plain _init() - a brand
+  // new block should never inherit a different special's stale state.
+  assert.match(
+    deviceEditor,
+    /function openConfig\(reference\) \{[\s\S]{0,600}_init\(true\);/
+  );
+  assert.match(
+    deviceEditor,
+    /function openLayoutConfig\(reference\) \{[\s\S]{0,200}_init\(true\);/
+  );
+});
+
+test('icon column width (--icon-column-width) is configurable from the Theme settings menu', () => {
+  const settingsJs = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const saveCustomCss = fs.readFileSync(
+    path.join(root, 'js/savecustomcss.php'),
+    'utf8'
+  );
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const modernDark = fs.readFileSync(
+    path.join(root, 'themes/modern-dark/modern-dark.css'),
+    'utf8'
+  );
+  const liquidGlassBlue = fs.readFileSync(
+    path.join(root, 'themes/liquid-glass-blue/liquid-glass-blue.css'),
+    'utf8'
+  );
+  const liquidGlassGrey = fs.readFileSync(
+    path.join(root, 'themes/liquid-glass-grey/liquid-glass-grey.css'),
+    'utf8'
+  );
+  const enLang = JSON.parse(
+    fs.readFileSync(path.join(root, 'lang/en_US.json'), 'utf8')
+  );
+  const nlLang = JSON.parse(
+    fs.readFileSync(path.join(root, 'lang/nl_NL.json'), 'utf8')
+  );
+
+  // The icon column's own box width (.col-icon, .dt_block .col-icon) was the
+  // one icon-related size still hardcoded in css/creative.css, unlike
+  // --icon-font-size/--icon-image-size (the icon glyph/image content inside
+  // that column) which are already theme variables - added to the same
+  // _THEME_ICON_VARS-driven settings panel and save allowlist those use, so
+  // it renders in the same Icon size column, no new plumbing needed.
+  assert.match(
+    settingsJs,
+    /var _THEME_ICON_VARS = \[\s*\n\s*'--icon-font-size',\s*\n\s*'--icon-image-size',\s*\n\s*'--icon-column-width',\s*\n\s*\];/
+  );
+  assert.match(saveCustomCss, /'--icon-image-size', '--icon-column-width',/);
+
+  // css/creative.css (loaded for every theme) drives both rules from the
+  // variable, keeping each rule's own current literal value as its fallback
+  // so a theme/install that never sets the variable renders unchanged.
+  assert.match(
+    styles,
+    /\.col-icon \{\s*\n\s*width: var\(--icon-column-width, 40px\) !important;/
+  );
+  assert.match(
+    styles,
+    /\.dt_block \.col-icon \{\s*\n\s*margin-top: 5px;\s*\n\s*width: var\(--icon-column-width, 45px\) !important;/
+  );
+
+  // Modern Dark/Liquid Glass Blue/Liquid Glass Grey each set an explicit
+  // default (matching the 45px .dt_block .col-icon already renders in
+  // practice, since getContainer() always adds the dt_block class) so the
+  // settings panel's field is correctly pre-filled instead of showing blank.
+  [modernDark, liquidGlassBlue, liquidGlassGrey].forEach((theme) => {
+    assert.match(theme, /--icon-column-width: 45px;/);
+  });
+
+  assert.equal(
+    enLang.settings.theme.vars['--icon-column-width'],
+    'Icon column width (--icon-column-width)'
+  );
+  assert.equal(
+    nlLang.settings.theme.vars['--icon-column-width'],
+    'Icoon kolombreedte (--icon-column-width)'
+  );
 });
 
 test('Group block gets the Layout Editor config (cog) control, like HTML/LMS blocks, instead of only a drag handle', () => {
