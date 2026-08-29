@@ -855,7 +855,8 @@
         "--font-large": "Tekst Titel (--font-large)",
         "--font-update": "Tekst Update (--font-update)",
         "--icon-font-size": "Icoon (--icon-font-size)",
-        "--icon-image-size": "Afbeelding (--icon-image-size)"
+        "--icon-image-size": "Afbeelding (--icon-image-size)",
+        "--icon-column-width": "Icoon kolombreedte (--icon-column-width)"
       }
     },
     "customfieldpresets": {

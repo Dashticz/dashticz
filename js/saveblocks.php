@@ -359,6 +359,12 @@ foreach ($data['devices'] as $entry) {
         $lmsPlayer = null;
         $lmsRefresh = null;
         $lmsHideWhenOff = false;
+        $lmsTitleSize = null;
+        $lmsTitleColor = null;
+        $lmsArtistSize = null;
+        $lmsArtistColor = null;
+        $lmsStationSize = null;
+        $lmsStationColor = null;
         if ($kind === 'lms') {
             $lmsServer = isset($entry['server']) && is_string($entry['server'])
                 ? dashticz_normalize_host_input($entry['server'])
@@ -387,6 +393,27 @@ foreach ($data['devices'] as $entry) {
                 dashticz_json_error(400, 'Enter a valid refresh interval.');
             }
             $lmsHideWhenOff = !empty($entry['hide_when_off']);
+            // Title/Artist/Station text style: optional per-block overrides
+            // for css/creative.css's .lms-title/.lms-artist/.lms-station
+            // (js/components/lms.js applies them as inline CSS custom
+            // properties) - a size outside a sane range or a non hex-color
+            // value is dropped rather than rejecting the whole save, so a
+            // malformed value never blocks saving the rest of the block.
+            $lmsSizeField = function ($value) {
+                $size = is_numeric($value) ? (int)$value : null;
+                return ($size !== null && $size >= 8 && $size <= 60) ? $size : null;
+            };
+            $lmsColorField = function ($value) {
+                return (is_string($value) && preg_match('/^#[0-9a-fA-F]{6}$/', $value))
+                    ? strtolower($value)
+                    : null;
+            };
+            $lmsTitleSize = $lmsSizeField(isset($entry['title_size']) ? $entry['title_size'] : null);
+            $lmsTitleColor = $lmsColorField(isset($entry['title_color']) ? $entry['title_color'] : null);
+            $lmsArtistSize = $lmsSizeField(isset($entry['artist_size']) ? $entry['artist_size'] : null);
+            $lmsArtistColor = $lmsColorField(isset($entry['artist_color']) ? $entry['artist_color'] : null);
+            $lmsStationSize = $lmsSizeField(isset($entry['station_size']) ? $entry['station_size'] : null);
+            $lmsStationColor = $lmsColorField(isset($entry['station_color']) ? $entry['station_color'] : null);
         }
         $slide = null;
         $buttonKey = null;
@@ -430,6 +457,12 @@ foreach ($data['devices'] as $entry) {
             'lms_player' => $lmsPlayer,
             'lms_refresh' => $lmsRefresh,
             'lms_hide_when_off' => $lmsHideWhenOff,
+            'lms_title_size' => $lmsTitleSize,
+            'lms_title_color' => $lmsTitleColor,
+            'lms_artist_size' => $lmsArtistSize,
+            'lms_artist_color' => $lmsArtistColor,
+            'lms_station_size' => $lmsStationSize,
+            'lms_station_color' => $lmsStationColor,
         ];
     } elseif (is_int($entry) && $entry > 0) {
         $devices[] = [

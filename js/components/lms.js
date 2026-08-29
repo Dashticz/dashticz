@@ -70,6 +70,37 @@ var DT_lms_api = {
   var LMS_CURL_REQUIRED_ERROR =
     'The PHP curl extension is required for the Lyrion Music Server block.';
 
+  // Device Config's Title/Artist/Station text style fields (js/deviceeditor.js's
+  // _lmsFieldsHtml()) - each block property maps to the css/creative.css
+  // custom property its .lms-title/.lms-artist/.lms-station rule reads via
+  // var(..., --font-small/theme color), so an unset property (older/never
+  // resaved config) renders exactly as before.
+  var LMS_TEXT_STYLE_VARS = {
+    title_size: '--lms-title-font-size',
+    title_color: '--lms-title-color',
+    artist_size: '--lms-artist-font-size',
+    artist_color: '--lms-artist-color',
+    station_size: '--lms-station-font-size',
+    station_color: '--lms-station-color',
+  };
+
+  function _applyTextStyleVars(me, $el) {
+    var el = $el[0];
+    if (!el) return;
+    Object.keys(LMS_TEXT_STYLE_VARS).forEach(function (blockProp) {
+      var cssVar = LMS_TEXT_STYLE_VARS[blockProp];
+      var value = me.block[blockProp];
+      if (value === undefined || value === null || value === '') {
+        el.style.removeProperty(cssVar);
+        return;
+      }
+      el.style.setProperty(
+        cssVar,
+        /_size$/.test(blockProp) ? value + 'px' : String(value)
+      );
+    });
+  }
+
   function _esc(value) {
     return $('<div>')
       .text(value === null || typeof value === 'undefined' ? '' : String(value))
@@ -136,10 +167,32 @@ var DT_lms_api = {
     return text ? '<div class="' + cls + '">' + _esc(text) + '</div>' : '';
   }
 
-  function _skeletonHtml() {
+  /* The block's own configured icon/image (#217), rendered as a small badge
+     inside .lms-cover itself instead of through getColIcon()'s normal
+     .col-icon column (js/dashticz.js) - that column floats over the same
+     top-left corner the cover art occupies, so css/creative.css hides it
+     for LMS blocks (.lms-block > .col-icon) and this renders the badge
+     directly on top of the artwork instead. Mirrors getColIcon()'s
+     icon-vs-image handling so both configuration paths keep working. */
+  function _coverIconHtml(me) {
+    var icon = me.block.icon;
+    if (icon) return '<em class="' + icon + ' lms-cover-icon"></em>';
+    var image = me.block.image;
+    if (image)
+      return (
+        '<img src="img/' +
+        image +
+        '" class="lms-cover-icon lms-cover-icon-img"/>'
+      );
+    return '';
+  }
+
+  function _skeletonHtml(me) {
     return (
       '<div class="lms-block-inner">' +
-      '<div class="lms-cover"><div class="lms-cover-placeholder"><em class="fas fa-music" aria-hidden="true"></em></div></div>' +
+      '<div class="lms-cover">' +
+      _coverIconHtml(me) +
+      '<div class="lms-cover-placeholder"><em class="fas fa-music" aria-hidden="true"></em></div></div>' +
       '<div class="lms-info"><div class="lms-title">' +
       _esc(_lmsText('loading', 'Loading...')) +
       '</div></div>' +
@@ -147,23 +200,27 @@ var DT_lms_api = {
     );
   }
 
-  function _renderCover($cover, dataUrl) {
+  function _renderCover(me, $cover, dataUrl) {
+    var iconHtml = _coverIconHtml(me);
     if (!dataUrl) {
       $cover.html(
-        '<div class="lms-cover-placeholder"><em class="fas fa-music" aria-hidden="true"></em></div>'
+        iconHtml +
+          '<div class="lms-cover-placeholder"><em class="fas fa-music" aria-hidden="true"></em></div>'
       );
       return;
     }
+    $cover.html(iconHtml);
     var $img = $('<img class="lms-cover-img" alt="">');
     // A broken/expired data URL must fall back to the placeholder instead of
     // the browser's own broken-image icon (#9's "sensible placeholder").
     $img.on('error', function () {
       $cover.html(
-        '<div class="lms-cover-placeholder"><em class="fas fa-music" aria-hidden="true"></em></div>'
+        iconHtml +
+          '<div class="lms-cover-placeholder"><em class="fas fa-music" aria-hidden="true"></em></div>'
       );
     });
     $img.attr('src', dataUrl);
-    $cover.html($img);
+    $cover.append($img);
   }
 
   /* Write an inline style with !important when hiding the whole block.
@@ -249,6 +306,7 @@ var DT_lms_api = {
       );
       $existing = $state.find('.lms-block-inner');
     }
+    _applyTextStyleVars(me, $existing);
     $existing
       .attr('data-lms-state', meta.state)
       .toggleClass('lms-remote', !!meta.remote);
@@ -315,7 +373,7 @@ var DT_lms_api = {
 
     if (!artworkKey) {
       _resetArtworkState(me);
-      _renderCover($cover, null);
+      _renderCover(me, $cover, null);
       return;
     }
 
@@ -352,12 +410,12 @@ var DT_lms_api = {
           me.lmsArtworkLoadedKey = artworkKey;
           me.lmsArtworkRetryKey = '';
           me.lmsArtworkRetryAt = 0;
-          _renderCover($cover, dataUrl);
+          _renderCover(me, $cover, dataUrl);
         } else {
           me.lmsArtworkLoadedKey = '';
           me.lmsArtworkRetryKey = artworkKey;
           me.lmsArtworkRetryAt = Date.now() + ARTWORK_RETRY_MS;
-          _renderCover($cover, null);
+          _renderCover(me, $cover, null);
         }
       })
       .catch(function () {
@@ -367,7 +425,7 @@ var DT_lms_api = {
         me.lmsArtworkLoadedKey = '';
         me.lmsArtworkRetryKey = artworkKey;
         me.lmsArtworkRetryAt = Date.now() + ARTWORK_RETRY_MS;
-        _renderCover($cover, null);
+        _renderCover(me, $cover, null);
       });
   }
 

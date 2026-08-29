@@ -27,7 +27,10 @@ server, player or refresh interval. The **Hide block when player is off**
 switch replaces the "Player off" message with nothing at all (no icon, no
 text) whenever the player is powered down - useful together with a
 device/widget's own **No background** option to make the whole block
-disappear until the player is turned back on. Unlike the other tiles in the
+disappear until the player is turned back on. The **Text style** section lets
+you set a font size and color for the Title, Artist and Station lines
+independently (the title is always shown in bold); leaving these untouched
+keeps the active theme's own defaults. Unlike the other tiles in the
 Widgets catalog, this one can be added more than once, so each LMS player on
 the network can get its own block.
 
@@ -69,7 +72,13 @@ refresh                   Poll interval in seconds (2-3600, default: ``5``)
 hide_when_off             ``true``: show nothing (no icon, no "Player off" text) while the player is off, instead of the usual "Player off" message. Default ``false``
 title                     ``'<string>'``: Custom title for the block
 width                     The block width
-icon                      Optional icon to show in the block. Default no icon (the cover artwork is this block's own visual)
+icon                      Optional icon to show in the block. Default no icon (the cover artwork is this block's own visual). When set, it's shown as a small badge in the top-left corner of the cover artwork itself, rather than in the usual icon column
+title_size                Song title font size in px (default ``16``). Also settable from Device Config's Text style section
+title_color               Song title color as ``'#rrggbb'`` (default ``'#ffffff'``). The title is always bold
+artist_size               Artist font size in px (default ``14``)
+artist_color              Artist color as ``'#rrggbb'`` (default ``'#cccccc'``)
+station_size              Station font size in px (default ``14``, internet radio only)
+station_color             Station color as ``'#rrggbb'`` (default ``'#999999'``, internet radio only)
 =======================   ===============================
 
 Networking

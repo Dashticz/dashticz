@@ -320,7 +320,13 @@ var DashticzDeviceEditor = (function () {
     editorMode = 'devices';
     openedFromAddMenu = false;
     gridMode = _activeScreenDom().hasClass('dt-grid-screen');
-    _init();
+    // preserveDeviceState=true, matching openLayoutConfig() below: without
+    // it, _init() wipes managedSpecials entirely on every call, so editing
+    // the same special block (e.g. an LMS block's Text style fields) twice
+    // in one session re-derived the second popup's fields from the stale
+    // client-side blocks[] snapshot from page load - silently reverting to
+    // whatever was saved before this session, not the first edit just made.
+    _init(true);
 
     var prepared = _prepareManagedDeviceState();
     var orderKey = '';
@@ -1020,6 +1026,35 @@ var DashticzDeviceEditor = (function () {
       lmsRefresh: kind === 'lms' ? parseInt(definition.refresh, 10) || 5 : 5,
       lmsHideWhenOff:
         kind === 'lms' ? definition.hide_when_off === true : false,
+      // Title/Artist/Station text style (size/color) - optional per-block
+      // overrides for css/creative.css's .lms-title/.lms-artist/.lms-station
+      // rules (js/components/lms.js applies them as inline CSS custom
+      // properties). Undefined here when never saved so _lmsFieldsHtml()'s
+      // own placeholder defaults show instead of a stale 0/empty value.
+      lmsTitleSize:
+        kind === 'lms' && definition.title_size
+          ? parseInt(definition.title_size, 10)
+          : undefined,
+      lmsTitleColor:
+        kind === 'lms' && definition.title_color
+          ? String(definition.title_color)
+          : undefined,
+      lmsArtistSize:
+        kind === 'lms' && definition.artist_size
+          ? parseInt(definition.artist_size, 10)
+          : undefined,
+      lmsArtistColor:
+        kind === 'lms' && definition.artist_color
+          ? String(definition.artist_color)
+          : undefined,
+      lmsStationSize:
+        kind === 'lms' && definition.station_size
+          ? parseInt(definition.station_size, 10)
+          : undefined,
+      lmsStationColor:
+        kind === 'lms' && definition.station_color
+          ? String(definition.station_color)
+          : undefined,
       // hide_data/last_update/switch are unused for a title/separator block,
       // but icon applies to every special kind.
       options: {
@@ -1270,6 +1305,21 @@ var DashticzDeviceEditor = (function () {
     player: true,
     refresh: true,
     hide_when_off: true,
+    // Title/Artist/Station text style (size/color) - managed by the
+    // dedicated Text style section of the Lyrion Music Server popup above,
+    // not the generic custom-fields grid. Without this, these six
+    // properties were double-carried: once correctly through the dedicated
+    // lmsTitleSize/etc. fields, and once more as stale generic custom-field
+    // rows (hydrated from CONFIG.js when the popup first opened and never
+    // touched again). configwriter.php's special-block-props builder
+    // unconditionally applies custom_fields last, so that stale copy
+    // silently overwrote every real edit on save (#217 follow-up).
+    title_size: true,
+    title_color: true,
+    artist_size: true,
+    artist_color: true,
+    station_size: true,
+    station_color: true,
     __proto__: true,
     prototype: true,
     constructor: true,
@@ -3415,6 +3465,69 @@ var DashticzDeviceEditor = (function () {
       '<span class="form-check-label">' +
       _esc(t.lms_hide_when_off) +
       '</span></label>';
+    html += '<h6 class="de-section-title">' + _esc(t.lms_text_style) + '</h6>';
+    html += '<div class="row g-2 mb-3">';
+    [
+      {
+        key: 'title',
+        label: t.lms_title_line,
+        size: values.titleSize || 16,
+        color: values.titleColor || '#ffffff',
+      },
+      {
+        key: 'artist',
+        label: t.lms_artist_line,
+        size: values.artistSize || 14,
+        color: values.artistColor || '#cccccc',
+      },
+      {
+        key: 'station',
+        label: t.lms_station_line,
+        size: values.stationSize || 14,
+        color: values.stationColor || '#999999',
+      },
+    ].forEach(function (line) {
+      html += '<div class="col-12 col-md-4">';
+      html +=
+        '<div class="small fw-semibold mb-1">' + _esc(line.label) + '</div>';
+      html += '<div class="d-flex gap-2 align-items-end">';
+      html +=
+        '<div class="flex-grow-1"><label class="form-label small mb-1" for="' +
+        prefix +
+        '-lms-' +
+        line.key +
+        '-size">' +
+        _esc(t.lms_font_size) +
+        '</label>';
+      html +=
+        '<input type="number" min="8" max="60" class="form-control form-control-sm" id="' +
+        prefix +
+        '-lms-' +
+        line.key +
+        '-size" value="' +
+        _esc(line.size) +
+        '"></div>';
+      html +=
+        '<div><label class="form-label small mb-1" for="' +
+        prefix +
+        '-lms-' +
+        line.key +
+        '-color">' +
+        _esc(t.lms_font_color) +
+        '</label>';
+      html +=
+        '<input type="color" class="form-control form-control-color" id="' +
+        prefix +
+        '-lms-' +
+        line.key +
+        '-color" value="' +
+        _esc(line.color) +
+        '" title="' +
+        _esc(t.lms_font_color) +
+        '"></div>';
+      html += '</div></div>';
+    });
+    html += '</div>';
     return html;
   }
 
@@ -3531,6 +3644,23 @@ var DashticzDeviceEditor = (function () {
       hideWhenOff: $popup
         .find('#' + prefix + '-lms-hide-when-off')
         .is(':checked'),
+      titleSize:
+        parseInt($popup.find('#' + prefix + '-lms-title-size').val(), 10) || 16,
+      titleColor: String(
+        $popup.find('#' + prefix + '-lms-title-color').val() || '#ffffff'
+      ),
+      artistSize:
+        parseInt($popup.find('#' + prefix + '-lms-artist-size').val(), 10) ||
+        14,
+      artistColor: String(
+        $popup.find('#' + prefix + '-lms-artist-color').val() || '#cccccc'
+      ),
+      stationSize:
+        parseInt($popup.find('#' + prefix + '-lms-station-size').val(), 10) ||
+        14,
+      stationColor: String(
+        $popup.find('#' + prefix + '-lms-station-color').val() || '#999999'
+      ),
     };
   }
 
@@ -3659,6 +3789,12 @@ var DashticzDeviceEditor = (function () {
         lmsPlayerLabel: lms.playerLabel,
         lmsRefresh: lms.refresh,
         lmsHideWhenOff: lms.hideWhenOff,
+        lmsTitleSize: lms.titleSize,
+        lmsTitleColor: lms.titleColor,
+        lmsArtistSize: lms.artistSize,
+        lmsArtistColor: lms.artistColor,
+        lmsStationSize: lms.stationSize,
+        lmsStationColor: lms.stationColor,
       };
       managedOrder.push(orderKey);
       window.bootstrap.Modal.getInstance(
@@ -6343,6 +6479,12 @@ var DashticzDeviceEditor = (function () {
         playerLabel: special.lmsPlayerLabel,
         refresh: special.lmsRefresh,
         hideWhenOff: special.lmsHideWhenOff,
+        titleSize: special.lmsTitleSize,
+        titleColor: special.lmsTitleColor,
+        artistSize: special.lmsArtistSize,
+        artistColor: special.lmsArtistColor,
+        stationSize: special.lmsStationSize,
+        stationColor: special.lmsStationColor,
       });
     }
     html +=
@@ -6911,6 +7053,12 @@ var DashticzDeviceEditor = (function () {
           special.lmsPlayerLabel = pendingLms.playerLabel;
           special.lmsRefresh = pendingLms.refresh;
           special.lmsHideWhenOff = pendingLms.hideWhenOff;
+          special.lmsTitleSize = pendingLms.titleSize;
+          special.lmsTitleColor = pendingLms.titleColor;
+          special.lmsArtistSize = pendingLms.artistSize;
+          special.lmsArtistColor = pendingLms.artistColor;
+          special.lmsStationSize = pendingLms.stationSize;
+          special.lmsStationColor = pendingLms.stationColor;
         }
         if (special.specialType === 'slidebutton') {
           storedRows.forEach(function (row) {
@@ -8012,6 +8160,12 @@ var DashticzDeviceEditor = (function () {
           specialEntry.player = special.lmsPlayer;
           specialEntry.refresh = special.lmsRefresh;
           specialEntry.hide_when_off = special.lmsHideWhenOff === true;
+          specialEntry.title_size = special.lmsTitleSize;
+          specialEntry.title_color = special.lmsTitleColor;
+          specialEntry.artist_size = special.lmsArtistSize;
+          specialEntry.artist_color = special.lmsArtistColor;
+          specialEntry.station_size = special.lmsStationSize;
+          specialEntry.station_color = special.lmsStationColor;
         }
         if (special.height) specialEntry.height = special.height;
         return specialEntry;

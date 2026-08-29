@@ -1864,6 +1864,24 @@ function configwriter_special_block_props($block)
         if (!empty($block['lms_hide_when_off'])) {
             $props['hide_when_off'] = true;
         }
+        // Title/Artist/Station text style: optional overrides, omitted when
+        // never set (js/deviceeditor.js's saveblocks.php validation already
+        // dropped anything malformed) so an untouched block's CONFIG.js entry
+        // stays unchanged and css/creative.css's theme defaults keep applying.
+        foreach (
+            [
+                'lms_title_size' => 'title_size',
+                'lms_title_color' => 'title_color',
+                'lms_artist_size' => 'artist_size',
+                'lms_artist_color' => 'artist_color',
+                'lms_station_size' => 'station_size',
+                'lms_station_color' => 'station_color',
+            ] as $blockKey => $propKey
+        ) {
+            if (isset($block[$blockKey]) && $block[$blockKey] !== null && $block[$blockKey] !== '') {
+                $props[$propKey] = $block[$blockKey];
+            }
+        }
         if (trim($title) !== '') {
             $props['title'] = $title;
         }
