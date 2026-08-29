@@ -6,6 +6,37 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.45.12 beta (29-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- Added a dedicated ``--font-device-title`` option to the Theme
+  settings menu, its custom.css save allowlist and the English/Dutch
+  labels. Device titles can now be adjusted independently from both
+  header/title-bar text (``--font-large``) and data/status text
+  (``--font-small``).
+
+* **Fixes**
+
+- Fixed the legacy column layout becoming unstable when a device title
+  wrapped under newer Chromium font metrics. The default and White
+  layouts retain the classic 12px device-title size, while Modern Dark
+  and both Liquid Glass themes retain their existing 18px appearance;
+  no block dimensions, packing rules or device functionality changed.
+
+* **Code**
+
+- Restored all per-block Chromium visual regression screenshots. Each
+  component screenshot now hides neighbouring blocks with
+  ``visibility:hidden`` while preserving their float positions, so one
+  overflowing neighbour cannot make unrelated component snapshots fail.
+- Added explicit browser regressions for independent title/data sizing
+  and overlapping legacy-column block rectangles, plus source tests for
+  the new theme variable wiring. CI now also runs on direct pushes to
+  ``beta``.
+
+
 v3.45.11 beta (28-8-2026)
 -------------------------
 

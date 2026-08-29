@@ -30,6 +30,7 @@
   --radius-selector: 4px;
   --font-small: 12px;
   --font-large: 24px;
+  --font-device-title: 12px;
   --font-update: 10px;
   --border-radius: 6px;
   --text-title: #fff;
@@ -7538,7 +7539,7 @@ canvas {
 
 .title {
   color: var(--text-title) !important;
-  font-size: var(--font-large) !important;
+  font-size: var(--font-device-title) !important;
 }
 
 .state,

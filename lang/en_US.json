@@ -964,9 +964,10 @@
         "--blocktitle": "Block title (--blocktitle)",
         "--text-title": "Text title (--text-title)",
         "--text-status": "Text status (--text-status)",
-        "--font-small": "Text data (--font-small)",
-        "--font-large": "Text title (--font-large)",
-        "--font-update": "Text update (--font-update)",
+        "--font-small": "Data text (--font-small)",
+        "--font-large": "Header/title bar text (--font-large)",
+        "--font-device-title": "Device title text (--font-device-title)",
+        "--font-update": "Update text (--font-update)",
         "--icon-font-size": "Icon (--icon-font-size)",
         "--icon-image-size": "Image (--icon-image-size)",
         "--icon-column-width": "Icon column width (--icon-column-width)"

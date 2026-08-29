@@ -5465,6 +5465,52 @@ test('openConfig() preserves already-edited special-block state across repeated 
   );
 });
 
+test('device title font size (--font-device-title) is independent and configurable from Theme settings', () => {
+  const settingsJs = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
+  const saveCustomCss = fs.readFileSync(
+    path.join(root, 'js/savecustomcss.php'),
+    'utf8'
+  );
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const themes = [
+    'themes/modern-dark/modern-dark.css',
+    'themes/liquid-glass-blue/liquid-glass-blue.css',
+    'themes/liquid-glass-grey/liquid-glass-grey.css',
+  ].map((file) => fs.readFileSync(path.join(root, file), 'utf8'));
+  const enLang = JSON.parse(
+    fs.readFileSync(path.join(root, 'lang/en_US.json'), 'utf8')
+  );
+  const nlLang = JSON.parse(
+    fs.readFileSync(path.join(root, 'lang/nl_NL.json'), 'utf8')
+  );
+
+  assert.match(
+    settingsJs,
+    /var _THEME_FONT_VARS = \[\s*\n\s*'--font-large',\s*\n\s*'--font-device-title',\s*\n\s*'--font-small',\s*\n\s*'--font-update',\s*\n\s*\];/
+  );
+  assert.match(saveCustomCss, /'--font-device-title'/);
+  assert.match(styles, /--font-device-title: 12px;/);
+  assert.match(
+    styles,
+    /\.title \{\s*\n\s*color: var\(--text-title\) !important;\s*\n\s*font-size: var\(--font-device-title\) !important;/
+  );
+  themes.forEach((theme) => {
+    assert.match(theme, /--font-device-title: 18px;/);
+    assert.match(
+      theme,
+      /\.title \{\s*\n\s*font-size: var\(--font-device-title, 18px\) !important;/
+    );
+  });
+  assert.equal(
+    enLang.settings.theme.vars['--font-device-title'],
+    'Device title text (--font-device-title)'
+  );
+  assert.equal(
+    nlLang.settings.theme.vars['--font-device-title'],
+    'Tekst device-titel (--font-device-title)'
+  );
+});
+
 test('icon column width (--icon-column-width) is configurable from the Theme settings menu', () => {
   const settingsJs = fs.readFileSync(path.join(root, 'js/settings.js'), 'utf8');
   const saveCustomCss = fs.readFileSync(
