@@ -1,0 +1,97 @@
+/* Lyrion Music Server interactive layout/controls.
+   Base LMS typography, artwork and icon-badge styling stays in
+   css/creative.css. This file only contains the layout and controls added
+   by the interactive LMS implementation from PR #240. */
+
+.lms-block-inner {
+  display: grid;
+  grid-template-columns: 100px minmax(0, 1fr);
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    'cover info'
+    'controls controls';
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.lms-cover {
+  grid-area: cover;
+  align-self: start;
+}
+
+.lms-info {
+  grid-area: info;
+}
+
+.lms-controls {
+  grid-area: controls;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 0;
+}
+
+.lms-controls:empty {
+  display: none;
+}
+
+.lms-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 2px;
+  border: none;
+  border-radius: var(--radius-selector, 4px);
+  background: var(--main-bg-dark);
+  color: var(--text-normal);
+  font-size: var(--font-small);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.lms-btn:hover {
+  background: var(--main-bg-dark-hover, var(--main-bg-dark));
+}
+
+.lms-btn:active {
+  transform: scale(0.94);
+}
+
+.lms-btn:focus-visible {
+  outline: 2px solid var(--button-active);
+  outline-offset: 1px;
+}
+
+.lms-btn-playpause {
+  width: 34px;
+  height: 34px;
+  font-size: calc(var(--font-small) + 4px);
+}
+
+.lms-btn-power.lms-btn-active {
+  background: var(--button-active);
+  color: var(--main-bg, #fff);
+}
+
+@media (max-width: 400px) {
+  .lms-block-inner {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .lms-btn {
+    width: 27px;
+    height: 27px;
+  }
+
+  .lms-btn-playpause {
+    width: 30px;
+    height: 30px;
+  }
+}
