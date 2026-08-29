@@ -43,8 +43,8 @@ test('Garbage icon and Kliko layout enhancements stay available', () => {
   );
   assert.match(
     helper,
-    /setProperty\('left', '100px', 'important'\)/,
-    'the Kliko image must remain shifted 100px to the right'
+    /setProperty\('left', '70px', 'important'\)/,
+    'the Kliko image must be shifted 70px to the right'
   );
   assert.match(
     helper,
@@ -73,7 +73,7 @@ test('Garbage icon and Kliko layout enhancements stay available', () => {
   );
   assert.match(
     index,
-    /<script src="js\/garbageconfig\.js\?t=3"><\/script>/,
+    /<script src="js\/garbageconfig\.js\?t=4"><\/script>/,
     'the updated Garbage helper must be loaded with a fresh cache key'
   );
 });

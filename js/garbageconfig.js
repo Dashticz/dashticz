@@ -6,7 +6,7 @@
  * - expose one per-widget Kliko scale percentage;
  * - keep the widget title left aligned;
  * - render the first garbage collection row in bold;
- * - move the Kliko image 100 px to the right.
+ * - move the Kliko image 70 px to the right.
  */
 (function () {
   'use strict';
@@ -217,7 +217,7 @@
       if (title) title.style.setProperty('text-align', 'left', 'important');
 
       image.style.setProperty('position', 'relative', 'important');
-      image.style.setProperty('left', '100px', 'important');
+      image.style.setProperty('left', '70px', 'important');
 
       var scale = positiveNumber(definition && definition[SCALE_FIELD]);
       if (scale) {
