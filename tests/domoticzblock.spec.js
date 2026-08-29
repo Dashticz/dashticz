@@ -11,32 +11,32 @@ const compareScreenshots =
 // tiny renderer-only changes do not make an otherwise correct PR fail.
 const screenshotOptions = { maxDiffPixelRatio: 0.015 };
 
-// #242: CI's pinned Chrome build renders a couple of ".multiline" blocks'
-// wrapped text (e.g. tc2's temperature/humidity/dewpoint line) with just
-// enough extra width to grow those tiles by a line, and the CSS float +
-// `display: contents` gap-filling layout (see css/creative.css's comment
-// above `[id^='block_']:not(.dle-item-wrapper) { display: contents; }`)
-// then visibly overlaps some tiles instead of cleanly reflowing them -
-// reproduced identically across independent CI runs, unrelated to any
-// specific code change (present on beta too). checkBlock()'s pixel
-// screenshot comparison is disabled until that layout issue is fixed and
-// the baselines are regenerated; its text/icon/image assertions are
-// unaffected and still run.
-const SKIP_UNSTABLE_LAYOUT_SCREENSHOTS = true;
+// Element screenshots are component tests. Hiding the other .mh blocks with
+// visibility keeps every float in its original place, but prevents content
+// painted outside a neighbouring block from contaminating the target image.
+// The separate geometry test below continues to validate the full layout.
+const isolatedScreenshotCss = `
+  body.dt-isolate-block-screenshot .mh:not(.dt-screenshot-target) {
+    visibility: hidden !important;
+  }
+`;
 
 test.describe('Basic testing', () => {
   test.beforeEach(async ({ page }) => {
     // Go to the starting url before each test.
     await page.goto('/?cfg=CONFIG.pw.js&folder=tests');
+    await page.addStyleTag({ content: isolatedScreenshotCss });
   });
+
   test('block tests', async ({ page }) => {
     // Expect a title "to contain" a substring.
     await expect(page).toHaveTitle(/Dashticz/);
     await page.waitForTimeout(1000);
     if (compareScreenshots) {
-      await expect(page.locator('.block_43_1')).toHaveScreenshot(
-        'bl_43_1.png',
-        screenshotOptions
+      await expectIsolatedScreenshot(
+        page,
+        page.locator('.block_43_1'),
+        'bl_43_1.png'
       );
     }
     await expect(page.locator('.block_43_1 .value')).toHaveText('700W');
@@ -130,6 +130,101 @@ test.describe('Basic testing', () => {
       'OTGW_Thermostat',
       '19,0°C'
     );
+  });
+
+  test('device title typography is independent from data and heading text', async ({
+    page,
+  }) => {
+    await page.waitForTimeout(1000);
+
+    const title = page.locator('[data-id="tc2"] .title');
+    const value = page.locator('[data-id="tc2"] .value');
+
+    await expect(title).toHaveCSS('font-size', '12px');
+    await expect(value).toHaveCSS('font-size', '12px');
+
+    // Header/title-bar and data controls must not resize a device title.
+    await page.evaluate(() => {
+      document.documentElement.style.setProperty('--font-large', '40px');
+      document.documentElement.style.setProperty('--font-small', '30px');
+    });
+    await expect(title).toHaveCSS('font-size', '12px');
+    await expect(value).toHaveCSS('font-size', '30px');
+
+    // The dedicated variable remains available for a theme/custom override.
+    await page.evaluate(() => {
+      document.documentElement.style.setProperty('--font-device-title', '14px');
+    });
+    await expect(title).toHaveCSS('font-size', '14px');
+  });
+
+  test('legacy column block boxes do not overlap', async ({ page }) => {
+    await page.waitForTimeout(1000);
+
+    const overlaps = await page
+      .locator('.screen .row [data-colindex] .mh[data-id]')
+      .evaluateAll((elements) => {
+        const columns = new Map();
+
+        for (const element of elements) {
+          const style = getComputedStyle(element);
+          const rect = element.getBoundingClientRect();
+          if (
+            style.display === 'none' ||
+            style.visibility === 'hidden' ||
+            rect.width <= 0 ||
+            rect.height <= 0
+          ) {
+            continue;
+          }
+
+          const column = element.closest('[data-colindex]');
+          const columnKey = column
+            ? column.getAttribute('data-colindex') || ''
+            : '';
+          const entries = columns.get(columnKey) || [];
+          entries.push({
+            id: element.getAttribute('data-id') || element.className,
+            left: rect.left,
+            right: rect.right,
+            top: rect.top,
+            bottom: rect.bottom,
+          });
+          columns.set(columnKey, entries);
+        }
+
+        const result = [];
+        for (const entries of columns.values()) {
+          for (let leftIndex = 0; leftIndex < entries.length; leftIndex += 1) {
+            for (
+              let rightIndex = leftIndex + 1;
+              rightIndex < entries.length;
+              rightIndex += 1
+            ) {
+              const left = entries[leftIndex];
+              const right = entries[rightIndex];
+              const overlapWidth =
+                Math.min(left.right, right.right) -
+                Math.max(left.left, right.left);
+              const overlapHeight =
+                Math.min(left.bottom, right.bottom) -
+                Math.max(left.top, right.top);
+
+              // Ignore sub-pixel rounding at a shared edge; a real tile
+              // overlap is larger than one CSS pixel in both directions.
+              if (overlapWidth > 1 && overlapHeight > 1) {
+                result.push(
+                  `${left.id} overlaps ${right.id} ` +
+                    `(${Math.round(overlapWidth)}x${Math.round(overlapHeight)}px)`
+                );
+              }
+            }
+          }
+        }
+        return result;
+      });
+
+    expect(overlaps).toEqual([]);
   });
 
   test('hideimageonempty block option', async ({ page }) => {
@@ -242,11 +337,31 @@ test.describe('Basic testing', () => {
   });
 });
 
+async function expectIsolatedScreenshot(page, locator, fileName) {
+  await locator.evaluate((element) => {
+    element.classList.add('dt-screenshot-target');
+  });
+  await page.evaluate(() => {
+    document.body.classList.add('dt-isolate-block-screenshot');
+  });
+
+  try {
+    await expect.soft(locator).toHaveScreenshot(fileName, screenshotOptions);
+  } finally {
+    await page.evaluate(() => {
+      document.body.classList.remove('dt-isolate-block-screenshot');
+      document
+        .querySelectorAll('.dt-screenshot-target')
+        .forEach((element) => element.classList.remove('dt-screenshot-target'));
+    });
+  }
+}
+
 async function checkBlock(page, key, icon, image, title, value) {
   var fileName = 'bl_' + key + '.png';
   const locator = page.locator('css=[data-id="' + key + '"]');
-  if (compareScreenshots && !SKIP_UNSTABLE_LAYOUT_SCREENSHOTS) {
-    await expect.soft(locator).toHaveScreenshot(fileName, screenshotOptions);
+  if (compareScreenshots) {
+    await expectIsolatedScreenshot(page, locator, fileName);
   }
   typeof value !== 'undefined' &&
     (await expect.soft(locator.locator('.value')).toHaveText(value));

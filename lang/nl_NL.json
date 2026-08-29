@@ -851,9 +851,10 @@
         "--blocktitle": "Blok titel (--blocktitle)",
         "--text-title": "Tekst titel (--text-title)",
         "--text-status": "Tekst status (--text-status)",
-        "--font-small": "Tekst Data (--font-small)",
-        "--font-large": "Tekst Titel (--font-large)",
-        "--font-update": "Tekst Update (--font-update)",
+        "--font-small": "Tekst data (--font-small)",
+        "--font-large": "Tekst kop/titelbalk (--font-large)",
+        "--font-device-title": "Tekst device-titel (--font-device-title)",
+        "--font-update": "Tekst update (--font-update)",
         "--icon-font-size": "Icoon (--icon-font-size)",
         "--icon-image-size": "Afbeelding (--icon-image-size)",
         "--icon-column-width": "Icoon kolombreedte (--icon-column-width)"

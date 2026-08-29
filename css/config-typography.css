@@ -1,20 +1,22 @@
-/* ==========================================================================
+/* ========================================================================== 
    Configuration / editor UI typography
-   ==========================================================================
+   ========================================================================== 
    Centralized typography for Dashticz's configuration and editor dialogs
    (Settings, Device Config, Widget Config, Screen/Layout Editor, and every
    Add Device/Widget/Group/HTML/iFrame dialog). This file is intentionally
-   separate from css/creative.css (which stays untouched by design - it is
-   scheduled for its own typography refactor later) and is loaded by
-   js/main.js immediately after creative.css so it can win the cascade for
-   any rule that shares the same specificity.
+   separate from css/creative.css and is loaded by js/main.js immediately
+   after creative.css so narrowly-scoped compatibility rules can correct the
+   base stylesheet without changing theme-specific styling loaded afterwards.
 
-   Normal dashboard block typography is not affected: every rule below is
-   scoped to the known config/editor dialog roots, or targets a class name
-   that only ever appears inside those dialogs.
+   Normal dashboard typography is unaffected except for the dedicated default
+   device-title rule below. It restores the classic 12px title in the default
+   and White themes while keeping device titles independent from both data
+   text and the larger heading/miniclock size. Themes loaded later keep their
+   own .title rule and therefore remain visually unchanged.
    ========================================================================== */
 
 :root {
+  --font-device-title: 12px;
   --dt-config-font-family:
     system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
     sans-serif;
@@ -23,6 +25,14 @@
   --dt-config-font-body: 14px;
   --dt-config-font-label: 13px;
   --dt-config-font-small: 12px;
+}
+
+/* Device rows render their name as a direct .title child of .col-data.
+   :where() keeps this selector at the same specificity as the existing
+   theme .title rules: it wins over creative.css because this file loads
+   afterwards, while Modern Dark/Liquid Glass still win when loaded later. */
+:where(.mh .col-data) > .title {
+  font-size: var(--font-device-title) !important;
 }
 
 /* Every config/editor dialog root. Layout Editor has no modal of its own
