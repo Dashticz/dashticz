@@ -1,7 +1,52 @@
 /* Lyrion Music Server interactive layout/controls.
-   Base LMS typography, artwork and icon-badge styling stays in
-   css/creative.css. This file only contains the layout and controls added
-   by the interactive LMS implementation from PR #240. */
+   Base LMS typography and artwork styling stays in css/creative.css. This
+   file contains the layout/controls from the interactive LMS implementation
+   and the LMS-specific display-option compatibility rules. */
+
+/* Issue #217: Device Config's Icon option must behave like it does for other
+   Dashticz blocks. creative.css historically hides LMS's generic .col-icon
+   and lms.js mirrors the configured icon as a badge on the artwork. Restore
+   the normal icon column and keep it in its own flex slot, above artwork that
+   may overlap visually in compact layouts. */
+.lms-block > .col-icon {
+  display: flex !important;
+  position: relative;
+  z-index: 20;
+  flex: 0 0 var(--icon-column-width, 45px);
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* Font Awesome icons and custom images use the same Device Config option.
+   Some themes style the generic icon through inherited text properties;
+   make the LMS Font Awesome glyph explicit so it cannot disappear when the
+   album artwork is present. */
+.lms-block > .col-icon > em.icon {
+  display: inline-block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  color: var(--text-normal, #fff) !important;
+  -webkit-text-fill-color: currentColor !important;
+  line-height: 1;
+}
+
+.lms-block > .col-icon > img.icon {
+  display: block !important;
+  position: relative;
+  z-index: 20;
+}
+
+/* The block icon is now the regular Dashticz icon column. Do not duplicate it
+   as the legacy badge inside the album cover. */
+.lms-block .lms-cover-icon {
+  display: none !important;
+}
+
+/* Device Config -> Player controls. Controls stay enabled by default for
+   backwards compatibility; lmsconfig.js adds this class only when disabled. */
+.lms-block.lms-player-controls-hidden .lms-controls {
+  display: none !important;
+}
 
 .lms-block-inner {
   display: grid;
