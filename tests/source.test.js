@@ -4983,7 +4983,7 @@ test('Lyrion Music Server (LMS) block is registered, dispatched and wired throug
     1
   );
   assert.match(lms, /\['status', '-', 1, STATUS_TAGS\]/);
-  assert.match(lms, /STATUS_TAGS = 'tags:aclK'/);
+  assert.match(lms, /STATUS_TAGS = 'tags:aclK[N]?'/);
   // Automatic refresh reuses Dashticz's own per-block polling (me.block.refresh
   // + special.refresh, wired centrally in js/dashticz.js's _mountSpecialBlock,
   // including cleanup via removeBlock's clearInterval) instead of a bespoke

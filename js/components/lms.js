@@ -65,7 +65,7 @@ var DT_lms_api = {
   },
 };
 
-var STATUS_TAGS = 'tags:aclK'; // artist, album, coverid, artwork_url
+var STATUS_TAGS = 'tags:aclKN'; // (a)artist, (l)album, (c)coverid, (K)artwork_url, (N)remote_title
 
 // Shared request scheduler. It owns no timer: Dashticz continues to call each
 // block's refresh() at block.refresh seconds. The short cache only coalesces
@@ -239,6 +239,8 @@ var DT_lms_scheduler = {
     title_color: '--lms-title-color',
     artist_size: '--lms-artist-font-size',
     artist_color: '--lms-artist-color',
+    album_size: '--lms-station-font-size',
+    album_color: '--lms-station-color',
     station_size: '--lms-station-font-size',
     station_color: '--lms-station-color',
   };
@@ -331,7 +333,7 @@ var DT_lms_scheduler = {
     }
 
     if (remote) {
-      meta.station = currentTitle;
+      meta.station = remoteMeta.remote_title || currentTitle;
       meta.artist = remoteMeta.artist || '';
       meta.title = remoteMeta.title || (meta.station ? '' : currentTitle);
       meta.album = remoteMeta.album || '';
@@ -544,6 +546,9 @@ var DT_lms_scheduler = {
       case 'playpause':
         _sendCommand(me, meta.state === 'play' ? ['pause'] : ['play']);
         break;
+      case 'stop':
+        _sendCommand(me, ['stop']);
+        break;
       case 'next':
         _sendCommand(me, ['playlist', 'index', '+1']);
         break;
@@ -559,13 +564,42 @@ var DT_lms_scheduler = {
     }
   }
 
+  var LONG_PRESS_MS = 600;
+
   function _bindControls(me) {
     if (me.lmsControlsBound) return;
     me.lmsControlsBound = true;
-    me.$mountPoint.find('.dt_state').on('click', '.lms-btn', function (event) {
+
+    var $state = me.$mountPoint.find('.dt_state');
+    var longPressTimer = null;
+    var longPressFired = false;
+
+    $state.on('pointerdown', '.lms-btn-playpause', function () {
+      longPressFired = false;
+      clearTimeout(longPressTimer);
+      longPressTimer = setTimeout(function () {
+        longPressFired = true;
+        _handleControlClick(me, 'stop');
+      }, LONG_PRESS_MS);
+    });
+
+    $state.on(
+      'pointerup pointerleave pointercancel',
+      '.lms-btn-playpause',
+      function () {
+        clearTimeout(longPressTimer);
+      }
+    );
+
+    $state.on('click', '.lms-btn', function (event) {
       event.preventDefault();
       event.stopPropagation();
-      _handleControlClick(me, $(this).data('action'));
+      var action = $(this).data('action');
+      if (action === 'playpause' && longPressFired) {
+        longPressFired = false;
+        return; // déjà traité par le long press, on ignore le click playpause
+      }
+      _handleControlClick(me, action);
     });
   }
 
