@@ -1,3 +1,4 @@
+/* global language */
 /* Garbage Widget Config enhancement.
  *
  * Keeps Garbage-specific editor/runtime behaviour isolated from the generic
@@ -20,6 +21,18 @@
     row2Color: 'row2_color',
   };
   var POLL_MS = 500;
+
+  function garbageUiText(key, fallback) {
+    if (
+      typeof language !== 'undefined' &&
+      language.garbage &&
+      language.garbage.ui &&
+      language.garbage.ui[key]
+    ) {
+      return language.garbage.ui[key];
+    }
+    return fallback;
+  }
 
   function normaliseField(value) {
     return String(value || '')
@@ -155,7 +168,7 @@
     var sizeLabel = document.createElement('label');
     sizeLabel.className = 'form-label small mb-1';
     sizeLabel.setAttribute('for', options.sizeId);
-    sizeLabel.textContent = 'Font size';
+    sizeLabel.textContent = garbageUiText('font_size', 'Font size');
     var sizeInput = document.createElement('input');
     sizeInput.type = 'number';
     sizeInput.min = '8';
@@ -171,14 +184,14 @@
     var colorLabel = document.createElement('label');
     colorLabel.className = 'form-label small mb-1';
     colorLabel.setAttribute('for', options.colorId);
-    colorLabel.textContent = 'Font color';
+    colorLabel.textContent = garbageUiText('font_color', 'Font color');
     var colorInput = document.createElement('input');
     colorInput.type = 'color';
     colorInput.className =
       'form-control form-control-color garbage-row-color-input';
     colorInput.id = options.colorId;
     colorInput.value = options.colorValue;
-    colorInput.title = 'Font color';
+    colorInput.title = garbageUiText('font_color', 'Font color');
     colorWrap.appendChild(colorLabel);
     colorWrap.appendChild(colorInput);
 
@@ -194,14 +207,14 @@
 
     var heading = document.createElement('h6');
     heading.className = 'de-section-title';
-    heading.textContent = 'Text styling';
+    heading.textContent = garbageUiText('text_styling', 'Text styling');
     section.appendChild(heading);
 
     var row = document.createElement('div');
     row.className = 'row g-2 mb-3';
     row.appendChild(
       createTextStyleColumn({
-        title: 'First pickup row',
+        title: garbageUiText('first_pickup_row', 'First pickup row'),
         sizeId: 'we-cfg-garbage-row1-size',
         sizeValue: values.row1Size,
         colorId: 'we-cfg-garbage-row1-color',
@@ -210,7 +223,7 @@
     );
     row.appendChild(
       createTextStyleColumn({
-        title: 'Pickup rows 2+',
+        title: garbageUiText('pickup_rows_other', 'Pickup rows 2+'),
         sizeId: 'we-cfg-garbage-row2-size',
         sizeValue: values.row2Size,
         colorId: 'we-cfg-garbage-row2-color',
@@ -228,7 +241,7 @@
     var label = document.createElement('label');
     label.className = 'form-label we-field-label';
     label.setAttribute('for', 'we-cfg-kliko-scale');
-    label.textContent = 'Kliko scale (%)';
+    label.textContent = garbageUiText('kliko_scale', 'Bin scale (%)');
 
     var input = document.createElement('input');
     input.type = 'number';
@@ -241,8 +254,10 @@
 
     var help = document.createElement('div');
     help.className = 'form-text';
-    help.textContent =
-      '100 = normal size, 80 = 80%, 125 = 125%. Leave empty to use the theme size.';
+    help.textContent = garbageUiText(
+      'kliko_scale_help',
+      '100 = normal size, 80 = 80%, 125 = 125%. Leave empty to use the theme size.'
+    );
 
     group.appendChild(label);
     group.appendChild(input);
@@ -336,7 +351,7 @@
     var scaleHeading = document.createElement('h6');
     scaleHeading.className = 'mt-3 mb-2';
     scaleHeading.style.cssText = 'font-size:14px;font-weight:600;color:#495057';
-    scaleHeading.textContent = 'Kliko image';
+    scaleHeading.textContent = garbageUiText('kliko_image', 'Bin image');
     scaleWrapper.appendChild(scaleHeading);
     scaleWrapper.appendChild(createScaleField(scaleValue));
 

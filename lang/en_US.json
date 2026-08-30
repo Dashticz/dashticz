@@ -68,6 +68,16 @@
       "textiel": "Textiles",
       "sorti": "Sorted waste",
       "duo": "Duo bin"
+    },
+    "ui": {
+      "text_styling": "Text styling",
+      "first_pickup_row": "First pickup row",
+      "pickup_rows_other": "Pickup rows 2+",
+      "font_size": "Font size",
+      "font_color": "Font color",
+      "kliko_image": "Bin image",
+      "kliko_scale": "Bin scale (%)",
+      "kliko_scale_help": "100 = normal size, 80 = 80%, 125 = 125%. Leave empty to use the theme size."
     }
   },
   "misc": {
