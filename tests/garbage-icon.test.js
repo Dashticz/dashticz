@@ -58,8 +58,8 @@ test('Garbage icon and Kliko layout enhancements stay available', () => {
   );
   assert.match(
     helper,
-    /rows\[0\]\.style\.setProperty\('font-weight', '700', 'important'\)/,
-    'only the first collection row must be made bold'
+    /garbage-row-first\{font-weight:700!important;/,
+    'the first collection row must stay bold'
   );
   assert.match(
     garbage,
@@ -73,7 +73,7 @@ test('Garbage icon and Kliko layout enhancements stay available', () => {
   );
   assert.match(
     index,
-    /<script src="js\/garbageconfig\.js\?t=4"><\/script>/,
+    /<script src="js\/garbageconfig\.js\?t=6"><\/script>/,
     'the updated Garbage helper must be loaded with a fresh cache key'
   );
 });

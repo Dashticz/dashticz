@@ -1,0 +1,211 @@
+DASHTICZ - HERBRUIKBARE AI-OPDRACHT VOOR WIDGET TEKSTOPMAAK
+============================================================
+
+DOEL
+----
+Gebruik deze tekst als basis wanneer een andere Dashticz-widget dezelfde
+per-widget tekstinstellingen moet krijgen als de LMS-widget.
+
+Vervang de teksten tussen <...> voordat je de opdracht aan een AI geeft.
+
+
+KOPIEERBARE AI-OPDRACHT
+-----------------------
+
+# CONTEXT
+Ik werk aan mijn Dashticz fork en wil de widget <WIDGETNAAM> uitbreiden.
+Werk uitsluitend in branch <BRANCHNAAM>. Pas beta/master niet direct aan.
+
+De gewenste werking moet hetzelfde principe volgen als de werkende
+Lyrion Music Server (LMS) tekstinstellingen in Dashticz.
+
+# DOEL
+Voeg in de Device/Widget Config van <WIDGETNAAM> instellingen toe voor:
+
+- <TEKSTREGEL 1>: lettergrootte + tekstkleur
+- <TEKSTREGEL 2 OF GROEP>: lettergrootte + tekstkleur
+
+De instellingen moeten per widget/block worden opgeslagen en moeten de
+instellingen van het actieve theme overschrijven.
+
+# UI / LAYOUT
+Gebruik dezelfde compacte opmaak als LMS:
+
+- aparte sectie "Text styling" / "Tekstopmaak";
+- Bootstrap row: row g-2 mb-3;
+- per tekstgroep een col-12 col-md-*;
+- label van de tekstgroep bovenaan;
+- lettergrootte als input type="number" met form-control form-control-sm;
+- kleur als input type="color" met form-control form-control-color;
+- passende min/max-waarden voor de font size.
+
+De instellingen mogen NIET als dubbele handmatige Custom fields zichtbaar
+blijven wanneer ze via de normale UI worden beheerd.
+
+# OPSLAG
+Sla de waarden op bij het individuele block, bijvoorbeeld:
+
+blocks['<BLOCK_KEY>'] = {
+    <ROW1_SIZE_PROPERTY>: 18,
+    <ROW1_COLOR_PROPERTY>: '#ffffff',
+    <ROW2_SIZE_PROPERTY>: 14,
+    <ROW2_COLOR_PROPERTY>: '#cccccc'
+};
+
+Gebruik dus geen nieuwe globale dashboardsettings als primaire opslag.
+Verschillende instanties van dezelfde widget moeten verschillende waarden
+kunnen hebben.
+
+Bestaande globale/legacy settings mogen tijdelijk alleen als migratie- of
+fallbackwaarde worden gelezen, maar nieuwe wijzigingen vanuit de popup moeten
+per block worden opgeslagen.
+
+# RUNTIME / CSS
+Gebruik hetzelfde principe als LMS:
+
+block property
+    -> lokale CSS custom property
+    -> component/widget styling
+
+Voorbeeld:
+
+--<widget>-row1-font-size
+--<widget>-row1-color
+--<widget>-row2-font-size
+--<widget>-row2-color
+
+Wanneer een expliciete widgetinstelling aanwezig is, moet die altijd winnen
+van theme-CSS, ook als een theme !important gebruikt. Gebruik hiervoor een
+gerichte override-class en !important, niet een brede globale selector.
+
+Wanneer GEEN expliciete widgetinstelling aanwezig is, moet bestaande theme-
+of componentstyling actief blijven. Verwijder dus niet onbedoeld dynamische
+inline kleuren of andere bestaande styling.
+
+# SEMANTISCHE CLASSES
+Geef de te stylen regels duidelijke classes, bijvoorbeeld:
+
+.<widget>-row-first
+.<widget>-row-other
+
+Baseer "eerste regel" op de werkelijke DOM/render-volgorde, niet op een
+speciale statusclass zoals today/tomorrow. Hierdoor blijft regel 1 altijd de
+eerstvolgende regel.
+
+# COMPATIBILITEIT
+Behoud alle bestaande functionaliteit van de widget:
+
+- bestaande icon/image-functionaliteit;
+- bestaande dynamische kleuren;
+- bestaande layouts;
+- bestaande theme-opmaak wanneer er geen override is;
+- bestaande block properties;
+- bestaande editor/save-flow.
+
+Verwijder of verander geen losstaande functionaliteit tenzij dat noodzakelijk
+is voor deze opdracht.
+
+# VALIDATIE
+Font size:
+- alleen geldige positieve numerieke waarden;
+- gebruik een realistische min/max, bijvoorbeeld 8..60 px.
+
+Color:
+- valide hex-kleur via input type="color";
+- sla een normale #RRGGBB string op.
+
+# CACHE
+Als een rechtstreeks geladen JS/CSS-bestand een eigen ?t= of ?v= cache-key
+heeft, verhoog deze bij de wijziging zodat de browser de nieuwe versie laadt.
+
+# TESTS
+Voeg regressietests toe die minimaal controleren:
+
+1. de nieuwe block properties worden gebruikt;
+2. de waarden worden per widget opgeslagen;
+3. de UI dezelfde LMS-achtige layout heeft;
+4. regel 1 en regels >1 apart worden gestyled;
+5. expliciete instellingen theme-CSS overschrijven;
+6. bestaande icon/image/dynamische kleurfunctionaliteit behouden blijft;
+7. cache-key is bijgewerkt indien nodig.
+
+# VERPLICHTE FORMAT- EN CI-CONTROLE
+De opdracht is NIET klaar en de branch mag NIET als merge-ready worden gemeld
+voordat de repository-formatcontrole groen is.
+
+Voer na iedere codewijziging en in ieder geval direct voor commit/push/PR uit:
+
+npm run format:check
+
+Als deze controle faalt:
+
+npm run format
+npm run format:check
+
+Controleer daarna de formatteringsdiff en commit de geformatteerde bestanden.
+Sla deze stap nooit over en stel hem niet uit tot na de merge.
+
+Voer daarna minimaal uit:
+
+npm test
+npm run build
+
+De aanbevolen volledige controlevolgorde is dus:
+
+npm run format:check
+npm test
+npm run build
+
+Als de AI via een GitHub API/connector werkt en de npm-toolchain lokaal niet
+kan uitvoeren, moet de AI de Node CI-run controleren. De taak mag pas als
+klaar/merge-ready worden gemeld als de stap "npm run format:check" in Node CI
+groen is. Bij een formatteringsfout moet de AI deze eerst herstellen en een
+nieuwe CI-run controleren.
+
+# GIT
+- Werk uitsluitend op <BRANCHNAAM>.
+- Controleer de branch-head voor je begint.
+- Maak een echte commit.
+- Push/update de branch.
+- Controleer daarna opnieuw de remote branch-head.
+- Controleer na de push de Node CI-status en in het bijzonder format:check.
+- Meld pas "gepusht en gereed" wanneer de nieuwe commit-SHA via GitHub is
+  bevestigd EN npm run format:check/Node CI groen is.
+- Maak geen PR tenzij ik dat expliciet vraag.
+
+# ACCEPTATIECRITERIA
+De opdracht is pas klaar wanneer:
+
+- de UI zichtbaar en bruikbaar is;
+- wijzigingen na Save + reload blijven bestaan;
+- verschillende widgetinstanties eigen waarden kunnen hebben;
+- de gekozen waarden zichtbaar het theme overschrijven;
+- overige widgetfunctionaliteit niet is veranderd;
+- npm run format:check slaagt;
+- tests en build slagen;
+- de remote branch daadwerkelijk de nieuwe commit bevat;
+- de Node CI geen format failure meer meldt.
+
+
+CONTROLELIJST VOOR DE AI
+------------------------
+
+[ ] Juiste branch gecontroleerd
+[ ] Bestaande LMS-implementatie bekeken
+[ ] Bestaande widget-save-flow bekeken
+[ ] Geen onnodige globale settings toegevoegd
+[ ] Per-block properties gebruikt
+[ ] UI gelijkwaardig aan LMS-layout
+[ ] Theme override alleen bij expliciete widgetinstelling
+[ ] Bestaande dynamische styling intact
+[ ] Semantische row/classes gebruikt
+[ ] Regressietests toegevoegd/aangepast
+[ ] npm run format:check uitgevoerd en GROEN
+[ ] Bij format failure: npm run format uitgevoerd en diff gecontroleerd
+[ ] Unit tests gecontroleerd
+[ ] Build gecontroleerd
+[ ] Node CI gecontroleerd indien lokaal npm uitvoeren niet mogelijk was
+[ ] Cache-bust aangepast indien nodig
+[ ] Commit gemaakt
+[ ] Remote branch-head na push opnieuw gecontroleerd
+[ ] Branch pas merge-ready gemeld nadat format/check groen is

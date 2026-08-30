@@ -2596,6 +2596,25 @@ var DashticzWidgetEditor = (function () {
         ' value="' +
         _esc(String(value !== null && value !== undefined ? value : '')) +
         '">';
+    } else if (type === 'color') {
+      // Same plain swatch as Automation's Tekstkleur field and the LMS
+      // popup's title/artist/station color pickers (js/deviceeditor.js's
+      // _lmsFieldsHtml()) - a direct <input type="color"> with data-cfg-key,
+      // collected the same generic way as every other field type here.
+      var colorValue =
+        value && /^#[0-9a-f]{3,8}$/i.test(String(value))
+          ? String(value)
+          : opts && opts.default
+            ? opts.default
+            : '#000000';
+      html +=
+        '<input type="color" class="form-control form-control-color we-widget-field" id="' +
+        _esc(id) +
+        '" data-cfg-key="' +
+        _esc(key) +
+        '" value="' +
+        colorValue +
+        '">';
     }
     if (help) {
       html += '<div class="form-text">' + _esc(help) + '</div>';
@@ -3413,7 +3432,7 @@ var DashticzWidgetEditor = (function () {
         null,
         lg.garbage_calendar_id_help || ''
       );
-      fields += _cfgHeading(_t('display', 'Display'));
+      fields += '<div class="we-switch-grid">';
       fields += _cfgField(
         'garbage_hideicon',
         lg.garbage_hideicon || 'Hide icon',
@@ -3433,34 +3452,6 @@ var DashticzWidgetEditor = (function () {
         gcfg.garbage_use_colors
       );
       fields += _cfgField(
-        'garbage_row1_fontsize',
-        lg.garbage_row1_fontsize || 'Row 1 font size (px)',
-        'text',
-        gcfg.garbage_row1_fontsize
-      );
-      fields += _cfgField(
-        'garbage_row1_color',
-        lg.garbage_row1_color || 'Row 1 color',
-        'text',
-        gcfg.garbage_row1_color,
-        null,
-        lg.garbage_row1_color_help || 'Hex color code, e.g. #ff0000'
-      );
-      fields += _cfgField(
-        'garbage_row2_fontsize',
-        lg.garbage_row2_fontsize || 'Row 2+ font size (px)',
-        'text',
-        gcfg.garbage_row2_fontsize
-      );
-      fields += _cfgField(
-        'garbage_row2_color',
-        lg.garbage_row2_color || 'Row 2+ color',
-        'text',
-        gcfg.garbage_row2_color,
-        null,
-        lg.garbage_row2_color_help || 'Hex color code, e.g. #ff0000'
-      );
-      fields += _cfgField(
         'garbage_use_names',
         lg.garbage_use_names || 'Use names',
         'checkbox',
@@ -3471,6 +3462,33 @@ var DashticzWidgetEditor = (function () {
         lg.garbage_use_cors_prefix || 'Use CORS prefix',
         'checkbox',
         gcfg.garbage_use_cors_prefix
+      );
+      fields += '</div>';
+      fields += _cfgField(
+        'garbage_row1_fontsize',
+        lg.garbage_row1_fontsize || 'Row 1 font size (px)',
+        'number',
+        gcfg.garbage_row1_fontsize,
+        { min: 8, max: 60, step: 1 }
+      );
+      fields += _cfgField(
+        'garbage_row1_color',
+        lg.garbage_row1_color || 'Row 1 color',
+        'color',
+        gcfg.garbage_row1_color
+      );
+      fields += _cfgField(
+        'garbage_row2_fontsize',
+        lg.garbage_row2_fontsize || 'Row 2+ font size (px)',
+        'number',
+        gcfg.garbage_row2_fontsize,
+        { min: 8, max: 60, step: 1 }
+      );
+      fields += _cfgField(
+        'garbage_row2_color',
+        lg.garbage_row2_color || 'Row 2+ color',
+        'color',
+        gcfg.garbage_row2_color
       );
     } else if (item.id === 'sonarr') {
       var scfg = widgetConfigs.sonarr || {};

@@ -16,6 +16,27 @@ Instructions for AI coding agents working in this repository.
 - `origin` — the maintainer's own fork.
 - `upstream` — the official org repo, which the maintainer has push access to. `beta` tracks `upstream/beta`.
 
+## Required verification before push, PR, or merge-ready status
+
+Formatting is a required gate, not an optional cleanup step. Before any code change is pushed, presented as ready for a pull request, or described as ready to merge, run:
+
+    npm run format:check
+
+If it fails, run the repository formatter, review the resulting diff, and then run the check again:
+
+    npm run format
+    npm run format:check
+
+Do not bypass, disable, or postpone this check. A branch is not ready while `npm run format:check` fails.
+
+For JavaScript/CSS/build-related changes, the normal local verification sequence is:
+
+    npm run format:check
+    npm test
+    npm run build
+
+If the agent is modifying GitHub through an API/connector and cannot execute the local npm toolchain, it must not claim the branch is ready until the Node CI job has run and the `npm run format:check` step is green. If CI reports a formatting failure, fix it before asking for or performing a merge.
+
 ## Testing external fork branches before merging into `beta`
 
 Contributors' forks get evaluated via a throwaway integration branch before touching `beta` itself, so conflicts or regressions surface safely:
@@ -24,7 +45,7 @@ Contributors' forks get evaluated via a throwaway integration branch before touc
 2. `git remote add <name> <fork-url>` and fetch it.
 3. Inspect the actual commit(s)/diff before merging. A fork's raw diff against current `beta` can look enormous if its base is stale — check `git log --oneline beta..<remote>/<branch>` and `git show --stat` per commit to see what it *actually* changes, rather than trusting the full diffstat.
 4. For small, self-contained changes, a quick read-through is enough. For large multi-commit forks (e.g. a full dependency/build-system modernization), or when non-conflicting deletions could silently drop content (e.g. a `.gitignore` line removed by one side reappearing generated/personal files), flag it and ask before proceeding rather than guessing.
-5. After merging, sanity-check with `npm install`, `npm run build`, and `npm test`.
+5. After merging, sanity-check with `npm run format:check`, `npm install`, `npm run build`, and `npm test`.
 6. Once approved, merge the integration branch into `beta` and do the release bookkeeping below as part of that same change.
 
 ## Release bookkeeping — at most once a day, not per commit
@@ -48,6 +69,8 @@ When a bump does apply, it must include:
 - Add a corresponding dated entry under "Recent changes" in `docs/releasenotes/releasenotes.rst`, following the existing per-version header + `Enhancements`/`Fixes`/`Code` section style.
 
 ## Pushing
+
+Before pushing, the required verification section above must be satisfied, especially `npm run format:check`.
 
 Pushing requires the `gh` CLI authenticated as the maintainer, or a git credential helper for `https://github.com`. If neither is configured in the current environment, don't retry `git push` expecting it to work — leave the push to the user (e.g. via their editor's Source Control panel or their own terminal).
 
