@@ -67,7 +67,7 @@
       "garbage_maxitems": "Antal hämtningar som ska visas",
       "garbage_street": "Gata",
       "garbage_use_colors": "Textfärger",
-      "garbage_use_cors_prefix": "Använda Cors Prefix (Standardinställningen är på)",
+      "garbage_use_cors_prefix": "Använda Cors Prefix",
       "garbage_use_names": "Anpassade namn",
       "garbage_use_prefix_help": "Prefixet cors orsakar ibland fel",
       "garbage_width": "Bredd på block (1-12)",

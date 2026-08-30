@@ -522,7 +522,7 @@
       "garbage_maxdays_help": "Nombre maximal de jours à rechercher. Valeur par défaut : 32.",
       "garbage_street": "Rue",
       "garbage_use_colors": "Textes en couleurs",
-      "garbage_use_cors_prefix": "Utiliser le préfixe CORS (activé par défaut)",
+      "garbage_use_cors_prefix": "Utiliser le préfixe CORS",
       "garbage_use_names": "Noms personnalisés",
       "garbage_use_prefix_help": "Le préfixe CORS peut parfois causer des erreurs",
       "garbage_width": "Largeur du bloc (1-12)",

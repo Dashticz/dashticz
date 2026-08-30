@@ -630,7 +630,7 @@
       "garbage_row2_fontsize": "Lettergrootte overige regels (px)",
       "garbage_street": "Straat",
       "garbage_use_colors": "Tekstkleuren",
-      "garbage_use_cors_prefix": "Gebruik Cors Prefix (standaard is aan)",
+      "garbage_use_cors_prefix": "Gebruik Cors Prefix",
       "garbage_use_names": "Aangepaste namen",
       "garbage_use_prefix_help": "De Cors Prefix kan soms fouten veroorzaken.",
       "garbage_width": "Breedte van het blok (1-12)",

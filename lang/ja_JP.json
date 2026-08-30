@@ -67,7 +67,7 @@
       "garbage_maxitems": "Amount of pickups to show",
       "garbage_street": "Street",
       "garbage_use_colors": "テキスト色",
-      "garbage_use_cors_prefix": "Use CORS Prefix (Default is on)",
+      "garbage_use_cors_prefix": "Use CORS Prefix",
       "garbage_use_names": "カスタム名",
       "garbage_use_prefix_help": "The CORS prefix sometimes causes errors",
       "garbage_width": "ブロックの幅（1-12）",

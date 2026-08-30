@@ -67,7 +67,7 @@
       "garbage_maxitems": "Количество отображаемых элементов",
       "garbage_street": "Улица",
       "garbage_use_colors": "Цвета текста",
-      "garbage_use_cors_prefix": "Использовать префикс Cors (по умолчанию включен)",
+      "garbage_use_cors_prefix": "Использовать префикс Cors",
       "garbage_use_names": "Пользовательские имена",
       "garbage_use_prefix_help": "Префикс cors иногда приводит к ошибкам",
       "garbage_width": "Ширина блока (1-12)",

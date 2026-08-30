@@ -67,7 +67,7 @@
       "garbage_maxitems": "Počet položek k zobrazení",
       "garbage_street": "Ulice",
       "garbage_use_colors": "Barvy textu",
-      "garbage_use_cors_prefix": "Použít Cors prefix (výchozí je zapnuto)",
+      "garbage_use_cors_prefix": "Použít Cors prefix",
       "garbage_use_names": "Vlastní názvy",
       "garbage_use_prefix_help": "Cors prefix někdy způsobuje chyby",
       "garbage_width": "Šířka bloku (1-12)",

@@ -67,7 +67,7 @@
       "garbage_maxitems": "Pasirinkimų skaičius",
       "garbage_street": "Gatvė",
       "garbage_use_colors": "Teksto spalvos",
-      "garbage_use_cors_prefix": "Naudoti Cors prefiksą (numatytasis yra įjungtas)",
+      "garbage_use_cors_prefix": "Naudoti Cors prefiksą",
       "garbage_use_names": "Pasirinktiniai pavadinimai",
       "garbage_use_prefix_help": "Cors prefiksas kartais sukelia klaidų",
       "garbage_width": "Bloko plotis (1-12)",
