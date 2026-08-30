@@ -22,6 +22,15 @@ v3.45.13 beta (30-8-2026)
   date match, and its color takes precedence over the per-type color
   when set.
 
+- Laid out the garbage widget's Settings menu on/off switches (Hide
+  icon, Icon colors, Text colors, Custom names, CORS Prefix) two per
+  row instead of stacked full-width, via a new ``.settings-switch-grid``
+  CSS class applied by a dedicated ``renderGarbageWidgetSettings()``
+  that groups consecutive checkbox rows. Also shortened the CORS
+  Prefix label across every language file by dropping its redundant
+  "(Default is on)"-style parenthetical - already covered by its own
+  help tooltip - so it fits the narrower half-width column.
+
 * **Code**
 
 - Exposed the same four fields in both the dashboard Settings menu

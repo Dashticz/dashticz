@@ -1608,6 +1608,8 @@ function renderWidgetSettingsTab() {
       html += renderWeatherWidgetSettings(tile);
     } else if (tile.id === 'clock') {
       html += renderClockWidgetSettings(tile);
+    } else if (tile.id === 'garbage') {
+      html += renderGarbageWidgetSettings(tile);
     } else {
       for (var key in tile.settings) {
         html += renderSettingsRow(key, tile.settings[key]);
@@ -1625,6 +1627,34 @@ function renderWidgetSettingsTab() {
     }
     html += '</div>';
   });
+
+  return html;
+}
+
+// Consecutive on/off switch rows (Hide icon, Icon colors, Text colors, ...)
+// are grouped two per row via .settings-switch-grid instead of stacking
+// full width, one per row - text fields (company, colors, font sizes, ...)
+// keep their normal full-width row wherever they fall in between.
+function renderGarbageWidgetSettings(tile) {
+  var html = '';
+  var switchRows = '';
+
+  function flushSwitchRows() {
+    if (!switchRows) return;
+    html += '<div class="settings-switch-grid">' + switchRows + '</div>';
+    switchRows = '';
+  }
+
+  for (var key in tile.settings) {
+    var definition = tile.settings[key];
+    if (definition && definition.type === 'checkbox') {
+      switchRows += renderSettingsRow(key, definition);
+    } else {
+      flushSwitchRows();
+      html += renderSettingsRow(key, definition);
+    }
+  }
+  flushSwitchRows();
 
   return html;
 }

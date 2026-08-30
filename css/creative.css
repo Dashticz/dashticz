@@ -1017,6 +1017,26 @@ next css sets the default height of the frame popup
   max-width: 130px;
 }
 
+/* Consecutive on/off switch rows (e.g. the Garbage widget's Hide icon/Icon
+   colors/Text colors toggles) sit two per row instead of stacked full width -
+   each row's own label still gets most of the space, the switch itself only
+   needs a fixed narrow column. */
+.settings-switch-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 28px;
+}
+
+.settings-switch-grid .settings-row {
+  grid-template-columns: minmax(0, 1fr) 46px 26px;
+}
+
+@media (max-width: 767.98px) {
+  .settings-switch-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Number + "px" suffix pair used by the Font size / Icon size rows - the
    unit is fixed and shown next to the field instead of being typed. */
 .settings-cssvar-px-control {

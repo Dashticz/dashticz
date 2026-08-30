@@ -67,7 +67,7 @@
       "garbage_maxitems": "Liczba wyświetlanych terminów wywozu",
       "garbage_street": "Ulica",
       "garbage_use_colors": "Kolory tekstu",
-      "garbage_use_cors_prefix": "Uzyj prefiksu cors (domyślnie włączone)",
+      "garbage_use_cors_prefix": "Uzyj prefiksu cors",
       "garbage_use_names": "Niestandardowe nazwy",
       "garbage_use_prefix_help": "Prefiks cors może powodować błędy",
       "garbage_width": "Szerokość bloku (1-12)",
