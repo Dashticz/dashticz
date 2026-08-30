@@ -1037,6 +1037,10 @@ var DashticzWidgetEditor = (function () {
         garbage_hideicon: _n('garbage_hideicon'),
         garbage_icon_use_colors: _n('garbage_icon_use_colors', 1),
         garbage_use_colors: _n('garbage_use_colors', 1),
+        garbage_row1_fontsize: _s('garbage_row1_fontsize'),
+        garbage_row1_color: _s('garbage_row1_color'),
+        garbage_row2_fontsize: _s('garbage_row2_fontsize'),
+        garbage_row2_color: _s('garbage_row2_color'),
         garbage_use_names: _n('garbage_use_names', 1),
         garbage_use_cors_prefix: _n('garbage_use_cors_prefix', 1),
       },
@@ -3429,6 +3433,34 @@ var DashticzWidgetEditor = (function () {
         gcfg.garbage_use_colors
       );
       fields += _cfgField(
+        'garbage_row1_fontsize',
+        lg.garbage_row1_fontsize || 'Row 1 font size (px)',
+        'text',
+        gcfg.garbage_row1_fontsize
+      );
+      fields += _cfgField(
+        'garbage_row1_color',
+        lg.garbage_row1_color || 'Row 1 color',
+        'text',
+        gcfg.garbage_row1_color,
+        null,
+        lg.garbage_row1_color_help || 'Hex color code, e.g. #ff0000'
+      );
+      fields += _cfgField(
+        'garbage_row2_fontsize',
+        lg.garbage_row2_fontsize || 'Row 2+ font size (px)',
+        'text',
+        gcfg.garbage_row2_fontsize
+      );
+      fields += _cfgField(
+        'garbage_row2_color',
+        lg.garbage_row2_color || 'Row 2+ color',
+        'text',
+        gcfg.garbage_row2_color,
+        null,
+        lg.garbage_row2_color_help || 'Hex color code, e.g. #ff0000'
+      );
+      fields += _cfgField(
         'garbage_use_names',
         lg.garbage_use_names || 'Use names',
         'checkbox',
@@ -4983,6 +5015,10 @@ var DashticzWidgetEditor = (function () {
         'garbage_hideicon',
         'garbage_icon_use_colors',
         'garbage_use_colors',
+        'garbage_row1_fontsize',
+        'garbage_row1_color',
+        'garbage_row2_fontsize',
+        'garbage_row2_color',
         'garbage_use_names',
         'garbage_use_cors_prefix',
       ],
