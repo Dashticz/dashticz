@@ -68,6 +68,16 @@
       "textiel": "Textiel",
       "sorti": "Gesorteerd afval",
       "duo": "Duobak"
+    },
+    "ui": {
+      "text_styling": "Tekstopmaak",
+      "first_pickup_row": "Eerste ophaalregel",
+      "pickup_rows_other": "Ophaalregels 2+",
+      "font_size": "Lettergrootte",
+      "font_color": "Tekstkleur",
+      "kliko_image": "Kliko-afbeelding",
+      "kliko_scale": "Kliko-schaal (%)",
+      "kliko_scale_help": "100 = normale grootte, 80 = 80%, 125 = 125%. Laat leeg om de grootte van het thema te gebruiken."
     }
   },
   "misc": {

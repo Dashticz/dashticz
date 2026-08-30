@@ -68,6 +68,16 @@
       "textiel": "Textiles",
       "sorti": "Déchets triés",
       "duo": "Bac duo"
+    },
+    "ui": {
+      "text_styling": "Mise en forme du texte",
+      "first_pickup_row": "Première ligne de collecte",
+      "pickup_rows_other": "Lignes de collecte 2+",
+      "font_size": "Taille de police",
+      "font_color": "Couleur du texte",
+      "kliko_image": "Image du bac",
+      "kliko_scale": "Échelle du bac (%)",
+      "kliko_scale_help": "100 = taille normale, 80 = 80 %, 125 = 125 %. Laissez vide pour utiliser la taille du thème."
     }
   },
   "misc": {
