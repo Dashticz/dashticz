@@ -31,11 +31,26 @@ v3.45.13 beta (30-8-2026)
   "(Default is on)"-style parenthetical - already covered by its own
   help tooltip - so it fits the narrower half-width column.
 
+* **Fixes**
+
+- Fixed the Layout Editor showing a rendered repeatable Graph widget
+  as a generic arrows-only drag control instead of the standard
+  configuration cog. Render-time key-as-type hints are now accepted
+  by both the Layout Editor and Device Editor Graph recognition, so
+  clicking the cog opens that Graph widget's configuration. The popup
+  now also exposes the same dedicated Devices, graph type, Group by,
+  legend and height controls as Widget Config, while advanced Graph
+  options remain available under Custom fields.
+
 * **Code**
 
 - Exposed the same four fields in both the dashboard Settings menu
   (js/settings.js) and the Widget Config editor (js/widgeteditor.js).
   Verified with the full node --test suite.
+
+- Added source and Playwright regressions covering the Graph widget's
+  configuration cog, its shared Graph controls and canonical save
+  path.
 
 v3.45.12 beta (29-8-2026)
 -------------------------

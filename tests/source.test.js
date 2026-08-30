@@ -5611,6 +5611,57 @@ test('Group block gets the Layout Editor config (cog) control, like HTML/LMS blo
   );
 });
 
+test('rendered Graph blocks keep the Layout Editor config cog and open their own config', () => {
+  const layoutEditor = fs.readFileSync(
+    path.join(root, 'js/layouteditor.js'),
+    'utf8'
+  );
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+
+  // convertBlock() stamps a rendered Graph block's own reference into its
+  // in-memory type (for example graph_1.type === 'graph_1'). Layout Editor
+  // must still classify that block as the repeatable Graph special; otherwise
+  // _decorateItem() falls back to the arrows-only control instead of the cog.
+  assert.match(
+    layoutEditor,
+    /\(!definition\.type \|\| definition\.type === key\) &&\s*\n\s*Array\.isArray\(definition\.devices\)/
+  );
+  assert.match(layoutEditor, /kind: 'graph',/);
+  assert.match(
+    layoutEditor,
+    /var REFERENCE_BASED_SPECIAL_KINDS = \[[\s\S]{0,500}?'graph'[\s\S]{0,50}?\];/
+  );
+
+  // Clicking that cog routes through Device Editor. It must accept the same
+  // key-as-type artifact so openLayoutConfig(reference) resolves the exact
+  // Graph special and renders #de-config-popup instead of doing nothing.
+  assert.match(
+    deviceEditor,
+    /\(!definition\.type \|\| definition\.type === reference\) &&\s*\n\s*Array\.isArray\(definition\.devices\)/
+  );
+  assert.match(deviceEditor, /kind = 'graph';/);
+
+  // Widget Config's Graph add flow and the Layout Editor cog reuse one field
+  // builder, so Devices/Type/Group by/Legend/Height cannot drift apart again.
+  assert.match(deviceEditor, /function _graphFieldsHtml\(prefix, values\)/);
+  assert.match(deviceEditor, /_graphFieldsHtml\('gr', \{\}\)/);
+  assert.match(
+    deviceEditor,
+    /isGraphBlock[\s\S]{0,6000}?_graphFieldsHtml\('de-config', graphFields\)/
+  );
+  // Saving from the cog parses those dedicated controls back into the
+  // special's canonical custom rows and top-level height before blocksOnly.
+  assert.match(deviceEditor, /pendingGraph = _readGraphFields\('de-config'\)/);
+  assert.match(
+    deviceEditor,
+    /field: 'devices',[\s\S]{0,150}?JSON\.stringify\(pendingGraph\.devices\)/
+  );
+  assert.match(deviceEditor, /special\.height = pendingGraph\.height;/);
+});
+
 test('iconORimage() does not let a reset-to-empty image blank out a configured icon', () => {
   const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
 

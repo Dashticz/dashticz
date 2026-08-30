@@ -2536,6 +2536,38 @@ screens[1] = {
       await expect(item).toHaveCSS('overflow', 'auto');
     }
 
+    await page.locator('.screen1 .layouteditoricon').click();
+    await expect(page.locator('body')).toHaveClass(/dle-active/);
+    const graphOverlay = graph.locator('.dle-overlay');
+    await expect(graphOverlay.locator('.dle-drag-icon')).toHaveCount(0);
+    await expect(
+      graphOverlay.locator('.dle-config-button .fa-cog')
+    ).toHaveCount(1);
+    await graphOverlay.locator('.dle-config-button').click();
+    await expect(page.locator('#de-config-popup')).toBeVisible();
+    await expect(page.locator('#de-config-popup')).toHaveAttribute(
+      'data-block-kind',
+      'special'
+    );
+    await expect(page.locator('#de-config-graph-devices')).toHaveValue('708');
+    await expect(page.locator('#de-config-graph-type')).toHaveValue('line');
+    await expect(page.locator('#de-config-graph-groupby')).toHaveValue('');
+    await expect(page.locator('#de-config-graph-legend')).not.toBeChecked();
+    await expect(page.locator('#de-config-graph-height')).toHaveValue('');
+    // The dedicated fields replace their raw Custom-field duplicates, while
+    // that section remains available for advanced Graph options.
+    await expect(
+      page.locator('#de-config-popup .de-custom-field-name[value="devices"]')
+    ).toHaveCount(0);
+    await expect(
+      page.locator('#de-config-popup .de-custom-fields')
+    ).toBeVisible();
+    await page
+      .locator('#de-config-popup [data-bs-dismiss="modal"]')
+      .last()
+      .click();
+    await expect(page.locator('#de-config-popup')).toBeHidden();
+
     await openDeviceEditorFromScreenEditor(page);
     await page
       .locator('#deviceeditorpopup [data-bs-dismiss="modal"]')
@@ -2590,9 +2622,17 @@ screens[1] = {
     });
 
     const layoutEditorButton = page.locator('.screen1 .layouteditoricon');
-    await expect(layoutEditorButton).toBeVisible();
-    // The icon briefly animates while the responsive layout settles in
-    // WebKit. Dispatching its click avoids a false failure on element motion.
+    // The icon briefly animates while the responsive layout settles back
+    // from the mobile viewport above, and in WebKit that settle can still be
+    // in progress once the desktop viewport is applied - especially now that
+    // this test already cycles the Layout Editor open/closed once beforehand
+    // (see the Graph config-cog check above), leaving less margin than the
+    // default 5s timeout before this second, later open. Reuse
+    // waitForDashboard()'s own 15s allowance instead of the default.
+    // Dispatching the click via evaluate() (rather than Playwright's own
+    // actionability-checked click()) avoids a false failure on the element
+    // still being mid-motion once it is visible.
+    await expect(layoutEditorButton).toBeVisible({ timeout: 15000 });
     await layoutEditorButton.evaluate((button) => button.click());
     await expect(page.locator('body')).toHaveClass(/dle-active/);
     await expect(grid).toHaveClass(/dle-grid-canvas/);

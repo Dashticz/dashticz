@@ -1357,7 +1357,7 @@ var DashticzLayoutEditor = (function () {
 
     if (
       key &&
-      !definition.type &&
+      (!definition.type || definition.type === key) &&
       Array.isArray(definition.devices) &&
       definition.devices.length > 0
     ) {
@@ -1366,9 +1366,11 @@ var DashticzLayoutEditor = (function () {
       // _showGraphPopup()), mirroring the news check above and
       // deviceeditor.js's own _specialFromReference(): dispatched purely
       // on a truthy devices array (js/components/graph.js's canHandle()),
-      // no `type` of its own. Excludes type:'group' blocks, which can
-      // also carry a devices array but always write an explicit type of
-      // their own (see the group check below).
+      // no `type` of its own. Once rendered, convertBlock() temporarily
+      // stamps the block's own reference into definition.type, so treat that
+      // key-as-type dispatch hint as equivalent to no explicit type. Excludes
+      // type:'group' blocks, which can also carry a devices array but always
+      // write an explicit type of their own (see the group check below).
       return {
         definition: definition,
         kind: 'graph',
