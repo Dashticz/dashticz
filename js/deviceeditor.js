@@ -953,7 +953,7 @@ var DashticzDeviceEditor = (function () {
       kind = 'news';
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
-      !definition.type &&
+      (!definition.type || definition.type === reference) &&
       Array.isArray(definition.devices) &&
       definition.devices.length > 0
     ) {
@@ -962,12 +962,14 @@ var DashticzDeviceEditor = (function () {
       // above). Matches js/components/graph.js's own canHandle():
       // dispatched on a truthy devices array (this popup never writes an
       // explicit type, same convention as html/iframe/calendar/
-      // publictransport/xmltvguide/news above). devices/graph/legend/
-      // groupBy/... all ride through custom_fields (see
-      // _deviceCustomFieldRows() below), same as every other field-shape
-      // special. Excludes type:'group' blocks, which can also carry a
-      // devices array (js/components/group.js) but always write an
-      // explicit type of their own.
+      // publictransport/xmltvguide/news above). convertBlock() stamps the
+      // block's own reference into definition.type after rendering; that is
+      // only a dispatch hint, not an explicit Graph type, so it is accepted
+      // here too. devices/graph/legend/groupBy/... all ride through
+      // custom_fields (see _deviceCustomFieldRows() below), same as every
+      // other field-shape special. Excludes type:'group' blocks, which can
+      // also carry a devices array (js/components/group.js) but always write
+      // an explicit type of their own.
       kind = 'graph';
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
@@ -5540,6 +5542,133 @@ var DashticzDeviceEditor = (function () {
      parameters not covered by this quick popup (custom formulas, zoom,
      per-button styling, ...) remain reachable via the Custom fields
      section of the Device Editor's own config popup for this instance. */
+  function _graphFieldsHtml(prefix, values) {
+    var t = _translations();
+    values = values || {};
+    var graphType = String(values.graphType || 'line');
+    var groupBy = String(values.groupBy || '');
+    var devices = Array.isArray(values.devices)
+      ? values.devices.join(', ')
+      : String(values.devices || '');
+    var html =
+      '<div class="de-graph-fields" data-graph-prefix="' + _esc(prefix) + '">';
+    html += '<h6 class="de-section-title">' + _esc(t.graph_block) + '</h6>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="' +
+      _esc(prefix) +
+      '-graph-devices">' +
+      _esc(t.graph_block_devices) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="' +
+      _esc(prefix) +
+      '-graph-devices" value="' +
+      _esc(devices) +
+      '" placeholder="691, 692">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.graph_block_devices_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="' +
+      _esc(prefix) +
+      '-graph-type">' +
+      _esc(t.graph_block_type) +
+      '</label>';
+    html += '<select class="form-select" id="' + _esc(prefix) + '-graph-type">';
+    html +=
+      '<option value="line"' +
+      (graphType === 'bar' ? '' : ' selected') +
+      '>' +
+      _esc(t.graph_block_type_line) +
+      '</option>';
+    html +=
+      '<option value="bar"' +
+      (graphType === 'bar' ? ' selected' : '') +
+      '>' +
+      _esc(t.graph_block_type_bar) +
+      '</option></select></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="' +
+      _esc(prefix) +
+      '-graph-groupby">' +
+      _esc(t.graph_block_groupby) +
+      '</label>';
+    html +=
+      '<select class="form-select" id="' + _esc(prefix) + '-graph-groupby">';
+    [
+      ['', t.graph_block_groupby_none],
+      ['hour', t.graph_block_groupby_hour],
+      ['day', t.graph_block_groupby_day],
+      ['week', t.graph_block_groupby_week],
+      ['month', t.graph_block_groupby_month],
+    ].forEach(function (option) {
+      html +=
+        '<option value="' +
+        option[0] +
+        '"' +
+        (groupBy === option[0] ? ' selected' : '') +
+        '>' +
+        _esc(option[1]) +
+        '</option>';
+    });
+    html += '</select></div>';
+    html +=
+      '<div class="mb-3 form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="' +
+      _esc(prefix) +
+      '-graph-legend"' +
+      (values.legend === true ? ' checked' : '') +
+      '>';
+    html +=
+      '<label class="form-check-label" for="' +
+      _esc(prefix) +
+      '-graph-legend">' +
+      _esc(t.graph_block_legend) +
+      '</label></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="' +
+      _esc(prefix) +
+      '-graph-height">' +
+      _esc(t.graph_block_height) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="' +
+      _esc(prefix) +
+      '-graph-height" min="0" value="' +
+      _esc(values.height || '') +
+      '" autocomplete="off"></div></div>';
+    return html;
+  }
+
+  function _readGraphFields(prefix) {
+    var rawDevices = $.trim(
+      String($('#' + prefix + '-graph-devices').val() || '')
+    );
+    var invalidDevices = false;
+    var devices = rawDevices
+      .split(/[\s,]+/)
+      .filter(function (part) {
+        return part !== '';
+      })
+      .map(function (part) {
+        var value = parseInt(part, 10);
+        if (!(value > 0 && String(value) === part)) invalidDevices = true;
+        return value;
+      });
+    var rawHeight = $.trim(
+      String($('#' + prefix + '-graph-height').val() || '')
+    );
+    var parsedHeight = parseInt(rawHeight, 10);
+    return {
+      devices: devices,
+      validDevices: devices.length > 0 && !invalidDevices,
+      graphType: String($('#' + prefix + '-graph-type').val() || 'line'),
+      groupBy: String($('#' + prefix + '-graph-groupby').val() || ''),
+      legend: $('#' + prefix + '-graph-legend').is(':checked'),
+      height: parsedHeight > 0 ? parsedHeight : null,
+    };
+  }
+
   function _showGraphPopup() {
     var t = _translations();
     $('#graphblockpopup').remove();
@@ -5569,55 +5698,7 @@ var DashticzDeviceEditor = (function () {
       '</label>';
     html +=
       '<input type="text" class="form-control" id="gr-device-title" autocomplete="off"></div>';
-    html +=
-      '<div class="mb-3"><label class="form-label" for="gr-device-devices">' +
-      _esc(t.graph_block_devices) +
-      '</label>';
-    html +=
-      '<input type="text" class="form-control" id="gr-device-devices" placeholder="691, 692">';
-    html +=
-      '<div class="form-text">' +
-      _esc(t.graph_block_devices_help) +
-      '</div></div>';
-    html +=
-      '<div class="mb-3"><label class="form-label" for="gr-device-type">' +
-      _esc(t.graph_block_type) +
-      '</label>';
-    html += '<select class="form-select" id="gr-device-type">';
-    html +=
-      '<option value="line">' + _esc(t.graph_block_type_line) + '</option>';
-    html += '<option value="bar">' + _esc(t.graph_block_type_bar) + '</option>';
-    html += '</select></div>';
-    html +=
-      '<div class="mb-3"><label class="form-label" for="gr-device-groupby">' +
-      _esc(t.graph_block_groupby) +
-      '</label>';
-    html += '<select class="form-select" id="gr-device-groupby">';
-    html +=
-      '<option value="">' + _esc(t.graph_block_groupby_none) + '</option>';
-    html +=
-      '<option value="hour">' + _esc(t.graph_block_groupby_hour) + '</option>';
-    html +=
-      '<option value="day">' + _esc(t.graph_block_groupby_day) + '</option>';
-    html +=
-      '<option value="week">' + _esc(t.graph_block_groupby_week) + '</option>';
-    html +=
-      '<option value="month">' +
-      _esc(t.graph_block_groupby_month) +
-      '</option>';
-    html += '</select></div>';
-    html +=
-      '<div class="mb-3 form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="gr-device-legend">';
-    html +=
-      '<label class="form-check-label" for="gr-device-legend">' +
-      _esc(t.graph_block_legend) +
-      '</label></div>';
-    html +=
-      '<div class="mb-3"><label class="form-label" for="gr-device-height">' +
-      _esc(t.graph_block_height) +
-      '</label>';
-    html +=
-      '<input type="number" class="form-control" id="gr-device-height" min="0" autocomplete="off"></div>';
+    html += _graphFieldsHtml('gr', {});
     html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
     html +=
       '<div class="modal-footer">' +
@@ -5643,31 +5724,16 @@ var DashticzDeviceEditor = (function () {
         .text('');
       var title = $.trim(String($('#gr-device-title').val() || ''));
 
-      var rawDevices = $.trim(String($('#gr-device-devices').val() || ''));
-      var invalidDevices = false;
-      var devices = rawDevices
-        .split(/[\s,]+/)
-        .filter(function (part) {
-          return part !== '';
-        })
-        .map(function (part) {
-          var n = parseInt(part, 10);
-          if (!(n > 0 && String(n) === part)) invalidDevices = true;
-          return n;
-        });
-      if (!devices.length || invalidDevices) {
+      var graphFields = _readGraphFields('gr');
+      if (!graphFields.validDevices) {
         $message.addClass('text-danger').text(t.invalid_graph_devices);
-        $('#gr-device-devices').trigger('focus');
+        $('#gr-graph-devices').trigger('focus');
         return;
       }
 
       var quickOptions = _readQuickOptions('gr');
       var iconIsImage =
         quickOptions.icon && quickOptions.iconSource === 'image';
-      var graphType = String($('#gr-device-type').val() || 'line');
-      var groupBy = String($('#gr-device-groupby').val() || '');
-      var legend = $('#gr-device-legend').is(':checked');
-      var height = $.trim(String($('#gr-device-height').val() || ''));
 
       var customRows = [];
       if (title)
@@ -5686,17 +5752,21 @@ var DashticzDeviceEditor = (function () {
       }
       customRows.push({
         field: 'devices',
-        setting: JSON.stringify(devices),
-        value: devices,
+        setting: JSON.stringify(graphFields.devices),
+        value: graphFields.devices,
       });
-      if (graphType === 'bar') {
+      if (graphFields.graphType === 'bar') {
         customRows.push({ field: 'graph', setting: 'bar', value: 'bar' });
       }
-      if (legend) {
+      if (graphFields.legend) {
         customRows.push({ field: 'legend', setting: 'true', value: true });
       }
-      if (groupBy) {
-        customRows.push({ field: 'groupBy', setting: groupBy, value: groupBy });
+      if (graphFields.groupBy) {
+        customRows.push({
+          field: 'groupBy',
+          setting: graphFields.groupBy,
+          value: graphFields.groupBy,
+        });
       }
 
       var reference = _nextSpecialReference('graph');
@@ -5710,7 +5780,7 @@ var DashticzDeviceEditor = (function () {
         idx: null,
         title: title,
         width: 6,
-        height: height ? parseInt(height, 10) || null : null,
+        height: graphFields.height,
         showTitle: quickOptions.showTitle,
         options: {
           icon: quickOptions.icon,
@@ -6062,6 +6132,7 @@ var DashticzDeviceEditor = (function () {
     var isCustom = special && special.specialType === 'custom';
     var isGroupBlock = special && special.specialType === 'group';
     var isLmsBlock = special && special.specialType === 'lms';
+    var isGraphBlock = special && special.specialType === 'graph';
     // No Dial/Bar/Slider mode, and a restricted display-options set (see
     // hasDial/configOptions below) - every special except dummy/custom.
     var isNoDialSpecial = !!(
@@ -6109,6 +6180,38 @@ var DashticzDeviceEditor = (function () {
         setting: effectiveIcon,
         value: effectiveIcon,
         generated: true,
+      });
+    }
+
+    // Graph's commonly-used fields get the same dedicated controls as the
+    // Widget Config -> Graph flow. Keep every advanced Graph option in the
+    // generic Custom fields list, but remove the five fields managed by the
+    // shared Graph section so they are never shown or saved twice.
+    var graphFields = null;
+    if (isGraphBlock) {
+      var graphValues = {};
+      customRows.forEach(function (row) {
+        var field = _normaliseCustomFieldName(row && row.field).toLowerCase();
+        if (field) graphValues[field] = row.value;
+      });
+      graphFields = {
+        devices: Array.isArray(graphValues.devices) ? graphValues.devices : [],
+        graphType:
+          String(graphValues.graph || '').toLowerCase() === 'bar'
+            ? 'bar'
+            : 'line',
+        groupBy: String(graphValues.groupby || ''),
+        legend: graphValues.legend === true,
+        height: special.height,
+      };
+      customRows = customRows.filter(function (row) {
+        var field = _normaliseCustomFieldName(row && row.field).toLowerCase();
+        return !{
+          devices: true,
+          graph: true,
+          legend: true,
+          groupby: true,
+        }[field];
       });
     }
 
@@ -6486,6 +6589,8 @@ var DashticzDeviceEditor = (function () {
         stationSize: special.lmsStationSize,
         stationColor: special.lmsStationColor,
       });
+    } else if (isGraphBlock) {
+      html += _graphFieldsHtml('de-config', graphFields);
     }
     html +=
       '<div class="de-custom-fields-section"><h6 class="de-section-title mt-3">' +
@@ -6741,6 +6846,12 @@ var DashticzDeviceEditor = (function () {
       // generic custom field, so a hand-typed 'values' field name in the
       // generic list must still be rejected as a duplicate.
       var customKeys = multiDeviceValues ? { values: true } : {};
+      if (isGraphBlock) {
+        customKeys.devices = true;
+        customKeys.graph = true;
+        customKeys.legend = true;
+        customKeys.groupby = true;
+      }
       var pendingTitle = isSpecial
         ? String(special.title || '')
         : String(deviceTitles[ck] || '');
@@ -6805,6 +6916,18 @@ var DashticzDeviceEditor = (function () {
             .addClass('text-danger')
             .text(t.invalid_lms_player);
           $('#de-config-lms-player').trigger('focus');
+        }
+      }
+      var pendingGraph = null;
+      if (isGraphBlock) {
+        pendingGraph = _readGraphFields('de-config');
+        if (!pendingGraph.validDevices) {
+          valid = false;
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.invalid_graph_devices);
+          $('#de-config-graph-devices').trigger('focus');
         }
       }
       // [data-option]: excludes button.js's injected Background toggle,
@@ -7031,6 +7154,26 @@ var DashticzDeviceEditor = (function () {
         });
       }
       storedRows = storedRows.concat(pendingCustomFields);
+      if (pendingGraph) {
+        storedRows.push({
+          field: 'devices',
+          setting: JSON.stringify(pendingGraph.devices),
+          value: pendingGraph.devices,
+        });
+        if (pendingGraph.graphType === 'bar') {
+          storedRows.push({ field: 'graph', setting: 'bar', value: 'bar' });
+        }
+        if (pendingGraph.legend) {
+          storedRows.push({ field: 'legend', setting: 'true', value: true });
+        }
+        if (pendingGraph.groupBy) {
+          storedRows.push({
+            field: 'groupBy',
+            setting: pendingGraph.groupBy,
+            value: pendingGraph.groupBy,
+          });
+        }
+      }
       if (pendingValues) {
         storedRows.push({
           field: 'values',
@@ -7044,6 +7187,9 @@ var DashticzDeviceEditor = (function () {
         special.customFields = storedRows;
         special.showTitle = pendingShowTitle;
         if (isCustom || isGroupBlock) special.idx = pendingIdx;
+        if (isGraphBlock && pendingGraph) {
+          special.height = pendingGraph.height;
+        }
         if (isLmsBlock && pendingLms) {
           special.lmsServer = pendingLms.server;
           special.lmsPort = pendingLms.port;
