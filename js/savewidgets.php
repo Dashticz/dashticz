@@ -72,6 +72,10 @@ $allowedSettings = [
     'garbage_hideicon'       => 'bool',
     'garbage_icon_use_colors'=> 'bool',
     'garbage_use_colors'     => 'bool',
+    'garbage_row1_fontsize'  => 'number',
+    'garbage_row1_color'     => 'hex_color',
+    'garbage_row2_fontsize'  => 'number',
+    'garbage_row2_color'     => 'hex_color',
     'garbage_use_names'      => 'bool',
     'garbage_use_cors_prefix'=> 'bool',
     // sonarr
@@ -168,6 +172,11 @@ if (isset($data['settings']) && is_array($data['settings'])) {
         } elseif ($type === 'security_panel_lock') {
             if (in_array($value, [0, 1, 2, '0', '1', '2'], true)) {
                 $configSettings[$key] = (int)$value;
+            }
+        } elseif ($type === 'hex_color') {
+            $str = (string)$value;
+            if ($str === '' || preg_match('/^#[0-9a-fA-F]{3,8}$/', $str)) {
+                $configSettings[$key] = $str;
             }
         } else {
             // string: sanitize

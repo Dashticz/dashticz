@@ -501,32 +501,6 @@ var widgetSettingTiles = [
         title: language.settings.garbage.garbage_use_colors,
         type: 'checkbox',
       },
-      garbage_row1_fontsize: {
-        title:
-          language.settings.garbage.garbage_row1_fontsize ||
-          'Row 1 font size (px)',
-        type: 'text',
-      },
-      garbage_row1_color: {
-        title: language.settings.garbage.garbage_row1_color || 'Row 1 color',
-        type: 'text',
-        help:
-          language.settings.garbage.garbage_row1_color_help ||
-          'Hex color code, e.g. #ff0000',
-      },
-      garbage_row2_fontsize: {
-        title:
-          language.settings.garbage.garbage_row2_fontsize ||
-          'Row 2+ font size (px)',
-        type: 'text',
-      },
-      garbage_row2_color: {
-        title: language.settings.garbage.garbage_row2_color || 'Row 2+ color',
-        type: 'text',
-        help:
-          language.settings.garbage.garbage_row2_color_help ||
-          'Hex color code, e.g. #ff0000',
-      },
       garbage_use_names: {
         title: language.settings.garbage.garbage_use_names,
         type: 'checkbox',
@@ -535,6 +509,30 @@ var widgetSettingTiles = [
         title: language.settings.garbage.garbage_use_cors_prefix,
         type: 'checkbox',
         help: language.settings.garbage.garbage_use_prefix_help,
+      },
+      garbage_row1_fontsize: {
+        title:
+          language.settings.garbage.garbage_row1_fontsize ||
+          'Row 1 font size (px)',
+        type: 'number',
+        min: 8,
+        max: 60,
+      },
+      garbage_row1_color: {
+        title: language.settings.garbage.garbage_row1_color || 'Row 1 color',
+        type: 'color',
+      },
+      garbage_row2_fontsize: {
+        title:
+          language.settings.garbage.garbage_row2_fontsize ||
+          'Row 2+ font size (px)',
+        type: 'number',
+        min: 8,
+        max: 60,
+      },
+      garbage_row2_color: {
+        title: language.settings.garbage.garbage_row2_color || 'Row 2+ color',
+        type: 'color',
       },
     },
   },
@@ -1195,6 +1193,43 @@ function renderSettingsRow(settingName, definition) {
       (Number(value) === 1 ? ' checked' : '') +
       '>';
     html += '</div>';
+  }
+
+  if (definition.type === 'number') {
+    html +=
+      '<input class="form-control" type="number" id="' +
+      escapeSettingsHtml(controlId) +
+      '" name="' +
+      escapeSettingsHtml(settingName) +
+      '"' +
+      (typeof definition.min !== 'undefined'
+        ? ' min="' + escapeSettingsHtml(definition.min) + '"'
+        : '') +
+      (typeof definition.max !== 'undefined'
+        ? ' max="' + escapeSettingsHtml(definition.max) + '"'
+        : '') +
+      ' value="' +
+      escapeSettingsHtml(value) +
+      '">';
+  }
+
+  if (definition.type === 'color') {
+    // Same plain swatch as Automation's Tekstkleur field and the LMS
+    // popup's title/artist/station color pickers (js/deviceeditor.js's
+    // _lmsFieldsHtml()) - a direct <input type="color"> with name=, read
+    // the same generic way as every other field type here.
+    var colorValue =
+      value && /^#[0-9a-f]{3,8}$/i.test(String(value))
+        ? String(value)
+        : '#000000';
+    html +=
+      '<input type="color" class="form-control form-control-color" id="' +
+      escapeSettingsHtml(controlId) +
+      '" name="' +
+      escapeSettingsHtml(settingName) +
+      '" value="' +
+      colorValue +
+      '">';
   }
 
   if (definition.type === 'select') {
@@ -2930,7 +2965,7 @@ function saveSettings() {
       ';\n';
   }
   $(
-    'div#settingspopup input[type="text"],div#settingspopup input[type="hidden"],div#settingspopup select'
+    'div#settingspopup input[type="text"],div#settingspopup input[type="number"],div#settingspopup input[type="color"],div#settingspopup input[type="hidden"],div#settingspopup select'
   ).each(function () {
     // Skip UI-only controls that must not become config[...] keys.
     if (
