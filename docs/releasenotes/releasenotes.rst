@@ -6,6 +6,28 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.45.13 beta (30-8-2026)
+-------------------------
+
+* **Enhancements**
+
+- Garbage widget: added ``row1_fontsize``/``row1_color`` and
+  ``row2_fontsize``/``row2_color`` block parameters (also settable
+  globally via CONFIG.js as ``garbage_row1_fontsize`` etc., and from
+  the dashboard's Settings menu) so the topmost (soonest) pickup line
+  can get its own font size/color, independent of the per-garbage-type
+  color from ``use_colors``. The row-position style is applied after
+  sorting on date, so row 1 always corresponds to the actual first
+  rendered row rather than depending on a trashtoday/trashtomorrow
+  date match, and its color takes precedence over the per-type color
+  when set.
+
+* **Code**
+
+- Exposed the same four fields in both the dashboard Settings menu
+  (js/settings.js) and the Widget Config editor (js/widgeteditor.js).
+  Verified with the full node --test suite.
+
 v3.45.12 beta (29-8-2026)
 -------------------------
 

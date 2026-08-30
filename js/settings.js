@@ -501,6 +501,32 @@ var widgetSettingTiles = [
         title: language.settings.garbage.garbage_use_colors,
         type: 'checkbox',
       },
+      garbage_row1_fontsize: {
+        title:
+          language.settings.garbage.garbage_row1_fontsize ||
+          'Row 1 font size (px)',
+        type: 'text',
+      },
+      garbage_row1_color: {
+        title: language.settings.garbage.garbage_row1_color || 'Row 1 color',
+        type: 'text',
+        help:
+          language.settings.garbage.garbage_row1_color_help ||
+          'Hex color code, e.g. #ff0000',
+      },
+      garbage_row2_fontsize: {
+        title:
+          language.settings.garbage.garbage_row2_fontsize ||
+          'Row 2+ font size (px)',
+        type: 'text',
+      },
+      garbage_row2_color: {
+        title: language.settings.garbage.garbage_row2_color || 'Row 2+ color',
+        type: 'text',
+        help:
+          language.settings.garbage.garbage_row2_color_help ||
+          'Hex color code, e.g. #ff0000',
+      },
       garbage_use_names: {
         title: language.settings.garbage.garbage_use_names,
         type: 'checkbox',
