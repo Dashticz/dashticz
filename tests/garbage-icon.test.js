@@ -73,7 +73,7 @@ test('Garbage icon and Kliko layout enhancements stay available', () => {
   );
   assert.match(
     index,
-    /<script src="js\/garbageconfig\.js\?t=6"><\/script>/,
+    /<script src="js\/garbageconfig\.js\?t=7"><\/script>/,
     'the updated Garbage helper must be loaded with a fresh cache key'
   );
 });

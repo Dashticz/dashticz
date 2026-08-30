@@ -24,9 +24,9 @@ test('Garbage text styling is stored per widget instead of as global config', ()
 });
 
 test('Garbage text styling uses the same compact LMS-style layout', () => {
-  assert.match(helper, /heading\.textContent = 'Text styling'/);
-  assert.match(helper, /title: 'First pickup row'/);
-  assert.match(helper, /title: 'Pickup rows 2\+'/);
+  assert.match(helper, /heading\.textContent = garbageUiText\('text_styling'/);
+  assert.match(helper, /title: garbageUiText\('first_pickup_row'/);
+  assert.match(helper, /title: garbageUiText\('pickup_rows_other'/);
   assert.match(helper, /className = 'row g-2 mb-3'/);
   assert.match(helper, /className = 'col-12 col-md-6'/);
   assert.match(helper, /form-control form-control-sm garbage-row-size-input/);
