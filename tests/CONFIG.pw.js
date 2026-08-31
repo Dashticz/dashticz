@@ -10,6 +10,7 @@ config['dashticz_refresh'] = '600';
 config['cached_scripts'] = false;
 config['fake_domoticz'] = true;
 config['hide_mediaplayer'] = false;
+config['topbar_timeout'] = 0;
 
 var blocks = {};
 
