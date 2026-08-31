@@ -63,6 +63,8 @@ Switch between the two at any time from the mode icon in the topbar (sliders
 icon for Custom, wizard-hat icon for Wizard). A configuration written by hand
 can still be opened and extended in Wizard mode, and vice versa.
 
+<img width="608" height="61" alt="image" src="https://github.com/user-attachments/assets/ff212f05-78d9-40b0-94ed-7d34569f7252" />
+
 ## Documentation and support
 
 Documentation: https://dashticz.readthedocs.io
