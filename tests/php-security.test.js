@@ -685,10 +685,19 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
   assert.match(source, /array_key_exists\('height'/);
   assert.match(source, /round\(\$height \/ 10\) \* 10/);
   assert.match(writer, /height/);
-  /* Device Editor helper blocks are explicitly validated and whitelisted. */
+  /* Device Editor helper blocks are explicitly validated and whitelisted,
+     via a single $specialBlockKinds array shared by both the whitelist
+     check and the title-required check below, instead of two separately
+     hand-duplicated kind lists - adding another repeatable special (see
+     the iframe/calendar/publictransport/timegraph/xmltvguide entries for
+     the pattern) only touches this one array. */
   assert.match(
     source,
-    /in_array\(\$entry\['kind'\], \['dummy', 'title', 'custom', 'group', 'html', 'lms'\], true\)/
+    /\$specialBlockKinds = \['dummy', 'title', 'custom', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'\];/
+  );
+  assert.match(
+    source,
+    /in_array\(\$entry\['kind'\], \$specialBlockKinds, true\)/
   );
   /* Lyrion Music Server block: server/port/player validated, credentials
      never echoed back in an error message. */
@@ -1013,6 +1022,21 @@ test('custom icon list endpoint safely exposes non-background images', () => {
   assert.match(source, /\(\?:jpe\?g\|png\|webp\|gif\)/);
   assert.match(source, /is_link\(\$full\)/);
   assert.match(source, /\$images\[\] = 'custom\/' \. \$entry/);
+  assert.doesNotMatch(source, /\$_GET\[/);
+  assert.doesNotMatch(source, /\$_POST\[/);
+});
+
+test('streamplayer local logo lookup safely exposes tvg-id to filename mappings', () => {
+  const source = read('vendor/dashticz/streamplayer.php');
+  assert.match(source, /dashticz_require_same_origin\(\)/);
+  assert.match(source, /REQUEST_METHOD.*GET/);
+  assert.match(
+    source,
+    /realpath\(__DIR__ \. '\/\.\.\/\.\.\/img\/custom\/radio'\)/
+  );
+  assert.match(source, /\(\?:jpe\?g\|png\|webp\|gif\)/);
+  assert.match(source, /is_link\(\$full\)/);
+  assert.match(source, /PATHINFO_FILENAME/);
   assert.doesNotMatch(source, /\$_GET\[/);
   assert.doesNotMatch(source, /\$_POST\[/);
 });

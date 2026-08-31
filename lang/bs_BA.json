@@ -67,7 +67,7 @@
       "garbage_maxitems": "Broj preuzimanja za prikaz",
       "garbage_street": "Ulica",
       "garbage_use_colors": "Boja teksta",
-      "garbage_use_cors_prefix": "Koristite Cors prefiks (Zadano je uključeno)",
+      "garbage_use_cors_prefix": "Koristite Cors prefiks",
       "garbage_use_names": "Prilagođeni nazivi",
       "garbage_use_prefix_help": "Cors prefiks ponekad uzrokuje greške",
       "garbage_width": "Širina bloka (1-12)",

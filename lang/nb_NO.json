@@ -67,7 +67,7 @@
       "garbage_maxitems": "Antall hentesteder å vise",
       "garbage_street": "Gate",
       "garbage_use_colors": "Tekstfarger",
-      "garbage_use_cors_prefix": "Bruk kjerne prefiks (Standard er på)",
+      "garbage_use_cors_prefix": "Bruk kjerne prefiks",
       "garbage_use_names": "Egendefinerte Navn",
       "garbage_use_prefix_help": "Kjernens prefiks kan noen ganger forårsake feil ",
       "garbage_width": "Bredde av blokk (1-12)",

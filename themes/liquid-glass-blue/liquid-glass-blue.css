@@ -35,9 +35,12 @@
   --radius-border: 16px;
   --radius-selector: 10px;
   --font-small: 18px;
-  --font-large: 24px;
+  --font-large: 18px;
+  --font-device-title: 18px;
+  --font-update: 12px;
   --icon-font-size: 40px;
   --icon-image-size: 35px;
+  --icon-column-width: 45px;
   --border-radius: 10px;
   --text-title: rgb(225, 235, 255);
   --text-status: rgb(120, 200, 255);
@@ -383,18 +386,14 @@
   backdrop-filter: none !important;
 }
 
-.title,
-.state,
-.value {
-  font-size: var(--font-small) !important;
-}
-
 .title {
+  font-size: var(--font-device-title, 18px) !important;
   color: var(--text-title) !important;
 }
 
 .state,
 .value {
+  font-size: var(--font-small) !important;
   color: var(--text-status) !important;
 }
 

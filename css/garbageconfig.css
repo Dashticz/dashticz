@@ -1,0 +1,6 @@
+#we-config-popup .garbage-text-style-section,
+#we-config-popup .garbage-kliko-scale-fields {
+  grid-column: 1 / -1;
+  flex: 0 0 100%;
+  width: 100%;
+}

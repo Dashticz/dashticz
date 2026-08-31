@@ -324,7 +324,21 @@ function deviceUpdateHandler(block) {
   else $div.removeClass('timeout');
 
   addBatteryLevel($div, block);
+  addAutomationIndicator($div, block);
   triggerStatus(block); //moved the second call to the end to assure that the block has been created in the DOM completely
+}
+
+/* Small dot marking a block that has an enabled Automation (Device Rules)
+   rule configured for it. Opt out per block via automation_indicator: false. */
+function addAutomationIndicator($div, block) {
+  $div.find('.automation-indicator').remove();
+  if (block.automation_indicator === false) return;
+  var active =
+    typeof DashticzDeviceRules !== 'undefined' &&
+    DashticzDeviceRules &&
+    typeof DashticzDeviceRules.hasEnabledRules === 'function' &&
+    DashticzDeviceRules.hasEnabledRules(block);
+  if (active) $div.append('<i class="automation-indicator"></i>');
 }
 
 /*add the battery level indicator*/
@@ -582,9 +596,16 @@ function getStatusBlock(block) {
   if (block.textOff && getIconStatusClass(device.Status) === 'off')
     value = block.textOff;
 
-  if (!titleAndValueSwitch(block)) {
+  // hide_data hides the device's live value, not the (user-configured)
+  // title, so it also cancels the title/value swap below - matching
+  // getBlockData() (js/blocks.js), the equivalent switch-block renderer.
+  if (!titleAndValueSwitch(block) || block['hide_data']) {
     if (hideTitle(block)) {
-      stateBlock += '<span class="value">' + value + '</span>';
+      if (!block['hide_data']) {
+        stateBlock += '<span class="value">' + value + '</span>';
+      }
+    } else if (block['hide_data']) {
+      stateBlock += '<strong class="title">' + title + '</strong>';
     } else {
       stateBlock += '<strong class="title">' + title + '</strong><br />';
       stateBlock += '<span class="value">' + value + '</span>';
@@ -722,6 +743,9 @@ function iconORimage(
   colwidth,
   attrcol
 ) {
+  if (typeof colwidth === 'undefined') colwidth = 4;
+  if (typeof attrcol === 'undefined') attrcol = '';
+  if (typeof attr === 'undefined') attr = '';
   if (
     typeof block !== 'undefined' &&
     block['icon'] === '' &&
@@ -740,7 +764,14 @@ function iconORimage(
     // block.image) to fall back on - a device type whose own visual *is*
     // an image (blinds, motion sensor, kodi, ...) keeps showing it; the
     // Icon toggle only ever governs the font-icon slot.
-    return '';
+    // Keep the (now empty) .col-icon wrapper rather than omitting it:
+    // custom CSS can target/position around this column assuming it's
+    // always present (fixed offsets, sibling selectors), and dropping it
+    // entirely would silently break that layout the first time this
+    // toggle is turned off - see the "icon in de tekst" report.
+    return (
+      '<div class="col-xs-' + colwidth + ' col-icon" ' + attrcol + '></div>'
+    );
   }
   var mIcon = defaulticon;
   var mImage = defaultimage;
@@ -796,9 +827,6 @@ function iconORimage(
   mIcon = isOn ? iconOn : iconOff;
   mImage = isOn ? imageOn : imageOff;
 
-  if (typeof colwidth === 'undefined') colwidth = 4;
-  if (typeof attrcol === 'undefined') attrcol = '';
-  if (typeof attr === 'undefined') attr = '';
   var icon = '<div class="col-xs-' + colwidth + ' col-icon" ' + attrcol + '>';
   if (useImage) {
     icon +=

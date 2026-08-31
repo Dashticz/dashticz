@@ -95,13 +95,8 @@ function getThermostatBlock(block) {
       buttons: !choose(block.protected, block.subidx && block.subidx === 1),
       showinfo: showUpdateInformation(block) ? true : false,
       lastupdate: moment(device.LastUpdate).format(settings['timeformat']),
-      mIcon: block.icon === '' ? '' : isDefined(block.icon) ? block.icon : '',
-      mImage:
-        block.icon === ''
-          ? ''
-          : isDefined(block.image)
-            ? block.image
-            : 'heating.png',
+      mIcon: isDefined(block.icon) ? block.icon : '',
+      mImage: isDefined(block.image) ? block.image : 'heating.png',
     };
     html = template(dataObject);
     block.$mountPoint.find('.block_' + block.key).html(html);
@@ -156,13 +151,8 @@ function getEvohomeZoneBlock(block) {
       max: settings['setpoint_max'],
       fa: faStatus,
       update: untilOrLastUpdate,
-      mIcon: block.icon === '' ? '' : isDefined(block.icon) ? block.icon : '',
-      mImage:
-        block.icon === ''
-          ? ''
-          : isDefined(block.image)
-            ? block.image
-            : 'heating.png',
+      mIcon: isDefined(block.icon) ? block.icon : '',
+      mImage: isDefined(block.image) ? block.image : 'heating.png',
     };
     html = template(dataObject);
     block.$mountPoint.find('.mh').html(html);
@@ -278,13 +268,8 @@ function getEvohomeControllerBlock(block) {
   templateEngine.load('thermostat_evo_cont').then(function (template) {
     var dataObject = {
       idx: device.idx,
-      mIcon: block.icon === '' ? '' : isDefined(block.icon) ? block.icon : '',
-      mImage:
-        block.icon === ''
-          ? ''
-          : isDefined(block.image)
-            ? block.image
-            : 'evohome.png',
+      mIcon: isDefined(block.icon) ? block.icon : '',
+      mImage: isDefined(block.image) ? block.image : 'evohome.png',
       name: title,
       status: language.evohome[device.Status],
       update: moment(device.LastUpdate).format(settings['timeformat']),
@@ -388,13 +373,8 @@ function getEvohomeHotWaterBlock(block) {
       temp: temp,
       fa: faStatus,
       update: untilOrLastUpdate,
-      mIcon: block.icon === '' ? '' : isDefined(block.icon) ? block.icon : '',
-      mImage:
-        block.icon === ''
-          ? ''
-          : isDefined(block.image)
-            ? block.image
-            : 'hot_water_on.png',
+      mIcon: isDefined(block.icon) ? block.icon : '',
+      mImage: isDefined(block.image) ? block.image : 'hot_water_on.png',
     };
     html = template(dataObject);
     $div.html(html);

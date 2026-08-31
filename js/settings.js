@@ -510,6 +510,30 @@ var widgetSettingTiles = [
         type: 'checkbox',
         help: language.settings.garbage.garbage_use_prefix_help,
       },
+      garbage_row1_fontsize: {
+        title:
+          language.settings.garbage.garbage_row1_fontsize ||
+          'Row 1 font size (px)',
+        type: 'number',
+        min: 8,
+        max: 60,
+      },
+      garbage_row1_color: {
+        title: language.settings.garbage.garbage_row1_color || 'Row 1 color',
+        type: 'color',
+      },
+      garbage_row2_fontsize: {
+        title:
+          language.settings.garbage.garbage_row2_fontsize ||
+          'Row 2+ font size (px)',
+        type: 'number',
+        min: 8,
+        max: 60,
+      },
+      garbage_row2_color: {
+        title: language.settings.garbage.garbage_row2_color || 'Row 2+ color',
+        type: 'color',
+      },
     },
   },
   {
@@ -1171,6 +1195,43 @@ function renderSettingsRow(settingName, definition) {
     html += '</div>';
   }
 
+  if (definition.type === 'number') {
+    html +=
+      '<input class="form-control" type="number" id="' +
+      escapeSettingsHtml(controlId) +
+      '" name="' +
+      escapeSettingsHtml(settingName) +
+      '"' +
+      (typeof definition.min !== 'undefined'
+        ? ' min="' + escapeSettingsHtml(definition.min) + '"'
+        : '') +
+      (typeof definition.max !== 'undefined'
+        ? ' max="' + escapeSettingsHtml(definition.max) + '"'
+        : '') +
+      ' value="' +
+      escapeSettingsHtml(value) +
+      '">';
+  }
+
+  if (definition.type === 'color') {
+    // Same plain swatch as Automation's Tekstkleur field and the LMS
+    // popup's title/artist/station color pickers (js/deviceeditor.js's
+    // _lmsFieldsHtml()) - a direct <input type="color"> with name=, read
+    // the same generic way as every other field type here.
+    var colorValue =
+      value && /^#[0-9a-f]{3,8}$/i.test(String(value))
+        ? String(value)
+        : '#000000';
+    html +=
+      '<input type="color" class="form-control form-control-color" id="' +
+      escapeSettingsHtml(controlId) +
+      '" name="' +
+      escapeSettingsHtml(settingName) +
+      '" value="' +
+      colorValue +
+      '">';
+  }
+
   if (definition.type === 'select') {
     html +=
       '<select id="' +
@@ -1582,6 +1643,8 @@ function renderWidgetSettingsTab() {
       html += renderWeatherWidgetSettings(tile);
     } else if (tile.id === 'clock') {
       html += renderClockWidgetSettings(tile);
+    } else if (tile.id === 'garbage') {
+      html += renderGarbageWidgetSettings(tile);
     } else {
       for (var key in tile.settings) {
         html += renderSettingsRow(key, tile.settings[key]);
@@ -1599,6 +1662,34 @@ function renderWidgetSettingsTab() {
     }
     html += '</div>';
   });
+
+  return html;
+}
+
+// Consecutive on/off switch rows (Hide icon, Icon colors, Text colors, ...)
+// are grouped two per row via .settings-switch-grid instead of stacking
+// full width, one per row - text fields (company, colors, font sizes, ...)
+// keep their normal full-width row wherever they fall in between.
+function renderGarbageWidgetSettings(tile) {
+  var html = '';
+  var switchRows = '';
+
+  function flushSwitchRows() {
+    if (!switchRows) return;
+    html += '<div class="settings-switch-grid">' + switchRows + '</div>';
+    switchRows = '';
+  }
+
+  for (var key in tile.settings) {
+    var definition = tile.settings[key];
+    if (definition && definition.type === 'checkbox') {
+      switchRows += renderSettingsRow(key, definition);
+    } else {
+      flushSwitchRows();
+      html += renderSettingsRow(key, definition);
+    }
+  }
+  flushSwitchRows();
 
   return html;
 }
@@ -1908,9 +1999,18 @@ var _THEME_COLOR_VARS = [
   '--text-status',
 ];
 
-var _THEME_FONT_VARS = ['--font-small', '--font-large'];
+var _THEME_FONT_VARS = [
+  '--font-large',
+  '--font-device-title',
+  '--font-small',
+  '--font-update',
+];
 
-var _THEME_ICON_VARS = ['--icon-font-size', '--icon-image-size'];
+var _THEME_ICON_VARS = [
+  '--icon-font-size',
+  '--icon-image-size',
+  '--icon-column-width',
+];
 
 // All theme vars whose value is always a bare pixel number - the settings
 // panel shows/accepts just the number and adds "px" itself.
@@ -2102,31 +2202,35 @@ function renderThemeSettingsPanel() {
     return rowHtml;
   }
 
-  // Font size section heading.
+  // Font size (left column) and icon size (right column), each stacked
+  // vertically within its own column.
+  var iconSectionLabel = themeL.icons || 'Icon size';
+  html += '<div class="settings-theme-fonts-icons-grid">';
+
+  html += '<div class="settings-theme-fonts-col">';
   html +=
     '<div class="settings-section-heading">' +
     escapeSettingsHtml(fontSectionLabel) +
     '</div>';
-
-  // Font size variable rows.
   html += '<div class="settings-theme-compact-grid">';
   _THEME_FONT_VARS.forEach(function (varName) {
     html += renderCssVarTextRow(varName);
   });
   html += '</div>';
+  html += '</div>';
 
-  // Icon/image size section heading.
-  var iconSectionLabel = themeL.icons || 'Icon size';
+  html += '<div class="settings-theme-icons-col">';
   html +=
     '<div class="settings-section-heading">' +
     escapeSettingsHtml(iconSectionLabel) +
     '</div>';
-
-  // Icon/image size variable rows.
   html += '<div class="settings-theme-compact-grid">';
   _THEME_ICON_VARS.forEach(function (varName) {
     html += renderCssVarTextRow(varName);
   });
+  html += '</div>';
+  html += '</div>';
+
   html += '</div>';
 
   return html;
@@ -2861,7 +2965,7 @@ function saveSettings() {
       ';\n';
   }
   $(
-    'div#settingspopup input[type="text"],div#settingspopup input[type="hidden"],div#settingspopup select'
+    'div#settingspopup input[type="text"],div#settingspopup input[type="number"],div#settingspopup input[type="color"],div#settingspopup input[type="hidden"],div#settingspopup select'
   ).each(function () {
     // Skip UI-only controls that must not become config[...] keys.
     if (

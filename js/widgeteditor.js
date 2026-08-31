@@ -805,18 +805,27 @@ var DashticzWidgetEditor = (function () {
       window._STREAMPLAYER_TRACKS.length
     ) {
       return window._STREAMPLAYER_TRACKS.map(function (track) {
-        return { name: track.name || '', file: track.file || '' };
+        return {
+          name: track.name || '',
+          file: track.file || '',
+          logo: track.logo || '',
+        };
       });
     }
-    return [
-      {
-        name: 'Q-music',
-        file: 'http://icecast-qmusic.cdp.triple-it.nl/Qmusic_nl_live_96.mp3',
-      },
-      { name: 'Slam! NonStop', file: 'http://stream.radiocorp.nl/web10_mp3' },
-      { name: '100%NL', file: 'http://stream.100p.nl/100pctnl.mp3' },
-      { name: 'NPO Radio 1', file: 'http://icecast.omroep.nl/radio1-bb-mp3' },
-    ];
+
+    if (
+      typeof DT_streamplayer !== 'undefined' &&
+      Array.isArray(DT_streamplayer.defaultTracks)
+    ) {
+      return DT_streamplayer.defaultTracks.map(function (track) {
+        return {
+          name: track.name || '',
+          file: track.file || '',
+          logo: track.logo || '',
+        };
+      });
+    }
+    return [];
   }
 
   function _radioWidgetConfig() {
@@ -1028,6 +1037,10 @@ var DashticzWidgetEditor = (function () {
         garbage_hideicon: _n('garbage_hideicon'),
         garbage_icon_use_colors: _n('garbage_icon_use_colors', 1),
         garbage_use_colors: _n('garbage_use_colors', 1),
+        garbage_row1_fontsize: _s('garbage_row1_fontsize'),
+        garbage_row1_color: _s('garbage_row1_color'),
+        garbage_row2_fontsize: _s('garbage_row2_fontsize'),
+        garbage_row2_color: _s('garbage_row2_color'),
         garbage_use_names: _n('garbage_use_names', 1),
         garbage_use_cors_prefix: _n('garbage_use_cors_prefix', 1),
       },
@@ -1448,6 +1461,7 @@ var DashticzWidgetEditor = (function () {
             return {
               name: (track && track.name) || '',
               file: (track && track.file) || '',
+              logo: (track && track.logo) || '',
             };
           });
         }
@@ -1850,6 +1864,7 @@ var DashticzWidgetEditor = (function () {
         return {
           name: (track && track.name) || '',
           file: (track && track.file) || '',
+          logo: (track && track.logo) || '',
         };
       });
     } else if (item.id === 'log') {
@@ -2021,12 +2036,53 @@ var DashticzWidgetEditor = (function () {
       '<p class="text-muted">' +
       _t('choose', 'Choose the functions to show as tiles on screen 1.') +
       '</p>' +
+      '<h6 class="we-widget-section-title">' +
+      _t('widgets_single_heading', 'Widgets (once per screen)') +
+      '</h6>' +
       '<div class="we-widget-grid">';
 
+    // Repeatable widgets (managedSpecials-based, same mechanism as Group/
+    // HTML Block) get their own always-clickable "click to add" card
+    // below in addition to (not instead of) the normal singleton toggle
+    // card - each remains a real `catalog` entry (kept for the existing
+    // singleton 'widget_*' block's own config path, width/height/
+    // description metadata, etc.). The normal card is only skipped when
+    // hydration found no existing instance of that legacy shape
+    // (selectedWidgets[item.id] false): a fresh install gets just the
+    // clean repeatable card, while an existing install that already has
+    // one of these placed (any key, matched by shape - see
+    // _widgetIdFromDefinition()) keeps its familiar toggle/gear-icon
+    // card so that instance stays editable/removable exactly as before,
+    // alongside the new card for adding further independent instances.
+    var repeatableWidgetIds = {
+      iframe: true,
+      calendar: true,
+      publictransport: true,
+      timegraph: true,
+      xmltvguide: true,
+      camera: true,
+      news: true,
+    };
     catalog.forEach(function (item) {
+      if (repeatableWidgetIds[item.id] && !selectedWidgets[item.id]) return;
       html += _widgetCardHtml(item);
     });
+
+    html +=
+      '</div>' +
+      '<h6 class="we-widget-section-title we-widget-section-title-multi">' +
+      _t('widgets_multi_heading', 'Widgets (multiple per screen)') +
+      '</h6>' +
+      '<div class="we-widget-grid">';
+    html += _iframeWidgetCardHtml();
+    html += _calendarWidgetCardHtml();
+    html += _publicTransportWidgetCardHtml();
+    html += _timegraphWidgetCardHtml();
+    html += _xmltvguideWidgetCardHtml();
+    html += _cameraWidgetCardHtml();
+    html += _newsWidgetCardHtml();
     html += _lmsWidgetCardHtml();
+    html += _graphWidgetCardHtml();
 
     html +=
       '</div><div class="we-message" role="status"></div></div>' +
@@ -2152,6 +2208,325 @@ var DashticzWidgetEditor = (function () {
     });
   }
 
+  /* iFrame is a `catalog` entry (unlike LMS/Group/HTML Block above), kept
+     there so an existing install's singleton 'widget_iframe' block - and
+     its own config popup, reached via the Layout Editor's gear icon on
+     that specific already-placed tile (openLayoutConfig('iframe') ->
+     _openConfigModal('iframe'), which looks the item up in `catalog` by
+     id) - keeps working completely unchanged. Only the card shown *here*,
+     in the Widgets catalog grid, is replaced: instead of toggling
+     selectedWidgets.iframe (which only ever wrote the one fixed
+     'widget_iframe' key), clicking it always opens the repeatable iFrame
+     quick-add popup (DashticzDeviceEditor.openIframe(), same
+     managedSpecials mechanism as Group/HTML Block/LMS), so any number of
+     independently-configured iframes can be added. Title/description are
+     read from the existing catalog entry so they stay in sync with (and
+     translated the same as) the legacy singleton widget's own labels. */
+  function _iframeWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'iframe';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-iframe" data-special-widget="iframe" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openIframeFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openIframe();
+    });
+  }
+
+  /* Calendar is a `catalog` entry, same reasoning as iFrame above: kept
+     there so an existing install's singleton 'widget_calendar' block (its
+     richer multi-source-with-color-picker config, reached via that
+     specific placed tile's own gear icon) keeps working unchanged - only
+     the card shown *here* is replaced with a repeatable one, opening the
+     new Calendar quick-add popup (DashticzDeviceEditor.openCalendar())
+     instead of toggling selectedWidgets.calendar. */
+  function _calendarWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'calendar';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-calendar" data-special-widget="calendar" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openCalendarFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openCalendar();
+    });
+  }
+
+  /* Public transport is a `catalog` entry, same reasoning as iFrame/
+     Calendar above: kept there so an existing install's singleton
+     'widget_publictransport' block keeps working unchanged - only the
+     card shown *here* is replaced with a repeatable one, opening the new
+     Public transport quick-add popup
+     (DashticzDeviceEditor.openPublicTransport()) instead of toggling
+     selectedWidgets.publictransport. */
+  function _publicTransportWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'publictransport';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-publictransport" data-special-widget="publictransport" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openPublicTransportFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openPublicTransport();
+    });
+  }
+
+  /* Timegraph is a `catalog` entry, same reasoning as iFrame/Calendar/
+     Public transport above: kept there so an existing install's
+     singleton 'widget_timegraph' block (its richer repeatable
+     multi-value-row config) keeps working unchanged - only the card
+     shown *here* is replaced with a repeatable one, opening the new
+     Timegraph quick-add popup (DashticzDeviceEditor.openTimegraph())
+     instead of toggling selectedWidgets.timegraph. */
+  function _timegraphWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'timegraph';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-timegraph" data-special-widget="timegraph" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openTimegraphFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openTimegraph();
+    });
+  }
+
+  /* TV Guide (XMLTV) is a `catalog` entry, same reasoning as iFrame/
+     Calendar/Public transport/Timegraph above: kept there so an existing
+     install's singleton 'widget_xmltvguide' block (whose settings can
+     also fall back to global settings['xmltv_*']) keeps working
+     unchanged - only the card shown *here* is replaced with a repeatable
+     one, opening the new TV Guide quick-add popup
+     (DashticzDeviceEditor.openXmltvguide()) instead of toggling
+     selectedWidgets.xmltvguide. */
+  function _xmltvguideWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'xmltvguide';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-xmltvguide" data-special-widget="xmltvguide" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openXmltvguideFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openXmltvguide();
+    });
+  }
+
+  /* Camera is a `catalog` entry, same reasoning as iFrame/Calendar/Public
+     transport/Timegraph/TV Guide above: kept there so an existing
+     install's singleton 'widget_cameras' block (its richer multi-camera
+     tray/carousel config) keeps working unchanged - only the card shown
+     *here* is replaced with a repeatable one, opening the new Camera
+     quick-add popup (DashticzDeviceEditor.openCamera()) instead of
+     toggling selectedWidgets.camera. */
+  function _cameraWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'camera';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-camera" data-special-widget="camera" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openCameraFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openCamera();
+    });
+  }
+
+  /* News is a `catalog` entry, same reasoning as iFrame/Calendar/Public
+     transport/Timegraph/TV Guide/Camera above: kept there so an existing
+     install's singleton 'widget_news' block (its own config, which edits
+     the *global* default_news_url/news_scroll_after settings) keeps
+     working unchanged - only the card shown *here* is replaced with a
+     repeatable one, opening the new News quick-add popup
+     (DashticzDeviceEditor.openNews()) instead of toggling
+     selectedWidgets.news. */
+  function _newsWidgetCardHtml() {
+    var item = catalog.filter(function (candidate) {
+      return candidate.id === 'news';
+    })[0];
+    if (!item) return '';
+    var itemTitle = _widgetTitle(item);
+    return (
+      '<div class="we-widget-card we-widget-card-news" data-special-widget="news" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="' +
+      item.icon +
+      '" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _widgetDescription(item) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openNewsFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openNews();
+    });
+  }
+
+  /* Graph (docs/blocks/graphs.rst, js/components/graph.js) has no
+     pre-existing singleton widget shape to preserve - unlike iFrame/
+     Calendar/Public transport/Timegraph/TV Guide/Camera/News above, it
+     was never a `catalog` entry, so there is no legacy toggle card to
+     keep working. It only ever exists as this repeatable card, opening
+     the Graph quick-add popup (DashticzDeviceEditor.openGraph()) so any
+     number of independently-configured graphs can be placed on one
+     screen. */
+  function _graphWidgetCardHtml() {
+    var itemTitle = _t('graph_title', 'Graph');
+    return (
+      '<div class="we-widget-card we-widget-card-graph" data-special-widget="graph" ' +
+      'role="button" tabindex="0" aria-label="' +
+      itemTitle +
+      '">' +
+      '<div class="we-widget-icon"><i class="fas fa-chart-area" aria-hidden="true"></i></div>' +
+      '<div class="we-widget-content"><div class="we-widget-title">' +
+      itemTitle +
+      '</div><div class="we-widget-description">' +
+      _t(
+        'graph_description',
+        'Historical chart of one or more Domoticz device values, with Now/Today/Month buttons.'
+      ) +
+      '</div></div>' +
+      '<div class="we-widget-status">' +
+      _t('click_to_add', 'Click to add') +
+      '</div></div>'
+    );
+  }
+
+  function _openGraphFromWidgets() {
+    _closeModalWithoutSaving();
+    DT_function.loadDTScript('js/deviceeditor.js').then(function () {
+      DashticzDeviceEditor.openGraph();
+    });
+  }
+
   function _cfgField(key, label, type, value, opts, help) {
     var id = 'we-cfg-' + key.replace(/_/g, '-');
     var html = '<div class="mb-3">';
@@ -2221,12 +2596,28 @@ var DashticzWidgetEditor = (function () {
         ' value="' +
         _esc(String(value !== null && value !== undefined ? value : '')) +
         '">';
+    } else if (type === 'color') {
+      // Same plain swatch as Automation's Tekstkleur field and the LMS
+      // popup's title/artist/station color pickers (js/deviceeditor.js's
+      // _lmsFieldsHtml()) - a direct <input type="color"> with data-cfg-key,
+      // collected the same generic way as every other field type here.
+      var colorValue =
+        value && /^#[0-9a-f]{3,8}$/i.test(String(value))
+          ? String(value)
+          : opts && opts.default
+            ? opts.default
+            : '#000000';
+      html +=
+        '<input type="color" class="form-control form-control-color we-widget-field" id="' +
+        _esc(id) +
+        '" data-cfg-key="' +
+        _esc(key) +
+        '" value="' +
+        colorValue +
+        '">';
     }
     if (help) {
-      html +=
-        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
-        _esc(help) +
-        '</div>';
+      html += '<div class="form-text">' + _esc(help) + '</div>';
     }
     html += '</div>';
     return html;
@@ -2234,7 +2625,7 @@ var DashticzWidgetEditor = (function () {
 
   function _cfgHeading(text) {
     return (
-      '<h6 class="mt-3 mb-2" style="font-size:13px;font-weight:700;color:#495057">' +
+      '<h6 class="mt-3 mb-2" style="font-size:14px;font-weight:600;color:#495057">' +
       text +
       '</h6>'
     );
@@ -2301,12 +2692,20 @@ var DashticzWidgetEditor = (function () {
       '<input type="text" class="form-control form-control-sm we-radio-name" maxlength="100" value="' +
       _esc(station.name || '') +
       '"></div>' +
-      '<div><label class="form-label we-field-label">' +
+      '<div class="mb-2"><label class="form-label we-field-label">' +
       _t('radio_url', 'Stream URL') +
       '</label>' +
       '<input type="url" class="form-control form-control-sm we-radio-url" value="' +
       _esc(station.file || '') +
-      '"></div></div>'
+      '"></div>' +
+      '<div><label class="form-label we-field-label">' +
+      _t('radio_logo', 'Logo (URL or filename in img/custom/radio/)') +
+      '</label>' +
+      '<input type="text" class="form-control form-control-sm we-radio-logo" ' +
+      'placeholder="https://... or logo.png" value="' +
+      _esc(station.logo || '') +
+      '"></div>' +
+      '</div>'
     );
   }
 
@@ -3033,7 +3432,7 @@ var DashticzWidgetEditor = (function () {
         null,
         lg.garbage_calendar_id_help || ''
       );
-      fields += _cfgHeading(_t('display', 'Display'));
+      fields += '<div class="we-switch-grid">';
       fields += _cfgField(
         'garbage_hideicon',
         lg.garbage_hideicon || 'Hide icon',
@@ -3063,6 +3462,33 @@ var DashticzWidgetEditor = (function () {
         lg.garbage_use_cors_prefix || 'Use CORS prefix',
         'checkbox',
         gcfg.garbage_use_cors_prefix
+      );
+      fields += '</div>';
+      fields += _cfgField(
+        'garbage_row1_fontsize',
+        lg.garbage_row1_fontsize || 'Row 1 font size (px)',
+        'number',
+        gcfg.garbage_row1_fontsize,
+        { min: 8, max: 60, step: 1 }
+      );
+      fields += _cfgField(
+        'garbage_row1_color',
+        lg.garbage_row1_color || 'Row 1 color',
+        'color',
+        gcfg.garbage_row1_color
+      );
+      fields += _cfgField(
+        'garbage_row2_fontsize',
+        lg.garbage_row2_fontsize || 'Row 2+ font size (px)',
+        'number',
+        gcfg.garbage_row2_fontsize,
+        { min: 8, max: 60, step: 1 }
+      );
+      fields += _cfgField(
+        'garbage_row2_color',
+        lg.garbage_row2_color || 'Row 2+ color',
+        'color',
+        gcfg.garbage_row2_color
       );
     } else if (item.id === 'sonarr') {
       var scfg = widgetConfigs.sonarr || {};
@@ -3118,7 +3544,7 @@ var DashticzWidgetEditor = (function () {
         '<input type="text" class="form-control form-control-sm we-widget-field" id="we-cfg-pt-station" value="' +
         _esc(ptcfg.station || 'UT') +
         '">' +
-        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
+        '<div class="form-text">' +
         _t('station_help', 'For example UT for Utrecht Centraal (trains).') +
         '</div></div>';
     } else if (item.id === 'trafficinfo') {
@@ -3150,7 +3576,7 @@ var DashticzWidgetEditor = (function () {
         '<input type="text" class="form-control form-control-sm we-widget-field" id="we-cfg-alarm-filter" value="' +
         _esc(acfg.filter || '') +
         '">' +
-        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
+        '<div class="form-text">' +
         _t(
           'filter_help',
           'Comma-separated search terms, for example Amsterdam, Utrecht.'
@@ -3227,7 +3653,7 @@ var DashticzWidgetEditor = (function () {
         'data-cfg-key="frameurl" placeholder="http://192.168.1.x:8080" value="' +
         _esc(String(icfg.frameurl || '')) +
         '">' +
-        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
+        '<div class="form-text">' +
         (li.iframe_url_help ||
           'Full URL including http(s)://. The remote server must allow embedding (no X-Frame-Options: DENY).') +
         '</div></div>';
@@ -3292,7 +3718,7 @@ var DashticzWidgetEditor = (function () {
         'data-cfg-key="xmltvurl" placeholder="http://my-epg-server/guide.xml" value="' +
         _esc(String(xcfg.xmltvurl || '')) +
         '">' +
-        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
+        '<div class="form-text">' +
         (lx.xmltv_url_help ||
           'URL of an XMLTV-format XML file (e.g. from Jellyfin, Emby, WebGrab+).') +
         '</div></div>';
@@ -3466,7 +3892,7 @@ var DashticzWidgetEditor = (function () {
         'data-cfg-key="idx" value="' +
         _esc(String(tgcfg.idx || '')) +
         '">' +
-        '<div class="form-text" style="font-size:11px;color:#6c757d">' +
+        '<div class="form-text">' +
         (ltg.timegraph_idx_help ||
           'Used by every value below that does not set its own IDX.') +
         '</div></div>';
@@ -4279,7 +4705,8 @@ var DashticzWidgetEditor = (function () {
         $cfgModal.find('.we-radio-row').each(function (index) {
           var stationName = $.trim($(this).find('.we-radio-name').val() || '');
           var stationFile = $.trim($(this).find('.we-radio-url').val() || '');
-          if (!stationName && !stationFile) return; // skip a fully empty row
+          var stationLogo = $.trim($(this).find('.we-radio-logo').val() || '');
+          if (!stationName && !stationFile && !stationLogo) return; // skip a fully empty row
           if (!stationFile || !/^https?:\/\/\S+$/i.test(stationFile)) {
             $('.we-cfg-message')
               .addClass('text-danger')
@@ -4300,6 +4727,7 @@ var DashticzWidgetEditor = (function () {
             name:
               stationName || _t('radio_station', 'Station') + ' ' + (index + 1),
             file: stationFile,
+            logo: stationLogo,
           });
         });
         if (valid && !tracks.length) {
@@ -4464,6 +4892,38 @@ var DashticzWidgetEditor = (function () {
         _openLmsFromWidgets();
         return;
       }
+      if ($(this).data('special-widget') === 'iframe') {
+        _openIframeFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'calendar') {
+        _openCalendarFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'publictransport') {
+        _openPublicTransportFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'timegraph') {
+        _openTimegraphFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'xmltvguide') {
+        _openXmltvguideFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'camera') {
+        _openCameraFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'news') {
+        _openNewsFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'graph') {
+        _openGraphFromWidgets();
+        return;
+      }
       _toggleWidget(String($(this).data('widget-id')));
     });
 
@@ -4473,6 +4933,38 @@ var DashticzWidgetEditor = (function () {
       event.preventDefault();
       if ($(this).data('special-widget') === 'lms') {
         _openLmsFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'iframe') {
+        _openIframeFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'calendar') {
+        _openCalendarFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'publictransport') {
+        _openPublicTransportFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'timegraph') {
+        _openTimegraphFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'xmltvguide') {
+        _openXmltvguideFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'camera') {
+        _openCameraFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'news') {
+        _openNewsFromWidgets();
+        return;
+      }
+      if ($(this).data('special-widget') === 'graph') {
+        _openGraphFromWidgets();
         return;
       }
       _toggleWidget(String($(this).data('widget-id')));
@@ -4541,6 +5033,10 @@ var DashticzWidgetEditor = (function () {
         'garbage_hideicon',
         'garbage_icon_use_colors',
         'garbage_use_colors',
+        'garbage_row1_fontsize',
+        'garbage_row1_color',
+        'garbage_row2_fontsize',
+        'garbage_row2_color',
         'garbage_use_names',
         'garbage_use_cors_prefix',
       ],

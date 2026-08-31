@@ -67,7 +67,7 @@
       "garbage_maxitems": "Numarul de ridicari de afisat",
       "garbage_street": "Stradă",
       "garbage_use_colors": "Culorile textului",
-      "garbage_use_cors_prefix": "Utilizarea Cors Prefix (Implicit este on)",
+      "garbage_use_cors_prefix": "Utilizarea Cors Prefix",
       "garbage_use_names": "Nume particularizate",
       "garbage_use_prefix_help": "Prefixul Cors uneori provoacă erori",
       "garbage_width": "Lățimea blocului (1-12)",

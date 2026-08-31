@@ -68,6 +68,16 @@
       "textiel": "Textiles",
       "sorti": "Sorted waste",
       "duo": "Duo bin"
+    },
+    "ui": {
+      "text_styling": "Text styling",
+      "first_pickup_row": "First pickup row",
+      "pickup_rows_other": "Pickup rows 2+",
+      "font_size": "Font size",
+      "font_color": "Font color",
+      "kliko_image": "Bin image",
+      "kliko_scale": "Bin scale (%)",
+      "kliko_scale_help": "100 = normal size, 80 = 80%, 125 = 125%. Leave empty to use the theme size."
     }
   },
   "misc": {
@@ -305,6 +315,97 @@
       "html_block_border": "Margin",
       "invalid_html_block_name": "Enter a valid unique block name.",
       "invalid_html_block_file": "Enter a valid html filename (relative to custom/).",
+      "iframe_block": "iFrame",
+      "iframe_block_url": "URL",
+      "iframe_block_url_help": "Full URL including http(s)://. The remote server must allow embedding (no X-Frame-Options: DENY).",
+      "iframe_block_height": "Height (px)",
+      "iframe_block_scrollbars": "Show scrollbars",
+      "iframe_block_scaletofit": "Scale-to-fit width (px)",
+      "iframe_block_aspectratio": "Aspect ratio",
+      "iframe_block_forcerefresh": "Force cache refresh",
+      "iframe_block_refresh": "Refresh interval (seconds)",
+      "invalid_iframe_block_url": "Enter a valid URL.",
+      "calendar_block": "Calendar",
+      "calendar_block_icalurl": "Calendar (ICS) URL",
+      "calendar_block_icalurl_help": "The secret ICAL address of your calendar (see the Calendar documentation for how to find it).",
+      "calendar_block_holidayurl": "Holiday calendar URL (optional)",
+      "calendar_block_layout": "Layout",
+      "calendar_block_layout_0": "Agenda (text)",
+      "calendar_block_layout_1": "Agenda (table)",
+      "calendar_block_layout_2": "Traditional calendar (table)",
+      "calendar_block_layout_3": "Birthdays, all day (text)",
+      "calendar_block_layout_4": "Birthdays, all day (table)",
+      "calendar_block_maxitems": "Maximum number of events",
+      "calendar_block_weeks": "Number of weeks (layout: Traditional calendar)",
+      "calendar_block_lastweek": "Show previous week",
+      "calendar_block_isoweek": "Week starts on Monday",
+      "calendar_block_startonly": "Show start time only",
+      "invalid_calendar_block_icalurl": "Enter a valid calendar (ICS) URL.",
+      "publictransport_block": "Public transport",
+      "publictransport_block_provider": "Provider",
+      "publictransport_block_provider_treinen": "Trains (NL)",
+      "publictransport_block_provider_ovapi": "OV API (NL)",
+      "publictransport_block_provider_drgl": "DRGL (NL)",
+      "publictransport_block_provider_irailbe": "iRail (BE)",
+      "publictransport_block_provider_delijnbe": "De Lijn (BE)",
+      "publictransport_block_station": "Station (area code)",
+      "publictransport_block_station_help": "For example UT for Utrecht Centraal (trains).",
+      "publictransport_block_tpc": "Stop (tpc code, optional)",
+      "publictransport_block_tpc_help": "Use instead of Station to show only one specific stop/platform.",
+      "publictransport_block_direction": "Direction filter (optional)",
+      "publictransport_block_results": "Number of results",
+      "publictransport_block_showvia": "Show via",
+      "invalid_publictransport_block_station": "Enter a station or a tpc code.",
+      "timegraph_block": "Timegraph",
+      "timegraph_block_idx": "Domoticz device IDX",
+      "timegraph_block_idx_help": "The device whose value is graphed.",
+      "timegraph_block_duration": "Duration (seconds)",
+      "timegraph_block_height": "Height (px)",
+      "timegraph_block_xticks": "X-axis labels (count)",
+      "timegraph_block_yticks": "Y-axis labels (count)",
+      "timegraph_block_xlabels": "Show time-axis labels",
+      "invalid_timegraph_block_idx": "Enter a valid Domoticz device IDX.",
+      "xmltvguide_block": "TV Guide",
+      "xmltvguide_block_url": "XMLTV URL",
+      "xmltvguide_block_url_help": "URL of an XMLTV-format guide file, e.g. http://my-epg-server/guide.xml.",
+      "xmltvguide_block_channels": "Channels",
+      "xmltvguide_block_channels_help": "Comma-separated channel names or IDs to show.",
+      "xmltvguide_block_maxitems": "Maximum number of programmes",
+      "xmltvguide_block_layout": "Layout",
+      "xmltvguide_block_layout_0": "Show channel name",
+      "xmltvguide_block_layout_1": "Hide channel name",
+      "xmltvguide_block_refresh": "Refresh interval (seconds)",
+      "invalid_xmltvguide_block_url": "Enter a valid XMLTV URL.",
+      "camera_block": "Camera",
+      "camera_block_imageurl": "Image URL",
+      "camera_block_imageurl_help": "Full URL of the camera snapshot image, refreshed periodically.",
+      "camera_block_videourl": "Video URL (optional, MJPEG)",
+      "camera_block_videourl_help": "Only needed for a live MJPEG stream instead of a refreshing snapshot.",
+      "camera_block_height": "Height (px)",
+      "camera_block_refresh": "Refresh interval (seconds)",
+      "camera_block_forcerefresh": "Force cache refresh",
+      "invalid_camera_block_imageurl": "Enter a valid image URL.",
+      "news_block": "News",
+      "news_block_feed": "RSS feed URL",
+      "news_block_feed_help": "Full URL of an RSS/Atom news feed.",
+      "news_block_maxheight": "Maximum height (px)",
+      "news_block_showimages": "Show images",
+      "invalid_news_block_feed": "Enter a valid news feed URL.",
+      "graph_block": "Graph",
+      "graph_block_devices": "Devices (IDX)",
+      "graph_block_devices_help": "Comma-separated Domoticz device IDs to combine into one graph.",
+      "graph_block_type": "Graph type",
+      "graph_block_type_line": "Line",
+      "graph_block_type_bar": "Bar",
+      "graph_block_groupby": "Group by",
+      "graph_block_groupby_none": "None",
+      "graph_block_groupby_hour": "Hour",
+      "graph_block_groupby_day": "Day",
+      "graph_block_groupby_week": "Week",
+      "graph_block_groupby_month": "Month",
+      "graph_block_legend": "Show legend",
+      "graph_block_height": "Height (px)",
+      "invalid_graph_devices": "Enter at least one valid device ID.",
       "lms_block": "Lyrion Music Server",
       "lms_title": "Title",
       "lms_server": "Server / IP",
@@ -323,6 +424,12 @@
       "lms_player_placeholder": "Test the connection to list players",
       "lms_refresh_interval": "Refresh interval",
       "lms_hide_when_off": "Hide block when player is off",
+      "lms_text_style": "Text style",
+      "lms_title_line": "Title",
+      "lms_artist_line": "Artist",
+      "lms_station_line": "Station",
+      "lms_font_size": "Size (px)",
+      "lms_font_color": "Color",
       "invalid_lms_server": "Enter the Lyrion Music Server address.",
       "invalid_lms_port": "Enter a valid port (1-65535).",
       "invalid_lms_player": "Test the connection and select a player.",
@@ -368,6 +475,8 @@
     "widgeteditor": {
       "title": "Widgets",
       "choose": "Choose the functions to show as tiles on screen 1.",
+      "widgets_single_heading": "Widgets (once per screen)",
+      "widgets_multi_heading": "Widgets (multiple per screen)",
       "close": "Close",
       "save": "Save",
       "saving": "Saving…",
@@ -564,6 +673,7 @@
       "radio_description": "Internet radio stream player (Streamplayer).",
       "radio_station": "Station",
       "radio_url": "Stream URL",
+      "radio_logo": "Station Logo",
       "radio_add": "Add station",
       "radio_remove": "Remove station",
       "invalid_radio_url_prefix": "Enter a valid HTTP(S) stream URL for station",
@@ -589,6 +699,8 @@
       "owm_city_field_help": "City name or OpenWeatherMap city id. Leave empty to use the global config['owm_city'] setting.",
       "owm_country_field": "Country",
       "owm_country_field_help": "Country code, e.g. 'nl'. Leave empty to use the global config['owm_country'] setting.",
+      "graph_title": "Graph",
+      "graph_description": "Historical chart of one or more Domoticz device values, with Now/Today/Month buttons.",
       "timegraph_title": "Timegraph",
       "timegraph_description": "Moving time chart of one or more Domoticz device values.",
       "timegraph_idx": "Main IDX",
@@ -633,9 +745,13 @@
       "garbage_maxitems": "Amount of pickups to show",
       "garbage_maxdays": "Maximum days ahead",
       "garbage_maxdays_help": "Maximum number of days ahead to search. Default: 32.",
+      "garbage_row1_color": "Row 1 color",
+      "garbage_row1_fontsize": "Row 1 font size (px)",
+      "garbage_row2_color": "Row 2+ color",
+      "garbage_row2_fontsize": "Row 2+ font size (px)",
       "garbage_street": "Street",
       "garbage_use_colors": "Text Colors",
-      "garbage_use_cors_prefix": "Use CORS Prefix (Default is on)",
+      "garbage_use_cors_prefix": "Use CORS Prefix",
       "garbage_use_names": "Custom Names",
       "garbage_use_prefix_help": "The CORS prefix sometimes causes errors",
       "garbage_width": "Width of block (1-12)",
@@ -862,11 +978,594 @@
         "--blocktitle": "Block title (--blocktitle)",
         "--text-title": "Text title (--text-title)",
         "--text-status": "Text status (--text-status)",
-        "--font-small": "Font small (--font-small)",
-        "--font-large": "Font large (--font-large)",
+        "--font-small": "Data text (--font-small)",
+        "--font-large": "Header/title bar text (--font-large)",
+        "--font-device-title": "Device title text (--font-device-title)",
+        "--font-update": "Update text (--font-update)",
         "--icon-font-size": "Icon (--icon-font-size)",
-        "--icon-image-size": "Image (--icon-image-size)"
+        "--icon-image-size": "Image (--icon-image-size)",
+        "--icon-column-width": "Icon column width (--icon-column-width)"
       }
+    },
+    "customfieldpresets": {
+      "title": "Available extra fields",
+      "hint": "Type to filter. You can still enter a custom field manually.",
+      "noResults": "No matching preset. The typed field can still be used manually.",
+      "alreadyUsed": "Already added",
+      "type": "Type",
+      "defaultValue": "Default",
+      "example": "Example",
+      "categories": {
+        "visual": "Image / icon",
+        "data": "Data / display",
+        "behaviour": "Behaviour",
+        "actions": "Actions on change",
+        "navigation": "Popup / navigation",
+        "background": "Background",
+        "advanced": "Advanced"
+      },
+      "presets": {
+        "hideimageonempty": {
+          "description": "Hide the configured image when the device Data/sValue is empty."
+        },
+        "iconOn": {
+          "description": "Font Awesome icon to use when the device is On."
+        },
+        "iconOff": {
+          "description": "Font Awesome icon to use when the device is Off."
+        },
+        "imageOn": {
+          "description": "Image from the img/ folder to use when the device is On."
+        },
+        "imageOff": {
+          "description": "Image from the img/ folder to use when the device is Off."
+        },
+        "addClass": {
+          "description": "Add a custom CSS class to the block."
+        },
+        "textOn": {
+          "description": "Text shown when the device is On."
+        },
+        "textOff": {
+          "description": "Text shown when the device is Off."
+        },
+        "unit": {
+          "description": "Text placed behind the displayed device value."
+        },
+        "decimals": {
+          "description": "Number of decimals used for the displayed value."
+        },
+        "scale": {
+          "description": "Multiplier applied to the device value before display."
+        },
+        "values": {
+          "description": "Define which device/subdevice values are shown. Enter valid JSON."
+        },
+        "multi_line": {
+          "description": "Show multiple subvalues on separate lines."
+        },
+        "single_line": {
+          "description": "Show multiple subvalues on one line."
+        },
+        "showsubtitles": {
+          "description": "Show subvalue subtitles. Supported variants are 1 and 2."
+        },
+        "showvalues": {
+          "description": "Array of subvalue numbers to display. Enter valid JSON."
+        },
+        "sortOrder": {
+          "description": "Selector sorting: 0 none, 1 ascending, -1 descending."
+        },
+        "batteryThreshold": {
+          "description": "Show the battery warning below this percentage."
+        },
+        "flash": {
+          "description": "Flash the block after a value change for this many milliseconds."
+        },
+        "hide_stop": {
+          "description": "Hide the Stop button for supported devices such as blinds."
+        },
+        "protected": {
+          "description": "Prevent manual switching from Dashticz."
+        },
+        "confirmation": {
+          "description": "Ask for confirmation before changing a switch device."
+        },
+        "password": {
+          "description": "Password-protect supported switch actions."
+        },
+        "playsound": {
+          "description": "Play a sound when the device changes."
+        },
+        "playsoundOn": {
+          "description": "Play a sound when the device changes to On."
+        },
+        "playsoundOff": {
+          "description": "Play a sound when the device changes to Off."
+        },
+        "speak": {
+          "description": "Speak text when the device changes."
+        },
+        "speakOn": {
+          "description": "Speak text when the device changes to On."
+        },
+        "speakOff": {
+          "description": "Speak text when the device changes to Off."
+        },
+        "gotoslide": {
+          "description": "Go to this screen when the device changes."
+        },
+        "gotoslideOn": {
+          "description": "Go to this screen when the device changes to On."
+        },
+        "gotoslideOff": {
+          "description": "Go to this screen when the device changes to Off."
+        },
+        "openpopup": {
+          "description": "Open a configured popup when the device changes."
+        },
+        "openpopupOn": {
+          "description": "Open a configured popup when the device changes to On."
+        },
+        "openpopupOff": {
+          "description": "Open a configured popup when the device changes to Off."
+        },
+        "popup": {
+          "description": "Use a configured popup definition for this block."
+        },
+        "graph": {
+          "description": "Enable or disable the click graph for supported devices."
+        },
+        "url": {
+          "description": "URL opened when a supported block is clicked."
+        },
+        "newwindow": {
+          "description": "URL click mode: 0 same window, 1 tab, 2 frame, 3 GET, 4 POST, 5 window."
+        },
+        "backgroundimage": {
+          "description": "Background image URL or Domoticz text-device idx containing the URL."
+        },
+        "backgroundsize": {
+          "description": "Background sizing, for example cover, contain or 80%."
+        },
+        "backgroundopacity": {
+          "description": "Opacity of the configured background image."
+        },
+        "colorpicker": {
+          "description": "RGB colorpicker mode: 0 disabled, 1 old style, 2 new style."
+        },
+        "colorpickerscale": {
+          "description": "Relative scale of colorpicker mode 2."
+        },
+        "mode": {
+          "description": "Device-specific mode; only use when the relevant block documentation requires it."
+        },
+        "switchMode": {
+          "description": "For supported RGB devices, open the colorpicker instead of toggling On/Off."
+        }
+      }
+    },
+    "customfieldsetoptions": {
+      "title": "Possible values",
+      "strictHint": "Choose one of these supported values.",
+      "freeHint": "Suggested values. You may also type another valid value.",
+      "current": "Current",
+      "exampleValue": "Example value",
+      "options": {
+        "hideimageonempty": [
+          {
+            "value": "true",
+            "description": "Hide image when Data is empty"
+          },
+          {
+            "value": "false",
+            "description": "Always show image"
+          }
+        ],
+        "multi_line": [
+          {
+            "value": "true",
+            "description": "Show values on separate lines"
+          },
+          {
+            "value": "false",
+            "description": "Do not force multiple lines"
+          }
+        ],
+        "single_line": [
+          {
+            "value": "true",
+            "description": "Show values on one line"
+          },
+          {
+            "value": "false",
+            "description": "Do not force a single line"
+          }
+        ],
+        "hide_stop": [
+          {
+            "value": "true",
+            "description": "Hide Stop button"
+          },
+          {
+            "value": "false",
+            "description": "Show Stop button"
+          }
+        ],
+        "protected": [
+          {
+            "value": "true",
+            "description": "Prevent manual switching"
+          },
+          {
+            "value": "false",
+            "description": "Allow manual switching"
+          }
+        ],
+        "graph": [
+          {
+            "value": "true",
+            "description": "Enable graph"
+          },
+          {
+            "value": "false",
+            "description": "Disable graph"
+          }
+        ],
+        "confirmation": [
+          {
+            "value": "0",
+            "description": "No confirmation"
+          },
+          {
+            "value": "1",
+            "description": "Ask before switching"
+          }
+        ],
+        "sortorder": [
+          {
+            "value": "-1",
+            "description": "Descending"
+          },
+          {
+            "value": "0",
+            "description": "No sorting"
+          },
+          {
+            "value": "1",
+            "description": "Ascending"
+          }
+        ],
+        "showsubtitles": [
+          {
+            "value": "0",
+            "description": "Hide subtitles"
+          },
+          {
+            "value": "1",
+            "description": "Show subtitle with title"
+          },
+          {
+            "value": "2",
+            "description": "Show subtitle with value"
+          }
+        ],
+        "newwindow": [
+          {
+            "value": "0",
+            "description": "Open in current window"
+          },
+          {
+            "value": "1",
+            "description": "Open in new browser tab"
+          },
+          {
+            "value": "2",
+            "description": "Open in popup/frame"
+          },
+          {
+            "value": "3",
+            "description": "HTTP GET without window"
+          },
+          {
+            "value": "4",
+            "description": "HTTP POST without window"
+          },
+          {
+            "value": "5",
+            "description": "Open in separate browser window"
+          }
+        ],
+        "colorpicker": [
+          {
+            "value": "0",
+            "description": "Disabled"
+          },
+          {
+            "value": "1",
+            "description": "Old colorpicker"
+          },
+          {
+            "value": "2",
+            "description": "New colorpicker"
+          }
+        ],
+        "switchmode": [
+          {
+            "value": "color",
+            "description": "Open colorpicker instead of On/Off"
+          }
+        ],
+        "backgroundsize": [
+          {
+            "value": "cover",
+            "description": "Fill the complete block"
+          },
+          {
+            "value": "contain",
+            "description": "Fit complete image inside block"
+          },
+          {
+            "value": "80%",
+            "description": "Custom percentage example"
+          },
+          {
+            "value": "100%",
+            "description": "Original/full percentage example"
+          }
+        ],
+        "backgroundopacity": [
+          {
+            "value": "1",
+            "description": "100% visible"
+          },
+          {
+            "value": "0.75",
+            "description": "75% visible"
+          },
+          {
+            "value": "0.5",
+            "description": "50% visible"
+          },
+          {
+            "value": "0.25",
+            "description": "25% visible"
+          },
+          {
+            "value": "0",
+            "description": "Transparent"
+          }
+        ],
+        "colorpickerscale": [
+          {
+            "value": "1",
+            "description": "100%"
+          },
+          {
+            "value": "1.25",
+            "description": "125%"
+          },
+          {
+            "value": "1.5",
+            "description": "150%"
+          },
+          {
+            "value": "2",
+            "description": "200%"
+          }
+        ],
+        "decimals": [
+          {
+            "value": "0",
+            "description": "No decimals"
+          },
+          {
+            "value": "1",
+            "description": "One decimal"
+          },
+          {
+            "value": "2",
+            "description": "Two decimals"
+          },
+          {
+            "value": "3",
+            "description": "Three decimals"
+          }
+        ],
+        "batterythreshold": [
+          {
+            "value": "10",
+            "description": "Warn below 10%"
+          },
+          {
+            "value": "15",
+            "description": "Warn below 15%"
+          },
+          {
+            "value": "20",
+            "description": "Warn below 20%"
+          },
+          {
+            "value": "30",
+            "description": "Common/default threshold"
+          }
+        ],
+        "flash": [
+          {
+            "value": "0",
+            "description": "No flash"
+          },
+          {
+            "value": "250",
+            "description": "250 ms"
+          },
+          {
+            "value": "500",
+            "description": "500 ms"
+          },
+          {
+            "value": "1000",
+            "description": "1000 ms"
+          }
+        ],
+        "scale": [
+          {
+            "value": "0.001",
+            "description": "Divide by 1000"
+          },
+          {
+            "value": "0.01",
+            "description": "Divide by 100"
+          },
+          {
+            "value": "0.1",
+            "description": "Divide by 10"
+          },
+          {
+            "value": "1",
+            "description": "No scaling"
+          },
+          {
+            "value": "10",
+            "description": "Multiply by 10"
+          },
+          {
+            "value": "100",
+            "description": "Multiply by 100"
+          },
+          {
+            "value": "1000",
+            "description": "Multiply by 1000"
+          }
+        ],
+        "mode": [
+          {
+            "value": "1",
+            "description": "Example: device-specific mode 1"
+          }
+        ],
+        "texton": [
+          {
+            "value": "On",
+            "description": "Example On text"
+          },
+          {
+            "value": "Aan",
+            "description": "Dutch example"
+          },
+          {
+            "value": "Open",
+            "description": "Example state text"
+          }
+        ],
+        "textoff": [
+          {
+            "value": "Off",
+            "description": "Example Off text"
+          },
+          {
+            "value": "Uit",
+            "description": "Dutch example"
+          },
+          {
+            "value": "Closed",
+            "description": "Example state text"
+          },
+          {
+            "value": "Dicht",
+            "description": "Dutch state example"
+          }
+        ],
+        "unit": [
+          {
+            "value": "°C",
+            "description": "Temperature"
+          },
+          {
+            "value": "%",
+            "description": "Percentage"
+          },
+          {
+            "value": "W",
+            "description": "Watt"
+          },
+          {
+            "value": "kW",
+            "description": "Kilowatt"
+          },
+          {
+            "value": "V",
+            "description": "Volt"
+          },
+          {
+            "value": "A",
+            "description": "Ampere"
+          }
+        ]
+      }
+    },
+    "devicerules": {
+      "automation": "Automation",
+      "help": "Evaluate one trigger and then run the enabled actions. CSS targets this device; the text action fills the data/value field of a selected target device.",
+      "enabled": "On",
+      "trigger": "Trigger",
+      "actions": "Actions",
+      "property": "Status / property",
+      "condition": "Condition",
+      "value": "Value",
+      "cssAction": "Add CSS to current device",
+      "cssActionHelp": "The generated class is automatically added to and removed from the device whose configuration popup is open.",
+      "currentDevice": "Current device",
+      "textAction": "Put text in another device",
+      "textTarget": "Text action target device",
+      "targetHelp": "The dropdown lists available configured devices by name, IDX and block key. Text from multiple automations using the same target is automatically shown on separate lines; Text devices are listed first.",
+      "textOn": "Text when true",
+      "textOff": "Text when false",
+      "textCssAction": "Also apply CSS to target device",
+      "textCssActionHelp": "The generated class is added to and removed from the text action's target device, in sync with the trigger. Only visible while the text action itself is enabled.",
+      "cssClass": "CSS class",
+      "styling": "Styling",
+      "existingCss": "Existing CSS / class only",
+      "background": "Background",
+      "border": "Border",
+      "textColor": "Text color",
+      "backgroundColor": "Background color",
+      "opacity": "Opacity",
+      "borderWidth": "Border width",
+      "borderStyle": "Border style",
+      "borderColor": "Border color",
+      "bannerText": "Banner text",
+      "bannerTop": "Distance from top (px)",
+      "fontSize": "Font size (px)",
+      "legacyTarget": "Existing CSS target (compatibility)",
+      "legacyTargetHelp": "This older rule points to another block. Keep it unchanged to preserve the old behavior, or select This device.",
+      "selfTarget": "This device",
+      "advancedCss": "Advanced CSS options",
+      "remove": "Remove",
+      "addRule": "Add automation",
+      "noRules": "No automations configured yet.",
+      "advanced": "Advanced",
+      "handler": "Custom JS handler",
+      "handlerHelp": "Optional: link this device to getStatus_<name>(block, afterupdate) in custom.js.",
+      "invalidTrigger": "Automation: fill Status/property, Condition and Value for the trigger.",
+      "invalidActions": "Automation: enable at least one action.",
+      "invalidTextRule": "Automation: select a target device for the text action.",
+      "invalidTextValue": "Automation: enter text for the true and/or false result.",
+      "invalidBannerText": "Automation: enter banner text without quote or backslash characters.",
+      "invalidClass": "Automation: use a valid CSS class (letters, numbers, _ and -).",
+      "invalidHandler": "Automation: Custom JS handler may contain letters, numbers, _ and $ and may not start with a number.",
+      "cssSaving": "Saving automation to custom.js / custom.css...",
+      "cssSaveFailed": "Automation: custom.js / custom.css could not be updated.",
+      "source": "Source block",
+      "textDevices": "Text devices",
+      "otherBlocks": "Other available devices",
+      "unavailableTarget": "No longer available"
+    },
+    "haymanclock": {
+      "day": "day",
+      "hours": "hours",
+      "minutes": "minutes",
+      "seconds": "seconds"
     }
   },
   "switches": {

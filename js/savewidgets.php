@@ -72,6 +72,10 @@ $allowedSettings = [
     'garbage_hideicon'       => 'bool',
     'garbage_icon_use_colors'=> 'bool',
     'garbage_use_colors'     => 'bool',
+    'garbage_row1_fontsize'  => 'number',
+    'garbage_row1_color'     => 'hex_color',
+    'garbage_row2_fontsize'  => 'number',
+    'garbage_row2_color'     => 'hex_color',
     'garbage_use_names'      => 'bool',
     'garbage_use_cors_prefix'=> 'bool',
     // sonarr
@@ -168,6 +172,11 @@ if (isset($data['settings']) && is_array($data['settings'])) {
         } elseif ($type === 'security_panel_lock') {
             if (in_array($value, [0, 1, 2, '0', '1', '2'], true)) {
                 $configSettings[$key] = (int)$value;
+            }
+        } elseif ($type === 'hex_color') {
+            $str = (string)$value;
+            if ($str === '' || preg_match('/^#[0-9a-fA-F]{3,8}$/', $str)) {
+                $configSettings[$key] = $str;
             }
         } else {
             // string: sanitize
@@ -709,6 +718,20 @@ foreach ($data['widgets'] as $entry) {
                 'name' => $name,
                 'file' => $file,
             ];
+            if (isset($track['logo']) && is_string($track['logo'])) {
+                $logo = trim($track['logo']);
+                if ($logo !== '') {
+                    if (strlen($logo) <= 2048 && preg_match('#^https?://[^\s]+$#i', $logo)) {
+                        // Remote logo: stored as-is
+                        $widget['tracks'][count($widget['tracks']) - 1]['logo'] = $logo;
+                    } elseif (strlen($logo) <= 255 &&
+                        preg_match('#^[^/\\\\\x00-\x1F]+\.(png|jpe?g|svg|gif|webp)$#i', $logo)) {
+                        // Local logo: only a bare filename allowed (no slashes, no ..),
+                        // Resolved to img/custom/radio/<file> at render time by DT_streamplayer.
+                        $widget['tracks'][count($widget['tracks']) - 1]['logo'] = $logo;
+                    }
+                }
+            }
         }
     }
 
