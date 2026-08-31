@@ -477,7 +477,7 @@ screens[2] = {
     expect(editedDevice.icon).toBe('');
   });
 
-  test('persists default icons only for newly added iframe and Sunrise widgets', async ({
+  test('persists a default icon for a newly added Sunrise widget', async ({
     page,
   }) => {
     let widgetRequest = null;
@@ -518,29 +518,229 @@ screens[2] = {
     await page.evaluate('DashticzWidgetEditor.open()');
     await expect(page.locator('#widgeteditorpopup')).toBeVisible();
 
-    await page.locator('.we-config-btn[data-widget-id="iframe"]').click();
-    await expect(page.locator('#we-config-popup')).toBeVisible();
-    const iframeUrl = page.locator('#we-cfg-iframe-url');
+    await page.locator('.we-widget-card[data-widget-id="sunrise"]').click();
+    await page.locator('#we-save-btn').click();
+    await expect.poll(() => widgetRequest).not.toBeNull();
+
+    const sunrise = widgetRequest.widgets.find(
+      (entry) => entry.id === 'sunrise'
+    );
+    expect(sunrise.icon).toBe('fas fa-sun');
+  });
+
+  test('iFrame quick-add popup persists its default icon on a newly added block', async ({
+    page,
+  }) => {
+    // iframe moved from the Widgets catalog's singleton toggle+config flow
+    // (still exercised above by the Sunrise case) to its own repeatable
+    // quick-add popup (js/deviceeditor.js's _showIframePopup(), reached via
+    // its "Click to add" card in the Widgets catalog) - this is the same
+    // regression coverage as the old combined test, scoped to the new flow.
+    let blocksRequest = null;
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'iframe-quickadd-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: ['my_iframe'] }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savelayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.addScriptTag({
+      url: new URL('/js/widgeteditor.js', dashboardUrl).href,
+    });
+    await page.evaluate('DashticzWidgetEditor.open()');
+    await expect(page.locator('#widgeteditorpopup')).toBeVisible();
+
+    await page.locator('.we-widget-card[data-special-widget="iframe"]').click();
+    await expect(page.locator('#iframeblockpopup')).toBeVisible();
+    const iframeUrl = page.locator('#if-device-url');
     // WebKit on Windows can clear programmatic typing in a URL input. This
-    // regression covers the editor payload, so set the DOM value directly.
+    // regression covers the save payload, so set the DOM value directly.
     await iframeUrl.evaluate((input) => {
       input.value = 'https://example.invalid/embedded';
       input.dispatchEvent(new Event('input', { bubbles: true }));
     });
     await expect(iframeUrl).toHaveValue('https://example.invalid/embedded');
-    await page.locator('#we-cfg-ok-btn').click();
-    await expect(page.locator('#we-config-popup')).not.toBeVisible();
+    await page.locator('#if-save-btn').click();
 
-    await page.locator('.we-widget-card[data-widget-id="sunrise"]').click();
-    await page.locator('#we-save-btn').click();
-    await expect.poll(() => widgetRequest).not.toBeNull();
-
-    const iframe = widgetRequest.widgets.find((entry) => entry.id === 'iframe');
-    const sunrise = widgetRequest.widgets.find(
-      (entry) => entry.id === 'sunrise'
-    );
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const iframe = blocksRequest.devices.find((d) => d.kind === 'iframe');
+    expect(iframe).toBeTruthy();
+    // The reference/key is auto-generated (iframe_1, iframe_2, ...) - see
+    // _nextSpecialReference() in js/deviceeditor.js - rather than typed by
+    // the user, so only its shape is asserted here, not an exact value.
+    expect(iframe.key).toMatch(/^iframe_\d+$/);
     expect(iframe.icon).toBe('fas fa-window-maximize');
-    expect(sunrise.icon).toBe('fas fa-sun');
+    expect(iframe.custom_fields.frameurl).toBe(
+      'https://example.invalid/embedded'
+    );
+  });
+
+  test('Camera quick-add popup saves an independently-addable block (#201)', async ({
+    page,
+  }) => {
+    // Camera moved to the same repeatable managedSpecials mechanism as
+    // iFrame/Calendar/Public transport/Timegraph/TV Guide/LMS above: its
+    // "Click to add" card opens its own quick-add popup
+    // (js/deviceeditor.js's _showCameraPopup()) and can be placed any
+    // number of times, independently of the Widgets catalog's singleton
+    // 'camera' entry (its own multi-camera tray/carousel config).
+    let blocksRequest = null;
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'camera-quickadd-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: ['camera_1'] }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savelayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.addScriptTag({
+      url: new URL('/js/widgeteditor.js', dashboardUrl).href,
+    });
+    await page.evaluate('DashticzWidgetEditor.open()');
+    await expect(page.locator('#widgeteditorpopup')).toBeVisible();
+
+    await page.locator('.we-widget-card[data-special-widget="camera"]').click();
+    await expect(page.locator('#camerablockpopup')).toBeVisible();
+    const imageUrl = page.locator('#cam-device-imageurl');
+    // WebKit on Windows can clear programmatic typing in a URL input. This
+    // regression covers the save payload, so set the DOM value directly.
+    await imageUrl.evaluate((input) => {
+      input.value = 'https://example.invalid/camera.jpg';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await expect(imageUrl).toHaveValue('https://example.invalid/camera.jpg');
+    await page.locator('#cam-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const camera = blocksRequest.devices.find((d) => d.kind === 'camera');
+    expect(camera).toBeTruthy();
+    // The reference/key is auto-generated (camera_1, camera_2, ...) - see
+    // _nextSpecialReference() in js/deviceeditor.js - rather than typed by
+    // the user, so only its shape is asserted here, not an exact value.
+    expect(camera.key).toMatch(/^camera_\d+$/);
+    expect(camera.custom_fields.imageUrl).toBe(
+      'https://example.invalid/camera.jpg'
+    );
+  });
+
+  test('News quick-add popup saves an independently-addable block (#201)', async ({
+    page,
+  }) => {
+    // News moved to the same repeatable managedSpecials mechanism as
+    // iFrame/Calendar/Public transport/Timegraph/TV Guide/LMS/Camera
+    // above: its "Click to add" card opens its own quick-add popup
+    // (js/deviceeditor.js's _showNewsPopup()) and can be placed any
+    // number of times, independently of the Widgets catalog's singleton
+    // 'news' entry (its own global default_news_url/news_scroll_after
+    // config).
+    let blocksRequest = null;
+    await page.route('**/info.php?get=csrf', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ token: 'news-quickadd-token' }),
+      })
+    );
+    await page.route('**/js/saveblocks.php*', async (route) => {
+      blocksRequest = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: ['news_1'] }),
+      });
+    });
+    await page.route('**/js/savewidgets.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      })
+    );
+    await page.route('**/js/savelayout.php*', (route) =>
+      route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true }),
+      })
+    );
+
+    await page.goto(dashboardUrl);
+    await waitForDashboard(page);
+    await page.addScriptTag({
+      url: new URL('/js/widgeteditor.js', dashboardUrl).href,
+    });
+    await page.evaluate('DashticzWidgetEditor.open()');
+    await expect(page.locator('#widgeteditorpopup')).toBeVisible();
+
+    await page.locator('.we-widget-card[data-special-widget="news"]').click();
+    await expect(page.locator('#newsblockpopup')).toBeVisible();
+    const feedUrl = page.locator('#nw-device-feed');
+    // WebKit on Windows can clear programmatic typing in a URL input. This
+    // regression covers the save payload, so set the DOM value directly.
+    await feedUrl.evaluate((input) => {
+      input.value = 'https://example.invalid/feed.xml';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    await expect(feedUrl).toHaveValue('https://example.invalid/feed.xml');
+    await page.locator('#nw-save-btn').click();
+
+    await expect.poll(() => blocksRequest).not.toBeNull();
+    const news = blocksRequest.devices.find((d) => d.kind === 'news');
+    expect(news).toBeTruthy();
+    // The reference/key is auto-generated (news_1, news_2, ...) - see
+    // _nextSpecialReference() in js/deviceeditor.js - rather than typed by
+    // the user, so only its shape is asserted here, not an exact value.
+    expect(news.key).toMatch(/^news_\d+$/);
+    expect(news.custom_fields.feed).toBe('https://example.invalid/feed.xml');
   });
 
   test('Widget Config hides legacy globals and keeps current widget controls', async ({
@@ -2336,6 +2536,38 @@ screens[1] = {
       await expect(item).toHaveCSS('overflow', 'auto');
     }
 
+    await page.locator('.screen1 .layouteditoricon').click();
+    await expect(page.locator('body')).toHaveClass(/dle-active/);
+    const graphOverlay = graph.locator('.dle-overlay');
+    await expect(graphOverlay.locator('.dle-drag-icon')).toHaveCount(0);
+    await expect(
+      graphOverlay.locator('.dle-config-button .fa-cog')
+    ).toHaveCount(1);
+    await graphOverlay.locator('.dle-config-button').click();
+    await expect(page.locator('#de-config-popup')).toBeVisible();
+    await expect(page.locator('#de-config-popup')).toHaveAttribute(
+      'data-block-kind',
+      'special'
+    );
+    await expect(page.locator('#de-config-graph-devices')).toHaveValue('708');
+    await expect(page.locator('#de-config-graph-type')).toHaveValue('line');
+    await expect(page.locator('#de-config-graph-groupby')).toHaveValue('');
+    await expect(page.locator('#de-config-graph-legend')).not.toBeChecked();
+    await expect(page.locator('#de-config-graph-height')).toHaveValue('');
+    // The dedicated fields replace their raw Custom-field duplicates, while
+    // that section remains available for advanced Graph options.
+    await expect(
+      page.locator('#de-config-popup .de-custom-field-name[value="devices"]')
+    ).toHaveCount(0);
+    await expect(
+      page.locator('#de-config-popup .de-custom-fields')
+    ).toBeVisible();
+    await page
+      .locator('#de-config-popup [data-bs-dismiss="modal"]')
+      .last()
+      .click();
+    await expect(page.locator('#de-config-popup')).toBeHidden();
+
     await openDeviceEditorFromScreenEditor(page);
     await page
       .locator('#deviceeditorpopup [data-bs-dismiss="modal"]')
@@ -2390,9 +2622,17 @@ screens[1] = {
     });
 
     const layoutEditorButton = page.locator('.screen1 .layouteditoricon');
-    await expect(layoutEditorButton).toBeVisible();
-    // The icon briefly animates while the responsive layout settles in
-    // WebKit. Dispatching its click avoids a false failure on element motion.
+    // The icon briefly animates while the responsive layout settles back
+    // from the mobile viewport above, and in WebKit that settle can still be
+    // in progress once the desktop viewport is applied - especially now that
+    // this test already cycles the Layout Editor open/closed once beforehand
+    // (see the Graph config-cog check above), leaving less margin than the
+    // default 5s timeout before this second, later open. Reuse
+    // waitForDashboard()'s own 15s allowance instead of the default.
+    // Dispatching the click via evaluate() (rather than Playwright's own
+    // actionability-checked click()) avoids a false failure on the element
+    // still being mid-motion once it is visible.
+    await expect(layoutEditorButton).toBeVisible({ timeout: 15000 });
     await layoutEditorButton.evaluate((button) => button.click());
     await expect(page.locator('body')).toHaveClass(/dle-active/);
     await expect(grid).toHaveClass(/dle-grid-canvas/);

@@ -68,6 +68,16 @@
       "textiel": "Textiel",
       "sorti": "Gesorteerd afval",
       "duo": "Duobak"
+    },
+    "ui": {
+      "text_styling": "Tekstopmaak",
+      "first_pickup_row": "Eerste ophaalregel",
+      "pickup_rows_other": "Ophaalregels 2+",
+      "font_size": "Lettergrootte",
+      "font_color": "Tekstkleur",
+      "kliko_image": "Kliko-afbeelding",
+      "kliko_scale": "Kliko-schaal (%)",
+      "kliko_scale_help": "100 = normale grootte, 80 = 80%, 125 = 125%. Laat leeg om de grootte van het thema te gebruiken."
     }
   },
   "misc": {
@@ -300,7 +310,22 @@
       "html_block_title": "Titel",
       "html_block_border": "Marge",
       "invalid_html_block_name": "Vul een geldige unieke block naam in.",
-      "invalid_html_block_file": "Vul een geldige html-bestandsnaam in (relatief aan custom/)."
+      "invalid_html_block_file": "Vul een geldige html-bestandsnaam in (relatief aan custom/).",
+      "graph_block": "Grafiek",
+      "graph_block_devices": "Devices (IDX)",
+      "graph_block_devices_help": "Kommagescheiden Domoticz device-ID's om in één grafiek te combineren.",
+      "graph_block_type": "Grafiektype",
+      "graph_block_type_line": "Lijn",
+      "graph_block_type_bar": "Staaf",
+      "graph_block_groupby": "Groeperen per",
+      "graph_block_groupby_none": "Geen",
+      "graph_block_groupby_hour": "Uur",
+      "graph_block_groupby_day": "Dag",
+      "graph_block_groupby_week": "Week",
+      "graph_block_groupby_month": "Maand",
+      "graph_block_legend": "Legenda tonen",
+      "graph_block_height": "Hoogte (px)",
+      "invalid_graph_devices": "Vul minstens één geldig device-ID in."
     },
     "layouteditor": {
       "title": "Layout Editor",
@@ -561,6 +586,8 @@
       "owm_city_field_help": "Plaatsnaam of OpenWeatherMap city id. Laat leeg om de globale config['owm_city'] instelling te gebruiken.",
       "owm_country_field": "Land",
       "owm_country_field_help": "Landcode, bijvoorbeeld 'nl'. Laat leeg om de globale config['owm_country'] instelling te gebruiken.",
+      "graph_title": "Grafiek",
+      "graph_description": "Historische grafiek van één of meerdere Domoticz-devicewaarden, met Nu/Vandaag/Maand-knoppen.",
       "timegraph_title": "Timegraph",
       "timegraph_description": "Bewegende tijdgrafiek van één of meerdere Domoticz-devicewaarden.",
       "timegraph_idx": "Hoofd-IDX",
@@ -605,9 +632,13 @@
       "garbage_maxitems": "Aantal ophaaldagen weer te geven",
       "garbage_maxdays": "Maximaal aantal dagen vooruit",
       "garbage_maxdays_help": "Maximaal aantal dagen vooruit waarin wordt gezocht. Standaard: 32.",
+      "garbage_row1_color": "Tekstkleur regel 1",
+      "garbage_row1_fontsize": "Lettergrootte regel 1 (px)",
+      "garbage_row2_color": "Tekstkleur overige regels",
+      "garbage_row2_fontsize": "Lettergrootte overige regels (px)",
       "garbage_street": "Straat",
       "garbage_use_colors": "Tekstkleuren",
-      "garbage_use_cors_prefix": "Gebruik Cors Prefix (standaard is aan)",
+      "garbage_use_cors_prefix": "Gebruik Cors Prefix",
       "garbage_use_names": "Aangepaste namen",
       "garbage_use_prefix_help": "De Cors Prefix kan soms fouten veroorzaken.",
       "garbage_width": "Breedte van het blok (1-12)",
@@ -819,7 +850,7 @@
       "icons": "Icoongrootte",
       "custom_css_active": "Actieve aangepaste stylesheet: {path}",
       "vars": {
-        "--main-bg": "Pagina achtergrond (--main-bg)",
+        "--main-bg": "Blok achtergrond (--main-bg)",
         "--home-bg": "Home achtergrond (--home-bg)",
         "--border-color-inactive": "Rand inactief (--border-color-inactive)",
         "--border-color-active": "Rand actief (--border-color-active)",
@@ -834,11 +865,599 @@
         "--blocktitle": "Blok titel (--blocktitle)",
         "--text-title": "Tekst titel (--text-title)",
         "--text-status": "Tekst status (--text-status)",
-        "--font-small": "Klein lettertype (--font-small)",
-        "--font-large": "Groot lettertype (--font-large)",
+        "--font-small": "Tekst data (--font-small)",
+        "--font-large": "Tekst kop/titelbalk (--font-large)",
+        "--font-device-title": "Tekst device-titel (--font-device-title)",
+        "--font-update": "Tekst update (--font-update)",
         "--icon-font-size": "Icoon (--icon-font-size)",
-        "--icon-image-size": "Afbeelding (--icon-image-size)"
+        "--icon-image-size": "Afbeelding (--icon-image-size)",
+        "--icon-column-width": "Icoon kolombreedte (--icon-column-width)"
       }
+    },
+    "customfieldpresets": {
+      "title": "Beschikbare extra velden",
+      "hint": "Typ om te filteren. Je kunt ook nog steeds zelf een veld invoeren.",
+      "noResults": "Geen passende preset. Het getypte veld kan nog steeds handmatig worden gebruikt.",
+      "alreadyUsed": "Al toegevoegd",
+      "type": "Type",
+      "defaultValue": "Standaard",
+      "example": "Voorbeeld",
+      "categories": {
+        "visual": "Afbeelding / icoon",
+        "data": "Data / weergave",
+        "behaviour": "Gedrag",
+        "actions": "Acties bij wijziging",
+        "navigation": "Popup / navigatie",
+        "background": "Achtergrond",
+        "advanced": "Geavanceerd"
+      },
+      "presets": {
+        "hideimageonempty": {
+          "description": "Verberg de ingestelde afbeelding wanneer Data/sValue van het device leeg is."
+        },
+        "iconOn": {
+          "description": "Font Awesome-icoon dat wordt gebruikt wanneer het device Aan is."
+        },
+        "iconOff": {
+          "description": "Font Awesome-icoon dat wordt gebruikt wanneer het device Uit is."
+        },
+        "imageOn": {
+          "description": "Afbeelding uit de map img/ die wordt gebruikt wanneer het device Aan is."
+        },
+        "imageOff": {
+          "description": "Afbeelding uit de map img/ die wordt gebruikt wanneer het device Uit is."
+        },
+        "addClass": {
+          "description": "Voeg een eigen CSS-class toe aan het block."
+        },
+        "textOn": {
+          "description": "Tekst die wordt getoond wanneer het device Aan is.",
+          "example": "Aan"
+        },
+        "textOff": {
+          "description": "Tekst die wordt getoond wanneer het device Uit is.",
+          "example": "Uit"
+        },
+        "unit": {
+          "description": "Tekst die achter de weergegeven devicewaarde wordt geplaatst."
+        },
+        "decimals": {
+          "description": "Aantal decimalen voor de weergegeven waarde."
+        },
+        "scale": {
+          "description": "Vermenigvuldigingsfactor die vóór weergave op de devicewaarde wordt toegepast."
+        },
+        "values": {
+          "description": "Bepaal welke device/subdevicewaarden worden getoond. Gebruik geldige JSON."
+        },
+        "multi_line": {
+          "description": "Toon meerdere subwaarden op afzonderlijke regels."
+        },
+        "single_line": {
+          "description": "Toon meerdere subwaarden op één regel."
+        },
+        "showsubtitles": {
+          "description": "Toon subtitels van subwaarden. Ondersteunde varianten zijn 1 en 2."
+        },
+        "showvalues": {
+          "description": "Array met nummers van subwaarden die getoond worden. Gebruik geldige JSON."
+        },
+        "sortOrder": {
+          "description": "Sortering van selectors: 0 geen, 1 oplopend, -1 aflopend."
+        },
+        "batteryThreshold": {
+          "description": "Toon de batterijwaarschuwing onder dit percentage."
+        },
+        "flash": {
+          "description": "Laat het block na een waardewijziging dit aantal milliseconden knipperen."
+        },
+        "hide_stop": {
+          "description": "Verberg de Stop-knop voor ondersteunde devices, zoals zonwering."
+        },
+        "protected": {
+          "description": "Voorkom handmatig schakelen vanuit Dashticz."
+        },
+        "confirmation": {
+          "description": "Vraag om bevestiging voordat een schakeldevice wordt gewijzigd."
+        },
+        "password": {
+          "description": "Beveilig ondersteunde schakelacties met een wachtwoord."
+        },
+        "playsound": {
+          "description": "Speel een geluid af wanneer het device verandert."
+        },
+        "playsoundOn": {
+          "description": "Speel een geluid af wanneer het device naar Aan verandert."
+        },
+        "playsoundOff": {
+          "description": "Speel een geluid af wanneer het device naar Uit verandert."
+        },
+        "speak": {
+          "description": "Spreek tekst uit wanneer het device verandert.",
+          "example": "Device status is gewijzigd"
+        },
+        "speakOn": {
+          "description": "Spreek tekst uit wanneer het device naar Aan verandert.",
+          "example": "Device is aan"
+        },
+        "speakOff": {
+          "description": "Spreek tekst uit wanneer het device naar Uit verandert.",
+          "example": "Device is uit"
+        },
+        "gotoslide": {
+          "description": "Ga naar dit scherm wanneer het device verandert."
+        },
+        "gotoslideOn": {
+          "description": "Ga naar dit scherm wanneer het device naar Aan verandert."
+        },
+        "gotoslideOff": {
+          "description": "Ga naar dit scherm wanneer het device naar Uit verandert."
+        },
+        "openpopup": {
+          "description": "Open een ingestelde popup wanneer het device verandert."
+        },
+        "openpopupOn": {
+          "description": "Open een ingestelde popup wanneer het device naar Aan verandert."
+        },
+        "openpopupOff": {
+          "description": "Open een ingestelde popup wanneer het device naar Uit verandert."
+        },
+        "popup": {
+          "description": "Gebruik een ingestelde popupdefinitie voor dit block."
+        },
+        "graph": {
+          "description": "Schakel de klikgrafiek voor ondersteunde devices in of uit."
+        },
+        "url": {
+          "description": "URL die wordt geopend wanneer op een ondersteund block wordt geklikt."
+        },
+        "newwindow": {
+          "description": "URL-klikmodus: 0 zelfde venster, 1 tab, 2 frame, 3 GET, 4 POST, 5 venster."
+        },
+        "backgroundimage": {
+          "description": "URL van de achtergrondafbeelding of IDX van een Domoticz text-device met de URL."
+        },
+        "backgroundsize": {
+          "description": "Formaat van de achtergrond, bijvoorbeeld cover, contain of 80%."
+        },
+        "backgroundopacity": {
+          "description": "Dekking van de ingestelde achtergrondafbeelding."
+        },
+        "colorpicker": {
+          "description": "RGB-kleurkiezer: 0 uit, 1 oude stijl, 2 nieuwe stijl."
+        },
+        "colorpickerscale": {
+          "description": "Relatieve schaal van kleurkiezer type 2."
+        },
+        "mode": {
+          "description": "Device-specifieke modus; alleen gebruiken wanneer de betreffende blockdocumentatie dit vereist."
+        },
+        "switchMode": {
+          "description": "Open bij ondersteunde RGB-devices de kleurkiezer in plaats van Aan/Uit te schakelen."
+        }
+      }
+    },
+    "customfieldsetoptions": {
+      "title": "Mogelijke waarden",
+      "strictHint": "Kies één van deze ondersteunde waarden.",
+      "freeHint": "Voorgestelde waarden. Je kunt ook zelf een andere geldige waarde typen.",
+      "current": "Huidig",
+      "exampleValue": "Voorbeeldwaarde",
+      "options": {
+        "hideimageonempty": [
+          {
+            "value": "true",
+            "description": "Afbeelding verbergen als Data leeg is"
+          },
+          {
+            "value": "false",
+            "description": "Afbeelding altijd tonen"
+          }
+        ],
+        "multi_line": [
+          {
+            "value": "true",
+            "description": "Waarden op aparte regels tonen"
+          },
+          {
+            "value": "false",
+            "description": "Geen meerdere regels afdwingen"
+          }
+        ],
+        "single_line": [
+          {
+            "value": "true",
+            "description": "Waarden op één regel tonen"
+          },
+          {
+            "value": "false",
+            "description": "Geen enkele regel afdwingen"
+          }
+        ],
+        "hide_stop": [
+          {
+            "value": "true",
+            "description": "Stop-knop verbergen"
+          },
+          {
+            "value": "false",
+            "description": "Stop-knop tonen"
+          }
+        ],
+        "protected": [
+          {
+            "value": "true",
+            "description": "Handmatig schakelen blokkeren"
+          },
+          {
+            "value": "false",
+            "description": "Handmatig schakelen toestaan"
+          }
+        ],
+        "graph": [
+          {
+            "value": "true",
+            "description": "Grafiek inschakelen"
+          },
+          {
+            "value": "false",
+            "description": "Grafiek uitschakelen"
+          }
+        ],
+        "confirmation": [
+          {
+            "value": "0",
+            "description": "Geen bevestiging"
+          },
+          {
+            "value": "1",
+            "description": "Bevestiging vragen voor schakelen"
+          }
+        ],
+        "sortorder": [
+          {
+            "value": "-1",
+            "description": "Aflopend"
+          },
+          {
+            "value": "0",
+            "description": "Niet sorteren"
+          },
+          {
+            "value": "1",
+            "description": "Oplopend"
+          }
+        ],
+        "showsubtitles": [
+          {
+            "value": "0",
+            "description": "Subtitels verbergen"
+          },
+          {
+            "value": "1",
+            "description": "Subtitel bij titel tonen"
+          },
+          {
+            "value": "2",
+            "description": "Subtitel bij waarde tonen"
+          }
+        ],
+        "newwindow": [
+          {
+            "value": "0",
+            "description": "Openen in huidig venster"
+          },
+          {
+            "value": "1",
+            "description": "Openen in nieuwe browsertab"
+          },
+          {
+            "value": "2",
+            "description": "Openen in popup/frame"
+          },
+          {
+            "value": "3",
+            "description": "HTTP GET zonder venster"
+          },
+          {
+            "value": "4",
+            "description": "HTTP POST zonder venster"
+          },
+          {
+            "value": "5",
+            "description": "Openen in apart browservenster"
+          }
+        ],
+        "colorpicker": [
+          {
+            "value": "0",
+            "description": "Uitgeschakeld"
+          },
+          {
+            "value": "1",
+            "description": "Oude kleurkiezer"
+          },
+          {
+            "value": "2",
+            "description": "Nieuwe kleurkiezer"
+          }
+        ],
+        "switchmode": [
+          {
+            "value": "color",
+            "description": "Kleurkiezer openen in plaats van Aan/Uit"
+          }
+        ],
+        "backgroundsize": [
+          {
+            "value": "cover",
+            "description": "Volledige block vullen"
+          },
+          {
+            "value": "contain",
+            "description": "Volledige afbeelding in block passen"
+          },
+          {
+            "value": "80%",
+            "description": "Voorbeeld aangepast percentage"
+          },
+          {
+            "value": "100%",
+            "description": "Voorbeeld 100%"
+          }
+        ],
+        "backgroundopacity": [
+          {
+            "value": "1",
+            "description": "100% zichtbaar"
+          },
+          {
+            "value": "0.75",
+            "description": "75% zichtbaar"
+          },
+          {
+            "value": "0.5",
+            "description": "50% zichtbaar"
+          },
+          {
+            "value": "0.25",
+            "description": "25% zichtbaar"
+          },
+          {
+            "value": "0",
+            "description": "Transparant"
+          }
+        ],
+        "colorpickerscale": [
+          {
+            "value": "1",
+            "description": "100%"
+          },
+          {
+            "value": "1.25",
+            "description": "125%"
+          },
+          {
+            "value": "1.5",
+            "description": "150%"
+          },
+          {
+            "value": "2",
+            "description": "200%"
+          }
+        ],
+        "decimals": [
+          {
+            "value": "0",
+            "description": "Geen decimalen"
+          },
+          {
+            "value": "1",
+            "description": "Eén decimaal"
+          },
+          {
+            "value": "2",
+            "description": "Twee decimalen"
+          },
+          {
+            "value": "3",
+            "description": "Drie decimalen"
+          }
+        ],
+        "batterythreshold": [
+          {
+            "value": "10",
+            "description": "Waarschuwen onder 10%"
+          },
+          {
+            "value": "15",
+            "description": "Waarschuwen onder 15%"
+          },
+          {
+            "value": "20",
+            "description": "Waarschuwen onder 20%"
+          },
+          {
+            "value": "30",
+            "description": "Veelgebruikte/standaard grens"
+          }
+        ],
+        "flash": [
+          {
+            "value": "0",
+            "description": "Niet knipperen"
+          },
+          {
+            "value": "250",
+            "description": "250 ms"
+          },
+          {
+            "value": "500",
+            "description": "500 ms"
+          },
+          {
+            "value": "1000",
+            "description": "1000 ms"
+          }
+        ],
+        "scale": [
+          {
+            "value": "0.001",
+            "description": "Delen door 1000"
+          },
+          {
+            "value": "0.01",
+            "description": "Delen door 100"
+          },
+          {
+            "value": "0.1",
+            "description": "Delen door 10"
+          },
+          {
+            "value": "1",
+            "description": "Geen schaling"
+          },
+          {
+            "value": "10",
+            "description": "Vermenigvuldigen met 10"
+          },
+          {
+            "value": "100",
+            "description": "Vermenigvuldigen met 100"
+          },
+          {
+            "value": "1000",
+            "description": "Vermenigvuldigen met 1000"
+          }
+        ],
+        "mode": [
+          {
+            "value": "1",
+            "description": "Voorbeeld: device-specifieke modus 1"
+          }
+        ],
+        "texton": [
+          {
+            "value": "On",
+            "description": "Voorbeeldtekst Aan"
+          },
+          {
+            "value": "Aan",
+            "description": "Nederlands voorbeeld"
+          },
+          {
+            "value": "Open",
+            "description": "Voorbeeld statustekst"
+          }
+        ],
+        "textoff": [
+          {
+            "value": "Off",
+            "description": "Voorbeeldtekst Uit"
+          },
+          {
+            "value": "Uit",
+            "description": "Nederlands voorbeeld"
+          },
+          {
+            "value": "Closed",
+            "description": "Voorbeeld statustekst"
+          },
+          {
+            "value": "Dicht",
+            "description": "Nederlands statusvoorbeeld"
+          }
+        ],
+        "unit": [
+          {
+            "value": "°C",
+            "description": "Temperatuur"
+          },
+          {
+            "value": "%",
+            "description": "Percentage"
+          },
+          {
+            "value": "W",
+            "description": "Watt"
+          },
+          {
+            "value": "kW",
+            "description": "Kilowatt"
+          },
+          {
+            "value": "V",
+            "description": "Volt"
+          },
+          {
+            "value": "A",
+            "description": "Ampère"
+          }
+        ]
+      }
+    },
+    "devicerules": {
+      "automation": "Automation",
+      "help": "Beoordeel één trigger en voer daarna de ingeschakelde acties uit. CSS wordt toegepast op dit device; de tekstactie vult het data-/waardeveld van een geselecteerd doeldevice.",
+      "enabled": "Aan",
+      "trigger": "Trigger",
+      "actions": "Acties",
+      "property": "Status / eigenschap",
+      "condition": "Voorwaarde",
+      "value": "Waarde",
+      "cssAction": "Add CSS aan huidig device",
+      "cssActionHelp": "De gegenereerde class wordt automatisch toegevoegd aan en verwijderd van het device waarvan dit configuratiemenu geopend is.",
+      "currentDevice": "Huidig device",
+      "textAction": "Tekst in ander device plaatsen",
+      "textTarget": "Doeldevice voor tekstactie",
+      "targetHelp": "De pulldown toont beschikbare geconfigureerde devices met naam, IDX en block-key. Teksten van meerdere automations met hetzelfde doeldevice worden automatisch onder elkaar geplaatst; Text-devices worden bovenaan getoond.",
+      "textOn": "Tekst indien waar",
+      "textOff": "Tekst indien onwaar",
+      "textCssAction": "Ook CSS toepassen op doeldevice",
+      "textCssActionHelp": "De gegenereerde class wordt toegevoegd aan en verwijderd van het doeldevice van de tekstactie, gelijk met de trigger. Alleen zichtbaar zolang de tekstactie zelf is ingeschakeld.",
+      "cssClass": "CSS-class",
+      "styling": "Styling",
+      "existingCss": "Bestaande CSS / alleen class",
+      "background": "Achtergrond",
+      "border": "Rand",
+      "textColor": "Tekstkleur",
+      "backgroundColor": "Achtergrondkleur",
+      "opacity": "Dekking",
+      "borderWidth": "Randdikte",
+      "borderStyle": "Randstijl",
+      "borderColor": "Randkleur",
+      "bannerText": "Bannertekst",
+      "bannerTop": "Afstand vanaf boven (px)",
+      "fontSize": "Lettergrootte (px)",
+      "legacyTarget": "Bestaand CSS-doel (compatibiliteit)",
+      "legacyTargetHelp": "Deze oudere regel wijst naar een ander block. Laat dit ongewijzigd om het bestaande gedrag te behouden, of kies Dit device.",
+      "selfTarget": "Dit device",
+      "advancedCss": "Geavanceerde CSS-opties",
+      "remove": "Verwijderen",
+      "addRule": "Automation toevoegen",
+      "noRules": "Nog geen automations ingesteld.",
+      "advanced": "Geavanceerd",
+      "handler": "Custom JS handler",
+      "handlerHelp": "Optioneel: koppel dit device aan getStatus_<naam>(block, afterupdate) in custom.js.",
+      "invalidTrigger": "Automation: vul Status/eigenschap, Voorwaarde en Waarde van de trigger in.",
+      "invalidActions": "Automation: schakel minimaal één actie in.",
+      "invalidTextRule": "Automation: selecteer een doeldevice voor de tekstactie.",
+      "invalidTextValue": "Automation: vul tekst in voor waar en/of onwaar.",
+      "invalidBannerText": "Automation: vul een bannertekst in en gebruik geen aanhalingstekens of backslashes.",
+      "invalidClass": "Automation: gebruik een geldige CSS-class (letters, cijfers, _ en -).",
+      "invalidHandler": "Automation: Custom JS handler mag alleen letters, cijfers, _ en $ bevatten en mag niet met een cijfer beginnen.",
+      "cssSaving": "Automation opslaan in custom.js / custom.css...",
+      "cssSaveFailed": "Automation: custom.js / custom.css kon niet worden bijgewerkt.",
+      "source": "Bronblock",
+      "textDevices": "Text-devices",
+      "otherBlocks": "Overige beschikbare devices",
+      "unavailableTarget": "Niet meer beschikbaar"
+    },
+    "haymanclock": {
+      "day": "dag",
+      "hours": "uur",
+      "minutes": "minuten",
+      "seconds": "seconden"
     }
   },
   "switches": {

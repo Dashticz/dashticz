@@ -1,15 +1,18 @@
-/* global $, blocks, Dashticz, settings, _PARAMS */
+/* global $, blocks, Dashticz, settings, _PARAMS, Domoticz, language */
 
 // Device Rules / Automation for Dashticz.
 //
-// Device Rules are intentionally NOT stored in CONFIG.js.
-// The editor writes a small managed data block to custom/custom.js and writes
-// generated visual classes to custom/custom.css (or the active custom*.css).
-// Existing hand-written content in both files is preserved. Existing
-// getStatus_<block.key>() functions continue to run normally.
+// Rules are intentionally stored outside CONFIG.js. The Device Config editor
+// writes a managed data block to custom/custom.js and writes generated visual
+// classes to custom/custom.css (or the active custom*.css file). Hand-written
+// content in those files is preserved by savedevicerules.php.
 //
-// Only whitelisted rule/style values are sent to savedevicerules.php; the
-// browser never sends raw JavaScript or raw CSS to be written by the server.
+// Schema v2 groups one trigger with two independent actions:
+//   1. CSS styling for the device whose Device Config popup is open.
+//   2. Text in the data/value field of another configured Dashticz device block.
+//
+// The normaliser still accepts the previous flat action/target/className and
+// action/target/textOn/textOff records, so existing automation keeps working.
 (function (window, document) {
   'use strict';
 
@@ -22,8 +25,23 @@
   var editorApiWrapped = false;
   var editorApiTimer = null;
   var pendingPopupSource = '';
+
+  // Runtime state is kept per target. A rule only removes the class/text that
+  // it owns; existing addClass/value settings from CONFIG.js remain untouched.
   var classStates = {};
+  var classBaseValues = {};
+  var classManagedNames = {};
+  var textStates = {};
+  var textBaseValues = {};
   var sourceStateIds = {};
+  // Remember the last live block for every source alias so a saved rule change
+  // can be applied immediately, without waiting for another Domoticz update.
+  var sourceBlocks = {};
+  var runtimeStyleNodes = {};
+  var stateOrder = 0;
+  var MULTILINE_TEXT_VALUE_CLASS = 'dt-automation-multiline-value';
+  var MULTILINE_TEXT_STYLE_ID = 'dt-device-rules-multiline-style';
+  var multilineTextStyleReady = false;
 
   var propertySuggestions = [
     'Status',
@@ -66,100 +84,94 @@
     ['background-border', 'Background + border'],
     ['background-text', 'Background + text'],
     ['background-border-text', 'Background + border + text'],
+    ['banner', 'Floating banner'],
   ];
 
   var borderStyles = ['solid', 'dashed', 'dotted', 'double'];
 
-  var nl = {
-    automation: 'Automation',
-    help: 'Voer regels uit wanneer dit Domoticz-device wordt bijgewerkt. De regels worden opgeslagen in custom.js; gegenereerde opmaak wordt opgeslagen in custom.css.',
-    enabled: 'Aan',
-    property: 'Eigenschap',
-    condition: 'Voorwaarde',
-    value: 'Waarde',
-    target: 'Doelblok',
-    cssClass: 'CSS-class',
-    styling: 'Styling',
-    existingCss: 'Bestaande CSS / alleen class',
-    background: 'Achtergrond',
-    border: 'Rand',
-    textColor: 'Tekstkleur',
-    backgroundColor: 'Achtergrondkleur',
-    opacity: 'Dekking',
-    borderWidth: 'Randdikte',
-    borderStyle: 'Randstijl',
-    borderColor: 'Randkleur',
-    remove: 'Verwijderen',
-    addRule: 'Regel toevoegen',
-    noRules: 'Nog geen regels ingesteld.',
-    advanced: 'Geavanceerd',
-    handler: 'Custom JS handler',
-    handlerHelp:
-      'Optioneel: koppel dit device aan getStatus_<naam>(block, afterupdate) in custom.js.',
-    styleHelp:
-      'Bij een gekozen styling wordt deze CSS-class automatisch in custom.css beheerd. Kies Bestaande CSS als je de class zelf in custom.css onderhoudt.',
-    invalidRule:
-      'Automation: vul voor iedere ingeschakelde regel Eigenschap, Doelblok en CSS-class in.',
-    invalidValue: 'Automation: vul een waarde in voor deze voorwaarde.',
-    invalidClass:
-      'Automation: voor automatisch gegenereerde styling moet CSS-class uit één geldige classnaam bestaan (letters/cijfers/_/-).',
-    invalidHandler:
-      'Automation: Custom JS handler mag alleen letters, cijfers, _ en $ bevatten en mag niet met een cijfer beginnen.',
-    cssSaving: 'Automation opslaan in custom.js / custom.css...',
-    cssSaveFailed:
-      'Automation: custom.js / custom.css kon niet worden bijgewerkt.',
-    source: 'Bronblok',
-  };
-
-  var en = {
-    automation: 'Automation',
-    help: 'Run rules whenever this Domoticz device is updated. Rules are stored in custom.js; generated styling is stored in custom.css.',
-    enabled: 'On',
-    property: 'Property',
-    condition: 'Condition',
-    value: 'Value',
-    target: 'Target block',
-    cssClass: 'CSS class',
-    styling: 'Styling',
-    existingCss: 'Existing CSS / class only',
-    background: 'Background',
-    border: 'Border',
-    textColor: 'Text color',
-    backgroundColor: 'Background color',
-    opacity: 'Opacity',
-    borderWidth: 'Border width',
-    borderStyle: 'Border style',
-    borderColor: 'Border color',
-    remove: 'Remove',
-    addRule: 'Add rule',
-    noRules: 'No rules configured yet.',
-    advanced: 'Advanced',
-    handler: 'Custom JS handler',
-    handlerHelp:
-      'Optional: link this device to getStatus_<name>(block, afterupdate) in custom.js.',
-    styleHelp:
-      'When styling is selected this CSS class is managed automatically in custom.css. Choose Existing CSS if you maintain the class yourself.',
-    invalidRule:
-      'Automation: fill Property, Target block and CSS class for every enabled rule.',
-    invalidValue: 'Automation: enter a value for this condition.',
-    invalidClass:
-      'Automation: generated styling requires one valid CSS class name (letters/numbers/_/-).',
-    invalidHandler:
-      'Automation: Custom JS handler may contain letters, numbers, _ and $ and may not start with a number.',
-    cssSaving: 'Saving automation to custom.js / custom.css...',
-    cssSaveFailed: 'Automation: custom.js / custom.css could not be updated.',
-    source: 'Source block',
-  };
+  function _translations() {
+    var configured =
+      typeof language !== 'undefined' &&
+      language.settings &&
+      language.settings.devicerules
+        ? language.settings.devicerules
+        : {};
+    return $.extend(
+      {
+        automation: 'Automation',
+        help: 'Evaluate one trigger and then run the enabled actions. CSS targets this device; the text action fills the data/value field of a selected target device.',
+        enabled: 'On',
+        trigger: 'Trigger',
+        actions: 'Actions',
+        property: 'Status / property',
+        condition: 'Condition',
+        value: 'Value',
+        cssAction: 'Add CSS to current device',
+        cssActionHelp:
+          'The generated class is automatically added to and removed from the device whose configuration popup is open.',
+        currentDevice: 'Current device',
+        textAction: 'Put text in another device',
+        textTarget: 'Text action target device',
+        targetHelp:
+          'The dropdown lists available configured devices by name, IDX and block key. Text from multiple automations using the same target is automatically shown on separate lines; Text devices are listed first.',
+        textOn: 'Text when true',
+        textOff: 'Text when false',
+        textCssAction: 'Also apply CSS to target device',
+        textCssActionHelp:
+          "The generated class is added to and removed from the text action's target device, in sync with the trigger. Only visible while the text action itself is enabled.",
+        cssClass: 'CSS class',
+        styling: 'Styling',
+        existingCss: 'Existing CSS / class only',
+        background: 'Background',
+        border: 'Border',
+        textColor: 'Text color',
+        backgroundColor: 'Background color',
+        opacity: 'Opacity',
+        borderWidth: 'Border width',
+        borderStyle: 'Border style',
+        borderColor: 'Border color',
+        bannerText: 'Banner text',
+        bannerTop: 'Distance from top (px)',
+        fontSize: 'Font size (px)',
+        legacyTarget: 'Existing CSS target (compatibility)',
+        legacyTargetHelp:
+          'This older rule points to another block. Keep it unchanged to preserve the old behavior, or select This device.',
+        selfTarget: 'This device',
+        advancedCss: 'Advanced CSS options',
+        remove: 'Remove',
+        addRule: 'Add automation',
+        noRules: 'No automations configured yet.',
+        advanced: 'Advanced',
+        handler: 'Custom JS handler',
+        handlerHelp:
+          'Optional: link this device to getStatus_<name>(block, afterupdate) in custom.js.',
+        invalidTrigger:
+          'Automation: fill Status/property, Condition and Value for the trigger.',
+        invalidActions: 'Automation: enable at least one action.',
+        invalidTextRule:
+          'Automation: select a target device for the text action.',
+        invalidTextValue:
+          'Automation: enter text for the true and/or false result.',
+        invalidBannerText:
+          'Automation: enter banner text without quote or backslash characters.',
+        invalidClass:
+          'Automation: use a valid CSS class (letters, numbers, _ and -).',
+        invalidHandler:
+          'Automation: Custom JS handler may contain letters, numbers, _ and $ and may not start with a number.',
+        cssSaving: 'Saving automation to custom.js / custom.css...',
+        cssSaveFailed:
+          'Automation: custom.js / custom.css could not be updated.',
+        source: 'Source block',
+        textDevices: 'Text devices',
+        otherBlocks: 'Other available devices',
+        unavailableTarget: 'No longer available',
+      },
+      configured
+    );
+  }
 
   function text() {
-    var lang = '';
-    try {
-      if (window.config && window.config.language)
-        lang = window.config.language;
-    } catch (ignore) {
-      lang = '';
-    }
-    return /^nl/i.test(String(lang || '')) ? nl : en;
+    return _translations();
   }
 
   function escapeHtml(value) {
@@ -194,23 +206,66 @@
     return /^#[0-9a-f]{6}$/.test(color) ? color : fallback;
   }
 
+  function shortHash(value) {
+    var string = String(value == null ? '' : value);
+    var hash = 2166136261;
+    for (var i = 0; i < string.length; i += 1) {
+      hash ^= string.charCodeAt(i);
+      hash +=
+        (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+    }
+    return (hash >>> 0).toString(36);
+  }
+
+  function createRuleId() {
+    return (
+      'rule_' +
+      Date.now().toString(36) +
+      '_' +
+      Math.floor(Math.random() * 0x1000000).toString(36)
+    );
+  }
+
+  function normaliseRuleId(value, index, rule) {
+    var id = String(value || '').trim();
+    if (/^[A-Za-z_][A-Za-z0-9_-]{0,79}$/.test(id)) return id;
+    return 'legacy_' + index + '_' + shortHash(JSON.stringify(rule || {}));
+  }
+
+  function managedClassName(source, ruleId) {
+    // Hash an ASCII-normalised form so the browser and PHP writer generate
+    // exactly the same fallback class without requiring an async crypto API.
+    var safeSource = String(source || '').replace(/[^A-Za-z0-9_-]/g, '_');
+    var safeRuleId = String(ruleId || '').replace(/[^A-Za-z0-9_-]/g, '_');
+    return 'dt-auto-' + shortHash(safeSource) + '-' + shortHash(safeRuleId);
+  }
+
   function defaultStyle(mode) {
     return {
-      mode: mode || 'background-border-text',
+      mode: mode || 'background-border',
       backgroundColor: '#ff0000',
       backgroundOpacity: 0.35,
       borderWidth: 2,
       borderStyle: 'solid',
       borderColor: '#ff4040',
       textColor: '#ffffff',
+      bannerText: '',
+      bannerTop: 40,
+      fontSize: 20,
     };
   }
 
-  function normaliseStyle(style, legacyRule) {
-    // Rules created by v1/v2 had no style object. Preserve them as class-only
-    // so an upgrade never overwrites an existing hand-written CSS definition.
+  function safeBannerText(value) {
+    var result = String(value == null ? '' : value);
+    if (result.indexOf('"') !== -1 || result.indexOf('\\') !== -1) return '';
+    return result.slice(0, 200);
+  }
+
+  function normaliseStyle(style, defaultMode) {
+    // Old rules without a style object used hand-written custom.css. Preserve
+    // those as class-only instead of generating replacement declarations.
     if (!style || typeof style !== 'object') {
-      return defaultStyle(legacyRule ? 'existing' : 'background-border-text');
+      return defaultStyle(defaultMode || 'background-border');
     }
     var mode = String(style.mode || 'existing');
     if (
@@ -240,29 +295,182 @@
         : result.borderStyle;
     result.borderColor = validHexColor(style.borderColor, result.borderColor);
     result.textColor = validHexColor(style.textColor, result.textColor);
+    result.bannerText = safeBannerText(style.bannerText);
+    result.bannerTop = Math.round(
+      clampNumber(style.bannerTop, 0, 2000, result.bannerTop)
+    );
+    result.fontSize = Math.round(
+      clampNumber(style.fontSize, 10, 60, result.fontSize)
+    );
     return result;
   }
 
-  function normaliseRules(value) {
+  function defaultRule(source) {
+    var id = createRuleId();
+    return {
+      id: id,
+      enabled: true,
+      trigger: {
+        property: 'Status',
+        operator: 'eq',
+        value: 'On',
+      },
+      actions: {
+        css: {
+          enabled: true,
+          target: 'self',
+          className: managedClassName(source, id),
+          style: defaultStyle('background-border'),
+        },
+        text: {
+          enabled: false,
+          target: '',
+          textOn: '',
+          textOff: '',
+          css: {
+            enabled: false,
+            className: managedClassName(source, id + '_text'),
+            style: defaultStyle('border'),
+          },
+        },
+      },
+    };
+  }
+
+  function normaliseRules(value, source) {
     var parsed = safeJsonParse(value, value);
     if (!Array.isArray(parsed)) return [];
+    source = String(source || 'device');
+    var seenRuleIds = {};
+
     return parsed
       .filter(function (rule) {
         return rule && typeof rule === 'object';
       })
-      .map(function (rule) {
+      .map(function (rule, index) {
+        var nested =
+          (rule.trigger && typeof rule.trigger === 'object') ||
+          (rule.actions && typeof rule.actions === 'object');
+        var id = normaliseRuleId(rule.id, index, rule);
+        if (seenRuleIds[id]) {
+          id = id + '_' + index;
+          while (seenRuleIds[id]) id += '_';
+        }
+        seenRuleIds[id] = true;
+        var trigger = nested && rule.trigger ? rule.trigger : rule;
+        var actionContainer = nested && rule.actions ? rule.actions : {};
+        var cssSource =
+          actionContainer.css && typeof actionContainer.css === 'object'
+            ? actionContainer.css
+            : rule.css && typeof rule.css === 'object'
+              ? rule.css
+              : {};
+        var textSource =
+          actionContainer.text && typeof actionContainer.text === 'object'
+            ? actionContainer.text
+            : rule.text && typeof rule.text === 'object'
+              ? rule.text
+              : {};
+
+        var legacyAction = rule.action === 'text' ? 'text' : 'class';
+        var cssEnabled = nested
+          ? cssSource.enabled === true
+          : legacyAction === 'class';
+        var textEnabled = nested
+          ? textSource.enabled === true
+          : legacyAction === 'text';
+
+        var cssTarget = String(
+          typeof cssSource.target !== 'undefined'
+            ? cssSource.target
+            : !nested && legacyAction === 'class'
+              ? rule.target || 'self'
+              : 'self'
+        ).trim();
+        if (!cssTarget || cssTarget === source) cssTarget = 'self';
+
+        var className = String(
+          cssSource.className ||
+            cssSource.class ||
+            (!nested && legacyAction === 'class'
+              ? rule.className || rule.class || ''
+              : '')
+        ).trim();
+        // Always keep a valid class name pre-filled, even while the action
+        // is currently off - not just when re-enabling it, so a rule saved
+        // (or loaded) before this action was ever turned on still renders a
+        // usable value in the popup the moment the user flips it on, rather
+        // than an empty field that fails validation on save.
+        if (!className) {
+          className = managedClassName(source, id);
+        }
+
+        var textTarget = String(
+          typeof textSource.target !== 'undefined'
+            ? textSource.target
+            : !nested && legacyAction === 'text'
+              ? rule.target || ''
+              : ''
+        ).trim();
+
+        var textCssSource =
+          textSource.css && typeof textSource.css === 'object'
+            ? textSource.css
+            : {};
+        var textCssEnabled = textCssSource.enabled === true;
+        var textCssClassName = String(
+          textCssSource.className || textCssSource.class || ''
+        ).trim();
+        if (!textCssClassName) {
+          textCssClassName = managedClassName(source, id + '_text');
+        }
+
         return {
+          id: id,
           enabled: rule.enabled !== false,
-          property: String(rule.property || 'Status'),
-          operator: String(rule.operator || 'eq'),
-          value:
-            typeof rule.value === 'undefined' || rule.value === null
-              ? ''
-              : String(rule.value),
-          action: 'class',
-          target: String(rule.target || ''),
-          className: String(rule.className || rule.class || ''),
-          style: normaliseStyle(rule.style, !rule.style),
+          trigger: {
+            property: String(trigger.property || 'Status'),
+            operator: String(trigger.operator || 'eq'),
+            value:
+              typeof trigger.value === 'undefined' || trigger.value === null
+                ? ''
+                : String(trigger.value),
+          },
+          actions: {
+            css: {
+              enabled: cssEnabled,
+              target: cssTarget,
+              className: className,
+              style: normaliseStyle(
+                cssSource.style || (!nested ? rule.style : null),
+                !nested && !rule.style ? 'existing' : 'background-border'
+              ),
+              legacyTarget: cssTarget !== 'self',
+            },
+            text: {
+              enabled: textEnabled,
+              target: textTarget,
+              textOn: String(
+                typeof textSource.textOn !== 'undefined'
+                  ? textSource.textOn
+                  : typeof rule.textOn !== 'undefined'
+                    ? rule.textOn
+                    : ''
+              ),
+              textOff: String(
+                typeof textSource.textOff !== 'undefined'
+                  ? textSource.textOff
+                  : typeof rule.textOff !== 'undefined'
+                    ? rule.textOff
+                    : ''
+              ),
+              css: {
+                enabled: textCssEnabled,
+                className: textCssClassName,
+                style: normaliseStyle(textCssSource.style, 'border'),
+              },
+            },
+          },
         };
       });
   }
@@ -284,9 +492,27 @@
 
   function numericValue(value) {
     if (typeof value === 'number') return isFinite(value) ? value : NaN;
-    var parsed = parseFloat(
-      String(value == null ? '' : value).replace(',', '.')
-    );
+    var str = String(value == null ? '' : value).trim();
+    if (str === '') return NaN;
+    // Domoticz device values often carry a unit suffix (e.g. "1,8Bar",
+    // "1.020,5 hPa") glued straight onto the number, with either '.' or ','
+    // as the decimal separator depending on the sensor/locale. Pull out just
+    // the numeric run and, when both separators appear, treat the later one
+    // as the decimal point and the earlier one(s) as thousands grouping.
+    var match = str.match(/-?\d[\d.,]*/);
+    if (!match) return NaN;
+    var token = match[0];
+    var lastComma = token.lastIndexOf(',');
+    var lastDot = token.lastIndexOf('.');
+    if (lastComma !== -1 && lastDot !== -1) {
+      token =
+        lastComma > lastDot
+          ? token.replace(/\./g, '').replace(',', '.')
+          : token.replace(/,/g, '');
+    } else if (lastComma !== -1) {
+      token = token.replace(',', '.');
+    }
+    var parsed = parseFloat(token);
     return isFinite(parsed) ? parsed : NaN;
   }
 
@@ -346,68 +572,491 @@
     });
   }
 
-  function recomputeTarget(target) {
-    if (!target || !classStates[target]) return;
-    var targetStates = classStates[target];
-    var allRuleClasses = [];
+  function sourceSelfTarget(source) {
+    var block = sourceBlocks[String(source || '')];
+    return String((block && block.key) || source || '');
+  }
+
+  function managedClassNamesForTarget(target, source, ruleSets) {
+    var managed = {};
+    Object.keys(classManagedNames[target] || {}).forEach(function (className) {
+      managed[className] = true;
+    });
+
+    (ruleSets || []).forEach(function (ruleSet) {
+      normaliseRules(ruleSet || [], source).forEach(function (rule) {
+        var cssAction = rule.actions && rule.actions.css;
+        if (cssAction && cssAction.className) {
+          var cssTarget =
+            cssAction.target === 'self' || !cssAction.target
+              ? sourceSelfTarget(source)
+              : String(cssAction.target);
+          if (String(cssTarget) === String(target)) {
+            splitClasses(cssAction.className).forEach(function (className) {
+              managed[className] = true;
+            });
+          }
+        }
+        var textAction = rule.actions && rule.actions.text;
+        var textCssAction = textAction && textAction.enabled && textAction.css;
+        if (
+          textCssAction &&
+          textCssAction.className &&
+          textAction.target &&
+          String(textAction.target) === String(target)
+        ) {
+          splitClasses(textCssAction.className).forEach(function (className) {
+            managed[className] = true;
+          });
+        }
+      });
+    });
+    return managed;
+  }
+
+  function stripManagedAddClassValue(value, target, source, ruleSets) {
+    var managed = managedClassNamesForTarget(
+      String(target || ''),
+      String(source || ''),
+      ruleSets
+    );
+    return splitClasses(String(value || ''))
+      .filter(function (className) {
+        return !managed[className];
+      })
+      .join(' ');
+  }
+
+  // addClass is runtime output of Device Rules. Keep generated class names out
+  // of the block's editable CONFIG.js base while retaining hand-written names.
+  function cleanManagedAddClassBases(source, ruleSets) {
+    source = String(source || '');
+    var targets = {};
+    targets[sourceSelfTarget(source)] = true;
+
+    (ruleSets || []).forEach(function (ruleSet) {
+      normaliseRules(ruleSet || [], source).forEach(function (rule) {
+        var cssAction = rule.actions && rule.actions.css;
+        if (cssAction && cssAction.className) {
+          var target =
+            cssAction.target === 'self' || !cssAction.target
+              ? sourceSelfTarget(source)
+              : String(cssAction.target);
+          if (target) targets[target] = true;
+        }
+        var textAction = rule.actions && rule.actions.text;
+        if (
+          textAction &&
+          textAction.enabled &&
+          textAction.target &&
+          textAction.css &&
+          textAction.css.className
+        ) {
+          targets[String(textAction.target)] = true;
+        }
+      });
+    });
+
+    Object.keys(targets).forEach(function (target) {
+      var definition = configuredBlock(target);
+      var current =
+        definition && typeof definition.addClass === 'string'
+          ? definition.addClass
+          : '';
+      var cleaned = stripManagedAddClassValue(
+        current,
+        target,
+        source,
+        ruleSets
+      );
+
+      if (definition) {
+        if (cleaned) definition.addClass = cleaned;
+        else delete definition.addClass;
+      }
+      if (Object.prototype.hasOwnProperty.call(classBaseValues, target)) {
+        classBaseValues[target] = stripManagedAddClassValue(
+          classBaseValues[target],
+          target,
+          source,
+          ruleSets
+        );
+      }
+    });
+  }
+
+  function configuredBlock(target) {
+    return window.blocks && window.blocks[target]
+      ? window.blocks[target]
+      : null;
+  }
+
+  function collectRenderedTargets(target) {
+    if (typeof $ !== 'function') return null;
+    var $result = $();
+
+    $('[data-id]').each(function () {
+      if (String($(this).attr('data-id')) !== String(target)) return;
+      var $node = $(this);
+      if ($node.is('.dt_block,.mh')) $result = $result.add($node);
+      $result = $result.add($node.find('.dt_block,.mh'));
+    });
+    $('.dt-grid-item[data-grid-block]').each(function () {
+      if (String($(this).attr('data-grid-block')) !== String(target)) return;
+      $result = $result.add($(this).find('.dt_block,.mh'));
+    });
+    return $result;
+  }
+
+  function applyClassStateToDom(target, allClasses, activeClasses) {
+    var $targets = collectRenderedTargets(target);
+    if (!$targets || !$targets.length) return;
+    allClasses.forEach(function (className) {
+      $targets.removeClass(className);
+    });
+    activeClasses.forEach(function (className) {
+      $targets.addClass(className);
+    });
+  }
+
+  function setBlockState(target, state) {
+    if (window.Dashticz && typeof window.Dashticz.setBlock === 'function') {
+      window.Dashticz.setBlock(target, state);
+      return;
+    }
+    if (window.blocks && window.blocks[target]) {
+      Object.keys(state || {}).forEach(function (key) {
+        window.blocks[target][key] = state[key];
+      });
+    }
+  }
+
+  function recomputeClassTarget(target) {
+    if (!target) return;
+    var targetStates = classStates[target] || {};
+    var allRuleClasses = Object.keys(classManagedNames[target] || {});
     var activeRuleClasses = [];
 
     Object.keys(targetStates).forEach(function (id) {
       var state = targetStates[id];
-      if (!state || !state.className) return;
+      if (!state || !state.className || !state.active) return;
       splitClasses(state.className).forEach(function (className) {
-        allRuleClasses.push(className);
-        if (state.active) activeRuleClasses.push(className);
+        activeRuleClasses.push(className);
       });
     });
 
-    var configured =
-      window.blocks && window.blocks[target]
-        ? window.blocks[target].addClass
-        : '';
-    var base = splitClasses(configured).filter(function (className) {
-      return allRuleClasses.indexOf(className) === -1;
-    });
-    var combined = unique(base.concat(activeRuleClasses)).join(' ');
+    var base = splitClasses(classBaseValues[target] || '');
+    var combined = unique(base.concat(activeRuleClasses));
+    setBlockState(target, { addClass: combined.join(' ') });
+    applyClassStateToDom(target, allRuleClasses, activeRuleClasses);
 
-    if (window.Dashticz && typeof window.Dashticz.setBlock === 'function') {
-      window.Dashticz.setBlock(target, { addClass: combined });
-    } else if (window.blocks && window.blocks[target]) {
-      window.blocks[target].addClass = combined;
+    // Device refreshes may replace the rendered .mh/.dt_block later in the
+    // same JavaScript turn. Re-apply the managed classes once the current
+    // render stack has completed so the visual state also survives blocks
+    // that do not make the usual second getStatus() callback.
+    if (typeof window.setTimeout === 'function') {
+      window.setTimeout(function () {
+        applyClassStateToDom(target, allRuleClasses, activeRuleClasses);
+      }, 0);
+    }
+
+    if (!Object.keys(targetStates).length) {
+      delete classStates[target];
+      delete classBaseValues[target];
+      delete classManagedNames[target];
     }
   }
 
   function setRuleClassState(target, id, className, active) {
     if (!target || !id || !className) return;
-    if (!classStates[target]) classStates[target] = {};
-    var previous = classStates[target][id];
-    if (previous && previous.className !== className) {
-      previous.active = false;
-      recomputeTarget(target);
+    if (!classStates[target]) {
+      classStates[target] = {};
+      var definition = configuredBlock(target);
+      classBaseValues[target] =
+        definition && typeof definition.addClass === 'string'
+          ? definition.addClass
+          : '';
+      classManagedNames[target] = {};
     }
-    classStates[target][id] = { className: className, active: !!active };
-    recomputeTarget(target);
+    splitClasses(className).forEach(function (name) {
+      classManagedNames[target][name] = true;
+    });
+    classStates[target][id] = {
+      className: className,
+      active: !!active,
+    };
+    recomputeClassTarget(target);
   }
 
   function removeRuleClassState(target, id) {
     if (!target || !classStates[target] || !classStates[target][id]) return;
-    classStates[target][id].active = false;
-    recomputeTarget(target);
     delete classStates[target][id];
-    if (!Object.keys(classStates[target]).length) delete classStates[target];
+    recomputeClassTarget(target);
   }
 
-  function cleanupSourceStates(sourceKey, currentIds) {
+  function targetDevice(target) {
+    if (
+      !window.Domoticz ||
+      typeof window.Domoticz.getAllDevices !== 'function'
+    ) {
+      return null;
+    }
+    var definition = configuredBlock(target);
+    var reference =
+      definition && typeof definition.idx !== 'undefined'
+        ? definition.idx
+        : target;
+    try {
+      return window.Domoticz.getAllDevices(reference) || null;
+    } catch (ignore) {
+      return null;
+    }
+  }
+
+  function liveTargetData(target) {
+    var device = targetDevice(target);
+    if (!device) return '';
+    if (typeof device.Data !== 'undefined' && device.Data !== null) {
+      return String(device.Data);
+    }
+    if (typeof device.Status !== 'undefined' && device.Status !== null) {
+      return String(device.Status);
+    }
+    return '';
+  }
+
+  function renderedDataField($block, definition) {
+    var $data = $block.find('.col-data').first();
+    if (!$data.length) return $();
+
+    // `switch: true` swaps title and value in getStatusBlock(). The logical
+    // value is therefore rendered in `.title` for that compatibility mode.
+    if (definition && definition.switch) {
+      var $swapped = $data.find('.title').first();
+      if ($swapped.length) return $swapped;
+    }
+
+    var $value = $data.find('.value').first();
+    if ($value.length) return $value;
+    // Switch blocks use `.state` for their value instead of `.value`.
+    return $data.find('.state').first();
+  }
+
+  function readRenderedTargetData(target) {
+    var $targets = collectRenderedTargets(target);
+    if (!$targets || !$targets.length) return undefined;
+    var definition = configuredBlock(target);
+    var result;
+    $targets.each(function () {
+      var $field = renderedDataField($(this), definition);
+      if (!$field.length) return;
+      result = String($field.text() || '');
+      return false;
+    });
+    return result;
+  }
+
+  function captureTextBase(target) {
+    if (Object.prototype.hasOwnProperty.call(textBaseValues, target)) return;
+    var definition = configuredBlock(target);
+    textBaseValues[target] = {
+      hadOwn: !!(
+        definition && Object.prototype.hasOwnProperty.call(definition, 'value')
+      ),
+      value: definition ? definition.value : undefined,
+      renderedValue: readRenderedTargetData(target),
+    };
+  }
+
+  function ensureMultilineTextStyle() {
+    if (multilineTextStyleReady) return;
+    if (!document || typeof document.createElement !== 'function') return;
+    if (
+      typeof document.getElementById === 'function' &&
+      document.getElementById(MULTILINE_TEXT_STYLE_ID)
+    ) {
+      multilineTextStyleReady = true;
+      return;
+    }
+
+    var head =
+      document.head ||
+      (typeof document.getElementsByTagName === 'function'
+        ? document.getElementsByTagName('head')[0]
+        : null);
+    if (!head || typeof head.appendChild !== 'function') return;
+
+    var style = document.createElement('style');
+    style.id = MULTILINE_TEXT_STYLE_ID;
+    style.setAttribute('data-dashticz-device-rules', 'multiline-text');
+    style.textContent =
+      'html body .' +
+      MULTILINE_TEXT_VALUE_CLASS +
+      ' {\n' +
+      '  white-space: pre-line !important;\n' +
+      '  line-height: 1.35 !important;\n' +
+      '  overflow-wrap: break-word;\n' +
+      '  word-break: break-word;\n' +
+      '}';
+    head.appendChild(style);
+    multilineTextStyleReady = true;
+  }
+
+  function directDataUpdate(target, value, multiline) {
+    var $targets = collectRenderedTargets(target);
+    if (!$targets || !$targets.length) return;
+    var definition = configuredBlock(target);
+    $targets.each(function () {
+      var $field = renderedDataField($(this), definition);
+      if (!$field.length) return;
+      $field.removeClass(MULTILINE_TEXT_VALUE_CLASS);
+      if (multiline) $field.addClass(MULTILINE_TEXT_VALUE_CLASS);
+      $field.text(value == null ? '' : String(value));
+    });
+  }
+
+  function setTargetData(target, value, multiline) {
+    // `value` is the normal getStatusBlock() data field. This only changes the
+    // display inside Dashticz and does not write to the Domoticz text device.
+    if (multiline) ensureMultilineTextStyle();
+    setBlockState(target, { value: value });
+    directDataUpdate(target, value, multiline);
+  }
+
+  function resolveBaseDisplayValue(target, base) {
+    if (typeof base.renderedValue !== 'undefined') return base.renderedValue;
+    if (!base.hadOwn) return liveTargetData(target);
+    if (base.value == null) return '';
+
+    var value = String(base.value);
+    var device = targetDevice(target);
+    if (!device) return value;
+    return value.replace(
+      /<([A-Za-z_$][A-Za-z0-9_$]*)>/g,
+      function (match, property) {
+        return typeof device[property] === 'undefined'
+          ? match
+          : String(device[property]);
+      }
+    );
+  }
+
+  function restoreTargetData(target) {
+    var base = textBaseValues[target];
+    var definition = configuredBlock(target);
+    if (!base) return;
+
+    if (base.hadOwn) {
+      setBlockState(target, { value: base.value });
+    } else {
+      if (definition) delete definition.value;
+      if (window.Dashticz && typeof window.Dashticz.setBlock === 'function') {
+        window.Dashticz.setBlock(target);
+      }
+    }
+
+    directDataUpdate(target, resolveBaseDisplayValue(target, base), false);
+    delete textBaseValues[target];
+  }
+
+  function compareTextStates(left, right) {
+    var labelComparison = String(
+      left.sourceLabel || left.sourceKey || ''
+    ).localeCompare(
+      String(right.sourceLabel || right.sourceKey || ''),
+      undefined,
+      {
+        numeric: true,
+        sensitivity: 'base',
+      }
+    );
+    if (labelComparison) return labelComparison;
+
+    var keyComparison = String(left.sourceKey || '').localeCompare(
+      String(right.sourceKey || ''),
+      undefined,
+      { numeric: true, sensitivity: 'base' }
+    );
+    if (keyComparison) return keyComparison;
+
+    var leftIndex = Number(left.ruleIndex || 0);
+    var rightIndex = Number(right.ruleIndex || 0);
+    if (leftIndex !== rightIndex) return leftIndex - rightIndex;
+    return left.order - right.order;
+  }
+
+  function recomputeTextTarget(target) {
+    if (!target) return;
+    var targetStates = textStates[target] || {};
+    var states = Object.keys(targetStates)
+      .map(function (id) {
+        return targetStates[id];
+      })
+      .sort(compareTextStates);
+
+    if (!states.length) {
+      delete textStates[target];
+      restoreTargetData(target);
+      return;
+    }
+
+    var values = states
+      .map(function (state) {
+        return state.active ? state.textOn : state.textOff;
+      })
+      .filter(function (value) {
+        return value !== '';
+      });
+    setTargetData(target, values.join('\n'), values.length > 1);
+  }
+
+  function setRuleTextState(target, id, textOn, textOff, active, metadata) {
+    if (!target || !id) return;
+    metadata = metadata || {};
+    captureTextBase(target);
+    if (!textStates[target]) textStates[target] = {};
+    var previous = textStates[target][id];
+    textStates[target][id] = {
+      textOn: String(textOn == null ? '' : textOn),
+      textOff: String(textOff == null ? '' : textOff),
+      active: !!active,
+      sourceKey: String(metadata.sourceKey || ''),
+      sourceLabel: String(metadata.sourceLabel || metadata.sourceKey || ''),
+      ruleIndex: Number(metadata.ruleIndex || 0),
+      order: previous ? previous.order : ++stateOrder,
+    };
+    recomputeTextTarget(target);
+  }
+
+  function removeRuleTextState(target, id) {
+    if (!target || !textStates[target] || !textStates[target][id]) return;
+    delete textStates[target][id];
+    recomputeTextTarget(target);
+  }
+
+  function cleanupSourceStates(sourceKey, currentEntries) {
     var previous = sourceStateIds[sourceKey] || [];
     previous.forEach(function (entry) {
-      if (currentIds.indexOf(entry.id) === -1) {
-        removeRuleClassState(entry.target, entry.id);
-      }
+      var stillCurrent = currentEntries.some(function (candidate) {
+        return (
+          candidate.id === entry.id &&
+          candidate.target === entry.target &&
+          candidate.action === entry.action
+        );
+      });
+      if (stillCurrent) return;
+      // The rule id remains stable when a user changes a target. Compare the
+      // complete state identity so the old target is cleaned up instead of
+      // retaining a stale class or title indefinitely.
+      if (entry.action === 'text') removeRuleTextState(entry.target, entry.id);
+      else removeRuleClassState(entry.target, entry.id);
     });
-    sourceStateIds[sourceKey] = currentIds.map(function (id) {
-      var parts = id.split('|');
-      return { id: id, target: parts[1] || '' };
-    });
+    sourceStateIds[sourceKey] = currentEntries;
+  }
+
+  function reapplyTargetVisuals(target) {
+    if (classStates[target]) recomputeClassTarget(target);
+    if (textStates[target]) recomputeTextTarget(target);
   }
 
   function ruleStore() {
@@ -441,6 +1090,48 @@
     return candidates;
   }
 
+  function rememberSourceBlock(sourceKey, block) {
+    if (!block || !block.device) return;
+    sourceKey = String(sourceKey || '').trim();
+    if (sourceKey) sourceBlocks[sourceKey] = block;
+    sourceCandidatesForBlock(block).forEach(function (candidate) {
+      sourceBlocks[candidate] = block;
+    });
+  }
+
+  // Re-evaluate a source immediately after Device Config saves. Clear all old
+  // aliases for the rendered block first so disabled/deleted actions cannot
+  // retain a stale class or text value until the next Domoticz update.
+  function reconcileSavedSource(source) {
+    source = String(source || '').trim();
+    if (!source) return;
+
+    var block = sourceBlocks[source] || null;
+    var aliases = [source];
+    if (block) {
+      Object.keys(sourceBlocks).forEach(function (candidate) {
+        if (
+          sourceBlocks[candidate] === block &&
+          aliases.indexOf(candidate) === -1
+        ) {
+          aliases.push(candidate);
+        }
+      });
+    }
+
+    aliases.forEach(function (candidate) {
+      cleanupSourceStates(candidate, []);
+      if (candidate !== source) updateRuntimeRuleCss(candidate, []);
+    });
+
+    if (block && block.device) {
+      process(block, {
+        source: source,
+        entry: ruleStore()[source] || null,
+      });
+    }
+  }
+
   function entryForBlock(block) {
     var store = ruleStore();
     var candidates = sourceCandidatesForBlock(block);
@@ -452,26 +1143,114 @@
     return { source: candidates[0] || 'device', entry: null };
   }
 
+  // Cheap "is there an enabled Automation rule for this block" check for the
+  // live dashboard's automation-active indicator - does not evaluate
+  // whether any rule's trigger currently matches, only whether one exists.
+  function hasEnabledRules(block) {
+    if (!block) return false;
+    var resolved = entryForBlock(block);
+    if (!resolved.entry) return false;
+    var rules = normaliseRules(resolved.entry.rules, resolved.source);
+    return rules.some(function (rule) {
+      return rule.enabled !== false;
+    });
+  }
+
   function process(block, resolved) {
     if (!block || !block.device) return;
     resolved = resolved || entryForBlock(block);
-    var rules = normaliseRules(resolved.entry && resolved.entry.rules);
     var sourceKey = String(
       resolved.source || block.key || block.idx || 'device'
     );
-    var currentIds = [];
+    // `sourceKey` identifies the managed custom.js entry. A legacy entry may
+    // still be stored under a numeric IDX, while the rendered block itself has
+    // a named key. CSS target `self` must always refer to the actual rendered
+    // block, not necessarily the key used to look up the stored automation.
+    var selfTarget = String(block.key || sourceKey || block.idx || 'device');
+    rememberSourceBlock(sourceKey, block);
+    var rules = normaliseRules(
+      resolved.entry && resolved.entry.rules,
+      sourceKey
+    );
 
-    rules.forEach(function (rule, index) {
-      if (rule.enabled === false) return;
-      if (!rule.property || !rule.target || !rule.className) return;
-      var actual = readPath(block.device, rule.property);
-      var active = compare(actual, rule.operator, rule.value);
-      var id = sourceKey + '|' + rule.target + '|' + index;
-      currentIds.push(id);
-      setRuleClassState(rule.target, id, rule.className, active);
+    // Keep a runtime copy of the normalized generated CSS. Besides making a
+    // newly saved rule visible immediately, this upgrades managed CSS written
+    // by an older Device Rules version without requiring the user to open and
+    // save every automation again first.
+    updateRuntimeRuleCss(sourceKey, rules);
+
+    var currentEntries = [];
+    var sourceLabel = friendlyBlockName(selfTarget);
+
+    rules.forEach(function (rule, ruleIndex) {
+      if (rule.enabled === false || !rule.trigger.property) return;
+      var actual = readPath(block.device, rule.trigger.property);
+      var active = compare(actual, rule.trigger.operator, rule.trigger.value);
+
+      var cssAction = rule.actions.css;
+      if (cssAction.enabled && cssAction.className) {
+        var cssTarget =
+          cssAction.target === 'self' || !cssAction.target
+            ? selfTarget
+            : cssAction.target;
+        var cssId = sourceKey + '|' + rule.id + '|css';
+        currentEntries.push({
+          id: cssId,
+          target: cssTarget,
+          action: 'class',
+        });
+        setRuleClassState(cssTarget, cssId, cssAction.className, active);
+      }
+
+      var textAction = rule.actions.text;
+      if (textAction.enabled && textAction.target) {
+        var textId = sourceKey + '|' + rule.id + '|text';
+        currentEntries.push({
+          id: textId,
+          target: textAction.target,
+          action: 'text',
+        });
+        setRuleTextState(
+          textAction.target,
+          textId,
+          textAction.textOn,
+          textAction.textOff,
+          active,
+          {
+            sourceKey: sourceKey,
+            sourceLabel: sourceLabel,
+            ruleIndex: ruleIndex,
+          }
+        );
+
+        var textCssAction = textAction.css;
+        if (textCssAction && textCssAction.enabled && textCssAction.className) {
+          var textCssId = sourceKey + '|' + rule.id + '|text-css';
+          currentEntries.push({
+            id: textCssId,
+            target: textAction.target,
+            action: 'class',
+          });
+          setRuleClassState(
+            textAction.target,
+            textCssId,
+            textCssAction.className,
+            active
+          );
+        }
+      }
     });
 
-    cleanupSourceStates(sourceKey, currentIds);
+    cleanupSourceStates(sourceKey, currentEntries);
+
+    // A Domoticz device refresh continues rendering with the current runtime
+    // block object after getStatus has returned. Keep that object in sync with
+    // the configured source block, otherwise the later render step could put
+    // the pre-automation class list back before the final DOM re-apply.
+    var sourceDefinition = configuredBlock(selfTarget);
+    if (sourceDefinition) {
+      block.addClass = String(sourceDefinition.addClass || '');
+    }
   }
 
   function callLinkedCustomHandler(block, afterupdate, resolved) {
@@ -482,8 +1261,12 @@
         ? resolved.entry.customJsHandler
         : ''
     ).trim();
-    if (!handler || !/^(?:getStatus_)?[A-Za-z_$][A-Za-z0-9_$]*$/.test(handler))
+    if (
+      !handler ||
+      !/^(?:getStatus_)?[A-Za-z_$][A-Za-z0-9_$]*$/.test(handler)
+    ) {
       return;
+    }
 
     var functionName = /^getStatus_/.test(handler)
       ? handler
@@ -538,6 +1321,7 @@
         var resolved = entryForBlock(block);
         callLinkedCustomHandler(block, afterupdate, resolved);
         process(block, resolved);
+        sourceCandidatesForBlock(block).forEach(reapplyTargetVisuals);
       }
       return result;
     }
@@ -605,20 +1389,23 @@
     orderKey = String(orderKey || '');
     if (orderKey.indexOf('special:') === 0) return orderKey.slice(8);
     if (orderKey.indexOf('device:') !== 0) return '';
-    var ck = orderKey.slice(7);
+    var composite = orderKey.slice(7);
     var refs = visibleBlockReferences();
     for (var i = 0; i < refs.length; i += 1) {
-      if (definitionCompositeKey(window.blocks[refs[i]]) === ck) return refs[i];
+      if (definitionCompositeKey(window.blocks[refs[i]]) === composite) {
+        return refs[i];
+      }
     }
     if (window.blocks && typeof window.blocks === 'object') {
       var keys = Object.keys(window.blocks);
       for (var j = 0; j < keys.length; j += 1) {
-        if (definitionCompositeKey(window.blocks[keys[j]]) === ck)
+        if (definitionCompositeKey(window.blocks[keys[j]]) === composite) {
           return keys[j];
+        }
       }
     }
-    var parts = ck.split('_');
-    return stableDeviceReference(parts[0], parts[1] || 0) || ck;
+    var parts = composite.split('_');
+    return stableDeviceReference(parts[0], parts[1] || 0) || composite;
   }
 
   function rememberPopupSource(source) {
@@ -645,8 +1432,9 @@
       if (
         typeof original !== 'function' ||
         original._dashticzDeviceRulesWrapped
-      )
+      ) {
         return;
+      }
       var wrappedMethod = function (reference) {
         rememberPopupSource(sourceFromReference(reference));
         return original.apply(this, arguments);
@@ -663,35 +1451,29 @@
     return true;
   }
 
-  function sourceForCompositeKey(ck) {
-    ck = String(ck || '').trim();
-    if (!ck) return '';
-
+  function sourceForCompositeKey(composite) {
+    composite = String(composite || '').trim();
+    if (!composite) return '';
     var refs = visibleBlockReferences();
     for (var i = 0; i < refs.length; i += 1) {
-      if (definitionCompositeKey(window.blocks[refs[i]]) === ck) return refs[i];
+      if (definitionCompositeKey(window.blocks[refs[i]]) === composite) {
+        return refs[i];
+      }
     }
-
     if (window.blocks && typeof window.blocks === 'object') {
       var keys = Object.keys(window.blocks);
       for (var j = 0; j < keys.length; j += 1) {
-        if (definitionCompositeKey(window.blocks[keys[j]]) === ck)
+        if (definitionCompositeKey(window.blocks[keys[j]]) === composite) {
           return keys[j];
+        }
       }
     }
-
-    var parts = ck.split('_');
-    return stableDeviceReference(parts[0], parts[1] || 0) || ck;
+    var parts = composite.split('_');
+    return stableDeviceReference(parts[0], parts[1] || 0) || composite;
   }
 
-  // Device Editor is lazy-loaded. On the very first direct Settings click the
-  // popup can therefore be created before tryWrapDeviceEditorApi() has had a
-  // chance to wrap openConfig()/openLayoutConfig(). Derive the source from the
-  // popup's own IDX label as a race-free fallback, so Automation is available
-  // on that first opening as well as every later opening.
   function inferPopupSource(popup) {
     if (!popup) return '';
-
     var orderKey = String(
       popup.getAttribute('data-order-key') ||
         $(popup).find('[data-order-key]').first().attr('data-order-key') ||
@@ -710,14 +1492,14 @@
     if (/^(?:s\d+|\d+(?:_\d+)?)$/.test(idxText)) {
       return sourceForCompositeKey(idxText);
     }
-
     return '';
   }
 
   function popupSource(popup) {
     if (!popup) return '';
-    if (popup._dashticzDeviceRulesSource)
+    if (popup._dashticzDeviceRulesSource) {
       return popup._dashticzDeviceRulesSource;
+    }
     var source = String(pendingPopupSource || '').trim();
     if (!source) source = inferPopupSource(popup);
     if (source) {
@@ -734,36 +1516,156 @@
         ? store[source]
         : {};
     return {
-      rules: normaliseRules(entry.rules),
+      schemaVersion: Number(entry.schemaVersion || 1),
+      rules: normaliseRules(entry.rules, source),
       customJsHandler: String(entry.customJsHandler || ''),
     };
   }
 
-  function targetOptions(selected) {
-    var keys = [];
+  function liveDeviceForDefinition(definition) {
+    if (!definition || typeof definition !== 'object') return null;
+    try {
+      if (
+        typeof window.Domoticz !== 'undefined' &&
+        window.Domoticz &&
+        typeof window.Domoticz.getAllDevices === 'function' &&
+        definition.idx
+      ) {
+        return window.Domoticz.getAllDevices(definition.idx) || null;
+      }
+    } catch (ignore) {
+      return null;
+    }
+    return null;
+  }
+
+  function isTextDevice(definition, liveDevice) {
+    var values = [
+      definition && definition.type,
+      definition && definition.Type,
+      definition && definition.subtype,
+      definition && definition.SubType,
+      liveDevice && liveDevice.Type,
+      liveDevice && liveDevice.SubType,
+      liveDevice && liveDevice.TypeImg,
+    ];
+    return values.some(function (value) {
+      return /(?:^|\s|_)text(?:$|\s|_)/i.test(String(value || ''));
+    });
+  }
+
+  function friendlyBlockName(key) {
+    var definition = configuredBlock(key) || {};
+    var liveDevice = liveDeviceForDefinition(definition);
+    return String(
+      (liveDevice && liveDevice.Name) ||
+        definition.title ||
+        definition.name ||
+        definition.description ||
+        key
+    );
+  }
+
+  function blockOptionData(selected) {
+    var rows = [];
     if (window.blocks && typeof window.blocks === 'object') {
-      keys = Object.keys(window.blocks).filter(function (key) {
-        return key && window.blocks[key] != null;
+      Object.keys(window.blocks).forEach(function (key) {
+        var definition = window.blocks[key];
+        if (!definition || typeof definition !== 'object') return;
+        var liveDevice = liveDeviceForDefinition(definition);
+        var idx = definition.idx == null ? '' : String(definition.idx);
+        var keyLooksLikeDevice =
+          /^(?:device_)?\d+(?:_\d+)?$/.test(String(key)) ||
+          /^(?:s|v)\d+$/.test(String(key));
+        // The text action deliberately lists devices, not every widget or
+        // special block in window.blocks. Named custom devices remain
+        // available because they carry an IDX. Numeric/scene/variable keys
+        // are included for hand-written legacy configurations without idx.
+        if (!idx && !liveDevice && !keyLooksLikeDevice) return;
+        if (!idx && keyLooksLikeDevice) {
+          idx = String(key)
+            .replace(/^device_/, '')
+            .replace(/^[sv]/, '');
+        }
+        var name = String(
+          (liveDevice && liveDevice.Name) ||
+            definition.title ||
+            definition.name ||
+            key
+        );
+        var label = name;
+        if (idx) label += ' — IDX ' + idx;
+        if (name !== key) label += ' — ' + key;
+        rows.push({
+          key: key,
+          label: label,
+          textDevice: isTextDevice(definition, liveDevice),
+        });
       });
     }
-    if (selected && keys.indexOf(selected) === -1) keys.push(selected);
-    keys.sort(function (a, b) {
-      return String(a).localeCompare(String(b), undefined, {
+
+    if (
+      selected &&
+      rows.every(function (row) {
+        return String(row.key) !== String(selected);
+      })
+    ) {
+      rows.push({
+        key: selected,
+        label: selected + ' — ' + text().unavailableTarget,
+        textDevice: false,
+        unavailable: true,
+      });
+    }
+
+    rows.sort(function (left, right) {
+      if (left.textDevice !== right.textDevice) return left.textDevice ? -1 : 1;
+      return left.label.localeCompare(right.label, undefined, {
         numeric: true,
         sensitivity: 'base',
       });
     });
+    return rows;
+  }
+
+  function targetOptions(selected, includeSelf) {
+    var t = text();
+    var rows = blockOptionData(selected);
     var html = '<option value=""></option>';
-    keys.forEach(function (key) {
+    if (includeSelf) {
       html +=
-        '<option value="' +
-        escapeHtml(key) +
-        '"' +
-        (String(key) === String(selected) ? ' selected' : '') +
+        '<option value="self"' +
+        (selected === 'self' ? ' selected' : '') +
         '>' +
-        escapeHtml(key) +
+        escapeHtml(t.selfTarget) +
         '</option>';
+    }
+
+    var textRows = rows.filter(function (row) {
+      return row.textDevice;
     });
+    var otherRows = rows.filter(function (row) {
+      return !row.textDevice;
+    });
+
+    function appendGroup(label, entries) {
+      if (!entries.length) return;
+      html += '<optgroup label="' + escapeHtml(label) + '">';
+      entries.forEach(function (row) {
+        html +=
+          '<option value="' +
+          escapeHtml(row.key) +
+          '"' +
+          (String(row.key) === String(selected) ? ' selected' : '') +
+          '>' +
+          escapeHtml(row.label) +
+          '</option>';
+      });
+      html += '</optgroup>';
+    }
+
+    appendGroup(t.textDevices, textRows);
+    appendGroup(t.otherBlocks, otherRows);
     return html;
   }
 
@@ -797,6 +1699,7 @@
         t.border.toLowerCase() +
         ' + ' +
         t.textColor.toLowerCase(),
+      banner: 'Floating banner',
     };
     return labels[mode] || fallback;
   }
@@ -818,7 +1721,7 @@
 
   function opacityOptions(selected) {
     var html = '';
-    for (var i = 10; i <= 100; i += 5) {
+    for (var i = 5; i <= 100; i += 5) {
       var value = i / 100;
       html +=
         '<option value="' +
@@ -862,119 +1765,284 @@
     return html;
   }
 
-  function ruleRowHtml(rule) {
+  function cssTargetControl(cssAction) {
     var t = text();
-    rule = rule || {
-      enabled: true,
-      property: 'Status',
-      operator: 'eq',
-      value: 'On',
-      target: '',
-      className: '',
-      style: defaultStyle('background-border-text'),
-    };
-    rule.style = normaliseStyle(rule.style, false);
-    var noValue = rule.operator === 'empty' || rule.operator === 'notempty';
+    if (!cssAction.legacyTarget) {
+      return '<input type="hidden" class="dr-css-target" value="self">';
+    }
     return (
-      '<div class="dt-device-rule border rounded p-2 mb-2">' +
+      '<div class="mt-2"><label class="form-label small mb-1">' +
+      escapeHtml(t.legacyTarget) +
+      '</label><select class="form-select form-select-sm dr-css-target">' +
+      targetOptions(cssAction.target, true) +
+      '</select><div class="form-text">' +
+      escapeHtml(t.legacyTargetHelp) +
+      '</div></div>'
+    );
+  }
+
+  function ruleRowHtml(rule, source) {
+    var t = text();
+    rule = rule || defaultRule(source);
+    var cssAction = rule.actions.css;
+    var textAction = rule.actions.text;
+    var textCssAction = textAction.css;
+    var noValue =
+      rule.trigger.operator === 'empty' || rule.trigger.operator === 'notempty';
+    var sourceLabel = friendlyBlockName(source);
+    if (sourceLabel !== source) sourceLabel += ' — ' + source;
+
+    return (
+      '<div class="dt-device-rule border rounded p-2 mb-3" data-rule-id="' +
+      escapeHtml(rule.id) +
+      '">' +
       '<div class="d-flex justify-content-between align-items-center mb-2">' +
       '<label class="d-flex align-items-center gap-2 mb-0">' +
       '<span class="form-check form-switch m-0 p-0">' +
-      '<input class="form-check-input dr-enabled m-0" type="checkbox" role="switch" style="width:4em;height:2em;float:none;"' +
+      '<input class="form-check-input dr-enabled de-switch m-0" type="checkbox" role="switch"' +
       (rule.enabled !== false ? ' checked' : '') +
-      '></span><span class="form-check-label">' +
-      escapeHtml(t.enabled) +
+      '></span><span class="form-check-label fw-semibold">' +
+      escapeHtml(t.automation) +
       '</span></label>' +
       '<button type="button" class="btn btn-outline-danger btn-sm dr-remove" title="' +
       escapeHtml(t.remove) +
       '"><i class="fas fa-trash" aria-hidden="true"></i></button>' +
       '</div>' +
-      '<div class="row g-2">' +
+      '<div class="small fw-semibold text-uppercase opacity-75 mb-1">' +
+      escapeHtml(t.trigger) +
+      '</div>' +
+      '<div class="row g-2 mb-3">' +
       '<div class="col-12 col-md-4"><label class="form-label small mb-1">' +
       escapeHtml(t.property) +
       '</label><input type="text" class="form-control form-control-sm dr-property" list="dt-device-rule-properties" value="' +
-      escapeHtml(rule.property) +
+      escapeHtml(rule.trigger.property) +
       '"></div>' +
       '<div class="col-12 col-md-4"><label class="form-label small mb-1">' +
       escapeHtml(t.condition) +
       '</label><select class="form-select form-select-sm dr-operator">' +
-      operatorOptions(rule.operator) +
+      operatorOptions(rule.trigger.operator) +
       '</select></div>' +
       '<div class="col-12 col-md-4"><label class="form-label small mb-1">' +
       escapeHtml(t.value) +
       '</label><input type="text" class="form-control form-control-sm dr-value" value="' +
-      escapeHtml(rule.value) +
+      escapeHtml(rule.trigger.value) +
       '"' +
       (noValue ? ' disabled' : '') +
-      '></div>' +
-      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
-      escapeHtml(t.target) +
-      '</label><select class="form-select form-select-sm dr-target">' +
-      targetOptions(rule.target) +
-      '</select></div>' +
-      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
-      escapeHtml(t.cssClass) +
-      '</label><input type="text" class="form-control form-control-sm dr-class" value="' +
-      escapeHtml(rule.className) +
-      '" placeholder="warning_ketel"></div>' +
-      '<div class="col-12"><label class="form-label small mb-1">' +
-      escapeHtml(t.styling) +
-      '</label><select class="form-select form-select-sm dr-style-mode">' +
-      styleModeOptions(rule.style.mode) +
-      '</select><div class="form-text">' +
-      escapeHtml(t.styleHelp) +
-      '</div></div>' +
-      '<div class="col-12 dr-style-controls border-top mt-2 pt-2">' +
+      '></div></div>' +
+      '<div class="small fw-semibold text-uppercase opacity-75 mb-1">' +
+      escapeHtml(t.actions) +
+      '</div>' +
+      '<div class="border rounded p-2 mb-2 dr-css-action-card">' +
+      '<label class="d-flex align-items-center gap-2 mb-1">' +
+      '<span class="form-check form-switch m-0 p-0">' +
+      '<input type="checkbox" class="form-check-input dr-css-enabled de-switch m-0"' +
+      (cssAction.enabled ? ' checked' : '') +
+      '></span><span class="fw-semibold">' +
+      escapeHtml(t.cssAction) +
+      '</span></label>' +
+      '<div class="form-text mb-2">' +
+      escapeHtml(t.cssActionHelp) +
+      '</div>' +
+      '<div class="dr-css-body">' +
+      '<div class="small text-muted mb-2"><strong>' +
+      escapeHtml(t.currentDevice) +
+      ':</strong> ' +
+      escapeHtml(sourceLabel) +
+      '</div>' +
+      '<div class="dr-generated-style-controls">' +
       '<div class="row g-2">' +
       '<div class="col-12 col-lg-4 dr-background-controls">' +
       '<div class="small fw-semibold mb-1">' +
       escapeHtml(t.background) +
       '</div><div class="d-flex gap-2 align-items-end">' +
-      '<div class="flex-grow-1"><label class="form-label small mb-1">' +
+      '<div><label class="form-label small mb-1">' +
       escapeHtml(t.backgroundColor) +
       '</label><input type="color" class="form-control form-control-color dr-background-color" value="' +
-      escapeHtml(rule.style.backgroundColor) +
+      escapeHtml(cssAction.style.backgroundColor) +
       '" title="' +
       escapeHtml(t.backgroundColor) +
       '"></div>' +
       '<div class="flex-grow-1"><label class="form-label small mb-1">' +
       escapeHtml(t.opacity) +
       '</label><select class="form-select form-select-sm dr-background-opacity">' +
-      opacityOptions(rule.style.backgroundOpacity) +
+      opacityOptions(cssAction.style.backgroundOpacity) +
       '</select></div></div></div>' +
-      '<div class="col-12 col-lg-5 dr-border-controls">' +
+      '<div class="col-12 col-lg-8 dr-border-controls">' +
       '<div class="small fw-semibold mb-1">' +
       escapeHtml(t.border) +
-      '</div><div class="d-flex gap-2 align-items-end">' +
+      '</div><div class="d-flex flex-wrap gap-2 align-items-end">' +
+      '<div><label class="form-label small mb-1">' +
+      escapeHtml(t.borderColor) +
+      '</label><input type="color" class="form-control form-control-color dr-border-color" value="' +
+      escapeHtml(cssAction.style.borderColor) +
+      '" title="' +
+      escapeHtml(t.borderColor) +
+      '"></div>' +
       '<div><label class="form-label small mb-1">' +
       escapeHtml(t.borderWidth) +
       '</label><select class="form-select form-select-sm dr-border-width">' +
-      borderWidthOptions(rule.style.borderWidth) +
+      borderWidthOptions(cssAction.style.borderWidth) +
       '</select></div>' +
       '<div class="flex-grow-1"><label class="form-label small mb-1">' +
       escapeHtml(t.borderStyle) +
       '</label><select class="form-select form-select-sm dr-border-style">' +
-      borderStyleOptions(rule.style.borderStyle) +
+      borderStyleOptions(cssAction.style.borderStyle) +
+      '</select></div></div></div>' +
+      '</div></div>' +
+      '<details class="mt-2 dr-css-advanced"><summary class="small">' +
+      escapeHtml(t.advancedCss) +
+      '</summary><div class="row g-2 mt-1">' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.styling) +
+      '</label><select class="form-select form-select-sm dr-style-mode">' +
+      styleModeOptions(cssAction.style.mode) +
       '</select></div>' +
-      '<div><label class="form-label small mb-1">' +
-      escapeHtml(t.borderColor) +
-      '</label><input type="color" class="form-control form-control-color dr-border-color" value="' +
-      escapeHtml(rule.style.borderColor) +
-      '" title="' +
-      escapeHtml(t.borderColor) +
-      '"></div></div></div>' +
-      '<div class="col-12 col-lg-3 dr-text-controls">' +
-      '<div class="small fw-semibold mb-1">' +
-      escapeHtml(t.textColor) +
-      '</div><label class="form-label small mb-1">' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.cssClass) +
+      '</label><input type="text" class="form-control form-control-sm dr-class" value="' +
+      escapeHtml(cssAction.className) +
+      '"></div>' +
+      '<div class="col-12 col-md-4 dr-text-controls"><label class="form-label small mb-1">' +
       escapeHtml(t.textColor) +
       '</label><input type="color" class="form-control form-control-color dr-text-color" value="' +
-      escapeHtml(rule.style.textColor) +
-      '" title="' +
-      escapeHtml(t.textColor) +
+      escapeHtml(cssAction.style.textColor) +
       '"></div>' +
+      '<div class="col-12 dr-banner-controls"><div class="row g-2">' +
+      '<div class="col-12"><label class="form-label small mb-1">' +
+      escapeHtml(t.bannerText) +
+      '</label><input type="text" class="form-control form-control-sm dr-banner-text" value="' +
+      escapeHtml(cssAction.style.bannerText) +
+      '"></div>' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.bannerTop) +
+      '</label><input type="number" min="0" max="2000" class="form-control form-control-sm dr-banner-top" value="' +
+      escapeHtml(cssAction.style.bannerTop) +
+      '"></div>' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.fontSize) +
+      '</label><input type="number" min="10" max="60" class="form-control form-control-sm dr-banner-fontsize" value="' +
+      escapeHtml(cssAction.style.fontSize) +
+      '"></div></div></div>' +
+      '<div class="col-12">' +
+      cssTargetControl(cssAction) +
+      '</div></div></details>' +
       '</div></div>' +
-      '</div></div>'
+      '<div class="border rounded p-2 dr-text-action-card">' +
+      '<label class="d-flex align-items-center gap-2 mb-1">' +
+      '<span class="form-check form-switch m-0 p-0">' +
+      '<input type="checkbox" class="form-check-input dr-text-enabled de-switch m-0"' +
+      (textAction.enabled ? ' checked' : '') +
+      '></span><span class="fw-semibold">' +
+      escapeHtml(t.textAction) +
+      '</span></label>' +
+      '<div class="dr-text-body"><div class="row g-2">' +
+      '<div class="col-12"><label class="form-label small mb-1">' +
+      escapeHtml(t.textTarget) +
+      '</label><select class="form-select form-select-sm dr-text-target">' +
+      targetOptions(textAction.target, false) +
+      '</select><div class="form-text">' +
+      escapeHtml(t.targetHelp) +
+      '</div></div>' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.textOn) +
+      '</label><input type="text" class="form-control form-control-sm dr-text-on" value="' +
+      escapeHtml(textAction.textOn) +
+      '"></div>' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.textOff) +
+      '</label><input type="text" class="form-control form-control-sm dr-text-off" value="' +
+      escapeHtml(textAction.textOff) +
+      '"></div></div>' +
+      '<div class="mt-2 border rounded p-2 dr-text-css-card">' +
+      '<label class="d-flex align-items-center gap-2 mb-1">' +
+      '<span class="form-check form-switch m-0 p-0">' +
+      '<input type="checkbox" class="form-check-input dr-text-css-enabled de-switch m-0"' +
+      (textCssAction.enabled ? ' checked' : '') +
+      '></span><span class="fw-semibold">' +
+      escapeHtml(t.textCssAction) +
+      '</span></label>' +
+      '<div class="form-text mb-2">' +
+      escapeHtml(t.textCssActionHelp) +
+      '</div>' +
+      '<div class="dr-text-css-body">' +
+      '<div class="dr-text-css-generated-style-controls">' +
+      '<div class="row g-2">' +
+      '<div class="col-12 col-lg-4 dr-text-css-background-controls">' +
+      '<div class="small fw-semibold mb-1">' +
+      escapeHtml(t.background) +
+      '</div><div class="d-flex gap-2 align-items-end">' +
+      '<div><label class="form-label small mb-1">' +
+      escapeHtml(t.backgroundColor) +
+      '</label><input type="color" class="form-control form-control-color dr-text-css-background-color" value="' +
+      escapeHtml(textCssAction.style.backgroundColor) +
+      '" title="' +
+      escapeHtml(t.backgroundColor) +
+      '"></div>' +
+      '<div class="flex-grow-1"><label class="form-label small mb-1">' +
+      escapeHtml(t.opacity) +
+      '</label><select class="form-select form-select-sm dr-text-css-background-opacity">' +
+      opacityOptions(textCssAction.style.backgroundOpacity) +
+      '</select></div></div></div>' +
+      '<div class="col-12 col-lg-8 dr-text-css-border-controls">' +
+      '<div class="small fw-semibold mb-1">' +
+      escapeHtml(t.border) +
+      '</div><div class="d-flex flex-wrap gap-2 align-items-end">' +
+      '<div><label class="form-label small mb-1">' +
+      escapeHtml(t.borderColor) +
+      '</label><input type="color" class="form-control form-control-color dr-text-css-border-color" value="' +
+      escapeHtml(textCssAction.style.borderColor) +
+      '" title="' +
+      escapeHtml(t.borderColor) +
+      '"></div>' +
+      '<div><label class="form-label small mb-1">' +
+      escapeHtml(t.borderWidth) +
+      '</label><select class="form-select form-select-sm dr-text-css-border-width">' +
+      borderWidthOptions(textCssAction.style.borderWidth) +
+      '</select></div>' +
+      '<div class="flex-grow-1"><label class="form-label small mb-1">' +
+      escapeHtml(t.borderStyle) +
+      '</label><select class="form-select form-select-sm dr-text-css-border-style">' +
+      borderStyleOptions(textCssAction.style.borderStyle) +
+      '</select></div></div></div>' +
+      '</div></div>' +
+      '<details class="mt-2 dr-text-css-advanced"><summary class="small">' +
+      escapeHtml(t.advancedCss) +
+      '</summary><div class="row g-2 mt-1">' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.styling) +
+      '</label><select class="form-select form-select-sm dr-text-css-mode">' +
+      styleModeOptions(textCssAction.style.mode) +
+      '</select></div>' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.cssClass) +
+      '</label><input type="text" class="form-control form-control-sm dr-text-css-class" value="' +
+      escapeHtml(textCssAction.className) +
+      '"></div>' +
+      '<div class="col-12 col-md-4 dr-text-css-text-controls"><label class="form-label small mb-1">' +
+      escapeHtml(t.textColor) +
+      '</label><input type="color" class="form-control form-control-color dr-text-css-text-color" value="' +
+      escapeHtml(textCssAction.style.textColor) +
+      '"></div>' +
+      '<div class="col-12 dr-text-css-banner-controls"><div class="row g-2">' +
+      '<div class="col-12"><label class="form-label small mb-1">' +
+      escapeHtml(t.bannerText) +
+      '</label><input type="text" class="form-control form-control-sm dr-text-css-banner-text" value="' +
+      escapeHtml(textCssAction.style.bannerText) +
+      '"></div>' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.bannerTop) +
+      '</label><input type="number" min="0" max="2000" class="form-control form-control-sm dr-text-css-banner-top" value="' +
+      escapeHtml(textCssAction.style.bannerTop) +
+      '"></div>' +
+      '<div class="col-12 col-md-6"><label class="form-label small mb-1">' +
+      escapeHtml(t.fontSize) +
+      '</label><input type="number" min="10" max="60" class="form-control form-control-sm dr-text-css-banner-fontsize" value="' +
+      escapeHtml(textCssAction.style.fontSize) +
+      '"></div></div></div>' +
+      '</div></details>' +
+      '</div></div>' +
+      '</div></div>' +
+      '</div>'
     );
   }
 
@@ -992,24 +2060,83 @@
         borderStyle: String($row.find('.dr-border-style').val() || 'solid'),
         borderColor: String($row.find('.dr-border-color').val() || '#ff4040'),
         textColor: String($row.find('.dr-text-color').val() || '#ffffff'),
+        bannerText: String($row.find('.dr-banner-text').val() || ''),
+        bannerTop: Number($row.find('.dr-banner-top').val() || 40),
+        fontSize: Number($row.find('.dr-banner-fontsize').val() || 20),
       },
-      false
+      'background-border'
     );
   }
 
-  function readRuleRows($popup) {
+  function readTextStyleRow($row) {
+    return normaliseStyle(
+      {
+        mode: String($row.find('.dr-text-css-mode').val() || 'border'),
+        backgroundColor: String(
+          $row.find('.dr-text-css-background-color').val() || '#ff0000'
+        ),
+        backgroundOpacity: Number(
+          $row.find('.dr-text-css-background-opacity').val() || 0.35
+        ),
+        borderWidth: Number($row.find('.dr-text-css-border-width').val() || 2),
+        borderStyle: String(
+          $row.find('.dr-text-css-border-style').val() || 'solid'
+        ),
+        borderColor: String(
+          $row.find('.dr-text-css-border-color').val() || '#ff4040'
+        ),
+        textColor: String(
+          $row.find('.dr-text-css-text-color').val() || '#ffffff'
+        ),
+        bannerText: String($row.find('.dr-text-css-banner-text').val() || ''),
+        bannerTop: Number($row.find('.dr-text-css-banner-top').val() || 40),
+        fontSize: Number($row.find('.dr-text-css-banner-fontsize').val() || 20),
+      },
+      'border'
+    );
+  }
+
+  function readRuleRows($popup, source) {
     var rules = [];
     $popup.find('.dt-device-rule').each(function () {
       var $row = $(this);
+      var id = normaliseRuleId($row.attr('data-rule-id'), rules.length, {});
+      var className = String($row.find('.dr-class').val() || '').trim();
+      if (!className) className = managedClassName(source, id);
+      var textCssClassName = String(
+        $row.find('.dr-text-css-class').val() || ''
+      ).trim();
+      if (!textCssClassName) {
+        textCssClassName = managedClassName(source, id + '_text');
+      }
       rules.push({
+        id: id,
         enabled: $row.find('.dr-enabled').prop('checked') !== false,
-        property: String($row.find('.dr-property').val() || '').trim(),
-        operator: String($row.find('.dr-operator').val() || 'eq'),
-        value: String($row.find('.dr-value').val() || ''),
-        action: 'class',
-        target: String($row.find('.dr-target').val() || '').trim(),
-        className: String($row.find('.dr-class').val() || '').trim(),
-        style: readStyleRow($row),
+        trigger: {
+          property: String($row.find('.dr-property').val() || '').trim(),
+          operator: String($row.find('.dr-operator').val() || 'eq'),
+          value: String($row.find('.dr-value').val() || ''),
+        },
+        actions: {
+          css: {
+            enabled: $row.find('.dr-css-enabled').prop('checked') === true,
+            target: String($row.find('.dr-css-target').val() || 'self').trim(),
+            className: className,
+            style: readStyleRow($row),
+          },
+          text: {
+            enabled: $row.find('.dr-text-enabled').prop('checked') === true,
+            target: String($row.find('.dr-text-target').val() || '').trim(),
+            textOn: String($row.find('.dr-text-on').val() || ''),
+            textOff: String($row.find('.dr-text-off').val() || ''),
+            css: {
+              enabled:
+                $row.find('.dr-text-css-enabled').prop('checked') === true,
+              className: textCssClassName,
+              style: readTextStyleRow($row),
+            },
+          },
+        },
       });
     });
     return rules;
@@ -1038,16 +2165,51 @@
   function updateStyleState($row) {
     var mode = String($row.find('.dr-style-mode').val() || 'existing');
     var generated = mode !== 'existing';
-    $row.find('.dr-style-controls').toggleClass('d-none', !generated);
+    var isBanner = mode === 'banner';
+    $row.find('.dr-generated-style-controls').toggleClass('d-none', !generated);
     $row
       .find('.dr-background-controls')
-      .toggleClass('d-none', !modeUses(mode, 'background'));
+      .toggleClass('d-none', !(isBanner || modeUses(mode, 'background')));
     $row
       .find('.dr-border-controls')
-      .toggleClass('d-none', !modeUses(mode, 'border'));
+      .toggleClass('d-none', !(isBanner || modeUses(mode, 'border')));
     $row
       .find('.dr-text-controls')
-      .toggleClass('d-none', !modeUses(mode, 'text'));
+      .toggleClass('d-none', !(isBanner || modeUses(mode, 'text')));
+    $row.find('.dr-banner-controls').toggleClass('d-none', !isBanner);
+  }
+
+  function updateTextStyleState($row) {
+    var mode = String($row.find('.dr-text-css-mode').val() || 'border');
+    var generated = mode !== 'existing';
+    var isBanner = mode === 'banner';
+    $row
+      .find('.dr-text-css-generated-style-controls')
+      .toggleClass('d-none', !generated);
+    $row
+      .find('.dr-text-css-background-controls')
+      .toggleClass('d-none', !(isBanner || modeUses(mode, 'background')));
+    $row
+      .find('.dr-text-css-border-controls')
+      .toggleClass('d-none', !(isBanner || modeUses(mode, 'border')));
+    $row
+      .find('.dr-text-css-text-controls')
+      .toggleClass('d-none', !(isBanner || modeUses(mode, 'text')));
+    $row.find('.dr-text-css-banner-controls').toggleClass('d-none', !isBanner);
+  }
+
+  function updateActionState($row) {
+    var cssEnabled = $row.find('.dr-css-enabled').prop('checked') === true;
+    var textEnabled = $row.find('.dr-text-enabled').prop('checked') === true;
+    var textCssEnabled =
+      $row.find('.dr-text-css-enabled').prop('checked') === true;
+    $row.find('.dr-css-body').toggleClass('d-none', !cssEnabled);
+    $row.find('.dr-text-body').toggleClass('d-none', !textEnabled);
+    $row.find('.dr-text-css-body').toggleClass('d-none', !textCssEnabled);
+  }
+
+  function showValidationError($popup, message) {
+    $popup.find('.de-config-message').addClass('text-danger').text(message);
   }
 
   function validatePopup($popup) {
@@ -1059,28 +2221,102 @@
       if (!valid) return;
       var $row = $(this);
       if ($row.find('.dr-enabled').prop('checked') === false) return;
+
       var property = String($row.find('.dr-property').val() || '').trim();
       var operator = String($row.find('.dr-operator').val() || 'eq');
       var value = String($row.find('.dr-value').val() || '').trim();
-      var target = String($row.find('.dr-target').val() || '').trim();
-      var className = String($row.find('.dr-class').val() || '').trim();
-      var styleMode = String($row.find('.dr-style-mode').val() || 'existing');
-      if (!property || !target || !className) {
-        valid = false;
-        message = t.invalidRule;
-        return;
-      }
-      if (operator !== 'empty' && operator !== 'notempty' && !value) {
-        valid = false;
-        message = t.invalidValue;
-        return;
-      }
+      var cssEnabled = $row.find('.dr-css-enabled').prop('checked') === true;
+      var textEnabled = $row.find('.dr-text-enabled').prop('checked') === true;
+
       if (
-        styleMode !== 'existing' &&
-        !/^[A-Za-z_][A-Za-z0-9_-]*$/.test(className)
+        !property ||
+        !operator ||
+        (operator !== 'empty' && operator !== 'notempty' && !value)
       ) {
         valid = false;
-        message = t.invalidClass;
+        message = t.invalidTrigger;
+        return;
+      }
+      if (!cssEnabled && !textEnabled) {
+        valid = false;
+        message = t.invalidActions;
+        return;
+      }
+
+      if (cssEnabled) {
+        var className = String($row.find('.dr-class').val() || '').trim();
+        var styleMode = String($row.find('.dr-style-mode').val() || 'existing');
+        var classPattern =
+          styleMode === 'existing'
+            ? /^(?:[A-Za-z_][A-Za-z0-9_-]*)(?:\s+[A-Za-z_][A-Za-z0-9_-]*)*$/
+            : /^[A-Za-z_][A-Za-z0-9_-]*$/;
+        if (!classPattern.test(className)) {
+          valid = false;
+          message = t.invalidClass;
+          return;
+        }
+        if (styleMode === 'banner') {
+          var bannerText = String($row.find('.dr-banner-text').val() || '');
+          if (
+            !bannerText ||
+            bannerText.indexOf('"') !== -1 ||
+            bannerText.indexOf('\\') !== -1
+          ) {
+            valid = false;
+            message = t.invalidBannerText;
+            return;
+          }
+        }
+      }
+
+      if (textEnabled) {
+        var target = String($row.find('.dr-text-target').val() || '').trim();
+        var textOn = String($row.find('.dr-text-on').val() || '');
+        var textOff = String($row.find('.dr-text-off').val() || '');
+        if (!target) {
+          valid = false;
+          message = t.invalidTextRule;
+          return;
+        }
+        if (!textOn && !textOff) {
+          valid = false;
+          message = t.invalidTextValue;
+          return;
+        }
+
+        var textCssEnabled =
+          $row.find('.dr-text-css-enabled').prop('checked') === true;
+        if (textCssEnabled) {
+          var textCssClassName = String(
+            $row.find('.dr-text-css-class').val() || ''
+          ).trim();
+          var textCssStyleMode = String(
+            $row.find('.dr-text-css-mode').val() || 'existing'
+          );
+          var textCssClassPattern =
+            textCssStyleMode === 'existing'
+              ? /^(?:[A-Za-z_][A-Za-z0-9_-]*)(?:\s+[A-Za-z_][A-Za-z0-9_-]*)*$/
+              : /^[A-Za-z_][A-Za-z0-9_-]*$/;
+          if (!textCssClassPattern.test(textCssClassName)) {
+            valid = false;
+            message = t.invalidClass;
+            return;
+          }
+          if (textCssStyleMode === 'banner') {
+            var textCssBannerText = String(
+              $row.find('.dr-text-css-banner-text').val() || ''
+            );
+            if (
+              !textCssBannerText ||
+              textCssBannerText.indexOf('"') !== -1 ||
+              textCssBannerText.indexOf('\\') !== -1
+            ) {
+              valid = false;
+              message = t.invalidBannerText;
+              return;
+            }
+          }
+        }
       }
     });
 
@@ -1094,24 +2330,86 @@
       message = t.invalidHandler;
     }
 
-    if (!valid) {
-      $popup.find('.de-config-message').addClass('text-danger').text(message);
-    }
+    if (!valid) showValidationError($popup, message);
     return valid;
   }
 
   function hexToRgba(hex, opacity) {
     var value = validHexColor(hex, '#000000').substring(1);
-    var r = parseInt(value.substring(0, 2), 16);
-    var g = parseInt(value.substring(2, 4), 16);
-    var b = parseInt(value.substring(4, 6), 16);
+    var red = parseInt(value.substring(0, 2), 16);
+    var green = parseInt(value.substring(2, 4), 16);
+    var blue = parseInt(value.substring(4, 6), 16);
     var alpha = clampNumber(opacity, 0.05, 1, 1);
-    return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha.toFixed(2) + ')';
+    return (
+      'rgba(' + red + ', ' + green + ', ' + blue + ', ' + alpha.toFixed(2) + ')'
+    );
+  }
+
+  // Themes such as modern-dark and liquid-glass style panels with
+  // selectors like `.transbg:not(.dial)` plus `!important`. A generated rule
+  // using only `.automation-class` therefore loses on specificity even though
+  // custom.css is loaded later. Target the actual Dashticz block shapes with a
+  // stronger selector, while keeping a generic fallback for custom blocks.
+  function generatedBlockSelectors(className, pseudo) {
+    var suffix = String(pseudo || '');
+    var classSelector = '.' + String(className || '');
+    return [
+      'html body .dt_block.transbg' + classSelector + suffix,
+      'html body .mh.transbg' + classSelector + suffix,
+      'html body .dt_block' + classSelector + suffix,
+      'html body .mh' + classSelector + suffix,
+      'html body .transbg' + classSelector + suffix,
+      'html body ' + classSelector + suffix,
+    ].join(',\n');
+  }
+
+  function generatedBannerCss(className, style) {
+    style = normaliseStyle(style, false);
+    if (!style.bannerText) return '';
+    return (
+      generatedBlockSelectors(className) +
+      ' {\n  visibility: visible;\n}\n\n' +
+      generatedBlockSelectors(className, ':before') +
+      ' {\n' +
+      '  content: "' +
+      style.bannerText.replace(/"/g, '') +
+      '";\n' +
+      '  background: ' +
+      hexToRgba(style.backgroundColor, style.backgroundOpacity) +
+      ' !important;\n' +
+      '  background-clip: border-box;\n' +
+      '  border: ' +
+      style.borderWidth +
+      'px ' +
+      style.borderStyle +
+      ' ' +
+      style.borderColor +
+      ' !important;\n' +
+      '  border-radius: 15px !important;\n' +
+      '  font-size: ' +
+      style.fontSize +
+      'px !important;\n' +
+      '  font-weight: bold;\n' +
+      '  color: ' +
+      style.textColor +
+      ' !important;\n' +
+      '  visibility: visible;\n' +
+      '  position: fixed;\n' +
+      '  top: ' +
+      style.bannerTop +
+      'px;\n' +
+      '  left: 50%;\n' +
+      '  transform: translateX(-50%);\n' +
+      '  padding: 10px;\n' +
+      '  text-align: center;\n' +
+      '  z-index: 9999;\n' +
+      '}'
+    );
   }
 
   function generatedDeclarations(style) {
     style = normaliseStyle(style, false);
-    if (style.mode === 'existing') return [];
+    if (style.mode === 'existing' || style.mode === 'banner') return [];
     var declarations = [];
     if (modeUses(style.mode, 'background')) {
       declarations.push(
@@ -1137,22 +2435,78 @@
     return declarations;
   }
 
-  function generatedCssForRules(rules) {
+  function generatedCssForAction(className, style) {
+    if (style.mode === 'existing') return '';
+    if (!/^[A-Za-z_][A-Za-z0-9_-]*$/.test(className)) return '';
+    if (style.mode === 'banner') {
+      return generatedBannerCss(className, style);
+    }
+    var declarations = generatedDeclarations(style);
+    if (!declarations.length) return '';
+    return (
+      generatedBlockSelectors(className) +
+      ' {\n  ' +
+      declarations.join('\n  ') +
+      '\n}'
+    );
+  }
+
+  function generatedCssForRules(rules, source) {
     var seen = {};
     var css = [];
-    rules.forEach(function (rule) {
-      if (!rule || !rule.style || rule.style.mode === 'existing') return;
-      if (!/^[A-Za-z_][A-Za-z0-9_-]*$/.test(rule.className)) return;
-      var declarations = generatedDeclarations(rule.style);
-      if (!declarations.length) return;
-      // Last rule with a duplicate class wins, matching the server behaviour.
-      seen[rule.className] =
-        '.' + rule.className + ' {\n  ' + declarations.join('\n  ') + '\n}';
+    normaliseRules(rules, source).forEach(function (rule) {
+      if (rule.enabled === false) return;
+      var cssAction = rule.actions.css;
+      if (cssAction.enabled) {
+        var cssOut = generatedCssForAction(
+          cssAction.className,
+          cssAction.style
+        );
+        if (cssOut) seen[cssAction.className] = cssOut;
+      }
+      var textAction = rule.actions.text;
+      var textCssAction = textAction.enabled ? textAction.css : null;
+      if (textCssAction && textCssAction.enabled) {
+        var textCssOut = generatedCssForAction(
+          textCssAction.className,
+          textCssAction.style
+        );
+        if (textCssOut) seen[textCssAction.className] = textCssOut;
+      }
     });
     Object.keys(seen).forEach(function (className) {
       css.push(seen[className]);
     });
     return css.join('\n\n');
+  }
+
+  function updateRuntimeRuleCss(source, rules) {
+    source = String(source || 'device');
+    var css = generatedCssForRules(rules, source);
+    var styleNode = runtimeStyleNodes[source];
+
+    if (!css) {
+      if (styleNode && styleNode.parentNode) {
+        styleNode.parentNode.removeChild(styleNode);
+      }
+      delete runtimeStyleNodes[source];
+      return;
+    }
+
+    if (!document || typeof document.createElement !== 'function') return;
+    var head = document.head;
+    if (!head && typeof document.getElementsByTagName === 'function') {
+      head = document.getElementsByTagName('head')[0];
+    }
+    if (!head) return;
+
+    if (!styleNode) {
+      styleNode = document.createElement('style');
+      styleNode.setAttribute('data-dashticz-device-rules-runtime', 'true');
+      head.appendChild(styleNode);
+      runtimeStyleNodes[source] = styleNode;
+    }
+    if (styleNode.textContent !== css) styleNode.textContent = css;
   }
 
   function activeCssFilename() {
@@ -1161,7 +2515,6 @@
       var basename = path.split('/').pop();
       if (/^[A-Za-z0-9_-]+\.css$/.test(basename)) return basename;
     }
-
     try {
       if (typeof _PARAMS !== 'undefined' && _PARAMS && _PARAMS.css) {
         var explicit = String(_PARAMS.css).split('/').pop();
@@ -1174,12 +2527,19 @@
         if (/^[A-Za-z0-9_-]+\.css$/.test(derived)) return derived;
       }
     } catch (ignore) {
-      // Fall through to the default below.
+      // Fall through to the default.
     }
     return 'custom.css';
   }
 
   function updateRuleStore(source, rules, handler) {
+    var existingEntry = ruleStore()[source];
+    var previousRules = normaliseRules(
+      existingEntry && existingEntry.rules,
+      source
+    );
+    cleanManagedAddClassBases(source, [previousRules, rules]);
+
     if (
       !window[RULE_STORE_NAME] ||
       typeof window[RULE_STORE_NAME] !== 'object'
@@ -1188,12 +2548,17 @@
     }
     if (!rules.length && !handler) {
       delete window[RULE_STORE_NAME][source];
+      updateRuntimeRuleCss(source, []);
+      reconcileSavedSource(source);
       return;
     }
     window[RULE_STORE_NAME][source] = {
+      schemaVersion: 2,
       rules: rules,
       customJsHandler: handler,
     };
+    updateRuntimeRuleCss(source, rules);
+    reconcileSavedSource(source);
   }
 
   function activeCustomFolder() {
@@ -1204,24 +2569,28 @@
     return folder.replace(/\/$/, '') || 'custom';
   }
 
-  function saveDeviceRules($popup) {
-    var source = popupSource($popup[0]);
-    var rules = readRuleRows($popup);
+  function saveDeviceRules($popup, source) {
+    var rules = readRuleRows($popup, source);
     var handler = String($popup.find('.dr-handler').val() || '').trim();
     var phpPath =
       window.settings && window.settings.dashticz_php_path
         ? String(window.settings.dashticz_php_path)
         : 'js/';
+    phpPath = phpPath.replace(/\/?$/, '/');
     var cssFile = activeCssFilename();
 
     return $.getJSON(phpPath + 'info.php?get=csrf').then(function (data) {
       return $.ajax({
+        // Keep the writer on its fixed js/ endpoint. dashticz_php_path can
+        // point at the shared info.php folder and does not necessarily contain
+        // this feature-specific endpoint.
         url: SAVE_URL,
         method: 'POST',
         dataType: 'json',
         headers: { 'X-Dashticz-CSRF': data.token },
         data: {
           source: source,
+          schema_version: 2,
           rules: JSON.stringify(rules),
           custom_js_handler: handler,
           css_file: cssFile,
@@ -1260,11 +2629,65 @@
     return html;
   }
 
+  // Device Editor snapshots Custom fields before Device Rules saves. Remove a
+  // runtime-generated addClass from that snapshot so it cannot be persisted as
+  // a permanently active CONFIG.js class; hand-written base classes remain.
+  function syncAutomationAddClassCustomField($popup, source, ruleSets) {
+    if (!$popup || typeof $popup.find !== 'function') return;
+    var target = sourceSelfTarget(source);
+    $popup.find('.de-custom-field-row').each(function () {
+      var $row = $(this);
+      var field = String($row.find('.de-custom-field-name').val() || '')
+        .trim()
+        .replace(/[\s-]+/g, '_')
+        .toLowerCase();
+      if (field !== 'addclass') return;
+
+      var $setting = $row.find('.de-custom-field-setting');
+      var cleaned = stripManagedAddClassValue(
+        $setting.val(),
+        target,
+        source,
+        ruleSets
+      );
+      if (cleaned) {
+        $setting.val(cleaned);
+        return;
+      }
+
+      var $remove = $row.find('.de-custom-field-remove');
+      if ($remove.length && $remove.prop('disabled') !== true) {
+        $remove.trigger('click');
+        $row.remove();
+      } else {
+        $row.find('.de-custom-field-name,.de-custom-field-setting').val('');
+        $row.addClass('d-none');
+      }
+    });
+  }
+
+  function scheduleSavedSourceReconcile(source) {
+    if (typeof window.setTimeout !== 'function') return;
+    [0, 150, 500].forEach(function (delay) {
+      window.setTimeout(function () {
+        reconcileSavedSource(source);
+      }, delay);
+    });
+  }
+
   function enhancePopup(popup) {
     if (!popup || popup._dashticzDeviceRulesEnhanced) return;
     var $popup = $(popup);
     var $customSection = $popup.find('.de-custom-fields-section');
     if (!$customSection.length || !$popup.find('#de-config-ok').length) return;
+    // Idx-less specials (Title, Separator, HTML Block, LMS, iFrame, ...)
+    // reuse this same popup template - e.g. a Title's only real control is
+    // its icon/image pulldown - but have no live Domoticz Status/nValue to
+    // trigger an Automation rule from, so the section makes no sense there.
+    // A Custom/Multi Device or Group special still wraps a real idx (data-
+    // block-kind reflects that, not just isSpecial - see _showConfigPopup)
+    // and keeps the section, same as a plain device.
+    if ($popup.attr('data-block-kind') === 'special') return;
 
     var source = popupSource(popup);
     if (!source) return;
@@ -1274,16 +2697,13 @@
     var stored = configForSource(source);
     var rules = stored.rules;
     var handler = stored.customJsHandler;
-
     var html =
       '<div class="de-device-rules-section">' +
       '<h6 class="de-section-title mt-3"><i class="fas fa-bolt me-2" aria-hidden="true"></i>' +
       escapeHtml(t.automation) +
-      '</h6>' +
-      '<p class="form-text">' +
+      '</h6><p class="form-text">' +
       escapeHtml(t.help) +
-      '</p>' +
-      '<div class="small text-muted mb-2"><strong>' +
+      '</p><div class="small text-muted mb-2"><strong>' +
       escapeHtml(t.source) +
       ':</strong> <code>' +
       escapeHtml(source) +
@@ -1297,35 +2717,36 @@
       '</button>' +
       '<details class="mb-2"><summary class="small">' +
       escapeHtml(t.advanced) +
-      '</summary>' +
-      '<div class="mt-2"><label class="form-label small mb-1">' +
+      '</summary><div class="mt-2"><label class="form-label small mb-1">' +
       escapeHtml(t.handler) +
-      '</label>' +
-      '<input type="text" class="form-control form-control-sm dr-handler" value="' +
+      '</label><input type="text" class="form-control form-control-sm dr-handler" value="' +
       escapeHtml(handler) +
-      '" placeholder="Party_Mode">' +
-      '<div class="form-text">' +
+      '" placeholder="Party_Mode"><div class="form-text">' +
       escapeHtml(t.handlerHelp) +
-      '</div></div></details>' +
-      '</div>';
+      '</div></div></details></div>';
 
     $customSection.before(html);
+    syncAutomationAddClassCustomField($popup, source, [rules]);
     var $rules = $popup.find('.dr-rules');
     rules.forEach(function (rule) {
-      $rules.append(ruleRowHtml(rule));
+      $rules.append(ruleRowHtml(rule, source));
     });
 
     $popup.find('.dt-device-rule').each(function () {
       updateValueState($(this));
       updateStyleState($(this));
+      updateTextStyleState($(this));
+      updateActionState($(this));
     });
     updateEmptyMessage($popup);
 
     $popup.on('click.deviceRules', '.dr-add', function () {
-      $rules.append(ruleRowHtml());
+      $rules.append(ruleRowHtml(defaultRule(source), source));
       var $newRule = $rules.find('.dt-device-rule').last();
       updateValueState($newRule);
       updateStyleState($newRule);
+      updateTextStyleState($newRule);
+      updateActionState($newRule);
       updateEmptyMessage($popup);
       $newRule.find('.dr-property').trigger('focus');
     });
@@ -1337,28 +2758,26 @@
 
     $popup.on(
       'change.deviceRules input.deviceRules',
-      '.dr-enabled,.dr-property,.dr-operator,.dr-value,.dr-target,.dr-class,.dr-style-mode,.dr-background-color,.dr-background-opacity,.dr-border-width,.dr-border-style,.dr-border-color,.dr-text-color,.dr-handler',
+      '.dr-enabled,.dr-property,.dr-operator,.dr-value,.dr-css-enabled,.dr-css-target,.dr-class,.dr-style-mode,.dr-background-color,.dr-background-opacity,.dr-border-width,.dr-border-style,.dr-border-color,.dr-text-color,.dr-banner-text,.dr-banner-top,.dr-banner-fontsize,.dr-text-enabled,.dr-text-target,.dr-text-on,.dr-text-off,.dr-text-css-enabled,.dr-text-css-mode,.dr-text-css-class,.dr-text-css-background-color,.dr-text-css-background-opacity,.dr-text-css-border-color,.dr-text-css-border-width,.dr-text-css-border-style,.dr-text-css-text-color,.dr-text-css-banner-text,.dr-text-css-banner-top,.dr-text-css-banner-fontsize,.dr-handler',
       function () {
         var $field = $(this);
         var $rule = $field.closest('.dt-device-rule');
         if ($field.hasClass('dr-operator')) updateValueState($rule);
         if ($field.hasClass('dr-style-mode')) updateStyleState($rule);
+        if ($field.hasClass('dr-text-css-mode')) updateTextStyleState($rule);
+        if (
+          $field.hasClass('dr-css-enabled') ||
+          $field.hasClass('dr-text-enabled') ||
+          $field.hasClass('dr-text-css-enabled')
+        ) {
+          updateActionState($rule);
+        }
       }
     );
 
-    // Save custom.js/custom.css first. Only after both managed files have been
-    // updated successfully do we re-dispatch OK to Device Editor, which may
-    // independently persist ordinary block presentation settings to CONFIG.js.
-    // Device Rules themselves never enter that CONFIG.js payload.
-    //
-    // Bound on the popup (an ancestor of #de-config-ok), not on the button
-    // itself. Device Editor's own click handler is already attached directly
-    // to #de-config-ok by the time this popup is enhanced, and for listeners
-    // on the same target element the capture flag does not decide execution
-    // order - registration order does. A capture-phase listener on an
-    // ancestor genuinely runs first, so this reliably intercepts the click
-    // before Device Editor's own handler (which would otherwise persist/close
-    // immediately and race with the save below).
+    // Device Rules are saved first. Only after custom.js and custom.css are
+    // updated successfully is the click re-dispatched to Device Editor, which
+    // independently persists normal block presentation settings to CONFIG.js.
     popup.addEventListener(
       'click',
       function (event) {
@@ -1369,22 +2788,16 @@
         ) {
           return;
         }
-
         if (popup._dashticzDeviceRulesSaveBypass) {
           popup._dashticzDeviceRulesSaveBypass = false;
           return;
         }
 
-        var rulesToSave = readRuleRows($popup);
+        var rulesToSave = readRuleRows($popup, source);
         var handlerToSave = String(
           $popup.find('.dr-handler').val() || ''
         ).trim();
-
-        // Nothing configured now and nothing stored before: there is
-        // nothing for this feature to persist or clear, so let Device
-        // Editor's own OK handler run immediately instead of round-tripping
-        // to savedevicerules.php on every Device Config save - including
-        // the vast majority that never touch Automation at all.
+        syncAutomationAddClassCustomField($popup, source, [rules, rulesToSave]);
         if (
           !rulesToSave.length &&
           !handlerToSave &&
@@ -1393,7 +2806,6 @@
         ) {
           return;
         }
-
         if (!validatePopup($popup)) {
           event.preventDefault();
           event.stopPropagation();
@@ -1402,23 +2814,27 @@
 
         event.preventDefault();
         event.stopPropagation();
-
         var $ok = $popup.find('#de-config-ok').prop('disabled', true);
         $popup
           .find('.de-config-message')
           .removeClass('text-danger')
           .text(t.cssSaving);
 
-        saveDeviceRules($popup)
+        saveDeviceRules($popup, source)
           .done(function (result) {
             updateRuleStore(source, rulesToSave, handlerToSave);
             var cssFile =
               result && result.css_file ? result.css_file : activeCssFilename();
             refreshActiveCustomCss(cssFile).always(function () {
+              syncAutomationAddClassCustomField($popup, source, [
+                rules,
+                rulesToSave,
+              ]);
               popup._dashticzDeviceRulesSaveBypass = true;
               $ok.prop('disabled', false);
               $popup.find('.de-config-message').text('');
               $ok[0].click();
+              scheduleSavedSourceReconcile(source);
             });
           })
           .fail(function (xhr) {
@@ -1426,10 +2842,7 @@
               xhr && xhr.responseJSON && xhr.responseJSON.error
                 ? xhr.responseJSON.error
                 : t.cssSaveFailed;
-            $popup
-              .find('.de-config-message')
-              .addClass('text-danger')
-              .text(message);
+            showValidationError($popup, message);
             $ok.prop('disabled', false);
           });
       },
@@ -1451,9 +2864,6 @@
   function retryPopupEnhancement(popup) {
     if (!popup) return;
     enhancePopup(popup);
-    // The Device Config popup is built dynamically and Device Editor itself is
-    // lazy-loaded. Retry after the current DOM task and once after Bootstrap's
-    // show transition, covering both the first-open race and slower devices.
     window.setTimeout(function () {
       if (document.body && document.body.contains(popup)) enhancePopup(popup);
     }, 0);
@@ -1471,10 +2881,6 @@
       });
       popupObserver.observe(document.body, { childList: true, subtree: true });
       inspectForPopup();
-
-      // MutationObserver normally sees the popup insertion, but Bootstrap's
-      // modal events are an explicit second route. This also catches a popup
-      // that existed before the observer was installed.
       $(document)
         .off('.deviceRulesPopupInit')
         .on(
@@ -1485,7 +2891,6 @@
           }
         );
     }
-
     if (document.body) start();
     else document.addEventListener('DOMContentLoaded', start, { once: true });
   }
@@ -1507,17 +2912,31 @@
   window.DashticzDeviceRules = {
     compare: compare,
     normaliseRules: normaliseRules,
+    defaultRule: defaultRule,
+    managedClassName: managedClassName,
+    stripManagedAddClassValue: stripManagedAddClassValue,
+    cleanManagedAddClassBases: cleanManagedAddClassBases,
+    syncAutomationAddClassCustomField: syncAutomationAddClassCustomField,
     process: process,
     enhancePopup: enhancePopup,
+    hasEnabledRules: hasEnabledRules,
     tryWrap: tryWrapGetCustomFunction,
     generatedDeclarations: generatedDeclarations,
+    generatedBlockSelectors: generatedBlockSelectors,
+    generatedBannerCss: generatedBannerCss,
     generatedCssForRules: generatedCssForRules,
+    updateRuntimeRuleCss: updateRuntimeRuleCss,
+    updateRuleStore: updateRuleStore,
+    reconcileSavedSource: reconcileSavedSource,
     sourceFromOrderKey: sourceFromOrderKey,
     configForSource: configForSource,
     inferPopupSource: inferPopupSource,
+    blockOptionData: blockOptionData,
+    availableDeviceTargets: blockOptionData,
+    targetOptions: targetOptions,
   };
 
-  init();
+  if (document && document.addEventListener) init();
 })(window, document);
 
 //# sourceURL=js/devicerules.js

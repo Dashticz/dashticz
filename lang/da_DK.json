@@ -67,7 +67,7 @@
       "garbage_maxitems": "Antal visninger af afhentninger",
       "garbage_street": "Gade",
       "garbage_use_colors": "Tekstfarver",
-      "garbage_use_cors_prefix": "Brug Cors Præfiks (Standard er aktiveret)",
+      "garbage_use_cors_prefix": "Brug Cors Præfiks",
       "garbage_use_names": "Brugerdefinerede navne",
       "garbage_use_prefix_help": "Cors-præfektet forårsager nogle gange fejl",
       "garbage_width": "Bredde af blok (1-12)",

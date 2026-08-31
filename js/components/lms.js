@@ -1,24 +1,19 @@
-/* global Dashticz settings language */
-// Lyrion Music Server (LMS) "Now Playing" block. Read-only: shows player
-// state/artist/title/album/artwork for one configured player, refreshed on
-// Dashticz's own per-block polling (see me.block.refresh below) - it never
-// sends any playback command to LMS. Configured via the Screen Editor's
-// "Lyrion Music Server" quick-add popup (js/deviceeditor.js), which discovers
-// players through the same backend bridge this component polls
-// (vendor/dashticz/lms/index.php) rather than talking to LMS directly, so
-// this never hits a CORS or mixed-content wall regardless of deployment -
-// see docs/blocks/specials/lms.rst.
-// Shared LMS backend bridge, kept as its own global (mirroring the NZBGET
-// object in js/components/nzbget.js) rather than nested inside DT_lms's own
-// closure below: js/deviceeditor.js's Lyrion Music Server quick-add/edit
-// popup reuses DT_lms_api.request() for player discovery/"Test connection",
-// posting the very same request shape this block polls with, so both share
-// one implementation of the fetch/error handling instead of two. Component
-// scripts are all loaded unconditionally at dashboard startup (well before
-// the Screen Editor can lazy-load deviceeditor.js), so this is available by
-// the time it's needed.
+/* global Dashticz settings language DT_function */
+// Lyrion Music Server (LMS) "Now Playing" block. The component keeps
+// Dashticz's existing per-block refresh timer, while DT_lms_scheduler below
+// deduplicates LMS requests shared by blocks on the same server. Interactive
+// transport, volume and power controls use the same backend bridge as status
+// polling. Existing cover-icon and per-line text-style support from beta is
+// intentionally retained.
+
+// Shared LMS backend bridge, also reused by js/deviceeditor.js for player
+// discovery and connection testing.
 // eslint-disable-next-line no-unused-vars
 var DT_lms_api = {
+  _errorMessage: function (jqXHR) {
+    return (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.error) || '';
+  },
+
   request: function (block, params, player) {
     return $.ajax({
       url: settings['dashticz_php_path'] + 'lms/index.php',
@@ -38,6 +33,7 @@ var DT_lms_api = {
       return res && res.result;
     });
   },
+
   cover: function (block, player, coverid, artworkUrl) {
     return $.ajax({
       url: settings['dashticz_php_path'] + 'lms/index.php',
@@ -58,17 +54,213 @@ var DT_lms_api = {
       return res && res.dataUrl;
     });
   },
+
+  getPlayers: function (block) {
+    return this.request(block, ['players', 0, 100], '').then(function (result) {
+      if (!result || !Array.isArray(result.players_loop)) {
+        throw new Error('LMS player list unavailable');
+      }
+      return result.players_loop;
+    });
+  },
+};
+
+var STATUS_TAGS = 'tags:aclKN'; // (a)artist, (l)album, (c)coverid, (K)artwork_url, (N)remote_title
+
+// Shared request scheduler. It owns no timer: Dashticz continues to call each
+// block's refresh() at block.refresh seconds. The short cache only coalesces
+// calls arriving in the same refresh window.
+// eslint-disable-next-line no-unused-vars
+var DT_lms_scheduler = {
+  CACHE_TTL_MS: 1000,
+  playersCache: {},
+  statusCache: {},
+
+  _key: function (block) {
+    return block.server + ':' + block.port;
+  },
+
+  _statusKey: function (block, playerid) {
+    return this._key(block) + ':' + playerid;
+  },
+
+  poll: function (block, playerid, cb) {
+    var self = this;
+    this._getPlayersMap(block)
+      .then(function (playersMap) {
+        var playerInfo = playersMap[playerid];
+
+        if (!playerInfo || Number(playerInfo.connected) === 0) {
+          cb({
+            playerid: playerid,
+            connected: 0,
+            power: 0,
+            known: true,
+          });
+          return;
+        }
+
+        if (Number(playerInfo.power) === 0) {
+          cb({
+            playerid: playerid,
+            connected: 1,
+            power: 0,
+            player_name: playerInfo.name || playerInfo.player_name || '',
+            known: true,
+          });
+          return;
+        }
+
+        self
+          ._getStatus(block, playerid)
+          .then(function (detail) {
+            var merged = $.extend({}, playerInfo, detail || {});
+            merged.known = true;
+            cb(merged);
+          })
+          .catch(function () {
+            playerInfo.known = true;
+            cb(playerInfo);
+          });
+      })
+      .catch(function (playersError) {
+        // Backwards-compatible fallback: if an older/mock backend does not
+        // expose the server-wide players query, keep the block functional by
+        // using the historical direct status request for this player.
+        self
+          ._getStatus(block, playerid)
+          .then(function (detail) {
+            cb(detail || {});
+          })
+          .catch(function (statusError) {
+            cb(null, statusError || playersError);
+          });
+      });
+  },
+
+  invalidate: function (block, playerid) {
+    delete this.playersCache[this._key(block)];
+    if (playerid) delete this.statusCache[this._statusKey(block, playerid)];
+  },
+
+  _getPlayersMap: function (block) {
+    var self = this;
+    var key = this._key(block);
+    var entry = this.playersCache[key];
+    var now = Date.now();
+
+    if (entry && entry.inFlight) return entry.inFlight;
+    if (entry && now - entry.ts < this.CACHE_TTL_MS) {
+      return $.Deferred().resolve(entry.data).promise();
+    }
+
+    var req = DT_lms_api.getPlayers(block)
+      .then(function (playersLoop) {
+        var map = self._indexPlayersLoop(playersLoop);
+        self.playersCache[key] = { data: map, ts: Date.now() };
+        return map;
+      })
+      .catch(function (err) {
+        delete self.playersCache[key];
+        throw err;
+      });
+
+    this.playersCache[key] = {
+      data: (entry && entry.data) || {},
+      ts: 0,
+      inFlight: req,
+    };
+    req.always(function () {
+      if (self.playersCache[key] && self.playersCache[key].inFlight === req) {
+        delete self.playersCache[key].inFlight;
+      }
+    });
+    return req;
+  },
+
+  _getStatus: function (block, playerid) {
+    var self = this;
+    var key = this._statusKey(block, playerid);
+    var entry = this.statusCache[key];
+    var now = Date.now();
+
+    if (entry && entry.inFlight) return entry.inFlight;
+    if (entry && now - entry.ts < this.CACHE_TTL_MS) {
+      return $.Deferred().resolve(entry.data).promise();
+    }
+
+    var req = DT_lms_api.request(
+      block,
+      ['status', '-', 1, STATUS_TAGS],
+      playerid
+    )
+      .then(function (detail) {
+        self.statusCache[key] = { data: detail, ts: Date.now() };
+        return detail;
+      })
+      .catch(function (err) {
+        delete self.statusCache[key];
+        throw err;
+      });
+
+    this.statusCache[key] = {
+      data: (entry && entry.data) || null,
+      ts: 0,
+      inFlight: req,
+    };
+    req.always(function () {
+      if (self.statusCache[key] && self.statusCache[key].inFlight === req) {
+        delete self.statusCache[key].inFlight;
+      }
+    });
+    return req;
+  },
+
+  _indexPlayersLoop: function (playersLoop) {
+    var map = {};
+    (playersLoop || []).forEach(function (player) {
+      if (player && player.playerid) map[player.playerid] = player;
+    });
+    return map;
+  },
 };
 
 (function (Dashticz) {
   'use strict';
 
-  var STATUS_TAGS = 'tags:aclK'; // artist, album, coverid, artwork_url - see docs/blocks/specials/lms.rst
+  var VOLUME_STEP = 2;
   var ARTWORK_RETRY_MS = 30000;
-  // Must match vendor/dashticz/lms/index.php's fixed message exactly - see
-  // the try block's function_exists('curl_init') check there.
   var LMS_CURL_REQUIRED_ERROR =
     'The PHP curl extension is required for the Lyrion Music Server block.';
+
+  // Device Config Title/Artist/Station styling introduced on current beta.
+  var LMS_TEXT_STYLE_VARS = {
+    title_size: '--lms-title-font-size',
+    title_color: '--lms-title-color',
+    artist_size: '--lms-artist-font-size',
+    artist_color: '--lms-artist-color',
+    album_size: '--lms-station-font-size',
+    album_color: '--lms-station-color',
+    station_size: '--lms-station-font-size',
+    station_color: '--lms-station-color',
+  };
+
+  function _applyTextStyleVars(me, $el) {
+    var el = $el[0];
+    if (!el) return;
+    Object.keys(LMS_TEXT_STYLE_VARS).forEach(function (blockProp) {
+      var cssVar = LMS_TEXT_STYLE_VARS[blockProp];
+      var value = me.block[blockProp];
+      if (value === undefined || value === null || value === '') {
+        el.style.removeProperty(cssVar);
+        return;
+      }
+      el.style.setProperty(
+        cssVar,
+        /_size$/.test(blockProp) ? value + 'px' : String(value)
+      );
+    });
+  }
 
   function _esc(value) {
     return $('<div>')
@@ -80,12 +272,27 @@ var DT_lms_api = {
     return (language.misc && language.misc[key]) || fallback;
   }
 
-  /* Normalization layer: the only place that reads raw LMS 'status' fields
-     (remote/current_title/remoteMeta/playlist_loop/...), so the renderer
-     below never has to know how local tracks and internet radio streams
-     differ in LMS's response shape. */
   function normalizeStatus(status, fallbackName) {
     status = status || {};
+
+    if (status.connected === 0 || Number(status.connected) === 0) {
+      return {
+        playerName: fallbackName || '',
+        known: true,
+        power: false,
+        connected: false,
+        state: 'disconnected',
+        remote: false,
+        station: '',
+        artist: '',
+        title: '',
+        album: '',
+        coverid: '',
+        artworkUrl: '',
+        volume: null,
+      };
+    }
+
     var power = Number(status.power) === 1;
     var mode = status.mode || 'stop';
     var remote = Number(status.remote) === 1;
@@ -95,11 +302,13 @@ var DT_lms_api = {
     var currentTitle = status.current_title || '';
 
     var meta = {
-      playerName: status.player_name || fallbackName || '',
+      playerName: status.player_name || status.name || fallbackName || '',
       known:
+        status.known === true ||
         typeof status.mode !== 'undefined' ||
         typeof status.power !== 'undefined',
       power: power,
+      connected: true,
       state: !power
         ? 'off'
         : mode === 'play' || mode === 'pause'
@@ -112,6 +321,10 @@ var DT_lms_api = {
       album: '',
       coverid: track.coverid || '',
       artworkUrl: track.artwork_url || remoteMeta.artwork_url || '',
+      volume:
+        typeof status['mixer volume'] !== 'undefined'
+          ? Math.max(0, Math.min(100, Number(status['mixer volume'])))
+          : null,
     };
 
     if (!power || meta.state === 'stop') {
@@ -120,7 +333,7 @@ var DT_lms_api = {
     }
 
     if (remote) {
-      meta.station = currentTitle;
+      meta.station = remoteMeta.remote_title || currentTitle;
       meta.artist = remoteMeta.artist || '';
       meta.title = remoteMeta.title || (meta.station ? '' : currentTitle);
       meta.album = remoteMeta.album || '';
@@ -136,40 +349,56 @@ var DT_lms_api = {
     return text ? '<div class="' + cls + '">' + _esc(text) + '</div>' : '';
   }
 
-  function _skeletonHtml() {
+  // Current-beta LMS icon/image handling (#217): keep the generic icon column
+  // out of the cover and render the configured icon as an artwork badge.
+  function _coverIconHtml(me) {
+    var icon = me.block.icon;
+    if (icon) return '<em class="' + icon + ' lms-cover-icon"></em>';
+    var image = me.block.image;
+    if (image)
+      return (
+        '<img src="img/' +
+        image +
+        '" class="lms-cover-icon lms-cover-icon-img"/>'
+      );
+    return '';
+  }
+
+  function _skeletonHtml(me) {
     return (
       '<div class="lms-block-inner">' +
-      '<div class="lms-cover"><div class="lms-cover-placeholder"><em class="fas fa-music" aria-hidden="true"></em></div></div>' +
+      '<div class="lms-cover">' +
+      _coverIconHtml(me) +
+      '<div class="lms-cover-placeholder"><em class="fas fa-music" aria-hidden="true"></em></div></div>' +
       '<div class="lms-info"><div class="lms-title">' +
       _esc(_lmsText('loading', 'Loading...')) +
       '</div></div>' +
+      '<div class="lms-controls"></div>' +
       '</div>'
     );
   }
 
-  function _renderCover($cover, dataUrl) {
+  function _renderCover(me, $cover, dataUrl) {
+    var iconHtml = _coverIconHtml(me);
     if (!dataUrl) {
       $cover.html(
-        '<div class="lms-cover-placeholder"><em class="fas fa-music" aria-hidden="true"></em></div>'
+        iconHtml +
+          '<div class="lms-cover-placeholder"><em class="fas fa-music" aria-hidden="true"></em></div>'
       );
       return;
     }
+    $cover.html(iconHtml);
     var $img = $('<img class="lms-cover-img" alt="">');
-    // A broken/expired data URL must fall back to the placeholder instead of
-    // the browser's own broken-image icon (#9's "sensible placeholder").
     $img.on('error', function () {
       $cover.html(
-        '<div class="lms-cover-placeholder"><em class="fas fa-music" aria-hidden="true"></em></div>'
+        iconHtml +
+          '<div class="lms-cover-placeholder"><em class="fas fa-music" aria-hidden="true"></em></div>'
       );
     });
     $img.attr('src', dataUrl);
-    $cover.html($img);
+    $cover.append($img);
   }
 
-  /* Write an inline style with !important when hiding the whole block.
-     Several optional Dashticz themes intentionally use !important for their
-     glass/panel background, border and shadow, so a normal jQuery .css()
-     assignment would not reliably make hide_when_off fully transparent. */
   function _setImportantStyle($nodes, property, value) {
     $nodes.each(function () {
       if (!this || !this.style) return;
@@ -178,10 +407,6 @@ var DT_lms_api = {
     });
   }
 
-  /* Keep an off player in the layout but make the complete tile visually
-     disappear. This includes generic title/icon content and every panel
-     effect. Removing these inline overrides when the player returns hands
-     styling back to the active theme without changing the saved config. */
   function _setHiddenOff(me, hidden) {
     var $block = me.$mountPoint
       .find('.lms-block')
@@ -215,10 +440,6 @@ var DT_lms_api = {
     });
   }
 
-  /* Build a key from visible metadata as well as LMS's artwork fields. Radio
-     stations often keep the same coverid/artwork_url while the programme or
-     song changes; including the textual metadata ensures current-cover is
-     refreshed when the actual now-playing item changes. */
   function _artworkKey(meta) {
     if (meta.state !== 'play' && meta.state !== 'pause') return '';
     return [
@@ -240,43 +461,194 @@ var DT_lms_api = {
     me.lmsArtworkRetryAt = 0;
   }
 
+  var CONTROL_BUTTONS = [
+    {
+      action: 'power',
+      icon: 'fa-power-off',
+      labelKey: 'lms_power',
+      fallback: 'Power',
+    },
+    {
+      action: 'prev',
+      icon: 'fa-step-backward',
+      labelKey: 'lms_prev',
+      fallback: 'Previous',
+    },
+    {
+      action: 'playpause',
+      icon: 'fa-play',
+      labelKey: 'lms_playpause',
+      fallback: 'Play/Pause',
+    },
+    {
+      action: 'next',
+      icon: 'fa-step-forward',
+      labelKey: 'lms_next',
+      fallback: 'Next',
+    },
+    {
+      action: 'voldown',
+      icon: 'fa-volume-down',
+      labelKey: 'lms_vol_down',
+      fallback: 'Volume down',
+    },
+    {
+      action: 'volup',
+      icon: 'fa-volume-up',
+      labelKey: 'lms_vol_up',
+      fallback: 'Volume up',
+    },
+  ];
+
+  function _controlsHtml(meta) {
+    if (!meta.known || meta.state === 'disconnected') return '';
+
+    var html = '';
+    CONTROL_BUTTONS.forEach(function (def) {
+      var icon = def.icon;
+      var active = false;
+      if (def.action === 'playpause') {
+        icon = meta.state === 'play' ? 'fa-pause' : 'fa-play';
+      } else if (def.action === 'power') {
+        active = meta.power;
+      }
+      var label = _esc(_lmsText(def.labelKey, def.fallback));
+      html +=
+        '<button type="button" class="transbg hover lms-btn lms-btn-' +
+        def.action +
+        (active ? ' lms-btn-active' : '') +
+        '" data-action="' +
+        def.action +
+        '" title="' +
+        label +
+        '" aria-label="' +
+        label +
+        '"><em class="fas fa-small ' +
+        icon +
+        '" aria-hidden="true"></em></button>';
+    });
+    return html;
+  }
+
+  function _sendCommand(me, params) {
+    DT_lms_api.request(me.block, params, me.block.player).always(function () {
+      DT_lms_scheduler.invalidate(me.block, me.block.player);
+      DT_lms.refresh(me);
+    });
+  }
+
+  function _handleControlClick(me, action) {
+    var meta = me.lmsLastMeta || {};
+    switch (action) {
+      case 'power':
+        _sendCommand(me, ['power', meta.power ? 0 : 1]);
+        break;
+      case 'playpause':
+        _sendCommand(me, meta.state === 'play' ? ['pause'] : ['play']);
+        break;
+      case 'stop':
+        _sendCommand(me, ['stop']);
+        break;
+      case 'next':
+        _sendCommand(me, ['playlist', 'index', '+1']);
+        break;
+      case 'prev':
+        _sendCommand(me, ['playlist', 'index', '-1']);
+        break;
+      case 'volup':
+        _sendCommand(me, ['mixer', 'volume', '+' + VOLUME_STEP]);
+        break;
+      case 'voldown':
+        _sendCommand(me, ['mixer', 'volume', '-' + VOLUME_STEP]);
+        break;
+    }
+  }
+
+  var LONG_PRESS_MS = 600;
+
+  function _bindControls(me) {
+    if (me.lmsControlsBound) return;
+    me.lmsControlsBound = true;
+
+    var $state = me.$mountPoint.find('.dt_state');
+    var longPressTimer = null;
+    var longPressFired = false;
+
+    $state.on('pointerdown', '.lms-btn-playpause', function () {
+      longPressFired = false;
+      clearTimeout(longPressTimer);
+      longPressTimer = setTimeout(function () {
+        longPressFired = true;
+        _handleControlClick(me, 'stop');
+      }, LONG_PRESS_MS);
+    });
+
+    $state.on(
+      'pointerup pointerleave pointercancel',
+      '.lms-btn-playpause',
+      function () {
+        clearTimeout(longPressTimer);
+      }
+    );
+
+    $state.on('click', '.lms-btn', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      var action = $(this).data('action');
+      if (action === 'playpause' && longPressFired) {
+        longPressFired = false;
+        return; // déjà traité par le long press, on ignore le click playpause
+      }
+      _handleControlClick(me, action);
+    });
+  }
+
   function render(me, meta) {
+    _bindControls(me);
+    me.lmsLastMeta = meta;
+
     var $state = me.$mountPoint.find('.dt_state');
     var $existing = $state.find('.lms-block-inner');
     if (!$existing.length) {
       $state.html(
-        '<div class="lms-block-inner"><div class="lms-cover"></div><div class="lms-info"></div></div>'
+        '<div class="lms-block-inner"><div class="lms-cover"></div><div class="lms-info"></div><div class="lms-controls"></div></div>'
       );
       $existing = $state.find('.lms-block-inner');
     }
+    _applyTextStyleVars(me, $existing);
     $existing
       .attr('data-lms-state', meta.state)
       .toggleClass('lms-remote', !!meta.remote);
 
-    // hide_when_off means the complete LMS tile is visually absent while
-    // preserving its grid/column footprint, so surrounding layout never jumps.
     var hideWhenOff =
       me.block.hide_when_off === true && meta.known && !meta.power;
     _setHiddenOff(me, hideWhenOff);
 
     var $info = $existing.find('.lms-info');
+    var $controls = $existing.find('.lms-controls');
     if (hideWhenOff) {
       $info.empty();
+      $controls.empty();
     } else {
       var lines = '';
       if (!meta.known) {
         lines = _line(
-          'lms-state-label',
+          'lms-state-label text-center',
           _lmsText('lms_player_unavailable', 'Player unavailable')
+        );
+      } else if (meta.state === 'disconnected') {
+        lines = _line(
+          'lms-state-label text-center',
+          _lmsText('lms_player_disconnected', 'Player disconnected')
         );
       } else if (!meta.power) {
         lines = _line(
-          'lms-state-label',
+          'lms-state-label text-center',
           _lmsText('lms_player_off', 'Player off')
         );
       } else if (meta.state === 'stop') {
         lines = _line(
-          'lms-state-label',
+          'lms-state-label text-center',
           _lmsText(
             'mediaplayer_nothing_playing',
             'Nothing is playing right now'
@@ -294,13 +666,15 @@ var DT_lms_api = {
           );
         }
       }
+
       $info.html(
         lines ||
           _line(
-            'lms-state-label',
+            'lms-state-label text-center',
             _lmsText('lms_player_unavailable', 'Player unavailable')
           )
       );
+      $controls.html(_controlsHtml(meta));
     }
 
     var $cover = $existing.find('.lms-cover');
@@ -315,14 +689,10 @@ var DT_lms_api = {
 
     if (!artworkKey) {
       _resetArtworkState(me);
-      _renderCover($cover, null);
+      _renderCover(me, $cover, null);
       return;
     }
 
-    // A successfully loaded cover is cached until the now-playing metadata
-    // changes. Failed artwork is deliberately not marked as loaded: it gets
-    // one retry after a quiet period so a temporary LMS image-proxy/network
-    // failure can recover without issuing a cover request every refresh tick.
     if (me.lmsArtworkLoadedKey === artworkKey) return;
     if (me.lmsArtworkRequestKey === artworkKey) return;
     if (
@@ -332,9 +702,6 @@ var DT_lms_api = {
     )
       return;
 
-    // A failure for the previous station/track must never postpone artwork
-    // for a newly selected item. Retry throttling therefore belongs to the
-    // artwork key, not to the LMS block globally.
     if (me.lmsArtworkRetryKey !== artworkKey) {
       me.lmsArtworkRetryKey = '';
       me.lmsArtworkRetryAt = 0;
@@ -343,8 +710,6 @@ var DT_lms_api = {
     me.lmsArtworkRequestKey = artworkKey;
     DT_lms_api.cover(me.block, me.block.player, meta.coverid, meta.artworkUrl)
       .then(function (dataUrl) {
-        // Always release this request key, even when a slow result became
-        // stale because the player already moved to another track.
         if (me.lmsArtworkRequestKey === artworkKey)
           me.lmsArtworkRequestKey = '';
         if (me.lmsArtworkCurrentKey !== artworkKey) return;
@@ -352,12 +717,12 @@ var DT_lms_api = {
           me.lmsArtworkLoadedKey = artworkKey;
           me.lmsArtworkRetryKey = '';
           me.lmsArtworkRetryAt = 0;
-          _renderCover($cover, dataUrl);
+          _renderCover(me, $cover, dataUrl);
         } else {
           me.lmsArtworkLoadedKey = '';
           me.lmsArtworkRetryKey = artworkKey;
           me.lmsArtworkRetryAt = Date.now() + ARTWORK_RETRY_MS;
-          _renderCover($cover, null);
+          _renderCover(me, $cover, null);
         }
       })
       .catch(function () {
@@ -367,7 +732,7 @@ var DT_lms_api = {
         me.lmsArtworkLoadedKey = '';
         me.lmsArtworkRetryKey = artworkKey;
         me.lmsArtworkRetryAt = Date.now() + ARTWORK_RETRY_MS;
-        _renderCover($cover, null);
+        _renderCover(me, $cover, null);
       });
   }
 
@@ -375,6 +740,9 @@ var DT_lms_api = {
     name: 'lms',
     canHandle: function (block) {
       return block && block.type === 'lms';
+    },
+    init: function () {
+      return DT_function.loadCSS('./js/components/lms.css');
     },
     defaultCfg: {
       containerClass: 'lms-block',
@@ -390,32 +758,32 @@ var DT_lms_api = {
           .find('.dt_state')
           .html(
             _line(
-              'lms-state-label',
+              'lms-state-label text-center',
               _lmsText('lms_server_unavailable', 'LMS unavailable')
             )
           );
         return;
       }
-      DT_lms_api.request(
+
+      DT_lms_scheduler.poll(
         me.block,
-        ['status', '-', 1, STATUS_TAGS],
-        me.block.player
-      )
-        .then(function (status) {
-          render(me, normalizeStatus(status, me.block.title));
-        })
-        .catch(function (xhr) {
-          // A connection error is not a confirmed powered-off state. Always
-          // reveal a previously hidden tile so the LMS-unavailable message is
-          // visible instead of leaving a stale transparent block indefinitely.
-          _setHiddenOff(me, false);
-          var serverError = xhr && xhr.responseJSON && xhr.responseJSON.error;
-          var text =
-            serverError === LMS_CURL_REQUIRED_ERROR
-              ? serverError
-              : _lmsText('lms_server_unavailable', 'LMS unavailable');
-          me.$mountPoint.find('.dt_state').html(_line('lms-state-label', text));
-        });
+        me.block.player,
+        function (rawStatus, serverError) {
+          if (!rawStatus) {
+            _setHiddenOff(me, false);
+            serverError = DT_lms_api._errorMessage(serverError);
+            var text =
+              serverError === LMS_CURL_REQUIRED_ERROR
+                ? serverError
+                : _lmsText('lms_server_unavailable', 'LMS unavailable');
+            me.$mountPoint
+              .find('.dt_state')
+              .html(_line('lms-state-label text-center', text));
+            return;
+          }
+          render(me, normalizeStatus(rawStatus, me.block.title));
+        }
+      );
     },
   };
 

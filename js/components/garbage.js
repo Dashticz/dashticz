@@ -48,6 +48,10 @@ var DT_garbage = (function () {
       use_colors: settings['garbage_use_colors'],
       icon_use_colors: settings['garbage_icon_use_colors'],
       use_names: settings['garbage_use_names'],
+      row1_fontsize: settings['garbage_row1_fontsize'],
+      row1_color: settings['garbage_row1_color'],
+      row2_fontsize: settings['garbage_row2_fontsize'],
+      row2_color: settings['garbage_row2_color'],
       mapping: settings['garbage_mapping'],
       date_separator: ': ',
       layout: 1,
@@ -594,11 +598,25 @@ SENSOR_LOCATIONS_TO_URL = {
       .slice(0, getMaxItems(me));
   }
 
-  function mapReturnDates(me, garbage) {
+  function mapReturnDates(me, garbage, isFirstRow) {
     var name = me.block.garbage[garbage.garbageType].name;
     var localizedName = garbageTypeName(garbage.garbageType);
     // Garbage dates follow the selected Dashticz locale, just like their labels.
     var localizedDate = garbage.date.locale(settings['language']);
+
+    var styles = [];
+    if (me.block.use_colors) {
+      styles.push('color:' + me.block.garbage[garbage.garbageType].code);
+    }
+    // Row 1 (the topmost, soonest pickup) and the rows after it can each get
+    // their own font size/color, independent of the per-garbage-type color.
+    var rowFontSize = isFirstRow
+      ? me.block.row1_fontsize
+      : me.block.row2_fontsize;
+    var rowColor = isFirstRow ? me.block.row1_color : me.block.row2_color;
+    if (rowFontSize) styles.push('font-size:' + parseFloat(rowFontSize) + 'px');
+    if (rowColor) styles.push('color:' + rowColor);
+
     var result = {
       rowClass: 'trashrow',
       trashDate: localizedDate.format('l'),
@@ -608,9 +626,7 @@ SENSOR_LOCATIONS_TO_URL = {
           (garbage.summary
             ? garbage.summary.charAt(0).toUpperCase() + garbage.summary.slice(1)
             : name),
-      color: me.block.use_colors
-        ? ' style="color:' + me.block.garbage[garbage.garbageType].code + '"'
-        : '',
+      color: styles.length ? ' style="' + styles.join(';') + '"' : '',
     };
     if (garbage.date.isSame(moment(), 'day')) {
       result.trashDate = language.weekdays.today;
@@ -652,8 +668,8 @@ SENSOR_LOCATIONS_TO_URL = {
         trashSep: me.block.date_separator,
       };
 
-      data.items = returnDates.map(function (el) {
-        return mapReturnDates(me, el);
+      data.items = returnDates.map(function (el, index) {
+        return mapReturnDates(me, el, index === 0);
       });
 
       $divState.html(template(data));

@@ -9,6 +9,99 @@ var DashticzDeviceEditor = (function () {
   var managedOrder = []; // device:<ck> and widget:<id> in screen order
   var managedWidgets = {}; // order key -> widget metadata
   var managedSpecials = {}; // order key -> dummy/title block metadata
+
+  /* Special-block kind groupings shared by _specialFromReference(),
+     _showConfigPopup() and _buildDevicePayload() below. Centralizing
+     these here means adding another repeatable special (see the iFrame/
+     Calendar/Public transport/Timegraph/TV Guide additions for the
+     pattern - each is a `kind:'special'` entry in managedSpecials, same
+     mechanism as Group/HTML Block/LMS) touches one array per grouping
+     instead of a hand-duplicated `kind === 'x' || kind === 'y' || ...`
+     chain repeated at every call site - less code to keep in sync, and
+     far less likely to conflict with a concurrent branch adding a
+     different kind to the same chain. */
+
+  // No real Domoticz-device idx of their own (a plain numeric idx would
+  // be meaningless for these). 'group' is handled separately just below
+  // its own idx is optional-but-real; 'custom'/'dummy'/'timegraph' keep
+  // their real parsed idx.
+  var IDX_LESS_SPECIAL_KINDS = [
+    'title',
+    'slidebutton',
+    'html',
+    'iframe',
+    'calendar',
+    'publictransport',
+    'xmltvguide',
+    'lms',
+    'camera',
+    'news',
+    'graph',
+  ];
+
+  // Title is optional (blank is fine) rather than required.
+  var TITLE_OPTIONAL_SPECIAL_KINDS = [
+    'custom',
+    'group',
+    'html',
+    'iframe',
+    'calendar',
+    'publictransport',
+    'timegraph',
+    'xmltvguide',
+    'lms',
+    'camera',
+    'news',
+    'graph',
+  ];
+
+  // Defaults to a 6-column width instead of the generic 3-column
+  // default - their content needs more horizontal room.
+  var WIDE_DEFAULT_SPECIAL_KINDS = [
+    'lms',
+    'iframe',
+    'calendar',
+    'timegraph',
+    'xmltvguide',
+    'graph',
+  ];
+
+  // No Dial/Bar/Slider visual mode of their own, and only Icon/Last
+  // update/Title among the Device Config display options (no Data/
+  // Switch) - every special except a plain dummy/custom device.
+  var NO_DIAL_SPECIAL_KINDS = [
+    'group',
+    'html',
+    'iframe',
+    'calendar',
+    'publictransport',
+    'timegraph',
+    'xmltvguide',
+    'lms',
+    'camera',
+    'news',
+    'graph',
+  ];
+
+  // _buildDevicePayload()'s shared "just Icon + Last update (+ Group's
+  // own optional idx)" branch - a subset of NO_DIAL_SPECIAL_KINDS
+  // excluding Timegraph/LMS, which need their own dedicated payload
+  // branches (a required idx + explicit type for Timegraph, several
+  // dedicated connection fields for LMS) despite sharing the same popup
+  // option set. Graph fits here too - like html/iframe/calendar its
+  // required data (the devices array, plus graph/legend/groupBy) rides
+  // through custom_fields instead of a dedicated top-level property.
+  var SIMPLE_ICON_PAYLOAD_KINDS = [
+    'group',
+    'html',
+    'iframe',
+    'calendar',
+    'publictransport',
+    'xmltvguide',
+    'camera',
+    'news',
+    'graph',
+  ];
   var deviceNames = {}; // composite key -> device name
   var deviceWidths = {}; // composite key -> block width (1..12)
   var deviceHeights = {}; // composite key -> optional block height
@@ -227,7 +320,13 @@ var DashticzDeviceEditor = (function () {
     editorMode = 'devices';
     openedFromAddMenu = false;
     gridMode = _activeScreenDom().hasClass('dt-grid-screen');
-    _init();
+    // preserveDeviceState=true, matching openLayoutConfig() below: without
+    // it, _init() wipes managedSpecials entirely on every call, so editing
+    // the same special block (e.g. an LMS block's Text style fields) twice
+    // in one session re-derived the second popup's fields from the stale
+    // client-side blocks[] snapshot from page load - silently reverting to
+    // whatever was saved before this session, not the first edit just made.
+    _init(true);
 
     var prepared = _prepareManagedDeviceState();
     var orderKey = '';
@@ -326,6 +425,79 @@ var DashticzDeviceEditor = (function () {
     _init();
     _prepareManagedDeviceState();
     _showHtmlBlockPopup();
+  }
+
+  /** Open the dedicated iFrame popup used by the Screen Editor add menu. */
+  function openIframe() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showIframePopup();
+  }
+
+  /** Open the dedicated Calendar popup used by the Screen Editor add menu. */
+  function openCalendar() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showCalendarPopup();
+  }
+
+  /** Open the dedicated Public transport popup used by the Screen Editor
+   * add menu. */
+  function openPublicTransport() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showPublicTransportPopup();
+  }
+
+  /** Open the dedicated Timegraph popup used by the Screen Editor add menu. */
+  function openTimegraph() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showTimegraphPopup();
+  }
+
+  /** Open the dedicated TV Guide popup used by the Screen Editor add menu. */
+  function openXmltvguide() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showXmltvguidePopup();
+  }
+
+  /** Open the dedicated Camera popup used by the Screen Editor add menu. */
+  function openCamera() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showCameraPopup();
+  }
+
+  /** Open the dedicated Graph popup used by the Screen Editor add menu. */
+  function openGraph() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showGraphPopup();
+  }
+
+  /** Open the dedicated News popup used by the Screen Editor add menu. */
+  function openNews() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showNewsPopup();
   }
 
   /** Open the dedicated Lyrion Music Server popup used by the Screen Editor
@@ -662,6 +834,145 @@ var DashticzDeviceEditor = (function () {
       kind = 'html';
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      reference !== 'widget_iframe' &&
+      !definition.type &&
+      typeof definition.frameurl === 'string' &&
+      definition.frameurl !== ''
+    ) {
+      // Repeatable iFrame block, added via the Screen Editor's own "Add
+      // items" -> iFrame quick-add popup (_showIframePopup() above) rather
+      // than the Widgets catalog's singleton 'iframe' entry. Matches
+      // js/components/frame.js's own canHandle(): dispatched purely on a
+      // truthy frameurl, with no `type` of its own - same convention as
+      // html above. The fixed 'widget_iframe' key is excluded so the
+      // existing singleton catalog widget keeps going through
+      // DashticzWidgetEditor's own (unrelated) config path unchanged.
+      kind = 'iframe';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      reference !== 'widget_calendar' &&
+      String(definition.type || '').toLowerCase() !== 'calendar' &&
+      typeof definition.icalurl === 'string' &&
+      definition.icalurl !== ''
+    ) {
+      // Repeatable Calendar block, added via the Screen Editor's own "Add
+      // items" -> Calendar quick-add popup (_showCalendarPopup() above)
+      // rather than the Widgets catalog's singleton 'calendar' entry.
+      // Matches js/components/calendar.js's own canHandle(): dispatched on
+      // a truthy icalurl (this popup never writes an explicit type, same
+      // convention as html/iframe above). The fixed 'widget_calendar' key,
+      // and any block with an explicit type: 'calendar' (the legacy
+      // multi-source `calendars` array shape the singleton widget itself
+      // writes), are excluded so those keep going through
+      // DashticzWidgetEditor's own (unrelated) config path unchanged.
+      kind = 'calendar';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      reference !== 'widget_publictransport' &&
+      !definition.type &&
+      ((typeof definition.station === 'string' && definition.station !== '') ||
+        (typeof definition.tpc === 'string' && definition.tpc !== ''))
+    ) {
+      // Repeatable Public transport block, added via the Screen Editor's
+      // own "Add items" -> Public transport quick-add popup
+      // (_showPublicTransportPopup() above) rather than the Widgets
+      // catalog's singleton 'publictransport' entry. Matches
+      // js/components/publictransport.js's own canHandle(): dispatched on
+      // a truthy station or tpc, no `type` of its own. The fixed
+      // 'widget_publictransport' key is excluded so that singleton keeps
+      // going through DashticzWidgetEditor's own (unrelated) config path
+      // unchanged.
+      kind = 'publictransport';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      reference !== 'widget_timegraph' &&
+      String(definition.type || '').toLowerCase() === 'timegraph'
+    ) {
+      // Repeatable Timegraph block, added via the Screen Editor's own "Add
+      // items" -> Timegraph quick-add popup (_showTimegraphPopup() above)
+      // rather than the Widgets catalog's singleton 'timegraph' entry.
+      // Unlike html/iframe/calendar/publictransport above,
+      // js/components/timegraph.js dispatches purely on an explicit
+      // type:'timegraph' (like Group's type:'group'), so this is a type
+      // check rather than a field-shape one. The fixed 'widget_timegraph'
+      // key is excluded so that singleton keeps going through
+      // DashticzWidgetEditor's own (unrelated) config path unchanged.
+      kind = 'timegraph';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      reference !== 'widget_xmltvguide' &&
+      !definition.type &&
+      typeof definition.xmltvurl === 'string' &&
+      definition.xmltvurl !== ''
+    ) {
+      // Repeatable TV Guide (XMLTV) block, added via the Screen Editor's
+      // own "Add items" -> TV Guide quick-add popup
+      // (_showXmltvguidePopup() above) rather than the Widgets catalog's
+      // singleton 'xmltvguide' entry. Matches
+      // js/components/xmltvguide.js's own canHandle(): dispatched on a
+      // truthy xmltvurl, no `type` of its own (this popup never writes
+      // one, same convention as html/iframe/calendar/publictransport
+      // above). The fixed 'widget_xmltvguide' key is excluded so that
+      // singleton keeps going through DashticzWidgetEditor's own
+      // (unrelated) config path unchanged.
+      kind = 'xmltvguide';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      reference !== 'widget_cameras' &&
+      String(definition.type || '').toLowerCase() === 'camera'
+    ) {
+      // Repeatable Camera block, added via the Screen Editor's own "Add
+      // items" -> Camera quick-add popup (_showCameraPopup() above)
+      // rather than the Widgets catalog's singleton 'camera' entry.
+      // Unlike html/iframe/calendar/publictransport/xmltvguide above,
+      // js/components/camera.js dispatches purely on an explicit
+      // type:'camera' (like Timegraph's type:'timegraph'), so this is a
+      // type check rather than a field-shape one. The fixed
+      // 'widget_cameras' key is excluded so that singleton (also
+      // type:'camera', but potentially multi-camera via its own
+      // `cameras` array) keeps going through DashticzWidgetEditor's own
+      // (unrelated) config path unchanged.
+      kind = 'camera';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      reference !== 'widget_news' &&
+      String(definition.type || '').toLowerCase() !== 'news' &&
+      typeof definition.feed === 'string' &&
+      definition.feed !== ''
+    ) {
+      // Repeatable News block, added via the Screen Editor's own "Add
+      // items" -> News quick-add popup (_showNewsPopup() above) rather
+      // than the Widgets catalog's singleton 'news' entry. Matches
+      // js/components/news.js's own canHandle(): dispatched on a truthy
+      // feed (this popup never writes an explicit type, same convention
+      // as html/iframe/calendar/publictransport/xmltvguide above). The
+      // fixed 'widget_news' key, and any block with an explicit
+      // type: 'news' (the shape the singleton widget itself writes), are
+      // excluded so those keep going through DashticzWidgetEditor's own
+      // (unrelated) config path unchanged.
+      kind = 'news';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      (!definition.type || definition.type === reference) &&
+      Array.isArray(definition.devices) &&
+      definition.devices.length > 0
+    ) {
+      // Repeatable Graph block, added via the Screen Editor's own "Add
+      // items" -> Widgets -> Graph quick-add popup (_showGraphPopup()
+      // above). Matches js/components/graph.js's own canHandle():
+      // dispatched on a truthy devices array (this popup never writes an
+      // explicit type, same convention as html/iframe/calendar/
+      // publictransport/xmltvguide/news above). convertBlock() stamps the
+      // block's own reference into definition.type after rendering; that is
+      // only a dispatch hint, not an explicit Graph type, so it is accepted
+      // here too. devices/graph/legend/groupBy/... all ride through
+      // custom_fields (see _deviceCustomFieldRows() below), same as every
+      // other field-shape special. Excludes type:'group' blocks, which can
+      // also carry a devices array (js/components/group.js) but always write
+      // an explicit type of their own.
+      kind = 'graph';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       String(definition.type || '').toLowerCase() === 'lms'
     ) {
       // Lyrion Music Server "Now Playing" block (js/components/lms.js),
@@ -680,10 +991,7 @@ var DashticzDeviceEditor = (function () {
       reference: reference,
       definition: definition,
       idx:
-        kind === 'title' ||
-        kind === 'slidebutton' ||
-        kind === 'html' ||
-        kind === 'lms'
+        IDX_LESS_SPECIAL_KINDS.indexOf(kind) > -1
           ? null
           : kind === 'group'
             ? parseInt(definition.idx, 10) > 0
@@ -691,17 +999,20 @@ var DashticzDeviceEditor = (function () {
               : null
             : parseInt(definition.idx, 10),
       title:
-        kind === 'custom' ||
-        kind === 'group' ||
-        kind === 'html' ||
-        kind === 'lms'
+        TITLE_OPTIONAL_SPECIAL_KINDS.indexOf(kind) > -1
           ? String(definition.title || '')
           : String(
               definition.title || (kind === 'title' ? 'Title' : reference)
             ),
       width: _parseWidth(
-        definition.width || (kind === 'title' ? 12 : kind === 'lms' ? 6 : 3)
+        definition.width ||
+          (kind === 'title'
+            ? 12
+            : WIDE_DEFAULT_SPECIAL_KINDS.indexOf(kind) > -1
+              ? 6
+              : 3)
       ),
+
       height: _parseHeight(definition.height),
       // Lyrion Music Server connection/player fields - kept as their own
       // properties (like slideTarget/buttonKey below) rather than routed
@@ -717,6 +1028,35 @@ var DashticzDeviceEditor = (function () {
       lmsRefresh: kind === 'lms' ? parseInt(definition.refresh, 10) || 5 : 5,
       lmsHideWhenOff:
         kind === 'lms' ? definition.hide_when_off === true : false,
+      // Title/Artist/Station text style (size/color) - optional per-block
+      // overrides for css/creative.css's .lms-title/.lms-artist/.lms-station
+      // rules (js/components/lms.js applies them as inline CSS custom
+      // properties). Undefined here when never saved so _lmsFieldsHtml()'s
+      // own placeholder defaults show instead of a stale 0/empty value.
+      lmsTitleSize:
+        kind === 'lms' && definition.title_size
+          ? parseInt(definition.title_size, 10)
+          : undefined,
+      lmsTitleColor:
+        kind === 'lms' && definition.title_color
+          ? String(definition.title_color)
+          : undefined,
+      lmsArtistSize:
+        kind === 'lms' && definition.artist_size
+          ? parseInt(definition.artist_size, 10)
+          : undefined,
+      lmsArtistColor:
+        kind === 'lms' && definition.artist_color
+          ? String(definition.artist_color)
+          : undefined,
+      lmsStationSize:
+        kind === 'lms' && definition.station_size
+          ? parseInt(definition.station_size, 10)
+          : undefined,
+      lmsStationColor:
+        kind === 'lms' && definition.station_color
+          ? String(definition.station_color)
+          : undefined,
       // hide_data/last_update/switch are unused for a title/separator block,
       // but icon applies to every special kind.
       options: {
@@ -967,6 +1307,21 @@ var DashticzDeviceEditor = (function () {
     player: true,
     refresh: true,
     hide_when_off: true,
+    // Title/Artist/Station text style (size/color) - managed by the
+    // dedicated Text style section of the Lyrion Music Server popup above,
+    // not the generic custom-fields grid. Without this, these six
+    // properties were double-carried: once correctly through the dedicated
+    // lmsTitleSize/etc. fields, and once more as stale generic custom-field
+    // rows (hydrated from CONFIG.js when the popup first opened and never
+    // touched again). configwriter.php's special-block-props builder
+    // unconditionally applies custom_fields last, so that stale copy
+    // silently overwrote every real edit on save (#217 follow-up).
+    title_size: true,
+    title_color: true,
+    artist_size: true,
+    artist_color: true,
+    station_size: true,
+    station_color: true,
     __proto__: true,
     prototype: true,
     constructor: true,
@@ -1151,6 +1506,11 @@ var DashticzDeviceEditor = (function () {
       if (special.specialType === 'custom') return 'fas fa-cube';
       if (special.specialType === 'group') return 'fas fa-object-group';
       if (special.specialType === 'html') return 'fas fa-code';
+      if (special.specialType === 'iframe') return 'fas fa-window-maximize';
+      if (special.specialType === 'calendar') return 'fas fa-calendar-alt';
+      if (special.specialType === 'publictransport') return 'fas fa-train';
+      if (special.specialType === 'timegraph') return 'fas fa-chart-line';
+      if (special.specialType === 'xmltvguide') return 'fas fa-tv';
       if (special.specialType === 'lms') return 'fas fa-music';
     }
     return 'fas fa-question';
@@ -3107,6 +3467,69 @@ var DashticzDeviceEditor = (function () {
       '<span class="form-check-label">' +
       _esc(t.lms_hide_when_off) +
       '</span></label>';
+    html += '<h6 class="de-section-title">' + _esc(t.lms_text_style) + '</h6>';
+    html += '<div class="row g-2 mb-3">';
+    [
+      {
+        key: 'title',
+        label: t.lms_title_line,
+        size: values.titleSize || 16,
+        color: values.titleColor || '#ffffff',
+      },
+      {
+        key: 'artist',
+        label: t.lms_artist_line,
+        size: values.artistSize || 14,
+        color: values.artistColor || '#cccccc',
+      },
+      {
+        key: 'station',
+        label: t.lms_station_line,
+        size: values.stationSize || 14,
+        color: values.stationColor || '#999999',
+      },
+    ].forEach(function (line) {
+      html += '<div class="col-12 col-md-4">';
+      html +=
+        '<div class="small fw-semibold mb-1">' + _esc(line.label) + '</div>';
+      html += '<div class="d-flex gap-2 align-items-end">';
+      html +=
+        '<div class="flex-grow-1"><label class="form-label small mb-1" for="' +
+        prefix +
+        '-lms-' +
+        line.key +
+        '-size">' +
+        _esc(t.lms_font_size) +
+        '</label>';
+      html +=
+        '<input type="number" min="8" max="60" class="form-control form-control-sm" id="' +
+        prefix +
+        '-lms-' +
+        line.key +
+        '-size" value="' +
+        _esc(line.size) +
+        '"></div>';
+      html +=
+        '<div><label class="form-label small mb-1" for="' +
+        prefix +
+        '-lms-' +
+        line.key +
+        '-color">' +
+        _esc(t.lms_font_color) +
+        '</label>';
+      html +=
+        '<input type="color" class="form-control form-control-color" id="' +
+        prefix +
+        '-lms-' +
+        line.key +
+        '-color" value="' +
+        _esc(line.color) +
+        '" title="' +
+        _esc(t.lms_font_color) +
+        '"></div>';
+      html += '</div></div>';
+    });
+    html += '</div>';
     return html;
   }
 
@@ -3223,6 +3646,23 @@ var DashticzDeviceEditor = (function () {
       hideWhenOff: $popup
         .find('#' + prefix + '-lms-hide-when-off')
         .is(':checked'),
+      titleSize:
+        parseInt($popup.find('#' + prefix + '-lms-title-size').val(), 10) || 16,
+      titleColor: String(
+        $popup.find('#' + prefix + '-lms-title-color').val() || '#ffffff'
+      ),
+      artistSize:
+        parseInt($popup.find('#' + prefix + '-lms-artist-size').val(), 10) ||
+        14,
+      artistColor: String(
+        $popup.find('#' + prefix + '-lms-artist-color').val() || '#cccccc'
+      ),
+      stationSize:
+        parseInt($popup.find('#' + prefix + '-lms-station-size').val(), 10) ||
+        14,
+      stationColor: String(
+        $popup.find('#' + prefix + '-lms-station-color').val() || '#999999'
+      ),
     };
   }
 
@@ -3351,6 +3791,12 @@ var DashticzDeviceEditor = (function () {
         lmsPlayerLabel: lms.playerLabel,
         lmsRefresh: lms.refresh,
         lmsHideWhenOff: lms.hideWhenOff,
+        lmsTitleSize: lms.titleSize,
+        lmsTitleColor: lms.titleColor,
+        lmsArtistSize: lms.artistSize,
+        lmsArtistColor: lms.artistColor,
+        lmsStationSize: lms.stationSize,
+        lmsStationColor: lms.stationColor,
       };
       managedOrder.push(orderKey);
       window.bootstrap.Modal.getInstance(
@@ -3532,6 +3978,1830 @@ var DashticzDeviceEditor = (function () {
     });
     window.bootstrap.Modal.getOrCreateInstance(
       document.getElementById('htmlblockpopup')
+    ).show();
+  }
+
+  /* Repeatable iFrame block - same managedSpecials mechanism as HTML Block
+     above (kind:'special', specialType:'iframe'), so any number of
+     independently-configured iframes can be placed, unlike the Widgets
+     catalog's singleton 'iframe' entry (always the fixed 'widget_iframe'
+     key). js/components/frame.js dispatches on a truthy frameurl alone, no
+     `type` of its own - see _specialFromReference()'s matching 'iframe'
+     branch, which excludes the legacy 'widget_iframe' key so that singleton
+     stays on its own Widget Editor path unchanged. */
+  function _showIframePopup() {
+    var t = _translations();
+    $('#iframeblockpopup').remove();
+
+    var html =
+      '<div class="modal fade" id="iframeblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-window-maximize me-2" aria-hidden="true"></i>' +
+      _esc(t.iframe_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    // Icon defaults on, using the catalog's own iframe icon - unlike HTML
+    // Block/Calendar, iframe already has a well-known default icon
+    // (js/widgeteditor.js's _usesExplicitEditorDefaultIcon() persists this
+    // exact icon for the singleton catalog widget too, to avoid a
+    // historical no-icon regression - see its comment for context).
+    html += _quickOptionsHtml('if', {
+      icon: true,
+      iconValue: 'fas fa-window-maximize',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="if-device-url">' +
+      _esc(t.iframe_block_url) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="if-device-url" placeholder="https://..." autocomplete="off">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.iframe_block_url_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="if-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="if-device-title" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="if-device-height">' +
+      _esc(t.iframe_block_height) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="if-device-height" min="0" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3 form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="if-device-scrollbars">';
+    html +=
+      '<label class="form-check-label" for="if-device-scrollbars">' +
+      _esc(t.iframe_block_scrollbars) +
+      '</label></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="if-device-scaletofit">' +
+      _esc(t.iframe_block_scaletofit) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="if-device-scaletofit" min="0" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="if-device-aspectratio">' +
+      _esc(t.iframe_block_aspectratio) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="if-device-aspectratio" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3 form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="if-device-forcerefresh">';
+    html +=
+      '<label class="form-check-label" for="if-device-forcerefresh">' +
+      _esc(t.iframe_block_forcerefresh) +
+      '</label></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="if-device-refresh">' +
+      _esc(t.iframe_block_refresh) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="if-device-refresh" min="0" autocomplete="off"></div>';
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="if-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#iframeblockpopup');
+    _wireQuickOptions('if', $popup);
+    _wireBackButton('iframeblockpopup');
+
+    $('#if-save-btn').on('click', function () {
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
+      var title = $.trim(String($('#if-device-title').val() || ''));
+      var frameurl = $.trim(String($('#if-device-url').val() || ''));
+      if (!frameurl || frameurl.length > 2048) {
+        $message.addClass('text-danger').text(t.invalid_iframe_block_url);
+        $('#if-device-url').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('if');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+      var height = $.trim(String($('#if-device-height').val() || ''));
+      var scrollbars = $('#if-device-scrollbars').is(':checked');
+      var scaletofit = $.trim(String($('#if-device-scaletofit').val() || ''));
+      var aspectratio = $.trim(String($('#if-device-aspectratio').val() || ''));
+      var forcerefresh = $('#if-device-forcerefresh').is(':checked');
+      var refresh = $.trim(String($('#if-device-refresh').val() || ''));
+
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      customRows.push({
+        field: 'frameurl',
+        setting: frameurl,
+        value: frameurl,
+      });
+      if (height) {
+        var heightInt = parseInt(height, 10) || 0;
+        if (heightInt > 0) {
+          customRows.push({
+            field: 'height',
+            setting: String(heightInt),
+            value: heightInt,
+          });
+        }
+      }
+      if (scrollbars) {
+        customRows.push({
+          field: 'scrollbars',
+          setting: 'true',
+          value: true,
+        });
+      }
+      if (scaletofit) {
+        var scaletofitInt = parseInt(scaletofit, 10) || 0;
+        if (scaletofitInt > 0) {
+          customRows.push({
+            field: 'scaletofit',
+            setting: String(scaletofitInt),
+            value: scaletofitInt,
+          });
+        }
+      }
+      if (aspectratio) {
+        customRows.push({
+          field: 'aspectratio',
+          setting: aspectratio,
+          value: aspectratio,
+        });
+      }
+      if (forcerefresh) {
+        customRows.push({
+          field: 'forcerefresh',
+          setting: 'true',
+          value: true,
+        });
+      }
+      if (refresh) {
+        var refreshInt = parseInt(refresh, 10) || 0;
+        if (refreshInt > 0) {
+          customRows.push({
+            field: 'refresh',
+            setting: String(refreshInt),
+            value: refreshInt,
+          });
+        }
+      }
+
+      var reference = _nextSpecialReference('iframe');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'iframe',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 6,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('iframeblockpopup')
+      ).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('iframeblockpopup')
+    ).show();
+  }
+
+  /* Repeatable Calendar block - same managedSpecials mechanism as iFrame/
+     HTML Block above (kind:'special', specialType:'calendar'), so any
+     number of independently-configured calendars can be placed, unlike
+     the Widgets catalog's singleton 'calendar' entry (always the fixed
+     'widget_calendar' key). js/components/calendar.js dispatches on a
+     truthy icalurl (or an explicit type:'calendar'/legacy calendars
+     array) - see _specialFromReference()'s matching 'calendar' branch,
+     which excludes the legacy 'widget_calendar' key so that singleton
+     stays on its own Widget Editor path unchanged. Scoped to a single
+     ICS source per block (title/icalurl/holidayurl/layout/maxitems/
+     weeks/lastweek/isoweek/startonly) - the existing singleton widget's
+     richer multi-source-with-color picker stays available there for
+     anyone who needs it, same as hand-editing custom/CONFIG.js already
+     supports every calendar.js field regardless. */
+  function _showCalendarPopup() {
+    var t = _translations();
+    $('#calendarblockpopup').remove();
+
+    var layoutOptions = [
+      ['0', t.calendar_block_layout_0],
+      ['1', t.calendar_block_layout_1],
+      ['2', t.calendar_block_layout_2],
+      ['3', t.calendar_block_layout_3],
+      ['4', t.calendar_block_layout_4],
+    ];
+
+    var html =
+      '<div class="modal fade" id="calendarblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-calendar-alt me-2" aria-hidden="true"></i>' +
+      _esc(t.calendar_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    html += _quickOptionsHtml('cal', {
+      icon: false,
+      iconValue: 'fas fa-calendar-alt',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="cal-device-icalurl">' +
+      _esc(t.calendar_block_icalurl) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="cal-device-icalurl" placeholder="https://..." autocomplete="off">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.calendar_block_icalurl_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="cal-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="cal-device-title" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="cal-device-holidayurl">' +
+      _esc(t.calendar_block_holidayurl) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="cal-device-holidayurl" placeholder="https://..." autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="cal-device-layout">' +
+      _esc(t.calendar_block_layout) +
+      '</label>';
+    html += '<select class="form-select" id="cal-device-layout">';
+    layoutOptions.forEach(function (option) {
+      html +=
+        '<option value="' +
+        _esc(option[0]) +
+        '">' +
+        _esc(option[1]) +
+        '</option>';
+    });
+    html += '</select></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="cal-device-maxitems">' +
+      _esc(t.calendar_block_maxitems) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="cal-device-maxitems" min="0" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="cal-device-weeks">' +
+      _esc(t.calendar_block_weeks) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="cal-device-weeks" min="0" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3 form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="cal-device-lastweek">';
+    html +=
+      '<label class="form-check-label" for="cal-device-lastweek">' +
+      _esc(t.calendar_block_lastweek) +
+      '</label></div>';
+    html +=
+      '<div class="mb-3 form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="cal-device-isoweek">';
+    html +=
+      '<label class="form-check-label" for="cal-device-isoweek">' +
+      _esc(t.calendar_block_isoweek) +
+      '</label></div>';
+    html +=
+      '<div class="mb-3 form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="cal-device-startonly">';
+    html +=
+      '<label class="form-check-label" for="cal-device-startonly">' +
+      _esc(t.calendar_block_startonly) +
+      '</label></div>';
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="cal-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#calendarblockpopup');
+    _wireQuickOptions('cal', $popup);
+    _wireBackButton('calendarblockpopup');
+
+    $('#cal-save-btn').on('click', function () {
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
+      var title = $.trim(String($('#cal-device-title').val() || ''));
+      var icalurl = $.trim(String($('#cal-device-icalurl').val() || ''));
+      if (!icalurl || icalurl.length > 2048) {
+        $message.addClass('text-danger').text(t.invalid_calendar_block_icalurl);
+        $('#cal-device-icalurl').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('cal');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+      var holidayurl = $.trim(String($('#cal-device-holidayurl').val() || ''));
+      var layout = String($('#cal-device-layout').val() || '0');
+      var maxitems = $.trim(String($('#cal-device-maxitems').val() || ''));
+      var weeks = $.trim(String($('#cal-device-weeks').val() || ''));
+      var lastweek = $('#cal-device-lastweek').is(':checked');
+      var isoweek = $('#cal-device-isoweek').is(':checked');
+      var startonly = $('#cal-device-startonly').is(':checked');
+
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      customRows.push({ field: 'icalurl', setting: icalurl, value: icalurl });
+      if (holidayurl) {
+        customRows.push({
+          field: 'holidayurl',
+          setting: holidayurl,
+          value: holidayurl,
+        });
+      }
+      if (layout !== '0') {
+        customRows.push({
+          field: 'layout',
+          setting: layout,
+          value: parseInt(layout, 10),
+        });
+      }
+      if (maxitems) {
+        var maxitemsInt = parseInt(maxitems, 10) || 0;
+        if (maxitemsInt > 0) {
+          customRows.push({
+            field: 'maxitems',
+            setting: String(maxitemsInt),
+            value: maxitemsInt,
+          });
+        }
+      }
+      if (weeks) {
+        var weeksInt = parseInt(weeks, 10) || 0;
+        if (weeksInt > 0) {
+          customRows.push({
+            field: 'weeks',
+            setting: String(weeksInt),
+            value: weeksInt,
+          });
+        }
+      }
+      if (lastweek) {
+        customRows.push({ field: 'lastweek', setting: 'true', value: true });
+      }
+      if (isoweek) {
+        customRows.push({ field: 'isoweek', setting: 'true', value: true });
+      }
+      if (startonly) {
+        customRows.push({ field: 'startonly', setting: 'true', value: true });
+      }
+
+      var reference = _nextSpecialReference('calendar');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'calendar',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 6,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('calendarblockpopup')
+      ).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('calendarblockpopup')
+    ).show();
+  }
+
+  /* Repeatable Public transport block - same managedSpecials mechanism as
+     iFrame/Calendar/HTML Block above (kind:'special',
+     specialType:'publictransport'), so any number of independently-
+     configured departure boards can be placed, unlike the Widgets
+     catalog's singleton 'publictransport' entry (always the fixed
+     'widget_publictransport' key). js/components/publictransport.js
+     dispatches on a truthy station or tpc - see
+     _specialFromReference()'s matching branch, which excludes the legacy
+     'widget_publictransport' key. Provider list/labels match the existing
+     singleton widget's own Wizard config (js/widgeteditor.js's
+     '_ptOption()' calls) for consistency. */
+  function _showPublicTransportPopup() {
+    var t = _translations();
+    $('#publictransportblockpopup').remove();
+
+    var providerOptions = [
+      ['treinen', t.publictransport_block_provider_treinen],
+      ['ovapi', t.publictransport_block_provider_ovapi],
+      ['drgl', t.publictransport_block_provider_drgl],
+      ['irailbe', t.publictransport_block_provider_irailbe],
+      ['delijnbe', t.publictransport_block_provider_delijnbe],
+    ];
+
+    var html =
+      '<div class="modal fade" id="publictransportblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-train me-2" aria-hidden="true"></i>' +
+      _esc(t.publictransport_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    html += _quickOptionsHtml('pt', {
+      icon: true,
+      iconValue: 'fas fa-train',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="pt-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="pt-device-title" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="pt-device-provider">' +
+      _esc(t.publictransport_block_provider) +
+      '</label>';
+    html += '<select class="form-select" id="pt-device-provider">';
+    providerOptions.forEach(function (option) {
+      html +=
+        '<option value="' +
+        _esc(option[0]) +
+        '">' +
+        _esc(option[1]) +
+        '</option>';
+    });
+    html += '</select></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="pt-device-station">' +
+      _esc(t.publictransport_block_station) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="pt-device-station" autocomplete="off">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.publictransport_block_station_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="pt-device-tpc">' +
+      _esc(t.publictransport_block_tpc) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="pt-device-tpc" autocomplete="off">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.publictransport_block_tpc_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="pt-device-direction">' +
+      _esc(t.publictransport_block_direction) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="pt-device-direction" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="pt-device-results">' +
+      _esc(t.publictransport_block_results) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="pt-device-results" min="0" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3 form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="pt-device-showvia" checked>';
+    html +=
+      '<label class="form-check-label" for="pt-device-showvia">' +
+      _esc(t.publictransport_block_showvia) +
+      '</label></div>';
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="pt-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#publictransportblockpopup');
+    _wireQuickOptions('pt', $popup);
+    _wireBackButton('publictransportblockpopup');
+
+    $('#pt-save-btn').on('click', function () {
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
+      var title = $.trim(String($('#pt-device-title').val() || ''));
+      var station = $.trim(String($('#pt-device-station').val() || ''));
+      var tpc = $.trim(String($('#pt-device-tpc').val() || ''));
+      if (!station && !tpc) {
+        $message
+          .addClass('text-danger')
+          .text(t.invalid_publictransport_block_station);
+        $('#pt-device-station').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('pt');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+      var provider = String($('#pt-device-provider').val() || 'treinen');
+      var direction = $.trim(String($('#pt-device-direction').val() || ''));
+      var results = $.trim(String($('#pt-device-results').val() || ''));
+      var showVia = $('#pt-device-showvia').is(':checked');
+
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      customRows.push({
+        field: 'provider',
+        setting: provider,
+        value: provider,
+      });
+      if (station) {
+        customRows.push({ field: 'station', setting: station, value: station });
+      }
+      if (tpc) {
+        customRows.push({ field: 'tpc', setting: tpc, value: tpc });
+      }
+      if (direction) {
+        customRows.push({
+          field: 'direction',
+          setting: direction,
+          value: direction,
+        });
+      }
+      if (results) {
+        var resultsInt = parseInt(results, 10) || 0;
+        if (resultsInt > 0) {
+          customRows.push({
+            field: 'results',
+            setting: String(resultsInt),
+            value: resultsInt,
+          });
+        }
+      }
+      customRows.push({
+        field: 'show_via',
+        setting: showVia ? 'true' : 'false',
+        value: showVia,
+      });
+
+      var reference = _nextSpecialReference('publictransport');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'publictransport',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 3,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('publictransportblockpopup')
+      ).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('publictransportblockpopup')
+    ).show();
+  }
+
+  /* Repeatable Timegraph block - same managedSpecials mechanism as
+     Public transport/Calendar/iFrame/HTML Block above (kind:'special',
+     specialType:'timegraph'), so any number of independently-configured
+     graphs can be placed, unlike the Widgets catalog's singleton
+     'timegraph' entry (always the fixed 'widget_timegraph' key). Unlike
+     html/iframe/calendar/publictransport above, js/components/timegraph.js
+     dispatches on an explicit type:'timegraph' only (no shape-based
+     fallback), the same as Group/LMS - see _specialFromReference()'s
+     matching branch and configwriter.php's 'timegraph' kind, which both
+     write/read that type unconditionally. Scoped to a single graphed
+     device per block (idx/duration/height/xTicks/yTicks/xLabels) - the
+     existing singleton widget's richer repeatable multi-value-row editor
+     (several series in one graph) stays available there for anyone who
+     needs it, same as hand-editing custom/CONFIG.js already supports
+     every timegraph.js field regardless. */
+  function _showTimegraphPopup() {
+    var t = _translations();
+    $('#timegraphblockpopup').remove();
+
+    var html =
+      '<div class="modal fade" id="timegraphblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-chart-line me-2" aria-hidden="true"></i>' +
+      _esc(t.timegraph_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    html += _quickOptionsHtml('tg', {
+      icon: true,
+      iconValue: 'fas fa-chart-line',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="tg-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="tg-device-title" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="tg-device-idx">' +
+      _esc(t.timegraph_block_idx) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="tg-device-idx" min="1" autocomplete="off">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.timegraph_block_idx_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="tg-device-duration">' +
+      _esc(t.timegraph_block_duration) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="tg-device-duration" min="0" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="tg-device-height">' +
+      _esc(t.timegraph_block_height) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="tg-device-height" min="0" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="tg-device-xticks">' +
+      _esc(t.timegraph_block_xticks) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="tg-device-xticks" min="0" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="tg-device-yticks">' +
+      _esc(t.timegraph_block_yticks) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="tg-device-yticks" min="0" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3 form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="tg-device-xlabels" checked>';
+    html +=
+      '<label class="form-check-label" for="tg-device-xlabels">' +
+      _esc(t.timegraph_block_xlabels) +
+      '</label></div>';
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="tg-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#timegraphblockpopup');
+    _wireQuickOptions('tg', $popup);
+    _wireBackButton('timegraphblockpopup');
+
+    $('#tg-save-btn').on('click', function () {
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
+      var title = $.trim(String($('#tg-device-title').val() || ''));
+      var idx = parseInt($('#tg-device-idx').val(), 10) || 0;
+      if (idx < 1) {
+        $message.addClass('text-danger').text(t.invalid_timegraph_block_idx);
+        $('#tg-device-idx').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('tg');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+      var duration = $.trim(String($('#tg-device-duration').val() || ''));
+      var height = $.trim(String($('#tg-device-height').val() || ''));
+      var xTicks = $.trim(String($('#tg-device-xticks').val() || ''));
+      var yTicks = $.trim(String($('#tg-device-yticks').val() || ''));
+      var xLabels = $('#tg-device-xlabels').is(':checked');
+
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      if (duration) {
+        var durationInt = parseInt(duration, 10) || 0;
+        if (durationInt > 0) {
+          customRows.push({
+            field: 'duration',
+            setting: String(durationInt),
+            value: durationInt,
+          });
+        }
+      }
+      if (height) {
+        var heightInt = parseInt(height, 10) || 0;
+        if (heightInt > 0) {
+          customRows.push({
+            field: 'height',
+            setting: String(heightInt),
+            value: heightInt,
+          });
+        }
+      }
+      if (xTicks) {
+        var xTicksInt = parseInt(xTicks, 10) || 0;
+        if (xTicksInt > 0) {
+          customRows.push({
+            field: 'xTicks',
+            setting: String(xTicksInt),
+            value: xTicksInt,
+          });
+        }
+      }
+      if (yTicks) {
+        var yTicksInt = parseInt(yTicks, 10) || 0;
+        if (yTicksInt > 0) {
+          customRows.push({
+            field: 'yTicks',
+            setting: String(yTicksInt),
+            value: yTicksInt,
+          });
+        }
+      }
+      if (!xLabels) {
+        customRows.push({ field: 'xLabels', setting: 'false', value: false });
+      }
+
+      var reference = _nextSpecialReference('timegraph');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'timegraph',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: idx,
+        title: title,
+        width: 6,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('timegraphblockpopup')
+      ).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('timegraphblockpopup')
+    ).show();
+  }
+
+  /* Repeatable TV Guide (XMLTV) block - same managedSpecials mechanism as
+     Timegraph/Public transport/Calendar/iFrame/HTML Block above
+     (kind:'special', specialType:'xmltvguide'), so any number of
+     independently-configured guides can be placed, unlike the Widgets
+     catalog's singleton 'xmltvguide' entry (always the fixed
+     'widget_xmltvguide' key, and whose settings additionally fall back to
+     global settings['xmltv_*'] when a block leaves a field unset -
+     js/components/xmltvguide.js's defaultCfg). Every field below is
+     always written explicitly onto the new block, so a repeatable
+     instance never depends on those globals. js/components/xmltvguide.js
+     dispatches on a truthy xmltvurl (or an explicit type:'xmltvguide') -
+     see _specialFromReference()'s matching 'xmltvguide' branch, which
+     excludes the legacy 'widget_xmltvguide' key. */
+  function _showXmltvguidePopup() {
+    var t = _translations();
+    $('#xmltvguideblockpopup').remove();
+
+    var layoutOptions = [
+      ['0', t.xmltvguide_block_layout_0],
+      ['1', t.xmltvguide_block_layout_1],
+    ];
+
+    var html =
+      '<div class="modal fade" id="xmltvguideblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-tv me-2" aria-hidden="true"></i>' +
+      _esc(t.xmltvguide_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    html += _quickOptionsHtml('xtv', {
+      icon: true,
+      iconValue: 'fas fa-tv',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="xtv-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="xtv-device-title" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="xtv-device-url">' +
+      _esc(t.xmltvguide_block_url) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="xtv-device-url" placeholder="http://..." autocomplete="off">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.xmltvguide_block_url_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="xtv-device-channels">' +
+      _esc(t.xmltvguide_block_channels) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="xtv-device-channels" placeholder="BBC One, ITV, Channel 4" autocomplete="off">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.xmltvguide_block_channels_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="xtv-device-maxitems">' +
+      _esc(t.xmltvguide_block_maxitems) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="xtv-device-maxitems" min="0" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="xtv-device-layout">' +
+      _esc(t.xmltvguide_block_layout) +
+      '</label>';
+    html += '<select class="form-select" id="xtv-device-layout">';
+    layoutOptions.forEach(function (option) {
+      html +=
+        '<option value="' +
+        _esc(option[0]) +
+        '">' +
+        _esc(option[1]) +
+        '</option>';
+    });
+    html += '</select></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="xtv-device-refresh">' +
+      _esc(t.xmltvguide_block_refresh) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="xtv-device-refresh" min="0" autocomplete="off"></div>';
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="xtv-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#xmltvguideblockpopup');
+    _wireQuickOptions('xtv', $popup);
+    _wireBackButton('xmltvguideblockpopup');
+
+    $('#xtv-save-btn').on('click', function () {
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
+      var title = $.trim(String($('#xtv-device-title').val() || ''));
+      var xmltvurl = $.trim(String($('#xtv-device-url').val() || ''));
+      if (!xmltvurl || xmltvurl.length > 2048) {
+        $message.addClass('text-danger').text(t.invalid_xmltvguide_block_url);
+        $('#xtv-device-url').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('xtv');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+      var channelsRaw = $.trim(String($('#xtv-device-channels').val() || ''));
+      var channels = channelsRaw
+        ? channelsRaw
+            .split(',')
+            .map(function (value) {
+              return value.trim();
+            })
+            .filter(Boolean)
+        : [];
+      var maxitems = $.trim(String($('#xtv-device-maxitems').val() || ''));
+      var layout = String($('#xtv-device-layout').val() || '0');
+      var refresh = $.trim(String($('#xtv-device-refresh').val() || ''));
+
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      customRows.push({
+        field: 'xmltvurl',
+        setting: xmltvurl,
+        value: xmltvurl,
+      });
+      if (channels.length) {
+        customRows.push({
+          field: 'channels',
+          setting: channels.join(', '),
+          value: channels,
+        });
+      }
+      if (maxitems) {
+        var maxitemsInt = parseInt(maxitems, 10) || 0;
+        if (maxitemsInt > 0) {
+          customRows.push({
+            field: 'maxitems',
+            setting: String(maxitemsInt),
+            value: maxitemsInt,
+          });
+        }
+      }
+      if (layout !== '0') {
+        customRows.push({
+          field: 'layout',
+          setting: layout,
+          value: parseInt(layout, 10),
+        });
+      }
+      if (refresh) {
+        var refreshInt = parseInt(refresh, 10) || 0;
+        if (refreshInt > 0) {
+          customRows.push({
+            field: 'refresh',
+            setting: String(refreshInt),
+            value: refreshInt,
+          });
+        }
+      }
+
+      var reference = _nextSpecialReference('xmltvguide');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'xmltvguide',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 6,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('xmltvguideblockpopup')
+      ).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('xmltvguideblockpopup')
+    ).show();
+  }
+
+  /* Repeatable Camera block - same managedSpecials mechanism as iFrame/
+     Calendar/Public transport/Timegraph/TV Guide above (kind:'special',
+     specialType:'camera'), so any number of independently-configured
+     single cameras can be placed, unlike the Widgets catalog's singleton
+     'camera' entry (always the fixed 'widget_cameras' key, which also
+     supports a multi-camera tray/carousel via its own `cameras` array -
+     that richer config stays available there unchanged). Unlike html/
+     iframe/calendar/publictransport/xmltvguide above,
+     js/components/camera.js dispatches purely on an explicit
+     type:'camera' (like Group/LMS/Timegraph's own type), so this popup
+     always writes it - see _specialFromReference()'s matching 'camera'
+     branch, which excludes the legacy 'widget_cameras' key so that
+     singleton keeps going through DashticzWidgetEditor's own (unrelated)
+     config path unchanged. Scoped to a single image/video URL per block -
+     the existing singleton widget's richer multi-camera tray config stays
+     available there for anyone who needs it. */
+  function _showCameraPopup() {
+    var t = _translations();
+    $('#camerablockpopup').remove();
+
+    var html =
+      '<div class="modal fade" id="camerablockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-video me-2" aria-hidden="true"></i>' +
+      _esc(t.camera_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    // Icon defaults off, same as HTML Block/Calendar - the camera image is
+    // this block's own visual, with no Domoticz device to derive an icon
+    // from.
+    html += _quickOptionsHtml('cam', {
+      icon: false,
+      iconValue: 'fas fa-video',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="cam-device-imageurl">' +
+      _esc(t.camera_block_imageurl) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="cam-device-imageurl" placeholder="https://..." autocomplete="off">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.camera_block_imageurl_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="cam-device-videourl">' +
+      _esc(t.camera_block_videourl) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="cam-device-videourl" placeholder="https://..." autocomplete="off">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.camera_block_videourl_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="cam-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="cam-device-title" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="cam-device-height">' +
+      _esc(t.camera_block_height) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="cam-device-height" min="0" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="cam-device-refresh">' +
+      _esc(t.camera_block_refresh) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="cam-device-refresh" min="0" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3 form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="cam-device-forcerefresh">';
+    html +=
+      '<label class="form-check-label" for="cam-device-forcerefresh">' +
+      _esc(t.camera_block_forcerefresh) +
+      '</label></div>';
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="cam-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#camerablockpopup');
+    _wireQuickOptions('cam', $popup);
+    _wireBackButton('camerablockpopup');
+
+    $('#cam-save-btn').on('click', function () {
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
+      var title = $.trim(String($('#cam-device-title').val() || ''));
+      var imageUrl = $.trim(String($('#cam-device-imageurl').val() || ''));
+      if (!imageUrl || imageUrl.length > 2048) {
+        $message.addClass('text-danger').text(t.invalid_camera_block_imageurl);
+        $('#cam-device-imageurl').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('cam');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+      var videoUrl = $.trim(String($('#cam-device-videourl').val() || ''));
+      var height = $.trim(String($('#cam-device-height').val() || ''));
+      var refresh = $.trim(String($('#cam-device-refresh').val() || ''));
+      var forcerefresh = $('#cam-device-forcerefresh').is(':checked');
+
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      customRows.push({
+        field: 'imageUrl',
+        setting: imageUrl,
+        value: imageUrl,
+      });
+      if (videoUrl) {
+        customRows.push({
+          field: 'videoUrl',
+          setting: videoUrl,
+          value: videoUrl,
+        });
+      }
+      if (height) {
+        var heightInt = parseInt(height, 10) || 0;
+        if (heightInt > 0) {
+          customRows.push({
+            field: 'height',
+            setting: String(heightInt),
+            value: heightInt,
+          });
+        }
+      }
+      if (refresh) {
+        var refreshInt = parseInt(refresh, 10) || 0;
+        if (refreshInt > 0) {
+          customRows.push({
+            field: 'refresh',
+            setting: String(refreshInt),
+            value: refreshInt,
+          });
+        }
+      }
+      if (forcerefresh) {
+        customRows.push({
+          field: 'forcerefresh',
+          setting: 'true',
+          value: true,
+        });
+      }
+
+      var reference = _nextSpecialReference('camera');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'camera',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 3,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('camerablockpopup')
+      ).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('camerablockpopup')
+    ).show();
+  }
+
+  /* Repeatable News block - same managedSpecials mechanism as iFrame/
+     Calendar/Public transport/Timegraph/TV Guide/Camera above
+     (kind:'special', specialType:'news'), so any number of independently-
+     configured RSS tickers can be placed, unlike the Widgets catalog's
+     singleton 'news' entry (always the fixed 'widget_news' key, whose own
+     config only edits the *global* default_news_url/news_scroll_after
+     settings - that richer/global config stays available there
+     unchanged). js/components/news.js dispatches on a truthy feed alone
+     (or a legacy explicit type:'news', the shape the singleton widget
+     itself writes) - see _specialFromReference()'s matching 'news'
+     branch, which excludes both the fixed 'widget_news' key and any
+     type:'news' block so that singleton keeps going through
+     DashticzWidgetEditor's own (unrelated) config path unchanged. */
+  function _showNewsPopup() {
+    var t = _translations();
+    $('#newsblockpopup').remove();
+
+    var html =
+      '<div class="modal fade" id="newsblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-newspaper me-2" aria-hidden="true"></i>' +
+      _esc(t.news_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    html += _quickOptionsHtml('nw', {
+      icon: true,
+      iconValue: 'fas fa-newspaper',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="nw-device-feed">' +
+      _esc(t.news_block_feed) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="nw-device-feed" placeholder="https://..." autocomplete="off">';
+    html +=
+      '<div class="form-text">' + _esc(t.news_block_feed_help) + '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="nw-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="nw-device-title" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="nw-device-maxheight">' +
+      _esc(t.news_block_maxheight) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="nw-device-maxheight" min="0" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3 form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="nw-device-showimages" checked>';
+    html +=
+      '<label class="form-check-label" for="nw-device-showimages">' +
+      _esc(t.news_block_showimages) +
+      '</label></div>';
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="nw-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#newsblockpopup');
+    _wireQuickOptions('nw', $popup);
+    _wireBackButton('newsblockpopup');
+
+    $('#nw-save-btn').on('click', function () {
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
+      var title = $.trim(String($('#nw-device-title').val() || ''));
+      var feed = $.trim(String($('#nw-device-feed').val() || ''));
+      if (!feed || feed.length > 2048) {
+        $message.addClass('text-danger').text(t.invalid_news_block_feed);
+        $('#nw-device-feed').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('nw');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+      var maxheight = $.trim(String($('#nw-device-maxheight').val() || ''));
+      var showimages = $('#nw-device-showimages').is(':checked');
+
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      customRows.push({ field: 'feed', setting: feed, value: feed });
+      if (maxheight) {
+        var maxheightInt = parseInt(maxheight, 10) || 0;
+        if (maxheightInt > 0) {
+          customRows.push({
+            field: 'maxheight',
+            setting: String(maxheightInt),
+            value: maxheightInt,
+          });
+        }
+      }
+      if (!showimages) {
+        customRows.push({
+          field: 'showimages',
+          setting: 'false',
+          value: false,
+        });
+      }
+
+      var reference = _nextSpecialReference('news');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'news',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 3,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('newsblockpopup')
+      ).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('newsblockpopup')
+    ).show();
+  }
+
+  /* Repeatable Graph block - same managedSpecials mechanism as Timegraph/
+     Public transport/Calendar/iFrame/News above (kind:'special',
+     specialType:'graph'), so any number of independently-configured
+     historical graphs (see docs/blocks/graphs.rst) can be placed on one
+     screen, unlike a hand-written single blocks['my_graph'] = {...}.
+     js/components/graph.js dispatches on a truthy devices array alone, no
+     type of its own (see _specialFromReference()'s matching 'graph'
+     branch above), so devices/graph/legend/groupBy all ride through
+     custom_fields exactly like html/iframe/calendar/publictransport/
+     xmltvguide/news do for their own required field. Advanced graph
+     parameters not covered by this quick popup (custom formulas, zoom,
+     per-button styling, ...) remain reachable via the Custom fields
+     section of the Device Editor's own config popup for this instance. */
+  function _graphFieldsHtml(prefix, values) {
+    var t = _translations();
+    values = values || {};
+    var graphType = String(values.graphType || 'line');
+    var groupBy = String(values.groupBy || '');
+    var devices = Array.isArray(values.devices)
+      ? values.devices.join(', ')
+      : String(values.devices || '');
+    var html =
+      '<div class="de-graph-fields" data-graph-prefix="' + _esc(prefix) + '">';
+    html += '<h6 class="de-section-title">' + _esc(t.graph_block) + '</h6>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="' +
+      _esc(prefix) +
+      '-graph-devices">' +
+      _esc(t.graph_block_devices) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="' +
+      _esc(prefix) +
+      '-graph-devices" value="' +
+      _esc(devices) +
+      '" placeholder="691, 692">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.graph_block_devices_help) +
+      '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="' +
+      _esc(prefix) +
+      '-graph-type">' +
+      _esc(t.graph_block_type) +
+      '</label>';
+    html += '<select class="form-select" id="' + _esc(prefix) + '-graph-type">';
+    html +=
+      '<option value="line"' +
+      (graphType === 'bar' ? '' : ' selected') +
+      '>' +
+      _esc(t.graph_block_type_line) +
+      '</option>';
+    html +=
+      '<option value="bar"' +
+      (graphType === 'bar' ? ' selected' : '') +
+      '>' +
+      _esc(t.graph_block_type_bar) +
+      '</option></select></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="' +
+      _esc(prefix) +
+      '-graph-groupby">' +
+      _esc(t.graph_block_groupby) +
+      '</label>';
+    html +=
+      '<select class="form-select" id="' + _esc(prefix) + '-graph-groupby">';
+    [
+      ['', t.graph_block_groupby_none],
+      ['hour', t.graph_block_groupby_hour],
+      ['day', t.graph_block_groupby_day],
+      ['week', t.graph_block_groupby_week],
+      ['month', t.graph_block_groupby_month],
+    ].forEach(function (option) {
+      html +=
+        '<option value="' +
+        option[0] +
+        '"' +
+        (groupBy === option[0] ? ' selected' : '') +
+        '>' +
+        _esc(option[1]) +
+        '</option>';
+    });
+    html += '</select></div>';
+    html +=
+      '<div class="mb-3 form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="' +
+      _esc(prefix) +
+      '-graph-legend"' +
+      (values.legend === true ? ' checked' : '') +
+      '>';
+    html +=
+      '<label class="form-check-label" for="' +
+      _esc(prefix) +
+      '-graph-legend">' +
+      _esc(t.graph_block_legend) +
+      '</label></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="' +
+      _esc(prefix) +
+      '-graph-height">' +
+      _esc(t.graph_block_height) +
+      '</label>';
+    html +=
+      '<input type="number" class="form-control" id="' +
+      _esc(prefix) +
+      '-graph-height" min="0" value="' +
+      _esc(values.height || '') +
+      '" autocomplete="off"></div></div>';
+    return html;
+  }
+
+  function _readGraphFields(prefix) {
+    var rawDevices = $.trim(
+      String($('#' + prefix + '-graph-devices').val() || '')
+    );
+    var invalidDevices = false;
+    var devices = rawDevices
+      .split(/[\s,]+/)
+      .filter(function (part) {
+        return part !== '';
+      })
+      .map(function (part) {
+        var value = parseInt(part, 10);
+        if (!(value > 0 && String(value) === part)) invalidDevices = true;
+        return value;
+      });
+    var rawHeight = $.trim(
+      String($('#' + prefix + '-graph-height').val() || '')
+    );
+    var parsedHeight = parseInt(rawHeight, 10);
+    return {
+      devices: devices,
+      validDevices: devices.length > 0 && !invalidDevices,
+      graphType: String($('#' + prefix + '-graph-type').val() || 'line'),
+      groupBy: String($('#' + prefix + '-graph-groupby').val() || ''),
+      legend: $('#' + prefix + '-graph-legend').is(':checked'),
+      height: parsedHeight > 0 ? parsedHeight : null,
+    };
+  }
+
+  function _showGraphPopup() {
+    var t = _translations();
+    $('#graphblockpopup').remove();
+
+    var html =
+      '<div class="modal fade" id="graphblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-chart-area me-2" aria-hidden="true"></i>' +
+      _esc(t.graph_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    html += _quickOptionsHtml('gr', {
+      icon: true,
+      iconValue: 'fas fa-chart-area',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="gr-device-title">' +
+      _esc(t.html_block_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="gr-device-title" autocomplete="off"></div>';
+    html += _graphFieldsHtml('gr', {});
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="gr-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#graphblockpopup');
+    _wireQuickOptions('gr', $popup);
+    _wireBackButton('graphblockpopup');
+
+    $('#gr-save-btn').on('click', function () {
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
+      var title = $.trim(String($('#gr-device-title').val() || ''));
+
+      var graphFields = _readGraphFields('gr');
+      if (!graphFields.validDevices) {
+        $message.addClass('text-danger').text(t.invalid_graph_devices);
+        $('#gr-graph-devices').trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('gr');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      customRows.push({
+        field: 'devices',
+        setting: JSON.stringify(graphFields.devices),
+        value: graphFields.devices,
+      });
+      if (graphFields.graphType === 'bar') {
+        customRows.push({ field: 'graph', setting: 'bar', value: 'bar' });
+      }
+      if (graphFields.legend) {
+        customRows.push({ field: 'legend', setting: 'true', value: true });
+      }
+      if (graphFields.groupBy) {
+        customRows.push({
+          field: 'groupBy',
+          setting: graphFields.groupBy,
+          value: graphFields.groupBy,
+        });
+      }
+
+      var reference = _nextSpecialReference('graph');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'graph',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 6,
+        height: graphFields.height,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('graphblockpopup')
+      ).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('graphblockpopup')
     ).show();
   }
 
@@ -3861,8 +6131,13 @@ var DashticzDeviceEditor = (function () {
     var isTitle = special && special.specialType === 'title';
     var isCustom = special && special.specialType === 'custom';
     var isGroupBlock = special && special.specialType === 'group';
-    var isHtmlBlock = special && special.specialType === 'html';
     var isLmsBlock = special && special.specialType === 'lms';
+    var isGraphBlock = special && special.specialType === 'graph';
+    // No Dial/Bar/Slider mode, and a restricted display-options set (see
+    // hasDial/configOptions below) - every special except dummy/custom.
+    var isNoDialSpecial = !!(
+      special && NO_DIAL_SPECIAL_KINDS.indexOf(special.specialType) > -1
+    );
     var options = isSpecial ? special.options || {} : deviceOptions[ck] || {};
     var customRows = isSpecial ? special.customFields : deviceCustomFields[ck];
     if (!customRows || !customRows.length) {
@@ -3908,6 +6183,38 @@ var DashticzDeviceEditor = (function () {
       });
     }
 
+    // Graph's commonly-used fields get the same dedicated controls as the
+    // Widget Config -> Graph flow. Keep every advanced Graph option in the
+    // generic Custom fields list, but remove the five fields managed by the
+    // shared Graph section so they are never shown or saved twice.
+    var graphFields = null;
+    if (isGraphBlock) {
+      var graphValues = {};
+      customRows.forEach(function (row) {
+        var field = _normaliseCustomFieldName(row && row.field).toLowerCase();
+        if (field) graphValues[field] = row.value;
+      });
+      graphFields = {
+        devices: Array.isArray(graphValues.devices) ? graphValues.devices : [],
+        graphType:
+          String(graphValues.graph || '').toLowerCase() === 'bar'
+            ? 'bar'
+            : 'line',
+        groupBy: String(graphValues.groupby || ''),
+        legend: graphValues.legend === true,
+        height: special.height,
+      };
+      customRows = customRows.filter(function (row) {
+        var field = _normaliseCustomFieldName(row && row.field).toLowerCase();
+        return !{
+          devices: true,
+          graph: true,
+          legend: true,
+          groupby: true,
+        }[field];
+      });
+    }
+
     // A Multi Device's 'values' custom field is JSON produced by the Multi
     // Device popup (or hand-written in the same shape). Editing that as raw
     // JSON text made this popup look like a plain device editor instead of
@@ -3944,9 +6251,18 @@ var DashticzDeviceEditor = (function () {
       idxLabel = String(special.idx);
     }
 
+    // A Custom/Multi Device or Group special still wraps a real, live
+    // Domoticz idx (see idxLabel above) and can trigger an Automation rule
+    // just like a plain device - only the genuinely idx-less specials
+    // (Title, Separator, HTML Block, iFrame, ...) cannot.
+    var hasLiveDevice =
+      !isSpecial || ((isCustom || isGroupBlock) && special.idx);
+
     $('#de-config-popup').remove();
     var html =
-      '<div class="modal fade de-config-popup" id="de-config-popup" tabindex="-1" aria-hidden="true">';
+      '<div class="modal fade de-config-popup" id="de-config-popup" data-block-kind="' +
+      (hasLiveDevice ? 'device' : 'special') +
+      '" tabindex="-1" aria-hidden="true">';
     html +=
       '<div class="modal-dialog modal-dialog-centered de-config-dialog"><div class="modal-content">';
     html +=
@@ -3965,8 +6281,10 @@ var DashticzDeviceEditor = (function () {
     html += '<div class="modal-body">';
     // A separator/title bar has no data value or last-update timestamp of its
     // own, but it can still show a leading icon like any other block.
-    // A Group/HTML/LMS block has no Dial/Bar display mode of its own.
-    var hasDial = !isTitle && !isGroupBlock && !isHtmlBlock && !isLmsBlock;
+    // No NO_DIAL_SPECIAL_KINDS special (Group/HTML/iFrame/Calendar/Public
+    // transport/Timegraph/TV Guide/LMS) has a Dial/Bar display mode of
+    // its own either.
+    var hasDial = !isTitle && !isNoDialSpecial;
     var barDeviceIdx = null;
     if (hasDial) {
       if (!isSpecial && ck) {
@@ -4043,7 +6361,7 @@ var DashticzDeviceEditor = (function () {
     // gets it (previously only Group/HTML/LMS/Separator specials did).
     var configOptions = isTitle
       ? ['icon', 'show_title']
-      : isGroupBlock || isHtmlBlock || isLmsBlock
+      : isNoDialSpecial
         ? ['icon', 'last_update', 'show_title']
         : ['icon', 'hide_data', 'last_update', 'show_title'];
     html += '<h6 class="de-section-title">' + _esc(t.display_options) + '</h6>';
@@ -4264,7 +6582,15 @@ var DashticzDeviceEditor = (function () {
         playerLabel: special.lmsPlayerLabel,
         refresh: special.lmsRefresh,
         hideWhenOff: special.lmsHideWhenOff,
+        titleSize: special.lmsTitleSize,
+        titleColor: special.lmsTitleColor,
+        artistSize: special.lmsArtistSize,
+        artistColor: special.lmsArtistColor,
+        stationSize: special.lmsStationSize,
+        stationColor: special.lmsStationColor,
       });
+    } else if (isGraphBlock) {
+      html += _graphFieldsHtml('de-config', graphFields);
     }
     html +=
       '<div class="de-custom-fields-section"><h6 class="de-section-title mt-3">' +
@@ -4520,6 +6846,12 @@ var DashticzDeviceEditor = (function () {
       // generic custom field, so a hand-typed 'values' field name in the
       // generic list must still be rejected as a duplicate.
       var customKeys = multiDeviceValues ? { values: true } : {};
+      if (isGraphBlock) {
+        customKeys.devices = true;
+        customKeys.graph = true;
+        customKeys.legend = true;
+        customKeys.groupby = true;
+      }
       var pendingTitle = isSpecial
         ? String(special.title || '')
         : String(deviceTitles[ck] || '');
@@ -4584,6 +6916,18 @@ var DashticzDeviceEditor = (function () {
             .addClass('text-danger')
             .text(t.invalid_lms_player);
           $('#de-config-lms-player').trigger('focus');
+        }
+      }
+      var pendingGraph = null;
+      if (isGraphBlock) {
+        pendingGraph = _readGraphFields('de-config');
+        if (!pendingGraph.validDevices) {
+          valid = false;
+          $popup
+            .find('.de-config-message')
+            .addClass('text-danger')
+            .text(t.invalid_graph_devices);
+          $('#de-config-graph-devices').trigger('focus');
         }
       }
       // [data-option]: excludes button.js's injected Background toggle,
@@ -4810,6 +7154,26 @@ var DashticzDeviceEditor = (function () {
         });
       }
       storedRows = storedRows.concat(pendingCustomFields);
+      if (pendingGraph) {
+        storedRows.push({
+          field: 'devices',
+          setting: JSON.stringify(pendingGraph.devices),
+          value: pendingGraph.devices,
+        });
+        if (pendingGraph.graphType === 'bar') {
+          storedRows.push({ field: 'graph', setting: 'bar', value: 'bar' });
+        }
+        if (pendingGraph.legend) {
+          storedRows.push({ field: 'legend', setting: 'true', value: true });
+        }
+        if (pendingGraph.groupBy) {
+          storedRows.push({
+            field: 'groupBy',
+            setting: pendingGraph.groupBy,
+            value: pendingGraph.groupBy,
+          });
+        }
+      }
       if (pendingValues) {
         storedRows.push({
           field: 'values',
@@ -4823,6 +7187,9 @@ var DashticzDeviceEditor = (function () {
         special.customFields = storedRows;
         special.showTitle = pendingShowTitle;
         if (isCustom || isGroupBlock) special.idx = pendingIdx;
+        if (isGraphBlock && pendingGraph) {
+          special.height = pendingGraph.height;
+        }
         if (isLmsBlock && pendingLms) {
           special.lmsServer = pendingLms.server;
           special.lmsPort = pendingLms.port;
@@ -4832,6 +7199,12 @@ var DashticzDeviceEditor = (function () {
           special.lmsPlayerLabel = pendingLms.playerLabel;
           special.lmsRefresh = pendingLms.refresh;
           special.lmsHideWhenOff = pendingLms.hideWhenOff;
+          special.lmsTitleSize = pendingLms.titleSize;
+          special.lmsTitleColor = pendingLms.titleColor;
+          special.lmsArtistSize = pendingLms.artistSize;
+          special.lmsArtistColor = pendingLms.artistColor;
+          special.lmsStationSize = pendingLms.stationSize;
+          special.lmsStationColor = pendingLms.stationColor;
         }
         if (special.specialType === 'slidebutton') {
           storedRows.forEach(function (row) {
@@ -5057,6 +7430,11 @@ var DashticzDeviceEditor = (function () {
     var isSlideButton = special.specialType === 'slidebutton';
     var isGroupBlock = special.specialType === 'group';
     var isHtmlBlock = special.specialType === 'html';
+    var isIframeBlock = special.specialType === 'iframe';
+    var isCalendarBlock = special.specialType === 'calendar';
+    var isPublicTransportBlock = special.specialType === 'publictransport';
+    var isTimegraphBlock = special.specialType === 'timegraph';
+    var isXmltvguideBlock = special.specialType === 'xmltvguide';
     var isLmsBlock = special.specialType === 'lms';
     // A Multi Device is a Custom device whose 'values' custom field was filled
     // in via the dedicated Multi Device popup (see openMultiDevice() above);
@@ -5078,12 +7456,46 @@ var DashticzDeviceEditor = (function () {
             : t.dummy_device;
     if (isGroupBlock) label = t.group_block;
     else if (isHtmlBlock) label = t.html_block;
+    else if (isIframeBlock) label = t.iframe_block;
+    else if (isCalendarBlock) label = t.calendar_block;
+    else if (isPublicTransportBlock) label = t.publictransport_block;
+    else if (isTimegraphBlock) label = t.timegraph_block;
+    else if (isXmltvguideBlock) label = t.xmltvguide_block;
     else if (isLmsBlock) label = t.lms_block;
     var htmlFileRow =
       isHtmlBlock && special.customFields
         ? special.customFields.find(function (row) {
             return (
               String((row && row.field) || '').toLowerCase() === 'htmlfile'
+            );
+          })
+        : null;
+    var frameurlRow =
+      isIframeBlock && special.customFields
+        ? special.customFields.find(function (row) {
+            return (
+              String((row && row.field) || '').toLowerCase() === 'frameurl'
+            );
+          })
+        : null;
+    var icalurlRow =
+      isCalendarBlock && special.customFields
+        ? special.customFields.find(function (row) {
+            return String((row && row.field) || '').toLowerCase() === 'icalurl';
+          })
+        : null;
+    var stationRow =
+      isPublicTransportBlock && special.customFields
+        ? special.customFields.find(function (row) {
+            var field = String((row && row.field) || '').toLowerCase();
+            return field === 'station' || field === 'tpc';
+          })
+        : null;
+    var xmltvurlRow =
+      isXmltvguideBlock && special.customFields
+        ? special.customFields.find(function (row) {
+            return (
+              String((row && row.field) || '').toLowerCase() === 'xmltvurl'
             );
           })
         : null;
@@ -5101,11 +7513,24 @@ var DashticzDeviceEditor = (function () {
             : special.reference
           : isHtmlBlock
             ? (htmlFileRow && htmlFileRow.setting) || special.reference
-            : isLmsBlock
-              ? special.lmsPlayerLabel || special.lmsPlayer || special.reference
-              : isCustom
-                ? special.reference + ' · IDX\u00a0' + special.idx
-                : 'IDX\u00a0' + special.idx;
+            : isIframeBlock
+              ? (frameurlRow && frameurlRow.setting) || special.reference
+              : isCalendarBlock
+                ? (icalurlRow && icalurlRow.setting) || special.reference
+                : isPublicTransportBlock
+                  ? (stationRow && stationRow.setting) || special.reference
+                  : isTimegraphBlock
+                    ? 'IDX ' + special.idx
+                    : isXmltvguideBlock
+                      ? (xmltvurlRow && xmltvurlRow.setting) ||
+                        special.reference
+                      : isLmsBlock
+                        ? special.lmsPlayerLabel ||
+                          special.lmsPlayer ||
+                          special.reference
+                        : isCustom
+                          ? special.reference + ' · IDX\u00a0' + special.idx
+                          : 'IDX\u00a0' + special.idx;
     var specialIconClass = isTitle
       ? 'fa-divide'
       : isSlideButton
@@ -5115,6 +7540,11 @@ var DashticzDeviceEditor = (function () {
           : 'fa-cube';
     if (isGroupBlock) specialIconClass = 'fa-object-group';
     else if (isHtmlBlock) specialIconClass = 'fa-code';
+    else if (isIframeBlock) specialIconClass = 'fa-window-maximize';
+    else if (isCalendarBlock) specialIconClass = 'fa-calendar-alt';
+    else if (isPublicTransportBlock) specialIconClass = 'fa-train';
+    else if (isTimegraphBlock) specialIconClass = 'fa-chart-line';
+    else if (isXmltvguideBlock) specialIconClass = 'fa-tv';
     else if (isLmsBlock) specialIconClass = 'fa-music';
     var html =
       '<div class="de-device-item de-special-item" data-special-key="' +
@@ -5252,9 +7682,31 @@ var DashticzDeviceEditor = (function () {
     return html;
   }
 
+  // Auto-generated reference prefixes for the repeatable "Widgets catalog"
+  // specials (iFrame/Calendar/Public transport/Timegraph/TV Guide/LMS and
+  // any added after them) - each gets no manual name input of its own,
+  // just a silently incrementing kind_1, kind_2, ... reference, same as
+  // LMS has always used. 'title' keeps its own legacy 'Title_' prefix;
+  // anything else (dummy/custom device rows) falls back to 'dummyblock_'.
+  var SPECIAL_REFERENCE_PREFIXES = {
+    title: 'Title_',
+    lms: 'lms_',
+    iframe: 'iframe_',
+    calendar: 'calendar_',
+    publictransport: 'publictransport_',
+    timegraph: 'timegraph_',
+    xmltvguide: 'xmltvguide_',
+    camera: 'camera_',
+    news: 'news_',
+    // Matches the legacy hand-written 'graph_<idx>' convention (see
+    // docs/blocks/graphs.rst and js/components/graph.js's own canHandle()
+    // key-prefix check), so a repeatable instance's auto-generated key
+    // reads the same as one a user would have typed by hand.
+    graph: 'graph_',
+  };
+
   function _nextSpecialReference(type) {
-    var prefix =
-      type === 'title' ? 'Title_' : type === 'lms' ? 'lms_' : 'dummyblock_';
+    var prefix = SPECIAL_REFERENCE_PREFIXES[type] || 'dummyblock_';
     var used = {};
     if (typeof blocks !== 'undefined') {
       Object.keys(blocks).forEach(function (key) {
@@ -5718,10 +8170,7 @@ var DashticzDeviceEditor = (function () {
           width: _parseWidth(special.width),
         };
         var titleOptionalKind =
-          special.specialType === 'custom' ||
-          special.specialType === 'group' ||
-          special.specialType === 'html' ||
-          special.specialType === 'lms';
+          TITLE_OPTIONAL_SPECIAL_KINDS.indexOf(special.specialType) > -1;
         if (!titleOptionalKind || String(special.title || '').trim()) {
           specialEntry.title = special.title;
         }
@@ -5778,15 +8227,16 @@ var DashticzDeviceEditor = (function () {
             specialEntry.custom_fields = specialCustomFields;
           }
         } else if (
-          special.specialType === 'group' ||
-          special.specialType === 'html'
+          SIMPLE_ICON_PAYLOAD_KINDS.indexOf(special.specialType) > -1
         ) {
           // Only Icon and Last update apply here (no Data/Switch/Dial - see
           // _quickOptionsHtml()); idx is optional and only meaningful for a
           // Group block (js/components/group.js can use 'devices' instead,
           // carried through specialCustomFields above like any other extra
           // field). configwriter.php writes type: 'group' unconditionally
-          // for this kind, so it is not set here.
+          // for that kind only - html/iframe/calendar/xmltvguide have no
+          // `type` of their own (dispatched on htmlfile/frameurl/icalurl/
+          // xmltvurl instead), so it is not set here.
           var quickSaveOptions = special.options || {};
           if (quickSaveOptions.icon === false) {
             specialEntry.icon = '';
@@ -5797,6 +8247,21 @@ var DashticzDeviceEditor = (function () {
           if (special.specialType === 'group' && special.idx) {
             specialEntry.idx = special.idx;
           }
+        } else if (special.specialType === 'timegraph') {
+          // js/components/timegraph.js dispatches on an explicit
+          // type:'timegraph' alone (like Group's own type:'group') -
+          // configwriter.php writes it unconditionally for this kind, so
+          // it is not set here. Unlike Group/HTML/iFrame/Calendar/Public
+          // transport above, the graphed device idx is a required,
+          // always-present top-level property here, not optional.
+          var tgOptions = special.options || {};
+          if (tgOptions.icon === false) {
+            specialEntry.icon = '';
+          } else if (tgOptions.iconValue) {
+            specialEntry.icon = tgOptions.iconValue;
+          }
+          specialEntry.last_update = tgOptions.last_update === true;
+          specialEntry.idx = special.idx;
         } else if (special.specialType === 'slidebutton') {
           var slideOptions = special.options || {};
           specialEntry.slide = parseInt(special.slideTarget, 10) || 1;
@@ -5841,6 +8306,12 @@ var DashticzDeviceEditor = (function () {
           specialEntry.player = special.lmsPlayer;
           specialEntry.refresh = special.lmsRefresh;
           specialEntry.hide_when_off = special.lmsHideWhenOff === true;
+          specialEntry.title_size = special.lmsTitleSize;
+          specialEntry.title_color = special.lmsTitleColor;
+          specialEntry.artist_size = special.lmsArtistSize;
+          specialEntry.artist_color = special.lmsArtistColor;
+          specialEntry.station_size = special.lmsStationSize;
+          specialEntry.station_color = special.lmsStationColor;
         }
         if (special.height) specialEntry.height = special.height;
         return specialEntry;
@@ -6354,6 +8825,14 @@ var DashticzDeviceEditor = (function () {
     openMultiDevice: openMultiDevice,
     openGroup: openGroup,
     openHtmlBlock: openHtmlBlock,
+    openIframe: openIframe,
+    openCalendar: openCalendar,
+    openPublicTransport: openPublicTransport,
+    openTimegraph: openTimegraph,
+    openXmltvguide: openXmltvguide,
+    openCamera: openCamera,
+    openNews: openNews,
+    openGraph: openGraph,
     openLms: openLms,
     openSlideButton: openSlideButton,
     addSeparator: addSeparator,

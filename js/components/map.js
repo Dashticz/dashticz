@@ -34,7 +34,7 @@ function gm_authFailure() {
         Dashticz.googleMapsPromise = $.Deferred();
         $.ajax({
           url:
-            'https://maps.googleapis.com/maps/api/js?callback=GoogleMapsCallback&key=' +
+            'https://maps.googleapis.com/maps/api/js?callback=GoogleMapsCallback&libraries=marker&loading=async&key=' +
             (block.api || settings['gm_api']),
           dataType: 'script',
           cache: true,
@@ -47,6 +47,11 @@ function gm_authFailure() {
         refresh: 600,
         clickHandler: false,
         api: settings['gm_api'],
+        // Advanced markers require a Map ID. 'DEMO_MAP_ID' works out of the
+        // box for testing; for production (and to use cloud-based map
+        // styling) create a Map ID in the Google Cloud Console and set it
+        // via block.mapid or settings['gm_mapid'].
+        mapid: block.mapid || settings['gm_mapid'] || 'DEMO_MAP_ID',
         width: 4,
         height: 500,
         //            aspectratio:0.5,
@@ -172,21 +177,25 @@ function gm_authFailure() {
       zoom: me.block.zoom,
       center: me.pointA,
       disableDefaultUI: !me.block.showUI,
+      // Advanced markers require a Map ID (mapId) to be set on the map.
+      mapId: me.block.mapid,
     });
     var markerOptions = {
       position: me.pointA,
       map: me.map,
       //            title: 'My Location',
     };
-    if (me.block.markerIconUrl)
-      markerOptions.icon = {
-        url: me.block.markerIconUrl,
-        scaledSize: new google.maps.Size(
-          me.block.markerSize,
-          me.block.markerSize
-        ),
-      };
-    if (me.block.showmarker) me.marker = new google.maps.Marker(markerOptions);
+    if (me.block.markerIconUrl) {
+      // AdvancedMarkerElement doesn't take an `icon` option like the old
+      // Marker did; a custom image is passed as DOM content instead.
+      var markerImg = document.createElement('img');
+      markerImg.src = me.block.markerIconUrl;
+      markerImg.style.width = me.block.markerSize + 'px';
+      markerImg.style.height = me.block.markerSize + 'px';
+      markerOptions.content = markerImg;
+    }
+    if (me.block.showmarker)
+      me.marker = new google.maps.marker.AdvancedMarkerElement(markerOptions);
     if (me.showRoute)
       me.directionsDisplay = new google.maps.DirectionsRenderer({
         map: me.map,
@@ -345,7 +354,8 @@ function gm_authFailure() {
       if (me.map) {
         //if we have a map, update it
         me.map.setCenter(me.pointA);
-        if (me.marker) me.marker.setPosition(me.pointA);
+        // AdvancedMarkerElement has no setPosition(); assign the property.
+        if (me.marker) me.marker.position = me.pointA;
         setRefreshTime(me);
       }
     }

@@ -67,7 +67,7 @@
       "garbage_maxitems": "Quantitià di pickup da mostrare",
       "garbage_street": "Via",
       "garbage_use_colors": "Text Colors",
-      "garbage_use_cors_prefix": "Use Cors Prefix (Default is on)",
+      "garbage_use_cors_prefix": "Use Cors Prefix",
       "garbage_use_names": "Custom Names",
       "garbage_use_prefix_help": "The cors prefix sometimes causes errors",
       "garbage_width": "Larghezza del blocco (1-12)",
