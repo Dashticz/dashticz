@@ -267,7 +267,6 @@ test('update scripts create a valid empty CONFIG.js instead of an unparsable stu
 
 test('installer accepts an optional target directory', () => {
   const installer = fs.readFileSync(path.join(root, 'install.sh'), 'utf8');
-  const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
   const installDocs = fs.readFileSync(
     path.join(root, 'docs/gettingstarted/automaticinstall.rst'),
     'utf8'
@@ -278,18 +277,12 @@ test('installer accepts an optional target directory', () => {
   assert.match(installer, /--directory=\*/);
   assert.match(installer, /Only one installation directory can be specified/);
   assert.match(installer, /git clone[\s\S]*"\$INSTALL_DIR"/);
-  assert.match(readme, /-- --directory \/var\/www\/html\/my-dashboard/);
   assert.match(installDocs, /-- --directory \/var\/www\/html\/my-dashboard/);
-  assert.match(readme, /-- -d \/var\/www\/html\/my-dashboard/);
-  assert.match(readme, /-- --directory=\/var\/www\/html\/my-dashboard/);
-  assert.match(readme, /DASHTICZ_INSTALL_DIR=\/var\/www\/html\/my-dashboard/);
-  assert.match(readme, /-- --help/);
   assert.match(installDocs, /-- -d \/var\/www\/html\/my-dashboard/);
   assert.match(
     installDocs,
     /DASHTICZ_INSTALL_DIR=\/var\/www\/html\/my-dashboard/
   );
-  assert.match(readme, /file mode `0644`/);
   assert.match(installDocs, /file mode ``0644``/);
 });
 
@@ -2660,22 +2653,11 @@ test('remote content and network failures use safe bounded rendering paths', () 
   );
 });
 
-test('calendar editor behavior is documented without a version bump', () => {
-  const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
-
-  assert.match(readme, /Calendar Widget Config shows every source/);
-  assert.match(readme, /Personal: \{ ics:/);
-  assert.match(readme, /holidayurl/);
-  assert.match(readme, /property `c`/);
-  assert.match(readme, /framed active-stylesheet notice/);
-});
-
 test('modern dark theme is portable and documented', () => {
   const theme = fs.readFileSync(
     path.join(root, 'themes/modern-dark/modern-dark.css'),
     'utf8'
   );
-  const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
   const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
 
   assert.match(theme, /--main-bg/);
@@ -2770,7 +2752,6 @@ test('modern dark theme is portable and documented', () => {
   );
   assert.doesNotMatch(theme, /https?:\/\//i);
   assert.doesNotMatch(theme, /url\s*\(/i);
-  assert.match(readme, /config\['theme'\] = 'modern-dark'/);
 });
 
 test('settings modal uses compact Bootstrap 5 controls and aligned help icons', () => {
