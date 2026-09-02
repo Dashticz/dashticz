@@ -6,6 +6,64 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v4.0.1 beta (2-9-2026)
+----------------------
+
+* **Enhancements**
+
+- Major dependency refresh: updated every outdated package one at a
+  time with full verification between each - ``webpack`` 5.110.3,
+  ``css-loader`` 7.1.5, ``@types/node`` 26.4.1, ``webpack-cli``
+  7.2.3, ``babel-loader`` 10.1.1, ``sass-loader`` 17.0.1,
+  ``@babel/core`` 8.0.1, ``@babel/preset-env`` 8.0.2,
+  ``@fortawesome/fontawesome-free`` 7.3.1, ``jquery`` 4.0.0,
+  ``ical.js`` 2.2.1 and ``swiper`` 14.2.0. ``jquery-migrate`` 4.0.2,
+  previously an unused devDependency, is now actually wired into the
+  bundle as a runtime safety net for the jQuery 4 upgrade.
+
+* **Fixes**
+
+- Fixed ``loadConfig()`` crashing on every dashboard load under
+  jQuery 4 ("Cannot read properties of undefined (reading 'trim')")
+  - jQuery 4's script transport no longer hands ``dataFilter`` any
+  response text, so ``CONFIG.js`` is now fetched as plain text and
+  evaluated explicitly via ``$.globalEval``.
+
+- Fixed every jQuery UI widget (``.slider``/``.draggable``/
+  ``.sortable``/...) silently failing under jQuery 4
+  ("$x.slider is not a function") - ``jquery-ui-dist``'s own nested
+  ``jquery@3.x`` dependency was getting bundled as a second, isolated
+  jQuery instance. A webpack ``resolve.alias`` now forces one
+  canonical jQuery everywhere.
+
+- Fixed an ``aria-hidden``/focus violation on the blinds/dimmer
+  slider's tick scale (``tabindex="-1"`` added to the tick buttons,
+  which stay clickable but drop out of the tab order).
+
+- Dropped the ``ios_saf 9`` browserslist target (FontAwesome 7 ships
+  woff2-only fonts, unsupported on iOS 9) and raised
+  ``package.json``'s ``engines.node`` to match the new devDependency
+  floor.
+
+- Resolved a high-severity ``fast-uri`` advisory (transitive
+  build-time dependency) via ``npm audit fix``.
+
+* **Code**
+
+- Replaced 15 deprecated ``.click()``/``.blur()`` jQuery event
+  shorthand calls with ``.on()`` across ``js/switches.js``,
+  ``js/components/graph.js``, ``js/dashticz.js``, ``js/blocks.js``
+  and ``js/tempcontrol.js``.
+
+- Bumped ``dist/bundle.js``'s cache-bust version so browsers that
+  already loaded an earlier build actually fetch the updated bundle.
+
+- Verified after every change with ``npm run format:check``, the
+  full ``node --test`` suite, and a production build from a clean
+  ``npm ci``, plus targeted live-browser verification
+  (Playwright/Chromium) of the ``loadConfig`` and jQuery UI fixes,
+  and end-to-end manual testing on a live Domoticz dashboard.
+
 v3.45.14 beta (2-9-2026)
 ------------------------
 
