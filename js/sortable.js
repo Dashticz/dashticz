@@ -13,7 +13,7 @@ function startSortable() {
           $('.swiper-container .screen').length > 1 &&
           typeof myswiper !== 'undefined'
         )
-          myswiper.lockSwipes();
+          myswiper.allowTouchMove = false;
         if (ui.helper !== undefined)
           ui.helper
             .css('position', 'absolute')
@@ -37,7 +37,7 @@ function startSortable() {
           $('.swiper-container .screen').length > 1 &&
           typeof myswiper !== 'undefined'
         )
-          myswiper.unlockSwipes();
+          myswiper.allowTouchMove = true;
         if (ui.offset !== undefined) ui.helper.css('margin-top', 0);
       },
     })

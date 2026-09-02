@@ -1,24 +1,22 @@
 /* eslint-disable no-debugger */
-/*global getBlockTypesBlock, language, _TEMP_SYMBOL, settings*/
-/*global Dashticz, DT_function, Domoticz, Debug */
+/*global getBlockTypesBlock, language, settings*/
+/*global Dashticz, DashticzLayoutEditor, DT_function, Domoticz, Debug */
 /*global moment, number_format */
 /*from bundle.js*/
-/*global ion*/
+/*global ion isDefined*/
 /*from main.js*/
 /*global toSlide disableStandby infoMessage*/
 /*from dt_function.js*/
 /* global capitalizeFirstLetter choose */
-/*from thermostat.js*/
-/*global getThermostatBlock getEvohomeZoneBlock getEvohomeControllerBlock getEvohomeHotWaterBlock*/
 /*from switches.js*/
-/*global  getIconStatusClass getDefaultSwitchBlock getDimmerBlock getBlindsBlock slideDevice*/
+/*global  getIconStatusClass slideDevice*/
 /*from custom.js*/
 /*global afterGetDevices*/
 /*unknown. probably a bug ...*/
 /*global google*/
 /*from config.js (or main.js)*/
 /*global blocks*/
-/* Exports: */
+/* exported getSecurityBlock getMediaPlayer getSelectorSwitch*/
 
 var alldevices = 'initial value';
 
@@ -36,80 +34,117 @@ var onOffstates = [];
  */
 // eslint-disable-next-line no-unused-vars
 function getBlock(cols, c, screendiv, standby) {
-  //    if (c==='bar') debugger;
   if (typeof cols !== 'undefined') {
     var columndiv = screendiv + ' .row .col' + c;
     var colclass = '';
     if (c === 'bar') colclass = 'transbg dark';
     var colwidth = 'col-sm-' + (cols.width ? cols.width + ' ' : '12 ');
-    if (standby) {
-      $(screendiv + ' .row').append(
-        '<div class="' + colwidth + ' col-xs-12 col' + c + '"></div>'
-      );
-    } else {
-      $(screendiv + ' .row').append(
-        '<div data-colindex="' +
-          c +
-          '" class="' +
-          colwidth +
-          ' col-xs-12 sortable col' +
-          c +
-          ' ' +
-          colclass +
-          '"></div>'
-      );
-    }
-    cols.blocks && cols['blocks'].forEach(function (b, i) {
-      if(b)
-        addBlock2Column(columndiv, c, b);
-      else {
-        Debug.log(Debug.ERROR, 'Block number '+i+' in column ' + c + ' is undefined.');
-      }
-    });
+    // data-colindex is required for layout/device/widget editors (incl. standby).
+    $(screendiv + ' .row').append(
+      '<div data-colindex="' +
+        c +
+        '" class="' +
+        colwidth +
+        ' col-xs-12 ' +
+        (standby ? '' : 'sortable ') +
+        'col' +
+        c +
+        ' ' +
+        colclass +
+        '"></div>'
+    );
+    cols.blocks &&
+      cols['blocks'].forEach(function (b, i) {
+        if (b) addBlock2Column(columndiv, c, b);
+        else {
+          Debug.log(
+            Debug.ERROR,
+            'Block number ' + i + ' in column ' + c + ' is undefined.'
+          );
+        }
+      });
   }
 }
 /**Adds a block to a column
  * @param {string} columndiv - div to add block to
  * @param {string} c - Column id
  * @param {object | string | number} b - string, as key for block object, object or number
+ * @param {function} prepareContainer - optional hook before the component mounts
  *
  * If b is a number then it represents a device id.
  */
-var previousblock=0;
+var previousblock = 0;
 
-function addBlock2Column(columndiv, c, b) {
-  if(typeof b=== 'undefined') {
-    console.log('Block undefined after block ',previousblock);
-    return;
+function addBlock2Column(columndiv, c, b, prepareContainer) {
+  if (typeof b === 'undefined') {
+    console.log('Block undefined after block ', previousblock);
+    return null;
   }
-  previousblock=b;
+  previousblock = b;
   var myblockselector = Dashticz.mountNewContainer(columndiv);
+  if (prepareContainer) prepareContainer(myblockselector);
   var newBlock = b;
-  if (typeof b !== 'object') newBlock = convertBlock(b, c);
-  if (c === 'popup') newBlock.isPopup = true;
-  if (newBlock.blocks) {
-    newBlock.blocks.forEach(function (aBlock) {
-      addBlock2Column(myblockselector, '', aBlock);
-    });
-    $(myblockselector).attr('data-id', newBlock.key);
-    return;
-  }
-  if (Array.isArray(newBlock)) {
-    newBlock.forEach(function (aBlock) {
-      addBlock2Column(myblockselector, '', aBlock);
-    });
-    return;
-  }
+  try {
+    if (typeof b !== 'object') newBlock = convertBlock(b, c);
+    if (c === 'popup') newBlock.isPopup = true;
+    if (
+      c === 'bar' &&
+      newBlock &&
+      typeof newBlock.type === 'string' &&
+      /^[a-z0-9_-]+$/i.test(newBlock.type)
+    ) {
+      // Stable wrapper classes keep topbar layout independent of :has()
+      // support and nested Bootstrap percentage widths.
+      $(myblockselector).addClass(
+        'dt-topbar-item dt-topbar-' + newBlock.type.toLowerCase()
+      );
+    }
+    if (newBlock.blocks) {
+      newBlock.blocks.forEach(function (aBlock) {
+        addBlock2Column(myblockselector, '', aBlock);
+      });
+      $(myblockselector).attr('data-id', newBlock.key);
+      return myblockselector;
+    }
+    if (Array.isArray(newBlock)) {
+      newBlock.forEach(function (aBlock) {
+        addBlock2Column(myblockselector, '', aBlock);
+      });
+      return myblockselector;
+    }
 
-  if (!Dashticz.mount(myblockselector, newBlock))
-    Dashticz.mountDefaultBlock(myblockselector, newBlock);
+    if (!Dashticz.mount(myblockselector, newBlock))
+      Dashticz.mountDefaultBlock(myblockselector, newBlock);
+  } catch (error) {
+    renderUnavailableBlock(myblockselector, newBlock, b, error);
+  }
+  return myblockselector;
+}
+
+function renderUnavailableBlock(mountPoint, block, key, error) {
+  var blockConfig = block && !Array.isArray(block) ? block : {};
+  var blockKey = blockConfig.key || String(key);
+  var title = blockConfig.title || blockKey;
+  var width = blockConfig.width || 4;
+  var $fallback = $('<div>')
+    .attr('data-id', blockKey)
+    .addClass(
+      'mh transbg dt_block block_unavailable col-xs-' + parseInt(width, 10)
+    )
+    .text(title);
+
+  $(mountPoint).empty().append($fallback);
+  console.error('Unable to mount block ' + blockKey, error);
+  Debug.log(Debug.ERROR, 'Unable to mount block ' + blockKey);
 }
 
 function convertBlock(blocktype, c) {
   var block = {};
   block.type = blocktype;
   $.extend(block, blocks[blocktype]);
-  block.c = c; //c can be 'bar'. Used for sunriseholder
+  // Keep the render column separate from the user-configurable property c.
+  // The latter may be hand-written and must survive editor round-trips exactly.
+  block._dashticzColumn = c;
   block.key = block.key || blocktype;
 
   //Check for Domoticz device block
@@ -148,17 +183,39 @@ function deviceUpdateHandler(block) {
 
   getCustomFunction('getStatus', block, false);
   var $selector = $(selector);
-  if (typeof block.title === 'undefined') block.title = device.Name;
+  if (!Object.prototype.hasOwnProperty.call(block, '_dashticzAutoTitle')) {
+    // Remember whether CONFIG.js supplied an explicit title. The marker is
+    // non-enumerable so editor serialization never writes this runtime state.
+    Object.defineProperty(block, '_dashticzAutoTitle', {
+      value: typeof block.title === 'undefined',
+      enumerable: false,
+    });
+  }
+  if (block._dashticzAutoTitle) {
+    // Keep the live Domoticz title out of serialized block definitions.
+    Object.defineProperty(block, 'title', {
+      value: device.Name,
+      writable: true,
+      configurable: true,
+      enumerable: false,
+    });
+  }
 
   //var $div=$selector.find('.block_'+fullidx); //doesn't work for blocks['myblock'] kind of definitions
   var $div = $selector.find('.mh');
+  var oldLayoutEditorBlocks = $div.toArray();
+  // Domoticz refreshes may replace the complete .mh element. Keep every
+  // Layout Editor overlay paired with the block it belongs to, so the editor
+  // can transfer both the controls and its internal DOM reference.
+  var layoutEditorOverlays = oldLayoutEditorBlocks.map(function (element) {
+    return $(element).children('.dle-overlay').detach();
+  });
 
   var width = 4;
   switch (device['SwitchType']) {
     case 'Selector':
       width = 8;
       break;
-    case 'Media Player':
     case 'Dimmer':
       width = 12;
   }
@@ -185,7 +242,6 @@ function deviceUpdateHandler(block) {
   else if (parseFloat(settings['default_columns']) == 2)
     $div.addClass('col-xs-4');
 
-  var addHTML = true;
   var html = '';
 
   triggerChange(block);
@@ -193,15 +249,45 @@ function deviceUpdateHandler(block) {
   html = getCustomFunction('getBlock', block);
   //getCustomFunction 'getBlock' returns undefined in case function getBlock_<idx> is not defined in custom.js
   if (!html) {
-    var response = handleDevice(block);
-    html = response[0];
-    addHTML = response[1];
+    html = handleDevice(block);
   }
 
-  if (addHTML) {
+  if (html && typeof html === 'string') {
     $div.html(html);
+    layoutEditorOverlays.forEach(function ($overlay, index) {
+      if ($overlay.length && $div[index]) $($div[index]).append($overlay);
+    });
     getBlockClick(block);
-  } else $div = $selector.find('.mh'); //$div may not exist anymore. Find the new one.
+  } else {
+    $div = $selector.find('.mh'); //$div may not exist anymore. Find the new one.
+    var newLayoutEditorBlocks = $div.toArray();
+
+    oldLayoutEditorBlocks.forEach(function (oldBlock, index) {
+      var dataId = oldBlock.getAttribute('data-id');
+      var newBlock = null;
+
+      if (dataId !== null) {
+        newBlock = newLayoutEditorBlocks.find(function (candidate) {
+          return candidate.getAttribute('data-id') === dataId;
+        });
+      }
+      if (!newBlock) newBlock = newLayoutEditorBlocks[index];
+      if (!newBlock) return;
+
+      var $overlay = layoutEditorOverlays[index];
+      if ($overlay && $overlay.length) {
+        $(newBlock).addClass('dle-block').append($overlay);
+      }
+
+      if (
+        oldBlock !== newBlock &&
+        typeof DashticzLayoutEditor !== 'undefined' &&
+        DashticzLayoutEditor.replaceBlockReference
+      ) {
+        DashticzLayoutEditor.replaceBlockReference(oldBlock, newBlock);
+      }
+    });
+  }
 
   if (typeof $div.attr('onclick') !== 'undefined') {
     $div.addClass('hover');
@@ -226,6 +312,7 @@ function deviceUpdateHandler(block) {
     $div.removeClass(storedBlock.currentClass);
     storedBlock.currentClass = block.addClass;
   }
+  block.defaultAddClass && $div.addClass(block.defaultAddClass);
   $div.addClass(block.addClass);
   if (storedBlock && storedBlock.currentDeviceStatus != device.deviceStatus) {
     $div.removeClass(storedBlock.currentDeviceStatus);
@@ -237,7 +324,21 @@ function deviceUpdateHandler(block) {
   else $div.removeClass('timeout');
 
   addBatteryLevel($div, block);
+  addAutomationIndicator($div, block);
   triggerStatus(block); //moved the second call to the end to assure that the block has been created in the DOM completely
+}
+
+/* Small dot marking a block that has an enabled Automation (Device Rules)
+   rule configured for it. Opt out per block via automation_indicator: false. */
+function addAutomationIndicator($div, block) {
+  $div.find('.automation-indicator').remove();
+  if (block.automation_indicator === false) return;
+  var active =
+    typeof DashticzDeviceRules !== 'undefined' &&
+    DashticzDeviceRules &&
+    typeof DashticzDeviceRules.hasEnabledRules === 'function' &&
+    DashticzDeviceRules.hasEnabledRules(block);
+  if (active) $div.append('<i class="automation-indicator"></i>');
 }
 
 /*add the battery level indicator*/
@@ -304,8 +405,7 @@ function isDomoticzDevice(key) {
   if (idx) {
     return idx;
   }
-  if(typeof key === 'undefined') {
-//    debugger;
+  if (typeof key === 'undefined') {
     return false;
   }
   if (key[0] === 's' || key[0] === 'v') {
@@ -319,27 +419,21 @@ function isDomoticzDevice(key) {
 }
 
 // eslint-disable-next-line no-unused-vars
-function getStatusBlock(block) {
-  var device = block.device;
-  var value = block.value ? block.value : '';
-  var title = block.title ? block.title : '';
+
+function formatTemplateString(block, device, valueParam, isTitle) {
+  // eslint-disable-next-line no-useless-escape
+  var unit = block.unit;
   var format = block.format;
   var decimals = block.decimals;
-  var image = block.image;
-  var icon = block.icon;
+  var tagRegEx = /<[\w\s="/.':;#-/?]+>/gi;
+  var valueStr = Dashticz.getProperty(valueParam, device);
+  var matches = valueStr.match(tagRegEx);
   var elements = [];
 
-  if (!value && !title) {
-    console.log('No title and no value for block');
-    console.log(block);
-  }
-  // eslint-disable-next-line no-useless-escape
-  var tagRegEx = /<[\w\s="/.':;#-\/\?]+>/gi;
-  var matches = (title + value).match(tagRegEx);
   //todo: see dirty hack below with '<br />'
   if (matches && matches[0] !== '<br />') {
-    matches.map(function (val) {
-      elements.push(val.replace(/([<,>])+/g, ''));
+    matches.forEach(function (val) {
+      if (val !== '<br />') elements.push(val.replace(/([<,>])+/g, ''));
     });
   }
   /*    if (block.unit && typeof block.unit === 'string') {
@@ -347,13 +441,18 @@ function getStatusBlock(block) {
         }*/
   if (elements.length) {
     var blockunits = [];
-    if (typeof block.unit === 'string') {
-      blockunits = block.unit.split(';');
+    if (typeof unit === 'string') {
+      blockunits = unit.split(';');
     }
     var cnt = 0;
     for (var d in elements) {
       var deviceValue = device[elements[d]];
-      if (format || typeof decimals !== 'undefined' || block.unit) {
+      if (
+        !isTitle &&
+        (format ||
+          typeof decimals !== 'undefined' ||
+          Dashticz.getProperty(unit, device))
+      ) {
         var blockunit = blockunits[cnt] || blockunits[0];
         var current_unit = '';
         if (isNaN(deviceValue)) {
@@ -361,25 +460,89 @@ function getStatusBlock(block) {
           deviceValue = valueSplit[0];
           current_unit = valueSplit[1] || current_unit;
         }
+        if (block.scale) {
+          deviceValue = parseFloat(deviceValue) * block.scale;
+        }
         if (format) {
           deviceValue = number_format(deviceValue, decimals);
         }
         deviceValue += blockunit || current_unit; //no space between value and unit
       }
-      value = value.replace('<' + elements[d] + '>', deviceValue);
-      title = title.replace('<' + elements[d] + '>', device[elements[d]]);
+      valueStr = valueStr.replace('<' + elements[d] + '>', deviceValue);
       cnt++;
     }
   } else {
     //not a template function
     //number_format has been applied already
     //so we only can change the unit, if needed.
-    if (block.unit) {
-      if (isNaN(value)) {
-        value = value.split(' ')[0] || value;
+    if (!isTitle && block.unit) {
+      if (isNaN(valueStr)) {
+        valueStr = valueStr.split(' ')[0] || valueStr;
       }
-      value += block.unit; //no space between value and unit
+      valueStr += block.unit; //no space between value and unit
     }
+  }
+
+  return valueStr;
+}
+function formatBlockValues(parentBlock) {
+  var blockValues = parentBlock.values;
+  //  var subidx=1;
+  if (!blockValues) return;
+  var newBlockValues = [];
+  blockValues.forEach(function (block) {
+    //    $.extend(block, parentBlock);
+    var newBlock = {};
+    $.extend(newBlock, block); //, parentBlock); don't use parentBlock: it may contain icon from protoBlock
+    //parentBlock may contain a custom icon
+    //however, we should use value of block
+    if (block.value) newBlock.value = block.value;
+    if (block.subidx) newBlock.subidx = block.subidx;
+    if (block.idx) newBlock.idx = block.idx; //parentBlock has values with specific idx
+    //    if(!newBlock.subidx) newBlock.subidx=subidx;
+    //    subidx+=1;
+    //    idx = block.idx || parentBlock.idx;
+    var device = Domoticz.getAllDevices(newBlock.idx);
+    if (newBlock.hideEmpty && !device[newBlock.hideEmpty]) return;
+    var value = Dashticz.getProperty(newBlock.value, device);
+    //    var title = block.title ? block.title : '';
+    newBlock.value = formatTemplateString(block, device, '' + value);
+    newBlock.title = formatTemplateString(
+      block,
+      device,
+      newBlock.title || '',
+      true
+    );
+    newBlockValues.push(newBlock);
+  });
+  return newBlockValues;
+}
+
+function getStatusBlock(block) {
+  var device = block.device;
+  var value = choose(block.value, '');
+  var title = choose(block.title, '');
+  var image = block.image;
+  var icon = block.icon;
+
+  if (block.subtitle)
+    switch (block.showsubtitles) {
+      case '2':
+      case 2:
+        value = value + ' (' + block.subtitle + ')';
+        break;
+      case 1:
+      case '1':
+      case true:
+        title = title + ': ' + block.subtitle;
+        break;
+      case false:
+      case 0:
+    }
+
+  if (!value && !title) {
+    console.log('No title and no value for block');
+    console.log(block);
   }
 
   //todo: this should not be part of blocks I guess. But we've reserved unit already for the 'real' unit for some devices
@@ -433,9 +596,16 @@ function getStatusBlock(block) {
   if (block.textOff && getIconStatusClass(device.Status) === 'off')
     value = block.textOff;
 
-  if (!titleAndValueSwitch(block)) {
+  // hide_data hides the device's live value, not the (user-configured)
+  // title, so it also cancels the title/value swap below - matching
+  // getBlockData() (js/blocks.js), the equivalent switch-block renderer.
+  if (!titleAndValueSwitch(block) || block['hide_data']) {
     if (hideTitle(block)) {
-      stateBlock += '<span class="value">' + value + '</span>';
+      if (!block['hide_data']) {
+        stateBlock += '<span class="value">' + value + '</span>';
+      }
+    } else if (block['hide_data']) {
+      stateBlock += '<strong class="title">' + title + '</strong>';
     } else {
       stateBlock += '<strong class="title">' + title + '</strong><br />';
       stateBlock += '<span class="value">' + value + '</span>';
@@ -515,9 +685,12 @@ function getBlockClick(block, selector) {
       device['SubType'] === 'Soil Moisture' ||
       graph
     ) {
-      $div.addClass('hover').off('click').click(function () {
-        DT_function.clickHandler({ block: block });
-      });
+      $div
+        .addClass('hover')
+        .off('click')
+        .click(function () {
+          DT_function.clickHandler({ block: block });
+        });
     }
   }
 }
@@ -570,24 +743,60 @@ function iconORimage(
   colwidth,
   attrcol
 ) {
+  if (typeof colwidth === 'undefined') colwidth = 4;
+  if (typeof attrcol === 'undefined') attrcol = '';
+  if (typeof attr === 'undefined') attr = '';
+  if (
+    typeof block !== 'undefined' &&
+    block['icon'] === '' &&
+    !defaultimage &&
+    !block['image']
+  ) {
+    // Icon explicitly turned off via the Icon toggle in Device/Widget
+    // Config (block.icon === '', not merely undefined/unset - see
+    // configwriter.php's "Must write an explicit icon: ''" comments).
+    // Falling through to defaulticon or the device type's own
+    // iconOn/iconOff (protoBlock, js/blocktypes.js) below would silently
+    // reinstate a default icon instead of honoring the toggle - see the
+    // $.extend(block, protoBlock, origBlock) merge in getBlock() above,
+    // which only overrides the plain `icon` key.
+    // Only when there is no image anywhere (defaultimage param or
+    // block.image) to fall back on - a device type whose own visual *is*
+    // an image (blinds, motion sensor, kodi, ...) keeps showing it; the
+    // Icon toggle only ever governs the font-icon slot.
+    // Keep the (now empty) .col-icon wrapper rather than omitting it:
+    // custom CSS can target/position around this column assuming it's
+    // always present (fixed offsets, sibling selectors), and dropping it
+    // entirely would silently break that layout the first time this
+    // toggle is turned off - see the "icon in de tekst" report.
+    return (
+      '<div class="col-xs-' + colwidth + ' col-icon" ' + attrcol + '></div>'
+    );
+  }
   var mIcon = defaulticon;
   var mImage = defaultimage;
   var useImage = false;
   //probably yes
   var device = block.device;
-  if (defaultimage !== '') {
+  if (defaultimage) {
     useImage = true;
   }
   var isOn = false;
   if (device && device.Status)
     isOn = getIconStatusClass(device.Status) === 'on';
   if (typeof block !== 'undefined') {
-    if (typeof block['icon'] !== 'undefined') {
-      mIcon = block['icon'];
+    // Truthy checks, not typeof: getBlockConfig() (js/dashticz.js) resets the
+    // *other* of icon/image to '' (still "defined") whenever one is set, so
+    // an empty string here means "not set", not "use an empty image". A
+    // typeof check would let a defined-but-empty image win over a real icon
+    // and render a broken <img> instead of the icon (e.g. group blocks with
+    // a custom icon and no image - see js/components/group.js).
+    if (block['icon']) {
+      mIcon = Dashticz.getProperty(block['icon'], device);
       useImage = false;
     }
-    if (typeof block['image'] !== 'undefined') {
-      mImage = block['image'];
+    if (block['image']) {
+      mImage = Dashticz.getProperty(block['image'], device);
       useImage = true;
     }
   }
@@ -618,9 +827,6 @@ function iconORimage(
   mIcon = isOn ? iconOn : iconOff;
   mImage = isOn ? imageOn : imageOff;
 
-  if (typeof colwidth === 'undefined') colwidth = 4;
-  if (typeof attrcol === 'undefined') attrcol = '';
-  if (typeof attr === 'undefined') attr = '';
   var icon = '<div class="col-xs-' + colwidth + ' col-icon" ' + attrcol + '>';
   if (useImage) {
     icon +=
@@ -661,7 +867,7 @@ function getBlockData(block, textOn, textOff) {
     ) {
       value = choose(block.textOff, textOff);
     }
-    if(status === 'mixed') {
+    if (status === 'mixed') {
       value = choose(block.textmixed, language.switches.state_mixed || 'Mixed');
     }
 
@@ -691,7 +897,7 @@ function titleAndValueSwitch(block) {
 function hideTitle(block) {
   if (block.hide_title) return true;
   var title = getBlockTitle(block);
-  return (title===0 || title ==='');
+  return title === 0 || title === '';
 }
 
 function showUpdateInformation(block) {
@@ -763,7 +969,6 @@ function toBeaufort(windSpeed) {
  */
 function Beaufort(windSpeed) {
   return toBeaufort(windSpeed) + ' Bft';
-
 }
 
 function triggerStatus(block) {
@@ -830,329 +1035,35 @@ function triggerChange(block) {
   oldstates[idx] = value;
 }
 
-function handleDevice(block) {
-  var device = block.device;
-  var idx = block.idx;
-  var buttonimg = '';
-  if (device['Image'] === 'Fan') buttonimg = 'fan.png';
-  if (device['Image'] === 'Heating') buttonimg = 'heating.png';
-  var html = '';
-  var addHTML = true;
-
-  var res = getBlockTypesBlock(block);
-  if (res) return res;
-
-  switch (device['Type']) {
-    case 'P1 Smart Meter':
-      return getSmartMeterBlock(block);
-    case 'RFXMeter':
-      if (device['SubType'] == 'RFXMeter counter') {
-        return getRFXMeterCounterBlock(block);
-      }
-      break;
-    case 'YouLess Meter':
-      return getYouLessBlock(block);
-    case 'General':
-      if (device['SubType'] === 'kWh') {
-        return getGeneralKwhBlock(block);
-      }
-      break;
-    case 'Humidity':
-      return getHumBlock(block);
-    case 'Temp + Humidity + Baro':
-    case 'Temp + Humidity':
-    case 'Temp + Baro':
-    case 'Radiator 1':
-    case 'Heating':
-      if (device.SubType === 'Zone')
-        //EvoHome Zone device
-        return getEvohomeZoneBlock(block);
-      if (device.SubType === 'Evohome')
-        //EvoHome Controller device
-        return getEvohomeControllerBlock(block);
-      if (device.SubType === 'Hot Water')
-        //EvoHome Hot Water device
-        return getEvohomeHotWaterBlock(block);
-      return getTempHumBarBlock(block);
-    case 'Thermostat':
-    case 'Setpoint':
-      return getThermostatBlock(block);
-    case 'Group':
-    case 'Scene':
-      return getDefaultSwitchBlock(
-        block,
-        'fas fa-lightbulb',
-        'far fa-lightbulb',
-        buttonimg
-      );
-  }
-
-  switch (device['HardwareType']) {
-    case 'Toon Thermostat':
-      if (device['SubType'] !== 'SetPoint' && device['SubType'] !== 'AC') {
-        return getSmartMeterBlock(block);
-      }
-      if (device['SubType'] === 'SetPoint') {
-        return getThermostatBlock(block);
-      }
-      break;
-    case 'Logitech Media Server':
-      html = getLogitechControls(block);
-      $('div.block_' + idx).addClass('with_controls');
-      return [html, addHTML];
-  }
-
-  switch (device['SwitchType']) {
-    case 'Dimmer':
-      return getDimmerBlock(block, buttonimg);
-    case 'Door Contact':
-    case 'Contact':
-      if (device['Status'] === 'Closed')
-        html += iconORimage(block, 'fas fa-door-closed', '', 'off icon', '', 2);
-      else html += iconORimage(block, 'fas fa-door-open', '', 'on icon', '', 2);
-      html += getBlockData(
-        block,
-        language.switches.state_open,
-        language.switches.state_closed
-      );
-      return [html, addHTML];
-    case 'Door Lock':
-    case 'Door Lock Inverted':
-        return getDefaultSwitchBlock(block, 'fas fa-lock', 'fas fa-unlock', buttonimg, language.switches.state_unlocked, language.switches.state_locked );
-    case 'Venetian Blinds EU':
-    case 'Venetian Blinds US':
-    case 'Venetian Blinds EU Inverted':
-    case 'Venetian Blinds US Inverted':
-    case 'Blinds':
-    case 'Blinds Inverted':
-      return getBlindsBlock(block, false);
-    case 'Blinds Percentage':
-    case 'Blinds + Stop':
-    case 'Blinds Percentage Inverted':
-    case 'Venetian Blinds EU Percentage':
-    case 'Venetian Blinds EU Inverted Percentage':
-    case 'Venetian Blinds EU Percentage Inverted':
-      return getBlindsBlock(block, true);
-    case 'Security':
-      return getSecurityBlock(block);
-    case 'Motion Sensor':
-      html += '<div class="col-xs-4 col-icon">';
-      html +=
-        '<img src="img/motion_' +
-        getIconStatusClass(device['Status']) +
-        '.png" class="' +
-        getIconStatusClass(device['Status']) +
-        ' icon" style="max-height:35px;" />';
-      html += '</div>';
-      html += getBlockData(
-        block,
-        language.switches.state_movement,
-        language.switches.state_nomovement
-      );
-      return [html, addHTML];
-    case 'Smoke Detector':
-      if (device['Status'] == 'Off' || device['Status'] == 'Normal')
-        html += iconORimage(
-          block,
-          '',
-          'heating.png',
-          'off icon',
-          'style="max-height:35px;"'
-        );
-      else
-        html += iconORimage(
-          block,
-          '',
-          'heating.png',
-          'on icon',
-          'style="max-height:35px;border: 5px solid #F05F40;"'
-        );
-      html += getBlockData(
-        block,
-        language.switches.state_smoke,
-        language.switches.state_nosmoke
-      );
-      return [html, addHTML];
-    case 'Doorbell':
-      html += iconORimage(
-        block,
-        'fas fa-bell',
-        buttonimg,
-        getIconStatusClass(device['Status']) + ' icon'
-      );
-      html += getBlockData(block, '', '');
-      return [html, addHTML];
-    case 'Media Player':
-      if (device['HardwareType'] == 'Kodi Media Server')
-        html += iconORimage(block, '', 'kodi.png', 'on icon', '', 2);
-      else html += iconORimage(block, 'fas fa-film', '', 'on icon', '', 2);
-      html += '<div class="col-xs-10 col-data">';
-      html += '<strong class="title">' + block.title + '</strong><br />';
-      if (device['Data'] === '') {
-        device['Data'] = language.misc.mediaplayer_nothing_playing;
-        if (settings['hide_mediaplayer'] == 1)
-          $('div.block_' + block.key).hide();
-      } else {
-        $('div.block_' + block.key).show();
-      }
-      html += '<span class="h4">' + device['Data'] + '</span>';
-      return [html, addHTML];
-  }
-
-  if (
-    typeof device['LevelActions'] !== 'undefined' &&
-    device['LevelNames'] !== ''
-  ) {
-    var names = Domoticz.info.levelNamesEncoded ? b64_to_utf8(device['LevelNames']) : device['LevelNames'];
-
-    nameValues = names.split('|').map(function(name, idx) {
-      return {
-        name: name,
-        value: idx
-      }
-    })
-
-    if(block.sortOrder) {
-      nameValues.sort(function(a,b) {
-        return a.name.localeCompare(b.name)*block.sortOrder;
-      })
-    }
-
-    if (device['Status'] === 'Off')
-      html += iconORimage(
-        block,
-        'far fa-lightbulb',
-        buttonimg,
-        getIconStatusClass(device['Status']) + ' icon'
-      );
-    else
-      html += iconORimage(
-        block,
-        'fas fa-lightbulb',
-        buttonimg,
-        getIconStatusClass(device['Status']) + ' icon'
-      );
-
-    if (
-      typeof device['SelectorStyle'] !== 'undefined' &&
-      device['SelectorStyle'] == 1
-    ) {
-      html += '<div class="col-xs-8 col-data">';
-      if(!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
-      html += '<select>';
-      html += '<option value="">' + language.misc.select + '</option>';
-      for (var idx in nameValues) {
-        var nv = nameValues[idx];
-        if (
-          parseFloat(nv.value) > 0 ||
-          (nv.value == 0 &&
-            (typeof device['LevelOffHidden'] == 'undefined' ||
-              device['LevelOffHidden'] === false))
-        ) {
-          var s = '';
-          if (nv.value * 10 == parseFloat(device['Level'])) s = 'selected';
-          html +=
-            '<option value="' +
-            nv.value * 10 +
-            '" ' +
-            s +
-            '>' +
-            nv.name +
-            '</option>';
-        }
-      }
-      html += '</select>';
-      html += '</div>';
-      block.$mountPoint
-        .find('.mh')
-        .off('change')
-        .on('change', 'select', function () {
-          slideDevice(block, $(this).val());
-        });
-    } else {
-      html += '<div class="col-xs-8 col-data">';
-      if(!hideTitle(block)) html += '<strong class="title">' + block.title + '</strong><br />';
-      html += '<div class="btn-group" data-toggle="buttons">';
-      for (idx in nameValues) {
-        var nv = nameValues[idx];
-        if (
-          parseFloat(nv.value) > 0 ||
-          (nv.value == 0 &&
-            (typeof device['LevelOffHidden'] == 'undefined' ||
-              device['LevelOffHidden'] === false))
-        ) {
-          var st = '';
-          if (nv.value * 10 == parseFloat(device['Level'])) st = 'active';
-          html += '<label class="btn btn-default ' + st + '">';
-          html +=
-            '<input type="radio" name="options" autocomplete="off" value="' +
-            nv.value * 10 +
-            '" checked>' +
-            nv.name;
-          html += '</label>';
-        }
-      }
-      html += '</select>';
-      html += '</div>';
-      html += '</div>';
-      block.$mountPoint
-        .find('.mh')
-        .off('click')
-        .on('click', '.btn-group', function (ev) {
-          var value = $(ev.target).children('input').val();
-          console.log(value);
-          slideDevice(block, value);
-        });
-    }
-  } else if (device['SubType'] == 'Custom Sensor') {
-    var defaultIcon = 'fas fa-question';
-    if (device['Image'] === 'Water') defaultIcon = 'fas fa-tint';
-    else if (device['Image'] === 'Heating') defaultIcon = 'fas fa-utensils';
-
-    html += iconORimage(block, defaultIcon, '', 'on icon');
-    html += '<div class="col-xs-8 col-data">';
-    var title = block.title;
-    var value = device['Data'];
-    if (titleAndValueSwitch(block)) {
-      title = device['Data'];
-      value = block.title;
-    }
-    html += '<strong class="title">' + title + '</strong><br />';
-    html += '<span class="state">' + value + '</span>';
-
-    if (showUpdateInformation(block)) {
-      html +=
-        '<br /><span class="lastupdate">' +
-        moment(block.device['LastUpdate']).format(settings['timeformat']) +
-        '</span>';
-    }
-    html += '</div>';
-  } else if (device['HardwareName'] === 'Dummy') {
-    return getDefaultSwitchBlock(
-      block,
-      'fas fa-toggle-on',
-      'fas fa-toggle-off',
-      buttonimg
-    );
-  } else {
-    return getDefaultSwitchBlock(
-      block,
-      'fas fa-lightbulb',
-      'far fa-lightbulb',
-      buttonimg
-    );
-  }
-
-  return [html, addHTML];
+function setDefaultImage(block) {
+  var deviceImages = {
+    Fan: 'fan.png',
+    Heating: 'heating.png',
+  };
+  var defaultImage;
+  if (block && block.device && block.device.Image)
+    defaultImage = deviceImages[block.device.Image];
+  if (defaultImage && !block.image) block.image = defaultImage;
 }
 
-function getLogitechControls(block) {
+function handleDevice(block) {
+  setDefaultImage(block);
+  block.protoBlock = getBlockTypesBlock(block);
+  if (block.values && !block.single_line && !block.joinsubblocks) {
+    block.multi_line = choose(block.multi_line, true);
+  }
+  var handler = choose(block.handler, block.protoBlock.handler);
+  if (handler) {
+    return handler(block);
+  }
+
+  createBlocks(block);
+}
+
+/*exported postHookLogitechMediaServer */
+function postHookLogitechMediaServer(block) {
   var device = block.device;
   var html = '';
-  html += iconORimage(block, 'fas fa-music', '', 'on icon', '', 2);
-  html += '<div class="col-xs-10 col-data">';
-  html += '<strong class="title">' + block.title + '</strong><br />';
-  html += '<span class="h4">' + device['Data'] + '</span>';
   html += '<div>';
   html +=
     '<a href="javascript:controlLogitech(' +
@@ -1189,459 +1100,168 @@ function getLogitechControls(block) {
     ',\'VolumeUp\');"><em class="fas fa-plus-circle fa-small"></em></a>';
   html += '</div>';
   html += '</div>';
-
-  return html;
+  block.$mountPoint.find('.col-data').append(html);
 }
 
-function getSmartMeterBlock(block) {
-  var device = block.device;
-  var idx = device.idx;
-  block.width = block.width || 4;
-  if (device['SubType'] === 'Energy') {
-    var usage = parseFloat(device.NettUsage || '0');
-
-    var data = device['Data'].split(';');
-    var blockValues = [
-      {
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 1,
-        title: language.energy.energy_usage,
-        value: usage,
-        unit: settings['units'].names.watt,
-      },
-      {
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 2,
-        title: language.energy.energy_usagetoday,
-        value: number_format(
-          device['CounterToday'],
-          settings['units'].decimals.kwh
-        ),
-        unit: settings['units'].names.kwh,
-      },
-      {
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 3,
-        title: language.energy.energy_totals,
-        value: number_format(device['Counter'], 0),
-        unit: settings['units'].names.kwh,
-      },
-    ];
-
-    if (parseFloat(device['CounterDeliv']) > 0) {
-      blockValues.push({
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 4,
-        title: language.energy.energy_delivered,
-        value: number_format(device['CounterDeliv'], 0),
-        unit: settings['units'].names.kwh,
-      });
-      blockValues.push({
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 5,
-        title: language.energy.energy_deliveredtoday,
-        value: number_format(
-          device['CounterDelivToday'],
-          settings['units'].decimals.kwh
-        ),
-        unit: settings['units'].names.kwh,
-      });
-    }
-
-    if (typeof data[1] !== 'undefined') {
-      data[0] = data[0] / 1000;
-      data[1] = data[1] / 1000;
-      blockValues.push({
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 6,
-        title: language.energy.energy_totals,
-        value:
-          'P1: ' +
-          number_format(data[0], 3, '.', '') +
-          ' ' +
-          settings['units'].names.kwh +
-          '<br />P2: ' +
-          number_format(data[1], 3, '.', '') +
-          ' ' +
-          settings['units'].names.kwh,
-        unit: '',
-      });
-
-      blockValues.push({
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 7,
-        title: language.energy.energy_totals + ' P1',
-        value: number_format(data[0], 3, '.', ''),
-        unit: settings['units'].names.kwh,
-      });
-
-      blockValues.push({
-        icon: 'fas fa-plug',
-        idx: idx,
-        subidx: 8,
-        title: language.energy.energy_totals + ' P2',
-        value: number_format(data[1], 3, '.', ''),
-        unit: settings['units'].names.kwh,
-      });
-    }
-    createBlocks(block, blockValues);
-    return ['', false];
-  }
-  if (device['SubType'] === 'Gas') {
-    var myblockValues = [
-      {
-        icon: 'fas fa-fire',
-        idx: idx,
-        subidx: 1,
-        title: language.energy.gas_usagetoday,
-        value: device['CounterToday'],
-        unit: '',
-      },
-      {
-        icon: 'fas fa-fire',
-        idx: idx,
-        subidx: 2,
-        title: language.energy.energy_totals + ' ' + block.title,
-        value: device['Counter'],
-        unit: 'm3',
-      },
-    ];
-    createBlocks(block, myblockValues);
-    return ['', false];
-  }
-  return ['', false];
+function getJoinValuesSeperator(block) {
+  if (typeof block.joinsubblocks === 'string') return block.joinsubblocks;
+  if (block.single_line) return '/ ';
+  if (block.multi_line) return '<br/>';
 }
 
-function getRFXMeterCounterBlock(block) {
-  var device = block.device;
-  var idx = device.idx;
-  var unit = '';
-  var decimals = 2;
-  var icon = 'fas fa-fire';
-
-  switch (device['SwitchTypeVal']) {
-    case 0:
-      unit = settings['units'].names.kwh;
-      decimals = settings['units'].decimals.kwh;
-      icon = 'fas fa-bolt';
-      break;
-
-    case 1:
-      unit = settings['units'].names.gas;
-      decimals = settings['units'].decimals.gas;
-      icon = 'fas fa-fire';
-      break;
-
-    case 2:
-      unit = settings['units'].names.water;
-      decimals = settings['units'].decimals.water;
-      icon = 'fas fa-tint';
-      break;
-
-    case 3:
-      unit = device['ValueUnits'];
-      break;
-
-    case 4:
-      unit = settings['units'].names.kwh;
-      decimals = settings['units'].decimals.kwh;
-      icon = 'fas fa-sun';
-      break;
-
-    case 5:
-      unit = settings['units'].names.time;
-      decimals = settings['units'].decimals.time;
-      icon = 'far fa-clock';
-      break;
-  }
-
-  var blockValues = [
-    {
-      icon: icon,
-      idx: idx,
-      subidx: 1,
-      title: block.title,
-      value: number_format(device['CounterToday'].split(' ')[0], decimals),
-      unit: unit,
-    },
-    {
-      icon: icon,
-      idx: idx,
-      subidx: 2,
-      title: language.energy.energy_totals + ' ' + block.title,
-      value: number_format(device['Counter'].split(' ')[0], decimals),
-      unit: unit,
-    },
-  ];
-  if (typeof device['Usage'] !== 'undefined') {
-    blockValues.push({
-      icon: icon,
-      idx: idx,
-      subidx: 3,
-      title: block.title,
-      value: number_format(device['Usage'].split(' ')[0], decimals),
-      unit: unit,
+function selectBlockValues(parentBlock) {
+  var blockValues = parentBlock.values;
+  if (!blockValues) return;
+  if (parentBlock.showvalues) {
+    //showvalues contains a list of subidx devices to show
+    var selectedBlockValues = [];
+    parentBlock.showvalues.forEach(function (value) {
+      var obj = blockValues[value - 1];
+      if (typeof obj === 'object') selectedBlockValues.push(obj);
     });
+    blockValues = selectedBlockValues;
   }
-  createBlocks(block, blockValues);
-  return ['', false];
+  var filteredBlockValues = blockValues.filter(function (blockValue) {
+    return !(
+      blockValue.hideEmpty &&
+      !isDefined(parentBlock.device[blockValue.hideEmpty])
+    );
+  });
+
+  var seperator = getJoinValuesSeperator(parentBlock);
+  if (seperator) {
+    var value = filteredBlockValues
+      .map(function (blockValue) {
+        var localValue = blockValue.value;
+        var showsubtitles = choose(
+          parentBlock.showsubtitles,
+          blockValue.showsubtitles
+        );
+        if (blockValue.subtitle) {
+          if (showsubtitles === 2)
+            return localValue + ' (' + blockValue.subtitle + ')';
+          if (showsubtitles) return blockValue.subtitle + ': ' + localValue;
+          return localValue;
+        } else return localValue;
+      })
+      .join(seperator);
+    parentBlock.value = value;
+    return; //values must become undefined
+  }
+  return filteredBlockValues;
 }
 
-function getYouLessBlock(block) {
-  var device = block.device;
-  var idx = device.idx;
-
-  this.html = '';
-  var blockValues = [
-    {
-      icon: 'fas fa-fire',
-      idx: idx,
-      subidx: 1,
-      title: block.title,
-      value: number_format(
-        device['CounterToday'].split(' ')[0],
-        settings['units'].decimals.kwh
-      ),
-      unit: settings['units'].names.kwh,
-    },
-    {
-      icon: 'fas fa-fire',
-      idx: idx,
-      subidx: 2,
-      title: language.energy.energy_totals + ' ' + block.title,
-      value: number_format(device['Counter'], settings['units'].decimals.kwh),
-      unit: settings['units'].names.kwh,
-    },
-  ];
-  if (typeof device['Usage'] !== 'undefined') {
-    blockValues.push({
-      icon: 'fas fa-fire',
-      idx: idx,
-      subidx: 3,
-      title: block.title,
-      value: number_format(device['Usage'], settings['units'].decimals.watt),
-      unit: settings['units'].names.watt,
-    });
-  }
-  createBlocks(block, blockValues);
-  return ['', false];
-}
-
-function createBlocks(blockParent, blockValues) {
+function createBlocks(origBlock) {
   /* I assume this function gets called once per block
   // That means we first have to remove the previous content
   // console.log('createBlocks for '+blockParent.idx);
   //
-  // blockValues does not always contain a subidx: It can be a prototype from blocktypes.
   */
 
-  var device = blockParent.device;
-  var $div = blockParent.$mountPoint;
-  $div.html(''); //it would be better for performance to add all changes at once.
+  //Four situations:
+  // 1. block.values (protoBlock.value and protoBlock.values will be ignored)
+  // 2. block.value (block.values and protoBlock.values will be ignored)
+  // 3. protoBlock.values
+  // 4. protoBlock.value
 
-  blockValues.forEach(function (blockValue) {
-    if (blockParent.subidx && blockParent.subidx !== blockValue.subidx) return;
-    //  console.log("createBlocks id: ", blockValue.idx)
-    var block = {};
-    $.extend(block, blockValue); //create a block from the prototype
-    $.extend(block, blockParent);
-    /* Fix icon/image setting*/
-    if(blockParent.image || blockParent.icon) {
-      block.image = blockParent.image;
-      block.icon = blockParent.icon;
-    }
-    //        $.extend(block, blocks[blockValue.idx]); //I don't think we should do this: It will overwrite block settings of a custom block
-    //Although for subdevices it would be nice to use corresponding block setting
-    //so let's overwrite in case parent and blockvalue idx are different
-    //because in that case we are creating subdevices
-    var key = blockParent.key;
-    if (!blockParent.subidx && blockValue.subidx) {
-      $.extend(block, blocks[blockParent.key + '_' + blockValue.subidx]);
-      key += '_' + blockValue.subidx;
-    }
-    block.idx = blockValue.idx;
-    if (blockValue.subidx) block.subidx = blockValue.subidx;
+  var protoBlock = origBlock.protoBlock;
+  var block = {};
+
+  //default should be like this:
+  $.extend(block, protoBlock, origBlock);
+  //Note: protoBlock may contain an icon, while protoBlock.values also contain icons.
+  //Protoblock.values.icons have priority
+  //while origBlock.icon has priority above protoblock.values.icons
+  //So I think protoBlock.values should be extended with origBlock to get the icon right.
+  //Note: if origBlock contains a value parameter it will overwrite all values.value
+  //That is ok
+
+  if (protoBlock.values && !origBlock.values) {
+    block.values = protoBlock.values.map(function (value) {
+      var newValue = {};
+      $.extend(newValue, value, origBlock);
+      return newValue;
+    });
+  }
+
+  //if protoBlock has values, then these values already have been extended with protoblock in blocktypes.js
+  //however, this is not the case for values of origBlock:
+  if (origBlock.values) {
+    var subidx = 1;
+    block.values = origBlock.values.map(function (value) {
+      var newValue = { subidx: subidx };
+      $.extend(newValue, protoBlock, origBlock, value);
+      subidx += 1;
+      return newValue;
+    });
+  }
+  //the code above also is correct when origBlock uses values with different idx
+
+  //the idea is that at this moment block.values is always correct, and has been expanded.
+  if (origBlock.subidx && block.values) {
+    var newBlock = {};
+    $.extend(newBlock, origBlock, block.values[origBlock.subidx - 1]); //added origBlock, to keep $mountPoint
+    newBlock.values = undefined;
+    //if block.subidx exists then don't look at block.values anymore!
+    block = newBlock;
+  }
+
+  //Now handle all cases when value has been defined.
+  //protoBlock, inluding value, already has been extended into protoBlock.values, so that should be ok.
+  //In case origBlock contains value, and origBlock doesn't contain values, then remove values
+  //because protoBlock may contain values which shall be overruled by origBlock.value
+  if (origBlock.value && !origBlock.values) block.values = undefined;
+
+  var device = Domoticz.getAllDevices(block.idx);
+  block.device = device;
+  if (block.value)
+    block.value = formatTemplateString(block, device, block.value); //there should always be a block.value
+  if (block.title)
+    block.title = formatTemplateString(block, device, block.title, true);
+  block.values = formatBlockValues(block);
+  block.values = selectBlockValues(block);
+  block.$mountPoint.html(''); //it would be better for performance to add all changes at once.
+
+  var blockValues = block.values;
+  if (blockValues)
+    blockValues.forEach(function (blockValue) {
+      createSingleBlock(blockValue, false, true);
+    });
+  else createSingleBlock(block, block.multi_line || block.single_line, false);
+  var postHook = protoBlock.postHook;
+  if (postHook) postHook(block);
+}
+
+function createSingleBlock(block, asMultiLine, hasSubidx) {
+  if (Dashticz.getProperty(block.hidden, block.device)) return;
+  var key = block.key;
+  if (hasSubidx) {
+    key += '_' + block.subidx;
     block.key = key;
-    var html =
-      '<div class="mh transbg block_' +
-      key +
-      ' col-xs-' +
-      (block.width || 4) +
-      '"/>';
-    $div.append(html);
-    block.mountPoint = blockParent.mountPoint; //  +' .block_'+key;
-    block.$mountPoint = $(block.mountPoint);
-    //        block.subidx = index;
-    //        block.blockdef=blocks[blockValue.idx]; //store a reference of the parent blockdef ? should be in parent already ...
-    //        $.extend(block, block.blockdef); //merge all fields
-
-    triggerStatus(block);
-    triggerChange(block);
-
-    block.valueunit = block.value + ' ' + block.unit;
-    block.device = device;
-
-    html = getStatusBlock(block);
-    /*
-                //todo: check next few lines;
-                if (!index) {
-                    if (!$('div.block_' + device['idx']).hasClass('block_' + blockValue.idx)) $('div.block_' + device['idx']).addClass('block_' + blockValue.idx);
-                } else {
-                    if (typeof (allblocks[device['idx']]) !== 'undefined' &&
-                        $('div.block_' + blockValue.idx).length == 0
-                    ) {
-
-                        //sometimes there is a block_IDX_3 and block_IDX_6, but no block_IDX_4, therefor, loop to remove classes
-                        //(e.g. with smart P1 meters, when there's no CounterDeliv value)
-                        var newblock = $('div.block_' + device['idx']).last().clone();
-                        for (var i = 1; i <= 10; i++) {
-                            newblock.removeClass('block_' + device['idx'] + '_' + i);
-                        }
-                        newblock.addClass('block_' + blockValue.idx).insertAfter($('div.block_' + device['idx']).last());
-                    }
-                }
-                $('div.block_' + block.idx).html(html);*/
-    block.$mountPoint
-      .find('.block_' + key)
-      .html(html)
-      .addClass(block.addClass);
-  });
-}
-
-function getGeneralKwhBlock(block) {
-  var device = block.device;
-  var idx = device.idx;
-  this.html = '';
-  var blockValues = [
-    {
-      icon: 'fas fa-fire',
-      idx: idx,
-      subidx: 1,
-      title: block.title + ' ' + language.energy.energy_now,
-      value: number_format(device['Usage'], settings['units'].decimals.watt),
-      unit: settings['units'].names.watt,
-    },
-    {
-      icon: 'fas fa-fire',
-      idx: idx,
-      subidx: 2,
-      title: block.title + ' ' + language.energy.energy_today,
-      value: number_format(
-        device['CounterToday'],
-        settings['units'].decimals.kwh
-      ),
-      unit: settings['units'].names.kwh,
-    },
-    {
-      icon: 'fas fa-fire',
-      idx: idx,
-      subidx: 3,
-      title: block.title + ' ' + language.energy.energy_total,
-      value: number_format(device['Data'], 2),
-      unit: settings['units'].names.kwh,
-    },
-  ];
-  createBlocks(block, blockValues);
-  return ['', false];
-}
-
-function getHumBlock(block) {
-  var device = block.device;
-  var idx = device.idx;
-  this.html = '';
-  var blockValues = [
-    {
-      icon: 'wi wi-humidity',
-      idx: idx,
-      title: block.title,
-      value: number_format(device['Humidity'], 0),
-      unit: '%',
-    },
-  ];
-  createBlocks(block, blockValues);
-  return ['', false];
-}
-
-function getTempHumBarBlock(block) {
-  var device = block.device;
-  var idx = device.idx;
-  this.html = '';
-  var single_block =
-    typeof blocks[idx] !== 'undefined' &&
-    typeof blocks[idx]['single_block'] !== 'undefined' &&
-    blocks[idx]['single_block'];
-
-  var blockValues = [
-    {
-      icon: 'fas fa-thermometer-half',
-      idx: idx,
-      subidx: 1,
-      title: block.title,
-      value: number_format(
-        typeof device['Temp'] !== 'undefined' ? device['Temp'] : device['Data'],
-        1
-      ),
-      unit: _TEMP_SYMBOL,
-    },
-  ];
-  if (typeof device['Humidity'] !== 'undefined') {
-    if (single_block) {
-      blockValues[0].value +=
-        ' ' +
-        blockValues[0].unit +
-        ' / ' +
-        number_format(device['Humidity'], 0) +
-        ' %';
-      blockValues[0].unit = '';
-    } else {
-      blockValues.push({
-        icon: 'wi wi-humidity',
-        idx: idx,
-        subidx: 2,
-        title: block.title,
-        value: number_format(device['Humidity'], 0),
-        unit: '%',
-      });
-    }
+    $.extend(block, blocks[key]);
   }
-  if (typeof device['Barometer'] !== 'undefined') {
-    if (single_block) {
-      blockValues[0].value += ' / ' + device['Barometer'] + ' hPa';
-    } else {
-      blockValues.push({
-        icon: 'wi wi-barometer',
-        idx: idx,
-        subidx: 3,
-        title: block.title,
-        value: device['Barometer'],
-        unit: 'hPa',
-      });
-    }
-  }
-  if (typeof device['DewPoint'] !== 'undefined') {
-    if (single_block) {
-      blockValues[0].value +=
-        ' / ' + number_format(device['DewPoint'], 1) + ' °';
-    } else {
-      blockValues.push({
-        icon: 'wi wi-fog',
-        idx: idx,
-        subidx: 4,
-        title: block.title,
-        value: number_format(device['DewPoint'], 1),
-        unit: _TEMP_SYMBOL,
-      });
-    }
-  }
-  createBlocks(block, blockValues);
-  return ['', false];
+  var multiline = asMultiLine ? ' multiline' : '';
+  var html =
+    '<div data-id="' +
+    key +
+    '" class="mh transbg dt_block block_' +
+    key +
+    multiline +
+    ' col-xs-' +
+    (block.width || 4) +
+    '"/>';
+  block.$mountPoint.append(html);
+
+  triggerStatus(block);
+  triggerChange(block);
+
+  html = getStatusBlock(block);
+
+  block.$mountPoint
+    .find('[data-id="' + key + '"]')
+    .html(html)
+    .addClass(block.addClass)
+    .addClass(block.defaultAddClass);
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -1689,7 +1309,6 @@ function loadMaps(b, map) {
 
 // eslint-disable-next-line no-unused-vars
 function getAllDevicesHandler(value) {
-  //    debugger;
   //    console.log('alldevices update');
   alldevices = Domoticz.getAllDevices();
   $('.solar').remove();
@@ -1831,7 +1450,7 @@ function getSecurityBlock(block) {
     armaway =
       '<i class="fas fa-home" title="' +
       language.switches.state_armaway +
-      '"></i><i class="fa fa-walking"></i>';
+      '"></i><i class="fas fa-person-walking"></i>';
   }
   if (device['Status'] === 'Normal') {
     da = 'warning';
@@ -1882,7 +1501,7 @@ function getSecurityBlock(block) {
     html += '</div>';
     html += '</div>';
   }
-  return [html, true];
+  return html;
 }
 
 function getProtectedSecurityBlock(block) {
@@ -1906,11 +1525,160 @@ function getProtectedSecurityBlock(block) {
   };
   secBlock.value = block.device.Status;
   $.extend(secBlock, block);
-  return [getStatusBlock(secBlock), true];
+  // deviceUpdateHandler's auto-derived title (device.Name) is defined
+  // non-enumerable so it never gets serialized into CONFIG.js - but that
+  // also means $.extend()/for...in above silently drop it, leaving the
+  // title blank whenever the device has no explicit title of its own.
+  secBlock.title = getBlockTitle(block);
+  return getStatusBlock(secBlock);
 }
 
 function getBlockTitle(block) {
-  return choose(block.title, block.device && block.device.Name);
+  return choose(
+    block.title,
+    block.protoBlock && block.protoBlock.title,
+    block.device && block.device.Name
+  );
 }
 
+function getMediaPlayer(block) {
+  var html = '';
+  var device = block.device;
+  if (device['HardwareType'] == 'Kodi Media Server')
+    html += iconORimage(block, '', 'kodi.png', 'on icon', '', 2);
+  else html += iconORimage(block, 'fas fa-film', '', 'on icon', '', 2);
+  html += '<div class="col-xs-10 col-data">';
+  html += '<strong class="title">' + block.title + '</strong><br />';
+  if (device['Data'] === '') {
+    device['Data'] = language.misc.mediaplayer_nothing_playing;
+    if (settings['hide_mediaplayer'] == 1) $('div.block_' + block.key).hide();
+  } else {
+    $('div.block_' + block.key).show();
+  }
+  html += '<span class="value h4">' + device['Data'] + '</span>';
+  return html;
+}
+
+function getSelectorSwitch(block) {
+  var device = block.device;
+  var html = '';
+  var nameValues;
+  if (
+    typeof device['LevelActions'] !== 'undefined' &&
+    device['LevelNames'] !== ''
+  ) {
+    var names = Domoticz.info.levelNamesEncoded
+      ? b64_to_utf8(device['LevelNames'])
+      : device['LevelNames'];
+
+    nameValues = names.split('|').map(function (name, idx) {
+      return {
+        name: name,
+        value: idx,
+      };
+    });
+
+    if (block.sortOrder) {
+      nameValues.sort(function (a, b) {
+        return a.name.localeCompare(b.name) * block.sortOrder;
+      });
+    }
+
+    if (device['Status'] === 'Off')
+      html += iconORimage(
+        block,
+        'far fa-lightbulb',
+        block.image,
+        getIconStatusClass(device['Status']) + ' icon'
+      );
+    else
+      html += iconORimage(
+        block,
+        'fas fa-lightbulb',
+        block.image,
+        getIconStatusClass(device['Status']) + ' icon'
+      );
+
+    if (
+      typeof device['SelectorStyle'] !== 'undefined' &&
+      device['SelectorStyle'] == 1
+    ) {
+      html += '<div class="col-xs-8 col-data">';
+      if (!hideTitle(block))
+        html += '<strong class="title">' + block.title + '</strong><br />';
+      html += '<select>';
+      html += '<option value="">' + language.misc.select + '</option>';
+      for (var idx in nameValues) {
+        var nv = nameValues[idx];
+        if (
+          parseFloat(nv.value) > 0 ||
+          (nv.value == 0 &&
+            (typeof device['LevelOffHidden'] == 'undefined' ||
+              device['LevelOffHidden'] === false))
+        ) {
+          var s = '';
+          if (nv.value * 10 == parseFloat(device['Level'])) s = 'selected';
+          html +=
+            '<option value="' +
+            nv.value * 10 +
+            '" ' +
+            s +
+            '>' +
+            nv.name +
+            '</option>';
+        }
+      }
+      html += '</select>';
+      html += '</div>';
+      block.$mountPoint
+        .find('.mh')
+        .off('change')
+        .on('change', 'select', function () {
+          slideDevice(block, $(this).val());
+        });
+    } else {
+      html += '<div class="col-xs-8 col-data">';
+      if (!hideTitle(block))
+        html += '<strong class="title">' + block.title + '</strong><br />';
+      html += '<div class="btn-group selector-buttons" data-toggle="buttons">';
+      for (idx in nameValues) {
+        nv = nameValues[idx];
+        if (
+          parseFloat(nv.value) > 0 ||
+          (nv.value == 0 &&
+            (typeof device['LevelOffHidden'] == 'undefined' ||
+              device['LevelOffHidden'] === false))
+        ) {
+          var st = '';
+          if (nv.value * 10 == parseFloat(device['Level'])) st = 'active';
+          var checked = st ? ' checked' : '';
+          html += '<label class="btn btn-default ' + st + '">';
+          html +=
+            '<input type="radio" name="options" autocomplete="off" value="' +
+            nv.value * 10 +
+            '"' +
+            checked +
+            '>' +
+            nv.name;
+          html += '</label>';
+        }
+      }
+      html += '</div>';
+      html += '</div>';
+      block.$mountPoint
+        .find('.mh')
+        .off('click', '.btn-group')
+        .off('change.selectorButtons', '.btn-group input[type="radio"]')
+        .on(
+          'change.selectorButtons',
+          '.btn-group input[type="radio"]',
+          function () {
+            var value = $(this).val();
+            slideDevice(block, value);
+          }
+        );
+    }
+  }
+  return html;
+}
 //# sourceURL=js/blocks.js

@@ -24,7 +24,9 @@ You can customize the Topbar with the following settings in ``CONFIG.js``::
   * - miniclock
     - Clock in Topbar
   * - settings
-    - Settings & Fullscreen button in Topbar
+    - Device Editor, Visual Layout Editor, Settings & Fullscreen buttons in Topbar
+  * - (screen switcher)
+    - Built into the settings area: square Standby / screen buttons to switch screens; ``+`` adds a screen in Wizard mode.  When ``topbar_use_png_icons`` is enabled they automatically use the bundled ``Standby.png``, ``One.png``, ``Two.png``, ``Three.png``, and ``Four.png`` images unless you configured a custom icon in ``CONFIG.js``.
 
 Applicable config-parameters from ``CONFIG.js``:
 
@@ -38,13 +40,14 @@ Applicable config-parameters from ``CONFIG.js``:
   * - app_title
     - | Name of the Dashboard - Title to show in the :ref:`customtopbar`
       | ``'Dashticz'`` = Show 'Dashticz' in the top bar
-  * - hide_topbar
-    - | 0 / 1
-      | Hide or Show :ref:`customtopbar`
+  * - topbar_timeout
+    - | Number of seconds after which the topbar is automatically hidden (0 = always visible)
+      | The topbar reappears when the mouse moves to the top of the screen.
+      | Example: ``config['topbar_timeout'] = 20;``
 
 Complete example::
 
-    config['hide_topbar'] = 0;
+    config['topbar_timeout'] = 20;
     config['app_title'] = 'Dashticz';
 
     var columns = {}
