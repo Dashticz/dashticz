@@ -917,10 +917,17 @@ function addSlider(block, sliderValues) {
 
     function addTick(value, label) {
       var target = Math.round(value);
+      // .slider-scale (below) is aria-hidden - the jQuery UI slider handle
+      // is the real accessible control (native keyboard/arrow-key support),
+      // these ticks are a click/touch-only shortcut. tabindex="-1" keeps
+      // them out of the tab order so a focused tick is never left stranded
+      // inside an aria-hidden ancestor (browsers warn on exactly that,
+      // since aria-hidden only hides from assistive tech, not from Tab).
       var $tick = $('<button type="button" class="slider-tick"></button>')
         .css('bottom', percentFromBottom(value) + '%')
         .append('<span>' + label + '%</span>')
-        .attr('aria-label', label + '%');
+        .attr('aria-label', label + '%')
+        .attr('tabindex', '-1');
       if (!sliderValues.disabled) {
         // Setting the jQuery UI value option itself triggers the slider's
         // own "change" callback below (with a null event) - that already
