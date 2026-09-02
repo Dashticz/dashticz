@@ -188,7 +188,12 @@ test('first-run setup uses its own wizard and removes the legacy browser fallbac
 
   assert.match(source, /localStorage\.removeItem\('dashticz_setup_config'\)/);
   assert.match(source, /source\.trim\(\) === '#EMPTY#'/);
-  assert.match(source, /dataFilter: function \(source\)/);
+  // CONFIG.js is fetched as plain text (not dataType: 'script') and
+  // evaluated explicitly via $.globalEval, since jQuery 4's script
+  // transport loads same-origin scripts via a <script src> tag too, which
+  // never exposes response text to dataFilter - see loadConfig()'s comment.
+  assert.match(source, /dataType: 'text'/);
+  assert.match(source, /\$\.globalEval\(source\)/);
   assert.match(source, /firstRunSetupRequired = true/);
   assert.match(source, /return checkSetupWriteAccess\(\)/);
   assert.match(source, /url: 'js\/checkconfigaccess\.php'/);
@@ -5869,11 +5874,11 @@ test('Bar and Slider show On/Off (not Open/Closed) for Dimmers, and Slider becom
   );
   assert.match(
     switches,
-    /\$mountPoint\.find\('\.btn-blinds-up'\)\.click\(function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'on', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'On' : 'Off'\);/
+    /\$mountPoint\.find\('\.btn-blinds-up'\)\.on\('click', function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'on', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'On' : 'Off'\);/
   );
   assert.match(
     switches,
-    /\$mountPoint\.find\('\.btn-blinds-down'\)\.click\(function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'off', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'Off' : 'On'\);/
+    /\$mountPoint\.find\('\.btn-blinds-down'\)\.on\('click', function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'off', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'Off' : 'On'\);/
   );
 
   // A Dimmer's up/down buttons are a genuine On/Off toggle, not a matched

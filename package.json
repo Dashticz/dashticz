@@ -7,7 +7,7 @@
     "doc": "docs"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^6.7.2",
+    "@fortawesome/fontawesome-free": "^7.3.1",
     "@jaames/iro": "^5.5.2",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.8",
@@ -18,9 +18,10 @@
     "dayjs": "^1.11.23",
     "hammerjs": "^2.0.8",
     "handlebars": "^4.7.9",
-    "ical.js": "^1.5.0",
+    "ical.js": "^2.2.1",
     "ion-sound": "^3.0.7",
-    "jquery": "^3.7.1",
+    "jquery": "^4.0.0",
+    "jquery-migrate": "^4.0.2",
     "jquery-ui-dist": "^1.13.3",
     "jquery-ui-touch-punch": "^0.2.3",
     "js-cookie": "^3.0.8",
@@ -30,31 +31,29 @@
     "skycons-color": "^1.0.0",
     "spectrum-colorpicker": "^1.8.1",
     "spotify-web-api-js": "^1.5.2",
-    "swiper": "^12.2.0"
+    "swiper": "^14.2.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.29.7",
-    "@babel/preset-env": "^7.29.7",
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
     "@playwright/test": "^1.62.1",
-    "@types/node": "^22.14.0",
-    "babel-loader": "^9.2.1",
-    "css-loader": "^7.1.4",
-    "jquery-migrate": "^3.6.0",
+    "@types/node": "^26.4.1",
+    "babel-loader": "^10.1.1",
+    "css-loader": "^7.1.5",
     "mini-css-extract-plugin": "^2.10.2",
     "prettier": "^3.9.6",
     "sass": "1.103.1",
-    "sass-loader": "^16.0.8",
+    "sass-loader": "^17.0.1",
     "terser-webpack-plugin": "^5.6.1",
-    "webpack": "^5.109.2",
-    "webpack-cli": "^6.0.1"
+    "webpack": "^5.110.3",
+    "webpack-cli": "^7.2.3"
   },
   "engines": {
-    "node": ">=18.12.0"
+    "node": "^22.18.0 || >=24.11.0"
   },
   "browserslist": [
     "> 0.25%",
-    "not dead",
-    "ios_saf 9"
+    "not dead"
   ],
   "scripts": {
     "build": "webpack --config build/webpack.config.js --mode production",
