@@ -28,8 +28,8 @@ var DT_train = {
           }
         });
 
-      Dashticz.setEmpty(me, !count)  
-      
+      Dashticz.setEmpty(me, !count);
+
       $(me.mountPoint + ' .dt_state').html(
         count + ' ' + language.misc.notifications_ns
       );

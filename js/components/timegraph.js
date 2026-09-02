@@ -29,6 +29,7 @@ var DT_timegraph = (function () {
     },
 
     defaultCfg: {
+      icon: 'fas fa-chart-line',
       duration: 5 * 60,
       xTicks: 10,
       xLabels: true,
@@ -78,7 +79,7 @@ var DT_timegraph = (function () {
           return newValue;
         });
       }
-      me.block.values.forEach(function (el) {
+      (me.block.values || []).forEach(function (el) {
         if (typeof el === 'object' && el.idx) {
           //              if (!$.inArray(el.idx, me.devices))
           var idx = parseInt(el.idx);
@@ -177,9 +178,13 @@ var DT_timegraph = (function () {
         };
       });
 
-      setInterval(function () {
-        addTick(me);
-      }, 1000);
+      Dashticz.setInterval(
+        me,
+        function () {
+          addTick(me);
+        },
+        1000
+      );
 
       if (me.block.height) {
         me.graphProperties.options.maintainAspectRatio = false;
@@ -208,8 +213,8 @@ var DT_timegraph = (function () {
         typeof data.unit !== 'undefined'
           ? data.unit
           : res.length > 1
-          ? res[1]
-          : '';
+            ? res[1]
+            : '';
       return {
         value: value,
         unit: unit,
@@ -290,12 +295,12 @@ var DT_timegraph = (function () {
     var val = getValueInfo(device, dataset);
     var length = me.chart.data.datasets[setIdx].data.length;
     if (me.datasets[setIdx].tick && length) {
-      me.chart.data.datasets[setIdx].data[length - 1].t = timestamp;
+      me.chart.data.datasets[setIdx].data[length - 1].x = timestamp.valueOf();
       me.chart.data.datasets[setIdx].data[length - 1].y = val.data;
     } else {
       me.chart.data.datasets[setIdx].data.push({
         y: val.data,
-        t: timestamp,
+        x: timestamp.valueOf(),
       });
     }
     me.datasets[setIdx].tick = false;
@@ -316,22 +321,22 @@ var DT_timegraph = (function () {
   function addTick(me) {
     var timestamp = moment();
     var minTime = timestamp - me.duration;
-    me.chart.options.scales.xAxes[0].ticks.max = timestamp;
-    me.chart.options.scales.xAxes[0].ticks.min = minTime;
+    me.chart.options.scales.x.max = timestamp.valueOf();
+    me.chart.options.scales.x.min = minTime.valueOf();
     me.chart.data.datasets.forEach(function (dataset, setIdx) {
       var length = dataset.data.length;
       if (!length) return; //During initialization there might be no data yet
       var data = dataset.data[length - 1];
       if (me.datasets[setIdx].tick) {
-        data.t = timestamp + 10000;
+        data.x = timestamp.valueOf() + 10000;
         //      me.chart.data.labels[me.chart.data.labels.length-1]=timestamp;
       } else {
-        var d = { y: data.y, t: timestamp + 10000 };
+        var d = { y: data.y, x: timestamp.valueOf() + 10000 };
         dataset.data.push(d);
         //      me.chart.data.labels.push(timestamp);
       }
       me.datasets[setIdx].tick = true;
-      while (dataset.data.length > 2 && dataset.data[1].t < minTime) {
+      while (dataset.data.length > 2 && dataset.data[1].x < minTime) {
         dataset.data.shift();
         //      console.log('shifting');
       }

@@ -1,6 +1,7 @@
-.dt_block.weather_0, .dt_block.weather_1 {
+.dt_block.weather_0,
+.dt_block.weather_1 {
   background: rgba(0, 0, 0, 0);
-  padding: 0px !important
+  padding: 0px !important;
 }
 
 .weatherday {
@@ -61,31 +62,31 @@
 .weathercurrent {
   display: flex;
   align-items: center;
-  width: 100%
+  width: 100%;
 }
 
 .weathercurrent > div {
   width: 25%;
-  text-align: center
+  text-align: center;
 }
 
 .weathercurrent .temp {
   font-size: 50%;
-  margin-right: 0.5em
+  margin-right: 0.5em;
 }
 
 .weathercurrent .cityholder {
   font-size: 50%;
   width: 50%;
-  text-align: left
+  text-align: left;
 }
 
 .weathercurrent .description {
-  font-size: 80%
+  font-size: 80%;
 }
 
 .weather_2 .skycon {
-  width: 3em
+  width: 3em;
 }
 
 .weatherdetails {
@@ -94,7 +95,6 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-
 }
 
 .weatherdetails > div {
@@ -103,10 +103,10 @@
   text-align: center;
 }
 
-
-.weather_3, .weather_4 {
+.weather_3,
+.weather_4 {
   display: flex;
-  flex-direction:column;
+  flex-direction: column;
 }
 
 .weatherdetails .forecast {

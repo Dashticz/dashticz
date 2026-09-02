@@ -11,7 +11,8 @@ var DT_alarmmeldingen = {
     rss: 'https://www.alarmeringen.nl/feeds/all.rss',
     filter: '',
     show_lastupdate: true,
-    width: 12,
+    width: 4,
+    height: 160,
     refresh: 180,
     results: 5,
     timeformat: 'ddd D MMM HH:mm',
@@ -30,7 +31,7 @@ var DT_alarmmeldingen = {
       },
       error: function (data) {
         infoMessage(
-          '<font color="red">Alarmeringen.nl feed Error!</font>',
+          '<font color="red">' + language.misc.alert_feed_error + '</font>',
           'RSS feed ' + data.statusText + '. Check rss url.',
           10000
         );
@@ -39,13 +40,20 @@ var DT_alarmmeldingen = {
 
     function dataAlarmInfo(me, data) {
       var alarmobject = me.block;
-      var html = '';
-      var filterArray = [];
-      if (alarmobject.filter.indexOf(',')) {
-        filterArray = alarmobject.filter.split(/, |,/);
-      } else {
-        filterArray.push(alarmobject.filter);
+      var $state = $(me.mountPoint + ' .dt_state').empty();
+      var filterArray = String(alarmobject.filter || '').split(/,\s*/);
+
+      function safeExternalUrl(value) {
+        try {
+          var parsed = new URL(value, window.location.href);
+          return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+            ? parsed.href
+            : '';
+        } catch (error) {
+          return '';
+        }
       }
+
       var aantalMeldingen = 1;
       var maxMeldingen = alarmobject.results;
       $(data)
@@ -61,46 +69,54 @@ var DT_alarmmeldingen = {
             aantalMeldingen - 1 < maxMeldingen
           ) {
             var pubDate = moment(el.find('pubDate').text());
-            html +=
-              '<li><strong>' +
-              pubDate.format(alarmobject.timeformat) +
-              '&nbsp;&nbsp;&nbsp' +
-              '<a href=' +
-              el.find('link').text() +
-              ' onclick="window.open(this.href); return false;" onkeypress="window.open(this.href); return false;">' +
-              el.find('description').text() +
-              '</a>' +
-              '</strong></li>';
+            var $strong = $('<strong>').append(
+              document.createTextNode(
+                pubDate.format(alarmobject.timeformat) + '   '
+              )
+            );
+            var safeLink = safeExternalUrl(el.find('link').text());
+            if (safeLink) {
+              $('<a>')
+                .attr({
+                  href: safeLink,
+                  target: '_blank',
+                  rel: 'noopener noreferrer',
+                })
+                .text(description)
+                .appendTo($strong);
+            } else {
+              $('<span>').text(description).appendTo($strong);
+            }
+            $('<li>').append($strong).appendTo($state);
             aantalMeldingen++;
           }
         });
       var isEmpty = aantalMeldingen < 2;
       Dashticz.setEmpty(me, isEmpty);
       if (isEmpty) {
-        html +=
-          '<li <strong>' +
-          'Geen Actuele Meldingen.....' +
-          '</strong><br />' +
-          '</li>';
+        $('<li>')
+          .append(
+            $('<strong>').text(language.misc.no_alerts || 'No current alerts.')
+          )
+          .appendTo($state);
       }
-      $(me.mountPoint + ' .dt_state').html(html);
 
       if (
         typeof alarmobject.show_lastupdate !== 'undefined' &&
         alarmobject.show_lastupdate == true
       ) {
         var dt = new Date();
-        $(me.mountPoint + ' .dt_state').append(
-          '<em>' +
+        $('<em>')
+          .text(
             language.misc.last_update +
-            ': ' +
-            addZero(dt.getHours()) +
-            ':' +
-            addZero(dt.getMinutes()) +
-            ':' +
-            addZero(dt.getSeconds()) +
-            '</em>'
-        );
+              ': ' +
+              addZero(dt.getHours()) +
+              ':' +
+              addZero(dt.getMinutes()) +
+              ':' +
+              addZero(dt.getSeconds())
+          )
+          .appendTo($state);
       }
     }
 

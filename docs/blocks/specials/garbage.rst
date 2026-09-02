@@ -18,6 +18,12 @@ Next, add the garbage to a column, like::
 
 You can change the colors of the trashcan (and/or the complete line) via the parameters in ``CONFIG.js``.
 
+Independent of that, ``row1_fontsize``/``row1_color`` and ``row2_fontsize``/``row2_color`` let you style the topmost
+(soonest) pickup line differently from the rows below it. These always apply to the first and further rows as they
+are actually rendered (after sorting on date), so row 1 is always the top line. They can be set as block parameters,
+globally via ``CONFIG.js`` (``garbage_row1_fontsize``, ``garbage_row1_color``, ``garbage_row2_fontsize``,
+``garbage_row2_color``), or from the dashboard's Settings menu.
+
 Since Dashticz beta 3.10.3 the default garbage company is ``afvalinfo``. See :ref:`afvalinfo`.
 
 Parameters
@@ -39,6 +45,10 @@ width                     ``1..12``: Width of the block
 hideicon                  ``true / false``: To hide the garbage icon
 use_names                 ``true / false``: shows name of the garbage type
 use_colors                ``true / false``: shows coloring for complete line
+row1_fontsize             Font size (in px) for row 1, the topmost (soonest) pickup line
+row1_color                Text color (hex) for row 1, the topmost (soonest) pickup line
+row2_fontsize             Font size (in px) for row 2 and further
+row2_color                Text color (hex) for row 2 and further
 icon_use_colors           ``true / false``: shows colored or only white trashcan
 title                     Title text
 use_cors_prefix           ``true / false``: use a CORS proxy for getting data from provider. See :ref:`dom_CORS_proxy`

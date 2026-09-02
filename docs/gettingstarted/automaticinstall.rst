@@ -3,43 +3,61 @@
 Automatic install
 =================
 
-.. note :: The installation scripts currently only works on Raspberry (except xbian) and Ubuntu
+Open a terminal in the directory in which you want to install Dashticz. Then
+run the installer:
 
-For the automatic install open a terminal in a folder of choice where Dashticz V3 will get installed::
+.. code-block:: sh
 
-    mkdir dev
-    cd dev
+   bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/master/install.sh)"
 
-Then start the installation script with::
+To install directly into a different directory, pass the target path after
+``--``:
 
-     . <(wget -qO - https://raw.githubusercontent.com/Dashticz/dashticz/beta/scripts/dashticz_install.sh )
+.. code-block:: sh
 
-The script:
+   bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/master/install.sh)" -- --directory /var/www/html/my-dashboard
 
-* asks for a folder where to install Dashticz V3 
-* asks to install the beta or master branch : For now only beta works with the auto install!!
-* Clones the Dashticz V3 repository and selected branch into a new folder
-* Asks for the IP adress of your Domoticz server.
-* Copies CONFIG_DEFAULT.js to CONFIG.js with the correct IP address for Domoticz
+The installer accepts these equivalent directory forms:
 
-Then a Makefile is executed which:
+.. code-block:: sh
 
-* Installs Docker (if not installed yet)
-* Creates a Dashticz V3 container, named dtv3, containing Apache and PHP
-* FInd the first free port, 8082 or higher
-* Starts the container on the first free port
-* Mounts the dashticz folder to the web-root of the container
-* Shows the Dashticz url
+   # Short option
+   bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/master/install.sh)" -- -d /var/www/html/my-dashboard
 
-If you open this url then the default Dashticz dashboard becomes visible.
+   # Option with equals sign
+   bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/master/install.sh)" -- --directory=/var/www/html/my-dashboard
 
-So no more need to configure Apache and/or PHP! It just works out-of-the box.
-You need a few 100 MB free space on your system.
+   # Positional directory
+   bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/master/install.sh)" -- /var/www/html/my-dashboard
 
-The first time the installation may take a while (5 - 15 minutes?): be patient.
+The ``DASHTICZ_INSTALL_DIR`` environment variable can also select the target:
 
-Update from a previous version
-------------------------------
-If the default page is working then you can copy your previous CONFIG.js, custom.css, custom.js from your previous installation to dashticz/custom.
+.. code-block:: sh
 
-Just refresh your browser, and your new dashboard is shown. No need to rebuild the docker container.
+   DASHTICZ_INSTALL_DIR=/var/www/html/my-dashboard \
+     bash -c "$(curl -fsSL https://raw.githubusercontent.com/dashticz/dashticz/master/install.sh)"
+
+Use ``--help`` to show the installer help. An explicit directory argument
+overrides ``DASHTICZ_INSTALL_DIR``. Relative and absolute paths are supported;
+quote a path containing spaces.
+
+The installer:
+
+* installs Git when necessary and supported by the operating system;
+* clones the stable ``master`` branch into the selected directory (``dashticz``
+  by default);
+* creates ``custom/CONFIG.js`` below that directory with the content
+  ``#EMPTY#``;
+* gives ``CONFIG.js`` file mode ``0644``;
+* attempts to give the web-server account write access to ``custom/`` and the
+  Git checkout for browser settings and updates.
+
+The target directory must not exist yet. To update an existing stable
+installation, run:
+
+.. code-block:: sh
+
+   cd dashticz
+   sh update.sh
+
+After installation, edit ``custom/CONFIG.js`` to configure the dashboard.

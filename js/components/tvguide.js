@@ -5,7 +5,7 @@ var allchannels = [];
 var DT_tvguide = {
   name: 'tvguide',
   canHandle: function (block) {
-    return block && block.channels;
+    return block && block.channels && typeof block.xmltvurl === 'undefined';
   },
   defaultCfg: {
     icon: 'fas fa-tv',
@@ -80,7 +80,7 @@ var DT_tvguide = {
             });
             tvobject.html(newObject);
 
-            tvobject.off(); 
+            tvobject.off();
             //Install clickhandlers
             if (tvObj.url)
               tvobject.on('click', function () {
@@ -91,7 +91,7 @@ var DT_tvguide = {
                 DT_function.clickHandler(me, {
                   url: 'https://tvgids.nl/programma/' + $(this).data('id'),
                 });
-            });
+              });
           });
       });
 

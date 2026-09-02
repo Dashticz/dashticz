@@ -1,4 +1,4 @@
-/* global  Dashticz language _CORS_PATH*/
+/* global  Dashticz language settings _CORS_PATH*/
 var DT_trafficinfo = {
   name: 'trafficinfo',
   canHandle: function (block) {
@@ -7,7 +7,8 @@ var DT_trafficinfo = {
   defaultCfg: function (block) {
     if (block && block.refresh && parseFloat(block.refresh) < 60)
       block.refresh = 60;
-    var showempty = (block && block.showemptyroads) ? false : 'No traffic announcements';
+    var noTraffic = language.misc.no_traffic || 'No traffic announcements';
+    var showempty = block && block.showemptyroads ? false : noTraffic;
     return {
       icon: 'fas fa-car',
       containerClass: 'trafficinforow',
@@ -16,26 +17,37 @@ var DT_trafficinfo = {
       newwindow: 1,
       clickHandler: true,
       provider: 'anwb',
+      apikey: settings.anwb_apikey || '',
       results: 50,
       showempty: showempty,
       showemptyroads: false,
       trafficJams: true,
       roadWorks: true,
-      radars: true
+      radars: true,
+      width: 4,
+      height: 260,
     };
   },
   defaultContent: language.misc.loading,
   refresh: function (me) {
+    if (!me.block.apikey) {
+      me.$mountPoint
+        .find('.dt_state')
+        .text(
+          language.misc.traffic_api_missing || 'ANWB API key is not configured.'
+        );
+      return;
+    }
     var dataURL =
       _CORS_PATH +
-      'https://api.anwb.nl/v2/incidents?apikey=QYUEE3fEcFD7SGMJ6E7QBCMzdQGqRkAi';
+      'https://api.anwb.nl/v2/incidents?apikey=' +
+      encodeURIComponent(me.block.apikey);
 
     $.getJSON(dataURL, function (data) {
       dataTrafficInfo(me, data);
     });
 
     function dataTrafficInfo(me, data) {
-
       var trafficobject = me.block;
       var dataPart = {};
       var i = 0;
@@ -50,10 +62,16 @@ var DT_trafficinfo = {
         }
         roadArray.sort();
         if (trafficobject.showemptyroads) {
-          var showempty = typeof trafficobject.showemptyroads === 'string' ? trafficobject.showemptyroads : 'Geen verkeersinformatie';
+          var showempty =
+            typeof trafficobject.showemptyroads === 'string'
+              ? trafficobject.showemptyroads
+              : language.misc.no_traffic || 'No traffic announcements';
           for (var x = 0; x < roadArray.length; x++) {
             key = roadArray[x];
-            var html = '<div><b class="title">' + key + '</b><br>' +
+            var html =
+              '<div><b class="title">' +
+              key +
+              '</b><br>' +
               showempty +
               '<br></div>';
             dataPart[key] = [html];
@@ -67,7 +85,7 @@ var DT_trafficinfo = {
             key = roadId;
             if (
               typeof trafficobject.road == 'undefined' ||
-              (roadArray.indexOf(roadId) > -1)
+              roadArray.indexOf(roadId) > -1
             ) {
               var segments = data[d][t]['segments'];
               var header = '';
@@ -84,7 +102,7 @@ var DT_trafficinfo = {
                         (typeof trafficobject.segStart == 'undefined' ||
                           (typeof trafficobject.segStart != 'undefined' &&
                             segments[segment]['start'] ==
-                            trafficobject.segStart)) &&
+                              trafficobject.segStart)) &&
                         (typeof trafficobject.segEnd == 'undefined' ||
                           (typeof trafficobject.segEnd != 'undefined' &&
                             segments[segment]['end'] == trafficobject.segEnd))
@@ -103,19 +121,15 @@ var DT_trafficinfo = {
                         //}
                         if (segments[segment][seg][s]['from'] != null) {
                           dataPart[key][i] +=
-                            '<b>' +
-                            segments[segment][seg][s]['from'] +
-                            '</b>';
+                            '<b>' + segments[segment][seg][s]['from'] + '</b>';
                         }
                         if (
                           segments[segment][seg][s]['to'] != null &&
                           segments[segment][seg][s]['to'] !=
-                          segments[segment][seg][s]['from']
+                            segments[segment][seg][s]['from']
                         ) {
                           dataPart[key][i] +=
-                            '<b> - ' +
-                            segments[segment][seg][s]['to'] +
-                            '</b>';
+                            '<b> - ' + segments[segment][seg][s]['to'] + '</b>';
                         }
                         if (
                           segments[segment][seg][s]['from'] != null ||
@@ -125,8 +139,7 @@ var DT_trafficinfo = {
                         }
                         if (segments[segment][seg][s]['delay'] != null) {
                           var delay = segments[segment][seg][s]['delay'] / 60;
-                          dataPart[key][i] +=
-                            '+ ' + Math.round(delay) + 'min';
+                          dataPart[key][i] += '+ ' + Math.round(delay) + 'min';
                         }
                         if (segments[segment][seg][s]['distance'] != null) {
                           var distance =
@@ -178,7 +191,6 @@ var DT_trafficinfo = {
             }
           }
         }
-
       }
       $(me.mountPoint + ' .dt_state').html('');
       var c = 1;
@@ -192,8 +204,13 @@ var DT_trafficinfo = {
       });
 
       if (noData && me.block.showempty) {
-        var emptyblock = typeof me.block.showempty === 'string' ? me.block.showempty : 'No traffic announcements';
-        $(me.mountPoint + ' .dt_state').append('<div class="empty">' + emptyblock + '</div>');
+        var emptyblock =
+          typeof me.block.showempty === 'string'
+            ? me.block.showempty
+            : language.misc.no_traffic || 'No traffic announcements';
+        $(me.mountPoint + ' .dt_state').append(
+          '<div class="empty">' + emptyblock + '</div>'
+        );
       }
 
       Dashticz.setEmpty(me, noData);
@@ -205,14 +222,14 @@ var DT_trafficinfo = {
         var dt = new Date();
         $(me.mountPoint + ' .dt_state').append(
           '<em>' +
-          language.misc.last_update +
-          ': ' +
-          addZero(dt.getHours()) +
-          ':' +
-          addZero(dt.getMinutes()) +
-          ':' +
-          addZero(dt.getSeconds()) +
-          '</em>'
+            language.misc.last_update +
+            ': ' +
+            addZero(dt.getHours()) +
+            ':' +
+            addZero(dt.getMinutes()) +
+            ':' +
+            addZero(dt.getSeconds()) +
+            '</em>'
         );
       }
     }
