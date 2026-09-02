@@ -6,6 +6,18 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v3.45.14 beta (2-9-2026)
+------------------------
+
+* **Code**
+
+- Updated ``browserslist`` (4.28.5 to 4.28.8) and its transitive data
+  packages (``caniuse-lite``, ``electron-to-chromium``,
+  ``node-releases``, ``baseline-browser-mapping``,
+  ``update-browserslist-db``) to their latest releases, matching the
+  equivalent Dependabot proposal. Only ``package-lock.json`` changed;
+  no direct dependency ranges in ``package.json`` were affected.
+
 v3.45.13 beta (30-8-2026)
 -------------------------
 
