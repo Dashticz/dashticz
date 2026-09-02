@@ -37,7 +37,7 @@
     "@babel/preset-env": "^7.29.7",
     "@playwright/test": "^1.62.1",
     "@types/node": "^26.4.1",
-    "babel-loader": "^9.2.1",
+    "babel-loader": "^10.1.1",
     "css-loader": "^7.1.5",
     "jquery-migrate": "^3.6.0",
     "mini-css-extract-plugin": "^2.10.2",
