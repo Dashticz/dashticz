@@ -1,21 +1,59 @@
 <?php
-$config=file_get_contents('../custom/CONFIG.js');
-list($before,$conf) = explode('var config = {}',$config);
-$rows = explode("\n",$conf);
-foreach($rows as $r => $row){
-	if(substr($row,0,17)!='config[\'garbage\']') {
-		if(substr($row,0,6)=='config' || substr($row,0,8)=='//config'){
-			unset($rows[$r]);
-		}
-	}
+require_once(__DIR__ . '/../vendor/dashticz/security.php');
+require_once(__DIR__ . '/configwriter.php');
+
+dashticz_require_same_origin();
+dashticz_require_csrf();
+
+if (!isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
+    dashticz_json_error(405, 'Only POST requests are allowed.');
 }
 
-$newconf="var config = {}\n";
-foreach($_POST as $n => $v){
-//	if(intval($v)==1) $newconf.= "config['".$n."'] = ".$v.";\n";
-//	else $newconf.= "config['".$n."'] = '".$v."';\n";
-	$newconf.="config['".$n."'] = ".$v.";\n";
+$customDir = __DIR__ . '/../custom';
+list($configPath, $cfgFile) = configwriter_resolve_config_path($customDir);
+$submittedSettings = [];
+foreach ($_POST as $name => $serializedValue) {
+    if (!preg_match('/^[A-Za-z0-9_]+$/', $name)) {
+        dashticz_json_error(400, 'Invalid setting name.');
+    }
+
+    $value = json_decode($serializedValue, true);
+    if (json_last_error() !== JSON_ERROR_NONE || is_array($value) || is_object($value)) {
+        dashticz_json_error(400, 'Invalid value for setting ' . $name . '.');
+    }
+
+    $submittedSettings[$name] = $value;
 }
-$config=file_put_contents('../custom/CONFIG.js',$before.$newconf.implode("\n",$rows));
-exit();
-?>
+
+list($config, $readError) = configwriter_read_config($configPath);
+if ($readError !== null) {
+    dashticz_json_error(500, $readError);
+}
+if (strpos($config, 'var config = {}') === false) {
+    dashticz_json_error(409, $cfgFile . ' does not contain the expected config marker.');
+}
+// Changing the dashboard-wide gridColumns/rowHeight default is a deliberate
+// signal that every grid screen should follow it - clear any per-screen
+// override for that same property so the new default actually reaches
+// screens that already had their own value pinned (see
+// configwriter_remove_grid_default_overrides()).
+foreach (['gridColumns', 'rowHeight'] as $gridDefaultProperty) {
+    if (array_key_exists($gridDefaultProperty, $submittedSettings)) {
+        $config = configwriter_remove_grid_default_overrides(
+            $config,
+            $gridDefaultProperty
+        );
+    }
+}
+$config = configwriter_upsert_root_config_settings(
+    $config,
+    $submittedSettings,
+    false
+);
+$writeError = configwriter_write_config($configPath, $customDir, $config);
+if ($writeError !== null) {
+    dashticz_json_error(500, $writeError);
+}
+
+header('Content-Type: application/json');
+echo json_encode(array('success' => true));

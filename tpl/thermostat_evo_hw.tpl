@@ -7,8 +7,8 @@
     </div>
 </div>
 <div class="col-xs-2 col-icon">
-    <img src="img/{{mImage}}" class="on icon iconheating">
-    <em class="{{mIcon}} on icon iconheating"></em>
+    {{#if mImage}}<img src="img/{{mImage}}" class="on icon iconheating">{{/if}}
+    {{#if mIcon}}<em class="{{mIcon}} on icon iconheating"></em>{{/if}}
 </div>
 <div class="col-xs-8 col-data right1col">
     <div class="title">{{name}}</div>

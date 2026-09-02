@@ -29,11 +29,13 @@
 {{/inline}}
 
 <div class="dial {{size}} {{#if fixed}}fixed{{/if}} {{active}} {{addclass}} {{deviceStatus}}" style="font-size: {{fontsize}}px;--dial-color: {{rgba}};">
-    <div class="slice {{#if split}}{{slice}}{{/if}} primary {{class}}">
-        <div class="bar"></div>
-        <div class="fill"></div>
+    <div class="dial-ring-clip">
+        <div class="slice {{#if split}}{{slice}}{{/if}} primary {{class}}">
+            <div class="bar"></div>
+            <div class="fill"></div>
+        </div>
     </div>
-    <div class="dial-container">         
+    <div class="dial-container">
         <div id="face{{id}}" class="dial-face">
             <div class="dial-numbers">
                 {{#if numbers}}       
@@ -44,8 +46,10 @@
             </div>
         </div>        
         {{#unless fixed}}
-        <div class="draggable">
-            <div class="dial-needle" style="--dial-color: {{color}};--needle-length: {{needleL}}px;--needle-width: {{needleW}}px;"></div>
+        <div class="dial-needle-clip">
+            <div class="draggable">
+                <div class="dial-needle" style="--dial-color: {{color}};--needle-length: {{needleL}}px;--needle-width: {{needleW}}px;"></div>
+            </div>
         </div>
         {{/unless}}
         <div id="{{id}}" class="dial-center {{on}}" style="--dial-rgba: {{rgba}};">

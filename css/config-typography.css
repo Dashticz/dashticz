@@ -1,0 +1,351 @@
+/* ========================================================================== 
+   Configuration / editor UI typography
+   ========================================================================== 
+   Centralized typography for Dashticz's configuration and editor dialogs
+   (Settings, Device Config, Widget Config, Screen/Layout Editor, and every
+   Add Device/Widget/Group/HTML/iFrame dialog). This file is intentionally
+   separate from css/creative.css and is loaded by js/main.js immediately
+   after creative.css so narrowly-scoped compatibility rules can correct the
+   base stylesheet without changing theme-specific styling loaded afterwards.
+
+   Normal dashboard typography is unaffected except for the dedicated default
+   device-title rule below. It restores the classic 12px title in the default
+   and White themes while keeping device titles independent from both data
+   text and the larger heading/miniclock size. Themes loaded later keep their
+   own .title rule and therefore remain visually unchanged.
+   ========================================================================== */
+
+:root {
+  --font-device-title: 12px;
+  --dt-config-font-family:
+    system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+  --dt-config-font-title: 18px;
+  --dt-config-font-section: 14px;
+  --dt-config-font-body: 14px;
+  --dt-config-font-label: 13px;
+  --dt-config-font-small: 12px;
+}
+
+/* Device rows render their name as a direct .title child of .col-data.
+   :where() keeps this selector at the same specificity as the existing
+   theme .title rules: it wins over creative.css because this file loads
+   afterwards, while Modern Dark/Liquid Glass still win when loaded later. */
+:where(.mh .col-data) > .title {
+  font-size: var(--font-device-title) !important;
+}
+
+/* Every config/editor dialog root. Layout Editor has no modal of its own
+   (it edits the live dashboard in place), so its floating .dle-toolbar is
+   included here alongside the Bootstrap modal popups. */
+:is(
+  #deviceeditorpopup,
+  #de-config-popup,
+  #customdevicepopup,
+  #multidevicepopup,
+  #groupblockpopup,
+  #lmsblockpopup,
+  #htmlblockpopup,
+  #slidebuttonpopup,
+  #widgeteditorpopup,
+  #we-config-popup,
+  #settingspopup,
+  #settingsoutput,
+  #configmodepopup,
+  #configmodewarningpopup,
+  #screeneditoraddpopup,
+  #dt-setup-permission,
+  #dt-setup-wizard,
+  #blocksoutput,
+  .dle-toolbar
+) {
+  font-family: var(--dt-config-font-family);
+  font-size: var(--dt-config-font-body);
+}
+
+/* creative.css explicitly assigns Open Sans to h1-h6. Because an explicit
+   font-family on a heading wins over an inherited font-family, normalize all
+   headings inside the config/editor UI to the central config font-family. */
+:is(
+    #deviceeditorpopup,
+    #de-config-popup,
+    #customdevicepopup,
+    #multidevicepopup,
+    #groupblockpopup,
+    #lmsblockpopup,
+    #htmlblockpopup,
+    #slidebuttonpopup,
+    #widgeteditorpopup,
+    #we-config-popup,
+    #settingspopup,
+    #settingsoutput,
+    #configmodepopup,
+    #configmodewarningpopup,
+    #screeneditoraddpopup,
+    #dt-setup-permission,
+    #dt-setup-wizard,
+    #blocksoutput,
+    .dle-toolbar
+  )
+  :is(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--dt-config-font-family);
+}
+
+/* Modal titles / main panel titles - 18px, the top of the hierarchy. */
+:is(
+    #deviceeditorpopup,
+    #de-config-popup,
+    #customdevicepopup,
+    #multidevicepopup,
+    #groupblockpopup,
+    #lmsblockpopup,
+    #htmlblockpopup,
+    #slidebuttonpopup,
+    #widgeteditorpopup,
+    #we-config-popup,
+    #settingspopup,
+    #settingsoutput,
+    #configmodepopup,
+    #configmodewarningpopup,
+    #screeneditoraddpopup,
+    #dt-setup-permission,
+    #dt-setup-wizard,
+    #blocksoutput
+  )
+  .modal-title {
+  font-family: var(--dt-config-font-family);
+  font-size: var(--dt-config-font-title);
+  font-weight: 600;
+}
+
+/* Section headings (plain h6 section headers with no dedicated class, e.g.
+   the Add Custom Device / Add Multi-Device value sections). Classes that
+   already declare their own font-size (.de-section-title, .settings-*-heading)
+   are left alone below - this only fixes headings that had no explicit size
+   and were otherwise inheriting whatever ambient size (often below 12px). */
+:is(
+    #deviceeditorpopup,
+    #de-config-popup,
+    #customdevicepopup,
+    #multidevicepopup,
+    #groupblockpopup,
+    #lmsblockpopup,
+    #htmlblockpopup,
+    #slidebuttonpopup,
+    #widgeteditorpopup,
+    #we-config-popup,
+    #settingspopup,
+    #settingsoutput,
+    #dt-setup-wizard
+  )
+  h6 {
+  font-family: var(--dt-config-font-family);
+  font-size: var(--dt-config-font-section);
+  font-weight: 600;
+}
+
+/* Field labels - 13px. */
+:is(
+    #deviceeditorpopup,
+    #de-config-popup,
+    #customdevicepopup,
+    #multidevicepopup,
+    #groupblockpopup,
+    #lmsblockpopup,
+    #htmlblockpopup,
+    #slidebuttonpopup,
+    #widgeteditorpopup,
+    #we-config-popup,
+    #settingspopup,
+    #dt-setup-wizard
+  )
+  :is(.form-label, label) {
+  font-size: var(--dt-config-font-label);
+}
+
+/* Help text / descriptions / secondary metadata - 12px floor. Bootstrap's
+   own .form-text/.small default to 0.875em, which - inherited from the
+   dashboard's small global body font-size - can render as low as 9-11px.
+   The selector below is more specific than Bootstrap's bare .form-text/.small
+   (thanks to the id-scoped :is() list), so it wins without needing
+   !important. */
+:is(
+    #deviceeditorpopup,
+    #de-config-popup,
+    #customdevicepopup,
+    #multidevicepopup,
+    #groupblockpopup,
+    #lmsblockpopup,
+    #htmlblockpopup,
+    #slidebuttonpopup,
+    #widgeteditorpopup,
+    #we-config-popup,
+    #settingspopup,
+    #settingsoutput,
+    #configmodepopup,
+    #configmodewarningpopup,
+    #screeneditoraddpopup,
+    #dt-setup-permission,
+    #dt-setup-wizard,
+    #blocksoutput,
+    .dle-toolbar
+  )
+  :is(.form-text, .small, small) {
+  font-size: var(--dt-config-font-small);
+}
+
+/* Inputs/selects - 14px. Bootstrap's un-sized .form-control/.form-select
+   default to 1rem (16px); this normalizes them to the body-text tier.
+   creative.css has a global `select, select option { font-size: 16px
+   !important; }` (for dashboard device selects), which otherwise beats any
+   non-!important override regardless of specificity - !important here is
+   the only way to win against that without touching creative.css.
+
+   `select option` is explicitly included as well so the opened dropdown
+   entries use the same 14px size as the select control itself. */
+:is(
+    #deviceeditorpopup,
+    #de-config-popup,
+    #customdevicepopup,
+    #multidevicepopup,
+    #groupblockpopup,
+    #lmsblockpopup,
+    #htmlblockpopup,
+    #slidebuttonpopup,
+    #widgeteditorpopup,
+    #we-config-popup,
+    #settingspopup,
+    #dt-setup-wizard
+  )
+  :is(.form-control, .form-select, select, select option) {
+  font-size: var(--dt-config-font-body) !important;
+}
+
+/* Buttons: creative.css sizes .btn at a relative 120%, which computed
+   ~13.2px against the dashboard's small global body font-size (the ambient
+   size these dialogs inherited before this stylesheet gave them their own
+   explicit 14px baseline above). Left alone, that same 120% now computes
+   against the new 14px baseline instead and inflates to ~16.8px - along
+   with every footer icon sized as 1em of its parent .btn (see
+   .modal-footer .btn .fas in creative.css). Pinning .btn to the
+   button-label tier (13px, matching the original ~13.2px) keeps both the
+   button text and those icons at their original visual size. */
+:is(
+    #deviceeditorpopup,
+    #de-config-popup,
+    #customdevicepopup,
+    #multidevicepopup,
+    #groupblockpopup,
+    #lmsblockpopup,
+    #htmlblockpopup,
+    #slidebuttonpopup,
+    #widgeteditorpopup,
+    #we-config-popup,
+    #settingspopup,
+    #settingsoutput,
+    #configmodepopup,
+    #configmodewarningpopup,
+    #screeneditoraddpopup,
+    #dt-setup-permission,
+    #dt-setup-wizard,
+    #blocksoutput,
+    .dle-toolbar
+  )
+  .btn {
+  font-family: var(--dt-config-font-family);
+  font-size: var(--dt-config-font-label);
+}
+
+/* --------------------------------------------------------------------------
+   Named overrides for creative.css rules that conflict with the scale above.
+   creative.css itself is not edited - these narrowly-scoped, config-only
+   selectors win the cascade because this stylesheet loads after it.
+   -------------------------------------------------------------------------- */
+
+/* Settings modal: the visible "Dashticz" brand acts as the modal's real
+   title (the actual <h2 class="modal-title"> is visually-hidden), so it
+   belongs in the title tier, not 17px. */
+#settingspopup .settings-brand {
+  font-size: var(--dt-config-font-title);
+}
+
+/* Settings modal: named "-section-heading" but was one step below the
+   14px section-heading tier used everywhere else. */
+#settingspopup .settings-section-heading {
+  font-size: var(--dt-config-font-section);
+}
+
+/* Settings modal: the "Update" button used a relative 1.15rem (~18.4px)
+   size; normalize it to the button-label tier like every other button. */
+#settingspopup .settings-update-btn {
+  font-size: var(--dt-config-font-label);
+}
+
+/* Settings modal: every field label in Settings used 12px while Device/
+   Widget Config field labels use 13px - normalize so labels match across
+   every config dialog. */
+#settingspopup .settings-label {
+  font-size: var(--dt-config-font-label);
+}
+
+/* Device Config: device type badge is metadata, not body text. */
+#deviceeditorpopup .de-device-type,
+#de-config-popup .de-device-type {
+  font-size: var(--dt-config-font-small);
+}
+
+/* Device Config: the per-field mini-label (e.g. under the width input)
+   was below the 12px floor. */
+#deviceeditorpopup .de-device-field label,
+#de-config-popup .de-device-field label {
+  font-size: var(--dt-config-font-label);
+}
+
+/* Device Config: the IDX badge next to the per-device "configure" button
+   used a relative 0.85em; give it an explicit size and, matching the
+   convention already used for .de-device-idx, a monospace face since it
+   displays a technical identifier. */
+#deviceeditorpopup .de-config-idx-label,
+#de-config-popup .de-config-idx-label {
+  font-family: monospace;
+  font-size: var(--dt-config-font-small);
+}
+
+/* Widget Config: per-field label used 11px, below the floor. */
+#widgeteditorpopup .we-field-label,
+#we-config-popup .we-field-label {
+  font-size: var(--dt-config-font-label);
+}
+
+/* Widget Config: each widget-gallery tile used the 18px title size for its
+   name, the same size as the popup's own modal title. Widget names are
+   list/card content, not a panel title, so they move down a tier. */
+#widgeteditorpopup .we-widget-title,
+#we-config-popup .we-widget-title {
+  font-size: var(--dt-config-font-section);
+  font-weight: 600;
+}
+
+/* Layout Editor: block-size badge shown while resizing was below the
+   12px floor. */
+.dle-toolbar .dle-size-label {
+  font-size: var(--dt-config-font-small);
+}
+
+/* Layout Editor: "pending item" status badge was below the 12px floor. */
+.dle-toolbar .dle-pending-badge {
+  font-size: var(--dt-config-font-small);
+}
+
+/* Layout Editor: the toolbar title had no explicit size at all and was
+   inheriting the dashboard's small global body font-size. */
+.dle-toolbar .dle-toolbar-title {
+  font-size: var(--dt-config-font-section);
+}
+
+/* Raw configuration output (Layout Editor's "copy config" textarea) is
+   code, so it gets the monospace exception. */
+#blocksoutput textarea,
+#codeToCopy {
+  font-family: monospace;
+}
