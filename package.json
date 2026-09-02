@@ -7,7 +7,7 @@
     "doc": "docs"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^6.7.2",
+    "@fortawesome/fontawesome-free": "^7.3.1",
     "@jaames/iro": "^5.5.2",
     "@popperjs/core": "^2.11.8",
     "bootstrap": "^5.3.8",
@@ -53,8 +53,7 @@
   },
   "browserslist": [
     "> 0.25%",
-    "not dead",
-    "ios_saf 9"
+    "not dead"
   ],
   "scripts": {
     "build": "webpack --config build/webpack.config.js --mode production",
