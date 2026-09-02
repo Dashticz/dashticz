@@ -50,7 +50,7 @@ function getDefaultSwitchBlock(block) {
         .find('.mh')
         .addClass('hover')
         .off('click')
-        .click(function () {
+        .on('click', function () {
           switchDevice(block, mMode, !!confirmswitch);
         });
   }
@@ -699,13 +699,13 @@ function getBlindsBlock(parentBlock, withPercentageParam) {
   html += '</div>';
 
   $mountPoint.html(html);
-  $mountPoint.find('.plus').click(function () {
+  $mountPoint.find('.plus').on('click', function () {
     switchBlinds(block, asOn ? 'On' : 'Off');
   });
-  $mountPoint.find('.min').click(function () {
+  $mountPoint.find('.min').on('click', function () {
     switchBlinds(block, asOn ? 'Off' : 'On');
   });
-  $mountPoint.find('.btn.stop').click(function () {
+  $mountPoint.find('.btn.stop').on('click', function () {
     switchBlinds(block, 'Stop');
   });
 
@@ -810,15 +810,15 @@ function renderBlindsSliderBlock(
   html += '</div>'; // .blinds-slider-block
 
   $mountPoint.html(html);
-  $mountPoint.find('.btn-blinds-up').click(function () {
+  $mountPoint.find('.btn-blinds-up').on('click', function () {
     if (isDimmer) switchDevice(block, 'on', false);
     else switchBlinds(block, asOn ? 'On' : 'Off');
   });
-  $mountPoint.find('.btn-blinds-down').click(function () {
+  $mountPoint.find('.btn-blinds-down').on('click', function () {
     if (isDimmer) switchDevice(block, 'off', false);
     else switchBlinds(block, asOn ? 'Off' : 'On');
   });
-  $mountPoint.find('.btn-blinds-stop').click(function () {
+  $mountPoint.find('.btn-blinds-stop').on('click', function () {
     switchBlinds(block, 'Stop');
   });
 

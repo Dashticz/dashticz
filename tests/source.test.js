@@ -5874,11 +5874,11 @@ test('Bar and Slider show On/Off (not Open/Closed) for Dimmers, and Slider becom
   );
   assert.match(
     switches,
-    /\$mountPoint\.find\('\.btn-blinds-up'\)\.click\(function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'on', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'On' : 'Off'\);/
+    /\$mountPoint\.find\('\.btn-blinds-up'\)\.on\('click', function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'on', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'On' : 'Off'\);/
   );
   assert.match(
     switches,
-    /\$mountPoint\.find\('\.btn-blinds-down'\)\.click\(function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'off', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'Off' : 'On'\);/
+    /\$mountPoint\.find\('\.btn-blinds-down'\)\.on\('click', function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'off', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'Off' : 'On'\);/
   );
 
   // A Dimmer's up/down buttons are a genuine On/Off toggle, not a matched
