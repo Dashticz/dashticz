@@ -88,6 +88,27 @@ module.exports = {
     fallback: {
       fs: false,
     },
+    alias: {
+      // jquery-ui-dist declares "jquery": ">=1.8.0 <4.0.0" (package.json),
+      // so npm installs its own nested jquery@3.x under
+      // node_modules/jquery-ui-dist/node_modules/jquery even though the
+      // app itself uses jquery@4. jquery-ui.min.js's UMD wrapper never
+      // requires "jquery" directly at runtime - it just references the
+      // free `jQuery` global - but its `typeof define === "function" &&
+      // define.amd ? define(["jquery"], factory) : factory(jQuery)` shape
+      // is still webpack's classic UMD/AMD pattern: webpack's parser
+      // statically resolves the `define(["jquery"], ...)` branch's
+      // "jquery" dependency at build time regardless of which branch runs,
+      // and Node/webpack module resolution finds the nearest node_modules
+      // first - the nested 3.x copy - so jQuery UI ends up registering
+      // .slider()/.draggable()/etc. onto a bundled jquery@3.x instance
+      // nobody else ever sees, instead of the app's real jquery@4 (window.
+      // jQuery), leaving every jQuery UI method silently missing at
+      // runtime. Force every "jquery" resolution in the bundle - explicit
+      // imports and this implicit AMD one alike - to the single top-level
+      // install so there is exactly one jQuery instance.
+      jquery: path.resolve(rootDir, 'node_modules/jquery'),
+    },
   },
   optimization: {
     minimize: true,
