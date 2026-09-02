@@ -22,12 +22,9 @@ Block parameter
       
   * - Parameter
     - Description
-  * - size
-    - | Size of the stationclock in pixels. The default size of the station clock is the column width.
-      | ``200`` The clock will have a width and height of 200 pixels
   * - scale
-    - | Scale factor for the width of the clock. Should be smaller than 1
-      | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%).
+    - | Scale factor applied on top of the clock's automatic fit-to-block size.
+      | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%). Values above ``1`` are still capped to the available block space.
   * - body
     - clock body (Uhrgehäuse)
   * - dial
@@ -148,13 +145,10 @@ Block parameter
     - Description
   * - width
     - | block width
-      | ``1 .. 12``: (default ``12``).  
-  * - size
-    - | Size of the basic clock in pixels. The default size of the basic clock is the column width.
-      | ``200`` The clock will have a width of 200 pixels
+      | ``1 .. 12``: (default ``12``).
   * - scale
-    - | Scale factor for the width of the clock. Should be smaller than 1
-      | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%).
+    - | Scale factor applied on top of the clock's automatic fit-to-block size.
+      | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%). Values above ``1`` are still capped to the available block space.
 
 Flipclock
 -------------
@@ -184,13 +178,10 @@ Block parameter
     - Description
   * - width
     - | block width
-      | ``1 .. 12``: (default ``12``).  
-  * - size
-    - | Size of the flipclock in pixels. The default size of the flip clock is the column width.
-      | ``200`` The clock will have a width of 200 pixels
+      | ``1 .. 12``: (default ``12``).
   * - scale
-    - | Scale factor for the width of the clock. Should be smaller than 1
-      | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%).
+    - | Scale factor applied on top of the clock's automatic fit-to-block size.
+      | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%). Values above ``1`` are still capped to the available block space.
   * - showSeconds
     - | ``true``: (=default) Show seconds
       | ``false``: Hide seconds
@@ -230,13 +221,10 @@ Block parameter
     - Description
   * - width
     - | block width
-      | ``1 .. 12``: (default ``12``).  
-  * - size
-    - | Size of the Hayman clock in pixels. The default size of the Hayman clock is the column width.
-      | ``200`` The clock will have a width of 200 pixels
+      | ``1 .. 12``: (default ``12``).
   * - scale
-    - | Scale factor for the width of the clock. Should be smaller than 1
-      | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%).
+    - | Scale factor applied on top of the clock's automatic fit-to-block size.
+      | ``0.75``: Scales the clock down to 75% (default ``1`` = 100%). Values above ``1`` are still capped to the available block space.
 
 Miniclock
 -------------

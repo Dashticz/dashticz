@@ -1,3 +1,4 @@
-#The docker build doesn't require anything, so just ignore all
+# The docker build doesn't require the source code, but we need the docker config files
 *
+!docker/
 

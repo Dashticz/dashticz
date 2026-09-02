@@ -1,0 +1,180 @@
+name: CI
+
+on:
+  push:
+    branches: [beta, develop, test]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      run_live_integrations:
+        description: Run tests against configured live services
+        required: false
+        default: false
+        type: boolean
+      update_snapshots:
+        description: Regenerate tests/domoticzblock.spec.js's chromium Playwright visual snapshots and print them as base64 in the job log, instead of asserting against the committed ones
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Node ${{ matrix.node }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ${{ fromJSON(github.event_name == 'pull_request' && '[22]' || '[20,22,24]') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: curl
+          coverage: none
+      - run: npm ci
+      - run: npm run format:check
+      - run: npm test
+      - run: npm run build
+
+  php:
+    name: PHP ${{ matrix.php }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ${{ fromJSON(github.event_name == 'pull_request' && '["8.4"]' || '["7.4","8.1","8.2","8.3","8.4","8.5"]') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl
+          coverage: none
+      - run: php --version
+      - run: php -m | grep -qi '^curl$'
+      - run: node --test tests/php-security.test.js
+
+  browsers:
+    name: Playwright ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    needs: quality
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: ${{ fromJSON(github.event_name == 'pull_request' && '["chromium","webkit"]' || '["chromium","firefox","webkit"]') }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: curl
+          coverage: none
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Start PHP test server
+        run: |
+          php -S 127.0.0.1:8082 -t . > php-server.log 2>&1 &
+          for attempt in {1..30}; do
+            curl --fail --silent http://127.0.0.1:8082/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat php-server.log
+          exit 1
+      - if: ${{ !(inputs.update_snapshots && matrix.browser == 'chromium') }}
+        run: npx playwright test --project=${{ matrix.browser }}
+        env:
+          DASHTICZ_TEST_URL: http://127.0.0.1:8082
+          DASHTICZ_BROWSER: ${{ matrix.browser }}
+      - if: ${{ inputs.update_snapshots && matrix.browser == 'chromium' }}
+        run: npx playwright test tests/domoticzblock.spec.js --project=chromium --update-snapshots
+        env:
+          DASHTICZ_TEST_URL: http://127.0.0.1:8082
+          DASHTICZ_BROWSER: chromium
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-${{ matrix.browser }}
+          path: |
+            playwright-report/
+            test-results/
+            php-server.log
+          retention-days: 7
+      - name: Print regenerated snapshots as base64
+        if: ${{ inputs.update_snapshots && matrix.browser == 'chromium' }}
+        run: |
+          for f in tests/domoticzblock.spec.js-snapshots/*.png; do
+            echo "===SNAPSHOT_BASE64_START:$f==="
+            base64 -w0 "$f"
+            echo ""
+            echo "===SNAPSHOT_BASE64_END==="
+          done
+
+  live-integrations:
+    name: Live integrations
+    if: github.event_name == 'workflow_dispatch' && inputs.run_live_integrations
+    runs-on: ubuntu-latest
+    environment: live-integrations
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: curl
+          coverage: none
+      - run: npm ci
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Require at least one configured live integration
+        run: test -n "${DASHTICZ_LIVE_DOMOTICZ_URL}${DASHTICZ_LIVE_LMS_HOST}${DASHTICZ_LIVE_ICAL_URL}"
+        env:
+          DASHTICZ_LIVE_DOMOTICZ_URL: ${{ secrets.DASHTICZ_LIVE_DOMOTICZ_URL }}
+          DASHTICZ_LIVE_LMS_HOST: ${{ secrets.DASHTICZ_LIVE_LMS_HOST }}
+          DASHTICZ_LIVE_ICAL_URL: ${{ secrets.DASHTICZ_LIVE_ICAL_URL }}
+      - name: Start PHP test server
+        run: |
+          php -S 127.0.0.1:8082 -t . > php-server.log 2>&1 &
+          for attempt in {1..30}; do
+            curl --fail --silent http://127.0.0.1:8082/ >/dev/null && exit 0
+            sleep 1
+          done
+          cat php-server.log
+          exit 1
+        env:
+          DASHTICZ_ALLOWED_REMOTE_HOSTS: ${{ secrets.DASHTICZ_ALLOWED_REMOTE_HOSTS }}
+      - run: npm run test:live
+        env:
+          DASHTICZ_TEST_URL: http://127.0.0.1:8082
+          DASHTICZ_BROWSER: chromium
+          DASHTICZ_ALLOWED_REMOTE_HOSTS: ${{ secrets.DASHTICZ_ALLOWED_REMOTE_HOSTS }}
+          DASHTICZ_LIVE_DOMOTICZ_URL: ${{ secrets.DASHTICZ_LIVE_DOMOTICZ_URL }}
+          DASHTICZ_LIVE_DOMOTICZ_USERNAME: ${{ secrets.DASHTICZ_LIVE_DOMOTICZ_USERNAME }}
+          DASHTICZ_LIVE_DOMOTICZ_PASSWORD: ${{ secrets.DASHTICZ_LIVE_DOMOTICZ_PASSWORD }}
+          DASHTICZ_LIVE_LMS_HOST: ${{ secrets.DASHTICZ_LIVE_LMS_HOST }}
+          DASHTICZ_LIVE_LMS_PORT: ${{ secrets.DASHTICZ_LIVE_LMS_PORT }}
+          DASHTICZ_LIVE_LMS_USERNAME: ${{ secrets.DASHTICZ_LIVE_LMS_USERNAME }}
+          DASHTICZ_LIVE_LMS_PASSWORD: ${{ secrets.DASHTICZ_LIVE_LMS_PASSWORD }}
+          DASHTICZ_LIVE_ICAL_URL: ${{ secrets.DASHTICZ_LIVE_ICAL_URL }}

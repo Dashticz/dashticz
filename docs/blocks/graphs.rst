@@ -41,6 +41,23 @@ It's also possible to combine the data from several devices into one graph. In t
       ...
     ]
 
+Using the Widget editor
+-----------------------
+
+In Wizard mode you don't have to hand-write a ``blocks['my_graph'] = {...}`` definition.
+Open the screen's **Add items** menu, choose **Widgets**, and click the **Graph** card
+under "Widgets (multiple per screen)". Fill in the device IDX values to combine (comma-separated),
+an optional title, the graph type (line/bar), legend and group-by options, then Save.
+
+Unlike most widgets in that menu, Graph can be added any number of times per screen -
+every time you click the card a new, independently-configured graph is created (``graph_1``,
+``graph_2``, ...), each editable or removable from the Device Editor's own list afterwards.
+
+The quick-add popup only covers the most commonly used parameters. Anything else documented
+below (custom formulas, per-button styling, zoom, ...) can still be added to a Graph widget's
+instance via the Device Editor's Custom fields section - the field names match the block
+parameters documented on this page.
+
 The following block parameters can be used to configure the graph:
 
 .. list-table:: 

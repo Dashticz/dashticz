@@ -30,21 +30,22 @@ var Debug = (function () {
   };
 
   function init() {
-    var configKeys = Object.keys(config); 
-    var keysWithoutDefault = configKeys.filter(function(key) {
-      return !defaultSettings.hasOwnProperty(key)
+    var configKeys = Object.keys(config);
+    var keysWithoutDefault = configKeys.filter(function (key) {
+      return !defaultSettings.hasOwnProperty(key);
     });
-    if(keysWithoutDefault.length) {
-//      Debug.log('Config settings without default:\n'+JSON.stringify(keysWithoutDefault,null, 2));
-        Debug.log('Config settings without default:\n'+keysWithoutDefault.join(', '));
-    } 
+    if (keysWithoutDefault.length) {
+      //      Debug.log('Config settings without default:\n'+JSON.stringify(keysWithoutDefault,null, 2));
+      Debug.log(
+        'Config settings without default:\n' + keysWithoutDefault.join(', ')
+      );
+    }
     //Find config keys unequal to default setting
-    filteredConfig=configKeys.reduce(function(cfg, key) {
+    filteredConfig = configKeys.reduce(function (cfg, key) {
       var val = config[key];
-      if(val!=defaultSettings[key]) cfg[key] = val;
-        return cfg;
-    },{});
-    
+      if (val != defaultSettings[key]) cfg[key] = val;
+      return cfg;
+    }, {});
 
     $('body').on('click', '.logo', function () {
       $el.modal({
@@ -61,10 +62,10 @@ var Debug = (function () {
       $elbody = $el.find('#debug-items');
       log('init');
       $el.on('show.bs.modal', function () {
-        if(!settings.heartbeat) {
+        if (!settings.heartbeat) {
           logUsage();
         }
-        
+
         visible = true;
         createDebug();
         var obj = $elbody[0];
@@ -75,16 +76,23 @@ var Debug = (function () {
       $el.on('hide.bs.modal', function () {
         visible = false;
       });
-      $el.find('#debug-save').on("click", saveDebug);
+      $el.find('#debug-save').on('click', saveDebug);
       if (settings.heartbeat) startHeartbeat();
     });
   }
 
   function logUsage() {
     Debug.log(
-      (settings.heartbeat? 'heartbeat ' + Number((time() - startTime) / settings.heartbeat)  + ', ': '')+ 
-      'usedJSHeapSize: '+(performance.memory.usedJSHeapSize/1000).toFixed() + 'kB, ' +
-      'DOM element count: '+$('*').length
+      (settings.heartbeat
+        ? 'heartbeat ' +
+          Number((time() - startTime) / settings.heartbeat) +
+          ', '
+        : '') +
+        'usedJSHeapSize: ' +
+        (performance.memory.usedJSHeapSize / 1000).toFixed() +
+        'kB, ' +
+        'DOM element count: ' +
+        $('*').length
     );
   }
 
@@ -93,11 +101,16 @@ var Debug = (function () {
       logUsage();
       var memory = performance.memory;
       var newDate = new Date();
-      addSample(memorySamples, { t: newDate, y: memory.totalJSHeapSize / 1000 });
-      addSample(memoryUsedSamples, { t: newDate, y: memory.usedJSHeapSize / 1000 });
+      addSample(memorySamples, {
+        t: newDate,
+        y: memory.totalJSHeapSize / 1000,
+      });
+      addSample(memoryUsedSamples, {
+        t: newDate,
+        y: memory.usedJSHeapSize / 1000,
+      });
       //$('*').length
       if (visible) memoryGraph.update();
-
     }, settings['heartbeat'] * 1000);
   }
 
@@ -108,17 +121,18 @@ var Debug = (function () {
 
   function limitSize(data, len) {
     if (data.length >= len) {
-      var sampleRate = (data[data.length - 1].t.getTime() - data[0].t.getTime()) / len * 2;
+      var sampleRate =
+        ((data[data.length - 1].t.getTime() - data[0].t.getTime()) / len) * 2;
       var startTime = data[0].t.getTime();
       var i = 0;
       while (i < data.length) {
         var keep = i - 1 == data.length;
-        if (data[i].t.getTime() >= startTime) keep = true
+        if (data[i].t.getTime() >= startTime) keep = true;
         if (!keep) {
           var m1 = i >= 1 ? data[i - 1].y : data[i].y;
           var m2 = i >= 2 ? data[i - 2].y : m1;
-          var p1 = (i <= data.length - 2) ? data[i + 1].y : data[i].y;
-          var p2 = (i <= data.length - 3) ? data[i + 2].y : p1;
+          var p1 = i <= data.length - 2 ? data[i + 1].y : data[i].y;
+          var p2 = i <= data.length - 3 ? data[i + 2].y : p1;
           var myMax = Math.max(m2, m1, p1, p2);
           var myMin = Math.min(m2, m1, p1, p2);
           if (data[i].y > myMax) keep = true;
@@ -127,8 +141,7 @@ var Debug = (function () {
         if (keep) {
           startTime = data[i].t.getTime() + sampleRate;
           i++;
-        }
-        else {
+        } else {
           data.splice(i, 1);
         }
       }
@@ -163,31 +176,31 @@ var Debug = (function () {
             label: 'TotalHeapSize',
             lineTension: 0,
             data: memorySamples,
-            backgroundColor: 'rgba(255,0,0,0.3)'
+            backgroundColor: 'rgba(255,0,0,0.3)',
           },
           {
             label: 'UsedHeapSize',
             lineTension: 0,
             data: memoryUsedSamples,
-            backgroundColor: 'rgba(0,255,0,0.3)'
-          }
-
-        ]
+            backgroundColor: 'rgba(0,255,0,0.3)',
+          },
+        ],
       },
       options: {
         maintainAspectRatio: false,
         scales: {
-          xAxes: [{
-            type: 'time',
-            ticks: {
-              maxTicksLimit: 11
-            }
-          }]
-        }
-      }
-    }
+          xAxes: [
+            {
+              type: 'time',
+              ticks: {
+                maxTicksLimit: 11,
+              },
+            },
+          ],
+        },
+      },
+    };
     memoryGraph = new Chart(chartctx, graphProperties);
-
   }
 
   function renderBlockTab() {
@@ -240,10 +253,9 @@ var Debug = (function () {
     var type = 0;
     var err = new Error('test');
     try {
-      msg = err.stack ? (err.stack.split('\n')[2].slice(7) + ':'):'';
-    }
-    catch(e) {
-     msg='';   
+      msg = err.stack ? err.stack.split('\n')[2].slice(7) + ':' : '';
+    } catch (e) {
+      msg = '';
     }
     if (arguments.length > 1 && typeof arguments[0] === 'number') {
       type = arguments[0];
@@ -263,32 +275,28 @@ var Debug = (function () {
   }
 
   function saveDebug() {
-    // (A) CREATE BLOB OBJECT
     var debugData = {
-      messages: messages.map(function (res) { return res.timestamp.toISOString().slice(11, 23) + ' ' + res.msg + '\n' }),
+      messages: messages.map(function (res) {
+        return res.timestamp.toISOString().slice(11, 23) + ' ' + res.msg + '\n';
+      }),
       config: filteredConfig,
       blocks: blocks,
-    }
-    var debugTxt = JSON.stringify(debugData,null, 2).split('\n').map(function(res) {
-      return res+'\n'
-    });
-    var myBlob = new Blob(debugTxt);
-//    var myBlob = new Blob(messages.map(function (res) { return res.timestamp.toISOString().slice(11, 23) + ' ' + res.msg + '\n' }), { type: "text/plain", filename: 'test.txt' });
-    // (B) FORM DATA
-    var data = new FormData();
-    data.append("upfile", myBlob, "debug." + moment().format('YYYY-MM-DD-HH-mm-ss') + ".txt");
-
-    // (C) AJAX UPLOAD TO SERVER
-    fetch(settings['dashticz_php_path'] + "upload.php", {
-      method: "POST",
-      body: data
-    })
-      .then(function (res) {
-        return res.text();
-      })
-      .then(function(txt) {
-        Debug.log(txt)
+    };
+    var debugTxt = JSON.stringify(debugData, null, 2)
+      .split('\n')
+      .map(function (res) {
+        return res + '\n';
       });
+    var blobUrl = URL.createObjectURL(
+      new Blob(debugTxt, { type: 'text/plain' })
+    );
+    var download = document.createElement('a');
+    download.href = blobUrl;
+    download.download =
+      'debug.' + moment().format('YYYY-MM-DD-HH-mm-ss') + '.txt';
+    document.body.appendChild(download);
+    download.click();
+    download.remove();
+    URL.revokeObjectURL(blobUrl);
   }
-
 })();

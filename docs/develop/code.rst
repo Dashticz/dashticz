@@ -62,6 +62,32 @@ Migration is checked via jquery-migrate plugin, which can be enabled in ``src/in
 
 The spectrum-colorpicker is not fully compatible with jQuery 3. The jquery-migrate plugin generates warnings in the console if the ``jquery-migrate`` plugin is enabled.
 
+Automated checks
+----------------
+
+GitHub Actions runs formatting, unit/source tests and a production build on
+Node.js 20, 22 and 24. The PHP bridge/security suite runs on PHP 7.4 and 8.1
+through 8.5, and Playwright runs the browser suite in Chromium, Firefox and
+WebKit.
+
+Before opening a pull request, run::
+
+    npm ci
+    npm run format:check
+    npm test
+    npm run build
+    npm run test:playwright:all
+
+The production build has enforced JavaScript/CSS asset and entrypoint budgets.
+Optional iCalendar and Spotify libraries are separate runtime chunks, so test
+their relevant blocks whenever their loading code changes.
+
+The ``live-integrations`` GitHub environment can contain protected secrets for
+a real Domoticz instance, Lyrion Music Server and iCalendar URL. Start the CI
+workflow manually and enable its live-integration input to exercise those
+services through the real API/PHP bridges. Normal pushes use deterministic
+fixtures and never contact configured home services.
+
 
 Design
 -------
@@ -228,5 +254,4 @@ Updating documentation
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 If possible update the documentation together with your code changes in the same PR. For updating the documentation see :ref:`documentation`
-
 

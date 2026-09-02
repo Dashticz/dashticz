@@ -21,7 +21,7 @@
 <div class="col-xs-8 col-data {{#buttons}}right1col{{/buttons}}">
     <strong class="title">{{title}}</strong>
     <br />
-    <span class="state">{{value}}</span>
+    <span class="value">{{value}}</span>
     <br />
     {{#if showinfo}}
     <span class="lastupdate">{{lastupdate}}</span>
