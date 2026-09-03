@@ -99,15 +99,15 @@ Parameters
   * - showDescription
     - | Show/hide weather description (only for daily and hourly forecast)
       | ``false``: Hide weather description
-      | ``true``: Show weather description
+      | ``true``: Show weather description (=default)
   * - showWind
     - | Show/hide wind info and wind dial (daily and hourly forecast only)
-      | ``false``: Hide wind info
-      | ``true``: Show wind info (=default)
+      | ``false``: Hide wind info (=default)
+      | ``true``: Show wind info
   * - showGust
     - | Show/hide wind gust info
-      | ``false``: Hide wind gust info
-      | ``true``: Show wind gust info (=default)
+      | ``false``: Hide wind gust info (=default)
+      | ``true``: Show wind gust info
   * - useBeaufort
     - Set to ``true`` to show wind speed in Beaufort instead of m/s
   * - skipFirst
@@ -309,4 +309,3 @@ See https://home.openweathermap.org/subscriptions
 .. image :: img/owm3_limits.jpg
 
 If you want to use OpenWeatherMap One Call API 3.0 set ``provider`` to ``owm3`` in your block definition.
-

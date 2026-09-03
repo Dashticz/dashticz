@@ -10,13 +10,13 @@ var Dashticz = (function () {
     'button',
     'frame',
     'news',
-    'longfonds',
     'traffic',
     'train',
     'publictransport',
     'stationclock',
     'blocktitle',
     'tvguide',
+    'xmltvguide',
     'trafficinfo',
     'alarmmeldingen',
     'secpanel',
@@ -24,7 +24,7 @@ var Dashticz = (function () {
     'coronavirus',
     'camera',
     'nzbget',
-    'garbage',  //place before calendar, to detect company: ical with icalurl as garbage block
+    'garbage', //place before calendar, to detect company: ical with icalurl as garbage block
     'calendar',
     'dial',
     'html',
@@ -39,6 +39,7 @@ var Dashticz = (function () {
     'map',
     'group',
     'waqi',
+    'lms',
   ];
   var components = [];
   var mountedBlocks = {};
@@ -53,42 +54,43 @@ var Dashticz = (function () {
       return $.when.apply(
         $,
         specials.map(function (component) {
-          return DT_function.loadDTScript('js/components/' + component + '.js')
-            .fail(function (jqXHR, textStatus, errorThrown) {
-              console.error(
-                'Error loading: ./js/components/' + component + '.js'
-              );
-              console.error('Error: ', textStatus);
-              return errorThrown;
-            });
+          return DT_function.loadDTScript(
+            'js/components/' + component + '.js'
+          ).fail(function (jqXHR, textStatus, errorThrown) {
+            console.error(
+              'Error loading: ./js/components/' + component + '.js'
+            );
+            console.error('Error: ', textStatus);
+            return errorThrown;
+          });
         })
       );
     });
   }
 
   function initDomoticz() {
-    return DT_function.loadDTScript('js/domoticz-api.js')
-      .then(function () {
-        var cfg = {
-          url: settings.domoticz_ip,
-          plan: settings.room_plan,
-          username: settings.user_name,
-          password: settings.pass_word,
-          client_id: settings.client_id,
-          client_secret: settings.client_secret,
-          enable_websocket: settings['enable_websocket'],
-          domoticz_refresh: settings['domoticz_refresh'],
-          refresh_method: settings['refresh_method'],
-          domoticz_timeout: settings['domoticz_timeout'],
-          use_favorites: settings['use_favorites'],
-          use_hidden: settings['use_hidden']
-        };
-        if(settings.code) {
-          cfg.code=settings.code
-        }
-    
-        return Domoticz.init(cfg);
-      })
+    return DT_function.loadDTScript('js/domoticz-api.js').then(function () {
+      var cfg = {
+        url: settings.domoticz_ip,
+        plan: settings.room_plan,
+        username: settings.user_name,
+        password: settings.pass_word,
+        client_id: settings.client_id,
+        client_secret: settings.client_secret,
+        enable_websocket: settings['enable_websocket'],
+        domoticz_refresh: settings['domoticz_refresh'],
+        refresh_method: settings['refresh_method'],
+        domoticz_timeout: settings['domoticz_timeout'],
+        use_favorites: settings['use_favorites'],
+        use_hidden: settings['use_hidden'],
+        fake_domoticz: settings['fake_domoticz'],
+      };
+      if (settings.code) {
+        cfg.code = settings.code;
+      }
+
+      return Domoticz.init(cfg);
+    });
   }
 
   function _onResize() {
@@ -104,6 +106,7 @@ var Dashticz = (function () {
 
   function renderBlock(me) {
     var $div = me.$mountPoint.find('.dt_block');
+    _applyTextOptions(me);
     var block = $(getSpecialBlock(me));
     if (me.block.containerClass)
       $div.addClass(getProperty(me.block.containerClass, me));
@@ -118,25 +121,26 @@ var Dashticz = (function () {
       .append(getProperty(components[me.name].defaultContent, me));
     $div.html(block);
     var fixedHeight = false;
+    // A grid item's height is already fixed by its grid-row span (--dt-grid-h);
+    // forcing the block's own pixel height on top of that fights the grid and
+    // breaks content that needs to size itself (iframes, camera images,
+    // mobile stacking). Skip it there and let the grid cell govern height.
+    var inGrid = me.$mountPoint.hasClass('dt-grid-item');
     if (me.block.aspectratio) {
       var blockWidth = parseInt($div.outerWidth());
-      $div.css({height:blockWidth * me.block.aspectratio});
+      $div.css({ height: blockWidth * me.block.aspectratio });
+      fixedHeight = true;
+    } else if (me.block.height && !inGrid) {
+      $div.css({ height: me.block.height });
       fixedHeight = true;
     }
-    else if (me.block.height) {
-      $div.css({height: me.block.height})
-      fixedHeight = true;
-    }
-    if(fixedHeight) $div.addClass('fixedheight');
-
+    if (fixedHeight) $div.addClass('fixedheight');
   }
 
   function setEmpty(me, state) {
     var $div = me.$mountPoint.find('.dt_block');
-    if (state)
-      $div.addClass('empty');
-    else
-      $div.removeClass('empty');
+    if (state) $div.addClass('empty');
+    else $div.removeClass('empty');
   }
 
   function addClickHandler(me) {
@@ -150,7 +154,7 @@ var Dashticz = (function () {
     }
     if (clickHandler) {
       $(me.mountPoint + ' .dt_block')
-        .click(function () {
+        .on('click', function () {
           clickHandler(me);
         })
         .addClass('hover');
@@ -158,6 +162,7 @@ var Dashticz = (function () {
   }
 
   function removeBlock(id) {
+    if (!mountedBlocks[id]) return;
     mountedBlocks[id].childs.forEach(function (child) {
       removeBlock(child);
     });
@@ -192,7 +197,6 @@ var Dashticz = (function () {
       var me = createBlock(mountPoint, blockdef, special, key);
       me.$mountPoint = $(mountPoint);
       me.$mountPoint.html(getContainer(me));
-      //            console.log(me);
       renderBlock(me);
       mountedBlocks[me.mountPoint].me = me;
       if (special.run) special.run(me);
@@ -211,6 +215,9 @@ var Dashticz = (function () {
           renderBlock(me);
           special.refresh(me);
         });
+      }
+      if (me.block.styling) {
+        console.log('styling', me.block.styling);
       }
     });
   }
@@ -258,7 +265,13 @@ var Dashticz = (function () {
     var html = '';
     if (icon) {
       html += '<div class="col-icon">';
-      html += '<em class="' + icon + '"></em>';
+      // The 'icon' class (already added to the image branch below) is what
+      // themes' .col-icon .icon sizing rules key off - without it, a block
+      // rendered only through this path (e.g. an HTML block with no
+      // refresh() to later re-render via iconORimage(), which always adds
+      // it) falls back to each theme's unscoped default size instead of
+      // matching every other block's icon.
+      html += '<em class="' + icon + ' icon"></em>';
       html += '</div>';
     }
     var image = me.block.image;
@@ -271,10 +284,19 @@ var Dashticz = (function () {
   }
 
   function renderTitle(me) {
+    if (me.block.hide_title) return '';
     if (me.block.title) {
       var res = '<div class="dt_title">' + me.block.title + '</div>';
       return res;
     } else return '';
+  }
+
+  function _applyTextOptions(me) {
+    if (!me || !me.$mountPoint) return;
+    me.$mountPoint.toggleClass(
+      'dt-hide-title',
+      !!(me.block && me.block.hide_title)
+    );
   }
 
   function renderStateDiv() {
@@ -285,6 +307,47 @@ var Dashticz = (function () {
     //getter functionaly
     if (typeof fn === 'function') return fn(me);
     return fn;
+  }
+
+  function getWidgetTitle(block, special) {
+    if (
+      !special ||
+      (block && typeof block.key === 'string' && !/^widget_/.test(block.key))
+    ) {
+      return null;
+    }
+
+    var titleKeys = {
+      alarmmeldingen: 'alarmmeldingen_title',
+      basicclock: 'clock_title',
+      calendar: 'calendar_title',
+      camera: 'camera_title',
+      flipclock: 'clock_title',
+      garbage: 'garbage_title',
+      haymanclock: 'clock_title',
+      // WAQI reuses the longfonds_title translation key: the widget it
+      // replaced already carried the correct "Air Quality" wording.
+      waqi: 'longfonds_title',
+      map: 'map_title',
+      moon: 'moon_title',
+      news: 'news_title',
+      owmwidget: 'weather_title',
+      publictransport: 'publictransport_title',
+      secpanel: 'secpanel_title',
+      sonarr: 'sonarr_title',
+      spotify: 'spotify_title',
+      stationclock: 'clock_title',
+      trafficinfo: 'trafficinfo_title',
+      weather: 'weather_title',
+      xmltvguide: 'xmltvguide_title',
+    };
+    var translations =
+      typeof language !== 'undefined' &&
+      language &&
+      language.settings &&
+      language.settings.widgeteditor;
+    var titleKey = titleKeys[special.name];
+    return (translations && titleKey && translations[titleKey]) || null;
   }
 
   function getBlockConfig(block, special, key) {
@@ -300,9 +363,40 @@ var Dashticz = (function () {
         cfg.icon = ''; //reset default icon in case image is set
       }
       $.extend(cfg, block);
+      // A separator exposes Icon/Image as one mutually exclusive visual in
+      // Device Config. Older CONFIG.js versions can nevertheless contain
+      // both properties; $.extend() above would restore the explicit icon
+      // after the default-reset and getColIcon() would render both side by
+      // side. For block titles, an image always replaces the icon.
+      if (special && special.name === 'blocktitle' && cfg.image) {
+        cfg.icon = '';
+      }
     }
     if (typeof key !== 'undefined' && key !== '') {
       cfg.key = key;
+    }
+    // Only fall back to the translated default widget title when the block
+    // itself does not define one. Previously this ran unconditionally, so a
+    // custom title saved via the config menu was immediately overwritten by
+    // the generic default on every render (and after every reload).
+    var widgetTitle =
+      block && typeof block.title !== 'undefined'
+        ? null
+        : getWidgetTitle(block, special);
+    if (widgetTitle) {
+      cfg.title = widgetTitle;
+    } else if (
+      special &&
+      special.name === 'garbage' &&
+      (typeof block === 'undefined' || typeof block.title === 'undefined')
+    ) {
+      cfg.title =
+        (typeof language !== 'undefined' &&
+          language &&
+          language.settings &&
+          language.settings.garbage &&
+          language.settings.garbage.title) ||
+        'Garbage';
     }
     return cfg;
   }
@@ -434,8 +528,12 @@ var Dashticz = (function () {
   }
 
   function isMounted(me) {
-    if (me.$mountPoint.length) return true;
-    removeBlock(me);
+    if (
+      me.$mountPoint.length &&
+      $.contains(document.documentElement, me.$mountPoint[0])
+    )
+      return true;
+    removeBlock(me.mountPoint);
     return false;
   }
 
@@ -457,40 +555,44 @@ var Dashticz = (function () {
 
   function _subscribeDevice(me, idx, getCurrent, callback) {
     var unsubscribe = Domoticz.subscribe(idx, getCurrent, function (data) {
-      if (isMounted(me)) callback(data);
+      if (isMounted(me)) {
+        try {
+          callback(data);
+        } catch (error) {
+          console.error('Device update failed for block ' + me.key, error);
+          Debug.log(Debug.ERROR, 'Device update failed for block ' + me.key);
+        }
+      }
     });
     me.callbacks.subscriptionList.push(unsubscribe);
     return unsubscribe;
   }
 
   function isAvailable() {
-      console.log('check domoticzIsAvailable');
-      return $.get({
-        url: window.location.href,
-        type: 'GET',
-        async: true,
-        error: function (jqXHR, textStatus) {
-          if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
-            console.log('Domoticz request cancelled');
-          } else {
-            if (jqXHR.status == 401) {
-              return 'Domoticz authorizaton error';
-            }
-            var errorTxt = 'Domoticz error code: ' + jqXHR.status + ' ' + textStatus;
-            console.error( errorTxt + '!\nPlease, double check the path to Domoticz in Settings!');
-            Debug.log(
-              Debug.ERROR,
-              errorTxt
-            );
+    return $.get({
+      url: window.location.href,
+      type: 'GET',
+      async: true,
+      error: function (jqXHR, textStatus) {
+        if (typeof textStatus !== 'undefined' && textStatus === 'abort') {
+          Debug.log('Domoticz request cancelled');
+        } else {
+          if (jqXHR.status == 401) {
+            return 'Domoticz authorizaton error';
           }
-          console.log('No Domoticz');
-          return textStatus;
-        },
-      }).then(function (res) {
-        //                        console.log('ajax resolved ' + query);
-        console.log('result: ', res);
-        return !!res;
-      });
+          var errorTxt =
+            'Domoticz error code: ' + jqXHR.status + ' ' + textStatus;
+          console.error(
+            errorTxt +
+              '!\nPlease, double check the path to Domoticz in Settings!'
+          );
+          Debug.log(Debug.ERROR, errorTxt);
+        }
+        return textStatus;
+      },
+    }).then(function (res) {
+      return !!res;
+    });
   }
 
   return {
@@ -509,7 +611,8 @@ var Dashticz = (function () {
     removeBlock: removeBlock,
     setEmpty: setEmpty,
     isAvailable: isAvailable,
-    mountedBlocks: mountedBlocks
+    mountedBlocks: mountedBlocks,
+    getProperty: getProperty,
   };
 })();
 
