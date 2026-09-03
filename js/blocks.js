@@ -646,7 +646,7 @@ function getBlockClick(block, selector) {
       $div
         .addClass('hover')
         .off('click')
-        .click(function () {
+        .on('click', function () {
           /*          if (target === '_blank') window.open(block.link);
           else if (target === 'iframe') addBlockClickFrame(block);*/
           DT_function.clickHandler({ block: block });
@@ -659,7 +659,7 @@ function getBlockClick(block, selector) {
       $div
         .addClass('hover')
         .off('click')
-        .click(function () {
+        .on('click', function () {
           /*          if (target === '_blank') window.open(block.link);
           else if (target === 'iframe') addBlockClickFrame(block);*/
           DT_function.clickHandler({ block: block });
@@ -688,7 +688,7 @@ function getBlockClick(block, selector) {
       $div
         .addClass('hover')
         .off('click')
-        .click(function () {
+        .on('click', function () {
           DT_function.clickHandler({ block: block });
         });
     }

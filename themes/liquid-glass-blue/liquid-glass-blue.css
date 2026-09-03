@@ -133,6 +133,29 @@
     var(--panel-shadow) !important;
 }
 
+/* css/creative.css's .hover:hover/.hover.hovered highlight (#259) is a
+   plain, non-!important background+border, so the panel styling above
+   always won and silently hid it on this theme. Override with the same
+   --button-hover tone the theme's own .btn:hover already uses; only
+   background-color is touched so the glass gradient layer stays intact. */
+@media (hover: hover) {
+  html.non-touch .transbg.hover:not(.dial):hover {
+    background-color: var(--button-hover) !important;
+  }
+}
+
+.transbg.hover.hovered:not(.dial) {
+  background-color: var(--button-hover) !important;
+}
+
+/* Same problem as the hover highlight above: css/creative.css's
+   .mh.timeout tint (#257) is a plain, non-!important background-color,
+   so the panel styling above always won and silently hid it on this
+   theme too. Override with the same red tint the default theme uses. */
+.transbg.timeout:not(.dial) {
+  background-color: rgba(255, 0, 0, 0.3) !important;
+}
+
 /* The Bar subtype (#182) is a vertical rectangle, not a face that must
    stay a perfect square/circle - it doesn't share the centering problem
    above (js/components/dial.js's _dialFitSize() measures its content box

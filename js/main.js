@@ -113,8 +113,20 @@ function loadConfig() {
   loadingFilename = _CFG.customfolder + '/' + configjs;
   return $.ajax({
     url: loadingFilename,
-    dataType: 'script',
-    dataFilter: function (source) {
+    // Loaded as plain text and evaluated explicitly (rather than
+    // dataType: 'script') because jQuery 4's script transport now loads
+    // same-origin scripts via a <script src> tag for this same-domain,
+    // non-JSONP, async request too (see jQuery's canUseScriptTag()), which
+    // never exposes response text to dataFilter - the placeholder check
+    // below needs the raw source before it's executed as JavaScript.
+    dataType: 'text',
+    cache: false,
+  }).then(
+    function (source) {
+      var tmp = loadingFilename;
+      loadingFilename = null;
+      if (throwError) return $.Deferred().reject(new Error(throwError));
+
       if (
         source.trim() === '#EMPTY#' &&
         !_PARAMS['cfg'] &&
@@ -124,15 +136,10 @@ function loadConfig() {
         // Treat it exactly like a missing first-run configuration instead.
         window.config = {};
         firstRunSetupRequired = true;
-        return '';
+        return;
       }
-      return source;
-    },
-  }).then(
-    function () {
-      var tmp = loadingFilename;
-      loadingFilename = null;
-      if (throwError) return $.Deferred().reject(new Error(throwError));
+
+      $.globalEval(source);
 
       if (typeof config == 'undefined') {
         return $.Deferred().reject(new Error('Error in ' + tmp));

@@ -278,7 +278,7 @@ function getEvohomeControllerBlock(block) {
     html = template(dataObject);
     $div.html(html);
 
-    $div.find('.evoSelect').blur(function () {
+    $div.find('.evoSelect').on('blur', function () {
       Domoticz.release(block.device.idx);
       $div.find('.title').toggleClass('hide');
       $div.find('.evoSelect').toggleClass('hide');

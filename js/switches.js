@@ -50,7 +50,7 @@ function getDefaultSwitchBlock(block) {
         .find('.mh')
         .addClass('hover')
         .off('click')
-        .click(function () {
+        .on('click', function () {
           switchDevice(block, mMode, !!confirmswitch);
         });
   }
@@ -699,13 +699,13 @@ function getBlindsBlock(parentBlock, withPercentageParam) {
   html += '</div>';
 
   $mountPoint.html(html);
-  $mountPoint.find('.plus').click(function () {
+  $mountPoint.find('.plus').on('click', function () {
     switchBlinds(block, asOn ? 'On' : 'Off');
   });
-  $mountPoint.find('.min').click(function () {
+  $mountPoint.find('.min').on('click', function () {
     switchBlinds(block, asOn ? 'Off' : 'On');
   });
-  $mountPoint.find('.btn.stop').click(function () {
+  $mountPoint.find('.btn.stop').on('click', function () {
     switchBlinds(block, 'Stop');
   });
 
@@ -810,15 +810,15 @@ function renderBlindsSliderBlock(
   html += '</div>'; // .blinds-slider-block
 
   $mountPoint.html(html);
-  $mountPoint.find('.btn-blinds-up').click(function () {
+  $mountPoint.find('.btn-blinds-up').on('click', function () {
     if (isDimmer) switchDevice(block, 'on', false);
     else switchBlinds(block, asOn ? 'On' : 'Off');
   });
-  $mountPoint.find('.btn-blinds-down').click(function () {
+  $mountPoint.find('.btn-blinds-down').on('click', function () {
     if (isDimmer) switchDevice(block, 'off', false);
     else switchBlinds(block, asOn ? 'Off' : 'On');
   });
-  $mountPoint.find('.btn-blinds-stop').click(function () {
+  $mountPoint.find('.btn-blinds-stop').on('click', function () {
     switchBlinds(block, 'Stop');
   });
 
@@ -917,10 +917,17 @@ function addSlider(block, sliderValues) {
 
     function addTick(value, label) {
       var target = Math.round(value);
+      // .slider-scale (below) is aria-hidden - the jQuery UI slider handle
+      // is the real accessible control (native keyboard/arrow-key support),
+      // these ticks are a click/touch-only shortcut. tabindex="-1" keeps
+      // them out of the tab order so a focused tick is never left stranded
+      // inside an aria-hidden ancestor (browsers warn on exactly that,
+      // since aria-hidden only hides from assistive tech, not from Tab).
       var $tick = $('<button type="button" class="slider-tick"></button>')
         .css('bottom', percentFromBottom(value) + '%')
         .append('<span>' + label + '%</span>')
-        .attr('aria-label', label + '%');
+        .attr('aria-label', label + '%')
+        .attr('tabindex', '-1');
       if (!sliderValues.disabled) {
         // Setting the jQuery UI value option itself triggers the slider's
         // own "change" callback below (with a null event) - that already
