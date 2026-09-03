@@ -129,7 +129,7 @@ function curlWeb($url, $options=0) {
 
 }
 
-function curlWebJson($url, $headers=0) {
+function curlWebJson($url, $headers=array()) {
 	return json_decode(curlWeb($url, array( CURLOPT_HTTPHEADER=>$headers)));
 }
 

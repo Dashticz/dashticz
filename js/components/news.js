@@ -4,7 +4,7 @@
 var DT_news = {
   name: 'news',
   canHandle: function (block) {
-    return block && block.feed;
+    return block && (block.type === 'news' || block.feed);
   },
   init: function () {
     return DT_function.loadScript('vendor/jquery.newsTicker.min.js');
@@ -13,6 +13,14 @@ var DT_news = {
     containerClass: 'hover',
     feed: settings['default_news_url'],
     refresh: 300,
+    width: 4,
+    height: 240,
+    // Widget Editor's Icon checkbox is checked by default but has nothing to
+    // fall back to unless the user also types a custom icon value (see
+    // js/widgeteditor.js _buildWidgetPayloadEntry): with no explicit
+    // block.icon, getColIcon() (js/dashticz.js) renders nothing. Other
+    // widgets like weather already ship a default icon for the same reason.
+    icon: 'fas fa-newspaper',
   },
   run: function (me) {
     me.height =
@@ -31,6 +39,22 @@ var DT_news = {
     me.interval = parseFloat(settings['news_scroll_after'] * 1000);
   },
   refresh: function (me) {
+    function safeExternalUrl(value) {
+      try {
+        var parsed = new URL(value, window.location.href);
+        return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+          ? parsed.href
+          : '';
+      } catch (error) {
+        return '';
+      }
+    }
+
+    function plainText(value) {
+      var parsed = new DOMParser().parseFromString(value || '', 'text/html');
+      return parsed.body.textContent || '';
+    }
+
     $.ajax(_CORS_PATH + me.block.feed, {
       accepts: {
         xml: 'application/rss+xml',
@@ -60,12 +84,12 @@ var DT_news = {
             }
             var newsItem = {
               show: me.showImage,
-              image: $(this)
-                .find('media\\:content, content, enclosure')
-                .attr('url'),
+              image: safeExternalUrl(
+                $(this).find('media\\:content, content, enclosure').attr('url')
+              ),
               title: $(this).find('title').text(),
-              link: $(this).find('link').text(),
-              desc: $(this).find('description').text(),
+              link: safeExternalUrl($(this).find('link').text()),
+              desc: plainText($(this).find('description').text()),
               pubd: moment($(this).find('pubDate').text()).format('llll'),
             };
             items.push(newsItem);
@@ -90,10 +114,10 @@ var DT_news = {
               $(document.body).append(template);
             });
           }
-          $(me.mountPoint + ' .headline').on("click", function() {
+          $(me.mountPoint + ' .headline').on('click', function () {
             var url = $(this).data('link');
-            DT_function.clickHandler(me, {url: url})
-          })
+            DT_function.clickHandler(me, { url: url });
+          });
 
           if (me.height) {
             /*set to fixed height*/
@@ -130,7 +154,7 @@ var DT_news = {
       },
       error: function (data) {
         infoMessage(
-          '<font color="red">News Error!</font>',
+          '<font color="red">' + language.misc.news_error + '</font>',
           'RSS feed ' + data.statusText + '. Check rss url.',
           10000
         );

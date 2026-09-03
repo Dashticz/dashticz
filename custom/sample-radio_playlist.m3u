@@ -1,0 +1,21 @@
+#EXTINF:-1 tvg-id="nostalgie" tvg-name="Nostalgie Belgique" tvg-logo="" group-title="Belgique : Nationales FR",BE | Nostalgie Belgique
+http://n23a-eu.rcs.revma.com/5gd04cwptg0uv
+
+#EXTINF:-1 tvg-id="nostalgie_plus" tvg-name="Nostalgie +" tvg-logo="" group-title="Belgique : Nationales FR",BE | Nostalgie +
+http://stream.rcs.revma.com/s9mkgtsqtg0uv
+
+#EXTINF:-1 tvg-id="nrj" tvg-name="NRJ Belgique" tvg-logo="" group-title="Belgique : Nationales FR",BE | NRJ Belgique
+http://n08a-eu.rcs.revma.com/xh00fwuptg0uv
+
+#EXTINF:-1 tvg-id="tipik" tvg-name="Tipik" tvg-logo="" group-title="Belgique : Nationales FR",BE | Tipik
+http://radio.rtbf.be/tipik/aac-128/fl
+
+#EXTINF:-1 tvg-id="qmusic" tvg-name="Q-Music" tvg-logo="" group-title="Belgique : Nationales NL",BE | QMusic
+https://icecast-qmusicbe-cdp.triple-it.nl/qmusic.mp3
+
+#EXTINF:-1 tvg-id="tomorrowland" tvg-name="Tomorrowland One World Radio" tvg-logo="https://myonlineradio.de/public/uploads/radio_img/tomorrowland-one-world-radio/fb_cover.jpg" group-title="Belgique : Nationales NL",BE | Tomorrowland One World Radio
+https://shoutcast2.wirelessantwerpen.be/stadsradio
+
+
+
+

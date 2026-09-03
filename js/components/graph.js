@@ -43,7 +43,7 @@ function Initialize(me) {
     var device = {};
     $.extend(device, Domoticz.getAllDevices(idx)); //Make a copy of the current device data
     if (device.idx) {
-//      device.idx = parseInt(device.idx);
+      //      device.idx = parseInt(device.idx);
       getDeviceDefaults(me, device);
       me.graphDevices.push(device);
     } else {
@@ -242,7 +242,7 @@ function getDeviceDefaults(me, device) {
     case 'Energy':
     case 'kWh':
     case 'YouLess counter':
-      txtUnit = device.SwitchTypeVal==1 ? 'm3':'kWh'; //SwitchTypeVal 0: Electra; 1: Gas
+      txtUnit = device.SwitchTypeVal == 1 ? 'm3' : 'kWh'; //SwitchTypeVal 0: Electra; 1: Gas
       currentValue = device['CounterToday'];
       break;
     case 'Managed Counter':
@@ -325,8 +325,8 @@ function getDeviceDefaults(me, device) {
   currentValue = multidata
     ? device.Data
     : me.block.format && type !== 'text'
-    ? number_format(currentValue, decimals) + ' ' + txtUnit
-    : currentValue;
+      ? number_format(currentValue, decimals) + ' ' + txtUnit
+      : currentValue;
 
   var obj = {
     currentValue: currentValue,
@@ -493,7 +493,8 @@ function getAllGraphData(me) {
 function getRegularGraphData(me, i) {
   var device = me.graphDevices[i];
   var cmd = Domoticz.info.api15330 ? 'type=command&param=graph' : 'type=graph';
-  var params = cmd +
+  var params =
+    cmd +
     '&sensor=' +
     device.sensor +
     '&idx=' +
@@ -510,7 +511,9 @@ function getSwitchGraphData(me, i) {
   var device = me.graphDevices[i];
   //http://:8080/json.htm?idx=19&type=lightlog
   //todo: check type=command&param=graph for new Domoticz version>=15330
-  var cmd = Domoticz.info.api15330 ? 'param=getlightlog&type=command' : 'type=lightlog';
+  var cmd = Domoticz.info.api15330
+    ? 'param=getlightlog&type=command'
+    : 'type=lightlog';
   var params = cmd + '&idx=' + device.idx;
   me.params[i] = params;
   return Domoticz.request(params).then(function (data) {
@@ -523,11 +526,14 @@ Status: "Off"
 User: "OpenTherm"
 idx: "11209721"
 */
-    var maxDimLevel = data.result && data.result[0].MaxDimLevel; 
+    var maxDimLevel = data.result && data.result[0].MaxDimLevel;
     var result = data.result.map(function (sample) {
       return {
         d: sample.Date,
-        l: getIconStatusClass(sample.Status)==='off'? 0 : sample.Level || maxDimLevel || 1,
+        l:
+          getIconStatusClass(sample.Status) === 'off'
+            ? 0
+            : sample.Level || maxDimLevel || 1,
       };
     });
     return { result: result };
@@ -599,7 +605,8 @@ function formatData(me) {
             var obj = tmpResults[sampleDate] || { d: sampleDate }; //if sampleDate already exists use that one, otherwise create new one
             for (var key in res) {
               var mayAdd =
-                key !== 'd' && (key !== 'c' || me.block.graphTypes || me.block.legend ) &&
+                key !== 'd' &&
+                (key !== 'c' || me.block.graphTypes || me.block.legend) &&
                 (me.block.graphTypes
                   ? $.inArray(key, me.block.graphTypes) >= 0
                   : true);
@@ -658,7 +665,7 @@ function formatData(me) {
   me.keys = arrYkeys; //keys contains all the selected keys, like ['te','l']
   me.ykeys = newKeys; //ykeys contains all the keys incl device idx, like ['te_12','te_13','l_3']
   //    graph.txtUnits = txtUnits; //todo: check txtUnits
-  //me.txtUnit = me.txtUnits[0]; //todo: temp fix. txtUnits contains the units belonging to ykeys, like ['°C', '°C', 'level']
+  //me.txtUnit = me.txtUnits[0]; //todo: temp fix. txtUnits contains the units belonging to ykeys, like ['Â°C', 'Â°C', 'level']
   //me.ylabels = getYlabels(me);
   //graph.currentValues = currentValues; //todo: check currentValues
 
@@ -789,7 +796,7 @@ function createGraph(graph) {
 
   if (graph.dataFilterCount > 0) filterGraphData(graph);
 
-  if(graph.filter==='todaytomorrow') filterGraphDataTodayTomorrow(graph);
+  if (graph.filter === 'todaytomorrow') filterGraphDataTodayTomorrow(graph);
 
   if (graph.graphConfig) createCustomData(graph);
 
@@ -864,11 +871,14 @@ function createGraph(graph) {
 function createYAxes(graph, mergedBlock, graphProperties) {
   var uniqueylabels = graph.ylabels.filter(onlyUnique);
   var labelLeft = !mergedBlock.axisRight;
-  var axisCount = graphProperties.options && graphProperties.options.scales && graphProperties.options.scales.yAxes
-    ? graphProperties.options.scales.yAxes.length
-    : 0;
-  var yAxesConfig = axisCount? graphProperties.options.scales.yAxes : [];
-  
+  var axisCount =
+    graphProperties.options &&
+    graphProperties.options.scales &&
+    graphProperties.options.scales.yAxes
+      ? graphProperties.options.scales.yAxes.length
+      : 0;
+  var yAxesConfig = axisCount ? graphProperties.options.scales.yAxes : [];
+
   graphProperties.options.scales.yAxes = []; // reset to empty
   uniqueylabels.forEach(function (element, i) {
     var yaxis = {
@@ -891,11 +901,7 @@ function createYAxes(graph, mergedBlock, graphProperties) {
     };
     graphProperties.options.scales.yAxes.push(yaxis);
     if (i < axisCount)
-      $.extend(
-        true,
-        graphProperties.options.scales.yAxes[i],
-        yAxesConfig[i]
-      );
+      $.extend(true, graphProperties.options.scales.yAxes[i], yAxesConfig[i]);
     labelLeft = mergedBlock.axisAlternate ? !labelLeft : labelLeft;
   });
 
@@ -911,9 +917,12 @@ function createYAxes(graph, mergedBlock, graphProperties) {
           .filter(function (dataset) {
             return dataset.yAxisID === yAxis.id;
           })
-          .reduce(function (newlabelString, dataset) {
-            return dataset.label + ' ' + newlabelString;
-          }, '(' + yAxis.scaleLabel.labelString + ')');
+          .reduce(
+            function (newlabelString, dataset) {
+              return dataset.label + ' ' + newlabelString;
+            },
+            '(' + yAxis.scaleLabel.labelString + ')'
+          );
       });
   }
 }
@@ -973,11 +982,14 @@ function filterGraphData(graph) {
 
 function filterGraphDataTodayTomorrow(graph) {
   var todayDate = moment().startOf('day');
-  var today=todayDate.format('YYYY-MM-DD HH:mm');
-  var tomorrow=todayDate.endOf('day').add(1, 'day').format('YYYY-MM-DD HH:mm');
+  var today = todayDate.format('YYYY-MM-DD HH:mm');
+  var tomorrow = todayDate
+    .endOf('day')
+    .add(1, 'day')
+    .format('YYYY-MM-DD HH:mm');
   console.log(today, tomorrow);
   graph.data.result = graph.data.result.filter(function (element) {
-    return (element.d >= today) && (element.d <= tomorrow);
+    return element.d >= today && element.d <= tomorrow;
   });
 }
 
@@ -1020,8 +1032,8 @@ function graphRender(graph, graphProperties) {
   }
 */
 
+  Chart.defaults.color = graph.block.fontColor;
   new Chart(graph.chartctx, graphProperties);
-  Chart.defaults.global.defaultFontColor = graph.block.fontColor;
 }
 
 function createCustomData(graph) {
@@ -1330,7 +1342,7 @@ function createButtons(graph, ranges, customRange) {
         btnText +
         '</button> ';
       $(newButton)
-        .click(function () {
+        .on('click', function () {
           getGraphData(graph, item);
         })
         .appendTo($buttons);
@@ -1354,14 +1366,10 @@ function createButtons(graph, ranges, customRange) {
     newButton += '</button>';
 
     $(document).on('click', '#resetZoom' + graph.graphIdx, function () {
-      Chart.helpers.each(Chart.instances, function (instance) {
-        if (
-          instance.chart.canvas.id ===
-          $('#resetZoom' + graph.graphIdx).data('canvas')
-        ) {
-          instance.chart.resetZoom();
-        }
-      });
+      var instance = Chart.getChart(
+        $('#resetZoom' + graph.graphIdx).data('canvas')
+      );
+      if (instance) instance.resetZoom();
     });
     $(newButton).appendTo($buttons);
   }
@@ -1386,8 +1394,10 @@ function createButtons(graph, ranges, customRange) {
     var newLi =
       '<li><a href="#" ><i class="fas fa-code" style="font-size:14px;color:' +
       btn.icon +
-      '">&nbsp;</i>&nbsp;Show Data</a></li>';
-    var $newLi = $(newLi).click(function () {
+      '">&nbsp;</i>&nbsp;' +
+      language.graph.show_data +
+      '</a></li>';
+    var $newLi = $(newLi).on('click', function () {
       showData(graph);
       return false;
     });
@@ -1530,21 +1540,29 @@ function showData(graph) {
     html += '       <hr/>';
     html += '       <div class="flex-row">';
     html +=
-      '         <div class="devices"><i class="fas fa-bolt text-yellow"></i><span class="label">Devices:</span>' +
+      '         <div class="devices"><i class="fas fa-bolt text-yellow"></i><span class="label">' +
+      language.graph.devices +
+      ':</span>' +
       graph.block.devices.join(', ') +
       '</div>';
 
     if (!graph.block.groupByDevice) {
       html +=
-        '         <div class="input-keys"><i class="fas fa-key text-red"></i><span class="label">Input Keys:</span>' +
+        '         <div class="input-keys"><i class="fas fa-key text-red"></i><span class="label">' +
+        language.graph.input_keys +
+        ':</span>' +
         graph.keys.join(', ') +
         '</div>';
       html +=
-        '         <div class="output-keys"><i class="fas fa-key text-green"></i><span class="label">Output Keys:</span>' +
+        '         <div class="output-keys"><i class="fas fa-key text-green"></i><span class="label">' +
+        language.graph.output_keys +
+        ':</span>' +
         graph.ykeys.join(', ') +
         '</div>';
       html +=
-        '         <div class="ylabels"><i class="fas fa-balance-scale-right text-blue"></i></i><span class="label">Y Labels:</span>' +
+        '         <div class="ylabels"><i class="fas fa-balance-scale-right text-blue"></i></i><span class="label">' +
+        language.graph.y_labels +
+        ':</span>' +
         graph.ylabels.join(', ') +
         '</div>';
     }
@@ -1567,7 +1585,7 @@ function showData(graph) {
 
     $('#modal_' + graphIdx)
       .find('#logbutton')
-      .click(function () {
+      .on('click', function () {
         console.log(graph);
         return false;
       });
@@ -1575,9 +1593,13 @@ function showData(graph) {
     $.each(graph.graphDevices, function (i, graphDevice) {
       // var g = dtGraphs[graph.primaryIdx]; //todo: I would expect g is just graph
       var url =
-        config['domoticz_ip'] + '/json.htm?' +
-        (Domoticz.info.api15330?'type=command&param=getdevices':'type=devices') + 
-        '&rid=' + graphDevice.idx;
+        config['domoticz_ip'] +
+        '/json.htm?' +
+        (Domoticz.info.api15330
+          ? 'type=command&param=getdevices'
+          : 'type=devices') +
+        '&rid=' +
+        graphDevice.idx;
 
       $.getJSON(url, function (data) {
         var device = data.result[0]; //This device should already contain the same info as graphDevice.
@@ -1585,27 +1607,39 @@ function showData(graph) {
         d += '<div class="device">';
         d += '  <div class="col-md-10">';
         d +=
-          '    <div class="name"><span class="label">Name:</span>' +
+          '    <div class="name"><span class="label">' +
+          language.graph.name +
+          ':</span>' +
           device.Name +
           '</div>';
         d +=
-          '    <div class="type"><span class="label">Type:</span>' +
+          '    <div class="type"><span class="label">' +
+          language.graph.type +
+          ':</span>' +
           device.Type +
           '</div>';
         d +=
-          '    <div class="subtype"><span class="label">SubType:</span>' +
+          '    <div class="subtype"><span class="label">' +
+          language.graph.subtype +
+          ':</span>' +
           device.SubType +
           '</div>';
         d +=
-          '    <div class="hardwareName"><span class="label">Hardware Name:</span>' +
+          '    <div class="hardwareName"><span class="label">' +
+          language.graph.hardware_name +
+          ':</span>' +
           device.HardwareName +
           '</div>';
         d +=
-          '    <div class="data"><span class="label">Data:</span>' +
+          '    <div class="data"><span class="label">' +
+          language.graph.data +
+          ':</span>' +
           device.Data +
           '</div>';
         d +=
-          '    <div class="lastUpdate"><span class="label">Last Update:</span>' +
+          '    <div class="lastUpdate"><span class="label">' +
+          language.graph.last_update +
+          ':</span>' +
           device.LastUpdate +
           '</div>';
         d += '  </div>';
@@ -1622,7 +1656,9 @@ function showData(graph) {
             config['domoticz_ip'] +
             '/json.htm?' +
             graph.params[i] +
-            '" target="_blank"><i class="fas fa-database">&nbsp;</i>Data</a>';
+            '" target="_blank"><i class="fas fa-database">&nbsp;</i>' +
+            language.graph.data +
+            '</a>';
         }
         d += '  </div>';
         d += '</div>';
@@ -1822,9 +1858,9 @@ function getDefaultGraphProperties(graph, block) {
                   graph.range === 'today'
                     ? 'H:mm'
                     : graph.realrange === 'day'
-                    ? 'ddd H:mm'
-                    : 'D MMM',
-                day: 'D MMM',
+                      ? 'EEE H:mm'
+                      : 'd MMM',
+                day: 'd MMM',
               },
             },
             distribution: 'series',
@@ -1878,7 +1914,7 @@ function getYlabels(g) {
         } else if (g.subtype === 'Electric') {
           l.push('Watt');
         } else if (g.subtype === 'Gas') {
-          l.push('m³');
+          l.push('mÂ³');
         } else {
           l.push(label);
         }
@@ -1896,7 +1932,7 @@ function getYlabels(g) {
         l.push('Lux (max)');
         break;
       case 'di':
-        l.push('°');
+        l.push('Â°');
         break;
       case 'gu':
       case 'sp':
@@ -1983,7 +2019,7 @@ function groupByDevice(me) {
   mountPoint.addClass('col-xs-' + graph.block.width);
   mountPoint.addClass('block_graph');
   mountPoint.addClass(graphIdx);
-//  $('.' + graphIdx + ' .graphcontent').css('height', setHeight(graph));
+  //  $('.' + graphIdx + ' .graphcontent').css('height', setHeight(graph));
 
   var graphProperties = getDefaultGraphProperties(graph, graph.block);
   var xAxesType = 'category';
@@ -2012,7 +2048,7 @@ function groupByDevice(me) {
   obj.backgroundColor = me.hasSetPoint
     ? datasetColors
     : graph.block.datasetColors;
-  obj.label = me.hasSetPoint ? 'Temperature' : graph.txtUnit;
+  obj.label = me.hasSetPoint ? language.graph.temperature : graph.txtUnit;
   obj.order = 1;
   graphProperties.data.datasets.push(obj);
 

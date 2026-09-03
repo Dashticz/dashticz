@@ -50,10 +50,10 @@ Block parameters
       | ``60``: Default: 300 (=5 minutes)
   * - xTicks
     - | Number of labels on the x-axis (= time axis)
-      | ``10`` (=default) 
-  * - xTicks
+      | ``10`` (=default)
+  * - yTicks
     - | Number of labels on the y-axis (= vertical axis)
-      | ``5`` (=default) 
+      | ``5`` (=default)
   * - xLabels
     - | To show labels on the x-axis
       | ``true`` (=default): Show labels on the x-axis

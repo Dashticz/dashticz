@@ -131,7 +131,8 @@ Config parameters
   * - security_panel_lock
     - | If set the Security Panel in Domoticz or Dashticz to 'Arm - Away', then Dashticz will automatically load a full screen panel.
       | ``0`` = Loading Security Panel full screen disabled (default)
-      | ``1`` = Loading Security Panel full screen enabled
+      | ``1`` = Load the full-screen panel when Armed Away
+      | ``2`` = Load the full-screen panel when Armed Home or Armed Away
   * - language
     - | Default language of Dashticz. See the ``lang`` folder for all supported languages.
       | ``'en_us'`` = default
@@ -196,9 +197,9 @@ Config parameters
       | ``1`` Use CORS proxy for OpenWeatherMap. Needed on Android 4.4.2.
   * - last_update
     - ``0`` / ``1`` To show the time when the device was updated for the last time
-  * - hide_topbar
-    - | 0 / 1
-      | Hide or Show :ref:`customtopbar`
+  * - topbar_timeout
+    - | Number of seconds after which the topbar is automatically hidden (0 = always visible)
+      | The topbar reappears when the mouse moves to the top of the screen.
   * - hide_seconds
     - | 0 / 1
       | Show the seconds of the clock
@@ -262,12 +263,12 @@ Config parameters
   * - speak_lang
     - | Text to speech language
       | ``'<LANGUAGE>'`` Language options: de-DE, en-US, es-ES, fr-FR, it-IT, nl-NL, pl-PL, ru-RU
-  * - longfonds_zipcode
-    - | Longfonds (Dutch air quality check) zipcode.
-      | ``'1234AZ'`` Language options
-  * - longfonds_housenumber
-    - | Longfonds (Dutch air quality check) housenumber
-      | ``'123'`` Language options
+  * - waqi_city
+    - | World Air Quality Index (WAQI) city code, see :ref:`waqi`.
+      | ``5771`` (example: Amsterdam)
+  * - waqi_layout
+    - | World Air Quality Index (WAQI) widget layout, see :ref:`waqi`.
+      | ``'xsmall'``, ``'small'``, ``'large'``, ``'xlarge'`` or ``'xxl'``
 
 
 .. _urlparameters:
@@ -353,4 +354,3 @@ To prevent switching to a websocket connection add the following setting to CONF
 In the <gif> below you see the instant updates in action. On the right you see the Domoticz dashboard. On the left Dashticz.
 
 .. image :: img/dashticz-websocket.gif
-
