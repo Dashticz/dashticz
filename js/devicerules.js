@@ -1071,6 +1071,21 @@
     return 'device_' + base + (sub > 0 ? '_' + sub : '');
   }
 
+  function deviceReferenceCandidates(idx, subidx) {
+    var candidates = [];
+    function add(value) {
+      if (value === null || typeof value === 'undefined') return;
+      value = String(value).trim();
+      if (value && candidates.indexOf(value) === -1) candidates.push(value);
+    }
+    add(stableDeviceReference(idx, subidx));
+    if (idx) {
+      add(String(idx) + (subidx ? '_' + subidx : ''));
+      add(idx);
+    }
+    return candidates;
+  }
+
   function sourceCandidatesForBlock(block) {
     var candidates = [];
     function add(value) {
@@ -1081,12 +1096,25 @@
     add(block && block.key);
     add(block && block.id);
     if (block) {
-      add(stableDeviceReference(block.idx, block.subidx));
-      if (block.idx) {
-        add(String(block.idx) + (block.subidx ? '_' + block.subidx : ''));
-        add(block.idx);
-      }
+      deviceReferenceCandidates(block.idx, block.subidx).forEach(add);
     }
+    return candidates;
+  }
+
+  // Same idea as sourceCandidatesForBlock(), but usable without a live,
+  // still-mounted block object - e.g. the Layout Editor's remove flow, where
+  // the item may already be unmounted (block.device cleared) by the time its
+  // saved Device Rules need cleaning up. reference is the item/order key a
+  // rule set may have been saved under in addition to the idx-derived forms.
+  function sourceCandidatesForRemoval(idx, subidx, reference) {
+    var candidates = [];
+    function add(value) {
+      if (value === null || typeof value === 'undefined') return;
+      value = String(value).trim();
+      if (value && candidates.indexOf(value) === -1) candidates.push(value);
+    }
+    add(reference);
+    deviceReferenceCandidates(idx, subidx).forEach(add);
     return candidates;
   }
 
@@ -2600,6 +2628,46 @@
     });
   }
 
+  // Wipes a source's saved Device Rules entirely - same request shape as
+  // saveDeviceRules() with an empty rule set, which savedevicerules.php
+  // already treats as "remove this source's managed block from custom.js/
+  // custom.css" (it only re-adds a block when rules or a handler is
+  // present). Used when a device is removed from a screen, so a
+  // re-added device with the same idx does not silently resurrect its old
+  // Automation config. No popup involved, so it does not go through
+  // saveDeviceRules()/readRuleRows().
+  function deleteSourceRules(source) {
+    source = String(source || '').trim();
+    if (!source) return $.Deferred().resolve().promise();
+    var phpPath =
+      window.settings && window.settings.dashticz_php_path
+        ? String(window.settings.dashticz_php_path)
+        : 'js/';
+    phpPath = phpPath.replace(/\/?$/, '/');
+    var cssFile = activeCssFilename();
+
+    return $.getJSON(phpPath + 'info.php?get=csrf')
+      .then(function (data) {
+        return $.ajax({
+          url: SAVE_URL,
+          method: 'POST',
+          dataType: 'json',
+          headers: { 'X-Dashticz-CSRF': data.token },
+          data: {
+            source: source,
+            schema_version: 2,
+            rules: '[]',
+            custom_js_handler: '',
+            css_file: cssFile,
+            custom_folder: activeCustomFolder(),
+          },
+        });
+      })
+      .done(function () {
+        updateRuleStore(source, [], '');
+      });
+  }
+
   function refreshActiveCustomCss(cssFile) {
     var path = activeCustomFolder() + '/' + cssFile;
     return $.ajax({
@@ -2929,6 +2997,8 @@
     updateRuleStore: updateRuleStore,
     reconcileSavedSource: reconcileSavedSource,
     sourceFromOrderKey: sourceFromOrderKey,
+    sourceCandidatesForRemoval: sourceCandidatesForRemoval,
+    deleteSourceRules: deleteSourceRules,
     configForSource: configForSource,
     inferPopupSource: inferPopupSource,
     blockOptionData: blockOptionData,

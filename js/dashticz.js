@@ -154,7 +154,7 @@ var Dashticz = (function () {
     }
     if (clickHandler) {
       $(me.mountPoint + ' .dt_block')
-        .click(function () {
+        .on('click', function () {
           clickHandler(me);
         })
         .addClass('hover');
