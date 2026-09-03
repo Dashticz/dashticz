@@ -902,7 +902,7 @@ The following CSS classes will be attached to a Domoticz block automatically:
 * ``off``. In case a Domoticz switch is not in the On (or closed) state.
 * ``timeout``. In case the Domoticz device is in timeout state.
 
-To give Domoticz blocks with a device in timeout state a red background, add the following to ``custom.css``::
+By default, a Domoticz block with a device in timeout state gets a red background. To use a different color, override this in ``custom.css``::
 
   .mh.timeout {
       background-color:rgba(255,0,0,0.3);

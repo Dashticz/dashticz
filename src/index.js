@@ -2,6 +2,7 @@ import $ from 'jquery';
 import './loader.scss';
 window.jQuery = $;
 window.$ = $;
+require('jquery-migrate');
 
 import moment from './date-time.js';
 window.moment = moment;
