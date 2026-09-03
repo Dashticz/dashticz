@@ -1342,7 +1342,7 @@ function createButtons(graph, ranges, customRange) {
         btnText +
         '</button> ';
       $(newButton)
-        .click(function () {
+        .on('click', function () {
           getGraphData(graph, item);
         })
         .appendTo($buttons);
@@ -1397,7 +1397,7 @@ function createButtons(graph, ranges, customRange) {
       '">&nbsp;</i>&nbsp;' +
       language.graph.show_data +
       '</a></li>';
-    var $newLi = $(newLi).click(function () {
+    var $newLi = $(newLi).on('click', function () {
       showData(graph);
       return false;
     });
@@ -1585,7 +1585,7 @@ function showData(graph) {
 
     $('#modal_' + graphIdx)
       .find('#logbutton')
-      .click(function () {
+      .on('click', function () {
         console.log(graph);
         return false;
       });

@@ -642,12 +642,12 @@ var DT_dial = (function () {
         me.control[0].addEventListener(e, start, { passive: false });
       });
       me.body
-        .bind('mousedown touchstart', function () {
+        .on('mousedown touchstart', function () {
           me.devices.forEach(function (idx) {
             Domoticz.hold(idx);
           });
         })
-        .bind('mousemove touchmove', function (event) {
+        .on('mousemove touchmove', function (event) {
           if (DT_dial.active) {
             DT_dial.isTouch && event.targetTouches
               ? angle(me, event.targetTouches[0])
@@ -655,7 +655,7 @@ var DT_dial = (function () {
           }
           return false;
         })
-        .bind('mouseup touchend mouseleave', function () {
+        .on('mouseup touchend mouseleave', function () {
           if (DT_dial.active) stop(me);
         });
     }

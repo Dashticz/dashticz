@@ -1,4 +1,5 @@
 /* global Domoticz settings columns columns_standby blocks myswiper Dashticz DashticzGridLayout DashticzScreenSwitcher DashticzDeviceEditor DashticzWidgetEditor DT_function isCustomConfigMode standbyActive language */
+/* global DashticzDeviceRules */
 // eslint-disable-next-line no-unused-vars
 var DashticzLayoutEditor = (function () {
   'use strict';
@@ -65,6 +66,14 @@ var DashticzLayoutEditor = (function () {
   // items (see addPendingItems). Never reset - a monotonic counter across
   // the page's lifetime can't collide with itself.
   var pendingKeyCounter = 0;
+  // Devices removed via the remove button during this editing round (see
+  // _removeItem) - their saved Device Rules, if any, are deleted only once
+  // the removal is actually confirmed with Save (_save), never on Cancel.
+  // Without this, a device removed and later re-added with the same idx
+  // silently comes back with its old Automation config, since removing a
+  // block from a screen only touches CONFIG.js, not the separate
+  // DashticzDeviceRulesConfig store in custom.js.
+  var removedDeviceSources = [];
 
   function _translations() {
     return (
@@ -93,6 +102,7 @@ var DashticzLayoutEditor = (function () {
   function open() {
     if (active) return;
 
+    removedDeviceSources = [];
     var $screen = _activeScreenDom();
     if (!$screen.length) {
       alert(_t('no_active_screen'));
@@ -1961,6 +1971,13 @@ var DashticzLayoutEditor = (function () {
     if (pointerState && pointerState.item === item) {
       _finishPointerAction();
     }
+    if (item.kind === 'device') {
+      removedDeviceSources.push({
+        idx: item.idx,
+        subidx: item.subidx,
+        reference: item.reference,
+      });
+    }
     if (item.wrapper.parentNode) {
       item.wrapper.parentNode.removeChild(item.wrapper);
     }
@@ -2407,12 +2424,56 @@ var DashticzLayoutEditor = (function () {
     return _activeScreenPayload();
   }
 
+  // A device removed earlier in this editing round may have been re-added
+  // (same idx) before Save, on this screen or another one touched in the
+  // same round - its Automation must survive that. Building this set from
+  // every payload's own `ordered` items (the actual final saved state)
+  // rather than current on-screen module state keeps it correct across
+  // the multi-screen session capture/restore _buildSavePayloads() already
+  // does.
+  function _stillPresentDeviceKeys(payloads) {
+    var present = {};
+    payloads.forEach(function (screenPayload) {
+      (screenPayload.ordered || []).forEach(function (item) {
+        if (item.kind !== 'device' || !item.idx) return;
+        present[String(item.idx) + '_' + (item.subidx || 0)] = true;
+      });
+    });
+    return present;
+  }
+
+  function _sourcesToDeleteAfterSave(payloads) {
+    if (
+      !removedDeviceSources.length ||
+      typeof DashticzDeviceRules === 'undefined'
+    ) {
+      return [];
+    }
+    var present = _stillPresentDeviceKeys(payloads);
+    var sources = [];
+    removedDeviceSources.forEach(function (removed) {
+      var key = String(removed.idx) + '_' + (removed.subidx || 0);
+      if (present[key]) return;
+      DashticzDeviceRules.sourceCandidatesForRemoval(
+        removed.idx,
+        removed.subidx,
+        removed.reference
+      ).forEach(function (candidate) {
+        var config = DashticzDeviceRules.configForSource(candidate);
+        if (!config.rules.length && !config.customJsHandler) return;
+        if (sources.indexOf(candidate) === -1) sources.push(candidate);
+      });
+    });
+    return sources;
+  }
+
   function _save() {
     var $save = $toolbar.find('.dle-save').prop('disabled', true);
     $toolbar.find('.dle-cancel').prop('disabled', true);
     $toolbar.find('.dle-toolbar-help').text(_t('saving_layout'));
 
     var payloads = _buildSavePayloads();
+    var sourcesToDelete = _sourcesToDeleteAfterSave(payloads);
 
     $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
       .then(function (data) {
@@ -2424,6 +2485,21 @@ var DashticzLayoutEditor = (function () {
           });
         });
         return chain;
+      })
+      .then(function () {
+        // Best-effort cleanup: the layout save above is what actually
+        // matters, so a Device Rules deletion failure here must not block
+        // it or surface as a save error - it only leaves a harmless stale
+        // entry to retry on the next remove+save.
+        var cleanup = $.Deferred().resolve().promise();
+        sourcesToDelete.forEach(function (source) {
+          cleanup = cleanup.then(function () {
+            return DashticzDeviceRules.deleteSourceRules(source).catch(
+              function () {}
+            );
+          });
+        });
+        return cleanup;
       })
       .done(function () {
         $toolbar.find('.dle-toolbar-help').text(_t('saved_reloading'));
@@ -2491,6 +2567,7 @@ var DashticzLayoutEditor = (function () {
               return entry;
             }),
           },
+          ordered: _orderedItems(),
         };
       }
 

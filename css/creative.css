@@ -3240,6 +3240,13 @@ a:focus {
   --col2width: 30px;
 }
 
+/* Default styling for a device in Domoticz timeout state (docs:
+   domoticzStyling) - override .mh.timeout in custom.css for a different
+   color. */
+.mh.timeout {
+  background-color: rgba(255, 0, 0, 0.3);
+}
+
 div.mh:not(.multiline) {
   height: 85px;
 }

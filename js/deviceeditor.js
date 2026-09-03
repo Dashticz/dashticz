@@ -1,4 +1,4 @@
-/* global Domoticz settings columns columns_standby blocks blocktypes screens standby_screen DashticzScreenSwitcher standbyActive language getBlockTypesBlock DashticzLayoutEditor */
+/* global Domoticz settings columns columns_standby blocks blocktypes screens standby_screen DashticzScreenSwitcher standbyActive language getBlockTypesBlock DashticzLayoutEditor DashticzDeviceRules */
 // eslint-disable-next-line no-unused-vars
 var DashticzDeviceEditor = (function () {
   'use strict';
@@ -137,6 +137,15 @@ var DashticzDeviceEditor = (function () {
   // instead of persisting immediately and reloading (see
   // _graftIntoLayoutEditor). Null whenever the Layout Editor isn't active.
   var layoutEditorBaseline = null;
+  // Devices present on the screen when this popup opened (idx/subidx/
+  // reference, from managedOrder/deviceRefs before the user made any
+  // changes). _save() diffs this against the final managedOrder to find
+  // devices actually removed in this session, so their saved Device
+  // Rules can be deleted too - otherwise a device toggled off then back
+  // on later (same idx) silently comes back with its old Automation
+  // config, since this save flow only rewrites CONFIG.js, never the
+  // separate DashticzDeviceRulesConfig store in custom.js.
+  var openDeviceEntries = [];
 
   function _translations() {
     var configured =
@@ -661,6 +670,21 @@ var DashticzDeviceEditor = (function () {
       DashticzLayoutEditor.isActive()
         ? managedOrder.slice()
         : null;
+
+    openDeviceEntries = managedOrder
+      .filter(function (orderKey) {
+        return orderKey.indexOf('device:') === 0;
+      })
+      .map(function (orderKey) {
+        var ck = orderKey.slice(7);
+        var parsed = _parseCk(ck);
+        return {
+          orderKey: orderKey,
+          idx: parsed.idx,
+          subidx: parsed.subidx,
+          reference: deviceRefs[ck],
+        };
+      });
   }
 
   /* ── composite key helpers ──────────────────────────────────── */
@@ -8498,6 +8522,32 @@ var DashticzDeviceEditor = (function () {
     if (instance) instance.hide();
   }
 
+  // Devices in openDeviceEntries no longer in managedOrder were toggled off
+  // in this editing session - collect the saved Device Rules sources (if
+  // any) that should be deleted along with them. See openDeviceEntries.
+  function _removedDeviceRuleSources() {
+    if (
+      !openDeviceEntries.length ||
+      typeof DashticzDeviceRules === 'undefined'
+    ) {
+      return [];
+    }
+    var sources = [];
+    openDeviceEntries.forEach(function (entry) {
+      if (managedOrder.indexOf(entry.orderKey) !== -1) return;
+      DashticzDeviceRules.sourceCandidatesForRemoval(
+        entry.idx,
+        entry.subidx,
+        entry.reference
+      ).forEach(function (candidate) {
+        var config = DashticzDeviceRules.configForSource(candidate);
+        if (!config.rules.length && !config.customJsHandler) return;
+        if (sources.indexOf(candidate) === -1) sources.push(candidate);
+      });
+    });
+    return sources;
+  }
+
   function _save() {
     if (layoutEditorBaseline && _graftIntoLayoutEditor()) return;
 
@@ -8523,6 +8573,8 @@ var DashticzDeviceEditor = (function () {
       if (gridMode && gridRefs[orderKey]) entry.key = gridRefs[orderKey];
       return entry;
     });
+
+    var deviceRuleSourcesToDelete = _removedDeviceRuleSources();
 
     $.getJSON(settings['dashticz_php_path'] + 'info.php?get=csrf')
       .then(function (data) {
@@ -8648,6 +8700,21 @@ var DashticzDeviceEditor = (function () {
             );
           });
         });
+      })
+      .then(function () {
+        // Best-effort cleanup: the layout save above is what actually
+        // matters, so a Device Rules deletion failure here must not block
+        // it or surface as a save error - it only leaves a harmless stale
+        // entry to retry on the next toggle-off+save.
+        var cleanup = $.Deferred().resolve().promise();
+        deviceRuleSourcesToDelete.forEach(function (source) {
+          cleanup = cleanup.then(function () {
+            return DashticzDeviceRules.deleteSourceRules(source).catch(
+              function () {}
+            );
+          });
+        });
+        return cleanup;
       })
       .done(function () {
         $btn.removeClass('btn-primary').addClass('btn-success').text(t.saved);
