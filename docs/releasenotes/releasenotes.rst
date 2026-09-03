@@ -6,6 +6,36 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v4.0.2 beta (3-9-2026)
+----------------------
+
+* **Fixes**
+
+- Hardened Automation rule cleanup so a device's saved rule source
+  is only deleted when its last dashboard occurrence is actually
+  removed, tracked via a new ``dashboardDeviceOccurrenceCount()``
+  across classic screens/columns, grid screens, responsive layouts
+  and standby views.
+
+- A sub-device's bare base idx is no longer treated as its own
+  removable Automation source, since it is ambiguous with the main
+  device's own source and deleting it on sub-device removal could
+  have wiped the main device's rule.
+
+- Prevented ``update.sh``/``updatebeta.sh`` from appending config
+  assignments onto a first-run ``#EMPTY#`` ``CONFIG.js`` placeholder,
+  which would have made it invalid JavaScript and broken the setup
+  wizard.
+
+- Blocked dotfile exposure (e.g. ``.git``, ``.env``) through the
+  Docker Nginx config, while still allowing ACME ``.well-known``
+  challenges.
+
+* **Code**
+
+- Enabled the CI workflow to also run on pushes to ``master``, not
+  just ``beta``/``develop``/``test``.
+
 v4.0.1 beta (2-9-2026)
 ----------------------
 
