@@ -6074,3 +6074,17 @@ test('addAutomationIndicator marks a block with an enabled Device Rule, opt-out 
     /\.automation-indicator \{\s*\n\s*position: absolute;\s*\n\s*left: 0;\s*\n\s*bottom: 0;/
   );
 });
+
+test('a timed-out Domoticz device gets a default visible style (#257)', () => {
+  const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  assert.match(
+    blocks,
+    /if \(device\.HaveTimeout\) \$div\.addClass\('timeout'\);\s*\n\s*else \$div\.removeClass\('timeout'\);/
+  );
+  assert.match(
+    css,
+    /\.mh\.timeout \{\s*\n\s*background-color: rgba\(255, 0, 0, 0\.3\);\s*\n\s*\}/
+  );
+});
