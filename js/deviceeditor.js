@@ -8533,8 +8533,24 @@ var DashticzDeviceEditor = (function () {
       return [];
     }
     var sources = [];
-    openDeviceEntries.forEach(function (entry) {
-      if (managedOrder.indexOf(entry.orderKey) !== -1) return;
+    var removed = openDeviceEntries.filter(function (entry) {
+      return managedOrder.indexOf(entry.orderKey) === -1;
+    });
+    var removedCounts = {};
+    removed.forEach(function (entry) {
+      var key = String(entry.idx) + '_' + (entry.subidx || 0);
+      removedCounts[key] = (removedCounts[key] || 0) + 1;
+    });
+    removed.forEach(function (entry) {
+      var key = String(entry.idx) + '_' + (entry.subidx || 0);
+      if (
+        DashticzDeviceRules.dashboardDeviceOccurrenceCount(
+          entry.idx,
+          entry.subidx
+        ) > removedCounts[key]
+      ) {
+        return;
+      }
       DashticzDeviceRules.sourceCandidatesForRemoval(
         entry.idx,
         entry.subidx,
