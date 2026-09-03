@@ -1271,3 +1271,83 @@ test('enhancePopup skips the Automation section for special blocks (Title, Separ
   );
   assert.equal(device.popup._dashticzDeviceRulesEnhanced, true);
 });
+
+test('sourceCandidatesForRemoval finds a device saved under any of its idx/reference forms', () => {
+  const { api } = createRuntime();
+
+  // A device removed from a screen may have had its Automation saved
+  // under any of several historical key forms - the stable "device_<idx>"
+  // reference, the raw idx, or a custom block key/reference. All must be
+  // checked so a removal reliably finds and cleans up whichever one was
+  // actually used.
+  assert.deepEqual(
+    plain(api.sourceCandidatesForRemoval(154, 0, 'device_154')),
+    ['device_154', '154']
+  );
+
+  assert.deepEqual(plain(api.sourceCandidatesForRemoval(154, 2, 'Erker_5')), [
+    'Erker_5',
+    'device_154_2',
+    '154_2',
+    '154',
+  ]);
+
+  // No live idx (e.g. a scene/group or an already-unmounted item) still
+  // falls back to whatever reference the caller has.
+  assert.deepEqual(plain(api.sourceCandidatesForRemoval(null, 0, 'living')), [
+    'living',
+  ]);
+
+  const raw = plain(api.sourceCandidatesForRemoval(154, 0, '154'));
+  assert.equal(new Set(raw).size, raw.length, 'candidates must be deduped');
+
+  // The removal flows (layouteditor.js/_save, deviceeditor.js/_save) walk
+  // every candidate and only delete ones configForSource() actually finds
+  // rules or a handler for - confirm that lookup correctly matches a rule
+  // saved under one of the candidate forms.
+  api.updateRuleStore(
+    'device_154',
+    [
+      {
+        id: 'rule1',
+        trigger: { property: 'Status', operator: 'eq', value: 'On' },
+        actions: { css: { enabled: true, target: 'self' } },
+      },
+    ],
+    ''
+  );
+  const candidates = plain(
+    api.sourceCandidatesForRemoval(154, 0, 'device_154')
+  );
+  const withRules = candidates.filter(
+    (candidate) => api.configForSource(candidate).rules.length > 0
+  );
+  assert.deepEqual(withRules, ['device_154']);
+  assert.equal(api.configForSource('154').rules.length, 0);
+});
+
+test('deleteSourceRules is exposed for the Layout/Device Editor remove flows to clean up stale Automation', () => {
+  const { api, store } = createRuntime();
+
+  assert.equal(typeof api.deleteSourceRules, 'function');
+
+  // Exercise the same store-clearing path deleteSourceRules() takes once
+  // its server request succeeds (updateRuleStore with no rules/handler),
+  // without needing to mock a full $.ajax round trip here - that flow is
+  // covered by savedevicerules.test.js/php-security.test.js on the server
+  // side and by source-shape assertions confirming the client wires it up.
+  api.updateRuleStore(
+    'device_154',
+    [
+      {
+        id: 'rule1',
+        trigger: { property: 'Status', operator: 'eq', value: 'On' },
+        actions: { css: { enabled: true, target: 'self' } },
+      },
+    ],
+    ''
+  );
+  assert.ok(store.device_154);
+  api.updateRuleStore('device_154', [], '');
+  assert.equal(store.device_154, undefined);
+});

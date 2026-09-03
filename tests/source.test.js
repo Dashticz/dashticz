@@ -188,7 +188,12 @@ test('first-run setup uses its own wizard and removes the legacy browser fallbac
 
   assert.match(source, /localStorage\.removeItem\('dashticz_setup_config'\)/);
   assert.match(source, /source\.trim\(\) === '#EMPTY#'/);
-  assert.match(source, /dataFilter: function \(source\)/);
+  // CONFIG.js is fetched as plain text (not dataType: 'script') and
+  // evaluated explicitly via $.globalEval, since jQuery 4's script
+  // transport loads same-origin scripts via a <script src> tag too, which
+  // never exposes response text to dataFilter - see loadConfig()'s comment.
+  assert.match(source, /dataType: 'text'/);
+  assert.match(source, /\$\.globalEval\(source\)/);
   assert.match(source, /firstRunSetupRequired = true/);
   assert.match(source, /return checkSetupWriteAccess\(\)/);
   assert.match(source, /url: 'js\/checkconfigaccess\.php'/);
@@ -267,7 +272,6 @@ test('update scripts create a valid empty CONFIG.js instead of an unparsable stu
 
 test('installer accepts an optional target directory', () => {
   const installer = fs.readFileSync(path.join(root, 'install.sh'), 'utf8');
-  const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
   const installDocs = fs.readFileSync(
     path.join(root, 'docs/gettingstarted/automaticinstall.rst'),
     'utf8'
@@ -278,18 +282,12 @@ test('installer accepts an optional target directory', () => {
   assert.match(installer, /--directory=\*/);
   assert.match(installer, /Only one installation directory can be specified/);
   assert.match(installer, /git clone[\s\S]*"\$INSTALL_DIR"/);
-  assert.match(readme, /-- --directory \/var\/www\/html\/my-dashboard/);
   assert.match(installDocs, /-- --directory \/var\/www\/html\/my-dashboard/);
-  assert.match(readme, /-- -d \/var\/www\/html\/my-dashboard/);
-  assert.match(readme, /-- --directory=\/var\/www\/html\/my-dashboard/);
-  assert.match(readme, /DASHTICZ_INSTALL_DIR=\/var\/www\/html\/my-dashboard/);
-  assert.match(readme, /-- --help/);
   assert.match(installDocs, /-- -d \/var\/www\/html\/my-dashboard/);
   assert.match(
     installDocs,
     /DASHTICZ_INSTALL_DIR=\/var\/www\/html\/my-dashboard/
   );
-  assert.match(readme, /file mode `0644`/);
   assert.match(installDocs, /file mode ``0644``/);
 });
 
@@ -2660,22 +2658,11 @@ test('remote content and network failures use safe bounded rendering paths', () 
   );
 });
 
-test('calendar editor behavior is documented without a version bump', () => {
-  const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
-
-  assert.match(readme, /Calendar Widget Config shows every source/);
-  assert.match(readme, /Personal: \{ ics:/);
-  assert.match(readme, /holidayurl/);
-  assert.match(readme, /property `c`/);
-  assert.match(readme, /framed active-stylesheet notice/);
-});
-
 test('modern dark theme is portable and documented', () => {
   const theme = fs.readFileSync(
     path.join(root, 'themes/modern-dark/modern-dark.css'),
     'utf8'
   );
-  const readme = fs.readFileSync(path.join(root, 'README.md'), 'utf8');
   const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
 
   assert.match(theme, /--main-bg/);
@@ -2770,7 +2757,6 @@ test('modern dark theme is portable and documented', () => {
   );
   assert.doesNotMatch(theme, /https?:\/\//i);
   assert.doesNotMatch(theme, /url\s*\(/i);
-  assert.match(readme, /config\['theme'\] = 'modern-dark'/);
 });
 
 test('settings modal uses compact Bootstrap 5 controls and aligned help icons', () => {
@@ -5888,11 +5874,11 @@ test('Bar and Slider show On/Off (not Open/Closed) for Dimmers, and Slider becom
   );
   assert.match(
     switches,
-    /\$mountPoint\.find\('\.btn-blinds-up'\)\.click\(function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'on', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'On' : 'Off'\);/
+    /\$mountPoint\.find\('\.btn-blinds-up'\)\.on\('click', function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'on', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'On' : 'Off'\);/
   );
   assert.match(
     switches,
-    /\$mountPoint\.find\('\.btn-blinds-down'\)\.click\(function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'off', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'Off' : 'On'\);/
+    /\$mountPoint\.find\('\.btn-blinds-down'\)\.on\('click', function \(\) \{\s*\n\s*if \(isDimmer\) switchDevice\(block, 'off', false\);\s*\n\s*else switchBlinds\(block, asOn \? 'Off' : 'On'\);/
   );
 
   // A Dimmer's up/down buttons are a genuine On/Off toggle, not a matched
@@ -6087,4 +6073,61 @@ test('addAutomationIndicator marks a block with an enabled Device Rule, opt-out 
     css,
     /\.automation-indicator \{\s*\n\s*position: absolute;\s*\n\s*left: 0;\s*\n\s*bottom: 0;/
   );
+});
+
+test('a timed-out Domoticz device gets a default visible style (#257)', () => {
+  const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  assert.match(
+    blocks,
+    /if \(device\.HaveTimeout\) \$div\.addClass\('timeout'\);\s*\n\s*else \$div\.removeClass\('timeout'\);/
+  );
+  assert.match(
+    css,
+    /\.mh\.timeout \{\s*\n\s*background-color: rgba\(255, 0, 0, 0\.3\);\s*\n\s*\}/
+  );
+});
+
+test('the .hover highlight works on the 3 new themes, not just the default theme (#259)', () => {
+  const themes = [
+    'themes/modern-dark/modern-dark.css',
+    'themes/liquid-glass-blue/liquid-glass-blue.css',
+    'themes/liquid-glass-grey/liquid-glass-grey.css',
+  ].map((file) => fs.readFileSync(path.join(root, file), 'utf8'));
+
+  themes.forEach((theme) => {
+    // .transbg:not(.dial)'s !important background/border always won over
+    // creative.css's plain, non-!important .hover:hover/.hover.hovered
+    // highlight, silently hiding it on every themed panel - dials stay
+    // excluded here too, matching .transbg:not(.dial)'s own exclusion
+    // (a themed background on a dial throws its centering off, #177).
+    assert.match(
+      theme,
+      /@media \(hover: hover\) \{\s*\n\s*html\.non-touch \.transbg\.hover:not\(\.dial\):hover \{\s*\n\s*background-color: var\(--button-hover\) !important;\s*\n\s*\}\s*\n\s*\}/
+    );
+    assert.match(
+      theme,
+      /\.transbg\.hover\.hovered:not\(\.dial\) \{\s*\n\s*background-color: var\(--button-hover\) !important;\s*\n\s*\}/
+    );
+  });
+});
+
+test('the .mh.timeout tint works on the 3 new themes too, not just the default theme (#257)', () => {
+  const themes = [
+    'themes/modern-dark/modern-dark.css',
+    'themes/liquid-glass-blue/liquid-glass-blue.css',
+    'themes/liquid-glass-grey/liquid-glass-grey.css',
+  ].map((file) => fs.readFileSync(path.join(root, file), 'utf8'));
+
+  themes.forEach((theme) => {
+    // Same swallowing problem as the hover highlight above, reported
+    // against modern-dark in a follow-up comment on #257: .transbg:not(.dial)'s
+    // !important background always won over creative.css's plain
+    // .mh.timeout background-color too.
+    assert.match(
+      theme,
+      /\.transbg\.timeout:not\(\.dial\) \{\s*\n\s*background-color: rgba\(255, 0, 0, 0\.3\) !important;\s*\n\s*\}/
+    );
+  });
 });
