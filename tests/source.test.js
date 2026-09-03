@@ -6088,3 +6088,46 @@ test('a timed-out Domoticz device gets a default visible style (#257)', () => {
     /\.mh\.timeout \{\s*\n\s*background-color: rgba\(255, 0, 0, 0\.3\);\s*\n\s*\}/
   );
 });
+
+test('the .hover highlight works on the 3 new themes, not just the default theme (#259)', () => {
+  const themes = [
+    'themes/modern-dark/modern-dark.css',
+    'themes/liquid-glass-blue/liquid-glass-blue.css',
+    'themes/liquid-glass-grey/liquid-glass-grey.css',
+  ].map((file) => fs.readFileSync(path.join(root, file), 'utf8'));
+
+  themes.forEach((theme) => {
+    // .transbg:not(.dial)'s !important background/border always won over
+    // creative.css's plain, non-!important .hover:hover/.hover.hovered
+    // highlight, silently hiding it on every themed panel - dials stay
+    // excluded here too, matching .transbg:not(.dial)'s own exclusion
+    // (a themed background on a dial throws its centering off, #177).
+    assert.match(
+      theme,
+      /@media \(hover: hover\) \{\s*\n\s*html\.non-touch \.transbg\.hover:not\(\.dial\):hover \{\s*\n\s*background-color: var\(--button-hover\) !important;\s*\n\s*\}\s*\n\s*\}/
+    );
+    assert.match(
+      theme,
+      /\.transbg\.hover\.hovered:not\(\.dial\) \{\s*\n\s*background-color: var\(--button-hover\) !important;\s*\n\s*\}/
+    );
+  });
+});
+
+test('the .mh.timeout tint works on the 3 new themes too, not just the default theme (#257)', () => {
+  const themes = [
+    'themes/modern-dark/modern-dark.css',
+    'themes/liquid-glass-blue/liquid-glass-blue.css',
+    'themes/liquid-glass-grey/liquid-glass-grey.css',
+  ].map((file) => fs.readFileSync(path.join(root, file), 'utf8'));
+
+  themes.forEach((theme) => {
+    // Same swallowing problem as the hover highlight above, reported
+    // against modern-dark in a follow-up comment on #257: .transbg:not(.dial)'s
+    // !important background always won over creative.css's plain
+    // .mh.timeout background-color too.
+    assert.match(
+      theme,
+      /\.transbg\.timeout:not\(\.dial\) \{\s*\n\s*background-color: rgba\(255, 0, 0, 0\.3\) !important;\s*\n\s*\}/
+    );
+  });
+});
