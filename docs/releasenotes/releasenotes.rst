@@ -9,6 +9,17 @@ For Dashticz's **master** version Release Notes go to: https://dashticz.readthed
 v4.0.3 beta (4-9-2026)
 ----------------------
 
+* **Fixes**
+
+- A viewport/orientation change could leave the active screen
+  scrolled off-canvas to the side, with no way back short of a
+  reload. ``startSwiper()``'s Swiper instance positions slides
+  purely via CSS transform, but some browsers (reproduced
+  consistently in headless Chromium) could leave the ``.swiper``
+  container's native ``scrollLeft`` stuck at a nonzero value after
+  a resize landed mid-reflow. A window resize handler now forces
+  it back to ``0``.
+
 * **Code**
 
 - Added a ``.githooks/pre-push`` hook that runs ``npm run
@@ -22,14 +33,15 @@ v4.0.3 beta (4-9-2026)
   of failing pixel-exact snapshot diffs a human wouldn't perceive
   as a real change.
 
-- Investigated recent CI failure history: the actual current flake
-  is a chromium-only drag-and-drop assertion in
-  ``tests/gridlayout.spec.js`` ("places blocks at explicit
-  coordinates and stacks on mobile") - Playwright's webkit job
-  passed in every failing run sampled, so the working assumption
-  that webkit was the flaky browser job did not hold up. Left
-  unfixed pending a closer look at that test's mouse-drag
-  simulation.
+- Root-caused the actual recurring CI flake: a chromium-only
+  drag-and-drop assertion in ``tests/gridlayout.spec.js`` ("places
+  blocks at explicit coordinates and stacks on mobile") that turned
+  out to be the scrollLeft bug above, not test flakiness -
+  Playwright's webkit job had passed in every failing run sampled,
+  so the working assumption that webkit was the flaky browser job
+  did not hold up. Verified with 14 repeated local runs of the
+  previously-failing test (0 failures) plus a new source-shape
+  regression test for the resize handler.
 
 v4.0.2 beta (3-9-2026)
 ----------------------
