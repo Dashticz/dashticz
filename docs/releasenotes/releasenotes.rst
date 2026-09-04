@@ -73,6 +73,11 @@ v4.0.2 beta (3-9-2026)
 - Enabled the CI workflow to also run on pushes to ``master``, not
   just ``beta``/``develop``/``test``.
 
+v4.0.1 master (3-9-2026)
+------------------------
+
+Master version derived from beta 4.0.1. See below.
+
 v4.0.1 beta (2-9-2026)
 ----------------------
 
