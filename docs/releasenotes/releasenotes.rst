@@ -6,6 +6,31 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
+v4.0.3 beta (4-9-2026)
+----------------------
+
+* **Code**
+
+- Added a ``.githooks/pre-push`` hook that runs ``npm run
+  format:check && npm test`` before every push. The existing
+  pre-commit hook only checked formatting, so a broken test could
+  still reach a push and only get caught by CI.
+
+- Set ``expect.toHaveScreenshot.maxDiffPixelRatio`` to ``0.02`` in
+  ``playwright.config.js`` so the visual-regression suite tolerates
+  sub-percent rendering noise (anti-aliasing/font hinting) instead
+  of failing pixel-exact snapshot diffs a human wouldn't perceive
+  as a real change.
+
+- Investigated recent CI failure history: the actual current flake
+  is a chromium-only drag-and-drop assertion in
+  ``tests/gridlayout.spec.js`` ("places blocks at explicit
+  coordinates and stacks on mobile") - Playwright's webkit job
+  passed in every failing run sampled, so the working assumption
+  that webkit was the flaky browser job did not hold up. Left
+  unfixed pending a closer look at that test's mouse-drag
+  simulation.
+
 v4.0.2 beta (3-9-2026)
 ----------------------
 
