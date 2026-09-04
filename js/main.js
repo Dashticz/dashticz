@@ -1510,6 +1510,18 @@ function startSwiper() {
       $('.slide' + (1 + this.activeIndex)).addClass('selectedbutton');
     });
     $('.slide' + settings['start_page']).addClass('selectedbutton');
+
+    // Swiper positions slides purely via CSS transform here (no cssMode),
+    // so .swiper's own scrollLeft should always stay 0. Some browsers can
+    // still leave it stuck at a nonzero value after a viewport/orientation
+    // change lands mid-reflow, which shifts the whole active screen off to
+    // the side with nothing to bring it back short of a reload. Force it
+    // back to 0 on every resize, once layout has had a chance to settle.
+    $(window).on('resize.dashticz-swiper', function () {
+      setTimeout(function () {
+        if (myswiper && myswiper.el) myswiper.el.scrollLeft = 0;
+      }, 0);
+    });
   }, 100);
 }
 

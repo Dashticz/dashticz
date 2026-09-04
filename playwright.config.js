@@ -25,6 +25,12 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
+  /* Allow a small fraction of differing pixels in toHaveScreenshot() comparisons, so
+     sub-percent rendering noise (anti-aliasing, font hinting) between CI runs/environments
+     doesn't fail a visual regression that a human wouldn't perceive as a real change. */
+  expect: {
+    toHaveScreenshot: { maxDiffPixelRatio: 0.02 },
+  },
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */

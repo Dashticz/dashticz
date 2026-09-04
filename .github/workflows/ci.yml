@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [beta, develop, test]
+    branches: [master, beta, develop, test]
   pull_request:
   workflow_dispatch:
     inputs:

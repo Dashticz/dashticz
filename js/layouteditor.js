@@ -2451,9 +2451,25 @@ var DashticzLayoutEditor = (function () {
     }
     var present = _stillPresentDeviceKeys(payloads);
     var sources = [];
-    removedDeviceSources.forEach(function (removed) {
+    var actualRemovals = removedDeviceSources.filter(function (removed) {
       var key = String(removed.idx) + '_' + (removed.subidx || 0);
-      if (present[key]) return;
+      return !present[key];
+    });
+    var removedCounts = {};
+    actualRemovals.forEach(function (removed) {
+      var key = String(removed.idx) + '_' + (removed.subidx || 0);
+      removedCounts[key] = (removedCounts[key] || 0) + 1;
+    });
+    actualRemovals.forEach(function (removed) {
+      var key = String(removed.idx) + '_' + (removed.subidx || 0);
+      if (
+        DashticzDeviceRules.dashboardDeviceOccurrenceCount(
+          removed.idx,
+          removed.subidx
+        ) > removedCounts[key]
+      ) {
+        return;
+      }
       DashticzDeviceRules.sourceCandidatesForRemoval(
         removed.idx,
         removed.subidx,
