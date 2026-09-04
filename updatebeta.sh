@@ -45,6 +45,11 @@ if [ ! -f "$CONFIG_FILE" ]; then
     # throw when loaded as a script.
     printf '%s\n' '#EMPTY#' > "$CONFIG_FILE"
     echo "No $CONFIG_FILE found; created an empty one for first-run setup."
+elif [ "$(tr -d '[:space:]' < "$CONFIG_FILE")" = '#EMPTY#' ]; then
+    # Keep the first-run marker by itself. Appending config assignments after
+    # it would turn CONFIG.js into invalid JavaScript and prevent the setup
+    # wizard from recognising the otherwise-empty configuration.
+    echo "$CONFIG_FILE is waiting for first-run setup; leaving it unchanged."
 else
     CONFIG_LINE_1='config["topbar_timeout"] = 5;'
     CONFIG_LINE_2="config['hide_topbar'] = 0;"
