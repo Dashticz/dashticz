@@ -1285,11 +1285,13 @@ test('sourceCandidatesForRemoval finds a device saved under any of its idx/refer
     ['device_154', '154']
   );
 
+  // For a sub-device, the bare base idx is deliberately excluded: it is
+  // ambiguous with the main device's own Automation source, so automatic
+  // removal must not delete it just because a sub-device was removed.
   assert.deepEqual(plain(api.sourceCandidatesForRemoval(154, 2, 'Erker_5')), [
     'Erker_5',
     'device_154_2',
     '154_2',
-    '154',
   ]);
 
   // No live idx (e.g. a scene/group or an already-unmounted item) still
