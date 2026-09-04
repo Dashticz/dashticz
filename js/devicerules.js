@@ -1081,9 +1081,111 @@
     add(stableDeviceReference(idx, subidx));
     if (idx) {
       add(String(idx) + (subidx ? '_' + subidx : ''));
-      add(idx);
+      // A bare base idx is ambiguous for a sub-device: it can be the source
+      // of the main device's own Automation. Looking it up remains useful at
+      // runtime for backwards compatibility, but automatic removal must not
+      // delete it when only a sub-device is removed.
+      if (!subidx) add(idx);
     }
     return candidates;
+  }
+
+  function deviceIdentity(value) {
+    var definition = value;
+    if (typeof value === 'string' && window.blocks && window.blocks[value]) {
+      definition = window.blocks[value];
+    }
+
+    var rawIdx =
+      definition && typeof definition === 'object'
+        ? definition.idx
+        : definition;
+    var rawSubidx =
+      definition && typeof definition === 'object' ? definition.subidx : 0;
+    if (/^s\d+$/.test(String(rawIdx || ''))) {
+      return { idx: String(rawIdx), subidx: 0 };
+    }
+    var match = String(rawIdx || '').match(/^\d+(?:_\d+)?$/)
+      ? String(rawIdx).match(/^(\d+)(?:_(\d+))?$/)
+      : null;
+    if (!match || parseInt(match[1], 10) < 1) return null;
+    return {
+      idx: parseInt(match[1], 10),
+      subidx: match[2] ? parseInt(match[2], 10) : parseInt(rawSubidx, 10) || 0,
+    };
+  }
+
+  // Count how often a device is currently placed anywhere in the dashboard,
+  // including classic columns, grid screens, responsive screen profiles and
+  // standby. Removal flows compare this count with the number of occurrences
+  // they are actually deleting, so a rule source shared by another screen is
+  // never wiped along with one tile.
+  function dashboardDeviceOccurrenceCount(idx, subidx) {
+    var targetIdx = String(idx || '');
+    var targetSubidx = parseInt(subidx, 10) || 0;
+    var count = 0;
+    var referencedColumns = 0;
+    var seenContainers = [];
+
+    function countEntries(entries) {
+      if (!Array.isArray(entries)) return;
+      entries.forEach(function (entry) {
+        var identity = deviceIdentity(entry);
+        if (
+          identity &&
+          String(identity.idx) === targetIdx &&
+          identity.subidx === targetSubidx
+        ) {
+          count++;
+        }
+      });
+    }
+
+    function countColumn(columnKey, collection) {
+      if (!collection || !collection[columnKey]) return;
+      referencedColumns++;
+      countEntries(collection[columnKey].blocks);
+    }
+
+    function scanScreenTree(container) {
+      if (!container || typeof container !== 'object') return;
+      if (seenContainers.indexOf(container) !== -1) return;
+      seenContainers.push(container);
+
+      countEntries(container.blocks);
+      if (Array.isArray(container.columns)) {
+        container.columns.forEach(function (columnKey) {
+          countColumn(columnKey, window.columns);
+        });
+      }
+
+      Object.keys(container).forEach(function (key) {
+        if (key === 'blocks' || key === 'columns' || key === 'grid') return;
+        var child = container[key];
+        if (child && typeof child === 'object' && !Array.isArray(child)) {
+          scanScreenTree(child);
+        }
+      });
+    }
+
+    scanScreenTree(window.screens);
+    scanScreenTree(window.standby_screen);
+
+    if (window.columns_standby) {
+      Object.keys(window.columns_standby).forEach(function (columnKey) {
+        countColumn(columnKey, window.columns_standby);
+      });
+    }
+
+    // Older single-screen configurations may define columns without a
+    // screens object. Count those only as a fallback to avoid double-counting
+    // normal screen-referenced columns.
+    if (!referencedColumns && window.columns) {
+      Object.keys(window.columns).forEach(function (columnKey) {
+        countColumn(columnKey, window.columns);
+      });
+    }
+    return count;
   }
 
   function sourceCandidatesForBlock(block) {
@@ -2998,6 +3100,7 @@
     reconcileSavedSource: reconcileSavedSource,
     sourceFromOrderKey: sourceFromOrderKey,
     sourceCandidatesForRemoval: sourceCandidatesForRemoval,
+    dashboardDeviceOccurrenceCount: dashboardDeviceOccurrenceCount,
     deleteSourceRules: deleteSourceRules,
     configForSource: configForSource,
     inferPopupSource: inferPopupSource,
