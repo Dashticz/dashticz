@@ -6131,3 +6131,22 @@ test('the .mh.timeout tint works on the 3 new themes too, not just the default t
     );
   });
 });
+
+test("startSwiper() resets .swiper's scrollLeft on resize, so a viewport change can't leave the active screen scrolled off-screen", () => {
+  // Swiper positions slides purely via CSS transform here (no cssMode
+  // option is passed to `new Swiper(...)`), so the `.swiper` container's
+  // own native scrollLeft should always stay 0. Some browsers can still
+  // leave it stuck at a nonzero value after a viewport/orientation change
+  // lands mid-reflow (observed in Chromium after resizing the window),
+  // shifting the whole active screen off to the side with nothing to bring
+  // it back short of a reload. A window resize handler forces it back to 0.
+  const main = fs.readFileSync(path.join(root, 'js/main.js'), 'utf8');
+  assert.match(
+    main,
+    /\$\(window\)\.on\('resize\.dashticz-swiper', function \(\) \{/
+  );
+  assert.match(
+    main,
+    /if \(myswiper && myswiper\.el\) myswiper\.el\.scrollLeft = 0;/
+  );
+});
