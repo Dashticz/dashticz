@@ -68,6 +68,32 @@ When a bump does apply, it must include:
 - Regenerate `package-lock.json` if `package.json` changed (`npm install --package-lock-only`).
 - Add a corresponding dated entry under "Recent changes" in `docs/releasenotes/releasenotes.rst`, following the existing per-version header + `Enhancements`/`Fixes`/`Code` section style.
 
+## Promoting beta into master
+
+`version.txt` and `docs/releasenotes/releasenotes.rst` used to carry branch-specific
+text (`"branch": "beta"` vs `"master"`, a hand-written `"Master version derived
+from beta X.X.X."` `last_changes`/changelog placeholder, and a separate `vX.X.X
+master (date)` release-notes stub) that got re-authored independently on each
+branch and reliably conflicted on every subsequent beta→master merge. To stop
+that:
+
+- When merging `beta` into `master`, copy `version.txt`'s `last_changes` and
+  `changelog` verbatim from `beta` - don't author separate master-specific text.
+  Only the `"branch"` field itself differs, and it must keep saying the literal
+  git branch name (`"beta"`/`"master"`): `js/version.js`'s update-checker falls
+  back to this field (via `getUpdateSource()`) to build the
+  `raw.githubusercontent.com/.../{branch}/version.txt` compare URL and the
+  GitHub `tree/{branch}` download link whenever a deployed install has no
+  `.git` directory for `vendor/dashticz/info.php`'s `gitinfo` to read (the
+  common case for docker/zip installs) - never repurpose or drop it.
+- Give the promoted `docs/releasenotes/releasenotes.rst` section the same
+  header beta used, without a `beta`/`master` suffix (`vX.X.X (date)`, not
+  `vX.X.X beta (date)`), and don't add a separate `vX.X.X master (date)` stub
+  section for it - master's file should otherwise read the same as beta's.
+- This only applies going forward. Don't rewrite historical `vX.X.X beta
+  (date)`/`vX.X.X master (date)` headers already in `releasenotes.rst` - that's
+  a multi-year record, and scrubbing it wholesale isn't part of this cleanup.
+
 ## Pushing
 
 Before pushing, the required verification section above must be satisfied, especially `npm run format:check`.
