@@ -38,6 +38,30 @@ var SpotifyModule = (function () {
         '" style="' +
         heightStyle +
         'padding:0px !important;">';
+      // Spotify is in getWidgetTitle()'s titleKeys (js/dashticz.js), so the
+      // Widget Editor's Icon/Title checkboxes save block.icon/block.title
+      // (or block.image, for its Icon field's "Image" source) correctly,
+      // but this renderer never painted them at all. .col-icon/.icon,
+      // .col-icon img and .dt_title reuse getColIcon()'s/renderTitle()'s
+      // own markup purely so a theme's icon-size/title rules apply here
+      // too. block.icon and block.image are mutually exclusive.
+      var showTitle = !block.hide_title && block.title;
+      if (block.icon || block.image || showTitle) {
+        html += '<div class="dt-simple-header">';
+        if (block.icon)
+          html +=
+            '<div class="col-icon"><em class="' +
+            block.icon +
+            ' icon"></em></div>';
+        if (block.image)
+          html +=
+            '<div class="col-icon"><img src="img/' +
+            block.image +
+            '" class="icon"/></div>';
+        if (showTitle)
+          html += '<div class="dt_title">' + block.title + '</div>';
+        html += '</div>';
+      }
       html += '<div id="current"></div>';
 
       html +=

@@ -203,6 +203,19 @@
   display: none !important;
 }
 
+/* Every block's title right-aligned by default, matching .mh below (a
+   device's own text-align: right, inherited by its .dt_title since
+   nothing else set the property on the title itself) - widgets rendered
+   via the standard getContainer()/getColIcon()/renderTitle() path
+   (js/dashticz.js) never carry .mh (that class is only added by the
+   Domoticz device pipeline, js/blocks.js), so their .dt_title silently
+   stayed left-aligned without this rule (e.g. the 112/alarmmeldingen
+   widget). .titlegroups .dt_title above and .blocktitle/.slide .dt_title
+   below stay more specific overrides on top of this default. */
+.dt_title {
+  text-align: right !important;
+}
+
 .mh {
   --col1width: 60px;
   --col2width: 60px;

@@ -1,13 +1,110 @@
 Release Notes
 =============
 
-For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedocs.io/en/beta/releasenotes/index.html
+v4.0.4 (5-9-2026)
+----------------------
 
-For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
+* **Fixes**
 
+- Sunrise/sunset widget: a custom ``block.addClass`` was silently
+  ignored. ``renderSunrise()`` builds its own markup instead of
+  going through ``js/dashticz.js``'s ``renderBlock()`` (which every
+  other block relies on for this), so it never applied it - now
+  read and applied directly.
+
+- Sunrise/sunset widget: the Icon checkbox now defaults to on. It
+  has an obvious default icon (``fas fa-sun``), unlike iframe (which
+  has none to guess and keeps the old off-by-default behaviour for a
+  hand-written CONFIG.js block with no ``icon`` field).
+
+- Sunrise/sunset widget: the title now carries the standard
+  ``.dt_title`` class (its font-size/margin overridden back down to
+  this small tile's compact size) so a theme's ``.dt_title``
+  alignment rules - e.g. a theme that right-aligns block titles -
+  apply here too, instead of the title always sitting left-aligned
+  regardless of theme.
+
+- Sunrise/sunset widget: the title stayed left-aligned on Modern
+  Dark and both Liquid Glass themes even after the ``.dt_title``
+  fix above, since those themes actually right-align every device
+  block's title via ``.mh { text-align: right !important }``, not a
+  generic ``.dt_title`` rule - and Sunrise's header never carries
+  ``.mh``. Added an explicit title-alignment override to all 3
+  theme files instead, matching the existing ``.slide .dt_title``
+  override already there.
+
+- Sunrise/sunset widget: that theme override still had no visible
+  effect, because ``.sunrise-header`` shrank to fit just the
+  icon+title's own width, leaving ``text-align`` nothing to push
+  against. It's now a flex row stretched to the tile's full width,
+  with the title given ``flex: 1`` to actually fill the remaining
+  space, so a right-aligned title now visibly sits at the tile's
+  right edge - icon-left/title-right, like every other block.
+
+- Sunrise/sunset widget: added a Data toggle to its Widget Config
+  (hides the sunrise/sunset time row while keeping icon/title,
+  matching a device's Data option) - the only catalog widget whose
+  renderer actually reads it, so the button only appears there.
+
+- Every catalog widget's Config popup was missing the Background
+  toggle (#170) that Device Config already had.
+  ``js/components/button.js``'s ``enhancePopups()`` matched
+  ``#we-config-popup`` as a class selector (``.we-config-popup``)
+  instead of the id it actually is, so the toggle never got
+  injected into Widget Config at all.
+
+- Moon, Weather/Wunderground and Spotify build their own markup
+  instead of going through the standard rendering path, so their
+  configured Icon/Title were silently dropped entirely - all three
+  now paint them via the same ``.col-icon``/``.icon`` and
+  ``.dt_title`` classes every other block uses, so a theme's
+  icon-size and title styling applies to them too.
+
+- The OWM widget replaced its entire themed block - icon and title
+  included - with its own embed on every update, instead of only
+  updating its own content area.
+
+- Graph's header icon had a hardcoded pixel size, and Sonarr's icon
+  was missing the class its own icon column already required to be
+  themed - both now follow a theme's icon size. Each widget's other
+  custom styling (Graph's icon color, Sonarr's title position) is
+  unchanged.
+
+- The title-alignment fix earlier only covered Sunrise. Any widget
+  rendered via the standard path (e.g. the 112/alarmmeldingen
+  widget) never carries the class only real Domoticz devices get,
+  so it still had no theme-driven title alignment. Replaced the
+  Sunrise-only override with a plain title-alignment default in all
+  3 theme files, which existing more specific title overrides still
+  take precedence over.
+
+- Sunrise, Moon, Weather and Spotify only ever read a plain font
+  icon, never a custom uploaded image - the Widget Editor's Icon
+  field can be switched to an image instead, so picking one
+  rendered nothing. All four now support both.
+
+- The real Weather widget's icon and title were still invisible in
+  practice, despite already being present in the markup: it scales
+  its own tile's font-size dynamically based on width for its
+  internal forecast content, and the icon/title inherited that same
+  font-size chain, so an early, still-zero-width layout pass could
+  shrink both down to nothing. The OWM widget does the same internal
+  scaling and had the identical risk. Both now pin their icon and
+  title to a stable size, unaffected by that internal scaling.
+
+- The actual reason the Weather widget's icon and title never
+  appeared: as soon as forecast data arrived, its own refresh logic
+  replaced the entire widget - icon and title included - with just
+  the forecast tiles. It now only replaces its own forecast content,
+  leaving the icon and title in place.
+
+- That fix left the Weather widget's forecast days stacked on top of
+  each other instead of side by side, since they'd relied on being
+  a direct child of the widget's own row layout to line up. They're
+  back in a row again.
 
 v4.0.3 (4-9-2026)
-------------------
+-----------------
 
 * **Fixes**
 
@@ -44,7 +141,7 @@ v4.0.3 (4-9-2026)
   regression test for the resize handler.
 
 v4.0.2 (3-9-2026)
-------------------
+-----------------
 
 * **Fixes**
 
@@ -73,13 +170,13 @@ v4.0.2 (3-9-2026)
 - Enabled the CI workflow to also run on pushes to ``master``, not
   just ``beta``/``develop``/``test``.
 
-v4.0.1 master (3-9-2026)
-------------------------
+v4.0.1 (3-9-2026)
+-----------------
 
 Master version derived from beta 4.0.1. See below.
 
-v4.0.1 beta (2-9-2026)
-----------------------
+v4.0.1 (2-9-2026)
+-----------------
 
 * **Enhancements**
 
@@ -136,8 +233,8 @@ v4.0.1 beta (2-9-2026)
   (Playwright/Chromium) of the ``loadConfig`` and jQuery UI fixes,
   and end-to-end manual testing on a live Domoticz dashboard.
 
-v3.45.14 beta (2-9-2026)
-------------------------
+v3.45.14 (2-9-2026)
+-------------------
 
 * **Code**
 
@@ -148,8 +245,8 @@ v3.45.14 beta (2-9-2026)
   equivalent Dependabot proposal. Only ``package-lock.json`` changed;
   no direct dependency ranges in ``package.json`` were affected.
 
-v3.45.13 beta (30-8-2026)
--------------------------
+v3.45.13 (30-8-2026)
+--------------------
 
 * **Enhancements**
 
@@ -194,8 +291,8 @@ v3.45.13 beta (30-8-2026)
   configuration cog, its shared Graph controls and canonical save
   path.
 
-v3.45.12 beta (29-8-2026)
--------------------------
+v3.45.12 (29-8-2026)
+--------------------
 
 * **Enhancements**
 
@@ -225,8 +322,8 @@ v3.45.12 beta (29-8-2026)
   ``beta``.
 
 
-v3.45.11 beta (28-8-2026)
--------------------------
+v3.45.11 (28-8-2026)
+--------------------
 
 * **Enhancements**
 
@@ -345,8 +442,8 @@ v3.45.11 beta (28-8-2026)
 - Verified the Theme settings menu changes with the full node --test
   suite (201 tests), Prettier's format check, and a production build.
 
-v3.45.10 beta (27-8-2026)
--------------------------
+v3.45.10 (27-8-2026)
+--------------------
 
 * **Enhancements**
 
@@ -429,8 +526,8 @@ v3.45.10 beta (27-8-2026)
   computed font-size/font-family matches the new scale with no
   visible config text below 12px.
 
-v3.45.8 beta (26-8-2026)
--------------------------
+v3.45.8 (26-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -581,8 +678,8 @@ v3.45.8 beta (26-8-2026)
   disabled action always normalising to a non-empty class name both
   client- and server-side) and Prettier's format check.
 
-v3.45.9 beta (27-8-2026)
--------------------------
+v3.45.9 (27-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -619,8 +716,8 @@ v3.45.9 beta (27-8-2026)
   verification of the Screen Editor flow was not possible in this
   environment (no Domoticz/Docker stack available).
 
-v3.45.7 beta (25-8-2026)
--------------------------
+v3.45.7 (25-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -663,8 +760,8 @@ v3.45.7 beta (25-8-2026)
   ``js/devicerules.js`` (no functional change) that was failing CI's
   ``format:check`` job on Node 20/22/24.
 
-v3.45.6 beta (24-8-2026)
--------------------------
+v3.45.6 (24-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -749,8 +846,8 @@ v3.45.6 beta (24-8-2026)
   ``.de-switch``, ``.de-lms-switch``) into the shared blue-switch color
   rule on their own.
 
-v3.45.5 beta (23-8-2026)
--------------------------
+v3.45.5 (23-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -811,8 +908,8 @@ v3.45.5 beta (23-8-2026)
   size unchanged within budget), the full ``node --test`` suite,
   Prettier's format check, and the Playwright suite.
 
-v3.45.4 beta (22-8-2026)
--------------------------
+v3.45.4 (22-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -1104,8 +1201,8 @@ v3.45.4 beta (22-8-2026)
   - any future standalone Device Config switch can just add this
   class instead of needing its own new CSS rule.
 
-v3.45.3 beta (21-8-2026)
--------------------------
+v3.45.3 (21-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -1250,8 +1347,8 @@ v3.45.3 beta (21-8-2026)
   functional for anyone who sets them directly in ``CONFIG.js``; only the
   settings-UI entry point was removed.
 
-v3.45.2 beta (20-8-2026)
--------------------------
+v3.45.2 (20-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -1386,8 +1483,8 @@ v3.45.2 beta (20-8-2026)
   production code changed - the tests now assert the actual current
   implementation instead of an earlier, simpler shape.
 
-v3.45.1 beta (19-8-2026)
--------------------------
+v3.45.1 (19-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -1448,8 +1545,8 @@ v3.45.1 beta (19-8-2026)
   code changed - the tests now assert basicclock.js's actual current
   behavior instead of its old one.
 
-v3.45.0 beta (19-8-2026)
--------------------------
+v3.45.0 (19-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -1506,8 +1603,8 @@ v3.45.0 beta (19-8-2026)
   instead of silently falling back to a default. An explicitly configured
   icon is unaffected and keeps rendering as before (#169).
 
-v3.44.3 beta (18-8-2026)
--------------------------
+v3.44.3 (18-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -1539,8 +1636,8 @@ v3.44.3 beta (18-8-2026)
   save now declares the new block in the same request instead of only
   sending a grid position for something the config didn't know yet.
 
-v3.44.2 beta (17-8-2026)
--------------------------
+v3.44.2 (17-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -1554,8 +1651,8 @@ v3.44.2 beta (17-8-2026)
   Layout Editor open and untouched underneath the whole time, the same way
   a widget tile's gear icon already worked.
 
-v3.44.1 beta (17-8-2026)
--------------------------
+v3.44.1 (17-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -1577,8 +1674,8 @@ v3.44.1 beta (17-8-2026)
   favor of the **+** add-item icon in that same topbar slot while editing,
   and swaps back once editing closes.
 
-v3.44.0 beta (17-8-2026)
--------------------------
+v3.44.0 (17-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -1598,8 +1695,8 @@ v3.44.0 beta (17-8-2026)
   coding a fixed icon and title visibility with no way to change either
   before saving.
 
-v3.43.5 beta (16-8-2026)
--------------------------
+v3.43.5 (16-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -1613,8 +1710,8 @@ v3.43.5 beta (16-8-2026)
   which pulls the center down away from the digit itself. Repositioned
   lower to align with the digit.
 
-v3.43.4 beta (16-8-2026)
--------------------------
+v3.43.4 (16-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -1637,8 +1734,8 @@ v3.43.4 beta (16-8-2026)
   theme's ``!important`` font-size/height rules. The fixed-height topbar
   Miniclock is unaffected.
 
-v3.43.3 beta (16-8-2026)
--------------------------
+v3.43.3 (16-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -1661,8 +1758,8 @@ v3.43.3 beta (16-8-2026)
   (digits touching, the ':' separators hidden behind them) instead of
   scaling with the block.
 
-v3.43.2 beta (16-8-2026)
--------------------------
+v3.43.2 (16-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -1683,8 +1780,8 @@ v3.43.2 beta (16-8-2026)
   font, instead of only reacting to Scale (and never past 100%) while Size
   had no effect on the visible clock at all.
 
-v3.43.1 beta (16-8-2026)
--------------------------
+v3.43.1 (16-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -1693,8 +1790,8 @@ v3.43.1 beta (16-8-2026)
   its editor-list icon) and the Screen Editor add-menu's **Separator** tile
   icon from ``fa-heading`` to ``fa-divide``.
 
-v3.43.0 beta (16-8-2026)
--------------------------
+v3.43.0 (16-8-2026)
+-------------------
 
 * **Improvements**
 
@@ -1709,8 +1806,8 @@ v3.43.0 beta (16-8-2026)
 - Separator icons now have a visible default and remain hidden after the Icon
   option is unchecked and saved.
 
-v3.42.10 beta (15-8-2026)
----------------------------
+v3.42.10 (15-8-2026)
+--------------------
 
 * **Fixes**
 
@@ -1730,8 +1827,8 @@ v3.42.10 beta (15-8-2026)
 - Added Chromium regressions covering legacy column sizing/icon behavior and
   fixed grid-cell sizing with explicit icons.
 
-v3.42.9 beta (15-8-2026)
---------------------------
+v3.42.9 (15-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -1755,8 +1852,8 @@ v3.42.9 beta (15-8-2026)
   Removed the obsolete unreferenced ``dist/475.js`` chunk and duplicate legacy
   ``packagelock.json`` file.
 
-v3.42.8 beta (14-8-2026)
---------------------------
+v3.42.8 (14-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -1771,8 +1868,8 @@ v3.42.8 beta (14-8-2026)
   language, ``config_mode``, and every other setting) are now written to
   and read from the same object that is actually submitted.
 
-v3.42.7 beta (14-8-2026)
---------------------------
+v3.42.7 (14-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -1784,8 +1881,8 @@ v3.42.7 beta (14-8-2026)
   the existing "permission denied" and "dubious ownership" cases, instead of
   just the raw Git error.
 
-v3.42.6 beta (14-8-2026)
---------------------------
+v3.42.6 (14-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -1797,8 +1894,8 @@ v3.42.6 beta (14-8-2026)
   either with ``config['theme'] = 'liquid-glass-grey';`` or
   ``config['theme'] = 'liquid-glass-blue';``.
 
-v3.42.5 beta (14-8-2026)
---------------------------
+v3.42.5 (14-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -1839,8 +1936,8 @@ v3.42.5 beta (14-8-2026)
   - so the property ended up simply absent instead of explicitly cleared,
   which read back as "never configured" rather than "off".
 
-v3.42.4 beta (14-8-2026)
---------------------------
+v3.42.4 (14-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -1864,8 +1961,8 @@ v3.42.4 beta (14-8-2026)
   these rows now saves the device's base idx instead, so the dial correctly
   detects the combined sensor type and renders a gauge.
 
-v3.42.3 beta (13-8-2026)
---------------------------
+v3.42.3 (13-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -1881,8 +1978,8 @@ v3.42.3 beta (13-8-2026)
   keeps a height a widget's own field explicitly (re)sets on that save;
   column mode is unaffected.
 
-v3.42.2 beta (13-8-2026)
---------------------------
+v3.42.2 (13-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -1897,8 +1994,8 @@ v3.42.2 beta (13-8-2026)
   around the whole tile. Capped the log widget's block to its row height,
   matching the same fix already applied to the iFrame/WAQI/clock widgets.
 
-v3.42.0 beta (12-8-2026)
---------------------------
+v3.42.0 (12-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -1964,8 +2061,8 @@ v3.42.0 beta (12-8-2026)
     confirmed with a dimmer dial swept across its full 0–100% range.
     Wrapped in a new ``.dial-needle-clip`` container.
 
-v3.41.7 beta (12-8-2026)
---------------------------
+v3.41.7 (12-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -1981,8 +2078,8 @@ v3.41.7 beta (12-8-2026)
   since these devices aren't a real, recognised Domoticz device type there
   was nothing else to derive an icon from, so the tile rendered with none.
 
-v3.41.6 beta (11-8-2026)
---------------------------
+v3.41.6 (11-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -1992,8 +2089,8 @@ v3.41.6 beta (11-8-2026)
   an 8x8 grid cell (in grid columns/rows) instead, independent of the
   column-mode default the widget still uses outside grid screens.
 
-v3.41.5 beta (11-8-2026)
---------------------------
+v3.41.5 (11-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -2004,8 +2101,8 @@ v3.41.5 beta (11-8-2026)
   devices, the separator/title bar block (**Tussenbalk**), Slide button,
   Multi Device, and Custom device — all of which share this same popup.
 
-v3.41.4 beta (11-8-2026)
---------------------------
+v3.41.4 (11-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -2018,8 +2115,8 @@ v3.41.4 beta (11-8-2026)
   it was set. The clocks now render into ``.dt_state`` instead, leaving
   the title alone.
 
-v3.41.3 beta (11-8-2026)
---------------------------
+v3.41.3 (11-8-2026)
+-------------------
 
 * **Code**
 
@@ -2029,8 +2126,8 @@ v3.41.3 beta (11-8-2026)
 - Removed ``tests/phpsecurity.test.js``, a stale duplicate of
   ``tests/php-security.test.js`` that had drifted out of sync with it.
 
-v3.41.2 beta (11-8-2026)
---------------------------
+v3.41.2 (11-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -2050,8 +2147,8 @@ v3.41.2 beta (11-8-2026)
   reserved grid cell; only the visible content was affected, the stored
   size was never actually lost.
 
-v3.41.1 beta (11-8-2026)
---------------------------
+v3.41.1 (11-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -2128,8 +2225,8 @@ v3.41.1 beta (11-8-2026)
   ``BTC_Price``) that could be mistaken for defaults. Existing Custom
   Devices are unaffected.
 
-v3.41.0 beta (10-8-2026)
---------------------------
+v3.41.0 (10-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -2160,8 +2257,8 @@ v3.41.0 beta (10-8-2026)
   ``savewidgets.php`` still rejected the save. It now falls back to
   ``settings.xmltv_url`` when the block has no URL of its own.
 
-v3.40.6 beta (10-8-2026)
---------------------------
+v3.40.6 (10-8-2026)
+-------------------
 
 * **Enhancements**
 
@@ -2174,8 +2271,8 @@ v3.40.6 beta (10-8-2026)
   needed the missing Device Editor UI and ``saveblocks.php``/``configwriter.php``
   wiring to carry the icon through to ``CONFIG.js``.
 
-v3.40.5 beta (10-8-2026)
---------------------------
+v3.40.5 (10-8-2026)
+-------------------
 
 * **Code**
 
@@ -2186,8 +2283,8 @@ v3.40.5 beta (10-8-2026)
   writer's ``$forceClone`` check, which still expected its previous form and
   never matched the current cross-screen ownership logic (commit a88f728).
 
-v3.40.4 beta (10-8-2026)
---------------------------
+v3.40.4 (10-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -2204,8 +2301,8 @@ v3.40.4 beta (10-8-2026)
   adding a device no longer breaks dashboards that also use the XMLTV TV
   Guide or an iFrame widget. (#98)
 
-v3.40.3 beta (10-8-2026)
---------------------------
+v3.40.3 (10-8-2026)
+-------------------
 
 * **Fixes**
 
@@ -2221,8 +2318,8 @@ v3.40.3 beta (10-8-2026)
   default height needed to pack columns, and any explicitly-set height keeps
   working in both modes.
 
-v3.40.2 beta (7-8-2026)
---------------------------
+v3.40.2 (7-8-2026)
+------------------
 
 * **Fixes**
 
@@ -2248,8 +2345,8 @@ v3.40.2 beta (7-8-2026)
   with ``slide``, ``key``, ``title`` and optional ``icon`` properties for quick
   page navigation buttons.
 
-v3.40.1 beta (7-8-2026)
---------------------------
+v3.40.1 (7-8-2026)
+------------------
 
 * **Fixes**
 
@@ -2262,8 +2359,8 @@ v3.40.1 beta (7-8-2026)
   in the theme dropdown therefore never cleared after a reset, making saved changes
   appear not to take effect.
 
-v3.40.0 beta (7-8-2026)
---------------------------
+v3.40.0 (7-8-2026)
+------------------
 
 * **Enhancements**
 
@@ -2284,7 +2381,7 @@ v3.40.0 beta (7-8-2026)
 - Bumped the beta package and runtime version to 3.40.0 and updated regression
   coverage for the editor controls.
 
-v3.30.3 beta (5-8-2026)
+v3.30.3 (5-8-2026)
 
 * **Enhancements**
 
@@ -2309,13 +2406,13 @@ v3.30.3 beta (5-8-2026)
   source/playwright tests. Existing ``CONFIG.js`` variables and alignment
   options remain supported and the version number is unchanged.
 
-v3.30.2 beta (4-8-2026)
+v3.30.2 (4-8-2026)
 
 * **Fixes**
 
 - Theme settings: after selecting the "original" (reset) option, the reset entry no longer reappears in the dropdown while the panel is still open.
 
-v3.30.1 beta (5-8-2026)
+v3.30.1 (5-8-2026)
 
 * **Enhancements
 
@@ -2338,7 +2435,7 @@ v3.30.1 beta (5-8-2026)
 - Limited the mode-switch change to the Wizard confirmation text and the
   configuration cleanup written by `saveconfigmode.php`.
 
-v3.30.0 beta (4-8-2026)
+v3.30.0 (4-8-2026)
 
 * **Changes
 
@@ -2390,8 +2487,8 @@ v3.30.0 beta (4-8-2026)
 - Replaced deprecated PHP string-offset syntax in the legacy iCalendar parser.
 - The parser is now compatible with PHP 8.
 
-v3.23.7 beta (2-8-2026)
---------------------------
+v3.23.7 (2-8-2026)
+------------------
 
 * **Consistent localization for settings and widgets**: user-facing text in
   Settings, Device Editor, Widget Editor, Layout Editor, screen controls and
@@ -2431,8 +2528,8 @@ v3.23.7 beta (2-8-2026)
   can immediately populate the new screen. This empty bootstrap remains
   separate from the delete-screen operation.
 
-v3.23.6 beta (1-8-2026)
---------------------------
+v3.23.6 (1-8-2026)
+------------------
 
 * **Stable Domoticz device keys**: blocks written by the Device Editor now use
   ``device_<IDX>`` or ``device_<IDX>_<subidx>`` instead of a mutable Domoticz
@@ -2467,24 +2564,24 @@ Fixes
 
 * **XMLTV TV Guide — consistent setting storage**: the Widget Editor now stores the XMLTV widget's URL, channel filter, maximum items, layout, separator, and refresh interval as global ``config['xmltv_*']`` settings, matching the pattern already used by widgets such as Sonarr.  Generated XMLTV blocks now use ``type: 'xmltvguide'`` and read those shared settings automatically, while existing hand-written blocks that keep ``xmltvurl`` / ``channels`` / ``maxitems`` directly on the block remain supported as overrides.
 
-v3.23.5 beta (1-8-2026)
---------------------------
+v3.23.5 (1-8-2026)
+------------------
 
 Fixes
 ~~~~~
 
 * **XMLTV TV Guide — settings not saved**: in grid mode, changing the XMLTV URL (or any other XMLTV widget setting) via the widget-editor settings popup now persists correctly.  Previously ``savegridlayout.php`` would re-apply the stale block definition from the old grid-layout section of ``CONFIG.js`` instead of the freshly-saved definition written by ``savewidgets.php``, silently discarding the change.  Additionally, the widget editor now reads back ``layout``, ``separator`` and ``refresh`` from an existing saved block when the settings popup is opened in grid mode.
 
-v3.23.4 beta (1-8-2026)
---------------------------
+v3.23.4 (1-8-2026)
+------------------
 
 Fixes
 ~~~~~
 
 * **XMLTV TV Guide**: the XMLTV widget now stays on its own XMLTV data path instead of falling back to the legacy ``tvgids.nl`` JSON API when ``channels`` is configured.  Widget saves now preserve the XMLTV-specific ``layout``, ``separator`` and ``refresh`` options during Widget/Layout Editor updates.  Public XMLTV feeds can now be fetched through a dedicated PHP endpoint that caches downloads for 24 hours and accepts plain XML plus ``.gz`` and ``.zip`` guide files.
 
-v3.23.3 beta (1-8-2026)
---------------------------
+v3.23.3 (1-8-2026)
+------------------
 
 Fixes
 ~~~~~
@@ -2492,16 +2589,16 @@ Fixes
 * **Default topbar height**: when no theme is selected, the topbar now uses the same compact height as Modern Dark.
 * **Topbar screen-switcher PNG icons**: when **Custom iconen topbalk** is enabled, the Standby and screen buttons now automatically use the bundled ``Standby.png``, ``One.png``, ``Two.png``, ``Three.png``, and ``Four.png`` assets when no explicit per-screen icon is configured.  These screen-switcher PNG icons now render at 30px.
 
-v3.23.2 beta (1-8-2026)
---------------------------
+v3.23.2 (1-8-2026)
+------------------
 
 Fixes
 ~~~~~
 
 * **Topbar custom icons**: renamed the topbar icon setting from *"Default iconen topbalk"* to **"Custom iconen topbalk"** and corrected the logic so that **off** (default) keeps Font Awesome icons and **on** switches to custom PNG images from ``img/icons/``.  The fix applies consistently to the main topbar, the Standby-screen editor icons, and the fullscreen toggle.
 
-v3.23.1 beta (1-8-2026)
---------------------------
+v3.23.1 (1-8-2026)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -2512,8 +2609,8 @@ Enhancements
 
 
 
-v3.23.0 beta (1-8-2026)
---------------------------
+v3.23.0 (1-8-2026)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -2541,8 +2638,8 @@ Fixes
 
 
 
-v3.22.2 beta (1-8-2026)
---------------------------
+v3.22.2 (1-8-2026)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -2550,8 +2647,8 @@ Enhancements
 * Config mode: the Custom/Wizard switch now defaults to **Custom** when ``config["config_mode"]`` is absent from CONFIG.js (hand-written configs are treated as Custom). On startup and on every settings save the auto-detected value is written back to CONFIG.js so that subsequent loads resolve it directly.
 
 
-v3.22.1 beta (1-8-2026)
---------------------------
+v3.22.1 (1-8-2026)
+------------------
 
 Fixes
 ~~~~~
@@ -2560,8 +2657,8 @@ Fixes
 * Calendar (agenda layouts 0 and 1): the block background now expands to fit all displayed agenda items instead of being capped at a fixed 120 px default.  Users who want a fixed-height scrollable agenda can still set ``height`` explicitly in their block config; layout 2 (monthly view) is unaffected.
 
 
-v3.22.0 beta (30-7-2026)
---------------------------
+v3.22.0 (30-7-2026)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -2590,32 +2687,32 @@ Fixes
 * Grid Layout Editor: blocks cannot be resized below two columns by four rows.
 * Garbage: collection date names now explicitly follow the language selected under Settings > Localize.
 
-v3.21.7 beta (30-7-2026)
---------------------------
+v3.21.7 (30-7-2026)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
 
 * Wizard layout: opening a legacy columns screen now offers a confirmed conversion to a compact 24-column grid, including named, numeric and inline blocks. Switching from Custom to Wizard performs the same conversion, ensuring Wizard uses free grid placement.
 
-v3.21.6 beta (30-7-2026)
---------------------------
+v3.21.6 (30-7-2026)
+-------------------
 
 Fixes
 ~~~~~
 
 * Grid Layout Editor: the editing canvas now exposes and dynamically adds empty rows, scrolls automatically near the viewport edge, and keeps pointer capture outside the original block area so blocks can be dropped at any grid coordinate.
 
-v3.21.5 beta (30-7-2026)
---------------------------
+v3.21.5 (30-7-2026)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
 
 * Grid Layout Editor: named blocks on a grid screen can be dragged to new ``x``/``y`` coordinates and resized in ``w``/``h`` grid units. Save persists a safe grid-only override in ``CONFIG.js``; Cancel restores the original layout.
 
-v3.21.4 beta (30-7-2026)
---------------------------
+v3.21.4 (30-7-2026)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -2623,8 +2720,8 @@ Enhancements
 * Screens: optional CSS Grid layouts place blocks at explicit ``x``, ``y``, ``w`` and ``h`` coordinates while preserving empty cells. Grid dimensions, row height and gap are configurable per screen.
 * Grid screens: invalid positions receive safe fallbacks with console warnings, overlapping blocks remain rendered and are marked for diagnosis, mobile screens stack blocks in configured order, and column-based Device/Widget editors are disabled to protect grid configuration.
 
-v3.21.3 beta (30-7-2026)
---------------------------
+v3.21.3 (30-7-2026)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -2646,16 +2743,16 @@ Fixes
 * Version check: the comparison now follows the current Git checkout's preferred remote and branch, and its status text is translated.
 * Visual editors: saving a layout with tall and short tiles now keeps every tile on the same 12-column grid, preserving its configured width, order and height after reload.
 
-v3.21.2 beta (28-7-2026)
---------------------------
+v3.21.2 (28-7-2026)
+-------------------
 
 Fixes
 ~~~~~
 
 * CONFIG.js: visual editor saves now consolidate generated output into one section with settings at the top, followed by grouped blocks, columns and screens. Existing separate Device, Widget and Layout Editor sections are migrated automatically on the next save.
 
-v3.21.1 beta (28-7-2026)
---------------------------
+v3.21.1 (28-7-2026)
+-------------------
 
 Fixes
 ~~~~~
@@ -2668,8 +2765,8 @@ Documentation
 * README: documents the first-run wizard, Wizard/Custom modes, all topbar editors, the complete 15-widget catalog, standby settings, browser updates, and every supported installer directory option.
 * Automatic installer guide: documents ``-d``, ``--directory``, ``--directory=PATH``, a positional directory, ``DASHTICZ_INSTALL_DIR``, and ``--help``.
 
-v3.21.0 beta (28-7-2026)
---------------------------
+v3.21.0 (28-7-2026)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -2684,8 +2781,8 @@ Enhancements
 * Topbar: Dashticz logo is shown before the app title. The topbar clock is optional via Settings → Weergave (default off).
 * Settings Update: Git commands pass ``safe.directory`` for the Dashticz checkout so updates work when the web-server user does not own the files (e.g. Docker / www-data). Permission errors show a fix hint; use ``tools/install-dashticz-write-access.sh --git-update`` to grant write access. ``install.sh`` runs that helper after a fresh clone so first installs can use Settings → Update.
 
-v3.20.4 beta (24-7-2026)
---------------------------
+v3.20.4 (24-7-2026)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -2708,8 +2805,8 @@ Fixes
 * Device Editor save: blocks are now written as proper named ``blocks['Name'] = {idx, …}`` entries with grouped columns and a ``screens[1]`` initialisation; previously only a raw IDX array was written to a single ``columns['device_editor']`` entry and ``screens[1]`` was never created on a fresh CONFIG.js.
 * Device Editor remove: restoring a removed device back into the ``available[]`` array so that subsequent **+** dropdown rows correctly include it.
 
-v3.20.3 beta (20-7-2026)
---------------------------
+v3.20.3 (20-7-2026)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -2721,24 +2818,24 @@ Code
 
 * Makefile: Rewritten container management targets (contributed by jgaalen)
 
-v3.20.2 beta (20-7-2026)
---------------------------
+v3.20.2 (20-7-2026)
+-------------------
 
 Code
 ~~~~~
 
 * Docs: Fixed remaining ``thermostat.js`` reference to ``tempcontrol.js`` (contributed by jgaalen)
 
-v3.20.1 beta (20-7-2026)
---------------------------
+v3.20.1 (20-7-2026)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
 
 * Garbage: Added HVC waste collection provider (contributed by me-processware)
 
-v3.20.0 beta (20-7-2026)
---------------------------
+v3.20.0 (20-7-2026)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -2750,8 +2847,8 @@ Code
 
 * Build tooling moved to the ``build/`` folder (webpack, babel and prettier configs)
 
-v3.14.1.5 beta (29-4-2025)
---------------------------
+v3.14.1.5 (29-4-2025)
+---------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -2763,24 +2860,24 @@ Code
 
 * Thermostat styling: CSS class for thermostat value renamed from ``.state`` to ``.value``
   
-v3.14.1.4 beta (18-4-2025)
---------------------------
+v3.14.1.4 (18-4-2025)
+---------------------
 
 Fixes
 ~~~~~~
 
 * Fix for Logitech Media Server
 
-v3.14.1.3 beta (17-4-2025)
---------------------------
+v3.14.1.3 (17-4-2025)
+---------------------
 
 Fixes
 ~~~~~~
 
 * Fix for default icons of a switch block
 
-v3.14.1.2 beta (15-4-2025)
---------------------------
+v3.14.1.2 (15-4-2025)
+---------------------
 
 Fixes
 ~~~~~~
@@ -2792,8 +2889,8 @@ Code
 
 * First version of autotest
   
-v3.14.1.1 beta (1-4-2025)
-------------------------
+v3.14.1.1 (1-4-2025)
+--------------------
 
 Fixes
 ~~~~~~
@@ -2801,8 +2898,8 @@ Fixes
 * Fix for Domoticz device types Usage and Scale
 * Fix for Domoticz subdevice numbering
 
-v3.14.1 beta (24-3-2025)
-------------------------
+v3.14.1 (24-3-2025)
+-------------------
 
 .. warning :: Some breaking changes. See :ref:`v3_14_1`
 
@@ -2822,18 +2919,18 @@ Rework of Domoticz blocks, giving the following new parameters:
 
 See :ref:`dom_blockparameters` and :ref:`multiplevaluesblock`
 
-v3.14.0 beta (23-2-2025)
-------------------------
+v3.14.0 (23-2-2025)
+-------------------
 
 Beta version, same as v3.14
 
-v3.14 master (23-2-2025)
-------------------------
+v3.14 (23-2-2025)
+-----------------
 
 Master version derived from v3.13.1. See below.
 
-V3.13.1 beta (18-2-2025)
----------------------------
+V3.13.1 (18-2-2025)
+-------------------
 
 Fixes
 ~~~~~~
@@ -2846,18 +2943,18 @@ Fixes
 * Work-around for broken websocket with Domoticz 2024.7
 * Weather: Fix for OWM3. (@meal)
 
-V3.13.0 beta (14-7-2024)
----------------------------
+V3.13.0 (14-7-2024)
+-------------------
 
 Beta version, derived from v3.13 master
 
-V3.13 master (14-7-2024)
----------------------------
+V3.13 (14-7-2024)
+-----------------
 
 Same as v3.12.1 beta
 
-V3.12.1 beta (14-7-2024)
----------------------------
+V3.12.1 (14-7-2024)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -2879,13 +2976,13 @@ Fixes
 * Dial: Prevent error when device is not defined
 * Dial: Fix updown dial (bug introduced by recent change)
 
-V3.12.0 beta (26-1-2024)
----------------------------
+V3.12.0 (26-1-2024)
+-------------------
 
 Beta version, derived from v3.12 master
 
-V3.12 Master (26-1-2024)
----------------------------
+V3.12 (26-1-2024)
+-----------------
 
 Roll-up of all v3.11.x beta changes,summarized below:
 
@@ -2915,8 +3012,8 @@ Fixes
 * Settings: Fix for save settings with setting containing a ' character
 * Setpoint devices: Fix for new Domoticz setpoint devices (Domoticz build 15555)
 
-V3.11.2 Beta (26-1-2024)
----------------------------
+V3.11.2 (26-1-2024)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -2940,8 +3037,8 @@ Fixes
 * Dial: Fix for a needle with a custom setpoint: main value was replaced by the needle value
 * Settings: Fix for save settings with setting containing a ' character
 
-V3.11.1 Beta (23-9-2023)
----------------------------
+V3.11.1 (23-9-2023)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -2954,13 +3051,13 @@ Fixes
 
 * Setpoint devices: Fix for new Domoticz setpoint devices (Domoticz build 15555)
 
-V3.11.0 Beta (8-9-2023)
----------------------------
+V3.11.0 (8-9-2023)
+------------------
 
 Beta version, derived from v3.11 master
 
-V3.11 Master (8-9-2023)
----------------------------
+V3.11 (8-9-2023)
+----------------
 
 Roll-up of all v3.10.x beta changes,summarized below:
 
@@ -2991,16 +3088,16 @@ Fixes
 * Publictransport: Fix for OVAPI (SSL certificate expired)
 * Debug: Fix some iOS 7 and 9 incompatibility
 
-v3.10.9 Beta (8-9-2023)
--------------------------
+v3.10.9 (8-9-2023)
+------------------
 
 Fixes
 ~~~~~~
 
 * Graph: Fix height computation.
 
-v3.10.8 Beta (5-9-2023)
--------------------------
+v3.10.8 (5-9-2023)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~~
@@ -3017,8 +3114,8 @@ Fixes
 * Login from trusted network without username.
 * Dial: Update custom dial setpoint after Domoticz device update.
 
-v3.10.7 Beta (15-6-2023)
--------------------------
+v3.10.7 (15-6-2023)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~~
@@ -3030,32 +3127,32 @@ Fixes
 
 * Fix loading problems
 
-v3.10.6 Beta (11-6-2023)
--------------------------
+v3.10.6 (11-6-2023)
+-------------------
 
 Code
 ~~~~~~
 
 * Bump versions
 
-v3.10.5 Beta (6-6-2023)
--------------------------
+v3.10.5 (6-6-2023)
+------------------
 
 Fixes
 ~~~~~
 
 * Fix for additional changes in Domoticz API (2023.1, build 15327 and up)
 
-v3.10.4 Beta (4-6-2023)
--------------------------
+v3.10.4 (4-6-2023)
+------------------
 
 Fixes
 ~~~~~
 
 * Graph: Fix for changes in Domoticz API (2023.1, build 15330)
 
-v3.10.3 Beta (2-5-2023)
--------------------------
+v3.10.3 (2-5-2023)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~~
@@ -3068,8 +3165,8 @@ Fixes
 
 * Garbage: Fix recycleapp (BE)
 
-v3.10.2 Beta (19-2-2023)
--------------------------
+v3.10.2 (19-2-2023)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~~
@@ -3084,8 +3181,8 @@ Fixes
 * Debug: Fix some iOS 7 and 9 incompatibility
 * Domoticz devices: Fix for ``setBlock`` functionality
 
-v3.10.1 Beta (28-1-2023)
-----------------------------
+v3.10.1 (28-1-2023)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3107,21 +3204,21 @@ Code
 
 * Enhanced debug functionality
 
-v3.10.0.1 Beta (27-12-2022)
-----------------------------
+v3.10.0.1 (27-12-2022)
+----------------------
 
 Fixes
 ~~~~~
 
 * Publictransport: Fix for OVAPI (SSL certificate expired)
 
-v3.10.0 Beta (27-12-2022)
--------------------------
+v3.10.0 (27-12-2022)
+--------------------
 
 Beta version derived from v3.10 Master.
 
-V3.10 Master (27-12-2022)
----------------------------
+V3.10 (27-12-2022)
+------------------
 
 Roll-up of all v3.9.x beta changes,summarized below:
 
@@ -3165,8 +3262,8 @@ Fixes
 * Public transport: Translations
 
 
-V3.9.8 Beta (27-12-2022)
----------------------------
+V3.9.8 (27-12-2022)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3178,8 +3275,8 @@ Fixes
 
 * Dials: Fix scaling parameter for computed values (NettUsage, NettCounterToday, NettCounter) for P1 Smart Meter
 
-V3.9.7 Beta (8-12-2022)
----------------------------
+V3.9.7 (8-12-2022)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3193,16 +3290,16 @@ Fixes
 
 * Fix for opening Outlook calendar files
 
-V3.9.6.1 Beta (28-10-2022)
----------------------------
+V3.9.6.1 (28-10-2022)
+---------------------
 
 Fixes
 ~~~~~
 
 * Fixed incompatibility for IOS introduced with v3.9.6
 
-V3.9.6 Beta (18-10-2022)
--------------------------
+V3.9.6 (18-10-2022)
+-------------------
 
 Fixes
 ~~~~~
@@ -3216,8 +3313,8 @@ Fixes
 * Garbage: Fix for Circulus-Berkel
 * Blinds: Fix Open/Close in new Domoticz version (build>14535)
 
-V3.9.5 Beta (25-3-2022)
------------------------
+V3.9.5 (25-3-2022)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3229,8 +3326,8 @@ Fixes
 
 * Rollback upgrade development environment to maintain iOS10 compatibility.
 
-V3.9.4 Beta (19-3-2022)
------------------------
+V3.9.4 (19-3-2022)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3250,8 +3347,8 @@ Code
 
 * [Prelim] Calendar: New ical module to parse calendar data. Should solve most calendar issues, especially related to recurring events. Select via ``method:2``
 
-V3.9.3 Beta (9-3-2022)
------------------------
+V3.9.3 (9-3-2022)
+-----------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3269,8 +3366,8 @@ Fixes
 * Dial: Fix min, max setpoint setting in CONFIG.js
 * Garbage: Fix for Purmerend, Suez, Blink
 
-V3.9.2 Beta (27-2-2022)
------------------------
+V3.9.2 (27-2-2022)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3292,8 +3389,8 @@ Code
 * Prevent caching index.html
 * Update caching behavior
 
-V3.9.1 Beta (13-2-2022)
------------------------
+V3.9.1 (13-2-2022)
+------------------
 
 Code
 ~~~~
@@ -3301,13 +3398,13 @@ Code
 * Update development dependencies
 * Update FontAwesome, Popper, IRO and Swiper to latest versions
 
-V3.9.0 Beta (10-2-2022)
------------------------
+V3.9.0 (10-2-2022)
+------------------
 
 Beta version derived from v3.9 Master
 
-v3.9 Master (10-2-2022)
-------------------------
+v3.9 (10-2-2022)
+----------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3321,8 +3418,8 @@ Fixes
 * P1 Smart Meter: Display NettUsage as default value (=Usage-Delivery)
 
 
-v3.8.11 Beta (28-1-2022)
-------------------------
+v3.8.11 (28-1-2022)
+-------------------
 
 .. note:: Some changes in dial styling, especially dial font sizes.
 
@@ -3332,8 +3429,8 @@ Enhancements
 * New block type 'Door Lock Inverted'
 * Dial: Selector menu can show title. See :ref:`dialselector`
 
-v3.8.10 Beta (23-1-2022)
-------------------------
+v3.8.10 (23-1-2022)
+-------------------
 
 .. note:: Public Transport changed. See :ref:`publictransport`.
 .. note:: Dial ring styling changed. See :ref:`v389`.
@@ -3352,8 +3449,8 @@ Fixes
 * Dial: P1 decimals configurable via decimals block parameter.
 * Calendar: Fixed issues with some recurring events in ical modules (PHP5 as well as PHP7 version)
 
-v3.8.9 Beta (23-12-2021)
-------------------------
+v3.8.9 (23-12-2021)
+-------------------
 
 .. note:: Your images in buttons now might scale to the full block width. This is a side effect of the fix of the moon scaling. Reduce the block width in case your image is too wide.
 
@@ -3369,8 +3466,8 @@ Fixes
 * Moon image scaling
 
 
-v3.8.8 Beta (17-12-2021)
-------------------------
+v3.8.8 (17-12-2021)
+-------------------
 
 Fixes
 ~~~~~~
@@ -3378,8 +3475,8 @@ Fixes
 * Garbage: Recycleapp (BE)
 * Dials: Fix for so called splitdial with 0 not at top. For instance: min=-10 and max=50
  
-v3.8.7 Beta (5-12-2021)
-------------------------
+v3.8.7 (5-12-2021)
+------------------
 
 .. note:: Weather icons changed. See :ref:`weathericons`
 .. note:: CSS styling for calendar events changed. See :ref:`eventClasses`   
@@ -3397,8 +3494,8 @@ Fixes
 * Garbage: Recycleapp (BE), Avalex, Suez 
 
 
-v3.8.6 Beta (22-10-2021)
-------------------------
+v3.8.6 (22-10-2021)
+-------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3410,8 +3507,8 @@ Fixes
 
 * Graphs: Fixes in y-axes labeling
 
-v3.8.5 Beta (15-10-2021)
-------------------------
+v3.8.5 (15-10-2021)
+-------------------
 
 Fixes
 ~~~~~~
@@ -3422,8 +3519,8 @@ Fixes
 * Weather block: fixed rain rate in hourly forecast
 * Graph: Fix for displaying energy values, for instance for P1 devices
 
-v3.8.4 Beta (13-8-2021)
------------------------
+v3.8.4 (13-8-2021)
+------------------
 
 Fixes
 ~~~~~~
@@ -3432,8 +3529,8 @@ Fixes
 * ANWB traffic info: Change API v1 to v2
 * Garbage: Fix for Rova
 
-v3.8.3 Beta (29-5-2021)
------------------------
+v3.8.3 (29-5-2021)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3454,8 +3551,8 @@ Code
 
 * Bump Swiper.js from 5.4.5 to 6.4.2
 
-v3.8.2 Beta (24-4-2021)
------------------------
+v3.8.2 (24-4-2021)
+------------------
 
 .. note:: Breaking changes: New weather block.
 
@@ -3465,16 +3562,16 @@ Enhancements
 * Rewrite of the weather block. See :ref:`customweather`.
   
 
-v3.8.1 Beta (14-4-2021)
------------------------
+v3.8.1 (14-4-2021)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
 
 * Change in auto swipe behavior. See :ref:`autoswipe`.
 
-v3.8.0 Beta (10-4-2021)
------------------------
+v3.8.0 (10-4-2021)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3484,24 +3581,24 @@ Enhancements
 * Fix for columns without block parameter
 * Fix for icon size for special blocks on screen width < 975 pixels
 
-v3.8.0.2 Master (14-5-2021)
----------------------------
+v3.8.0.2 (14-5-2021)
+--------------------
 
 Fixes
 ~~~~~
 
 * Fix potential error in startup behavior
 
-v3.8.0.1 Master (26-4-2021)
----------------------------
+v3.8.0.1 (26-4-2021)
+--------------------
 
 Fixes
 ~~~~~~
 
 * Standby: Prevent click to activate a Dashticz block while in standby
 
-v3.8 Master (9-4-2021)
-----------------------
+v3.8 (9-4-2021)
+---------------
 
 Master version derived from v3.7.7 Beta.
 
@@ -3509,8 +3606,8 @@ If your current Dashticz version is lower than v3.7.2 then before upgrading make
 
 See the upgrade instructions at v3.7.2 below.
 
-v3.7.7 Beta (8-4-2021)
-------------------------
+v3.7.7 (8-4-2021)
+-----------------
 
 
 Fixes
@@ -3529,8 +3626,8 @@ Code
 
 * Update of the external npm modules
   
-v3.7.6 Beta (12-3-2021)
-------------------------
+v3.7.6 (12-3-2021)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3545,8 +3642,8 @@ Fixes
 
 * Blinds: Support textOn and textOff block parameters
 
-v3.7.5 Beta (28-2-2021)
------------------------
+v3.7.5 (28-2-2021)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3561,8 +3658,8 @@ Fixes
 * Dials: Improved error handling
 * Dials: Support setpoint for default dial
 
-v3.7.4 Beta (20-2-2021)
------------------------
+v3.7.4 (20-2-2021)
+------------------
 
 Fixes
 ~~~~~~
@@ -3584,8 +3681,8 @@ Enhancements
 * Dials: Set number of decimals with ``decimals`` parameter
 * Garbage will be sorted in the same order as ``garbage`` block parameter (or ``config['garbage']``)
 
-v3.7.3 beta (24-1-2021)
------------------------
+v3.7.3 (24-1-2021)
+------------------
 
 .. note :: Make a backup of CONFIG.js, custom.css and custom.js
 
@@ -3612,8 +3709,8 @@ Fixes
 * Calendar: Update icalparser for PHP8 compatibility
 
 
-3.7.2 Beta (27-12-2020)
------------------------
+3.7.2 (27-12-2020)
+------------------
 
 .. note:: Update instructions.
 
@@ -3666,8 +3763,8 @@ Fixes
 * Improved styling of modal popup windows.
 
 
-3.7.1 Beta (19-12-2020)
------------------------
+3.7.1 (19-12-2020)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3678,21 +3775,21 @@ Enhancements
 * Clock: New basicclock, which is the same as the normal clock, but then responsive. (scales with the width)
 * Clock parameters: haymanclock, flipclock, stationclock and basicclock all support the block parameters ``size`` to set the width of the clock and the parameter ``scale`` to scale down the width with a relative factor (``scale: 0.6``)
 
-3.7.0 Beta (13-12-2020)
------------------------
+3.7.0 (13-12-2020)
+------------------
 
 Code
 ~~~~~
 
 * NPM update, code formatting
 
-3.7 Master (13-12-2020)
-------------------------
+3.7 (13-12-2020)
+----------------
 
 Master version derived from 3.6.9 Beta
 
-3.6.9 Beta (10-12-2020)
-------------------------
+3.6.9 (10-12-2020)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3710,8 +3807,8 @@ Fixes
 * Garbage: Fix Afvalwijzer 2021 data
 * Prevent :hover effect for touch devices
 
-3.6.8 Beta (27-11-2020)
-------------------------
+3.6.8 (27-11-2020)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3732,13 +3829,13 @@ Fixes
 * Calendar: Add 'method:0' to your calendar block definition in case you experience issues with recurring events. Only works for the new calendar block. See :ref:'newcalendar'
 * Fix for X10 security motion device.
 
-3.6.7 Beta (4-11-2020)
-------------------------
+3.6.7 (4-11-2020)
+-----------------
 
 Update of the Garbage module. See :ref:`garbage_upgrade` for upgrade information.
 
-3.6.6 Beta (30-10-2020)
-------------------------
+3.6.6 (30-10-2020)
+------------------
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3754,8 +3851,8 @@ Fixes
 * Disable Dashticz refresh if `config['dashticz_refresh']` is 0
 * Bugfix initialization code
 
-3.6.5 Beta (22-10-2020)
-------------------------
+3.6.5 (22-10-2020)
+------------------
 
 Fixes
 ~~~~~~~
@@ -3771,8 +3868,8 @@ Enhancements
 * Add support for Domoticz x10 security sensor
 * Dial: Combine data from several devices. See :ref:'genericdial'
 
-3.6.4 Beta (6-10-2020)
-----------------------
+3.6.4 (6-10-2020)
+-----------------
 
 Fixes
 ~~~~~
@@ -3784,8 +3881,8 @@ Update notes
 
 * The icon for PV Output blocks are not automatically set to 'fas fa-sun' anymore. You still can do this manually in a block definition. In a future version I'll improve the default settings for Domoticz device types.
 
-3.6.3 Beta
------------
+3.6.3
+-----
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3800,24 +3897,24 @@ Fixes
 * New config setting ``use_cors`` to enable CORS proxy for OWM. Set to ``true`` on Android 4.4.2.
 * Garbage: recycleapp
 
-3.6.2 Beta
-----------
+3.6.2
+-----
 
 Fixes
 ~~~~~
 
 * Fix for graph issues in 3.6
 
-3.6.1 Beta
-----------
+3.6.1
+-----
 
 Enhancements
 ~~~~~~~~~~~~
 
 * Custom HTML block. See :ref:`customhtml`
 
-3.6.0 Beta
-----------
+3.6.0
+-----
 Beta version, same as 3.6 master.
 
 Code
@@ -3825,8 +3922,8 @@ Code
 
 * Update of the external js modules
 
-3.6 Master
-----------
+3.6
+---
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3852,8 +3949,8 @@ Fixes
   * Fixed use_favorites config setting. Changed default to false, meaning all devices will be available for Dashticz.
   * Remove CORS for OWM data
 
-3.5.2 Beta
------------
+3.5.2
+-----
 
 Enhancements
 ~~~~~~~~~~~~
@@ -3871,8 +3968,8 @@ Code
 
 * Update to jquery 3.5.1
 
-3.5.1 Beta
------------
+3.5.1
+-----
 
 Enhancements
   * Domoticz textblocks, traffic, trafficinfo, longfonds and public transport now support the block parameters ``url``, ``newwindow``, ``forcerefresh`` and ``password`` giving it the same behavior as a button if you want to open an url on click.
@@ -3880,20 +3977,20 @@ Enhancements
 Fixes
   * Change traffic info provider for traffic block
 
-3.5.0 Beta
------------
+3.5.0
+-----
 
 Same as 3.5 Master
 
-3.5 Master
---------------
+3.5
+---
 
 New master release derived from 3.4.10 beta.
 
 See the release notes for the beta releases below for all changes.
 
-3.4.10 (Beta) (7-6-2020)
----------------------------
+3.4.10 (7-6-2020)
+-----------------
 
 Enhancements
   * Japanese language support (preliminary)
@@ -3904,20 +4001,20 @@ Fixes
   * Improve Dial representation on Android devices
   * Improved graph groupBy function
 
-3.4.9.1 (Beta) (26-5-2020)
---------------------------
+3.4.9.1 (26-5-2020)
+-------------------
 Fixes
   * Several bug fixes
 
-3.4.9 (Beta) (25-5-2020)
-------------------------
+3.4.9 (25-5-2020)
+-----------------
 
 Fixes
   * Improved number formatting for graph header and tooltip. See :ref:`graphNumberFormat`
   * Block definition with custom keys: consistency in block selection for subdevices, CSS class application and function names in custom.js. This may result in a breaking change. See :ref:`v349`
 
-3.4.8 (Beta) (20-5-2020)
-------------------------
+3.4.8 (20-5-2020)
+-----------------
 
 Enhancements
   * Improved trafficinfo layout
@@ -3930,8 +4027,8 @@ Code
   * Standardized formatting of source code
   * Removed eslint warnings (first batch)  
 
-3.4.7 (Beta) (18-5-2020)
-------------------------
+3.4.7 (18-5-2020)
+-----------------
 
 Enhancements
   * Support for Dials. See :ref:`dial`
@@ -3939,8 +4036,8 @@ Enhancements
 Fixes
   * Refresh of graph while in standby
 
-3.4.6 (Beta) (13-5-2020)
-------------------------
+3.4.6 (13-5-2020)
+-----------------
 
 Enhancements
   * Enable graphs for Voltage and Distance devices
@@ -3952,16 +4049,16 @@ Fixes
   * Fix for ANWB Traffic Info (new API)
   * Fix for recurring calendar events (older than 3 year, without end date)
 
-3.4.5 (Beta) (23-4-2020)
-------------------------
+3.4.5 (23-4-2020)
+-----------------
 
 Fixes
   * Garbage: Cure moved to 'mijnafvalwijzer'
   * Synchronization Domoticz security panel state
   * Bug fix popup chart refresh
 
-3.4.4 (Beta) (18-4-2020)
--------------------------
+3.4.4 (18-4-2020)
+-----------------
 
 Enhancements
   * Add 'Current' Domoticz device type.
@@ -3970,8 +4067,8 @@ Enhancements
 Fixes
   * Fix for refresh of Scenes/Groups and some temperature sensors
 
-3.4.3 (Beta) (9-4-2020)
------------------------
+3.4.3 (9-4-2020)
+----------------
 
 Enhancements
   * New calendar layout. See :ref:'newcalendar'
@@ -3980,8 +4077,8 @@ Fixes
   * Group/scene status refresh
   * Unit parameter, which can be used for formatting the value of some Domoticz devices. See :ref:`formatting`
 
-3.4.2 (Beta) (3-4-2020)
-------------------------
+3.4.2 (3-4-2020)
+----------------
 
 Enhancements
   * Add dewpoint block for TempHumBar devices
@@ -3995,8 +4092,8 @@ Fixes
 Internal
   * Refactoring blocktypes
 
-3.4.1 (Beta)
----------------
+3.4.1
+-----
 
 .. note:: Breaking changes. See :ref:`v341` for update instuctions
 
@@ -4030,8 +4127,8 @@ Fixes
   * Fix for updating devices via ``getStatus_idx`` in ``custom.js``
   * Fix for initial update of block defined by ``getBlock_<idx>()`` in ``custom.js``
 
-3.4.0 Beta (8-2-2020)
----------------------
+3.4.0 (8-2-2020)
+----------------
 
 Enhancements
   * Websocket interface for Domoticz version > 4.11000 to receive instant device updates. See :ref:`websocket`
@@ -4045,8 +4142,8 @@ Optimizations
 
 
 
-3.3.5 Beta (28-1-2020)
-----------------------
+3.3.5 (28-1-2020)
+-----------------
 
 Fixes
   * Garbage Uden
@@ -4054,27 +4151,27 @@ Fixes
     The PHP5 library is selected automatically on systems with PHP version lower than 7.1.
     The PHP5 library doesn't show yearly recurring events correctly.
 
-3.3.4 Beta (22-1-2020)
-----------------------
+3.3.4 (22-1-2020)
+-----------------
 
 Enhancements:
   * Multigraph functionality. See :ref:`dom_graphs`.
 
-3.3.3.1 Master (4-2-2020)
--------------------------
+3.3.3.1 (4-2-2020)
+------------------
 
 Fixes
   * Garbage Uden
   * Reenabled PHP5 calendar module
 
-3.3.3 Master (22-1-2020)
-------------------------
+3.3.3 (22-1-2020)
+-----------------
 
 Fixes
   * New PHP ical library to solve issue with recurring events. Note: PHP 7.1 or higher is required.
 
-3.3.2 Master (18-1-2020)
-------------------------
+3.3.2 (18-1-2020)
+-----------------
 Master version derived from 3.3.1 beta.
 
 If you are upgrading from a previous master version please read :ref:`v320`.
@@ -4082,8 +4179,8 @@ If you are upgrading from a previous master version please read :ref:`v320`.
 Additional fixes
   * Fix standby screen in case of single screen.
 
-3.3.1 Beta (13-1-2020)
-----------------------
+3.3.1 (13-1-2020)
+-----------------
 
 Enhancements
   * Complete dimmer block is clickable (not just the icon)
@@ -4095,8 +4192,8 @@ Fixes
   * TwenteMilieu garbage collection
   * Bar-afvalbeheer garbage collection (for Barendrecht, Rhoon). Use 'barafvalbeheer' as garbage_company.
 
-3.3.0 Beta (5-1-2020)
----------------------
+3.3.0 (5-1-2020)
+----------------
 
 Enhancements
   * Evohome support. See :ref:`Evohome`

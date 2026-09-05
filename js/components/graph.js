@@ -1233,8 +1233,13 @@ function createDataSets(graph, mergedBlock, graphProperties) {
 }
 
 function createHeader(graph) {
+  // Icon size is a themed default (.graphtitle .icon in css/creative.css
+  // reads the same --icon-font-size custom property a theme sets for
+  // every other block's icon) rather than this hardcoded 20px - color
+  // stays a per-graph override (graph.block.iconColour), an existing,
+  // deliberately user-configurable CONFIG.js property.
   var html =
-    '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar" style="font-size:20px;margin-left:5px;color:' +
+    '<div class="graphheader"><div class="graphtitle"><i class="fas fa-chart-bar icon" style="margin-left:5px;color:' +
     graph.block.iconColour +
     '">&nbsp;</i>' +
     graph.title +

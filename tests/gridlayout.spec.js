@@ -91,7 +91,7 @@ screens[2]['background_night'] = '';
       .toContain('img/bg2.jpg');
   });
 
-  test('keeps legacy widgets iconless and lets a classic dial fill its column', async ({
+  test('keeps legacy iframe iconless, lets a classic dial fill its column, and gives Sunrise a default icon', async ({
     page,
   }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
@@ -133,9 +133,14 @@ screens[1] = {background: 'bg2.jpg', columns: [1]};
     );
     await expect(frame.locator('iframe')).toBeAttached();
     await expect(frame.locator('.col-icon')).toHaveCount(0);
+    // Unlike iframe, Sunrise has an obvious default icon ('fas fa-sun'), so a
+    // hand-written block without `icon` now renders it, rather than staying
+    // iconless like the legacy behaviour above.
     await expect(
-      page.locator('.screen1 .sunriseholder[data-id="sunrise"] .sunrise-header')
-    ).toHaveCount(0);
+      page.locator(
+        '.screen1 .sunriseholder[data-id="sunrise"] .sunrise-header .fa-sun'
+      )
+    ).toBeVisible();
   });
 
   test('keeps grid dials constrained and renders explicitly configured icons', async ({

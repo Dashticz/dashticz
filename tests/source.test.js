@@ -1207,9 +1207,13 @@ test('device and widget config editors share full widget config and preserve hid
   );
   assert.match(deviceEditor, /special\.showTitle = pendingShowTitle/);
   assert.match(deviceEditor, /deviceTitleVisible\[ck\] = pendingShowTitle/);
-  // Catalog Widget Config only exposes Icon and Title. Existing hide_data and
-  // last_update values remain hydrated, preserved and accepted by the writer;
-  // Device Config retains its separate Data/Updated controls above.
+  // Catalog Widget Config only exposes Icon and Title, except for Sunrise,
+  // which also gets Data (js/components/simpleblock.js's renderSunrise()
+  // hides its sunrise/sunset time row on hide_data, the only catalog widget
+  // that actually reads it - #followup to #195). Every other widget's
+  // hide_data and every widget's last_update values remain hydrated,
+  // preserved and accepted by the writer regardless; Device Config retains
+  // its separate Data/Updated controls above.
   const widgetOptionsStart = widgetEditor.indexOf(
     'function _widgetBlockOptionsHtml'
   );
@@ -1225,15 +1229,19 @@ test('device and widget config editors share full widget config and preserve hid
     widgetOptionsBody,
     /\['icon', _t\('icon', 'Icon'\), 'fas fa-image', options\.icon\]/
   );
+  assert.match(widgetOptionsBody, /if \(item\.id === 'sunrise'\)/);
+  assert.match(
+    widgetOptionsBody,
+    /'hide_data',\s*\n\s*_t\('data', 'Data'\),\s*\n\s*'fas fa-align-left',\s*\n\s*options\.hide_data !== true,/
+  );
   assert.match(
     widgetOptionsBody,
     /'show_title',\s*\n\s*_t\('show_title', 'Title'\),\s*\n\s*'fas fa-heading',\s*\n\s*options\.show_title,/
   );
-  assert.doesNotMatch(widgetOptionsBody, /data-block-option="hide_data"/);
   assert.doesNotMatch(widgetOptionsBody, /data-block-option="last_update"/);
   assert.match(
     widgetEditor,
-    /hide_data: existingBlockOptions\.hide_data === true/
+    /hide_data: \$hideDataButton\.length\s*\n\s*\? !\$hideDataButton\.hasClass\('active'\)\s*\n\s*: existingBlockOptions\.hide_data === true,/
   );
   assert.match(
     widgetEditor,
@@ -3380,45 +3388,80 @@ test('Domoticz log, OWM, Sunrise/Sunset and Timegraph are added to the Widget Co
     simpleBlockSource.indexOf('function renderSunrise'),
     simpleBlockSource.indexOf('function renderHorizon')
   );
-  assert.match(renderSunriseBody, /var icon = me\.block\.icon;/);
+  // Sunrise has an obvious default icon ('fas fa-sun'), so an unset
+  // block.icon (and no image picked either) now shows it by default; an
+  // explicitly cleared icon (the Icon checkbox switched off, which
+  // persists icon: '') still hides it.
+  assert.match(
+    renderSunriseBody,
+    /var hasCustomIcon =\s*\n\s*typeof me\.block\.icon !== 'undefined' \|\|\s*\n\s*typeof me\.block\.image !== 'undefined';/
+  );
+  assert.match(
+    renderSunriseBody,
+    /var icon = hasCustomIcon \? me\.block\.icon : 'fas fa-sun';/
+  );
   assert.match(
     renderSunriseBody,
     /var showTitle = !me\.block\.hide_title && me\.block\.title;/
   );
   assert.match(renderSunriseBody, /class="sunrise-header"/);
-  assert.match(renderSunriseBody, /class="title">'\s*\+\s*me\.block\.title/);
-  // A hand-written/legacy Sunrise block without `icon` must retain its old
-  // iconless appearance. Newly added Editor widgets still get the catalog
-  // icon, but it is persisted explicitly instead of becoming a runtime
-  // default for every existing CONFIG.js.
-  assert.doesNotMatch(simpleBlockSource, /cfg\.icon = 'fas fa-sun'/);
+  // The title carries the standard .dt_title class (compact size/margin
+  // overridden in creative.css's .sunriseholder rules) so a theme's
+  // .dt_title alignment rules apply here like on every other block.
+  assert.match(
+    renderSunriseBody,
+    /class="dt_title title">'\s*\+\s*me\.block\.title/
+  );
+  // renderSunrise never went through js/dashticz.js's renderBlock(), so a
+  // custom block.addClass (supported on every other block) was silently
+  // ignored here. Applied directly onto this renderer's own class string.
+  assert.match(renderSunriseBody, /if \(me\.block\.addClass\)/);
+  // iframe has no sensible icon to guess, so a hand-written/legacy iframe
+  // block without `icon` keeps its historical iconless appearance in the
+  // editor. Sunrise is excluded from that legacy quirk (it does have an
+  // obvious default), so its Icon checkbox now shows on by default too.
   assert.match(
     widgetEditor,
     /item\.id === 'iframe' \|\| item\.id === 'sunrise'/
   );
   assert.match(widgetEditor, /iconValue: explicitDefaultIcon/);
-  assert.match(widgetEditor, /var legacyImplicitIcon =/);
+  assert.match(
+    widgetEditor,
+    /var legacyImplicitIcon =\s*\n\s*item && item\.id === 'iframe' &&/
+  );
   // The sunrise/sunset line is its own .sunrise-data row, separate from
   // .sunrise-header, so grid mode's flex-direction: column (creative.css)
   // stacks exactly those two rows instead of flexing every individual
   // icon/span inside both onto one line (a live screenshot showed icon,
   // title and the sunrise/sunset line all crammed side by side).
   assert.match(renderSunriseBody, /class="sunrise-data"/);
+  // Data toggle (#followup to #195): the Widget Config popup only exposes a
+  // Data button for Sunrise (see the Widget Config editor test above), and
+  // renderSunrise is the only place that actually has to honor it - hides
+  // the sunrise/sunset time row while keeping the icon+title header.
+  assert.match(renderSunriseBody, /if \(!me\.block\.hide_data\) \{/);
   assert.match(
     styles,
     /\.dt-grid-screen > \.dt-grid-layout > \.dt-grid-item > \.sunriseholder \{[\s\S]*?flex-direction: column;/
   );
   // .sunriseholder is text-center (the sunrise/sunset line stays centered,
   // as before), but a live screenshot showed the icon+title header
-  // centered along with it instead of left-aligned at the top like every
-  // other device/widget's icon+title (e.g. a slide button). Override just
-  // that row back to flush top-left: text-align for column/classic mode,
-  // align-self for the grid rule's flex column (align-items: center there
-  // would otherwise still center the header's own shrink-to-fit box, not
-  // just the text inside it).
+  // centered along with it instead of flush at the top like every other
+  // device/widget's icon+title. .sunrise-header is a flex row stretched to
+  // the tile's full width (align-self: stretch, instead of shrink-to-fit)
+  // both to stop it from being centered as a whole (align-items: center on
+  // the grid rule above centers a shrink-to-fit box, not just the text
+  // inside it) and to give .dt_title's flex: 1 something to align into -
+  // text-align has no visible effect on a box no wider than its content, a
+  // second live screenshot showed the title still sitting flush against
+  // the icon on a theme that right-aligns it.
   assert.match(
     styles,
-    /\.sunriseholder \.sunrise-header \{[\s\S]*?text-align: left;[\s\S]*?align-self: flex-start;/
+    /\.sunriseholder \.sunrise-header \{[\s\S]*?display: flex;[\s\S]*?align-self: stretch;/
+  );
+  assert.match(
+    styles,
+    /\.sunriseholder \.sunrise-header \.dt_title \{[\s\S]*?flex: 1;/
   );
   // Pinning content to the top must only kick in when a header is actually
   // rendered - unconditionally forcing flex-start regressed the header-less
@@ -5808,6 +5851,32 @@ test('Slide button quick-add popup gets an Icon toggle and a Background icon but
   );
 });
 
+test('Widget Config popup gets the #170 Background toggle, not just Device Config', () => {
+  const button = fs.readFileSync(
+    path.join(root, 'js/components/button.js'),
+    'utf8'
+  );
+  // enhancePopups() matched '#we-config-popup' as a class selector
+  // (`.we-config-popup`) instead of the id js/widgeteditor.js's
+  // _buildConfigModalHtml() actually sets it with (id="we-config-popup"),
+  // so injectNoBackgroundIntoConfig() never ran for the Widget Config
+  // popup - every catalog widget (Sunrise included) was missing the
+  // Background toggle that Device Config already had. Both id selectors
+  // must be used consistently.
+  const enhancePopupsBody = button.slice(
+    button.indexOf('function enhancePopups'),
+    button.indexOf('function installAjaxPrefilter')
+  );
+  assert.match(
+    enhancePopupsBody,
+    /scope\.matches\('#de-config-popup, #we-config-popup'\)/
+  );
+  assert.match(
+    enhancePopupsBody,
+    /scope\.querySelectorAll\('#de-config-popup, #we-config-popup'\)/
+  );
+});
+
 test('Bar and Slider show On/Off (not Open/Closed) for Dimmers, and Slider becomes available for them (#197)', () => {
   const switches = fs.readFileSync(path.join(root, 'js/switches.js'), 'utf8');
   const dialComponent = fs.readFileSync(
@@ -6132,6 +6201,33 @@ test('the .mh.timeout tint works on the 3 new themes too, not just the default t
   });
 });
 
+test('Every .dt_title is right-aligned by default on the 3 new themes, not just device blocks', () => {
+  const themes = [
+    'themes/modern-dark/modern-dark.css',
+    'themes/liquid-glass-blue/liquid-glass-blue.css',
+    'themes/liquid-glass-grey/liquid-glass-grey.css',
+  ].map((file) => fs.readFileSync(path.join(root, file), 'utf8'));
+
+  themes.forEach((theme) => {
+    // These 3 themes right-align every device block's title via
+    // `.mh { text-align: right !important; }`, which cascades down into
+    // .dt_title only by inheritance. Any widget rendered via the standard
+    // getContainer()/getColIcon()/renderTitle() path (js/dashticz.js) -
+    // e.g. the 112/alarmmeldingen widget, js/components/alarmmeldingen.js -
+    // never carries .mh (that class is only added by the Domoticz device
+    // pipeline, js/blocks.js), so its title stayed left-aligned regardless
+    // of theme. A per-widget override (once added just for Sunrise here)
+    // doesn't scale to every such widget, so .dt_title itself now gets an
+    // explicit default, with .titlegroups/.blocktitle/.slide .dt_title
+    // above/below it in each theme file staying more specific overrides.
+    assert.doesNotMatch(theme, /\.sunriseholder \.sunrise-header \.dt_title/);
+    assert.match(
+      theme,
+      /^\.dt_title \{\s*\n\s*text-align: right !important;\s*\n\s*\}/m
+    );
+  });
+});
+
 test("startSwiper() resets .swiper's scrollLeft on resize, so a viewport change can't leave the active screen scrolled off-screen", () => {
   // Swiper positions slides purely via CSS transform here (no cssMode
   // option is passed to `new Swiper(...)`), so the `.swiper` container's
@@ -6148,5 +6244,244 @@ test("startSwiper() resets .swiper's scrollLeft on resize, so a viewport change 
   assert.match(
     main,
     /if \(myswiper && myswiper\.el\) myswiper\.el\.scrollLeft = 0;/
+  );
+});
+
+test('Sunrise, Moon, Weather/Wunderground and Spotify icons follow theme icon size and support an image icon source', () => {
+  // These js/components/simpleblock.js (and js/spotify.js) renderers build
+  // their own markup instead of going through getColIcon() (js/dashticz.js),
+  // so their icon previously had no way to pick up a theme's icon-size
+  // rule (.col-icon .icon, e.g. themes/modern-dark/modern-dark.css), and
+  // only ever read block.icon - never block.image, the Widget Editor
+  // Icon field's alternative "Image" source - so switching a widget's
+  // Icon to a custom image rendered nothing. simpleblock.js's shared
+  // _colIconHtml() mirrors getColIcon() exactly (both block.icon and
+  // block.image, mutually exclusive); Sunrise, Moon and Weather all call
+  // it, and Spotify (a separate file, can't share it) inlines the same
+  // two branches.
+  const simpleBlockSource = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const spotifySource = fs.readFileSync(
+    path.join(root, 'js/spotify.js'),
+    'utf8'
+  );
+  assert.match(
+    simpleBlockSource,
+    /function _colIconHtml\(block\) \{[\s\S]*?if \(block\.icon\)[\s\S]*?<div class="col-icon"><em class="' \+ block\.icon \+ ' icon"><\/em><\/div>[\s\S]*?if \(block\.image\)[\s\S]*?<div class="col-icon"><img src="img\/' \+[\s\S]*?block\.image[\s\S]*?class="icon"\/><\/div>/
+  );
+  // Sunrise, Moon and Weather each call the shared helper.
+  const callMatches = simpleBlockSource.match(/_colIconHtml\(/g) || [];
+  assert.ok(
+    callMatches.length >= 3,
+    `expected at least 3 _colIconHtml() calls in simpleblock.js, found ${callMatches.length}`
+  );
+  assert.match(spotifySource, /if \(block\.icon\)/);
+  assert.match(spotifySource, /if \(block\.image\)/);
+  assert.match(
+    spotifySource,
+    /<div class="col-icon"><img src="img\/' \+\s*\n\s*block\.image \+\s*\n\s*'" class="icon"\/><\/div>/
+  );
+});
+
+test('Moon widget paints its Icon/Title checkboxes instead of always dropping them', () => {
+  const simpleBlockSource = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const renderMoonBody = simpleBlockSource.slice(
+    simpleBlockSource.indexOf('function renderMoon'),
+    simpleBlockSource.indexOf(
+      '})();',
+      simpleBlockSource.indexOf('function renderMoon')
+    )
+  );
+  // Moon is in getWidgetTitle()'s titleKeys (js/dashticz.js), so the Widget
+  // Editor's Icon/Title checkboxes save block.icon/block.title correctly,
+  // but renderMoon() replaced the whole mount point with just the
+  // moon-phase image, silently dropping both.
+  assert.match(
+    renderMoonBody,
+    /var showTitle = !me\.block\.hide_title && me\.block\.title;/
+  );
+  assert.match(
+    renderMoonBody,
+    /if \(me\.block\.icon \|\| me\.block\.image \|\| showTitle\) \{/
+  );
+  assert.match(renderMoonBody, /class="dt-simple-header"/);
+  assert.match(renderMoonBody, /_colIconHtml\(me\.block\)/);
+  assert.match(renderMoonBody, /class="dt_title">'\s*\+\s*me\.block\.title/);
+});
+
+test('Weather/Wunderground widget paints its Icon/Title checkboxes, and loadWeatherFull() refresh no longer wipes them', () => {
+  const simpleBlockSource = fs.readFileSync(
+    path.join(root, 'js/components/simpleblock.js'),
+    'utf8'
+  );
+  const renderWeatherBody = simpleBlockSource.slice(
+    simpleBlockSource.indexOf('function renderWeather'),
+    simpleBlockSource.indexOf('function renderCurrentWeather')
+  );
+  assert.match(
+    renderWeatherBody,
+    /if \(me\.block\.icon \|\| me\.block\.image \|\| showTitle\) \{/
+  );
+  assert.match(renderWeatherBody, /class="dt-simple-header"/);
+  assert.match(renderWeatherBody, /_colIconHtml\(me\.block\)/);
+  // .containsweatherfull must be a nested child, not the outer .dt_block
+  // itself - js/weather.js's loadWeatherFull() replaces
+  // div.containsweatherfull's content wholesale on every refresh, which
+  // would wipe the header out too if it lived on the same element.
+  assert.match(
+    renderWeatherBody,
+    /header \+\s*\n\s*'<div class="containsweatherfull"><\/div>'/
+  );
+  assert.doesNotMatch(renderWeatherBody, /' containsweatherfull'/);
+});
+
+test('Spotify widget paints its Icon/Title checkboxes instead of always dropping them', () => {
+  const spotifySource = fs.readFileSync(
+    path.join(root, 'js/spotify.js'),
+    'utf8'
+  );
+  // Spotify is in getWidgetTitle()'s titleKeys (js/dashticz.js), so the
+  // Widget Editor's Icon/Title checkboxes save block.icon/block.title
+  // correctly, but _getSpotify() never painted them at all.
+  assert.match(
+    spotifySource,
+    /var showTitle = !block\.hide_title && block\.title;/
+  );
+  assert.match(
+    spotifySource,
+    /if \(block\.icon \|\| block\.image \|\| showTitle\) \{/
+  );
+  assert.match(spotifySource, /class="dt-simple-header"/);
+});
+
+test('OWM widget stops wiping the framework-rendered .col-icon/.dt_title when it mounts its own content', () => {
+  // js/components/owmwidget.js is a normal special block - js/dashticz.js's
+  // _mountSpecialBlock() already rendered .dt_block's own .col-icon/
+  // .dt_title before run() executes - but run() replaced .dt_block's
+  // entire innerHTML with just its own embed div, wiping that header out.
+  const owm = fs.readFileSync(
+    path.join(root, 'js/components/owmwidget.js'),
+    'utf8'
+  );
+  assert.doesNotMatch(owm, /me\.\$block\.html\('<div id="/);
+  assert.match(
+    owm,
+    /me\.\$block\s*\n\s*\.find\('\.dt_state'\)\s*\n\s*\.html\('<div id="' \+ me\.containerid \+ '"><\/div>'\);/
+  );
+});
+
+test('Weather widget (js/components/weather.js) and OWM widget icon/title stay visible despite their own dynamic .dt_block font-size', () => {
+  // The real "Weather" widget catalog entry (type: 'weather') dispatches
+  // to js/components/weather.js's DT_weather, not
+  // js/components/simpleblock.js's own renderWeather (only reachable via
+  // the legacy type: 'wunderground') - it already gets .col-icon/.dt_title
+  // structurally via the standard path. But DT_weather and the OWM widget
+  // both call $block.css('font-size', ...px) to scale their own internal
+  // content proportionally with tile width; .col-icon .icon/.dt_title
+  // inherit that same font-size chain (.dt_title's 150% is relative, and
+  // .col-icon .icon has no absolute size at all on the base/White theme),
+  // so an early/zero-width refresh() call could shrink them to invisible.
+  const weather = fs.readFileSync(
+    path.join(root, 'js/components/weather.js'),
+    'utf8'
+  );
+  const owm = fs.readFileSync(
+    path.join(root, 'js/components/owmwidget.js'),
+    'utf8'
+  );
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  assert.match(weather, /me\.\$block\.css\('font-size', fontSize \+ 'px'\);/);
+  assert.match(owm, /me\.\$block\.css\('font-size', fontSize \+ 'px'\);/);
+  assert.match(
+    styles,
+    /\.weather\.dt_block \.dt_title,\s*\n\.owmwidget\.dt_block \.dt_title \{\s*\n\s*font-size: 16px !important;\s*\n\s*\}/
+  );
+  assert.match(
+    styles,
+    /\.weather\.dt_block \.col-icon \.icon,\s*\n\.owmwidget\.dt_block \.col-icon \.icon \{\s*\n\s*font-size: var\(--icon-font-size, 24px\) !important;\s*\n\s*\}/
+  );
+});
+
+test('Weather widget forecast refresh no longer wipes the configured icon/title out of .dt_block', () => {
+  // The font-size fix above assumed .col-icon/.dt_title stayed in the DOM
+  // once rendered - they did not. refreshKNMI()/refreshOWM()/refreshOWM3()
+  // each replaced $(me.$block) - the whole .dt_block, icon/title included -
+  // with the tpl/weather*_*.tpl forecast template's own markup (pure
+  // content fragments with no outer container of their own) as soon as the
+  // first weather data came back, which is why a live dashboard showed the
+  // forecast tiles but never the widget's own icon or title. Fixed by
+  // targeting .dt_state (the framework's own content slot) instead.
+  const weather = fs.readFileSync(
+    path.join(root, 'js/components/weather.js'),
+    'utf8'
+  );
+  assert.doesNotMatch(weather, /\$\(me\.\$block\)\.html\(html\);/);
+  const htmlAssignments = weather.match(
+    /me\.\$block\.find\('\.dt_state'\)\.html\(html\);/g
+  );
+  assert.ok(
+    htmlAssignments && htmlAssignments.length === 3,
+    `expected refreshKNMI/refreshOWM/refreshOWM3 to each target .dt_state, found ${
+      htmlAssignments ? htmlAssignments.length : 0
+    }`
+  );
+  // addWeatherIcons() selected every ".icon" element in the whole mount
+  // point, which also matches the widget's own configured header icon
+  // (.col-icon .icon carries the same class, per getColIcon()) - it has no
+  // data-icon attribute for a weather condition to mount into, so it would
+  // get stomped on too. Scope it to just the forecast content just
+  // inserted into .dt_state.
+  assert.doesNotMatch(weather, /me\.\$mountPoint\.find\('\.icon'\);/);
+  assert.match(weather, /me\.\$block\.find\('\.dt_state \.icon'\);/);
+});
+
+test('Weather widget day-forecast tiles stay side by side after nesting them one level deeper into .dt_state', () => {
+  // .dt_block is display: flex (css/creative.css) - the day-forecast tiles
+  // (.weatherday, js/components/weather.css) used to lay out side by side
+  // purely because they were .dt_block's own direct flex-row children
+  // (each declares width: 100% and relies on flex-shrink to divide the
+  // row). The previous fix nested them one level deeper, inside .dt_state,
+  // to stop the icon/title from being wiped out on every refresh - but
+  // .dt_state has no display of its own, so its .weatherday children fell
+  // back to stacking as ordinary blocks instead, one per row. Give
+  // .dt_state that same flex row back so the tiles line up side by side
+  // again, confirmed with a headless-browser check (three .weatherday
+  // elements at the same y, increasing x).
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  assert.match(
+    styles,
+    /\.weather\.dt_block \.dt_state \{\s*\n\s*display: flex;\s*\n\s*\}/
+  );
+});
+
+test('Graph header icon and Sonarr icons follow theme icon size instead of a hardcoded size', () => {
+  const graph = fs.readFileSync(
+    path.join(root, 'js/components/graph.js'),
+    'utf8'
+  );
+  const sonarr = fs.readFileSync(path.join(root, 'js/sonarr.js'), 'utf8');
+  const styles = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  // createHeader() had a hardcoded font-size:20px inline style; the icon
+  // color (graph.block.iconColour) stays a deliberate, existing per-graph
+  // CONFIG.js override, untouched.
+  assert.doesNotMatch(graph, /font-size:20px/);
+  assert.match(graph, /fas fa-chart-bar icon" style="margin-left:5px;color:/);
+  assert.match(
+    styles,
+    /\.graphtitle \.icon \{\s*\n\s*font-size: var\(--icon-font-size, 20px\) !important;\s*\n\s*\}/
+  );
+  // Sonarr's title_position: 'left' icon already sat inside .col-icon but
+  // was missing the .icon class that rule keys off; title_position: 'top'
+  // has no .col-icon ancestor at all, so it gets its own themed rule.
+  assert.match(sonarr, /class="col-xs-2 col-icon"><em class="fas fa-tv icon">/);
+  assert.match(sonarr, /<h3><em class="fas fa-tv icon">/);
+  assert.match(
+    styles,
+    /\.titlegroups h3 \.icon \{\s*\n\s*font-size: var\(--icon-font-size, inherit\) !important;\s*\n\s*\}/
   );
 });

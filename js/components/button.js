@@ -438,11 +438,17 @@ Dashticz.register(DT_button);
   function enhancePopups(root) {
     var scope = root && root.querySelectorAll ? root : document;
     var configPopups = [];
-    if (scope.matches && scope.matches('#de-config-popup, .we-config-popup'))
+    // #we-config-popup is an id (js/widgeteditor.js's _buildConfigModalHtml()
+    // sets it via id=, not class=), so the .we-config-popup class selector
+    // here never matched - the Widget Config popup (every catalog widget,
+    // Sunrise included) never got the #170 Background toggle injected,
+    // unlike Device Config, whose #de-config-popup selector was already
+    // correct.
+    if (scope.matches && scope.matches('#de-config-popup, #we-config-popup'))
       configPopups.push(scope);
     Array.prototype.push.apply(
       configPopups,
-      scope.querySelectorAll('#de-config-popup, .we-config-popup')
+      scope.querySelectorAll('#de-config-popup, #we-config-popup')
     );
     configPopups.forEach(injectNoBackgroundIntoConfig);
 
