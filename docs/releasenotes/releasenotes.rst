@@ -6,8 +6,8 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
-v4.0.3 beta (4-9-2026)
-----------------------
+v4.0.3 (4-9-2026)
+------------------
 
 * **Fixes**
 
@@ -43,8 +43,8 @@ v4.0.3 beta (4-9-2026)
   previously-failing test (0 failures) plus a new source-shape
   regression test for the resize handler.
 
-v4.0.2 beta (3-9-2026)
-----------------------
+v4.0.2 (3-9-2026)
+------------------
 
 * **Fixes**
 
