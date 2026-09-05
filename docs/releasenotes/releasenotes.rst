@@ -6,18 +6,8 @@ For Dashticz's **beta** version Release Notes go to: https://dashticz.readthedoc
 For Dashticz's **master** version Release Notes go to: https://dashticz.readthedocs.io/en/master/releasenotes/index.html
 
 
-v4.0.3 master (4-9-2026)
-------------------------
-
-Master version derived from beta 4.0.3. See below.
-
-v4.0.1 master (3-9-2026)
-------------------------
-
-Master version derived from beta 4.0.1. See below.
-
-v4.0.3 beta (4-9-2026)
-----------------------
+v4.0.3 (4-9-2026)
+------------------
 
 * **Fixes**
 
@@ -53,8 +43,8 @@ v4.0.3 beta (4-9-2026)
   previously-failing test (0 failures) plus a new source-shape
   regression test for the resize handler.
 
-v4.0.2 beta (3-9-2026)
-----------------------
+v4.0.2 (3-9-2026)
+------------------
 
 * **Fixes**
 
@@ -82,6 +72,11 @@ v4.0.2 beta (3-9-2026)
 
 - Enabled the CI workflow to also run on pushes to ``master``, not
   just ``beta``/``develop``/``test``.
+
+v4.0.1 master (3-9-2026)
+------------------------
+
+Master version derived from beta 4.0.1. See below.
 
 v4.0.1 beta (2-9-2026)
 ----------------------

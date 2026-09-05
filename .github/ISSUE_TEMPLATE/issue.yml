@@ -1,0 +1,89 @@
+name: Issue
+description: Report a problem, suggest an improvement, or ask a question
+title: ''
+labels: []
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for taking the time to open an issue. Please provide enough information for others to understand and investigate it.
+
+        Before submitting, search the existing issues to avoid creating a duplicate. Do not include passwords, API keys, access tokens, or other sensitive information.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Issue type
+      description: Select the option that best describes this issue.
+      options:
+        - Bug report
+        - Feature request
+        - Documentation
+        - Question
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Clearly describe the problem, request, or question.
+      placeholder: What would you like us to know?
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: If this is a bug, list the steps needed to reproduce it. Otherwise, you may leave this field empty.
+      placeholder: |
+        1. Go to ...
+        2. Click on ...
+        3. Observe ...
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: If applicable, explain what you expected to happen.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Enter the application version, package version, or commit hash, if relevant.
+      placeholder: For example, 1.2.3 or abc1234
+
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Include relevant operating system, browser, runtime, device, or platform details.
+      placeholder: For example, Windows 11, Chrome 140, Node.js 24
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or error output
+      description: Paste any relevant logs or error messages. Remove sensitive information first.
+      render: shell
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add screenshots, links, examples, or any other useful information.
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Submission checklist
+      options:
+        - label: I searched the existing issues and did not find a duplicate.
+          required: true
+        - label: I removed passwords, API keys, access tokens, and other sensitive information.
+          required: true
