@@ -670,24 +670,6 @@ var widgetSettingTiles = [
     },
   },
   {
-    id: 'trafficinfo',
-    title: widgetEditorTranslations.trafficinfo_title || 'Traffic information',
-    icon: 'fas fa-car',
-    settings: {
-      anwb_apikey: {
-        title:
-          (language.settings.widgets &&
-            language.settings.widgets.anwb_apikey) ||
-          'ANWB API key',
-        type: 'text',
-        help:
-          (language.settings.widgets &&
-            language.settings.widgets.anwb_apikey_help) ||
-          'API key for ANWB traffic info (trafficinfo widget).',
-      },
-    },
-  },
-  {
     id: 'map',
     title: widgetEditorTranslations.map_title || 'Google Maps',
     icon: 'fas fa-map-marked-alt',
@@ -926,7 +908,6 @@ var defaultSettings = {
   auto_swipe_back_after: 0,
   standby_after: 0,
   standby_background: '',
-  anwb_apikey: '',
   config_mode: 'wizard',
   selector_instead_of_buttons: 0,
   default_news_url: 'https://www.nu.nl/rss/Algemeen',

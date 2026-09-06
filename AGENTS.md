@@ -4,7 +4,7 @@ Instructions for AI coding agents working in this repository.
 
 ## Start of session: sync to the latest branch state first
 
-`beta` moves fast (several version bumps a day are normal), so a fresh session/container clone - or a checkout left over from an earlier session - can already be many commits behind by the time work starts. Building edits (especially the release-bookkeeping ones below) on a stale base leads to wrong version numbers and merge surprises. Before making any changes, sync the branch you're about to develop on (usually `beta`, per your task's own instructions) to its remote tip:
+`beta` moves fast, so a fresh session/container clone - or a checkout left over from an earlier session - can already be many commits behind by the time work starts. Building edits (especially the release-bookkeeping ones below) on a stale base leads to wrong version numbers and merge surprises. Before making any changes, sync the branch you're about to develop on (usually `beta`, per your task's own instructions) to its remote tip:
 
     git fetch origin <branch>
     git merge --ff-only origin/<branch>
@@ -48,14 +48,11 @@ Contributors' forks get evaluated via a throwaway integration branch before touc
 5. After merging, sanity-check with `npm run format:check`, `npm install`, `npm run build`, and `npm test`.
 6. Once approved, merge the integration branch into `beta` and do the release bookkeeping below as part of that same change.
 
-## Release bookkeeping — at most once a day, not per commit
+## Release bookkeeping — only when the user explicitly asks
 
-Don't bump the version for every commit/push. Only do the bookkeeping below when either:
+Do not bump the version on your own initiative — not per commit, not once a day, not because a session's work feels "done". Only do the bookkeeping below when the user explicitly asks for a version bump/release. Absent that request, push code changes without touching `version.txt`, `package.json`'s `version`, `index.html`'s version strings, or `docs/releasenotes/releasenotes.rst`.
 
-- the user explicitly asks for a version bump/release, or
-- you're about to push and no bump has been done yet today (i.e. `version.txt`'s current `changelog` entry is from an earlier date) — then fold *all* of today's accumulated changes into a single bump, rather than one per commit.
-
-If a bump already exists for today, just amend that same version's `changelog`/`last_changes`/release-notes entry with the new change instead of creating another version bump.
+When the user does ask for a bump: if a bump already exists for today (i.e. `version.txt`'s current `changelog` entry is already dated today), amend that same version's `changelog`/`last_changes`/release-notes entry with the new change instead of creating another version bump. Otherwise create a new one.
 
 When a bump does apply, it must include:
 
