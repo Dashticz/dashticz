@@ -30,7 +30,7 @@ function loadSonarr(me) {
   // create the static html part
   if (sonarrTitlePosition == 'top') {
     html +=
-      '<div class="col-xs-12 mh titlegroups transbg"><h3><em class="fas fa-tv"></em> ' +
+      '<div class="col-xs-12 mh titlegroups transbg"><h3><em class="fas fa-tv icon"></em> ' +
       sonarrTitleObject +
       '</h3></div>';
   }
@@ -45,7 +45,7 @@ function loadSonarr(me) {
 
   if (sonarrTitlePosition == 'left') {
     html +=
-      '<div class="col-xs-2 col-icon"><em class="fas fa-tv"></em><div class="SonarrBigTitle">' +
+      '<div class="col-xs-2 col-icon"><em class="fas fa-tv icon"></em><div class="SonarrBigTitle">' +
       sonarrTitleObject +
       '</div></div>';
     sonarrColSize = 10;

@@ -68,6 +68,8 @@ When a bump does apply, it must include:
 - Regenerate `package-lock.json` if `package.json` changed (`npm install --package-lock-only`).
 - Add a corresponding dated entry under "Recent changes" in `docs/releasenotes/releasenotes.rst`, following the existing per-version header + `Enhancements`/`Fixes`/`Code` section style.
 
+**Never write `beta` or `master` into `version.txt` or `docs/releasenotes/releasenotes.rst`.** Both branches maintain these two files independently, and a branch-labeled line (`"branch": "beta"`, a `vX.Y.Z beta (date)` heading, etc.) conflicts on every `beta`→`master` merge/PR since each side's copy differs. `version.txt` carries no `branch` field at all; a `releasenotes.rst` heading is just `vX.Y.Z (date)`, with no `beta`/`master`/`Beta`/`Master` qualifier. This applies to new entries only - untouched historical entries don't need retroactive fixing on their own, but don't reintroduce the pattern while editing nearby.
+
 ## Pushing
 
 Before pushing, the required verification section above must be satisfied, especially `npm run format:check`.

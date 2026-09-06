@@ -2957,6 +2957,16 @@ a.playlist {
   margin-left: 0px;
 }
 
+/* Sonarr's title_position: 'top' layout (js/sonarr.js) - its icon sits
+   inside this h3 instead of a .col-icon, so it needs its own rule to pick
+   up a theme's --icon-font-size (the title_position: 'left' layout's icon
+   is already inside .col-icon, styled by the existing .col-icon .icon
+   rule). Falls back to the h3's own inherited size on themes that don't
+   set the variable, matching the icon's original unstyled appearance. */
+.titlegroups h3 .icon {
+  font-size: var(--icon-font-size, inherit) !important;
+}
+
 .blocktitle {
   font-size: 150%;
 }
@@ -3107,6 +3117,17 @@ a.playlist {
 
 .graphtitle span .fas {
   font-size: 16px !important;
+}
+
+/* createHeader() (js/components/graph.js) builds its own header instead of
+   going through getColIcon() (js/dashticz.js), so its icon previously had
+   a hardcoded 20px inline style rather than a theme's icon size. --icon-
+   font-size is a plain custom property set at :root by a theme (e.g.
+   themes/modern-dark/modern-dark.css), so referencing it here picks up
+   that value without needing the .col-icon ancestor its other consumer
+   (.col-icon .icon) requires. */
+.graphtitle .icon {
+  font-size: var(--icon-font-size, 20px) !important;
 }
 
 .graphbuttons .btn {
@@ -3268,17 +3289,38 @@ div.big {
 }
 
 .sunriseholder .sunrise-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
   margin-bottom: 5px;
   /* sunriseholder is text-center (for the sunrise/sunset line below, kept
      centered as before), but every other device/widget's icon+title sits
-     left-aligned at the top of the block, not centered - override just
-     this row back to that convention. align-self only matters on the grid
-     rule above (flex column): without it the header's own box, though
-     text-align: left inside it, would still be centered as a whole because
-     align-items: center there centers the shrink-to-fit box itself, not
-     just the text inside it. */
+     flush at the top of the block, not centered - align-self: stretch
+     (instead of the shrink-to-fit default) makes this row span the full
+     tile width like every other block's icon+content row, both so it
+     doesn't end up centered as a whole (align-items: center on the grid
+     rule above centers a shrink-to-fit box, not just text inside it) and
+     so .dt_title below actually has room to align into - text-align has
+     no visible effect on a box no wider than its own content. */
+  align-self: stretch;
+}
+
+/* The title reuses the standard .dt_title class (see renderSunrise() in
+   js/components/simpleblock.js) purely so a theme's .dt_title rules -
+   including title text-align - apply here like on every other block. Its
+   150% font-size and 5px margin are sized for a full .dt_block header, not
+   this small single-line tile, so they're overridden back down here.
+   flex: 1 fills the rest of the now full-width .sunrise-header row (instead
+   of only the icon's own natural width), giving text-align: right (set per
+   theme - see e.g. themes/modern-dark/modern-dark.css) an actual gap to
+   align into, matching every other block's icon-left/title-right layout. */
+.sunriseholder .sunrise-header .dt_title {
+  flex: 1;
+  min-width: 0;
+  font-size: inherit;
+  font-weight: bold;
+  margin: 0;
   text-align: left;
-  align-self: flex-start;
 }
 
 .sunriseholder .wi-sunset {
@@ -3288,6 +3330,68 @@ div.big {
 .sunriseholder .wi {
   padding-right: 5px;
   padding-top: 5px;
+}
+
+/* Shared icon+title header row for other js/components/simpleblock.js
+   widgets (Moon, Weather, Spotify, ...) that build their own markup
+   instead of going through getContainer()/getColIcon()/renderTitle()
+   (js/dashticz.js) like every other block, and so have no .dt_block flex
+   layout of their own to hang an icon-left/title-right row off of. Reuses
+   .col-icon/.icon (icon size) and .dt_title (title size/color/alignment)
+   so a theme's rules for those classes apply here too, instead of icon
+   and title silently ignoring the active theme. Unlike .sunriseholder's
+   own .sunrise-header (a small, compact single-line tile that overrides
+   .dt_title's size back down), these widgets are full-size tiles, so
+   .dt_title keeps its normal theme-driven size here. */
+.dt-simple-header {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+.dt-simple-header .dt_title {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The actual "Weather" widget catalog entry (type: 'weather') dispatches
+   to js/components/weather.js's DT_weather, a normal special block that
+   goes through the standard getContainer()/getColIcon()/renderTitle()
+   path (unlike js/components/simpleblock.js's own renderWeather above,
+   only ever reachable via the legacy type: 'wunderground'), so its
+   .col-icon/.dt_title are already there structurally. But DT_weather (and
+   the OWM widget, js/components/owmwidget.js) scales its own .dt_block's
+   font-size dynamically based on tile width, for its internal forecast
+   content - .col-icon .icon and .dt_title inherit that same font-size
+   chain via relative units (.dt_title's 150%) or, on the base/White
+   theme, no absolute override at all, so an early/zero-width refresh()
+   call (before layout has settled) could shrink them to an unreadable or
+   fully invisible size. Pin both to an absolute size immune to that
+   internal scaling; .col-icon .icon still honors a theme's own
+   --icon-font-size when set. */
+.weather.dt_block .dt_title,
+.owmwidget.dt_block .dt_title {
+  font-size: 16px !important;
+}
+
+.weather.dt_block .col-icon .icon,
+.owmwidget.dt_block .col-icon .icon {
+  font-size: var(--icon-font-size, 24px) !important;
+}
+
+/* .dt_block itself is display: flex (see .dt_block above), which is what
+   used to lay the day-forecast tiles (.weatherday, js/components/
+   weather.css) out side by side back when refreshOWM()/refreshOWM3()/
+   refreshKNMI() (js/components/weather.js) wrote them directly into
+   .dt_block - each declares width: 100% and relies on flex-shrink to
+   divide the row between them. Now that they're nested one level deeper,
+   inside .dt_state (so the icon/title fix above didn't get wiped out by
+   the next weather refresh), that flex row context no longer reaches
+   them - .dt_state has no display of its own, so its .weatherday children
+   just stack as ordinary blocks. Give .dt_state that same flex row back. */
+.weather.dt_block .dt_state {
+  display: flex;
 }
 
 select,

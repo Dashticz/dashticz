@@ -635,9 +635,14 @@ var DashticzDeviceEditor = (function () {
           widgetTitles[item.orderKey] = String(
             item.definition.title || item.title || ''
           );
+          // iframe has no sensible icon to guess, so a hand-written/legacy
+          // iframe block without `icon` keeps its historical iconless
+          // appearance here. Sunrise does have an obvious default
+          // ('fas fa-sun' - see renderSunrise() in
+          // js/components/simpleblock.js), so it's excluded from this legacy
+          // quirk and shows the Icon checkbox on, same as any other widget.
           var legacyImplicitIcon =
-            (item.id === 'iframe' || item.id === 'sunrise') &&
-            typeof item.definition.icon === 'undefined';
+            item.id === 'iframe' && typeof item.definition.icon === 'undefined';
           widgetOptions[item.orderKey] = {
             icon:
               (typeof item.definition.image === 'string' &&

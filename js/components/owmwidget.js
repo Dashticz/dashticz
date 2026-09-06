@@ -62,7 +62,15 @@ var DT_owmwidget = (function () {
       }
       me.cityIdPromise = getCityId(me);
       me.containerid = me.mountPoint.slice(1) + '_owmwidget';
-      me.$block.html('<div id="' + me.containerid + '"></div>');
+      // OWM is a normal special block (js/dashticz.js's _mountSpecialBlock()
+      // already rendered .dt_block's own .col-icon/.dt_title before this
+      // runs), so write the embed into .dt_state - the framework's own
+      // content slot (see renderBlock()'s defaultContent handling) -
+      // instead of .dt_block directly, which would wipe out that themed
+      // icon/title along with it.
+      me.$block
+        .find('.dt_state')
+        .html('<div id="' + me.containerid + '"></div>');
     },
     refresh: function (me) {
       var w = parseInt(me.$mountPoint.width() * me.block.scale);

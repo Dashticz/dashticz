@@ -274,7 +274,13 @@ var DT_weather = (function () {
       })
       .then(function (template) {
         var html = template(me.data);
-        $(me.$block).html(html);
+        // The tpl/weatherknmi_*.tpl templates are plain forecast content
+        // fragments (no outer container of their own), so they belong in
+        // .dt_state - the framework's own content slot (js/dashticz.js's
+        // renderBlock()) - not directly in .dt_block, which would wipe out
+        // the .col-icon/.dt_title already rendered there for this block's
+        // own (user-configurable) icon and title.
+        me.$block.find('.dt_state').html(html);
         addWeatherIcons(me);
       });
   }
@@ -289,7 +295,7 @@ var DT_weather = (function () {
       })
       .then(function (template) {
         var html = template(me.data);
-        $(me.$block).html(html);
+        me.$block.find('.dt_state').html(html);
         addWeatherIcons(me);
       });
   }
@@ -304,7 +310,7 @@ var DT_weather = (function () {
       })
       .then(function (template) {
         var html = template(me.data);
-        $(me.$block).html(html);
+        me.$block.find('.dt_state').html(html);
         addWeatherIcons(me);
       });
   }
@@ -899,7 +905,12 @@ var DT_weather = (function () {
 
     var debugIcon = ['01d', '02n', '04d', '11n', '03d', '10n', '13d', '50n'];
 
-    var iconlist = me.$mountPoint.find('.icon');
+    // Scoped to .dt_state (the forecast content refreshOWM()/refreshOWM3()/
+    // refreshKNMI() just populated), not the whole mount point - the
+    // block's own configured icon (.col-icon .icon, getColIcon(),
+    // js/dashticz.js) also carries the "icon" class, and has no
+    // data-icon attribute for a weather condition to mount into.
+    var iconlist = me.$block.find('.dt_state .icon');
     iconlist.each(function (idx, el) {
       var $div = $(el);
       var icon = _DEBUG ? debugIcon[idx % debugIcon.length] : el.dataset.icon;
