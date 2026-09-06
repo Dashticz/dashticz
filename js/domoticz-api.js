@@ -154,6 +154,29 @@ var Domoticz = (function () {
                   newPromise.reject(new Error('SSL_CERT:' + cfg.url));
                   return;
                 }
+                if (jqXHR.status === 0) {
+                  // Status 0 on a non-HTTPS URL (or an HTTPS URL without a
+                  // certificate problem) usually means either Domoticz isn't
+                  // reachable at cfg.url, or the browser blocked the request
+                  // because Domoticz didn't send an Access-Control-Allow-Origin
+                  // header for this CORS request (visible in the browser
+                  // console as "CORS header 'Access-Control-Allow-Origin'
+                  // missing"). Point the user at both possible causes.
+                  console.error(
+                    'Domoticz error code: 0!\nEither Domoticz is not reachable at ' +
+                      cfg.url +
+                      ', or the request was blocked by the browser (CORS).'
+                  );
+                  Debug.log(
+                    Debug.ERROR,
+                    'Domoticz error code: 0 (unreachable or CORS-blocked) for ' +
+                      cfg.url
+                  );
+                  newPromise.reject(
+                    new Error('CORS_OR_UNREACHABLE:' + cfg.url)
+                  );
+                  return;
+                }
                 console.error(
                   'Domoticz error code: ' +
                     jqXHR.status +
@@ -256,6 +279,26 @@ var Domoticz = (function () {
                 certHost +
                 ' (unsafe)</b>.<br>' +
                 '3. Come back here and click the <b>Retry</b> button below.'
+            );
+          }
+          if (
+            err.message &&
+            err.message.substring(0, 20) === 'CORS_OR_UNREACHABLE:'
+          ) {
+            var unreachableUrl = err.message.substring(20);
+            var testUrl =
+              unreachableUrl + 'json.htm?type=command&param=getauth&plan=0';
+            throw new Error(
+              "Can't access Domoticz via " +
+                unreachableUrl +
+                '<br>Check domoticz_ip in config.js, and confirm Domoticz is reachable by opening <a href="' +
+                testUrl +
+                '" target="_blank">' +
+                testUrl +
+                '</a> in a new tab.<br><br>' +
+                'If that page loads fine, the browser is blocking the request as cross-origin (CORS). Fix this in Domoticz under ' +
+                '<b>Setup &rarr; Settings &rarr; Security</b>: add the address Dashticz is served from (or <code>*</code>) to <b>Allowed CORS Origins</b>, ' +
+                'or enable <b>Also allow origins from local networks</b>. Then reload Dashticz.'
             );
           }
           throw err;

@@ -16,6 +16,10 @@ Instructions for AI coding agents working in this repository.
 - `origin` — the maintainer's own fork.
 - `upstream` — the official org repo, which the maintainer has push access to. `beta` tracks `upstream/beta`.
 
+## Branch policy
+
+Never commit, push, or otherwise make changes directly on `master` or `beta`. Always develop on a separate branch — the branch named in the current task's instructions, or a new `claude/<topic>` branch when none is given — and push that branch. Changes land on `master`/`beta` only through a merge or pull request, never a direct push to those branches.
+
 ## Required verification before push, PR, or merge-ready status
 
 Formatting is a required gate, not an optional cleanup step. Before any code change is pushed, presented as ready for a pull request, or described as ready to merge, run:
