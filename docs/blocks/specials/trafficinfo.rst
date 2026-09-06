@@ -1,39 +1,43 @@
 .. _trafficinfo :
 
-Traffic info 
+Traffic info
 ################
 
-With a traffic info block you can show the ANWB (Dutch) traffic info. 
+With a traffic info block you can show Dutch traffic jams and roadworks, from RWS
+(Rijkswaterstaat)'s public traffic API. No API key is needed.
 
 For public transport info see :ref:`publictransport`.
 
 A traffic info block can be configured as follows::
 
     var trafficinfo = {}
-    trafficinfo.anwbA1 = {
+    trafficinfo.rwsA1 = {
         trafficJams: true,
         roadWorks: false,
-        radars: false,
         road:'A1',
-        provider: 'anwb',
         show_lastupdate:true,
         icon: 'fas fa-car',
         width:12,
         results: 100 };
 
-segStart and segEnd can also be provided to filter the results even more.
-
 .. image :: img/trafficinfo.jpg
+
+Using the Widget editor
+-----------------------
+
+In Wizard mode, ``trafficJams``, ``roadWorks``, ``radars``, ``results``, ``maxDistance``,
+``latitude`` and ``longitude`` can all be set from the Widget editor's Traffic information
+quick-add, without hand-writing a block.
 
 
 Parameters
 ----------
 
-.. list-table:: 
+.. list-table::
   :header-rows: 1
   :widths: 5, 30
   :class: tight-table
-      
+
   * - Parameter
     - Description
   * - road
@@ -42,16 +46,17 @@ Parameters
     - Title of the block
   * - show_lastupdate
     - ``false`` , ``true``. To display the time of the last update.
-  * - provider
-    - | Traffic info provider to use. Choose from
-      | ``'anwb'`` The Netherlands
+  * - maxDistance
+    - Only show items within this distance, in km straight-line, from ``latitude``/``longitude``. Defaults to ``40``.
+  * - latitude, longitude
+    - | Reference location for ``maxDistance``. Leave both unset to use Domoticz's own configured system location (Settings > System > Location) - only set these yourself if that isn't configured.
   * - icon
     - | The font-awesome icon (including ``fas fa-``)
       | ``'fas fa-car'``, ...
-  * - refresh 
+  * - refresh
     - time in seconds for refreshing the data
-  * - results 
-    - Number of results to show 
+  * - results
+    - Number of results to show. Defaults to ``5``.
   * - width
     - To customize the width. It's not recommended to change the default value (``12``) because of the size of the output.
   * - trafficJams
@@ -59,7 +64,7 @@ Parameters
   * - roadWorks
     - ``false`` , ``true``.  To show road work info
   * - radars
-    - ``false`` , ``true``.  To show radar info
+    - ``false`` , ``true``.  To show radar info. RWS has no radar data, so this currently has no visible effect.
   * - showempty
     - | Control text to show in case of no traffic announcements
       | ``false``: Don't show a message in case of no traffic announcements
@@ -69,9 +74,9 @@ Parameters
     - | Control text to show in case of no traffic announcements for a certain road (only applicable in combination with block parameter ``road``)
       | ``false``: Don't show a message in case of no traffic announcements for a certain road.
       | ``true``: Display default message in case of no traffic announcements for a certain road.
-      | ``'<text>'``: Display <text> in case of no traffic announcements for a certain road.  
+      | ``'<text>'``: Display <text> in case of no traffic announcements for a certain road.
   * - url
-    - ``'<url>'``: URL of the page to open in a popup frame or new window on click. 
+    - ``'<url>'``: URL of the page to open in a popup frame or new window on click.
   * - newwindow
     - | ``0``: open in current window
       | ``1``: open in new window
@@ -84,4 +89,3 @@ Styling
 
 In case no info is available then the CSS class ``empty`` will be added to block.
 This can be used to adjust the styling of an empty block via ``custom.css``
-
