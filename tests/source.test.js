@@ -1696,7 +1696,7 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(settings, /config_mode: 'wizard'/);
   assert.match(
     settings,
-    /background_image: '\/img\/custom\/BG_Dashticz_bw\.png'/
+    /background_image: 'img\/custom\/BG_Dashticz_bw\.png'/
   );
   for (const id of [
     'weather',
