@@ -4,6 +4,7 @@ var DashticzWidgetEditor = (function () {
   'use strict';
 
   var customImageListPromise = null;
+  var DEFAULT_GRID_SIZE = { width: 6, height: 6 };
   // Snapshot of selectedWidgets (which widget ids are on-screen) taken when
   // this popup opened, only while the Layout Editor was already open
   // underneath it. Used by _save() to graft newly checked widgets into
@@ -5570,6 +5571,7 @@ var DashticzWidgetEditor = (function () {
         widgetId: id,
         name: catalogItem.title || id,
         width: catalogItem.width || 3,
+        gridDefaultSize: catalogItem.gridDefaultSize || DEFAULT_GRID_SIZE,
         icon: catalogItem.icon,
       };
     });
@@ -5712,37 +5714,16 @@ var DashticzWidgetEditor = (function () {
                 catalog.filter(function (c) {
                   return c.id === entry.id;
                 })[0] || {};
-              // A few widgets look wrong at the generic proportional/px-based
-              // grid default (e.g. Domoticz log at a full-width, short strip)
-              // and specify their own grid cell size directly, in grid units.
-              var gridDefault = catalogItem.gridDefaultSize;
-              var width = gridDefault
-                ? Math.max(
-                    1,
-                    Math.min(gridConfig.gridColumns, gridDefault.width)
-                  )
-                : Math.max(
-                    1,
-                    Math.min(
-                      gridConfig.gridColumns,
-                      Math.round(
-                        ((entry.width || 3) * gridConfig.gridColumns) / 12
-                      )
-                    )
-                  );
-              // entry.height is only present for a widget with an explicit
-              // custom height; fall back to the catalog default just to size
-              // the initial grid cell, without writing it into the block.
-              var height = gridDefault
-                ? Math.max(1, gridDefault.height)
-                : Math.max(
-                    1,
-                    Math.ceil(
-                      ((entry.height || catalogItem.height || 120) +
-                        gridConfig.gap) /
-                        (gridConfig.rowHeight + gridConfig.gap)
-                    )
-                  );
+              // Grid defaults are direct cell counts, independent of classic
+              // 12-column widths and pixel heights. Individual widgets can
+              // still override the shared 6x6 fallback (for example log 8x8).
+              var gridDefault =
+                catalogItem.gridDefaultSize || DEFAULT_GRID_SIZE;
+              var width = Math.max(
+                1,
+                Math.min(gridConfig.gridColumns, gridDefault.width)
+              );
+              var height = Math.max(1, gridDefault.height);
               var position = _firstFreeGridPosition(occupied, width, height);
               occupied.push(position);
               gridItems.push({

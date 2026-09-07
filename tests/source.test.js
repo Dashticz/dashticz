@@ -1696,7 +1696,7 @@ test('widget editor exposes the supported catalog and keeps legacy options out o
   assert.match(settings, /config_mode: 'wizard'/);
   assert.match(
     settings,
-    /background_image: '\/img\/custom\/BG_Dashticz_bw\.png'/
+    /background_image: 'img\/custom\/BG_Dashticz_bw\.png'/
   );
   for (const id of [
     'weather',
@@ -3653,27 +3653,26 @@ test('Google Maps widget gets a default icon like other widgets', () => {
   );
 });
 
-test('Domoticz log widget defaults to an 8x8 grid cell instead of a full-width strip', () => {
+test('Widget grid fallback is 6x6 while Domoticz log keeps its 8x8 override', () => {
   const widgetEditor = fs.readFileSync(
     path.join(root, 'js/widgeteditor.js'),
     'utf8'
   );
+  const layoutEditor = fs.readFileSync(
+    path.join(root, 'js/layouteditor.js'),
+    'utf8'
+  );
 
-  // The generic grid-default formula scales column width (1-12) proportionally
-  // to gridColumns, so log's width:12 (full width, needed for column-mode
-  // layouts) used to also make its *grid* default a full-width strip. log's
-  // catalog entry now opts into an explicit grid-only override; the width:12
-  // column-mode default is untouched.
+  // Generic widgets start at 6x6 grid cells instead of deriving a surprising
+  // size from their classic 12-column width and pixel height. A catalog entry
+  // can still opt into an explicit grid-only override.
+  assert.match(widgetEditor, /DEFAULT_GRID_SIZE = \{ width: 6, height: 6 \}/);
   assert.match(widgetEditor, /gridDefaultSize: \{ width: 8, height: 8 \}/);
-  assert.match(widgetEditor, /var gridDefault = catalogItem\.gridDefaultSize;/);
   assert.match(
     widgetEditor,
-    /var width = gridDefault\s*\n\s*\? Math\.max\(1, Math\.min\(gridConfig\.gridColumns, gridDefault\.width\)\)/
+    /catalogItem\.gridDefaultSize \|\| DEFAULT_GRID_SIZE/
   );
-  assert.match(
-    widgetEditor,
-    /var height = gridDefault\s*\n\s*\? Math\.max\(1, gridDefault\.height\)/
-  );
+  assert.match(layoutEditor, /var gridDefault = entry\.gridDefaultSize;/);
   // log's own catalog width (used for column-mode layouts) must stay 12.
   const logEntryStart = widgetEditor.indexOf("id: 'log',");
   const logEntryEnd = widgetEditor.indexOf('},', logEntryStart);
@@ -5084,15 +5083,20 @@ test('Lyrion Music Server (LMS) block is registered, dispatched and wired throug
     deviceEditor,
     /if \(special\.specialType === 'lms'\) return 'fas fa-music';/
   );
-  // Default size for a newly added block: 6 columns wide, and (grid mode
-  // only - this popup is only reachable from the grid-only Widgets catalog)
-  // 8 rows tall, comfortably fitting the 100px cover plus its info lines.
-  // `height` means a grid-row count in grid mode but a literal CSS pixel
-  // height outside it (js/dashticz.js's renderBlock()), so a fixed default
-  // is only ever written for grid mode.
+  // Default size for a newly added block: exactly 5x8 grid cells. Keep these
+  // separate from classic width/height: width is otherwise rescaled from a
+  // 12-column value to gridColumns, while height is otherwise treated as px.
   assert.match(
     deviceEditor,
-    /width: 6,\s*\n(?:\s*\/\/[^\n]*\n)*\s*height: gridMode \? 8 : null,/
+    /width: 6,\s*\n\s*height: null,\s*\n\s*gridWidth: 5,\s*\n\s*gridHeight: 8,/
+  );
+  assert.match(
+    deviceEditor,
+    /requestedGridWidth > 0[\s\S]{0,300}?Math\.min\(gridConfig\.gridColumns, requestedGridWidth\)/
+  );
+  assert.match(
+    deviceEditor,
+    /requestedGridHeight > 0\s*\n\s*\? requestedGridHeight/
   );
 
   // Entry point lives in the Widgets ("wizard") catalog popup (js/widgeteditor.js),
