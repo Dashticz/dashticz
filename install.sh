@@ -118,14 +118,15 @@ echo
 echo "Configuring write access for the web-server user..."
 WRITE_ACCESS="$INSTALL_DIR/tools/install-dashticz-write-access.sh"
 if [ -f "$WRITE_ACCESS" ]; then
-    # Grants custom/ + .git write access so Settings → Update works.
+    # Grant write access only to custom/. Application code and .git must remain
+    # protected from the web-server user.
     # Soft-fail: web server may not be installed yet on a fresh host.
-    if sh "$WRITE_ACCESS" --git-update; then
-        echo "Web-server write access configured (CONFIG.js + Git updates)."
+    if sh "$WRITE_ACCESS"; then
+        echo "Web-server write access configured for custom/."
     else
         echo "Warning: could not configure web-server write access automatically."
         echo "After your web server is installed, run:"
-        echo "  sudo sh $WRITE_ACCESS --git-update"
+        echo "  sudo sh $WRITE_ACCESS"
     fi
 else
     echo "Warning: write-access helper not found at $WRITE_ACCESS"

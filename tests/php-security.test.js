@@ -633,14 +633,27 @@ test('first-run access check verifies CONFIG.js as the web server user', () => {
 
 test('Apache write-access installer derives the path and verifies a real write', () => {
   const installer = read('tools/install-dashticz-write-access.sh');
+  const mainInstaller = read('install.sh');
 
   assert.match(installer, /INSTALL_DIR=.*SCRIPT_DIR\/\.\./);
   assert.match(installer, /js\/savesettings\.php/);
   assert.match(installer, /chmod 2775/);
   assert.match(installer, /runuser -u .* touch/);
+  assert.match(installer, /Refusing --git-update/);
+  assert.doesNotMatch(installer, /chown -R/);
+  assert.doesNotMatch(mainInstaller, /--git-update/);
   assert.doesNotMatch(installer, /sudoers/);
   assert.doesNotMatch(installer, /NOPASSWD/);
   assert.doesNotMatch(installer, /\/var\/www\/html/);
+});
+
+test('Git permission hint does not recommend exposing the checkout', () => {
+  const source = read('js/update.php');
+
+  assert.match(source, /application code and \.git should not be writable/);
+  assert.match(source, /\.\/update\.sh/);
+  assert.doesNotMatch(source, /sudo chown -R/);
+  assert.doesNotMatch(source, /install-dashticz-write-access\.sh --git-update/);
 });
 
 test('bundled Horizon remote requires POST, CSRF and a key allowlist', () => {

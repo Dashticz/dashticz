@@ -316,7 +316,9 @@
       "removed_all": "Il ne reste aucune tuile. Choisissez Enregistrer pour tout supprimer, ou Annuler pour restaurer.",
       "auto_height": "automatique",
       "configure_device": "Configurer l’appareil",
-      "configure_widget": "Configurer le widget"
+      "configure_widget": "Configurer le widget",
+      "added_pending": "Élément ajouté. Choisissez Enregistrer pour le conserver, ou Annuler pour l’abandonner.",
+      "discard_pending_confirm": "Abandonner le(s) élément(s) que vous venez d’ajouter ? Ils n’ont pas encore été enregistrés."
     },
     "widgeteditor": {
       "title": "Widgets",
