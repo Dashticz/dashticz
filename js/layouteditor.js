@@ -428,21 +428,26 @@ var DashticzLayoutEditor = (function () {
 
     if (gridMode) {
       var gridColumns = gridConfig.gridColumns;
+      var gridDefault = entry.gridDefaultSize;
       var gridWidth =
         entry.kind === 'separator'
           ? gridColumns
-          : Math.max(
-              MIN_GRID_WIDTH,
-              Math.min(gridColumns, Math.round((width12 * gridColumns) / 12))
-            );
+          : gridDefault
+            ? Math.max(MIN_GRID_WIDTH, Math.min(gridColumns, gridDefault.width))
+            : Math.max(
+                MIN_GRID_WIDTH,
+                Math.min(gridColumns, Math.round((width12 * gridColumns) / 12))
+              );
       var pixelHeight = entry.kind === 'separator' ? 60 : 120;
-      var gridHeight = Math.max(
-        minimumHeight,
-        Math.ceil(
-          (pixelHeight + gridConfig.gap) /
-            (gridConfig.rowHeight + gridConfig.gap)
-        )
-      );
+      var gridHeight = gridDefault
+        ? Math.max(minimumHeight, gridDefault.height)
+        : Math.max(
+            minimumHeight,
+            Math.ceil(
+              (pixelHeight + gridConfig.gap) /
+                (gridConfig.rowHeight + gridConfig.gap)
+            )
+          );
       var grid = _firstFreeGridPosition(
         items,
         1,

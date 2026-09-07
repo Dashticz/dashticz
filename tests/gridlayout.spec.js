@@ -2868,6 +2868,7 @@ screens[1] = {
     page,
   }) => {
     let blocksRequest = null;
+    let gridRequest = null;
     await page.route('**/tests/CONFIG.pw.js*', async (route) => {
       const response = await route.fetch();
       await route.fulfill({
@@ -2928,13 +2929,25 @@ screens[1] = {
         body: JSON.stringify({ success: true, blockKeys: ['lms_1'] }),
       });
     });
-    await page.route('**/js/savegridlayout.php*', (route) =>
-      route.fulfill({
+    // No configurable widgets are placed in this test, but _save() always
+    // chains a savewidgets.php call (with an empty list) before it can reach
+    // savegridlayout.php - it must be mocked too, or that chain 403s against
+    // the real backend's CSRF check and the grid save below never fires.
+    await page.route('**/js/savewidgets.php*', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ success: true, blockKeys: [] }),
+      });
+    });
+    await page.route('**/js/savegridlayout.php*', async (route) => {
+      gridRequest = route.request().postDataJSON();
+      await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({ success: true }),
-      })
-    );
+      });
+    });
 
     await page.goto(dashboardUrl);
     // See the rendering test above: give this test's cold start more room
@@ -2973,8 +2986,16 @@ screens[1] = {
     expect(saved.player).toBe('11:22:33:44:55:66');
     expect(saved.refresh).toBe(5);
     expect(saved.title).toBe('Kitchen Speaker');
+    // width is the classic-layout value carried on the device itself; grid
+    // placement is a separate 5x8 cell size sent to savegridlayout.php below,
+    // so the device payload no longer carries a `height` at all.
     expect(saved.width).toBe(6);
-    expect(saved.height).toBe(8);
+    expect(saved.height).toBeUndefined();
+
+    await expect.poll(() => gridRequest).not.toBeNull();
+    expect(gridRequest.items).toHaveLength(1);
+    expect(gridRequest.items[0].ref).toBe('lms_1');
+    expect(gridRequest.items[0].grid).toEqual({ x: 1, y: 1, w: 5, h: 8 });
   });
 });
 
