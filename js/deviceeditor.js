@@ -128,6 +128,8 @@ var DashticzDeviceEditor = (function () {
   var gridPositions = {}; // order key -> {x,y,w,h}
   var gridRefs = {}; // order key -> block reference
   var gridExtras = []; // non-device/widget blocks
+  var DEFAULT_GRID_WIDTH = 6;
+  var DEFAULT_GRID_HEIGHT = 6;
   var TITLE_GRID_HEIGHT = 2;
   var SEPARATOR_DEFAULT_ICON = 'fas fa-divide';
   var customImageListPromise = null;
@@ -8667,34 +8669,41 @@ var DashticzDeviceEditor = (function () {
                     pendingSpecial && pendingSpecial.gridHeight,
                     10
                   );
+                  var isTitleBlock =
+                    pendingSpecial && pendingSpecial.specialType === 'title';
                   var width =
                     requestedGridWidth > 0
                       ? Math.max(
                           1,
                           Math.min(gridConfig.gridColumns, requestedGridWidth)
                         )
-                      : Math.max(
-                          1,
-                          Math.min(
-                            gridConfig.gridColumns,
-                            Math.round((width12 * gridConfig.gridColumns) / 12)
-                          )
-                        );
-                  var isTitleBlock =
-                    orderKey.indexOf('special:') === 0 &&
-                    managedSpecials[orderKey].specialType === 'title';
+                      : isTitleBlock
+                        ? gridConfig.gridColumns
+                        : pendingSpecial
+                          ? Math.min(gridConfig.gridColumns, DEFAULT_GRID_WIDTH)
+                          : Math.max(
+                              1,
+                              Math.min(
+                                gridConfig.gridColumns,
+                                Math.round(
+                                  (width12 * gridConfig.gridColumns) / 12
+                                )
+                              )
+                            );
                   var height =
                     requestedGridHeight > 0
                       ? requestedGridHeight
                       : isTitleBlock
                         ? TITLE_GRID_HEIGHT
-                        : Math.max(
-                            1,
-                            Math.ceil(
-                              ((pixelHeight || 120) + gridConfig.gap) /
-                                (gridConfig.rowHeight + gridConfig.gap)
-                            )
-                          );
+                        : pendingSpecial
+                          ? DEFAULT_GRID_HEIGHT
+                          : Math.max(
+                              1,
+                              Math.ceil(
+                                ((pixelHeight || 120) + gridConfig.gap) /
+                                  (gridConfig.rowHeight + gridConfig.gap)
+                              )
+                            );
                   position = _firstFreeGridPosition(occupied, width, height);
                   occupied.push(position);
                 }
