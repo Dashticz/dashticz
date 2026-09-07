@@ -3786,14 +3786,12 @@ var DashticzDeviceEditor = (function () {
         definition: {},
         idx: null,
         title: title || lms.playerLabel || '',
+        // width/height are classic-layout values. Grid placement uses its own
+        // cell counts so 5x8 is not rescaled by gridColumns or treated as px.
         width: 6,
-        // A block's `height` means two different things depending on mode
-        // (js/dashticz.js's renderBlock(): grid-row count in grid mode vs.
-        // a literal CSS pixel height outside it), so a fixed default is
-        // only meaningful in grid mode - the only mode this popup is
-        // actually reachable from (the Widgets catalog is grid-only).
-        // 8 rows comfortably fits the 100px cover plus its info lines.
-        height: gridMode ? 8 : null,
+        height: null,
+        gridWidth: 5,
+        gridHeight: 8,
         showTitle: quickOptions.showTitle,
         options: {
           icon: quickOptions.icon,
@@ -8657,25 +8655,46 @@ var DashticzDeviceEditor = (function () {
                 if (!position) {
                   var width12 = _widthForOrderKey(orderKey);
                   var pixelHeight = _heightForOrderKey(orderKey);
-                  var width = Math.max(
-                    1,
-                    Math.min(
-                      gridConfig.gridColumns,
-                      Math.round((width12 * gridConfig.gridColumns) / 12)
-                    )
+                  var pendingSpecial =
+                    orderKey.indexOf('special:') === 0
+                      ? managedSpecials[orderKey]
+                      : null;
+                  var requestedGridWidth = parseInt(
+                    pendingSpecial && pendingSpecial.gridWidth,
+                    10
                   );
+                  var requestedGridHeight = parseInt(
+                    pendingSpecial && pendingSpecial.gridHeight,
+                    10
+                  );
+                  var width =
+                    requestedGridWidth > 0
+                      ? Math.max(
+                          1,
+                          Math.min(gridConfig.gridColumns, requestedGridWidth)
+                        )
+                      : Math.max(
+                          1,
+                          Math.min(
+                            gridConfig.gridColumns,
+                            Math.round((width12 * gridConfig.gridColumns) / 12)
+                          )
+                        );
                   var isTitleBlock =
                     orderKey.indexOf('special:') === 0 &&
                     managedSpecials[orderKey].specialType === 'title';
-                  var height = isTitleBlock
-                    ? TITLE_GRID_HEIGHT
-                    : Math.max(
-                        1,
-                        Math.ceil(
-                          ((pixelHeight || 120) + gridConfig.gap) /
-                            (gridConfig.rowHeight + gridConfig.gap)
-                        )
-                      );
+                  var height =
+                    requestedGridHeight > 0
+                      ? requestedGridHeight
+                      : isTitleBlock
+                        ? TITLE_GRID_HEIGHT
+                        : Math.max(
+                            1,
+                            Math.ceil(
+                              ((pixelHeight || 120) + gridConfig.gap) /
+                                (gridConfig.rowHeight + gridConfig.gap)
+                            )
+                          );
                   position = _firstFreeGridPosition(occupied, width, height);
                   occupied.push(position);
                 }

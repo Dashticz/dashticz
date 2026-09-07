@@ -5084,15 +5084,20 @@ test('Lyrion Music Server (LMS) block is registered, dispatched and wired throug
     deviceEditor,
     /if \(special\.specialType === 'lms'\) return 'fas fa-music';/
   );
-  // Default size for a newly added block: 6 columns wide, and (grid mode
-  // only - this popup is only reachable from the grid-only Widgets catalog)
-  // 8 rows tall, comfortably fitting the 100px cover plus its info lines.
-  // `height` means a grid-row count in grid mode but a literal CSS pixel
-  // height outside it (js/dashticz.js's renderBlock()), so a fixed default
-  // is only ever written for grid mode.
+  // Default size for a newly added block: exactly 5x8 grid cells. Keep these
+  // separate from classic width/height: width is otherwise rescaled from a
+  // 12-column value to gridColumns, while height is otherwise treated as px.
   assert.match(
     deviceEditor,
-    /width: 6,\s*\n(?:\s*\/\/[^\n]*\n)*\s*height: gridMode \? 8 : null,/
+    /width: 6,\s*\n\s*height: null,\s*\n\s*gridWidth: 5,\s*\n\s*gridHeight: 8,/
+  );
+  assert.match(
+    deviceEditor,
+    /requestedGridWidth > 0[\s\S]{0,300}?Math\.min\(gridConfig\.gridColumns, requestedGridWidth\)/
+  );
+  assert.match(
+    deviceEditor,
+    /requestedGridHeight > 0\s*\n\s*\? requestedGridHeight/
   );
 
   // Entry point lives in the Widgets ("wizard") catalog popup (js/widgeteditor.js),
