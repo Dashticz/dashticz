@@ -1,30 +1,31 @@
 #!/bin/sh
 # Prepare Dashticz write access. CONFIG.js remains used by the normal Dashticz
 # setup/editors; Device Rules themselves are stored only in custom.js/custom.css.
-# Optionally allow Git updates from the Settings UI.
+# The application code and .git directory deliberately remain owned by the
+# deployment user, not by the web-server user.
 # The Dashticz directory is derived from this script's own location.
 
 set -eu
 
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
 INSTALL_DIR=$(CDPATH= cd -- "$SCRIPT_DIR/.." && pwd -P)
-GIT_UPDATE=0
 
 for arg in "$@"; do
     case "$arg" in
-        --git-update)
-            GIT_UPDATE=1
-            ;;
         -h|--help)
-            echo "Usage: $0 [--git-update]"
-            echo "  Default: prepare custom/ plus writable custom.js/custom.css for Device Rules."
-            echo "  --git-update: also give that user ownership of the checkout"
-            echo "                so Settings -> Update can run git fetch/pull."
+            echo "Usage: $0"
+            echo "Prepare custom/ plus writable custom.js/custom.css for Device Rules."
+            echo "Application code and .git remain protected from the web-server user."
             exit 0
+            ;;
+        --git-update)
+            echo "Refusing --git-update: it would make application code and .git writable" >&2
+            echo "by the web-server user. Update Dashticz from a shell as the checkout owner." >&2
+            exit 64
             ;;
         *)
             echo "Unknown option: $arg" >&2
-            echo "Usage: $0 [--git-update]" >&2
+            echo "Usage: $0" >&2
             exit 64
             ;;
     esac
@@ -142,16 +143,6 @@ fi
 chgrp "$WEB_GROUP" "$CUSTOM_CSS_FILE"
 chmod 0664 "$CUSTOM_CSS_FILE"
 
-if [ "$GIT_UPDATE" -eq 1 ]; then
-    if [ ! -d "$INSTALL_DIR/.git" ]; then
-        echo "No .git directory found; cannot enable Git updates" >&2
-        exit 66
-    fi
-    # Dedicated installs: let the web-server user own the tree so fetch/pull work.
-    chown -R "$WEB_USER:$WEB_GROUP" "$INSTALL_DIR"
-    echo "Git update access enabled for $WEB_USER:$WEB_GROUP on $INSTALL_DIR"
-fi
-
 if command -v runuser >/dev/null 2>&1; then
     TEST_FILE="$CUSTOM_DIR/.dashticz-write-test.$$"
     if ! runuser -u "$WEB_USER" -- touch "$TEST_FILE"; then
@@ -169,15 +160,6 @@ if command -v runuser >/dev/null 2>&1; then
         echo "$CUSTOM_CSS_FILE is still not writable by $WEB_USER" >&2
         exit 73
     fi
-
-    if [ "$GIT_UPDATE" -eq 1 ]; then
-        GIT_TEST="$INSTALL_DIR/.git/.dashticz-write-test.$$"
-        if ! runuser -u "$WEB_USER" -- touch "$GIT_TEST"; then
-            echo "The .git directory is still not writable by $WEB_USER" >&2
-            exit 73
-        fi
-        rm -f "$GIT_TEST"
-    fi
 else
     echo "Warning: runuser not found; could not verify access as $WEB_USER" >&2
 fi
@@ -187,6 +169,4 @@ echo "Normal Dashticz CONFIG.js access is prepared for the setup/editor workflow
 echo "Device Rules storage uses custom.js and custom.css only"
 echo "$CUSTOM_JS_FILE exists and is writable by the web-server user"
 echo "$CUSTOM_CSS_FILE exists and is writable by the web-server user"
-if [ "$GIT_UPDATE" -eq 0 ]; then
-    echo "Tip: run with --git-update to allow Settings -> Update (git fetch/pull)."
-fi
+echo "Application code and .git remain protected; update from a shell as the checkout owner"
