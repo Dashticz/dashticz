@@ -370,7 +370,9 @@
       "auto_height": "automatisch",
       "configure_device": "Device configureren",
       "configure_widget": "Widget configureren",
-      "pending_new": "Nieuw – nog niet opgeslagen"
+      "pending_new": "Nieuw – nog niet opgeslagen",
+      "added_pending": "Item toegevoegd. Kies Opslaan om te bewaren, of Annuleren om te verwijderen.",
+      "discard_pending_confirm": "Zojuist toegevoegde item(s) verwijderen? Deze zijn nog niet opgeslagen."
     },
     "widgeteditor": {
       "title": "Widgets",

@@ -478,7 +478,9 @@
       "auto_height": "auto",
       "configure_device": "Configure device",
       "configure_widget": "Configure widget",
-      "pending_new": "New – not saved yet"
+      "pending_new": "New – not saved yet",
+      "added_pending": "Item added. Select Save to keep it, or Cancel to discard it.",
+      "discard_pending_confirm": "Discard the item(s) you just added? They have not been saved yet."
     },
     "widgeteditor": {
       "title": "Widgets",

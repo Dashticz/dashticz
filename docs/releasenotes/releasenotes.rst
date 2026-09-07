@@ -2811,7 +2811,7 @@ Enhancements
 * Settings → Weergave: background image uses the same pulldown as Standby (``BG_*`` labels for ``img/bg*`` files), with a **Pad/URL** field underneath for custom paths or full URLs. Standby uses the same pattern.
 * Settings → Widgets → Clock: **Grootte** and **Schaal** apply as defaults; clocks (especially station clock) fit inside the device tile.
 * Topbar: Dashticz logo is shown before the app title. The topbar clock is optional via Settings → Weergave (default off).
-* Settings Update: Git commands pass ``safe.directory`` for the Dashticz checkout so updates work when the web-server user does not own the files (e.g. Docker / www-data). Permission errors show a fix hint; use ``tools/install-dashticz-write-access.sh --git-update`` to grant write access. ``install.sh`` runs that helper after a fresh clone so first installs can use Settings → Update.
+* Installation security: ``install.sh`` grants the web-server user write access only to ``custom/``. Application code and ``.git`` remain protected; the deprecated ``--git-update`` option is refused. When Settings → Update lacks permission, its hint now directs administrators to update from a shell as the checkout owner instead of making the entire checkout writable by the web server.
 
 v3.20.4 (24-7-2026)
 -------------------

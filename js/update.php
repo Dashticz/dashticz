@@ -165,7 +165,7 @@ function dashticz_git_writable_check($repoRoot)
 }
 
 /**
- * Build a concrete fix command when Git reports permission / ownership problems.
+ * Explain how to update without making the checkout writable by the web server.
  */
 function dashticz_git_permission_hint($repoRoot, $combinedOutput)
 {
@@ -182,14 +182,13 @@ function dashticz_git_permission_hint($repoRoot, $combinedOutput)
 
     $user = dashticz_web_user_name();
     $path = str_replace('\\', '/', $repoRoot);
-    $tool = $path . '/tools/install-dashticz-write-access.sh';
 
     return
-        'The web-server user (' . $user . ') needs write access to the Dashticz checkout.' . "\n" .
-        'On the server run:' . "\n" .
-        '  sudo sh ' . $tool . ' --git-update' . "\n" .
-        'or:' . "\n" .
-        '  sudo chown -R ' . $user . ':' . $user . ' ' . $path;
+        'The web-server user (' . $user . ') cannot update this checkout. This is intentional: ' .
+        'application code and .git should not be writable by the web server.' . "\n" .
+        'Log in to the server and update Dashticz as the checkout owner:' . "\n" .
+        '  cd ' . escapeshellarg($path) . "\n" .
+        '  ./update.sh';
 }
 
 /**
