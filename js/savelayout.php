@@ -91,14 +91,15 @@ foreach ($data['items'] as $entry) {
  * device/widget sections for the active screen into one readable generated
  * area. Standby (screen 0) writes columns_standby instead of screens[].
  * Widget settings are global, so retain them in the root config for every
- * screen before removing the active screen's temporary widget section.
+ * screen - but only AFTER the active screen's temporary sections are
+ * removed below: configwriter_upsert_root_config_settings() prefers to
+ * rewrite an existing simple `config['key'] = value;` line in place rather
+ * than appending a new one, and while the widget-editor section still
+ * exists that in-place match finds the *old* line still sitting inside it,
+ * so the "preserved" value gets deleted right along with the whole section
+ * a moment later instead of actually being preserved (same class of bug as
+ * discussion #271, fixed for the grid layout in savegridlayout.php).
  */
-$config = configwriter_upsert_root_config_settings(
-    $config,
-    $widgetSettings,
-    true
-);
-
 if ($screenNumber === 0) {
     // $blockLines was extracted at request start, after saveblocks/savewidgets
     // already wrote the new block definitions into temporary editor sections.
@@ -107,6 +108,11 @@ if ($screenNumber === 0) {
         $config,
         '// [standby-editor-start]',
         '// [standby-editor-end]'
+    );
+    $config = configwriter_upsert_root_config_settings(
+        $config,
+        $widgetSettings,
+        true
     );
     $config = rtrim($config);
 
@@ -141,6 +147,11 @@ if ($screenNumber === 1) {
         '// [standby-editor-end]'
     );
 }
+$config = configwriter_upsert_root_config_settings(
+    $config,
+    $widgetSettings,
+    true
+);
 $config = rtrim($config);
 
 if (!empty($items)) {

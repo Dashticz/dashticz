@@ -265,16 +265,23 @@ if ($screenNumber > 0 && empty($items) && !isset($data['configMode'])) {
     }
 }
 
-$config = configwriter_upsert_root_config_settings(
-    $config,
-    $widgetSettings,
-    true
-);
-
 /* A grid layout supersedes the generated column layout for the same screen.
  * Remove all temporary and consolidated editor sections before emitting the
  * grid section; otherwise an IDX-key migration leaves the old name-keyed
- * blocks in dashboard-editor and creates duplicate device definitions. */
+ * blocks in dashboard-editor and creates duplicate device definitions.
+ *
+ * This must run BEFORE configwriter_upsert_root_config_settings() below.
+ * $widgetSettings was extracted from the widget-editor section while it
+ * still lives at its original spot inside [widget-editor-*]; upsert's
+ * "keep an existing simple setting in place" optimisation would find that
+ * same line still sitting there and rewrite it in place instead of
+ * appending it, so the value would be re-written right back inside the
+ * section this code is about to delete - only to be deleted along with it,
+ * silently dropping every general widget setting (OWM/Garbage/Gmap/XMLTV
+ * API keys etc.) on every grid layout save. Removing the section first
+ * means the in-place match can no longer find it there, so upsert falls
+ * through to its append path and the settings land safely outside any
+ * editor section. */
 $config = configwriter_remove_editor_sections($config, $screenNumber);
 if ($screenNumber === 0) {
     $config = configwriter_remove_section(
@@ -284,6 +291,11 @@ if ($screenNumber === 0) {
     );
 }
 $config = configwriter_remove_section($config, $startMarker, $endMarker);
+$config = configwriter_upsert_root_config_settings(
+    $config,
+    $widgetSettings,
+    true
+);
 $section = configwriter_build_grid_layout_section(
     $items,
     $screenNumber,
