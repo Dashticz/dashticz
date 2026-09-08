@@ -838,13 +838,21 @@ test('layout writer stores safe references in one grouped dashboard section', ()
   assert.match(source, /configwriter_extract_wrapped_section/);
   assert.match(source, /configwriter_remove_editor_sections/);
   assert.match(source, /configwriter_upsert_root_config_settings/);
+  // configwriter_upsert_root_config_settings() must run AFTER the temporary
+  // editor sections are removed, in both the standby (screen 0) and normal
+  // screen branches - not before. It prefers to rewrite an existing simple
+  // `config['key'] = value;` line in place rather than appending a new one;
+  // if the widget-editor section still existed at that point, the in-place
+  // match would find the old line still sitting inside it, so the
+  // "preserved" value would be deleted right along with the whole section a
+  // moment later instead of actually being preserved (discussion #271).
   assert.match(
     source,
-    /configwriter_upsert_root_config_settings\([\s\S]*?if \(\$screenNumber === 0\)/
+    /configwriter_remove_editor_sections\(\$config, 0\)[\s\S]*?configwriter_upsert_root_config_settings/
   );
-  assert.doesNotMatch(
+  assert.match(
     source,
-    /if \(\$screenNumber === 1\)\s*\{[\s\S]*?configwriter_upsert_root_config_settings/
+    /configwriter_remove_editor_sections\(\$config, \$screenNumber\)[\s\S]*?configwriter_upsert_root_config_settings/
   );
   assert.match(source, /configwriter_build_layout_section/);
   assert.match(source, /configwriter_parse_screen_number/);
