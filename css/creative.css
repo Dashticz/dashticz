@@ -3080,7 +3080,12 @@ a.playlist {
 }
 */
 
+/* Relying on .block_graph's flex stretch (display:flex; flex-direction:
+   column) to give this its width wasn't reliable in practice - the canvas
+   Chart.js creates inside kept its browser-default intrinsic width instead
+   of the block's actual width (#280). Set it explicitly instead. */
 .graphcontent {
+  width: 100%;
   height: 100%;
   min-height: 1px;
 }
@@ -3130,8 +3135,16 @@ a.playlist {
   font-size: var(--icon-font-size, 20px) !important;
 }
 
+/* Graph buttons default to a white fill with a mid-grey icon
+   (buttonsFill/buttonsIcon in js/components/graph.js's getBlockDefaults()).
+   Dimming the whole button with opacity washes both toward the same
+   backdrop color, collapsing the icon-vs-fill contrast rather than just
+   toning the button down - on the base theme (no themes/*.css override)
+   this left inactive range buttons close to invisible (#280). A lighter
+   dimming keeps the active/inactive distinction without erasing that
+   contrast. */
 .graphbuttons .btn {
-  opacity: 0.5;
+  opacity: 0.75;
 }
 
 .graphbuttons .btn.active {
