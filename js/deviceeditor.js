@@ -210,6 +210,8 @@ var DashticzDeviceEditor = (function () {
         invalid_slide_target: 'Enter a valid positive screen number.',
         custom_device_name: 'Device name',
         custom_device_name_help: 'Used as the blocks[...] key in CONFIG.js.',
+        custom_device_idx_help:
+          "Domoticz device idx, or 'v<idx>' for a Domoticz variable (e.g. v3).",
         custom_device_title: 'Title',
         custom_device_options: 'Device options',
         custom_device_values_help: 'For arrays or objects, enter valid JSON.',
@@ -799,6 +801,19 @@ var DashticzDeviceEditor = (function () {
     return 'device_' + parsed.idx + (parsed.subidx ? '_' + parsed.subidx : '');
   }
 
+  /* A Custom device's idx is normally a plain positive Domoticz device id,
+     but js/components/domoticzblock.js (via DT_function.getDomoticzIdx()) and
+     js/domoticz-api.js's _setAllVariables() also resolve a 'v<idx>' string to
+     a Domoticz user variable (documented in docs/blocks/domoticzblocks.rst).
+     Recognising that shape here lets the Custom Device popup create/edit
+     variable-backed blocks instead of only plain devices. */
+  function _isCustomVariableIdx(idx) {
+    return typeof idx === 'string' && /^[vV][1-9][0-9]*$/.test(idx);
+  }
+  function _normalizeCustomVariableIdx(idx) {
+    return 'v' + idx.slice(1);
+  }
+
   /* Recognise editor-created dummy and title blocks without treating every
      hand-written block with hide_data as a dummy device. */
   function _specialFromReference(reference) {
@@ -832,7 +847,7 @@ var DashticzDeviceEditor = (function () {
         definition.type === 'dial' ||
         definition.type === 'bar' ||
         definition.type === reference) &&
-      parseInt(definition.idx, 10) > 0
+      (parseInt(definition.idx, 10) > 0 || _isCustomVariableIdx(definition.idx))
     ) {
       // A device with a hand-picked block key is a Custom device. Recognising
       // it before the normal IDX path preserves that key on later editor saves.
@@ -1028,7 +1043,9 @@ var DashticzDeviceEditor = (function () {
             ? parseInt(definition.idx, 10) > 0
               ? parseInt(definition.idx, 10)
               : null
-            : parseInt(definition.idx, 10),
+            : kind === 'custom' && _isCustomVariableIdx(definition.idx)
+              ? _normalizeCustomVariableIdx(definition.idx)
+              : parseInt(definition.idx, 10),
       title:
         TITLE_OPTIONAL_SPECIAL_KINDS.indexOf(kind) > -1
           ? String(definition.title || '')
@@ -2450,7 +2467,12 @@ var DashticzDeviceEditor = (function () {
     html +=
       '<div class="mb-3"><label class="form-label" for="cd-device-idx">IDX</label>';
     html +=
-      '<input type="number" min="1" step="1" class="form-control" id="cd-device-idx"></div>';
+      '<input type="text" inputmode="numeric" class="form-control" ' +
+      'id="cd-device-idx" placeholder="123, or v3 for a variable">';
+    html +=
+      '<div class="form-text">' +
+      _esc(t.custom_device_idx_help) +
+      '</div></div>';
     html +=
       '<div class="mb-3"><label class="form-label" for="cd-device-title">' +
       _esc(t.custom_device_title) +
@@ -2515,7 +2537,10 @@ var DashticzDeviceEditor = (function () {
         .text('');
       var reference = $.trim(String($('#cd-device-name').val() || ''));
       var rawIdx = $.trim(String($('#cd-device-idx').val() || ''));
-      var idx = parseInt(rawIdx, 10);
+      var isVariableIdx = _isCustomVariableIdx(rawIdx);
+      var idx = isVariableIdx
+        ? _normalizeCustomVariableIdx(rawIdx)
+        : parseInt(rawIdx, 10);
       if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference)) {
         $message.addClass('text-danger').text(t.invalid_custom_device_name);
         $('#cd-device-name').trigger('focus');
@@ -2529,7 +2554,7 @@ var DashticzDeviceEditor = (function () {
         $('#cd-device-name').trigger('focus');
         return;
       }
-      if (!(idx > 0 && String(idx) === rawIdx)) {
+      if (!isVariableIdx && !(idx > 0 && String(idx) === rawIdx)) {
         $message.addClass('text-danger').text(t.invalid_idx);
         $('#cd-device-idx').trigger('focus');
         return;

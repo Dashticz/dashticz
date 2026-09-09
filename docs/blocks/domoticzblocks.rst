@@ -115,6 +115,10 @@ Example::
 
 After that you can use ``'v3'`` in your column definitions in ``CONFIG.js`` as usual.
 
+This can also be configured graphically: the Screen Editor's add menu has a
+**Custom Device** option whose IDX field accepts a ``v<idx>`` value (e.g.
+``v3``) in addition to a plain device idx.
+
 A list of all Domoticz variables can be obtained via::
 
     http://[DomoticzIP:Port]/json.htm?type=command&param=getuservariables

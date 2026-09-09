@@ -1303,7 +1303,7 @@ test('device and widget config editors share full widget config and preserve hid
   );
   assert.match(
     deviceEditor,
-    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === 'bar' \|\|\s*\n\s*definition\.type === reference\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
+    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === 'bar' \|\|\s*\n\s*definition\.type === reference\) &&\s*\n\s*\(parseInt\(definition\.idx, 10\) > 0 \|\| _isCustomVariableIdx\(definition\.idx\)\)/
   );
   assert.match(saveBlocks, /function _dashticz_editor_block_type\(\$entry\)/);
   assert.match(saveBlocks, /'type' => _dashticz_editor_block_type\(\$entry\)/);
@@ -4506,7 +4506,7 @@ test("Move mode Settings button opens the Multi/Custom Device's own config, not 
   // the Dial/Bar visual mode's type:'dial' (#182).
   assert.match(
     deviceEditor,
-    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === 'bar' \|\|\s*\n\s*definition\.type === reference\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
+    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === 'bar' \|\|\s*\n\s*definition\.type === reference\) &&\s*\n\s*\(parseInt\(definition\.idx, 10\) > 0 \|\| _isCustomVariableIdx\(definition\.idx\)\)/
   );
 });
 
