@@ -1653,11 +1653,19 @@ function configwriter_special_block_props($block)
         if (!empty($block['hide_data'])) {
             $props['hide_data'] = true;
         }
-        // Written as an explicit true/false (not omitted when unchecked) so
-        // it can override settings['last_update']'s global default in either
-        // direction - see js/blocks.js's showUpdateInformation() last-update
-        // check, which only ever suppresses the global default when this
-        // property is present and explicitly false.
+        // Custom/Multi Device is the only special kind whose "Last update"
+        // checkbox already defaults to checked at creation (see
+        // js/deviceeditor.js's _showCustomDevicePopup()/_showMultiDevicePopup()
+        // lastUpdate: true, vs. false for every other special kind below) -
+        // so writing an explicit false here when unchecked changes nothing for
+        // a block left at its default, it only makes the checkbox able to
+        // force last-update off (previously the property was simply omitted
+        // when unchecked, which fell through to settings['last_update']'s
+        // global default instead - see js/blocks.js's showUpdateInformation()).
+        // The other special kinds keep the conditional (omit-when-false) form
+        // deliberately: their checkbox defaults to unchecked, so writing an
+        // explicit false there would newly suppress the global default for
+        // every newly created (or merely re-saved) block of that kind.
         $props['last_update'] = !empty($block['last_update']);
         if (!empty($block['switch'])) {
             $props['switch'] = true;

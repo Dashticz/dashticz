@@ -77,6 +77,19 @@ Before pushing, the required verification section above must be satisfied, espec
 
 Pushing requires the `gh` CLI authenticated as the maintainer, or a git credential helper for `https://github.com`. If neither is configured in the current environment, don't retry `git push` expecting it to work — leave the push to the user (e.g. via their editor's Source Control panel or their own terminal).
 
+## Every device/widget must keep its config (cog) icon
+
+Every device and widget tile must be able to open its own Device/Widget Config popup by default — a tile with no way to reach its settings is a regression, not an acceptable trade-off, even for a newly added or unusual idx/block shape.
+
+The tile's cog icon and its click target are decided independently in (at least) two places, and both must recognize a new block shape or it silently loses its config option in part of the app while still working elsewhere:
+
+- `js/deviceeditor.js`'s `_specialFromReference()` — recognizes an existing block as a given "special" kind so its own Device Config popup (gear icon inside the Device Editor's list, and `openConfig`/`openLayoutConfig`) can find and edit it.
+- `js/layouteditor.js`'s `_resolveBlock()` — classifies the same block for the (grid) Layout Editor. Returning `null` here either drops the item from the Layout Editor's list entirely (classic column mode) or downgrades it to an untyped `kind: 'grid'` item (grid mode) — both cases mean the tile keeps drag/resize but loses its cog/config control, since `_decorateItem()`'s `isConfigurable` and `_openItemConfig()`'s dispatch only allow `'device'`, `'widget'`, or a kind listed in `REFERENCE_BASED_SPECIAL_KINDS` (also defined in `js/layouteditor.js`).
+
+A real example: extending Custom Device's idx to also accept `'v<idx>'` (a Domoticz variable, alongside the existing `'s<idx>'` scene/group form) only touched `js/deviceeditor.js` at first. `js/layouteditor.js`'s `_resolveBlock()` had its own, separate `^s\d+$` pattern that never learned about `v<idx>`, so a variable-backed Custom Device silently lost its cog icon the moment the Layout Editor was involved, even though the popup it would have opened worked fine.
+
+When adding a new special block kind, or extending what idx shapes an existing kind accepts, verify the cog icon and its config popup still work in **all** of: the plain dashboard (Wizard/Custom mode), the Device Editor's own managed-items list, and the (grid) Layout Editor. Grep both files above for the existing kind/pattern being extended — chances are it needs the identical change in both places.
+
 ## Known outstanding issues
 
 - `vendor/dashticz/garbage/index.php`: the `curlGetJson()` helper (added for the HVC waste-collection provider) unconditionally disables `CURLOPT_SSL_VERIFYPEER`, unlike the rest of the file, which only disables SSL verification when the user opts in via `?ignoressl=1`. Left as-is per maintainer decision — flag it again if touching this file.

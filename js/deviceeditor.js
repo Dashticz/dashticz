@@ -6604,7 +6604,8 @@ var DashticzDeviceEditor = (function () {
         _esc(t.multi_device_idx) +
         '</label>';
       html +=
-        '<input type="number" min="1" step="1" class="form-control" id="de-config-idx" value="' +
+        '<input type="text" inputmode="numeric" class="form-control" ' +
+        'id="de-config-idx" placeholder="123, or v3 for a variable" value="' +
         _esc(special.idx || '') +
         '">';
       html +=
@@ -6915,16 +6916,20 @@ var DashticzDeviceEditor = (function () {
       var pendingIdx = isCustom || isGroupBlock ? special.idx : null;
       if (isCustom) {
         var rawIdx = $.trim(String($('#de-config-idx').val() || ''));
-        var parsedIdx = parseInt(rawIdx, 10);
-        if (!(parsedIdx > 0 && String(parsedIdx) === rawIdx)) {
-          valid = false;
-          $popup
-            .find('.de-config-message')
-            .addClass('text-danger')
-            .text(t.invalid_idx);
-          $('#de-config-idx').trigger('focus');
+        if (_isCustomVariableIdx(rawIdx)) {
+          pendingIdx = _normalizeCustomVariableIdx(rawIdx);
         } else {
-          pendingIdx = parsedIdx;
+          var parsedIdx = parseInt(rawIdx, 10);
+          if (!(parsedIdx > 0 && String(parsedIdx) === rawIdx)) {
+            valid = false;
+            $popup
+              .find('.de-config-message')
+              .addClass('text-danger')
+              .text(t.invalid_idx);
+            $('#de-config-idx').trigger('focus');
+          } else {
+            pendingIdx = parsedIdx;
+          }
         }
       } else if (isGroupBlock) {
         // Unlike Custom/Multi Device, a Group's idx is optional - it can
