@@ -1303,7 +1303,7 @@ test('device and widget config editors share full widget config and preserve hid
   );
   assert.match(
     deviceEditor,
-    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === 'bar' \|\|\s*\n\s*definition\.type === reference\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
+    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === 'bar' \|\|\s*\n\s*definition\.type === reference\) &&\s*\n\s*\(parseInt\(definition\.idx, 10\) > 0 \|\| _isCustomVariableIdx\(definition\.idx\)\)/
   );
   assert.match(saveBlocks, /function _dashticz_editor_block_type\(\$entry\)/);
   assert.match(saveBlocks, /'type' => _dashticz_editor_block_type\(\$entry\)/);
@@ -4506,7 +4506,7 @@ test("Move mode Settings button opens the Multi/Custom Device's own config, not 
   // the Dial/Bar visual mode's type:'dial' (#182).
   assert.match(
     deviceEditor,
-    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === 'bar' \|\|\s*\n\s*definition\.type === reference\) &&\s*\n\s*parseInt\(definition\.idx, 10\) > 0/
+    /\(!definition\.type \|\| definition\.type === 'dial' \|\| definition\.type === 'bar' \|\|\s*\n\s*definition\.type === reference\) &&\s*\n\s*\(parseInt\(definition\.idx, 10\) > 0 \|\| _isCustomVariableIdx\(definition\.idx\)\)/
   );
 });
 
@@ -4671,7 +4671,7 @@ test("Device Config popup lets a Custom/Multi device's main idx be corrected aft
   );
   assert.match(
     deviceEditor,
-    /var pendingIdx =[\s\S]{0,100}?isCustom \|\| isGroupBlock[\s\S]{0,120}?special\.idx[\s\S]{0,80}?: null;[\s\S]{0,100}?if \(isCustom\) \{[\s\S]{0,120}?var rawIdx = \$\.trim\(String\(\$\('#de-config-idx'\)\.val\(\) \|\| ''\)\);[\s\S]{0,100}?var parsedIdx = parseInt\(rawIdx, 10\);[\s\S]{0,160}?valid = false;/
+    /var pendingIdx =[\s\S]{0,100}?isCustom \|\| isGroupBlock[\s\S]{0,120}?special\.idx[\s\S]{0,80}?: null;[\s\S]{0,100}?if \(isCustom\) \{[\s\S]{0,120}?var rawIdx = \$\.trim\(String\(\$\('#de-config-idx'\)\.val\(\) \|\| ''\)\);[\s\S]{0,60}?if \(_isCustomVariableIdx\(rawIdx\)\) \{[\s\S]{0,80}?pendingIdx = _normalizeCustomVariableIdx\(rawIdx\);[\s\S]{0,40}?\} else \{[\s\S]{0,100}?var parsedIdx = parseInt\(rawIdx, 10\);[\s\S]{0,160}?valid = false;/
   );
   assert.match(
     deviceEditor,

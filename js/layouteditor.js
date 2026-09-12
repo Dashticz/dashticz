@@ -1478,7 +1478,15 @@ var DashticzLayoutEditor = (function () {
     }
 
     var rawIdx = typeof definition.idx !== 'undefined' ? definition.idx : ref;
-    var groupMatch = String(rawIdx).match(/^s\d+$/);
+    // 's<idx>' (scene/group) and 'v<idx>' (Domoticz variable, see
+    // js/domoticz-api.js's _setAllVariables() and
+    // docs/blocks/domoticzblocks.rst) are both valid non-numeric idx forms -
+    // without this, a variable-backed Custom Device fell through to the
+    // purely-numeric match below, returned null, and the item lost its
+    // config (cog) control entirely (or vanished from the Layout Editor's
+    // item list in classic column mode) - the same fate the comment above
+    // already documents for an untyped Group block.
+    var groupMatch = String(rawIdx).match(/^[sv]\d+$/);
     if (groupMatch) {
       var groupName = definition.title || key || String(rawIdx);
       return {

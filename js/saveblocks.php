@@ -173,12 +173,23 @@ foreach ($data['devices'] as $entry) {
         $switch = false;
         $type = null;
         if ($kind === 'dummy' || $kind === 'custom') {
-            if (!isset($entry['idx']) || !is_int($entry['idx']) || $entry['idx'] < 1) {
+            // A Custom device may also reference a Domoticz user variable via
+            // a 'v<idx>' string (see js/domoticz-api.js's _setAllVariables()
+            // and docs/blocks/domoticzblocks.rst) - a Dummy device has no
+            // Domoticz backing, so it stays a plain positive integer.
+            $isVariableIdx = $kind === 'custom'
+                && isset($entry['idx'])
+                && is_string($entry['idx'])
+                && preg_match('/^v\d+$/', $entry['idx']);
+            if (
+                !$isVariableIdx
+                && (!isset($entry['idx']) || !is_int($entry['idx']) || $entry['idx'] < 1)
+            ) {
                 dashticz_json_error(
                     400,
                     $kind === 'dummy'
                         ? 'A dummy block requires a positive integer idx.'
-                        : 'A custom device requires a positive integer idx.'
+                        : 'A custom device requires a positive integer idx or a v<idx> variable reference.'
                 );
             }
             $idx = $entry['idx'];
