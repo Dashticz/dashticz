@@ -4199,15 +4199,18 @@ img.icon {
   bottom: -8px !important;
 }
 
-/* A small, plain button - not an oversized draggable circle. Width/height
-   !important: jQuery UI's own bundled default theme sizes the handle via
-   its own em-based rule (.ui-slider .ui-slider-handle), which these two
-   already outrank on specificity, but pin them anyway so the handle can
-   never end up non-square. jQuery UI positions the handle with "bottom:
-   value%", which places the handle's *bottom edge* (not its center) at
-   that percentage of the track - so without correction the round handle
-   visually sits half its own height too high compared to the tick marks,
-   which center on their percentage via transform: translateY(-50%) (see
+/* A rounded-rectangle handle spanning the full track width, not a small
+   round dot. left: 0/right: 0 with width: auto stretches it to the
+   track's own width instead of a fixed px size; border-radius stays a
+   flat 6px (not 50%, which would draw an ellipse instead of a
+   rectangle). height !important: jQuery UI's own bundled default
+   theme sizes the handle via its own em-based rule (.ui-slider
+   .ui-slider-handle), which this already outranks on specificity, but
+   pin it anyway. jQuery UI positions the handle with "bottom: value%",
+   which places the handle's *bottom edge* (not its center) at that
+   percentage of the track - so without correction the handle visually
+   sits half its own height too high compared to the tick marks, which
+   center on their percentage via transform: translateY(-50%) (see
    .slider-tick span below). margin-bottom: -8px (half the 16px handle
    height) shifts the handle back down so its *center* lands on the
    value's percentage, matching the ticks. The theme's own default
@@ -4228,16 +4231,17 @@ img.icon {
    slider's actual value. Resetting top/margin-top back to auto/0 hands
    vertical positioning back to jQuery UI's own "bottom" entirely. */
 .blinds-slider-wrap .slider .ui-slider-handle {
-  left: 50%;
+  left: 0 !important;
+  right: 0;
   top: auto !important;
-  width: 16px !important;
+  width: auto !important;
   height: 16px !important;
-  margin-left: -8px;
+  margin-left: 0;
   margin-top: 0 !important;
   margin-bottom: -8px !important;
-  border: 2px solid rgba(255, 255, 255, 0.85) !important;
-  border-radius: 50% !important;
-  background: #d9dde2 !important;
+  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  border-radius: 6px !important;
+  background: #234824 !important;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
   cursor: grab;
 }

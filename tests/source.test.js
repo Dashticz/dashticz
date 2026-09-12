@@ -2717,7 +2717,16 @@ test('modern dark theme is portable and documented', () => {
     theme,
     /\.transbg select:focus,[\s\S]*border-color: var\(--border-color-selector\) !important/
   );
-  assert.doesNotMatch(theme, /linear-gradient/);
+  // One deliberate exception to this theme's otherwise gradient-free
+  // convention: the blinds/dimmer slider's track fill, matching
+  // creative.css's own gradient default for the same element. Assert
+  // it's still the *only* gradient in the file, so any future one
+  // creeping in elsewhere still fails this test.
+  assert.match(
+    theme,
+    /\.blinds-slider-wrap \.slider \.ui-slider-range \{\s*\n\s*background: linear-gradient\(/
+  );
+  assert.strictEqual((theme.match(/linear-gradient/g) || []).length, 1);
   assert.match(theme, /\.mh \.btn\.active/);
   assert.match(
     theme,
