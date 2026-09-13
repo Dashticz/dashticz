@@ -1560,26 +1560,60 @@ next css sets the default height of the frame popup
 /* Screen Editor add menu */
 .dt-screeneditor-add-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(100px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(5, minmax(76px, 1fr));
+  gap: 10px;
 }
 
 .dt-screeneditor-add-tile {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-width: 100px;
-  min-height: 100px;
+  min-width: 76px;
+  min-height: 76px;
   aspect-ratio: 1 / 1;
-  padding: 12px 8px;
+  padding: 8px 6px;
   border: 1px solid #ced4da;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #f8f9fa;
   color: #212529;
   text-align: center;
   cursor: pointer;
+}
+
+.dt-screeneditor-add-tile::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 60%;
+  height: 100%;
+  transform: skewX(-20deg);
+  /* The tile's own background (#f8f9fa, #eef5ff on hover) is already very
+     light, so the originally-requested rgba(237,233,224,0.25) had almost no
+     luminance difference to read against it - confirmed invisible in a
+     screenshot scan across the full sweep. A brighter, more opaque white
+     keeps the same diagonal-sweep shape but actually shows up here. */
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.85),
+    transparent
+  );
+}
+
+.dt-screeneditor-add-tile:hover::before {
+  left: 120%;
+  /* The original cubic-bezier(0.65, 0, 0.35, 1) keeps the animated value
+     near its start for roughly the first quarter of the transition, which
+     reads as a delay before the sweep appears - confirmed with screenshots
+     at 50ms steps showing nothing moving until ~250ms in. ease-out starts
+     moving immediately instead, and a shorter duration makes the whole
+     sweep feel snappy rather than a slow drift. */
+  transition: left 0.45s ease-out;
 }
 
 .dt-screeneditor-add-tile:hover,
@@ -1590,12 +1624,12 @@ next css sets the default height of the frame popup
 }
 
 .dt-screeneditor-add-tile i {
-  margin: 0 0 8px !important;
-  font-size: 28px !important;
+  margin: 0 0 6px !important;
+  font-size: 22px !important;
 }
 
 .dt-screeneditor-add-tile span {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
 }
 
@@ -2149,6 +2183,39 @@ body.dle-active {
   white-space: nowrap;
 }
 
+/* Cluster popup pending-device row: an editable name (defaults to the
+   device's own Domoticz name via its placeholder) plus its IDX, and - in
+   Switch mode - a companion "consumption" device <select>, all between the
+   remove button and the row's edge. The name group needs to actually
+   shrink (a flex item's default min-width:auto ignores overflow:hidden/
+   text-overflow otherwise) instead of pushing everything else off the
+   edge of the row. */
+.cl-pending-name-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cl-name-input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cl-pending-idx {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.cl-usage-select {
+  flex: 0 0 auto;
+  width: auto;
+  max-width: 180px;
+}
+
 .de-device-type {
   align-self: flex-start;
   font-size: 11px;
@@ -2388,7 +2455,7 @@ body.dle-active {
 
 @media (max-width: 575.98px) {
   .dt-screeneditor-add-grid {
-    grid-template-columns: repeat(2, minmax(100px, 1fr));
+    grid-template-columns: repeat(3, minmax(76px, 1fr));
   }
 
   .de-custom-field-row,
@@ -4313,6 +4380,170 @@ img.icon {
 .slider-tick-active span {
   color: #9ae58b;
   font-weight: 800;
+}
+
+/* Cluster (js/components/cluster.js): a fixed list of devices shown as
+   individually-switchable rows in one block, unlike Group's single
+   combined toggle. Deliberately plain/theme-neutral (unlike the blinds
+   slider handle above, this isn't themed per-theme) so it reads
+   consistently regardless of the active theme. Rows are painted into
+   .dt_state (js/dashticz.js's own content slot), so the block's configured
+   icon/.dt_title - painted once by the framework itself - stay untouched;
+   containerClass: 'cluster-block' (js/components/cluster.js) is only a
+   scoping hook here, same idea as e.g. .weather_1/.weather_2. */
+.cluster-block .dt_state {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.cluster-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.cluster-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Scales with --cluster-switch-scale (see .cluster-row-switch below) so
+     a bigger switch doesn't crowd into the usage text next to it. */
+  gap: calc(8px * var(--cluster-switch-scale, 1));
+}
+
+.cluster-row-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* Same size as the block's own title (.dt_title), just not bold - per
+     user request. */
+  font-size: var(--font-device-title);
+  font-weight: normal;
+}
+
+.cluster-row-usage {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: var(--font-device-title);
+  color: var(--text-muted);
+}
+
+/* Temperature mode's own row value (js/components/cluster.js) - unlike
+   the usage span, this is the row's primary value (there is no toggle
+   next to it), so it keeps its own status color instead of the muted one
+   .cluster-row-usage uses for its secondary annotation. */
+.cluster-row-temp {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  font-size: var(--font-device-title);
+  font-weight: 600;
+  color: var(--text-status);
+}
+
+.cluster-row-switch {
+  /* --cluster-switch-scale (default 1) resizes the whole switch - .cluster
+     -row-track/-thumb below scale their actual box size via calc() rather
+     than a transform: scale() on this element, so the row's own height
+     (flex align-items: center sizes to its tallest child) and the gap to
+     .cluster-row-usage (see .cluster-row above) grow with it too, instead
+     of the switch visually overlapping its neighbours while its layout
+     box stays the original size. Read with a var() fallback rather than
+     declared here: a declaration on this same selector would always win
+     over one set on an ancestor (custom.css, a theme, or .cluster-block
+     itself), regardless of specificity, which would make such overrides
+     silently do nothing. */
+  position: relative;
+  flex: 0 0 auto;
+  display: inline-flex;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.cluster-row-switch .cluster-row-checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.cluster-row-track {
+  position: relative;
+  /* Wider than tall (66x30, vs. a more typical ~2:1 pill) so ON/OFF has
+     more breathing room next to the thumb and reads more easily. */
+  width: calc(66px * var(--cluster-switch-scale, 1));
+  height: calc(30px * var(--cluster-switch-scale, 1));
+  border-radius: 9999px;
+  background: var(--cluster-switch-off, rgba(255, 255, 255, 0.25));
+  border: calc(1px * var(--cluster-switch-scale, 1)) solid
+    var(--cluster-switch-border, rgba(255, 255, 255, 0.3));
+  box-shadow: inset 0 calc(1px * var(--cluster-switch-scale, 1))
+    calc(2px * var(--cluster-switch-scale, 1)) rgba(0, 0, 0, 0.15);
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.cluster-row-track::after {
+  content: 'OFF';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: calc(7px * var(--cluster-switch-scale, 1));
+  display: flex;
+  align-items: center;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: calc(10px * var(--cluster-switch-scale, 1));
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0.04em;
+  color: var(--cluster-switch-label, rgba(255, 255, 255, 0.7));
+}
+
+.cluster-row-thumb {
+  position: absolute;
+  top: calc(3px * var(--cluster-switch-scale, 1));
+  left: calc(3px * var(--cluster-switch-scale, 1));
+  width: calc(24px * var(--cluster-switch-scale, 1));
+  height: calc(24px * var(--cluster-switch-scale, 1));
+  border-radius: 50%;
+  background: var(--cluster-switch-thumb, #fff);
+  box-shadow:
+    0 calc(1px * var(--cluster-switch-scale, 1))
+      calc(3px * var(--cluster-switch-scale, 1)) rgba(0, 0, 0, 0.35),
+    0 0 0 calc(1px * var(--cluster-switch-scale, 1)) rgba(0, 0, 0, 0.04);
+  transition:
+    transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.2s ease;
+}
+
+.cluster-row-checkbox:checked + .cluster-row-track {
+  /* A richer, slightly darker green than a plain #4cd964 keeps the white
+     ON label above legible (~3.3:1, enough for bold 10px text) instead of
+     washing out against a lighter green. */
+  background: var(--cluster-switch-on, #43a047);
+}
+
+.cluster-row-checkbox:checked + .cluster-row-track::after {
+  content: 'ON';
+  right: auto;
+  left: calc(8px * var(--cluster-switch-scale, 1));
+  color: var(--cluster-switch-label-on, rgba(255, 255, 255, 0.95));
+}
+
+.cluster-row-checkbox:checked + .cluster-row-track .cluster-row-thumb {
+  /* 66px track, 1px border eaten by border-box, 24px thumb, 3px padding
+     each side: 66 - 2(border) - 24 - 2(3px padding) = 34, scaled the same
+     as every other dimension here. */
+  transform: translateX(calc(34px * var(--cluster-switch-scale, 1)));
+}
+
+.cluster-row-checkbox:focus-visible + .cluster-row-track {
+  outline: 2px solid var(--button-active);
+  outline-offset: 2px;
 }
 
 @media (max-width: 975px) {

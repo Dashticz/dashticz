@@ -127,7 +127,13 @@ function switchDevice(block, pMode, pAskConfirm) {
   var idx = block.idx;
   var $div = block.$mountPoint;
   var dial = block.type === 'onoff';
-  var group = block.type === 'group';
+  // Cluster (js/components/cluster.js) rows already compute their own
+  // target state from that device's own current status, the same as
+  // Group's groupClickHandler does for every member device - so both
+  // take the same "pass pMode straight through" path instead of the
+  // .icon/.fa-toggle-on DOM-class detection toggleItem() uses below,
+  // which no cluster row's own markup carries.
+  var group = block.type === 'group' || block.type === 'cluster';
   if (isProtected(block)) return;
 
   var hasPassword = block.password;

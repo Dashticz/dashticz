@@ -4980,7 +4980,10 @@ test('Lyrion Music Server (LMS) block is registered, dispatched and wired throug
   // component left out of that list is dead code: Dashticz.register() for
   // it never runs, so components['lms'] never exists and every LMS block
   // silently falls through to the default/button dispatch instead.
-  assert.match(dashticz, /'group',\s*\n\s*'waqi',\s*\n\s*'lms',\s*\n\s*\];/);
+  assert.match(
+    dashticz,
+    /'group',\s*\n\s*'cluster',\s*\n\s*'waqi',\s*\n\s*'lms',\s*\n\s*\];/
+  );
 
   // The component itself: dispatches on type: 'lms' (like js/components/group.js
   // dispatches on type: 'group'), never sends an LMS control command, and
@@ -5657,7 +5660,467 @@ test('Group block gets the Layout Editor config (cog) control, like HTML/LMS blo
   // only needs to be re-checked for 'group' itself.
   assert.match(
     layoutEditor,
-    /var REFERENCE_BASED_SPECIAL_KINDS = \[[\s\S]{0,400}?'group'[\s\S]{0,50}?\];/
+    /var REFERENCE_BASED_SPECIAL_KINDS = \[[\s\S]{0,400}?'group'[\s\S]{0,150}?\];/
+  );
+});
+
+test('Cluster block gets its own Layout Editor config (cog) control and renders individually-switchable rows', () => {
+  const layoutEditor = fs.readFileSync(
+    path.join(root, 'js/layouteditor.js'),
+    'utf8'
+  );
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const cluster = fs.readFileSync(
+    path.join(root, 'js/components/cluster.js'),
+    'utf8'
+  );
+  const dashticz = fs.readFileSync(path.join(root, 'js/dashticz.js'), 'utf8');
+  const switches = fs.readFileSync(path.join(root, 'js/switches.js'), 'utf8');
+
+  // Loaded (and therefore registered) at startup, same as every other
+  // component in js/dashticz.js's own `specials` list.
+  assert.match(dashticz, /'cluster',/);
+
+  // _resolveBlock() dispatches on type: 'cluster', same shape as Group's
+  // own type: 'group' check - without this a cluster block fell through
+  // to the untyped 'grid' fallback kind, which only gets a drag handle,
+  // never the cog.
+  assert.match(
+    layoutEditor,
+    /String\(definition\.type \|\| ''\)\.toLowerCase\(\) === 'cluster'/
+  );
+  assert.match(layoutEditor, /kind: 'cluster',/);
+  assert.match(
+    layoutEditor,
+    /var REFERENCE_BASED_SPECIAL_KINDS = \[[\s\S]{0,400}?'cluster'[\s\S]{0,150}?\];/
+  );
+
+  // js/deviceeditor.js's own _specialFromReference() recognizes the same
+  // type: 'cluster' shape, and the quick-add popup exists.
+  assert.match(
+    deviceEditor,
+    /String\(definition\.type \|\| ''\)\.toLowerCase\(\) === 'cluster'/
+  );
+  assert.match(deviceEditor, /function _showClusterPopup\(/);
+  assert.match(deviceEditor, /function openCluster\(\)/);
+  assert.match(deviceEditor, /openCluster: openCluster,/);
+
+  // The component itself: one row per device, each with its own toggle,
+  // not one combined status like Group.
+  assert.match(cluster, /name: 'cluster',/);
+  assert.match(cluster, /cluster-row/);
+  assert.match(cluster, /switchDevice\(/);
+
+  // switchDevice() must treat a cluster row's own computed newState the
+  // same way it already treats Group's - passed straight through, not
+  // re-derived from .icon/.fa-toggle-on DOM classes a cluster row's own
+  // markup never carries.
+  assert.match(
+    switches,
+    /block\.type === 'group' \|\| block\.type === 'cluster'/
+  );
+});
+
+test('a saved Cluster block can actually be re-opened and saved from the Layout Editor cog', () => {
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const cluster = fs.readFileSync(
+    path.join(root, 'js/components/cluster.js'),
+    'utf8'
+  );
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  // _showConfigPopup() (reached via openLayoutConfig(), i.e. the Layout
+  // Editor's own cog) must strip the 'devices' row out of the generic
+  // custom-fields list for a Cluster block, exactly like it already does
+  // for Graph. Without this, the raw 'devices' row stayed rendered AND
+  // reserved (customKeys.devices = true below), so every save - even with
+  // zero changes - failed immediately with "duplicate field", making a
+  // saved Cluster block impossible to edit.
+  assert.match(
+    deviceEditor,
+    /if \(isClusterBlock\) \{[\s\S]{0,2200}?customRows = customRows\.filter\(function \(row\) \{[\s\S]{0,120}?return\s*\(\s*field !== 'devices' &&\s*field !== 'usage' &&\s*field !== 'mode' &&\s*field !== 'titles' &&\s*field !== 'switchscale'\s*\);[\s\S]{0,40}?\}\);[\s\S]{0,20}?\}/
+  );
+
+  // A dedicated add/remove device picker (mirroring _showClusterPopup's own)
+  // replaces that raw field, and is actually wired into the popup markup
+  // and the Save handler's persisted output.
+  assert.match(deviceEditor, /function _clusterFieldsHtml\(/);
+  assert.match(deviceEditor, /_clusterFieldsHtml\(\s*'de-config',/);
+  assert.match(
+    deviceEditor,
+    /isClusterBlock && !clusterPendingDevices\.length/
+  );
+  assert.match(
+    deviceEditor,
+    /if \(isClusterBlock\) \{\s*\n\s*var clusterDeviceIdxOut = clusterPendingDevices\.map/
+  );
+
+  // The row title must be allowed to shrink inside its flex row (a flex
+  // item's default min-width:auto ignores overflow:hidden/text-overflow,
+  // so a long device name pushed the whole block width instead of eliding -
+  // forcing an unwanted horizontal scrollbar on the tile).
+  assert.match(
+    css,
+    /\.cluster-row-title \{[\s\S]{0,60}?min-width: 0;[\s\S]{0,120}?text-overflow: ellipsis;/
+  );
+
+  // The 'mh' container class carries div.mh:not(.multiline) { height: 85px }
+  // (a single-line device-tile height), which clipped/collapsed a Cluster
+  // block down to almost nothing once it held more than one or two rows.
+  // Cluster's row count is inherently variable, so it must not opt into
+  // that fixed single-line height the way Group (always exactly one row)
+  // legitimately does.
+  assert.doesNotMatch(cluster, /containerClass:\s*'mh'/);
+});
+
+test('Cluster keeps its framework-painted icon/title and sizes rows like a device title', () => {
+  const cluster = fs.readFileSync(
+    path.join(root, 'js/components/cluster.js'),
+    'utf8'
+  );
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  // js/dashticz.js's renderBlock() already paints .dt_block's own
+  // .col-icon/.dt_title (from the block's configured icon/title) before
+  // run()/refresh() ever runs. doRefresh() must write into .dt_state - the
+  // framework's own content slot, same as e.g. OWM/Weather - rather than
+  // replacing .dt_block wholesale, which wiped that icon/title out on every
+  // refresh (leaving a Cluster block's own configured icon never visible).
+  assert.doesNotMatch(cluster, /find\('\.dt_block'\)\.html\(/);
+  assert.match(cluster, /find\('\.dt_state'\)\.html\(/);
+  // No longer hand-rolls its own .dt_title - the framework's renderTitle()
+  // (gated on the same hide_title the Title checkbox writes) already
+  // renders one.
+  assert.doesNotMatch(cluster, /class="dt_title"/);
+
+  // Row names read like a normal device title elsewhere in the dashboard
+  // (--font-device-title), just not bold, per user request.
+  assert.match(
+    css,
+    /\.cluster-row-title \{[\s\S]{0,300}?font-size: var\(--font-device-title\);[\s\S]{0,60}?font-weight: normal;/
+  );
+});
+
+test('Cluster device picker only offers plain on/off switches', () => {
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+
+  // A cluster row is only ever a simple toggle, so the shared picker list
+  // (_clusterAvailableDeviceList - used by both the quick-add popup and the
+  // Device Config popup's own Cluster section) must restrict candidates to
+  // Domoticz's own SwitchType: 'On/Off', excluding Dimmers, Blinds,
+  // Selectors, sensors and other switch types that don't behave like a
+  // plain toggle.
+  assert.match(
+    deviceEditor,
+    /function _clusterAvailableDeviceList\(\) \{[\s\S]{0,400}?live\.SwitchType === 'On\/Off';[\s\S]{0,20}?\}/
+  );
+});
+
+test("Cluster rows can show a companion device's power consumption", () => {
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const cluster = fs.readFileSync(
+    path.join(root, 'js/components/cluster.js'),
+    'utf8'
+  );
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const saveblocks = fs.readFileSync(
+    path.join(root, 'js/saveblocks.php'),
+    'utf8'
+  );
+
+  // A switch's own idx has no wattage of its own - many switches
+  // (Shelly/Zigbee2MQTT/Sonoff plugs) report it through a separate
+  // companion device instead (Domoticz Type 'Usage', or 'General'/'kWh').
+  // The candidate list is restricted to those two shapes, never the
+  // switches themselves.
+  assert.match(deviceEditor, /function _clusterUsageDeviceList\(\) \{/);
+  assert.match(
+    deviceEditor,
+    /d\.Type === 'Usage' \|\| \(d\.Type === 'General' && d\.SubType === 'kWh'\)/
+  );
+
+  // Candidates are sorted so a name sharing a long prefix with the switch's
+  // own name (e.g. a Shelly's own "-1" vs its paired "-energy" device) is
+  // offered first - a convenience default, not a strict filter.
+  assert.match(deviceEditor, /function _clusterSortUsageCandidates\(/);
+
+  // The picker is wired into both the quick-add popup and the Device
+  // Config popup's own Cluster section, and both persist the pick as an
+  // idx->idx 'usage' map alongside 'devices' - not raw-editable generic
+  // custom fields, same reasoning as 'devices' itself (see the
+  // duplicate-field regression this mirrors).
+  assert.match(deviceEditor, /cl-usage-select/);
+  assert.match(deviceEditor, /customKeys\.usage = true;/);
+  assert.match(
+    deviceEditor,
+    /field: 'usage',\s*\n\s*setting: JSON\.stringify\(/
+  );
+  assert.match(
+    deviceEditor,
+    /return\s*\(\s*field !== 'devices' &&\s*field !== 'usage' &&\s*field !== 'mode' &&\s*field !== 'titles' &&\s*field !== 'switchscale'\s*\);/
+  );
+
+  // js/components/cluster.js: subscribes to each referenced companion
+  // device (so its own updates trigger a re-render even while the switch
+  // stays on) and reads the right field per Domoticz Type - a plain
+  // 'Usage' device's current reading is in .Data, while a kWh meter's .Data
+  // is its cumulative energy instead, with the *current* wattage in .Usage.
+  assert.match(
+    cluster,
+    /me\.usageMap = me\.mode === 'switch' \? me\.block\.usage \|\| \{\} : \{\};/
+  );
+  assert.match(cluster, /Dashticz\.subscribeDevice\(me, usageIdx, false,/);
+  assert.match(cluster, /usageDevice\.Type === 'Usage'/);
+  assert.match(cluster, /cluster-row-usage/);
+
+  // Server-side: the usage map is validated, not trusted verbatim (see the
+  // php-security.test.js counterpart for the exact error strings).
+  assert.match(saveblocks, /isset\(\$customFields\['usage'\]\)/);
+
+  assert.match(css, /\.cluster-row-usage \{/);
+});
+
+test('Cluster rows can be Switch or Temperature, never mixed', () => {
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const cluster = fs.readFileSync(
+    path.join(root, 'js/components/cluster.js'),
+    'utf8'
+  );
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+  const saveblocks = fs.readFileSync(
+    path.join(root, 'js/saveblocks.php'),
+    'utf8'
+  );
+
+  // The candidate list for Temperature mode is restricted to plain
+  // temperature-reporting Domoticz Types, built independently of
+  // _getAvailableDevices() (whose sub-value expansion would otherwise hide
+  // a whole Temp+Humidity+Baro device behind un-offerable idx_1/2/3
+  // entries - see the function's own comment).
+  assert.match(deviceEditor, /function _clusterTemperatureDeviceList\(\) \{/);
+  assert.match(deviceEditor, /'Temp \+ Humidity \+ Baro': true,/);
+
+  // A shared mode-button pair (mirroring the existing Dial/Bar/Needle
+  // mutually-exclusive button-group pattern already used elsewhere in this
+  // same popup) is rendered in both the quick-add popup and the Device
+  // Config popup's own Cluster section, and clicking it clears whatever
+  // was picked under the other mode - the two device sets never overlap.
+  assert.match(deviceEditor, /function _clusterModeButtonsHtml\(/);
+  assert.match(deviceEditor, /cl-mode-button/);
+  assert.match(
+    deviceEditor,
+    /pendingDevices = \[\];\s*\n\s*deviceList =\s*\n\s*clusterMode === 'temperature'/
+  );
+  assert.match(
+    deviceEditor,
+    /clusterPendingDevices = \[\];\s*\n\s*clusterDeviceList =\s*\n\s*clusterMode === 'temperature'/
+  );
+
+  // Persisted as an optional 'mode' custom field (temperature-only;
+  // absent means the default switch rows) - filtered out of the generic
+  // custom-fields list like devices/usage, and reserved so a hand-typed
+  // 'mode' field can't collide with it.
+  assert.match(deviceEditor, /customKeys\.mode = true;/);
+  assert.match(
+    deviceEditor,
+    /field !== 'devices' &&\s*field !== 'usage' &&\s*field !== 'mode' &&\s*field !== 'titles' &&\s*field !== 'switchscale'/
+  );
+  assert.match(deviceEditor, /field: 'mode',\s*\n\s*setting: 'temperature',/);
+
+  // js/components/cluster.js: temperature rows read the device's own .Temp
+  // field directly (no companion device, unlike switch mode's usage map)
+  // and never wire a switch click handler.
+  assert.match(
+    cluster,
+    /me\.mode = me\.block\.mode === 'temperature' \? 'temperature' : 'switch';/
+  );
+  assert.match(cluster, /function temperatureRowHtml\(/);
+  assert.match(cluster, /device\.Temp\.toFixed\(1\) \+ _TEMP_SYMBOL/);
+  assert.match(cluster, /if \(me\.mode === 'temperature'\) return;/);
+  assert.match(css, /\.cluster-row-temp \{/);
+
+  // Server-side: only 'temperature' (or absent) is a valid mode.
+  assert.match(saveblocks, /\$customFields\['mode'\] !== 'temperature'/);
+});
+
+test('Cluster row type is locked once the cluster has been saved', () => {
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+
+  // The Device Config popup only ever edits an already-saved cluster (a
+  // pending, not-yet-saved block never gets a cog - see
+  // openLayoutConfig()), so switching mode there would silently orphan its
+  // already-picked devices instead of clearing a pending pick the way the
+  // quick-add popup (never locked) does - _clusterModeButtonsHtml's own
+  // `locked` param disables both buttons, and the click handler still
+  // guards against it defensively.
+  assert.match(
+    deviceEditor,
+    /function _clusterModeButtonsHtml\(\s*idPrefix,\s*t,\s*mode,\s*locked,\s*switchScaleValue\s*\)\s*\{/
+  );
+  assert.match(deviceEditor, /\(locked \? ' disabled' : ''\)/);
+  assert.match(
+    deviceEditor,
+    /_clusterModeButtonsHtml\(\s*'de-config',\s*t,\s*clusterMode,\s*true,\s*clusterSwitchScaleValue\s*\);/
+  );
+  assert.match(
+    deviceEditor,
+    /if \(\$\(this\)\.prop\('disabled'\)\) return;\s*\n\s*var mode = String\(\$\(this\)\.attr\('data-cluster-mode'\)/
+  );
+
+  // The quick-add popup's own call passes locked: false, i.e. stays
+  // unlocked (nothing is saved yet there).
+  assert.match(
+    deviceEditor,
+    /html \+= _clusterModeButtonsHtml\(\s*'cl',\s*t,\s*clusterMode,\s*false,\s*clusterSwitchScaleValue\s*\);/
+  );
+});
+
+test('Cluster row names can be customized per device, like a normal device Title', () => {
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const cluster = fs.readFileSync(
+    path.join(root, 'js/components/cluster.js'),
+    'utf8'
+  );
+  const saveblocks = fs.readFileSync(
+    path.join(root, 'js/saveblocks.php'),
+    'utf8'
+  );
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  // The row's device name in the pending list is now an editable input
+  // (placeholder shows the live Domoticz name so an empty value visibly
+  // means "use the device name"), not a static span.
+  assert.match(deviceEditor, /cl-name-input/);
+  assert.match(deviceEditor, /placeholder="' \+\s*\n\s*_esc\(d\.name\) \+/);
+
+  // Persisted as an optional 'titles' map (device idx -> custom name),
+  // same shape/reasoning as 'usage' - filtered out of the generic
+  // custom-fields list and reserved, wired into both popups' save
+  // handlers and the quick-add popup's own live state.
+  assert.match(deviceEditor, /customKeys\.titles = true;/);
+  assert.match(deviceEditor, /field !== 'titles'/);
+  assert.match(deviceEditor, /if \(d\.title\) titlesMap\[d\.idx\] = d\.title;/);
+  assert.match(
+    deviceEditor,
+    /if \(d\.title\) clusterTitlesOut\[d\.idx\] = d\.title;/
+  );
+
+  // js/components/cluster.js: falls back to the device's own Domoticz
+  // Name when no override is set - never blank.
+  assert.match(cluster, /me\.titlesMap = me\.block\.titles \|\| \{\};/);
+  assert.match(
+    cluster,
+    /var title = me\.titlesMap\[idx\] \|\| device\.Name \|\| idx;/
+  );
+
+  // Server-side: keys must be one of the block's own devices, values
+  // non-empty strings.
+  assert.match(saveblocks, /isset\(\$customFields\['titles'\]\)/);
+  assert.match(
+    saveblocks,
+    /A cluster block\\'s titles map key must be one of its own devices\./
+  );
+  assert.match(
+    saveblocks,
+    /A cluster block\\'s titles map values must be non-empty strings\./
+  );
+
+  assert.match(css, /\.cl-name-input \{/);
+});
+
+test('Cluster switch can be resized via a switchScale field next to the Row type buttons', () => {
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  const cluster = fs.readFileSync(
+    path.join(root, 'js/components/cluster.js'),
+    'utf8'
+  );
+  const saveblocks = fs.readFileSync(
+    path.join(root, 'js/saveblocks.php'),
+    'utf8'
+  );
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  // Rendered inline (a 5-character-wide input per request, not a stacked
+  // mb-3 block) right next to the Switch/Temperature buttons -
+  // _clusterModeButtonsHtml calls it itself rather than callers rendering
+  // it as a separate field below, and it's hidden entirely in Temperature
+  // mode (no switches there to size).
+  assert.match(deviceEditor, /function _clusterSwitchScaleFieldHtml\(/);
+  assert.match(deviceEditor, /if \(mode === 'temperature'\) return '';/);
+  assert.match(deviceEditor, /width:10ch/);
+  assert.match(
+    deviceEditor,
+    /_clusterSwitchScaleFieldHtml\(idPrefix, t, mode, switchScaleValue\)/
+  );
+
+  // Parsed/clamped client-side to the same 0.3-3 range saveblocks.php
+  // enforces server-side, read back from both popups' own inputs and
+  // reserved so a hand-typed 'switchScale' custom field can't collide.
+  assert.match(deviceEditor, /function _readClusterSwitchScale\(/);
+  assert.match(deviceEditor, /customKeys\.switchscale = true;/);
+  assert.match(deviceEditor, /field !== 'switchscale'/);
+  assert.match(
+    deviceEditor,
+    /field: 'switchScale',\s*\n\s*setting: String\(switchScale\),/
+  );
+  assert.match(
+    deviceEditor,
+    /field: 'switchScale',\s*\n\s*setting: String\(editSwitchScale\),/
+  );
+
+  // js/components/cluster.js applies it as a CSS custom property on every
+  // refresh (not just run()), so a live config update without a full page
+  // reload still picks up a changed value.
+  assert.match(
+    cluster,
+    /var switchScale = parseFloat\(me\.block\.switchScale\);/
+  );
+  assert.match(
+    cluster,
+    /'--cluster-switch-scale',\s*\n\s*switchScale > 0 \? switchScale : ''/
+  );
+
+  // css/creative.css: every scaled dimension is read with a var()
+  // fallback of 1 (never declared on the same selector - see
+  // .cluster-row-switch's own comment) so the switch renders at normal
+  // size when unset, and the row's own gap to .cluster-row-usage scales
+  // the same way so a bigger switch doesn't crowd its neighbour.
+  assert.match(css, /width: calc\(66px \* var\(--cluster-switch-scale, 1\)\);/);
+  assert.match(css, /gap: calc\(8px \* var\(--cluster-switch-scale, 1\)\);/);
+
+  // Server-side: must be a number within 0.3-3.
+  assert.match(saveblocks, /isset\(\$customFields\['switchScale'\]\)/);
+  assert.match(
+    saveblocks,
+    /A cluster block\\'s switchScale must be a number\./
+  );
+  assert.match(
+    saveblocks,
+    /A cluster block\\'s switchScale must be between 0\.3 and 3\./
   );
 });
 

@@ -562,6 +562,11 @@ var DT_simpleblock = (function () {
         label: t.group_block || 'Group',
       },
       {
+        action: 'cluster',
+        icon: 'fa-list-check',
+        label: t.cluster_block || 'Cluster',
+      },
+      {
         action: 'htmlblock',
         icon: 'fa-code',
         label: t.html_block || 'HTML Block',
@@ -633,6 +638,8 @@ var DT_simpleblock = (function () {
             DashticzDeviceEditor.openMultiDevice();
           } else if (selectedAction === 'group') {
             DashticzDeviceEditor.openGroup();
+          } else if (selectedAction === 'cluster') {
+            DashticzDeviceEditor.openCluster();
           } else if (selectedAction === 'htmlblock') {
             DashticzDeviceEditor.openHtmlBlock();
           } else if (selectedAction === 'slidebutton') {

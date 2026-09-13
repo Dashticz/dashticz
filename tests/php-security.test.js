@@ -706,11 +706,68 @@ test('blocks writer requires CSRF, POST, and generates named block definitions',
      the pattern) only touches this one array. */
   assert.match(
     source,
-    /\$specialBlockKinds = \['dummy', 'title', 'custom', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'\];/
+    /\$specialBlockKinds = \['dummy', 'title', 'custom', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'\];/
   );
   assert.match(
     source,
     /in_array\(\$entry\['kind'\], \$specialBlockKinds, true\)/
+  );
+  /* Cluster block: requires a non-empty devices array of positive integer
+     idx values (js/components/cluster.js), same shape as Graph's own
+     requirement, and always writes type: 'cluster' server-side. */
+  assert.match(source, /kind === 'cluster'/);
+  assert.match(source, /A cluster block requires at least one device\./);
+  assert.match(
+    source,
+    /A cluster block requires positive integer device idx values\./
+  );
+  assert.match(writer, /\$kind === 'cluster'/);
+  assert.match(writer, /'type' => 'cluster'/);
+  /* Cluster's optional usage map (switch idx -> companion consumption
+     device idx, js/components/cluster.js): each key must be one of the
+     block's own devices, each value a positive integer idx - otherwise a
+     hand-crafted request could point a row's "consumption" at an arbitrary
+     idx it was never actually given. */
+  assert.match(source, /isset\(\$customFields\['usage'\]\)/);
+  assert.match(
+    source,
+    /A cluster block\\'s usage map key must be one of its own devices\./
+  );
+  assert.match(
+    source,
+    /A cluster block\\'s usage map values must be positive integer device idx values\./
+  );
+  /* Cluster's optional mode field (js/components/cluster.js): switches
+     every row from a toggle to a plain temperature reading. Only
+     'temperature' is a valid value - anything else (including a hand-typed
+     string) is rejected rather than silently ignored. */
+  assert.match(
+    source,
+    /isset\(\$customFields\['mode'\]\) && \$customFields\['mode'\] !== 'temperature'/
+  );
+  /* Cluster's optional titles map (device idx -> custom row name,
+     js/components/cluster.js): same key/value shape as usage above - each
+     key must be one of the block's own devices, each value a non-empty
+     string. */
+  assert.match(source, /isset\(\$customFields\['titles'\]\)/);
+  assert.match(
+    source,
+    /A cluster block\\'s titles map key must be one of its own devices\./
+  );
+  assert.match(
+    source,
+    /A cluster block\\'s titles map values must be non-empty strings\./
+  );
+  /* Cluster's optional switchScale field (js/components/cluster.js sets
+     --cluster-switch-scale from it): must be a number within the same
+     0.3-3 range js/deviceeditor.js's own input already clamps to
+     client-side - a hand-crafted request could otherwise send an
+     arbitrary/non-numeric value straight into a CSS custom property. */
+  assert.match(source, /isset\(\$customFields\['switchScale'\]\)/);
+  assert.match(source, /A cluster block\\'s switchScale must be a number\./);
+  assert.match(
+    source,
+    /A cluster block\\'s switchScale must be between 0\.3 and 3\./
   );
   /* Lyrion Music Server block: server/port/player validated, credentials
      never echoed back in an error message. */
