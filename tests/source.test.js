@@ -7408,3 +7408,29 @@ test('--main-bg stays gradient-safe wherever creative.css consumes it', () => {
     /\.transbg,\s*\n\.dt_block \{[\s\S]{0,600}?background-color: var\(--main-bg\);/
   );
 });
+
+test('Selector Switch dropdown shows only its own levels, no generic placeholder option', () => {
+  const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+
+  // getSelectorSwitch()'s dropdown style (SelectorStyle 1) used to prepend
+  // a generic "Select..." placeholder (language.misc.select) above the
+  // device's own real levels - redundant (and, for a device whose own
+  // level 0 is itself named something like "Select"/"Off", visually
+  // duplicated) with the device's own levels, which already include
+  // whatever "please choose" framing the device's own naming provides.
+  // The button-style branch (the `else`, further down) never had this
+  // placeholder - only the dropdown did.
+  const dropdownBranch = blocks.match(
+    /device\['SelectorStyle'\] == 1\s*\n\s*\) \{[\s\S]{0,2500}?\/\/ No placeholder[\s\S]{0,1000}?<\/select>/
+  );
+  assert.ok(dropdownBranch, 'expected to find the SelectorStyle 1 branch');
+  assert.doesNotMatch(dropdownBranch[0], /language\.misc\.select/);
+  assert.doesNotMatch(dropdownBranch[0], /<option value=""/);
+
+  // The device's own hidden/off level (LevelOffHidden) is still respected
+  // - unrelated to, and unaffected by, removing the generic placeholder.
+  assert.match(
+    dropdownBranch[0],
+    /parseFloat\(nv\.value\) > 0 \|\|\s*\n\s*\(nv\.value == 0 &&\s*\n\s*\(typeof device\['LevelOffHidden'\] == 'undefined' \|\|\s*\n\s*device\['LevelOffHidden'\] === false\)\)/
+  );
+});
