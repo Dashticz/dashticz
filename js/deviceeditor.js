@@ -3513,16 +3513,24 @@ var DashticzDeviceEditor = (function () {
   // data channels, which all share their parent's numeric idx - offering
   // each as a separately "addable" option would let two rows end up
   // pointing at the exact same device, and a sub-device isn't independently
-  // switchable in the first place). Also restricted to plain on/off
-  // switches (Domoticz's own SwitchType: 'On/Off') - a cluster row is only
-  // ever a plain toggle, so e.g. Dimmers, Blinds, Selectors and sensors
-  // would offer an "addable" option that doesn't actually behave like one.
+  // switchable in the first place). Otherwise restricted to Domoticz
+  // SwitchTypes with a genuine binary on/off state: plain 'On/Off'
+  // switches, and Dimmers - a cluster row only ever exposes the toggle
+  // (js/components/cluster.js's switchRowHtml() never renders a brightness
+  // slider), so a Dimmer here behaves exactly like a plain switch, same as
+  // clicking its icon (not its slider) on a normal device tile. SwitchType
+  // Blinds/Selectors/etc. are still excluded - those don't have a plain
+  // on/off semantic (Blinds is Open/Close/Stop, Selectors are named
+  // levels), so offering them as "addable" wouldn't actually behave like a
+  // toggle the way Dimmer does.
   function _clusterAvailableDeviceList() {
     var allDevices = Domoticz.getAllDevices();
     return _getAvailableDevices(managedDevices).filter(function (d) {
       if (_isGroupCk(d.key) || d.subidx) return false;
       var live = allDevices[d.idx];
-      return !!live && live.SwitchType === 'On/Off';
+      return (
+        !!live && (live.SwitchType === 'On/Off' || live.SwitchType === 'Dimmer')
+      );
     });
   }
 
