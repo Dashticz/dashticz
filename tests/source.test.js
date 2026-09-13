@@ -2717,18 +2717,21 @@ test('modern dark theme is portable and documented', () => {
     theme,
     /\.transbg select:focus,[\s\S]*border-color: var\(--border-color-selector\) !important/
   );
-  // Two deliberate gradients in this theme: the blinds/dimmer slider's
-  // track fill (matching creative.css's own gradient default for the same
-  // element), and --main-bg itself (every .dt_block/.transbg tile's own
-  // background - requested by the user for this theme specifically).
-  // Assert there are exactly these two, so any future one creeping in
-  // elsewhere still fails this test.
+  // One deliberate exception to this theme's otherwise gradient-free
+  // convention: the blinds/dimmer slider's track fill, matching
+  // creative.css's own gradient default for the same element. --main-bg
+  // was briefly a gradient here too (per an earlier user request) but was
+  // reverted back to a flat color for this theme specifically - Liquid
+  // Glass Blue/Grey keep the gradient --main-bg instead (see their own
+  // portability tests). Assert there's still only this one gradient in
+  // Modern Dark, so any future one creeping in elsewhere still fails this
+  // test.
   assert.match(
     theme,
     /\.blinds-slider-wrap \.slider \.ui-slider-range \{\s*\n\s*background: linear-gradient\(/
   );
-  assert.match(theme, /--main-bg: linear-gradient\(\s*\n\s*157deg,/);
-  assert.strictEqual((theme.match(/linear-gradient/g) || []).length, 2);
+  assert.match(theme, /--main-bg: rgba\(32, 33, 42, 0\.88\);/);
+  assert.strictEqual((theme.match(/linear-gradient/g) || []).length, 1);
   assert.match(theme, /\.mh \.btn\.active/);
   assert.match(
     theme,
