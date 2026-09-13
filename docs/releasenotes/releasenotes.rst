@@ -1,6 +1,27 @@
 Release Notes
 =============
 
+v4.0.7 (12-9-2026)
+----------------------
+
+* **Enhancements**
+
+- Blinds/Dimmer slider: the up/down/stop action buttons and their icons
+  (32px/12px), and the percentage scale labels beside the track (12px,
+  16px for the tick bold-highlighting the current value), are now bigger
+  touch targets - 38px/14px and 14px/16px respectively - on the Modern
+  Dark, Liquid Glass Blue and Liquid Glass Grey themes.
+
+* **Code**
+
+- Redesigned the slider's drag handle in ``css/creative.css`` itself (so
+  it applies to every theme, and to both the Blinds and Dimmer variants
+  that share this component): previously a small 16px round dot in a
+  light grey fill, it's now a rounded rectangle spanning the full width
+  of the track (16px tall, 6px corner radius, a softened white border),
+  filled with a dark green pulled from the same palette as the track's
+  own fill gradient.
+
 v4.0.6 (10-9-2026)
 ----------------------
 

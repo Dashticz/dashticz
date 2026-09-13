@@ -3012,7 +3012,7 @@ async function openScreenEditorAddMenu(page) {
   await expect(addButton).toBeVisible();
   await addButton.click();
   await expect(page.locator('#screeneditoraddpopup')).toBeVisible();
-  await expect(page.locator('.dt-screeneditor-add-tile')).toHaveCount(8);
+  await expect(page.locator('.dt-screeneditor-add-tile')).toHaveCount(9);
 }
 
 async function openDeviceEditorFromScreenEditor(page) {

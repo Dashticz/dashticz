@@ -568,3 +568,21 @@
   background: var(--warning-red) !important;
   background-clip: border-box;
 }
+
+/* Blinds slider up/down/stop buttons and scale labels: bigger touch
+   targets than creative.css's defaults (32px / 12px). The tick closest
+   to the current value is bold and a bit bigger still (16px) so it
+   stands out as the current reading. */
+.blinds-slider-action a {
+  width: 38px !important;
+  height: 38px !important;
+  font-size: 14px !important;
+}
+
+.slider-tick span {
+  font-size: 14px !important;
+}
+
+.slider-tick-active span {
+  font-size: 16px !important;
+}
