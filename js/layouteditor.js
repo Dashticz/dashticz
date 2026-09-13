@@ -36,6 +36,7 @@ var DashticzLayoutEditor = (function () {
     'xmltvguide',
     'lms',
     'group',
+    'cluster',
     'camera',
     'news',
     'graph',
@@ -1436,6 +1437,23 @@ var DashticzLayoutEditor = (function () {
           parseInt(definition.idx, 10) > 0
             ? parseInt(definition.idx, 10)
             : null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (key && String(definition.type || '').toLowerCase() === 'cluster') {
+      // Cluster (js/components/cluster.js): a fixed list of devices shown
+      // as individually-switchable rows in one block, dispatched on
+      // type: 'cluster' like Group's type: 'group' just above and
+      // mirroring deviceeditor.js's _specialFromReference(). Always
+      // idx-less (no single device backs the whole block), unlike Group.
+      return {
+        definition: definition,
+        kind: 'cluster',
+        reference: key,
+        widgetId: null,
+        idx: null,
         subidx: 0,
         name: definition.title || key,
       };

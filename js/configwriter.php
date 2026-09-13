@@ -1698,6 +1698,23 @@ function configwriter_special_block_props($block)
         if (isset($block['idx']) && $block['idx'] !== null && $block['idx'] !== '') {
             $props['idx'] = (int)$block['idx'];
         }
+    } elseif ($kind === 'cluster') {
+        // js/components/cluster.js dispatches purely on type: 'cluster',
+        // always written the same as group's own type: 'group' just above -
+        // unlike Group, always idx-less: devices (see saveblocks.php's
+        // 'cluster' branch for the non-empty-array requirement) is carried
+        // through custom_fields below like any other extra field.
+        $props = [
+            'width' => $width,
+            'type' => 'cluster',
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        $props['last_update'] = !empty($block['last_update']);
     } elseif ($kind === 'html') {
         // js/components/html.js dispatches on a truthy htmlfile alone - no
         // `type` of its own. htmlfile itself is carried through custom_fields

@@ -537,3 +537,48 @@
   background: var(--warning-red) !important;
   background-clip: border-box;
 }
+
+/* Blinds slider up/down/stop buttons and scale labels: bigger touch
+   targets than creative.css's defaults (32px / 12px). The tick closest
+   to the current value is bold and a bit bigger still (16px) so it
+   stands out as the current reading. */
+.blinds-slider-action a {
+  width: 38px !important;
+  height: 38px !important;
+  font-size: 14px !important;
+}
+
+.slider-tick span {
+  font-size: 14px !important;
+}
+
+.slider-tick-active span {
+  font-size: 16px !important;
+}
+
+/* Recolor the blinds/dimmer vertical slider's track fill and drag handle
+   to this theme's own blue accent (matching the plain horizontal
+   .ui-slider-handle above, #00aaff) instead of creative.css's generic
+   green - !important to win the tie against creative.css's own
+   !important rules for these same selectors (this file loads after it,
+   so an equal-specificity, equally-!important rule here wins). This is
+   a deliberate, one-off exception to this theme's otherwise gradient-free
+   convention (see the "modern dark theme is portable and documented"
+   test, updated to allow only this specific gradient) - matching
+   creative.css's own default green fill, which is a gradient too.
+   Handle fill stays a dark shade of the same blue (not the bright
+   #00aaff itself), so it still reads apart from the track's own color
+   at high percentages, the same reasoning creative.css's default dark
+   green already used. */
+.blinds-slider-wrap .slider .ui-slider-range {
+  background: linear-gradient(
+    to top,
+    rgba(45, 90, 140, 0.55),
+    rgba(112, 160, 218, 0.95)
+  ) !important;
+}
+
+.blinds-slider-wrap .slider .ui-slider-handle {
+  border: 1px solid rgba(255, 255, 255, 0.75) !important;
+  background: #1c3450 !important;
+}

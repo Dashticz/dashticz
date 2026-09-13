@@ -38,6 +38,7 @@ var Dashticz = (function () {
     'simpleblock',
     'map',
     'group',
+    'cluster',
     'waqi',
     'lms',
   ];
