@@ -1,6 +1,15 @@
 Release Notes
 =============
 
+v4.0.8 (13-9-2026)
+----------------------
+
+* **Fixes**
+
+- Modern Dark: reverted block backgrounds (``--main-bg``) back to a flat
+  color, undoing an earlier gradient experiment for this theme
+  specifically. Liquid Glass Blue and Liquid Glass Grey are unaffected.
+
 v4.0.7 (12-9-2026)
 ----------------------
 
