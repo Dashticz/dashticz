@@ -1607,7 +1607,11 @@ function getSelectorSwitch(block) {
       if (!hideTitle(block))
         html += '<strong class="title">' + block.title + '</strong><br />';
       html += '<select>';
-      html += '<option value="">' + language.misc.select + '</option>';
+      // No placeholder "Select..." option here on purpose: a Selector
+      // Switch's dropdown is meant to show only its own real levels (a
+      // device's own hidden/off level already stays out via LevelOffHidden
+      // below) - an extra generic placeholder above them just read as a
+      // second, redundant "please choose" row alongside it.
       for (var idx in nameValues) {
         var nv = nameValues[idx];
         if (
