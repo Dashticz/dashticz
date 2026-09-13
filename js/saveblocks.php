@@ -90,9 +90,9 @@ function _normalise_custom_device_fields($entry)
    configwriter.php's matching per-kind $props branch. 'slidebutton' is
    checked separately below (its own key pattern differs from every
    other kind here). */
-$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'];
+$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'];
 // Kinds whose title is optional (blank is fine) rather than required.
-$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'];
+$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'];
 
 dashticz_require_same_origin();
 dashticz_require_csrf();
@@ -152,12 +152,12 @@ foreach ($data['devices'] as $entry) {
         $defaultWidth = 3;
         if ($kind === 'title' || $kind === 'slidebutton') {
             $defaultWidth = 12;
-        } elseif ($kind === 'lms' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'timegraph' || $kind === 'xmltvguide' || $kind === 'graph') {
+        } elseif ($kind === 'lms' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'timegraph' || $kind === 'xmltvguide' || $kind === 'graph' || $kind === 'cluster') {
             // Cover (100x100) + artist/title/album (lms), an embedded page
             // (iframe), an agenda/calendar table (calendar), a chart
-            // (timegraph, graph), or a programme guide (xmltvguide), needs
-            // more room than the generic 3-column default other special
-            // blocks start at.
+            // (timegraph, graph), a programme guide (xmltvguide), or a
+            // stacked list of device rows (cluster), needs more room than
+            // the generic 3-column default other special blocks start at.
             $defaultWidth = 6;
         }
         $width = isset($entry['width']) ? (int)$entry['width'] : $defaultWidth;
@@ -206,8 +206,8 @@ foreach ($data['devices'] as $entry) {
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
                 : null;
-        } elseif ($kind === 'group' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news' || $kind === 'graph') {
-            // Only Icon and Last update apply to these nine (no Data/Switch/
+        } elseif ($kind === 'group' || $kind === 'cluster' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news' || $kind === 'graph') {
+            // Only Icon and Last update apply to these ten (no Data/Switch/
             // Dial - see js/deviceeditor.js's _quickOptionsHtml()).
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
@@ -338,6 +338,91 @@ foreach ($data['devices'] as $entry) {
                 foreach ($graphDevices as $graphDeviceIdx) {
                     if (!is_int($graphDeviceIdx) || $graphDeviceIdx < 1) {
                         dashticz_json_error(400, 'A graph block requires positive integer device idx values.');
+                    }
+                }
+            } elseif ($kind === 'cluster') {
+                // devices is otherwise just another custom field (see
+                // _normalise_custom_device_fields() above), but this block
+                // (js/components/cluster.js) renders nothing at all without
+                // a non-empty devices array - same requirement as graph's
+                // above, and the same reasoning as html's htmlfile
+                // requirement further up. Every entry must be a positive
+                // integer Domoticz device idx.
+                $clusterDevices = isset($customFields['devices']) ? $customFields['devices'] : null;
+                if (!is_array($clusterDevices) || count($clusterDevices) === 0) {
+                    dashticz_json_error(400, 'A cluster block requires at least one device.');
+                }
+                foreach ($clusterDevices as $clusterDeviceIdx) {
+                    if (!is_int($clusterDeviceIdx) || $clusterDeviceIdx < 1) {
+                        dashticz_json_error(400, 'A cluster block requires positive integer device idx values.');
+                    }
+                }
+                // usage (optional): maps a switch's own idx to a companion
+                // consumption device's idx (js/components/cluster.js reads
+                // it to show that device's wattage next to the row). Each
+                // key must be one of this block's own devices, and each
+                // value a positive integer idx.
+                if (isset($customFields['usage'])) {
+                    $clusterUsage = $customFields['usage'];
+                    if (is_object($clusterUsage)) {
+                        $clusterUsage = get_object_vars($clusterUsage);
+                    }
+                    if (!is_array($clusterUsage)) {
+                        dashticz_json_error(400, 'A cluster block\'s usage map must be an object.');
+                    }
+                    $clusterDeviceIdxSet = array_flip(array_map('strval', $clusterDevices));
+                    foreach ($clusterUsage as $clusterUsageKey => $clusterUsageIdx) {
+                        if (!isset($clusterDeviceIdxSet[(string)$clusterUsageKey])) {
+                            dashticz_json_error(400, 'A cluster block\'s usage map key must be one of its own devices.');
+                        }
+                        if (!is_int($clusterUsageIdx) || $clusterUsageIdx < 1) {
+                            dashticz_json_error(400, 'A cluster block\'s usage map values must be positive integer device idx values.');
+                        }
+                    }
+                }
+                // mode (optional): 'temperature' switches every row from a
+                // toggle to a plain .Temp reading (js/components/cluster.js);
+                // absent/anything else means the default switch rows. The
+                // only value js/deviceeditor.js's Cluster popups ever send.
+                if (isset($customFields['mode']) && $customFields['mode'] !== 'temperature') {
+                    dashticz_json_error(400, 'A cluster block\'s mode must be \'temperature\' if set.');
+                }
+                // titles (optional): overrides a row's displayed name
+                // (js/components/cluster.js falls back to the device's own
+                // Name when absent). Same shape/reasoning as usage above -
+                // each key must be one of this block's own devices, each
+                // value a non-empty string.
+                if (isset($customFields['titles'])) {
+                    $clusterTitles = $customFields['titles'];
+                    if (is_object($clusterTitles)) {
+                        $clusterTitles = get_object_vars($clusterTitles);
+                    }
+                    if (!is_array($clusterTitles)) {
+                        dashticz_json_error(400, 'A cluster block\'s titles map must be an object.');
+                    }
+                    $clusterDeviceIdxSet = array_flip(array_map('strval', $clusterDevices));
+                    foreach ($clusterTitles as $clusterTitleKey => $clusterTitleValue) {
+                        if (!isset($clusterDeviceIdxSet[(string)$clusterTitleKey])) {
+                            dashticz_json_error(400, 'A cluster block\'s titles map key must be one of its own devices.');
+                        }
+                        if (!is_string($clusterTitleValue) || $clusterTitleValue === '') {
+                            dashticz_json_error(400, 'A cluster block\'s titles map values must be non-empty strings.');
+                        }
+                    }
+                }
+                // switchScale (optional): resizes the switch toggle
+                // (js/components/cluster.js sets --cluster-switch-scale
+                // from it, read by css/creative.css's .cluster-row-switch).
+                // Absent means the default size; js/deviceeditor.js's own
+                // input already clamps to this same 0.3-3 range, but that's
+                // client-side only.
+                if (isset($customFields['switchScale'])) {
+                    $clusterSwitchScale = $customFields['switchScale'];
+                    if (!is_int($clusterSwitchScale) && !is_float($clusterSwitchScale)) {
+                        dashticz_json_error(400, 'A cluster block\'s switchScale must be a number.');
+                    }
+                    if ($clusterSwitchScale < 0.3 || $clusterSwitchScale > 3) {
+                        dashticz_json_error(400, 'A cluster block\'s switchScale must be between 0.3 and 3.');
                     }
                 }
             }
