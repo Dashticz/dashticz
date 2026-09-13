@@ -2719,13 +2719,18 @@ test('modern dark theme is portable and documented', () => {
   );
   // One deliberate exception to this theme's otherwise gradient-free
   // convention: the blinds/dimmer slider's track fill, matching
-  // creative.css's own gradient default for the same element. Assert
-  // it's still the *only* gradient in the file, so any future one
-  // creeping in elsewhere still fails this test.
+  // creative.css's own gradient default for the same element. --main-bg
+  // was briefly a gradient here too (per an earlier user request) but was
+  // reverted back to a flat color for this theme specifically - Liquid
+  // Glass Blue/Grey keep the gradient --main-bg instead (see their own
+  // portability tests). Assert there's still only this one gradient in
+  // Modern Dark, so any future one creeping in elsewhere still fails this
+  // test.
   assert.match(
     theme,
     /\.blinds-slider-wrap \.slider \.ui-slider-range \{\s*\n\s*background: linear-gradient\(/
   );
+  assert.match(theme, /--main-bg: rgba\(32, 33, 42, 0\.88\);/);
   assert.strictEqual((theme.match(/linear-gradient/g) || []).length, 1);
   assert.match(theme, /\.mh \.btn\.active/);
   assert.match(
@@ -5807,21 +5812,44 @@ test('Cluster keeps its framework-painted icon/title and sizes rows like a devic
   );
 });
 
-test('Cluster device picker only offers plain on/off switches', () => {
+test('Cluster device picker offers On/Off and Dimmer switches, as plain toggles', () => {
   const deviceEditor = fs.readFileSync(
     path.join(root, 'js/deviceeditor.js'),
     'utf8'
   );
+  const cluster = fs.readFileSync(
+    path.join(root, 'js/components/cluster.js'),
+    'utf8'
+  );
+  const switches = fs.readFileSync(path.join(root, 'js/switches.js'), 'utf8');
 
   // A cluster row is only ever a simple toggle, so the shared picker list
   // (_clusterAvailableDeviceList - used by both the quick-add popup and the
-  // Device Config popup's own Cluster section) must restrict candidates to
-  // Domoticz's own SwitchType: 'On/Off', excluding Dimmers, Blinds,
-  // Selectors, sensors and other switch types that don't behave like a
-  // plain toggle.
+  // Device Config popup's own Cluster section) restricts candidates to
+  // Domoticz SwitchTypes with a genuine binary on/off state: plain
+  // 'On/Off' switches, and Dimmers (a cluster row never renders a
+  // brightness slider, so a Dimmer here behaves exactly like a plain
+  // switch). Blinds, Selectors, sensors and other switch types without a
+  // plain on/off semantic stay excluded.
   assert.match(
     deviceEditor,
-    /function _clusterAvailableDeviceList\(\) \{[\s\S]{0,400}?live\.SwitchType === 'On\/Off';[\s\S]{0,20}?\}/
+    /function _clusterAvailableDeviceList\(\) \{[\s\S]{0,500}?live\.SwitchType === 'On\/Off' \|\| live\.SwitchType === 'Dimmer'[\s\S]{0,40}?\}/
+  );
+
+  // js/components/cluster.js's switchRowHtml() only ever renders the
+  // toggle markup (.cluster-row-switch), never a brightness slider, for
+  // every row regardless of the underlying device's own SwitchType.
+  assert.doesNotMatch(cluster, /slider|dimmer/i);
+
+  // The click handler's toggle command (js/switches.js's switchDevice(),
+  // via the shared group/cluster "pass pMode straight through" path) sends
+  // a plain switchlight On/Off command with no level parameter of its own
+  // - the same command Domoticz already treats as a full on/off toggle for
+  // a Dimmer (turning it on to its last level, or off), so no Dimmer-
+  // specific branch is needed there.
+  assert.match(
+    switches,
+    /block\.type === 'group' \|\| block\.type === 'cluster'/
   );
 });
 
@@ -7312,5 +7340,97 @@ test('Traffic info translations: no ANWB/provider keys left, jams/roadworks/resu
   assert.doesNotMatch(
     english.settings.widgeteditor.trafficinfo_description || '',
     /ANWB/
+  );
+});
+
+test('Dashboard blocks get a themed shine-sweep hover, without overflow: hidden', () => {
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  // .dt_block hosts every kind of block (dials, graphs, dropdowns, camera
+  // popups, ...), and some rely on their own content overflowing its box
+  // (see e.g. .dle-block's own overflow: visible !important while the
+  // Layout Editor is open) - the shine is a second background layer with
+  // an animated background-position rather than a translated element
+  // like the Add-items tile's own version, specifically so it never needs
+  // overflow: hidden on .dt_block itself (a background is always clipped
+  // to the element's own box regardless of the element's own overflow
+  // setting).
+  const blockRuleMatch = css.match(/\.dt_block \{[\s\S]{0,400}?\n\}/);
+  assert.ok(blockRuleMatch, 'expected to find the base .dt_block rule');
+  assert.match(blockRuleMatch[0], /position: relative;/);
+  assert.doesNotMatch(blockRuleMatch[0], /overflow:\s*hidden/);
+
+  assert.match(css, /\.dt_block::before \{/);
+  const beforeRuleMatch = css.match(/\.dt_block::before \{[\s\S]{0,600}?\n\}/);
+  assert.ok(beforeRuleMatch, 'expected to find the .dt_block::before rule');
+  assert.doesNotMatch(beforeRuleMatch[0], /overflow:\s*hidden/);
+  assert.match(beforeRuleMatch[0], /background-size: 200% 100%;/);
+
+  // Themed, not hardcoded: var(--button-active)/var(--border-color-active)
+  // already vary per theme (themes/modern-dark, themes/liquid-glass-*),
+  // the same pair an active/pressed .transbg button already uses.
+  assert.match(css, /var\(--dt-block-shine, var\(--button-active\)\)/);
+  assert.match(
+    css,
+    /@media \(hover: hover\) and \(pointer: fine\) \{\s*\n\s*\.dt_block:hover \{\s*\n\s*border-color: var\(--border-color-active\);/
+  );
+  assert.match(
+    css,
+    /\.dt_block:hover::before \{\s*\n\s*background-position: 150% 0;/
+  );
+});
+
+test('--main-bg stays gradient-safe wherever creative.css consumes it', () => {
+  const css = fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8');
+
+  // --main-bg is a plain color in most themes, but themes/modern-dark now
+  // sets it to a linear-gradient() (per user request) - a background-
+  // color: var(--main-bg) declaration would be invalid wherever that's
+  // the *only* background rule for that selector (gradients aren't valid
+  // <color> values), silently dropping to transparent in that theme. Every
+  // such standalone use in creative.css was switched to the background
+  // shorthand instead, which accepts both a plain color and a gradient.
+  for (const selectorComment of [
+    /\.security-panel \{[\s\S]{0,200}?background: var\(--main-bg\);/,
+    /\.dialbtn\.middle \{\s*\n\s*background: var\(--main-bg\);/,
+    /\.colorpicker \.cp-buttonsOnOff \{\s*\n\s*background: var\(--main-bg\);/,
+  ]) {
+    assert.match(css, selectorComment);
+  }
+
+  // .dt_block/.transbg are the one deliberate exception: each already has
+  // an *earlier* full `background: var(--main-bg); background-clip:
+  // padding-box;` rule, so this later, shared rule only needs to refine
+  // background-color - switching it to the full shorthand too would reset
+  // that earlier background-clip back to its own initial (border-box).
+  assert.match(
+    css,
+    /\.transbg,\s*\n\.dt_block \{[\s\S]{0,600}?background-color: var\(--main-bg\);/
+  );
+});
+
+test('Selector Switch dropdown shows only its own levels, no generic placeholder option', () => {
+  const blocks = fs.readFileSync(path.join(root, 'js/blocks.js'), 'utf8');
+
+  // getSelectorSwitch()'s dropdown style (SelectorStyle 1) used to prepend
+  // a generic "Select..." placeholder (language.misc.select) above the
+  // device's own real levels - redundant (and, for a device whose own
+  // level 0 is itself named something like "Select"/"Off", visually
+  // duplicated) with the device's own levels, which already include
+  // whatever "please choose" framing the device's own naming provides.
+  // The button-style branch (the `else`, further down) never had this
+  // placeholder - only the dropdown did.
+  const dropdownBranch = blocks.match(
+    /device\['SelectorStyle'\] == 1\s*\n\s*\) \{[\s\S]{0,2500}?\/\/ No placeholder[\s\S]{0,1000}?<\/select>/
+  );
+  assert.ok(dropdownBranch, 'expected to find the SelectorStyle 1 branch');
+  assert.doesNotMatch(dropdownBranch[0], /language\.misc\.select/);
+  assert.doesNotMatch(dropdownBranch[0], /<option value=""/);
+
+  // The device's own hidden/off level (LevelOffHidden) is still respected
+  // - unrelated to, and unaffected by, removing the generic placeholder.
+  assert.match(
+    dropdownBranch[0],
+    /parseFloat\(nv\.value\) > 0 \|\|\s*\n\s*\(nv\.value == 0 &&\s*\n\s*\(typeof device\['LevelOffHidden'\] == 'undefined' \|\|\s*\n\s*device\['LevelOffHidden'\] === false\)\)/
   );
 });

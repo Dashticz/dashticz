@@ -16,10 +16,12 @@ single cluster is never a mix of both):
 
 Added via the Screen Editor's "Add items" menu -> Cluster, by picking
 devices from the same device list used to add a normal device. The row type
-buttons filter that list to match: Switch to plain on/off switches
-(Domoticz's ``On/Off`` switch type - a cluster row is only ever a simple
-toggle), Temperature to plain temperature-reporting devices (Domoticz Type
-``Temp``, or one of the Temp+Humidity/Baro combo types). Switching row type
+buttons filter that list to match: Switch to devices with a genuine on/off
+state (Domoticz's ``On/Off`` and ``Dimmer`` switch types - a cluster row is
+only ever a simple toggle, so a Dimmer behaves exactly like a plain switch
+here, with no brightness slider), Temperature to plain temperature-reporting
+devices (Domoticz Type ``Temp``, or one of the Temp+Humidity/Baro combo
+types). Switching row type
 clears any devices already picked, since the two device sets don't overlap -
 row type can only be set while creating a cluster; once it has been saved
 with devices, the buttons are locked.
