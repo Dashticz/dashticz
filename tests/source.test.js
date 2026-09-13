@@ -5809,21 +5809,44 @@ test('Cluster keeps its framework-painted icon/title and sizes rows like a devic
   );
 });
 
-test('Cluster device picker only offers plain on/off switches', () => {
+test('Cluster device picker offers On/Off and Dimmer switches, as plain toggles', () => {
   const deviceEditor = fs.readFileSync(
     path.join(root, 'js/deviceeditor.js'),
     'utf8'
   );
+  const cluster = fs.readFileSync(
+    path.join(root, 'js/components/cluster.js'),
+    'utf8'
+  );
+  const switches = fs.readFileSync(path.join(root, 'js/switches.js'), 'utf8');
 
   // A cluster row is only ever a simple toggle, so the shared picker list
   // (_clusterAvailableDeviceList - used by both the quick-add popup and the
-  // Device Config popup's own Cluster section) must restrict candidates to
-  // Domoticz's own SwitchType: 'On/Off', excluding Dimmers, Blinds,
-  // Selectors, sensors and other switch types that don't behave like a
-  // plain toggle.
+  // Device Config popup's own Cluster section) restricts candidates to
+  // Domoticz SwitchTypes with a genuine binary on/off state: plain
+  // 'On/Off' switches, and Dimmers (a cluster row never renders a
+  // brightness slider, so a Dimmer here behaves exactly like a plain
+  // switch). Blinds, Selectors, sensors and other switch types without a
+  // plain on/off semantic stay excluded.
   assert.match(
     deviceEditor,
-    /function _clusterAvailableDeviceList\(\) \{[\s\S]{0,400}?live\.SwitchType === 'On\/Off';[\s\S]{0,20}?\}/
+    /function _clusterAvailableDeviceList\(\) \{[\s\S]{0,500}?live\.SwitchType === 'On\/Off' \|\| live\.SwitchType === 'Dimmer'[\s\S]{0,40}?\}/
+  );
+
+  // js/components/cluster.js's switchRowHtml() only ever renders the
+  // toggle markup (.cluster-row-switch), never a brightness slider, for
+  // every row regardless of the underlying device's own SwitchType.
+  assert.doesNotMatch(cluster, /slider|dimmer/i);
+
+  // The click handler's toggle command (js/switches.js's switchDevice(),
+  // via the shared group/cluster "pass pMode straight through" path) sends
+  // a plain switchlight On/Off command with no level parameter of its own
+  // - the same command Domoticz already treats as a full on/off toggle for
+  // a Dimmer (turning it on to its last level, or off), so no Dimmer-
+  // specific branch is needed there.
+  assert.match(
+    switches,
+    /block\.type === 'group' \|\| block\.type === 'cluster'/
   );
 });
 
