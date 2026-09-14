@@ -22,7 +22,7 @@ function addThermostatFunctions(block) {
     var type = $(this).attr('data-type');
     var input = titleAndValueSwitch(block)
       ? $el.find('.title')
-      : $el.find('.state');
+      : $el.find('.value');
     var currentVal = input.text().split(block.unit);
     currentVal = parseFloat(currentVal[0].replace(',', '.'));
     var setpointStep = choose(block.device.step, 0.5);
