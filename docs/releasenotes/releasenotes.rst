@@ -1,6 +1,20 @@
 Release Notes
 =============
 
+v4.0.9 (14-9-2026)
+----------------------
+
+* **Fixes**
+
+- Fixed the plain Thermostat/Setpoint block's plus/minus buttons silently
+  doing nothing (issue #1292): the v4.0.0 typography stabilization
+  renamed the block's value span from ``class="state"`` to
+  ``class="value"`` in ``tpl/thermostat_block.tpl``, but
+  ``js/tempcontrol.js``'s click handler still looked up the old
+  ``.state`` class, so it always read an empty selection, never parsed a
+  valid current value, and never sent the ``setsetpoint`` command.
+  Updated the selector to ``.value`` to match the current template.
+
 v4.0.8 (13-9-2026)
 ----------------------
 
