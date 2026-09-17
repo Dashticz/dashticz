@@ -37,6 +37,7 @@ var DashticzLayoutEditor = (function () {
     'lms',
     'group',
     'cluster',
+    'postnl',
     'camera',
     'news',
     'graph',
@@ -1451,6 +1452,24 @@ var DashticzLayoutEditor = (function () {
       return {
         definition: definition,
         kind: 'cluster',
+        reference: key,
+        widgetId: null,
+        idx: null,
+        subidx: 0,
+        name: definition.title || key,
+      };
+    }
+
+    if (key && String(definition.type || '').toLowerCase() === 'postnl') {
+      // PostNL (js/components/postnl.js): the domoticz_postnl plugin's
+      // Incoming/Sent Text devices combined in one block, dispatched on
+      // type: 'postnl' like Cluster's type: 'cluster' just above and
+      // mirroring deviceeditor.js's _specialFromReference(). Always
+      // idx-less (its two device idx ride through incomingIdx/sentIdx,
+      // not a single top-level idx).
+      return {
+        definition: definition,
+        kind: 'postnl',
         reference: key,
         widgetId: null,
         idx: null,

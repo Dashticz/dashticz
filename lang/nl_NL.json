@@ -119,7 +119,9 @@
     "browser_not_supported": "Uw browser wordt helaas niet ondersteund.",
     "wu_settings_missing": "De Weather Underground-instellingen ontbreken.",
     "widget_not_visible": "Is de widget niet zichtbaar?",
-    "more_info": "Meer informatie"
+    "more_info": "Meer informatie",
+    "postnl_incoming_label": "Inkomend",
+    "postnl_sent_label": "Verzonden"
   },
   "settings": {
     "title": "Dashticz-instellingen",
@@ -329,6 +331,13 @@
       "cluster_switch_scale_help": "Schaalfactor voor de aan/uit-schakelaar (bijv. 1.5 voor 150%). Leeg laten voor de standaardgrootte.",
       "invalid_cluster_name": "Vul een geldige unieke clusternaam in.",
       "invalid_cluster_devices": "Voeg minstens één device toe.",
+      "postnl_block": "PostNL",
+      "postnl_title": "Titel",
+      "postnl_incoming": "Device inkomende pakketten (IDX)",
+      "postnl_incoming_help": "Optioneel. IDX van het 'Packages Incoming' tekst-device van de domoticz_postnl-plugin.",
+      "postnl_sent": "Device verzonden pakketten (IDX)",
+      "postnl_sent_help": "Optioneel. IDX van het 'Packages Sent' tekst-device van de domoticz_postnl-plugin.",
+      "invalid_postnl_devices": "Vul minstens één geldige device-IDX in (Inkomend of Verzonden).",
       "html_block": "HTML Block",
       "html_block_name": "Block naam",
       "html_block_name_help": "Wordt gebruikt als de blocks[...] sleutel in CONFIG.js.",
@@ -549,6 +558,7 @@
       "multi_device": "Multi Device",
       "group_block": "Group",
       "cluster_block": "Cluster",
+      "postnl_block": "PostNL",
       "html_block": "HTML Block",
       "separator": "Tussenbalk",
       "add_widgets": "Widgets toevoegen",

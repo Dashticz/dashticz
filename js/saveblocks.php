@@ -90,9 +90,9 @@ function _normalise_custom_device_fields($entry)
    configwriter.php's matching per-kind $props branch. 'slidebutton' is
    checked separately below (its own key pattern differs from every
    other kind here). */
-$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'];
+$specialBlockKinds = ['dummy', 'title', 'custom', 'group', 'cluster', 'postnl', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'];
 // Kinds whose title is optional (blank is fine) rather than required.
-$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'cluster', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'];
+$titleOptionalBlockKinds = ['custom', 'slidebutton', 'group', 'cluster', 'postnl', 'html', 'iframe', 'calendar', 'publictransport', 'timegraph', 'xmltvguide', 'lms', 'camera', 'news', 'graph'];
 
 dashticz_require_same_origin();
 dashticz_require_csrf();
@@ -152,11 +152,12 @@ foreach ($data['devices'] as $entry) {
         $defaultWidth = 3;
         if ($kind === 'title' || $kind === 'slidebutton') {
             $defaultWidth = 12;
-        } elseif ($kind === 'lms' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'timegraph' || $kind === 'xmltvguide' || $kind === 'graph' || $kind === 'cluster') {
+        } elseif ($kind === 'lms' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'timegraph' || $kind === 'xmltvguide' || $kind === 'graph' || $kind === 'cluster' || $kind === 'postnl') {
             // Cover (100x100) + artist/title/album (lms), an embedded page
             // (iframe), an agenda/calendar table (calendar), a chart
-            // (timegraph, graph), a programme guide (xmltvguide), or a
-            // stacked list of device rows (cluster), needs more room than
+            // (timegraph, graph), a programme guide (xmltvguide), a
+            // stacked list of device rows (cluster), or up to two
+            // multi-line package-list rows (postnl), needs more room than
             // the generic 3-column default other special blocks start at.
             $defaultWidth = 6;
         }
@@ -206,9 +207,9 @@ foreach ($data['devices'] as $entry) {
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
                 : null;
-        } elseif ($kind === 'group' || $kind === 'cluster' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news' || $kind === 'graph') {
-            // Only Icon and Last update apply to these ten (no Data/Switch/
-            // Dial - see js/deviceeditor.js's _quickOptionsHtml()).
+        } elseif ($kind === 'group' || $kind === 'cluster' || $kind === 'postnl' || $kind === 'html' || $kind === 'iframe' || $kind === 'calendar' || $kind === 'publictransport' || $kind === 'xmltvguide' || $kind === 'camera' || $kind === 'news' || $kind === 'graph') {
+            // Only Icon and Last update apply to these eleven (no Data/
+            // Switch/Dial - see js/deviceeditor.js's _quickOptionsHtml()).
             $icon = array_key_exists('icon', $entry) && is_string($entry['icon'])
                 ? substr($entry['icon'], 0, 100)
                 : null;
@@ -424,6 +425,26 @@ foreach ($data['devices'] as $entry) {
                     if ($clusterSwitchScale < 0.3 || $clusterSwitchScale > 3) {
                         dashticz_json_error(400, 'A cluster block\'s switchScale must be between 0.3 and 3.');
                     }
+                }
+            } elseif ($kind === 'postnl') {
+                // incomingIdx/sentIdx are otherwise just other custom fields
+                // (see _normalise_custom_device_fields() above), but this
+                // block (js/components/postnl.js) renders nothing at all
+                // without at least one of them, so at least one is required
+                // here - same reasoning as html's htmlfile requirement
+                // further up. Each, when present, must be a positive
+                // integer Domoticz device idx, same as every other idx in
+                // this file.
+                $postnlIncomingIdx = isset($customFields['incomingIdx']) ? $customFields['incomingIdx'] : null;
+                $postnlSentIdx = isset($customFields['sentIdx']) ? $customFields['sentIdx'] : null;
+                if ($postnlIncomingIdx !== null && (!is_int($postnlIncomingIdx) || $postnlIncomingIdx < 1)) {
+                    dashticz_json_error(400, 'A PostNL block\'s incomingIdx must be a positive integer.');
+                }
+                if ($postnlSentIdx !== null && (!is_int($postnlSentIdx) || $postnlSentIdx < 1)) {
+                    dashticz_json_error(400, 'A PostNL block\'s sentIdx must be a positive integer.');
+                }
+                if ($postnlIncomingIdx === null && $postnlSentIdx === null) {
+                    dashticz_json_error(400, 'A PostNL block requires an incomingIdx or a sentIdx.');
                 }
             }
         } elseif ($kind === 'timegraph') {

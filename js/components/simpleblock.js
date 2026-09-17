@@ -567,6 +567,11 @@ var DT_simpleblock = (function () {
         label: t.cluster_block || 'Cluster',
       },
       {
+        action: 'postnl',
+        icon: 'fa-box',
+        label: t.postnl_block || 'PostNL',
+      },
+      {
         action: 'htmlblock',
         icon: 'fa-code',
         label: t.html_block || 'HTML Block',
@@ -640,6 +645,8 @@ var DT_simpleblock = (function () {
             DashticzDeviceEditor.openGroup();
           } else if (selectedAction === 'cluster') {
             DashticzDeviceEditor.openCluster();
+          } else if (selectedAction === 'postnl') {
+            DashticzDeviceEditor.openPostnl();
           } else if (selectedAction === 'htmlblock') {
             DashticzDeviceEditor.openHtmlBlock();
           } else if (selectedAction === 'slidebutton') {

@@ -123,7 +123,9 @@
     "browser_not_supported": "Your browser is unfortunately not supported.",
     "wu_settings_missing": "Weather Underground settings are missing.",
     "widget_not_visible": "Not seeing a widget?",
-    "more_info": "More info"
+    "more_info": "More info",
+    "postnl_incoming_label": "Incoming",
+    "postnl_sent_label": "Sent"
   },
   "settings": {
     "title": "Dashticz settings",
@@ -333,6 +335,13 @@
       "cluster_switch_scale_help": "Scale factor for the on/off toggle (e.g. 1.5 for 150%). Leave empty for the default size.",
       "invalid_cluster_name": "Enter a valid unique cluster name.",
       "invalid_cluster_devices": "Add at least one device.",
+      "postnl_block": "PostNL",
+      "postnl_title": "Title",
+      "postnl_incoming": "Incoming packages device (IDX)",
+      "postnl_incoming_help": "Optional. IDX of the domoticz_postnl plugin's 'Packages Incoming' Text device.",
+      "postnl_sent": "Sent packages device (IDX)",
+      "postnl_sent_help": "Optional. IDX of the domoticz_postnl plugin's 'Packages Sent' Text device.",
+      "invalid_postnl_devices": "Enter at least one valid device IDX (Incoming or Sent).",
       "html_block": "HTML Block",
       "html_block_name": "Block name",
       "html_block_name_help": "Used as the blocks[...] key in CONFIG.js.",
@@ -659,6 +668,7 @@
       "multi_device": "Multi Device",
       "group_block": "Group",
       "cluster_block": "Cluster",
+      "postnl_block": "PostNL",
       "html_block": "HTML Block",
       "lms_block": "Lyrion Music Server",
       "lms_description": "Now playing info for a Lyrion Music Server (Logitech Media Server) player.",

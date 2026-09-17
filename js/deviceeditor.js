@@ -29,6 +29,7 @@ var DashticzDeviceEditor = (function () {
     'title',
     'slidebutton',
     'cluster',
+    'postnl',
     'html',
     'iframe',
     'calendar',
@@ -45,6 +46,7 @@ var DashticzDeviceEditor = (function () {
     'custom',
     'group',
     'cluster',
+    'postnl',
     'html',
     'iframe',
     'calendar',
@@ -62,6 +64,7 @@ var DashticzDeviceEditor = (function () {
   var WIDE_DEFAULT_SPECIAL_KINDS = [
     'lms',
     'cluster',
+    'postnl',
     'iframe',
     'calendar',
     'timegraph',
@@ -75,6 +78,7 @@ var DashticzDeviceEditor = (function () {
   var NO_DIAL_SPECIAL_KINDS = [
     'group',
     'cluster',
+    'postnl',
     'html',
     'iframe',
     'calendar',
@@ -98,6 +102,7 @@ var DashticzDeviceEditor = (function () {
   var SIMPLE_ICON_PAYLOAD_KINDS = [
     'group',
     'cluster',
+    'postnl',
     'html',
     'iframe',
     'calendar',
@@ -467,6 +472,15 @@ var DashticzDeviceEditor = (function () {
     _init();
     _prepareManagedDeviceState();
     _showClusterPopup();
+  }
+
+  /** Open the dedicated PostNL block popup used by the Screen Editor add menu. */
+  function openPostnl() {
+    editorMode = 'devices';
+    gridMode = _activeScreenDom().hasClass('dt-grid-screen');
+    _init();
+    _prepareManagedDeviceState();
+    _showPostnlPopup();
   }
 
   /** Open the dedicated HTML Block popup used by the Screen Editor add menu. */
@@ -917,6 +931,17 @@ var DashticzDeviceEditor = (function () {
       // a devices array (no optional idx like Group), validated by
       // saveblocks.php's own 'cluster' branch.
       kind = 'cluster';
+    } else if (
+      /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
+      String(definition.type || '').toLowerCase() === 'postnl'
+    ) {
+      // PostNL (js/components/postnl.js): the domoticz_postnl plugin's
+      // Incoming/Sent Text devices combined in one block, dispatched on
+      // type: 'postnl' like Cluster's type: 'cluster' just above. Always
+      // idx-less: incomingIdx/sentIdx (at least one required, validated by
+      // saveblocks.php's own 'postnl' branch) ride through custom_fields
+      // like any other extra field, same as Cluster's own devices array.
+      kind = 'postnl';
     } else if (
       /^[A-Za-z_$][A-Za-z0-9_$]*$/.test(reference) &&
       !definition.type &&
@@ -1602,6 +1627,7 @@ var DashticzDeviceEditor = (function () {
       if (special.specialType === 'custom') return 'fas fa-cube';
       if (special.specialType === 'group') return 'fas fa-object-group';
       if (special.specialType === 'cluster') return 'fas fa-list-check';
+      if (special.specialType === 'postnl') return 'fas fa-box';
       if (special.specialType === 'html') return 'fas fa-code';
       if (special.specialType === 'iframe') return 'fas fa-window-maximize';
       if (special.specialType === 'calendar') return 'fas fa-calendar-alt';
@@ -4070,6 +4096,185 @@ var DashticzDeviceEditor = (function () {
     });
     window.bootstrap.Modal.getOrCreateInstance(
       document.getElementById('clusterblockpopup')
+    ).show();
+  }
+
+  /* PostNL: shows the domoticz_postnl plugin's "Packages Incoming" and
+   * "Packages Sent" Text devices combined in one block
+   * (js/components/postnl.js). Saved as its own specialType 'postnl' -
+   * incomingIdx/sentIdx (at least one required, plain positive-integer
+   * Domoticz device idx, like Group's own optional idx field) are the only
+   * parameters unique to it, carried through custom_fields like Cluster's
+   * devices array rather than as dedicated top-level properties. Unlike
+   * Cluster, editing an already-saved PostNL block has no dedicated section
+   * of its own in _showConfigPopup - its two idx fields are simple enough
+   * (plain numbers, no per-row picker) to fall through to the generic
+   * Custom fields editor there, same as Group's own 'devices' field. See
+   * docs/blocks/specials/postnl.rst. */
+  function _showPostnlPopup() {
+    var t = _translations();
+    $('#postnlblockpopup').remove();
+
+    var html =
+      '<div class="modal fade" id="postnlblockpopup" tabindex="-1" aria-hidden="true">';
+    html +=
+      '<div class="modal-dialog modal-dialog-centered"><div class="modal-content">';
+    html +=
+      '<div class="modal-header"><h5 class="modal-title"><i class="fas fa-box me-2" aria-hidden="true"></i>' +
+      _esc(t.postnl_block) +
+      '</h5>';
+    html +=
+      '<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="' +
+      _esc(t.close) +
+      '"></button></div>';
+    html += '<div class="modal-body">';
+    html += _quickOptionsHtml('pn', {
+      icon: true,
+      iconValue: 'fas fa-box',
+      lastUpdate: false,
+      showTitle: true,
+    });
+    html +=
+      '<div class="mb-3"><label class="form-label" for="pn-device-title">' +
+      _esc(t.postnl_title) +
+      '</label>';
+    html +=
+      '<input type="text" class="form-control" id="pn-device-title" autocomplete="off"></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="pn-incoming-idx">' +
+      _esc(t.postnl_incoming) +
+      '</label>';
+    html +=
+      '<input type="number" min="1" step="1" class="form-control" id="pn-incoming-idx">';
+    html +=
+      '<div class="form-text">' + _esc(t.postnl_incoming_help) + '</div></div>';
+    html +=
+      '<div class="mb-3"><label class="form-label" for="pn-sent-idx">' +
+      _esc(t.postnl_sent) +
+      '</label>';
+    html +=
+      '<input type="number" min="1" step="1" class="form-control" id="pn-sent-idx">';
+    html +=
+      '<div class="form-text">' + _esc(t.postnl_sent_help) + '</div></div>';
+    html += '<div class="cd-custom-message mt-2" role="status"></div></div>';
+    html +=
+      '<div class="modal-footer">' +
+      _backButtonHtml() +
+      '<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">' +
+      '<i class="fas fa-xmark me-1" aria-hidden="true"></i>' +
+      _esc(t.cancel) +
+      '</button>';
+    html +=
+      '<button type="button" class="btn btn-primary btn-save" id="pn-save-btn"><i class="fas fa-floppy-disk me-1" aria-hidden="true"></i>' +
+      _esc(t.save) +
+      '</button>';
+    html += '</div></div></div></div>';
+    $('body').append(html);
+    var $popup = $('#postnlblockpopup');
+    _wireQuickOptions('pn', $popup);
+    _wireBackButton('postnlblockpopup');
+
+    $('#pn-save-btn').on('click', function () {
+      var $message = $popup
+        .find('.cd-custom-message')
+        .removeClass('text-danger')
+        .text('');
+      var title = $.trim(String($('#pn-device-title').val() || ''));
+
+      function readOptionalIdx($field) {
+        var raw = $.trim(String($field.val() || ''));
+        if (!raw) return { ok: true, idx: null };
+        var parsed = parseInt(raw, 10);
+        if (!(parsed > 0 && String(parsed) === raw)) return { ok: false };
+        return { ok: true, idx: parsed };
+      }
+
+      var $incomingField = $('#pn-incoming-idx');
+      var $sentField = $('#pn-sent-idx');
+      var incoming = readOptionalIdx($incomingField);
+      if (!incoming.ok) {
+        $message.addClass('text-danger').text(t.invalid_idx);
+        $incomingField.trigger('focus');
+        return;
+      }
+      var sent = readOptionalIdx($sentField);
+      if (!sent.ok) {
+        $message.addClass('text-danger').text(t.invalid_idx);
+        $sentField.trigger('focus');
+        return;
+      }
+      if (!incoming.idx && !sent.idx) {
+        $message.addClass('text-danger').text(t.invalid_postnl_devices);
+        $incomingField.trigger('focus');
+        return;
+      }
+
+      var quickOptions = _readQuickOptions('pn');
+      var iconIsImage =
+        quickOptions.icon && quickOptions.iconSource === 'image';
+      var customRows = [];
+      if (title)
+        customRows.push({
+          field: 'title',
+          setting: title,
+          value: title,
+          system: true,
+        });
+      if (iconIsImage && quickOptions.iconValue) {
+        customRows.push({
+          field: 'image',
+          setting: quickOptions.iconValue,
+          value: quickOptions.iconValue,
+        });
+      }
+      if (incoming.idx) {
+        customRows.push({
+          field: 'incomingIdx',
+          setting: incoming.idx,
+          value: incoming.idx,
+        });
+      }
+      if (sent.idx) {
+        customRows.push({
+          field: 'sentIdx',
+          setting: sent.idx,
+          value: sent.idx,
+        });
+      }
+
+      var reference = _nextSpecialReference('postnl');
+      var orderKey = _specialOrderKey(reference);
+      managedSpecials[orderKey] = {
+        kind: 'special',
+        specialType: 'postnl',
+        orderKey: orderKey,
+        reference: reference,
+        definition: {},
+        idx: null,
+        title: title,
+        width: 6,
+        height: null,
+        showTitle: quickOptions.showTitle,
+        options: {
+          icon: quickOptions.icon,
+          iconValue: iconIsImage ? null : quickOptions.iconValue,
+          last_update: quickOptions.lastUpdate,
+        },
+        customFields: customRows,
+        preservedFields: {},
+      };
+      managedOrder.push(orderKey);
+      window.bootstrap.Modal.getInstance(
+        document.getElementById('postnlblockpopup')
+      ).hide();
+      _save();
+    });
+
+    $popup.one('hidden.bs.modal', function () {
+      $(this).remove();
+    });
+    window.bootstrap.Modal.getOrCreateInstance(
+      document.getElementById('postnlblockpopup')
     ).show();
   }
 
@@ -9978,6 +10183,7 @@ var DashticzDeviceEditor = (function () {
     openMultiDevice: openMultiDevice,
     openGroup: openGroup,
     openCluster: openCluster,
+    openPostnl: openPostnl,
     openHtmlBlock: openHtmlBlock,
     openIframe: openIframe,
     openCalendar: openCalendar,
