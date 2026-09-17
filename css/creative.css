@@ -4606,6 +4606,37 @@ img.icon {
   outline-offset: 2px;
 }
 
+/* PostNL (js/components/postnl.js): the domoticz_postnl plugin's Incoming/
+   Sent Text devices combined in one block. Rows are painted into .dt_state
+   (js/dashticz.js's own content slot), same reasoning as Cluster above -
+   the block's configured icon/.dt_title stay untouched; containerClass:
+   'postnl-block' is only a scoping hook here, same idea as .cluster-block. */
+.postnl-block .dt_state {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.postnl-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.postnl-row-label {
+  font-size: var(--font-device-title);
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.postnl-row-text {
+  font-size: var(--font-device-title);
+  /* The plugin's own multi-line package list (one package per line) -
+     preserves its newlines without needing them converted to <br> tags. */
+  white-space: pre-line;
+}
+
 @media (max-width: 975px) {
   div.mh {
     height: 75px;

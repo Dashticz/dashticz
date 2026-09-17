@@ -1715,6 +1715,24 @@ function configwriter_special_block_props($block)
             $props['icon'] = (string)$block['icon'];
         }
         $props['last_update'] = !empty($block['last_update']);
+    } elseif ($kind === 'postnl') {
+        // js/components/postnl.js dispatches purely on type: 'postnl',
+        // always written the same as cluster's own type: 'cluster' just
+        // above - also always idx-less: incomingIdx/sentIdx (see
+        // saveblocks.php's 'postnl' branch for the at-least-one
+        // requirement) are carried through custom_fields below like any
+        // other extra field.
+        $props = [
+            'width' => $width,
+            'type' => 'postnl',
+        ];
+        if (trim($title) !== '') {
+            $props['title'] = $title;
+        }
+        if (array_key_exists('icon', $block) && $block['icon'] !== null) {
+            $props['icon'] = (string)$block['icon'];
+        }
+        $props['last_update'] = !empty($block['last_update']);
     } elseif ($kind === 'html') {
         // js/components/html.js dispatches on a truthy htmlfile alone - no
         // `type` of its own. htmlfile itself is carried through custom_fields
