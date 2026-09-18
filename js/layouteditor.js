@@ -532,6 +532,7 @@ var DashticzLayoutEditor = (function () {
   var WIDGET_KEY_TYPE = {
     weather: { key: 'widget_weather', type: 'weather' },
     garbage: { key: 'widget_garbage', type: 'garbage' },
+    postnl: { key: 'widget_postnl', type: 'postnl' },
     spotify: { key: 'widget_spotify', type: 'spotify' },
     sonarr: { key: 'widget_sonarr', type: 'sonarr' },
     clock: { key: 'widget_clock', type: 'basicclock' },
