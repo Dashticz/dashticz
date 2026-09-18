@@ -35,6 +35,11 @@ var DT_postnl = (function () {
     refresh: refresh,
   };
 
+  function fontSize() {
+    var size = parseInt(settings['postnl_fontsize'], 10);
+    return size >= 8 && size <= 60 ? size : 14;
+  }
+
   function statusLabel(status) {
     var misc = (typeof language !== 'undefined' && language.misc) || {};
     return misc['postnl_status_' + String(status).toLowerCase()] || status;
@@ -79,6 +84,7 @@ var DT_postnl = (function () {
 
   function refresh(me) {
     var misc = (typeof language !== 'undefined' && language.misc) || {};
+    me.$mountPoint.find('.dt_state').css('font-size', fontSize() + 'px');
     var username = settings['postnl_username'] || '';
     var password = settings['postnl_password'] || '';
     if (!username || !password) {

@@ -1085,6 +1085,7 @@ var DashticzWidgetEditor = (function () {
         postnl_password: _s('postnl_password'),
         postnl_days: _s('postnl_days', '2'),
         postnl_pollminutes: _s('postnl_pollminutes', '60'),
+        postnl_fontsize: _s('postnl_fontsize', '14'),
       },
       spotify: {
         spot_clientid: _s('spot_clientid'),
@@ -3639,6 +3640,15 @@ var DashticzWidgetEditor = (function () {
         lp.postnl_pollminutes_help ||
           'Minimum 15 minutes, to avoid your PostNL account being flagged. Default: 60.'
       );
+      fields += _cfgField(
+        'postnl_fontsize',
+        lp.postnl_fontsize || 'Font size (px)',
+        'number',
+        pncfg.postnl_fontsize || '14',
+        { min: 8, max: 60, step: 1 },
+        lp.postnl_fontsize_help ||
+          'Font size of the shipment text. Default: 14.'
+      );
     } else if (item.id === 'sonarr') {
       var scfg = widgetConfigs.sonarr || {};
       fields += _cfgField(
@@ -5259,6 +5269,7 @@ var DashticzWidgetEditor = (function () {
         'postnl_password',
         'postnl_days',
         'postnl_pollminutes',
+        'postnl_fontsize',
       ],
       spotify: ['spot_clientid'],
       calendar: ['calendarformat', 'calendarlanguage', 'calendar_maxitems'],

@@ -695,6 +695,8 @@
       "postnl_days": "Bezorgd tonen gedurende (dagen)",
       "postnl_days_help": "Hoeveel dagen een verzonden pakket zichtbaar blijft na bezorging. Standaard: 2.",
       "postnl_pollminutes": "Ophaalinterval (minuten)",
+      "postnl_fontsize": "Lettergrootte (px)",
+      "postnl_fontsize_help": "Lettergrootte van de pakkettekst. Standaard: 14.",
       "postnl_pollminutes_help": "Minimaal 15 minuten, om te voorkomen dat je PostNL-account wordt geblokkeerd. Standaard: 60."
     },
     "general": {

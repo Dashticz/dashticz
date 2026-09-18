@@ -808,6 +808,8 @@
       "postnl_days": "Show delivered for (days)",
       "postnl_days_help": "How many days a sent package stays visible after delivery. Default: 2.",
       "postnl_pollminutes": "Poll interval (minutes)",
+      "postnl_fontsize": "Font size (px)",
+      "postnl_fontsize_help": "Font size of the shipment text. Default: 14.",
       "postnl_pollminutes_help": "Minimum 15 minutes, to avoid your PostNL account being flagged. Default: 60."
     },
     "general": {
