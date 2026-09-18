@@ -532,6 +532,7 @@ var DashticzLayoutEditor = (function () {
   var WIDGET_KEY_TYPE = {
     weather: { key: 'widget_weather', type: 'weather' },
     garbage: { key: 'widget_garbage', type: 'garbage' },
+    postnl: { key: 'widget_postnl', type: 'postnl' },
     spotify: { key: 'widget_spotify', type: 'spotify' },
     sonarr: { key: 'widget_sonarr', type: 'sonarr' },
     clock: { key: 'widget_clock', type: 'basicclock' },
@@ -1563,6 +1564,7 @@ var DashticzLayoutEditor = (function () {
       widget_longfonds: 'longfonds',
       widget_moon: 'moon',
       widget_news: 'news',
+      widget_postnl: 'postnl',
       widget_xmltvguide: 'xmltvguide',
       // Streamplayer/Radio is dispatched by its component name directly (see
       // Dashticz._mount in dashticz.js), so its block is always keyed
@@ -1625,6 +1627,7 @@ var DashticzLayoutEditor = (function () {
       waqi: 'longfonds',
       moon: 'moon',
       news: 'news',
+      postnl: 'postnl',
       basicclock: 'clock',
       stationclock: 'clock',
       flipclock: 'clock',

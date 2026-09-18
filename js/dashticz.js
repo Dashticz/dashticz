@@ -37,6 +37,7 @@ var Dashticz = (function () {
     'weather',
     'simpleblock',
     'map',
+    'postnl',
     'group',
     'cluster',
     'waqi',

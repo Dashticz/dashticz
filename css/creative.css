@@ -4606,6 +4606,43 @@ img.icon {
   outline-offset: 2px;
 }
 
+/* PostNL widget (js/components/postnl.js): incoming/sent PostNL shipments,
+   fetched via vendor/dashticz/postnl/index.php. Rows are painted into
+   .dt_state (js/dashticz.js's own content slot), same reasoning as Cluster
+   above - the block's configured icon/.dt_title stay untouched;
+   containerClass: 'postnl-block' is only a scoping hook here, same idea as
+   .cluster-block. */
+.postnl-block .dt_state {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.postnl-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.postnl-row-label {
+  font-size: inherit;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.postnl-row-text {
+  font-size: inherit;
+  /* One formatted shipment line per line - preserves the newlines the
+     component joins them with, without needing them converted to <br>. */
+  white-space: pre-line;
+}
+
+.postnl-error {
+  font-size: inherit;
+  color: var(--text-muted);
+}
+
 @media (max-width: 975px) {
   div.mh {
     height: 75px;
