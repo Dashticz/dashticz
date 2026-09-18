@@ -3,57 +3,47 @@
 PostNL
 ======
 
-A PostNL block shows the `domoticz_postnl
-<https://github.com/MadPatrick/domoticz_postnl>`_ plugin's "Packages
-Incoming" and "Packages Sent" Text devices combined in one block, as two
-rows: Incoming and Sent.
+The PostNL widget shows your incoming and sent PostNL shipments (Track & Trace)
+as two rows in one block: Incoming and Sent. A row is left out completely when
+there is nothing to show.
 
-Either device is optional, and each row is only shown when its device
-actually has a package to report. The plugin's own Text devices never
-really go empty - they hold a fixed placeholder string instead (e.g.
-"Nothing on the way" / "Geen pakketten onderweg") - so this block recognizes
-that placeholder (in either of the plugin's two supported languages) and
-renders nothing for that row rather than showing filler text. When neither
-device has anything to report, the block simply shows no rows at all.
+PostNL has no public API. The widget logs in to your PostNL account server-side
+(``vendor/dashticz/postnl/index.php``), using the same unofficial login flow as
+the `domoticz_postnl <https://github.com/MadPatrick/domoticz_postnl>`_ plugin.
+If PostNL changes their login process, the widget may stop working.
 
-Added via the Screen Editor's "Add items" menu -> PostNL, by entering the
-IDX of the plugin's "Packages Incoming" and/or "Packages Sent" Text
-devices.
+Add the widget via the Screen Editor: "Add items" -> Widgets -> PostNL, and
+fill in the settings with the cog icon.
 
-Block parameters
-----------------
+Settings
+--------
 
 .. list-table::
   :header-rows: 1
   :widths: 5 30
   :class: tight-table
 
-  * - Parameter
+  * - Setting
     - Description
-  * - width
-    - ``1..12``: The width of the block relative to the column width
-  * - title
-    - ``'<string>'``: Custom title for the block
-  * - icon
-    - | Defines the icon for this block, choose from: https://fontawesome.com/icons?d=gallery&m=free
-      | ``'fas fa-box'``
-  * - incomingIdx
-    - | Optional (at least one of incomingIdx/sentIdx is required): the
-        domoticz_postnl plugin's "Packages Incoming" Text device idx.
-      | ``12``
-  * - sentIdx
-    - | Optional (at least one of incomingIdx/sentIdx is required): the
-        domoticz_postnl plugin's "Packages Sent" Text device idx.
-      | ``13``
+  * - postnl_username
+    - Your PostNL e-mail address
+  * - postnl_password
+    - Your PostNL password
+  * - postnl_days
+    - ``1..30``: Number of days a sent package stays visible after delivery. Default: 2
+  * - postnl_pollminutes
+    - ``15..720``: Poll interval in minutes. Minimum 15, to avoid your account being flagged. Default: 60
+
+The status texts follow the language that is configured in Dashticz.
 
 Example
 -------
 
 ::
 
-    blocks['postnl'] = {
+    config['postnl_username'] = 'me@example.com';
+    config['postnl_password'] = 'secret';
+    blocks['widget_postnl'] = {
       type: 'postnl',
-      title: 'PostNL',
-      incomingIdx: 12,
-      sentIdx: 13
+      title: 'PostNL'
     }

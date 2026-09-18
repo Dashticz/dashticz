@@ -121,7 +121,14 @@
     "widget_not_visible": "Is de widget niet zichtbaar?",
     "more_info": "Meer informatie",
     "postnl_incoming_label": "Inkomend",
-    "postnl_sent_label": "Verzonden"
+    "postnl_sent_label": "Verzonden",
+    "postnl_status_open": "Onderweg",
+    "postnl_status_intransit": "Onderweg",
+    "postnl_status_delivered": "Bezorgd",
+    "postnl_status_returntosender": "Retour afzender",
+    "postnl_unknown_sender": "Onbekend",
+    "postnl_not_configured": "Stel je PostNL-account in bij Instellingen -> Widgets -> PostNL.",
+    "postnl_error": "Kan PostNL-zendingen niet ophalen."
   },
   "settings": {
     "title": "Dashticz-instellingen",
@@ -331,13 +338,6 @@
       "cluster_switch_scale_help": "Schaalfactor voor de aan/uit-schakelaar (bijv. 1.5 voor 150%). Leeg laten voor de standaardgrootte.",
       "invalid_cluster_name": "Vul een geldige unieke clusternaam in.",
       "invalid_cluster_devices": "Voeg minstens één device toe.",
-      "postnl_block": "PostNL",
-      "postnl_title": "Titel",
-      "postnl_incoming": "Device inkomende pakketten (IDX)",
-      "postnl_incoming_help": "Optioneel. IDX van het 'Packages Incoming' tekst-device van de domoticz_postnl-plugin.",
-      "postnl_sent": "Device verzonden pakketten (IDX)",
-      "postnl_sent_help": "Optioneel. IDX van het 'Packages Sent' tekst-device van de domoticz_postnl-plugin.",
-      "invalid_postnl_devices": "Vul minstens één geldige device-IDX in (Inkomend of Verzonden).",
       "html_block": "HTML Block",
       "html_block_name": "Block naam",
       "html_block_name_help": "Wordt gebruikt als de blocks[...] sleutel in CONFIG.js.",
@@ -523,6 +523,8 @@
       "weather_description": "Weersverwachting via OpenWeather of Weather Underground.",
       "garbage_title": "Afval",
       "garbage_description": "Aankomende afvalinzamelingen.",
+      "postnl_title": "PostNL",
+      "postnl_description": "Inkomende en verzonden PostNL-pakketten.",
       "spotify_title": "Spotify",
       "spotify_description": "Spotify Connect-afstandsbediening.",
       "sonarr_title": "Sonarr",
@@ -558,7 +560,6 @@
       "multi_device": "Multi Device",
       "group_block": "Group",
       "cluster_block": "Cluster",
-      "postnl_block": "PostNL",
       "html_block": "HTML Block",
       "separator": "Tussenbalk",
       "add_widgets": "Widgets toevoegen",
@@ -686,6 +687,15 @@
       "google_api_key": "Google APi Key",
       "google_api_key_help": "Google API-key is nodig voor afvalkalender via Google Calendar",
       "title": "Afval"
+    },
+    "postnl": {
+      "title": "PostNL",
+      "postnl_username": "PostNL e-mailadres",
+      "postnl_password": "PostNL wachtwoord",
+      "postnl_days": "Bezorgd tonen gedurende (dagen)",
+      "postnl_days_help": "Hoeveel dagen een verzonden pakket zichtbaar blijft na bezorging. Standaard: 2.",
+      "postnl_pollminutes": "Ophaalinterval (minuten)",
+      "postnl_pollminutes_help": "Minimaal 15 minuten, om te voorkomen dat je PostNL-account wordt geblokkeerd. Standaard: 60."
     },
     "general": {
       "app_title": "App title",
