@@ -4626,20 +4626,20 @@ img.icon {
 }
 
 .postnl-row-label {
-  font-size: var(--font-device-title);
+  font-size: inherit;
   font-weight: 600;
   color: var(--text-muted);
 }
 
 .postnl-row-text {
-  font-size: var(--font-device-title);
+  font-size: inherit;
   /* One formatted shipment line per line - preserves the newlines the
      component joins them with, without needing them converted to <br>. */
   white-space: pre-line;
 }
 
 .postnl-error {
-  font-size: var(--font-device-title);
+  font-size: inherit;
   color: var(--text-muted);
 }
 
