@@ -1689,6 +1689,7 @@ var DashticzWidgetEditor = (function () {
       weather: 'weather',
       wunderground: 'weather',
       garbage: 'garbage',
+      postnl: 'postnl',
       spotify: 'spotify',
       sonarr: 'sonarr',
       calendar: 'calendar',
@@ -4763,6 +4764,8 @@ var DashticzWidgetEditor = (function () {
         widgetConfigs.clock = collected;
       } else if (widgetId === 'garbage') {
         widgetConfigs.garbage = collected;
+      } else if (widgetId === 'postnl') {
+        widgetConfigs.postnl = collected;
       } else if (widgetId === 'sonarr') {
         widgetConfigs.sonarr = collected;
       } else if (widgetId === 'spotify') {
