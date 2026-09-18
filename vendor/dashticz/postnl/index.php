@@ -1,6 +1,17 @@
 <?php
 require_once(__DIR__ . '/../security.php');
 
+// Fixed PostNL/Akamai(Janrain) identity constants - mirrors the account web
+// app exactly. Defined before the request runs below (define() is not hoisted).
+define('DASHTICZ_POSTNL_TENANT', 'https://login.postnl.nl/101112a0-4a0f-4bbb-8176-2f1b2d370d7c');
+define('DASHTICZ_POSTNL_OIDC_CLIENT', 'deb0a372-6d72-4e09-83fe-997beacbd137');
+define('DASHTICZ_POSTNL_REDIRECT_URI', 'postnl://login');
+define('DASHTICZ_POSTNL_SCOPE', 'openid profile email poa-profiles-api');
+define('DASHTICZ_POSTNL_CAPTURE_SERVER', 'https://login.postnl.nl');
+define('DASHTICZ_POSTNL_GRAPHQL_URL', 'https://jouw.postnl.nl/account/api/graphql');
+define('DASHTICZ_POSTNL_TT_URL', 'https://jouw.postnl.nl/track-and-trace/api/trackAndTrace');
+define('DASHTICZ_POSTNL_GRAPHQL_QUERY', '{ trackedShipments { receiverShipments { key creationDateTime title barcode delivered deliveredTimeStamp deliveryWindowFrom deliveryWindowTo shipmentType deliveryAddressType sourceDisplayName } senderShipments { key creationDateTime title barcode delivered deliveredTimeStamp deliveryWindowFrom deliveryWindowTo shipmentType deliveryAddressType sourceDisplayName } } }');
+
 // This endpoint promises JSON even when PHP itself raises a fatal error.
 @ini_set('display_errors', '0');
 
@@ -280,14 +291,6 @@ function dashticz_postnl_cookie_value($cookieFile, $name)
 // Fixed PostNL/Akamai(Janrain) identity constants - mirrors the account web
 // app exactly (see the reference domoticz_postnl plugin's PostNLClient).
 
-define('DASHTICZ_POSTNL_TENANT', 'https://login.postnl.nl/101112a0-4a0f-4bbb-8176-2f1b2d370d7c');
-define('DASHTICZ_POSTNL_OIDC_CLIENT', 'deb0a372-6d72-4e09-83fe-997beacbd137');
-define('DASHTICZ_POSTNL_REDIRECT_URI', 'postnl://login');
-define('DASHTICZ_POSTNL_SCOPE', 'openid profile email poa-profiles-api');
-define('DASHTICZ_POSTNL_CAPTURE_SERVER', 'https://login.postnl.nl');
-define('DASHTICZ_POSTNL_GRAPHQL_URL', 'https://jouw.postnl.nl/account/api/graphql');
-define('DASHTICZ_POSTNL_TT_URL', 'https://jouw.postnl.nl/track-and-trace/api/trackAndTrace');
-define('DASHTICZ_POSTNL_GRAPHQL_QUERY', '{ trackedShipments { receiverShipments { key creationDateTime title barcode delivered deliveredTimeStamp deliveryWindowFrom deliveryWindowTo shipmentType deliveryAddressType sourceDisplayName } senderShipments { key creationDateTime title barcode delivered deliveredTimeStamp deliveryWindowFrom deliveryWindowTo shipmentType deliveryAddressType sourceDisplayName } } }');
 
 // Performs the full (unofficial, reverse-engineered) OIDC + Janrain capture
 // widget login PostNL's own account app uses, returning a fresh access
