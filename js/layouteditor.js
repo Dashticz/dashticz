@@ -37,7 +37,6 @@ var DashticzLayoutEditor = (function () {
     'lms',
     'group',
     'cluster',
-    'postnl',
     'camera',
     'news',
     'graph',
@@ -1460,24 +1459,6 @@ var DashticzLayoutEditor = (function () {
       };
     }
 
-    if (key && String(definition.type || '').toLowerCase() === 'postnl') {
-      // PostNL (js/components/postnl.js): the domoticz_postnl plugin's
-      // Incoming/Sent Text devices combined in one block, dispatched on
-      // type: 'postnl' like Cluster's type: 'cluster' just above and
-      // mirroring deviceeditor.js's _specialFromReference(). Always
-      // idx-less (its two device idx ride through incomingIdx/sentIdx,
-      // not a single top-level idx).
-      return {
-        definition: definition,
-        kind: 'postnl',
-        reference: key,
-        widgetId: null,
-        idx: null,
-        subidx: 0,
-        name: definition.title || key,
-      };
-    }
-
     if (
       key &&
       typeof definition.idx === 'undefined' &&
@@ -1582,6 +1563,7 @@ var DashticzLayoutEditor = (function () {
       widget_longfonds: 'longfonds',
       widget_moon: 'moon',
       widget_news: 'news',
+      widget_postnl: 'postnl',
       widget_xmltvguide: 'xmltvguide',
       // Streamplayer/Radio is dispatched by its component name directly (see
       // Dashticz._mount in dashticz.js), so its block is always keyed
@@ -1644,6 +1626,7 @@ var DashticzLayoutEditor = (function () {
       waqi: 'longfonds',
       moon: 'moon',
       news: 'news',
+      postnl: 'postnl',
       basicclock: 'clock',
       stationclock: 'clock',
       flipclock: 'clock',

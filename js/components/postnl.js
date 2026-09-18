@@ -1,63 +1,67 @@
-/* global Dashticz Domoticz language */
+/* global Dashticz settings language moment */
 //# sourceURL=js/components/postnl.js
-/* PostNL: shows the "Packages Incoming" and "Packages Sent" Text devices
- * created by the domoticz_postnl plugin
- * (https://github.com/MadPatrick/domoticz_postnl) combined in one block,
- * added via the Screen Editor's "Add items" -> PostNL quick-add popup
- * (js/deviceeditor.js's _showPostnlPopup()).
+/* PostNL widget: shows incoming and sent PostNL shipments (Track & Trace),
+ * fetched through vendor/dashticz/postnl/index.php - a same-origin PHP
+ * bridge that performs PostNL's own (unofficial, reverse-engineered) login
+ * and GraphQL shipment lookup server-side, mirroring how the Lyrion Music
+ * Server block (js/components/lms.js) never talks to its server directly
+ * from the browser. The widget's own e-mail address/password/days-shown/
+ * poll-interval are global settings (Settings -> Widgets -> PostNL, see
+ * js/widgeteditor.js), not per-tile config - there is nothing to pick per
+ * tile, same as Weather or Garbage.
  *
- * Either device is optional (block.incomingIdx/block.sentIdx), and each is
- * shown as its own row only when it actually has something to report - the
- * plugin's own Text devices never truly go empty, they hold a fixed
- * "nothing to show" placeholder string instead (plugin.py's TRANSLATIONS,
- * en/nl only, independent of Dashticz's own UI language since it is set on
- * the plugin/hardware itself). Matching those known placeholders (see
- * EMPTY_TEXTS below) instead of just checking for an empty value blanks the
- * row entirely rather than showing filler text - by design, an idx that
- * isn't configured at all behaves exactly the same as one with nothing to
- * report.
+ * Either row (Incoming/Sent) is simply omitted when its own array comes
+ * back empty - no filler/placeholder text, by design. Status text and
+ * date/time formatting happen here (not in the PHP backend) purely from the
+ * raw {status, who, from, to, deliveryDate} fields it returns, so the
+ * display always follows Dashticz's own active language automatically,
+ * with no separate language setting of its own.
  */
 var DT_postnl = (function () {
-  var EMPTY_TEXTS = [
-    'Nothing on the way',
-    'Geen pakketten onderweg',
-    'No shipments sent',
-    'Geen verzonden pakketten',
-  ];
-
   return {
     name: 'postnl',
-    defaultCfg: function () {
-      return {
-        width: 6,
-        refresh: 3600,
-        containerClass: 'postnl-block',
-      };
+    canHandle: function (block) {
+      return !!(block && block.type === 'postnl');
+    },
+    defaultCfg: {
+      width: 6,
+      refresh: (parseInt(settings['postnl_pollminutes'], 10) || 60) * 60,
+      containerClass: 'postnl-block',
     },
     run: function (me) {
-      me.incomingIdx = parseInt(me.block.incomingIdx, 10) || null;
-      me.sentIdx = parseInt(me.block.sentIdx, 10) || null;
-      [me.incomingIdx, me.sentIdx].forEach(function (idx) {
-        if (!idx) return;
-        Dashticz.subscribeDevice(me, idx, false, function () {
-          return refresh(me);
-        });
-      });
       refresh(me);
     },
     refresh: refresh,
   };
 
-  function rowText(idx) {
-    if (!idx) return '';
-    var device = Domoticz.getAllDevices()[idx];
-    var text = device ? String(device.Data || '').trim() : '';
-    if (!text || EMPTY_TEXTS.indexOf(text) > -1) return '';
-    return text;
+  function statusLabel(status) {
+    var misc = (typeof language !== 'undefined' && language.misc) || {};
+    return misc['postnl_status_' + String(status).toLowerCase()] || status;
   }
 
-  function rowHtml(cssClass, label, text) {
-    if (!text) return '';
+  function formatLine(entry) {
+    var misc = (typeof language !== 'undefined' && language.misc) || {};
+    var who = entry.who || misc.postnl_unknown_sender || 'Unknown';
+    var label = statusLabel(entry.status);
+    var date = '';
+    var time = '';
+    if (entry.status === 'Delivered' && entry.deliveryDate) {
+      date = moment(entry.deliveryDate).format('DD/MM');
+      time = moment(entry.deliveryDate).format('HH:mm');
+    } else if (entry.from) {
+      date = moment(entry.from).format('DD/MM');
+      var timeFrom = moment(entry.from).format('HH:mm');
+      var timeTo = entry.to ? moment(entry.to).format('HH:mm') : '';
+      time = timeFrom && timeTo ? timeFrom + '-' + timeTo : timeFrom || timeTo;
+    }
+    var prefix = date ? '[' + date + '] ' : '';
+    var suffix = time ? ' ' + time : '';
+    return prefix + who + ': ' + label + suffix;
+  }
+
+  function rowHtml(cssClass, label, entries) {
+    if (!entries || !entries.length) return '';
+    var lines = entries.map(formatLine).join('\n');
     return (
       '<div class="postnl-row ' +
       cssClass +
@@ -66,36 +70,68 @@ var DT_postnl = (function () {
       label +
       '</div>' +
       '<div class="postnl-row-text">' +
-      text +
+      lines +
       '</div>' +
       '</div>'
     );
   }
 
   function refresh(me) {
-    doRefresh(me);
-  }
-
-  function doRefresh(me) {
     var misc = (typeof language !== 'undefined' && language.misc) || {};
-    var html =
-      rowHtml(
-        'postnl-row-incoming',
-        misc.postnl_incoming_label || 'Incoming',
-        rowText(me.incomingIdx)
-      ) +
-      rowHtml(
-        'postnl-row-sent',
-        misc.postnl_sent_label || 'Sent',
-        rowText(me.sentIdx)
-      );
-    // Written into .dt_state - the framework's own content slot (already
-    // painted with the block's configured icon/.dt_title before run()/
-    // refresh() ever runs) - same convention as e.g. Cluster/OWM/Weather,
-    // so replacing it here never wipes that icon/title.
-    me.$mountPoint
-      .find('.dt_state')
-      .html('<div class="postnl-rows">' + html + '</div>');
+    var username = settings['postnl_username'] || '';
+    var password = settings['postnl_password'] || '';
+    if (!username || !password) {
+      me.$mountPoint
+        .find('.dt_state')
+        .html(
+          '<div class="postnl-rows postnl-error">' +
+            (misc.postnl_not_configured ||
+              'Configure your PostNL account in Settings -> Widgets -> PostNL.') +
+            '</div>'
+        );
+      return;
+    }
+
+    $.ajax({
+      url: settings['dashticz_php_path'] + 'postnl/index.php',
+      method: 'POST',
+      contentType: 'application/json',
+      dataType: 'json',
+      data: JSON.stringify({
+        username: username,
+        password: password,
+        days: parseInt(settings['postnl_days'], 10) || 2,
+        pollMinutes: parseInt(settings['postnl_pollminutes'], 10) || 60,
+      }),
+    }).then(
+      function (res) {
+        var html =
+          rowHtml(
+            'postnl-row-incoming',
+            misc.postnl_incoming_label || 'Incoming',
+            res && res.incoming
+          ) +
+          rowHtml(
+            'postnl-row-sent',
+            misc.postnl_sent_label || 'Sent',
+            res && res.sent
+          );
+        me.$mountPoint
+          .find('.dt_state')
+          .html('<div class="postnl-rows">' + html + '</div>');
+      },
+      function (jqXHR) {
+        var errorMessage =
+          (jqXHR && jqXHR.responseJSON && jqXHR.responseJSON.error) ||
+          misc.postnl_error ||
+          'Unable to fetch PostNL shipments.';
+        me.$mountPoint
+          .find('.dt_state')
+          .html(
+            '<div class="postnl-rows postnl-error">' + errorMessage + '</div>'
+          );
+      }
+    );
   }
 })();
 

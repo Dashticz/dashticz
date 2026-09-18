@@ -82,6 +82,11 @@ $allowedSettings = [
     'sonarr_url'             => 'string',
     'sonarr_apikey'          => 'string',
     'sonarr_maxitems'        => 'number',
+    // postnl
+    'postnl_username'        => 'string',
+    'postnl_password'        => 'string',
+    'postnl_days'            => 'number',
+    'postnl_pollminutes'     => 'number',
     // spotify
     'spot_clientid'          => 'string',
     // calendar
@@ -189,6 +194,7 @@ if (isset($data['settings']) && is_array($data['settings'])) {
 $catalog = [
     'weather' => ['key' => 'widget_weather', 'width' => 4, 'height' => 120],
     'garbage' => ['key' => 'widget_garbage', 'width' => 5, 'height' => 160],
+    'postnl' => ['key' => 'widget_postnl', 'width' => 6, 'height' => 160],
     'spotify' => ['key' => 'widget_spotify', 'width' => 4, 'height' => 120],
     'sonarr' => ['key' => 'widget_sonarr', 'width' => 4, 'height' => 120],
     'clock' => ['key' => 'widget_clock', 'width' => 4],
@@ -1036,6 +1042,10 @@ function _widgetBlockProps($widget)
             $props['title'] = isset($widget['displayTitle']) ? $widget['displayTitle'] : 'Afval';
             $props['maxitems'] = $widget['maxitems'];
             $props['maxdays'] = $widget['maxdays'];
+            break;
+        case 'postnl':
+            $props['type'] = 'postnl';
+            $props['title'] = 'PostNL';
             break;
         case 'spotify':
             $props['type'] = 'spotify';
