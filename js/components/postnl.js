@@ -25,6 +25,7 @@ var DT_postnl = (function () {
     },
     defaultCfg: {
       width: 6,
+      icon: 'fas fa-box',
       refresh: (parseInt(settings['postnl_pollminutes'], 10) || 60) * 60,
       containerClass: 'postnl-block',
     },
