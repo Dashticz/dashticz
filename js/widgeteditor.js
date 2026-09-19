@@ -32,6 +32,15 @@ var DashticzWidgetEditor = (function () {
       height: 120,
     },
     {
+      id: 'postnl',
+      blockKey: 'widget_postnl',
+      title: 'PostNL',
+      description: 'Incoming and sent PostNL shipments.',
+      icon: 'fas fa-box',
+      width: 6,
+      height: 160,
+    },
+    {
       id: 'spotify',
       blockKey: 'widget_spotify',
       title: 'Spotify',
@@ -1071,6 +1080,13 @@ var DashticzWidgetEditor = (function () {
         sonarr_apikey: _s('sonarr_apikey'),
         sonarr_maxitems: _s('sonarr_maxitems'),
       },
+      postnl: {
+        postnl_username: _s('postnl_username'),
+        postnl_password: _s('postnl_password'),
+        postnl_days: _s('postnl_days', '2'),
+        postnl_pollminutes: _s('postnl_pollminutes', '60'),
+        postnl_fontsize: _s('postnl_fontsize', '14'),
+      },
       spotify: {
         spot_clientid: _s('spot_clientid'),
       },
@@ -1674,6 +1690,7 @@ var DashticzWidgetEditor = (function () {
       weather: 'weather',
       wunderground: 'weather',
       garbage: 'garbage',
+      postnl: 'postnl',
       spotify: 'spotify',
       sonarr: 'sonarr',
       calendar: 'calendar',
@@ -2189,6 +2206,7 @@ var DashticzWidgetEditor = (function () {
       id === 'calendar' ||
       id === 'clock' ||
       id === 'garbage' ||
+      id === 'postnl' ||
       id === 'sonarr' ||
       id === 'spotify' ||
       id === 'secpanel' ||
@@ -2622,6 +2640,15 @@ var DashticzWidgetEditor = (function () {
         '" value="' +
         _esc(String(value !== null && value !== undefined ? value : '')) +
         '">';
+    } else if (type === 'password') {
+      html +=
+        '<input type="password" class="form-control form-control-sm we-widget-field" id="' +
+        _esc(id) +
+        '" data-cfg-key="' +
+        _esc(key) +
+        '" autocomplete="new-password" value="' +
+        _esc(String(value !== null && value !== undefined ? value : '')) +
+        '">';
     } else if (type === 'checkbox') {
       html +=
         '<div class="form-check form-switch">' +
@@ -3050,6 +3077,7 @@ var DashticzWidgetEditor = (function () {
     var lw = lng.weather || {};
     var ll = lng.localize || {};
     var lg = lng.garbage || {};
+    var lp = lng.postnl || {};
     var lm = lng.media || {};
     // Radio's Add station control docks next to the Display options
     // checkboxes rather than living on every station row.
@@ -3579,6 +3607,47 @@ var DashticzWidgetEditor = (function () {
         lg.garbage_row2_color || 'Row 2+ color',
         'color',
         gcfg.garbage_row2_color
+      );
+    } else if (item.id === 'postnl') {
+      var pncfg = widgetConfigs.postnl || {};
+      fields += _cfgField(
+        'postnl_username',
+        lp.postnl_username || 'PostNL e-mail address',
+        'text',
+        pncfg.postnl_username
+      );
+      fields += _cfgField(
+        'postnl_password',
+        lp.postnl_password || 'PostNL password',
+        'password',
+        pncfg.postnl_password
+      );
+      fields += _cfgField(
+        'postnl_days',
+        lp.postnl_days || 'Show delivered for (days)',
+        'number',
+        pncfg.postnl_days || '2',
+        { min: 1, max: 30, step: 1 },
+        lp.postnl_days_help ||
+          'How many days a sent package stays visible after delivery. Default: 2.'
+      );
+      fields += _cfgField(
+        'postnl_pollminutes',
+        lp.postnl_pollminutes || 'Poll interval (minutes)',
+        'number',
+        pncfg.postnl_pollminutes || '60',
+        { min: 15, max: 720, step: 15 },
+        lp.postnl_pollminutes_help ||
+          'Minimum 15 minutes, to avoid your PostNL account being flagged. Default: 60.'
+      );
+      fields += _cfgField(
+        'postnl_fontsize',
+        lp.postnl_fontsize || 'Font size (px)',
+        'number',
+        pncfg.postnl_fontsize || '14',
+        { min: 8, max: 60, step: 1 },
+        lp.postnl_fontsize_help ||
+          'Font size of the shipment text. Default: 14.'
       );
     } else if (item.id === 'sonarr') {
       var scfg = widgetConfigs.sonarr || {};
@@ -4705,6 +4774,8 @@ var DashticzWidgetEditor = (function () {
         widgetConfigs.clock = collected;
       } else if (widgetId === 'garbage') {
         widgetConfigs.garbage = collected;
+      } else if (widgetId === 'postnl') {
+        widgetConfigs.postnl = collected;
       } else if (widgetId === 'sonarr') {
         widgetConfigs.sonarr = collected;
       } else if (widgetId === 'spotify') {
@@ -5193,6 +5264,13 @@ var DashticzWidgetEditor = (function () {
         'garbage_use_cors_prefix',
       ],
       sonarr: ['sonarr_url', 'sonarr_apikey', 'sonarr_maxitems'],
+      postnl: [
+        'postnl_username',
+        'postnl_password',
+        'postnl_days',
+        'postnl_pollminutes',
+        'postnl_fontsize',
+      ],
       spotify: ['spot_clientid'],
       calendar: ['calendarformat', 'calendarlanguage', 'calendar_maxitems'],
       secpanel: ['security_button_icons'],

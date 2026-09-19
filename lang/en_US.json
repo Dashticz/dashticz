@@ -123,7 +123,16 @@
     "browser_not_supported": "Your browser is unfortunately not supported.",
     "wu_settings_missing": "Weather Underground settings are missing.",
     "widget_not_visible": "Not seeing a widget?",
-    "more_info": "More info"
+    "more_info": "More info",
+    "postnl_incoming_label": "Incoming",
+    "postnl_sent_label": "Sent",
+    "postnl_status_open": "In transit",
+    "postnl_status_intransit": "In transit",
+    "postnl_status_delivered": "Delivered",
+    "postnl_status_returntosender": "Returned to sender",
+    "postnl_unknown_sender": "Unknown",
+    "postnl_not_configured": "Configure your PostNL account in Settings -> Widgets -> PostNL.",
+    "postnl_error": "Unable to fetch PostNL shipments."
   },
   "settings": {
     "title": "Dashticz settings",
@@ -624,6 +633,8 @@
       "weather_description": "Weather forecast via OpenWeather or Weather Underground.",
       "garbage_title": "Garbage",
       "garbage_description": "Upcoming waste collections.",
+      "postnl_title": "PostNL",
+      "postnl_description": "Incoming and sent PostNL shipments.",
       "spotify_title": "Spotify",
       "spotify_description": "Spotify Connect remote control.",
       "sonarr_title": "Sonarr",
@@ -789,6 +800,17 @@
       "google_api_key": "Google API Key",
       "google_api_key_help": "Google API key is needed for Google Garbage Calendar",
       "title": "Garbage"
+    },
+    "postnl": {
+      "title": "PostNL",
+      "postnl_username": "PostNL e-mail address",
+      "postnl_password": "PostNL password",
+      "postnl_days": "Show delivered for (days)",
+      "postnl_days_help": "How many days a sent package stays visible after delivery. Default: 2.",
+      "postnl_pollminutes": "Poll interval (minutes)",
+      "postnl_fontsize": "Font size (px)",
+      "postnl_fontsize_help": "Font size of the shipment text. Default: 14.",
+      "postnl_pollminutes_help": "Minimum 15 minutes, to avoid your PostNL account being flagged. Default: 60."
     },
     "general": {
       "app_title": "App title",
