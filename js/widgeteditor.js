@@ -1086,6 +1086,7 @@ var DashticzWidgetEditor = (function () {
         postnl_days: _s('postnl_days', '2'),
         postnl_pollminutes: _s('postnl_pollminutes', '60'),
         postnl_fontsize: _s('postnl_fontsize', '14'),
+        postnl_showdelivered: _n('postnl_showdelivered', 1),
       },
       spotify: {
         spot_clientid: _s('spot_clientid'),
@@ -3623,13 +3624,19 @@ var DashticzWidgetEditor = (function () {
         pncfg.postnl_password
       );
       fields += _cfgField(
+        'postnl_showdelivered',
+        lp.postnl_showdelivered || 'Show delivered packages',
+        'checkbox',
+        pncfg.postnl_showdelivered
+      );
+      fields += _cfgField(
         'postnl_days',
         lp.postnl_days || 'Show delivered for (days)',
         'number',
         pncfg.postnl_days || '2',
         { min: 1, max: 30, step: 1 },
         lp.postnl_days_help ||
-          'How many days a sent package stays visible after delivery. Default: 2.'
+          'How many days a package stays visible after delivery. Default: 2.'
       );
       fields += _cfgField(
         'postnl_pollminutes',
@@ -5270,6 +5277,7 @@ var DashticzWidgetEditor = (function () {
         'postnl_days',
         'postnl_pollminutes',
         'postnl_fontsize',
+        'postnl_showdelivered',
       ],
       spotify: ['spot_clientid'],
       calendar: ['calendarformat', 'calendarlanguage', 'calendar_maxitems'],

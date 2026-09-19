@@ -88,6 +88,7 @@ $allowedSettings = [
     'postnl_days'            => 'number',
     'postnl_pollminutes'     => 'number',
     'postnl_fontsize'        => 'number',
+    'postnl_showdelivered'   => 'bool',
     // spotify
     'spot_clientid'          => 'string',
     // calendar
