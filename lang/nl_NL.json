@@ -119,7 +119,16 @@
     "browser_not_supported": "Uw browser wordt helaas niet ondersteund.",
     "wu_settings_missing": "De Weather Underground-instellingen ontbreken.",
     "widget_not_visible": "Is de widget niet zichtbaar?",
-    "more_info": "Meer informatie"
+    "more_info": "Meer informatie",
+    "postnl_incoming_label": "Inkomend",
+    "postnl_sent_label": "Verzonden",
+    "postnl_status_open": "Onderweg",
+    "postnl_status_intransit": "Onderweg",
+    "postnl_status_delivered": "Bezorgd",
+    "postnl_status_returntosender": "Retour afzender",
+    "postnl_unknown_sender": "Onbekend",
+    "postnl_not_configured": "Stel je PostNL-account in bij Instellingen -> Widgets -> PostNL.",
+    "postnl_error": "Kan PostNL-zendingen niet ophalen."
   },
   "settings": {
     "title": "Dashticz-instellingen",
@@ -514,6 +523,8 @@
       "weather_description": "Weersverwachting via OpenWeather of Weather Underground.",
       "garbage_title": "Afval",
       "garbage_description": "Aankomende afvalinzamelingen.",
+      "postnl_title": "PostNL",
+      "postnl_description": "Inkomende en verzonden PostNL-pakketten.",
       "spotify_title": "Spotify",
       "spotify_description": "Spotify Connect-afstandsbediening.",
       "sonarr_title": "Sonarr",
@@ -676,6 +687,17 @@
       "google_api_key": "Google APi Key",
       "google_api_key_help": "Google API-key is nodig voor afvalkalender via Google Calendar",
       "title": "Afval"
+    },
+    "postnl": {
+      "title": "PostNL",
+      "postnl_username": "PostNL e-mailadres",
+      "postnl_password": "PostNL wachtwoord",
+      "postnl_days": "Bezorgd tonen gedurende (dagen)",
+      "postnl_days_help": "Hoeveel dagen een verzonden pakket zichtbaar blijft na bezorging. Standaard: 2.",
+      "postnl_pollminutes": "Ophaalinterval (minuten)",
+      "postnl_fontsize": "Lettergrootte (px)",
+      "postnl_fontsize_help": "Lettergrootte van de pakkettekst. Standaard: 14.",
+      "postnl_pollminutes_help": "Minimaal 15 minuten, om te voorkomen dat je PostNL-account wordt geblokkeerd. Standaard: 60."
     },
     "general": {
       "app_title": "App title",
