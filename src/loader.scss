@@ -234,6 +234,73 @@
   text-transform: uppercase;
 }
 
+.loaderDetail,
+.loaderRetry {
+  display: none;
+}
+
+#loaderHolder.loaderOffline {
+  .loaderProgress,
+  .loaderDots,
+  .loaderOrbit {
+    display: none;
+  }
+
+  .loaderLogo {
+    filter: grayscale(0.85) brightness(0.7)
+      drop-shadow(0 0 10px rgba(255, 76, 94, 0.4));
+    animation: none;
+  }
+
+  .loaderLogoShell::before {
+    animation: none;
+    opacity: 0.35;
+  }
+
+  .loaderLogoShell::after {
+    box-shadow: 0 0 40px 10px rgba(255, 31, 53, 0.14);
+  }
+
+  .loaderHeader {
+    color: #ff5e6e;
+  }
+
+  .loaderStatus {
+    max-width: 320px;
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .loaderDetail {
+    display: block;
+    margin-top: 10px;
+    color: rgba(255, 255, 255, 0.3);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+  }
+
+  .loaderRetry {
+    display: inline-block;
+    margin-top: 22px;
+    padding: 9px 26px;
+    color: #fff;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid rgba(255, 94, 110, 0.7);
+    border-radius: 999px;
+    background: rgba(255, 31, 53, 0.12);
+    box-shadow: 0 0 14px rgba(255, 31, 53, 0.25);
+
+    &:hover,
+    &:focus-visible {
+      background: rgba(255, 31, 53, 0.3);
+      outline: none;
+    }
+  }
+}
+
 @keyframes loaderOrbitSpin {
   to {
     transform: rotate(360deg);
