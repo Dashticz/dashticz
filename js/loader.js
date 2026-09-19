@@ -11,13 +11,30 @@ script.onerror = function () {
 };
 head.appendChild(script);
 
+// Turn the startup screen into an "offline" screen instead of showing a bare
+// error message. Reloads automatically as soon as the browser is back online.
 function showLoaderError(message) {
   var loaderHolder = document.getElementById('loaderHolder');
   var error = document.getElementById('error');
   var hide = document.getElementById('hide');
-  if (loaderHolder) loaderHolder.style.display = 'none';
-  if (error) error.textContent = message;
-  if (hide) hide.style.display = 'block';
+  if (!loaderHolder) {
+    if (error) error.textContent = message;
+    if (hide) hide.style.display = 'block';
+    return;
+  }
+  loaderHolder.classList.add('loaderOffline');
+  loaderHolder.setAttribute('aria-label', 'Dashticz is offline');
+  var header = loaderHolder.querySelector('.loaderHeader');
+  var status = loaderHolder.querySelector('.loaderStatus');
+  var detail = loaderHolder.querySelector('.loaderDetail');
+  if (header) header.textContent = 'Dashticz is offline';
+  if (status)
+    status.textContent =
+      'Unable to reach the server. Check your connection; Dashticz will retry automatically.';
+  if (detail) detail.textContent = message;
+  window.addEventListener('online', function () {
+    window.location.reload();
+  });
 }
 
 // Plain source files (js/main.js, js/functions.js, js/polyfills.js) change far

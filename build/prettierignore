@@ -1,2 +1,9 @@
 ../dist
 ../vendor
+# Everything under custom/ is gitignored per-installation content (see
+# .gitignore) except the two tracked *.DEFAULT.js templates - a user's own
+# untracked custom/CONFIG.js or custom/custom.js must never fail this
+# repo-wide format check.
+../custom/*
+!../custom/CONFIG_DEFAULT.js
+!../custom/custom.DEFAULT.js

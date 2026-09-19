@@ -1211,6 +1211,7 @@ var DashticzDeviceEditor = (function () {
     var translatedTitles = {
       weather: t.weather_title || 'Weather',
       garbage: t.garbage_title || 'Garbage',
+      postnl: t.postnl_title || 'PostNL',
       spotify: t.spotify_title || 'Spotify',
       sonarr: t.sonarr_title || 'Sonarr',
       clock: t.clock_title || 'Clock',
@@ -1236,6 +1237,7 @@ var DashticzDeviceEditor = (function () {
     var catalog = {
       widget_weather: { id: 'weather', title: translatedTitles.weather },
       widget_garbage: { id: 'garbage', title: translatedTitles.garbage },
+      widget_postnl: { id: 'postnl', title: translatedTitles.postnl },
       widget_spotify: { id: 'spotify', title: translatedTitles.spotify },
       widget_sonarr: { id: 'sonarr', title: translatedTitles.sonarr },
       widget_clock: { id: 'clock', title: translatedTitles.clock },
@@ -1287,6 +1289,7 @@ var DashticzDeviceEditor = (function () {
         weather: 'weather',
         wunderground: 'weather',
         garbage: 'garbage',
+        postnl: 'postnl',
         spotify: 'spotify',
         sonarr: 'sonarr',
         calendar: 'calendar',
