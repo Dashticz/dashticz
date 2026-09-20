@@ -8301,3 +8301,16 @@ canvas {
     min-height: 72px;
   }
 }
+
+/* Compact Selector Switch icon picker (Device Config): every icon in the
+   toggle and in the pull-down has the same size and the same single colour. The theme's global .fas.fa-* rules (colour and size !important)
+   would otherwise make each icon look different. */
+.de-config-popup .de-compact-icon-row .de-compact-icon-toggle > i,
+.de-config-popup .de-compact-icon-row .de-compact-icon-choice > i {
+  display: inline-block;
+  width: 1.25em;
+  color: var(--bs-body-color, #212529) !important;
+  font-size: 13px !important;
+  line-height: 1;
+  text-align: center;
+}
