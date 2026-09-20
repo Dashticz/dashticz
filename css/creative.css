@@ -4496,6 +4496,18 @@ img.icon {
   font-weight: normal;
 }
 
+/* Optional row icon (block.icons), the HP iLO look (.hpilo-icon). The size
+   and colour repeat !important because themes size/colour some .fas icons
+   globally. */
+.cluster-block .dt_state .cluster-row-icon {
+  flex: none;
+  width: 1.4em;
+  color: #3a86d8 !important;
+  font-size: var(--font-device-title, 1em) !important;
+  line-height: 1;
+  text-align: center;
+}
+
 .cluster-row-usage {
   flex: 0 0 auto;
   white-space: nowrap;
@@ -4503,7 +4515,7 @@ img.icon {
   color: var(--text-muted);
 }
 
-/* Temperature mode's own row value (js/components/cluster.js) - unlike
+/* Temperature and Other mode's own row value (js/components/cluster.js) - unlike
    the usage span, this is the row's primary value (there is no toggle
    next to it), so it keeps its own status color instead of the muted one
    .cluster-row-usage uses for its secondary annotation. */
@@ -8307,6 +8319,20 @@ canvas {
    would otherwise make each icon look different. */
 .de-config-popup .de-compact-icon-row .de-compact-icon-toggle > i,
 .de-config-popup .de-compact-icon-row .de-compact-icon-choice > i {
+  display: inline-block;
+  width: 1.25em;
+  color: var(--bs-body-color, #212529) !important;
+  font-size: 13px !important;
+  line-height: 1;
+  text-align: center;
+}
+
+/* Cluster row icon picker (Device Config / Cluster popup): same uniform size
+   and single colour for every icon as the compact selector's picker above -
+   the theme's global .fas.fa-* rules (size and colour !important) would
+   otherwise make each icon look different. */
+.cl-icon-wrap .cl-icon-toggle > i,
+.cl-icon-wrap .cl-icon-panel .cl-icon-choice > i {
   display: inline-block;
   width: 1.25em;
   color: var(--bs-body-color, #212529) !important;
