@@ -584,16 +584,18 @@
 }
 
 /* Compact Selector Switch (Device Config -> Compact, block.compactSelector).
-   js/blocks.js getSelectorSwitch() adds .dt-selector-compact when the block
-   has exactly three level buttons. The layout stays the theme's own: icon
-   and title (not restyled) where every other block has them, the buttons
-   below the title - only smaller, as icon buttons. The level names stay in the DOM (title/aria-label) and are
-   hidden with font-size 0; the icons are Font Awesome glyphs on ::before:
-   1st level up, 2nd minus, 3rd down. The buttons scale with the block
-   height (Layout Editor / configured height), 24px in the default block.
-   The rules above force border/background/padding/font-size with
-   !important on .transbg .btn, so those properties repeat !important on
-   this more specific selector; everything else wins on specificity. */
+   js/blocks.js getSelectorSwitch() adds .dt-selector-compact to the block.
+   The layout stays the theme's own: icon and title (not restyled) where
+   every other block has them, the level buttons below the title - only
+   smaller. A level with an icon (Device Config -> Icon per level) gets the
+   class .dt-sc-icon and shows just its <i> icon; the level name stays in the
+   DOM (title/aria-label) and is hidden with font-size 0. Levels without an
+   icon keep their name as small text button. The buttons scale with the
+   block height (Layout Editor / configured height), 24px in the default
+   block. The theme forces border/background/padding/font-size (and the
+   colour and size of .fas icons) with !important, so those properties repeat
+   !important on this more specific selector; everything else wins on
+   specificity. */
 .transbg.mh.dt-selector-compact {
   --sc-block-h: 76px;
   --sc-block-radius: 12px;
@@ -602,6 +604,7 @@
   --sc-btn-radius: 6px;
   --sc-gap: 4px;
   --sc-icon-size: 11px;
+  --sc-text-size: 12px;
   --sc-btn-bg: var(--button-bg);
   --sc-btn-bg-hover: var(--button-hover);
   --sc-btn-border: var(--border-color-inactive);
@@ -609,9 +612,6 @@
   --sc-btn-bg-on: var(--button-active);
   --sc-btn-border-on: var(--border-color-active);
   --sc-btn-icon-on: #fff;
-  --sc-icon-font:
-    'Font Awesome 7 Free', 'Font Awesome 6 Free', 'Font Awesome 5 Free',
-    'FontAwesome';
   height: var(--sc-block-h) !important;
   min-height: 0;
   border-radius: var(--sc-block-radius) !important;
@@ -624,6 +624,7 @@
     --sc-btn-w: calc(var(--sc-btn-h) * 1.2);
     --sc-btn-radius: calc(var(--sc-btn-h) * 0.27);
     --sc-icon-size: clamp(10px, 18cqh, 26px);
+    --sc-text-size: clamp(11px, 20cqh, 20px);
   }
 }
 
@@ -635,8 +636,9 @@
 }
 
 .transbg.mh.dt-selector-compact .selector-buttons {
-  flex: 0 0 auto;
+  flex: 0 1 auto;
   flex-wrap: nowrap;
+  max-width: 100%;
   gap: var(--sc-gap);
   justify-content: flex-end;
   width: auto;
@@ -644,34 +646,37 @@
 
 .transbg.mh.dt-selector-compact .selector-buttons .btn {
   display: inline-flex;
-  flex: 0 0 var(--sc-btn-w);
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: var(--sc-btn-w);
-  min-width: 0;
+  width: auto;
+  min-width: var(--sc-btn-w);
   height: var(--sc-btn-h);
   min-height: 0;
   margin: 0;
-  padding: 0 !important;
+  padding: 0 8px !important;
   border: 1px solid var(--sc-btn-border) !important;
   border-radius: var(--sc-btn-radius) !important;
   background-color: var(--sc-btn-bg) !important;
   box-shadow: none;
   color: var(--sc-btn-icon);
-  font-size: 0 !important;
-  line-height: 0;
-  --sc-glyph: '\f111';
+  font-size: var(--sc-text-size) !important;
+  line-height: 1;
 }
 
-.transbg.mh.dt-selector-compact .selector-buttons .btn::before {
-  content: var(--sc-glyph);
-  color: var(--sc-btn-icon);
-  font-family: var(--sc-icon-font);
-  font-size: var(--sc-icon-size);
-  font-style: normal;
-  font-weight: 900;
+.transbg.mh.dt-selector-compact .selector-buttons .btn.dt-sc-icon {
+  flex: 0 1 var(--sc-btn-w);
+  width: var(--sc-btn-w);
+  min-width: 18px;
+  padding: 0 !important;
+  font-size: 0 !important;
+  line-height: 0;
+}
+
+.transbg.mh.dt-selector-compact .selector-buttons .btn > i {
+  color: var(--sc-btn-icon) !important;
+  font-size: var(--sc-icon-size) !important;
   line-height: 1;
-  -webkit-font-smoothing: antialiased;
 }
 
 .transbg.mh.dt-selector-compact .selector-buttons .btn:hover,
@@ -692,19 +697,7 @@
   background-color: var(--sc-btn-bg-on) !important;
 }
 
-.transbg.mh.dt-selector-compact .selector-buttons .btn.active::before,
-.transbg.mh.dt-selector-compact .selector-buttons .btn:active::before {
-  color: var(--sc-btn-icon-on);
-}
-
-.transbg.mh.dt-selector-compact .selector-buttons .btn:nth-child(1) {
-  --sc-glyph: '\f077'; /* chevron-up */
-}
-
-.transbg.mh.dt-selector-compact .selector-buttons .btn:nth-child(2) {
-  --sc-glyph: '\f068'; /* minus */
-}
-
-.transbg.mh.dt-selector-compact .selector-buttons .btn:nth-child(3) {
-  --sc-glyph: '\f078'; /* chevron-down */
+.transbg.mh.dt-selector-compact .selector-buttons .btn.active > i,
+.transbg.mh.dt-selector-compact .selector-buttons .btn:active > i {
+  color: var(--sc-btn-icon-on) !important;
 }
