@@ -6141,6 +6141,13 @@ test('Cluster switch can be resized via a switchScale field next to the Row type
   // Awesome class) picked from a pull-down in every pending row, rendered
   // by cluster.js in front of the name, validated in saveblocks.php.
   assert.match(deviceEditor, /function _clusterIconPickerHtml\(/);
+  // creative.css has per-icon margin offsets of its own (.fas.fa-lightbulb,
+  // .fas.fa-plug, ...) for the big tile icon; row icons reset them so every
+  // icon lines up in the same column.
+  assert.match(
+    fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8'),
+    /\.cluster-block \.dt_state \.cluster-row-icon \{[^}]*margin: 0 !important;/
+  );
   assert.match(deviceEditor, /customKeys\.icons = true;/);
   assert.match(deviceEditor, /field: 'icons',/);
   assert.match(
@@ -7491,4 +7498,25 @@ test('Selector Switch dropdown shows only its own levels, no generic placeholder
     dropdownBranch[0],
     /parseFloat\(nv\.value\) > 0 \|\|\s*\n\s*\(nv\.value == 0 &&\s*\n\s*\(typeof device\['LevelOffHidden'\] == 'undefined' \|\|\s*\n\s*device\['LevelOffHidden'\] === false\)\)/
   );
+});
+
+test('HP iLO rows can each get their own icon, chosen in the widget config', () => {
+  const editor = fs.readFileSync(path.join(root, 'js/widgeteditor.js'), 'utf8');
+  const hpilo = fs.readFileSync(
+    path.join(root, 'js/components/hpilo.js'),
+    'utf8'
+  );
+  const save = fs.readFileSync(path.join(root, 'js/savewidgets.php'), 'utf8');
+
+  // A pull-down per row, stored as JSON in the hidden hpilo_icons field and
+  // saved together with the other HP iLO settings.
+  assert.match(editor, /function _hpiloIconPickerHtml\(/);
+  assert.match(editor, /data-cfg-key="hpilo_icons"/);
+  assert.match(editor, /'hpilo_rows',\s*'hpilo_icons',/);
+  // The renderer falls back to each row's own icon; 'none' hides it.
+  assert.match(hpilo, /settings\['hpilo_icons'\]/);
+  assert.match(hpilo, /if \(icon === 'none'\) return '';/);
+  // Server side: known rows and Font Awesome class names only.
+  assert.match(save, /'hpilo_icons'\s*=> 'hpilo_icons',/);
+  assert.match(save, /\$type === 'hpilo_icons'/);
 });

@@ -674,6 +674,7 @@
 }
 
 .transbg.mh.dt-selector-compact .selector-buttons .btn > i {
+  margin: 0 !important;
   color: var(--sc-btn-icon) !important;
   font-size: var(--sc-icon-size) !important;
   line-height: 1;

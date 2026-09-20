@@ -150,7 +150,30 @@ var DT_hpilo = (function () {
     return value + (metric.unit || '');
   }
 
+  // hpilo_icons: JSON map of row key -> icon chosen per row in the widget
+  // config ('none' hides the icon); rows without an entry keep their own
+  // default icon (METRICS).
+  function iconOverrides() {
+    var raw = settings['hpilo_icons'];
+    try {
+      return typeof raw === 'object' && raw
+        ? raw
+        : JSON.parse(raw || '{}') || {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function iconHtml(metric, overrides) {
+    var icon = overrides[metric.key];
+    if (icon === 'none') return '';
+    if (typeof icon !== 'string' || !/^[A-Za-z0-9 _-]{1,60}$/.test(icon))
+      icon = 'fas ' + metric.icon;
+    return '<i class="' + icon + ' hpilo-icon" aria-hidden="true"></i>';
+  }
+
   function rowsHtml(res, metrics) {
+    var overrides = iconOverrides();
     return metrics
       .filter(function (metric) {
         return res[metric.key] !== null && res[metric.key] !== undefined;
@@ -168,9 +191,7 @@ var DT_hpilo = (function () {
           '<div class="hpilo-row' +
           state +
           '">' +
-          '<i class="fas ' +
-          metric.icon +
-          ' hpilo-icon" aria-hidden="true"></i>' +
+          iconHtml(metric, overrides) +
           '<span class="hpilo-label">' +
           esc(label(metric.key)) +
           '</span>' +
