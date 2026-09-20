@@ -2674,15 +2674,21 @@ body.dle-active {
 
 .we-widget-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 767.98px) {
+  .we-widget-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .we-widget-card {
   position: relative;
   display: flex;
-  min-height: 180px;
-  padding: 18px 16px 38px;
+  min-height: 150px;
+  padding: 14px 12px 34px;
   color: #212529;
   background: #f8f9fa;
   border: 2px solid #dee2e6;
@@ -2707,10 +2713,10 @@ body.dle-active {
 }
 
 .we-widget-icon {
-  flex: 0 0 56px;
+  flex: 0 0 40px;
   padding-top: 2px;
   color: #0d6efd;
-  font-size: 38px;
+  font-size: 28px;
   line-height: 1;
   text-align: center;
 }
@@ -2722,19 +2728,20 @@ body.dle-active {
 .we-widget-content {
   flex: 1 1 auto;
   min-width: 0;
-  padding-left: 12px;
+  padding-left: 8px;
 }
 
 .we-widget-title {
-  margin-bottom: 5px;
-  font-size: 18px;
+  margin-bottom: 4px;
+  padding-right: 22px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 .we-widget-description {
-  min-height: 42px;
+  min-height: 36px;
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.35;
 }
 
@@ -2814,6 +2821,10 @@ body.dle-active {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   column-gap: 16px;
+}
+
+.we-switch-grid.we-switch-grid-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .we-switch-grid .mb-3 {
@@ -4661,6 +4672,71 @@ img.icon {
 }
 
 .postnl-error {
+  font-size: inherit;
+  color: var(--text-muted);
+}
+
+/* HP iLO widget (js/components/hpilo.js): clustered server info fetched via
+   vendor/dashticz/hpilo/index.php. Rows are painted into .dt_state, same
+   reasoning as the PostNL widget above. */
+.hpilo-block .dt_state {
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.hpilo-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.hpilo-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#we-hpilo-add:not(:hover),
+.we-hpilo-remove:not(:hover) {
+  background-color: #fff;
+}
+
+.we-hpilo-name {
+  min-width: 0;
+}
+
+.hpilo-block .dt_state .hpilo-icon {
+  flex: none;
+  width: 1.4em;
+  font-size: 1em;
+  line-height: 1;
+  text-align: center;
+  color: #3a86d8;
+}
+
+.hpilo-label {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.hpilo-value {
+  flex: none;
+  margin-left: auto;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.hpilo-warning .hpilo-value {
+  color: #e0a800;
+}
+
+.hpilo-critical .hpilo-value {
+  color: #d9534f;
+}
+
+.hpilo-error {
   font-size: inherit;
   color: var(--text-muted);
 }

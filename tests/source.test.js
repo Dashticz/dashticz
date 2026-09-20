@@ -7073,6 +7073,14 @@ test('Trafficinfo settings/Widget editor: no global settings, no provider select
   }
   assert.match(
     widgetEditor,
+    /<div class="we-switch-grid we-switch-grid-three">[\s\S]*?'trafficJams',[\s\S]*?'roadWorks',[\s\S]*?'radars',[\s\S]*?fields \+= '<\/div>';/
+  );
+  assert.match(
+    fs.readFileSync(path.join(root, 'css/creative.css'), 'utf8'),
+    /\.we-switch-grid\.we-switch-grid-three\s*\{\s*grid-template-columns:\s*repeat\(3, minmax\(0, 1fr\)\);/
+  );
+  assert.match(
+    widgetEditor,
     /trafficinfo: \{\s*\n[\s\S]{0,600}provider: true,\s*\n\s*trafficJams: true,\s*\n\s*roadWorks: true,\s*\n\s*radars: true,\s*\n\s*results: true,\s*\n\s*maxDistance: true,\s*\n\s*latitude: true,\s*\n\s*longitude: true,\s*\n\s*\},/
   );
 
