@@ -381,11 +381,12 @@ foreach ($data['devices'] as $entry) {
                     }
                 }
                 // mode (optional): 'temperature' switches every row from a
-                // toggle to a plain .Temp reading (js/components/cluster.js);
-                // absent/anything else means the default switch rows. The
-                // only value js/deviceeditor.js's Cluster popups ever send.
-                if (isset($customFields['mode']) && $customFields['mode'] !== 'temperature') {
-                    dashticz_json_error(400, 'A cluster block\'s mode must be \'temperature\' if set.');
+                // toggle to a plain .Temp reading, 'other' to the device's
+                // own Data value (js/components/cluster.js); absent means
+                // the default switch rows. The only values
+                // js/deviceeditor.js's Cluster popups ever send.
+                if (isset($customFields['mode']) && $customFields['mode'] !== 'temperature' && $customFields['mode'] !== 'other') {
+                    dashticz_json_error(400, 'A cluster block\'s mode must be \'temperature\' or \'other\' if set.');
                 }
                 // titles (optional): overrides a row's displayed name
                 // (js/components/cluster.js falls back to the device's own
@@ -423,6 +424,40 @@ foreach ($data['devices'] as $entry) {
                     }
                     if ($clusterSwitchScale < 0.3 || $clusterSwitchScale > 3) {
                         dashticz_json_error(400, 'A cluster block\'s switchScale must be between 0.3 and 3.');
+                    }
+                }
+                // icons (optional): per-row icon shown in front of the name
+                // (js/components/cluster.js). Same shape as titles: a map
+                // from one of the cluster's own device idx values to 'auto'
+                // or a Font Awesome class string.
+                if (isset($customFields['icons'])) {
+                    $clusterIcons = $customFields['icons'];
+                    if (is_object($clusterIcons)) {
+                        $clusterIcons = get_object_vars($clusterIcons);
+                    }
+                    if (!is_array($clusterIcons)) {
+                        dashticz_json_error(400, 'A cluster block\'s icons map must be an object.');
+                    }
+                    $clusterDeviceIdxSet = array_flip(array_map('strval', $clusterDevices));
+                    foreach ($clusterIcons as $clusterIconKey => $clusterIconValue) {
+                        if (!isset($clusterDeviceIdxSet[(string)$clusterIconKey])) {
+                            dashticz_json_error(400, 'A cluster block\'s icons map key must be one of its own devices.');
+                        }
+                        if (!is_string($clusterIconValue) || !preg_match('/^[A-Za-z0-9 _-]{1,60}$/', $clusterIconValue)) {
+                            dashticz_json_error(400, 'A cluster block\'s icons map values must be Font Awesome class names.');
+                        }
+                    }
+                }
+                // fontSize (optional): font size of the whole cluster in pixels
+                // (js/components/cluster.js sets --font-device-title from it).
+                // Absent means the default size.
+                if (isset($customFields['fontSize'])) {
+                    $clusterFontSize = $customFields['fontSize'];
+                    if (!is_int($clusterFontSize)) {
+                        dashticz_json_error(400, 'A cluster block\'s fontSize must be a whole number.');
+                    }
+                    if ($clusterFontSize < 8 || $clusterFontSize > 60) {
+                        dashticz_json_error(400, 'A cluster block\'s fontSize must be between 8 and 60.');
                     }
                 }
             }

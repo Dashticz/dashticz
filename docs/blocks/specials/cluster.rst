@@ -4,8 +4,8 @@ Cluster
 =========
 
 A Cluster block shows a fixed list of Domoticz devices as individual rows in
-one block. It has two row types, chosen once when the cluster is created (a
-single cluster is never a mix of both):
+one block. It has three row types, chosen once when the cluster is created (a
+single cluster is never a mix of them):
 
 - **Switch** (the default): each row has its own on/off toggle. Unlike a
   :ref:`group`, which shows one combined status and switches every member
@@ -13,6 +13,9 @@ single cluster is never a mix of both):
   its own device.
 - **Temperature**: each row instead shows that device's own temperature
   reading, with no toggle.
+- **Other**: each row shows that device's own value (for example a humidity,
+  wind, lux or energy reading), with no toggle. This is for every device that
+  is neither a switch nor a temperature reading.
 
 Added via the Screen Editor's "Add items" menu -> Cluster, by picking
 devices from the same device list used to add a normal device. The row type
@@ -21,7 +24,8 @@ state (Domoticz's ``On/Off`` and ``Dimmer`` switch types - a cluster row is
 only ever a simple toggle, so a Dimmer behaves exactly like a plain switch
 here, with no brightness slider), Temperature to plain temperature-reporting
 devices (Domoticz Type ``Temp``, or one of the Temp+Humidity/Baro combo
-types). Switching row type
+types), Other to every remaining device: anything without a Domoticz switch
+type that is not a temperature reading. Switching row type
 clears any devices already picked, since the two device sets don't overlap -
 row type can only be set while creating a cluster; once it has been saved
 with devices, the buttons are locked.
@@ -56,9 +60,9 @@ Block parameters
       | ``{ 12: 'Ceiling light' }``: Device 12's row shows "Ceiling light"
   * - mode
     - | Optional: ``'temperature'`` switches every row to a plain
-        temperature reading instead of a toggle. Absent (the default) means
-        Switch rows.
-      | ``'temperature'``
+        temperature reading instead of a toggle, ``'other'`` to the device's
+        own value. Absent (the default) means Switch rows.
+      | ``'temperature'`` or ``'other'``
   * - usage
     - | Switch mode only. Optional: maps a device's own idx to a companion
         Domoticz device that reports its power consumption, shown next to
@@ -69,6 +73,17 @@ Block parameters
         between the two, so this is picked per row in the Cluster popup
         rather than auto-detected.
       | ``{ 12: 13 }``: Device 12's row also shows device 13's consumption
+  * - icons
+    - | Optional: shows an icon in front of a row's name, like the rows of
+        the HP iLO widget. Maps a device's own idx to ``'auto'`` (an icon
+        derived from the device's type) or to a Font Awesome class. Rows
+        without an entry show no icon.
+      | ``{ 12: 'auto', 13: 'fas fa-fan' }``
+  * - fontSize
+    - | Optional: font size of the whole cluster in pixels (``8``-``60``),
+        like the font size setting of the HP iLO widget. Absent (the
+        default) means the normal size.
+      | ``22``: Rows and title render at 22px
   * - switchScale
     - | Switch mode only. Optional: a scale factor (``0.3``-``3``) resizing
         the on/off toggle. Absent (the default) means the normal size.
@@ -95,4 +110,13 @@ A temperature cluster::
       title: 'Room temperatures',
       mode: 'temperature',
       devices: [21, 22, 23]
+    }
+
+A cluster with other values (humidity, wind, ...)::
+
+    blocks['myothercluster'] = {
+      type: 'cluster',
+      title: 'Sensors',
+      mode: 'other',
+      devices: [31, 32, 33]
     }
