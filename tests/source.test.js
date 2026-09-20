@@ -5496,6 +5496,46 @@ test('LMS text style fields are protected from the generic Custom fields grid, s
   );
 });
 
+test('Device/Widget Config: picking an icon that matches the suggested default actually saves it', () => {
+  // Regression: a special block with no icon/image yet (e.g. a freshly
+  // added Cluster) gets a pre-filled Icon field showing a per-kind
+  // suggestion (_effectiveDeviceConfigIcon(), e.g. 'fas fa-list-check' for
+  // Cluster) that is NOT actually shown on the tile - defaultCfg never
+  // injects a runtime default icon for these kinds (#169 precedent). The
+  // save handler's own generatedIcon check silently skipped persisting that
+  // suggestion whenever the saved text still equalled it, so enabling Icon
+  // and leaving (or retyping) that exact suggested value - a deliberate
+  // choice - saved nothing at all, while picking Image instead always
+  // worked. iconFieldTouched (set from genuine interaction with the icon
+  // controls: the Icon/Image toggle, the source dropdown, typing the
+  // setting, or picking a custom image) must bypass that skip.
+  const deviceEditor = fs.readFileSync(
+    path.join(root, 'js/deviceeditor.js'),
+    'utf8'
+  );
+  assert.match(deviceEditor, /var iconFieldTouched = false;/);
+  assert.match(
+    deviceEditor,
+    /if \(String\(\$\(this\)\.attr\('data-option'\)\) === 'icon'\) \{\s*\n\s*iconFieldTouched = true;/
+  );
+  assert.match(
+    deviceEditor,
+    /\$popup\.on\('change', '\.de-icon-source', function \(\) \{\s*\n\s*iconFieldTouched = true;/
+  );
+  assert.match(
+    deviceEditor,
+    /'input change',\s*\n\s*'\.de-icon-field-row \.de-custom-field-setting',\s*\n\s*function \(\) \{\s*\n\s*iconFieldTouched = true;/
+  );
+  assert.match(
+    deviceEditor,
+    /\$popup\.on\('click', '\.dt-custom-image-option', function \(\) \{\s*\n\s*iconFieldTouched = true;/
+  );
+  assert.match(
+    deviceEditor,
+    /generatedIcon &&\s*\n\s*rawSetting === initialIcon &&\s*\n\s*!options\.iconValue &&\s*\n\s*!iconFieldTouched\s*\n\s*\)\s*\n\s*return;/
+  );
+});
+
 test('openConfig() preserves already-edited special-block state across repeated opens, like openLayoutConfig()', () => {
   const deviceEditor = fs.readFileSync(
     path.join(root, 'js/deviceeditor.js'),

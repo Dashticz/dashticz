@@ -88,6 +88,12 @@ Block parameters
     - | Switch mode only. Optional: a scale factor (``0.3``-``3``) resizing
         the on/off toggle. Absent (the default) means the normal size.
       | ``1.5``: Toggles render at 150% size
+  * - template
+    - | Optional: layout of the icon/title relative to the rows. Defaults to
+        ``1`` (icon and title in their own header row, rows below spanning
+        the block's full width). Set to ``0`` for the classic layout, with
+        the icon in a column beside the rows for the whole block height.
+      | ``0``: Icon beside the rows instead of above them
 
 Example
 -------

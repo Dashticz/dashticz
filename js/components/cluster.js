@@ -37,6 +37,15 @@ var DT_cluster = (function () {
         width: 4,
         refresh: 3600,
         containerClass: 'cluster-block',
+        // template: 1 (js/dashticz.js's getSpecialBlock()) puts the block's
+        // own icon/title in their own row and renders .dt_state - the rows -
+        // as a sibling spanning the block's full width, instead of the
+        // framework default that reserves a .col-icon-wide column beside the
+        // rows for the whole block height. A row list has no use for that
+        // reserved column past the header, so the default layout left rows
+        // indented with dead space to their left; explicit template: 0 in a
+        // block definition still opts back into the old side-by-side layout.
+        template: 1,
       };
     },
     run: function (me) {
@@ -119,12 +128,26 @@ var DT_cluster = (function () {
     return 'fas fa-circle-info';
   }
 
-  function iconHtml(me, idx, device) {
+  // anyIcon (true once any row in the cluster has an icon configured, see
+  // doRefresh()) keeps every row's own .cluster-row-icon slot reserved, even
+  // a row with no icon of its own - otherwise that row's title started
+  // 1.4em further left than its icon-having neighbours, i.e. the row
+  // "jumps" against the rest of the list. A cluster with no icons
+  // configured anywhere renders no spacer at all, same as before this.
+  function iconHtml(me, idx, device, anyIcon) {
     var setting = me.iconsMap[idx];
-    if (!setting) return '';
-    var icon = setting === 'auto' ? autoIcon(device) : String(setting);
-    if (!/^[A-Za-z0-9 _-]+$/.test(icon)) return '';
-    return '<i class="' + icon + ' cluster-row-icon" aria-hidden="true"></i>';
+    var icon = setting
+      ? setting === 'auto'
+        ? autoIcon(device)
+        : String(setting)
+      : '';
+    if (icon && !/^[A-Za-z0-9 _-]+$/.test(icon)) icon = '';
+    if (!icon && !anyIcon) return '';
+    return (
+      '<i class="' +
+      (icon ? icon + ' ' : '') +
+      'cluster-row-icon" aria-hidden="true"></i>'
+    );
   }
 
   function temperatureRowHtml(idx, device, title, icon) {
@@ -197,6 +220,9 @@ var DT_cluster = (function () {
     // .dt_state - the framework's own content slot, same as e.g. OWM/Weather
     // - instead of replacing .dt_block wholesale keeps that icon/title
     // intact instead of wiping it every refresh.
+    var anyIcon = me.devices.some(function (idx) {
+      return !!me.iconsMap[idx];
+    });
     var html = '<div class="cluster-rows">';
     me.devices.forEach(function (idx) {
       var device = allDevices[idx];
@@ -207,10 +233,15 @@ var DT_cluster = (function () {
           idx,
           device,
           title,
-          iconHtml(me, idx, device)
+          iconHtml(me, idx, device, anyIcon)
         );
       } else if (me.mode === 'other') {
-        html += otherRowHtml(idx, device, title, iconHtml(me, idx, device));
+        html += otherRowHtml(
+          idx,
+          device,
+          title,
+          iconHtml(me, idx, device, anyIcon)
+        );
       } else {
         var usage = usageText(allDevices[me.usageMap[idx]]);
         html += switchRowHtml(
@@ -218,7 +249,7 @@ var DT_cluster = (function () {
           device,
           usage,
           title,
-          iconHtml(me, idx, device)
+          iconHtml(me, idx, device, anyIcon)
         );
       }
     });

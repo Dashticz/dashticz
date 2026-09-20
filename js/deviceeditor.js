@@ -7837,6 +7837,15 @@ var DashticzDeviceEditor = (function () {
     $('body').append(html);
 
     var $popup = $('#de-config-popup');
+    // Whether the user actually interacted with the icon controls this time
+    // the popup is open - see the generatedIcon skip-check in the save
+    // handler below, which relies on this to tell "the pre-filled Icon
+    // field still shows its untouched suggestion" (never persist, so
+    // opening/saving any *other* field on a block without an icon does not
+    // silently give it one) apart from "the user enabled Icon or typed a
+    // value that happens to match the suggestion" (persist - a deliberate
+    // choice, even one that matches the suggestion by coincidence).
+    var iconFieldTouched = false;
     if (isLmsBlock) _wireLmsFields('de-config', $popup);
     if (isClusterBlock) {
       function clusterEditPendingListHtml() {
@@ -8104,12 +8113,14 @@ var DashticzDeviceEditor = (function () {
         .toggleClass('active', active)
         .attr('aria-pressed', active ? 'true' : 'false');
       if (String($(this).attr('data-option')) === 'icon') {
+        iconFieldTouched = true;
         if (active) ensureIconFieldRow();
         refreshCustomFieldButtons();
         refreshIconFieldVisibility();
       }
     });
     $popup.on('change', '.de-icon-source', function () {
+      iconFieldTouched = true;
       var $row = $(this).closest('.de-icon-field-row');
       var useImage = $(this).val() === 'image';
       var $setting = $row.find('.de-custom-field-setting');
@@ -8122,6 +8133,13 @@ var DashticzDeviceEditor = (function () {
       closeCustomImagePickers();
     });
     $popup.on(
+      'input change',
+      '.de-icon-field-row .de-custom-field-setting',
+      function () {
+        iconFieldTouched = true;
+      }
+    );
+    $popup.on(
       'click focus',
       '.de-icon-field-row .de-custom-field-setting',
       function () {
@@ -8129,6 +8147,7 @@ var DashticzDeviceEditor = (function () {
       }
     );
     $popup.on('click', '.dt-custom-image-option', function () {
+      iconFieldTouched = true;
       var $row = $(this).closest('.de-icon-field-row');
       $row
         .find('.de-custom-field-setting')
@@ -8456,7 +8475,19 @@ var DashticzDeviceEditor = (function () {
           }
           var generatedIcon = $(this).attr('data-generated-icon') === 'true';
           var initialIcon = String($(this).attr('data-initial-setting') || '');
-          if (generatedIcon && rawSetting === initialIcon && !options.iconValue)
+          // Only skip an unchanged, still-generated suggestion when the user
+          // never actually interacted with the icon controls this time the
+          // popup was open (iconFieldTouched) - otherwise deliberately
+          // enabling Icon or typing a value that happens to match the
+          // suggested default (e.g. Cluster's 'fas fa-list-check') silently
+          // saved nothing at all, even though picking Image instead always
+          // worked.
+          if (
+            generatedIcon &&
+            rawSetting === initialIcon &&
+            !options.iconValue &&
+            !iconFieldTouched
+          )
             return;
           hasIconField = true;
           pendingIconValue = rawSetting;
