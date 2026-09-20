@@ -1603,6 +1603,7 @@ function getSelectorSwitch(block) {
       typeof device['SelectorStyle'] !== 'undefined' &&
       device['SelectorStyle'] == 1
     ) {
+      block.$mountPoint.find('.mh').removeClass('dt-selector-compact');
       html += '<div class="col-xs-8 col-data">';
       if (!hideTitle(block))
         html += '<strong class="title">' + block.title + '</strong><br />';
@@ -1641,6 +1642,21 @@ function getSelectorSwitch(block) {
           slideDevice(block, $(this).val());
         });
     } else {
+      var visibleLevels = nameValues.filter(function (nv) {
+        return (
+          parseFloat(nv.value) > 0 ||
+          (nv.value == 0 &&
+            (typeof device['LevelOffHidden'] == 'undefined' ||
+              device['LevelOffHidden'] === false))
+        );
+      });
+      // Device Config "Compact" option (block.compactSelector): compact
+      // block with icon-only buttons (Open/Half/Dicht -> up/minus/down, see
+      // themes/modern-dark .dt-selector-compact). The icons are defined for
+      // exactly three levels; any other selector keeps its normal layout.
+      var compact =
+        block.compactSelector === true && visibleLevels.length === 3;
+      block.$mountPoint.find('.mh').toggleClass('dt-selector-compact', compact);
       html += '<div class="col-xs-8 col-data">';
       if (!hideTitle(block))
         html += '<strong class="title">' + block.title + '</strong><br />';
@@ -1656,7 +1672,15 @@ function getSelectorSwitch(block) {
           var st = '';
           if (nv.value * 10 == parseFloat(device['Level'])) st = 'active';
           var checked = st ? ' checked' : '';
-          html += '<label class="btn btn-default ' + st + '">';
+          html += '<label class="btn btn-default ' + st + '"';
+          // The level name is hidden visually in compact mode; keep it
+          // available as tooltip and accessible name.
+          if (compact) {
+            var levelLabel = String(nv.name).replace(/"/g, '&quot;');
+            html +=
+              ' title="' + levelLabel + '" aria-label="' + levelLabel + '"';
+          }
+          html += '>';
           html +=
             '<input type="radio" name="options" autocomplete="off" value="' +
             nv.value * 10 +

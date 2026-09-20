@@ -279,6 +279,8 @@
       "invalid_barsteps": "Enter a positive number of steps.",
       "dial_inverse": "Inverse",
       "dial_inverse_help": "0% is fully open instead of 100%. Auto-detected from the device's Domoticz type when left untouched.",
+      "compact_selector": "Compact",
+      "compact_selector_help": "Show the title and the three level buttons (for example Open/Half/Closed) on one line, as small icon buttons. Only applies to selectors with exactly three levels.",
       "show_title": "Title",
       "device_config": "Device Config",
       "widget_config": "Widget Config",

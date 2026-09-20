@@ -190,6 +190,9 @@ var DashticzDeviceEditor = (function () {
         dial_barsteps_help:
           'Number of segments the Bar is divided into (default 10).',
         invalid_barsteps: 'Enter a positive number of steps.',
+        compact_selector: 'Compact',
+        compact_selector_help:
+          'Show the title and the three level buttons (for example Open/Half/Closed) on one line, as small icon buttons. Only applies to selectors with exactly three levels.',
         show_title: 'Title',
         device_config: 'Device Config',
         widget_config: 'Widget Config',
@@ -2233,6 +2236,8 @@ var DashticzDeviceEditor = (function () {
         dial: configured.type === 'dial' && !barMode,
         bar: barMode,
         needle: configured.needle === true,
+        // Selector Switch "Compact" layout (js/blocks.js getSelectorSwitch()).
+        compactSelector: configured.compactSelector === true,
         // See the analogous comment in _specialFromReference() - kept as a
         // tri-state, not coerced to a boolean.
         inverse: configured.inverse,
@@ -7212,6 +7217,25 @@ var DashticzDeviceEditor = (function () {
     });
     if (inverseRowIndex > -1) customRows.splice(inverseRowIndex, 1);
 
+    // Compact layout is a plain per-device switch for Selector Switches that
+    // render as buttons (SelectorStyle 0), stored as the compactSelector
+    // custom field. Like needle above it is shown here instead of in Custom
+    // fields. An already-saved value stays editable even when the live device
+    // is temporarily unavailable.
+    var supportsCompactSelector =
+      !isSpecial &&
+      hasDial &&
+      ((!!barLiveDevice &&
+        barLiveDevice.SwitchType === 'Selector' &&
+        barLiveDevice.SelectorStyle != 1) ||
+        options.compactSelector === true);
+    if (supportsCompactSelector) {
+      var compactRowIndex = customRows.findIndex(function (row) {
+        return String(row.field || '').toLowerCase() === 'compactselector';
+      });
+      if (compactRowIndex > -1) customRows.splice(compactRowIndex, 1);
+    }
+
     var visualMode =
       options.needle === true
         ? 'needle'
@@ -7390,6 +7414,21 @@ var DashticzDeviceEditor = (function () {
         '</span></label>';
       html +=
         '<div class="form-text">' + _esc(t.dial_inverse_help) + '</div></div>';
+    }
+
+    if (supportsCompactSelector) {
+      html += '<div class="mb-3 de-compact-selector-row">';
+      html +=
+        '<label class="form-check form-switch"><input class="form-check-input de-switch" type="checkbox" id="de-config-compact-selector"' +
+        (options.compactSelector === true ? ' checked' : '') +
+        '>' +
+        '<span class="form-check-label">' +
+        _esc(t.compact_selector) +
+        '</span></label>';
+      html +=
+        '<div class="form-text">' +
+        _esc(t.compact_selector_help) +
+        '</div></div>';
     }
 
     if (!isTitle) {
@@ -7954,6 +7993,11 @@ var DashticzDeviceEditor = (function () {
         var checked = $(this).hasClass('active');
         updated[option] = option === 'hide_data' ? !checked : checked;
       });
+      if (supportsCompactSelector) {
+        updated.compactSelector = $('#de-config-compact-selector').prop(
+          'checked'
+        );
+      }
       if (hasDial) {
         updated.dial = pendingVisualMode === 'dial';
         updated.bar = pendingVisualMode === 'bar';
@@ -9451,6 +9495,11 @@ var DashticzDeviceEditor = (function () {
           customFields.inverse = options.inverse;
         }
       }
+      // Selector Switch Compact layout: rides through custom_fields like
+      // needle above (saveblocks.php only knows a fixed set of top-level
+      // props). Written only when on; unchecking removes it.
+      delete customFields.compactSelector;
+      if (options.compactSelector === true) customFields.compactSelector = true;
       if (Object.keys(customFields).length) entry.custom_fields = customFields;
       if (deviceHeights[ck]) entry.height = deviceHeights[ck];
       // Never retain a legacy name-based reference: Domoticz names may change.
