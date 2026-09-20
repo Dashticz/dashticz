@@ -752,7 +752,10 @@
       "hpilo_rows_help": "Kies een regel en klik op + om toe te voegen. De volgorde hieronder is de volgorde op de tegel.",
       "hpilo_rows_none": "Nog geen regels toegevoegd.",
       "hpilo_rows_drag": "Sleep om te verplaatsen",
-      "hpilo_rows_remove": "Verwijderen"
+      "hpilo_rows_remove": "Verwijderen",
+      "hpilo_row_icon": "Icoon voor deze regel",
+      "hpilo_icon_default": "Standaard",
+      "hpilo_icon_none": "Geen"
     },
     "general": {
       "app_title": "App title",

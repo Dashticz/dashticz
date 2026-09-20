@@ -1108,6 +1108,7 @@ var DashticzWidgetEditor = (function () {
           'hpilo_rows',
           'power,health,uptime,fanspeed,cputemp,inlettemp'
         ),
+        hpilo_icons: _s('hpilo_icons', '{}'),
       },
       spotify: {
         spot_clientid: _s('spot_clientid'),
@@ -3128,6 +3129,122 @@ var DashticzWidgetEditor = (function () {
     powerregulator: 'Power regulator',
   };
 
+  // Default icon of every row (js/components/hpilo.js METRICS) and the icons
+  // a row can be switched to. Stored per row in the hidden hpilo_icons field
+  // as JSON, {"power": "fas fa-bolt"}: absent = the row's own default icon,
+  // 'none' = no icon.
+  var HPILO_DEFAULT_ICONS = {
+    name: 'fas fa-server',
+    model: 'fas fa-microchip',
+    power: 'fas fa-power-off',
+    health: 'fas fa-heart-pulse',
+    uptime: 'fas fa-clock',
+    fanspeed: 'fas fa-fan',
+    cputemp: 'fas fa-temperature-half',
+    inlettemp: 'fas fa-temperature-half',
+    watts: 'fas fa-bolt',
+    storage: 'fas fa-hard-drive',
+    ssdlife: 'fas fa-hard-drive',
+    firmware: 'fas fa-code-branch',
+    network: 'fas fa-network-wired',
+    serial: 'fas fa-barcode',
+    minfan: 'fas fa-fan',
+    thermalconfig: 'fas fa-gauge-high',
+    powerregulator: 'fas fa-plug',
+  };
+
+  var HPILO_ICON_PRESETS = [
+    ['fas fa-server', 'Server'],
+    ['fas fa-power-off', 'Power'],
+    ['fas fa-heart-pulse', 'Health'],
+    ['fas fa-clock', 'Clock'],
+    ['fas fa-fan', 'Fan'],
+    ['fas fa-temperature-half', 'Temperature'],
+    ['fas fa-thermometer-half', 'Thermometer'],
+    ['fas fa-bolt', 'Energy'],
+    ['fas fa-plug', 'Plug'],
+    ['fas fa-gauge-high', 'Gauge'],
+    ['fas fa-hard-drive', 'Storage'],
+    ['fas fa-microchip', 'Chip'],
+    ['fas fa-memory', 'Memory'],
+    ['fas fa-network-wired', 'Network'],
+    ['fas fa-wifi', 'Wifi'],
+    ['fas fa-code-branch', 'Firmware'],
+    ['fas fa-barcode', 'Serial'],
+    ['fas fa-fire', 'Heating'],
+    ['fas fa-snowflake', 'Cooling'],
+    ['fas fa-droplet', 'Humidity'],
+    ['fas fa-shield-halved', 'Security'],
+    ['fas fa-circle-check', 'OK'],
+    ['fas fa-triangle-exclamation', 'Warning'],
+    ['fas fa-circle-info', 'Info'],
+  ];
+
+  // hpilo_icons value (JSON text) -> {rowKey: icon}, known rows and safe
+  // class strings only.
+  function _hpiloIconsMap(value) {
+    var parsed = {};
+    try {
+      parsed = typeof value === 'object' ? value : JSON.parse(value || '{}');
+    } catch (e) {
+      parsed = {};
+    }
+    var result = {};
+    Object.keys(parsed || {}).forEach(function (key) {
+      var icon = String(parsed[key] || '');
+      if (HPILO_ROWS[key] && /^[A-Za-z0-9 _-]{1,60}$/.test(icon)) {
+        result[key] = icon;
+      }
+    });
+    return result;
+  }
+
+  // The pull-down of one row: a button with the row's current icon and a
+  // panel of icon-only choices (names as tooltip).
+  function _hpiloIconPickerHtml(key, icons, lh) {
+    var current = icons[key] || '';
+    var shown = current === 'none' ? '' : current || HPILO_DEFAULT_ICONS[key];
+    var html =
+      '<span class="we-hpilo-icon-wrap" style="position:relative;flex:0 0 auto;">' +
+      '<button type="button" class="btn btn-outline-secondary btn-sm we-hpilo-icon-toggle"' +
+      ' aria-haspopup="true" title="' +
+      _esc(lh.hpilo_row_icon || 'Icon for this row') +
+      '" style="min-width:3.5em;">' +
+      (shown
+        ? '<i class="' + _esc(shown) + '" aria-hidden="true"></i>'
+        : _esc(lh.hpilo_icon_none || 'None')) +
+      ' <span aria-hidden="true">&#9662;</span></button>' +
+      '<span class="we-hpilo-icon-panel d-none" style="position:absolute;top:100%;right:0;z-index:1060;width:max-content;min-width:4em;max-height:260px;overflow-x:hidden;overflow-y:auto;padding:4px;margin-top:2px;border:1px solid rgba(128,128,128,.5);border-radius:6px;background:var(--bs-body-bg,#fff);box-shadow:0 4px 12px rgba(0,0,0,.35);">';
+    [
+      ['', lh.hpilo_icon_default || 'Default'],
+      ['none', lh.hpilo_icon_none || 'None'],
+    ].forEach(function (choice) {
+      html +=
+        '<button type="button" class="btn btn-sm d-block w-100 text-center we-hpilo-icon-choice' +
+        (current === choice[0] ? ' active' : '') +
+        '" data-icon="' +
+        choice[0] +
+        '">' +
+        _esc(choice[1]) +
+        '</button>';
+    });
+    HPILO_ICON_PRESETS.forEach(function (p) {
+      html +=
+        '<button type="button" class="btn btn-sm d-block w-100 text-center we-hpilo-icon-choice' +
+        (current === p[0] ? ' active' : '') +
+        '" data-icon="' +
+        _esc(p[0]) +
+        '" title="' +
+        _esc(p[1]) +
+        '" aria-label="' +
+        _esc(p[1]) +
+        '"><i class="' +
+        _esc(p[0]) +
+        '" aria-hidden="true"></i></button>';
+    });
+    return html + '</span></span>';
+  }
+
   function _hpiloRowLabel(key) {
     var misc = (typeof language !== 'undefined' && language.misc) || {};
     return misc['hpilo_' + key] || HPILO_ROWS[key];
@@ -3147,7 +3264,8 @@ var DashticzWidgetEditor = (function () {
       });
   }
 
-  function _hpiloRowsInnerHtml(keys) {
+  function _hpiloRowsInnerHtml(keys, icons) {
+    icons = icons || {};
     var lng =
       typeof language !== 'undefined' && language.settings
         ? language.settings
@@ -3180,7 +3298,9 @@ var DashticzWidgetEditor = (function () {
               '<span class="we-hpilo-name">' +
               _esc(_hpiloRowLabel(key)) +
               '</span>' +
-              '<button type="button" class="btn btn-outline-danger btn-sm we-hpilo-remove ms-auto"' +
+              '<span class="ms-auto"></span>' +
+              _hpiloIconPickerHtml(key, icons, lh) +
+              '<button type="button" class="btn btn-outline-danger btn-sm we-hpilo-remove"' +
               ' title="' +
               _esc(lh.hpilo_rows_remove || 'Remove') +
               '"><i class="fas fa-minus" aria-hidden="true"></i></button>' +
@@ -3194,14 +3314,15 @@ var DashticzWidgetEditor = (function () {
     return { options: options, list: list };
   }
 
-  function _hpiloRowsFieldHtml(value) {
+  function _hpiloRowsFieldHtml(value, iconsValue) {
     var lng =
       typeof language !== 'undefined' && language.settings
         ? language.settings
         : {};
     var lh = lng.hpilo || {};
     var keys = _hpiloRowKeys(value);
-    var inner = _hpiloRowsInnerHtml(keys);
+    var icons = _hpiloIconsMap(iconsValue);
+    var inner = _hpiloRowsInnerHtml(keys, icons);
     return (
       '<div class="mb-3" id="we-hpilo-rows">' +
       '<label class="form-label we-field-label">' +
@@ -3209,6 +3330,9 @@ var DashticzWidgetEditor = (function () {
       '</label>' +
       '<input type="hidden" class="we-widget-field" id="we-cfg-hpilo-rows" data-cfg-key="hpilo_rows" value="' +
       _esc(keys.join(',')) +
+      '">' +
+      '<input type="hidden" class="we-widget-field" id="we-cfg-hpilo-icons" data-cfg-key="hpilo_icons" value="' +
+      _esc(JSON.stringify(icons)) +
       '">' +
       '<div class="d-flex gap-2">' +
       '<select class="form-select form-select-sm" id="we-hpilo-select">' +
@@ -3861,7 +3985,7 @@ var DashticzWidgetEditor = (function () {
         { min: 8, max: 60, step: 1 },
         lh.hpilo_fontsize_help || 'Font size of the rows. Default: 14.'
       );
-      fields += _hpiloRowsFieldHtml(hcfg.hpilo_rows);
+      fields += _hpiloRowsFieldHtml(hcfg.hpilo_rows, hcfg.hpilo_icons);
     } else if (item.id === 'sonarr') {
       var scfg = widgetConfigs.sonarr || {};
       fields += _cfgField(
@@ -4630,8 +4754,19 @@ var DashticzWidgetEditor = (function () {
         .attr('src', _clockPreviewSrc(type));
     });
 
-    function hpiloSetRows(keys) {
-      var inner = _hpiloRowsInnerHtml(keys);
+    function hpiloIcons() {
+      return _hpiloIconsMap($cfgModal.find('#we-cfg-hpilo-icons').val());
+    }
+
+    function hpiloSetRows(keys, icons) {
+      icons = icons || hpiloIcons();
+      // Only rows still on the tile keep their icon choice.
+      var kept = {};
+      keys.forEach(function (key) {
+        if (icons[key]) kept[key] = icons[key];
+      });
+      var inner = _hpiloRowsInnerHtml(keys, kept);
+      $cfgModal.find('#we-cfg-hpilo-icons').val(JSON.stringify(kept));
       $cfgModal.find('#we-cfg-hpilo-rows').val(keys.join(','));
       $cfgModal.find('#we-hpilo-select').html(inner.options);
       $cfgModal.find('#we-hpilo-list').html(inner.list);
@@ -4654,6 +4789,29 @@ var DashticzWidgetEditor = (function () {
           return row !== key;
         })
       );
+    });
+
+    $cfgModal.on('click', '.we-hpilo-icon-toggle', function () {
+      var $panel = $(this).siblings('.we-hpilo-icon-panel');
+      $cfgModal.find('.we-hpilo-icon-panel').not($panel).addClass('d-none');
+      $panel.toggleClass('d-none');
+    });
+
+    $cfgModal.on('click', '.we-hpilo-icon-choice', function () {
+      var key = String($(this).closest('.we-hpilo-item').data('key'));
+      var icons = hpiloIcons();
+      var icon = String($(this).attr('data-icon') || '');
+      if (icon) icons[key] = icon;
+      else delete icons[key];
+      hpiloSetRows(hpiloRows(), icons);
+    });
+
+    $cfgModal.on('click', function (event) {
+      if (
+        !$(event.target).closest('.we-hpilo-icon-toggle, .we-hpilo-icon-panel')
+          .length
+      )
+        $cfgModal.find('.we-hpilo-icon-panel').addClass('d-none');
     });
 
     // Drag-and-drop reordering, same behaviour as the Device Editor's list.
@@ -5581,6 +5739,7 @@ var DashticzWidgetEditor = (function () {
         'hpilo_pollseconds',
         'hpilo_fontsize',
         'hpilo_rows',
+        'hpilo_icons',
       ],
       spotify: ['spot_clientid'],
       calendar: ['calendarformat', 'calendarlanguage', 'calendar_maxitems'],

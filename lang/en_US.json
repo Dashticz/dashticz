@@ -865,7 +865,10 @@
       "hpilo_rows_help": "Pick a row and click + to add it. The order below is the order on the tile.",
       "hpilo_rows_none": "No rows added yet.",
       "hpilo_rows_drag": "Drag to reorder",
-      "hpilo_rows_remove": "Remove"
+      "hpilo_rows_remove": "Remove",
+      "hpilo_row_icon": "Icon for this row",
+      "hpilo_icon_default": "Default",
+      "hpilo_icon_none": "None"
     },
     "general": {
       "app_title": "App title",
