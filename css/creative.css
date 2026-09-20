@@ -422,6 +422,25 @@
   margin: 0px 0px;
 }
 
+/* .dt_column (template: 1, js/dashticz.js's getSpecialBlock()) renders
+   .dt_state as a sibling of .dt_content instead of nested inside it, so it
+   becomes a flex item of .dt_block directly. .dt_block's align-items:
+   flex-start (needed so .col-icon/.dt_content top-align in the normal row
+   layout) then also governs .dt_column's cross axis, which is horizontal in
+   column mode - so without an override, .dt_state shrinks to its content's
+   own width instead of filling the block like .dt_content already does
+   above, and any right-aligned content inside it (e.g. Cluster's
+   switchRowHtml, css/creative.css's .cluster-row) sits against that
+   shrunk-to-fit edge rather than the block's true right edge.
+   align-self: stretch, not width: 100% - .dt_state already carries its own
+   margin: 5px 5px (below), and a stretched flex item's margin box (not its
+   border box) is what fills the line, so stretch keeps that 5px margin on
+   both sides. width: 100% would ignore the margin and add it on top,
+   overflowing the block by 5px on the right. */
+.dt_column > .dt_state {
+  align-self: stretch;
+}
+
 .fixedheight:not(.dt_column) .dt_content {
   display: flex;
   flex-direction: column;
@@ -4499,7 +4518,12 @@ img.icon {
 /* Optional row icon (block.icons), the HP iLO look (.hpilo-icon). The size,
    colour and margin repeat !important because themes size/colour some .fas
    icons globally, and this file has per-icon margin offsets of its own
-   (.fas.fa-lightbulb, .fas.fa-plug, ...) meant for the big tile icon. */
+   (.fas.fa-lightbulb, .fas.fa-bolt, .fas.fa-thermometer-half, .fas.fa-plug,
+   .fas.fa-microchip, ...) meant for the big tile icon - autoIcon()
+   (js/components/cluster.js) or a manually picked icon can easily reuse one
+   of those exact classes, and without this override a row using one of them
+   "jumps" a few px out of line with every other row's icon in the same
+   cluster. */
 .cluster-block .dt_state .cluster-row-icon {
   flex: none;
   width: 1.4em;
@@ -4721,6 +4745,11 @@ img.icon {
   min-width: 0;
 }
 
+/* margin: 0 !important - same reasoning as .cluster-row-icon above: legacy
+   per-icon rules further up this file (.fas.fa-plug, .fas.fa-microchip, ...)
+   would otherwise add a stray margin to the exact Font Awesome classes some
+   METRICS entries use (js/components/hpilo.js), making that row's icon
+   jump out of line with the others. */
 .hpilo-block .dt_state .hpilo-icon {
   flex: none;
   width: 1.4em;

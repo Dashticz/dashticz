@@ -72,6 +72,12 @@ var DT_hpilo = (function () {
       icon: 'fas fa-server',
       refresh: pollSeconds(),
       containerClass: 'hpilo-block',
+      // Same reasoning as Cluster's own defaultCfg (js/components/cluster.js):
+      // template: 1 puts the icon/title in their own header row and lets the
+      // rows below use the block's full width, instead of the framework
+      // default that reserves a .col-icon-wide column beside the rows for
+      // the whole block height.
+      template: 1,
     },
     run: function (me) {
       refresh(me);
