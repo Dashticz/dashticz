@@ -164,10 +164,11 @@ function dashticz_postnl_read_cache($cacheFile)
 // Never persists the password - only the refresh token (needed to avoid a
 // full re-login on every poll) and the already-fetched, non-secret shipment
 // summaries.
-function dashticz_postnl_write_cache($cacheFile, $refreshToken, $incoming, $sent)
+function dashticz_postnl_write_cache($cacheFile, $refreshToken, $days, $incoming, $sent)
 {
     $data = array(
         'refreshToken' => $refreshToken,
+        'days' => $days,
         'fetchedAt' => time(),
         'incoming' => $incoming,
         'sent' => $sent,
@@ -674,7 +675,10 @@ function dashticz_postnl_get_shipments($username, $password, $days, $ttlSeconds)
     $cacheFile = dashticz_postnl_cache_file($username);
     $cache = dashticz_postnl_read_cache($cacheFile);
 
-    if ($cache && isset($cache['fetchedAt']) && (time() - (int) $cache['fetchedAt']) < $ttlSeconds) {
+    // A changed "days shown" setting must not keep serving the old list until
+    // the cache expires, so it is part of the cache's validity too.
+    if ($cache && isset($cache['fetchedAt']) && isset($cache['days']) && (int) $cache['days'] === $days
+        && (time() - (int) $cache['fetchedAt']) < $ttlSeconds) {
         return array('incoming' => $cache['incoming'], 'sent' => $cache['sent']);
     }
 
@@ -704,11 +708,18 @@ function dashticz_postnl_get_shipments($username, $password, $days, $ttlSeconds)
             $senderEntries[] = dashticz_postnl_build_entry($item, 'sender', $tokens['accessToken'], $cookieFile);
         }
 
-        // Packages Incoming: only what's still pending, per the reference
-        // plugin. Packages Sent: pending outgoing plus recently delivered
-        // outgoing (the $days window), so a sent parcel stays visible for a
-        // while after arriving.
-        $incoming = dashticz_postnl_pending_entries($receiverEntries);
+        // Both lists: what's still pending plus what was delivered within the
+        // last $days days, so a parcel stays visible for a while after it
+        // arrived (the reference plugin keeps delivered incoming packages in
+        // a separate device, which this single list replaces).
+        $incoming = array_slice(
+            array_merge(
+                dashticz_postnl_pending_entries($receiverEntries),
+                dashticz_postnl_recent_delivered($receiverEntries, $days)
+            ),
+            0,
+            10
+        );
         $sent = array_slice(
             array_merge(
                 dashticz_postnl_pending_entries($senderEntries),
@@ -718,7 +729,7 @@ function dashticz_postnl_get_shipments($username, $password, $days, $ttlSeconds)
             10
         );
 
-        dashticz_postnl_write_cache($cacheFile, $tokens['refreshToken'], $incoming, $sent);
+        dashticz_postnl_write_cache($cacheFile, $tokens['refreshToken'], $days, $incoming, $sent);
 
         return array('incoming' => $incoming, 'sent' => $sent);
     } catch (RuntimeException $error) {

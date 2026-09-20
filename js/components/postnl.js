@@ -10,8 +10,9 @@
  * js/widgeteditor.js), not per-tile config - there is nothing to pick per
  * tile, same as Weather or Garbage.
  *
- * Either row (Incoming/Sent) is simply omitted when its own array comes
- * back empty - no filler/placeholder text, by design. Status text and
+ * Incoming and sent shipments are shown in one list, each line with an
+ * icon. Nothing is shown when there are no shipments - no
+ * filler/placeholder text, by design. Status text and
  * date/time formatting happen here (not in the PHP backend) purely from the
  * raw {status, who, from, to, deliveryDate} fields it returns, so the
  * display always follows Dashticz's own active language automatically,
@@ -40,6 +41,10 @@ var DT_postnl = (function () {
     return size >= 8 && size <= 60 ? size : 14;
   }
 
+  function showDelivered() {
+    return parseInt(settings['postnl_showdelivered'], 10) !== 0;
+  }
+
   function statusLabel(status) {
     var misc = (typeof language !== 'undefined' && language.misc) || {};
     return misc['postnl_status_' + String(status).toLowerCase()] || status;
@@ -65,21 +70,54 @@ var DT_postnl = (function () {
     return prefix + who + ': ' + label + suffix;
   }
 
-  function rowHtml(cssClass, label, entries) {
-    if (!entries || !entries.length) return '';
-    var lines = entries.map(formatLine).join('\n');
-    return (
-      '<div class="postnl-row ' +
-      cssClass +
-      '">' +
-      '<div class="postnl-row-label">' +
-      label +
-      '</div>' +
-      '<div class="postnl-row-text">' +
-      lines +
-      '</div>' +
-      '</div>'
-    );
+  // Delivered: open box; otherwise a delivery truck (incoming) or a paper
+  // plane (sent).
+  function icon(item) {
+    if (item.entry.status === 'Delivered') return 'fa-box-open';
+    return item.role === 'in' ? 'fa-truck' : 'fa-paper-plane';
+  }
+
+  function sortKey(entry) {
+    var date = entry.status === 'Delivered' ? entry.deliveryDate : entry.from;
+    return date ? moment(date).valueOf() : 8.64e15;
+  }
+
+  // One combined list, soonest first: each line gets an icon
+  // (truck = incoming, paper plane = sent, open box = delivered).
+  function listHtml(res) {
+    var entries = []
+      .concat(
+        ((res && res.incoming) || []).map(function (entry) {
+          return { role: 'in', entry: entry };
+        }),
+        ((res && res.sent) || []).map(function (entry) {
+          return { role: 'out', entry: entry };
+        })
+      )
+      .filter(function (item) {
+        return showDelivered() || item.entry.status !== 'Delivered';
+      })
+      .sort(function (a, b) {
+        return sortKey(a.entry) - sortKey(b.entry);
+      });
+    return entries
+      .map(function (item) {
+        return (
+          '<div class="postnl-row' +
+          (item.entry.status === 'Delivered' ? ' postnl-row-delivered' : '') +
+          '">' +
+          '<i class="fas ' +
+          icon(item) +
+          ' postnl-icon postnl-icon-' +
+          item.role +
+          '" aria-hidden="true"></i>' +
+          '<span class="postnl-row-text">' +
+          formatLine(item.entry) +
+          '</span>' +
+          '</div>'
+        );
+      })
+      .join('');
   }
 
   function refresh(me) {
@@ -112,17 +150,7 @@ var DT_postnl = (function () {
       }),
     }).then(
       function (res) {
-        var html =
-          rowHtml(
-            'postnl-row-incoming',
-            misc.postnl_incoming_label || 'Incoming',
-            res && res.incoming
-          ) +
-          rowHtml(
-            'postnl-row-sent',
-            misc.postnl_sent_label || 'Sent',
-            res && res.sent
-          );
+        var html = listHtml(res);
         me.$mountPoint
           .find('.dt_state')
           .html('<div class="postnl-rows">' + html + '</div>');
