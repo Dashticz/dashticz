@@ -38,6 +38,7 @@ var Dashticz = (function () {
     'simpleblock',
     'map',
     'postnl',
+    'hpilo',
     'group',
     'cluster',
     'waqi',

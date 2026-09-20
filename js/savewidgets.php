@@ -88,6 +88,15 @@ $allowedSettings = [
     'postnl_days'            => 'number',
     'postnl_pollminutes'     => 'number',
     'postnl_fontsize'        => 'number',
+    'postnl_showdelivered'   => 'bool',
+    // hp ilo
+    'hpilo_host'             => 'string',
+    'hpilo_port'             => 'number',
+    'hpilo_username'         => 'string',
+    'hpilo_password'         => 'string',
+    'hpilo_pollseconds'      => 'number',
+    'hpilo_fontsize'         => 'number',
+    'hpilo_rows'             => 'hpilo_rows',
     // spotify
     'spot_clientid'          => 'string',
     // calendar
@@ -142,6 +151,12 @@ $allowedWeatherIcons = ['line', 'linestatic', 'fill', 'static', 'meteo'];
 
 $allowedWaqiLayouts = ['xsmall', 'small', 'large', 'xlarge', 'xxl'];
 
+$allowedHpiloRows = [
+    'name', 'model', 'power', 'health', 'uptime', 'fanspeed',
+    'cputemp', 'inlettemp', 'watts', 'storage', 'ssdlife', 'firmware', 'network',
+    'serial', 'minfan', 'thermalconfig', 'powerregulator',
+];
+
 // Process optional config settings
 $configSettings = [];
 if (isset($data['settings']) && is_array($data['settings'])) {
@@ -173,6 +188,16 @@ if (isset($data['settings']) && is_array($data['settings'])) {
             if (in_array((string)$value, $allowedWaqiLayouts, true)) {
                 $configSettings[$key] = (string)$value;
             }
+        } elseif ($type === 'hpilo_rows') {
+            // Ordered, comma-separated list of known HP iLO row keys.
+            $rows = [];
+            foreach (explode(',', (string)$value) as $row) {
+                $row = trim($row);
+                if (in_array($row, $allowedHpiloRows, true) && !in_array($row, $rows, true)) {
+                    $rows[] = $row;
+                }
+            }
+            $configSettings[$key] = implode(',', $rows);
         } elseif ($type === 'security_panel_lock') {
             if (in_array($value, [0, 1, 2, '0', '1', '2'], true)) {
                 $configSettings[$key] = (int)$value;
@@ -196,6 +221,7 @@ $catalog = [
     'weather' => ['key' => 'widget_weather', 'width' => 4, 'height' => 120],
     'garbage' => ['key' => 'widget_garbage', 'width' => 5, 'height' => 160],
     'postnl' => ['key' => 'widget_postnl', 'width' => 6, 'height' => 160],
+    'hpilo' => ['key' => 'widget_hpilo', 'width' => 4, 'height' => 200],
     'spotify' => ['key' => 'widget_spotify', 'width' => 4, 'height' => 120],
     'sonarr' => ['key' => 'widget_sonarr', 'width' => 4, 'height' => 120],
     'clock' => ['key' => 'widget_clock', 'width' => 4],
@@ -1047,6 +1073,10 @@ function _widgetBlockProps($widget)
         case 'postnl':
             $props['type'] = 'postnl';
             $props['title'] = 'PostNL';
+            break;
+        case 'hpilo':
+            $props['type'] = 'hpilo';
+            $props['title'] = 'HP iLO';
             break;
         case 'spotify':
             $props['type'] = 'spotify';
